@@ -244,7 +244,8 @@ if (typeof Slick === "undefined") {
 
       $headerScroller = $("<div class='slick-header ui-state-default' style='overflow:hidden;position:relative;' />").appendTo($container);
       $headers = $("<div class='slick-header-columns' style='left:-1000px' />").appendTo($headerScroller);
-      $headers.width(getHeadersWidth());
+      
+      $headers.outerWidth(getHeadersWidth());
 
       $headerRowScroller = $("<div class='slick-headerrow ui-state-default' style='overflow:hidden;position:relative;' />").appendTo($container);
       $headerRow = $("<div class='slick-headerrow-columns' />").appendTo($headerRowScroller);
@@ -409,7 +410,8 @@ if (typeof Slick === "undefined") {
     function measureScrollbar() {
       var $c = $("<div style='position:absolute; top:-10000px; left:-10000px; width:100px; height:100px; overflow:scroll;'></div>").appendTo("body");
       var dim = {
-        width: $c.width() - $c[0].clientWidth,
+        
+        width: $c.outerWidth() - $c[0].clientWidth,
         height: $c.height() - $c[0].clientHeight
       };
       $c.remove();
@@ -441,14 +443,14 @@ if (typeof Slick === "undefined") {
       canvasWidth = getCanvasWidth();
 
       if (canvasWidth != oldCanvasWidth) {
-        $canvas.width(canvasWidth);
-        $headerRow.width(canvasWidth);
-        $headers.width(getHeadersWidth());
+        
+        $canvas.outerWidth(canvasWidth);
+        $headerRow.outerWidth(canvasWidth);
+        $headers.outerWidth(getHeadersWidth());
         viewportHasHScroll = (canvasWidth > viewportW - scrollbarDimensions.width);
       }
-
-      $headerRowSpacer.width(canvasWidth + (viewportHasVScroll ? scrollbarDimensions.width : 0));
-
+      $headerRowSpacer.outerWidth(canvasWidth + (viewportHasVScroll ? scrollbarDimensions.width : 0));
+      
       if (canvasWidth != oldCanvasWidth || forceColumnWidthsUpdate) {
         applyColumnWidths();
       }
@@ -573,7 +575,8 @@ if (typeof Slick === "undefined") {
           }
         });
       $headers.empty();
-      $headers.width(getHeadersWidth());
+      
+      $headers.outerWidth(getHeadersWidth());
 
       $headerRow.find(".slick-headerrow-column")
         .each(function() {
@@ -711,7 +714,7 @@ if (typeof Slick === "undefined") {
         helper: "clone",
         placeholder: "slick-sortable-placeholder ui-state-default slick-header-column",
         start: function (e, ui) {
-          ui.placeholder.width(ui.helper.outerWidth() - headerColumnWidthDiff);
+          ui.placeholder.outerWidth(ui.helper.outerWidth() - headerColumnWidthDiff);
           $(ui.helper).addClass("slick-header-column-active");
         },
         beforeStop: function (e, ui) {
@@ -1141,9 +1144,9 @@ if (typeof Slick === "undefined") {
       if (!initialized) { return; }
       var h;
       for (var i = 0, headers = $headers.children(), ii = headers.length; i < ii; i++) {
-        h = $(headers[i]);
-        if (h.width() !== columns[i].width - headerColumnWidthDiff) {
-          h.width(columns[i].width - headerColumnWidthDiff);
+         h = $(headers[i]);
+        if (h.outerWidth() !== columns[i].width - headerColumnWidthDiff) {
+          h.outerWidth(columns[i].width - headerColumnWidthDiff);
         }
       }
 
@@ -3250,7 +3253,7 @@ if (typeof Slick === "undefined") {
           } else {
             // Re-add the CSS class to trigger transitions, if any.
             $(activeCellNode).removeClass("invalid");
-            $(activeCellNode).width();  // force layout
+            $(activeCellNode).outerWidth();  // force layout
             $(activeCellNode).addClass("invalid");
 
             trigger(self.onValidationError, {
