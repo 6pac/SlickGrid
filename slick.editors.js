@@ -143,6 +143,13 @@
         };
       }
 
+      if (args.column.validator) {
+        var validationResults = args.column.validator(this.serializeValue());
+        if (!validationResults.valid) {
+          return validationResults;
+        }
+      }
+
       return {
         valid: true,
         msg: null
@@ -181,22 +188,22 @@
 	function getDecimalPlaces() {
 		// returns the number of fixed decimal places or null
 		var rtn = args.column.editorFixedDecimalPlaces;
-		if (typeof rtn == 'undefined') { 
+		if (typeof rtn == 'undefined') {
 			rtn = FloatEditor.DefaultDecimalPlaces;
 		}
 		return (!rtn && rtn!==0 ? null : rtn);
 	}
-	
+
     this.loadValue = function (item) {
       defaultValue = item[args.column.field];
-	  
+
 	  var decPlaces = getDecimalPlaces();
-	  if (decPlaces !== null 
-	  && (defaultValue || defaultValue===0) 
-	  && defaultValue.toFixed) { 
+	  if (decPlaces !== null
+	  && (defaultValue || defaultValue===0)
+	  && defaultValue.toFixed) {
 		defaultValue = defaultValue.toFixed(decPlaces);
 	  }
-	  
+
       $input.val(defaultValue);
       $input[0].defaultValue = defaultValue;
       $input.select();
@@ -206,12 +213,12 @@
 	  var rtn = parseFloat($input.val()) || 0;
 
 	  var decPlaces = getDecimalPlaces();
-	  if (decPlaces !== null 
-	  && (rtn || rtn===0) 
-	  && rtn.toFixed) { 
+	  if (decPlaces !== null
+	  && (rtn || rtn===0)
+	  && rtn.toFixed) {
 		rtn = parseFloat(rtn.toFixed(decPlaces));
 	  }
-	  
+
       return rtn;
     };
 
@@ -241,7 +248,7 @@
   }
 
   FloatEditor.DefaultDecimalPlaces = null;
-  
+
   function DateEditor(args) {
     var $input;
     var defaultValue;
