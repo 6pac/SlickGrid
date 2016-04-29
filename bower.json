@@ -1,0 +1,43 @@
+{
+  "name": "slickgrid",
+  "homepage": "https://github.com/6pac/SlickGrid",
+  "authors": [
+    "Michael Leibman"
+  ],
+  "description": "A lightning fast JavaScript grid/spreadsheet",
+  "main": [
+    "./plugins/slick.autotooltips.js",
+    "./plugins/slick.cellcopymanager.js",
+    "./plugins/slick.cellrangedecorator.js",
+    "./plugins/slick.cellrangeselector.js",
+    "./plugins/slick.cellselectionmodel.js",
+    "./plugins/slick.checkboxselectcolumn.js",
+    "./plugins/slick.headerbutton.js",
+    "./plugins/slick.headermenu.js",
+    "./plugins/slick.rowmovemanager.js",
+    "./plugins/slick.rowselectionmodel.js",
+    "./controls/slick.columnpicker.js",
+    "./controls/slick.pager.js",
+	"./lib/jquery.event.drag-2.2.js",
+	"./lib/jquery.event.drop-2.2.js",
+    "./slick.core.js",
+    "./slick.dataview.js",
+    "./slick.editor.js",
+    "./slick.formatters.js",
+    "./slick.grid.js",
+    "./slick.groupitemmetadataprovider.js",
+    "./slick.remotemodel.js",
+    "./slick.remotemodel-yahoo.js"
+  ],
+  "license": "MIT",
+  "ignore": [
+    "**/.*",
+    "examples",
+    "tests",
+	"bower_components"
+  ],
+  "dependencies": {
+    "jquery-1.11.2": "http://code.jquery.com/jquery-1.11.2.js",
+    "jquery-ui": "http://code.jquery.com/ui/1.11.4/jquery-ui.js"
+  }
+}
