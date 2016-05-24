@@ -177,7 +177,7 @@
 
 
     function reloadData(from, to) {
-      for (var i = from; i <= to; i++)
+      for (var i = Math.floor(from / PAGESIZE) * PAGESIZE; i <= to; i++)
         delete data[i];
 
       ensureData(from, to);
