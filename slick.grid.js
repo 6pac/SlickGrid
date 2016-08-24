@@ -91,7 +91,8 @@ if (typeof Slick === "undefined") {
       multiColumnSort: false,
       defaultFormatter: defaultFormatter,
       forceSyncScrolling: false,
-      addNewRowCssClass: "new-row"
+      addNewRowCssClass: "new-row",	 
+      noScrollbarDimensions: false
     };
 
     var columnDefaults = {
@@ -210,12 +211,13 @@ if (typeof Slick === "undefined") {
       }
 
       cacheCssForHiddenInit();
+	  
+	  options = $.extend({}, defaults, options);
 
       // calculate these only once and share between grid instances
       maxSupportedCssHeight = maxSupportedCssHeight || getMaxSupportedCssHeight();
       scrollbarDimensions = scrollbarDimensions || measureScrollbar();
-
-      options = $.extend({}, defaults, options);
+      
       validateAndEnforceOptions();
       columnDefaults.width = options.defaultColumnWidth;
 
@@ -437,7 +439,9 @@ if (typeof Slick === "undefined") {
       return $canvas[0];
     }
 
-    function measureScrollbar() {
+    function measureScrollbar() {		
+      if (options.noScrollbarDimensions) return { width: 0, height: 0 };
+	  
       var $c = $("<div style='position:absolute; top:-10000px; left:-10000px; width:100px; height:100px; overflow:scroll;'></div>").appendTo("body");
       var dim = {
         width: $c.width() - $c[0].clientWidth,
