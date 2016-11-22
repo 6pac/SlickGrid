@@ -104,7 +104,8 @@ if (typeof Slick === "undefined") {
       headerCssClass: null,
       defaultSortAsc: true,
       focusable: true,
-      selectable: true
+      selectable: true,
+      locked: false
     };
 
     // scroller
@@ -668,6 +669,10 @@ if (typeof Slick === "undefined") {
             .on('mouseleave', onMouseLeave);
         }
 
+        if(m.locked) {
+          header.addClass("slick-column-locked");
+        }
+
         if (m.sortable) {
           header.addClass("slick-header-sortable");
           header.append("<span class='slick-sort-indicator' />");
@@ -781,6 +786,7 @@ if (typeof Slick === "undefined") {
       $headers.filter(":ui-sortable").sortable("destroy");
       $headers.sortable({
         containment: "parent",
+        items: '.slick-header-column:not(.slick-column-locked)',
         distance: 3,
         axis: "x",
         cursor: "default",
@@ -800,7 +806,10 @@ if (typeof Slick === "undefined") {
             return;
           }
 
-          var reorderedIds = $headers.sortable("toArray");
+          var reorderedIds = [];
+          $headers.children().each(function() {
+            reorderedIds.push(this.id);
+          });
           var reorderedColumns = [];
           for (var i = 0; i < reorderedIds.length; i++) {
             reorderedColumns.push(columns[getColumnIndex(reorderedIds[i].replace(uid, ""))]);
