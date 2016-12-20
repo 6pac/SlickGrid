@@ -215,11 +215,11 @@
           
         execute: function() {
           this.h=0;
-          for (var y = 0; y < destH; y++){
+          for (var y = 0; y < this.destH; y++){
             this.oldValues[y] = [];
             this.w=0;
             this.h++;
-            for (var x = 0; x < destW; x++){
+            for (var x = 0; x < this.destW; x++){
               this.w++;
               var desty = activeRow + y;
               var destx = activeCell + x;
