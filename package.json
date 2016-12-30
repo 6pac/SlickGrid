@@ -1,0 +1,23 @@
+{
+  "name": "slickgrid",
+  "version": "2.3.4",
+  "description": "lucax88x fork of slickgrid",
+  "main": "slick.core.js",
+  "directories": {
+    "example": "examples",
+    "test": "tests"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/lucax88x/SlickGrid.git"
+  },
+  "author": "mleibmann",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/lucax88x/SlickGrid/issues"
+  },
+  "homepage": "https://github.com/lucax88x/SlickGrid#readme"
+}
