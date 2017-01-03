@@ -1,6 +1,6 @@
 {
   "name": "slickgrid",
-  "version": "2.3.4",
+  "version": "2.3.5",
   "description": "lucax88x fork of slickgrid",
   "main": "slick.core.js",
   "directories": {
