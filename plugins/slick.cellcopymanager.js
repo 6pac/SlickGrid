@@ -57,32 +57,32 @@
       }
     }
 
-    function markCopySelection(ranges) {
-      var columns = _grid.getColumns();
-      var hash = {};
-      for (var i = 0; i < ranges.length; i++) {
-        for (var j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
-          hash[j] = {};
-          for (var k = ranges[i].fromCell; k <= ranges[i].toCell; k++) {
-            hash[j][columns[k].id] = "copied";
-          }
+  function markCopySelection(ranges) {
+    var columns = _grid.getColumns();
+    var hash = {};
+    for (var i = 0; i < ranges.length; i++) {
+      for (var j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
+        hash[j] = {};
+        for (var k = ranges[i].fromCell; k <= ranges[i].toCell; k++) {
+          hash[j][columns[k].id] = "copied";
         }
       }
-      _grid.setCellCssStyles("copy-manager", hash);
     }
-
-    function clearCopySelection() {
-      _grid.removeCellCssStyles("copy-manager");
-    }
-
-    $.extend(this, {
-      "init": init,
-      "destroy": destroy,
-      "clearCopySelection": clearCopySelection,
-
-      "onCopyCells": new Slick.Event(),
-      "onCopyCancelled": new Slick.Event(),
-      "onPasteCells": new Slick.Event()
-    });
+    _grid.setCellCssStyles("copy-manager", hash);
   }
+
+  function clearCopySelection() {
+    _grid.removeCellCssStyles("copy-manager");
+  }
+
+  $.extend(this, {
+    "init": init,
+    "destroy": destroy,
+    "clearCopySelection": clearCopySelection,
+
+    "onCopyCells": new Slick.Event(),
+    "onCopyCancelled": new Slick.Event(),
+    "onPasteCells": new Slick.Event()
+  });
+
 })(jQuery);
