@@ -16,9 +16,7 @@
         "PercentComplete": PercentCompleteFormatter,
         "PercentCompleteBar": PercentCompleteBarFormatter,
         "YesNo": YesNoFormatter,
-        "Checkmark": CheckmarkFormatter,
-        "Checkbox": CheckboxFormatter
-
+        "Checkmark": CheckmarkFormatter
       }
     }
   });
@@ -53,10 +51,6 @@
 
   function YesNoFormatter(row, cell, value, columnDef, dataContext) {
     return value ? "Yes" : "No";
-  }
-
-  function CheckboxFormatter(row, cell, value, columnDef, dataContext) {
-    return '<img class="slick-edit-preclick" src="../images/' + (value ? "CheckboxY" : "CheckboxN") + '.png">';
   }
 
   function CheckmarkFormatter(row, cell, value, columnDef, dataContext) {

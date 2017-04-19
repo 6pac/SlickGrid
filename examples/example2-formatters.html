@@ -14,23 +14,16 @@
     .cell-effort-driven {
       text-align: center;
     }
-
-    .green {
-      background-color: green;
-    }      
-    .red {
-      background-color: red;
-    }      
-    .orange {
-      background-color: orange;
-    }      
   </style>
 </head>
 <body>
+
+<input type=text>
+
 <table width="100%">
   <tr>
     <td valign="top" width="50%">
-      <div id="myGrid" style="width:700px;height:500px;"></div>
+      <div id="myGrid" style="width:600px;height:500px;"></div>
     </td>
     <td valign="top">
       <h2>Demonstrates:</h2>
@@ -59,26 +52,10 @@
 <script src="../slick.grid.js"></script>
 
 <script>
-   // a standard formatter returns a string 
-  function formatter(row, cell, value, columnDef, dataContext) {
-      return value;
-  }
+    function formatter(row, cell, value, columnDef, dataContext) {
+        return value;
+    }
 
-  // an extended formatter returns an object { text , removeClasses, addClasses }
-  // the classes are removed and then added during an update, or just added on cell creation
-  function statusFormatter(row, cell, value, columnDef, dataContext) {
-      var rtn = { text: value, removeClasses: 'red orange green' };
-      if (value !== null || value !== "") {
-        if (value < 33) {
-          rtn.addClasses = "red";
-        } else if (value < 66) {
-          rtn.addClasses =  "orange";
-        } else {
-          rtn.addClasses =  "green";
-        }
-      }
-      return rtn;
-  }
 
   var grid;
   var data = [];
@@ -86,13 +63,11 @@
     {id: "title", name: "Title", field: "title", width: 120, cssClass: "cell-title", formatter: formatter},
     {id: "duration", name: "Duration", field: "duration"},
     {id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar},
-    {id: "status", name: "Status", field: "percentComplete", width: 50, resizable: false, formatter: statusFormatter},
     {id: "start", name: "Start", field: "start", minWidth: 60},
     {id: "finish", name: "Finish", field: "finish", minWidth: 60},
     {id: "effort-driven", name: "Effort Driven", sortable: false, width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark}
   ];
 
-  
   var options = {
     editable: false,
     enableAddRow: false,
