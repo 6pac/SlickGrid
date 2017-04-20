@@ -113,7 +113,6 @@
     var emptyDropbox;
 
     function setupColumnDropbox() {
-      dropboxPlaceholder.hide();
       dropbox.droppable({
         activeClass: "ui-state-default",
         hoverClass: "ui-state-hover",
@@ -225,6 +224,9 @@
         groupby[e.id] = e;
       });
       removeFromArray(columnsGroupBy, groupby[id]);
+      if(columnsGroupBy.length == 0){
+        dropboxPlaceholder.show();
+      }
       updateGroupBy();
     }
 
