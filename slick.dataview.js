@@ -177,8 +177,6 @@
             if (e.grouping != null) {
               var entry = $("<div id='" + slickGrid.getUID() + e.id + "_entry' data-id='" + e.id + "' class='slick-dropped-grouping'>");
               var span = $("<span class='slick-groupby-remove'></span>").text(column.text() + " ")
-              //var img = $("<img></img>"); //.attr('src', slickGrid.getOptions().groupByRemoveImage);
-              //img.appendTo(span);
               span.appendTo(entry);
               $("</div>").appendTo(entry);
               entry.appendTo(container);
