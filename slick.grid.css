@@ -177,8 +177,3 @@ classes should alter those!
   position: absolute;
   border: 2px dashed black;
 }
-
-.slick-groupby-remove {
-    background: url(images/delete.png) no-repeat center right;
-    padding-right: 20px;
-}
