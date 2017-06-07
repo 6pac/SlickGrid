@@ -843,7 +843,7 @@
 
     function getRowDiffs(rows, newRows) {
       var item, r, eitherIsNonData, diff = [];
-      var from = 0, to = newRows.length;
+      var from = 0, to = Math.max(newRows.length, rows.length);
 
       if (refreshHints && refreshHints.ignoreDiffsBefore) {
         from = Math.max(0,
@@ -851,11 +851,11 @@
       }
 
       if (refreshHints && refreshHints.ignoreDiffsAfter) {
-        to = Math.min(newRows.length,
+        to = Math.min(to,
             Math.max(0, refreshHints.ignoreDiffsAfter));
       }
 
-      for (var i = from, rl = rows.length; i < to; i++) {
+      for (var i = from, rl = Math.min(newRows.length, rows.length); i < to; i++) {
         if (i >= rl) {
           diff[diff.length] = i;
         } else {
