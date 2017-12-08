@@ -1717,7 +1717,7 @@ if (typeof Slick === "undefined") {
 
       var value = null;
       if (item) { value = getDataItemValueForColumn(item, m); }
-      var formatterResult =  getFormatter(row, m)(row, cell, value, m, item);
+      var formatterResult =  getFormatter(row, m)(row, cell, value, m, item) || '';
       
       // get addl css class names from object type formatter return and from string type return of onBeforeAppendCell
       var addlCssClasses = trigger(self.onBeforeAppendCell, { row: row, cell: cell, grid: self, value: value, dataContext: item }) || '';
