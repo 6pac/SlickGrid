@@ -1,0 +1,14 @@
+{
+  "version": "2.0.0",
+  "tasks": [
+    {
+      "label": "Publish Library to NPM",
+      "command": "npm",
+      "type": "shell",
+      "args": [
+        "publish"
+      ],
+      "problemMatcher": []
+    }
+  ]
+}
