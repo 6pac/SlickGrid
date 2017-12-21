@@ -1921,7 +1921,7 @@ if (typeof Slick === "undefined") {
           (options.createPreHeaderPanel && options.showPreHeaderPanel ? options.preHeaderPanelHeight + getVBoxDelta($preHeaderPanelScroller) : 0);
     }
 
-    function resizeCanvas(forceUpdate) {
+    function resizeCanvas() {
       if (!initialized) { return; }
       if (options.autoHeight) {
         viewportH = options.rowHeight * getDataLengthIncludingAddNew();
@@ -1933,10 +1933,6 @@ if (typeof Slick === "undefined") {
       viewportW = parseFloat($.css($container[0], "width", true));
       if (!options.autoHeight) {
         $viewport.height(viewportH);
-      }
-      
-      if (forceUpdate) {
-        scrollbarDimensions = measureScrollbar();
       }
 
       if (options.forceFitColumns) {
