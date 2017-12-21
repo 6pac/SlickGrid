@@ -1934,7 +1934,7 @@ if (typeof Slick === "undefined") {
       if (!options.autoHeight) {
         $viewport.height(viewportH);
       }
-      
+
       if (options.forceFitColumns) {
         autosizeColumns();
       }
