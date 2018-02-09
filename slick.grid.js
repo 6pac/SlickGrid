@@ -1802,7 +1802,8 @@ if (typeof Slick === "undefined") {
 
     function removeRowFromCache(row) {
       var cacheEntry = rowsCache[row];
-      if (!cacheEntry) {
+      //In some cases cacheEntry is filled with a null rowNode...
+      if (!cacheEntry || !cacheEntry.rowNode) {
         return;
       }
 
