@@ -3,7 +3,7 @@
    *
    * USAGE:
    *
-   * Add the slick.detailview.(js|css) files and register the plugin with the grid.
+   * Add the slick.rowDetailView.(js|css) files and register the plugin with the grid.
    *
    * Available row detail options:
    *    cssClass:         A CSS class to be added to the row detail
@@ -15,12 +15,12 @@
   // register namespace
   $.extend(true, window, {
     "Slick": {
-      "DetailView": DetailView
+      "RowDetailView": RowDetailView
     }
   });
 
 
-  function DetailView(options) {
+  function RowDetailView(options) {
     var _grid;
     var _self = this;
     var _handler = new Slick.EventHandler();
@@ -107,7 +107,7 @@
               // the response has to be as "args.detailItem" with it's data back
               _self.onAsyncResponse.subscribe(function (e, args) {
                 if(!args || !args.detailItem) {
-                  throw 'Slick.DetailView plugin requires the onAsyncResponse() to supply "args.detailItem" property.'
+                  throw 'Slick.RowDetailView plugin requires the onAsyncResponse() to supply "args.detailItem" property.'
                 }
                 item._detailContent = _options.postTemplate(args.detailItem);
                 var idxParent = dataView.getIdxById(args.detailItem.id);

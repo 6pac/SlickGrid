@@ -6,13 +6,13 @@
   <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
   <link rel="stylesheet" href="../css/smoothness/jquery-ui-1.11.3.custom.css" type="text/css"/>
   <link rel="stylesheet" href="examples.css" type="text/css"/>
-  <link rel="stylesheet" href="../plugins/slick.detailview.css" type="text/css"/>
+  <link rel="stylesheet" href="../plugins/slick.rowdetailview.css" type="text/css"/>
   <style>
     .detail {
         padding: 5px
     }
-    label {
-        font-weight: bold;
+    .preload {
+      font-size: 18px;
     }
   </style>
 </head>
@@ -43,7 +43,7 @@
 <script src="../lib/jquery.event.drag-2.3.0.js"></script>
 
 <script src="../slick.core.js"></script>
-<script src="../plugins/slick.detailview.js"></script>
+<script src="../plugins/slick.rowdetailview.js"></script>
 <script src="../slick.formatters.js"></script>
 <script src="../plugins/slick.rowselectionmodel.js"></script>
 <script src="../slick.grid.js"></script>
@@ -116,7 +116,7 @@
       dataView = new Slick.Data.DataView({ inlineFilters: true });
 
       // create the row detail plugin
-      detailView = new Slick.DetailView({
+      detailView = new Slick.RowDetailView({
         cssClass: "detailView-toggle",
         preTemplate: loadingTemplate,
         postTemplate: postTemplate,
