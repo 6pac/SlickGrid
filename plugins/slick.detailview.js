@@ -105,9 +105,9 @@
 
               // subscribe to the onBeforeRowDetailOpen so that the plugin knows when the user server side calls finishes with it's data back
               _self.onBeforeRowDetailOpen.subscribe(function (e, args) {
-                item._detailContent = _options.postTemplate(item);
-                var idxParent = dataView.getIdxById(item.id);
-                dataView.updateItem(item.id, item);
+                item._detailContent = _options.postTemplate(rowDetailItem);
+                var idxParent = dataView.getIdxById(rowDetailItem.id);
+                dataView.updateItem(rowDetailItem.id, rowDetailItem);
               });
 
               // async server call
