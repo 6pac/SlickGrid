@@ -26,11 +26,11 @@
   <div class="options-panel">
     <h2>Demonstrates:</h2>
     <ul>
-      <li>Checkbox row select column</li>
+      <li>DetailView Plugin</li>
     </ul>
       <h2>View Source:</h2>
       <ul>
-          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-checkbox-row-select.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example16-row-detail.html" target="_sourcewindow"> View the source for this example on Github</a></li>
       </ul>
 
   </div>
@@ -67,7 +67,7 @@
       enableAddRow: false,
       enableCellNavigation: true
     };
-    var detailSelectColumn;
+    var detailView;
 
     function DataItem(i) {
       this.num = i;
@@ -100,7 +100,9 @@
     function simulateServerCall(item) {
       // fill the template on delay
       setTimeout(function() {
-        detailSelectColumn.onBeforeRowDetailOpen.notify({
+        // notify the onAsyncResponse with the "args.detailItem" 
+        // the plugin will then uses it to populate the detail panel with "postTemplate"
+        detailView.onAsyncResponse.notify({
           "detailItem": item
         }, undefined, this);
       }, 1000);      
@@ -114,7 +116,7 @@
       dataView = new Slick.Data.DataView({ inlineFilters: true });
 
       // create the row detail plugin
-      detailSelectColumn = new Slick.DetailSelectColumn({
+      detailView = new Slick.DetailView({
         cssClass: "detailView-toggle",
         preTemplate: loadingTemplate,
         postTemplate: postTemplate,
@@ -123,13 +125,13 @@
       });
 
       // push the plugin as first column
-      columns.unshift(detailSelectColumn.getColumnDefinition());
+      columns.unshift(detailView.getColumnDefinition());
 
       grid = new Slick.Grid("#myGrid", dataView, columns, options);
       
       // register the column
       grid.setSelectionModel(new Slick.RowSelectionModel({selectActiveRow: false}));
-      grid.registerPlugin(detailSelectColumn);
+      grid.registerPlugin(detailView);
       
       // initialize the model after all the events have been hooked up
       dataView.beginUpdate();

@@ -15,12 +15,12 @@
   // register namespace
   $.extend(true, window, {
     "Slick": {
-      "DetailSelectColumn": DetailSelectColumn
+      "DetailView": DetailView
     }
   });
 
 
-  function DetailSelectColumn(options) {
+  function DetailView(options) {
     var _grid;
     var _self = this;
     var _handler = new Slick.EventHandler();
@@ -47,7 +47,7 @@
 
     function destroy() {
       _handler.unsubscribeAll();
-      _self.onBeforeRowDetailOpen.unsubscribe();
+      _self.onAsyncResponse.unsubscribe();
     }
 
     function handleSort(e, args) {
@@ -103,8 +103,12 @@
               applyTemplateNewLineHeight(dataView, item);              
               dataView.updateItem(item.id, item);
 
-              // subscribe to the onBeforeRowDetailOpen so that the plugin knows when the user server side calls finishes with it's data back
-              _self.onBeforeRowDetailOpen.subscribe(function (e, args) {
+              // subscribe to the onAsyncResponse so that the plugin knows when the user server side calls finished
+              // the response has to be as "args.detailItem" with it's data back
+              _self.onAsyncResponse.subscribe(function (e, args) {
+                if(!args || !args.detailItem) {
+                  throw 'Slick.DetailView plugin requires the onAsyncResponse() to supply "args.detailItem" property.'
+                }
                 item._detailContent = _options.postTemplate(args.detailItem);
                 var idxParent = dataView.getIdxById(args.detailItem.id);
                 dataView.updateItem(args.detailItem.id, args.detailItem);
@@ -209,7 +213,7 @@
     $.extend(this, {
       "init": init,
       "destroy": destroy,
-      "onBeforeRowDetailOpen": new Slick.Event(),
+      "onAsyncResponse": new Slick.Event(),
       "getColumnDefinition": getColumnDefinition
     });
   }
