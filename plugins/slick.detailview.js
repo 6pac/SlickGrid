@@ -47,6 +47,7 @@
 
     function destroy() {
       _handler.unsubscribeAll();
+      _self.onBeforeRowDetailOpen.unsubscribe();
     }
 
     function handleSort(e, args) {
@@ -102,12 +103,15 @@
               applyTemplateNewLineHeight(dataView, item);              
               dataView.updateItem(item.id, item);
 
-              // fill the template on delay
-              setTimeout(function() {
-                  item._detailContent = _options.postTemplate(item);
-                  var idxParent = dataView.getIdxById(item.id);
-                  dataView.updateItem(item.id, item);
-                }, 1000);
+              // subscribe to the onBeforeRowDetailOpen so that the plugin knows when the user server side calls finishes with it's data back
+              _self.onBeforeRowDetailOpen.subscribe(function (e, args) {
+                item._detailContent = _options.postTemplate(item);
+                var idxParent = dataView.getIdxById(item.id);
+                dataView.updateItem(item.id, item);
+              });
+
+              // async server call
+              _options.process(item);
             }
         }
     }
@@ -205,7 +209,7 @@
     $.extend(this, {
       "init": init,
       "destroy": destroy,
-
+      "onBeforeRowDetailOpen": new Slick.Event(),
       "getColumnDefinition": getColumnDefinition
     });
   }

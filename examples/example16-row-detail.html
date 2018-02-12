@@ -67,6 +67,7 @@
       enableAddRow: false,
       enableCellNavigation: true
     };
+    var detailSelectColumn;
 
     function DataItem(i) {
       this.num = i;
@@ -80,11 +81,7 @@
     }
 
     function loadingTemplate() {
-      return [
-        '<div>',
-        '<h4>Loading...</h4>',
-        '</div>'
-      ].join('');
+      return '<div><h4>Loading...</h4></div>';
     }
 
     function postTemplate(item) {
@@ -100,6 +97,15 @@
       ].join('');
     }
 
+    function simulateServerCall(item) {
+      // fill the template on delay
+      setTimeout(function() {
+        detailSelectColumn.onBeforeRowDetailOpen.notify({
+          "detailItem": item
+        }, undefined, this);
+      }, 1000);      
+    }
+
     $(function () {
       // prepare the data
       for (var i = 0; i < 5000; i++) {
@@ -107,11 +113,12 @@
       }
       dataView = new Slick.Data.DataView({ inlineFilters: true });
 
-      // create the selection
-      var detailSelectColumn = new Slick.DetailSelectColumn({
+      // create the row detail plugin
+      detailSelectColumn = new Slick.DetailSelectColumn({
         cssClass: "detailView-toggle",
         preTemplate: loadingTemplate,
         postTemplate: postTemplate,
+        process: simulateServerCall,
         templateRowCount: 6
       });
 
