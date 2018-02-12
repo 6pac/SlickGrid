@@ -1,3 +1,16 @@
+  /***
+   * A plugin to add row detail panel
+   *
+   * USAGE:
+   *
+   * Add the slick.detailview.(js|css) files and register the plugin with the grid.
+   *
+   * Available row detail options:
+   *    cssClass:         A CSS class to be added to the row detail
+   *    preTemplate:      Template used before the async template
+   *    postTempalte:     Template that will be loaded once the async function finishes
+   *    templateRowCount: row count of the template lines 
+   */
 (function ($) {
   // register namespace
   $.extend(true, window, {
@@ -79,15 +92,23 @@
                 for (var idx = 1; idx <= item._sizePadding; idx++)
                     dataView.deleteItem(item.id + "." + idx);
                 item._sizePadding = 0;
+                dataView.updateItem(item.id, item);
             }
             else if (!forceHide) {
-                item._collapsed = false;
-                kookupDynamicContent(item);
-                var idxParent = dataView.getIdxById(item.id);
-                for (var idx = 1; idx <= item._sizePadding; idx++)
-                    dataView.insertItem(idxParent + idx, getPaddingItem(item, idx));
+              item._collapsed = false;
+
+              // display pre-loading template
+              item._detailContent = _options.preTemplate(item);
+              applyTemplateNewLineHeight(dataView, item);              
+              dataView.updateItem(item.id, item);
+
+              // fill the template on delay
+              setTimeout(function() {
+                  item._detailContent = _options.postTemplate(item);
+                  var idxParent = dataView.getIdxById(item.id);
+                  dataView.updateItem(item.id, item);
+                }, 1000);
             }
-            dataView.updateItem(item.id, item);
         }
     }
 
@@ -110,32 +131,20 @@
     //////////////////////////////////////////////////////////////
     //create the detail ctr node. this belongs to the dev & can be custom-styled as per
     //////////////////////////////////////////////////////////////
-    var kookupDynamicContent=function(item)
-    {      
-      // display row detail
-      var templateRows = [
-        '<div>',
-        '<h4>' + item.title + '</h4>',
-        '<div class="detail"><label>Duration:</label> <span>' + item.duration + '</span></div>',
-        '<div class="detail"><label>% Complete:</label> <span>' + item.percentComplete + '</span></div>',
-        '<div class="detail"><label>Start:</label> <span>' + item.start + '</span></div>',
-        '<div class="detail"><label>Finish:</label> <span>' + item.finish + '</span></div>',
-        '<div class="detail"><label>Effort Driven:</label> <span>' + item.effortDriven + '</span></div>',
-        '</div>'
-      ];
-      
-      // don't exactly know how to calculate this spacing, but using the row count seems to be around what we need
-      var rowCount = templateRows.length - 2; // 2 rows are for the div container
-      var height = rowCount * 2;
-
-      // detail content
-      item._detailContent = templateRows.join('');
+    function applyTemplateNewLineHeight(dataView, item) {
+      // the height seems to be calculated by the template row count (how many line of items does the template have)
+      var height = _options.templateRowCount * 2;
 
       //calculate padding requirements based on detail-content..
       //ie. worst-case: create an invisible dom node now &find it's height.
       var lineHeight=13; //we know cuz we wrote the custom css innit ;)
       item._sizePadding=Math.ceil((height*lineHeight) / _grid.getOptions().rowHeight);
       item._height=(item._sizePadding * _grid.getOptions().rowHeight);
+
+      var idxParent = dataView.getIdxById(item.id);
+      for (var idx = 1; idx <= item._sizePadding; idx++) {
+        dataView.insertItem(idxParent + idx, getPaddingItem(item, idx));
+      }
     }
 
 
