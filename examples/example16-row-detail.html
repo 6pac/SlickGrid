@@ -53,6 +53,8 @@
     var dataView;
     var grid;
     var data = [];
+    var fakeNames = ['John Doe', 'Jane Doe', 'Chuck Norris', 'Bumblebee', 'Jackie Chan', 'Elvis Presley', 'Bob Marley', 'Mohammed Ali', 'Bruce Lee', 'Rocky Balboa'];
+
     var columns = [      
       {id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 40, resizable: false, selectable: false },
       {id: "title", name: "Title", field: "title", width: 110, minWidth: 110, cssClass: "cell-title"},
@@ -105,8 +107,8 @@
       setTimeout(function() {
         // let's add some property to our item for a better simulation
         var itemDetail = item;
-        itemDetail.assignee = "John Doe";
-        itemDetail.reporter = "Jane Doe";
+        itemDetail.assignee = fakeNames[randomNumber(0, 10)];
+        itemDetail.reporter = fakeNames[randomNumber(0, 10)];
 
         // notify the onAsyncResponse with the "args.itemDetail" (required property)
         // the plugin will then uses it to populate the detail panel with "postTemplate"
@@ -114,6 +116,10 @@
           "itemDetail": itemDetail
         }, undefined, this);
       }, 1000);      
+    }
+
+    function randomNumber(min, max) {
+      return Math.floor(Math.random() * (max - min + 1) + min);
     }
 
     $(function () {
