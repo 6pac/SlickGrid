@@ -23,6 +23,7 @@
     padding:            0;
     width:              100%;
     display:            table;
+    overflow:           auto;
 }
  
 .dynamic-cell-detail > :first-child
@@ -33,4 +34,9 @@
     padding:            10px;
     font-size:          12px;
     line-height:        13px;
+}
+
+.dynamic-cell-detail > .detail-container {
+    overflow: auto;
+    display: block !important;
 }

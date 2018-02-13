@@ -9,7 +9,7 @@
    *    cssClass:         A CSS class to be added to the row detail
    *    preTemplate:      Template used before the async template
    *    postTempalte:     Template that will be loaded once the async function finishes
-   *    templateRowCount: row count of the template lines 
+   *    panelRows: row count of the template lines 
    */
 (function ($) {
   // register namespace
@@ -58,7 +58,7 @@
 
     function handleClick(e, args) {
       // clicking on a row select checkbox
-        if (_grid.getColumns()[args.cell].id === _options.columnId && $(e.target).hasClass("detailView-toggle")) {
+      if (_grid.getColumns()[args.cell].id === _options.columnId && $(e.target).hasClass("detailView-toggle")) {
         // if editing, try to commit
         if (_grid.getEditorLock().isActive() && !_grid.getEditorLock().commitCurrentEdit()) {
           e.preventDefault();
@@ -104,14 +104,14 @@
               dataView.updateItem(item.id, item);
 
               // subscribe to the onAsyncResponse so that the plugin knows when the user server side calls finished
-              // the response has to be as "args.detailItem" with it's data back
+              // the response has to be as "args.itemDetail" with it's data back
               _self.onAsyncResponse.subscribe(function (e, args) {
-                if(!args || !args.detailItem) {
-                  throw 'Slick.RowDetailView plugin requires the onAsyncResponse() to supply "args.detailItem" property.'
+                if(!args || !args.itemDetail) {
+                  throw 'Slick.RowDetailView plugin requires the onAsyncResponse() to supply "args.itemDetail" property.'
                 }
-                item._detailContent = _options.postTemplate(args.detailItem);
-                var idxParent = dataView.getIdxById(args.detailItem.id);
-                dataView.updateItem(args.detailItem.id, args.detailItem);
+                item._detailContent = _options.postTemplate(args.itemDetail);
+                var idxParent = dataView.getIdxById(args.itemDetail.id);
+                dataView.updateItem(args.itemDetail.id, args.itemDetail);
               });
 
               // async server call
@@ -141,12 +141,12 @@
     //////////////////////////////////////////////////////////////
     function applyTemplateNewLineHeight(dataView, item) {
       // the height seems to be calculated by the template row count (how many line of items does the template have)
-      var height = _options.templateRowCount * 2;
+      var rowCount = _options.panelRows;
 
       //calculate padding requirements based on detail-content..
       //ie. worst-case: create an invisible dom node now &find it's height.
       var lineHeight=13; //we know cuz we wrote the custom css innit ;)
-      item._sizePadding=Math.ceil((height*lineHeight) / _grid.getOptions().rowHeight);
+      item._sizePadding=Math.ceil(((rowCount * 2)*lineHeight) / _grid.getOptions().rowHeight);
       item._height=(item._sizePadding * _grid.getOptions().rowHeight);
 
       var idxParent = dataView.getIdxById(item.id);
@@ -182,11 +182,14 @@
             dataContext._offset = 0
         }
 
-        if (dataContext._isPadding == true); //render nothing
-        else if (dataContext._collapsed) return "<div class='detailView-toggle expand'></div>";
-        else {
+        if (dataContext._isPadding == true) {
+          //render nothing
+        } else if (dataContext._collapsed) {
+          return "<div class='detailView-toggle expand'></div>";
+        }else {
             var html = [];
             var rowHeight = _grid.getOptions().rowHeight;
+            var bottomMargin = 5;
 
             //V313HAX:
             //putting in an extra closing div after the closing toggle div and ommiting a
@@ -202,7 +205,7 @@
             html.push("<div class='dynamic-cell-detail' ");   //apply custom css to detail
             html.push("style='height:", dataContext._height, "px;"); //set total height of padding
             html.push("top:", rowHeight, "px'>");             //shift detail below 1st row
-            html.push("<div>", dataContext._detailContent, "</div>");  //sub ctr for custom styling
+            html.push("<div class='detail-container' style='max-height:" + (dataContext._height - rowHeight + bottomMargin) + "px'>", dataContext._detailContent, "</div>");  //sub ctr for custom styling
             //&omit a final closing detail container </div> that would come next
 
             return html.join("");
