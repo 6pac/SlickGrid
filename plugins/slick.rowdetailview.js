@@ -132,6 +132,8 @@
         //additional hidden padding metadata fields
         item._collapsed=     true;
         item._isPadding=     true;
+		item._parent = parent;
+        item._offset = offset;
 
         return item;
     }
