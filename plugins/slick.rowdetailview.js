@@ -28,7 +28,7 @@
     var _defaults = {
       columnId: "_detail_selector",
       cssClass: null,
-      toolTip: "Select/Deselect All",
+      toolTip: "",
       width: 30
     };
 
@@ -43,13 +43,48 @@
         .subscribe(_grid.onSort, handleSort);
       _grid.getData().onRowCountChanged.subscribe (function () { _grid.updateRowCount(); _grid.render(); });
       _grid.getData().onRowsChanged.subscribe (function (e, a) { _grid.invalidateRows(a.rows); _grid.render(); });
+	   
+	   // TODO: Remove/Update once we have someway of updating core.getRenderedRange
+       _grid.getRenderedRange = getRenderedRange;
     }
 
     function destroy() {
       _handler.unsubscribeAll();
       _self.onAsyncResponse.unsubscribe();
     }
+	
+    //////////////////////////////////////////////////////////////
+    //TODO: Make this not override the core functionality!
+    // This is a clone of the slick.core.getRenderedRange Only change is adding _options.panelRows
+    //////////////////////////////////////////////////////////////
+    function getRenderedRange(viewportTop, viewportLeft) {
+        var range = getVisibleRange(viewportTop, viewportLeft);
+        var buffer = Math.round(viewportH / options.rowHeight);
+        var minBuffer = 3 + _options.panelRows; // Changed line
 
+        if (vScrollDir == -1) {
+            range.top -= buffer;
+            range.bottom += minBuffer;
+        } else if (vScrollDir == 1) {
+            range.top -= minBuffer;
+            range.bottom += buffer;
+        } else {
+            range.top -= minBuffer;
+            range.bottom += minBuffer;
+        }
+
+        range.top = Math.max(0, range.top);
+        range.bottom = Math.min(getDataLengthIncludingAddNew() - 1, range.bottom);
+
+        range.leftPx -= viewportW;
+        range.rightPx += viewportW;
+
+        range.leftPx = Math.max(0, range.leftPx);
+        range.rightPx = Math.min(canvasWidth, range.rightPx);
+
+        return range;
+    }
+	
     function handleSort(e, args) {
         $.each(_grid.getData().rows, function (i, r) {
             HandleAccordionShowHide(r, true);
