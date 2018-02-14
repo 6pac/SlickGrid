@@ -8,7 +8,7 @@
    * Available row detail options:
    *    cssClass:         A CSS class to be added to the row detail
    *    preTemplate:      Template used before the async template
-   *    postTempalte:     Template that will be loaded once the async function finishes
+   *    postTemplate:     Template that will be loaded once the async function finishes
    *    panelRows: row count of the template lines 
    */
 (function ($) {
@@ -51,9 +51,10 @@
     }
 
     function handleSort(e, args) {
-        $.each(_grid.getData().rows, function (i, r) {
-            HandleAccordionShowHide(r, true);
-        });
+      console.log(_grid.getData().rows)
+      $.each(_grid.getData().rows, function (i, r) {
+          HandleAccordionShowHide(r, true);
+      });
     }
 
     function handleClick(e, args) {

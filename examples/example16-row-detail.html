@@ -53,13 +53,16 @@
     var dataView;
     var grid;
     var data = [];
+    var sortcol = "title";
+    var sortdir = 1;
+
     var fakeNames = ['John Doe', 'Jane Doe', 'Chuck Norris', 'Bumblebee', 'Jackie Chan', 'Elvis Presley', 'Bob Marley', 'Mohammed Ali', 'Bruce Lee', 'Rocky Balboa'];
 
     var columns = [      
       {id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 40, resizable: false, selectable: false },
-      {id: "title", name: "Title", field: "title", width: 110, minWidth: 110, cssClass: "cell-title"},
-      {id: "duration", name: "Duration", field: "duration"},
-      {id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar},
+      {id: "title", name: "Title", field: "title", width: 110, minWidth: 110, cssClass: "cell-title", sortable: true},
+      {id: "duration", name: "Duration", field: "duration", sortable: true},
+      {id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, sortable: true},
       {id: "start", name: "Start", field: "start", minWidth: 60},
       {id: "finish", name: "Finish", field: "finish", minWidth: 60},
       {id: "effort-driven", name: "Effort Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark}
@@ -67,7 +70,8 @@
     var options = {
       editable: false,
       enableAddRow: false,
-      enableCellNavigation: true
+      enableCellNavigation: true,
+      enableColumnReorder: false
     };
     var detailView;
 
@@ -122,6 +126,18 @@
       return Math.floor(Math.random() * (max - min + 1) + min);
     }
 
+    
+    function percentCompleteSort(a, b) {
+      return a["percentComplete"] - b["percentComplete"];
+    }
+    function comparer(a, b) {
+      var x = a[sortcol], y = b[sortcol];
+      return (x == y ? 0 : (x > y ? 1 : -1));
+    }
+    function toggleFilterRow() {
+      grid.setTopPanelVisibility(!grid.getOptions().showTopPanel);
+    }
+
     $(function () {
       // prepare the data
       for (var i = 0; i < 5000; i++) {
@@ -149,6 +165,17 @@
       // register the column
       grid.setSelectionModel(new Slick.RowSelectionModel({selectActiveRow: false}));
       grid.registerPlugin(detailView);
+
+      grid.onSort.subscribe(function (e, args) {
+        console.log(args)
+        sortdir = args.sortAsc ? 1 : -1;
+        sortcol = args.sortCol.field;
+        
+        // using native sort with comparer
+        // preferred method but can be very slow in IE with huge datasets
+        dataView.sort(comparer, args.sortAsc);
+        
+      });
       
       // initialize the model after all the events have been hooked up
       dataView.beginUpdate();
