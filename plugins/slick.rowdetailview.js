@@ -23,13 +23,13 @@
   function RowDetailView(options) {
     var _grid;
     var _self = this;
+    var _expandedRows = [];
     var _handler = new Slick.EventHandler();
-    var _selectedRowsLookup = {};
     var _defaults = {
-      columnId: "_detail_selector",
-      cssClass: null,
-      toolTip: "",
-      width: 30
+        columnId: "_detail_selector",
+        cssClass: null,
+        toolTip: "",
+        width: 30
     };
 
     var _options = $.extend(true, {}, _defaults, options);
@@ -84,13 +84,6 @@
 
         return range;
     }
-	
-    function handleSort(e, args) {		
-      var rows = _grid.getData().getItems();		
-      $.each(rows, function (i, r) {
-          HandleAccordionShowHide(r, true);
-      });
-    }
 
     function handleClick(e, args) {
       // clicking on a row select checkbox
@@ -110,78 +103,96 @@
         e.stopImmediatePropagation();
       }
     }
+        // Sort will just collapse all of the open items
+    function handleSort(e, args) {
+        collapseAll();
+    }
 
+    // Toggle between showing and hiding a row
     function toggleRowSelection(row) {
-
         _grid.getData().beginUpdate();
-
-        HandleAccordionShowHide(row, false);
-
+        HandleAccordionShowHide(row);
         _grid.getData().endUpdate();
     }
 
-    function HandleAccordionShowHide(item, forceHide) {
-        var dataView = _grid.getData();
+    // Collapse all of the open items
+    function collapseAll()
+    {
+        for (var i = _expandedRows.length -1; i >= 0; i--) {               
+            collapseItem(_expandedRows[i]);
+        }
+    }
 
+    // Colapse an Item so it is notlonger seen
+    function collapseItem(item)
+    {
+        item._collapsed = true;
+        for (var idx = 1; idx <= item._sizePadding; idx++)
+            _dataView.deleteItem(item.id + "." + idx);
+        item._sizePadding = 0;
+        _dataView.updateItem(item.id, item);
+
+        // Remove the item from the expandedRows
+        _expandedRows = _expandedRows.filter(function (r) {
+            return r.id !== item.id;
+        });
+    }
+
+    // Expand a row given the dataview item that is to be expanded
+    function expandItem(item)
+    {
+        item._collapsed = false;
+        _expandedRows.push(item);
+        // display pre-loading template
+        if (!item._detailViewLoaded || _options.loadOnce != true) {
+            item._detailContent = _options.preTemplate(item);
+        }
+        else {
+            _self.onAsyncResponse.notify({
+                "itemDetail": item,
+                "detailView": item._detailContent
+            }, undefined, this);
+            applyTemplateNewLineHeight(item);
+            _dataView.updateItem(item.id, item);
+
+            return;
+        }
+
+        applyTemplateNewLineHeight(item);
+        _dataView.updateItem(item.id, item);
+
+        // subscribe to the onAsyncResponse so that the plugin knows when the user server side calls finished
+        // the response has to be as "args.itemDetail" with it's data back
+        _self.onAsyncResponse.subscribe(function (e, args) {
+            if (!args || !args.itemDetail) {
+                throw 'Slick.RowDetailView plugin requires the onAsyncResponse() to supply "args.itemDetail" property.'
+            }
+
+            // If we just want to load in a view directly we can use detailView property to do so
+            if (args.detailView) {
+                item._detailContent = args.detailView;
+            }
+            else {
+                item._detailContent = _options.postTemplate(args.itemDetail);
+            }
+
+            item._detailViewLoaded = true;
+
+            var idxParent = _dataView.getIdxById(args.itemDetail.id);
+            _dataView.updateItem(args.itemDetail.id, args.itemDetail);
+        });
+
+        // async server call
+        _options.process(item);
+    }
+
+    function HandleAccordionShowHide(item) {           
         if (item) {
             if (!item._collapsed) {
-                item._collapsed = true;
-                for (var idx = 1; idx <= item._sizePadding; idx++)
-                    dataView.deleteItem(item.id + "." + idx);
-                item._sizePadding = 0;
-                dataView.updateItem(item.id, item);
+                collapseItem(item);
             }
-            else if (!forceHide) {
-              item._collapsed = false;
-
-			  // display pre-loading template only if view has not been loaded before and we are not only loading it once
-              if (!item._detailViewLoaded || _options.loadOnce != true)
-              {
-                  item._detailContent = _options.preTemplate(item);
-              }
-              else
-              {
-				  // If we are only loading it the once and we have loaded it before just notify to update the view
-                  _self.onAsyncResponse.notify({
-                      "itemDetail": item,
-                      "detailView": item._detailContent
-                  }, undefined, this);
-                  applyTemplateNewLineHeight(dataView, item);
-                  dataView.updateItem(item.id, item);
-
-                  return;
-              }
-			  
-              // display pre-loading template
-              item._detailContent = _options.preTemplate(item);
-              applyTemplateNewLineHeight(dataView, item);              
-              dataView.updateItem(item.id, item);
-
-              // subscribe to the onAsyncResponse so that the plugin knows when the user server side calls finished
-              // the response has to be as "args.itemDetail" with it's data back
-              _self.onAsyncResponse.subscribe(function (e, args) {
-                if(!args || !args.itemDetail) {
-                  throw 'Slick.RowDetailView plugin requires the onAsyncResponse() to supply "args.itemDetail" property.'
-                }
-                
-				// If we just want to load in a view directly we can use detailView property to do so
-                if (args.detailView)
-                {
-                    item._detailContent = args.detailView;                            
-                }
-                else
-                {
-                    item._detailContent = _options.postTemplate(args.itemDetail);
-                }
-				
-                item._detailViewLoaded = true;
-				
-                var idxParent = dataView.getIdxById(args.itemDetail.id);
-                dataView.updateItem(args.itemDetail.id, args.itemDetail);
-              });
-
-              // async server call
-              _options.process(item);
+            else {
+                expandItem(item);
             }
         }
     }
@@ -207,20 +218,20 @@
     //////////////////////////////////////////////////////////////
     //create the detail ctr node. this belongs to the dev & can be custom-styled as per
     //////////////////////////////////////////////////////////////
-    function applyTemplateNewLineHeight(dataView, item) {
-      // the height seems to be calculated by the template row count (how many line of items does the template have)
-      var rowCount = _options.panelRows;
+    function applyTemplateNewLineHeight(item) {
+        // the height seems to be calculated by the template row count (how many line of items does the template have)
+        var rowCount = _options.panelRows;
 
-      //calculate padding requirements based on detail-content..
-      //ie. worst-case: create an invisible dom node now &find it's height.
-      var lineHeight=13; //we know cuz we wrote the custom css innit ;)
-      item._sizePadding=Math.ceil(((rowCount * 2)*lineHeight) / _grid.getOptions().rowHeight);
-      item._height=(item._sizePadding * _grid.getOptions().rowHeight);
+        //calculate padding requirements based on detail-content..
+        //ie. worst-case: create an invisible dom node now &find it's height.
+        var lineHeight = 13; //we know cuz we wrote the custom css innit ;)
+        item._sizePadding = Math.ceil(((rowCount * 2) * lineHeight) / _grid.getOptions().rowHeight);
+        item._height = (item._sizePadding * _grid.getOptions().rowHeight);
 
-      var idxParent = dataView.getIdxById(item.id);
-      for (var idx = 1; idx <= item._sizePadding; idx++) {
-        dataView.insertItem(idxParent + idx, getPaddingItem(item, idx));
-      }
+        var idxParent = _dataView.getIdxById(item.id);
+        for (var idx = 1; idx <= item._sizePadding; idx++) {
+            _dataView.insertItem(idxParent + idx, getPaddingItem(item, idx));
+        }
     }
 
 
@@ -285,7 +296,8 @@
       "init": init,
       "destroy": destroy,
       "onAsyncResponse": new Slick.Event(),
-      "getColumnDefinition": getColumnDefinition
+      "getColumnDefinition": getColumnDefinition,
+      "collapseAll": collapseAll	  
     });
   }
 })(jQuery);
