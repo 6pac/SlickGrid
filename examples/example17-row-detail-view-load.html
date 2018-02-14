@@ -32,7 +32,7 @@
     </ul>
       <h2>View Source:</h2>
       <ul>
-          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example16-row-detail.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example17-row-detail-view-load.html" target="_sourcewindow"> View the source for this example on Github</a></li>
       </ul>
 
   </div>
@@ -110,17 +110,25 @@
         '</div>'
       ].join('');
     }
+
+    function randomNumber(min, max) {
+      return Math.floor(Math.random() * (max - min + 1) + min);
+    }
 	
     function simulateServerCall(item) {
       // fill the template on delay
       setTimeout(function() {
-       
+        // let's add some property to our item for a better simulation
+        var itemDetail = item;
+        itemDetail.assignee = fakeNames[randomNumber(0, 10)];
+        itemDetail.reporter = fakeNames[randomNumber(0, 10)];
+
         // notify the onAsyncResponse with the "args.itemDetail" (required property)
         // in this case we are passing the view explicitly that we wish to show "args.detailView"
         detailView.onAsyncResponse.notify({
-          "itemDetail": item,
+          "itemDetail": itemDetail,
 		  // The view to display as the detail view
-		  "detailView": createView(item)
+		  "detailView": createView(itemDetail)
         }, undefined, this);
       }, 1000);      
     }
