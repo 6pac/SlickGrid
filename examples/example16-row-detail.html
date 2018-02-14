@@ -168,7 +168,6 @@
       grid.registerPlugin(detailView);
 
       grid.onSort.subscribe(function (e, args) {
-        console.log(args)
         sortdir = args.sortAsc ? 1 : -1;
         sortcol = args.sortCol.field;
 

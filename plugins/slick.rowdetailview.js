@@ -85,9 +85,9 @@
         return range;
     }
 	
-    function handleSort(e, args) {
-      console.log(_grid.getData().rows)
-      $.each(_grid.getData().rows, function (i, r) {
+    function handleSort(e, args) {		
+      var rows = _grid.getData().getItems();		
+      $.each(rows, function (i, r) {
           HandleAccordionShowHide(r, true);
       });
     }
