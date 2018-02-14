@@ -98,6 +98,24 @@
             else if (!forceHide) {
               item._collapsed = false;
 
+			  // display pre-loading template only if view has not been loaded before and we are not only loading it once
+              if (!item._detailViewLoaded || _options.loadOnce != true)
+              {
+                  item._detailContent = _options.preTemplate(item);
+              }
+              else
+              {
+				  // If we are only loading it the once and we have loaded it before just notify to update the view
+                  _self.onAsyncResponse.notify({
+                      "itemDetail": item,
+                      "detailView": item._detailContent
+                  }, undefined, this);
+                  applyTemplateNewLineHeight(dataView, item);
+                  dataView.updateItem(item.id, item);
+
+                  return;
+              }
+			  
               // display pre-loading template
               item._detailContent = _options.preTemplate(item);
               applyTemplateNewLineHeight(dataView, item);              
@@ -109,7 +127,19 @@
                 if(!args || !args.itemDetail) {
                   throw 'Slick.RowDetailView plugin requires the onAsyncResponse() to supply "args.itemDetail" property.'
                 }
-                item._detailContent = _options.postTemplate(args.itemDetail);
+                
+				// If we just want to load in a view directly we can use detailView property to do so
+                if (args.detailView)
+                {
+                    item._detailContent = args.detailView;                            
+                }
+                else
+                {
+                    item._detailContent = _options.postTemplate(args.itemDetail);
+                }
+				
+                item._detailViewLoaded = true;
+				
                 var idxParent = dataView.getIdxById(args.itemDetail.id);
                 dataView.updateItem(args.itemDetail.id, args.itemDetail);
               });
