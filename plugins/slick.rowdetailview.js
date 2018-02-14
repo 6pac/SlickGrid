@@ -15,7 +15,9 @@
   // register namespace
   $.extend(true, window, {
     "Slick": {
-      "RowDetailView": RowDetailView
+		"Plugin": {
+			"RowDetailView": RowDetailView
+		}
     }
   });
 
