@@ -28,7 +28,7 @@
     var _defaults = {
       columnId: "_detail_selector",
       cssClass: null,
-      toolTip: "Select/Deselect All",
+      toolTip: "",
       width: 30
     };
 
@@ -43,13 +43,48 @@
         .subscribe(_grid.onSort, handleSort);
       _grid.getData().onRowCountChanged.subscribe (function () { _grid.updateRowCount(); _grid.render(); });
       _grid.getData().onRowsChanged.subscribe (function (e, a) { _grid.invalidateRows(a.rows); _grid.render(); });
+	   
+	   // TODO: Remove/Update once we have someway of updating core.getRenderedRange
+       _grid.getRenderedRange = getRenderedRange;
     }
 
     function destroy() {
       _handler.unsubscribeAll();
       _self.onAsyncResponse.unsubscribe();
     }
+	
+    //////////////////////////////////////////////////////////////
+    //TODO: Make this not override the core functionality!
+    // This is a clone of the slick.core.getRenderedRange Only change is adding _options.panelRows
+    //////////////////////////////////////////////////////////////
+    function getRenderedRange(viewportTop, viewportLeft) {
+        var range = getVisibleRange(viewportTop, viewportLeft);
+        var buffer = Math.round(viewportH / options.rowHeight);
+        var minBuffer = 3 + _options.panelRows; // Changed line
 
+        if (vScrollDir == -1) {
+            range.top -= buffer;
+            range.bottom += minBuffer;
+        } else if (vScrollDir == 1) {
+            range.top -= minBuffer;
+            range.bottom += buffer;
+        } else {
+            range.top -= minBuffer;
+            range.bottom += minBuffer;
+        }
+
+        range.top = Math.max(0, range.top);
+        range.bottom = Math.min(getDataLengthIncludingAddNew() - 1, range.bottom);
+
+        range.leftPx -= viewportW;
+        range.rightPx += viewportW;
+
+        range.leftPx = Math.max(0, range.leftPx);
+        range.rightPx = Math.min(canvasWidth, range.rightPx);
+
+        return range;
+    }
+	
     function handleSort(e, args) {
       console.log(_grid.getData().rows)
       $.each(_grid.getData().rows, function (i, r) {
@@ -99,6 +134,24 @@
             else if (!forceHide) {
               item._collapsed = false;
 
+			  // display pre-loading template only if view has not been loaded before and we are not only loading it once
+              if (!item._detailViewLoaded || _options.loadOnce != true)
+              {
+                  item._detailContent = _options.preTemplate(item);
+              }
+              else
+              {
+				  // If we are only loading it the once and we have loaded it before just notify to update the view
+                  _self.onAsyncResponse.notify({
+                      "itemDetail": item,
+                      "detailView": item._detailContent
+                  }, undefined, this);
+                  applyTemplateNewLineHeight(dataView, item);
+                  dataView.updateItem(item.id, item);
+
+                  return;
+              }
+			  
               // display pre-loading template
               item._detailContent = _options.preTemplate(item);
               applyTemplateNewLineHeight(dataView, item);              
@@ -110,7 +163,19 @@
                 if(!args || !args.itemDetail) {
                   throw 'Slick.RowDetailView plugin requires the onAsyncResponse() to supply "args.itemDetail" property.'
                 }
-                item._detailContent = _options.postTemplate(args.itemDetail);
+                
+				// If we just want to load in a view directly we can use detailView property to do so
+                if (args.detailView)
+                {
+                    item._detailContent = args.detailView;                            
+                }
+                else
+                {
+                    item._detailContent = _options.postTemplate(args.itemDetail);
+                }
+				
+                item._detailViewLoaded = true;
+				
                 var idxParent = dataView.getIdxById(args.itemDetail.id);
                 dataView.updateItem(args.itemDetail.id, args.itemDetail);
               });
@@ -133,6 +198,8 @@
         //additional hidden padding metadata fields
         item._collapsed=     true;
         item._isPadding=     true;
+		item._parent = parent;
+        item._offset = offset;
 
         return item;
     }
