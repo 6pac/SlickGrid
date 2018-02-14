@@ -27,6 +27,7 @@
     <h2>Demonstrates:</h2>
     <ul>
       <li>DetailView Plugin</li>
+      <li>See more detail of an item by toggling (first column icon) a row detail panel.<li></li>
     </ul>
       <h2>View Source:</h2>
       <ul>
@@ -170,7 +171,7 @@
         console.log(args)
         sortdir = args.sortAsc ? 1 : -1;
         sortcol = args.sortCol.field;
-        
+
         // using native sort with comparer
         // preferred method but can be very slow in IE with huge datasets
         dataView.sort(comparer, args.sortAsc);
