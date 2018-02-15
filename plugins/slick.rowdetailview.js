@@ -80,13 +80,11 @@
     }
 
     function destroy() {
-      alert('destroy')
       _handler.unsubscribeAll();
       _self.onAsyncResponse.unsubscribe();
       _self.onAsyncEndUpdate.unsubscribe();
       _self.onAfterRowDetailToggle.unsubscribe();
       _self.onBeforeRowDetailToggle.unsubscribe();
-      alert('destroyed')
     }
 
     //////////////////////////////////////////////////////////////
