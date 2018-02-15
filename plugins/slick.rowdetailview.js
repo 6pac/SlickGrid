@@ -7,9 +7,10 @@
    *
    * Available row detail options:
    *    cssClass:         A CSS class to be added to the row detail
-   *    preTemplate:      Template used before the async template
+   *    preTemplate:      Template that will be used before the async process (typically used to show a spinner/loading)
    *    postTemplate:     Template that will be loaded once the async function finishes
-   *    panelRows: row count of the template lines 
+   *    panelRows:        Row count to use for the template panel
+   *    useRowClick:      Boolean value which when set will open the row detail on a row click (from any column), default to False
    */
 (function ($) {
   // register namespace
@@ -94,7 +95,7 @@
 
     function handleClick(e, args) {
       // clicking on a row select checkbox
-      if (_grid.getColumns()[args.cell].id === _options.columnId && $(e.target).hasClass("detailView-toggle")) {
+      if (_options.useRowClick || _grid.getColumns()[args.cell].id === _options.columnId && $(e.target).hasClass("detailView-toggle")) {
         // if editing, try to commit
         if (_grid.getEditorLock().isActive() && !_grid.getEditorLock().commitCurrentEdit()) {
           e.preventDefault();
