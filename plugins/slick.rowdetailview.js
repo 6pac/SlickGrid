@@ -11,10 +11,12 @@
  *
  * Available row detail options:
  *    cssClass:         A CSS class to be added to the row detail
+ *    loadOnce:         Booleang flag, when True will load the data once and then reuse it.
  *    preTemplate:      Template that will be used before the async process (typically used to show a spinner/loading)
  *    postTemplate:     Template that will be loaded once the async function finishes
+ *    process:          Async server function call
  *    panelRows:        Row count to use for the template panel
- *    useRowClick:      Boolean value which when set will open the row detail on a row click (from any column), default to False
+ *    useRowClick:      Boolean flag, when True will open the row detail on a row click (from any column), default to False
  * 
  * The plugin exposes the following events:
  *    onAsyncResponse:  This event must be used with the "notify" by the end user once the Asynchronous Server call returns the item detail 
