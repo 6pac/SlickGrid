@@ -147,7 +147,7 @@
       dataView = new Slick.Data.DataView({ inlineFilters: true });
 
       // create the row detail plugin
-      detailView = new Slick.Plugin.RowDetailView({
+      detailView = new Slick.Plugins.RowDetailView({
         cssClass: "detailView-toggle",
         preTemplate: loadingTemplate,
         postTemplate: postTemplate,
@@ -159,7 +159,7 @@
         panelRows: 4 
       });
 
-      // push the plugin as first column
+      // push the plugin as the first column
       columns.unshift(detailView.getColumnDefinition());
 
       grid = new Slick.Grid("#myGrid", dataView, columns, options);
@@ -168,21 +168,30 @@
       grid.setSelectionModel(new Slick.RowSelectionModel({selectActiveRow: false}));
       grid.registerPlugin(detailView);
 
+      detailView.onBeforeRowDetailToggle.subscribe(function(e, args) {
+        console.log('before toggling row detail', args.item);
+      });
+      detailView.onAfterRowDetailToggle.subscribe(function(e, args) {
+        console.log('after toggling row detail', args.item);
+      });
+      detailView.onAsyncEndUpdate.subscribe(function(e, args) {
+        console.log('finished updating the post async template', args.itemDetail);
+      });
+
       grid.onSort.subscribe(function (e, args) {
         sortdir = args.sortAsc ? 1 : -1;
         sortcol = args.sortCol.field;
 
         // using native sort with comparer
         // preferred method but can be very slow in IE with huge datasets
-        dataView.sort(comparer, args.sortAsc);
-        
+        dataView.sort(comparer, args.sortAsc);        
       });
       
       // initialize the model after all the events have been hooked up
       dataView.beginUpdate();
       dataView.setItems(data);
       dataView.endUpdate();
-    })
+    });
   </script>
 </body>
 </html>

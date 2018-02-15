@@ -1,24 +1,49 @@
-  /***
-   * A plugin to add row detail panel
-   *
-   * USAGE:
-   *
-   * Add the slick.rowDetailView.(js|css) files and register the plugin with the grid.
-   *
-   * Available row detail options:
-   *    cssClass:         A CSS class to be added to the row detail
-   *    preTemplate:      Template that will be used before the async process (typically used to show a spinner/loading)
-   *    postTemplate:     Template that will be loaded once the async function finishes
-   *    panelRows:        Row count to use for the template panel
-   *    useRowClick:      Boolean value which when set will open the row detail on a row click (from any column), default to False
-   */
+/***
+ * A plugin to add row detail panel
+ * Original StackOverflow question & article making this possible (thanks to violet313)
+ * https://stackoverflow.com/questions/10535164/can-slickgrids-row-height-be-dynamically-altered#29399927
+ * http://violet313.org/slickgrids/#intro
+ * 
+ *
+ * USAGE:
+ *
+ * Add the slick.rowDetailView.(js|css) files and register the plugin with the grid.
+ *
+ * Available row detail options:
+ *    cssClass:         A CSS class to be added to the row detail
+ *    preTemplate:      Template that will be used before the async process (typically used to show a spinner/loading)
+ *    postTemplate:     Template that will be loaded once the async function finishes
+ *    panelRows:        Row count to use for the template panel
+ *    useRowClick:      Boolean value which when set will open the row detail on a row click (from any column), default to False
+ * 
+ * The plugin exposes the following events:
+ *    onAsyncResponse:  This event must be used with the "notify" by the end user once the Asynchronous Server call returns the item detail 
+ *       Event args:
+ *          itemDetail: Item detail returned from the async server call
+ *
+ *    onAsyncEndUpdate: Fired when the async response finished
+ *       Event args:
+ *         grid:        Reference to the grid.
+ *         itemDetail:  Column definition.
+ * 
+ *    onBeforeRowDetailToggle: Fired before the row detail gets toggled
+ *       Event args:
+ *         grid:        Reference to the grid.
+ *         item:  Column definition.
+ * 
+ *    onAfterRowDetailToggle: Fired after the row detail gets toggled
+ *       Event args:
+ *         grid:        Reference to the grid.
+ *         item:  Column definition.
+ *
+ */
 (function ($) {
   // register namespace
   $.extend(true, window, {
     "Slick": {
-		"Plugin": {
-			"RowDetailView": RowDetailView
-		}
+      "Plugins": {
+        "RowDetailView": RowDetailView
+      }
     }
   });
 
@@ -29,10 +54,10 @@
     var _expandedRows = [];
     var _handler = new Slick.EventHandler();
     var _defaults = {
-        columnId: "_detail_selector",
-        cssClass: null,
-        toolTip: "",
-        width: 30
+      columnId: "_detail_selector",
+      cssClass: null,
+      toolTip: "",
+      width: 30
     };
 
     var _options = $.extend(true, {}, _defaults, options);
@@ -44,48 +69,54 @@
       _handler
         .subscribe(_grid.onClick, handleClick)
         .subscribe(_grid.onSort, handleSort);
-      _grid.getData().onRowCountChanged.subscribe (function () { _grid.updateRowCount(); _grid.render(); });
-      _grid.getData().onRowsChanged.subscribe (function (e, a) { _grid.invalidateRows(a.rows); _grid.render(); });
-	   
-	   // TODO: Remove/Update once we have someway of updating core.getRenderedRange
-       _grid.getRenderedRange = getRenderedRange;
+
+      _grid.getData().onRowCountChanged.subscribe(function () { _grid.updateRowCount(); _grid.render(); });
+      _grid.getData().onRowsChanged.subscribe(function (e, a) { _grid.invalidateRows(a.rows); _grid.render(); });
+
+      // TODO: Remove/Update once we have someway of updating core.getRenderedRange
+      _grid.getRenderedRange = getRenderedRange;
     }
 
     function destroy() {
+      alert('destroy')
       _handler.unsubscribeAll();
       _self.onAsyncResponse.unsubscribe();
+      _self.onAsyncEndUpdate.unsubscribe();
+      _self.onAfterRowDetailToggle.unsubscribe();
+      _self.onBeforeRowDetailToggle.unsubscribe();
+      alert('destroyed')
     }
-	
+
     //////////////////////////////////////////////////////////////
     //TODO: Make this not override the core functionality!
     // This is a clone of the slick.core.getRenderedRange Only change is adding _options.panelRows
     //////////////////////////////////////////////////////////////
     function getRenderedRange(viewportTop, viewportLeft) {
-        var range = getVisibleRange(viewportTop, viewportLeft);
-        var buffer = Math.round(viewportH / options.rowHeight);
-        var minBuffer = 3 + _options.panelRows; // Changed line
+      var range = getVisibleRange(viewportTop, viewportLeft);
+      var buffer = Math.round(viewportH / options.rowHeight);
+      var minBuffer = 3 + _options.panelRows; // Changed line
 
-        if (vScrollDir == -1) {
-            range.top -= buffer;
-            range.bottom += minBuffer;
-        } else if (vScrollDir == 1) {
-            range.top -= minBuffer;
-            range.bottom += buffer;
-        } else {
-            range.top -= minBuffer;
-            range.bottom += minBuffer;
-        }
+      if (vScrollDir == -1) {
+        range.top -= buffer;
+        range.bottom += minBuffer;
+      } else if (vScrollDir == 1) {
+        range.top -= minBuffer;
+        range.bottom += buffer;
+      } else {
+        range.top -= minBuffer;
+        range.bottom += minBuffer;
+      }
 
-        range.top = Math.max(0, range.top);
-        range.bottom = Math.min(getDataLengthIncludingAddNew() - 1, range.bottom);
+      range.top = Math.max(0, range.top);
+      range.bottom = Math.min(getDataLengthIncludingAddNew() - 1, range.bottom);
 
-        range.leftPx -= viewportW;
-        range.rightPx += viewportW;
+      range.leftPx -= viewportW;
+      range.rightPx += viewportW;
 
-        range.leftPx = Math.max(0, range.leftPx);
-        range.rightPx = Math.min(canvasWidth, range.rightPx);
+      range.leftPx = Math.max(0, range.leftPx);
+      range.rightPx = Math.min(canvasWidth, range.rightPx);
 
-        return range;
+      return range;
     }
 
     function handleClick(e, args) {
@@ -100,141 +131,155 @@
 
         var item = _dataView.getItem(args.row);
 
+        // trigger an event before toggling
+        _self.onBeforeRowDetailToggle.notify({
+          "grid": _grid,
+          "item": item
+        }, e, _self);
+
         toggleRowSelection(item);
-        
+
+        // trigger an event after toggling
+        _self.onAfterRowDetailToggle.notify({
+          "grid": _grid,
+          "item": item
+        }, e, _self);
+
         e.stopPropagation();
         e.stopImmediatePropagation();
       }
     }
-        // Sort will just collapse all of the open items
+    // Sort will just collapse all of the open items
     function handleSort(e, args) {
-        collapseAll();
+      collapseAll();
     }
 
     // Toggle between showing and hiding a row
     function toggleRowSelection(row) {
-        _grid.getData().beginUpdate();
-        HandleAccordionShowHide(row);
-        _grid.getData().endUpdate();
+      _grid.getData().beginUpdate();
+      HandleAccordionShowHide(row);
+      _grid.getData().endUpdate();
     }
 
     // Collapse all of the open items
-    function collapseAll()
-    {
-        for (var i = _expandedRows.length -1; i >= 0; i--) {               
-            collapseItem(_expandedRows[i]);
-        }
+    function collapseAll() {
+      for (var i = _expandedRows.length - 1; i >= 0; i--) {
+        collapseItem(_expandedRows[i]);
+      }
     }
 
     // Colapse an Item so it is notlonger seen
-    function collapseItem(item)
-    {
-        item._collapsed = true;
-        for (var idx = 1; idx <= item._sizePadding; idx++)
-            _dataView.deleteItem(item.id + "." + idx);
-        item._sizePadding = 0;
-        _dataView.updateItem(item.id, item);
+    function collapseItem(item) {
+      item._collapsed = true;
+      for (var idx = 1; idx <= item._sizePadding; idx++) {
+        _dataView.deleteItem(item.id + "." + idx);
+      }
+      item._sizePadding = 0;
+      _dataView.updateItem(item.id, item);
 
-        // Remove the item from the expandedRows
-        _expandedRows = _expandedRows.filter(function (r) {
-            return r.id !== item.id;
-        });
+      // Remove the item from the expandedRows
+      _expandedRows = _expandedRows.filter(function (r) {
+        return r.id !== item.id;
+      });
     }
 
     // Expand a row given the dataview item that is to be expanded
-    function expandItem(item)
-    {
-        item._collapsed = false;
-        _expandedRows.push(item);
-        // display pre-loading template
-        if (!item._detailViewLoaded || _options.loadOnce != true) {
-            item._detailContent = _options.preTemplate(item);
-        }
-        else {
-            _self.onAsyncResponse.notify({
-                "itemDetail": item,
-                "detailView": item._detailContent
-            }, undefined, this);
-            applyTemplateNewLineHeight(item);
-            _dataView.updateItem(item.id, item);
-
-            return;
-        }
-
+    function expandItem(item) {
+      item._collapsed = false;
+      _expandedRows.push(item);
+      // display pre-loading template
+      if (!item._detailViewLoaded || _options.loadOnce !== true) {
+        item._detailContent = _options.preTemplate(item);
+      } else {
+        _self.onAsyncResponse.notify({
+          "itemDetail": item,
+          "detailView": item._detailContent
+        }, undefined, this);
         applyTemplateNewLineHeight(item);
         _dataView.updateItem(item.id, item);
 
-        // subscribe to the onAsyncResponse so that the plugin knows when the user server side calls finished
-        // the response has to be as "args.itemDetail" with it's data back
-        _self.onAsyncResponse.subscribe(function (e, args) {
-            if (!args || !args.itemDetail) {
-                throw 'Slick.RowDetailView plugin requires the onAsyncResponse() to supply "args.itemDetail" property.'
-            }
+        return;
+      }
 
-            // If we just want to load in a view directly we can use detailView property to do so
-            if (args.detailView) {
-                item._detailContent = args.detailView;
-            }
-            else {
-                item._detailContent = _options.postTemplate(args.itemDetail);
-            }
+      applyTemplateNewLineHeight(item);
+      _dataView.updateItem(item.id, item);
 
-            item._detailViewLoaded = true;
-
-            var idxParent = _dataView.getIdxById(args.itemDetail.id);
-            _dataView.updateItem(args.itemDetail.id, args.itemDetail);
-        });
-
-        // async server call
-        _options.process(item);
-    }
-
-    function HandleAccordionShowHide(item) {           
-        if (item) {
-            if (!item._collapsed) {
-                collapseItem(item);
-            }
-            else {
-                expandItem(item);
-            }
+      // subscribe to the onAsyncResponse so that the plugin knows when the user server side calls finished
+      // the response has to be as "args.itemDetail" with it's data back
+      _self.onAsyncResponse.subscribe(function (e, args) {
+        if (!args || !args.itemDetail) {
+          throw 'Slick.RowDetailView plugin requires the onAsyncResponse() to supply "args.itemDetail" property.'
         }
+
+        // If we just want to load in a view directly we can use detailView property to do so
+        if (args.detailView) {
+          item._detailContent = args.detailView;
+        } else {
+          item._detailContent = _options.postTemplate(args.itemDetail);
+        }
+
+        item._detailViewLoaded = true;
+
+        var idxParent = _dataView.getIdxById(args.itemDetail.id);
+        _dataView.updateItem(args.itemDetail.id, args.itemDetail);
+
+        // trigger an event once the post template is finished loading
+        _self.onAsyncEndUpdate.notify({
+          "grid": _grid,
+          "itemDetail": args.itemDetail
+        }, e, _self);
+      });
+
+      // async server call
+      _options.process(item);
+    }
+
+    function HandleAccordionShowHide(item) {
+      if (item) {
+        if (!item._collapsed) {
+          collapseItem(item);
+        } else {
+          expandItem(item);
+        }
+      }
     }
 
     //////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////
-    var getPaddingItem=function(parent , offset)
-    {
-        var item={};
+    var getPaddingItem = function (parent, offset) {
+      var item = {};
 
-        for (var prop in _grid.getData()) item[prop]=null;
-        item.id=parent.id+"."+offset;
+      for (var prop in _grid.getData()) {
+        item[prop] = null;
+      }
+      item.id = parent.id + "." + offset;
 
-        //additional hidden padding metadata fields
-        item._collapsed=     true;
-        item._isPadding=     true;
-		item._parent = parent;
-        item._offset = offset;
+      //additional hidden padding metadata fields
+      item._collapsed = true;
+      item._isPadding = true;
+      item._parent = parent;
+      item._offset = offset;
 
-        return item;
+      return item;
     }
 
     //////////////////////////////////////////////////////////////
     //create the detail ctr node. this belongs to the dev & can be custom-styled as per
     //////////////////////////////////////////////////////////////
     function applyTemplateNewLineHeight(item) {
-        // the height seems to be calculated by the template row count (how many line of items does the template have)
-        var rowCount = _options.panelRows;
+      // the height seems to be calculated by the template row count (how many line of items does the template have)
+      var rowCount = _options.panelRows;
 
-        //calculate padding requirements based on detail-content..
-        //ie. worst-case: create an invisible dom node now &find it's height.
-        var lineHeight = 13; //we know cuz we wrote the custom css innit ;)
-        item._sizePadding = Math.ceil(((rowCount * 2) * lineHeight) / _grid.getOptions().rowHeight);
-        item._height = (item._sizePadding * _grid.getOptions().rowHeight);
+      //calculate padding requirements based on detail-content..
+      //ie. worst-case: create an invisible dom node now &find it's height.
+      var lineHeight = 13; //we know cuz we wrote the custom css innit ;)
+      item._sizePadding = Math.ceil(((rowCount * 2) * lineHeight) / _grid.getOptions().rowHeight);
+      item._height = (item._sizePadding * _grid.getOptions().rowHeight);
 
-        var idxParent = _dataView.getIdxById(item.id);
-        for (var idx = 1; idx <= item._sizePadding; idx++) {
-            _dataView.insertItem(idxParent + idx, getPaddingItem(item, idx));
-        }
+      var idxParent = _dataView.getIdxById(item.id);
+      for (var idx = 1; idx <= item._sizePadding; idx++) {
+        _dataView.insertItem(idxParent + idx, getPaddingItem(item, idx));
+      }
     }
 
 
@@ -254,53 +299,55 @@
 
     function detailSelectionFormatter(row, cell, value, columnDef, dataContext) {
 
-        if (dataContext._collapsed == undefined)
-        {
-            dataContext._collapsed = true,
-            dataContext._sizePadding = 0,     //the required number of pading rows
-            dataContext._height = 0,     //the actual height in pixels of the detail field
-            dataContext._isPadding = false,
-            dataContext._parent = undefined,
-            dataContext._offset = 0
-        }
+      if (dataContext._collapsed == undefined) {
+        dataContext._collapsed = true,
+          dataContext._sizePadding = 0,     //the required number of pading rows
+          dataContext._height = 0,     //the actual height in pixels of the detail field
+          dataContext._isPadding = false,
+          dataContext._parent = undefined,
+          dataContext._offset = 0
+      }
 
-        if (dataContext._isPadding == true) {
-          //render nothing
-        } else if (dataContext._collapsed) {
-          return "<div class='detailView-toggle expand'></div>";
-        }else {
-            var html = [];
-            var rowHeight = _grid.getOptions().rowHeight;
-            var bottomMargin = 5;
+      if (dataContext._isPadding == true) {
+        //render nothing
+      } else if (dataContext._collapsed) {
+        return "<div class='detailView-toggle expand'></div>";
+      } else {
+        var html = [];
+        var rowHeight = _grid.getOptions().rowHeight;
+        var bottomMargin = 5;
 
-            //V313HAX:
-            //putting in an extra closing div after the closing toggle div and ommiting a
-            //final closing div for the detail ctr div causes the slickgrid renderer to
-            //insert our detail div as a new column ;) ~since it wraps whatever we provide
-            //in a generic div column container. so our detail becomes a child directly of
-            //the row not the cell. nice =)  ~no need to apply a css change to the parent
-            //slick-cell to escape the cell overflow clipping.
+        //V313HAX:
+        //putting in an extra closing div after the closing toggle div and ommiting a
+        //final closing div for the detail ctr div causes the slickgrid renderer to
+        //insert our detail div as a new column ;) ~since it wraps whatever we provide
+        //in a generic div column container. so our detail becomes a child directly of
+        //the row not the cell. nice =)  ~no need to apply a css change to the parent
+        //slick-cell to escape the cell overflow clipping.
 
-            //sneaky extra </div> inserted here-----------------v
-            html.push("<div class='detailView-toggle collapse'></div></div>");
+        //sneaky extra </div> inserted here-----------------v
+        html.push("<div class='detailView-toggle collapse'></div></div>");
 
-            html.push("<div class='dynamic-cell-detail' ");   //apply custom css to detail
-            html.push("style='height:", dataContext._height, "px;"); //set total height of padding
-            html.push("top:", rowHeight, "px'>");             //shift detail below 1st row
-            html.push("<div class='detail-container' style='max-height:" + (dataContext._height - rowHeight + bottomMargin) + "px'>", dataContext._detailContent, "</div>");  //sub ctr for custom styling
-            //&omit a final closing detail container </div> that would come next
+        html.push("<div class='dynamic-cell-detail' ");   //apply custom css to detail
+        html.push("style='height:", dataContext._height, "px;"); //set total height of padding
+        html.push("top:", rowHeight, "px'>");             //shift detail below 1st row
+        html.push("<div class='detail-container' style='max-height:" + (dataContext._height - rowHeight + bottomMargin) + "px'>", dataContext._detailContent, "</div>");  //sub ctr for custom styling
+        //&omit a final closing detail container </div> that would come next
 
-            return html.join("");
-        }
+        return html.join("");
+      }
       return null;
     }
 
     $.extend(this, {
       "init": init,
       "destroy": destroy,
-      "onAsyncResponse": new Slick.Event(),
+      "collapseAll": collapseAll,
       "getColumnDefinition": getColumnDefinition,
-      "collapseAll": collapseAll	  
+      "onAsyncResponse": new Slick.Event(),
+      "onAsyncEndUpdate": new Slick.Event(),
+      "onAfterRowDetailToggle": new Slick.Event(),
+      "onBeforeRowDetailToggle": new Slick.Event(),
     });
   }
 })(jQuery);
