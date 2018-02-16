@@ -31,10 +31,18 @@
       <li>"useRowClick: True" to toggle from any column</li>
       <li>"useRowClick: False" to toggle from the toggle icon only</li>
       <li>Row detail panel height is calculated by table rows</li>
+      <li>&nbsp;</li>
+      <li>Using onetime loading ("Load Once" button)</li>
+	    <li>Example of using different views per row e.g. check any row multiple of 5<li>
     </ul>
+
+    <h2>Options:</h2>
+    <button onclick="detailView.setOptions({ loadOnce: true })">Load Once ON</button>
+    &nbsp;
+    <button onclick="detailView.setOptions({ loadOnce: false })">Load Once OFF</button>
       <h2>View Source:</h2>
       <ul>
-          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example16-row-detail.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+        <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example16-row-detail.html" target="_sourcewindow"> View the source for this example on Github</a></li>
       </ul>
 
   </div>
@@ -94,9 +102,19 @@
       return '<div class="preload">Loading...</div>';
     }
 
-    function postTemplate(itemDetail) {
+    function loadView(itemDetail) {
+      // load a different view on certain rows
+      if(itemDetail.num % 5 == 0) {
+        return "<div><span>Some other view</span></div> "
+      }
+
+      // get the plugin options just to see if we 
+      var pluginOptions = detailView.getOptions();
+      var preTitle = pluginOptions.loadOnce ? 'Direct view inserting without template' : '';
+
       return filledTemplateRows = [
         '<div>',
+        '<h4>' + preTitle + '</h4>',
         '<h4>' + itemDetail.title + '</h4>',
         '<div class="detail"><label>Assignee:</label> <span>' + itemDetail.assignee + '</span></div>',
         '<div class="detail"><label>Reporter:</label> <span>' + itemDetail.reporter + '</span></div>',
@@ -118,18 +136,30 @@
         itemDetail.assignee = fakeNames[randomNumber(0, 10)];
         itemDetail.reporter = fakeNames[randomNumber(0, 10)];
 
+        // get the plugin options just to see if we 
+        var pluginOptions = detailView.getOptions();
+
         // notify the onAsyncResponse with the "args.itemDetail" (required property)
-        // the plugin will then uses it to populate the detail panel with "postTemplate"
-        detailView.onAsyncResponse.notify({
-          "itemDetail": itemDetail
-        }, undefined, this);
+        if (pluginOptions.loadOnce) {
+          // in this case we are passing the view explicitly that we wish to show "args.detailView"
+          detailView.onAsyncResponse.notify({
+            "itemDetail": itemDetail,
+            
+            // The view to display as the detail view
+            "detailView": loadView(itemDetail)
+          }, undefined, this);
+        } else {
+          // the plugin will then uses it to populate the detail panel with "postTemplate"
+          detailView.onAsyncResponse.notify({
+            "itemDetail": itemDetail
+          }, undefined, this);
+        }
       }, 1000);      
     }
 
     function randomNumber(min, max) {
       return Math.floor(Math.random() * (max - min + 1) + min);
     }
-
     
     function percentCompleteSort(a, b) {
       return a["percentComplete"] - b["percentComplete"];
@@ -153,7 +183,7 @@
       detailView = new Slick.Plugins.RowDetailView({
         cssClass: "detailView-toggle",
         preTemplate: loadingTemplate,
-        postTemplate: postTemplate,
+        postTemplate: loadView,
         process: simulateServerCall,
         useRowClick: true,
 

@@ -127,8 +127,9 @@
         // in this case we are passing the view explicitly that we wish to show "args.detailView"
         detailView.onAsyncResponse.notify({
           "itemDetail": itemDetail,
-		  // The view to display as the detail view
-		  "detailView": createView(itemDetail)
+          
+          // The view to display as the detail view
+          "detailView": createView(itemDetail)
         }, undefined, this);
       }, 1000);      
     }

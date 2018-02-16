@@ -9,7 +9,7 @@
  *
  * Add the slick.rowDetailView.(js|css) files and register the plugin with the grid.
  *
- * Available row detail options:
+ * AVAILABLE ROW DETAIL OPTIONS:
  *    cssClass:         A CSS class to be added to the row detail
  *    loadOnce:         Booleang flag, when True will load the data once and then reuse it.
  *    preTemplate:      Template that will be used before the async process (typically used to show a spinner/loading)
@@ -18,7 +18,15 @@
  *    panelRows:        Row count to use for the template panel
  *    useRowClick:      Boolean flag, when True will open the row detail on a row click (from any column), default to False
  * 
- * The plugin exposes the following events:
+ * AVAILABLE PUBLIC OPTIONS:
+ *    init:                 initiliaze the plugin
+ *    destroy:              destroy the plugin and it's events
+ *    collapseAll:          collapse all opened row detail panel
+ *    getColumnDefinition:  get the column definitions 
+ *    getOptions:           get current plugin options
+ *    setOptions:           set or change some of the plugin options
+ * 
+ * THE PLUGIN EXPOSES THE FOLLOWING SLICK EVENTS:
  *    onAsyncResponse:  This event must be used with the "notify" by the end user once the Asynchronous Server call returns the item detail 
  *       Event args:
  *          itemDetail: Item detail returned from the async server call
@@ -85,6 +93,14 @@
       _self.onAsyncEndUpdate.unsubscribe();
       _self.onAfterRowDetailToggle.unsubscribe();
       _self.onBeforeRowDetailToggle.unsubscribe();
+    }
+
+    function getOptions(options) {
+      return _options;
+    }
+
+    function setOptions(options) {
+      _options = $.extend(true, {}, _options, options);
     }
 
     //////////////////////////////////////////////////////////////
@@ -187,6 +203,7 @@
     function expandItem(item) {
       item._collapsed = false;
       _expandedRows.push(item);
+      
       // display pre-loading template
       if (!item._detailViewLoaded || _options.loadOnce !== true) {
         item._detailContent = _options.preTemplate(item);
@@ -344,6 +361,8 @@
       "destroy": destroy,
       "collapseAll": collapseAll,
       "getColumnDefinition": getColumnDefinition,
+      "getOptions": getOptions,
+      "setOptions": setOptions,
       "onAsyncResponse": new Slick.Event(),
       "onAsyncEndUpdate": new Slick.Event(),
       "onAfterRowDetailToggle": new Slick.Event(),
