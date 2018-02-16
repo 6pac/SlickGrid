@@ -99,7 +99,8 @@ if (typeof Slick === "undefined") {
       addNewRowCssClass: "new-row",
       preserveCopiedSelectionOnPaste: false,
       showCellSelection: true,
-      viewportClass: null
+      viewportClass: null,
+      enablePagingDuringScroll: true
     };
 
     var columnDefaults = {
@@ -1801,7 +1802,8 @@ if (typeof Slick === "undefined") {
 
     function removeRowFromCache(row) {
       var cacheEntry = rowsCache[row];
-      if (!cacheEntry) {
+      //In some cases cacheEntry is filled with a null rowNode...
+      if (!cacheEntry || !cacheEntry.rowNode) {
         return;
       }
 
@@ -3594,8 +3596,8 @@ if (typeof Slick === "undefined") {
       var stepFn = stepFunctions[dir];
       var pos = stepFn(activeRow, activeCell, activePosX);
       if (pos) {
-        var isAddNewRow = (pos.row == getDataLength());
-        scrollCellIntoView(pos.row, pos.cell, !isAddNewRow);
+        var doPaging = options.enablePagingDuringScroll && (pos.row == getDataLength());
+        scrollCellIntoView(pos.row, pos.cell, doPaging);
         setActiveCellInternal(getCellNode(pos.row, pos.cell));
         activePosX = pos.posX;
         return true;
