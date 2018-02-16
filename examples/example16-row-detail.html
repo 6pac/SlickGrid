@@ -30,16 +30,21 @@
       <li>See more detail of an item by toggling a row detail panel.<li></li>
       <li>"useRowClick: True" to toggle from any column</li>
       <li>"useRowClick: False" to toggle from the toggle icon only</li>
-      <li>Row detail panel height is calculated by table rows</li>
+      <li>"panelRows: 4" DetailView is RowHeight * 4</li>
+	  <li>"loadOnce: True" Try shrink and reopen same row</li>
+	  <li>"loadOnce: False DEFAULT" Will call load every time row is expanded</li>
       <li>&nbsp;</li>
-      <li>Using onetime loading ("Load Once" button)</li>
-	    <li>Example of using different views per row e.g. check any row multiple of 5<li>
+	  <li>Example of using non templated view e.g. check any row multiple of 5<li>
     </ul>
 
     <h2>Options:</h2>
-    <button onclick="detailView.setOptions({ loadOnce: true })">Load Once ON</button>
+    <button onclick="detailView.setOptions({ loadOnce: true, useRowClick: detailView.useRowClick })">Load Once ON</button>
     &nbsp;
-    <button onclick="detailView.setOptions({ loadOnce: false })">Load Once OFF</button>
+    <button onclick="detailView.setOptions({ loadOnce: false, useRowClick: detailView.useRowClick})">Load Once OFF</button>
+	<p>
+	<button onclick="detailView.setOptions({ loadOnce: detailView.loadOnce, useRowClick: true })">Row Click ON</button>
+    &nbsp;
+    <button onclick="detailView.setOptions({ loadOnce: detailView.loadOnce, useRowClick: false })">Row Click OFF</button>
       <h2>View Source:</h2>
       <ul>
         <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example16-row-detail.html" target="_sourcewindow"> View the source for this example on Github</a></li>
@@ -83,7 +88,7 @@
       editable: false,
       enableAddRow: false,
       enableCellNavigation: true,
-      enableColumnReorder: false
+      enableColumnReorder: true
     };
     var detailView;
 
@@ -103,18 +108,8 @@
     }
 
     function loadView(itemDetail) {
-      // load a different view on certain rows
-      if(itemDetail.num % 5 == 0) {
-        return "<div><span>Some other view</span></div> "
-      }
-
-      // get the plugin options just to see if we 
-      var pluginOptions = detailView.getOptions();
-      var preTitle = pluginOptions.loadOnce ? 'Direct view inserting without template' : '';
-
       return filledTemplateRows = [
         '<div>',
-        '<h4>' + preTitle + '</h4>',
         '<h4>' + itemDetail.title + '</h4>',
         '<div class="detail"><label>Assignee:</label> <span>' + itemDetail.assignee + '</span></div>',
         '<div class="detail"><label>Reporter:</label> <span>' + itemDetail.reporter + '</span></div>',
@@ -127,35 +122,47 @@
         '</div>'
       ].join('');
     }
-
+	
     function simulateServerCall(item) {
       // fill the template on delay
       setTimeout(function() {
+	  
         // let's add some property to our item for a better simulation
-        var itemDetail = item;
+        var itemDetail = item;		
         itemDetail.assignee = fakeNames[randomNumber(0, 10)];
         itemDetail.reporter = fakeNames[randomNumber(0, 10)];
 
-        // get the plugin options just to see if we 
-        var pluginOptions = detailView.getOptions();
-
-        // notify the onAsyncResponse with the "args.itemDetail" (required property)
-        if (pluginOptions.loadOnce) {
-          // in this case we are passing the view explicitly that we wish to show "args.detailView"
-          detailView.onAsyncResponse.notify({
-            "itemDetail": itemDetail,
-            
-            // The view to display as the detail view
-            "detailView": loadView(itemDetail)
-          }, undefined, this);
-        } else {
-          // the plugin will then uses it to populate the detail panel with "postTemplate"
-          detailView.onAsyncResponse.notify({
-            "itemDetail": itemDetail
-          }, undefined, this);
-        }
+		if(itemDetail.num % 5 == 0)
+		{
+			notifyNonTemplatedView(itemDetail)
+		}
+		else
+		{
+			notifyTemplate(itemDetail)
+		}
       }, 1000);      
     }
+	
+	function notifyTemplate(itemDetail)
+	{
+		// notify the onAsyncResponse with the "args.itemDetail" (required property)
+	    // the plugin will then use itemDetail to populate the detail panel with "postTemplate"
+        detailView.onAsyncResponse.notify({
+          "itemDetail": itemDetail		
+        }, undefined, this);
+	}
+	
+	function notifyNonTemplatedView(itemDetail)
+	{
+		// notify the onAsyncResponse with the "args.itemDetail" (required property)
+	    // the plugin will then use itemDetail to populate the detail panel with "postTemplate"
+        detailView.onAsyncResponse.notify({
+          "itemDetail": itemDetail,	
+
+          // detailView Ignores any template and use whats passed though instead
+          "detailView": "<div><h4>Direct view inserting without template</h4><span>This is not using the template</span></div>"
+        }, undefined, this);
+	}
 
     function randomNumber(min, max) {
       return Math.floor(Math.random() * (max - min + 1) + min);
