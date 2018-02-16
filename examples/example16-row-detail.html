@@ -17,56 +17,56 @@
   </style>
 </head>
 <body>
-<div style="position:relative">
-  <td valign="top" width="50%">
-    <div id="myGrid" style="width:600px;height:500px;"></div>
-  </td>
-  <br/>
+  <div style="position:relative">
+    <td valign="top" width="50%">
+      <div id="myGrid" style="width:600px;height:500px;"></div>
+    </td>
+    <br/>
 
-  <div class="options-panel">
-    <h2>Demonstrates:</h2>
-    <ul>
-      <li>RowDetailView Plugin</li>
-      <li>See more detail of an item by toggling a row detail panel.<li></li>
-      <li>"useRowClick: True" to toggle from any column</li>
-      <li>"useRowClick: False" to toggle from the toggle icon only</li>
-      <li>"panelRows: 4" DetailView is RowHeight * 4</li>
-	  <li>"loadOnce: True" Try shrink and reopen same row</li>
-	  <li>"loadOnce: False DEFAULT" Will call load every time row is expanded</li>
-      <li>&nbsp;</li>
-	  <li>Example of using non templated view e.g. check any row multiple of 5<li>
-    </ul>
-
-    <h2>Options:</h2>
-    <button onclick="detailView.setOptions({ loadOnce: true, useRowClick: detailView.useRowClick })">Load Once ON</button>
-    &nbsp;
-    <button onclick="detailView.setOptions({ loadOnce: false, useRowClick: detailView.useRowClick})">Load Once OFF</button>
-	<p>
-	<button onclick="detailView.setOptions({ loadOnce: detailView.loadOnce, useRowClick: true })">Row Click ON</button>
-    &nbsp;
-    <button onclick="detailView.setOptions({ loadOnce: detailView.loadOnce, useRowClick: false })">Row Click OFF</button>
-      <h2>View Source:</h2>
+    <div class="options-panel">
+      <h2>Demonstrates:</h2>
       <ul>
-        <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example16-row-detail.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+        <li>RowDetailView Plugin</li>
+        <li>See more detail of an item by toggling a row detail panel.<li></li>
+        <li>"useRowClick: True" to toggle from any column</li>
+        <li>"useRowClick: False" to toggle from the toggle icon only</li>
+        <li>"panelRows: 4" DetailView is RowHeight * 4</li>
+        <li>"loadOnce: True" Try shrink and reopen same row</li>
+        <li>"loadOnce: False DEFAULT" Will call load every time row is expanded</li>
+        <li>&nbsp;</li>
+        <li>Example of using non templated view e.g. check any row multiple of 5<li>
       </ul>
 
+      <h2>Options:</h2>
+      <button onclick="detailView.setOptions({ loadOnce: true, useRowClick: detailView.useRowClick })">Load Once ON</button>
+      &nbsp;
+      <button onclick="detailView.setOptions({ loadOnce: false, useRowClick: detailView.useRowClick})">Load Once OFF</button>
+      <p>
+        <button onclick="detailView.setOptions({ loadOnce: detailView.loadOnce, useRowClick: true })">Row Click ON</button>
+        &nbsp;
+        <button onclick="detailView.setOptions({ loadOnce: detailView.loadOnce, useRowClick: false })">Row Click OFF</button>
+        <h2>View Source:</h2>
+        <ul>
+          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example16-row-detail.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+        </ul>
+      </p>
+    </div>
   </div>
-</div>
 
-<script src="../lib/firebugx.js"></script>
+  <script src="../lib/firebugx.js"></script>
 
-<script src="../lib/jquery-1.11.2.min.js"></script>
-<script src="../lib/jquery-ui-1.11.3.min.js"></script>
-<script src="../lib/jquery.event.drag-2.3.0.js"></script>
+  <script src="../lib/jquery-1.11.2.min.js"></script>
+  <script src="../lib/jquery-ui-1.11.3.min.js"></script>
+  <script src="../lib/jquery.event.drag-2.3.0.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../plugins/slick.rowdetailview.js"></script>
-<script src="../slick.formatters.js"></script>
-<script src="../plugins/slick.rowselectionmodel.js"></script>
-<script src="../slick.grid.js"></script>
-<script src="../slick.dataview.js"></script>
+  <script src="../slick.core.js"></script>
+  <script src="../plugins/slick.rowdetailview.js"></script>
+  <script src="../slick.formatters.js"></script>
+  <script src="../plugins/slick.rowselectionmodel.js"></script>
+  <script src="../slick.grid.js"></script>
+  <script src="../slick.dataview.js"></script>
 
-<script>
+  <script>
     var dataView;
     var grid;
     var data = [];
@@ -122,47 +122,42 @@
         '</div>'
       ].join('');
     }
-	
+    
     function simulateServerCall(item) {
       // fill the template on delay
       setTimeout(function() {
-	  
+      
         // let's add some property to our item for a better simulation
         var itemDetail = item;		
         itemDetail.assignee = fakeNames[randomNumber(0, 10)];
         itemDetail.reporter = fakeNames[randomNumber(0, 10)];
 
-		if(itemDetail.num % 5 == 0)
-		{
-			notifyNonTemplatedView(itemDetail)
-		}
-		else
-		{
-			notifyTemplate(itemDetail)
-		}
+        if(itemDetail.num % 5 == 0) {
+          notifyNonTemplatedView(itemDetail)
+        } else {
+          notifyTemplate(itemDetail)
+        }
       }, 1000);      
     }
-	
-	function notifyTemplate(itemDetail)
-	{
-		// notify the onAsyncResponse with the "args.itemDetail" (required property)
-	    // the plugin will then use itemDetail to populate the detail panel with "postTemplate"
-        detailView.onAsyncResponse.notify({
-          "itemDetail": itemDetail		
-        }, undefined, this);
-	}
-	
-	function notifyNonTemplatedView(itemDetail)
-	{
-		// notify the onAsyncResponse with the "args.itemDetail" (required property)
-	    // the plugin will then use itemDetail to populate the detail panel with "postTemplate"
-        detailView.onAsyncResponse.notify({
-          "itemDetail": itemDetail,	
+    
+    function notifyTemplate(itemDetail) {
+      // notify the onAsyncResponse with the "args.itemDetail" (required property)
+      // the plugin will then use itemDetail to populate the detail panel with "postTemplate"
+      detailView.onAsyncResponse.notify({
+        "itemDetail": itemDetail		
+      }, undefined, this);
+    }
+    
+    function notifyNonTemplatedView(itemDetail) {
+      // notify the onAsyncResponse with the "args.itemDetail" (required property)
+      // the plugin will then use itemDetail to populate the detail panel with "postTemplate"
+      detailView.onAsyncResponse.notify({
+        "itemDetail": itemDetail,	
 
-          // detailView Ignores any template and use whats passed though instead
-          "detailView": "<div><h4>Direct view inserting without template</h4><span>This is not using the template</span></div>"
-        }, undefined, this);
-	}
+        // detailView Ignores any template and use whats passed though instead
+        "detailView": "<div><h4>Direct view inserting without template</h4><span>This is not using the template</span></div>"
+      }, undefined, this);
+    }
 
     function randomNumber(min, max) {
       return Math.floor(Math.random() * (max - min + 1) + min);
