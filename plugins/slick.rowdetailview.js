@@ -30,6 +30,7 @@
  *    onAsyncResponse:  This event must be used with the "notify" by the end user once the Asynchronous Server call returns the item detail 
  *       Event args:
  *          itemDetail: Item detail returned from the async server call
+ *          detailView:  An explicit view to use instead of template (Optional)
  *
  *    onAsyncEndUpdate: Fired when the async response finished
  *       Event args:
