@@ -60,7 +60,6 @@
 
 
   function RowDetailView(options) {
-    var _currentItem;
     var _grid;
     var _self = this;
     var _expandedRows = [];
@@ -177,7 +176,6 @@
     function expandItem(item) {
       item._collapsed = false;
       _expandedRows.push(item);
-      _currentItem = item;
       
       // display pre-loading template
       if (!item._detailViewLoaded || _options.loadOnce !== true) {
@@ -208,9 +206,6 @@
       _self.onAsyncResponse.subscribe(function (e, args) {      
         if (!args || !args.itemDetail) {
           throw 'Slick.RowDetailView plugin requires the onAsyncResponse() to supply "args.itemDetail" property.'
-        }
-        if (args.itemDetail.id != _currentItem.id) {
-          return;
         }
 
         // If we just want to load in a view directly we can use detailView property to do so
