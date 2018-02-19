@@ -60,6 +60,7 @@
 
 
   function RowDetailView(options) {
+    var _currentItem;
     var _grid;
     var _self = this;
     var _expandedRows = [];
@@ -76,8 +77,9 @@
     function init(grid) {
       _grid = grid;
       _dataView = _grid.getData();
-	  // Update the minRowBuffer so that the view doesn't disappear when it's at top of screen + the original default 3
-	  _grid.getOptions().minRowBuffer = _options.panelRows + 3;
+
+      // Update the minRowBuffer so that the view doesn't disappear when it's at top of screen + the original default 3
+      _grid.getOptions().minRowBuffer = _options.panelRows + 3;
 
       _handler
         .subscribe(_grid.onClick, handleClick)
@@ -85,6 +87,9 @@
 
       _grid.getData().onRowCountChanged.subscribe(function () { _grid.updateRowCount(); _grid.render(); });
       _grid.getData().onRowsChanged.subscribe(function (e, a) { _grid.invalidateRows(a.rows); _grid.render(); });
+
+      // subscribe to the onAsyncResponse so that the plugin knows when the user server side calls finished
+      subscribeToOnAsyncResponse();
     }
 
     function destroy() {
@@ -133,6 +138,7 @@
         e.stopImmediatePropagation();
       }
     }
+
     // Sort will just collapse all of the open items
     function handleSort(e, args) {
       collapseAll();
@@ -171,6 +177,7 @@
     function expandItem(item) {
       item._collapsed = false;
       _expandedRows.push(item);
+      _currentItem = item;
       
       // display pre-loading template
       if (!item._detailViewLoaded || _options.loadOnce !== true) {
@@ -189,19 +196,28 @@
       applyTemplateNewLineHeight(item);
       _dataView.updateItem(item.id, item);
 
-    // subscribe to the onAsyncResponse so that the plugin knows when the user server side calls finished
-    // the response has to be as "args.itemDetail" with it's data back
-    _self.onAsyncResponse.subscribe(function (e, args) {                
+      // async server call
+      _options.process(item);
+    }
+
+    /**
+     * subscribe to the onAsyncResponse so that the plugin knows when the user server side calls finished
+     * the response has to be as "args.itemDetail" with it's data back
+     */
+    function subscribeToOnAsyncResponse() {      
+      _self.onAsyncResponse.subscribe(function (e, args) {      
         if (!args || !args.itemDetail) {
-            throw 'Slick.RowDetailView plugin requires the onAsyncResponse() to supply "args.itemDetail" property.'
+          throw 'Slick.RowDetailView plugin requires the onAsyncResponse() to supply "args.itemDetail" property.'
         }
-        if (args.itemDetail.id != item.id) return;
+        if (args.itemDetail.id != _currentItem.id) {
+          return;
+        }
 
         // If we just want to load in a view directly we can use detailView property to do so
         if (args.detailView) {
-            args.itemDetail._detailContent = args.detailView;
+          args.itemDetail._detailContent = args.detailView;
         } else {
-            args.itemDetail._detailContent = _options.postTemplate(args.itemDetail);
+          args.itemDetail._detailContent = _options.postTemplate(args.itemDetail);
         }
 
         args.itemDetail._detailViewLoaded = true;
@@ -214,10 +230,7 @@
             "grid": _grid,
             "itemDetail": args.itemDetail
         }, e, _self);
-    });
-
-      // async server call
-      _options.process(item);
+      });
     }
 
     function HandleAccordionShowHide(item) {
