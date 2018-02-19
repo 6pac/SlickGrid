@@ -76,6 +76,8 @@
     function init(grid) {
       _grid = grid;
       _dataView = _grid.getData();
+	  // Update the minRowBuffer so that the view doesn't disappear when it's at top of screen + the original default 3
+	  _grid.getOptions().minRowBuffer = _options.panelRows + 3;
 
       _handler
         .subscribe(_grid.onClick, handleClick)
@@ -83,9 +85,6 @@
 
       _grid.getData().onRowCountChanged.subscribe(function () { _grid.updateRowCount(); _grid.render(); });
       _grid.getData().onRowsChanged.subscribe(function (e, a) { _grid.invalidateRows(a.rows); _grid.render(); });
-
-      // TODO: Remove/Update once we have someway of updating core.getRenderedRange
-      _grid.getRenderedRange = getRenderedRange;
     }
 
     function destroy() {
@@ -103,39 +102,7 @@
     function setOptions(options) {
       _options = $.extend(true, {}, _options, options);
     }
-
-    //////////////////////////////////////////////////////////////
-    //TODO: Make this not override the core functionality!
-    // This is a clone of the slick.core.getRenderedRange Only change is adding _options.panelRows
-    //////////////////////////////////////////////////////////////
-    function getRenderedRange(viewportTop, viewportLeft) {
-      var range = getVisibleRange(viewportTop, viewportLeft);
-      var buffer = Math.round(viewportH / options.rowHeight);
-      var minBuffer = 3 + _options.panelRows; // Changed line
-
-      if (vScrollDir == -1) {
-        range.top -= buffer;
-        range.bottom += minBuffer;
-      } else if (vScrollDir == 1) {
-        range.top -= minBuffer;
-        range.bottom += buffer;
-      } else {
-        range.top -= minBuffer;
-        range.bottom += minBuffer;
-      }
-
-      range.top = Math.max(0, range.top);
-      range.bottom = Math.min(getDataLengthIncludingAddNew() - 1, range.bottom);
-
-      range.leftPx -= viewportW;
-      range.rightPx += viewportW;
-
-      range.leftPx = Math.max(0, range.leftPx);
-      range.rightPx = Math.min(canvasWidth, range.rightPx);
-
-      return range;
-    }
-
+  
     function handleClick(e, args) {
       // clicking on a row select checkbox
       if (_options.useRowClick || _grid.getColumns()[args.cell].id === _options.columnId && $(e.target).hasClass("detailView-toggle")) {
