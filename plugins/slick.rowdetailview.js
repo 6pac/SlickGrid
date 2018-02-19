@@ -322,10 +322,11 @@
         //sneaky extra </div> inserted here-----------------v
         html.push("<div class='detailView-toggle collapse'></div></div>");
 
-        html.push("<div class='dynamic-cell-detail' ");   //apply custom css to detail
+        html.push("<div id='cellDetailView_", dataContext.id, "' class='dynamic-cell-detail' ");   //apply custom css to detail
         html.push("style='height:", dataContext._height, "px;"); //set total height of padding
         html.push("top:", rowHeight, "px'>");             //shift detail below 1st row
-        html.push("<div class='detail-container' style='height:" + (dataContext._height - rowHeight + bottomMargin) + "px'>", dataContext._detailContent, "</div>");  //sub ctr for custom styling
+        html.push("<div id='detailViewContainer_", dataContext.id, "'  class='detail-container' style='max-height:" + (dataContext._height - rowHeight + bottomMargin) + "px'>"); //sub ctr for custom styling
+        html.push("<div id='innerDeatilView_" , dataContext.id , "'>" , dataContext._detailContent, "</div></div>"); 
         //&omit a final closing detail container </div> that would come next
 
         return html.join("");
@@ -333,6 +334,37 @@
       return null;
     }
 
+	function resizeDetailView(item) {
+      for (var idx = 1; idx <= item._sizePadding; idx++) {
+          _dataView.deleteItem(item.id + "." + idx);
+      }
+      
+      var rowHeight = _grid.getOptions().rowHeight; // height of a row
+      var lineHeight = 13; //we know cuz we wrote the custom css innit ;)
+      
+      // Grad each of the dom items
+      var domItem = document.getElementById('detailViewContainer_' + item.id);
+      var cellItem = document.getElementById('cellDetailView_' + item.id);
+      var inner = document.getElementById('innerDeatilView_' + item.id);
+      
+      // Get the inner Item height as this will be the actual size
+      var itemHeight = inner.clientHeight;
+      
+      // Now work out how many rows 
+      var rowCount = Math.ceil(itemHeight / rowHeight) + 1;
+      
+      item._sizePadding = Math.ceil(((rowCount * 2) * lineHeight) / rowHeight);
+      item._height = (item._sizePadding * rowHeight);
+      
+      domItem.setAttribute("style", "max-height: " + item._height + "px");
+      if (cellItem) cellItem.setAttribute("style", "height: " + item._height + "px;top:" + rowHeight + "px");
+      
+      var idxParent = _dataView.getIdxById(item.id);
+      for (var idx = 1; idx <= item._sizePadding; idx++) {
+          _dataView.insertItem(idxParent + idx, getPaddingItem(item, idx));
+      }
+    }
+	
     $.extend(this, {
       "init": init,
       "destroy": destroy,
@@ -344,6 +376,7 @@
       "onAsyncEndUpdate": new Slick.Event(),
       "onAfterRowDetailToggle": new Slick.Event(),
       "onBeforeRowDetailToggle": new Slick.Event(),
+	  "resizeDetailView": resizeDetailView
     });
   }
 })(jQuery);
