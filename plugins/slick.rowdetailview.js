@@ -325,7 +325,7 @@
         html.push("<div class='dynamic-cell-detail' ");   //apply custom css to detail
         html.push("style='height:", dataContext._height, "px;"); //set total height of padding
         html.push("top:", rowHeight, "px'>");             //shift detail below 1st row
-        html.push("<div class='detail-container' style='max-height:" + (dataContext._height - rowHeight + bottomMargin) + "px'>", dataContext._detailContent, "</div>");  //sub ctr for custom styling
+        html.push("<div class='detail-container' style='height:" + (dataContext._height - rowHeight + bottomMargin) + "px'>", dataContext._detailContent, "</div>");  //sub ctr for custom styling
         //&omit a final closing detail container </div> that would come next
 
         return html.join("");
