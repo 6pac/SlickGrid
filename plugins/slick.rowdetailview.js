@@ -222,31 +222,32 @@
       applyTemplateNewLineHeight(item);
       _dataView.updateItem(item.id, item);
 
-      // subscribe to the onAsyncResponse so that the plugin knows when the user server side calls finished
-      // the response has to be as "args.itemDetail" with it's data back
-      _self.onAsyncResponse.subscribe(function (e, args) {
+    // subscribe to the onAsyncResponse so that the plugin knows when the user server side calls finished
+    // the response has to be as "args.itemDetail" with it's data back
+    _self.onAsyncResponse.subscribe(function (e, args) {                
         if (!args || !args.itemDetail) {
-          throw 'Slick.RowDetailView plugin requires the onAsyncResponse() to supply "args.itemDetail" property.'
+            throw 'Slick.RowDetailView plugin requires the onAsyncResponse() to supply "args.itemDetail" property.'
         }
+        if (args.itemDetail.id != item.id) return;
 
         // If we just want to load in a view directly we can use detailView property to do so
         if (args.detailView) {
-          item._detailContent = args.detailView;
+            args.itemDetail._detailContent = args.detailView;
         } else {
-          item._detailContent = _options.postTemplate(args.itemDetail);
+            args.itemDetail._detailContent = _options.postTemplate(args.itemDetail);
         }
 
-        item._detailViewLoaded = true;
+        args.itemDetail._detailViewLoaded = true;
 
         var idxParent = _dataView.getIdxById(args.itemDetail.id);
         _dataView.updateItem(args.itemDetail.id, args.itemDetail);
 
         // trigger an event once the post template is finished loading
         _self.onAsyncEndUpdate.notify({
-          "grid": _grid,
-          "itemDetail": args.itemDetail
+            "grid": _grid,
+            "itemDetail": args.itemDetail
         }, e, _self);
-      });
+    });
 
       // async server call
       _options.process(item);
