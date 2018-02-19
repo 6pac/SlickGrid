@@ -334,18 +334,22 @@
       return null;
     }
 
-	function resizeDetailView(item) {
+    function resizeDetailView(item) {
+      if (!item) return;
+      
+      // Grad each of the dom items
+      var mainContainer = document.getElementById('detailViewContainer_' + item.id);
+      var cellItem = document.getElementById('cellDetailView_' + item.id);
+      var inner = document.getElementById('innerDeatilView_' + item.id);
+      
+      if (!mainContainer || !cellItem || !inner) return;
+      
       for (var idx = 1; idx <= item._sizePadding; idx++) {
           _dataView.deleteItem(item.id + "." + idx);
       }
       
       var rowHeight = _grid.getOptions().rowHeight; // height of a row
       var lineHeight = 13; //we know cuz we wrote the custom css innit ;)
-      
-      // Grad each of the dom items
-      var domItem = document.getElementById('detailViewContainer_' + item.id);
-      var cellItem = document.getElementById('cellDetailView_' + item.id);
-      var inner = document.getElementById('innerDeatilView_' + item.id);
       
       // Get the inner Item height as this will be the actual size
       var itemHeight = inner.clientHeight;
@@ -356,7 +360,7 @@
       item._sizePadding = Math.ceil(((rowCount * 2) * lineHeight) / rowHeight);
       item._height = (item._sizePadding * rowHeight);
       
-      domItem.setAttribute("style", "max-height: " + item._height + "px");
+      mainContainer.setAttribute("style", "max-height: " + item._height + "px");
       if (cellItem) cellItem.setAttribute("style", "height: " + item._height + "px;top:" + rowHeight + "px");
       
       var idxParent = _dataView.getIdxById(item.id);
