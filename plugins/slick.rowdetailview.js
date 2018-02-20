@@ -159,6 +159,11 @@
 
     // Colapse an Item so it is notlonger seen
     function collapseItem(item) {
+	  
+	  // If we are loading once then lets save view when we collapse it incase it's changed
+	  if (_options.loadOnce)
+      item._detailContent = $("#innerDeatilView_" + item.id).html();
+		
       item._collapsed = true;
       for (var idx = 1; idx <= item._sizePadding; idx++) {
         _dataView.deleteItem(item.id + "." + idx);
