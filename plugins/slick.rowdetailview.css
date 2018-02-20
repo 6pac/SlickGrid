@@ -24,17 +24,12 @@
     margin:             0;
     padding:            0;
     width:              100%;
-    display:            table;
     overflow:           auto;
 }
  
 .dynamic-cell-detail > :first-child
 {
-    display:            table-cell;
     vertical-align:     middle;
-    margin-left:        20px;
-    padding:            10px;
-    font-size:          12px;
     line-height:        13px;
 }
 
