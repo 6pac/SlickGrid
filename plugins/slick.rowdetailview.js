@@ -199,10 +199,10 @@
     // Saves the current state of the detail veiw
     function saveDetailView(item)
     {
-        var view = $("#innerDeatilView_" + item.id);
+        var view = $("#innerDetailView_" + item.id);
         if (view)
         {
-            var html = $("#innerDeatilView_" + item.id).html();
+            var html = $("#innerDetailView_" + item.id).html();
             if(html !== undefined)
             {
                 item._detailContent = html;
@@ -388,7 +388,7 @@
         html.push("style='height:", dataContext._height, "px;"); //set total height of padding
         html.push("top:", rowHeight, "px'>");             //shift detail below 1st row
         html.push("<div id='detailViewContainer_", dataContext.id, "'  class='detail-container' style='max-height:" + (dataContext._height - rowHeight + bottomMargin) + "px'>"); //sub ctr for custom styling
-        html.push("<div id='innerDeatilView_" , dataContext.id , "'>" , dataContext._detailContent, "</div></div>"); 
+        html.push("<div id='innerDetailView_" , dataContext.id , "'>" , dataContext._detailContent, "</div></div>"); 
         //&omit a final closing detail container </div> that would come next
 
         return html.join("");
@@ -402,7 +402,7 @@
       // Grad each of the dom items
       var mainContainer = document.getElementById('detailViewContainer_' + item.id);
       var cellItem = document.getElementById('cellDetailView_' + item.id);
-      var inner = document.getElementById('innerDeatilView_' + item.id);
+      var inner = document.getElementById('innerDetailView_' + item.id);
       
       if (!mainContainer || !cellItem || !inner) return;
       
