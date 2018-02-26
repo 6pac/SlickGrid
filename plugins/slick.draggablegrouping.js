@@ -139,7 +139,7 @@
       if (columnAllowed) {
         _gridColumns.forEach(function(e, i, a) {
           if (e.id == columnid) {
-            if (e.grouping != null) {
+            if (e.grouping != null && !$.isEmptyObject(e.grouping)) {
               var entry = $("<div id='" + _gridUid + e.id + "_entry' data-id='" + e.id + "' class='slick-dropped-grouping'>");
               var span = $("<span class='slick-groupby-remove'></span>").text(column.text() + " ")
               span.appendTo(entry);

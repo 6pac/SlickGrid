@@ -721,8 +721,13 @@ if (typeof Slick === "undefined") {
       for (var i = 0; i < columns.length; i++) {
         var m = columns[i];
 
+        var groupableIcon = '';
+        if (!$.isEmptyObject(m.grouping)) {
+          groupableIcon = "<span class='slick-column-groupable' />";
+        }
+
         var header = $("<div class='ui-state-default slick-header-column' />")
-            .html("<span class='slick-column-name'>" + m.name + "</span>")
+            .html("<span class='slick-column-name'>" + m.name + "</span>" + groupableIcon)
             .width(m.width - headerColumnWidthDiff)
             .attr("id", "" + uid + m.id)
             .attr("title", m.toolTip || "")

@@ -136,17 +136,7 @@ var grid;
 var data = [];
 var columns = [
   {id: "sel", name: "#", field: "num", cssClass: "cell-selection", width: 40, resizable: false, selectable: false, focusable: false,
-    grouping: {
-      getter: "num",
-      formatter: function (g) {
-        return "#:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
-      },
-      aggregators: [
-        new Slick.Data.Aggregators.Sum("cost")
-      ],
-      aggregateCollapsed: false,
-      collapsed: false
-    }
+    grouping: {}
   },
   {id: "title", name: "Title", field: "title", width: 70, minWidth: 50, cssClass: "cell-title", sortable: true, editor: Slick.Editors.Text,
     grouping: {
