@@ -46,7 +46,7 @@
       _dataView = _grid.getData();
       
       dropbox = $(_grid.getPreHeaderPanel());
-      dropbox.html("<div class='slick-placeholder'>Drop a column header here to group by the column</div><div class='slick-group-toggle-all expanded' style='display:block'></div>");
+      dropbox.html("<div class='slick-placeholder'>Drop a column header here to group by the column</div><div class='slick-group-toggle-all expanded' style='display:none'></div>");
 
       dropboxPlaceholder = dropbox.find(".slick-placeholder");
       groupToggler = dropbox.find(".slick-group-toggle-all");
@@ -150,6 +150,7 @@
             }
           }
         });
+        groupToggler.css('display', 'block');
       }
     }
 

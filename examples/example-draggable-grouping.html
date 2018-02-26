@@ -92,9 +92,9 @@
       <br />
       <button onclick="clearGroupings()">Clear grouping</button>
       <br/>
-      <button onclick="dataView.collapseAllGroups()">Collapse all groups</button>
+      <button onclick="toggleGrouping(false)">Collapse all groups</button>
       <br/>
-      <button onclick="dataView.expandAllGroups()">Expand all groups</button>
+      <button onclick="toggleGrouping(true)">Expand all groups</button>
       <br/>
     </div>
     <hr/>
@@ -319,6 +319,7 @@ function clearGroupings() {
    dataView.setGrouping([]);
    draggableGrouping.clearDroppedGroups();
    $(".slick-dropped-grouping").remove();
+   $(".slick-group-toggle-all").css("display", "none");
    grid.invalidate();
    grid.render();  
 }
@@ -332,6 +333,16 @@ function toggleDraggableGrouping() {
   } else {
     $(".slick-preheader-panel").show();
     draggableEnabled = true;
+  }
+}
+
+function toggleGrouping(expand) {
+  if(expand) {
+    dataView.expandAllGroups();
+    $(".slick-group-toggle-all").removeClass('collapsed').addClass('expanded');
+  } else {
+    dataView.collapseAllGroups();
+    $(".slick-group-toggle-all").removeClass('expanded').addClass('collapsed');
   }
 }
 
