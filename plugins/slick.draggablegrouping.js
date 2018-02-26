@@ -30,6 +30,7 @@
     var _dataView;
     var dropbox;
     var dropboxPlaceholder;
+    var groupToggler;
     var _self = this;
     var _defaults = {
     };
@@ -45,9 +46,10 @@
       _dataView = _grid.getData();
       
       dropbox = $(_grid.getPreHeaderPanel());
-      dropbox.html("<div class='slick-placeholder'>Drop a column header here to group by the column</div>");
+      dropbox.html("<div class='slick-placeholder'>Drop a column header here to group by the column</div><div class='slick-group-toggle-all expanded' style='display:block'></div>");
 
-      dropboxPlaceholder = dropbox.find(".slick-placeholder");      
+      dropboxPlaceholder = dropbox.find(".slick-placeholder");
+      groupToggler = dropbox.find(".slick-group-toggle-all");
       setupColumnDropbox();
     }
     
@@ -109,6 +111,18 @@
         }
       });
       emptyDropbox = dropbox.html();
+
+      groupToggler.on('click', function(e) {
+        if (this.classList.contains('collapsed')) {
+          this.classList.remove('collapsed');
+          this.classList.add('expanded');
+          _dataView.expandAllGroups();
+        } else {
+          this.classList.add('collapsed');
+          this.classList.remove('expanded');
+          _dataView.collapseAllGroups();
+        }
+      });
     }
 
     var columnsGroupBy = [];
