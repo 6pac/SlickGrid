@@ -218,51 +218,10 @@ var columns = [
   }
 ];
 
-function setupColumnReorder(grid, $headers, headerColumnWidthDiff, setColumns, setupColumnResize, columns, getColumnIndex, uid, trigger) {
-  $headers.filter(":ui-sortable").sortable("destroy");
-  var $headerDraggableGroupBy = $(grid.getPreHeaderPanel());
-    $headers.sortable({
-      distance: 3,
-      cursor: "default",
-      tolerance: "intersection",
-      helper: "clone",
-      placeholder: "slick-sortable-placeholder ui-state-default slick-header-column",
-      forcePlaceholderSize: true,
-      appendTo: "body",
-      start: function(e, ui) {
-        $(ui.helper).addClass("slick-header-column-active");
-        $headerDraggableGroupBy.find(".slick-placeholder").show();
-        $headerDraggableGroupBy.find(".slick-dropped-grouping").hide();
-      },
-      beforeStop: function(e, ui) {
-        $(ui.helper).removeClass("slick-header-column-active");
-        $headerDraggableGroupBy.find(".slick-placeholder").hide();
-        $headerDraggableGroupBy.find(".slick-dropped-grouping").show();
-      },
-      stop: function(e) {
-        if (!grid.getEditorLock().commitCurrentEdit()) {
-          $(this).sortable("cancel");
-          return;
-        }
-        var reorderedIds = $headers.sortable("toArray");
-        var reorderedColumns = [];
-        for (var i = 0; i < reorderedIds.length; i++) {
-          reorderedColumns.push(columns[getColumnIndex(reorderedIds[i].replace(uid, ""))]);
-        }
-        setColumns(reorderedColumns);
-        trigger(grid.onColumnsReordered, {
-          grid: grid
-        });
-        e.stopPropagation();
-        setupColumnResize();
-      }
-    });
-}
 
 var options = {
   enableCellNavigation: true,
   editable: true,
-  enableColumnReorder: setupColumnReorder,
   createPreHeaderPanel: true,
   showPreHeaderPanel: true,
   preHeaderPanelHeight: 25

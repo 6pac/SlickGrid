@@ -876,20 +876,24 @@ if (typeof Slick === "undefined") {
 
     function setupColumnReorder() {
       $headers.filter(":ui-sortable").sortable("destroy");
+      var $headerDraggableGroupBy = $(getPreHeaderPanel());
       $headers.sortable({
-        containment: "parent",
         distance: 3,
-        axis: "x",
         cursor: "default",
         tolerance: "intersection",
         helper: "clone",
         placeholder: "slick-sortable-placeholder ui-state-default slick-header-column",
+        forcePlaceholderSize: true,
+        appendTo: "body",
         start: function (e, ui) {
-          ui.placeholder.width(ui.helper.outerWidth() - headerColumnWidthDiff);
           $(ui.helper).addClass("slick-header-column-active");
+          $headerDraggableGroupBy.find(".slick-placeholder").show();
+          $headerDraggableGroupBy.find(".slick-dropped-grouping").hide();
         },
         beforeStop: function (e, ui) {
           $(ui.helper).removeClass("slick-header-column-active");
+          $headerDraggableGroupBy.find(".slick-placeholder").hide();
+          $headerDraggableGroupBy.find(".slick-dropped-grouping").show();
         },
         stop: function (e) {
           if (!getEditorLock().commitCurrentEdit()) {
