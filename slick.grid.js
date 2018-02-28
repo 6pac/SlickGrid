@@ -1989,18 +1989,22 @@ if (typeof Slick === "undefined") {
       }
 
       var oldH = h;
-      th = Math.max(options.rowHeight * numberOfRows, viewportH - scrollbarDimensions.height);
-      if (th < maxSupportedCssHeight) {
-        // just one page
-        h = ph = th;
-        n = 1;
-        cj = 0;
+      if (options.autoHeight) {
+        h =  options.rowHeight * numberOfRows;
       } else {
-        // break into pages
-        h = maxSupportedCssHeight;
-        ph = h / 100;
-        n = Math.floor(th / ph);
-        cj = (th - h) / (n - 1);
+        th = Math.max(options.rowHeight * numberOfRows, viewportH - scrollbarDimensions.height);
+        if (th < maxSupportedCssHeight) {
+          // just one page
+          h = ph = th;
+          n = 1;
+          cj = 0;
+        } else {
+          // break into pages
+          h = maxSupportedCssHeight;
+          ph = h / 100;
+          n = Math.floor(th / ph);
+          cj = (th - h) / (n - 1);
+        }
       }
 
       if (h !== oldH) {
