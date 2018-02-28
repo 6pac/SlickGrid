@@ -52,6 +52,22 @@
       dropboxPlaceholder = dropbox.find(".slick-placeholder");
       groupToggler = dropbox.find(".slick-group-toggle-all");
       setupColumnDropbox();
+
+
+      _grid.onHeaderCellRendered.subscribe(function (e, args) {
+        var column = args.column;
+        var node = args.node;
+        if (!$.isEmptyObject(column.grouping)) {
+          var groupableIcon = "<span class='slick-column-groupable' />";
+          $(node).append(groupableIcon);
+        }
+      })
+
+      for (var i = 0; i < _gridColumns.length; i++) {
+        var columnId = _gridColumns[i].field;
+        _grid.updateColumnHeader(columnId);
+      }
+
     }
     
     /**
