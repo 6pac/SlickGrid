@@ -325,16 +325,11 @@ $(".grid-header .ui-icon")
     });
 
 $(function () {
-  var groupItemMetadataProvider = new Slick.Data.GroupItemMetadataProvider();
   draggableGrouping = new Slick.DraggableGrouping();
-  dataView = new Slick.Data.DataView({
-    groupItemMetadataProvider: groupItemMetadataProvider,
-    inlineFilters: true
-  });
+  dataView = new Slick.Data.DataView();
   grid = new Slick.Grid("#myGrid", dataView, columns, options);
 
   // register the group item metadata provider to add expand/collapse group handlers
-  grid.registerPlugin(groupItemMetadataProvider);
   grid.registerPlugin(draggableGrouping);
   grid.setSelectionModel(new Slick.CellSelectionModel());
 
