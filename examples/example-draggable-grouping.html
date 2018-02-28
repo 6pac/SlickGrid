@@ -90,6 +90,8 @@
       <hr/>
       <button onclick="toggleDraggableGrouping()">Toggle Draggable Grouping</button>
       <br />
+      <button onclick="groupByTitle()">Group by Title</button>
+      <br/>
       <button onclick="clearGroupings()">Clear grouping</button>
       <br/>
       <button onclick="toggleGrouping(false)">Collapse all groups</button>
@@ -263,6 +265,11 @@ function comparer(a, b) {
 
 var draggableEnabled = true;
 
+function groupByTitle() {
+  draggableGrouping.setDroppedGroups('title');
+  grid.invalidate();
+  grid.render();  
+}
 
 function clearGroupings() {
    dataView.setGrouping([]);

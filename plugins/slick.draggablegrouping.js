@@ -168,6 +168,14 @@
       });
     }
 
+    function setDroppedGroups(groupingInfo) {
+      groupingInfos = (groupingInfo instanceof Array) ? groupingInfo : [groupingInfo];
+      dropboxPlaceholder.hide()
+      for (var i = 0; i < groupingInfos.length; i++) {
+        var column = $(_grid.getHeaderRowColumn(groupingInfos[i]));
+        handleGroupByDrop(dropbox, column);
+      }
+    }
     function clearDroppedGroups() {
       columnsGroupBy = [];
       onGroupChanged.notify({ groupColumns: []})
@@ -220,6 +228,7 @@
       "init": init,
       "destroy": destroy,
       "onGroupChanged": onGroupChanged,
+      "setDroppedGroups": setDroppedGroups,
       "clearDroppedGroups": clearDroppedGroups
     });
   }
