@@ -34,7 +34,8 @@
     var _self = this;
     var _defaults = {
     };
-    
+    var onGroupChanged = new Slick.Event();
+
     /**
      * Initialize plugin.
      */
@@ -169,6 +170,7 @@
 
     function clearDroppedGroups() {
       columnsGroupBy = [];
+      onGroupChanged.notify({ groupColumns: []})
     }
 
     function removeFromArray(arr) {
@@ -210,12 +212,14 @@
       /*
       collapseAllGroups();
       */
+      onGroupChanged.notify({ groupColumns: groupingArray})
     }
     
     // Public API
     $.extend(this, {
       "init": init,
       "destroy": destroy,
+      "onGroupChanged": onGroupChanged,
       "clearDroppedGroups": clearDroppedGroups
     });
   }
