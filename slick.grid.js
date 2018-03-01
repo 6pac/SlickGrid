@@ -658,7 +658,7 @@ if (typeof Slick === "undefined") {
 
     function getHeaderRowColumn(columnId) {
       var idx = getColumnIndex(columnId);
-      var $header = $headerRow.children().eq(idx);
+      var $header = $headers.children().eq(idx);
       return $header && $header[0];
     }
 
