@@ -30,10 +30,12 @@
     var _dataView;
     var dropbox;
     var dropboxPlaceholder;
+    var groupToggler;
     var _self = this;
     var _defaults = {
     };
-    
+    var onGroupChanged = new Slick.Event();
+
     /**
      * Initialize plugin.
      */
@@ -45,10 +47,27 @@
       _dataView = _grid.getData();
       
       dropbox = $(_grid.getPreHeaderPanel());
-      dropbox.html("<div class='slick-placeholder'>Drop a column header here to group by the column</div>");
+      dropbox.html("<div class='slick-placeholder'>Drop a column header here to group by the column</div><div class='slick-group-toggle-all expanded' style='display:none'></div>");
 
-      dropboxPlaceholder = dropbox.find(".slick-placeholder");      
+      dropboxPlaceholder = dropbox.find(".slick-placeholder");
+      groupToggler = dropbox.find(".slick-group-toggle-all");
       setupColumnDropbox();
+
+
+      _grid.onHeaderCellRendered.subscribe(function (e, args) {
+        var column = args.column;
+        var node = args.node;
+        if (!$.isEmptyObject(column.grouping)) {
+          var groupableIcon = "<span class='slick-column-groupable' />";
+          $(node).append(groupableIcon);
+        }
+      })
+
+      for (var i = 0; i < _gridColumns.length; i++) {
+        var columnId = _gridColumns[i].field;
+        _grid.updateColumnHeader(columnId);
+      }
+
     }
     
     /**
@@ -109,6 +128,18 @@
         }
       });
       emptyDropbox = dropbox.html();
+
+      groupToggler.on('click', function(e) {
+        if (this.classList.contains('collapsed')) {
+          this.classList.remove('collapsed');
+          this.classList.add('expanded');
+          _dataView.expandAllGroups();
+        } else {
+          this.classList.add('collapsed');
+          this.classList.remove('expanded');
+          _dataView.collapseAllGroups();
+        }
+      });
     }
 
     var columnsGroupBy = [];
@@ -125,7 +156,7 @@
       if (columnAllowed) {
         _gridColumns.forEach(function(e, i, a) {
           if (e.id == columnid) {
-            if (e.grouping != null) {
+            if (e.grouping != null && !$.isEmptyObject(e.grouping)) {
               var entry = $("<div id='" + _gridUid + e.id + "_entry' data-id='" + e.id + "' class='slick-dropped-grouping'>");
               var span = $("<span class='slick-groupby-remove'></span>").text(column.text() + " ")
               span.appendTo(entry);
@@ -136,6 +167,7 @@
             }
           }
         });
+        groupToggler.css('display', 'block');
       }
     }
 
@@ -152,8 +184,21 @@
       });
     }
 
+    function setDroppedGroups(groupingInfo) {
+      groupingInfos = (groupingInfo instanceof Array) ? groupingInfo : [groupingInfo];
+      dropboxPlaceholder.hide()
+      for (var i = 0; i < groupingInfos.length; i++) {
+        var column = $(_grid.getHeaderRowColumn(groupingInfos[i]));
+        handleGroupByDrop(dropbox, column);
+      }
+    }
     function clearDroppedGroups() {
       columnsGroupBy = [];
+      updateGroupBy();
+      onGroupChanged.notify({ groupColumns: []})
+      dropbox.find(".slick-dropped-grouping").remove();
+      groupToggler.css("display", "none");
+      dropboxPlaceholder.show()
     }
 
     function removeFromArray(arr) {
@@ -195,12 +240,15 @@
       /*
       collapseAllGroups();
       */
+      onGroupChanged.notify({ groupColumns: groupingArray})
     }
     
     // Public API
     $.extend(this, {
       "init": init,
       "destroy": destroy,
+      "onGroupChanged": onGroupChanged,
+      "setDroppedGroups": setDroppedGroups,
       "clearDroppedGroups": clearDroppedGroups
     });
   }
