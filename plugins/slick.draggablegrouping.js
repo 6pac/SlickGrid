@@ -194,7 +194,11 @@
     }
     function clearDroppedGroups() {
       columnsGroupBy = [];
+      updateGroupBy();
       onGroupChanged.notify({ groupColumns: []})
+      dropbox.find(".slick-dropped-grouping").remove();
+      groupToggler.css("display", "none");
+      dropboxPlaceholder.show()
     }
 
     function removeFromArray(arr) {

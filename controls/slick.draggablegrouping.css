@@ -17,7 +17,7 @@
 }
 
 .slick-column-groupable {
-  background: url('./images/column-grouping.png') no-repeat center center;
+  background: url('../images/column-grouping.png') no-repeat center center;
   width: 9px;
   height: 9px;
   display: inline-block;

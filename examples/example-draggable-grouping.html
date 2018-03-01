@@ -272,12 +272,7 @@ function groupByTitle() {
 }
 
 function clearGroupings() {
-   dataView.setGrouping([]);
    draggableGrouping.clearDroppedGroups();
-   $(".slick-dropped-grouping").remove();
-   $(".slick-group-toggle-all").css("display", "none");
-   grid.invalidate();
-   grid.render();  
 }
 
 
