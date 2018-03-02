@@ -196,7 +196,7 @@
       }
     }
 	
-    // Saves the current state of the detail veiw
+    // Saves the current state of the detail view
     function saveDetailView(item)
     {
         var view = $("#innerDetailView_" + item.id);
