@@ -374,7 +374,7 @@ if (typeof Slick === "undefined") {
             //.on("click", handleClick)
             .on("scroll", handleScroll);
         $headerScroller
-            .on("scroll", handleHeaderScroll)
+            //.on("scroll", handleHeaderScroll)
             .on("contextmenu", handleHeaderContextMenu)
             .on("click", handleHeaderClick)
             .on("mouseenter", ".slick-header-column", handleHeaderMouseEnter)
@@ -644,6 +644,16 @@ if (typeof Slick === "undefined") {
       }
     }
 
+    function getHeader() {
+      return $header[0];
+    }
+
+    function getHeaderColumn(columnIdOrIdx) {
+      var idx = (typeof columnIdOrIdx === "number" ? columnIdOrIdx : getColumnIndex[columnIdOrIdx]);
+      var $rtn = $header.children().eq(idx);
+      return $rtn && $rtn[0];
+    }
+
     function getHeaderRow() {
       return $headerRow[0];
     }
@@ -656,16 +666,16 @@ if (typeof Slick === "undefined") {
       return $preHeaderPanel[0];
     }
 
-    function getHeaderRowColumn(columnId) {
-      var idx = getColumnIndex(columnId);
-      var $header = $headers.children().eq(idx);
-      return $header && $header[0];
+    function getHeaderRowColumn(columnIdOrIdx) {
+      var idx = (typeof columnIdOrIdx === "number" ? columnIdOrIdx : getColumnIndex[columnIdOrIdx]);
+      var $rtn = $headerRow.children().eq(idx);
+      return $rtn && $rtn[0];
     }
 
-    function getFooterRowColumn(columnId) {
-      var idx = getColumnIndex(columnId);
-      var $footer = $footerRow.children().eq(idx);
-      return $footer && $footer[0];
+    function getFooterRowColumn(columnIdOrIdx) {
+      var idx = (typeof columnIdOrIdx === "number" ? columnIdOrIdx : getColumnIndex[columnIdOrIdx]);
+      var $rtn = $footerRow.children().eq(idx);
+      return $rtn && $rtn[0];
     }
 
     function createColumnHeaders() {
@@ -849,21 +859,19 @@ if (typeof Slick === "undefined") {
           
           setSortColumns(sortColumns);
 
-          if (sortColumns.length > 0) { 
-              if (!options.multiColumnSort) {
-                trigger(self.onSort, {
-                  multiColumnSort: false,
-                  sortCol: column,
-                  sortAsc: sortColumns[0].sortAsc,
-                  grid: self}, e);
-              } else {
-                trigger(self.onSort, {
-                  multiColumnSort: true,
-                  sortCols: $.map(sortColumns, function(col) {
-                    return {sortCol: columns[getColumnIndex(col.columnId)], sortAsc: col.sortAsc };
-                  }),
-                  grid: self}, e);
-              }
+          if (!options.multiColumnSort) {
+            trigger(self.onSort, {
+              multiColumnSort: false,
+              sortCol: (sortColumns.length > 0 ? column : null),
+              sortAsc: (sortColumns.length > 0 ? sortColumns[0].sortAsc : true),
+              grid: self}, e);
+          } else {
+            trigger(self.onSort, {
+              multiColumnSort: true,
+              sortCols: $.map(sortColumns, function(col) {
+                return {sortCol: columns[getColumnIndex(col.columnId)], sortAsc: col.sortAsc };
+              }),
+              grid: self}, e);
           }
         }
       });
@@ -1365,7 +1373,7 @@ if (typeof Slick === "undefined") {
           .removeClass("slick-header-column-sorted")
           .find("." + sortIndicatorCssClass)
               .removeClass("slick-sort-indicator-asc slick-sort-indicator-desc");
-      if (numberCols) { sortIndicatorEl.text(''); }
+      sortIndicatorEl.text('');
 
       $.each(sortColumns, function(i, col) {
         if (col.sortAsc == null) {
@@ -3836,7 +3844,7 @@ if (typeof Slick === "undefined") {
     // Public API
 
     $.extend(this, {
-      "slickGridVersion": "2.3.15",
+      "slickGridVersion": "2.3.16",
 
       // Events
       "onScroll": new Slick.Event(),
@@ -3954,6 +3962,8 @@ if (typeof Slick === "undefined") {
       "setTopPanelVisibility": setTopPanelVisibility,
       "getPreHeaderPanel": getPreHeaderPanel,
       "setPreHeaderPanelVisibility": setPreHeaderPanelVisibility,
+      "getHeader": getHeader,
+      "getHeaderColumn": getHeaderColumn,
       "setHeaderRowVisibility": setHeaderRowVisibility,
       "getHeaderRow": getHeaderRow,
       "getHeaderRowColumn": getHeaderRowColumn,
