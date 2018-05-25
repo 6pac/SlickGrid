@@ -1114,6 +1114,9 @@ if (typeof Slick === "undefined") {
       // In short, if jQueryNewWidthBehaviour is true, then width() sets content width.  If it is false, width() sets css width.
       var verArray = $.fn.jquery.split('.');
       var jQueryNewWidthBehaviour = (verArray[0]==1 && verArray[1]>=8) ||  verArray[0] >=2;
+      var usesBorderBox = function(el) {
+        return el.css("box-sizing") == "border-box" || el.css("-moz-box-sizing") == "border-box" || el.css("-webkit-box-sizing") == "border-box";
+      };
 
       el = $("<div class='ui-state-default slick-header-column' style='visibility:hidden'>-</div>").appendTo($headers);
       headerColumnWidthDiff = headerColumnHeightDiff = 0;
@@ -1123,20 +1126,20 @@ if (typeof Slick === "undefined") {
       $.each(v, function (n, val) {
         headerColumnHeightDiff += parseFloat(el.css(val)) || 0;
       });
-      legacySetHeaderWidth = !jQueryNewWidthBehaviour && (
-        el.css("box-sizing") == "border-box" || el.css("-moz-box-sizing") == "border-box" || el.css("-webkit-box-sizing") == "border-box"
-      );
+      legacySetHeaderWidth = !jQueryNewWidthBehaviour && usesBorderBox(el);
       el.remove();
 
       var r = $("<div class='slick-row' />").appendTo($canvas);
       el = $("<div class='slick-cell' id='' style='visibility:hidden'>-</div>").appendTo(r);
       cellWidthDiff = cellHeightDiff = 0;
-      $.each(h, function (n, val) {
-        cellWidthDiff += parseFloat(el.css(val)) || 0;
-      });
-      $.each(v, function (n, val) {
-        cellHeightDiff += parseFloat(el.css(val)) || 0;
-      });
+      if (!usesBorderBox(el)) {
+        $.each(h, function (n, val) {
+          cellWidthDiff += parseFloat(el.css(val)) || 0;
+        });
+        $.each(v, function (n, val) {
+          cellHeightDiff += parseFloat(el.css(val)) || 0;
+        });
+      }
       r.remove();
 
       absoluteColumnMinWidth = Math.max(headerColumnWidthDiff, cellWidthDiff);
@@ -1144,7 +1147,7 @@ if (typeof Slick === "undefined") {
 
     function createCssRules() {
       $style = $("<style type='text/css' rel='stylesheet' />").appendTo($("head"));
-      var rowHeight = (options.rowHeight - cellHeightDiff);
+      var rowHeight = options.rowHeight - cellHeightDiff;
       var rules = [
         "." + uid + " .slick-header-column { left: 1000px; }",
         "." + uid + " .slick-top-panel { height:" + options.topPanelHeight + "px; }",
