@@ -1350,7 +1350,7 @@ if (typeof Slick === "undefined") {
       for (var i = 0, headers = $headers.children(), ii = columns.length; i < ii; i++) {
         h = $(headers[i]);
         if (h.outerWidth() !== columns[i].width) {
-          setHeaderOuterWidth(columns[i].width);
+          setHeaderOuterWidth(h, columns[i].width);
         }
       }
 
