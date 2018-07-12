@@ -153,7 +153,8 @@ if (typeof Slick === "undefined") {
     var canvasWidth;
     var viewportHasHScroll, viewportHasVScroll;
     var headerColumnWidthDiff = 0, headerColumnHeightDiff = 0, // border+padding
-        cellWidthDiff = 0, cellHeightDiff = 0, jQueryNewWidthBehaviour = false;
+        cellWidthDiff = 0, cellHeightDiff = 0;
+    var legacySetHeaderWidth;
     var absoluteColumnMinWidth;
     
     var tabbingDirection = 1;
@@ -734,9 +735,11 @@ if (typeof Slick === "undefined") {
         var m = columns[i];
 
         var header = $("<div class='ui-state-default slick-header-column' />")
-            .html("<span class='slick-column-name'>" + m.name + "</span>")
-            .width(m.width - headerColumnWidthDiff)
-            .attr("id", "" + uid + m.id)
+            .html("<span class='slick-column-name'>" + m.name + "</span>");
+
+        setHeaderOuterWidth(header, m.width)
+
+        header.attr("id", "" + uid + m.id)
             .attr("title", m.toolTip || "")
             .data("column", m)
             .addClass(m.headerCssClass || "")
@@ -1108,26 +1111,28 @@ if (typeof Slick === "undefined") {
 
       // jquery prior to version 1.8 handles .width setter/getter as a direct css write/read
       // jquery 1.8 changed .width to read the true inner element width if box-sizing is set to border-box, and introduced a setter for .outerWidth
-      // so for equivalent functionality, prior to 1.8 use .width, and after use .outerWidth
+      // In short, if jQueryNewWidthBehaviour is true, then width() sets content width.  If it is false, width() sets css width.
       var verArray = $.fn.jquery.split('.');
-      jQueryNewWidthBehaviour = (verArray[0]==1 && verArray[1]>=8) ||  verArray[0] >=2;
+      var jQueryNewWidthBehaviour = (verArray[0]==1 && verArray[1]>=8) ||  verArray[0] >=2;
+      var usesBorderBox = function(el) {
+        return el.css("box-sizing") == "border-box" || el.css("-moz-box-sizing") == "border-box" || el.css("-webkit-box-sizing") == "border-box";
+      };
 
       el = $("<div class='ui-state-default slick-header-column' style='visibility:hidden'>-</div>").appendTo($headers);
       headerColumnWidthDiff = headerColumnHeightDiff = 0;
-      if (el.css("box-sizing") != "border-box" && el.css("-moz-box-sizing") != "border-box" && el.css("-webkit-box-sizing") != "border-box") {
-        $.each(h, function (n, val) {
-          headerColumnWidthDiff += parseFloat(el.css(val)) || 0;
-        });
-        $.each(v, function (n, val) {
-          headerColumnHeightDiff += parseFloat(el.css(val)) || 0;
-        });
-      }
+      $.each(h, function (n, val) {
+        headerColumnWidthDiff += parseFloat(el.css(val)) || 0;
+      });
+      $.each(v, function (n, val) {
+        headerColumnHeightDiff += parseFloat(el.css(val)) || 0;
+      });
+      legacySetHeaderWidth = !jQueryNewWidthBehaviour && usesBorderBox(el);
       el.remove();
 
       var r = $("<div class='slick-row' />").appendTo($canvas);
       el = $("<div class='slick-cell' id='' style='visibility:hidden'>-</div>").appendTo(r);
       cellWidthDiff = cellHeightDiff = 0;
-      if (el.css("box-sizing") != "border-box" && el.css("-moz-box-sizing") != "border-box" && el.css("-webkit-box-sizing") != "border-box") {
+      if (!usesBorderBox(el)) {
         $.each(h, function (n, val) {
           cellWidthDiff += parseFloat(el.css(val)) || 0;
         });
@@ -1142,7 +1147,7 @@ if (typeof Slick === "undefined") {
 
     function createCssRules() {
       $style = $("<style type='text/css' rel='stylesheet' />").appendTo($("head"));
-      var rowHeight = (options.rowHeight - cellHeightDiff);
+      var rowHeight = options.rowHeight - cellHeightDiff;
       var rules = [
         "." + uid + " .slick-header-column { left: 1000px; }",
         "." + uid + " .slick-top-panel { height:" + options.topPanelHeight + "px; }",
@@ -1332,20 +1337,23 @@ if (typeof Slick === "undefined") {
       }
     }
 
+    function setHeaderOuterWidth($header, outerWidth) {
+      if (legacySetHeaderWidth) {
+        $header.width(outerWidth);
+      }
+      else {
+        $header.width(outerWidth - headerColumnWidthDiff)
+      }
+    }
+
     function applyColumnHeaderWidths() {
       if (!initialized) { return; }
       var h;
 
       for (var i = 0, headers = $headers.children(), ii = columns.length; i < ii; i++) {
         h = $(headers[i]);
-        if (jQueryNewWidthBehaviour) {
-            if (h.outerWidth() !== columns[i].width) {
-              h.outerWidth(columns[i].width);
-            }
-        } else {
-            if (h.width() !== columns[i].width - headerColumnWidthDiff) {
-              h.width(columns[i].width - headerColumnWidthDiff);
-            }
+        if (h.outerWidth() !== columns[i].width) {
+          setHeaderOuterWidth(h, columns[i].width);
         }
       }
 
