@@ -187,10 +187,11 @@ if (typeof Slick === "undefined") {
 
     var pagingActive = false;
     var pagingIsLastPage = false;
+
+    var scrollThrottle = ActionThrottle(render, 50);
     
     // async call handles
     var h_editorLoader = null;
-    var h_render = null;
     var h_postrender = null;
     var h_postrenderCleanup = null;
     var postProcessedRows = {};
@@ -2325,6 +2326,9 @@ if (typeof Slick === "undefined") {
 
     function render() {
       if (!initialized) { return; }
+
+      scrollThrottle.dequeue();
+
       var visible = getVisibleRange();
       var rendered = getRenderedRange();
 
@@ -2345,7 +2349,6 @@ if (typeof Slick === "undefined") {
 
       lastRenderedScrollTop = scrollTop;
       lastRenderedScrollLeft = scrollLeft;
-      h_render = null;
     }
 
     function handleHeaderScroll() {
@@ -2412,18 +2415,19 @@ if (typeof Slick === "undefined") {
       }
 
       if (hScrollDist || vScrollDist) {
-        if (h_render) {
-          clearTimeout(h_render);
-        }
 
-        if (Math.abs(lastRenderedScrollTop - scrollTop) > 20 ||
-            Math.abs(lastRenderedScrollLeft - scrollLeft) > 20) {
-          if (options.forceSyncScrolling || (
-              Math.abs(lastRenderedScrollTop - scrollTop) < viewportH &&
-              Math.abs(lastRenderedScrollLeft - scrollLeft) < viewportW)) {
+        var dx = Math.abs(lastRenderedScrollLeft - scrollLeft);
+        var dy = Math.abs(lastRenderedScrollTop - scrollTop);
+
+        if (dx > 20 || dy > 20) {
+
+          // if rendering is forced or scrolling is small enough to be "easy", just render
+          if (options.forceSyncScrolling || (dy < viewportH && dx < viewportW)) {
             render();
-          } else {
-            h_render = setTimeout(render, 50);
+          }
+          // otherwise, perform "difficult" renders at a capped frequency
+          else {
+            scrollThrottle.enqueue();
           }
 
           trigger(self.onViewportChanged, {grid: self});
@@ -2431,6 +2435,49 @@ if (typeof Slick === "undefined") {
       }
 
       trigger(self.onScroll, {scrollLeft: scrollLeft, scrollTop: scrollTop, grid: self});
+    }
+
+    /*
+    limits the frequency at which the provided action is executed.
+    call enqueue to execute the action - it will execute either immediately or, if it was executed less than minPeriod_ms in the past, as soon as minPeriod_ms has expired.
+    call dequeue to cancel any pending action.
+    */
+    function ActionThrottle(action, minPeriod_ms) {
+
+      var blocked = false;
+      var queued = false;
+
+      function enqueue() {
+        if (!blocked) {
+          blockAndExecute();
+        } else {
+          queued = true;
+        }
+      }
+
+      function dequeue() {
+        queued = false;
+      }
+
+      function blockAndExecute() {
+        blocked = true;
+        setTimeout(unblock, minPeriod_ms);
+        action();
+      }
+
+      function unblock() {
+        if (queued) {
+          dequeue();
+          blockAndExecute();
+        } else {
+          blocked = false;
+        }
+      }
+
+      return {
+        enqueue: enqueue,
+        dequeue: dequeue
+      }
     }
 
     function asyncPostProcessRows() {
