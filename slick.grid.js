@@ -2054,6 +2054,7 @@ if (typeof Slick === "undefined") {
       updateCanvasWidth(false);
     }
 
+    // returns a range of fully or partially visible rows
     function getVisibleRange(viewportTop, viewportLeft) {
       if (viewportTop == null) {
         viewportTop = scrollTop;
@@ -2064,7 +2065,7 @@ if (typeof Slick === "undefined") {
 
       return {
         top: getRowFromPosition(viewportTop),
-        bottom: getRowFromPosition(viewportTop + viewportH) + 1,
+        bottom: getRowFromPosition(viewportTop + viewportH - 1) + 1,
         leftPx: viewportLeft,
         rightPx: viewportLeft + viewportW
       };
@@ -3265,17 +3266,20 @@ if (typeof Slick === "undefined") {
     }
 
     function scrollRowIntoView(row, doPaging) {
-      var rowAtTop = row * options.rowHeight;
-      var rowAtBottom = (row + 1) * options.rowHeight - viewportH + (viewportHasHScroll ? scrollbarDimensions.height : 0);
+      var rh = options.rowHeight;
+        /// value of y to scroll to in order to show this row
+        /// fully visible at the top/bottom of window
+      var yAtTop = row * rh;
+      var yAtBottom = (row + 1) * rh - viewportH + (viewportHasHScroll ? scrollbarDimensions.height : 0);
 
       // need to page down?
-      if ((row + 1) * options.rowHeight > scrollTop + viewportH + offset) {
-        scrollTo(doPaging ? rowAtTop : rowAtBottom);
+      if ( yAtBottom > scrollTop + offset ) {
+        scrollTo(doPaging ? yAtTop : yAtBottom);
         render();
       }
       // or page up?
-      else if (row * options.rowHeight < scrollTop + offset) {
-        scrollTo(doPaging ? rowAtBottom : rowAtTop);
+      else if ( yAtTop < scrollTop + offset ) {
+        scrollTo(doPaging ? yAtBottom : yAtTop);
         render();
       }
     }
@@ -3287,7 +3291,10 @@ if (typeof Slick === "undefined") {
 
     function scrollPage(dir) {
       var deltaRows = dir * numVisibleRows;
-      scrollTo((getRowFromPosition(scrollTop) + deltaRows) * options.rowHeight);
+        /// First fully visible row crosses the line with  
+        /// y == bottomOfTopmostFullyVisibleRow
+      var bottomOfTopmostFullyVisibleRow = scrollTop + options.rowHeight - 1;
+      scrollTo((getRowFromPosition(bottomOfTopmostFullyVisibleRow) + deltaRows) * options.rowHeight);
       render();
 
       if (options.enableCellNavigation && activeRow != null) {
