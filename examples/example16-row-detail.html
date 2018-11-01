@@ -14,13 +14,27 @@
     .preload {
       font-size: 18px;
     }
-	
-	.dynamic-cell-detail > :first-child
-    {
-    vertical-align:     middle;
-    line-height:        13px;
-	padding:            10px;
-	margin-left:		20px;
+
+	  .dynamic-cell-detail > :first-child {
+      vertical-align:     middle;
+      line-height:        13px;
+      padding:            10px;
+      margin-left:		20px;
+    }
+    .slick-headerrow-column {
+      background: #87ceeb;
+      text-overflow: clip;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+
+    .slick-headerrow-column input {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
     }
   </style>
 </head>
@@ -68,22 +82,24 @@
   <script src="../lib/jquery.event.drag-2.3.0.js"></script>
 
   <script src="../slick.core.js"></script>
-  <script src="../plugins/slick.rowdetailview.js"></script>
   <script src="../slick.formatters.js"></script>
+  <script src="../plugins/slick.rowdetailview.js"></script>
   <script src="../plugins/slick.rowselectionmodel.js"></script>
   <script src="../slick.grid.js"></script>
   <script src="../slick.dataview.js"></script>
 
   <script>
     var dataView;
+    var detailView;
     var grid;
     var data = [];
+    var columnFilters = {};
     var sortcol = "title";
     var sortdir = 1;
 
     var fakeNames = ['John Doe', 'Jane Doe', 'Chuck Norris', 'Bumblebee', 'Jackie Chan', 'Elvis Presley', 'Bob Marley', 'Mohammed Ali', 'Bruce Lee', 'Rocky Balboa'];
 
-    var columns = [      
+    var columns = [
       {id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 40, resizable: false, selectable: false },
       {id: "title", name: "Title", field: "title", width: 110, minWidth: 110, cssClass: "cell-title", sortable: true},
       {id: "duration", name: "Duration", field: "duration", sortable: true},
@@ -96,19 +112,31 @@
       editable: false,
       enableAddRow: false,
       enableCellNavigation: true,
-      enableColumnReorder: true
+      enableColumnReorder: true,
+      explicitInitialization: true,
+      headerRowHeight: 30,
+      showHeaderRow: true,
     };
-    var detailView;
 
     function DataItem(i) {
+      this.id = i;
       this.num = i;
-      this.id = "id_" + i;
       this.percentComplete = Math.round(Math.random() * 100);
       this.effortDriven = (i % 5 == 0);
       this.start = "01/01/2009";
       this.finish = "01/05/2009";
       this.title = "Task " + i;
       this.duration = "5 days";
+    }
+
+    function hookAssigneeOnClick(itemId) {
+      $("#who-is-assignee_" + itemId).off("click").on("click", function() {
+        alert("Assignee is " + $("#assignee_" + itemId).val());
+      });
+    }
+
+    function destroyAssigneeOnClick(itemId) {
+      $("#who-is-assignee_" + itemId).off("click");
     }
 
     function loadingTemplate() {
@@ -119,7 +147,9 @@
       return [
         '<div>',
         '<h4>' + itemDetail.title + '</h4>',
-        '<div class="detail"><label>Assignee:</label> <span>' + itemDetail.assignee + '</span></div>',
+        '<div class="detail">',
+        '<label>Assignee:</label> <input id="assignee_' + itemDetail.id + '" type="text" value="' + itemDetail.assignee + '"/>',
+        '<span style="float: right">Find out who is the Assignee <button id="who-is-assignee_' + itemDetail.id + '">Click Me</button></span></div>',
         '<div class="detail"><label>Reporter:</label> <span>' + itemDetail.reporter + '</span></div>',
         '<div class="detail"><label>Duration:</label> <span>' + itemDetail.duration + '</span></div>',
         '<div class="detail"><label>% Complete:</label> <span>' + itemDetail.percentComplete + '</span></div>',
@@ -130,39 +160,63 @@
         '</div>'
       ].join('');
     }
-    
+
+    function filter(item) {
+      for (var columnId in columnFilters) {
+        if (columnId !== undefined && columnFilters[columnId] !== "") {
+          var column = grid.getColumns()[grid.getColumnIndex(columnId)];
+
+          // IMPORTANT with Row Detail View plugin
+          // if the row is a padding row, we just get the value we're filtering on from it's parent
+          if (item._isPadding && item._parent) {
+            item = item._parent;
+          }
+
+          if (item[column.field] !== undefined) {
+            var filterResult = typeof item[column.field].indexOf === 'function'
+              ? (item[column.field].indexOf(columnFilters[columnId] && columnFilters[columnId]) === -1)
+              : (item[column.field] != columnFilters[columnId]);
+
+            if (filterResult) {
+              return false;
+            }
+          }
+        }
+      }
+      return true;
+    }
+
+    // fill the template with a delay to simulate a server call
     function simulateServerCall(item) {
-      // fill the template on delay
       setTimeout(function() {
-      
         // let's add some property to our item for a better simulation
-        var itemDetail = item;		
-        itemDetail.assignee = fakeNames[randomNumber(0, 10)];
-        itemDetail.reporter = fakeNames[randomNumber(0, 10)];
+        var itemDetail = item;
+        itemDetail.assignee = fakeNames[randomNumber(0, 9)];
+        itemDetail.reporter = fakeNames[randomNumber(0, 9)];
 
         if(itemDetail.num % 5 == 0) {
           notifyNonTemplatedView(itemDetail)
         } else {
           notifyTemplate(itemDetail)
         }
-      }, 1000);      
+      }, 1000);
     }
-    
+
+    // notify the onAsyncResponse with the "args.item" (required property)
+    // the plugin will then use itemDetail to populate the detail panel with "postTemplate"
     function notifyTemplate(itemDetail) {
-      // notify the onAsyncResponse with the "args.itemDetail" (required property)
-      // the plugin will then use itemDetail to populate the detail panel with "postTemplate"
       detailView.onAsyncResponse.notify({
-        "itemDetail": itemDetail		
+        "item": itemDetail
       }, undefined, this);
     }
-    
-    function notifyNonTemplatedView(itemDetail) {
-      // notify the onAsyncResponse with the "args.itemDetail" (required property)
-      // the plugin will then use itemDetail to populate the detail panel with "postTemplate"
-      detailView.onAsyncResponse.notify({
-        "itemDetail": itemDetail,	
 
-        // detailView Ignores any template and use whats passed though instead
+    // notify the onAsyncResponse with the "args.item" (required property)
+    // the plugin will then use itemDetail to populate the detail panel with "postTemplate"
+    function notifyNonTemplatedView(itemDetail) {
+      detailView.onAsyncResponse.notify({
+        "item": itemDetail,
+
+        // detailView Ignores any template and use what's passed through instead
         "detailView": "<div><h4>Direct view inserting without template</h4><span>This is not using the template</span></div>"
       }, undefined, this);
     }
@@ -170,16 +224,10 @@
     function randomNumber(min, max) {
       return Math.floor(Math.random() * (max - min + 1) + min);
     }
-    
-    function percentCompleteSort(a, b) {
-      return a["percentComplete"] - b["percentComplete"];
-    }
+
     function comparer(a, b) {
       var x = a[sortcol], y = b[sortcol];
       return (x == y ? 0 : (x > y ? 1 : -1));
-    }
-    function toggleFilterRow() {
-      grid.setTopPanelVisibility(!grid.getOptions().showTopPanel);
     }
 
     $(function () {
@@ -187,7 +235,7 @@
       for (var i = 0; i < 5000; i++) {
         data[i] = new DataItem(i);
       }
-      dataView = new Slick.Data.DataView({ inlineFilters: true });
+      dataView = new Slick.Data.DataView();
 
       // create the row detail plugin
       detailView = new Slick.Plugins.RowDetailView({
@@ -199,15 +247,15 @@
 
         // how many grid rows do we want to use for the detail panel
         // also note that the detail view adds an extra 1 row for padding purposes
-        // so if you choose 4 panelRows, the display will in fact use 5 rows
-        panelRows: 4 
+        // example, if you choosed 4 panelRows, the display will in fact use 5 rows
+        panelRows: 4
       });
 
       // push the plugin as the first column
       columns.unshift(detailView.getColumnDefinition());
 
       grid = new Slick.Grid("#myGrid", dataView, columns, options);
-      
+
       // register the column
       grid.setSelectionModel(new Slick.RowSelectionModel({selectActiveRow: false}));
       grid.registerPlugin(detailView);
@@ -217,9 +265,24 @@
       });
       detailView.onAfterRowDetailToggle.subscribe(function(e, args) {
         console.log('after toggling row detail', args.item);
+        if (args.item._collapsed) {
+          destroyAssigneeOnClick(args.item.id);
+        } else {
+
+        }
       });
       detailView.onAsyncEndUpdate.subscribe(function(e, args) {
-        console.log('finished updating the post async template', args.itemDetail);
+        console.log('finished updating the post async template', args);
+        hookAssigneeOnClick(args.item.id);
+      });
+
+      // the following subscribers can be useful to Save/Re-Render a View
+      // when it goes out of visible or back to visible range
+      detailView.onRowOutOfVisibleRange.subscribe((e, args) => {
+        destroyAssigneeOnClick(args.item.id);
+      });
+      detailView.onRowBackToVisibleRange.subscribe((e, args) => {
+        hookAssigneeOnClick(args.item.id);
       });
 
       grid.onSort.subscribe(function (e, args) {
@@ -228,12 +291,30 @@
 
         // using native sort with comparer
         // preferred method but can be very slow in IE with huge datasets
-        dataView.sort(comparer, args.sortAsc);        
+        dataView.sort(comparer, args.sortAsc);
       });
-      
+
+      $(grid.getHeaderRow()).on("change keyup", ":input", function (e) {
+        var columnId = $(this).data("columnId");
+        if (columnId != null) {
+          columnFilters[columnId] = $.trim($(this).val());
+          dataView.refresh();
+        }
+      });
+
+      grid.onHeaderRowCellRendered.subscribe(function(e, args) {
+        $(args.node).empty();
+        $("<input type='text'>")
+            .data("columnId", args.column.id)
+            .val(columnFilters[args.column.id])
+            .appendTo(args.node);
+      });
+
       // initialize the model after all the events have been hooked up
+      grid.init();
       dataView.beginUpdate();
       dataView.setItems(data);
+      dataView.setFilter(filter);
       dataView.endUpdate();
     });
   </script>
