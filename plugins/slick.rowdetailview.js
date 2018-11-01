@@ -18,8 +18,8 @@
  *    panelRows:              Row count to use for the template panel
  *    useRowClick:            Boolean flag, when True will open the row detail on a row click (from any column), default to False
  *    keyPrefix:              Defaults to '_', prefix used for all the plugin metadata added to the item object (meta e.g.: padding, collapsed, parent)
- *    onScrollSaveDetailView: Defaults to true, which will save the row detail view in a cache when it detects that it will become out of the viewport buffer
- *    onSortCollapseAll:      Defaults to true, which will collapse all row detail views when user calls a sort. Unless user implements a sort to deal with padding
+ *    collapseAllOnSort:      Defaults to true, which will collapse all row detail views when user calls a sort. Unless user implements a sort to deal with padding
+ *    saveDetailViewOnScroll: Defaults to true, which will save the row detail view in a cache when it detects that it will become out of the viewport buffer
  *
  * AVAILABLE PUBLIC OPTIONS:
  *    init:                 initiliaze the plugin
@@ -88,8 +88,8 @@
       cssClass: "detailView-toggle",
       keyPrefix: "_",
       loadOnce: false,
-      onScrollSaveDetailView: true,
-      onSortCollapseAll: true,
+      collapseAllOnSort: true,
+      saveDetailViewOnScroll: true,
       toolTip: "",
       width: 30
     };
@@ -114,7 +114,7 @@
         .subscribe(_grid.onScroll, handleScroll);
 
       // Sort will, by default, Collapse all of the open items (unless user implements his own onSort which deals with open row and padding)
-      if (_options.onSortCollapseAll) {
+      if (_options.collapseAllOnSort) {
         _handler.subscribe(_grid.onSort, collapseAll);
         _expandedRows = [];
         _outOfVisibleRangeRows = [];
@@ -202,7 +202,7 @@
     // If we scroll save detail views that go out of cache range
     function handleScroll(e, args) {
       calculateOutOfRangeViews();
-      if (_options.onScrollSaveDetailView) {
+      if (_options.saveDetailViewOnScroll) {
         // handleOnScrollSaveDetailView();
       }
     }
@@ -227,7 +227,7 @@
             notifyOutOfVisibility(row, rowIndex);
 
             // save the view when asked
-            if (_options.onScrollSaveDetailView) {
+            if (_options.saveDetailViewOnScroll) {
               saveDetailView(row);
             }
           }
