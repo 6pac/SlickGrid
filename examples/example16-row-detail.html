@@ -217,7 +217,18 @@
         "item": itemDetail,
 
         // detailView Ignores any template and use what's passed through instead
-        "detailView": "<div><h4>Direct view inserting without template</h4><span>This is not using the template</span></div>"
+        "detailView": "<div>" + 
+					  "<h4>Direct view inserting without template</h4>" +
+					  "<span>This is not using the template</span><br/>" + 
+					  "<button onclick=\"detailView.resizeDetailView(data[" + itemDetail.id + "])\">Resize detail view</button>" +
+					  "<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>" + 
+					  "This is to make the loaded area longer" +
+					  "<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>" +
+					  "And Loooooonnnnnggggerrr<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>" +
+					  "Nearly there<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>" +
+					  "One more to go<br/><br/><br/><br/>" +
+					  "Done Yay" + 
+					  "</div>"
       }, undefined, this);
     }
 

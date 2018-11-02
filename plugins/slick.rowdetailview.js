@@ -533,9 +533,9 @@
       if (!item) return;
 
       // Grad each of the DOM elements
-      var mainContainer = document.getElementsByClassName('detailViewContainer_' + item.id);
-      var cellItem = document.getElementsByClassName('cellDetailView_' + item.id);
-      var inner = document.getElementsByClassName('innerDetailView_' + item.id);
+      var mainContainer = document.getElementsByClassName('detailViewContainer_' + item.id)[0];
+      var cellItem = document.getElementsByClassName('cellDetailView_' + item.id)[0];
+      var inner = document.getElementsByClassName('innerDetailView_' + item.id)[0];
 
       if (!mainContainer || !cellItem || !inner) return;
 
