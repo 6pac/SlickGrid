@@ -12,7 +12,7 @@
  * AVAILABLE ROW DETAIL OPTIONS:
  *    cssClass:               A CSS class to be added to the row detail
  *    expandedClass:          Extra classes to be added to the expanded Toggle
- *    collapsedClass:         Extra classes to be added to the expanded Toggle
+ *    collapsedClass:         Extra classes to be added to the collapse Toggle
  *    loadOnce:               Defaults to false, when set to True it will load the data once and then reuse it.
  *    preTemplate:            Template that will be used before the async process (typically used to show a spinner/loading)
  *    postTemplate:           Template that will be loaded once the async function finishes
