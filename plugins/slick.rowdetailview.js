@@ -11,6 +11,8 @@
  *
  * AVAILABLE ROW DETAIL OPTIONS:
  *    cssClass:               A CSS class to be added to the row detail
+ *    expandedClass:          Extra classes to be added to the expanded Toggle
+ *    collapsedClass:         Extra classes to be added to the expanded Toggle
  *    loadOnce:               Defaults to false, when set to True it will load the data once and then reuse it.
  *    preTemplate:            Template that will be used before the async process (typically used to show a spinner/loading)
  *    postTemplate:           Template that will be loaded once the async function finishes
@@ -86,6 +88,8 @@
     var _defaults = {
       columnId: "_detail_selector",
       cssClass: "detailView-toggle",
+      expandedClass: null,
+      collapsedClass: null,
       keyPrefix: "_",
       loadOnce: false,
       collapseAllOnSort: true,
@@ -501,7 +505,9 @@
       if (dataContext[_keyPrefix + 'isPadding'] == true) {
         //render nothing
       } else if (dataContext[_keyPrefix + 'collapsed']) {
-        return "<div class='" + _options.cssClass + " expand'></div>";
+		var collapsedClasses = _options.cssClass + " expand ";
+		if (_options.collapsedClass) collapsedClasses += _options.collapsedClass;
+		return "<div class='" + collapsedClasses + "'></div>";
       } else {
         var html = [];
         var rowHeight = _gridOptions.rowHeight;
@@ -515,7 +521,9 @@
         //slick-cell to escape the cell overflow clipping.
 
         //sneaky extra </div> inserted here-----------------v
-        html.push("<div class='" + _options.cssClass + " collapse'></div></div>");
+        var expandedClasses = _options.cssClass + " collapse ";
+        if (_options.expandedClass) expandedClasses += _options.expandedClass;
+        html.push("<div class='" + expandedClasses + "'></div></div>");
 
         html.push("<div class='dynamic-cell-detail cellDetailView_", dataContext.id, "' ");   //apply custom css to detail
         html.push("style='height:", dataContext[_keyPrefix + 'height'], "px;"); //set total height of padding
