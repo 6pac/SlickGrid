@@ -528,7 +528,7 @@
         html.push("<div class='dynamic-cell-detail cellDetailView_", dataContext.id, "' ");   //apply custom css to detail
         html.push("style='height:", dataContext[_keyPrefix + 'height'], "px;"); //set total height of padding
         html.push("top:", rowHeight, "px'>");             //shift detail below 1st row
-        html.push("<div class='detail-container detailViewContainer_", dataContext.id, "'>"); //sub ctr for custom styling
+        html.push("<div class='detail-container detailViewContainer_", dataContext.id, "' style = 'max-height:" + (dataContext._height - rowHeight + 5) + "px'>"); //sub ctr for custom styling
         html.push("<div class='innerDetailView_", dataContext.id, "'>", dataContext[_keyPrefix + 'detailContent'], "</div></div>");
         //&omit a final closing detail container </div> that would come next
 
@@ -554,8 +554,8 @@
       var rowHeight = _gridOptions.rowHeight; // height of a row
       var lineHeight = 13; // we know cuz we wrote the custom css innit ;)
 
-      // Get the inner Item height as this will be the actual size
-      var itemHeight = inner.clientHeight;
+      // Get the scroll height for the main container so we know the actual size of the view
+      var itemHeight = mainContainer.scrollHeight;
 
       // Now work out how many rows
       var rowCount = Math.ceil(itemHeight / rowHeight) + 1;
@@ -576,6 +576,9 @@
       for (var idx = 1; idx <= item[_keyPrefix + 'sizePadding']; idx++) {
         _dataView.insertItem(idxParent + idx, getPaddingItem(item, idx));
       }
+	  
+	  // Lastly save the updated state
+      saveDetailView(item);
     }
 
     $.extend(this, {
