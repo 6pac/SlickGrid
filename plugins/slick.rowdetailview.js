@@ -82,19 +82,20 @@
   function RowDetailView(options) {
     var _grid;
     var _gridOptions;
+    var _gridUid;
     var _self = this;
     var _expandedRows = [];
     var _handler = new Slick.EventHandler();
     var _defaults = {
-      columnId: "_detail_selector",
-      cssClass: "detailView-toggle",
+      columnId: '_detail_selector',
+      cssClass: 'detailView-toggle',
       expandedClass: null,
       collapsedClass: null,
-      keyPrefix: "_",
+      keyPrefix: '_',
       loadOnce: false,
       collapseAllOnSort: true,
       saveDetailViewOnScroll: true,
-      toolTip: "",
+      toolTip: '',
       width: 30
     };
     var _keyPrefix = _defaults.keyPrefix;
@@ -104,14 +105,17 @@
     var _options = $.extend(true, {}, _defaults, options);
 
     function init(grid) {
+      if (!grid) {
+        throw new Error('RowDetailView Plugin requires the Grid instance to be passed as argument to the "init()" method');
+      }
       _grid = grid;
+      _gridUid = grid.getUID();
       _gridOptions = grid.getOptions() || {};
       _dataView = _grid.getData();
-      _keyPrefix = _options && _options.keyPrefix || "_";
+      _keyPrefix = _options && _options.keyPrefix || '_';
 
       // Update the minRowBuffer so that the view doesn't disappear when it's at top of screen + the original default 3
-      _gridRowBuffer = _gridOptions.minRowBuffer;
-      options.minRowBuffer = _options.panelRows + 3;
+      _grid.getOptions().minRowBuffer = _options.panelRows + 3;
 
       _handler
         .subscribe(_grid.onClick, handleClick)
@@ -138,7 +142,7 @@
       subscribeToOnAsyncResponse();
 
       setTimeout(calculateVisibleRenderedCount, 250);
-      $(window).on("resize", calculateVisibleRenderedCount);
+      $(window).on('resize', calculateVisibleRenderedCount);
     }
 
     function destroy() {
@@ -185,17 +189,17 @@
 
         // trigger an event before toggling
         _self.onBeforeRowDetailToggle.notify({
-          "grid": _grid,
-          "item": item
+          'grid': _grid,
+          'item': item
         }, e, _self);
 
         toggleRowSelection(item);
 
         // trigger an event after toggling
         _self.onAfterRowDetailToggle.notify({
-          "grid": _grid,
-          "item": item,
-          "expandedRows": _expandedRows,
+          'grid': _grid,
+          'item': item,
+          'expandedRows': _expandedRows,
         }, e, _self);
 
         e.stopPropagation();
@@ -249,11 +253,11 @@
 
     function notifyOutOfVisibility(item, rowIndex) {
       _self.onRowOutOfVisibleRange.notify({
-        "grid": _grid,
-        "item": item,
-        "rowIndex": rowIndex,
-        "expandedRows": _expandedRows,
-        "outOfVisibleRangeRows": updateOutOfVisibleArrayWhenNecessary(rowIndex, true)
+        'grid': _grid,
+        'item': item,
+        'rowIndex': rowIndex,
+        'expandedRows': _expandedRows,
+        'outOfVisibleRangeRows': updateOutOfVisibleArrayWhenNecessary(rowIndex, true)
       }, null, _self);
     }
 
@@ -261,13 +265,13 @@
       var rowIndex = item.rowIndex || _dataView.getRowById(item.id);
       setTimeout(function() {
         // make sure View Row DOM Element really exist before notifying that it's a row that is visible again
-        if ($('.cellDetailView_' + item.id).length) {
+        if (document.querySelector('.cellDetailView_' + item.id).length) {
           _self.onRowBackToVisibleRange.notify({
-            "grid": _grid,
-            "item": item,
-            "rowIndex": rowIndex,
-            "expandedRows": _expandedRows,
-            "outOfVisibleRangeRows": updateOutOfVisibleArrayWhenNecessary(rowIndex, false)
+            'grid': _grid,
+            'item': item,
+            'rowIndex': rowIndex,
+            'expandedRows': _expandedRows,
+            'outOfVisibleRangeRows': updateOutOfVisibleArrayWhenNecessary(rowIndex, false)
           }, null, _self);
         }
       }, 100);
@@ -370,9 +374,9 @@
         item[_keyPrefix + 'detailContent'] = _options.preTemplate(item);
       } else {
         _self.onAsyncResponse.notify({
-          "item": item,
-          "itemDetail": item,
-          "detailView": item[_keyPrefix + 'detailContent']
+          'item': item,
+          'itemDetail': item,
+          'detailView': item[_keyPrefix + 'detailContent']
         }, undefined, this);
         applyTemplateNewLineHeight(item);
         _dataView.updateItem(item.id, item);
@@ -389,9 +393,9 @@
 
     // Saves the current state of the detail view
     function saveDetailView(item) {
-      var view = $(".innerDetailView_" + item.id);
+      var view = $('.innerDetailView_' + item.id);
       if (view) {
-        var html = $(".innerDetailView_" + item.id).html();
+        var html = $('.innerDetailView_' + item.id).html();
         if (html !== undefined) {
           item[_keyPrefix + 'detailContent'] = html;
         }
@@ -423,9 +427,9 @@
 
         // trigger an event once the post template is finished loading
         _self.onAsyncEndUpdate.notify({
-          "grid": _grid,
-          "item": itemDetail,
-          "itemDetail": itemDetail
+          'grid': _grid,
+          'item': itemDetail,
+          'itemDetail': itemDetail
         }, e, _self);
       });
     }
@@ -448,7 +452,7 @@
       for (var prop in _grid.getData()) {
         item[prop] = null;
       }
-      item.id = parent.id + "." + offset;
+      item.id = parent.id + '.' + offset;
 
       // additional hidden padding metadata fields
       item[_keyPrefix + 'collapsed'] = true;
@@ -481,9 +485,9 @@
     function getColumnDefinition() {
       return {
         id: _options.columnId,
-        name: "",
+        name: '',
         toolTip: _options.toolTip,
-        field: "sel",
+        field: 'sel',
         width: _options.width,
         resizable: false,
         sortable: false,
@@ -505,9 +509,11 @@
       if (dataContext[_keyPrefix + 'isPadding'] == true) {
         //render nothing
       } else if (dataContext[_keyPrefix + 'collapsed']) {
-		var collapsedClasses = _options.cssClass + " expand ";
-		if (_options.collapsedClass) collapsedClasses += _options.collapsedClass;
-		return "<div class='" + collapsedClasses + "'></div>";
+		    var collapsedClasses = _options.cssClass + ' expand ';
+		    if (_options.collapsedClass) {
+          collapsedClasses += _options.collapsedClass;
+        }
+		    return '<div class="' + collapsedClasses + '"></div>';
       } else {
         var html = [];
         var rowHeight = _gridOptions.rowHeight;
@@ -521,18 +527,18 @@
         //slick-cell to escape the cell overflow clipping.
 
         //sneaky extra </div> inserted here-----------------v
-        var expandedClasses = _options.cssClass + " collapse ";
+        var expandedClasses = _options.cssClass + ' collapse ';
         if (_options.expandedClass) expandedClasses += _options.expandedClass;
-        html.push("<div class='" + expandedClasses + "'></div></div>");
+        html.push('<div class="' + expandedClasses + '"></div></div>');
 
-        html.push("<div class='dynamic-cell-detail cellDetailView_", dataContext.id, "' ");   //apply custom css to detail
-        html.push("style='height:", dataContext[_keyPrefix + 'height'], "px;"); //set total height of padding
-        html.push("top:", rowHeight, "px'>");             //shift detail below 1st row
-        html.push("<div class='detail-container detailViewContainer_", dataContext.id, "' style = 'max-height:" + (dataContext._height - rowHeight + 5) + "px'>"); //sub ctr for custom styling
-        html.push("<div class='innerDetailView_", dataContext.id, "'>", dataContext[_keyPrefix + 'detailContent'], "</div></div>");
-        //&omit a final closing detail container </div> that would come next
+        html.push('<div class="dynamic-cell-detail cellDetailView_', dataContext.id, '" ');   //apply custom css to detail
+        html.push('style="height:', dataContext[_keyPrefix + 'height'], 'px;'); //set total height of padding
+        html.push('top:', rowHeight, 'px">');             //shift detail below 1st row
+        html.push('<div class="detail-container detailViewContainer_', dataContext.id, '" style="max-height:' + (dataContext._height - rowHeight + 5) + 'px">'); //sub ctr for custom styling
+        html.push('<div class="innerDetailView_', dataContext.id, '">', dataContext[_keyPrefix + 'detailContent'], '</div></div>');
+        // &omit a final closing detail container </div> that would come next
 
-        return html.join("");
+        return html.join('');
       }
       return null;
     }
@@ -541,14 +547,16 @@
       if (!item) return;
 
       // Grad each of the DOM elements
-      var mainContainer = document.getElementsByClassName('detailViewContainer_' + item.id)[0];
-      var cellItem = document.getElementsByClassName('cellDetailView_' + item.id)[0];
-      var inner = document.getElementsByClassName('innerDetailView_' + item.id)[0];
+      var mainContainer = document.querySelector('.' + _gridUid + ' .detailViewContainer_' + item.id);
+      var cellItem = document.querySelector('.' + _gridUid + ' .cellDetailView_' + item.id);
+      var inner = document.querySelector('.' + _gridUid + ' .innerDetailView_' + item.id);
 
-      if (!mainContainer || !cellItem || !inner) return;
+      if (!mainContainer || !cellItem || !inner) {
+        return;
+      }
 
       for (var idx = 1; idx <= item[_keyPrefix + 'sizePadding']; idx++) {
-        _dataView.deleteItem(item.id + "." + idx);
+        _dataView.deleteItem(item.id + '.' + idx);
       }
 
       var rowHeight = _gridOptions.rowHeight; // height of a row
@@ -564,19 +572,19 @@
       item[_keyPrefix + 'height'] = (item[_keyPrefix + 'sizePadding'] * rowHeight);
 
       // If the padding is now more than the original minRowBuff we need to increase it
-      if (_gridOptions.minRowBuffer < item[_keyPrefix + 'sizePadding']) {
+      if (_grid.getOptions().minRowBuffer < item[_keyPrefix + 'sizePadding']) {
         // Update the minRowBuffer so that the view doesn't disappear when it's at top of screen + the original default 3
-        _gridOptions.minRowBuffer = item[_keyPrefix + 'sizePadding'] + 3;
+        _grid.getOptions().minRowBuffer = item[_keyPrefix + 'sizePadding'] + 3;
       }
 
-      mainContainer.setAttribute("style", "max-height: " + item[_keyPrefix + 'height'] + "px");
-      if (cellItem) cellItem.setAttribute("style", "height: " + item[_keyPrefix + 'height'] + "px;top:" + rowHeight + "px");
+      mainContainer.setAttribute('style', 'max-height: ' + item[_keyPrefix + 'height'] + 'px');
+      if (cellItem) cellItem.setAttribute('style', 'height: ' + item[_keyPrefix + 'height'] + 'px; top:' + rowHeight + 'px');
 
       var idxParent = _dataView.getIdxById(item.id);
       for (var idx = 1; idx <= item[_keyPrefix + 'sizePadding']; idx++) {
         _dataView.insertItem(idxParent + idx, getPaddingItem(item, idx));
       }
-	  
+
 	  // Lastly save the updated state
       saveDetailView(item);
     }
