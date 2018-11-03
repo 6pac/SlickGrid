@@ -209,10 +209,9 @@
 
     // If we scroll save detail views that go out of cache range
     function handleScroll(e, args) {
-      console.log($('.detailViewContainer_5').length)
-      // calculateOutOfRangeViews();
+      calculateOutOfRangeViews();
       if (_options.saveDetailViewOnScroll) {
-        handleOnScrollSaveDetailView();
+        // handleOnScrollSaveDetailView();
       }
     }
 
