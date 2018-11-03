@@ -209,9 +209,10 @@
 
     // If we scroll save detail views that go out of cache range
     function handleScroll(e, args) {
-      calculateOutOfRangeViews();
+      console.log($('.detailViewContainer_5').length)
+      // calculateOutOfRangeViews();
       if (_options.saveDetailViewOnScroll) {
-        // handleOnScrollSaveDetailView();
+        handleOnScrollSaveDetailView();
       }
     }
 
@@ -321,7 +322,7 @@
     // Toggle between showing and hiding a row
     function toggleRowSelection(row) {
       _dataView.beginUpdate();
-      HandleAccordionShowHide(row);
+      handleAccordionShowHide(row);
       _dataView.endUpdate();
     }
 
@@ -393,9 +394,9 @@
 
     // Saves the current state of the detail view
     function saveDetailView(item) {
-      var view = $('.innerDetailView_' + item.id);
+      var view = $('.' + _gridUid + ' .innerDetailView_' + item.id);
       if (view) {
-        var html = $('.innerDetailView_' + item.id).html();
+        var html = $('.' + _gridUid + ' .innerDetailView_' + item.id).html();
         if (html !== undefined) {
           item[_keyPrefix + 'detailContent'] = html;
         }
@@ -434,7 +435,7 @@
       });
     }
 
-    function HandleAccordionShowHide(item) {
+    function handleAccordionShowHide(item) {
       if (item) {
         if (!item[_keyPrefix + 'collapsed']) {
           collapseItem(item);
@@ -544,7 +545,9 @@
     }
 
     function resizeDetailView(item) {
-      if (!item) return;
+      if (!item) {
+        return;
+      }
 
       // Grad each of the DOM elements
       var mainContainer = document.querySelector('.' + _gridUid + ' .detailViewContainer_' + item.id);
@@ -585,7 +588,7 @@
         _dataView.insertItem(idxParent + idx, getPaddingItem(item, idx));
       }
 
-	  // Lastly save the updated state
+	    // Lastly save the updated state
       saveDetailView(item);
     }
 
