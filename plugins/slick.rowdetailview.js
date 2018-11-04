@@ -252,6 +252,11 @@
      * @param rowCountToDetectEarlier, number of Rows if we want an earlier detection of the out of visible range
      */
     function checkIsRowOutOfVisibleRange(rowIndex, renderedRange, rowCountToDetectEarlier) {
+      // calculate when scrolling up
+  	  if (Math.abs(renderedRange.top - _gridRowBuffer - rowIndex - rowCountToDetectEarlier) > _visibleRenderedCellCount * 2) {
+        return true;
+      }
+      // calculate when scrolling down
   	  if (Math.abs(renderedRange.bottom - _gridRowBuffer - rowIndex + rowCountToDetectEarlier) > _visibleRenderedCellCount * 2) {
         return true;
       }
