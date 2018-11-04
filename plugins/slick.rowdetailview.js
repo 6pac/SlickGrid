@@ -22,6 +22,7 @@
  *    keyPrefix:              Defaults to '_', prefix used for all the plugin metadata added to the item object (meta e.g.: padding, collapsed, parent)
  *    collapseAllOnSort:      Defaults to true, which will collapse all row detail views when user calls a sort. Unless user implements a sort to deal with padding
  *    saveDetailViewOnScroll: Defaults to true, which will save the row detail view in a cache when it detects that it will become out of the viewport buffer
+ *    outOfVisibleDetectEarlierRows: Number of Rows if we want an earlier detection of the out of visible range
  *
  * AVAILABLE PUBLIC OPTIONS:
  *    init:                 initiliaze the plugin
@@ -227,7 +228,7 @@
 
         _expandedRows.forEach((row) => {
           var rowIndex = _dataView.getRowById(row.id);
-          var isOutOfVisibility = checkIsRowOutOfVisibleRange(rowIndex, renderedRange);
+          var isOutOfVisibility = checkIsRowOutOfVisibleRange(rowIndex, renderedRange, _options.outOfVisibleDetectEarlierRows || 0);
 
           if (!isOutOfVisibility && arrayFindIndex(_outOfVisibleRangeRows, rowIndex) >= 0) {
             notifyBackToVisibleWhenDomExist(row, rowIndex);
@@ -243,9 +244,14 @@
       }
     }
 
-    /** Check if the row became out of visible range (when user can't see it anymore) */
-    function checkIsRowOutOfVisibleRange(rowIndex, renderedRange) {
-  	  if (Math.abs(renderedRange.bottom - _gridRowBuffer - rowIndex) > _visibleRenderedCellCount * 2) {
+    /**
+     * Check if the row became out of visible range (when user can't see it anymore)
+     * @param rowIndex
+     * @param renderedRange from SlickGrid
+     * @param rowCountToDetectEarlier, number of Rows if we want an earlier detection of the out of visible range
+     */
+    function checkIsRowOutOfVisibleRange(rowIndex, renderedRange, rowCountToDetectEarlier) {
+  	  if (Math.abs(renderedRange.bottom - _gridRowBuffer - rowIndex + rowCountToDetectEarlier) > _visibleRenderedCellCount * 2) {
         return true;
       }
       return false;
@@ -265,7 +271,7 @@
       var rowIndex = item.rowIndex || _dataView.getRowById(item.id);
       setTimeout(function() {
         // make sure View Row DOM Element really exist before notifying that it's a row that is visible again
-        if (document.querySelector('.cellDetailView_' + item.id).length) {
+        if ($('.cellDetailView_' + item.id).length) {
           _self.onRowBackToVisibleRange.notify({
             'grid': _grid,
             'item': item,
@@ -335,8 +341,8 @@
     }
 
     // Colapse an Item so it is not longer seen
-    function collapseItem(item, multipleCollapse) {
-      if (!multipleCollapse) {
+    function collapseItem(item, isMultipleCollapsing) {
+      if (!isMultipleCollapsing) {
         _dataView.beginUpdate();
       }
       // Save the details on the collapse assuming onetime loading
@@ -346,7 +352,7 @@
 
       item[_keyPrefix + 'collapsed'] = true;
       for (var idx = 1; idx <= item[_keyPrefix + 'sizePadding']; idx++) {
-        _dataView.deleteItem(item.id + "." + idx);
+        _dataView.deleteItem(item.id + '.' + idx);
       }
       item[_keyPrefix + 'sizePadding'] = 0;
       _dataView.updateItem(item.id, item);
@@ -356,7 +362,7 @@
         return r.id !== item.id;
       });
 
-      if (!multipleCollapse) {
+      if (!isMultipleCollapsing) {
         _dataView.endUpdate();
       }
     }
@@ -507,7 +513,7 @@
       }
 
       if (dataContext[_keyPrefix + 'isPadding'] == true) {
-        //render nothing
+        // render nothing
       } else if (dataContext[_keyPrefix + 'collapsed']) {
 		    var collapsedClasses = _options.cssClass + ' expand ';
 		    if (_options.collapsedClass) {
