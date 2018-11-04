@@ -116,6 +116,7 @@
       _keyPrefix = _options && _options.keyPrefix || '_';
 
       // Update the minRowBuffer so that the view doesn't disappear when it's at top of screen + the original default 3
+      _gridRowBuffer = _grid.getOptions().minRowBuffer;
       _grid.getOptions().minRowBuffer = _options.panelRows + 3;
 
       _handler
