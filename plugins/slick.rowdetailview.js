@@ -85,6 +85,7 @@
     var _gridOptions;
     var _gridUid;
     var _self = this;
+    var _lastRange = null;
     var _expandedRows = [];
     var _handler = new Slick.EventHandler();
     var _defaults = {
@@ -223,26 +224,83 @@
 	    return _visibleRenderedCellCount;
     }
 
+
+
     function calculateOutOfRangeViews() {
-      if (_grid) {
-        var renderedRange = _grid.getRenderedRange();
+        if (_grid) {                
+            var renderedRange = _grid.getRenderedRange();
+           // Only check if we have expanded rows
+            if (_expandedRows.length > 0) {
+                // Assume scroll direction is down by default.
+                var scrollDir = 'DOWN';
+                if (_lastRange) {
+                    // If our new top is smaller we are scrolling up
+                    if (_lastRange.top > renderedRange.top ||
+                        // Or we are at very top but our bottom is increasing
+                        (_lastRange.top === 0 && renderedRange.top === 0) && _lastRange.bottom > renderedRange.bottom) {
+                        scrollDir = 'UP';
+                    }
 
-        _expandedRows.forEach((row) => {
-          var rowIndex = _dataView.getRowById(row.id);
-          var isOutOfVisibility = checkIsRowOutOfVisibleRange(rowIndex, renderedRange, _options.outOfVisibleDetectEarlierRows || 0);
-
-          if (!isOutOfVisibility && arrayFindIndex(_outOfVisibleRangeRows, rowIndex) >= 0) {
-            notifyBackToVisibleWhenDomExist(row, rowIndex);
-          } else if (isOutOfVisibility) {
-            notifyOutOfVisibility(row, rowIndex);
-
-            // save the view when asked
-            if (_options.saveDetailViewOnScroll) {
-              saveDetailView(row);
+                    // Some scrolling isn't anything as the range is the same
+                    if (_lastRange.top === renderedRange.top && _lastRange.bottom === renderedRange.bottom) {
+                        return;
+                    }
+                }
             }
-          }
-        });
-      }
+
+            _expandedRows.forEach((row) => {
+                var rowIndex = _dataView.getRowById(row.id);
+
+                var rowPadding = row[_keyPrefix + 'sizePadding'];
+                var rowOutOfRange = arrayFindIndex(_outOfVisibleRangeRows, rowIndex) >= 0;
+
+                // save the view when asked
+                if (_options.saveDetailViewOnScroll) {
+                    // If the top or bottom item of the range is an expanded row save it.
+                    // This may need to be updated to check within current view port instead
+                    if (rowIndex <= renderedRange.top + _gridRowBuffer || rowIndex >= renderedRange.bottom - _gridRowBuffer) {
+                        saveDetailView(row);
+                    }
+                }
+                                    
+                if (scrollDir === 'UP') {
+                    // If the row expanded area is within the buffer notify that it is back in range
+                    if (rowOutOfRange && rowIndex - 5 < renderedRange.top && rowIndex >= renderedRange.top) {
+                        notifyBackToVisibleWhenDomExist(row, rowIndex);
+                        console.log("BACK", rowIndex);
+                    }
+                                            
+                    // if our first expanded row is about to go off the bottom
+                    if (!rowOutOfRange && (rowIndex + rowPadding) > renderedRange.bottom) {
+                        notifyOutOfVisibility(row, rowIndex);
+                        console.log("NOTIFY", rowIndex);
+                    }
+                }
+                else if (scrollDir === 'DOWN') {
+                    
+                    // If row index is i higher than bottom with some added value (To ignore top rows off view) and is with view and was our of range                    
+                    if (rowOutOfRange && (rowIndex + rowPadding + 5) > renderedRange.bottom && rowIndex < rowIndex + rowPadding) {
+                        notifyBackToVisibleWhenDomExist(row, rowIndex);
+                        console.log("BACK", rowIndex);
+                    }
+
+                    // if our row is outside top of and the buffering zone but not in the array of outOfVisable range notify it
+                    if (!rowOutOfRange && rowIndex < renderedRange.top) {
+                        notifyOutOfVisibility(row, rowIndex);
+                        console.log("NOTIFY", rowIndex);
+                    }
+                }
+
+                //var isOutOfVisibility = checkIsRowOutOfVisibleRange(rowIndex, renderedRange, 0);
+
+                //if (!isOutOfVisibility && arrayFindIndex(_outOfVisibleRangeRows, rowIndex) >= 0) {
+                //    notifyBackToVisibleWhenDomExist(row, rowIndex);
+                //} else if (isOutOfVisibility) {
+                //    notifyOutOfVisibility(row, rowIndex);
+                //}
+            });
+            _lastRange = renderedRange;
+        }
     }
 
     /**
