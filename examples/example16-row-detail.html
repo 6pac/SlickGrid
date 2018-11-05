@@ -253,12 +253,12 @@
     // notify the onAsyncResponse with the "args.item" (required property)
     // the plugin will then use itemDetail to populate the detail panel with "postTemplate"
     function notifyNonTemplatedView(itemDetail) {
-
+	var rowIdx = grid.getData().getIdxById(itemDetail.id);
 	var temp =
 		"<div class=\"tab\">"+
-		"<button class=\"tablinks\" onclick=\"openCity(event, 'London')\">London</button>" +
-		"<button class=\"tablinks\" onclick=\"openCity(event, 'Paris')\">Paris</button>" +
-		"<button class=\"tablinks\" onclick=\"openCity(event, 'Tokyo')\">Tokyo</button>" +
+		"<button class=\"tablinks\" onclick=\"openCity(event, 'London'," + rowIdx +")\">London</button>" +
+		"<button class=\"tablinks\" onclick=\"openCity(event, 'Paris'," + rowIdx +")\">Paris</button>" +
+		"<button class=\"tablinks\" onclick=\"openCity(event, 'Tokyo'," + rowIdx +")\">Tokyo</button>" +
 		"</div>" +
 
 		"<div id=\"London\" class=\"tabcontent\">" +
@@ -275,7 +275,7 @@
 			"<div>" +
 				"<h4>Direct view inserting without template</h4>" +
 				"<span>This is not using the template</span><br/>" +
-				"<button onclick=\"detailView.resizeDetailView(data[" + itemDetail.id + "])\">Resize detail view</button>" +
+				"<button onclick=\"detailView.resizeDetailView(data[" + rowIdx + "])\">Resize detail view</button>" +
 				"<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>" +
 				"This is to make the loaded area longer" +
 				"<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>" +
@@ -290,7 +290,7 @@
       }, undefined, this);
     }
 
-	function openCity(evt, cityName) {
+	function openCity(evt, cityName, rowIdx) {
     var i, tabcontent, tablinks;
     tabcontent = document.getElementsByClassName("tabcontent");
     for (i = 0; i < tabcontent.length; i++) {
@@ -302,7 +302,9 @@
     }
     document.getElementById(cityName).style.display = "block";
     evt.currentTarget.className += " active";
-}
+	
+		detailView.saveDetailView(data[rowIdx]);
+	}
 
     function randomNumber(min, max) {
       return Math.floor(Math.random() * (max - min + 1) + min);

@@ -617,7 +617,8 @@
       "onBeforeRowDetailToggle": new Slick.Event(),
       "onRowOutOfVisibleRange": new Slick.Event(),
       "onRowBackToVisibleRange": new Slick.Event(),
-      "resizeDetailView": resizeDetailView
+      "resizeDetailView": resizeDetailView,
+	  "saveDetailView": saveDetailView
     });
   }
 })(jQuery);
