@@ -234,16 +234,16 @@
                 // Assume scroll direction is down by default.
                 var scrollDir = 'DOWN';
                 if (_lastRange) {
+					// Some scrolling isn't anything as the range is the same
+                    if (_lastRange.top === renderedRange.top && _lastRange.bottom === renderedRange.bottom) {
+                        return;
+                    }
+					
                     // If our new top is smaller we are scrolling up
                     if (_lastRange.top > renderedRange.top ||
                         // Or we are at very top but our bottom is increasing
                         (_lastRange.top === 0 && renderedRange.top === 0) && _lastRange.bottom > renderedRange.bottom) {
                         scrollDir = 'UP';
-                    }
-
-                    // Some scrolling isn't anything as the range is the same
-                    if (_lastRange.top === renderedRange.top && _lastRange.bottom === renderedRange.bottom) {
-                        return;
                     }
                 }
             }
@@ -269,9 +269,9 @@
                         notifyBackToVisibleWhenDomExist(row, rowIndex);
                         console.log("BACK", rowIndex);
                     }
-                                            
+					
                     // if our first expanded row is about to go off the bottom
-                    if (!rowOutOfRange && (rowIndex + rowPadding) > renderedRange.bottom) {
+                    else if (!rowOutOfRange && (rowIndex + rowPadding) > renderedRange.bottom) {
                         notifyOutOfVisibility(row, rowIndex);
                         console.log("NOTIFY", rowIndex);
                     }
@@ -285,7 +285,7 @@
                     }
 
                     // if our row is outside top of and the buffering zone but not in the array of outOfVisable range notify it
-                    if (!rowOutOfRange && rowIndex < renderedRange.top) {
+                    else if (!rowOutOfRange && rowIndex < renderedRange.top) {
                         notifyOutOfVisibility(row, rowIndex);
                         console.log("NOTIFY", rowIndex);
                     }
