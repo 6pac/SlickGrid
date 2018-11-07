@@ -208,9 +208,7 @@
 
           // IMPORTANT with Row Detail View plugin
           // if the row is a padding row, we just get the value we're filtering on from it's parent
-          if (item._isPadding && item._parent) {
-            item = item._parent;
-          }
+          item = detailView.getFilterItem(item);
 
           if (item[column.field] !== undefined) {
             var filterResult = typeof item[column.field].indexOf === 'function'

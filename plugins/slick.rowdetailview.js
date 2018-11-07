@@ -676,6 +676,14 @@
 	    // Lastly save the updated state
       saveDetailView(item);
     }
+	
+	//Takes in the item we are filtering and if it is an expanded row returns it's parents row to filter on
+	function getFilterItem(item){
+		if (item[_keyPrefix + 'isPadding'] && item[_keyPrefix + 'parent']) {
+			item = item[_keyPrefix + 'parent'];
+		}
+		return item;
+	}
 
     $.extend(this, {
       "init": init,
@@ -693,7 +701,8 @@
       "onRowOutOfVisibleRange": new Slick.Event(),
       "onRowBackToVisibleRange": new Slick.Event(),
       "resizeDetailView": resizeDetailView,
-	    "saveDetailView": saveDetailView
+	  "saveDetailView": saveDetailView,
+	  "getFilterItem": getFilterItem
     });
   }
 })(jQuery);
