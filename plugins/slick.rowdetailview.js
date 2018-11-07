@@ -92,6 +92,7 @@
     var _lastRange = null;
     var _expandedRows = [];
     var _handler = new Slick.EventHandler();
+	var _outsideRange = 5;
     var _defaults = {
       columnId: '_detail_selector',
       cssClass: 'detailView-toggle',
@@ -258,18 +259,17 @@
                 var rowPadding = row[_keyPrefix + 'sizePadding'];
                 var rowOutOfRange = arrayFindIndex(_outOfVisibleRangeRows, rowIndex) >= 0;
 
-                // save the view when asked
-                if (_options.saveDetailViewOnScroll) {
-                    // If the top or bottom item of the range is an expanded row save it.
-                    // This may need to be updated to check within current view port instead
-                    if (rowIndex <= renderedRange.top + _gridRowBuffer || rowIndex >= renderedRange.bottom - _gridRowBuffer) {
-                        saveDetailView(row);
-                    }
-                }
-
-                if (scrollDir === 'UP') {
+                if (scrollDir === 'UP') {					
+					// save the view when asked
+					if (_options.saveDetailViewOnScroll) {
+						// If the bottom item within buffer range is an expanded row save it.
+						if (rowIndex >= renderedRange.bottom - _gridRowBuffer) {
+							saveDetailView(row);
+						}
+					}					
+					
                     // If the row expanded area is within the buffer notify that it is back in range
-                    if (rowOutOfRange && rowIndex - 5 < renderedRange.top && rowIndex >= renderedRange.top) {
+                    if (rowOutOfRange && rowIndex - _outsideRange < renderedRange.top && rowIndex >= renderedRange.top) {
                         notifyBackToVisibleWhenDomExist(row, rowIndex);
                         console.log("BACK", rowIndex);
                     }
@@ -282,8 +282,16 @@
                 }
                 else if (scrollDir === 'DOWN') {
 
+					// save the view when asked
+					if (_options.saveDetailViewOnScroll) {
+						// If the top item within buffer range is an expanded row save it.
+						if (rowIndex <= renderedRange.top + _gridRowBuffer) {
+							saveDetailView(row);
+						}
+					}
+				
                     // If row index is i higher than bottom with some added value (To ignore top rows off view) and is with view and was our of range
-                    if (rowOutOfRange && (rowIndex + rowPadding + 5) > renderedRange.bottom && rowIndex < rowIndex + rowPadding) {
+                    if (rowOutOfRange && (rowIndex + rowPadding + _outsideRange) > renderedRange.bottom && rowIndex < rowIndex + rowPadding) {
                         notifyBackToVisibleWhenDomExist(row, rowIndex);
                         console.log("BACK", rowIndex);
                     }
