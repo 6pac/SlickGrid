@@ -304,6 +304,10 @@
       document.getElementById(cityName).style.display = "block";
       evt.currentTarget.className += " active";
 
+      /* You can save the detail view here OR on the filter keyup
+       the reason we save the detail view is to keep the entire content of the view
+       before doing certain action like filtering/sorting/reorderingColumn/...
+      */
       // detailView.saveDetailView(data[rowIdx]);
     }
 
@@ -384,7 +388,12 @@
       $(grid.getHeaderRow()).on("change keyup", ":input", function (e) {
         var columnId = $(this).data("columnId");
         if (columnId != null) {
-          // we can save the detail view content before filtering
+          /* we can save the detail view content before filtering (this will save on every keyup)
+            OR you can save in other area of your code (like in the "openCity()" function)
+            the reason we save the detail view is to keep the entire content of the view
+            before doing certain action like filtering/sorting/reorderingColumn/...
+            it's up to you to decide where and if you need to save the detail view
+          */
           var expandedRows = detailView.getExpandedRows();
           expandedRows.forEach(function (row) {
             detailView.saveDetailView(row);
