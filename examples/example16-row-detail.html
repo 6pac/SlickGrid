@@ -290,21 +290,22 @@
       }, undefined, this);
     }
 
-	function openCity(evt, cityName, rowIdx) {
-    var i, tabcontent, tablinks;
-    tabcontent = document.getElementsByClassName("tabcontent");
-    for (i = 0; i < tabcontent.length; i++) {
-        tabcontent[i].style.display = "none";
+    /** Callback to open a city from row detail "Task 5" */
+    function openCity(evt, cityName, rowIdx) {
+      var i, tabcontent, tablinks;
+      tabcontent = document.getElementsByClassName("tabcontent");
+      for (i = 0; i < tabcontent.length; i++) {
+          tabcontent[i].style.display = "none";
+      }
+      tablinks = document.getElementsByClassName("tablinks");
+      for (i = 0; i < tablinks.length; i++) {
+          tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+      document.getElementById(cityName).style.display = "block";
+      evt.currentTarget.className += " active";
+
+      // detailView.saveDetailView(data[rowIdx]);
     }
-    tablinks = document.getElementsByClassName("tablinks");
-    for (i = 0; i < tablinks.length; i++) {
-        tablinks[i].className = tablinks[i].className.replace(" active", "");
-    }
-    document.getElementById(cityName).style.display = "block";
-    evt.currentTarget.className += " active";
-	
-		detailView.saveDetailView(data[rowIdx]);
-	}
 
     function randomNumber(min, max) {
       return Math.floor(Math.random() * (max - min + 1) + min);
@@ -383,6 +384,13 @@
       $(grid.getHeaderRow()).on("change keyup", ":input", function (e) {
         var columnId = $(this).data("columnId");
         if (columnId != null) {
+          // we can save the detail view content before filtering
+          var expandedRows = detailView.getExpandedRows();
+          expandedRows.forEach(function (row) {
+            detailView.saveDetailView(row);
+          });
+
+          // keep filter in global variable & filter dataset by calling a refresh
           columnFilters[columnId] = $.trim($(this).val());
           dataView.refresh();
         }

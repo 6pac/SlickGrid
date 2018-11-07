@@ -28,7 +28,11 @@
  *    init:                 initiliaze the plugin
  *    destroy:              destroy the plugin and it's events
  *    collapseAll:          collapse all opened row detail panel
+ *    collapseItem:         collapse a row by passing the item object (row detail)
  *    getColumnDefinition:  get the column definitions
+ *    getExpandedRows:      get all the expanded rows
+ *    resizeDetailView:     resize a row detail view, it will auto-calculate the number of rows it needs
+ *    saveDetailView:       save a row detail view content by passing the row object
  *    getOptions:           get current plugin options
  *    setOptions:           set or change some of the plugin options
  *
@@ -227,7 +231,7 @@
 
 
     function calculateOutOfRangeViews() {
-        if (_grid) {                
+        if (_grid) {
             var renderedRange = _grid.getRenderedRange();
            // Only check if we have expanded rows
             if (_expandedRows.length > 0) {
@@ -238,7 +242,7 @@
                     if (_lastRange.top === renderedRange.top && _lastRange.bottom === renderedRange.bottom) {
                         return;
                     }
-					
+
                     // If our new top is smaller we are scrolling up
                     if (_lastRange.top > renderedRange.top ||
                         // Or we are at very top but our bottom is increasing
@@ -262,14 +266,14 @@
                         saveDetailView(row);
                     }
                 }
-                                    
+
                 if (scrollDir === 'UP') {
                     // If the row expanded area is within the buffer notify that it is back in range
                     if (rowOutOfRange && rowIndex - 5 < renderedRange.top && rowIndex >= renderedRange.top) {
                         notifyBackToVisibleWhenDomExist(row, rowIndex);
                         console.log("BACK", rowIndex);
                     }
-					
+
                     // if our first expanded row is about to go off the bottom
                     else if (!rowOutOfRange && (rowIndex + rowPadding) > renderedRange.bottom) {
                         notifyOutOfVisibility(row, rowIndex);
@@ -277,8 +281,8 @@
                     }
                 }
                 else if (scrollDir === 'DOWN') {
-                    
-                    // If row index is i higher than bottom with some added value (To ignore top rows off view) and is with view and was our of range                    
+
+                    // If row index is i higher than bottom with some added value (To ignore top rows off view) and is with view and was our of range
                     if (rowOutOfRange && (rowIndex + rowPadding + 5) > renderedRange.bottom && rowIndex < rowIndex + rowPadding) {
                         notifyBackToVisibleWhenDomExist(row, rowIndex);
                         console.log("BACK", rowIndex);
@@ -566,6 +570,10 @@
       };
     }
 
+    function getExpandedRows() {
+      return _expandedRows;
+    }
+
     function detailSelectionFormatter(row, cell, value, columnDef, dataContext) {
       if (dataContext[_keyPrefix + 'collapsed'] == undefined) {
         dataContext[_keyPrefix + 'collapsed'] = true,
@@ -667,6 +675,7 @@
       "collapseAll": collapseAll,
       "collapseItem": collapseItem,
       "getColumnDefinition": getColumnDefinition,
+      "getExpandedRows": getExpandedRows,
       "getOptions": getOptions,
       "setOptions": setOptions,
       "onAsyncResponse": new Slick.Event(),
@@ -676,7 +685,7 @@
       "onRowOutOfVisibleRange": new Slick.Event(),
       "onRowBackToVisibleRange": new Slick.Event(),
       "resizeDetailView": resizeDetailView,
-	  "saveDetailView": saveDetailView
+	    "saveDetailView": saveDetailView
     });
   }
 })(jQuery);
