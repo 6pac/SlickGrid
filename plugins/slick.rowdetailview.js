@@ -103,7 +103,8 @@
       collapseAllOnSort: true,
       saveDetailViewOnScroll: true,
       toolTip: '',
-      width: 30
+      width: 30,
+      maxRows: null
     };
     var _keyPrefix = _defaults.keyPrefix;
     var _gridRowBuffer = 0;
@@ -594,15 +595,23 @@
 
       if (dataContext[_keyPrefix + 'isPadding'] == true) {
         // render nothing
-      } else if (dataContext[_keyPrefix + 'collapsed']) {
-		    var collapsedClasses = _options.cssClass + ' expand ';
-		    if (_options.collapsedClass) {
-          collapsedClasses += _options.collapsedClass;
-        }
-		    return '<div class="' + collapsedClasses + '"></div>';
-      } else {
+      }
+	  else if (dataContext[_keyPrefix + 'collapsed']) {
+        var collapsedClasses = _options.cssClass + ' expand ';
+          if (_options.collapsedClass) {
+            collapsedClasses += _options.collapsedClass;
+          }
+        return '<div class="' + collapsedClasses + '"></div>';
+      }
+	  else {
         var html = [];
         var rowHeight = _gridOptions.rowHeight;
+
+        var outterHeight = dataContext[_keyPrefix + 'sizePadding'] * _gridOptions.rowHeight;
+        if (_options.maxRows !== null && dataContext[_keyPrefix + 'sizePadding'] > _options.maxRows) {
+            outterHeight = _options.maxRows * rowHeight;
+            dataContext[_keyPrefix + 'sizePadding'] = _options.maxRows;
+        }
 
         //V313HAX:
         //putting in an extra closing div after the closing toggle div and ommiting a
@@ -618,9 +627,9 @@
         html.push('<div class="' + expandedClasses + '"></div></div>');
 
         html.push('<div class="dynamic-cell-detail cellDetailView_', dataContext.id, '" ');   //apply custom css to detail
-        html.push('style="height:', dataContext[_keyPrefix + 'height'], 'px;'); //set total height of padding
+        html.push('style="height:', outterHeight, 'px;'); //set total height of padding
         html.push('top:', rowHeight, 'px">');             //shift detail below 1st row
-        html.push('<div class="detail-container detailViewContainer_', dataContext.id, '" style="max-height:' + (dataContext._height - rowHeight + 5) + 'px">'); //sub ctr for custom styling
+        html.push('<div class="detail-container detailViewContainer_', dataContext.id, '" style="min-height:' + dataContext[_keyPrefix + 'height'] + 'px">'); //sub ctr for custom styling
         html.push('<div class="innerDetailView_', dataContext.id, '">', dataContext[_keyPrefix + 'detailContent'], '</div></div>');
         // &omit a final closing detail container </div> that would come next
 
@@ -650,14 +659,23 @@
       var rowHeight = _gridOptions.rowHeight; // height of a row
       var lineHeight = 13; // we know cuz we wrote the custom css innit ;)
 
+      // remove the height so we can calculate the height
+      mainContainer.style.minHeight = null;
+
       // Get the scroll height for the main container so we know the actual size of the view
       var itemHeight = mainContainer.scrollHeight;
 
       // Now work out how many rows
-      var rowCount = Math.ceil(itemHeight / rowHeight) + 1;
+      var rowCount = Math.ceil(itemHeight / rowHeight);
 
       item[_keyPrefix + 'sizePadding'] = Math.ceil(((rowCount * 2) * lineHeight) / rowHeight);
-      item[_keyPrefix + 'height'] = (item[_keyPrefix + 'sizePadding'] * rowHeight);
+      item[_keyPrefix + 'height'] = itemHeight;
+
+      var outterHeight = (item[_keyPrefix + 'sizePadding'] * rowHeight);
+      if (_options.maxRows !== null && item[_keyPrefix + 'sizePadding'] > _options.maxRows) {
+        outterHeight = _options.maxRows * rowHeight;
+        item[_keyPrefix + 'sizePadding'] = _options.maxRows;
+      }
 
       // If the padding is now more than the original minRowBuff we need to increase it
       if (_grid.getOptions().minRowBuffer < item[_keyPrefix + 'sizePadding']) {
@@ -665,15 +683,15 @@
         _grid.getOptions().minRowBuffer = item[_keyPrefix + 'sizePadding'] + 3;
       }
 
-      mainContainer.setAttribute('style', 'max-height: ' + item[_keyPrefix + 'height'] + 'px');
-      if (cellItem) cellItem.setAttribute('style', 'height: ' + item[_keyPrefix + 'height'] + 'px; top:' + rowHeight + 'px');
+      mainContainer.setAttribute('style', 'min-height: ' + item[_keyPrefix + 'height'] + 'px');
+      if (cellItem) cellItem.setAttribute('style', 'height: ' + outterHeight + 'px; top:' + rowHeight + 'px');
 
       var idxParent = _dataView.getIdxById(item.id);
       for (var idx = 1; idx <= item[_keyPrefix + 'sizePadding']; idx++) {
         _dataView.insertItem(idxParent + idx, getPaddingItem(item, idx));
       }
 
-	    // Lastly save the updated state
+      // Lastly save the updated state
       saveDetailView(item);
     }
 	
