@@ -37,45 +37,42 @@
       box-sizing: border-box;
     }
 
+    /* Style the tab */
+    .tab {
+      overflow: hidden;
+      border: 1px solid #ccc;
+      background-color: #f1f1f1;
+    }
 
+    /* Style the buttons inside the tab */
+    .tab button {
+      background-color: inherit;
+      float: left;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      transition: 0.3s;
+      font-size: 17px;
+    }
 
+    /* Change background color of buttons on hover */
+    .tab button:hover {
+      background-color: #ddd;
+    }
 
-	/* Style the tab */
-	.tab {
-		overflow: hidden;
-		border: 1px solid #ccc;
-		background-color: #f1f1f1;
-	}
+    /* Create an active/current tablink class */
+    .tab button.active {
+      background-color: #ccc;
+    }
 
-	/* Style the buttons inside the tab */
-	.tab button {
-		background-color: inherit;
-		float: left;
-		border: none;
-		outline: none;
-		cursor: pointer;
-		padding: 14px 16px;
-		transition: 0.3s;
-		font-size: 17px;
-	}
-
-	/* Change background color of buttons on hover */
-	.tab button:hover {
-		background-color: #ddd;
-	}
-
-	/* Create an active/current tablink class */
-	.tab button.active {
-		background-color: #ccc;
-	}
-
-	/* Style the tab content */
-	.tabcontent {
-		display: none;
-		padding: 6px 12px;
-		border: 1px solid #ccc;
-		border-top: none;
-	}
+    /* Style the tab content */
+    .tabcontent {
+      display: none;
+      padding: 6px 12px;
+      border: 1px solid #ccc;
+      border-top: none;
+    }
   </style>
 </head>
 <body>
@@ -103,23 +100,18 @@
       <button onclick="detailView.setOptions({ loadOnce: true, useRowClick: detailView.useRowClick })">Load Once ON</button>
       &nbsp;
       <button onclick="detailView.setOptions({ loadOnce: false, useRowClick: detailView.useRowClick})">Load Once OFF</button>
-      
-	  <p>
-	  <input type="number" id="panelRowInput"/> <button onclick="setPanelRows()">Set Panel Rows Option</button>
-	  </p>
-	  
-	  <p>
-	  <input type="number" id="maxRowInput"/> <button onclick="setMaxRows()">Set Max Panel Rows Option</button>
-	  </p>
-	  
-	  <p>
+	    <p>
+	      <input type="number" id="panelRowInput"/> <button onclick="setPanelRows()">Set Panel Rows Option</button>
+	    </p>
+      <p>
+        <input type="number" id="maxRowInput"/> <button onclick="setMaxRows()">Set Max Panel Rows Option</button>
+      </p>
+	    <p>
         <button onclick="detailView.setOptions({ loadOnce: detailView.loadOnce, useRowClick: true })">Row Click ON</button>
         &nbsp;
         <button onclick="detailView.setOptions({ loadOnce: detailView.loadOnce, useRowClick: false })">Row Click OFF</button>
-        
-		
-		
-		<h2>View Source:</h2>
+
+        <h2>View Source:</h2>
         <ul>
           <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example16-row-detail.html" target="_sourcewindow"> View the source for this example on Github</a></li>
         </ul>
@@ -181,34 +173,28 @@
       this.duration = "5 days";
     }
 
-	function setMaxRows(amount){
-		var value = $("#maxRowInput").val();		
-		var maxRows = parseInt(value);
-		
-		var options = detailView.getOptions();
-				
-		if(!isNaN(maxRows))
-		{
-			options.maxRows = maxRows;	
-		}
-		
-		detailView.setOptions(options);
-	}
-	
-	function setPanelRows(amount){
-		var value = $("#panelRowInput").val();		
-		var panelRows = parseInt(value);
-		
-		var options = detailView.getOptions();
-				
-		if(!isNaN(panelRows))
-		{
-			options.panelRows = panelRows;	
-		}
-		
-		detailView.setOptions(options);
-	}	
-	
+    function setMaxRows(amount) {
+      var value = $("#maxRowInput").val();
+      var maxRows = parseInt(value);
+      var options = detailView.getOptions();
+
+      if(!isNaN(maxRows)) {
+        options.maxRows = maxRows;
+      }
+      detailView.setOptions(options);
+    }
+
+    function setPanelRows(amount) {
+      var value = $("#panelRowInput").val();
+      var panelRows = parseInt(value);
+      var options = detailView.getOptions();
+
+      if(!isNaN(panelRows)) {
+        options.panelRows = panelRows;
+      }
+      detailView.setOptions(options);
+    }
+
     function hookAssigneeOnClick(itemId) {
       $("#who-is-assignee_" + itemId).off("click").on("click", function() {
         alert("Assignee is " + $("#assignee_" + itemId).val());
@@ -291,36 +277,36 @@
     // notify the onAsyncResponse with the "args.item" (required property)
     // the plugin will then use itemDetail to populate the detail panel with "postTemplate"
     function notifyNonTemplatedView(itemDetail) {
-	var rowIdx = grid.getData().getIdxById(itemDetail.id);
-	var temp =
-		"<div class=\"tab\">"+
-		"<button class=\"tablinks\" onclick=\"openCity(event, 'London'," + rowIdx +")\">London</button>" +
-		"<button class=\"tablinks\" onclick=\"openCity(event, 'Paris'," + rowIdx +")\">Paris</button>" +
-		"<button class=\"tablinks\" onclick=\"openCity(event, 'Tokyo'," + rowIdx +")\">Tokyo</button>" +
-		"</div>" +
+	    var rowIdx = grid.getData().getIdxById(itemDetail.id);
+	    var temp =
+        "<div class=\"tab\">"+
+        "<button class=\"tablinks\" onclick=\"openCity(event, 'London'," + rowIdx +")\">London</button>" +
+        "<button class=\"tablinks\" onclick=\"openCity(event, 'Paris'," + rowIdx +")\">Paris</button>" +
+        "<button class=\"tablinks\" onclick=\"openCity(event, 'Tokyo'," + rowIdx +")\">Tokyo</button>" +
+        "</div>" +
 
-		"<div id=\"London\" class=\"tabcontent\">" +
-		"<h3>London</h3>" +
-		"<p>London is the capital city of England.</p>" +
-		"<button onclick=\"detailView.resizeDetailView(data[" + rowIdx + "])\">Resize detail view</button>" +
-		"</div>" +
+        "<div id=\"London\" class=\"tabcontent\">" +
+        "<h3>London</h3>" +
+        "<p>London is the capital city of England.</p>" +
+        "<button onclick=\"detailView.resizeDetailView(data[" + rowIdx + "])\">Resize detail view</button>" +
+        "</div>" +
 
-		"<div id=\"Paris\" class=\"tabcontent\">" +
-		"<h3>Paris</h3>" +
-		"<p>Paris is the capital of France.</p> " +
-		"</div>" +
+        "<div id=\"Paris\" class=\"tabcontent\">" +
+        "<h3>Paris</h3>" +
+        "<p>Paris is the capital of France.</p> " +
+        "</div>" +
 
-		"<div id=\"Tokyo\" class=\"tabcontent\">" +
-			"<div>" +
-				"<h4>Direct view inserting without template</h4>" +
-				"<span>This is not using the template</span><br/>" +
-				"<button onclick=\"detailView.resizeDetailView(data[" + rowIdx + "])\">Resize detail view</button>" +
-				"<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>" +
-				"This is to make the loaded area longer" +
-				"<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>" +
-				"Done Yay" +
-				"</div>" +
-		"</div>";
+        "<div id=\"Tokyo\" class=\"tabcontent\">" +
+          "<div>" +
+            "<h4>Direct view inserting without template</h4>" +
+            "<span>This is not using the template</span><br/>" +
+            "<button onclick=\"detailView.resizeDetailView(data[" + rowIdx + "])\">Resize detail view</button>" +
+            "<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>" +
+            "This is to make the loaded area longer" +
+            "<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>" +
+            "Done Yay" +
+            "</div>" +
+        "</div>";
 
       detailView.onAsyncResponse.notify({
         "item": itemDetail,
@@ -393,6 +379,7 @@
       detailView.onBeforeRowDetailToggle.subscribe(function(e, args) {
         console.log('before toggling row detail', args.item);
       });
+
       detailView.onAfterRowDetailToggle.subscribe(function(e, args) {
         console.log('after toggling row detail', args.item);
         if (args.item._collapsed) {
@@ -401,6 +388,7 @@
 
         }
       });
+
       detailView.onAsyncEndUpdate.subscribe(function(e, args) {
         console.log('finished updating the post async template', args);
         hookAssigneeOnClick(args.item.id);
@@ -408,10 +396,11 @@
 
       // the following subscribers can be useful to Save/Re-Render a View
       // when it goes out of visible or back to visible range
-      detailView.onRowOutOfVisibleRange.subscribe((e, args) => {
+      detailView.onRowOutOfVisibleRange.subscribe(function(e, args) {
         destroyAssigneeOnClick(args.item.id);
       });
-      detailView.onRowBackToVisibleRange.subscribe((e, args) => {
+
+      detailView.onRowBackToVisibleRange.subscribe(function(e, args) {
         hookAssigneeOnClick(args.item.id);
       });
 

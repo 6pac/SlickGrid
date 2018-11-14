@@ -4,9 +4,7 @@
  * https://stackoverflow.com/questions/10535164/can-slickgrids-row-height-be-dynamically-altered#29399927
  * http://violet313.org/slickgrids/#intro
  *
- *
  * USAGE:
- *
  * Add the slick.rowDetailView.(js|css) files and register the plugin with the grid.
  *
  * AVAILABLE ROW DETAIL OPTIONS:
@@ -28,12 +26,14 @@
  *    init:                 initiliaze the plugin
  *    destroy:              destroy the plugin and it's events
  *    collapseAll:          collapse all opened row detail panel
- *    collapseItem:         collapse a row by passing the item object (row detail)
+ *    collapseDetailView:   collapse a row by passing the item object (row detail)
+ *    expandDetailView:     expand a row by passing the item object (row detail)
  *    getColumnDefinition:  get the column definitions
  *    getExpandedRows:      get all the expanded rows
+ *    getFilterItem:        takes in the item we are filtering and if it is an expanded row returns it's parents row to filter on
+ *    getOptions:           get current plugin options
  *    resizeDetailView:     resize a row detail view, it will auto-calculate the number of rows it needs
  *    saveDetailView:       save a row detail view content by passing the row object
- *    getOptions:           get current plugin options
  *    setOptions:           set or change some of the plugin options
  *
  * THE PLUGIN EXPOSES THE FOLLOWING SLICK EVENTS:
@@ -92,7 +92,7 @@
     var _lastRange = null;
     var _expandedRows = [];
     var _handler = new Slick.EventHandler();
-	var _outsideRange = 5;
+    var _outsideRange = 5;
     var _defaults = {
       columnId: '_detail_selector',
       cssClass: 'detailView-toggle',
@@ -227,111 +227,79 @@
     function calculateVisibleRenderedCount() {
       var renderedRange = _grid.getRenderedRange() || {};
       _visibleRenderedCellCount = renderedRange.bottom - renderedRange.top - _gridRowBuffer;
-	    return _visibleRenderedCellCount;
+      return _visibleRenderedCellCount;
     }
 
-
-
+    /** Calculate when expanded rows become out of view range */
     function calculateOutOfRangeViews() {
-        if (_grid) {
-            var renderedRange = _grid.getRenderedRange();
-           // Only check if we have expanded rows
-            if (_expandedRows.length > 0) {
-                // Assume scroll direction is down by default.
-                var scrollDir = 'DOWN';
-                if (_lastRange) {
-					// Some scrolling isn't anything as the range is the same
-                    if (_lastRange.top === renderedRange.top && _lastRange.bottom === renderedRange.bottom) {
-                        return;
-                    }
-
-                    // If our new top is smaller we are scrolling up
-                    if (_lastRange.top > renderedRange.top ||
-                        // Or we are at very top but our bottom is increasing
-                        (_lastRange.top === 0 && renderedRange.top === 0) && _lastRange.bottom > renderedRange.bottom) {
-                        scrollDir = 'UP';
-                    }
-                }
+      if (_grid) {
+        var renderedRange = _grid.getRenderedRange();
+        // Only check if we have expanded rows
+        if (_expandedRows.length > 0) {
+          // Assume scroll direction is down by default.
+          var scrollDir = 'DOWN';
+          if (_lastRange) {
+            // Some scrolling isn't anything as the range is the same
+            if (_lastRange.top === renderedRange.top && _lastRange.bottom === renderedRange.bottom) {
+              return;
             }
 
-            _expandedRows.forEach((row) => {
-                var rowIndex = _dataView.getRowById(row.id);
-
-                var rowPadding = row[_keyPrefix + 'sizePadding'];
-                var rowOutOfRange = arrayFindIndex(_outOfVisibleRangeRows, rowIndex) >= 0;
-
-                if (scrollDir === 'UP') {					
-					// save the view when asked
-					if (_options.saveDetailViewOnScroll) {
-						// If the bottom item within buffer range is an expanded row save it.
-						if (rowIndex >= renderedRange.bottom - _gridRowBuffer) {
-							saveDetailView(row);
-						}
-					}					
-					
-                    // If the row expanded area is within the buffer notify that it is back in range
-                    if (rowOutOfRange && rowIndex - _outsideRange < renderedRange.top && rowIndex >= renderedRange.top) {
-                        notifyBackToVisibleWhenDomExist(row, rowIndex);
-                        console.log("BACK", rowIndex);
-                    }
-
-                    // if our first expanded row is about to go off the bottom
-                    else if (!rowOutOfRange && (rowIndex + rowPadding) > renderedRange.bottom) {
-                        notifyOutOfVisibility(row, rowIndex);
-                        console.log("NOTIFY", rowIndex);
-                    }
-                }
-                else if (scrollDir === 'DOWN') {
-
-					// save the view when asked
-					if (_options.saveDetailViewOnScroll) {
-						// If the top item within buffer range is an expanded row save it.
-						if (rowIndex <= renderedRange.top + _gridRowBuffer) {
-							saveDetailView(row);
-						}
-					}
-				
-                    // If row index is i higher than bottom with some added value (To ignore top rows off view) and is with view and was our of range
-                    if (rowOutOfRange && (rowIndex + rowPadding + _outsideRange) > renderedRange.bottom && rowIndex < rowIndex + rowPadding) {
-                        notifyBackToVisibleWhenDomExist(row, rowIndex);
-                        console.log("BACK", rowIndex);
-                    }
-
-                    // if our row is outside top of and the buffering zone but not in the array of outOfVisable range notify it
-                    else if (!rowOutOfRange && rowIndex < renderedRange.top) {
-                        notifyOutOfVisibility(row, rowIndex);
-                        console.log("NOTIFY", rowIndex);
-                    }
-                }
-
-                //var isOutOfVisibility = checkIsRowOutOfVisibleRange(rowIndex, renderedRange, 0);
-
-                //if (!isOutOfVisibility && arrayFindIndex(_outOfVisibleRangeRows, rowIndex) >= 0) {
-                //    notifyBackToVisibleWhenDomExist(row, rowIndex);
-                //} else if (isOutOfVisibility) {
-                //    notifyOutOfVisibility(row, rowIndex);
-                //}
-            });
-            _lastRange = renderedRange;
+            // If our new top is smaller we are scrolling up
+            if (_lastRange.top > renderedRange.top ||
+              // Or we are at very top but our bottom is increasing
+              (_lastRange.top === 0 && renderedRange.top === 0) && _lastRange.bottom > renderedRange.bottom) {
+              scrollDir = 'UP';
+            }
+          }
         }
-    }
 
-    /**
-     * Check if the row became out of visible range (when user can't see it anymore)
-     * @param rowIndex
-     * @param renderedRange from SlickGrid
-     * @param rowCountToDetectEarlier, number of Rows if we want an earlier detection of the out of visible range
-     */
-    function checkIsRowOutOfVisibleRange(rowIndex, renderedRange, rowCountToDetectEarlier) {
-      // calculate when scrolling up
-  	  if (Math.abs(renderedRange.top - _gridRowBuffer - rowIndex - rowCountToDetectEarlier) > _visibleRenderedCellCount * 2) {
-        return true;
+        _expandedRows.forEach(function (row) {
+          var rowIndex = _dataView.getRowById(row.id);
+
+          var rowPadding = row[_keyPrefix + 'sizePadding'];
+          var rowOutOfRange = arrayFindIndex(_outOfVisibleRangeRows, rowIndex) >= 0;
+
+          if (scrollDir === 'UP') {
+            // save the view when asked
+            if (_options.saveDetailViewOnScroll) {
+              // If the bottom item within buffer range is an expanded row save it.
+              if (rowIndex >= renderedRange.bottom - _gridRowBuffer) {
+                saveDetailView(row);
+              }
+            }
+
+            // If the row expanded area is within the buffer notify that it is back in range
+            if (rowOutOfRange && rowIndex - _outsideRange < renderedRange.top && rowIndex >= renderedRange.top) {
+              notifyBackToVisibleWhenDomExist(row, rowIndex);
+            }
+
+            // if our first expanded row is about to go off the bottom
+            else if (!rowOutOfRange && (rowIndex + rowPadding) > renderedRange.bottom) {
+              notifyOutOfVisibility(row, rowIndex);
+            }
+          }
+          else if (scrollDir === 'DOWN') {
+            // save the view when asked
+            if (_options.saveDetailViewOnScroll) {
+              // If the top item within buffer range is an expanded row save it.
+              if (rowIndex <= renderedRange.top + _gridRowBuffer) {
+                saveDetailView(row);
+              }
+            }
+
+            // If row index is i higher than bottom with some added value (To ignore top rows off view) and is with view and was our of range
+            if (rowOutOfRange && (rowIndex + rowPadding + _outsideRange) > renderedRange.bottom && rowIndex < rowIndex + rowPadding) {
+              notifyBackToVisibleWhenDomExist(row, rowIndex);
+            }
+
+            // if our row is outside top of and the buffering zone but not in the array of outOfVisable range notify it
+            else if (!rowOutOfRange && rowIndex < renderedRange.top) {
+              notifyOutOfVisibility(row, rowIndex);
+            }
+          }
+        });
+        _lastRange = renderedRange;
       }
-      // calculate when scrolling down
-  	  if (Math.abs(renderedRange.bottom - _gridRowBuffer - rowIndex + rowCountToDetectEarlier) > _visibleRenderedCellCount * 2) {
-        return true;
-      }
-      return false;
     }
 
     function notifyOutOfVisibility(item, rowIndex) {
@@ -371,36 +339,6 @@
       return _outOfVisibleRangeRows;
     }
 
-    function handleOnScrollSaveDetailView() {
-      var range = _grid.getRenderedRange();
-      var start = (range.top > 0 ? range.top : 0);
-      var end = (range.bottom > _dataView.getLength() ? range.bottom : _dataView.getLength());
-
-      // Get the item at the top of the view
-      var topMostItem = _dataView.getItemByIdx(start);
-
-      // Check it is a parent item
-      if (topMostItem && topMostItem[_keyPrefix + 'parent'] == undefined) {
-        // This is a standard row as we have no parent.
-        var nextItem = _dataView.getItemByIdx(start + 1);
-        if (nextItem !== undefined && nextItem[_keyPrefix + 'parent'] !== undefined) {
-          // This is likely the expanded Detail Row View
-          // Check for safety
-          if (nextItem[_keyPrefix + 'parent'] == topMostItem) {
-            saveDetailView(topMostItem);
-          }
-        }
-      }
-
-      // Find the bottom most item that is likely to go off screen
-      var bottomMostItem = _dataView.getItemByIdx(end - 1);
-
-      // If we are a detailView and we are about to go out of cache view
-      if (bottomMostItem && bottomMostItem[_keyPrefix + 'parent'] !== undefined) {
-        saveDetailView(bottomMostItem[_keyPrefix + 'parent']);
-      }
-    }
-
     // Toggle between showing and hiding a row
     function toggleRowSelection(row) {
       _dataView.beginUpdate();
@@ -412,13 +350,13 @@
     function collapseAll() {
       _dataView.beginUpdate();
       for (var i = _expandedRows.length - 1; i >= 0; i--) {
-        collapseItem(_expandedRows[i], true);
+        collapseDetailView(_expandedRows[i], true);
       }
       _dataView.endUpdate();
     }
 
     // Colapse an Item so it is not longer seen
-    function collapseItem(item, isMultipleCollapsing) {
+    function collapseDetailView(item, isMultipleCollapsing) {
       if (!isMultipleCollapsing) {
         _dataView.beginUpdate();
       }
@@ -445,7 +383,7 @@
     }
 
     // Expand a row given the dataview item that is to be expanded
-    function expandItem(item) {
+    function expandDetailView(item) {
       item[_keyPrefix + 'collapsed'] = false;
       _expandedRows.push(item);
 
@@ -520,9 +458,9 @@
     function handleAccordionShowHide(item) {
       if (item) {
         if (!item[_keyPrefix + 'collapsed']) {
-          collapseItem(item);
+          collapseDetailView(item);
         } else {
-          expandItem(item);
+          expandDetailView(item);
         }
       }
     }
@@ -586,31 +524,31 @@
     function detailSelectionFormatter(row, cell, value, columnDef, dataContext) {
       if (dataContext[_keyPrefix + 'collapsed'] == undefined) {
         dataContext[_keyPrefix + 'collapsed'] = true,
-        dataContext[_keyPrefix + 'sizePadding'] = 0,     //the required number of pading rows
-        dataContext[_keyPrefix + 'height'] = 0,     //the actual height in pixels of the detail field
-        dataContext[_keyPrefix + 'isPadding'] = false,
-        dataContext[_keyPrefix + 'parent'] = undefined,
-        dataContext[_keyPrefix + 'offset'] = 0
+          dataContext[_keyPrefix + 'sizePadding'] = 0,     //the required number of pading rows
+          dataContext[_keyPrefix + 'height'] = 0,     //the actual height in pixels of the detail field
+          dataContext[_keyPrefix + 'isPadding'] = false,
+          dataContext[_keyPrefix + 'parent'] = undefined,
+          dataContext[_keyPrefix + 'offset'] = 0
       }
 
       if (dataContext[_keyPrefix + 'isPadding'] == true) {
         // render nothing
       }
-	  else if (dataContext[_keyPrefix + 'collapsed']) {
+      else if (dataContext[_keyPrefix + 'collapsed']) {
         var collapsedClasses = _options.cssClass + ' expand ';
-          if (_options.collapsedClass) {
-            collapsedClasses += _options.collapsedClass;
-          }
+        if (_options.collapsedClass) {
+          collapsedClasses += _options.collapsedClass;
+        }
         return '<div class="' + collapsedClasses + '"></div>';
       }
-	  else {
+      else {
         var html = [];
         var rowHeight = _gridOptions.rowHeight;
 
         var outterHeight = dataContext[_keyPrefix + 'sizePadding'] * _gridOptions.rowHeight;
         if (_options.maxRows !== null && dataContext[_keyPrefix + 'sizePadding'] > _options.maxRows) {
-            outterHeight = _options.maxRows * rowHeight;
-            dataContext[_keyPrefix + 'sizePadding'] = _options.maxRows;
+          outterHeight = _options.maxRows * rowHeight;
+          dataContext[_keyPrefix + 'sizePadding'] = _options.maxRows;
         }
 
         //V313HAX:
@@ -694,33 +632,34 @@
       // Lastly save the updated state
       saveDetailView(item);
     }
-	
-	//Takes in the item we are filtering and if it is an expanded row returns it's parents row to filter on
-	function getFilterItem(item){
-		if (item[_keyPrefix + 'isPadding'] && item[_keyPrefix + 'parent']) {
-			item = item[_keyPrefix + 'parent'];
-		}
-		return item;
-	}
+
+    //Takes in the item we are filtering and if it is an expanded row returns it's parents row to filter on
+    function getFilterItem(item) {
+      if (item[_keyPrefix + 'isPadding'] && item[_keyPrefix + 'parent']) {
+        item = item[_keyPrefix + 'parent'];
+      }
+      return item;
+    }
 
     $.extend(this, {
       "init": init,
       "destroy": destroy,
       "collapseAll": collapseAll,
-      "collapseItem": collapseItem,
+      "collapseDetailView": collapseDetailView,
+      "expandDetailView": expandDetailView,
       "getColumnDefinition": getColumnDefinition,
       "getExpandedRows": getExpandedRows,
+      "getFilterItem": getFilterItem,
       "getOptions": getOptions,
+      "resizeDetailView": resizeDetailView,
+      "saveDetailView": saveDetailView,
       "setOptions": setOptions,
       "onAsyncResponse": new Slick.Event(),
       "onAsyncEndUpdate": new Slick.Event(),
       "onAfterRowDetailToggle": new Slick.Event(),
       "onBeforeRowDetailToggle": new Slick.Event(),
       "onRowOutOfVisibleRange": new Slick.Event(),
-      "onRowBackToVisibleRange": new Slick.Event(),
-      "resizeDetailView": resizeDetailView,
-	  "saveDetailView": saveDetailView,
-	  "getFilterItem": getFilterItem
+      "onRowBackToVisibleRange": new Slick.Event()
     });
   }
 })(jQuery);
