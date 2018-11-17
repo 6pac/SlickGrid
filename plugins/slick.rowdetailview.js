@@ -20,7 +20,6 @@
  *    keyPrefix:              Defaults to '_', prefix used for all the plugin metadata added to the item object (meta e.g.: padding, collapsed, parent)
  *    collapseAllOnSort:      Defaults to true, which will collapse all row detail views when user calls a sort. Unless user implements a sort to deal with padding
  *    saveDetailViewOnScroll: Defaults to true, which will save the row detail view in a cache when it detects that it will become out of the viewport buffer
- *    outOfVisibleDetectEarlierRows: Number of Rows if we want an earlier detection of the out of visible range
  *
  * AVAILABLE PUBLIC OPTIONS:
  *    init:                 initiliaze the plugin
@@ -58,21 +57,21 @@
  *        item:         Item data context
  *        expandedRows: Array of the Expanded Rows
  *
- *    onRowOutOfVisibleRange: Fired after a row becomes out of visible range (user can't see the row anymore)
+ *    onRowOutOfViewportRange: Fired after a row becomes out of viewport range (user can't see the row anymore)
  *      Event args:
  *        grid:         Reference to the grid.
  *        item:         Item data context
  *        rowIndex:     Index of the Row in the Grid
  *        expandedRows: Array of the Expanded Rows
- *        outOfVisibleRangeRows: Array of the Out of Visible Range Rows
+ *        rowsOutOfViewport: Array of the Out of viewport Range Rows
  *
- *    onRowBackToVisibleRange: Fired after the row detail gets toggled
+ *    onRowBackToViewportRange: Fired after the row detail gets toggled
  *      Event args:
  *        grid:         Reference to the grid.
  *        item:         Item data context
  *        rowIndex:     Index of the Row in the Grid
  *        expandedRows: Array of the Expanded Rows
- *        outOfVisibleRangeRows: Array of the Out of Visible Range Rows
+ *        rowsOutOfViewport: Array of the Out of viewport Range Rows
  */
 (function ($) {
   // register namespace
@@ -108,8 +107,8 @@
     };
     var _keyPrefix = _defaults.keyPrefix;
     var _gridRowBuffer = 0;
-    var _outOfVisibleRangeRows = [];
-    var _visibleRenderedCellCount = 0;
+    var _rowsOutOfViewport = [];
+    var _viewportRenderedCellCount = 0;
     var _options = $.extend(true, {}, _defaults, options);
 
     function init(grid) {
@@ -134,7 +133,7 @@
       if (_options.collapseAllOnSort) {
         _handler.subscribe(_grid.onSort, collapseAll);
         _expandedRows = [];
-        _outOfVisibleRangeRows = [];
+        _rowsOutOfViewport = [];
       }
 
       _grid.getData().onRowCountChanged.subscribe(function () {
@@ -150,8 +149,8 @@
       // subscribe to the onAsyncResponse so that the plugin knows when the user server side calls finished
       subscribeToOnAsyncResponse();
 
-      setTimeout(calculateVisibleRenderedCount, 250);
-      $(window).on('resize', calculateVisibleRenderedCount);
+      setTimeout(calculateViewportRenderedCount, 250);
+      $(window).on('resize', calculateViewportRenderedCount);
     }
 
     function destroy() {
@@ -160,8 +159,8 @@
       _self.onAsyncEndUpdate.unsubscribe();
       _self.onAfterRowDetailToggle.unsubscribe();
       _self.onBeforeRowDetailToggle.unsubscribe();
-      _self.onRowOutOfVisibleRange.unsubscribe();
-      _self.onRowBackToVisibleRange.unsubscribe();
+      _self.onRowOutOfViewportRange.unsubscribe();
+      _self.onRowBackToViewportRange.unsubscribe();
       $(window).off('resize');
     }
 
@@ -219,15 +218,12 @@
     // If we scroll save detail views that go out of cache range
     function handleScroll(e, args) {
       calculateOutOfRangeViews();
-      if (_options.saveDetailViewOnScroll) {
-        // handleOnScrollSaveDetailView();
-      }
     }
 
-    function calculateVisibleRenderedCount() {
+    function calculateViewportRenderedCount() {
       var renderedRange = _grid.getRenderedRange() || {};
-      _visibleRenderedCellCount = renderedRange.bottom - renderedRange.top - _gridRowBuffer;
-      return _visibleRenderedCellCount;
+      _viewportRenderedCellCount = renderedRange.bottom - renderedRange.top - _gridRowBuffer;
+      return _viewportRenderedCellCount;
     }
 
     /** Calculate when expanded rows become out of view range */
@@ -257,7 +253,7 @@
           var rowIndex = _dataView.getRowById(row.id);
 
           var rowPadding = row[_keyPrefix + 'sizePadding'];
-          var rowOutOfRange = arrayFindIndex(_outOfVisibleRangeRows, rowIndex) >= 0;
+          var rowOutOfRange = arrayFindIndex(_rowsOutOfViewport, rowIndex) >= 0;
 
           if (scrollDir === 'UP') {
             // save the view when asked
@@ -270,12 +266,12 @@
 
             // If the row expanded area is within the buffer notify that it is back in range
             if (rowOutOfRange && rowIndex - _outsideRange < renderedRange.top && rowIndex >= renderedRange.top) {
-              notifyBackToVisibleWhenDomExist(row, rowIndex);
+              notifyBackToViewportWhenDomExist(row, rowIndex);
             }
 
             // if our first expanded row is about to go off the bottom
             else if (!rowOutOfRange && (rowIndex + rowPadding) > renderedRange.bottom) {
-              notifyOutOfVisibility(row, rowIndex);
+              notifyOutOfViewport(row, rowIndex);
             }
           }
           else if (scrollDir === 'DOWN') {
@@ -289,12 +285,12 @@
 
             // If row index is i higher than bottom with some added value (To ignore top rows off view) and is with view and was our of range
             if (rowOutOfRange && (rowIndex + rowPadding + _outsideRange) > renderedRange.bottom && rowIndex < rowIndex + rowPadding) {
-              notifyBackToVisibleWhenDomExist(row, rowIndex);
+              notifyBackToViewportWhenDomExist(row, rowIndex);
             }
 
             // if our row is outside top of and the buffering zone but not in the array of outOfVisable range notify it
             else if (!rowOutOfRange && rowIndex < renderedRange.top) {
-              notifyOutOfVisibility(row, rowIndex);
+              notifyOutOfViewport(row, rowIndex);
             }
           }
         });
@@ -302,41 +298,41 @@
       }
     }
 
-    function notifyOutOfVisibility(item, rowIndex) {
-      _self.onRowOutOfVisibleRange.notify({
+    function notifyOutOfViewport(item, rowIndex) {
+      _self.onRowOutOfViewportRange.notify({
         'grid': _grid,
         'item': item,
         'rowIndex': rowIndex,
         'expandedRows': _expandedRows,
-        'outOfVisibleRangeRows': updateOutOfVisibleArrayWhenNecessary(rowIndex, true)
+        'rowsOutOfViewport': updateOutOfViewportArrayWhenNecessary(rowIndex, true)
       }, null, _self);
     }
 
-    function notifyBackToVisibleWhenDomExist(item, rowIndex) {
+    function notifyBackToViewportWhenDomExist(item, rowIndex) {
       var rowIndex = item.rowIndex || _dataView.getRowById(item.id);
       setTimeout(function() {
         // make sure View Row DOM Element really exist before notifying that it's a row that is visible again
         if ($('.cellDetailView_' + item.id).length) {
-          _self.onRowBackToVisibleRange.notify({
+          _self.onRowBackToViewportRange.notify({
             'grid': _grid,
             'item': item,
             'rowIndex': rowIndex,
             'expandedRows': _expandedRows,
-            'outOfVisibleRangeRows': updateOutOfVisibleArrayWhenNecessary(rowIndex, false)
+            'rowsOutOfViewport': updateOutOfViewportArrayWhenNecessary(rowIndex, false)
           }, null, _self);
         }
       }, 100);
     }
 
-    function updateOutOfVisibleArrayWhenNecessary(rowIndex, isAdding) {
-      var arrayRowIndex = arrayFindIndex(_outOfVisibleRangeRows, rowIndex);
+    function updateOutOfViewportArrayWhenNecessary(rowIndex, isAdding) {
+      var arrayRowIndex = arrayFindIndex(_rowsOutOfViewport, rowIndex);
 
       if (isAdding && arrayRowIndex < 0) {
-        _outOfVisibleRangeRows.push(rowIndex);
+        _rowsOutOfViewport.push(rowIndex);
       } else if (!isAdding && arrayRowIndex >= 0) {
-        _outOfVisibleRangeRows.splice(arrayRowIndex, 1);
+        _rowsOutOfViewport.splice(arrayRowIndex, 1);
       }
-      return _outOfVisibleRangeRows;
+      return _rowsOutOfViewport;
     }
 
     // Toggle between showing and hiding a row
@@ -633,7 +629,7 @@
       saveDetailView(item);
     }
 
-    //Takes in the item we are filtering and if it is an expanded row returns it's parents row to filter on
+    // Takes in the item we are filtering and if it is an expanded row returns it's parents row to filter on
     function getFilterItem(item) {
       if (item[_keyPrefix + 'isPadding'] && item[_keyPrefix + 'parent']) {
         item = item[_keyPrefix + 'parent'];
@@ -654,12 +650,14 @@
       "resizeDetailView": resizeDetailView,
       "saveDetailView": saveDetailView,
       "setOptions": setOptions,
+
+      // events
       "onAsyncResponse": new Slick.Event(),
       "onAsyncEndUpdate": new Slick.Event(),
       "onAfterRowDetailToggle": new Slick.Event(),
       "onBeforeRowDetailToggle": new Slick.Event(),
-      "onRowOutOfVisibleRange": new Slick.Event(),
-      "onRowBackToVisibleRange": new Slick.Event()
+      "onRowOutOfViewportRange": new Slick.Event(),
+      "onRowBackToViewportRange": new Slick.Event()
     });
   }
 })(jQuery);
