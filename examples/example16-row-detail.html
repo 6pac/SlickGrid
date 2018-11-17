@@ -359,7 +359,6 @@
         postTemplate: loadView,
         process: simulateServerCall,
         useRowClick: true,
-        outOfVisibleDetectEarlierRows: 7, // for an earlier detection (out of visible range)
 
         // how many grid rows do we want to use for the detail panel
         // also note that the detail view adds an extra 1 row for padding purposes
@@ -395,12 +394,12 @@
       });
 
       // the following subscribers can be useful to Save/Re-Render a View
-      // when it goes out of visible or back to visible range
-      detailView.onRowOutOfVisibleRange.subscribe(function(e, args) {
+      // when it goes out of viewport or back to viewport range
+      detailView.onRowOutOfViewportRange.subscribe(function(e, args) {
         destroyAssigneeOnClick(args.item.id);
       });
 
-      detailView.onRowBackToVisibleRange.subscribe(function(e, args) {
+      detailView.onRowBackToViewportRange.subscribe(function(e, args) {
         hookAssigneeOnClick(args.item.id);
       });
 
