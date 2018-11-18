@@ -83,6 +83,7 @@
     }
   });
 
+  /** Constructor of the Row Detail View Plugin */
   function RowDetailView(options) {
     var _grid;
     var _gridOptions;
@@ -108,9 +109,12 @@
     var _keyPrefix = _defaults.keyPrefix;
     var _gridRowBuffer = 0;
     var _rowsOutOfViewport = [];
-    var _viewportRenderedCellCount = 0;
     var _options = $.extend(true, {}, _defaults, options);
 
+    /**
+     * Initialize the plugin, which requires user to pass the SlickGrid Grid object
+     * @param grid: SlickGrid Grid object
+     */
     function init(grid) {
       if (!grid) {
         throw new Error('RowDetailView Plugin requires the Grid instance to be passed as argument to the "init()" method');
@@ -148,11 +152,9 @@
 
       // subscribe to the onAsyncResponse so that the plugin knows when the user server side calls finished
       subscribeToOnAsyncResponse();
-
-      setTimeout(calculateViewportRenderedCount, 250);
-      $(window).on('resize', calculateViewportRenderedCount);
     }
 
+    /** destroy the plugin and it's events */
     function destroy() {
       _handler.unsubscribeAll();
       _self.onAsyncResponse.unsubscribe();
@@ -164,14 +166,17 @@
       $(window).off('resize');
     }
 
+    /** Get current plugin options */
     function getOptions() {
       return _options;
     }
 
+    /** set or change some of the plugin options */
     function setOptions(options) {
       _options = $.extend(true, {}, _options, options);
     }
 
+    /** Find a value in an array and return the index when (or -1 when not found) */
     function arrayFindIndex(sourceArray, value) {
       if (sourceArray) {
         for (var i = 0; i < sourceArray.length; i++) {
@@ -183,6 +188,7 @@
       return -1;
     }
 
+    /** Handle mouse click event */
     function handleClick(e, args) {
       // clicking on a row select checkbox
       if (_options.useRowClick || _grid.getColumns()[args.cell].id === _options.columnId && $(e.target).hasClass(_options.cssClass)) {
@@ -215,15 +221,9 @@
       }
     }
 
-    // If we scroll save detail views that go out of cache range
+    /** If we scroll save detail views that go out of cache range */
     function handleScroll(e, args) {
       calculateOutOfRangeViews();
-    }
-
-    function calculateViewportRenderedCount() {
-      var renderedRange = _grid.getRenderedRange() || {};
-      _viewportRenderedCellCount = renderedRange.bottom - renderedRange.top - _gridRowBuffer;
-      return _viewportRenderedCellCount;
     }
 
     /** Calculate when expanded rows become out of view range */
@@ -298,16 +298,18 @@
       }
     }
 
+    /** Send a notification, through "onRowOutOfViewportRange", that is out of the viewport range */
     function notifyOutOfViewport(item, rowIndex) {
       _self.onRowOutOfViewportRange.notify({
         'grid': _grid,
         'item': item,
         'rowIndex': rowIndex,
         'expandedRows': _expandedRows,
-        'rowsOutOfViewport': updateOutOfViewportArrayWhenNecessary(rowIndex, true)
+        'rowsOutOfViewport': syncOutOfViewportArray(rowIndex, true)
       }, null, _self);
     }
 
+    /** Send a notification, through "onRowBackToViewportRange", that a row came back to the viewport */
     function notifyBackToViewportWhenDomExist(item, rowIndex) {
       var rowIndex = item.rowIndex || _dataView.getRowById(item.id);
       setTimeout(function() {
@@ -318,13 +320,19 @@
             'item': item,
             'rowIndex': rowIndex,
             'expandedRows': _expandedRows,
-            'rowsOutOfViewport': updateOutOfViewportArrayWhenNecessary(rowIndex, false)
+            'rowsOutOfViewport': syncOutOfViewportArray(rowIndex, false)
           }, null, _self);
         }
       }, 100);
     }
 
-    function updateOutOfViewportArrayWhenNecessary(rowIndex, isAdding) {
+    /**
+     * This function will sync the out of viewport array whenever necessary.
+     * The sync can add a row (when necessary, no need to add again if it already exist) or delete a row from the array.
+     * @param rowIndex: number
+     * @param isAdding: are we adding or removing a row?
+     */
+    function syncOutOfViewportArray(rowIndex, isAdding) {
       var arrayRowIndex = arrayFindIndex(_rowsOutOfViewport, rowIndex);
 
       if (isAdding && arrayRowIndex < 0) {
@@ -342,7 +350,7 @@
       _dataView.endUpdate();
     }
 
-    // Collapse all of the open items
+    /** Collapse all of the open items */
     function collapseAll() {
       _dataView.beginUpdate();
       for (var i = _expandedRows.length - 1; i >= 0; i--) {
@@ -351,7 +359,7 @@
       _dataView.endUpdate();
     }
 
-    // Colapse an Item so it is not longer seen
+    /** Colapse an Item so it is not longer seen */
     function collapseDetailView(item, isMultipleCollapsing) {
       if (!isMultipleCollapsing) {
         _dataView.beginUpdate();
@@ -378,7 +386,7 @@
       }
     }
 
-    // Expand a row given the dataview item that is to be expanded
+    /** Expand a row given the dataview item that is to be expanded */
     function expandDetailView(item) {
       item[_keyPrefix + 'collapsed'] = false;
       _expandedRows.push(item);
@@ -408,7 +416,7 @@
       _options.process(item);
     }
 
-    // Saves the current state of the detail view
+    /** Saves the current state of the detail view */
     function saveDetailView(item) {
       var view = $('.' + _gridUid + ' .innerDetailView_' + item.id);
       if (view) {
@@ -451,6 +459,7 @@
       });
     }
 
+    /** When row is getting toggled, we will handle the action of collapsing/expanding */
     function handleAccordionShowHide(item) {
       if (item) {
         if (!item[_keyPrefix + 'collapsed']) {
@@ -463,6 +472,8 @@
 
     //////////////////////////////////////////////////////////////
     //////////////////////////////////////////////////////////////
+
+    /** Get the Row Detail padding (which are the rows dedicated to the detail panel) */
     var getPaddingItem = function (parent, offset) {
       var item = {};
 
@@ -498,7 +509,7 @@
       }
     }
 
-
+    /** Get the Column Definition of the first column dedicated to toggling the Row Detail View */
     function getColumnDefinition() {
       return {
         id: _options.columnId,
@@ -513,10 +524,12 @@
       };
     }
 
+    /** return the currently expanded rows */
     function getExpandedRows() {
       return _expandedRows;
     }
 
+    /** The Formatter of the toggling icon of the Row Detail */
     function detailSelectionFormatter(row, cell, value, columnDef, dataContext) {
       if (dataContext[_keyPrefix + 'collapsed'] == undefined) {
         dataContext[_keyPrefix + 'collapsed'] = true,
@@ -572,6 +585,7 @@
       return null;
     }
 
+    /** Resize the Row Detail View */
     function resizeDetailView(item) {
       if (!item) {
         return;
@@ -629,7 +643,7 @@
       saveDetailView(item);
     }
 
-    // Takes in the item we are filtering and if it is an expanded row returns it's parents row to filter on
+    /** Takes in the item we are filtering and if it is an expanded row returns it's parents row to filter on */
     function getFilterItem(item) {
       if (item[_keyPrefix + 'isPadding'] && item[_keyPrefix + 'parent']) {
         item = item[_keyPrefix + 'parent'];
