@@ -191,25 +191,14 @@
         visibleColumns = removeColumnByIndex(visibleColumns, columnIndex);
         grid.setColumns(visibleColumns);
 			}else if(args.command === "sort-asc" || args.command === "sort-desc") {
-        // get previously sorted columns
-        // getSortColumns() only returns sortAsc & columnId, we want the entire column definition
-        var oldSortColumns = grid.getSortColumns();
-        var cols = $.map(oldSortColumns, function(col) {
-          // get the column definition but only keep column which are not equal to our current column
-          if(col.columnId !== args.column.id) {
-            return {sortCol: columns[grid.getColumnIndex(col.columnId)], sortAsc: col.sortAsc };
+	// Fix sorting after hiding a column when "multiColumnSort" = true
+          var cols = grid.getSortColumns().map(function(col) {
+            return {columnId: col.columnId, sortAsc: col.columnId === args.column.id ? args.command === "sort-asc" : col.sortAsc };
+          });
+          if(cols.findIndex(function(col) { return col.columnId === args.column.id; }) === -1) {
+            cols.push({columnId: args.column.id, sortAsc: args.command === "sort-asc" });
           }
-				});
-
-        // add to the column array, the column sorted by the header menu
-				var isSortedAsc = (args.command === "sort-asc");
-				cols.push({ sortAsc: isSortedAsc, sortCol: args.column });
-
-				// update the grid sortColumns array which will at the same add the visual sort icon(s) on the UI
-				newSortColumns = $.map(cols, function(col) {
-					return {columnId: col.sortCol.id, sortAsc: col.sortAsc };
-				});
-				grid.setSortColumns(newSortColumns);
+          grid.setSortColumns(cols);
 				executeSort(cols);
 			}else {
 				alert("Command: " + args.command);
