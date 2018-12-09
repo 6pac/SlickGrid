@@ -243,7 +243,7 @@
 	
 	  function calculateViewportRenderedCount() {
       var renderedRange = _grid.getRenderedRange() || {};
-      _visibleRenderedCellCount = renderedRange.bottom - renderedRange.top - (_gridRowBuffer * 2);
+      _visibleRenderedCellCount = renderedRange.bottom - renderedRange.top - _gridRowBuffer;
     }
 
     /** Calculate when expanded rows become out of view range */
