@@ -62,17 +62,19 @@
  *      Event args:
  *        grid:         Reference to the grid.
  *        item:         Item data context
+ *        rowId:        Id of the Row object (datacontext) in the Grid
  *        rowIndex:     Index of the Row in the Grid
  *        expandedRows: Array of the Expanded Rows
- *        rowsOutOfViewport: Array of the Out of viewport Range Rows
+ *        rowIdsOutOfViewport: Array of the Out of viewport Range Rows
  *
  *    onRowBackToViewportRange: Fired after the row detail gets toggled
  *      Event args:
  *        grid:         Reference to the grid.
  *        item:         Item data context
+ *        rowId:        Id of the Row object (datacontext) in the Grid
  *        rowIndex:     Index of the Row in the Grid
  *        expandedRows: Array of the Expanded Rows
- *        rowsOutOfViewport: Array of the Out of viewport Range Rows
+ *        rowIdsOutOfViewport: Array of the Out of viewport Range Rows
  */
 (function ($) {
   // register namespace
@@ -111,7 +113,7 @@
     };
     var _keyPrefix = _defaults.keyPrefix;
     var _gridRowBuffer = 0;
-    var _rowsOutOfViewport = [];
+    var _rowIdsOutOfViewport = [];
     var _options = $.extend(true, {}, _defaults, options);
 
     /**
@@ -140,7 +142,7 @@
       if (_options.collapseAllOnSort) {
         _handler.subscribe(_grid.onSort, collapseAll);
         _expandedRows = [];
-        _rowsOutOfViewport = [];
+        _rowIdsOutOfViewport = [];
       }
 
       _grid.getData().onRowCountChanged.subscribe(function () {
@@ -273,7 +275,7 @@
           var rowIndex = _dataView.getRowById(row.id);
 
           var rowPadding = row[_keyPrefix + 'sizePadding'];
-          var rowOutOfRange = arrayFindIndex(_rowsOutOfViewport, rowIndex) >= 0;
+          var rowOutOfRange = arrayFindIndex(_rowIdsOutOfViewport, row.id) >= 0;
 
           if (scrollDir === 'UP') {
             // save the view when asked
@@ -286,12 +288,12 @@
 
             // If the row expanded area is within the buffer notify that it is back in range
             if (rowOutOfRange && rowIndex - _outsideRange < renderedRange.top && rowIndex >= renderedRange.top) {
-              notifyBackToViewportWhenDomExist(row, rowIndex);
+              notifyBackToViewportWhenDomExist(row, row.id);
             }
 
             // if our first expanded row is about to go off the bottom
             else if (!rowOutOfRange && (rowIndex + rowPadding) > renderedRange.bottom) {
-              notifyOutOfViewport(row, rowIndex);
+              notifyOutOfViewport(row, row.id);
             }
           }
           else if (scrollDir === 'DOWN') {
@@ -305,12 +307,12 @@
 
             // If row index is i higher than bottom with some added value (To ignore top rows off view) and is with view and was our of range
             if (rowOutOfRange && (rowIndex + rowPadding + _outsideRange) > renderedRange.bottom && rowIndex < rowIndex + rowPadding) {
-              notifyBackToViewportWhenDomExist(row, rowIndex);
+              notifyBackToViewportWhenDomExist(row, row.id);
             }
 
             // if our row is outside top of and the buffering zone but not in the array of outOfVisable range notify it
             else if (!rowOutOfRange && rowIndex < renderedRange.top) {
-              notifyOutOfViewport(row, rowIndex);
+              notifyOutOfViewport(row, row.id);
             }
           }
         });
@@ -326,10 +328,10 @@
         _expandedRows.forEach(function (row) {
           var rowIndex = _dataView.getRowById(row.id);
           var isOutOfVisibility = checkIsRowOutOfViewportRange(rowIndex, renderedRange);
-          if (!isOutOfVisibility && arrayFindIndex(_rowsOutOfViewport, rowIndex) >= 0) {
-            notifyBackToViewportWhenDomExist(row, rowIndex);
+          if (!isOutOfVisibility && arrayFindIndex(_rowIdsOutOfViewport, row.id) >= 0) {
+            notifyBackToViewportWhenDomExist(row, row.id);
           } else if (isOutOfVisibility) {
-            notifyOutOfViewport(row, rowIndex);
+            notifyOutOfViewport(row, row.id);
           }
         });
       }
@@ -348,28 +350,33 @@
     }
 
     /** Send a notification, through "onRowOutOfViewportRange", that is out of the viewport range */
-    function notifyOutOfViewport(item, rowIndex) {
+    function notifyOutOfViewport(item, rowId) {
+      var rowIndex = item.rowIndex || _dataView.getRowById(item.id);
+
       _self.onRowOutOfViewportRange.notify({
         'grid': _grid,
         'item': item,
+        'rowId': rowId,
         'rowIndex': rowIndex,
         'expandedRows': _expandedRows,
-        'rowsOutOfViewport': syncOutOfViewportArray(rowIndex, true)
+        'rowIdsOutOfViewport': syncOutOfViewportArray(rowId, true)
       }, null, _self);
     }
 
     /** Send a notification, through "onRowBackToViewportRange", that a row came back to the viewport */
-    function notifyBackToViewportWhenDomExist(item, rowIndex) {
+    function notifyBackToViewportWhenDomExist(item, rowId) {
       var rowIndex = item.rowIndex || _dataView.getRowById(item.id);
+
       setTimeout(function() {
         // make sure View Row DOM Element really exist before notifying that it's a row that is visible again
         if ($('.cellDetailView_' + item.id).length) {
           _self.onRowBackToViewportRange.notify({
             'grid': _grid,
             'item': item,
+            'rowId': rowId,
             'rowIndex': rowIndex,
             'expandedRows': _expandedRows,
-            'rowsOutOfViewport': syncOutOfViewportArray(rowIndex, false)
+            'rowIdsOutOfViewport': syncOutOfViewportArray(rowId, false)
           }, null, _self);
         }
       }, 100);
@@ -378,18 +385,18 @@
     /**
      * This function will sync the out of viewport array whenever necessary.
      * The sync can add a row (when necessary, no need to add again if it already exist) or delete a row from the array.
-     * @param rowIndex: number
+     * @param rowId: number
      * @param isAdding: are we adding or removing a row?
      */
-    function syncOutOfViewportArray(rowIndex, isAdding) {
-      var arrayRowIndex = arrayFindIndex(_rowsOutOfViewport, rowIndex);
+    function syncOutOfViewportArray(rowId, isAdding) {
+      var arrayRowIndex = arrayFindIndex(_rowIdsOutOfViewport, rowId);
 
       if (isAdding && arrayRowIndex < 0) {
-        _rowsOutOfViewport.push(rowIndex);
+        _rowIdsOutOfViewport.push(rowId);
       } else if (!isAdding && arrayRowIndex >= 0) {
-        _rowsOutOfViewport.splice(arrayRowIndex, 1);
+        _rowIdsOutOfViewport.splice(arrayRowIndex, 1);
       }
-      return _rowsOutOfViewport;
+      return _rowIdsOutOfViewport;
     }
 
     // Toggle between showing and hiding a row
