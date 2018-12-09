@@ -20,6 +20,7 @@
  *    keyPrefix:              Defaults to '_', prefix used for all the plugin metadata added to the item object (meta e.g.: padding, collapsed, parent)
  *    collapseAllOnSort:      Defaults to true, which will collapse all row detail views when user calls a sort. Unless user implements a sort to deal with padding
  *    saveDetailViewOnScroll: Defaults to true, which will save the row detail view in a cache when it detects that it will become out of the viewport buffer
+ *    useSimpleViewportCalc:  Defaults to false, which will use simplified calculation of out or back of viewport visibility
  *
  * AVAILABLE PUBLIC OPTIONS:
  *    init:                 initiliaze the plugin
@@ -93,6 +94,7 @@
     var _expandedRows = [];
     var _handler = new Slick.EventHandler();
     var _outsideRange = 5;
+	  var _visibleRenderedCellCount = 0;
     var _defaults = {
       columnId: '_detail_selector',
       cssClass: 'detailView-toggle',
@@ -102,6 +104,7 @@
       loadOnce: false,
       collapseAllOnSort: true,
       saveDetailViewOnScroll: true,
+      useSimpleViewportCalc: false,
       toolTip: '',
       width: 30,
       maxRows: null
@@ -152,6 +155,14 @@
 
       // subscribe to the onAsyncResponse so that the plugin knows when the user server side calls finished
       subscribeToOnAsyncResponse();
+    
+      // if we use the alternative & simpler calculation of the out of viewport range
+      // we will need to know how many rows are rendered on the screen and we need to wait for grid to be rendered
+      // unfortunately there is no triggered event for knowing when grid is finished, so we use 250ms delay and it's typically more than enough
+      if (_options.useSimpleViewportCalc) {
+        setTimeout(calculateViewportRenderedCount, 250);
+        $(window).on('resize', calculateViewportRenderedCount);
+      }
     }
 
     /** destroy the plugin and it's events */
@@ -223,7 +234,16 @@
 
     /** If we scroll save detail views that go out of cache range */
     function handleScroll(e, args) {
-      calculateOutOfRangeViews();
+      if (_options.useSimpleViewportCalc) {
+        calculateOutOfRangeViewsSimplerVersion();
+      } else {
+        calculateOutOfRangeViews();
+      }
+    }
+	
+	  function calculateViewportRenderedCount() {
+      var renderedRange = _grid.getRenderedRange() || {};
+      _visibleRenderedCellCount = renderedRange.bottom - renderedRange.top - (_gridRowBuffer * 2);
     }
 
     /** Calculate when expanded rows become out of view range */
@@ -296,6 +316,35 @@
         });
         _lastRange = renderedRange;
       }
+    }
+
+    /** This is an alternative & more simpler version of the Calculate when expanded rows become out of view range */
+    function calculateOutOfRangeViewsSimplerVersion() {
+      if (_grid) {
+        var renderedRange = _grid.getRenderedRange();
+
+        _expandedRows.forEach(function (row) {
+          var rowIndex = _dataView.getRowById(row.id);
+          var isOutOfVisibility = checkIsRowOutOfViewportRange(rowIndex, renderedRange);
+          if (!isOutOfVisibility && arrayFindIndex(_rowsOutOfViewport, rowIndex) >= 0) {
+            notifyBackToViewportWhenDomExist(row, rowIndex);
+          } else if (isOutOfVisibility) {
+            notifyOutOfViewport(row, rowIndex);
+          }
+        });
+      }
+    }
+	
+	  /**
+     * Check if the row became out of visible range (when user can't see it anymore)
+     * @param rowIndex
+     * @param renderedRange from SlickGrid
+     */
+    function checkIsRowOutOfViewportRange(rowIndex, renderedRange) {
+  	  if (Math.abs(renderedRange.bottom - _gridRowBuffer - rowIndex) > _visibleRenderedCellCount * 2) {
+        return true;
+      }
+      return false;
     }
 
     /** Send a notification, through "onRowOutOfViewportRange", that is out of the viewport range */
