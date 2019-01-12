@@ -13,8 +13,8 @@
    *      columnTitle: "Columns",                 // default to empty string
    *
    *      // the last 2 checkboxes titles
-   *      hideForceFitButton: false,              // show/hide checkbox near the end "Force Fit Columns" (default:false) 
-   *      hideSyncResizeButton: false,            // show/hide checkbox near the end "Synchronous Resize" (default:false) 
+   *      hideForceFitButton: false,              // show/hide checkbox near the end "Force Fit Columns" (default:false)
+   *      hideSyncResizeButton: false,            // show/hide checkbox near the end "Synchronous Resize" (default:false)
    *      forceFitTitle: "Force fit columns",     // default to "Force fit columns"
    *      headerColumnValueExtractor: "Extract the column label" // default to column.name
    *      syncResizeTitle: "Synchronous resize",  // default to "Synchronous resize"
@@ -40,10 +40,10 @@
 
       // the last 2 checkboxes titles
       hideForceFitButton: false,
-      hideSyncResizeButton: false, 
+      hideSyncResizeButton: false,
       forceFitTitle: "Force fit columns",
       syncResizeTitle: "Synchronous resize",
-      headerColumnValueExtractor: 
+      headerColumnValueExtractor:
         function (columnDef) {
           return columnDef.name;
         }
@@ -105,12 +105,12 @@
           $input.attr("checked", "checked");
         }
 
-        if (options.columnPicker.headerColumnValueExtractor) {
+        if (options && options.columnPicker && options.columnPicker.headerColumnValueExtractor) {
           columnLabel = options.columnPicker.headerColumnValueExtractor(columns[i]);
         } else {
           columnLabel = defaults.headerColumnValueExtractor(columns[i]);
         }
-        
+
         $("<label />")
           .html(columnLabel)
           .prepend($input)
