@@ -30,7 +30,6 @@
 (function ($) {
   function SlickColumnPicker(columns, grid, options) {
     var _grid = grid;
-    var _options = options;
     var $list;
     var $menu;
     var columnCheckboxes;
@@ -53,14 +52,14 @@
     function init(grid) {
       grid.onHeaderContextMenu.subscribe(handleHeaderContextMenu);
       grid.onColumnsReordered.subscribe(updateColumnOrder);
-      _options = $.extend({}, defaults, options);
+      options = $.extend({}, defaults, options);
 
       $menu = $("<div class='slick-columnpicker' style='display:none' />").appendTo(document.body);
       var $close = $("<button type='button' class='close' data-dismiss='slick-columnpicker' aria-label='Close'><span class='close' aria-hidden='true'>&times;</span></button>").appendTo($menu);
 
       // user could pass a title on top of the columns list
-      if(_options.columnPickerTitle || (_options.columnPicker && _options.columnPicker.columnTitle)) {
-        var columnTitle = _options.columnPickerTitle || _options.columnPicker.columnTitle;
+      if(options.columnPickerTitle || (options.columnPicker && options.columnPicker.columnTitle)) {
+        var columnTitle = options.columnPickerTitle || options.columnPicker.columnTitle;
         var $title = $("<div class='title'/>").append(columnTitle);
         $title.appendTo($menu);
       }
@@ -79,13 +78,13 @@
       _grid.onHeaderContextMenu.unsubscribe(handleHeaderContextMenu);
       _grid.onColumnsReordered.unsubscribe(updateColumnOrder);
       $(document.body).off("mousedown", handleBodyMouseDown);
-      $("div.slick-columnpicker").hide(_options.fadeSpeed);
+      $("div.slick-columnpicker").hide(options.fadeSpeed);
       $menu.remove();
     }
 
     function handleBodyMouseDown(e) {
       if (($menu && $menu[0] != e.target && !$.contains($menu[0], e.target)) || e.target.className == "close") {
-        $menu.hide(_options.fadeSpeed);
+        $menu.hide(options.fadeSpeed);
       }
     }
 
@@ -106,8 +105,8 @@
           $input.attr("checked", "checked");
         }
 
-        if (_options.columnPicker.headerColumnValueExtractor) {
-          columnLabel = _options.columnPicker.headerColumnValueExtractor(columns[i]);
+        if (options.columnPicker.headerColumnValueExtractor) {
+          columnLabel = options.columnPicker.headerColumnValueExtractor(columns[i]);
         } else {
           columnLabel = defaults.headerColumnValueExtractor(columns[i]);
         }
@@ -118,12 +117,12 @@
           .appendTo($li);
       }
 
-      if (_options.columnPicker && (!_options.columnPicker.hideForceFitButton || !_options.columnPicker.hideSyncResizeButton)) {
+      if (options.columnPicker && (!options.columnPicker.hideForceFitButton || !options.columnPicker.hideSyncResizeButton)) {
         $("<hr/>").appendTo($list);
       }
 
-      if (!(_options.columnPicker && _options.columnPicker.hideForceFitButton)) {
-        var forceFitTitle = (_options.columnPicker && _options.columnPicker.forceFitTitle) || _options.forceFitTitle;
+      if (!(options.columnPicker && options.columnPicker.hideForceFitButton)) {
+        var forceFitTitle = (options.columnPicker && options.columnPicker.forceFitTitle) || options.forceFitTitle;
         $li = $("<li />").appendTo($list);
         $input = $("<input type='checkbox' />").data("option", "autoresize");
         $("<label />")
@@ -135,8 +134,8 @@
         }
       }
 
-      if (!(_options.columnPicker && _options.columnPicker.hideSyncResizeButton)) {
-        var syncResizeTitle = (_options.columnPicker && _options.columnPicker.syncResizeTitle) || _options.syncResizeTitle;
+      if (!(options.columnPicker && options.columnPicker.hideSyncResizeButton)) {
+        var syncResizeTitle = (options.columnPicker && options.columnPicker.syncResizeTitle) || options.syncResizeTitle;
         $li = $("<li />").appendTo($list);
         $input = $("<input type='checkbox' />").data("option", "syncresize");
         $("<label />")
@@ -152,7 +151,7 @@
           .css("top", e.pageY - 10)
           .css("left", e.pageX - 10)
           .css("max-height", $(window).height() - e.pageY -10)
-          .fadeIn(_options.fadeSpeed);
+          .fadeIn(options.fadeSpeed);
 
       $list.appendTo($menu);
     }
