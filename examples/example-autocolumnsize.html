@@ -1,0 +1,107 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <title>SlickGrid example 1: Basic grid</title>
+  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
+  <link rel="stylesheet" href="../css/smoothness/jquery-ui-1.11.3.custom.css" type="text/css"/>
+  <link rel="stylesheet" href="examples.css" type="text/css"/>
+</head>
+<body>
+<table width="100%">
+  <tr>
+    <td valign="top" width="50%">
+      <div id="myGrid" style="width:600px;height:500px;"></div>
+    </td>
+    <td valign="top">
+      <h2>Demonstrates:</h2>
+      <ul>
+        <li>basic grid with autoColumnSize plugin</li>
+		<li><input type="checkbox" id="ForceFitOption" onclick="ChangeForceFit()">Option Force Fit Columns<br></li>
+		<li></li>
+		<li>Button will resize all columns so they fit text or shrink to column header size</li>
+		<li><button onclick="CallResize()">Resize Columns</button></li>
+		<li></li>
+      </ul>
+        <h2>View Source:</h2>
+        <ul>
+            <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-autocolumnsize.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+        </ul>
+    </td>
+  </tr>
+</table>
+
+<script src="../lib/jquery-1.11.2.min.js"></script>
+<script src="../lib/jquery.event.drag-2.3.0.js"></script>
+
+<script src="../plugins/slick.autocolumnsize.js"></script>
+
+<script src="../slick.core.js"></script>
+<script src="../slick.grid.js"></script>
+
+<script>
+  var grid;
+  var columns = [
+    {id: "title", name: "Title", field: "title"},
+    {id: "duration", name: "Duration", field: "duration"},
+    {id: "%", name: "% Complete", field: "percentComplete"},
+    {id: "start", name: "Start", field: "start"},
+    {id: "finish", name: "Finish", field: "finish"},
+    {id: "effort-driven", name: "Effort Driven", field: "effortDriven"},
+	{id: "random-text", name: "Random Text", field: "randomText"}
+  ];
+
+  var options = {
+    enableCellNavigation: true,
+    enableColumnReorder: false,
+	forceFitColumns: false
+  };
+  
+  var autoColumnSizePlugin;
+  
+  autoColumnSizePlugin = new Slick.Plugins.AutoColumnSize();
+  
+  function ChangeForceFit()
+  {
+	var checked = $("#ForceFitOption").is(':checked');
+	var opt = grid.getOptions();
+	opt.forceFitColumns = checked;
+	grid.setOptions(opt)
+  };
+  
+  function CallResize()
+  {
+	autoColumnSizePlugin.resizeAllColumns();
+  }
+  
+  function CreateRandomText(words)
+  {
+	var amount = Math.round(Math.random() * 10)
+	var result = "";
+	for(var i = 0; i < amount; i++){
+		result += " " + words[Math.round(Math.random() * words.length)];
+	}
+	return result;
+  };
+  
+  $(function () {
+    var data = [];
+    for (var i = 0; i < 500; i++) {
+      data[i] = {
+        title: "Task " + i,
+        duration:  Math.round(Math.random() * 100) + " days",
+        percentComplete: Math.round(Math.random() * 100),
+        start: "01/01/2009",
+        finish: "01/05/2009",
+        effortDriven: (i % 5 == 0),
+		randomText: CreateRandomText(["good", "bad", "dog", "something", "another word"])
+      };
+    }
+
+    grid = new Slick.Grid("#myGrid", data, columns, options);
+	grid.registerPlugin(autoColumnSizePlugin);
+  })
+</script>
+</body>
+</html>
