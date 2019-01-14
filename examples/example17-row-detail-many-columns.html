@@ -87,27 +87,26 @@
       <ul>
         <li>RowDetailView Plugin</li>
         <li>RowDetailView Plugin going out of horizontal scroll.<li>
-		<li>"Always Render Column" is used here to always show the cell even when it's out of horizontal view</li>
-		
+        <li>"Always Render Column" is used here to always show the cell even when it's out of horizontal view</li>
       </ul>
 
       <h2>Options:</h2>
       <button onclick="setLoadOnce(true)">Load Once ON</button>
       &nbsp;
       <button onclick="setLoadOnce(false)">Load Once OFF</button>
-	    <p>
-	      <input type="number" id="panelRowInput"/> <button onclick="setPanelRows()">Set Panel Rows Option</button>
-	    </p>
+    <p>
+        <input type="number" id="panelRowInput"/> <button onclick="setPanelRows()">Set Panel Rows Option</button>
+        </p>
       <p>
         <input type="number" id="maxRowInput"/> <button onclick="setMaxRows()">Set Max Panel Rows Option</button>
       </p>
-	    <p>
+        <p>
         <button onclick="setRowClick(true)">Row Click ON</button>
         &nbsp;
         <button onclick="setRowClick(false)">Row Click OFF</button>
-		<p>
-		<span>Tell column 0 always to render if outside or horizontal scroll</span>
-		<p>
+        <p>
+        <span>Tell column 0 always to render if outside or horizontal scroll</span>
+        <p>
         <button onclick="setAlwaysRenderRowClick(true)">Always Render Column ON</button>
         &nbsp;
         <button onclick="setAlwaysRenderRowClick(false)">Always Render Column OFF</button>
@@ -153,14 +152,14 @@
       {id: "finish", name: "Finish", field: "finish", minWidth: 60},
       {id: "effort-driven", name: "Effort Driven", width: 80, minWidth: 20, axWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark}	  
     ];
-	
-	for(var i = 0; i < 10; i++){
-	
-	columns.push({id: "extra" + i, name: "Extra " + i, field: "extra" + i, minWidth: 60});
-	
-	}
-	
-	
+    
+    for(var i = 0; i < 10; i++){
+    
+    columns.push({id: "extra" + i, name: "Extra " + i, field: "extra" + i, minWidth: 60});
+    
+    }
+    
+    
     var options = {
       editable: false,
       enableAddRow: false,
@@ -181,21 +180,21 @@
       this.title = "Task " + i;
       this.duration = "5 days";
     }
-	
-	function setAlwaysRenderRowClick(val){
-	  var detailColumn = grid.getColumns()[0];
-	  detailColumn.alwaysRenderColumn = val;	 
-	}
-	
-	function setLoadOnce(val){
-	  var options = detailView.getOptions();
-	  options.loadOnce = val;	  
-      detailView.setOptions(options);
-	}
-	
-	function setRowClick(val) {      
+    
+    function setAlwaysRenderRowClick(val){
+      var detailColumn = grid.getColumns()[0];
+      detailColumn.alwaysRenderColumn = val;
+    }
+    
+    function setLoadOnce(val){
       var options = detailView.getOptions();
-	  options.useRowClick = val;	  
+      options.loadOnce = val;
+      detailView.setOptions(options);
+    }
+    
+    function setRowClick(val) {
+      var options = detailView.getOptions();
+    options.useRowClick = val;
       detailView.setOptions(options);
     }
 
@@ -303,8 +302,8 @@
     // notify the onAsyncResponse with the "args.item" (required property)
     // the plugin will then use itemDetail to populate the detail panel with "postTemplate"
     function notifyNonTemplatedView(itemDetail) {
-	    var rowIdx = grid.getData().getIdxById(itemDetail.id);
-	    var temp =
+        var rowIdx = grid.getData().getIdxById(itemDetail.id);
+        var temp =
         "<div class=\"tab\">"+
         "<button class=\"tablinks\" onclick=\"openCity(event, 'London'," + rowIdx +")\">London</button>" +
         "<button class=\"tablinks\" onclick=\"openCity(event, 'Paris'," + rowIdx +")\">Paris</button>" +

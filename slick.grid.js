@@ -2594,7 +2594,7 @@ if (typeof Slick === "undefined") {
           }
         }
         
-		// Do not render cells outside of the viewport.
+        // Do not render cells outside of the viewport.
         if (columnPosRight[Math.min(ii - 1, i + colspan - 1)] > range.leftPx) {
           if (!m.alwaysRenderColumn && columnPosLeft[i] > range.rightPx) {
             // All columns to the right are outside the range.
@@ -3185,11 +3185,11 @@ if (typeof Slick === "undefined") {
         if (i <= options.frozenColumn) {
           continue;
         }
-		
-		// Ignore alwaysRenderedColumns
-		if (columns[i].alwaysRenderColumn){
-		  continue;
-		}
+        
+        // Ignore alwaysRenderedColumns
+        if (columns[i].alwaysRenderColumn){
+          continue;
+        }
 
         var colspan = cacheEntry.cellColSpans[i];
         if (columnPosLeft[i] > range.rightPx ||
