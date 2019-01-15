@@ -157,7 +157,7 @@
                     template = $("<span>" + formatFun(index, colIndex, text, columnDef, data[index]) + "</span>");
                     text = template.text() || text;
                 }
-                var length = text ? getElementWidthUsingCanvas(rowEl, text) : getTemplateWidth(rowEl, template);
+                var length = text ? getElementWidthUsingCanvas(rowEl, text) : 0;
                 if (length > max) {
                     max = length;
                     maxTemplate = template || text;
