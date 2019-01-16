@@ -82,6 +82,10 @@
 <script src="../plugins/slick.autocolumnsize.js"></script>
 
 <script>
+
+  var param = /[&?]rows=([^&]+)/.exec(location.search);
+  param = param ? param[1].replace(/"/g, '&quot;') : '';
+
   var dataView;
   var grid;
   var data = [];
@@ -162,8 +166,10 @@
   
 
   $(function () {
+    param = param | 0;
+    var rows = (param === 0) ? 500000 : param;
     // prepare the data
-    for (var i = 0; i < 500000; i++) {
+    for (var i = 0; i < rows; i++) {
       data[i] = new DataItem(i);
     }
 
