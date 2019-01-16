@@ -131,10 +131,17 @@
             if (Slick.Data && data instanceof Slick.Data.DataView) {
                 data = data.getItems();
             }
-            for (var i = 0; i < data.length; i++) {
-                texts.push(data[i][columnDef.field]);
+
+            let length = data.length, result = [], seen = new Set();
+            outer:
+            for (let index = 0; index < length; index++) {
+              let value = data[index][columnDef.field];
+              if (seen.has(value)) continue outer;
+              seen.add(value);
+              result.push(value);
             }
-            var template = getMaxTextTemplate(texts, columnDef, colIndex, data, rowEl);
+
+            var template = getMaxTextTemplate(result, columnDef, colIndex, data, rowEl);
             var width = getTemplateWidth(rowEl, template);
             deleteRow(rowEl);
             return width;
