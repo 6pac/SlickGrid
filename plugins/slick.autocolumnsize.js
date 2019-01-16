@@ -158,13 +158,16 @@
             var max = 0,
                 maxTemplate = null;
             var formatFun = columnDef.formatter;
+
+            context.font = rowEl.css("font-size") + " " + rowEl.css("font-family");
             $(texts).each(function (index, text) {
                 var template;
                 if (formatFun) {
                     template = $("<span>" + formatFun(index, colIndex, text, columnDef, data[index]) + "</span>");
                     text = template.text() || text;
                 }
-                var length = text ? getElementWidthUsingCanvas(rowEl, text) : 0;
+
+                var length = text ? context.measureText(text).width : 0;
                 if (length > max) {
                     max = length;
                     maxTemplate = template || text;
