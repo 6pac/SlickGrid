@@ -89,6 +89,7 @@
     {id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 40, resizable: false, selectable: false },
     {id: "title", name: "Title", field: "title", width: 120, minWidth: 120, cssClass: "cell-title"},
     {id: "duration", name: "Duration", field: "duration"},
+    {id: "random-word", name: "Random word", field: "randomWord"},
     {id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar},
     {id: "start", name: "Start", field: "start", minWidth: 60},
     {id: "finish", name: "Finish", field: "finish", minWidth: 60},
@@ -115,11 +116,12 @@
     this.id = "id_" + i;
     this.percentComplete = Math.round(Math.random() * 100);
     this.effortDriven = (i % 5 == 0);
-    this.start = "01/01/2009";
-    this.finish = "01/05/2009";
+    this.start = "01/01/200" + Math.round(Math.random() * 9);
+    this.finish = "01/05/200" + Math.round(Math.random() * 9);
     this.title = "Task " + i;
     this.duration =  (i % 5 == 0) ? 5 + " days and some" : 10 + " days";
-    this.randomText = CreateRandomText(["good", "bad", "dog", "something", "another word"])
+    this.randomText = CreateRandomText(["good", "bad", "dog", "something", "another word"]);
+    this.randomWord = ["good", "bad", "dog", "something", "another word"][i % 5];
   }
 
   var options = {
@@ -134,6 +136,7 @@
   
   function ChangeForceFit()
   {
+    var checked = $("#ForceFitOption").is(':checked');
     var opt = grid.getOptions();
     opt.forceFitColumns = checked;
     grid.setOptions(opt)
