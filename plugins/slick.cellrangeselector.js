@@ -69,7 +69,7 @@
       if ( _gridOptions.frozenColumn > -1 && _isRightCanvas ) {
           _columnOffset = $('.grid-canvas-left').width();
       }
-            
+
       // prevent the grid from cancelling drag'n'drop by default
       e.stopImmediatePropagation();
     }
@@ -108,24 +108,17 @@
         e.pageY - _$activeCanvas.offset().top + _rowOffset
       );
 
-      if (_gridOptions.frozenColumn < 0) {
-        if (!_grid.canCellBeSelected(end.row, end.cell)) {
-          return;
-        }
-      } else {
-        // when having frozen column(s), we need to do extra checks
-        if ( (!_grid.canCellBeSelected( end.row, end.cell ) ) 
-          || ( !_isRightCanvas && ( end.cell > _gridOptions.frozenColumn ) )
-          || ( _isRightCanvas && ( end.cell <= _gridOptions.frozenColumn ) )
-          || ( !_isBottomCanvas && ( end.row >= _gridOptions.frozenRow ) )
-          || ( _isBottomCanvas && ( end.row < _gridOptions.frozenRow ) )
+      if ((!_grid.canCellBeSelected(end.row, end.cell) )
+        || ( !_isRightCanvas && ( end.cell > _gridOptions.frozenColumn ) )
+        || ( _isRightCanvas && ( end.cell <= _gridOptions.frozenColumn ) )
+        || ( !_isBottomCanvas && ( end.row >= _gridOptions.frozenRow ) )
+        || ( _isBottomCanvas && ( end.row < _gridOptions.frozenRow ) )
         ) {
-         return;
-        }
+        return;
       }
 
       dd.range.end = end;
-      
+
       _decorator.show(new Slick.Range(dd.range.start.row, dd.range.start.cell, end.row, end.cell));
     }
 
