@@ -108,12 +108,24 @@
         e.pageY - _$activeCanvas.offset().top + _rowOffset
       );
 
-      if ((!_grid.canCellBeSelected(end.row, end.cell) )
-        || ( !_isRightCanvas && ( end.cell > _gridOptions.frozenColumn ) )
-        || ( _isRightCanvas && ( end.cell <= _gridOptions.frozenColumn ) )
-        || ( !_isBottomCanvas && ( end.row >= _gridOptions.frozenRow ) )
-        || ( _isBottomCanvas && ( end.row < _gridOptions.frozenRow ) )
+      // ... frozen column(s), 
+      if (_gridOptions.frozenColumn >= 0) {
+        if ((!_isRightCanvas && (end.cell > _gridOptions.frozenColumn)) ||
+            (_isRightCanvas && (end.cell <= _gridOptions.frozenColumn))
         ) {
+            return;
+        }
+      }
+      // ... or frozen row(s)
+      else if (_gridOptions.frozenRow >= 0) {
+        if ((!_isBottomCanvas && (end.row >= _gridOptions.frozenRow)) ||
+            (_isBottomCanvas && (end.row < _gridOptions.frozenRow))
+        ) {
+            return;
+        }
+      }
+      // ... or regular grid (without any frozen options)
+      else if (!_grid.canCellBeSelected(end.row, end.cell)) {
         return;
       }
 
