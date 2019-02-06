@@ -113,11 +113,11 @@
         return;
       }
       // ... or frozen row(s)
-      else if (_gridOptions.frozenRow >= 0 && (!_isBottomCanvas && (end.row >= _gridOptions.frozenRow)) || (_isBottomCanvas && (end.row < _gridOptions.frozenRow))) {
+      if (_gridOptions.frozenRow >= 0 && (!_isBottomCanvas && (end.row >= _gridOptions.frozenRow)) || (_isBottomCanvas && (end.row < _gridOptions.frozenRow))) {
         return;
       }
       // ... or regular grid (without any frozen options)
-      else if (!_grid.canCellBeSelected(end.row, end.cell)) {
+      if (!_grid.canCellBeSelected(end.row, end.cell)) {
         return;
       }
 
