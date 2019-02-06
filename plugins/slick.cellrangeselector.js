@@ -28,6 +28,10 @@
     var _isRightCanvas;
     var _isBottomCanvas;
 
+    // Scrollings
+    var _scrollTop;
+    var _scrollLeft;
+
     function init(grid) {
       options = $.extend(true, {}, _defaults, options);
       _decorator = options.cellDecorator || new Slick.CellRangeDecorator(grid, options);
@@ -35,6 +39,7 @@
       _canvas = _grid.getCanvasNode();
       _gridOptions = _grid.getOptions();
       _handler
+        .subscribe(_grid.onScroll, handleScroll)
         .subscribe(_grid.onDragInit, handleDragInit)
         .subscribe(_grid.onDragStart, handleDragStart)
         .subscribe(_grid.onDrag, handleDrag)
@@ -47,6 +52,11 @@
 
     function getCellDecorator() {
       return _decorator;
+    }
+
+    function handleScroll(e, args) {
+      _scrollTop = args.scrollTop;
+      _scrollLeft = args.scrollLeft;
     }
 
     function handleDragInit(e, dd) {
@@ -88,9 +98,17 @@
 
       _grid.focus();
 
-      var start = _grid.getCellFromPoint(
-        dd.startX - $(_canvas).offset().left,
-        dd.startY - $(_canvas).offset().top);
+      var startX = dd.startX - $(_canvas).offset().left;
+      if (_gridOptions.frozenColumn >= 0) {
+        startX += _scrollLeft;
+      }
+
+      var startY = dd.startY - $(_canvas).offset().top;
+      if (_gridOptions.frozenRow >= 0) {
+        startY += _scrollTop;
+      }
+
+      var start = _grid.getCellFromPoint(startX, startY);
 
       dd.range = { start: start, end: {} };
       _currentlySelectedRange = dd.range;
@@ -109,13 +127,15 @@
       );
 
       // ... frozen column(s), 
-      if (_gridOptions.frozenColumn >= 0 && (!_isRightCanvas && (end.cell > _gridOptions.frozenColumn)) || (_isRightCanvas && (end.cell <= _gridOptions.frozenColumn))) {
+      if ( _gridOptions.frozenColumn >= 0 && (!_isRightCanvas && (end.cell > _gridOptions.frozenColumn)) || (_isRightCanvas && (end.cell <= _gridOptions.frozenColumn)) ) {
         return;
       }
+
       // ... or frozen row(s)
-      if (_gridOptions.frozenRow >= 0 && (!_isBottomCanvas && (end.row >= _gridOptions.frozenRow)) || (_isBottomCanvas && (end.row < _gridOptions.frozenRow))) {
+      if ( _gridOptions.frozenRow >= 0 && (!_isBottomCanvas && (end.row >= _gridOptions.frozenRow)) || (_isBottomCanvas && (end.row < _gridOptions.frozenRow)) ) {
         return;
       }
+
       // ... or regular grid (without any frozen options)
       if (!_grid.canCellBeSelected(end.row, end.cell)) {
         return;
@@ -144,7 +164,7 @@
         )
       });
     }
-
+    
     function getCurrentRange() {
       return _currentlySelectedRange;
     }
