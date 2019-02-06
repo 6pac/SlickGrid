@@ -52,22 +52,22 @@
     function handleDragInit(e, dd) {
       // Set the active canvas node because the decorator needs to append its
       // box to the correct canvas
-      _$activeCanvas = $( _grid.getActiveCanvasNode( e ) );
+      _$activeCanvas = $(_grid.getActiveCanvasNode(e));
 
       var c = _$activeCanvas.offset();
 
       _rowOffset = 0;
       _columnOffset = 0;
-      _isBottomCanvas = _$activeCanvas.hasClass( 'grid-canvas-bottom' );
+      _isBottomCanvas = _$activeCanvas.hasClass('grid-canvas-bottom');
 
-      if ( _gridOptions.frozenRow > -1 && _isBottomCanvas ) {
-          _rowOffset = ( _gridOptions.frozenBottom ) ? $('.grid-canvas-bottom').height() : $('.grid-canvas-top').height();
+      if (_gridOptions.frozenRow > -1 && _isBottomCanvas) {
+        _rowOffset = (_gridOptions.frozenBottom) ? $('.grid-canvas-bottom').height() : $('.grid-canvas-top').height();
       }
-      
-      _isRightCanvas = _$activeCanvas.hasClass( 'grid-canvas-right' );
-      
-      if ( _gridOptions.frozenColumn > -1 && _isRightCanvas ) {
-          _columnOffset = $('.grid-canvas-left').width();
+
+      _isRightCanvas = _$activeCanvas.hasClass('grid-canvas-right');
+
+      if (_gridOptions.frozenColumn > -1 && _isRightCanvas) {
+        _columnOffset = $('.grid-canvas-left').width();
       }
 
       // prevent the grid from cancelling drag'n'drop by default
@@ -92,7 +92,7 @@
         dd.startX - $(_canvas).offset().left,
         dd.startY - $(_canvas).offset().top);
 
-      dd.range = {start: start, end: {}};
+      dd.range = { start: start, end: {} };
       _currentlySelectedRange = dd.range;
       return _decorator.show(new Slick.Range(start.row, start.cell));
     }
@@ -109,20 +109,12 @@
       );
 
       // ... frozen column(s), 
-      if (_gridOptions.frozenColumn >= 0) {
-        if ((!_isRightCanvas && (end.cell > _gridOptions.frozenColumn)) ||
-            (_isRightCanvas && (end.cell <= _gridOptions.frozenColumn))
-        ) {
-            return;
-        }
+      if (_gridOptions.frozenColumn >= 0 && (!_isRightCanvas && (end.cell > _gridOptions.frozenColumn)) || (_isRightCanvas && (end.cell <= _gridOptions.frozenColumn))) {
+        return;
       }
       // ... or frozen row(s)
-      else if (_gridOptions.frozenRow >= 0) {
-        if ((!_isBottomCanvas && (end.row >= _gridOptions.frozenRow)) ||
-            (_isBottomCanvas && (end.row < _gridOptions.frozenRow))
-        ) {
-            return;
-        }
+      else if (_gridOptions.frozenRow >= 0 && (!_isBottomCanvas && (end.row >= _gridOptions.frozenRow)) || (_isBottomCanvas && (end.row < _gridOptions.frozenRow))) {
+        return;
       }
       // ... or regular grid (without any frozen options)
       else if (!_grid.canCellBeSelected(end.row, end.cell)) {
