@@ -2867,7 +2867,7 @@ if (typeof Slick === "undefined") {
       if (options.autoHeight) {
         viewportH = options.rowHeight
           * getDataLengthIncludingAddNew()
-          + ( ( options.frozenColumn == -1 ) ? $headers.outerHeight() : 0 );
+          + ( ( options.frozenColumn == -1 ) ? $headerScroller.outerHeight() : 0 );
       } else {
         topPanelH = ( options.showTopPanel ) ? options.topPanelHeight + getVBoxDelta($topPanelScroller) : 0;
         headerRowH = ( options.showHeaderRow ) ? options.headerRowHeight + getVBoxDelta($headerRowScroller) : 0;
