@@ -9,6 +9,8 @@
 
   function CheckboxSelectColumn(options) {
     var _grid;
+    var _selectableOverride = null;
+    var _selectableRows = []; // which rows are selectable, default would be all rows when no override is provided
     var _selectAll_UID = createUID();
     var _handler = new Slick.EventHandler();
     var _selectedRowsLookup = {};
@@ -31,7 +33,7 @@
       .subscribe(_grid.onSelectedRowsChanged, handleSelectedRowsChanged)
       .subscribe(_grid.onClick, handleClick)
       .subscribe(_grid.onKeyDown, handleKeyDown);
-      
+
       if (!_options.hideInFilterHeaderRow) {
         addCheckboxToFilterHeaderRow(grid);
       }
@@ -50,7 +52,7 @@
 
     function setOptions(options) {
       _options = $.extend(true, {}, _options, options);
-      
+
       if (_options.hideSelectAllCheckbox) {
         hideSelectAllFromColumnHeaderTitleRow();
         hideSelectAllFromColumnHeaderFilterRow();
@@ -73,7 +75,7 @@
         } else {
           hideSelectAllFromColumnHeaderFilterRow();
         }
-      } 
+      }
     }
 
     function hideSelectAllFromColumnHeaderTitleRow() {
@@ -108,7 +110,7 @@
         } else {
           _grid.updateColumnHeader(_options.columnId, "<input id='header-selector" + _selectAll_UID + "' type='checkbox'><label for='header-selector" + _selectAll_UID + "'></label>", _options.toolTip);
         }
-      } 
+      }
       if (!_options.hideInFilterHeaderRow) {
         var selectAllElm = $("#header-filter-selector" + _selectAll_UID);
         selectAllElm.prop("checked", _isSelectAllChecked);
@@ -190,7 +192,13 @@
         if ($(e.target).is(":checked")) {
           var rows = [];
           for (var i = 0; i < _grid.getDataLength(); i++) {
-            rows.push(i);
+            if (typeof _selectableOverride === 'function') {
+              if (_selectableRows.indexOf(i) >= 0) {
+                rows.push(i);
+              }
+            } else {
+              rows.push(i);
+            }
           }
           _grid.setSelectedRows(rows);
         } else {
@@ -237,8 +245,8 @@
           $(args.node).empty();
           $("<span id='filter-checkbox-selectall-container'><input id='header-filter-selector" + _selectAll_UID + "' type='checkbox'><label for='header-filter-selector" + _selectAll_UID + "'></label></span>")
             .appendTo(args.node)
-            .on('click', function(evnt) { 
-              handleHeaderClick(evnt, args) 
+            .on('click', function(evnt) {
+              handleHeaderClick(evnt, args)
             });
         }
       });
@@ -248,15 +256,29 @@
       return Math.round(10000000 * Math.random());
     }
 
-    function checkboxSelectionFormatter(row, cell, value, columnDef, dataContext) {
+    function checkboxSelectionFormatter(row, cell, value, columnDef, dataContext, grid) {
       var UID = createUID() + row;
 
       if (dataContext) {
-        return _selectedRowsLookup[row]
-            ? "<input id='selector" + UID + "' type='checkbox' checked='checked'><label for='selector" + UID + "'></label>"
-            : "<input id='selector" + UID + "' type='checkbox'><label for='selector" + UID + "'></label>";
+        if (typeof _selectableOverride === 'function') {
+          if (_selectableOverride(row, columnDef, dataContext, grid)) {
+            _selectableRows.push(row);
+            return _selectedRowsLookup[row]
+                ? "<input id='selector" + UID + "' type='checkbox' checked='checked'><label for='selector" + UID + "'></label>"
+                : "<input id='selector" + UID + "' type='checkbox'><label for='selector" + UID + "'></label>";
+          }
+        } else {
+          _selectableRows.push(row);
+          return _selectedRowsLookup[row]
+              ? "<input id='selector" + UID + "' type='checkbox' checked='checked'><label for='selector" + UID + "'></label>"
+              : "<input id='selector" + UID + "' type='checkbox'><label for='selector" + UID + "'></label>";
+        }
       }
       return null;
+    }
+
+    function selectableOverride(overrideFn) {
+      _selectableOverride = overrideFn;
     }
 
     $.extend(this, {
@@ -266,6 +288,7 @@
       "selectRows": selectRows,
       "getColumnDefinition": getColumnDefinition,
       "getOptions": getOptions,
+      "selectableOverride": selectableOverride,
       "setOptions": setOptions,
     });
   }

@@ -24,7 +24,7 @@
       -moz-box-sizing: border-box;
       box-sizing: border-box;
     }
-    
+
     .slick-cell-checkboxsel {
       background: #f0f0f0;
       border-right-color: silver;
@@ -107,6 +107,11 @@
     hideInFilterHeaderRow: isSelectAllShownAsColumnTitle
   });
 
+  // make only Even Rows selectable by using the override function
+  checkboxSelector.selectableOverride(function(row, columnDef, dataContext, grid) {
+    return dataContext.id % 2;
+  });
+
   columns.push(checkboxSelector.getColumnDefinition());
 
   for (var i = 0; i < 10; i++) {
@@ -137,7 +142,7 @@
 
   function toggleWhichRowToShowSelectAll() {
     isSelectAllShownAsColumnTitle = !isSelectAllShownAsColumnTitle;
-    checkboxSelector.setOptions({ 
+    checkboxSelector.setOptions({
       hideInColumnTitleRow: !isSelectAllShownAsColumnTitle,
       hideInFilterHeaderRow: isSelectAllShownAsColumnTitle,
     });
