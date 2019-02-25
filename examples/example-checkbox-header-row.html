@@ -107,9 +107,9 @@
     hideInFilterHeaderRow: isSelectAllShownAsColumnTitle
   });
 
-  // make only Even Rows selectable by using the override function
-  checkboxSelector.selectableOverride(function(row, columnDef, dataContext, grid) {
-    return dataContext.id % 2;
+  // make only Odd Rows selectable by using the override function
+  checkboxSelector.selectableOverride(function(row, dataContext, grid) {
+    return (dataContext.id % 2 === 1);
   });
 
   columns.push(checkboxSelector.getColumnDefinition());

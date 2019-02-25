@@ -10,7 +10,6 @@
   function CheckboxSelectColumn(options) {
     var _grid;
     var _selectableOverride = null;
-    var _selectableRows = []; // which rows are selectable, default would be all rows when no override is provided
     var _selectAll_UID = createUID();
     var _handler = new Slick.EventHandler();
     var _selectedRowsLookup = {};
@@ -193,8 +192,11 @@
           var rows = [];
           for (var i = 0; i < _grid.getDataLength(); i++) {
             if (typeof _selectableOverride === 'function') {
-              if (_selectableRows.indexOf(i) >= 0) {
-                rows.push(i);
+              var dataContext = _grid.getDataItem(i);
+              if (typeof _selectableOverride === 'function') {
+                if (_selectableOverride(i, dataContext, grid)) {
+                  rows.push(i);
+                }
               }
             } else {
               rows.push(i);
@@ -261,14 +263,12 @@
 
       if (dataContext) {
         if (typeof _selectableOverride === 'function') {
-          if (_selectableOverride(row, columnDef, dataContext, grid)) {
-            _selectableRows.push(row);
+          if (_selectableOverride(row, dataContext, grid)) {
             return _selectedRowsLookup[row]
                 ? "<input id='selector" + UID + "' type='checkbox' checked='checked'><label for='selector" + UID + "'></label>"
                 : "<input id='selector" + UID + "' type='checkbox'><label for='selector" + UID + "'></label>";
           }
         } else {
-          _selectableRows.push(row);
           return _selectedRowsLookup[row]
               ? "<input id='selector" + UID + "' type='checkbox' checked='checked'><label for='selector" + UID + "'></label>"
               : "<input id='selector" + UID + "' type='checkbox'><label for='selector" + UID + "'></label>";
