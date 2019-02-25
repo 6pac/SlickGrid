@@ -90,10 +90,15 @@
       var lookup = {}, row, i;
       for (i = 0; i < selectedRows.length; i++) {
         row = selectedRows[i];
-        lookup[row] = true;
-        if (lookup[row] !== _selectedRowsLookup[row]) {
-          _grid.invalidateRow(row);
-          delete _selectedRowsLookup[row];
+
+        // If we are allowed to select the row
+        var rowItem = _grid.getDataItem(row);
+        if (checkSelectableOverride(i, rowItem, _grid)) {
+          lookup[row] = true;
+          if (lookup[row] !== _selectedRowsLookup[row]) {
+            _grid.invalidateRow(row);
+            delete _selectedRowsLookup[row];
+          }
         }
       }
       for (i in _selectedRowsLookup) {
@@ -146,6 +151,11 @@
     }
 
     function toggleRowSelection(row) {
+      var dataContext = _grid.getDataItem(row);
+      if (!checkSelectableOverride(row, dataContext, _grid)) {
+        return;
+      }
+
       if (_selectedRowsLookup[row]) {
         _grid.setSelectedRows($.grep(_grid.getSelectedRows(), function (n) {
           return n != row
@@ -191,14 +201,9 @@
         if ($(e.target).is(":checked")) {
           var rows = [];
           for (var i = 0; i < _grid.getDataLength(); i++) {
-            if (typeof _selectableOverride === 'function') {
-              var dataContext = _grid.getDataItem(i);
-              if (typeof _selectableOverride === 'function') {
-                if (_selectableOverride(i, dataContext, grid)) {
-                  rows.push(i);
-                }
-              }
-            } else {
+            // Get the row and check it's a selectable row before pushing it onto the stack
+            var dataContext = _grid.getDataItem(i);
+            if (checkSelectableOverride(i, dataContext, _grid)) {
               rows.push(i);
             }
           }
@@ -275,6 +280,13 @@
         }
       }
       return null;
+    }
+
+    function checkSelectableOverride(row, dataContext, grid) {
+      if (typeof _selectableOverride === 'function') {
+        return _selectableOverride(row, dataContext, grid);
+      }
+      return true;
     }
 
     function selectableOverride(overrideFn) {
