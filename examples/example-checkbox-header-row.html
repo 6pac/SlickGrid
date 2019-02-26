@@ -175,6 +175,9 @@
       grid.render();
     });
 
+    grid.onSelectedRowsChanged.subscribe(function (e, args) {
+      console.log("Selected Rows: " + args.rows.toString());
+    });
 
     $(grid.getHeaderRow()).on("change keyup", ":input", function (e) {
       var columnId = $(this).data("columnId");
