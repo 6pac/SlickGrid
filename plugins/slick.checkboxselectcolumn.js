@@ -9,7 +9,7 @@
 
   function CheckboxSelectColumn(options) {
     var _grid;
-    var _selectableOverride = null;
+    var _canRowBeSelected = null;
     var _selectAll_UID = createUID();
     var _handler = new Slick.EventHandler();
     var _selectedRowsLookup = {};
@@ -57,11 +57,7 @@
         hideSelectAllFromColumnHeaderFilterRow();
       } else {
         if (!_options.hideInColumnTitleRow) {
-          if (_isSelectAllChecked) {
-            _grid.updateColumnHeader(_options.columnId, "<input id='header-selector" + _selectAll_UID + "' type='checkbox' checked='checked'><label for='header-selector" + _selectAll_UID + "'></label>", _options.toolTip);
-          } else {
-            _grid.updateColumnHeader(_options.columnId, "<input id='header-selector" + _selectAll_UID + "' type='checkbox'><label for='header-selector" + _selectAll_UID + "'></label>", _options.toolTip);
-          }
+          renderSelectAllCheckbox(_isSelectAllChecked);
           _handler.subscribe(_grid.onHeaderClick, handleHeaderClick);
         } else {
           hideSelectAllFromColumnHeaderTitleRow();
@@ -89,11 +85,11 @@
       var selectedRows = _grid.getSelectedRows();
       var lookup = {}, row, i;
       var disabledCount = 0;
-      if (typeof _selectableOverride === 'function') {
+      if (typeof _canRowBeSelected === 'function') {
           for (k = 0; k < _grid.getDataLength(); k++) {
               // If we are allowed to select the row
               var dataItem = _grid.getDataItem(k);
-              if (!checkSelectableOverride(i, dataItem, _grid)) {
+              if (!checkcanRowBeSelected(i, dataItem, _grid)) {
                   disabledCount++;
               }
           }
@@ -105,7 +101,7 @@
 
         // If we are allowed to select the row
         var rowItem = _grid.getDataItem(row);
-        if (checkSelectableOverride(i, rowItem, _grid)) {
+        if (checkcanRowBeSelected(i, rowItem, _grid)) {
           lookup[row] = true;
           if (lookup[row] !== _selectedRowsLookup[row]) {
             _grid.invalidateRow(row);
@@ -124,11 +120,7 @@
       _isSelectAllChecked = selectedRows.length && selectedRows.length + disabledCount >= _grid.getDataLength();
 
       if (!_options.hideInColumnTitleRow && !_options.hideSelectAllCheckbox) {
-        if (_isSelectAllChecked) {
-          _grid.updateColumnHeader(_options.columnId, "<input id='header-selector" + _selectAll_UID + "' type='checkbox' checked='checked'><label for='header-selector" + _selectAll_UID + "'></label>", _options.toolTip);
-        } else {
-          _grid.updateColumnHeader(_options.columnId, "<input id='header-selector" + _selectAll_UID + "' type='checkbox'><label for='header-selector" + _selectAll_UID + "'></label>", _options.toolTip);
-        }
+        renderSelectAllCheckbox(_isSelectAllChecked);
       }
       if (!_options.hideInFilterHeaderRow) {
         var selectAllElm = $("#header-filter-selector" + _selectAll_UID);
@@ -175,7 +167,7 @@
 
     function toggleRowSelection(row) {
       var dataContext = _grid.getDataItem(row);
-      if (!checkSelectableOverride(row, dataContext, _grid)) {
+      if (!checkcanRowBeSelected(row, dataContext, _grid)) {
         return;
       }
 
@@ -187,7 +179,6 @@
         _grid.setSelectedRows(_grid.getSelectedRows().concat(row));
       }
       _grid.setActiveCell(row, getCheckboxColumnCellIndex());
-      _grid.focus();
     }
 
     function selectRows(rowArray) {
@@ -290,7 +281,7 @@
       var UID = createUID() + row;
 
       if (dataContext) {
-        if (!checkSelectableOverride(row, dataContext, grid)) {
+        if (!checkcanRowBeSelected(row, dataContext, grid)) {
           return null;
         } else {
           return _selectedRowsLookup[row]
@@ -301,16 +292,30 @@
       return null;
     }
 
-    function checkSelectableOverride(row, dataContext, grid) {
-      if (typeof _selectableOverride === 'function') {
-        return _selectableOverride(row, dataContext, grid);
+    function checkcanRowBeSelected(row, dataContext, grid) {
+      if (typeof _canRowBeSelected === 'function') {
+        return _canRowBeSelected(row, dataContext, grid);
       }
       return true;
     }
 
-    function selectableOverride(overrideFn) {
-      _selectableOverride = overrideFn;
+    function renderSelectAllCheckbox(isSelectAllChecked) {
+      if (isSelectAllChecked) {
+        _grid.updateColumnHeader(_options.columnId, "<input id='header-selector" + _selectAll_UID + "' type='checkbox' checked='checked'><label for='header-selector" + _selectAll_UID + "'></label>", _options.toolTip);
+      } else {
+        _grid.updateColumnHeader(_options.columnId, "<input id='header-selector" + _selectAll_UID + "' type='checkbox'><label for='header-selector" + _selectAll_UID + "'></label>", _options.toolTip);
+      }
     }
+
+    /**
+     * Method that user can pass to override the default behavior or making every row a selectable row.
+     * In order word, user can choose which rows to be selectable or not by providing his own logic.
+     * @param overrideFn: override function callback
+     */
+    function canRowBeSelected(overrideFn) {
+      _canRowBeSelected = overrideFn;
+    }
+
 
     $.extend(this, {
       "init": init,
@@ -319,7 +324,7 @@
       "selectRows": selectRows,
       "getColumnDefinition": getColumnDefinition,
       "getOptions": getOptions,
-      "selectableOverride": selectableOverride,
+      "canRowBeSelected": canRowBeSelected,
       "setOptions": setOptions,
     });
   }
