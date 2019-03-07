@@ -24,7 +24,7 @@
  *
  * AVAILABLE PUBLIC OPTIONS:
  *    init:                 initiliaze the plugin
- *    canRowBeExpandable:   callback method that user can override the default behavior or making every row an expendable row.
+ *    expandableOverride:   callback method that user can override the default behavior of making every row an expandable row (the logic to show or not the expandable icon).
  *    destroy:              destroy the plugin and it's events
  *    collapseAll:          collapse all opened row detail panel
  *    collapseDetailView:   collapse a row by passing the item object (row detail)
@@ -92,7 +92,7 @@
     var _grid;
     var _gridOptions;
     var _gridUid;
-    var _canRowBeExpandable = null;
+    var _expandableOverride = null;
     var _self = this;
     var _lastRange = null;
     var _expandedRows = [];
@@ -209,7 +209,7 @@
     /** Handle mouse click event */
     function handleClick(e, args) {
       var dataContext = _grid.getDataItem(args.row);
-      if (!checkCanRowBeExpandable(args.row, dataContext, _grid)) {
+      if (!checkExpandableOverride(args.row, dataContext, _grid)) {
         return;
       }
 
@@ -406,7 +406,7 @@
 
     // Toggle between showing and hiding a row
     function toggleRowSelection(rowNumber, dataContext) {
-      if (!checkCanRowBeExpandable(rowNumber, dataContext, _grid)) {
+      if (!checkExpandableOverride(rowNumber, dataContext, _grid)) {
         return;
       }
 
@@ -597,7 +597,7 @@
 
     /** The Formatter of the toggling icon of the Row Detail */
     function detailSelectionFormatter(row, cell, value, columnDef, dataContext) {
-      if (!checkCanRowBeExpandable(row, dataContext, grid)) {
+      if (!checkExpandableOverride(row, dataContext, grid)) {
         return null;
       } else {
         if (dataContext[_keyPrefix + 'collapsed'] == undefined) {
@@ -721,29 +721,29 @@
       return item;
     }
 
-    function checkCanRowBeExpandable(row, dataContext, grid) {
-      if (typeof _canRowBeExpandable === 'function') {
-        return _canRowBeExpandable(row, dataContext, grid);
+    function checkExpandableOverride(row, dataContext, grid) {
+      if (typeof _expandableOverride === 'function') {
+        return _expandableOverride(row, dataContext, grid);
       }
       return true;
     }
 
     /**
-     * Method that user can pass to override the default behavior or making every row an expendable row.
+     * Method that user can pass to override the default behavior or making every row an expandable row.
      * In order word, user can choose which rows to be an available row detail (or not) by providing his own logic.
      * @param overrideFn: override function callback
      */
-    function canRowBeExpandable(overrideFn) {
-      _canRowBeExpandable = overrideFn;
+    function expandableOverride(overrideFn) {
+      _expandableOverride = overrideFn;
     }
 
     $.extend(this, {
       "init": init,
-      "canRowBeExpandable": canRowBeExpandable,
       "destroy": destroy,
       "collapseAll": collapseAll,
       "collapseDetailView": collapseDetailView,
       "expandDetailView": expandDetailView,
+      "expandableOverride": expandableOverride,
       "getColumnDefinition": getColumnDefinition,
       "getExpandedRows": getExpandedRows,
       "getFilterItem": getFilterItem,
