@@ -1,5 +1,5 @@
 {
-  "name": "slickgrid",
+  "name": "slickgrid-fix-large-numbers",
   "version": "2.4.7",
   "description": "A lightning fast JavaScript grid/spreadsheet",
   "main": "slick.core.js",
@@ -9,15 +9,15 @@
   },
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/6pac/SlickGrid.git"
+    "url": "git+https://github.com/vin-e/SlickGrid.git"
   },
   "keywords": [
     "slickgrid",
     "grid"
   ],
   "author": "Michael Leibman <michael.leibman@gmail.com>",
-  "contributors": [ 
-    "Ben McIntyre <email.ben.mcintyre@gmail.com>" 
+  "contributors": [
+    "Ben McIntyre <email.ben.mcintyre@gmail.com>"
   ],
   "license": "MIT",
   "bugs": {

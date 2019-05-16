@@ -1,3 +1,7 @@
+## About this Fix
+
+This is a fix for numbers over 2.14 billion rows. This package will not track with 6pac's version. This is only a stop gap solution for my use case until the patch is release by 6pac.
+
 ## This is the 6pac SlickGrid repo
 
 Check out the NEW SlickGrid Website! http://slickgrid.net/
