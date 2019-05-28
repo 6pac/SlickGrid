@@ -1,5 +1,5 @@
 {
-  "name": "slickgrid",
+  "name": "slickgrid-fix-large-numbers",
   "version": "2.4.8",
   "description": "A lightning fast JavaScript grid/spreadsheet",
   "main": "slick.core.js",
