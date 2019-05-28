@@ -3441,7 +3441,7 @@ if (typeof Slick === "undefined") {
 
     function updateRowPositions() {
       for (var row in rowsCache) {
-        rowsCache[row].rowNode.style.top = getRowTop(row) + "px";
+        rowsCache[parseRowToNumber(row)].rowNode.style.top = getRowTop(parseRowToNumber(row)) + "px";
       }
     }
 
@@ -4108,11 +4108,15 @@ if (typeof Slick === "undefined") {
       return parseInt(cls[0].substr(1, cls[0].length - 1), 10);
     }
 
+    function parseRowToNumber(row) {
+      return (row ? parseInt(row) : 0);
+    }
+
     function getRowFromNode(rowNode) {
       for (var row in rowsCache) {
         for (var i in rowsCache[row].rowNode) {
           if (rowsCache[row].rowNode[i] === rowNode)
-          return (row ? parseInt(row) : 0);
+          return parseRowToNumber(row);
         }
       }
       return null;
