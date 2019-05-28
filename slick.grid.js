@@ -3441,7 +3441,7 @@ if (typeof Slick === "undefined") {
 
     function updateRowPositions() {
       for (var row in rowsCache) {
-        rowsCache[parseRowToNumber(row)].rowNode.style.top = getRowTop(parseRowToNumber(row)) + "px";
+        rowsCache[parseRowToNumber(row)][0].rowNode.style.top = getRowTop(parseRowToNumber(row)) + "px";
       }
     }
 
