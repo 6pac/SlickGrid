@@ -91,7 +91,7 @@
       var lookup = {}, row, i;
       var disabledCount = 0;
       if (typeof _selectableOverride === 'function') {
-        for (k = 0; k < _grid.getDataLength(); k++) {
+        for (var k = 0; k < _grid.getDataLength(); k++) {
           // If we are allowed to select the row
           var dataItem = _grid.getDataItem(k);
           if (!checkSelectableOverride(i, dataItem, _grid)) {
