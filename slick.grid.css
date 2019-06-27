@@ -10,6 +10,12 @@ classes should alter those!
   overflow: auto;
   position: relative;
   border-left: 0px !important;
+  /* IRONFLY_START */
+  background: none;
+  color: #EEEEEE;
+  border-top: none;
+  border-bottom: 2px solid #3b7e99;
+  /* IRONFLY_END */
 }
 
 .slick-header.ui-state-default {
@@ -30,18 +36,22 @@ classes should alter those!
 .slick-header-column.ui-state-default, .slick-group-header-column.ui-state-default {
   position: relative;
   display: inline-block;
-  box-sizing: content-box !important; /* this here only for Firefox! */ 
+  /*box-sizing: content-box !important; !* this here only for Firefox! *! */
   overflow: hidden;
   -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
-  height: 16px;
-  line-height: 16px;
+  /* IRONFLY_START */
+  height: 20px;
+  line-height: 20px;
+  /* IRONFLY_END */
   margin: 0;
   padding: 4px;
-  border-right: 1px solid silver;
-  border-left: 0px !important;
-  border-top: 0px !important;
-  border-bottom: 0px !important;
+  /* IRONFLY_START */
+  border: 0;
+  border: none;
+  background: none;
+  color: #EEEEEE;
+  /* IRONFLY_END */
   float: left;
 }
 
@@ -123,13 +133,27 @@ classes should alter those!
   position: absolute;
   border: 0px;
   width: 100%;
+  /* IRONFLY_START */
+  background: none;
+  color: #EEEEEE;
+  /*border-bottom: 1px solid silver;*/
+  /* IRONFLY_END */
 }
+
+/* IRONFLY_START */
+.slick-row.even {
+    background: rgba(260, 260, 260, .1);
+}
+/* IRONFLY_END */
 
 .slick-cell, .slick-headerrow-column , .slick-footerrow-column{
   position: absolute;
-  border: 1px solid transparent;
-  border-right: 1px dotted silver;
-  border-bottom-color: silver;
+  /* IRONFLY_START */
+  border: none;
+  /*border: 1px solid transparent;*/
+  /*border-right: 1px dotted silver;*/
+  /*border-bottom-color: silver;*/
+  /* IRONFLY_END */
   overflow: hidden;
   -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
@@ -140,12 +164,14 @@ classes should alter those!
   white-space: nowrap;
   cursor: default;
 }
-.slick-cell, .slick-headerrow-column{
-  border-bottom-color: silver;
-}
-.slick-footerrow-column {
-  border-top-color: silver;
-}
+/*IRONFLY_START*/
+/*.slick-cell, .slick-headerrow-column{*/
+  /*border-bottom-color: silver;*/
+/*}*/
+/*.slick-footerrow-column {*/
+  /*border-top-color: silver;*/
+/*}*/
+/*IRONFLY_END*/
 
 .slick-group {
 }

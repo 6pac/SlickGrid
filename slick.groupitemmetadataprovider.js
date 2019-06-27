@@ -1,3 +1,8 @@
+// IRONFLY_START
+var keycode =require('./keycode')
+// IRONFLY_END
+
+
 (function ($) {
   $.extend(true, window, {
     Slick: {
@@ -31,6 +36,9 @@
       groupCssClass: "slick-group",
       groupTitleCssClass: "slick-group-title",
       totalsCssClass: "slick-group-totals",
+      // IRONFLY_START
+      displayTotalsRow: false,
+      // IRONFLY_END
       groupFocusable: true,
       totalsFocusable: false,
       toggleCssClass: "slick-group-toggle",
@@ -112,7 +120,9 @@
 
     // TODO:  add -/+ handling
     function handleGridKeyDown(e, args) {
-      if (options.enableExpandCollapse && (e.which == Slick.keyCode.SPACE)) {
+      // IRONFLY_START
+      if (options.enableExpandCollapse && (e.which == keycode.SPACE)) {
+        // IRONFLY_END
         var activeCell = this.getActiveCell();
         if (activeCell) {
           var item = this.getDataItem(activeCell.row);
@@ -137,10 +147,16 @@
     }
 
     function getGroupRowMetadata(item) {
+      // IRONFLY_START
+      var cssClasses = options.groupCssClass
+      if (item && item.level != null) {
+        cssClasses += ' group-level-' + item.level
+      }
+      if (options.displayTotalsRow) {
       return {
-        selectable: false,
+          selectable: true,
         focusable: options.groupFocusable,
-        cssClasses: options.groupCssClass,
+          cssClasses: cssClasses,
         columns: {
           0: {
             colspan: "*",
@@ -148,17 +164,26 @@
             editor: null
           }
         }
+        }
+      }
+      return {
+        selectable: true,
+        focusable: options.groupFocusable,
+        cssClasses: cssClasses,
+        formatter: options.totalsFormatter,
+        editor: null
       };
     }
 
     function getTotalsRowMetadata(item) {
       return {
-        selectable: false,
+        selectable: true,
         focusable: options.totalsFocusable,
-        cssClasses: options.totalsCssClass,
+        cssClasses: cssClasses,
         formatter: options.totalsFormatter,
         editor: null
       };
+      // IRONFLY_END
     }
 
 

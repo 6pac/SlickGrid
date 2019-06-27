@@ -1,3 +1,7 @@
+// IRONFLY_START
+var keycode = require('./keycode')
+// IRONFLY_END
+
 /***
  * Contains basic SlickGrid editors.
  * @module Editors
@@ -28,11 +32,13 @@
 
     this.init = function () {
       var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
+      // IRONFLY_START
       $input = $("<INPUT type=text class='editor-text' />")
           .appendTo(args.container)
           .on("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav)
-          .focus()
-          .select();
+        .trigger('focus')
+        .trigger('select');
+      // IRONFLY_END
     };
 
     this.destroy = function () {
@@ -40,7 +46,9 @@
     };
 
     this.focus = function () {
-      $input.focus();
+      // IRONFLY_START
+      $input.trigger('focus');
+      // IRONFLY_END
     };
 
     this.getValue = function () {
@@ -55,7 +63,9 @@
       defaultValue = item[args.column.field] || "";
       $input.val(defaultValue);
       $input[0].defaultValue = defaultValue;
-      $input.select();
+      // IRONFLY_START
+      $input.trigger('select');
+      // IRONFLY_END
     };
 
     this.serializeValue = function () {
@@ -94,11 +104,13 @@
 
     this.init = function () {
       var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
+      // IRONFLY_START
       $input = $("<INPUT type=text class='editor-text' />")
       .appendTo(args.container)
       .on("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav)      
-      .focus()
-      .select();
+        .trigger('focus')
+        .trigger('select');
+      // IRONFLY_END
     };
 
     this.destroy = function () {
@@ -106,14 +118,18 @@
     };
 
     this.focus = function () {
-      $input.focus();
+      // IRONFLY_START
+      $input.trigger('focus');
+      // IRONFLY_END
     };
 
     this.loadValue = function (item) {
       defaultValue = item[args.column.field];
       $input.val(defaultValue);
       $input[0].defaultValue = defaultValue;
-      $input.select();
+      // IRONFLY_START
+      $input.trigger('select');
+      // IRONFLY_END
     };
 
     this.serializeValue = function () {
@@ -159,11 +175,13 @@
 
     this.init = function () {
       var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
+      // IRONFLY_START
       $input = $("<INPUT type=text class='editor-text' />")
       .appendTo(args.container)
       .on("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav)      
-      .focus()
-      .select();
+        .trigger('focus')
+        .trigger('select');
+      // IRONFLY_END
     };
 
     this.destroy = function () {
@@ -171,7 +189,9 @@
     };
 
     this.focus = function () {
-      $input.focus();
+      // IRONFLY_START
+      $input.trigger('focus');
+      // IRONFLY_END
     };
 
     function getDecimalPlaces() {
@@ -195,7 +215,9 @@
 
       $input.val(defaultValue);
       $input[0].defaultValue = defaultValue;
-      $input.select();
+      // IRONFLY_START
+      $input.trigger('select');
+      // IRONFLY_END
     };
 
     this.serializeValue = function () {
@@ -260,7 +282,9 @@
     this.init = function () {
       $input = $("<INPUT type=text class='editor-text' />");
       $input.appendTo(args.container);
-      $input.focus().select();
+      // IRONFLY_START
+      $input.trigger('focus').trigger('select');
+      // IRONFLY_END
       $input.datepicker({
         showOn: "button",
         buttonImageOnly: true,
@@ -303,14 +327,18 @@
     };
 
     this.focus = function () {
-      $input.focus();
+      // IRONFLY_START
+      $input.trigger('focus');
+      // IRONFLY_END
     };
 
     this.loadValue = function (item) {
       defaultValue = item[args.column.field];
       $input.val(defaultValue);
       $input[0].defaultValue = defaultValue;
-      $input.select();
+      // IRONFLY_START
+      $input.trigger('select');
+      // IRONFLY_END
     };
 
     this.serializeValue = function () {
@@ -350,7 +378,9 @@
     this.init = function () {
       $select = $("<SELECT tabIndex='0' class='editor-yesno'><OPTION value='yes'>Yes</OPTION><OPTION value='no'>No</OPTION></SELECT>");
       $select.appendTo(args.container);
-      $select.focus();
+      // IRONFLY_START
+      $select.trigger('focus');
+      // IRONFLY_END
     };
 
     this.destroy = function () {
@@ -358,12 +388,16 @@
     };
 
     this.focus = function () {
-      $select.focus();
+      // IRONFLY_START
+      $select.trigger('focus');
+      // IRONFLY_END
     };
 
     this.loadValue = function (item) {
       $select.val((defaultValue = item[args.column.field]) ? "yes" : "no");
-      $select.select();
+      // IRONFLY_START
+      $select.trigger('select');
+      // IRONFLY_END
     };
 
     this.serializeValue = function () {
@@ -396,7 +430,9 @@
     this.init = function () {
       $select = $("<INPUT type=checkbox value='true' class='editor-checkbox' hideFocus>");
       $select.appendTo(args.container);
-      $select.focus();
+      // IRONFLY_START
+      $select.trigger('focus');
+      // IRONFLY_END
     };
 
     this.destroy = function () {
@@ -404,7 +440,9 @@
     };
 
     this.focus = function () {
-      $select.focus();
+      // IRONFLY_START
+      $select.trigger('focus');
+      // IRONFLY_END
     };
 
     this.loadValue = function (item) {
@@ -457,7 +495,9 @@
 
       $picker.find(".editor-percentcomplete-buttons").append("<button val=0>Not started</button><br/><button val=50>In Progress</button><br/><button val=100>Complete</button>");
 
-      $input.focus().select();
+      // IRONFLY_START
+      $input.trigger('focus').trigger('select');
+      // IRONFLY_END
 
       $picker.find(".editor-percentcomplete-slider").slider({
         orientation: "vertical",
@@ -480,12 +520,16 @@
     };
 
     this.focus = function () {
-      $input.focus();
+      // IRONFLY_START
+      $input.trigger('focus');
+      // IRONFLY_END
     };
 
     this.loadValue = function (item) {
       $input.val(defaultValue = item[args.column.field]);
-      $input.select();
+      // IRONFLY_START
+      $input.trigger('select');
+      // IRONFLY_END
     };
 
     this.serializeValue = function () {
@@ -545,33 +589,37 @@
       $input.on("keydown", this.handleKeyDown); 
 
       scope.position(args.position);
-      $input.focus().select();
+      // IRONFLY_START
+      $input.trigger('focus').trigger('select');
+      // IRONFLY_END
     };
 
     this.handleKeyDown = function (e) {
-      if (e.which == $.ui.keyCode.ENTER && e.ctrlKey) {
+      // IRONFLY_START
+      if (e.which == keycode.ENTER && e.ctrlKey) {
         scope.save();
-      } else if (e.which == $.ui.keyCode.ESCAPE) {
+      } else if (e.which == keycode.ESCAPE) {
         e.preventDefault();
         scope.cancel();
-      } else if (e.which == $.ui.keyCode.TAB && e.shiftKey) {
+      } else if (e.which == keycode.TAB && e.shiftKey) {
         e.preventDefault();
         args.grid.navigatePrev();
-      } else if (e.which == $.ui.keyCode.TAB) {
+      } else if (e.which == keycode.TAB) {
         e.preventDefault();
         args.grid.navigateNext();
-      } else if (e.which == $.ui.keyCode.LEFT || e.which == $.ui.keyCode.RIGHT) {
+      } else if (e.which == keycode.LEFT || e.which == keycode.RIGHT) {
         if (args.grid.getOptions().editorCellNavOnLRKeys) {
           var cursorPosition = this.selectionStart;
           var textLength = this.value.length;
-          if (e.keyCode === $.ui.keyCode.LEFT && cursorPosition === 0) {
+          if (e.keyCode === keycode.LEFT && cursorPosition === 0) {
             args.grid.navigatePrev();
           }
-          if (e.keyCode === $.ui.keyCode.RIGHT && cursorPosition >= textLength-1) {
+          if (e.keyCode === keycode.RIGHT && cursorPosition >= textLength-1) {
             args.grid.navigateNext();
           }
         }
       }
+      // IRONFLY_END
     };
 
     this.save = function () {
@@ -602,12 +650,16 @@
     };
 
     this.focus = function () {
-      $input.focus();
+      // IRONFLY_START
+      $input.trigger('focus');
+      // IRONFLY_END
     };
 
     this.loadValue = function (item) {
       $input.val(defaultValue = item[args.column.field]);
-      $input.select();
+      // IRONFLY_START
+      $input.trigger('select');
+      // IRONFLY_END
     };
 
     this.serializeValue = function () {
@@ -647,16 +699,20 @@
   function handleKeydownLRNav(e) {
     var cursorPosition = this.selectionStart;
     var textLength = this.value.length;
-    if ((e.keyCode === $.ui.keyCode.LEFT && cursorPosition > 0) ||
-         e.keyCode === $.ui.keyCode.RIGHT && cursorPosition < textLength-1) {
+    // IRONFLY_START
+    if ((e.keyCode === keycode.LEFT && cursorPosition > 0) ||
+         e.keyCode === keycode.RIGHT && cursorPosition < textLength-1) {
       e.stopImmediatePropagation();
     }
+    // IRONFLY_END
   }
 
   function handleKeydownLRNoNav(e) {
-    if (e.keyCode === $.ui.keyCode.LEFT || e.keyCode === $.ui.keyCode.RIGHT) {	
+    // IRONFLY_START
+    if (e.keyCode === keycode.LEFT || e.keyCode === keycode.RIGHT) {
       e.stopImmediatePropagation();	
     }	
+    // IRONFLY_END
   }
   
 })(jQuery);

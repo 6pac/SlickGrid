@@ -1,4 +1,10 @@
-## This is the 6pac SlickGrid repo
+## This is the Ironfly Tech SlickGrid repo
+It is slightly modified off the 6pac SlickGrid repo with some
+specific improvements.
+
+---
+
+### This is the 6pac SlickGrid repo
 
 Check out the NEW SlickGrid Website! http://slickgrid.net/
 

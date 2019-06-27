@@ -380,6 +380,14 @@
      * @type {Object}
      */
     this.groupingKey = null;
+    // IRONFLY_START
+    /***
+     * An ID key for the group, similar to grouping key but name consistent between the group and the group totals for easier lookup
+     * of the corresponding group/groupTotals rows
+     * @type {String}
+     */
+    this.id = null;
+    // IRONFLY_END
   }
 
   Group.prototype = new NonDataItem();
@@ -423,6 +431,14 @@
      * @type {Boolean}
      */
     this.initialized = false;
+    // IRONFLY_START
+    /***
+     * An ID key for the group, similar to grouping key but name consistent between the group and the group totals for easier lookup
+     * of the corresponding group/groupTotals rows
+     * @type {String}
+     */
+    this.id = null;
+    // IRONFLY_END
   }
 
   GroupTotals.prototype = new NonDataItem();

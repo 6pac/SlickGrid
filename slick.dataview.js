@@ -77,6 +77,9 @@
     var totalRows = 0;
 
     // events
+    // IRONFLY_START
+    var onGroupExpandCollapse = new Slick.Event();
+    // IRONFLY_END
     var onRowCountChanged = new Slick.Event();
     var onRowsChanged = new Slick.Event();
     var onRowsOrCountChanged = new Slick.Event();
@@ -511,6 +514,10 @@
         groupingInfos[level].collapsed = collapse;
       }
       refresh();
+      // START_IRONFLY
+      var evt = {collapsed: collapse, all: true, level: level, toggledGroupsByLevel: toggledGroupsByLevel, dataView: self}
+      onGroupExpandCollapse.notify(evt, null, self);
+      // END_IRONFLY
     }
 
     /**
@@ -530,6 +537,10 @@
     function expandCollapseGroup(level, groupingKey, collapse) {
       toggledGroupsByLevel[level][groupingKey] = groupingInfos[level].collapsed ^ collapse;
       refresh();
+      // START_IRONFLY
+      var evt = {collapsed: collapse, groupingKey: groupingKey, level: level, toggledGroupsByLevel: toggledGroupsByLevel, dataView: self}
+      onGroupExpandCollapse.notify(evt, null, self);
+      // END_IRONFLY
     }
 
     /**
@@ -585,6 +596,9 @@
           group.value = val;
           group.level = level;
           group.groupingKey = (parentGroup ? parentGroup.groupingKey + groupingDelimiter : '') + val;
+          // IRONFLY_START
+          group.id = '_group_' + group.groupingKey;
+          // IRONFLY_END
           groups[groups.length] = group;
           groupsByVal[val] = group;
         }
@@ -599,6 +613,9 @@
           group.value = val;
           group.level = level;
           group.groupingKey = (parentGroup ? parentGroup.groupingKey + groupingDelimiter : '') + val;
+          // IRONFLY_START
+          group.id = '_group_' + group.groupingKey;
+          // IRONFLY_END
           groups[groups.length] = group;
           groupsByVal[val] = group;
         }
@@ -612,11 +629,23 @@
           group.groups = extractGroups(group.rows, group);
         }
       }
-
-      groups.sort(groupingInfos[level].comparer);
-
+      // IRONFLY_START
+      // groups.sort(groupingInfos[level].comparer);
+      //IRONFLY_END
       return groups;
     }
+
+    // IRONFLY_START
+    function sortGroups(groups, level){
+        var lvl = level ? level : 0;
+        for(var i = 0; i < groups.length; i++){
+            var group = groups[i];
+            if(group.groups) sortGroups(group.groups, lvl+1);
+        }
+        groups.sort(groupingInfos[lvl].comparer);
+
+    }
+    //IRONFLY_END
 
     function calculateTotals(totals) {
       var group = totals.group;
@@ -651,6 +680,9 @@
       var gi = groupingInfos[group.level];
       var totals = new Slick.GroupTotals();
       totals.group = group;
+      // IRONFLY_START
+      totals.id = '_groupTotals_' + group.groupingKey
+      // IRONFLY_END
       group.totals = totals;
       if (!gi.lazyTotalsCalculation) {
         calculateTotals(totals);
@@ -716,18 +748,26 @@
       };
     }
 
+    // IRONFLY_START
     function compileAccumulatorLoop(aggregator) {
-      var accumulatorInfo = getFunctionInfo(aggregator.accumulate);
-      var fn = new Function(
-          "_items",
-          "for (var " + accumulatorInfo.params[0] + ", _i=0, _il=_items.length; _i<_il; _i++) {" +
-              accumulatorInfo.params[0] + " = _items[_i]; " +
-              accumulatorInfo.body +
-          "}"
-      );
-      fn.displayName = fn.name = "compiledAccumulatorLoop";
-      return fn;
+      // Fix issue where some browsers do not allow the displayName/name fields on the function, and allows for better code inspection in dev tools.
+      // var accumulatorInfo = getFunctionInfo(aggregator.accumulate);
+      // var fn = new Function(
+      //     "_items",
+      //     "for (var " + accumulatorInfo.params[0] + ", _i=0, _il=_items.length; _i<_il; _i++) {" +
+      //         accumulatorInfo.params[0] + " = _items[_i]; " +
+      //         accumulatorInfo.body +
+      //     "}"
+      // );
+      // fn.displayName = fn.name = "compiledAccumulatorLoop";
+      // return fn;
+      return function compiledAccumulatorLoop (items) {
+        for (var i = 0; i < items.length; i++) {
+          aggregator.accumulate(items[i])
+        }
     }
+    }
+    // IRONFLY_END
 
     function compileFilter() {
       var filterInfo = getFunctionInfo(filter);
@@ -927,6 +967,10 @@
         groups = extractGroups(newRows);
         if (groups.length) {
           addTotals(groups);
+          // IRONFLY_START
+          // ensure groups are sorted whenever recalculating them.
+          sortGroups(groups);
+          // IRONFLY_END
           newRows = flattenGroupedRows(groups);
         }
       }
@@ -1138,6 +1182,9 @@
       "getItemMetadata": getItemMetadata,
 
       // events
+      // START_IRONFLY
+      "onGroupExpandCollapse": onGroupExpandCollapse,
+      // END_IRONFLY
       "onRowCountChanged": onRowCountChanged,
       "onRowsChanged": onRowsChanged,
       "onRowsOrCountChanged": onRowsOrCountChanged,
