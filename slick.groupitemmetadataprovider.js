@@ -1,8 +1,3 @@
-// IRONFLY_START
-var keycode =require('./keycode')
-// IRONFLY_END
-
-
 (function ($) {
   $.extend(true, window, {
     Slick: {
@@ -121,7 +116,7 @@ var keycode =require('./keycode')
     // TODO:  add -/+ handling
     function handleGridKeyDown(e, args) {
       // IRONFLY_START
-      if (options.enableExpandCollapse && (e.which == keycode.SPACE)) {
+      if (options.enableExpandCollapse && (e.which == Slick.keyCode.SPACE)) {
         // IRONFLY_END
         var activeCell = this.getActiveCell();
         if (activeCell) {

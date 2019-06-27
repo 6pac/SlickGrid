@@ -5,6 +5,7 @@
  * index.js
  * @module
  */
+require('hammerjs')
 require('./lib/jquery.event.drag-2.3.0.js')
 require('./slick.core.js')
 require('./slick.formatters.js')

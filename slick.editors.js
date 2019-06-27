@@ -1,7 +1,3 @@
-// IRONFLY_START
-var keycode = require('./keycode')
-// IRONFLY_END
-
 /***
  * Contains basic SlickGrid editors.
  * @module Editors
@@ -596,25 +592,25 @@ var keycode = require('./keycode')
 
     this.handleKeyDown = function (e) {
       // IRONFLY_START
-      if (e.which == keycode.ENTER && e.ctrlKey) {
+      if (e.which == Slick.keyCode.ENTER && e.ctrlKey) {
         scope.save();
-      } else if (e.which == keycode.ESCAPE) {
+      } else if (e.which == Slick.keyCode.ESCAPE) {
         e.preventDefault();
         scope.cancel();
-      } else if (e.which == keycode.TAB && e.shiftKey) {
+      } else if (e.which == Slick.keyCode.TAB && e.shiftKey) {
         e.preventDefault();
         args.grid.navigatePrev();
-      } else if (e.which == keycode.TAB) {
+      } else if (e.which == Slick.keyCode.TAB) {
         e.preventDefault();
         args.grid.navigateNext();
-      } else if (e.which == keycode.LEFT || e.which == keycode.RIGHT) {
+      } else if (e.which == Slick.keyCode.LEFT || e.which == Slick.keyCode.RIGHT) {
         if (args.grid.getOptions().editorCellNavOnLRKeys) {
           var cursorPosition = this.selectionStart;
           var textLength = this.value.length;
-          if (e.keyCode === keycode.LEFT && cursorPosition === 0) {
+          if (e.keyCode === Slick.keyCode.LEFT && cursorPosition === 0) {
             args.grid.navigatePrev();
           }
-          if (e.keyCode === keycode.RIGHT && cursorPosition >= textLength-1) {
+          if (e.keyCode === Slick.keyCode.RIGHT && cursorPosition >= textLength-1) {
             args.grid.navigateNext();
           }
         }
@@ -700,8 +696,8 @@ var keycode = require('./keycode')
     var cursorPosition = this.selectionStart;
     var textLength = this.value.length;
     // IRONFLY_START
-    if ((e.keyCode === keycode.LEFT && cursorPosition > 0) ||
-         e.keyCode === keycode.RIGHT && cursorPosition < textLength-1) {
+    if ((e.keyCode === Slick.keyCode.LEFT && cursorPosition > 0) ||
+         e.keyCode === Slick.keyCode.RIGHT && cursorPosition < textLength-1) {
       e.stopImmediatePropagation();
     }
     // IRONFLY_END
@@ -709,7 +705,7 @@ var keycode = require('./keycode')
 
   function handleKeydownLRNoNav(e) {
     // IRONFLY_START
-    if (e.keyCode === keycode.LEFT || e.keyCode === keycode.RIGHT) {
+    if (e.keyCode === Slick.keyCode.LEFT || e.keyCode === Slick.keyCode.RIGHT) {
       e.stopImmediatePropagation();	
     }	
     // IRONFLY_END
