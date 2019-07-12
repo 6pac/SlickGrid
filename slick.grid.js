@@ -3626,31 +3626,64 @@ if (typeof Slick === "undefined") {
       trigger(self.onRendered, { startRow: visible.top, endRow: visible.bottom, grid: self });
     }
 
+// IRONFLY_START
+    var ignoreScroll = {
+      header: false,
+      headerRow: false,
+      footerRow: false,
+      preHeaderPanel: false
+    }
+    var scrollFrom = {
+      header: false,
+      headerRow: false,
+      footerRow: false,
+      preHeaderPanel: false
+    }
+
     function handleHeaderScroll() {
-      handleElementScroll($headerScrollContainer[0]);
+      if (ignoreScroll.header) {
+        ignoreScroll.header = false
+        return
+      }
+      handleElementScroll($headerScrollContainer[0], 'header');
     }
 
     function handleHeaderRowScroll() {
+      if (ignoreScroll.headerRow) {
+        ignoreScroll.headerRow = false
+        return
+      }
       var scrollLeft = $headerRowScrollContainer[0].scrollLeft;
       if (scrollLeft != $viewportScrollContainerX[0].scrollLeft) {
+        scrollFrom.headerRow = true
         $viewportScrollContainerX[0].scrollLeft = scrollLeft;
       }
     }
 
     function handleFooterRowScroll() {
+      if (ignoreScroll.footerRow) {
+        ignoreScroll.footerRow = false
+        return
+      }
       var scrollLeft = $footerRowScrollContainer[0].scrollLeft;
       if (scrollLeft != $viewportScrollContainerX[0].scrollLeft) {
+        scrollFrom.footerRow = true
         $viewportScrollContainerX[0].scrollLeft = scrollLeft;
       }
     }
 
     function handlePreHeaderPanelScroll() {
-      handleElementScroll($preHeaderPanelScroller[0]);
+      if (ignoreScroll.preHeaderPanel) {
+        ignoreScroll.preHeaderPanel = false
+        return
+      }
+      handleElementScroll($preHeaderPanelScroller[0], 'preHeaderPanel');
     }
 
-    function handleElementScroll(element) {
+    function handleElementScroll(element, from) {
       var scrollLeft = element.scrollLeft;
       if (scrollLeft != $viewportScrollContainerX[0].scrollLeft) {
+        scrollFrom[from] = true
         $viewportScrollContainerX[0].scrollLeft = scrollLeft;
       }
     }
@@ -3678,16 +3711,34 @@ if (typeof Slick === "undefined") {
 
       if (hScrollDist) {
         prevScrollLeft = scrollLeft;
+        if (!scrollFrom.header) {
+          ignoreScroll.header = true;
+          $headerScrollContainer[0].scrollLeft = scrollLeft;
+        } else {
+          scrollFrom.header = false;
+        }
 
         $viewportScrollContainerX[0].scrollLeft = scrollLeft;
         $headerScrollContainer[0].scrollLeft = scrollLeft;
         $topPanelScroller[0].scrollLeft = scrollLeft;
-        $headerRowScrollContainer[0].scrollLeft = scrollLeft;
-        if (options.createFooterRow) {
-          $footerRowScrollContainer[0].scrollLeft = scrollLeft;
+        if (!scrollFrom.headerRow) {
+          ignoreScroll.headerRow = true;
+          $headerRowScrollContainer[0].scrollLeft = scrollLeft;
+        } else {
+          scrollFrom.headerRow = false
         }
-        if (options.createPreHeaderPanel) {
+
+        if (options.createFooterRow && !scrollFrom.footerRow) {
+          ignoreScroll.footerRow = true;
+          $footerRowScrollContainer[0].scrollLeft = scrollLeft;
+        } else {
+          scrollFrom.footerRow = false;
+        }
+        if (options.createPreHeaderPanel && !scrollFrom.preHeaderPanel) {
+          ignoreScroll.preHeaderPanel = true;
           $preHeaderPanelScroller[0].scrollLeft = scrollLeft;
+        } else {
+          scrollFrom.preHeaderPanel = false;
         }
 
         if (hasFrozenColumns()) {
@@ -3755,6 +3806,7 @@ if (typeof Slick === "undefined") {
       if (hScrollDist || vScrollDist) return true;
       return false;
     }
+    // IRONFLY_END
 
     /*
     limits the frequency at which the provided action is executed.
@@ -3951,6 +4003,29 @@ if (typeof Slick === "undefined") {
     // Interactivity
 
     function handleMouseWheel(e, delta, deltaX, deltaY) {
+      // IRONFLY_START
+      // ignore mouse wheel outside of frozen columns
+      if(e.currentTarget === $viewportBottomR[0]){ return }
+      var PIXEL = 0
+      var LINE = 1
+      var PAGE = 2
+      var deltaMode = (e && e.originalEvent && e.originalEvent.deltaMode)
+      if (deltaMode == null) { deltaMode = LINE }
+      if (deltaX == null) {
+        deltaX = ((e && e.originalEvent && e.originalEvent.deltaX) || 0)
+      }
+      if (deltaY == null) {
+        deltaY = ((e && e.originalEvent && e.originalEvent.deltaY) || 0)
+      }
+      var shiftKey = (e && e.originalEvent && e.originalEvent.shiftKey)
+      if (shiftKey) {
+        var temp = deltaX
+        deltaX = deltaY
+        deltaY = temp
+      }
+      // flip the scroll direction on y.
+      deltaY *= -1
+      // IRONFLY_END
       var $rowNode = $(e.target).closest(".slick-row");
       var rowNode = $rowNode[0];
       if (rowNode != rowNodeFromLastMouseWheelEvent) {
@@ -3967,9 +4042,22 @@ if (typeof Slick === "undefined") {
 
         rowNodeFromLastMouseWheelEvent = rowNode;
       }
-
-      scrollTop = Math.max(0, $viewportScrollContainerY[0].scrollTop - (deltaY * options.rowHeight));
-      scrollLeft = $viewportScrollContainerX[0].scrollLeft + (deltaX * 10);
+      // IRONFLY_START
+      var topOffset = 0
+      var leftOffset = 0
+      if (deltaMode === PIXEL) {
+        topOffset = deltaY
+        leftOffset = deltaX
+      } else if (deltaMode === LINE) {
+        topOffset = deltaY * options.rowHeight
+        leftOffset = deltaX * 20
+      } else if (deltaMode === PAGE) {
+        topOffset = deltaY * viewportH
+        leftOffset = deltaX * viewportW
+      }
+      scrollTop = Math.max(0, $viewportScrollContainerY[0].scrollTop - topOffset)
+      scrollLeft = $viewportScrollContainerX[0].scrollLeft + leftOffset
+      // IRONFLY_END
       var handled = _handleScroll(true);
       if (handled) e.preventDefault();
     }
