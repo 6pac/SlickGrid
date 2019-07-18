@@ -544,9 +544,11 @@ if (typeof Slick === "undefined") {
         $viewport
           .on("scroll", handleScroll);
 
-        if (jQuery.fn.mousewheel) {
+        // IRONFLY_START
+        // if (jQuery.fn.mousewheel) {
           $viewport.on("mousewheel", handleMouseWheel);
-        }
+        // }
+        // IRONFLY_END
 
         $headerScroller
         //.on("scroll", handleHeaderScroll)
