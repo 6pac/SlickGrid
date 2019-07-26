@@ -4510,7 +4510,11 @@ if (typeof Slick === "undefined") {
 
         if (options.showCellSelection) {
           $(activeCellNode).addClass("active");
-          $(rowsCache[activeRow].rowNode).addClass("active");
+          // IRONFLY_START
+          if (rowsCache[activeRow]) {
+            $(rowsCache[activeRow].rowNode).addClass("active");
+          }
+          // IRONFLY_END
         }
 
         if (options.editable && opt_editMode && isCellPotentiallyEditable(activeRow, activeCell)) {
