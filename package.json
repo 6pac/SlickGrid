@@ -1,6 +1,6 @@
 {
   "name": "@ironfly/slickgrid",
-  "version": "2.4.12",
+  "version": "2.4.13",
   "description": "A lightning fast JavaScript grid/spreadsheet",
   "main": "index.js",
   "directories": {
