@@ -3090,8 +3090,12 @@ if (typeof Slick === "undefined") {
       // item: grid data for row
 
       var m = columns[cell];
-      var cellCss = "slick-cell l" + cell + " r" + Math.min(columns.length - 1, cell + colspan - 1) +
-          (m.cssClass ? " " + m.cssClass : "");
+      var cellCss = "slick-cell l" + cell + " r" + Math.min(columns.length - 1, cell + colspan - 1);
+      
+      if (m.cssClass) {
+        cellCss += " ";
+        cellCss += (typeof m.cssClass === "function" ? m.cssClass (row, cell, item) : m.cssClass);
+      }
 
       if (hasFrozenColumns() && cell <= options.frozenColumn) {
         cellCss += (" frozen");
