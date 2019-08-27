@@ -580,6 +580,8 @@ if (typeof Slick === "undefined") {
 
         if (options.createPreHeaderPanel) {
           $preHeaderPanelScroller
+              .on("contextmenu", handlePreHeaderContextMenu)
+              .on("click", handlePreHeaderClick)	  
               .on("scroll", handlePreHeaderPanelScroll);
         }
 
@@ -4515,6 +4517,19 @@ if (typeof Slick === "undefined") {
       }
     }
 
+    function handlePreHeaderContextMenu(e) {
+      var $header = $(e.target).closest(".slick-header-column", ".slick-header-columns");
+      var columnGroup = $header && $header.children(".slick-column-name:first").text();
+      trigger(self.onPreHeaderContextMenu, {columnGroup: columnGroup}, e);
+    }
+
+    function handlePreHeaderClick(e) {
+      if (columnResizeDragging) return;
+      var $header = $(e.target).closest(".slick-header-column", ".slick-header-columns");
+      var columnGroup = $header && $header.children(".slick-column-name:first").text();
+      trigger(self.onPreHeaderClick, {columnGroup: columnGroup}, e);
+    }
+	  
     function handleFooterContextMenu(e) {
       var $footer = $(e.target).closest(".slick-footerrow-column", ".slick-footerrow-columns");
       var column = $footer && $footer.data("column");
@@ -5678,6 +5693,8 @@ if (typeof Slick === "undefined") {
       // Events
       "onScroll": new Slick.Event(),
       "onSort": new Slick.Event(),
+      "onPreHeaderContextMenu": new Slick.Event(),
+      "onPreHeaderClick": new Slick.Event(),	    
       "onHeaderMouseEnter": new Slick.Event(),
       "onHeaderMouseLeave": new Slick.Event(),
       "onHeaderContextMenu": new Slick.Event(),
