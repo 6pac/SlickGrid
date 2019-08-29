@@ -31,7 +31,6 @@
     var _grid = grid;
     var _options = options;
     var $columnTitleElm;
-    var columns;
     var $list;
     var $menu;
     var columnCheckboxes;
