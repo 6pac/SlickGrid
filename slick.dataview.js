@@ -187,7 +187,7 @@
       sortComparer = null;
       var oldToString = Object.prototype.toString;
       Object.prototype.toString = (typeof field == "function") ? field : function () {
-        return this[field]
+        return this[field];
       };
       // an extra reversal for descending sort keeps the sort stable
       // (assuming a stable native sort implementation, which isn't true in some cases)
@@ -826,8 +826,8 @@
      * In ES5 we could set the function name on the fly but in ES6 this is forbidden and we need to set it through differently
      * We can use Object.defineProperty and set it the property to writable, see MDN for reference
      * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty
-     * @param {string} fn 
-     * @param {string} fnName 
+     * @param {string} fn
+     * @param {string} fnName
      */
     function setFunctionName(fn, fnName) {
       if (Object && Object.defineProperty) {
@@ -1202,7 +1202,7 @@
       if (!groupTotals.avg) {
         groupTotals.avg = {};
       }
-      if (this.nonNullCount_ != 0) {
+      if (this.nonNullCount_ !== 0) {
         groupTotals.avg[this.field_] = this.sum_ / this.nonNullCount_;
       }
     };
@@ -1229,7 +1229,7 @@
         groupTotals.min = {};
       }
       groupTotals.min[this.field_] = this.min_;
-    }
+    };
   }
 
   function MaxAggregator(field) {
@@ -1253,7 +1253,7 @@
         groupTotals.max = {};
       }
       groupTotals.max[this.field_] = this.max_;
-    }
+    };
   }
 
   function SumAggregator(field) {
@@ -1275,7 +1275,7 @@
         groupTotals.sum = {};
       }
       groupTotals.sum[this.field_] = this.sum_;
-    }
+    };
   }
 
   function CountAggregator(field) {
@@ -1289,7 +1289,7 @@
         groupTotals.count = {};
       }
       groupTotals.count[this.field_] = groupTotals.group.rows.length;
-    }
+    };
   }
 
   // TODO:  add more built-in aggregators
