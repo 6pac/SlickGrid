@@ -105,6 +105,7 @@
     var $list;
     var $button;
     var $menu;
+    var columns;
     var columnCheckboxes;
     var _defaults = {
       hideForceFitButton: false,

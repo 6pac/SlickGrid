@@ -30,7 +30,7 @@ if (typeof Slick === "undefined") {
 
 (function ($) {
   "use strict";
-  
+
   // Slick.Grid
   $.extend(true, window, {
     Slick: {
@@ -576,7 +576,7 @@ if (typeof Slick === "undefined") {
           $footerRow
             .on("contextmenu", handleFooterContextMenu)
             .on("click", handleFooterClick);
-		
+
           $footerRowScroller
               .on("scroll", handleFooterRowScroll);
         }
@@ -1268,7 +1268,7 @@ if (typeof Slick === "undefined") {
             }
           }
         }
-	      
+
         if (m.sortable) {
           header.addClass("slick-header-sortable");
           header.append("<span class='slick-sort-indicator"
@@ -1554,7 +1554,7 @@ if (typeof Slick === "undefined") {
     function getImpactedColumns( limit ) {
     	var impactedColumns = [];
 
-    	if( limit !== undefined ) {
+    	if( limit !== undefined && limit !== null ) {
 
 	   		for( var i = limit.start; i <= limit.end; i++ ) {
 	   			impactedColumns.push( columns[i] );
@@ -2081,21 +2081,21 @@ if (typeof Slick === "undefined") {
       var c = columnOrIndexOrId;
       if (typeof columnOrIndexOrId === 'number') {
         c = columns[columnOrIndexOrId];
-      } 
+      }
       else if (typeof columnOrIndexOrId === 'string') {
         for (i = 0; i < columns.length; i++) {
           if (columns[i].Id === columnOrIndexOrId) { c = columns[i]; }
         }
       }
       var $gridCanvas = $(getCanvasNode(0, 0));
-      getColAutosizeWidth(c, $gridCanvas, isInit);      
+      getColAutosizeWidth(c, $gridCanvas, isInit);
     }
-    
+
     function autosizeColumns(autosizeMode, isInit) {
       //LogColWidths();
 
       autosizeMode =  autosizeMode || options.autosizeColsMode;
-      if (autosizeMode === Slick.GridAutosizeColsMode.LegacyForceFit 
+      if (autosizeMode === Slick.GridAutosizeColsMode.LegacyForceFit
       || autosizeMode === Slick.GridAutosizeColsMode.LegacyOff) {
         legacyAutosizeColumns();
         return;
@@ -2158,7 +2158,7 @@ if (typeof Slick === "undefined") {
               colWidth = c.autoSize.widthPx;
             }
             if (c.rerenderOnResize && c.width  != colWidth) { reRender = true; }
-            c.width = colWidth; 
+            c.width = colWidth;
           }
         } else if ((options.viewportSwitchToScrollModeWidthPercent && totalWidthLessSTR + strColsMinWidth > viewportWidth * options.viewportSwitchToScrollModeWidthPercent / 100)
           || (totalMinWidth > viewportWidth)) {
@@ -2186,19 +2186,19 @@ if (typeof Slick === "undefined") {
               }
             }
             if (c.rerenderOnResize && c.width  != colWidth) { reRender = true; }
-            c.width = colWidth; 
+            c.width = colWidth;
           }
         }
       }
 
       if (autosizeMode === Slick.GridAutosizeColsMode.IgnoreViewport) {
         // just size columns as-is
-        for (i = 0; i < columns.length; i++) { 
+        for (i = 0; i < columns.length; i++) {
           colWidth = columns[i].autoSize.widthPx;
           if (columns[i].rerenderOnResize && columns[i].width != colWidth) {
             reRender = true;
           }
-          columns[i].width = colWidth; 
+          columns[i].width = colWidth;
         }
       }
 
@@ -2515,7 +2515,7 @@ if (typeof Slick === "undefined") {
         }
         columns[i].width = widths[i];
       }
-      
+
       reRenderColumns(reRender);
     }
 
@@ -4547,7 +4547,7 @@ if (typeof Slick === "undefined") {
       var column = $footer && $footer.data("column");
       trigger(self.onFooterClick, {column: column}, e);
     }
-	  
+
     function handleMouseEnter(e) {
       trigger(self.onMouseEnter, {}, e);
     }
