@@ -1,0 +1,343 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <title>SlickGrid example 7: Events</title>
+  <link rel="stylesheet" href="../slick.grid.css" type="text/css" />
+  <link rel="stylesheet" href="../plugins/slick.cellContextmenu.css" type="text/css" />
+  <link rel="stylesheet" href="../plugins/slick.contextmenu.css" type="text/css" />
+  <link rel="stylesheet" href="../css/smoothness/jquery-ui.css" type="text/css" />
+  <link rel="stylesheet" href="examples.css" type="text/css" />
+  <style>
+    .italic {
+      font-style: italic;
+    }
+
+    .grey {
+      color: grey;
+    }
+
+    .orange {
+      color: orange;
+    }
+
+    .red {
+      color: red;
+    }
+
+    .pointer {
+      cursor: pointer;
+    }
+
+    /**
+     * Style the drop-down menu here since the plugin stylesheet mostly contains structural CSS.
+     */
+    .slick-context-menu .title {
+      font-size: 17px;
+    }
+
+    .slick-context-menu {
+      border: 1px solid #718BB7;
+      background: #f0f0f0;
+      box-shadow: 2px 2px 2px silver;
+    }
+
+    .slick-context-menu-item {
+      padding: 2px 4px;
+      border: 1px solid transparent;
+      border-radius: 3px;
+    }
+
+    .slick-context-menu-item:hover {
+      border-color: silver;
+      background: white;
+    }
+
+    .slick-context-menu-item-disabled {
+      border-color: transparent !important;
+      background: inherit !important;
+    }
+
+    .icon-help {
+      background-image: url(../images/help.png);
+    }
+  </style>
+</head>
+
+<body>
+  <table width="100%">
+    <tr>
+      <td valign="top" width="50%">
+        <div id="myGrid" style="width:600px;height:500px;"></div>
+      </td>
+      <td valign="top">
+        <h2>Demonstrates:</h2>
+        <ul>
+          <li><strong>Slick.Plugins.ContextMenu - Context Menu (global from any columns)</strong></li>
+          <li>This plugin subscribes internally to the "onContextMenu" event</li>
+          <li>Mouse Right-Click the row to open a Context Menu (global any columns)</li>
+          <li>The context menu showing on left columns will show only commands (from Title to Finish)</li>
+          <li>
+            The context menu showing on Priority column will show list of options will be applied to the Priority cell
+          </li>
+          <li>
+            You can dynamically change the behavior and show Commands & Options over the Priority column
+            (choose option below, then try it over Priority column)
+          </li>
+          <div style="margin-bottom:10px">
+            <button onclick="showCommandsAndOptions(true)">Show Commands & Priority Options</button>
+            <button onclick="showCommandsAndOptions(false)">Show Priority Options Only</button>
+          </div>
+          <p></p>
+          <li><strong>Slick.Plugins.CellContextMenu - Cell Context Menu (from a single cell)</strong></li>
+          <li>This plugin subscribes internally to the "onClick" event</li>
+          <li>Regular Cell Click (left mouse or touch) will open a Cell Context Menu </li>
+          <li>
+            Very similar to the global Context Menu except that it's on a single cell click instead of a right+click
+          </li>
+          <li>Uses the same context menu structure as the global one but is defined on a column definition level</li>
+          <li>A good usage example is with an "Action" button/cell as shown in the grid</li>
+          <li>Note that the Button is only a placeholder, user can click anywhere in the cell. You could use a link or
+            anything else, as long as the cell is clicked it will trigger</li>
+        </ul>
+        <h2>View Source:</h2>
+        <ul>
+          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-plugin-contextmenu.html"
+              target="_sourcewindow"> View the source for this example on Github</a></li>
+        </ul>
+      </td>
+    </tr>
+  </table>
+
+  <script src="../lib/firebugx.js"></script>
+
+  <script src="../lib/jquery-1.12.4.min.js"></script>
+  <script src="../lib/jquery-ui.min.js"></script>
+  <script src="../lib/jquery.event.drag-2.3.0.js"></script>
+
+  <script src="../slick.core.js"></script>
+  <script src="../slick.dataview.js"></script>
+  <script src="../slick.editors.js"></script>
+  <script src="../slick.grid.js"></script>
+  <script src="../plugins/slick.cellContextmenu.js"></script>
+  <script src="../plugins/slick.contextmenu.js"></script>
+
+  <script>
+    var grid;
+    var data = [];
+    var dataView;
+    var contextMenuPlugin;
+
+    function fakeButtonFormatter(row, cell, value, columnDef, dataContext) {
+      return "<button class='pointer'>" + value + "</button>";
+    }
+
+    function priorityFormatter(row, cell, value, columnDef, dataContext) {
+      if (!value) {
+        return "";
+      }
+      let output = "";
+      const count = +(value >= 3 ? 3 : value);
+      return count === 3 ? "High" : (count === 2 ? "Medium" : "Low");
+    }
+
+    function formattedRandomNum(maxVal) {
+      var numDigits = ("" + maxVal).length;
+      return ("0000" + (Math.floor(Math.random() * maxVal) + 1)).slice(-numDigits)
+    }
+
+    function showCommandsAndOptions(showBothList) {
+      // when showing both Commands/Options, we can just pass an empty array to show over all columns
+      // else show on all columns except Priority
+      var showOverColumnIds = showBothList ? [] : ["title", "complete", "start", "finish"];
+      contextMenuPlugin.setOptions({
+        commandShownOverColumnIds: showOverColumnIds
+      });
+    }
+
+    function loadData(count) {
+      data = [];
+      for (var i = 0; i < 500; i++) {
+        data[i] = {
+          id: i,
+          title: "Task " + i,
+          duration: Math.floor(Math.random() * 25) + " days",
+          percentComplete: Math.floor(Math.random() * 100),
+          start: "" + formattedRandomNum(28) + "/03/2009",
+          finish: "" + formattedRandomNum(28) + "/05/2011",
+          priority: i % 3 ? 1 : (i % 2 ? 2 : 3),
+          action: "Action"
+        };
+      }
+      return data;
+    }
+
+    function executeCommand(e, args) {
+      var columnDef = args.columnDef;
+      var command = args.command;
+      var dataContext = args.dataContext;
+
+      switch (command) {
+        case "command1":
+          alert('Command 1');
+          break;
+        case "command2":
+          alert('Command 2');
+          break;
+        case "help":
+          alert('Please help!');
+          break;
+        case "delete-row":
+          if (confirm("Do you really want to delete row " + (args.row + 1) + " with " + dataContext.title + "?")) {
+            dataView.deleteItem(dataContext.id);
+          }
+          break;
+      }
+    }
+
+    var columns = [
+      { id: "title", name: "Title", field: "title", width: 150, cssClass: "cell-title", editor: Slick.Editors.Text },
+      { id: "complete", name: "% Complete", field: "percentComplete", sortable: true, width: 90 },
+      { id: "start", name: "Start", field: "start", sortable: true },
+      { id: "finish", name: "Finish", field: "finish", sortable: true },
+      { id: "priority", name: "Priority", field: "priority", width: 80, resizable: false, formatter: priorityFormatter },
+      {
+        id: "action", name: "Action", field: "action", width: 80, resizable: false, formatter: fakeButtonFormatter,
+        cellContextMenu: {
+          commandTitle: "Commands",
+          commandItems: [
+            { command: "command1", title: "Command 1" },
+            { command: "command2", title: "Command 2", cssClass: "orange" },
+            { command: "delete-row", title: "Delete Row", iconImage: "../images/delete.png", cssClass: "red" },
+            { divider: true },
+            { command: "help", title: "Help", iconCssClass: "icon-help" },
+            { command: "something", title: "Disabled Command", disabled: true },
+          ],
+        }
+      }
+    ];
+
+    var options = {
+      editable: true,
+      enableAddRow: false,
+      enableCellNavigation: true,
+      asyncEditorLoading: false,
+      rowHeight: 30,
+      contextMenu: {
+        commandTitle: "Commands",
+        // which column to show the command list? when not defined it will be shown over all columns
+        commandShownOverColumnIds: ["title", "complete", "start", "finish" /*, "priority"*/],
+        commandItems: [
+          { command: "delete-row", title: "Delete Row", iconImage: "../images/delete.png", cssClass: "red" },
+          { divider: true },
+          { command: "help", title: "Help", iconCssClass: "icon-help" },
+          { command: "something", title: "Disabled Command", disabled: true },
+        ],
+
+        // Options allows you to edit a column from an option chose a list
+        // for example, changing the Priority value
+        // you can also optionally define an array of column ids that you wish to display this option list (when not defined it will show over all columns)
+        optionTitle: "Change Priority",
+        optionShownOverColumnIds: ["priority"], // optional, when defined it will only show over the columns (column id) defined in the array
+        optionItems: [
+          { option: 0, title: "none", cssClass: "italic" },
+          { option: 1, iconImage: "../images/info.gif", iconCssClass: "grey", title: "Low" },
+          { option: 2, iconImage: "../images/info.gif", iconCssClass: "orange", title: "Medium" },
+          { option: 3, iconImage: "../images/info.gif", iconCssClass: "red", title: "High" },
+          { divider: true },
+          { option: 4, title: "Extreme (disabled)", disabled: true },
+        ]
+      }
+    };
+
+    $(function () {
+      dataView = new Slick.Data.DataView();
+      grid = new Slick.Grid("#myGrid", dataView, columns, options);
+      cellContextMenuPlugin = new Slick.Plugins.CellContextMenu({}); // this plugin does not have any argument
+      contextMenuPlugin = new Slick.Plugins.ContextMenu(options);    // while this plugin requires the grid options
+      grid.registerPlugin(cellContextMenuPlugin);
+      grid.registerPlugin(contextMenuPlugin);
+
+      dataView.onRowCountChanged.subscribe(function (e, args) {
+        grid.updateRowCount();
+        grid.render();
+      });
+
+      dataView.onRowsChanged.subscribe(function (e, args) {
+        grid.invalidateRows(args.rows);
+        grid.render();
+      });
+
+      grid.init();
+      data = loadData(1000);
+      dataView.beginUpdate();
+      dataView.setItems(data);
+      dataView.endUpdate();
+
+      // 
+      // -- subscribe to some Context Menu (menu from grid options, any columns) events
+      // -------------------------------------------------------------------------------
+
+      // subscribe to Context Menu 
+      contextMenuPlugin.onBeforeMenuShow.subscribe(function (e, args) {
+        // for example, you could select the row it was clicked with 
+        // grid.setSelectedRows([args.row]);
+        console.log("Before the global Context Menu is shown", args);
+      });
+      contextMenuPlugin.onBeforeMenuClose.subscribe(function (e, args) {
+        console.log("global Context Menu is closing", args);
+      });
+
+      // subscribe to Context Menu onCommand event
+      contextMenuPlugin.onCommand.subscribe(function (e, args) {
+        executeCommand(e, args);
+      });
+
+      // subscribe to Context Menu onOptionSelected event
+      contextMenuPlugin.onOptionSelected.subscribe(function (e, args) {
+        var dataContext = args && args.dataContext;
+
+        // change Priority
+        if (dataContext && dataContext.hasOwnProperty("priority")) {
+          dataContext.priority = args.item.option;
+          grid.updateRow(args.row);
+        }
+      });
+
+      //
+      // -- subscribe to some Cell Context Menu (menu from column def, cell click) events 
+      // --------------------------------------------------------------------------------- 
+
+      // subscribe to Context Menu 
+      cellContextMenuPlugin.onBeforeMenuShow.subscribe(function (e, args) {
+        // for example, you could select the row it was clicked with 
+        // grid.setSelectedRows([args.row]);
+        console.log("Before the Cell Context Menu is shown", args);
+      });
+      cellContextMenuPlugin.onBeforeMenuClose.subscribe(function (e, args) {
+        console.log("Cell Context Menu is closing", args);
+      });
+
+      // subscribe to Context Menu onCommand event
+      cellContextMenuPlugin.onCommand.subscribe(function (e, args) {
+        executeCommand(e, args);
+      });
+
+      // subscribe to Context Menu onOptionSelected event
+      cellContextMenuPlugin.onOptionSelected.subscribe(function (e, args) {
+        var dataContext = args && args.dataContext;
+
+        // change Priority
+        if (dataContext && dataContext.hasOwnProperty("priority")) {
+          dataContext.priority = args.item.option;
+          grid.updateRow(args.row);
+        }
+      });
+    });
+
+  </script>
+</body>
+
+</html>
