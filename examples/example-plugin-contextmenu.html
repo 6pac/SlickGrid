@@ -60,6 +60,10 @@
       background: inherit !important;
     }
 
+    .checkmark {
+      background-image: url(../images/tick.png);
+    }
+
     .icon-help {
       background-image: url(../images/help.png);
     }
@@ -70,7 +74,7 @@
   <table width="100%">
     <tr>
       <td valign="top" width="50%">
-        <div id="myGrid" style="width:600px;height:500px;"></div>
+        <div id="myGrid" style="width:600px;height:800px;"></div>
       </td>
       <td valign="top">
         <h2>Demonstrates:</h2>
@@ -78,7 +82,8 @@
           <li><strong>Slick.Plugins.ContextMenu - Context Menu (global from any columns)</strong></li>
           <li>This plugin subscribes internally to the "onContextMenu" event</li>
           <li>Mouse Right-Click the row to open a Context Menu (global any columns)</li>
-          <li>The context menu showing on left columns will show only commands (from Title to Finish)</li>
+          <li>It will also "autoAdjustDrop" (bottom/top) and "autoAlignSide" (left/right)</li>
+          <li>The context menu showing on left columns will show only commands (from Title to EffortDriven)</li>
           <li>
             The context menu showing on Priority column will show list of options will be applied to the Priority cell
           </li>
@@ -94,6 +99,7 @@
           <li><strong>Slick.Plugins.CellContextMenu - Cell Context Menu (from a single cell)</strong></li>
           <li>This plugin subscribes internally to the "onClick" event</li>
           <li>Regular Cell Click (left mouse or touch) will open a Cell Context Menu </li>
+          <li>It will also "autoAdjustDrop" (bottom/top) and "autoAlignSide" (left/right)</li>
           <li>
             Very similar to the global Context Menu except that it's on a single cell click instead of a right+click
           </li>
@@ -118,6 +124,7 @@
   <script src="../lib/jquery.event.drag-2.3.0.js"></script>
 
   <script src="../slick.core.js"></script>
+  <script src="../slick.formatters.js"></script>
   <script src="../slick.dataview.js"></script>
   <script src="../slick.editors.js"></script>
   <script src="../slick.grid.js"></script>
@@ -151,7 +158,7 @@
     function showCommandsAndOptions(showBothList) {
       // when showing both Commands/Options, we can just pass an empty array to show over all columns
       // else show on all columns except Priority
-      var showOverColumnIds = showBothList ? [] : ["title", "complete", "start", "finish"];
+      var showOverColumnIds = showBothList ? [] : ["title", "complete", "start", "finish", "effortDriven"];
       contextMenuPlugin.setOptions({
         commandShownOverColumnIds: showOverColumnIds
       });
@@ -168,6 +175,7 @@
           start: "" + formattedRandomNum(28) + "/03/2009",
           finish: "" + formattedRandomNum(28) + "/05/2011",
           priority: i % 3 ? 1 : (i % 2 ? 2 : 3),
+          effortDriven: (i % 5 == 0),
           action: "Action"
         };
       }
@@ -198,23 +206,29 @@
     }
 
     var columns = [
-      { id: "title", name: "Title", field: "title", width: 150, cssClass: "cell-title", editor: Slick.Editors.Text },
+      { id: "title", name: "Title", field: "title", width: 90, cssClass: "cell-title", editor: Slick.Editors.Text },
       { id: "complete", name: "% Complete", field: "percentComplete", sortable: true, width: 90 },
       { id: "start", name: "Start", field: "start", sortable: true },
       { id: "finish", name: "Finish", field: "finish", sortable: true },
       { id: "priority", name: "Priority", field: "priority", width: 80, resizable: false, formatter: priorityFormatter },
+      { id: "effortDriven", name: "Effort Driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark },
       {
         id: "action", name: "Action", field: "action", width: 80, resizable: false, formatter: fakeButtonFormatter,
         cellContextMenu: {
           commandTitle: "Commands",
           commandItems: [
-            { command: "command1", title: "Command 1" },
-            { command: "command2", title: "Command 2", cssClass: "orange" },
+            { command: "command1", title: "Command 1", cssClass: "orange" },
+            { command: "command2", title: "Command 2" },
             { command: "delete-row", title: "Delete Row", iconImage: "../images/delete.png", cssClass: "red" },
             { divider: true },
             { command: "help", title: "Help", iconCssClass: "icon-help" },
-            { command: "something", title: "Disabled Command", disabled: true },
+            { command: "something", title: "Disabled Command", disabled: true }
           ],
+          optionTitle: "Change Effort Driven",
+          optionItems: [
+            { option: true, title: "True", iconCssClass: 'checkmark' },
+            { option: false, title: "False" }
+          ]
         }
       }
     ];
@@ -228,7 +242,7 @@
       contextMenu: {
         commandTitle: "Commands",
         // which column to show the command list? when not defined it will be shown over all columns
-        commandShownOverColumnIds: ["title", "complete", "start", "finish" /*, "priority"*/],
+        commandShownOverColumnIds: ["title", "complete", "start", "finish", "effortDriven" /*, "priority"*/],
         commandItems: [
           { command: "delete-row", title: "Delete Row", iconImage: "../images/delete.png", cssClass: "red" },
           { divider: true },
@@ -276,13 +290,13 @@
       dataView.setItems(data);
       dataView.endUpdate();
 
-      // 
+      //
       // -- subscribe to some Context Menu (menu from grid options, any columns) events
       // -------------------------------------------------------------------------------
 
-      // subscribe to Context Menu 
+      // subscribe to Context Menu
       contextMenuPlugin.onBeforeMenuShow.subscribe(function (e, args) {
-        // for example, you could select the row it was clicked with 
+        // for example, you could select the row it was clicked with
         // grid.setSelectedRows([args.row]);
         console.log("Before the global Context Menu is shown", args);
       });
@@ -307,12 +321,12 @@
       });
 
       //
-      // -- subscribe to some Cell Context Menu (menu from column def, cell click) events 
-      // --------------------------------------------------------------------------------- 
+      // -- subscribe to some Cell Context Menu (menu from column def, cell click) events
+      // ---------------------------------------------------------------------------------
 
-      // subscribe to Context Menu 
+      // subscribe to Context Menu
       cellContextMenuPlugin.onBeforeMenuShow.subscribe(function (e, args) {
-        // for example, you could select the row it was clicked with 
+        // for example, you could select the row it was clicked with
         // grid.setSelectedRows([args.row]);
         console.log("Before the Cell Context Menu is shown", args);
       });
@@ -329,9 +343,9 @@
       cellContextMenuPlugin.onOptionSelected.subscribe(function (e, args) {
         var dataContext = args && args.dataContext;
 
-        // change Priority
+        // change Effort Driven column
         if (dataContext && dataContext.hasOwnProperty("priority")) {
-          dataContext.priority = args.item.option;
+          dataContext.effortDriven = args.item.option;
           grid.updateRow(args.row);
         }
       });

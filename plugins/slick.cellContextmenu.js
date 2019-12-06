@@ -10,6 +10,12 @@
 
   /***
    * A plugin to add Context Menu on a Cell (click on the cell that has the cellContextMenu object defined)
+   * The "cellContextMenu" is defined in a Column Definition object
+   * Similar to the ContextMenu plugin (could be used in combo), 
+   * except that it subscribes to the cell "onClick" event (regular mouse click or touch). 
+   *
+   * A general use of this plugin is for an Action Dropdown Menu to do certain things on the row that was clicked
+   * You can use it to change the cell data property through a list of Options AND/OR through a list of Commands.
    *
    * USAGE:
    *
@@ -24,6 +30,11 @@
    *    {
    *      id: "action", name: "Action", field: "action", formatter: fakeButtonFormatter,
    *      cellContextMenu: {
+   *        optionTitle: "Change Effort Driven",
+   *        optionItems: [
+   *          { option: true, title: "True", iconCssClass: 'checkmark' },
+   *          { option: false, title: "False" }
+   *        ],
    *        commandTitle: "Commands",
    *        commandItems: [
    *          { command: "delete-row", title: "Delete Row", iconImage: "../images/delete.png", cssClass: "red" },
@@ -36,38 +47,48 @@
    *  ];
    *
    *
+   * Available cellContextMenu properties:
+   *    commandTitle:               Title of the Command sub-menu
+   *    commandItems:               Array of Command item objects (command/title pair)
+   *    optionTitle:                Title of the Option sub-menu
+   *    optionItems:                Array of Options item objects (option/title pair)
+   *    minWidth:                   Minimum width that the drop menu will have
+   *    autoAdjustDrop:              Auto-align dropup or dropdown menu to the left or right depending on grid viewport available space (defaults to true)
+   *    autoAdjustDropOffset:        Optionally add an offset to the auto-align of the drop menu (defaults to 0)
+   *    autoAlignSide:              Auto-align drop menu to the left or right depending on grid viewport available space (defaults to true)
+   *    autoAlignSideOffset:        Optionally add an offset to the left/right side auto-align (defaults to 0)
+   * 
+   * 
    * Available menu Command/Option item properties:
-   *    title:            Menu item text.
-   *    divider:          Whether the current item is a divider, not an actual command.
-   *    disabled:         Whether the item is disabled.
-   *    tooltip:          Item tooltip.
-   *    command:          A command identifier to be passed to the onCommand event handlers.
-   *    cssClass:         A CSS class to be added to the menu item container.
-   *    iconCssClass:     A CSS class to be added to the menu item icon.
-   *    iconImage:        A url to the icon image.
-   *    minWidth:         Minimum width that the drop menu will have
-   *    autoAlign:        Auto-align drop menu to the left when not enough viewport space to show on the right
-   *    autoAlignOffset:  When drop menu is aligned to the left, it might not be perfectly aligned with the header menu icon, if that is the case you can add an offset (positive/negative number to move right/left)
+   *    command:             A command identifier to be passed to the onCommand event handlers (when using "commandItems").
+   *    option:              An option to be passed to the onOptionSelected event handlers (when using "optionItems").
+   *    title:               Menu item text label.
+   *    divider:             Whether the current item is a divider, not an actual command.
+   *    disabled:            Whether the item is disabled.
+   *    tooltip:             Item tooltip.
+   *    cssClass:            A CSS class to be added to the menu item container.
+   *    iconCssClass:        A CSS class to be added to the menu item icon.
+   *    iconImage:           A url to the icon image.
    *
    *
    * The plugin exposes the following events:
-   * 
+   *
    *    onBeforeMenuShow:   Fired before the menu is shown.  You can customize the menu or dismiss it by returning false.
    *        Event args:
-   *            cell:        Cell or column index          
+   *            cell:        Cell or column index
    *            row:         Row index
    *            grid:        Reference to the grid.
-   * 
+   *
    *    onBeforeMenuClose:   Fired when the menu is closing.
    *        Event args:
-   *            cell:        Cell or column index          
+   *            cell:        Cell or column index
    *            row:         Row index
    *            grid:        Reference to the grid.
    *            menu:        Menu DOM element
    *
    *    onCommand: Fired on menu option clicked from the Command items list
    *        Event args:
-   *            cell:        Cell or column index          
+   *            cell:        Cell or column index
    *            row:         Row index
    *            grid:        Reference to the grid.
    *            command:     Menu command identified.
@@ -77,7 +98,7 @@
    *
    *    onOptionSelected: Fired on menu option clicked from the Option items list
    *        Event args:
-   *            cell:        Cell or column index          
+   *            cell:        Cell or column index
    *            row:         Row index
    *            grid:        Reference to the grid.
    *            command:     Menu command identified.
@@ -99,18 +120,20 @@
     var _currentCell = -1;
     var _currentRow = -1;
     var _gridUid = "";
+    var _gridOptions;
     var _handler = new Slick.EventHandler();
     var _defaults = {
-      cssClass: null,
-      fadeSpeed: 250,
+      autoAdjustDrop: true,    // dropup/dropdown
+      autoAlignSide: true,    // left/right
+      autoAdjustDropOffset: 0,
+      autoAlignSideOffset: 0,
       minWidth: 180,
-      optionShownOverColumnIds: [],
-      commandShownOverColumnIds: [],
     };
     var $menu;
 
     function init(grid) {
       _grid = grid;
+      _gridOptions = grid.getOptions();
       _contextMenuProperties = $.extend(true, {}, _defaults, optionProperties);
       _gridUid = (grid && grid.getUID) ? grid.getUID() : "";
       _handler.subscribe(_grid.onClick, showMenu);
@@ -118,14 +141,6 @@
 
     function setOptions(newOptions) {
       _contextMenuProperties = $.extend(true, {}, _contextMenuProperties, newOptions);
-
-      // on the array properties, we want to make sure to overwrite them and not just extending them
-      if (newOptions.commandShownOverColumnIds) {
-        _contextMenuProperties.commandShownOverColumnIds = newOptions.commandShownOverColumnIds;
-      }
-      if (newOptions.optionShownOverColumnIds) {
-        _contextMenuProperties.optionShownOverColumnIds = newOptions.optionShownOverColumnIds;
-      }
     }
 
     function destroy() {
@@ -146,13 +161,11 @@
       // merge the contextMenu of the column definition with the default properties
       _contextMenuProperties = $.extend(true, {}, _contextMenuProperties, columnDef.cellContextMenu);
 
-      var isColumnOptionAllowed = checkIsColumnAllowed(_contextMenuProperties.optionShownOverColumnIds, columnDef.id);
-      var isColumnCommandAllowed = checkIsColumnAllowed(_contextMenuProperties.commandShownOverColumnIds, columnDef.id);
       var commandItems = _contextMenuProperties.commandItems || [];
       var optionItems = _contextMenuProperties.optionItems || [];
 
       // make sure there's at least something to show before creating the Context Menu
-      if (!columnDef || !columnDef.cellContextMenu || (!isColumnOptionAllowed && !isColumnCommandAllowed) || (!commandItems.length && optionItems.length)) {
+      if (!columnDef || !columnDef.cellContextMenu || (!commandItems.length && optionItems.length)) {
         return;
       }
 
@@ -171,19 +184,19 @@
 
       // create a new context menu
       var menu = $('<div class="slick-cell-context-menu ' + _gridUid + '" style="min-width: ' + _contextMenuProperties.minWidth + 'px" />')
-        .css("top", e.pageY)
+        .css("top", e.pageY + 5)
         .css("left", e.pageX)
         .css("display", "none");
 
       // -- Option List sub-menu
-      if (isColumnOptionAllowed && optionItems.length > 0) {
+      if (optionItems.length > 0) {
         var $optionMenu = $('<div class="slick-cell-context-menu-option-list" />');
         $optionMenu.appendTo(menu);
         populateOptionItems(_contextMenuProperties, $optionMenu);
       }
 
       // -- Command List sub-menu
-      if (isColumnCommandAllowed && commandItems.length > 0) {
+      if (commandItems.length > 0) {
         var $commandMenu = $('<div class="slick-cell-context-menu-command-list" />');
         $commandMenu.appendTo(menu);
         populateCommandItems(_contextMenuProperties, $commandMenu);
@@ -195,6 +208,25 @@
       return menu;
     }
 
+    function calculateAvailableSpaceBottom(element) {
+      var windowHeight = $(window).innerHeight() || 0;
+      var pageScroll = $(window).scrollTop() || 0;
+      if (element && element.length > 0) {
+        var elementOffsetTop = element.offset().top;
+        return windowHeight - (elementOffsetTop - pageScroll);
+      }
+      return 0;
+    }
+
+    function calculateAvailableSpaceTop(element) {
+      var pageScroll = $(window).scrollTop() || 0;
+      if (element && element.length > 0) {
+        var elementOffsetTop = element.offset().top;
+        return elementOffsetTop - pageScroll;
+      }
+      return 0;
+    }
+
     function destroyMenu() {
       if ($menu) {
         $menu.remove();
@@ -202,29 +234,58 @@
       }
     }
 
-    function checkIsColumnAllowed(columnIds, columnId) {
-      var isAllowedColumn = false;
+    /**
+     * Reposition the menu drop (up/down) and the side (left/right)
+     * @param {*} event
+     */
+    function repositionMenu(e) {
+      var $parent = $(e.target).closest(".slick-cell");
+      var menuOffsetLeft = $parent ? $parent.offset().left : e.pageX;
+      var menuOffsetTop = $parent ? $parent.offset().top : e.pageY;
+      var parentCellWidth = $parent.outerWidth();
+      var menuHeight = $menu.outerHeight() || 0;
+      var menuWidth = $menu.outerWidth() || _contextMenuProperties.minWidth || 0;
 
-      if (columnIds && columnIds.length > 0) {
-        for (var o = 0, ln = columnIds.length; o < ln; o++) {
-          if (columnIds[o] === columnId) {
-            isAllowedColumn = true;
-          }
+      // if autoAdjustDrop is enable, we first need to see what position the drop will be located (defaults to bottom)
+      // without necessary toggling it's position just yet, we just want to know the future position for calculation
+      if (_contextMenuProperties.autoAdjustDrop) {
+        var spaceBottom = calculateAvailableSpaceBottom($menu);
+        var spaceTop = calculateAvailableSpaceTop($menu);
+        var dropPosition = (spaceBottom < menuHeight && spaceTop > spaceBottom) ? 'top' : 'bottom';
+        if (dropPosition === 'top') {
+          menuOffsetTop = menuOffsetTop - menuHeight - _contextMenuProperties.autoAdjustDropOffset;
+        } else {
+          menuOffsetTop = menuOffsetTop + _gridOptions.rowHeight + _contextMenuProperties.autoAdjustDropOffset;
         }
-      } else {
-        isAllowedColumn = true;
       }
-      return isAllowedColumn;
+
+      // when auto-align is set, it will calculate whether it has enough space in the viewport to show the drop menu on the right (default)
+      // if there isn't enough space on the right, it will automatically align the drop menu to the left (defaults to the right)
+      // to simulate an align left, we actually need to know the width of the drop menu
+      if (_contextMenuProperties.autoAlignSide) {
+        var gridPos = _grid.getGridPosition();
+        var dropSide = ((menuOffsetLeft + menuWidth) >= gridPos.width) ? 'left' : 'right';
+        if (dropSide === 'left') {
+          menuOffsetLeft = (menuOffsetLeft - (menuWidth - parentCellWidth) - _contextMenuProperties.autoAlignSideOffset);
+        } else {
+          menuOffsetLeft = menuOffsetLeft + _contextMenuProperties.autoAlignSideOffset;
+        }
+      }
+
+      // ready to reposition the menu
+      $menu.css("top", menuOffsetTop);
+      $menu.css("left", menuOffsetLeft);
     }
 
     function showMenu(e, args) {
       e.preventDefault();
 
-      // create the DOM element 
+      // create the DOM element
       $menu = createMenu(e, args);
 
       // reposition the menu to where the user clicked
       if ($menu) {
+        repositionMenu(e);
         $menu
           .data("cell", _currentCell)
           .data("row", _currentRow)
@@ -412,7 +473,9 @@
       var columnDef = _grid.getColumns()[cell];
       var dataContext = _grid.getDataItem(row);
 
-      if (option != null) {
+      if (option !== undefined) {
+        closeMenu(e, { cell: cell, row: row });
+
         _self.onOptionSelected.notify({
           "cell": cell,
           "row": row,
@@ -428,12 +491,12 @@
     $.extend(this, {
       "init": init,
       "destroy": destroy,
-      "pluginName": "ContextMenu",
+      "pluginName": "CellContextMenu",
       "setOptions": setOptions,
 
       "onBeforeMenuShow": new Slick.Event(),
-      "onCommand": new Slick.Event(),
       "onBeforeMenuClose": new Slick.Event(),
+      "onCommand": new Slick.Event(),
       "onOptionSelected": new Slick.Event()
     });
   }
