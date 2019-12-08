@@ -59,7 +59,8 @@
    *    optionTitle:                Title of the Option sub-menu
    *    optionShownOverColumnIds:   Define which column to show the Options list. If not defined (defaults), the menu will be shown over all columns
    *    optionItems:                Array of Options item objects (option/title pair)
-   *    minWidth:                   Minimum width that the drop menu will have
+   *    maxHeight:                  Maximum height that the drop menu will have, can be a number (250) or text ("none")
+   *    minWidth:                   Minimum width that the drop menu will have, can be a number (250) or text ("inherit")
    *    autoAdjustDrop:             Auto-align dropup or dropdown menu to the left or right depending on grid viewport available space (defaults to true)
    *    autoAdjustDropOffset:       Optionally add an offset to the auto-align of the drop menu (defaults to -4)
    *    autoAlignSide:              Auto-align drop menu to the left or right depending on grid viewport available space (defaults to true)
@@ -68,15 +69,15 @@
    * 
    * 
    * Available menu Command/Option item properties:
-   *    command:             A command identifier to be passed to the onCommand event handlers (when using "commandItems").
-   *    option:              An option to be passed to the onOptionSelected event handlers (when using "optionItems").
-   *    title:               Menu item text.
-   *    divider:             Whether the current item is a divider, not an actual command.
-   *    disabled:            Whether the item is disabled.
-   *    tooltip:             Item tooltip.
-   *    cssClass:            A CSS class to be added to the menu item container.
-   *    iconCssClass:        A CSS class to be added to the menu item icon.
-   *    iconImage:           A url to the icon image.
+   *    command:                A command identifier to be passed to the onCommand event handlers (when using "commandItems").
+   *    option:                 An option to be passed to the onOptionSelected event handlers (when using "optionItems").
+   *    title:                  Menu item text.
+   *    divider:                Whether the current item is a divider, not an actual command.
+   *    disabled:               Whether the item is disabled.
+   *    tooltip:                Item tooltip.
+   *    cssClass:               A CSS class to be added to the menu item container.
+   *    iconCssClass:           A CSS class to be added to the menu item icon.
+   *    iconImage:              A url to the icon image.
    *    itemVisibilityOverride: Callback method that user can override the default behavior of showing/hiding an item from the list
    *    itemUsabilityOverride:  Callback method that user can override the default behavior of enabling/disabling an item from the list
    *
@@ -116,36 +117,38 @@
    *            dataContext: Cell Data Context (data object)
    *
    *
-   * @param gridOptions {Object} Grid Options
+   * @param options {Object} Context Menu Options
    * @class Slick.Plugins.ContextMenu
    * @constructor
    */
-  function ContextMenu(gridOptions) {
-    var _grid;
-    var _gridOptions;
-    var $optionTitleElm;
-    var $commandTitleElm;
+  function ContextMenu(optionProperties) {
     var _contextMenuProperties;
     var _currentCell = -1;
     var _currentRow = -1;
+    var _grid;
+    var _gridOptions;
     var _gridUid = "";
-    var _self = this;
     var _handler = new Slick.EventHandler();
+    var _self = this;
+    var $optionTitleElm;
+    var $commandTitleElm;
+    var $menu;
+
     var _defaults = {
-      autoAdjustDrop: true,    // dropup/dropdown
-      autoAlignSide: true,    // left/right
+      autoAdjustDrop: true,     // dropup/dropdown
+      autoAlignSide: true,      // left/right
       autoAdjustDropOffset: -4,
       autoAlignSideOffset: 0,
+      maxHeight: "none",
       minWidth: 180,
       optionShownOverColumnIds: [],
       commandShownOverColumnIds: [],
     };
-    var $menu;
 
     function init(grid) {
       _grid = grid;
-      _gridOptions = gridOptions;
-      _contextMenuProperties = $.extend({}, _defaults, gridOptions.contextMenu);
+      _gridOptions = grid.getOptions();
+      _contextMenuProperties = $.extend({}, _defaults, optionProperties);
       _gridUid = (grid && grid.getUID) ? grid.getUID() : "";
       _handler.subscribe(_grid.onContextMenu, handleOnContextMenu);
     }
@@ -202,7 +205,10 @@
       }
 
       // create a new context menu
-      var menu = $('<div class="slick-context-menu ' + _gridUid + '" style="min-width: ' + _contextMenuProperties.minWidth + 'px" />')
+      var maxHeight = isNaN(_contextMenuProperties.maxHeight) ? _contextMenuProperties.maxHeight : _contextMenuProperties.maxHeight + "px";
+      var minWidth = isNaN(_contextMenuProperties.minWidth) ? _contextMenuProperties.minWidth : _contextMenuProperties.minWidth + "px";
+      var menuStyle = "min-width: " + minWidth + "; max-height: " + maxHeight;
+      var menu = $('<div class="slick-context-menu ' + _gridUid + '" style="' + menuStyle + '" />')
         .css("top", e.pageY)
         .css("left", e.pageX)
         .css("display", "none");
@@ -270,7 +276,7 @@
     function calculateAvailableSpaceBottom(element) {
       var windowHeight = $(window).innerHeight() || 0;
       var pageScroll = $(window).scrollTop() || 0;
-      if (element && element.length > 0) {
+      if (element && element.offset && element.length > 0) {
         var elementOffsetTop = element.offset().top;
         return windowHeight - (elementOffsetTop - pageScroll);
       }
@@ -279,7 +285,7 @@
 
     function calculateAvailableSpaceTop(element) {
       var pageScroll = $(window).scrollTop() || 0;
-      if (element && element.length > 0) {
+      if (element && element.offset && element.length > 0) {
         var elementOffsetTop = element.offset().top;
         return elementOffsetTop - pageScroll;
       }
@@ -514,17 +520,24 @@
       var parentCellWidth = $parent.outerWidth();
       var menuHeight = $menu.outerHeight() || 0;
       var menuWidth = $menu.outerWidth() || _contextMenuProperties.minWidth || 0;
+      var rowHeight = _gridOptions.rowHeight;
+      var dropOffset = _contextMenuProperties.autoAdjustDropOffset;
+      var sideOffset = _contextMenuProperties.autoAlignSideOffset;
 
       // if autoAdjustDrop is enable, we first need to see what position the drop will be located
       // without necessary toggling it's position just yet, we just want to know the future position for calculation
       if (_contextMenuProperties.autoAdjustDrop) {
-        var spaceBottom = calculateAvailableSpaceBottom($menu);
-        var spaceTop = calculateAvailableSpaceTop($menu);
-        var dropPosition = (spaceBottom < menuHeight && spaceTop > spaceBottom) ? 'top' : 'bottom';
+        var spaceBottom = calculateAvailableSpaceBottom($parent);
+        var spaceTop = calculateAvailableSpaceTop($parent);
+        var spaceBottomRemaining = spaceBottom + dropOffset - rowHeight; // since we reposition menu below slick cell, we need to take it in consideration
+        var spaceTopRemaining = spaceTop - dropOffset + rowHeight;
+        var dropPosition = (spaceBottomRemaining < menuHeight && spaceTopRemaining > spaceBottomRemaining) ? 'top' : 'bottom';
         if (dropPosition === 'top') {
-          menuOffsetTop = menuOffsetTop - menuHeight - _contextMenuProperties.autoAdjustDropOffset;
+          $menu.removeClass("dropdown").addClass("dropup");
+          menuOffsetTop = menuOffsetTop - menuHeight - dropOffset;
         } else {
-          menuOffsetTop = menuOffsetTop + _gridOptions.rowHeight + _contextMenuProperties.autoAdjustDropOffset;
+          $menu.removeClass("dropup").addClass("dropdown");
+          menuOffsetTop = menuOffsetTop + rowHeight + dropOffset;
         }
       }
 
@@ -535,9 +548,9 @@
         var gridPos = _grid.getGridPosition();
         var dropSide = ((menuOffsetLeft + menuWidth) >= gridPos.width) ? 'left' : 'right';
         if (dropSide === 'left') {
-          menuOffsetLeft = (menuOffsetLeft - (menuWidth - parentCellWidth) - _contextMenuProperties.autoAlignSideOffset);
+          menuOffsetLeft = (menuOffsetLeft - (menuWidth - parentCellWidth) - sideOffset);
         } else {
-          menuOffsetLeft = menuOffsetLeft + _contextMenuProperties.autoAlignSideOffset;
+          menuOffsetLeft = menuOffsetLeft + sideOffset;
         }
       }
 

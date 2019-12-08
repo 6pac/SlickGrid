@@ -87,15 +87,14 @@
   <table width="100%">
     <tr>
       <td valign="top" width="50%">
-        <div id="myGrid" style="width:600px;height:800px;"></div>
+        <div id="myGrid" style="width:630px;height:700px;"></div>
       </td>
       <td valign="top">
         <h2>Demonstrates:</h2>
         <ul>
-          <li><strong>Slick.Plugins.ContextMenu - Context Menu (global from any columns)</strong></li>
+          <li><strong>Slick.Plugins.ContextMenu - Context Menu (global from any columns right+click)</strong></li>
           <li>This plugin subscribes internally to the "onContextMenu" event</li>
           <li>Mouse Right-Click the row to open a Context Menu (global any columns)</li>
-          <li>It will also "autoAdjustDrop" (bottom/top) and "autoAlignSide" (left/right)</li>
           <li>The context menu showing on left columns will show only commands (from Title to EffortDriven)</li>
           <li>
             The context menu showing on Priority column will show list of options will be applied to the Priority cell
@@ -109,7 +108,7 @@
             <button onclick="showCommandsAndOptions(false)">Show Priority Options Only</button>
           </div>
           <p></p>
-          <li><strong>Slick.Plugins.CellContextMenu - Cell Context Menu (from a single cell)</strong></li>
+          <li><strong>Slick.Plugins.CellContextMenu - Cell Context Menu (from a single cell click)</strong></li>
           <li>This plugin subscribes internally to the "onClick" event</li>
           <li>Regular Cell Click (left mouse or touch) will open a Cell Context Menu </li>
           <li>It will also "autoAdjustDrop" (bottom/top) and "autoAlignSide" (left/right)</li>
@@ -120,6 +119,29 @@
           <li>A good usage example is with an "Action" button/cell as shown in the grid</li>
           <li>Note that the Button is only a placeholder, user can click anywhere in the cell. You could use a link or
             anything else, as long as the cell is clicked it will trigger</li>
+          <p></p>
+          <li><strong>Common Features</strong></li>
+          <li>It will also "autoAdjustDrop" (bottom/top) and "autoAlignSide" (left/right) - can be turned off</li>
+          <li>
+            There 2 sub-menus, the first is an Options array (change value of a field)
+            and second is an array of Commands (execute a command)
+          </li>
+          <li>These 2 list are static arrays and are not meant to be dynamic however you can...</li>
+          <li>Use override callback functions to change show/hide, enable/disable, use or block certain items</li>
+          <li>These callbacks are: "menuUsabilityOverride", "itemVisibilityOverride", "itemUsabilityOverride"</li>
+          <li>
+            There are many properties available for each list items:
+            disabled, divider, tooltip, cssClass, iconCssClass, iconImage
+          </li>
+          <li>
+            There are also a few SlickGrid Events you can subscribe
+            onBeforeMenuShow, onBeforeMenuClose, onCommand, onOptionSelected
+          </li>
+          <li>
+            Each Option/Command have full knowledge of the column definition and data context object
+            and are available arguments of the subsribe events
+          </li>
+          <li>Lots of options, looks at each plugin to see the entire list of options available</li>
         </ul>
         <h2>View Source:</h2>
         <ul>
@@ -152,9 +174,9 @@
 
     function actionFormatter(row, cell, value, columnDef, dataContext) {
       if (dataContext.priority === 3) { // option 3 is High
-        return "<span class='fake-hyperlink'>" + value + " &#9660;</span>";
+        return "<div class='fake-hyperlink'>" + value + " &#9660;</div>";
       }
-      return "<span class='disabled'>" + value + " &#9660;</span>";
+      return "<div class='disabled'>" + value + " &#9660;</div>";
     }
 
     function priorityFormatter(row, cell, value, columnDef, dataContext) {
@@ -222,6 +244,7 @@
     }
 
     var columns = [
+      { id: "id", name: "#", field: "id", width: 32 },
       { id: "title", name: "Title", field: "title", width: 90, cssClass: "cell-title", editor: Slick.Editors.Text },
       { id: "complete", name: "% Complete", field: "percentComplete", sortable: true, width: 90 },
       { id: "start", name: "Start", field: "start", sortable: true },
@@ -287,58 +310,63 @@
       enableAddRow: false,
       enableCellNavigation: true,
       asyncEditorLoading: false,
-      rowHeight: 30,
-      contextMenu: {
-        menuUsabilityOverride: function (row, dataContext, grid) {
-          return (dataContext.percentComplete > 30);
-        },
-        commandTitle: "Commands",
-        // which column to show the command list? when not defined it will be shown over all columns
-        commandShownOverColumnIds: ["title", "complete", "start", "finish", "effortDriven" /*, "priority"*/],
-        commandItems: [
-          { command: "delete-row", title: "Delete Row", iconImage: "../images/delete.png", cssClass: "red" },
-          { divider: true },
-          {
-            command: "help", title: "Help", iconCssClass: "icon-help",
-            // only show command to "Help" when there's no Effort Driven
-            itemVisibilityOverride: function (row, dataContext, grid) {
-              return (!dataContext.effortDriven);
-            }
-          },
-          { command: "something", title: "Command", disabled: true },
-        ],
+      rowHeight: 30
+    };
 
-        // Options allows you to edit a column from an option chose a list
-        // for example, changing the Priority value
-        // you can also optionally define an array of column ids that you wish to display this option list (when not defined it will show over all columns)
-        optionTitle: "Change Priority",
-        optionShownOverColumnIds: ["priority"], // optional, when defined it will only show over the columns (column id) defined in the array
-        optionItems: [
-          { option: 0, title: "none", cssClass: "italic" },
-          { option: 1, iconImage: "../images/info.gif", iconCssClass: "grey", title: "Low" },
-          { option: 2, iconImage: "../images/info.gif", iconCssClass: "orange", title: "Medium" },
-          { option: 3, iconImage: "../images/info.gif", iconCssClass: "red", title: "High" },
-          { divider: true },
-          {
-            option: 4, title: "Extreme",
-            // only enable command when there's no Effort Driven
-            itemUsabilityOverride: function (row, dataContext, grid) {
-              return (dataContext.priority === 3);
-            },
-            // only show command to "Delete Row" when there's no Effort Driven
-            itemVisibilityOverride: function (row, dataContext, grid) {
-              return (!dataContext.effortDriven);
-            }
+    var contextMenuOptions = {
+      // optionally and conditionally define when the the menu is usable, 
+      // this should be used with a custom formatter to show/hide/disable the menu
+      menuUsabilityOverride: function (row, dataContext, grid) {
+        return (dataContext.id < 21); // say we want to display menu only over Task 0-20
+      },
+      commandTitle: "Commands",
+      // which column to show the command list? when not defined it will be shown over all columns
+      commandShownOverColumnIds: ["title", "complete", "start", "finish", "effortDriven" /*, "priority"*/],
+      commandItems: [
+        { command: "delete-row", title: "Delete Row", iconImage: "../images/delete.png", cssClass: "red" },
+        { divider: true },
+        {
+          command: "help", title: "Help", iconCssClass: "icon-help",
+          // only show command to "Help" when there's no Effort Driven
+          itemVisibilityOverride: function (row, dataContext, grid) {
+            return (!dataContext.effortDriven);
+          }
+        },
+        { command: "something", title: "Command", disabled: true },
+      ],
+
+      // Options allows you to edit a column from an option chose a list
+      // for example, changing the Priority value
+      // you can also optionally define an array of column ids that you wish to display this option list (when not defined it will show over all columns)
+      optionTitle: "Change Priority",
+      optionShownOverColumnIds: ["priority"], // optional, when defined it will only show over the columns (column id) defined in the array
+      optionItems: [
+        {
+          option: 0, title: "none", cssClass: "italic",
+          // only enable command when there's no Effort Driven
+          itemUsabilityOverride: function (row, dataContext, grid) {
+            return (dataContext.priority === 3);
           },
-        ]
-      }
+        },
+        { option: 1, iconImage: "../images/info.gif", title: "Low" },
+        { option: 2, iconImage: "../images/info.gif", title: "Medium" },
+        { option: 3, iconImage: "../images/bullet_star.png", title: "High" },
+        { divider: true },
+        {
+          option: 4, title: "Extreme", disabled: true,
+          // only shown when there's no Effort Driven
+          itemVisibilityOverride: function (row, dataContext, grid) {
+            return (!dataContext.effortDriven);
+          }
+        },
+      ]
     };
 
     $(function () {
       dataView = new Slick.Data.DataView();
       grid = new Slick.Grid("#myGrid", dataView, columns, options);
-      cellContextMenuPlugin = new Slick.Plugins.CellContextMenu({}); // this plugin does not have any argument
-      contextMenuPlugin = new Slick.Plugins.ContextMenu(options);    // while this plugin requires the grid options
+      cellContextMenuPlugin = new Slick.Plugins.CellContextMenu({});
+      contextMenuPlugin = new Slick.Plugins.ContextMenu(contextMenuOptions);
       grid.registerPlugin(cellContextMenuPlugin);
       grid.registerPlugin(contextMenuPlugin);
 
@@ -359,8 +387,8 @@
       dataView.endUpdate();
 
       //
-      // -- subscribe to some Context Menu (menu from grid options, any columns) events
-      // -------------------------------------------------------------------------------
+      // -- subscribe to some Context Menu (from any columns) events
+      // --------------------------------------------------------------
 
       // subscribe to Context Menu
       contextMenuPlugin.onBeforeMenuShow.subscribe(function (e, args) {
@@ -369,7 +397,7 @@
         console.log("Before the global Context Menu is shown", args);
       });
       contextMenuPlugin.onBeforeMenuClose.subscribe(function (e, args) {
-        console.log("global Context Menu is closing", args);
+        console.log("Global Context Menu is closing", args);
       });
 
       // subscribe to Context Menu onCommand event

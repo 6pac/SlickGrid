@@ -52,9 +52,10 @@
    *    commandItems:               Array of Command item objects (command/title pair)
    *    optionTitle:                Title of the Option sub-menu
    *    optionItems:                Array of Options item objects (option/title pair)
+   *    maxHeight:                  Maximum height that the drop menu will have, can be a number (250) or text ("none")
    *    minWidth:                   Minimum width that the drop menu will have
-   *    autoAdjustDrop:              Auto-align dropup or dropdown menu to the left or right depending on grid viewport available space (defaults to true)
-   *    autoAdjustDropOffset:        Optionally add an offset to the auto-align of the drop menu (defaults to 0)
+   *    autoAdjustDrop:             Auto-align dropup or dropdown menu to the left or right depending on grid viewport available space (defaults to true)
+   *    autoAdjustDropOffset:       Optionally add an offset to the auto-align of the drop menu (defaults to 0)
    *    autoAlignSide:              Auto-align drop menu to the left or right depending on grid viewport available space (defaults to true)
    *    autoAlignSideOffset:        Optionally add an offset to the left/right side auto-align (defaults to 0)
    *    menuUsabilityOverride:      Callback method that user can override the default behavior of enabling/disabling the menu from being usable (must be combined with a custom formatter)
@@ -110,28 +111,29 @@
    *            dataContext: Cell Data Context (data object)
    *
    *
-   * @param gridOptions {Object} Grid Options
+   * @param options {Object} Context Menu Options
    * @class Slick.Plugins.ContextMenu
    * @constructor
    */
   function CellContextMenu(optionProperties) {
-    var _grid;
-    var _self = this;
-    var $menu;
-    var $commandTitleElm;
-    var $optionTitleElm;
     var _contextMenuProperties;
     var _currentCell = -1;
     var _currentRow = -1;
-    var _gridUid = "";
+    var _grid;
     var _gridOptions;
+    var _gridUid = "";
     var _handler = new Slick.EventHandler();
+    var _self = this;
+    var $commandTitleElm;
+    var $optionTitleElm;
+    var $menu;
 
     var _defaults = {
-      autoAdjustDrop: true,    // dropup/dropdown
-      autoAlignSide: true,    // left/right
+      autoAdjustDrop: true,     // dropup/dropdown
+      autoAlignSide: true,      // left/right
       autoAdjustDropOffset: 0,
       autoAlignSideOffset: 0,
+      maxHeight: "none",
       minWidth: 180,
     };
 
@@ -185,7 +187,10 @@
       }
 
       // create a new context menu
-      var menu = $('<div class="slick-cell-context-menu ' + _gridUid + '" style="min-width: ' + _contextMenuProperties.minWidth + 'px" />')
+      var maxHeight = isNaN(_contextMenuProperties.maxHeight) ? _contextMenuProperties.maxHeight : _contextMenuProperties.maxHeight + "px";
+      var minWidth = isNaN(_contextMenuProperties.minWidth) ? _contextMenuProperties.minWidth : _contextMenuProperties.minWidth + "px";
+      var menuStyle = "min-width: " + minWidth + "; max-height: " + maxHeight;
+      var menu = $('<div class="slick-cell-context-menu ' + _gridUid + '" style="' + menuStyle + '" />')
         .css("top", e.pageY + 5)
         .css("left", e.pageX)
         .css("display", "none");
@@ -223,7 +228,7 @@
     function calculateAvailableSpaceBottom(element) {
       var windowHeight = $(window).innerHeight() || 0;
       var pageScroll = $(window).scrollTop() || 0;
-      if (element && element.length > 0) {
+      if (element && element.offset && element.length > 0) {
         var elementOffsetTop = element.offset().top;
         return windowHeight - (elementOffsetTop - pageScroll);
       }
@@ -232,7 +237,7 @@
 
     function calculateAvailableSpaceTop(element) {
       var pageScroll = $(window).scrollTop() || 0;
-      if (element && element.length > 0) {
+      if (element && element.offset && element.length > 0) {
         var elementOffsetTop = element.offset().top;
         return elementOffsetTop - pageScroll;
       }
@@ -257,17 +262,25 @@
       var parentCellWidth = $parent.outerWidth();
       var menuHeight = $menu.outerHeight() || 0;
       var menuWidth = $menu.outerWidth() || _contextMenuProperties.minWidth || 0;
+      var rowHeight = _gridOptions.rowHeight;
+      var dropOffset = _contextMenuProperties.autoAdjustDropOffset;
+      var sideOffset = _contextMenuProperties.autoAlignSideOffset;
 
       // if autoAdjustDrop is enable, we first need to see what position the drop will be located (defaults to bottom)
       // without necessary toggling it's position just yet, we just want to know the future position for calculation
       if (_contextMenuProperties.autoAdjustDrop) {
-        var spaceBottom = calculateAvailableSpaceBottom($menu);
-        var spaceTop = calculateAvailableSpaceTop($menu);
-        var dropPosition = (spaceBottom < menuHeight && spaceTop > spaceBottom) ? 'top' : 'bottom';
+        // since we reposition menu below slick cell, we need to take it in consideration and do our caculation from that element 
+        var spaceBottom = calculateAvailableSpaceBottom($parent);
+        var spaceTop = calculateAvailableSpaceTop($parent);
+        var spaceBottomRemaining = spaceBottom + dropOffset - rowHeight;
+        var spaceTopRemaining = spaceTop - dropOffset + rowHeight;
+        var dropPosition = (spaceBottomRemaining < menuHeight && spaceTopRemaining > spaceBottomRemaining) ? 'top' : 'bottom';
         if (dropPosition === 'top') {
-          menuOffsetTop = menuOffsetTop - menuHeight - _contextMenuProperties.autoAdjustDropOffset;
+          $menu.removeClass("dropdown").addClass("dropup");
+          menuOffsetTop = menuOffsetTop - menuHeight - dropOffset;
         } else {
-          menuOffsetTop = menuOffsetTop + _gridOptions.rowHeight + _contextMenuProperties.autoAdjustDropOffset;
+          $menu.removeClass("dropup").addClass("dropdown");
+          menuOffsetTop = menuOffsetTop + rowHeight + dropOffset;
         }
       }
 
@@ -278,9 +291,9 @@
         var gridPos = _grid.getGridPosition();
         var dropSide = ((menuOffsetLeft + menuWidth) >= gridPos.width) ? 'left' : 'right';
         if (dropSide === 'left') {
-          menuOffsetLeft = (menuOffsetLeft - (menuWidth - parentCellWidth) - _contextMenuProperties.autoAlignSideOffset);
+          menuOffsetLeft = (menuOffsetLeft - (menuWidth - parentCellWidth) - sideOffset);
         } else {
-          menuOffsetLeft = menuOffsetLeft + _contextMenuProperties.autoAlignSideOffset;
+          menuOffsetLeft = menuOffsetLeft + sideOffset;
         }
       }
 
