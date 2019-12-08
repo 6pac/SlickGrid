@@ -11,8 +11,8 @@
   /***
    * A plugin to add Context Menu on a Cell (click on the cell that has the cellContextMenu object defined)
    * The "cellContextMenu" is defined in a Column Definition object
-   * Similar to the ContextMenu plugin (could be used in combo), 
-   * except that it subscribes to the cell "onClick" event (regular mouse click or touch). 
+   * Similar to the ContextMenu plugin (could be used in combo),
+   * except that it subscribes to the cell "onClick" event (regular mouse click or touch).
    *
    * A general use of this plugin is for an Action Dropdown Menu to do certain things on the row that was clicked
    * You can use it to change the cell data property through a list of Options AND/OR through a list of Commands.
@@ -39,6 +39,7 @@
    *        commandItems: [
    *          { command: "delete-row", title: "Delete Row", iconImage: "../images/delete.png", cssClass: "red" },
    *          { divider: true },
+     *        "divider" // you can pass "divider" as a string or an object
    *          { command: "help", title: "Help", iconCssClass: "icon-help" },
    *          { command: "help", title: "Disabled Command", disabled: true },
    *        ],
@@ -48,10 +49,13 @@
    *
    *
    * Available cellContextMenu properties:
-   *    commandTitle:               Title of the Command sub-menu
+   *    commandTitle:               Title of the Command section (optional)
    *    commandItems:               Array of Command item objects (command/title pair)
-   *    optionTitle:                Title of the Option sub-menu
+   *    optionTitle:                Title of the Option section (optional)
    *    optionItems:                Array of Options item objects (option/title pair)
+   *    hideCloseButton:            Hide the Close button on top right (defaults to false)
+   *    hideCommandSection:         Hide the Commands section even when the commandItems array is filled (defaults to false)
+   *    hideOptionSection:          Hide the Options section even when the optionItems array is filled (defaults to false)
    *    maxHeight:                  Maximum height that the drop menu will have, can be a number (250) or text ("none")
    *    minWidth:                   Minimum width that the drop menu will have
    *    autoAdjustDrop:             Auto-align dropup or dropdown menu to the left or right depending on grid viewport available space (defaults to true)
@@ -60,12 +64,13 @@
    *    autoAlignSideOffset:        Optionally add an offset to the left/right side auto-align (defaults to 0)
    *    menuUsabilityOverride:      Callback method that user can override the default behavior of enabling/disabling the menu from being usable (must be combined with a custom formatter)
    *
-   * 
+   *
    * Available menu Command/Option item properties:
+   *    action:                 Optionally define a callback function that gets executed when item is chosen (and/or use the onCommand event)
    *    command:                A command identifier to be passed to the onCommand event handlers (when using "commandItems").
    *    option:                 An option to be passed to the onOptionSelected event handlers (when using "optionItems").
    *    title:                  Menu item text label.
-   *    divider:                Whether the current item is a divider, not an actual command.
+   *    divider:                Boolean which tells if the current item is a divider, not an actual command. You could also pass "divider" instead of an object
    *    disabled:               Whether the item is disabled.
    *    tooltip:                Item tooltip.
    *    cssClass:               A CSS class to be added to the menu item container.
@@ -195,9 +200,15 @@
         .css("left", e.pageX)
         .css("display", "none");
 
-      // -- Option List sub-menu
-      if (optionItems.length > 0) {
+      var closeButtonHtml = '<button type="button" class="close" data-dismiss="slick-context-menu" aria-label="Close">'
+        + '<span class="close" aria-hidden="true">&times;</span></button>';
+
+      // -- Option List section
+      if (!_contextMenuProperties.hideOptionSection && optionItems.length > 0) {
         var $optionMenu = $('<div class="slick-cell-context-menu-option-list" />');
+        if (!_contextMenuProperties.hideCloseButton) {
+          $(closeButtonHtml).on("click", destroyMenu).appendTo(menu);
+        }
         $optionMenu.appendTo(menu);
         populateOptionItems({
           contextMenu: _contextMenuProperties,
@@ -207,9 +218,12 @@
         });
       }
 
-      // -- Command List sub-menu
-      if (commandItems.length > 0) {
+      // -- Command List section
+      if (!_contextMenuProperties.hideCommandSection && commandItems.length > 0) {
         var $commandMenu = $('<div class="slick-cell-context-menu-command-list" />');
+        if (!_contextMenuProperties.hideCloseButton && (optionItems.length === 0 || _contextMenuProperties.hideOptionSection)) {
+          $(closeButtonHtml).on("click", destroyMenu).appendTo(menu);
+        }
         $commandMenu.appendTo(menu);
         populateCommandItems({
           contextMenu: _contextMenuProperties,
@@ -245,6 +259,8 @@
     }
 
     function destroyMenu() {
+      $menu = $menu || $(".slick-cell-context-menu." + _gridUid);
+
       if ($menu) {
         $menu.remove();
         $menu = null;
@@ -269,7 +285,7 @@
       // if autoAdjustDrop is enable, we first need to see what position the drop will be located (defaults to bottom)
       // without necessary toggling it's position just yet, we just want to know the future position for calculation
       if (_contextMenuProperties.autoAdjustDrop) {
-        // since we reposition menu below slick cell, we need to take it in consideration and do our caculation from that element 
+        // since we reposition menu below slick cell, we need to take it in consideration and do our calculation from that element
         var spaceBottom = calculateAvailableSpaceBottom($parent);
         var spaceTop = calculateAvailableSpaceTop($parent);
         var spaceBottomRemaining = spaceBottom + dropOffset - rowHeight;
@@ -354,7 +370,7 @@
       }
     }
 
-    /** Construct the Option Items sub-menu. */
+    /** Construct the Option Items section. */
     function populateOptionItems(args) {
       var optionMenuElm = args && args.optionMenuElm;
       var contextMenu = args && args.contextMenu;
@@ -374,9 +390,19 @@
       for (var i = 0, ln = optionItems.length; i < ln; i++) {
         var item = optionItems[i];
 
-        // run the override function (when defined), if the result is false it won't go further
-        if (!runOverrideFunctionWhenExists(item.itemVisibilityOverride, _currentRow, dataContext, _grid)) {
+        // run each override functions to know if the item is visible and usable
+        var isItemVisible = runOverrideFunctionWhenExists(item.itemVisibilityOverride, _currentRow, dataContext, _grid);
+        var isItemUsable = runOverrideFunctionWhenExists(item.itemUsabilityOverride, _currentRow, dataContext, _grid);
+
+        // if the result is not visible then there's no need to go further
+        if (!isItemVisible) {
           continue;
+        }
+
+        // when the override is defined, we need to use its result to update the disabled property
+        // so that "handleMenuItemOptionClick" has the correct flag and won't trigger an option clicked event
+        if (item.hasOwnProperty("itemUsabilityOverride")) {
+          item.disabled = isItemUsable ? false : true;
         }
 
         var $li = $('<div class="slick-cell-context-menu-item"></div>')
@@ -385,14 +411,14 @@
           .on("click", handleMenuItemOptionClick)
           .appendTo(optionMenuElm);
 
-        // if the item is disabled by the property or by the usabilityOverride
-        if (item.disabled || !runOverrideFunctionWhenExists(item.itemUsabilityOverride, _currentRow, dataContext, _grid)) {
-          $li.addClass("slick-cell-context-menu-item-disabled");
-        }
-
-        if (item.divider) {
+        if (item.divider || item === "divider") {
           $li.addClass("slick-cell-context-menu-item-divider");
           continue;
+        }
+
+        // if the item is disabled then add the disabled css class
+        if (item.disabled || !isItemUsable) {
+          $li.addClass("slick-cell-context-menu-item-disabled");
         }
 
         if (item.cssClass) {
@@ -420,7 +446,7 @@
       }
     }
 
-    /** Construct the Command Items sub-menu. */
+    /** Construct the Command Items section. */
     function populateCommandItems(args) {
       var commandMenuElm = args && args.commandMenuElm;
       var contextMenu = args && args.contextMenu;
@@ -440,9 +466,19 @@
       for (var i = 0, ln = commandItems.length; i < ln; i++) {
         var item = commandItems[i];
 
-        // run the override function (when defined), if the result is false it won't go further
-        if (!runOverrideFunctionWhenExists(item.itemVisibilityOverride, _currentRow, dataContext, _grid)) {
+        // run each override functions to know if the item is visible and usable
+        var isItemVisible = runOverrideFunctionWhenExists(item.itemVisibilityOverride, _currentRow, dataContext, _grid);
+        var isItemUsable = runOverrideFunctionWhenExists(item.itemUsabilityOverride, _currentRow, dataContext, _grid);
+
+        // if the result is not visible then there's no need to go further
+        if (!isItemVisible) {
           continue;
+        }
+
+        // when the override is defined, we need to use its result to update the disabled property
+        // so that "handleMenuItemCommandClick" has the correct flag and won't trigger a command clicked event
+        if (item.hasOwnProperty("itemUsabilityOverride")) {
+          item.disabled = isItemUsable ? false : true;
         }
 
         var $li = $('<div class="slick-cell-context-menu-item"></div>')
@@ -451,14 +487,14 @@
           .on("click", handleMenuItemCommandClick)
           .appendTo(commandMenuElm);
 
-        // if the item is disabled by the property or by the usabilityOverride
-        if (item.disabled || !runOverrideFunctionWhenExists(item.itemUsabilityOverride, _currentRow, dataContext, _grid)) {
-          $li.addClass("slick-cell-context-menu-item-disabled");
-        }
-
-        if (item.divider) {
+        if (item.divider || item === "divider") {
           $li.addClass("slick-cell-context-menu-item-divider");
           continue;
+        }
+
+        // if the item is disabled then add the disabled css class
+        if (item.disabled || !isItemUsable) {
+          $li.addClass("slick-cell-context-menu-item-disabled");
         }
 
         if (item.cssClass) {
@@ -490,7 +526,7 @@
       var command = $(this).data("command");
       var item = $(this).data("item");
 
-      if (item.disabled || item.divider) {
+      if (!item || item.disabled || item.divider || item === "divider") {
         return;
       }
 
@@ -503,7 +539,9 @@
       if (command !== null && command !== "") {
         closeMenu(e, { cell: cell, row: row });
 
-        _self.onCommand.notify({
+        // user could execute a callback through 2 ways
+        // via the onCommand event and/or an action callback
+        var callbackArgs = {
           "cell": cell,
           "row": row,
           "grid": _grid,
@@ -511,7 +549,13 @@
           "item": item,
           "columnDef": columnDef,
           "dataContext": dataContext
-        }, e, _self);
+        };
+        _self.onCommand.notify(callbackArgs, e, _self);
+
+        // execute action callback when defined
+        if (typeof item.action === "function") {
+          item.action(e, callbackArgs);
+        }
       }
     }
 
@@ -519,7 +563,7 @@
       var option = $(this).data("option");
       var item = $(this).data("item");
 
-      if (item.disabled || item.divider) {
+      if (!item || item.disabled || item.divider || item === "divider") {
         return;
       }
       if (!_grid.getEditorLock().commitCurrentEdit()) {
@@ -535,7 +579,9 @@
       if (option !== undefined) {
         closeMenu(e, { cell: cell, row: row });
 
-        _self.onOptionSelected.notify({
+        // user could execute a callback through 2 ways
+        // via the onOptionSelected event and/or an action callback
+        var callbackArgs = {
           "cell": cell,
           "row": row,
           "grid": _grid,
@@ -543,7 +589,13 @@
           "item": item,
           "columnDef": columnDef,
           "dataContext": dataContext
-        }, e, _self);
+        };
+        _self.onOptionSelected.notify(callbackArgs, e, _self);
+
+        // execute action callback when defined
+        if (typeof item.action === "function") {
+          item.action(e, callbackArgs);
+        }
       }
     }
 

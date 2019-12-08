@@ -91,6 +91,7 @@
   background: white;
 }
 .slick-cell-context-menu-item-disabled {
+  cursor: default;
   border-color: transparent !important;
   background: inherit !important;
 }

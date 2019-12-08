@@ -104,11 +104,12 @@
             (choose option below, then try it over Priority column)
           </li>
           <div style="margin-bottom:10px">
-            <button onclick="showCommandsAndOptions(true)">Show Commands & Priority Options</button>
-            <button onclick="showCommandsAndOptions(false)">Show Priority Options Only</button>
+            <button onclick="showContextCommandsAndOptions(false)">Show Priority Options Only</button>
+            <button onclick="showContextCommandsAndOptions(true)">Show Commands & Priority Options</button>
           </div>
           <p></p>
           <li><strong>Slick.Plugins.CellContextMenu - Cell Context Menu (from a single cell click)</strong></li>
+          <li>The "Action" column is demoing this functionality</li>
           <li>This plugin subscribes internally to the "onClick" event</li>
           <li>Regular Cell Click (left mouse or touch) will open a Cell Context Menu </li>
           <li>It will also "autoAdjustDrop" (bottom/top) and "autoAlignSide" (left/right)</li>
@@ -119,16 +120,23 @@
           <li>A good usage example is with an "Action" button/cell as shown in the grid</li>
           <li>Note that the Button is only a placeholder, user can click anywhere in the cell. You could use a link or
             anything else, as long as the cell is clicked it will trigger</li>
+          <div style="margin-bottom:10px">
+            <button onclick="showCellMenuCommandsAndOptions(false)">Show Commands Only</button>
+            <button onclick="showCellMenuCommandsAndOptions(true)">Show Commands & Effort Options</button>
+          </div>
           <p></p>
           <li><strong>Common Features</strong></li>
-          <li>It will also "autoAdjustDrop" (bottom/top) and "autoAlignSide" (left/right) - can be turned off</li>
+          <li>It will also "autoAdjustDrop" (bottom/top) and "autoAlignSide" (left/right) by default but could be turned
+            off</li>
           <li>
-            There 2 sub-menus, the first is an Options array (change value of a field)
-            and second is an array of Commands (execute a command)
+            There 2 sections, the first section can have an Options array (change value of a field)
+            and second section can have an array of Commands (execute a command)
           </li>
-          <li>These 2 list are static arrays and are not meant to be dynamic however you can...</li>
-          <li>Use override callback functions to change show/hide, enable/disable, use or block certain items</li>
+          <li>These 2 lists are static arrays and are not meant to be dynamic however you can...</li>
+          <li>Use override callback functions to change show/hide, enable/disable, use/block certain item(s)</li>
           <li>These callbacks are: "menuUsabilityOverride", "itemVisibilityOverride", "itemUsabilityOverride"</li>
+          <li>... e.g. in the demo, the "Action" menu is only available when Priority is set to "High" via
+            "menuUsabilityOverride"</li>
           <li>
             There are many properties available for each list items:
             disabled, divider, tooltip, cssClass, iconCssClass, iconImage
@@ -138,8 +146,15 @@
             onBeforeMenuShow, onBeforeMenuClose, onCommand, onOptionSelected
           </li>
           <li>
-            Each Option/Command have full knowledge of the column definition and data context object
-            and are available arguments of the subsribe events
+            There 2 ways to execute a Command/Option
+          </li>
+          <ol>
+            <li>via onCommand/onOptionSelected (use a switch/case to parse command/option and do something with it)</li>
+            <li>via action callback (must be defined on each command/option)</li>
+          </ol>
+          <li>
+            Each Command/Option have full knowledge of the column definition, data context object
+            and are available arguments of the subsribe events (or action callback)
           </li>
           <li>Lots of options, looks at each plugin to see the entire list of options available</li>
         </ul>
@@ -171,6 +186,7 @@
     var data = [];
     var dataView;
     var contextMenuPlugin;
+    var showCellMenuCommandsOnly = false; // show commands only or commands+options?
 
     function actionFormatter(row, cell, value, columnDef, dataContext) {
       if (dataContext.priority === 3) { // option 3 is High
@@ -193,13 +209,25 @@
       return ("0000" + (Math.floor(Math.random() * maxVal) + 1)).slice(-numDigits)
     }
 
-    function showCommandsAndOptions(showBothList) {
+    function showContextCommandsAndOptions(showBothList) {
       // when showing both Commands/Options, we can just pass an empty array to show over all columns
       // else show on all columns except Priority
       var showOverColumnIds = showBothList ? [] : ["title", "complete", "start", "finish", "effortDriven"];
       contextMenuPlugin.setOptions({
-        commandShownOverColumnIds: showOverColumnIds
+        commandShownOverColumnIds: showOverColumnIds,
+        // hideCommandSection: !showBothList
       });
+    }
+
+    function showCellMenuCommandsAndOptions(showBothList) {
+      // change via the plugin setOptions
+      cellContextMenuPlugin.setOptions({
+        hideOptionSection: !showBothList
+      });
+
+      // OR find the column, then change the same hide property
+      // var actionColumn = columns.find(function (column) { return column.id === "action" });
+      // actionColumn.cellContextMenu.hideOptionSection = !showBothList;
     }
 
     function loadData(count) {
@@ -255,7 +283,7 @@
         id: "action", name: "Action", field: "action", width: 80, resizable: false,
         formatter: actionFormatter,
         cellContextMenu: {
-          // you can override the logic of when the menu is usable 
+          // you can override the logic of when the menu is usable
           // for example say that we want to show a menu only when then Priority is set to "High".
           // Note that this ONLY overrides the usability itself NOT the text displayed in the cell,
           // if you wish to change the cell text (or hide it)
@@ -268,6 +296,10 @@
             { command: "command1", title: "Command 1", cssClass: "orange" },
             {
               command: "command2", title: "Command 2",
+              // you can subscribe to the "onCallback" event and/or simply use the "action" callback, they both have the same arguments
+              action: function(e, args) {
+                // action callback.. do something
+              },
               // only enable command when there's no Effort Driven
               itemUsabilityOverride: function (row, dataContext, grid) {
                 return (!dataContext.effortDriven);
@@ -281,7 +313,9 @@
                 return (!dataContext.effortDriven);
               }
             },
-            { divider: true },
+            // you can pass divider as a string or an object with a boolean
+            "divider",
+            // { divider: true },
             { command: "help", title: "Help", iconCssClass: "icon-help" },
             { command: "something", title: "Disabled Command", disabled: true }
           ],
@@ -291,6 +325,10 @@
             { option: false, title: "False" },
             {
               option: null, title: "null", cssClass: "italic",
+              // you can subscribe to the "onCallback" event and/or simply use the "action" callback, they both have the same arguments
+              action: function(e, args) {
+                // action callback.. do something
+              },
               // only enable command when there's no Effort Driven
               itemUsabilityOverride: function (row, dataContext, grid) {
                 return (dataContext.priority === 3);
@@ -314,7 +352,7 @@
     };
 
     var contextMenuOptions = {
-      // optionally and conditionally define when the the menu is usable, 
+      // optionally and conditionally define when the the menu is usable,
       // this should be used with a custom formatter to show/hide/disable the menu
       menuUsabilityOverride: function (row, dataContext, grid) {
         return (dataContext.id < 21); // say we want to display menu only over Task 0-20
@@ -327,6 +365,10 @@
         { divider: true },
         {
           command: "help", title: "Help", iconCssClass: "icon-help",
+          // you can subscribe to the "onCallback" event and/or simply use the "action" callback, they both have the same arguments
+          action: function(e, args) {
+            // action callback.. do something
+          },
           // only show command to "Help" when there's no Effort Driven
           itemVisibilityOverride: function (row, dataContext, grid) {
             return (!dataContext.effortDriven);
@@ -343,14 +385,20 @@
       optionItems: [
         {
           option: 0, title: "none", cssClass: "italic",
-          // only enable command when there's no Effort Driven
+          // only enable this option when there's no Effort Driven
           itemUsabilityOverride: function (row, dataContext, grid) {
-            return (dataContext.priority === 3);
+            return (!dataContext.effortDriven);
+          },
+          // you can subscribe to the "onCallback" event and/or simply use the "action" callback, they both have the same arguments
+          action: function(e, args) {
+            // action callback.. do something
           },
         },
         { option: 1, iconImage: "../images/info.gif", title: "Low" },
         { option: 2, iconImage: "../images/info.gif", title: "Medium" },
         { option: 3, iconImage: "../images/bullet_star.png", title: "High" },
+        // you can pass divider as a string or an object with a boolean
+        // "divider",
         { divider: true },
         {
           option: 4, title: "Extreme", disabled: true,
@@ -400,12 +448,12 @@
         console.log("Global Context Menu is closing", args);
       });
 
-      // subscribe to Context Menu onCommand event
+      // subscribe to Context Menu onCommand event (or use the action callback on each command)
       contextMenuPlugin.onCommand.subscribe(function (e, args) {
         executeCommand(e, args);
       });
 
-      // subscribe to Context Menu onOptionSelected event
+      // subscribe to Context Menu onOptionSelected event (or use the action callback on each option)
       contextMenuPlugin.onOptionSelected.subscribe(function (e, args) {
         var dataContext = args && args.dataContext;
 
@@ -430,12 +478,12 @@
         console.log("Cell Context Menu is closing", args);
       });
 
-      // subscribe to Context Menu onCommand event
+      // subscribe to Context Menu onCommand event (or use the action callback on each command)
       cellContextMenuPlugin.onCommand.subscribe(function (e, args) {
         executeCommand(e, args);
       });
 
-      // subscribe to Context Menu onOptionSelected event
+      // subscribe to Context Menu onOptionSelected event (or use the action callback on each option)
       cellContextMenuPlugin.onOptionSelected.subscribe(function (e, args) {
         var dataContext = args && args.dataContext;
 
