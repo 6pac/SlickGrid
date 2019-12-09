@@ -1,6 +1,7 @@
 .gitk*
 .idea/*
 .DS_Store
+package-lock.json
 yarn-error.log
 yarn.lock
 node_modules/*

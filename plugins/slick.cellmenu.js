@@ -401,7 +401,7 @@
 
         // when the override is defined, we need to use its result to update the disabled property
         // so that "handleMenuItemOptionClick" has the correct flag and won't trigger an option clicked event
-        if (item.hasOwnProperty("itemUsabilityOverride")) {
+        if (Object.prototype.hasOwnProperty.call(item, "itemUsabilityOverride")) {
           item.disabled = isItemUsable ? false : true;
         }
 
@@ -477,7 +477,7 @@
 
         // when the override is defined, we need to use its result to update the disabled property
         // so that "handleMenuItemCommandClick" has the correct flag and won't trigger a command clicked event
-        if (item.hasOwnProperty("itemUsabilityOverride")) {
+        if (Object.prototype.hasOwnProperty.call(item, "itemUsabilityOverride")) {
           item.disabled = isItemUsable ? false : true;
         }
 

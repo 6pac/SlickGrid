@@ -97,7 +97,7 @@
           <li>Mouse Right-Click the row to open a Context Menu (global any columns)</li>
           <li>The context menu showing on left columns will show only commands (from Title to EffortDriven)</li>
           <li>
-            The context menu showing on Priority column will show list of options will be applied to the Priority cell
+            The context menu showing on Priority column will show list of options that will be applied to the Priority cell
           </li>
           <li>
             You can dynamically change the behavior and show Commands & Options over the Priority column
@@ -211,7 +211,7 @@
     function showContextCommandsAndOptions(showBothList) {
       // when showing both Commands/Options, we can just pass an empty array to show over all columns
       // else show on all columns except Priority
-      var showOverColumnIds = showBothList ? [] : ["title", "complete", "start", "finish", "effortDriven"];
+      var showOverColumnIds = showBothList ? [] : ["id", "title", "complete", "start", "finish", "effortDriven"];
       contextMenuPlugin.setOptions({
         commandShownOverColumnIds: showOverColumnIds,
         // hideCommandSection: !showBothList
@@ -342,7 +342,7 @@
       }
     ];
 
-    var options = {
+    var gridOptions = {
       editable: true,
       enableAddRow: false,
       enableCellNavigation: true,
@@ -354,11 +354,11 @@
       // optionally and conditionally define when the the menu is usable,
       // this should be used with a custom formatter to show/hide/disable the menu
       menuUsabilityOverride: function (row, dataContext, grid) {
-        return (dataContext.id < 21); // say we want to display menu only over Task 0-20
+        return (dataContext.id < 21); // say we want to display the menu only from Task 0 to 20
       },
       commandTitle: "Commands",
       // which column to show the command list? when not defined it will be shown over all columns
-      commandShownOverColumnIds: ["title", "complete", "start", "finish", "effortDriven" /*, "priority"*/],
+      commandShownOverColumnIds: ["id", "title", "complete", "start", "finish", "effortDriven" /*, "priority"*/],
       commandItems: [
         { command: "delete-row", title: "Delete Row", iconImage: "../images/delete.png", cssClass: "red" },
         { divider: true },
@@ -411,7 +411,7 @@
 
     $(function () {
       dataView = new Slick.Data.DataView();
-      grid = new Slick.Grid("#myGrid", dataView, columns, options);
+      grid = new Slick.Grid("#myGrid", dataView, columns, gridOptions);
       cellMenuPlugin = new Slick.Plugins.CellMenu({});
       contextMenuPlugin = new Slick.Plugins.ContextMenu(contextMenuOptions);
       grid.registerPlugin(cellMenuPlugin);
@@ -440,7 +440,8 @@
       // subscribe to Context Menu
       contextMenuPlugin.onBeforeMenuShow.subscribe(function (e, args) {
         // for example, you could select the row it was clicked with
-        // grid.setSelectedRows([args.row]);
+        // grid.setSelectedRows([args.row]); // select the entire row
+        grid.setActiveCell(args.row, args.cell, false); // select the cell that the click originated
         console.log("Before the global Context Menu is shown", args);
       });
       contextMenuPlugin.onBeforeMenuClose.subscribe(function (e, args) {
