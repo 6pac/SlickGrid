@@ -1,28 +1,34 @@
-name: With server
-on: [push]
+name: Tests
+on: [push, pull_request]
+env:
+  CI: true
+
 jobs:
-  cypress-run:
+  run:
+    name: Node ${{ matrix.node }}
     runs-on: ubuntu-latest
+
     strategy:
+      fail-fast: false
       matrix:
-        node-version: [8.x, 10.x, 12.x]
+        node: [10, 12]
+
     steps:
-      - name: Checkout
+      - name: Clone repository
         uses: actions/checkout@v1
-      - name: Use Node.js ${{ matrix.node-version }}
+        with:
+          fetch-depth: 3
+
+      - name: Set Node.js version
         uses: actions/setup-node@v1
         with:
-          node-version: ${{ matrix.node-version }}
-      - name: npm install, build, and test
-        run: |
-          npm serve
-          npm run cypress:ci
-        env:
-          CI: true
-      - name: Start Http Server on port 8080
-        run: npm serve
-      - name: Cypress run
-        uses: cypress-io/github-action@v1
-        with:           
-          # Run Cypress CI E2E tests in command line
-          start: npm run cypress:ci
+          node-version: ${{ matrix.node }}
+
+      - run: node --version
+      - run: npm --version
+
+      - name: Install npm dependencies
+        run: npm ci
+
+      - name: Run Cypress E2E tests
+        run: npm cypress:ci
