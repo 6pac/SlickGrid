@@ -31,4 +31,4 @@ jobs:
         run: npm ci
 
       - name: Run Cypress E2E tests
-        run: npm cypress:ci
+        run: npm run cypress:ci
