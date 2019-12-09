@@ -6,7 +6,7 @@
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example 7: Events</title>
   <link rel="stylesheet" href="../slick.grid.css" type="text/css" />
-  <link rel="stylesheet" href="../plugins/slick.cellContextmenu.css" type="text/css" />
+  <link rel="stylesheet" href="../plugins/slick.cellMenu.css" type="text/css" />
   <link rel="stylesheet" href="../plugins/slick.contextmenu.css" type="text/css" />
   <link rel="stylesheet" href="../css/smoothness/jquery-ui.css" type="text/css" />
   <link rel="stylesheet" href="examples.css" type="text/css" />
@@ -108,18 +108,17 @@
             <button onclick="showContextCommandsAndOptions(true)">Show Commands & Priority Options</button>
           </div>
           <p></p>
-          <li><strong>Slick.Plugins.CellContextMenu - Cell Context Menu (from a single cell click)</strong></li>
+          <li><strong>Slick.Plugins.CellMenu - Cell Menu (from a single cell click)</strong></li>
           <li>The "Action" column is demoing this functionality</li>
           <li>This plugin subscribes internally to the "onClick" event</li>
-          <li>Regular Cell Click (left mouse or touch) will open a Cell Context Menu </li>
+          <li>Regular Cell Click (left mouse or touch) will open a Cell Menu </li>
           <li>It will also "autoAdjustDrop" (bottom/top) and "autoAlignSide" (left/right)</li>
           <li>
             Very similar to the global Context Menu except that it's on a single cell click instead of a right+click
           </li>
           <li>Uses the same context menu structure as the global one but is defined on a column definition level</li>
           <li>A good usage example is with an "Action" button/cell as shown in the grid</li>
-          <li>Note that the Button is only a placeholder, user can click anywhere in the cell. You could use a link or
-            anything else, as long as the cell is clicked it will trigger</li>
+          <li>Note that the Action text is just a placeholder, user can click anywhere in the cell to trigger the action.</li>
           <div style="margin-bottom:10px">
             <button onclick="showCellMenuCommandsAndOptions(false)">Show Commands Only</button>
             <button onclick="showCellMenuCommandsAndOptions(true)">Show Commands & Effort Options</button>
@@ -178,15 +177,15 @@
   <script src="../slick.dataview.js"></script>
   <script src="../slick.editors.js"></script>
   <script src="../slick.grid.js"></script>
-  <script src="../plugins/slick.cellContextmenu.js"></script>
+  <script src="../plugins/slick.cellMenu.js"></script>
   <script src="../plugins/slick.contextmenu.js"></script>
 
   <script>
     var grid;
     var data = [];
     var dataView;
+    var cellMenuPlugin;
     var contextMenuPlugin;
-    var showCellMenuCommandsOnly = false; // show commands only or commands+options?
 
     function actionFormatter(row, cell, value, columnDef, dataContext) {
       if (dataContext.priority === 3) { // option 3 is High
@@ -221,13 +220,13 @@
 
     function showCellMenuCommandsAndOptions(showBothList) {
       // change via the plugin setOptions
-      cellContextMenuPlugin.setOptions({
+      cellMenuPlugin.setOptions({
         hideOptionSection: !showBothList
       });
 
       // OR find the column, then change the same hide property
       // var actionColumn = columns.find(function (column) { return column.id === "action" });
-      // actionColumn.cellContextMenu.hideOptionSection = !showBothList;
+      // actionColumn.cellMenu.hideOptionSection = !showBothList;
     }
 
     function loadData(count) {
@@ -282,7 +281,7 @@
       {
         id: "action", name: "Action", field: "action", width: 80, resizable: false,
         formatter: actionFormatter,
-        cellContextMenu: {
+        cellMenu: {
           // you can override the logic of when the menu is usable
           // for example say that we want to show a menu only when then Priority is set to "High".
           // Note that this ONLY overrides the usability itself NOT the text displayed in the cell,
@@ -413,9 +412,9 @@
     $(function () {
       dataView = new Slick.Data.DataView();
       grid = new Slick.Grid("#myGrid", dataView, columns, options);
-      cellContextMenuPlugin = new Slick.Plugins.CellContextMenu({});
+      cellMenuPlugin = new Slick.Plugins.CellMenu({});
       contextMenuPlugin = new Slick.Plugins.ContextMenu(contextMenuOptions);
-      grid.registerPlugin(cellContextMenuPlugin);
+      grid.registerPlugin(cellMenuPlugin);
       grid.registerPlugin(contextMenuPlugin);
 
       dataView.onRowCountChanged.subscribe(function (e, args) {
@@ -465,26 +464,26 @@
       });
 
       //
-      // -- subscribe to some Cell Context Menu (menu from column def, cell click) events
+      // -- subscribe to some Cell Menu (menu from column def, cell click) events
       // ---------------------------------------------------------------------------------
 
       // subscribe to Context Menu
-      cellContextMenuPlugin.onBeforeMenuShow.subscribe(function (e, args) {
+      cellMenuPlugin.onBeforeMenuShow.subscribe(function (e, args) {
         // for example, you could select the row it was clicked with
         // grid.setSelectedRows([args.row]);
-        console.log("Before the Cell Context Menu is shown", args);
+        console.log("Before the Cell Menu is shown", args);
       });
-      cellContextMenuPlugin.onBeforeMenuClose.subscribe(function (e, args) {
-        console.log("Cell Context Menu is closing", args);
+      cellMenuPlugin.onBeforeMenuClose.subscribe(function (e, args) {
+        console.log("Cell Menu is closing", args);
       });
 
       // subscribe to Context Menu onCommand event (or use the action callback on each command)
-      cellContextMenuPlugin.onCommand.subscribe(function (e, args) {
+      cellMenuPlugin.onCommand.subscribe(function (e, args) {
         executeCommand(e, args);
       });
 
       // subscribe to Context Menu onOptionSelected event (or use the action callback on each option)
-      cellContextMenuPlugin.onOptionSelected.subscribe(function (e, args) {
+      cellMenuPlugin.onOptionSelected.subscribe(function (e, args) {
         var dataContext = args && args.dataContext;
 
         // change Effort Driven column

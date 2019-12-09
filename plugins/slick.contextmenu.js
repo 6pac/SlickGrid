@@ -16,14 +16,14 @@
    *
    * Note:
    *   There is only 1 list of Options, so typically that would be use for 1 column
-   *   if you plan to use different Options for different columns, then the CellContextMenu plugin might be better suited.
+   *   if you plan to use different Options for different columns, then the CellMenu plugin might be better suited.
    *
    * USAGE:
    *
    * Add the slick.contextmenu.(js|css) files and register it with the grid.
    *
    * To specify a menu in a column header, extend the column definition like so:
-   * var contextMenuControl = new Slick.Plugins.ContextMenu(columns, grid, options);
+   * var contextMenuPlugin = new Slick.Plugins.ContextMenu(columns, grid, options);
    *
    * Available grid options, by defining a contextMenu object:
    *

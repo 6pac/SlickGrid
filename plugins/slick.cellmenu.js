@@ -3,14 +3,14 @@
   $.extend(true, window, {
     "Slick": {
       "Plugins": {
-        "CellContextMenu": CellContextMenu
+        "CellMenu": CellMenu
       }
     }
   });
 
   /***
-   * A plugin to add Context Menu on a Cell (click on the cell that has the cellContextMenu object defined)
-   * The "cellContextMenu" is defined in a Column Definition object
+   * A plugin to add Menu on a Cell click (click on the cell that has the cellMenu object defined)
+   * The "cellMenu" is defined in a Column Definition object
    * Similar to the ContextMenu plugin (could be used in combo),
    * except that it subscribes to the cell "onClick" event (regular mouse click or touch).
    *
@@ -19,17 +19,17 @@
    *
    * USAGE:
    *
-   * Add the slick.cellContextmenu.(js|css) files and register it with the grid.
+   * Add the slick.cellMenu.(js|css) files and register it with the grid.
    *
    * To specify a menu in a column header, extend the column definition like so:
-   * var cellContextMenuControl = new Slick.Plugins.CellContextMenu(columns, grid, options);
+   * var cellMenuPlugin = new Slick.Plugins.CellMenu(columns, grid, options);
    *
-   * Available grid options, by defining a contextMenu object:
+   * Available cellMenu options, by defining a cellMenu object:
    *
    *  var columns = [
    *    {
    *      id: "action", name: "Action", field: "action", formatter: fakeButtonFormatter,
-   *      cellContextMenu: {
+   *      cellMenu: {
    *        optionTitle: "Change Effort Driven",
    *        optionItems: [
    *          { option: true, title: "True", iconCssClass: 'checkmark' },
@@ -39,7 +39,7 @@
    *        commandItems: [
    *          { command: "delete-row", title: "Delete Row", iconImage: "../images/delete.png", cssClass: "red" },
    *          { divider: true },
-     *        "divider" // you can pass "divider" as a string or an object
+   *          "divider" // you can pass "divider" as a string or an object
    *          { command: "help", title: "Help", iconCssClass: "icon-help" },
    *          { command: "help", title: "Disabled Command", disabled: true },
    *        ],
@@ -48,7 +48,7 @@
    *  ];
    *
    *
-   * Available cellContextMenu properties:
+   * Available cellMenu properties:
    *    commandTitle:               Title of the Command section (optional)
    *    commandItems:               Array of Command item objects (command/title pair)
    *    optionTitle:                Title of the Option section (optional)
@@ -116,12 +116,12 @@
    *            dataContext: Cell Data Context (data object)
    *
    *
-   * @param options {Object} Context Menu Options
-   * @class Slick.Plugins.ContextMenu
+   * @param options {Object} Cell Menu Options
+   * @class Slick.Plugins.CellMenu
    * @constructor
    */
-  function CellContextMenu(optionProperties) {
-    var _contextMenuProperties;
+  function CellMenu(optionProperties) {
+    var _cellMenuProperties;
     var _currentCell = -1;
     var _currentRow = -1;
     var _grid;
@@ -145,13 +145,13 @@
     function init(grid) {
       _grid = grid;
       _gridOptions = grid.getOptions();
-      _contextMenuProperties = $.extend({}, _defaults, optionProperties);
+      _cellMenuProperties = $.extend({}, _defaults, optionProperties);
       _gridUid = (grid && grid.getUID) ? grid.getUID() : "";
       _handler.subscribe(_grid.onClick, handleCellClick);
     }
 
     function setOptions(newOptions) {
-      _contextMenuProperties = $.extend({}, _contextMenuProperties, newOptions);
+      _cellMenuProperties = $.extend({}, _cellMenuProperties, newOptions);
     }
 
     function destroy() {
@@ -170,15 +170,15 @@
       var columnDef = _grid.getColumns()[_currentCell];
       var dataContext = _grid.getDataItem(_currentRow);
 
-      var commandItems = _contextMenuProperties.commandItems || [];
-      var optionItems = _contextMenuProperties.optionItems || [];
+      var commandItems = _cellMenuProperties.commandItems || [];
+      var optionItems = _cellMenuProperties.optionItems || [];
 
-      // make sure there's at least something to show before creating the Context Menu
-      if (!columnDef || !columnDef.cellContextMenu || (!commandItems.length && optionItems.length)) {
+      // make sure there's at least something to show before creating the Cell Menu
+      if (!columnDef || !columnDef.cellMenu || (!commandItems.length && optionItems.length)) {
         return;
       }
 
-      // delete any prior context menu
+      // delete any prior Cell Menu
       destroyMenu();
 
       // Let the user modify the menu or cancel altogether,
@@ -191,27 +191,27 @@
         return;
       }
 
-      // create a new context menu
-      var maxHeight = isNaN(_contextMenuProperties.maxHeight) ? _contextMenuProperties.maxHeight : _contextMenuProperties.maxHeight + "px";
-      var minWidth = isNaN(_contextMenuProperties.minWidth) ? _contextMenuProperties.minWidth : _contextMenuProperties.minWidth + "px";
+      // create a new cell menu
+      var maxHeight = isNaN(_cellMenuProperties.maxHeight) ? _cellMenuProperties.maxHeight : _cellMenuProperties.maxHeight + "px";
+      var minWidth = isNaN(_cellMenuProperties.minWidth) ? _cellMenuProperties.minWidth : _cellMenuProperties.minWidth + "px";
       var menuStyle = "min-width: " + minWidth + "; max-height: " + maxHeight;
-      var menu = $('<div class="slick-cell-context-menu ' + _gridUid + '" style="' + menuStyle + '" />')
+      var menu = $('<div class="slick-cell-menu ' + _gridUid + '" style="' + menuStyle + '" />')
         .css("top", e.pageY + 5)
         .css("left", e.pageX)
         .css("display", "none");
 
-      var closeButtonHtml = '<button type="button" class="close" data-dismiss="slick-context-menu" aria-label="Close">'
+      var closeButtonHtml = '<button type="button" class="close" data-dismiss="slick-cell-menu" aria-label="Close">'
         + '<span class="close" aria-hidden="true">&times;</span></button>';
 
       // -- Option List section
-      if (!_contextMenuProperties.hideOptionSection && optionItems.length > 0) {
-        var $optionMenu = $('<div class="slick-cell-context-menu-option-list" />');
-        if (!_contextMenuProperties.hideCloseButton) {
+      if (!_cellMenuProperties.hideOptionSection && optionItems.length > 0) {
+        var $optionMenu = $('<div class="slick-cell-menu-option-list" />');
+        if (!_cellMenuProperties.hideCloseButton) {
           $(closeButtonHtml).on("click", destroyMenu).appendTo(menu);
         }
         $optionMenu.appendTo(menu);
         populateOptionItems({
-          contextMenu: _contextMenuProperties,
+          cellMenu: _cellMenuProperties,
           optionMenuElm: $optionMenu,
           dataContext: dataContext,
           optionItems: optionItems
@@ -219,14 +219,14 @@
       }
 
       // -- Command List section
-      if (!_contextMenuProperties.hideCommandSection && commandItems.length > 0) {
-        var $commandMenu = $('<div class="slick-cell-context-menu-command-list" />');
-        if (!_contextMenuProperties.hideCloseButton && (optionItems.length === 0 || _contextMenuProperties.hideOptionSection)) {
+      if (!_cellMenuProperties.hideCommandSection && commandItems.length > 0) {
+        var $commandMenu = $('<div class="slick-cell-menu-command-list" />');
+        if (!_cellMenuProperties.hideCloseButton && (optionItems.length === 0 || _cellMenuProperties.hideOptionSection)) {
           $(closeButtonHtml).on("click", destroyMenu).appendTo(menu);
         }
         $commandMenu.appendTo(menu);
         populateCommandItems({
-          contextMenu: _contextMenuProperties,
+          cellMenu: _cellMenuProperties,
           commandMenuElm: $commandMenu,
           dataContext: dataContext,
           commandItems: commandItems
@@ -259,7 +259,7 @@
     }
 
     function destroyMenu() {
-      $menu = $menu || $(".slick-cell-context-menu." + _gridUid);
+      $menu = $menu || $(".slick-cell-menu." + _gridUid);
 
       if ($menu) {
         $menu.remove();
@@ -277,14 +277,14 @@
       var menuOffsetTop = $parent ? $parent.offset().top : e.pageY;
       var parentCellWidth = $parent.outerWidth();
       var menuHeight = $menu.outerHeight() || 0;
-      var menuWidth = $menu.outerWidth() || _contextMenuProperties.minWidth || 0;
+      var menuWidth = $menu.outerWidth() || _cellMenuProperties.minWidth || 0;
       var rowHeight = _gridOptions.rowHeight;
-      var dropOffset = _contextMenuProperties.autoAdjustDropOffset;
-      var sideOffset = _contextMenuProperties.autoAlignSideOffset;
+      var dropOffset = _cellMenuProperties.autoAdjustDropOffset;
+      var sideOffset = _cellMenuProperties.autoAlignSideOffset;
 
       // if autoAdjustDrop is enable, we first need to see what position the drop will be located (defaults to bottom)
       // without necessary toggling it's position just yet, we just want to know the future position for calculation
-      if (_contextMenuProperties.autoAdjustDrop) {
+      if (_cellMenuProperties.autoAdjustDrop) {
         // since we reposition menu below slick cell, we need to take it in consideration and do our calculation from that element
         var spaceBottom = calculateAvailableSpaceBottom($parent);
         var spaceTop = calculateAvailableSpaceTop($parent);
@@ -303,7 +303,7 @@
       // when auto-align is set, it will calculate whether it has enough space in the viewport to show the drop menu on the right (default)
       // if there isn't enough space on the right, it will automatically align the drop menu to the left (defaults to the right)
       // to simulate an align left, we actually need to know the width of the drop menu
-      if (_contextMenuProperties.autoAlignSide) {
+      if (_cellMenuProperties.autoAlignSide) {
         var gridPos = _grid.getGridPosition();
         var dropSide = ((menuOffsetLeft + menuWidth) >= gridPos.width) ? 'left' : 'right';
         if (dropSide === 'left') {
@@ -325,11 +325,11 @@
       var dataContext = _grid.getDataItem(cell.row);
       var columnDef = _grid.getColumns()[cell.cell];
 
-      // merge the contextMenu of the column definition with the default properties
-      _contextMenuProperties = $.extend({}, _contextMenuProperties, columnDef.cellContextMenu);
+      // merge the cellMenu of the column definition with the default properties
+      _cellMenuProperties = $.extend({}, _cellMenuProperties, columnDef.cellMenu);
 
       // run the override function (when defined), if the result is false it won't go further
-      if (!runOverrideFunctionWhenExists(_contextMenuProperties.menuUsabilityOverride, args.row, dataContext, _grid)) {
+      if (!runOverrideFunctionWhenExists(_cellMenuProperties.menuUsabilityOverride, args.row, dataContext, _grid)) {
         return;
       }
 
@@ -373,17 +373,17 @@
     /** Construct the Option Items section. */
     function populateOptionItems(args) {
       var optionMenuElm = args && args.optionMenuElm;
-      var contextMenu = args && args.contextMenu;
+      var cellMenu = args && args.cellMenu;
       var dataContext = args && args.dataContext;
       var optionItems = args && args.optionItems;
 
-      if (!args || !optionItems || !contextMenu) {
+      if (!args || !optionItems || !cellMenu) {
         return;
       }
 
       // user could pass a title on top of the Options section
-      if (contextMenu && contextMenu.optionTitle) {
-        $optionTitleElm = $('<div class="title"/>').append(contextMenu.optionTitle);
+      if (cellMenu && cellMenu.optionTitle) {
+        $optionTitleElm = $('<div class="title"/>').append(cellMenu.optionTitle);
         $optionTitleElm.appendTo(optionMenuElm);
       }
 
@@ -405,20 +405,20 @@
           item.disabled = isItemUsable ? false : true;
         }
 
-        var $li = $('<div class="slick-cell-context-menu-item"></div>')
+        var $li = $('<div class="slick-cell-menu-item"></div>')
           .data("option", item.option || "")
           .data("item", item)
           .on("click", handleMenuItemOptionClick)
           .appendTo(optionMenuElm);
 
         if (item.divider || item === "divider") {
-          $li.addClass("slick-cell-context-menu-item-divider");
+          $li.addClass("slick-cell-menu-item-divider");
           continue;
         }
 
         // if the item is disabled then add the disabled css class
         if (item.disabled || !isItemUsable) {
-          $li.addClass("slick-cell-context-menu-item-disabled");
+          $li.addClass("slick-cell-menu-item-disabled");
         }
 
         if (item.cssClass) {
@@ -429,7 +429,7 @@
           $li.attr("title", item.tooltip);
         }
 
-        var $icon = $('<div class="slick-cell-context-menu-icon"></div>')
+        var $icon = $('<div class="slick-cell-menu-icon"></div>')
           .appendTo($li);
 
         if (item.iconCssClass) {
@@ -440,7 +440,7 @@
           $icon.css("background-image", "url(" + item.iconImage + ")");
         }
 
-        $('<span class="slick-cell-context-menu-content"></span>')
+        $('<span class="slick-cell-menu-content"></span>')
           .text(item.title)
           .appendTo($li);
       }
@@ -449,17 +449,17 @@
     /** Construct the Command Items section. */
     function populateCommandItems(args) {
       var commandMenuElm = args && args.commandMenuElm;
-      var contextMenu = args && args.contextMenu;
+      var cellMenu = args && args.cellMenu;
       var dataContext = args && args.dataContext;
       var commandItems = args && args.commandItems;
 
-      if (!args || !commandItems || !contextMenu) {
+      if (!args || !commandItems || !cellMenu) {
         return;
       }
 
       // user could pass a title on top of the Commands section
-      if (contextMenu && contextMenu.commandTitle) {
-        $commandTitleElm = $('<div class="title"/>').append(contextMenu.commandTitle);
+      if (cellMenu && cellMenu.commandTitle) {
+        $commandTitleElm = $('<div class="title"/>').append(cellMenu.commandTitle);
         $commandTitleElm.appendTo(commandMenuElm);
       }
 
@@ -481,20 +481,20 @@
           item.disabled = isItemUsable ? false : true;
         }
 
-        var $li = $('<div class="slick-cell-context-menu-item"></div>')
+        var $li = $('<div class="slick-cell-menu-item"></div>')
           .data("command", item.command || "")
           .data("item", item)
           .on("click", handleMenuItemCommandClick)
           .appendTo(commandMenuElm);
 
         if (item.divider || item === "divider") {
-          $li.addClass("slick-cell-context-menu-item-divider");
+          $li.addClass("slick-cell-menu-item-divider");
           continue;
         }
 
         // if the item is disabled then add the disabled css class
         if (item.disabled || !isItemUsable) {
-          $li.addClass("slick-cell-context-menu-item-disabled");
+          $li.addClass("slick-cell-menu-item-disabled");
         }
 
         if (item.cssClass) {
@@ -505,7 +505,7 @@
           $li.attr("title", item.tooltip);
         }
 
-        var $icon = $('<div class="slick-cell-context-menu-icon"></div>')
+        var $icon = $('<div class="slick-cell-menu-icon"></div>')
           .appendTo($li);
 
         if (item.iconCssClass) {
@@ -516,7 +516,7 @@
           $icon.css("background-image", "url(" + item.iconImage + ")");
         }
 
-        $('<span class="slick-cell-context-menu-content"></span>')
+        $('<span class="slick-cell-menu-content"></span>')
           .text(item.title)
           .appendTo($li);
       }
@@ -614,7 +614,7 @@
     $.extend(this, {
       "init": init,
       "destroy": destroy,
-      "pluginName": "CellContextMenu",
+      "pluginName": "CellMenu",
       "setOptions": setOptions,
 
       "onBeforeMenuShow": new Slick.Event(),
