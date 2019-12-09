@@ -8,6 +8,9 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
  
+      - name: Install npm dependencies
+        run: npm ci
+
       - name: Cypress run
         uses: cypress-io/github-action@v1
         with:
