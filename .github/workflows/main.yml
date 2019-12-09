@@ -7,7 +7,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
       - name: NPM install
-        uses: 6pac/npm-install@v1
+        uses: bahmutov/npm-install@v1
       - name: Start Http Server on port 8080
         run: npm start
       - name: Cypress run
