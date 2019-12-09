@@ -31,6 +31,6 @@ jobs:
         run: npm ci
 
       - name: Run Cypress E2E tests
-        run: npm run cypress:ci
+        uses: cypress-io/github-action@v1
         with:
           start: npm run serve
