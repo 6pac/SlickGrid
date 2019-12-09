@@ -27,7 +27,7 @@
   "scripts": {
     "cypress:ci": "node node_modules/cypress/bin/cypress run --reporter xunit --reporter-options output=testresult.xml",
     "cypress:open": "node node_modules/cypress/bin/cypress open",
-    "serve": "http-server ./ -p 8080 -a localhost"
+    "serve": "http-server ./ -p 8080 -a localhost -s"
   },
   "dependencies": {
     "jquery": ">=1.8.0",
