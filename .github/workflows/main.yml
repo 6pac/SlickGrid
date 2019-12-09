@@ -3,9 +3,22 @@ on: [push]
 jobs:
   cypress-run:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        node-version: [8.x, 10.x, 12.x]
     steps:
       - name: Checkout
         uses: actions/checkout@v1
+      - name: Use Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v1
+        with:
+          node-version: ${{ matrix.node-version }}
+      - name: npm install, build, and test
+        run: |
+          npm serve
+          npm run cypress:ci
+        env:
+          CI: true
       - name: Start Http Server on port 8080
         run: npm serve
       - name: Cypress run
