@@ -6,10 +6,9 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v1
-      - name: Start Http Server
-        run: 
-          # Start http server on port 8080
-          start: npm run start
+        uses: 6pac/npm-install@v1
+      - name: Start Http Server on port 8080
+        run: npm start
           wait-on: 'http://localhost:8080'
       - name: Cypress run
         uses: cypress-io/github-action@v1
