@@ -501,6 +501,10 @@
 
       var columnDef = _grid.getColumns()[cell];
       var dataContext = _grid.getDataItem(row);
+      var cellValue;
+      if (Object.prototype.hasOwnProperty.call(dataContext, columnDef && columnDef.field)) {
+        cellValue = dataContext[columnDef.field];
+      }
 
       if (command != null && command !== "") {
         // user could execute a callback through 2 ways
@@ -512,13 +516,14 @@
           "command": command,
           "item": item,
           "columnDef": columnDef,
-          "dataContext": dataContext
+          "dataContext": dataContext,
+          "value": cellValue
         };
         _self.onCommand.notify(callbackArgs, e, _self);
 
         // execute action callback when defined
         if (typeof item.action === "function") {
-          item.action(e, callbackArgs);
+          item.action.call(this, e, callbackArgs);
         }
       }
     }
@@ -556,7 +561,7 @@
 
         // execute action callback when defined
         if (typeof item.action === "function") {
-          item.action(e, callbackArgs);
+          item.action.call(this, e, callbackArgs);
         }
       }
     }

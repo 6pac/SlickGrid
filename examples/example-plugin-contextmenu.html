@@ -97,7 +97,8 @@
           <li>Mouse Right-Click the row to open a Context Menu (global any columns)</li>
           <li>The context menu showing on left columns will show only commands (from Title to EffortDriven)</li>
           <li>
-            The context menu showing on Priority column will show list of options that will be applied to the Priority cell
+            The context menu showing on Priority column will show list of options that will be applied to the Priority
+            cell
           </li>
           <li>
             You can dynamically change the behavior and show Commands & Options over the Priority column
@@ -118,7 +119,8 @@
           </li>
           <li>Uses the same context menu structure as the global one but is defined on a column definition level</li>
           <li>A good usage example is with an "Action" button/cell as shown in the grid</li>
-          <li>Note that the Action text is just a placeholder, user can click anywhere in the cell to trigger the action.</li>
+          <li>Note that the Action text is just a placeholder, user can click anywhere in the cell to trigger the
+            action.</li>
           <div style="margin-bottom:10px">
             <button onclick="showCellMenuCommandsAndOptions(false)">Show Commands Only</button>
             <button onclick="showCellMenuCommandsAndOptions(true)">Show Commands & Effort Options</button>
@@ -208,6 +210,31 @@
       return ("0000" + (Math.floor(Math.random() * maxVal) + 1)).slice(-numDigits)
     }
 
+    // Copy text to clipboard, on IE it's easy to copy a text, we can just call the clipboard
+    // but on other browsers this is insecure and we need to use the following trick to copy a cell, 
+    // by creating a temp div and change the text value, we can then call the execCommand to copy which only works with dom element
+    function copyCellValue(textToCopy) {
+      try {
+        if (window.clipboardData) {
+          window.clipboardData.setData("Text", textToCopy);
+        } else {
+          var range = document.createRange();
+          var tmpElem = $('<div>')
+            .css({ position: "absolute", left: "-1000px", top: "-1000px" })
+            .text(textToCopy);
+          $("body").append(tmpElem);
+          range.selectNodeContents(tmpElem.get(0));
+          var selection = window.getSelection();
+          selection.removeAllRanges();
+          selection.addRange(range);
+          var success = document.execCommand("copy", false, null);
+          if (success) {
+            tmpElem.remove();
+          }
+        }
+      } catch (e) { }
+    }
+
     function showContextCommandsAndOptions(showBothList) {
       // when showing both Commands/Options, we can just pass an empty array to show over all columns
       // else show on all columns except Priority
@@ -259,6 +286,9 @@
         case "command2":
           alert('Command 2');
           break;
+        case "copy-text":
+          copyCellValue(args.value);
+          break;
         case "help":
           alert('Please help!');
           break;
@@ -296,7 +326,8 @@
             {
               command: "command2", title: "Command 2",
               // you can subscribe to the "onCallback" event and/or simply use the "action" callback, they both have the same arguments
-              action: function(e, args) {
+              action: function (e, args) {
+                console.log(args.dataContext, args.columnDef)
                 // action callback.. do something
               },
               // only enable command when there's no Effort Driven
@@ -325,7 +356,7 @@
             {
               option: null, title: "null", cssClass: "italic",
               // you can subscribe to the "onCallback" event and/or simply use the "action" callback, they both have the same arguments
-              action: function(e, args) {
+              action: function (e, args) {
                 // action callback.. do something
               },
               // only enable command when there's no Effort Driven
@@ -346,6 +377,7 @@
       editable: true,
       enableAddRow: false,
       enableCellNavigation: true,
+      enableTextSelectionOnCells: true,
       asyncEditorLoading: false,
       rowHeight: 30
     };
@@ -360,12 +392,13 @@
       // which column to show the command list? when not defined it will be shown over all columns
       commandShownOverColumnIds: ["id", "title", "complete", "start", "finish", "effortDriven" /*, "priority"*/],
       commandItems: [
+        { command: "copy-text", title: "Copy Cell Value" },
         { command: "delete-row", title: "Delete Row", iconImage: "../images/delete.png", cssClass: "red" },
         { divider: true },
         {
           command: "help", title: "Help", iconCssClass: "icon-help",
           // you can subscribe to the "onCallback" event and/or simply use the "action" callback, they both have the same arguments
-          action: function(e, args) {
+          action: function (e, args) {
             // action callback.. do something
           },
           // only show command to "Help" when there's no Effort Driven
@@ -389,7 +422,7 @@
             return (!dataContext.effortDriven);
           },
           // you can subscribe to the "onCallback" event and/or simply use the "action" callback, they both have the same arguments
-          action: function(e, args) {
+          action: function (e, args) {
             // action callback.. do something
           },
         },

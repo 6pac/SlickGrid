@@ -554,7 +554,7 @@
 
         // execute action callback when defined
         if (typeof item.action === "function") {
-          item.action(e, callbackArgs);
+          item.action.call(this, e, callbackArgs);
         }
       }
     }
@@ -594,7 +594,7 @@
 
         // execute action callback when defined
         if (typeof item.action === "function") {
-          item.action(e, callbackArgs);
+          item.action.call(this, e, callbackArgs);
         }
       }
     }
