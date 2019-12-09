@@ -31,7 +31,7 @@ jobs:
         run: npm ci
 
       - name: Run Http Server
-        run: npm serve
+        run: npm run serve
 
       - name: Run Cypress E2E tests
         run: npm run cypress:ci
