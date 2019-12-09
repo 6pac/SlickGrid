@@ -7,7 +7,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
       - name: Start Http Server
-        with: 
+        run: 
           # Start http server on port 8080
           start: npm run start
           wait-on: 'http://localhost:8080'
