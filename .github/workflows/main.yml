@@ -7,7 +7,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v1
       - name: Start Http Server on port 8080
-        run: npm start
+        run: npm serve
       - name: Cypress run
         uses: cypress-io/github-action@v1
         with:           
