@@ -32,4 +32,5 @@ jobs:
 
       - name: Run Cypress E2E tests
         run: npm run cypress:ci
-        with: npm serve
+        with: 
+          start: npm serve
