@@ -1,4 +1,4 @@
-name: Tests
+name: SlickGrid - Cypress E2E Tests
 on: [push, pull_request]
 env:
   CI: true

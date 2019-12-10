@@ -122,8 +122,8 @@
           <li>Note that the Action text is just a placeholder, user can click anywhere in the cell to trigger the
             action.</li>
           <div style="margin-bottom:10px">
-            <button onclick="showCellMenuCommandsAndOptions(false)">Show Commands Only</button>
-            <button onclick="showCellMenuCommandsAndOptions(true)">Show Commands & Effort Options</button>
+            <button onclick="showCellMenuCommandsAndOptions(false)">Show Action Commands Only</button>
+            <button onclick="showCellMenuCommandsAndOptions(true)">Show Actions Commands & Effort Options</button>
           </div>
           <p></p>
           <li><strong>Common Features</strong></li>
@@ -406,7 +406,7 @@
             return (!dataContext.effortDriven);
           }
         },
-        { command: "something", title: "Command", disabled: true },
+        { command: "something", title: "Command (always disabled)", disabled: true },
       ],
 
       // Options allows you to edit a column from an option chose a list

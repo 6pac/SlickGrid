@@ -307,8 +307,10 @@
         var gridPos = _grid.getGridPosition();
         var dropSide = ((menuOffsetLeft + menuWidth) >= gridPos.width) ? 'left' : 'right';
         if (dropSide === 'left') {
+          $menu.removeClass("dropright").addClass("dropleft");
           menuOffsetLeft = (menuOffsetLeft - (menuWidth - parentCellWidth) - sideOffset);
         } else {
+          $menu.removeClass("dropleft").addClass("dropright");
           menuOffsetLeft = menuOffsetLeft + sideOffset;
         }
       }
