@@ -6,8 +6,7 @@ describe('Example - Context Menu & Cell Menu', () => {
   it('should display Example Context Menu & Cell Menu', () => {
     cy.visit(`${Cypress.config('baseExampleUrl')}/example-plugin-contextmenu.html`);
     cy.get('h2').should('contain', 'Demonstrates:');
-    cy.contains('Slick.Plugins.ContextMenu - Context Menu (global from any columns right+click)');
-    cy.contains('Slick.Plugins.CellMenu - Cell Menu (from a single cell click)');
+    cy.get('h2 span').should('contain', 'Slick.Plugins.ContextMenu / Slick.Plugins.CellMenu');
   });
 
   it('should have exact Column Titles in the grid', () => {
