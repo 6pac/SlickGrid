@@ -1,5 +1,13 @@
 name: SlickGrid - Cypress E2E Tests
-on: [push, pull_request]
+on: 
+  # Trigger the workflow on push or pull request,
+  # but only for the master branch on Push and any branches on PR
+  push:
+    branches:
+      - master
+  pull_request:
+    branches:
+      - *
 env:
   CI: true
 
