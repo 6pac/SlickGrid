@@ -11,6 +11,10 @@
   <link rel="stylesheet" href="../css/smoothness/jquery-ui.css" type="text/css" />
   <link rel="stylesheet" href="examples.css" type="text/css" />
   <style>
+    .bold {
+      font-weight: bold;
+    }
+
     .italic {
       font-style: italic;
     }
@@ -193,17 +197,17 @@
     var contextMenuPlugin;
 
     function actionFormatter(row, cell, value, columnDef, dataContext) {
-      if (dataContext.priority === 3) { // option 3 is High
-        return "<div class='fake-hyperlink'>" + value + " &#9660;</div>";
+      // only enable the Action menu when Priority is set to High (3)
+      if (dataContext.priority === 3) {
+        return "<div class='fake-hyperlink'>Action &#9660;</div>";
       }
-      return "<div class='disabled'>" + value + " &#9660;</div>";
+      return "<div class='disabled'>Action &#9660;</div>";
     }
 
     function priorityFormatter(row, cell, value, columnDef, dataContext) {
       if (!value) {
         return "";
       }
-      let output = "";
       var count = +(value >= 3 ? 3 : value);
       return count === 3 ? "High" : (count === 2 ? "Medium" : "Low");
     }
@@ -270,8 +274,7 @@
           start: "" + formattedRandomNum(28) + "/03/2009",
           finish: "" + formattedRandomNum(28) + "/05/2011",
           priority: i % 3 ? 2 : (i % 5 ? 3 : 1),
-          effortDriven: (i % 4 === 0),
-          action: "Action"
+          effortDriven: (i % 4 === 0)
         };
       }
       return data;
@@ -312,7 +315,7 @@
       { id: "priority", name: "Priority", field: "priority", width: 80, resizable: false, formatter: priorityFormatter },
       { id: "effortDriven", name: "Effort Driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark },
       {
-        id: "action", name: "Action", field: "action", width: 80, resizable: false,
+        id: "action", name: "Action", field: "id", width: 80, resizable: false,
         formatter: actionFormatter,
         cellMenu: {
           // you can override the logic of when the menu is usable
@@ -340,7 +343,8 @@
             },
             {
               command: "delete-row", title: "Delete Row",
-              iconImage: "../images/delete.png", cssClass: "red",
+              iconImage: "../images/delete.png",
+              cssClass: "bold", textCssClass: "red",
               // only show command to "Delete Row" when there's no Effort Driven
               itemVisibilityOverride: function (row, dataContext, grid) {
                 return (!dataContext.effortDriven);
@@ -357,7 +361,7 @@
             { option: true, title: "True", iconCssClass: 'checkmark' },
             { option: false, title: "False" },
             {
-              option: null, title: "null", cssClass: "italic",
+              option: null, title: "null", textCssClass: "italic",
               // you can subscribe to the "onCallback" event and/or simply use the "action" callback, they both have the same arguments
               action: function (e, args) {
                 // action callback.. do something
@@ -396,7 +400,7 @@
       commandShownOverColumnIds: ["id", "title", "complete", "start", "finish", "effortDriven" /*, "priority"*/],
       commandItems: [
         { command: "copy-text", title: "Copy Cell Value" },
-        { command: "delete-row", title: "Delete Row", iconImage: "../images/delete.png", cssClass: "red" },
+        { command: "delete-row", title: "Delete Row", iconImage: "../images/delete.png", cssClass: "bold", textCssClass: "red", },
         { divider: true },
         {
           command: "help", title: "Help", iconCssClass: "icon-help",
@@ -419,7 +423,7 @@
       optionShownOverColumnIds: ["priority"], // optional, when defined it will only show over the columns (column id) defined in the array
       optionItems: [
         {
-          option: 0, title: "none", cssClass: "italic",
+          option: 0, title: "none", textCssClass: "italic",
           // only enable this option when there's no Effort Driven
           itemUsabilityOverride: function (row, dataContext, grid) {
             return (!dataContext.effortDriven);

@@ -173,6 +173,8 @@ describe('Example - Context Menu & Cell Menu', () => {
       .contains('High');
 
     cy.get('.slick-context-menu-command-list')
+      .find('.slick-context-menu-item.bold')
+      .find('.slick-context-menu-content.red')
       .should('exist')
       .contains('Delete Row');
 
@@ -233,6 +235,7 @@ describe('Example - Context Menu & Cell Menu', () => {
 
     cy.get('.slick-cell-menu')
       .find('.slick-cell-menu-option-list')
+      .find('.slick-cell-menu-content.italic')
       .contains('null');
   });
 
@@ -297,6 +300,8 @@ describe('Example - Context Menu & Cell Menu', () => {
       .rightclick();
 
     cy.get('.slick-context-menu .slick-context-menu-command-list')
+      .find('.slick-context-menu-item.bold')
+      .find('.slick-context-menu-content.red')
       .should('exist')
       .contains('Delete Row')
       .click();
@@ -319,6 +324,8 @@ describe('Example - Context Menu & Cell Menu', () => {
       .click();
 
     cy.get('.slick-cell-menu .slick-cell-menu-command-list')
+      .find('.slick-cell-menu-item.bold')
+      .find('.slick-cell-menu-content.red')
       .should('exist')
       .contains('Delete Row')
       .click();

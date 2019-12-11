@@ -37,7 +37,7 @@
    *        ],
    *        commandTitle: "Commands",
    *        commandItems: [
-   *          { command: "delete-row", title: "Delete Row", iconImage: "../images/delete.png", cssClass: "red" },
+   *          { command: "delete-row", title: "Delete Row", iconImage: "../images/delete.png", cssClass: 'bold', textCssClass: "red" },
    *          { divider: true },
    *          "divider" // you can pass "divider" as a string or an object
    *          { command: "help", title: "Help", iconCssClass: "icon-help" },
@@ -66,54 +66,55 @@
    *
    *
    * Available menu Command/Option item properties:
-   *    action:                 Optionally define a callback function that gets executed when item is chosen (and/or use the onCommand event)
-   *    command:                A command identifier to be passed to the onCommand event handlers (when using "commandItems").
-   *    option:                 An option to be passed to the onOptionSelected event handlers (when using "optionItems").
-   *    title:                  Menu item text label.
-   *    divider:                Boolean which tells if the current item is a divider, not an actual command. You could also pass "divider" instead of an object
-   *    disabled:               Whether the item is disabled.
-   *    tooltip:                Item tooltip.
-   *    cssClass:               A CSS class to be added to the menu item container.
-   *    iconCssClass:           A CSS class to be added to the menu item icon.
-   *    iconImage:              A url to the icon image.
-   *    itemVisibilityOverride: Callback method that user can override the default behavior of showing/hiding an item from the list
-   *    itemUsabilityOverride:  Callback method that user can override the default behavior of enabling/disabling an item from the list
+   *    action:                     Optionally define a callback function that gets executed when item is chosen (and/or use the onCommand event)
+   *    command:                    A command identifier to be passed to the onCommand event handlers (when using "commandItems").
+   *    option:                     An option to be passed to the onOptionSelected event handlers (when using "optionItems").
+   *    title:                      Menu item text label.
+   *    divider:                    Boolean which tells if the current item is a divider, not an actual command. You could also pass "divider" instead of an object
+   *    disabled:                   Whether the item is disabled.
+   *    tooltip:                    Item tooltip.
+   *    cssClass:                   A CSS class to be added to the menu item container.
+   *    iconCssClass:               A CSS class to be added to the menu item icon.
+   *    textCssClass:               A CSS class to be added to the menu item text.
+   *    iconImage:                  A url to the icon image.
+   *    itemVisibilityOverride:     Callback method that user can override the default behavior of showing/hiding an item from the list
+   *    itemUsabilityOverride:      Callback method that user can override the default behavior of enabling/disabling an item from the list
    *
    *
    * The plugin exposes the following events:
    *
-   *    onBeforeMenuShow:   Fired before the menu is shown.  You can customize the menu or dismiss it by returning false.
+   *    onBeforeMenuShow: Fired before the menu is shown.  You can customize the menu or dismiss it by returning false.
    *        Event args:
-   *            cell:        Cell or column index
-   *            row:         Row index
-   *            grid:        Reference to the grid.
+   *            cell:         Cell or column index
+   *            row:          Row index
+   *            grid:         Reference to the grid.
    *
-   *    onBeforeMenuClose:   Fired when the menu is closing.
+   *    onBeforeMenuClose: Fired when the menu is closing.
    *        Event args:
-   *            cell:        Cell or column index
-   *            row:         Row index
-   *            grid:        Reference to the grid.
-   *            menu:        Menu DOM element
+   *            cell:         Cell or column index
+   *            row:          Row index
+   *            grid:         Reference to the grid.
+   *            menu:         Menu DOM element
    *
    *    onCommand: Fired on menu option clicked from the Command items list
    *        Event args:
-   *            cell:        Cell or column index
-   *            row:         Row index
-   *            grid:        Reference to the grid.
-   *            command:     Menu command identified.
-   *            item:        Menu item selected
-   *            columnDef:   Cell Column definition
-   *            dataContext: Cell Data Context (data object)
+   *            cell:         Cell or column index
+   *            row:          Row index
+   *            grid:         Reference to the grid.
+   *            command:      Menu command identified.
+   *            item:         Menu item selected
+   *            columnDef:    Cell Column definition
+   *            dataContext:  Cell Data Context (data object)
    *
    *    onOptionSelected: Fired on menu option clicked from the Option items list
    *        Event args:
-   *            cell:        Cell or column index
-   *            row:         Row index
-   *            grid:        Reference to the grid.
-   *            command:     Menu command identified.
-   *            item:        Menu item selected
-   *            columnDef:   Cell Column definition
-   *            dataContext: Cell Data Context (data object)
+   *            cell:         Cell or column index
+   *            row:          Row index
+   *            grid:         Reference to the grid.
+   *            option:       Menu option selected.
+   *            item:         Menu item selected
+   *            columnDef:    Cell Column definition
+   *            dataContext:  Cell Data Context (data object)
    *
    *
    * @param options {Object} Cell Menu Options
@@ -442,9 +443,13 @@
           $icon.css("background-image", "url(" + item.iconImage + ")");
         }
 
-        $('<span class="slick-cell-menu-content"></span>')
+        var $text = $('<span class="slick-cell-menu-content"></span>')
           .text(item.title)
           .appendTo($li);
+
+        if (item.textCssClass) {
+          $text.addClass(item.textCssClass);
+        }
       }
     }
 
@@ -518,9 +523,13 @@
           $icon.css("background-image", "url(" + item.iconImage + ")");
         }
 
-        $('<span class="slick-cell-menu-content"></span>')
+        var $text = $('<span class="slick-cell-menu-content"></span>')
           .text(item.title)
           .appendTo($li);
+
+        if (item.textCssClass) {
+          $text.addClass(item.textCssClass);
+        }
       }
     }
 
