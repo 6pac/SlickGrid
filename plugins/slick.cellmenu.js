@@ -57,7 +57,7 @@
    *    hideCommandSection:         Hide the Commands section even when the commandItems array is filled (defaults to false)
    *    hideOptionSection:          Hide the Options section even when the optionItems array is filled (defaults to false)
    *    maxHeight:                  Maximum height that the drop menu will have, can be a number (250) or text ("none")
-   *    minWidth:                   Minimum width that the drop menu will have
+   *    width:                      Width that the drop menu will have, can be a number (250) or text (defaults to "auto")
    *    autoAdjustDrop:             Auto-align dropup or dropdown menu to the left or right depending on grid viewport available space (defaults to true)
    *    autoAdjustDropOffset:       Optionally add an offset to the auto-align of the drop menu (defaults to 0)
    *    autoAlignSide:              Auto-align drop menu to the left or right depending on grid viewport available space (defaults to true)
@@ -140,7 +140,7 @@
       autoAdjustDropOffset: 0,
       autoAlignSideOffset: 0,
       maxHeight: "none",
-      minWidth: 180,
+      width: "auto",
     };
 
     function init(grid) {
@@ -149,6 +149,7 @@
       _cellMenuProperties = $.extend({}, _defaults, optionProperties);
       _gridUid = (grid && grid.getUID) ? grid.getUID() : "";
       _handler.subscribe(_grid.onClick, handleCellClick);
+      _handler.subscribe(_grid.onScroll, destroyMenu);
     }
 
     function setOptions(newOptions) {
@@ -161,7 +162,9 @@
       _self.onCommand.unsubscribe();
       _self.onOptionSelected.unsubscribe();
       _handler.unsubscribeAll();
-      $menu.remove();
+      if ($menu && $menu.remove) {
+        $menu.remove();
+      }
     }
 
     function createMenu(e) {
@@ -194,8 +197,8 @@
 
       // create a new cell menu
       var maxHeight = isNaN(_cellMenuProperties.maxHeight) ? _cellMenuProperties.maxHeight : _cellMenuProperties.maxHeight + "px";
-      var minWidth = isNaN(_cellMenuProperties.minWidth) ? _cellMenuProperties.minWidth : _cellMenuProperties.minWidth + "px";
-      var menuStyle = "min-width: " + minWidth + "; max-height: " + maxHeight;
+      var width = isNaN(_cellMenuProperties.width) ? _cellMenuProperties.width : _cellMenuProperties.width + "px";
+      var menuStyle = "width: " + width + "; max-height: " + maxHeight;
       var menu = $('<div class="slick-cell-menu ' + _gridUid + '" style="' + menuStyle + '" />')
         .css("top", e.pageY + 5)
         .css("left", e.pageX)
@@ -262,7 +265,7 @@
     function destroyMenu() {
       $menu = $menu || $(".slick-cell-menu." + _gridUid);
 
-      if ($menu) {
+      if ($menu && $menu.remove) {
         $menu.remove();
         $menu = null;
       }
@@ -278,7 +281,7 @@
       var menuOffsetTop = $parent ? $parent.offset().top : e.pageY;
       var parentCellWidth = $parent.outerWidth();
       var menuHeight = $menu.outerHeight() || 0;
-      var menuWidth = $menu.outerWidth() || _cellMenuProperties.minWidth || 0;
+      var menuWidth = $menu.outerWidth() || _cellMenuProperties.width || 0;
       var rowHeight = _gridOptions.rowHeight;
       var dropOffset = _cellMenuProperties.autoAdjustDropOffset;
       var sideOffset = _cellMenuProperties.autoAlignSideOffset;
@@ -368,8 +371,10 @@
         }, e, _self) == false) {
           return;
         }
-        $menu.remove();
-        $menu = null;
+        if ($menu && $menu.remove) {
+          $menu.remove();
+          $menu = null;
+        }
       }
     }
 
@@ -624,6 +629,7 @@
 
     $.extend(this, {
       "init": init,
+      "closeMenu": destroyMenu,
       "destroy": destroy,
       "pluginName": "CellMenu",
       "setOptions": setOptions,

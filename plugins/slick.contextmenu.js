@@ -64,7 +64,7 @@
    *    hideCommandSection:         Hide the Commands section even when the commandItems array is filled (defaults to false)
    *    hideOptionSection:          Hide the Options section even when the optionItems array is filled (defaults to false)
    *    maxHeight:                  Maximum height that the drop menu will have, can be a number (250) or text ("none")
-   *    minWidth:                   Minimum width that the drop menu will have, can be a number (250) or text ("inherit")
+   *    width:                      Width that the drop menu will have, can be a number (250) or text (defaults to "auto")
    *    autoAdjustDrop:             Auto-align dropup or dropdown menu to the left or right depending on grid viewport available space (defaults to true)
    *    autoAdjustDropOffset:       Optionally add an offset to the auto-align of the drop menu (defaults to -4)
    *    autoAlignSide:              Auto-align drop menu to the left or right depending on grid viewport available space (defaults to true)
@@ -147,7 +147,7 @@
       autoAdjustDropOffset: -4,
       autoAlignSideOffset: 0,
       maxHeight: "none",
-      minWidth: 180,
+      width: "auto",
       optionShownOverColumnIds: [],
       commandShownOverColumnIds: [],
     };
@@ -178,7 +178,9 @@
       _self.onCommand.unsubscribe();
       _self.onOptionSelected.unsubscribe();
       _handler.unsubscribeAll();
-      $menu.remove();
+      if ($menu && $menu.remove) {
+        $menu.remove();
+      }
     }
 
     function createMenu(e) {
@@ -213,8 +215,8 @@
 
       // create a new context menu
       var maxHeight = isNaN(_contextMenuProperties.maxHeight) ? _contextMenuProperties.maxHeight : _contextMenuProperties.maxHeight + "px";
-      var minWidth = isNaN(_contextMenuProperties.minWidth) ? _contextMenuProperties.minWidth : _contextMenuProperties.minWidth + "px";
-      var menuStyle = "min-width: " + minWidth + "; max-height: " + maxHeight;
+      var width = isNaN(_contextMenuProperties.width) ? _contextMenuProperties.width : _contextMenuProperties.width + "px";
+      var menuStyle = "width: " + width + "; max-height: " + maxHeight;
       var menu = $('<div class="slick-context-menu ' + _gridUid + '" style="' + menuStyle + '" />')
         .css("top", e.pageY)
         .css("left", e.pageX)
@@ -271,8 +273,10 @@
         }, e, _self) == false) {
           return;
         }
-        $menu.remove();
-        $menu = null;
+        if ($menu && $menu.remove) {
+          $menu.remove();
+          $menu = null;
+        }
       }
     }
 
@@ -585,7 +589,7 @@
       var menuOffsetLeft = e.pageX;
       var menuOffsetTop = $parent ? $parent.offset().top : e.pageY;
       var menuHeight = $menu.outerHeight() || 0;
-      var menuWidth = $menu.outerWidth() || _contextMenuProperties.minWidth || 0;
+      var menuWidth = $menu.outerWidth() || _contextMenuProperties.width || 0;
       var rowHeight = _gridOptions.rowHeight;
       var dropOffset = _contextMenuProperties.autoAdjustDropOffset;
       var sideOffset = _contextMenuProperties.autoAlignSideOffset;
@@ -642,6 +646,7 @@
 
     $.extend(this, {
       "init": init,
+      "closeMenu": destroyMenu,
       "destroy": destroy,
       "pluginName": "ContextMenu",
       "setOptions": setOptions,

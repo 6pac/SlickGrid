@@ -86,7 +86,7 @@ describe('Example - Context Menu & Cell Menu', () => {
     cy.get('#myGrid')
       .find('.slick-row .slick-cell:nth(7)')
       .contains('Action')
-      .click();
+      .click({ force: true });
 
     cy.get('.slick-cell-menu.dropleft')
       .should('exist');
@@ -95,7 +95,7 @@ describe('Example - Context Menu & Cell Menu', () => {
   it('should expect a "Command 2" to be disabled and not clickable (menu will remain open), in that same Action menu', () => {
     cy.get('.slick-cell-menu .slick-cell-menu-item.slick-cell-menu-item-disabled')
       .contains('Command 2')
-      .click();
+      .click({ force: true });
 
     cy.get('.slick-cell-menu.dropleft')
       .should('exist');
@@ -113,7 +113,7 @@ describe('Example - Context Menu & Cell Menu', () => {
     cy.get('#myGrid')
       .find('.slick-row .slick-cell:nth(7)')
       .contains('Action')
-      .click();
+      .click({ force: true });
 
 
     cy.get('.slick-cell-menu .slick-cell-menu-item')
@@ -147,7 +147,7 @@ describe('Example - Context Menu & Cell Menu', () => {
     cy.get('#myGrid')
       .find('.slick-row .slick-cell:nth(7)')
       .contains('Action')
-      .click();
+      .click({ force: true });
 
     cy.get('.slick-cell-menu.dropleft')
       .should('exist');
@@ -210,7 +210,7 @@ describe('Example - Context Menu & Cell Menu', () => {
     cy.get('#myGrid')
       .find('.slick-row .slick-cell:nth(7)')
       .contains('Action')
-      .click();
+      .click({ force: true });
 
     cy.get('.slick-cell-menu .slick-cell-menu-option-list')
       .should('exist')
@@ -228,7 +228,7 @@ describe('Example - Context Menu & Cell Menu', () => {
     cy.get('#myGrid')
       .find('.slick-row .slick-cell:nth(7)')
       .contains('Action')
-      .click();
+      .click({ force: true });
 
     cy.get('.slick-cell-menu.dropleft')
       .should('exist');
@@ -251,7 +251,7 @@ describe('Example - Context Menu & Cell Menu', () => {
     cy.get('#myGrid')
       .find('.slick-row .slick-cell:nth(7)')
       .contains('Action')
-      .click();
+      .click({ force: true });
 
     cy.get('.slick-cell-menu')
       .each($row => {
@@ -276,7 +276,7 @@ describe('Example - Context Menu & Cell Menu', () => {
     cy.get('#myGrid')
       .find('.slick-row .slick-cell:nth(7)')
       .contains('Action')
-      .click();
+      .click({ force: true });
 
     cy.get('.slick-cell-menu .slick-cell-menu-command-list')
       .should('exist')
@@ -321,7 +321,7 @@ describe('Example - Context Menu & Cell Menu', () => {
     cy.get('#myGrid')
       .find('.slick-row:nth(2) .slick-cell:nth(7)')
       .contains('Action')
-      .click();
+      .click({ force: true });
 
     cy.get('.slick-cell-menu .slick-cell-menu-command-list')
       .find('.slick-cell-menu-item.bold')
