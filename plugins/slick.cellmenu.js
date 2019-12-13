@@ -218,12 +218,12 @@
           $(closeButtonHtml).on("click", destroyMenu).appendTo(menu);
         }
         $optionMenu.appendTo(menu);
-        populateOptionItems({
-          cellMenu: _cellMenuProperties,
-          optionMenuElm: $optionMenu,
-          dataContext: dataContext,
-          optionItems: optionItems
-        });
+        populateOptionItems(
+          _cellMenuProperties,
+          $optionMenu,
+          optionItems,
+          { cell: _currentCell, row: _currentRow, columnDef: columnDef, dataContext: dataContext, grid: _grid }
+        );
       }
 
       // -- Command List section
@@ -233,12 +233,12 @@
           $(closeButtonHtml).on("click", destroyMenu).appendTo(menu);
         }
         $commandMenu.appendTo(menu);
-        populateCommandItems({
-          cellMenu: _cellMenuProperties,
-          commandMenuElm: $commandMenu,
-          dataContext: dataContext,
-          commandItems: commandItems
-        });
+        populateCommandItems(
+          _cellMenuProperties,
+          $commandMenu,
+          commandItems,
+          { cell: _currentCell, row: _currentRow, columnDef: columnDef, dataContext: dataContext, grid: _grid }
+        );
       }
 
       menu.show();
@@ -339,7 +339,13 @@
       _cellMenuProperties = $.extend({}, _cellMenuProperties, columnDef.cellMenu);
 
       // run the override function (when defined), if the result is false it won't go further
-      if (!runOverrideFunctionWhenExists(_cellMenuProperties.menuUsabilityOverride, args.row, dataContext, _grid)) {
+      if (!args) {
+        args = {};
+      }
+      args.columnDef = columnDef;
+      args.dataContext = dataContext;
+      args.grid = _grid;
+      if (!runOverrideFunctionWhenExists(_cellMenuProperties.menuUsabilityOverride, args)) {
         return;
       }
 
@@ -383,12 +389,7 @@
     }
 
     /** Construct the Option Items section. */
-    function populateOptionItems(args) {
-      var optionMenuElm = args && args.optionMenuElm;
-      var cellMenu = args && args.cellMenu;
-      var dataContext = args && args.dataContext;
-      var optionItems = args && args.optionItems;
-
+    function populateOptionItems(cellMenu, optionMenuElm, optionItems, args) {
       if (!args || !optionItems || !cellMenu) {
         return;
       }
@@ -403,8 +404,8 @@
         var item = optionItems[i];
 
         // run each override functions to know if the item is visible and usable
-        var isItemVisible = runOverrideFunctionWhenExists(item.itemVisibilityOverride, _currentRow, dataContext, _grid);
-        var isItemUsable = runOverrideFunctionWhenExists(item.itemUsabilityOverride, _currentRow, dataContext, _grid);
+        var isItemVisible = runOverrideFunctionWhenExists(item.itemVisibilityOverride, args);
+        var isItemUsable = runOverrideFunctionWhenExists(item.itemUsabilityOverride, args);
 
         // if the result is not visible then there's no need to go further
         if (!isItemVisible) {
@@ -463,12 +464,7 @@
     }
 
     /** Construct the Command Items section. */
-    function populateCommandItems(args) {
-      var commandMenuElm = args && args.commandMenuElm;
-      var cellMenu = args && args.cellMenu;
-      var dataContext = args && args.dataContext;
-      var commandItems = args && args.commandItems;
-
+    function populateCommandItems(cellMenu, commandMenuElm, commandItems, args) {
       if (!args || !commandItems || !cellMenu) {
         return;
       }
@@ -483,8 +479,8 @@
         var item = commandItems[i];
 
         // run each override functions to know if the item is visible and usable
-        var isItemVisible = runOverrideFunctionWhenExists(item.itemVisibilityOverride, _currentRow, dataContext, _grid);
-        var isItemUsable = runOverrideFunctionWhenExists(item.itemUsabilityOverride, _currentRow, dataContext, _grid);
+        var isItemVisible = runOverrideFunctionWhenExists(item.itemVisibilityOverride, args);
+        var isItemUsable = runOverrideFunctionWhenExists(item.itemUsabilityOverride, args);
 
         // if the result is not visible then there's no need to go further
         if (!isItemVisible) {
@@ -623,10 +619,11 @@
      * Method that user can pass to override the default behavior or making every row an expandable row.
      * In order word, user can choose which rows to be an available row detail (or not) by providing his own logic.
      * @param overrideFn: override function callback
+     * @param args: multiple arguments provided to the override (cell, row, columnDef, dataContext, grid)
      */
-    function runOverrideFunctionWhenExists(overrideFn, row, dataContext, grid) {
+    function runOverrideFunctionWhenExists(overrideFn, args) {
       if (typeof overrideFn === 'function') {
-        return overrideFn(row, dataContext, grid);
+        return overrideFn(args);
       }
       return true;
     }

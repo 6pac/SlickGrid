@@ -307,8 +307,8 @@
           // Note that this ONLY overrides the usability itself NOT the text displayed in the cell,
           // if you wish to change the cell text (or hide it)
           // then you SHOULD use it in combination with a custom formatter (actionFormatter) and use the same logic in that formatter
-          menuUsabilityOverride: function (row, dataContext, grid) {
-            return (dataContext.priority === 3); // option 3 is High
+          menuUsabilityOverride: function (args) {
+            return (args.dataContext.priority === 3); // option 3 is High
           },
           commandTitle: "Commands",
           commandItems: [
@@ -321,8 +321,8 @@
                 // action callback.. do something
               },
               // only enable command when there's no Effort Driven
-              itemUsabilityOverride: function (row, dataContext, grid) {
-                return (!dataContext.effortDriven);
+              itemUsabilityOverride: function (args) {
+                return (!args.dataContext.effortDriven);
               }
             },
             {
@@ -330,8 +330,8 @@
               iconImage: "../images/delete.png",
               cssClass: "bold", textCssClass: "red",
               // only show command to "Delete Row" when there's no Effort Driven
-              itemVisibilityOverride: function (row, dataContext, grid) {
-                return (!dataContext.effortDriven);
+              itemVisibilityOverride: function (args) {
+                return (!args.dataContext.effortDriven);
               }
             },
             // you can pass divider as a string or an object with a boolean
@@ -351,12 +351,12 @@
                 // action callback.. do something
               },
               // only enable command when the Priority is set to High
-              itemUsabilityOverride: function (row, dataContext, grid) {
-                return (dataContext.priority === 3);
+              itemUsabilityOverride: function (args) {
+                return (args.dataContext.priority === 3);
               },
               // only show command to "Delete Row" when there's no Effort Driven
-              itemVisibilityOverride: function (row, dataContext, grid) {
-                return (!dataContext.effortDriven);
+              itemVisibilityOverride: function (args) {
+                return (!args.dataContext.effortDriven);
               }
             },
           ]
@@ -376,8 +376,8 @@
     var contextMenuOptions = {
       // optionally and conditionally define when the the menu is usable,
       // this should be used with a custom formatter to show/hide/disable the menu
-      menuUsabilityOverride: function (row, dataContext, grid) {
-        return (dataContext.id < 21); // say we want to display the menu only from Task 0 to 20
+      menuUsabilityOverride: function (args) {
+        return (args.dataContext.id < 21); // say we want to display the menu only from Task 0 to 20
       },
       commandTitle: "Commands",
       // which column to show the command list? when not defined it will be shown over all columns
@@ -393,8 +393,8 @@
             // action callback.. do something
           },
           // only show command to "Help" when there's no Effort Driven
-          itemVisibilityOverride: function (row, dataContext, grid) {
-            return (!dataContext.effortDriven);
+          itemVisibilityOverride: function (args) {
+            return (!args.dataContext.effortDriven);
           }
         },
         { command: "something", title: "Command (always disabled)", disabled: true },
@@ -409,8 +409,8 @@
         {
           option: 0, title: "none", textCssClass: "italic",
           // only enable this option when there's no Effort Driven
-          itemUsabilityOverride: function (row, dataContext, grid) {
-            return (!dataContext.effortDriven);
+          itemUsabilityOverride: function (args) {
+            return (!args.dataContext.effortDriven);
           },
           // you can use the "action" callback and/or subscribe to the "onCallback" event, they both have the same arguments
           action: function (e, args) {
@@ -426,8 +426,8 @@
         {
           option: 4, title: "Extreme", disabled: true,
           // only shown when there's no Effort Driven
-          itemVisibilityOverride: function (row, dataContext, grid) {
-            return (!dataContext.effortDriven);
+          itemVisibilityOverride: function (args) {
+            return (!args.dataContext.effortDriven);
           }
         },
       ]
