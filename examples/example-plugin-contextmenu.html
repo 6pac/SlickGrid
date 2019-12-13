@@ -436,7 +436,7 @@
     $(function () {
       dataView = new Slick.Data.DataView();
       grid = new Slick.Grid("#myGrid", dataView, columns, gridOptions);
-      cellMenuPlugin = new Slick.Plugins.CellMenu({});
+      cellMenuPlugin = new Slick.Plugins.CellMenu({ hideMenuOnScroll: true });
       contextMenuPlugin = new Slick.Plugins.ContextMenu(contextMenuOptions);
       grid.registerPlugin(cellMenuPlugin);
       grid.registerPlugin(contextMenuPlugin);

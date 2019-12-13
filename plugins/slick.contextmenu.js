@@ -62,6 +62,7 @@
    *    optionShownOverColumnIds:   Define which column to show the Options list. If not defined (defaults), the menu will be shown over all columns
    *    hideCloseButton:            Hide the Close button on top right (defaults to false)
    *    hideCommandSection:         Hide the Commands section even when the commandItems array is filled (defaults to false)
+   *    hideMenuOnScroll:           Do we want to hide the Cell Menu when a scrolling event occurs (defaults to false)?
    *    hideOptionSection:          Hide the Options section even when the optionItems array is filled (defaults to false)
    *    maxHeight:                  Maximum height that the drop menu will have, can be a number (250) or text ("none")
    *    width:                      Width that the drop menu will have, can be a number (250) or text (defaults to "auto")
@@ -146,6 +147,7 @@
       autoAlignSide: true,      // left/right
       autoAdjustDropOffset: -4,
       autoAlignSideOffset: 0,
+      hideMenuOnScroll: false,
       maxHeight: "none",
       width: "auto",
       optionShownOverColumnIds: [],
@@ -158,6 +160,9 @@
       _contextMenuProperties = $.extend({}, _defaults, optionProperties);
       _gridUid = (grid && grid.getUID) ? grid.getUID() : "";
       _handler.subscribe(_grid.onContextMenu, handleOnContextMenu);
+      if (_contextMenuProperties.hideMenuOnScroll) {
+        _handler.subscribe(_grid.onScroll, destroyMenu);
+      }
     }
 
     function setOptions(newOptions) {

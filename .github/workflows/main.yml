@@ -1,4 +1,4 @@
-name: SlickGrid - Cypress E2E Tests
+name: Cypress E2E Tests
 on: 
   # Trigger the workflow on push or pull request,
   # but only for the master branch on Push and any branches on PR
@@ -50,3 +50,5 @@ jobs:
         uses: cypress-io/github-action@v1
         with:
           start: npm run serve
+          wait-on: 'http://localhost:8080'
+          browser: chrome

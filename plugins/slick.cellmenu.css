@@ -58,11 +58,6 @@
   background: white;
 }
 
-
-.slick-cell-menu-custom {
-  margin-bottom: 10px;
-}
-
 .slick-cell-menu-option-list {
   margin-bottom: 10px;
 }
@@ -75,7 +70,6 @@
   padding: 6px;
   cursor: default;
 }
-
 
 /* Menu items */
 .slick-cell-menu-item {
