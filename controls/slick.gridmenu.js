@@ -141,7 +141,6 @@
 
     function setOptions(newOptions) {
       options = $.extend({}, options, newOptions);
-      console.log(options)
     }
 
     function createGridMenu() {
@@ -500,7 +499,7 @@
 
       if ($(e.target).is(":checkbox")) {
         var visibleColumns = [];
-        $.each(columnCheckboxes, function (i, e) {
+        $.each(columnCheckboxes, function (i) {
           if ($(this).is(":checked")) {
             visibleColumns.push(columns[i]);
           }
