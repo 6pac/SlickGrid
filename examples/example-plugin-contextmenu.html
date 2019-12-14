@@ -265,7 +265,7 @@
     }
 
     function executeCommand(e, args) {
-      var columnDef = args.columnDef;
+      var columnDef = args.column;
       var command = args.command;
       var dataContext = args.dataContext;
 
@@ -317,7 +317,7 @@
               command: "command2", title: "Command 2",
               // you can use the "action" callback and/or subscribe to the "onCallback" event, they both have the same arguments
               action: function (e, args) {
-                console.log(args.dataContext, args.columnDef)
+                console.log(args.dataContext, args.column)
                 // action callback.. do something
               },
               // only enable command when there's no Effort Driven

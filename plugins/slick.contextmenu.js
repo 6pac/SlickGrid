@@ -534,7 +534,7 @@
           "grid": _grid,
           "command": command,
           "item": item,
-          "columnDef": columnDef,
+          "column": columnDef,
           "dataContext": dataContext,
           "value": cellValue
         };
@@ -573,7 +573,7 @@
           "grid": _grid,
           "option": option,
           "item": item,
-          "columnDef": columnDef,
+          "column": columnDef,
           "dataContext": dataContext
         };
         _self.onOptionSelected.notify(callbackArgs, e, _self);
@@ -638,8 +638,8 @@
     }
 
     /**
-     * Method that user can pass to override the default behavior or making every row an expandable row.
-     * In order word, user can choose which rows to be an available row detail (or not) by providing his own logic.
+     * Method that user can pass to override the default behavior.
+     * In order word, user can choose or an item is (usable/visible/enable) by providing his own logic.
      * @param overrideFn: override function callback
      * @param args: multiple arguments provided to the override (cell, row, columnDef, dataContext, grid)
      */
