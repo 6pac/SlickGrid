@@ -236,19 +236,19 @@
           .on("click", handleMenuItemClick)
           .appendTo($menu);
 
-        if (item.disabled) {
-          $li.addClass("slick-header-menuitem-disabled");
-        }
-
-        if (item.divider) {
+        if (item.divider || item === "divider") {
           $li.addClass("slick-header-menuitem-divider");
           continue;
+        }
+        
+        if (item.disabled) {
+          $li.addClass("slick-header-menuitem-disabled");
         }
 
         if (item.cssClass) {
           $li.addClass(item.cssClass);
         }
-        
+
         if (item.tooltip) {
           $li.attr("title", item.tooltip);
         }
@@ -305,7 +305,7 @@
       var columnDef = $(this).data("column");
       var item = $(this).data("item");
 
-      if (item.disabled || item.divider) {
+      if (item.disabled || item.divider || item === "divider") {
         return;
       }
 

@@ -246,13 +246,12 @@
           .on("click", handleMenuItemClick)
           .appendTo($customMenu);
 
-        if (item.disabled) {
-          $li.addClass("slick-gridmenu-item-disabled");
-        }
-
-        if (item.divider) {
+        if (item.divider || item === "divider") {
           $li.addClass("slick-gridmenu-item-divider");
           continue;
+        }
+        if (item.disabled) {
+          $li.addClass("slick-gridmenu-item-disabled");
         }
 
         if (item.cssClass) {
@@ -400,7 +399,7 @@
       var command = $(this).data("command");
       var item = $(this).data("item");
 
-      if (item.disabled || item.divider) {
+      if (item.disabled || item.divider || item === "divider") {
         return;
       }
 
