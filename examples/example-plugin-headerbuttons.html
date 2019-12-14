@@ -73,7 +73,20 @@
           {
             cssClass: "icon-highlight-off",
             command: "toggle-highlight",
-            tooltip: "Highlight negative numbers."
+            tooltip: "Highlight negative numbers.",
+            itemVisibilityOverride: function (args) {
+              // for example don't show the header button on column "E"
+              return args.column.name !== "E";
+            },
+            itemUsabilityOverride: function (args) {
+              // for example the button usable everywhere except on last column "J"
+              return args.column.name !== "J";
+            },
+            action: function(e, args) {
+              // you can use the "action" callback and/or subscribe to the "onCallback" event, they both have the same arguments
+              // do something
+              console.log('execute an action', args);
+            }
           }
         ]
       }

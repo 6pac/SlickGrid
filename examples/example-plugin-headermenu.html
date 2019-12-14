@@ -9,10 +9,25 @@
   <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css"/>
   <link rel="stylesheet" href="examples.css" type="text/css"/>
   <style>
+    .blue {
+      color: rgb(73, 73, 255);
+    }
+    .orange {
+      color: orange;
+    }
+    .red {
+      color: red;
+    }
+    .bold {
+      font-weight: bold;
+    }
+    .italic {
+      font-style: italic;
+    }
+
     /**
      * Style the drop-down menu here since the plugin stylesheet mostly contains structural CSS.
      */
-
     .slick-header-menu {
       border: 1px solid #718BB7;
       background: #f0f0f0;
@@ -43,6 +58,7 @@
       background-image: url(../images/help.png);
     }
   </style>
+
 </head>
 <body>
 <div style="position:relative">
@@ -88,7 +104,7 @@
   var columns = [
     {id: "title", name: "Title", field: "title", width: 90},
     {id: "duration", name: "Duration", field: "duration", sortable: true, width: 90},
-    {id: "%", name: "% Complete", field: "percentComplete", sortable: true, width: 90},
+    {id: "percentComplete", name: "% Complete", field: "percentComplete", sortable: true, width: 90},
     {id: "start", name: "Start", field: "start", sortable: true},
     {id: "finish", name: "Finish", field: "finish", sortable: true},
     {id: "effort-driven", name: "Effort Driven", field: "effortDriven"}
@@ -109,12 +125,17 @@
             iconImage: "../images/sort-desc.gif",
             title: "Sort Descending",
             disabled: !columns[i].sortable,
+            cssClass: !columns[i].sortable ? 'italic' : '',
             command: "sort-desc"
           },
           {
             title: "Hide Column",
             command: "hide",
-            tooltip: "Can't hide this column"
+            tooltip: "Can't hide this column",
+            itemUsabilityOverride: function (args) {
+              // for example we want to disable the "Hide Column" over the "Duration" column
+              return args.column.id === "Duration";
+            },
           },
           {
             divider: true,
@@ -123,7 +144,18 @@
           {
             iconCssClass: "icon-help",
             title: "Help",
-            command: "help"
+            command: "help",
+            cssClass: 'bold',     // container css class
+            textCssClass: 'blue', // just the text css class
+            itemVisibilityOverride: function (args) {
+              console.log(args)
+              // for example don't show Help on column "% Complete"
+              return (args.column.id !== "percentComplete");
+            },
+            action: function(e, args) {
+              // you can use the "action" callback and/or subscribe to the "onCallback" event, they both have the same arguments
+              console.log('execute an action on Help', args);
+            }
           }
         ]
       }
@@ -188,11 +220,11 @@
 
   function formattedRandomNum(maxVal) {
     var numDigits = ('' + maxVal).length;
-    return ('0000' + (Math.floor(Math.random() * maxVal) + 1)).slice(-numDigits) 
+    return ('0000' + (Math.floor(Math.random() * maxVal) + 1)).slice(-numDigits)
   }
 
-  
-  
+
+
   $(function () {
     data = [];
     for (var i = 0; i < 500; i++) {

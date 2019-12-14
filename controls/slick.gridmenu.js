@@ -39,14 +39,29 @@
  *  };
  *
  *
+ * Available menu options:
+ *     hideForceFitButton:        Hide the "Force fit columns" button (defaults to false)
+ *     hideSyncResizeButton:      Hide the "Synchronous resize" button (defaults to false)
+ *     fadeSpeed:                 Animation to fade the menu out
+ *     forceFitTitle:             Text of the title "Force fit columns"
+ *     menuWidth:                 Grid menu button width (defaults to 18)
+ *     resizeOnShowHeaderRow:     Do we want to resize on the show header row event
+ *     syncResizeTitle:           Text of the title "Synchronous resize"
+ *     menuUsabilityOverride:     Callback method that user can override the default behavior of enabling/disabling the menu from being usable (must be combined with a custom formatter)
+ *
  * Available custom menu item options:
- *    title:        Menu item text.
- *    divider:      Whether the current item is a divider, not an actual command.
- *    disabled:     Whether the item is disabled.
- *    tooltip:      Item tooltip.
- *    command:      A command identifier to be passed to the onCommand event handlers.
- *    iconCssClass: A CSS class to be added to the menu item icon.
- *    iconImage:    A url to the icon image.
+ *    action:                     Optionally define a callback function that gets executed when item is chosen (and/or use the onCommand event)
+ *    title:                      Menu item text.
+ *    divider:                    Whether the current item is a divider, not an actual command.
+ *    disabled:                   Whether the item is disabled.
+ *    tooltip:                    Item tooltip.
+ *    command:                    A command identifier to be passed to the onCommand event handlers.
+ *    cssClass:                   A CSS class to be added to the menu item container.
+ *    iconCssClass:               A CSS class to be added to the menu item icon.
+ *    iconImage:                  A url to the icon image.
+ *    textCssClass:               A CSS class to be added to the menu item text.
+ *    itemVisibilityOverride:     Callback method that user can override the default behavior of showing/hiding an item from the list
+ *    itemUsabilityOverride:      Callback method that user can override the default behavior of enabling/disabling an item from the list
  *
  *
  * The plugin exposes the following events:
@@ -100,8 +115,10 @@
     var _isMenuOpen = false;
     var _options = options;
     var _self = this;
+    var _visibleColumns = columns;
     var $customTitleElm;
     var $columnTitleElm;
+    var $customMenu;
     var $list;
     var $button;
     var $menu;
@@ -118,6 +135,17 @@
 
     function init(grid) {
       _gridOptions = grid.getOptions();
+      createGridMenu();
+
+      // subscribe to the grid, when it's destroyed, we should also destroy the Grid Menu
+      grid.onBeforeDestroy.subscribe(destroy);
+    }
+
+    function setOptions(newOptions) {
+      options = $.extend({}, options, newOptions);
+    }
+
+    function createGridMenu() {
       var gridMenuWidth = (_options.gridMenu && _options.gridMenu.menuWidth) || _defaults.menuWidth;
       var $header;
       if (_gridOptions && _gridOptions.hasOwnProperty('frozenColumn') && _gridOptions.frozenColumn >= 0) {
@@ -126,9 +154,6 @@
         $header = $('.' + _gridUid + ' .slick-header-left');
       }
       $header.attr('style', 'width: calc(100% - ' + gridMenuWidth + 'px)');
-
-      // subscribe to the grid, when it's destroyed, we should also destroy the Grid Menu
-      grid.onBeforeDestroy.subscribe(destroy);
 
       // if header row is enabled, we need to resize it's width also
       var enableResizeHeaderRow = (_options.gridMenu && _options.gridMenu.resizeOnShowHeaderRow != undefined) ? _options.gridMenu.resizeOnShowHeaderRow : _defaults.resizeOnShowHeaderRow;
@@ -150,14 +175,8 @@
       $menu = $('<div class="slick-gridmenu ' + _gridUid + '" style="display: none" />').appendTo(document.body);
       $('<button type="button" class="close" data-dismiss="slick-gridmenu" aria-label="Close"><span class="close" aria-hidden="true">&times;</span></button>').appendTo($menu);
 
-      var $customMenu = $('<div class="slick-gridmenu-custom" />');
+      $customMenu = $('<div class="slick-gridmenu-custom" />');
       $customMenu.appendTo($menu);
-
-      // user could pass a title on top of the custom section
-      if (_options.gridMenu && _options.gridMenu.customTitle) {
-        $customTitleElm = $('<div class="title"/>').append(_options.gridMenu.customTitle);
-        $customTitleElm.appendTo($customMenu);
-      }
 
       populateCustomMenus(_options, $customMenu);
       populateColumnPicker();
@@ -190,8 +209,36 @@
       if (!options.gridMenu || !options.gridMenu.customItems) {
         return;
       }
+
+      // user could pass a title on top of the custom section
+      if (_options.gridMenu && _options.gridMenu.customTitle) {
+        $customTitleElm = $('<div class="title"/>').append(_options.gridMenu.customTitle);
+        $customTitleElm.appendTo($customMenu);
+      }
+
       for (var i = 0, ln = options.gridMenu.customItems.length; i < ln; i++) {
         var item = options.gridMenu.customItems[i];
+        var callbackArgs = {
+          "grid": _grid,
+          "menu": $menu,
+          "columns": columns,
+          "visibleColumns": _visibleColumns
+        };
+
+        // run each override functions to know if the item is visible and usable
+        var isItemVisible = runOverrideFunctionWhenExists(item.itemVisibilityOverride, callbackArgs);
+        var isItemUsable = runOverrideFunctionWhenExists(item.itemUsabilityOverride, callbackArgs);
+
+        // if the result is not visible then there's no need to go further
+        if (!isItemVisible) {
+          continue;
+        }
+
+        // when the override is defined, we need to use its result to update the disabled property
+        // so that "handleMenuItemCommandClick" has the correct flag and won't trigger a command clicked event
+        if (Object.prototype.hasOwnProperty.call(item, "itemUsabilityOverride")) {
+          item.disabled = isItemUsable ? false : true;
+        }
 
         var $li = $("<div class='slick-gridmenu-item'></div>")
           .data("command", item.command || '')
@@ -206,6 +253,10 @@
         if (item.divider) {
           $li.addClass("slick-gridmenu-item-divider");
           continue;
+        }
+
+        if (item.cssClass) {
+          $li.addClass(item.cssClass);
         }
 
         if (item.tooltip) {
@@ -223,9 +274,13 @@
           $icon.css("background-image", "url(" + item.iconImage + ")");
         }
 
-        var $content = $("<span class='slick-gridmenu-content'></span>")
+        var $text = $("<span class='slick-gridmenu-content'></span>")
           .text(item.title)
           .appendTo($li);
+
+        if (item.textCssClass) {
+          $text.addClass(item.textCssClass);
+        }
       }
     }
 
@@ -246,18 +301,32 @@
 
     function showGridMenu(e) {
       e.preventDefault();
-      $list.empty();
 
+      // empty both the picker list & the command list
+      $list.empty();
+      $customMenu.empty();
+
+      populateCustomMenus(_options, $customMenu);
       updateColumnOrder();
       columnCheckboxes = [];
+
+      var callbackArgs = {
+        "grid": _grid,
+        "menu": $menu,
+        "allColumns": columns,
+        "visibleColumns": _visibleColumns
+      };
+
+      // run the override function (when defined), if the result is false it won't go further
+      if (!runOverrideFunctionWhenExists(_options.gridMenu.menuUsabilityOverride, callbackArgs)) {
+        return;
+      }
 
       // notify of the onBeforeMenuShow only works when it's a jQuery event (as per slick.core code)
       // this mean that we cannot notify when the grid menu is attach to a button event
       if (typeof e.isPropagationStopped === "function") {
-        if (_self.onBeforeMenuShow.notify({
-          "grid": _grid,
-          "menu": $menu
-        }, e, _self) == false) {
+
+        if (_self.onBeforeMenuShow.notify(callbackArgs, e, _self) == false) {
           return;
         }
       }
@@ -342,11 +411,19 @@
       }
 
       if (command != null && command != '') {
-        _self.onCommand.notify({
+        var callbackArgs = {
           "grid": _grid,
           "command": command,
-          "item": item
-        }, e, _self);
+          "item": item,
+          "allColumns": columns,
+          "visibleColumns": _visibleColumns
+        };
+        _self.onCommand.notify(callbackArgs, e, _self);
+
+        // execute action callback when defined
+        if (typeof item.action === "function") {
+          item.action.call(this, e, callbackArgs);
+        }
       }
 
       // Stop propagation so that it doesn't register as a header click event.
@@ -359,10 +436,13 @@
         $menu.hide(_options.fadeSpeed);
         _isMenuOpen = false;
 
-        if (_self.onMenuClose.notify({
+        var callbackArgs = {
           "grid": _grid,
-          "menu": $menu
-        }, e, _self) == false) {
+          "menu": $menu,
+          "allColumns": columns,
+          "visibleColumns": _visibleColumns
+        };
+        if (_self.onMenuClose.notify(callbackArgs, e, _self) == false) {
           return;
         }
       }
@@ -433,11 +513,14 @@
           return;
         }
 
-        _grid.setColumns(visibleColumns);
-        _self.onColumnsChanged.notify({
+        var callbackArgs = {
           "grid": _grid,
+          "allColumns": columns,
           "columns": visibleColumns
-        }, e, _self);
+        };
+        _visibleColumns = visibleColumns;
+        _grid.setColumns(visibleColumns);
+        _self.onColumnsChanged.notify(callbackArgs, e, _self);
       }
     }
 
@@ -447,12 +530,32 @@
       return columns;
     }
 
+    function getVisibleColumns() {
+      return _visibleColumns;
+    }
+
+    /**
+     * Method that user can pass to override the default behavior.
+     * In order word, user can choose or an item is (usable/visible/enable) by providing his own logic.
+     * @param overrideFn: override function callback
+     * @param args: multiple arguments provided to the override (cell, row, columnDef, dataContext, grid)
+     */
+    function runOverrideFunctionWhenExists(overrideFn, args) {
+      if (typeof overrideFn === 'function') {
+        return overrideFn(args);
+      }
+      return true;
+    }
+
     $.extend(this, {
       "init": init,
       "getAllColumns": getAllColumns,
+      "getVisibleColumns": getVisibleColumns,
       "destroy": destroy,
       "showGridMenu": showGridMenu,
+      "setOptions": setOptions,
       "updateAllTitles": updateAllTitles,
+      
       "onBeforeMenuShow": new Slick.Event(),
       "onMenuClose": new Slick.Event(),
       "onCommand": new Slick.Event(),

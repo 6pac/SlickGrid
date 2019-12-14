@@ -8,6 +8,21 @@
   <link rel="stylesheet" href="examples.css" type="text/css"/>
   <link rel="stylesheet" href="../controls/slick.gridmenu.css" type="text/css"/>
   <style>
+    .blue {
+      color: rgb(73, 73, 255);
+    }
+    .orange {
+      color: orange;
+    }
+    .red {
+      color: red;
+    }
+    .bold {
+      font-weight: bold;
+    }
+    .italic {
+      font-style: italic;
+    }
     .slick-headerrow-column {
       background: #BDD8E0;
       text-overflow: clip;
@@ -80,6 +95,16 @@
   var grid;
   var gridMenu;
   var data = [];
+
+  function isObjectEmpty(obj) {
+    for(var key in obj) {
+      if(obj.hasOwnProperty(key) && obj[key] !== "") {
+        return false;
+      }
+    }
+    return true;
+  }
+
   var options = {
     enableCellNavigation: true,
     showHeaderRow: true,
@@ -91,6 +116,10 @@
     // gridMenu Object is optional
     // when not passed, it will act as a regular Column Picker (with default Grid Menu image of drag-handle.png)
     gridMenu: {
+      menuUsabilityOverride: function (args) {
+        // we could disable the menu entirely by returning false
+        return true;
+      },
       customTitle: "Custom Menus",
       columnTitle: "Columns",
       hideForceFitButton: false,
@@ -105,19 +134,27 @@
           iconImage: "../images/delete.png",
           title: "Clear Filters",
           disabled: false,
-          command: "clear-filter"
+          command: "clear-filter",
+          cssClass: 'bold',     // container css class
+          textCssClass: 'red'   // just the text css class
         },
         {
           iconImage: "../images/info.gif",
           title: "Toggle Filter Row",
           disabled: false,
-          command: "toggle-filter"
+          command: "toggle-filter",
+          itemUsabilityOverride: function (args) {
+            // for example disable the toggle of the filter bar when there's filters provided
+            return isObjectEmpty(columnFilters);
+          },
         },
         {
           iconImage: "../images/info.gif",
           title: "Toggle Top Panel",
           disabled: false,
-          command: "toggle-toppanel"
+          command: "toggle-toppanel",
+          cssClass: 'italic',     // container css class
+          textCssClass: 'orange'  // just the text css class
         },
         {
           divider: true,
@@ -126,7 +163,17 @@
         {
           iconCssClass: "icon-help",
           title: "Help",
-          command: "help"
+          command: "help",
+          textCssClass: "blue",
+          // you could dynamically remove a command from the list (only checks before opening the menu)
+          // for example don't show the "Help" button if we have less than 5 columns left
+          itemVisibilityOverride: function (args) {
+            return args.visibleColumns.length > 4;
+          },
+          action: function(e, args) {
+            // you can use the "action" callback and/or subscribe to the "onCallback" event, they both have the same arguments
+            console.log('execute an action on Help', args);
+          }
         },
         {
           iconImage: "",
