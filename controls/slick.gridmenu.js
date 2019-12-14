@@ -42,7 +42,6 @@
  * Available menu options:
  *     hideForceFitButton:        Hide the "Force fit columns" button (defaults to false)
  *     hideSyncResizeButton:      Hide the "Synchronous resize" button (defaults to false)
- *     fadeSpeed:                 Animation to fade the menu out
  *     forceFitTitle:             Text of the title "Force fit columns"
  *     menuWidth:                 Grid menu button width (defaults to 18)
  *     resizeOnShowHeaderRow:     Do we want to resize on the show header row event
@@ -126,7 +125,6 @@
     var _defaults = {
       hideForceFitButton: false,
       hideSyncResizeButton: false,
-      fadeSpeed: 250,
       forceFitTitle: "Force fit columns",
       menuWidth: 18,
       resizeOnShowHeaderRow: false,
@@ -143,6 +141,7 @@
 
     function setOptions(newOptions) {
       options = $.extend({}, options, newOptions);
+      console.log(options)
     }
 
     function createGridMenu() {
@@ -199,7 +198,7 @@
       _grid.onColumnsReordered.unsubscribe(updateColumnOrder);
       _grid.onBeforeDestroy.unsubscribe();
       $(document.body).off("mousedown." + _gridUid, handleBodyMouseDown);
-      $("div.slick-gridmenu." + _gridUid).hide(_options.fadeSpeed);
+      $("div.slick-gridmenu." + _gridUid).hide();
       $menu.remove();
       $button.remove();
     }
@@ -383,7 +382,7 @@
         .css("top", e.pageY + 10)
         .css("left", e.pageX - $menu.width())
         .css("max-height", $(window).height() - e.pageY - 10)
-        .fadeIn(_options.fadeSpeed);
+        .show();
 
       $list.appendTo($menu);
       _isMenuOpen = true;
@@ -432,7 +431,7 @@
 
     function hideMenu(e) {
       if ($menu) {
-        $menu.hide(_options.fadeSpeed);
+        $menu.hide();
         _isMenuOpen = false;
 
         var callbackArgs = {
