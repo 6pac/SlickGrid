@@ -155,7 +155,6 @@
               cssClass: 'bold',     // container css class
               textCssClass: 'blue', // just the text css class
               itemVisibilityOverride: function (args) {
-                console.log(args)
                 // for example don't show Help on column "% Complete"
                 return (args.column.id !== "percentComplete");
               },

@@ -16,6 +16,27 @@ describe('Example - Grid Menu', () => {
       .each(($child, index) => expect($child.text()).to.eq(fullTitles[index]));
   });
 
+  it('should open the Grid Menu and expect a title for "Custom Menus" and for "Columns"', () => {
+    cy.get('#myGrid')
+      .find('button.slick-gridmenu-button')
+      .trigger('click')
+      .click({ force: true });
+
+    cy.get('.slick-gridmenu-custom')
+      .find('.title')
+      .contains('Custom Menus');
+
+    cy.get('.slick-gridmenu')
+      .find('.title')
+      .contains('Columns');
+
+    cy.get('#myGrid')
+      .get('.slick-gridmenu:visible')
+      .find('span.close')
+      .trigger('click')
+      .click({ force: true });
+  });
+
   it('should click on the Grid Menu to hide the column "A"', () => {
     const expectedTitleList = ['#', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']; // without "A"
 

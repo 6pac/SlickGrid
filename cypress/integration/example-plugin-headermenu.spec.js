@@ -3,6 +3,13 @@
 describe('Example - Header Menu', () => {
   const titles = ['Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
 
+  beforeEach(() => {
+    // create a console.log spy for later use
+    cy.window().then((win) => {
+      cy.spy(win.console, "log");
+    });
+  });
+
   it('should display Example title', () => {
     cy.visit(`${Cypress.config('baseExampleUrl')}/example-plugin-headermenu.html`);
     cy.get('p').contains('This example demonstrates using the Slick.Plugins.HeaderMenu');
@@ -39,16 +46,20 @@ describe('Example - Header Menu', () => {
   });
 
   it(`should be still be able to click on the Help button and expect an alert`, () => {
-    const stub = cy.stub();
-    cy.on('window:alert', stub);
+    const alertStub = cy.stub();
+    cy.on('window:alert', alertStub);
 
     cy.get('.slick-header-menuitem.bold')
       .find('.slick-header-menucontent.blue')
       .contains('Help')
       .click()
-      .then(() => expect(stub.getCall(0)).to.be.calledWith('Command: help'));
-  });
+      .then(() => expect(alertStub.getCall(0)).to.be.calledWith('Command: help'))
 
+    cy.window().then((win) => {
+      expect(win.console.log).to.have.callCount(1);
+      expect(win.console.log).to.be.calledWith('execute an action on Help');
+    });
+  });
 
   it('should hover over the "Duration" column and expect Sort commands to be enabled', () => {
     cy.get('#myGrid')

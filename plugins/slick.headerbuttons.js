@@ -182,19 +182,23 @@
       var columnDef = $(this).data("column");
       var button = $(this).data("button");
 
-      if (command != null && !button.disabled) {
-        var callbackArgs = {
-          "grid": _grid,
-          "column": columnDef,
-          "command": command,
-          "button": button
-        };
-        _self.onCommand.notify(callbackArgs, e, _self);
+      var callbackArgs = {
+        "grid": _grid,
+        "column": columnDef,
+        "button": button
+      };
 
-        // execute action callback when defined
-        if (typeof button.action === "function") {
-          button.action.call(this, e, callbackArgs);
-        }
+      if (command != null) {
+        callbackArgs.command = command;
+      }
+
+      // execute action callback when defined
+      if (typeof button.action === "function") {
+        button.action.call(this, e, callbackArgs);
+      }
+
+      if (command != null && !button.disabled) {
+        _self.onCommand.notify(callbackArgs, e, _self);
 
         // Update the header in case the user updated the button definition in the handler.
         _grid.updateColumnHeader(columnDef.id);
@@ -213,7 +217,7 @@
      */
     function runOverrideFunctionWhenExists(overrideFn, args) {
       if (typeof overrideFn === 'function') {
-        return overrideFn(args);
+        return overrideFn.call(this, args);
       }
       return true;
     }

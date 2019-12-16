@@ -645,7 +645,7 @@
      */
     function runOverrideFunctionWhenExists(overrideFn, args) {
       if (typeof overrideFn === 'function') {
-        return overrideFn(args);
+        return overrideFn.call(this, args);
       }
       return true;
     }

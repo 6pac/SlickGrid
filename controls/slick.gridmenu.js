@@ -539,7 +539,7 @@
      */
     function runOverrideFunctionWhenExists(overrideFn, args) {
       if (typeof overrideFn === 'function') {
-        return overrideFn(args);
+        return overrideFn.call(this, args);
       }
       return true;
     }
@@ -552,7 +552,7 @@
       "showGridMenu": showGridMenu,
       "setOptions": setOptions,
       "updateAllTitles": updateAllTitles,
-      
+
       "onBeforeMenuShow": new Slick.Event(),
       "onMenuClose": new Slick.Event(),
       "onCommand": new Slick.Event(),

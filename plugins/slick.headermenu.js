@@ -240,7 +240,7 @@
           $li.addClass("slick-header-menuitem-divider");
           continue;
         }
-        
+
         if (item.disabled) {
           $li.addClass("slick-header-menuitem-disabled");
         }
@@ -339,7 +339,7 @@
      */
     function runOverrideFunctionWhenExists(overrideFn, args) {
       if (typeof overrideFn === 'function') {
-        return overrideFn(args);
+        return overrideFn.call(this, args);
       }
       return true;
     }
