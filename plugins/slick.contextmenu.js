@@ -110,7 +110,7 @@
    *            grid:         Reference to the grid.
    *            command:      Menu command identified.
    *            item:         Menu item selected
-   *            columnDef:    Cell Column definition
+   *            column:    Cell Column definition
    *            dataContext:  Cell Data Context (data object)
    *            value:        Value of the cell we triggered the context menu from
    *
@@ -121,7 +121,7 @@
    *            grid:         Reference to the grid.
    *            option:       Menu option selected.
    *            item:         Menu item selected
-   *            columnDef:    Cell Column definition
+   *            column:    Cell Column definition
    *            dataContext:  Cell Data Context (data object)
    *
    *
@@ -241,7 +241,7 @@
           _contextMenuProperties,
           $optionMenu,
           optionItems,
-          { cell: _currentCell, row: _currentRow, columnDef: columnDef, dataContext: dataContext, grid: _grid }
+          { cell: _currentCell, row: _currentRow, column: columnDef, dataContext: dataContext, grid: _grid }
         );
       }
 
@@ -256,7 +256,7 @@
           _contextMenuProperties,
           $commandMenu,
           commandItems,
-          { cell: _currentCell, row: _currentRow, columnDef: columnDef, dataContext: dataContext, grid: _grid }
+          { cell: _currentCell, row: _currentRow, column: columnDef, dataContext: dataContext, grid: _grid }
         );
       }
 
