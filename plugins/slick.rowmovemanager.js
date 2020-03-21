@@ -13,7 +13,9 @@
     var _self = this;
     var _handler = new Slick.EventHandler();
     var _defaults = {
-      cancelEditOnDrag: false
+      cancelEditOnDrag: false,
+      singleRowMove: false,
+      disableRowSelection: false,
     };
 
     function init(grid) {
@@ -29,6 +31,10 @@
 
     function destroy() {
       _handler.unsubscribeAll();
+    }
+
+    function setOptions(newOptions) {
+      options = $.extend({}, options, newOptions);
     }
 
     function handleDragInit(e, dd) {
@@ -50,11 +56,13 @@
       _dragging = true;
       e.stopImmediatePropagation();
 
-      var selectedRows = _grid.getSelectedRows();
+      var selectedRows = options.singleRowMove ? [cell.row] : _grid.getSelectedRows();
 
       if (selectedRows.length === 0 || $.inArray(cell.row, selectedRows) == -1) {
         selectedRows = [cell.row];
-        _grid.setSelectedRows(selectedRows);
+        if (!options.disableRowSelection) {
+          _grid.setSelectedRows(selectedRows);
+        }
       }
 
       var rowHeight = _grid.getOptions().rowHeight;
@@ -62,18 +70,18 @@
       dd.selectedRows = selectedRows;
 
       dd.selectionProxy = $("<div class='slick-reorder-proxy'/>")
-          .css("position", "absolute")
-          .css("zIndex", "99999")
-          .css("width", $(_canvas).innerWidth())
-          .css("height", rowHeight * selectedRows.length)
-          .appendTo(_canvas);
+        .css("position", "absolute")
+        .css("zIndex", "99999")
+        .css("width", $(_canvas).innerWidth())
+        .css("height", rowHeight * selectedRows.length)
+        .appendTo(_canvas);
 
       dd.guide = $("<div class='slick-reorder-guide'/>")
-          .css("position", "absolute")
-          .css("zIndex", "99998")
-          .css("width", $(_canvas).innerWidth())
-          .css("top", -1000)
-          .appendTo(_canvas);
+        .css("position", "absolute")
+        .css("zIndex", "99998")
+        .css("width", $(_canvas).innerWidth())
+        .css("top", -1000)
+        .appendTo(_canvas);
 
       dd.insertBefore = -1;
     }
@@ -133,6 +141,7 @@
 
       "init": init,
       "destroy": destroy,
+      "setOptions": setOptions,
       "pluginName": "RowMoveManager"
     });
   }
