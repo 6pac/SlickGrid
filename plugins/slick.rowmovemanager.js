@@ -11,12 +11,18 @@
     var _canvas;
     var _dragging;
     var _self = this;
+    var _usabilityOverride = null;
     var _handler = new Slick.EventHandler();
     var _defaults = {
       cancelEditOnDrag: false,
       singleRowMove: false,
       disableRowSelection: false,
     };
+
+    // user could override the expandable icon logic from within the options or after instantiating the plugin
+    if (typeof options.usabilityOverride === 'function') {
+      usabilityOverride(options.usabilityOverride);
+    }
 
     function init(grid) {
       options = $.extend(true, {}, _defaults, options);
@@ -44,6 +50,12 @@
 
     function handleDragStart(e, dd) {
       var cell = _grid.getCellFromEvent(e);
+      var currentRow = cell && cell.row;
+      var dataContext = _grid.getDataItem(currentRow);
+
+      if (!checkUsabilityOverride(currentRow, dataContext, _grid)) {
+        return;
+      }
 
       if (options.cancelEditOnDrag && _grid.getEditorLock().isActive()) {
         _grid.getEditorLock().cancelCurrentEdit();
@@ -135,6 +147,22 @@
       }
     }
 
+    function checkUsabilityOverride(row, dataContext, grid) {
+      if (typeof _usabilityOverride === 'function') {
+        return _usabilityOverride(row, dataContext, grid);
+      }
+      return true;
+    }
+
+    /**
+     * Method that user can pass to override the default behavior or making every row moveable.
+     * In order word, user can choose which rows to be an available as moveable (or not) by providing his own logic show/hide icon and usability.
+     * @param overrideFn: override function callback
+     */
+    function usabilityOverride(overrideFn) {
+      _usabilityOverride = overrideFn;
+    }
+
     $.extend(this, {
       "onBeforeMoveRows": new Slick.Event(),
       "onMoveRows": new Slick.Event(),
@@ -142,6 +170,7 @@
       "init": init,
       "destroy": destroy,
       "setOptions": setOptions,
+      "usabilityOverride": usabilityOverride,
       "pluginName": "RowMoveManager"
     });
   }

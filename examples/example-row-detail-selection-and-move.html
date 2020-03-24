@@ -96,6 +96,12 @@
           Single Row Move OFF
         </button>
       </p>
+      <p>
+        The RowMoveManager Plugin is can be configured with an "usabilityOverride" which will make the row moveable
+        or not depending on a custom override callback that can be provided by the user.
+        Also don't forget to also configure a custom formatter that will follow the same logic of when to show the icon.
+        For example this demo makes the row moveable only on every second row.
+      </p>
 
       <h2>View Source:</h2>
       <ul>
@@ -140,8 +146,16 @@
 
     var fakeNames = ['John Doe', 'Jane Doe', 'Chuck Norris', 'Bumblebee', 'Jackie Chan', 'Elvis Presley', 'Bob Marley', 'Mohammed Ali', 'Bruce Lee', 'Rocky Balboa'];
 
+    // This Formatter is used in combo with the "usabilityOverride" defined in the RowMoveManager creation
+    var moveIconFormatter = function (row, cell, value, columnDef, dataContext) {
+      if (dataContext.id % 2 === 1) {
+        return { addClasses: "cell-reorder dnd" };
+      }
+      return "";
+    }
+
     var columns = [
-      { id: "move", name: "", field: "move", width: 40, behavior: "selectAndMove", selectable: false, resizable: false, cssClass: "cell-reorder dnd" },
+      { id: "move", name: "", field: "move", width: 40, behavior: "selectAndMove", selectable: false, resizable: false, formatter: moveIconFormatter },
       { id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 40, resizable: false, selectable: false },
       { id: "title", name: "Title", field: "title", width: 110, minWidth: 110, cssClass: "cell-title", sortable: true },
       { id: "duration", name: "Duration", field: "duration", sortable: true },
@@ -254,7 +268,17 @@
       grid.registerPlugin(checkboxSelectorPlugin);
       grid.registerPlugin(detailViewPlugin);
 
-      rowMovePlugin = new Slick.RowMoveManager({ cancelEditOnDrag: true, singleRowMove: true, disableRowSelection: true });
+      rowMovePlugin = new Slick.RowMoveManager({
+        cancelEditOnDrag: true,
+        singleRowMove: true,
+        disableRowSelection: true,
+
+        // make only every 2nd row an a moveable row,
+        // you can override it here in the options or externally by calling the method on the plugin instance
+        usabilityOverride: function (row, dataContext, grid) {
+          return (dataContext.id % 2 === 1);
+        }
+      });
       grid.registerPlugin(rowMovePlugin);
 
       rowMovePlugin.onBeforeMoveRows.subscribe(function (e, data) {
