@@ -1,3 +1,14 @@
+/**
+ * Row Move Manager options: 
+ *    cssClass:             A CSS class to be added to the menu item container.
+ *    columnId:             Column definition id (defaults to "_move")
+ *    cancelEditOnDrag:     Do we want to cancel any Editing while dragging a row (defaults to false)
+ *    disableRowSelection:  Do we want to disable the row selection? (defaults to false)
+ *    singleRowMove:        Do we want a single row move? Setting this to false means that it's a multple row move (defaults to false)
+ *    width:                Width of the column
+ *    usabilityOverride:    Callback method that user can override the default behavior of the row being moveable or not
+ *
+ */
 (function ($) {
   // register namespace
   $.extend(true, window, {
@@ -14,9 +25,12 @@
     var _usabilityOverride = null;
     var _handler = new Slick.EventHandler();
     var _defaults = {
+      columnId: "_move",
+      cssClass: null,
       cancelEditOnDrag: false,
-      singleRowMove: false,
       disableRowSelection: false,
+      singleRowMove: false,
+      width: 40,
     };
 
     // user could override the expandable icon logic from within the options or after instantiating the plugin
@@ -147,6 +161,28 @@
       }
     }
 
+    function getColumnDefinition() {
+      return {
+        id: options.columnId || "_move",
+        name: "",
+        field: "move",
+        width: options.width || 40,
+        behavior: "selectAndMove",
+        selectable: false,
+        resizable: false,
+        cssClass: options.cssClass,
+        formatter: moveIconFormatter
+      };
+    }
+
+    function moveIconFormatter(row, cell, value, columnDef, dataContext, grid) {
+      if (!checkUsabilityOverride(row, dataContext, grid)) {
+        return null;
+      } else {
+        return { addClasses: "cell-reorder dnd" };
+      }
+    }
+
     function checkUsabilityOverride(row, dataContext, grid) {
       if (typeof _usabilityOverride === 'function') {
         return _usabilityOverride(row, dataContext, grid);
@@ -169,6 +205,7 @@
 
       "init": init,
       "destroy": destroy,
+      "getColumnDefinition": getColumnDefinition,
       "setOptions": setOptions,
       "usabilityOverride": usabilityOverride,
       "pluginName": "RowMoveManager"

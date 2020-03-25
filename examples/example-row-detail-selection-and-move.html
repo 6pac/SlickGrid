@@ -97,10 +97,10 @@
         </button>
       </p>
       <p>
-        The RowMoveManager Plugin is can be configured with an "usabilityOverride" which will make the row moveable
-        or not depending on a custom override callback that can be provided by the user.
-        Also don't forget to also configure a custom formatter that will follow the same logic of when to show the icon.
-        For example this demo makes the row moveable only on every second row.
+        The RowMoveManager Plugin can be configured with an "usabilityOverride" which will make the row moveable
+        or not depending on a custom override callback that can be provided by the user (all 3 plugins have such
+        override). Also don't forget to also configure a custom formatter that will follow the same logic of when to
+        show the icon. For example this demo makes the row moveable only on every second row.
       </p>
 
       <h2>View Source:</h2>
@@ -146,16 +146,7 @@
 
     var fakeNames = ['John Doe', 'Jane Doe', 'Chuck Norris', 'Bumblebee', 'Jackie Chan', 'Elvis Presley', 'Bob Marley', 'Mohammed Ali', 'Bruce Lee', 'Rocky Balboa'];
 
-    // This Formatter is used in combo with the "usabilityOverride" defined in the RowMoveManager creation
-    var moveIconFormatter = function (row, cell, value, columnDef, dataContext) {
-      if (dataContext.id % 2 === 1) {
-        return { addClasses: "cell-reorder dnd" };
-      }
-      return "";
-    }
-
     var columns = [
-      { id: "move", name: "", field: "move", width: 40, behavior: "selectAndMove", selectable: false, resizable: false, formatter: moveIconFormatter },
       { id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 40, resizable: false, selectable: false },
       { id: "title", name: "Title", field: "title", width: 110, minWidth: 110, cssClass: "cell-title", sortable: true },
       { id: "duration", name: "Duration", field: "duration", sortable: true },
@@ -255,7 +246,7 @@
       columns.unshift(detailViewPlugin.getColumnDefinition());
 
       // create the Checkbox Selector and push it on first index 
-      var columnIndex = 2; // which column index position do we want to add the checkbox selector?
+      var columnIndex = 1; // which column index position do we want to add the checkbox selector?
       checkboxSelectorPlugin = new Slick.CheckboxSelectColumn({ cssClass: "slick-cell-checkboxsel" });
       columns.splice(columnIndex, 0, checkboxSelectorPlugin.getColumnDefinition());
 
@@ -280,6 +271,9 @@
         }
       });
       grid.registerPlugin(rowMovePlugin);
+
+      // use unshift to make it the 1st column OR splice to position it where you wish
+      columns.splice(1, 0, rowMovePlugin.getColumnDefinition());
 
       rowMovePlugin.onBeforeMoveRows.subscribe(function (e, data) {
         // collapse any Row Details to avoid any rendering issues
