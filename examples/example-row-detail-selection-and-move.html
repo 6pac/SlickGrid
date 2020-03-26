@@ -72,10 +72,11 @@
 
     <div class="options-panel">
       <h2>Demonstrates:</h2>
+      <h3>The following three Plugins used together</h3>
       <ul>
         <li>1. Checkbox Row Selection</li>
         <li>2. Row Detail</li>
-        <li>3. Row Move</li>
+        <li>3. Row Move Manager</li>
       </ul>
 
       <h2>Options:</h2>
@@ -181,7 +182,7 @@
     function loadView(itemDetail) {
       return [
         '<div>',
-        '<h4>' + itemDetail.title + '</h4>',
+        '<h2>' + itemDetail.title + '</h2>',
         '<div class="detail">',
         '<label>Assignee:</label> <input id="assignee_' + itemDetail.id + '" type="text" value="' + itemDetail.assignee + '"/>',
         '</div>',
@@ -204,7 +205,7 @@
         itemDetail.assignee = fakeNames[randomNumber(0, 9)];
         itemDetail.reporter = fakeNames[randomNumber(0, 9)];
         notifyTemplate(itemDetail)
-      }, 1000);
+      }, 250);
     }
 
     // notify the onAsyncResponse with the "args.item" (required property)
@@ -238,7 +239,7 @@
         postTemplate: loadView,
         process: simulateServerCall,
         useRowClick: false,
-        panelRows: 6,
+        panelRows: 7,
         singleRowExpand: true
       });
 
