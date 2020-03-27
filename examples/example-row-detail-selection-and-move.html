@@ -276,12 +276,12 @@
       // use unshift to make it the 1st column OR splice to position it where you wish
       columns.splice(1, 0, rowMovePlugin.getColumnDefinition());
 
-      rowMovePlugin.onBeforeMoveRows.subscribe(function (e, data) {
+      rowMovePlugin.onBeforeMoveRows.subscribe(function (e, args) {
         // collapse any Row Details to avoid any rendering issues
         detailViewPlugin.collapseAll();
 
-        for (var i = 0; i < data.rows.length; i++) {
-          if (data.rows[i] == data.insertBefore || data.rows[i] == data.insertBefore - 1) {
+        for (var i = 0; i < args.rows.length; i++) {
+          if (args.rows[i] == args.insertBefore || args.rows[i] == args.insertBefore - 1) {
             e.stopPropagation();
             return false;
           }

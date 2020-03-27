@@ -57,7 +57,7 @@
       options = $.extend({}, options, newOptions);
     }
 
-    function handleDragInit(e, dd) {
+    function handleDragInit(e) {
       // prevent the grid from cancelling drag'n'drop by default
       e.stopImmediatePropagation();
     }
@@ -125,6 +125,7 @@
       var insertBefore = Math.max(0, Math.min(Math.round(top / _grid.getOptions().rowHeight), _grid.getDataLength()));
       if (insertBefore !== dd.insertBefore) {
         var eventData = {
+          "grid": _grid,
           "rows": dd.selectedRows,
           "insertBefore": insertBefore
         };
@@ -153,6 +154,7 @@
 
       if (dd.canMove) {
         var eventData = {
+          "grid": _grid,
           "rows": dd.selectedRows,
           "insertBefore": dd.insertBefore
         };
