@@ -40,16 +40,16 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
     });
 
     it('should drag opened Row Detail to another position in the grid', () => {
-        cy.get('[style="top:25px"] > .slick-cell.cell-reorder').as('moveIcon1');
-        cy.get('[style="top:75px"] > .slick-cell.cell-reorder').as('moveIcon3');
+        cy.get('[style="top:25px"] > .slick-cell.cell-reorder').as('moveIconTask1');
+        cy.get('[style="top:75px"] > .slick-cell.cell-reorder').as('moveIconTask3');
 
-        cy.get('@moveIcon3').should('have.length', 1);
+        cy.get('@moveIconTask3').should('have.length', 1);
 
-        cy.get('@moveIcon3')
+        cy.get('@moveIconTask3')
             .trigger('mousedown', { button: 0, force: true })
             .trigger('mousemove', 'bottomRight');
 
-        cy.get('@moveIcon1')
+        cy.get('@moveIconTask1')
             .trigger('mousemove', 'bottomRight')
             .trigger('mouseup', 'bottomRight', { force: true });
 
@@ -57,7 +57,7 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
             .should('have.length', 0);
     });
 
-    it('should expect row got moved to another row index', () => {
+    it('should expect row to be moved to another row index', () => {
         cy.get('.slick-viewport-top.slick-viewport-left')
             .scrollTo('top');
 
@@ -69,5 +69,81 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
 
         cy.get('input[type="checkbox"]:checked')
             .should('have.length', 0);
+    });
+
+    it('should select 2 rows (Task 3,4), then move row and expect the 2 rows to still be selected without any others', () => {
+        cy.get('[style="top:50px"] > .slick-cell:nth(2)').click();
+        cy.get('[style="top:100px"] > .slick-cell:nth(2)').click();
+
+        cy.get('[style="top:50px"] > .slick-cell.cell-reorder').as('moveIconTask3');
+        cy.get('[style="top:125px"] > .slick-cell.cell-reorder').as('moveIconTask5');
+
+        cy.get('@moveIconTask3').should('have.length', 1);
+
+        cy.get('@moveIconTask3')
+            .trigger('mousedown', { button: 0, force: true })
+            .trigger('mousemove', 'bottomRight');
+
+        cy.get('@moveIconTask5')
+            .trigger('mousemove', 'bottomRight')
+            .trigger('mouseup', 'bottomRight', { force: true });
+
+        cy.get('[style="top:0px"] > .slick-cell:nth(4)').should('contain', 'Task 0');
+        cy.get('[style="top:25px"] > .slick-cell:nth(4)').should('contain', 'Task 1');
+        cy.get('[style="top:50px"] > .slick-cell:nth(4)').should('contain', 'Task 2');
+        cy.get('[style="top:75px"] > .slick-cell:nth(4)').should('contain', 'Task 4');
+        cy.get('[style="top:100px"] > .slick-cell:nth(4)').should('contain', 'Task 5');
+        cy.get('[style="top:125px"] > .slick-cell:nth(4)').should('contain', 'Task 3');
+
+        // Task 4 and 3 should be selected
+        cy.get('input[type="checkbox"]:checked').should('have.length', 2);
+        cy.get('[style="top:75px"] > .slick-cell:nth(2) input[type="checkbox"]:checked').should('have.length', 1);
+        cy.get('[style="top:125px"] > .slick-cell:nth(2) input[type="checkbox"]:checked').should('have.length', 1);
+    });
+
+    it('should click on "Single Row Move OFF", then drag a row and expect both selected rows to be moved together', () => {
+        cy.contains('Single Row Move OFF').click();
+
+        cy.get('[style="top:175px"] > .slick-cell.cell-reorder').as('moveIconTask7');
+        cy.get('[style="top:125px"] > .slick-cell.cell-reorder').as('moveIconTask3');
+
+        cy.get('@moveIconTask3').should('have.length', 1);
+
+        cy.get('@moveIconTask3')
+            .trigger('mousedown', { button: 0, force: true })
+            .trigger('mousemove', 'bottomRight');
+
+        cy.get('@moveIconTask7')
+            .trigger('mousemove', 'bottomRight')
+            .trigger('mouseup', 'bottomRight', { force: true });
+
+        cy.get('[style="top:0px"] > .slick-cell:nth(4)').should('contain', 'Task 0');
+        cy.get('[style="top:25px"] > .slick-cell:nth(4)').should('contain', 'Task 1');
+        cy.get('[style="top:50px"] > .slick-cell:nth(4)').should('contain', 'Task 2');
+        cy.get('[style="top:75px"] > .slick-cell:nth(4)').should('contain', 'Task 5');
+        cy.get('[style="top:100px"] > .slick-cell:nth(4)').should('contain', 'Task 6');
+        cy.get('[style="top:125px"] > .slick-cell:nth(4)').should('contain', 'Task 7');
+        cy.get('[style="top:150px"] > .slick-cell:nth(4)').should('contain', 'Task 4');
+        cy.get('[style="top:175px"] > .slick-cell:nth(4)').should('contain', 'Task 3');
+
+        // Task 4 and 3 should be selected
+        cy.get('input[type="checkbox"]:checked').should('have.length', 2);
+        cy.get('[style="top:150px"] > .slick-cell:nth(2) input[type="checkbox"]:checked').should('have.length', 1);
+        cy.get('[style="top:175px"] > .slick-cell:nth(2) input[type="checkbox"]:checked').should('have.length', 1);
+    });
+
+    it('should open the Task 3 Row Detail and still expect same detail', () => {
+        cy.get('[style="top:175px"] > .slick-cell:nth(4)').should('contain', 'Task 3');
+
+        cy.get('[style="top:175px"] > .slick-cell:nth(0)')
+            .click()
+            .wait(250);
+
+        cy.get('.innerDetailView_3')
+            .find('h2')
+            .should('contain', 'Task 3');
+
+        cy.get('input[id="assignee_3"]')
+            .should('exist');
     });
 });
