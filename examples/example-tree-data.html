@@ -85,6 +85,7 @@
 
   <script>
     var columnFilters = {};
+    var tmpPreFilteredData = [];
     var dataView;
     var grid;
     var data = [];
@@ -157,17 +158,16 @@
       }
 
       for (var columnId in columnFilters) {
-        var tmpResult = filterMyFiles(data, columnFilters);
-        if (Array.isArray(tmpResult)) {
+        if (Array.isArray(tmpPreFilteredData)) {
           // NOTE: we are comparing against object id, perhaps "filterMyFiles()" could simply store IDs, that would be faster??
-          var itemFound = tmpResult.find(function (obj) { return obj.id == item.id });
+          var itemFound = tmpPreFilteredData.find(function (obj) { return obj.id == item.id });
           return itemFound ? true : false;
         }
       }
       return true;
     }
 
-    function onSearchEvent(e) {
+    function onSearchKeyupEvent(e) {
       var columnId = $(this).data("columnId");
       if (columnId != null) {
         var searchString = $.trim($(this).val());
@@ -180,6 +180,10 @@
         // display current columnFilters in the DOM
         document.querySelector('#currentColumnFilters').textContent = JSON.stringify(columnFilters);
 
+        // step1. filter the files 
+        tmpPreFilteredData = filterMyFiles(data, columnFilters);
+
+        // step2. call the refresh so it does the final filtering of which rows should persist
         // calling dataview refresh is what triggers the myFilter()
         dataView.refresh();
       }
@@ -217,7 +221,7 @@
       // initialize the grid
       grid = new Slick.Grid("#myGrid", dataView, columns, gridOptions);
 
-      $(grid.getHeaderRow()).on("change keyup", ":input", onSearchEvent);
+      $(grid.getHeaderRow()).on("change keyup", ":input", onSearchKeyupEvent);
 
       grid.onHeaderRowCellRendered.subscribe(function (e, args) {
         $(args.node).empty();
