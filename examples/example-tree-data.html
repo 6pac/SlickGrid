@@ -76,8 +76,14 @@
 <body>
   <table width="100%">
     <tr>
-      <div>ColumnFilters: <span id="currentColumnFilters"></span></div>
+      <div>
+        <span>
+          <button onclick="clearFilters()">Clear Filters</button>
+        </span>
+        ColumnFilters: <span id="currentColumnFilters"></span>
+      </div>
       <td valign="top" width="40%">
+        <br />
         <div id="myGrid" style="width:600px;height:550px;"></div>
       </td>
       <td valign="top">
@@ -307,6 +313,14 @@
       dataView.setFilter(myFilter);
       dataView.endUpdate();
     });
+
+    function clearFilters() {
+      $('.slick-headerrow-column').children().val('').keyup();
+      for (var columnId in columnFilters) {
+        columnFilters[columnId] = "";
+      }
+      dataView.refresh();
+    }
 
     function treeFormatter(row, cell, value, columnDef, dataContext, grid) {
       const treeLevelPropName = '__treeLevel';
