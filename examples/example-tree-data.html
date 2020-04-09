@@ -141,11 +141,12 @@
         }
         if (matchFilter) {
           const len = filteredChildrenAndParents.length;
-          filteredChildrenAndParents.splice(len, 0, a);
+          //add child (id):
+          filteredChildrenAndParents.splice(len, 0, a.id);
           let parent = myObj[a.parentId] || false;
           while (parent) {
-            //only add parent if not already added:
-            parent._used || filteredChildrenAndParents.splice(len, 0, parent);
+            //only add parent (id) if not already added:
+            parent._used || filteredChildrenAndParents.splice(len, 0, parent.id);
             //mark each parent as used so not used again:
             myObj[parent.id]._used = true;
             //try to find parent of the current parent, if exists:
@@ -172,7 +173,10 @@
       for (var columnId in columnFilters) {
         if (Array.isArray(tmpPreFilteredData)) {
           // NOTE: we are comparing against object id, perhaps "filterMyFiles()" could simply store IDs, that would be faster??
-          var itemFound = tmpPreFilteredData.find(function (obj) { return obj.id == item.id });
+          //var itemFound = tmpPreFilteredData.find(function (obj) { return obj.id == item.id });
+
+          //Yes I think its possibly faster to use includes on a number array than find on an object array:
+          var itemFound = tmpPreFilteredData.includes(item.id);
           return itemFound ? true : false;
         }
       }
