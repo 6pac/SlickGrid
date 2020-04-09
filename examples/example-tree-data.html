@@ -109,6 +109,10 @@
       const myObj = {};
       for (let i = 0; i < inputArray.length; i++) {
         myObj[inputArray[i].id] = inputArray[i];
+        //as the filtered data is then used again as each subsequent letter
+        //we need to delete the ._used property, otherwise the logic below
+        //in the while loop (which checks for parents) doesn't work:
+        delete myObj[inputArray[i].id]._used;
       }
 
       const filteredChildrenAndParents = [];
@@ -117,8 +121,12 @@
         let matchFilter = true;
         for (const key in columnFilters) {
           if (a.hasOwnProperty(key)) {
-            const strContains = String(a[key]).includes(columnFilters[key]);
+            //check case insensitive:
+            const strContains = String(a[key]).toLowerCase().includes(columnFilters[key].toLowerCase());
+            //RegEx explained: https://regex101.com/r/w74GSk/13:
             const re = /(?:(?:^|[-+<>=_*/])(?:\s*-?\d+(\.\d+)?(?:[eE][+-<>=]?\d+)?\s*))+$/;
+            // according to mozilla using Function("return something") is better then eval() - and doesn't use eval
+            //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#Never_use_eval!
             const comparison = re.test(columnFilters[key]) && Function('return ' + a[key] + columnFilters[key])();
             if (strContains || comparison) {
               // don't return true as need to check other keys in columnFilters
@@ -134,16 +142,20 @@
         if (matchFilter) {
           const len = filteredChildrenAndParents.length;
           filteredChildrenAndParents.splice(len, 0, a);
-          let parent = myObj[a.parentId];
+          let parent = myObj[a.parentId] || false;
           while (parent) {
-            filteredChildrenAndParents.splice(len, 0, parent);
+            //only add parent if not already added:
+            parent._used || filteredChildrenAndParents.splice(len, 0, parent);
+            //mark each parent as used so not used again:
+            myObj[parent.id]._used = true;
+            //try to find parent of the current parent, if exists:
             parent = myObj[parent.parentId] || false;
           }
         }
       }
 
-      // seems to have duplicate values, so need to dedupe array
-      return uniqueArray(filteredChildrenAndParents);
+      // no longer has duplicate values (due to using ._used flag), so no need to dedupe array
+      return filteredChildrenAndParents;
     }
 
     function myFilter(item, columnFilters) {
