@@ -12,7 +12,7 @@
     crossorigin="anonymous">
   <style>
     .fa {
-      font-size: 12px;
+      font-size: 13px;
       font-weight: 500;
     }
 
@@ -77,18 +77,20 @@
   <table width="100%">
     <tr>
       <div>ColumnFilters: <span id="currentColumnFilters"></span></div>
-      <td valign="top" width="50%">
-        <div id="myGrid" style="width:600px;height:500px;"></div>
+      <td valign="top" width="40%">
+        <div id="myGrid" style="width:600px;height:550px;"></div>
       </td>
       <td valign="top">
         <h2>Demonstrates:</h2>
         <ul>
-          <li>implementing expand/collapse as a filter for DataView</li>
+          <li>Implementing a Tree Data View with Filtering and Sorting</li>
+          <li>The data can have unlimited tree depth coming from parent/child ref (parentId)</li>
+          <li>You can filter "File Size" with operator prefix, for example ">3" (greater than 3Mb)</li>
         </ul>
 
         <h2>View Source:</h2>
         <ul>
-          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example5-collapsing.html"
+          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-tree-data.html"
               target="_sourcewindow"> View the source for this example on Github</a></li>
         </ul>
       </td>
@@ -112,7 +114,7 @@
     var grid;
     var data = [];
     var columns = [
-      { id: 'file', name: 'Files', field: 'file', width: 150, formatter: treeFormatter, sortable: true, },
+      { id: 'file', name: 'Files', field: 'file', width: 200, formatter: treeFormatter, sortable: true, },
       { id: 'dateModified', name: 'Date Modified', field: 'dateModified', sortable: true, minWidth: 90, },
       { id: 'size', name: 'Size', field: 'size', sortable: true, minWidth: 90, formatter: function (row, cell, value) { return isNaN(value) ? '' : `${value} MB`; } },
     ];
@@ -127,28 +129,31 @@
       headerRowHeight: 30,
     };
 
+    // Executed right after a search input change/keyup event BUT before the myFilter since that requires the result of this call
     function filterMyFiles(inputArray, columnFilters) {
-      const myObj = {};
+      const treeObj = {};
       for (let i = 0; i < inputArray.length; i++) {
-        myObj[inputArray[i].id] = inputArray[i];
-        //as the filtered data is then used again as each subsequent letter
-        //we need to delete the ._used property, otherwise the logic below
-        //in the while loop (which checks for parents) doesn't work:
-        delete myObj[inputArray[i].id]._used;
+        treeObj[inputArray[i].id] = inputArray[i];
+        // as the filtered data is then used again as each subsequent letter
+        // we need to delete the .__used property, otherwise the logic below
+        // in the while loop (which checks for parents) doesn't work:
+        delete treeObj[inputArray[i].id].__used;
       }
 
       const filteredChildrenAndParents = [];
       for (let i = 0; i < inputArray.length; i++) {
         const a = inputArray[i];
-        let matchFilter = true;
+        let matchFilter = true; // valid until it is proven to be invalid
+
+        // loop through all column filters and execute filter condition(s)
         for (const key in columnFilters) {
           if (a.hasOwnProperty(key)) {
-            //check case insensitive:
+            // check case insensitive:
             const strContains = String(a[key]).toLowerCase().includes(columnFilters[key].toLowerCase());
-            //RegEx explained: https://regex101.com/r/w74GSk/13:
+            // RegEx explained: https://regex101.com/r/w74GSk/13:
             const re = /(?:(?:^|[-+<>=_*/])(?:\s*-?\d+(\.\d+)?(?:[eE][+-<>=]?\d+)?\s*))+$/;
             // according to mozilla using Function("return something") is better then eval() - and doesn't use eval
-            //https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#Never_use_eval!
+            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#Never_use_eval!
             const comparison = re.test(columnFilters[key]) && Function('return ' + a[key] + columnFilters[key])();
             if (strContains || comparison) {
               // don't return true as need to check other keys in columnFilters
@@ -161,23 +166,25 @@
             continue;
           }
         }
+
+        // build an array from the matched filters, anything valid from filter condition
+        // will be pushed to the filteredChildrenAndParents array
         if (matchFilter) {
           const len = filteredChildrenAndParents.length;
-          //add child (id):
+          // add child (id):
           filteredChildrenAndParents.splice(len, 0, a.id);
-          let parent = myObj[a.parentId] || false;
+          let parent = treeObj[a.parentId] || false;
           while (parent) {
-            //only add parent (id) if not already added:
-            parent._used || filteredChildrenAndParents.splice(len, 0, parent.id);
-            //mark each parent as used so not used again:
-            myObj[parent.id]._used = true;
-            //try to find parent of the current parent, if exists:
-            parent = myObj[parent.parentId] || false;
+            // only add parent (id) if not already added:
+            parent.__used || filteredChildrenAndParents.splice(len, 0, parent.id);
+            // mark each parent as used to not use them again later:
+            treeObj[parent.id].__used = true;
+            // try to find parent of the current parent, if exists:
+            parent = treeObj[parent.parentId] || false;
           }
         }
       }
 
-      // no longer has duplicate values (due to using ._used flag), so no need to dedupe array
       return filteredChildrenAndParents;
     }
 
@@ -186,22 +193,20 @@
         let parent = dataView.getItemById(item.parentId);
         while (parent) {
           if (parent.__collapsed) {
-            return false;
+            return false; // don't display any row that have their parent collapsed
           }
           parent = dataView.getItemById(parent.parentId);
         }
       }
 
-      for (var columnId in columnFilters) {
-        if (Array.isArray(tmpPreFilteredData)) {
-          // NOTE: we are comparing against object id, perhaps "filterMyFiles()" could simply store IDs, that would be faster??
-          //var itemFound = tmpPreFilteredData.find(function (obj) { return obj.id == item.id });
-
-          //Yes I think its possibly faster to use includes on a number array than find on an object array:
-          var itemFound = tmpPreFilteredData.includes(item.id);
-          return itemFound ? true : false;
+      // filter out any row items that aren't part of our pre-processed "filterMyFiles()" result
+      if (Array.isArray(tmpPreFilteredData)) {
+        for (var columnId in columnFilters) {
+          return tmpPreFilteredData.includes(item.id); // return true when found, false otherwise
         }
       }
+
+      // anything is considered valid
       return true;
     }
 
@@ -218,20 +223,18 @@
         // display current columnFilters in the DOM
         document.querySelector('#currentColumnFilters').textContent = JSON.stringify(columnFilters);
 
-        // step1. filter the files 
+        // step 1. filter the files 
         tmpPreFilteredData = filterMyFiles(data, columnFilters);
 
-        // step2. call the refresh so it does the final filtering of which rows should persist
+        // step 2. call the refresh so it does the final filtering of which rows should persist
         // calling dataview refresh is what triggers the myFilter()
         dataView.refresh();
       }
     }
 
     $(function () {
-      var indent = 0;
-      var parents = [];
-
-      // prepare the data
+      // prepare the data "__treeLevel" is required for the treeFormatter to work correctly
+      // very important, the data must be pre-sorted as to how it should be displayed in the UI
       data = [
         { id: 21, file: "Documents", parentId: null, __treeLevel: 0 },
         { id: 9, file: "misc", __treeLevel: 1, parentId: 21 },
@@ -254,13 +257,12 @@
       ];
 
       // initialize the model
-      dataView = new Slick.Data.DataView({ inlineFilters: false });
+      dataView = new Slick.Data.DataView();
 
       // initialize the grid
       grid = new Slick.Grid("#myGrid", dataView, columns, gridOptions);
 
-      $(grid.getHeaderRow()).on("change keyup", ":input", onSearchKeyupEvent);
-
+      // add search input on top of each column
       grid.onHeaderRowCellRendered.subscribe(function (e, args) {
         $(args.node).empty();
         $("<input type='text'>")
@@ -269,23 +271,21 @@
           .appendTo(args.node);
       });
 
+      // bind change/keyup events to search inputs and execute onSearchKeyupEvent() callback
+      $(grid.getHeaderRow()).on("change keyup", ":input", onSearchKeyupEvent);
+
+      // on a cell click event, we'll analyze if the cell is a parent, if it is then we'll toggle the collapse
       grid.onClick.subscribe(function (e, args) {
         if ($(e.target).hasClass("slick-group-toggle")) {
           var item = dataView.getItem(args.row);
           if (item) {
-            if (!item.__collapsed) {
-              item.__collapsed = true;
-            } else {
-              item.__collapsed = false;
-            }
-
+            item.__collapsed = !item.__collapsed;
             dataView.updateItem(item.id, item);
             grid.invalidate();
           }
           e.stopImmediatePropagation();
         }
       });
-
 
       // wire up model events to drive the grid
       dataView.onRowCountChanged.subscribe(function (e, args) {
@@ -298,7 +298,9 @@
         grid.render();
       });
 
+      // initialize grid & dataview
       grid.init();
+      grid.autosizeColumns();
       dataView.beginUpdate();
       dataView.setItems(data);
       dataView.setFilterArgs(columnFilters);
