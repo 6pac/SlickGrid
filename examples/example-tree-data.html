@@ -11,6 +11,28 @@
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css"
     crossorigin="anonymous">
   <style>
+    .fa {
+      font-size: 12px;
+      font-weight: 500;
+    }
+
+    .fa-folder-o,
+    .fa-folder-open-o {
+      color: orange;
+    }
+
+    .fa-file-pdf-o {
+      color: #f14668;
+    }
+
+    .fa-file-audio-o {
+      color: #3298dc;
+    }
+
+    .fa-file-excel-o {
+      color: #1E9F75;
+    }
+
     .cell-title {
       font-weight: bold;
     }
@@ -299,7 +321,7 @@
       const spacer = `<span style="display:inline-block; width:${(15 * dataContext[treeLevelPropName])}px;"></span>`;
 
       if (data[idx + 1] && data[idx + 1][treeLevelPropName] > data[idx][treeLevelPropName]) {
-        const folderPrefix = `<i class="fa fa-folder-o"></i>`;
+        const folderPrefix = `<i class="fa ${dataContext.__collapsed ? 'fa-folder-o' : 'fa-folder-open-o'}"></i>`;
         if (dataContext.__collapsed) {
           return `${spacer} <span class="slick-group-toggle collapsed" level="${dataContext[treeLevelPropName]}"></span>${folderPrefix} ${prefix}&nbsp;${value}`;
         } else {
@@ -313,24 +335,15 @@
     function getFileIcon(value) {
       let prefix = '';
       if (value.includes('.pdf')) {
-        prefix = '<i class="text-danger fa fa-file-pdf-o"></i>';
+        prefix = '<i class="fa fa-file-pdf-o"></i>';
       } else if (value.includes('.txt')) {
         prefix = '<i class="fa fa-file-o"></i>';
       } else if (value.includes('.xls')) {
-        prefix = '<i class="text-success fa fa-file-excel-o"></i>';
+        prefix = '<i class="fa fa-file-excel-o"></i>';
       } else if (value.includes('.mp3')) {
-        prefix = '<i class="text-info fa fa-music"></i>';
+        prefix = '<i class="fa fa-file-audio-o"></i>';
       }
       return prefix;
-    }
-
-    function uniqueArray(arr) {
-      if (Array.isArray(arr) && arr.length > 0) {
-        return arr.filter((item, index) => {
-          return arr.indexOf(item) >= index;
-        });
-      }
-      return arr;
     }
   </script>
 </body>
