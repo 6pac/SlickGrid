@@ -119,6 +119,7 @@
     var dataView;
     var grid;
     var data = [];
+    var treeData = {};
     var columns = [
       { id: 'file', name: 'Files', field: 'file', width: 200, formatter: treeFormatter, sortable: true, },
       { id: 'dateModified', name: 'Date Modified', field: 'dateModified', sortable: true, minWidth: 90, },
@@ -141,7 +142,7 @@
       const filteredChildrenAndParents = [];
       function outerFilter(treeObj, masterTreeObj, arrayOfParentIds){
         for (let id in treeObj) {
-          const a = inputArray[i];
+          const a = treeObj[id];
           let matchFilter = true; // valid until it is proven to be invalid
 
           // loop through all column filters and execute filter condition(s)
@@ -188,7 +189,7 @@
               for (let id in child) {
                 const childCopy = {...child[id]};
                 delete childCopy.__children;
-                console.log('copy', childCopy);
+                //console.log('copy', childCopy);
                 filteredChildrenAndParents.push(childCopy);
                 innerAddAll(child[id].__children);
               }
@@ -202,9 +203,9 @@
           }
         }  
       }
-      outerFilter(treeObj, {...treeObj}, []);
-      console.log('myObj', treeObj);
-      console.log('filtered', filteredChildrenAndParents);
+      outerFilter({...treeObj}, treeObj, []);
+      //console.log('myObj', treeObj);
+      //console.log('filtered', filteredChildrenAndParents);
       return filteredChildrenAndParents;
     }
 
@@ -279,18 +280,23 @@
       ];
 
       treeData = {};
-      for (let i = 0; i < data.length; i++) {
-        treeData[data[i].id] = data[i];
-        //new nested tree object creation if the data is sorted as it should appear as it says in the comments
-        //then this will work if it is not sorted then children could come before parents and this would fail
-        //it could be made to account for that too but if we don't need to there's no point:
+      for (let i = 0; i < data.length; i++) {   
+        //new nested tree object creation
+        //if the data is sorted as it should appear
+        //as it says in the comments then this will work
+        //if it is not sorted then children could come
+        //before parents and this would fail
+        //it could be made to account for that too
+        //but if we don't need to there's no point:
         const j = data.length - 1 - i;
-        //line above just reverses the loop direction using j instead of i
+        //line above just reverses the loop direction
+        //using j instead of i
         if (data[j].parentId != null){
           //then it's not the level 0 folder
           if ( treeData.hasOwnProperty(data[j].id) ){
             //then its child already created its parent folder
             //so merge the current children and the parent itself:
+            //debug// console.log(i, 'before1', {...treeData})
             treeData[data[j].id] = {...data[j], ...treeData[data[j].id]};      
             //now we need to create this folder's parent and delete this key:
             const newChild = {[data[j].id]: treeData[data[j].id]};
@@ -303,12 +309,15 @@
             treeData[data[j].parentId].__children = {...currChildren, ...newChild};
             //now delete this key and its data (already contained in parent's children):
             delete treeData[data[j].id];
+            //debug// console.log(i, 'after1', {...treeData})
           } else{
             //then this is a file/folder with no children
+            //debug// console.log(i, 'before2', {...treeData})
             if ( !treeData.hasOwnProperty(data[j].parentId) ){
               //the parent wasn't yet created so do this          
               treeData[data[j].parentId] = {};
-              //otherwise it is another file/folder sharing a parent (but with no children)
+              //otherwise it is another file/folder sharing a parent
+              //(but with no children)
               //and this parent was already created
             } 
             const children = treeData[data[j].parentId].__children || {};
@@ -316,8 +325,10 @@
             const newChildren = {...children, [data[j].id]: newChild};
             //console.log(i, 'newChildren', newChildren)
             treeData[data[j].parentId].__children = newChildren;
+            //debug// console.log(i, 'after2', {...treeData})
           }            
         } else { //is the level 0 file/folder:
+          //debug// console.log(i, 'before3', {...treeData})
           if ( !treeData.hasOwnProperty(data[j].id) ){
             //then it also doesn't have any children
             //so they didnt create its key
@@ -325,9 +336,11 @@
             treeData[data[j].id] = {};
           }
           const children = treeData[data[j].id].__children || {};
-          const newParent = data[j];          
+          const newParent = data[j];
           treeData[data[j].id] = {...newParent, __children: children};
+          //debug// console.log(i, 'after3', {...treeData})
         }    
+        //debug// console.log(i, 'tree', {...treeData});
       }
       console.log('tree', treeData);
 
