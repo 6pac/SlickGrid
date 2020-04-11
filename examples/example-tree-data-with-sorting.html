@@ -324,7 +324,11 @@
       dataView.setFilterArgs(columnFilters);
       dataView.setFilter(myFilter);
       dataView.endUpdate();
-      dataHierarchical = treeDataUtilities.convertParentChildFlatArrayToHierarchicalView(data, { parentPropName: 'parentId', childrenPropName: 'files', })
+      dataHierarchical = treeDataUtilities.convertParentChildFlatArrayToHierarchicalView(data, {
+        parentPropName: 'parentId',
+        childrenPropName: 'files',
+        treeLevelPropName: '__treeLevel',
+      })
     });
 
     function clearFilters() {
@@ -337,7 +341,11 @@
 
     function executeSort(args) {
       sortTreeChild(dataHierarchical, args);
-      const sortedFlatArray = treeDataUtilities.convertHierarchicalViewToFlatArray(dataHierarchical, { parentPropName: 'parentId', childrenPropName: 'files', });
+      const sortedFlatArray = treeDataUtilities.convertHierarchicalViewToFlatArray(dataHierarchical, {
+        parentPropName: 'parentId',
+        childrenPropName: 'files',
+        treeLevelPropName: '__treeLevel',
+      });
       dataView.setItems(sortedFlatArray);
       grid.invalidate();
     }
@@ -348,12 +356,7 @@
       hierarchicalArray.sort(function (dataRow1, dataRow2) {
         var field = args.sortCol.field;
         var sign = args.sortAsc ? 1 : -1;
-        var value1 = dataRow1[field], value2 = dataRow2[field];
-        var result = (value1 == value2 ? 0 : (value1 > value2 ? 1 : -1)) * sign;
-        if (result != 0) {
-          return result;
-        }
-        return 0;
+        return stringSort(dataRow1[field], dataRow2[field], sign);
       });
 
       for (const item of hierarchicalArray) {
@@ -361,6 +364,22 @@
           sortTreeChild(item[childrenPropName], args);
         }
       }
+    }
+
+    function stringSort(value1, value2, directionSign) {
+      let position = 0;
+      if (value1 === value2) {
+        position = 0;
+      } else if (value1 === null || value1 === undefined) {
+        position = -1;
+      } else if (value2 === null || value2 === undefined) {
+        position = 1;
+      } else if (directionSign) {
+        position = value1 < value2 ? -1 : 1;
+      } else {
+        position = value1 < value2 ? 1 : -1;
+      }
+      return directionSign * position;
     }
 
     function treeFormatter(row, cell, value, columnDef, dataContext, grid) {

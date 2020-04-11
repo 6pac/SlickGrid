@@ -30,8 +30,8 @@
       const childrenPropName = options && options.childrenPropName || 'children';
       const parentPropName = options && options.parentPropName || '__parentId';
       const identifierPropName = options && options.identifierPropName || 'id';
-      const hasChildrenFlagPropName = '__hasChildren';
-      const treeLevelPropName = '__treeLevel';
+      const treeLevelPropName = options && options.treeLevelPropName || '__treeLevel';
+      const hasChildrenFlagPropName = options && options.hasChildrenFlagPropName || '__hasChildren';
       const inputArray = $.extend(true, [], flatArray);
 
       const roots = []; // things without parent
@@ -114,72 +114,13 @@
       }
     }
 
-    /**
- * Take a flat array with Parent/Child references (child having parentId) and sort it by given parent/child properties
- * It will sort by a given "parentPropName" and "childrenPropName"
- * @param flatArray
- * @param options
- */
-    function sortFlatArrayWithParentChildRef(flatArray, options) {
-      const inputArray = $.extend(true, [], flatArray); // make a deep copy of the input array to avoid modifying that array
-
-      // step 1: convert array to a hierarchical structure so that we can sort it
-      const outputArrayRef = convertParentChildFlatArrayToHierarchicalView(inputArray, options);
-
-      // step 2: sort the hierarchical array
-      sortHierarchicalArray(outputArrayRef, options);
-      // const inputHierarchicalArray = $.extend(true, [], outputArrayRef); // make a deep copy of the input array to avoid modifying that array
-
-      // step 3: re-convert the array back to a flat structure and return it
-      const resultSortedFlatDataset = convertHierarchicalViewToFlatArray(outputArrayRef, options);
-
-      return resultSortedFlatDataset;
-    }
-
-    /**
-     * Sort a hierarchical array (an array that has children property, that could also have children, ...)
-     * It will sort by a given "parentPropName" and "childrenPropName"
-     * @param hierarchicalArray
-     * @param options
-     */
-    function sortHierarchicalArray(hierarchicalArray, options) {
-      const childrenPropName = options && options.childrenPropName || 'children';
-      const sortAscending = ((options && options.direction || 'ASC').toUpperCase() === SortDirection.ASC);
-      const sortingDirectionNumber = sortAscending ? 1 : -1;
-
-      hierarchicalArray.sort(function (value1, value2) {
-        if (value1 === value2) {
-          position = 0;
-        } else if (value1 === null) {
-          position = -1;
-        } else if (value2 === null) {
-          position = 1;
-        } else if (sortingDirectionNumber) {
-          position = value1 < value2 ? -1 : 1;
-        } else {
-          position = value1 < value2 ? 1 : -1;
-        }
-        return sortingDirectionNumber * position;
-      });
-
-      for (const item of hierarchicalArray) {
-        if (item && Array.isArray(item[childrenPropName])) {
-          sortHierarchicalArray(item[childrenPropName], options);
-        }
-      }
-
-      return hierarchicalArray;
-    }
-
     $.extend(this, {
       "init": init,
       "pluginName": "TreeData",
 
       "convertParentChildFlatArrayToHierarchicalView": convertParentChildFlatArrayToHierarchicalView,
       "convertHierarchicalViewToFlatArray": convertHierarchicalViewToFlatArray,
-      "convertHierarchicalViewToFlatArrayByOutputArrayReference": convertHierarchicalViewToFlatArrayByOutputArrayReference,
-      "sortFlatArrayWithParentChildRef": sortFlatArrayWithParentChildRef,
-      "sortHierarchicalArray": sortHierarchicalArray,
+      "convertHierarchicalViewToFlatArrayByOutputArrayReference": convertHierarchicalViewToFlatArrayByOutputArrayReference
     });
   }
 })(jQuery);
