@@ -119,6 +119,7 @@
     var dataView;
     var grid;
     var data = [];
+    var treeData = {};
     var columns = [
       { id: 'file', name: 'Files', field: 'file', width: 200, formatter: treeFormatter, sortable: true, },
       { id: 'dateModified', name: 'Date Modified', field: 'dateModified', sortable: true, minWidth: 90, },
@@ -136,61 +137,75 @@
     };
 
     // Executed right after a search input change/keyup event BUT before the myFilter since that requires the result of this call
-    function filterMyFiles(inputArray, columnFilters) {
-      const treeObj = {};
-      for (let i = 0; i < inputArray.length; i++) {
-        treeObj[inputArray[i].id] = inputArray[i];
-        // as the filtered data is then used again as each subsequent letter
-        // we need to delete the .__used property, otherwise the logic below
-        // in the while loop (which checks for parents) doesn't work:
-        delete treeObj[inputArray[i].id].__used;
-      }
-
+    function filterMyFiles(inputArray, treeObj, columnFilters) {
+      
       const filteredChildrenAndParents = [];
-      for (let i = 0; i < inputArray.length; i++) {
-        const a = inputArray[i];
-        let matchFilter = true; // valid until it is proven to be invalid
+      function outerFilter(treeObj, masterTreeObj, arrayOfParentIds){
+        for (let id in treeObj) {
+          const a = treeObj[id];
+          let matchFilter = true; // valid until it is proven to be invalid
 
-        // loop through all column filters and execute filter condition(s)
-        for (const key in columnFilters) {
-          if (a.hasOwnProperty(key)) {
-            // check case insensitive:
-            const strContains = String(a[key]).toLowerCase().includes(columnFilters[key].toLowerCase());
-            // RegEx explained: https://regex101.com/r/w74GSk/13:
-            const re = /(?:(?:^|[-+<>=_*/])(?:\s*-?\d+(\.\d+)?(?:[eE][+-<>=]?\d+)?\s*))+$/;
-            // according to mozilla using Function("return something") is better then eval() - and doesn't use eval
-            // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#Never_use_eval!
-            const comparison = re.test(columnFilters[key]) && Function('return ' + a[key] + columnFilters[key])();
-            if (strContains || comparison) {
-              // don't return true as need to check other keys in columnFilters
+          // loop through all column filters and execute filter condition(s)
+          for (const key in columnFilters) {
+            if (a.hasOwnProperty(key)) {
+              // check case insensitive:
+              const strContains = String(a[key]).toLowerCase().includes(columnFilters[key].toLowerCase());
+              // RegEx explained: https://regex101.com/r/w74GSk/13:
+              const re = /(?:(?:^|[-+<>=_*/])(?:\s*-?\d+(\.\d+)?(?:[eE][+-<>=]?\d+)?\s*))+$/;
+              // according to mozilla using Function("return something") is better then eval() - and doesn't use eval
+              // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#Never_use_eval!
+              const comparison = re.test(columnFilters[key]) && Function('return ' + a[key] + columnFilters[key])();
+              if (strContains || comparison) {
+                // don't return true as need to check other keys in columnFilters
+              } else {
+                matchFilter = false;
+                continue;
+              }
             } else {
               matchFilter = false;
               continue;
             }
-          } else {
-            matchFilter = false;
-            continue;
           }
-        }
 
-        // build an array from the matched filters, anything valid from filter condition
-        // will be pushed to the filteredChildrenAndParents array
-        if (matchFilter) {
-          const len = filteredChildrenAndParents.length;
-          // add child (id):
-          filteredChildrenAndParents.splice(len, 0, a.id);
-          let parent = treeObj[a.parentId] || false;
-          while (parent) {
-            // only add parent (id) if not already added:
-            parent.__used || filteredChildrenAndParents.splice(len, 0, parent.id);
-            // mark each parent as used to not use them again later:
-            treeObj[parent.id].__used = true;
-            // try to find parent of the current parent, if exists:
-            parent = treeObj[parent.parentId] || false;
+          // build an array from the matched filters, anything valid from filter condition
+          // will be pushed to the filteredChildrenAndParents array
+          if (matchFilter) {
+            const itemCopy = {...a};
+            delete itemCopy.__children;
+            filteredChildrenAndParents.push(itemCopy);
+            let parentID = arrayOfParentIds.shift()
+            let parent = masterTreeObj[parentID] || false;
+            while (parent) {
+              const parentCopy = {...parent};
+              delete parentCopy.__children;
+              filteredChildrenAndParents.push(parentCopy);
+              parentID = arrayOfParentIds.shift()
+              parent = parent.__children[parentID] || false;
+            }
+            const childrenObj = treeObj[a.id].__children;
+            //function to add all children recursively
+            //as this parent matched, show all children
+            function innerAddAll(child){        
+              for (let id in child) {
+                const childCopy = {...child[id]};
+                delete childCopy.__children;
+                //console.log('copy', childCopy);
+                filteredChildrenAndParents.push(childCopy);
+                innerAddAll(child[id].__children);
+              }
+            }
+            innerAddAll(childrenObj);
+          } else{ //didn't match but children might match
+            //call recursively this function
+            const childrenObj = treeObj[a.id].__children;
+            const copyOfParentIds = [...arrayOfParentIds, a.id];
+            outerFilter(childrenObj, masterTreeObj, copyOfParentIds);
           }
-        }
+        }  
       }
-
+      outerFilter({...treeObj}, treeObj, []);
+      //console.log('myObj', treeObj);
+      //console.log('filtered', filteredChildrenAndParents);
       return filteredChildrenAndParents;
     }
 
@@ -208,7 +223,8 @@
       // filter out any row items that aren't part of our pre-processed "filterMyFiles()" result
       if (Array.isArray(tmpPreFilteredData)) {
         for (var columnId in columnFilters) {
-          return tmpPreFilteredData.includes(item.id); // return true when found, false otherwise
+          return tmpPreFilteredData.find(function (obj) { return obj.id == item.id });
+          //return tmpPreFilteredData.includes(item.id); // return true when found, false otherwise
         }
       }
 
@@ -230,7 +246,7 @@
         document.querySelector('#currentColumnFilters').textContent = JSON.stringify(columnFilters);
 
         // step 1. filter the files 
-        tmpPreFilteredData = filterMyFiles(data, columnFilters);
+        tmpPreFilteredData = filterMyFiles(data, treeData, columnFilters);
 
         // step 2. call the refresh so it does the final filtering of which rows should persist
         // calling dataview refresh is what triggers the myFilter()
@@ -242,8 +258,10 @@
       // prepare the data "__treeLevel" is required for the treeFormatter to work correctly
       // very important, the data must be pre-sorted as to how it should be displayed in the UI
       data = [
+        { id: 18, file: "alone.txt", dateModified: "2015-03-03", size: 90, __treeLevel: 0, parentId: null, },
         { id: 21, file: "Documents", parentId: null, __treeLevel: 0 },
         { id: 9, file: "misc", __treeLevel: 1, parentId: 21 },
+        { id: 23,  file: "something2.txt", dateModified: "2015-02-26", size: 0.4, __treeLevel: 2,  parentId: 9 },
         { id: 10, file: "something.txt", dateModified: "2015-02-26", size: 0.4, __treeLevel: 2, parentId: 9, },
         { id: 4, file: "pdf", __treeLevel: 1, parentId: 21 },
         { id: 6, file: "internet-bill.pdf", dateModified: "2015-05-12", size: 1.4, __treeLevel: 2, parentId: 4, },
@@ -258,9 +276,73 @@
         { id: 14, file: "pop", __treeLevel: 2, parentId: 12 },
         { id: 15, file: "theme.mp3", dateModified: "2015-03-01", size: 85, __treeLevel: 3, parentId: 14, },
         { id: 16, file: "rock", __treeLevel: 2, parentId: 12 },
-        { id: 17, file: "soft.mp3", dateModified: "2015-05-13", size: 98, __treeLevel: 3, parentId: 16, },
-        { id: 18, file: "something.txt", dateModified: "2015-03-03", size: 90, __treeLevel: 0, parentId: null, },
+        { id: 17, file: "soft.mp3", dateModified: "2015-05-13", size: 98, __treeLevel: 3, parentId: 16, }       
       ];
+
+      treeData = {};
+      for (let i = 0; i < data.length; i++) {   
+        //new nested tree object creation
+        //if the data is sorted as it should appear
+        //as it says in the comments then this will work
+        //if it is not sorted then children could come
+        //before parents and this would fail
+        //it could be made to account for that too
+        //but if we don't need to there's no point:
+        const j = data.length - 1 - i;
+        //line above just reverses the loop direction
+        //using j instead of i
+        if (data[j].parentId != null){
+          //then it's not the level 0 folder
+          if ( treeData.hasOwnProperty(data[j].id) ){
+            //then its child already created its parent folder
+            //so merge the current children and the parent itself:
+            //debug// console.log(i, 'before1', {...treeData})
+            treeData[data[j].id] = {...data[j], ...treeData[data[j].id]};      
+            //now we need to create this folder's parent and delete this key:
+            const newChild = {[data[j].id]: treeData[data[j].id]};
+            if ( !treeData.hasOwnProperty(data[j].parentId) ){
+              //the parent wasn't yet created so do this:
+              treeData[data[j].parentId] = {};
+              treeData[data[j].parentId].__children = {};
+            }
+            const currChildren = treeData[data[j].parentId].__children;
+            treeData[data[j].parentId].__children = {...currChildren, ...newChild};
+            //now delete this key and its data (already contained in parent's children):
+            delete treeData[data[j].id];
+            //debug// console.log(i, 'after1', {...treeData})
+          } else{
+            //then this is a file/folder with no children
+            //debug// console.log(i, 'before2', {...treeData})
+            if ( !treeData.hasOwnProperty(data[j].parentId) ){
+              //the parent wasn't yet created so do this          
+              treeData[data[j].parentId] = {};
+              //otherwise it is another file/folder sharing a parent
+              //(but with no children)
+              //and this parent was already created
+            } 
+            const children = treeData[data[j].parentId].__children || {};
+            const newChild = data[j];
+            const newChildren = {...children, [data[j].id]: newChild};
+            //console.log(i, 'newChildren', newChildren)
+            treeData[data[j].parentId].__children = newChildren;
+            //debug// console.log(i, 'after2', {...treeData})
+          }            
+        } else { //is the level 0 file/folder:
+          //debug// console.log(i, 'before3', {...treeData})
+          if ( !treeData.hasOwnProperty(data[j].id) ){
+            //then it also doesn't have any children
+            //so they didnt create its key
+            //so let's make it:
+            treeData[data[j].id] = {};
+          }
+          const children = treeData[data[j].id].__children || {};
+          const newParent = data[j];
+          treeData[data[j].id] = {...newParent, __children: children};
+          //debug// console.log(i, 'after3', {...treeData})
+        }    
+        //debug// console.log(i, 'tree', {...treeData});
+      }
+      console.log('tree', treeData);
 
       // initialize the model
       dataView = new Slick.Data.DataView();
