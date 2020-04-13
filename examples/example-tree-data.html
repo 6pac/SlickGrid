@@ -112,6 +112,7 @@
   <script src="../slick.core.js"></script>
   <script src="../slick.grid.js"></script>
   <script src="../slick.dataview.js"></script>
+  <script src="../plugins/slick.treedata.js"></script>
 
   <script>
     var columnFilters = {};
@@ -119,7 +120,15 @@
     var dataView;
     var grid;
     var data = [];
+    var myOptions = {
+      parentPropName: 'parentId',
+      childrenPropName: 'files',
+      identifierPropName: 'id',
+      treeLevelPropName: '__treeLevel',
+      treeOutputType: {} //Object of Objects rather than default array of objects
+    };
     var treeData = {};
+    var dataHierarchical = [];
     var columns = [
       { id: 'file', name: 'Files', field: 'file', width: 200, formatter: treeFormatter, sortable: true, },
       { id: 'dateModified', name: 'Date Modified', field: 'dateModified', sortable: true, minWidth: 90, },
@@ -137,12 +146,21 @@
     };
 
     // Executed right after a search input change/keyup event BUT before the myFilter since that requires the result of this call
-    function filterMyFiles(inputArray, treeObj, columnFilters) {
+    function filterMyFiles(inputArray, treeObj, columnFilters, options) {    
+      //console.log(options);
+      const childrenPropName = options && options.childrenPropName || 'children';
+      const parentPropName = options && options.parentPropName || '__parentId';
+      const identifierPropName = options && options.identifierPropName || 'id';
+      const treeLevelPropName = options && options.treeLevelPropName || '__treeLevel';
+      const hasChildrenFlagPropName = options && options.hasChildrenFlagPropName || '__hasChildren';  
       
       const filteredChildrenAndParents = [];
-      function outerFilter(treeObj, masterTreeObj, arrayOfParentIds){
-        for (let id in treeObj) {
-          const a = treeObj[id];
+      function outerFilter(treeObj, masterTreeObj, arrayOfParentIds){                
+        const iterable = (treeObj instanceof Array) ?
+          treeObj:
+          Object.values(treeObj) || [];
+        for (let id of iterable) {
+          const a = id;
           let matchFilter = true; // valid until it is proven to be invalid
 
           // loop through all column filters and execute filter condition(s)
@@ -171,39 +189,51 @@
           // will be pushed to the filteredChildrenAndParents array
           if (matchFilter) {
             const itemCopy = {...a};
-            delete itemCopy.__children;
+            delete itemCopy[childrenPropName];
             filteredChildrenAndParents.push(itemCopy);
             let parentID = arrayOfParentIds.shift()
-            let parent = masterTreeObj[parentID] || false;
+            //now works with nested array of objects or object of objects:
+            let parent = (masterTreeObj instanceof Array) ?
+              masterTreeObj.find(val => val[identifierPropName] == parentID) || false:
+              masterTreeObj[parentID] || false; 
             while (parent) {
               const parentCopy = {...parent};
-              delete parentCopy.__children;
+              delete parentCopy[childrenPropName];
               filteredChildrenAndParents.push(parentCopy);
               parentID = arrayOfParentIds.shift()
-              parent = parent.__children[parentID] || false;
-            }
-            const childrenObj = treeObj[a.id].__children;
+              const parentsChildren = parent[childrenPropName];
+              //now works with nested array of objects or object of objects:
+              parent = (parentsChildren instanceof Array) ?
+                parentsChildren.find(val => val[identifierPropName] == parentID) || false:
+                parentsChildren[parentID] || false; 
+            }            
+            const childrenObj = a[childrenPropName];
             //function to add all children recursively
             //as this parent matched, show all children
-            function innerAddAll(child){        
-              for (let id in child) {
-                const childCopy = {...child[id]};
-                delete childCopy.__children;
-                //console.log('copy', childCopy);
+            function innerAddAll(child){
+              //now works with nested array of objects or object of objects:
+              const iterable = (child instanceof Array) ?
+                child:
+                Object.values(child) || [];  
+              for (let id of iterable) {       
+                const childCopy = {...id};
+                delete childCopy[childrenPropName];
                 filteredChildrenAndParents.push(childCopy);
-                innerAddAll(child[id].__children);
+                id[childrenPropName] && innerAddAll(id[childrenPropName]);
               }
             }
-            innerAddAll(childrenObj);
+            childrenObj && innerAddAll(childrenObj);
           } else{ //didn't match but children might match
             //call recursively this function
-            const childrenObj = treeObj[a.id].__children;
-            const copyOfParentIds = [...arrayOfParentIds, a.id];
-            outerFilter(childrenObj, masterTreeObj, copyOfParentIds);
+            const childrenObj = a[childrenPropName] || false;
+            const copyOfParentIds = [...arrayOfParentIds, a[identifierPropName]];
+            childrenObj && outerFilter(childrenObj, masterTreeObj, copyOfParentIds);
           }
         }  
       }
-      outerFilter({...treeObj}, treeObj, []);
+      //now works with nested array of objects or object of objects:
+      const treeCopy = (treeObj instanceof Array) ? [...treeObj] : {...treeObj};
+      outerFilter(treeCopy, treeObj, []);
       //console.log('myObj', treeObj);
       //console.log('filtered', filteredChildrenAndParents);
       return filteredChildrenAndParents;
@@ -246,7 +276,7 @@
         document.querySelector('#currentColumnFilters').textContent = JSON.stringify(columnFilters);
 
         // step 1. filter the files 
-        tmpPreFilteredData = filterMyFiles(data, treeData, columnFilters);
+        tmpPreFilteredData = filterMyFiles(data, dataHierarchical, columnFilters, myOptions);
 
         // step 2. call the refresh so it does the final filtering of which rows should persist
         // calling dataview refresh is what triggers the myFilter()
@@ -279,76 +309,21 @@
         { id: 17, file: "soft.mp3", dateModified: "2015-05-13", size: 98, __treeLevel: 3, parentId: 16, }       
       ];
 
-      treeData = {};
-      for (let i = 0; i < data.length; i++) {   
-        //new nested tree object creation
-        //if the data is sorted as it should appear
-        //as it says in the comments then this will work
-        //if it is not sorted then children could come
-        //before parents and this would fail
-        //it could be made to account for that too
-        //but if we don't need to there's no point:
-        const j = data.length - 1 - i;
-        //line above just reverses the loop direction
-        //using j instead of i
-        if (data[j].parentId != null){
-          //then it's not the level 0 folder
-          if ( treeData.hasOwnProperty(data[j].id) ){
-            //then its child already created its parent folder
-            //so merge the current children and the parent itself:
-            //debug// console.log(i, 'before1', {...treeData})
-            treeData[data[j].id] = {...data[j], ...treeData[data[j].id]};      
-            //now we need to create this folder's parent and delete this key:
-            const newChild = {[data[j].id]: treeData[data[j].id]};
-            if ( !treeData.hasOwnProperty(data[j].parentId) ){
-              //the parent wasn't yet created so do this:
-              treeData[data[j].parentId] = {};
-              treeData[data[j].parentId].__children = {};
-            }
-            const currChildren = treeData[data[j].parentId].__children;
-            treeData[data[j].parentId].__children = {...currChildren, ...newChild};
-            //now delete this key and its data (already contained in parent's children):
-            delete treeData[data[j].id];
-            //debug// console.log(i, 'after1', {...treeData})
-          } else{
-            //then this is a file/folder with no children
-            //debug// console.log(i, 'before2', {...treeData})
-            if ( !treeData.hasOwnProperty(data[j].parentId) ){
-              //the parent wasn't yet created so do this          
-              treeData[data[j].parentId] = {};
-              //otherwise it is another file/folder sharing a parent
-              //(but with no children)
-              //and this parent was already created
-            } 
-            const children = treeData[data[j].parentId].__children || {};
-            const newChild = data[j];
-            const newChildren = {...children, [data[j].id]: newChild};
-            //console.log(i, 'newChildren', newChildren)
-            treeData[data[j].parentId].__children = newChildren;
-            //debug// console.log(i, 'after2', {...treeData})
-          }            
-        } else { //is the level 0 file/folder:
-          //debug// console.log(i, 'before3', {...treeData})
-          if ( !treeData.hasOwnProperty(data[j].id) ){
-            //then it also doesn't have any children
-            //so they didnt create its key
-            //so let's make it:
-            treeData[data[j].id] = {};
-          }
-          const children = treeData[data[j].id].__children || {};
-          const newParent = data[j];
-          treeData[data[j].id] = {...newParent, __children: children};
-          //debug// console.log(i, 'after3', {...treeData})
-        }    
-        //debug// console.log(i, 'tree', {...treeData});
-      }
-      console.log('tree', treeData);
-
       // initialize the model
       dataView = new Slick.Data.DataView();
 
       // initialize the grid
       grid = new Slick.Grid("#myGrid", dataView, columns, gridOptions);
+
+      // load tree data utilities
+      treeDataUtilities = new Slick.Plugins.TreeData();
+
+      //can use the util to convert the flat array of objects to an nested object of objects:
+      treeData = treeDataUtilities.convertParentChildFlatArrayToHierarchicalView(data, myOptions)      
+      console.log('tree', treeData);
+
+      //can use the util to convert the nested object of objects (back) to a flat array of objects:
+      console.log('flat', treeDataUtilities.convertHierarchicalViewToFlatArray(treeData, myOptions))
 
       // add search input on top of each column
       grid.onHeaderRowCellRendered.subscribe(function (e, args) {
@@ -393,7 +368,10 @@
       dataView.setItems(data);
       dataView.setFilterArgs(columnFilters);
       dataView.setFilter(myFilter);
-      dataView.endUpdate();
+      dataView.endUpdate();      
+      const myOptionsMod = {...myOptions, treeOutputType: []};
+      dataHierarchical = treeDataUtilities.convertParentChildFlatArrayToHierarchicalView(data, myOptionsMod);
+      console.log('array objects', dataHierarchical);
     });
 
     function clearFilters() {
