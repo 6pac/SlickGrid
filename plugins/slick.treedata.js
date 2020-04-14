@@ -26,11 +26,23 @@
     function type_of(x) {
       return Object.prototype.toString.call(x).slice(8, -1).toLowerCase();
     }
+
+    /**
+     * Options Object to be passed to several TreeData functions
+     * @typedef {Object} Options 
+     * @property {string} [childrenPropName='children']
+     * @property {string} [parentPropName='__parentId']
+     * @property {string} [identifierPropName='id']
+     * @property {string} [treeLevelPropName='__treeLevel']
+     * @property {string} [hasChildrenFlagPropName='__hasChildren']
+     * @property {Array|Object} [treeOutputType=[]]
+     */
+
     /**
      * Convert a flat array (with "parentId" references) into a hierarchical dataset structure (where children are array(s) inside their parent objects)
-     * @param flatArray array input
-     * @param outputArray array output (passed by reference)
-     * @param options you can provide the following options:: "parentPropName" (defaults to "parent"), "childrenPropName" (defaults to "children") and "identifierPropName" (defaults to "id")
+     * @param {Array} flatArray array input
+     * @param {Options} options you can provide the following options:: "parentPropName" (defaults to "parent"), "childrenPropName" (defaults to "children") and "identifierPropName" (defaults to "id")
+     * @returns {Array|Object} output as nested Array of Objects or Object of Objects.
      */
     function convertParentChildFlatArrayToHierarchicalView(flatArray, options) {
       const childrenPropName = options && options.childrenPropName || 'children';
@@ -79,9 +91,9 @@
 
     /**
      * Convert a hierarchical array/object (with children) into a flat array structure array (where the children are pushed as next indexed item in the array)
-     * @param hierarchicalArrayOrObj
-     * @param outputArray
-     * @param options you can provide "childrenPropName" (defaults to "children")
+     * @param {Object|Array} hierarchicalArrayOrObj input nested Array of Objects or Object of Objects.
+     * @param {Options} options you can provide "childrenPropName" (defaults to "children")
+     * @returns {Array} outputArray (flat array)
      */
     function convertHierarchicalViewToFlatArray(hierarchicalArrayOrObj, options) {
       //if the caller calls with array of objects or object of objects [] or {} will be detected:
@@ -104,9 +116,12 @@
 
     /**
      * Convert a hierarchical array/object (with children) into a flat array structure array but using the array as the output (the array is the pointer reference)
-     * @param hierarchicalArrayOrObj
-     * @param outputArray
-     * @param options you can provide "childrenPropName" (defaults to "children")
+     * @param {Object|Array} hierarchicalArrayOrObj
+     * @param {Array} outputArray the outputArray is passed by reference and is mutated directly
+     * @param {Options} options you can provide "childrenPropName" (defaults to "children")
+     * @param {number} treeLevel the depth of the nested objects is tracked
+     * @param {number} [parentId] the parent ID is tracked if a parent exists
+     * @returns {void} the outputArray is passed by reference and is mutated directly
      */
     function convertHierarchicalViewToFlatArrayByOutputArrayReference(hierarchicalArrayOrObj, outputArray, options, treeLevel, parentId) {
       const childrenPropName = options && options.childrenPropName || 'children';
