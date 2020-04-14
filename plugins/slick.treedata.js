@@ -21,6 +21,12 @@
     }
 
     /**
+     * Private method to determine type
+     */
+    function type_of(x) {
+      return Object.prototype.toString.call(x).slice(8, -1).toLowerCase();
+    }
+    /**
      * Convert a flat array (with "parentId" references) into a hierarchical dataset structure (where children are array(s) inside their parent objects)
      * @param flatArray array input
      * @param outputArray array output (passed by reference)
@@ -33,11 +39,18 @@
       const treeLevelPropName = options && options.treeLevelPropName || '__treeLevel';
       const hasChildrenFlagPropName = options && options.hasChildrenFlagPropName || '__hasChildren';
       const inputArray = $.extend(true, [], flatArray);
+      //give the caller the chance to output nested array of objects or nested object of objects:
+      //the caller can call with options.treeOutputType can be [] or {} (defaults to []);
+      let outputAsArray = options && (type_of(options.treeOutputType) == 'array') || false;
+      const outputAsObject = options && (type_of(options.treeOutputType) == 'object') || false;
+      if (outputAsArray == false && outputAsObject == false){ outputAsArray = true }; //default to array
 
-      const roots = []; // things without parent
-
+      // things without parent
+      const roots = [];
       // make them accessible by guid on this map
       const all = {};
+      //alternative output as real object of objects:
+      const tree = {};
 
       inputArray.forEach(function (item) {
         all[item[identifierPropName]] = item
@@ -47,13 +60,13 @@
       Object.keys(all).forEach(function (id) {
         const item = all[id];
         if (item[parentPropName] === null || !item.hasOwnProperty(parentPropName)) {
-          roots.push(item);
+          outputAsArray ? roots.push(item) : tree[item[identifierPropName]] = item;
         } else if (item[parentPropName] in all) {
           const p = all[item[parentPropName]];
           if (!(childrenPropName in p)) {
-            p[childrenPropName] = [];
+            p[childrenPropName] = outputAsArray ? [] : {};            
           }
-          p[childrenPropName].push(item);
+          outputAsArray ? p[childrenPropName].push(item) : p[childrenPropName][item[identifierPropName]] = item;
         }
 
         // delete any unnecessary properties that were possibly created in the flat array but shouldn't be part of the tree data
@@ -61,48 +74,63 @@
         delete item[hasChildrenFlagPropName];
       });
 
-      return roots;
+      return outputAsArray ? roots : tree;
     }
 
     /**
-     * Convert a hierarchical array (with children) into a flat array structure array (where the children are pushed as next indexed item in the array)
-     * @param hierarchicalArray
+     * Convert a hierarchical array/object (with children) into a flat array structure array (where the children are pushed as next indexed item in the array)
+     * @param hierarchicalArrayOrObj
      * @param outputArray
      * @param options you can provide "childrenPropName" (defaults to "children")
      */
-    function convertHierarchicalViewToFlatArray(hierarchicalArray, options) {
-      const outputArray = [];
-      convertHierarchicalViewToFlatArrayByOutputArrayReference($.extend(true, [], hierarchicalArray), outputArray, options, 0);
+    function convertHierarchicalViewToFlatArray(hierarchicalArrayOrObj, options) {
+      //if the caller calls with array of objects or object of objects [] or {} will be detected:
+      let inputAsArray = (type_of(hierarchicalArrayOrObj) == 'array') || false;
+      const inputAsObject = (type_of(hierarchicalArrayOrObj) == 'object') || false;
+      if (inputAsArray == false && inputAsObject == false){ inputAsArray = true }; //default to array
+
+      const outputArray = []; //the flat output will be a flat array of objects
+      //$.extend(): true makes a deep copy, [] gives me any array at the end, last arg is input to copy.
+      //returns deep copy of new array (default from above)
+      //Or we can now also call this with a deep copy of an object of objects with {}:
+      const deepCopy = inputAsArray ?
+        $.extend(true, [], hierarchicalArrayOrObj):
+        $.extend(true, {}, hierarchicalArrayOrObj);
+      convertHierarchicalViewToFlatArrayByOutputArrayReference(deepCopy, outputArray, options, 0);
 
       // the output array is the one passed as reference
       return outputArray;
     }
 
     /**
-     * Convert a hierarchical array (with children) into a flat array structure array but using the array as the output (the array is the pointer reference)
-     * @param hierarchicalArray
+     * Convert a hierarchical array/object (with children) into a flat array structure array but using the array as the output (the array is the pointer reference)
+     * @param hierarchicalArrayOrObj
      * @param outputArray
      * @param options you can provide "childrenPropName" (defaults to "children")
      */
-    function convertHierarchicalViewToFlatArrayByOutputArrayReference(hierarchicalArray, outputArray, options, treeLevel, parentId) {
+    function convertHierarchicalViewToFlatArrayByOutputArrayReference(hierarchicalArrayOrObj, outputArray, options, treeLevel, parentId) {
       const childrenPropName = options && options.childrenPropName || 'children';
       const identifierPropName = options && options.identifierPropName || 'id';
       const hasChildrenFlagPropName = options && options.hasChildrenFlagPropName || '__hasChildren';
       const treeLevelPropName = options && options.treeLevelPropName || '__treeLevel';
       const parentPropName = options && options.parentPropName || '__parentId';
+      let inputAsArray = (type_of(hierarchicalArrayOrObj) == 'array') || false;
+      const inputAsObject = (type_of(hierarchicalArrayOrObj) == 'object') || false;
+      if (inputAsArray == false && inputAsObject == false){ inputAsArray = true }; //default to array
 
-      if (Array.isArray(hierarchicalArray)) {
-        for (const item of hierarchicalArray) {
+      if (Array.isArray(hierarchicalArrayOrObj) || inputAsObject) {
+        const iterable = (hierarchicalArrayOrObj instanceof Array) ?
+          hierarchicalArrayOrObj:
+          Object.values(hierarchicalArrayOrObj) || []; 
+        for (const item of iterable) {
           if (item) {
-            const itemExist = outputArray.find(function (itm) {
-              return itm[identifierPropName] === item[identifierPropName];
-            });
+            const itemExist = outputArray.find(itm => itm[identifierPropName] === item[identifierPropName]) || false;
             if (!itemExist) {
               item[treeLevelPropName] = treeLevel; // save tree level ref
               item[parentPropName] = parentId || null;
-              outputArray.push(item);
+              outputArray.push(item); //top level is always an array
             }
-            if (Array.isArray(item[childrenPropName])) {
+            if (Array.isArray(item[childrenPropName]) || type_of(item[childrenPropName]) == 'object') {
               treeLevel++;
               convertHierarchicalViewToFlatArrayByOutputArrayReference(item[childrenPropName], outputArray, options, treeLevel, item[identifierPropName]);
               treeLevel--;
