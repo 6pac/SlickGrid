@@ -36,6 +36,7 @@
      * @property {string} [treeLevelPropName='__treeLevel']
      * @property {string} [hasChildrenFlagPropName='__hasChildren']
      * @property {Array|Object} [treeOutputType=[]]
+     * @property {Array<string>} [aggregatorProps=[]]
      */
 
     /**
@@ -50,6 +51,7 @@
       const identifierPropName = options && options.identifierPropName || 'id';
       const treeLevelPropName = options && options.treeLevelPropName || '__treeLevel';
       const hasChildrenFlagPropName = options && options.hasChildrenFlagPropName || '__hasChildren';
+      const aggregatorProps = options && options.aggregatorProps || [];
       const inputArray = $.extend(true, [], flatArray);
       //give the caller the chance to output nested array of objects or nested object of objects:
       //the caller can call with options.treeOutputType can be [] or {} (defaults to []);
@@ -67,15 +69,17 @@
       inputArray.forEach(function (item) {
         all[item[identifierPropName]] = item
       });
-      //add aggregate size:
-      // for (let i = inputArray.length - 1; i >= 0; i--){
-      //   const item = inputArray[i];
-      //   console.log('item', item)
-      //   if (item[parentPropName] != null){
-      //     const currSize = all[item[parentPropName]].size || 0;
-      //     all[item[parentPropName]].size = currSize + item.size;
-      //   }        
-      // }
+      //add aggregate props:
+      for (let i = inputArray.length - 1; i >= 0; i--){
+        const item = inputArray[i];
+        //console.log('item', item)
+        for (const prop of aggregatorProps){
+          if (item[parentPropName] != null){
+            const currPropVal = all[item[parentPropName]][`__agg__${prop}`] || 0;
+            all[item[parentPropName]][`__agg__${prop}`] = currPropVal + (item[`__agg__${prop}`] || item[prop]);
+          }
+        }                
+      }
 
       // connect childrens to its parent, and split roots apart
       Object.keys(all).forEach(function (id) {
