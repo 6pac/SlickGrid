@@ -154,17 +154,20 @@
       const treeLevelPropName = options && options.treeLevelPropName || '__treeLevel';
       const hasChildrenFlagPropName = options && options.hasChildrenFlagPropName || '__hasChildren';  
       
-      const filteredChildrenAndParents = [];
-      function outerFilter(treeObj, masterTreeObj, arrayOfParentIds){                
+      const filteredChildrenAndParents = [];      
+      function outerFilter(treeObj, masterTreeObj, arrayOfParentIds, filterKeys){                
         const iterable = (treeObj instanceof Array) ?
           treeObj:
           Object.values(treeObj) || [];
         for (let id of iterable) {
           const a = id;
-          let matchFilter = true; // valid until it is proven to be invalid
+          let matchFilter = false; // invalid until it is proven to be valid
 
-          // loop through all column filters and execute filter condition(s)
-          for (const key in columnFilters) {
+          //make a copy each time so each recursion sibling has a fresh array:
+          const copyOfFilters = [...filterKeys]
+          // loop through all column filters and execute filter condition(s):
+          for (let i = 0; i < copyOfFilters.length; i++) {
+            const key = copyOfFilters[i];
             if (a.hasOwnProperty(key)) {
               // check case insensitive:
               const strContains = String(a[key]).toLowerCase().includes(columnFilters[key].toLowerCase());
@@ -174,20 +177,21 @@
               // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#Never_use_eval!
               const comparison = re.test(columnFilters[key]) && Function('return ' + a[key] + columnFilters[key])();
               if (strContains || comparison) {
-                // don't return true as need to check other keys in columnFilters
+                // one filter matched remove this from the copyOfFilters
+                matchFilter = true;
+                copyOfFilters.splice(i,1);
+                i--; //the next filter has now moved one place back         
               } else {
-                matchFilter = false;
                 continue;
               }
             } else {
-              matchFilter = false;
               continue;
             }
           }
 
           // build an array from the matched filters, anything valid from filter condition
           // will be pushed to the filteredChildrenAndParents array
-          if (matchFilter) {
+          if (matchFilter && copyOfFilters.length == 0) { //all filters matched
             const itemCopy = {...a};
             delete itemCopy[childrenPropName];
             filteredChildrenAndParents.push(itemCopy);
@@ -221,19 +225,24 @@
                 filteredChildrenAndParents.push(childCopy);
                 id[childrenPropName] && innerAddAll(id[childrenPropName]);
               }
-            }
+            }            
             childrenObj && innerAddAll(childrenObj);
-          } else{ //didn't match but children might match
+          } else{ 
+            // either didn't match at all
+            //or one or more filters matched but not all
+            //but children might match
             //call recursively this function
             const childrenObj = a[childrenPropName] || false;
             const copyOfParentIds = [...arrayOfParentIds, a[identifierPropName]];
-            childrenObj && outerFilter(childrenObj, masterTreeObj, copyOfParentIds);
+            //but call it with the limited filters - i.e. if some already passed don't pass them down:
+            childrenObj && outerFilter(childrenObj, masterTreeObj, copyOfParentIds, copyOfFilters);
           }
         }  
       }
       //now works with nested array of objects or object of objects:
       const treeCopy = (treeObj instanceof Array) ? [...treeObj] : {...treeObj};
-      outerFilter(treeCopy, treeObj, []);
+      const filterKeys = Object.keys(columnFilters);
+      outerFilter(treeCopy, treeObj, [], filterKeys);
       //console.log('myObj', treeObj);
       //console.log('filtered', filteredChildrenAndParents);
       return filteredChildrenAndParents;

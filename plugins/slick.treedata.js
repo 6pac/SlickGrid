@@ -67,6 +67,15 @@
       inputArray.forEach(function (item) {
         all[item[identifierPropName]] = item
       });
+      //add aggregate size:
+      // for (let i = inputArray.length - 1; i >= 0; i--){
+      //   const item = inputArray[i];
+      //   console.log('item', item)
+      //   if (item[parentPropName] != null){
+      //     const currSize = all[item[parentPropName]].size || 0;
+      //     all[item[parentPropName]].size = currSize + item.size;
+      //   }        
+      // }
 
       // connect childrens to its parent, and split roots apart
       Object.keys(all).forEach(function (id) {
