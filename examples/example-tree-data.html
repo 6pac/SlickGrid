@@ -125,11 +125,11 @@
       childrenPropName: 'files',
       identifierPropName: 'id',
       treeLevelPropName: '__treeLevel',
-      treeOutputType: {}, //Object of Objects rather than default array of objects
+      treeOutputType: [], //Object of Objects or (default) array of objects
       aggregatorProps: ['size']
     };
     var treeData = {};
-    var dataHierarchical = [];
+    var nestedData = [];
     var columns = [
       { id: 'file', name: 'Files', field: 'file', width: 200, formatter: treeFormatter, sortable: true, },
       { id: 'dateModified', name: 'Date Modified', field: 'dateModified', sortable: true, minWidth: 90, },
@@ -193,7 +193,7 @@
 
         // step 1. filter the files
         // Executed right after a search input change/keyup event BUT before the myFilter since that requires the result of this call
-        tmpPreFilteredData = treeDataUtilities.filterMyFiles(data, dataHierarchical, columnFilters, myOptions, gridOptions);
+        tmpPreFilteredData = treeDataUtilities.filterMyFiles(data, nestedData, columnFilters, myOptions, gridOptions);
 
         // step 2. call the refresh so it does the final filtering of which rows should persist
         // calling dataview refresh is what triggers the myFilter()
@@ -204,7 +204,8 @@
     $(function () {
       // prepare the data "__treeLevel" is required for the treeFormatter to work correctly
       // very important, the data must be pre-sorted as to how it should be displayed in the UI
-      data = [
+      /*
+      initData = [
         { id: 18, file: "alone.txt", dateModified: "2015-03-03", size: 90, __treeLevel: 0, parentId: null, },
         { id: 21, file: "Documents", parentId: null, __treeLevel: 0 },
         { id: 9, file: "misc", __treeLevel: 1, parentId: 21 },
@@ -225,6 +226,59 @@
         { id: 16, file: "rock", __treeLevel: 2, parentId: 12 },
         { id: 17, file: "soft.mp3", dateModified: "2015-05-13", size: 98, __treeLevel: 3, parentId: 16, }
       ];
+      //*/
+
+      //*
+      //the user should be able to start with flat or heirarchical and we should handle that with the TreeData Plugin:
+      initData = [
+        { id: 18, file: "alone.txt", dateModified: "2015-03-03", size: 90, },
+        { id: 21, file: "Documents",
+          files: [
+            { id: 9, file: "misc",
+              files: [
+                { id: 23, file: "something2.txt", dateModified: "2015-02-26", size: 0.4, },
+                { id: 10, file: "something.txt", dateModified: "2015-02-26", size: 0.4, },
+              ]
+            },
+            { id: 4, file: "pdf",
+              files: [
+                { id: 6, file: "internet-bill.pdf", dateModified: "2015-05-12", size: 1.4, },
+                { id: 5, file: "map.pdf", dateModified: "2015-05-21", size: 3.1, },
+                { id: 22, file: "map2.pdf", dateModified: "2015-05-21", size: 2.9, },
+              ]
+            },
+            { id: 2, file: "txt",
+              files: [
+                { id: 3, file: "todo.txt", dateModified: "2015-05-12", size: 0.7, },
+              ]
+            },
+            { id: 7, file: "xls",
+              files: [
+                { id: 8, file: "compilation.xls", dateModified: "2014-10-02", size: 2.3, },
+              ]
+            },
+          ]
+        },
+        { id: 11, file: "Music",
+          files: [
+            { id: 12, file: "mp3",
+              files: [
+                { id: 14, file: "pop",
+                  files: [
+                    { id: 15, file: "theme.mp3", dateModified: "2015-03-01", size: 85,  },
+                  ]
+                },
+                { id: 16, file: "rock",
+                  files: [
+                    { id: 17, file: "soft.mp3", dateModified: "2015-05-13", size: 98, } 
+                  ]
+                },
+              ]
+            },
+          ]
+        },    
+      ];
+      //*/
 
       // initialize the model
       dataView = new Slick.Data.DataView();
@@ -235,12 +289,68 @@
       // load tree data utilities
       treeDataUtilities = new Slick.Plugins.TreeData();
 
-      //can use the util to convert the flat array of objects to an nested object of objects:
-      treeData = treeDataUtilities.convertParentChildFlatArrayToHierarchicalView(data, myOptions)
+      /*
+      //you can use the util to convert the flat array of objects to an nested object of objects:
+      treeData = treeDataUtilities.convertParentChildFlatArrayToHierarchicalView(initData, myOptions)
       console.log('tree', treeData);
 
-      //can use the util to convert the nested object of objects (back) to a flat array of objects:
-      console.log('flat', treeDataUtilities.convertHierarchicalViewToFlatArray(treeData, myOptions))
+      //OR if you started with a nested object of object or array of objects,
+      //you can use the util to convert this back to a flat array of objects:
+      data = treeDataUtilities.convertHierarchicalViewToFlatArray(initData, myOptions)
+      console.log('flat', data);
+      */
+
+      //OR you can use this function to determine which type you have and to return both [flat, nested]:
+      //as well as the __treeLevel props and parentIds etc.
+      function fromInputReturnFlatAndNestedDataStructures(initData, options){
+        const childrenPropName = options && options.childrenPropName || 'children';
+        const identifierPropName = options && options.identifierPropName || 'id';
+        const hasChildrenFlagPropName = options && options.hasChildrenFlagPropName || '__hasChildren';
+        const treeLevelPropName = options && options.treeLevelPropName || '__treeLevel';
+        const parentPropName = options && options.parentPropName || '__parentId';
+        const aggregatorProps = options && options.aggregatorProps || [];
+        let inputDataIsFlat = true; //to be determined.
+        let [flat, nested] = [null, null]; //to be determined.
+        const isInputArray = (initData instanceof Array);
+        
+        if (isInputArray){
+          for (let i = initData.length - 1; i >= 0; i--){
+            const item = initData[i];
+            if (item[childrenPropName] && item[childrenPropName] instanceof Object){
+              inputDataIsFlat = false;
+              //break out of the loop we know what the data type is
+              break;
+            } else {
+              //we can't add __agg__ props here because otherwise they are added twice in
+              //convertParentChildFlatArrayToHierarchicalView
+              
+              //it might be the flat data and if so, use this chance to generate __agg__ props:
+              // for (const prop of aggregatorProps){
+              //   if (item[parentPropName] && item[parentPropName] != null){
+              //     const parent = initData.find(val => val[identifierPropName] == item[parentPropName]);
+              //     const currPropVal = parent[`__agg__${prop}`] || 0;
+              //     parent[`__agg__${prop}`] = currPropVal + (item[`__agg__${prop}`] || item[prop]);
+              //   }
+              // } 
+            }
+          }    
+        } else {
+          inputDataIsFlat = false;
+        }           
+
+        if (inputDataIsFlat){          
+          nested = treeDataUtilities.convertParentChildFlatArrayToHierarchicalView(initData, options)
+          flat = initData;
+        } else { //then its nested
+          flat = treeDataUtilities.convertHierarchicalViewToFlatArray(initData, options);
+          nested = treeDataUtilities.convertParentChildFlatArrayToHierarchicalView(flat, options)
+        }       
+        return [flat, nested];
+      }
+
+      [data, nestedData] = fromInputReturnFlatAndNestedDataStructures(initData, myOptions);
+      console.log('tree', nestedData);
+      console.log('flat', data);
 
       // add search input on top of each column
       grid.onHeaderRowCellRendered.subscribe(function (e, args) {
@@ -286,13 +396,10 @@
       dataView.setFilterArgs(columnFilters);
       dataView.setFilter(myFilter);
       dataView.endUpdate();
-      const myOptionsMod = { ...myOptions, treeOutputType: [] };
-      dataHierarchical = treeDataUtilities.convertParentChildFlatArrayToHierarchicalView(data, myOptionsMod);
-      console.log('array objects', dataHierarchical);
 
       // trigger an empty filter so that the aggregation shows up on page load
       columnFilters.file = '';
-      tmpPreFilteredData = treeDataUtilities.filterMyFiles(data, dataHierarchical, columnFilters, myOptions, gridOptions);
+      tmpPreFilteredData = treeDataUtilities.filterMyFiles(data, nestedData, columnFilters, myOptions, gridOptions);
       dataView.refresh();
       grid.invalidate();
     });
