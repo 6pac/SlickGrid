@@ -398,6 +398,12 @@
       const myOptionsMod = { ...myOptions, treeOutputType: [] };
       dataHierarchical = treeDataUtilities.convertParentChildFlatArrayToHierarchicalView(data, myOptionsMod);
       console.log('array objects', dataHierarchical);
+
+      // trigger an empty filter so that the aggregation shows up on page load
+      columnFilters.file = '';
+      tmpPreFilteredData = filterMyFiles(data, dataHierarchical, columnFilters, myOptions);
+      dataView.refresh();
+      grid.invalidate();
     });
 
     function clearFilters() {
