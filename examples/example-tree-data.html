@@ -144,121 +144,9 @@
       showHeaderRow: true,
       explicitInitialization: true,
       headerRowHeight: 30,
-      excludeChildrenWhenTreeDataFiltering: true
+      excludeChildrenWhenTreeDataFiltering: false
     };
-
-    // Executed right after a search input change/keyup event BUT before the myFilter since that requires the result of this call
-    function filterMyFiles(inputArray, treeObj, columnFilters, options) {
-      //console.log(options);
-      const childrenPropName = options && options.childrenPropName || 'children';
-      const parentPropName = options && options.parentPropName || '__parentId';
-      const identifierPropName = options && options.identifierPropName || 'id';
-      const treeLevelPropName = options && options.treeLevelPropName || '__treeLevel';
-      const hasChildrenFlagPropName = options && options.hasChildrenFlagPropName || '__hasChildren';
-
-      const filteredChildrenAndParents = [];
-      function outerFilter(treeObj, masterTreeObj, arrayOfParentIds, filterKeys) {
-        const iterable = (treeObj instanceof Array) ?
-          treeObj :
-          Object.values(treeObj) || [];
-        for (let id of iterable) {
-          const a = id;
-          let matchFilter = false; // invalid until it is proven to be valid
-
-          //make a copy each time so each recursion sibling has a fresh array:
-          const copyOfFilters = [...filterKeys]
-          // loop through all column filters and execute filter condition(s):
-          for (let i = 0; i < copyOfFilters.length; i++) {
-            const key = copyOfFilters[i];
-            if (a.hasOwnProperty(key) ||
-              (gridOptions.excludeChildrenWhenTreeDataFiltering &&
-                a.hasOwnProperty(`__agg__${key}`))) {
-
-              const keyOrAggKey = a.hasOwnProperty(key) ? key : `__agg__${key}`;
-              // check case insensitive:
-              const strContains = String(a[keyOrAggKey]).toLowerCase().includes(columnFilters[key].toLowerCase());
-              // RegEx explained: https://regex101.com/r/w74GSk/13:
-              const re = /(?:(?:^|[-+<>=_*/])(?:\s*-?\d+(\.\d+)?(?:[eE][+-<>=]?\d+)?\s*))+$/;
-              // according to mozilla using Function("return something") is better then eval() - and doesn't use eval
-              // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#Never_use_eval!
-              const comparison = re.test(columnFilters[key]) && Function('return ' + a[keyOrAggKey] + columnFilters[key])();
-              if (strContains || comparison) {
-                // one filter matched remove this from the copyOfFilters
-                matchFilter = true;
-                copyOfFilters.splice(i, 1);
-                i--; //the next filter has now moved one place back                       
-              } else {
-                continue;
-              }
-            } else {
-              continue;
-            }
-          }
-
-          // build an array from the matched filters, anything valid from filter condition
-          // will be pushed to the filteredChildrenAndParents array
-          if (matchFilter && copyOfFilters.length == 0) { //all filters matched
-            const itemCopy = { ...a };
-            delete itemCopy[childrenPropName];
-            filteredChildrenAndParents.push(itemCopy);
-            let parentID = arrayOfParentIds.shift()
-            //now works with nested array of objects or object of objects:
-            let parent = (masterTreeObj instanceof Array) ?
-              masterTreeObj.find(val => val[identifierPropName] == parentID) || false :
-              masterTreeObj[parentID] || false;
-            while (parent) {
-              const parentCopy = { ...parent };
-              delete parentCopy[childrenPropName];
-              filteredChildrenAndParents.push(parentCopy);
-              parentID = arrayOfParentIds.shift()
-              const parentsChildren = parent[childrenPropName];
-              //now works with nested array of objects or object of objects:
-              parent = (parentsChildren instanceof Array) ?
-                parentsChildren.find(val => val[identifierPropName] == parentID) || false :
-                parentsChildren[parentID] || false;
-            }
-            const childrenObj = a[childrenPropName];
-            //function to add all children recursively
-            //as this parent matched, show all children
-            function innerAddAll(child) {
-              //now works with nested array of objects or object of objects:
-              const iterable = (child instanceof Array) ?
-                child :
-                Object.values(child) || [];
-              for (let id of iterable) {
-                const childCopy = { ...id };
-                delete childCopy[childrenPropName];
-                filteredChildrenAndParents.push(childCopy);
-                id[childrenPropName] && innerAddAll(id[childrenPropName]);
-              }
-            }
-            childrenObj && innerAddAll(childrenObj);
-          } else {
-            // either didn't match at all
-            //or one or more filters matched but not all
-            //but children might match
-            //call recursively this function
-            const childrenObj = a[childrenPropName] || false;
-            const copyOfParentIds = [...arrayOfParentIds, a[identifierPropName]];
-            if (gridOptions.excludeChildrenWhenTreeDataFiltering) {
-              //call it with the full filterKeys - i.e. only ever match when one file/folder matches all filters
-              childrenObj && outerFilter(childrenObj, masterTreeObj, copyOfParentIds, filterKeys);
-            } else {
-              //call it with the limited filters - i.e. if some already passed don't pass them down:
-              childrenObj && outerFilter(childrenObj, masterTreeObj, copyOfParentIds, copyOfFilters);
-            }
-          }
-        }
-      }
-      //now works with nested array of objects or object of objects:
-      const treeCopy = (treeObj instanceof Array) ? [...treeObj] : { ...treeObj };
-      const filterKeys = Object.keys(columnFilters);
-      outerFilter(treeCopy, treeObj, [], filterKeys);
-      //console.log('myObj', treeObj);
-      //console.log('filtered', filteredChildrenAndParents);
-      return filteredChildrenAndParents;
-    }
-
+   
     function myFilter(item, columnFilters) {
       if (item.parentId !== null) {
         let parent = dataView.getItemById(item.parentId);
@@ -274,6 +162,8 @@
       if (Array.isArray(tmpPreFilteredData)) {
         for (var columnId in columnFilters) {
           const filteredItem = tmpPreFilteredData.find(function (obj) { return obj.id == item.id });
+          //copy the result of any aggregators to the item object that is filtered,
+          // this is needed because the __agg__size is added to the copy of the data and not the original data:
           myOptions.aggregatorProps.forEach((aggKey) => {
             if (filteredItem && filteredItem.hasOwnProperty('__agg__' + aggKey)) {
               item['__agg__' + aggKey] = filteredItem['__agg__' + aggKey]; // copy the aggregator to the item
@@ -301,8 +191,9 @@
         // display current columnFilters in the DOM
         document.querySelector('#currentColumnFilters').textContent = JSON.stringify(columnFilters);
 
-        // step 1. filter the files 
-        tmpPreFilteredData = filterMyFiles(data, dataHierarchical, columnFilters, myOptions);
+        // step 1. filter the files
+        // Executed right after a search input change/keyup event BUT before the myFilter since that requires the result of this call
+        tmpPreFilteredData = treeDataUtilities.filterMyFiles(data, dataHierarchical, columnFilters, myOptions, gridOptions);
 
         // step 2. call the refresh so it does the final filtering of which rows should persist
         // calling dataview refresh is what triggers the myFilter()
@@ -401,7 +292,7 @@
 
       // trigger an empty filter so that the aggregation shows up on page load
       columnFilters.file = '';
-      tmpPreFilteredData = filterMyFiles(data, dataHierarchical, columnFilters, myOptions);
+      tmpPreFilteredData = treeDataUtilities.filterMyFiles(data, dataHierarchical, columnFilters, myOptions, gridOptions);
       dataView.refresh();
       grid.invalidate();
     });

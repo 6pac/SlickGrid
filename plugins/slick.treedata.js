@@ -170,13 +170,158 @@
       }
     }
 
+    /**
+     * GridOptions Object to be passed to several TreeData functions
+     * @typedef {Object} GridOptions
+     * @property {boolean} [editable=true]
+     * @property {boolean} [enableAddRow=true]
+     * @property {boolean} [enableCellNavigation=true]
+     * @property {boolean} [asyncEditorLoading=false]
+     * @property {boolean} [showHeaderRow=true]
+     * @property {boolean} [explicitInitialization=true]
+     * @property {number} [headerRowHeight=30]
+     * @property {boolean} [excludeChildrenWhenTreeDataFiltering=true]
+     */
+
+    /**
+     * Filter Hierarchical Data and return flat array with parentIds and filtered results
+     * @param {Array} inputArray 
+     * @param {Array|Object} treeObj 
+     * @param {Object} columnFilters 
+     * @param {Options} options
+     * @param {GridOptions} gridOptions
+     * @returns {Array} Returns filtered flat array
+     */
+    function filterMyFiles(inputArray, treeObj, columnFilters, options, gridOptions) {
+      //console.log(options);
+      const childrenPropName = options && options.childrenPropName || 'children';
+      const parentPropName = options && options.parentPropName || '__parentId';
+      const identifierPropName = options && options.identifierPropName || 'id';
+      const treeLevelPropName = options && options.treeLevelPropName || '__treeLevel';
+      const hasChildrenFlagPropName = options && options.hasChildrenFlagPropName || '__hasChildren';
+
+      const filteredChildrenAndParents = [];
+      /**
+       * A recursive function to work down the tree testing filter conditions
+       * @param {Array|Object} treeObj 
+       * @param {Array|Object} masterTreeObj 
+       * @param {Array<number>} arrayOfParentIds 
+       * @param {Array<string>} filterKeys 
+       */
+      function outerFilter(treeObj, masterTreeObj, arrayOfParentIds, filterKeys) {
+        const iterable = (treeObj instanceof Array) ?
+          treeObj :
+          Object.values(treeObj) || [];
+        for (let id of iterable) {
+          const a = id;
+          let matchFilter = false; // invalid until it is proven to be valid
+
+          //make a copy each time so each recursion sibling has a fresh array:
+          const copyOfFilters = [...filterKeys]
+          // loop through all column filters and execute filter condition(s):
+          for (let i = 0; i < copyOfFilters.length; i++) {
+            const key = copyOfFilters[i];
+            if (a.hasOwnProperty(key) ||
+              (gridOptions.excludeChildrenWhenTreeDataFiltering &&
+                a.hasOwnProperty(`__agg__${key}`))) {
+
+              const keyOrAggKey = a.hasOwnProperty(key) ? key : `__agg__${key}`;
+              // check case insensitive:
+              const strContains = String(a[keyOrAggKey]).toLowerCase().includes(columnFilters[key].toLowerCase());
+              // RegEx explained: https://regex101.com/r/w74GSk/13:
+              const re = /(?:(?:^|[-+<>=_*/])(?:\s*-?\d+(\.\d+)?(?:[eE][+-<>=]?\d+)?\s*))+$/;
+              // according to mozilla using Function("return something") is better then eval() - and doesn't use eval
+              // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#Never_use_eval!
+              const comparison = re.test(columnFilters[key]) && Function('return ' + a[keyOrAggKey] + columnFilters[key])();
+              if (strContains || comparison) {
+                // one filter matched remove this from the copyOfFilters
+                matchFilter = true;
+                copyOfFilters.splice(i, 1);
+                i--; //the next filter has now moved one place back                       
+              } else {
+                continue;
+              }
+            } else {
+              continue;
+            }
+          }
+
+          // build an array from the matched filters, anything valid from filter condition
+          // will be pushed to the filteredChildrenAndParents array
+          if (matchFilter && copyOfFilters.length == 0) { //all filters matched
+            const itemCopy = { ...a };
+            delete itemCopy[childrenPropName];
+            filteredChildrenAndParents.push(itemCopy);
+            let parentID = arrayOfParentIds.shift()
+            //now works with nested array of objects or object of objects:
+            let parent = (masterTreeObj instanceof Array) ?
+              masterTreeObj.find(val => val[identifierPropName] == parentID) || false :
+              masterTreeObj[parentID] || false;
+            while (parent) {
+              const parentCopy = { ...parent };
+              delete parentCopy[childrenPropName];
+              filteredChildrenAndParents.push(parentCopy);
+              parentID = arrayOfParentIds.shift()
+              const parentsChildren = parent[childrenPropName];
+              //now works with nested array of objects or object of objects:
+              parent = (parentsChildren instanceof Array) ?
+                parentsChildren.find(val => val[identifierPropName] == parentID) || false :
+                parentsChildren[parentID] || false;
+            }
+            const childrenObj = a[childrenPropName];
+            //as this parent matched, show all children:
+            /**
+             * function to add all children recursively
+             * @param {Object} child
+             * @returns {void}
+             */
+            function innerAddAll(child) {
+              //now works with nested array of objects or object of objects:
+              const iterable = (child instanceof Array) ?
+                child :
+                Object.values(child) || [];
+              for (let id of iterable) {
+                const childCopy = { ...id };
+                delete childCopy[childrenPropName];
+                filteredChildrenAndParents.push(childCopy);
+                id[childrenPropName] && innerAddAll(id[childrenPropName]);
+              }
+            }
+            childrenObj && innerAddAll(childrenObj);
+          } else {
+            // either didn't match at all
+            //or one or more filters matched but not all
+            //but children might match
+            //call recursively this function
+            const childrenObj = a[childrenPropName] || false;
+            const copyOfParentIds = [...arrayOfParentIds, a[identifierPropName]];
+            if (gridOptions.excludeChildrenWhenTreeDataFiltering) {
+              //call it with the full filterKeys - i.e. only ever match when one file/folder matches all filters
+              childrenObj && outerFilter(childrenObj, masterTreeObj, copyOfParentIds, filterKeys);
+            } else {
+              //call it with the limited filters - i.e. if some already passed don't pass them down:
+              childrenObj && outerFilter(childrenObj, masterTreeObj, copyOfParentIds, copyOfFilters);
+            }
+          }
+        }
+      }
+      //now works with nested array of objects or object of objects:
+      const treeCopy = (treeObj instanceof Array) ? [...treeObj] : { ...treeObj };
+      const filterKeys = Object.keys(columnFilters);
+      outerFilter(treeCopy, treeObj, [], filterKeys);
+      //console.log('myObj', treeObj);
+      //console.log('filtered', filteredChildrenAndParents);
+      return filteredChildrenAndParents;
+    }
+
     $.extend(this, {
       "init": init,
       "pluginName": "TreeData",
 
       "convertParentChildFlatArrayToHierarchicalView": convertParentChildFlatArrayToHierarchicalView,
       "convertHierarchicalViewToFlatArray": convertHierarchicalViewToFlatArray,
-      "convertHierarchicalViewToFlatArrayByOutputArrayReference": convertHierarchicalViewToFlatArrayByOutputArrayReference
+      "convertHierarchicalViewToFlatArrayByOutputArrayReference": convertHierarchicalViewToFlatArrayByOutputArrayReference,
+      "filterMyFiles": filterMyFiles
     });
   }
 })(jQuery);
