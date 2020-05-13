@@ -82,6 +82,13 @@
         </span>
         ColumnFilters: <span id="currentColumnFilters"></span>
       </div>
+      <div style="height: 10px"></div>
+      <div>
+        <span>
+          <button onclick="toggleExcludeChildren()">Toggle excludeChildren</button>
+        </span>
+        excludeChildrenWhenTreeDataFiltering: <span id="currentExcludeChildren"></span>
+      </div>
       <td valign="top" width="40%">
         <br />
         <div id="myGrid" style="width:600px;height:550px;"></div>
@@ -144,22 +151,24 @@
       showHeaderRow: true,
       explicitInitialization: true,
       headerRowHeight: 30,
-      excludeChildrenWhenTreeDataFiltering: false
+      excludeChildrenWhenTreeDataFiltering: true
     };
+
+    $('#currentExcludeChildren').html(`${gridOptions.excludeChildrenWhenTreeDataFiltering}`)
    
     function myFilter(item, columnFilters) {
-      if (item.parentId !== null) {
-        let parent = dataView.getItemById(item.parentId);
-        while (parent) {
-          if (parent.__collapsed) {
-            return false; // don't display any row that have their parent collapsed
-          }
-          parent = dataView.getItemById(parent.parentId);
-        }
-      }
+      // if (item.parentId !== null) {
+      //   let parent = dataView.getItemById(item.parentId);
+      //   while (parent) {
+      //     if (parent.__collapsed) {
+      //       return false; // don't display any row that has their parent collapsed
+      //     }
+      //     parent = dataView.getItemById(parent.parentId);
+      //   }
+      // }
 
-      // filter out any row items that aren't part of our pre-processed "filterMyFiles()" result
-      if (Array.isArray(tmpPreFilteredData)) {
+      // filter out any row items that aren't part of our pre-processed "filterHierarchicalData()" result
+      if (Array.isArray(tmpPreFilteredData) && tmpPreFilteredData.length > 0) {
         for (var columnId in columnFilters) {
           const filteredItem = tmpPreFilteredData.find(function (obj) { return obj.id == item.id });
           //copy the result of any aggregators to the item object that is filtered,
@@ -169,12 +178,17 @@
               item['__agg__' + aggKey] = filteredItem['__agg__' + aggKey]; // copy the aggregator to the item
             }
           });
+          if (filteredItem && filteredItem.hasOwnProperty('__collapsed')) {
+              item['__collapsed'] = filteredItem['__collapsed']; // copy the collapsed prop to the item
+          }
           return !!filteredItem; // should return boolean, not the actual item
           //return tmpPreFilteredData.includes(item.id); // return true when found, false otherwise
         }
       }
-
-      // anything is considered valid
+      
+      // anything is considered valid (tmpPreFilteredData array is empty or not present)
+      // return true to reset all filters and also reset collapsed to false:
+      item['__collapsed'] = false;
       return true;
     }
 
@@ -193,7 +207,7 @@
 
         // step 1. filter the files
         // Executed right after a search input change/keyup event BUT before the myFilter since that requires the result of this call
-        tmpPreFilteredData = treeDataUtilities.filterMyFiles(data, nestedData, columnFilters, myOptions, gridOptions);
+        tmpPreFilteredData = treeDataUtilities.filterHierarchicalData(data, nestedData, columnFilters, myOptions, gridOptions);
 
         // step 2. call the refresh so it does the final filtering of which rows should persist
         // calling dataview refresh is what triggers the myFilter()
@@ -207,7 +221,7 @@
       /*
       initData = [
         { id: 18, file: "alone.txt", dateModified: "2015-03-03", size: 90, __treeLevel: 0, parentId: null, },
-        { id: 21, file: "Documents", parentId: null, __treeLevel: 0 },
+        { id: 21, file: "documents", parentId: null, __treeLevel: 0 },
         { id: 9, file: "misc", __treeLevel: 1, parentId: 21 },
         { id: 23, file: "something2.txt", dateModified: "2015-02-26", size: 0.4, __treeLevel: 2, parentId: 9 },
         { id: 10, file: "something.txt", dateModified: "2015-02-26", size: 0.4, __treeLevel: 2, parentId: 9, },
@@ -219,7 +233,7 @@
         { id: 3, file: "todo.txt", dateModified: "2015-05-12", size: 0.7, __treeLevel: 2, parentId: 2, },
         { id: 7, file: "xls", __treeLevel: 1, parentId: 21 },
         { id: 8, file: "compilation.xls", dateModified: "2014-10-02", size: 2.3, __treeLevel: 2, parentId: 7, },
-        { id: 11, file: "Music", __treeLevel: 0, parentId: null },
+        { id: 11, file: "music", __treeLevel: 0, parentId: null },
         { id: 12, file: "mp3", __treeLevel: 1, parentId: 11 },
         { id: 14, file: "pop", __treeLevel: 2, parentId: 12 },
         { id: 15, file: "theme.mp3", dateModified: "2015-03-01", size: 85, __treeLevel: 3, parentId: 14, },
@@ -232,7 +246,7 @@
       //the user should be able to start with flat or heirarchical and we should handle that with the TreeData Plugin:
       initData = [
         { id: 18, file: "alone.txt", dateModified: "2015-03-03", size: 90, },
-        { id: 21, file: "Documents",
+        { id: 21, file: "documents",
           files: [
             { id: 9, file: "misc",
               files: [
@@ -259,7 +273,7 @@
             },
           ]
         },
-        { id: 11, file: "Music",
+        { id: 11, file: "music",
           files: [
             { id: 12, file: "mp3",
               files: [
@@ -295,60 +309,16 @@
       console.log('tree', treeData);
 
       //OR if you started with a nested object of object or array of objects,
-      //you can use the util to convert this back to a flat array of objects:
+      //you can use the util to convert this back to a flat array of objects, which SlickGrid requires:
       data = treeDataUtilities.convertHierarchicalViewToFlatArray(initData, myOptions)
       console.log('flat', data);
       */
 
-      //OR you can use this function to determine which type you have and to return both [flat, nested]:
-      //as well as the __treeLevel props and parentIds etc.
-      function fromInputReturnFlatAndNestedDataStructures(initData, options){
-        const childrenPropName = options && options.childrenPropName || 'children';
-        const identifierPropName = options && options.identifierPropName || 'id';
-        const hasChildrenFlagPropName = options && options.hasChildrenFlagPropName || '__hasChildren';
-        const treeLevelPropName = options && options.treeLevelPropName || '__treeLevel';
-        const parentPropName = options && options.parentPropName || '__parentId';
-        const aggregatorProps = options && options.aggregatorProps || [];
-        let inputDataIsFlat = true; //to be determined.
-        let [flat, nested] = [null, null]; //to be determined.
-        const isInputArray = (initData instanceof Array);
-        
-        if (isInputArray){
-          for (let i = initData.length - 1; i >= 0; i--){
-            const item = initData[i];
-            if (item[childrenPropName] && item[childrenPropName] instanceof Object){
-              inputDataIsFlat = false;
-              //break out of the loop we know what the data type is
-              break;
-            } else {
-              //we can't add __agg__ props here because otherwise they are added twice in
-              //convertParentChildFlatArrayToHierarchicalView
-              
-              //it might be the flat data and if so, use this chance to generate __agg__ props:
-              // for (const prop of aggregatorProps){
-              //   if (item[parentPropName] && item[parentPropName] != null){
-              //     const parent = initData.find(val => val[identifierPropName] == item[parentPropName]);
-              //     const currPropVal = parent[`__agg__${prop}`] || 0;
-              //     parent[`__agg__${prop}`] = currPropVal + (item[`__agg__${prop}`] || item[prop]);
-              //   }
-              // } 
-            }
-          }    
-        } else {
-          inputDataIsFlat = false;
-        }           
+      //OR you can use this function to determine which type you have and to return both flat & nested (& filter func):
+      //also adds the __treeLevel props and parentIds etc. to the flat data if initData is heirarchical (nested) data
+      //and returns the filter function to the user for them to attach directly to a keyup event etc.      
 
-        if (inputDataIsFlat){          
-          nested = treeDataUtilities.convertParentChildFlatArrayToHierarchicalView(initData, options)
-          flat = initData;
-        } else { //then its nested
-          flat = treeDataUtilities.convertHierarchicalViewToFlatArray(initData, options);
-          nested = treeDataUtilities.convertParentChildFlatArrayToHierarchicalView(flat, options)
-        }       
-        return [flat, nested];
-      }
-
-      [data, nestedData] = fromInputReturnFlatAndNestedDataStructures(initData, myOptions);
+      [data, nestedData] = treeDataUtilities.fromInputReturnFlatAndNestedDataStructures(initData, false, myOptions);
       console.log('tree', nestedData);
       console.log('flat', data);
 
@@ -396,15 +366,25 @@
       dataView.setFilterArgs(columnFilters);
       dataView.setFilter(myFilter);
       dataView.endUpdate();
-
+      console.log(treeDataUtilities.getFlatData())
       // trigger an empty filter so that the aggregation shows up on page load
-      columnFilters.file = '';
-      tmpPreFilteredData = treeDataUtilities.filterMyFiles(data, nestedData, columnFilters, myOptions, gridOptions);
+      // NO LONGER NEEDED :)
+      //columnFilters.file = '';
+      tmpPreFilteredData = treeDataUtilities.filterHierarchicalData(data, nestedData, columnFilters, myOptions, gridOptions);
       dataView.refresh();
       grid.invalidate();
     });
 
     function clearFilters() {
+      $('.slick-headerrow-column').children().val('').keyup();
+      for (var columnId in columnFilters) {
+        columnFilters[columnId] = "";
+      }
+      dataView.refresh();
+    }
+    function toggleExcludeChildren() {      
+      gridOptions.excludeChildrenWhenTreeDataFiltering = !gridOptions.excludeChildrenWhenTreeDataFiltering;
+      $('#currentExcludeChildren').html(`${gridOptions.excludeChildrenWhenTreeDataFiltering}`)
       $('.slick-headerrow-column').children().val('').keyup();
       for (var columnId in columnFilters) {
         columnFilters[columnId] = "";
