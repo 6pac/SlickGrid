@@ -18,7 +18,8 @@
  *      iconImage: "../images/drag-handle.png",     // this is the Grid Menu icon (hamburger icon)
  *      iconCssClass: "fa fa-bars",                 // you can provide iconImage OR iconCssClass
  *      leaveOpen: false,                           // do we want to leave the Grid Menu open after a command execution? (false by default)
- *      menuWidth: 18,                              // width that will be use to resize the column header container (18 by default)
+ *      menuWidth: 18,                              // width (icon) that will be use to resize the column header container (18 by default)
+ *      contentMinWidth: 0,							            // defaults to 0 (auto), minimum width of grid menu content (command, column list) 
  *      resizeOnShowHeaderRow: false,               // false by default
  *
  *      // the last 2 checkboxes titles
@@ -134,6 +135,7 @@
       hideSyncResizeButton: false,
       forceFitTitle: "Force fit columns",
       menuWidth: 18,
+      contentMinWidth: 0,
       resizeOnShowHeaderRow: false,
       syncResizeTitle: "Synchronous resize",
       headerColumnValueExtractor: function (columnDef) {
@@ -389,10 +391,16 @@
         }
       }
 
+      var menuWidth = $menu.width();
+      var gridMenuIconWidth = (_options.gridMenu && _options.gridMenu.menuWidth) || _defaults.menuWidth;
+      var contentMinWidth = (_options.gridMenu && _options.gridMenu.contentMinWidth) ? _options.gridMenu.contentMinWidth : _defaults.contentMinWidth;
+      var currentMenuWidth = (contentMinWidth > menuWidth) ? contentMinWidth : (menuWidth + gridMenuIconWidth);
+
       $menu
         .css("top", e.pageY + 10)
-        .css("left", e.pageX - $menu.width())
+        .css("left", e.pageX - currentMenuWidth)
         .css("max-height", $(window).height() - e.pageY - 10)
+        .css("min-width", contentMinWidth)
         .show();
 
       $list.appendTo($menu);
