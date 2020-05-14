@@ -410,7 +410,7 @@
       $menu
         .css("top", nextPositionTop + 10)
         .css("left", nextPositionLeft - currentMenuWidth + 10)
-        .css("max-height", $(window).height() - e.pageY - 10);
+        .css("max-height", $(window).height() - e.pageY - 15);
 
       if (contentMinWidth > 0) {
         $menu.css("min-width", contentMinWidth);
