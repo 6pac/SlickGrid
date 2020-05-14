@@ -21,6 +21,7 @@
  *      menuWidth: 18,                              // width (icon) that will be use to resize the column header container (18 by default)
  *      contentMinWidth: 0,							            // defaults to 0 (auto), minimum width of grid menu content (command, column list) 
  *      resizeOnShowHeaderRow: false,               // false by default
+ *      useClickToRepositionMenu: true,             // true by default
  *
  *      // the last 2 checkboxes titles
  *      hideForceFitButton: false,                  // show/hide checkbox near the end "Force Fit Columns"
@@ -44,9 +45,11 @@
  *     hideForceFitButton:        Hide the "Force fit columns" button (defaults to false)
  *     hideSyncResizeButton:      Hide the "Synchronous resize" button (defaults to false)
  *     forceFitTitle:             Text of the title "Force fit columns"
+ *     contentMinWidth:						minimum width of grid menu content (command, column list), defaults to 0 (auto)
  *     menuWidth:                 Grid menu button width (defaults to 18)
  *     resizeOnShowHeaderRow:     Do we want to resize on the show header row event
  *     syncResizeTitle:           Text of the title "Synchronous resize"
+ *     useClickToRepositionMenu:  Use the Click offset to reposition the Grid Menu (defaults to true), when set to False it will use the icon offset to reposition the grid menu
  *     menuUsabilityOverride:     Callback method that user can override the default behavior of enabling/disabling the menu from being usable (must be combined with a custom formatter)
  *
  * Available custom menu item options:
@@ -138,6 +141,7 @@
       contentMinWidth: 0,
       resizeOnShowHeaderRow: false,
       syncResizeTitle: "Synchronous resize",
+      useClickToRepositionMenu: true,
       headerColumnValueExtractor: function (columnDef) {
         return columnDef.name;
       }
@@ -396,11 +400,12 @@
         menuIconOffset = $(e.target).offset(); // external grid menu might fall in this last case
       }
       var menuWidth = $menu.width();
+      var useClickToRepositionMenu = (_options.gridMenu && _options.gridMenu.useClickToRepositionMenu !== undefined) ? _options.gridMenu.useClickToRepositionMenu : _defaults.useClickToRepositionMenu;
       var gridMenuIconWidth = (_options.gridMenu && _options.gridMenu.menuWidth) || _defaults.menuWidth;
       var contentMinWidth = (_options.gridMenu && _options.gridMenu.contentMinWidth) ? _options.gridMenu.contentMinWidth : _defaults.contentMinWidth;
       var currentMenuWidth = (contentMinWidth > menuWidth) ? contentMinWidth : (menuWidth + gridMenuIconWidth);
-      var nextPositionTop = e.pageY > 0 ? e.pageY : menuIconOffset.top + 10;
-      var nextPositionLeft = e.pageX > 0 ? e.pageX : menuIconOffset.left + 10;
+      var nextPositionTop = (useClickToRepositionMenu && e.pageY > 0) ? e.pageY : menuIconOffset.top + 10;
+      var nextPositionLeft = (useClickToRepositionMenu && e.pageX > 0) ? e.pageX : menuIconOffset.left + 10;
 
       $menu
         .css("top", nextPositionTop + 10)
