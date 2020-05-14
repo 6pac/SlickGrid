@@ -391,18 +391,27 @@
         }
       }
 
+      var menuIconOffset = $(e.target).prop('nodeName') == "button" ? $(e.target).offset() : $(e.target).parent("button").offset(); // get button offset position
+      if (!menuIconOffset) {
+        menuIconOffset = $(e.target).offset(); // external grid menu might fall in this last case
+      }
       var menuWidth = $menu.width();
       var gridMenuIconWidth = (_options.gridMenu && _options.gridMenu.menuWidth) || _defaults.menuWidth;
       var contentMinWidth = (_options.gridMenu && _options.gridMenu.contentMinWidth) ? _options.gridMenu.contentMinWidth : _defaults.contentMinWidth;
       var currentMenuWidth = (contentMinWidth > menuWidth) ? contentMinWidth : (menuWidth + gridMenuIconWidth);
+      var nextPositionTop = e.pageY > 0 ? e.pageY : menuIconOffset.top + 10;
+      var nextPositionLeft = e.pageX > 0 ? e.pageX : menuIconOffset.left + 10;
 
       $menu
-        .css("top", e.pageY + 10)
-        .css("left", e.pageX - currentMenuWidth)
-        .css("max-height", $(window).height() - e.pageY - 10)
-        .css("min-width", contentMinWidth)
-        .show();
+        .css("top", nextPositionTop + 10)
+        .css("left", nextPositionLeft - currentMenuWidth + 10)
+        .css("max-height", $(window).height() - e.pageY - 10);
 
+      if (contentMinWidth > 0) {
+        $menu.css("min-width", contentMinWidth);
+      }
+
+      $menu.show();
       $list.appendTo($menu);
       _isMenuOpen = true;
 
