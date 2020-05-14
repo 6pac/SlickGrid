@@ -135,7 +135,10 @@
       forceFitTitle: "Force fit columns",
       menuWidth: 18,
       resizeOnShowHeaderRow: false,
-      syncResizeTitle: "Synchronous resize"
+      syncResizeTitle: "Synchronous resize",
+      headerColumnValueExtractor: function (columnDef) {
+        return columnDef.name;
+      }
     };
 
     function init(grid) {
@@ -323,7 +326,7 @@
       };
 
       // run the override function (when defined), if the result is false it won't go further
-      if (!runOverrideFunctionWhenExists(_options.gridMenu.menuUsabilityOverride, callbackArgs)) {
+      if (_options && _options.gridMenu && !runOverrideFunctionWhenExists(_options.gridMenu.menuUsabilityOverride, callbackArgs)) {
         return;
       }
 
@@ -335,7 +338,7 @@
         }
       }
 
-      var $li, $input, columnId, excludeCssClass;
+      var $li, $input, columnId, columnLabel, excludeCssClass;
       for (var i = 0; i < columns.length; i++) {
         columnId = columns[i].id;
         excludeCssClass = columns[i].excludeFromGridMenu ? "hidden" : "";
@@ -348,8 +351,15 @@
           $input.attr("checked", "checked");
         }
 
+        // get the column label from the picker value extractor (user can optionally provide a custom extractor)
+        if (_options && _options.gridMenu && _options.gridMenu.headerColumnValueExtractor) {
+          columnLabel = _options.gridMenu.headerColumnValueExtractor(columns[i]);
+        } else {
+          columnLabel = _defaults.headerColumnValueExtractor(columns[i]);
+        }
+
         $("<label for='gridmenu-colpicker-" + columnId + "' />")
-          .html(columns[i].name)
+          .html(columnLabel)
           .appendTo($li);
       }
 
