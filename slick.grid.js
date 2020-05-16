@@ -3307,12 +3307,16 @@ if (typeof Slick === "undefined") {
         cacheEntry.rowNode.hide();
 
         zombieRowNodeFromLastMouseWheelEvent = cacheEntry.rowNode;
+        zombieRowCacheFromLastMouseWheelEvent = cacheEntry;
+        zombieRowPostProcessedFromLastMouseWheelEvent = postProcessedRows[row];
       } else {
-
-        cacheEntry.rowNode.each(function() {
-          this.parentElement.removeChild(this);
-        });
-
+        if (options.enableAsyncPostRenderCleanup && postProcessedRows[row]) {
+          queuePostProcessedRowForCleanup(cacheEntry, postProcessedRows[row], row);
+        } else {
+          cacheEntry.rowNode.each(function() {
+            this.parentElement.removeChild(this);
+          });
+        }
       }
 
       delete rowsCache[row];
@@ -4381,9 +4385,15 @@ if (typeof Slick === "undefined") {
 
         if (zombieRowNodeFromLastMouseWheelEvent && zombieRowNodeFromLastMouseWheelEvent[left? 0:1] != rowNode) {
           var zombieRow = zombieRowNodeFromLastMouseWheelEvent[left || zombieRowNodeFromLastMouseWheelEvent.length == 1? 0:1];
-          zombieRow.parentElement.removeChild(zombieRow);
-
+          if (options.enableAsyncPostRenderCleanup && zombieRowPostProcessedFromLastMouseWheelEvent) {
+            queuePostProcessedRowForCleanup(zombieRowCacheFromLastMouseWheelEvent,
+              zombieRowPostProcessedFromLastMouseWheelEvent);
+          } else {
+            zombieRow.parentElement.removeChild(zombieRow);
+          }
           zombieRowNodeFromLastMouseWheelEvent = null;
+          zombieRowCacheFromLastMouseWheelEvent = null
+          zombieRowPostProcessedFromLastMouseWheelEvent = null;
         }
 
         rowNodeFromLastMouseWheelEvent = rowNode;
