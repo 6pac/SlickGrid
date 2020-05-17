@@ -82,6 +82,13 @@
         </span>
         ColumnFilters: <span id="currentColumnFilters"></span>
       </div>
+      <div style="height: 10px"></div>
+      <div>
+        <span>
+          <button onclick="toggleExcludeChildren()">Toggle excludeChildren</button>
+        </span>
+        excludeChildrenWhenTreeDataFiltering: <span id="currentExcludeChildren"></span>
+      </div>
       <td valign="top" width="40%">
         <br />
         <div id="myGrid" style="width:600px;height:550px;"></div>
@@ -116,7 +123,7 @@
 
   <script>
     var columnFilters = {};
-    var tmpPreFilteredData = [];
+    var tmpPreFilteredData = {}; //[];
     var dataView;
     var grid;
     var data = [];
@@ -125,11 +132,11 @@
       childrenPropName: 'files',
       identifierPropName: 'id',
       treeLevelPropName: '__treeLevel',
-      treeOutputType: {}, //Object of Objects rather than default array of objects
+      treeOutputType: [], //Object of Objects or (default) array of objects
       aggregatorProps: ['size']
     };
     var treeData = {};
-    var dataHierarchical = [];
+    var nestedData = [];
     var columns = [
       { id: 'file', name: 'Files', field: 'file', width: 200, formatter: treeFormatter, sortable: true, },
       { id: 'dateModified', name: 'Date Modified', field: 'dateModified', sortable: true, minWidth: 90, },
@@ -144,147 +151,52 @@
       showHeaderRow: true,
       explicitInitialization: true,
       headerRowHeight: 30,
-      excludeChildrenWhenTreeDataFiltering: true
+      excludeChildrenWhenTreeDataFiltering: false
     };
 
-    // Executed right after a search input change/keyup event BUT before the myFilter since that requires the result of this call
-    function filterMyFiles(inputArray, treeObj, columnFilters, options) {
-      //console.log(options);
-      const childrenPropName = options && options.childrenPropName || 'children';
-      const parentPropName = options && options.parentPropName || '__parentId';
-      const identifierPropName = options && options.identifierPropName || 'id';
-      const treeLevelPropName = options && options.treeLevelPropName || '__treeLevel';
-      const hasChildrenFlagPropName = options && options.hasChildrenFlagPropName || '__hasChildren';
-
-      const filteredChildrenAndParents = [];
-      function outerFilter(treeObj, masterTreeObj, arrayOfParentIds, filterKeys) {
-        const iterable = (treeObj instanceof Array) ?
-          treeObj :
-          Object.values(treeObj) || [];
-        for (let id of iterable) {
-          const a = id;
-          let matchFilter = false; // invalid until it is proven to be valid
-
-          //make a copy each time so each recursion sibling has a fresh array:
-          const copyOfFilters = [...filterKeys]
-          // loop through all column filters and execute filter condition(s):
-          for (let i = 0; i < copyOfFilters.length; i++) {
-            const key = copyOfFilters[i];
-            if (a.hasOwnProperty(key) ||
-              (gridOptions.excludeChildrenWhenTreeDataFiltering &&
-                a.hasOwnProperty(`__agg__${key}`))) {
-
-              const keyOrAggKey = a.hasOwnProperty(key) ? key : `__agg__${key}`;
-              // check case insensitive:
-              const strContains = String(a[keyOrAggKey]).toLowerCase().includes(columnFilters[key].toLowerCase());
-              // RegEx explained: https://regex101.com/r/w74GSk/13:
-              const re = /(?:(?:^|[-+<>=_*/])(?:\s*-?\d+(\.\d+)?(?:[eE][+-<>=]?\d+)?\s*))+$/;
-              // according to mozilla using Function("return something") is better then eval() - and doesn't use eval
-              // https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/eval#Never_use_eval!
-              const comparison = re.test(columnFilters[key]) && Function('return ' + a[keyOrAggKey] + columnFilters[key])();
-              if (strContains || comparison) {
-                // one filter matched remove this from the copyOfFilters
-                matchFilter = true;
-                copyOfFilters.splice(i, 1);
-                i--; //the next filter has now moved one place back                       
-              } else {
-                continue;
-              }
-            } else {
-              continue;
-            }
-          }
-
-          // build an array from the matched filters, anything valid from filter condition
-          // will be pushed to the filteredChildrenAndParents array
-          if (matchFilter && copyOfFilters.length == 0) { //all filters matched
-            const itemCopy = { ...a };
-            delete itemCopy[childrenPropName];
-            filteredChildrenAndParents.push(itemCopy);
-            let parentID = arrayOfParentIds.shift()
-            //now works with nested array of objects or object of objects:
-            let parent = (masterTreeObj instanceof Array) ?
-              masterTreeObj.find(val => val[identifierPropName] == parentID) || false :
-              masterTreeObj[parentID] || false;
-            while (parent) {
-              const parentCopy = { ...parent };
-              delete parentCopy[childrenPropName];
-              filteredChildrenAndParents.push(parentCopy);
-              parentID = arrayOfParentIds.shift()
-              const parentsChildren = parent[childrenPropName];
-              //now works with nested array of objects or object of objects:
-              parent = (parentsChildren instanceof Array) ?
-                parentsChildren.find(val => val[identifierPropName] == parentID) || false :
-                parentsChildren[parentID] || false;
-            }
-            const childrenObj = a[childrenPropName];
-            //function to add all children recursively
-            //as this parent matched, show all children
-            function innerAddAll(child) {
-              //now works with nested array of objects or object of objects:
-              const iterable = (child instanceof Array) ?
-                child :
-                Object.values(child) || [];
-              for (let id of iterable) {
-                const childCopy = { ...id };
-                delete childCopy[childrenPropName];
-                filteredChildrenAndParents.push(childCopy);
-                id[childrenPropName] && innerAddAll(id[childrenPropName]);
-              }
-            }
-            childrenObj && innerAddAll(childrenObj);
-          } else {
-            // either didn't match at all
-            //or one or more filters matched but not all
-            //but children might match
-            //call recursively this function
-            const childrenObj = a[childrenPropName] || false;
-            const copyOfParentIds = [...arrayOfParentIds, a[identifierPropName]];
-            if (gridOptions.excludeChildrenWhenTreeDataFiltering) {
-              //call it with the full filterKeys - i.e. only ever match when one file/folder matches all filters
-              childrenObj && outerFilter(childrenObj, masterTreeObj, copyOfParentIds, filterKeys);
-            } else {
-              //call it with the limited filters - i.e. if some already passed don't pass them down:
-              childrenObj && outerFilter(childrenObj, masterTreeObj, copyOfParentIds, copyOfFilters);
-            }
-          }
-        }
-      }
-      //now works with nested array of objects or object of objects:
-      const treeCopy = (treeObj instanceof Array) ? [...treeObj] : { ...treeObj };
-      const filterKeys = Object.keys(columnFilters);
-      outerFilter(treeCopy, treeObj, [], filterKeys);
-      //console.log('myObj', treeObj);
-      //console.log('filtered', filteredChildrenAndParents);
-      return filteredChildrenAndParents;
-    }
-
+    $('#currentExcludeChildren').html(`${gridOptions.excludeChildrenWhenTreeDataFiltering}`)
+   
     function myFilter(item, columnFilters) {
       if (item.parentId !== null) {
         let parent = dataView.getItemById(item.parentId);
         while (parent) {
           if (parent.__collapsed) {
-            return false; // don't display any row that have their parent collapsed
+            return false; // don't display any row that has their parent collapsed
           }
           parent = dataView.getItemById(parent.parentId);
         }
       }
 
-      // filter out any row items that aren't part of our pre-processed "filterMyFiles()" result
-      if (Array.isArray(tmpPreFilteredData)) {
-        for (var columnId in columnFilters) {
-          const filteredItem = tmpPreFilteredData.find(function (obj) { return obj.id == item.id });
+      // filter out any row items that aren't part of our pre-processed "filterHierarchicalData()" result
+      const tmpPreFilteredKeys = Object.keys(tmpPreFilteredData);
+      if (Array.isArray(tmpPreFilteredKeys) && tmpPreFilteredKeys.length > 0) {
+        //what are we looping columnFilters for?:
+        //for (var columnId in columnFilters) {
+          //old way (tmpPreFilteredData) is a flat array of objects:
+          //const filteredItem = tmpPreFilteredData.find(function (obj) { return obj.id == item.id });
+
+          //new way (tmpPreFilteredData) is a flat object of objects:
+          const filteredItem = tmpPreFilteredData[item.id] || false;
+
+          //copy the result of any aggregators to the item object that is filtered,
+          // this is needed because the __agg__size is added to the copy of the data and not the original data:
           myOptions.aggregatorProps.forEach((aggKey) => {
             if (filteredItem && filteredItem.hasOwnProperty('__agg__' + aggKey)) {
               item['__agg__' + aggKey] = filteredItem['__agg__' + aggKey]; // copy the aggregator to the item
             }
           });
+          if (filteredItem && filteredItem.hasOwnProperty('__collapsed')) {
+              item['__collapsed'] = filteredItem['__collapsed']; // copy the collapsed prop to the item
+          }
           return !!filteredItem; // should return boolean, not the actual item
           //return tmpPreFilteredData.includes(item.id); // return true when found, false otherwise
-        }
+        //}
       }
-
-      // anything is considered valid
+      
+      // anything is considered valid (tmpPreFilteredData array is empty or not present)
+      // return true to reset all filters and also reset collapsed to false:
+      //item['__collapsed'] = false;
+      //console.log('myFilter', item, columnFilters)
       return true;
     }
 
@@ -301,21 +213,26 @@
         // display current columnFilters in the DOM
         document.querySelector('#currentColumnFilters').textContent = JSON.stringify(columnFilters);
 
-        // step 1. filter the files 
-        tmpPreFilteredData = filterMyFiles(data, dataHierarchical, columnFilters, myOptions);
+        // step 1. filter the files
+        // Executed right after a search input change/keyup event BUT before the myFilter since that requires the result of this call
+        //console.log('filterTriggered', data)
+        tmpPreFilteredData = treeDataUtilities.filterHierarchicalData(data, nestedData, columnFilters, myOptions, gridOptions);
 
         // step 2. call the refresh so it does the final filtering of which rows should persist
         // calling dataview refresh is what triggers the myFilter()
         dataView.refresh();
+        //apparently, this line is need to make the aggregator work:
+        grid.invalidate();
       }
     }
 
     $(function () {
       // prepare the data "__treeLevel" is required for the treeFormatter to work correctly
       // very important, the data must be pre-sorted as to how it should be displayed in the UI
-      data = [
+      /*
+      initData = [
         { id: 18, file: "alone.txt", dateModified: "2015-03-03", size: 90, __treeLevel: 0, parentId: null, },
-        { id: 21, file: "Documents", parentId: null, __treeLevel: 0 },
+        { id: 21, file: "documents", parentId: null, __treeLevel: 0 },
         { id: 9, file: "misc", __treeLevel: 1, parentId: 21 },
         { id: 23, file: "something2.txt", dateModified: "2015-02-26", size: 0.4, __treeLevel: 2, parentId: 9 },
         { id: 10, file: "something.txt", dateModified: "2015-02-26", size: 0.4, __treeLevel: 2, parentId: 9, },
@@ -327,13 +244,66 @@
         { id: 3, file: "todo.txt", dateModified: "2015-05-12", size: 0.7, __treeLevel: 2, parentId: 2, },
         { id: 7, file: "xls", __treeLevel: 1, parentId: 21 },
         { id: 8, file: "compilation.xls", dateModified: "2014-10-02", size: 2.3, __treeLevel: 2, parentId: 7, },
-        { id: 11, file: "Music", __treeLevel: 0, parentId: null },
+        { id: 11, file: "music", __treeLevel: 0, parentId: null },
         { id: 12, file: "mp3", __treeLevel: 1, parentId: 11 },
         { id: 14, file: "pop", __treeLevel: 2, parentId: 12 },
         { id: 15, file: "theme.mp3", dateModified: "2015-03-01", size: 85, __treeLevel: 3, parentId: 14, },
         { id: 16, file: "rock", __treeLevel: 2, parentId: 12 },
         { id: 17, file: "soft.mp3", dateModified: "2015-05-13", size: 98, __treeLevel: 3, parentId: 16, }
       ];
+      //*/
+
+      //*
+      //the user should be able to start with flat or heirarchical and we should handle that with the TreeData Plugin:
+      initData = [
+        { id: 18, file: "alone.txt", dateModified: "2015-03-03", size: 90, },
+        { id: 21, file: "documents",
+          files: [
+            { id: 9, file: "misc",
+              files: [
+                { id: 23, file: "something2.txt", dateModified: "2015-02-26", size: 0.4, },
+                { id: 10, file: "something.txt", dateModified: "2015-02-26", size: 0.4, },
+              ]
+            },
+            { id: 4, file: "pdf",
+              files: [
+                { id: 6, file: "internet-bill.pdf", dateModified: "2015-05-12", size: 1.4, },
+                { id: 5, file: "map.pdf", dateModified: "2015-05-21", size: 3.1, },
+                { id: 22, file: "map2.pdf", dateModified: "2015-05-21", size: 2.9, },
+              ]
+            },
+            { id: 2, file: "txt",
+              files: [
+                { id: 3, file: "todo.txt", dateModified: "2015-05-12", size: 0.7, },
+              ]
+            },
+            { id: 7, file: "xls",
+              files: [
+                { id: 8, file: "compilation.xls", dateModified: "2014-10-02", size: 2.3, },
+              ]
+            },
+          ]
+        },
+        { id: 11, file: "music",
+          files: [
+            { id: 12, file: "mp3",
+              files: [
+                { id: 14, file: "pop",
+                  files: [
+                    { id: 15, file: "theme.mp3", dateModified: "2015-03-01", size: 85,  },
+                  ]
+                },
+                { id: 16, file: "rock",
+                  files: [
+                    { id: 17, file: "soft.mp3", dateModified: "2015-05-13", size: 98, } 
+                  ]
+                },
+              ]
+            },
+          ]
+        },    
+      ];
+      //*/
 
       // initialize the model
       dataView = new Slick.Data.DataView();
@@ -344,12 +314,24 @@
       // load tree data utilities
       treeDataUtilities = new Slick.Plugins.TreeData();
 
-      //can use the util to convert the flat array of objects to an nested object of objects:
-      treeData = treeDataUtilities.convertParentChildFlatArrayToHierarchicalView(data, myOptions)
+      /*
+      //you can use the util to convert the flat array of objects to an nested object of objects:
+      treeData = treeDataUtilities.convertParentChildFlatArrayToHierarchicalView(initData, myOptions)
       console.log('tree', treeData);
 
-      //can use the util to convert the nested object of objects (back) to a flat array of objects:
-      console.log('flat', treeDataUtilities.convertHierarchicalViewToFlatArray(treeData, myOptions))
+      //OR if you started with a nested object of object or array of objects,
+      //you can use the util to convert this back to a flat array of objects, which SlickGrid requires:
+      data = treeDataUtilities.convertHierarchicalViewToFlatArray(initData, myOptions)
+      console.log('flat', data);
+      */
+
+      //OR you can use this function to determine which type you have and to return both flat & nested (& filter func):
+      //also adds the __treeLevel props and parentIds etc. to the flat data if initData is heirarchical (nested) data
+      //and returns the filter function to the user for them to attach directly to a keyup event etc.      
+
+      [data, nestedData] = treeDataUtilities.fromInputReturnFlatAndNestedDataStructures(initData, false, myOptions);
+      console.log('tree', nestedData);
+      console.log('flat', data);
 
       // add search input on top of each column
       grid.onHeaderRowCellRendered.subscribe(function (e, args) {
@@ -365,6 +347,7 @@
 
       // on a cell click event, we'll analyze if the cell is a parent, if it is then we'll toggle the collapse
       grid.onClick.subscribe(function (e, args) {
+        //console.log('grid clicked', e)
         if ($(e.target).hasClass("slick-group-toggle")) {
           var item = dataView.getItem(args.row);
           if (item) {
@@ -395,18 +378,25 @@
       dataView.setFilterArgs(columnFilters);
       dataView.setFilter(myFilter);
       dataView.endUpdate();
-      const myOptionsMod = { ...myOptions, treeOutputType: [] };
-      dataHierarchical = treeDataUtilities.convertParentChildFlatArrayToHierarchicalView(data, myOptionsMod);
-      console.log('array objects', dataHierarchical);
-
+      //console.log(treeDataUtilities.getFlatData())
       // trigger an empty filter so that the aggregation shows up on page load
-      columnFilters.file = '';
-      tmpPreFilteredData = filterMyFiles(data, dataHierarchical, columnFilters, myOptions);
+      // NO LONGER NEEDED :)
+      //columnFilters.file = '';
+      tmpPreFilteredData = treeDataUtilities.filterHierarchicalData(data, nestedData, columnFilters, myOptions, gridOptions);
       dataView.refresh();
       grid.invalidate();
     });
 
     function clearFilters() {
+      $('.slick-headerrow-column').children().val('').keyup();
+      for (var columnId in columnFilters) {
+        columnFilters[columnId] = "";
+      }
+      dataView.refresh();
+    }
+    function toggleExcludeChildren() {      
+      gridOptions.excludeChildrenWhenTreeDataFiltering = !gridOptions.excludeChildrenWhenTreeDataFiltering;
+      $('#currentExcludeChildren').html(`${gridOptions.excludeChildrenWhenTreeDataFiltering}`)
       $('.slick-headerrow-column').children().val('').keyup();
       for (var columnId in columnFilters) {
         columnFilters[columnId] = "";
