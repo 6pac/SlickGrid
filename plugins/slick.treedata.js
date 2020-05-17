@@ -469,7 +469,14 @@
       console.log('filteredFlatObj', filteredFlatObj)
       console.log('treeObj', treeObj)
 
-      return filteredFlatObj;
+      //if the search returns nothing, then just send the full data back:
+      if (Object.keys(filteredFlatObj).length == 0){
+        return tempFlatObj;
+      }
+      //else, send the filtered flat object back:
+      else {
+        return filteredFlatObj;
+      }  
     }
 
     $.extend(this, {

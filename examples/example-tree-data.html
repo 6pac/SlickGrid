@@ -170,7 +170,8 @@
       // filter out any row items that aren't part of our pre-processed "filterHierarchicalData()" result
       const tmpPreFilteredKeys = Object.keys(tmpPreFilteredData);
       if (Array.isArray(tmpPreFilteredKeys) && tmpPreFilteredKeys.length > 0) {
-        for (var columnId in columnFilters) {
+        //what are we looping columnFilters for?:
+        //for (var columnId in columnFilters) {
           //old way (tmpPreFilteredData) is a flat array of objects:
           //const filteredItem = tmpPreFilteredData.find(function (obj) { return obj.id == item.id });
 
@@ -189,7 +190,7 @@
           }
           return !!filteredItem; // should return boolean, not the actual item
           //return tmpPreFilteredData.includes(item.id); // return true when found, false otherwise
-        }
+        //}
       }
       
       // anything is considered valid (tmpPreFilteredData array is empty or not present)
@@ -214,11 +215,14 @@
 
         // step 1. filter the files
         // Executed right after a search input change/keyup event BUT before the myFilter since that requires the result of this call
+        //console.log('filterTriggered', data)
         tmpPreFilteredData = treeDataUtilities.filterHierarchicalData(data, nestedData, columnFilters, myOptions, gridOptions);
 
         // step 2. call the refresh so it does the final filtering of which rows should persist
         // calling dataview refresh is what triggers the myFilter()
         dataView.refresh();
+        //apparently, this line is need to make the aggregator work:
+        grid.invalidate();
       }
     }
 
