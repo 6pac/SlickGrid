@@ -347,7 +347,7 @@
 
       // on a cell click event, we'll analyze if the cell is a parent, if it is then we'll toggle the collapse
       grid.onClick.subscribe(function (e, args) {
-        console.log('grid clicked', e)
+        //console.log('grid clicked', e)
         if ($(e.target).hasClass("slick-group-toggle")) {
           var item = dataView.getItem(args.row);
           if (item) {

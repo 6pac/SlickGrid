@@ -286,7 +286,7 @@
       const treeLevelPropName = options && options.treeLevelPropName || '__treeLevel';
       const hasChildrenFlagPropName = options && options.hasChildrenFlagPropName || '__hasChildren';
 
-      const filteredChildrenAndParents = [];
+      //const filteredChildrenAndParents = [];
       const tempFlatObj = {};
       const filteredFlatObj = {};
       const aggregatorPropsInitObj = aggregatorProps.reduce((aggObj, prop) => {
@@ -344,10 +344,13 @@
             const itemCopy = { ...a };
             // if excludeChildrenWhenTreeDataFiltering == true then we collapse this item
             // and essentially hide all children:
-            if (gridOptions.excludeChildrenWhenTreeDataFiltering) itemCopy.__collapsed = true;
+            if (gridOptions.excludeChildrenWhenTreeDataFiltering){
+              itemCopy.__collapsed = true;
+              a.__collapsed = true;
+            }  
             delete itemCopy[childrenPropName];            
-            filteredChildrenAndParents.push(itemCopy);
-            filteredFlatObj[a[identifierPropName]] = {...a, ...aggregatorPropsInitObj};
+            //filteredChildrenAndParents.push(itemCopy);
+            filteredFlatObj[a[identifierPropName]] = {...itemCopy, ...aggregatorPropsInitObj};
             delete filteredFlatObj[a[identifierPropName]][childrenPropName];
             
             const childrenObj = a[childrenPropName];
@@ -367,10 +370,10 @@
                 const childCopy = { ...id };
                 delete childCopy[childrenPropName];
                 childCopy.__collapsed = collapsedFlag;
-                filteredChildrenAndParents.push(childCopy);
-                filteredFlatObj[id[identifierPropName]] = {...id, ...aggregatorPropsInitObj};
-                delete filteredFlatObj[id[identifierPropName]][childrenPropName];
-                tempFlatObj[id[identifierPropName]] = {...id};
+                //filteredChildrenAndParents.push(childCopy);
+                delete childCopy[childrenPropName];
+                filteredFlatObj[id[identifierPropName]] = {...childCopy, ...aggregatorPropsInitObj};               
+                tempFlatObj[id[identifierPropName]] = {...childCopy};
                 id[childrenPropName] && innerAddAll(id[childrenPropName], collapsedFlag);
               }
             }           
@@ -393,8 +396,8 @@
               // for the item itself to display:
               parentCopy.__collapsed = false;
               delete parentCopy[childrenPropName];
-              filteredChildrenAndParents.push(parentCopy);
-              filteredFlatObj[parent[identifierPropName]] = {...parent, ...aggregatorPropsInitObj};
+              //filteredChildrenAndParents.push(parentCopy);
+              filteredFlatObj[parent[identifierPropName]] = {...parentCopy, ...aggregatorPropsInitObj};
               delete filteredFlatObj[parent[identifierPropName]][childrenPropName];
               parentID = parentCopy[parentPropName];
               parent = tempFlatObj[parentID] || false;
@@ -419,7 +422,7 @@
       const filterKeys = Object.keys(columnFilters);
       outerFilter(treeObj, filterKeys);
 
-      console.log('filteredChildrenAndParents', filteredChildrenAndParents)
+      //console.log('filteredChildrenAndParents', filteredChildrenAndParents)
       console.log('tempFlatObj', tempFlatObj)    
 
       function recursiveAggProps(nestedData, flatObjAgg, parentId) {
