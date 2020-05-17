@@ -3478,7 +3478,7 @@ if (typeof Slick === "undefined") {
       }
 
       // The top viewport does not contain the top panel or header row
-      viewportTopH = paneTopH - topPanelH - preHeaderHeight - headerRowH - footerRowH;
+      viewportTopH = paneTopH - topPanelH - headerRowH - footerRowH;
 
       if (options.autoHeight) {
         if (hasFrozenColumns()) {
