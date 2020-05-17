@@ -23,7 +23,7 @@
     /**
      * Private variables
      */
-    var flatData = [1];
+    var flatData = [];
     var nestedData = []; // [] || {};
     var flatObj = {}; //hashtable for fast lookups
 
@@ -275,7 +275,7 @@
      * @param {Object} columnFilters 
      * @param {Options} options
      * @param {GridOptions} gridOptions
-     * @returns {Array} Returns filtered flat array
+     * @returns {Object} Returns filtered flat object
      */
     function filterHierarchicalData(inputArray, treeObj, columnFilters, options, gridOptions) {
       //console.log(options);
@@ -289,6 +289,10 @@
       const filteredChildrenAndParents = [];
       const tempFlatObj = {};
       const filteredFlatObj = {};
+      const aggregatorPropsInitObj = aggregatorProps.reduce((aggObj, prop) => {
+        aggObj[`__agg__${prop}`] = 0;
+        return aggObj;
+      }, {})
       /**
        * A recursive function to work down the tree testing filter conditions
        * @param {Array|Object} treeObj 
@@ -299,8 +303,9 @@
           treeObj :
           Object.values(treeObj) || [];
         for (let id of iterable) {
-          const a = id;
-          tempFlatObj[a[identifierPropName]] = a;
+          const a = {...id};          
+          tempFlatObj[a[identifierPropName]] = {...a, [childrenPropName]: null};
+          delete tempFlatObj[a[identifierPropName]][childrenPropName];          
           let matchFilter = false; // invalid until it is proven to be valid
 
           //make a copy each time so each recursion sibling has a fresh array:
@@ -342,7 +347,7 @@
             if (gridOptions.excludeChildrenWhenTreeDataFiltering) itemCopy.__collapsed = true;
             delete itemCopy[childrenPropName];            
             filteredChildrenAndParents.push(itemCopy);
-            filteredFlatObj[a[identifierPropName]] = {...a};
+            filteredFlatObj[a[identifierPropName]] = {...a, ...aggregatorPropsInitObj};
             delete filteredFlatObj[a[identifierPropName]][childrenPropName];
             
             const childrenObj = a[childrenPropName];
@@ -363,7 +368,7 @@
                 delete childCopy[childrenPropName];
                 childCopy.__collapsed = collapsedFlag;
                 filteredChildrenAndParents.push(childCopy);
-                filteredFlatObj[id[identifierPropName]] = {...id};
+                filteredFlatObj[id[identifierPropName]] = {...id, ...aggregatorPropsInitObj};
                 delete filteredFlatObj[id[identifierPropName]][childrenPropName];
                 tempFlatObj[id[identifierPropName]] = {...id};
                 id[childrenPropName] && innerAddAll(id[childrenPropName], collapsedFlag);
@@ -389,7 +394,7 @@
               parentCopy.__collapsed = false;
               delete parentCopy[childrenPropName];
               filteredChildrenAndParents.push(parentCopy);
-              filteredFlatObj[parent[identifierPropName]] = {...parent};
+              filteredFlatObj[parent[identifierPropName]] = {...parent, ...aggregatorPropsInitObj};
               delete filteredFlatObj[parent[identifierPropName]][childrenPropName];
               parentID = parentCopy[parentPropName];
               parent = tempFlatObj[parentID] || false;
@@ -413,45 +418,58 @@
       }
       const filterKeys = Object.keys(columnFilters);
       outerFilter(treeObj, filterKeys);
-      //console.log('myObj', treeObj);
-      //console.log('filtered', filteredChildrenAndParents);
 
-      // const all = {};
-      // for (let i = 0; i < filteredChildrenAndParents.length; i++){
-      //   const item = filteredChildrenAndParents[i];
-      //   all[item[identifierPropName]] = {...item};
-      //   for (const prop of aggregatorProps){
-      //     if (all[item[identifierPropName]].hasOwnProperty(`__agg__${prop}`) ){
-      //       all[item[identifierPropName]][`__agg__${prop}`] = 0;
-      //     }
-      //   } 
-      // }
-      // console.log('all', all)
-      // //update aggregate props:
-      // Object.values(all).forEach( item => {
-      //   //console.log('item', item)
-      //   for (const prop of aggregatorProps){
-      //     if (item[parentPropName] != null){
-      //       console.log(item[parentPropName])
-      //       const currPropVal = all[item[parentPropName]][`__agg__${prop}`] || 0;
-      //       all[item[parentPropName]][`__agg__${prop}`] = currPropVal + (item[`__agg__${prop}`] || item[prop]);
-      //     }
-      //   }                
-      // });
-      // console.log('all', all)
-      // for (let i = 0; i < filteredChildrenAndParents.length; i++){
-      //   const item = filteredChildrenAndParents[i];
-      //   for (const prop of aggregatorProps){
-      //     if (all[item[identifierPropName]].hasOwnProperty(`__agg__${prop}`) ){
-      //       item[`__agg__${prop}`] = all[item[identifierPropName]][`__agg__${prop}`]
-      //     }
-      //   } 
-      // }
       console.log('filteredChildrenAndParents', filteredChildrenAndParents)
-      console.log('tempFlatObj', tempFlatObj)
-      console.log('filteredFlatObj', filteredFlatObj)
+      console.log('tempFlatObj', tempFlatObj)    
 
-      return filteredChildrenAndParents;
+      function recursiveAggProps(nestedData, flatObjAgg, parentId) {
+      
+        function innerRec(innerData, innerParentID) {
+          for (let obj of innerData) {
+            if (obj.hasOwnProperty(childrenPropName)) {
+              const childObjCopy = [...obj[childrenPropName]];
+              delete childObjCopy[childrenPropName];
+              if (flatObjAgg[obj.id]){
+                flatObjAgg[obj.id] = {...obj, ...aggregatorPropsInitObj, parentId: innerParentID};
+                innerRec(childObjCopy, obj.id);
+              }              
+            }
+            else if (innerParentID == null) {
+              if (flatObjAgg[obj.id]){
+                flatObjAgg[obj.id] = { ...obj, parentId: innerParentID };
+              }              
+            }
+            else {
+              if (flatObjAgg[obj.id]){
+                flatObjAgg[obj.id] = { ...obj, parentId: innerParentID };
+                let parent = flatObjAgg[innerParentID];
+                let currObj = obj;
+                const currProps = aggregatorProps.map(prop => currObj[prop]);
+                while (parent) {
+                  //traverse the tree up to the root adding on the
+                  //contribution of this (end node) file size (and/or other agg props)
+                  aggregatorProps.forEach((prop, i) => {
+                    parent[`__agg__${prop}`] += currProps[i];
+                  });                
+                  currObj = parent;
+                  parent = flatObjAgg[parent.parentId] || null;
+                }
+              }  
+            }
+          }
+        }
+      
+        innerRec(nestedData, parentId);
+      
+        return flatObjAgg;
+      }
+
+      recursiveAggProps(treeObj, filteredFlatObj, null)
+
+      console.log('filteredFlatObj', filteredFlatObj)
+      console.log('treeObj', treeObj)
+
+      return filteredFlatObj;
     }
 
     $.extend(this, {

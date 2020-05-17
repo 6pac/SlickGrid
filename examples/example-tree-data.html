@@ -123,7 +123,7 @@
 
   <script>
     var columnFilters = {};
-    var tmpPreFilteredData = [];
+    var tmpPreFilteredData = {}; //[];
     var dataView;
     var grid;
     var data = [];
@@ -151,26 +151,32 @@
       showHeaderRow: true,
       explicitInitialization: true,
       headerRowHeight: 30,
-      excludeChildrenWhenTreeDataFiltering: true
+      excludeChildrenWhenTreeDataFiltering: false
     };
 
     $('#currentExcludeChildren').html(`${gridOptions.excludeChildrenWhenTreeDataFiltering}`)
    
     function myFilter(item, columnFilters) {
-      // if (item.parentId !== null) {
-      //   let parent = dataView.getItemById(item.parentId);
-      //   while (parent) {
-      //     if (parent.__collapsed) {
-      //       return false; // don't display any row that has their parent collapsed
-      //     }
-      //     parent = dataView.getItemById(parent.parentId);
-      //   }
-      // }
+      if (item.parentId !== null) {
+        let parent = dataView.getItemById(item.parentId);
+        while (parent) {
+          if (parent.__collapsed) {
+            return false; // don't display any row that has their parent collapsed
+          }
+          parent = dataView.getItemById(parent.parentId);
+        }
+      }
 
       // filter out any row items that aren't part of our pre-processed "filterHierarchicalData()" result
-      if (Array.isArray(tmpPreFilteredData) && tmpPreFilteredData.length > 0) {
+      const tmpPreFilteredKeys = Object.keys(tmpPreFilteredData);
+      if (Array.isArray(tmpPreFilteredKeys) && tmpPreFilteredKeys.length > 0) {
         for (var columnId in columnFilters) {
-          const filteredItem = tmpPreFilteredData.find(function (obj) { return obj.id == item.id });
+          //old way (tmpPreFilteredData) is a flat array of objects:
+          //const filteredItem = tmpPreFilteredData.find(function (obj) { return obj.id == item.id });
+
+          //new way (tmpPreFilteredData) is a flat object of objects:
+          const filteredItem = tmpPreFilteredData[item.id] || false;
+
           //copy the result of any aggregators to the item object that is filtered,
           // this is needed because the __agg__size is added to the copy of the data and not the original data:
           myOptions.aggregatorProps.forEach((aggKey) => {
@@ -188,7 +194,8 @@
       
       // anything is considered valid (tmpPreFilteredData array is empty or not present)
       // return true to reset all filters and also reset collapsed to false:
-      item['__collapsed'] = false;
+      //item['__collapsed'] = false;
+      //console.log('myFilter', item, columnFilters)
       return true;
     }
 
@@ -336,6 +343,7 @@
 
       // on a cell click event, we'll analyze if the cell is a parent, if it is then we'll toggle the collapse
       grid.onClick.subscribe(function (e, args) {
+        console.log('grid clicked', e)
         if ($(e.target).hasClass("slick-group-toggle")) {
           var item = dataView.getItem(args.row);
           if (item) {
@@ -366,7 +374,7 @@
       dataView.setFilterArgs(columnFilters);
       dataView.setFilter(myFilter);
       dataView.endUpdate();
-      console.log(treeDataUtilities.getFlatData())
+      //console.log(treeDataUtilities.getFlatData())
       // trigger an empty filter so that the aggregation shows up on page load
       // NO LONGER NEEDED :)
       //columnFilters.file = '';
