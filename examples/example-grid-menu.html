@@ -3,11 +3,28 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
-  <link rel="stylesheet" href="../css/smoothness/jquery-ui-1.11.3.custom.css" type="text/css"/>
+  <link rel="stylesheet" href="../css/smoothness/jquery-ui.css" type="text/css"/>
   <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
   <link rel="stylesheet" href="examples.css" type="text/css"/>
   <link rel="stylesheet" href="../controls/slick.gridmenu.css" type="text/css"/>
+  <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" crossorigin="anonymous">
   <style>
+    .blue {
+      color: rgb(73, 73, 255);
+    }
+    .orange {
+      color: orange;
+    }
+    .red {
+      color: red;
+    }
+    .bold {
+      font-weight: bold;
+    }
+    .italic {
+      font-style: italic;
+    }
     .slick-headerrow-column {
       background: #BDD8E0;
       text-overflow: clip;
@@ -26,6 +43,47 @@
     .icon-help {
       background-image: url(../images/help.png);
     }
+
+    /** you could optionally style the grid menu column picker list with font-awesome checkboxes */
+    .slick-gridmenu-list li,
+    .slick-columnpicker-list li {
+      cursor: pointer;
+      margin: 4px;
+    }
+    .slick-gridmenu-list label,
+    .slick-columnpicker-list label {
+      padding: 1px;
+      display: block;
+      cursor: pointer;
+    }
+    
+    #myGrid input[type=checkbox], 
+    .slick-gridmenu-list input[type=checkbox],
+    .slick-columnpicker-list input[type=checkbox] { 
+      display:none; /* to hide the checkbox itself */
+    } 
+    #myGrid input[type=checkbox] + label:before,
+    .slick-gridmenu-list input[type=checkbox] + label:before,
+    .slick-columnpicker-list input[type=checkbox] + label:before {
+      cursor: pointer;
+      font-family: FontAwesome;
+      color: #013668;
+      font-weight: bold;
+      display: inline-block;
+      content: "\f00c";
+      font-size: 13px;
+      margin-right: 4px;
+    }
+    #myGrid input[type=checkbox] + label:before,
+    .slick-gridmenu-list input[type=checkbox] + label:before,
+    .slick-columnpicker-list input[type=checkbox] + label:before { 
+      opacity: 0.2; /* unchecked icon */
+    } 
+    #myGrid input[type=checkbox]:checked + label:before,
+    .slick-gridmenu-list input[type=checkbox]:checked + label:before,
+    .slick-columnpicker-list input[type=checkbox]:checked + label:before { 
+      opacity: 1; /* checked icon */
+    } 
   </style>
 </head>
 <body>
@@ -66,13 +124,14 @@
 
 <script src="../lib/firebugx.js"></script>
 
-<script src="../lib/jquery-1.11.2.min.js"></script>
-<script src="../lib/jquery-ui-1.11.3.min.js"></script>
+<script src="../lib/jquery-1.12.4.min.js"></script>
+<script src="../lib/jquery-ui.min.js"></script>
 <script src="../lib/jquery.event.drag-2.3.0.js"></script>
 
 <script src="../slick.core.js"></script>
 <script src="../slick.dataview.js"></script>
 <script src="../slick.grid.js"></script>
+<script src="../controls/slick.columnpicker.js"></script>
 <script src="../controls/slick.gridmenu.js"></script>
 
 <script>
@@ -80,6 +139,18 @@
   var grid;
   var gridMenu;
   var data = [];
+  var columnpicker;
+  var gridMenuControl;
+
+  function isObjectEmpty(obj) {
+    for(var key in obj) {
+      if(obj.hasOwnProperty(key) && obj[key] !== "") {
+        return false;
+      }
+    }
+    return true;
+  }
+
   var options = {
     enableCellNavigation: true,
     showHeaderRow: true,
@@ -87,10 +158,23 @@
     explicitInitialization: true,
     forceFitColumns: false,
     alwaysShowVerticalScroll: true, // this is necessary when using Grid Menu with a small dataset
+    columnPicker: {
+      fadeSpeed: 100,
+      columnTitle: "Columns",
+      hideForceFitButton: false,
+      hideSyncResizeButton: false,
+      forceFitTitle: "Force fit columns",
+      syncResizeTitle: "Synchronous resize",
+    },
 
     // gridMenu Object is optional
     // when not passed, it will act as a regular Column Picker (with default Grid Menu image of drag-handle.png)
     gridMenu: {
+      useClickToRepositionMenu: false, // defaults to true (false would use the icon offset to reposition the grid menu)
+      menuUsabilityOverride: function (args) {
+        // we could disable the menu entirely by returning false
+        return true;
+      },
       customTitle: "Custom Menus",
       columnTitle: "Columns",
       hideForceFitButton: false,
@@ -105,28 +189,45 @@
           iconImage: "../images/delete.png",
           title: "Clear Filters",
           disabled: false,
-          command: "clear-filter"
+          command: "clear-filter",
+          cssClass: 'bold',     // container css class
+          textCssClass: 'red'   // just the text css class
         },
         {
           iconImage: "../images/info.gif",
           title: "Toggle Filter Row",
           disabled: false,
-          command: "toggle-filter"
+          command: "toggle-filter",
+          itemUsabilityOverride: function (args) {
+            // for example disable the toggle of the filter bar when there's filters provided
+            return isObjectEmpty(columnFilters);
+          },
         },
         {
           iconImage: "../images/info.gif",
           title: "Toggle Top Panel",
           disabled: false,
-          command: "toggle-toppanel"
+          command: "toggle-toppanel",
+          cssClass: 'italic',     // container css class
+          textCssClass: 'orange'  // just the text css class
         },
-        {
-          divider: true,
-          command: ""
-        },
+        // you can pass divider as a string or an object with a boolean
+        // "divider",
+        { divider: true },
         {
           iconCssClass: "icon-help",
           title: "Help",
-          command: "help"
+          command: "help",
+          textCssClass: "blue",
+          // you could dynamically remove a command from the list (only checks before opening the menu)
+          // for example don't show the "Help" button if we have less than 5 columns left
+          itemVisibilityOverride: function (args) {
+            return args.visibleColumns.length > 4;
+          },
+          action: function(e, args) {
+            // you can use the "action" callback and/or subscribe to the "onCallback" event, they both have the same arguments
+            console.log('execute an action on Help', args);
+          }
         },
         {
           iconImage: "",
@@ -180,8 +281,8 @@
   $(function () {
     dataView = new Slick.Data.DataView();
     grid = new Slick.Grid("#myGrid", dataView, columns, options);
+    columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
     gridMenuControl = new Slick.Controls.GridMenu(columns, grid, options);
-
 
     dataView.onRowCountChanged.subscribe(function (e, args) {
       grid.updateRowCount();
@@ -235,6 +336,15 @@
       } else {
         alert("Command: " + args.command);
       }
+    });
+
+    // subscribe to some events
+    
+    gridMenuControl.onBeforeMenuShow.subscribe(function(e, args) {
+      console.log('Before the Grid Menu is shown');
+    });
+    gridMenuControl.onAfterMenuShow.subscribe(function(e, args) {
+      console.log('After the Grid Menu is shown');
     });
 
     // subscribe to event when column visibility is changed via the menu

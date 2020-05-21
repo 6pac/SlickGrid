@@ -20,9 +20,9 @@
    * @module Data
    * @namespace Slick.Data
    * @constructor
-   * @param options
+   * @param inputOptions
    */
-  function GroupItemMetadataProvider(options) {
+  function GroupItemMetadataProvider(inputOptions) {
     var _grid;
     var _defaults = {
       checkboxSelect: false,
@@ -38,11 +38,19 @@
       toggleCollapsedCssClass: "collapsed",
       enableExpandCollapse: true,
       groupFormatter: defaultGroupCellFormatter,
-      totalsFormatter: defaultTotalsCellFormatter
+      totalsFormatter: defaultTotalsCellFormatter,
+      includeHeaderTotals: false
     };
 
-    options = $.extend(true, {}, _defaults, options);
+    var options = $.extend(true, {}, _defaults, inputOptions);
 
+    function getOptions(){
+      return options;
+    }
+
+    function setOptions(inputOptions) {
+      $.extend(true, options, inputOptions);
+    }
 
     function defaultGroupCellFormatter(row, cell, value, columnDef, item, grid) {
       if (!options.enableExpandCollapse) {
@@ -137,14 +145,15 @@
     }
 
     function getGroupRowMetadata(item) {
-      var groupLevel = item && item.level;      
+      var groupLevel = item && item.level;
       return {
         selectable: false,
         focusable: options.groupFocusable,
         cssClasses: options.groupCssClass + ' slick-group-level-' + groupLevel,
+        formatter: options.includeHeaderTotals && options.totalsFormatter,
         columns: {
           0: {
-            colspan: "*",
+            colspan: options.includeHeaderTotals?"1":"*",
             formatter: options.groupFormatter,
             editor: null
           }
@@ -168,7 +177,9 @@
       "init": init,
       "destroy": destroy,
       "getGroupRowMetadata": getGroupRowMetadata,
-      "getTotalsRowMetadata": getTotalsRowMetadata
+      "getTotalsRowMetadata": getTotalsRowMetadata,
+      "getOptions": getOptions,
+      "setOptions": setOptions
     };
   }
 })(jQuery);

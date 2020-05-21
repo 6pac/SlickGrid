@@ -4,7 +4,7 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="../css/smoothness/jquery-ui-1.11.3.custom.css" type="text/css"/>
+  <link rel="stylesheet" href="../css/smoothness/jquery-ui.css" type="text/css"/>
   <link rel="stylesheet" href="examples.css" type="text/css"/>
   <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css"/>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" crossorigin="anonymous">
@@ -60,6 +60,10 @@
       <p>
         <button onclick="toggleHideSelectAllCheckbox()">Toggle show/hide "Select All" checkbox</button>
       </p>
+      
+      <p>
+        <button id="unselectRow5">Unselect row 5</button> <button id="selectRow5">Select row 5</button> <button id="unselectAllRows">Unselect all rows</button>
+      </p>
     </ul>
       <h2>View Source:</h2>
       <ul>
@@ -71,8 +75,8 @@
 
 <script src="../lib/firebugx.js"></script>
 
-<script src="../lib/jquery-1.11.2.min.js"></script>
-<script src="../lib/jquery-ui-1.11.3.min.js"></script>
+<script src="../lib/jquery-1.12.4.min.js"></script>
+<script src="../lib/jquery-ui.min.js"></script>
 <script src="../lib/jquery.event.drag-2.3.0.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -157,6 +161,30 @@
         var rtn = args.grid.getActiveCell();
         var x = args.rows;
     });
+    
+    $("#selectRow5").click(function() {
+        var rowIndex = 5; // use row 5 for this example
+        var selectedRowsIndexes = grid.getSelectedRows();
+        if (selectedRowsIndexes.indexOf(rowIndex) < 0) {
+          selectedRowsIndexes.push(rowIndex);
+          grid.setSelectedRows(selectedRowsIndexes);
+        }
+    });
+
+    $("#unselectRow5").click(function() {
+        var rowIndex = 5; // use row 5 for this example
+        var selectedRowsIndexes = grid.getSelectedRows();
+        var rowIndexInArr = selectedRowsIndexes.indexOf(rowIndex);
+        if (rowIndexInArr >= 0) {
+          selectedRowsIndexes.splice(rowIndexInArr, 1);
+          grid.setSelectedRows(selectedRowsIndexes);
+        }
+    });
+
+    $("#unselectAllRows").click(function() {
+        grid.setSelectedRows([]);
+    });
+    
   })
 </script>
 </body>

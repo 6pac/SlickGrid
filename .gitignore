@@ -1,9 +1,11 @@
 .gitk*
 .idea/*
 .DS_Store
-yarn-error.log
-yarn.lock
+*.exe
+*.pdb
 node_modules/*
 SlickgridRelease*
 nuget*
 testresult.xml
+yarn-error.log
+yarn.lock

@@ -30,7 +30,7 @@ if (typeof Slick === "undefined") {
 
 (function ($) {
   "use strict";
-  
+
   // Slick.Grid
   $.extend(true, window, {
     Slick: {
@@ -584,7 +584,7 @@ if (typeof Slick === "undefined") {
           $footerRow
             .on("contextmenu", handleFooterContextMenu)
             .on("click", handleFooterClick);
-		
+
           $footerRowScroller
               .on("scroll", handleFooterRowScroll);
         }
@@ -730,7 +730,7 @@ if (typeof Slick === "undefined") {
     }
 
     function measureScrollbar() {
-      var $outerdiv = $('<div class="' + $viewport.className + '" style="position:absolute; top:-10000px; left:-10000px; overflow:auto; width:100px; height:100px;"></div>').appendTo($viewport);
+      var $outerdiv = $('<div class="' + $viewport.className + '" style="position:absolute; top:-10000px; left:-10000px; overflow:auto; width:100px; height:100px;"></div>').appendTo('body');
       var $innerdiv = $('<div style="width:200px; height:200px; overflow:auto;"></div>').appendTo($outerdiv);
       var dim = {
         width: $outerdiv[0].offsetWidth - $outerdiv[0].clientWidth,
@@ -1096,7 +1096,7 @@ if (typeof Slick === "undefined") {
         $footerRowTarget = $footerRowL;
       }
 
-      var $footer = $footerRowTarget.children().eq(idx);
+      var $footer = $footerRowTarget && $footerRowTarget.children().eq(idx);
       return $footer && $footer[0];
     }
 
@@ -1280,7 +1280,7 @@ if (typeof Slick === "undefined") {
             }
           }
         }
-	      
+
         if (m.sortable) {
           header.addClass("slick-header-sortable");
           header.append("<span class='slick-sort-indicator"
@@ -1839,9 +1839,11 @@ if (typeof Slick === "undefined") {
     function getVBoxDelta($el) {
       var p = ["borderTopWidth", "borderBottomWidth", "paddingTop", "paddingBottom"];
       var delta = 0;
-      $.each(p, function (n, val) {
-        delta += parseFloat($el.css(val)) || 0;
-      });
+      if ($el && typeof $el.css === 'function') {
+        $.each(p, function (n, val) {
+          delta += parseFloat($el.css(val)) || 0;
+        });
+      }
       return delta;
     }
 
@@ -2093,21 +2095,21 @@ if (typeof Slick === "undefined") {
       var c = columnOrIndexOrId;
       if (typeof columnOrIndexOrId === 'number') {
         c = columns[columnOrIndexOrId];
-      } 
+      }
       else if (typeof columnOrIndexOrId === 'string') {
         for (i = 0; i < columns.length; i++) {
           if (columns[i].Id === columnOrIndexOrId) { c = columns[i]; }
         }
       }
       var $gridCanvas = $(getCanvasNode(0, 0));
-      getColAutosizeWidth(c, $gridCanvas, isInit);      
+      getColAutosizeWidth(c, $gridCanvas, isInit);
     }
-    
+
     function autosizeColumns(autosizeMode, isInit) {
       //LogColWidths();
 
       autosizeMode =  autosizeMode || options.autosizeColsMode;
-      if (autosizeMode === Slick.GridAutosizeColsMode.LegacyForceFit 
+      if (autosizeMode === Slick.GridAutosizeColsMode.LegacyForceFit
       || autosizeMode === Slick.GridAutosizeColsMode.LegacyOff) {
         legacyAutosizeColumns();
         return;
@@ -2170,7 +2172,7 @@ if (typeof Slick === "undefined") {
               colWidth = c.autoSize.widthPx;
             }
             if (c.rerenderOnResize && c.width  != colWidth) { reRender = true; }
-            c.width = colWidth; 
+            c.width = colWidth;
           }
         } else if ((options.viewportSwitchToScrollModeWidthPercent && totalWidthLessSTR + strColsMinWidth > viewportWidth * options.viewportSwitchToScrollModeWidthPercent / 100)
           || (totalMinWidth > viewportWidth)) {
@@ -2198,19 +2200,19 @@ if (typeof Slick === "undefined") {
               }
             }
             if (c.rerenderOnResize && c.width  != colWidth) { reRender = true; }
-            c.width = colWidth; 
+            c.width = colWidth;
           }
         }
       }
 
       if (autosizeMode === Slick.GridAutosizeColsMode.IgnoreViewport) {
         // just size columns as-is
-        for (i = 0; i < columns.length; i++) { 
+        for (i = 0; i < columns.length; i++) {
           colWidth = columns[i].autoSize.widthPx;
           if (columns[i].rerenderOnResize && columns[i].width != colWidth) {
             reRender = true;
           }
-          columns[i].width = colWidth; 
+          columns[i].width = colWidth;
         }
       }
 
@@ -2344,10 +2346,10 @@ if (typeof Slick === "undefined") {
 
       if (autoSize.valueFilterMode === Slick.ValueFilterMode.GetLongestTextAndSub) {
         // get greatest abs value in data
-        var tempVal, maxLen = 0, maxIndex;
+        var tempVal, maxLen = 0;
         for (i = 0, ii = rows.length; i < ii; i++) {
           tempVal = rows[i][columnDef.field];
-          if ((tempVal || '').length > maxLen) { maxLen = tempVal.length; maxIndex = i; }
+          if ((tempVal || '').length > maxLen) { maxLen = tempVal.length; }
         }
         // now substitute a 'c' for all characters
         tempVal = Array(maxLen + 1).join("m");
@@ -2358,7 +2360,7 @@ if (typeof Slick === "undefined") {
 
       if (autoSize.valueFilterMode === Slick.ValueFilterMode.GetLongestText) {
         // get greatest abs value in data
-        var tempVal, maxLen = 0, maxIndex;
+        var tempVal, maxLen = 0, maxIndex = 0;
         for (i = 0, ii = rows.length; i < ii; i++) {
           tempVal = rows[i][columnDef.field];
           if ((tempVal || '').length > maxLen) { maxLen = tempVal.length; maxIndex = i; }
@@ -2527,7 +2529,7 @@ if (typeof Slick === "undefined") {
         }
         columns[i].width = widths[i];
       }
-      
+
       reRenderColumns(reRender);
     }
 
@@ -2701,7 +2703,7 @@ if (typeof Slick === "undefined") {
       setCellCssStyles(options.selectedCellCssClass, hash);
 
       if (simpleArrayEquals(previousSelectedRows, selectedRows)) {
-        trigger(self.onSelectedRowsChanged, {rows: getSelectedRows()}, e);
+        trigger(self.onSelectedRowsChanged, {rows: getSelectedRows(), previousSelectedRows: previousSelectedRows}, e);
       }
     }
 
@@ -2738,7 +2740,7 @@ if (typeof Slick === "undefined") {
 
         var m = columns[i] = $.extend({}, columnDefaults, columns[i]);
         m.autoSize = $.extend({}, columnAutosizeDefaults, m.autoSize);
-        
+
         columnsById[m.id] = i;
         if (m.minWidth && m.width < m.minWidth) {
           m.width = m.minWidth;
@@ -2864,24 +2866,48 @@ if (typeof Slick === "undefined") {
       return $topPanel[0];
     }
 
-    function setTopPanelVisibility(visible) {
+    function setTopPanelVisibility(visible, animate) {
+      var animated = (animate === false) ? false : true;
+
       if (options.showTopPanel != visible) {
         options.showTopPanel = visible;
         if (visible) {
-          $topPanelScroller.slideDown("fast", resizeCanvas);
+          if (animated) {
+            $topPanelScroller.slideDown("fast", resizeCanvas);
+          } else {
+            $topPanelScroller.show();
+            resizeCanvas();
+          }
         } else {
-          $topPanelScroller.slideUp("fast", resizeCanvas);
+          if (animated) {
+            $topPanelScroller.slideUp("fast", resizeCanvas);
+          } else {
+            $topPanelScroller.hide();
+            resizeCanvas();
+          }
         }
       }
     }
 
-    function setHeaderRowVisibility(visible) {
+    function setHeaderRowVisibility(visible, animate) {
+      var animated = (animate === false) ? false : true;
+
       if (options.showHeaderRow != visible) {
         options.showHeaderRow = visible;
         if (visible) {
-          $headerRowScroller.slideDown("fast", resizeCanvas);
+          if (animated) {
+            $headerRowScroller.slideDown("fast", resizeCanvas);
+          } else {
+            $headerRowScroller.show();
+            resizeCanvas();
+          }
         } else {
-          $headerRowScroller.slideUp("fast", resizeCanvas);
+          if (animated) {
+            $headerRowScroller.slideUp("fast", resizeCanvas);
+          } else {
+            $headerRowScroller.hide();
+            resizeCanvas();
+          }
         }
       }
     }
@@ -2907,24 +2933,48 @@ if (typeof Slick === "undefined") {
       }
     }
 
-    function setFooterRowVisibility(visible) {
+    function setFooterRowVisibility(visible, animate) {
+      var animated = (animate === false) ? false : true;
+
       if (options.showFooterRow != visible) {
         options.showFooterRow = visible;
         if (visible) {
-          $footerRowScroller.slideDown("fast", resizeCanvas);
+          if (animated) {
+            $footerRowScroller.slideDown("fast", resizeCanvas);
+          } else {
+            $footerRowScroller.show();
+            resizeCanvas();
+          }
         } else {
-          $footerRowScroller.slideUp("fast", resizeCanvas);
+          if (animated) {
+            $footerRowScroller.slideUp("fast", resizeCanvas);
+          } else {
+            $footerRowScroller.hide();
+            resizeCanvas();
+          }
         }
       }
     }
 
-    function setPreHeaderPanelVisibility(visible) {
+    function setPreHeaderPanelVisibility(visible, animate) {
+      var animated = (animate === false) ? false : true;
+
       if (options.showPreHeaderPanel != visible) {
         options.showPreHeaderPanel = visible;
         if (visible) {
-          $preHeaderPanelScroller.slideDown("fast", resizeCanvas);
+          if (animated) {
+            $preHeaderPanelScroller.slideDown("fast", resizeCanvas);
+          } else {
+            $preHeaderPanelScroller.show();
+            resizeCanvas();
+          }
         } else {
-          $preHeaderPanelScroller.slideUp("fast", resizeCanvas);
+          if (animated) {
+            $preHeaderPanelScroller.slideUp("fast", resizeCanvas);
+          } else {
+            $preHeaderPanelScroller.hide();
+            resizeCanvas();
+          }
         }
       }
     }
@@ -4026,6 +4076,11 @@ if (typeof Slick === "undefined") {
       var maxScrollDistanceY = $viewportScrollContainerY[0].scrollHeight - $viewportScrollContainerY[0].clientHeight;
       var maxScrollDistanceX = $viewportScrollContainerY[0].scrollWidth - $viewportScrollContainerY[0].clientWidth;
 
+      // Protect against erroneous clientHeight/Width greater than scrollHeight/Width.
+      // Sometimes seen in Chrome.
+      maxScrollDistanceY = Math.max(0, maxScrollDistanceY);
+      maxScrollDistanceX = Math.max(0, maxScrollDistanceX);
+
       // Ceiling the max scroll values
       if (scrollTop > maxScrollDistanceY) {
         scrollTop = maxScrollDistanceY;
@@ -4292,23 +4347,24 @@ if (typeof Slick === "undefined") {
 
     function flashCell(row, cell, speed) {
       speed = speed || 100;
+
+      function toggleCellClass($cell, times) {
+        if (!times) {
+          return;
+        }
+
+        setTimeout(function () {
+          $cell.queue(function () {
+            $cell.toggleClass(options.cellFlashingCssClass).dequeue();
+            toggleCellClass($cell, times - 1);
+          });
+        }, speed);
+      }
+
       if (rowsCache[row]) {
         var $cell = $(getCellNode(row, cell));
 
-        function toggleCellClass(times) {
-          if (!times) {
-            return;
-          }
-          setTimeout(function () {
-                $cell.queue(function () {
-                  $cell.toggleClass(options.cellFlashingCssClass).dequeue();
-                  toggleCellClass(times - 1);
-                });
-              },
-              speed);
-        }
-
-        toggleCellClass(4);
+        toggleCellClass($cell, 4);
       }
     }
 
@@ -4565,7 +4621,7 @@ if (typeof Slick === "undefined") {
       var column = $footer && $footer.data("column");
       trigger(self.onFooterClick, {column: column}, e);
     }
-	  
+
     function handleMouseEnter(e) {
       trigger(self.onMouseEnter, {}, e);
     }
@@ -4767,19 +4823,15 @@ if (typeof Slick === "undefined") {
         activeRow = cell.row;
         activeCell = activePosX = activeCell = activePosX = getCellFromNode(activeCellNode);
 
-        $activeCellNode.addClass("active");
-        if (rowsCache[activeRow]) {
-          $(rowsCache[activeRow].rowNode).addClass('active');
-        }
-
-
         if (opt_editMode == null) {
           opt_editMode = (activeRow == getDataLength()) || options.autoEdit;
         }
 
         if (options.showCellSelection) {
-        $(activeCellNode).addClass("active");
-        $(rowsCache[activeRow].rowNode).addClass("active");
+          $activeCellNode.addClass("active");
+          if (rowsCache[activeRow]) {
+            $(rowsCache[activeRow].rowNode).addClass("active");
+          }
         }
 
         if (options.editable && opt_editMode && isCellPotentiallyEditable(activeRow, activeCell)) {
@@ -5671,7 +5723,7 @@ if (typeof Slick === "undefined") {
       if (!selectionModel) {
         throw new Error("Selection model is not set");
       }
-      return selectedRows;
+      return selectedRows.slice(0);
     }
 
     function setSelectedRows(rows) {
@@ -5712,7 +5764,7 @@ if (typeof Slick === "undefined") {
     // Public API
 
     $.extend(this, {
-      "slickGridVersion": "2.4.13",
+      "slickGridVersion": "2.4.23",
 
       // Events
       "onScroll": new Slick.Event(),

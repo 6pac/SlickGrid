@@ -30,6 +30,7 @@
   function SlickColumnPicker(columns, grid, options) {
     var _grid = grid;
     var _options = options;
+    var _gridUid = (grid && grid.getUID) ? grid.getUID() : '';
     var $columnTitleElm;
     var $list;
     var $menu;
@@ -55,7 +56,7 @@
       grid.onColumnsReordered.subscribe(updateColumnOrder);
       _options = $.extend({}, defaults, options);
 
-      $menu = $("<div class='slick-columnpicker' style='display:none' />").appendTo(document.body);
+      $menu = $("<div class='slick-columnpicker " + _gridUid + "' style='display:none' />").appendTo(document.body);
       $("<button type='button' class='close' data-dismiss='slick-columnpicker' aria-label='Close'><span class='close' aria-hidden='true'>&times;</span></button>").appendTo($menu);
 
       // user could pass a title on top of the columns list
@@ -79,31 +80,32 @@
       _grid.onHeaderContextMenu.unsubscribe(handleHeaderContextMenu);
       _grid.onColumnsReordered.unsubscribe(updateColumnOrder);
       $(document.body).off("mousedown", handleBodyMouseDown);
-      $("div.slick-columnpicker").hide(_options.fadeSpeed);
+      $("div.slick-columnpicker").hide(_options && _options.columnPicker && _options.columnPicker.fadeSpeed);
       $menu.remove();
     }
 
     function handleBodyMouseDown(e) {
       if (($menu && $menu[0] != e.target && !$.contains($menu[0], e.target)) || e.target.className == "close") {
-        $menu.hide(_options.fadeSpeed);
+        $menu.hide(_options && _options.columnPicker && _options.columnPicker.fadeSpeed);
       }
     }
 
-    function handleHeaderContextMenu(e, args) {
+    function handleHeaderContextMenu(e) {
       e.preventDefault();
       $list.empty();
       updateColumnOrder();
       columnCheckboxes = [];
 
-      var $li, $input;
+      var $li, $input, columnId;
       var columnLabel, excludeCssClass;
       for (var i = 0; i < columns.length; i++) {
+        columnId = columns[i].id;
         excludeCssClass = columns[i].excludeFromColumnPicker ? "hidden" : "";
         $li = $('<li class="' + excludeCssClass + '" />').appendTo($list);
-        $input = $("<input type='checkbox' />").data("column-id", columns[i].id);
+        $input = $("<input type='checkbox' id='" + _gridUid + "colpicker-" + columnId + "' />").data("column-id", columnId).appendTo($li);
         columnCheckboxes.push($input);
 
-        if (_grid.getColumnIndex(columns[i].id) != null) {
+        if (_grid.getColumnIndex(columnId) != null) {
           $input.attr("checked", "checked");
         }
 
@@ -113,9 +115,8 @@
           columnLabel = defaults.headerColumnValueExtractor(columns[i]);
         }
 
-        $("<label />")
+        $("<label for='" + _gridUid + "colpicker-" + columnId + "' />")
           .html(columnLabel)
-          .prepend($input)
           .appendTo($li);
       }
 
@@ -126,11 +127,8 @@
       if (!(_options.columnPicker && _options.columnPicker.hideForceFitButton)) {
         var forceFitTitle = (_options.columnPicker && _options.columnPicker.forceFitTitle) || _options.forceFitTitle;
         $li = $("<li />").appendTo($list);
-        $input = $("<input type='checkbox' />").data("option", "autoresize");
-        $("<label />")
-          .text(forceFitTitle)
-          .prepend($input)
-          .appendTo($li);
+        $input = $("<input type='checkbox' id='" + _gridUid + "colpicker-forcefit' />").data("option", "autoresize").appendTo($li);
+        $("<label for='" + _gridUid + "colpicker-forcefit' />").text(forceFitTitle).appendTo($li);
         if (_grid.getOptions().forceFitColumns) {
           $input.attr("checked", "checked");
         }
@@ -139,11 +137,8 @@
       if (!(_options.columnPicker && _options.columnPicker.hideSyncResizeButton)) {
         var syncResizeTitle = (_options.columnPicker && _options.columnPicker.syncResizeTitle) || _options.syncResizeTitle;
         $li = $("<li />").appendTo($list);
-        $input = $("<input type='checkbox' />").data("option", "syncresize");
-        $("<label />")
-          .text(syncResizeTitle)
-          .prepend($input)
-          .appendTo($li);
+        $input = $("<input type='checkbox' id='" + _gridUid + "colpicker-syncresize' />").data("option", "syncresize").appendTo($li);
+        $("<label for='" + _gridUid + "colpicker-syncresize' />").text(syncResizeTitle).appendTo($li);
         if (_grid.getOptions().syncColumnCellResize) {
           $input.attr("checked", "checked");
         }
@@ -153,7 +148,7 @@
         .css("top", e.pageY - 10)
         .css("left", e.pageX - 10)
         .css("max-height", $(window).height() - e.pageY - 10)
-        .fadeIn(_options.fadeSpeed);
+        .fadeIn(_options && _options.columnPicker && _options.columnPicker.fadeSpeed);
 
       $list.appendTo($menu);
     }
@@ -189,12 +184,12 @@
 
     function updateColumn(e) {
       if ($(e.target).data("option") == "autoresize") {
-        if (e.target.checked) {
-          _grid.setOptions({ forceFitColumns: true });
-          _grid.autosizeColumns();
-        } else {
-          _grid.setOptions({ forceFitColumns: false });
-        }
+        // when calling setOptions, it will resize with ALL Columns (even the hidden ones)
+        // we can avoid this problem by keeping a reference to the visibleColumns before setOptions and then setColumns after 
+        var previousVisibleColumns = getVisibleColumns();
+        var isChecked = e.target.checked;
+        _grid.setOptions({ forceFitColumns: isChecked });
+        _grid.setColumns(previousVisibleColumns);
         return;
       }
 
@@ -209,7 +204,7 @@
 
       if ($(e.target).is(":checkbox")) {
         var visibleColumns = [];
-        $.each(columnCheckboxes, function (i, e) {
+        $.each(columnCheckboxes, function (i) {
           if ($(this).is(":checked")) {
             visibleColumns.push(columns[i]);
           }
@@ -221,7 +216,7 @@
         }
 
         _grid.setColumns(visibleColumns);
-        onColumnsChanged.notify({ columns: visibleColumns, grid: _grid });
+        onColumnsChanged.notify({ allColumns: columns, columns: visibleColumns, grid: _grid });
       }
     }
 
@@ -229,11 +224,17 @@
       return columns;
     }
 
+    /** visible columns, we can simply get them directly from the grid */
+    function getVisibleColumns() {
+      return _grid.getColumns();
+    }
+
     init(_grid);
 
     return {
       "init": init,
       "getAllColumns": getAllColumns,
+      "getVisibleColumns": getVisibleColumns,
       "destroy": destroy,
       "updateAllTitles": updateAllTitles,
       "onColumnsChanged": onColumnsChanged
