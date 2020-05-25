@@ -125,7 +125,7 @@
     var _options = $.extend(true, {}, _defaults, options);
 
     // user could override the expandable icon logic from within the options or after instantiating the plugin
-    if(typeof _options.expandableOverride === 'function') {
+    if (typeof _options.expandableOverride === 'function') {
       expandableOverride(_options.expandableOverride);
     }
 
@@ -232,7 +232,7 @@
       }
 
       // clicking on a row select checkbox
-      if (_options.useRowClick || _grid.getColumns()[args.cell][_dataViewIdProperty] === _options.columnId && $(e.target).hasClass(_options.cssClass)) {
+      if (_options.useRowClick || _grid.getColumns()[args.cell]['id'] === _options.columnId && $(e.target).hasClass(_options.cssClass)) {
         // if editing, try to commit
         if (_grid.getEditorLock().isActive() && !_grid.getEditorLock().commitCurrentEdit()) {
           e.preventDefault();
@@ -240,20 +240,18 @@
           return;
         }
 
-        var item = _dataView.getItem(args.row);
-
         // trigger an event before toggling
         _self.onBeforeRowDetailToggle.notify({
           'grid': _grid,
-          'item': item
+          'item': dataContext
         }, e, _self);
 
-        toggleRowSelection(args.row, item);
+        toggleRowSelection(args.row, dataContext);
 
         // trigger an event after toggling
         _self.onAfterRowDetailToggle.notify({
           'grid': _grid,
-          'item': item,
+          'item': dataContext,
           'expandedRows': _expandedRows,
         }, e, _self);
 
