@@ -155,7 +155,7 @@
     };
 
     $('#currentExcludeChildren').html(`${gridOptions.excludeChildrenWhenTreeDataFiltering}`)
-   
+
     function myFilter(item, columnFilters) {
       if (item.parentId !== null) {
         let parent = dataView.getItemById(item.parentId);
@@ -192,7 +192,7 @@
           //return tmpPreFilteredData.includes(item.id); // return true when found, false otherwise
         //}
       }
-      
+
       // anything is considered valid (tmpPreFilteredData array is empty or not present)
       // return true to reset all filters and also reset collapsed to false:
       //item['__collapsed'] = false;
@@ -295,13 +295,13 @@
                 },
                 { id: 16, file: "rock",
                   files: [
-                    { id: 17, file: "soft.mp3", dateModified: "2015-05-13", size: 98, } 
+                    { id: 17, file: "soft.mp3", dateModified: "2015-05-13", size: 98, }
                   ]
                 },
               ]
             },
           ]
-        },    
+        },
       ];
       //*/
 
@@ -327,7 +327,7 @@
 
       //OR you can use this function to determine which type you have and to return both flat & nested (& filter func):
       //also adds the __treeLevel props and parentIds etc. to the flat data if initData is heirarchical (nested) data
-      //and returns the filter function to the user for them to attach directly to a keyup event etc.      
+      //and returns the filter function to the user for them to attach directly to a keyup event etc.
 
       [data, nestedData] = treeDataUtilities.fromInputReturnFlatAndNestedDataStructures(initData, false, myOptions);
       console.log('tree', nestedData);
@@ -357,6 +357,10 @@
           }
           e.stopImmediatePropagation();
         }
+      });
+
+      grid.onSort.subscribe(function (e, args) {
+        executeSort(args);
       });
 
       // wire up model events to drive the grid
@@ -394,7 +398,7 @@
       }
       dataView.refresh();
     }
-    function toggleExcludeChildren() {      
+    function toggleExcludeChildren() {
       gridOptions.excludeChildrenWhenTreeDataFiltering = !gridOptions.excludeChildrenWhenTreeDataFiltering;
       $('#currentExcludeChildren').html(`${gridOptions.excludeChildrenWhenTreeDataFiltering}`)
       $('.slick-headerrow-column').children().val('').keyup();
@@ -412,6 +416,50 @@
       }
       return isNaN(value) ? '' : `${value} MB`;
     }
+
+    function executeSort(args) {
+      sortTreeChild(nestedData, args);
+      const sortedFlatArray = treeDataUtilities.convertHierarchicalViewToFlatArray(nestedData, {
+        parentPropName: 'parentId',
+        childrenPropName: 'files',
+        treeLevelPropName: '__treeLevel',
+      });
+      dataView.setItems(sortedFlatArray);
+      grid.invalidate();
+    }
+
+    function sortTreeChild(nestedArray, args) {
+      const childrenPropName = 'files';
+
+      nestedArray.sort(function (dataRow1, dataRow2) {
+        var field = args.sortCol.field;
+        var sign = args.sortAsc ? 1 : -1;
+        return stringSort(dataRow1[field], dataRow2[field], sign);
+      });
+
+      for (const item of nestedArray) {
+        if (item && Array.isArray(item[childrenPropName])) {
+          sortTreeChild(item[childrenPropName], args);
+        }
+      }
+    }
+
+    function stringSort(value1, value2, directionSign) {
+      let position = 0;
+      if (value1 === value2) {
+        position = 0;
+      } else if (value1 === null || value1 === undefined) {
+        position = -1;
+      } else if (value2 === null || value2 === undefined) {
+        position = 1;
+      } else if (directionSign) {
+        position = value1 < value2 ? -1 : 1;
+      } else {
+        position = value1 < value2 ? 1 : -1;
+      }
+      return directionSign * position;
+    }
+
 
     function treeFormatter(row, cell, value, columnDef, dataContext, grid) {
       const treeLevelPropName = '__treeLevel';
