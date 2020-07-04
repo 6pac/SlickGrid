@@ -271,8 +271,8 @@
           $icon.css("background-image", "url(" + item.iconImage + ")");
         }
 
-        var $text = $("<span class='slick-header-menucontent'></span>")
-          .text(item.title)
+        var $text = $("<div class='slick-header-menucontent'></div>")
+          .html(item.title)
           .appendTo($li);
 
         if (item.textCssClass) {
