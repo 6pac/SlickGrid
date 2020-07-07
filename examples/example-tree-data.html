@@ -138,9 +138,9 @@
     var treeData = {};
     var nestedData = [];
     var columns = [
-      { id: 'file', name: 'Files', field: 'file', width: 200, formatter: treeFormatter, sortable: true, },
-      { id: 'dateModified', name: 'Date Modified', field: 'dateModified', sortable: true, minWidth: 90, },
-      { id: 'size', name: 'Size', field: 'size', sortable: true, minWidth: 90, formatter: sizeFormatter },
+      { id: 'file', name: 'Files', field: 'file', width: 200, formatter: treeFormatter, sortable: true, type: 'string' },
+      { id: 'dateModified', name: 'Date Modified', field: 'dateModified', sortable: true, minWidth: 90, type: 'date', },
+      { id: 'size', name: 'Size', field: 'size', sortable: true, minWidth: 90, formatter: sizeFormatter, type: 'number' },
     ];
 
     var gridOptions = {
@@ -262,14 +262,14 @@
             { id: 9, file: "misc",
               files: [
                 { id: 23, file: "something2.txt", dateModified: "2015-02-26", size: 0.4, },
-                { id: 10, file: "something.txt", dateModified: "2015-02-26", size: 0.4, },
+                { id: 10, file: "something.txt", dateModified: "2015-02-24", size: 0.4, },
               ]
             },
             { id: 4, file: "pdf",
               files: [
                 { id: 6, file: "internet-bill.pdf", dateModified: "2015-05-12", size: 1.4, },
                 { id: 5, file: "map.pdf", dateModified: "2015-05-21", size: 3.1, },
-                { id: 22, file: "map2.pdf", dateModified: "2015-05-21", size: 2.9, },
+                { id: 22, file: "map2.pdf", dateModified: "2015-05-24", size: 2.9, },
               ]
             },
             { id: 2, file: "txt",
@@ -433,10 +433,16 @@
 
       nestedArray.sort(function (dataRow1, dataRow2) {
         var field = args.sortCol.field;
+        var fieldType = args.sortCol.type;
         var sign = args.sortAsc ? 1 : -1;
+
+        if (fieldType === 'number') {
+          return numericSort(dataRow1[field], dataRow2[field], sign);
+        }
         return stringSort(dataRow1[field], dataRow2[field], sign);
       });
 
+      // if the nested data has other children, we'll sort their children as well recursively
       for (const item of nestedArray) {
         if (item && Array.isArray(item[childrenPropName])) {
           sortTreeChild(item[childrenPropName], args);
@@ -444,7 +450,13 @@
       }
     }
 
-    function stringSort(value1, value2, directionSign) {
+    function numericSort(value1, value2, sortDirection) {
+      const x = (isNaN(value1) || value1 === '' || value1 === null) ? -99e+10 : parseFloat(value1);
+      const y = (isNaN(value2) || value2 === '' || value2 === null) ? -99e+10 : parseFloat(value2);
+      return sortDirection * (x === y ? 0 : (x > y ? 1 : -1));
+    };
+
+    function stringSort(value1, value2, sortDirection) {
       let position = 0;
       if (value1 === value2) {
         position = 0;
@@ -452,12 +464,12 @@
         position = -1;
       } else if (value2 === null || value2 === undefined) {
         position = 1;
-      } else if (directionSign) {
+      } else if (sortDirection) {
         position = value1 < value2 ? -1 : 1;
       } else {
         position = value1 < value2 ? 1 : -1;
       }
-      return directionSign * position;
+      return sortDirection * position;
     }
 
 
