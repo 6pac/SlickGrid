@@ -256,7 +256,7 @@
       // calculate the available sizes with minimum height defined as a varant
       var availableDimensions = calculateGridNewDimensions();
 
-      if ((newSizes || availableDimensions) && _gridDomElm.length > 0) {
+      if ((newSizes || availableDimensions) && _gridDomElm && _gridDomElm.length > 0) {
         // get the new sizes, if new sizes are passed (not 0), we will use them else use available space
         // basically if user passes 1 of the dimension, let say he passes just the height,
         // we will use the height as a fixed height but the width will be resized by it's available space
