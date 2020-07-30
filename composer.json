@@ -1,0 +1,14 @@
+{
+  "name": "arashdalir/slick-grid",
+  "description": "Forked SlickGrid",
+  "minimum-stability": "stable",
+  "license": "GPL-3.0-or-later",
+  "authors": [
+    {
+      "name": "ada",
+      "email": "arash.dalir+github@gmail.com"
+    }
+  ],
+  "require": {
+  }
+}
