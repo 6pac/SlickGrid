@@ -1816,10 +1816,20 @@ if (typeof Slick === "undefined") {
               if (options.syncColumnCellResize) {
                 applyColumnWidths();
               }
+              trigger(self.onColumnsDrag, { 
+                triggeredByColumn: $(this).parent().attr("id").replace(uid, ""), 
+                resizeHandle: $(this) 
+              });
             })
             .on("dragend", function (e, dd) {
-              var newWidth;
               $(this).parent().removeClass("slick-header-column-active");
+
+              var triggeredByColumn = $(this).parent().attr("id").replace(uid, "");
+              if (trigger(self.onBeforeColumnsResize, { triggeredByColumn: triggeredByColumn }) === true) {
+                applyColumnHeaderWidths();
+                applyColumnGroupHeaderWidths();
+              }
+              var newWidth;
               for (j = 0; j < columns.length; j++) {
                 c = columns[j];
                 newWidth = $(columnElements[j]).outerWidth();
@@ -1830,7 +1840,7 @@ if (typeof Slick === "undefined") {
               }
               updateCanvasWidth(true);
               render();
-              trigger(self.onColumnsResized, {triggeredByColumn: $(this).parent().attr("id").replace(uid, "")});
+              trigger(self.onColumnsResized, { triggeredByColumn: triggeredByColumn });
               setTimeout(function () { columnResizeDragging = false; }, 300);
             });
       });
@@ -2804,7 +2814,10 @@ if (typeof Slick === "undefined") {
         invalidateRow(getDataLength());
       }
 
+      var originalOptions = $.extend(true, {}, options);
       options = $.extend(options, args);
+      trigger(self.onSetOptions, { "optionsBefore": originalOptions, "optionsAfter": options });
+
       validateAndEnforceOptions();
 
       $viewport.css("overflow-y", options.autoHeight ? "hidden" : "auto");
@@ -3411,6 +3424,11 @@ if (typeof Slick === "undefined") {
     }
 
     function getViewportHeight() {
+      if (!options.autoHeight || options.frozenColumn != -1) {
+        topPanelH = ( options.showTopPanel ) ? options.topPanelHeight + getVBoxDelta($topPanelScroller) : 0;
+        headerRowH = ( options.showHeaderRow ) ? options.headerRowHeight + getVBoxDelta($headerRowScroller) : 0;
+        footerRowH = ( options.showFooterRow ) ? options.footerRowHeight + getVBoxDelta($footerRowScroller) : 0;
+      }
       if (options.autoHeight) {
         var fullHeight = $paneHeaderL.outerHeight();
         fullHeight += ( options.showHeaderRow ) ? options.headerRowHeight + getVBoxDelta($headerRowScroller) : 0;
@@ -3423,9 +3441,6 @@ if (typeof Slick === "undefined") {
       } else {
         var columnNamesH = ( options.showColumnHeader ) ? parseFloat($.css($headerScroller[0], "height"))
           + getVBoxDelta($headerScroller) : 0;
-        topPanelH = ( options.showTopPanel ) ? options.topPanelHeight + getVBoxDelta($topPanelScroller) : 0;
-        headerRowH = ( options.showHeaderRow ) ? options.headerRowHeight + getVBoxDelta($headerRowScroller) : 0;
-        footerRowH = ( options.showFooterRow ) ? options.footerRowHeight + getVBoxDelta($footerRowScroller) : 0;
         var preHeaderH = (options.createPreHeaderPanel && options.showPreHeaderPanel) ? options.preHeaderPanelHeight + getVBoxDelta($preHeaderPanelScroller) : 0;
 
         viewportH = parseFloat($.css($container[0], "height", true))
@@ -5764,7 +5779,7 @@ if (typeof Slick === "undefined") {
     // Public API
 
     $.extend(this, {
-      "slickGridVersion": "2.4.24",
+      "slickGridVersion": "2.4.27",
 
       // Events
       "onScroll": new Slick.Event(),
@@ -5792,7 +5807,9 @@ if (typeof Slick === "undefined") {
       "onValidationError": new Slick.Event(),
       "onViewportChanged": new Slick.Event(),
       "onColumnsReordered": new Slick.Event(),
+      "onColumnsDrag": new Slick.Event(),
       "onColumnsResized": new Slick.Event(),
+      "onBeforeColumnsResize": new Slick.Event(),
       "onCellChange": new Slick.Event(),
       "onBeforeEditCell": new Slick.Event(),
       "onBeforeCellEditorDestroy": new Slick.Event(),
@@ -5807,6 +5824,7 @@ if (typeof Slick === "undefined") {
       "onCellCssStylesChanged": new Slick.Event(),
       "onAutosizeColumns": new Slick.Event(),
       "onRendered": new Slick.Event(),
+      "onSetOptions": new Slick.Event(),
 
       // Methods
       "registerPlugin": registerPlugin,
