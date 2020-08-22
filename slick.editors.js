@@ -25,6 +25,7 @@
     var $input;
     var defaultValue;
     var scope = this;
+    this.args = args;
 
     this.init = function () {
       var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
@@ -91,6 +92,7 @@
     var $input;
     var defaultValue;
     var scope = this;
+    this.args = args;
 
     this.init = function () {
       var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
@@ -156,6 +158,7 @@
     var $input;
     var defaultValue;
     var scope = this;
+    this.args = args;
 
     this.init = function () {
       var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
@@ -256,6 +259,7 @@
     var defaultValue;
     var scope = this;
     var calendarOpen = false;
+    this.args = args;
 
     this.init = function () {
       $input = $("<INPUT type=text class='editor-text' />");
@@ -271,7 +275,8 @@
           calendarOpen = false;
         }
       });
-      $input.width($input.width() - 18);
+      
+      $input.width($input.width() - (!args.isCompositeEditor ? 18 : 28));
     };
 
     this.destroy = function () {
@@ -346,6 +351,7 @@
     var $select;
     var defaultValue;
     var scope = this;
+    this.args = args;
 
     this.init = function () {
       $select = $("<SELECT tabIndex='0' class='editor-yesno'><OPTION value='yes'>Yes</OPTION><OPTION value='no'>No</OPTION></SELECT>");
@@ -392,6 +398,7 @@
     var $select;
     var defaultValue;
     var scope = this;
+    this.args = args;
 
     this.init = function () {
       $select = $("<INPUT type=checkbox value='true' class='editor-checkbox' hideFocus>");
@@ -446,6 +453,7 @@
     var $input, $picker;
     var defaultValue;
     var scope = this;
+    this.args = args;
 
     this.init = function () {
       $input = $("<INPUT type=text class='editor-percentcomplete' />");
@@ -526,25 +534,34 @@
     var $input, $wrapper;
     var defaultValue;
     var scope = this;
+    this.args = args;
 
     this.init = function () {
-      var $container = $("body");
+      var isCompositeEditor = args.isCompositeEditor;
       var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
+      var $container = isCompositeEditor ? args.container : $('body');
 
-      $wrapper = $("<DIV style='z-index:10000;position:absolute;background:white;padding:5px;border:3px solid gray; -moz-border-radius:10px; border-radius:10px;'/>")
+      $wrapper = $("<DIV class='slick-large-editor-text' style='z-index:10000;background:white;padding:5px;border:3px solid gray; border-radius:10px;'/>")
           .appendTo($container);
+      if (isCompositeEditor) {
+        $wrapper.css({ position: 'relative', padding: 0, border: 0 });
+      } else {
+        $wrapper.css({ position: 'absolute' });
+      }
 
       $input = $("<TEXTAREA hidefocus rows=5 style='background:white;width:250px;height:80px;border:0;outline:0'>")
           .appendTo($wrapper);
 
-      $("<DIV style='text-align:right'><BUTTON>Save</BUTTON><BUTTON>Cancel</BUTTON></DIV>")
-          .appendTo($wrapper);
+      if (!isCompositeEditor) {
+        $("<DIV style='text-align:right'><BUTTON>Save</BUTTON><BUTTON>Cancel</BUTTON></DIV>")
+            .appendTo($wrapper);
 
-      $wrapper.find("button:first").on("click", this.save);
-      $wrapper.find("button:last").on("click", this.cancel);
-      $input.on("keydown", this.handleKeyDown); 
+        $wrapper.find("button:first").on("click", this.save);
+        $wrapper.find("button:last").on("click", this.cancel);
+        $input.on("keydown", this.handleKeyDown); 
+        scope.position(args.position);
+      }
 
-      scope.position(args.position);
       $input.focus().select();
     };
 
