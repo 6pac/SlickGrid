@@ -297,6 +297,13 @@
         grid.render();
       });
 
+      grid.onCompositeEditorChange.subscribe(function (e, args) {
+        console.log('composite editor input changed', args);
+      });
+
+      grid.onCellChange.subscribe(function (e, args) {
+        console.log('cell changed', args);
+      });
 
       grid.onValidationError.subscribe(function (e, args) {
         // handle validation errors originating from the CompositeEditor

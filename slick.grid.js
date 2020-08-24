@@ -5811,6 +5811,7 @@ if (typeof Slick === "undefined") {
       "onColumnsResized": new Slick.Event(),
       "onBeforeColumnsResize": new Slick.Event(),
       "onCellChange": new Slick.Event(),
+      "onCompositeEditorChange": new Slick.Event(),
       "onBeforeEditCell": new Slick.Event(),
       "onBeforeCellEditorDestroy": new Slick.Event(),
       "onBeforeDestroy": new Slick.Event(),

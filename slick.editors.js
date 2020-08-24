@@ -34,6 +34,14 @@
           .on("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav)
           .focus()
           .select();
+
+      if (args.isCompositeEditor) {
+        $input.on("change", function() {
+          var activeCell = args.grid.getActiveCell();
+          scope.applyValue(scope.args.item, scope.serializeValue());
+          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column });
+        });
+      }
     };
 
     this.destroy = function () {
@@ -101,6 +109,14 @@
       .on("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav)      
       .focus()
       .select();
+
+      if (args.isCompositeEditor) {
+        $input.on("change", function() {
+          var activeCell = args.grid.getActiveCell();
+          scope.applyValue(scope.args.item, scope.serializeValue());
+          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column });
+        });
+      }
     };
 
     this.destroy = function () {
@@ -167,6 +183,14 @@
       .on("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav)      
       .focus()
       .select();
+
+      if (args.isCompositeEditor) {
+        $input.on("change", function() {
+          var activeCell = args.grid.getActiveCell();
+          scope.applyValue(scope.args.item, scope.serializeValue());
+          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column });
+        });
+      }
     };
 
     this.destroy = function () {
@@ -273,6 +297,12 @@
         },
         onClose: function () {
           calendarOpen = false;
+
+          if (args.isCompositeEditor) {
+            var activeCell = args.grid.getActiveCell();
+            scope.applyValue(scope.args.item, scope.serializeValue());
+            args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column });
+          }
         }
       });
       
@@ -357,6 +387,14 @@
       $select = $("<SELECT tabIndex='0' class='editor-yesno'><OPTION value='yes'>Yes</OPTION><OPTION value='no'>No</OPTION></SELECT>");
       $select.appendTo(args.container);
       $select.focus();
+
+      if (args.isCompositeEditor) {
+        $select.on("change", function() {
+          var activeCell = args.grid.getActiveCell();
+          scope.applyValue(scope.args.item, scope.serializeValue());
+          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column });
+        });
+      }
     };
 
     this.destroy = function () {
@@ -404,6 +442,14 @@
       $select = $("<INPUT type=checkbox value='true' class='editor-checkbox' hideFocus>");
       $select.appendTo(args.container);
       $select.focus();
+
+      if (args.isCompositeEditor) {
+        $select.on("change", function() {
+          var activeCell = args.grid.getActiveCell();
+          scope.applyValue(scope.args.item, scope.serializeValue());
+          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column });
+        });
+      }
     };
 
     this.destroy = function () {
@@ -473,6 +519,13 @@
         value: defaultValue,
         slide: function (event, ui) {
           $input.val(ui.value);
+        },
+        stop: function (event, ui) {
+          if (args.isCompositeEditor) {
+            var activeCell = args.grid.getActiveCell();
+            scope.applyValue(scope.args.item, ui.value);
+            args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column });
+          }
         }
       });
 
@@ -552,14 +605,20 @@
       $input = $("<TEXTAREA hidefocus rows=5 style='background:white;width:250px;height:80px;border:0;outline:0'>")
           .appendTo($wrapper);
 
-      if (!isCompositeEditor) {
+      if (isCompositeEditor) {
+        $input.on("change", function() {
+          var activeCell = args.grid.getActiveCell();
+          scope.applyValue(scope.args.item, scope.serializeValue());
+          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column });
+        });
+      } else {
         $("<DIV style='text-align:right'><BUTTON>Save</BUTTON><BUTTON>Cancel</BUTTON></DIV>")
             .appendTo($wrapper);
 
         $wrapper.find("button:first").on("click", this.save);
         $wrapper.find("button:last").on("click", this.cancel);
-        $input.on("keydown", this.handleKeyDown); 
-        scope.position(args.position);
+        $input.on("keydown", this.handleKeyDown);
+        scope.position(args.position);        
       }
 
       $input.focus().select();
