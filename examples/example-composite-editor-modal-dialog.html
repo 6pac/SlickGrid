@@ -84,7 +84,7 @@
       border: 1px solid silver;
       background: white;
       display: block;
-      margin: 10px;
+      margin: 4px 10px;
       margin-top: 4px;
       padding: 0;
       padding-left: 4px;
@@ -96,8 +96,15 @@
       height: inherit;
     }
 
+    .invalid {
+      color: red;
+    }
+    .item-details-editor-container.invalid {
+      border: 1px solid red;
+    }
     .slick-editor-detail-validation {
       color: red;
+      font-style: italic;
       margin-left: 12px;
     }
 
@@ -127,7 +134,8 @@
       </ul>
 
       <h2>Options:</h2>
-      <button onclick="openDetails()">Open Item Edit for active row</button>
+      <button onclick="openDetails(false)">Open Item Edit for active row</button>
+      <button onclick="openDetails(true)">Open Add New Row Detail</button>
 
       <h2>View Source:</h2>
       <ul>
@@ -180,55 +188,58 @@
       autoEdit: false
     };
 
-    function validateCurrentEditor() {
+    function validateCurrentEditor($targetElm) {
       var currentEditor = this.grid.getCellEditor();
       if (currentEditor) {
-        currentEditor.validate();
+        currentEditor.validate($targetElm);
       }
     }
 
-    function openDetails() {
+    function openDetails(isInserting) {
       if (grid.getEditorLock().isActive() && !grid.getEditorLock().commitCurrentEdit()) {
         return;
       }
 
       var $modal = $(`<div class="modal"></div>`);
       var $modalHeader = $(`<div class="modal-header"><h5>Composite Editor</h5>
-      <button type="button" class="close" data-action="cancel" aria-label="Close">
+        <button type="button" class="close" data-action="cancel" aria-label="Close">
           <span aria-hidden="true">X</span>
         </button></div>`);
       var $modalBody = $(`<div class="modal-body"></div>`);
 
       for (const column of columns) {
         if (column.editor) {
-          var $templateItem = $(`<div class="item-details-label">${column.name}</div>
-        <div class="item-details-editor-container" data-editorid="${column.id}" style="height: ${column.id === 'desc' ? 'inherit' : '20px'}"></div>
-        <div class="slick-editor-detail-validation editor-${column.id}"></div>`);
+          var $templateItem = $(`<div class="item-details-label editor-${column.id}">${column.name}</div>
+            <div class="item-details-editor-container" data-editorid="${column.id}" style="height: ${column.id === 'desc' ? 'inherit' : '20px'}"></div>
+            <div class="slick-editor-detail-validation editor-${column.id}"></div>`);
           $templateItem.appendTo($modalBody);
         }
       }
       const $modalFooter = $(`<div class="modal-footer">
-      <button data-action="save">Save</button>
-      <button data-action="cancel">Cancel</button>
-    </div>`);
+          <button data-action="save">Save</button>
+          <button data-action="cancel">Cancel</button>
+        </div>`);
 
       $modalHeader.appendTo($modal);
       $modalBody.appendTo($modal);
       $modalFooter.appendTo($modal);
       $modal.appendTo("body");
 
-      $modal.on('focusout', validateCurrentEditor.bind(this));
+      $modal.on('focusout', function(e) {
+        validateCurrentEditor(e.target);
+      });
       $modal.on('keydown', (function (e) {
         if (e.which == Slick.keyCode.ESCAPE) {
           grid.getEditController().cancelCurrentEdit();
           e.stopPropagation();
           e.preventDefault();
         } else if (e.which === Slick.keyCode.TAB) {
-          validateCurrentEditor();
+          validateCurrentEditor(e.target);
         }
       }));
 
       $modal.find("[data-action=save]").click(function () {
+        validateCurrentEditor();
         grid.getEditController().commitCurrentEdit();
       });
 
@@ -250,9 +261,14 @@
         {
           destroy: function () {
             $modal.remove();
-          }
+          },
+          addingNewRow: isInserting
         }
       );
+
+      if (isInserting) {
+        grid.setActiveCell(data.length, 0);
+      }
 
       grid.editActiveCell(compositeEditor);
     }
@@ -302,7 +318,7 @@
       });
 
       grid.setActiveCell(0, 0);
-    })
+    });
   </script>
 </body>
 

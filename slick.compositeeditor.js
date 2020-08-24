@@ -26,6 +26,7 @@
    * @param containers {Array} Container HTMLElements in which editors will be placed.
    * @param options {Object} Options hash:
    *  validationFailedMsg     -   A generic failed validation message set on the aggregated validation resuls.
+   *  addingNewRow            -   Are we adding a new row? False by default, which mean that we are instead in Editing mode
    *  hide                    -   A function to be called when the grid asks the editor to hide itself.
    *  show                    -   A function to be called when the grid asks the editor to show itself.
    *  position                -   A function to be called when the grid asks the editor to reposition itself.
@@ -33,6 +34,7 @@
    */
   function CompositeEditor(columns, containers, options) {
     var defaultOptions = {
+      addingNewRow: false,
       validationFailedMsg: "Some of the fields have failed validation",
       show: null,
       hide: null,
@@ -143,14 +145,18 @@
 
       this.loadValue = function (item) {
         var idx = 0;
-        while (idx < editors.length) {
-          editors[idx].loadValue(item);
-          idx++;
+        
+        // load the value only when the modal is for Editing (we won't load value on New Item Insert)
+        if (!options.addingNewRow) {
+          while (idx < editors.length) {
+            editors[idx].loadValue(item);
+            idx++;
+          }
         }
       };
 
 
-      this.validate = function () {
+      this.validate = function ($targetElm) {
         var validationResults;
         var errors = [];
 
@@ -161,27 +167,38 @@
           var columnDef = editors[idx].args && editors[idx].args.column || {};
           if (columnDef) {
             var $validationElm = $(".slick-editor-detail-validation.editor-" + columnDef.id);
-            validationResults = editors[idx].validate();
+            var $labelElm = $(".item-details-label.editor-" + columnDef.id);
+            var $editorElm = $("[data-editorid=" + columnDef.id + "]");
 
-            if (!validationResults.valid) {
-              firstInvalidEditor = editors[idx];
-              errors.push({
-                index: idx,
-                editor: editors[idx],
-                container: containers[idx],
-                msg: validationResults.msg
-              });
+            if (!$targetElm || ($editorElm.has($targetElm).length > 0)) {
+              validationResults = editors[idx].validate();
 
-              if ($validationElm) {
-                $validationElm.text(validationResults.msg);
-                $validationElm.show();
+              if (!validationResults.valid) {
+                firstInvalidEditor = editors[idx];
+                errors.push({
+                  index: idx,
+                  editor: editors[idx],
+                  container: containers[idx],
+                  msg: validationResults.msg
+                });
+  
+                if ($validationElm) {
+                  $validationElm.text(validationResults.msg);
+                  $labelElm.addClass("invalid");
+                  $editorElm.addClass("invalid");
+                  $validationElm.show();
+                }
+              } else if ($validationElm) {
+                $validationElm.text("");
+                $editorElm.removeClass("invalid");
+                $labelElm.removeClass("invalid");
+                $validationElm.hide();
               }
-            } else if ($validationElm) {
-              $validationElm.hide();
             }
           }
           idx++;
         }
+
 
         if (errors.length) {
           return {
