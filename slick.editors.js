@@ -35,11 +35,13 @@
           .focus()
           .select();
 
-      if (args.isCompositeEditor) {
+      // don't show Save/Cancel when it's a Composite Editor and also trigger a onCompositeEditorChange event when input changes
+      if (args.compositeEditorOptions) {
         $input.on("change", function() {
           var activeCell = args.grid.getActiveCell();
           scope.applyValue(scope.args.item, scope.serializeValue());
-          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column });
+          scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
+          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
         });
       }
     };
@@ -81,7 +83,7 @@
 
     this.validate = function () {
       if (args.column.validator) {
-        var validationResults = args.column.validator($input.val());
+        var validationResults = args.column.validator($input.val(), args);
         if (!validationResults.valid) {
           return validationResults;
         }
@@ -110,11 +112,13 @@
       .focus()
       .select();
 
-      if (args.isCompositeEditor) {
+      // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
+      if (args.compositeEditorOptions) {
         $input.on("change", function() {
           var activeCell = args.grid.getActiveCell();
           scope.applyValue(scope.args.item, scope.serializeValue());
-          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column });
+          scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
+          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
         });
       }
     };
@@ -155,7 +159,7 @@
       }
 
       if (args.column.validator) {
-        var validationResults = args.column.validator($input.val());
+        var validationResults = args.column.validator($input.val(), args);
         if (!validationResults.valid) {
           return validationResults;
         }
@@ -184,11 +188,13 @@
       .focus()
       .select();
 
-      if (args.isCompositeEditor) {
+      // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
+      if (args.compositeEditorOptions) {
         $input.on("change", function() {
           var activeCell = args.grid.getActiveCell();
           scope.applyValue(scope.args.item, scope.serializeValue());
-          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column });
+          scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
+          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
         });
       }
     };
@@ -260,7 +266,7 @@
       }
 
       if (args.column.validator) {
-        var validationResults = args.column.validator($input.val());
+        var validationResults = args.column.validator($input.val(), args);
         if (!validationResults.valid) {
           return validationResults;
         }
@@ -298,15 +304,17 @@
         onClose: function () {
           calendarOpen = false;
 
-          if (args.isCompositeEditor) {
+          // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
+          if (args.compositeEditorOptions) {
             var activeCell = args.grid.getActiveCell();
             scope.applyValue(scope.args.item, scope.serializeValue());
-            args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column });
+            scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
+            args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
           }
         }
       });
       
-      $input.width($input.width() - (!args.isCompositeEditor ? 18 : 28));
+      $input.width($input.width() - (!args.compositeEditorOptions ? 18 : 28));
     };
 
     this.destroy = function () {
@@ -362,7 +370,7 @@
 
     this.validate = function () {
       if (args.column.validator) {
-        var validationResults = args.column.validator($input.val());
+        var validationResults = args.column.validator($input.val(), args);
         if (!validationResults.valid) {
           return validationResults;
         }
@@ -388,11 +396,13 @@
       $select.appendTo(args.container);
       $select.focus();
 
-      if (args.isCompositeEditor) {
+      // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
+      if (args.compositeEditorOptions) {
         $select.on("change", function() {
           var activeCell = args.grid.getActiveCell();
           scope.applyValue(scope.args.item, scope.serializeValue());
-          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column });
+          scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
+          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
         });
       }
     };
@@ -443,11 +453,13 @@
       $select.appendTo(args.container);
       $select.focus();
 
-      if (args.isCompositeEditor) {
+      // trigger onCompositeEditorChange event when input checkbox changes and it's a Composite Editor
+      if (args.compositeEditorOptions) {
         $select.on("change", function() {
           var activeCell = args.grid.getActiveCell();
           scope.applyValue(scope.args.item, scope.serializeValue());
-          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column });
+          scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
+          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
         });
       }
     };
@@ -521,10 +533,12 @@
           $input.val(ui.value);
         },
         stop: function (event, ui) {
-          if (args.isCompositeEditor) {
+          // trigger onCompositeEditorChange event when slider stops and it's a Composite Editor
+          if (args.compositeEditorOptions) {
             var activeCell = args.grid.getActiveCell();
             scope.applyValue(scope.args.item, ui.value);
-            args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column });
+            scope.applyValue(scope.args.compositeEditorOptions.formValues, ui.value);
+            args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
           }
         }
       });
@@ -590,13 +604,13 @@
     this.args = args;
 
     this.init = function () {
-      var isCompositeEditor = args.isCompositeEditor;
+      var compositeEditorOptions = args.compositeEditorOptions;
       var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
-      var $container = isCompositeEditor ? args.container : $('body');
+      var $container = compositeEditorOptions ? args.container : $('body');
 
       $wrapper = $("<DIV class='slick-large-editor-text' style='z-index:10000;background:white;padding:5px;border:3px solid gray; border-radius:10px;'/>")
           .appendTo($container);
-      if (isCompositeEditor) {
+      if (compositeEditorOptions) {
         $wrapper.css({ position: 'relative', padding: 0, border: 0 });
       } else {
         $wrapper.css({ position: 'absolute' });
@@ -605,11 +619,13 @@
       $input = $("<TEXTAREA hidefocus rows=5 style='background:white;width:250px;height:80px;border:0;outline:0'>")
           .appendTo($wrapper);
 
-      if (isCompositeEditor) {
+      // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
+      if (compositeEditorOptions) {
         $input.on("change", function() {
           var activeCell = args.grid.getActiveCell();
           scope.applyValue(scope.args.item, scope.serializeValue());
-          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column });
+          scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
+          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
         });
       } else {
         $("<DIV style='text-align:right'><BUTTON>Save</BUTTON><BUTTON>Cancel</BUTTON></DIV>")
@@ -700,7 +716,7 @@
 
     this.validate = function () {
       if (args.column.validator) {
-        var validationResults = args.column.validator($input.val());
+        var validationResults = args.column.validator($input.val(), args);
         if (!validationResults.valid) {
           return validationResults;
         }

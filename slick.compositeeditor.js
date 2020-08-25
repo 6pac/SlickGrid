@@ -26,7 +26,7 @@
    * @param containers {Array} Container HTMLElements in which editors will be placed.
    * @param options {Object} Options hash:
    *  validationFailedMsg     -   A generic failed validation message set on the aggregated validation resuls.
-   *  addingNewRow            -   Are we adding a new row? False by default, which mean that we are instead in Editing mode
+   *  modalType               -   Defaults to "edit", modal type can 1 of these 3: (create, edit, mass, mass-selection)
    *  hide                    -   A function to be called when the grid asks the editor to hide itself.
    *  show                    -   A function to be called when the grid asks the editor to show itself.
    *  position                -   A function to be called when the grid asks the editor to reposition itself.
@@ -34,12 +34,13 @@
    */
   function CompositeEditor(columns, containers, options) {
     var defaultOptions = {
-      addingNewRow: false,
+      modalType: 'edit', // available type (create, edit, mass)
       validationFailedMsg: "Some of the fields have failed validation",
       show: null,
       hide: null,
       position: null,
-      destroy: null
+      destroy: null,
+      formValues: {},
     };
 
     var noop = function () {
@@ -53,14 +54,14 @@
     function getContainerBox(i) {
       var c = containers[i];
       var offset = $(c).offset();
-      var w = $(c).width();
-      var h = $(c).height();
+      var w = $(c).width() || 0;
+      var h = $(c).height() || 0;
 
       return {
-        top: offset.top,
-        left: offset.left,
-        bottom: offset.top + h,
-        right: offset.left + w,
+        top: offset && offset.top,
+        left: offset && offset.left,
+        bottom: offset && offset.top + h,
+        right: offset && offset.left + w,
         width: w,
         height: h,
         visible: true
@@ -77,15 +78,17 @@
         var idx = 0;
         while (idx < columns.length) {
           if (columns[idx].editor) {
+            var column = columns[idx];
             newArgs = $.extend({}, args);
             newArgs.container = containers[idx];
-            newArgs.column = columns[idx];
+            newArgs.column = column;
             newArgs.position = getContainerBox(idx);
             newArgs.commitChanges = noop;
             newArgs.cancelChanges = noop;
-            newArgs.isCompositeEditor = true;
+            newArgs.compositeEditorOptions = options;
+            newArgs.formValues = {};
 
-            editors.push(new (columns[idx].editor)(newArgs));
+            editors.push(new (column.editor)(newArgs));
           }
           idx++;
         }
@@ -147,7 +150,7 @@
         var idx = 0;
         
         // load the value only when the modal is for Editing (we won't load value on New Item Insert)
-        if (!options.addingNewRow) {
+        if (options.modalType === "edit") {
           while (idx < editors.length) {
             editors[idx].loadValue(item);
             idx++;
@@ -191,7 +194,7 @@
               } else if ($validationElm) {
                 $validationElm.text("");
                 $editorElm.removeClass("invalid");
-                $labelElm.removeClass("invalid");
+                $labelElm.removeClass("invalid");                
                 $validationElm.hide();
               }
             }
