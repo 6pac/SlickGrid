@@ -129,7 +129,7 @@
     <div style="width:625px;">
       <div id="myGrid" style="width:100%;height:500px;"></div>
     </div>
-    
+
     <div class="options-panel">
       <h2>Demonstrates:</h2>
       <ul>
@@ -195,8 +195,8 @@
       return { valid: true, msg: '' };
     }
 
-    function durationFormatter(row, cell, value) { 
-      return value > 1 ? (value + " days") : (value + " day"); 
+    function durationFormatter(row, cell, value) {
+      return value > 1 ? (value + " days") : (value + " day");
     }
 
     var lastCompositeEditor = null;
@@ -204,7 +204,7 @@
     var data = [];
     var columns = [
       // we use a "massChange" flag to know which field(s) will be added to the MassUpdate/MassSelection form in the composite modal window
-      { id: "title", name: "Title", field: "title", width: 70, cssClass: "cell-title", editor: Slick.Editors.Text, validator: taskValidator, massChange: true, },
+      { id: "title", name: "Title", field: "title", width: 70, cssClass: "cell-title", editor: Slick.Editors.Text, validator: taskValidator, massChange: false, },
       { id: "desc", name: "Description", field: "description", width: 100, editor: Slick.Editors.LongText, massChange: false, },
       { id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Integer, massChange: true, validator: durationValidator, formatter: durationFormatter },
       { id: "percent", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete },
@@ -245,7 +245,12 @@
         if (columnIndexWithEditor === -1) {
           throw new Error('We could not find any Editor in your Column Definition');
         } else {
-          this.grid.setActiveCell(rowIndex, columnIndexWithEditor, false);
+          grid.setActiveCell(rowIndex, columnIndexWithEditor, false);
+          if (isWithMassChange) {
+            // when it's a mass change, we'll activate the last row without scrolling to it
+            // that is possible via the 3rd argument "suppressScrollIntoView" set to "true"
+            grid.setActiveRow(data.length, columnIndexWithEditor, true);
+          }
         }
       }
     }
@@ -264,17 +269,14 @@
       } else if (!activeCell && modalType === "edit") {
         throw new Error('No records selected for edit operation');
       } else {
-        var dataContext = grid.getDataItem(activeRow);        
+        var dataContext = grid.getDataItem(activeRow);
         var isWithMassChange = (modalType === "mass-update" || modalType === "mass-selection");
 
         // focus on a first cell with an Editor (unless current cell already has an Editor then do nothing)
-        if (modalType !== "edit") {
-          var rowIndex = data.length;
-          focusOnFirstCellWithEditor(columns, rowIndex, isWithMassChange);
-        } else {
-          focusOnFirstCellWithEditor(columns, activeCell.row, isWithMassChange);
-        }
-        
+        // also when it's a "Create" modal, we'll scroll to the end of the grid
+        var rowIndex = modalType === "create" ? data.length : activeRow;
+        focusOnFirstCellWithEditor(columns, rowIndex, isWithMassChange);
+
         if (modalType === "edit" && !dataContext) {
           alert("Current row is not editable");
           return;
@@ -304,7 +306,7 @@
             headerTitle = `Editing ${dataContext.title}`;
             break;
           case "mass-update":
-            headerTitle = "Mass Update";
+            headerTitle = "Mass Update (all rows)";
             break;
           case "mass-selection":
             headerTitle = "Update on Current Selection";
@@ -327,9 +329,9 @@
           }
         }
         let saveActionType = (modalType === "create" || modalType === "edit") ? "save" : modalType;
-        let saveButtonText = (modalType === "create" || modalType === "edit") 
-          ? "Save" 
-          : (modalType === "mass-update") 
+        let saveButtonText = (modalType === "create" || modalType === "edit")
+          ? "Save"
+          : (modalType === "mass-update")
             ? "Apply Mass Update"
             : "Apply Update to Current Selection";
 
@@ -358,7 +360,7 @@
           }
         }));
 
-        $modal.find("[data-action=save]").click(function () {        
+        $modal.find("[data-action=save]").click(function () {
           var validationResults = validateCompositeEditors(null, modalType);
           grid.getEditController().commitCurrentEdit();
         });
@@ -411,10 +413,6 @@
               }
             }
 
-            // for the update to work we had to go to the last line in the grid, 
-            // but after the update we should scroll back to the selected row index 
-            grid.scrollRowIntoView(selectedRowsIndexes[0]);
-
             // once we're done doing the mass update, we can cancel the current editor since we don't want to add any new row
             // that will also destroy/close the modal window
             grid.getEditController().cancelCurrentEdit();
@@ -460,7 +458,7 @@
         d["finish"] = "01/05/2009";
         d["effortDriven"] = (i % 5 == 0);
       }
-      
+
       var checkboxSelectorPlugin = new Slick.CheckboxSelectColumn({ cssClass: "slick-cell-checkboxsel" });
       columns.unshift(checkboxSelectorPlugin.getColumnDefinition());
       grid = new Slick.Grid("#myGrid", data, columns, options);

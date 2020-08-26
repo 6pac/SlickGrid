@@ -148,13 +148,10 @@
 
       this.loadValue = function (item) {
         var idx = 0;
-        
-        // load the value only when the modal is for Editing (we won't load value on New Item Insert)
-        if (options.modalType === "edit") {
-          while (idx < editors.length) {
-            editors[idx].loadValue(item);
-            idx++;
-          }
+
+        while (idx < editors.length) {
+          editors[idx].loadValue(item);
+          idx++;
         }
       };
 
@@ -184,7 +181,7 @@
                   container: containers[idx],
                   msg: validationResults.msg
                 });
-  
+
                 if ($validationElm) {
                   $validationElm.text(validationResults.msg);
                   $labelElm.addClass("invalid");
@@ -194,7 +191,7 @@
               } else if ($validationElm) {
                 $validationElm.text("");
                 $editorElm.removeClass("invalid");
-                $labelElm.removeClass("invalid");                
+                $labelElm.removeClass("invalid");
                 $validationElm.hide();
               }
             }
