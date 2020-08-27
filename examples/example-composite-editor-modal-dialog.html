@@ -102,7 +102,7 @@
     .item-details-editor-container.invalid {
       border: 1px solid red;
     }
-    .slick-editor-detail-validation {
+    .item-details-validation {
       color: red;
       font-style: italic;
       margin-left: 12px;
@@ -220,7 +220,7 @@
       autoEdit: false
     };
 
-    function validateCompositeEditors($targetElm, modalType) {
+    function validateCompositeEditors($targetElm) {
       var validationResults = { valid: true, msg: "" };
       var currentEditor = grid.getCellEditor();
 
@@ -261,7 +261,6 @@
       }
 
       var activeCell = this.grid.getActiveCell();
-      var columnIndexWithEditor = activeCell && activeCell.cell || 0;
       var activeRow = activeCell && activeCell.row || 0;
 
       if (!options.enableCellNavigation) {
@@ -324,7 +323,7 @@
           if (column.editor) {
             var $templateItem = $(`<div class="item-details-label editor-${column.id}">${column.name}</div>
               <div class="item-details-editor-container" data-editorid="${column.id}" style="height: ${column.id === 'desc' ? 'inherit' : '20px'}"></div>
-              <div class="slick-editor-detail-validation editor-${column.id}"></div>`);
+              <div class="item-details-validation editor-${column.id}"></div>`);
             $templateItem.appendTo($modalBody);
           }
         }
@@ -348,7 +347,7 @@
         $modal.appendTo("body");
 
         $modal.on('focusout', function(e) {
-          validateCompositeEditors(e.target, modalType);
+          validateCompositeEditors(e.target);
         });
         $modal.on('keydown', (function (e) {
           if (e.which == Slick.keyCode.ESCAPE) {
@@ -356,18 +355,17 @@
             e.stopPropagation();
             e.preventDefault();
           } else if (e.which === Slick.keyCode.TAB) {
-            validateCompositeEditors(e.target, modalType);
+            validateCompositeEditors(e.target);
           }
         }));
 
         $modal.find("[data-action=save]").click(function () {
-          var validationResults = validateCompositeEditors(null, modalType);
           grid.getEditController().commitCurrentEdit();
         });
 
         // Apply a Mass Update change (apply changes to all items in the dataset)
         $modal.find("[data-action=mass-update]").click(function () {
-          var validationResults = validateCompositeEditors(null, modalType);
+          var validationResults = validateCompositeEditors();
           var isFormValid = validationResults.valid;
 
           if (isFormValid && lastCompositeEditor && lastCompositeEditor.formValues) {
@@ -395,7 +393,7 @@
 
         // Similar to Mass Update except that we apply changes only to the selected items in the grid
         $modal.find("[data-action=mass-selection]").click(function () {
-          var validationResults = validateCompositeEditors(null, modalType);
+          var validationResults = validateCompositeEditors();
           var isFormValid = validationResults.valid;
           var selectedRowsIndexes = grid.getSelectedRows();
 

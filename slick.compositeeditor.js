@@ -156,9 +156,10 @@
       };
 
 
-      this.validate = function ($targetElm) {
+      this.validate = function (targetElm) {
         var validationResults;
         var errors = [];
+        var $targetElm = targetElm ? $(targetElm) : null;
 
         firstInvalidEditor = null;
 
@@ -166,7 +167,7 @@
         while (idx < editors.length) {
           var columnDef = editors[idx].args && editors[idx].args.column || {};
           if (columnDef) {
-            var $validationElm = $(".slick-editor-detail-validation.editor-" + columnDef.id);
+            var $validationElm = $(".item-details-validation.editor-" + columnDef.id);
             var $labelElm = $(".item-details-label.editor-" + columnDef.id);
             var $editorElm = $("[data-editorid=" + columnDef.id + "]");
 
