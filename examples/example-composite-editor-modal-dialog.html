@@ -99,14 +99,17 @@
     .invalid {
       color: red;
     }
+
     .item-details-editor-container.invalid {
       border: 1px solid red;
     }
+
     .item-details-validation {
       color: red;
       font-style: italic;
       margin-left: 12px;
     }
+
     .item-details-editor-container.modified {
       border: 1px solid orange;
     }
@@ -146,7 +149,7 @@
       <li>2. Edit Current Item</li>
       <li>3. Mass Update</li>
       <li>4. Mass Selection Change</li>
-      <br/>
+      <br />
       <button onclick="openDetails('edit')">Open Item Edit for active row</button>
       <button onclick="openDetails('create')">Open Add New Row Detail</button>
       <button onclick="openDetails('mass-update')">Open Mass Update Detail</button>
@@ -177,19 +180,19 @@
   <script src="../slick.compositeeditor.js"></script>
 
   <script>
-    function taskValidator(value, args) {
-      if ((value === null || value === undefined || !value.length) && (args.compositeEditorOptions && args.compositeEditorOptions.modalType === "create" || args.compositeEditorOptions.modalType === "edit")) {
+    function taskValidator(newValue, args) {
+      if ((newValue === null || newValue === undefined || !newValue.length) && (args.compositeEditorOptions && args.compositeEditorOptions.modalType === "create" || args.compositeEditorOptions.modalType === "edit")) {
         // we will only check if the field is supplied when it's an inline editing OR a composite editor of type create/edit
         return { valid: false, msg: 'This is a required field' };
-      } else if (!/^(task\s\d+)*$/i.test(value)) {
+      } else if (!/^(task\s\d+)*$/i.test(newValue)) {
         return { valid: false, msg: 'Your title is invalid, it must start with "Task" followed by a number' };
       }
       return { valid: true, msg: '' };
     }
 
-    function durationValidator(value, args) {
+    function durationValidator(newValue, args) {
       var dataContext = args && args.item;
-      if (dataContext && (dataContext.effortDriven && (dataContext.duration < 5 || !dataContext.duration))) {
+      if (dataContext && (dataContext.effortDriven && (newValue < 5 || !newValue))) {
         return { valid: false, msg: 'Duration must be at least 5 days when "Effort-Driven" is enabled' };
       }
       return { valid: true, msg: '' };
@@ -239,9 +242,9 @@
       const hasEditor = columns[columnIndexWithEditor].editor;
       if (!hasEditor) {
         if (isWithMassChange) {
-          columnIndexWithEditor = columns.findIndex(function(col) { return col.editor && col.massChange });
+          columnIndexWithEditor = columns.findIndex(function (col) { return col.editor && col.massChange });
         } else {
-          columnIndexWithEditor = columns.findIndex(function(col) { return col.editor });
+          columnIndexWithEditor = columns.findIndex(function (col) { return col.editor });
         }
         if (columnIndexWithEditor === -1) {
           throw new Error('We could not find any Editor in your Column Definition');
@@ -291,11 +294,11 @@
 
         var modalColumns;
 
-        if(isWithMassChange) {
+        if (isWithMassChange) {
           // when using Mass Update, we only care about the columns that have the "massChange: true", we disregard anything else
-          modalColumns = columns.filter(function(col) { return col && col.massChange && col.editor });
+          modalColumns = columns.filter(function (col) { return col && col.massChange && col.editor });
         } else {
-          modalColumns = columns.filter(function(col) { return col && col.editor });
+          modalColumns = columns.filter(function (col) { return col && col.editor });
         }
 
         let headerTitle = "";
@@ -348,7 +351,7 @@
         $modalFooter.appendTo($modal);
         $modal.appendTo("body");
 
-        $modal.on('focusout', function(e) {
+        $modal.on('focusout', function (e) {
           validateCompositeEditors(e.target);
         });
         $modal.on('keydown', (function (e) {
@@ -376,7 +379,7 @@
             // we can loop through these changes and apply them on the selected row indexes
             for (const itemProp in lastCompositeEditor.formValues) {
               if (lastCompositeEditor.formValues.hasOwnProperty(itemProp)) {
-                data.forEach(function(item) {
+                data.forEach(function (item) {
                   if (item.hasOwnProperty(itemProp) && lastCompositeEditor.formValues.hasOwnProperty(itemProp)) {
                     item[itemProp] = lastCompositeEditor.formValues[itemProp];
                   }
@@ -406,7 +409,7 @@
             // we can loop through these changes and apply them on the selected row indexes
             for (const itemProp in lastCompositeEditor.formValues) {
               if (lastCompositeEditor.formValues.hasOwnProperty(itemProp)) {
-                selectedRowsIndexes.forEach(function(rowIndex) {
+                selectedRowsIndexes.forEach(function (rowIndex) {
                   if (data[rowIndex] && data[rowIndex].hasOwnProperty(itemProp) && lastCompositeEditor.formValues.hasOwnProperty(itemProp)) {
                     data[rowIndex][itemProp] = lastCompositeEditor.formValues[itemProp];
                     grid.updateRow(rowIndex);
@@ -467,7 +470,7 @@
       var checkboxSelectorPlugin = new Slick.CheckboxSelectColumn({ cssClass: "slick-cell-checkboxsel" });
       columns.unshift(checkboxSelectorPlugin.getColumnDefinition());
       grid = new Slick.Grid("#myGrid", data, columns, options);
-      grid.setSelectionModel(new Slick.RowSelectionModel({selectActiveRow: false}));
+      grid.setSelectionModel(new Slick.RowSelectionModel({ selectActiveRow: false }));
       grid.registerPlugin(checkboxSelectorPlugin);
 
       grid.onAddNewRow.subscribe(function (e, args) {

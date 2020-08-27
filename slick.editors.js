@@ -30,15 +30,20 @@
     this.init = function () {
       var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
       $input = $("<INPUT type=text class='editor-text' />")
-          .appendTo(args.container)
-          .on("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav)
-          .focus()
-          .select();
+        .appendTo(args.container)
+        .on("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav)
+        .focus()
+        .select();
 
       // don't show Save/Cancel when it's a Composite Editor and also trigger a onCompositeEditorChange event when input changes
       if (args.compositeEditorOptions) {
-        $input.on("change", function() {
+        $input.on("change", function () {
           var activeCell = args.grid.getActiveCell();
+
+          // when valid, we'll also apply the new value to the dataContext item object
+          if (scope.validate().valid) {
+            scope.applyValue(scope.args.item, scope.serializeValue());
+          }
           scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
           args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
         });
@@ -106,15 +111,20 @@
     this.init = function () {
       var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
       $input = $("<INPUT type=text class='editor-text' />")
-      .appendTo(args.container)
-      .on("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav)
-      .focus()
-      .select();
+        .appendTo(args.container)
+        .on("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav)
+        .focus()
+        .select();
 
       // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
       if (args.compositeEditorOptions) {
-        $input.on("change", function() {
+        $input.on("change", function () {
           var activeCell = args.grid.getActiveCell();
+
+          // when valid, we'll also apply the new value to the dataContext item object
+          if (scope.validate().valid) {
+            scope.applyValue(scope.args.item, scope.serializeValue());
+          }
           scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
           args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
         });
@@ -181,15 +191,20 @@
     this.init = function () {
       var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
       $input = $("<INPUT type=text class='editor-text' />")
-      .appendTo(args.container)
-      .on("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav)
-      .focus()
-      .select();
+        .appendTo(args.container)
+        .on("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav)
+        .focus()
+        .select();
 
       // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
       if (args.compositeEditorOptions) {
-        $input.on("change", function() {
+        $input.on("change", function () {
           var activeCell = args.grid.getActiveCell();
+
+          // when valid, we'll also apply the new value to the dataContext item object
+          if (scope.validate().valid) {
+            scope.applyValue(scope.args.item, scope.serializeValue());
+          }
           scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
           args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
         });
@@ -205,12 +220,12 @@
     };
 
     function getDecimalPlaces() {
-        // returns the number of fixed decimal places or null
-        var rtn = args.column.editorFixedDecimalPlaces;
-        if (typeof rtn == 'undefined') {
-            rtn = FloatEditor.DefaultDecimalPlaces;
-        }
-        return (!rtn && rtn!==0 ? null : rtn);
+      // returns the number of fixed decimal places or null
+      var rtn = args.column.editorFixedDecimalPlaces;
+      if (typeof rtn == 'undefined') {
+        rtn = FloatEditor.DefaultDecimalPlaces;
+      }
+      return (!rtn && rtn !== 0 ? null : rtn);
     }
 
     this.loadValue = function (item) {
@@ -218,8 +233,8 @@
 
       var decPlaces = getDecimalPlaces();
       if (decPlaces !== null
-      && (defaultValue || defaultValue===0)
-      && defaultValue.toFixed) {
+        && (defaultValue || defaultValue === 0)
+        && defaultValue.toFixed) {
         defaultValue = defaultValue.toFixed(decPlaces);
       }
 
@@ -231,15 +246,15 @@
     this.serializeValue = function () {
       var rtn = parseFloat($input.val());
       if (FloatEditor.AllowEmptyValue) {
-        if (!rtn && rtn !==0) { rtn = ''; }
+        if (!rtn && rtn !== 0) { rtn = ''; }
       } else {
         rtn = rtn || 0;
       }
 
       var decPlaces = getDecimalPlaces();
       if (decPlaces !== null
-      && (rtn || rtn===0)
-      && rtn.toFixed) {
+        && (rtn || rtn === 0)
+        && rtn.toFixed) {
         rtn = parseFloat(rtn.toFixed(decPlaces));
       }
 
@@ -295,7 +310,7 @@
       $input.datepicker({
         showOn: "button",
         buttonImageOnly: true,
-         beforeShow: function () {
+        beforeShow: function () {
           calendarOpen = true;
         },
         onClose: function () {
@@ -304,6 +319,11 @@
           // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
           if (args.compositeEditorOptions) {
             var activeCell = args.grid.getActiveCell();
+
+            // when valid, we'll also apply the new value to the dataContext item object
+            if (scope.validate().valid) {
+              scope.applyValue(scope.args.item, scope.serializeValue());
+            }
             scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
             args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
           }
@@ -337,8 +357,8 @@
         return;
       }
       $.datepicker.dpDiv
-          .css("top", position.top + 30)
-          .css("left", position.left);
+        .css("top", position.top + 30)
+        .css("left", position.left);
     };
 
     this.focus = function () {
@@ -394,8 +414,13 @@
 
       // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
       if (args.compositeEditorOptions) {
-        $select.on("change", function() {
+        $select.on("change", function () {
           var activeCell = args.grid.getActiveCell();
+
+          // when valid, we'll also apply the new value to the dataContext item object
+          if (scope.validate().valid) {
+            scope.applyValue(scope.args.item, scope.serializeValue());
+          }
           scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
           args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
         });
@@ -450,8 +475,13 @@
 
       // trigger onCompositeEditorChange event when input checkbox changes and it's a Composite Editor
       if (args.compositeEditorOptions) {
-        $select.on("change", function() {
+        $select.on("change", function () {
           var activeCell = args.grid.getActiveCell();
+
+          // when valid, we'll also apply the new value to the dataContext item object
+          if (scope.validate().valid) {
+            scope.applyValue(scope.args.item, scope.serializeValue());
+          }
           scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
           args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
         });
@@ -476,7 +506,7 @@
     };
 
     this.preClick = function () {
-        $select.prop('checked', !$select.prop('checked'));
+      $select.prop('checked', !$select.prop('checked'));
     };
 
     this.serializeValue = function () {
@@ -530,7 +560,12 @@
           // trigger onCompositeEditorChange event when slider stops and it's a Composite Editor
           if (args.compositeEditorOptions) {
             var activeCell = args.grid.getActiveCell();
-            scope.applyValue(scope.args.compositeEditorOptions.formValues, ui.value);
+
+            // when valid, we'll also apply the new value to the dataContext item object
+            if (scope.validate().valid) {
+              scope.applyValue(scope.args.item, scope.serializeValue());
+            }
+            scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
             args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
           }
         }
@@ -602,7 +637,7 @@
       var $container = compositeEditorOptions ? args.container : $('body');
 
       $wrapper = $("<DIV class='slick-large-editor-text' style='z-index:10000;background:white;padding:5px;border:3px solid gray; border-radius:10px;'/>")
-          .appendTo($container);
+        .appendTo($container);
       if (compositeEditorOptions) {
         $wrapper.css({ position: 'relative', padding: 0, border: 0 });
       } else {
@@ -610,18 +645,23 @@
       }
 
       $input = $("<TEXTAREA hidefocus rows=5 style='background:white;width:250px;height:80px;border:0;outline:0'>")
-          .appendTo($wrapper);
+        .appendTo($wrapper);
 
       // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
       if (compositeEditorOptions) {
-        $input.on("change", function() {
+        $input.on("change", function () {
           var activeCell = args.grid.getActiveCell();
+
+          // when valid, we'll also apply the new value to the dataContext item object
+          if (scope.validate().valid) {
+            scope.applyValue(scope.args.item, scope.serializeValue());
+          }
           scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
           args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
         });
       } else {
         $("<DIV style='text-align:right'><BUTTON>Save</BUTTON><BUTTON>Cancel</BUTTON></DIV>")
-            .appendTo($wrapper);
+          .appendTo($wrapper);
 
         $wrapper.find("button:first").on("click", this.save);
         $wrapper.find("button:last").on("click", this.cancel);
@@ -651,7 +691,7 @@
           if (e.keyCode === $.ui.keyCode.LEFT && cursorPosition === 0) {
             args.grid.navigatePrev();
           }
-          if (e.keyCode === $.ui.keyCode.RIGHT && cursorPosition >= textLength-1) {
+          if (e.keyCode === $.ui.keyCode.RIGHT && cursorPosition >= textLength - 1) {
             args.grid.navigateNext();
           }
         }
@@ -677,8 +717,8 @@
 
     this.position = function (position) {
       $wrapper
-          .css("top", position.top - 5)
-          .css("left", position.left - 5);
+        .css("top", position.top - 5)
+        .css("left", position.left - 5);
     };
 
     this.destroy = function () {
@@ -732,7 +772,7 @@
     var cursorPosition = this.selectionStart;
     var textLength = this.value.length;
     if ((e.keyCode === $.ui.keyCode.LEFT && cursorPosition > 0) ||
-         e.keyCode === $.ui.keyCode.RIGHT && cursorPosition < textLength-1) {
+      e.keyCode === $.ui.keyCode.RIGHT && cursorPosition < textLength - 1) {
       e.stopImmediatePropagation();
     }
   }
