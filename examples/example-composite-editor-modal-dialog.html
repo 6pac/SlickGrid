@@ -200,6 +200,7 @@
     }
 
     var lastCompositeEditor = null;
+    var lastActiveRowNumber = 0;
     var grid;
     var data = [];
     var columns = [
@@ -270,6 +271,7 @@
       } else {
         var dataContext = grid.getDataItem(activeRow);
         var isWithMassChange = (modalType === "mass-update" || modalType === "mass-selection");
+        lastActiveRowNumber = activeRow;
 
         // focus on a first cell with an Editor (unless current cell already has an Editor then do nothing)
         // also when it's a "Create" modal, we'll scroll to the end of the grid
@@ -352,6 +354,7 @@
         $modal.on('keydown', (function (e) {
           if (e.which == Slick.keyCode.ESCAPE) {
             grid.getEditController().cancelCurrentEdit();
+            grid.setActiveRow(lastActiveRowNumber);
             e.stopPropagation();
             e.preventDefault();
           } else if (e.which === Slick.keyCode.TAB) {
@@ -388,6 +391,7 @@
             // once we're done doing the mass update, we can cancel the current editor since we don't want to add any new row
             // that will also destroy/close the modal window
             grid.getEditController().cancelCurrentEdit();
+            grid.setActiveCell(0, 0, false);
           }
         });
 
@@ -414,15 +418,18 @@
             // once we're done doing the mass update, we can cancel the current editor since we don't want to add any new row
             // that will also destroy/close the modal window
             grid.getEditController().cancelCurrentEdit();
+            grid.setActiveRow(lastActiveRowNumber);
           }
         });
 
         $modal.find("[data-action=cancel]").click(function () {
           grid.getEditController().cancelCurrentEdit();
+          grid.setActiveRow(lastActiveRowNumber);
         });
 
         $modal.find("[data-action=close]").click(function () {
           grid.getEditController().cancelCurrentEdit();
+          grid.setActiveRow(lastActiveRowNumber);
         });
 
         var containers = $.map(modalColumns, function (c) {
