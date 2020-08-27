@@ -39,7 +39,6 @@
       if (args.compositeEditorOptions) {
         $input.on("change", function() {
           var activeCell = args.grid.getActiveCell();
-          scope.applyValue(scope.args.item, scope.serializeValue());
           scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
           args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
         });
@@ -108,7 +107,7 @@
       var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
       $input = $("<INPUT type=text class='editor-text' />")
       .appendTo(args.container)
-      .on("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav)      
+      .on("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav)
       .focus()
       .select();
 
@@ -116,7 +115,6 @@
       if (args.compositeEditorOptions) {
         $input.on("change", function() {
           var activeCell = args.grid.getActiveCell();
-          scope.applyValue(scope.args.item, scope.serializeValue());
           scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
           args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
         });
@@ -184,7 +182,7 @@
       var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
       $input = $("<INPUT type=text class='editor-text' />")
       .appendTo(args.container)
-      .on("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav)      
+      .on("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav)
       .focus()
       .select();
 
@@ -192,7 +190,6 @@
       if (args.compositeEditorOptions) {
         $input.on("change", function() {
           var activeCell = args.grid.getActiveCell();
-          scope.applyValue(scope.args.item, scope.serializeValue());
           scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
           args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
         });
@@ -307,13 +304,12 @@
           // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
           if (args.compositeEditorOptions) {
             var activeCell = args.grid.getActiveCell();
-            scope.applyValue(scope.args.item, scope.serializeValue());
             scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
             args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
           }
         }
       });
-      
+
       $input.width($input.width() - (!args.compositeEditorOptions ? 18 : 28));
     };
 
@@ -400,7 +396,6 @@
       if (args.compositeEditorOptions) {
         $select.on("change", function() {
           var activeCell = args.grid.getActiveCell();
-          scope.applyValue(scope.args.item, scope.serializeValue());
           scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
           args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
         });
@@ -457,7 +452,6 @@
       if (args.compositeEditorOptions) {
         $select.on("change", function() {
           var activeCell = args.grid.getActiveCell();
-          scope.applyValue(scope.args.item, scope.serializeValue());
           scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
           args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
         });
@@ -536,7 +530,6 @@
           // trigger onCompositeEditorChange event when slider stops and it's a Composite Editor
           if (args.compositeEditorOptions) {
             var activeCell = args.grid.getActiveCell();
-            scope.applyValue(scope.args.item, ui.value);
             scope.applyValue(scope.args.compositeEditorOptions.formValues, ui.value);
             args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
           }
@@ -623,7 +616,6 @@
       if (compositeEditorOptions) {
         $input.on("change", function() {
           var activeCell = args.grid.getActiveCell();
-          scope.applyValue(scope.args.item, scope.serializeValue());
           scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
           args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
         });
@@ -634,7 +626,7 @@
         $wrapper.find("button:first").on("click", this.save);
         $wrapper.find("button:last").on("click", this.cancel);
         $input.on("keydown", this.handleKeyDown);
-        scope.position(args.position);        
+        scope.position(args.position);
       }
 
       $input.focus().select();
@@ -730,9 +722,9 @@
 
     this.init();
   }
-  
+
   /*
-   * Depending on the value of Grid option 'editorCellNavOnLRKeys', us 
+   * Depending on the value of Grid option 'editorCellNavOnLRKeys', us
    * Navigate to the cell on the left if the cursor is at the beginning of the input string
    * and to the right cell if it's at the end. Otherwise, move the cursor within the text
    */
@@ -746,9 +738,9 @@
   }
 
   function handleKeydownLRNoNav(e) {
-    if (e.keyCode === $.ui.keyCode.LEFT || e.keyCode === $.ui.keyCode.RIGHT) {	
-      e.stopImmediatePropagation();	
-    }	
+    if (e.keyCode === $.ui.keyCode.LEFT || e.keyCode === $.ui.keyCode.RIGHT) {
+      e.stopImmediatePropagation();
+    }
   }
-  
+
 })(jQuery);
