@@ -207,14 +207,14 @@
     var grid;
     var data = [];
     var columns = [
-      // we use a "massChange" flag to know which field(s) will be added to the MassUpdate/MassSelection form in the composite modal window
-      { id: "title", name: "Title", field: "title", width: 70, cssClass: "cell-title", editor: Slick.Editors.Text, validator: taskValidator, massChange: false, },
-      { id: "desc", name: "Description", field: "description", width: 100, editor: Slick.Editors.LongText, massChange: false, },
-      { id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Integer, massChange: true, validator: durationValidator, formatter: durationFormatter },
+      // we use a "massUpdate" flag to know which field(s) will be added to the MassUpdate/MassSelection form in the composite modal window
+      { id: "title", name: "Title", field: "title", width: 70, cssClass: "cell-title", editor: Slick.Editors.Text, validator: taskValidator, massUpdate: false, },
+      { id: "desc", name: "Description", field: "description", width: 100, editor: Slick.Editors.LongText, massUpdate: false, },
+      { id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Integer, massUpdate: true, validator: durationValidator, formatter: durationFormatter },
       { id: "percent", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete },
-      { id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Date, massChange: true, },
-      { id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Date, massChange: false, },
-      { id: "effort-driven", name: "Effort Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, editor: Slick.Editors.Checkbox, massChange: true, }
+      { id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Date, massUpdate: true, },
+      { id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Date, massUpdate: false, },
+      { id: "effort-driven", name: "Effort Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, editor: Slick.Editors.Checkbox, massUpdate: true, }
     ];
     var options = {
       editable: true,
@@ -236,13 +236,13 @@
 
     // For the Composite Editor to work, the current active cell must have an Editor (because it calls editActiveCell() and that only works with a cell with an Editor)
     // so if current active cell doesn't have an Editor, we'll find the first column with an Editor and focus on it (from left to right starting at index 0)
-    function focusOnFirstCellWithEditor(columns, rowIndex, isWithMassChange) {
+    function focusOnFirstCellWithEditor(columns, rowIndex, isWithMassUpdate) {
       var columnIndexWithEditor = 0;
 
       const hasEditor = columns[columnIndexWithEditor].editor;
       if (!hasEditor) {
-        if (isWithMassChange) {
-          columnIndexWithEditor = columns.findIndex(function (col) { return col.editor && col.massChange });
+        if (isWithMassUpdate) {
+          columnIndexWithEditor = columns.findIndex(function (col) { return col.editor && col.massUpdate });
         } else {
           columnIndexWithEditor = columns.findIndex(function (col) { return col.editor });
         }
@@ -250,7 +250,7 @@
           throw new Error('We could not find any Editor in your Column Definition');
         } else {
           grid.setActiveCell(rowIndex, columnIndexWithEditor, false);
-          if (isWithMassChange) {
+          if (isWithMassUpdate) {
             // when it's a mass change, we'll activate the last row without scrolling to it
             // that is possible via the 3rd argument "suppressScrollIntoView" set to "true"
             grid.setActiveRow(data.length, columnIndexWithEditor, true);
@@ -273,13 +273,13 @@
         throw new Error('No records selected for edit operation');
       } else {
         var dataContext = grid.getDataItem(activeRow);
-        var isWithMassChange = (modalType === "mass-update" || modalType === "mass-selection");
+        var isWithMassUpdate = (modalType === "mass-update" || modalType === "mass-selection");
         lastActiveRowNumber = activeRow;
 
         // focus on a first cell with an Editor (unless current cell already has an Editor then do nothing)
         // also when it's a "Create" modal, we'll scroll to the end of the grid
         var rowIndex = modalType === "create" ? data.length : activeRow;
-        focusOnFirstCellWithEditor(columns, rowIndex, isWithMassChange);
+        focusOnFirstCellWithEditor(columns, rowIndex, isWithMassUpdate);
 
         if (modalType === "edit" && !dataContext) {
           alert("Current row is not editable");
@@ -294,9 +294,9 @@
 
         var modalColumns;
 
-        if (isWithMassChange) {
-          // when using Mass Update, we only care about the columns that have the "massChange: true", we disregard anything else
-          modalColumns = columns.filter(function (col) { return col && col.massChange && col.editor });
+        if (isWithMassUpdate) {
+          // when using Mass Update, we only care about the columns that have the "massUpdate: true", we disregard anything else
+          modalColumns = columns.filter(function (col) { return col && col.massUpdate && col.editor });
         } else {
           modalColumns = columns.filter(function (col) { return col && col.editor });
         }
@@ -446,7 +446,8 @@
             destroy: function () {
               $modal.remove();
             },
-            modalType: modalType
+            modalType: modalType,
+            // validationMsgPrefix: '* '
           }
         );
 
@@ -480,6 +481,7 @@
         data.push(item);
         grid.updateRowCount();
         grid.render();
+        grid.onAddNewRow.unsubscribe(); // unsubscribe after closing the modal to avoid multiple entries
       });
 
       grid.onCompositeEditorChange.subscribe(function (e, args) {

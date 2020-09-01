@@ -26,6 +26,7 @@
    * @param containers {Array} Container HTMLElements in which editors will be placed.
    * @param options {Object} Options hash:
    *  validationFailedMsg     -   A generic failed validation message set on the aggregated validation resuls.
+   *  validationMsgPrefix     -   Add an optional prefix to each validation message (only the ones shown in the modal form, not the ones in the "errors")
    *  modalType               -   Defaults to "edit", modal type can 1 of these 3: (create, edit, mass, mass-selection)
    *  hide                    -   A function to be called when the grid asks the editor to hide itself.
    *  show                    -   A function to be called when the grid asks the editor to show itself.
@@ -36,6 +37,7 @@
     var defaultOptions = {
       modalType: 'edit', // available type (create, edit, mass)
       validationFailedMsg: "Some of the fields have failed validation",
+      validationMsgPrefix: null,
       show: null,
       hide: null,
       position: null,
@@ -170,6 +172,7 @@
             var $validationElm = $(".item-details-validation.editor-" + columnDef.id);
             var $labelElm = $(".item-details-label.editor-" + columnDef.id);
             var $editorElm = $("[data-editorid=" + columnDef.id + "]");
+            var validationMsgPrefix = options && options.validationMsgPrefix || "";
 
             if (!$targetElm || ($editorElm.has($targetElm).length > 0)) {
               validationResults = editors[idx].validate();
@@ -184,16 +187,14 @@
                 });
 
                 if ($validationElm) {
-                  $validationElm.text(validationResults.msg);
+                  $validationElm.text(validationMsgPrefix + validationResults.msg);
                   $labelElm.addClass("invalid");
                   $editorElm.addClass("invalid");
-                  $validationElm.show();
                 }
               } else if ($validationElm) {
                 $validationElm.text("");
                 $editorElm.removeClass("invalid");
                 $labelElm.removeClass("invalid");
-                $validationElm.hide();
               }
             }
           }
