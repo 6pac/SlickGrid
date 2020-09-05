@@ -150,10 +150,11 @@
       <li>3. Mass Update</li>
       <li>4. Mass Selection Change</li>
       <br />
-      <button onclick="openDetails('edit')">Open Item Edit for active row</button>
-      <button onclick="openDetails('create')">Open Add New Row Detail</button>
-      <button onclick="openDetails('mass-update')">Open Mass Update Detail</button>
-      <button onclick="openDetails('mass-selection')">Open Mass Selection Change</button>
+      <button onclick="openDetails('edit')" data-test="edit-button">Open Item Edit for active row</button>
+      <button onclick="openDetails('create')" data-test="create-button">Open Add New Row Detail</button>
+      <button onclick="openDetails('mass-update')" data-test="mass-update-button">Open Mass Update Detail</button>
+      <button onclick="openDetails('mass-selection')" data-test="mass-selection-button">Open Mass Selection
+        Change</button>
 
       <h2>View Source:</h2>
       <ul>
@@ -485,7 +486,7 @@
       });
 
       grid.onCompositeEditorChange.subscribe(function (e, args) {
-        console.log('composite editor input changed', args);
+        console.log('composite editor input changed', args.formValues);
 
         // keep reference to the last composite editor, we'll need it when doing a MassUpdate or UpdateSelection
         lastCompositeEditor = {
