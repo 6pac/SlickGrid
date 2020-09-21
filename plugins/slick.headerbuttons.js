@@ -40,7 +40,8 @@
    * Available button options:
    *    cssClass:     CSS class to add to the button.
    *    image:        Relative button image path.
-   *    disabled:     Whether the item is disabled.
+   *    disabled:     Whether the item/command is disabled.
+   *    hidden:       Whether the item/command is hidden.
    *    tooltip:      Button tooltip.
    *    showOnHover:  Only show the button on hover.
    *    handler:      Button click handler.
@@ -131,6 +132,10 @@
 
           if (button.disabled) {
             btn.addClass("slick-header-button-disabled");
+          }
+
+          if (button.hidden) {
+            btn.addClass("slick-header-button-hidden");
           }
 
           if (button.showOnHover) {
