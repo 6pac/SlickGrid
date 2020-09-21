@@ -499,6 +499,11 @@
           $li.addClass("slick-context-menu-item-disabled");
         }
 
+        // if the item is hidden then add the hidden css class
+        if (item.hidden) {
+          $li.addClass("slick-context-menu-item-hidden");
+        }
+
         if (item.cssClass) {
           $li.addClass(item.cssClass);
         }
