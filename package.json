@@ -1,6 +1,6 @@
 {
   "name": "slickgrid",
-  "version": "2.4.27",
+  "version": "2.4.28",
   "description": "A lightning fast JavaScript grid/spreadsheet",
   "main": "slick.core.js",
   "directories": {
@@ -34,8 +34,8 @@
     "jquery-ui": ">=1.8.0"
   },
   "devDependencies": {
-    "cypress": "^4.8.0",
-    "eslint": "^7.0.0",
+    "cypress": "^5.1.0",
+    "eslint": "^7.8.1",
     "http-server": "^0.12.3"
   }
 }
