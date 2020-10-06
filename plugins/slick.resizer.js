@@ -34,6 +34,7 @@
  * @param {Object} options available plugin options that can be passed in the constructor:
  *   container:      (REQUIRED) DOM element selector of the page container, basically what element in the page will be used to calculate the available space
  *   gridContainer:             DOM element selector of the grid container, optional but when provided it will be resized with same size as the grid (typically a container holding the grid and extra custom footer/pagination)
+ *   applyResizeToContainer:    Defaults to false, do we want to apply the resized dimentions to the grid container as well?
  *   rightPadding:              Defaults to 0, right side padding to remove from the total dimension
  *   bottomPadding:             Defaults to 20, bottom padding to remove from the total dimension
  *   minHeight:                 Defaults to 180, minimum height of the grid
