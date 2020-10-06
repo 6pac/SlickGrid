@@ -78,6 +78,7 @@
     var _gridContainerElm;
     var _defaults = {
       bottomPadding: 20,
+      applyResizeToContainer: false,
       minHeight: 180,
       minWidth: 300,
       rightPadding: 0
@@ -267,13 +268,13 @@
           // apply these new height/width to the datagrid
           if (!_gridOptions.autoHeight) {
             _gridDomElm.height(newHeight);
-            if (options.gridContainer) {
+            if (options.gridContainer && options.applyResizeToContainer) {
               _gridContainerElm.height(newHeight);
             }
           }
 
           _gridDomElm.width(newWidth);
-          if (options.gridContainer) {
+          if (options.gridContainer && options.applyResizeToContainer) {
             _gridContainerElm.width(newWidth);
           }
 
