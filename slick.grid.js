@@ -908,7 +908,7 @@ if (typeof Slick === "undefined") {
           }
         }
 
-        viewportHasHScroll = (canvasWidth > viewportW - scrollbarDimensions.width);
+        viewportHasHScroll = (canvasWidth >= viewportW - scrollbarDimensions.width);
       }
 
       $headerRowSpacerL.width(canvasWidth + (viewportHasVScroll ? scrollbarDimensions.width : 0));
@@ -1905,7 +1905,7 @@ if (typeof Slick === "undefined") {
     function setOverflow() {
       $viewportTopL.css({
         'overflow-x': ( hasFrozenColumns() ) ? ( hasFrozenRows && !options.alwaysAllowHorizontalScroll ? 'hidden' : 'scroll' ) : ( hasFrozenRows && !options.alwaysAllowHorizontalScroll ? 'hidden' : 'auto' ),
-        'overflow-y': options.alwaysShowVerticalScroll ? "scroll" : (( hasFrozenColumns() ) ? ( hasFrozenRows ? 'hidden' : 'hidden' ) : ( hasFrozenRows ? 'scroll' : 'auto' ))
+        'overflow-y': (!hasFrozenColumns() && options.alwaysShowVerticalScroll) ? "scroll" : (( hasFrozenColumns() ) ? ( hasFrozenRows ? 'hidden' : 'hidden' ) : ( hasFrozenRows ? 'scroll' : 'auto' ))
       });
 
       $viewportTopR.css({
@@ -1915,7 +1915,7 @@ if (typeof Slick === "undefined") {
 
       $viewportBottomL.css({
         'overflow-x': ( hasFrozenColumns() ) ? ( hasFrozenRows && !options.alwaysAllowHorizontalScroll ? 'scroll' : 'auto'   ): ( hasFrozenRows && !options.alwaysAllowHorizontalScroll ? 'auto' : 'auto'   ),
-        'overflow-y': options.alwaysShowVerticalScroll ? "scroll" : (( hasFrozenColumns() ) ? ( hasFrozenRows ? 'hidden' : 'hidden' ): ( hasFrozenRows ? 'scroll' : 'auto' ))
+        'overflow-y': (!hasFrozenColumns() && options.alwaysShowVerticalScroll) ? "scroll" : (( hasFrozenColumns() ) ? ( hasFrozenRows ? 'hidden' : 'hidden' ): ( hasFrozenRows ? 'scroll' : 'auto' ))
       });
 
       $viewportBottomR.css({
@@ -2799,7 +2799,7 @@ if (typeof Slick === "undefined") {
       return options;
     }
 
-    function setOptions(args, suppressRender) {
+    function setOptions(args, suppressRender, suppressColumnSet) {
       if (!getEditorLock().commitCurrentEdit()) {
         return;
       }
@@ -2821,13 +2821,17 @@ if (typeof Slick === "undefined") {
       validateAndEnforceOptions();
 
       $viewport.css("overflow-y", options.autoHeight ? "hidden" : "auto");
-      if (!suppressRender) { render(); }
+      if (!suppressRender) {
+        render();
+      }
 
       setFrozenOptions();
       setScroller();
       zombieRowNodeFromLastMouseWheelEvent = null;
 
-      setColumns(treeColumns.extractColumns());
+      if (!suppressColumnSet) {
+        setColumns(treeColumns.extractColumns());
+      }
     }
 
     function validateAndEnforceOptions() {
@@ -5676,7 +5680,8 @@ if (typeof Slick === "undefined") {
                   trigger(self.onCellChange, {
                     row: this.row,
                     cell: this.cell,
-                    item: item
+                    item: item,
+                    column: column
                   });
                 },
                 undo: function () {
@@ -5685,7 +5690,8 @@ if (typeof Slick === "undefined") {
                   trigger(self.onCellChange, {
                     row: this.row,
                     cell: this.cell,
-                    item: item
+                    item: item,
+                    column: column
                   });
                 }
               };
@@ -5791,7 +5797,7 @@ if (typeof Slick === "undefined") {
     // Public API
 
     $.extend(this, {
-      "slickGridVersion": "2.4.28",
+      "slickGridVersion": "2.4.30",
 
       // Events
       "onScroll": new Slick.Event(),
