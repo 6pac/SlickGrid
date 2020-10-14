@@ -1122,7 +1122,7 @@
       return onSelectedRowIdsChanged;
     }
 
-    function getSelectedRows(){
+    function getAllSelectedRows(){
       return selectedRowIds;
     }
 
@@ -1231,7 +1231,7 @@
       "onGroupExpanded": onGroupExpanded,
       "onGroupCollapsed": onGroupCollapsed,
 
-      "getSelectedRows": getSelectedRows
+      "getAllSelectedRows": getAllSelectedRows
     });
   }
 
