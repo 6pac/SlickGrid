@@ -72,6 +72,7 @@
     var groups = [];
     var toggledGroupsByLevel = [];
     var groupingDelimiter = ':|:';
+    var selectedRowIds = null;
 
     var pagesize = 0;
     var pagenum = 0;
@@ -1052,8 +1053,6 @@
         }, null, self);
       }
     }
-
-    var selectedRowIds = null;
     /***
      * Wires the grid and the DataView together to keep row selection tied to item ids.
      * This is useful since, without it, the grid only knows about rows, so if the items
