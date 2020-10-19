@@ -1131,6 +1131,16 @@
     }
 
     /** 
+     * Get all selected filtered IDs (similar to "getAllSelectedIds" but only return filtered data)
+     * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true. 
+     */
+    function getAllSelectedFilteredIds() {
+      return getAllSelectedFilteredItems().map(function (item) {
+        return item[idProperty];
+      });  
+    }
+
+    /** 
      * Set all selected IDs is similar to `grid.setSelectedRows()` method except that if it's used with Pagination it will also apply the selection to all pages.
      * This function was created mostly to be used by the CheckboxSelectColumn plugin (when option `applySelectOnAllPages` is set to true)
      */
@@ -1144,10 +1154,10 @@
       }
     }
 
-  /**
-   * Get all selected dataContext items
-   * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
-   */
+    /**
+     * Get all selected dataContext items
+     * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
+     */
     function getAllSelectedItems() {
       var selectedData = [];
       var selectedIds = getAllSelectedIds();
@@ -1155,6 +1165,19 @@
         selectedData.push(self.getItemById(id));
       });
       return selectedData;
+    }
+
+    /**
+     * Get all selected filtered dataContext items (similar to "getAllSelectedItems" but only return filtered data)
+     * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
+     */
+    function getAllSelectedFilteredItems() {
+      var intersection = filteredItems.filter(function(a) {
+        return selectedRowIds.some(function(b) { 
+          return a[idProperty] === b;
+        });
+      });
+      return intersection || [];
     }
 
     function syncGridCellCssStyles(grid, key) {
@@ -1230,6 +1253,8 @@
       "getAllSelectedIds": getAllSelectedIds,
       "setAllSelectedIds": setAllSelectedIds,
       "getAllSelectedItems": getAllSelectedItems,
+      "getAllSelectedFilteredIds": getAllSelectedFilteredIds,
+      "getAllSelectedFilteredItems": getAllSelectedFilteredItems,
       "getIdxById": getIdxById,
       "getRowByItem": getRowByItem,
       "getRowById": getRowById,
