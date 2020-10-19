@@ -246,7 +246,6 @@
           isAllSelected = true;
         }
         if (_isUsingDataView && _dataView && _dataView.setAllSelectedIds && options.applySelectOnAllPages) {
-          console.log('setAllSelectedIds')
           _dataView.setAllSelectedIds(isAllSelected);
         }
         _grid.setSelectedRows(rows);

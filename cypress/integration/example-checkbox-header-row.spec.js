@@ -98,4 +98,59 @@ describe('Example - Checkbox Header Row', () => {
       expect(win.console.log).to.be.calledWith('Selected Rows: ');
     });
   });
+
+  it('Should display "Showing page 1 of 4" text after changing Pagination to 25 items per page', () => {
+    cy.get('.ui-icon-lightbulb')
+      .click();
+
+    cy.get('.slick-pager-settings-expanded')
+      .should('be.visible');
+
+    cy.get('.slick-pager-settings-expanded')
+      .contains('25')
+      .click();
+
+    cy.get('.slick-pager-status')
+      .contains('Showing page 1 of 4');
+  });
+
+  it('should click on "Select All" checkbox and expect all row selected in current page', () => {
+    const expectedRows = '1,3,5,7,9,11,13,15,17,19,21,23';
+
+    cy.get('#filter-checkbox-selectall-container input[type=checkbox]')
+      .click({ force: true });
+
+    cy.get('#selectedRows')
+      .contains(expectedRows);
+
+    cy.window().then((win) => {
+      expect(win.console.log).to.have.callCount(2);
+      expect(win.console.log).to.be.calledWith('Previously Selected Rows: ');
+      expect(win.console.log).to.be.calledWith(`Selected Rows: ${expectedRows}`);
+    });
+  });
+
+  it('should go to next page and still expect all row selected in current page', () => {
+    cy.get('.ui-icon-seek-next')
+      .click();
+
+    cy.get('.slick-cell-checkboxsel input:checked')
+    .should('have.length', 11);
+  });
+
+  it('should go to last page and still expect all row selected in current page', () => {
+    cy.get('.ui-icon-seek-end')
+      .click();
+
+    cy.get('.slick-cell-checkboxsel input:checked')
+    .should('have.length', 11);
+  });
+
+  it('should go back to first page and still expect all row selected in current page', () => {
+    cy.get('.ui-icon-seek-first')
+      .click();
+
+    cy.get('.slick-cell-checkboxsel input:checked')
+    .should('have.length', 11);
+  });
 });
