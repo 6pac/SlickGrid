@@ -654,7 +654,7 @@
         }
       }
 
-      if(groups.length) {
+      if (groups.length) {
         addTotals(groups, level);
       }
 
@@ -1122,17 +1122,37 @@
       return onSelectedRowIdsChanged;
     }
 
-    /** Get all selected IDs */
-    function getAllSelectedIds(){
+    /** 
+     * Get all selected IDs 
+     * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true. 
+     */
+    function getAllSelectedIds() {
       return selectedRowIds;
     }
 
-    /** Get all selected dataContext items */
+    /** 
+     * Set all selected IDs is similar to `grid.setSelectedRows()` method except that if it's used with Pagination it will also apply the selection to all pages.
+     * This function was created mostly to be used by the CheckboxSelectColumn plugin (when option `applySelectOnAllPages` is set to true)
+     */
+    function setAllSelectedIds(isAllSelected) {
+      if (isAllSelected === false) {
+        selectedRowIds = [];
+      } else {
+        selectedRowIds = items.map(function (item) {
+          return item[idProperty];
+        });
+      }
+    }
+
+  /**
+   * Get all selected dataContext items
+   * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
+   */
     function getAllSelectedItems() {
       var selectedData = [];
       var selectedIds = getAllSelectedIds();
       selectedIds.forEach(function (id) {
-          selectedData.push(self.getItemById(id));
+        selectedData.push(self.getItemById(id));
       });
       return selectedData;
     }
@@ -1208,6 +1228,7 @@
       "expandGroup": expandGroup,
       "getGroups": getGroups,
       "getAllSelectedIds": getAllSelectedIds,
+      "setAllSelectedIds": setAllSelectedIds,
       "getAllSelectedItems": getAllSelectedItems,
       "getIdxById": getIdxById,
       "getRowByItem": getRowByItem,
