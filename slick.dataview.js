@@ -1154,6 +1154,16 @@
       }
     }
 
+    /** 
+     * Set and override currently selected IDs array (regardless of Pagination) 
+     * NOTE: This will NOT the selection in the grid, if you need to do that then you still need to call "grid.setSelectedRows(rows)"
+     */
+    function setSelectedIds(selectedIds) {
+      if (Array.isArray(selectedIds)) {
+        selectedRowIds = selectedIds;
+      }
+    }
+
     /**
      * Get all selected dataContext items
      * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
@@ -1255,6 +1265,7 @@
       "getAllSelectedItems": getAllSelectedItems,
       "getAllSelectedFilteredIds": getAllSelectedFilteredIds,
       "getAllSelectedFilteredItems": getAllSelectedFilteredItems,
+      "setSelectedIds": setSelectedIds,
       "getIdxById": getIdxById,
       "getRowByItem": getRowByItem,
       "getRowById": getRowById,
