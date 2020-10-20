@@ -138,7 +138,7 @@
       _grid.render();
       _isSelectAllChecked = selectedRows.length && selectedRows.length + disabledCount >= _grid.getDataLength();
 
-      if (!_isUsingDataView) {
+      if (!_isUsingDataView || !_options.applySelectOnAllPages) {
         if (!_options.hideInColumnTitleRow && !_options.hideSelectAllCheckbox) {
           renderSelectAllCheckbox(_isSelectAllChecked);
         }
@@ -147,7 +147,7 @@
           selectAllElm.prop("checked", _isSelectAllChecked);
         }
       }
-      
+
       // Remove items that shouln't of been selected in the first place (Got here Ctrl + click)
       if (removeList.length > 0) {
         for (i = 0; i < removeList.length; i++) {
