@@ -45,6 +45,12 @@
         .subscribe(_grid.onClick, handleClick)
         .subscribe(_grid.onKeyDown, handleKeyDown);
 
+      if (_isUsingDataView && _dataView && _options.applySelectOnAllPages) {
+        _handler
+          .subscribe(_dataView.onSelectedRowIdsChanged, handleDataViewSelectedIdsChanged)
+          .subscribe(_dataView.onPagingInfoChanged, handleDataViewSelectedIdsChanged)
+      }
+
       if (!_options.hideInFilterHeaderRow) {
         addCheckboxToFilterHeaderRow(grid);
       }
@@ -95,10 +101,6 @@
 
     function handleSelectedRowsChanged(e, args) {
       var selectedRows = _grid.getSelectedRows();
-      var selectedIds = null;
-      if (_isUsingDataView && _dataView && _dataView.getAllSelectedIds) {
-        selectedIds = _dataView.getAllSelectedIds();
-      }
 
       var lookup = {}, row, i, k;
       var disabledCount = 0;
@@ -136,17 +138,16 @@
       _grid.render();
       _isSelectAllChecked = selectedRows.length && selectedRows.length + disabledCount >= _grid.getDataLength();
 
-      if (_isUsingDataView && _dataView && _dataView.getLength && options.applySelectOnAllPages) {
-        _isSelectAllChecked = selectedIds.length && selectedIds.length + disabledCount >= _dataView.getLength();
+      if (!_isUsingDataView) {
+        if (!_options.hideInColumnTitleRow && !_options.hideSelectAllCheckbox) {
+          renderSelectAllCheckbox(_isSelectAllChecked);
+        }
+        if (!_options.hideInFilterHeaderRow) {
+          var selectAllElm = $("#header-filter-selector" + _selectAll_UID);
+          selectAllElm.prop("checked", _isSelectAllChecked);
+        }
       }
-
-      if (!_options.hideInColumnTitleRow && !_options.hideSelectAllCheckbox) {
-        renderSelectAllCheckbox(_isSelectAllChecked);
-      }
-      if (!_options.hideInFilterHeaderRow) {
-        var selectAllElm = $("#header-filter-selector" + _selectAll_UID);
-        selectAllElm.prop("checked", _isSelectAllChecked);
-      }
+      
       // Remove items that shouln't of been selected in the first place (Got here Ctrl + click)
       if (removeList.length > 0) {
         for (i = 0; i < removeList.length; i++) {
@@ -154,6 +155,30 @@
           selectedRows.splice(remIdx, 1);
         }
         _grid.setSelectedRows(selectedRows);
+      }
+    }
+
+    function handleDataViewSelectedIdsChanged(e, args) {
+      var selectedIds = _dataView.getAllSelectedIds();
+      var disabledCount = 0;
+      if (typeof _selectableOverride === 'function') {
+        for (k = 0; k < _dataView.getItemsCount(); k++) {
+          // If we are allowed to select the row
+          var dataItem = _dataView.getItemByIdx(k);
+          if (!checkSelectableOverride(i, dataItem, _grid)) {
+            disabledCount++;
+          }
+        }
+      }
+
+      _isSelectAllChecked = selectedIds.length && selectedIds.length + disabledCount >= _dataView.getItemsCount();
+
+      if (!_options.hideInColumnTitleRow && !_options.hideSelectAllCheckbox) {
+        renderSelectAllCheckbox(_isSelectAllChecked);
+      }
+      if (!_options.hideInFilterHeaderRow) {
+        var selectAllElm = $("#header-filter-selector" + _selectAll_UID);
+        selectAllElm.prop("checked", _isSelectAllChecked);
       }
     }
 
@@ -233,9 +258,9 @@
           return;
         }
 
-        var isAllSelected = false;
+        var isAllSelected = $(e.target).is(":checked") || false;
         var rows = [];
-        if ($(e.target).is(":checked")) {          
+        if (isAllSelected) {          
           for (var i = 0; i < _grid.getDataLength(); i++) {
             // Get the row and check it's a selectable row before pushing it onto the stack
             var rowItem = _grid.getDataItem(i);
@@ -245,8 +270,20 @@
           }
           isAllSelected = true;
         }
-        if (_isUsingDataView && _dataView && _dataView.setAllSelectedIds && options.applySelectOnAllPages) {
-          _dataView.setAllSelectedIds(isAllSelected);
+        if (_isUsingDataView && _dataView && _options.applySelectOnAllPages) {
+          var ids = [];
+          for (var i = 0; i < _dataView.getItemsCount(); i++) {
+            // Get the row and check it's a selectable ID (it could be in a different page) before pushing it onto the stack
+            var rowItem = _dataView.getItemByIdx(i);
+            if (checkSelectableOverride(i, rowItem, _grid)) {
+              ids.push(rowItem[_dataView.getIdPropertyName()]);
+            }
+          }
+          if (isAllSelected) {
+            _dataView.setSelectedIds(ids);
+          } else {
+            _dataView.setAllSelectedIds(false);
+          }
         }
         _grid.setSelectedRows(rows);
         e.stopPropagation();

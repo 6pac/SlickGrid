@@ -23,6 +23,7 @@
    */
   function DataView(options) {
     var self = this;
+    var _grid; // grid object will be defined only after using "syncGridSelection()" method"
 
     var defaults = {
       groupItemMetadataProvider: null,
@@ -79,6 +80,7 @@
     var totalRows = 0;
 
     // events
+    var onSelectedRowIdsChanged = new Slick.Event();
     var onSetItemsCalled = new Slick.Event();
     var onRowCountChanged = new Slick.Event();
     var onRowsChanged = new Slick.Event();
@@ -469,6 +471,10 @@
         }
       }
       return low;
+    }
+
+    function getItemsCount() {
+      return items.length;
     }
 
     function getLength() {
@@ -1073,10 +1079,10 @@
      * @method syncGridSelection
      */
     function syncGridSelection(grid, preserveHidden, preserveHiddenOnSelectionChange) {
+      _grid = grid;
       var self = this;
       var inHandler;
       selectedRowIds = self.mapRowsToIds(grid.getSelectedRows());
-      var onSelectedRowIdsChanged = new Slick.Event();
 
       function setSelectedRowIds(rowIds) {
         if (selectedRowIds.join(",") == rowIds.join(",")) {
@@ -1152,6 +1158,11 @@
           return item[idProperty];
         });
       }
+      onSelectedRowIdsChanged.notify({
+        "grid": _grid,
+        "ids": selectedRowIds,
+        "dataView": self
+      }, new Slick.EventData(), self);
     }
 
     /** 
@@ -1162,6 +1173,11 @@
       if (Array.isArray(selectedIds)) {
         selectedRowIds = selectedIds;
       }
+      onSelectedRowIdsChanged.notify({
+        "grid": _grid,
+        "ids": selectedRowIds,
+        "dataView": self
+      }, new Slick.EventData(), self);
     }
 
     /**
@@ -1287,11 +1303,13 @@
       "syncGridCellCssStyles": syncGridCellCssStyles,
 
       // data provider methods
+      "getItemsCount": getItemsCount,
       "getLength": getLength,
       "getItem": getItem,
       "getItemMetadata": getItemMetadata,
 
       // events
+      "onSelectedRowIdsChanged": onSelectedRowIdsChanged, // NOTE this will only work when used with "syncGridSelection"
       "onSetItemsCalled": onSetItemsCalled,
       "onRowCountChanged": onRowCountChanged,
       "onRowsChanged": onRowsChanged,
