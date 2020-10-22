@@ -1159,7 +1159,7 @@
      */
     function getAllSelectedFilteredIds() {
       return getAllSelectedFilteredItems().map(function (item) {
-        return filteredItems[idProperty];
+        return item[idProperty];
       });
     }
 
@@ -1216,6 +1216,8 @@
      * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
      */
     function getAllSelectedFilteredItems() {
+      if (!Array.isArray(selectedRowIds)) { return []; }
+
       var intersection = filteredItems.filter(function (a) {
         return selectedRowIds.some(function (b) {
           return a[idProperty] === b;
