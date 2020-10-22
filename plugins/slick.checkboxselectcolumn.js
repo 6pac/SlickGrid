@@ -159,7 +159,7 @@
     }
 
     function handleDataViewSelectedIdsChanged(e, args) {
-      var selectedIds = _dataView.getAllSelectedIds();
+      var selectedIds = _dataView.getAllSelectedFilteredIds();
       var disabledCount = 0;
       if (typeof _selectableOverride === 'function') {
         for (k = 0; k < _dataView.getItemsCount(); k++) {
@@ -260,7 +260,7 @@
 
         var isAllSelected = $(e.target).is(":checked") || false;
         var rows = [];
-        if (isAllSelected) {          
+        if (isAllSelected) {
           for (var i = 0; i < _grid.getDataLength(); i++) {
             // Get the row and check it's a selectable row before pushing it onto the stack
             var rowItem = _grid.getDataItem(i);

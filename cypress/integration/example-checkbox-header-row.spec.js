@@ -66,7 +66,7 @@ describe('Example - Checkbox Header Row', () => {
   });
 
   it('should click on Select All and display previous and new selected rows', () => {
-    const expectedRows = '1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,81,83,85,87,89,91,93,95,97,99';
+    const expectedRows = '1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,81,83,85,87,89,91,93,95,97,99,101,103,105,107,109,111,113,115,117,119,121,123,125,127,129,131,133,135,137,139,141,143,145,147,149';
 
     cy.get('#filter-checkbox-selectall-container input[type=checkbox]')
       .click({ force: true });
@@ -82,7 +82,7 @@ describe('Example - Checkbox Header Row', () => {
   });
 
   it('should click on Select All again and expect no new selected rows', () => {
-    const expectedPreviousRows = '1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,81,83,85,87,89,91,93,95,97,99';
+    const expectedPreviousRows = '1,3,5,7,9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,81,83,85,87,89,91,93,95,97,99,101,103,105,107,109,111,113,115,117,119,121,123,125,127,129,131,133,135,137,139,141,143,145,147,149';
 
     cy.get('#filter-checkbox-selectall-container input[type=checkbox]')
       .click({ force: true });
@@ -99,7 +99,7 @@ describe('Example - Checkbox Header Row', () => {
     });
   });
 
-  it('Should display "Showing page 1 of 4" text after changing Pagination to 25 items per page', () => {
+  it('Should display "Showing page 1 of 6" text after changing Pagination to 25 items per page', () => {
     cy.get('.ui-icon-lightbulb')
       .click();
 
@@ -111,7 +111,7 @@ describe('Example - Checkbox Header Row', () => {
       .click();
 
     cy.get('.slick-pager-status')
-      .contains('Showing page 1 of 4');
+      .contains('Showing page 1 of 6');
   });
 
   it('should click on "Select All" checkbox and expect all rows selected in current page', () => {
@@ -146,7 +146,7 @@ describe('Example - Checkbox Header Row', () => {
       .should('have.length', 11);
 
     cy.get('.slick-pager-status')
-      .contains('Showing page 4 of 4');
+      .contains('Showing page 6 of 6');
 
     cy.get('#selectedRows')
       .should('contain', '0,2,4,6,8,10,12,14,16,18,20,22,24');
@@ -172,7 +172,7 @@ describe('Example - Checkbox Header Row', () => {
       .should('contain', '2,4,6,8,10,12,14,16,18,20,22,24');
 
     cy.get('#selectedIds')
-      .should('contain', '9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,81,85,87,89,91,93,95,97,99,101,103,105,107');
+      .should('contain', '9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,81,83,85,87,89,91,93,95,97,99,101,103,105,107,109,111,113,115,117,119,121,123,125,127,129,131,135,137,139,141,143,145,147,149,151,153,155,157');
   });
 
   it('should go back to first page and still expect all rows selected in current page', () => {
@@ -186,13 +186,13 @@ describe('Example - Checkbox Header Row', () => {
       .should('have.length', 11);
 
     cy.get('.slick-pager-status')
-      .contains('Showing page 1 of 4');
+      .contains('Showing page 1 of 6');
 
     cy.get('#selectedRows')
       .should('contain', '1,3,5,7,9,11,13,15,17,19,21,23');
 
     cy.get('#selectedIds')
-      .should('contain', '9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,81,85,87,89,91,93,95,97,99,101,103,105,107');
+      .should('contain', '9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,81,83,85,87,89,91,93,95,97,99,101,103,105,107,109,111,113,115,117,119,121,123,125,127,129,131,135,137,139,141,143,145,147,149,151,153,155,157');
   });
 
   it('should go back to last page then re-select the first row and expect "Select All" to be checked', () => {
@@ -209,12 +209,61 @@ describe('Example - Checkbox Header Row', () => {
       .should('have.length', 11);
 
     cy.get('.slick-pager-status')
-      .contains('Showing page 4 of 4');
+      .contains('Showing page 6 of 6');
 
     cy.get('#selectedRows')
       .should('contain', '0,2,4,6,8,10,12,14,16,18,20,22,24');
 
     cy.get('#selectedIds')
       .should('contain', '9,11,13,15,17,19,21,23,25,27,29,31,33,35,37,39,41,43,45,47,49,51,53,55,57,59,61,63,65,67,69,71,73,75,77,79,81,83,85,87,89,91,93,95,97,99,101,103,105,107');
+  });
+
+  it('should have lower count of selected Ids after filtering data', () => {
+    let prevSelectedIdsCount = 0;
+    let newSelectedIdsCount = 0;
+    let prevSelectedRowsCount = 0;
+    let newSelectedRowsCount = 0;
+
+    cy.get('#idsCount')
+      .then($elm => {
+        console.log($elm)
+        prevSelectedIdsCount = +$elm[0].textContent;
+        expect(prevSelectedIdsCount).to.be.greaterThan(0);
+      });
+
+    cy.get('#rowsCount')
+      .then($elm => {
+        console.log($elm)
+        prevSelectedRowsCount = +$elm[0].textContent;
+        expect(prevSelectedRowsCount).to.be.greaterThan(0);
+        expect(prevSelectedIdsCount).not.to.be.eq(prevSelectedRowsCount);
+      });
+
+    cy.get('.slick-pager-status')
+      .should('not.contain', 'Showing page 1 of 1');
+
+    cy.get('#myGrid')
+      .find('.slick-headerrow-column.l1.r1')
+      .find('input')
+      .type('5');
+
+    cy.get('#idsCount')
+      .then($elm => {
+        newSelectedIdsCount = +$elm[0].textContent;
+        expect(newSelectedIdsCount).to.be.lessThan(prevSelectedIdsCount);
+      });
+
+    cy.get('#rowsCount')
+      .then($elm => {
+        newSelectedRowsCount = +$elm[0].textContent;
+      });
+
+    cy.get('.slick-pager-status')
+      .then($elm => {
+        const pagerInfo = $elm[0].textContent;
+        if (pagerInfo === 'Showing page 1 of 1') {
+          expect(newSelectedIdsCount).to.be.eq(newSelectedRowsCount);
+        }
+      });
   });
 });

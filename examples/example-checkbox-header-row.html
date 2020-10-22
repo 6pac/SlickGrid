@@ -94,12 +94,12 @@
 
     <hr/>
 
-    <h3>Selected Rows:</h3>
+    <h3>Selected Rows (<span id="rowsCount">0</span>):</h3>
     <div id="selectedRows" style="overflow-x: auto;"></div>
     
     <hr/>
 
-    <h3>Selected Ids (index/id offset=<span id="idOffset"></span>):</h3>
+    <h3>Selected Ids (<span id="idsCount">0</span>) with index/id offset=<span id="idOffset"></span>:</h3>
     <div id="selectedIds" style="overflow-x: auto;"></div>
   </div>
 </div>
@@ -137,7 +137,7 @@
   
   // add an offset so that the IDs are not equal to the row number, to fully validate that DataView selected IDs work as intended
   var idOffset = 8;
-  $('#idOffset').text(idOffset); 
+  $('#idOffset').text(idOffset);
 
   checkboxSelector = new Slick.CheckboxSelectColumn({
     cssClass: "slick-cell-checkboxsel",
@@ -188,7 +188,7 @@
   }
 
   $(function () {
-    for (var i = 0; i < 100; i++) {
+    for (var i = 0; i < 150; i++) {
       var d = (data[i] = {});
       d["id"] = i + idOffset;
       for (var j = 0; j < columns.length; j++) {
@@ -223,12 +223,14 @@
       console.log("Previously Selected Rows: " + previousSelectedRows.toString());
       console.log("Selected Rows: " + sortedSelectedRows.toString());
       $('#selectedRows').text(sortedSelectedRows.toString());
+      $('#rowsCount').text(sortedSelectedRows.length); 
     });
     
     dataView.onSelectedRowIdsChanged.subscribe(function(e, args) {
-      var sortedSelectedIds = args.ids.sort(function (a, b) { return a - b });
-      // console.log("Selected Ids: " + sortedSelectedRows.toString());
+      var sortedSelectedIds = args.filteredIds.sort(function (a, b) { return a - b });
+      // console.log("Selected Ids: " + sortedSelectedIds.toString());
       $('#selectedIds').text(sortedSelectedIds.toString());
+      $('#idsCount').text(sortedSelectedIds.length); 
     });
 
     $(grid.getHeaderRow()).on("change keyup", ":input", function (e) {

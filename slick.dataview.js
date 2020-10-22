@@ -1088,12 +1088,21 @@
         if (selectedRowIds.join(",") == rowIds.join(",")) {
           return;
         }
+        triggerSelectedRowIdsChange(rowIds);
+      }
 
+      function triggerSelectedRowIdsChange(rowIds) {
         selectedRowIds = rowIds;
+        var selectedFilteredRowIds = rowIds.filter(function (selectedId) {
+          return filteredItems.some(function (filteredItem) {
+            return filteredItem[idProperty] === selectedId;
+          });
+        });
 
         onSelectedRowIdsChanged.notify({
           "grid": grid,
           "ids": selectedRowIds,
+          "filteredIds": selectedFilteredRowIds,
           "dataView": self
         }, new Slick.EventData(), self);
       }
@@ -1107,6 +1116,14 @@
           }
           grid.setSelectedRows(selectedRows);
           inHandler = false;
+
+          var checkboxPlugin = grid.getPluginByName('CheckboxSelectColumn');
+          if (preserveHiddenOnSelectionChange && checkboxPlugin && checkboxPlugin.getOptions) {
+            var checkboxPluginOptions = checkboxPlugin.getOptions() || {};
+            if (checkboxPluginOptions.applySelectOnAllPages) {
+              triggerSelectedRowIdsChange(selectedRowIds);
+            }
+          }
         }
       }
 
@@ -1142,8 +1159,8 @@
      */
     function getAllSelectedFilteredIds() {
       return getAllSelectedFilteredItems().map(function (item) {
-        return item[idProperty];
-      });  
+        return filteredItems[idProperty];
+      });
     }
 
     /** 
@@ -1154,13 +1171,14 @@
       if (isAllSelected === false) {
         selectedRowIds = [];
       } else {
-        selectedRowIds = items.map(function (item) {
+        selectedRowIds = filteredItems.map(function (item) {
           return item[idProperty];
         });
       }
       onSelectedRowIdsChanged.notify({
         "grid": _grid,
         "ids": selectedRowIds,
+        "filteredIds": selectedRowIds,
         "dataView": self
       }, new Slick.EventData(), self);
     }
@@ -1170,14 +1188,14 @@
      * NOTE: This will NOT the selection in the grid, if you need to do that then you still need to call "grid.setSelectedRows(rows)"
      */
     function setSelectedIds(selectedIds) {
-      if (Array.isArray(selectedIds)) {
-        selectedRowIds = selectedIds;
-      }
-      onSelectedRowIdsChanged.notify({
-        "grid": _grid,
-        "ids": selectedRowIds,
-        "dataView": self
-      }, new Slick.EventData(), self);
+      if (!Array.isArray(selectedIds)) { return; }
+
+      var selectedFilteredRowIds = selectedIds.filter(function (selectedId) {
+        return filteredItems.some(function (filteredItem) {
+          return filteredItem[idProperty] === selectedId;
+        });
+      });
+      selectedRowIds = selectedFilteredRowIds;
     }
 
     /**
@@ -1198,8 +1216,8 @@
      * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
      */
     function getAllSelectedFilteredItems() {
-      var intersection = filteredItems.filter(function(a) {
-        return selectedRowIds.some(function(b) { 
+      var intersection = filteredItems.filter(function (a) {
+        return selectedRowIds.some(function (b) {
           return a[idProperty] === b;
         });
       });
