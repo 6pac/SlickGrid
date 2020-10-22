@@ -160,18 +160,24 @@
 
     function handleDataViewSelectedIdsChanged(e, args) {
       var selectedIds = _dataView.getAllSelectedFilteredIds();
+      var filteredItems = _dataView.getFilteredItems();
       var disabledCount = 0;
-      if (typeof _selectableOverride === 'function') {
+
+      if (typeof _selectableOverride === 'function' && selectedIds.length > 0) {
         for (k = 0; k < _dataView.getItemsCount(); k++) {
           // If we are allowed to select the row
           var dataItem = _dataView.getItemByIdx(k);
-          if (!checkSelectableOverride(i, dataItem, _grid)) {
+          var idProperty = _dataView.getIdPropertyName();
+          var dataItemId = dataItem[idProperty];
+          var foundItemIdx = filteredItems.findIndex(function (item) {
+            return item[idProperty] === dataItemId;
+          });
+          if (foundItemIdx >= 0 && !checkSelectableOverride(i, dataItem, _grid)) {
             disabledCount++;
           }
         }
       }
-
-      _isSelectAllChecked = selectedIds.length && selectedIds.length + disabledCount >= _dataView.getItemsCount();
+      _isSelectAllChecked = selectedIds.length && selectedIds.length + disabledCount >= filteredItems.length;
 
       if (!_options.hideInColumnTitleRow && !_options.hideSelectAllCheckbox) {
         renderSelectAllCheckbox(_isSelectAllChecked);
