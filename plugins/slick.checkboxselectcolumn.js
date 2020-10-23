@@ -277,19 +277,18 @@
           isAllSelected = true;
         }
         if (_isUsingDataView && _dataView && _options.applySelectOnAllPages) {
-          var ids = [];
-          for (var i = 0; i < _dataView.getItemsCount(); i++) {
-            // Get the row and check it's a selectable ID (it could be in a different page) before pushing it onto the stack
-            var rowItem = _dataView.getItemByIdx(i);
-            if (checkSelectableOverride(i, rowItem, _grid)) {
-              ids.push(rowItem[_dataView.getIdPropertyName()]);
+            var ids = [];
+            var filteredItems = _dataView.getFilteredItems();
+            for(var i = 0; i < filteredItems.length; i++)
+            {
+              // Get the row and check it's a selectable ID (it could be in a different page) before pushing it onto the stack
+              var rowItem = filteredItems[i];
+              if(checkSelectableOverride(i, rowItem, _grid))
+              {
+                ids.push(rowItem[_dataView.getIdPropertyName()]);
+              }
             }
-          }
-          if (isAllSelected) {
-            _dataView.setSelectedIds(ids);
-          } else {
-            _dataView.setAllSelectedIds(false);
-          }
+          _dataView.setSelectedIds(ids, isAllSelected);
         }
         _grid.setSelectedRows(rows);
         e.stopPropagation();
