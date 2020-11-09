@@ -2107,7 +2107,6 @@ if (typeof Slick === "undefined") {
       $container = null;
       $focusSink = null;
       $focusSink2 = null;
-      $gridCanvas = null;
       $groupHeaders = null;
       $groupHeadersL = null;
       $groupHeadersR = null;
@@ -2150,8 +2149,6 @@ if (typeof Slick === "undefined") {
       $topPanelScrollerR = null;
       $topPanelL = null;
       $topPanelR = null;
-      $cellEl = null;
-      $rowEl = null;
       $paneHeaderL = null;
       $paneHeaderR = null;
       $paneTopL = null;
@@ -2489,6 +2486,7 @@ if (typeof Slick === "undefined") {
           len = $cellEl.outerWidth();
 
           $rowEl.remove();
+          $cellEl = null;
           return len;
         }
 
@@ -2510,6 +2508,7 @@ if (typeof Slick === "undefined") {
          });
 
         $rowEl.remove();
+        $cellEl = null;
         return max;
     }
 
