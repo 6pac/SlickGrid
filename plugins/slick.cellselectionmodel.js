@@ -45,7 +45,8 @@
       _selector.onCellRangeSelected.unsubscribe(handleCellRangeSelected);
       _selector.onBeforeCellRangeSelected.unsubscribe(handleBeforeCellRangeSelected);
       _grid.unregisterPlugin(_selector);
-	    _selector = null;
+      _selector = null;
+      _canvas = null;
     }
 
     function removeInvalidRanges(ranges) {
