@@ -90,6 +90,7 @@
       $columnTitleElm = null;
       $list = null;
       $menu = null;
+      $(window).off("beforeunload");
     }
 
     function handleBodyMouseDown(e) {

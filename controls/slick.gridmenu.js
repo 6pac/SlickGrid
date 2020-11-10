@@ -232,6 +232,7 @@
       _grid.onSetOptions.unsubscribe();
 	    $("div.slick-gridmenu." + _gridUid).remove();
       deleteMenu();
+      $(window).off("beforeunload");
     }
 
     /** Delete the menu DOM element but without unsubscribing any events */
