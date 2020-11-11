@@ -2072,7 +2072,7 @@ if (typeof Slick === "undefined") {
       stylesheet = null;
     }
 
-    function destroy() {
+    function destroy(shouldDestroyAllElements) {
       getEditorLock().cancelCurrentEdit();
 
       trigger(self.onBeforeDestroy, {});
@@ -2092,7 +2092,9 @@ if (typeof Slick === "undefined") {
 
       $canvas.off("draginit dragstart dragend drag");
       $container.empty().removeClass(uid);
-      destroyAllElements();
+      if (shouldDestroyAllElements) {
+        destroyAllElements();
+      }
     }
 
     function destroyAllElements() {
