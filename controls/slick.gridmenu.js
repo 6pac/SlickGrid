@@ -230,7 +230,7 @@
       _grid.onColumnsReordered.unsubscribe(updateColumnOrder);
       _grid.onBeforeDestroy.unsubscribe();
       _grid.onSetOptions.unsubscribe();
-	    $("div.slick-gridmenu." + _gridUid).remove();
+      $("div.slick-gridmenu." + _gridUid).remove();
       deleteMenu();
       $(window).off("beforeunload");
     }
@@ -239,19 +239,19 @@
     function deleteMenu() {
       $(document.body).off("mousedown." + _gridUid, handleBodyMouseDown);
       $("div.slick-gridmenu." + _gridUid).hide();
-	    if ($button) {
-		    $button.remove();
-	    }
-	    if ($menu) {
-		    $menu.remove();
-	    }
-	    if ($customMenu) {
-		    $customMenu.remove();
-	    }
+      if ($button) {
+        $button.remove();
+      }
+      if ($menu) {
+        $menu.remove();
+      }
+      if ($customMenu) {
+        $customMenu.remove();
+      }
       if ($header) {
         $header.attr('style', 'width: 100%'); // put back original width
       }
-	    $customTitleElm = null;
+      $customTitleElm = null;
       $columnTitleElm = null;
       $customMenu = null;
       $header = null;
@@ -486,7 +486,7 @@
           return;
         }
       }
-	    $input = null;
+      $input = null;
     }
 
     function handleBodyMouseDown(e) {

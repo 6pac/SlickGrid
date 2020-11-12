@@ -79,12 +79,12 @@
     function destroy() {
       _grid.onHeaderContextMenu.unsubscribe(handleHeaderContextMenu);
       _grid.onColumnsReordered.unsubscribe(updateColumnOrder);
-	    if ($list) {
-		    $list.remove();
-	    }
-	    if ($menu) {
-	      $menu.off("click").remove();
-	    }
+      if ($list) {
+        $list.remove();
+      }
+      if ($menu) {
+        $menu.off("click").remove();
+      }
       $(document.body).off("mousedown", handleBodyMouseDown);
       $(".slick-columnpicker." + _gridUid).hide(_options && _options.columnPicker && _options.columnPicker.fadeSpeed);
       $columnTitleElm = null;
