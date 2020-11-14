@@ -17,6 +17,6 @@ We also welcome any new contributions (tests or fixes) and if you wish to add Cy
 ```bash
 npm install             # install all npm packages
 npm run serve           # run a local http server on port 8080
-npm run cypress:open    # open Cypress tool
+npm run cypress         # open Cypress tool
 ```
 Once the Cypress UI is open, you can then click on "Run all Specs" to execute all E2E browser tests.

@@ -23,6 +23,7 @@
    */
   function DataView(options) {
     var self = this;
+    var _grid; // grid object will be defined only after using "syncGridSelection()" method"
 
     var defaults = {
       groupItemMetadataProvider: null,
@@ -80,6 +81,7 @@
     var totalRows = 0;
 
     // events
+    var onSelectedRowIdsChanged = new Slick.Event();
     var onSetItemsCalled = new Slick.Event();
     var onRowCountChanged = new Slick.Event();
     var onRowsChanged = new Slick.Event();
@@ -493,6 +495,10 @@
       return low;
     }
 
+    function getItemsCount() {
+      return items.length;
+    }
+
     function getLength() {
       return rows.length;
     }
@@ -676,7 +682,7 @@
         }
       }
 
-      if(groups.length) {
+      if (groups.length) {
         addTotals(groups, level);
       }
 
@@ -1095,22 +1101,31 @@
      * @method syncGridSelection
      */
     function syncGridSelection(grid, preserveHidden, preserveHiddenOnSelectionChange) {
+      _grid = grid;
       var self = this;
       _grid = grid;
       var inHandler;
       selectedRowIds = self.mapRowsToIds(grid.getSelectedRows());
-      var onSelectedRowIdsChanged = new Slick.Event();
 
       function setSelectedRowIds(rowIds) {
         if (selectedRowIds.join(",") == rowIds.join(",")) {
           return;
         }
+        triggerSelectedRowIdsChange(rowIds);
+      }
 
+      function triggerSelectedRowIdsChange(rowIds) {
         selectedRowIds = rowIds;
+        var selectedFilteredRowIds = rowIds.filter(function (selectedId) {
+          return filteredItems.some(function (filteredItem) {
+            return filteredItem[idProperty] === selectedId;
+          });
+        });
 
         onSelectedRowIdsChanged.notify({
           "grid": grid,
           "ids": selectedRowIds,
+          "filteredIds": selectedFilteredRowIds,
           "dataView": self
         }, new Slick.EventData(), self);
       }
@@ -1124,6 +1139,14 @@
           }
           grid.setSelectedRows(selectedRows);
           inHandler = false;
+
+          var checkboxPlugin = grid.getPluginByName('CheckboxSelectColumn');
+          if (preserveHiddenOnSelectionChange && checkboxPlugin && checkboxPlugin.getOptions) {
+            var checkboxPluginOptions = checkboxPlugin.getOptions() || {};
+            if (checkboxPluginOptions.applySelectOnAllPages) {
+              triggerSelectedRowIdsChange(selectedRowIds);
+            }
+          }
         }
       }
 
@@ -1145,19 +1168,85 @@
       return onSelectedRowIdsChanged;
     }
 
-    /** Get all selected IDs */
-    function getAllSelectedIds(){
+    /** 
+     * Get all selected IDs 
+     * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true. 
+     */
+    function getAllSelectedIds() {
       return selectedRowIds;
     }
 
-    /** Get all selected dataContext items */
+    /** 
+     * Get all selected filtered IDs (similar to "getAllSelectedIds" but only return filtered data)
+     * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true. 
+     */
+    function getAllSelectedFilteredIds() {
+      return getAllSelectedFilteredItems().map(function (item) {
+        return item[idProperty];
+      });
+    }
+
+    /** 
+     * Set all selected IDs is similar to `grid.setSelectedRows()` method except that if it's used with Pagination it will also apply the selection to all pages.
+     * This function was created mostly to be used by the CheckboxSelectColumn plugin (when option `applySelectOnAllPages` is set to true)
+     */
+    function setAllSelectedIds(isAllSelected) {
+      if (isAllSelected === false) {
+        selectedRowIds = [];
+      } else {
+        selectedRowIds = filteredItems.map(function (item) {
+          return item[idProperty];
+        });
+      }
+      onSelectedRowIdsChanged.notify({
+        "grid": _grid,
+        "ids": selectedRowIds,
+        "filteredIds": selectedRowIds,
+        "dataView": self
+      }, new Slick.EventData(), self);
+    }
+
+    /** 
+     * Set and override currently selected IDs array (regardless of Pagination) 
+     * NOTE: This will NOT the selection in the grid, if you need to do that then you still need to call "grid.setSelectedRows(rows)"
+     */
+    function setSelectedIds(selectedIds) {
+      if (!Array.isArray(selectedIds)) { return; }
+
+      var selectedFilteredRowIds = selectedIds.filter(function (selectedId) {
+        return filteredItems.some(function (filteredItem) {
+          return filteredItem[idProperty] === selectedId;
+        });
+      });
+      selectedRowIds = selectedFilteredRowIds;
+    }
+
+    /**
+     * Get all selected dataContext items
+     * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
+     */
     function getAllSelectedItems() {
       var selectedData = [];
       var selectedIds = getAllSelectedIds();
       selectedIds.forEach(function (id) {
-          selectedData.push(self.getItemById(id));
+        selectedData.push(self.getItemById(id));
       });
       return selectedData;
+    }
+
+    /**
+     * Get all selected filtered dataContext items (similar to "getAllSelectedItems" but only return filtered data)
+     * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
+     */
+    function getAllSelectedFilteredItems() {
+      if (!Array.isArray(selectedRowIds)) { return []; }
+
+      var intersection = filteredItems.filter(function (a) {
+        return selectedRowIds.some(function (b) {
+          return a[idProperty] === b;
+        });
+      });
+      return intersection || [];
     }
 
     function syncGridCellCssStyles(grid, key) {
@@ -1232,7 +1321,11 @@
       "expandGroup": expandGroup,
       "getGroups": getGroups,
       "getAllSelectedIds": getAllSelectedIds,
+      "setAllSelectedIds": setAllSelectedIds,
       "getAllSelectedItems": getAllSelectedItems,
+      "getAllSelectedFilteredIds": getAllSelectedFilteredIds,
+      "getAllSelectedFilteredItems": getAllSelectedFilteredItems,
+      "setSelectedIds": setSelectedIds,
       "getIdxById": getIdxById,
       "getRowByItem": getRowByItem,
       "getRowById": getRowById,
@@ -1254,11 +1347,13 @@
       "syncGridCellCssStyles": syncGridCellCssStyles,
 
       // data provider methods
+      "getItemsCount": getItemsCount,
       "getLength": getLength,
       "getItem": getItem,
       "getItemMetadata": getItemMetadata,
 
       // events
+      "onSelectedRowIdsChanged": onSelectedRowIdsChanged, // NOTE this will only work when used with "syncGridSelection"
       "onSetItemsCalled": onSetItemsCalled,
       "onRowCountChanged": onRowCountChanged,
       "onRowsChanged": onRowsChanged,
