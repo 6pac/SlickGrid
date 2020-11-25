@@ -2907,6 +2907,13 @@ if (typeof Slick === "undefined") {
       if (!suppressColumnSet) {
         setColumns(treeColumns.extractColumns());
       }
+
+      if (options.enableMouseWheelScrollHandler && $viewport && jQuery.fn.mousewheel) {
+        var viewportEvents = $._data($viewport[0], "events");
+        if (!viewportEvents || !viewportEvents.mousewheel) {
+          $viewport.on("mousewheel", handleMouseWheel);
+        }
+      }
     }
 
     function validateAndEnforceOptions() {
