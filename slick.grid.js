@@ -113,6 +113,7 @@ if (typeof Slick === "undefined") {
       minRowBuffer: 3,
       emulatePagingWhenScrolling: true, // when scrolling off bottom of viewport, place new row at top of viewport
       editorCellNavOnLRKeys: false,
+      enableMouseWheelScrollHandler: true,
       doPaging: true,
       autosizeColsMode: Slick.GridAutosizeColsMode.LegacyOff,
       autosizeColPaddingPx: 4,
@@ -567,7 +568,7 @@ if (typeof Slick === "undefined") {
         $viewport
             .on("scroll", handleScroll);
 
-        if (jQuery.fn.mousewheel) {
+        if (jQuery.fn.mousewheel && options.enableMouseWheelScrollHandler) {
           $viewport.on("mousewheel", handleMouseWheel);
         }
 
