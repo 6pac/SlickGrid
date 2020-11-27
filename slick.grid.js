@@ -2512,10 +2512,10 @@ if (typeof Slick === "undefined") {
             val = (Array.isArray(row) ? row[columnDef.field] : row);
             if (columnDef.formatterOverride) {
               // use formatterOverride as first preference
-              formatterResult = columnDef.formatterOverride(index, colIndex, val, columnDef, row);
+              formatterResult = columnDef.formatterOverride(index, colIndex, val, columnDef, row, self);
             } else if (columnDef.formatter) {
               // otherwise, use formatter
-              formatterResult = columnDef.formatter(index, colIndex, val, columnDef, row);
+              formatterResult = columnDef.formatter(index, colIndex, val, columnDef, row, self);
             } else {
               // otherwise, use plain text
               formatterResult = '' + val;
@@ -3175,7 +3175,7 @@ if (typeof Slick === "undefined") {
 
         if( metadata ) {
         	var columnData = metadata[m.id] || metadata[cell];
-        	result = getFormatter(row, m)(row, cell, value, m, item, columnData );
+        	result = getFormatter(row, m)(row, cell, value, m, item, columnData, grid );
         }
         else {
         	result = getFormatter(row, m)(row, cell, value, m, item);
