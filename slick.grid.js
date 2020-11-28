@@ -3165,25 +3165,6 @@ if (typeof Slick === "undefined") {
           options.defaultFormatter;
     }
 
-    function callFormatter( row, cell, value, m, item, grid ) {
-
-    	var result;
-
-        // pass metadata to formatter
-        var metadata = data.getItemMetadata && data.getItemMetadata(row);
-        metadata = metadata && metadata.columns;
-
-        if( metadata ) {
-        	var columnData = metadata[m.id] || metadata[cell];
-        	result = getFormatter(row, m)(row, cell, value, m, item, columnData, grid );
-        }
-        else {
-        	result = getFormatter(row, m)(row, cell, value, m, item);
-        }
-
-        return result;
-    }
-
     function getEditor(row, cell) {
       var column = columns[cell];
       var rowMetadata = data.getItemMetadata && data.getItemMetadata(row);
