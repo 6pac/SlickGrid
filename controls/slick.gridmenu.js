@@ -616,7 +616,7 @@
 
         var callbackArgs = {
           "columnId": columnId,
-          "isColumnShown": isChecked,
+          "showing": isChecked,
           "grid": _grid,
           "allColumns": columns,
           "columns": visibleColumns

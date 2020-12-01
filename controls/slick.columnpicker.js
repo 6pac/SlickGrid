@@ -229,7 +229,7 @@
         }
 
         _grid.setColumns(visibleColumns);
-        onColumnsChanged.notify({ columnId: columnId, isColumnShown: isChecked, allColumns: columns, columns: visibleColumns, grid: _grid });
+        onColumnsChanged.notify({ columnId: columnId, showing: isChecked, allColumns: columns, columns: visibleColumns, grid: _grid });
       }
     }
 
