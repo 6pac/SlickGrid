@@ -214,6 +214,7 @@
       }
 
       if ($(e.target).is(":checkbox")) {
+        var isChecked = e.target.checked;
         var columnId = $(e.target).data("column-id") || "";
         var visibleColumns = [];
         $.each(columnCheckboxes, function (i) {
@@ -228,7 +229,7 @@
         }
 
         _grid.setColumns(visibleColumns);
-        onColumnsChanged.notify({ columnId: columnId, allColumns: columns, columns: visibleColumns, grid: _grid });
+        onColumnsChanged.notify({ columnId: columnId, isColumnShown: isChecked, allColumns: columns, columns: visibleColumns, grid: _grid });
       }
     }
 
