@@ -600,6 +600,7 @@
       }
 
       if ($(e.target).is(":checkbox")) {
+        var columnId = $(e.target).data("column-id") || "";
         var visibleColumns = [];
         $.each(columnCheckboxes, function (i) {
           if ($(this).is(":checked")) {
@@ -613,6 +614,7 @@
         }
 
         var callbackArgs = {
+          "columnId": columnId,
           "grid": _grid,
           "allColumns": columns,
           "columns": visibleColumns
