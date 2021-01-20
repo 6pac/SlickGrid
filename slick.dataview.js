@@ -493,7 +493,7 @@
       return low;
     }
 
-    function getItemsCount() {
+    function getItemCount() {
       return items.length;
     }
 
@@ -1258,7 +1258,7 @@
       "syncGridCellCssStyles": syncGridCellCssStyles,
 
       // data provider methods
-      "getItemsCount": getItemsCount,
+      "getItemCount": getItemCount,
       "getLength": getLength,
       "getItem": getItem,
       "getItemMetadata": getItemMetadata,
