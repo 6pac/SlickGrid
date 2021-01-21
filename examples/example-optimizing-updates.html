@@ -51,8 +51,11 @@
       then updated.
     </p>
     <h2>Controls</h2>
-    <button onclick="simulateLogs(100000, false)">Add 100000 entries of each severity (inefficient)</button>
-    <button onclick="simulateLogs(100000, true)">Add 100000 entries of each severity (efficient)</button>
+    <button onclick="simulateLogs(100000, false, true)">Add 100000 entries of each severity (inefficient)</button>
+    <button onclick="simulateLogs(100000, true, true)">Add 100000 entries of each severity (efficient)</button>
+    <div>
+        Last update took: <span id="duration"></span>
+    </div>
     <h2>View Source:</h2>
     <ul>
       <li><a href="https://github.com/6pac/SlickGrid/blob/master/examples/example-optimizing-updates.html" target="_sourcewindow"> View the source for this example on Github</a></li>
@@ -107,13 +110,18 @@
   
   // the logic to simulate new events
   
-  function simulateLogs(count, efficient) {
-      var chunks = 10;
-      for(var i = 0; i < chunks; i++) {
-          simulateLogChunk(count / chunks, efficient);
-      }
+  function simulateLogs(count, efficient, update) {
+    var chunks = 10;
+    var start = new Date();
+    for(var i = 0; i < chunks; i++) {
+        simulateLogChunk(count / chunks, efficient);
+    }
+    var end = new Date();
+    if (update) {
+        $('#duration').text(end - start + 'ms');
+    }      
   }
-  function simulateLogChunk(count, efficient) {
+  function simulateLogChunk(count, efficient, update) {
     if(efficient) {
       dataView.beginUpdate(true); // efficient bulk update 
       var logs = []; // we will first collect all items to be added
