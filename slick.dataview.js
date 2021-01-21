@@ -14,26 +14,6 @@
     }
   });
 
-  /**
-   * Polyfill for Map to support old browsers but
-   * benefit of the Map speed in modern browsers.
-   */
-  var SlickMap = 'Map' in window ? Map : function SlickMap() {
-    var data = {};
-    this.get = function(key) {
-      return data[key];
-    }
-    this.set = function(key, value) {
-      data[key] = value;
-    }      
-    this.has = function(key) {
-      return key in data;
-    }
-    this.delete = function(key) {
-      delete data[key];
-    }      
-  };  
-
   /***
    * A sample Model implementation.
    * Provides a filtered view of the underlying data.
@@ -52,7 +32,7 @@
     var idProperty = "id";          // property holding a unique row id
     var items = [];                 // data by index
     var rows = [];                  // data by row
-    var idxById = new SlickMap();   // indexes by id
+    var idxById = new Slick.Map();   // indexes by id
     var rowsById = null;            // rows by id; lazy-calculated
     var filter = null;              // filter function
     var updated = null;             // updated item ids
@@ -60,7 +40,7 @@
     var isBulkSuspend = false;      // delays various operations like the
                                     // index update and delete to efficient
                                     // versions at endUpdate
-    var bulkDeleteIds = new SlickMap();
+    var bulkDeleteIds = new Slick.Map();
     var sortAsc = true;
     var fastSortField;
     var sortComparer;
@@ -113,6 +93,13 @@
 
     options = $.extend(true, {}, defaults, options);
 
+    /***
+     * Begins a bached update of the items in the data view. 
+     * @param bulkUpdate {Boolean} if set to true, most data view modifications 
+     * including deletes and the related events are postponed to the endUpdate call.
+     * As certain operations are postponed during this update, some methods might not 
+     * deliver fully consistent information.
+     */
     function beginUpdate(bulkUpdate) {
       suspend = true;
       isBulkSuspend = bulkUpdate === true;
@@ -156,9 +143,19 @@
       filterArgs = args;
     }
 
-    function processBulkDelete() {     
+    /***
+     * Processes all delete requests placed during bulk update
+     * by recomputing the items and idxById members.
+     */
+    function processBulkDelete() {
+      // the bulk update is processed by 
+      // recomputing the whole items array and the index lookup in one go.
+      // this is done by placing the not-deleted items 
+      // from left to right into the array and shrink the array the the new 
+      // size afterwards.
+      // see https://github.com/6pac/SlickGrid/issues/571 for further details. 
+      
       var id, item, newIdx = 0;
-
       for (var i = 0, l = items.length; i < l; i++) {
         item = items[i];
         id = item[idProperty];
@@ -166,21 +163,28 @@
           throw new Error("Each data element must implement a unique 'id' property");
         }
         
+        // if items have been marked as deleted we skip them for the new final items array
+        // and we remove them from the lookup table. 
         if(bulkDeleteIds.has(id)) {
           idxById.delete(id);
         } else {
+          // for items which are not deleted, we add them to the
+          // next free position in the array and register the index in the lookup.
           items[newIdx] = item;
           idxById.set(id, newIdx);
           ++newIdx;
         }
       }
       
+      // here we shrink down the full item array to the ones actually 
+      // inserted in the cleanup loop above. 
       items.length = newIdx;
-      bulkDeleteIds = new SlickMap();
+      // and finally cleanup the deleted ids to start cleanly on the next update.
+      bulkDeleteIds = new Slick.Map();
     }
 
     function updateIdxById(startingIndex) {
-      if (isBulkSuspend) {
+      if (isBulkSuspend) { // during bulk update we do not reorganize
         return;
       }
       startingIndex = startingIndex || 0;
@@ -217,7 +221,7 @@
         idProperty = objectIdProperty;
       }
       items = filteredItems = data;
-      idxById = new SlickMap();
+      idxById = new Slick.Map();
       updateIdxById();
       ensureIdUniqueness();
       refresh();
@@ -257,7 +261,7 @@
       if (ascending === false) {
         items.reverse();
       }
-      idxById = new SlickMap();
+      idxById = new Slick.Map();
       updateIdxById();
       refresh();
     }
@@ -285,7 +289,7 @@
       if (ascending === false) {
         items.reverse();
       }
-      idxById = new SlickMap();
+      idxById = new Slick.Map();
       updateIdxById();
       refresh();
     }
@@ -442,6 +446,12 @@
       return ids;
     }
 
+    /***
+     * Performs the update operations of a single item by id without 
+     * triggering any events or refresh operations.
+     * @param id The new id of the item. 
+     * @param item The item which should be the new value for the given id. 
+     */
     function updateSingleItem(id, item) {
       // see also https://github.com/mleibman/SlickGrid/issues/1082
       if (!idxById.has(id)) {
@@ -481,45 +491,77 @@
       updated[id] = true;
     }
     
+    /***
+     * Updates a single item in the data view given the id and new value. 
+     * @param id The new id of the item. 
+     * @param item The item which should be the new value for the given id. 
+     */    
     function updateItem(id, item) {
       updateSingleItem(id, item);
       refresh();
     }
     
-    function updateItems(ids, items) {
-      if(ids.length !== items.length) {
+    /***
+     * Updates multiple items in the data view given the new ids and new values. 
+     * @param id {Array} The array of new ids which is in the same order as the items.
+     * @param newItems {Array} The new items that should be set in the data view for the given ids. 
+     */    
+    function updateItems(ids, newItems) {
+      if(ids.length !== newItems.length) {
         throw new Error("Mismatch on the length of ids and items provided to update");
       }          
-      for (var i = 0, l = items.length; i < l; i++) {
-        updateSingleItem(ids[i], items[i]);
+      for (var i = 0, l = newItems.length; i < l; i++) {
+        updateSingleItem(ids[i], newItems[i]);
       }
       refresh();
     }
     
+    /***
+     * Inserts a single item into the data view at the given position. 
+     * @param insertBefore {Number} The 0-based index before which the item should be inserted. 
+     * @param item The item to insert.
+     */      
     function insertItem(insertBefore, item) {
       items.splice(insertBefore, 0, item);
       updateIdxById(insertBefore);
       refresh();
     }
 
+    /***
+     * Inserts multiple items into the data view at the given position. 
+     * @param insertBefore {Number} The 0-based index before which the items should be inserted. 
+     * @param newItems {Array}  The items to insert.
+     */
     function insertItems(insertBefore, newItems) {
       Array.prototype.splice.apply(items, [insertBefore, 0].concat(newItems));
       updateIdxById(insertBefore);
       refresh();
     }
 
+    /***
+     * Adds a single item at the end of the data view. 
+     * @param item The item to add at the end.
+     */
     function addItem(item) {
       items.push(item);
       updateIdxById(items.length - 1);
       refresh();
     }
 
+    /***
+     * Adds multiple items at the end of the data view. 
+     * @param newItems {Array} The items to add at the end.
+     */
     function addItems(newItems) {
       items = items.concat(newItems);
       updateIdxById(items.length - newItems.length);
       refresh();
     }
 
+    /***
+     * Deletes a single item identified by the given id from the data view. 
+     * @param id The id identifying the object to delete. 
+     */
     function deleteItem(id) {
       if (isBulkSuspend) {
         bulkDeleteIds.set(id, true);
@@ -535,6 +577,10 @@
       }
     }
 
+    /***
+     * Deletes multiple item identified by the given ids from the data view. 
+     * @param ids {Array} The ids of the items to delete.
+     */
     function deleteItems(ids) {
       if (ids.length === 0) {
         return;

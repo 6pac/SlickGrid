@@ -698,6 +698,62 @@
       });
     };
   }
+  
+  /***
+   * Polyfill for Map to support old browsers but
+   * benefit of the Map speed in modern browsers.
+   * @class Map
+   * @constructor
+   */
+  var Map = 'Map' in window ? window.Map : function Map() {
+    var data = {};
+    
+    /***
+     * Gets the item with the given key from the map or undefined if
+     * the map does not contain the item. 
+     * @method get
+     * @param key {Map} The key of the item in the map.
+     */
+    this.get = function(key) {
+      return data[key];
+    };
+
+    /***
+     * Adds or updates the item with the given key in the map. 
+     * @method set
+     * @param key The key of the item in the map.
+     * @param value The value to insert into the map of the item in the map.
+     */
+    this.set = function(key, value) {
+      data[key] = value;
+    };
+    
+    /***
+     * Gets a value indicating whether the given key is present in the map.
+     * @method has
+     * @param key The key of the item in the map.
+     * @return {Boolean}
+     */    
+    this.has = function(key) {
+      return key in data;
+    };
+    
+    /***
+     * Removes the item with the given key from the map. 
+     * @method delete
+     * @param key The key of the item in the map.
+     */
+    this.delete = function(key) {
+      delete data[key];
+    };
+  };
+  // Register Map in SlickGrid.
+  // this is done down here after we defined what "Map" will be
+  $.extend(true, window, {
+    "Slick": {
+      "Map": Map,
+    }
+  });
 })(jQuery);
 
 
