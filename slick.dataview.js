@@ -486,9 +486,12 @@
       refresh();
     }
     
-    function updateItems(id, items) {
-      for (var i = 0; i < items.length; i++) {
-        updateSingleItem(id, items);
+    function updateItems(ids, items) {
+      if(ids.length !== items.length) {
+        throw new Error("Mismatch on the length of ids and items provided to update");
+      }          
+      for (var i = 0, l = items.length; i < l; i++) {
+        updateSingleItem(id[i], items);
       }
       refresh();
     }
