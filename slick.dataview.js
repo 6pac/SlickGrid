@@ -390,7 +390,7 @@
       return ids;
     }
 
-    function updateItem(id, item) {
+    function updateSingleItem(id, item) {
       // see also https://github.com/mleibman/SlickGrid/issues/1082
       if (idxById[id] === undefined) {
         throw new Error("Invalid id");
@@ -427,11 +427,28 @@
         updated = {};
       }
       updated[id] = true;
+    }
+    
+    function updateItem(id, item) {
+      updateSingleItem(id, item);
+      refresh();
+    }
+    
+    function updateItems(id, items) {
+      for (var i = 0; i < items.length; i++) {
+        updateSingleItem(id, items);
+      }
+      refresh();
+    }
+    
+    function insertItem(insertBefore, item) {
+      items.splice(insertBefore, 0, item);
+      updateIdxById(insertBefore);
       refresh();
     }
 
-    function insertItem(insertBefore, item) {
-      items.splice(insertBefore, 0, item);
+    function insertItems(insertBefore, newItems) {
+      items.prototype.splice.apply(newItems, [insertBefore, 0].concat(newItems));
       updateIdxById(insertBefore);
       refresh();
     }
@@ -439,6 +456,12 @@
     function addItem(item) {
       items.push(item);
       updateIdxById(items.length - 1);
+      refresh();
+    }
+
+    function addItems(newItems) {
+      items = items.concat(newItems);
+      updateIdxById(items.length - newItems.length);
       refresh();
     }
 
@@ -450,6 +473,33 @@
       delete idxById[id];
       items.splice(idx, 1);
       updateIdxById(idx);
+      refresh();
+    }
+
+    function deleteItems(ids) {
+      if (ids.length === 0) {
+        return;
+      }
+      
+      // collect all indexes
+      var indexesToDelete = [];
+      for (var i = 0; i < ids.length; i++) {
+        var idx = idxById[id];
+        if (idx === undefined) {
+          throw new Error("Invalid id");
+        }
+        delete idxById[id];
+        indexesToDelete.push(idx);        
+      }
+      
+      // Remove from back to front
+      indexesToDelete.sort();
+      for (var i = indexesToDelete.length - 1; i >= 0; --i) {
+        items.splice(indexesToDelete[i], 1);
+      }
+      
+      // update lookup from front to back
+      updateIdxById(indexesToDelete[0]);
       refresh();
     }
 
@@ -1249,9 +1299,13 @@
       "setFilterArgs": setFilterArgs,
       "refresh": refresh,
       "updateItem": updateItem,
+      "updateItems": updateItems,
       "insertItem": insertItem,
+      "insertItems": insertItems,
       "addItem": addItem,
+      "addItems": addItems,
       "deleteItem": deleteItem,
+      "deleteItems": deleteItems,
       "sortedAddItem": sortedAddItem,
       "sortedUpdateItem": sortedUpdateItem,
       "syncGridSelection": syncGridSelection,
