@@ -190,7 +190,7 @@
         if (id === undefined) {
           throw new Error("Each data element must implement a unique 'id' property");
         }
-        idxById(id, i);
+        idxById.set(id, i);
       }
     }
 
