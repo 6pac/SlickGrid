@@ -29,16 +29,19 @@
       inlineFilters: false
     };
 
-
     // private
-    var idProperty = "id";  // property holding a unique row id
-    var items = [];         // data by index
-    var rows = [];          // data by row
-    var idxById = {};       // indexes by id
-    var rowsById = null;    // rows by id; lazy-calculated
-    var filter = null;      // filter function
-    var updated = null;     // updated item ids
-    var suspend = false;    // suspends the recalculation
+    var idProperty = "id";      // property holding a unique row id
+    var items = [];             // data by index
+    var rows = [];              // data by row
+    var idxById = {};           // indexes by id
+    var rowsById = null;        // rows by id; lazy-calculated
+    var filter = null;          // filter function
+    var updated = null;         // updated item ids
+    var suspend = false;        // suspends the recalculation
+    var isBulkSuspend = false;  // delays various operations like the
+                                // index update and delete to efficient
+                                // versions at endUpdate
+    var bulkDeleteIds = {};
     var sortAsc = true;
     var fastSortField;
     var sortComparer;
@@ -91,12 +94,16 @@
 
     options = $.extend(true, {}, defaults, options);
 
-
-    function beginUpdate() {
+    function beginUpdate(bulkUpdate) {
       suspend = true;
+      isBulkSuspend = !!bulkUpdate;
     }
 
     function endUpdate() {
+      if (isBulkSuspend) {
+        processBulkDelete();
+      }
+      isBulkSuspend = false;
       suspend = false;
       refresh();
     }
@@ -130,7 +137,32 @@
       filterArgs = args;
     }
 
+    function processBulkDelete() {     
+      var id, item, newIdx = 0;
+
+      for (var i = 0, l = items.length; i < l; i++) {
+        item = items[i];
+        id = item[idProperty];
+        if (id === undefined) {
+          throw new Error("Each data element must implement a unique 'id' property");
+        }
+        
+        if(id in deletedIdsDuringBulkUpdate) {
+          delete idxById[id];
+        } else {
+          items[newIdx] = item;
+          idxById[id] = newIdx;
+          ++newIdx;
+        }
+      }
+      
+      items.length = newIdx;
+    }
+
     function updateIdxById(startingIndex) {
+      if (isBulkSuspend) {
+        return;
+      }
       startingIndex = startingIndex || 0;
       var id;
       for (var i = startingIndex, l = items.length; i < l; i++) {
@@ -470,10 +502,14 @@
       if (idx === undefined) {
         throw new Error("Invalid id");
       }
-      delete idxById[id];
-      items.splice(idx, 1);
-      updateIdxById(idx);
-      refresh();
+      if (isBulkSuspend) {
+        bulkDeleteIds[ids[i]] = true;
+      } else {
+        delete idxById[id];
+        items.splice(idx, 1);
+        updateIdxById(idx);
+        refresh();
+      }
     }
 
     function deleteItems(ids) {
@@ -481,26 +517,36 @@
         return;
       }
       
-      // collect all indexes
-      var indexesToDelete = [];
-      for (var i = 0; i < ids.length; i++) {
-        var idx = idxById[id];
-        if (idx === undefined) {
-          throw new Error("Invalid id");
+      if (isBulkSuspend) {
+        for (var i = 0, l = ids.length; i < l; i++) {
+          var idx = idxById[id];
+          if (idx === undefined) {
+            throw new Error("Invalid id");
+          }
+          bulkDeleteIds[ids[i]] = true;
         }
-        delete idxById[id];
-        indexesToDelete.push(idx);        
+      } else {      
+        // collect all indexes
+        var indexesToDelete = [];
+        for (var i = 0, l = ids.length; i < l; i++) {
+          var idx = idxById[id];
+          if (idx === undefined) {
+            throw new Error("Invalid id");
+          }
+          delete idxById[id];
+          indexesToDelete.push(idx);
+        }
+        
+        // Remove from back to front
+        indexesToDelete.sort();
+        for (var i = indexesToDelete.length - 1; i >= 0; --i) {
+          items.splice(indexesToDelete[i], 1);
+        }
+        
+        // update lookup from front to back
+        updateIdxById(indexesToDelete[0]);
+        refresh();
       }
-      
-      // Remove from back to front
-      indexesToDelete.sort();
-      for (var i = indexesToDelete.length - 1; i >= 0; --i) {
-        items.splice(indexesToDelete[i], 1);
-      }
-      
-      // update lookup from front to back
-      updateIdxById(indexesToDelete[0]);
-      refresh();
     }
 
     function sortedAddItem(item) {
