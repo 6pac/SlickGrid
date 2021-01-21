@@ -14,6 +14,25 @@
     }
   });
 
+  /**
+   * Polyfill for Map to support old browsers but
+   * benefit of the Map speed in modern browsers.
+   */
+  var SlickMap = 'Map' in window ? Map : function SlickMap() {
+    var data = {};
+    this.get = function(key) {
+      return data[key];
+    }
+    this.set = function(key, value) {
+      data[key] = value;
+    }      
+    this.has = function(key) {
+      return key in data;
+    }
+    this.delete = function(key) {
+      delete data[key];
+    }      
+  };  
 
   /***
    * A sample Model implementation.
@@ -30,18 +49,18 @@
     };
 
     // private
-    var idProperty = "id";      // property holding a unique row id
-    var items = [];             // data by index
-    var rows = [];              // data by row
-    var idxById = {};           // indexes by id
-    var rowsById = null;        // rows by id; lazy-calculated
-    var filter = null;          // filter function
-    var updated = null;         // updated item ids
-    var suspend = false;        // suspends the recalculation
-    var isBulkSuspend = false;  // delays various operations like the
-                                // index update and delete to efficient
-                                // versions at endUpdate
-    var bulkDeleteIds = {};
+    var idProperty = "id";          // property holding a unique row id
+    var items = [];                 // data by index
+    var rows = [];                  // data by row
+    var idxById = new SlickMap();   // indexes by id
+    var rowsById = null;            // rows by id; lazy-calculated
+    var filter = null;              // filter function
+    var updated = null;             // updated item ids
+    var suspend = false;            // suspends the recalculation
+    var isBulkSuspend = false;      // delays various operations like the
+                                    // index update and delete to efficient
+                                    // versions at endUpdate
+    var bulkDeleteIds = new SlickMap();
     var sortAsc = true;
     var fastSortField;
     var sortComparer;
@@ -147,11 +166,11 @@
           throw new Error("Each data element must implement a unique 'id' property");
         }
         
-        if(id in deletedIdsDuringBulkUpdate) {
-          delete idxById[id];
+        if(bulkDeleteIds.has(id)) {
+          idxById.delete(id);
         } else {
           items[newIdx] = item;
-          idxById[id] = newIdx;
+          idxById.set(id, newIdx);
           ++newIdx;
         }
       }
@@ -170,7 +189,7 @@
         if (id === undefined) {
           throw new Error("Each data element must implement a unique 'id' property");
         }
-        idxById[id] = i;
+        idxById(id, i);
       }
     }
 
@@ -178,7 +197,7 @@
       var id;
       for (var i = 0, l = items.length; i < l; i++) {
         id = items[i][idProperty];
-        if (id === undefined || idxById[id] !== i) {
+        if (id === undefined || idxById.get(id) !== i) {
           throw new Error("Each data element must implement a unique 'id' property");
         }
       }
@@ -197,7 +216,7 @@
         idProperty = objectIdProperty;
       }
       items = filteredItems = data;
-      idxById = {};
+      idxById = new SlickMap();
       updateIdxById();
       ensureIdUniqueness();
       refresh();
@@ -237,7 +256,7 @@
       if (ascending === false) {
         items.reverse();
       }
-      idxById = {};
+      idxById = new SlickMap();
       updateIdxById();
       refresh();
     }
@@ -265,7 +284,7 @@
       if (ascending === false) {
         items.reverse();
       }
-      idxById = {};
+      idxById = new SlickMap();
       updateIdxById();
       refresh();
     }
@@ -362,7 +381,7 @@
     }
 
     function getIdxById(id) {
-      return idxById[id];
+      return idxById.get(id);
     }
 
     function ensureRowsByIdCache() {
@@ -385,7 +404,7 @@
     }
 
     function getItemById(id) {
-      return items[idxById[id]];
+      return items[idxById.get(id)];
     }
 
     function mapItemsToRows(itemArray) {
@@ -424,7 +443,7 @@
 
     function updateSingleItem(id, item) {
       // see also https://github.com/mleibman/SlickGrid/issues/1082
-      if (idxById[id] === undefined) {
+      if (!idxById.has(id)) {
         throw new Error("Invalid id");
       }
 
@@ -436,11 +455,11 @@
         if (newId == null) {
           throw new Error("Cannot update item to associate with a null id");
         }
-        if (idxById[newId] !== undefined) {
+        if (idxById.has(newId)) {
           throw new Error("Cannot update item to associate with a non-unique id");
         }
-        idxById[newId] = idxById[id];
-        delete idxById[id];
+        idxById.set(newId, idxById.get(id));
+        idxById.delete(id);
 
         // Also update the `updated` hashtable/markercache? Yes, `recalc()` inside `refresh()` needs that one!
         if (updated && updated[id]) {
@@ -451,7 +470,7 @@
 
         id = newId;
       }
-      items[idxById[id]] = item;
+      items[idxById.get(id)] = item;
 
       // Also update the rows? no need since the `refresh()`, further down, blows away the `rows[]` cache and recalculates it via `recalc()`!
 
@@ -498,14 +517,14 @@
     }
 
     function deleteItem(id) {
-      var idx = idxById[id];
+      var idx = idxById.get(id);
       if (idx === undefined) {
         throw new Error("Invalid id");
       }
       if (isBulkSuspend) {
-        bulkDeleteIds[ids[i]] = true;
+        bulkDeleteIds.set(id, true);
       } else {
-        delete idxById[id];
+        idxById.delete(id);
         items.splice(idx, 1);
         updateIdxById(idx);
         refresh();
@@ -519,21 +538,21 @@
       
       if (isBulkSuspend) {
         for (var i = 0, l = ids.length; i < l; i++) {
-          var idx = idxById[id];
+          var idx = idxById.get(id);
           if (idx === undefined) {
             throw new Error("Invalid id");
           }
-          bulkDeleteIds[ids[i]] = true;
+          bulkDeleteIds.set(ids[i], true);
         }
       } else {      
         // collect all indexes
         var indexesToDelete = [];
         for (var i = 0, l = ids.length; i < l; i++) {
-          var idx = idxById[id];
+          var idx = idxById.get(id);
           if (idx === undefined) {
             throw new Error("Invalid id");
           }
-          delete idxById[id];
+          idxById.delete(id);
           indexesToDelete.push(idx);
         }
         
@@ -557,8 +576,8 @@
     }
 
     function sortedUpdateItem(id, item) {
-      if (idxById[id] === undefined || id !== item[idProperty]) {
-        throw new Error("Invalid or non-matching id " + idxById[id]);
+      if (!idxById.has(id) || id !== item[idProperty]) {
+        throw new Error("Invalid or non-matching id " + idxById.get(id));
       }
       if (!sortComparer) {
         throw new Error("sortedUpdateItem() requires a sort comparer, use sort()");
