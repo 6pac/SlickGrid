@@ -115,7 +115,7 @@
 
     function beginUpdate(bulkUpdate) {
       suspend = true;
-      isBulkSuspend = !!bulkUpdate;
+      isBulkSuspend = bulkUpdate === true;
     }
 
     function endUpdate() {
@@ -176,6 +176,7 @@
       }
       
       items.length = newIdx;
+      bulkDeleteIds = new SlickMap();
     }
 
     function updateIdxById(startingIndex) {
