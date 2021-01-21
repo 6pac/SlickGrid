@@ -161,7 +161,7 @@ test("refresh fires after resume", function() {
     var count = 0;
     dv.onRowsChanged.subscribe(function(e,args) {
         ok(true, "onRowsChanged called");
-        same(args, {rows:[0,1]}, "args");
+        same(args.rows, [0,1], "args");
         count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
@@ -243,7 +243,7 @@ test("applied immediately", function() {
     dv.setItems([{id:0,val:0},{id:1,val:1},{id:2,val:2}]);
     dv.onRowsChanged.subscribe(function(e,args) {
         ok(true, "onRowsChanged called");
-        same(args, {rows:[0]}, "args");
+        same(args.rows, [0,1,2], "args");
         count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
@@ -277,7 +277,7 @@ test("re-applied on refresh", function() {
 
     dv.onRowsChanged.subscribe(function(e,args) {
         ok(true, "onRowsChanged called");
-        same(args, {rows:[0]}, "args");
+        same(args.rows, [0,1,2], "args");
         count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
@@ -321,7 +321,8 @@ test("all", function() {
     var dv = new Slick.Data.DataView();
     dv.setItems([{id:0,val:0},{id:1,val:1},{id:2,val:2}]);
     dv.onRowsChanged.subscribe(function(e,args) {
-        ok(false, "onRowsChanged called");
+        ok(true, "onRowsChanged called");
+        same(args.rows, [0,1,2], "args");        
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
         ok(true, "onRowCountChanged called");
@@ -353,7 +354,7 @@ test("all then none", function() {
 
     dv.onRowsChanged.subscribe(function(e,args) {
         ok(true, "onRowsChanged called");
-        same(args, {rows:[0,1,2]}, "args");
+        same(args.rows, [0,1,2], "args");
         count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
@@ -420,7 +421,7 @@ test("basic", function() {
 
     dv.onRowsChanged.subscribe(function(e,args) {
         ok(true, "onRowsChanged called");
-        same(args, {rows:[1]}, "args");
+        same(args.rows, [1], "args");
         count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
@@ -461,7 +462,7 @@ test("updating an item to pass the filter", function() {
     dv.setFilter(function(o) { return o["val"] !== 1337; });
     dv.onRowsChanged.subscribe(function(e,args) {
         ok(true, "onRowsChanged called");
-        same(args, {rows:[3]}, "args");
+        same(args.rows, [3], "args");
         count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
@@ -489,8 +490,9 @@ test("updating an item to not pass the filter", function() {
     dv.setItems([{id:0,val:0},{id:1,val:1},{id:2,val:2},{id:3,val:3}]);
     dv.setFilter(function(o) { return o["val"] !== 1337; });
     dv.onRowsChanged.subscribe(function(e,args) {
-        console.log(args);
-        ok(false, "onRowsChanged called");
+        ok(true, "onRowsChanged called");
+        same(args.rows, [3], "args");
+        count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
         ok(true, "onRowCountChanged called");
@@ -506,7 +508,7 @@ test("updating an item to not pass the filter", function() {
         count++;
     });
     dv.updateItem(3,{id:3,val:1337});
-    equal(count, 2, "events fired");
+    equal(count, 3, "events fired");
     same(dv.getItems()[3], {id:3,val:1337}, "item updated");
     assertConsistency(dv);
 });
@@ -520,7 +522,7 @@ test("basic", function() {
 
     dv.onRowsChanged.subscribe(function(e,args) {
         ok(true, "onRowsChanged called");
-        same(args, {rows:[1,2]}, "args");
+        same(args.rows, [1,2], "args");
         count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
@@ -529,7 +531,7 @@ test("basic", function() {
     dv.onPagingInfoChanged.subscribe(function(e,args) {
         ok(false, "onPagingInfoChanged called");
     });
-    var newItems = [{id:1,val:1337},{id:1,val:4711}];
+    var newItems = [{id:1,val:1337},{id:2,val:4711}];
     dv.updateItems([1,2], newItems);
     equal(count, 1, "events fired");
     same(dv.getItem(1), newItems[0], "item updated");
@@ -561,7 +563,7 @@ test("updating an item not passing the filter", function() {
     dv.onPagingInfoChanged.subscribe(function(e,args) {
         ok(false, "onPagingInfoChanged called");
     });
-    var newItems = [{id:3,val:1337},{id:3,val:4711}];
+    var newItems = [{id:3,val:1337},{id:4,val:4711}];
     dv.updateItems([3,4], newItems);
     same(dv.getItems()[3], newItems[0], "item updated");
     same(dv.getItems()[4], newItems[1], "item updated");
@@ -575,7 +577,7 @@ test("updating an item to pass the filter", function() {
     dv.setFilter(function(o) { return o["val"] !== 1337 && o["val"] !== 4711; });
     dv.onRowsChanged.subscribe(function(e,args) {
         ok(true, "onRowsChanged called");
-        same(args, {rows:[3,4]}, "args");
+        same(args.rows, [3,4,5], "args");
         count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
@@ -605,8 +607,9 @@ test("updating an item to not pass the filter", function() {
     dv.setItems([{id:0,val:0},{id:1,val:1},{id:2,val:2},{id:3,val:3},{id:4,val:4},{id:5,val:5}]);
     dv.setFilter(function(o) { return o["val"] !== 1337 && o["val"] !== 4711; });
     dv.onRowsChanged.subscribe(function(e,args) {
-        console.log(args);
-        ok(false, "onRowsChanged called");
+        ok(true, "onRowsChanged called");
+        same(args.rows, [3,4,5], "args");
+        count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
         ok(true, "onRowCountChanged called");
@@ -623,7 +626,7 @@ test("updating an item to not pass the filter", function() {
     });
     var newItems = [{id:3,val:1337},{id:4,val:4711}];
     dv.updateItems([3,4],newItems);
-    equal(count, 2, "events fired");
+    equal(count, 3, "events fired");
     same(dv.getItems()[3], newItems[0], "item updated");
     same(dv.getItems()[4], newItems[1], "item updated");
     assertConsistency(dv);
@@ -659,7 +662,7 @@ test("basic", function() {
     dv.setItems([{id:0,val:0},{id:1,val:1},{id:2,val:2}]);
     dv.onRowsChanged.subscribe(function(e,args) {
         ok(true, "onRowsChanged called");
-        same(args, {rows:[3]}, "args");
+        same(args.rows, [3], "args");
         count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
@@ -730,7 +733,7 @@ test("basic", function() {
     dv.setItems([{id:0,val:0},{id:1,val:1},{id:2,val:2}]);
     dv.onRowsChanged.subscribe(function(e,args) {
         ok(true, "onRowsChanged called");
-        same(args, {rows:[3,4,5]}, "args");
+        same(args.rows, [3,4,5], "args");
         count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
@@ -749,12 +752,12 @@ test("basic", function() {
     var newItems = [{id:3,val:1337},{id:4,val:4711},{id:5,val:8080}];
     dv.addItems(newItems);
     equal(count, 3, "events fired");
-    same(dv.getItems()[3], newItems[3], "item updated");
-    same(dv.getItems()[4], newItems[4], "item updated");
-    same(dv.getItems()[5], newItems[5], "item updated");
-    same(dv.getItem(3), newItems[3], "item updated");
-    same(dv.getItem(4), newItems[4], "item updated");
-    same(dv.getItem(5), newItems[5], "item updated");
+    same(dv.getItems()[3], newItems[0], "item updated");
+    same(dv.getItems()[4], newItems[1], "item updated");
+    same(dv.getItems()[5], newItems[2], "item updated");
+    same(dv.getItem(3), newItems[0], "item updated");
+    same(dv.getItem(4), newItems[1], "item updated");
+    same(dv.getItem(5), newItems[2], "item updated");
     assertConsistency(dv);
 });
 
@@ -788,7 +791,7 @@ test("insert at the beginning", function() {
     dv.setItems([{id:0,val:0},{id:1,val:1},{id:2,val:2}]);
     dv.onRowsChanged.subscribe(function(e,args) {
         ok(true, "onRowsChanged called");
-        same(args, {rows:[0,1,2,3]}, "args");
+        same(args.rows, [0,1,2,3], "args");
         count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
@@ -818,7 +821,7 @@ test("insert in the middle", function() {
     dv.setItems([{id:0,val:0},{id:1,val:1},{id:2,val:2}]);
     dv.onRowsChanged.subscribe(function(e,args) {
         ok(true, "onRowsChanged called");
-        same(args, {rows:[2,3]}, "args");
+        same(args.rows, [2,3], "args");
         count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
@@ -848,7 +851,7 @@ test("insert at the end", function() {
     dv.setItems([{id:0,val:0},{id:1,val:1},{id:2,val:2}]);
     dv.onRowsChanged.subscribe(function(e,args) {
         ok(true, "onRowsChanged called");
-        same(args, {rows:[3]}, "args");
+        same(args.rows, [3], "args");
         count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
@@ -902,7 +905,7 @@ test("insert at the beginning", function() {
     dv.setItems([{id:0,val:0},{id:1,val:1},{id:2,val:2}]);
     dv.onRowsChanged.subscribe(function(e,args) {
         ok(true, "onRowsChanged called");
-        same(args, {rows:[0,1,2,3,4,5]}, "args");
+        same(args.rows, [0,1,2,3,4,5], "args");
         count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
@@ -935,7 +938,7 @@ test("insert in the middle", function() {
     dv.setItems([{id:0,val:0},{id:1,val:1},{id:2,val:2}]);
     dv.onRowsChanged.subscribe(function(e,args) {
         ok(true, "onRowsChanged called");
-        same(args, {rows:[2,3,4,5]}, "args");
+        same(args.rows, [2,3,4,5], "args");
         count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
@@ -969,7 +972,7 @@ test("insert at the end", function() {
     dv.setItems([{id:0,val:0},{id:1,val:1},{id:2,val:2}]);
     dv.onRowsChanged.subscribe(function(e,args) {
         ok(true, "onRowsChanged called");
-        same(args, {rows:[3,4,5]}, "args");
+        same(args.rows, [3,4,5], "args");
         count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
@@ -1056,7 +1059,7 @@ test("delete at the beginning", function() {
     dv.setItems([{id:05,val:0},{id:15,val:1},{id:25,val:2}]);
     dv.onRowsChanged.subscribe(function(e,args) {
         ok(true, "onRowsChanged called");
-        same(args, {rows:[0,1]}, "args");
+        same(args.rows, [0,1,2], "args");
         count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
@@ -1085,7 +1088,7 @@ test("delete in the middle", function() {
     dv.setItems([{id:05,val:0},{id:15,val:1},{id:25,val:2}]);
     dv.onRowsChanged.subscribe(function(e,args) {
         ok(true, "onRowsChanged called");
-        same(args, {rows:[1]}, "args");
+        same(args.rows, [1, 2], "args");
         count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
@@ -1113,7 +1116,9 @@ test("delete at the end", function() {
     var dv = new Slick.Data.DataView();
     dv.setItems([{id:05,val:0},{id:15,val:1},{id:25,val:2}]);
     dv.onRowsChanged.subscribe(function(e,args) {
-        ok(false, "onRowsChanged called");
+        ok(true, "onRowsChanged called");
+        same(args.rows, [2], "args");
+        count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
         ok(true, "onRowCountChanged called");
@@ -1129,7 +1134,7 @@ test("delete at the end", function() {
         count++;
     });
     dv.deleteItem(25);
-    equal(count, 2, "events fired");
+    equal(count, 3, "events fired");
     equal(dv.getItems().length, 2, "items updated");
     equal(dv.getLength(), 2, "rows updated");
     assertConsistency(dv);
@@ -1195,7 +1200,7 @@ test("delete at the beginning", function() {
     dv.setItems([{id:05,val:0},{id:15,val:1},{id:25,val:2},{id:35,val:3},{id:45,val:4}]);
     dv.onRowsChanged.subscribe(function(e,args) {
         ok(true, "onRowsChanged called");
-        same(args, {rows:[0,1]}, "args");
+        same(args.rows, [0,1,2,3,4], "args");
         count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
@@ -1213,7 +1218,7 @@ test("delete at the beginning", function() {
     });
     dv.deleteItems([05,15]);
     equal(count, 3, "events fired");
-    equal(dv.getItems().length, 2, "items updated");
+    equal(dv.getItems().length, 3, "items updated");
     equal(dv.getLength(), 3, "rows updated");
     assertConsistency(dv);
 });
@@ -1224,7 +1229,7 @@ test("delete in the middle", function() {
     dv.setItems([{id:05,val:0},{id:15,val:1},{id:25,val:2},{id:35,val:3},{id:45,val:4}]);
     dv.onRowsChanged.subscribe(function(e,args) {
         ok(true, "onRowsChanged called");
-        same(args, {rows:[1,2]}, "args");
+        same(args.rows, [1,2,3,4], "args");
         count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
@@ -1253,7 +1258,7 @@ test("delete in the middle mixed", function() {
     dv.setItems([{id:05,val:0},{id:15,val:1},{id:25,val:2},{id:35,val:3},{id:45,val:4}]);
     dv.onRowsChanged.subscribe(function(e,args) {
         ok(true, "onRowsChanged called");
-        same(args, {rows:[1,3]}, "args");
+        same(args.rows, [1,2,3,4], "args");
         count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
@@ -1281,7 +1286,9 @@ test("delete at the end", function() {
     var dv = new Slick.Data.DataView();
     dv.setItems([{id:05,val:0},{id:15,val:1},{id:25,val:2},{id:35,val:3},{id:45,val:4}]);
     dv.onRowsChanged.subscribe(function(e,args) {
-        ok(false, "onRowsChanged called");
+        ok(true, "onRowsChanged called");
+        same(args.rows, [3,4], "args");
+        count++;
     });
     dv.onRowCountChanged.subscribe(function(e,args) {
         ok(true, "onRowCountChanged called");
@@ -1296,8 +1303,8 @@ test("delete at the end", function() {
         equal(args.totalRows, 3, "totalRows arg");
         count++;
     });
-    dv.deleteItem(25);
-    equal(count, 2, "events fired");
+    dv.deleteItems([35,45]);
+    equal(count, 3, "events fired");
     equal(dv.getItems().length, 3, "items updated");
     equal(dv.getLength(), 3, "rows updated");
     assertConsistency(dv);

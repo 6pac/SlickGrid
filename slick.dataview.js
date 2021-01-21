@@ -491,7 +491,7 @@
         throw new Error("Mismatch on the length of ids and items provided to update");
       }          
       for (var i = 0, l = items.length; i < l; i++) {
-        updateSingleItem(id[i], items);
+        updateSingleItem(ids[i], items[i]);
       }
       refresh();
     }
@@ -503,7 +503,7 @@
     }
 
     function insertItems(insertBefore, newItems) {
-      items.prototype.splice.apply(newItems, [insertBefore, 0].concat(newItems));
+      Array.prototype.splice.apply(items, [insertBefore, 0].concat(newItems));
       updateIdxById(insertBefore);
       refresh();
     }
@@ -542,16 +542,18 @@
       
       if (isBulkSuspend) {
         for (var i = 0, l = ids.length; i < l; i++) {
+          var id = ids[i];
           var idx = idxById.get(id);
           if (idx === undefined) {
             throw new Error("Invalid id");
           }
-          bulkDeleteIds.set(ids[i], true);
+          bulkDeleteIds.set(id, true);
         }
       } else {      
         // collect all indexes
         var indexesToDelete = [];
         for (var i = 0, l = ids.length; i < l; i++) {
+          var id = ids[i];
           var idx = idxById.get(id);
           if (idx === undefined) {
             throw new Error("Invalid id");
