@@ -165,11 +165,11 @@
         idProperty = objectIdProperty;
       }
       items = filteredItems = data;
+      onSetItemsCalled.notify({ idProperty: objectIdProperty, itemCount: items.length }, null, self);
       idxById = {};
       updateIdxById();
       ensureIdUniqueness();
       refresh();
-      onSetItemsCalled.notify({ idProperty: objectIdProperty, itemCount: items.length }, null, self);
     }
 
     function setPagingOptions(args) {
