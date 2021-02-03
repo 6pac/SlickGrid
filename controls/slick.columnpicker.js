@@ -79,9 +79,18 @@
     function destroy() {
       _grid.onHeaderContextMenu.unsubscribe(handleHeaderContextMenu);
       _grid.onColumnsReordered.unsubscribe(updateColumnOrder);
+      if ($list) {
+        $list.remove();
+      }
+      if ($menu) {
+        $menu.off("click").remove();
+      }
       $(document.body).off("mousedown", handleBodyMouseDown);
-      $("div.slick-columnpicker").hide(_options && _options.columnPicker && _options.columnPicker.fadeSpeed);
-      $menu.remove();
+      $(".slick-columnpicker." + _gridUid).hide(_options && _options.columnPicker && _options.columnPicker.fadeSpeed);
+      $columnTitleElm = null;
+      $list = null;
+      $menu = null;
+      $(window).off("beforeunload");
     }
 
     function handleBodyMouseDown(e) {
@@ -151,6 +160,8 @@
         .fadeIn(_options && _options.columnPicker && _options.columnPicker.fadeSpeed);
 
       $list.appendTo($menu);
+      $li = null;
+      $input = null;
     }
 
     function updateColumnOrder() {
@@ -203,6 +214,8 @@
       }
 
       if ($(e.target).is(":checkbox")) {
+        var isChecked = e.target.checked;
+        var columnId = $(e.target).data("column-id") || "";
         var visibleColumns = [];
         $.each(columnCheckboxes, function (i) {
           if ($(this).is(":checked")) {
@@ -216,7 +229,7 @@
         }
 
         _grid.setColumns(visibleColumns);
-        onColumnsChanged.notify({ allColumns: columns, columns: visibleColumns, grid: _grid });
+        onColumnsChanged.notify({ columnId: columnId, showing: isChecked, allColumns: columns, columns: visibleColumns, grid: _grid });
       }
     }
 
