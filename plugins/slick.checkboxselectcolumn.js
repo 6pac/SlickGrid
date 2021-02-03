@@ -164,7 +164,7 @@
       var disabledCount = 0;
 
       if (typeof _selectableOverride === 'function' && selectedIds.length > 0) {
-        for (k = 0; k < _dataView.getItemsCount(); k++) {
+        for (k = 0; k < _dataView.getItemCount(); k++) {
           // If we are allowed to select the row
           var dataItem = _dataView.getItemByIdx(k);
           var idProperty = _dataView.getIdPropertyName();
