@@ -1,5 +1,5 @@
 name: Cypress E2E Tests
-on:
+on: 
   # Trigger the workflow on push or pull request,
   # but only for the master branch on Push and any branches on PR
   push:
@@ -24,11 +24,11 @@ jobs:
 
     steps:
       - name: Clone repository
-        uses: actions/checkout@v2
+        uses: actions/checkout@v1
         with:
           fetch-depth: 3
 
-      - uses: actions/cache@v2
+      - uses: actions/cache@v1
         with:
           path: ~/.npm
           key: ${{ runner.os }}-node-${{ hashFiles('**/package-lock.json') }}
@@ -36,7 +36,7 @@ jobs:
             ${{ runner.os }}-node-
 
       - name: Set Node.js version
-        uses: actions/setup-node@v2
+        uses: actions/setup-node@v1
         with:
           node-version: ${{ matrix.node }}
 
@@ -47,7 +47,7 @@ jobs:
         run: npm install
 
       - name: Run Cypress E2E tests
-        uses: cypress-io/github-action@v2
+        uses: cypress-io/github-action@v1
         with:
           start: npm run serve
           wait-on: 'http://localhost:8080'

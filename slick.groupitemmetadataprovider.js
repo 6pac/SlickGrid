@@ -1,4 +1,13 @@
 (function ($) {
+  $.extend(true, window, {
+    Slick: {
+      Data: {
+        GroupItemMetadataProvider: GroupItemMetadataProvider
+      }
+    }
+  });
+
+
   /***
    * Provides item metadata for group (Slick.Group) and totals (Slick.Totals) rows produced by the DataView.
    * This metadata overrides the default behavior and formatting of those rows so that they appear and function
@@ -173,13 +182,4 @@
       "setOptions": setOptions
     };
   }
-
-  // exports
-  $.extend(true, window, {
-    Slick: {
-      Data: {
-        GroupItemMetadataProvider: GroupItemMetadataProvider
-      }
-    }
-  });
 })(jQuery);
