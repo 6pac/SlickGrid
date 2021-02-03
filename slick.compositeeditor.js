@@ -1,11 +1,4 @@
 (function ($) {
-  $.extend(true, window, {
-    Slick: {
-      CompositeEditor: CompositeEditor
-    }
-  });
-
-
   /***
    * A composite SlickGrid editor factory.
    * Generates an editor that is composed of multiple editors for given columns.
@@ -99,7 +92,11 @@
         }
 
         // focus on first input
-        setTimeout(function () { editors[0].focus(); }, 0);
+        setTimeout(function () {
+          if (Array.isArray(editors) && editors.length > 0 && editors[0].focus) {
+            editors[0].focus();
+          }
+        }, 0);
       }
 
 
@@ -111,6 +108,7 @@
         }
 
         options.destroy && options.destroy();
+		    editors = [];
       };
 
 
@@ -200,10 +198,13 @@
                 $labelElm.removeClass("invalid");
               }
             }
+            $validationElm = null;
+            $labelElm = null;
+            $editorElm = null;
           }
           idx++;
         }
-
+		    $targetElm = null;
 
         if (errors.length) {
           return {
@@ -252,4 +253,11 @@
     editor.prototype = this;
     return editor;
   }
+  
+  // exports
+  $.extend(true, window, {
+    Slick: {
+      CompositeEditor: CompositeEditor
+    }
+  });  
 })(jQuery);
