@@ -48,11 +48,6 @@
 
     function destroy() {
       _handler.unsubscribeAll();
-      _$activeCanvas = null;
-      _canvas = null;
-      if (_decorator && _decorator.destroy) {
-        _decorator.destroy();
-      }
     }
 
     function getCellDecorator() {
@@ -131,7 +126,7 @@
         e.pageY - _$activeCanvas.offset().top + _rowOffset
       );
 
-      // ... frozen column(s),
+      // ... frozen column(s), 
       if ( _gridOptions.frozenColumn >= 0 && (!_isRightCanvas && (end.cell > _gridOptions.frozenColumn)) || (_isRightCanvas && (end.cell <= _gridOptions.frozenColumn)) ) {
         return;
       }
@@ -169,7 +164,7 @@
         )
       });
     }
-
+    
     function getCurrentRange() {
       return _currentlySelectedRange;
     }

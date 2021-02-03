@@ -189,7 +189,8 @@
       // if header row is enabled, we need to resize it's width also
       var enableResizeHeaderRow = (_options.gridMenu && _options.gridMenu.resizeOnShowHeaderRow != undefined) ? _options.gridMenu.resizeOnShowHeaderRow : _defaults.resizeOnShowHeaderRow;
       if (enableResizeHeaderRow && _options.showHeaderRow) {
-        $('.' + _gridUid + '.slick-headerrow').attr('style', 'width: calc(100% - ' + gridMenuWidth + 'px)');
+        var $headerrow = $('.' + _gridUid + '.slick-headerrow');
+        $headerrow.attr('style', 'width: calc(100% - ' + gridMenuWidth + 'px)');
       }
 
       $button = $('<button class="slick-gridmenu-button"/>');
@@ -197,7 +198,8 @@
         $button.addClass(_options.gridMenu.iconCssClass);
       } else {
         var iconImage = (_options.gridMenu && _options.gridMenu.iconImage) ? _options.gridMenu.iconImage : "../images/drag-handle.png";
-        $('<img src="' + iconImage + '"/>').appendTo($button);
+        var $btnImage = $('<img src="' + iconImage + '"/>');
+        $btnImage.appendTo($button);
       }
       $button.insertBefore($header);
 
@@ -230,34 +232,18 @@
       _grid.onColumnsReordered.unsubscribe(updateColumnOrder);
       _grid.onBeforeDestroy.unsubscribe();
       _grid.onSetOptions.unsubscribe();
-      $("div.slick-gridmenu." + _gridUid).remove();
       deleteMenu();
-      $(window).off("beforeunload");
     }
 
     /** Delete the menu DOM element but without unsubscribing any events */
     function deleteMenu() {
       $(document.body).off("mousedown." + _gridUid, handleBodyMouseDown);
       $("div.slick-gridmenu." + _gridUid).hide();
-      if ($button) {
-        $button.remove();
-      }
-      if ($menu) {
-        $menu.remove();
-      }
-      if ($customMenu) {
-        $customMenu.remove();
-      }
+      $menu.remove();
+      $button.remove();
       if ($header) {
         $header.attr('style', 'width: 100%'); // put back original width
       }
-      $customTitleElm = null;
-      $columnTitleElm = null;
-      $customMenu = null;
-      $header = null;
-      $list = null;
-      $button = null;
-      $menu = null;
     }
 
     function populateCustomMenus(options, $customMenu) {
@@ -340,9 +326,6 @@
         if (item.textCssClass) {
           $text.addClass(item.textCssClass);
         }
-        $icon = null;
-        $li = null;
-        $text = null;
       }
     }
 
@@ -486,7 +469,6 @@
           return;
         }
       }
-      $input = null;
     }
 
     function handleBodyMouseDown(e) {
@@ -600,8 +582,6 @@
       }
 
       if ($(e.target).is(":checkbox")) {
-        var isChecked = e.target.checked;
-        var columnId = $(e.target).data("column-id") || "";
         var visibleColumns = [];
         $.each(columnCheckboxes, function (i) {
           if ($(this).is(":checked")) {
@@ -615,8 +595,6 @@
         }
 
         var callbackArgs = {
-          "columnId": columnId,
-          "showing": isChecked,
           "grid": _grid,
           "allColumns": columns,
           "columns": visibleColumns

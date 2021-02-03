@@ -59,10 +59,6 @@
       return _elem;
     }
 
-    function destroy() {
-      hide();
-    }
-
     function hide() {
       if (_elem) {
         _elem.remove();
@@ -73,8 +69,7 @@
     $.extend(this, {
       "pluginName": "CellRangeDecorator",
       "show": show,
-      "hide": hide,
-      "destroy": destroy
+      "hide": hide
     });
   }
 })(jQuery);

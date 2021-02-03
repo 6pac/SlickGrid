@@ -194,9 +194,6 @@
       if ($menu && $menu.remove) {
         $menu.remove();
       }
-      $commandTitleElm = null;
-      $optionTitleElm = null;
-      $menu = null;
     }
 
     function createMenu(e) {

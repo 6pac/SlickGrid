@@ -56,7 +56,6 @@
     var _defaults = {
     };
     var onGroupChanged = new Slick.Event();
-    var _handler = new Slick.EventHandler();
 
     /**
      * Initialize plugin.
@@ -77,7 +76,7 @@
       setupColumnDropbox();
 
 
-      _handler.subscribe(_grid.onHeaderCellRendered, function (e, args) {
+      _grid.onHeaderCellRendered.subscribe(function (e, args) {
         var column = args.column;
         var node = args.node;
         if (!$.isEmptyObject(column.grouping)) {
@@ -144,7 +143,6 @@
      */
     function destroy() {
       onGroupChanged.unsubscribe();
-      _handler.unsubscribeAll();
     }
     
 
