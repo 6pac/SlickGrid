@@ -164,7 +164,7 @@
       var disabledCount = 0;
 
       if (typeof _selectableOverride === 'function' && selectedIds.length > 0) {
-        for (k = 0; k < _dataView.getItemsCount(); k++) {
+        for (k = 0; k < _dataView.getItemCount(); k++) {
           // If we are allowed to select the row
           var dataItem = _dataView.getItemByIdx(k);
           var idProperty = _dataView.getIdPropertyName();
@@ -327,7 +327,7 @@
     }
 
     function addCheckboxToFilterHeaderRow(grid) {
-      grid.onHeaderRowCellRendered.subscribe(function (e, args) {
+      _handler.subscribe(grid.onHeaderRowCellRendered, function (e, args) {
         if (args.column.field === "sel") {
           $(args.node).empty();
           $("<span id='filter-checkbox-selectall-container'><input id='header-filter-selector" + _selectAll_UID + "' type='checkbox'><label for='header-filter-selector" + _selectAll_UID + "'></label></span>")
