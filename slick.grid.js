@@ -3073,15 +3073,20 @@ if (typeof Slick === "undefined") {
         if (visible) {
           if (animated) {
             $preHeaderPanelScroller.slideDown("fast", resizeCanvas);
+            $preHeaderPanelScrollerR.slideDown("fast", resizeCanvas);
+            
           } else {
             $preHeaderPanelScroller.show();
+            $preHeaderPanelScrollerR.show();
             resizeCanvas();
           }
         } else {
           if (animated) {
             $preHeaderPanelScroller.slideUp("fast", resizeCanvas);
+            $preHeaderPanelScrollerR.slideUp("fast", resizeCanvas);
           } else {
             $preHeaderPanelScroller.hide();
+            $preHeaderPanelScrollerR.slideDown("fast", resizeCanvas);
             resizeCanvas();
           }
         }

@@ -124,7 +124,15 @@
               $(this).sortable("cancel");
               return;
             }
-            var reorderedIds = $headers.sortable("toArray");
+           var reorderedIds = $headers.sortable("toArray");
+            if($headers.length > 1) {
+              for(var ctr=1,l=$headers.length; ctr < l; ctr+=1) {
+                $header = $($headers[ctr]);
+                for(var ctr2=0,l2=$header.length; ctr2< l2; ctr2+=1) {
+                    reorderedIds.push($header[ctr2]);
+                }                
+              }
+            }
             var reorderedColumns = [];
             for (var i = 0; i < reorderedIds.length; i++) {
               reorderedColumns.push(columns[getColumnIndex(reorderedIds[i].replace(uid, ""))]);
