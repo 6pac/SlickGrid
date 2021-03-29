@@ -134,8 +134,8 @@
                 // Note: the loop below could be simplified with:
                 // reorderedIds.push.apply(reorderedIds,ids);
                 // However, the loop is more in keeping with way-backward compatibility 
-                for(var headerI2=0,l2=ids.length; headerI2< l2; headerI2+=1) {
-                    reorderedIds.push($header[headerI2]);
+                for(var idI=0,idL=ids.length; idI< idL; idI+=1) {
+                    reorderedIds.push(ids[idI]);
                 }                
               }
             }
