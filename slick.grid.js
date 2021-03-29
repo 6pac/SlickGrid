@@ -367,7 +367,7 @@ if (typeof Slick === "undefined") {
       $paneTopR = $("<div class='slick-pane slick-pane-top slick-pane-right' tabIndex='0' />").appendTo($container);
       $paneBottomL = $("<div class='slick-pane slick-pane-bottom slick-pane-left' tabIndex='0' />").appendTo($container);
       $paneBottomR = $("<div class='slick-pane slick-pane-bottom slick-pane-right' tabIndex='0' />").appendTo($container);
-
+      
       if (options.createPreHeaderPanel) {
         $preHeaderPanelScroller = $("<div class='slick-preheader-panel ui-state-default' style='overflow:hidden;position:relative;' />").appendTo($paneHeaderL);
         $preHeaderPanel = $("<div />").appendTo($preHeaderPanelScroller);
@@ -3086,7 +3086,7 @@ if (typeof Slick === "undefined") {
             $preHeaderPanelScrollerR.slideUp("fast", resizeCanvas);
           } else {
             $preHeaderPanelScroller.hide();
-            $preHeaderPanelScrollerR.slideDown("fast", resizeCanvas);
+            $preHeaderPanelScrollerR.hide();
             resizeCanvas();
           }
         }
