@@ -1,5 +1,3 @@
-/// <reference types="Cypress" />
-
 describe('Example - Optimizing Updates', () => {
   const titles = ['#', 'Severity', 'Time', 'Message'];
 
@@ -11,7 +9,7 @@ describe('Example - Optimizing Updates', () => {
   });
 
   it('should display Example Multi-grid Basic', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example-optimizing-updates.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-optimizing-updates.html`);
     cy.get('.options-panel > b').should('contain', 'Description:');
     cy.contains('This page demonstrates how the bulk update operations ');
   });
@@ -30,7 +28,7 @@ describe('Example - Optimizing Updates', () => {
   });
 
   it('should update the rows on inefficient click', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example-optimizing-updates.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-optimizing-updates.html`);
     
     cy.get('#myGrid')  
       .find('.slick-row')
@@ -54,7 +52,7 @@ describe('Example - Optimizing Updates', () => {
   });
     
   it('should update the rows on efficient click', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example-optimizing-updates.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-optimizing-updates.html`);
     
     cy.get('#myGrid')  
       .find('.slick-row')
@@ -78,7 +76,7 @@ describe('Example - Optimizing Updates', () => {
   });
   
   it('should need less time on efficient than inefficient', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example-optimizing-updates.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-optimizing-updates.html`);
 
     cy.get('#duration').invoke('text', '').should('be.empty');
     cy.get('.options-panel button')  

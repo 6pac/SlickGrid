@@ -1,5 +1,3 @@
-/// <reference types="Cypress" />
-
 describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
     const fullTitles = ['', '', '', '#', 'Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
 
@@ -11,7 +9,7 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
     });
 
     it('should display Example Row Detail/Row Move/Checkbox Selector Plugins', () => {
-        cy.visit(`${Cypress.config('baseExampleUrl')}/example-row-detail-selection-and-move.html`);
+        cy.visit(`${Cypress.config('baseUrl')}/examples/example-row-detail-selection-and-move.html`);
         cy.get('h2').should('contain', 'Demonstrates:');
         cy.get('h3').should('contain', 'The following three Plugins used together');
     });

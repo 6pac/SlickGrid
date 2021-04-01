@@ -1,5 +1,3 @@
-/// <reference types="Cypress" />
-
 describe('Example - Grid Menu', () => {
   const fullTitles = ['#', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
@@ -11,7 +9,7 @@ describe('Example - Grid Menu', () => {
   });
 
   it('should display Example Grid Menu', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example-grid-menu.html`);
+    cy.visit(`${Cypress.config("baseUrl")}/examples/example-grid-menu.html`);
     cy.get('h2').should('contain', 'Demonstrates:');
     cy.contains('This example demonstrates using the Slick.Controls.GridMenu ');
   });

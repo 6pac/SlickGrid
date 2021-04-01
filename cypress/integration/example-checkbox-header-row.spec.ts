@@ -1,5 +1,3 @@
-/// <reference types="cypress" />
-
 describe('Example - Checkbox Header Row', () => {
   const titles = ['', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
@@ -11,7 +9,7 @@ describe('Example - Checkbox Header Row', () => {
   });
 
   it('should display Example title', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example-checkbox-header-row.html`);
+    cy.visit(`${Cypress.config("baseUrl")}/examples/example-checkbox-header-row.html`);
     cy.get('h2').contains('Demonstrates');
     cy.get('h2 + ul > li').first().contains('Using a fixed header row to implement column-level filters with Checkbox Selector');
   });

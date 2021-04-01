@@ -1,5 +1,3 @@
-/// <reference types="cypress" />
-
 describe('Example - Header Menu', () => {
   const titles = ['Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
 
@@ -11,7 +9,7 @@ describe('Example - Header Menu', () => {
   });
 
   it('should display Example title', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example-plugin-headermenu.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-plugin-headermenu.html`);
     cy.get('p').contains('This example demonstrates using the Slick.Plugins.HeaderMenu');
   });
 

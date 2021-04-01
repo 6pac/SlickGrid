@@ -1,11 +1,9 @@
-/// <reference types="Cypress" />
-
 describe('Example - Row Grouping Titles', () => {
     const fullPreTitles = ['', 'Common Factor', 'Period', 'Analysis'];
     const fullTitles = ['#', 'Title', 'Duration', 'Start', 'Finish', '% Complete', 'Effort Driven'];
 
     it('should display Example Grid Menu', () => {
-        cy.visit(`${Cypress.config('baseExampleUrl')}/example-frozen-columns-and-column-group.html`);
+        cy.visit(`${Cypress.config('baseUrl')}/examples/example-frozen-columns-and-column-group.html`);
         cy.get('h2').should('contain', 'Demonstrates:');
         cy.contains('Frozen columns with extra header row grouping columns into categories');
     });

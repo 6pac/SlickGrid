@@ -1,4 +1,4 @@
-/// <reference types="Cypress" />
+type GridUID = string | null | undefined
 
 describe('Example - Grid Menu', () => {
   const fullTitles = ['Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
@@ -11,7 +11,7 @@ describe('Example - Grid Menu', () => {
   });
 
   it('should display Example Multi-grid Basic', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example-multi-grid-basic.html`);
+    cy.visit(`${Cypress.config("baseUrl")}/examples/example-multi-grid-basic.html`);
     cy.get('h2').should('contain', 'Demonstrates:');
     cy.contains('Two basic Grids with minimal configuration');
   });
@@ -29,14 +29,14 @@ describe('Example - Grid Menu', () => {
   });
 
   it('should open the Grid Menu on 1st Grid and expect all Columns to be checked', () => {
-    let gridUid = '';
+    let gridUid: GridUID = '';
     cy.get('#myGrid01')
       .find('button.slick-gridmenu-button')
       .click({ force: true });
 
     cy.get('#myGrid01')
       .should(($grid) => {
-        const classes = $grid.prop('className').split(' ');
+        const classes: string[] = $grid.prop('className').split(' ');
         gridUid = classes.find(className => /slickgrid_.*/.test(className));
         expect(gridUid).to.not.be.null;
       })
@@ -77,14 +77,14 @@ describe('Example - Grid Menu', () => {
   });
 
   it('should open the Grid Menu off 2nd Grid and expect all Columns to still be all checked', () => {
-    let gridUid = '';
+    let gridUid: GridUID = '';
     cy.get('#myGrid02')
       .find('button.slick-gridmenu-button')
       .click({ force: true });
 
     cy.get('#myGrid02')
       .should(($grid) => {
-        const classes = $grid.prop('className').split(' ');
+        const classes: string[] = $grid.prop('className').split(' ');
         gridUid = classes.find(className => /slickgrid_.*/.test(className));
         expect(gridUid).to.not.be.null;
       })
@@ -207,14 +207,14 @@ describe('Example - Grid Menu', () => {
   });
 
   it('should open the Grid Menu on 2nd Grid and expect all Columns to be checked', () => {
-    let gridUid = '';
+    let gridUid: GridUID = '';
     cy.get('#myGrid02')
       .find('button.slick-gridmenu-button')
       .click({ force: true });
 
     cy.get('#myGrid02')
       .should(($grid) => {
-        const classes = $grid.prop('className').split(' ');
+        const classes: string[] = $grid.prop('className').split(' ');
         gridUid = classes.find(className => /slickgrid_.*/.test(className));
         expect(gridUid).to.not.be.null;
       })
@@ -243,14 +243,14 @@ describe('Example - Grid Menu', () => {
   });
 
   it('should open the Grid Menu on 1st Grid and also expect to only have 4 columns checked (visible)', () => {
-    let gridUid = '';
+    let gridUid: GridUID = '';
     cy.get('#myGrid01')
       .find('button.slick-gridmenu-button')
       .click({ force: true });
 
     cy.get('#myGrid01')
       .should(($grid) => {
-        const classes = $grid.prop('className').split(' ');
+        const classes: string[] = $grid.prop('className').split(' ');
         gridUid = classes.find(className => /slickgrid_.*/.test(className));
         expect(gridUid).to.not.be.null;
       })

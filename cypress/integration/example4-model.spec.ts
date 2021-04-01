@@ -1,5 +1,3 @@
-/// <reference types="cypress" />
-
 describe('Example 4 - Model', () => {
   const titles = ['#', 'Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
 
@@ -11,7 +9,7 @@ describe('Example 4 - Model', () => {
   });
 
   it('should display Example title', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example4-model.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example4-model.html`);
     cy.get('h2').contains('Demonstrates');
     cy.get('h2 + ul > li').first().contains('a filtered Model (DataView) as a data source instead of a simple array');
   });

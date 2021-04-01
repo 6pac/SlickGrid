@@ -1,5 +1,3 @@
-/// <reference types="cypress" />
-
 describe('Example - Composite Editor Modal with Create/Edit/Mass-Update/Mass-Selection', () => {
   const GRID_ROW_HEIGHT = 25;
   const titles = ['', 'Title', 'Description', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
@@ -12,7 +10,7 @@ describe('Example - Composite Editor Modal with Create/Edit/Mass-Update/Mass-Sel
   });
 
   it('should display Example title', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example-composite-editor-modal-dialog.html`);
+    cy.visit(`${Cypress.config("baseUrl")}/examples/example-composite-editor-modal-dialog.html`);
     cy.get('h2').contains('Demonstrates');
     cy.get('h2 + ul > li').first().contains('Composite Editor Modal - Edit Form');
   });
