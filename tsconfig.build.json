@@ -1,0 +1,11 @@
+{
+  "extends": "./tsconfig.json",
+  "exclude": [
+    "node_modules",
+    "cypress",
+    "coverage",
+    "@types",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+  ],
+}
