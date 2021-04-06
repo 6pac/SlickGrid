@@ -39,6 +39,7 @@
     "@testing-library/cypress": "^7.0.5",
     "@types/jest": "^26.0.22",
     "@types/jquery": "^3.5.5",
+    "@types/jqueryui": "^1.12.15",
     "@types/node": "^14.14.37",
     "cypress": "^6.8.0",
     "eslint": "^7.18.0",

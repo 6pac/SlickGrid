@@ -1,18 +1,32 @@
+declare namespace Slick {
+  class Range {
+    fromRow: number;
+    toRow: number;
+    fromCell: number;
+    toCell: number;
+  }
+}
+
+type CellCopyManager = {
+  onCopyCancelled: Slick.Event;
+  onCopyCells: Slick.Event;
+  onPasteCells: Slick.Event;
+};
+
 (function ($) {
   // register namespace
   $.extend(true, window, {
-    "Slick": {
-      "CellCopyManager": CellCopyManager
-    }
+    Slick: {
+      CellCopyManager: CellCopyManager,
+    },
   });
 
+  function CellCopyManager(this: CellCopyManager) {
+    let _grid: SlickGrid;
+    const _self = this;
+    let _copiedRanges: Range[] | null;
 
-  function CellCopyManager() {
-    var _grid;
-    var _self = this;
-    var _copiedRanges;
-
-    function init(grid) {
+    function init(grid: SlickGrid) {
       _grid = grid;
       _grid.onKeyDown.subscribe(handleKeyDown);
     }
@@ -21,14 +35,14 @@
       _grid.onKeyDown.unsubscribe(handleKeyDown);
     }
 
-    function handleKeyDown(e, args) {
-      var ranges;
+    function handleKeyDown(e: KeyboardEvent) {
+      let ranges;
       if (!_grid.getEditorLock().isActive()) {
         if (e.which == $.ui.keyCode.ESCAPE) {
           if (_copiedRanges) {
             e.preventDefault();
             clearCopySelection();
-            _self.onCopyCancelled.notify({ranges: _copiedRanges});
+            _self.onCopyCancelled.notify({ ranges: _copiedRanges });
             _copiedRanges = null;
           }
         }
@@ -39,7 +53,7 @@
             e.preventDefault();
             _copiedRanges = ranges;
             markCopySelection(ranges);
-            _self.onCopyCells.notify({ranges: ranges});
+            _self.onCopyCells.notify({ ranges: ranges });
           }
         }
 
@@ -47,7 +61,7 @@
           if (_copiedRanges) {
             e.preventDefault();
             ranges = _grid.getSelectionModel().getSelectedRanges();
-            _self.onPasteCells.notify({from: _copiedRanges, to: ranges});
+            _self.onPasteCells.notify({ from: _copiedRanges, to: ranges });
             if (!_grid.getOptions().preserveCopiedSelectionOnPaste) {
               clearCopySelection();
               _copiedRanges = null;
@@ -57,13 +71,13 @@
       }
     }
 
-    function markCopySelection(ranges) {
-      var columns = _grid.getColumns();
-      var hash = {};
-      for (var i = 0; i < ranges.length; i++) {
-        for (var j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
+    function markCopySelection(ranges: Slick.Range[]) {
+      const columns = _grid.getColumns();
+      const hash: Record<number, Record<string | number, string>> = {};
+      for (let i = 0; i < ranges.length; i++) {
+        for (let j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
           hash[j] = {};
-          for (var k = ranges[i].fromCell; k <= ranges[i].toCell; k++) {
+          for (let k = ranges[i].fromCell; k <= ranges[i].toCell; k++) {
             hash[j][columns[k].id] = "copied";
           }
         }
@@ -76,15 +90,15 @@
     }
 
     $.extend(this, {
-      "init": init,
-      "destroy": destroy,
-      "pluginName": "CellCopyManager",
+      init: init,
+      destroy: destroy,
+      pluginName: "CellCopyManager",
 
-      "clearCopySelection": clearCopySelection,
+      clearCopySelection: clearCopySelection,
 
-      "onCopyCells": new Slick.Event(),
-      "onCopyCancelled": new Slick.Event(),
-      "onPasteCells": new Slick.Event()
+      onCopyCells: new Slick.Event(),
+      onCopyCancelled: new Slick.Event(),
+      onPasteCells: new Slick.Event(),
     });
   }
 })(jQuery);
