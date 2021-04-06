@@ -87,7 +87,7 @@ describe('Example - Checkbox Header Row', () => {
 
     cy.get('#selectedRows')
     .invoke('text').then((text => {
-        expect(text.trim()).to.eq('')
+        expect(text).to.eq('')
     }));
 
     cy.window().then((win) => {
