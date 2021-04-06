@@ -1,3 +1,10 @@
+// TODO: remove when slick.core has been converted
+declare namespace Slick {
+  export class Event {
+    notify(args: any): void;
+  }
+}
+
 (function ($) {
   /***
    * A sample AJAX data store implementation.
@@ -7,12 +14,12 @@
   function RemoteModel() {
     // private
     var PAGESIZE = 50;
-    var data = {length: 0};
+    var data: { [key: number]: any, length: number } = {length: 0};
     var searchstr = "";
-    var sortcol = null;
+    var sortcol: string | null = null;
     var sortdir = 1;
-    var h_request = null;
-    var req = null; // ajax request
+    var h_request: NodeJS.Timeout | null = null;
+    var req: JsonpExtendedOptions | null = null; // ajax request
 
     // events
     var onDataLoading = new Slick.Event();
@@ -23,7 +30,7 @@
     }
 
 
-    function isDataLoaded(from, to) {
+    function isDataLoaded(from: number, to: number) {
       for (var i = from; i <= to; i++) {
         if (data[i] == undefined || data[i] == null) {
           return false;
@@ -42,7 +49,7 @@
     }
 
 
-    function ensureData(from, to) {
+    function ensureData(from: number, to: number) {
       if (req) {
         req.abort();
         for (var i = req.fromPage; i <= req.toPage; i++)
@@ -103,11 +110,11 @@
     }
 
 
-    function onError(fromPage, toPage) {
+    function onError(fromPage: number, toPage: number) {
       alert("error loading pages " + fromPage + " to " + toPage);
     }
 
-    function onSuccess(resp) {
+    function onSuccess(resp: any) {
       var from = resp.request.start, to = from + resp.results.length;
       data.length = Math.min(parseInt(resp.hits),1000); // limitation of the API
 
@@ -124,7 +131,7 @@
     }
 
 
-    function reloadData(from, to) {
+    function reloadData(from: number, to: number) {
       for (var i = from; i <= to; i++)
         delete data[i];
 
@@ -132,13 +139,13 @@
     }
 
 
-    function setSort(column, dir) {
+    function setSort(column: string, dir: number) {
       sortcol = column;
       sortdir = dir;
       clear();
     }
 
-    function setSearch(str) {
+    function setSearch(str: string) {
       searchstr = str;
       clear();
     }
