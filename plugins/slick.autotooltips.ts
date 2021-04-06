@@ -1,3 +1,18 @@
+// @todo Primitive type should be in some generic type folder
+type Primitive = boolean | string | number | null;
+// @todo GenericOption type should be in some generic type folder
+type GenericOption = Record<string, Primitive>;
+// @todo slickGrid type should be in some generic type folder
+type SlickGrid = any;
+
+
+type AutoTooltipsOptions = {
+  enableForCells?: boolean;
+  enableForHeaderCells?: boolean;
+  maxToolTipLength?: number | null
+} & GenericOption;
+type AutoTooltipsFunction = (options: AutoTooltipsOptions) => void;
+
 (function ($) {
   // Register namespace
   $.extend(true, window, {
@@ -13,9 +28,9 @@
    * @param {boolean} [options.enableForHeaderCells=false] - Enable tooltip for header cells
    * @param {number}  [options.maxToolTipLength=null]      - The maximum length for a tooltip
    */
-  function AutoTooltips(options) {
-    var _grid;
-    var _self = this;
+  function AutoTooltips(this: AutoTooltipsFunction, { enableForCells = true, enableForHeaderCells = false, maxToolTipLength = null }) {
+    var options: AutoTooltipsOptions = { enableForCells, enableForHeaderCells, maxToolTipLength };
+    var _grid: SlickGrid;
     var _defaults = {
       enableForCells: true,
       enableForHeaderCells: false,
@@ -26,7 +41,7 @@
     /**
      * Initialize plugin.
      */
-    function init(grid) {
+    function init(grid: SlickGrid) {
       options = $.extend(true, {}, _defaults, options);
       _grid = grid;
       if (options.enableForCells) _grid.onMouseEnter.subscribe(handleMouseEnter);
@@ -45,13 +60,14 @@
      * Handle mouse entering grid cell to add/remove tooltip.
      * @param {jQuery.Event} e - The event
      */
-    function handleMouseEnter(e) {
+    function handleMouseEnter(e: HTMLDivElement) {
       var cell = _grid.getCellFromEvent(e);
       if (cell) {
-        var $node = $(_grid.getCellNode(cell.row, cell.cell));
-        var text;
+        var $node: JQuery<HTMLDivElement> = $(_grid.getCellNode(cell.row, cell.cell));
+        var text: string;
         if (!$node.attr("title") || options.replaceExisting) {
-          if ($node.innerWidth() < $node[0].scrollWidth) {
+          const innerWidth = $node.innerWidth()
+          if (typeof innerWidth !== 'undefined' && innerWidth < $node[0].scrollWidth) {
             text = $.trim($node.text());
             if (options.maxToolTipLength && text.length > options.maxToolTipLength) {
               text = text.substr(0, options.maxToolTipLength - 3) + "...";
@@ -61,8 +77,15 @@
           }
           $node.attr("title", text);
         }
-		    $node = null;
+        $node = null as any;
       }
+    }
+
+    type HandleHeaderMouseEnterArgs = {
+      column: {
+        toolTip: boolean | undefined
+        name: string
+      };
     }
 
     /**
@@ -70,13 +93,16 @@
      * @param {jQuery.Event} e     - The event
      * @param {object} args.column - The column definition
      */
-    function handleHeaderMouseEnter(e, args) {
+    function handleHeaderMouseEnter(e: any, args: HandleHeaderMouseEnterArgs) {
       var column = args.column,
-          $node = $(e.target).closest(".slick-header-column");
+          $node: JQuery<HTMLDivElement> = $(e.target).closest(".slick-header-column");
       if (column && !column.toolTip) {
-        $node.attr("title", ($node.innerWidth() < $node[0].scrollWidth) ? column.name : "");
+        const innerWidth = $node.innerWidth()
+        if (typeof innerWidth !== 'undefined') {
+          $node.attr("title", (innerWidth < $node[0].scrollWidth) ? column.name : "");
+        }
       }
-	    $node = null;
+      $node = null as any;
     }
 
     // Public API
