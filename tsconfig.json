@@ -71,5 +71,13 @@
     "forceConsistentCasingInFileNames": true        /* Disallow inconsistently-cased references to the same file. */
   },
   "include": ["**/*.ts"],
-  "exclude": ["node_modules", "@types", "@scripts"]
+  "exclude": [
+    "node_modules",
+     "cypress",
+    "coverage",
+    "@types",
+    "@scripts",
+    "**/*.spec.ts",
+    "**/*.spec.tsx",
+  ]
 }
