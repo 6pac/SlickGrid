@@ -60,7 +60,7 @@
       <p>
         <button onclick="toggleHideSelectAllCheckbox()">Toggle show/hide "Select All" checkbox</button>
       </p>
-      
+
       <p>
         <button id="unselectRow5">Unselect row 5</button> <button id="selectRow5">Select row 5</button> <button id="unselectAllRows">Unselect all rows</button>
       </p>
@@ -84,7 +84,7 @@
 <script src="../plugins/slick.autotooltips.js"></script>
 <script src="../plugins/slick.cellrangedecorator.js"></script>
 <script src="../plugins/slick.cellrangeselector.js"></script>
-<script src="../plugins/slick.cellcopymanager.js"></script>
+<script src="../@scripts/plugins/slick.cellcopymanager.js"></script>
 <script src="../plugins/slick.cellselectionmodel.js"></script>
 <script src="../plugins/slick.rowselectionmodel.js"></script>
 <script src="../controls/slick.columnpicker.js"></script>
@@ -161,7 +161,7 @@
         var rtn = args.grid.getActiveCell();
         var x = args.rows;
     });
-    
+
     $("#selectRow5").click(function() {
         var rowIndex = 5; // use row 5 for this example
         var selectedRowsIndexes = grid.getSelectedRows();
@@ -184,7 +184,7 @@
     $("#unselectAllRows").click(function() {
         grid.setSelectedRows([]);
     });
-    
+
   })
 </script>
 </body>
