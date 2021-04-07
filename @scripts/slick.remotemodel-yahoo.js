@@ -67,7 +67,7 @@
             if (h_request != null) {
                 clearTimeout(h_request);
             }
-            h_request = setTimeout(function () {
+            h_request = window.setTimeout(function () {
                 for (var i = fromPage; i <= toPage; i++)
                     data[i * PAGESIZE] = null; // null indicates a 'requested but not available yet'
                 onDataLoading.notify({ from: from, to: to });
