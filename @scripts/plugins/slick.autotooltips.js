@@ -2,32 +2,31 @@
 (function ($) {
     // Register namespace
     $.extend(true, window, {
-        "Slick": {
-            "AutoTooltips": AutoTooltips
-        }
+        Slick: {
+            AutoTooltips: AutoTooltips,
+        },
     });
     /**
      * AutoTooltips plugin to show/hide tooltips when columns are too narrow to fit content.
      * @constructor
-     * @param {boolean} [options.enableForCells=true]        - Enable tooltip for grid cells
-     * @param {boolean} [options.enableForHeaderCells=false] - Enable tooltip for header cells
-     * @param {number}  [options.maxToolTipLength=null]      - The maximum length for a tooltip
+     * @param {boolean} [autoTooltipOptions.enableForCells=true]        - Enable tooltip for grid cells
+     * @param {boolean} [autoTooltipOptions.enableForHeaderCells=false] - Enable tooltip for header cells
+     * @param {number}  [autoTooltipOptions.maxToolTipLength=null]      - The maximum length for a tooltip
      */
-    function AutoTooltips(_a) {
-        var _b = _a.enableForCells, enableForCells = _b === void 0 ? true : _b, _c = _a.enableForHeaderCells, enableForHeaderCells = _c === void 0 ? false : _c, _d = _a.maxToolTipLength, maxToolTipLength = _d === void 0 ? null : _d;
-        var options = { enableForCells: enableForCells, enableForHeaderCells: enableForHeaderCells, maxToolTipLength: maxToolTipLength };
+    function AutoTooltips(autoTooltipOptions) {
+        var options;
         var _grid;
         var _defaults = {
             enableForCells: true,
             enableForHeaderCells: false,
             maxToolTipLength: null,
-            replaceExisting: true
+            replaceExisting: true,
         };
         /**
          * Initialize plugin.
          */
         function init(grid) {
-            options = $.extend(true, {}, _defaults, options);
+            options = $.extend(true, {}, _defaults, autoTooltipOptions);
             _grid = grid;
             if (options.enableForCells)
                 _grid.onMouseEnter.subscribe(handleMouseEnter);
@@ -54,9 +53,11 @@
                 var text;
                 if (!$node.attr("title") || options.replaceExisting) {
                     var innerWidth_1 = $node.innerWidth();
-                    if (typeof innerWidth_1 !== 'undefined' && innerWidth_1 < $node[0].scrollWidth) {
+                    if (typeof innerWidth_1 !== "undefined" &&
+                        innerWidth_1 < $node[0].scrollWidth) {
                         text = $.trim($node.text());
-                        if (options.maxToolTipLength && text.length > options.maxToolTipLength) {
+                        if (options.maxToolTipLength &&
+                            text.length > options.maxToolTipLength) {
                             text = text.substr(0, options.maxToolTipLength - 3) + "...";
                         }
                     }
@@ -77,17 +78,17 @@
             var column = args.column, $node = $(e.target).closest(".slick-header-column");
             if (column && !column.toolTip) {
                 var innerWidth_2 = $node.innerWidth();
-                if (typeof innerWidth_2 !== 'undefined') {
-                    $node.attr("title", (innerWidth_2 < $node[0].scrollWidth) ? column.name : "");
+                if (typeof innerWidth_2 !== "undefined") {
+                    $node.attr("title", innerWidth_2 < $node[0].scrollWidth ? column.name : "");
                 }
             }
             $node = null;
         }
         // Public API
         $.extend(this, {
-            "init": init,
-            "destroy": destroy,
-            "pluginName": "AutoTooltips"
+            init: init,
+            destroy: destroy,
+            pluginName: "AutoTooltips",
         });
     }
 })(jQuery);
