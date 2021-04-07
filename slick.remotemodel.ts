@@ -18,7 +18,7 @@ declare namespace Slick {
     var searchstr = "";
     var sortcol: string | null = null;
     var sortdir = 1;
-    var h_request: NodeJS.Timeout | null = null;
+    var h_request: number | null = null;
     var req: JsonpExtendedOptions | null = null; // ajax request
 
     // events
@@ -89,7 +89,7 @@ declare namespace Slick {
         clearTimeout(h_request);
       }
 
-      h_request = setTimeout(function () {
+      h_request = window.setTimeout(function () {
         for (var i = fromPage; i <= toPage; i++)
           data[i * PAGESIZE] = null; // null indicates a 'requested but not available yet'
 
