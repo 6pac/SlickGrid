@@ -1,3 +1,35 @@
+type CellRangeDecoratorOptions = {
+  cellDecorator?: any;
+  selectionCss?: { [cssRule: string]: string | number | boolean };
+  selectionCssClass: string;
+  offset?: {
+    top: number,
+    left: number,
+    height: number,
+    width: number,
+  }
+};
+
+/** @todo replace with SlickGrid when added */
+type Grid = any;
+
+type CellRangeDecoratorFunction = (grid: Grid, options: CellRangeDecoratorOptions) => void;
+
+/** @todo this should be probably extracted to a shared interface folder  */
+export interface CellRange {
+  /** Selection start from which cell? */
+  fromCell: number;
+
+  /** Selection start from which row? */
+  fromRow: number;
+
+  /** Selection goes to which cell? */
+  toCell: number;
+
+  /** Selection goes to which row? */
+  toRow: number;
+}
+
 (function ($) {
   // register namespace
   $.extend(true, window, {
@@ -17,8 +49,8 @@
    * @param {Grid} grid
    * @param {Object} options
    */
-  function CellRangeDecorator(grid, options) {
-    var _elem;
+  function CellRangeDecorator(this: CellRangeDecoratorFunction, grid: Grid, options: CellRangeDecoratorOptions) {
+    var _elem: JQuery<HTMLElement> | null;
     var _defaults = {
       selectionCssClass: 'slick-range-decorator',
       selectionCss: {
@@ -36,7 +68,7 @@
     options = $.extend(true, {}, _defaults, options);
 
 
-    function show(range) {
+    function show(range: CellRange) {
       if (!_elem) {
         _elem = $("<div></div>", {css: options.selectionCss})
           .addClass(options.selectionCssClass)
