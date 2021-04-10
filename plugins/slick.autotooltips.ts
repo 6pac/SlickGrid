@@ -1,15 +1,20 @@
-// @todo Primitive type should be in some generic type folder
-type Primitive = boolean | string | number | null;
-// @todo GenericOption type should be in some generic type folder
-type GenericOption = Record<string, Primitive>;
 // @todo slickGrid type should be in some generic type folder
 type SlickGrid = any;
 
 type AutoTooltipsOptions = {
-  enableForCells?: boolean;
-  enableForHeaderCells?: boolean;
-  maxToolTipLength?: number | null;
-} & GenericOption;
+  /** are tooltip enabled for all cells? */
+  enableForCells: boolean;
+
+  /** are tooltip enabled for column headers */
+  enableForHeaderCells: boolean;
+
+  /** what is the maximum tooltip length in pixels (only type the number) */
+  maxToolTipLength: number;
+
+  /** Allow preventing custom tooltips from being overwritten by auto tooltips */
+  replaceExisting?: boolean;
+}
+
 type AutoTooltipsFunction = (options: AutoTooltipsOptions) => void;
 
 (function ($) {
