@@ -34,7 +34,7 @@
 
     .slick-group-title[level='2'] {
       font-style: italic;
-    }    
+    }
   </style>
 </head>
 <body>
@@ -98,7 +98,7 @@
 <script src="../slick.core.js"></script>
 <script src="../@scripts/slick.formatters.js"></script>
 <script src="../slick.editors.js"></script>
-<script src="../plugins/slick.cellrangedecorator.js"></script>
+<script src="../@scripts/slick.cellrangedecorator.js"></script>
 <script src="../plugins/slick.cellrangeselector.js"></script>
 <script src="../plugins/slick.cellselectionmodel.js"></script>
 <script src="../plugins/slick.draggablegrouping.js"></script>
@@ -143,7 +143,7 @@ var columns = [
       collapsed: false
     }
   },
-  
+
   {id: "start", name: "Start", field: "start", minWidth: 60, sortable: true,
     grouping: {
       getter: "start",
@@ -236,7 +236,7 @@ var draggableEnabled = true;
 function groupByTitle() {
   draggableGrouping.setDroppedGroups('title');
   grid.invalidate();
-  grid.render();  
+  grid.render();
 }
 
 function clearGroupings() {
@@ -296,7 +296,7 @@ $(".grid-header .ui-icon")
 
 $(function () {
   draggableGrouping = new Slick.DraggableGrouping({iconImage :'../images/delete.png', groupIconImage: '../images/column-grouping.png', dropPlaceHolderText: 'Drop a column header here to group by the column :)'});
-  // draggableGrouping = new Slick.DraggableGrouping({iconCssClass :'slick-groupby-remove-image', groupIconCssClass: 'slick-column-groupable-image', dropPlaceHolderText: 'Drop a column header here to group by the column :)'});  
+  // draggableGrouping = new Slick.DraggableGrouping({iconCssClass :'slick-groupby-remove-image', groupIconCssClass: 'slick-column-groupable-image', dropPlaceHolderText: 'Drop a column header here to group by the column :)'});
   // draggableGrouping = new Slick.DraggableGrouping();
   var options = {
     enableCellNavigation: true,
@@ -312,7 +312,7 @@ $(function () {
     groupItemMetadataProvider: groupItemMetadataProvider,
     inlineFilters: true
   });
-  
+
   grid = new Slick.Grid("#myGrid", dataView, columns, options);
 
   // register the group item metadata provider to add expand/collapse group handlers

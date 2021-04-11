@@ -42,7 +42,7 @@
 <script src="../lib/jquery-ui.min.js"></script>
 <script src="../lib/jquery.event.drag-2.2.js"></script>
 <script src="../slick.core.js"></script>
-<script src="../plugins/slick.cellrangedecorator.js"></script>
+<script src="../@scripts/slick.cellrangedecorator.js"></script>
 <script src="../plugins/slick.cellrangeselector.js"></script>
 <script src="../plugins/slick.cellselectionmodel.js"></script>
 <script src="../@scripts/slick.formatters.js"></script>
@@ -61,7 +61,7 @@
       var defaultValue;
       var scope = this;
       // check scope get this value
-        
+
       var chkBoxListData = getChkBoxDataList(args);
       var chkBoxAllValues = chkBoxListData.AllValues;
 	  chkBoxAllValues.sort();
@@ -70,12 +70,12 @@
 	  if(selectedchkBox.length>0) selectedchkBoxArray = selectedchkBox.split(";");
 	  }
       this.init = function () {
-          
+
 		  if(chkBoxAllValues.length!=0){
           var $container = $("body");
           $wrapper = $("<DIV style='z-index:10000;position:absolute;background:white;padding:5px;border:3px solid gray; -moz-border-radius:10px; border-radius:10px;'/>")
           .appendTo($container);
-          
+
           for (var i = 0; i < chkBoxAllValues.length; i++) {
 			  if(!(selectedchkBoxArray == undefined || selectedchkBoxArray == '')){
               if (selectedchkBoxArray.length>0 && selectedchkBoxArray.indexOf(chkBoxAllValues[i]) > -1){
@@ -103,7 +103,7 @@
           $input.on("keydown", this.handleKeyDown);
 		  }
 		  else{
-			  
+
 			  alert("Dropdown list is empty. Kindly provide data for this dropdown list");
 		  }
           scope.position(args.position);
@@ -132,7 +132,7 @@
                   var allSelectedValues = '';
                   $('input[type="checkbox"]').each(function () {
                       var isChecked = $(this).prop('checked');
-					
+
                       var name = $(this).prop('name');
                       var currentChekBoxId = $(this).prop('id');
                       if (isChecked) {
@@ -147,7 +147,7 @@
  				  var allSelValues = '';
                   $('input[type="checkbox"]').each(function () {
                       var isChecked = $(this).prop('checked');
-					 
+
                       var name = $(this).prop('name');
                       var currentChekBoxId = $(this).prop('id');
                       if (isChecked) {
@@ -247,7 +247,7 @@
       return {valid: true, msg: null};
     }
   }
-  
+
   var grid;
   var data = [];
   var columns = [
@@ -263,7 +263,7 @@
     asyncEditorLoading: false,
     autoEdit: false
   };
- 
+
   $(function () {
     for (var i = 0; i < 50; i++) {
       var d = (data[i] = {});
@@ -272,7 +272,7 @@
 	  d["country"] = 'United States;India';
       d["language"] = "English";
       d["area"] = "123456789 sq Km";
-    
+
     }
 
     grid = new Slick.Grid("#myGrid", data, columns, options);
@@ -287,7 +287,7 @@
       grid.render();
     });
   })
-  
+
 	  /*
       * An example of a "Multi-Select Dropdown" editor.
       * "DropdownListData" is an array to store all the checkbox options required for the dropdowwn multi-select field.
@@ -300,7 +300,7 @@
              var countryData =
                 {
                     "AllValues": DropdownListData,
-                    "SelectedValues": args.item.country 
+                    "SelectedValues": args.item.country
 				   /*
 					* args.item.country is used to read the value of the field "country" of a particular row.
 					* This "SelectedValues" array generates prepopulated data if you want to retrieve data from your data base.
@@ -309,11 +309,11 @@
                 }
              return countryData;
          }
-		 
+
 		 /*
 		  * add else if conditions if you have another multi-select dropdown list as well.
 		  */
-      
+
      }
   </script>
 </body>

@@ -99,7 +99,7 @@
 <script src="../@scripts/slick.formatters.js"></script>
 <script src="../slick.editors.js"></script>
 <script src="../plugins/slick.checkboxselectcolumn.js"></script>
-<script src="../plugins/slick.cellrangedecorator.js"></script>
+<script src="../@scripts/slick.cellrangedecorator.js"></script>
 <script src="../plugins/slick.cellrangeselector.js"></script>
 <script src="../plugins/slick.cellselectionmodel.js"></script>
 <script src="../plugins/slick.rowselectionmodel.js"></script>
@@ -318,7 +318,7 @@ $(function () {
   var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
 
   dataView.syncGridSelection(grid, true, true);
-    
+
   grid.onSort.subscribe(function (e, args) {
     sortdir = args.sortAsc ? 1 : -1;
     sortcol = args.sortCol.field;

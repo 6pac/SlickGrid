@@ -15,7 +15,7 @@
 	}
     .select2-container .select2-selection--single {
 		height: 26px;
-	}  
+	}
 </style>
 </head>
 <body>
@@ -49,7 +49,7 @@
 <script src="../lib/jquery.event.drag-2.3.0.js"></script>
 
 <script src="../slick.core.js"></script>
-<script src="../plugins/slick.cellrangedecorator.js"></script>
+<script src="../@scripts/slick.cellrangedecorator.js"></script>
 <script src="../plugins/slick.cellrangeselector.js"></script>
 <script src="../plugins/slick.cellselectionmodel.js"></script>
 <script src="../@scripts/slick.formatters.js"></script>
@@ -326,7 +326,7 @@ var countryIsoAndNameList = {
             PopulateSelect($input[0], args.column.dataSource, true);
             $input.appendTo(args.container);
             $input.focus().select();
-			
+
             $input.select2({
                 placeholder: '-',
 				allowClear: true
@@ -369,10 +369,10 @@ var countryIsoAndNameList = {
         };
         this.init();
     }
-	
+
     function Select2Formatter(row, cell, value, columnDef, dataContext) {
         return columnDef.dataSource[value] || '-';
-    }	
+    }
 </script>
 <script>
   // stackoverflow.com/questions/2532218
@@ -384,7 +384,7 @@ var countryIsoAndNameList = {
 		   result = prop;
 	return result;
   }
-	
+
   function requiredFieldValidator(value) {
     if (value == null || value == undefined || !value.length) {
       return {valid: false, msg: "This is a required field"};
@@ -399,7 +399,7 @@ var countryIsoAndNameList = {
     {id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Text},
     {id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Date},
     {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Date},
-	{id: "CountryOfOrigin", name: "Country Of Origin", field: "country", minWidth: 200, formatter: Select2Formatter, 
+	{id: "CountryOfOrigin", name: "Country Of Origin", field: "country", minWidth: 200, formatter: Select2Formatter,
 		editor: Select2Editor, dataSource: countryIsoAndNameList }
   ];
   var options = {
