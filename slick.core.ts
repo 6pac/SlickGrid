@@ -11,7 +11,8 @@
    * @class EventData
    * @constructor
    */
-  function EventData() {
+
+  const EventData = (function (this: Event & JQuery.Event): void {
     var isPropagationStopped = false;
     var isImmediatePropagationStopped = false;
 
@@ -24,15 +25,6 @@
     };
 
     /***
-     * Returns whether stopPropagation was called on this event object.
-     * @method isPropagationStopped
-     * @return {Boolean}
-     */
-    this.isPropagationStopped = function () {
-      return isPropagationStopped;
-    };
-
-    /***
      * Prevents the rest of the handlers from being executed.
      * @method stopImmediatePropagation
      */
@@ -41,22 +33,40 @@
     };
 
     /***
+     * Returns whether stopPropagation was called on this event object.
+     * @method isPropagationStopped
+     * @return {Boolean}
+     */
+    this.isPropagationStopped = function (): boolean {
+      return isPropagationStopped;
+    };
+
+    /***
      * Returns whether stopImmediatePropagation was called on this event object.\
      * @method isImmediatePropagationStopped
      * @return {Boolean}
      */
-    this.isImmediatePropagationStopped = function () {
+    this.isImmediatePropagationStopped = function (): boolean {
       return isImmediatePropagationStopped;
     };
-  }
+  } as any) as { new (): Event & JQuery.Event };
 
   /***
    * A simple publisher-subscriber implementation.
    * @class Event
    * @constructor
    */
-  function Event() {
-    var handlers = [];
+  interface IEvent {
+    subscribe: (fn: () => void) => void;
+    unsubscribe: (fn: () => void) => void;
+    notify: (
+      args: object,
+      e: new () => Event & JQuery.Event,
+      scope: object
+    ) => void;
+  }
+  function Event(this: IEvent) {
+    var handlers: typeof EventHandler[] = [];
 
     /***
      * Adds an event handler to be called when the event is fired.
@@ -65,7 +75,7 @@
      * @method subscribe
      * @param fn {Function} Event handler.
      */
-    this.subscribe = function (fn) {
+    this.subscribe = function (fn: () => void): void {
       handlers.push(fn);
     };
 
@@ -74,7 +84,7 @@
      * @method unsubscribe
      * @param fn {Function} Event handler to be removed.
      */
-    this.unsubscribe = function (fn) {
+    this.unsubscribe = function (fn: Function): void {
       for (var i = handlers.length - 1; i >= 0; i--) {
         if (handlers[i] === fn) {
           handlers.splice(i, 1);
@@ -95,12 +105,21 @@
      *      The scope ("this") within which the handler will be executed.
      *      If not specified, the scope will be set to the <code>Event</code> instance.
      */
-    this.notify = function (args, e, scope) {
+    this.notify = function (
+      args: object,
+      e: typeof EventData,
+      scope: object
+    ): void {
       e = e || new EventData();
       scope = scope || this;
 
       var returnValue;
-      for (var i = 0; i < handlers.length && !(e.isPropagationStopped() || e.isImmediatePropagationStopped()); i++) {
+      for (
+        var i = 0;
+        i < handlers.length &&
+        !(e.isPropagationStopped() || e.isImmediatePropagationStopped());
+        i++
+      ) {
         returnValue = handlers[i].call(scope, e, args);
       }
 
@@ -109,30 +128,29 @@
   }
 
   function EventHandler() {
-    var handlers = [];
+    var handlers = typeof EventHandler[] = [];
 
     this.subscribe = function (event, handler) {
       handlers.push({
         event: event,
-        handler: handler
+        handler: handler,
       });
       event.subscribe(handler);
 
-      return this;  // allow chaining
+      return this; // allow chaining
     };
 
     this.unsubscribe = function (event, handler) {
       var i = handlers.length;
       while (i--) {
-        if (handlers[i].event === event &&
-            handlers[i].handler === handler) {
+        if (handlers[i].event === event && handlers[i].handler === handler) {
           handlers.splice(i, 1);
           event.unsubscribe(handler);
           return;
         }
       }
 
-      return this;  // allow chaining
+      return this; // allow chaining
     };
 
     this.unsubscribeAll = function () {
@@ -142,7 +160,7 @@
       }
       handlers = [];
 
-      return this;  // allow chaining
+      return this; // allow chaining
     };
   }
 
@@ -155,7 +173,12 @@
    * @param toRow {Integer} Optional. Ending row. Defaults to <code>fromRow</code>.
    * @param toCell {Integer} Optional. Ending cell. Defaults to <code>fromCell</code>.
    */
-  function Range(fromRow, fromCell, toRow, toCell) {
+  function Range(
+    fromRow: number,
+    fromCell: number,
+    toRow: number,
+    toCell: number
+  ): void {
     if (toRow === undefined && toCell === undefined) {
       toRow = fromRow;
       toCell = fromCell;
@@ -190,7 +213,7 @@
      * @method isSingleRow
      * @return {Boolean}
      */
-    this.isSingleRow = function () {
+    this.isSingleRow = function (): boolean {
       return this.fromRow == this.toRow;
     };
 
@@ -199,7 +222,7 @@
      * @method isSingleCell
      * @return {Boolean}
      */
-    this.isSingleCell = function () {
+    this.isSingleCell = function (): boolean {
       return this.fromRow == this.toRow && this.fromCell == this.toCell;
     };
 
@@ -210,9 +233,13 @@
      * @param cell {Integer}
      * @return {Boolean}
      */
-    this.contains = function (row, cell) {
-      return row >= this.fromRow && row <= this.toRow &&
-          cell >= this.fromCell && cell <= this.toCell;
+    this.contains = function (row: Integer, cell: Integer): boolean {
+      return (
+        row >= this.fromRow &&
+        row <= this.toRow &&
+        cell >= this.fromCell &&
+        cell <= this.toCell
+      );
     };
 
     /***
@@ -220,16 +247,24 @@
      * @method toString
      * @return {String}
      */
-    this.toString = function () {
+    this.toString = function (): string {
       if (this.isSingleCell()) {
         return "(" + this.fromRow + ":" + this.fromCell + ")";
-      }
-      else {
-        return "(" + this.fromRow + ":" + this.fromCell + " - " + this.toRow + ":" + this.toCell + ")";
+      } else {
+        return (
+          "(" +
+          this.fromRow +
+          ":" +
+          this.fromCell +
+          " - " +
+          this.toRow +
+          ":" +
+          this.toCell +
+          ")"
+        );
       }
     };
   }
-
 
   /***
    * A base class that all special / non-data rows (like Group and GroupTotals) derive from.
@@ -239,7 +274,6 @@
   function NonDataItem() {
     this.__nonDataRow = true;
   }
-
 
   /***
    * Information about a group of rows.
@@ -330,11 +364,13 @@
    * @return {Boolean}
    * @param group {Group} Group instance to compare to.
    */
-  Group.prototype.equals = function (group) {
-    return this.value === group.value &&
-        this.count === group.count &&
-        this.collapsed === group.collapsed &&
-        this.title === group.title;
+  Group.prototype.equals = function (group: Group): boolean {
+    return (
+      this.value === group.value &&
+      this.count === group.count &&
+      this.collapsed === group.collapsed &&
+      this.title === group.title
+    );
   };
 
   /***
@@ -385,8 +421,10 @@
      * @param editController {EditController}
      * @return {Boolean}
      */
-    this.isActive = function (editController) {
-      return (editController ? activeEditController === editController : activeEditController !== null);
+    this.isActive = function (editController: EditController): boolean {
+      return editController
+        ? activeEditController === editController
+        : activeEditController !== null;
     };
 
     /***
@@ -395,18 +433,25 @@
      * @method activate
      * @param editController {EditController} edit controller acquiring the lock
      */
-    this.activate = function (editController) {
-      if (editController === activeEditController) { // already activated?
+    this.activate = function (editController: EditController) {
+      if (editController === activeEditController) {
+        // already activated?
         return;
       }
       if (activeEditController !== null) {
-        throw new Error("SlickGrid.EditorLock.activate: an editController is still active, can't activate another editController");
+        throw new Error(
+          "SlickGrid.EditorLock.activate: an editController is still active, can't activate another editController"
+        );
       }
       if (!editController.commitCurrentEdit) {
-        throw new Error("SlickGrid.EditorLock.activate: editController must implement .commitCurrentEdit()");
+        throw new Error(
+          "SlickGrid.EditorLock.activate: editController must implement .commitCurrentEdit()"
+        );
       }
       if (!editController.cancelCurrentEdit) {
-        throw new Error("SlickGrid.EditorLock.activate: editController must implement .cancelCurrentEdit()");
+        throw new Error(
+          "SlickGrid.EditorLock.activate: editController must implement .cancelCurrentEdit()"
+        );
       }
       activeEditController = editController;
     };
@@ -417,9 +462,11 @@
      * @method deactivate
      * @param editController {EditController} edit controller releasing the lock
      */
-    this.deactivate = function (editController) {
+    this.deactivate = function (editController: EditController) {
       if (activeEditController !== editController) {
-        throw new Error("SlickGrid.EditorLock.deactivate: specified editController is not the currently active one");
+        throw new Error(
+          "SlickGrid.EditorLock.deactivate: specified editController is not the currently active one"
+        );
       }
       activeEditController = null;
     };
@@ -432,8 +479,10 @@
      * @method commitCurrentEdit
      * @return {Boolean}
      */
-    this.commitCurrentEdit = function () {
-      return (activeEditController ? activeEditController.commitCurrentEdit() : true);
+    this.commitCurrentEdit = function (): boolean {
+      return activeEditController
+        ? activeEditController.commitCurrentEdit()
+        : true;
     };
 
     /***
@@ -443,8 +492,10 @@
      * @method cancelCurrentEdit
      * @return {Boolean}
      */
-    this.cancelCurrentEdit = function cancelCurrentEdit() {
-      return (activeEditController ? activeEditController.cancelCurrentEdit() : true);
+    this.cancelCurrentEdit = function cancelCurrentEdit(): boolean {
+      return activeEditController
+        ? activeEditController.cancelCurrentEdit()
+        : true;
     };
   }
 
@@ -454,8 +505,19 @@
    * @returns {{hasDepth: 'hasDepth', getTreeColumns: 'getTreeColumns', extractColumns: 'extractColumns', getDepth: 'getDepth', getColumnsInDepth: 'getColumnsInDepth', getColumnsInGroup: 'getColumnsInGroup', visibleColumns: 'visibleColumns', filter: 'filter', reOrder: reOrder}}
    * @constructor
    */
-  function TreeColumns(treeColumns) {
-
+  function TreeColumns(
+    treeColumns: Array<any>
+  ): {
+    hasDepth: "hasDepth";
+    getTreeColumns: "getTreeColumns";
+    extractColumns: "extractColumns";
+    getDepth: "getDepth";
+    getColumnsInDepth: "getColumnsInDepth";
+    getColumnsInGroup: "getColumnsInGroup";
+    visibleColumns: "visibleColumns";
+    filter: "filter";
+    reOrder: reOrder;
+  } {
     var columnsById = {};
 
     function init() {
@@ -463,19 +525,15 @@
     }
 
     function mapToId(columns) {
-      columns
-        .forEach(function (column) {
-          columnsById[column.id] = column;
+      columns.forEach(function (column) {
+        columnsById[column.id] = column;
 
-          if (column.columns)
-            mapToId(column.columns);
-        });
+        if (column.columns) mapToId(column.columns);
+      });
     }
 
     function filter(node, condition) {
-
       return node.filter(function (column) {
-
         var valid = condition.call(column);
 
         if (valid && column.columns)
@@ -483,7 +541,6 @@
 
         return valid && (!column.columns || column.columns.length);
       });
-
     }
 
     function sort(columns, grid) {
@@ -495,23 +552,18 @@
           return indexA - indexB;
         })
         .forEach(function (column) {
-          if (column.columns)
-            sort(column.columns, grid);
+          if (column.columns) sort(column.columns, grid);
         });
     }
 
     function getOrDefault(value) {
-      return typeof value === 'undefined' ? -1 : value;
+      return typeof value === "undefined" ? -1 : value;
     }
 
     function getDepth(node) {
-      if (node.length)
-        for (var i in node)
-          return getDepth(node[i]);
-      else if (node.columns)
-        return 1 + getDepth(node.columns);
-      else
-        return 1;
+      if (node.length) for (var i in node) return getDepth(node[i]);
+      else if (node.columns) return 1 + getDepth(node.columns);
+      else return 1;
     }
 
     function getColumnsInDepth(node, depth, current) {
@@ -519,11 +571,10 @@
       current = current || 0;
 
       if (depth == current) {
-
         if (node.length)
-          node.forEach(function(n) {
+          node.forEach(function (n) {
             if (n.columns)
-              n.extractColumns = function() {
+              n.extractColumns = function () {
                 return extractColumns(n);
               };
           });
@@ -532,7 +583,9 @@
       } else
         for (var i in node)
           if (node[i].columns) {
-            columns = columns.concat(getColumnsInDepth(node[i].columns, depth, current + 1));
+            columns = columns.concat(
+              getColumnsInDepth(node[i].columns, depth, current + 1)
+            );
           }
 
       return columns;
@@ -541,20 +594,13 @@
     function extractColumns(node) {
       var result = [];
 
-      if (node.hasOwnProperty('length')) {
-
+      if (node.hasOwnProperty("length")) {
         for (var i = 0; i < node.length; i++)
           result = result.concat(extractColumns(node[i]));
-
       } else {
-
-        if (node.hasOwnProperty('columns'))
-
+        if (node.hasOwnProperty("columns"))
           result = result.concat(extractColumns(node.columns));
-
-        else
-          return node;
-
+        else return node;
       }
 
       return result;
@@ -567,10 +613,8 @@
     init();
 
     this.hasDepth = function () {
-
       for (var i in treeColumns)
-        if (treeColumns[i].hasOwnProperty('columns'))
-          return true;
+        if (treeColumns[i].hasOwnProperty("columns")) return true;
 
       return false;
     };
@@ -580,7 +624,7 @@
     };
 
     this.extractColumns = function () {
-      return this.hasDepth()? extractColumns(treeColumns): treeColumns;
+      return this.hasDepth() ? extractColumns(treeColumns) : treeColumns;
     };
 
     this.getDepth = function () {
@@ -619,79 +663,82 @@
       });
     };
   }
-  
+
   /***
    * Polyfill for Map to support old browsers but
    * benefit of the Map speed in modern browsers.
    * @class Map
    * @constructor
    */
-  var Map = 'Map' in window ? window.Map : function Map() {
-    var data = {};
-    
-    /***
-     * Gets the item with the given key from the map or undefined if
-     * the map does not contain the item. 
-     * @method get
-     * @param key {Map} The key of the item in the map.
-     */
-    this.get = function(key) {
-      return data[key];
-    };
+  var Map =
+    "Map" in window
+      ? window.Map
+      : function Map() {
+          var data = {};
 
-    /***
-     * Adds or updates the item with the given key in the map. 
-     * @method set
-     * @param key The key of the item in the map.
-     * @param value The value to insert into the map of the item in the map.
-     */
-    this.set = function(key, value) {
-      data[key] = value;
-    };
-    
-    /***
-     * Gets a value indicating whether the given key is present in the map.
-     * @method has
-     * @param key The key of the item in the map.
-     * @return {Boolean}
-     */    
-    this.has = function(key) {
-      return key in data;
-    };
-    
-    /***
-     * Removes the item with the given key from the map. 
-     * @method delete
-     * @param key The key of the item in the map.
-     */
-    this.delete = function(key) {
-      delete data[key];
-    };
-  };
-  
+          /***
+           * Gets the item with the given key from the map or undefined if
+           * the map does not contain the item.
+           * @method get
+           * @param key {Map} The key of the item in the map.
+           */
+          this.get = function (key: Map) {
+            return data[key];
+          };
+
+          /***
+           * Adds or updates the item with the given key in the map.
+           * @method set
+           * @param key The key of the item in the map.
+           * @param value The value to insert into the map of the item in the map.
+           */
+          this.set = function (key, value) {
+            data[key] = value;
+          };
+
+          /***
+           * Gets a value indicating whether the given key is present in the map.
+           * @method has
+           * @param key The key of the item in the map.
+           * @return {Boolean}
+           */
+          this.has = function (key): boolean {
+            return key in data;
+          };
+
+          /***
+           * Removes the item with the given key from the map.
+           * @method delete
+           * @param key The key of the item in the map.
+           */
+          this.delete = function (key) {
+            delete data[key];
+          };
+        };
+
   // exports
   $.extend(true, window, {
-    "Slick": {
-      "Event": Event,
-      "EventData": EventData,
-      "EventHandler": EventHandler,
-      "Range": Range,
-      "Map": Map,      
-      "NonDataRow": NonDataItem,
-      "Group": Group,
-      "GroupTotals": GroupTotals,
-      "EditorLock": EditorLock,
-  
+    Slick: {
+      Event: Event,
+      EventData: EventData,
+      EventHandler: EventHandler,
+      Range: Range,
+      Map: Map,
+      NonDataRow: NonDataItem,
+      Group: Group,
+      GroupTotals: GroupTotals,
+      EditorLock: EditorLock,
+
       /***
        * A global singleton editor lock.
        * @class GlobalEditorLock
        * @static
        * @constructor
        */
-      "GlobalEditorLock": new EditorLock(),
-      "TreeColumns": TreeColumns,
+      GlobalEditorLock: new EditorLock(),
+      TreeColumns: TreeColumns,
 
-      "keyCode": {
+      keyCode: {
         SPACE: 8,
         BACKSPACE: 8,
         DELETE: 46,
@@ -707,47 +754,45 @@
         RIGHT: 39,
         TAB: 9,
         UP: 38,
-        A: 65
+        A: 65,
       },
-      "preClickClassName" : "slick-edit-preclick",
-      
-      "GridAutosizeColsMode": {
-        None: 'NOA',
-        LegacyOff: 'LOF',
-        LegacyForceFit: 'LFF',
-        IgnoreViewport: 'IGV',
-        FitColsToViewport: 'FCV',
-        FitViewportToCols: 'FVC'
+      preClickClassName: "slick-edit-preclick",
+
+      GridAutosizeColsMode: {
+        None: "NOA",
+        LegacyOff: "LOF",
+        LegacyForceFit: "LFF",
+        IgnoreViewport: "IGV",
+        FitColsToViewport: "FCV",
+        FitViewportToCols: "FVC",
       },
-      
-      "ColAutosizeMode": {
-          Locked: 'LCK',
-          Guide: 'GUI',
-          Content: 'CON',
-          ContentIntelligent: 'CTI'
+
+      ColAutosizeMode: {
+        Locked: "LCK",
+        Guide: "GUI",
+        Content: "CON",
+        ContentIntelligent: "CTI",
       },
-      
-      "RowSelectionMode": {
-          FirstRow: 'FS1',
-          FirstNRows: 'FSN',
-          AllRows: 'ALL',
-          LastRow: 'LS1'
+
+      RowSelectionMode: {
+        FirstRow: "FS1",
+        FirstNRows: "FSN",
+        AllRows: "ALL",
+        LastRow: "LS1",
       },
-      
-      "ValueFilterMode": {
-          None: 'NONE',
-          DeDuplicate: 'DEDP',
-          GetGreatestAndSub: 'GR8T',
-          GetLongestTextAndSub: 'LNSB',
-          GetLongestText: 'LNSC'
+
+      ValueFilterMode: {
+        None: "NONE",
+        DeDuplicate: "DEDP",
+        GetGreatestAndSub: "GR8T",
+        GetLongestTextAndSub: "LNSB",
+        GetLongestText: "LNSC",
       },
-      
-      "WidthEvalMode": {
-          CanvasTextSize: 'CANV',
-          HTML: 'HTML'
-      }      
-    }
+
+      WidthEvalMode: {
+        CanvasTextSize: "CANV",
+        HTML: "HTML",
+      },
+    },
   });
 })(jQuery);
-
-
