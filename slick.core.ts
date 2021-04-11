@@ -127,8 +127,8 @@
     };
   }
 
-  function EventHandler() {
-    var handlers = typeof EventHandler[] = [];
+  function EventHandler(this: IEvent) {
+    var handlers: typeof EventHandler[] = [];
 
     this.subscribe = function (event, handler) {
       handlers.push({
