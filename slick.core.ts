@@ -5,14 +5,15 @@
  */
 
 (function ($) {
+  type TEventData = Event & JQuery.Event;
+
   /***
    * An event object for passing data to event handlers and letting them control propagation.
    * <p>This is pretty much identical to how W3C and jQuery implement events.</p>
    * @class EventData
    * @constructor
    */
-
-  const EventData = (function (this: Event & JQuery.Event): void {
+  const EventData = (function (this: TEventData): void {
     var isPropagationStopped = false;
     var isImmediatePropagationStopped = false;
 
@@ -49,23 +50,19 @@
     this.isImmediatePropagationStopped = function (): boolean {
       return isImmediatePropagationStopped;
     };
-  } as any) as { new (): Event & JQuery.Event };
+  } as any) as { new (): TEventData };
 
+  interface IEvent {
+    subscribe: (fn: () => void) => void;
+    unsubscribe: (fn: () => void) => void;
+    notify: <T>(args: object, e: TEventData, scope: ThisType<T>) => void;
+  }
   /***
    * A simple publisher-subscriber implementation.
    * @class Event
    * @constructor
    */
-  interface IEvent {
-    subscribe: (fn: () => void) => void;
-    unsubscribe: (fn: () => void) => void;
-    notify: (
-      args: object,
-      e: new () => Event & JQuery.Event,
-      scope: object
-    ) => void;
-  }
-  function Event(this: IEvent) {
+  function Event(this: IEvent): void {
     var handlers: typeof EventHandler[] = [];
 
     /***
@@ -105,10 +102,10 @@
      *      The scope ("this") within which the handler will be executed.
      *      If not specified, the scope will be set to the <code>Event</code> instance.
      */
-    this.notify = function (
+    this.notify = function <T>(
       args: object,
-      e: typeof EventData,
-      scope: object
+      e: TEventData,
+      scope: ThisType<T>
     ): void {
       e = e || new EventData();
       scope = scope || this;
@@ -120,7 +117,7 @@
         !(e.isPropagationStopped() || e.isImmediatePropagationStopped());
         i++
       ) {
-        returnValue = handlers[i].call(scope, e, args);
+        returnValue = handlers[i].call(scope, e, args); //? How is this working
       }
 
       return returnValue;
