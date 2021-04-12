@@ -283,14 +283,17 @@
     };
   }
 
+  interface INonDataItem {
+    __nonDataRow: true;
+  }
   /***
    * A base class that all special / non-data rows (like Group and GroupTotals) derive from.
    * @class NonDataItem
    * @constructor
    */
-  function NonDataItem() {
+  const NonDataItem = (function (this: INonDataItem): void {
     this.__nonDataRow = true;
-  }
+  } as any) as { new (): INonDataItem };
 
   /***
    * Information about a group of rows.
