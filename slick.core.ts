@@ -57,6 +57,7 @@
     unsubscribe: (fn: () => void) => void;
     notify: <T>(args: object, e: TEventData, scope: ThisType<T>) => void;
   }
+
   /***
    * A simple publisher-subscriber implementation.
    * @class Event
@@ -123,9 +124,17 @@
       return returnValue;
     };
   }
-
-  function EventHandler(this: IEvent) {
-    var handlers: typeof EventHandler[] = [];
+  interface IEventHandler {
+    subscribe: (event: any, handler: any) => IEventHandler;
+    unsubscribe: (event: any, handler: any) => void | IEventHandler;
+    unsubscribeAll: (event: any, handler: any) => IEventHandler;
+  }
+  type THandler = {
+    event: IEvent;
+    handler: () => void;
+  };
+  function EventHandler(this: IEventHandler) {
+    var handlers: THandler[] = [];
 
     this.subscribe = function (event, handler) {
       handlers.push({
@@ -161,6 +170,16 @@
     };
   }
 
+  interface IRange {
+    fromRow: number;
+    fromCell: number;
+    toRow: number;
+    toCell: number;
+    isSingleRow: () => boolean;
+    isSingleCell: () => boolean;
+    contains: (row: number, cell: number) => boolean;
+    toString: () => string;
+  }
   /***
    * A structure containing a range of cells.
    * @class Range
@@ -171,6 +190,7 @@
    * @param toCell {Integer} Optional. Ending cell. Defaults to <code>fromCell</code>.
    */
   function Range(
+    this: IRange,
     fromRow: number,
     fromCell: number,
     toRow: number,
@@ -230,7 +250,7 @@
      * @param cell {Integer}
      * @return {Boolean}
      */
-    this.contains = function (row: Integer, cell: Integer): boolean {
+    this.contains = function (row: number, cell: number): boolean {
       return (
         row >= this.fromRow &&
         row <= this.toRow &&
