@@ -53,7 +53,7 @@
   } as any) as { new (): TEventData };
 
   interface IEvent {
-    subscribe: (fn: () => void) => void;
+    subscribe: (fn: new () => IEventHandler) => void;
     unsubscribe: (fn: () => void) => void;
     notify: <T>(args: object, e: TEventData, scope: ThisType<T>) => void;
   }
@@ -71,9 +71,9 @@
      * <p>Event handler will receive two arguments - an <code>EventData</code> and the <code>data</code>
      * object the event was fired with.<p>
      * @method subscribe
-     * @param fn {Function} Event handler.
+     * @param fn Event handler.
      */
-    this.subscribe = function (fn: () => void): void {
+    this.subscribe = function (fn): void {
       handlers.push(fn);
     };
 
@@ -315,7 +315,7 @@
    * @extends Slick.NonDataItem
    * @constructor
    */
-  function Group(this: IGroup) {
+  const Group = (function (this: IGroup) {
     this.__group = true;
 
     /**
@@ -388,7 +388,7 @@
      * @type {Object}
      */
     this.groupingKey = null;
-  }
+  } as any) as { new (): IGroup };
 
   Group.prototype = new NonDataItem();
 
@@ -424,7 +424,7 @@
    * @extends Slick.NonDataItem
    * @constructor
    */
-  function GroupTotals(this: IGroupTotals) {
+  const GroupTotals = (function (this: IGroupTotals) {
     this.__groupTotals = true;
 
     /***
@@ -441,7 +441,7 @@
      * @type {Boolean}
      */
     this.initialized = false;
-  }
+  } as any) as { new (): IGroupTotals };
 
   GroupTotals.prototype = new NonDataItem(); //? Is this being used -- JACOB
 
@@ -461,7 +461,7 @@
    * @class EditorLock
    * @constructor
    */
-  function EditorLock(this: IEditorLock) {
+  const EditorLock = (function (this: IEditorLock) {
     var activeEditController: IEditController | null;
 
     /***
@@ -547,7 +547,7 @@
         ? activeEditController.cancelCurrentEdit()
         : true;
     };
-  }
+  } as any) as { new (): IEditorLock };
 
   // interface ITreeColumns {
   //   hasDepth: ;
