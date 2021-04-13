@@ -190,7 +190,7 @@
    * @param toRow {Integer} Optional. Ending row. Defaults to <code>fromRow</code>.
    * @param toCell {Integer} Optional. Ending cell. Defaults to <code>fromCell</code>.
    */
-  const Range = function (
+  const Range = (function (
     this: IRange,
     fromRow: number,
     fromCell: number,
@@ -249,21 +249,21 @@
      * @method contains
      * @param row {Integer}
      * @param cell {Integer}
-     * @return {Boolean}
+     * @return {Boolean} boolean
      */
-    this.contains = (function (row: number, cell: number): boolean {
+    this.contains = function (row: number, cell: number): boolean {
       return (
         row >= this.fromRow &&
         row <= this.toRow &&
         cell >= this.fromCell &&
         cell <= this.toCell
       );
-    }
+    };
 
     /***
      * Returns a readable representation of a range.
      * @method toString
-     * @return {String}
+     * @return {String} string
      */
     this.toString = function (): string {
       if (this.isSingleCell()) {
@@ -282,7 +282,7 @@
         );
       }
     };
-  };
+  } as any) as { new (): IRange };
 
   interface INonDataItem {
     __nonDataRow: boolean;
@@ -445,14 +445,14 @@
 
   GroupTotals.prototype = new NonDataItem(); //? Is this being used -- JACOB
 
-  type TEditController = {}; //? This is the param in the Methods, unknown type -- JACOB
   interface IEditorLock {
-    isActive: <T>(editController: T) => boolean;
-    activate: <T>(editController: T) => void | undefined;
-    deactivate: <T>(editController: T) => void | undefined;
+    isActive: (editController: IEditController) => boolean;
+    activate: (editController: IEditController) => void | undefined;
+    deactivate: (editController: IEditController) => void | undefined;
     commitCurrentEdit: () => boolean;
     cancelCurrentEdit: () => boolean;
   }
+  interface IEditController extends IEditorLock {}
   /***
    * A locking helper to track the active edit controller and ensure that only a single controller
    * can be active at a time.  This prevents a whole class of state and validation synchronization
@@ -462,7 +462,7 @@
    * @constructor
    */
   function EditorLock(this: IEditorLock) {
-    var activeEditController = null; //? What type is this -- JACOB
+    var activeEditController: IEditController | null;
 
     /***
      * Returns true if a specified edit controller is active (has the edit lock).
@@ -471,7 +471,7 @@
      * @param editController
      * @return {Boolean}
      */
-    this.isActive = function (editController): boolean {
+    this.isActive = function (editController: IEditController): boolean {
       return editController
         ? activeEditController === editController
         : activeEditController !== null;
@@ -483,7 +483,7 @@
      * @method activate
      * @param editController edit controller acquiring the lock
      */
-    this.activate = function (editController) {
+    this.activate = function (editController: IEditController) {
       if (editController === activeEditController) {
         // already activated?
         return;
@@ -512,7 +512,7 @@
      * @method deactivate
      * @param editController edit controller releasing the lock
      */
-    this.deactivate = function (editController) {
+    this.deactivate = function (editController: IEditController) {
       if (activeEditController !== editController) {
         throw new Error(
           "SlickGrid.EditorLock.deactivate: specified editController is not the currently active one"
@@ -549,32 +549,32 @@
     };
   }
 
+  // interface ITreeColumns {
+  //   hasDepth: ;
+  //   getTreeColumns: "getTreeColumns";
+  //   extractColumns: "extractColumns";
+  //   getDepth: "getDepth";
+  //   getColumnsInDepth: "getColumnsInDepth";
+  //   getColumnsInGroup: "getColumnsInGroup";
+  //   visibleColumns: "visibleColumns";
+  //   filter: "filter";
+  //   reOrder: (grid) => ;
+  // }
+
   /**
    *
    * @param {Array} treeColumns Array com levels of columns
    * @returns {{hasDepth: 'hasDepth', getTreeColumns: 'getTreeColumns', extractColumns: 'extractColumns', getDepth: 'getDepth', getColumnsInDepth: 'getColumnsInDepth', getColumnsInGroup: 'getColumnsInGroup', visibleColumns: 'visibleColumns', filter: 'filter', reOrder: reOrder}}
    * @constructor
    */
-  function TreeColumns(
-    treeColumns: Array<any>
-  ): {
-    hasDepth: "hasDepth";
-    getTreeColumns: "getTreeColumns";
-    extractColumns: "extractColumns";
-    getDepth: "getDepth";
-    getColumnsInDepth: "getColumnsInDepth";
-    getColumnsInGroup: "getColumnsInGroup";
-    visibleColumns: "visibleColumns";
-    filter: "filter";
-    reOrder: reOrder;
-  } {
+  function TreeColumns(this: ITreeColumns, treeColumns: []): void {
     var columnsById = {};
 
     function init() {
       mapToId(treeColumns);
     }
 
-    function mapToId(columns) {
+    function mapToId(columns: []) {
       columns.forEach(function (column) {
         columnsById[column.id] = column;
 
