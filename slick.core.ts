@@ -549,18 +549,22 @@
     };
   } as any) as { new (): IEditorLock };
 
-  // interface ITreeColumns {
-  //   hasDepth: ;
-  //   getTreeColumns: "getTreeColumns";
-  //   extractColumns: "extractColumns";
-  //   getDepth: "getDepth";
-  //   getColumnsInDepth: "getColumnsInDepth";
-  //   getColumnsInGroup: "getColumnsInGroup";
-  //   visibleColumns: "visibleColumns";
-  //   filter: "filter";
-  //   reOrder: (grid) => ;
-  // }
-
+  interface ITreeColumns {
+    init: () => void
+    mapToId: (columns: []) => void
+    filter: (node, condition) => boolean //TODO: Double check this return type
+    sort: (columns, grid) => void
+    hasDepth: () => boolean ;
+    getOrDefault: (value) => void //TODO: uncertain of return type RN 
+    getDepth: (node: {}) => number
+    getTreeColumns: "getTreeColumns";
+    extractColumns: "extractColumns";
+    getColumnsInDepth: "getColumnsInDepth";
+    getColumnsInGroup: "getColumnsInGroup";
+    visibleColumns: "visibleColumns";
+    reOrder: (grid) => ;
+  }
+  type TColumns = Record<string, any> //? Correct structure unknown
   /**
    *
    * @param {Array} treeColumns Array com levels of columns
@@ -568,13 +572,13 @@
    * @constructor
    */
   function TreeColumns(this: ITreeColumns, treeColumns: []): void {
-    var columnsById = {};
+    var columnsById: TColumns = {};
 
     function init() {
       mapToId(treeColumns);
     }
 
-    function mapToId(columns: []) {
+    function mapToId(columns: TColumns[]) {
       columns.forEach(function (column) {
         columnsById[column.id] = column;
 
