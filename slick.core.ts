@@ -63,7 +63,7 @@
    * @class Event
    * @constructor
    */
-  function Event(this: IEvent): void {
+  const Event = (function (this: IEvent): void {
     var handlers: typeof EventHandler[] = [];
 
     /***
@@ -118,12 +118,13 @@
         !(e.isPropagationStopped() || e.isImmediatePropagationStopped());
         i++
       ) {
-        returnValue = handlers[i].call(scope, e, args); //? How is this working
+        returnValue = handlers[i].call(scope, e, args); //? How is this working -- JACOB
       }
 
       return returnValue;
     };
-  }
+  } as any) as { new (): IEvent };
+
   interface IEventHandler {
     subscribe: (event: any, handler: any) => IEventHandler;
     unsubscribe: (event: any, handler: any) => void | IEventHandler;
@@ -133,7 +134,7 @@
     event: IEvent;
     handler: () => void;
   };
-  function EventHandler(this: IEventHandler) {
+  const EventHandler = (function (this: IEventHandler) {
     var handlers: THandler[] = [];
 
     this.subscribe = function (event, handler) {
@@ -168,7 +169,7 @@
 
       return this; // allow chaining
     };
-  }
+  } as any) as { new (): IEventHandler };
 
   interface IRange {
     fromRow: number;
@@ -189,7 +190,7 @@
    * @param toRow {Integer} Optional. Ending row. Defaults to <code>fromRow</code>.
    * @param toCell {Integer} Optional. Ending cell. Defaults to <code>fromCell</code>.
    */
-  function Range(
+  const Range = function (
     this: IRange,
     fromRow: number,
     fromCell: number,
@@ -250,14 +251,14 @@
      * @param cell {Integer}
      * @return {Boolean}
      */
-    this.contains = function (row: number, cell: number): boolean {
+    this.contains = (function (row: number, cell: number): boolean {
       return (
         row >= this.fromRow &&
         row <= this.toRow &&
         cell >= this.fromCell &&
         cell <= this.toCell
       );
-    };
+    }
 
     /***
      * Returns a readable representation of a range.
@@ -281,10 +282,10 @@
         );
       }
     };
-  }
+  };
 
   interface INonDataItem {
-    __nonDataRow: true;
+    __nonDataRow: boolean;
   }
   /***
    * A base class that all special / non-data rows (like Group and GroupTotals) derive from.
@@ -295,13 +296,26 @@
     this.__nonDataRow = true;
   } as any) as { new (): INonDataItem };
 
+  interface IGroup {
+    __group: boolean;
+    level: number;
+    count: number;
+    value: object | null;
+    title: string | null;
+    collapsed: boolean;
+    selectChecked: boolean;
+    totals: IGroupTotals | null;
+    rows: [];
+    groups: IGroup[] | null;
+    groupingKey: object | null;
+  }
   /***
    * Information about a group of rows.
    * @class Group
    * @extends Slick.NonDataItem
    * @constructor
    */
-  function Group() {
+  function Group(this: IGroup) {
     this.__group = true;
 
     /**
@@ -378,13 +392,16 @@
 
   Group.prototype = new NonDataItem();
 
+  interface INonDataItem {
+    equals: (this: IGroup, group: IGroup) => boolean;
+  }
   /***
    * Compares two Group instances.
    * @method equals
-   * @return {Boolean}
-   * @param group {Group} Group instance to compare to.
+   * @return {Boolean} boolean
+   * @param group {IGroup} Group instance to compare to.
    */
-  Group.prototype.equals = function (group: Group): boolean {
+  Group.prototype.equals = function (this: IGroup, group: IGroup): boolean {
     return (
       this.value === group.value &&
       this.count === group.count &&
@@ -393,6 +410,11 @@
     );
   };
 
+  interface IGroupTotals {
+    __groupTotals: boolean;
+    group: IGroup | null;
+    initialized: boolean;
+  }
   /***
    * Information about group totals.
    * An instance of GroupTotals will be created for each totals row and passed to the aggregators
@@ -402,7 +424,7 @@
    * @extends Slick.NonDataItem
    * @constructor
    */
-  function GroupTotals() {
+  function GroupTotals(this: IGroupTotals) {
     this.__groupTotals = true;
 
     /***
@@ -421,8 +443,16 @@
     this.initialized = false;
   }
 
-  GroupTotals.prototype = new NonDataItem();
+  GroupTotals.prototype = new NonDataItem(); //? Is this being used -- JACOB
 
+  type TEditController = {}; //? This is the param in the Methods, unknown type -- JACOB
+  interface IEditorLock {
+    isActive: <T>(editController: T) => boolean;
+    activate: <T>(editController: T) => void | undefined;
+    deactivate: <T>(editController: T) => void | undefined;
+    commitCurrentEdit: () => boolean;
+    cancelCurrentEdit: () => boolean;
+  }
   /***
    * A locking helper to track the active edit controller and ensure that only a single controller
    * can be active at a time.  This prevents a whole class of state and validation synchronization
@@ -431,17 +461,17 @@
    * @class EditorLock
    * @constructor
    */
-  function EditorLock() {
-    var activeEditController = null;
+  function EditorLock(this: IEditorLock) {
+    var activeEditController = null; //? What type is this -- JACOB
 
     /***
      * Returns true if a specified edit controller is active (has the edit lock).
      * If the parameter is not specified, returns true if any edit controller is active.
      * @method isActive
-     * @param editController {EditController}
+     * @param editController
      * @return {Boolean}
      */
-    this.isActive = function (editController: EditController): boolean {
+    this.isActive = function (editController): boolean {
       return editController
         ? activeEditController === editController
         : activeEditController !== null;
@@ -451,9 +481,9 @@
      * Sets the specified edit controller as the active edit controller (acquire edit lock).
      * If another edit controller is already active, and exception will be throw new Error(.
      * @method activate
-     * @param editController {EditController} edit controller acquiring the lock
+     * @param editController edit controller acquiring the lock
      */
-    this.activate = function (editController: EditController) {
+    this.activate = function (editController) {
       if (editController === activeEditController) {
         // already activated?
         return;
@@ -480,9 +510,9 @@
      * Unsets the specified edit controller as the active edit controller (release edit lock).
      * If the specified edit controller is not the active one, an exception will be throw new Error(.
      * @method deactivate
-     * @param editController {EditController} edit controller releasing the lock
+     * @param editController edit controller releasing the lock
      */
-    this.deactivate = function (editController: EditController) {
+    this.deactivate = function (editController) {
       if (activeEditController !== editController) {
         throw new Error(
           "SlickGrid.EditorLock.deactivate: specified editController is not the currently active one"
