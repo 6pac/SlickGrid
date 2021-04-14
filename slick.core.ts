@@ -93,20 +93,20 @@
     /***
      * Fires an event notifying all subscribers.
      * @method notify
-     * @param args {Object} Additional data object to be passed to all handlers.
+     * @param args  Additional data object to be passed to all handlers.
      * @param e {EventData}
      *      Optional.
      *      An <code>EventData</code> object to be passed to all handlers.
      *      For DOM events, an existing W3C/jQuery event object can be passed in.
-     * @param scope {Object}
+     * @param scope 
      *      Optional.
      *      The scope ("this") within which the handler will be executed.
      *      If not specified, the scope will be set to the <code>Event</code> instance.
      */
-    this.notify = function <T>(
-      args: object,
+    this.notify = function(
+      args: {},
       e: TEventData,
-      scope: ThisType<T>
+      scope
     ): void {
       e = e || new EventData();
       scope = scope || this;
@@ -118,7 +118,7 @@
         !(e.isPropagationStopped() || e.isImmediatePropagationStopped());
         i++
       ) {
-        returnValue = handlers[i].call(scope, e, args); //? How is this working -- JACOB
+        returnValue = handlers[i].call(scope, e, args) //? How is this working -- JACOB
       }
 
       return returnValue;
