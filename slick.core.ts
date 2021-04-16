@@ -98,15 +98,15 @@
      *      Optional.
      *      An <code>EventData</code> object to be passed to all handlers.
      *      For DOM events, an existing W3C/jQuery event object can be passed in.
-     * @param scope 
+     * @param scope
      *      Optional.
      *      The scope ("this") within which the handler will be executed.
      *      If not specified, the scope will be set to the <code>Event</code> instance.
      */
-    this.notify = function(
+    this.notify = function <T>(
       args: {},
       e: TEventData,
-      scope
+      scope: ThisParameterType<T | TEventData>
     ): void {
       e = e || new EventData();
       scope = scope || this;
@@ -118,7 +118,7 @@
         !(e.isPropagationStopped() || e.isImmediatePropagationStopped());
         i++
       ) {
-        returnValue = handlers[i].call(scope, e, args) //? How is this working -- JACOB
+        returnValue = handlers[i].call(scope, e, args); //? How is this working -- JACOB
       }
 
       return returnValue;
@@ -549,29 +549,34 @@
     };
   } as any) as { new (): IEditorLock };
 
+  //TODO Make more generic
   interface ITreeColumns {
-    init: () => void
-    mapToId: (columns: []) => void
-    filter: (node, condition) => boolean //TODO: Double check this return type
-    sort: (columns, grid) => void
-    hasDepth: () => boolean ;
-    getOrDefault: (value) => void //TODO: uncertain of return type RN 
-    getDepth: (node: {}) => number
-    getTreeColumns: "getTreeColumns";
-    extractColumns: "extractColumns";
-    getColumnsInDepth: "getColumnsInDepth";
-    getColumnsInGroup: "getColumnsInGroup";
-    visibleColumns: "visibleColumns";
-    reOrder: (grid) => ;
+    init: () => void;
+    mapToId: (columns: []) => void;
+    filter: (condition: Function) => TColumns[];
+    sort: (columns: TColumns[], grid: SlickGrid) => void;
+    hasDepth: () => boolean;
+    getOrDefault: <T>(value: T) => T | -1;
+    getDepth: (node: {}) => number;
+    getTreeColumns: () => TColumns;
+    extractColumns: () => TColumns;
+    getColumnsInDepth: (depth: number) => TColumns;
+    getColumnsInGroup: (groups: Record<string, any>) => any;
+    visibleColumns: () => any;
+    getById: (id: string) => any;
+    getInIds: (ids: string[]) => any;
+    reOrder: (grid: SlickGrid) => any;
   }
-  type TColumns = Record<string, any> //? Correct structure unknown
+
+  //TODO What is the structure of the Node and Columns types
+  type TColumns = Record<string, any>; //? Find Correct structure
   /**
    *
    * @param {Array} treeColumns Array com levels of columns
    * @returns {{hasDepth: 'hasDepth', getTreeColumns: 'getTreeColumns', extractColumns: 'extractColumns', getDepth: 'getDepth', getColumnsInDepth: 'getColumnsInDepth', getColumnsInGroup: 'getColumnsInGroup', visibleColumns: 'visibleColumns', filter: 'filter', reOrder: reOrder}}
    * @constructor
    */
-  function TreeColumns(this: ITreeColumns, treeColumns: []): void {
+  function TreeColumns(this: ITreeColumns, treeColumns: TColumns[]): void {
     var columnsById: TColumns = {};
 
     function init() {
@@ -586,8 +591,8 @@
       });
     }
 
-    function filter(node, condition) {
-      return node.filter(function (column) {
+    function filter(node: TColumns[], condition: Function) {
+      return node.filter(function (column: TColumns) {
         var valid = condition.call(column);
 
         if (valid && column.columns)
@@ -597,36 +602,40 @@
       });
     }
 
-    function sort(columns, grid) {
+    function sort(columns: TColumns, grid: SlickGrid) {
       columns
-        .sort(function (a, b) {
+        .sort(function (a: { id: string }, b: { id: string }) {
           var indexA = getOrDefault(grid.getColumnIndex(a.id)),
             indexB = getOrDefault(grid.getColumnIndex(b.id));
 
           return indexA - indexB;
         })
-        .forEach(function (column) {
+        .forEach(function (column: TColumns) {
           if (column.columns) sort(column.columns, grid);
         });
     }
 
-    function getOrDefault(value) {
+    function getOrDefault<T>(value: T) {
       return typeof value === "undefined" ? -1 : value;
     }
 
-    function getDepth(node) {
+    function getDepth(node: TColumns): number {
       if (node.length) for (var i in node) return getDepth(node[i]);
       else if (node.columns) return 1 + getDepth(node.columns);
-      else return 1;
+      return 1;
     }
 
-    function getColumnsInDepth(node, depth, current) {
-      var columns = [];
+    function getColumnsInDepth(
+      node: Record<string, any>,
+      depth: number,
+      current?: number
+    ) {
+      var columns: TColumns[] = [];
       current = current || 0;
 
       if (depth == current) {
         if (node.length)
-          node.forEach(function (n) {
+          node.forEach(function (n: Record<string, any>) {
             if (n.columns)
               n.extractColumns = function () {
                 return extractColumns(n);
@@ -645,8 +654,8 @@
       return columns;
     }
 
-    function extractColumns(node) {
-      var result = [];
+    function extractColumns(node: Record<string, any>) {
+      var result: TColumns[] = [];
 
       if (node.hasOwnProperty("length")) {
         for (var i = 0; i < node.length; i++)
@@ -694,12 +703,12 @@
     };
 
     this.visibleColumns = function () {
-      return filter(cloneTreeColumns(), function () {
+      return filter(cloneTreeColumns(), function (this: { visible: boolean }) {
         return this.visible;
       });
     };
 
-    this.filter = function (condition) {
+    this.filter = function (condition: Function) {
       return filter(cloneTreeColumns(), condition);
     };
 
@@ -718,19 +727,21 @@
     };
   }
 
-
   interface IMap<K, V> {
     clear(): void;
     delete(key: K): void;
-    forEach(callbackfn: (value: V, key: K, map: Map<K, V>) => void, thisArg?: any): void;
+    forEach(
+      callbackfn: (value: V, key: K, map: Map<K, V>) => void,
+      thisArg?: any
+    ): void;
     get(key: K): V | undefined;
     has(key: K): boolean;
     set(key: K, value: V): void; //? Return type should probably be contextual "this"
     readonly size: number;
-}
+  }
   interface MapConstructor {
-    new(): Map<any, any>;
-    new<K, V>(entries?: readonly (readonly [K, V])[] | null): Map<K, V>;
+    new (): Map<any, any>;
+    new <K, V>(entries?: readonly (readonly [K, V])[] | null): Map<K, V>;
     readonly prototype: Map<any, any>;
   }
   /***
@@ -739,8 +750,8 @@
    * @class Map
    * @constructor
    */
-   const Map = function <K extends keyof V,V>(this: IMap<K, V>) {
-    var data: Record<K, V>
+  const Map = (function <K extends keyof V, V>(this: IMap<K, V>) {
+    var data: Record<K, V>;
 
     /***
      * Gets the item with the given key from the map or undefined if
@@ -759,7 +770,7 @@
      * @param value The value to insert into the map of the item in the map.
      */
     this.set = function (key: K, value: V) {
-     data[key] = value;
+      data[key] = value;
     };
 
     /***
@@ -780,12 +791,9 @@
     this.delete = function (key: K) {
       delete data[key];
     };
-  } as any as MapConstructor
+  } as any) as MapConstructor;
 
-  var MapPolly =
-    "Map" in window
-      ? window.Map
-      : Map
+  var MapPolly = "Map" in window ? window.Map : Map;
 
   // exports
   $.extend(true, window, {
