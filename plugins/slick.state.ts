@@ -123,12 +123,12 @@ type SlickStateFunction = (options: SlickStateOptions) => void;
               var defaultColumns = options.defaultColumns;
               if (defaultColumns) {
                 var defaultColumnsLookup: DefaultColumns = {};
-                $.each(defaultColumns, function (idx, colDef) {
+                $.each(defaultColumns, function (_, colDef) {
                   defaultColumnsLookup[colDef.id] = colDef;
                 });
 
                 var cols: any[] = [];
-                $.each(state.columns, function (idx, columnDef) {
+                $.each(state.columns, function (_, columnDef) {
                   if (defaultColumnsLookup[columnDef.id]) {
                     cols.push(
                       $.extend(true, {}, defaultColumnsLookup[columnDef.id], {

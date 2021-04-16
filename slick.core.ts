@@ -118,6 +118,7 @@
         !(e.isPropagationStopped() || e.isImmediatePropagationStopped());
         i++
       ) {
+        // @ts-ignore 3 arguments passed 1 expected
         returnValue = handlers[i].call(scope, e, args); //? How is this working -- JACOB
       }
 
