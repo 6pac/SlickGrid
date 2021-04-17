@@ -94,8 +94,7 @@
           url: url,
           callbackParameter: "callback",
           cache: true,
-          success: function (json, _textStatus, _xOptions) {
-            //? textStatus and xOptions both seem completely unused.
+          success: function (json) {
             onSuccess(json, recStart);
           },
           error: function () {
