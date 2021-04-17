@@ -9,7 +9,7 @@
     var PAGESIZE = 10;
     var data: { [key: number]: any; length: number } = { length: 0 };
     var h_request: number | null = null;
-    var req: JsonpExtendedOptions | null = null;  // ajax request
+    var req: JsonpExtendedOptions | null = null; // ajax request
 
     // events
     var onDataLoading = new Slick.Event();
@@ -94,7 +94,8 @@
           url: url,
           callbackParameter: "callback",
           cache: true,
-          success: function (json, textStatus, xOptions) {
+          success: function (json, _textStatus, _xOptions) {
+            //? textStatus and xOptions both seem completely unused.
             onSuccess(json, recStart);
           },
           error: function () {
