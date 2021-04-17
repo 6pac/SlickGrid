@@ -77,12 +77,12 @@
         /***
          * Fires an event notifying all subscribers.
          * @method notify
-         * @param args {Object} Additional data object to be passed to all handlers.
+         * @param args  Additional data object to be passed to all handlers.
          * @param e {EventData}
          *      Optional.
          *      An <code>EventData</code> object to be passed to all handlers.
          *      For DOM events, an existing W3C/jQuery event object can be passed in.
-         * @param scope {Object}
+         * @param scope
          *      Optional.
          *      The scope ("this") within which the handler will be executed.
          *      If not specified, the scope will be set to the <code>Event</code> instance.
@@ -93,6 +93,7 @@
             var returnValue;
             for (var i = 0; i < handlers.length &&
                 !(e.isPropagationStopped() || e.isImmediatePropagationStopped()); i++) {
+                // @ts-ignore 3 arguments passed 1 expected
                 returnValue = handlers[i].call(scope, e, args); //? How is this working -- JACOB
             }
             return returnValue;
@@ -412,17 +413,6 @@
                 : true;
         };
     };
-    // interface ITreeColumns {
-    //   hasDepth: ;
-    //   getTreeColumns: "getTreeColumns";
-    //   extractColumns: "extractColumns";
-    //   getDepth: "getDepth";
-    //   getColumnsInDepth: "getColumnsInDepth";
-    //   getColumnsInGroup: "getColumnsInGroup";
-    //   visibleColumns: "visibleColumns";
-    //   filter: "filter";
-    //   reOrder: (grid) => ;
-    // }
     /**
      *
      * @param {Array} treeColumns Array com levels of columns
@@ -469,8 +459,7 @@
                     return getDepth(node[i]);
             else if (node.columns)
                 return 1 + getDepth(node.columns);
-            else
-                return 1;
+            return 1;
         }
         function getColumnsInDepth(node, depth, current) {
             var columns = [];
@@ -557,46 +546,45 @@
      * @class Map
      * @constructor
      */
-    var Map = "Map" in window
-        ? window.Map
-        : function Map() {
-            var data = {};
-            /***
-             * Gets the item with the given key from the map or undefined if
-             * the map does not contain the item.
-             * @method get
-             * @param key {Map} The key of the item in the map.
-             */
-            this.get = function (key) {
-                return data[key];
-            };
-            /***
-             * Adds or updates the item with the given key in the map.
-             * @method set
-             * @param key The key of the item in the map.
-             * @param value The value to insert into the map of the item in the map.
-             */
-            this.set = function (key, value) {
-                data[key] = value;
-            };
-            /***
-             * Gets a value indicating whether the given key is present in the map.
-             * @method has
-             * @param key The key of the item in the map.
-             * @return {Boolean}
-             */
-            this.has = function (key) {
-                return key in data;
-            };
-            /***
-             * Removes the item with the given key from the map.
-             * @method delete
-             * @param key The key of the item in the map.
-             */
-            this.delete = function (key) {
-                delete data[key];
-            };
+    var Map = function () {
+        var data;
+        /***
+         * Gets the item with the given key from the map or undefined if
+         * the map does not contain the item.
+         * @method get
+         * @param key The key of the item in the map.
+         */
+        this.get = function (key) {
+            return data[key];
         };
+        /***
+         * Adds or updates the item with the given key in the map.
+         * @method set
+         * @param key The key of the item in the map.
+         * @param value The value to insert into the map of the item in the map.
+         */
+        this.set = function (key, value) {
+            data[key] = value;
+        };
+        /***
+         * Gets a value indicating whether the given key is present in the map.
+         * @method has
+         * @param key The key of the item in the map.
+         * @return {Boolean}
+         */
+        this.has = function (key) {
+            return key in data;
+        };
+        /***
+         * Removes the item with the given key from the map.
+         * @method delete
+         * @param key The key of the item in the map.
+         */
+        this.delete = function (key) {
+            delete data[key];
+        };
+    };
+    var MapPolly = "Map" in window ? window.Map : Map;
     // exports
     $.extend(true, window, {
         Slick: {
@@ -604,7 +592,7 @@
             EventData: EventData,
             EventHandler: EventHandler,
             Range: Range,
-            Map: Map,
+            Map: MapPolly,
             NonDataRow: NonDataItem,
             Group: Group,
             GroupTotals: GroupTotals,

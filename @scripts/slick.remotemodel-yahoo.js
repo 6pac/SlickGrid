@@ -75,7 +75,8 @@
                     url: url,
                     callbackParameter: "callback",
                     cache: true,
-                    success: function (json, textStatus, xOptions) {
+                    success: function (json, _textStatus, _xOptions) {
+                        //? textStatus and xOptions both seem completely unused.
                         onSuccess(json, recStart);
                     },
                     error: function () {
