@@ -4,9 +4,7 @@
  * @module Core
  * @namespace Slick
  */
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.Core = void 0;
-function Core($) {
+(function ($) {
     /***
      * An event object for passing data to event handlers and letting them control propagation.
      * <p>This is pretty much identical to how W3C and jQuery implement events.</p>
@@ -101,7 +99,7 @@ function Core($) {
             return returnValue;
         };
     };
-    function EventHandler() {
+    var EventHandler = function () {
         var handlers = [];
         this.subscribe = function (event, handler) {
             handlers.push({
@@ -130,7 +128,7 @@ function Core($) {
             handlers = [];
             return this; // allow chaining
         };
-    }
+    };
     /***
      * A structure containing a range of cells.
      * @class Range
@@ -659,5 +657,4 @@ function Core($) {
             },
         },
     });
-}
-exports.Core = Core;
+})(jQuery);
