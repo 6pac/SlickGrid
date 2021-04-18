@@ -4,7 +4,7 @@
  * @namespace Slick
  */
 
-export function Core($: JQueryStatic) {
+(function ($) {
   type TEventData = Event & JQuery.Event;
 
   /***
@@ -53,7 +53,7 @@ export function Core($: JQueryStatic) {
   } as any) as { new (): TEventData };
 
   interface IEvent {
-    subscribe: (fn: () => IEventHandler) => void;
+    subscribe: (fn: new () => IEventHandler) => void;
     unsubscribe: (fn: () => void) => void;
     notify: <T>(args: object, e: TEventData, scope: ThisType<T>) => void;
   }
@@ -135,7 +135,7 @@ export function Core($: JQueryStatic) {
     event: IEvent;
     handler: () => void;
   };
-  function EventHandler(this: IEventHandler) {
+  const EventHandler = (function (this: IEventHandler) {
     var handlers: THandler[] = [];
 
     this.subscribe = function (event, handler) {
@@ -170,7 +170,7 @@ export function Core($: JQueryStatic) {
 
       return this; // allow chaining
     };
-  }
+  } as any) as { new (): IEventHandler };
 
   interface IRange {
     fromRow: number;
@@ -875,4 +875,4 @@ export function Core($: JQueryStatic) {
       },
     },
   });
-}
+})(jQuery);
