@@ -53,7 +53,7 @@ export function Core($: JQueryStatic) {
   } as any) as { new (): TEventData };
 
   interface IEvent {
-    subscribe: (fn: new () => IEventHandler) => void;
+    subscribe: (fn: () => IEventHandler) => void;
     unsubscribe: (fn: () => void) => void;
     notify: <T>(args: object, e: TEventData, scope: ThisType<T>) => void;
   }

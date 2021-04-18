@@ -101,7 +101,7 @@ function Core($) {
             return returnValue;
         };
     };
-    var EventHandler = function () {
+    function EventHandler() {
         var handlers = [];
         this.subscribe = function (event, handler) {
             handlers.push({
@@ -130,7 +130,7 @@ function Core($) {
             handlers = [];
             return this; // allow chaining
         };
-    };
+    }
     /***
      * A structure containing a range of cells.
      * @class Range
