@@ -4,7 +4,9 @@
  * @module Core
  * @namespace Slick
  */
-(function ($) {
+Object.defineProperty(exports, "__esModule", { value: true });
+exports.Core = void 0;
+function Core($) {
     /***
      * An event object for passing data to event handlers and letting them control propagation.
      * <p>This is pretty much identical to how W3C and jQuery implement events.</p>
@@ -657,4 +659,5 @@
             },
         },
     });
-})(jQuery);
+}
+exports.Core = Core;

@@ -4,7 +4,7 @@
  * @namespace Slick
  */
 
-(function ($) {
+export function Core($: JQueryStatic) {
   type TEventData = Event & JQuery.Event;
 
   /***
@@ -135,7 +135,7 @@
     event: IEvent;
     handler: () => void;
   };
-  const EventHandler = (function (this: IEventHandler) {
+  function EventHandler(this: IEventHandler) {
     var handlers: THandler[] = [];
 
     this.subscribe = function (event, handler) {
@@ -170,7 +170,7 @@
 
       return this; // allow chaining
     };
-  } as any) as { new (): IEventHandler };
+  }
 
   interface IRange {
     fromRow: number;
@@ -875,4 +875,4 @@
       },
     },
   });
-})(jQuery);
+}
