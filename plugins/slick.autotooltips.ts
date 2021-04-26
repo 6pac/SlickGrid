@@ -1,4 +1,5 @@
-// @todo slickGrid type should be in some generic type folder
+// @todo slickGrid type should be in some generic type folder 
+// TODO Jacob Evans -- This likely is going to be the type from slick.grid.d.ts output
 type SlickGrid = any;
 
 type AutoTooltipsOptions = {
