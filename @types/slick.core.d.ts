@@ -93,8 +93,7 @@ interface ITreeColumns {
     getInIds: (ids: string[]) => any;
     reOrder: (grid: SlickGrid) => any;
 }
-declare function Core(): {
-    Slick: {
+declare type Slick = {
         Event: new () => IEvent;
         EventData: {
             new (): {
@@ -170,4 +169,4 @@ declare function Core(): {
             HTML: string;
         };
     };
-};
+

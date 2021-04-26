@@ -1,11 +1,4 @@
-declare namespace Slick {
-    class Range {
-        fromRow: number;
-        toRow: number;
-        fromCell: number;
-        toCell: number;
-    }
-}
+/// <reference types="./@types/slick.core.d.ts" />
 declare type CellCopyManager = {
     onCopyCancelled: Slick.Event;
     onCopyCells: Slick.Event;

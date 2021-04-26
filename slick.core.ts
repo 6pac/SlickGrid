@@ -872,7 +872,7 @@ interface ITreeColumns {
   getInIds: (ids: string[]) => any;
   reOrder: (grid: SlickGrid) => any;
 }
-function Core() {
+module Core {
   /***
    * An event object for passing data to event handlers and letting them control propagation.
    * <p>This is pretty much identical to how W3C and jQuery implement events.</p>
@@ -1574,18 +1574,16 @@ function Core() {
 
   var MapPolly = "Map" in window ? window.Map : Map;
 
-  // exports
-  return {
-    Slick: {
+   export type Slick = {
       Event: Event,
-      EventData: EventData,
-      EventHandler: EventHandler,
+      EventData: typeof  EventData,
+      EventHandler: typeof EventHandler,
       Range: Range,
-      Map: MapPolly,
-      NonDataRow: NonDataItem,
-      Group: Group,
-      GroupTotals: GroupTotals,
-      EditorLock: EditorLock,
+      Map: typeof  MapPolly,
+      NonDataRow: typeof NonDataItem,
+      Group: typeof Group,
+      GroupTotals: typeof GroupTotals,
+      EditorLock: typeof EditorLock,
 
       /***
        * A global singleton editor lock.
@@ -1593,8 +1591,8 @@ function Core() {
        * @static
        * @constructor
        */
-      GlobalEditorLock: new EditorLock(),
-      TreeColumns: TreeColumns,
+      GlobalEditorLock: typeof EditorLock,
+      TreeColumns: typeof TreeColumns,
 
       keyCode: {
         SPACE: 8,
@@ -1651,6 +1649,5 @@ function Core() {
         CanvasTextSize: "CANV",
         HTML: "HTML",
       },
-    },
-  };
+    }
 }
