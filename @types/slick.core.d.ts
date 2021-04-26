@@ -30,9 +30,6 @@ interface IRange {
     contains: (row: number, cell: number) => boolean;
     toString: () => string;
 }
-interface INonDataItem {
-    __nonDataRow: boolean;
-}
 interface IGroup {
     __group: boolean;
     level: number;
@@ -47,6 +44,7 @@ interface IGroup {
     groupingKey: object | null;
 }
 interface INonDataItem {
+    __nonDataRow: boolean;
     equals: (this: IGroup, group: IGroup) => boolean;
 }
 interface IGroupTotals {

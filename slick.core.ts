@@ -4,7 +4,7 @@
  * @namespace Slick
  */
 
-(window as any).Core = (function () {
+(window as any) = (function () {
   /***
    * An event object for passing data to event handlers and letting them control propagation.
    * <p>This is pretty much identical to how W3C and jQuery implement events.</p>
@@ -350,9 +350,6 @@
 
   Group.prototype = new NonDataItem();
 
-  interface INonDataItem {
-    equals: (this: IGroup, group: IGroup) => boolean;
-  }
   /***
    * Compares two Group instances.
    * @method equals
@@ -808,9 +805,6 @@ interface IRange {
   contains: (row: number, cell: number) => boolean;
   toString: () => string;
 }
-interface INonDataItem {
-  __nonDataRow: boolean;
-}
 interface IGroup {
   __group: boolean;
   level: number;
@@ -824,7 +818,9 @@ interface IGroup {
   groups: IGroup[] | null;
   groupingKey: object | null;
 }
+
 interface INonDataItem {
+  __nonDataRow: boolean;
   equals: (this: IGroup, group: IGroup) => boolean;
 }
 interface IGroupTotals {
@@ -1369,8 +1365,6 @@ function Core() {
         : true;
     };
   } as any) as { new (): IEditorLock };
-
-  //TODO Make more generic
 
   /**
    *
