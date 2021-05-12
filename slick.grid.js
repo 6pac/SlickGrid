@@ -680,15 +680,7 @@ if (typeof Slick === "undefined") {
     }
 
     function getCanvasNode(columnIdOrIdx, rowIndex) {
-      if (!columnIdOrIdx) { columnIdOrIdx = 0; }
-      if (!rowIndex) { rowIndex = 0; }
-
-      var idx = (typeof columnIdOrIdx === "number" ? columnIdOrIdx : getColumnIndex(columnIdOrIdx));
-
-      return (hasFrozenRows && rowIndex >= actualFrozenRow + (options.frozenBottom ? 0 : 1) )
-          ?  ((hasFrozenColumns() && idx > options.frozenColumn) ? $canvasBottomR[0] : $canvasBottomL[0])
-          :  ((hasFrozenColumns() && idx > options.frozenColumn) ? $canvasTopR[0] : $canvasTopL[0])
-          ;
+      return _getContainerElement(getCanvases(), columnIdOrIdx, rowIndex);
     }
 
     function getActiveCanvasNode(element) {
@@ -707,12 +699,16 @@ if (typeof Slick === "undefined") {
       }
     }
 
-    function getViewportNode() {
-      return $viewport[0];
+    function getViewportNode(columnIdOrIdx, rowIndex) {
+      return _getContainerElement(getViewports(), columnIdOrIdx, rowIndex);
+    }
+
+    function getViewports() {
+      return $viewport;
     }
 
     function getActiveViewportNode(element) {
-      setActiveViewPortNode(element);
+      setActiveViewportNode(element);
 
       return $activeViewportNode[0];
     }
@@ -721,6 +717,19 @@ if (typeof Slick === "undefined") {
       if (element) {
         $activeViewportNode = $(element.target).closest('.slick-viewport');
       }
+    }
+
+    function _getContainerElement($targetContainers, columnIdOrIdx, rowIndex) {
+      if (!$targetContainers) { return }
+      if (!columnIdOrIdx) { columnIdOrIdx = 0; }
+      if (!rowIndex) { rowIndex = 0; }
+
+      var idx = (typeof columnIdOrIdx === "number" ? columnIdOrIdx : getColumnIndex(columnIdOrIdx));
+
+      var isBottomSide = hasFrozenRows && rowIndex >= actualFrozenRow + (options.frozenBottom ? 0 : 1);
+      var isRightSide = hasFrozenColumns() && idx > options.frozenColumn;
+
+      return $targetContainers[(isBottomSide ? 2 : 0) + (isRightSide ? 1 : 0)];
     }
 
     function measureScrollbar() {
@@ -1836,6 +1845,10 @@ if (typeof Slick === "undefined") {
               render();
               trigger(self.onColumnsResized, { triggeredByColumn: triggeredByColumn });
               setTimeout(function () { columnResizeDragging = false; }, 300);
+            })
+            .on("dblclick", function () {
+              var triggeredByColumn = $(this).parent().attr("id").replace(uid, "");
+              trigger(self.onColumnsResizeDblClick, { triggeredByColumn: triggeredByColumn });
             });
       });
     }
@@ -2035,7 +2048,7 @@ if (typeof Slick === "undefined") {
         }
 
         if (!stylesheet) {
-          throw new Error("Cannot find stylesheet.");
+          throw new Error("SlickGrid Cannot find stylesheet.");
         }
 
         // find and cache column CSS rules
@@ -3073,15 +3086,19 @@ if (typeof Slick === "undefined") {
         if (visible) {
           if (animated) {
             $preHeaderPanelScroller.slideDown("fast", resizeCanvas);
+            $preHeaderPanelScrollerR.slideDown("fast", resizeCanvas);
           } else {
             $preHeaderPanelScroller.show();
+            $preHeaderPanelScrollerR.show();
             resizeCanvas();
           }
         } else {
           if (animated) {
             $preHeaderPanelScroller.slideUp("fast", resizeCanvas);
+            $preHeaderPanelScrollerR.slideUp("fast", resizeCanvas);
           } else {
             $preHeaderPanelScroller.hide();
+            $preHeaderPanelScrollerR.hide();
             resizeCanvas();
           }
         }
@@ -4404,7 +4421,7 @@ if (typeof Slick === "undefined") {
 
     function addCellCssStyles(key, hash) {
       if (cellCssClasses[key]) {
-        throw new Error("addCellCssStyles: cell CSS hash with key '" + key + "' already exists.");
+        throw new Error("SlickGrid addCellCssStyles: cell CSS hash with key '" + key + "' already exists.");
       }
 
       cellCssClasses[key] = hash;
@@ -4747,7 +4764,7 @@ if (typeof Slick === "undefined") {
       // read column number from .l<columnNumber> CSS class
       var cls = /l\d+/.exec(cellNode.className);
       if (!cls) {
-        throw new Error("getCellFromNode: cannot get cell - " + cellNode.className);
+        throw new Error("SlickGrid getCellFromNode: cannot get cell - " + cellNode.className);
       }
       return parseInt(cls[0].substr(1, cls[0].length - 1), 10);
     }
@@ -5015,7 +5032,7 @@ if (typeof Slick === "undefined") {
         return;
       }
       if (!options.editable) {
-        throw new Error("Grid : makeActiveCellEditable : should never get called when options.editable is false");
+        throw new Error("SlickGrid makeActiveCellEditable : should never get called when options.editable is false");
       }
 
       // cancel pending async call if there is one
@@ -5028,7 +5045,7 @@ if (typeof Slick === "undefined") {
       var columnDef = columns[activeCell];
       var item = getDataItem(activeRow);
 
-      if (trigger(self.onBeforeEditCell, {row: activeRow, cell: activeCell, item: item, column: columnDef}) === false) {
+      if (trigger(self.onBeforeEditCell, {row: activeRow, cell: activeCell, item: item, column: columnDef, target: 'grid' }) === false) {
         setFocus();
         return;
       }
@@ -5827,14 +5844,14 @@ if (typeof Slick === "undefined") {
 
     function getSelectedRows() {
       if (!selectionModel) {
-        throw new Error("Selection model is not set");
+        throw new Error("SlickGrid Selection model is not set");
       }
       return selectedRows.slice(0);
     }
 
     function setSelectedRows(rows) {
       if (!selectionModel) {
-        throw new Error("Selection model is not set");
+        throw new Error("SlickGrid Selection model is not set");
       }
       if (self && self.getEditorLock && !self.getEditorLock().isActive()) {
         selectionModel.setSelectedRanges(rowsToRanges(rows));
@@ -5870,7 +5887,7 @@ if (typeof Slick === "undefined") {
     // Public API
 
     $.extend(this, {
-      "slickGridVersion": "2.4.33",
+      "slickGridVersion": "2.4.35",
 
       // Events
       "onScroll": new Slick.Event(),
@@ -5900,6 +5917,7 @@ if (typeof Slick === "undefined") {
       "onColumnsReordered": new Slick.Event(),
       "onColumnsDrag": new Slick.Event(),
       "onColumnsResized": new Slick.Event(),
+      "onColumnsResizeDblClick": new Slick.Event(),
       "onBeforeColumnsResize": new Slick.Event(),
       "onCellChange": new Slick.Event(),
       "onCompositeEditorChange": new Slick.Event(),
@@ -5946,6 +5964,7 @@ if (typeof Slick === "undefined") {
       "applyFormatResultToCellNode": applyFormatResultToCellNode,
 
       "render": render,
+      "reRenderColumns": reRenderColumns,
       "invalidate": invalidate,
       "invalidateRow": invalidateRow,
       "invalidateRows": invalidateRows,
@@ -5970,6 +5989,7 @@ if (typeof Slick === "undefined") {
       "getActiveCanvasNode": getActiveCanvasNode,
       "setActiveCanvasNode": setActiveCanvasNode,
       "getViewportNode": getViewportNode,
+      "getViewports": getViewports,
       "getActiveViewportNode": getActiveViewportNode,
       "setActiveViewportNode": setActiveViewportNode,
       "focus": setFocus,
