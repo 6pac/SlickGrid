@@ -91,6 +91,7 @@ if (typeof Slick === "undefined") {
       frozenBottom: false,
       frozenColumn: -1,
       frozenRow: -1,
+      frozenRightViewportMinWidth: 100,
       fullWidthRows: false,
       multiColumnSort: false,
       numberedMultiColumnSort: false,
@@ -1585,6 +1586,7 @@ if (typeof Slick === "undefined") {
 
     function setupColumnResize() {
       var $col, j, k, c, pageX, columnElements, minPageX, maxPageX, firstResizable, lastResizable;
+      var frozenLeftColMaxWidth = 0;
       columnElements = $headers.children();
       columnElements.find(".slick-resizable-handle").remove();
       columnElements.each(function (i, e) {
@@ -1612,6 +1614,7 @@ if (typeof Slick === "undefined") {
                 return false;
               }
               pageX = e.pageX;
+              frozenLeftColMaxWidth = 0;
               $(this).parent().addClass("slick-header-column-active");
               var shrinkLeewayOnRight = null, stretchLeewayOnRight = null;
               // lock each column's width option to current width
@@ -1671,6 +1674,7 @@ if (typeof Slick === "undefined") {
               columnResizeDragging = true;
               var actualMinWidth, d = Math.min(maxPageX, Math.max(minPageX, e.pageX)) - pageX, x;
               var newCanvasWidthL = 0, newCanvasWidthR = 0;
+              var viewportWidth = viewportHasVScroll ? viewportW - scrollbarDimensions.width : viewportW;
 
               if (d < 0) { // shrink column
                 x = d;
@@ -1759,7 +1763,18 @@ if (typeof Slick === "undefined") {
                       x -= c.maxWidth - c.previousWidth;
                       c.width = c.maxWidth;
                     } else {
-                      c.width = c.previousWidth + x;
+                      var newWidth = c.previousWidth + x;
+                      var resizedCanvasWidthL = canvasWidthL + x;
+
+                      if (hasFrozenColumns() && (j <= options.frozenColumn)) {
+                        // if we're on the left frozen side, we need to make sure that our left section width never goes over the total viewport width
+                        if (newWidth > frozenLeftColMaxWidth && resizedCanvasWidthL < (viewportWidth - options.frozenRightViewportMinWidth)) {
+                          frozenLeftColMaxWidth = newWidth; // keep max column width ref, if we go over the limit this number will stop increasing
+                        }
+                        c.width = ((resizedCanvasWidthL + options.frozenRightViewportMinWidth) > viewportWidth) ? frozenLeftColMaxWidth : newWidth;
+                      } else {
+                        c.width = newWidth;
+                      }
                       x = 0;
                     }
                   }
@@ -2895,7 +2910,7 @@ if (typeof Slick === "undefined") {
       return options;
     }
 
-    function setOptions(args, suppressRender, suppressColumnSet) {
+    function setOptions(args, suppressRender, suppressColumnSet, suppressSetOverflow) {
       if (!getEditorLock().commitCurrentEdit()) {
         return;
       }
@@ -2923,6 +2938,9 @@ if (typeof Slick === "undefined") {
 
       setFrozenOptions();
       setScroller();
+      if (!suppressSetOverflow) {
+        setOverflow();
+      }
       zombieRowNodeFromLastMouseWheelEvent = null;
 
       if (!suppressColumnSet) {
@@ -5887,7 +5905,7 @@ if (typeof Slick === "undefined") {
     // Public API
 
     $.extend(this, {
-      "slickGridVersion": "2.4.35",
+      "slickGridVersion": "2.4.36",
 
       // Events
       "onScroll": new Slick.Event(),
