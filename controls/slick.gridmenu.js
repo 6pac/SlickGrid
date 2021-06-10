@@ -128,7 +128,6 @@
     var _gridOptions;
     var _gridUid = (grid && grid.getUID) ? grid.getUID() : '';
     var _isMenuOpen = false;
-    var _options = options;
     var _self = this;
     var $customTitleElm;
     var $columnTitleElm;
@@ -139,6 +138,7 @@
     var $menu;
     var columnCheckboxes;
     var _defaults = {
+      showButton: true,
       hideForceFitButton: false,
       hideSyncResizeButton: false,
       forceFitTitle: "Force fit columns",
@@ -152,6 +152,7 @@
         return columnDef.name;
       }
     };
+    var _options = $.extend(true, {}, {gridMenu: _defaults}, options);
 
     // when a grid changes from a regular grid to a frozen grid, we need to destroy & recreate the grid menu
     // we do this change because the Grid Menu is on the left container on a regular grid but is on the right container on a frozen grid
@@ -192,14 +193,19 @@
         $('.' + _gridUid + '.slick-headerrow').attr('style', 'width: calc(100% - ' + gridMenuWidth + 'px)');
       }
 
-      $button = $('<button class="slick-gridmenu-button"/>');
-      if (_options.gridMenu && _options.gridMenu.iconCssClass) {
-        $button.addClass(_options.gridMenu.iconCssClass);
-      } else {
-        var iconImage = (_options.gridMenu && _options.gridMenu.iconImage) ? _options.gridMenu.iconImage : "../images/drag-handle.png";
-        $('<img src="' + iconImage + '"/>').appendTo($button);
+      if(_options.gridMenu.showButton)
+      {
+        $button = $('<button class="slick-gridmenu-button"/>');
+        if (_options.gridMenu && _options.gridMenu.iconCssClass) {
+          $button.addClass(_options.gridMenu.iconCssClass);
+        } else {
+          var iconImage = (_options.gridMenu && _options.gridMenu.iconImage) ? _options.gridMenu.iconImage : "../images/drag-handle.png";
+          $('<img src="' + iconImage + '"/>').appendTo($button);
+        }
+        $button.insertBefore($header);
+        // add on click handler for the Grid Menu itself
+        $button.on("click." + _gridUid, showGridMenu);
       }
-      $button.insertBefore($header);
 
       $menu = $('<div class="slick-gridmenu ' + _gridUid + '" style="display: none" />').appendTo(document.body);
       $('<button type="button" class="close" data-dismiss="slick-gridmenu" aria-label="Close"><span class="close" aria-hidden="true">&times;</span></button>').appendTo($menu);
@@ -216,8 +222,6 @@
       // destroy the picker if user leaves the page
       $(window).on("beforeunload", destroy);
 
-      // add on click handler for the Grid Menu itself
-      $button.on("click." + _gridUid, showGridMenu);
     }
 
     /** Destroy the plugin by unsubscribing every events & also delete the menu DOM elements */
