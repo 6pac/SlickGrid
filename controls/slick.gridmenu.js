@@ -22,6 +22,9 @@
  *      contentMinWidth: 0,							            // defaults to 0 (auto), minimum width of grid menu content (command, column list)
  *      marginBottom: 15,                           // defaults to 15, margin to use at the bottom of the grid when using max-height (default)
  *      resizeOnShowHeaderRow: false,               // false by default
+ *      showButton: true,                           // true by default - it allows the user to control if the
+ *                                                          // default gridMenu button (located on the top right corner by default CSS)
+ *                                                          // should be created or omitted
  *      useClickToRepositionMenu: true,             // true by default
  *
  *      // the last 2 checkboxes titles
