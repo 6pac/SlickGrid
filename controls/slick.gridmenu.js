@@ -196,7 +196,7 @@
         $('.' + _gridUid + '.slick-headerrow').attr('style', 'width: calc(100% - ' + gridMenuWidth + 'px)');
       }
 
-      var showButton = _options.gridMenu.showButton !== undefined ? _options.gridMenu.showButton : _defaults.showButton;
+      var showButton = (_options.gridMenu && _options.gridMenu.showButton !== undefined) ? _options.gridMenu.showButton : _defaults.showButton;
       if (showButton) {
         $button = $('<button class="slick-gridmenu-button"/>');
         if (_options.gridMenu && _options.gridMenu.iconCssClass) {
