@@ -4045,7 +4045,6 @@ if (typeof Slick === "undefined") {
 
       for (var i = 0, ii = rows.length; i < ii; i++) {
         if (( hasFrozenRows ) && ( rows[i] >= actualFrozenRow )) {
-            if ((hasFrozenRows) && (rows[i] >= actualFrozenRow)) {
             if (hasFrozenColumns()) {
                 $canvasBottomL.append(x.firstChild);
                 $canvasBottomR.append(xRight.firstChild);
