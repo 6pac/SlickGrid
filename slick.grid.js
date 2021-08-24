@@ -4046,26 +4046,26 @@ if (typeof Slick === "undefined") {
       for (var i = 0, ii = rows.length; i < ii; i++) {
         if (( hasFrozenRows ) && ( rows[i] >= actualFrozenRow )) {
             if (hasFrozenColumns()) {
-                $canvasBottomL.append(x.firstChild);
-                $canvasBottomR.append(xRight.firstChild);
                 rowsCache[rows[i]].rowNode = $()
                     .add($(x.firstChild))
                     .add($(xRight.firstChild));
+                $canvasBottomL.append(x.firstChild);
+                $canvasBottomR.append(xRight.firstChild);
             } else {
-                $canvasBottomL.append($(x.firstChild))
                 rowsCache[rows[i]].rowNode = $()
                     .add($(x.firstChild));
+                $canvasBottomL.append($(x.firstChild));
             }
         } else if (hasFrozenColumns()) {
-            $canvasTopL.append(x.firstChild);
-            $canvasTopR.append(xRight.firstChild);
             rowsCache[rows[i]].rowNode = $()
                 .add($(x.firstChild))
                 .add($(xRight.firstChild));
-        } else {
             $canvasTopL.append(x.firstChild);
+            $canvasTopR.append(xRight.firstChild);
+        } else {
             rowsCache[rows[i]].rowNode = $()
                 .add($(x.firstChild));
+            $canvasTopL.append(x.firstChild);
         }
       }
 
