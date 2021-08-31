@@ -106,7 +106,6 @@
 
         pagingOptions += "<a data=" +p.data + ">" + p.name + "</a>";
       }
-      console.log(pagingOptions);
 
       pagingOptions = $("<span class='slick-pager-settings-expanded'>Show: " + pagingOptions + "</span>");
 
