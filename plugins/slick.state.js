@@ -79,7 +79,7 @@
           userData: null
         };
 
-        if (typeof userData !== typeof undefined)
+        if (userData !== undefined)
         {
           state.userData = userData;
         }
