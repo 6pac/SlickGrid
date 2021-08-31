@@ -70,13 +70,20 @@
       save();
     }
 
-    function save() {
+    function save(userData) {
       if (_cid && _store) {
         var state = {
           sortcols: getSortColumns(),
           viewport: _grid.getViewport(),
-          columns: getColumns()
+          columns: getColumns(),
+          userData: null
         };
+
+        if (typeof userData !== typeof undefined)
+        {
+          state.userData = userData;
+        }
+
         onStateChanged.notify(state);
         return _store.set(options.key_prefix + _cid, state);
       }

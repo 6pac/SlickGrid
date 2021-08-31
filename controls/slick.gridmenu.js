@@ -196,8 +196,8 @@
         $('.' + _gridUid + '.slick-headerrow').attr('style', 'width: calc(100% - ' + gridMenuWidth + 'px)');
       }
 
-      if(_options.gridMenu.showButton)
-      {
+      var showButton = (_options.gridMenu && _options.gridMenu.showButton !== undefined) ? _options.gridMenu.showButton : _defaults.showButton;
+      if (showButton) {
         $button = $('<button class="slick-gridmenu-button"/>');
         if (_options.gridMenu && _options.gridMenu.iconCssClass) {
           $button.addClass(_options.gridMenu.iconCssClass);
@@ -318,7 +318,7 @@
         }
 
         if (item.hidden) {
-          $li.addClass("slick-header-menuitem-hidden");
+          $li.addClass("slick-gridmenu-item-hidden");
         }
 
         if (item.cssClass) {

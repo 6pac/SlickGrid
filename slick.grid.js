@@ -2921,6 +2921,8 @@ if (typeof Slick === "undefined") {
     }
 
     function setColumns(columnDefinitions) {
+      trigger(self.onBeforeSetColumns, { previousColumns: columns, newColumns: columnDefinitions, grid: self });
+
       var _treeColumns = new Slick.TreeColumns(columnDefinitions);
       if (_treeColumns.hasDepth()) {
         treeColumns = _treeColumns;
@@ -3662,7 +3664,8 @@ if (typeof Slick === "undefined") {
       }
 
       $paneTopL.css({
-        'top': $paneHeaderL.height(), 'height': paneTopH
+        'top': $paneHeaderL.height() || (options.showHeaderRow ? options.headerRowHeight : 0) + (options.showPreHeaderPanel ? options.preHeaderPanelHeight : 0),
+        'height': paneTopH
       });
 
       var paneBottomTop = $paneTopL.position().top
@@ -4088,21 +4091,27 @@ if (typeof Slick === "undefined") {
 
       for (var i = 0, ii = rows.length; i < ii; i++) {
         if (( hasFrozenRows ) && ( rows[i] >= actualFrozenRow )) {
-          if (hasFrozenColumns()) {
-            rowsCache[rows[i]].rowNode = $()
-              .add($(x.firstChild).appendTo($canvasBottomL))
-              .add($(xRight.firstChild).appendTo($canvasBottomR));
-          } else {
-            rowsCache[rows[i]].rowNode = $()
-              .add($(x.firstChild).appendTo($canvasBottomL));
-          }
+            if (hasFrozenColumns()) {
+                rowsCache[rows[i]].rowNode = $()
+                    .add($(x.firstChild))
+                    .add($(xRight.firstChild));
+                $canvasBottomL.append(x.firstChild);
+                $canvasBottomR.append(xRight.firstChild);
+            } else {
+                rowsCache[rows[i]].rowNode = $()
+                    .add($(x.firstChild));
+                $canvasBottomL.append($(x.firstChild));
+            }
         } else if (hasFrozenColumns()) {
-          rowsCache[rows[i]].rowNode = $()
-            .add($(x.firstChild).appendTo($canvasTopL))
-            .add($(xRight.firstChild).appendTo($canvasTopR));
+            rowsCache[rows[i]].rowNode = $()
+                .add($(x.firstChild))
+                .add($(xRight.firstChild));
+            $canvasTopL.append(x.firstChild);
+            $canvasTopR.append(xRight.firstChild);
         } else {
-          rowsCache[rows[i]].rowNode = $()
-            .add($(x.firstChild).appendTo($canvasTopL));
+            rowsCache[rows[i]].rowNode = $()
+                .add($(x.firstChild));
+            $canvasTopL.append(x.firstChild);
         }
       }
 
@@ -5830,6 +5839,7 @@ if (typeof Slick === "undefined") {
                   this.editor.applyValue(item, this.serializedValue);
                   updateRow(this.row);
                   trigger(self.onCellChange, {
+                    command: 'execute',
                     row: this.row,
                     cell: this.cell,
                     item: item,
@@ -5840,6 +5850,7 @@ if (typeof Slick === "undefined") {
                   this.editor.applyValue(item, this.prevSerializedValue);
                   updateRow(this.row);
                   trigger(self.onCellChange, {
+                    command: 'undo',
                     row: this.row,
                     cell: this.cell,
                     item: item,
@@ -5949,7 +5960,7 @@ if (typeof Slick === "undefined") {
     // Public API
 
     $.extend(this, {
-      "slickGridVersion": "2.4.36",
+      "slickGridVersion": "2.4.38",
 
       // Events
       "onScroll": new Slick.Event(),
@@ -5995,6 +6006,7 @@ if (typeof Slick === "undefined") {
       "onSelectedRowsChanged": new Slick.Event(),
       "onCellCssStylesChanged": new Slick.Event(),
       "onAutosizeColumns": new Slick.Event(),
+      "onBeforeSetColumns": new Slick.Event(),
       "onRendered": new Slick.Event(),
       "onSetOptions": new Slick.Event(),
 
