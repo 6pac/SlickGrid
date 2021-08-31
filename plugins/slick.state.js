@@ -79,7 +79,7 @@
           userData: null
         };
 
-        if (userData !== undefined)
+        if (userData !== undefined && !(userData instanceof jQuery.Event))
         {
           state.userData = userData;
         }
