@@ -125,6 +125,20 @@
               return;
             }
             var reorderedIds = $headers.sortable("toArray");
+            // If frozen columns are used, headers has more than one entry and we need the ids from all of them.
+            // though there is only really a left and right header, this will work even if that should change.
+            if($headers.length > 1) {
+              for(var headerI=1,l=$headers.length; headerI < l; headerI+=1) {
+                var $header = $($headers[headerI]);
+                var ids = $header.sortable("toArray");
+                // Note: the loop below could be simplified with:
+                // reorderedIds.push.apply(reorderedIds,ids);
+                // However, the loop is more in keeping with way-backward compatibility 
+                for(var idI=0,idL=ids.length; idI< idL; idI+=1) {
+                    reorderedIds.push(ids[idI]);
+                }                
+              }
+            }
             var reorderedColumns = [];
             for (var i = 0; i < reorderedIds.length; i++) {
               reorderedColumns.push(columns[getColumnIndex(reorderedIds[i].replace(uid, ""))]);
@@ -229,7 +243,8 @@
           if (e.id == columnid) {
             if (e.grouping != null && !$.isEmptyObject(e.grouping)) {
               var entry = $("<div id='" + _gridUid + e.id + "_entry' data-id='" + e.id + "' class='slick-dropped-grouping'>");
-              var groupText = $("<div style='display: inline-flex'>" + column.text() + "</div>");
+              var columnName = column.children('.slick-column-name').first();
+              var groupText = $("<div style='display: inline-flex'>" + (columnName.length ? columnName.text() : column.text()) + "</div>");
               groupText.appendTo(entry);
               var groupRemoveIcon = $("<div class='slick-groupby-remove'>&nbsp;</div>");
               if(options.deleteIconCssClass) groupRemoveIcon.addClass(options.deleteIconCssClass);

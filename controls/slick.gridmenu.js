@@ -22,6 +22,9 @@
  *      contentMinWidth: 0,							            // defaults to 0 (auto), minimum width of grid menu content (command, column list)
  *      marginBottom: 15,                           // defaults to 15, margin to use at the bottom of the grid when using max-height (default)
  *      resizeOnShowHeaderRow: false,               // false by default
+ *      showButton: true,                           // true by default - it allows the user to control if the
+ *                                                          // default gridMenu button (located on the top right corner by default CSS)
+ *                                                          // should be created or omitted
  *      useClickToRepositionMenu: true,             // true by default
  *
  *      // the last 2 checkboxes titles
@@ -139,6 +142,7 @@
     var $menu;
     var columnCheckboxes;
     var _defaults = {
+      showButton: true,
       hideForceFitButton: false,
       hideSyncResizeButton: false,
       forceFitTitle: "Force fit columns",
@@ -192,14 +196,19 @@
         $('.' + _gridUid + '.slick-headerrow').attr('style', 'width: calc(100% - ' + gridMenuWidth + 'px)');
       }
 
-      $button = $('<button class="slick-gridmenu-button"/>');
-      if (_options.gridMenu && _options.gridMenu.iconCssClass) {
-        $button.addClass(_options.gridMenu.iconCssClass);
-      } else {
-        var iconImage = (_options.gridMenu && _options.gridMenu.iconImage) ? _options.gridMenu.iconImage : "../images/drag-handle.png";
-        $('<img src="' + iconImage + '"/>').appendTo($button);
+      var showButton = (_options.gridMenu && _options.gridMenu.showButton !== undefined) ? _options.gridMenu.showButton : _defaults.showButton;
+      if (showButton) {
+        $button = $('<button class="slick-gridmenu-button"/>');
+        if (_options.gridMenu && _options.gridMenu.iconCssClass) {
+          $button.addClass(_options.gridMenu.iconCssClass);
+        } else {
+          var iconImage = (_options.gridMenu && _options.gridMenu.iconImage) ? _options.gridMenu.iconImage : "../images/drag-handle.png";
+          $('<img src="' + iconImage + '"/>').appendTo($button);
+        }
+        $button.insertBefore($header);
+        // add on click handler for the Grid Menu itself
+        $button.on("click." + _gridUid, showGridMenu);
       }
-      $button.insertBefore($header);
 
       $menu = $('<div class="slick-gridmenu ' + _gridUid + '" style="display: none" />').appendTo(document.body);
       $('<button type="button" class="close" data-dismiss="slick-gridmenu" aria-label="Close"><span class="close" aria-hidden="true">&times;</span></button>').appendTo($menu);
@@ -216,8 +225,6 @@
       // destroy the picker if user leaves the page
       $(window).on("beforeunload", destroy);
 
-      // add on click handler for the Grid Menu itself
-      $button.on("click." + _gridUid, showGridMenu);
     }
 
     /** Destroy the plugin by unsubscribing every events & also delete the menu DOM elements */
@@ -311,7 +318,7 @@
         }
 
         if (item.hidden) {
-          $li.addClass("slick-header-menuitem-hidden");
+          $li.addClass("slick-gridmenu-item-hidden");
         }
 
         if (item.cssClass) {
@@ -503,12 +510,6 @@
         return;
       }
 
-      // does the user want to leave open the Grid Menu after executing a command?
-      var leaveOpen = (_options.gridMenu && _options.gridMenu.leaveOpen) ? true : false;
-      if (!leaveOpen) {
-        hideMenu(e);
-      }
-
       if (command != null && command != '') {
         var callbackArgs = {
           "grid": _grid,
@@ -523,6 +524,12 @@
         if (typeof item.action === "function") {
           item.action.call(this, e, callbackArgs);
         }
+      }
+
+      // does the user want to leave open the Grid Menu after executing a command?
+      var leaveOpen = (_options.gridMenu && _options.gridMenu.leaveOpen) ? true : false;
+      if (!leaveOpen && !e.isDefaultPrevented()) {
+        hideMenu(e);
       }
 
       // Stop propagation so that it doesn't register as a header click event.
