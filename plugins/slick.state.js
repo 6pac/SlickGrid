@@ -51,6 +51,11 @@
       _store = options.storage,
       onStateChanged = new Slick.Event();
 
+    var userData = {
+      state: null,
+      current: null
+    };
+
     function init(grid) {
       _grid = grid;
       _cid = grid.cid || options.cid;
@@ -70,7 +75,7 @@
       save();
     }
 
-    function save(userData) {
+    function save() {
       if (_cid && _store) {
         var state = {
           sortcols: getSortColumns(),
@@ -79,9 +84,9 @@
           userData: null
         };
 
-        if (userData !== undefined && !(userData instanceof jQuery.Event))
+        if (userData.state !== userData.current)
         {
-          state.userData = userData;
+          state.userData = userData.current;
         }
 
         onStateChanged.notify(state);
@@ -126,10 +131,42 @@
 
                 _grid.setColumns(state.columns);
               }
+              setUserData(state.userData, true);
             }
             dfd.resolve(state);
           }, dfd.reject);
       });
+    }
+
+    function setUserData(data, comesFromState)
+    {
+      if (typeof comesFromState === typeof undefined)
+      {
+        comesFromState = false;
+      }
+
+      if (comesFromState)
+      {
+        userData.state = data;
+      }
+
+      userData.current = data;
+
+      return this;
+    }
+
+    function getUserData(){
+      return userData.current;
+    }
+
+    function getStateUserData(){
+      return userData.state;
+    }
+
+    function resetUserData(){
+      userData.current = userData.state;
+
+      return this;
     }
 
     function getColumns() {
@@ -156,6 +193,10 @@
       "init": init,
       "destroy": destroy,
       "save": save,
+      "setUserData": setUserData,
+      "resetUserData": resetUserData,
+      "getUserData": getUserData,
+      "getStateUserData": getStateUserData,
       "restore": restore,
       "onStateChanged": onStateChanged,
       "reset": reset
