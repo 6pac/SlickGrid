@@ -316,14 +316,14 @@ if (typeof Slick === "undefined") {
         throw new Error("SlickGrid requires a valid container, " + container + " does not exist in the DOM.");
       }
 
-      if (!options.suppressCssChangesOnHiddenInit) { cacheCssForHiddenInit(); }
-
       // calculate these only once and share between grid instances
       maxSupportedCssHeight = maxSupportedCssHeight || getMaxSupportedCssHeight();
 
       options = $.extend({}, defaults, options);
       validateAndEnforceOptions();
       columnDefaults.width = options.defaultColumnWidth;
+
+      if (!options.suppressCssChangesOnHiddenInit) { cacheCssForHiddenInit(); }
 
       treeColumns = new Slick.TreeColumns(columns);
       columns = treeColumns.extractColumns();
@@ -1478,7 +1478,7 @@ if (typeof Slick === "undefined") {
       var positionValid = limit.start <= currentPosition && currentPosition <= limit.end;
 
       return {
-    	limit: limit,
+      limit: limit,
         valid: positionValid,
         message: positionValid? '': 'Column "'.concat($item.text(), '" can be reordered only within the "', limit.group.name, '" group!')
       };
@@ -1509,7 +1509,7 @@ if (typeof Slick === "undefined") {
           ui.placeholder.width(ui.helper.outerWidth() - headerColumnWidthDiff);
           canDragScroll = !hasFrozenColumns() ||
             (ui.placeholder.offset().left + ui.placeholder.width()) > $viewportScrollContainerX.offset().left;
-	      $(ui.helper).addClass("slick-header-column-active");
+        $(ui.helper).addClass("slick-header-column-active");
         },
         beforeStop: function (e, ui) {
           $(ui.helper).removeClass("slick-header-column-active");
@@ -1568,20 +1568,20 @@ if (typeof Slick === "undefined") {
     }
 
     function getImpactedColumns( limit ) {
-    	var impactedColumns = [];
+      var impactedColumns = [];
 
-    	if( limit ) {
+      if( limit ) {
 
-	   		for( var i = limit.start; i <= limit.end; i++ ) {
-	   			impactedColumns.push( columns[i] );
-	   		}
-    	}
-    	else {
+        for( var i = limit.start; i <= limit.end; i++ ) {
+          impactedColumns.push( columns[i] );
+        }
+      }
+      else {
 
-    		impactedColumns = columns;
-    	}
+        impactedColumns = columns;
+      }
 
-   		return impactedColumns;
+      return impactedColumns;
     }
 
     function setupColumnResize() {
@@ -3898,7 +3898,7 @@ if (typeof Slick === "undefined") {
           queuePostProcessedCellForCleanup(cellNode, cellToRemove, row);
         } else {
           cellNode.parentElement.removeChild(cellNode);
-        }       
+        }
 
         delete cacheEntry.cellColSpans[cellToRemove];
         delete cacheEntry.cellNodesByColumnIdx[cellToRemove];
@@ -4124,23 +4124,23 @@ if (typeof Slick === "undefined") {
       // add new rows & missing cells in existing rows
       if (lastRenderedScrollLeft != scrollLeft) {
 
-    	  if ( hasFrozenRows ) {
+        if ( hasFrozenRows ) {
 
-    		  var renderedFrozenRows = jQuery.extend(true, {}, rendered);
+          var renderedFrozenRows = jQuery.extend(true, {}, rendered);
 
-    		  if (options.frozenBottom) {
+          if (options.frozenBottom) {
 
-    			 renderedFrozenRows.top=actualFrozenRow;
-    			 renderedFrozenRows.bottom=getDataLength();
-    		  }
-    		  else {
+           renderedFrozenRows.top=actualFrozenRow;
+           renderedFrozenRows.bottom=getDataLength();
+          }
+          else {
 
-	             renderedFrozenRows.top=0;
-	             renderedFrozenRows.bottom=options.frozenRow;
-    		  }
+               renderedFrozenRows.top=0;
+               renderedFrozenRows.bottom=options.frozenRow;
+          }
 
-    		  cleanUpAndRenderCells(renderedFrozenRows);
-    	  }
+          cleanUpAndRenderCells(renderedFrozenRows);
+        }
 
           cleanUpAndRenderCells(rendered);
       }
@@ -4150,16 +4150,16 @@ if (typeof Slick === "undefined") {
 
       // Render frozen rows
       if (hasFrozenRows) {
-	      if (options.frozenBottom) {
-	        renderRows({
-	          top: actualFrozenRow, bottom: getDataLength() - 1, leftPx: rendered.leftPx, rightPx: rendered.rightPx
-	        });
-	      }
-	      else {
-	          renderRows({
-	           top: 0, bottom: options.frozenRow - 1, leftPx: rendered.leftPx, rightPx: rendered.rightPx
-	          });
-	        }
+        if (options.frozenBottom) {
+          renderRows({
+            top: actualFrozenRow, bottom: getDataLength() - 1, leftPx: rendered.leftPx, rightPx: rendered.rightPx
+          });
+        }
+        else {
+            renderRows({
+             top: 0, bottom: options.frozenRow - 1, leftPx: rendered.leftPx, rightPx: rendered.rightPx
+            });
+          }
       }
 
       postProcessFromRow = visible.top;
@@ -4640,7 +4640,7 @@ if (typeof Slick === "undefined") {
         // if this click resulted in some cell child node getting focus,
         // don't steal it back - keyboard events will still bubble up
         // IE9+ seems to default DIVs to tabIndex=0 instead of -1, so check for cell clicks directly.
-	if (e.target != document.activeElement || $(e.target).hasClass("slick-cell")) {
+  if (e.target != document.activeElement || $(e.target).hasClass("slick-cell")) {
           var selection = getTextSelection(); //store text-selection and restore it after
           setFocus();
           setTextSelection(selection);
@@ -5207,7 +5207,7 @@ if (typeof Slick === "undefined") {
     function getActiveCellNode() {
       return activeCellNode;
     }
-	  
+
     //This get/set methods are used for keeping text-selection. These don't consider IE because they don't loose text-selection.
     //Fix for firefox selection. See https://github.com/mleibman/SlickGrid/pull/746/files
     function getTextSelection(){
@@ -5230,32 +5230,32 @@ if (typeof Slick === "undefined") {
     }
 
     function scrollRowIntoView(row, doPaging) {
-	    if (!hasFrozenRows ||
-	  	  ( !options.frozenBottom && row > actualFrozenRow - 1 ) ||
-	  	  ( options.frozenBottom && row < actualFrozenRow - 1 ) ) {
+      if (!hasFrozenRows ||
+        ( !options.frozenBottom && row > actualFrozenRow - 1 ) ||
+        ( options.frozenBottom && row < actualFrozenRow - 1 ) ) {
 
-	      var viewportScrollH = $viewportScrollContainerY.height();
+        var viewportScrollH = $viewportScrollContainerY.height();
 
-	      // if frozen row on top
-	      // subtract number of frozen row
-	      var rowNumber = ( hasFrozenRows && !options.frozenBottom ? row - options.frozenRow : row );
+        // if frozen row on top
+        // subtract number of frozen row
+        var rowNumber = ( hasFrozenRows && !options.frozenBottom ? row - options.frozenRow : row );
 
-	      var rowAtTop = rowNumber * options.rowHeight;
-	      var rowAtBottom = (rowNumber + 1) * options.rowHeight
-	        - viewportScrollH
-	        + (viewportHasHScroll ? scrollbarDimensions.height : 0);
+        var rowAtTop = rowNumber * options.rowHeight;
+        var rowAtBottom = (rowNumber + 1) * options.rowHeight
+          - viewportScrollH
+          + (viewportHasHScroll ? scrollbarDimensions.height : 0);
 
-	      // need to page down?
-	      if ((rowNumber + 1) * options.rowHeight > scrollTop + viewportScrollH + offset) {
-	        scrollTo(doPaging ? rowAtTop : rowAtBottom);
-	        render();
-	      }
-	      // or page up?
-	      else if (rowNumber * options.rowHeight < scrollTop + offset) {
-	        scrollTo(doPaging ? rowAtBottom : rowAtTop);
-	        render();
-	      }
-	    }
+        // need to page down?
+        if ((rowNumber + 1) * options.rowHeight > scrollTop + viewportScrollH + offset) {
+          scrollTo(doPaging ? rowAtTop : rowAtBottom);
+          render();
+        }
+        // or page up?
+        else if (rowNumber * options.rowHeight < scrollTop + offset) {
+          scrollTo(doPaging ? rowAtBottom : rowAtTop);
+          render();
+        }
+      }
     }
 
     function scrollRowToTop(row) {
