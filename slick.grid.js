@@ -247,13 +247,6 @@ if (typeof Slick === "undefined") {
     var counter_rows_rendered = 0;
     var counter_rows_removed = 0;
 
-    // These two variables work around a bug with inertial scrolling in Webkit/Blink on Mac.
-    // See http://crbug.com/312427.
-    var rowNodeFromLastMouseWheelEvent;  // this node must not be deleted while inertial scrolling
-    var zombieRowNodeFromLastMouseWheelEvent;  // node that was hidden instead of getting deleted
-    var zombieRowCacheFromLastMouseWheelEvent;  // row cache for above node
-    var zombieRowPostProcessedFromLastMouseWheelEvent;  // post processing references for above node
-
     var $paneHeaderL;
     var $paneHeaderR;
     var $paneTopL;
@@ -323,14 +316,14 @@ if (typeof Slick === "undefined") {
         throw new Error("SlickGrid requires a valid container, " + container + " does not exist in the DOM.");
       }
 
-      if (!options.suppressCssChangesOnHiddenInit) { cacheCssForHiddenInit(); }
-
       // calculate these only once and share between grid instances
       maxSupportedCssHeight = maxSupportedCssHeight || getMaxSupportedCssHeight();
 
       options = $.extend({}, defaults, options);
       validateAndEnforceOptions();
       columnDefaults.width = options.defaultColumnWidth;
+
+      if (!options.suppressCssChangesOnHiddenInit) { cacheCssForHiddenInit(); }
 
       treeColumns = new Slick.TreeColumns(columns);
       columns = treeColumns.extractColumns();
@@ -1355,6 +1348,7 @@ if (typeof Slick === "undefined") {
             return;
           }
 
+          var previousSortColumns = $.extend(true, [], sortColumns);
           var sortColumn = null;
           var i = 0;
           for (; i < sortColumns.length; i++) {
@@ -1400,22 +1394,28 @@ if (typeof Slick === "undefined") {
               }
           }
 
-          setSortColumns(sortColumns);
-
+          var onSortArgs;
           if (!options.multiColumnSort) {
-            trigger(self.onSort, {
+            onSortArgs = {
               multiColumnSort: false,
+              previousSortColumns: previousSortColumns,
               columnId: (sortColumns.length > 0 ? column.id : null),
               sortCol: (sortColumns.length > 0 ? column : null),
               sortAsc: (sortColumns.length > 0 ? sortColumns[0].sortAsc : true)
-            }, e);
+            };
           } else {
-            trigger(self.onSort, {
+            onSortArgs = {
               multiColumnSort: true,
+              previousSortColumns: previousSortColumns,
               sortCols: $.map(sortColumns, function(col) {
                 return {columnId: columns[getColumnIndex(col.columnId)].id, sortCol: columns[getColumnIndex(col.columnId)], sortAsc: col.sortAsc };
               })
-            }, e);
+            };
+          }
+
+          if (trigger(self.onBeforeSort, onSortArgs, e) !== false) {
+            setSortColumns(sortColumns);
+            trigger(self.onSort, onSortArgs, e);
           }
         }
       });
@@ -2943,7 +2943,6 @@ if (typeof Slick === "undefined") {
       if (!suppressSetOverflow) {
         setOverflow();
       }
-      zombieRowNodeFromLastMouseWheelEvent = null;
 
       if (!suppressColumnSet) {
         setColumns(treeColumns.extractColumns());
@@ -3408,7 +3407,7 @@ if (typeof Slick === "undefined") {
         groupId: postProcessgroupId,
         node: cacheEntry.rowNode
       });
-      $(cacheEntry.rowNode).detach();
+      cacheEntry.rowNode.detach();
     }
 
     function queuePostProcessedCellForCleanup(cellnode, columnIdx, rowIdx) {
@@ -3428,18 +3427,12 @@ if (typeof Slick === "undefined") {
         return;
       }
 
-      if (rowNodeFromLastMouseWheelEvent == cacheEntry.rowNode[0]
-        || (hasFrozenColumns() && rowNodeFromLastMouseWheelEvent == cacheEntry.rowNode[1])) {
-
-        cacheEntry.rowNode.hide();
-
-        zombieRowNodeFromLastMouseWheelEvent = cacheEntry.rowNode;
+      if (options.enableAsyncPostRenderCleanup && postProcessedRows[row]) {
+        queuePostProcessedRowForCleanup(cacheEntry, postProcessedRows[row], row);
       } else {
-
         cacheEntry.rowNode.each(function() {
           this.parentElement.removeChild(this);
         });
-
       }
 
       delete rowsCache[row];
@@ -3897,9 +3890,15 @@ if (typeof Slick === "undefined") {
         }
       }
 
-      var cellToRemove;
+      var cellToRemove, cellNode;
       while ((cellToRemove = cellsToRemove.pop()) != null) {
-        cacheEntry.cellNodesByColumnIdx[cellToRemove][0].parentElement.removeChild(cacheEntry.cellNodesByColumnIdx[cellToRemove][0]);
+        cellNode = cacheEntry.cellNodesByColumnIdx[cellToRemove][0];
+
+        if (options.enableAsyncPostRenderCleanup && postProcessedRows[row] && postProcessedRows[row][cellToRemove]) {
+          queuePostProcessedCellForCleanup(cellNode, cellToRemove, row);
+        } else {
+          cellNode.parentElement.removeChild(cellNode);
+        }       
 
         delete cacheEntry.cellColSpans[cellToRemove];
         delete cacheEntry.cellNodesByColumnIdx[cellToRemove];
@@ -4051,23 +4050,23 @@ if (typeof Slick === "undefined") {
                 rowsCache[rows[i]].rowNode = $()
                     .add($(x.firstChild))
                     .add($(xRight.firstChild));
-                $canvasBottomL.append(x.firstChild);
-                $canvasBottomR.append(xRight.firstChild);
+                $canvasBottomL[0].append(x.firstChild);
+                $canvasBottomR[0].append(xRight.firstChild);
             } else {
                 rowsCache[rows[i]].rowNode = $()
                     .add($(x.firstChild));
-                $canvasBottomL.append($(x.firstChild));
+                $canvasBottomL[0].append($(x.firstChild));
             }
         } else if (hasFrozenColumns()) {
             rowsCache[rows[i]].rowNode = $()
                 .add($(x.firstChild))
                 .add($(xRight.firstChild));
-            $canvasTopL.append(x.firstChild);
-            $canvasTopR.append(xRight.firstChild);
+            $canvasTopL[0].append(x.firstChild);
+            $canvasTopR[0].append(xRight.firstChild);
         } else {
             rowsCache[rows[i]].rowNode = $()
                 .add($(x.firstChild));
-            $canvasTopL.append(x.firstChild);
+            $canvasTopL[0].append(x.firstChild);
         }
       }
 
@@ -4508,23 +4507,6 @@ if (typeof Slick === "undefined") {
     // Interactivity
 
     function handleMouseWheel(e, delta, deltaX, deltaY) {
-      var $rowNode = $(e.target).closest(".slick-row");
-      var rowNode = $rowNode[0];
-      if (rowNode != rowNodeFromLastMouseWheelEvent) {
-
-        var $gridCanvas = $rowNode.parents('.grid-canvas');
-        var left = $gridCanvas.hasClass('grid-canvas-left');
-
-        if (zombieRowNodeFromLastMouseWheelEvent && zombieRowNodeFromLastMouseWheelEvent[left? 0:1] != rowNode) {
-          var zombieRow = zombieRowNodeFromLastMouseWheelEvent[left || zombieRowNodeFromLastMouseWheelEvent.length == 1? 0:1];
-          zombieRow.parentElement.removeChild(zombieRow);
-
-          zombieRowNodeFromLastMouseWheelEvent = null;
-        }
-
-        rowNodeFromLastMouseWheelEvent = rowNode;
-      }
-
       scrollTop = Math.max(0, $viewportScrollContainerY[0].scrollTop - (deltaY * options.rowHeight));
       scrollLeft = $viewportScrollContainerX[0].scrollLeft + (deltaX * 10);
       var handled = _handleScroll(true);
@@ -4658,8 +4640,10 @@ if (typeof Slick === "undefined") {
         // if this click resulted in some cell child node getting focus,
         // don't steal it back - keyboard events will still bubble up
         // IE9+ seems to default DIVs to tabIndex=0 instead of -1, so check for cell clicks directly.
-        if (e.target != document.activeElement || $(e.target).hasClass("slick-cell")) {
+	if (e.target != document.activeElement || $(e.target).hasClass("slick-cell")) {
+          var selection = getTextSelection(); //store text-selection and restore it after
           setFocus();
+          setTextSelection(selection);
         }
       }
 
@@ -4934,7 +4918,7 @@ if (typeof Slick === "undefined") {
         makeActiveCellNormal();
         $(activeCellNode).removeClass("active");
         if (rowsCache[activeRow]) {
-          $(rowsCache[activeRow].rowNode).removeClass("active");
+          rowsCache[activeRow].rowNode.removeClass("active");
         }
       }
 
@@ -4966,7 +4950,7 @@ if (typeof Slick === "undefined") {
         if (options.showCellSelection) {
           $activeCellNode.addClass("active");
           if (rowsCache[activeRow]) {
-            $(rowsCache[activeRow].rowNode).addClass("active");
+            rowsCache[activeRow].rowNode.addClass("active");
           }
         }
 
@@ -5222,6 +5206,27 @@ if (typeof Slick === "undefined") {
 
     function getActiveCellNode() {
       return activeCellNode;
+    }
+	  
+    //This get/set methods are used for keeping text-selection. These don't consider IE because they don't loose text-selection.
+    //Fix for firefox selection. See https://github.com/mleibman/SlickGrid/pull/746/files
+    function getTextSelection(){
+      var textSelection = null;
+      if (window.getSelection) {
+        var selection = window.getSelection();
+        if (selection.rangeCount > 0) {
+          textSelection = selection.getRangeAt(0);
+        }
+      }
+      return textSelection;
+    }
+
+    function setTextSelection(selection){
+      if (window.getSelection && selection) {
+        var target = window.getSelection();
+        target.removeAllRanges();
+        target.addRange(selection);
+      }
     }
 
     function scrollRowIntoView(row, doPaging) {
@@ -5916,10 +5921,11 @@ if (typeof Slick === "undefined") {
     // Public API
 
     $.extend(this, {
-      "slickGridVersion": "2.4.38",
+      "slickGridVersion": "2.4.40",
 
       // Events
       "onScroll": new Slick.Event(),
+      "onBeforeSort": new Slick.Event(),
       "onSort": new Slick.Event(),
       "onHeaderMouseEnter": new Slick.Event(),
       "onHeaderMouseLeave": new Slick.Event(),
