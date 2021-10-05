@@ -2480,7 +2480,7 @@ if (typeof Slick === "undefined") {
       if (autoSize.valueFilterMode === Slick.ValueFilterMode.GetLongestText) {
         // get greatest abs value in data
         var tempVal, maxLen = 0, maxIndex = 0;
-        if (row.length) {
+        if (rows.length) {
           for (i = 0, ii = rows.length; i < ii; i++) {
             tempVal = rows[i][columnDef.field];
             if ((tempVal || '').length > maxLen) { maxLen = tempVal.length; maxIndex = i; }
