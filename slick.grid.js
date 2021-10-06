@@ -2427,6 +2427,7 @@ if (typeof Slick === "undefined") {
       // select rows to evaluate using rowSelectionMode and rowSelectionCount
       var rows = getData();
       if (rows.getItems) { rows = rows.getItems(); }
+      if (!rows.length) { return headerWidth; }
 
       var rowSelectionMode = (isInit ? autoSize.rowSelectionModeOnInit : undefined) || autoSize.rowSelectionMode;
 
@@ -2480,15 +2481,12 @@ if (typeof Slick === "undefined") {
       if (autoSize.valueFilterMode === Slick.ValueFilterMode.GetLongestText) {
         // get greatest abs value in data
         var tempVal, maxLen = 0, maxIndex = 0;
-        if (rows.length) {
-          for (i = 0, ii = rows.length; i < ii; i++) {
-            tempVal = rows[i][columnDef.field];
-            if ((tempVal || '').length > maxLen) { maxLen = tempVal.length; maxIndex = i; }
-          }
-          // now substitute a 'c' for all characters
-          tempVal = rows[maxIndex][columnDef.field];
+        for (i = 0, ii = rows.length; i < ii; i++) {
+          tempVal = rows[i][columnDef.field];
+          if ((tempVal || '').length > maxLen) { maxLen = tempVal.length; maxIndex = i; }
         }
-
+        // now substitute a 'c' for all characters
+        tempVal = rows[maxIndex][columnDef.field];
         rows = [ tempVal ];
       }
 
