@@ -1,0 +1,25 @@
+.slick-custom-tooltip {
+  position: absolute;
+  background-color: #ffffff;
+  border: 2px solid #acacac;
+  border-radius: 4px;
+  color: inherit;
+  padding: 7px;
+  height: auto;
+  width: auto;
+  z-index: 10;
+}
+
+/* show arrow below tooltip with same color as the border color */
+.slick-custom-tooltip::after {
+  content: "";
+  height: 0;
+  position: absolute;
+  width: 0;
+  border-left: 10px solid transparent;
+  border-right: 10px solid transparent;
+  border-top: 7px solid #acacac;
+  margin-left: -20px;
+  bottom: -7px;
+  left: 25px;
+}

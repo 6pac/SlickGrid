@@ -1,0 +1,173 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <title>SlickGrid example 3: Editing</title>
+  <link rel="stylesheet" href="../slick.grid.css" type="text/css" />
+  <link rel="stylesheet" href="../css/smoothness/jquery-ui.css" type="text/css" />
+  <link rel="stylesheet" href="../plugins/slick.customtooltip.css" type="text/css" />
+  <link rel="stylesheet" href="examples.css" type="text/css" />
+  <style>
+    .cell-title {
+      font-weight: bold;
+    }
+
+    .cell-effort-driven {
+      text-align: center;
+    }
+
+    .tooltip-2cols-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr;
+      column-gap: 5px;
+      line-height: 20px;
+    }
+  </style>
+</head>
+
+<body>
+  <div style="position:relative">
+    <div style="width:600px;">
+      <div id="myGrid" style="width:100%;height:500px;"></div>
+    </div>
+
+    <div class="options-panel">
+      <h2>Demonstrates:</h2>
+      <ul>
+        <li>Custom Tooltip Plugin</li>
+        <li>First column shows a tooltip with a formatter which itself has a formatter displaying percent complete bar
+        </li>
+        <li>Every other columns will show other info of the item data context</li>
+      </ul>
+
+      <h2>Options:</h2>
+      <button onclick="grid.setOptions({autoEdit:true})">Auto-edit ON</button>
+      &nbsp;
+      <button onclick="grid.setOptions({autoEdit:false})">Auto-edit OFF</button>
+      <h2>View Source:</h2>
+      <ul>
+        <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-plugin-custom-tooltip.html"
+            target="_sourcewindow"> View the source for this example on Github</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <script src="../lib/firebugx.js"></script>
+
+  <script src="../lib/jquery-1.12.4.min.js"></script>
+  <script src="../lib/jquery-ui.min.js"></script>
+  <script src="../lib/jquery.event.drag-2.3.0.js"></script>
+
+  <script src="../slick.core.js"></script>
+  <script src="../plugins/slick.checkboxselectcolumn.js"></script>
+  <script src="../plugins/slick.cellrangedecorator.js"></script>
+  <script src="../plugins/slick.cellrangeselector.js"></script>
+  <script src="../plugins/slick.cellselectionmodel.js"></script>
+  <script src="../plugins/slick.rowselectionmodel.js"></script>
+  <script src="../plugins/slick.customtooltip.js"></script>
+  <script src="../slick.formatters.js"></script>
+  <script src="../slick.editors.js"></script>
+  <script src="../slick.grid.js"></script>
+
+  <script>
+    function requiredFieldValidator(value) {
+      if (value == null || value == undefined || !value.length) {
+        return { valid: false, msg: "This is a required field" };
+      } else {
+        return { valid: true, msg: null };
+      }
+    }
+
+    var grid;
+    var data = [];
+    var columns = [
+      {
+        id: "title", name: "Title", field: "title", width: 70, cssClass: "cell-title",
+        editor: Slick.Editors.Text, validator: requiredFieldValidator,
+        customTooltip: {
+          formatter: tooltipTaskFormatter,
+          usabilityOverride: (args) => !!(args.dataContext?.id % 2) // show it only every second row
+        },
+      },
+      { id: "desc", name: "Description", field: "description", width: 100, editor: Slick.Editors.LongText },
+      { id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Text },
+      { id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete },
+      { id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Date },
+      { id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Date },
+      { id: "effort-driven", name: "Effort Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, editor: Slick.Editors.Checkbox }
+    ];
+    var gridOptions = {
+      editable: true,
+      enableAddRow: true,
+      enableCellNavigation: true,
+      asyncEditorLoading: false,
+      autoEdit: false,
+      multiSelect: true,
+      // Custom Tooltip options can be defined in a Column or Grid Options or a mixed of both (first options found wins)
+      enableCustomTooltip: true,
+      customTooltip: {
+        formatter: this.tooltipFormatter.bind(this),
+        usabilityOverride: (args) => (args.cell !== 0 && args.cell !== args.grid.getColumns().length - 1), // don't show on first/last columns
+      },
+    };
+
+    function tooltipFormatter(row, cell, value, column, dataContext) {
+      const tooltipTitle = 'Custom Tooltip';
+      return '<div class="color-sf-primary-dark" style="font-weight: bold">' + tooltipTitle + '</div>'
+        + '<div class="tooltip-2cols-row"><div>Id:</div> <div>' + dataContext.id + '</div></div>'
+        + '<div class="tooltip-2cols-row"><div>Title:</div> <div>' + dataContext.title + '</div></div>'
+        + '<div class="tooltip-2cols-row"><div>Completion:</div> <div>' + dataContext.percentComplete + '%</div>'
+        + '</div>';
+    }
+
+    function tooltipTaskFormatter(row, cell, value, column, dataContext, grid) {
+      const tooltipTitle = 'Task ' + dataContext.id + ' - Tooltip';
+
+      // use a 2nd Formatter to get the percent completion
+      const completionBar = Slick.Formatters.PercentCompleteBar(row, cell, dataContext.percentComplete, column, dataContext, grid);
+      const out = '<div class="color-se-danger" style="font-weight: bold">' + tooltipTitle + '</div>'
+        + '<div class="tooltip-2cols-row"><div>Completion:</div> <div>' + completionBar + '</div></div>';
+      return out;
+    }
+
+    $(function () {
+      for (var i = 0; i < 500; i++) {
+        var d = (data[i] = {});
+
+        d["id"] = i;
+        d["title"] = "Task " + i;
+        d["description"] = "This is a sample task description.\n  It can be multiline";
+        d["duration"] = "5 days";
+        d["percentComplete"] = Math.round(Math.random() * 100);
+        d["start"] = "01/01/2009";
+        d["finish"] = "01/05/2009";
+        d["effortDriven"] = (i % 5 == 0);
+      }
+
+      var checkboxSelector = new Slick.CheckboxSelectColumn({
+        cssClass: "slick-cell-checkboxsel"
+      });
+      columns.unshift(checkboxSelector.getColumnDefinition());
+      grid = new Slick.Grid("#myGrid", data, columns, gridOptions);
+      grid.setSelectionModel(new Slick.RowSelectionModel({ selectActiveRow: false }));
+      grid.registerPlugin(checkboxSelector);
+
+      var customTooltipPlugin = new Slick.Plugins.CustomTooltip();
+      grid.setSelectionModel(new Slick.CellSelectionModel());
+      grid.registerPlugin(customTooltipPlugin);
+
+      grid.onAddNewRow.subscribe(function (e, args) {
+        var item = args.item;
+        grid.invalidateRow(data.length);
+        data.push(item);
+        grid.updateRowCount();
+        grid.render();
+      });
+    })
+  </script>
+</body>
+
+</html>
