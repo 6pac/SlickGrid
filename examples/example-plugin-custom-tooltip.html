@@ -38,15 +38,17 @@
       <h2>Demonstrates:</h2>
       <ul>
         <li>Custom Tooltip Plugin</li>
-        <li>First column shows a tooltip with a formatter which itself has a formatter displaying percent complete bar
+        <li>First column shows an async tooltip (could be an API with Promise), it demos a formatter which itself has a
+          formatter displaying percent complete bar
         </li>
         <li>Every other columns will show other info of the item data context</li>
+        <li>Tooltip gets auto-position depending on its available space</li>
       </ul>
 
       <h2>Options:</h2>
-      <button onclick="grid.setOptions({autoEdit:true})">Auto-edit ON</button>
+      <button onclick="customTooltipPlugin.setOptions({hideArrow:true})">Hide Tooltip Arrow ON</button>
       &nbsp;
-      <button onclick="grid.setOptions({autoEdit:false})">Auto-edit OFF</button>
+      <button onclick="customTooltipPlugin.setOptions({hideArrow:false})">Hide Tooltip Arrow OFF</button>
       <h2>View Source:</h2>
       <ul>
         <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-plugin-custom-tooltip.html"
@@ -83,13 +85,27 @@
 
     var grid;
     var data = [];
+    var customTooltipPlugin;
     var columns = [
       {
         id: "title", name: "Title", field: "title", width: 70, cssClass: "cell-title",
         editor: Slick.Editors.Text, validator: requiredFieldValidator,
         customTooltip: {
-          formatter: tooltipTaskFormatter,
-          usabilityOverride: (args) => !!(args.dataContext?.id % 2) // show it only every second row
+          // you can use the Custom Tooltip in 2 ways (synchronous or asynchronous)
+          // example 1 (sync):
+          // formatter: this.tooltipTaskFormatter.bind(this),
+
+          // example 2 (async):
+          // when using async, the `formatter` will contain the loading spinner
+          // you will need to provide an `asyncPost` function returning a Promise and also `asyncPostFormatter` formatter to display the result once the Promise resolves
+          formatter: () => `<div>loading...</div>`,
+          asyncPostProcess: () => new Promise(resolve => {
+            setTimeout(() => resolve({ ratio: Math.random() * 10 / 10, lifespan: Math.random() * 100 }), 500);
+          }),
+          asyncPostFormatter: this.tooltipTaskFormatter.bind(this),
+
+          // optional conditional usability callback
+          // usabilityOverride: (args) => !!(args.dataContext?.id % 2) // show it only every second row
         },
       },
       { id: "desc", name: "Description", field: "description", width: 100, editor: Slick.Editors.LongText },
@@ -107,10 +123,10 @@
       autoEdit: false,
       multiSelect: true,
       // Custom Tooltip options can be defined in a Column or Grid Options or a mixed of both (first options found wins)
-      enableCustomTooltip: true,
       customTooltip: {
-        formatter: this.tooltipFormatter.bind(this),
-        usabilityOverride: (args) => (args.cell !== 0 && args.cell !== args.grid.getColumns().length - 1), // don't show on first/last columns
+        formatter: tooltipFormatter,
+        usabilityOverride: (args) => (args.cell !== 0), // don't show on first column
+        // hideArrow: true, // defaults to False
       },
     };
 
@@ -127,9 +143,12 @@
       const tooltipTitle = 'Task ' + dataContext.id + ' - Tooltip';
 
       // use a 2nd Formatter to get the percent completion
+      // any p                  ies provided from the `asyncPost` will end up in the `__params` property (unless a different prop name is provided via `asyncParamsPropName`)
       const completionBar = Slick.Formatters.PercentCompleteBar(row, cell, dataContext.percentComplete, column, dataContext, grid);
       const out = '<div class="color-se-danger" style="font-weight: bold">' + tooltipTitle + '</div>'
-        + '<div class="tooltip-2cols-row"><div>Completion:</div> <div>' + completionBar + '</div></div>';
+        + '<div class="tooltip-2cols-row"><div>Completion:</div> <div>' + completionBar + '</div></div>'
+        + '<div class="tooltip-2cols-row"><div>Lifespan:</div> <div>' + dataContext.__params.lifespan.toFixed(2) + '</div></div>'
+        + '<div class="tooltip-2cols-row"><div>Ratio:</div> <div>'+dataContext.__params.ratio.toFixed(2) + '</div></div>';
       return out;
     }
 
@@ -155,7 +174,7 @@
       grid.setSelectionModel(new Slick.RowSelectionModel({ selectActiveRow: false }));
       grid.registerPlugin(checkboxSelector);
 
-      var customTooltipPlugin = new Slick.Plugins.CustomTooltip();
+       customTooltipPlugin = new Slick.Plugins.CustomTooltip();
       grid.setSelectionModel(new Slick.CellSelectionModel());
       grid.registerPlugin(customTooltipPlugin);
 
