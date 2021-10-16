@@ -65,17 +65,18 @@
       hideArrow: false,
     };
     var _eventHandler = new Slick.EventHandler();
+    var _cellTooltipOptions = {};
     var _options;
 
     /**
      * Initialize plugin.
      */
     function init(grid) {
-      _options = $.extend(true, {}, _defaults, options);
       _grid = grid;
       var _data = grid && grid.getData() || [];
       _dataView = Array.isArray(_data) ? null : _data;
       _gridOptions = grid.getOptions() || {};
+      _options = $.extend(true, {}, _defaults, _gridOptions.customTooltip, options);
       _eventHandler
         .subscribe(grid.onMouseEnter, handleOnMouseEnter)
         .subscribe(grid.onMouseLeave, hideTooltip);
@@ -104,7 +105,7 @@
           var item = _dataView ? _dataView.getItem(cell.row) : _grid.getDataItem(cell.row);
           var columnDef = _grid.getColumns()[cell.cell];
           if (item && columnDef) {
-            _options = $.extend(true, {}, _options, _gridOptions.customTooltip, columnDef.customTooltip);
+            _cellTooltipOptions = $.extend(true, {}, _options, columnDef.customTooltip);
 
             // run the override function (when defined), if the result is false it won't go further
             if (!args) {
@@ -115,33 +116,46 @@
             args.columnDef = columnDef;
             args.dataContext = item;
             args.grid = _grid;
-            if (!runOverrideFunctionWhenExists(_options.usabilityOverride, args)) {
+            if (!runOverrideFunctionWhenExists(_cellTooltipOptions.usabilityOverride, args)) {
               return;
             }
 
             var value = item.hasOwnProperty(columnDef.field) ? item[columnDef.field] : null;
-            if (typeof _options.formatter === 'function') {
-              renderTooltipFormatter(value, columnDef, item, _options.formatter, cell);
-            }
-            if (typeof _options.asyncPostProcess === 'function') {
-              var asyncProcess = _options.asyncPostProcess(cell.row, cell.cell, value, columnDef, item, _grid);
-              if (!_options.asyncPostFormatter) {
-                throw new Error('[Slickgrid-Universal] when using "asyncPostProcess", you must also provide an "asyncPostFormatter" formatter');
-              }
 
-              if (asyncProcess instanceof Promise) {
-                // create a new cancellable promise which will resolve, unless it's cancelled, with the udpated `dataContext` object that includes the `__params`
-                _cancellablePromise = cancellablePromise(asyncProcess);
-                _cancellablePromise.promise
-                  .then(function (asyncResult) {
-                    asyncProcessCallback(asyncResult, cell, value, columnDef, item)
-                  })
-                  .catch(function (error) {
-                    // we will throw back any errors, unless it's a cancelled promise which in that case will be disregarded (thrown by the promise wrapper cancel() call)
-                    if (!(error.isPromiseCancelled)) {
-                      throw error;
-                    }
-                  });
+            if (_cellTooltipOptions.useRegularTooltip || !_cellTooltipOptions.formatter) {
+              // parse the cell formatter and assume it might be html
+              // then create a temporary html element to then retrieve the first [title=""] attribute text content
+              var tmpDiv = document.createElement('div');
+              tmpDiv.innerHTML = parseFormatter(columnDef.formatter, cell, value, columnDef, item);
+              var titleElm = tmpDiv.querySelector('[title]');
+              var tooltipText = titleElm && titleElm.getAttribute('title') || '';
+              if (tooltipText !== '') {
+                renderTooltipFormatter(columnDef.formatter, cell, value, columnDef, item, tooltipText);
+              }
+            } else {
+              if (typeof _cellTooltipOptions.formatter === 'function') {
+                renderTooltipFormatter(_cellTooltipOptions.formatter, cell, value, columnDef, item);
+              }
+              if (typeof _cellTooltipOptions.asyncProcess === 'function') {
+                var asyncProcess = _cellTooltipOptions.asyncProcess(cell.row, cell.cell, value, columnDef, item, _grid);
+                if (!_cellTooltipOptions.asyncPostFormatter) {
+                  throw new Error('[Slickgrid-Universal] when using "asyncProcess", you must also provide an "asyncPostFormatter" formatter');
+                }
+
+                if (asyncProcess instanceof Promise) {
+                  // create a new cancellable promise which will resolve, unless it's cancelled, with the udpated `dataContext` object that includes the `__params`
+                  _cancellablePromise = cancellablePromise(asyncProcess);
+                  _cancellablePromise.promise
+                    .then(function (asyncResult) {
+                      asyncProcessCallback(asyncResult, cell, value, columnDef, item)
+                    })
+                    .catch(function (error) {
+                      // we will throw back any errors, unless it's a cancelled promise which in that case will be disregarded (thrown by the promise wrapper cancel() call)
+                      if (!(error.isPromiseCancelled)) {
+                        throw error;
+                      }
+                    });
+                }
               }
             }
           }
@@ -151,8 +165,8 @@
 
     function asyncProcessCallback(asyncResult, cell, value, columnDef, dataContext) {
       hideTooltip();
-      var itemWithAsyncData = $.extend(true, {}, dataContext, { [_options.asyncParamsPropName || '__params']: asyncResult });
-      renderTooltipFormatter(value, columnDef, itemWithAsyncData, _options.asyncPostFormatter, cell);
+      var itemWithAsyncData = $.extend(true, {}, dataContext, { [_cellTooltipOptions.asyncParamsPropName || '__params']: asyncResult });
+      renderTooltipFormatter(_cellTooltipOptions.asyncPostFormatter, cell, value, columnDef, itemWithAsyncData);
     }
 
 
@@ -220,7 +234,7 @@
       if (_cancellablePromise && _cancellablePromise.cancel) {
         _cancellablePromise.cancel();
       }
-      var prevTooltip = document.body.querySelector('.' + _options.className + '.' + _grid.getUID());
+      var prevTooltip = document.body.querySelector('.' + _cellTooltipOptions.className + '.' + _grid.getUID());
       if (prevTooltip && prevTooltip.remove) {
         prevTooltip.remove();
       }
@@ -243,14 +257,14 @@
         var calculatedBodyWidth = document.body.offsetWidth || window.innerWidth;
 
         // first calculate the default (top/left) position
-        let newPositionTop = cellPosition.top - _tooltipElm.offsetHeight - (_options.offsetTopBottom || 0);
-        let newPositionLeft = (cellPosition && cellPosition.left || 0) - (_options.offsetLeft || 0);
+        let newPositionTop = cellPosition.top - _tooltipElm.offsetHeight - (_cellTooltipOptions.offsetTopBottom || 0);
+        let newPositionLeft = (cellPosition && cellPosition.left || 0) - (_cellTooltipOptions.offsetLeft || 0);
 
         // user could explicitely use a "left" position (when user knows his column is completely on the right)
         // or when using "auto" and we detect not enough available space then we'll position to the "left" of the cell
-        var position = _options.position || 'auto';
+        var position = _cellTooltipOptions.position || 'auto';
         if (position === 'left' || (position === 'auto' && (newPositionLeft + calculatedTooltipWidth) > calculatedBodyWidth)) {
-          newPositionLeft -= (calculatedTooltipWidth - containerWidth - (_options.offsetRight || 0));
+          newPositionLeft -= (calculatedTooltipWidth - containerWidth - (_cellTooltipOptions.offsetRight || 0));
           _tooltipElm.classList.remove('arrow-left');
           _tooltipElm.classList.add('arrow-right');
         } else {
@@ -260,7 +274,7 @@
 
         // do the same calculation/reposition with top/bottom (default is top of the cell or in other word starting from the cell going down)
         if (position === 'top' || (position === 'auto' && calculatedTooltipHeight > calculateAvailableSpaceTop(cellElm))) {
-          newPositionTop = cellPosition.top + (_gridOptions.rowHeight || 0) + (_options.offsetTopBottom || 0);
+          newPositionTop = cellPosition.top + (_gridOptions.rowHeight || 0) + (_cellTooltipOptions.offsetTopBottom || 0);
           _tooltipElm.classList.remove('arrow-down');
           _tooltipElm.classList.add('arrow-up');
         } else {
@@ -268,27 +282,43 @@
           _tooltipElm.classList.remove('arrow-up');
         }
 
-        // reposition the editor over the cell (90% of the time this will end up using a position on the "right" of the cell)
+        // reposition the tooltip over the cell (90% of the time this will end up using a position on the "right" of the cell)
         _tooltipElm.style.top = newPositionTop + 'px';
         _tooltipElm.style.left = newPositionLeft + 'px';
       }
     }
 
-    function renderTooltipFormatter(value, columnDef, item, formatter, cell) {
+    function parseFormatter(formatter, cell, value, columnDef, item) {
       if (typeof formatter === 'function') {
         var tooltipText = formatter(cell.row, cell.cell, value, columnDef, item, _grid);
+        return typeof tooltipText === 'object' ? tooltipText.text : tooltipText;
+      }
+      return '';
+    }
 
+
+    function renderTooltipFormatter(formatter, cell, value, columnDef, item, tooltipText) {
+      if (typeof formatter === 'function') {
         // create the tooltip DOM element with the text returned by the Formatter
         _tooltipElm = document.createElement('div');
-        _tooltipElm.className = _options.className + ' ' + _grid.getUID();
-        _tooltipElm.innerHTML = typeof tooltipText === 'object' ? tooltipText.text : tooltipText;
+        _tooltipElm.className = _cellTooltipOptions.className + ' ' + _grid.getUID();
+        _tooltipElm.innerHTML = tooltipText || parseFormatter(formatter, cell, value, columnDef, item);
+
+        // optional max height/width of the tooltip container
+        if (_cellTooltipOptions.maxHeight) {
+          _tooltipElm.style.maxHeight = _cellTooltipOptions.maxHeight + 'px';
+        }
+        if (_cellTooltipOptions.maxWidth) {
+          _tooltipElm.style.maxWidth = _cellTooltipOptions.maxWidth + 'px';
+        }
+
         document.body.appendChild(_tooltipElm);
 
         // reposition the tooltip on top of the cell that triggered the mouse over event
         reposition(cell);
 
         // user could optionally hide the tooltip arrow (we can simply update the CSS variables, that's the only way we have to update CSS pseudo)
-        if (!_options.hideArrow) {
+        if (!_cellTooltipOptions.hideArrow) {
           _tooltipElm.classList.add('tooltip-arrow');
         }
       }

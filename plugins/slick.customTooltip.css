@@ -8,6 +8,14 @@
   height: auto;
   width: auto;
   z-index: 200;
+  overflow: initial;
+  text-overflow: ellipsis;
+  white-space: normal;
+}
+.slick-custom-tooltip::after {
+  content: "";
+  clear: both;
+  display: table;
 }
 
 /* show arrow below tooltip with same color as the border color */

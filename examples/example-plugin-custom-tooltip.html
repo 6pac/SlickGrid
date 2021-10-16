@@ -99,7 +99,7 @@
           // when using async, the `formatter` will contain the loading spinner
           // you will need to provide an `asyncPost` function returning a Promise and also `asyncPostFormatter` formatter to display the result once the Promise resolves
           formatter: () => `<div>loading...</div>`,
-          asyncPostProcess: () => new Promise(resolve => {
+          asyncProcess: () => new Promise(resolve => {
             setTimeout(() => resolve({ ratio: Math.random() * 10 / 10, lifespan: Math.random() * 100 }), 500);
           }),
           asyncPostFormatter: this.tooltipTaskFormatter.bind(this),
@@ -108,7 +108,15 @@
           // usabilityOverride: (args) => !!(args.dataContext?.id % 2) // show it only every second row
         },
       },
-      { id: "desc", name: "Description", field: "description", width: 100, editor: Slick.Editors.LongText },
+      { 
+        id: "desc", name: "Description", field: "description", width: 100, editor: Slick.Editors.LongText,  
+        formatter: (row, cell, value) => `<span title="regular tooltip (from title attribute) - cell value: ${value || ''}">${value || ''}</span>`,
+        customTooltip: {
+          useRegularTooltip: true,
+          // maxWidth: 200,
+          // maxHeight: 40,
+        },
+      },
       { id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Text },
       { id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete },
       { id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Date },
@@ -140,7 +148,7 @@
     }
 
     function tooltipTaskFormatter(row, cell, value, column, dataContext, grid) {
-      const tooltipTitle = 'Task ' + dataContext.id + ' - Tooltip';
+      const tooltipTitle = 'Task ' + dataContext.id + ' - (async tooltip)';
 
       // use a 2nd Formatter to get the percent completion
       // any p                  ies provided from the `asyncPost` will end up in the `__params` property (unless a different prop name is provided via `asyncParamsPropName`)
