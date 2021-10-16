@@ -297,7 +297,7 @@
         }
 
         // do the same calculation/reposition with top/bottom (default is top of the cell or in other word starting from the cell going down)
-        if (position === 'top' || (position === 'auto' && calculatedTooltipHeight > calculateAvailableSpaceTop(_cellNodeElm))) {
+        if (position === 'bottom' || (position === 'auto' && calculatedTooltipHeight > calculateAvailableSpaceTop(_cellNodeElm))) {
           newPositionTop = cellPosition.top + (_gridOptions.rowHeight || 0) + (_cellTooltipOptions.offsetTopBottom || 0);
           _tooltipElm.classList.remove('arrow-down');
           _tooltipElm.classList.add('arrow-up');
