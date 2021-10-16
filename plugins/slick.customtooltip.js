@@ -234,15 +234,25 @@
     function renderRegulatTooltip(formatterOrText, cell, value, columnDef, item) {
       var tmpDiv = document.createElement('div');
       tmpDiv.innerHTML = sanitizeHtmlString(parseFormatter(formatterOrText, cell, value, columnDef, item));
-      var titleElm = _cellNodeElm.querySelector('[title]');
       var tmpTitleElm = tmpDiv.querySelector('[title]');
       var tooltipText = tmpTitleElm && tmpTitleElm.getAttribute('title') || '';
       if (tooltipText !== '') {
         renderTooltipFormatter(formatterOrText, cell, value, columnDef, item, tooltipText);
       }
-      // clear the "title" attribute from the grid div text content so that it won't show also as a 2nd browser tooltip
-      // note: the reason we can do delete it completely is because we always re-execute the formatter whenever we hover the tooltip and so we have a fresh title attribute each time to use
-      titleElm.setAttribute('title', '');
+
+      // also clear any "title" attribute to avoid showing a 2nd browser tooltip
+      clearTitleAttribute();
+    }
+
+    /**
+     * clear the "title" attribute from the grid div text content so that it won't show also as a 2nd browser tooltip
+     * note: the reason we can do delete it completely is because we always re-execute the formatter whenever we hover the tooltip and so we have a fresh title attribute each time to use
+     */
+    function clearTitleAttribute() {
+      var titleElm = _cellNodeElm.querySelector('[title]');
+      if (titleElm) {
+        titleElm.setAttribute('title', '');
+      }
     }
 
     function asyncProcessCallback(asyncResult, cell, value, columnDef, dataContext) {
@@ -411,6 +421,9 @@
       if (!_cellTooltipOptions.hideArrow) {
         _tooltipElm.classList.add('tooltip-arrow');
       }
+
+      // also clear any "title" attribute to avoid showing a 2nd browser tooltip
+      clearTitleAttribute();
     }
 
     /**
