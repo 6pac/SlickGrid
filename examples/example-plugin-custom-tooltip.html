@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="../plugins/slick.customtooltip.css" type="text/css" />
   <link rel="stylesheet" href="examples.css" type="text/css" />
   <style>
-    .cell-title {
+    .cell-title, .bold {
       font-weight: bold;
     }
 
@@ -18,6 +18,10 @@
       text-align: center;
     }
 
+    .header-tooltip-title {
+      font-weight: bold;
+      font-size: 14px;
+    }
     .tooltip-2cols-row {
       display: grid;
       grid-template-columns: 1fr 1fr;
@@ -128,7 +132,7 @@
         id: "title", name: "Title", field: "title", width: 70, cssClass: "cell-title",
         editor: Slick.Editors.Text, validator: requiredFieldValidator,
         customTooltip: {
-          position: 'right', // defaults to "auto", available options are: "auto", "top", "left", "bottom", "right"
+          // position: 'bottom', // defaults to "auto", available options are: "auto", "top", "left", "bottom", "right"
           // you can use the Custom Tooltip in 2 ways (synchronous or asynchronous)
           // example 1 (sync):
           // formatter: this.tooltipTaskFormatter.bind(this),
@@ -147,7 +151,7 @@
         },
       },
       { 
-        id: "desc", name: "Description", field: "description", width: 100, editor: Slick.Editors.LongText,  
+        id: "desc", name: '<span title="custom title tooltip text">Description</span>', field: "description", width: 100, editor: Slick.Editors.LongText,  
         formatter: (row, cell, value, column, dataContext) => `<span title="<b>regular tooltip</b> (from title attribute) \r${dataContext.title} cell value:\r ${value || ''}">${value || ''}</span>`,
         // define tooltip options here OR for the entire grid via the grid options (cell tooltip options will have precedence over grid options)
         customTooltip: {
@@ -161,7 +165,7 @@
       { id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete },
       { id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Date },
       { id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Date },
-      { id: "effort-driven", name: "Effort Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, editor: Slick.Editors.Checkbox }
+      { id: "effortDriven", name: "Effort Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, editor: Slick.Editors.Checkbox }
     ];
     var gridOptions = {
       editable: true,
@@ -173,6 +177,7 @@
       // Custom Tooltip options can be defined in a Column or Grid Options or a mixed of both (first options found wins)
       customTooltip: {
         formatter: tooltipFormatter,
+        headerFormatter: headerFormatter,
         usabilityOverride: function (args) {
          return !isTooltipDisabled && args.cell !== 0; // don't show on first column (row selection column)
         }
@@ -180,11 +185,17 @@
       },
     };
 
+    function headerFormatter(row, cell, value, column, dataContext) {
+      const tooltipTitle = 'Custom Tooltip - Header';
+      return '<div class="header-tooltip-title" style="font-weight: bold">' + tooltipTitle + '</div>'
+      + '<div class="tooltip-2cols-row"><div>Column:</div> <div>' + column.name + '</div></div>';
+    }
+
     function tooltipFormatter(row, cell, value, column, dataContext) {
       const tooltipTitle = 'Custom Tooltip';
-      const effortDrivenHtml = Slick.Formatters.Checkmark(row, cell, dataContext.percentComplete, column, dataContext);
+      const effortDrivenHtml = Slick.Formatters.Checkmark(row, cell, dataContext.effortDriven, column, dataContext);
       const completionBarHtml = Slick.Formatters.PercentCompleteBar(row, cell, dataContext.percentComplete, column, dataContext);
-      return '<div class="color-sf-primary-dark" style="font-weight: bold">' + tooltipTitle + '</div>'
+      return '<div class="bold">' + tooltipTitle + '</div>'
         + '<div class="tooltip-2cols-row"><div>Id:</div> <div>' + dataContext.id + '</div></div>'
         + '<div class="tooltip-2cols-row"><div>Title:</div> <div>' + dataContext.title + '</div></div>'
         + '<div class="tooltip-2cols-row"><div>Completion:</div> <div>' + completionBarHtml + '</div></div>'
@@ -197,7 +208,7 @@
       // use a 2nd Formatter to get the percent completion
       // any properies provided from the `asyncPost` will end up in the `__params` property (unless a different prop name is provided via `asyncParamsPropName`)
       const completionBar = Slick.Formatters.PercentCompleteBar(row, cell, dataContext.percentComplete, column, dataContext);
-      const out = '<div class="color-se-danger" style="font-weight: bold">' + tooltipTitle + '</div>'
+      const out = '<div class="bold">' + tooltipTitle + '</div>'
         + '<div class="tooltip-2cols-row"><div>Completion:</div> <div>' + completionBar + '</div></div>'
         + '<div class="tooltip-2cols-row"><div>Lifespan:</div> <div>' + dataContext.__params.lifespan.toFixed(2) + '</div></div>'
         + '<div class="tooltip-2cols-row"><div>Ratio:</div> <div>'+dataContext.__params.ratio.toFixed(2) + '</div></div>';

@@ -97,7 +97,9 @@
       _options = $.extend(true, {}, _defaults, _gridOptions.customTooltip, options);
       _eventHandler
         .subscribe(grid.onMouseEnter, handleOnMouseEnter)
-        .subscribe(grid.onMouseLeave, hideTooltip);
+        .subscribe(grid.onHeaderMouseEnter, handleOnHeaderMouseEnter)
+        .subscribe(grid.onMouseLeave, hideTooltip)
+        .subscribe(grid.onHeaderMouseLeave, hideTooltip);
     }
 
     /**
@@ -106,6 +108,55 @@
     function destroy() {
       hideTooltip();
       _eventHandler.unsubscribeAll();
+    }
+
+    /**
+     * Handle mouse entering grid cell header to show tooltip.
+     * @param {jQuery.Event} e - The event
+     */
+    function handleOnHeaderMouseEnter(e, args) {
+      // before doing anything, let's remove any previous tooltip before
+      // and cancel any opened Promise/Observable when using async
+      hideTooltip();
+
+      var cell = {
+        row: -1, // negative row to avoid pulling any dataContext while rendering
+        cell: _grid.getColumns().findIndex(function (col) { return args.column.id === col.id })
+      };
+      var columnDef = args.column;
+      var item = {};
+
+      // run the override function (when defined), if the result is false it won't go further
+      if (!args) {
+        args = {};
+      }
+      args.cell = cell.cell;
+      args.row = cell.row;
+      args.columnDef = columnDef;
+      args.dataContext = item;
+      args.grid = _grid;
+      if (!runOverrideFunctionWhenExists(_cellTooltipOptions.usabilityOverride, args)) {
+        return;
+      }
+
+      if (columnDef && e.target) {
+        _cellTooltipOptions = $.extend(true, {}, _options, columnDef.customTooltip);
+        _cellNodeElm = findClosestHeaderNode(e.target);
+        if (_cellTooltipOptions.useRegularTooltip || !_cellTooltipOptions.headerFormatter) {
+          renderRegulatTooltip(columnDef.name, cell, null, columnDef, item);
+        } else if (_cellNodeElm && typeof _cellTooltipOptions.headerFormatter === 'function') {
+          renderTooltipFormatter(_cellTooltipOptions.headerFormatter, cell, null, columnDef, item);
+        }
+      }
+    }
+
+    function findClosestHeaderNode(elm) {
+      if (typeof elm.closest === 'function') {
+        return elm.closest('.slick-header-column');
+      }
+      return elm.classList.contains('slick-header-column')
+        ? elm : elm.parentElement.classList.contains('slick-header-column')
+          ? elm.parentElement : null;
     }
 
     /**
@@ -143,19 +194,7 @@
             var value = item.hasOwnProperty(columnDef.field) ? item[columnDef.field] : null;
 
             if (_cellTooltipOptions.useRegularTooltip || !_cellTooltipOptions.formatter) {
-              // parse the cell formatter and assume it might be html
-              // then create a temporary html element to easily retrieve the first [title=""] attribute text content
-              var tmpDiv = document.createElement('div');
-              tmpDiv.innerHTML = sanitizeHtmlString(parseFormatter(columnDef.formatter, cell, value, columnDef, item));
-              var titleElm = _cellNodeElm.querySelector('[title]');
-              var tmpTitleElm = tmpDiv.querySelector('[title]');
-              var tooltipText = tmpTitleElm && tmpTitleElm.getAttribute('title') || '';
-              if (tooltipText !== '') {
-                renderTooltipFormatter(columnDef.formatter, cell, value, columnDef, item, tooltipText);
-              }
-              // clear the "title" attribute from the grid div text content so that it won't show also as a 2nd browser tooltip
-              // note: the reason we can do delete it completely is because we always re-execute the formatter whenever we hover the tooltip and so we have a fresh title attribute each time to use
-              titleElm.setAttribute('title', '');
+              renderRegulatTooltip(columnDef.formatter, cell, value, columnDef, item);
             } else {
               if (typeof _cellTooltipOptions.formatter === 'function') {
                 renderTooltipFormatter(_cellTooltipOptions.formatter, cell, value, columnDef, item);
@@ -185,6 +224,25 @@
           }
         }
       }
+    }
+
+    /**
+     * Parse the cell formatter and assume it might be html
+     * then create a temporary html element to easily retrieve the first [title=""] attribute text content
+     * also clear the "title" attribute from the grid div text content so that it won't show also as a 2nd browser tooltip
+     */
+    function renderRegulatTooltip(formatterOrText, cell, value, columnDef, item) {
+      var tmpDiv = document.createElement('div');
+      tmpDiv.innerHTML = sanitizeHtmlString(parseFormatter(formatterOrText, cell, value, columnDef, item));
+      var titleElm = _cellNodeElm.querySelector('[title]');
+      var tmpTitleElm = tmpDiv.querySelector('[title]');
+      var tooltipText = tmpTitleElm && tmpTitleElm.getAttribute('title') || '';
+      if (tooltipText !== '') {
+        renderTooltipFormatter(formatterOrText, cell, value, columnDef, item, tooltipText);
+      }
+      // clear the "title" attribute from the grid div text content so that it won't show also as a 2nd browser tooltip
+      // note: the reason we can do delete it completely is because we always re-execute the formatter whenever we hover the tooltip and so we have a fresh title attribute each time to use
+      titleElm.setAttribute('title', '');
     }
 
     function asyncProcessCallback(asyncResult, cell, value, columnDef, dataContext) {
@@ -312,46 +370,46 @@
       }
     }
 
-    function parseFormatter(formatter, cell, value, columnDef, item) {
-      if (typeof formatter === 'function') {
-        var tooltipText = formatter(cell.row, cell.cell, value, columnDef, item, _grid);
+    function parseFormatter(formatterOrText, cell, value, columnDef, item) {
+      if (typeof formatterOrText === 'function') {
+        var tooltipText = formatterOrText(cell.row, cell.cell, value, columnDef, item, _grid);
         return typeof tooltipText === 'object' ? tooltipText.text : tooltipText;
+      } else if (typeof formatterOrText === 'string') {
+        return formatterOrText;
       }
       return '';
     }
 
 
     function renderTooltipFormatter(formatter, cell, value, columnDef, item, tooltipText) {
-      if (typeof formatter === 'function') {
-        // create the tooltip DOM element with the text returned by the Formatter
-        _tooltipElm = document.createElement('div');
-        _tooltipElm.className = _cellTooltipOptions.className + ' ' + _grid.getUID();
-        _tooltipElm.classList.add('l' + cell.cell);
-        _tooltipElm.classList.add('r' + cell.cell);
-        var outputText = tooltipText || parseFormatter(formatter, cell, value, columnDef, item);
-        if (_cellTooltipOptions.enableRenderHtml || !tooltipText || _cellTooltipOptions.renderRegularTooltipAsHtml) {
-          _tooltipElm.innerHTML = sanitizeHtmlString(outputText.replace(/[\r\n]/gi, '<br>'));
-        } else {
-          _tooltipElm.textContent = outputText;
-        }
+      // create the tooltip DOM element with the text returned by the Formatter
+      _tooltipElm = document.createElement('div');
+      _tooltipElm.className = _cellTooltipOptions.className + ' ' + _grid.getUID();
+      _tooltipElm.classList.add('l' + cell.cell);
+      _tooltipElm.classList.add('r' + cell.cell);
+      var outputText = tooltipText || parseFormatter(formatter, cell, value, columnDef, item);
+      if (_cellTooltipOptions.enableRenderHtml || !tooltipText || _cellTooltipOptions.renderRegularTooltipAsHtml) {
+        _tooltipElm.innerHTML = sanitizeHtmlString(outputText.replace(/[\r\n]/gi, '<br>'));
+      } else {
+        _tooltipElm.textContent = outputText;
+      }
 
-        // optional max height/width of the tooltip container
-        if (_cellTooltipOptions.maxHeight) {
-          _tooltipElm.style.maxHeight = _cellTooltipOptions.maxHeight + 'px';
-        }
-        if (_cellTooltipOptions.maxWidth) {
-          _tooltipElm.style.maxWidth = _cellTooltipOptions.maxWidth + 'px';
-        }
+      // optional max height/width of the tooltip container
+      if (_cellTooltipOptions.maxHeight) {
+        _tooltipElm.style.maxHeight = _cellTooltipOptions.maxHeight + 'px';
+      }
+      if (_cellTooltipOptions.maxWidth) {
+        _tooltipElm.style.maxWidth = _cellTooltipOptions.maxWidth + 'px';
+      }
 
-        document.body.appendChild(_tooltipElm);
+      document.body.appendChild(_tooltipElm);
 
-        // reposition the tooltip on top of the cell that triggered the mouse over event
-        reposition(cell);
+      // reposition the tooltip on top of the cell that triggered the mouse over event
+      reposition(cell);
 
-        // user could optionally hide the tooltip arrow (we can simply update the CSS variables, that's the only way we have to update CSS pseudo)
-        if (!_cellTooltipOptions.hideArrow) {
-          _tooltipElm.classList.add('tooltip-arrow');
-        }
+      // user could optionally hide the tooltip arrow (we can simply update the CSS variables, that's the only way we have to update CSS pseudo)
+      if (!_cellTooltipOptions.hideArrow) {
+        _tooltipElm.classList.add('tooltip-arrow');
       }
     }
 
