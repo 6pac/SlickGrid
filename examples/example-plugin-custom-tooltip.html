@@ -25,12 +25,31 @@
       column-gap: 5px;
       line-height: 20px;
     }
+
+    /* change css of 3rd column (l2 r2) */
+    .l2.slick-custom-tooltip {
+      background-color: #363636;
+      color: #ffffff;
+      border: 2px solid #252525;
+      /* overflow: hidden;
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      display: -webkit-box;
+      -webkit-box-orient: vertical;
+      -webkit-line-clamp: 2; */
+    }
+    .l2.slick-custom-tooltip.tooltip-arrow.arrow-up::before {
+      border-bottom: 7px solid #252525;
+    }
+    .l2.slick-custom-tooltip.tooltip-arrow.arrow-down::after {
+      border-top: 7px solid #252525;
+    }
   </style>
 </head>
 
 <body>
   <div style="position:relative">
-    <div style="width:600px;">
+    <div style="width:618px;">
       <div id="myGrid" style="width:100%;height:500px;"></div>
     </div>
 
@@ -38,17 +57,24 @@
       <h2>Demonstrates:</h2>
       <ul>
         <li>Custom Tooltip Plugin</li>
-        <li>First column shows an async tooltip (could be an API with Promise), it demos a formatter which itself has a
+        <li>1st column shows an async tooltip (could be an API with Promise), it demos a formatter which itself has a
           formatter displaying percent complete bar
         </li>
+        <li>2nd column is with "useRegularTooltip" which will parse your cell formatters in search of a "title" attribute to use as tooltip</li>
         <li>Every other columns will show other info of the item data context</li>
         <li>Tooltip gets auto-position depending on its available space</li>
+        <li>You can disable a tooltip via "usabilityOverride"</li>
       </ul>
 
       <h2>Options:</h2>
       <button onclick="customTooltipPlugin.setOptions({hideArrow:true})">Hide Tooltip Arrow ON</button>
       &nbsp;
       <button onclick="customTooltipPlugin.setOptions({hideArrow:false})">Hide Tooltip Arrow OFF</button>
+      <br/>
+      <br/>
+      <button onclick="disableTooltip(true)">Disable Tooltip ON</button>
+      &nbsp;
+      <button onclick="disableTooltip(false)">Disable Tooltip OFF</button>
       <h2>View Source:</h2>
       <ul>
         <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-plugin-custom-tooltip.html"
@@ -83,6 +109,17 @@
       }
     }
 
+    function disableTooltip(disable) {
+      if (disable) {
+        isTooltipDisabled = true;
+        // customTooltipPlugin.setOptions({ usabilityOverride: function (args) { return false;}});
+      } else {
+        isTooltipDisabled = false;
+        // customTooltipPlugin.setOptions({ usabilityOverride: function (args) { return args.cell !== 0;}});
+      }
+    }
+
+    var isTooltipDisabled = false;
     var grid;
     var data = [];
     var customTooltipPlugin;
@@ -110,11 +147,13 @@
       },
       { 
         id: "desc", name: "Description", field: "description", width: 100, editor: Slick.Editors.LongText,  
-        formatter: (row, cell, value) => `<span title="regular tooltip (from title attribute) - cell value: ${value || ''}">${value || ''}</span>`,
+        formatter: (row, cell, value, column, dataContext) => `<span title="<b>regular tooltip</b> (from title attribute) \r${dataContext.title} cell value:\r ${value || ''}">${value || ''}</span>`,
+        // define tooltip options here OR for the entire grid via the grid options (cell tooltip options will have precedence over grid options)
         customTooltip: {
-          useRegularTooltip: true,
-          // maxWidth: 200,
-          // maxHeight: 40,
+          useRegularTooltip: true, // note regular tooltip will try to find a "title" attribute in the cell formatter (it won't work without a cell formatter)
+          renderRegularTooltipAsHtml: true, // defaults to false, regular "title" tooltip won't be rendered as html unless specified via this flag (also "\r\n" will be replaced by <br>)
+          // maxWidth: 100,
+          // maxHeight: 30,
         },
       },
       { id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Text },
@@ -133,26 +172,30 @@
       // Custom Tooltip options can be defined in a Column or Grid Options or a mixed of both (first options found wins)
       customTooltip: {
         formatter: tooltipFormatter,
-        usabilityOverride: (args) => (args.cell !== 0), // don't show on first column
+        usabilityOverride: function (args) {
+         return !isTooltipDisabled && args.cell !== 0; // don't show on first column (row selection column)
+        }
         // hideArrow: true, // defaults to False
       },
     };
 
     function tooltipFormatter(row, cell, value, column, dataContext) {
       const tooltipTitle = 'Custom Tooltip';
+      const effortDrivenHtml = Slick.Formatters.Checkmark(row, cell, dataContext.percentComplete, column, dataContext);
+      const completionBarHtml = Slick.Formatters.PercentCompleteBar(row, cell, dataContext.percentComplete, column, dataContext);
       return '<div class="color-sf-primary-dark" style="font-weight: bold">' + tooltipTitle + '</div>'
         + '<div class="tooltip-2cols-row"><div>Id:</div> <div>' + dataContext.id + '</div></div>'
         + '<div class="tooltip-2cols-row"><div>Title:</div> <div>' + dataContext.title + '</div></div>'
-        + '<div class="tooltip-2cols-row"><div>Completion:</div> <div>' + dataContext.percentComplete + '%</div>'
-        + '</div>';
+        + '<div class="tooltip-2cols-row"><div>Completion:</div> <div>' + completionBarHtml + '</div></div>'
+        + '<div class="tooltip-2cols-row"><div>Effort Driven:</div> <div>' + effortDrivenHtml + '</div></div>';
     }
 
     function tooltipTaskFormatter(row, cell, value, column, dataContext, grid) {
       const tooltipTitle = 'Task ' + dataContext.id + ' - (async tooltip)';
 
       // use a 2nd Formatter to get the percent completion
-      // any p                  ies provided from the `asyncPost` will end up in the `__params` property (unless a different prop name is provided via `asyncParamsPropName`)
-      const completionBar = Slick.Formatters.PercentCompleteBar(row, cell, dataContext.percentComplete, column, dataContext, grid);
+      // any properies provided from the `asyncPost` will end up in the `__params` property (unless a different prop name is provided via `asyncParamsPropName`)
+      const completionBar = Slick.Formatters.PercentCompleteBar(row, cell, dataContext.percentComplete, column, dataContext);
       const out = '<div class="color-se-danger" style="font-weight: bold">' + tooltipTitle + '</div>'
         + '<div class="tooltip-2cols-row"><div>Completion:</div> <div>' + completionBar + '</div></div>'
         + '<div class="tooltip-2cols-row"><div>Lifespan:</div> <div>' + dataContext.__params.lifespan.toFixed(2) + '</div></div>'

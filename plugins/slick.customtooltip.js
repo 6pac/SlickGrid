@@ -22,7 +22,7 @@
  *    }
  *  ];
  * 
- *  OR Example 2 - via Grid Options (for all columns)
+ *  OR Example 2 - via Grid Options (for all columns), NOTE: the column definition tooltip options will win over the options defined in the grid options
  *  var gridOptions = {
  *    enableCellNavigation: true,
  *    customTooltip: {
@@ -30,6 +30,23 @@
  *      usabilityOverride: (args) => !!(args.dataContext.id % 2) // show it only every second row
  *    },
  *  };
+ *
+ * Available options that can be defined from either a column definition or in grid options (column definition options as precendence)
+ *    asyncParamsPropName:         defaults to "__params", optionally change the property name that will be used to merge the data returned by the async method into the `dataContext` object
+ *    asyncProcess:                Async Post method returning a Promise, it must return an object with 1 or more properties. internally the data that will automatically be merged into the `dataContext` object under the `__params` property so that you can use it in your `asyncPostFormatter` formatter.
+ *    asyncPostFormatter:          Formatter to execute once the async process is completed, to displayed the actual text result (used when dealing with an Async API to get data to display later in the tooltip)
+ *    hideArrow:                   defaults to False, should we hide the tooltip pointer arrow?
+ *    className:                   defaults to "slick-custom-tooltip"
+ *    formatter:                   Formatter to execute for displaying the data that will show in the tooltip. NOTE: when using `asyncProcess`, this formatter will be executed first and prior to the actual async process.
+ *    maxHeight:                   optional maximum height number (in pixel) of the tooltip container
+ *    maxWidth:                    optional maximum width number (in pixel) of the tooltip container
+ *    offsetLeft:                  defaults to 0, optional left offset, it must be a positive/negative number (in pixel) that will be added to the offset position calculation of the tooltip container.
+ *    offsetRight:                 defaults to 0, optional right offset, it must be a positive/negative number (in pixel) that will be added to the offset position calculation of the tooltip container.
+ *    offsetTopBottom:             defaults to 4, optional top or bottom offset (depending on which side it shows), it must be a positive/negative number (in pixel) that will be added to the offset position calculation of the tooltip container.
+ *    position:                    defaults to "auto" (available options: 'auto' | 'top' | 'bottom' | 'left' | 'right'), allows to align the tooltip to the best logical position in the window, by default it will show on top but if it calculates that it doesn't have enough space it will revert to bottom (same goes for each side)
+ *    useRegularTooltip:           defaults to False, when set to True it will try parse through the regular cell formatter and try to find a `title` attribute to show as a regular tooltip (also note: this has precedence over customTooltip formatter defined)
+ *    renderRegularTooltipAsHtml:  defaults to false, regular "title" tooltip won't be rendered as html unless specified via this flag (also "\r\n" will be replaced by <br>)
+ *    usabilityOverride:           callback method that user can override the default behavior of showing the tooltip. If it returns False, then the tooltip won't show
  *
  * @param options {Object} Custom Tooltip Options
  * @class Slick.Plugins.CustomTooltip
@@ -53,6 +70,7 @@
    */
   function CustomTooltip(options) {
     var _cancellablePromise;
+    var _cellNodeElm;
     var _dataView;
     var _grid;
     var _gridOptions;
@@ -104,6 +122,8 @@
         if (cell) {
           var item = _dataView ? _dataView.getItem(cell.row) : _grid.getDataItem(cell.row);
           var columnDef = _grid.getColumns()[cell.cell];
+          _cellNodeElm = _grid.getCellNode(cell.row, cell.cell);
+
           if (item && columnDef) {
             _cellTooltipOptions = $.extend(true, {}, _options, columnDef.customTooltip);
 
@@ -124,14 +144,18 @@
 
             if (_cellTooltipOptions.useRegularTooltip || !_cellTooltipOptions.formatter) {
               // parse the cell formatter and assume it might be html
-              // then create a temporary html element to then retrieve the first [title=""] attribute text content
+              // then create a temporary html element to easily retrieve the first [title=""] attribute text content
               var tmpDiv = document.createElement('div');
-              tmpDiv.innerHTML = parseFormatter(columnDef.formatter, cell, value, columnDef, item);
-              var titleElm = tmpDiv.querySelector('[title]');
-              var tooltipText = titleElm && titleElm.getAttribute('title') || '';
+              tmpDiv.innerHTML = sanitizeHtmlString(parseFormatter(columnDef.formatter, cell, value, columnDef, item));
+              var titleElm = _cellNodeElm.querySelector('[title]');
+              var tmpTitleElm = tmpDiv.querySelector('[title]');
+              var tooltipText = tmpTitleElm && tmpTitleElm.getAttribute('title') || '';
               if (tooltipText !== '') {
                 renderTooltipFormatter(columnDef.formatter, cell, value, columnDef, item, tooltipText);
               }
+              // clear the "title" attribute from the grid div text content so that it won't show also as a 2nd browser tooltip
+              // note: the reason we can do delete it completely is because we always re-execute the formatter whenever we hover the tooltip and so we have a fresh title attribute each time to use
+              titleElm.setAttribute('title', '');
             } else {
               if (typeof _cellTooltipOptions.formatter === 'function') {
                 renderTooltipFormatter(_cellTooltipOptions.formatter, cell, value, columnDef, item);
@@ -249,9 +273,9 @@
      */
     function reposition(cell) {
       if (_tooltipElm) {
-        var cellElm = _grid.getCellNode(cell.row, cell.cell);
-        var cellPosition = getHtmlElementOffset(cellElm);
-        var containerWidth = cellElm.offsetWidth;
+        _cellNodeElm = _cellNodeElm || _grid.getCellNode(cell.row, cell.cell);
+        var cellPosition = getHtmlElementOffset(_cellNodeElm);
+        var containerWidth = _cellNodeElm.offsetWidth;
         var calculatedTooltipHeight = _tooltipElm.getBoundingClientRect().height;
         var calculatedTooltipWidth = _tooltipElm.getBoundingClientRect().width;
         var calculatedBodyWidth = document.body.offsetWidth || window.innerWidth;
@@ -273,7 +297,7 @@
         }
 
         // do the same calculation/reposition with top/bottom (default is top of the cell or in other word starting from the cell going down)
-        if (position === 'top' || (position === 'auto' && calculatedTooltipHeight > calculateAvailableSpaceTop(cellElm))) {
+        if (position === 'top' || (position === 'auto' && calculatedTooltipHeight > calculateAvailableSpaceTop(_cellNodeElm))) {
           newPositionTop = cellPosition.top + (_gridOptions.rowHeight || 0) + (_cellTooltipOptions.offsetTopBottom || 0);
           _tooltipElm.classList.remove('arrow-down');
           _tooltipElm.classList.add('arrow-up');
@@ -302,7 +326,14 @@
         // create the tooltip DOM element with the text returned by the Formatter
         _tooltipElm = document.createElement('div');
         _tooltipElm.className = _cellTooltipOptions.className + ' ' + _grid.getUID();
-        _tooltipElm.innerHTML = tooltipText || parseFormatter(formatter, cell, value, columnDef, item);
+        _tooltipElm.classList.add('l' + cell.cell);
+        _tooltipElm.classList.add('r' + cell.cell);
+        var outputText = tooltipText || parseFormatter(formatter, cell, value, columnDef, item);
+        if (_cellTooltipOptions.enableRenderHtml || !tooltipText || _cellTooltipOptions.renderRegularTooltipAsHtml) {
+          _tooltipElm.innerHTML = sanitizeHtmlString(outputText.replace(/[\r\n]/gi, '<br>'));
+        } else {
+          _tooltipElm.textContent = outputText;
+        }
 
         // optional max height/width of the tooltip container
         if (_cellTooltipOptions.maxHeight) {
@@ -339,6 +370,11 @@
 
     function setOptions(newOptions) {
       _options = $.extend({}, _options, newOptions);
+    }
+
+    /** basic html sanitizer to avoid xss */
+    function sanitizeHtmlString(dirtyHtml) {
+      return dirtyHtml.replace(/(\b)(on\S+)(\s*)=|javascript:([^>]*)[^>]*|(<\s*)(\/*)script([<>]*).*(<\s*)(\/*)script([<>]*)/gi, '');
     }
 
     // Public API
