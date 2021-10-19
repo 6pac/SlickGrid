@@ -39,6 +39,7 @@
  *   className:                           defaults to "slick-custom-tooltip"
  *   formatter:                           Formatter to execute for displaying the data that will show in the tooltip. NOTE: when using `asyncProcess`, this formatter will be executed first and prior to the actual async process.
  *   headerFormatter:                     Formatter to execute when custom tooltip is over a header column
+ *   headerRowFormatter:                  Formatter to execute when custom tooltip is over a heade row column (e.g. filter)
  *   maxHeight:                           optional maximum height number (in pixel) of the tooltip container
  *   maxWidth:                            optional maximum width number (in pixel) of the tooltip container
  *   offsetLeft:                          defaults to 0, optional left offset, it must be a positive/negative number (in pixel) that will be added to the offset position calculation of the tooltip container.
@@ -106,8 +107,10 @@
       _eventHandler
         .subscribe(grid.onMouseEnter, handleOnMouseEnter)
         .subscribe(grid.onHeaderMouseEnter, handleOnHeaderMouseEnter)
+        .subscribe(grid.onHeaderRowMouseEnter, handleOnHeaderRowMouseEnter)
         .subscribe(grid.onMouseLeave, hideTooltip)
-        .subscribe(grid.onHeaderMouseLeave, hideTooltip);
+        .subscribe(grid.onHeaderMouseLeave, hideTooltip)
+        .subscribe(grid.onHeaderRowMouseLeave, hideTooltip);
     }
 
     /**
@@ -119,10 +122,23 @@
     }
 
     /**
-     * Handle mouse entering grid cell header to show tooltip.
+     * Handle mouse entering grid header title to show tooltip.
      * @param {jQuery.Event} e - The event
      */
     function handleOnHeaderMouseEnter(e, args) {
+      handleOnHeaderMouseEnterByType(e, args, 'slick-header-column');
+    }
+
+    /**
+     * Handle mouse entering grid cell header-row (filter) to show tooltip.
+     * @param {jQuery.Event} e - The event
+     */
+    function handleOnHeaderRowMouseEnter(e, args) {
+      handleOnHeaderMouseEnterByType(e, args, 'slick-headerrow-column');
+    }
+
+    /** depending on the selector type, execute the necessary handler code */
+    function handleOnHeaderMouseEnterByType(e, args, selector) {
       // before doing anything, let's remove any previous tooltip before
       // and cancel any opened Promise/Observable when using async
       hideTooltip();
@@ -149,24 +165,26 @@
 
       if (columnDef && e.target) {
         _cellTooltipOptions = $.extend(true, {}, _options, columnDef.customTooltip);
-        _cellNodeElm = findClosestHeaderNode(e.target);
+        _cellNodeElm = findClosestHeaderNode(e.target, selector);
+        var isHeaderRowType = selector === 'slick-headerrow-column';
+        var formatter = isHeaderRowType ? _cellTooltipOptions.headerRowFormatter : _cellTooltipOptions.headerFormatter;
 
         executeTooltipOpenDelayWhenProvided(function () {
-          if (_cellTooltipOptions.useRegularTooltip || !_cellTooltipOptions.headerFormatter) {
-            renderRegularTooltip(columnDef.name, cell, null, columnDef, item);
-          } else if (_cellNodeElm && typeof _cellTooltipOptions.headerFormatter === 'function') {
-            renderTooltipFormatter(_cellTooltipOptions.headerFormatter, cell, null, columnDef, item);
+          if (_cellTooltipOptions.useRegularTooltip || !formatter) {
+            renderRegularTooltip(!isHeaderRowType ? columnDef.name : formatter, cell, null, columnDef, item);
+          } else if (_cellNodeElm && typeof formatter === 'function') {
+            renderTooltipFormatter(formatter, cell, null, columnDef, item);
           }
         }, _cellTooltipOptions.tooltipDelay);
       }
     }
 
-    function findClosestHeaderNode(elm) {
+    function findClosestHeaderNode(elm, selector) {
       if (typeof elm.closest === 'function') {
-        return elm.closest('.slick-header-column');
+        return elm.closest('.' + selector);
       }
-      return elm.classList.contains('slick-header-column')
-        ? elm : elm.parentElement.classList.contains('slick-header-column')
+      return elm.classList.contains(selector)
+        ? elm : elm.parentElement.classList.contains(selector)
           ? elm.parentElement : null;
     }
 
@@ -269,7 +287,7 @@
         tmpTitleElm = _cellNodeElm && _cellNodeElm.getAttribute('title') ? _cellNodeElm : tmpDiv.querySelector('[title]');
       }
       var tooltipText = (tmpTitleElm && tmpTitleElm.getAttribute('title')) || '';
-      if (tooltipText !== '') {
+      if (tooltipText !== '' || (typeof formatterOrText === 'function' && !_cellTooltipOptions.useRegularTooltipFromFormatterOnly)) {
         renderTooltipFormatter(formatterOrText, cell, value, columnDef, item, tooltipText);
       }
 

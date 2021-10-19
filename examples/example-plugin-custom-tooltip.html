@@ -17,10 +17,33 @@
     .cell-effort-driven {
       text-align: center;
     }
+    .slick-headerrow-column {
+      background: #c4ddc4;
+      text-overflow: clip;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
 
+    .slick-headerrow-column input {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+    
     .header-tooltip-title {
       font-weight: bold;
       font-size: 14px;
+    }
+    .headerrow-tooltip-title {
+      color: #AD0041;
+      font-style: italic;
+      font-size: 13px;
+    }
+    .l2 .headerrow-tooltip-title {
+      color: #ffffff;
     }
     .tooltip-2cols-row {
       display: grid;
@@ -100,6 +123,7 @@
   <script src="../plugins/slick.cellselectionmodel.js"></script>
   <script src="../plugins/slick.rowselectionmodel.js"></script>
   <script src="../plugins/slick.customtooltip.js"></script>
+  <script src="../slick.dataview.js"></script>
   <script src="../slick.formatters.js"></script>
   <script src="../slick.editors.js"></script>
   <script src="../slick.grid.js"></script>
@@ -123,9 +147,30 @@
       }
     }
 
+    function filter(item) {
+      for (var columnId in columnFilters) {
+        if (columnId !== undefined && columnFilters[columnId] !== "") {
+          var column = grid.getColumns()[grid.getColumnIndex(columnId)];
+
+          if (item[column.field] !== undefined) {
+            var filterResult = typeof item[column.field].indexOf === 'function'
+              ? (item[column.field].indexOf(columnFilters[columnId]) === -1)
+              : (item[column.field] != columnFilters[columnId]);
+
+            if (filterResult) {
+              return false;
+            }
+          }
+        }
+      }
+      return true;
+    }
+
     var isTooltipDisabled = false;
+    var columnFilters = {};
     var grid;
     var data = [];
+    var dataView;
     var customTooltipPlugin;
     var columns = [
       {
@@ -167,17 +212,22 @@
       { id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Date },
       { id: "effortDriven", name: "Effort Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, editor: Slick.Editors.Checkbox }
     ];
+
     var gridOptions = {
       editable: true,
       enableAddRow: true,
       enableCellNavigation: true,
+      explicitInitialization: true,
       asyncEditorLoading: false,
       autoEdit: false,
+      showHeaderRow: true,
+      headerRowHeight: 30,
       multiSelect: true,
       // Custom Tooltip options can be defined in a Column or Grid Options or a mixed of both (first options found wins)
       customTooltip: {
         formatter: tooltipFormatter,
         headerFormatter: headerFormatter,
+        headerRowFormatter: headerRowFormatter,
         // tooltipDelay: 250,
         usabilityOverride: function (args) {
          return !isTooltipDisabled && args.cell !== 0; // don't show on first column (row selection column)
@@ -190,6 +240,12 @@
       const tooltipTitle = 'Custom Tooltip - Header';
       return '<div class="header-tooltip-title" style="font-weight: bold">' + tooltipTitle + '</div>'
       + '<div class="tooltip-2cols-row"><div>Column:</div> <div>' + column.name + '</div></div>';
+    }
+
+    function headerRowFormatter(row, cell, value, column, dataContext) {
+      const tooltipTitle = 'Custom Tooltip - Header Row (filter)';
+      return '<div class="headerrow-tooltip-title" style="font-weight: bold">' + tooltipTitle + '</div>'
+      + '<div class="tooltip-2cols-row"><div>Column:</div> <div>' + column.field + '</div></div>';
     }
 
     function tooltipFormatter(row, cell, value, column, dataContext) {
@@ -234,21 +290,47 @@
         cssClass: "slick-cell-checkboxsel"
       });
       columns.unshift(checkboxSelector.getColumnDefinition());
-      grid = new Slick.Grid("#myGrid", data, columns, gridOptions);
+      dataView = new Slick.Data.DataView();
+      grid = new Slick.Grid("#myGrid", dataView, columns, gridOptions);
       grid.setSelectionModel(new Slick.RowSelectionModel({ selectActiveRow: false }));
       grid.registerPlugin(checkboxSelector);
 
-       customTooltipPlugin = new Slick.Plugins.CustomTooltip();
+      customTooltipPlugin = new Slick.Plugins.CustomTooltip();
       grid.setSelectionModel(new Slick.CellSelectionModel());
       grid.registerPlugin(customTooltipPlugin);
 
-      grid.onAddNewRow.subscribe(function (e, args) {
-        var item = args.item;
-        grid.invalidateRow(data.length);
-        data.push(item);
+      $(grid.getHeaderRow()).on("change keyup", ":input", function (e) {
+        var columnId = $(this).data("columnId");
+        if (columnId != null) {
+          // keep filter in global variable & filter dataset by calling a refresh
+          columnFilters[columnId] = $.trim($(this).val());
+          dataView.refresh();
+        }
+      });
+
+      grid.onHeaderRowCellRendered.subscribe(function(e, args) {
+        $(args.node).empty();
+        $("<input type='text'>")
+            .data("columnId", args.column.id)
+            .val(columnFilters[args.column.id])
+            .appendTo(args.node);
+      });
+
+      dataView.onRowCountChanged.subscribe(function (e, args) {
         grid.updateRowCount();
         grid.render();
       });
+
+      dataView.onRowsChanged.subscribe(function (e, args) {
+        grid.invalidateRows(args.rows);
+        grid.render();
+      });
+
+      grid.init();
+      dataView.beginUpdate();
+      dataView.setItems(data);
+      dataView.setFilter(filter);
+      dataView.endUpdate();
     })
   </script>
 </body>
