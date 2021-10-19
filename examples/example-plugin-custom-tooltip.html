@@ -152,11 +152,11 @@
       },
       { 
         id: "desc", name: '<span title="custom title tooltip text">Description</span>', field: "description", width: 100, editor: Slick.Editors.LongText,  
-        formatter: (row, cell, value, column, dataContext) => `<span title="<b>regular tooltip</b> (from title attribute) \r${dataContext.title} cell value:\r ${value || ''}">${value || ''}</span>`,
+        formatter: (row, cell, value, column, dataContext) => `<span title="regular tooltip (from title attribute)\r${dataContext.title} cell value:\r${value || ''}">${value || ''}</span>`,
         // define tooltip options here OR for the entire grid via the grid options (cell tooltip options will have precedence over grid options)
         customTooltip: {
           useRegularTooltip: true, // note regular tooltip will try to find a "title" attribute in the cell formatter (it won't work without a cell formatter)
-          renderRegularTooltipAsHtml: true, // defaults to false, regular "title" tooltip won't be rendered as html unless specified via this flag (also "\r\n" will be replaced by <br>)
+          // renderRegularTooltipAsHtml: true, // defaults to false, regular "title" tooltip won't be rendered as html unless specified via this flag (also "\r\n" will be replaced by <br>)
           // maxWidth: 100,
           // maxHeight: 30,
         },
@@ -178,6 +178,7 @@
       customTooltip: {
         formatter: tooltipFormatter,
         headerFormatter: headerFormatter,
+        // tooltipDelay: 250,
         usabilityOverride: function (args) {
          return !isTooltipDisabled && args.cell !== 0; // don't show on first column (row selection column)
         }
@@ -221,7 +222,7 @@
 
         d["id"] = i;
         d["title"] = "Task " + i;
-        d["description"] = "This is a sample task description.\n  It can be multiline";
+        d["description"] = "This is a sample task description.\nIt can be multiline\r\rAnother line...";
         d["duration"] = "5 days";
         d["percentComplete"] = Math.round(Math.random() * 100);
         d["start"] = "01/01/2009";
