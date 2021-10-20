@@ -9,7 +9,7 @@
   height: auto;
   width: auto;
   z-index: 200;
-  overflow: initial;
+  overflow: inherit;
   text-overflow: ellipsis;
   white-space: normal;
 }

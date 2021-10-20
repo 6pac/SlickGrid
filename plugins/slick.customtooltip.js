@@ -46,12 +46,13 @@
  *   offsetRight:                         defaults to 0, optional right offset, it must be a positive/negative number (in pixel) that will be added to the offset position calculation of the tooltip container.
  *   offsetTopBottom:                     defaults to 4, optional top or bottom offset (depending on which side it shows), it must be a positive/negative number (in pixel) that will be added to the offset position calculation of the tooltip container.
  *   position:                            defaults to "auto" (available options: 'auto' | 'top' | 'bottom' | 'left-align' | 'right-align'), allows to align the tooltip to the best logical position in the window, by default it will show on top left but if it calculates that it doesn't have enough space it will use bottom (same goes for each side align)
+ *   regularTooltipWhiteSpace:            defaults to `pre-line`, optionally change the style `white-space` when displaying regular text tooltip. NOTE: when using a formatter it will use the `whiteSpace` setting instead
+ *   whiteSpace:                          defaults to `normal`, optionally change the style `white-space` when displaying tooltip with formatter (tooltip or regular formatter)
  *   useRegularTooltip:                   defaults to False, when set to True it will try parse through the regular cell formatter and try to find a `title` attribute to show as a regular tooltip (also note: this has precedence over customTooltip formatter defined)
  *   useRegularTooltipFromFormatterOnly:  defaults to False, optionally force to retrieve the `title` from the Formatter result instead of the cell itself.
  *                                            for example, when used in combo with the AutoTooltip plugin we might want to force the tooltip to read the `title` attribute from the formatter result first instead of the cell itself,
  *                                            make the cell as a 2nd read, in other words check the formatter prior to the cell which the AutoTooltip might have filled.
  *   renderRegularTooltipAsHtml:          defaults to false, regular "title" tooltip won't be rendered as html unless specified via this flag (also "\r\n" will be replaced by <br>)
- *   tooltipDelay:                        no defaults, when provided it will delay the tooltip open
  *   tooltipTextMaxLength:                defaults to 700 (characters), when defined the text will be truncated to the max length characters provided
  *   usabilityOverride:                   callback method that user can override the default behavior of showing the tooltip. If it returns False, then the tooltip won't show
  *
@@ -88,8 +89,9 @@
       offsetRight: 0,
       offsetTopBottom: 4,
       hideArrow: false,
-      tooltipDelay: null,
       tooltipTextMaxLength: 700,
+      regularTooltipWhiteSpace: 'pre-line',
+      whiteSpace: 'normal',
     };
     var _eventHandler = new Slick.EventHandler();
     var _cellTooltipOptions = {};
@@ -149,6 +151,7 @@
       };
       var columnDef = args.column;
       var item = {};
+      var isHeaderRowType = selector === 'slick-headerrow-column';
 
       // run the override function (when defined), if the result is false it won't go further
       if (!args) {
@@ -159,23 +162,24 @@
       args.columnDef = columnDef;
       args.dataContext = item;
       args.grid = _grid;
-      if (!runOverrideFunctionWhenExists(_cellTooltipOptions.usabilityOverride, args)) {
+      args.type = isHeaderRowType ? 'header-row' : 'header';
+
+      _cellTooltipOptions = $.extend(true, {}, _options, columnDef.customTooltip);
+      if ((columnDef && columnDef.disableTooltip) || !runOverrideFunctionWhenExists(_cellTooltipOptions.usabilityOverride, args)) {
         return;
       }
 
       if (columnDef && e.target) {
-        _cellTooltipOptions = $.extend(true, {}, _options, columnDef.customTooltip);
         _cellNodeElm = findClosestHeaderNode(e.target, selector);
         var isHeaderRowType = selector === 'slick-headerrow-column';
         var formatter = isHeaderRowType ? _cellTooltipOptions.headerRowFormatter : _cellTooltipOptions.headerFormatter;
 
-        executeTooltipOpenDelayWhenProvided(function () {
-          if (_cellTooltipOptions.useRegularTooltip || !formatter) {
-            renderRegularTooltip(!isHeaderRowType ? columnDef.name : formatter, cell, null, columnDef, item);
-          } else if (_cellNodeElm && typeof formatter === 'function') {
-            renderTooltipFormatter(formatter, cell, null, columnDef, item);
-          }
-        }, _cellTooltipOptions.tooltipDelay);
+        if (_cellTooltipOptions.useRegularTooltip || !formatter) {
+          var formatterOrText = !isHeaderRowType ? columnDef.name : _cellTooltipOptions.useRegularTooltip ? null : formatter;
+          renderRegularTooltip(formatterOrText, cell, null, columnDef, item);
+        } else if (_cellNodeElm && typeof formatter === 'function') {
+          renderTooltipFormatter(formatter, cell, null, columnDef, item);
+        }
       }
     }
 
@@ -207,66 +211,67 @@
           _cellTooltipOptions = $.extend(true, {}, _options, columnDef.customTooltip);
 
           if (item && columnDef) {
-            executeTooltipOpenDelayWhenProvided(function () {
-              // run the override function (when defined), if the result is false it won't go further
-              if (!args) {
-                args = {};
-              }
-              args.cell = cell.cell;
-              args.row = cell.row;
-              args.columnDef = columnDef;
-              args.dataContext = item;
-              args.grid = _grid;
-              if (!runOverrideFunctionWhenExists(_cellTooltipOptions.usabilityOverride, args)) {
-                return;
-              }
+            // run the override function (when defined), if the result is false it won't go further
+            if (!args) {
+              args = {};
+            }
+            args.cell = cell.cell;
+            args.row = cell.row;
+            args.columnDef = columnDef;
+            args.dataContext = item;
+            args.grid = _grid;
+            args.type = 'cell';
+            if ((columnDef && columnDef.disableTooltip) || !runOverrideFunctionWhenExists(_cellTooltipOptions.usabilityOverride, args)) {
+              return;
+            }
 
-              var value = item.hasOwnProperty(columnDef.field) ? item[columnDef.field] : null;
+            var value = item.hasOwnProperty(columnDef.field) ? item[columnDef.field] : null;
 
-              if (_cellTooltipOptions.useRegularTooltip || !_cellTooltipOptions.formatter) {
-                renderRegularTooltip(columnDef.formatter, cell, value, columnDef, item);
-              } else {
-                if (typeof _cellTooltipOptions.formatter === 'function') {
-                  renderTooltipFormatter(_cellTooltipOptions.formatter, cell, value, columnDef, item);
+            if (_cellTooltipOptions.useRegularTooltip || !_cellTooltipOptions.formatter) {
+              renderRegularTooltip(columnDef.formatter, cell, value, columnDef, item);
+            } else {
+              if (typeof _cellTooltipOptions.formatter === 'function') {
+                renderTooltipFormatter(_cellTooltipOptions.formatter, cell, value, columnDef, item);
+              }
+              if (typeof _cellTooltipOptions.asyncProcess === 'function') {
+                var asyncProcess = _cellTooltipOptions.asyncProcess(cell.row, cell.cell, value, columnDef, item, _grid);
+                if (!_cellTooltipOptions.asyncPostFormatter) {
+                  throw new Error('[Slickgrid-Universal] when using "asyncProcess", you must also provide an "asyncPostFormatter" formatter');
                 }
-                if (typeof _cellTooltipOptions.asyncProcess === 'function') {
-                  var asyncProcess = _cellTooltipOptions.asyncProcess(cell.row, cell.cell, value, columnDef, item, _grid);
-                  if (!_cellTooltipOptions.asyncPostFormatter) {
-                    throw new Error('[Slickgrid-Universal] when using "asyncProcess", you must also provide an "asyncPostFormatter" formatter');
-                  }
 
-                  if (asyncProcess instanceof Promise) {
-                    // create a new cancellable promise which will resolve, unless it's cancelled, with the udpated `dataContext` object that includes the `__params`
-                    _cancellablePromise = cancellablePromise(asyncProcess);
-                    _cancellablePromise.promise
-                      .then(function (asyncResult) {
-                        asyncProcessCallback(asyncResult, cell, value, columnDef, item)
-                      })
-                      .catch(function (error) {
-                        // we will throw back any errors, unless it's a cancelled promise which in that case will be disregarded (thrown by the promise wrapper cancel() call)
-                        if (!(error.isPromiseCancelled)) {
-                          throw error;
-                        }
-                      });
-                  }
+                if (asyncProcess instanceof Promise) {
+                  // create a new cancellable promise which will resolve, unless it's cancelled, with the udpated `dataContext` object that includes the `__params`
+                  _cancellablePromise = cancellablePromise(asyncProcess);
+                  _cancellablePromise.promise
+                    .then(function (asyncResult) {
+                      asyncProcessCallback(asyncResult, cell, value, columnDef, item)
+                    })
+                    .catch(function (error) {
+                      // we will throw back any errors, unless it's a cancelled promise which in that case will be disregarded (thrown by the promise wrapper cancel() call)
+                      if (!(error.isPromiseCancelled)) {
+                        throw error;
+                      }
+                    });
                 }
               }
-            }, _cellTooltipOptions.tooltipDelay);
+            }
           }
         }
       }
     }
 
-    function executeTooltipOpenDelayWhenProvided(fn, delay) {
-      if (typeof delay === 'number') {
-        hideTooltip();
-        setTimeout(function () {
-          hideTooltip();
-          fn.call(this);
-        }, delay);
-      } else {
-        fn.call(this);
+    function findFirstElementAttribute(inputElm, attributes) {
+      if (inputElm) {
+        var outputAttrData;
+        attributes.forEach(function (attribute) {
+          var attrData = inputElm.getAttribute(attribute);
+          if (attrData) {
+            outputAttrData = attrData;
+          }
+        });
+        return outputAttrData;
       }
+      return null;
     }
 
     /**
@@ -276,35 +281,55 @@
      */
     function renderRegularTooltip(formatterOrText, cell, value, columnDef, item) {
       var tmpDiv = document.createElement('div');
-      tmpDiv.innerHTML = sanitizeHtmlString(parseFormatter(formatterOrText, cell, value, columnDef, item));
-
-      // the title attribute might be directly on the slick-cell element (e.g. AutoTooltip plugin)
-      // OR in a child element (most commonly as a custom formatter)
+      tmpDiv.innerHTML = parseFormatterAndSanitize(formatterOrText, cell, value, columnDef, item);
+      var tooltipText = columnDef.toolTip || '';
       var tmpTitleElm;
-      if (_cellTooltipOptions.useRegularTooltipFromFormatterOnly) {
-        tmpTitleElm = tmpDiv.querySelector('[title]');
-      } else {
-        tmpTitleElm = _cellNodeElm && _cellNodeElm.getAttribute('title') ? _cellNodeElm : tmpDiv.querySelector('[title]');
+
+      if (!tooltipText) {
+        if ((_cellNodeElm && (_cellNodeElm.clientWidth < _cellNodeElm.scrollWidth)) && !_cellTooltipOptions.useRegularTooltipFromFormatterOnly) {
+          tooltipText = (_cellNodeElm.textContent || '').trim() || '';
+          if (_cellTooltipOptions.tooltipTextMaxLength && (tooltipText.length > _cellTooltipOptions.tooltipTextMaxLength)) {
+            tooltipText = tooltipText.substr(0, _cellTooltipOptions.tooltipTextMaxLength - 3) + '...';
+          }
+          tmpTitleElm = _cellNodeElm;
+        } else {
+          if (_cellTooltipOptions.useRegularTooltipFromFormatterOnly) {
+            tmpTitleElm = tmpDiv.querySelector('[title], [data-slick-tooltip]');
+          } else {
+            tmpTitleElm = findFirstElementAttribute(_cellNodeElm, ['title', 'data-slick-tooltip']) ? _cellNodeElm : tmpDiv.querySelector('[title], [data-slick-tooltip]');
+            if ((!tmpTitleElm || !findFirstElementAttribute(tmpTitleElm, ['title', 'data-slick-tooltip'])) && _cellNodeElm) {
+              tmpTitleElm = _cellNodeElm.querySelector('[title], [data-slick-tooltip]');
+            }
+          }
+          if (!tooltipText || (typeof formatterOrText === 'function' && _cellTooltipOptions.useRegularTooltipFromFormatterOnly)) {
+            tooltipText = findFirstElementAttribute(tmpTitleElm, ['title', 'data-slick-tooltip']) || '';
+          }
+        }
       }
-      var tooltipText = (tmpTitleElm && tmpTitleElm.getAttribute('title')) || '';
-      if (tooltipText !== '' || (typeof formatterOrText === 'function' && !_cellTooltipOptions.useRegularTooltipFromFormatterOnly)) {
-        renderTooltipFormatter(formatterOrText, cell, value, columnDef, item, tooltipText);
+
+      if (tooltipText !== '') {
+        renderTooltipFormatter(formatterOrText, cell, value, columnDef, item, tooltipText /* , _cellTooltipOptions.useRegularTooltipFromFormatterOnly ? null : tmpTitleElm */);
       }
 
       // also clear any "title" attribute to avoid showing a 2nd browser tooltip
-      clearTitleAttribute(tmpTitleElm);
+      clearTitleAttribute(tmpTitleElm, tooltipText);
     }
 
     /**
      * clear the "title" attribute from the grid div text content so that it won't show also as a 2nd browser tooltip
      * note: the reason we can do delete it completely is because we always re-execute the formatter whenever we hover the tooltip and so we have a fresh title attribute each time to use
      */
-    function clearTitleAttribute(inputTitleElm) {
-      // the title attribute might be directly on the slick-cell element (e.g. AutoTooltip plugin)
+    function clearTitleAttribute(inputTitleElm, tooltipText) {
+      // the title attribute might be directly on the slick-cell container element (when formatter returns a result object)
       // OR in a child element (most commonly as a custom formatter)
-      var titleElm = inputTitleElm || (_cellNodeElm && _cellNodeElm.hasAttribute('title')) ? _cellNodeElm : (_cellNodeElm && _cellNodeElm.querySelector('[title]'));
+      var titleElm = inputTitleElm || (_cellNodeElm && ((_cellNodeElm.hasAttribute('title') && _cellNodeElm.getAttribute('title')) ? _cellNodeElm : _cellNodeElm.querySelector('[title]')));
+
+      // flip tooltip text from `title` to `data-slick-tooltip`
       if (titleElm) {
-        titleElm.setAttribute('title', '');
+        titleElm.setAttribute('data-slick-tooltip', tooltipText || '');
+        if (titleElm.hasAttribute('title')) {
+          titleElm.setAttribute('title', '');
+        }
       }
     }
 
@@ -437,7 +462,7 @@
      * Parse the Custom Formatter (when provided) or return directly the text when it is already a string.
      * We will also sanitize the text in both cases before returning it so that it can be used safely.
      */
-    function parseFormatter(formatterOrText, cell, value, columnDef, item) {
+    function parseFormatterAndSanitize(formatterOrText, cell, value, columnDef, item) {
       if (typeof formatterOrText === 'function') {
         var tooltipText = formatterOrText(cell.row, cell.cell, value, columnDef, item, _grid);
         var formatterText = ((typeof tooltipText === 'object' && tooltipText.text) ? tooltipText.text : typeof tooltipText === 'string' ? tooltipText : '');
@@ -449,20 +474,21 @@
     }
 
 
-    function renderTooltipFormatter(formatter, cell, value, columnDef, item, tooltipText) {
+    function renderTooltipFormatter(formatter, cell, value, columnDef, item, tooltipText, inputTitleElm) {
       // create the tooltip DOM element with the text returned by the Formatter
       _tooltipElm = document.createElement('div');
       _tooltipElm.className = _cellTooltipOptions.className + ' ' + _grid.getUID();
       _tooltipElm.classList.add('l' + cell.cell);
       _tooltipElm.classList.add('r' + cell.cell);
-      var outputText = tooltipText || parseFormatter(formatter, cell, value, columnDef, item) || '';
-      outputText = ((_cellTooltipOptions.tooltipTextMaxLength && outputText.length) > _cellTooltipOptions.tooltipTextMaxLength) ? outputText.substr(0, _cellTooltipOptions.tooltipTextMaxLength) + '...' : outputText;
+      var outputText = tooltipText || parseFormatterAndSanitize(formatter, cell, value, columnDef, item) || '';
+      outputText = (_cellTooltipOptions.tooltipTextMaxLength && outputText.length > _cellTooltipOptions.tooltipTextMaxLength) ? outputText.substr(0, _cellTooltipOptions.tooltipTextMaxLength - 3) + '...' : outputText;
 
-      if (!tooltipText || _cellTooltipOptions && _cellTooltipOptions.renderRegularTooltipAsHtml) {
+      if (!tooltipText || (_cellTooltipOptions && _cellTooltipOptions.renderRegularTooltipAsHtml)) {
         _tooltipElm.innerHTML = sanitizeHtmlString(outputText);
+        _tooltipElm.style.whiteSpace = (_cellTooltipOptions && _cellTooltipOptions.whiteSpace) || _defaultOptions.whiteSpace;
       } else {
         _tooltipElm.textContent = outputText || '';
-        _tooltipElm.style.whiteSpace = 'pre'; // use `pre` so that sequences of white space are preserved
+        _tooltipElm.style.whiteSpace = (_cellTooltipOptions && _cellTooltipOptions.regularTooltipWhiteSpace) || _defaultOptions.regularTooltipWhiteSpace; // use `pre` so that sequences of white space are collapsed. Lines are broken at newline characters
       }
 
       // optional max height/width of the tooltip container
@@ -484,7 +510,7 @@
       }
 
       // also clear any "title" attribute to avoid showing a 2nd browser tooltip
-      clearTitleAttribute();
+      clearTitleAttribute(inputTitleElm, outputText);
     }
 
     /**

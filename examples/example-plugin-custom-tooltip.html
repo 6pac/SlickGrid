@@ -58,12 +58,6 @@
       background-color: #363636;
       color: #ffffff;
       border: 2px solid #252525;
-      /* overflow: hidden;
-      text-overflow: ellipsis;
-      white-space: nowrap;
-      display: -webkit-box;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2; */
     }
     .l2.slick-custom-tooltip.tooltip-arrow.arrow-up::before {
       border-bottom: 7px solid #252525;
@@ -201,15 +195,23 @@
         // define tooltip options here OR for the entire grid via the grid options (cell tooltip options will have precedence over grid options)
         customTooltip: {
           useRegularTooltip: true, // note regular tooltip will try to find a "title" attribute in the cell formatter (it won't work without a cell formatter)
+          // useRegularTooltipFromFormatterOnly: true,
           // renderRegularTooltipAsHtml: true, // defaults to false, regular "title" tooltip won't be rendered as html unless specified via this flag (also "\r\n" will be replaced by <br>)
-          // maxWidth: 100,
+          // maxWidth: 75,
           // maxHeight: 30,
         },
       },
       { id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Text },
       { id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete },
       { id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Date },
-      { id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Date },
+      { 
+        id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Date,
+        // you could disable the custom/regular tooltip via either of the following 2 options
+        disableTooltip: true,
+        // customTooltip: {
+        //   usabilityOverride: (args) => false,
+        // },
+      },
       { id: "effortDriven", name: "Effort Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, editor: Slick.Editors.Checkbox }
     ];
 
