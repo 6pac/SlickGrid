@@ -2,7 +2,7 @@
 
 describe('Example - Custom Tooltip', () => {
   const GRID_ROW_HEIGHT = 25;
-  const titles = ['', 'Title', 'Description', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
+  const titles = ['', 'Title', 'Description', 'Description 2', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
 
   beforeEach(() => {
     // create a console.log spy for later use
@@ -80,13 +80,25 @@ describe('Example - Custom Tooltip', () => {
     cy.get('@desc5-cell').trigger('mouseover');
 
     cy.get('.slick-custom-tooltip').should('be.visible');
+    cy.get('.slick-custom-tooltip').should('not.contain', `regular tooltip (from title attribute)\nTask 5 cell value:\nThis is a sample task description.\nIt can be multiline\n\nAnother line...`);
     cy.get('.slick-custom-tooltip').should('contain', `This is a sample task description.\nIt can be multiline\n\nAnother line...`);
 
     cy.get('@desc5-cell').trigger('mouseleave');
   });
 
+  it('should mouse over 6th row Description 2 and expect regular tooltip title + concatenated full cell content when using "useRegularTooltipFromFormatterOnly: true"', () => {
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(3)`).as('desc2-5-cell')
+    cy.get('@desc2-5-cell').should('contain', 'This is a sample task description.');
+    cy.get('@desc2-5-cell').trigger('mouseover');
+
+    cy.get('.slick-custom-tooltip').should('be.visible');
+    cy.get('.slick-custom-tooltip').should('contain', `regular tooltip (from title attribute)\nTask 5 cell value:\nThis is a sample task description.\nIt can be multiline\n\nAnother line...`);
+
+    cy.get('@desc2-5-cell').trigger('mouseleave');
+  });
+
   it('should mouse over 6th row Duration and expect a custom tooltip shown with 4 label/value pairs displayed', () => {
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(3)`).as('duration5-cell')
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(4)`).as('duration5-cell')
     cy.get('@duration5-cell').should('contain', '5 days');
     cy.get('@duration5-cell').trigger('mouseover');
 
@@ -131,7 +143,7 @@ describe('Example - Custom Tooltip', () => {
   });
 
   it('should mouse over header-row (filter) Finish column and NOT expect any tooltip to show since it is disabled on that column', () => {
-    cy.get(`.slick-headerrow-columns .slick-headerrow-column:nth(6)`).as('finish-filter')
+    cy.get(`.slick-headerrow-columns .slick-headerrow-column:nth(7)`).as('finish-filter')
     cy.get('@finish-filter').trigger('mouseover');
 
     cy.get('.slick-custom-tooltip').should('not.exist');
@@ -160,7 +172,7 @@ describe('Example - Custom Tooltip', () => {
   });
 
   it('should mouse over header title on 2nd column with Finish name and NOT expect any tooltip to show since it is disabled on that column', () => {
-    cy.get(`.slick-header-columns .slick-header-column:nth(6)`).as('finish-header')
+    cy.get(`.slick-header-columns .slick-header-column:nth(7)`).as('finish-header')
     cy.get('@finish-header').trigger('mouseover');
 
     cy.get('.slick-custom-tooltip').should('not.exist');

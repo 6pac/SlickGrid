@@ -203,7 +203,15 @@
         // define tooltip options here OR for the entire grid via the grid options (cell tooltip options will have precedence over grid options)
         customTooltip: {
           useRegularTooltip: true, // note regular tooltip will try to find a "title" attribute in the cell formatter (it won't work without a cell formatter)
-          // useRegularTooltipFromFormatterOnly: true,
+        },
+      },
+      { 
+        id: "desc2", name: '<span title="custom title tooltip text">Description 2</span>', field: "description", width: 100, editor: Slick.Editors.LongText,  
+        formatter: (row, cell, value, column, dataContext) => `<span title="regular tooltip (from title attribute)\r${dataContext.title} cell value:\r${value || ''}">${value || ''}</span>`,
+        // define tooltip options here OR for the entire grid via the grid options (cell tooltip options will have precedence over grid options)
+        customTooltip: {
+          useRegularTooltip: true, // note regular tooltip will try to find a "title" attribute in the cell formatter (it won't work without a cell formatter)
+          useRegularTooltipFromFormatterOnly: true,
           // renderRegularTooltipAsHtml: true, // defaults to false, regular "title" tooltip won't be rendered as html unless specified via this flag (also "\r\n" will be replaced by <br>)
           // maxWidth: 75,
           // maxHeight: 30,
