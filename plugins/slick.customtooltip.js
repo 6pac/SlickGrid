@@ -477,7 +477,8 @@
     function renderTooltipFormatter(formatter, cell, value, columnDef, item, tooltipText, inputTitleElm) {
       // create the tooltip DOM element with the text returned by the Formatter
       _tooltipElm = document.createElement('div');
-      _tooltipElm.className = _cellTooltipOptions.className + ' ' + _grid.getUID();
+      _tooltipElm.className = _cellTooltipOptions.className;
+      _tooltipElm.classList.add(_grid.getUID());
       _tooltipElm.classList.add('l' + cell.cell);
       _tooltipElm.classList.add('r' + cell.cell);
       var outputText = tooltipText || parseFormatterAndSanitize(formatter, cell, value, columnDef, item) || '';

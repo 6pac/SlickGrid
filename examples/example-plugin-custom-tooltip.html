@@ -75,7 +75,7 @@
     </div>
 
     <div class="options-panel">
-      <h2>Demonstrates:</h2>
+      <h2>Demonstrates: <code>Slick.Plugins.CustomTooltip</code></h2>
       <ul>
         <li>Custom Tooltip Plugin</li>
         <li>1st column shows an async tooltip (could be an API with Promise), it demos a formatter which itself has a
@@ -101,6 +101,9 @@
         <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-plugin-custom-tooltip.html"
             target="_sourcewindow"> View the source for this example on Github</a></li>
       </ul>
+      <p>
+	      <input type="number" id="server-delay" value="500"/> <button id="set-delay-btn" onclick="changeServerDelay()">Change Server Delay Wait (ms)</button>
+	    </p>
     </div>
   </div>
 
@@ -141,6 +144,10 @@
       }
     }
 
+    function changeServerDelay(delay) {
+      serverApiDelay = delay;
+    }
+
     function filter(item) {
       for (var columnId in columnFilters) {
         if (columnId !== undefined && columnFilters[columnId] !== "") {
@@ -166,6 +173,7 @@
     var data = [];
     var dataView;
     var customTooltipPlugin;
+    var serverApiDelay = 500; // simulate API server call delay
     var columns = [
       {
         id: "title", name: "Title", field: "title", width: 70, cssClass: "cell-title",
@@ -181,7 +189,7 @@
           // you will need to provide an `asyncPost` function returning a Promise and also `asyncPostFormatter` formatter to display the result once the Promise resolves
           formatter: () => `<div>loading...</div>`,
           asyncProcess: () => new Promise(resolve => {
-            setTimeout(() => resolve({ ratio: Math.random() * 10 / 10, lifespan: Math.random() * 100 }), 500);
+            setTimeout(() => resolve({ ratio: Math.random() * 10 / 10, lifespan: Math.random() * 100 }), serverApiDelay);
           }),
           asyncPostFormatter: this.tooltipTaskFormatter.bind(this),
 
