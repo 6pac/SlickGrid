@@ -1,16 +1,17 @@
 /**
  * Row Move Manager options:
- *    cssClass:             A CSS class to be added to the menu item container.
- *    columnId:             Column definition id (defaults to "_move")
- *    cancelEditOnDrag:     Do we want to cancel any Editing while dragging a row (defaults to false)
- *    disableRowSelection:  Do we want to disable the row selection? (defaults to false)
- *    hideRowMoveShadow:    Do we want to hide the row move shadow clone? (defaults to true)
- *    rowMoveShadowMarginLeft:    When row move shadow is shown, optional margin-left (defaults to -5%)
- *    rowMoveShadowOpacity: When row move shadow is shown, what is its opacity? (defaults to 1)
- *    rowMoveShadowScale:   When row move shadow is shown, what is its size scale? (default to 0.75)
- *    singleRowMove:        Do we want a single row move? Setting this to false means that it's a multple row move (defaults to false)
- *    width:                Width of the column
- *    usabilityOverride:    Callback method that user can override the default behavior of the row being moveable or not
+ *    cssClass:                 A CSS class to be added to the menu item container.
+ *    columnId:                 Column definition id (defaults to "_move")
+ *    cancelEditOnDrag:         Do we want to cancel any Editing while dragging a row (defaults to false)
+ *    disableRowSelection:      Do we want to disable the row selection? (defaults to false)
+ *    hideRowMoveShadow:        Do we want to hide the row move shadow clone? (defaults to true)
+ *    rowMoveShadowMarginTop:   When row move shadow is shown, optional margin-top (defaults to 0)
+ *    rowMoveShadowMarginLeft:  When row move shadow is shown, optional margin-left (defaults to 0)
+ *    rowMoveShadowOpacity:     When row move shadow is shown, what is its opacity? (defaults to 0.95)
+ *    rowMoveShadowScale:       When row move shadow is shown, what is its size scale? (default to 0.75)
+ *    singleRowMove:            Do we want a single row move? Setting this to false means that it's a multple row move (defaults to false)
+ *    width:                    Width of the column
+ *    usabilityOverride:        Callback method that user can override the default behavior of the row being moveable or not
  *
  */
 (function ($) {
@@ -34,8 +35,9 @@
       cancelEditOnDrag: false,
       disableRowSelection: false,
       hideRowMoveShadow: true,
-      rowMoveShadowMarginLeft: "-5%",
-      rowMoveShadowOpacity: 1,
+      rowMoveShadowMarginTop: 0,
+      rowMoveShadowMarginLeft: 0,
+      rowMoveShadowOpacity: 0.95,
       rowMoveShadowScale: 0.75,
       singleRowMove: false,
       width: 40,
@@ -95,12 +97,11 @@
         var $slickRowElm = $(_grid.getCellNode(cell.row, cell.cell)).closest('.slick-row');
         if ($slickRowElm) {
           dd.clonedSlickRow = $slickRowElm.clone();
-          dd.clonedSlickRow.css("position", "absolute")
-            .css("zIndex", "999999")
-            .css("marginLeft", options.rowMoveShadowMarginLeft || "-5%")
+          dd.clonedSlickRow.addClass('slick-reorder-shadow-row')
+            .css("marginTop", options.rowMoveShadowMarginTop || 0)
+            .css("marginLeft", options.rowMoveShadowMarginLeft || 0)
             .css("opacity", options.rowMoveShadowOpacity || 0.95)
             .css("transform", "scale(" + options.rowMoveShadowScale + ")")
-            .css("boxShadow", "rgb(0 0 0 / 20%) 8px 2px 8px 4px, rgb(0 0 0 / 19%) 2px 2px 0px 0px")
             .appendTo(_canvas);
 
           // add a listener on the canvas whenever the mouse moves, we'll have our shadow row follow the mouse cursor
