@@ -61,7 +61,6 @@
 
     function destroy() {
       _handler.unsubscribeAll();
-      $("body").off('mousemove');
     }
 
     function setOptions(newOptions) {
@@ -103,15 +102,8 @@
             .css("marginLeft", options.rowMoveShadowMarginLeft || 0)
             .css("opacity", options.rowMoveShadowOpacity || 0.95)
             .css("transform", "scale(" + options.rowMoveShadowScale + ")")
+            .hide()
             .appendTo(_canvas);
-
-          // add a listener on the canvas whenever the mouse moves, we'll have our shadow row follow the mouse cursor
-          $("body").on('mousemove', function (e) {
-            if (dd.clonedSlickRow) {
-              var offsetY = e.pageY - $(_canvas).offset().top;
-              dd.clonedSlickRow.css("top", offsetY - 6);
-            }
-          });
         }
       }
 
@@ -133,6 +125,7 @@
         .css("zIndex", "99999")
         .css("width", $(_canvas).innerWidth())
         .css("height", rowHeight * selectedRows.length)
+        .hide()
         .appendTo(_canvas);
 
       dd.guide = $("<div class='slick-reorder-guide'/>")
@@ -153,7 +146,13 @@
       e.stopImmediatePropagation();
 
       var top = e.pageY - $(_canvas).offset().top;
-      dd.selectionProxy.css("top", top - 5);
+      dd.selectionProxy.css("top", top - 5).show();
+
+      // if the row move shadow is enabled, we'll also make it follow the mouse cursor
+      if (dd.clonedSlickRow) {
+        var offsetY = e.pageY - $(_canvas).offset().top;
+        dd.clonedSlickRow.css("top", offsetY - 6).show();
+      }
 
       var insertBefore = Math.max(0, Math.min(Math.round(top / _grid.getOptions().rowHeight), _grid.getDataLength()));
       if (insertBefore !== dd.insertBefore) {
