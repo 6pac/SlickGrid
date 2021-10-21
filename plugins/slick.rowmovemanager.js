@@ -33,6 +33,7 @@
       cancelEditOnDrag: false,
       disableRowSelection: false,
       hideRowMoveShadow: true,
+      rowMoveMarginLeft: "-5%",
       rowMoveShadowOpacity: 1,
       rowMoveShadowScale: 0.75,
       singleRowMove: false,
@@ -95,7 +96,7 @@
           dd.clonedSlickRow = $slickRowElm.clone();
           dd.clonedSlickRow.css("position", "absolute")
             .css("zIndex", "999999")
-            .css("marginLeft", "-5%")
+            .css("marginLeft", options.rowMoveMarginLeft || "-5%")
             .css("opacity", options.rowMoveShadowOpacity || 0.95)
             .css("transform", "scale(" + options.rowMoveShadowScale + ")")
             .css("boxShadow", "rgb(0 0 0 / 20%) 8px 2px 8px 4px, rgb(0 0 0 / 19%) 2px 2px 0px 0px")
