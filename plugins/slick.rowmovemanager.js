@@ -105,9 +105,9 @@
             .appendTo(_canvas);
 
           // add a listener on the canvas whenever the mouse moves, we'll have our shadow row follow the mouse cursor
-          _canvas.addEventListener('mousemove', function (e) {
+          $("body").on('mousemove', function (e) {
             if (dd.clonedSlickRow) {
-              var offsetY = e.clientY - (e.currentTarget).getBoundingClientRect().top;
+              var offsetY = e.pageY - $(_canvas).offset().top;
               dd.clonedSlickRow.css("top", offsetY - 6);
             }
           });
