@@ -61,6 +61,7 @@
 
     function destroy() {
       _handler.unsubscribeAll();
+      $("body").off('mousemove');
     }
 
     function setOptions(newOptions) {
