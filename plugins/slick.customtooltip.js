@@ -308,18 +308,18 @@
       }
 
       if (tooltipText !== '') {
-        renderTooltipFormatter(formatterOrText, cell, value, columnDef, item, tooltipText /* , _cellTooltipOptions.useRegularTooltipFromFormatterOnly ? null : tmpTitleElm */);
+        renderTooltipFormatter(formatterOrText, cell, value, columnDef, item, tooltipText);
       }
 
       // also clear any "title" attribute to avoid showing a 2nd browser tooltip
-      clearTitleAttribute(tmpTitleElm, tooltipText);
+      swapAndClearTitleAttribute(tmpTitleElm, tooltipText);
     }
 
     /**
-     * clear the "title" attribute from the grid div text content so that it won't show also as a 2nd browser tooltip
-     * note: the reason we can do delete it completely is because we always re-execute the formatter whenever we hover the tooltip and so we have a fresh title attribute each time to use
-     */
-    function clearTitleAttribute(inputTitleElm, tooltipText) {
+   * swap and copy the "title" attribute into a new custom attribute then clear the "title" attribute
+   * from the grid div text content so that it won't show also as a 2nd browser tooltip
+   */
+    function swapAndClearTitleAttribute(inputTitleElm, tooltipText) {
       // the title attribute might be directly on the slick-cell container element (when formatter returns a result object)
       // OR in a child element (most commonly as a custom formatter)
       var titleElm = inputTitleElm || (_cellNodeElm && ((_cellNodeElm.hasAttribute('title') && _cellNodeElm.getAttribute('title')) ? _cellNodeElm : _cellNodeElm.querySelector('[title]')));
@@ -435,11 +435,11 @@
         var position = _cellTooltipOptions.position || 'auto';
         if (position === 'left-align' || (position === 'auto' && (newPositionLeft + calculatedTooltipWidth) > calculatedBodyWidth)) {
           newPositionLeft -= (calculatedTooltipWidth - containerWidth - (_cellTooltipOptions.offsetRight || 0));
-          _tooltipElm.classList.remove('arrow-left');
-          _tooltipElm.classList.add('arrow-right');
+          _tooltipElm.classList.remove('arrow-left-align');
+          _tooltipElm.classList.add('arrow-right-align');
         } else {
-          _tooltipElm.classList.add('arrow-left');
-          _tooltipElm.classList.remove('arrow-right');
+          _tooltipElm.classList.add('arrow-left-align');
+          _tooltipElm.classList.remove('arrow-right-align');
         }
 
         // do the same calculation/reposition with top/bottom (default is top of the cell or in other word starting from the cell going down)
@@ -465,7 +465,7 @@
     function parseFormatterAndSanitize(formatterOrText, cell, value, columnDef, item) {
       if (typeof formatterOrText === 'function') {
         var tooltipText = formatterOrText(cell.row, cell.cell, value, columnDef, item, _grid);
-        var formatterText = ((typeof tooltipText === 'object' && tooltipText.text) ? tooltipText.text : typeof tooltipText === 'string' ? tooltipText : '');
+        var formatterText = (typeof tooltipText === 'object' && tooltipText && tooltipText.text) ? tooltipText.text : (typeof tooltipText === 'string' ? tooltipText : '');
         return sanitizeHtmlString(formatterText);
       } else if (typeof formatterOrText === 'string') {
         return sanitizeHtmlString(formatterOrText);
@@ -511,7 +511,7 @@
       }
 
       // also clear any "title" attribute to avoid showing a 2nd browser tooltip
-      clearTitleAttribute(inputTitleElm, outputText);
+      swapAndClearTitleAttribute(inputTitleElm, outputText);
     }
 
     /**

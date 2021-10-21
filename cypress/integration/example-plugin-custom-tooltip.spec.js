@@ -121,6 +121,17 @@ describe('Example - Custom Tooltip', () => {
     cy.get('@duration5-cell').trigger('mouseleave');
   });
 
+  it('should mouse over % Complete cell of Task 5 and expect regular tooltip to show with content "x %" where x is a number', () => {
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(5)`).as('percentage-cell')
+    cy.get('@percentage-cell').find('.percent-complete-bar').should('exist');
+    cy.get('@percentage-cell').trigger('mouseover');
+
+    cy.get('.slick-custom-tooltip').should('be.visible');
+    cy.get('.slick-custom-tooltip').contains(/\d+\%$/);
+
+    cy.get('@percentage-cell').trigger('mouseleave');
+  });
+
   it('should mouse over header-row (filter) 1st column checkbox and NOT expect any tooltip to show since it is disabled on that column', () => {
     cy.get(`.slick-headerrow-columns .slick-headerrow-column:nth(0)`).as('checkbox0-filter')
     cy.get('@checkbox0-filter').trigger('mouseover');

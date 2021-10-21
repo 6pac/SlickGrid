@@ -42,7 +42,7 @@
       font-style: italic;
       font-size: 13px;
     }
-    .l2 .headerrow-tooltip-title {
+    .l3 .headerrow-tooltip-title {
       color: #ffffff;
     }
     .tooltip-2cols-row {
@@ -53,28 +53,46 @@
       line-height: 20px;
     }
 
-    /* change css of 3rd column (l2 r2) */
-    .l2.slick-custom-tooltip {
+    /* change css of 3rd column (l3) */
+    .l3 .header-tooltip-title,
+    .l3 .headerrow-tooltip-title {
+      color: #ffffff;
+    }
+    .l3.slick-custom-tooltip {
       background-color: #363636;
       color: #ffffff;
       border: 2px solid #252525;
     }
-    .l2.slick-custom-tooltip.tooltip-arrow.arrow-up::before {
-      border-bottom: 7px solid #252525;
+    .l3.slick-custom-tooltip.tooltip-arrow.arrow-down::after,
+    .l3.slick-custom-tooltip.tooltip-arrow.arrow-up::after {
+      border-width: 10px; /* arrow size */
     }
-    .l2.slick-custom-tooltip.tooltip-arrow.arrow-down::after {
-      border-top: 7px solid #252525;
+    .l3.slick-custom-tooltip.tooltip-arrow.arrow-down::after {
+      border-top-color: #252525; /* arrow down color */
+    }
+    .l3.slick-custom-tooltip.tooltip-arrow.arrow-up::after {
+      top: -20px; /* arrow size * 2 */
+      border-bottom-color: #252525; /* arrow up color */
+    }
+    .l3.slick-custom-tooltip.tooltip-arrow.arrow-left-align::after {
+      margin-left: 15px;
+    }
+    .l3.slick-custom-tooltip.tooltip-arrow.arrow-right-align::after {
+      margin-left: calc(100% - 20px - 15px); /* 20px is (arrow size * 2), 15px is your extra side margin */
+    }
+    .l5.slick-custom-tooltip.arrow-left-align::after {
+      margin-left: 5%;
     }
   </style>
 </head>
 
 <body>
   <div style="position:relative">
-    <div style="width:618px;">
+    <div style="width:718px;">
       <div id="myGrid" style="width:100%;height:500px;"></div>
     </div>
 
-    <div class="options-panel">
+    <div class="options-panel" style="margin-left: 100px">
       <h2>Demonstrates: <code>Slick.Plugins.CustomTooltip</code></h2>
       <ul>
         <li>Custom Tooltip Plugin</li>
@@ -145,7 +163,7 @@
     }
 
     function changeServerDelay(delay) {
-      serverApiDelay = delay;
+      serverApiDelay = $('#server-delay').val();
     }
 
     function filter(item) {
@@ -218,7 +236,12 @@
         },
       },
       { id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Text },
-      { id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete },
+      { 
+        id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, 
+        formatter: Slick.Formatters.PercentCompleteBar, 
+        editor: Slick.Editors.PercentComplete,
+        customTooltip: { useRegularTooltip: true },
+      },
       { id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Date },
       { 
         id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Date,
@@ -246,7 +269,6 @@
         formatter: tooltipFormatter,
         headerFormatter: headerFormatter,
         headerRowFormatter: headerRowFormatter,
-        // tooltipDelay: 250,
         usabilityOverride: function (args) {
          return !isTooltipDisabled && args.cell !== 0; // don't show on first column (row selection column)
         }
