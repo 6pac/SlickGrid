@@ -5,6 +5,7 @@
  *    cancelEditOnDrag:     Do we want to cancel any Editing while dragging a row (defaults to false)
  *    disableRowSelection:  Do we want to disable the row selection? (defaults to false)
  *    hideRowMoveShadow:    Do we want to hide the row move shadow clone? (defaults to true)
+ *    rowMoveShadowMarginLeft:    When row move shadow is shown, optional margin-left (defaults to -5%)
  *    rowMoveShadowOpacity: When row move shadow is shown, what is its opacity? (defaults to 1)
  *    rowMoveShadowScale:   When row move shadow is shown, what is its size scale? (default to 0.75)
  *    singleRowMove:        Do we want a single row move? Setting this to false means that it's a multple row move (defaults to false)
@@ -33,7 +34,7 @@
       cancelEditOnDrag: false,
       disableRowSelection: false,
       hideRowMoveShadow: true,
-      rowMoveMarginLeft: "-5%",
+      rowMoveShadowMarginLeft: "-5%",
       rowMoveShadowOpacity: 1,
       rowMoveShadowScale: 0.75,
       singleRowMove: false,
@@ -96,7 +97,7 @@
           dd.clonedSlickRow = $slickRowElm.clone();
           dd.clonedSlickRow.css("position", "absolute")
             .css("zIndex", "999999")
-            .css("marginLeft", options.rowMoveMarginLeft || "-5%")
+            .css("marginLeft", options.rowMoveShadowMarginLeft || "-5%")
             .css("opacity", options.rowMoveShadowOpacity || 0.95)
             .css("transform", "scale(" + options.rowMoveShadowScale + ")")
             .css("boxShadow", "rgb(0 0 0 / 20%) 8px 2px 8px 4px, rgb(0 0 0 / 19%) 2px 2px 0px 0px")
