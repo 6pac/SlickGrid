@@ -197,6 +197,7 @@
       dd.selectionProxy.remove();
       if (dd.clonedSlickRow) {
         dd.clonedSlickRow.remove();
+        dd.clonedSlickRow = null;
       }
 
       if (dd.canMove) {
