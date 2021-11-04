@@ -107,6 +107,8 @@ if (typeof Slick === "undefined") {
       emulatePagingWhenScrolling: true, // when scrolling off bottom of viewport, place new row at top of viewport
       editorCellNavOnLRKeys: false,
       enableMouseWheelScrollHandler: true,
+      mouseWheelSensitivityX: 10,
+      mouseWheelSensitivityY: 25,
       doPaging: true,
       autosizeColsMode: Slick.GridAutosizeColsMode.LegacyOff,
       autosizeColPaddingPx: 4,
@@ -4525,8 +4527,8 @@ if (typeof Slick === "undefined") {
     // Interactivity
 
     function handleMouseWheel(e, delta, deltaX, deltaY) {
-      scrollTop = Math.max(0, $viewportScrollContainerY[0].scrollTop - (deltaY * options.rowHeight));
-      scrollLeft = $viewportScrollContainerX[0].scrollLeft + (deltaX * 10);
+      scrollTop = Math.max(0, $viewportScrollContainerY[0].scrollTop - (deltaY * options.mouseWheelSensitivityY));
+      scrollLeft = $viewportScrollContainerX[0].scrollLeft + (deltaX * options.mouseWheelSensitivityX);
       var handled = _handleScroll(true);
       if (handled) e.preventDefault();
     }
