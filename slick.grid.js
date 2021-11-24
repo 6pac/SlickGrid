@@ -970,6 +970,18 @@ if (typeof Slick === "undefined") {
       return scrollbarDimensions;
     }
 
+    function isViewportHasHScroll() {
+      return viewportHasHScroll
+    }
+
+    function isViewportHasVScroll() {
+      return viewportHasVScroll;
+    }
+
+    function getAbsoluteColumnMinWidth() {
+      return absoluteColumnMinWidth;
+    }
+
     // TODO:  this is static.  need to handle page mutation.
     function bindAncestorScrollEvents() {
       var elem = (hasFrozenRows && !options.frozenBottom) ? $canvasBottomL[0] : $canvasTopL[0];
@@ -6121,6 +6133,9 @@ if (typeof Slick === "undefined") {
       "getFrozenRowOffset": getFrozenRowOffset,
       "setColumnHeaderVisibility": setColumnHeaderVisibility,
       "sanitizeHtmlString": sanitizeHtmlString,
+      "isViewportHasVScroll": isViewportHasVScroll,
+      "isViewportHasHScroll": isViewportHasHScroll,
+      "getAbsoluteColumnMinWidth": getAbsoluteColumnMinWidth,
 
       "init": finishInitialization,
       "destroy": destroy,
