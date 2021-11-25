@@ -970,12 +970,11 @@ if (typeof Slick === "undefined") {
       return scrollbarDimensions;
     }
 
-    function isViewportHasHScroll() {
-      return viewportHasHScroll
-    }
-
-    function isViewportHasVScroll() {
-      return viewportHasVScroll;
+    function getDisplayedScrollbarDimensions() {
+      return {
+        width: viewportHasVScroll ? scrollbarDimensions.width : 0,
+        height: viewportHasHScroll ? scrollbarDimensions.height : 0
+      };
     }
 
     function getAbsoluteColumnMinWidth() {
@@ -4940,7 +4939,7 @@ if (typeof Slick === "undefined") {
     }
 
     function internalScrollColumnIntoView(left, right) {
-      var scrollRight = scrollLeft + $viewportScrollContainerX.width();
+      var scrollRight = scrollLeft + $viewportScrollContainerX.width() - (viewportHasVScroll ? scrollbarDimensions.width : 0);
 
       if (left < scrollLeft) {
         $viewportScrollContainerX.scrollLeft(left);
@@ -6133,8 +6132,7 @@ if (typeof Slick === "undefined") {
       "getFrozenRowOffset": getFrozenRowOffset,
       "setColumnHeaderVisibility": setColumnHeaderVisibility,
       "sanitizeHtmlString": sanitizeHtmlString,
-      "isViewportHasVScroll": isViewportHasVScroll,
-      "isViewportHasHScroll": isViewportHasHScroll,
+      "getDisplayedScrollbarDimensions": getDisplayedScrollbarDimensions,
       "getAbsoluteColumnMinWidth": getAbsoluteColumnMinWidth,
 
       "init": finishInitialization,

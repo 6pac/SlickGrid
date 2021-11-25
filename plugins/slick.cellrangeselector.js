@@ -85,9 +85,9 @@
       _$activeCanvas = $(_grid.getActiveCanvasNode(e));
       _$activeViewport = $(_grid.getActiveViewportNode(e));
 
-      var scrollbarDimensions = _grid.getScrollbarDimensions();
-      _viewportWidth = _$activeViewport.width() - (_grid.isViewportHasVScroll() ? scrollbarDimensions.width : 0);
-      _viewportHeight = _$activeViewport.height() - (_grid.isViewportHasHScroll() ? scrollbarDimensions.height : 0);
+      var scrollbarDimensions = _grid.getDisplayedScrollbarDimensions()
+      _viewportWidth = _$activeViewport.width() - scrollbarDimensions.width;
+      _viewportHeight = _$activeViewport.height() - scrollbarDimensions.height;
       _moveDistanceForOneCell = {
         x: _grid.getAbsoluteColumnMinWidth() / 2,
         y: _grid.getOptions().rowHeight / 2
