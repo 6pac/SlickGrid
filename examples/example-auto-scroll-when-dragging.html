@@ -20,8 +20,11 @@
     .slick-group-title[level='2'] {
       font-style: italic;
     }
-    .slick-row .slick-cell.frozen:last-child, 
-    .slick-header-column.frozen:last-child, 
+    .slick-row:not(.slick-group) >.cell-unselectable {
+      background: #efefef;
+    }
+    .slick-row .slick-cell.frozen:last-child,
+    .slick-header-column.frozen:last-child,
     .slick-headerrow-column.frozen:last-child,
     .slick-footerrow-column.frozen:last-child {
       border-right: 1px solid red;
@@ -38,12 +41,16 @@
 <body>
 <div style="position:relative">
   <div style="width:600px;">
-    <div id="myGrid" style="width:100%;height:350px;"></div>
+    <h1> Using Slick.CellRangeSelector </h1>
+    <div id="myGrid" class="example-grid" style="width:100%;height:350px;"></div>
+    <br>
+    <h1> Using Slick.RowRangeSelector </h1>
+    <div id="myGrid2" class="example-grid" style="width:100%;height:350px;"></div>
   </div>
   <br/>
 
   <div class="options-panel">
-    <h2>Options:</h2>
+    <h2>Options: (Apply to both grid)</h2>
     <div class="option-item">
       <label for='isAutoScroll'>Auto Scroll: (need click Set Options)</label>
       <input type="checkbox" id="isAutoScroll">
@@ -83,7 +90,7 @@
 
     <h2>Demonstrates:</h2>
     <ul>
-      <li>Dragging to make a selection, and the viewport will auto scroll.</li>
+      <li>Dragging from 2nd column to make a selection, and the viewport will auto scroll.</li>
     </ul>
   </div>
 </div>
@@ -98,6 +105,7 @@
 <script src="../plugins/slick.cellrangedecorator.js"></script>
 <script src="../plugins/slick.cellrangeselector.js"></script>
 <script src="../plugins/slick.cellselectionmodel.js"></script>
+<script src="../plugins/slick.rowselectionmodel.js"></script>
 <script src="../slick.editors.js"></script>
 <script src="../slick.formatters.js"></script>
 <script src="../slick.dataview.js"></script>
@@ -106,6 +114,7 @@
 
 <script>
   var grid;
+  var grid2;
   var dataView;
 
   var options = {
@@ -114,11 +123,12 @@
     asyncEditorLoading: false,
     autoEdit: false,
     frozenRow: -1,
+    enableColumnReorder: false,
     frozenColumn: -1
   };
 
   var columns = [
-    {id: "sel", name: "#", field: "num", cssClass: "cell-selection", resizable: false, selectable: false, focusable: false },
+    {id: "sel", name: "#", field: "num", cssClass: "cell-unselectable", resizable: false, selectable: false, focusable: false, width: 40 },
     {id: "title", name: "Title", field: "title", minWidth: 50, cssClass: "cell-title", editor: Slick.Editors.Text},
     {id: "duration", name: "Duration", field: "duration", groupTotalsFormatter: function(totals, columnDef, grid) {
       var val = totals.sum && totals.sum[columnDef.field];
@@ -168,16 +178,22 @@
     var groupItemMetadataProvider = new Slick.Data.GroupItemMetadataProvider();
     loadData(groupItemMetadataProvider);
     grid = new Slick.Grid("#myGrid", dataView, columns, options);
+    grid2 = new Slick.Grid("#myGrid2", dataView, columns, options);
     grid.registerPlugin(groupItemMetadataProvider);
+    grid2.registerPlugin(groupItemMetadataProvider);
     setDefaultOption();
     dataView.onRowCountChanged.subscribe(function (e, args) {
       grid.updateRowCount();
       grid.render();
+      grid2.updateRowCount();
+      grid2.render();
     });
 
     dataView.onRowsChanged.subscribe(function (e, args) {
       grid.invalidateRows(args.rows);
       grid.render();
+      grid2.invalidateRows(args.rows);
+      grid2.render();
     });
   })
 
@@ -198,16 +214,30 @@
         accelerateInterval: Number($('#accelerateInterval').val())
       })
     }));
+
+    grid2.setSelectionModel(new Slick.RowSelectionModel({
+      cellRangeSelector: new Slick.CellRangeSelector({
+        selectionCss: {
+          "border": "none"
+        },
+        autoScroll: $('#isAutoScroll').is(":checked"),
+        minIntervalToShowNextCell: Number($('#minIntervalToShowNextCell').val()),
+        maxIntervalToShowNextCell: Number($('#maxIntervalToShowNextCell').val()),
+        accelerateInterval: Number($('#accelerateInterval').val())
+      })
+  }));
   }
 
   function toggleFrozen() {
     var option = grid.getOptions();
     var frozenRow = option.frozenRow;
     var frozenColumn = option.frozenColumn;
-    grid.setOptions({
+    var newOption = {
       frozenColumn: frozenColumn == -1 ? 1 : -1,
       frozenRow: frozenRow == -1 ? 3 : -1
-    })
+    };
+    grid.setOptions(newOption);
+    grid2.setOptions(newOption);
   }
 
   function toggleGroup() {

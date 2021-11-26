@@ -317,7 +317,11 @@
 
       dd.range.end = end;
 
-      _decorator.show(new Slick.Range(dd.range.start.row, dd.range.start.cell, end.row, end.cell));
+      var range = new Slick.Range(dd.range.start.row, dd.range.start.cell, end.row, end.cell);
+      _decorator.show(range);
+      _self.onCellRangeSelecting.notify({
+        range: range
+      });
     }
 
     function handleDragEnd(e, dd) {
@@ -353,7 +357,8 @@
       "getCurrentRange": getCurrentRange,
 
       "onBeforeCellRangeSelected": new Slick.Event(),
-      "onCellRangeSelected": new Slick.Event()
+      "onCellRangeSelected": new Slick.Event(),
+      "onCellRangeSelecting": new Slick.Event()
     });
   }
 })(jQuery);
