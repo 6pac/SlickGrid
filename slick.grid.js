@@ -972,6 +972,17 @@ if (typeof Slick === "undefined") {
       return scrollbarDimensions;
     }
 
+    function getDisplayedScrollbarDimensions() {
+      return {
+        width: viewportHasVScroll ? scrollbarDimensions.width : 0,
+        height: viewportHasHScroll ? scrollbarDimensions.height : 0
+      };
+    }
+
+    function getAbsoluteColumnMinWidth() {
+      return absoluteColumnMinWidth;
+    }
+
     // TODO:  this is static.  need to handle page mutation.
     function bindAncestorScrollEvents() {
       var elem = (hasFrozenRows && !options.frozenBottom) ? $canvasBottomL[0] : $canvasTopL[0];
@@ -2842,7 +2853,17 @@ if (typeof Slick === "undefined") {
       setCellCssStyles(options.selectedCellCssClass, hash);
 
       if (simpleArrayEquals(previousSelectedRows, selectedRows)) {
-        trigger(self.onSelectedRowsChanged, {rows: getSelectedRows(), previousSelectedRows: previousSelectedRows}, e);
+        var caller = e && e.detail && e.detail.caller || 'click';
+        var newSelectedAdditions = getSelectedRows().filter(function(i) { return previousSelectedRows.indexOf(i) < 0 });
+        var newSelectedDeletions = previousSelectedRows.filter(function(i) { return getSelectedRows().indexOf(i) < 0 });
+
+        trigger(self.onSelectedRowsChanged, {
+          rows: getSelectedRows(),
+          previousSelectedRows: previousSelectedRows,
+          caller : caller,
+          changedSelectedRows: newSelectedAdditions,
+          changedUnselectedRows: newSelectedDeletions
+        }, e);
       }
     }
 
@@ -4930,7 +4951,7 @@ if (typeof Slick === "undefined") {
     }
 
     function internalScrollColumnIntoView(left, right) {
-      var scrollRight = scrollLeft + $viewportScrollContainerX.width();
+      var scrollRight = scrollLeft + $viewportScrollContainerX.width() - (viewportHasVScroll ? scrollbarDimensions.width : 0);
 
       if (left < scrollLeft) {
         $viewportScrollContainerX.scrollLeft(left);
@@ -5917,18 +5938,21 @@ if (typeof Slick === "undefined") {
       return selectedRows.slice(0);
     }
 
-    function setSelectedRows(rows) {
+    function setSelectedRows(rows, caller) {
       if (!selectionModel) {
         throw new Error("SlickGrid Selection model is not set");
       }
       if (self && self.getEditorLock && !self.getEditorLock().isActive()) {
-        selectionModel.setSelectedRanges(rowsToRanges(rows));
+        selectionModel.setSelectedRanges(rowsToRanges(rows), caller || "SlickGrid.setSelectedRows");
       }
     }
 
     /** basic html sanitizer to avoid scripting attack */
     function sanitizeHtmlString(dirtyHtml) {
-      return typeof dirtyHtml === 'string' ? dirtyHtml.replace(/(\b)(on\S+)(\s*)=|javascript:([^>]*)[^>]*|(<\s*)(\/*)script([<>]*).*(<\s*)(\/*)script(>*)|(&lt;)(\/*)(script|script defer)(.*)(&gt;|&gt;">)/gi, '') : dirtyHtml;
+      var sanitizer = options.sanitizer || function (dirtyHtmlStr) {
+        return dirtyHtmlStr.replace(/(\b)(on\S+)(\s*)=|javascript:([^>]*)[^>]*|(<\s*)(\/*)script([<>]*).*(<\s*)(\/*)script(>*)|(&lt;)(\/*)(script|script defer)(.*)(&gt;|&gt;">)/gi, '');
+      }
+      return typeof dirtyHtml === 'string' ? sanitizer(dirtyHtml) : dirtyHtml;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -5959,7 +5983,7 @@ if (typeof Slick === "undefined") {
     // Public API
 
     $.extend(this, {
-      "slickGridVersion": "2.4.43",
+      "slickGridVersion": "2.4.44",
 
       // Events
       "onScroll": new Slick.Event(),
@@ -6123,6 +6147,8 @@ if (typeof Slick === "undefined") {
       "getFrozenRowOffset": getFrozenRowOffset,
       "setColumnHeaderVisibility": setColumnHeaderVisibility,
       "sanitizeHtmlString": sanitizeHtmlString,
+      "getDisplayedScrollbarDimensions": getDisplayedScrollbarDimensions,
+      "getAbsoluteColumnMinWidth": getAbsoluteColumnMinWidth,
 
       "init": finishInitialization,
       "destroy": destroy,
