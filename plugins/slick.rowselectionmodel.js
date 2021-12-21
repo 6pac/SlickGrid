@@ -14,6 +14,7 @@
     var _inHandler;
     var _options;
     var _selector;
+    var _isRowMoveManagerHandler;
     var _defaults = {
       selectActiveRow: true,
       cellRangeSelector: undefined
@@ -204,7 +205,11 @@
     }
 
     function handleBeforeCellRangeSelected(e, cell) {
-      if (_grid.getEditorLock().isActive()) {
+      if (!_isRowMoveManagerHandler) {
+        var rowMoveManager = _grid.getPluginByName('RowMoveManager') || _grid.getPluginByName('CrossGridRowMoveManager');
+        _isRowMoveManagerHandler = rowMoveManager ? rowMoveManager.isHandlerColumn : $.noop;
+      }
+      if (_grid.getEditorLock().isActive() || _isRowMoveManagerHandler(cell.cell)) {
         e.stopPropagation();
         return false;
       }
