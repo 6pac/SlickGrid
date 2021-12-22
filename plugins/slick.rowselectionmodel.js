@@ -17,6 +17,8 @@
     var _isRowMoveManagerHandler;
     var _defaults = {
       selectActiveRow: true,
+      dragToSelect: false,
+      autoScrollWhenDrag: true,
       cellRangeSelector: undefined
     };
 
@@ -24,6 +26,19 @@
       _options = $.extend(true, {}, _defaults, options);
       _selector = _options.cellRangeSelector;
       _grid = grid;
+
+      if (!_selector && _options.dragToSelect) {
+        if (!Slick.CellRangeDecorator) {
+            throw new Error("Slick.CellRangeDecorator is required when option dragToSelect set to true");
+        }
+        _selector = new Slick.CellRangeSelector({
+          selectionCss: {
+            "border": "none"
+          },
+          autoScroll: _options.autoScrollWhenDrag
+        })
+      }
+
       _handler.subscribe(_grid.onActiveCellChanged,
           wrapHandler(handleActiveCellChange));
       _handler.subscribe(_grid.onKeyDown,

@@ -109,11 +109,7 @@ $(function () {
   grid = new Slick.Grid("#myGrid", data, columns, options);
 
   grid.setSelectionModel(new Slick.RowSelectionModel({
-      cellRangeSelector: new Slick.CellRangeSelector({
-        selectionCss: {
-          "border": "none"
-        }
-      })
+    dragToSelect: true
   }));
 
   var moveRowsPlugin = new Slick.RowMoveManager({

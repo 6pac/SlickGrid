@@ -257,11 +257,7 @@
       // register the Selection Model that will be used for all Plugins 
       grid.setSelectionModel(new Slick.RowSelectionModel({
         selectActiveRow: false,
-        cellRangeSelector: new Slick.CellRangeSelector({
-          selectionCss: {
-            "border": "none"
-          }
-        })
+        dragToSelect: true
       }));
 
       // register all Plugins (Row Selection / Row Detail)

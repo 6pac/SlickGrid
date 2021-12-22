@@ -189,21 +189,13 @@ $(function () {
   grid = new Slick.Grid("#myGrid", data, columns, options);
 
   grid.setSelectionModel(new Slick.RowSelectionModel({
-      cellRangeSelector: new Slick.CellRangeSelector({
-        selectionCss: {
-          "border": "none"
-        }
-      })
+    dragToSelect: true
   }));
 
   toGrid = new Slick.Grid("#myGrid2", data2, columns2, options);
 
   toGrid.setSelectionModel(new Slick.RowSelectionModel({
-      cellRangeSelector: new Slick.CellRangeSelector({
-        selectionCss: {
-          "border": "none"
-        }
-      })
+    dragToSelect: true
   }));
 
   var moveRowsPlugin = new Slick.CrossGridRowMoveManager({
