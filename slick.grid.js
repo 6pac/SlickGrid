@@ -2916,13 +2916,8 @@ if (typeof Slick === "undefined") {
     function setColumns(columnDefinitions) {
       trigger(self.onBeforeSetColumns, { previousColumns: columns, newColumns: columnDefinitions, grid: self });
 
-      var _treeColumns = new Slick.TreeColumns(columnDefinitions);
-      if (_treeColumns.hasDepth()) {
-        treeColumns = _treeColumns;
-        columns = treeColumns.extractColumns();
-      } else {
-        columns = columnDefinitions;
-      }
+      treeColumns = new Slick.TreeColumns(columnDefinitions);
+      columns = treeColumns.extractColumns();
 
       updateColumnProps();
       updateColumnCaches();
