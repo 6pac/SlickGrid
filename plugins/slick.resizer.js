@@ -88,6 +88,7 @@
     function setOptions(_newOptions){
       options = $.extend(true, {}, _defaults, _newOptions);
     }
+
     function init(grid) {
       setOptions(options);
       _grid = grid;
@@ -122,17 +123,14 @@
         // -- 2nd bind a trigger on the Window DOM element, so that it happens also when resizing after first load
         // -- bind auto-resize to Window object only if it exist
         $(window).on('resize.grid.' + _gridUid, function (event) {
-          if (event.originalEvent.type !== 'resize')
-          {
-            _self.onGridBeforeResize.notify({ grid: _grid }, event, _self);
+          _self.onGridBeforeResize.notify({ grid: _grid }, event, _self);
 
-            // unless the resizer is paused, let's go and resize the grid
-            if (!_resizePaused) {
-              // for some yet unknown reason, calling the resize twice removes any stuttering/flickering
-              // when changing the height and makes it much smoother experience
-              resizeGrid(0, newSizes, event);
-              resizeGrid(0, newSizes, event);
-            }
+          // unless the resizer is paused, let's go and resize the grid
+          if (!_resizePaused) {
+            // for some yet unknown reason, calling the resize twice removes any stuttering/flickering
+            // when changing the height and makes it much smoother experience
+            resizeGrid(0, newSizes, event);
+            resizeGrid(0, newSizes, event);
           }
         });
       }
