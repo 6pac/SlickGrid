@@ -85,8 +85,11 @@
       rightPadding: 0
     };
 
+    function setOptions(_newOptions){
+      options = $.extend(true, {}, _defaults, _newOptions);
+    }
     function init(grid) {
-      options = $.extend(true, {}, _defaults, options);
+      setOptions(options);
       _grid = grid;
       _gridOptions = _grid.getOptions();
       _gridUid = _grid.getUID();
@@ -119,14 +122,17 @@
         // -- 2nd bind a trigger on the Window DOM element, so that it happens also when resizing after first load
         // -- bind auto-resize to Window object only if it exist
         $(window).on('resize.grid.' + _gridUid, function (event) {
-          _self.onGridBeforeResize.notify({ grid: _grid }, event, _self);
+          if (event.originalEvent.type !== 'resize')
+          {
+            _self.onGridBeforeResize.notify({ grid: _grid }, event, _self);
 
-          // unless the resizer is paused, let's go and resize the grid
-          if (!_resizePaused) {
-            // for some yet unknown reason, calling the resize twice removes any stuttering/flickering
-            // when changing the height and makes it much smoother experience
-            resizeGrid(0, newSizes, event);
-            resizeGrid(0, newSizes, event);
+            // unless the resizer is paused, let's go and resize the grid
+            if (!_resizePaused) {
+              // for some yet unknown reason, calling the resize twice removes any stuttering/flickering
+              // when changing the height and makes it much smoother experience
+              resizeGrid(0, newSizes, event);
+              resizeGrid(0, newSizes, event);
+            }
           }
         });
       }
@@ -315,6 +321,7 @@
       "getLastResizeDimensions": getLastResizeDimensions,
       "pauseResizer": pauseResizer,
       "resizeGrid": resizeGrid,
+      "setOptions": setOptions,
 
       "onGridAfterResize": new Slick.Event(),
       "onGridBeforeResize": new Slick.Event()
