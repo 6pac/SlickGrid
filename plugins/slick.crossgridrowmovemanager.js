@@ -18,13 +18,15 @@
   // register namespace
   $.extend(true, window, {
     "Slick": {
-      "RowMoveManager": RowMoveManager
+      "CrossGridRowMoveManager": CrossGridRowMoveManager
     }
   });
 
-  function RowMoveManager(options) {
+  function CrossGridRowMoveManager(options) {
     var _grid;
     var _canvas;
+    var _toGrid;
+    var _toCanvas;
     var _dragging;
     var _self = this;
     var _usabilityOverride = null;
@@ -52,6 +54,9 @@
       options = $.extend(true, {}, _defaults, options);
       _grid = grid;
       _canvas = _grid.getCanvasNode();
+      
+      _toGrid = options.toGrid;
+      _toCanvas = _toGrid.getCanvasNode();
       _handler
         .subscribe(_grid.onDragInit, handleDragInit)
         .subscribe(_grid.onDragStart, handleDragStart)
@@ -116,24 +121,28 @@
         }
       }
 
+      selectedRows.sort(function(a,b) { return a-b; });
+      
       var rowHeight = _grid.getOptions().rowHeight;
 
+      dd.fromGrid = _grid;
+      dd.toGrid = _toGrid;
       dd.selectedRows = selectedRows;
 
       dd.selectionProxy = $("<div class='slick-reorder-proxy'/>")
         .css("position", "absolute")
         .css("zIndex", "99999")
-        .css("width", $(_canvas).innerWidth())
+        .css("width", $(_toCanvas).innerWidth())
         .css("height", rowHeight * selectedRows.length)
         .hide()
-        .appendTo(_canvas);
+        .appendTo(_toCanvas);
 
       dd.guide = $("<div class='slick-reorder-guide'/>")
         .css("position", "absolute")
         .css("zIndex", "99998")
-        .css("width", $(_canvas).innerWidth())
+        .css("width", $(_toCanvas).innerWidth())
         .css("top", -1000)
-        .appendTo(_canvas);
+        .appendTo(_toCanvas);
 
       dd.insertBefore = -1;
     }
@@ -145,7 +154,7 @@
 
       e.stopImmediatePropagation();
 
-      var top = e.pageY - $(_canvas).offset().top;
+      var top = e.pageY - $(_toCanvas).offset().top;
       dd.selectionProxy.css("top", top - 5).show();
 
       // if the row move shadow is enabled, we'll also make it follow the mouse cursor
@@ -154,10 +163,11 @@
         dd.clonedSlickRow.css("top", offsetY - 6).show();
       }
 
-      var insertBefore = Math.max(0, Math.min(Math.round(top / _grid.getOptions().rowHeight), _grid.getDataLength()));
+      var insertBefore = Math.max(0, Math.min(Math.round(top / _toGrid.getOptions().rowHeight), _toGrid.getDataLength()));
       if (insertBefore !== dd.insertBefore) {
         var eventData = {
-          "grid": _grid,
+          "fromGrid": _grid,
+          "toGrid": _toGrid,
           "rows": dd.selectedRows,
           "insertBefore": insertBefore
         };
@@ -170,8 +180,8 @@
 
         // if there's a UsabilityOverride defined, we also need to verify that the condition is valid
         if (_usabilityOverride && dd.canMove) {
-          var insertBeforeDataContext = _grid.getDataItem(insertBefore);
-          dd.canMove = checkUsabilityOverride(insertBefore, insertBeforeDataContext, _grid);
+          var insertBeforeDataContext = _toGrid.getDataItem(insertBefore);
+          dd.canMove = checkUsabilityOverride(insertBefore, insertBeforeDataContext, _toGrid);
         }
 
         // if the new target is possible we'll display the dark blue bar (representin the acceptability) at the target position
@@ -179,7 +189,7 @@
         if (!dd.canMove) {
           dd.guide.css("top", -1000);
         } else {
-          dd.guide.css("top", insertBefore * _grid.getOptions().rowHeight);
+          dd.guide.css("top", insertBefore * _toGrid.getOptions().rowHeight);
         }
 
         dd.insertBefore = insertBefore;
@@ -202,7 +212,8 @@
 
       if (dd.canMove) {
         var eventData = {
-          "grid": _grid,
+          "fromGrid": _grid,
+          "toGrid": _toGrid,
           "rows": dd.selectedRows,
           "insertBefore": dd.insertBefore
         };
@@ -263,7 +274,7 @@
       "setOptions": setOptions,
       "usabilityOverride": usabilityOverride,
       "isHandlerColumn": isHandlerColumn,
-      "pluginName": "RowMoveManager"
+      "pluginName": "CrossGridRowMoveManager"
     });
   }
 })(jQuery);

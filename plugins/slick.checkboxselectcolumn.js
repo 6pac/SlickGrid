@@ -154,7 +154,7 @@
           var remIdx = selectedRows.indexOf(removeList[i]);
           selectedRows.splice(remIdx, 1);
         }
-        _grid.setSelectedRows(selectedRows);
+        _grid.setSelectedRows(selectedRows, "click.cleanup");
       }
     }
 
@@ -226,9 +226,9 @@
       if (_selectedRowsLookup[row]) {
         _grid.setSelectedRows($.grep(_grid.getSelectedRows(), function (n) {
           return n != row;
-        }));
+        }), "click.toggle");
       } else {
-        _grid.setSelectedRows(_grid.getSelectedRows().concat(row));
+        _grid.setSelectedRows(_grid.getSelectedRows().concat(row), "click.toggle");
       }
       _grid.setActiveCell(row, getCheckboxColumnCellIndex());
     }
@@ -240,7 +240,7 @@
           addRows[addRows.length] = rowArray[i];
         }
       }
-      _grid.setSelectedRows(_grid.getSelectedRows().concat(addRows));
+      _grid.setSelectedRows(_grid.getSelectedRows().concat(addRows), "SlickCheckboxSelectColumn.selectRows");
     }
 
     function deSelectRows(rowArray) {
@@ -252,7 +252,7 @@
       }
       _grid.setSelectedRows($.grep(_grid.getSelectedRows(), function (n) {
         return removeRows.indexOf(n) < 0;
-      }));
+      }), "SlickCheckboxSelectColumn.deSelectRows");
     }
 
     function handleHeaderClick(e, args) {

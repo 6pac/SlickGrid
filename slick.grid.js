@@ -569,6 +569,12 @@ if (typeof Slick === "undefined") {
         $headerRowScroller
             .on("scroll", handleHeaderRowScroll);
 
+        if (options.showHeaderRow) {
+          $headerRow
+            .on("mouseenter", ".slick-headerrow-column", handleHeaderRowMouseEnter)
+            .on("mouseleave", ".slick-headerrow-column", handleHeaderRowMouseLeave);
+        }
+
         if (options.createFooterRow) {
           $footerRow
             .on("contextmenu", handleFooterContextMenu)
@@ -963,6 +969,17 @@ if (typeof Slick === "undefined") {
 
     function getScrollbarDimensions() {
       return scrollbarDimensions;
+    }
+
+    function getDisplayedScrollbarDimensions() {
+      return {
+        width: viewportHasVScroll ? scrollbarDimensions.width : 0,
+        height: viewportHasHScroll ? scrollbarDimensions.height : 0
+      };
+    }
+
+    function getAbsoluteColumnMinWidth() {
+      return absoluteColumnMinWidth;
     }
 
     // TODO:  this is static.  need to handle page mutation.
@@ -2419,6 +2436,13 @@ if (typeof Slick === "undefined") {
       if (!autoSize.ignoreHeaderText) {
         headerWidth = getColHeaderWidth(columnDef);
       }
+      if (headerWidth === 0) {
+        headerWidth = (columnDef.width ? columnDef.width
+          : (columnDef.maxWidth ? columnDef.maxWidth
+            : (columnDef.minWidth ? columnDef.minWidth : 20)
+            )
+        );
+      }
 
       if (autoSize.colValueArray) {
         // if an array of values are specified, just pass them in instead of data
@@ -2429,6 +2453,8 @@ if (typeof Slick === "undefined") {
       // select rows to evaluate using rowSelectionMode and rowSelectionCount
       var rows = getData();
       if (rows.getItems) { rows = rows.getItems(); }
+
+      if (rows.length === 0) { return headerWidth; }
 
       var rowSelectionMode = (isInit ? autoSize.rowSelectionModeOnInit : undefined) || autoSize.rowSelectionMode;
 
@@ -2452,7 +2478,7 @@ if (typeof Slick === "undefined") {
 
       if (autoSize.valueFilterMode === Slick.ValueFilterMode.GetGreatestAndSub) {
         // get greatest abs value in data
-        var tempVal, maxVal, maxAbsVal = 0;
+        var tempVal, maxVal = 0, maxAbsVal = 0;
         for (i = 0, ii = rows.length; i < ii; i++) {
           tempVal = rows[i][columnDef.field];
           if (Math.abs(tempVal) > maxAbsVal) { maxVal = tempVal; maxAbsVal = Math.abs(tempVal); }
@@ -2481,13 +2507,14 @@ if (typeof Slick === "undefined") {
 
       if (autoSize.valueFilterMode === Slick.ValueFilterMode.GetLongestText) {
         // get greatest abs value in data
-        var tempVal, maxLen = 0, maxIndex = 0;
+        var tempVal = '', maxLen = 0, maxIndex = 0;
         for (i = 0, ii = rows.length; i < ii; i++) {
           tempVal = rows[i][columnDef.field];
           if ((tempVal || '').length > maxLen) { maxLen = tempVal.length; maxIndex = i; }
         }
         // now substitute a 'c' for all characters
         tempVal = rows[maxIndex][columnDef.field];
+
         rows = [ tempVal ];
       }
 
@@ -2826,7 +2853,17 @@ if (typeof Slick === "undefined") {
       setCellCssStyles(options.selectedCellCssClass, hash);
 
       if (simpleArrayEquals(previousSelectedRows, selectedRows)) {
-        trigger(self.onSelectedRowsChanged, {rows: getSelectedRows(), previousSelectedRows: previousSelectedRows}, e);
+        var caller = e && e.detail && e.detail.caller || 'click';
+        var newSelectedAdditions = getSelectedRows().filter(function(i) { return previousSelectedRows.indexOf(i) < 0 });
+        var newSelectedDeletions = previousSelectedRows.filter(function(i) { return getSelectedRows().indexOf(i) < 0 });
+
+        trigger(self.onSelectedRowsChanged, {
+          rows: getSelectedRows(),
+          previousSelectedRows: previousSelectedRows,
+          caller : caller,
+          changedSelectedRows: newSelectedAdditions,
+          changedUnselectedRows: newSelectedDeletions
+        }, e);
       }
     }
 
@@ -2949,6 +2986,7 @@ if (typeof Slick === "undefined") {
         applyColumnHeaderWidths();
         applyColumnWidths();
         handleScroll();
+        if (getSelectionModel() && getSelectionModel().refreshSelections) { getSelectionModel().refreshSelections(); }
       }
     }
 
@@ -3475,7 +3513,9 @@ if (typeof Slick === "undefined") {
         queuePostProcessedRowForCleanup(cacheEntry, postProcessedRows[row], row);
       } else {
         cacheEntry.rowNode.each(function() {
-          this.parentElement.removeChild(this);
+          if (this.parentElement) {
+            this.parentElement.removeChild(this);
+          }
         });
       }
 
@@ -3511,10 +3551,10 @@ if (typeof Slick === "undefined") {
     function applyFormatResultToCellNode(formatterResult, cellNode, suppressRemove) {
         if (formatterResult === null || formatterResult === undefined) { formatterResult = ''; }
         if (Object.prototype.toString.call(formatterResult)  !== '[object Object]') {
-          cellNode.innerHTML = formatterResult;
+          cellNode.innerHTML = sanitizeHtmlString(formatterResult);
           return;
         }
-        cellNode.innerHTML = formatterResult.text;
+        cellNode.innerHTML = sanitizeHtmlString(formatterResult.text);
         if (formatterResult.removeClasses && !suppressRemove) {
           $(cellNode).removeClass(formatterResult.removeClasses);
         }
@@ -3942,7 +3982,7 @@ if (typeof Slick === "undefined") {
           queuePostProcessedCellForCleanup(cellNode, cellToRemove, row);
         } else {
           cellNode.parentElement.removeChild(cellNode);
-        }       
+        }
 
         delete cacheEntry.cellColSpans[cellToRemove];
         delete cacheEntry.cellNodesByColumnIdx[cellToRemove];
@@ -4021,7 +4061,7 @@ if (typeof Slick === "undefined") {
       }
 
       var x = document.createElement("div");
-      x.innerHTML = stringArray.join("");
+      x.innerHTML = sanitizeHtmlString(stringArray.join(""));
 
       var processedRow;
       var node;
@@ -4085,8 +4125,8 @@ if (typeof Slick === "undefined") {
       var x = document.createElement("div"),
         xRight = document.createElement("div");
 
-      x.innerHTML = stringArrayL.join("");
-      xRight.innerHTML = stringArrayR.join("");
+      x.innerHTML = sanitizeHtmlString(stringArrayL.join(""));
+      xRight.innerHTML = sanitizeHtmlString(stringArrayR.join(""));
 
       for (var i = 0, ii = rows.length; i < ii; i++) {
         if (( hasFrozenRows ) && ( rows[i] >= actualFrozenRow )) {
@@ -4094,23 +4134,23 @@ if (typeof Slick === "undefined") {
                 rowsCache[rows[i]].rowNode = $()
                     .add($(x.firstChild))
                     .add($(xRight.firstChild));
-                $canvasBottomL[0].append(x.firstChild);
-                $canvasBottomR[0].append(xRight.firstChild);
+                $canvasBottomL[0].appendChild(x.firstChild);
+                $canvasBottomR[0].appendChild(xRight.firstChild);
             } else {
                 rowsCache[rows[i]].rowNode = $()
                     .add($(x.firstChild));
-                $canvasBottomL[0].append($(x.firstChild));
+                $canvasBottomL[0].appendChild(x.firstChild);
             }
         } else if (hasFrozenColumns()) {
             rowsCache[rows[i]].rowNode = $()
                 .add($(x.firstChild))
                 .add($(xRight.firstChild));
-            $canvasTopL[0].append(x.firstChild);
-            $canvasTopR[0].append(xRight.firstChild);
+            $canvasTopL[0].appendChild(x.firstChild);
+            $canvasTopR[0].appendChild(xRight.firstChild);
         } else {
             rowsCache[rows[i]].rowNode = $()
                 .add($(x.firstChild));
-            $canvasTopL[0].append(x.firstChild);
+            $canvasTopL[0].appendChild(x.firstChild);
         }
       }
 
@@ -4759,6 +4799,20 @@ if (typeof Slick === "undefined") {
       }, e);
     }
 
+    function handleHeaderRowMouseEnter(e) {
+      trigger(self.onHeaderRowMouseEnter, {
+        "column": $(this).data("column"),
+        "grid": self
+      }, e);
+    }
+
+    function handleHeaderRowMouseLeave(e) {
+      trigger(self.onHeaderRowMouseLeave, {
+        "column": $(this).data("column"),
+        "grid": self
+      }, e);
+    }
+
     function handleHeaderContextMenu(e) {
       var $header = $(e.target).closest(".slick-header-column", ".slick-header-columns");
       var column = $header && $header.data("column");
@@ -4940,7 +4994,7 @@ if (typeof Slick === "undefined") {
     }
 
     function internalScrollColumnIntoView(left, right) {
-      var scrollRight = scrollLeft + $viewportScrollContainerX.width();
+      var scrollRight = scrollLeft + $viewportScrollContainerX.width() - (viewportHasVScroll ? scrollbarDimensions.width : 0);
 
       if (left < scrollLeft) {
         $viewportScrollContainerX.scrollLeft(left);
@@ -5251,7 +5305,7 @@ if (typeof Slick === "undefined") {
     function getActiveCellNode() {
       return activeCellNode;
     }
-	  
+
     //This get/set methods are used for keeping text-selection. These don't consider IE because they don't loose text-selection.
     //Fix for firefox selection. See https://github.com/mleibman/SlickGrid/pull/746/files
     function getTextSelection(){
@@ -5927,15 +5981,22 @@ if (typeof Slick === "undefined") {
       return selectedRows.slice(0);
     }
 
-    function setSelectedRows(rows) {
+    function setSelectedRows(rows, caller) {
       if (!selectionModel) {
         throw new Error("SlickGrid Selection model is not set");
       }
       if (self && self.getEditorLock && !self.getEditorLock().isActive()) {
-        selectionModel.setSelectedRanges(rowsToRanges(rows));
+        selectionModel.setSelectedRanges(rowsToRanges(rows), caller || "SlickGrid.setSelectedRows");
       }
     }
 
+    /** basic html sanitizer to avoid scripting attack */
+    function sanitizeHtmlString(dirtyHtml) {
+      var sanitizer = options.sanitizer || function (dirtyHtmlStr) {
+        return dirtyHtmlStr.replace(/(\b)(on\S+)(\s*)=|javascript:([^>]*)[^>]*|(<\s*)(\/*)script([<>]*).*(<\s*)(\/*)script(>*)|(&lt;)(\/*)(script|script defer)(.*)(&gt;|&gt;">)/gi, '');
+      }
+      return typeof dirtyHtml === 'string' ? sanitizer(dirtyHtml) : dirtyHtml;
+    }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Debug
@@ -5965,7 +6026,7 @@ if (typeof Slick === "undefined") {
     // Public API
 
     $.extend(this, {
-      "slickGridVersion": "2.4.40",
+      "slickGridVersion": "2.4.44",
 
       // Events
       "onScroll": new Slick.Event(),
@@ -5973,6 +6034,8 @@ if (typeof Slick === "undefined") {
       "onSort": new Slick.Event(),
       "onHeaderMouseEnter": new Slick.Event(),
       "onHeaderMouseLeave": new Slick.Event(),
+      "onHeaderRowMouseEnter": new Slick.Event(),
+      "onHeaderRowMouseLeave": new Slick.Event(),
       "onHeaderContextMenu": new Slick.Event(),
       "onHeaderClick": new Slick.Event(),
       "onHeaderCellRendered": new Slick.Event(),
@@ -6129,6 +6192,9 @@ if (typeof Slick === "undefined") {
       "getCellCssStyles": getCellCssStyles,
       "getFrozenRowOffset": getFrozenRowOffset,
       "setColumnHeaderVisibility": setColumnHeaderVisibility,
+      "sanitizeHtmlString": sanitizeHtmlString,
+      "getDisplayedScrollbarDimensions": getDisplayedScrollbarDimensions,
+      "getAbsoluteColumnMinWidth": getAbsoluteColumnMinWidth,
 
       "init": finishInitialization,
       "destroy": destroy,

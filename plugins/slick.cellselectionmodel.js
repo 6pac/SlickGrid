@@ -82,7 +82,7 @@
       return !areDifferent;
     }
 
-    function setSelectedRanges(ranges) {
+    function setSelectedRanges(ranges, caller) {
       // simple check for: empty selection didn't change, prevent firing onSelectedRangesChanged
       if ((!_ranges || _ranges.length === 0) && (!ranges || ranges.length === 0)) { return; }
 
@@ -90,11 +90,20 @@
       var rangeHasChanged = !rangesAreEqual(_ranges, ranges);
 
       _ranges = removeInvalidRanges(ranges);
-      if (rangeHasChanged) { _self.onSelectedRangesChanged.notify(_ranges); }
+      if (rangeHasChanged) { 
+        // provide extra "caller" argument through SlickEventData to avoid breaking pubsub event that only accepts an array of selected range
+        var eventData = new Slick.EventData();
+        Object.defineProperty(eventData, 'detail', { writable: true, configurable: true, value: { caller: caller || "SlickCellSelectionModel.setSelectedRanges" } });
+        _self.onSelectedRangesChanged.notify(_ranges, eventData); 
+      }
     }
 
     function getSelectedRanges() {
       return _ranges;
+    }
+
+    function refreshSelections() {
+      setSelectedRanges(getSelectedRanges());
     }
 
     function handleBeforeCellRangeSelected(e, args) {
@@ -183,6 +192,8 @@
     $.extend(this, {
       "getSelectedRanges": getSelectedRanges,
       "setSelectedRanges": setSelectedRanges,
+
+      "refreshSelections": refreshSelections,
 
       "init": init,
       "destroy": destroy,
