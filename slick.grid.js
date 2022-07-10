@@ -3810,7 +3810,7 @@ if (typeof Slick === "undefined") {
         scrollTo(scrollTop + offset);
       } else {
         // scroll to bottom
-        scrollTo(th - tempViewportH);
+        scrollTo(th - tempViewportH + scrollbarDimensions.height);
       }
 
       if (h != oldH && options.autoHeight) {
