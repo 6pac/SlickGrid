@@ -118,7 +118,7 @@ if (typeof Slick === "undefined") {
       ffMaxSupportedCssHeight: 6000000,
       maxSupportedCssHeight: 1000000000,
       sanitizer: undefined, // sanitize function, builtin is: defaultSanitizeHtmlString(dirtyHtml)
-      logSanitizedHtml: true // log to console when sanitised
+      logSanitizedHtml: false // log to console when sanitised
     }; 
 
     var columnDefaults = {
@@ -3512,10 +3512,10 @@ if (typeof Slick === "undefined") {
     function applyFormatResultToCellNode(formatterResult, cellNode, suppressRemove) {
         if (formatterResult === null || formatterResult === undefined) { formatterResult = ''; }
         if (Object.prototype.toString.call(formatterResult)  !== '[object Object]') {
-          cellNode.innerHTML = internalSanitizeHtmlString(formatterResult);
+          cellNode.innerHTML = sanitizeHtmlString(formatterResult);
           return;
         }
-        cellNode.innerHTML = internalSanitizeHtmlString(formatterResult.text);
+        cellNode.innerHTML = sanitizeHtmlString(formatterResult.text);
         if (formatterResult.removeClasses && !suppressRemove) {
           $(cellNode).removeClass(formatterResult.removeClasses);
         }
@@ -4022,7 +4022,7 @@ if (typeof Slick === "undefined") {
       }
 
       var x = document.createElement("div");
-      x.innerHTML = internalSanitizeHtmlString(stringArray.join(""));
+      x.innerHTML = sanitizeHtmlString(stringArray.join(""));
 
       var processedRow;
       var node;
@@ -4086,8 +4086,8 @@ if (typeof Slick === "undefined") {
       var x = document.createElement("div"),
         xRight = document.createElement("div");
 
-      x.innerHTML = internalSanitizeHtmlString(stringArrayL.join(""));
-      xRight.innerHTML = internalSanitizeHtmlString(stringArrayR.join(""));
+      x.innerHTML = sanitizeHtmlString(stringArrayL.join(""));
+      xRight.innerHTML = sanitizeHtmlString(stringArrayR.join(""));
 
       for (var i = 0, ii = rows.length; i < ii; i++) {
         if (( hasFrozenRows ) && ( rows[i] >= actualFrozenRow )) {
@@ -5956,17 +5956,11 @@ if (typeof Slick === "undefined") {
        return dirtyHtmlStr.replace(/(\b)(on[a-z]+)(\s*)=|javascript:([^>]*)[^>]*|(<\s*)(\/*)script([<>]*).*(<\s*)(\/*)script(>*)|(&lt;)(\/*)(script|script defer)(.*)(&gt;|&gt;">)/gi, '');
     }
 
-    function externalSanitizeHtmlString(dirtyHtml) {
-      if (typeof dirtyHtml !== 'string') return dirtyHtml;
-      var sanitizer = options.sanitizer || defaultSanitizeHtmlString;
-      return sanitizer(dirtyHtml);
-    }
-
-    function internalSanitizeHtmlString(dirtyHtml) {
+    function sanitizeHtmlString(dirtyHtml) {
       if (!options.sanitizer || typeof dirtyHtml !== 'string') return dirtyHtml;
       var cleanHtml = options.sanitizer(dirtyHtml);
       if (options.logSanitizedHtml && cleanHtml !== dirtyHtml) {
-         console.log("sanitizer: " + dirtyHtml + " --> " + cleanHtml);        
+         console.log("sanitizer altered html: " + dirtyHtml + " --> " + cleanHtml);        
       }
       return cleanHtml;
     }
@@ -6162,7 +6156,7 @@ if (typeof Slick === "undefined") {
       "getCellCssStyles": getCellCssStyles,
       "getFrozenRowOffset": getFrozenRowOffset,
       "setColumnHeaderVisibility": setColumnHeaderVisibility,
-      "sanitizeHtmlString": externalSanitizeHtmlString,
+      "sanitizeHtmlString": sanitizeHtmlString,
       "getDisplayedScrollbarDimensions": getDisplayedScrollbarDimensions,
       "getAbsoluteColumnMinWidth": getAbsoluteColumnMinWidth,
 
