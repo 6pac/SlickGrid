@@ -117,8 +117,8 @@ if (typeof Slick === "undefined") {
       suppressCssChangesOnHiddenInit: false,
       ffMaxSupportedCssHeight: 6000000,
       maxSupportedCssHeight: 1000000000,
-      sanitizer: undefined, // sanitize function, builtin is: defaultSanitizeHtmlString(dirtyHtml)
-      logSanitizedHtml: false // log to console when sanitised
+      sanitizer: undefined,  // sanitize function, built in basic sanitizer is: Slick.RegexSanitizer(dirtyHtml)
+      logSanitizedHtml: false // log to console when sanitised - recommend true for testing of dev and production
     }; 
 
     var columnDefaults = {
@@ -5951,11 +5951,7 @@ if (typeof Slick === "undefined") {
       }
     }
 
-   /** basic html sanitizer to avoid scripting attack */
-    function defaultSanitizeHtmlString(dirtyHtml) {
-       return dirtyHtmlStr.replace(/(\b)(on[a-z]+)(\s*)=|javascript:([^>]*)[^>]*|(<\s*)(\/*)script([<>]*).*(<\s*)(\/*)script(>*)|(&lt;)(\/*)(script|script defer)(.*)(&gt;|&gt;">)/gi, '');
-    }
-
+    /** basic html sanitizer to avoid scripting attack */
     function sanitizeHtmlString(dirtyHtml) {
       if (!options.sanitizer || typeof dirtyHtml !== 'string') return dirtyHtml;
       var cleanHtml = options.sanitizer(dirtyHtml);
@@ -6156,6 +6152,7 @@ if (typeof Slick === "undefined") {
       "getCellCssStyles": getCellCssStyles,
       "getFrozenRowOffset": getFrozenRowOffset,
       "setColumnHeaderVisibility": setColumnHeaderVisibility,
+      "sanitizeHtmlString": sanitizeHtmlString,
       "sanitizeHtmlString": sanitizeHtmlString,
       "getDisplayedScrollbarDimensions": getDisplayedScrollbarDimensions,
       "getAbsoluteColumnMinWidth": getAbsoluteColumnMinWidth,
