@@ -6153,7 +6153,6 @@ if (typeof Slick === "undefined") {
       "getFrozenRowOffset": getFrozenRowOffset,
       "setColumnHeaderVisibility": setColumnHeaderVisibility,
       "sanitizeHtmlString": sanitizeHtmlString,
-      "sanitizeHtmlString": sanitizeHtmlString,
       "getDisplayedScrollbarDimensions": getDisplayedScrollbarDimensions,
       "getAbsoluteColumnMinWidth": getAbsoluteColumnMinWidth,
 
