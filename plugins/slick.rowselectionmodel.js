@@ -13,23 +13,57 @@
     var _handler = new Slick.EventHandler();
     var _inHandler;
     var _options;
+    var _selector;
+    var _isRowMoveManagerHandler;
     var _defaults = {
-      selectActiveRow: true
+      selectActiveRow: true,
+      dragToSelect: false,
+      autoScrollWhenDrag: true,
+      cellRangeSelector: undefined
     };
 
     function init(grid) {
       _options = $.extend(true, {}, _defaults, options);
+      _selector = _options.cellRangeSelector;
       _grid = grid;
+
+      if (!_selector && _options.dragToSelect) {
+        if (!Slick.CellRangeDecorator) {
+            throw new Error("Slick.CellRangeDecorator is required when option dragToSelect set to true");
+        }
+        _selector = new Slick.CellRangeSelector({
+          selectionCss: {
+            "border": "none"
+          },
+          autoScroll: _options.autoScrollWhenDrag
+        })
+      }
+
       _handler.subscribe(_grid.onActiveCellChanged,
           wrapHandler(handleActiveCellChange));
       _handler.subscribe(_grid.onKeyDown,
           wrapHandler(handleKeyDown));
       _handler.subscribe(_grid.onClick,
           wrapHandler(handleClick));
+      if (_selector) {
+        grid.registerPlugin(_selector);
+        _selector.onCellRangeSelecting.subscribe(handleCellRangeSelected);
+        _selector.onCellRangeSelected.subscribe(handleCellRangeSelected);
+        _selector.onBeforeCellRangeSelected.subscribe(handleBeforeCellRangeSelected);
+      }
     }
 
     function destroy() {
       _handler.unsubscribeAll();
+      if (_selector) {
+        _selector.onCellRangeSelecting.unsubscribe(handleCellRangeSelected);
+        _selector.onCellRangeSelected.unsubscribe(handleCellRangeSelected);
+        _selector.onBeforeCellRangeSelected.unsubscribe(handleBeforeCellRangeSelected);
+        _grid.unregisterPlugin(_selector);
+        if (_selector.destroy) {
+          _selector.destroy();
+        }
+      }
     }
 
     function wrapHandler(handler) {
@@ -77,18 +111,28 @@
     }
 
     function setSelectedRows(rows) {
-      setSelectedRanges(rowsToRanges(rows));
+      setSelectedRanges(rowsToRanges(rows), "SlickRowSelectionModel.setSelectedRows");
     }
 
-    function setSelectedRanges(ranges) {
+    function setSelectedRanges(ranges, caller) {
       // simple check for: empty selection didn't change, prevent firing onSelectedRangesChanged
-      if ((!_ranges || _ranges.length === 0) && (!ranges || ranges.length === 0)) { return; }
+      if ((!_ranges || _ranges.length === 0) && (!ranges || ranges.length === 0)) { 
+        return; 
+      }
       _ranges = ranges;
-      _self.onSelectedRangesChanged.notify(_ranges);
+      
+      // provide extra "caller" argument through SlickEventData to avoid breaking pubsub event that only accepts an array of selected range
+      var eventData = new Slick.EventData();
+      Object.defineProperty(eventData, 'detail', { writable: true, configurable: true, value: { caller: caller || "SlickRowSelectionModel.setSelectedRanges" } });
+      _self.onSelectedRangesChanged.notify(_ranges, eventData);
     }
 
     function getSelectedRanges() {
       return _ranges;
+    }
+
+    function refreshSelections() {
+      setSelectedRows(getSelectedRows());
     }
 
     function handleActiveCellChange(e, data) {
@@ -175,12 +219,33 @@
       return true;
     }
 
+    function handleBeforeCellRangeSelected(e, cell) {
+      if (!_isRowMoveManagerHandler) {
+        var rowMoveManager = _grid.getPluginByName('RowMoveManager') || _grid.getPluginByName('CrossGridRowMoveManager');
+        _isRowMoveManagerHandler = rowMoveManager ? rowMoveManager.isHandlerColumn : $.noop;
+      }
+      if (_grid.getEditorLock().isActive() || _isRowMoveManagerHandler(cell.cell)) {
+        e.stopPropagation();
+        return false;
+      }
+      _grid.setActiveCell(cell.row, cell.cell);
+    }
+
+    function handleCellRangeSelected(e, args) {
+      if (!_grid.getOptions().multiSelect || !_options.selectActiveRow) {
+        return false;
+      }
+      setSelectedRanges([new Slick.Range(args.range.fromRow, 0, args.range.toRow, _grid.getColumns().length - 1)])
+    }
+
     $.extend(this, {
       "getSelectedRows": getSelectedRows,
       "setSelectedRows": setSelectedRows,
 
       "getSelectedRanges": getSelectedRanges,
       "setSelectedRanges": setSelectedRanges,
+
+      "refreshSelections": refreshSelections,
 
       "init": init,
       "destroy": destroy,
