@@ -114,8 +114,12 @@ if (typeof Slick === "undefined") {
       viewportSwitchToScrollModeWidthPercent: undefined,
       viewportMinWidthPx: undefined,
       viewportMaxWidthPx: undefined,
-      suppressCssChangesOnHiddenInit: false
-    };
+      suppressCssChangesOnHiddenInit: false,
+      ffMaxSupportedCssHeight: 6000000,
+      maxSupportedCssHeight: 1000000000,
+      sanitizer: undefined,  // sanitize function, built in basic sanitizer is: Slick.RegexSanitizer(dirtyHtml)
+      logSanitizedHtml: false // log to console when sanitised - recommend true for testing of dev and production
+    }; 
 
     var columnDefaults = {
       name: "",
@@ -829,7 +833,18 @@ if (typeof Slick === "undefined") {
         }
       }
       var totalRowWidth = canvasWidthL + canvasWidthR;
-      return options.fullWidthRows ? Math.max(totalRowWidth, availableWidth) : totalRowWidth;
+      if (options.fullWidthRows) {
+        var extraWidth = Math.max(totalRowWidth, availableWidth) - totalRowWidth;
+        if (extraWidth > 0) {
+          totalRowWidth += extraWidth;
+          if (hasFrozenColumns()) {
+            canvasWidthR += extraWidth;
+          } else {
+            canvasWidthL += extraWidth;
+          }
+        }
+      }
+      return totalRowWidth;
     }
 
     function updateCanvasWidth(forceColumnWidthsUpdate) {
@@ -942,7 +957,8 @@ if (typeof Slick === "undefined") {
     function getMaxSupportedCssHeight() {
       var supportedHeight = 1000000;
       // FF reports the height back but still renders blank after ~6M px
-      var testUpTo = navigator.userAgent.toLowerCase().match(/firefox/) ? 6000000 : 1000000000;
+      //var testUpTo = navigator.userAgent.toLowerCase().match(/firefox/) ? 6000000 : 1000000000;
+      var testUpTo = navigator.userAgent.toLowerCase().match(/firefox/) ? options.ffMaxSupportedCssHeight : options.maxSupportedCssHeight;    
       var div = $("<div style='display:none' />").appendTo(document.body);
 
       while (true) {
@@ -3854,7 +3870,7 @@ if (typeof Slick === "undefined") {
         scrollTo(scrollTop + offset);
       } else {
         // scroll to bottom
-        scrollTo(th - tempViewportH);
+        scrollTo(th - tempViewportH + scrollbarDimensions.height);
       }
 
       if (h != oldH && options.autoHeight) {
@@ -4286,6 +4302,9 @@ if (typeof Slick === "undefined") {
     }
 
     function handleScroll() {
+      // autoheight does not have scrolling, but editors can trigger a scroll, which we should ignore
+      if (options.autoHeight) return;
+      
       scrollTop = $viewportScrollContainerY[0].scrollTop;
       scrollLeft = $viewportScrollContainerX[0].scrollLeft;
       return _handleScroll(false);
@@ -5990,12 +6009,21 @@ if (typeof Slick === "undefined") {
       }
     }
 
-    /** basic html sanitizer to avoid scripting attack */
-    function sanitizeHtmlString(dirtyHtml) {
-      var sanitizer = options.sanitizer || function (dirtyHtmlStr) {
-        return dirtyHtmlStr.replace(/(\b)(on\S+)(\s*)=|javascript:([^>]*)[^>]*|(<\s*)(\/*)script([<>]*).*(<\s*)(\/*)script(>*)|(&lt;)(\/*)(script|script defer)(.*)(&gt;|&gt;">)/gi, '');
+    /** html sanitizer to avoid scripting attack */
+    var logMessageCount = 0;
+    var logMessageMaxCount = 30;
+
+    function sanitizeHtmlString(dirtyHtml, suppressLogging) {
+      if (!options.sanitizer || typeof dirtyHtml !== 'string') return dirtyHtml;
+      
+      var cleanHtml = options.sanitizer(dirtyHtml);
+      
+      if (!suppressLogging && options.logSanitizedHtml && logMessageCount <= logMessageMaxCount && cleanHtml !== dirtyHtml) {
+        console.log("sanitizer altered html: " + dirtyHtml + " --> " + cleanHtml);    
+        if (logMessageCount === logMessageMaxCount) { console.log("sanitizer: silencing messages after first " + logMessageMaxCount); }
+        logMessageCount++;
       }
-      return typeof dirtyHtml === 'string' ? sanitizer(dirtyHtml) : dirtyHtml;
+      return cleanHtml;
     }
 
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -6026,7 +6054,7 @@ if (typeof Slick === "undefined") {
     // Public API
 
     $.extend(this, {
-      "slickGridVersion": "2.4.44",
+      "slickGridVersion": "2.4.45",
 
       // Events
       "onScroll": new Slick.Event(),
