@@ -183,7 +183,10 @@
       } else {
         _grid.setSelectedRows(_grid.getSelectedRows().concat(row), "click.toggle");
       }
-      _grid.setActiveCell(row, getCheckboxColumnCellIndex());
+      
+      if (_options.setActiveCellOnToggle !== false) {
+        _grid.setActiveCell(row, getCheckboxColumnCellIndex());
+      }
     }
 
     function selectRows(rowArray) {
