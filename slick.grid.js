@@ -2465,16 +2465,18 @@ if (typeof Slick === "undefined") {
       }
 
       // select rows to evaluate using rowSelectionMode and rowSelectionCount
-      var rows = getData();
-      if (rows.getItems) { rows = rows.getItems(); }
-
-      if (rows.length === 0) { return headerWidth; }
+      if (getDataLength() === 0) { return headerWidth; }
 
       var rowSelectionMode = (isInit ? autoSize.rowSelectionModeOnInit : undefined) || autoSize.rowSelectionMode;
 
-      if (rowSelectionMode === Slick.RowSelectionMode.FirstRow) { rows = rows.slice(0,1); }
-      if (rowSelectionMode === Slick.RowSelectionMode.LastRow) { rows = rows.slice(rows.length -1, rows.length); }
-      if (rowSelectionMode === Slick.RowSelectionMode.FirstNRows) { rows = rows.slice(0, autoSize.rowSelectionCount); }
+      var rowsStart = 0, rowsEnd = getDataLength();
+      if (rowSelectionMode === Slick.RowSelectionMode.FirstRow) { rowsStart = 0; rowsEnd = 1; }
+      if (rowSelectionMode === Slick.RowSelectionMode.LastRow) { rowsStart = getDataLength() - 1; rowsEnd = getDataLength(); }
+      if (rowSelectionMode === Slick.RowSelectionMode.FirstNRows) { rowsStart = 0; rowsEnd = autoSize.rowSelectionCount; }
+
+      // make a shalow copy of the rows
+      var rows = [];
+      for (i = rowsStart; i < rowsEnd; i++) rows.push(getDataItem(i));
 
       // now use valueFilterMode to further filter selected rows
       if (autoSize.valueFilterMode === Slick.ValueFilterMode.DeDuplicate) {
