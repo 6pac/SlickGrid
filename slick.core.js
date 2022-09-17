@@ -672,6 +672,10 @@
     };
   };
   
+  function regexSanitizer(dirtyHtml) {
+     return dirtyHtml.replace(/(\b)(on[a-z]+)(\s*)=|javascript:([^>]*)[^>]*|(<\s*)(\/*)script([<>]*).*(<\s*)(\/*)script(>*)|(&lt;)(\/*)(script|script defer)(.*)(&gt;|&gt;">)/gi, '');
+  }
+ 
   // exports
   $.extend(true, window, {
     "Slick": {
@@ -683,6 +687,7 @@
       "NonDataRow": NonDataItem,
       "Group": Group,
       "GroupTotals": GroupTotals,
+      "RegexSanitizer": regexSanitizer,
       "EditorLock": EditorLock,
   
       /***
@@ -724,31 +729,33 @@
       },
       
       "ColAutosizeMode": {
-          Locked: 'LCK',
-          Guide: 'GUI',
-          Content: 'CON',
-          ContentIntelligent: 'CTI'
+        Locked: 'LCK',
+        Guide: 'GUI',
+        Content: 'CON',
+        ContentExpandOnly: 'CXO',
+        ContentIntelligent: 'CTI'
       },
-      
+
       "RowSelectionMode": {
-          FirstRow: 'FS1',
-          FirstNRows: 'FSN',
-          AllRows: 'ALL',
-          LastRow: 'LS1'
+        FirstRow: 'FS1',
+        FirstNRows: 'FSN',
+        AllRows: 'ALL',
+        LastRow: 'LS1'
       },
-      
+
       "ValueFilterMode": {
-          None: 'NONE',
-          DeDuplicate: 'DEDP',
-          GetGreatestAndSub: 'GR8T',
-          GetLongestTextAndSub: 'LNSB',
-          GetLongestText: 'LNSC'
+        None: 'NONE',
+        DeDuplicate: 'DEDP',
+        GetGreatestAndSub: 'GR8T',
+        GetLongestTextAndSub: 'LNSB',
+        GetLongestText: 'LNSC'
       },
-      
+
       "WidthEvalMode": {
-          CanvasTextSize: 'CANV',
-          HTML: 'HTML'
-      }      
+        Auto: 'AUTO',
+        TextOnly: 'CANV',
+        HTML: 'HTML'
+      }
     }
   });
 })(jQuery);
