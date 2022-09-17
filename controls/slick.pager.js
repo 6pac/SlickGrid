@@ -136,25 +136,25 @@
       var icon_prefix = "<span class='ui-state-default ui-corner-all ui-icon-container'><span class='ui-icon ";
       var icon_suffix = "' /></span>";
 
-      $(icon_prefix + "ui-icon-lightbulb" + icon_suffix)
+      $(icon_prefix + "ui-icon-lightbulb slick-icon-lightbulb" + icon_suffix)
           .click(function () {
             $(".slick-pager-settings-expanded").toggle();
           })
           .appendTo($settings);
 
-      $(icon_prefix + "ui-icon-seek-first" + icon_suffix)
+      $(icon_prefix + "ui-icon-seek-first slick-icon-seek-first" + icon_suffix)
           .click(gotoFirst)
           .appendTo($nav);
 
-      $(icon_prefix + "ui-icon-seek-prev" + icon_suffix)
+      $(icon_prefix + "ui-icon-seek-prev slick-icon-seek-prev" + icon_suffix)
           .click(gotoPrev)
           .appendTo($nav);
 
-      $(icon_prefix + "ui-icon-seek-next" + icon_suffix)
+      $(icon_prefix + "ui-icon-seek-next slick-icon-seek-next" + icon_suffix)
           .click(gotoNext)
           .appendTo($nav);
 
-      $(icon_prefix + "ui-icon-seek-end" + icon_suffix)
+      $(icon_prefix + "ui-icon-seek-end slick-icon-seek-end" + icon_suffix)
           .click(gotoLast)
           .appendTo($nav);
 
@@ -171,17 +171,22 @@
       var state = getNavState();
 
       $container.find(".slick-pager-nav span").removeClass("ui-state-disabled");
+      $container.find(".slick-pager-nav span").removeClass("slick-icon-state-disabled");
       if (!state.canGotoFirst) {
         $container.find(".ui-icon-seek-first").addClass("ui-state-disabled");
+        $container.find(".slick-icon-seek-first").addClass("slick-icon-state-disabled");
       }
       if (!state.canGotoLast) {
         $container.find(".ui-icon-seek-end").addClass("ui-state-disabled");
+        $container.find(".slick-icon-seek-end").addClass("slick-icon-state-disabled");
       }
       if (!state.canGotoNext) {
         $container.find(".ui-icon-seek-next").addClass("ui-state-disabled");
+        $container.find(".slick-icon-seek-next").addClass("slick-icon-state-disabled");
       }
       if (!state.canGotoPrev) {
         $container.find(".ui-icon-seek-prev").addClass("ui-state-disabled");
+        $container.find(".slick-icon-seek-prev").addClass("slick-icon-state-disabled");
       }
 
       if (pagingInfo.pageSize === 0) {

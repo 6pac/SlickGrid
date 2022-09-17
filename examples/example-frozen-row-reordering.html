@@ -83,13 +83,14 @@
 
 <script src="../lib/firebugx.js"></script>
 
-<script src="../lib/jquery-1.12.4.min.js"></script>
+<script src="../lib/jquery-3.1.0.js"></script>
 <script src="../lib/jquery-ui.min.js"></script>
 <script src="../lib/jquery.event.drag-2.3.0.js"></script>
 <script src="../lib/jquery.event.drop-2.3.0.js"></script>
-<script src="../lib/jquery.mousewheel.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
+<script src="../slick.interactions.js"></script>
 <script src="../plugins/slick.cellrangeselector.js"></script>
 <script src="../plugins/slick.cellselectionmodel.js"></script>
 <script src="../plugins/slick.rowselectionmodel.js"></script>
@@ -212,6 +213,7 @@ $(function () {
   });
 
   moveRowsPlugin.onMoveRows.subscribe(function (e, args) {
+    console.log(args)
     var extractedRows = [], left, right;
     var rows = args.rows;
     var insertBefore = args.insertBefore;
@@ -283,6 +285,7 @@ $(function () {
 
     dd.rows = selectedRows;
     dd.count = selectedRows.length;
+    console.log('drag>> ', dd)
 
     var proxy = $("<span></span>")
       .css({
@@ -310,7 +313,8 @@ $(function () {
       return;
     }
     e.stopImmediatePropagation();
-    dd.helper.css({top: e.pageY + 5, left: e.pageX + 5});
+    var targetEvent = e.touches ? e.touches[0] : e;
+    dd.helper.css({top: targetEvent.pageY + 5, left: targetEvent.pageX + 5});
   });
 
   grid.onDragEnd.subscribe(function (e, dd) {
@@ -331,7 +335,7 @@ $(function () {
       $(dd.available).css("background", "pink");
     })
     .bind("drop", function (e, dd) {
-      var rowsToDelete = dd.rows.sort().reverse();
+      var rowsToDelete = (dd.rows || []).sort().reverse();
       for (var i = 0; i < rowsToDelete.length; i++) {
         data.splice(rowsToDelete[i], 1);
       }

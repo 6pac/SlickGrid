@@ -6,7 +6,8 @@ Cypress.Commands.add("dragStart", { prevSubject: true }, (subject, { cellWidth =
     .trigger('mousemove', cellWidth / 3, cellHeight / 3);
 })
 
-Cypress.Commands.add("drag", { prevSubject: true }, (subject, addRow, addCell, { cellWidth = 80, cellHeight = 25 } = {}) => {
+// use a different command name than "drag" so that it doesn't conflict with the "@4tw/cypress-drag-drop" lib
+Cypress.Commands.add("dragCell", { prevSubject: true }, (subject, addRow, addCell, { cellWidth = 80, cellHeight = 25 } = {}) => {
   return cy.wrap(subject).trigger('mousemove', cellWidth * (addCell + 0.5), cellHeight * (addRow + 0.5), { force: true });
 })
 

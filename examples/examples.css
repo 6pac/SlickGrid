@@ -160,7 +160,14 @@ input.editor-percentcomplete {
 
   float: left;
 }
-
+input[type='range'].editor-percentcomplete-slider {
+  background-color: #ccc;
+  transform: rotate(270deg);
+  transform-origin: left;
+  position: absolute;
+  top: 125px;
+  left: 15px;
+}
 .editor-percentcomplete-picker {
   position: relative;
   display: inline-block;
@@ -194,6 +201,8 @@ input.editor-percentcomplete {
   height: 98px;
   border: 1px solid gray;
   border-left: 0;
+  position: fixed;
+  width: 120px;
 }
 
 .editor-percentcomplete-buttons {

@@ -29,6 +29,10 @@ classes should alter those!
   height: 100%;
 }
 
+.slick-preheader-panel {
+  border: 1px solid #d3d3d3;
+}
+
 .slick-row.ui-state-active {
   background: #F5F7D7;
 }
@@ -97,7 +101,7 @@ classes should alter those!
 }
 
 .slick-sortable-placeholder {
-  background: silver !important;
+  background: #d9d9d9 !important;
 }
 
 .slick-row.odd {

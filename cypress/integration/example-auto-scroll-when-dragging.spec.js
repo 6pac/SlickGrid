@@ -30,22 +30,23 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
   });
 
   it('should select border shown in cell selection model, and hidden in row selection model when dragging', { scrollBehavior: false }, function () {
-    cy.getCell(0, 1, '', { parentSelector: "#myGrid" })
+    cy.getCell(0, 1, '', { parentSelector: "#myGrid", rowHeight: cellHeight })
       .as('cell1')
       .dragStart();
+
     cy.get('#myGrid .slick-range-decorator').should('be.exist').and('have.css', 'border-color').and('not.equal', 'none');
     cy.get('@cell1')
-      .drag(0, 5)
+      .dragCell(0, 5)
       .dragEnd('#myGrid');
     cy.get('#myGrid .slick-range-decorator').should('not.be.exist');
     cy.get('#myGrid .slick-cell.selected').should('have.length', 6);
 
-    cy.getCell(0, 1, '', { parentSelector: "#myGrid2" })
+    cy.getCell(0, 1, '', { parentSelector: "#myGrid2", rowHeight: cellHeight })
       .as('cell2')
       .dragStart();
     cy.get('#myGrid2 .slick-range-decorator').should('be.exist').and('have.css', 'border-style').and('equal', 'none');
     cy.get('@cell2')
-      .drag(5, 1)
+      .dragCell(5, 1)
       .dragEnd('#myGrid2');
     cy.get('#myGrid2 .slick-range-decorator').should('not.be.exist');
     cy.get('#myGrid2 .slick-row:nth-child(-n+6)')
@@ -90,10 +91,10 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
 
   function getIntervalUntilRow16Displayed(selector, px) {
     const viewportSelector = (selector + ' .slick-viewport:first');
-    cy.getCell(0, 1, '', { parentSelector: selector })
+    cy.getCell(0, 1, '', { parentSelector: selector, rowHeight: cellHeight })
       .dragStart();
     return cy.get(viewportSelector).invoke('scrollTop').then(scrollBefore => {
-      cy.dragOutside('bottom', 0, px, { parentSelector: selector });
+      cy.dragOutside('bottom', 0, px, { parentSelector: selector, rowHeight: cellHeight });
 
       const start = performance.now();
       cy.get(selector + ' .slick-row:not(.slick-group) >.cell-unselectable')
@@ -274,10 +275,10 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
   });
 
   function testDragInGrouping(selector) {
-    cy.getCell(7, 0, 'bottomRight', { parentSelector: selector })
+    cy.getCell(7, 0, 'bottomRight', { parentSelector: selector, rowHeight: cellHeight })
       .dragStart();
     cy.get(selector + ' .slick-viewport:last').as('viewport').invoke('scrollTop').then(scrollBefore => {
-      cy.dragOutside('bottom', 400, 300, { parentSelector: selector });
+      cy.dragOutside('bottom', 400, 300, { parentSelector: selector, rowHeight: cellHeight });
       cy.get('@viewport').invoke('scrollTop').then(scrollAfter => {
         expect(scrollBefore).to.be.lessThan(scrollAfter);
         cy.dragEnd(selector);

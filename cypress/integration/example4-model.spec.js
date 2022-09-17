@@ -42,7 +42,7 @@ describe('Example 4 - Model', () => {
   });
 
   it('Should display "Showing page 1 of 1000" text after changing Pagination to 50 items per page', () => {
-    cy.get('.ui-icon-lightbulb')
+    cy.get('.slick-icon-lightbulb')
       .click();
 
     cy.get('.slick-pager-settings-expanded')
@@ -65,10 +65,10 @@ describe('Example 4 - Model', () => {
   it('Should display "Showing page 2 of 1000" text after clicking on next page', () => {
     const expectedRows = ['Task 50', 'Task 51', 'Task 52', 'Task 53', 'Task 54'];
 
-    cy.get('.ui-icon-seek-first.ui-state-disabled');
-    cy.get('.ui-icon-seek-prev.ui-state-disabled');
+    cy.get('.slick-icon-seek-first.ui-state-disabled');
+    cy.get('.slick-icon-seek-prev.ui-state-disabled');
 
-    cy.get('.ui-icon-seek-next')
+    cy.get('.slick-icon-seek-next')
       .click();
 
     cy.get('.slick-pager-status')
@@ -95,7 +95,7 @@ describe('Example 4 - Model', () => {
   it('Should display "Showing page 1000 of 1000" text after clicking on last page', () => {
     const expectedRows = ['Task 49950', 'Task 49951', 'Task 49952', 'Task 49953', 'Task 49954'];
 
-    cy.get('.ui-icon-seek-end')
+    cy.get('.slick-icon-seek-end')
       .click();
 
     cy.get('.slick-pager-status')

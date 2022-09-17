@@ -38,6 +38,11 @@
   </div>
 
   <div class="options-panel" style="width:450px;">
+    <h2>Demonstrates:</h2>
+    <ul>
+      <li>Grouping & Aggregator features</li>
+      <li>Similar to regular grouping but the "grouping" must be defined in the column we want to group by</li>
+    </ul>
     <b>Options:</b>
     <hr/>
     <div style="padding:6px;">
@@ -47,30 +52,28 @@
         <div style="width:100px;display:inline-block;" id="pcSlider"></div>
       </div>
       <br/><br/>
-      <button onclick="loadData(50)">50 rows</button>
-      <button onclick="loadData(50000)">50k rows</button>
-      <button onclick="loadData(500000)">500k rows</button>
+      <button data-test="add-500-rows-btn" onclick="loadData(500)">500 rows</button>
+      <button data-test="add-50k-rows-btn" onclick="loadData(50000)">50k rows</button>
+      <button data-test="add-500k-rows-btn" onclick="loadData(500000)">500k rows</button>
       <hr/>
       <button onclick="dataView.setGrouping([])">Clear grouping</button>
       <br/>
-      <button onclick="groupByDuration()">Group by duration & sort groups by value</button>
+      <button data-test="group-duration-sort-value-btn" onclick="groupByDuration()">Group by duration & sort groups by value</button>
       <br/>
-      <button onclick="groupByDurationOrderByCount(false)">Group by duration & sort groups by count</button>
+      <button data-test="group-duration-sort-count-btn" onclick="groupByDurationOrderByCount(false)">Group by duration & sort groups by count</button>
       <br/>
-      <button onclick="groupByDurationOrderByCount(true)">Group by duration & sort groups by count, aggregate
+      <button data-test="group-duration-sort-count-aggregate-collapsed-btn" onclick="groupByDurationOrderByCount(true)">Group by duration & sort groups by count, aggregate
         collapsed
       </button>
       <br/>
       <br/>
-      <button onclick="groupByDurationEffortDriven()">Group by duration then effort-driven</button>
+      <button data-test="group-duration-effort-btn" onclick="groupByDurationEffortDriven()">Group by duration then effort-driven</button>
       <br/>
-      <button onclick="groupByDurationEffortDrivenPercent()">Group by duration then effort-driven then percent.</button>
+      <button data-test="group-duration-effort-percent-btn" onclick="groupByDurationEffortDrivenPercent()">Group by duration then effort-driven then percent.</button>
       <br/>
       <br/>
-      <button onclick="dataView.collapseAllGroups()">Collapse all groups</button>
-      <br/>
-      <button onclick="dataView.expandAllGroups()">Expand all groups</button>
-      <br/>
+      <button data-test="collapse-all-btn" onclick="toggleGrouping(false)">Collapse all groups</button>
+      <button data-test="expand-all-btn" onclick="toggleGrouping(true)">Expand all groups</button>
     </div>
     <hr/>
     <h2>Demonstrates:</h2>
@@ -91,11 +94,12 @@
 
 <script src="../lib/firebugx.js"></script>
 
-<script src="../lib/jquery-1.12.4.min.js"></script>
+<script src="../lib/jquery-3.1.0.js"></script>
 <script src="../lib/jquery-ui.min.js"></script>
-<script src="../lib/jquery.event.drag-2.3.0.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
+<script src="../slick.interactions.js"></script>
 <script src="../slick.formatters.js"></script>
 <script src="../slick.editors.js"></script>
 <script src="../plugins/slick.cellrangedecorator.js"></script>
@@ -121,7 +125,7 @@ var columns = [
   {id: "start", name: "Start", field: "start", minWidth: 60, sortable: true},
   {id: "finish", name: "Finish", field: "finish", minWidth: 60, sortable: true},
   {id: "cost", name: "Cost", field: "cost", width: 90, sortable: true, groupTotalsFormatter: sumTotalsFormatter},
-  {id: "effort-driven", name: "Effort Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, sortable: true}
+  {id: "effort-driven", name: "Effort-Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, sortable: true}
 ];
 
 var options = {
@@ -263,6 +267,16 @@ function groupByDurationEffortDrivenPercent() {
       lazyTotalsCalculation: true
     }
   ]);
+}
+
+function toggleGrouping(expand) {
+  if(expand) {
+    dataView.expandAllGroups();
+    $(".slick-group-toggle-all").removeClass('collapsed').addClass('expanded');
+  } else {
+    dataView.collapseAllGroups();
+    $(".slick-group-toggle-all").removeClass('expanded').addClass('collapsed');
+  }
 }
 
 function loadData(count) {

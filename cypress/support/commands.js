@@ -23,7 +23,7 @@
 //
 // -- This is will overwrite an existing command --
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
-
+import '@4tw/cypress-drag-drop';
 import { convertPosition } from './common';
 
 // convert position like 'topLeft' to the object { x: 'left|right', y: 'top|bottom' }

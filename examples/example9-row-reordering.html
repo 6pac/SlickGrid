@@ -83,12 +83,14 @@
 
 <script src="../lib/firebugx.js"></script>
 
-<script src="../lib/jquery-1.12.4.min.js"></script>
+<script src="../lib/jquery-3.1.0.js"></script>
 <script src="../lib/jquery-ui.min.js"></script>
 <script src="../lib/jquery.event.drag-2.3.0.js"></script>
 <script src="../lib/jquery.event.drop-2.3.0.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
+<script src="../slick.interactions.js"></script>
 <script src="../plugins/slick.cellrangeselector.js"></script>
 <script src="../plugins/slick.cellselectionmodel.js"></script>
 <script src="../plugins/slick.rowselectionmodel.js"></script>
@@ -270,7 +272,8 @@ $(function () {
     if (dd.mode != "recycle") {
       return;
     }
-    dd.helper.css({top: e.pageY + 5, left: e.pageX + 5});
+    var targetEvent = e.touches ? e.touches[0] : e;
+    dd.helper.css({top: targetEvent.pageY + 5, left: targetEvent.pageX + 5});
   });
 
   grid.onDragEnd.subscribe(function (e, dd) {

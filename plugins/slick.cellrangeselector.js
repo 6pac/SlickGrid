@@ -48,6 +48,10 @@
     var _scrollLeft = 0;
 
     function init(grid) {
+      if (typeof Slick.Draggable === "undefined") {
+        throw new Error('Slick.Draggable is undefined, make sure to import "slick.interactions.js"');
+      }
+
       options = $.extend(true, {}, _defaults, options);
       _decorator = options.cellDecorator || new Slick.CellRangeDecorator(grid, options);
       _grid = grid;
@@ -165,6 +169,7 @@
     }
 
     function getMouseOffsetViewport(e, dd) {
+      var targetEvent = e.touches ? e.touches[0] : e;
       var viewportLeft = _$activeViewport.scrollLeft();
       var viewportTop = _$activeViewport.scrollTop();
       var viewportRight = viewportLeft + _viewportWidth;
@@ -200,16 +205,16 @@
         isOutsideViewport: false
       }
       // ... horizontal
-      if (e.pageX < viewportOffsetLeft) {
-        result.offset.x = e.pageX - viewportOffsetLeft;
-      } else if (e.pageX > viewportOffsetRight) {
-        result.offset.x = e.pageX - viewportOffsetRight;
+      if (targetEvent.pageX < viewportOffsetLeft) {
+        result.offset.x = targetEvent.pageX - viewportOffsetLeft;
+      } else if (targetEvent.pageX > viewportOffsetRight) {
+        result.offset.x = targetEvent.pageX - viewportOffsetRight;
       }
       // ... vertical
-      if (e.pageY < viewportOffsetTop) {
-        result.offset.y = viewportOffsetTop - e.pageY;
-      } else if (e.pageY > viewportOffsetBottom) {
-        result.offset.y = viewportOffsetBottom - e.pageY;
+      if (targetEvent.pageY < viewportOffsetTop) {
+        result.offset.y = viewportOffsetTop - targetEvent.pageY;
+      } else if (targetEvent.pageY > viewportOffsetBottom) {
+        result.offset.y = viewportOffsetBottom - targetEvent.pageY;
       }
       result.isOutsideViewport = !!result.offset.x || !!result.offset.y;
       return result;
@@ -286,9 +291,10 @@
     }
 
     function handleDragTo(e, dd) {
+      var targetEvent = e.touches ? e.touches[0] : e;
       var end = _grid.getCellFromPoint(
-        e.pageX - _$activeCanvas.offset().left + _columnOffset,
-        e.pageY - _$activeCanvas.offset().top + _rowOffset
+        targetEvent.pageX - _$activeCanvas.offset().left + _columnOffset,
+        targetEvent.pageY - _$activeCanvas.offset().top + _rowOffset
       );
 
       // ... frozen column(s),

@@ -43,6 +43,7 @@ classes should alter those!
   border-top: 0px !important;
   border-bottom: 0px !important;
   float: left;
+  z-index: 1;
 }
 
 .slick-footerrow-column.ui-state-default {
@@ -107,7 +108,7 @@ classes should alter those!
   right: -5px;
   top: 0;
   height: 100%;
-  z-index: 1;
+  z-index: 2;
 }
 
 .slick-sortable-placeholder {

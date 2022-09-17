@@ -200,6 +200,7 @@
     }
 
     function createMenu(e) {
+      var targetEvent = e.touches ? e.touches[0] : e;
       var cell = _grid.getCellFromEvent(e);
       _currentCell = cell && cell.cell;
       _currentRow = cell && cell.row;
@@ -234,8 +235,8 @@
       var width = isNaN(_contextMenuProperties.width) ? _contextMenuProperties.width : _contextMenuProperties.width + "px";
       var menuStyle = "width: " + width + "; max-height: " + maxHeight;
       var menu = $('<div class="slick-context-menu ' + _gridUid + '" style="' + menuStyle + '" />')
-        .css("top", e.pageY)
-        .css("left", e.pageX)
+        .css("top", targetEvent.pageY)
+        .css("left", targetEvent.pageX)
         .css("display", "none");
 
       var closeButtonHtml = '<button type="button" class="close" data-dismiss="slick-context-menu" aria-label="Close">'
@@ -627,9 +628,10 @@
      * @param {*} event
      */
     function repositionMenu(e) {
+      var targetEvent = e.touches ? e.touches[0] : e;
       var $parent = $(e.target).closest(".slick-cell");
-      var menuOffsetLeft = e.pageX;
-      var menuOffsetTop = $parent ? $parent.offset().top : e.pageY;
+      var menuOffsetLeft = targetEvent.pageX;
+      var menuOffsetTop = $parent ? $parent.offset().top : targetEvent.pageY;
       var menuHeight = $menu.outerHeight() || 0;
       var menuWidth = $menu.outerWidth() || _contextMenuProperties.width || 0;
       var rowHeight = _gridOptions.rowHeight;
