@@ -29,7 +29,7 @@
     "bump:patch": "node ./scripts/bump.js ---bump patch",
     "cypress": "npx cypress open",
     "cypress:ci": "npx cypress run --reporter xunit --reporter-options output=testresult.xml",
-    "serve": "serve ./ -l 8080",
+    "serve": "serve -p 8080",
     "clean:dist": "rimraf dist",
     "minify": "node ./scripts/minify.js"
   },
