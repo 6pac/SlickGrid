@@ -29,7 +29,7 @@
     "bump:patch": "node ./scripts/bump.js ---bump patch",
     "cypress": "npx cypress open",
     "cypress:ci": "npx cypress run --reporter xunit --reporter-options output=testresult.xml",
-    "serve": "serve -p 8080",
+    "serve": "http-server ./ -p 8080 -a localhost -s",
     "clean:dist": "rimraf dist",
     "minify": "node ./scripts/minify.js"
   },
@@ -45,11 +45,11 @@
     "cypress": "^9.7.0",
     "eslint": "^8.22.0",
     "fs-extra": "^10.1.0",
+    "http-server": "^13.0.2",
     "path": "^0.12.7",
     "postcss": "^8.4.16",
     "rimraf": "^3.0.2",
     "semver": "^7.3.7",
-    "serve": "^14.0.1",
     "uglify-js": "^3.17.0",
     "yargs": "^17.5.1"
   }
