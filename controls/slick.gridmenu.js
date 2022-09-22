@@ -375,6 +375,7 @@
     }
 
     function showGridMenu(e) {
+      var targetEvent = e.touches ? e.touches[0] : e;
       e.preventDefault();
 
       // empty both the picker list & the command list
@@ -465,8 +466,8 @@
       var gridMenuIconWidth = (_options.gridMenu && _options.gridMenu.menuWidth) || _defaults.menuWidth;
       var contentMinWidth = (_options.gridMenu && _options.gridMenu.contentMinWidth) ? _options.gridMenu.contentMinWidth : _defaults.contentMinWidth;
       var currentMenuWidth = (contentMinWidth > menuWidth) ? contentMinWidth : (menuWidth + gridMenuIconWidth);
-      var nextPositionTop = (useClickToRepositionMenu && e.pageY > 0) ? e.pageY : menuIconOffset.top + 10;
-      var nextPositionLeft = (useClickToRepositionMenu && e.pageX > 0) ? e.pageX : menuIconOffset.left + 10;
+      var nextPositionTop = (useClickToRepositionMenu && targetEvent.pageY > 0) ? targetEvent.pageY : menuIconOffset.top + 10;
+      var nextPositionLeft = (useClickToRepositionMenu && targetEvent.pageX > 0) ? targetEvent.pageX : menuIconOffset.left + 10;
       var menuMarginBottom = (_options.gridMenu && _options.gridMenu.marginBottom !== undefined) ? _options.gridMenu.marginBottom : _defaults.marginBottom;
 
       $menu
@@ -481,7 +482,7 @@
       if (_options.gridMenu && _options.gridMenu.height !== undefined) {
         $menu.css("height", _options.gridMenu.height);
       } else {
-        $menu.css("max-height", $(window).height() - e.clientY - menuMarginBottom);
+        $menu.css("max-height", $(window).height() - targetEvent.clientY - menuMarginBottom);
       }
 
       $menu.show();

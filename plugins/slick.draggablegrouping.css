@@ -32,6 +32,7 @@
   margin-right: 5px;
   vertical-align: middle;
   cursor: pointer;
+  z-index: -1; /* to help group delete button click on touch device */
 }
 
 .slick-groupby-remove {
@@ -40,13 +41,32 @@
 } 
 
 .slick-groupby-remove-image {
+  margin-left: 5px;
   background: url(../images/delete.png) no-repeat center right;
+}
+.slick-groupby-remove-image::before {
+  content: "."; 
+  display: block; 
+  clear: both;
 }
 
 .slick-placeholder {
-  height: 25px;
+  font-size: 11px;
+  height: 100%;
 }
 
-.ui-droppable {
-  padding: 5px;
+.slick-droppable-sortitem-hover {
+  opacity: 0.5;
+}
+.slick-dropzone {
+  padding: 4px;
+}
+.slick-dropzone-hover {
+  border: 1px dashed rgb(255, 95, 95);
+  /* box-shadow: 0px 0px 0px 1px pink inset; */
+}
+.slick-dropzone-placeholder-hover {
+  color: #545454;
+  background-color: #f3f3f3;
+  background-clip: border-box;
 }
