@@ -848,6 +848,12 @@ if (typeof Slick === "undefined") {
         $headerL.width(headersWidthL);
         $headerR.width(headersWidthR);
 
+        $headerRowL.width(canvasWidthL);
+
+        if (options.createFooterRow) {
+          $footerRowL.width(canvasWidthL);
+        }
+
         if (hasFrozenColumns()) {
           $canvasTopR.width(canvasWidthR);
 
@@ -862,14 +868,12 @@ if (typeof Slick === "undefined") {
           $headerRowScrollerL.width(canvasWidthL);
           $headerRowScrollerR.width(viewportW - canvasWidthL);
 
-          $headerRowL.width(canvasWidthL);
           $headerRowR.width(canvasWidthR);
 
           if (options.createFooterRow) {
             $footerRowScrollerL.width(canvasWidthL);
             $footerRowScrollerR.width(viewportW - canvasWidthL);
 
-            $footerRowL.width(canvasWidthL);
             $footerRowR.width(canvasWidthR);
           }
           if (options.createPreHeaderPanel) {
@@ -892,11 +896,9 @@ if (typeof Slick === "undefined") {
           $paneHeaderL.width('100%');
           $paneTopL.width('100%');
           $headerRowScrollerL.width('100%');
-          $headerRowL.width(canvasWidth);
 
           if (options.createFooterRow) {
             $footerRowScrollerL.width('100%');
-            $footerRowL.width(canvasWidth);
           }
 
           if (options.createPreHeaderPanel) {
