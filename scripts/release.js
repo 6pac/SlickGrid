@@ -108,6 +108,7 @@ const cwd = process.cwd();
 
     // 5. Update (sync) npm lock file
     await npmUtils.syncLockFile({ cwd, dryRun: options.dryRun });
+    changedFiles.add(path.resolve('./package-lock.json'));
 
     // 6. "git add" all changed files
     options.dryRun
