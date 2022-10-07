@@ -1,4 +1,5 @@
 const autoprefixer = require('autoprefixer');
+const chalk = require('chalk');
 const cssnano = require('cssnano');
 const litePreset = require('cssnano-preset-lite');
 const postcss = require('postcss');
@@ -6,8 +7,12 @@ const fs = require('fs-extra');
 const path = require('path');
 const UglifyJS = require('uglify-js');
 const rimraf = require('rimraf');
-const pkg = require("../package.json");
+const yargs = require('yargs');
 
+const pkg = require("../package.json");
+const argv = yargs.argv;
+
+const changedFiles = new Set();
 const header =
   `/**
     * SlickGrid v${pkg.version}
@@ -18,36 +23,38 @@ const header =
     * file: {{filename}}
     */`;
 
-// empty dist folder and then minify all the JS files it found in the root & plugins folder
-rimraf('dist', async (error) => {
-    if (!error) {
-        const cssFileList = getFileListToMinify('.css');
-        const jsFileList = getFileListToMinify('.js');
-        await minifyCssFiles(cssFileList);
-        await minifyJsFiles(jsFileList);
+/**
+ * Execute the minification process which will return a Set of changed files
+ * @returns {Set<String>} - changed files
+ */
+function execute() {
+    // empty dist folder and then minify all the JS files it found in the root & plugins folder
+    return new Promise((resolve, reject) => {
+        rimraf('dist', async (error) => {
+            if (error) {
+                reject(error);
+            } else {
+                const cssFileList = getFileListToMinify('.css');
+                const jsFileList = getFileListToMinify('.js');
+                await minifyCssFiles(cssFileList);
+                await minifyJsFiles(jsFileList);
 
-        // also copy the images into the "/dist" folder so that all CSS url() still work
-        fs.copySync('./images', './dist/images');
-        console.log('\n-----------------');
-        console.log('// ALL DONE!!! //');
-        console.log('//-------------//\n');
-    }
-});
+                // also copy the images into the "/dist" folder so that all CSS url() still work
+                fs.copySync('./images', './dist/images');
+                console.log('\n');
+                console.log(`// ${chalk.green('DONE MINIFYING!!!')} //`);
+                console.log('-----------------------\n');
 
-/** Ensure folder exist or else create it */
-function ensureDirectoryExistence(filePath) {
-    var dirname = path.dirname(filePath);
-    if (fs.existsSync(dirname)) {
-        return true;
-    }
-    ensureDirectoryExistence(dirname);
-    fs.mkdirSync(dirname);
+                resolve(changedFiles);
+            }
+        });
+    });
 }
 
 /** Minify an array of CSS files */
 async function minifyCssFiles(filenames) {
     const preset = litePreset({});
-    console.log('//-- CSS Minify --//');
+    console.log(`//-- ${chalk.cyan('CSS Minify')} --//`);
     console.log('--------------------');
 
     for (const filename of filenames) {
@@ -63,13 +70,14 @@ async function minifyCssFiles(filenames) {
 
         ensureDirectoryExistence(writeFilePath);
         fs.writeFileSync(writeFilePath, minifiedCss, 'utf8');
+        changedFiles.add(path.resolve(writeFilePath));
     }
 }
 
 /** Minify an array of JS files */
 function minifyJsFiles(filenames) {
     console.log('\n');
-    console.log('//-- JS Minify --//');
+    console.log(`//-- ${chalk.cyan('JS Minify')} --//`);
     console.log('-------------------');
 
     for (const filename of filenames) {
@@ -86,13 +94,14 @@ function minifyJsFiles(filenames) {
                 // uglify options
                 output: {
                     beautify: false,
-                    preamble: header.replace('{{date}}', new Date().toISOString()).replace('{{filename}}', filename),
+                    preamble: header.replace('{{date}}', new Date().toISOString().substring(0, 10)).replace('{{filename}}', filename),
                 },
                 sourceMap: true
             });
 
         fs.writeFileSync(writeFilePath, minifiedFile.code, 'utf8');
         fs.writeFileSync(writeFileSourcePath, minifiedFile.map, 'utf8');
+        changedFiles.add(path.resolve(writeFilePath));
     }
 }
 
@@ -109,4 +118,26 @@ function getFileListToMinify(extension) {
         filePaths = filePaths.concat(filteredFiles.map(file => `${folderPath}${file}`));
     }
     return filePaths;
+}
+
+/**
+ * Ensure folder exist or else create it
+ * @param {String} filePath 
+ * @returns {Boolean}
+ */
+function ensureDirectoryExistence(filePath) {
+    const dirname = path.dirname(filePath);
+    if (fs.existsSync(dirname)) {
+        return true;
+    }
+    ensureDirectoryExistence(dirname);
+    fs.mkdirSync(dirname);
+}
+
+if (argv['start']) {
+    execute();
+}
+
+module.exports = {
+    execute
 }
