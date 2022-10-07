@@ -68,7 +68,7 @@ async function gitPushToCurrentBranch(remote = 'origin', { cwd, dryRun }) {
  * @param {{ cwd: String, dryRun: Boolean; skipChecks: Boolean; }} options
  */
 async function hasUncommittedChanges({ cwd, dryRun, skipChecks }) {
-    const execArgs = ['status', '--porcelain'];
+    const execArgs = ['status', '--porcelain', '-uno'];
     const { stdout } = await childProcess.exec('git', execArgs, { cwd });
     if (stdout.length && !skipChecks) {
         throw Error('Working tree has uncommitted changes, please commit or remove the following changes before continuing.');
