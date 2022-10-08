@@ -1,6 +1,6 @@
 const chalk = require('chalk');
 const fs = require('fs-extra');
-const inquirer = require('inquirer');
+const readline = require('readline');
 const path = require('path');
 const semver = require('semver');
 const yargs = require('yargs');
@@ -72,13 +72,13 @@ const cwd = process.cwd();
   const whichBumpType = await promptConfirmation(
     `${chalk.bgMagenta(dryRunPrefix)} Select increment to apply (next version)`,
     versionIncrements,
-    defaultIndex = 0
+    defaultIndex = versionIncrements.length - 1
   );
-
+  
   if (whichBumpType !== 'quit') {
     let newVersion = '';
     if (whichBumpType === 'other') {
-      newVersion = await promptOtherVersion('Please enter a valid version number (or type "q" to quit):');
+      newVersion = await getConsoleInput('Please enter a valid version number (or type "q" to quit):');
       if (newVersion === 'q') {
         return;
       }
@@ -223,11 +223,28 @@ function updateSlickGridVersion(newVersion) {
 }
 
 /**
- * Simple function to build a prompt question via the Inquirer utility
+ * Get console input using the 'readLine' lib
+ * @param {String} promptText - prompt question message
+ * @returns {Promise<String>} - the entered input
+ */
+function getConsoleInput(promptText) {
+  const rl = readline.createInterface({
+    input: process.stdin,
+    output: process.stdout,
+  });
+
+  return new Promise(resolve => rl.question(promptText, ans => {
+    rl.close();
+    resolve(ans);
+  }))
+}
+
+/**
+ * Simple function to select an item from a passed list of choices
  * @param {String} message - prompt question message
  * @param {Array<String>} [choices] - prompt list of choices, defaults to Yes/No
  * @param {Number} [defaultIndex] 
- * @returns {Promise<String>}
+ * @returns {Promise<String>} - value property of selected choice
  * @returns 
  */
 async function promptConfirmation(message, choices, defaultIndex) {
@@ -236,32 +253,20 @@ async function promptConfirmation(message, choices, defaultIndex) {
       { key: 'y', name: 'Yes', value: true },
       { key: 'n', name: 'No', value: false },
     ];
+    defaultIndex = 0;
   }
-  const answers = await inquirer.prompt([
-    {
-      type: 'list',
-      name: 'prompt',
-      message: message.trim(),
-      default: defaultIndex, // default Minor (1.x.0)
-      choices,
-      pageSize: 10
-    },
-  ]);
-  return answers.prompt;
-}
 
-/**
- * @param {String} message - prompt question message
- * @returns {Promise<String>}
- */
-async function promptOtherVersion(message) {
-  const answers = await inquirer.prompt([
-    {
-      type: 'input',
-      name: 'version',
-      message: message.trim(),
-    },
-  ]);
-  return answers.version;
+  // display propmpt message and choices
+  console.log(message.trim());
+  for (var i=0; i<choices.length; i++) {
+    console.log(' ' + (i+1) + ' - ' + choices[i].name);
+  }
+  
+  // get and process input
+  const input = await getConsoleInput("Enter value "  + " (default " + (defaultIndex + 1) + ') ');
+  var index = !isNaN(input) && !isNaN(parseFloat(input)) ? +input - 1 : defaultIndex;
+  if (index < 0 || index >= choices.length) {
+     throw Error('The input ' + input + ' could not be matched to a selection');
+  }
+  return choices[index].value;
 }
-
