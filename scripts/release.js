@@ -157,6 +157,7 @@ const cwd = process.cwd();
       console.log(`🏁 Done (in ${Math.floor(process.uptime())}s.)`);
     }
   }
+  process.exit();
 })();
 
 /**
