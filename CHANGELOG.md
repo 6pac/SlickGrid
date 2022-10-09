@@ -2,6 +2,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [3.0.0](https://github.com/6pac/SlickGrid/compare/2.4.45...3.0.0) (2022-10-09)
+
+### Bug Fixes
+
+* adjust the left/right canvas width properly when fullWidthRows is used ([#664](https://github.com/6pac/SlickGrid/issues/664)) ([d3de81c](https://github.com/6pac/SlickGrid/commit/d3de81cab64ca68ffa3cbb3e6ac7518414a97057))
+* ensure npm exits (otherwise need to ctrl-c to get back to command prompt) ([6dd4649](https://github.com/6pac/SlickGrid/commit/6dd4649611c009b8546f0c382a7a18aca616b2db))
+* gitCurrentBranchName should return the branch name not a process result object ([b25be57](https://github.com/6pac/SlickGrid/commit/b25be57ed6880ec30adec1541d829069db4c86ef))
+* ignore untracked files in update script ([f213d8b](https://github.com/6pac/SlickGrid/commit/f213d8b533e171c35b94bd73bde018b2469144b8))
+* replace inquirer with direct keyboard input ([7f12612](https://github.com/6pac/SlickGrid/commit/7f126121f67617aaca2e8931f12ec20a2c55ac1e))
+
+### Features
+
+* add npm scripts to create new version release & npm publish ([#701](https://github.com/6pac/SlickGrid/issues/701)) ([017bc7f](https://github.com/6pac/SlickGrid/commit/017bc7fde29745197c3a52d01f296f51ac58af94))
+* BREAKING CHANGE - replace jQueryUI with SortableJS ([#695](https://github.com/6pac/SlickGrid/issues/695)) ([386cd58](https://github.com/6pac/SlickGrid/commit/386cd5813ce30c47891bbdf039ffddb89d9d24a3))
+
 ## [2.4.45](https://github.com/6pac/SlickGrid/compare/2.4.44...2.4.45) (2022-07-27)
 
 ## [2.4.44](https://github.com/6pac/SlickGrid/compare/2.4.43...2.4.44) (2021-12-06)

@@ -7,7 +7,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v2.4
+ * SlickGrid v3.0.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing jQuery's DOM manipulation methods.
