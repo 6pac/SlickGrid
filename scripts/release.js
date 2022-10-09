@@ -20,6 +20,9 @@ const argv = yargs.argv;
 const options = argv;
 const cwd = process.cwd();
 
+const childProcess = require('./child-process.js');
+
+
 /** 
  * Main entry, this script will execute the following steps
  * 1. Ask for version bump type
@@ -74,7 +77,7 @@ const cwd = process.cwd();
     versionIncrements,
     defaultIndex = versionIncrements.length - 1
   );
-  
+ 
   if (whichBumpType !== 'quit') {
     let newVersion = '';
     if (whichBumpType === 'other') {
@@ -238,7 +241,7 @@ function getConsoleInput(promptText) {
     rl.close();
     resolve(ans);
   }))
-}
+}  
 
 /**
  * Simple function to select an item from a passed list of choices

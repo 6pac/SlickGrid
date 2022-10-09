@@ -25,9 +25,10 @@ function gitCommit(commitMsg, { cwd, dryRun }) {
  * @param {{ cwd: String, dryRun: Boolean}} options 
  * @returns {Promise<any>}
  */
-function gitCurrentBranchName({ cwd }) {
+async function gitCurrentBranchName({ cwd }) {
     const execArgs = ['branch', '--show-current'];
-    return childProcess.exec('git', execArgs, { cwd });
+    const procRtn = await childProcess.exec('git', execArgs, { cwd });
+    return procRtn.stdout;
 }
 
 /**
