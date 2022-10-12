@@ -236,7 +236,7 @@
               if (typeof _cellTooltipOptions.asyncProcess === 'function') {
                 var asyncProcess = _cellTooltipOptions.asyncProcess(cell.row, cell.cell, value, columnDef, item, _grid);
                 if (!_cellTooltipOptions.asyncPostFormatter) {
-                  throw new Error('[Slickgrid-Universal] when using "asyncProcess", you must also provide an "asyncPostFormatter" formatter');
+                  throw new Error('[SlickGrid] when using "asyncProcess", you must also provide an "asyncPostFormatter" formatter');
                 }
 
                 if (asyncProcess instanceof Promise) {

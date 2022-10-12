@@ -291,7 +291,7 @@ describe('Example - Composite Editor Modal with Create/Edit/Mass-Update/Mass-Sel
     cy.get('[data-editorid=duration] input')
       .type('9');
 
-    cy.get('[data-editorid=percent] input')
+    cy.get('[data-editorid=percent] input[type=text]')
       .type('44');
 
     cy.get('[data-editorid=start] input')

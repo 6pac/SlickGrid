@@ -1,6 +1,6 @@
 {
   "name": "slickgrid",
-  "version": "2.4.45",
+  "version": "3.0.0",
   "description": "A lightning fast JavaScript grid/spreadsheet",
   "main": "slick.core.js",
   "directories": {
@@ -27,15 +27,38 @@
   "scripts": {
     "cypress": "npx cypress open",
     "cypress:ci": "npx cypress run --reporter xunit --reporter-options output=testresult.xml",
-    "serve": "http-server ./ -p 8080 -a localhost -s"
+    "serve": "http-server ./ -p 8080 -a localhost -s",
+    "clean": "rimraf dist",
+    "minify": "node ./scripts/minify.js --start",
+    "preview:release": "node ./scripts/release.js --create-release github --dry-run --skip-checks",
+    "release": "node ./scripts/release.js --create-release github"
   },
   "dependencies": {
-    "jquery": ">=1.8.0",
-    "jquery-ui": ">=1.8.0"
+    "jquery": ">=3.0.0",
+    "sortablejs": "^1.15.0"
   },
   "devDependencies": {
-    "cypress": "^8.5.0",
-    "eslint": "^7.32.0",
-    "http-server": "^13.0.2"
+    "@4tw/cypress-drag-drop": "^2.2.1",
+    "@octokit/rest": "^19.0.4",
+    "autoprefixer": "^10.4.11",
+    "chalk": "^4.1.2",
+    "conventional-changelog": "^3.1.25",
+    "cssnano": "^5.1.13",
+    "cssnano-preset-lite": "^2.1.3",
+    "cypress": "^9.7.0",
+    "dotenv": "^16.0.2",
+    "eslint": "^8.22.0",
+    "fs-extra": "^10.1.0",
+    "git-url-parse": "^13.1.0",
+    "http-server": "^13.0.2",
+    "inquirer": "^8.2.4",
+    "new-github-release-url": "^1.0.0",
+    "path": "^0.12.7",
+    "postcss": "^8.4.16",
+    "rimraf": "^3.0.2",
+    "semver": "^7.3.7",
+    "strong-log-transformer": "^2.1.0",
+    "uglify-js": "^3.17.0",
+    "yargs": "^17.5.1"
   }
 }

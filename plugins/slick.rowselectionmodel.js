@@ -23,6 +23,10 @@
     };
 
     function init(grid) {
+      if (typeof Slick.Draggable === "undefined") {
+        throw new Error('Slick.Draggable is undefined, make sure to import "slick.interactions.js"');
+      }
+
       _options = $.extend(true, {}, _defaults, options);
       _selector = _options.cellRangeSelector;
       _grid = grid;

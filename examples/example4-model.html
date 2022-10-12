@@ -4,11 +4,12 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example 4: Model</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="../controls/slick.pager.css" type="text/css"/>
-  <link rel="stylesheet" href="../css/smoothness/jquery-ui.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
-  <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/slick.grid.min.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/controls/slick.pager.min.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/examples/examples.min.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/examples/examples-unicode-icons.min.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/controls/slick.columnpicker.min.css" type="text/css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <style>
     .cell-title {
       font-weight: bold;
@@ -37,7 +38,7 @@
   <div style="width:600px;">
     <div class="grid-header" style="width:100%">
       <label>SlickGrid</label>
-      <span style="float:right" class="ui-icon ui-icon-search" title="Toggle search panel"
+      <span style="float:right;margin:0px 4px auto 6px;background:transparent;cursor:pointer;" class="slick-icon-search" title="Toggle search panel"
             onclick="toggleFilterRow()"></span>
     </div>
     <div id="myGrid" style="width:100%;height:500px;"></div>
@@ -51,7 +52,7 @@
       <label style="width:200px;float:left">Show tasks with % at least: </label>
 
       <div style="padding:2px;">
-        <div style="width:100px;display:inline-block;" id="pcSlider"></div>
+        <input style="width:100px;display:inline-block;" id="pcSlider" type="range" min="1" max="100" value="1">
       </div>
       <br/>
       <label style="width:200px;float:left">And title including:</label>
@@ -87,26 +88,27 @@
   </div>
 </div>
 
-<div id="inlineFilterPanel" style="display:none;background:#dddddd;padding:3px;color:black;">
+<div id="inlineFilterPanel" style="display:none;background:#dddddd;color:black;">
   Show tasks with title including <input type="text" id="txtSearch2">
   and % at least &nbsp;
-  <div style="width:100px;display:inline-block;" id="pcSlider2"></div>
+  <input style="width:100px;display:inline-block;" id="pcSlider2" type="range" min="1" max="100" value="1">
 </div>
 
 <script src="../lib/firebugx.js"></script>
 
-<script src="../lib/jquery-1.12.4.min.js"></script>
-<script src="../lib/jquery-ui.min.js"></script>
-<script src="../lib/jquery.event.drag-2.3.0.js"></script>
+<script src="../lib/jquery-3.1.0.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.formatters.js"></script>
-<script src="../slick.editors.js"></script>
-<script src="../plugins/slick.rowselectionmodel.js"></script>
-<script src="../slick.grid.js"></script>
-<script src="../slick.dataview.js"></script>
-<script src="../controls/slick.pager.js"></script>
-<script src="../controls/slick.columnpicker.js"></script>
+<script src="../dist/slick.core.min.js"></script>
+<script src="../dist/slick.interactions.min.js"></script>
+<script src="../dist/slick.formatters.min.js"></script>
+<script src="../dist/slick.editors.min.js"></script>
+<script src="../dist/plugins/slick.rowselectionmodel.min.js"></script>
+<script src="../dist/slick.grid.min.js"></script>
+<script src="../dist/slick.dataview.min.js"></script>
+<script src="../dist/controls/slick.pager.min.js"></script>
+<script src="../dist/controls/slick.columnpicker.min.js"></script>
 
 <script>
 function isIEPreVer9() { var v = navigator.appVersion.match(/MSIE ([\d.]+)/i); return (v ? v[1] < 9 : false); }
@@ -119,8 +121,8 @@ var columns = [
   {id: "title", name: "Title", field: "title", width: 120, minWidth: 120, cssClass: "cell-title", editor: Slick.Editors.Text, validator: requiredFieldValidator, sortable: true},
   {id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Text, sortable: true},
   {id: "%", defaultSortAsc: false, name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete, sortable: true},
-  {id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Date, sortable: true},
-  {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Date, sortable: true},
+  {id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Flatpickr, sortable: true},
+  {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Flatpickr, sortable: true},
   {id: "effort-driven", name: "Effort Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkbox, editor: Slick.Editors.Checkbox, cannotTriggerInsert: true, sortable: true}
 ];
 
@@ -301,19 +303,20 @@ $(function () {
   var h_runfilters = null;
 
   // wire up the slider to apply the filter to the model
-  $("#pcSlider,#pcSlider2").slider({
-    "range": "min",
-    "slide": function (event, ui) {
-      Slick.GlobalEditorLock.cancelCurrentEdit();
+  var slider = document.getElementById("pcSlider");
+  var slider2 = document.getElementById("pcSlider2");
+  var sliderCallback = function() {
+    Slick.GlobalEditorLock.cancelCurrentEdit();
 
-      if (percentCompleteThreshold != ui.value) {
-        window.clearTimeout(h_runfilters);
-        h_runfilters = window.setTimeout(updateFilter, 10);
-        percentCompleteThreshold = ui.value;
-      }
+    if (percentCompleteThreshold != this.value) {
+      window.clearTimeout(h_runfilters);
+      h_runfilters = window.setTimeout(updateFilter, 10);
+      percentCompleteThreshold = this.value;
     }
-  });
-
+  }
+  
+  slider.oninput = sliderCallback;
+  slider2.oninput = sliderCallback;
 
   // wire up the search textbox to apply the filter to the model
   $("#txtSearch,#txtSearch2").keyup(function (e) {
@@ -363,8 +366,6 @@ $(function () {
   // if you don't want the items that are not visible (due to being filtered out
   // or being on a different page) to stay selected, pass 'false' to the second arg
   dataView.syncGridSelection(grid, true);
-
-  $("#gridContainer").resizable();
 })
 </script>
 </body>

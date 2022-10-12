@@ -1,5 +1,7 @@
 /// <reference types="Cypress" />
 
+import '@4tw/cypress-drag-drop';
+
 describe('Example - Grid Menu', () => {
   const fullTitles = ['#', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
@@ -191,16 +193,8 @@ describe('Example - Grid Menu', () => {
   it('should drag column "A" to be after column "C" and expect this to be reflected in the Grid Menu', () => {
     const expectedGridMenuList = ['B', 'C', 'A', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'Force fit columns', 'Synchronous resize']; // without "A"
 
-    cy.get('.slick-header-columns')
-      .children('.slick-header-column:nth(1)')
-      .should('contain', 'A')
-      .trigger('mousedown', 'bottom', { which: 1 });
-
-    cy.get('.slick-header-columns')
-      .children('.slick-header-column:nth(3)')
-      .should('contain', 'C')
-      .trigger('mousemove', 'bottomRight')
-      .trigger('mouseup', 'bottomRight', { force: true });
+    cy.get('.slick-header-column:nth(1)')
+      .drag('.slick-header-column:nth(3)');
 
     cy.get('button')
       .contains('Grid Menu')
