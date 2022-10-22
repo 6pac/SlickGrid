@@ -5,18 +5,18 @@
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example: 'Select2' javascript dropdown editor</title>
   <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="../css/smoothness/jquery-ui.css" type="text/css"/>
   <link rel="stylesheet" href="examples.css" type="text/css"/>
   <link rel="stylesheet" href="../css/select2.css" type="text/css"/>
-   <style>
-	.select2-container {
-		top: -3px;
-		left: -6px;
-	}
-    .select2-container .select2-selection--single {
-		height: 26px;
-	}  
-</style>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <style>
+    .select2-container {
+      top: -3px;
+      left: -6px;
+    }
+      .select2-container .select2-selection--single {
+      height: 26px;
+    }  
+  </style>
 </head>
 <body>
 <div style="position:relative">
@@ -45,7 +45,7 @@
 <script src="../lib/firebugx.js"></script>
 
 <script src="../lib/jquery-3.1.0.js"></script>
-<script src="../lib/jquery-ui.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -398,8 +398,8 @@ var countryIsoAndNameList = {
   var columns = [
     {id: "title", name: "Title", field: "title", width: 80, cssClass: "cell-title", editor: Slick.Editors.Text},
     {id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Text},
-    {id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Date},
-    {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Date},
+    {id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Flatpickr},
+    {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Flatpickr},
 	{id: "CountryOfOrigin", name: "Country Of Origin", field: "country", minWidth: 200, formatter: Select2Formatter, 
 		editor: Select2Editor, dataSource: countryIsoAndNameList }
   ];

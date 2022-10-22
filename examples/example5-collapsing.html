@@ -5,8 +5,8 @@
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example 5: Collapsing</title>
   <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="../css/smoothness/jquery-ui.css" type="text/css"/>
   <link rel="stylesheet" href="examples.css" type="text/css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <style>
     .cell-title {
       font-weight: bold;
@@ -40,7 +40,7 @@
         <label>Show tasks with % at least: </label>
 
         <div style="padding:4px;">
-          <div style="width:100px;" id="pcSlider"></div>
+          <input style="width:100px;display:inline-block;" id="pcSlider" type="range" min="1" max="100" value="1">
         </div>
         <br/>
         <label>And title including:</label>
@@ -67,7 +67,7 @@
 <script src="../lib/firebugx.js"></script>
 
 <script src="../lib/jquery-3.1.0.js"></script>
-<script src="../lib/jquery-ui.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -111,8 +111,8 @@ var columns = [
   {id: "title", name: "Title", field: "title", width: 220, cssClass: "cell-title", formatter: TaskNameFormatter, editor: Slick.Editors.Text, validator: requiredFieldValidator},
   {id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Text},
   {id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete},
-  {id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Date},
-  {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Date},
+  {id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Flatpickr},
+  {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Flatpickr},
   {id: "effort-driven", name: "Effort Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, editor: Slick.Editors.Checkbox, cannotTriggerInsert: true}
 ];
 
@@ -250,19 +250,18 @@ $(function () {
   var h_runfilters = null;
 
   // wire up the slider to apply the filter to the model
-  $("#pcSlider").slider({
-    "range": "min",
-    "slide": function (event, ui) {
-      Slick.GlobalEditorLock.cancelCurrentEdit();
+  var slider = document.getElementById("pcSlider");
+  var sliderCallback = function() {
+    Slick.GlobalEditorLock.cancelCurrentEdit();
 
-      if (percentCompleteThreshold != ui.value) {
-        window.clearTimeout(h_runfilters);
-        h_runfilters = window.setTimeout(dataView.refresh, 10);
-        percentCompleteThreshold = ui.value;
-      }
+    if (percentCompleteThreshold != this.value) {
+      window.clearTimeout(h_runfilters);
+      h_runfilters = window.setTimeout(dataView.refresh, 10);
+      percentCompleteThreshold = this.value;
     }
-  });
-
+  }
+  
+  slider.oninput = sliderCallback;
 
   // wire up the search textbox to apply the filter to the model
   $("#txtSearch").keyup(function (e) {

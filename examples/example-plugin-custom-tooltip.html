@@ -6,9 +6,9 @@
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example 3: Editing</title>
   <link rel="stylesheet" href="../slick.grid.css" type="text/css" />
-  <link rel="stylesheet" href="../css/smoothness/jquery-ui.css" type="text/css" />
   <link rel="stylesheet" href="../plugins/slick.customtooltip.css" type="text/css" />
   <link rel="stylesheet" href="examples.css" type="text/css" />
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <style>
     .cell-title, .bold {
       font-weight: bold;
@@ -128,7 +128,7 @@
   <script src="../lib/firebugx.js"></script>
 
   <script src="../lib/jquery-3.1.0.js"></script>
-  <script src="../lib/jquery-ui.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
   <script src="../slick.core.js"></script>
@@ -243,9 +243,9 @@
         editor: Slick.Editors.PercentComplete,
         customTooltip: { useRegularTooltip: true },
       },
-      { id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Date },
+      { id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Flatpickr },
       { 
-        id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Date,
+        id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Flatpickr,
         // you could disable the custom/regular tooltip via either of the following 2 options
         disableTooltip: true,
         // customTooltip: {

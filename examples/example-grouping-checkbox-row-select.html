@@ -6,8 +6,8 @@
   <title>SlickGrid example: Grouping</title>
   <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
   <link rel="stylesheet" href="../controls/slick.pager.css" type="text/css"/>
-  <link rel="stylesheet" href="../css/smoothness/jquery-ui.css" type="text/css"/>
   <link rel="stylesheet" href="examples.css" type="text/css"/>
+  <link rel="stylesheet" href="examples-unicode-icons.css" type="text/css"/>
   <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css"/>
   <style>
     .cell-effort-driven {
@@ -44,7 +44,7 @@
       <label style="width:200px;float:left">Show tasks with % at least: </label>
 
       <div style="padding:2px;">
-        <div style="width:100px;display:inline-block;" id="pcSlider"></div>
+        <input style="width:100px;display:inline-block;" id="pcSlider" type="range" min="1" max="100" value="1">
       </div>
       <br/><br/>
       <button onclick="loadData(50)">50 rows</button>
@@ -92,7 +92,6 @@
 <script src="../lib/firebugx.js"></script>
 
 <script src="../lib/jquery-3.1.0.js"></script>
-<script src="../lib/jquery-ui.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -364,19 +363,17 @@ $(function () {
   var h_runfilters = null;
 
   // wire up the slider to apply the filter to the model
-  $("#pcSlider,#pcSlider2").slider({
-    "range": "min",
-    "slide": function (event, ui) {
-      Slick.GlobalEditorLock.cancelCurrentEdit();
+  var slider = document.getElementById("pcSlider");
+  var sliderCallback = function() {
+    Slick.GlobalEditorLock.cancelCurrentEdit();
 
-      if (percentCompleteThreshold != ui.value) {
-        window.clearTimeout(h_runfilters);
-        h_runfilters = window.setTimeout(filterAndUpdate, 10);
-        percentCompleteThreshold = ui.value;
-      }
+    if (percentCompleteThreshold != this.value) {
+      window.clearTimeout(h_runfilters);
+      h_runfilters = window.setTimeout(filterAndUpdate, 10);
+      percentCompleteThreshold = this.value;
     }
-  });
-
+  }
+  slider.oninput = sliderCallback;
 
   function filterAndUpdate() {
     var isNarrowing = percentCompleteThreshold > prevPercentCompleteThreshold;
@@ -406,9 +403,7 @@ $(function () {
   loadData(50);
   groupByDuration();
   dataView.endUpdate();
-
-  $("#gridContainer").resizable();
-})
+});
 </script>
 </body>
 </html>

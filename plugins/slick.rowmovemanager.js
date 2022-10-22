@@ -145,7 +145,8 @@
 
       e.stopImmediatePropagation();
 
-      var top = e.pageY - $(_canvas).offset().top;
+      var targetEvent = e.touches ? e.touches[0] : e;
+      var top = targetEvent.pageY - $(_canvas).offset().top;
       dd.selectionProxy.css("top", top - 5).show();
 
       // if the row move shadow is enabled, we'll also make it follow the mouse cursor

@@ -5,8 +5,8 @@
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example: CompositeEditor</title>
   <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="../css/smoothness/jquery-ui.css" type="text/css"/>
   <link rel="stylesheet" href="examples.css" type="text/css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <style>
     .cell-title {
       font-weight: bold;
@@ -100,9 +100,9 @@
 <script src="../lib/firebugx.js"></script>
 
 <script src="../lib/jquery-3.1.0.js"></script>
-<script src="../lib/jquery-ui.min.js"></script>
 <script src="../lib/jquery.tmpl.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
 <script src="../slick.interactions.js"></script>
@@ -129,8 +129,8 @@
     {id: "desc", name: "Description", field: "description", width: 100, editor: Slick.Editors.Text},
     {id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Text},
     {id: "percent", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete},
-    {id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Date},
-    {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Date},
+    {id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Flatpickr},
+    {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Flatpickr},
     {id: "effort-driven", name: "Effort Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, editor: Slick.Editors.Checkbox}
   ];
   var options = {

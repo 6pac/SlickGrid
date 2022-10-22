@@ -21,6 +21,6 @@ npm run cypress     # open Cypress tool
 ```
 Once the Cypress UI is open, you can then click on "Run all Specs" to execute all E2E browser tests.
 
-### SlickGrid 3.x drops jQueryUI
+## SlickGrid 3.x drops jQueryUI requirement
 
-Great news we no longer require [jQueryUI](https://jqueryui.com/) in SlickGrid 3.x, we removed all associated code and replaced it with [SortableJS](https://sortablejs.github.io/Sortable/) which is a lot more modern. Please read [SlickGrid 3.0 - Annoucement & Migration](https://github.com/6pac/SlickGrid/wiki/Major-version-3.0----Removal-of-jQueryUI-requirement-(replaced-by-SortableJS)) Wiki for more info.
+Great news we no longer require [jQueryUI](https://jqueryui.com/) in SlickGrid 3.0.0, we removed all associated code and replaced it with [SortableJS](https://sortablejs.github.io/Sortable/) which is a lot more modern and touch friendly. Please read [SlickGrid 3.0 - Annoucement & Migration](https://github.com/6pac/SlickGrid/wiki/Major-version-3.0----Removal-of-jQueryUI-requirement-(replaced-by-SortableJS)) Wiki for more info.
