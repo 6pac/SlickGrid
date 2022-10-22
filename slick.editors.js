@@ -402,6 +402,7 @@
       $input.focus().select();
       flatpickrInstance = $input.flatpickr({
         closeOnSelect: true,
+        allowInput: true,
         altInput: true,
         altFormat: "m/d/Y",
         dateFormat: 'm/d/Y',
