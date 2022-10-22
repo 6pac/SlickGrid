@@ -210,11 +210,10 @@ describe('Example - Composite Editor Modal with Create/Edit/Mass-Update/Mass-Sel
     cy.get('[data-editorid=duration] input')
       .type('7');
 
-    cy.get('[data-editorid=start] input')
-      .type('02/02/2020');
-
-    cy.get('.ui-datepicker-trigger').click(); // just 
-    cy.get('a.ui-state-default').contains('1').click();
+    cy.get('[data-editorid=start] input:visible[type=text]')
+      .focus()
+      .type('02/02/2020')
+      .type('{Enter}');
 
     cy.get('[data-editorid=effort-driven] input')
       .click();
@@ -232,12 +231,12 @@ describe('Example - Composite Editor Modal with Create/Edit/Mass-Update/Mass-Sel
 
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 1}px"] > .slick-cell:nth(1)`).should('contain', 'Task 1');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 1}px"] > .slick-cell:nth(3)`).should('contain', '7 days');
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 1}px"] > .slick-cell:nth(5)`).should('contain', '02/01/2020');
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 1}px"] > .slick-cell:nth(5)`).should('contain', '02/02/2020');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 1}px"] > .slick-cell:nth(7)`).find('img').should('have.length', 1);
 
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 2}px"] > .slick-cell:nth(1)`).should('contain', 'Task 2');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 2}px"] > .slick-cell:nth(3)`).should('contain', '7 days');
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 2}px"] > .slick-cell:nth(5)`).should('contain', '02/01/2020');
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 2}px"] > .slick-cell:nth(5)`).should('contain', '02/02/2020');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 2}px"] > .slick-cell:nth(7)`).find('img').should('have.length', 1);
 
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 3}px"] > .slick-cell:nth(1)`).should('contain', 'Task 3');
@@ -294,11 +293,10 @@ describe('Example - Composite Editor Modal with Create/Edit/Mass-Update/Mass-Sel
     cy.get('[data-editorid=percent] input[type=text]')
       .type('44');
 
-    cy.get('[data-editorid=start] input')
-      .type('02/02/2020');
-
-    cy.get('.ui-datepicker-trigger').first().click(); // just 
-    cy.get('a.ui-state-default').contains('1').click();
+    cy.get('[data-editorid=start] input:visible[type=text]')
+      .focus()
+      .type('02/02/2020')
+      .type('{Enter}');
 
     cy.get('[data-editorid=effort-driven] input')
       .click();
@@ -314,7 +312,7 @@ describe('Example - Composite Editor Modal with Create/Edit/Mass-Update/Mass-Sel
     cy.window().then((win) => {
       expect(win.console.log).to.have.callCount(7);
       expect(win.console.log).to.be.calledWith('composite editor input changed', {
-        description: 'random text', duration: 9, effortDriven: true, start: '02/01/2020', title: 'Task 8899'
+        description: 'random text', duration: 9, effortDriven: true, start: '02/02/2020', title: 'Task 8899'
       });
     });
   });
@@ -327,7 +325,7 @@ describe('Example - Composite Editor Modal with Create/Edit/Mass-Update/Mass-Sel
       const htmlText = $cell.html();
       expect(htmlText).to.eq('<span class="percent-complete-bar" style="background:silver;width:44%" title="44%"></span>');
     });
-    cy.get(`[style="top:12500px"] > .slick-cell:nth(5)`).should('contain', '02/01/2020');
+    cy.get(`[style="top:12500px"] > .slick-cell:nth(5)`).should('contain', '02/02/2020');
     cy.get(`[style="top:12500px"] > .slick-cell:nth(6)`).should('contain', '');
     cy.get(`[style="top:12500px"] > .slick-cell:nth(7)`).find('img').should('have.length', 1);
   });
