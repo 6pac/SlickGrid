@@ -14,8 +14,8 @@ classes should alter those!
 
 .slick-header.ui-state-default {
   overflow: inherit;
+  border-top: 1px solid #d3d3d3;
 }
-
 .slick-header::-webkit-scrollbar,  .slick-headerrow::-webkit-scrollbar, .slick-footerrow::-webkit-scrollbar {
   display: none
 }
