@@ -19,8 +19,8 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        # define which version of NodeJS to run the build, version 12 should be enough
-        node: [12]
+        # define which version of NodeJS to run the build
+        node: [16]
 
     steps:
       - name: Clone repository
