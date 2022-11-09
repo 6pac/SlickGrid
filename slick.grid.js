@@ -947,10 +947,10 @@ if (typeof Slick === "undefined") {
             $canvasBottomL.width(canvasWidthL);
           }
         }
-
-        viewportHasHScroll = (canvasWidth >= viewportW - scrollbarDimensions.width);
       }
 
+      viewportHasHScroll = (canvasWidth >= viewportW - scrollbarDimensions.width);
+ 
       $headerRowSpacerL.width(canvasWidth + (viewportHasVScroll ? scrollbarDimensions.width : 0));
       $headerRowSpacerR.width(canvasWidth + (viewportHasVScroll ? scrollbarDimensions.width : 0));
 
