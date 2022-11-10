@@ -1,4 +1,4 @@
-name: Cypress E2E Tests
+name: CI Build
 on:
   # Trigger the workflow on push or pull request,
   # but only for the master branch on Push and any branches on PR
