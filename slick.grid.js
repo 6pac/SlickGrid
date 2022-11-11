@@ -4436,7 +4436,9 @@ if (typeof Slick === "undefined") {
         }
       }
 
-      // autoheight does not have scrolling, but editors can trigger a scroll, which we should ignore
+      // autoheight suppresses vertical scrolling, but editors can create a div larger than 
+      // the row vertical size, which can lead to a vertical scroll bar appearing temporarily
+      // while the editor is displayed. this is not part of the grid scrolling, so we should ignore it
       if (vScrollDist && !options.autoHeight) {
         vScrollDir = prevScrollTop < scrollTop ? 1 : -1;
         prevScrollTop = scrollTop;
