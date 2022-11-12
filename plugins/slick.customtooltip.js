@@ -289,7 +289,7 @@
         if ((_cellNodeElm && (_cellNodeElm.clientWidth < _cellNodeElm.scrollWidth)) && !_cellTooltipOptions.useRegularTooltipFromFormatterOnly) {
           tooltipText = (_cellNodeElm.textContent || '').trim() || '';
           if (_cellTooltipOptions.tooltipTextMaxLength && (tooltipText.length > _cellTooltipOptions.tooltipTextMaxLength)) {
-            tooltipText = tooltipText.substr(0, _cellTooltipOptions.tooltipTextMaxLength - 3) + '...';
+            tooltipText = tooltipText.substring(0, _cellTooltipOptions.tooltipTextMaxLength - 3) + '...';
           }
           tmpTitleElm = _cellNodeElm;
         } else {
@@ -421,7 +421,7 @@
       if (_tooltipElm) {
         _cellNodeElm = _cellNodeElm || _grid.getCellNode(cell.row, cell.cell);
         var cellPosition = getHtmlElementOffset(_cellNodeElm);
-        var containerWidth = _cellNodeElm.offsetWidth;
+        var cellContainerWidth = _cellNodeElm.offsetWidth;
         var calculatedTooltipHeight = _tooltipElm.getBoundingClientRect().height;
         var calculatedTooltipWidth = _tooltipElm.getBoundingClientRect().width;
         var calculatedBodyWidth = document.body.offsetWidth || window.innerWidth;
@@ -430,16 +430,24 @@
         var newPositionTop = cellPosition.top - _tooltipElm.offsetHeight - (_cellTooltipOptions.offsetTopBottom || 0);
         var newPositionLeft = (cellPosition && cellPosition.left || 0) - (_cellTooltipOptions.offsetLeft || 0);
 
-        // user could explicitely use a "left" position (when user knows his column is completely on the right)
+        // user could explicitely use a "left-align" arrow position, (when user knows his column is completely on the right in the grid)
         // or when using "auto" and we detect not enough available space then we'll position to the "left" of the cell
         var position = _cellTooltipOptions.position || 'auto';
-        if (position === 'left-align' || (position === 'auto' && (newPositionLeft + calculatedTooltipWidth) > calculatedBodyWidth)) {
-          newPositionLeft -= (calculatedTooltipWidth - containerWidth - (_cellTooltipOptions.offsetRight || 0));
+        if (position === 'center') {
+          newPositionLeft += (cellContainerWidth / 2) - (calculatedTooltipWidth / 2) + (_cellTooltipOptions.offsetLeft || 0);
+          _tooltipElm.classList.remove('arrow-left-align');
+          _tooltipElm.classList.remove('arrow-right-align');
+          _tooltipElm.classList.add('arrow-center-align');
+
+        } else if (position === 'left-align' || ((position === 'auto' || position !== 'right-align') && (newPositionLeft + calculatedTooltipWidth) > calculatedBodyWidth)) {
+          newPositionLeft -= (calculatedTooltipWidth - cellContainerWidth - (_cellTooltipOptions.offsetRight || 0));
+          _tooltipElm.classList.remove('arrow-center-align');
           _tooltipElm.classList.remove('arrow-left-align');
           _tooltipElm.classList.add('arrow-right-align');
         } else {
-          _tooltipElm.classList.add('arrow-left-align');
+          _tooltipElm.classList.remove('arrow-center-align');
           _tooltipElm.classList.remove('arrow-right-align');
+          _tooltipElm.classList.add('arrow-left-align');
         }
 
         // do the same calculation/reposition with top/bottom (default is top of the cell or in other word starting from the cell going down)
@@ -482,7 +490,7 @@
       _tooltipElm.classList.add('l' + cell.cell);
       _tooltipElm.classList.add('r' + cell.cell);
       var outputText = tooltipText || parseFormatterAndSanitize(formatter, cell, value, columnDef, item) || '';
-      outputText = (_cellTooltipOptions.tooltipTextMaxLength && outputText.length > _cellTooltipOptions.tooltipTextMaxLength) ? outputText.substr(0, _cellTooltipOptions.tooltipTextMaxLength - 3) + '...' : outputText;
+      outputText = (_cellTooltipOptions.tooltipTextMaxLength && outputText.length > _cellTooltipOptions.tooltipTextMaxLength) ? outputText.substring(0, _cellTooltipOptions.tooltipTextMaxLength - 3) + '...' : outputText;
 
       let finalOutputText = '';
       if (!tooltipText || (_cellTooltipOptions && _cellTooltipOptions.renderRegularTooltipAsHtml)) {
