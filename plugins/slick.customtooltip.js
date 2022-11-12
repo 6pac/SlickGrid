@@ -428,19 +428,19 @@
 
         // first calculate the default (top/left) position
         var newPositionTop = cellPosition.top - _tooltipElm.offsetHeight - (_cellTooltipOptions.offsetTopBottom || 0);
-        var newPositionLeft = (cellPosition && cellPosition.left || 0) - (_cellTooltipOptions.offsetLeft || 0);
+        var newPositionLeft = (cellPosition && cellPosition.left || 0) - (_cellTooltipOptions.offsetRight || 0);
 
         // user could explicitely use a "left-align" arrow position, (when user knows his column is completely on the right in the grid)
         // or when using "auto" and we detect not enough available space then we'll position to the "left" of the cell
         var position = _cellTooltipOptions.position || 'auto';
         if (position === 'center') {
-          newPositionLeft += (cellContainerWidth / 2) - (calculatedTooltipWidth / 2) + (_cellTooltipOptions.offsetLeft || 0);
+          newPositionLeft += (cellContainerWidth / 2) - (calculatedTooltipWidth / 2) + (_cellTooltipOptions.offsetRight || 0);
           _tooltipElm.classList.remove('arrow-left-align');
           _tooltipElm.classList.remove('arrow-right-align');
           _tooltipElm.classList.add('arrow-center-align');
 
-        } else if (position === 'left-align' || ((position === 'auto' || position !== 'right-align') && (newPositionLeft + calculatedTooltipWidth) > calculatedBodyWidth)) {
-          newPositionLeft -= (calculatedTooltipWidth - cellContainerWidth - (_cellTooltipOptions.offsetRight || 0));
+        } else if (position === 'right-align' || ((position === 'auto' || position !== 'left-align') && (newPositionLeft + calculatedTooltipWidth) > calculatedBodyWidth)) {
+          newPositionLeft -= (calculatedTooltipWidth - cellContainerWidth - (_cellTooltipOptions.offsetLeft || 0));
           _tooltipElm.classList.remove('arrow-center-align');
           _tooltipElm.classList.remove('arrow-left-align');
           _tooltipElm.classList.add('arrow-right-align');
