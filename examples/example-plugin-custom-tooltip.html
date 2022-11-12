@@ -198,7 +198,7 @@
         id: "title", name: "Title", field: "title", width: 70, cssClass: "cell-title",
         editor: Slick.Editors.Text, validator: requiredFieldValidator,
         customTooltip: {
-          // position: 'bottom', // defaults to "auto", available options are: "auto", "top", "left", "bottom", "right"
+          position: 'left-align', // defaults to "auto", available options are: "auto", "top", "left", "bottom", "right" or "center"
           // you can use the Custom Tooltip in 2 ways (synchronous or asynchronous)
           // example 1 (sync):
           // formatter: this.tooltipTaskFormatter.bind(this),
@@ -241,7 +241,7 @@
         id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, 
         formatter: Slick.Formatters.PercentCompleteBar, 
         editor: Slick.Editors.PercentComplete,
-        customTooltip: { useRegularTooltip: true },
+        customTooltip: { useRegularTooltip: true, position: "center" },
       },
       { id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Flatpickr },
       { 

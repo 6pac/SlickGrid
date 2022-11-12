@@ -38,5 +38,8 @@
   margin-left: 9px;
 }
 .slick-custom-tooltip.tooltip-arrow.arrow-right-align::after {
-  margin-left: calc(100% - 16px - 9px); /* arrow size * 2 => 16px, extra margin of 9px */
+  margin-left: calc(100% - 16px - 3px); /* arrow size * 2 => 16px, extra margin of 9px */
+}
+.slick-custom-tooltip.tooltip-arrow.arrow-center-align::after {
+  margin-left: calc(50% - 8px); /* arrow size * 2 => 16px, extra margin of 9px */
 }
