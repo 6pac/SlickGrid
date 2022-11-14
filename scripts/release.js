@@ -93,8 +93,8 @@ const childProcess = require('./child-process.js');
     console.log(`${chalk.bgMagenta(dryRunPrefix)} Bumping new version to "${newTag}"`);
 
     // 2. update package.json & slick.grid.js with new version
-    updatePackageVersion(newVersion);
-    updateSlickGridVersion(newVersion);
+    await updatePackageVersion(newVersion);
+    await updateSlickGridVersion(newVersion);
 
     // 3. minify JS/CSS files
     const changedFiles = await minify.execute();
