@@ -23,7 +23,7 @@ const cwd = process.cwd();
 const childProcess = require('./child-process.js');
 
 
-/** 
+/**
  * Main entry, this script will execute the following steps
  * 1. Ask for version bump type
  * 2. Bump version in "package.json" and "slick.grid.js"
@@ -77,7 +77,7 @@ const childProcess = require('./child-process.js');
     versionIncrements,
     defaultIndex = versionIncrements.length - 1
   );
- 
+
   if (whichBumpType !== 'quit') {
     let newVersion = '';
     if (whichBumpType === 'other') {
@@ -97,7 +97,7 @@ const childProcess = require('./child-process.js');
     await updateSlickGridVersion(newVersion);
 
     // 3. minify JS/CSS files
-    const changedFiles = await minify.execute();
+    const changedFiles = await minify.execute(newVersion);
     changedFiles.add(path.resolve('./package.json'));
     changedFiles.add(path.resolve('./slick.grid.js'));
 
@@ -165,7 +165,7 @@ const childProcess = require('./child-process.js');
 
 /**
  * Use semver to increment the version given a bump type
- * @param {String} bump 
+ * @param {String} bump
  * @returns {String}
  */
 function bumpVersion(bump) {
@@ -193,7 +193,7 @@ function bumpVersion(bump) {
 
 /**
  * Update version property into "package.json"
- * @param {String} newVersion 
+ * @param {String} newVersion
  */
 function updatePackageVersion(newVersion) {
   pkg.version = newVersion;
@@ -210,7 +210,7 @@ function updatePackageVersion(newVersion) {
 
 /**
  * Update version property into "slick.grid.json"
- * @param {String} newVersion 
+ * @param {String} newVersion
  */
 function updateSlickGridVersion(newVersion) {
   const slickGridJs = fs.readFileSync(path.resolve(__dirname, '../slick.grid.js'), { encoding: 'utf8', flag: 'r' });
@@ -241,15 +241,15 @@ function getConsoleInput(promptText) {
     rl.close();
     resolve(ans);
   }))
-}  
+}
 
 /**
  * Simple function to select an item from a passed list of choices
  * @param {String} message - prompt question message
  * @param {Array<String>} [choices] - prompt list of choices, defaults to Yes/No
- * @param {Number} [defaultIndex] 
+ * @param {Number} [defaultIndex]
  * @returns {Promise<String>} - value property of selected choice
- * @returns 
+ * @returns
  */
 async function promptConfirmation(message, choices, defaultIndex) {
   if (!choices) {
@@ -265,7 +265,7 @@ async function promptConfirmation(message, choices, defaultIndex) {
   for (var i=0; i<choices.length; i++) {
     console.log(' ' + (i+1) + ' - ' + choices[i].name);
   }
-  
+
   // get and process input
   const input = await getConsoleInput("Enter value "  + " (default " + (defaultIndex + 1) + ') ');
   var index = !isNaN(input) && !isNaN(parseFloat(input)) ? +input - 1 : defaultIndex;

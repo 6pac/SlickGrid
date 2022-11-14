@@ -13,21 +13,29 @@ const pkg = require("../package.json");
 const argv = yargs.argv;
 
 const changedFiles = new Set();
-const header =
-  `/**
-    * SlickGrid v${pkg.version}
-    * (c) 2009-present Michael Leibman
-    * homepage: http://github.com/mleibman/slickgrid
-    * license: MIT
-    * date: {{date}}
-    * file: {{filename}}
-    */`;
+
+/**
+ * Get SlickGrid header that will be prepended to each JS file
+ * @param {String} [newVersion]
+ * @returns {String}
+ */
+ function getSlickGridHeader(newVersion) {
+    return `/**
+ * SlickGrid v${newVersion}
+ * (c) 2009-present Michael Leibman
+ * homepage: http://github.com/mleibman/slickgrid
+ * license: MIT
+ * date: {{date}}
+ * file: {{filename}}
+ */`;
+  }
 
 /**
  * Execute the minification process which will return a Set of changed files
+ * @param {String} [version] - optional version
  * @returns {Set<String>} - changed files
  */
-function execute() {
+function execute(version) {
     // empty dist folder and then minify all the JS files it found in the root & plugins folder
     return new Promise((resolve, reject) => {
         rimraf('dist', async (error) => {
@@ -37,7 +45,7 @@ function execute() {
                 const cssFileList = getFileListToMinify('.css');
                 const jsFileList = getFileListToMinify('.js');
                 await minifyCssFiles(cssFileList);
-                await minifyJsFiles(jsFileList);
+                await minifyJsFiles(jsFileList, version);
 
                 // also copy the images into the "/dist" folder so that all CSS url() still work
                 fs.copySync('./images', './dist/images');
@@ -74,8 +82,14 @@ async function minifyCssFiles(filenames) {
     }
 }
 
-/** Minify an array of JS files */
-function minifyJsFiles(filenames) {
+/**
+ * Minify an array of JS files
+ * @param {String} [version] - optional version
+ */
+function minifyJsFiles(filenames, version) {
+    // use version provided or get it from package.json when undefined
+    let newVersion = version || pkg.version;
+
     console.log('\n');
     console.log(`//-- ${chalk.cyan('JS Minify')} --//`);
     console.log('-------------------');
@@ -94,7 +108,7 @@ function minifyJsFiles(filenames) {
                 // uglify options
                 output: {
                     beautify: false,
-                    preamble: header.replace('{{date}}', new Date().toISOString().substring(0, 10)).replace('{{filename}}', filename),
+                    preamble: getSlickGridHeader(newVersion).replace('{{date}}', new Date().toISOString().substring(0, 10)).replace('{{filename}}', filename),
                 },
                 sourceMap: true
             });
@@ -122,7 +136,7 @@ function getFileListToMinify(extension) {
 
 /**
  * Ensure folder exist or else create it
- * @param {String} filePath 
+ * @param {String} filePath
  * @returns {Boolean}
  */
 function ensureDirectoryExistence(filePath) {
