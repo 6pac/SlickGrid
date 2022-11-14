@@ -2,6 +2,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.1](https://github.com/6pac/SlickGrid/compare/2.4.45...3.0.1) (2022-11-14)
+
+### Bug Fixes
+
+* adjust the left/right canvas width properly when fullWidthRows is used ([#664](https://github.com/6pac/SlickGrid/issues/664)) ([d3de81c](https://github.com/6pac/SlickGrid/commit/d3de81cab64ca68ffa3cbb3e6ac7518414a97057))
+* auto-scroll should work even without jQueryUI ([#703](https://github.com/6pac/SlickGrid/issues/703)) ([afca1a2](https://github.com/6pac/SlickGrid/commit/afca1a2a313aec063602d35bd17f849f22514374))
+* auto-scroll should work even without jQueryUI ([#703](https://github.com/6pac/SlickGrid/issues/703)) ([4e5397d](https://github.com/6pac/SlickGrid/commit/4e5397d87e03288ff6c07fe34bad7f5326584ecd))
+* **editors:** allow input editing with Flatpickr editor ([#704](https://github.com/6pac/SlickGrid/issues/704)) ([2d64e47](https://github.com/6pac/SlickGrid/commit/2d64e4788f575351b5408b6bf432fe0d049a4482))
+* ensure H scrollbar is aways detected in resizeCanvas(). Fixes [#709](https://github.com/6pac/SlickGrid/issues/709) ([71bfd9a](https://github.com/6pac/SlickGrid/commit/71bfd9a57cac75280f6bab90532707721109fc6b))
+* revert [#674](https://github.com/6pac/SlickGrid/issues/674) and disable v scrolling only where options.autoHeight is ([b156cfb](https://github.com/6pac/SlickGrid/commit/b156cfbdaba04c76cf3bfeeb9977b2a94922cb28)), closes [#711](https://github.com/6pac/SlickGrid/issues/711)
+
+### Features
+
+* **tooltip:** add new "center" and invert left/right align ([#712](https://github.com/6pac/SlickGrid/issues/712)) ([e26eeaf](https://github.com/6pac/SlickGrid/commit/e26eeaf2f51b8bbde7c16dda937273386dbf0ace))
+
 # [3.0.0](https://github.com/6pac/SlickGrid/compare/2.4.45...3.0.0) (2022-10-09)
 
 ### Bug Fixes
