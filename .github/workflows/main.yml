@@ -56,6 +56,4 @@ jobs:
       - name: Run Cypress E2E tests with Firefox
         uses: cypress-io/github-action@v2
         with:
-          start: npm run serve
-          wait-on: 'http://localhost:8080'
           browser: firefox
