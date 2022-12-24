@@ -46,9 +46,16 @@ jobs:
       - name: Install npm dependencies
         run: npm install
 
-      - name: Run Cypress E2E tests
+      - name: Run Cypress E2E tests with Chrome
         uses: cypress-io/github-action@v2
         with:
           start: npm run serve
           wait-on: 'http://localhost:8080'
           browser: chrome
+
+      - name: Run Cypress E2E tests with Firefox
+        uses: cypress-io/github-action@v2
+        with:
+          start: npm run serve
+          wait-on: 'http://localhost:8080'
+          browser: firefox
