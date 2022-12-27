@@ -214,7 +214,13 @@ function updatePackageVersion(newVersion) {
  */
 function updateSlickGridVersion(newVersion) {
   const slickGridJs = fs.readFileSync(path.resolve(__dirname, '../slick.grid.js'), { encoding: 'utf8', flag: 'r' });
-  const updatedSlickGridJs = slickGridJs.replace(/(SlickGrid v)([0-9-.alpha|beta]*)/gi, `$1${newVersion}`);
+
+  // replaces version in 2 areas (a version could be "2.4.45" or "2.4.45-alpha.0"): 
+  // 1- in top comments, ie: SlickGrid v2.4.45
+  // 2- in public API definitions, ie: "slickGridVersion": "2.4.45",
+  const updatedSlickGridJs = slickGridJs
+    .replace(/(SlickGrid v)([0-9-.alpha|beta]*)/gi, `$1${newVersion}`)
+    .replace(/("slickGridVersion"): "([0-9\.]*([\-\.]?alpha[\-\.]?|[\-\.]?beta[\-\.]?)?[0-9\-\.]*)"/gi, `$1: "${newVersion}"`);
 
   if (options.dryRun) {
     console.log(`${chalk.magenta('[dry-run]')}`);
