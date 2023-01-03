@@ -61,7 +61,7 @@
     var toggledGroupsByLevel = [];
     var groupingDelimiter = ':|:';
     var selectedRowIds = null;
-    var selectedRowChangedFn;
+    var preSelectedRowIdsChangeFn;
 
     var pagesize = 0;
     var pagenum = 0;
@@ -1287,10 +1287,12 @@
             var selectedRowsChangedArgs = {
               "grid": _grid,
               "ids": self.mapRowsToIds(selectedRows),
+              "rows": selectedRows,
               "dataView": self
             };
-            selectedRowChangedFn(selectedRowsChangedArgs);
+            preSelectedRowIdsChangeFn(selectedRowsChangedArgs);
             onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
+              "selectedRowIds": selectedRowIds,
               "filteredIds": self.getAllSelectedFilteredIds(),
             }), new Slick.EventData(), self);
           }
@@ -1301,29 +1303,30 @@
 
       grid.onSelectedRowsChanged.subscribe(function (e, args) {
         if (!inHandler) {
-          var newSelectedRowIds = self.mapRowsToIds(grid.getSelectedRows());
+          var newSelectedRowIds = self.mapRowsToIds(args.rows);
           var selectedRowsChangedArgs = {
             "grid": _grid,
             "ids": newSelectedRowIds,
+            "rows": args.rows,
             "added": true,
             "dataView": self
           };
-          selectedRowChangedFn(selectedRowsChangedArgs);
+          preSelectedRowIdsChangeFn(selectedRowsChangedArgs);
           onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
+            "selectedRowIds": selectedRowIds,
             "filteredIds": self.getAllSelectedFilteredIds(),
           }), new Slick.EventData(), self);
         }
       });
 
-      selectedRowChangedFn = function (args) {
+      preSelectedRowIdsChangeFn = function (args) {
         if (!inHandler) {
           inHandler = true;
           var overwrite = (typeof args.added === typeof undefined);
 
           if (overwrite) {
             setSelectedRowIds(args.ids);
-          }
-          else {
+          } else {
             var rowIds;
             if (args.added) {
               if (preserveHiddenOnSelectionChange && grid.getOptions().multiSelect) {
@@ -1376,12 +1379,11 @@
     }
 
     /**
-     * Set currently selected IDs array (regardless of Pagination)
+     * Set current row selected IDs array (regardless of Pagination)
      * NOTE: This will NOT change the selection in the grid, if you need to do that then you still need to call
      * "grid.setSelectedRows(rows)"
-     *
      * @param {Array} selectedIds - list of IDs which have been selected for this action
-     * @param {boolean} added - if the selected IDs have been added to selection or removed from it
+     * @param {boolean} added - are the new selected IDs being added (or removed) as new row selection
      */
     function setSelectedIds(selectedIds, added) {
       if (typeof added === typeof undefined) {
@@ -1390,11 +1392,13 @@
       var selectedRowsChangedArgs = {
         "grid": _grid,
         "ids": selectedIds,
+        "rows": self.mapIdsToRows(selectedIds),
         "added": added,
         "dataView": self
       };
-      selectedRowChangedFn(selectedRowsChangedArgs);
+      preSelectedRowIdsChangeFn(selectedRowsChangedArgs);
       onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
+        "selectedRowIds": selectedRowIds,
         "filteredIds": self.getAllSelectedFilteredIds(),
       }), new Slick.EventData(), self);
     }

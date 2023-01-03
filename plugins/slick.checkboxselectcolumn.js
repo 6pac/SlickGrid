@@ -99,7 +99,7 @@
       $("#filter-checkbox-selectall-container").hide();
     }
 
-    function handleSelectedRowsChanged(e, args) {
+    function handleSelectedRowsChanged() {
       var selectedRows = _grid.getSelectedRows();
       var lookup = {}, row, i, k;
       var disabledCount = 0;
@@ -264,7 +264,9 @@
         }
 
         var isAllSelected = $(e.target).is(":checked") || false;
+        var caller = isAllSelected ? 'click.selectAll' : 'click.unselectAll';
         var rows = [];
+
         if (isAllSelected) {
           for (var i = 0; i < _grid.getDataLength(); i++) {
             // Get the row and check it's a selectable row before pushing it onto the stack
@@ -287,7 +289,7 @@
           }
           _dataView.setSelectedIds(ids, isAllSelected);
         }
-        _grid.setSelectedRows(rows, "click.selectAll");
+        _grid.setSelectedRows(rows, caller);
         e.stopPropagation();
         e.stopImmediatePropagation();
       }

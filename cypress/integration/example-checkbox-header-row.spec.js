@@ -268,6 +268,20 @@ describe('Example - Checkbox Header Row', () => {
       });
   });
 
+  it('should clear all filters and expect 75 rows to be selected', () => {
+    cy.get('[data-test="clear-filters"]').click();
+
+    cy.get('.slick-headerrow-column')
+      .children()
+      .each(($child, index) => expect($child.text()).to.eq(''));
+
+    cy.get('#idsCount')
+      .then($elm => {
+        let newSelectedIdsCount = +$elm[0].textContent;
+        expect(newSelectedIdsCount).to.be.eq(75);
+      });
+  });
+
   it('should clear all filters & clear all row selections', () => {
     cy.get('[data-test="clear-filters"]').click();
 
@@ -334,7 +348,18 @@ describe('Example - Checkbox Header Row', () => {
       .should('not.be.checked');
   });
 
-  it('should revert back to same previous filter and expect back to have "Select All" checkbox to be selected again', () => {
+  it('should sort and expect same selected Ids as previous test', () => {
+    cy.get('.slick-header-columns')
+      .children('.slick-header-column:nth(1)')
+      .click();
+
+    cy.get('#idsCount')
+      .then($elm => {
+        expect(+$elm[0].textContent).to.be.eq(selectedIdsCount);
+      });
+  });
+
+  it('should revert back to the same filter as before and still expect the same selected Ids to be selected again', () => {
     cy.get('#myGrid')
       .find('.slick-headerrow-column.l1.r1')
       .find('input')

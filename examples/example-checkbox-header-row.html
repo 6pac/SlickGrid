@@ -161,8 +161,14 @@
       id: i + idOffset,
       name: String.fromCharCode("A".charCodeAt(0) + i),
       field: i,
-      width: 60
+      width: 60,
+      sortable: true
     });
+  }
+
+  function comparer(a, b) {
+    var x = a[sortcol], y = b[sortcol];
+    return (x == y ? 0 : (x > y ? 1 : -1));
   }
 
   function clearFilters() {
@@ -238,6 +244,7 @@
     
     dataView.onSelectedRowIdsChanged.subscribe(function(e, args) {
       var sortedSelectedIds = args.filteredIds.sort(function (a, b) { return a - b });
+      // console.log('sortedSelectedIds', args.selectedRowIds);
       $('#selectedIds').text(sortedSelectedIds.toString());
       $('#idsCount').text(sortedSelectedIds.length); 
     });
@@ -258,6 +265,15 @@
            .val(columnFilters[args.column.id])
            .appendTo(args.node);
       }
+    });
+
+    grid.onSort.subscribe(function (e, args) {
+      sortdir = args.sortAsc ? 1 : -1;
+      sortcol = args.sortCol.field;
+    
+      // using native sort with comparer
+      // preferred method but can be very slow in IE with huge datasets
+      dataView.sort(comparer, args.sortAsc);
     });
 
     grid.init();
