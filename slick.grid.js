@@ -228,7 +228,6 @@ if (typeof Slick === "undefined") {
     var sortColumns = [];
     var columnPosLeft = [];
     var columnPosRight = [];
-    var allColumns = [];
 
     var pagingActive = false;
     var pagingIsLastPage = false;
@@ -1465,8 +1464,7 @@ if (typeof Slick === "undefined") {
               multiColumnSort: true,
               previousSortColumns: previousSortColumns,
               sortCols: $.map(sortColumns, function(col) {
-                var column = getColumnById(col.columnId, false);
-                return { columnId: column && column.id, sortCol: column, sortAsc: col.sortAsc };
+                return { columnId: columns[getColumnIndex(col.columnId)].id, sortCol: columns[getColumnIndex(col.columnId)], sortAsc: col.sortAsc };
               })
             };
           }
@@ -3014,19 +3012,6 @@ if (typeof Slick === "undefined") {
       return columns;
     }
 
-    function getColumnById(columnId, useOnlyVisibleColumns) {
-      var columnList = useOnlyVisibleColumns ? getColumns() : getAllColumns(true);
-      var column = null;
-
-      for (var c = 0; c < columnList.length; c++) {
-        if (columnList[c].id === columnId) {
-          column = columnList[c];
-          break;
-        }
-      }
-      return column;
-    }
-
     function updateColumnCaches() {
       // Pre-calculate cell boundaries.
       columnPosLeft = [];
@@ -3064,29 +3049,6 @@ if (typeof Slick === "undefined") {
           //m.autoSize.autosizeMode = Slick.ColAutosizeMode.Locked;
         }
       }
-    }
-
-    function setAllColumns(columnDefinitions) {
-      var _columns = columns.slice(0);
-      var _initialized = initialized;
-
-      initialized = false;
-      setColumns(columnDefinitions);
-      allColumns = columns.slice(0);
-      columns = _columns;
-      initialized = _initialized;
-    }
-
-    /**
-     *
-     * @param {boolean} [defaultToColumns=true]
-     * @return {[]|Array}
-     */
-    function getAllColumns(defaultToColumns) {
-      if (typeof defaultToColumns === typeof undefined) {
-        defaultToColumns = true;
-      }
-      return defaultToColumns ? (allColumns.length ? allColumns : columns) : allColumns;
     }
 
     function setColumns(columnDefinitions) {
@@ -6250,9 +6212,6 @@ if (typeof Slick === "undefined") {
       "getPluginByName": getPluginByName,
       "getColumns": getColumns,
       "setColumns": setColumns,
-      "getAllColumns": getAllColumns,
-      "setAllColumns": setAllColumns,
-      "getColumnById": getColumnById,
       "getColumnIndex": getColumnIndex,
       "updateColumnHeader": updateColumnHeader,
       "setSortColumn": setSortColumn,
