@@ -4,23 +4,26 @@
  * @namespace Slick
  */
 
-(function ($) {
+(function (window) {
   /***
    * An event object for passing data to event handlers and letting them control propagation.
    * <p>This is pretty much identical to how W3C and jQuery implement events.</p>
    * @class EventData
    * @constructor
    */
-  function EventData() {
+  function EventData(event) {
+
+    var nativeEvent = event;
     var isPropagationStopped = false;
     var isImmediatePropagationStopped = false;
-
+    var isDefaultPrevented = false;
     /***
      * Stops event from propagating up the DOM tree.
      * @method stopPropagation
      */
     this.stopPropagation = function () {
       isPropagationStopped = true;
+      this.preventDefault();
     };
 
     /***
@@ -29,7 +32,7 @@
      * @return {Boolean}
      */
     this.isPropagationStopped = function () {
-      return isPropagationStopped;
+      return isPropagationStopped || isDefaultPrevented;
     };
 
     /***
@@ -38,6 +41,7 @@
      */
     this.stopImmediatePropagation = function () {
       isImmediatePropagationStopped = true;
+      this.preventDefault();
     };
 
     /***
@@ -48,6 +52,16 @@
     this.isImmediatePropagationStopped = function () {
       return isImmediatePropagationStopped;
     };
+
+    this.getNativeEvent = function() {
+      return nativeEvent;
+    }
+
+    this.preventDefault = function() {
+      if(nativeEvent)
+        nativeEvent.preventDefault();
+      isDefaultPrevented = true;
+    }
   }
 
   /***
@@ -96,7 +110,9 @@
      *      If not specified, the scope will be set to the <code>Event</code> instance.
      */
     this.notify = function (args, e, scope) {
-      e = e || new EventData();
+
+      if(!(e instanceof EventData))
+        e = new EventData(e);
       scope = scope || this;
 
       var returnValue;
@@ -564,7 +580,7 @@
     }
 
     function cloneTreeColumns() {
-      return $.extend(true, [], treeColumns);
+      return extend([], treeColumns);
     }
 
     init();
@@ -572,8 +588,10 @@
     this.hasDepth = function () {
 
       for (var i in treeColumns)
+      {
         if (treeColumns[i].hasOwnProperty('columns'))
           return true;
+      }
 
       return false;
     };
@@ -675,10 +693,243 @@
   function regexSanitizer(dirtyHtml) {
      return dirtyHtml.replace(/(\b)(on[a-z]+)(\s*)=|javascript:([^>]*)[^>]*|(<\s*)(\/*)script([<>]*).*(<\s*)(\/*)script(>*)|(&lt;)(\/*)(script|script defer)(.*)(&gt;|&gt;">)/gi, '');
   }
+
+  // With help from https://youmightnotneedjquery.com/
+  function grep( elems, callback, invert ) {
+		var callbackInverse,
+			matches = [],
+			i = 0,
+			length = elems.length,
+			callbackExpect = !invert;
+
+		// Go through the array, only saving the items
+		// that pass the validator function
+		for ( ; i < length; i++ ) {
+			callbackInverse = !callback( elems[ i ], i );
+			if ( callbackInverse !== callbackExpect ) {
+				matches.push( elems[ i ] );
+			}
+		}
+
+		return matches;
+	}
+
+  function offset(el) {
+
+    box = el.getBoundingClientRect();
+    docElem = document.documentElement;
+    return {
+      top: box.top + window.pageYOffset - docElem.clientTop,
+      left: box.left + window.pageXOffset - docElem.clientLeft
+    };
  
-  // exports
-  $.extend(true, window, {
-    "Slick": {
+	}
+
+  function width(el, value)
+  {
+    if (value === undefined) {
+      return el.getBoundingClientRect().width;
+    }
+    setStyleSize(el, "width", value);
+  }
+
+  function height(el, value)
+  {
+    if (value === undefined) {
+      return el.getBoundingClientRect().height;
+    }
+    setStyleSize(el, "height", value);
+  }
+
+  function setWidth(el, value) {
+    setStyleSize(el, "width", value);
+  }
+  
+  function setHeight(el, value) {
+    setStyleSize(el, "height", value);
+  }
+
+  function setStyleSize(el, style, val) {
+    if (typeof val === 'function') val = val();
+    if (typeof val === 'string') el.style[style] = val;
+    else el.style[style] = val + 'px';
+  }
+
+  function position(el) {
+    const {top, left} = el.getBoundingClientRect();
+    const {marginTop, marginLeft} = getComputedStyle(el);
+    return {
+      top: top - parseInt(marginTop, 10),
+      left: left - parseInt(marginLeft, 10)
+    };
+  }
+  
+  function contains(parent, child) {
+    parent.contains(child);
+  }
+  
+  function isHidden(el)
+  {
+    return el.offsetWidth === 0 && el.offsetHeight === 0;
+  }
+
+  function parents(el, selector) {
+    const parents = [];
+    const visible = selector == ":visible";
+    const hidden = selector == ":hidden";
+
+    while ((el = el.parentNode) && el !== document) {
+
+      if(hidden)
+      {
+        if(isHidden(el))
+          parents.push(el);
+      }
+      else if (visible)
+      {
+        if(!isHidden(el))
+          parents.push(el);
+      }
+      else if (!selector || el.matches(selector)) 
+        parents.push(el);
+    }
+    return parents;
+  }
+
+  function template(html, parent) {
+    const template = document.createElement('template');
+    template.innerHTML = html.trim();
+
+    const first = template.content.firstChild;
+    if(parent)
+    {
+      [].forEach.call(template.content.children, (child) => {
+        parent.appendChild(child);
+      });
+      return first;
+    }
+    return first;
+  }
+  
+  function toFloat(value) {
+    var x = parseFloat(value)
+    if (isNaN(x)) {
+      return 0;
+    }
+    return x;
+  }
+
+  function scrollLeft(el, value) {
+    el = getElement(el);
+
+    if (value === undefined) {
+      return el.pageXOffset;
+    } else {
+      if (el === window || el.nodeType === 9) {
+        el.scrollTo(value, el.pageYOffset);
+      } else {
+        el.pageXOffset = value;
+      }
+    }
+  }
+
+  function scrollTop(el, value) {
+    if (value === undefined) {
+      return el.pageYOffset;
+    } else {
+      if (el === window || el.nodeType === 9) {
+        el.scrollTo(el.pageXOffset, value);
+      } else {
+        el.pageYOffset = value;
+      }
+    }
+  }
+  
+  function show(el, type)
+  {
+    if(type)
+      el.style.display = type;
+    else
+    el.style.display = "";
+  }
+
+  function hide(el)
+  {
+    el.style.display = "none";
+  }
+
+  // jQuery's extend
+  var getProto = Object.getPrototypeOf;
+  var class2type = {};
+  var toString = class2type.toString;
+  var hasOwn = class2type.hasOwnProperty;
+  var fnToString = hasOwn.toString;
+  var ObjectFunctionString = fnToString.call( Object );
+  function isFunction( obj ) {
+    return typeof obj === "function" && typeof obj.nodeType !== "number" &&
+      typeof obj.item !== "function";
+  };
+  function isPlainObject( obj ) {
+    var proto, Ctor;
+    if ( !obj || toString.call( obj ) !== "[object Object]" ) {
+      return false;
+    }
+
+    proto = getProto( obj );
+    if ( !proto ) {
+      return true;
+    }
+    Ctor = hasOwn.call( proto, "constructor" ) && proto.constructor;
+    return typeof Ctor === "function" && fnToString.call( Ctor ) === ObjectFunctionString;
+  }
+  function extend() {
+    var options, name, src, copy, copyIsArray, clone,
+      target = arguments[ 0 ] || {},
+      i = 1,
+      length = arguments.length,
+      deep = true;
+    if ( typeof target === "boolean" ) {
+      deep = target;
+      target = arguments[ i ] || {};
+      i++;
+    }
+    if ( typeof target !== "object" && !isFunction( target ) ) {
+      target = {};
+    }
+    if ( i === length ) {
+      target = this;
+      i--;
+    }
+    for ( ; i < length; i++ ) {
+      if ( ( options = arguments[ i ] ) != null ) {
+        for ( name in options ) {
+          copy = options[ name ];
+          if ( name === "__proto__" || target === copy ) {
+            continue;
+          }
+          if ( deep && copy && ( isPlainObject( copy ) ||
+            ( copyIsArray = Array.isArray( copy ) ) ) ) {
+            src = target[ name ];
+            if ( copyIsArray && !Array.isArray( src ) ) {
+              clone = [];
+            } else if ( !copyIsArray && !isPlainObject( src ) ) {
+              clone = {};
+            } else {
+              clone = src;
+            }
+            copyIsArray = false;
+            target[ name ] = extend( deep, clone, copy );
+          } else if ( copy !== undefined ) {
+            target[ name ] = copy;
+          }
+        }
+      }
+    }
+    return target;
+  };
+
+   // exports
+  window.Slick = {
       "Event": Event,
       "EventData": EventData,
       "EventHandler": EventHandler,
@@ -689,7 +940,49 @@
       "GroupTotals": GroupTotals,
       "RegexSanitizer": regexSanitizer,
       "EditorLock": EditorLock,
-  
+      "Utils":
+      {
+        "extend": extend,
+        "grep": grep,
+        "offset": offset,
+        "height": height,
+        "setHeight": setHeight,
+        "width": width,
+        "setWidth": setWidth,
+        "setStyleSize": setStyleSize,
+        "contains": contains,
+        "template": template,
+        "toFloat": toFloat,
+        "position": position,
+        "parents": parents,
+        "scrollLeft": scrollLeft,
+        "scrollTop": scrollTop,
+        "show": show,
+        "hide": hide,
+        "storage": {
+          // https://stackoverflow.com/questions/29222027/vanilla-alternative-to-jquery-data-function-any-native-javascript-alternati
+          _storage: new WeakMap(),
+          put: function (element, key, obj) {
+              if (!this._storage.has(element)) {
+                  this._storage.set(element, new Map());
+              }
+              this._storage.get(element).set(key, obj);
+          },
+          get: function (element, key) {
+              return this._storage.get(element).get(key);
+          },
+          has: function (element, key) {
+              return this._storage.has(element) && this._storage.get(element).has(key);
+          },
+          remove: function (element, key) {
+              var ret = this._storage.get(element).delete(key);
+              if (!this._storage.get(element).size === 0) {
+                  this._storage.delete(element);
+              }
+              return ret;
+          }
+      }
+      },
       /***
        * A global singleton editor lock.
        * @class GlobalEditorLock
@@ -757,7 +1050,4 @@
         HTML: 'HTML'
       }
     }
-  });
-})(jQuery);
-
-
+})(window);

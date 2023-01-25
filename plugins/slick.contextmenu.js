@@ -200,6 +200,9 @@
     }
 
     function createMenu(e) {
+      if(e instanceof Slick.EventData)
+        e = e.getNativeEvent();
+
       var targetEvent = e.touches ? e.touches[0] : e;
       var cell = _grid.getCellFromEvent(e);
       _currentCell = cell && cell.cell;
@@ -346,6 +349,9 @@
     }
 
     function handleOnContextMenu(e, args) {
+      if(e instanceof Slick.EventData)
+        e = e.getNativeEvent();
+
       e.preventDefault();
 
       var cell = _grid.getCellFromEvent(e);

@@ -1,4 +1,4 @@
-(function ($) {
+(function () {
   /***
    * A sample Model implementation.
    * Provides a filtered view of the underlying data.
@@ -78,7 +78,7 @@
     var onGroupExpanded = new Slick.Event();
     var onGroupCollapsed = new Slick.Event();
 
-    options = $.extend(true, {}, defaults, options);
+    options = Slick.Utils.extend({}, defaults, options);
 
     /***
      * Begins a bached update of the items in the data view.
@@ -330,7 +330,7 @@
       groupingInfos = (groupingInfo instanceof Array) ? groupingInfo : [groupingInfo];
 
       for (var i = 0; i < groupingInfos.length; i++) {
-        var gi = groupingInfos[i] = $.extend(true, {}, groupingInfoDefaults, groupingInfos[i]);
+        var gi = groupingInfos[i] = Slick.Utils.extend({}, groupingInfoDefaults, groupingInfos[i]);
         gi.getterIsAFn = typeof gi.getter === "function";
 
         // pre-compile accumulator loops
@@ -1206,7 +1206,7 @@
         return;
       }
 
-      var previousPagingInfo = $.extend(true, {}, getPagingInfo());
+      var previousPagingInfo = Slick.Utils.extend({}, getPagingInfo());
 
       var countBefore = rows.length;
       var totalRowsBefore = totalRows;
@@ -1495,7 +1495,7 @@
       this.onRowsOrCountChanged.subscribe(update);
     }
 
-    $.extend(this, {
+    Slick.Utils.extend(this, {
       // methods
       "beginUpdate": beginUpdate,
       "endUpdate": endUpdate,
@@ -1685,18 +1685,16 @@
   // TODO:  merge common aggregators in one to prevent needles iterating
 
   // exports
-  $.extend(true, window, {
-    Slick: {
-      Data: {
-        DataView: DataView,
-        Aggregators: {
-          Avg: AvgAggregator,
-          Min: MinAggregator,
-          Max: MaxAggregator,
-          Sum: SumAggregator,
-          Count: CountAggregator
-        }
+  Slick.Utils.extend(Slick, {
+    Data: {
+      DataView: DataView,
+      Aggregators: {
+        Avg: AvgAggregator,
+        Min: MinAggregator,
+        Max: MaxAggregator,
+        Sum: SumAggregator,
+        Count: CountAggregator
       }
     }
   });
-})(jQuery);
+})();

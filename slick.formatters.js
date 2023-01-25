@@ -8,7 +8,7 @@
  * @namespace Slick
  */
 
-(function ($) {
+(function () {
   function PercentCompleteFormatter(row, cell, value, columnDef, dataContext) {
     if (value == null || value === "") {
       return "-";
@@ -50,16 +50,14 @@
   }
 
   // exports
-  $.extend(true, window, {
-    "Slick": {
-      "Formatters": {
-        "PercentComplete": PercentCompleteFormatter,
-        "PercentCompleteBar": PercentCompleteBarFormatter,
-        "YesNo": YesNoFormatter,
-        "Checkmark": CheckmarkFormatter,
-        "Checkbox": CheckboxFormatter
+  Slick.Utils.extend(Slick, {
+    "Formatters": {
+      "PercentComplete": PercentCompleteFormatter,
+      "PercentCompleteBar": PercentCompleteBarFormatter,
+      "YesNo": YesNoFormatter,
+      "Checkmark": CheckmarkFormatter,
+      "Checkbox": CheckboxFormatter
 
-      }
     }
   });
-})(jQuery);
+})();

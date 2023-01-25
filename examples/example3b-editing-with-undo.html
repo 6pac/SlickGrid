@@ -41,7 +41,6 @@
 
 <script src="../lib/firebugx.js"></script>
 
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
@@ -96,7 +95,6 @@
     }
   }
 
-  $(function () {
     for (var i = 0; i < 500; i++) {
       var d = (data[i] = {});
 
@@ -110,7 +108,6 @@
     }
 
     grid = new Slick.Grid("#myGrid", data, columns, options);
-  })
 </script>
 </body>
 </html>

@@ -174,12 +174,6 @@
     };
   }
 
-  // exports
-  $.extend(true, window, {
-    Slick: {
-      Data: {
-        GroupItemMetadataProvider: GroupItemMetadataProvider
-      }
-    }
-  });
+  Slick.Data = Slick.Data || { };
+  Slick.Data.GroupItemMetadataProvider = GroupItemMetadataProvider;
 })(jQuery);

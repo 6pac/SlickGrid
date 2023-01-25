@@ -364,6 +364,9 @@
     }
 
     function handleCellClick(e, args) {
+      if(e instanceof Slick.EventData)
+        e = e.getNativeEvent();
+
       var cell = _grid.getCellFromEvent(e);
       var dataContext = _grid.getDataItem(cell.row);
       var columnDef = _grid.getColumns()[cell.cell];
