@@ -108,7 +108,7 @@
         }
 
         options.destroy && options.destroy();
-		    editors = [];
+        editors = [];
       };
 
 
@@ -205,7 +205,7 @@
           }
           idx++;
         }
-		    $targetElm = null;
+        $targetElm = null;
 
         if (errors.length) {
           return {
@@ -254,9 +254,9 @@
     editor.prototype = this;
     return editor;
   }
-  
+
   // exports
   Slick.Utils.extend(Slick, {
     CompositeEditor: CompositeEditor
-  });  
+  });
 })(jQuery);
