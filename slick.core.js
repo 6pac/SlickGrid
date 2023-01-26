@@ -17,6 +17,9 @@
     var isPropagationStopped = false;
     var isImmediatePropagationStopped = false;
     var isDefaultPrevented = false;
+
+    this.target = nativeEvent ? nativeEvent.target : undefined;
+
     /***
      * Stops event from propagating up the DOM tree.
      * @method stopPropagation
