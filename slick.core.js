@@ -768,8 +768,11 @@
   }
   
   function contains(parent, child) {
-    const parents = parents(child);
-    return !parents.every((p) => {
+    if(!parent || !child)
+      return false;
+
+    const parentList = parents(child);
+    return !parentList.every((p) => {
       if(parent == p)
         return false;
       return true;

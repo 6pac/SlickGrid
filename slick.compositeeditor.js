@@ -175,8 +175,7 @@
             var editorElm = document.querySelector("[data-editorid=" + columnDef.id + "]");
             var validationMsgPrefix = options && options.validationMsgPrefix || "";
 
-            // ($editorElm.has($targetElm).length > 0)
-            if (!targetElm || ($(editorElm).has(targetElm).length > 0)/*Slick.Utils.contains($editorElm, $targetElm)*/) {
+            if (!targetElm || Slick.Utils.contains(editorElm, targetElm)) {
               validationResults = editors[idx].validate();
 
               if (!validationResults.valid) {
