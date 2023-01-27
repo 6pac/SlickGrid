@@ -768,7 +768,12 @@
   }
   
   function contains(parent, child) {
-    parent.contains(child);
+    const parents = parents(child);
+    return !parents.every((p) => {
+      if(parent == p)
+        return false;
+      return true;
+    });
   }
   
   function isHidden(el)
@@ -887,7 +892,7 @@
   }
   function extend() {
     var options, name, src, copy, copyIsArray, clone,
-      target = arguments[ 0 ] || {},
+      target = arguments[ 0 ],
       i = 1,
       length = arguments.length,
       deep = true;
@@ -895,6 +900,10 @@
       deep = target;
       target = arguments[ i ] || {};
       i++;
+    }
+    else
+    {
+      target = target || {}
     }
     if ( typeof target !== "object" && !isFunction( target ) ) {
       target = {};
