@@ -1386,12 +1386,12 @@
      * @param {Object} options
      *  - `isRowBeingAdded`: are the new selected IDs being added (or removed) as new row selections
      *  - `shouldTriggerEvent`: should we trigger `onSelectedRowIdsChanged` event (defaults to true)
-     *  - `applyGridRowSelection`: should we apply the row selections to the grid in the UI
+     *  - `applyRowSelectionToGrid`: should we apply the row selections to the grid in the UI
      */
     function setSelectedIds(selectedIds, options) {
       var isRowBeingAdded = options && options.isRowBeingAdded;
       var shouldTriggerEvent = options && options.shouldTriggerEvent;
-      var applyGridRowSelection = options && options.applyGridRowSelection;
+      var applyRowSelectionToGrid = options && options.applyRowSelectionToGrid;
 
       if (typeof isRowBeingAdded === typeof undefined) {
         isRowBeingAdded = true;
@@ -1414,7 +1414,7 @@
       }
 
       // should we also apply the row selection in to the grid (UI) as well?
-      if (applyGridRowSelection && _grid) {
+      if (applyRowSelectionToGrid && _grid) {
         _grid.setSelectedRows(selectedRows);
       }
     }
