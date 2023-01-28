@@ -598,8 +598,8 @@ if (typeof Slick === "undefined") {
 
         if (options.showHeaderRow) {
           _headerRows.forEach((row) => {
-            //row.addEventListener("mouseenter", ".slick-headerrow-column", handleHeaderRowMouseEnter);
-            //row.addEventListener("mouseleave", ".slick-headerrow-column", handleHeaderRowMouseLeave);
+            row.addEventListener("mousseover", handleHeaderRowMouseOver);
+            row.addEventListener("mouseout", handleHeaderRowMouseOut);
           });
         }
 
@@ -626,10 +626,8 @@ if (typeof Slick === "undefined") {
           element.addEventListener("click", handleClick);
           element.addEventListener("dblclick", handleDblClick);
           element.addEventListener("contextmenu", handleContextMenu);
-          //element.addEventListener("mouseenter", ".slick-cell", handleMouseEnter);
-          //element.addEventListener("mouseleave", ".slick-cell", handleMouseLeave);
-          //element.addEventListener("mouseenter", handleMouseEnter);
-          //element.addEventListener("mouseleave", handleMouseLeave);
+          element.addEventListener("mouseover", handleCellMouseOver);
+          element.addEventListener("mouseout", handleCellMouseOut);
         });
 
         if (Slick.Draggable) {
@@ -1234,11 +1232,11 @@ if (typeof Slick === "undefined") {
       applyColumnGroupHeaderWidths();
     }
 
-    function onColumnHeaderMouseEnter(e) {
+    function onColumnHeaderMouseOver(e) {
       e.target.classList.add("ui-state-hover");
     }
 
-    function onColumnHeaderMouseLeave(e) {
+    function onColumnHeaderMouseOut(e) {
       e.target.classList.remove("ui-state-hover");
     }
 
@@ -1333,14 +1331,14 @@ if (typeof Slick === "undefined") {
         if(className)
           header.classList.add(className);
 
-        header.addEventListener("mouseenter", handleHeaderMouseEnter);
-        header.addEventListener("mouseleave", handleHeaderMouseLeave);
+        header.addEventListener("mouseover", handleHeaderMouseOver);
+        header.addEventListener("mouseout", handleHeaderMouseOut);
 
         u.storage.put(header, "column", m);
 
         if (options.enableColumnReorder || m.sortable) {
-          header.addEventListener('mouseenter', onColumnHeaderMouseEnter);
-          header.addEventListener('mouseleave', onColumnHeaderMouseLeave);
+          header.addEventListener('mouseover', onColumnHeaderMouseOver);
+          header.addEventListener('mouseout', onColumnHeaderMouseOut);
         }
 
         if(m.hasOwnProperty('headerCellAttrs') && m.headerCellAttrs instanceof Object) {
@@ -1371,8 +1369,6 @@ if (typeof Slick === "undefined") {
           if(classname)
             headerRowCell.classList.add(classname);
 
-          headerRowCell.addEventListener("mouseenter", handleHeaderRowMouseEnter);
-          headerRowCell.addEventListener("mouseleave", handleHeaderRowMouseLeave);
           u.storage.put(headerRowCell, "column", m);
 
           trigger(self.onHeaderRowCellRendered, {
@@ -2229,8 +2225,8 @@ if (typeof Slick === "undefined") {
         element.removeEventListener("click", handleClick);
         element.removeEventListener("dblclick", handleDblClick);
         element.removeEventListener("contextmenu", handleContextMenu);
-        element.removeEventListener("mouseenter", handleMouseEnter);
-        element.removeEventListener("mouseleave", handleMouseLeave);
+        element.removeEventListener("mouseover", handleCellMouseOver);
+        element.removeEventListener("mouseout", handleCellMouseOut);
       });
       _viewport.forEach((view) => {
         view.removeEventListener("scroll", handleScroll);
@@ -2272,11 +2268,11 @@ if (typeof Slick === "undefined") {
 
       const headerColumns = _container.querySelectorAll(".slick-header-column");
       [].forEach.call(headerColumns, (column) => {
-        column.removeEventListener("mouseenter", handleHeaderMouseEnter);
-        column.removeEventListener("mouseleave", handleHeaderMouseLeave);
+        column.removeEventListener("mouseover", handleHeaderMouseOver);
+        column.removeEventListener("mouseout", handleHeaderMouseOut);
 
-        column.removeEventListener('mouseenter', onColumnHeaderMouseEnter);
-        column.removeEventListener('mouseleave', onColumnHeaderMouseLeave);
+        column.removeEventListener('mouseover', onColumnHeaderMouseOver);
+        column.removeEventListener('mouseout', onColumnHeaderMouseOut);
       });
 
       _container.replaceChildren();
@@ -4245,27 +4241,6 @@ if (typeof Slick === "undefined") {
       x.innerHTML = sanitizeHtmlString(stringArrayL.join(""));
       xRight.innerHTML = sanitizeHtmlString(stringArrayR.join(""));
 
-      let cells = x.querySelectorAll(".slick-cell");
-      [].forEach.call(cells, (c) => {
-        c.addEventListener("mouseenter", handleMouseEnter);
-        c.addEventListener("mouseleave", handleMouseLeave);
-        //c.addEventListener("keydown", handleKeyDown);
-        //c.addEventListener("click", handleClick);
-        //c.addEventListener("dblclick", handleDblClick);
-        //c.addEventListener("contextmenu", handleContextMenu);
-
-      });
-      cells = xRight.querySelectorAll(".slick-cell");
-      [].forEach.call(cells, (c) => {
-        c.addEventListener("mouseenter", handleMouseEnter);
-        c.addEventListener("mouseleave", handleMouseLeave);
-        //c.addEventListener("keydown", handleKeyDown);
-        //c.addEventListener("click", handleClick);
-        //c.addEventListener("dblclick", handleDblClick);
-        //c.addEventListener("contextmenu", handleContextMenu);
-      });
-
-
       for (var i = 0, ii = rows.length; i < ii; i++) {
         if (( hasFrozenRows ) && ( rows[i] >= actualFrozenRow )) {
             if (hasFrozenColumns()) {
@@ -4926,32 +4901,40 @@ if (typeof Slick === "undefined") {
       }
     }
 
-    function handleHeaderMouseEnter(e) {
+    function handleHeaderMouseOver(e) {
       const c = u.storage.get(e.target, "column");
+      if(!c)
+        return;
       trigger(self.onHeaderMouseEnter, {
         "column": c,
         "grid": self
       }, e);
     }
 
-    function handleHeaderMouseLeave(e) {
+    function handleHeaderMouseOut(e) {
       const c = u.storage.get(e.target, "column");
+      if(!c)
+        return;
       trigger(self.onHeaderMouseLeave, {
         "column": c,
         "grid": self
       }, e);
     }
 
-    function handleHeaderRowMouseEnter(e) {
+    function handleHeaderRowMouseOver(e) {
       const c = u.storage.get(e.target, "column");
+      if(!c)
+        return;
       trigger(self.onHeaderRowMouseEnter, {
         "column": c,
         "grid": self
       }, e);
     }
 
-    function handleHeaderRowMouseLeave(e) {
+    function handleHeaderRowMouseOut(e) {
       const c = u.storage.get(e.target, "column");
+      if(!c)
+        return;
       trigger(self.onHeaderRowMouseLeave, {
         "column": c,
         "grid": self
@@ -4987,11 +4970,11 @@ if (typeof Slick === "undefined") {
       trigger(self.onFooterClick, {column: column}, e);
     }
 
-    function handleMouseEnter(e) {
+    function handleCellMouseOver(e) {
       trigger(self.onMouseEnter, {}, e);
     }
 
-    function handleMouseLeave(e) {
+    function handleCellMouseOut(e) {
       trigger(self.onMouseLeave, {}, e);
     }
 

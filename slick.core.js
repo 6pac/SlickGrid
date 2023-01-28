@@ -1011,10 +1011,10 @@
               this._storage.get(element).set(key, obj);
           },
           get: function (element, key) {
-              return this._storage.get(element).get(key);
-          },
-          has: function (element, key) {
-              return this._storage.has(element) && this._storage.get(element).has(key);
+              const el = this._storage.get(element);
+              if(el)
+                return el.get(key);
+              return null;
           },
           remove: function (element, key) {
               var ret = this._storage.get(element).delete(key);
