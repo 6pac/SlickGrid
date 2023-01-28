@@ -1383,24 +1383,40 @@
      * NOTE: This will NOT change the selection in the grid, if you need to do that then you still need to call
      * "grid.setSelectedRows(rows)"
      * @param {Array} selectedIds - list of IDs which have been selected for this action
-     * @param {boolean} added - are the new selected IDs being added (or removed) as new row selection
+     * @param {Object} options
+     *  - `isRowBeingAdded`: are the new selected IDs being added (or removed) as new row selections
+     *  - `shouldTriggerEvent`: should we trigger `onSelectedRowIdsChanged` event (defaults to true)
+     *  - `applyGridRowSelection`: should we apply the row selections to the grid in the UI
      */
-    function setSelectedIds(selectedIds, added) {
-      if (typeof added === typeof undefined) {
-        added = true;
+    function setSelectedIds(selectedIds, options) {
+      var isRowBeingAdded = options && options.isRowBeingAdded;
+      var shouldTriggerEvent = options && options.shouldTriggerEvent;
+      var applyGridRowSelection = options && options.applyGridRowSelection;
+
+      if (typeof isRowBeingAdded === typeof undefined) {
+        isRowBeingAdded = true;
       }
+      var selectedRows = self.mapIdsToRows(selectedIds);
       var selectedRowsChangedArgs = {
         "grid": _grid,
         "ids": selectedIds,
-        "rows": self.mapIdsToRows(selectedIds),
-        "added": added,
+        "rows": selectedRows,
+        "added": isRowBeingAdded,
         "dataView": self
       };
       preSelectedRowIdsChangeFn(selectedRowsChangedArgs);
-      onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
-        "selectedRowIds": selectedRowIds,
-        "filteredIds": self.getAllSelectedFilteredIds(),
-      }), new Slick.EventData(), self);
+
+      if (shouldTriggerEvent !== false) {
+        onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
+          "selectedRowIds": selectedRowIds,
+          "filteredIds": self.getAllSelectedFilteredIds(),
+        }), new Slick.EventData(), self);
+      }
+
+      // should we also apply the row selection in to the grid (UI) as well?
+      if (applyGridRowSelection && _grid) {
+        _grid.setSelectedRows(selectedRows);
+      }
     }
 
     /**

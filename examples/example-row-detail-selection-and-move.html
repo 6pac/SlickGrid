@@ -95,6 +95,12 @@
         <button onclick="rowMovePlugin.setOptions({ singleRowMove: false, disableRowSelection: false })">
           Single Row Move OFF
         </button>
+        <button data-test="collapse-all" onclick="collapseAllRowDetails()" style="margin-top: 4px">
+          Collapse All Row Details
+        </button>
+        <button data-test="set-dynamic-rows" onclick="setSelectedRowIds()" style="margin-top: 4px">
+          Change Row Selections (Task 4, 5, 8, 10)
+        </button>
       </p>
       <p>
         The RowMoveManager Plugin can be configured with an "usabilityOverride" which will make the row moveable
@@ -195,6 +201,20 @@
         '<div class="detail"><label>Effort Driven:</label> <span>' + itemDetail.effortDriven + '</span></div>',
         '</div>'
       ].join('');
+    }
+
+    function collapseAllRowDetails() {
+      detailViewPlugin.collapseAll();
+    }
+
+    // change row selection dynamically and apply it to the DataView and the Grid UI
+    function setSelectedRowIds() {
+      // grid.scrollRowToTop();
+      dataView.setSelectedIds([4, 5, 8, 10], { 
+        isRowBeingAdded: true, 
+        shouldTriggerEvent: true, 
+        applyGridRowSelection: true 
+      });
     }
 
     // fill the template with a delay to simulate a server call
@@ -376,6 +396,10 @@
       dataView.setItems(data);
       dataView.endUpdate();
       dataView.syncGridSelection(grid, true);
+
+      dataView.onSelectedRowIdsChanged.subscribe(function (e, args) {
+        console.log('onSelectedRowIdsChanged', args)
+      });
     });
   </script>
 </body>
