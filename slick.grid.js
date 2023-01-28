@@ -157,7 +157,10 @@ if (typeof Slick === "undefined") {
     var vScrollDir = 1;
 
     // private
-    var u = Slick.Utils;
+    const u = Slick.Utils;
+    const show = u.show;
+    const hide = u.hide;
+
     var initialized = false;
     var _container;
     var uid = "slickgrid_" + Math.round(1000000 * Math.random());
@@ -522,19 +525,6 @@ if (typeof Slick === "undefined") {
       if (!options.explicitInitialization) {
         finishInitialization();
       }
-    }
-
-    function show(el, type)
-    {
-      if(type)
-        el.style.display = type;
-      else
-      el.style.display = "";
-    }
-
-    function hide(el)
-    {
-      el.style.display = "none";
     }
 
     function finishInitialization() {
@@ -3293,131 +3283,47 @@ if (typeof Slick === "undefined") {
       return _topPanel[0];
     }
 
-    function setTopPanelVisibility(visible, animate) {
+    function togglePanelVisibility(option, container, visible, animate) {
       var animated = (animate === false) ? false : true;
 
-      if (options.showTopPanel != visible) {
-        options.showTopPanel = visible;
+      if (options[option] != visible) {
+        options[option] = visible;
         if (visible) {
           if (animated) {
-            //topPanelScroller.slideDown("fast", resizeCanvas);
+              u.slideDown(container, resizeCanvas);
+              return;
           }
-          _topPanelScroller.forEach((scroller) => {
-            show(scroller);
-          })
+          show(container);
           resizeCanvas();
         } else {
           if (animated) {
-            //topPanelScroller.slideUp("fast", resizeCanvas);
+            u.slideUp(container, resizeCanvas);
+            return;
           }
-          _topPanelScroller.forEach((scroller) => {
-            hide(scroller);
-          })
+          hide(container);
           resizeCanvas();
         }
       }
+    }
+
+    function setTopPanelVisibility(visible, animate) {
+      togglePanelVisibility("showTopPanel", _topPanelScroller, visible, animate);
     }
 
     function setHeaderRowVisibility(visible, animate) {
-      var animated = (animate === false) ? false : true;
-
-      if (options.showHeaderRow != visible) {
-        options.showHeaderRow = visible;
-        if (visible) {
-          if (animated) {
-            //headerRowScroller.slideDown("fast", resizeCanvas);
-          }
-          _headerRowScroller.forEach((scroller) => {
-            show(scroller);
-          });
-          resizeCanvas();
-        } else {
-          if (animated) {
-            //headerRowScroller.slideUp("fast", resizeCanvas);
-          }
-          _headerRowScroller.forEach((scroller) => {
-            hide(scroller);
-          });
-          resizeCanvas();
-        }
-      }
+      togglePanelVisibility("showHeaderRow", _headerRowScroller, visible, animate);
     }
 
     function setColumnHeaderVisibility(visible, animate) {
-      if (options.showColumnHeader != visible) {
-        options.showColumnHeader = visible;
-        if (visible) {
-          if (animate) {
-            //headerScroller.slideDown("fast", resizeCanvas);
-          }
-          _headerScroller.forEach((el) => {
-            show(el);
-          });
-          resizeCanvas();
-        } else {
-          if (animate) {
-            //headerScroller.slideUp("fast", resizeCanvas);
-          }
-          _headerScroller.forEach((el) =>
-          {
-              hide(el);
-          });
-          resizeCanvas();
-        }
-      }
+      togglePanelVisibility("showColumnHeader", _headerScroller, visible, animate);
     }
 
     function setFooterRowVisibility(visible, animate) {
-      var animated = (animate === false) ? false : true;
-
-      if (options.showFooterRow != visible) {
-        options.showFooterRow = visible;
-        if (visible) {
-          if (animated) {
-            //footerRowScroller.slideDown("fast", resizeCanvas);
-          }
-
-          _footerRowScroller.forEach((scroller) => {
-            show(scroller);
-          });
-
-          resizeCanvas();
-        } else {
-          if (animated) {
-            //footerRowScroller.slideUp("fast", resizeCanvas);
-          }
-
-          _footerRowScroller.forEach((scroller) => {
-            hide(scroller);
-          });
-          resizeCanvas();
-        }
-      }
+      togglePanelVisibility("showFooterRow", _footerRowScroller, visible, animate);
     }
 
     function setPreHeaderPanelVisibility(visible, animate) {
-      var animated = (animate === false) ? false : true;
-
-      if (options.showPreHeaderPanel != visible) {
-        options.showPreHeaderPanel = visible;
-        if (visible) {
-          if (animated) {
-            console.warn("animate not supported");
-          }
-
-          show(_preHeaderPanelScroller);
-          show(_preHeaderPanelScrollerR);
-          resizeCanvas();
-        } else {
-          if (animated) {
-            console.warn("animate not supported");
-          }
-
-          hide(_preHeaderPanelScroller);
-          hide(_preHeaderPanelScrollerR);
-          resizeCanvas();
-        }
-      }
+      togglePanelVisibility("showPreHeaderPanel", [_preHeaderPanelScroller, _preHeaderPanelScrollerR], visible, animate);
     }
 
     function getContainerNode() {
@@ -3844,7 +3750,7 @@ if (typeof Slick === "undefined") {
       }
 
       if (options.autoHeight) {
-        var fullHeight = _paneHeaderL.offsetHeight;
+        const fullHeight = _paneHeaderL.offsetHeight;
         fullHeight += ( options.showHeaderRow ) ? options.headerRowHeight + getVBoxDelta(_headerRowScroller[0]) : 0;
         fullHeight += ( options.showFooterRow ) ? options.footerRowHeight + getVBoxDelta(_footerRowScroller[0]) : 0;
         fullHeight += (getCanvasWidth() > viewportW) ? scrollbarDimensions.height : 0;
@@ -3853,12 +3759,13 @@ if (typeof Slick === "undefined") {
           * getDataLengthIncludingAddNew()
           + ( ( options.frozenColumn == -1 ) ? fullHeight : 0 );
       } else {
-        var columnNamesH = ( options.showColumnHeader ) ? u.toFloat(u.height(_headerScroller[0])) + getVBoxDelta(_headerScroller[0]) : 0;
-        var preHeaderH = (options.createPreHeaderPanel && options.showPreHeaderPanel) ? options.preHeaderPanelHeight + getVBoxDelta(_preHeaderPanelScroller) : 0;
+        const columnNamesH = ( options.showColumnHeader ) ? u.toFloat(u.height(_headerScroller[0])) + getVBoxDelta(_headerScroller[0]) : 0;
+        const preHeaderH = (options.createPreHeaderPanel && options.showPreHeaderPanel) ? options.preHeaderPanelHeight + getVBoxDelta(_preHeaderPanelScroller) : 0;
 
-        viewportH = u.toFloat(_container.style.height)
-          - u.toFloat(_container.style.paddingTop)
-          - u.toFloat(_container.style.paddingBottom)
+        const style = getComputedStyle(_container);
+        viewportH = u.toFloat(style.height)
+          - u.toFloat(style.paddingTop)
+          - u.toFloat(style.paddingBottom)
           - columnNamesH
           - topPanelH
           - headerRowH
@@ -3909,7 +3816,8 @@ if (typeof Slick === "undefined") {
 
       if (options.autoHeight) {
         if (hasFrozenColumns()) {
-          u.height(_container, paneTopH + u.toFloat(_headerScrollerL.style.height));
+          const style = getComputedStyle(_headerScrollerL);
+          u.height(_container, paneTopH + u.toFloat(style.height));
         }
 
         _paneTopL.style.position = "relative";
@@ -4414,7 +4322,7 @@ if (typeof Slick === "undefined") {
     function updateRowPositions() {
       for (var row in rowsCache) {
         var rowNumber = row ? parseInt(row) : 0;
-        rowsCache[rowNumber].rowNode[0].style.top = getRowTop(rowNumber) + "px";
+        u.setStyleSize("top", getRowTop(rowNumber));
       }
     }
 

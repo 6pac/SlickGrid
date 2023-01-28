@@ -725,19 +725,16 @@
       top: box.top + window.pageYOffset - docElem.clientTop,
       left: box.left + window.pageXOffset - docElem.clientLeft
     };
- 
-	}
+ 	}
 
-  function width(el, value)
-  {
+  function width(el, value) {
     if (value === undefined) {
       return el.getBoundingClientRect().width;
     }
     setStyleSize(el, "width", value);
   }
 
-  function height(el, value)
-  {
+  function height(el, value) {
     if (value === undefined) {
       return el.getBoundingClientRect().height;
     }
@@ -779,8 +776,7 @@
     });
   }
   
-  function isHidden(el)
-  {
+  function isHidden(el) {
     return el.offsetWidth === 0 && el.offsetHeight === 0;
   }
 
@@ -856,17 +852,48 @@
     }
   }
   
-  function show(el, type)
-  {
-    if(type)
+  function show(el, type) {
+
+    type = type ? type : "";
+    if(Array.isArray(el)) {
+      el.forEach((e) => {
+        e.style.display = type;
+      })
+    }
+    else {
       el.style.display = type;
-    else
-    el.style.display = "";
+    }
   }
 
-  function hide(el)
-  {
-    el.style.display = "none";
+  function hide(el) {
+    if(Array.isArray(el)) {
+      el.forEach((e) => {
+        e.style.display = "none";
+      });
+    }
+    else {
+      el.style.display = "none";
+    }
+  }
+
+  function slideUp(el, callback) {
+    if(window.jQuery !== undefined) {
+      window.jQuery(el).slideUp("fast", callback);
+      return;
+    }
+
+    hide(el);
+    callback();
+  }
+
+  function slideDown(el, callback) {
+    if(window.jQuery !== undefined) {
+      window.jQuery(el).slideDown("fast", callback);
+      return;
+    }
+
+    show(el);
+    callback();
   }
 
   // jQuery's extend
@@ -974,6 +1001,8 @@
         "scrollTop": scrollTop,
         "show": show,
         "hide": hide,
+        "slideUp": slideUp,
+        "slideDown": slideDown,
         "storage": {
           // https://stackoverflow.com/questions/29222027/vanilla-alternative-to-jquery-data-function-any-native-javascript-alternati
           _storage: new WeakMap(),
