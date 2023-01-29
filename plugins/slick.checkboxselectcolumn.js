@@ -287,7 +287,7 @@
               ids.push(dataviewRowItem[_dataView.getIdPropertyName()]);
             }
           }
-          _dataView.setSelectedIds(ids, isAllSelected);
+          _dataView.setSelectedIds(ids, { isRowBeingAdded: isAllSelected });
         }
         _grid.setSelectedRows(rows, caller);
         e.stopPropagation();
