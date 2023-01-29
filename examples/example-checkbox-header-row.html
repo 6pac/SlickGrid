@@ -89,6 +89,12 @@
       <p>
         <button data-test="clear-filters" onclick="clearFilters()">Clear Filters</button>
       </p>
+      <p>
+        Change Pagination to 25 and apply row selection across multiple pages <br/>
+        <button data-test="set-dynamic-rows" onclick="setSelectedRowIds()" style="margin-top: 4px">
+          Change Row Selections (row index 3, 5 and 21)
+        </button>
+      </p>
     </ul>
     <h2>View Source:</h2>
     <ul>
@@ -190,6 +196,19 @@
     }
     return true;
   }
+
+  // change row selection dynamically and apply it to the DataView and the Grid UI
+  function setSelectedRowIds() {
+      // change row selection even across multiple pages via DataView
+      dataView.setSelectedIds([11, 13, 37]); // don't forget we have an id offset of +8
+      
+      // you can also provide optional options (all defaults to true)
+      // dataView.setSelectedIds([4, 5, 8, 10], { 
+      //   isRowBeingAdded: true, 
+      //   shouldTriggerEvent: true, 
+      //   applyGridRowSelection: true 
+      // });
+    }
 
   function toggleHideSelectAllCheckbox() {
     isSelectAllCheckboxHidden = !isSelectAllCheckboxHidden;

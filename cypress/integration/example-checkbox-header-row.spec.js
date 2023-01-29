@@ -100,7 +100,7 @@ describe('Example - Checkbox Header Row', () => {
     });
   });
 
-  it('Should display "Showing page 1 of 6" text after changing Pagination to 25 items per page', () => {
+  it('should display "Showing page 1 of 6" text after changing Pagination to 25 items per page', () => {
     cy.get('.ui-icon-lightbulb')
       .click();
 
@@ -115,8 +115,29 @@ describe('Example - Checkbox Header Row', () => {
       .contains('Showing page 1 of 6');
   });
 
+  it('should change row selection across multiple pages, first page should have 2 selected', () => {
+    cy.get('[data-test="set-dynamic-rows"]').click();
+
+    // Row index 3, 5 and 21 (last one will be on 2nd page)
+    cy.get('input[type="checkbox"]:checked').should('have.length', 2); // 2x in current page and 1x in next page
+    cy.get('[style="top:75px"] > .slick-cell:nth(0) input[type="checkbox"]').should('be.checked');
+    cy.get('[style="top:125px"] > .slick-cell:nth(0) input[type="checkbox"]').should('be.checked');
+  });
+
+  it('should go to next page and expect 1 row selected in that second page', () => {
+    cy.get('.ui-icon-seek-next')
+      .click();
+
+    cy.get('input[type="checkbox"]:checked').should('have.length', 1); // only 1x row in page 2
+    cy.get('[style="top:100px"] > .slick-cell:nth(0) input[type="checkbox"]').should('be.checked');
+  });
+
   it('should click on "Select All" checkbox and expect all rows selected in current page', () => {
     const expectedRows = '1,3,5,7,9,11,13,15,17,19,21,23';
+
+    // go back to 1st page
+    cy.get('.ui-icon-seek-prev')
+      .click();
 
     cy.get('#filter-checkbox-selectall-container input[type=checkbox]')
       .click({ force: true });
@@ -125,8 +146,8 @@ describe('Example - Checkbox Header Row', () => {
       .contains(expectedRows);
 
     cy.window().then((win) => {
-      expect(win.console.log).to.have.callCount(2);
-      expect(win.console.log).to.be.calledWith('Previously Selected Rows: ');
+      expect(win.console.log).to.have.callCount(4);
+      expect(win.console.log).to.be.calledWith('Previously Selected Rows: 3,5'); // from previous test
       expect(win.console.log).to.be.calledWith(`Selected Rows: ${expectedRows}`);
     });
   });

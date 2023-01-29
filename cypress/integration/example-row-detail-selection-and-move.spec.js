@@ -167,21 +167,4 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
         cy.get('input[id="assignee_3"]')
             .should('exist');
     });
-
-    it('should collapse all rows', () => {
-        cy.get('[data-test="collapse-all"]').click();
-    })
-
-    it('should change row selection dynamically and expect them to show up in the grid', () => {
-        cy.get('[data-test="set-dynamic-rows"]').click();
-
-        cy.get('#selectedTitles').should('have.text', 'Task 4,Task 5,Task 8,Task 10');
-
-        // Task 4,5,8,10 should be selected
-        cy.get('input[type="checkbox"]:checked').should('have.length', 4);
-        cy.get('[style="top:50px"] > .slick-cell:nth(2) input[type="checkbox"]').should('be.checked')
-        cy.get('[style="top:75px"] > .slick-cell:nth(2) input[type="checkbox"]').should('be.checked')
-        cy.get('[style="top:150px"] > .slick-cell:nth(2) input[type="checkbox"]').should('be.checked')
-        cy.get('[style="top:250px"] > .slick-cell:nth(2) input[type="checkbox"]').should('be.checked')
-    })
 });
