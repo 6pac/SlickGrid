@@ -210,11 +210,14 @@
     // change row selection dynamically and apply it to the DataView and the Grid UI
     function setSelectedRowIds() {
       // grid.scrollRowToTop();
-      dataView.setSelectedIds([4, 5, 8, 10], { 
-        isRowBeingAdded: true, 
-        shouldTriggerEvent: true, 
-        applyGridRowSelection: true 
-      });
+      dataView.setSelectedIds([4, 5, 8, 10]);
+      
+      // you can also provide optional options (all defaults to true)
+      // dataView.setSelectedIds([4, 5, 8, 10], { 
+      //   isRowBeingAdded: true, 
+      //   shouldTriggerEvent: true, 
+      //   applyGridRowSelection: true 
+      // });
     }
 
     // fill the template with a delay to simulate a server call
