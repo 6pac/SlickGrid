@@ -1493,7 +1493,7 @@ if (typeof Slick === "undefined") {
               };
             }
 
-            if (trigger(self.onBeforeSort, onSortArgs, e) !== false) {
+            if (trigger(self.onBeforeSort, onSortArgs, e).getReturnValue() !== false) {
               setSortColumns(sortColumns);
               trigger(self.onSort, onSortArgs, e);
             }
@@ -1681,7 +1681,7 @@ if (typeof Slick === "undefined") {
 
     function handleResizeableHandleDoubleClick(evt) {
       const triggeredByColumn = evt.target.parentElement.id.replace(uid, "");
-      trigger(self.onColumnsResizeDblClick, { triggeredByColumn: triggeredByColumn });
+      trigger(self.onColumnsResizeDblClick, { triggeredByColumn: triggeredByColumn.getReturnValue() });
     }
 
     function setupColumnResize() {
@@ -1966,7 +1966,7 @@ if (typeof Slick === "undefined") {
               resizeElms.resizeableElement.classList.remove("slick-header-column-active");
 
               var triggeredByColumn = resizeElms.resizeableElement.id.replace(uid, "");
-              if (trigger(self.onBeforeColumnsResize, { triggeredByColumn: triggeredByColumn }) === true) {
+              if (trigger(self.onBeforeColumnsResize, { triggeredByColumn: triggeredByColumn }).getReturnValue() === true) {
                 applyColumnHeaderWidths();
                 applyColumnGroupHeaderWidths();
               }
@@ -2909,7 +2909,7 @@ if (typeof Slick === "undefined") {
     //////////////////////////////////////////////////////////////////////////////////////////////
 
     function trigger(evt, args, e) {
-      e = new Slick.EventData(e);
+      e = new Slick.EventData(e, args);
       args = args || {};
       args.grid = self;
       return evt.notify(args, e, self);
@@ -3523,7 +3523,8 @@ if (typeof Slick === "undefined") {
       }
 
       // get addl css class names from object type formatter return and from string type return of onBeforeAppendCell
-      var addlCssClasses = trigger(self.onBeforeAppendCell, { row: row, cell: cell, value: value, dataContext: item }) || '';
+      const evt = trigger(self.onBeforeAppendCell, { row: row, cell: cell, value: value, dataContext: item });
+      var addlCssClasses = evt.getReturnValue() || '';
       addlCssClasses += (formatterResult && formatterResult.addClasses ? (addlCssClasses ? ' ' : '') + formatterResult.addClasses : '');
       var toolTip = formatterResult && formatterResult.toolTip ? "title='" + formatterResult.toolTip + "'" : '';
 
@@ -4723,8 +4724,8 @@ if (typeof Slick === "undefined") {
       }
 
       var retval = trigger(self.onDragInit, dd, e);
-      if (e.defaultPrevented) {
-        return retval;
+      if (retval.isImmediatePropagationStopped()) {
+        return retval.getReturnValue();
       }
 
       // if nobody claims to be handling drag'n'drop by stopping immediate propagation,
@@ -4739,15 +4740,15 @@ if (typeof Slick === "undefined") {
       }
 
       var retval = trigger(self.onDragStart, dd, e);
-      if (e.defaultPrevented) {
-        return retval;
+      if (retval.isImmediatePropagationStopped()) {
+        return retval.getReturnValue();
       }
 
       return false;
     }
 
     function handleDrag(e, dd) {
-      return trigger(self.onDrag, dd, e);
+      return trigger(self.onDrag, dd, e).getReturnValue();
     }
 
     function handleDragEnd(e, dd) {
@@ -4755,8 +4756,8 @@ if (typeof Slick === "undefined") {
     }
 
     function handleKeyDown(e) {
-      trigger(self.onKeyDown, {row: activeRow, cell: activeCell}, e);
-      var handled = e.defaultPrevented;
+      const retval = trigger(self.onKeyDown, {row: activeRow, cell: activeCell}, e);
+      var handled = retval.isImmediatePropagationStopped();
       var keyCode = Slick.keyCode;
 
       if (!handled) {
@@ -5210,7 +5211,9 @@ if (typeof Slick === "undefined") {
 
       // this optimisation causes trouble - MLeibman #329
       //if (activeCellChanged) {
-      if (!suppressActiveCellChangedEvent) { trigger(self.onActiveCellChanged, getActiveCell()); }
+      if (!suppressActiveCellChangedEvent) { 
+        trigger(self.onActiveCellChanged, getActiveCell()); 
+      }
       //}
     }
 
@@ -5296,7 +5299,7 @@ if (typeof Slick === "undefined") {
       var columnDef = columns[activeCell];
       var item = getDataItem(activeRow);
 
-      if (trigger(self.onBeforeEditCell, {row: activeRow, cell: activeCell, item: item, column: columnDef, target: 'grid' }) === false) {
+      if (trigger(self.onBeforeEditCell, {row: activeRow, cell: activeCell, item: item, column: columnDef, target: 'grid' }).getReturnValue() === false) {
         setFocus();
         return;
       }

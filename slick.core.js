@@ -11,12 +11,15 @@
    * @class EventData
    * @constructor
    */
-  function EventData(event) {
+  function EventData(event, args) {
 
     var nativeEvent = event;
+    var arguments_ = args;
     var isPropagationStopped = false;
     var isImmediatePropagationStopped = false;
     var isDefaultPrevented = false;
+    var returnValues = [];
+    var returnValue = undefined;
 
     this.target = nativeEvent ? nativeEvent.target : undefined;
 
@@ -26,7 +29,8 @@
      */
     this.stopPropagation = function () {
       isPropagationStopped = true;
-      this.preventDefault();
+      if(nativeEvent)
+        nativeEvent.stopPropagation();
     };
 
     /***
@@ -35,7 +39,7 @@
      * @return {Boolean}
      */
     this.isPropagationStopped = function () {
-      return isPropagationStopped || isDefaultPrevented;
+      return isPropagationStopped;
     };
 
     /***
@@ -44,7 +48,8 @@
      */
     this.stopImmediatePropagation = function () {
       isImmediatePropagationStopped = true;
-      this.preventDefault();
+      if(nativeEvent)
+        nativeEvent.stopImmediatePropagation();
     };
 
     /***
@@ -64,6 +69,26 @@
       if(nativeEvent)
         nativeEvent.preventDefault();
       isDefaultPrevented = true;
+    }
+
+    this.isDefaultPrevented = function() {
+      if(nativeEvent)
+        return nativeEvent.defaultPrevented;
+      return isDefaultPrevented;
+    }
+
+    this.addReturnValue = function(value) {
+      returnValues.push(value);
+      if(returnValue === undefined && value !== undefined)
+        returnValue = value;
+    }
+
+    this.getReturnValue = function() {
+      return returnValue;
+    }
+
+    this.getArguments = function() {
+      return arguments_;
     }
   }
 
@@ -115,15 +140,15 @@
     this.notify = function (args, e, scope) {
 
       if(!(e instanceof EventData))
-        e = new EventData(e);
+        e = new EventData(e, args);
       scope = scope || this;
 
-      var returnValue;
       for (var i = 0; i < handlers.length && !(e.isPropagationStopped() || e.isImmediatePropagationStopped()); i++) {
-        returnValue = handlers[i].call(scope, e, args);
+        const returnValue = handlers[i].call(scope, e, args);
+        e.addReturnValue(returnValue);
       }
 
-      return returnValue;
+      return e;
     };
   }
 

@@ -213,7 +213,7 @@
         "column": columnDef,
         "menu": menu
       };
-      if (_self.onBeforeMenuShow.notify(callbackArgs, e, _self) == false) {
+      if (_self.onBeforeMenuShow.notify(callbackArgs, e, _self).getReturnValue() == false) {
         return;
       }
 
@@ -316,7 +316,7 @@
       $activeHeaderColumn
         .addClass("slick-header-column-active");
 
-      if (_self.onAfterMenuShow.notify(callbackArgs, e, _self) == false) {
+      if (_self.onAfterMenuShow.notify(callbackArgs, e, _self).getReturnValue() == false) {
         return;
       }
 

@@ -229,7 +229,7 @@
         "cell": _currentCell,
         "row": _currentRow,
         "grid": _grid
-      }, e, _self) == false) {
+      }, e, _self).getReturnValue() == false) {
         return;
       }
 
@@ -282,7 +282,7 @@
         "cell": _currentCell,
         "row": _currentRow,
         "grid": _grid
-      }, e, _self) == false) {
+      }, e, _self).getReturnValue() == false) {
         return;
       }
 
@@ -304,7 +304,7 @@
           "row": args && args.row,
           "grid": _grid,
           "menu": $menu
-        }, e, _self) == false) {
+        }, e, _self).getReturnValue() == false) {
           return;
         }
         if ($menu && $menu.remove) {
