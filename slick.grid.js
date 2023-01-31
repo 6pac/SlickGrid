@@ -1074,7 +1074,8 @@ if (typeof Slick === "undefined") {
         });
 
         header.setAttribute("title", toolTip || "");
-        header.children[0].innerHTML = title;
+        if(title !== undefined)
+          header.children[0].innerHTML = title;
             
         trigger(self.onHeaderCellRendered, {
           "node": header,
