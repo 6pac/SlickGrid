@@ -766,27 +766,12 @@
     setStyleSize(el, "height", value);
   }
 
-  function setWidth(el, value) {
-    setStyleSize(el, "width", value);
-  }
-  
-  function setHeight(el, value) {
-    setStyleSize(el, "height", value);
-  }
-
   function setStyleSize(el, style, val) {
     if (typeof val === 'function') val = val();
     if (typeof val === 'string') el.style[style] = val;
     else el.style[style] = val + 'px';
   }
 
-  function position(el) {
-    return { 
-      top: el.offsetTop, 
-      left: el.offsetLeft, 
-    };
-  }
-  
   function contains(parent, child) {
     if(!parent || !child)
       return false;
@@ -849,32 +834,6 @@
     return x;
   }
 
-  function scrollLeft(el, value) {
-    el = getElement(el);
-
-    if (value === undefined) {
-      return el.pageXOffset;
-    } else {
-      if (el === window || el.nodeType === 9) {
-        el.scrollTo(value, el.pageYOffset);
-      } else {
-        el.pageXOffset = value;
-      }
-    }
-  }
-
-  function scrollTop(el, value) {
-    if (value === undefined) {
-      return el.pageYOffset;
-    } else {
-      if (el === window || el.nodeType === 9) {
-        el.scrollTo(el.pageXOffset, value);
-      } else {
-        el.pageYOffset = value;
-      }
-    }
-  }
-  
   function show(el, type) {
 
     type = type ? type : "";
@@ -1011,17 +970,12 @@
         "grep": grep,
         "offset": offset,
         "height": height,
-        "setHeight": setHeight,
         "width": width,
-        "setWidth": setWidth,
         "setStyleSize": setStyleSize,
         "contains": contains,
         "template": template,
         "toFloat": toFloat,
-        "position": position,
         "parents": parents,
-        "scrollLeft": scrollLeft,
-        "scrollTop": scrollTop,
         "show": show,
         "hide": hide,
         "slideUp": slideUp,

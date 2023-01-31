@@ -3827,7 +3827,7 @@ if (typeof Slick === "undefined") {
       u.setStyleSize(_paneTopL, "top", u.height(_paneHeaderL) || (options.showHeaderRow ? options.headerRowHeight : 0) + (options.showPreHeaderPanel ? options.preHeaderPanelHeight : 0));
       u.height(_paneTopL, paneTopH);
 
-      var paneBottomTop = u.position(_paneTopL).top + paneTopH;
+      var paneBottomTop = _paneTopL.offsetTop + paneTopH;
 
       if (!options.autoHeight) {
         u.height(_viewportTopL, viewportTopH);
@@ -5065,7 +5065,7 @@ if (typeof Slick === "undefined") {
           rowOffset = ( options.frozenBottom ) ? u.height(_canvasTopL) : frozenRowsHeight;
         }
 
-        row = getCellFromPoint(targetEvent.clientX - c.left, targetEvent.clientY - c.top + rowOffset + u.scrollTop(document)).row;
+        row = getCellFromPoint(targetEvent.clientX - c.left, targetEvent.clientY - c.top + rowOffset + document.scrollTop).row;
       }
 
       cell = getCellFromNode(celll);
@@ -5137,11 +5137,11 @@ if (typeof Slick === "undefined") {
       var scrollRight = scrollLeft + u.width(_viewportScrollContainerX) - (viewportHasVScroll ? scrollbarDimensions.width : 0);
 
       if (left < scrollLeft) {
-        u.scrollLeft(_viewportScrollContainerX, left);
+        _viewportScrollContainerX.scrollLeft = left;
         handleScroll();
         render();
       } else if (right > scrollRight) {
-        u.scrollLeft(_viewportScrollContainerX, Math.min(left, right - _viewportScrollContainerX.clientWidth));
+        _viewportScrollContainerX.scrollLeft = Math.min(left, right - _viewportScrollContainerX.clientWidth);
         handleScroll();
         render();
       }
