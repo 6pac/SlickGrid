@@ -726,18 +726,20 @@ if (typeof Slick === "undefined") {
       return _getContainerElement(getCanvases(), columnIdOrIdx, rowIndex);
     }
 
-    function getActiveCanvasNode(element) {
+    function getActiveCanvasNode(e) {
+
+      if(e === undefined)
+        return _activeCanvasNode;
+
+      if (e instanceof Slick.EventData)
+        e = e.getNativeEvent();
+
+      _activeCanvasNode = e.target.closest('.grid-canvas');
       return _activeCanvasNode;
     }
 
     function getCanvases() {
       return _canvas;
-    }
-
-    function setActiveCanvasNode(element) {
-      if (element) {
-        _activeCanvasNode = element.closest('.grid-canvas');
-      }
     }
 
     function getViewportNode(columnIdOrIdx, rowIndex) {
@@ -748,14 +750,16 @@ if (typeof Slick === "undefined") {
       return _viewport;
     }
 
-    function getActiveViewportNode(element) {
-      return _activeViewportNode;
-    }
+    function getActiveViewportNode(e) {
 
-    function setActiveViewportNode(element) {
-      if (element) {
-        _activeViewportNode = element.target.closest('.slick-viewport');
-      }
+      if(e === undefined)
+        return _activeViewportNode;
+
+      if (e instanceof Slick.EventData)
+        e = e.getNativeEvent();
+
+      _activeViewportNode = e.target.closest('.slick-viewport');
+      return _activeViewportNode;
     }
 
     function _getContainerElement(targetContainers, columnIdOrIdx, rowIndex) {
@@ -3065,6 +3069,7 @@ if (typeof Slick === "undefined") {
     }
 
     function handleSelectedRangesChanged(e, ranges) {
+      const ne = e.getNativeEvent();
       var previousSelectedRows = selectedRows.slice(0); // shallow copy previously selected rows for later comparison
       selectedRows = [];
       var hash = {};
@@ -3085,7 +3090,7 @@ if (typeof Slick === "undefined") {
       setCellCssStyles(options.selectedCellCssClass, hash);
 
       if (simpleArrayEquals(previousSelectedRows, selectedRows)) {
-        var caller = e && e.detail && e.detail.caller || 'click';
+        var caller = ne && ne.detail && ne.detail.caller || 'click';
         var newSelectedAdditions = getSelectedRows().filter(function(i) { return previousSelectedRows.indexOf(i) < 0 });
         var newSelectedDeletions = previousSelectedRows.filter(function(i) { return getSelectedRows().indexOf(i) < 0 });
 
@@ -4041,9 +4046,10 @@ if (typeof Slick === "undefined") {
           if(rowNode.length > 1)
             children = children.concat(Array.from(rowNode[1].children))
 
+          let i = children.length - 1;
           while (cacheEntry.cellRenderQueue.length) {
             const columnIdx = cacheEntry.cellRenderQueue.pop();
-            cacheEntry.cellNodesByColumnIdx[columnIdx] = children[columnIdx];
+            cacheEntry.cellNodesByColumnIdx[columnIdx] = children[i--];
           }
         }
       }
@@ -4840,7 +4846,14 @@ if (typeof Slick === "undefined") {
       }
     }
 
-    function handleClick(e) {
+    function handleClick(evt) {
+
+      let e = evt;
+      if(e instanceof Slick.EventData)
+        e = evt.getNativeEvent();
+      else 
+        evt = undefined;
+
       if (!currentEditor) {
         // if this click resulted in some cell child node getting focus,
         // don't steal it back - keyboard events will still bubble up
@@ -4857,8 +4870,8 @@ if (typeof Slick === "undefined") {
         return;
       }
 
-      trigger(self.onClick, {row: cell.row, cell: cell.cell}, e);
-      if (e.defaultPrevented) {
+      evt = trigger(self.onClick, {row: cell.row, cell: cell.cell}, evt || e);
+      if (evt.isImmediatePropagationStopped()) {
         return;
       }
 
@@ -5065,7 +5078,7 @@ if (typeof Slick === "undefined") {
           rowOffset = ( options.frozenBottom ) ? u.height(_canvasTopL) : frozenRowsHeight;
         }
 
-        row = getCellFromPoint(targetEvent.clientX - c.left, targetEvent.clientY - c.top + rowOffset + document.scrollTop).row;
+        row = getCellFromPoint(targetEvent.clientX - c.left, targetEvent.clientY - c.top + rowOffset + document.documentElement.scrollTop).row;
       }
 
       cell = getCellFromNode(celll);
@@ -6287,11 +6300,9 @@ if (typeof Slick === "undefined") {
       "getCanvasWidth": getCanvasWidth,
       "getCanvases": getCanvases,
       "getActiveCanvasNode": getActiveCanvasNode,
-      "setActiveCanvasNode": setActiveCanvasNode,
       "getViewportNode": getViewportNode,
       "getViewports": getViewports,
       "getActiveViewportNode": getActiveViewportNode,
-      "setActiveViewportNode": setActiveViewportNode,
       "focus": setFocus,
       "scrollTo": scrollTo,
       "cacheCssForHiddenInit": cacheCssForHiddenInit,
