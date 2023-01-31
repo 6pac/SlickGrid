@@ -598,8 +598,8 @@ if (typeof Slick === "undefined") {
 
         if (options.showHeaderRow) {
           _headerRows.forEach((row) => {
-            row.addEventListener("mousseover", handleHeaderRowMouseOver);
-            row.addEventListener("mouseout", handleHeaderRowMouseOut);
+            //row.addEventListener("mouseover", handleHeaderRowMouseOver);
+            //row.addEventListener("mouseout", handleHeaderRowMouseOut);
           });
         }
 
@@ -1232,11 +1232,11 @@ if (typeof Slick === "undefined") {
       applyColumnGroupHeaderWidths();
     }
 
-    function onColumnHeaderMouseOver(e) {
+    function handleHeaderMouseHoverOn(e) {
       e.target.classList.add("ui-state-hover");
     }
 
-    function onColumnHeaderMouseOut(e) {
+    function handleHeaderMouseHoverOff(e) {
       e.target.classList.remove("ui-state-hover");
     }
 
@@ -1266,7 +1266,7 @@ if (typeof Slick === "undefined") {
 
       _headerRows.forEach((row) => {
         const columns = row.querySelectorAll(".slick-headerrow-column");
-        columns.forEach((column) => {
+        [].forEach.call(columns, (column) => {
           const columnDef = u.storage.get(column, "column");
           if (columnDef) {
             trigger(self.onBeforeHeaderRowCellDestroy, {
@@ -1324,21 +1324,21 @@ if (typeof Slick === "undefined") {
         header.setAttribute("title", m.toolTip || "");
         header.setAttribute("data-id", m.id);
 
-        let className = m.headerCssClass || null;
+        let classname = m.headerCssClass || null;
         if(classname)
-          header.classList.add(className);
+          header.classList.add(classname);
         classname = hasFrozenColumns() && i <= options.frozenColumn ? 'frozen' : null;
-        if(className)
-          header.classList.add(className);
+        if(classname)
+          header.classList.add(classname);
 
-        header.addEventListener("mouseover", handleHeaderMouseOver);
-        header.addEventListener("mouseout", handleHeaderMouseOut);
+        header.addEventListener("mouseenter", handleHeaderMouseEnter);
+        header.addEventListener("mouseleave", handleHeaderMouseLeave);
 
         u.storage.put(header, "column", m);
 
         if (options.enableColumnReorder || m.sortable) {
-          header.addEventListener('mouseover', onColumnHeaderMouseOver);
-          header.addEventListener('mouseout', onColumnHeaderMouseOut);
+          header.addEventListener("mouseenter", handleHeaderMouseHoverOn);
+          header.addEventListener("mouseleave", handleHeaderMouseHoverOff);
         }
 
         if(m.hasOwnProperty('headerCellAttrs') && m.headerCellAttrs instanceof Object) {
@@ -1364,10 +1364,13 @@ if (typeof Slick === "undefined") {
         });
 
         if (options.showHeaderRow) {
-          var headerRowCell = u.template("<div class='ui-state-default slick-headerrow-column l" + i + " r" + i + "'></div>", headerRowTarget);
-          var classname = hasFrozenColumns() && i <= options.frozenColumn? 'frozen': null;
+          let headerRowCell = u.template("<div class='ui-state-default slick-headerrow-column l" + i + " r" + i + "'></div>", headerRowTarget);
+          let classname = hasFrozenColumns() && i <= options.frozenColumn? 'frozen' : null;
           if(classname)
             headerRowCell.classList.add(classname);
+
+          headerRowCell.addEventListener("mouseenter", handleHeaderRowMouseEnter);
+          headerRowCell.addEventListener("mouseleave", handleHeaderRowMouseLeave);
 
           u.storage.put(headerRowCell, "column", m);
 
@@ -2268,11 +2271,11 @@ if (typeof Slick === "undefined") {
 
       const headerColumns = _container.querySelectorAll(".slick-header-column");
       [].forEach.call(headerColumns, (column) => {
-        column.removeEventListener("mouseover", handleHeaderMouseOver);
-        column.removeEventListener("mouseout", handleHeaderMouseOut);
+        column.removeEventListener("mouseover", handleHeaderMouseEnter);
+        column.removeEventListener("mouseout", handleHeaderMouseLeave);
 
-        column.removeEventListener('mouseover', onColumnHeaderMouseOver);
-        column.removeEventListener('mouseout', onColumnHeaderMouseOut);
+        column.removeEventListener('mouseover', handleHeaderMouseHoverOn);
+        column.removeEventListener('mouseout', handleHeaderMouseHoverOff);
       });
 
       _container.replaceChildren();
@@ -4901,8 +4904,8 @@ if (typeof Slick === "undefined") {
       }
     }
 
-    function handleHeaderMouseOver(e) {
-      const c = u.storage.get(e.target, "column");
+    function handleHeaderMouseEnter(e) {
+      const c = u.storage.get(e.target.closest(".slick-header-column"), "column");
       if(!c)
         return;
       trigger(self.onHeaderMouseEnter, {
@@ -4911,8 +4914,8 @@ if (typeof Slick === "undefined") {
       }, e);
     }
 
-    function handleHeaderMouseOut(e) {
-      const c = u.storage.get(e.target, "column");
+    function handleHeaderMouseLeave(e) {
+      const c = u.storage.get(e.target.closest(".slick-header-column"), "column");
       if(!c)
         return;
       trigger(self.onHeaderMouseLeave, {
@@ -4921,8 +4924,8 @@ if (typeof Slick === "undefined") {
       }, e);
     }
 
-    function handleHeaderRowMouseOver(e) {
-      const c = u.storage.get(e.target, "column");
+    function handleHeaderRowMouseEnter(e) {
+      const c = u.storage.get(e.target.closest(".slick-headerrow-column"), "column");
       if(!c)
         return;
       trigger(self.onHeaderRowMouseEnter, {
@@ -4931,8 +4934,8 @@ if (typeof Slick === "undefined") {
       }, e);
     }
 
-    function handleHeaderRowMouseOut(e) {
-      const c = u.storage.get(e.target, "column");
+    function handleHeaderRowMouseLeave(e) {
+      const c = u.storage.get(e.target.closest(".slick-headerrow-column"), "column");
       if(!c)
         return;
       trigger(self.onHeaderRowMouseLeave, {
