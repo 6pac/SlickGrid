@@ -1322,6 +1322,7 @@ if (typeof Slick === "undefined") {
         const m = columns[i];
         const headerTarget = hasFrozenColumns() ? ((i <= options.frozenColumn) ? _headerL : _headerR) : _headerL;
         const headerRowTarget = hasFrozenColumns() ? ((i <= options.frozenColumn) ? _headerRowL : _headerRowR) : _headerRowL;
+        const footerRowTarget = hasFrozenColumns() ? ((i <= options.frozenColumn) ? _footerRow[0] : _footerRow[1]) : _footerRow[0];
 
         const header = u.template("<div class='ui-state-default slick-header-column' />", headerTarget);
 
@@ -1388,7 +1389,7 @@ if (typeof Slick === "undefined") {
           });
         }
         if (options.createFooterRow && options.showFooterRow) {
-          var footerRowCell = u.template("<div class='ui-state-default slick-footerrow-column l" + i   + " r" + i + "'></div>", _footerRow);
+          var footerRowCell = u.template("<div class='ui-state-default slick-footerrow-column l" + i   + " r" + i + "'></div>", footerRowTarget);
           u.storage.put(footerRowCell, "column", m)
 
           trigger(self.onFooterRowCellRendered, {
@@ -3029,8 +3030,13 @@ if (typeof Slick === "undefined") {
       
       const numberCols = options.numberedMultiColumnSort && sortColumns.length > 1;
       _headers.forEach((header) => {
-        header.classList.remove("slick-header-column-sorted");
-        let indicators = header.querySelectorAll(".slick-sort-indicator");
+
+        let indicators = header.querySelectorAll(".slick-header-column-sorted");
+        indicators.forEach((indicator) => {
+          indicator.classList.remove("slick-header-column-sorted");
+        });
+
+        indicators = header.querySelectorAll(".slick-sort-indicator");
         indicators.forEach((indicator) => {
           indicator.classList.remove("slick-sort-indicator-asc");
           indicator.classList.remove("slick-sort-indicator-desc");
@@ -3756,7 +3762,7 @@ if (typeof Slick === "undefined") {
       }
 
       if (options.autoHeight) {
-        const fullHeight = _paneHeaderL.offsetHeight;
+        let fullHeight = _paneHeaderL.offsetHeight;
         fullHeight += ( options.showHeaderRow ) ? options.headerRowHeight + getVBoxDelta(_headerRowScroller[0]) : 0;
         fullHeight += ( options.showFooterRow ) ? options.footerRowHeight + getVBoxDelta(_footerRowScroller[0]) : 0;
         fullHeight += (getCanvasWidth() > viewportW) ? scrollbarDimensions.height : 0;
