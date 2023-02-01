@@ -12,15 +12,6 @@
       "type": "shell",
       "command": "npm run cypress:ci",
       "problemMatcher": []
-    },
-    {
-			"label": "http-server: http://localhost:8080",
-			"type": "shell",
-			"command": "npm run serve",
-			"problemMatcher": [],
-			"runOptions": { 
-				"runOn": "folderOpen" 
-			}
-		}
+    }
   ]
 }
