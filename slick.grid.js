@@ -991,16 +991,18 @@ if (typeof Slick === "undefined") {
     }
 
     function getMaxSupportedCssHeight() {
-      var supportedHeight = 1000000;
+      let supportedHeight = 1000000;
       // FF reports the height back but still renders blank after ~6M px
       //var testUpTo = navigator.userAgent.toLowerCase().match(/firefox/) ? 6000000 : 1000000000;
-      var testUpTo = navigator.userAgent.toLowerCase().match(/firefox/) ? options.ffMaxSupportedCssHeight : options.maxSupportedCssHeight;    
-      var div = u.template("<div style='display:none' />", document.body);
+      const testUpTo = navigator.userAgent.toLowerCase().match(/firefox/) ? options.ffMaxSupportedCssHeight : options.maxSupportedCssHeight;    
+      const div = u.template("<div style='display:hidden' />", document.body);
 
       while (true) {
-        var test = supportedHeight * 2;
+        const test = supportedHeight * 2;
         u.height(div, test);
-        if (test > testUpTo || u.height(div) !== test) {
+        const height = u.height(div);
+
+        if (test > testUpTo || height !== test) {
           break;
         } else {
           supportedHeight = test;
@@ -3446,9 +3448,7 @@ if (typeof Slick === "undefined") {
 
       var frozenRowOffset = getFrozenRowOffset(row);
 
-      var rowHtml = "<div class='ui-widget-content " + rowCss + "' style='top:"
-        + (getRowTop(row) - frozenRowOffset )
-        + "px'>";
+      var rowHtml = "<div class='ui-widget-content " + rowCss + "' style='top:" + (getRowTop(row) - frozenRowOffset) + "px'>";
 
       stringArrayL.push(rowHtml);
 
@@ -5037,18 +5037,36 @@ if (typeof Slick === "undefined") {
     }
 
     function getFrozenRowOffset(row) {
-      var offset =
-        ( hasFrozenRows )
-          ? ( options.frozenBottom )
-          ? ( row >= actualFrozenRow )
-          ? ( h < viewportTopH )
-          ? ( actualFrozenRow * options.rowHeight )
-          : h
-          : 0
-          : ( row >= actualFrozenRow )
-          ? frozenRowsHeight
-          : 0
-          : 0;
+      //var offset = ( hasFrozenRows ) ? ( options.frozenBottom ) ? ( row >= actualFrozenRow ) ? ( h < viewportTopH ) ? ( actualFrozenRow * options.rowHeight ) : h : 0 : ( row >= actualFrozenRow ) ? frozenRowsHeight : 0 : 0; // WTF?
+      let offset = 0;
+      if(hasFrozenRows)
+      {
+        if(options.frozenBottom)
+        {
+          if(row >= actualFrozenRow)
+          {
+              if(h < viewportTopH)
+                offset =  ( actualFrozenRow * options.rowHeight );
+              else
+                offset = h;
+          }
+          else
+          {
+            offset = 0;
+          }
+        }
+        else
+        {
+          if(row >= actualFrozenRow)
+            offset = frozenRowsHeight;
+          else
+            offset = 0;
+        }
+      }
+      else
+      {
+        offset = 0;
+      }
 
       return offset;
     }
