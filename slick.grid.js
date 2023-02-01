@@ -1322,7 +1322,6 @@ if (typeof Slick === "undefined") {
         const m = columns[i];
         const headerTarget = hasFrozenColumns() ? ((i <= options.frozenColumn) ? _headerL : _headerR) : _headerL;
         const headerRowTarget = hasFrozenColumns() ? ((i <= options.frozenColumn) ? _headerRowL : _headerRowR) : _headerRowL;
-        const footerRowTarget = hasFrozenColumns() ? ((i <= options.frozenColumn) ? _footerRow[0] : _footerRow[1]) : _footerRow[0];
 
         const header = u.template("<div class='ui-state-default slick-header-column' />", headerTarget);
 
@@ -1372,8 +1371,8 @@ if (typeof Slick === "undefined") {
         });
 
         if (options.showHeaderRow) {
-          let headerRowCell = u.template("<div class='ui-state-default slick-headerrow-column l" + i + " r" + i + "'></div>", headerRowTarget);
-          let classname = hasFrozenColumns() && i <= options.frozenColumn? 'frozen' : null;
+          const headerRowCell = u.template("<div class='ui-state-default slick-headerrow-column l" + i + " r" + i + "'></div>", headerRowTarget);
+          const classname = hasFrozenColumns() && i <= options.frozenColumn? 'frozen' : null;
           if(classname)
             headerRowCell.classList.add(classname);
 
@@ -1389,7 +1388,8 @@ if (typeof Slick === "undefined") {
           });
         }
         if (options.createFooterRow && options.showFooterRow) {
-          var footerRowCell = u.template("<div class='ui-state-default slick-footerrow-column l" + i   + " r" + i + "'></div>", footerRowTarget);
+          const footerRowTarget = hasFrozenColumns() ? ((i <= options.frozenColumn) ? _footerRow[0] : _footerRow[1]) : _footerRow[0];
+          const footerRowCell = u.template("<div class='ui-state-default slick-footerrow-column l" + i   + " r" + i + "'></div>", footerRowTarget);
           u.storage.put(footerRowCell, "column", m)
 
           trigger(self.onFooterRowCellRendered, {
