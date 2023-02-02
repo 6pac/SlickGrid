@@ -199,16 +199,16 @@
 
   // change row selection dynamically and apply it to the DataView and the Grid UI
   function setSelectedRowIds() {
-      // change row selection even across multiple pages via DataView
-      dataView.setSelectedIds([11, 13, 37]); // don't forget we have an id offset of +8
-      
-      // you can also provide optional options (all defaults to true)
-      // dataView.setSelectedIds([4, 5, 8, 10], { 
-      //   isRowBeingAdded: true, 
-      //   shouldTriggerEvent: true, 
-      //   applyGridRowSelection: true 
-      // });
-    }
+    // change row selection even across multiple pages via DataView
+    dataView.setSelectedIds([11, 13, 37]); // don't forget we have an id offset of +8
+    
+    // you can also provide optional options (all defaults to true)
+    // dataView.setSelectedIds([4, 5, 8, 10], { 
+    //   isRowBeingAdded: true,
+    //   shouldTriggerEvent: true,
+    //   applyGridRowSelection: true)
+    // });
+  }
 
   function toggleHideSelectAllCheckbox() {
     isSelectAllCheckboxHidden = !isSelectAllCheckboxHidden;
