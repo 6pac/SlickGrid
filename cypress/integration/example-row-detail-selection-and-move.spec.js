@@ -147,7 +147,7 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
         cy.get('[style="top:175px"] > .slick-cell:nth(4)').should('contain', 'Task 3');
         cy.get('[style="top:200px"] > .slick-cell:nth(4)').should('contain', 'Task 1');
 
-        // // Task 1 and 3 should be selected
+        // Task 1 and 3 should be selected
         cy.get('input[type="checkbox"]:checked').should('have.length', 2);
         cy.get('[style="top:175px"] > .slick-cell:nth(2) input[type="checkbox"]:checked').should('have.length', 1);
         cy.get('[style="top:200px"] > .slick-cell:nth(2) input[type="checkbox"]:checked').should('have.length', 1);

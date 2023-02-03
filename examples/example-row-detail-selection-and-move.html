@@ -376,6 +376,10 @@
       dataView.setItems(data);
       dataView.endUpdate();
       dataView.syncGridSelection(grid, true);
+
+      dataView.onSelectedRowIdsChanged.subscribe(function (e, args) {
+        console.log('onSelectedRowIdsChanged', args)
+      });
     });
   </script>
 </body>
