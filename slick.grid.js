@@ -1464,7 +1464,7 @@ if (typeof Slick === "undefined") {
               multiColumnSort: true,
               previousSortColumns: previousSortColumns,
               sortCols: $.map(sortColumns, function(col) {
-                return {columnId: columns[getColumnIndex(col.columnId)].id, sortCol: columns[getColumnIndex(col.columnId)], sortAsc: col.sortAsc };
+                return { columnId: columns[getColumnIndex(col.columnId)].id, sortCol: columns[getColumnIndex(col.columnId)], sortAsc: col.sortAsc };
               })
             };
           }

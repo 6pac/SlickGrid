@@ -4,8 +4,10 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
+  <link rel="stylesheet" href="../controls/slick.pager.css" type="text/css" />
   <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css"/>
   <link rel="stylesheet" href="examples.css" type="text/css"/>
+  <link rel="stylesheet" href="examples-unicode-icons.css" type="text/css"/>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" crossorigin="anonymous">
   <style>
     .slick-headerrow-column {
@@ -68,6 +70,7 @@
 <div style="position:relative">
   <div style="width:600px;">
     <div id="myGrid" style="width:100%;height:500px;"></div>
+    <div id="pager" style="width:100%;height:20px;"></div>
   </div>
 
   <div class="options-panel">
@@ -83,6 +86,15 @@
       <p>
         <button onclick="toggleWhichRowToShowSelectAll()">Toggle which row to show "Select All" checkbox</button>
       </p>
+      <p>
+        <button data-test="clear-filters" onclick="clearFilters()">Clear Filters</button>
+      </p>
+      <p>
+        Change Pagination to 25 and apply row selection across multiple pages <br/>
+        <button data-test="set-dynamic-rows" onclick="setSelectedRowIds()" style="margin-top: 4px">
+          Change Row Selections (row index 3, 5 and 21)
+        </button>
+      </p>
     </ul>
     <h2>View Source:</h2>
     <ul>
@@ -91,8 +103,13 @@
 
     <hr/>
 
-    <h3>Selected Rows:</h3>
+    <h3>Selected Rows (<span id="rowsCount">0</span>):</h3>
     <div id="selectedRows" style="overflow-x: auto;"></div>
+
+    <hr/>
+
+    <h3>Selected Ids (<span id="idsCount">0</span>) with index/id offset=<span id="idOffset"></span>:</h3>
+    <div id="selectedIds" style="overflow-x: auto;"></div>
   </div>
 </div>
 
@@ -103,6 +120,7 @@
 
 <script src="../plugins/slick.checkboxselectcolumn.js"></script>
 <script src="../plugins/slick.rowselectionmodel.js"></script>
+<script src="../controls/slick.pager.js"></script>
 <script src="../controls/slick.columnpicker.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -126,8 +144,13 @@
   var isSelectAllCheckboxHidden = false;
   var isSelectAllShownAsColumnTitle = false;
 
+  // add an offset so that the IDs are not equal to the row number, to fully validate that DataView selected IDs work as intended
+  var idOffset = 8;
+  $('#idOffset').text(idOffset);
+
   checkboxSelector = new Slick.CheckboxSelectColumn({
     cssClass: "slick-cell-checkboxsel",
+    applySelectOnAllPages: true, // defaults to false, when that is enabled the "Select All" will be applied to all pages
     hideInColumnTitleRow: !isSelectAllShownAsColumnTitle,
     hideInFilterHeaderRow: isSelectAllShownAsColumnTitle,
 
@@ -141,11 +164,25 @@
 
   for (var i = 0; i < 10; i++) {
     columns.push({
-      id: i,
+      id: i + idOffset,
       name: String.fromCharCode("A".charCodeAt(0) + i),
       field: i,
-      width: 60
+      width: 60,
+      sortable: true
     });
+  }
+
+  function comparer(a, b) {
+    var x = a[sortcol], y = b[sortcol];
+    return (x == y ? 0 : (x > y ? 1 : -1));
+  }
+
+  function clearFilters() {
+    $('.slick-headerrow-column').children().val('');
+    for (var columnId in columnFilters) {
+      columnFilters[columnId] = "";
+    }
+    dataView.refresh();
   }
 
   function filter(item) {
@@ -158,6 +195,19 @@
       }
     }
     return true;
+  }
+
+  // change row selection dynamically and apply it to the DataView and the Grid UI
+  function setSelectedRowIds() {
+    // change row selection even across multiple pages via DataView
+    dataView.setSelectedIds([11, 13, 37]); // don't forget we have an id offset of +8
+    
+    // you can also provide optional options (all defaults to true)
+    // dataView.setSelectedIds([4, 5, 8, 10], { 
+    //   isRowBeingAdded: true,
+    //   shouldTriggerEvent: true,
+    //   applyGridRowSelection: true)
+    // });
   }
 
   function toggleHideSelectAllCheckbox() {
@@ -174,9 +224,9 @@
   }
 
   $(function () {
-    for (var i = 0; i < 100; i++) {
+    for (var i = 0; i < 150; i++) {
       var d = (data[i] = {});
-      d["id"] = i;
+      d["id"] = i + idOffset;
       for (var j = 0; j < columns.length; j++) {
         d[j] = Math.round(Math.random() * 10);
       }
@@ -186,9 +236,10 @@
     grid = new Slick.Grid("#myGrid", dataView, columns, options);
     grid.setSelectionModel(new Slick.RowSelectionModel({selectActiveRow: false}));
     grid.registerPlugin(checkboxSelector);
+    dataView.syncGridSelection(grid, false, true);
 
+    var pager = new Slick.Controls.Pager(dataView, grid, $("#pager"));
     var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
-
 
     dataView.onRowCountChanged.subscribe(function (e, args) {
       grid.updateRowCount();
@@ -207,6 +258,14 @@
       console.log("Previously Selected Rows: " + previousSelectedRows.toString());
       console.log("Selected Rows: " + sortedSelectedRows.toString());
       $('#selectedRows').text(sortedSelectedRows.toString());
+      $('#rowsCount').text(sortedSelectedRows.length); 
+    });
+    
+    dataView.onSelectedRowIdsChanged.subscribe(function(e, args) {
+      var sortedSelectedIds = args.filteredIds.sort(function (a, b) { return a - b });
+      // console.log('sortedSelectedIds', args.selectedRowIds);
+      $('#selectedIds').text(sortedSelectedIds.toString());
+      $('#idsCount').text(sortedSelectedIds.length); 
     });
 
     $(grid.getHeaderRow()).on("change keyup", ":input", function (e) {
@@ -225,6 +284,15 @@
            .val(columnFilters[args.column.id])
            .appendTo(args.node);
       }
+    });
+
+    grid.onSort.subscribe(function (e, args) {
+      sortdir = args.sortAsc ? 1 : -1;
+      sortcol = args.sortCol.field;
+    
+      // using native sort with comparer
+      // preferred method but can be very slow in IE with huge datasets
+      dataView.sort(comparer, args.sortAsc);
     });
 
     grid.init();

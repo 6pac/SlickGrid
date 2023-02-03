@@ -36,7 +36,7 @@
     var compiledFilter;
     var compiledFilterWithCaching;
     var filterCache = [];
-    var _grid = null;
+    var _grid = null; // grid object will be defined only after using "syncGridSelection()" method"
 
     // grouping
     var groupingInfoDefaults = {
@@ -61,12 +61,14 @@
     var toggledGroupsByLevel = [];
     var groupingDelimiter = ':|:';
     var selectedRowIds = null;
+    var preSelectedRowIdsChangeFn;
 
     var pagesize = 0;
     var pagenum = 0;
     var totalRows = 0;
 
     // events
+    var onSelectedRowIdsChanged = new Slick.Event();
     var onSetItemsCalled = new Slick.Event();
     var onRowCountChanged = new Slick.Event();
     var onRowsChanged = new Slick.Event();
@@ -1265,28 +1267,34 @@
       _grid = grid;
       var inHandler;
       selectedRowIds = self.mapRowsToIds(grid.getSelectedRows());
-      var onSelectedRowIdsChanged = new Slick.Event();
 
+      /** @param {Array} rowIds */
       function setSelectedRowIds(rowIds) {
-        if (selectedRowIds.join(",") == rowIds.join(",")) {
-          return;
+        if (rowIds === false) {
+          selectedRowIds = [];
+        } else {
+          if (selectedRowIds.sort().join(",") !== rowIds.sort().join(",")) {
+            selectedRowIds = rowIds;
+          }
         }
-
-        selectedRowIds = rowIds;
-
-        onSelectedRowIdsChanged.notify({
-          "grid": grid,
-          "ids": selectedRowIds,
-          "dataView": self
-        }, new Slick.EventData(), self);
       }
 
       function update() {
-        if (selectedRowIds.length > 0) {
+        if (selectedRowIds.length > 0 && !inHandler) {
           inHandler = true;
           var selectedRows = self.mapIdsToRows(selectedRowIds);
           if (!preserveHidden) {
-            setSelectedRowIds(self.mapRowsToIds(selectedRows));
+            var selectedRowsChangedArgs = {
+              "grid": _grid,
+              "ids": self.mapRowsToIds(selectedRows),
+              "rows": selectedRows,
+              "dataView": self
+            };
+            preSelectedRowIdsChangeFn(selectedRowsChangedArgs);
+            onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
+              "selectedRowIds": selectedRowIds,
+              "filteredIds": self.getAllSelectedFilteredIds(),
+            }), new Slick.EventData(), self);
           }
           grid.setSelectedRows(selectedRows);
           inHandler = false;
@@ -1294,36 +1302,151 @@
       }
 
       grid.onSelectedRowsChanged.subscribe(function (e, args) {
-        if (inHandler) { return; }
-        var newSelectedRowIds = self.mapRowsToIds(grid.getSelectedRows());
-        if (!preserveHiddenOnSelectionChange || !grid.getOptions().multiSelect) {
-          setSelectedRowIds(newSelectedRowIds);
-        } else {
-          // keep the ones that are hidden
-          var existing = $.grep(selectedRowIds, function (id) { return self.getRowById(id) === undefined; });
-          // add the newly selected ones
-          setSelectedRowIds(existing.concat(newSelectedRowIds));
+        if (!inHandler) {
+          var newSelectedRowIds = self.mapRowsToIds(args.rows);
+          var selectedRowsChangedArgs = {
+            "grid": _grid,
+            "ids": newSelectedRowIds,
+            "rows": args.rows,
+            "added": true,
+            "dataView": self
+          };
+          preSelectedRowIdsChangeFn(selectedRowsChangedArgs);
+          onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
+            "selectedRowIds": selectedRowIds,
+            "filteredIds": self.getAllSelectedFilteredIds(),
+          }), new Slick.EventData(), self);
         }
       });
+
+      preSelectedRowIdsChangeFn = function (args) {
+        if (!inHandler) {
+          inHandler = true;
+          var overwrite = (typeof args.added === typeof undefined);
+
+          if (overwrite) {
+            setSelectedRowIds(args.ids);
+          } else {
+            var rowIds;
+            if (args.added) {
+              if (preserveHiddenOnSelectionChange && grid.getOptions().multiSelect) {
+                // find the ones that are hidden
+                var hiddenSelectedRowIds = $.grep(selectedRowIds, function (id) {
+                  return self.getRowById(id) === undefined;
+                });
+                // add the newly selected ones
+                rowIds = hiddenSelectedRowIds.concat(args.ids);
+              } else {
+                rowIds = args.ids;
+              }
+            } else {
+              if (preserveHiddenOnSelectionChange && grid.getOptions().multiSelect) {
+                // remove rows whose id is on the list
+                rowIds = $.grep(selectedRowIds, function (id) {
+                  return args.ids.indexOf(id) === -1;
+                });
+              } else {
+                rowIds = [];
+              }
+            }
+            setSelectedRowIds(rowIds);
+          }
+          inHandler = false;
+        }
+      };
 
       this.onRowsOrCountChanged.subscribe(update);
 
       return onSelectedRowIdsChanged;
     }
 
-    /** Get all selected IDs */
-    function getAllSelectedIds(){
+    /**
+     * Get all selected IDs
+     * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
+     */
+    function getAllSelectedIds() {
       return selectedRowIds;
     }
 
-    /** Get all selected dataContext items */
+    /**
+     * Get all selected filtered IDs (similar to "getAllSelectedIds" but only return filtered data)
+     * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
+     */
+    function getAllSelectedFilteredIds() {
+      return getAllSelectedFilteredItems().map(function (item) {
+        return item[idProperty];
+      });
+    }
+
+    /**
+     * Set current row selected IDs array (regardless of Pagination)
+     * NOTE: This will NOT change the selection in the grid, if you need to do that then you still need to call
+     * "grid.setSelectedRows(rows)"
+     * @param {Array} selectedIds - list of IDs which have been selected for this action
+     * @param {Object} options
+     *  - `isRowBeingAdded`: defaults to true, are the new selected IDs being added (or removed) as new row selections
+     *  - `shouldTriggerEvent`: defaults to true, should we trigger `onSelectedRowIdsChanged` event
+     *  - `applyRowSelectionToGrid`: defaults to true, should we apply the row selections to the grid in the UI
+     */
+    function setSelectedIds(selectedIds, options) {
+      var isRowBeingAdded = options && options.isRowBeingAdded;
+      var shouldTriggerEvent = options && options.shouldTriggerEvent;
+      var applyRowSelectionToGrid = options && options.applyRowSelectionToGrid;
+
+      if (isRowBeingAdded !== false) {
+        isRowBeingAdded = true;
+      }
+      var selectedRows = self.mapIdsToRows(selectedIds);
+      var selectedRowsChangedArgs = {
+        "grid": _grid,
+        "ids": selectedIds,
+        "rows": selectedRows,
+        "added": isRowBeingAdded,
+        "dataView": self
+      };
+      preSelectedRowIdsChangeFn(selectedRowsChangedArgs);
+
+      if (shouldTriggerEvent !== false) {
+        onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
+          "selectedRowIds": selectedRowIds,
+          "filteredIds": self.getAllSelectedFilteredIds(),
+        }), new Slick.EventData(), self);
+      }
+
+      // should we also apply the row selection in to the grid (UI) as well?
+      if (applyRowSelectionToGrid !== false && _grid) {
+        _grid.setSelectedRows(selectedRows);
+      }
+    }
+
+    /**
+     * Get all selected dataContext items
+     * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
+     */
     function getAllSelectedItems() {
       var selectedData = [];
       var selectedIds = getAllSelectedIds();
       selectedIds.forEach(function (id) {
-          selectedData.push(self.getItemById(id));
+        selectedData.push(self.getItemById(id));
       });
       return selectedData;
+    }
+
+    /**
+    * Get all selected filtered dataContext items (similar to "getAllSelectedItems" but only return filtered data)
+    * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
+    */
+    function getAllSelectedFilteredItems() {
+      if (!Array.isArray(selectedRowIds)) {
+        return [];
+      }
+
+      var intersection = filteredItems.filter(function (a) {
+        return selectedRowIds.some(function (b) {
+          return a[idProperty] === b;
+        });
+      });
+      return intersection || [];
     }
 
     function syncGridCellCssStyles(grid, key) {
@@ -1400,6 +1523,9 @@
       "getGroups": getGroups,
       "getAllSelectedIds": getAllSelectedIds,
       "getAllSelectedItems": getAllSelectedItems,
+      "getAllSelectedFilteredIds": getAllSelectedFilteredIds,
+      "getAllSelectedFilteredItems": getAllSelectedFilteredItems,
+      "setSelectedIds": setSelectedIds,
       "getIdxById": getIdxById,
       "getRowByItem": getRowByItem,
       "getRowById": getRowById,
@@ -1431,6 +1557,7 @@
       "getItemMetadata": getItemMetadata,
 
       // events
+      "onSelectedRowIdsChanged": onSelectedRowIdsChanged, // NOTE this will only work when used with "syncGridSelection"
       "onSetItemsCalled": onSetItemsCalled,
       "onRowCountChanged": onRowCountChanged,
       "onRowsChanged": onRowsChanged,
