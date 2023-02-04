@@ -4,6 +4,7 @@
 .DS_Store
 *.exe
 *.pdb
+*.bak
 node_modules/*
 SlickgridRelease*
 nuget*
