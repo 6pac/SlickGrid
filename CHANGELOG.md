@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.3](https://github.com/6pac/SlickGrid/compare/3.0.2...3.0.3) (2023-02-04)
+
+### Bug Fixes
+
+* cell selection in Firefox not working, fixes [#714](https://github.com/6pac/SlickGrid/issues/714) ([#715](https://github.com/6pac/SlickGrid/issues/715)) ([3583ffc](https://github.com/6pac/SlickGrid/commit/3583ffc8a6ed26c85132ab7cbcc7fb2ca5cbc024))
+* horizontal scrolling can cause screen flickering ([#722](https://github.com/6pac/SlickGrid/issues/722)) ([0d4d943](https://github.com/6pac/SlickGrid/commit/0d4d943a2f952d7477c16bff98778a6223de6a37))
+
+### Features
+
+* **dataView:** add option to apply row selection to all pages ([#716](https://github.com/6pac/SlickGrid/issues/716)) ([6e4e83a](https://github.com/6pac/SlickGrid/commit/6e4e83a50e34beca776eb14e8c88dbf42dafa640)), closes [#689](https://github.com/6pac/SlickGrid/issues/689)
+
 ## [3.0.2](https://github.com/6pac/SlickGrid/compare/3.0.1...3.0.2) (2022-11-14)
 
 ## [3.0.1](https://github.com/6pac/SlickGrid/compare/2.4.45...3.0.1) (2022-11-14)
