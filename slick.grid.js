@@ -54,6 +54,7 @@ if (typeof Slick === "undefined") {
       leaveSpaceForNewRows: false,
       editable: false,
       autoEdit: true,
+      autoCommitEdit: false,
       suppressActiveCellChangeOnEdit: false,
       enableCellNavigation: true,
       enableColumnReorder: true,
@@ -5327,7 +5328,7 @@ if (typeof Slick === "undefined") {
       // if so, do not steal the focus from the editor
       if (getEditorLock().commitCurrentEdit()) {
         setFocus();
-        if (options.autoEdit) {
+        if (options.autoEdit && !options.autoCommitEdit) {
           navigateDown();
         }
       }

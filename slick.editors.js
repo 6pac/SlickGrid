@@ -791,7 +791,12 @@
     };
 
     this.save = function () {
-      args.commitChanges();
+      const gridOptions = args.grid.getOptions() || {};
+      if (gridOptions.autoCommitEdit) {
+        args.grid.getEditorLock().commitCurrentEdit();
+      } else {
+        args.commitChanges();
+      }
     };
 
     this.cancel = function () {

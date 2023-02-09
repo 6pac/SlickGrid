@@ -33,13 +33,21 @@
     </ul>
 
     <h2>Options:</h2>
-    <button onclick="grid.setOptions({autoEdit:true})">Auto-edit ON</button>
-    &nbsp;
-    <button onclick="grid.setOptions({autoEdit:false})">Auto-edit OFF</button>
-      <h2>View Source:</h2>
-      <ul>
-          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example3-editing.html" target="_sourcewindow"> View the source for this example on Github</a></li>
-      </ul>
+    <p>
+      <button data-test="auto-edit-on-btn" onclick="grid.setOptions({autoEdit:true})">Auto-edit ON</button>
+      &nbsp;
+      <button data-test="auto-edit-off-btn" onclick="grid.setOptions({autoEdit:false})">Auto-edit OFF</button>
+    </p>
+    <p>
+      <button data-test="auto-commit-on-btn"  onclick="grid.setOptions({autoCommitEdit:true})">AutoCommitEdit ON</button>
+      &nbsp;
+      <button data-test="auto-commit-off-btn"  onclick="grid.setOptions({autoCommitEdit:false})">AutoCommitEdit OFF</button>
+    </p>
+
+    <h2>View Source:</h2>
+    <ul>
+        <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example3-editing.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+    </ul>
   </div>
 </div>
 
@@ -83,7 +91,8 @@
     enableAddRow: true,
     enableCellNavigation: true,
     asyncEditorLoading: false,
-    autoEdit: false
+    autoEdit: false,
+    autoCommitEdit: false
   };
 
   $(function () {
