@@ -127,8 +127,7 @@ if (typeof Slick === "undefined") {
       headerCssClass: null,
       defaultSortAsc: true,
       focusable: true,
-      selectable: true,
-      visible: true,
+      selectable: true
     };
 
     var columnAutosizeDefaults = {
