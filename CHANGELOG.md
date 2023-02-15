@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [3.0.4](https://github.com/6pac/SlickGrid/compare/3.0.3...3.0.4) (2023-02-15)
+
+### Features
+
+* add `autoCommitEdit` grid option ([#725](https://github.com/6pac/SlickGrid/issues/725)) ([6225f46](https://github.com/6pac/SlickGrid/commit/6225f466314c6b1a343132d5e6cdceea16c9e6d6))
+
 ## [3.0.3](https://github.com/6pac/SlickGrid/compare/3.0.2...3.0.3) (2023-02-04)
 
 ### Bug Fixes
