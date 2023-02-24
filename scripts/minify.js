@@ -97,7 +97,7 @@ function minifyJsFiles(filenames, version) {
     for (const filename of filenames) {
         console.log(filename);
         const writeFilePath = './dist/' + filename.replace('./', '').replace('.js', '.min.js');
-        const writeFileSourcePath = './dist/' + filename.replace('./', '').replace('.js', '.js.map');
+        const writeFileSourcePath = './dist/' + filename.replace('./', '').replace('.js', '.min.js.map');
         ensureDirectoryExistence(writeFilePath);
 
         const minifiedFile = UglifyJS.minify(
