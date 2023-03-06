@@ -1,5 +1,4 @@
-(function () {
-  const u = Slick.Utils;
+(function ($) {
   /***
    * Provides item metadata for group (Slick.Group) and totals (Slick.Totals) rows produced by the DataView.
    * This metadata overrides the default behavior and formatting of those rows so that they appear and function
@@ -34,14 +33,14 @@
       includeHeaderTotals: false
     };
 
-    var options = u.extend({}, _defaults, inputOptions);
+    var options = $.extend(true, {}, _defaults, inputOptions);
 
     function getOptions(){
       return options;
     }
 
     function setOptions(inputOptions) {
-      u.extend(options, inputOptions);
+      $.extend(true, options, inputOptions);
     }
 
     function defaultGroupCellFormatter(row, cell, value, columnDef, item, grid) {
@@ -82,9 +81,9 @@
     }
 
     function handleGridClick(e, args) {
-      var target = e.target;
+      var $target = $(e.target);
       var item = this.getDataItem(args.row);
-      if (item && item instanceof Slick.Group && target.classList.contains(options.toggleCssClass)) {
+      if (item && item instanceof Slick.Group && $target.hasClass(options.toggleCssClass)) {
         var range = _grid.getRenderedRange();
         this.getData().setRefreshHints({
           ignoreDiffsBefore: range.top,
@@ -100,10 +99,10 @@
         e.stopImmediatePropagation();
         e.preventDefault();
       }
-      if (item && item instanceof Slick.Group && target.classList.contains(options.checkboxSelectCssClass)) {
+      if (item && item instanceof Slick.Group && $target.hasClass(options.checkboxSelectCssClass)) {
         item.selectChecked = !item.selectChecked;
-        target.classList.remove((item.selectChecked ? "unchecked" : "checked"));
-        target.classList.add((item.selectChecked ? "checked" : "unchecked"));
+        $target.removeClass((item.selectChecked ? "unchecked" : "checked"));
+        $target.addClass((item.selectChecked ? "checked" : "unchecked"));
         // get rowIndexes array
         var rowIndexes = _grid.getData().mapItemsToRows(item.rows);
         (item.selectChecked ? options.checkboxSelectPlugin.selectRows : options.checkboxSelectPlugin.deSelectRows)(rowIndexes);
@@ -177,4 +176,4 @@
 
   Slick.Data = Slick.Data || { };
   Slick.Data.GroupItemMetadataProvider = GroupItemMetadataProvider;
-})();
+})(jQuery);

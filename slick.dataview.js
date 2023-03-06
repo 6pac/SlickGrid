@@ -23,8 +23,8 @@
     var updated = null;             // updated item ids
     var suspend = false;            // suspends the recalculation
     var isBulkSuspend = false;      // delays various operations like the
-    // index update and delete to efficient
-    // versions at endUpdate
+                                    // index update and delete to efficient
+                                    // versions at endUpdate
     var bulkDeleteIds = new Slick.Map();
     var sortAsc = true;
     var fastSortField;
@@ -154,7 +154,7 @@
 
         // if items have been marked as deleted we skip them for the new final items array
         // and we remove them from the lookup table.
-        if (bulkDeleteIds.has(id)) {
+        if(bulkDeleteIds.has(id)) {
           idxById.delete(id);
         } else {
           // for items which are not deleted, we add them to the
@@ -502,7 +502,7 @@
      * @param newItems {Array} The new items that should be set in the data view for the given ids.
      */
     function updateItems(ids, newItems) {
-      if (ids.length !== newItems.length) {
+      if(ids.length !== newItems.length) {
         throw new Error("[SlickGrid DataView] Mismatch on the length of ids and items provided to update");
       }
       for (var i = 0, l = newItems.length; i < l; i++) {
@@ -842,7 +842,7 @@
         }
       }
 
-      if (groups.length) {
+      if(groups.length) {
         addTotals(groups, level);
       }
 
@@ -1427,7 +1427,7 @@
       var selectedData = [];
       var selectedIds = getAllSelectedIds();
       selectedIds.forEach(function (id) {
-        selectedData.push(self.getItemById(id));
+          selectedData.push(self.getItemById(id));
       });
       return selectedData;
     }

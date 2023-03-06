@@ -53,12 +53,12 @@
       return isImmediatePropagationStopped;
     };
 
-    this.getNativeEvent = function () {
+    this.getNativeEvent = function() {
       return nativeEvent;
     }
 
-    this.preventDefault = function () {
-      if (nativeEvent)
+    this.preventDefault = function() {
+      if(nativeEvent)
         nativeEvent.preventDefault();
       isDefaultPrevented = true;
     }
@@ -111,7 +111,7 @@
      */
     this.notify = function (args, e, scope) {
 
-      if (!(e instanceof EventData))
+      if(!(e instanceof EventData))
         e = new EventData(e);
       scope = scope || this;
 
@@ -141,7 +141,7 @@
       var i = handlers.length;
       while (i--) {
         if (handlers[i].event === event &&
-          handlers[i].handler === handler) {
+            handlers[i].handler === handler) {
           handlers.splice(i, 1);
           event.unsubscribe(handler);
           return;
@@ -228,7 +228,7 @@
      */
     this.contains = function (row, cell) {
       return row >= this.fromRow && row <= this.toRow &&
-        cell >= this.fromCell && cell <= this.toCell;
+          cell >= this.fromCell && cell <= this.toCell;
     };
 
     /***
@@ -348,9 +348,9 @@
    */
   Group.prototype.equals = function (group) {
     return this.value === group.value &&
-      this.count === group.count &&
-      this.collapsed === group.collapsed &&
-      this.title === group.title;
+        this.count === group.count &&
+        this.collapsed === group.collapsed &&
+        this.title === group.title;
   };
 
   /***
@@ -540,9 +540,9 @@
       if (depth == current) {
 
         if (node.length)
-          node.forEach(function (n) {
+          node.forEach(function(n) {
             if (n.columns)
-              n.extractColumns = function () {
+              n.extractColumns = function() {
                 return extractColumns(n);
               };
           });
@@ -561,13 +561,19 @@
       var result = [];
 
       if (node.hasOwnProperty('length')) {
+
         for (var i = 0; i < node.length; i++)
           result = result.concat(extractColumns(node[i]));
+
       } else {
+
         if (node.hasOwnProperty('columns'))
+
           result = result.concat(extractColumns(node.columns));
+
         else
           return node;
+
       }
 
       return result;
@@ -581,7 +587,8 @@
 
     this.hasDepth = function () {
 
-      for (var i in treeColumns) {
+      for (var i in treeColumns)
+      {
         if (treeColumns[i].hasOwnProperty('columns'))
           return true;
       }
@@ -594,7 +601,7 @@
     };
 
     this.extractColumns = function () {
-      return this.hasDepth() ? extractColumns(treeColumns) : treeColumns;
+      return this.hasDepth()? extractColumns(treeColumns): treeColumns;
     };
 
     this.getDepth = function () {
@@ -633,7 +640,7 @@
       });
     };
   }
-
+  
   /***
    * Polyfill for Map to support old browsers but
    * benefit of the Map speed in modern browsers.
@@ -642,14 +649,14 @@
    */
   var Map = 'Map' in window ? window.Map : function Map() {
     var data = {};
-
+    
     /***
      * Gets the item with the given key from the map or undefined if
      * the map does not contain the item. 
      * @method get
      * @param key {Map} The key of the item in the map.
      */
-    this.get = function (key) {
+    this.get = function(key) {
       return data[key];
     };
 
@@ -659,53 +666,53 @@
      * @param key The key of the item in the map.
      * @param value The value to insert into the map of the item in the map.
      */
-    this.set = function (key, value) {
+    this.set = function(key, value) {
       data[key] = value;
     };
-
+    
     /***
      * Gets a value indicating whether the given key is present in the map.
      * @method has
      * @param key The key of the item in the map.
      * @return {Boolean}
-     */
-    this.has = function (key) {
+     */    
+    this.has = function(key) {
       return key in data;
     };
-
+    
     /***
      * Removes the item with the given key from the map. 
      * @method delete
      * @param key The key of the item in the map.
      */
-    this.delete = function (key) {
+    this.delete = function(key) {
       delete data[key];
     };
   };
-
+  
   function regexSanitizer(dirtyHtml) {
-    return dirtyHtml.replace(/(\b)(on[a-z]+)(\s*)=|javascript:([^>]*)[^>]*|(<\s*)(\/*)script([<>]*).*(<\s*)(\/*)script(>*)|(&lt;)(\/*)(script|script defer)(.*)(&gt;|&gt;">)/gi, '');
+     return dirtyHtml.replace(/(\b)(on[a-z]+)(\s*)=|javascript:([^>]*)[^>]*|(<\s*)(\/*)script([<>]*).*(<\s*)(\/*)script(>*)|(&lt;)(\/*)(script|script defer)(.*)(&gt;|&gt;">)/gi, '');
   }
 
   // With help from https://youmightnotneedjquery.com/
-  function grep(elems, callback, invert) {
-    var callbackInverse,
-      matches = [],
-      i = 0,
-      length = elems.length,
-      callbackExpect = !invert;
+  function grep( elems, callback, invert ) {
+		var callbackInverse,
+			matches = [],
+			i = 0,
+			length = elems.length,
+			callbackExpect = !invert;
 
-    // Go through the array, only saving the items
-    // that pass the validator function
-    for (; i < length; i++) {
-      callbackInverse = !callback(elems[i], i);
-      if (callbackInverse !== callbackExpect) {
-        matches.push(elems[i]);
-      }
-    }
+		// Go through the array, only saving the items
+		// that pass the validator function
+		for ( ; i < length; i++ ) {
+			callbackInverse = !callback( elems[ i ], i );
+			if ( callbackInverse !== callbackExpect ) {
+				matches.push( elems[ i ] );
+			}
+		}
 
-    return matches;
-  }
+		return matches;
+	}
 
   function offset(el) {
 
@@ -715,17 +722,19 @@
       top: box.top + window.pageYOffset - docElem.clientTop,
       left: box.left + window.pageXOffset - docElem.clientLeft
     };
+ 
+	}
 
-  }
-
-  function width(el, value) {
+  function width(el, value)
+  {
     if (value === undefined) {
       return el.getBoundingClientRect().width;
     }
     setStyleSize(el, "width", value);
   }
 
-  function height(el, value) {
+  function height(el, value)
+  {
     if (value === undefined) {
       return el.getBoundingClientRect().height;
     }
@@ -735,7 +744,7 @@
   function setWidth(el, value) {
     setStyleSize(el, "width", value);
   }
-
+  
   function setHeight(el, value) {
     setStyleSize(el, "height", value);
   }
@@ -747,19 +756,20 @@
   }
 
   function position(el) {
-    const { top, left } = el.getBoundingClientRect();
-    const { marginTop, marginLeft } = getComputedStyle(el);
+    const {top, left} = el.getBoundingClientRect();
+    const {marginTop, marginLeft} = getComputedStyle(el);
     return {
       top: top - parseInt(marginTop, 10),
       left: left - parseInt(marginLeft, 10)
     };
   }
-
+  
   function contains(parent, child) {
     parent.contains(child);
   }
-
-  function isHidden(el) {
+  
+  function isHidden(el)
+  {
     return el.offsetWidth === 0 && el.offsetHeight === 0;
   }
 
@@ -770,15 +780,17 @@
 
     while ((el = el.parentNode) && el !== document) {
 
-      if (hidden) {
-        if (isHidden(el))
+      if(hidden)
+      {
+        if(isHidden(el))
           parents.push(el);
       }
-      else if (visible) {
-        if (!isHidden(el))
+      else if (visible)
+      {
+        if(!isHidden(el))
           parents.push(el);
       }
-      else if (!selector || el.matches(selector))
+      else if (!selector || el.matches(selector)) 
         parents.push(el);
     }
     return parents;
@@ -789,7 +801,8 @@
     template.innerHTML = html.trim();
 
     const first = template.content.firstChild;
-    if (parent) {
+    if(parent)
+    {
       [].forEach.call(template.content.children, (child) => {
         parent.appendChild(child);
       });
@@ -797,9 +810,9 @@
     }
     return first;
   }
-
+  
   function toFloat(value) {
-    var x = parseFloat(value);
+    var x = parseFloat(value)
     if (isNaN(x)) {
       return 0;
     }
@@ -831,81 +844,83 @@
       }
     }
   }
-
-  function show(el, type) {
-    if (type)
+  
+  function show(el, type)
+  {
+    if(type)
       el.style.display = type;
     else
-      el.style.display = "";
+    el.style.display = "";
   }
 
-  function hide(el) {
+  function hide(el)
+  {
     el.style.display = "none";
   }
 
-  // jQuery's extend, deepCopy is enabled by default
+  // jQuery's extend
   var getProto = Object.getPrototypeOf;
   var class2type = {};
   var toString = class2type.toString;
   var hasOwn = class2type.hasOwnProperty;
   var fnToString = hasOwn.toString;
-  var ObjectFunctionString = fnToString.call(Object);
-  function isFunction(obj) {
+  var ObjectFunctionString = fnToString.call( Object );
+  function isFunction( obj ) {
     return typeof obj === "function" && typeof obj.nodeType !== "number" &&
       typeof obj.item !== "function";
   };
-  function isPlainObject(obj) {
+  function isPlainObject( obj ) {
     var proto, Ctor;
-    if (!obj || toString.call(obj) !== "[object Object]") {
+    if ( !obj || toString.call( obj ) !== "[object Object]" ) {
       return false;
     }
 
-    proto = getProto(obj);
-    if (!proto) {
+    proto = getProto( obj );
+    if ( !proto ) {
       return true;
     }
-    Ctor = hasOwn.call(proto, "constructor") && proto.constructor;
-    return typeof Ctor === "function" && fnToString.call(Ctor) === ObjectFunctionString;
+    Ctor = hasOwn.call( proto, "constructor" ) && proto.constructor;
+    return typeof Ctor === "function" && fnToString.call( Ctor ) === ObjectFunctionString;
   }
   function extend() {
     var options, name, src, copy, copyIsArray, clone,
-      target = arguments[0] || {},
+      target = arguments[ 0 ] || {},
       i = 1,
       length = arguments.length,
       deep = true;
-    if (typeof target === "boolean") {
+    if ( typeof target === "boolean" ) {
       deep = target;
-      target = arguments[i] || {};
+      target = arguments[ i ] || {};
       i++;
     }
-    if (typeof target !== "object" && !isFunction(target)) {
+    if ( typeof target !== "object" && !isFunction( target ) ) {
       target = {};
     }
-    if (i === length) {
+    if ( i === length ) {
       target = this;
       i--;
     }
-    for (; i < length; i++) {
-      if ((options = arguments[i]) != null) {
-        for (name in options) {
-          copy = options[name];
-          if (name === "__proto__" || target === copy) {
+    for ( ; i < length; i++ ) {
+      if ( ( options = arguments[ i ] ) != null ) {
+        for ( name in options ) {
+          copy = options[ name ];
+          if ( name === "__proto__" || target === copy ) {
             continue;
           }
-          if (deep && copy && (isPlainObject(copy) ||
-            (copyIsArray = Array.isArray(copy)))) {
-            src = target[name];
-            if (copyIsArray && !Array.isArray(src)) {
+          if ( deep && copy && ( isPlainObject( copy ) ||
+            ( copyIsArray = Array.isArray( copy ) ) ) ) {
+            src = target[ name ];
+            if ( copyIsArray && !Array.isArray( src ) ) {
               clone = [];
-            } else if (!copyIsArray && !isPlainObject(src)) {
+            } else if ( !copyIsArray && !isPlainObject( src ) ) {
               clone = {};
             } else {
               clone = src;
             }
             copyIsArray = false;
-            target[name] = extend(deep, clone, copy);
-          } else if (copy !== undefined) {
-            target[name] = copy;
+            target[ name ] = extend( deep, clone, copy );
+          } else if ( copy !== undefined ) {
+            target[ name ] = copy;
           }
         }
       }
@@ -913,126 +928,126 @@
     return target;
   };
 
-  // exports
+   // exports
   window.Slick = {
-    "Event": Event,
-    "EventData": EventData,
-    "EventHandler": EventHandler,
-    "Range": Range,
-    "Map": Map,
-    "NonDataRow": NonDataItem,
-    "Group": Group,
-    "GroupTotals": GroupTotals,
-    "RegexSanitizer": regexSanitizer,
-    "EditorLock": EditorLock,
-    "Utils":
-    {
-      "extend": extend,
-      "grep": grep,
-      "offset": offset,
-      "height": height,
-      "setHeight": setHeight,
-      "width": width,
-      "setWidth": setWidth,
-      "setStyleSize": setStyleSize,
-      "contains": contains,
-      "template": template,
-      "toFloat": toFloat,
-      "position": position,
-      "parents": parents,
-      "scrollLeft": scrollLeft,
-      "scrollTop": scrollTop,
-      "show": show,
-      "hide": hide,
-      "storage": {
-        // https://stackoverflow.com/questions/29222027/vanilla-alternative-to-jquery-data-function-any-native-javascript-alternati
-        _storage: new WeakMap(),
-        put: function (element, key, obj) {
-          if (!this._storage.has(element)) {
-            this._storage.set(element, new Map());
+      "Event": Event,
+      "EventData": EventData,
+      "EventHandler": EventHandler,
+      "Range": Range,
+      "Map": Map,      
+      "NonDataRow": NonDataItem,
+      "Group": Group,
+      "GroupTotals": GroupTotals,
+      "RegexSanitizer": regexSanitizer,
+      "EditorLock": EditorLock,
+      "Utils":
+      {
+        "extend": extend,
+        "grep": grep,
+        "offset": offset,
+        "height": height,
+        "setHeight": setHeight,
+        "width": width,
+        "setWidth": setWidth,
+        "setStyleSize": setStyleSize,
+        "contains": contains,
+        "template": template,
+        "toFloat": toFloat,
+        "position": position,
+        "parents": parents,
+        "scrollLeft": scrollLeft,
+        "scrollTop": scrollTop,
+        "show": show,
+        "hide": hide,
+        "storage": {
+          // https://stackoverflow.com/questions/29222027/vanilla-alternative-to-jquery-data-function-any-native-javascript-alternati
+          _storage: new WeakMap(),
+          put: function (element, key, obj) {
+              if (!this._storage.has(element)) {
+                  this._storage.set(element, new Map());
+              }
+              this._storage.get(element).set(key, obj);
+          },
+          get: function (element, key) {
+              return this._storage.get(element).get(key);
+          },
+          has: function (element, key) {
+              return this._storage.has(element) && this._storage.get(element).has(key);
+          },
+          remove: function (element, key) {
+              var ret = this._storage.get(element).delete(key);
+              if (!this._storage.get(element).size === 0) {
+                  this._storage.delete(element);
+              }
+              return ret;
           }
-          this._storage.get(element).set(key, obj);
-        },
-        get: function (element, key) {
-          return this._storage.get(element).get(key);
-        },
-        has: function (element, key) {
-          return this._storage.has(element) && this._storage.get(element).has(key);
-        },
-        remove: function (element, key) {
-          var ret = this._storage.get(element).delete(key);
-          if (!this._storage.get(element).size === 0) {
-            this._storage.delete(element);
-          }
-          return ret;
-        }
       }
-    },
-    /***
-     * A global singleton editor lock.
-     * @class GlobalEditorLock
-     * @static
-     * @constructor
-     */
-    "GlobalEditorLock": new EditorLock(),
-    "TreeColumns": TreeColumns,
+      },
+      /***
+       * A global singleton editor lock.
+       * @class GlobalEditorLock
+       * @static
+       * @constructor
+       */
+      "GlobalEditorLock": new EditorLock(),
+      "TreeColumns": TreeColumns,
 
-    "keyCode": {
-      SPACE: 8,
-      BACKSPACE: 8,
-      DELETE: 46,
-      DOWN: 40,
-      END: 35,
-      ENTER: 13,
-      ESCAPE: 27,
-      HOME: 36,
-      INSERT: 45,
-      LEFT: 37,
-      PAGE_DOWN: 34,
-      PAGE_UP: 33,
-      RIGHT: 39,
-      TAB: 9,
-      UP: 38,
-      A: 65
-    },
-    "preClickClassName": "slick-edit-preclick",
+      "keyCode": {
+        SPACE: 8,
+        BACKSPACE: 8,
+        DELETE: 46,
+        DOWN: 40,
+        END: 35,
+        ENTER: 13,
+        ESCAPE: 27,
+        HOME: 36,
+        INSERT: 45,
+        LEFT: 37,
+        PAGE_DOWN: 34,
+        PAGE_UP: 33,
+        RIGHT: 39,
+        TAB: 9,
+        UP: 38,
+        A: 65
+      },
+      "preClickClassName" : "slick-edit-preclick",
+      
+      "GridAutosizeColsMode": {
+        None: 'NOA',
+        LegacyOff: 'LOF',
+        LegacyForceFit: 'LFF',
+        IgnoreViewport: 'IGV',
+        FitColsToViewport: 'FCV',
+        FitViewportToCols: 'FVC'
+      },
+      
+      "ColAutosizeMode": {
+        Locked: 'LCK',
+        Guide: 'GUI',
+        Content: 'CON',
+        ContentExpandOnly: 'CXO',
+        ContentIntelligent: 'CTI'
+      },
 
-    "GridAutosizeColsMode": {
-      None: 'NOA',
-      LegacyOff: 'LOF',
-      LegacyForceFit: 'LFF',
-      IgnoreViewport: 'IGV',
-      FitColsToViewport: 'FCV',
-      FitViewportToCols: 'FVC'
-    },
+      "RowSelectionMode": {
+        FirstRow: 'FS1',
+        FirstNRows: 'FSN',
+        AllRows: 'ALL',
+        LastRow: 'LS1'
+      },
 
-    "ColAutosizeMode": {
-      Locked: 'LCK',
-      Guide: 'GUI',
-      Content: 'CON',
-      ContentExpandOnly: 'CXO',
-      ContentIntelligent: 'CTI'
-    },
+      "ValueFilterMode": {
+        None: 'NONE',
+        DeDuplicate: 'DEDP',
+        GetGreatestAndSub: 'GR8T',
+        GetLongestTextAndSub: 'LNSB',
+        GetLongestText: 'LNSC'
+      },
 
-    "RowSelectionMode": {
-      FirstRow: 'FS1',
-      FirstNRows: 'FSN',
-      AllRows: 'ALL',
-      LastRow: 'LS1'
-    },
-
-    "ValueFilterMode": {
-      None: 'NONE',
-      DeDuplicate: 'DEDP',
-      GetGreatestAndSub: 'GR8T',
-      GetLongestTextAndSub: 'LNSB',
-      GetLongestText: 'LNSC'
-    },
-
-    "WidthEvalMode": {
-      Auto: 'AUTO',
-      TextOnly: 'CANV',
-      HTML: 'HTML'
+      "WidthEvalMode": {
+        Auto: 'AUTO',
+        TextOnly: 'CANV',
+        HTML: 'HTML'
+      }
     }
-  }
 })(window);
