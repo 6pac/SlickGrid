@@ -587,7 +587,6 @@ if (typeof Slick === "undefined") {
         }
 
         _headerScroller.forEach((el) => {
-            //.on("scroll", handleHeaderScroll)
             el.addEventListener("contextmenu", handleHeaderContextMenu);
             el.addEventListener("click", handleHeaderClick);
         });
@@ -595,13 +594,6 @@ if (typeof Slick === "undefined") {
         _headerRowScroller.forEach((scroller) => {
            scroller.addEventListener("scroll", handleHeaderRowScroll);
         });
-
-        if (options.showHeaderRow) {
-          _headerRows.forEach((row) => {
-            //row.addEventListener("mouseover", handleHeaderRowMouseOver);
-            //row.addEventListener("mouseout", handleHeaderRowMouseOut);
-          });
-        }
 
         if (options.createFooterRow) {
           _footerRow.forEach((footer) => {
@@ -2285,11 +2277,11 @@ if (typeof Slick === "undefined") {
 
       const headerColumns = _container.querySelectorAll(".slick-header-column");
       [].forEach.call(headerColumns, (column) => {
-        column.removeEventListener("mouseover", handleHeaderMouseEnter);
-        column.removeEventListener("mouseout", handleHeaderMouseLeave);
+        column.removeEventListener("mouseenter", handleHeaderMouseEnter);
+        column.removeEventListener("mouseleave", handleHeaderMouseLeave);
 
-        column.removeEventListener('mouseover', handleHeaderMouseHoverOn);
-        column.removeEventListener('mouseout', handleHeaderMouseHoverOff);
+        column.removeEventListener('mouseenter', handleHeaderMouseHoverOn);
+        column.removeEventListener('mouseleave', handleHeaderMouseHoverOff);
       });
 
       _container.replaceChildren();
