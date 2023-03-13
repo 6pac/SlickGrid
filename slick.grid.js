@@ -3217,6 +3217,7 @@ if (typeof Slick === "undefined") {
       trigger(self.onSetOptions, { "optionsBefore": originalOptions, "optionsAfter": options });
 
       validateAndEnforceOptions();
+      setFrozenOptions();
 
       _viewport.forEach((view) => {
         view.style["overflow-y"] = options.autoHeight ? "hidden" : "auto";
@@ -3225,7 +3226,6 @@ if (typeof Slick === "undefined") {
         render();
       }
 
-      setFrozenOptions();
       setScroller();
       if (!suppressSetOverflow) {
         setOverflow();
