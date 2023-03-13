@@ -789,7 +789,7 @@
     }
 
     const parentList = parents(child);
-    return !parentList.every((p) => {
+    return !parentList.every(function (p)  {
       if(parent == p) {
         return false;
       }
@@ -835,7 +835,7 @@
     const first = template.content.firstChild;
     if(parent)
     {
-      [].forEach.call(template.content.children, (child) => {
+      [].forEach.call(template.content.children, function (child) {
         parent.appendChild(child);
       });
       return first;
@@ -855,7 +855,7 @@
 
     type = type ? type : "";
     if(Array.isArray(el)) {
-      el.forEach((e) => {
+      el.forEach(function (e) {
         e.style.display = type;
       })
     }
@@ -866,7 +866,7 @@
 
   function hide(el) {
     if(Array.isArray(el)) {
-      el.forEach((e) => {
+      el.forEach(function (e) {
         e.style.display = "none";
       });
     }
