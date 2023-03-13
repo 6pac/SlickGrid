@@ -5086,8 +5086,9 @@ if (typeof Slick === "undefined") {
     }
 
     function getCellFromEvent(e) {
-      if(e instanceof Slick.EventData)
+      if(e instanceof Slick.EventData) {
         e = e.getNativeEvent();
+      }
 
       var targetEvent = e.touches ? e.touches[0] : e;
       var row, cell;
