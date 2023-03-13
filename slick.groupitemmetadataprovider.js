@@ -14,7 +14,7 @@
    * @param inputOptions
    */
   function GroupItemMetadataProvider(inputOptions) {
-    const u = Slick.Utils;
+    const utils = Slick.Utils;
     var _grid;
     var _defaults = {
       checkboxSelect: false,
@@ -34,14 +34,14 @@
       includeHeaderTotals: false
     };
 
-    var options = u.extend(true, {}, _defaults, inputOptions);
+    var options = utils.extend(true, {}, _defaults, inputOptions);
 
     function getOptions(){
       return options;
     }
 
     function setOptions(inputOptions) {
-      u.extend(true, options, inputOptions);
+      utils.extend(true, options, inputOptions);
     }
 
     function defaultGroupCellFormatter(row, cell, value, columnDef, item, grid) {

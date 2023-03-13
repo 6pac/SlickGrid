@@ -29,8 +29,9 @@
      */
     this.stopPropagation = function () {
       isPropagationStopped = true;
-      if(nativeEvent)
+      if(nativeEvent) {
         nativeEvent.stopPropagation();
+      }
     };
 
     /***
@@ -48,8 +49,9 @@
      */
     this.stopImmediatePropagation = function () {
       isImmediatePropagationStopped = true;
-      if(nativeEvent)
+      if(nativeEvent) {
         nativeEvent.stopImmediatePropagation();
+      }
     };
 
     /***
@@ -66,21 +68,24 @@
     }
 
     this.preventDefault = function() {
-      if(nativeEvent)
+      if(nativeEvent) {
         nativeEvent.preventDefault();
+      }
       isDefaultPrevented = true;
     }
 
     this.isDefaultPrevented = function() {
-      if(nativeEvent)
+      if(nativeEvent) {
         return nativeEvent.defaultPrevented;
+      }
       return isDefaultPrevented;
     }
 
     this.addReturnValue = function(value) {
       returnValues.push(value);
-      if(returnValue === undefined && value !== undefined)
+      if(returnValue === undefined && value !== undefined) {
         returnValue = value;
+      }
     }
 
     this.getReturnValue = function() {
@@ -767,19 +772,27 @@
   }
 
   function setStyleSize(el, style, val) {
-    if (typeof val === 'function') val = val();
-    if (typeof val === 'string') el.style[style] = val;
-    else el.style[style] = val + 'px';
+    if (typeof val === 'function') {
+      val = val();
+    }
+    else if (typeof val === 'string') {
+      el.style[style] = val;
+    }
+    else {
+      el.style[style] = val + 'px';
+    }
   }
 
   function contains(parent, child) {
-    if(!parent || !child)
+    if(!parent || !child) {
       return false;
+    }
 
     const parentList = parents(child);
     return !parentList.every((p) => {
-      if(parent == p)
+      if(parent == p) {
         return false;
+      }
       return true;
     });
   }
@@ -797,16 +810,20 @@
 
       if(hidden)
       {
-        if(isHidden(el))
+        if(isHidden(el)) {
           parents.push(el);
+        }
       }
       else if (visible)
       {
-        if(!isHidden(el))
+        if(!isHidden(el)) {
           parents.push(el);
+        }
       }
       else if (!selector || el.matches(selector)) 
+      {
         parents.push(el);
+      }
     }
     return parents;
   }

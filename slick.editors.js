@@ -6,37 +6,42 @@
 
 (function () {
 
-  const u = Slick.Utils;
+  const utils = Slick.Utils;
 
   function TextEditor(args) {
     var input;
     var defaultValue;
     var scope = this;
+    var navOnLR;
     this.args = args;
 
     this.init = function () {
-      var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
-      input = u.template("<INPUT type=text class='editor-text' />", args.container);
+      navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
+      input = utils.template("<input type=text class='editor-text' />", args.container);
       input.addEventListener("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
       input.focus();
       input.select();
 
       // don't show Save/Cancel when it's a Composite Editor and also trigger a onCompositeEditorChange event when input changes
       if (args.compositeEditorOptions) {
-        input.addEventListener("change", function () {
-          var activeCell = args.grid.getActiveCell();
-
-          // when valid, we'll also apply the new value to the dataContext item object
-          if (scope.validate().valid) {
-            scope.applyValue(scope.args.item, scope.serializeValue());
-          }
-          scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
-          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
-        });
+        input.addEventListener("change", this.onChange);
       }
     };
 
+    this.onChange = function() {
+      var activeCell = args.grid.getActiveCell();
+
+      // when valid, we'll also apply the new value to the dataContext item object
+      if (scope.validate().valid) {
+        scope.applyValue(scope.args.item, scope.serializeValue());
+      }
+      scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
+      args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
+    }
+    
     this.destroy = function () {
+      input.removeEventListener("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
+      input.removeEventListener("change", this.onChange)
       input.remove();
     };
 
@@ -96,7 +101,7 @@
 
     this.init = function () {
       var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
-      input = u.template("<INPUT type=text class='editor-text' />", args.container);
+      input = utils.template("<input type=text class='editor-text' />", args.container);
       input.addEventListener("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
       input.focus()
       input.select();
@@ -175,7 +180,7 @@
 
     this.init = function () {
       var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
-      input = u.template("<INPUT type=text class='editor-text' />", args.container);
+      input = utils.template("<input type=text class='editor-text' />", args.container);
       input.addEventListener("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
       input.focus()
       input.select();
@@ -292,7 +297,7 @@
     var flatpickrInstance;
 
     this.init = function () {
-      input = u.template('<input type=text class="editor-text" />', args.container);
+      input = utils.template('<input type=text class="editor-text" />', args.container);
       input.focus();
       input.select();
       flatpickrInstance = flatpickr(input, {
@@ -323,7 +328,7 @@
         }, 50);
       }
 
-      u.width(input, u.width(input) - (!args.compositeEditorOptions ? 18 : 28));
+      utils.width(input, utils.width(input) - (!args.compositeEditorOptions ? 18 : 28));
     };
 
     this.destroy = function () {
@@ -392,7 +397,7 @@
     this.args = args;
 
     this.init = function () {
-      select = u.template("<SELECT tabIndex='0' class='editor-yesno'><OPTION value='yes'>Yes</OPTION><OPTION value='no'>No</OPTION></SELECT>", args.container);
+      select = utils.template("<select tabIndex='0' class='editor-yesno'><option value='yes'>Yes</option><option value='no'>No</option></select>", args.container);
       select.focus();
 
       // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
@@ -452,7 +457,7 @@
     this.args = args;
 
     this.init = function () {
-      select = u.template("<INPUT type=checkbox value='true' class='editor-checkbox' hideFocus>", args.container);
+      select = utils.template("<input type=checkbox value='true' class='editor-checkbox' hideFocus>", args.container);
       select.focus();
 
       // trigger onCompositeEditorChange event when input checkbox changes and it's a Composite Editor
@@ -533,11 +538,11 @@
     }
 
     this.init = function () {
-      input = u.template('<input type="text" class="editor-percentcomplete" />', args.container);
-      u.width(input, args.container.clientWidth - 25);
+      input = utils.template('<input type="text" class="editor-percentcomplete" />', args.container);
+      utils.width(input, args.container.clientWidth - 25);
 
-      picker = u.template("<div class='editor-percentcomplete-picker' />", args.container);
-      u.template("<div class='editor-percentcomplete-helper'><div class='editor-percentcomplete-wrapper'><div class='editor-percentcomplete-slider' /><input type='range' class='editor-percentcomplete-slider' /><div class='editor-percentcomplete-buttons' /><button val='0'>Not started</button><br/><button val='50'>In Progress</button><br/><button val='100'>Complete</button></div></div>", picker);
+      picker = utils.template("<div class='editor-percentcomplete-picker' />", args.container);
+      utils.template("<div class='editor-percentcomplete-helper'><div class='editor-percentcomplete-wrapper'><div class='editor-percentcomplete-slider' /><input type='range' class='editor-percentcomplete-slider' /><div class='editor-percentcomplete-buttons' /><button val='0'>Not started</button><br/><button val='50'>In Progress</button><br/><button val='100'>Complete</button></div></div>", picker);
       input.focus();
       input.select();
 
@@ -619,16 +624,16 @@
       var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
       var container = compositeEditorOptions ? args.container : document.body;
 
-      wrapper = u.template("<DIV class='slick-large-editor-text' style='z-index:10000;background:white;padding:5px;border:3px solid gray; border-radius:10px;'/>", container);
+      wrapper = utils.template("<div class='slick-large-editor-text' style='z-index:10000;background:white;padding:5px;border:3px solid gray; border-radius:10px;'/>", container);
       if (compositeEditorOptions) {
         wrapper.style.position = 'relative';
-        u.setStyleSize(wrapper, "padding", 0);
-        u.setStyleSize(wrapper, "border", 0);
+        utils.setStyleSize(wrapper, "padding", 0);
+        utils.setStyleSize(wrapper, "border", 0);
       } else {
         wrapper.style.position = 'absolute';
       }
 
-      input = u.template("<TEXTAREA hidefocus rows=5 style='background:white;width:250px;height:80px;border:0;outline:0'>", wrapper);
+      input = utils.template("<textarea hidefocus rows=5 style='background:white;width:250px;height:80px;border:0;outline:0'>", wrapper);
 
       // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
       if (compositeEditorOptions) {
@@ -643,7 +648,7 @@
           args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
         });
       } else {
-        u.template("<DIV style='text-align:right'><BUTTON id='save'>Save</BUTTON><BUTTON id='cancel'>Cancel</BUTTON></DIV>", wrapper);
+        utils.template("<div style='text-align:right'><button id='save'>Save</button><button id='cancel'>Cancel</button></div>", wrapper);
 
         wrapper.querySelector("#save").addEventListener("click", this.save);
         wrapper.querySelector("#cancel").addEventListener("click", this.cancel);
@@ -696,16 +701,16 @@
     };
 
     this.hide = function () {
-      u.hide(wrapper);
+      utils.hide(wrapper);
     };
 
     this.show = function () {
-      u.show(wrapper);
+      utils.show(wrapper);
     };
 
     this.position = function (position) {
-      u.setStyleSize(wrapper, "top", position.top - 5);
-      u.setStyleSize(wrapper, "left", position.left - 2);
+      utils.setStyleSize(wrapper, "top", position.top - 5);
+      utils.setStyleSize(wrapper, "left", position.left - 2);
     };
 
     this.destroy = function () {
@@ -771,7 +776,7 @@
   }
 
   // exports
-  u.extend(true, window, {
+  utils.extend(true, window, {
     "Slick": {
       "Editors": {
         "Text": TextEditor,
