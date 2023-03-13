@@ -100,15 +100,15 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-<script src="../dist/slick.core.min.js"></script>
-<script src="../dist/slick.interactions.min.js"></script>
-<script src="../dist/slick.formatters.min.js"></script>
-<script src="../dist/slick.editors.min.js"></script>
-<script src="../dist/plugins/slick.rowselectionmodel.min.js"></script>
-<script src="../dist/slick.grid.min.js"></script>
-<script src="../dist/slick.dataview.min.js"></script>
-<script src="../dist/controls/slick.pager.min.js"></script>
-<script src="../dist/controls/slick.columnpicker.min.js"></script>
+<script src="../slick.core.js"></script>
+<script src="../slick.interactions.js"></script>
+<script src="../slick.formatters.js"></script>
+<script src="../slick.editors.js"></script>
+<script src="../plugins/slick.rowselectionmodel.js"></script>
+<script src="../slick.grid.js"></script>
+<script src="../slick.dataview.js"></script>
+<script src="../controls/slick.pager.js"></script>
+<script src="../controls/slick.columnpicker.js"></script>
 
 <script>
 function isIEPreVer9() { var v = navigator.appVersion.match(/MSIE ([\d.]+)/i); return (v ? v[1] < 9 : false); }
@@ -119,7 +119,7 @@ var data = [];
 var columns = [
   {id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 40, cannotTriggerInsert: true, resizable: false, selectable: false, excludeFromColumnPicker: true },
   {id: "title", name: "Title", field: "title", width: 120, minWidth: 120, cssClass: "cell-title", editor: Slick.Editors.Text, validator: requiredFieldValidator, sortable: true},
-  {id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Text, sortable: true},
+  {id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Text, sortable: true, hidden: true},
   {id: "%", defaultSortAsc: false, name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete, sortable: true},
   {id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Flatpickr, sortable: true},
   {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Flatpickr, sortable: true},

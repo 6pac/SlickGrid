@@ -525,7 +525,6 @@
        * @constructor
        */
       "GlobalEditorLock": new EditorLock(),
-      "TreeColumns": TreeColumns,
 
       "keyCode": {
         SPACE: 8,

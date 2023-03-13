@@ -59,6 +59,8 @@
     
     for (var i = 0; i < columns.length; i++) {
       m = columns[i];
+      if (m.hidden) continue;
+      
       if (lastColumnGroup === m.columnGroup && i>0) {
         widthTotal += m.width;
         header.width(widthTotal - headerColumnWidthDiff)
@@ -87,7 +89,7 @@
   var columns = [
     {id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 40, resizable: false, selectable: false },
     {id: "title", name: "Title", field: "title", width: 120, minWidth: 120, cssClass: "cell-title", columnGroup:"Common Factor"},
-    {id: "duration", name: "Duration", field: "duration", columnGroup:"Common Factor"},
+    {id: "duration", name: "Duration", field: "duration", columnGroup:"Common Factor", hidden: true},
     {id: "start", name: "Start", field: "start", minWidth: 60, columnGroup:"Period"},
     {id: "finish", name: "Finish", field: "finish", minWidth: 60, columnGroup:"Period"},
     {id: "%", defaultSortAsc: false, name: "% Complete", field: "percentComplete", width: 80, resizable: false, columnGroup:"Analysis"},
