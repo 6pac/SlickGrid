@@ -1566,6 +1566,7 @@ if (typeof Slick === "undefined") {
         draggable: '.slick-header-column',
         dragoverBubble: false,
         revertClone: true,
+        scroll: !hasFrozenColumns(),
         onStart: function (e) {
           canDragScroll = !hasFrozenColumns() ||
             $(e.item).offset().left > $viewportScrollContainerX.offset().left;
