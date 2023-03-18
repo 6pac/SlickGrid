@@ -3111,13 +3111,13 @@ if (typeof Slick === "undefined") {
       trigger(self.onSetOptions, { "optionsBefore": originalOptions, "optionsAfter": options });
 
       validateAndEnforceOptions();
+      setFrozenOptions();
 
       $viewport.css("overflow-y", options.autoHeight ? "hidden" : "auto");
       if (!suppressRender) {
         render();
       }
 
-      setFrozenOptions();
       setScroller();
       if (!suppressSetOverflow) {
         setOverflow();
