@@ -2952,7 +2952,15 @@ if (typeof Slick === "undefined") {
       trigger(self.onBeforeSetColumns, { previousColumns: columns, newColumns: columnDefinitions, grid: self });
 
       columns = columnDefinitions;
-
+      updateColumnsInternal();      
+    }
+    
+    function updateColumns() {
+      trigger(self.onBeforeUpdateColumns, { columns: columns, grid: self });
+      updateColumnsInternal();
+    }
+ 
+    function updateColumnsInternal() {
       updateColumnProps();
       updateColumnCaches();
 
@@ -2998,13 +3006,13 @@ if (typeof Slick === "undefined") {
       trigger(self.onSetOptions, { "optionsBefore": originalOptions, "optionsAfter": options });
 
       validateAndEnforceOptions();
-
+      setFrozenOptions();
+  
       $viewport.css("overflow-y", options.autoHeight ? "hidden" : "auto");
       if (!suppressRender) {
         render();
       }
 
-      setFrozenOptions();
       setScroller();
       if (!suppressSetOverflow) {
         setOverflow();
@@ -6112,6 +6120,7 @@ if (typeof Slick === "undefined") {
       "onCellCssStylesChanged": new Slick.Event(),
       "onAutosizeColumns": new Slick.Event(),
       "onBeforeSetColumns": new Slick.Event(),
+      "onBeforeUpdateColumns": new Slick.Event(),
       "onRendered": new Slick.Event(),
       "onSetOptions": new Slick.Event(),
 
@@ -6120,6 +6129,7 @@ if (typeof Slick === "undefined") {
       "unregisterPlugin": unregisterPlugin,
       "getPluginByName": getPluginByName,
       "getColumns": getColumns,
+      "updateColumns": updateColumns,
       "setColumns": setColumns,
       "getColumnIndex": getColumnIndex,
       "updateColumnHeader": updateColumnHeader,

@@ -108,6 +108,8 @@
       var $li, $input, columnId;
       var columnLabel, excludeCssClass;
       for (var i = 0; i < columns.length; i++) {
+        if (columns[i].hidden) continue;
+
         columnId = columns[i].id;
         excludeCssClass = columns[i].excludeFromColumnPicker ? "hidden" : "";
         $li = $('<li class="' + excludeCssClass + '" />').appendTo($list);
