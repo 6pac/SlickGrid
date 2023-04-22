@@ -56,7 +56,9 @@
             if (options.maxToolTipLength && text.length > options.maxToolTipLength) {
               text = text.substr(0, options.maxToolTipLength - 3) + "...";
             }
-          } else {
+          } else if ($node.innerHeight() < $node[0].scrollHeight) {
+            text = $.trim($node.text());
+	  } else {
             text = "";
           }
           $node.attr("title", text);
