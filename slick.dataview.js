@@ -78,7 +78,7 @@
     var onGroupExpanded = new Slick.Event();
     var onGroupCollapsed = new Slick.Event();
 
-    options = Slick.Utils.extend({}, defaults, options);
+    options = Slick.Utils.extend(true, {}, defaults, options);
 
     /***
      * Begins a bached update of the items in the data view.
@@ -330,7 +330,7 @@
       groupingInfos = (groupingInfo instanceof Array) ? groupingInfo : [groupingInfo];
 
       for (var i = 0; i < groupingInfos.length; i++) {
-        var gi = groupingInfos[i] = Slick.Utils.extend({}, groupingInfoDefaults, groupingInfos[i]);
+        var gi = groupingInfos[i] = Slick.Utils.extend(true, {}, groupingInfoDefaults, groupingInfos[i]);
         gi.getterIsAFn = typeof gi.getter === "function";
 
         // pre-compile accumulator loops
@@ -1206,7 +1206,7 @@
         return;
       }
 
-      var previousPagingInfo = Slick.Utils.extend({}, getPagingInfo());
+      var previousPagingInfo = Slick.Utils.extend(true, {}, getPagingInfo());
 
       var countBefore = rows.length;
       var totalRowsBefore = totalRows;
@@ -1331,7 +1331,7 @@
             if (args.added) {
               if (preserveHiddenOnSelectionChange && grid.getOptions().multiSelect) {
                 // find the ones that are hidden
-                var hiddenSelectedRowIds = $.grep(selectedRowIds, function (id) {
+                var hiddenSelectedRowIds = Slick.Utils.grep(selectedRowIds, function (id) {
                   return self.getRowById(id) === undefined;
                 });
                 // add the newly selected ones
@@ -1342,7 +1342,7 @@
             } else {
               if (preserveHiddenOnSelectionChange && grid.getOptions().multiSelect) {
                 // remove rows whose id is on the list
-                rowIds = $.grep(selectedRowIds, function (id) {
+                rowIds = Slick.Utils.grep(selectedRowIds, function (id) {
                   return args.ids.indexOf(id) === -1;
                 });
               } else {
@@ -1685,7 +1685,7 @@
   // TODO:  merge common aggregators in one to prevent needles iterating
 
   // exports
-  Slick.Utils.extend(Slick, {
+  Slick.Utils.extend(true, Slick, {
     Data: {
       DataView: DataView,
       Aggregators: {
