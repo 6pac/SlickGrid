@@ -1,4 +1,4 @@
-(function ($) {
+(function () {
   /***
    * A composite SlickGrid editor factory.
    * Generates an editor that is composed of multiple editors for given columns.
@@ -44,14 +44,14 @@
 
     var firstInvalidEditor;
 
-    options = $.extend({}, defaultOptions, options);
+    options = Slick.Utils.extend({}, defaultOptions, options);
 
 
     function getContainerBox(i) {
       var c = containers[i];
-      var offset = $(c).offset();
-      var w = $(c).width() || 0;
-      var h = $(c).height() || 0;
+      var offset = Slick.Utils.offset(c);
+      var w = Slick.Utils.width(c);
+      var h = Slick.Utils.height(c);
 
       return {
         top: offset && offset.top,
@@ -75,7 +75,7 @@
         while (idx < columns.length) {
           if (columns[idx].editor) {
             var column = columns[idx];
-            newArgs = $.extend({}, args);
+            newArgs = Slick.Utils.extend(false, {}, args);
             newArgs.container = containers[idx];
             newArgs.column = column;
             newArgs.position = getContainerBox(idx);
@@ -162,7 +162,7 @@
       this.validate = function (targetElm) {
         var validationResults;
         var errors = [];
-        var $targetElm = targetElm ? $(targetElm) : null;
+        var targetElm = targetElm ? targetElm : null;
 
         firstInvalidEditor = null;
 
@@ -170,12 +170,12 @@
         while (idx < editors.length) {
           var columnDef = editors[idx].args && editors[idx].args.column || {};
           if (columnDef) {
-            var $validationElm = $(".item-details-validation.editor-" + columnDef.id);
-            var $labelElm = $(".item-details-label.editor-" + columnDef.id);
-            var $editorElm = $("[data-editorid=" + columnDef.id + "]");
+            var validationElm = document.querySelector(".item-details-validation.editor-" + columnDef.id);
+            var labelElm = document.querySelector(".item-details-label.editor-" + columnDef.id);
+            var editorElm = document.querySelector("[data-editorid=" + columnDef.id + "]");
             var validationMsgPrefix = options && options.validationMsgPrefix || "";
 
-            if (!$targetElm || ($editorElm.has($targetElm).length > 0)) {
+            if (!targetElm || Slick.Utils.contains(editorElm, targetElm)) {
               validationResults = editors[idx].validate();
 
               if (!validationResults.valid) {
@@ -187,24 +187,24 @@
                   msg: validationResults.msg
                 });
 
-                if ($validationElm) {
-                  $validationElm.text(validationMsgPrefix + validationResults.msg);
-                  $labelElm.addClass("invalid");
-                  $editorElm.addClass("invalid");
+                if (validationElm) {
+                  validationElm.textContent = validationMsgPrefix + validationResults.msg;
+                  labelElm.classList.add("invalid");
+                  editorElm.classList.add("invalid");
                 }
-              } else if ($validationElm) {
-                $validationElm.text("");
-                $editorElm.removeClass("invalid");
-                $labelElm.removeClass("invalid");
+              } else if (validationElm) {
+                validationElm.textContent = "";
+                editorElm.classList.remove("invalid");
+                labelElm.classList.remove("invalid");
               }
             }
-            $validationElm = null;
-            $labelElm = null;
-            $editorElm = null;
+            validationElm = null;
+            labelElm = null;
+            editorElm = null;
           }
           idx++;
         }
-		    $targetElm = null;
+		    targetElm = null;
 
         if (errors.length) {
           return {
@@ -255,9 +255,7 @@
   }
   
   // exports
-  $.extend(true, window, {
-    Slick: {
-      CompositeEditor: CompositeEditor
-    }
+  Slick.Utils.extend(Slick, {
+    CompositeEditor: CompositeEditor
   });  
-})(jQuery);
+})();

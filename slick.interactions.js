@@ -5,7 +5,7 @@
  * @namespace Slick
  */
 
-(function ($) {
+(function () {
   /**
    * Draggable Class, enables dragging functionality for any element for example cell & row selections.
    * Note that mouse/touch start is on the specified container element but all other events are on the document body.
@@ -253,11 +253,9 @@
   }
 
   // exports
-  $.extend(true, window, {
-    "Slick": {
-      "Draggable": Draggable,
-      "MouseWheel": MouseWheel,
-      "Resizable": Resizable,
-    }
+  Slick.Utils.extend(Slick, {
+    "Draggable": Draggable,
+    "MouseWheel": MouseWheel,
+    "Resizable": Resizable,
   });
-})(jQuery);
+})();

@@ -66,7 +66,6 @@
 
 <script src="../lib/firebugx.js"></script>
 
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
@@ -154,128 +153,126 @@ function percentCompleteSort(a, b) {
   return a["percentComplete"] - b["percentComplete"];
 }
 
-$(function () {
-  var indent = 0;
-  var parents = [];
+var indent = 0;
+var parents = [];
 
-  // prepare the data
-  for (var i = 0; i < 1000; i++) {
-    var d = (data[i] = {});
-    var parent;
+// prepare the data
+for (var i = 0; i < 1000; i++) {
+  var d = (data[i] = {});
+  var parent;
 
-    if (Math.random() > 0.8 && i > 0) {
-      indent++;
-      parents.push(i - 1);
-    } else if (Math.random() < 0.3 && indent > 0) {
-      indent--;
-      parents.pop();
-    } 
-	
-    if (parents.length > 0) {
-      parent = parents[parents.length - 1];
-    } else {
-      parent = null;
-    }
+  if (Math.random() > 0.8 && i > 0) {
+    indent++;
+    parents.push(i - 1);
+  } else if (Math.random() < 0.3 && indent > 0) {
+    indent--;
+    parents.pop();
+  } 
 
-    d["id"] = "id_" + i;
-    d["indent"] = indent;
-    d["parent"] = parent;
-    d["title"] = "Task " + i;
-    d["duration"] = "5 days";
-    d["percentComplete"] = Math.round(Math.random() * 100);
-    d["start"] = "01/01/2009";
-    d["finish"] = "01/05/2009";
-    d["effortDriven"] = (i % 5 == 0);
+  if (parents.length > 0) {
+    parent = parents[parents.length - 1];
+  } else {
+    parent = null;
   }
 
+  d["id"] = "id_" + i;
+  d["indent"] = indent;
+  d["parent"] = parent;
+  d["title"] = "Task " + i;
+  d["duration"] = "5 days";
+  d["percentComplete"] = Math.round(Math.random() * 100);
+  d["start"] = "01/01/2009";
+  d["finish"] = "01/05/2009";
+  d["effortDriven"] = (i % 5 == 0);
+}
 
-  // initialize the model
-  dataView = new Slick.Data.DataView({ inlineFilters: true });
-  dataView.beginUpdate();
-  dataView.setItems(data);
-  dataView.setFilter(myFilter);
-  dataView.endUpdate();
+
+// initialize the model
+dataView = new Slick.Data.DataView({ inlineFilters: true });
+dataView.beginUpdate();
+dataView.setItems(data);
+dataView.setFilter(myFilter);
+dataView.endUpdate();
 
 
-  // initialize the grid
-  grid = new Slick.Grid("#myGrid", dataView, columns, options);
+// initialize the grid
+grid = new Slick.Grid("#myGrid", dataView, columns, options);
 
-  grid.onCellChange.subscribe(function (e, args) {
-    dataView.updateItem(args.item.id, args.item);
-  });
+grid.onCellChange.subscribe(function (e, args) {
+  dataView.updateItem(args.item.id, args.item);
+});
 
-  grid.onAddNewRow.subscribe(function (e, args) {
-    var item = {
-      "id": "new_" + (Math.round(Math.random() * 10000)),
-      "indent": 0,
-      "title": "New task",
-      "duration": "1 day",
-      "percentComplete": 0,
-      "start": "01/01/2009",
-      "finish": "01/01/2009",
-      "effortDriven": false};
-    $.extend(item, args.item);
-    dataView.addItem(item);
-  });
+grid.onAddNewRow.subscribe(function (e, args) {
+  var item = {
+    "id": "new_" + (Math.round(Math.random() * 10000)),
+    "indent": 0,
+    "title": "New task",
+    "duration": "1 day",
+    "percentComplete": 0,
+    "start": "01/01/2009",
+    "finish": "01/01/2009",
+    "effortDriven": false};
+  Slick.Utils.extend(item, args.item);
+  dataView.addItem(item);
+});
 
-  grid.onClick.subscribe(function (e, args) {
-    if ($(e.target).hasClass("toggle")) {
-      var item = dataView.getItem(args.row);
-      if (item) {
-        if (!item._collapsed) {
-          item._collapsed = true;
-        } else {
-          item._collapsed = false;
-        }
-
-        dataView.updateItem(item.id, item);
+grid.onClick.subscribe(function (e, args) {
+  if (e.getNativeEvent().target.classList.contains("toggle")) {
+    var item = dataView.getItem(args.row);
+    if (item) {
+      if (!item._collapsed) {
+        item._collapsed = true;
+      } else {
+        item._collapsed = false;
       }
-      e.stopImmediatePropagation();
+
+      dataView.updateItem(item.id, item);
     }
-  });
-
-
-  // wire up model events to drive the grid
-  dataView.onRowCountChanged.subscribe(function (e, args) {
-    grid.updateRowCount();
-    grid.render();
-  });
-
-  dataView.onRowsChanged.subscribe(function (e, args) {
-    grid.invalidateRows(args.rows);
-    grid.render();
-  });
-
-
-  var h_runfilters = null;
-
-  // wire up the slider to apply the filter to the model
-  var slider = document.getElementById("pcSlider");
-  var sliderCallback = function() {
-    Slick.GlobalEditorLock.cancelCurrentEdit();
-
-    if (percentCompleteThreshold != this.value) {
-      window.clearTimeout(h_runfilters);
-      h_runfilters = window.setTimeout(dataView.refresh, 10);
-      percentCompleteThreshold = this.value;
-    }
+    e.stopImmediatePropagation();
   }
-  
-  slider.oninput = sliderCallback;
+});
 
-  // wire up the search textbox to apply the filter to the model
-  $("#txtSearch").keyup(function (e) {
-    Slick.GlobalEditorLock.cancelCurrentEdit();
 
-    // clear on Esc
-    if (e.which == 27) {
-      this.value = "";
-    }
+// wire up model events to drive the grid
+dataView.onRowCountChanged.subscribe(function (e, args) {
+  grid.updateRowCount();
+  grid.render();
+});
 
-    searchString = this.value;
-    dataView.refresh();
-  })
-})
+dataView.onRowsChanged.subscribe(function (e, args) {
+  grid.invalidateRows(args.rows);
+  grid.render();
+});
+
+
+var h_runfilters = null;
+
+// wire up the slider to apply the filter to the model
+var slider = document.getElementById("pcSlider");
+var sliderCallback = function() {
+  Slick.GlobalEditorLock.cancelCurrentEdit();
+
+  if (percentCompleteThreshold != this.value) {
+    window.clearTimeout(h_runfilters);
+    h_runfilters = window.setTimeout(dataView.refresh, 10);
+    percentCompleteThreshold = this.value;
+  }
+}
+
+slider.oninput = sliderCallback;
+
+// wire up the search textbox to apply the filter to the model
+document.getElementById("txtSearch").addEventListener("keyup", function (e) {
+  Slick.GlobalEditorLock.cancelCurrentEdit();
+
+  // clear on Esc
+  if (e.which == 27) {
+    this.value = "";
+  }
+
+  searchString = this.value;
+  dataView.refresh();
+});
 </script>
 </body>
 </html>

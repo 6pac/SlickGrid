@@ -439,7 +439,7 @@
         });
 
         var containers = $.map(modalColumns, function (c) {
-          return $modal.find("[data-editorid=" + c.id + "]");
+          return $modal.find("[data-editorid=" + c.id + "]")[0];
         });
 
         var compositeEditor = new Slick.CompositeEditor(

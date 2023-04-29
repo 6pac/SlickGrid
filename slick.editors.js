@@ -4,61 +4,68 @@
  * @namespace Slick
  */
 
-(function ($) {
+(function () {
+
+  const utils = Slick.Utils;
+
   function TextEditor(args) {
-    var $input;
+    var input;
     var defaultValue;
     var scope = this;
+    var navOnLR;
     this.args = args;
 
     this.init = function () {
-      var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
-      $input = $("<INPUT type=text class='editor-text' />")
-        .appendTo(args.container)
-        .on("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav)
-        .focus()
-        .select();
+      navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
+      input = utils.template("<input type=text class='editor-text' />", args.container);
+      input.addEventListener("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
+      input.focus();
+      input.select();
 
       // don't show Save/Cancel when it's a Composite Editor and also trigger a onCompositeEditorChange event when input changes
       if (args.compositeEditorOptions) {
-        $input.on("change", function () {
-          var activeCell = args.grid.getActiveCell();
-
-          // when valid, we'll also apply the new value to the dataContext item object
-          if (scope.validate().valid) {
-            scope.applyValue(scope.args.item, scope.serializeValue());
-          }
-          scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
-          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
-        });
+        input.addEventListener("change", this.onChange);
       }
     };
 
+    this.onChange = function() {
+      var activeCell = args.grid.getActiveCell();
+
+      // when valid, we'll also apply the new value to the dataContext item object
+      if (scope.validate().valid) {
+        scope.applyValue(scope.args.item, scope.serializeValue());
+      }
+      scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
+      args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
+    }
+    
     this.destroy = function () {
-      $input.remove();
+      input.removeEventListener("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
+      input.removeEventListener("change", this.onChange)
+      input.remove();
     };
 
     this.focus = function () {
-      $input.focus();
+      input.focus();
     };
 
     this.getValue = function () {
-      return $input.val();
+      return input.value;
     };
 
     this.setValue = function (val) {
-      $input.val(val);
+      input.value = val;
     };
 
     this.loadValue = function (item) {
       defaultValue = item[args.column.field] || "";
-      $input.val(defaultValue);
-      $input[0].defaultValue = defaultValue;
-      $input.select();
+      input.value = defaultValue;
+      input.defaultValue = defaultValue;
+      input.select();
     };
 
     this.serializeValue = function () {
-      return $input.val();
+      return input.value;
     };
 
     this.applyValue = function (item, state) {
@@ -66,12 +73,12 @@
     };
 
     this.isValueChanged = function () {
-      return (!($input.val() === "" && defaultValue == null)) && ($input.val() != defaultValue);
+      return (!(input.value === "" && defaultValue == null)) && (input.value != defaultValue);
     };
 
     this.validate = function () {
       if (args.column.validator) {
-        var validationResults = args.column.validator($input.val(), args);
+        var validationResults = args.column.validator(input.value, args);
         if (!validationResults.valid) {
           return validationResults;
         }
@@ -87,22 +94,21 @@
   }
 
   function IntegerEditor(args) {
-    var $input;
+    var input;
     var defaultValue;
     var scope = this;
     this.args = args;
 
     this.init = function () {
       var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
-      $input = $("<INPUT type=text class='editor-text' />")
-        .appendTo(args.container)
-        .on("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav)
-        .focus()
-        .select();
+      input = utils.template("<input type=text class='editor-text' />", args.container);
+      input.addEventListener("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
+      input.focus()
+      input.select();
 
       // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
       if (args.compositeEditorOptions) {
-        $input.on("change", function () {
+        input.addEventListener("change", function () {
           var activeCell = args.grid.getActiveCell();
 
           // when valid, we'll also apply the new value to the dataContext item object
@@ -116,22 +122,22 @@
     };
 
     this.destroy = function () {
-      $input.remove();
+      input.remove();
     };
 
     this.focus = function () {
-      $input.focus();
+      input.focus();
     };
 
     this.loadValue = function (item) {
       defaultValue = item[args.column.field];
-      $input.val(defaultValue);
-      $input[0].defaultValue = defaultValue;
-      $input.select();
+      input.value = defaultValue;
+      input.defaultValue = defaultValue;
+      input.select();
     };
 
     this.serializeValue = function () {
-      return parseInt($input.val(), 10) || 0;
+      return parseInt(input.value, 10) || 0;
     };
 
     this.applyValue = function (item, state) {
@@ -139,11 +145,11 @@
     };
 
     this.isValueChanged = function () {
-      return (!($input.val() === "" && defaultValue == null)) && ($input.val() != defaultValue);
+      return (!(input.value === "" && defaultValue == null)) && (input.value != defaultValue);
     };
 
     this.validate = function () {
-      if (isNaN($input.val())) {
+      if (isNaN(input.value)) {
         return {
           valid: false,
           msg: "Please enter a valid integer"
@@ -151,7 +157,7 @@
       }
 
       if (args.column.validator) {
-        var validationResults = args.column.validator($input.val(), args);
+        var validationResults = args.column.validator(input.value, args);
         if (!validationResults.valid) {
           return validationResults;
         }
@@ -167,22 +173,21 @@
   }
 
   function FloatEditor(args) {
-    var $input;
+    var input;
     var defaultValue;
     var scope = this;
     this.args = args;
 
     this.init = function () {
       var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
-      $input = $("<INPUT type=text class='editor-text' />")
-        .appendTo(args.container)
-        .on("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav)
-        .focus()
-        .select();
+      input = utils.template("<input type=text class='editor-text' />", args.container);
+      input.addEventListener("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
+      input.focus()
+      input.select();
 
       // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
       if (args.compositeEditorOptions) {
-        $input.on("change", function () {
+        input.addEventListener("change", function () {
           var activeCell = args.grid.getActiveCell();
 
           // when valid, we'll also apply the new value to the dataContext item object
@@ -196,11 +201,11 @@
     };
 
     this.destroy = function () {
-      $input.remove();
+      input.remove();
     };
 
     this.focus = function () {
-      $input.focus();
+      input.focus();
     };
 
     function getDecimalPlaces() {
@@ -222,13 +227,13 @@
         defaultValue = defaultValue.toFixed(decPlaces);
       }
 
-      $input.val(defaultValue);
-      $input[0].defaultValue = defaultValue;
-      $input.select();
+      input.value = defaultValue;
+      input.defaultValue = defaultValue;
+      input.select();
     };
 
     this.serializeValue = function () {
-      var rtn = parseFloat($input.val());
+      var rtn = parseFloat(input.value);
       if (FloatEditor.AllowEmptyValue) {
         if (!rtn && rtn !== 0) { rtn = ''; }
       } else {
@@ -250,11 +255,11 @@
     };
 
     this.isValueChanged = function () {
-      return (!($input.val() === "" && defaultValue == null)) && ($input.val() != defaultValue);
+      return (!(input.value === "" && defaultValue == null)) && (input.value != defaultValue);
     };
 
     this.validate = function () {
-      if (isNaN($input.val())) {
+      if (isNaN(input.value)) {
         return {
           valid: false,
           msg: "Please enter a valid number"
@@ -262,7 +267,7 @@
       }
 
       if (args.column.validator) {
-        var validationResults = args.column.validator($input.val(), args);
+        var validationResults = args.column.validator(input.value, args);
         if (!validationResults.valid) {
           return validationResults;
         }
@@ -280,127 +285,22 @@
   FloatEditor.DefaultDecimalPlaces = null;
   FloatEditor.AllowEmptyValue = false;
 
-  function DateEditor(args) {
-    var $input;
-    var defaultValue;
-    var scope = this;
-    var calendarOpen = false;
-    this.args = args;
-
-    this.init = function () {
-      $input = $("<INPUT type=text class='editor-text' />");
-      $input.appendTo(args.container);
-      $input.focus().select();
-      $input.datepicker({
-        showOn: "button",
-        buttonImageOnly: true,
-        beforeShow: function () {
-          calendarOpen = true;
-        },
-        onClose: function () {
-          calendarOpen = false;
-
-          // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
-          if (args.compositeEditorOptions) {
-            var activeCell = args.grid.getActiveCell();
-
-            // when valid, we'll also apply the new value to the dataContext item object
-            if (scope.validate().valid) {
-              scope.applyValue(scope.args.item, scope.serializeValue());
-            }
-            scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
-            args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
-          }
-        }
-      });
-
-      $input.width($input.width() - (!args.compositeEditorOptions ? 18 : 28));
-    };
-
-    this.destroy = function () {
-      $.datepicker.dpDiv.stop(true, true);
-      $input.datepicker("hide");
-      $input.datepicker("destroy");
-      $input.remove();
-    };
-
-    this.show = function () {
-      if (calendarOpen) {
-        $.datepicker.dpDiv.stop(true, true).show();
-      }
-    };
-
-    this.hide = function () {
-      if (calendarOpen) {
-        $.datepicker.dpDiv.stop(true, true).hide();
-      }
-    };
-
-    this.position = function (position) {
-      if (!calendarOpen) {
-        return;
-      }
-      $.datepicker.dpDiv
-        .css("top", position.top + 30)
-        .css("left", position.left);
-    };
-
-    this.focus = function () {
-      $input.focus();
-    };
-
-    this.loadValue = function (item) {
-      defaultValue = item[args.column.field];
-      $input.val(defaultValue);
-      $input[0].defaultValue = defaultValue;
-      $input.select();
-    };
-
-    this.serializeValue = function () {
-      return $input.val();
-    };
-
-    this.applyValue = function (item, state) {
-      item[args.column.field] = state;
-    };
-
-    this.isValueChanged = function () {
-      return (!($input.val() === "" && defaultValue == null)) && ($input.val() != defaultValue);
-    };
-
-    this.validate = function () {
-      if (args.column.validator) {
-        var validationResults = args.column.validator($input.val(), args);
-        if (!validationResults.valid) {
-          return validationResults;
-        }
-      }
-
-      return {
-        valid: true,
-        msg: null
-      };
-    };
-
-    this.init();
-  }
-
   function FlatpickrEditor(args) {
     if (typeof flatpickr === 'undefined') {
       throw new Error('Flatpickr not loaded but required in SlickGrid.Editors, refer to Flatpickr documentation: https://flatpickr.js.org/getting-started/');
     }
 
-    var $input;
+    var input;
     var defaultValue;
     var scope = this;
     this.args = args;
     var flatpickrInstance;
 
     this.init = function () {
-      $input = $('<input type=text class="editor-text" />');
-      $input.appendTo(args.container);
-      $input.focus().select();
-      flatpickrInstance = $input.flatpickr({
+      input = utils.template('<input type=text class="editor-text" />', args.container);
+      input.focus();
+      input.select();
+      flatpickrInstance = flatpickr(input, {
         closeOnSelect: true,
         allowInput: true,
         altInput: true,
@@ -428,13 +328,13 @@
         }, 50);
       }
 
-      $input.width($input.width() - (!args.compositeEditorOptions ? 18 : 28));
+      utils.width(input, utils.width(input) - (!args.compositeEditorOptions ? 18 : 28));
     };
 
     this.destroy = function () {
       scope.hide();
       flatpickrInstance.destroy();
-      $input.remove();
+      input.remove();
     };
 
     this.show = function () {
@@ -450,19 +350,19 @@
     };
 
     this.focus = function () {
-      $input.focus();
+      input.focus();
     };
 
     this.loadValue = function (item) {
       defaultValue = item[args.column.field];
-      $input.val(defaultValue);
-      $input[0].defaultValue = defaultValue;
-      $input.select();
+      input.value = defaultValue;
+      input.defaultValue = defaultValue;
+      input.select();
       flatpickrInstance.setDate(defaultValue);
     };
 
     this.serializeValue = function () {
-      return $input.val();
+      return input.value;
     };
 
     this.applyValue = function (item, state) {
@@ -470,12 +370,12 @@
     };
 
     this.isValueChanged = function () {
-      return (!($input.val() === "" && defaultValue == null)) && ($input.val() != defaultValue);
+      return (!(input.value === "" && defaultValue == null)) && (input.value != defaultValue);
     };
 
     this.validate = function () {
       if (args.column.validator) {
-        var validationResults = args.column.validator($input.val(), args);
+        var validationResults = args.column.validator(input.value, args);
         if (!validationResults.valid) {
           return validationResults;
         }
@@ -491,19 +391,18 @@
   }
 
   function YesNoSelectEditor(args) {
-    var $select;
+    var select;
     var defaultValue;
     var scope = this;
     this.args = args;
 
     this.init = function () {
-      $select = $("<SELECT tabIndex='0' class='editor-yesno'><OPTION value='yes'>Yes</OPTION><OPTION value='no'>No</OPTION></SELECT>");
-      $select.appendTo(args.container);
-      $select.focus();
+      select = utils.template("<select tabIndex='0' class='editor-yesno'><option value='yes'>Yes</option><option value='no'>No</option></select>", args.container);
+      select.focus();
 
       // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
       if (args.compositeEditorOptions) {
-        $select.on("change", function () {
+        select.addEventListener("change", function () {
           var activeCell = args.grid.getActiveCell();
 
           // when valid, we'll also apply the new value to the dataContext item object
@@ -517,20 +416,20 @@
     };
 
     this.destroy = function () {
-      $select.remove();
+      select.remove();
     };
 
     this.focus = function () {
-      $select.focus();
+      select.focus();
     };
 
     this.loadValue = function (item) {
-      $select.val((defaultValue = item[args.column.field]) ? "yes" : "no");
-      $select.select();
+      select.value = ((defaultValue = item[args.column.field]) ? "yes" : "no");
+      select.select();
     };
 
     this.serializeValue = function () {
-      return ($select.val() == "yes");
+      return select.value == "yes";
     };
 
     this.applyValue = function (item, state) {
@@ -538,7 +437,7 @@
     };
 
     this.isValueChanged = function () {
-      return ($select.val() != defaultValue);
+      return select.value != defaultValue;
     };
 
     this.validate = function () {
@@ -552,19 +451,18 @@
   }
 
   function CheckboxEditor(args) {
-    var $select;
+    var select;
     var defaultValue;
     var scope = this;
     this.args = args;
 
     this.init = function () {
-      $select = $("<INPUT type=checkbox value='true' class='editor-checkbox' hideFocus>");
-      $select.appendTo(args.container);
-      $select.focus();
+      select = utils.template("<input type=checkbox value='true' class='editor-checkbox' hideFocus>", args.container);
+      select.focus();
 
       // trigger onCompositeEditorChange event when input checkbox changes and it's a Composite Editor
       if (args.compositeEditorOptions) {
-        $select.on("change", function () {
+        select.addEventListener("change", function () {
           var activeCell = args.grid.getActiveCell();
 
           // when valid, we'll also apply the new value to the dataContext item object
@@ -578,28 +476,24 @@
     };
 
     this.destroy = function () {
-      $select.remove();
+      select.remove();
     };
 
     this.focus = function () {
-      $select.focus();
+      select.focus();
     };
 
     this.loadValue = function (item) {
       defaultValue = !!item[args.column.field];
       if (defaultValue) {
-        $select.prop('checked', true);
+        select.checked = true;
       } else {
-        $select.prop('checked', false);
+        select.checked = false;
       }
     };
 
-    this.preClick = function () {
-      $select.prop('checked', !$select.prop('checked'));
-    };
-
     this.serializeValue = function () {
-      return $select.prop('checked');
+      return select.checked;
     };
 
     this.applyValue = function (item, state) {
@@ -621,13 +515,13 @@
   }
 
   function PercentCompleteEditor(args) {
-    var $input, $picker;
+    var input, picker;
     var defaultValue;
     var scope = this;
     this.args = args;
-    var $slider;
+    var slider;
     var sliderInputHandler = function () {
-      $input.val(this.value);
+      input.value = this.value;
     }
     var sliderChangeHandler = function () {
       // trigger onCompositeEditorChange event when slider stops and it's a Composite Editor
@@ -644,47 +538,49 @@
     }
 
     this.init = function () {
-      $input = $('<input type="text" class="editor-percentcomplete" />');
-      $input.width($(args.container).innerWidth() - 25);
-      $input.appendTo(args.container);
+      input = utils.template('<input type="text" class="editor-percentcomplete" />', args.container);
+      utils.width(input, args.container.clientWidth - 25);
 
-      $picker = $("<div class='editor-percentcomplete-picker' />").appendTo(args.container);
-      $picker.append("<div class='editor-percentcomplete-helper'><div class='editor-percentcomplete-wrapper'><div class='editor-percentcomplete-slider' /><input type='range' class='editor-percentcomplete-slider' /><div class='editor-percentcomplete-buttons' /></div></div>");
-      $picker.find(".editor-percentcomplete-buttons").append('<button val="0">Not started</button><br/><button val="50">In Progress</button><br/><button val="100">Complete</button>');
-      $input.focus().select();
+      picker = utils.template("<div class='editor-percentcomplete-picker' />", args.container);
+      utils.template("<div class='editor-percentcomplete-helper'><div class='editor-percentcomplete-wrapper'><div class='editor-percentcomplete-slider' /><input type='range' class='editor-percentcomplete-slider' /><div class='editor-percentcomplete-buttons' /><button val='0'>Not started</button><br/><button val='50'>In Progress</button><br/><button val='100'>Complete</button></div></div>", picker);
+      input.focus();
+      input.select();
 
-      $slider = $picker.find('input.editor-percentcomplete-slider');
-      $slider.val(defaultValue);
+      slider = picker.querySelector('input.editor-percentcomplete-slider');
+      slider.value = defaultValue;
 
-      $slider.on('input', sliderInputHandler);
-      $slider.on('change', sliderChangeHandler);
+      slider.addEventListener('input', sliderInputHandler);
+      slider.addEventListener('change', sliderChangeHandler);
 
-      $picker.find(".editor-percentcomplete-buttons button").on("click", function (e) {
-        $input.val($(this).attr("val"));
-        $slider.val($(this).attr("val"));
+      const buttons = picker.querySelectorAll(".editor-percentcomplete-buttons button");
+      [].forEach.call(buttons, (button) => {
+        button.addEventListener("click", function (e) {
+          input.value = this.getAttribute("val");
+          slider.value = this.getAttribute("val");
+        });
       });
     };
 
     this.destroy = function () {
-      $slider.off('input', sliderInputHandler);
-      $slider.off('change', sliderChangeHandler);
-      $input.remove();
-      $picker.remove();
+      slider.removeEventListener('input', sliderInputHandler);
+      slider.removeEventListener('change', sliderChangeHandler);
+      input.remove();
+      picker.remove();
     };
 
     this.focus = function () {
-      $input.focus();
+      input.focus();
     };
 
     this.loadValue = function (item) {
       defaultValue = item[args.column.field];
-      $slider.val(defaultValue);
-      $input.val(defaultValue);
-      $input.select();
+      slider.value = defaultValue;
+      input.value = defaultValue;
+      input.select();
     };
 
     this.serializeValue = function () {
-      return parseInt($input.val(), 10) || 0;
+      return parseInt(input.value, 10) || 0;
     };
 
     this.applyValue = function (item, state) {
@@ -692,11 +588,11 @@
     };
 
     this.isValueChanged = function () {
-      return (!($input.val() === "" && defaultValue == null)) && ((parseInt($input.val(), 10) || 0) != defaultValue);
+      return (!(input.value === "" && defaultValue == null)) && ((parseInt(input.value, 10) || 0) != defaultValue);
     };
 
     this.validate = function () {
-      if (isNaN(parseInt($input.val(), 10))) {
+      if (isNaN(parseInt(input.value, 10))) {
         return {
           valid: false,
           msg: "Please enter a valid positive number"
@@ -718,7 +614,7 @@
    * KeyDown events are also handled to provide handling for Tab, Shift-Tab, Esc and Ctrl-Enter.
    */
   function LongTextEditor(args) {
-    var $input, $wrapper;
+    var input, wrapper;
     var defaultValue;
     var scope = this;
     this.args = args;
@@ -726,22 +622,22 @@
     this.init = function () {
       var compositeEditorOptions = args.compositeEditorOptions;
       var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
-      var $container = compositeEditorOptions ? args.container : $('body');
+      var container = compositeEditorOptions ? args.container : document.body;
 
-      $wrapper = $("<DIV class='slick-large-editor-text' style='z-index:10000;background:white;padding:5px;border:3px solid gray; border-radius:10px;'/>")
-        .appendTo($container);
+      wrapper = utils.template("<div class='slick-large-editor-text' style='z-index:10000;background:white;padding:5px;border:3px solid gray; border-radius:10px;'/>", container);
       if (compositeEditorOptions) {
-        $wrapper.css({ position: 'relative', padding: 0, border: 0 });
+        wrapper.style.position = 'relative';
+        utils.setStyleSize(wrapper, "padding", 0);
+        utils.setStyleSize(wrapper, "border", 0);
       } else {
-        $wrapper.css({ position: 'absolute' });
+        wrapper.style.position = 'absolute';
       }
 
-      $input = $("<TEXTAREA hidefocus rows=5 style='background:white;width:250px;height:80px;border:0;outline:0'>")
-        .appendTo($wrapper);
+      input = utils.template("<textarea hidefocus rows=5 style='background:white;width:250px;height:80px;border:0;outline:0'>", wrapper);
 
       // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
       if (compositeEditorOptions) {
-        $input.on("change", function () {
+        input.addEventListener("change", function () {
           var activeCell = args.grid.getActiveCell();
 
           // when valid, we'll also apply the new value to the dataContext item object
@@ -752,16 +648,16 @@
           args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
         });
       } else {
-        $("<DIV style='text-align:right'><BUTTON>Save</BUTTON><BUTTON>Cancel</BUTTON></DIV>")
-          .appendTo($wrapper);
+        utils.template("<div style='text-align:right'><button id='save'>Save</button><button id='cancel'>Cancel</button></div>", wrapper);
 
-        $wrapper.find("button:first").on("click", this.save);
-        $wrapper.find("button:last").on("click", this.cancel);
-        $input.on("keydown", this.handleKeyDown);
+        wrapper.querySelector("#save").addEventListener("click", this.save);
+        wrapper.querySelector("#cancel").addEventListener("click", this.cancel);
+        input.addEventListener("keydown", this.handleKeyDown);
         scope.position(args.position);
       }
 
-      $input.focus().select();
+      input.focus();
+      input.select();
     };
 
     this.handleKeyDown = function (e) {
@@ -800,39 +696,38 @@
     };
 
     this.cancel = function () {
-      $input.val(defaultValue);
+      input.value = defaultValue;
       args.cancelChanges();
     };
 
     this.hide = function () {
-      $wrapper.hide();
+      utils.hide(wrapper);
     };
 
     this.show = function () {
-      $wrapper.show();
+      utils.show(wrapper);
     };
 
     this.position = function (position) {
-      $wrapper
-        .css("top", position.top - 5)
-        .css("left", position.left - 5);
+      utils.setStyleSize(wrapper, "top", position.top - 5);
+      utils.setStyleSize(wrapper, "left", position.left - 2);
     };
 
     this.destroy = function () {
-      $wrapper.remove();
+      wrapper.remove();
     };
 
     this.focus = function () {
-      $input.focus();
+      input.focus();
     };
 
     this.loadValue = function (item) {
-      $input.val(defaultValue = item[args.column.field]);
-      $input.select();
+      input.value = defaultValue = item[args.column.field];
+      input.select();
     };
 
     this.serializeValue = function () {
-      return $input.val();
+      return input.value;
     };
 
     this.applyValue = function (item, state) {
@@ -840,12 +735,12 @@
     };
 
     this.isValueChanged = function () {
-      return (!($input.val() === "" && defaultValue == null)) && ($input.val() != defaultValue);
+      return (!(input.value === "" && defaultValue == null)) && (input.value != defaultValue);
     };
 
     this.validate = function () {
       if (args.column.validator) {
-        var validationResults = args.column.validator($input.val(), args);
+        var validationResults = args.column.validator(input.value, args);
         if (!validationResults.valid) {
           return validationResults;
         }
@@ -881,13 +776,12 @@
   }
 
   // exports
-  $.extend(true, window, {
+  utils.extend(true, window, {
     "Slick": {
       "Editors": {
         "Text": TextEditor,
         "Integer": IntegerEditor,
         "Float": FloatEditor,
-        "Date": DateEditor,
         "Flatpickr": FlatpickrEditor,
         "YesNoSelect": YesNoSelectEditor,
         "Checkbox": CheckboxEditor,
@@ -896,4 +790,4 @@
       }
     }
   });
-})(jQuery);
+})();

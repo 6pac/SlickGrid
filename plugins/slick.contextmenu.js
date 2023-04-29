@@ -200,6 +200,9 @@
     }
 
     function createMenu(e) {
+      if(e instanceof Slick.EventData)
+        e = e.getNativeEvent();
+
       var targetEvent = e.touches ? e.touches[0] : e;
       var cell = _grid.getCellFromEvent(e);
       _currentCell = cell && cell.cell;
@@ -226,7 +229,7 @@
         "cell": _currentCell,
         "row": _currentRow,
         "grid": _grid
-      }, e, _self) == false) {
+      }, e, _self).getReturnValue() == false) {
         return;
       }
 
@@ -279,7 +282,7 @@
         "cell": _currentCell,
         "row": _currentRow,
         "grid": _grid
-      }, e, _self) == false) {
+      }, e, _self).getReturnValue() == false) {
         return;
       }
 
@@ -301,7 +304,7 @@
           "row": args && args.row,
           "grid": _grid,
           "menu": $menu
-        }, e, _self) == false) {
+        }, e, _self).getReturnValue() == false) {
           return;
         }
         if ($menu && $menu.remove) {
@@ -346,6 +349,9 @@
     }
 
     function handleOnContextMenu(e, args) {
+      if(e instanceof Slick.EventData)
+        e = e.getNativeEvent();
+
       e.preventDefault();
 
       var cell = _grid.getCellFromEvent(e);

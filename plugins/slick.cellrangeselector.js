@@ -151,14 +151,15 @@
       return _decorator.show(new Slick.Range(start.row, start.cell));
     }
 
-    function handleDrag(e, dd) {
+    function handleDrag(evt, dd) {
       if (!_dragging && !_isRowMoveRegistered) {
         return;
       }
       if (!_isRowMoveRegistered) {
-        e.stopImmediatePropagation();
+        evt.stopImmediatePropagation();
       }
 
+      const e = evt.getNativeEvent();
       if (options.autoScroll) {
         _draggingMouseOffset = getMouseOffsetViewport(e, dd);
         if (_draggingMouseOffset.isOutsideViewport) {

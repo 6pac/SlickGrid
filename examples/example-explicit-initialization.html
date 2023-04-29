@@ -72,7 +72,7 @@
 
     // create a detached container element
     var myGrid = $("<div id='myGrid' style='width:600px;height:500px;position:relative;'></div>");
-    grid = new Slick.Grid(myGrid, data, columns, options);
+    grid = new Slick.Grid(myGrid[0], data, columns, options);
 
 
     // ... later on, append the container to the DOM and initialize SlickGrid

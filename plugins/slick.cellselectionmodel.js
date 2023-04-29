@@ -92,7 +92,7 @@
       _ranges = removeInvalidRanges(ranges);
       if (rangeHasChanged) { 
         // provide extra "caller" argument through SlickEventData to avoid breaking pubsub event that only accepts an array of selected range
-        var eventData = new Slick.EventData();
+        var eventData = new Slick.EventData(null, _ranges);
         Object.defineProperty(eventData, 'detail', { writable: true, configurable: true, value: { caller: caller || "SlickCellSelectionModel.setSelectedRanges" } });
         _self.onSelectedRangesChanged.notify(_ranges, eventData); 
       }

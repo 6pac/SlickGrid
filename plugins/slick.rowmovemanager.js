@@ -138,12 +138,13 @@
       dd.insertBefore = -1;
     }
 
-    function handleDrag(e, dd) {
+    function handleDrag(evt, dd) {
       if (!_dragging) {
         return;
       }
 
-      e.stopImmediatePropagation();
+      evt.stopImmediatePropagation();
+      const e = evt.getNativeEvent();
 
       var targetEvent = e.touches ? e.touches[0] : e;
       var top = targetEvent.pageY - $(_canvas).offset().top;
@@ -163,7 +164,7 @@
           "insertBefore": insertBefore
         };
 
-        if (_self.onBeforeMoveRows.notify(eventData) === false) {
+        if (_self.onBeforeMoveRows.notify(eventData).getReturnValue() === false) {
           dd.canMove = false;
         } else {
           dd.canMove = true;

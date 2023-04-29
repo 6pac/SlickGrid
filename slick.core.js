@@ -4,16 +4,24 @@
  * @namespace Slick
  */
 
-(function ($) {
+(function (window) {
   /***
    * An event object for passing data to event handlers and letting them control propagation.
    * <p>This is pretty much identical to how W3C and jQuery implement events.</p>
    * @class EventData
    * @constructor
    */
-  function EventData() {
+  function EventData(event, args) {
+
+    var nativeEvent = event;
+    var arguments_ = args;
     var isPropagationStopped = false;
     var isImmediatePropagationStopped = false;
+    var isDefaultPrevented = false;
+    var returnValues = [];
+    var returnValue = undefined;
+
+    this.target = nativeEvent ? nativeEvent.target : undefined;
 
     /***
      * Stops event from propagating up the DOM tree.
@@ -21,6 +29,9 @@
      */
     this.stopPropagation = function () {
       isPropagationStopped = true;
+      if(nativeEvent) {
+        nativeEvent.stopPropagation();
+      }
     };
 
     /***
@@ -38,6 +49,9 @@
      */
     this.stopImmediatePropagation = function () {
       isImmediatePropagationStopped = true;
+      if(nativeEvent) {
+        nativeEvent.stopImmediatePropagation();
+      }
     };
 
     /***
@@ -48,6 +62,39 @@
     this.isImmediatePropagationStopped = function () {
       return isImmediatePropagationStopped;
     };
+
+    this.getNativeEvent = function() {
+      return nativeEvent;
+    }
+
+    this.preventDefault = function() {
+      if(nativeEvent) {
+        nativeEvent.preventDefault();
+      }
+      isDefaultPrevented = true;
+    }
+
+    this.isDefaultPrevented = function() {
+      if(nativeEvent) {
+        return nativeEvent.defaultPrevented;
+      }
+      return isDefaultPrevented;
+    }
+
+    this.addReturnValue = function(value) {
+      returnValues.push(value);
+      if(returnValue === undefined && value !== undefined) {
+        returnValue = value;
+      }
+    }
+
+    this.getReturnValue = function() {
+      return returnValue;
+    }
+
+    this.getArguments = function() {
+      return arguments_;
+    }
   }
 
   /***
@@ -96,15 +143,17 @@
      *      If not specified, the scope will be set to the <code>Event</code> instance.
      */
     this.notify = function (args, e, scope) {
-      e = e || new EventData();
+
+      if(!(e instanceof EventData))
+        e = new EventData(e, args);
       scope = scope || this;
 
-      var returnValue;
       for (var i = 0; i < handlers.length && !(e.isPropagationStopped() || e.isImmediatePropagationStopped()); i++) {
-        returnValue = handlers[i].call(scope, e, args);
+        const returnValue = handlers[i].call(scope, e, args);
+        e.addReturnValue(returnValue);
       }
 
-      return returnValue;
+      return e;
     };
   }
 
@@ -564,7 +613,7 @@
     }
 
     function cloneTreeColumns() {
-      return $.extend(true, [], treeColumns);
+      return extend([], treeColumns);
     }
 
     init();
@@ -572,8 +621,10 @@
     this.hasDepth = function () {
 
       for (var i in treeColumns)
+      {
         if (treeColumns[i].hasOwnProperty('columns'))
           return true;
+      }
 
       return false;
     };
@@ -675,10 +726,251 @@
   function regexSanitizer(dirtyHtml) {
      return dirtyHtml.replace(/(\b)(on[a-z]+)(\s*)=|javascript:([^>]*)[^>]*|(<\s*)(\/*)script([<>]*).*(<\s*)(\/*)script(>*)|(&lt;)(\/*)(script|script defer)(.*)(&gt;|&gt;">)/gi, '');
   }
- 
-  // exports
-  $.extend(true, window, {
-    "Slick": {
+
+  // With help from https://youmightnotneedjquery.com/
+  function grep( elems, callback, invert ) {
+		var callbackInverse,
+			matches = [],
+			i = 0,
+			length = elems.length,
+			callbackExpect = !invert;
+
+		// Go through the array, only saving the items
+		// that pass the validator function
+		for ( ; i < length; i++ ) {
+			callbackInverse = !callback( elems[ i ], i );
+			if ( callbackInverse !== callbackExpect ) {
+				matches.push( elems[ i ] );
+			}
+		}
+
+		return matches;
+	}
+
+  function offset(el) {
+
+    box = el.getBoundingClientRect();
+    docElem = document.documentElement;
+    return {
+      top: box.top + window.pageYOffset - docElem.clientTop,
+      left: box.left + window.pageXOffset - docElem.clientLeft
+    };
+ 	}
+
+  function width(el, value) {
+    if (value === undefined) {
+      return el.getBoundingClientRect().width;
+    }
+    setStyleSize(el, "width", value);
+  }
+
+  function height(el, value) {
+    if (value === undefined) {
+      return el.getBoundingClientRect().height;
+    }
+    setStyleSize(el, "height", value);
+  }
+
+  function setStyleSize(el, style, val) {
+    if (typeof val === 'function') {
+      val = val();
+    }
+    else if (typeof val === 'string') {
+      el.style[style] = val;
+    }
+    else {
+      el.style[style] = val + 'px';
+    }
+  }
+
+  function contains(parent, child) {
+    if(!parent || !child) {
+      return false;
+    }
+
+    const parentList = parents(child);
+    return !parentList.every(function (p)  {
+      if(parent == p) {
+        return false;
+      }
+      return true;
+    });
+  }
+  
+  function isHidden(el) {
+    return el.offsetWidth === 0 && el.offsetHeight === 0;
+  }
+
+  function parents(el, selector) {
+    const parents = [];
+    const visible = selector == ":visible";
+    const hidden = selector == ":hidden";
+
+    while ((el = el.parentNode) && el !== document) {
+
+      if(hidden)
+      {
+        if(isHidden(el)) {
+          parents.push(el);
+        }
+      }
+      else if (visible)
+      {
+        if(!isHidden(el)) {
+          parents.push(el);
+        }
+      }
+      else if (!selector || el.matches(selector)) 
+      {
+        parents.push(el);
+      }
+    }
+    return parents;
+  }
+
+  function template(html, parent) {
+    const template = document.createElement('template');
+    template.innerHTML = html.trim();
+
+    const first = template.content.firstChild;
+    if(parent)
+    {
+      [].forEach.call(template.content.children, function (child) {
+        parent.appendChild(child);
+      });
+      return first;
+    }
+    return first;
+  }
+  
+  function toFloat(value) {
+    var x = parseFloat(value)
+    if (isNaN(x)) {
+      return 0;
+    }
+    return x;
+  }
+
+  function show(el, type) {
+
+    type = type ? type : "";
+    if(Array.isArray(el)) {
+      el.forEach(function (e) {
+        e.style.display = type;
+      })
+    }
+    else {
+      el.style.display = type;
+    }
+  }
+
+  function hide(el) {
+    if(Array.isArray(el)) {
+      el.forEach(function (e) {
+        e.style.display = "none";
+      });
+    }
+    else {
+      el.style.display = "none";
+    }
+  }
+
+  function slideUp(el, callback) {
+    if(window.jQuery !== undefined) {
+      window.jQuery(el).slideUp("fast", callback);
+      return;
+    }
+
+    hide(el);
+    callback();
+  }
+
+  function slideDown(el, callback) {
+    if(window.jQuery !== undefined) {
+      window.jQuery(el).slideDown("fast", callback);
+      return;
+    }
+
+    show(el);
+    callback();
+  }
+
+  // jQuery's extend
+  var getProto = Object.getPrototypeOf;
+  var class2type = {};
+  var toString = class2type.toString;
+  var hasOwn = class2type.hasOwnProperty;
+  var fnToString = hasOwn.toString;
+  var ObjectFunctionString = fnToString.call( Object );
+  function isFunction( obj ) {
+    return typeof obj === "function" && typeof obj.nodeType !== "number" &&
+      typeof obj.item !== "function";
+  };
+  function isPlainObject( obj ) {
+    var proto, Ctor;
+    if ( !obj || toString.call( obj ) !== "[object Object]" ) {
+      return false;
+    }
+
+    proto = getProto( obj );
+    if ( !proto ) {
+      return true;
+    }
+    Ctor = hasOwn.call( proto, "constructor" ) && proto.constructor;
+    return typeof Ctor === "function" && fnToString.call( Ctor ) === ObjectFunctionString;
+  }
+  function extend() {
+    var options, name, src, copy, copyIsArray, clone,
+      target = arguments[ 0 ],
+      i = 1,
+      length = arguments.length,
+      deep = true;
+    if ( typeof target === "boolean" ) {
+      deep = target;
+      target = arguments[ i ] || {};
+      i++;
+    }
+    else
+    {
+      target = target || {}
+    }
+    if ( typeof target !== "object" && !isFunction( target ) ) {
+      target = {};
+    }
+    if ( i === length ) {
+      target = this;
+      i--;
+    }
+    for ( ; i < length; i++ ) {
+      if ( ( options = arguments[ i ] ) != null ) {
+        for ( name in options ) {
+          copy = options[ name ];
+          if ( name === "__proto__" || target === copy ) {
+            continue;
+          }
+          if ( deep && copy && ( isPlainObject( copy ) ||
+            ( copyIsArray = Array.isArray( copy ) ) ) ) {
+            src = target[ name ];
+            if ( copyIsArray && !Array.isArray( src ) ) {
+              clone = [];
+            } else if ( !copyIsArray && !isPlainObject( src ) ) {
+              clone = {};
+            } else {
+              clone = src;
+            }
+            copyIsArray = false;
+            target[ name ] = extend( deep, clone, copy );
+          } else if ( copy !== undefined ) {
+            target[ name ] = copy;
+          }
+        }
+      }
+    }
+    return target;
+  };
+
+   // exports
+  window.Slick = {
       "Event": Event,
       "EventData": EventData,
       "EventHandler": EventHandler,
@@ -689,7 +981,46 @@
       "GroupTotals": GroupTotals,
       "RegexSanitizer": regexSanitizer,
       "EditorLock": EditorLock,
-  
+      "Utils":
+      {
+        "extend": extend,
+        "grep": grep,
+        "offset": offset,
+        "height": height,
+        "width": width,
+        "setStyleSize": setStyleSize,
+        "contains": contains,
+        "template": template,
+        "toFloat": toFloat,
+        "parents": parents,
+        "show": show,
+        "hide": hide,
+        "slideUp": slideUp,
+        "slideDown": slideDown,
+        "storage": {
+          // https://stackoverflow.com/questions/29222027/vanilla-alternative-to-jquery-data-function-any-native-javascript-alternati
+          _storage: new WeakMap(),
+          put: function (element, key, obj) {
+              if (!this._storage.has(element)) {
+                  this._storage.set(element, new Map());
+              }
+              this._storage.get(element).set(key, obj);
+          },
+          get: function (element, key) {
+              const el = this._storage.get(element);
+              if(el)
+                return el.get(key);
+              return null;
+          },
+          remove: function (element, key) {
+              var ret = this._storage.get(element).delete(key);
+              if (!this._storage.get(element).size === 0) {
+                  this._storage.delete(element);
+              }
+              return ret;
+          }
+      }
+      },
       /***
        * A global singleton editor lock.
        * @class GlobalEditorLock
@@ -757,7 +1088,4 @@
         HTML: 'HTML'
       }
     }
-  });
-})(jQuery);
-
-
+})(window);

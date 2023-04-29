@@ -49,7 +49,6 @@
 
 <script src="../lib/firebugx.js"></script>
 
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -99,10 +98,10 @@
   var options = {
     editable: true,
     enableAddRow: false,
-    enableCellNavigation: true
+    enableCellNavigation: true,
+    createPreHeaderPanel: true
   };
 
-  $(function () {
     for (var i = 0; i < 5; i++) {
       var d = (data[i] = {});
 
@@ -115,7 +114,6 @@
     }
 
     grid = new Slick.Grid("#myGrid", data, columns, options);
-  })
 </script>
 </body>
 </html>

@@ -206,7 +206,7 @@
         "cell": _currentCell,
         "row": _currentRow,
         "grid": _grid
-      }, e, _self) == false) {
+      }, e, _self).getReturnValue() == false) {
         return;
       }
 
@@ -259,7 +259,7 @@
         "cell": _currentCell,
         "row": _currentRow,
         "grid": _grid
-      }, e, _self) == false) {
+      }, e, _self).getReturnValue() == false) {
         return;
       }
 
@@ -301,7 +301,7 @@
             "row": args && args.row,
             "grid": _grid,
             "menu": $menu
-          }, e, _self) == false) {
+          }, e, _self).getReturnValue() == false) {
             return;
           }
         }
@@ -364,6 +364,9 @@
     }
 
     function handleCellClick(e, args) {
+      if(e instanceof Slick.EventData)
+        e = e.getNativeEvent();
+
       var cell = _grid.getCellFromEvent(e);
       var dataContext = _grid.getDataItem(cell.row);
       var columnDef = _grid.getColumns()[cell.cell];
@@ -418,7 +421,7 @@
           "row": args && args.row,
           "grid": _grid,
           "menu": $menu
-        }, e, _self) == false) {
+        }, e, _self).getReturnValue() == false) {
           return;
         }
         if ($menu && $menu.remove) {

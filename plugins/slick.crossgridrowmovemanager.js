@@ -147,12 +147,13 @@
       dd.insertBefore = -1;
     }
 
-    function handleDrag(e, dd) {
+    function handleDrag(evt, dd) {
       if (!_dragging) {
         return;
       }
 
-      e.stopImmediatePropagation();
+      evt.stopImmediatePropagation();
+      const e = evt.getNativeEvent();
 
       var top = e.pageY - $(_toCanvas).offset().top;
       dd.selectionProxy.css("top", top - 5).show();
@@ -172,7 +173,7 @@
           "insertBefore": insertBefore
         };
 
-        if (_self.onBeforeMoveRows.notify(eventData) === false) {
+        if (_self.onBeforeMoveRows.notify(eventData).getReturnValue() === false) {
           dd.canMove = false;
         } else {
           dd.canMove = true;
