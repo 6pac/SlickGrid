@@ -12,15 +12,26 @@
    * @constructor
    */
   function EventData(event, args) {
+    this.event = event;
+    let nativeEvent = event;
+    let arguments_ = args;
+    let isPropagationStopped = false;
+    let isImmediatePropagationStopped = false;
+    let isDefaultPrevented = false;
+    let returnValues = [];
+    let returnValue = undefined;
 
-    var nativeEvent = event;
-    var arguments_ = args;
-    var isPropagationStopped = false;
-    var isImmediatePropagationStopped = false;
-    var isDefaultPrevented = false;
-    var returnValues = [];
-    var returnValue = undefined;
-
+    // when we already have an event, we want to keep some of the event properties
+    if (event) {
+      const eventProps = [
+        'altKey', 'ctrlKey', 'metaKey', 'shiftKey', 'key', 'keyCode',
+        'clientX', 'clientY', 'offsetX', 'offsetY', 'pageX', 'pageY',
+        'bubbles', 'type', 'which', 'x', 'y'
+      ];
+      for (let key of eventProps) {
+        this[key] = event[key];
+      }
+    }
     this.target = nativeEvent ? nativeEvent.target : undefined;
 
     /***
@@ -143,9 +154,9 @@
      *      If not specified, the scope will be set to the <code>Event</code> instance.
      */
     this.notify = function (args, e, scope) {
-
-      if(!(e instanceof EventData))
+      if (!(e instanceof EventData)) {
         e = new EventData(e, args);
+      }
       scope = scope || this;
 
       for (var i = 0; i < handlers.length && !(e.isPropagationStopped() || e.isImmediatePropagationStopped()); i++) {
@@ -748,14 +759,14 @@
 	}
 
   function offset(el) {
+    const box = el.getBoundingClientRect();
+    const docElem = document.documentElement;
 
-    box = el.getBoundingClientRect();
-    docElem = document.documentElement;
     return {
       top: box.top + window.pageYOffset - docElem.clientTop,
       left: box.left + window.pageXOffset - docElem.clientLeft
     };
- 	}
+  }
 
   function width(el, value) {
     if (value === undefined) {
@@ -905,7 +916,7 @@
   function isFunction( obj ) {
     return typeof obj === "function" && typeof obj.nodeType !== "number" &&
       typeof obj.item !== "function";
-  };
+  }
   function isPlainObject( obj ) {
     var proto, Ctor;
     if ( !obj || toString.call( obj ) !== "[object Object]" ) {
@@ -924,7 +935,8 @@
       target = arguments[ 0 ],
       i = 1,
       length = arguments.length,
-      deep = true;
+      deep = false;
+
     if ( typeof target === "boolean" ) {
       deep = target;
       target = arguments[ i ] || {};
@@ -967,9 +979,52 @@
       }
     }
     return target;
-  };
+  }
 
-   // exports
+  /**
+   * A simple binding event service to keep track of all events being subscribed to, 
+   * it allows us to unbind event(s) and their listener(s) by calling a simple unbind method call.
+   * Unbinding is a necessary step to make sure that all event listeners are removed to avoid memory leaks when destroing the grid
+   */
+  function BindingEventService() {
+    let _boundedEvents = [];
+
+    this.destroy = function () {
+      this.unbindAll();
+      _boundedEvents = [];
+    }
+
+    /** Bind an event listener to any element */
+    this.bind = function (element, eventName, listener, options) {
+      element.addEventListener(eventName, listener, options);
+      _boundedEvents.push({ element: element, eventName, listener });
+    }
+
+    /** Unbind all will remove every every event handlers that were bounded earlier */
+    this.unbind = function (element, eventName, listener) {
+      if (element && element.removeEventListener) {
+        element.removeEventListener(eventName, listener);
+      }
+    }
+
+    this.unbindByName = function (element, eventName) {
+      const boundedEvent = _boundedEvents.find(e => e.element === element && e.eventName === eventName);
+      if (boundedEvent) {
+        this.unbind(boundedEvent.element, boundedEvent.eventName, boundedEvent.listener);
+      }
+    }
+
+    /** Unbind all will remove every every event handlers that were bounded earlier */
+    this.unbindAll = function () {
+      while (_boundedEvents.length > 0) {
+        const boundedEvent = _boundedEvents.pop();
+        const { element, eventName, listener } = boundedEvent;
+        this.unbind(element, eventName, listener);
+      }
+    }
+  }
+
+  // export Slick namespace on both global & window objects
   window.Slick = {
       "Event": Event,
       "EventData": EventData,
@@ -981,6 +1036,7 @@
       "GroupTotals": GroupTotals,
       "RegexSanitizer": regexSanitizer,
       "EditorLock": EditorLock,
+    "BindingEventService": BindingEventService,
       "Utils":
       {
         "extend": extend,
@@ -1019,7 +1075,7 @@
               }
               return ret;
           }
-      }
+        }
       },
       /***
        * A global singleton editor lock.
@@ -1088,4 +1144,11 @@
         HTML: 'HTML'
       }
     }
+
+  /*  eslint-disable no-undef */
+  // also add to global object when exist
+  if (typeof global !== "undefined") {
+    global.Slick = window.Slick;
+  }
+  /*  eslint-enable no-undef */
 })(window);

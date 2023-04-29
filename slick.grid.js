@@ -161,6 +161,7 @@ if (typeof Slick === "undefined") {
     const show = utils.show;
     const hide = utils.hide;
 
+    var _bindingEventService = new Slick.BindingEventService();
     var initialized = false;
     var _container;
     var uid = "slickgrid_" + Math.round(1000000 * Math.random());
@@ -327,7 +328,7 @@ if (typeof Slick === "undefined") {
 
       // calculate these only once and share between grid instances
       maxSupportedCssHeight = maxSupportedCssHeight || getMaxSupportedCssHeight();
-      options = utils.extend({}, defaults, options);
+      options = utils.extend(true, {}, defaults, options);
       validateAndEnforceOptions();
       columnDefaults.width = options.defaultColumnWidth;
 
@@ -549,7 +550,7 @@ if (typeof Slick === "undefined") {
           // disable text selection in grid cells except in input and textarea elements
           // (this is IE-specific, because selectstart event will only fire in IE)
           _viewport.forEach(function (view) {
-            view.addEventListener("selectstart.ui", function (event) {
+            _bindingEventService.bind(view, "selectstart.ui", function (event) {
               if(event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement)
               {
                 return;
@@ -572,9 +573,9 @@ if (typeof Slick === "undefined") {
         resizeCanvas();
         bindAncestorScrollEvents();
 
-        _container.addEventListener("resize.slickgrid", resizeCanvas);
+        _bindingEventService.bind(_container, "resize.slickgrid", resizeCanvas);
         _viewport.forEach(function (view) {
-          view.addEventListener("scroll", handleScroll);
+          _bindingEventService.bind(view, "scroll", handleScroll);
         });
 
         if (options.enableMouseWheelScrollHandler) {
@@ -587,39 +588,39 @@ if (typeof Slick === "undefined") {
         }
 
         _headerScroller.forEach(function (el) {
-            el.addEventListener("contextmenu", handleHeaderContextMenu);
-            el.addEventListener("click", handleHeaderClick);
+          _bindingEventService.bind(el, "contextmenu", handleHeaderContextMenu);
+          _bindingEventService.bind(el, "click", handleHeaderClick);
         });
 
         _headerRowScroller.forEach(function (scroller) {
-           scroller.addEventListener("scroll", handleHeaderRowScroll);
+          _bindingEventService.bind(scroller, "scroll", handleHeaderRowScroll);
         });
 
         if (options.createFooterRow) {
           _footerRow.forEach(function (footer) {
-            footer.addEventListener("contextmenu", handleFooterContextMenu)
-            footer.addEventListener("click", handleFooterClick);
+            _bindingEventService.bind(footer, "contextmenu", handleFooterContextMenu)
+            _bindingEventService.bind(footer, "click", handleFooterClick);
           });
 
           _footerRowScroller.forEach(function (scroller) {
-            scroller.addEventListener("scroll", handleFooterRowScroll);
+            _bindingEventService.bind(scroller, "scroll", handleFooterRowScroll);
           });
         }
 
         if (options.createPreHeaderPanel) {
-          _preHeaderPanelScroller.addEventListener("scroll", handlePreHeaderPanelScroll);
+          _bindingEventService.bind(_preHeaderPanelScroller, "scroll", handlePreHeaderPanelScroll);
         }
 
-        _focusSink.addEventListener("keydown", handleKeyDown);
-        _focusSink2.addEventListener("keydown", handleKeyDown);
+        _bindingEventService.bind(_focusSink, "keydown", handleKeyDown);
+        _bindingEventService.bind(_focusSink2, "keydown", handleKeyDown);
 
         _canvas.forEach(function (element) {
-          element.addEventListener("keydown", handleKeyDown);
-          element.addEventListener("click", handleClick);
-          element.addEventListener("dblclick", handleDblClick);
-          element.addEventListener("contextmenu", handleContextMenu);
-          element.addEventListener("mouseover", handleCellMouseOver);
-          element.addEventListener("mouseout", handleCellMouseOut);
+          _bindingEventService.bind(element, "keydown", handleKeyDown);
+          _bindingEventService.bind(element, "click", handleClick);
+          _bindingEventService.bind(element, "dblclick", handleDblClick);
+          _bindingEventService.bind(element, "contextmenu", handleContextMenu);
+          _bindingEventService.bind(element, "mouseover", handleCellMouseOver);
+          _bindingEventService.bind(element, "mouseout", handleCellMouseOut);
         });
 
         if (Slick.Draggable) {
@@ -982,7 +983,7 @@ if (typeof Slick === "undefined") {
       target.forEach(function (el) {
         el.setAttribute("unselectable", "on")
         el.style.MozUserSelect = "none";
-        el.addEventListener("selectstart.ui", function () {
+        _bindingEventService.bind(el, "selectstart.ui", function () {
           return false;
         });
       });
@@ -1041,14 +1042,14 @@ if (typeof Slick === "undefined") {
         // bind to scroll containers only
         if (elem == _viewportTopL || elem.scrollWidth != elem.clientWidth || elem.scrollHeight != elem.clientHeight) {
           _boundAncestors.push(elem);
-          elem.addEventListener("scroll." + uid, handleActiveCellPositionChange);
+          _bindingEventService.bind(elem, "scroll." + uid, handleActiveCellPositionChange);
         }
       }
     }
 
     function unbindAncestorScrollEvents() {
       _boundAncestors.forEach(function (ancestor) {
-        ancestor.removeEventListener("scroll." + uid);
+        _bindingEventService.unbindByName(ancestor, "scroll." + uid);
       });
       _boundAncestors = [];
     }
@@ -1336,14 +1337,14 @@ if (typeof Slick === "undefined") {
         if(classname)
           header.classList.add(classname);
 
-        header.addEventListener("mouseenter", handleHeaderMouseEnter);
-        header.addEventListener("mouseleave", handleHeaderMouseLeave);
+        _bindingEventService.bind(header, "mouseenter", handleHeaderMouseEnter);
+        _bindingEventService.bind(header, "mouseleave", handleHeaderMouseLeave);
 
         utils.storage.put(header, "column", m);
 
         if (options.enableColumnReorder || m.sortable) {
-          header.addEventListener("mouseenter", handleHeaderMouseHoverOn);
-          header.addEventListener("mouseleave", handleHeaderMouseHoverOff);
+          _bindingEventService.bind(header, "mouseenter", handleHeaderMouseHoverOn);
+          _bindingEventService.bind(header, "mouseleave", handleHeaderMouseHoverOff);
         }
 
         if(m.hasOwnProperty('headerCellAttrs') && m.headerCellAttrs instanceof Object) {
@@ -1374,8 +1375,8 @@ if (typeof Slick === "undefined") {
           if(classname)
             headerRowCell.classList.add(classname);
 
-          headerRowCell.addEventListener("mouseenter", handleHeaderRowMouseEnter);
-          headerRowCell.addEventListener("mouseleave", handleHeaderRowMouseLeave);
+          _bindingEventService.bind(headerRowCell, "mouseenter", handleHeaderRowMouseEnter);
+          _bindingEventService.bind(headerRowCell, "mouseleave", handleHeaderRowMouseLeave);
 
           utils.storage.put(headerRowCell, "column", m);
 
@@ -1413,7 +1414,7 @@ if (typeof Slick === "undefined") {
 
       _headers.forEach(function (header) {
 
-        header.addEventListener("click", function (e) {
+        _bindingEventService.bind(header, "click", function (e) {
           if (columnResizeDragging) 
             return;
 
@@ -1687,7 +1688,7 @@ if (typeof Slick === "undefined") {
 
     function handleResizeableHandleDoubleClick(evt) {
       const triggeredByColumn = evt.target.parentElement.id.replace(uid, "");
-      trigger(self.onColumnsResizeDblClick, { triggeredByColumn: triggeredByColumn.getReturnValue() });
+      trigger(self.onColumnsResizeDblClick, { triggeredByColumn: triggeredByColumn });
     }
 
     function setupColumnResize() {
@@ -1725,11 +1726,11 @@ if (typeof Slick === "undefined") {
 
         if (i >= columns.length) { return; }
         if (i < firstResizable || (options.forceFitColumns && i >= lastResizable)) {
-          return;
+          continue;
         }
         
         const resizeableHandle = utils.template("<div class='slick-resizable-handle' />", colElm);
-        resizeableHandle.addEventListener("dblclick", handleResizeableHandleDoubleClick);
+        _bindingEventService.bind(resizeableHandle, "dblclick", handleResizeableHandleDoubleClick);
 
         slickResizableInstances.push(
           Slick.Resizable({
@@ -2116,23 +2117,29 @@ if (typeof Slick === "undefined") {
 
       let el = utils.template("<div class='ui-state-default slick-header-column' style='visibility:hidden'>-</div>", header);
       let style = getComputedStyle(el);
-      h.forEach(function (val) {
-        headerColumnWidthDiff += utils.toFloat(style[val]);
-      });
-      v.forEach(function (val) {
-        headerColumnHeightDiff += utils.toFloat(style[val]);
-      })
+      // if (el.css("box-sizing") != "border-box" && el.css("-moz-box-sizing") != "border-box" && el.css("-webkit-box-sizing") != "border-box") {
+      if (style["box-sizing"] != "border-box" && style["-moz-box-sizing"] != "border-box" && style["-webkit-box-sizing"] != "border-box") {
+        h.forEach(function (val) {
+          headerColumnWidthDiff += utils.toFloat(style[val]);
+        });
+        v.forEach(function (val) {
+          headerColumnHeightDiff += utils.toFloat(style[val]);
+        })
+      }
       el.remove();
 
       const r = utils.template("<div class='slick-row' />", _canvas[0]);
       el = utils.template("<div class='slick-cell' id='' style='visibility:hidden'>-</div>", r);
       style = getComputedStyle(el);
-      h.forEach(function (val) {
-        cellWidthDiff += utils.toFloat(style[val]);
-      });
-      v.forEach(function (val) {
-        cellHeightDiff += utils.toFloat(style[val]);
-      })
+      // if (el.css("box-sizing") != "border-box" && el.css("-moz-box-sizing") != "border-box" && el.css("-webkit-box-sizing") != "border-box") {
+      if (style["box-sizing"] != "border-box" && style["-moz-box-sizing"] != "border-box" && style["-webkit-box-sizing"] != "border-box") {
+        h.forEach(function (val) {
+          cellWidthDiff += utils.toFloat(style[val]);
+        });
+        v.forEach(function (val) {
+          cellHeightDiff += utils.toFloat(style[val]);
+        })
+      }
       r.remove();
 
       absoluteColumnMinWidth = Math.max(headerColumnWidthDiff, cellWidthDiff);
@@ -2208,6 +2215,7 @@ if (typeof Slick === "undefined") {
     }
 
     function destroy(shouldDestroyAllElements) {
+      _bindingEventService.unbindAll();
       slickDraggableInstance = destroyAllInstances(slickDraggableInstance);
       slickMouseWheelInstances = destroyAllInstances(slickMouseWheelInstances);
       slickResizableInstances = destroyAllInstances(slickResizableInstances);
@@ -2226,62 +2234,62 @@ if (typeof Slick === "undefined") {
       }
 
       unbindAncestorScrollEvents();
-      _container.removeEventListener("resize.slickgrid", resizeCanvas);
+      _bindingEventService.unbindByName(_container, "resize.slickgrid", resizeCanvas);
       removeCssRules();
 
       _canvas.forEach(function (element) {
-        element.removeEventListener("keydown", handleKeyDown);
-        element.removeEventListener("click", handleClick);
-        element.removeEventListener("dblclick", handleDblClick);
-        element.removeEventListener("contextmenu", handleContextMenu);
-        element.removeEventListener("mouseover", handleCellMouseOver);
-        element.removeEventListener("mouseout", handleCellMouseOut);
+        _bindingEventService.unbindByName(element, "keydown", handleKeyDown);
+        _bindingEventService.unbindByName(element, "click", handleClick);
+        _bindingEventService.unbindByName(element, "dblclick", handleDblClick);
+        _bindingEventService.unbindByName(element, "contextmenu", handleContextMenu);
+        _bindingEventService.unbindByName(element, "mouseover", handleCellMouseOver);
+        _bindingEventService.unbindByName(element, "mouseout", handleCellMouseOut);
       });
       _viewport.forEach(function (view) {
-        view.removeEventListener("scroll", handleScroll);
+        _bindingEventService.unbindByName(view, "scroll", handleScroll);
       });
 
       _headerScroller.forEach(function (el) {
-        el.removeEventListener("contextmenu", handleHeaderContextMenu);
-        el.removeEventListener("click", handleHeaderClick);
+        _bindingEventService.unbindByName(el, "contextmenu", handleHeaderContextMenu);
+        _bindingEventService.unbindByName(el, "click", handleHeaderClick);
       });
 
       _headerRowScroller.forEach(function (scroller) {
-        scroller.removeEventListener("scroll", handleHeaderRowScroll);
+        _bindingEventService.unbindByName(scroller, "scroll", handleHeaderRowScroll);
       });
 
       if (_footerRow) {
         _footerRow.forEach(function (footer) {
-          footer.removeEventListener("contextmenu", handleFooterContextMenu)
-          footer.removeEventListener("click", handleFooterClick);
+          _bindingEventService.unbindByName(footer, "contextmenu", handleFooterContextMenu)
+          _bindingEventService.unbindByName(footer, "click", handleFooterClick);
         });
       }
 
       if (_footerRowScroller) {
         _footerRowScroller.forEach(function (scroller) {
-          scroller.removeEventListener("scroll", handleFooterRowScroll);
+          _bindingEventService.unbindByName(scroller, "scroll", handleFooterRowScroll);
         });
       }
 
       if (_preHeaderPanelScroller) {
-        _preHeaderPanelScroller.removeEventListener("scroll", handlePreHeaderPanelScroll);
+        _bindingEventService.unbindByName(_preHeaderPanelScroller, "scroll", handlePreHeaderPanelScroll);
       }
 
-      _focusSink.removeEventListener("keydown", handleKeyDown);
-      _focusSink2.removeEventListener("keydown", handleKeyDown);
+      _bindingEventService.unbindByName(_focusSink, "keydown", handleKeyDown);
+      _bindingEventService.unbindByName(_focusSink2, "keydown", handleKeyDown);
 
       const resizeHandles = _container.querySelectorAll(".slick-resizable-handle");
       [].forEach.call(resizeHandles, function (handle) {
-        handle.removeEventListener("dblclick", handleResizeableHandleDoubleClick);
+        _bindingEventService.unbindByName(handle, "dblclick", handleResizeableHandleDoubleClick);
       });
 
       const headerColumns = _container.querySelectorAll(".slick-header-column");
       [].forEach.call(headerColumns, function (column) {
-        column.removeEventListener("mouseenter", handleHeaderMouseEnter);
-        column.removeEventListener("mouseleave", handleHeaderMouseLeave);
+        _bindingEventService.unbindByName(column, "mouseenter", handleHeaderMouseEnter);
+        _bindingEventService.unbindByName(column, "mouseleave", handleHeaderMouseLeave);
 
-        column.removeEventListener('mouseenter', handleHeaderMouseHoverOn);
-        column.removeEventListener('mouseleave', handleHeaderMouseHoverOff);
+        _bindingEventService.unbindByName(column, 'mouseenter', handleHeaderMouseHoverOn);
+        _bindingEventService.unbindByName(column, 'mouseleave', handleHeaderMouseHoverOff);
       });
 
       _container.replaceChildren();
@@ -2915,7 +2923,7 @@ if (typeof Slick === "undefined") {
     //////////////////////////////////////////////////////////////////////////////////////////////
 
     function trigger(evt, args, e) {
-      e = new Slick.EventData(e, args);
+      e = e || new Slick.EventData(e, args);
       args = args || {};
       args.grid = self;
       return evt.notify(args, e, self);
@@ -3210,7 +3218,7 @@ if (typeof Slick === "undefined") {
         invalidateRow(getDataLength());
       }
 
-      var originalOptions = utils.extend({}, options);
+      var originalOptions = utils.extend(true, {}, options);
       options = utils.extend(options, args);
       trigger(self.onSetOptions, { "optionsBefore": originalOptions, "optionsAfter": options });
 
@@ -4332,7 +4340,7 @@ if (typeof Slick === "undefined") {
 
     	  if ( hasFrozenRows ) {
 
-    		  var renderedFrozenRows = utils.extend({}, rendered);
+          var renderedFrozenRows = utils.extend(true, {}, rendered);
 
     		  if (options.frozenBottom) {
 
