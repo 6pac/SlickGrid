@@ -49,7 +49,8 @@
     {id: "effort-driven", name: "Effort Driven", sortable: false, width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven"}
   ];
 
-    function setupColumnReorder(grid, $headers, headerColumnWidthDiff, setColumns, setupColumnResize, columns, getColumnIndex, uid, trigger) {
+    function setupColumnReorder(grid, headers, headerColumnWidthDiff, setColumns, setupColumnResize, columns, getColumnIndex, uid, trigger) {
+      var $headers = $(headers);
       $headers.filter(":ui-sortable").sortable("destroy");
       $headers.sortable({
         //cancel: '#' + uid + 'title',

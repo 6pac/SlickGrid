@@ -1049,7 +1049,7 @@ if (typeof Slick === "undefined") {
 
     function unbindAncestorScrollEvents() {
       _boundAncestors.forEach(function (ancestor) {
-        _bindingEventService.unbindByName(ancestor, "scroll." + uid);
+        _bindingEventService.unbindByEventName(ancestor, "scroll." + uid);
       });
       _boundAncestors = [];
     }
@@ -2234,62 +2234,62 @@ if (typeof Slick === "undefined") {
       }
 
       unbindAncestorScrollEvents();
-      _bindingEventService.unbindByName(_container, "resize.slickgrid", resizeCanvas);
+      _bindingEventService.unbindByEventName(_container, "resize.slickgrid", resizeCanvas);
       removeCssRules();
 
       _canvas.forEach(function (element) {
-        _bindingEventService.unbindByName(element, "keydown", handleKeyDown);
-        _bindingEventService.unbindByName(element, "click", handleClick);
-        _bindingEventService.unbindByName(element, "dblclick", handleDblClick);
-        _bindingEventService.unbindByName(element, "contextmenu", handleContextMenu);
-        _bindingEventService.unbindByName(element, "mouseover", handleCellMouseOver);
-        _bindingEventService.unbindByName(element, "mouseout", handleCellMouseOut);
+        _bindingEventService.unbindByEventName(element, "keydown", handleKeyDown);
+        _bindingEventService.unbindByEventName(element, "click", handleClick);
+        _bindingEventService.unbindByEventName(element, "dblclick", handleDblClick);
+        _bindingEventService.unbindByEventName(element, "contextmenu", handleContextMenu);
+        _bindingEventService.unbindByEventName(element, "mouseover", handleCellMouseOver);
+        _bindingEventService.unbindByEventName(element, "mouseout", handleCellMouseOut);
       });
       _viewport.forEach(function (view) {
-        _bindingEventService.unbindByName(view, "scroll", handleScroll);
+        _bindingEventService.unbindByEventName(view, "scroll", handleScroll);
       });
 
       _headerScroller.forEach(function (el) {
-        _bindingEventService.unbindByName(el, "contextmenu", handleHeaderContextMenu);
-        _bindingEventService.unbindByName(el, "click", handleHeaderClick);
+        _bindingEventService.unbindByEventName(el, "contextmenu", handleHeaderContextMenu);
+        _bindingEventService.unbindByEventName(el, "click", handleHeaderClick);
       });
 
       _headerRowScroller.forEach(function (scroller) {
-        _bindingEventService.unbindByName(scroller, "scroll", handleHeaderRowScroll);
+        _bindingEventService.unbindByEventName(scroller, "scroll", handleHeaderRowScroll);
       });
 
       if (_footerRow) {
         _footerRow.forEach(function (footer) {
-          _bindingEventService.unbindByName(footer, "contextmenu", handleFooterContextMenu)
-          _bindingEventService.unbindByName(footer, "click", handleFooterClick);
+          _bindingEventService.unbindByEventName(footer, "contextmenu", handleFooterContextMenu)
+          _bindingEventService.unbindByEventName(footer, "click", handleFooterClick);
         });
       }
 
       if (_footerRowScroller) {
         _footerRowScroller.forEach(function (scroller) {
-          _bindingEventService.unbindByName(scroller, "scroll", handleFooterRowScroll);
+          _bindingEventService.unbindByEventName(scroller, "scroll", handleFooterRowScroll);
         });
       }
 
       if (_preHeaderPanelScroller) {
-        _bindingEventService.unbindByName(_preHeaderPanelScroller, "scroll", handlePreHeaderPanelScroll);
+        _bindingEventService.unbindByEventName(_preHeaderPanelScroller, "scroll", handlePreHeaderPanelScroll);
       }
 
-      _bindingEventService.unbindByName(_focusSink, "keydown", handleKeyDown);
-      _bindingEventService.unbindByName(_focusSink2, "keydown", handleKeyDown);
+      _bindingEventService.unbindByEventName(_focusSink, "keydown", handleKeyDown);
+      _bindingEventService.unbindByEventName(_focusSink2, "keydown", handleKeyDown);
 
       const resizeHandles = _container.querySelectorAll(".slick-resizable-handle");
       [].forEach.call(resizeHandles, function (handle) {
-        _bindingEventService.unbindByName(handle, "dblclick", handleResizeableHandleDoubleClick);
+        _bindingEventService.unbindByEventName(handle, "dblclick", handleResizeableHandleDoubleClick);
       });
 
       const headerColumns = _container.querySelectorAll(".slick-header-column");
       [].forEach.call(headerColumns, function (column) {
-        _bindingEventService.unbindByName(column, "mouseenter", handleHeaderMouseEnter);
-        _bindingEventService.unbindByName(column, "mouseleave", handleHeaderMouseLeave);
+        _bindingEventService.unbindByEventName(column, "mouseenter", handleHeaderMouseEnter);
+        _bindingEventService.unbindByEventName(column, "mouseleave", handleHeaderMouseLeave);
 
-        _bindingEventService.unbindByName(column, 'mouseenter', handleHeaderMouseHoverOn);
-        _bindingEventService.unbindByName(column, 'mouseleave', handleHeaderMouseHoverOff);
+        _bindingEventService.unbindByEventName(column, 'mouseenter', handleHeaderMouseHoverOn);
+        _bindingEventService.unbindByEventName(column, 'mouseleave', handleHeaderMouseHoverOff);
       });
 
       _container.replaceChildren();
