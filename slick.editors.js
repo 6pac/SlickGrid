@@ -4,7 +4,7 @@
  * @namespace Slick
  */
 
-(function () {
+(function (window) {
 
   const utils = Slick.Utils;
 
@@ -333,18 +333,20 @@
 
     this.destroy = function () {
       scope.hide();
-      flatpickrInstance.destroy();
+      if (flatpickrInstance) {
+        flatpickrInstance.destroy();
+      }
       input.remove();
     };
 
     this.show = function () {
-      if (!args.compositeEditorOptions) {
+      if (!args.compositeEditorOptions && flatpickrInstance) {
         flatpickrInstance.open();
       }
     };
 
     this.hide = function () {
-      if (!args.compositeEditorOptions) {
+      if (!args.compositeEditorOptions && flatpickrInstance) {
         flatpickrInstance.close();
       }
     };
@@ -358,7 +360,9 @@
       input.value = defaultValue;
       input.defaultValue = defaultValue;
       input.select();
-      flatpickrInstance.setDate(defaultValue);
+      if (flatpickrInstance) {
+        flatpickrInstance.setDate(defaultValue);
+      }
     };
 
     this.serializeValue = function () {
@@ -776,7 +780,7 @@
   }
 
   // exports
-  utils.extend(true, window, {
+  Slick.Utils.extend(true, window, {
     "Slick": {
       "Editors": {
         "Text": TextEditor,
@@ -790,4 +794,4 @@
       }
     }
   });
-})();
+})(window);
