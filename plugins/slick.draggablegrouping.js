@@ -139,7 +139,7 @@
           dropzoneElm.classList.add('slick-dropzone-placeholder-hover');
           const draggablePlaceholderElm = dropzoneElm.querySelector('.slick-placeholder');
 
-          draggablePlaceholderElm.style.display = 'block';
+          draggablePlaceholderElm.style.display = 'inline-block';
           groupToggler.style.display = 'none';
 
           const droppedGroupingElms = dropzoneElm.querySelectorAll('.slick-dropped-grouping');
@@ -158,12 +158,13 @@
             draggablePlaceholderElm.parentElement && draggablePlaceholderElm.parentElement.classList.remove('slick-dropzone-placeholder-hover');
           }
 
-          if (dropzoneElm.querySelectorAll('.slick-dropped-grouping').length) {
+          const droppedGroupingElms = dropzoneElm.querySelectorAll('.slick-dropped-grouping');
+          droppedGroupingElms.forEach(droppedGroupingElm => droppedGroupingElm.style.display = 'inline-block');
+
+          if (droppedGroupingElms.length) {
             if (draggablePlaceholderElm) {
               draggablePlaceholderElm.style.display = 'none';
             }
-            const droppedGroupingElms = dropzoneElm.querySelectorAll('.slick-dropped-grouping');
-            droppedGroupingElms.forEach(droppedGroupingElm => droppedGroupingElm.style.display = 'inline-block');
             groupToggler.style.display = 'inline-block';
           }
 
@@ -228,8 +229,8 @@
 
       if (draggablePlaceholderElm) {
         _bindingEventService.bind(draggablePlaceholderElm, 'dragover', (e) => e.preventDefault);
-        _bindingEventService.bind(draggablePlaceholderElm, 'dragenter', () => _dropzoneElm.classList.add('slick-dropzone-placeholder-hover'));
-        _bindingEventService.bind(draggablePlaceholderElm, 'dragleave', () => _dropzoneElm.classList.remove('slick-dropzone-placeholder-hover'));
+        _bindingEventService.bind(draggablePlaceholderElm, 'dragenter', () => _dropzoneElm.classList.add('slick-dropzone-hover'));
+        _bindingEventService.bind(draggablePlaceholderElm, 'dragleave', () => _dropzoneElm.classList.remove('slick-dropzone-hover'));
       }
     }
 
