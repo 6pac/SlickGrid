@@ -1,6 +1,6 @@
-(function ($) {
+(function (window) {
   // Register namespace
-  $.extend(true, window, {
+  Slick.Utils.extend(true, window, {
     "Slick": {
       "AutoTooltips": AutoTooltips
     }
@@ -15,7 +15,6 @@
    */
   function AutoTooltips(options) {
     var _grid;
-    var _self = this;
     var _defaults = {
       enableForCells: true,
       enableForHeaderCells: false,
@@ -27,7 +26,7 @@
      * Initialize plugin.
      */
     function init(grid) {
-      options = $.extend(true, {}, _defaults, options);
+      options = Slick.Utils.extend(true, {}, _defaults, options);
       _grid = grid;
       if (options.enableForCells) _grid.onMouseEnter.subscribe(handleMouseEnter);
       if (options.enableForHeaderCells) _grid.onHeaderMouseEnter.subscribe(handleHeaderMouseEnter);
@@ -43,47 +42,52 @@
 
     /**
      * Handle mouse entering grid cell to add/remove tooltip.
-     * @param {jQuery.Event} e - The event
+     * @param {MouseEvent} e - The event
      */
-    function handleMouseEnter(e) {
-      var cell = _grid.getCellFromEvent(e);
+    function handleMouseEnter() {
+      const cell = _grid.getCellFromEvent(event);
       if (cell) {
-        var $node = $(_grid.getCellNode(cell.row, cell.cell));
-        var text;
-        if (!$node.attr("title") || options.replaceExisting) {
-          if (($node.innerWidth() < $node[0].scrollWidth) || ($node.innerHeight() < $node[0].scrollHeight)) {
-            text = $.trim($node.text());
-            if (options.maxToolTipLength && text.length > options.maxToolTipLength) {
-              text = text.substr(0, options.maxToolTipLength - 3) + "...";
+        let node = _grid.getCellNode(cell.row, cell.cell);
+        let text;
+        if (options && node && (!node.title || options && options.replaceExisting)) {
+          if (node.clientWidth < node.scrollWidth) {
+            text = node.textContent && node.textContent.trim() || '';
+            if (options && (options.maxToolTipLength && text.length > options.maxToolTipLength)) {
+              text = text.substring(0, options.maxToolTipLength - 3) + '...';
             }
-	  } else {
-            text = "";
+          } else {
+            text = '';
           }
-          $node.attr("title", text);
+          node.title = text;
         }
-		    $node = null;
+        node = null;
       }
     }
 
     /**
      * Handle mouse entering header cell to add/remove tooltip.
-     * @param {jQuery.Event} e     - The event
+     * @param {MouseEvent} e     - The event
      * @param {object} args.column - The column definition
      */
     function handleHeaderMouseEnter(e, args) {
-      var column = args.column,
-          $node = $(e.target).closest(".slick-header-column");
-      if (column && !column.toolTip) {
-        $node.attr("title", ($node.innerWidth() < $node[0].scrollWidth) ? column.name : "");
+      const column = args.column;
+      let node;
+      const targetElm = (e.target);
+
+      if (targetElm) {
+        node = targetElm.closest < HTMLDivElement > ('.slick-header-column');
+        if (node && !(column && column.toolTip)) {
+          node.title = (targetElm.clientWidth < node.clientWidth) ? column && column.name || '' : '';
       }
-	    $node = null;
+      }
+      node = null;
     }
 
     // Public API
-    $.extend(this, {
+    Slick.Utils.extend(this, {
       "init": init,
       "destroy": destroy,
       "pluginName": "AutoTooltips"
     });
   }
-})(jQuery);
+})(window);
