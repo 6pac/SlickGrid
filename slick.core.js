@@ -758,6 +758,24 @@
 		return matches;
 	}
 
+  function emptyElement(element) {
+    if (element && element.firstChild) {
+      while (element.firstChild) {
+        if (element.lastChild) {
+          element.removeChild(element.lastChild);
+        }
+      }
+    }
+    return element;
+  }
+
+  function isEmptyObject(obj) {
+    if (obj === null || obj === undefined) {
+      return true;
+    }
+    return Object.entries(obj).length === 0;
+  }
+
   function offset(el) {
     const box = el.getBoundingClientRect();
     const docElem = document.documentElement;
@@ -987,17 +1005,17 @@
    * Unbinding is a necessary step to make sure that all event listeners are removed to avoid memory leaks when destroing the grid
    */
   function BindingEventService() {
-    let _boundedEvents = [];
+    this.boundedEvents = [];
 
     this.destroy = function () {
       this.unbindAll();
-      _boundedEvents = [];
+      this.boundedEvents = [];
     }
 
     /** Bind an event listener to any element */
     this.bind = function (element, eventName, listener, options) {
       element.addEventListener(eventName, listener, options);
-      _boundedEvents.push({ element: element, eventName, listener });
+      this.boundedEvents.push({ element: element, eventName, listener });
     }
 
     /** Unbind all will remove every every event handlers that were bounded earlier */
@@ -1007,8 +1025,8 @@
       }
     }
 
-    this.unbindByName = function (element, eventName) {
-      const boundedEvent = _boundedEvents.find(e => e.element === element && e.eventName === eventName);
+    this.unbindByEventName = function (element, eventName) {
+      const boundedEvent = this.boundedEvents.find(e => e.element === element && e.eventName === eventName);
       if (boundedEvent) {
         this.unbind(boundedEvent.element, boundedEvent.eventName, boundedEvent.listener);
       }
@@ -1016,8 +1034,8 @@
 
     /** Unbind all will remove every every event handlers that were bounded earlier */
     this.unbindAll = function () {
-      while (_boundedEvents.length > 0) {
-        const boundedEvent = _boundedEvents.pop();
+      while (this.boundedEvents.length > 0) {
+        const boundedEvent = this.boundedEvents.pop();
         const { element, eventName, listener } = boundedEvent;
         this.unbind(element, eventName, listener);
       }
@@ -1041,6 +1059,8 @@
       {
         "extend": extend,
         "grep": grep,
+        "emptyElement": emptyElement,
+        "isEmptyObject": isEmptyObject,
         "offset": offset,
         "height": height,
         "width": width,

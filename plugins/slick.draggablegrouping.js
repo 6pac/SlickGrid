@@ -8,9 +8,9 @@
  *     This plugin provides the Draggable Grouping feature
  */
 
-(function ($) {
+(function (window) {
   // Register namespace
-  $.extend(true, window, {
+  Slick.Utils.extend(true, window, {
     "Slick": {
       "DraggableGrouping": DraggableGrouping
     }
@@ -49,48 +49,61 @@
     var _gridUid;
     var _gridColumns;
     var _dataView;
-    var $dropzone;
+    var _dropzoneElm;
+    var _droppableInstance;
     var dropzonePlaceholder;
     var groupToggler;
-    var _self = this;
     var _defaults = {
     };
     var onGroupChanged = new Slick.Event();
+    var _bindingEventService = new Slick.BindingEventService();
     var _handler = new Slick.EventHandler();
-    var _reorderedColumns = [];
-    var sortableLeftInstance;
-    var sortableRightInstance;
+    var _sortableLeftInstance;
+    var _sortableRightInstance;
 
     /**
      * Initialize plugin.
      */
     function init(grid) {
-      options = $.extend(true, {}, _defaults, options);
+      options = Slick.Utils.extend(true, {}, _defaults, options);
       _grid = grid;
       _gridUid = _grid.getUID();
       _gridColumns = _grid.getColumns();
       _dataView = _grid.getData();
-      _reorderedColumns = _gridColumns;
+      _dropzoneElm = grid.getPreHeaderPanel();
+      _dropzoneElm.classList.add('slick-dropzone');
 
-      $dropzone = $(_grid.getPreHeaderPanel());
-      $dropzone.addClass("slick-dropzone");
       var dropPlaceHolderText = options.dropPlaceHolderText || 'Drop a column header here to group by the column';
-      $dropzone.html("<div class='slick-placeholder'>" + dropPlaceHolderText + "</div><div class='slick-group-toggle-all expanded' style='display:none'></div>");
 
-      dropzonePlaceholder = $dropzone.find(".slick-placeholder");
-      groupToggler = $dropzone.find(".slick-group-toggle-all");
-      groupToggler.hide();
+      dropzonePlaceholder = document.createElement('div')
+      dropzonePlaceholder.className = 'slick-placeholder';
+      dropzonePlaceholder.textContent = dropPlaceHolderText;
+
+      groupToggler = document.createElement('div');
+      groupToggler.className = 'slick-group-toggle-all expanded';
+      groupToggler.style.display = 'none';
+
+      _dropzoneElm.appendChild(dropzonePlaceholder);
+      _dropzoneElm.appendChild(groupToggler);
+
       setupColumnDropbox();
 
 
       _handler.subscribe(_grid.onHeaderCellRendered, function (e, args) {
         var column = args.column;
         var node = args.node;        
-        if (!$.isEmptyObject(column.grouping)) {
-          var groupableIcon = $("<span class='slick-column-groupable' />");
-          if (options.groupIconCssClass) { groupableIcon.addClass(options.groupIconCssClass); }
-          if (options.groupIconImage) { groupableIcon.css("background", "url(" + options.groupIconImage + ") no-repeat center center"); }
-          $(node).css('cursor', 'pointer').append(groupableIcon);
+        if (!Slick.Utils.isEmptyObject(column.grouping) && node) {
+          node.style.cursor = 'pointer'; // add the pointer cursor on each column title
+
+          // also optionally add an icon beside each column title that can be dragged
+          if (options.groupIconCssClass) {
+            const groupableIconElm = document.createElement('span');
+            groupableIconElm.className = 'slick-column-groupable';
+            if (options.groupIconCssClass) {
+              groupableIconElm.classList.add(options.groupIconCssClass.split(' '));
+            }
+            node.appendChild(groupableIconElm);
+          }
         }
       });
 
@@ -101,8 +114,8 @@
 
     }
 
-    function setupColumnReorder(grid, $headers, headerColumnWidthDiff, setColumns, setupColumnResize, columns, getColumnIndex, uid, trigger) {
-      var $headerDraggableGroupBy = $(grid.getPreHeaderPanel());
+    function setupColumnReorder(grid, headers, _headerColumnWidthDiff, setColumns, setupColumnResize, _columns, getColumnIndex, _uid, trigger) {
+      const dropzoneElm = grid.getPreHeaderPanel();
 
       var sortableOptions = {
         animation: 50,
@@ -122,116 +135,125 @@
         //   return columnsGroupBy.some(c => c.id === target.getAttribute('data-id'));
         // },
         onStart: function () {
-          $('.slick-dropzone').addClass('slick-dropzone-hover');
-          $headerDraggableGroupBy.find('.slick-placeholder').show();
-          $headerDraggableGroupBy.find('.slick-dropped-grouping').hide();
-          groupToggler.hide();
+          dropzoneElm.classList.add('slick-dropzone-hover');
+          dropzoneElm.classList.add('slick-dropzone-placeholder-hover');
+          const draggablePlaceholderElm = dropzoneElm.querySelector('.slick-placeholder');
+
+          draggablePlaceholderElm.style.display = 'block';
+          groupToggler.style.display = 'none';
+
+          const droppedGroupingElms = dropzoneElm.querySelectorAll('.slick-dropped-grouping');
+          droppedGroupingElms.forEach(droppedGroupingElm => droppedGroupingElm.style.display = 'none');
         },
         onEnd: function (e) {
-          const $draggablePlaceholder = $headerDraggableGroupBy.find('.slick-placeholder');
-          $dropzone.removeClass('slick-dropzone-hover');
-          $draggablePlaceholder.addClass('slick-dropzone-placeholder-hover');
+          const draggablePlaceholderElm = dropzoneElm.querySelector('.slick-placeholder');
+          dropzoneElm.classList.remove('slick-dropzone-hover');
+          draggablePlaceholderElm.classList.remove('slick-dropzone-placeholder-hover');
 
-          $('.slick-dropzone').removeClass('slick-dropzone-hover');
-          $('.slick-placeholder').parent().removeClass('slick-dropzone-placeholder-hover');
 
-          var hasDroppedColumn = $headerDraggableGroupBy.find('.slick-dropped-grouping').length;
-          if (hasDroppedColumn > 0) {
-            $headerDraggableGroupBy.find('.slick-placeholder').hide();
-            $headerDraggableGroupBy.find('.slick-dropped-grouping').show();
-            groupToggler.show();
+          if (dropzonePlaceholder) {
+            dropzonePlaceholder.style.display = 'none';
+          }
+          if (draggablePlaceholderElm) {
+            draggablePlaceholderElm.parentElement && draggablePlaceholderElm.parentElement.classList.remove('slick-dropzone-placeholder-hover');
+          }
+
+          if (dropzoneElm.querySelectorAll('.slick-dropped-grouping').length) {
+            if (draggablePlaceholderElm) {
+              draggablePlaceholderElm.style.display = 'none';
+            }
+            const droppedGroupingElms = dropzoneElm.querySelectorAll('.slick-dropped-grouping');
+            droppedGroupingElms.forEach(droppedGroupingElm => droppedGroupingElm.style.display = 'inline-block');
+            groupToggler.style.display = 'inline-block';
           }
 
           if (!grid.getEditorLock().commitCurrentEdit()) {
             return;
           }
 
-          var reorderedIds = sortableLeftInstance.toArray();
+          const reorderedIds = _sortableLeftInstance && _sortableLeftInstance.toArray() || [];
 
-          // If frozen columns are used, headers has more than one entry and we need the ids from all of them.
-          // though there is only really a left and right header, this will work even if that should change.
-          if ($headers.length > 1) {
-            for (var headerI = 1, l = $headers.length; headerI < l; headerI += 1) {
-              var ids = sortableRightInstance.toArray();
+        // when frozen columns are used, headers has more than one entry and we need the ids from all of them.
+        // though there is only really a left and right header, this will work even if that should change.
+          if (headers.length > 1) {
+            const ids = _sortableRightInstance && _sortableRightInstance.toArray() || [];
 
-              // Note: the loop below could be simplified with:
-              // reorderedIds.push.apply(reorderedIds,ids);
-              // However, the loop is more in keeping with way-backward compatibility 
-              for (var idI = 0, idL = ids.length; idI < idL; idI += 1) {
-                reorderedIds.push(ids[idI]);
-              }
+          // Note: the loop below could be simplified with:
+          // reorderedIds.push.apply(reorderedIds,ids);
+          // However, the loop is more in keeping with way-backward compatibility
+            for (const id of ids) {
+              reorderedIds.push(id);
             }
           }
-          var reorderedColumns = [];
-          for (var i = 0; i < reorderedIds.length; i++) {
-            reorderedColumns.push(_reorderedColumns[getColumnIndex(reorderedIds[i])]);
+
+          const finalReorderedColumns = [];
+          const reorderedColumns = grid.getColumns();
+          for (const reorderedId of reorderedIds) {
+            finalReorderedColumns.push(reorderedColumns[getColumnIndex(reorderedId)]);
           }
-          setColumns(reorderedColumns);
-          trigger(grid.onColumnsReordered, {
-            grid: grid
-          });
+          setColumns(finalReorderedColumns);
+          trigger(grid.onColumnsReordered, { grid });
           e.stopPropagation();
           setupColumnResize();
-          _reorderedColumns = reorderedColumns;
         }
       }
-      if ($headers[0]) {
-        sortableLeftInstance = Sortable.create($headers[0], sortableOptions);
-      }
-      if ($headers[1]) {
-        sortableRightInstance = Sortable.create($headers[1], sortableOptions);
-      }
+
+      _sortableLeftInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-left`), sortableOptions);
+      _sortableRightInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-right`), sortableOptions);
+
+      return {
+        sortableLeftInstance: _sortableLeftInstance,
+        sortableRightInstance: _sortableRightInstance
+      };
     }
 
     /**
      * Destroy plugin.
      */
     function destroy() {
-      $('.slick-placeholder').off('dragover dragenter dragleave');
+      if (_sortableLeftInstance && _sortableLeftInstance.el) {
+        _sortableLeftInstance.destroy();
+      }
+      if (_sortableRightInstance && _sortableRightInstance.el) {
+        _sortableRightInstance.destroy();
+      }
       onGroupChanged.unsubscribe();
       _handler.unsubscribeAll();
-      if (sortableLeftInstance) {
-        sortableLeftInstance.destroy();
-        sortableRightInstance.destroy();
-      }
+      _bindingEventService.unbindAll();
+      Slick.Utils.emptyElement(document.querySelector(`.${_gridUid} .slick-preheader-panel`));
     }
 
     function addDragOverDropzoneListeners() {
-      var $dragPlaceholder = $('.slick-placeholder');
+      const draggablePlaceholderElm = _dropzoneElm.querySelector('.slick-placeholder');
 
-      $dragPlaceholder.on('dragover', function (evt) {
-        evt.preventDefault();
-      });
-
-      $dragPlaceholder.on('dragenter', function (evt) {
-        $dragPlaceholder.parent().addClass('slick-dropzone-placeholder-hover');
-      });
-
-      $dragPlaceholder.on('dragleave', function (evt) {
-        $dragPlaceholder.parent().removeClass('slick-dropzone-placeholder-hover');
-      });
+      if (draggablePlaceholderElm) {
+        _bindingEventService.bind(draggablePlaceholderElm, 'dragover', (e) => e.preventDefault);
+        _bindingEventService.bind(draggablePlaceholderElm, 'dragenter', () => _dropzoneElm.classList.add('slick-dropzone-placeholder-hover'));
+        _bindingEventService.bind(draggablePlaceholderElm, 'dragleave', () => _dropzoneElm.classList.remove('slick-dropzone-placeholder-hover'));
+      }
     }
 
     function setupColumnDropbox() {
-      var dropzoneElm = $dropzone[0];
+      const dropzoneElm = _dropzoneElm;
 
-      var sortableDrop = Sortable.create(dropzoneElm, {
-        group: "shared",
-        // chosenClass: "slick-header-column-active",
-        ghostClass: "slick-droppable-sortitem-hover",
+      _droppableInstance = Sortable.create(dropzoneElm, {
+        group: 'shared',
+        // chosenClass: 'slick-header-column-active',
+        ghostClass: 'slick-droppable-sortitem-hover',
         draggable: '.slick-dropped-grouping',
         dragoverBubble: true,
-        onAdd: function (evt) {
-          var el = evt.item;
-          if (el.getAttribute('id').replace(_gridUid, '')) {
-            handleGroupByDrop($dropzone[0], $(Sortable.utils.clone(evt.item)));
+        onAdd: (evt) => {
+          const el = evt.item;
+          const elId = el.getAttribute('id');
+          if (elId && elId.replace(_gridUid, '')) {
+            handleGroupByDrop(dropzoneElm, (Sortable.utils).clone(evt.item));
           }
-          evt.clone.style.opacity = .5;
-          el.parentNode.removeChild(el);
+          evt.clone.style.opacity = '.5';
+          el.parentNode && el.parentNode.removeChild(el);
         },
-        onUpdate: function (e) {
-          var sortArray = sortableDrop.toArray(),
-            newGroupingOrder = [];
+        onUpdate: () => {
+          const sortArray = _droppableInstance && _droppableInstance.toArray() || [];
+          let newGroupingOrder = [];
           for (var i = 0, l = sortArray.length; i < l; i++) {
             for (var a = 0, b = columnsGroupBy.length; a < b; a++) {
               if (columnsGroupBy[a].id == sortArray[i]) {
@@ -248,51 +270,76 @@
       // Sortable doesn't have onOver, we need to implement it ourselves
       addDragOverDropzoneListeners();
 
-      groupToggler.on('click', function (e) {
-        if (this.classList.contains('collapsed')) {
-          this.classList.remove('collapsed');
-          this.classList.add('expanded');
-          _dataView.expandAllGroups();
-        } else {
-          this.classList.add('collapsed');
-          this.classList.remove('expanded');
-          _dataView.collapseAllGroups();
-        }
-      });
+      if (groupToggler) {
+        _bindingEventService.bind(groupToggler, 'click', ((event) => {
+          const target = event.target;
+          toggleGroupToggler(target, target && target.classList.contains('expanded'));
+        }));
+      }
     }
 
-    var columnsGroupBy = [];
-    var groupBySorters = [];
 
-    function handleGroupByDrop(container, headerColumn) {
-      var columnid = headerColumn.attr('data-id').replace(this._gridUid, '');
-      var columnAllowed = true;
-      columnsGroupBy.forEach(function (e, i, a) {
-        if (e.id == columnid) {
+    var columnsGroupBy = [];
+
+    function handleGroupByDrop(containerElm, headerColumnElm) {
+      const headerColDataId = headerColumnElm.getAttribute('data-id');
+      const columnId = headerColDataId && headerColDataId.replace(_gridUid, '');
+      let columnAllowed = true;
+      for (const colGroupBy of columnsGroupBy) {
+        if (colGroupBy.id === columnId) {
           columnAllowed = false;
         }
-      });
+      }
+
       if (columnAllowed) {
-        _gridColumns.forEach(function (col, i, a) {
-          if (col.id == columnid) {
-            if (col.grouping != null && !$.isEmptyObject(col.grouping)) {
-              var entry = $("<div id='" + _gridUid + col.id + "_entry' data-id='" + col.id + "' class='slick-dropped-grouping'>");
-              var $columnName = headerColumn.find('.slick-column-name');
-              var groupText = $("<div class='slick-dropped-grouping-title' style='display: inline-flex'>" + ($columnName.length > 0 ? $columnName.text() : headerColumn.text()) + "</div>");
-              groupText.appendTo(entry);
-              var groupRemoveIcon = $("<div class='slick-groupby-remove'></div>");
-              if (options.deleteIconCssClass) groupRemoveIcon.addClass(options.deleteIconCssClass);
-              if (options.deleteIconImage) groupRemoveIcon.css("background", "url(" + options.deleteIconImage + ") no-repeat center right");
-              if (!options.deleteIconCssClass && !options.deleteIconImage) groupRemoveIcon.addClass('slick-groupby-remove-image');
-              groupRemoveIcon.appendTo(entry);
-              $("</div>").appendTo(entry);
-              entry.appendTo(container);
+        for (const col of _gridColumns) {
+          if (col.id === columnId) {
+            if (col.grouping && !Slick.Utils.isEmptyObject(col.grouping)) {
+              const columnNameElm = headerColumnElm.querySelector('.slick-column-name');
+              const entryElm = document.createElement('div');
+              entryElm.id = `${_gridUid}_${col.id}_entry`;
+              entryElm.className = 'slick-dropped-grouping';
+              entryElm.dataset.id = `${col.id}`;
+
+              const groupTextElm = document.createElement('div');
+              groupTextElm.className = 'slick-dropped-grouping-title';
+              groupTextElm.style.display = 'inline-flex';
+              groupTextElm.textContent = columnNameElm ? columnNameElm.textContent : headerColumnElm.textContent;
+              entryElm.appendChild(groupTextElm);
+
+              // delete icon
+              const groupRemoveIconElm = document.createElement('div');
+              groupRemoveIconElm.className = 'slick-groupby-remove';
+              if (options.deleteIconCssClass) {
+                groupRemoveIconElm.classList.add(options.deleteIconCssClass.split(' '));
+              }
+              if (options.deleteIconImage) {
+                groupRemoveIconElm.classList.add(options.deleteIconImage.split(' '));
+              }
+              if (!options.deleteIconCssClass) {
+                groupRemoveIconElm.classList.add('slick-groupby-remove-icon');
+              }
+              if (!options.deleteIconImage) {
+                groupRemoveIconElm.classList.add('slick-groupby-remove-image');
+              }
+
+              // sorting icons when enabled
+              if (options && options.hideGroupSortIcons !== true && col.sortable) {
+                if (col.grouping && col.grouping.sortAsc === undefined) {
+                  col.grouping.sortAsc = true;
+                }
+              }
+
+              entryElm.appendChild(groupRemoveIconElm);
+              entryElm.appendChild(document.createElement('div'));
+              containerElm.appendChild(entryElm);
+
               addColumnGroupBy(col);
-              addGroupByRemoveClickHandler(col.id, headerColumn, entry);
+              addGroupByRemoveClickHandler(col.id, groupRemoveIconElm, headerColumnElm, entryElm);
             }
           }
-        });
-        groupToggler.show();
+        }
+        groupToggler.style.display = 'inline-block';
       }
     }
 
@@ -301,28 +348,39 @@
       updateGroupBy("add-group");
     }
 
-    function addGroupByRemoveClickHandler(id, column, entry) {
-      var text = entry;
-      $("#" + _gridUid + id + "_entry >.slick-groupby-remove").on('click', function () {
-        $(this).off('click');
-        removeGroupBy(id, column, text);
+    function addGroupByRemoveClickHandler(id, groupRemoveIconElm, headerColumnElm, entry) {
+      _bindingEventService.bind(groupRemoveIconElm, 'click', () => {
+        const boundedElms = _bindingEventService.boundedEvents.filter(boundedEvent => boundedEvent.element === groupRemoveIconElm);
+        for (const boundedEvent of boundedElms) {
+          _bindingEventService.unbind(boundedEvent.element, 'click', boundedEvent.listener);
+        }
+        removeGroupBy(id, headerColumnElm, entry);
       });
     }
 
     function setDroppedGroups(groupingInfo) {
-      var groupingInfos = (groupingInfo instanceof Array) ? groupingInfo : [groupingInfo];
-      dropzonePlaceholder.hide();
-      for (var i = 0; i < groupingInfos.length; i++) {
-        var column = $(_grid.getHeaderColumn(groupingInfos[i]));
-        handleGroupByDrop($dropzone, column);
+      const groupingInfos = Array.isArray(groupingInfo) ? groupingInfo : [groupingInfo];
+      dropzonePlaceholder.style.display = 'none';
+      for (const groupInfo of groupingInfos) {
+        const columnElm = _grid.getHeaderColumn(groupInfo);
+        handleGroupByDrop(_dropzoneElm, columnElm);
       }
     }
+
     function clearDroppedGroups() {
       columnsGroupBy = [];
-      updateGroupBy("clear-all");
-      $dropzone.find(".slick-dropped-grouping").remove();
-      groupToggler.hide();
-      dropzonePlaceholder.show();
+      updateGroupBy('clear-all');
+      const allDroppedGroupingElms = _dropzoneElm.querySelectorAll('.slick-dropped-grouping');
+      groupToggler.style.display = 'none';
+
+      for (const groupElm of Array.from(allDroppedGroupingElms)) {
+        const groupRemoveBtnElm = _dropzoneElm.querySelector('.slick-groupby-remove');
+        groupRemoveBtnElm && groupRemoveBtnElm.remove();
+        groupElm && groupElm.remove();
+      }
+
+      // show placeholder text & hide the "Toggle All" when that later feature is enabled
+      dropzonePlaceholder.style.display = 'inline-block';
     }
 
     function removeFromArray(arr) {
@@ -338,18 +396,36 @@
       return arr;
     }
 
-    function removeGroupBy(id, column, entry) {
+    function removeGroupBy(id, _column, entry) {
       entry.remove();
       var groupby = [];
-      _gridColumns.forEach(function (e, i, a) {
+      _gridColumns.forEach(function (e) {
         groupby[e.id] = e;
       });
       removeFromArray(columnsGroupBy, groupby[id]);
       if (columnsGroupBy.length === 0) {
-        dropzonePlaceholder.show();
-        groupToggler.hide();
+        dropzonePlaceholder.style = 'block';
+        groupToggler.style.display = 'none';
       }
       updateGroupBy("remove-group");
+    }
+
+    function toggleGroupToggler(targetElm, collapsing = true, shouldExecuteDataViewCommand = true) {
+      if (targetElm) {
+        if (collapsing === true) {
+          targetElm.classList.add('collapsed');
+          targetElm.classList.remove('expanded');
+          if (shouldExecuteDataViewCommand) {
+            _dataView.collapseAllGroups();
+          }
+        } else {
+          targetElm.classList.remove('collapsed');
+          targetElm.classList.add('expanded');
+          if (shouldExecuteDataViewCommand) {
+            _dataView.expandAllGroups();
+          }
+        }
+      }
     }
 
     function updateGroupBy(originator) {
@@ -359,7 +435,7 @@
         return;
       }
       var groupingArray = [];
-      columnsGroupBy.forEach(function (element, index, array) {
+      columnsGroupBy.forEach(function (element) {
         groupingArray.push(element.grouping);
       });
       _dataView.setGrouping(groupingArray);
@@ -370,7 +446,7 @@
     }
 
     // Public API
-    $.extend(this, {
+    Slick.Utils.extend(this, {
       "init": init,
       "destroy": destroy,
       "pluginName": "DraggableGrouping",
@@ -381,4 +457,4 @@
       "getSetupColumnReorder": setupColumnReorder,
     });
   }
-})(jQuery);
+})(window);

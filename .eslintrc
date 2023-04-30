@@ -1,11 +1,16 @@
 {
-    "extends": "eslint:recommended",
+    "extends": [
+        "eslint:recommended",
+        "plugin:cypress/recommended"
+    ],
     "env": {
         "browser": true,
-        "es2015": true
+        "es2015": true,
+        "node": true
     },
     "globals": {
-        "Slick": true
+        "Slick": true,
+        "Sortable": true
     },
     "rules": {
         "no-prototype-builtins": [0]

@@ -34,7 +34,6 @@
     "release": "node ./scripts/release.js --create-release github"
   },
   "dependencies": {
-    "jquery": ">=3.0.0",
     "sortablejs": "^1.15.0"
   },
   "devDependencies": {
@@ -48,6 +47,7 @@
     "cypress": "^9.7.0",
     "dotenv": "^16.0.2",
     "eslint": "^8.22.0",
+    "eslint-plugin-cypress": "^2.13.3",
     "fs-extra": "^10.1.0",
     "git-url-parse": "^13.1.0",
     "http-server": "^13.0.2",
