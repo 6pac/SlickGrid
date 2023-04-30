@@ -626,6 +626,24 @@
 
   function noop() { }
 
+  function emptyElement(element) {
+    if (element && element.firstChild) {
+      while (element.firstChild) {
+        if (element.lastChild) {
+          element.removeChild(element.lastChild);
+        }
+      }
+    }
+    return element;
+  }
+
+  function isEmptyObject(obj) {
+    if (obj === null || obj === undefined) {
+      return true;
+    }
+    return Object.entries(obj).length === 0;
+  }
+
   function offset(el) {
     if (!el || !el.getBoundingClientRect) {
       return undefined;
