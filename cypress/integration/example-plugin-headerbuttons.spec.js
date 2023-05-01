@@ -122,12 +122,45 @@ describe('Example - Header Button', () => {
       .invoke('show');
 
     cy.get('.slick-header-column:nth(0)')
-      .should('have.css', 'width', '140px');
+      .should($el => expect(parseInt(`${$el.width()}`, 10)).to.eq(140));
 
     cy.get('.slick-header-columns')
       .children('.slick-header-column:nth(0)')
       .find('.slick-header-button')
       .should('have.length', 4);
+  });
+
+  it('should click on first "Red Tag Day" header button and expect an alert with that text when clicked', (done) => {
+    const stub = cy.stub();
+    cy.on('window:alert', stub);
+
+    cy.on('window:alert', (text) => {
+      expect(text).to.eq('command: Red Tag Day');
+      done();
+    });
+
+    // header buttons are displayed in inverse mode by default, 
+    // so we need to start at the end
+    cy.get('.slick-header-columns')
+      .children('.slick-header-column:nth(0)')
+      .find('.slick-header-button:nth(3)')
+      .click();
+  });
+
+  it('should click on second "Write a comment!" header button and expect an alert with that text when clicked', (done) => {
+    const stub = cy.stub();
+    cy.on('window:alert', stub);
+
+    cy.on('window:alert', (text) => {
+      expect(text).to.eq('Write a comment!');
+      done();
+    });
+
+    // header buttons are displayed in inverse mode by default
+    cy.get('.slick-header-columns')
+      .children('.slick-header-column:nth(0)')
+      .find('.slick-header-button:nth(2)')
+      .click();
   });
 
   it('should go on the 2nd column "Hover me!" and expect the header button to appear only when doing hover over it', () => {
