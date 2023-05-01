@@ -1,6 +1,6 @@
-(function ($) {
+(function (window) {
   // register namespace
-  $.extend(true, window, {
+  Slick.Utils.extend(true, window, {
     "Slick": {
       "Plugins": {
         "HeaderButtons": HeaderButtons
@@ -78,13 +78,14 @@
     var _grid;
     var _self = this;
     var _handler = new Slick.EventHandler();
+    var _bindingEventService = new Slick.BindingEventService();
     var _defaults = {
       buttonCssClass: "slick-header-button"
     };
 
 
     function init(grid) {
-      options = $.extend(true, {}, _defaults, options);
+      options = Slick.Utils.extend(true, {}, _defaults, options);
       _grid = grid;
       _handler
         .subscribe(_grid.onHeaderCellRendered, handleHeaderCellRendered)
@@ -97,6 +98,7 @@
 
     function destroy() {
       _handler.unsubscribeAll();
+      _bindingEventService.unbindAll();
     }
 
 
@@ -124,42 +126,35 @@
             button.disabled = isItemUsable ? false : true;
           }
 
-          var btn = $("<div></div>")
-            .addClass(options.buttonCssClass)
-            .data("column", column)
-            .data("button", button);
+          const btn = document.createElement('div');
+          btn.className = options.buttonCssClass;
 
           if (button.disabled) {
-            btn.addClass("slick-header-button-disabled");
+            btn.classList.add("slick-header-button-disabled");
           }
 
           if (button.showOnHover) {
-            btn.addClass("slick-header-button-hidden");
+            btn.classList.add("slick-header-button-hidden");
           }
 
           if (button.image) {
-            btn.css("backgroundImage", "url(" + button.image + ")");
+            btn.style.backgroundImage = "url(" + button.image + ")";
           }
 
           if (button.cssClass) {
-            btn.addClass(button.cssClass);
+            btn.classList.add(button.cssClass);
           }
 
           if (button.tooltip) {
-            btn.attr("title", button.tooltip);
-          }
-
-          if (button.command) {
-            btn.data("command", button.command);
+            btn.title = button.tooltip;
           }
 
           if (button.handler) {
-            btn.on("click", button.handler);
+            _bindingEventService.bind(btn, 'click', button.handler);
           }
 
-          btn
-            .on("click", handleButtonClick)
-            .appendTo(args.node);
+          _bindingEventService.bind(btn, 'click', handleButtonClick.bind(this, button, args.column));
+          args.node.appendChild(btn);
         }
       }
     }
@@ -172,17 +167,17 @@
         // Removing buttons via jQuery will also clean up any event handlers and data.
         // NOTE: If you attach event handlers directly or using a different framework,
         //       you must also clean them up here to avoid memory leaks.
-        $(args.node).find("." + options.buttonCssClass).remove();
+        const buttonCssClass = (options.buttonCssClass || '').replace(/(\s+)/g, '.');
+        if (buttonCssClass) {
+          args.node.querySelectorAll(`.${buttonCssClass}`).forEach(elm => elm.remove());
+        }
       }
     }
 
 
-    function handleButtonClick(e) {
-      var command = $(this).data("command");
-      var columnDef = $(this).data("column");
-      var button = $(this).data("button");
-
-      var callbackArgs = {
+    function handleButtonClick(button, columnDef, e) {
+      const command = button.command || '';
+      const callbackArgs = {
         "grid": _grid,
         "column": columnDef,
         "button": button
@@ -222,7 +217,7 @@
       return true;
     }
 
-    $.extend(this, {
+    Slick.Utils.extend(this, {
       "init": init,
       "destroy": destroy,
       "pluginName": "HeaderButtons",
@@ -230,4 +225,4 @@
       "onCommand": new Slick.Event()
     });
   }
-})(jQuery);
+})(window);

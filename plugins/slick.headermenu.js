@@ -1,6 +1,6 @@
-(function ($) {
+(function (window) {
   // register namespace
-  $.extend(true, window, {
+  Slick.Utils.extend(true, window, {
     "Slick": {
       "Plugins": {
         "HeaderMenu": HeaderMenu
@@ -99,6 +99,7 @@
     var _grid;
     var _self = this;
     var _handler = new Slick.EventHandler();
+    var _bindingEventService = new Slick.BindingEventService();
     var _defaults = {
       buttonCssClass: null,
       buttonImage: null,
@@ -106,12 +107,11 @@
       autoAlign: true,
       autoAlignOffset: 0
     };
-    var $menu;
-    var $activeHeaderColumn;
-
+    var _activeHeaderColumnElm;
+    var _menuElm;
 
     function init(grid) {
-      options = $.extend(true, {}, _defaults, options);
+      options = Slick.Utils.extend(true, {}, _defaults, options);
       _grid = grid;
       _handler
         .subscribe(_grid.onHeaderCellRendered, handleHeaderCellRendered)
@@ -121,40 +121,38 @@
       _grid.setColumns(_grid.getColumns());
 
       // Hide the menu on outside click.
-      $(document.body).on("mousedown", handleBodyMouseDown);
+      _bindingEventService.bind(document.body, 'mousedown', handleBodyMouseDown.bind(this));
     }
 
     function setOptions(newOptions) {
-      options = $.extend(true, {}, options, newOptions);
+      options = Slick.Utils.extend(true, {}, options, newOptions);
     }
 
+    function getGridUidSelector() {
+      const gridUid = _grid.getUID() || '';
+      return gridUid ? `.${gridUid}` : '';
+    }
 
     function destroy() {
       _handler.unsubscribeAll();
-      $(document.body).off("mousedown", handleBodyMouseDown);
-      if ($menu) {
-        $menu.remove();
-      }
-      $menu = null;
-      $activeHeaderColumn = null;
-      $menu = null;
+      _bindingEventService.unbindAll();
+      _menuElm = _menuElm || document.body.querySelector(`.slick-header-menu${getGridUidSelector()}`);
+      _menuElm && _menuElm.remove();
+      _activeHeaderColumnElm = undefined;
     }
 
-
     function handleBodyMouseDown(e) {
-      if ($menu && $menu[0] != e.target && !$.contains($menu[0], e.target)) {
+      if ((_menuElm !== e.target && !(_menuElm && _menuElm.contains(e.target))) || e.target.className === 'close') {
         hideMenu();
       }
     }
 
-
     function hideMenu() {
-      if ($menu) {
-        $menu.remove();
-        $menu = null;
-        $activeHeaderColumn
-          .removeClass("slick-header-column-active");
+      if (_menuElm) {
+        _menuElm.remove();
+        _menuElm = undefined;
       }
+      _activeHeaderColumnElm && _activeHeaderColumnElm.classList.remove('slick-header-column-active');
     }
 
     function handleHeaderCellRendered(e, args) {
@@ -167,45 +165,36 @@
           return;
         }
 
-        var $el = $("<div></div>")
-          .addClass("slick-header-menubutton")
-          .data("column", column)
-          .data("menu", menu);
+        const elm = document.createElement('div');
+        elm.className = "slick-header-menubutton";
 
         if (options.buttonCssClass) {
-          $el.addClass(options.buttonCssClass);
+          elm.classList.add(options.buttonCssClass);
         }
 
         if (options.buttonImage) {
-          $el.css("background-image", "url(" + options.buttonImage + ")");
+          elm.style.backgroundImage = "url(" + options.buttonImage + ")";
         }
 
         if (options.tooltip) {
-          $el.attr("title", options.tooltip);
+          elm.title = options.tooltip;
         }
 
-        $el
-          .on("click", showMenu)
-          .appendTo(args.node);
-		    $el = null;
+        _bindingEventService.bind(elm, 'click', (e) => showMenu(e, menu, args.column));
+        args.node.appendChild(elm);
       }
     }
-
 
     function handleBeforeHeaderCellDestroy(e, args) {
       var column = args.column;
 
       if (column.header && column.header.menu) {
-        $(args.node).find(".slick-header-menubutton").remove();
+        args.node.querySelectorAll('.slick-header-menubutton').forEach(elm => elm.remove());
       }
     }
 
 
-    function showMenu(e) {
-      var $menuButton = $(this);
-      var menu = $menuButton.data("menu");
-      var columnDef = $menuButton.data("column");
-
+    function showMenu(event, menu, columnDef) {
       // Let the user modify the menu or cancel altogether,
       // or provide alternative menu implementation.
       var callbackArgs = {
@@ -213,17 +202,23 @@
         "column": columnDef,
         "menu": menu
       };
-      if (_self.onBeforeMenuShow.notify(callbackArgs, e, _self).getReturnValue() == false) {
+      if (_self.onBeforeMenuShow.notify(callbackArgs, event, _self).getReturnValue() == false) {
         return;
       }
 
-
-      if (!$menu) {
-        $menu = $("<div class='slick-header-menu' style='min-width: " + options.minWidth + "px'></div>")
-          .appendTo(_grid.getContainerNode());
+      if (!_menuElm) {
+        _menuElm = document.createElement('div');
+        _menuElm.className = 'slick-header-menu';
+        _menuElm.style.minWidth = `${options.minWidth}px`;
+        _menuElm.setAttribute('aria-expanded', 'true');
+        const containerNode = _grid.getContainerNode();
+        if (containerNode) {
+          containerNode.appendChild(_menuElm);
+        }
       }
-      $menu.empty();
 
+      // make sure the menu element is an empty div before adding all list of commands
+      Slick.Utils.emptyElement(this._menuElm);
 
       // Construct the menu items.
       for (var i = 0; i < menu.items.length; i++) {
@@ -244,96 +239,94 @@
           item.disabled = isItemUsable ? false : true;
         }
 
-        var $li = $("<div class='slick-header-menuitem'></div>")
-          .data("command", item.command !== undefined ? item.command : "")
-          .data("column", columnDef)
-          .data("item", item)
-          .on("click", handleMenuItemClick)
-          .appendTo($menu);
+        const menuItem = document.createElement('div');
+        menuItem.className = 'slick-header-menuitem';
 
         if (item.divider || item === "divider") {
-          $li.addClass("slick-header-menuitem-divider");
+          menuItem.classList.add("slick-header-menuitem-divider");
           continue;
         }
 
         if (item.disabled) {
-          $li.addClass("slick-header-menuitem-disabled");
+          menuItem.classList.add("slick-header-menuitem-disabled");
         }
 
         if (item.hidden) {
-          $li.addClass("slick-header-menuitem-hidden");
+          menuItem.classList.add("slick-header-menuitem-hidden");
         }
 
         if (item.cssClass) {
-          $li.addClass(item.cssClass);
+          menuItem.classList.add(item.cssClass);
         }
 
         if (item.tooltip) {
-          $li.attr("title", item.tooltip);
+          menuItem.title = item.tooltip;
         }
 
-        var $icon = $("<div class='slick-header-menuicon'></div>")
-          .appendTo($li);
+        const iconElm = document.createElement('div');
+        iconElm.className = 'slick-header-menuicon';
+        menuItem.appendChild(iconElm);
 
         if (item.iconCssClass) {
-          $icon.addClass(item.iconCssClass);
+          iconElm.classList.add(item.iconCssClass);
         }
 
         if (item.iconImage) {
-          $icon.css("background-image", "url(" + item.iconImage + ")");
+          iconElm.style.backgroundImage = "url(" + item.iconImage + ")";
         }
 
-        var $text = $("<span class='slick-header-menucontent'></span>")
-          .text(item.title)
-          .appendTo($li);
+        const textElm = document.createElement('span');
+        textElm.className = 'slick-header-menucontent';
+        textElm.textContent = item.title;
+        menuItem.appendChild(textElm);
 
         if (item.textCssClass) {
-          $text.addClass(item.textCssClass);
+          textElm.classList.add(item.textCssClass);
         }
-        $icon = null;
-        $text = null;
-        $li = null;
+
+        _menuElm.appendChild(menuItem);
+        _bindingEventService.bind(menuItem, 'click', handleMenuItemClick.bind(this, item, columnDef));
       }
 
-      var leftPos = $(this).offset().left;
+      const buttonElm = event.target;
+      const btnOffset = Slick.Utils.offset(buttonElm);
+      const menuOffset = Slick.Utils.offset(_menuElm);
+      let leftPos = (btnOffset && btnOffset.left) || 0;
+
 
       // when auto-align is set, it will calculate whether it has enough space in the viewport to show the drop menu on the right (default)
       // if there isn't enough space on the right, it will automatically align the drop menu to the left
       // to simulate an align left, we actually need to know the width of the drop menu
       if (options.autoAlign) {
-        var gridPos = _grid.getGridPosition();
-        if ((leftPos + $menu.width()) >= gridPos.width) {
-          leftPos = leftPos + $menuButton.outerWidth() - $menu.outerWidth() + options.autoAlignOffset;
+        const gridPos = _grid.getGridPosition();
+        if (leftPos + _menuElm.offsetWidth >= gridPos.width) {
+          leftPos = leftPos + buttonElm.clientWidth - _menuElm.clientWidth + (options.autoAlignOffset || 0);
         }
       }
 
-      $menu
-        .offset({ top: $(this).offset().top + $(this).height(), left: leftPos });
-
+      _menuElm.style.top = `${(buttonElm.clientHeight || (btnOffset && btnOffset.top) || 0) + (options && options.menuOffsetTop || 0)}px`;
+      _menuElm.style.left = `${leftPos - menuOffset.left}px`;
 
       // Mark the header as active to keep the highlighting.
-      $activeHeaderColumn = $menuButton.closest(".slick-header-column");
-      $activeHeaderColumn
-        .addClass("slick-header-column-active");
+      _activeHeaderColumnElm = _menuElm.closest('.slick-header-column');
+      if (_activeHeaderColumnElm) {
+        _activeHeaderColumnElm.classList.add('slick-header-column-active');
+      }
 
-      if (_self.onAfterMenuShow.notify(callbackArgs, e, _self).getReturnValue() == false) {
+      if (_self.onAfterMenuShow.notify(callbackArgs, event, _self).getReturnValue() == false) {
         return;
       }
 
       // Stop propagation so that it doesn't register as a header click event.
-      e.preventDefault();
-      e.stopPropagation();
-	    $menuButton = null;
+      event.preventDefault();
+      event.stopPropagation();
     }
 
-
-    function handleMenuItemClick(e) {
-      var command = $(this).data("command");
-      var columnDef = $(this).data("column");
-      var item = $(this).data("item");
+    function handleMenuItemClick(item, columnDef, e) {
+      const command = item.command || '';
 
       if (item.disabled || item.divider || item === "divider") {
-        return;
+        return false;
       }
 
       if (command != null && command !== '') {
@@ -351,7 +344,7 @@
         }
       }
 
-      if(!e.isDefaultPrevented()) {
+      if (!e.defaultPrevented) {
         hideMenu();
       }
 
@@ -373,7 +366,7 @@
       return true;
     }
 
-    $.extend(this, {
+    Slick.Utils.extend(this, {
       "init": init,
       "destroy": destroy,
       "pluginName": "HeaderMenu",
@@ -384,4 +377,4 @@
       "onCommand": new Slick.Event()
     });
   }
-})(jQuery);
+})(window);
