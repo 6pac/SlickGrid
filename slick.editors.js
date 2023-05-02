@@ -5,7 +5,6 @@
  */
 
 (function (window) {
-
   const utils = Slick.Utils;
 
   function TextEditor(args) {

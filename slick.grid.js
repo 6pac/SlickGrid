@@ -10,7 +10,7 @@
  * SlickGrid v3.0.4
  *
  * NOTES:
- *     Cell/row DOM manipulations are done directly bypassing jQuery's DOM manipulation methods.
+ *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
  *     This increases the speed dramatically, but can only be done safely because there are no event handlers
  *     or data associated with any cell/row DOM nodes.  Cell editors must make sure they implement .destroy()
  *     and do proper cleanup.
@@ -399,7 +399,6 @@ if (typeof Slick === "undefined") {
           _groupHeadersL[index] = utils.template("<div class='slick-group-header-columns slick-group-header-columns-left' style='left:-1000px' />", _headerScrollerL);
           _groupHeadersR[index] = utils.template("<div class='slick-group-header-columns slick-group-header-columns-right' style='left:-1000px' />", _headerScrollerR);
         }
-
         _groupHeaders = [_groupHeadersL, _groupHeadersR];
       }
 
@@ -485,8 +484,9 @@ if (typeof Slick === "undefined") {
       _activeCanvasNode = _canvasTopL;
 
       // pre-header
-      if (_preHeaderPanelSpacer) 
+      if (_preHeaderPanelSpacer) {
         utils.width(_preHeaderPanelSpacer, getCanvasWidth() + scrollbarDimensions.width);
+      }
 
       _headers.forEach(function (el) {
         utils.width(el, getHeadersWidth());
@@ -634,16 +634,16 @@ if (typeof Slick === "undefined") {
           });
         }
 
-        if (!options.suppressCssChangesOnHiddenInit)
+        if (!options.suppressCssChangesOnHiddenInit) {
           restoreCssFromHiddenInit();
+        }
       }
     }
 
     function cacheCssForHiddenInit() {
       // handle display:none on container or container parents
       _hiddenParents = utils.parents(_container, ":hidden");
-      for (const el of _hiddenParents)
-      {
+      for (const el of _hiddenParents) {
         var old = {};
         for ( const name in cssShow ) {
           old[ name ] = el.style[ name ];
@@ -657,11 +657,10 @@ if (typeof Slick === "undefined") {
       // finish handle display:none on container or container parents
       // - put values back the way they were
       let i = 0;
-      for (const el of _hiddenParents)
-      {
+      for (const el of _hiddenParents) {
         var old = oldProps[i++];
-        for ( const name in cssShow ) {
-          el.style[ name ] = old[ name ];
+        for (const name in cssShow) {
+          el.style[name] = old[name];
         }
       }
     }
@@ -721,7 +720,7 @@ if (typeof Slick === "undefined") {
 
     function getActiveCanvasNode(e) {
 
-      if(e === undefined) {
+      if (e === undefined) {
         return _activeCanvasNode;
       }
 
@@ -752,11 +751,9 @@ if (typeof Slick === "undefined") {
     }
 
     function setActiveViewportNode(e) {
-
       if (e instanceof Slick.EventData) {
         e = e.getNativeEvent();
       }
-
       _activeViewportNode = e.target.closest('.slick-viewport');
       return _activeViewportNode;
     }
@@ -826,8 +823,9 @@ if (typeof Slick === "undefined") {
       headersWidthL =0;
 
       columns.forEach(function(column, i) {
-        if (!(( options.frozenColumn ) > -1 && ( i > options.frozenColumn )))
+        if (!((options.frozenColumn) > -1 && (i > options.frozenColumn))) {
           headersWidthL += column.width;
+        }
       });
 
       if (hasFrozenColumns()) {
@@ -844,8 +842,9 @@ if (typeof Slick === "undefined") {
       headersWidthR =0;
 
       columns.forEach(function(column, i) {
-        if (( options.frozenColumn ) > -1 && ( i > options.frozenColumn ))
+        if ((options.frozenColumn) > -1 && (i > options.frozenColumn)) {
           headersWidthR += column.width;
+        }
       });
 
       if (hasFrozenColumns()) {
@@ -1063,8 +1062,7 @@ if (typeof Slick === "undefined") {
 
       var columnDef = columns[idx];
       var header = getColumnByIndex(idx);
-      if(header)
-      {
+      if (header) {
         if (title !== undefined) {
           columns[idx].name = title;
         }
@@ -1182,10 +1180,11 @@ if (typeof Slick === "undefined") {
           var m = columns[i];
           const footerRowCell = utils.template("<div class='ui-state-default slick-footerrow-column l" + i + " r" + i + "'></div>", hasFrozenColumns() && (i > options.frozenColumn)? _footerRowR: _footerRowL);
           const className = hasFrozenColumns() && i <= options.frozenColumn? 'frozen': null;
-          if(className)
+          if (className) {
             footerRowCell.classList.add(className);
+          }
             
-          utils.storage.put(footerRowCell, "column", m)
+          utils.storage.put(footerRowCell, "column", m);
 
           trigger(self.onFooterRowCellRendered, {
             "node": footerRowCell,
@@ -1200,11 +1199,11 @@ if (typeof Slick === "undefined") {
       var columnsLength = 0;
       var frozenColumnsValid = false;
 
-      if (!treeColumns.hasDepth())
+      if (!treeColumns.hasDepth()) {
         return;
+      }
 
       for (var index = 0; index < _groupHeadersL.length; index++) {
-
         _groupHeadersL[index].replaceChildren();
         _groupHeadersR[index].replaceChildren();
 
@@ -1215,8 +1214,9 @@ if (typeof Slick === "undefined") {
 
           columnsLength += m.extractColumns().length;
 
-          if (hasFrozenColumns() && index === 0 && (columnsLength-1) === options.frozenColumn)
+          if (hasFrozenColumns() && index === 0 && (columnsLength - 1) === options.frozenColumn) {
             frozenColumnsValid = true;
+          }
 
           const el = utils.template("<div class='ui-state-default slick-group-header-column' />", hasFrozenColumns() && (columnsLength - 1) > options.frozenColumn ? _groupHeadersR[index]: _groupHeadersL[index]);
             el.innerHTML = "<span class='slick-column-name'>" + m.name + "</span>";
@@ -1331,11 +1331,13 @@ if (typeof Slick === "undefined") {
         header.setAttribute("data-id", m.id);
 
         let classname = m.headerCssClass || null;
-        if(classname)
+        if (classname) {
           header.classList.add(classname);
+        }
         classname = hasFrozenColumns() && i <= options.frozenColumn ? 'frozen' : null;
-        if(classname)
+        if (classname) {
           header.classList.add(classname);
+        }
 
         _bindingEventService.bind(header, "mouseenter", handleHeaderMouseEnter);
         _bindingEventService.bind(header, "mouseleave", handleHeaderMouseLeave);
@@ -1372,8 +1374,9 @@ if (typeof Slick === "undefined") {
         if (options.showHeaderRow) {
           const headerRowCell = utils.template("<div class='ui-state-default slick-headerrow-column l" + i + " r" + i + "'></div>", headerRowTarget);
           const classname = hasFrozenColumns() && i <= options.frozenColumn? 'frozen' : null;
-          if(classname)
+          if (classname) {
             headerRowCell.classList.add(classname);
+          }
 
           _bindingEventService.bind(headerRowCell, "mouseenter", handleHeaderRowMouseEnter);
           _bindingEventService.bind(headerRowCell, "mouseleave", handleHeaderRowMouseLeave);
@@ -1403,20 +1406,19 @@ if (typeof Slick === "undefined") {
       setupColumnResize();
       if (options.enableColumnReorder) {
         if (typeof options.enableColumnReorder == 'function') {
-            options.enableColumnReorder(self, _headers, headerColumnWidthDiff, setColumns, setupColumnResize, columns, getColumnIndex, uid, trigger);
+          options.enableColumnReorder(self, _headers, headerColumnWidthDiff, setColumns, setupColumnResize, columns, getColumnIndex, uid, trigger);
         } else {
-            setupColumnReorder();
+          setupColumnReorder();
         }
       }
     }
 
     function setupColumnSort() {
-
       _headers.forEach(function (header) {
-
         _bindingEventService.bind(header, "click", function (e) {
-          if (columnResizeDragging) 
+          if (columnResizeDragging) {
             return;
+          }
 
           if (e.target.classList.contains("slick-resizable-handle")) {
             return;
@@ -1466,8 +1468,7 @@ if (typeof Slick === "undefined") {
                   if (sortColumn) {
                     sortColumns.splice(i, 1);
                   }
-                }
-                else {
+                } else {
                   if ((!e.shiftKey && !e.metaKey) || !options.multiColumnSort) {
                     sortColumns = [];
                   }
@@ -1539,10 +1540,9 @@ if (typeof Slick === "undefined") {
           endLimit += groupColumn.columns.length;
 
           groupColumn.columns.some(function (column) {
-
-            if (column.id === idColumn)
+            if (column.id === idColumn) {
               groupColumnOfPreviousPosition = groupColumn;
-
+            }
             return groupColumnOfPreviousPosition;
           });
 
@@ -1560,7 +1560,7 @@ if (typeof Slick === "undefined") {
 
     function remove(arr, elem) {
       var index = arr.lastIndexOf(elem);
-      if(index > -1) {
+      if (index > -1) {
         arr.splice(index, 1);
         remove(arr, elem);
       }
@@ -1572,7 +1572,7 @@ if (typeof Slick === "undefined") {
       var positionValid = limit.start <= currentPosition && currentPosition <= limit.end;
 
       return {
-    	limit: limit,
+        limit: limit,
         valid: positionValid,
         message: positionValid ? '' : 'Column "'.concat(item.textContent, '" can be reordered only within the "', limit.group.name, '" group!')
       };
@@ -1610,13 +1610,11 @@ if (typeof Slick === "undefined") {
 
           if (canDragScroll && e.originalEvent.pageX > _container.clientWidth) {
             if (!(columnScrollTimer)) {
-              columnScrollTimer = setInterval(
-                scrollColumnsRight, 100);
+              columnScrollTimer = setInterval(scrollColumnsRight, 100);
             }
           } else if (canDragScroll && e.originalEvent.pageX < utils.offset(_viewportScrollContainerX).left) {
             if (!(columnScrollTimer)) {
-              columnScrollTimer = setInterval(
-                scrollColumnsLeft, 100);
+              columnScrollTimer = setInterval(scrollColumnsLeft, 100);
             }
           } else {
             clearInterval(columnScrollTimer);
@@ -1663,28 +1661,24 @@ if (typeof Slick === "undefined") {
       sortableSideRightInstance = Sortable.create(_headerR, sortableOptions);
     }
 
-    function getHeaderChildren()
-    {
+    function getHeaderChildren() {
       const a = Array.from(_headers[0].children);
       const b = Array.from(_headers[1].children);
       return a.concat(b);
     }
 
-    function getImpactedColumns( limit ) {
-    	var impactedColumns = [];
+    function getImpactedColumns(limit) {
+      var impactedColumns = [];
 
-    	if( limit ) {
+      if (limit) {
+        for (var i = limit.start; i <= limit.end; i++) {
+          impactedColumns.push(columns[i]);
+        }
+      } else {
+        impactedColumns = columns;
+      }
 
-	   		for( var i = limit.start; i <= limit.end; i++ ) {
-	   			impactedColumns.push( columns[i] );
-	   		}
-    	}
-    	else {
-
-    		impactedColumns = columns;
-    	}
-
-   		return impactedColumns;
+      return impactedColumns;
     }
 
     function handleResizeableHandleDoubleClick(evt) {
@@ -1708,8 +1702,9 @@ if (typeof Slick === "undefined") {
           handle.remove();
         });
 
-        if (i >= columns.length) 
+        if (i >= columns.length) {
           return;
+        }
 
         if (columns[i].resizable) {
           if (firstResizable === undefined) {
@@ -1719,8 +1714,9 @@ if (typeof Slick === "undefined") {
         }
       }
 
-      if (firstResizable === undefined)
+      if (firstResizable === undefined) {
         return;
+      }
 
       for (let i = 0; i < children.length; i++) {
         const colElm = children[i];
@@ -1748,8 +1744,9 @@ if (typeof Slick === "undefined") {
               var shrinkLeewayOnRight = null, stretchLeewayOnRight = null;
               // lock each column's width option to current width
               for(let pw = 0; pw < children.length; pw++) {
-                if (pw >= columns.length) 
+                if (pw >= columns.length) {
                   return;
+                }
                 columns[pw].previousWidth = children[pw].offsetWidth;
               }
               if (options.forceFitColumns) {
@@ -2408,8 +2405,9 @@ if (typeof Slick === "undefined") {
           if (columns[i].Id === columnOrIndexOrId) { colDef = columns[i]; colIndex = i; }
         }
       }
-      if (!colDef)
+      if (!colDef) {
         return;
+      }
       const gridCanvas = getCanvasNode(0, 0);
       getColAutosizeWidth(colDef, colIndex, gridCanvas, isInit, colIndex);
     }
@@ -2495,7 +2493,9 @@ if (typeof Slick === "undefined") {
             } else {
               colWidth = c.autoSize.widthPx;
             }
-            if (c.rerenderOnResize && c.width  != colWidth) { reRender = true; }
+            if (c.rerenderOnResize && c.width != colWidth) {
+              reRender = true;
+            }
             c.width = colWidth;
           }
         } else if ((options.viewportSwitchToScrollModeWidthPercent && totalWidthLessSTR + strColsMinWidth > viewportWidth * options.viewportSwitchToScrollModeWidthPercent / 100)
@@ -2516,7 +2516,9 @@ if (typeof Slick === "undefined") {
               } else {
                 // size width proportionally to free space (we know we have enough room due to the earlier calculations)
                 colWidth = unallocatedViewportWidth / unallocatedColWidth * c.autoSize.widthPx - 1;
-                if (colWidth < c.minWidth) { colWidth = c.minWidth; }
+                if (colWidth < c.minWidth) {
+                  colWidth = c.minWidth;
+                }
 
                 // remove the just allocated widths from the allocation pool
                 unallocatedColWidth -= c.autoSize.widthPx;
@@ -2524,10 +2526,14 @@ if (typeof Slick === "undefined") {
               }
             }
             if (treatAsLocked(c.autoSize)) {
-                colWidth = c.autoSize.widthPx;
-                if (colWidth < c.minWidth) { colWidth = c.minWidth; }
+              colWidth = c.autoSize.widthPx;
+              if (colWidth < c.minWidth) {
+                colWidth = c.minWidth;
+              }
             }
-            if (c.rerenderOnResize && c.width  != colWidth) { reRender = true; }
+            if (c.rerenderOnResize && c.width != colWidth) {
+              reRender = true;
+            }
             c.width = colWidth;
           }
         }
@@ -2544,14 +2550,7 @@ if (typeof Slick === "undefined") {
         }
       }
 
-      //LogColWidths();
       reRenderColumns(reRender);
-    }
-
-    function LogColWidths () {
-      var s =  "Col Widths:";
-      for (var i = 0; i < columns.length; i++) { s += ' ' + columns[i].width; }
-      console.log(s);
     }
 
     function getColAutosizeWidth(columnDef, colIndex, gridCanvas, isInit, colArrayIndex) {
@@ -2943,22 +2942,20 @@ if (typeof Slick === "undefined") {
     }
 
     function applyColumnGroupHeaderWidths() {
-      if (!treeColumns.hasDepth())
+      if (!treeColumns.hasDepth()) {
         return;
+      }
 
       for (var depth = _groupHeadersL.length - 1; depth >= 0; depth--) {
-
         var groupColumns = treeColumns.getColumnsInDepth(depth);
 
         const groupHeaders = [_groupHeadersL[depth], _groupHeadersR[depth]];
         groupHeaders.forEach(function (groupHeader) {
-          
           var currentColumnIndex = 0;
 
           utils.width(groupHeader, i === 0 ? getHeadersWidthL() : getHeadersWidthR());
 
           groupHeader.children.forEach(function (groupHeaderColumn) {
-
             var m = utils.storage.get(groupHeaderColumn, "column");
 
             m.width = 0;
@@ -2975,9 +2972,9 @@ if (typeof Slick === "undefined") {
     }
 
     function applyColumnHeaderWidths() {
-      
-      if (!initialized)
-        return; 
+      if (!initialized) {
+        return;
+      }
       
       let columnIndex = 0;
       _headers.forEach(function (header) {
@@ -3020,8 +3017,7 @@ if (typeof Slick === "undefined") {
       let result = null;
       _headers.every(function (header) {
         const length = header.children.length;
-        if(id < length)
-        {
+        if (id < length) {
           result = header.children[id];
           return false;
         }
@@ -3037,7 +3033,6 @@ if (typeof Slick === "undefined") {
       
       const numberCols = options.numberedMultiColumnSort && sortColumns.length > 1;
       _headers.forEach(function (header) {
-
         let indicators = header.querySelectorAll(".slick-header-column-sorted");
         indicators.forEach(function (indicator) {
           indicator.classList.remove("slick-header-column-sorted");
@@ -3056,20 +3051,19 @@ if (typeof Slick === "undefined") {
     
       let i = 1;
       sortColumns.forEach(function (col) {
-        if (col.sortAsc == null)
+        if (col.sortAsc == null) {
           col.sortAsc = true;
+        }
 
         const columnIndex = getColumnIndex(col.columnId);
         if (columnIndex != null) {
           const column = getColumnByIndex(columnIndex);
-          if(column)
-          {
+          if (column) {
             column.classList.add("slick-header-column-sorted");
             let indicator = column.querySelector(".slick-sort-indicator");
             indicator.classList.add(col.sortAsc ? "slick-sort-indicator-asc" : "slick-sort-indicator-desc");
     
-            if(numberCols)
-            {
+            if (numberCols) {
               indicator = column.querySelector(".slick-sort-indicator-numbered");
               indicator.textContent = i;
             }
@@ -3196,7 +3190,9 @@ if (typeof Slick === "undefined") {
         applyColumnHeaderWidths();
         applyColumnWidths();
         handleScroll();
-        if (getSelectionModel() && getSelectionModel().refreshSelections) { getSelectionModel().refreshSelections(); }
+        if (getSelectionModel() && getSelectionModel().refreshSelections) {
+          getSelectionModel().refreshSelections();
+        }
       }
     }
 
@@ -3538,7 +3534,9 @@ if (typeof Slick === "undefined") {
       if (item) {
         value = getDataItemValueForColumn(item, m);
         formatterResult =  getFormatter(row, m)(row, cell, value, m, item, self);
-        if (formatterResult === null || formatterResult === undefined) { formatterResult = ''; }
+        if (formatterResult === null || formatterResult === undefined) {
+          formatterResult = '';
+        }
       }
 
       // get addl css class names from object type formatter return and from string type return of onBeforeAppendCell
@@ -3548,7 +3546,7 @@ if (typeof Slick === "undefined") {
       var toolTip = formatterResult && formatterResult.toolTip ? "title='" + formatterResult.toolTip + "'" : '';
 
       var customAttrStr = '';
-      if(m.hasOwnProperty('cellAttrs') && m.cellAttrs instanceof Object) {
+      if (m.hasOwnProperty('cellAttrs') && m.cellAttrs instanceof Object) {
         for (var key in m.cellAttrs) {
           if (m.cellAttrs.hasOwnProperty(key)) {
             customAttrStr += ' ' + key + '="' + m.cellAttrs[key] + '" ';
@@ -3909,9 +3907,9 @@ if (typeof Slick === "undefined") {
       render();
     }
 
-    function updatePagingStatusFromView( pagingInfo ) {
-        pagingActive = (pagingInfo.pageSize !== 0);
-        pagingIsLastPage = (pagingInfo.pageNum == pagingInfo.totalPages - 1);
+    function updatePagingStatusFromView(pagingInfo) {
+      pagingActive = (pagingInfo.pageSize !== 0);
+      pagingIsLastPage = (pagingInfo.pageNum == pagingInfo.totalPages - 1);
     }
 
     function updateRowCount() {
@@ -3943,7 +3941,9 @@ if (typeof Slick === "undefined") {
           removeRowFromCache(i);
         }
       }
-      if (options.enableAsyncPostRenderCleanup) { startPostProcessingCleanup(); }
+      if (options.enableAsyncPostRenderCleanup) {
+        startPostProcessingCleanup();
+      }
 
       if (activeCellNode && activeRow > r1) {
         resetActiveCell();
@@ -4053,11 +4053,11 @@ if (typeof Slick === "undefined") {
       const cacheEntry = rowsCache[row];
       if (cacheEntry) {
         if (cacheEntry.cellRenderQueue.length) {
-
           const rowNode = cacheEntry.rowNode;
           let children = Array.from(rowNode[0].children);
-          if(rowNode.length > 1)
-            children = children.concat(Array.from(rowNode[1].children))
+          if (rowNode.length > 1) {
+            children = children.concat(Array.from(rowNode[1].children));
+          }
 
           let i = children.length - 1;
           while (cacheEntry.cellRenderQueue.length) {
@@ -4338,26 +4338,19 @@ if (typeof Slick === "undefined") {
 
       // add new rows & missing cells in existing rows
       if (lastRenderedScrollLeft != scrollLeft) {
-
-    	  if ( hasFrozenRows ) {
-
+        if (hasFrozenRows) {
           var renderedFrozenRows = utils.extend(true, {}, rendered);
 
-    		  if (options.frozenBottom) {
-
-    			 renderedFrozenRows.top=actualFrozenRow;
-    			 renderedFrozenRows.bottom=getDataLength();
-    		  }
-    		  else {
-
-	             renderedFrozenRows.top=0;
-	             renderedFrozenRows.bottom=options.frozenRow;
-    		  }
-
-    		  cleanUpAndRenderCells(renderedFrozenRows);
-    	  }
-
-          cleanUpAndRenderCells(rendered);
+          if (options.frozenBottom) {
+            renderedFrozenRows.top = actualFrozenRow;
+            renderedFrozenRows.bottom = getDataLength();
+          } else {
+            renderedFrozenRows.top = 0;
+            renderedFrozenRows.bottom = options.frozenRow;
+          }
+          cleanUpAndRenderCells(renderedFrozenRows);
+        }
+        cleanUpAndRenderCells(rendered);
       }
 
       // render missing rows
@@ -4365,16 +4358,15 @@ if (typeof Slick === "undefined") {
 
       // Render frozen rows
       if (hasFrozenRows) {
-	      if (options.frozenBottom) {
-	        renderRows({
-	          top: actualFrozenRow, bottom: getDataLength() - 1, leftPx: rendered.leftPx, rightPx: rendered.rightPx
-	        });
-	      }
-	      else {
-	          renderRows({
-	           top: 0, bottom: options.frozenRow - 1, leftPx: rendered.leftPx, rightPx: rendered.rightPx
-	          });
-	        }
+        if (options.frozenBottom) {
+          renderRows({
+            top: actualFrozenRow, bottom: getDataLength() - 1, leftPx: rendered.leftPx, rightPx: rendered.rightPx
+          });
+        } else {
+          renderRows({
+            top: 0, bottom: options.frozenRow - 1, leftPx: rendered.leftPx, rightPx: rendered.rightPx
+          });
+        }
       }
 
       postProcessFromRow = visible.top;
@@ -4385,10 +4377,6 @@ if (typeof Slick === "undefined") {
       lastRenderedScrollLeft = scrollLeft;
       h_render = null;
       trigger(self.onRendered, { startRow: visible.top, endRow: visible.bottom, grid: self });
-    }
-
-    function handleHeaderScroll() {
-      handleElementScroll(_headerScrollContainer);
     }
 
     function handleHeaderRowScroll() {
@@ -4528,7 +4516,7 @@ if (typeof Slick === "undefined") {
 
       trigger(self.onScroll, {scrollLeft: scrollLeft, scrollTop: scrollTop});
 
-      if (hScrollDist || vScrollDist) return true;
+      if (hScrollDist || vScrollDist) { return true; }
       return false;
     }
 
@@ -4538,7 +4526,6 @@ if (typeof Slick === "undefined") {
     call dequeue to cancel any pending action.
     */
     function ActionThrottle(action, minPeriod_ms) {
-
       var blocked = false;
       var queued = false;
 
@@ -4712,10 +4699,11 @@ if (typeof Slick === "undefined") {
         }
 
         setTimeout(function () {
-          if(times % 2 == 0)
+          if (times % 2 == 0) {
             cellNode.classList.add(options.cellFlashingCssClass);
-          else
+          } else {
             cellNode.classList.remove(options.cellFlashingCssClass);
+          }
           toggleCellClass(cellNode, times - 1);
         }, speed);
       }
@@ -4854,18 +4842,16 @@ if (typeof Slick === "undefined") {
         }
         // ignore exceptions - setting the original event's keycode throws access denied exception for "Ctrl"
         // (hitting control key only, nothing else), "Shift" (maybe others)
-        catch (error) {
-        }
+        catch (error) { }
       }
     }
 
     function handleClick(evt) {
 
       let e = evt;
-      if(e instanceof Slick.EventData) {
+      if (e instanceof Slick.EventData) {
         e = evt.getNativeEvent();
-      }
-      else  {
+      } else {
         evt = undefined;
       }
 
@@ -4936,8 +4922,9 @@ if (typeof Slick === "undefined") {
 
     function handleHeaderMouseEnter(e) {
       const c = utils.storage.get(e.target.closest(".slick-header-column"), "column");
-      if(!c)
+      if (!c) {
         return;
+      }
       trigger(self.onHeaderMouseEnter, {
         "column": c,
         "grid": self
@@ -4946,8 +4933,9 @@ if (typeof Slick === "undefined") {
 
     function handleHeaderMouseLeave(e) {
       const c = utils.storage.get(e.target.closest(".slick-header-column"), "column");
-      if(!c)
+      if (!c) {
         return;
+      }
       trigger(self.onHeaderMouseLeave, {
         "column": c,
         "grid": self
@@ -4956,8 +4944,9 @@ if (typeof Slick === "undefined") {
 
     function handleHeaderRowMouseEnter(e) {
       const c = utils.storage.get(e.target.closest(".slick-headerrow-column"), "column");
-      if(!c)
+      if (!c) {
         return;
+      }
       trigger(self.onHeaderRowMouseEnter, {
         "column": c,
         "grid": self
@@ -4966,8 +4955,9 @@ if (typeof Slick === "undefined") {
 
     function handleHeaderRowMouseLeave(e) {
       const c = utils.storage.get(e.target.closest(".slick-headerrow-column"), "column");
-      if(!c)
+      if (!c) {
         return;
+      }
       trigger(self.onHeaderRowMouseLeave, {
         "column": c,
         "grid": self
@@ -4981,8 +4971,9 @@ if (typeof Slick === "undefined") {
     }
 
     function handleHeaderClick(e) {
-      if (columnResizeDragging) 
+      if (columnResizeDragging) {
         return;
+      }
       
       var header = e.target.closest(".slick-header-column");
       var column = header && utils.storage.get(header, "column");
@@ -5044,8 +5035,9 @@ if (typeof Slick === "undefined") {
     function getRowFromNode(rowNode) {
       for (var row in rowsCache) {
         for (var i in rowsCache[row].rowNode) {
-          if (rowsCache[row].rowNode[i] === rowNode)
+          if (rowsCache[row].rowNode[i] === rowNode) {
             return (row ? parseInt(row) : 0);
+          }
         }
       }
       return null;
@@ -5054,32 +5046,28 @@ if (typeof Slick === "undefined") {
     function getFrozenRowOffset(row) {
       //var offset = ( hasFrozenRows ) ? ( options.frozenBottom ) ? ( row >= actualFrozenRow ) ? ( h < viewportTopH ) ? ( actualFrozenRow * options.rowHeight ) : h : 0 : ( row >= actualFrozenRow ) ? frozenRowsHeight : 0 : 0; // WTF?
       let offset = 0;
-      if(hasFrozenRows)
-      {
-        if(options.frozenBottom)
-        {
-          if(row >= actualFrozenRow)
-          {
-              if(h < viewportTopH)
-                offset =  ( actualFrozenRow * options.rowHeight );
-              else
-                offset = h;
+      if (hasFrozenRows) {
+        if (options.frozenBottom) {
+          if (row >= actualFrozenRow) {
+            if (h < viewportTopH) {
+              offset = (actualFrozenRow * options.rowHeight);
+            } else {
+              offset = h;
+            }
           }
-          else
-          {
+          else {
             offset = 0;
           }
         }
-        else
-        {
-          if(row >= actualFrozenRow)
+        else {
+          if (row >= actualFrozenRow) {
             offset = frozenRowsHeight;
-          else
+          } else {
             offset = 0;
+          }
         }
       }
-      else
-      {
+      else {
         offset = 0;
       }
 
@@ -5087,7 +5075,7 @@ if (typeof Slick === "undefined") {
     }
 
     function getCellFromEvent(e) {
-      if(e instanceof Slick.EventData) {
+      if (e instanceof Slick.EventData) {
         e = e.getNativeEvent();
       }
 
@@ -5102,7 +5090,6 @@ if (typeof Slick === "undefined") {
       row = getRowFromNode(cellNode.parentNode);
 
       if (hasFrozenRows) {
-
         var c = utils.offset(utils.parents(cellNode, '.grid-canvas')[0]);
 
         var rowOffset = 0;
@@ -5426,8 +5413,9 @@ if (typeof Slick === "undefined") {
       // walk up the tree
       var offsetParent = elem.offsetParent;
       while ((elem = elem.parentNode) != document.body) {
-        if (elem == null) 
+        if (elem == null) {
           break;
+        }
 
         const styles = getComputedStyle(elem);
         if (box.visible && elem.scrollHeight != elem.offsetHeight && styles["overflowY"] != "visible") {
@@ -5609,29 +5597,32 @@ if (typeof Slick === "undefined") {
     }
 
     function navigateToRow(row) {
-       var num_rows = getDataLength();
-       if (!num_rows) return true;
+      var num_rows = getDataLength();
+      if (!num_rows) { return true; }
 
-       if (row < 0) row = 0;
-       else if (row >= num_rows) row = num_rows - 1;
+      if (row < 0) {
+        row = 0;
+      } else if (row >= num_rows) {
+        row = num_rows - 1;
+      }
 
        scrollCellIntoView(row, 0, true);
        if (options.enableCellNavigation && activeRow != null) {
-          var cell = 0, prevCell = null;
-          var prevActivePosX = activePosX;
-          while (cell <= activePosX) {
-             if (canCellBeActive(row, cell)) {
-                prevCell = cell;
-             }
-             cell += getColspan(row, cell);
-          }
+         var cell = 0, prevCell = null;
+         var prevActivePosX = activePosX;
+         while (cell <= activePosX) {
+           if (canCellBeActive(row, cell)) {
+             prevCell = cell;
+           }
+           cell += getColspan(row, cell);
+         }
 
-          if (prevCell !== null) {
-             setActiveCellInternal(getCellNode(row, prevCell));
-             activePosX = prevActivePosX;
-          } else {
-             resetActiveCell();
-          }
+         if (prevCell !== null) {
+           setActiveCellInternal(getCellNode(row, prevCell));
+           activePosX = prevActivePosX;
+         } else {
+           resetActiveCell();
+         }
        }
        return true;
     }
@@ -6190,13 +6181,17 @@ if (typeof Slick === "undefined") {
     var logMessageMaxCount = 30;
 
     function sanitizeHtmlString(dirtyHtml, suppressLogging) {
-      if (!options.sanitizer || typeof dirtyHtml !== 'string') return dirtyHtml;
+      if (!options.sanitizer || typeof dirtyHtml !== 'string') {
+        return dirtyHtml;
+      }
       
       var cleanHtml = options.sanitizer(dirtyHtml);
       
       if (!suppressLogging && options.logSanitizedHtml && logMessageCount <= logMessageMaxCount && cleanHtml !== dirtyHtml) {
         console.log("sanitizer altered html: " + dirtyHtml + " --> " + cleanHtml);    
-        if (logMessageCount === logMessageMaxCount) { console.log("sanitizer: silencing messages after first " + logMessageMaxCount); }
+        if (logMessageCount === logMessageMaxCount) {
+          console.log("sanitizer: silencing messages after first " + logMessageMaxCount);
+        }
         logMessageCount++;
       }
       return cleanHtml;

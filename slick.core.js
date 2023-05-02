@@ -22,6 +22,7 @@
     let returnValue = undefined;
 
     // when we already have an event, we want to keep some of the event properties
+    // looping through some props is the only way to keep and sync these properties to the returned EventData
     if (event) {
       const eventProps = [
         'altKey', 'ctrlKey', 'metaKey', 'shiftKey', 'key', 'keyCode',
@@ -40,7 +41,7 @@
      */
     this.stopPropagation = function () {
       isPropagationStopped = true;
-      if(nativeEvent) {
+      if (nativeEvent) {
         nativeEvent.stopPropagation();
       }
     };
@@ -60,7 +61,7 @@
      */
     this.stopImmediatePropagation = function () {
       isImmediatePropagationStopped = true;
-      if(nativeEvent) {
+      if (nativeEvent) {
         nativeEvent.stopImmediatePropagation();
       }
     };
@@ -79,14 +80,14 @@
     }
 
     this.preventDefault = function() {
-      if(nativeEvent) {
+      if (nativeEvent) {
         nativeEvent.preventDefault();
       }
       isDefaultPrevented = true;
     }
 
     this.isDefaultPrevented = function() {
-      if(nativeEvent) {
+      if (nativeEvent) {
         return nativeEvent.defaultPrevented;
       }
       return isDefaultPrevented;
@@ -518,7 +519,6 @@
    * @constructor
    */
   function TreeColumns(treeColumns) {
-
     var columnsById = {};
 
     function init() {
@@ -530,19 +530,19 @@
         .forEach(function (column) {
           columnsById[column.id] = column;
 
-          if (column.columns)
+          if (column.columns) {
             mapToId(column.columns);
+          }
         });
     }
 
     function filter(node, condition) {
-
       return node.filter(function (column) {
-
         var valid = condition.call(column);
 
-        if (valid && column.columns)
+        if (valid && column.columns) {
           column.columns = filter(column.columns, condition);
+        }
 
         return valid && (!column.columns || column.columns.length);
       });
@@ -558,8 +558,9 @@
           return indexA - indexB;
         })
         .forEach(function (column) {
-          if (column.columns)
+          if (column.columns) {
             sort(column.columns, grid);
+          }
         });
     }
 
@@ -568,13 +569,15 @@
     }
 
     function getDepth(node) {
-      if (node.length)
-        for (var i in node)
+      if (node.length) {
+        for (var i in node) {
           return getDepth(node[i]);
-      else if (node.columns)
+        }
+      } else if (node.columns) {
         return 1 + getDepth(node.columns);
-      else
+      } else {
         return 1;
+      }
     }
 
     function getColumnsInDepth(node, depth, current) {
@@ -582,21 +585,23 @@
       current = current || 0;
 
       if (depth == current) {
-
-        if (node.length)
+        if (node.length) {
           node.forEach(function(n) {
-            if (n.columns)
+            if (n.columns) {
               n.extractColumns = function() {
                 return extractColumns(n);
               };
+            }
           });
-
+        }
         return node;
-      } else
-        for (var i in node)
+      } else {
+        for (var i in node) {
           if (node[i].columns) {
             columns = columns.concat(getColumnsInDepth(node[i].columns, depth, current + 1));
           }
+        }
+      }
 
       return columns;
     }
@@ -605,19 +610,15 @@
       var result = [];
 
       if (node.hasOwnProperty('length')) {
-
-        for (var i = 0; i < node.length; i++)
+        for (var i = 0; i < node.length; i++) {
           result = result.concat(extractColumns(node[i]));
-
+        }
       } else {
-
-        if (node.hasOwnProperty('columns'))
-
+        if (node.hasOwnProperty('columns')) {
           result = result.concat(extractColumns(node.columns));
-
-        else
+        } else {
           return node;
-
+        }
       }
 
       return result;
@@ -630,9 +631,7 @@
     init();
 
     this.hasDepth = function () {
-
-      for (var i in treeColumns)
-      {
+      for (var i in treeColumns) {
         if (treeColumns[i].hasOwnProperty('columns'))
           return true;
       }
@@ -739,7 +738,7 @@
   }
 
   // With help from https://youmightnotneedjquery.com/
-  function grep( elems, callback, invert ) {
+  function grep(elems, callback, invert) {
 		var callbackInverse,
 			matches = [],
 			i = 0,
@@ -749,8 +748,8 @@
 		// Go through the array, only saving the items
 		// that pass the validator function
 		for ( ; i < length; i++ ) {
-			callbackInverse = !callback( elems[ i ], i );
-			if ( callbackInverse !== callbackExpect ) {
+      callbackInverse = !callback(elems[i], i);
+      if (callbackInverse !== callbackExpect) {
 				matches.push( elems[ i ] );
 			}
 		}
@@ -803,22 +802,20 @@
   function setStyleSize(el, style, val) {
     if (typeof val === 'function') {
       val = val();
-    }
-    else if (typeof val === 'string') {
+    } else if (typeof val === 'string') {
       el.style[style] = val;
-    }
-    else {
+    } else {
       el.style[style] = val + 'px';
     }
   }
 
   function contains(parent, child) {
-    if(!parent || !child) {
+    if (!parent || !child) {
       return false;
     }
 
     const parentList = parents(child);
-    return !parentList.every(function (p)  {
+    return !parentList.every(function (p) {
       if(parent == p) {
         return false;
       }
@@ -836,21 +833,15 @@
     const hidden = selector == ":hidden";
 
     while ((el = el.parentNode) && el !== document) {
-
-      if(hidden)
-      {
+      if (hidden) {
         if(isHidden(el)) {
           parents.push(el);
         }
-      }
-      else if (visible)
-      {
+      } else if (visible) {
         if(!isHidden(el)) {
           parents.push(el);
         }
-      }
-      else if (!selector || el.matches(selector)) 
-      {
+      } else if (!selector || el.matches(selector)) {
         parents.push(el);
       }
     }
@@ -862,8 +853,7 @@
     template.innerHTML = html.trim();
 
     const first = template.content.firstChild;
-    if(parent)
-    {
+    if (parent) {
       [].forEach.call(template.content.children, function (child) {
         parent.appendChild(child);
       });
@@ -873,7 +863,7 @@
   }
   
   function toFloat(value) {
-    var x = parseFloat(value)
+    var x = parseFloat(value);
     if (isNaN(x)) {
       return 0;
     }
@@ -881,46 +871,40 @@
   }
 
   function show(el, type) {
-
     type = type ? type : "";
-    if(Array.isArray(el)) {
+    if (Array.isArray(el)) {
       el.forEach(function (e) {
         e.style.display = type;
       })
-    }
-    else {
+    } else {
       el.style.display = type;
     }
   }
 
   function hide(el) {
-    if(Array.isArray(el)) {
+    if (Array.isArray(el)) {
       el.forEach(function (e) {
         e.style.display = "none";
       });
-    }
-    else {
+    } else {
       el.style.display = "none";
     }
   }
 
   function slideUp(el, callback) {
-    if(window.jQuery !== undefined) {
-      window.jQuery(el).slideUp("fast", callback);
-      return;
-    }
-
-    hide(el);
-    callback();
+    return slideAnimation(el, 'slideUp', callback);
   }
 
   function slideDown(el, callback) {
-    if(window.jQuery !== undefined) {
-      window.jQuery(el).slideDown("fast", callback);
+    return slideAnimation(el, 'slideDown', callback);
+  }
+
+  function slideAnimation(el, slideDirection, callback) {
+    if (window.jQuery !== undefined) {
+      window.jQuery(el)[slideDirection]("fast", callback);
       return;
     }
-
-    show(el);
+    (slideDirection === 'slideUp') ? hide(el) : show(el);
     callback();
   }
 
@@ -955,19 +939,17 @@
       length = arguments.length,
       deep = false;
 
-    if ( typeof target === "boolean" ) {
+    if (typeof target === "boolean") {
       deep = target;
       target = arguments[ i ] || {};
       i++;
-    }
-    else
-    {
+    } else {
       target = target || {}
     }
-    if ( typeof target !== "object" && !isFunction( target ) ) {
+    if (typeof target !== "object" && !isFunction(target)) {
       target = {};
     }
-    if ( i === length ) {
+    if (i === length) {
       target = this;
       i--;
     }
@@ -1000,7 +982,7 @@
   }
 
   /**
-   * A simple binding event service to keep track of all events being subscribed to, 
+   * A simple binding event service to keep track of all JavaScript events with callback listeners,
    * it allows us to unbind event(s) and their listener(s) by calling a simple unbind method call.
    * Unbinding is a necessary step to make sure that all event listeners are removed to avoid memory leaks when destroing the grid
    */

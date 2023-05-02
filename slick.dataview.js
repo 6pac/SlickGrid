@@ -634,8 +634,7 @@
         // item affects sorting -> must use sorted add
         deleteItem(id);
         sortedAddItem(item);
-      }
-      else { // update does not affect sorting -> regular update works fine
+      } else { // update does not affect sorting -> regular update works fine
         updateItem(id, item);
       }
     }
@@ -647,8 +646,7 @@
         var mid = low + high >>> 1;
         if (sortComparer(items[mid], searchItem) === -1) {
           low = mid + 1;
-        }
-        else {
+        } else {
           high = mid;
         }
       }
@@ -842,7 +840,7 @@
         }
       }
 
-      if(groups.length) {
+      if (groups.length) {
         addTotals(groups, level);
       }
 
@@ -966,8 +964,7 @@
         fn.name = setFunctionName(fn, fnName);
         return fn;
       } else {
-        return function noAccumulator() {
-        }
+        return function noAccumulator() { }
       }
     }
 
