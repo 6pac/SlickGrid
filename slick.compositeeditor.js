@@ -46,7 +46,6 @@
 
     options = Slick.Utils.extend({}, defaultOptions, options);
 
-
     function getContainerBox(i) {
       var c = containers[i];
       var offset = Slick.Utils.offset(c);
@@ -63,7 +62,6 @@
         visible: true
       };
     }
-
 
     function editor(args) {
       var editors = [];
@@ -99,7 +97,6 @@
         }, 0);
       }
 
-
       this.destroy = function () {
         var idx = 0;
         while (idx < editors.length) {
@@ -108,7 +105,7 @@
         }
 
         options.destroy && options.destroy();
-		    editors = [];
+        editors = [];
       };
 
 
@@ -116,7 +113,6 @@
         // if validation has failed, set the focus to the first invalid editor
         (firstInvalidEditor || editors[0]).focus();
       };
-
 
       this.isValueChanged = function () {
         var idx = 0;
@@ -129,7 +125,6 @@
         return false;
       };
 
-
       this.serializeValue = function () {
         var serializedValue = [];
         var idx = 0;
@@ -139,7 +134,6 @@
         }
         return serializedValue;
       };
-
 
       this.applyValue = function (item, state) {
         var idx = 0;
@@ -158,11 +152,10 @@
         }
       };
 
-
-      this.validate = function (targetElm) {
+      this.validate = function (target) {
         var validationResults;
         var errors = [];
-        var targetElm = targetElm ? targetElm : null;
+        var targetElm = target ? target : null;
 
         firstInvalidEditor = null;
 
@@ -204,7 +197,7 @@
           }
           idx++;
         }
-		    targetElm = null;
+        targetElm = null;
 
         if (errors.length) {
           return {
@@ -220,7 +213,6 @@
         }
       };
 
-
       this.hide = function () {
         var idx = 0;
         while (idx < editors.length) {
@@ -229,7 +221,6 @@
         }
         options.hide && options.hide();
       };
-
 
       this.show = function () {
         var idx = 0;
@@ -240,11 +231,9 @@
         options.show && options.show();
       };
 
-
       this.position = function (box) {
         options.position && options.position(box);
       };
-
 
       init();
     }
