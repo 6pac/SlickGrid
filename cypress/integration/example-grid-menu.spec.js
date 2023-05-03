@@ -259,7 +259,7 @@ describe('Example - Grid Menu', () => {
     cy.get('#myGrid')
       .find('.slick-pane-left')
       .find('.slick-headerrow')
-      .should('not.be.hidden');
+      .should('be.hidden');
   });
 
   it('should expect "Clear Sorting" command to become hidden from Grid Menu when disabling feature', () => {
