@@ -1,6 +1,6 @@
 /// <reference types="Cypress" />
 
-describe('Example - Grid Menu', () => {
+describe('Example - Multi Grid on a Page', () => {
   const fullTitles = ['Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
 
   beforeEach(() => {
@@ -48,7 +48,7 @@ describe('Example - Grid Menu', () => {
             if (index <= 5) {
               const $input = $child.children('input');
               const $label = $child.children('label');
-              expect($input.attr('checked')).to.eq('checked');
+              expect($input.prop('checked')).to.eq(true);
               expect($label.text()).to.eq(fullTitles[index]);
             }
           });
@@ -96,7 +96,7 @@ describe('Example - Grid Menu', () => {
             if (index <= 5) {
               const $input = $child.children('input');
               const $label = $child.children('label');
-              expect($input.attr('checked')).to.eq('checked');
+              expect($input.prop('checked')).to.eq(true);
               expect($label.text()).to.eq(fullTitles[index]);
             }
           });
@@ -136,9 +136,9 @@ describe('Example - Grid Menu', () => {
           const $input = $child.children('input');
           const $label = $child.children('label');
           if ($label.text() === 'Title') {
-            expect($input.attr('checked')).to.eq(undefined);
+            expect($input.prop('checked')).to.eq(false);
           } else {
-            expect($input.attr('checked')).to.eq('checked');
+            expect($input.prop('checked')).to.eq(true);
           }
           expect($label.text()).to.eq(fullTitles[index]);
         }
@@ -226,7 +226,7 @@ describe('Example - Grid Menu', () => {
             if (index <= 5) {
               const $input = $child.children('input');
               const $label = $child.children('label');
-              expect($input.attr('checked')).to.eq('checked');
+              expect($input.prop('checked')).to.eq(true);
               expect($label.text()).to.eq(fullTitles[index]);
             }
           });
@@ -263,9 +263,9 @@ describe('Example - Grid Menu', () => {
               const $input = $child.children('input');
               const $label = $child.children('label');
               if ($label.text() === 'Title' || $label.text() === 'Start') {
-                expect($input.attr('checked')).to.eq(undefined);
+                expect($input.prop('checked')).to.eq(false);
               } else {
-                expect($input.attr('checked')).to.eq('checked');
+                expect($input.prop('checked')).to.eq(true);
               }
               expect($label.text()).to.eq(fullTitles[index]);
             }

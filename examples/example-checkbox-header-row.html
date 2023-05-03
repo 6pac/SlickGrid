@@ -113,8 +113,6 @@
   </div>
 </div>
 
-<script src="../lib/firebugx.js"></script>
-
 <script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
@@ -146,7 +144,7 @@
 
   // add an offset so that the IDs are not equal to the row number, to fully validate that DataView selected IDs work as intended
   var idOffset = 8;
-  $('#idOffset').text(idOffset);
+  document.querySelector('#idOffset').textContent = idOffset;
 
   checkboxSelector = new Slick.CheckboxSelectColumn({
     cssClass: "slick-cell-checkboxsel",
@@ -178,7 +176,8 @@
   }
 
   function clearFilters() {
-    $('.slick-headerrow-column').children().val('');
+    const filterInputs = document.querySelectorAll('.slick-headerrow-column input');
+    filterInputs.forEach(input => input.value = '');
     for (var columnId in columnFilters) {
       columnFilters[columnId] = "";
     }
@@ -223,7 +222,7 @@
     });
   }
 
-  $(function () {
+  (function () {
     for (var i = 0; i < 150; i++) {
       var d = (data[i] = {});
       d["id"] = i + idOffset;
@@ -257,32 +256,38 @@
 
       console.log("Previously Selected Rows: " + previousSelectedRows.toString());
       console.log("Selected Rows: " + sortedSelectedRows.toString());
-      $('#selectedRows').text(sortedSelectedRows.toString());
-      $('#rowsCount').text(sortedSelectedRows.length); 
+      document.querySelector('#selectedRows').textContent = sortedSelectedRows.toString();
+      document.querySelector('#rowsCount').textContent = sortedSelectedRows.length; 
     });
     
     dataView.onSelectedRowIdsChanged.subscribe(function(e, args) {
       var sortedSelectedIds = args.filteredIds.sort(function (a, b) { return a - b });
       // console.log('sortedSelectedIds', args.selectedRowIds);
-      $('#selectedIds').text(sortedSelectedIds.toString());
-      $('#idsCount').text(sortedSelectedIds.length); 
+      document.querySelector('#selectedIds').textContent = sortedSelectedIds.toString();
+      document.querySelector('#idsCount').textContent = sortedSelectedIds.length; 
     });
 
-    $(grid.getHeaderRow()).on("change keyup", ":input", function (e) {
-      var columnId = $(this).data("columnId");
+    const headerRowElm = grid.getHeaderRow();
+    headerRowElm.addEventListener('change', filterKeyup);
+    headerRowElm.addEventListener('keyup', filterKeyup);
+    
+    function filterKeyup(e) {
+      const inputFilter = e.target;
+      const columnId = inputFilter.dataset.columnid;
       if (columnId != null) {
-        columnFilters[columnId] = $.trim($(this).val());
+        columnFilters[columnId] = (e.target.value || '').trim();
         dataView.refresh();
       }
-    });
+    };
 
     grid.onHeaderRowCellRendered.subscribe(function(e, args) {
       if (args.column.field !== "sel") {
-        $(args.node).empty();
-        $("<input type='text'>")
-           .data("columnId", args.column.id)
-           .val(columnFilters[args.column.id])
-           .appendTo(args.node);
+        args.node.innerHTML = ''; // empty it
+        const inputElm = document.createElement('input');
+        inputElm.dataset.columnid = args.column.id;
+        inputElm.value = columnFilters[args.column.id] || '';
+
+        args.node.appendChild(inputElm);
       }
     });
 
@@ -301,7 +306,7 @@
     dataView.setItems(data);
     dataView.setFilter(filter);
     dataView.endUpdate();
-  })
+  })();
 </script>
 </body>
 </html>

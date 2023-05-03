@@ -25,17 +25,18 @@
  * @constructor
  */
 
-(function ($) {
+(function (window) {
   'use strict';
   function SlickColumnPicker(columns, grid, options) {
     var _grid = grid;
     var _options = options;
     var _gridUid = (grid && grid.getUID) ? grid.getUID() : '';
-    var $columnTitleElm;
-    var $list;
-    var $menu;
+    var _columnTitleElm;
+    var _listElm;
+    var _menuElm;
     var columnCheckboxes;
     var onColumnsChanged = new Slick.Event();
+    var _bindingEventService = new Slick.BindingEventService();
 
     var defaults = {
       fadeSpeed: 250,
@@ -54,68 +55,91 @@
     function init(grid) {
       grid.onHeaderContextMenu.subscribe(handleHeaderContextMenu);
       grid.onColumnsReordered.subscribe(updateColumnOrder);
-      _options = $.extend({}, defaults, options);
+      _options = Slick.Utils.extend({}, defaults, options);
 
-      $menu = $("<div class='slick-columnpicker " + _gridUid + "' style='display:none' />").appendTo(document.body);
-      $("<button type='button' class='close' data-dismiss='slick-columnpicker' aria-label='Close'><span class='close' aria-hidden='true'>&times;</span></button>").appendTo($menu);
+      _menuElm = document.createElement('div');
+      _menuElm.className = `slick-columnpicker ${_gridUid}`;
+      _menuElm.style.display = 'none';
+      document.body.appendChild(_menuElm);
+
+      const buttonElm = document.createElement('button');
+      buttonElm.type = 'button';
+      buttonElm.className = 'close';
+      buttonElm.dataset.dismiss = 'slick-columnpicker';
+      buttonElm.ariaLabel = 'Close';
+
+      const spanCloseElm = document.createElement('span');
+      spanCloseElm.className = 'close';
+      spanCloseElm.ariaHidden = 'true';
+      spanCloseElm.innerHTML = '&times;';
+      buttonElm.appendChild(spanCloseElm);
+      _menuElm.appendChild(buttonElm);
 
       // user could pass a title on top of the columns list
       if (_options.columnPickerTitle || (_options.columnPicker && _options.columnPicker.columnTitle)) {
         var columnTitle = _options.columnPickerTitle || _options.columnPicker.columnTitle;
-        $columnTitleElm = $("<div class='title'/>").append(columnTitle);
-        $columnTitleElm.appendTo($menu);
+        _columnTitleElm = document.createElement('div');
+        _columnTitleElm.className = 'slick-gridmenu-custom';
+        _columnTitleElm.textContent = columnTitle;
+        _menuElm.appendChild(_columnTitleElm);
       }
 
-      $menu.on("click", updateColumn);
-      $list = $("<span class='slick-columnpicker-list' />");
+      _bindingEventService.bind(_menuElm, 'click', updateColumn);
+
+      _listElm = document.createElement('span');
+      _listElm.className = 'slick-columnpicker-list';
 
       // Hide the menu on outside click.
-      $(document.body).on("mousedown", handleBodyMouseDown);
+      _bindingEventService.bind(document.body, 'mousedown', handleBodyMouseDown);
 
       // destroy the picker if user leaves the page
-      $(window).on("beforeunload", destroy);
+      _bindingEventService.bind(document.body, 'beforeunload', destroy);
     }
 
     function destroy() {
       _grid.onHeaderContextMenu.unsubscribe(handleHeaderContextMenu);
       _grid.onColumnsReordered.unsubscribe(updateColumnOrder);
-      if ($list) {
-        $list.remove();
+      _bindingEventService.unbindAll();
+
+      if (_listElm) {
+        _listElm.remove();
       }
-      if ($menu) {
-        $menu.off("click").remove();
+      if (_menuElm) {
+        _menuElm.remove();
       }
-      $(document.body).off("mousedown", handleBodyMouseDown);
-      $(".slick-columnpicker." + _gridUid).hide(_options && _options.columnPicker && _options.columnPicker.fadeSpeed);
-      $columnTitleElm = null;
-      $list = null;
-      $menu = null;
-      $(window).off("beforeunload");
     }
 
     function handleBodyMouseDown(e) {
-      if (($menu && $menu[0] != e.target && !$.contains($menu[0], e.target)) || e.target.className == "close") {
-        $menu.hide(_options && _options.columnPicker && _options.columnPicker.fadeSpeed);
+      if ((_menuElm !== e.target && !_menuElm.contains(e.target)) || e.target.className === 'close') {
+        _menuElm.setAttribute('aria-expanded', 'false');
+        _menuElm.style.display = 'none';
       }
     }
 
     function handleHeaderContextMenu(e) {
       e.preventDefault();
-      $list.empty();
+      Slick.Utils.emptyElement(_listElm);
       updateColumnOrder();
       columnCheckboxes = [];
 
-      var $li, $input, columnId;
-      var columnLabel, excludeCssClass;
+      let columnId, columnLabel, excludeCssClass;
       for (var i = 0; i < columns.length; i++) {
         columnId = columns[i].id;
         excludeCssClass = columns[i].excludeFromColumnPicker ? "hidden" : "";
-        $li = $('<li class="' + excludeCssClass + '" />').appendTo($list);
-        $input = $("<input type='checkbox' id='" + _gridUid + "colpicker-" + columnId + "' />").data("column-id", columnId).appendTo($li);
-        columnCheckboxes.push($input);
+
+        const liElm = document.createElement('li');
+        liElm.className = excludeCssClass;
+
+        const checkboxElm = document.createElement('input');
+        checkboxElm.type = 'checkbox';
+        checkboxElm.id = `${_gridUid}colpicker-${columnId}`;
+        checkboxElm.dataset.columnid = columns[i].id;
+        liElm.appendChild(checkboxElm);
+
+        columnCheckboxes.push(checkboxElm);
 
         if (_grid.getColumnIndex(columnId) != null) {
-          $input.attr("checked", "checked");
+          checkboxElm.checked = true;
         }
 
         if (_options && _options.columnPicker && _options.columnPicker.headerColumnValueExtractor) {
@@ -124,44 +148,72 @@
           columnLabel = defaults.headerColumnValueExtractor(columns[i], _options);
         }
 
-        $("<label for='" + _gridUid + "colpicker-" + columnId + "' />")
-          .html(columnLabel)
-          .appendTo($li);
+        const labelElm = document.createElement('label');
+        labelElm.htmlFor = `${_gridUid}colpicker-${columnId}`;
+        labelElm.textContent = columnLabel;
+        liElm.appendChild(labelElm);
+        _listElm.appendChild(liElm);
       }
 
       if (_options.columnPicker && (!_options.columnPicker.hideForceFitButton || !_options.columnPicker.hideSyncResizeButton)) {
-        $("<hr/>").appendTo($list);
+        _listElm.appendChild(document.createElement('hr'));
       }
 
       if (!(_options.columnPicker && _options.columnPicker.hideForceFitButton)) {
-        var forceFitTitle = (_options.columnPicker && _options.columnPicker.forceFitTitle) || _options.forceFitTitle;
-        $li = $("<li />").appendTo($list);
-        $input = $("<input type='checkbox' id='" + _gridUid + "colpicker-forcefit' />").data("option", "autoresize").appendTo($li);
-        $("<label for='" + _gridUid + "colpicker-forcefit' />").text(forceFitTitle).appendTo($li);
+        let forceFitTitle = (_options.columnPicker && _options.columnPicker.forceFitTitle) || _options.forceFitTitle;
+
+        const liElm = document.createElement('li');
+        _listElm.appendChild(liElm);
+
+        const forceFitCheckboxElm = document.createElement('input');
+        forceFitCheckboxElm.type = 'checkbox';
+        forceFitCheckboxElm.id = `${_gridUid}colpicker-forcefit`;
+        forceFitCheckboxElm.dataset.option = 'autoresize';
+        liElm.appendChild(forceFitCheckboxElm);
+
+        const labelElm = document.createElement('label');
+        labelElm.htmlFor = `${_gridUid}colpicker-forcefit`;
+        labelElm.textContent = forceFitTitle;
+        liElm.appendChild(labelElm);
+
         if (_grid.getOptions().forceFitColumns) {
-          $input.attr("checked", "checked");
+          forceFitCheckboxElm.checked = true;
         }
       }
 
       if (!(_options.columnPicker && _options.columnPicker.hideSyncResizeButton)) {
-        var syncResizeTitle = (_options.columnPicker && _options.columnPicker.syncResizeTitle) || _options.syncResizeTitle;
-        $li = $("<li />").appendTo($list);
-        $input = $("<input type='checkbox' id='" + _gridUid + "colpicker-syncresize' />").data("option", "syncresize").appendTo($li);
-        $("<label for='" + _gridUid + "colpicker-syncresize' />").text(syncResizeTitle).appendTo($li);
+        let syncResizeTitle = (_options.columnPicker && _options.columnPicker.syncResizeTitle) || _options.syncResizeTitle;
+
+        const liElm = document.createElement('li');
+        _listElm.appendChild(liElm);
+
+        const syncResizeCheckboxElm = document.createElement('input');
+        syncResizeCheckboxElm.type = 'checkbox';
+        syncResizeCheckboxElm.id = `${_gridUid}colpicker-syncresize`;
+        syncResizeCheckboxElm.dataset.option = 'syncresize';
+        liElm.appendChild(syncResizeCheckboxElm);
+
+        const labelElm = document.createElement('label');
+        labelElm.htmlFor = `${_gridUid}colpicker-syncresize`;
+        labelElm.textContent = syncResizeTitle;
+        liElm.appendChild(labelElm);
+
         if (_grid.getOptions().syncColumnCellResize) {
-          $input.attr("checked", "checked");
+          syncResizeCheckboxElm.checked = true;
         }
       }
 
-      $menu
-        .css("top", e.pageY - 10)
-        .css("left", e.pageX - 10)
-        .css("max-height", $(window).height() - e.pageY - 10)
-        .fadeIn(_options && _options.columnPicker && _options.columnPicker.fadeSpeed);
+      repositionMenu(e);
+    }
 
-      $list.appendTo($menu);
-      $li = null;
-      $input = null;
+    function repositionMenu(event) {
+      const targetEvent = event && event.touches && event.touches[0] || event;
+      _menuElm.style.top = `${targetEvent.pageY - 10}px`;
+      _menuElm.style.left = `${targetEvent.pageX - 10}px`;
+      _menuElm.style.maxHeight = `${window.innerHeight - targetEvent.clientY}px`;
+      _menuElm.style.display = 'block';
+      _menuElm.setAttribute('aria-expanded', 'true');
+      _menuElm.appendChild(_listElm);
     }
 
     function updateColumnOrder() {
@@ -171,9 +223,9 @@
       // We create a new `columns` structure by leaving currently-hidden
       // columns in their original ordinal position and interleaving the results
       // of the current column sort.
-      var current = _grid.getColumns().slice(0);
-      var ordered = new Array(columns.length);
-      for (var i = 0; i < ordered.length; i++) {
+      let current = _grid.getColumns().slice(0);
+      let ordered = new Array(columns.length);
+      for (let i = 0; i < ordered.length; i++) {
         if (_grid.getColumnIndex(columns[i].id) === undefined) {
           // If the column doesn't return a value from getColumnIndex,
           // it is hidden. Leave it in this position.
@@ -188,13 +240,13 @@
 
     /** Update the Titles of each sections (command, customTitle, ...) */
     function updateAllTitles(gridMenuOptions) {
-      if ($columnTitleElm && $columnTitleElm.text) {
-        $columnTitleElm.text(gridMenuOptions.columnTitle);
+      if (_columnTitleElm && _columnTitleElm.textContent) {
+        _columnTitleElm.textContent = gridMenuOptions.columnTitle;
       }
     }
 
     function updateColumn(e) {
-      if ($(e.target).data("option") == "autoresize") {
+      if (e.target.dataset.option === 'autoresize') {
         // when calling setOptions, it will resize with ALL Columns (even the hidden ones)
         // we can avoid this problem by keeping a reference to the visibleColumns before setOptions and then setColumns after
         var previousVisibleColumns = getVisibleColumns();
@@ -204,7 +256,7 @@
         return;
       }
 
-      if ($(e.target).data("option") == "syncresize") {
+      if (e.target.dataset.option === 'syncresize') {
         if (e.target.checked) {
           _grid.setOptions({ syncColumnCellResize: true });
         } else {
@@ -213,18 +265,18 @@
         return;
       }
 
-      if ($(e.target).is(":checkbox")) {
-        var isChecked = e.target.checked;
-        var columnId = $(e.target).data("column-id") || "";
-        var visibleColumns = [];
-        $.each(columnCheckboxes, function (i) {
-          if ($(this).is(":checked")) {
-            visibleColumns.push(columns[i]);
+      if (e.target.type === 'checkbox') {
+        const isChecked = e.target.checked;
+        const columnId = e.target.dataset.columnid || '';
+        let visibleColumns = [];
+        columnCheckboxes.forEach((columnCheckbox, idx) => {
+          if (columnCheckbox.checked) {
+            visibleColumns.push(columns[idx]);
           }
         });
 
         if (!visibleColumns.length) {
-          $(e.target).attr("checked", "checked");
+          e.target.checked = true;
           return;
         }
 
@@ -255,5 +307,5 @@
   }
 
   // Slick.Controls.ColumnPicker
-  $.extend(true, window, { Slick: { Controls: { ColumnPicker: SlickColumnPicker } } });
-})(jQuery);
+  Slick.Utils.extend(true, window, { Slick: { Controls: { ColumnPicker: SlickColumnPicker } } });
+})(window);
