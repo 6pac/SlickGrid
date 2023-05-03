@@ -38,7 +38,6 @@
   </tr>
 </table>
 
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -78,7 +77,7 @@
 	return data;
   }
   
-  $(function () {
+  (function () {
     // Create 1st Grid with its own ColumnPicker/GridMenu
     var data01 = CreateData();
     grid01 = new Slick.Grid("#myGrid01", data01, columns, options);
@@ -88,11 +87,11 @@
     // Create 2nd Grid with its own ColumnPicker/GridMenu
     var data02 = CreateData();
     var columns02 = columns.slice(0);
-    var options02 = jQuery.extend({}, options);
+    var options02 = Slick.Utils.extend({}, options);
     grid02 = new Slick.Grid("#myGrid02", data02, columns02, options02);
     new Slick.Controls.ColumnPicker(columns02, grid02, options02);
     new Slick.Controls.GridMenu(columns02, grid02, options02);
-  })
+  })();
 </script>
 </body>
 </html>
