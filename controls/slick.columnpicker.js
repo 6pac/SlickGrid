@@ -301,13 +301,13 @@
         col.hidden = false;
         visibleColumns.splice(idx, 0, col);
       } else {
-        let newVisibleColumns = [];      
+        let newVisibleColumns = [];
         for (let i = 0; i < visibleColumns.length; i++) {
           if (visibleColumns[i].id !== col.id) { newVisibleColumns.push(visibleColumns[i]); }
         }
         visibleColumns = newVisibleColumns;
       }
- 
+
       _grid.setColumns(visibleColumns);
       onColumnsChanged.notify({ columnId: col.id, showing: show, allColumns: columns, columns: visibleColumns, grid: _grid });
      }
