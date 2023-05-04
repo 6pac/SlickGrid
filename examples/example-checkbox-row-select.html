@@ -57,7 +57,7 @@
     <ul>
       <li>Checkbox row select column</li>
       <p>
-        <button onclick="toggleHideSelectAllCheckbox()">Toggle show/hide "Select All" checkbox</button>
+        <button data-test="toggle-select-all" onclick="toggleHideSelectAllCheckbox()">Toggle show/hide "Select All" checkbox</button>
       </p>
       
       <p>
@@ -72,9 +72,6 @@
   </div>
 </div>
 
-<script src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -114,7 +111,7 @@
     checkboxSelector2.setOptions({ hideSelectAllCheckbox: isSelectAllCheckbox2Hidden });
   }
 
-  $(function () {
+  (function () {
     for (var i = 0; i < 100; i++) {
       var d = (data[i] = {});
       d[0] = "Row " + i;
@@ -161,7 +158,7 @@
         var x = args.rows;
     });
     
-    $("#selectRow5").click(function() {
+    document.querySelector("#selectRow5").addEventListener('click', function() {
         var rowIndex = 5; // use row 5 for this example
         var selectedRowsIndexes = grid.getSelectedRows();
         if (selectedRowsIndexes.indexOf(rowIndex) < 0) {
@@ -170,7 +167,7 @@
         }
     });
 
-    $("#unselectRow5").click(function() {
+    document.querySelector("#unselectRow5").addEventListener('click', function() {
         var rowIndex = 5; // use row 5 for this example
         var selectedRowsIndexes = grid.getSelectedRows();
         var rowIndexInArr = selectedRowsIndexes.indexOf(rowIndex);
@@ -180,11 +177,10 @@
         }
     });
 
-    $("#unselectAllRows").click(function() {
+    document.querySelector("#unselectAllRows").addEventListener('click', function() {
         grid.setSelectedRows([]);
     });
-    
-  })
+  })()
 </script>
 </body>
 </html>
