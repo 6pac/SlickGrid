@@ -1,6 +1,6 @@
-(function ($) {
+(function (window) {
   // register namespace
-  $.extend(true, window, {
+  Slick.Utils.extend(true, window, {
     "Slick": {
       "Plugins": {
         "CellMenu": CellMenu
@@ -130,19 +130,20 @@
    * @constructor
    */
   function CellMenu(optionProperties) {
-    var _cellMenuProperties;
-    var _currentCell = -1;
-    var _currentRow = -1;
-    var _grid;
-    var _gridOptions;
-    var _gridUid = "";
-    var _handler = new Slick.EventHandler();
-    var _self = this;
-    var $commandTitleElm;
-    var $optionTitleElm;
-    var $menu;
+    let _cellMenuProperties;
+    let _currentCell = -1;
+    let _currentRow = -1;
+    let _grid;
+    let _gridOptions;
+    let _gridUid = "";
+    let _handler = new Slick.EventHandler();
+    let _self = this;
+    let _commandTitleElm;
+    let _optionTitleElm;
+    let _menuElm;
+    let _bindingEventService = new Slick.BindingEventService();
 
-    var _defaults = {
+    let _defaults = {
       autoAdjustDrop: true,     // dropup/dropdown
       autoAlignSide: true,      // left/right
       autoAdjustDropOffset: 0,
@@ -155,7 +156,7 @@
     function init(grid) {
       _grid = grid;
       _gridOptions = grid.getOptions();
-      _cellMenuProperties = $.extend({}, _defaults, optionProperties);
+      _cellMenuProperties = Slick.Utils.extend({}, _defaults, optionProperties);
       _gridUid = (grid && grid.getUID) ? grid.getUID() : "";
       _handler.subscribe(_grid.onClick, handleCellClick);
       if (_cellMenuProperties.hideMenuOnScroll) {
@@ -164,7 +165,7 @@
     }
 
     function setOptions(newOptions) {
-      _cellMenuProperties = $.extend({}, _cellMenuProperties, newOptions);
+      _cellMenuProperties = Slick.Utils.extend({}, _cellMenuProperties, newOptions);
     }
 
     function destroy() {
@@ -174,23 +175,25 @@
       _self.onCommand.unsubscribe();
       _self.onOptionSelected.unsubscribe();
       _handler.unsubscribeAll();
-      if ($menu && $menu.remove) {
-        $menu.remove();
+      _bindingEventService.unbindAll();
+
+      if (_menuElm && _menuElm.remove) {
+        _menuElm.remove();
       }
-      $commandTitleElm = null;
-      $optionTitleElm = null;
-      $menu = null;
+      _commandTitleElm = null;
+      _optionTitleElm = null;
+      _menuElm = null;
     }
 
     function createMenu(e) {
-      var cell = _grid.getCellFromEvent(e);
+      let cell = _grid.getCellFromEvent(e);
       _currentCell = cell && cell.cell;
       _currentRow = cell && cell.row;
-      var columnDef = _grid.getColumns()[_currentCell];
-      var dataContext = _grid.getDataItem(_currentRow);
+      let columnDef = _grid.getColumns()[_currentCell];
+      let dataContext = _grid.getDataItem(_currentRow);
 
-      var commandItems = _cellMenuProperties.commandItems || [];
-      var optionItems = _cellMenuProperties.optionItems || [];
+      let commandItems = _cellMenuProperties.commandItems || [];
+      let optionItems = _cellMenuProperties.optionItems || [];
 
       // make sure there's at least something to show before creating the Cell Menu
       if (!columnDef || !columnDef.cellMenu || (!commandItems.length && !optionItems.length)) {
@@ -211,27 +214,43 @@
       }
 
       // create a new cell menu
-      var maxHeight = isNaN(_cellMenuProperties.maxHeight) ? _cellMenuProperties.maxHeight : _cellMenuProperties.maxHeight + "px";
-      var width = isNaN(_cellMenuProperties.width) ? _cellMenuProperties.width : _cellMenuProperties.width + "px";
-      var menuStyle = "width: " + width + "; max-height: " + maxHeight;
-      var menu = $('<div class="slick-cell-menu ' + _gridUid + '" style="' + menuStyle + '" />')
-        .css("top", e.pageY + 5)
-        .css("left", e.pageX)
-        .css("display", "none");
+      let maxHeight = isNaN(_cellMenuProperties.maxHeight) ? _cellMenuProperties.maxHeight : _cellMenuProperties.maxHeight + "px";
+      let width = isNaN(_cellMenuProperties.width) ? _cellMenuProperties.width : _cellMenuProperties.width + "px";
 
-      var closeButtonHtml = '<button type="button" class="close" data-dismiss="slick-cell-menu" aria-label="Close">'
-        + '<span class="close" aria-hidden="true">&times;</span></button>';
+      _menuElm = document.createElement('div');
+      _menuElm.className = `slick-cell-menu ${_gridUid}`;
+      _menuElm.style.width = width;
+      _menuElm.style.maxHeight = maxHeight;
+      _menuElm.style.top = `${e.pageY + 5}px`;
+      _menuElm.style.left = `${e.pageX}px`;
+      _menuElm.style.display = 'none';
+
+      const closeButtonElm = document.createElement('button');
+      closeButtonElm.type = 'button';
+      closeButtonElm.className = 'close';
+      closeButtonElm.dataset.dismiss = 'slick-cell-menu';
+      closeButtonElm.ariaLabel = 'Close';
+
+      const spanCloseElm = document.createElement('span');
+      spanCloseElm.className = 'close';
+      spanCloseElm.ariaHidden = 'true';
+      spanCloseElm.innerHTML = '&times;';
+      closeButtonElm.appendChild(spanCloseElm);
 
       // -- Option List section
       if (!_cellMenuProperties.hideOptionSection && optionItems.length > 0) {
-        var $optionMenu = $('<div class="slick-cell-menu-option-list" />');
+        const optionMenuElm = document.createElement('div');
+        optionMenuElm.className = 'slick-cell-menu-option-list';
+
         if (!_cellMenuProperties.hideCloseButton) {
-          $(closeButtonHtml).on("click", handleCloseButtonClicked).appendTo(menu);
+          _bindingEventService.bind(closeButtonElm, 'click', handleCloseButtonClicked);
+          _menuElm.appendChild(closeButtonElm);
         }
-        $optionMenu.appendTo(menu);
+        _menuElm.appendChild(optionMenuElm)
+
         populateOptionItems(
           _cellMenuProperties,
-          $optionMenu,
+          optionMenuElm,
           optionItems,
           { cell: _currentCell, row: _currentRow, column: columnDef, dataContext: dataContext, grid: _grid }
         );
@@ -239,21 +258,25 @@
 
       // -- Command List section
       if (!_cellMenuProperties.hideCommandSection && commandItems.length > 0) {
-        var $commandMenu = $('<div class="slick-cell-menu-command-list" />');
+        const commandMenuElm = document.createElement('div');
+        commandMenuElm.className = 'slick-cell-menu-command-list';
+
         if (!_cellMenuProperties.hideCloseButton && (optionItems.length === 0 || _cellMenuProperties.hideOptionSection)) {
-          $(closeButtonHtml).on("click", handleCloseButtonClicked).appendTo(menu);
+          _bindingEventService.bind(closeButtonElm, 'click', handleCloseButtonClicked);
+          _menuElm.appendChild(closeButtonElm);
         }
-        $commandMenu.appendTo(menu);
+
+        _menuElm.appendChild(commandMenuElm);
         populateCommandItems(
           _cellMenuProperties,
-          $commandMenu,
+          commandMenuElm,
           commandItems,
           { cell: _currentCell, row: _currentRow, column: columnDef, dataContext: dataContext, grid: _grid }
         );
       }
 
-      menu.show();
-      menu.appendTo("body");
+      _menuElm.style.display = 'block';
+      document.body.appendChild(_menuElm);
 
       if (_self.onAfterMenuShow.notify({
         "cell": _currentCell,
@@ -263,50 +286,29 @@
         return;
       }
 
-      return menu;
-    }
-
-    function calculateAvailableSpaceBottom(element) {
-      var windowHeight = $(window).innerHeight() || 0;
-      var pageScroll = $(window).scrollTop() || 0;
-      if (element && element.offset && element.length > 0) {
-        var elementOffsetTop = element.offset().top;
-        return windowHeight - (elementOffsetTop - pageScroll);
-      }
-      return 0;
-    }
-
-    function calculateAvailableSpaceTop(element) {
-      var pageScroll = $(window).scrollTop() || 0;
-      if (element && element.offset && element.length > 0) {
-        var elementOffsetTop = element.offset().top;
-        return elementOffsetTop - pageScroll;
-      }
-      return 0;
+      return _menuElm;
     }
 
     function handleCloseButtonClicked(e) {
-      if(!e.isDefaultPrevented()) {
+      if (!e.defaultPrevented) {
         destroyMenu(e);
       }
     }
 
     function destroyMenu(e, args) {
-      $menu = $menu || $(".slick-cell-menu." + _gridUid);
+      _menuElm = _menuElm || document.querySelector(".slick-cell-menu." + _gridUid);
 
-      if ($menu && $menu.remove) {
-        if ($menu.length > 0) {
-          if (_self.onBeforeMenuClose.notify({
-            "cell": args && args.cell,
-            "row": args && args.row,
-            "grid": _grid,
-            "menu": $menu
-          }, e, _self).getReturnValue() == false) {
-            return;
-          }
+      if (_menuElm && _menuElm.remove) {
+        if (_self.onBeforeMenuClose.notify({
+          "cell": args && args.cell,
+          "row": args && args.row,
+          "grid": _grid,
+          "menu": _menuElm
+        }, e, _self).getReturnValue() == false) {
+          return;
         }
-        $menu.remove();
-        $menu = null;
+        _menuElm.remove();
+        _menuElm = null;
       }
     }
 
@@ -315,30 +317,33 @@
      * @param {*} event
      */
     function repositionMenu(e) {
-      var $parent = $(e.target).closest(".slick-cell");
-      var menuOffsetLeft = $parent ? $parent.offset().left : e.pageX;
-      var menuOffsetTop = $parent ? $parent.offset().top : e.pageY;
-      var parentCellWidth = $parent.outerWidth();
-      var menuHeight = $menu.outerHeight() || 0;
-      var menuWidth = $menu.outerWidth() || _cellMenuProperties.width || 0;
-      var rowHeight = _gridOptions.rowHeight;
-      var dropOffset = _cellMenuProperties.autoAdjustDropOffset;
-      var sideOffset = _cellMenuProperties.autoAlignSideOffset;
+      const parentElm = e.target.closest('.slick-cell');
+      const parentOffset = parentElm && Slick.Utils.offset(parentElm);
+      let menuOffsetLeft = parentElm ? parentOffset.left : e.pageX;
+      let menuOffsetTop = parentElm ? parentOffset.top : e.pageY;
+      const parentCellWidth = parentElm.offsetWidth || 0;
+      const menuHeight = _menuElm && _menuElm.offsetHeight || 0;
+      const menuWidth = _menuElm && _menuElm.offsetWidth || _cellMenuProperties.width || 0;
+      const rowHeight = _gridOptions.rowHeight;
+      const dropOffset = _cellMenuProperties.autoAdjustDropOffset;
+      const sideOffset = _cellMenuProperties.autoAlignSideOffset;
 
       // if autoAdjustDrop is enable, we first need to see what position the drop will be located (defaults to bottom)
       // without necessary toggling it's position just yet, we just want to know the future position for calculation
       if (_cellMenuProperties.autoAdjustDrop) {
         // since we reposition menu below slick cell, we need to take it in consideration and do our calculation from that element
-        var spaceBottom = calculateAvailableSpaceBottom($parent);
-        var spaceTop = calculateAvailableSpaceTop($parent);
-        var spaceBottomRemaining = spaceBottom + dropOffset - rowHeight;
-        var spaceTopRemaining = spaceTop - dropOffset + rowHeight;
-        var dropPosition = (spaceBottomRemaining < menuHeight && spaceTopRemaining > spaceBottomRemaining) ? 'top' : 'bottom';
+        const spaceBottom = Slick.Utils.calculateAvailableSpace(parentElm).bottom;
+        const spaceTop = Slick.Utils.calculateAvailableSpace(parentElm).top;
+        const spaceBottomRemaining = spaceBottom + dropOffset - rowHeight;
+        const spaceTopRemaining = spaceTop - dropOffset + rowHeight;
+        const dropPosition = (spaceBottomRemaining < menuHeight && spaceTopRemaining > spaceBottomRemaining) ? 'top' : 'bottom';
         if (dropPosition === 'top') {
-          $menu.removeClass("dropdown").addClass("dropup");
+          _menuElm.classList.remove('dropdown');
+          _menuElm.classList.add('dropup');
           menuOffsetTop = menuOffsetTop - menuHeight - dropOffset;
         } else {
-          $menu.removeClass("dropup").addClass("dropdown");
+          _menuElm.classList.remove('dropup');
+          _menuElm.classList.add('dropdown');
           menuOffsetTop = menuOffsetTop + rowHeight + dropOffset;
         }
       }
@@ -347,29 +352,31 @@
       // if there isn't enough space on the right, it will automatically align the drop menu to the left (defaults to the right)
       // to simulate an align left, we actually need to know the width of the drop menu
       if (_cellMenuProperties.autoAlignSide) {
-        var gridPos = _grid.getGridPosition();
-        var dropSide = ((menuOffsetLeft + menuWidth) >= gridPos.width) ? 'left' : 'right';
+        let gridPos = _grid.getGridPosition();
+        let dropSide = ((menuOffsetLeft + menuWidth) >= gridPos.width) ? 'left' : 'right';
         if (dropSide === 'left') {
-          $menu.removeClass("dropright").addClass("dropleft");
+          _menuElm.classList.remove('dropright');
+          _menuElm.classList.add('dropleft');
           menuOffsetLeft = (menuOffsetLeft - (menuWidth - parentCellWidth) - sideOffset);
         } else {
-          $menu.removeClass("dropleft").addClass("dropright");
+          _menuElm.classList.remove('dropleft');
+          _menuElm.classList.add('dropright');
           menuOffsetLeft = menuOffsetLeft + sideOffset;
         }
       }
 
       // ready to reposition the menu
-      $menu.css("top", menuOffsetTop);
-      $menu.css("left", menuOffsetLeft);
+      _menuElm.style.top = `${menuOffsetTop}px`;
+      _menuElm.style.left = `${menuOffsetLeft}px`;
     }
 
     function handleCellClick(e, args) {
       if(e instanceof Slick.EventData)
         e = e.getNativeEvent();
 
-      var cell = _grid.getCellFromEvent(e);
-      var dataContext = _grid.getDataItem(cell.row);
-      var columnDef = _grid.getColumns()[cell.cell];
+      let cell = _grid.getCellFromEvent(e);
+      let dataContext = _grid.getDataItem(cell.row);
+      let columnDef = _grid.getColumns()[cell.cell];
 
       // prevent event from bubbling but only on column that has a cell menu defined
       if (columnDef && columnDef.cellMenu) {
@@ -377,7 +384,7 @@
       }
 
       // merge the cellMenu of the column definition with the default properties
-      _cellMenuProperties = $.extend({}, _cellMenuProperties, columnDef.cellMenu);
+      _cellMenuProperties = Slick.Utils.extend({}, _cellMenuProperties, columnDef.cellMenu);
 
       // run the override function (when defined), if the result is false it won't go further
       if (!args) {
@@ -391,42 +398,40 @@
       }
 
       // create the DOM element
-      $menu = createMenu(e, args);
+      _menuElm = createMenu(e, args);
 
       // reposition the menu to where the user clicked
-      if ($menu) {
+      if (_menuElm) {
         repositionMenu(e);
-        $menu
-          .data("cell", _currentCell)
-          .data("row", _currentRow)
-          .show();
+        _menuElm.setAttribute('aria-expanded', 'true');
+        _menuElm.style.display = 'block';
       }
 
       // Hide the menu on outside click.
-      $("body").on("mousedown." + _gridUid, handleBodyMouseDown);
+      _bindingEventService.bind(document.body, 'mousedown', handleBodyMouseDown.bind(this));
     }
 
     function handleBodyMouseDown(e) {
-      if ($menu && $menu[0] != e.target && !$.contains($menu[0], e.target)) {
-        if(!e.isDefaultPrevented()) {
+      if (_menuElm != e.target && !(_menuElm && _menuElm.contains(e.target))) {
+        if (!e.defaultPrevented) {
           closeMenu(e, { cell: _currentCell, row: _currentRow });
         }
       }
     }
 
     function closeMenu(e, args) {
-      if ($menu && $menu.length > 0) {
+      if (_menuElm) {
         if (_self.onBeforeMenuClose.notify({
           "cell": args && args.cell,
           "row": args && args.row,
           "grid": _grid,
-          "menu": $menu
+          "menu": _menuElm
         }, e, _self).getReturnValue() == false) {
           return;
         }
-        if ($menu && $menu.remove) {
-          $menu.remove();
-          $menu = null;
+        if (_menuElm && _menuElm.remove) {
+          _menuElm.remove();
+          _menuElm = null;
         }
       }
     }
@@ -438,17 +443,20 @@
       }
 
       // user could pass a title on top of the Options section
-      if (cellMenu && cellMenu.optionTitle) {
-        $optionTitleElm = $('<div class="title"/>').append(cellMenu.optionTitle);
-        $optionTitleElm.appendTo(optionMenuElm);
+      if (cellMenu && cellMenu.optionTitle) {        
+        _optionTitleElm = document.createElement('div');
+        _optionTitleElm.className = 'title';
+        _optionTitleElm.textContent = cellMenu.optionTitle;
+        optionMenuElm.appendChild(_optionTitleElm);
       }
 
-      for (var i = 0, ln = optionItems.length; i < ln; i++) {
-        var item = optionItems[i];
+      for (let i = 0, ln = optionItems.length; i < ln; i++) {
+        let addClickListener = true;
+        let item = optionItems[i];
 
         // run each override functions to know if the item is visible and usable
-        var isItemVisible = runOverrideFunctionWhenExists(item.itemVisibilityOverride, args);
-        var isItemUsable = runOverrideFunctionWhenExists(item.itemUsabilityOverride, args);
+        let isItemVisible = runOverrideFunctionWhenExists(item.itemVisibilityOverride, args);
+        let isItemUsable = runOverrideFunctionWhenExists(item.itemUsabilityOverride, args);
 
         // if the result is not visible then there's no need to go further
         if (!isItemVisible) {
@@ -461,52 +469,59 @@
           item.disabled = isItemUsable ? false : true;
         }
 
-        var $li = $('<div class="slick-cell-menu-item"></div>')
-          .data("option", item.option !== undefined ? item.option : "")
-          .data("item", item)
-          .on("click", handleMenuItemOptionClick)
-          .appendTo(optionMenuElm);
+        const liElm = document.createElement('div');
+        liElm.className = 'slick-cell-menu-item';
 
         if (item.divider || item === "divider") {
-          $li.addClass("slick-cell-menu-item-divider");
-          continue;
+          liElm.classList.add("slick-cell-menu-item-divider");
+          addClickListener = false;
         }
 
         // if the item is disabled then add the disabled css class
         if (item.disabled || !isItemUsable) {
-          $li.addClass("slick-cell-menu-item-disabled");
+          liElm.classList.add("slick-cell-menu-item-disabled");
         }
 
         // if the item is hidden then add the hidden css class
         if (item.hidden) {
-          $li.addClass("slick-cell-menu-item-hidden");
+          liElm.classList.add("slick-cell-menu-item-hidden");
         }
 
         if (item.cssClass) {
-          $li.addClass(item.cssClass);
+          liElm.classList.add(item.cssClass);
         }
 
         if (item.tooltip) {
-          $li.attr("title", item.tooltip);
+          liElm.title = item.tooltip;
         }
 
-        var $icon = $('<div class="slick-cell-menu-icon"></div>')
-          .appendTo($li);
+        const iconElm = document.createElement('div');
+        iconElm.className = 'slick-cell-menu-icon';
+
+        liElm.appendChild(iconElm);
 
         if (item.iconCssClass) {
-          $icon.addClass(item.iconCssClass);
+          iconElm.classList.add(item.iconCssClass);
         }
 
         if (item.iconImage) {
-          $icon.css("background-image", "url(" + item.iconImage + ")");
+          iconElm.style.backgroundImage = "url(" + item.iconImage + ")";
         }
 
-        var $text = $('<span class="slick-cell-menu-content"></span>')
-          .text(item.title)
-          .appendTo($li);
+        const textElm = document.createElement('span');
+        textElm.className = 'slick-cell-menu-content';
+        textElm.textContent = item.title;
+
+        liElm.appendChild(textElm);
 
         if (item.textCssClass) {
-          $text.addClass(item.textCssClass);
+          textElm.classList.add(item.textCssClass);
+        }
+
+        optionMenuElm.appendChild(liElm);
+
+        if (addClickListener) {
+          _bindingEventService.bind(liElm, 'click', handleMenuItemOptionClick.bind(this, item));
         }
       }
     }
@@ -519,16 +534,19 @@
 
       // user could pass a title on top of the Commands section
       if (cellMenu && cellMenu.commandTitle) {
-        $commandTitleElm = $('<div class="title"/>').append(cellMenu.commandTitle);
-        $commandTitleElm.appendTo(commandMenuElm);
+        _commandTitleElm = document.createElement('div');
+        _commandTitleElm.className = 'title';
+        _commandTitleElm.textContent = cellMenu.commandTitle;
+        commandMenuElm.appendChild(_commandTitleElm);
       }
 
-      for (var i = 0, ln = commandItems.length; i < ln; i++) {
-        var item = commandItems[i];
+      for (let i = 0, ln = commandItems.length; i < ln; i++) {
+        let addClickListener = true;
+        let item = commandItems[i];
 
         // run each override functions to know if the item is visible and usable
-        var isItemVisible = runOverrideFunctionWhenExists(item.itemVisibilityOverride, args);
-        var isItemUsable = runOverrideFunctionWhenExists(item.itemUsabilityOverride, args);
+        let isItemVisible = runOverrideFunctionWhenExists(item.itemVisibilityOverride, args);
+        let isItemUsable = runOverrideFunctionWhenExists(item.itemUsabilityOverride, args);
 
         // if the result is not visible then there's no need to go further
         if (!isItemVisible) {
@@ -541,74 +559,78 @@
           item.disabled = isItemUsable ? false : true;
         }
 
-        var $li = $('<div class="slick-cell-menu-item"></div>')
-          .data("command", item.command !== undefined ? item.command : "")
-          .data("item", item)
-          .on("click", handleMenuItemCommandClick)
-          .appendTo(commandMenuElm);
+        const liElm = document.createElement('div');
+        liElm.className = 'slick-cell-menu-item';
 
         if (item.divider || item === "divider") {
-          $li.addClass("slick-cell-menu-item-divider");
-          continue;
+          liElm.classList.add("slick-cell-menu-item-divider");
+          addClickListener = false;
         }
 
         // if the item is disabled then add the disabled css class
         if (item.disabled || !isItemUsable) {
-          $li.addClass("slick-cell-menu-item-disabled");
+          liElm.classList.add("slick-cell-menu-item-disabled");
         }
 
         // if the item is hidden then add the hidden css class
         if (item.hidden) {
-          $li.addClass("slick-cell-menu-item-hidden");
+          liElm.classList.add("slick-cell-menu-item-hidden");
         }
 
         if (item.cssClass) {
-          $li.addClass(item.cssClass);
+          liElm.classList.add(item.cssClass);
         }
 
         if (item.tooltip) {
-          $li.attr("title", item.tooltip);
+          liElm.title = item.tooltip;
         }
 
-        var $icon = $('<div class="slick-cell-menu-icon"></div>')
-          .appendTo($li);
+        const iconElm = document.createElement('div');
+        iconElm.className = 'slick-cell-menu-icon';
+
+        liElm.appendChild(iconElm);
 
         if (item.iconCssClass) {
-          $icon.addClass(item.iconCssClass);
+          iconElm.classList.add(item.iconCssClass);
         }
 
         if (item.iconImage) {
-          $icon.css("background-image", "url(" + item.iconImage + ")");
+          iconElm.style.backgroundImage = "url(" + item.iconImage + ")";
         }
 
-        var $text = $('<span class="slick-cell-menu-content"></span>')
-          .text(item.title)
-          .appendTo($li);
+        const textElm = document.createElement('span');
+        textElm.className = 'slick-cell-menu-content';
+        textElm.textContent = item.title;
+
+        liElm.appendChild(textElm);
 
         if (item.textCssClass) {
-          $text.addClass(item.textCssClass);
+          textElm.classList.add(item.textCssClass);
+        }
+
+        commandMenuElm.appendChild(liElm);
+
+        if (addClickListener) {
+          _bindingEventService.bind(liElm, 'click', handleMenuItemCommandClick.bind(this, item));
         }
       }
     }
 
-    function handleMenuItemCommandClick(e) {
-      var command = $(this).data("command");
-      var item = $(this).data("item");
-
+    function handleMenuItemCommandClick(item, e) {
       if (!item || item.disabled || item.divider || item === "divider") {
         return;
       }
 
-      var row = $menu.data("row");
-      var cell = $menu.data("cell");
-
-      var columnDef = _grid.getColumns()[cell];
-      var dataContext = _grid.getDataItem(row);
+      const command = item.command || '';
+      const row = _currentRow;
+      const cell = _currentCell;
+      let columnDef = _grid.getColumns()[cell];
+      let dataContext = _grid.getDataItem(row);
 
       if (command !== null && command !== "") {
         // user could execute a callback through 2 ways
         // via the onCommand event and/or an action callback
-        var callbackArgs = {
+        let callbackArgs = {
           "cell": cell,
           "row": row,
           "grid": _grid,
@@ -624,16 +646,13 @@
           item.action.call(this, e, callbackArgs);
         }
 
-        if(!e.isDefaultPrevented()) {
+        if (!e.defaultPrevented) {
           closeMenu(e, { cell: cell, row: row });
         }
       }
     }
 
-    function handleMenuItemOptionClick(e) {
-      var option = $(this).data("option");
-      var item = $(this).data("item");
-
+    function handleMenuItemOptionClick(item, e) {
       if (!item || item.disabled || item.divider || item === "divider") {
         return;
       }
@@ -641,16 +660,16 @@
         return;
       }
 
-      var row = $menu.data("row");
-      var cell = $menu.data("cell");
-
-      var columnDef = _grid.getColumns()[cell];
-      var dataContext = _grid.getDataItem(row);
+      const option = item.option !== undefined ? item.option : '';
+      const row = _currentRow;
+      const cell = _currentCell;
+      const columnDef = _grid.getColumns()[cell];
+      const dataContext = _grid.getDataItem(row);
 
       if (option !== undefined) {
         // user could execute a callback through 2 ways
         // via the onOptionSelected event and/or an action callback
-        var callbackArgs = {
+        const callbackArgs = {
           "cell": cell,
           "row": row,
           "grid": _grid,
@@ -666,7 +685,7 @@
           item.action.call(this, e, callbackArgs);
         }
 
-        if(!e.isDefaultPrevented()) {
+        if (!e.defaultPrevented) {
           closeMenu(e, { cell: cell, row: row });
         }
       }
@@ -685,7 +704,7 @@
       return true;
     }
 
-    $.extend(this, {
+    Slick.Utils.extend(this, {
       "init": init,
       "closeMenu": destroyMenu,
       "destroy": destroy,
@@ -699,4 +718,4 @@
       "onOptionSelected": new Slick.Event()
     });
   }
-})(jQuery);
+})(window);

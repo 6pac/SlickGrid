@@ -158,9 +158,6 @@
     </tr>
   </table>
 
-  <script src="../lib/firebugx.js"></script>
-
-  <script src="../lib/jquery-3.1.0.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
   <script src="../slick.core.js"></script>
@@ -209,10 +206,12 @@
           window.clipboardData.setData("Text", textToCopy);
         } else {
           var range = document.createRange();
-          var tmpElem = $('<div>')
-            .css({ position: "absolute", left: "-1000px", top: "-1000px" })
-            .text(textToCopy);
-          $("body").append(tmpElem);
+          var tmpElem = document.createElement('div');
+          tmpElem.style.position = 'absolute';
+          tmpElem.style.left = '-1000px';
+          tmpElem.style.top = '-1000px';
+          tmpElem.textContent = textToCopy;
+          document.body.appendChild(tmpElem);
           range.selectNodeContents(tmpElem.get(0));
           var selection = window.getSelection();
           selection.removeAllRanges();
@@ -432,7 +431,7 @@
       ]
     };
 
-    $(function () {
+    (function () {
       dataView = new Slick.Data.DataView();
       grid = new Slick.Grid("#myGrid", dataView, columns, gridOptions);
       cellMenuPlugin = new Slick.Plugins.CellMenu({ hideMenuOnScroll: true });
@@ -534,7 +533,7 @@
           grid.updateRow(args.row);
         }
       });
-    });
+    })();
 
   </script>
 </body>

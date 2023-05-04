@@ -110,7 +110,7 @@
     }
 
     function handleBodyMouseDown(e) {
-      if ((_menuElm !== e.target && !_menuElm.contains(e.target)) || e.target.className === 'close') {
+      if ((_menuElm !== e.target && !(_menuElm && _menuElm.contains(e.target))) || e.target.className === 'close') {
         _menuElm.setAttribute('aria-expanded', 'false');
         _menuElm.style.display = 'none';
       }

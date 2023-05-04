@@ -5,7 +5,7 @@
     ],
     "env": {
         "browser": true,
-        "es2015": true,
+        "es6": true,
         "node": true
     },
     "globals": {
