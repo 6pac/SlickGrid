@@ -644,6 +644,8 @@
     return Object.entries(obj).length === 0;
   }
 
+  function noop() { }
+
   function offset(el) {
     if (!el || !el.getBoundingClientRect) {
       return undefined;
