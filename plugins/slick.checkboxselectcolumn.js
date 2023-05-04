@@ -1,21 +1,21 @@
-(function ($) {
+(function (window) {
   // register namespace
-  $.extend(true, window, {
+  Slick.Utils.extend(true, window, {
     "Slick": {
       "CheckboxSelectColumn": CheckboxSelectColumn
     }
   });
 
-
   function CheckboxSelectColumn(options) {
-    var _dataView;
-    var _grid;
-    var _isUsingDataView = false;
-    var _selectableOverride = null;
-    var _selectAll_UID = createUID();
-    var _handler = new Slick.EventHandler();
-    var _selectedRowsLookup = {};
-    var _defaults = {
+    let _dataView;
+    let _grid;
+    let _isUsingDataView = false;
+    let _selectableOverride = null;
+    let _headerRowNode;
+    let _selectAll_UID = createUID();
+    let _handler = new Slick.EventHandler();
+    let _selectedRowsLookup = {};
+    let _defaults = {
       columnId: "_checkbox_selector",
       cssClass: null,
       hideSelectAllCheckbox: false,
@@ -25,9 +25,10 @@
       hideInColumnTitleRow: false,
       hideInFilterHeaderRow: true
     };
-    var _isSelectAllChecked = false;
+    let _isSelectAllChecked = false;
 
-    var _options = $.extend(true, {}, _defaults, options);
+    let _bindingEventService = new Slick.BindingEventService();
+    let _options = Slick.Utils.extend(true, {}, _defaults, options);
 
     // user could override the checkbox icon logic from within the options or after instantiating the plugin
     if (typeof _options.selectableOverride === 'function') {
@@ -61,6 +62,7 @@
 
     function destroy() {
       _handler.unsubscribeAll();
+      _bindingEventService.unbindAll();
     }
 
     function getOptions() {
@@ -68,7 +70,7 @@
     }
 
     function setOptions(options) {
-      _options = $.extend(true, {}, _options, options);
+      _options = Slick.Utils.extend(true, {}, _options, options);
 
       if (_options.hideSelectAllCheckbox) {
         hideSelectAllFromColumnHeaderTitleRow();
@@ -82,9 +84,14 @@
         }
 
         if (!_options.hideInFilterHeaderRow) {
-          var selectAllContainer = $("#filter-checkbox-selectall-container");
-          selectAllContainer.show();
-          selectAllContainer.find('input[type="checkbox"]').prop("checked", _isSelectAllChecked);
+          let selectAllContainerElm = _headerRowNode.querySelector("#filter-checkbox-selectall-container");
+          if (selectAllContainerElm) {
+            selectAllContainerElm.style.display = 'flex';
+            const selectAllInputElm = selectAllContainerElm.querySelector('input[type="checkbox"]');
+            if (selectAllInputElm) {
+              selectAllInputElm.checked = _isSelectAllChecked;
+            }
+          }
         } else {
           hideSelectAllFromColumnHeaderFilterRow();
         }
@@ -96,29 +103,32 @@
     }
 
     function hideSelectAllFromColumnHeaderFilterRow() {
-      $("#filter-checkbox-selectall-container").hide();
+      const selectAllContainerElm = _headerRowNode && _headerRowNode.querySelector('#filter-checkbox-selectall-container');
+      if (selectAllContainerElm) {
+        selectAllContainerElm.style.display = 'none';
+      }
     }
 
     function handleSelectedRowsChanged() {
-      var selectedRows = _grid.getSelectedRows();
-      var lookup = {}, row, i, k;
-      var disabledCount = 0;
+      let selectedRows = _grid.getSelectedRows();
+      let lookup = {}, row, i, k;
+      let disabledCount = 0;
       if (typeof _selectableOverride === 'function') {
         for (k = 0; k < _grid.getDataLength(); k++) {
           // If we are allowed to select the row
-          var dataItem = _grid.getDataItem(k);
+          let dataItem = _grid.getDataItem(k);
           if (!checkSelectableOverride(i, dataItem, _grid)) {
             disabledCount++;
           }
         }
       }
 
-      var removeList = [];
+      let removeList = [];
       for (i = 0; i < selectedRows.length; i++) {
         row = selectedRows[i];
 
         // If we are allowed to select the row
-        var rowItem = _grid.getDataItem(row);
+        let rowItem = _grid.getDataItem(row);
         if (checkSelectableOverride(i, rowItem, _grid)) {
           lookup[row] = true;
           if (lookup[row] !== _selectedRowsLookup[row]) {
@@ -142,15 +152,17 @@
           renderSelectAllCheckbox(_isSelectAllChecked);
         }
         if (!_options.hideInFilterHeaderRow) {
-          var selectAllElm = $("#header-filter-selector" + _selectAll_UID);
-          selectAllElm.prop("checked", _isSelectAllChecked);
+          const selectAllElm = _headerRowNode && _headerRowNode.querySelector(`#header-filter-selector${_selectAll_UID}`);
+          if (selectAllElm) {
+            selectAllElm.checked = _isSelectAllChecked;
+          }
         }
       }
 
       // Remove items that shouln't of been selected in the first place (Got here Ctrl + click)
       if (removeList.length > 0) {
         for (i = 0; i < removeList.length; i++) {
-          var remIdx = selectedRows.indexOf(removeList[i]);
+          let remIdx = selectedRows.indexOf(removeList[i]);
           selectedRows.splice(remIdx, 1);
         }
         _grid.setSelectedRows(selectedRows, "click.cleanup");
@@ -158,17 +170,17 @@
     }
 
     function handleDataViewSelectedIdsChanged() {
-      var selectedIds = _dataView.getAllSelectedFilteredIds();
-      var filteredItems = _dataView.getFilteredItems();
-      var disabledCount = 0;
+      let selectedIds = _dataView.getAllSelectedFilteredIds();
+      let filteredItems = _dataView.getFilteredItems();
+      let disabledCount = 0;
 
       if (typeof _selectableOverride === 'function' && selectedIds.length > 0) {
-        for (var k = 0; k < _dataView.getItemCount(); k++) {
+        for (let k = 0; k < _dataView.getItemCount(); k++) {
           // If we are allowed to select the row
-          var dataItem = _dataView.getItemByIdx(k);
-          var idProperty = _dataView.getIdPropertyName();
-          var dataItemId = dataItem[idProperty];
-          var foundItemIdx = filteredItems.findIndex(function (item) {
+          let dataItem = _dataView.getItemByIdx(k);
+          let idProperty = _dataView.getIdPropertyName();
+          let dataItemId = dataItem[idProperty];
+          let foundItemIdx = filteredItems.findIndex(function (item) {
             return item[idProperty] === dataItemId;
           });
           if (foundItemIdx >= 0 && !checkSelectableOverride(k, dataItem, _grid)) {
@@ -182,8 +194,10 @@
         renderSelectAllCheckbox(_isSelectAllChecked);
       }
       if (!_options.hideInFilterHeaderRow) {
-        var selectAllElm = $("#header-filter-selector" + _selectAll_UID);
-        selectAllElm.prop("checked", _isSelectAllChecked);
+        const selectAllElm = _headerRowNode && _headerRowNode.querySelector(`#header-filter-selector${_selectAll_UID}`);
+        if (selectAllElm) {
+          selectAllElm.checked = _isSelectAllChecked;
+        }
       }
     }
 
@@ -202,7 +216,7 @@
 
     function handleClick(e, args) {
       // clicking on a row select checkbox
-      if (_grid.getColumns()[args.cell].id === _options.columnId && $(e.target).is(":checkbox")) {
+      if (_grid.getColumns()[args.cell].id === _options.columnId && e.target.type === 'checkbox') {
         // if editing, try to commit
         if (_grid.getEditorLock().isActive() && !_grid.getEditorLock().commitCurrentEdit()) {
           e.preventDefault();
@@ -217,15 +231,14 @@
     }
 
     function toggleRowSelection(row) {
-      var dataContext = _grid.getDataItem(row);
+      let dataContext = _grid.getDataItem(row);
       if (!checkSelectableOverride(row, dataContext, _grid)) {
         return;
       }
 
       if (_selectedRowsLookup[row]) {
-        _grid.setSelectedRows($.grep(_grid.getSelectedRows(), function (n) {
-          return n != row;
-        }), "click.toggle");
+        const newSelectedRows = _grid.getSelectedRows().filter((n) => n !== row);
+        _grid.setSelectedRows(newSelectedRows, 'click.toggle');
       } else {
         _grid.setSelectedRows(_grid.getSelectedRows().concat(row), "click.toggle");
       }
@@ -233,7 +246,7 @@
     }
 
     function selectRows(rowArray) {
-      var i, l = rowArray.length, addRows = [];
+      let i, l = rowArray.length, addRows = [];
       for (i = 0; i < l; i++) {
         if (!_selectedRowsLookup[rowArray[i]]) {
           addRows[addRows.length] = rowArray[i];
@@ -243,19 +256,18 @@
     }
 
     function deSelectRows(rowArray) {
-      var i, l = rowArray.length, removeRows = [];
+      let i, l = rowArray.length, removeRows = [];
       for (i = 0; i < l; i++) {
         if (_selectedRowsLookup[rowArray[i]]) {
           removeRows[removeRows.length] = rowArray[i];
         }
       }
-      _grid.setSelectedRows($.grep(_grid.getSelectedRows(), function (n) {
-        return removeRows.indexOf(n) < 0;
-      }), "SlickCheckboxSelectColumn.deSelectRows");
+
+      _grid.setSelectedRows(_grid.getSelectedRows().filter((n) => removeRows.indexOf(n) < 0), 'SlickCheckboxSelectColumn.deSelectRows');
     }
 
     function handleHeaderClick(e, args) {
-      if (args.column.id == _options.columnId && $(e.target).is(":checkbox")) {
+      if (args.column.id == _options.columnId && e.target.type === 'checkbox') {
         // if editing, try to commit
         if (_grid.getEditorLock().isActive() && !_grid.getEditorLock().commitCurrentEdit()) {
           e.preventDefault();
@@ -263,14 +275,14 @@
           return;
         }
 
-        var isAllSelected = $(e.target).is(":checked") || false;
-        var caller = isAllSelected ? 'click.selectAll' : 'click.unselectAll';
-        var rows = [];
+        let isAllSelected = e.target.checked;
+        let caller = isAllSelected ? 'click.selectAll' : 'click.unselectAll';
+        let rows = [];
 
         if (isAllSelected) {
-          for (var i = 0; i < _grid.getDataLength(); i++) {
+          for (let i = 0; i < _grid.getDataLength(); i++) {
             // Get the row and check it's a selectable row before pushing it onto the stack
-            var rowItem = _grid.getDataItem(i);
+            let rowItem = _grid.getDataItem(i);
             if (!rowItem.__group && !rowItem.__groupTotals && checkSelectableOverride(i, rowItem, _grid)) {
               rows.push(i);
             }
@@ -278,11 +290,11 @@
           isAllSelected = true;
         }
         if (_isUsingDataView && _dataView && _options.applySelectOnAllPages) {
-          var ids = [];
-          var filteredItems = _dataView.getFilteredItems();
-          for (var j = 0; j < filteredItems.length; j++) {
+          let ids = [];
+          let filteredItems = _dataView.getFilteredItems();
+          for (let j = 0; j < filteredItems.length; j++) {
             // Get the row and check it's a selectable ID (it could be in a different page) before pushing it onto the stack
-            var dataviewRowItem = filteredItems[j];
+            let dataviewRowItem = filteredItems[j];
             if (checkSelectableOverride(j, dataviewRowItem, _grid)) {
               ids.push(dataviewRowItem[_dataView.getIdPropertyName()]);
             }
@@ -295,13 +307,13 @@
       }
     }
 
-    var _checkboxColumnCellIndex = null;
+    let _checkboxColumnCellIndex = null;
 
     function getCheckboxColumnCellIndex() {
       if (_checkboxColumnCellIndex === null) {
         _checkboxColumnCellIndex = 0;
-        var colArr = _grid.getColumns();
-        for (var i = 0; i < colArr.length; i++) {
+        let colArr = _grid.getColumns();
+        for (let i = 0; i < colArr.length; i++) {
           if (colArr[i].id == _options.columnId) {
             _checkboxColumnCellIndex = i;
           }
@@ -328,12 +340,23 @@
     function addCheckboxToFilterHeaderRow(grid) {
       _handler.subscribe(grid.onHeaderRowCellRendered, function (e, args) {
         if (args.column.field === "sel") {
-          $(args.node).empty();
-          $("<span id='filter-checkbox-selectall-container'><input id='header-filter-selector" + _selectAll_UID + "' type='checkbox'><label for='header-filter-selector" + _selectAll_UID + "'></label></span>")
-            .appendTo(args.node)
-            .on('click', function (evnt) {
-              handleHeaderClick(evnt, args);
-            });
+          Slick.Utils.emptyElement(args.node);
+          const spanElm = document.createElement('span');
+          spanElm.id = 'filter-checkbox-selectall-container';
+
+          const inputElm = document.createElement('input');
+          inputElm.type = 'checkbox';
+          inputElm.id = `header-filter-selector${_selectAll_UID}`;
+
+          const labelElm = document.createElement('label');
+          labelElm.htmlFor = `header-filter-selector${_selectAll_UID}`;
+
+          spanElm.appendChild(inputElm);
+          spanElm.appendChild(labelElm);
+          args.node.appendChild(spanElm);
+          _headerRowNode = args.node;
+
+          _bindingEventService.bind(spanElm, 'click', ((e) => handleHeaderClick(e, args)));
         }
       });
     }
@@ -343,7 +366,7 @@
     }
 
     function checkboxSelectionFormatter(row, cell, value, columnDef, dataContext, grid) {
-      var UID = createUID() + row;
+      let UID = createUID() + row;
 
       if (dataContext) {
         if (!checkSelectableOverride(row, dataContext, grid)) {
@@ -382,7 +405,7 @@
     }
 
 
-    $.extend(this, {
+    Slick.Utils.extend(this, {
       "init": init,
       "destroy": destroy,
       "pluginName": "CheckboxSelectColumn",
@@ -395,4 +418,4 @@
       "setOptions": setOptions,
     });
   }
-})(jQuery);
+})(window);
