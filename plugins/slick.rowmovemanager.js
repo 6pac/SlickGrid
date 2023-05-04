@@ -14,9 +14,9 @@
  *    usabilityOverride:        Callback method that user can override the default behavior of the row being moveable or not
  *
  */
-(function ($) {
+(function (window) {
   // register namespace
-  $.extend(true, window, {
+  Slick.Utils.extend(true, window, {
     "Slick": {
       "RowMoveManager": RowMoveManager
     }
@@ -49,7 +49,7 @@
     }
 
     function init(grid) {
-      options = $.extend(true, {}, _defaults, options);
+      options = Slick.Utils.extend(true, {}, _defaults, options);
       _grid = grid;
       _canvas = _grid.getCanvasNode();
       _handler
@@ -64,7 +64,7 @@
     }
 
     function setOptions(newOptions) {
-      options = $.extend({}, options, newOptions);
+      options = Slick.Utils.extend({}, options, newOptions);
     }
 
     function handleDragInit(e) {
@@ -94,22 +94,23 @@
 
       // optionally create a shadow element of the row so that we can see all the time which row exactly we're dragging
       if (!options.hideRowMoveShadow) {
-        var $slickRowElm = $(_grid.getCellNode(cell.row, cell.cell)).closest('.slick-row');
-        if ($slickRowElm) {
-          dd.clonedSlickRow = $slickRowElm.clone();
-          dd.clonedSlickRow.addClass('slick-reorder-shadow-row')
-            .css("marginTop", options.rowMoveShadowMarginTop || 0)
-            .css("marginLeft", options.rowMoveShadowMarginLeft || 0)
-            .css("opacity", options.rowMoveShadowOpacity || 0.95)
-            .css("transform", "scale(" + options.rowMoveShadowScale + ")")
-            .hide()
-            .appendTo(_canvas);
+        const cellNodeElm = _grid.getCellNode(cell.row, cell.cell);
+        const slickRowElm = cellNodeElm && cellNodeElm.closest('.slick-row');
+        if (slickRowElm) {
+          dd.clonedSlickRow = slickRowElm.cloneNode(true);
+          dd.clonedSlickRow.classList.add('slick-reorder-shadow-row');
+          dd.clonedSlickRow.style.display = 'none';
+          dd.clonedSlickRow.style.marginLeft = Number(options.rowMoveShadowMarginLeft || 0) + 'px';
+          dd.clonedSlickRow.style.marginTop = Number(options.rowMoveShadowMarginTop || 0) + 'px';
+          dd.clonedSlickRow.style.opacity = `${options.rowMoveShadowOpacity || 0.95}`;
+          dd.clonedSlickRow.style.transform = `scale(${options.rowMoveShadowScale || 0.75})`;
+          _canvas.appendChild(dd.clonedSlickRow);
         }
       }
 
       var selectedRows = options.singleRowMove ? [cell.row] : _grid.getSelectedRows();
 
-      if (selectedRows.length === 0 || $.inArray(cell.row, selectedRows) == -1) {
+      if (selectedRows.length === 0 || !selectedRows.some(selectedRow => selectedRow === cell.row)) {
         selectedRows = [cell.row];
         if (!options.disableRowSelection) {
           _grid.setSelectedRows(selectedRows);
@@ -120,20 +121,22 @@
 
       dd.selectedRows = selectedRows;
 
-      dd.selectionProxy = $("<div class='slick-reorder-proxy'/>")
-        .css("position", "absolute")
-        .css("zIndex", "99999")
-        .css("width", $(_canvas).innerWidth())
-        .css("height", rowHeight * selectedRows.length)
-        .hide()
-        .appendTo(_canvas);
+      dd.selectionProxy = document.createElement('div');
+      dd.selectionProxy.className = 'slick-reorder-proxy';
+      dd.selectionProxy.style.display = 'none';
+      dd.selectionProxy.style.position = 'absolute';
+      dd.selectionProxy.style.zIndex = '99999';
+      dd.selectionProxy.style.width = `${_canvas.clientWidth}px`;
+      dd.selectionProxy.style.height = `${rowHeight * selectedRows.length}px`;
+      _canvas.appendChild(dd.selectionProxy);
 
-      dd.guide = $("<div class='slick-reorder-guide'/>")
-        .css("position", "absolute")
-        .css("zIndex", "99998")
-        .css("width", $(_canvas).innerWidth())
-        .css("top", -1000)
-        .appendTo(_canvas);
+      dd.guide = document.createElement('div');
+      dd.guide.className = 'slick-reorder-guide';
+      dd.guide.style.position = 'absolute';
+      dd.guide.style.zIndex = '99999';
+      dd.guide.style.width = `${_canvas.clientWidth}px`;
+      dd.guide.style.top = `-1000px`;
+      _canvas.appendChild(dd.guide);
 
       dd.insertBefore = -1;
     }
@@ -147,13 +150,14 @@
       const e = evt.getNativeEvent();
 
       var targetEvent = e.touches ? e.touches[0] : e;
-      var top = targetEvent.pageY - $(_canvas).offset().top;
-      dd.selectionProxy.css("top", top - 5).show();
+      const top = targetEvent.pageY - (Slick.Utils.offset(_canvas).top || 0);
+      dd.selectionProxy.style.top = `${top - 5}px`;
+      dd.selectionProxy.style.display = 'block';
 
       // if the row move shadow is enabled, we'll also make it follow the mouse cursor
       if (dd.clonedSlickRow) {
-        var offsetY = e.pageY - $(_canvas).offset().top;
-        dd.clonedSlickRow.css("top", offsetY - 6).show();
+        dd.clonedSlickRow.style.top = `${top - 6}px`;
+        dd.clonedSlickRow.style.display = 'block';
       }
 
       var insertBefore = Math.max(0, Math.min(Math.round(top / _grid.getOptions().rowHeight), _grid.getDataLength()));
@@ -179,9 +183,9 @@
         // if the new target is possible we'll display the dark blue bar (representin the acceptability) at the target position
         // else it won't show up (it will be off the screen)
         if (!dd.canMove) {
-          dd.guide.css("top", -1000);
+          dd.guide.style.top = '-1000px';
         } else {
-          dd.guide.css("top", insertBefore * _grid.getOptions().rowHeight);
+          dd.guide.style.top = `${insertBefore * (_grid.getOptions().rowHeight || 0)}px`;
         }
 
         dd.insertBefore = insertBefore;
@@ -255,7 +259,7 @@
       return /move|selectAndMove/.test(_grid.getColumns()[columnIndex].behavior);
     }
 
-    $.extend(this, {
+    Slick.Utils.extend(this, {
       "onBeforeMoveRows": new Slick.Event(),
       "onMoveRows": new Slick.Event(),
 
@@ -268,4 +272,4 @@
       "pluginName": "RowMoveManager"
     });
   }
-})(jQuery);
+})(window);
