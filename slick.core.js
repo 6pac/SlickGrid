@@ -737,6 +737,28 @@
      return dirtyHtml.replace(/(\b)(on[a-z]+)(\s*)=|javascript:([^>]*)[^>]*|(<\s*)(\/*)script([<>]*).*(<\s*)(\/*)script(>*)|(&lt;)(\/*)(script|script defer)(.*)(&gt;|&gt;">)/gi, '');
   }
 
+  function calculateAvailableSpace(element) {
+    let bottom = 0, top = 0, left = 0, right = 0;
+
+    const windowHeight = window.innerHeight || 0;
+    const windowWidth = window.innerWidth || 0;
+    const scrollPosition = windowScrollPosition();
+    const pageScrollTop = scrollPosition.top;
+    const pageScrollLeft = scrollPosition.left;
+    const elmOffset = offset(element);
+
+    if (elmOffset) {
+      const elementOffsetTop = elmOffset.top || 0;
+      const elementOffsetLeft = elmOffset.left || 0;
+      top = elementOffsetTop - pageScrollTop;
+      bottom = windowHeight - (elementOffsetTop - pageScrollTop);
+      left = elementOffsetLeft - pageScrollLeft;
+      right = windowWidth - (elementOffsetLeft - pageScrollLeft);
+    }
+
+    return { top, bottom, left, right };
+  }
+
   // With help from https://youmightnotneedjquery.com/
   function grep(elems, callback, invert) {
     var callbackInverse,
@@ -782,6 +804,13 @@
     return {
       top: box.top + window.pageYOffset - docElem.clientTop,
       left: box.left + window.pageXOffset - docElem.clientLeft
+    };
+  }
+
+  function windowScrollPosition() {
+    return {
+      left: window.pageXOffset || document.documentElement.scrollLeft || 0,
+      top: window.pageYOffset || document.documentElement.scrollTop || 0,
     };
   }
 
@@ -1040,6 +1069,7 @@
       "Utils":
       {
         "extend": extend,
+        "calculateAvailableSpace": calculateAvailableSpace,
         "grep": grep,
         "emptyElement": emptyElement,
         "isEmptyObject": isEmptyObject,
