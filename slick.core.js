@@ -797,6 +797,8 @@
     return Object.entries(obj).length === 0;
   }
 
+  function noop() { }
+
   function offset(el) {
     const box = el.getBoundingClientRect();
     const docElem = document.documentElement;
@@ -1073,6 +1075,7 @@
         "grep": grep,
         "emptyElement": emptyElement,
         "isEmptyObject": isEmptyObject,
+        "noop": noop,
         "offset": offset,
         "height": height,
         "width": width,
