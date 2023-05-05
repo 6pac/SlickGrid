@@ -35,4 +35,18 @@ Cypress.Commands.add("getCell", (row, col, viewport = 'topLeft', { parentSelecto
   const canvasSelectorY = position.y ? `.grid-canvas-${position.y}` : '';
 
   return cy.get(`${parentSelector} ${canvasSelectorX}${canvasSelectorY} [style="top:${row * rowHeight}px"] > .slick-cell:nth(${col})`);
-})
+});
+
+let LOCAL_STORAGE_MEMORY = {};
+
+Cypress.Commands.add('saveLocalStorage', () => {
+  Object.keys(localStorage).forEach(key => {
+    LOCAL_STORAGE_MEMORY[key] = localStorage[key];
+  });
+});
+
+Cypress.Commands.add('restoreLocalStorage', () => {
+  Object.keys(LOCAL_STORAGE_MEMORY).forEach(key => {
+    localStorage.setItem(key, LOCAL_STORAGE_MEMORY[key]);
+  });
+});

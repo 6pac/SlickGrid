@@ -1,6 +1,6 @@
-(function ($) {
+(function (window) {
   // register namespace
-  $.extend(true, window, {
+  Slick.Utils.extend(true, window, {
     Slick: {
       State: State
     }
@@ -15,17 +15,19 @@
 
     return {
       get: function(key) {
-        return $.Deferred(function(dfd) {
-          if (!localStorage) return dfd.reject("missing localStorage");
+        return new Promise((resolve, reject) => {
+          if (!localStorage) {
+            reject("missing localStorage");
+            return
+          }
           try {
             var d = localStorage.getItem(key);
             if (d) {
-              return dfd.resolve(JSON.parse(d));
+              return resolve(JSON.parse(d));
             }
-            dfd.resolve();
-          }
-          catch (exc) {
-            dfd.reject(exc);
+            resolve({});
+          } catch (exc) {
+            reject(exc);
           }
         });
       },
@@ -46,7 +48,7 @@
   };
 
   function State(options) {
-    options = $.extend(true, {}, defaults, options);
+    options = Slick.Utils.extend(true, {}, defaults, options);
 
     var _grid, _cid,
       _store = options.storage,
@@ -61,18 +63,18 @@
       _grid = grid;
       _cid = grid.cid || options.cid;
       if (_cid) {
-        grid.onColumnsResized.subscribe(save);
-        grid.onColumnsReordered.subscribe(save);
-        grid.onSort.subscribe(save);
+        _grid.onColumnsResized.subscribe(save);
+        _grid.onColumnsReordered.subscribe(save);
+        _grid.onSort.subscribe(save);
       } else {
         console.warn("grid has no client id. state persisting is disabled.");
       }
     }
 
     function destroy() {
-      grid.onSort.unsubscribe(save);
-      grid.onColumnsReordered.unsubscribe(save);
-      grid.onColumnsResized.unsubscribe(save);
+      _grid.onSort.unsubscribe(save);
+      _grid.onColumnsReordered.unsubscribe(save);
+      _grid.onColumnsResized.unsubscribe(save);
       save();
     }
 
@@ -86,7 +88,7 @@
         };
 
         state.userData = userData.current;
-        
+
         setUserDataFromState(state.userData);
 
         onStateChanged.notify(state);
@@ -95,15 +97,21 @@
     }
 
     function restore() {
-      return $.Deferred(function(dfd) {
-        if (!_cid) { return dfd.reject("missing client id"); }
-        if (!_store) { return dfd.reject("missing store"); }
+      return new Promise((resolve, reject) => {
+        if (!_cid) {
+          reject("missing client id");
+          return;
+        }
+        if (!_store) {
+          reject("missing store");
+          return;
+        }
 
         _store.get(options.key_prefix + _cid)
           .then(function success(state) {
-			if (state) {
+            if (state) {
               if (state.sortcols) {
-                _grid.setSortColumns(state.sortcols);
+                _grid.setSortColumns(state.sortcols || []);
               }
               if (state.viewport && options.scrollRowIntoView) {
                 _grid.scrollRowIntoView(state.viewport.top, true);
@@ -112,14 +120,14 @@
                 var defaultColumns = options.defaultColumns;
                 if (defaultColumns) {
                   var defaultColumnsLookup = {};
-                  $.each(defaultColumns, function(idx, colDef) {
+                  defaultColumns.forEach(function (colDef) {
                     defaultColumnsLookup[colDef.id] = colDef;
                   });
 
                   var cols = [];
-                  $.each(state.columns, function(idx, columnDef) {
+                  (state.columns || []).forEach(function (columnDef) {
                     if (defaultColumnsLookup[columnDef.id]) {
-                      cols.push($.extend(true, {}, defaultColumnsLookup[columnDef.id], {
+                      cols.push(Slick.Utils.extend(true, {}, defaultColumnsLookup[columnDef.id], {
                         width: columnDef.width,
                         headerCssClass: columnDef.headerCssClass
                       }));
@@ -133,8 +141,11 @@
               }
               setUserDataFromState(state.userData);
             }
-            dfd.resolve(state);
-          }, dfd.reject);
+            resolve(state);
+          })
+          .catch(function (e) {
+            reject(e);
+          })
       });
     }
 
@@ -171,7 +182,7 @@
       return userData.current;
     }
 
-	  /**
+    /**
 	   * returns user-data found in saved state
 	   *
 	   * @return {Object}
@@ -192,7 +203,7 @@
     }
 
     function getColumns() {
-      return $.map(_grid.getColumns(), function(col) {
+      return _grid.getColumns().map(function (col) {
         return {
           id: col.id,
           width: col.width
@@ -212,7 +223,7 @@
     /*
      *  API
      */
-    $.extend(this, {
+    Slick.Utils.extend(this, {
       "init": init,
       "destroy": destroy,
       "save": save,
@@ -225,4 +236,4 @@
       "reset": reset
     });
   }
-})(jQuery);
+})(window);
