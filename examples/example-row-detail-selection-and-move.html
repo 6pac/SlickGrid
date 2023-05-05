@@ -116,7 +116,6 @@
       </ul>
     </div>
   </div>
-
   <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
   <script src="../slick.core.js"></script>
@@ -224,11 +223,7 @@
 
     document.addEventListener("DOMContentLoaded", function() {
       // prepare the data
-      for (var i = 0; i < 1000; i++) {
         data[i] = new DataItem(i);
-      }
-      dataView = new Slick.Data.DataView();
-
       // create the row detail plugin
       detailViewPlugin = new Slick.Plugins.RowDetailView({
         cssClass: "detailView-toggle",
@@ -377,7 +372,7 @@
       dataView.onSelectedRowIdsChanged.subscribe(function (e, args) {
         console.log('onSelectedRowIdsChanged', args)
       });
-    });
+    })();
   </script>
 </body>
 
