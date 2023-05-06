@@ -355,7 +355,8 @@ if (typeof Slick === "undefined") {
       _container.classList.add(uid);
       _container.classList.add("ui-widget");
 
-      if (!(/relative|absolute|fixed/).test(_container.style.position)) {
+      const containerStyles = window.getComputedStyle(_container);
+      if (!(/relative|absolute|fixed/).test(containerStyles.position)) {
         _container.style.position = "relative";
       }
 
@@ -3795,7 +3796,7 @@ if (typeof Slick === "undefined") {
     }
 
     function getViewportWidth() {
-      viewportW = parseFloat(utils.width(_container));
+      viewportW = parseFloat(utils.innerSize(_container, 'width'));
     }
 
     function resizeCanvas() {

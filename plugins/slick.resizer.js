@@ -49,9 +49,9 @@
 
 'use strict';
 
-(function ($) {
+(function (window) {
   // register namespace
-  $.extend(true, window, {
+  Slick.Utils.extend(true, window, {
     "Slick": {
       "Plugins": {
         "Resizer": Resizer
@@ -61,23 +61,23 @@
 
   function Resizer(_options, fixedDimensions) {
     // global variables, height/width are in pixels
-    var DATAGRID_MIN_HEIGHT = 180;
-    var DATAGRID_MIN_WIDTH = 300;
-    var DATAGRID_BOTTOM_PADDING = 20;
+    let DATAGRID_MIN_HEIGHT = 180;
+    let DATAGRID_MIN_WIDTH = 300;
+    let DATAGRID_BOTTOM_PADDING = 20;
 
-    var _self = this;
-    var _fixedHeight;
-    var _fixedWidth;
-    var _grid;
-    var _gridOptions;
-    var _gridUid;
-    var _lastDimensions;
-    var _timer;
-    var _resizePaused = false;
-    var _gridDomElm;
-    var _pageContainerElm;
-    var _gridContainerElm;
-    var _defaults = {
+    let _self = this;
+    let _fixedHeight;
+    let _fixedWidth;
+    let _grid;
+    let _gridOptions;
+    let _gridUid;
+    let _lastDimensions;
+    let _timer;
+    let _resizePaused = false;
+    let _gridDomElm;
+    let _pageContainerElm;
+    let _gridContainerElm;
+    let _defaults = {
       bottomPadding: 20,
       applyResizeToContainer: false,
       minHeight: 180,
@@ -85,10 +85,11 @@
       rightPadding: 0
     };
 
-    var options = {};
+    let options = {};
+    let _bindingEventService = new Slick.BindingEventService();
 
     function setOptions(_newOptions){
-      options = $.extend(true, {}, _defaults, options, _newOptions);
+      options = Slick.Utils.extend(true, {}, _defaults, options, _newOptions);
     }
 
     function init(grid) {
@@ -96,10 +97,16 @@
       _grid = grid;
       _gridOptions = _grid.getOptions();
       _gridUid = _grid.getUID();
-      _gridDomElm = $(_grid.getContainerNode());
-      _pageContainerElm = $(options.container);
+      _gridDomElm = _grid.getContainerNode();
+
+      if (typeof _options.container === 'string') {
+        _pageContainerElm = typeof _options.container === 'string' ? document.querySelector(_options.container) : _options.container;
+      } else {
+        _pageContainerElm = _options.container;
+      }
+
       if (options.gridContainer) {
-        _gridContainerElm = $(options.gridContainer);
+        _gridContainerElm = options.gridContainer;
       }
 
       if (fixedDimensions) {
@@ -116,15 +123,17 @@
     * Options: we could also provide a % factor to resize on each height/width independently
     */
     function bindAutoResizeDataGrid(newSizes) {
+      const gridElmOffset = Slick.Utils.offset(_gridDomElm);
+
       // if we can't find the grid to resize, return without binding anything
-      if (_gridDomElm !== undefined || _gridDomElm.offset() !== undefined) {
+      if (_gridDomElm !== undefined || gridElmOffset !== undefined) {
         // -- 1st resize the datagrid size at first load (we need this because the .on event is not triggered on first load)
         // -- also we add a slight delay (in ms) so that we resize after the grid render is done
         resizeGrid(0, newSizes, null);
 
         // -- 2nd bind a trigger on the Window DOM element, so that it happens also when resizing after first load
         // -- bind auto-resize to Window object only if it exist
-        $(window).on('resize.grid.' + _gridUid, function (event) {
+        _bindingEventService.bind(window, 'resize', function (event) {
           _self.onGridBeforeResize.notify({ grid: _grid }, event, _self);
 
           // unless the resizer is paused, let's go and resize the grid
@@ -138,41 +147,42 @@
       }
     }
 
-    /**
+   /**
     * Calculate the datagrid new height/width from the available space, also consider that a % factor might be applied to calculation
     */
     function calculateGridNewDimensions() {
-      if (!window || _pageContainerElm === undefined || _gridDomElm === undefined || _gridDomElm.offset() === undefined) {
+      const gridElmOffset = Slick.Utils.offset(_gridDomElm);
+
+      if (!window || _pageContainerElm === undefined || _gridDomElm === undefined || gridElmOffset === undefined) {
         return null;
       }
 
       // calculate bottom padding
-      var bottomPadding = (options && options.bottomPadding !== undefined) ? options.bottomPadding : DATAGRID_BOTTOM_PADDING;
+      let bottomPadding = (options && options.bottomPadding !== undefined) ? options.bottomPadding : DATAGRID_BOTTOM_PADDING;
 
-      var gridHeight = 0;
-      var gridOffsetTop = 0;
+      let gridHeight = 0;
+      let gridOffsetTop = 0;
 
       // which DOM element are we using to calculate the available size for the grid?
       // defaults to "window"
       if (options.calculateAvailableSizeBy === 'container') {
         // uses the container's height to calculate grid height without any top offset
-        gridHeight = _pageContainerElm.height() || 0;
+        gridHeight = Slick.Utils.innerSize(_pageContainerElm, 'height') || 0;
       } else {
         // uses the browser's window height with its top offset to calculate grid height
         gridHeight = window.innerHeight || 0;
-        var coordOffsetTop = _gridDomElm.offset();
-        gridOffsetTop = (coordOffsetTop !== undefined) ? coordOffsetTop.top : 0;
+        gridOffsetTop = (gridElmOffset !== undefined) ? gridElmOffset.top : 0;
       }
 
-      var availableHeight = gridHeight - gridOffsetTop - bottomPadding;
-      var availableWidth = _pageContainerElm.width() || window.innerWidth || 0;
-      var maxHeight = options && options.maxHeight || undefined;
-      var minHeight = (options && options.minHeight !== undefined) ? options.minHeight : DATAGRID_MIN_HEIGHT;
-      var maxWidth = options && options.maxWidth || undefined;
-      var minWidth = (options && options.minWidth !== undefined) ? options.minWidth : DATAGRID_MIN_WIDTH;
+      let availableHeight = gridHeight - gridOffsetTop - bottomPadding;
+      let availableWidth = Slick.Utils.innerSize(_pageContainerElm, 'width') || window.innerWidth || 0;
+      let maxHeight = options && options.maxHeight || undefined;
+      let minHeight = (options && options.minHeight !== undefined) ? options.minHeight : DATAGRID_MIN_HEIGHT;
+      let maxWidth = options && options.maxWidth || undefined;
+      let minWidth = (options && options.minWidth !== undefined) ? options.minWidth : DATAGRID_MIN_WIDTH;
 
-      var newHeight = availableHeight;
-      var newWidth = (options && options.rightPadding) ? availableWidth - options.rightPadding : availableWidth;
+      let newHeight = availableHeight;
+      let newWidth = (options && options.rightPadding) ? availableWidth - options.rightPadding : availableWidth;
 
       // optionally (when defined), make sure that grid height & width are within their thresholds
       if (newHeight < minHeight) {
@@ -199,7 +209,7 @@
     function destroy() {
       _self.onGridBeforeResize.unsubscribe();
       _self.onGridAfterResize.unsubscribe();
-      $(window).off('resize.grid.' + _gridUid);
+      _bindingEventService.unbindAll();
     }
 
     /**
@@ -255,34 +265,30 @@
     }
 
     function resizeGridCallback(newSizes, event) {
-      var lastDimensions = resizeGridWithDimensions(newSizes);
+      let lastDimensions = resizeGridWithDimensions(newSizes);
       _self.onGridAfterResize.notify({ grid: _grid, dimensions: lastDimensions }, event, _self);
       return lastDimensions;
     }
 
     function resizeGridWithDimensions(newSizes) {
       // calculate the available sizes with minimum height defined as a varant
-      var availableDimensions = calculateGridNewDimensions();
+      let availableDimensions = calculateGridNewDimensions();
 
-      if ((newSizes || availableDimensions) && _gridDomElm && _gridDomElm.length > 0) {
+      if ((newSizes || availableDimensions) && _gridDomElm) {
         try {
           // get the new sizes, if new sizes are passed (not 0), we will use them else use available space
           // basically if user passes 1 of the dimension, let say he passes just the height,
           // we will use the height as a fixed height but the width will be resized by it's available space
-          var newHeight = (newSizes && newSizes.height) ? newSizes.height : availableDimensions.height;
-          var newWidth = (newSizes && newSizes.width) ? newSizes.width : availableDimensions.width;
+          let newHeight = (newSizes && newSizes.height) ? newSizes.height : availableDimensions.height;
+          let newWidth = (newSizes && newSizes.width) ? newSizes.width : availableDimensions.width;
 
           // apply these new height/width to the datagrid
           if (!_gridOptions.autoHeight) {
-            _gridDomElm.height(newHeight);
-            if (options.gridContainer && options.applyResizeToContainer) {
-              _gridContainerElm.height(newHeight);
-            }
+            _gridDomElm.style.height = `${newHeight}px`;
           }
-
-          _gridDomElm.width(newWidth);
-          if (options.gridContainer && options.applyResizeToContainer) {
-            _gridContainerElm.width(newWidth);
+          _gridDomElm.style.width = `${newWidth}px`;
+          if (_gridContainerElm) {
+            _gridContainerElm.style.width = `${newWidth}px`;
           }
 
           // resize the slickgrid canvas on all browser except some IE versions
@@ -295,7 +301,7 @@
           // also call the grid auto-size columns so that it takes available when going bigger
           if (_gridOptions && _gridOptions.enableAutoSizeColumns && _grid.autosizeColumns) {
             // make sure that the grid still exist (by looking if the Grid UID is found in the DOM tree) to avoid SlickGrid error "missing stylesheet"
-            if (_gridUid && ($('.' + _gridUid).length > 0 || $(_gridDomElm).length > 0)) {
+            if (_gridUid && document.querySelector(`.${_gridUid}`)) {
               _grid.autosizeColumns();
             }
           }
@@ -313,7 +319,7 @@
       return _lastDimensions;
     }
 
-    $.extend(this, {
+    Slick.Utils.extend(this, {
       "init": init,
       "destroy": destroy,
       "pluginName": "Resizer",
@@ -327,4 +333,4 @@
       "onGridBeforeResize": new Slick.Event()
     });
   }
-})(jQuery);
+})(window);
