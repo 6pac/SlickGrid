@@ -6217,11 +6217,6 @@ if (typeof Slick === "undefined") {
       alert(s);
     };
 
-    // a debug helper to be able to access private members
-    this.eval = function (expr) {
-      return eval(expr);
-    };
-
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
 

@@ -1328,7 +1328,7 @@
             if (args.added) {
               if (preserveHiddenOnSelectionChange && grid.getOptions().multiSelect) {
                 // find the ones that are hidden
-                var hiddenSelectedRowIds = Slick.Utils.grep(selectedRowIds, function (id) {
+                var hiddenSelectedRowIds = selectedRowIds.filter(function (id) {
                   return self.getRowById(id) === undefined;
                 });
                 // add the newly selected ones
@@ -1339,7 +1339,7 @@
             } else {
               if (preserveHiddenOnSelectionChange && grid.getOptions().multiSelect) {
                 // remove rows whose id is on the list
-                rowIds = Slick.Utils.grep(selectedRowIds, function (id) {
+                rowIds = selectedRowIds.filter(function (id) {
                   return args.ids.indexOf(id) === -1;
                 });
               } else {
