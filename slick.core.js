@@ -637,6 +637,28 @@
     return element;
   }
 
+  function innerSize(elm, type) {
+    let size = 0;
+
+    if (elm) {
+      const clientSize = type === 'height' ? 'clientHeight' : 'clientWidth';
+      const sides = type === 'height' ? ['top', 'bottom'] : ['left', 'right'];
+      size = elm[clientSize];
+      for (const side of sides) {
+        const sideSize = (parseFloat(getElementProp(elm, `padding-${side}`)) || 0);
+        size -= sideSize;
+      }
+    }
+    return size;
+  }
+
+  function getElementProp(elm, property) {
+    if (elm && elm.getComputedStyle) {
+      return window.getComputedStyle(elm, null).getPropertyValue(property);
+    }
+    return null;
+  }
+
   function isEmptyObject(obj) {
     if (obj === null || obj === undefined) {
       return true;
