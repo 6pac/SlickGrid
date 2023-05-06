@@ -683,7 +683,7 @@
       });
     };
   }
-  
+
   /***
    * Polyfill for Map to support old browsers but
    * benefit of the Map speed in modern browsers.
@@ -692,10 +692,10 @@
    */
   var Map = 'Map' in window ? window.Map : function Map() {
     var data = {};
-    
+
     /***
      * Gets the item with the given key from the map or undefined if
-     * the map does not contain the item. 
+     * the map does not contain the item.
      * @method get
      * @param key {Map} The key of the item in the map.
      */
@@ -704,7 +704,7 @@
     };
 
     /***
-     * Adds or updates the item with the given key in the map. 
+     * Adds or updates the item with the given key in the map.
      * @method set
      * @param key The key of the item in the map.
      * @param value The value to insert into the map of the item in the map.
@@ -712,19 +712,19 @@
     this.set = function(key, value) {
       data[key] = value;
     };
-    
+
     /***
      * Gets a value indicating whether the given key is present in the map.
      * @method has
      * @param key The key of the item in the map.
      * @return {Boolean}
-     */    
+     */
     this.has = function(key) {
       return key in data;
     };
-    
+
     /***
-     * Removes the item with the given key from the map. 
+     * Removes the item with the given key from the map.
      * @method delete
      * @param key The key of the item in the map.
      */
@@ -732,7 +732,7 @@
       delete data[key];
     };
   };
-  
+
   function regexSanitizer(dirtyHtml) {
      return dirtyHtml.replace(/(\b)(on[a-z]+)(\s*)=|javascript:([^>]*)[^>]*|(<\s*)(\/*)script([<>]*).*(<\s*)(\/*)script(>*)|(&lt;)(\/*)(script|script defer)(.*)(&gt;|&gt;">)/gi, '');
   }
@@ -790,6 +790,28 @@
     return element;
   }
 
+  function innerSize(elm, type) {
+    let size = 0;
+
+    if (elm) {
+      const clientSize = type === 'height' ? 'clientHeight' : 'clientWidth';
+      const sides = type === 'height' ? ['top', 'bottom'] : ['left', 'right'];
+      size = elm[clientSize];
+      for (const side of sides) {
+        const sideSize = (parseFloat(getElementProp(elm, `padding-${side}`)) || 0);
+        size -= sideSize;
+      }
+    }
+    return size;
+  }
+
+  function getElementProp(elm, property) {
+    if (elm && elm.getComputedStyle) {
+      return window.getComputedStyle(elm, null).getPropertyValue(property);
+    }
+    return null;
+  }
+
   function isEmptyObject(obj) {
     if (obj === null || obj === undefined) {
       return true;
@@ -800,6 +822,9 @@
   function noop() { }
 
   function offset(el) {
+    if (!el || !el.getBoundingClientRect) {
+      return undefined;
+    }
     const box = el.getBoundingClientRect();
     const docElem = document.documentElement;
 
@@ -853,7 +878,7 @@
       return true;
     });
   }
-  
+
   function isHidden(el) {
     return el.offsetWidth === 0 && el.offsetHeight === 0;
   }
@@ -892,7 +917,7 @@
     }
     return first;
   }
-  
+
   function toFloat(value) {
     var x = parseFloat(value);
     if (isNaN(x)) {
@@ -1057,61 +1082,61 @@
 
   // export Slick namespace on both global & window objects
   window.Slick = {
-      "Event": Event,
-      "EventData": EventData,
-      "EventHandler": EventHandler,
-      "Range": Range,
-      "Map": Map,      
-      "NonDataRow": NonDataItem,
-      "Group": Group,
-      "GroupTotals": GroupTotals,
-      "RegexSanitizer": regexSanitizer,
-      "EditorLock": EditorLock,
+    "Event": Event,
+    "EventData": EventData,
+    "EventHandler": EventHandler,
+    "Range": Range,
+    "Map": Map,
+    "NonDataRow": NonDataItem,
+    "Group": Group,
+    "GroupTotals": GroupTotals,
+    "RegexSanitizer": regexSanitizer,
+    "EditorLock": EditorLock,
     "BindingEventService": BindingEventService,
-      "Utils":
-      {
-        "extend": extend,
-        "calculateAvailableSpace": calculateAvailableSpace,
-        "grep": grep,
-        "emptyElement": emptyElement,
-        "isEmptyObject": isEmptyObject,
-        "noop": noop,
-        "offset": offset,
-        "height": height,
-        "width": width,
-        "setStyleSize": setStyleSize,
-        "contains": contains,
-        "template": template,
-        "toFloat": toFloat,
-        "parents": parents,
-        "show": show,
-        "hide": hide,
-        "slideUp": slideUp,
-        "slideDown": slideDown,
-        "storage": {
-          // https://stackoverflow.com/questions/29222027/vanilla-alternative-to-jquery-data-function-any-native-javascript-alternati
-          _storage: new WeakMap(),
-          put: function (element, key, obj) {
-              if (!this._storage.has(element)) {
-                  this._storage.set(element, new Map());
-              }
-              this._storage.get(element).set(key, obj);
-          },
-          get: function (element, key) {
-              const el = this._storage.get(element);
-              if(el)
-                return el.get(key);
-              return null;
-          },
-          remove: function (element, key) {
-              var ret = this._storage.get(element).delete(key);
-              if (!this._storage.get(element).size === 0) {
-                  this._storage.delete(element);
-              }
-              return ret;
+    "Utils": {
+      "extend": extend,
+      "calculateAvailableSpace": calculateAvailableSpace,
+      "grep": grep,
+      "emptyElement": emptyElement,
+      "innerSize": innerSize,
+      "isEmptyObject": isEmptyObject,
+      "noop": noop,
+      "offset": offset,
+      "height": height,
+      "width": width,
+      "setStyleSize": setStyleSize,
+      "contains": contains,
+      "template": template,
+      "toFloat": toFloat,
+      "parents": parents,
+      "show": show,
+      "hide": hide,
+      "slideUp": slideUp,
+      "slideDown": slideDown,
+      "storage": {
+        // https://stackoverflow.com/questions/29222027/vanilla-alternative-to-jquery-data-function-any-native-javascript-alternati
+        _storage: new WeakMap(),
+        put: function (element, key, obj) {
+          if (!this._storage.has(element)) {
+            this._storage.set(element, new Map());
           }
+          this._storage.get(element).set(key, obj);
+        },
+        get: function (element, key) {
+          const el = this._storage.get(element);
+          if (el)
+            return el.get(key);
+          return null;
+        },
+        remove: function (element, key) {
+          var ret = this._storage.get(element).delete(key);
+          if (!this._storage.get(element).size === 0) {
+            this._storage.delete(element);
+          }
+          return ret;
         }
-      },
+      }
+    },
       /***
        * A global singleton editor lock.
        * @class GlobalEditorLock
@@ -1140,7 +1165,7 @@
         A: 65
       },
       "preClickClassName" : "slick-edit-preclick",
-      
+
       "GridAutosizeColsMode": {
         None: 'NOA',
         LegacyOff: 'LOF',
@@ -1149,7 +1174,7 @@
         FitColsToViewport: 'FCV',
         FitViewportToCols: 'FVC'
       },
-      
+
       "ColAutosizeMode": {
         Locked: 'LCK',
         Guide: 'GUI',
