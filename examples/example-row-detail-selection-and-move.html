@@ -116,9 +116,7 @@
       </ul>
     </div>
   </div>
-
-  <script src="../lib/firebugx.js"></script>
-
+  
   <script src="../lib/jquery-3.1.0.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
@@ -225,7 +223,7 @@
       return (x == y ? 0 : (x > y ? 1 : -1));
     }
 
-    $(function () {
+    (function () {
       // prepare the data
       for (var i = 0; i < 1000; i++) {
         data[i] = new DataItem(i);
@@ -358,7 +356,7 @@
             return item && item.title || '';
           });
         }
-        $('#selectedTitles').text(selectedTitles.toString());
+        document.querySelector('#selectedTitles').textContent = selectedTitles.toString();
       });
 
       grid.onSort.subscribe(function (e, args) {
@@ -380,7 +378,7 @@
       dataView.onSelectedRowIdsChanged.subscribe(function (e, args) {
         console.log('onSelectedRowIdsChanged', args)
       });
-    });
+    })();
   </script>
 </body>
 

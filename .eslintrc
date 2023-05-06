@@ -13,6 +13,8 @@
         "Sortable": true
     },
     "rules": {
+        "cypress/no-unnecessary-waiting": "off",
+        "cypress/unsafe-to-chain-command": "off",
         "no-prototype-builtins": [0]
     }
 }

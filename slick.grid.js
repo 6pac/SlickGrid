@@ -112,7 +112,7 @@ if (typeof Slick === "undefined") {
       maxSupportedCssHeight: 1000000000,
       sanitizer: undefined,  // sanitize function, built in basic sanitizer is: Slick.RegexSanitizer(dirtyHtml)
       logSanitizedHtml: false // log to console when sanitised - recommend true for testing of dev and production
-    }; 
+    };
 
     var columnDefaults = {
       name: "",
@@ -321,7 +321,7 @@ if (typeof Slick === "undefined") {
       } else {
         _container = container;
       }
-      
+
       if (!_container) {
         throw new Error("SlickGrid requires a valid container, " + container + " does not exist in the DOM.");
       }
@@ -355,7 +355,8 @@ if (typeof Slick === "undefined") {
       _container.classList.add(uid);
       _container.classList.add("ui-widget");
 
-      if (!(/relative|absolute|fixed/).test(_container.style.position)) {
+      const containerStyles = window.getComputedStyle(_container);
+      if (!(/relative|absolute|fixed/).test(containerStyles.position)) {
         _container.style.position = "relative";
       }
 
@@ -964,7 +965,7 @@ if (typeof Slick === "undefined") {
       }
 
       viewportHasHScroll = (canvasWidth >= viewportW - scrollbarDimensions.width);
- 
+
       utils.width(_headerRowSpacerL, canvasWidth + (viewportHasVScroll ? scrollbarDimensions.width : 0));
       utils.width(_headerRowSpacerR, canvasWidth + (viewportHasVScroll ? scrollbarDimensions.width : 0));
 
@@ -992,7 +993,7 @@ if (typeof Slick === "undefined") {
       let supportedHeight = 1000000;
       // FF reports the height back but still renders blank after ~6M px
       //var testUpTo = navigator.userAgent.toLowerCase().match(/firefox/) ? 6000000 : 1000000000;
-      const testUpTo = navigator.userAgent.toLowerCase().match(/firefox/) ? options.ffMaxSupportedCssHeight : options.maxSupportedCssHeight;    
+      const testUpTo = navigator.userAgent.toLowerCase().match(/firefox/) ? options.ffMaxSupportedCssHeight : options.maxSupportedCssHeight;
       const div = utils.template("<div style='display:hidden' />", document.body);
 
       while (true) {
@@ -1079,7 +1080,7 @@ if (typeof Slick === "undefined") {
         header.setAttribute("title", toolTip || "");
         if(title !== undefined)
           header.children[0].innerHTML = title;
-            
+
         trigger(self.onHeaderCellRendered, {
           "node": header,
           "column": columnDef,
@@ -1100,7 +1101,7 @@ if (typeof Slick === "undefined") {
       var idx = (typeof columnIdOrIdx === "number" ? columnIdOrIdx : getColumnIndex(columnIdOrIdx));
       var targetHeader = hasFrozenColumns() ? ((idx <= options.frozenColumn) ? _headerL : _headerR) : _headerL;
       var targetIndex = hasFrozenColumns() ? ((idx <= options.frozenColumn) ? idx : idx - options.frozenColumn - 1) : idx;
-      
+
       return targetHeader.children[targetIndex];
     }
 
@@ -1183,7 +1184,7 @@ if (typeof Slick === "undefined") {
           if (className) {
             footerRowCell.classList.add(className);
           }
-            
+
           utils.storage.put(footerRowCell, "column", m);
 
           trigger(self.onFooterRowCellRendered, {
@@ -1360,7 +1361,7 @@ if (typeof Slick === "undefined") {
         if (m.sortable) {
           header.classList.add("slick-header-sortable");
           utils.template("<span class='slick-sort-indicator" + (options.numberedMultiColumnSort && !options.sortColNumberInSeparateSpan ? " slick-sort-indicator-numbered" : "" ) + "' />", header);
-          if (options.numberedMultiColumnSort && options.sortColNumberInSeparateSpan) { 
+          if (options.numberedMultiColumnSort && options.sortColNumberInSeparateSpan) {
             utils.template("<span class='slick-sort-indicator-numbered' />", header);
            }
         }
@@ -1456,8 +1457,8 @@ if (typeof Slick === "undefined") {
                   sortColumns.splice(i, 1);
                   sortColumn = null;
                 }
-                if (!options.multiColumnSort) { 
-                  sortColumns = []; 
+                if (!options.multiColumnSort) {
+                  sortColumns = [];
                 }
                 if (sortColumn && (!hadSortCol || !options.multiColumnSort)) {
                   sortColumns.push(sortColumn);
@@ -1590,7 +1591,7 @@ if (typeof Slick === "undefined") {
         _viewportScrollContainerX.scrollLeft = _viewportScrollContainerX.scrollLeft - 10;
       }
 
-      var canDragScroll;      
+      var canDragScroll;
       var sortableOptions = {
         animation: 50,
         direction: 'horizontal',
@@ -1721,7 +1722,7 @@ if (typeof Slick === "undefined") {
         if (i < firstResizable || (options.forceFitColumns && i >= lastResizable)) {
           continue;
         }
-        
+
         const resizeableHandle = utils.template("<div class='slick-resizable-handle' />", colElm);
         _bindingEventService.bind(resizeableHandle, "dblclick", handleResizeableHandleDoubleClick);
 
@@ -2295,7 +2296,7 @@ if (typeof Slick === "undefined") {
     }
 
     /**
-     * call destroy method, when exists, on all the instance(s) it found 
+     * call destroy method, when exists, on all the instance(s) it found
      * @params instances - can be a single instance or a an array of instances
      */
     function destroyAllInstances(inputInstances) {
@@ -2971,7 +2972,7 @@ if (typeof Slick === "undefined") {
       if (!initialized) {
         return;
       }
-      
+
       let columnIndex = 0;
       _headers.forEach(function (header) {
         for (let i = 0; i < header.children.length; i++, columnIndex++) {
@@ -3026,7 +3027,7 @@ if (typeof Slick === "undefined") {
 
     function setSortColumns(cols) {
       sortColumns = cols;
-      
+
       const numberCols = options.numberedMultiColumnSort && sortColumns.length > 1;
       _headers.forEach(function (header) {
         let indicators = header.querySelectorAll(".slick-header-column-sorted");
@@ -3044,7 +3045,7 @@ if (typeof Slick === "undefined") {
           el.textContent = "";
         });
       });
-    
+
       let i = 1;
       sortColumns.forEach(function (col) {
         if (col.sortAsc == null) {
@@ -3058,7 +3059,7 @@ if (typeof Slick === "undefined") {
             column.classList.add("slick-header-column-sorted");
             let indicator = column.querySelector(".slick-sort-indicator");
             indicator.classList.add(col.sortAsc ? "slick-sort-indicator-asc" : "slick-sort-indicator-desc");
-    
+
             if (numberCols) {
               indicator = column.querySelector(".slick-sort-indicator-numbered");
               indicator.textContent = i;
@@ -3791,7 +3792,7 @@ if (typeof Slick === "undefined") {
     }
 
     function getViewportWidth() {
-      viewportW = parseFloat(utils.width(_container));
+      viewportW = parseFloat(utils.innerSize(_container, 'width'));
     }
 
     function resizeCanvas() {
@@ -4458,7 +4459,7 @@ if (typeof Slick === "undefined") {
         }, 0);
       }
 
-      // autoheight suppresses vertical scrolling, but editors can create a div larger than 
+      // autoheight suppresses vertical scrolling, but editors can create a div larger than
       // the row vertical size, which can lead to a vertical scroll bar appearing temporarily
       // while the editor is displayed. this is not part of the grid scrolling, so we should ignore it
       if (vScrollDist && !options.autoHeight) {
@@ -4970,7 +4971,7 @@ if (typeof Slick === "undefined") {
       if (columnResizeDragging) {
         return;
       }
-      
+
       var header = e.target.closest(".slick-header-column");
       var column = header && utils.storage.get(header, "column");
       if (column) {
@@ -5242,8 +5243,8 @@ if (typeof Slick === "undefined") {
 
       // this optimisation causes trouble - MLeibman #329
       //if (activeCellChanged) {
-      if (!suppressActiveCellChangedEvent) { 
-        trigger(self.onActiveCellChanged, getActiveCell()); 
+      if (!suppressActiveCellChangedEvent) {
+        trigger(self.onActiveCellChanged, getActiveCell());
       }
       //}
     }
@@ -6180,11 +6181,11 @@ if (typeof Slick === "undefined") {
       if (!options.sanitizer || typeof dirtyHtml !== 'string') {
         return dirtyHtml;
       }
-      
+
       var cleanHtml = options.sanitizer(dirtyHtml);
-      
+
       if (!suppressLogging && options.logSanitizedHtml && logMessageCount <= logMessageMaxCount && cleanHtml !== dirtyHtml) {
-        console.log("sanitizer altered html: " + dirtyHtml + " --> " + cleanHtml);    
+        console.log("sanitizer altered html: " + dirtyHtml + " --> " + cleanHtml);
         if (logMessageCount === logMessageMaxCount) {
           console.log("sanitizer: silencing messages after first " + logMessageMaxCount);
         }

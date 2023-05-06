@@ -17,7 +17,7 @@
     var idProperty = "id";          // property holding a unique row id
     var items = [];                 // data by index
     var rows = [];                  // data by row
-    var idxById = new Slick.Map();   // indexes by id
+    var idxById = new Map();   // indexes by id
     var rowsById = null;            // rows by id; lazy-calculated
     var filter = null;              // filter function
     var updated = null;             // updated item ids
@@ -25,7 +25,7 @@
     var isBulkSuspend = false;      // delays various operations like the
                                     // index update and delete to efficient
                                     // versions at endUpdate
-    var bulkDeleteIds = new Slick.Map();
+    var bulkDeleteIds = new Map();
     var sortAsc = true;
     var fastSortField;
     var sortComparer;
@@ -169,7 +169,7 @@
       // inserted in the cleanup loop above.
       items.length = newIdx;
       // and finally cleanup the deleted ids to start cleanly on the next update.
-      bulkDeleteIds = new Slick.Map();
+      bulkDeleteIds = new Map();
     }
 
     function updateIdxById(startingIndex) {
@@ -214,7 +214,7 @@
       }
       items = filteredItems = data;
       onSetItemsCalled.notify({ idProperty: objectIdProperty, itemCount: items.length }, null, self);
-      idxById = new Slick.Map();
+      idxById = new Map();
       updateIdxById();
       ensureIdUniqueness();
       refresh();
@@ -253,7 +253,7 @@
       if (ascending === false) {
         items.reverse();
       }
-      idxById = new Slick.Map();
+      idxById = new Map();
       updateIdxById();
       refresh();
     }
@@ -281,7 +281,7 @@
       if (ascending === false) {
         items.reverse();
       }
-      idxById = new Slick.Map();
+      idxById = new Map();
       updateIdxById();
       refresh();
     }
