@@ -41,10 +41,10 @@
       cursor: pointer;
     }
 
-    #myGrid input[type=checkbox], 
-    .slick-columnpicker-list input[type=checkbox] { 
+    #myGrid input[type=checkbox],
+    .slick-columnpicker-list input[type=checkbox] {
       display:none; /* to hide the checkbox itself */
-    } 
+    }
     #myGrid input[type=checkbox] + label:before,
     .slick-columnpicker-list input[type=checkbox] + label:before {
       cursor: pointer;
@@ -57,13 +57,13 @@
       margin-right: 4px;
     }
     #myGrid input[type=checkbox] + label:before,
-    .slick-columnpicker-list input[type=checkbox] + label:before { 
+    .slick-columnpicker-list input[type=checkbox] + label:before {
       opacity: 0.2; /* unchecked icon */
-    } 
+    }
     #myGrid input[type=checkbox]:checked + label:before,
-    .slick-columnpicker-list input[type=checkbox]:checked + label:before { 
+    .slick-columnpicker-list input[type=checkbox]:checked + label:before {
       opacity: 1; /* checked icon */
-    } 
+    }
   </style>
 </head>
 <body>
@@ -200,9 +200,9 @@
   function setSelectedRowIds() {
     // change row selection even across multiple pages via DataView
     dataView.setSelectedIds([11, 13, 37]); // don't forget we have an id offset of +8
-    
+
     // you can also provide optional options (all defaults to true)
-    // dataView.setSelectedIds([4, 5, 8, 10], { 
+    // dataView.setSelectedIds([4, 5, 8, 10], {
     //   isRowBeingAdded: true,
     //   shouldTriggerEvent: true,
     //   applyGridRowSelection: true)
@@ -257,25 +257,25 @@
       console.log("Previously Selected Rows: " + previousSelectedRows.toString());
       console.log("Selected Rows: " + sortedSelectedRows.toString());
       document.querySelector('#selectedRows').textContent = sortedSelectedRows.toString();
-      document.querySelector('#rowsCount').textContent = sortedSelectedRows.length; 
+      document.querySelector('#rowsCount').textContent = sortedSelectedRows.length;
     });
-    
+
     dataView.onSelectedRowIdsChanged.subscribe(function(e, args) {
       var sortedSelectedIds = args.filteredIds.sort(function (a, b) { return a - b });
       // console.log('sortedSelectedIds', args.selectedRowIds);
       document.querySelector('#selectedIds').textContent = sortedSelectedIds.toString();
-      document.querySelector('#idsCount').textContent = sortedSelectedIds.length; 
+      document.querySelector('#idsCount').textContent = sortedSelectedIds.length;
     });
 
     const headerRowElm = grid.getHeaderRow();
-    headerRowElm.addEventListener('change', filterKeyup);
-    headerRowElm.addEventListener('keyup', filterKeyup);
-    
-    function filterKeyup(e) {
+    headerRowElm.addEventListener('change', filterInputHandler);
+    headerRowElm.addEventListener('keyup', filterInputHandler);
+
+    function filterInputHandler(e) {
       const inputFilter = e.target;
       const columnId = inputFilter.dataset.columnid;
       if (columnId != null) {
-        columnFilters[columnId] = (e.target.value || '').trim();
+        columnFilters[columnId] = (inputFilter.value || '').trim();
         dataView.refresh();
       }
     };
@@ -294,7 +294,7 @@
     grid.onSort.subscribe(function (e, args) {
       sortdir = args.sortAsc ? 1 : -1;
       sortcol = args.sortCol.field;
-    
+
       // using native sort with comparer
       // preferred method but can be very slow in IE with huge datasets
       dataView.sort(comparer, args.sortAsc);
