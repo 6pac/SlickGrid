@@ -1162,8 +1162,8 @@ if (typeof Slick === "undefined") {
     function createColumnFooter() {
       if (options.createFooterRow) {
         _footerRow.forEach(function (footer) {
-          const columns = footer.querySelectorAll(".slick-footerrow-column");
-          [].forEach(function (column) {
+          const columnElements = footer.querySelectorAll(".slick-footerrow-column");
+          columnElements.forEach(function (column) {
             const columnDef = utils.storage.get(column, "column");
             trigger(self.onBeforeFooterRowCellDestroy, {
               "node": column,
@@ -1249,8 +1249,8 @@ if (typeof Slick === "undefined") {
     function createColumnHeaders() {
 
       _headers.forEach(function (header) {
-        const columns = header.querySelectorAll(".slick-header-column")
-        columns.forEach(function (column) {
+        const columnElements = header.querySelectorAll(".slick-header-column")
+        columnElements.forEach(function (column) {
           var columnDef = utils.storage.get(column, "column");
           if (columnDef) {
             trigger(self.onBeforeHeaderCellDestroy, {
@@ -1271,8 +1271,8 @@ if (typeof Slick === "undefined") {
       utils.width(_headerR, headersWidthR);
 
       _headerRows.forEach(function (row) {
-        const columns = row.querySelectorAll(".slick-headerrow-column");
-        [].forEach.call(columns, function (column) {
+        const columnElements = row.querySelectorAll(".slick-headerrow-column");
+        columnElements.forEach(function (column) {
           const columnDef = utils.storage.get(column, "column");
           if (columnDef) {
             trigger(self.onBeforeHeaderRowCellDestroy, {
@@ -1288,8 +1288,8 @@ if (typeof Slick === "undefined") {
       _headerRowR.replaceChildren();
 
       if (options.createFooterRow) {
-        const footerRowColumns = _footerRowL.querySelectorAll(".slick-footerrow-column");
-        [].forEach.call(footerRowColumns, function (column) {
+        const footerRowColumnElements = _footerRowL.querySelectorAll(".slick-footerrow-column");
+        footerRowColumnElements.forEach(function (column) {
           var columnDef = utils.storage.get(column, "column");
           if (columnDef) {
             trigger(self.onBeforeFooterRowCellDestroy, {
@@ -1302,8 +1302,8 @@ if (typeof Slick === "undefined") {
         _footerRowL.replaceChildren();
 
         if (hasFrozenColumns()) {
-          const footerRowColumns = _footerRowR.querySelectorAll(".slick-footerrow-column");
-          [].forEach.call(footerRowColumns, function (column) {
+          const footerRowColumnElements = _footerRowR.querySelectorAll(".slick-footerrow-column");
+          footerRowColumnElements.forEach(function (column) {
             var columnDef = utils.storage.get(column, "column");
             if (columnDef) {
               trigger(self.onBeforeFooterRowCellDestroy, {
@@ -1512,17 +1512,13 @@ if (typeof Slick === "undefined") {
 
     function currentPositionInHeader(id) {
       let currentPosition = 0;
-      let searching = true;
-      _headers.every(function (header) {
-        const columns = header.querySelectorAll(".slick-header-column")
-        columns.every(function (column) {
+      _headers.forEach(function (header) {
+        const columnElements = header.querySelectorAll(".slick-header-column")
+        columnElements.forEach(function (column) {
           if(column.id == id) {
             currentPosition = i;
-            searching = false;
           }
-          return searching;
         });
-        return searching;
       });
 
       return currentPosition;
@@ -1721,7 +1717,7 @@ if (typeof Slick === "undefined") {
       for (let i = 0; i < children.length; i++) {
         const colElm = children[i];
 
-        if (i >= columns.length) { return; }
+        if (i >= columns.length) { continue; }
         if (i < firstResizable || (options.forceFitColumns && i >= lastResizable)) {
           continue;
         }
@@ -1743,9 +1739,9 @@ if (typeof Slick === "undefined") {
               resizeElms.resizeableElement.classList.add("slick-header-column-active");
               var shrinkLeewayOnRight = null, stretchLeewayOnRight = null;
               // lock each column's width option to current width
-              for(let pw = 0; pw < children.length; pw++) {
+              for (let pw = 0; pw < children.length; pw++) {
                 if (pw >= columns.length) {
-                  return;
+                  continue;
                 }
                 columns[pw].previousWidth = children[pw].offsetWidth;
               }
