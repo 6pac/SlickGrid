@@ -174,7 +174,7 @@ if (typeof Slick === "undefined") {
     var _footerRow, _footerRowScroller, _footerRowSpacerL, _footerRowSpacerR;
     var _preHeaderPanel, _preHeaderPanelScroller, _preHeaderPanelSpacer;
     var _preHeaderPanelR, _preHeaderPanelScrollerR, _preHeaderPanelSpacerR;
-    var _topPanelScroller;
+    var _topPanelScrollers;
     var _topPanel;
     var _viewport;
     var _canvas;
@@ -427,7 +427,7 @@ if (typeof Slick === "undefined") {
       _topPanelScrollerL = utils.template("<div class='slick-top-panel-scroller ui-state-default' />", _paneTopL);
       _topPanelScrollerR = utils.template("<div class='slick-top-panel-scroller ui-state-default' />", _paneTopR);
 
-      _topPanelScroller = [_topPanelScrollerL, _topPanelScrollerR];
+      _topPanelScrollers = [_topPanelScrollerL, _topPanelScrollerR];
 
       // Append the top panel
       _topPanelL = utils.template("<div class='slick-top-panel' style='width:10000px' />", _topPanelScrollerL);
@@ -442,7 +442,7 @@ if (typeof Slick === "undefined") {
       }
 
       if (!options.showTopPanel) {
-        _topPanelScroller.forEach(function (scroller) {
+        _topPanelScrollers.forEach(function (scroller) {
           hide(scroller);
         })
       }
@@ -2366,7 +2366,7 @@ if (typeof Slick === "undefined") {
       _preHeaderPanelSpacer = null;
       _preHeaderPanelSpacerR = null;
       _topPanel = null;
-      _topPanelScroller = null;
+      _topPanelScrollers = null;
       _style = null;
       _topPanelScrollerL = null;
       _topPanelScrollerR = null;
@@ -3324,7 +3324,7 @@ if (typeof Slick === "undefined") {
     }
 
     function setTopPanelVisibility(visible, animate) {
-      togglePanelVisibility("showTopPanel", _topPanelScroller, visible, animate);
+      togglePanelVisibility("showTopPanel", _topPanelScrollers, visible, animate);
     }
 
     function setHeaderRowVisibility(visible, animate) {
@@ -3762,7 +3762,7 @@ if (typeof Slick === "undefined") {
 
     function getViewportHeight() {
       if (!options.autoHeight || options.frozenColumn != -1) {
-        topPanelH = ( options.showTopPanel ) ? options.topPanelHeight + getVBoxDelta(_topPanelScroller[0]) : 0;
+        topPanelH = (options.showTopPanel) ? options.topPanelHeight + getVBoxDelta(_topPanelScrollers[0]) : 0;
         headerRowH = ( options.showHeaderRow ) ? options.headerRowHeight + getVBoxDelta(_headerRowScroller[0]) : 0;
         footerRowH = ( options.showFooterRow ) ? options.footerRowHeight + getVBoxDelta(_footerRowScroller[0]) : 0;
       }
@@ -4437,9 +4437,10 @@ if (typeof Slick === "undefined") {
         // adjust scroll position of all div containers when scrolling the grid
         // add a delay to avoid screen flickering
         setTimeout(function () {
-        _viewportScrollContainerX.scrollLeft = scrollLeft;
-        _headerScrollContainer.scrollLeft = scrollLeft;
-        _topPanelScroller.scrollLeft = scrollLeft;
+          _viewportScrollContainerX.scrollLeft = scrollLeft;
+          _headerScrollContainer.scrollLeft = scrollLeft;
+          _topPanelScrollers[0].scrollLeft = scrollLeft;
+          _headerRowScrollerL.scrollLeft = scrollLeft;
           if (options.createFooterRow) {
             _footerRowScrollContainer.scrollLeft = scrollLeft;
           }
