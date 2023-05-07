@@ -435,7 +435,8 @@
       var ids = [];
       for (var i = 0, l = rowArray.length; i < l; i++) {
         if (rowArray[i] < rows.length) {
-          ids[ids.length] = rows[rowArray[i]][idProperty];
+          const rowItem = rows[rowArray[i]];
+          ids[ids.length] = rowItem && rowItem[idProperty];
         }
       }
       return ids;
