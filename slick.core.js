@@ -710,6 +710,23 @@
     return { top, bottom, left, right };
   }
 
+  /**
+   * Debounce to delay JS callback execution, a wait of (-1) could be provided to execute callback without delay.
+   * @param {Function} callback - callback method to execute
+   * @param {Number} wait - delay to wait before execution or -1 for no delay
+   */
+  function debounce(callback, wait) {
+    let timeoutId = null;
+    return (...args) => {
+      if (wait >= 0) {
+        clearTimeout(timeoutId);
+        timeoutId = setTimeout(() => callback.apply(null, args), wait);
+      } else {
+        callback.apply(null);
+      }
+    };
+  }
+
   function emptyElement(element) {
     if (element && element.firstChild) {
       while (element.firstChild) {
@@ -1024,6 +1041,7 @@
     "EditorLock": EditorLock,
     "BindingEventService": BindingEventService,
     "Utils": {
+      "debounce": debounce,
       "extend": extend,
       "calculateAvailableSpace": calculateAvailableSpace,
       "emptyElement": emptyElement,

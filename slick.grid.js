@@ -108,6 +108,7 @@ if (typeof Slick === "undefined") {
       viewportMinWidthPx: undefined,
       viewportMaxWidthPx: undefined,
       suppressCssChangesOnHiddenInit: false,
+      scrollDebounceDelay: -1, // add a scroll delay to avoid screen flickering, -1 to disable delay
       ffMaxSupportedCssHeight: 6000000,
       maxSupportedCssHeight: 1000000000,
       sanitizer: undefined,  // sanitize function, built in basic sanitizer is: Slick.RegexSanitizer(dirtyHtml)
@@ -4435,12 +4436,11 @@ if (typeof Slick === "undefined") {
         prevScrollLeft = scrollLeft;
 
         // adjust scroll position of all div containers when scrolling the grid
-        // add a delay to avoid screen flickering
-        setTimeout(function () {
+        // user can optionally provide "scrollDebounceDelay" grid option if flickering are a problem
+        utils.debounce(() => {
           _viewportScrollContainerX.scrollLeft = scrollLeft;
           _headerScrollContainer.scrollLeft = scrollLeft;
           _topPanelScrollers[0].scrollLeft = scrollLeft;
-          _headerRowScrollerL.scrollLeft = scrollLeft;
           if (options.createFooterRow) {
             _footerRowScrollContainer.scrollLeft = scrollLeft;
           }
@@ -4456,12 +4456,14 @@ if (typeof Slick === "undefined") {
             if (hasFrozenRows) {
               _viewportTopR.scrollLeft = scrollLeft;
             }
+            _headerRowScrollerR.scrollLeft = scrollLeft; // right header row scrolling with frozen grid
           } else {
             if (hasFrozenRows) {
               _viewportTopL.scrollLeft = scrollLeft;
             }
+            _headerRowScrollerL.scrollLeft = scrollLeft; // left header row scrolling with regular grid
           }
-        }, 0);
+        }, options.scrollDebounceDelay)();
       }
 
       // autoheight suppresses vertical scrolling, but editors can create a div larger than
