@@ -34,7 +34,7 @@
 
     .slick-group-title[level='2'] {
       font-style: italic;
-    }    
+    }
   </style>
 </head>
 <body>
@@ -65,6 +65,9 @@
       <button data-test="add-500-rows-btn" onclick="loadData(500)">500 rows</button>
       <button data-test="add-50k-rows-btn" onclick="loadData(50000)">50k rows</button>
       <button data-test="add-500k-rows-btn" onclick="loadData(500000)">500k rows</button>
+      <span style="float: right">
+        <button data-test="destroy-pager" onclick="destroyPager()">Destroy Pager</button>
+      </span>
       <hr/>
       <button onclick="toggleDraggableGrouping()">Toggle Draggable Grouping</button>
       <button onclick="groupByTitle()">Group by Title</button>
@@ -100,10 +103,6 @@
   </div>
 </div>
 
-
-<script src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -155,7 +154,7 @@ var columns = [
       collapsed: false
     }
   },
-  
+
   {id: "start", name: "Start", field: "start", minWidth: 60, sortable: true,
     grouping: {
       getter: "start",
@@ -209,10 +208,16 @@ var columns = [
   }
 ];
 
+var columnpicker;
+var pager;
 var sortcol = "title";
 var sortdir = 1;
 var percentCompleteThreshold = 0;
 var prevPercentCompleteThreshold = 0;
+
+function destroyPager() {
+  pager.destroy();
+}
 
 function avgTotalsFormatter(totals, columnDef) {
   var val = totals.avg && totals.avg[columnDef.field];
@@ -249,7 +254,7 @@ function groupByTitle() {
   clearGroupings();
   draggableGrouping.setDroppedGroups('title');
   grid.invalidate();
-  grid.render();  
+  grid.render();
 }
 
 function groupByDuration() {
@@ -301,12 +306,16 @@ function toggleDraggableGrouping() {
 }
 
 function toggleGrouping(expand) {
+  const groupToggleAllElm = document.querySelector(".slick-group-toggle-all");
+
   if(expand) {
     dataView.expandAllGroups();
-    $(".slick-group-toggle-all").removeClass('collapsed').addClass('expanded');
+    groupToggleAllElm.classList.remove('collapsed');
+    groupToggleAllElm.classList.add('expanded');
   } else {
     dataView.collapseAllGroups();
-    $(".slick-group-toggle-all").removeClass('expanded').addClass('collapsed');
+    groupToggleAllElm.classList.remove('expanded');
+    groupToggleAllElm.classList.add('collapsed');
   }
 }
 
@@ -330,18 +339,9 @@ function loadData(count) {
   dataView.setItems(data);
 }
 
-$(".grid-header .ui-icon")
-    .addClass("ui-state-default ui-corner-all")
-    .mouseover(function (e) {
-      $(e.target).addClass("ui-state-hover")
-    })
-    .mouseout(function (e) {
-      $(e.target).removeClass("ui-state-hover")
-    });
-
-$(function () {
+(function () {
   draggableGrouping = new Slick.DraggableGrouping({iconImage :'../images/delete.png', groupIconImage: '../images/column-grouping.png', dropPlaceHolderText: 'Drop a column header here to group by the column :)'});
-  // draggableGrouping = new Slick.DraggableGrouping({iconCssClass :'slick-groupby-remove-image', groupIconCssClass: 'slick-column-groupable-image', dropPlaceHolderText: 'Drop a column header here to group by the column :)'});  
+  // draggableGrouping = new Slick.DraggableGrouping({iconCssClass :'slick-groupby-remove-image', groupIconCssClass: 'slick-column-groupable-image', dropPlaceHolderText: 'Drop a column header here to group by the column :)'});
   // draggableGrouping = new Slick.DraggableGrouping();
   var options = {
     enableCellNavigation: true,
@@ -357,7 +357,7 @@ $(function () {
     groupItemMetadataProvider: groupItemMetadataProvider,
     inlineFilters: true
   });
-  
+
   grid = new Slick.Grid("#myGrid", dataView, columns, options);
 
   // register the group item metadata provider to add expand/collapse group handlers
@@ -365,9 +365,8 @@ $(function () {
   grid.registerPlugin(draggableGrouping);
   grid.setSelectionModel(new Slick.CellSelectionModel());
 
-  var pager = new Slick.Controls.Pager(dataView, grid, $("#pager"));
-  var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
-
+  pager = new Slick.Controls.Pager(dataView, grid, document.querySelector("#pager"));
+  columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
 
   grid.onSort.subscribe(function (e, args) {
     sortdir = args.sortAsc ? 1 : -1;
@@ -402,7 +401,7 @@ $(function () {
       percentCompleteThreshold = this.value;
     }
   }
-  
+
   slider.oninput = sliderCallback;
 
 
@@ -433,7 +432,7 @@ $(function () {
   });
   loadData(50);
   dataView.endUpdate();
-})
+})();
 </script>
 </body>
 </html>

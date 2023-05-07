@@ -175,7 +175,7 @@ if (typeof Slick === "undefined") {
     var _preHeaderPanel, _preHeaderPanelScroller, _preHeaderPanelSpacer;
     var _preHeaderPanelR, _preHeaderPanelScrollerR, _preHeaderPanelSpacerR;
     var _topPanelScrollers;
-    var _topPanel;
+    var _topPanels;
     var _viewport;
     var _canvas;
     var _style;
@@ -433,7 +433,7 @@ if (typeof Slick === "undefined") {
       _topPanelL = utils.template("<div class='slick-top-panel' style='width:10000px' />", _topPanelScrollerL);
       _topPanelR = utils.template("<div class='slick-top-panel' style='width:10000px' />", _topPanelScrollerR);
 
-      _topPanel = [_topPanelL, _topPanelR];
+      _topPanels = [_topPanelL, _topPanelR];
 
       if (!options.showColumnHeader) {
         _headerScroller.forEach(function (el) {
@@ -2361,7 +2361,7 @@ if (typeof Slick === "undefined") {
       _preHeaderPanelScrollerR = null;
       _preHeaderPanelSpacer = null;
       _preHeaderPanelSpacerR = null;
-      _topPanel = null;
+      _topPanels = null;
       _topPanelScrollers = null;
       _style = null;
       _topPanelScrollerL = null;
@@ -3293,7 +3293,11 @@ if (typeof Slick === "undefined") {
     }
 
     function getTopPanel() {
-      return _topPanel[0];
+      return _topPanels[0];
+    }
+
+    function getTopPanels() {
+      return _topPanels;
     }
 
     function togglePanelVisibility(option, container, visible, animate) {
@@ -6359,6 +6363,7 @@ if (typeof Slick === "undefined") {
       "navigateRowEnd": navigateRowEnd,
       "gotoCell": gotoCell,
       "getTopPanel": getTopPanel,
+      "getTopPanels": getTopPanels,
       "setTopPanelVisibility": setTopPanelVisibility,
       "getPreHeaderPanel": getPreHeaderPanel,
       "getPreHeaderPanelLeft": getPreHeaderPanel,

@@ -41,7 +41,6 @@
    *    groupIconImage:      a url to the grouping field hint image (default undefined)
    *    dropPlaceHolderText:      option to specify set own placeholder note text
    *
-   
    */
 
   function DraggableGrouping(options) {
@@ -91,16 +90,19 @@
 
       _handler.subscribe(_grid.onHeaderCellRendered, function (e, args) {
         var column = args.column;
-        var node = args.node;        
+        var node = args.node;
         if (!Slick.Utils.isEmptyObject(column.grouping) && node) {
           node.style.cursor = 'pointer'; // add the pointer cursor on each column title
 
           // also optionally add an icon beside each column title that can be dragged
-          if (options.groupIconCssClass) {
+          if (options.groupIconCssClass || options.groupIconImage) {
             const groupableIconElm = document.createElement('span');
             groupableIconElm.className = 'slick-column-groupable';
             if (options.groupIconCssClass) {
               groupableIconElm.classList.add(options.groupIconCssClass.split(' '));
+            }
+            if (options.groupIconImage) {
+              groupableIconElm.style.background = "url(" + options.groupIconImage + ") no-repeat center center";
             }
             node.appendChild(groupableIconElm);
           }
