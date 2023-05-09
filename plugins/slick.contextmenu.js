@@ -243,6 +243,7 @@
 
       _menuElm = document.createElement('div');
       _menuElm.className = `slick-context-menu ${_gridUid}`;
+      _menuElm.role = 'menu';
       _menuElm.style.width = width;
       _menuElm.style.maxHeight = maxHeight;
       _menuElm.style.top = `${targetEvent.pageY}px`;
@@ -265,6 +266,7 @@
       if (!_contextMenuProperties.hideOptionSection && isColumnOptionAllowed && optionItems.length > 0) {
         const optionMenuElm = document.createElement('div');
         optionMenuElm.className = 'slick-context-menu-option-list';
+        optionMenuElm.role = 'menu';
 
         if (!_contextMenuProperties.hideCloseButton) {
           _bindingEventService.bind(closeButtonElm, 'click', handleCloseButtonClicked);
@@ -284,6 +286,7 @@
       if (!_contextMenuProperties.hideCommandSection && isColumnCommandAllowed && commandItems.length > 0) {
         const commandMenuElm = document.createElement('div');
         commandMenuElm.className = 'slick-context-menu-command-list';
+        commandMenuElm.role = 'menu';
 
         if (!_contextMenuProperties.hideCloseButton && (!isColumnOptionAllowed || optionItems.length === 0 || _contextMenuProperties.hideOptionSection)) {
           _bindingEventService.bind(closeButtonElm, 'click', handleCloseButtonClicked);
@@ -426,6 +429,7 @@
 
         const liElm = document.createElement('div');
         liElm.className = 'slick-context-menu-item';
+        liElm.role = 'menuitem';
 
         if (item.divider || item === "divider") {
           liElm.classList.add("slick-context-menu-item-divider");
@@ -451,6 +455,7 @@
         }
 
         const iconElm = document.createElement('div');
+        iconElm.role = 'button';
         iconElm.className = 'slick-context-menu-icon';
 
         liElm.appendChild(iconElm);
@@ -516,6 +521,7 @@
 
         const liElm = document.createElement('div');
         liElm.className = 'slick-context-menu-item';
+        liElm.role = 'menuitem';
 
         if (item.divider || item === "divider") {
           liElm.classList.add("slick-context-menu-item-divider");

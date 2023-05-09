@@ -128,6 +128,8 @@
 
           const btn = document.createElement('div');
           btn.className = options.buttonCssClass;
+          btn.ariaLabel = 'Header Button';
+          btn.role = 'button';
 
           if (button.disabled) {
             btn.classList.add("slick-header-button-disabled");

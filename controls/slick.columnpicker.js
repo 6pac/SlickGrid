@@ -129,6 +129,7 @@
 
         const liElm = document.createElement('li');
         liElm.className = excludeCssClass;
+        liElm.ariaLabel = columns[i] && columns[i].name;
 
         const checkboxElm = document.createElement('input');
         checkboxElm.type = 'checkbox';
@@ -163,6 +164,7 @@
         let forceFitTitle = (_options.columnPicker && _options.columnPicker.forceFitTitle) || _options.forceFitTitle;
 
         const liElm = document.createElement('li');
+        liElm.ariaLabel = forceFitTitle;
         _listElm.appendChild(liElm);
 
         const forceFitCheckboxElm = document.createElement('input');
@@ -185,6 +187,7 @@
         let syncResizeTitle = (_options.columnPicker && _options.columnPicker.syncResizeTitle) || _options.syncResizeTitle;
 
         const liElm = document.createElement('li');
+        liElm.ariaLabel = syncResizeTitle;
         _listElm.appendChild(liElm);
 
         const syncResizeCheckboxElm = document.createElement('input');

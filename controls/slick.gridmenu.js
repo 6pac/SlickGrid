@@ -204,6 +204,7 @@
       if (showButton) {
         _buttonElm = document.createElement('button');
         _buttonElm.className = 'slick-gridmenu-button';
+        _buttonElm.ariaLabel = 'Grid Menu';
 
         if (_options.gridMenu && _options.gridMenu.iconCssClass) {
           _buttonElm.classList.add(_options.gridMenu.iconCssClass);
@@ -241,6 +242,7 @@
 
       _customMenuElm = document.createElement('div');
       _customMenuElm.className = 'slick-gridmenu-custom';
+      _customMenuElm.role = 'menu';
 
       _menuElm.appendChild(_customMenuElm);
 
@@ -326,6 +328,7 @@
 
         const liElm = document.createElement('div');
         liElm.className = 'slick-gridmenu-item';
+        liElm.role = 'menuitem';
 
         if (item.divider || item === "divider") {
           liElm.classList.add("slick-gridmenu-item-divider");
@@ -394,6 +397,7 @@
       _bindingEventService.bind(_menuElm, 'click', updateColumn);
       _listElm = document.createElement('span');
       _listElm.className = 'slick-gridmenu-list';
+      _listElm.role = 'menu';
     }
 
     /** Delete and then Recreate the Grid Menu (for example when we switch from regular to a frozen grid) */
@@ -426,7 +430,7 @@
         return;
       }
 
-      // notify of the onBeforeMenuShow only works when 
+      // notify of the onBeforeMenuShow only works when
       // this mean that we cannot notify when the grid menu is attach to a button event
       if (typeof e.stopPropagation === "function") {
         if (_self.onBeforeMenuShow.notify(callbackArgs, e, _self).getReturnValue() == false) {
@@ -441,6 +445,7 @@
 
         const liElm = document.createElement('li');
         liElm.className = excludeCssClass;
+        liElm.ariaLabel = columns[i] && columns[i].name;
 
         const checkboxElm = document.createElement('input');
         checkboxElm.type = 'checkbox';
@@ -476,6 +481,8 @@
         let forceFitTitle = (_options.gridMenu && _options.gridMenu.forceFitTitle) || _defaults.forceFitTitle;
 
         const liElm = document.createElement('li');
+        liElm.ariaLabel = forceFitTitle;
+        liElm.role = 'menuitem';
         _listElm.appendChild(liElm);
 
         const forceFitCheckboxElm = document.createElement('input');
@@ -498,6 +505,7 @@
         let syncResizeTitle = (_options.gridMenu && _options.gridMenu.syncResizeTitle) || _defaults.syncResizeTitle;
 
         const liElm = document.createElement('li');
+        liElm.ariaLabel = syncResizeTitle;
         _listElm.appendChild(liElm);
 
         const syncResizeCheckboxElm = document.createElement('input');

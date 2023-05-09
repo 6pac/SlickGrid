@@ -167,6 +167,8 @@
 
         const elm = document.createElement('div');
         elm.className = "slick-header-menubutton";
+        elm.ariaLabel = 'Header Menu';
+        elm.role = 'button';
 
         if (options.buttonCssClass) {
           elm.classList.add(options.buttonCssClass);
@@ -209,6 +211,7 @@
       if (!_menuElm) {
         _menuElm = document.createElement('div');
         _menuElm.className = 'slick-header-menu';
+        _menuElm.role = 'menu';
         _menuElm.style.minWidth = `${options.minWidth}px`;
         _menuElm.setAttribute('aria-expanded', 'true');
         const containerNode = _grid.getContainerNode();
@@ -241,6 +244,7 @@
 
         const menuItem = document.createElement('div');
         menuItem.className = 'slick-header-menuitem';
+        menuItem.role = 'menuitem';
 
         if (item.divider || item === "divider") {
           menuItem.classList.add("slick-header-menuitem-divider");

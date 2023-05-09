@@ -1724,7 +1724,7 @@ if (typeof Slick === "undefined") {
           continue;
         }
 
-        const resizeableHandle = utils.template("<div class='slick-resizable-handle' />", colElm);
+        const resizeableHandle = utils.template("<div class='slick-resizable-handle' role='separator' aria-orientation='horizontal' />", colElm);
         _bindingEventService.bind(resizeableHandle, "dblclick", handleResizeableHandleDoubleClick);
 
         slickResizableInstances.push(
@@ -2134,7 +2134,7 @@ if (typeof Slick === "undefined") {
         });
         v.forEach(function (val) {
           cellHeightDiff += utils.toFloat(style[val]);
-        })
+        });
       }
       r.remove();
 
@@ -3556,7 +3556,7 @@ if (typeof Slick === "undefined") {
         }
       }
 
-      stringArray.push("<div class='" + cellCss + (addlCssClasses ? ' ' + addlCssClasses : '') + "' " + toolTip + customAttrStr + ">");
+      stringArray.push(`<div class="${cellCss + (addlCssClasses ? ' ' + addlCssClasses : '')}" ${toolTip + customAttrStr}>`);
 
       // if there is a corresponding row (if not, this is the Add New row or this data hasn't been loaded yet)
       if (item) {

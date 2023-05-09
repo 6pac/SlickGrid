@@ -15,16 +15,16 @@
     let statusElm;
     let _options;
     let _defaults = {
-      showAllText: "Showing all {rowCount} rows",
-      showPageText: "Showing page {pageNum} of {pageCount}",
-      showCountText: "From {countBegin} to {countEnd} of {rowCount} rows",
+      showAllText: 'Showing all {rowCount} rows',
+      showPageText: 'Showing page {pageNum} of {pageCount}',
+      showCountText: 'From {countBegin} to {countEnd} of {rowCount} rows',
       showCount: false,
       pagingOptions: [
-        { data: 0, name: "All" },
-        { data: -1, name: "Auto" },
-        { data: 25, name: "25" },
-        { data: 50, name: "50" },
-        { data: 100, name: "100" }
+        { data: 0, name: 'All', ariaLabel: 'Show All Pages' },
+        { data: -1, name: 'Auto', ariaLabel: 'Auto Page Size' },
+        { data: 25, name: '25', ariaLabel: 'Show 25 rows per page' },
+        { data: 50, name: '50', ariaLabel: 'Show 50 rows per page' },
+        { data: 100, name: '100', ariaLabel: 'Show 100 rows per page' },
       ],
       showPageSizes: false
     };
@@ -127,6 +127,7 @@
 
         const anchorElm = document.createElement('a');
         anchorElm.textContent = p.name;
+        anchorElm.ariaLabel = p.ariaLabel;
         anchorElm.dataset.val = p.data;
         pagerSettingsElm.appendChild(anchorElm);
 
@@ -151,6 +152,8 @@
       const displayPaginationContainer = document.createElement('span');
       const displayIconElm = document.createElement('span');
       displayPaginationContainer.className = 'ui-state-default ui-corner-all ui-icon-container';
+      displayIconElm.ariaLabel = 'Show Pagination Options';
+      displayIconElm.role = 'button';
       displayIconElm.className = 'ui-icon ui-icon-lightbulb slick-icon-lightbulb';
       displayPaginationContainer.appendChild(displayIconElm);
 
@@ -160,20 +163,22 @@
       });
       settingsElm.appendChild(displayPaginationContainer);
 
-      const directions = [
-        { key: 'first', callback: gotoFirst },
-        { key: 'prev', callback: gotoPrev },
-        { key: 'next', callback: gotoNext },
-        { key: 'end', callback: gotoLast },
+      const pageButtons = [
+        { key: 'first', ariaLabel: 'First Page', callback: gotoFirst },
+        { key: 'prev', ariaLabel: 'Previous Page', callback: gotoPrev },
+        { key: 'next', ariaLabel: 'Next Page', callback: gotoNext },
+        { key: 'end', ariaLabel: 'Last Page', callback: gotoLast },
       ];
 
-      directions.forEach(direction => {
+      pageButtons.forEach(pageBtn => {
         const iconElm = document.createElement('span');
         iconElm.className = 'ui-state-default ui-corner-all ui-icon-container';
 
         const innerIconElm = document.createElement('span');
-        innerIconElm.className = `ui-icon ui-icon-seek-${direction.key} slick-icon-seek-${direction.key}`;
-        _bindingEventService.bind(innerIconElm, 'click', direction.callback);
+        innerIconElm.role = 'button';
+        innerIconElm.ariaLabel = pageBtn.ariaLabel;
+        innerIconElm.className = `ui-icon ui-icon-seek-${pageBtn.key} slick-icon-seek-${pageBtn.key}`;
+        _bindingEventService.bind(innerIconElm, 'click', pageBtn.callback);
 
         iconElm.appendChild(innerIconElm);
         navElm.appendChild(iconElm);
