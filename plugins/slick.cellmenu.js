@@ -219,6 +219,7 @@
 
       _menuElm = document.createElement('div');
       _menuElm.className = `slick-cell-menu ${_gridUid}`;
+      _menuElm.role = 'menu';
       _menuElm.style.width = width;
       _menuElm.style.maxHeight = maxHeight;
       _menuElm.style.top = `${e.pageY + 5}px`;
@@ -241,6 +242,7 @@
       if (!_cellMenuProperties.hideOptionSection && optionItems.length > 0) {
         const optionMenuElm = document.createElement('div');
         optionMenuElm.className = 'slick-cell-menu-option-list';
+        optionMenuElm.role = 'menu';
 
         if (!_cellMenuProperties.hideCloseButton) {
           _bindingEventService.bind(closeButtonElm, 'click', handleCloseButtonClicked);
@@ -260,6 +262,7 @@
       if (!_cellMenuProperties.hideCommandSection && commandItems.length > 0) {
         const commandMenuElm = document.createElement('div');
         commandMenuElm.className = 'slick-cell-menu-command-list';
+        commandMenuElm.role = 'menu';
 
         if (!_cellMenuProperties.hideCloseButton && (optionItems.length === 0 || _cellMenuProperties.hideOptionSection)) {
           _bindingEventService.bind(closeButtonElm, 'click', handleCloseButtonClicked);
@@ -443,7 +446,7 @@
       }
 
       // user could pass a title on top of the Options section
-      if (cellMenu && cellMenu.optionTitle) {        
+      if (cellMenu && cellMenu.optionTitle) {
         _optionTitleElm = document.createElement('div');
         _optionTitleElm.className = 'title';
         _optionTitleElm.textContent = cellMenu.optionTitle;
@@ -471,6 +474,7 @@
 
         const liElm = document.createElement('div');
         liElm.className = 'slick-cell-menu-item';
+        liElm.role = 'menuitem';
 
         if (item.divider || item === "divider") {
           liElm.classList.add("slick-cell-menu-item-divider");
@@ -561,6 +565,7 @@
 
         const liElm = document.createElement('div');
         liElm.className = 'slick-cell-menu-item';
+        liElm.role = 'menuitem';
 
         if (item.divider || item === "divider") {
           liElm.classList.add("slick-cell-menu-item-divider");
