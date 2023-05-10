@@ -17,13 +17,13 @@
 
     .green {
       background-color: green;
-    }      
+    }
     .red {
       background-color: red;
-    }      
+    }
     .orange {
       background-color: orange;
-    }      
+    }
   </style>
 </head>
 <body>
@@ -52,9 +52,6 @@
 
 <input type=text>
 
-<script src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -82,7 +79,7 @@
     explicitInitialization: true
   };
 
-  $(function () {
+  document.addEventListener("DOMContentLoaded", function() {
     for (var i = 0; i < 5; i++) {
       var d = (data[i] = {});
 
@@ -95,16 +92,16 @@
     }
 
     grid = new Slick.Grid("#myGrid", data, columns, options);
-    
-    // The onBeforeAppendCell event returns text corresponding to the css class to add to the cell. 
+
+    // The onBeforeAppendCell event returns text corresponding to the css class to add to the cell.
     // It is called when first rendering the cell or when redrawing invalidated rows, so it can't respond to cell updates like a formatter.
-    // It was intended to be a general formatting tool rather then being tied to a particular column, for example to allow validation formatting 
+    // It was intended to be a general formatting tool rather then being tied to a particular column, for example to allow validation formatting
     // of cells. The idea was that formatting should remain in place until a subsequent validation.
     // Note that onBeforeAppendCell requires explicitInitialization: true so that the event can be wired up before the first render.
-    
+
     grid.onBeforeAppendCell.subscribe(function (e, args) {
       if (grid.getColumns()[args.cell].id !== 'status') return null;
-  
+
       if (args.value == null || args.value === "") {
         return null;
       } else if (args.value < 33) {
@@ -115,10 +112,10 @@
         return "green";
       }
       return null;
-    }); 
-    
+    });
+
     grid.init();
-  })
+  });
 </script>
 </body>
 </html>

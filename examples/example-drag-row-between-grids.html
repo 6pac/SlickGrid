@@ -166,21 +166,21 @@ function requiredFieldValidator(value) {
   }
 }
 
-(function () {
+document.addEventListener("DOMContentLoaded", function() {
   data = [
     { name: "Make a list", complete: true},
     { name: "Check it twice", complete: false},
     { name: "Find out who's naughty", complete: false},
     { name: "Find out who's nice", complete: false}
   ];
-  
+
   data2 = [
     { name: "Onions", complete: true},
     { name: "Vegemite", complete: false},
     { name: "Corn Flakes", complete: false},
     { name: "Beans", complete: false}
   ];
-  
+
   grid = new Slick.Grid("#myGrid", data, columns, options);
 
   grid.setSelectionModel(new Slick.RowSelectionModel({
@@ -201,7 +201,7 @@ function requiredFieldValidator(value) {
   moveRowsPlugin.onMoveRows.subscribe(function (e, args) {
     var extractedRows = [], selectedRowIndexes = [], left, right;
     var rows = args.rows;
-    
+
     // insert moved rows into data array
     left = data2.slice(0, args.insertBefore);
     right = data2.slice(args.insertBefore, data2.length);
@@ -232,7 +232,7 @@ function requiredFieldValidator(value) {
     grid.updateRowCount();
     grid.render();
   });
-})();
+});
 </script>
 </body>
 </html>

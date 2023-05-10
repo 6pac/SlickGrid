@@ -221,7 +221,7 @@
     });
   }
 
-  (function () {
+  document.addEventListener("DOMContentLoaded", function() {
     for (var i = 0; i < 150; i++) {
       var d = (data[i] = {});
       d["id"] = i + idOffset;
@@ -305,7 +305,7 @@
     dataView.setItems(data);
     dataView.setFilter(filter);
     dataView.endUpdate();
-  })();
+  });
 </script>
 </body>
 </html>

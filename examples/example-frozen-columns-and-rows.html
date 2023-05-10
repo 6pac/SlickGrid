@@ -331,7 +331,7 @@ if (headerSearchIcon) {
   }));
 }
 
-(function () {
+document.addEventListener("DOMContentLoaded", function() {
   // prepare the data
   for (var i = 0; i < 50000; i++) {
     var d = (data[i] = {});
@@ -532,7 +532,7 @@ if (headerSearchIcon) {
     grid.setOptions({ 'frozenColumn': val });
     updateHeaderRow();
   });
-})();
+});
 </script>
 
 </body>

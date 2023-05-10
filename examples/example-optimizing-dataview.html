@@ -118,7 +118,7 @@
   }
 
 
-  (function () {
+  document.addEventListener("DOMContentLoaded", function() {
     // prepare the data
     for (var i = 0; i < 500000; i++) {
       data[i] = new DataItem(i);
@@ -174,7 +174,7 @@
     dataView.setFilter(myFilter);
     dataView.setFilterArgs(0);
     dataView.endUpdate();
-  })();
+  });
 </script>
 </body>
 </html>

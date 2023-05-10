@@ -306,7 +306,7 @@
       });
   }
 
-  (function () {
+  document.addEventListener("DOMContentLoaded", function() {
     dataView = new Slick.Data.DataView();
     grid = new Slick.Grid("#myGrid", dataView, columns, options);
     columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
@@ -325,7 +325,7 @@
     const headerRowElm = grid.getHeaderRow();
     headerRowElm.addEventListener('change', filterKeyup);
     headerRowElm.addEventListener('keyup', filterKeyup);
-    
+
     function filterKeyup(e) {
       const inputFilter = e.target;
       const columnId = inputFilter.dataset.columnid;
@@ -406,7 +406,7 @@
       sortcol = args.sortCol.field;
       dataView.sort(comparer, args.sortAsc);
     });
-  })();
+  });
 </script>
 </body>
 </html>

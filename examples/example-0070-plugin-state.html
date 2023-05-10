@@ -91,7 +91,7 @@
     window.location.reload();
   }
 
-  (function () {
+  document.addEventListener("DOMContentLoaded", function() {
     var dataView = new Slick.Data.DataView();
     var statePersistor = new Slick.State({
       cid: 'sample-grid',
@@ -160,7 +160,7 @@
         });
         sortDataView(sortCols);
       });
-  })();
+  });
 </script>
 </body>
 </html>

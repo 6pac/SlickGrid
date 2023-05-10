@@ -431,7 +431,7 @@
       ]
     };
 
-    (function () {
+    document.addEventListener("DOMContentLoaded", function() {
       dataView = new Slick.Data.DataView();
       grid = new Slick.Grid("#myGrid", dataView, columns, gridOptions);
       cellMenuPlugin = new Slick.Plugins.CellMenu({ hideMenuOnScroll: true });
@@ -533,8 +533,7 @@
           grid.updateRow(args.row);
         }
       });
-    })();
-
+    });
   </script>
 </body>
 

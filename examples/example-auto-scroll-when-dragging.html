@@ -170,7 +170,7 @@
     dataView.setItems(data);
   }
 
-  (function () {
+  document.addEventListener("DOMContentLoaded", function() {
     var groupItemMetadataProvider = new Slick.Data.GroupItemMetadataProvider();
     loadData(groupItemMetadataProvider);
     grid = new Slick.Grid("#myGrid", dataView, columns, options);
@@ -191,7 +191,7 @@
       grid2.invalidateRows(args.rows);
       grid2.render();
     });
-  })()
+  });
 
   function setDefaultOption() {
     document.querySelector('#isAutoScroll').checked =  true;

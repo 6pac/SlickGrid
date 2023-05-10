@@ -362,7 +362,7 @@
       return (x == y ? 0 : (x > y ? 1 : -1));
     }
 
-    (function () {
+    document.addEventListener("DOMContentLoaded", function() {
       // prepare the data
       for (var i = 0; i < 5000; i++) {
         data[i] = new DataItem(i);
@@ -475,7 +475,7 @@
       dataView.setItems(data, 'num');
       dataView.setFilter(filter);
       dataView.endUpdate();
-    })();
+    });
   </script>
 </body>
 </html>

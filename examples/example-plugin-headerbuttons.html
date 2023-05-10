@@ -160,7 +160,7 @@
 
 
 
-  (function () {
+  document.addEventListener("DOMContentLoaded", function() {
     grid = new Slick.Grid("#myGrid", data, columns, options);
 
     var headerButtonsPlugin = new Slick.Plugins.HeaderButtons();
@@ -186,7 +186,7 @@
     });
 
     grid.registerPlugin(headerButtonsPlugin);
-  })();
+  });
   </script>
 </body>
 
