@@ -9,7 +9,6 @@
   <link rel="stylesheet" href="../examples/examples.css" type="text/css"/>
   <link rel="stylesheet" href="../examples/examples-unicode-icons.css" type="text/css"/>
   <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css"/>
-  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/flatpickr.css">
   <style>
     .cell-title {
       font-weight: bold;
@@ -97,8 +96,7 @@
 
 <script src="../lib/firebugx.js"></script>
 
-<script src="../lib/jquery-3.1.0.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -182,17 +180,23 @@ function toggleFilterRow() {
   grid.setTopPanelVisibility(!grid.getOptions().showTopPanel);
 }
 
+let elList = document.querySelectorAll('.grid-header .ui-icon');
+elList.forEach(function(el) {
+  el.classList.add('ui-state-default ui-corner-all');
+  el.addEventListener("mouseover", function(e) { e.target.classList.add('ui-state-hover'); });
+  el.addEventListener("mouseleave", function(e) { e.target.classList.remove('ui-state-hover'); });
+});
 
-$(".grid-header .ui-icon")
-        .addClass("ui-state-default ui-corner-all")
-        .mouseover(function (e) {
-          $(e.target).addClass("ui-state-hover")
-        })
-        .mouseout(function (e) {
-          $(e.target).removeClass("ui-state-hover")
-        });
+//$(".grid-header .ui-icon")
+//        .addClass("ui-state-default ui-corner-all")
+//        .mouseover(function (e) {
+//          $(e.target).addClass("ui-state-hover")
+//        })
+//        .mouseout(function (e) {
+//          $(e.target).removeClass("ui-state-hover")
+//        });
 
-$(function () {
+document.addEventListener("DOMContentLoaded", function() {
   // prepare the data
   for (var i = 0; i < 50000; i++) {
     var d = (data[i] = {});
@@ -212,14 +216,18 @@ $(function () {
   grid = new Slick.Grid("#myGrid", dataView, columns, options);
   grid.setSelectionModel(new Slick.RowSelectionModel());
 
-  var pager = new Slick.Controls.Pager(dataView, grid, $("#pager"));
+  var pager = new Slick.Controls.Pager(dataView, grid, document.querySelector('#pager'));
   var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
 
 
   // move the filter panel defined in a hidden div into grid top panel
-  $("#inlineFilterPanel")
-      .appendTo(grid.getTopPanel())
-      .show();
+  let el = document.querySelector('#inlineFilterPanel');
+  grid.getTopPanel().append(el);
+  el.style.display = 'block';
+  
+  //$("#inlineFilterPanel")
+  //    .appendTo(grid.getTopPanel())
+  //    .show();
 
   grid.onCellChange.subscribe(function (e, args) {
     dataView.updateItem(args.item.id, args.item);
@@ -227,7 +235,8 @@ $(function () {
 
   grid.onAddNewRow.subscribe(function (e, args) {
     var item = {"num": data.length, "id": "new_" + (Math.round(Math.random() * 10000)), "title": "New task", "duration": "1 day", "percentComplete": 0, "start": "01/01/2009", "finish": "01/01/2009", "effortDriven": false};
-    $.extend(item, args.item);
+    utils.extend(item, args.item);
+    //$.extend(item, args.item);
     dataView.addItem(item);
   });
 
@@ -320,7 +329,7 @@ $(function () {
   slider2.oninput = sliderCallback;
 
   // wire up the search textbox to apply the filter to the model
-  $("#txtSearch,#txtSearch2").keyup(function (e) {
+  document.querySelector('#txtSearch,#txtSearch2').addEventListener("keyup", function(e) { 
     Slick.GlobalEditorLock.cancelCurrentEdit();
 
     // clear on Esc
@@ -330,7 +339,19 @@ $(function () {
 
     searchString = this.value;
     updateFilter();
-  });
+ });
+
+//  $("#txtSearch,#txtSearch2").keyup(function (e) {
+//    Slick.GlobalEditorLock.cancelCurrentEdit();
+//
+//    // clear on Esc
+//    if (e.which == 27) {
+//      this.value = "";
+//    }
+//
+//    searchString = this.value;
+//    updateFilter();
+//  });
 
   function updateFilter() {
     dataView.setFilterArgs({
@@ -340,7 +361,8 @@ $(function () {
     dataView.refresh();
   }
 
-  $("#btnSelectRows").click(function () {
+//  $("#btnSelectRows").click(function () {
+  document.querySelector('#btnSelectRows').addEventListener("click", function(e) { 
     if (!Slick.GlobalEditorLock.commitCurrentEdit()) {
       return;
     }
@@ -351,10 +373,11 @@ $(function () {
     }
 
     grid.setSelectedRows(rows);
-  });
+ });
 
-  $("#chkHideColumn").change(function () {
-    var hideCol = $("#chkHideColumn").prop('checked') || false;
+  document.querySelector('#chkHideColumn').addEventListener("change", function(e) { 
+  //$("#chkHideColumn").change(function () {
+    var hideCol = document.querySelector('#chkHideColumn').checked || false;
     columns[2].hidden = hideCol;
     grid.setColumns(columns);
   });
