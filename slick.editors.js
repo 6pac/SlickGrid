@@ -16,7 +16,7 @@
 
     this.init = function () {
       navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
-      input = utils.template("<input type=text class='editor-text' />", args.container);
+      input = utils.createDomElement('input', { type: 'text', className: 'editor-text' }, args.container);
       input.addEventListener("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
       input.focus();
       input.select();
@@ -36,8 +36,8 @@
       }
       scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
       args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
-    }
-    
+    };
+
     this.destroy = function () {
       input.removeEventListener("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
       input.removeEventListener("change", this.onChange)
@@ -96,31 +96,36 @@
     var input;
     var defaultValue;
     var scope = this;
+    var navOnLR;
     this.args = args;
 
     this.init = function () {
-      var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
-      input = utils.template("<input type=text class='editor-text' />", args.container);
+      navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
+      input = utils.createDomElement('input', { type: 'text', className: 'editor-text' }, args.container);
       input.addEventListener("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
       input.focus()
       input.select();
 
       // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
       if (args.compositeEditorOptions) {
-        input.addEventListener("change", function () {
-          var activeCell = args.grid.getActiveCell();
-
-          // when valid, we'll also apply the new value to the dataContext item object
-          if (scope.validate().valid) {
-            scope.applyValue(scope.args.item, scope.serializeValue());
-          }
-          scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
-          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
-        });
+        input.addEventListener("change", this.onChange);
       }
     };
 
+    this.onChange = function () {
+      var activeCell = args.grid.getActiveCell();
+
+      // when valid, we'll also apply the new value to the dataContext item object
+      if (scope.validate().valid) {
+        scope.applyValue(scope.args.item, scope.serializeValue());
+      }
+      scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
+      args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
+    };
+
     this.destroy = function () {
+      input.removeEventListener("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
+      input.removeEventListener("change", this.onChange)
       input.remove();
     };
 
@@ -175,31 +180,36 @@
     var input;
     var defaultValue;
     var scope = this;
+    var navOnLR;
     this.args = args;
 
     this.init = function () {
-      var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
-      input = utils.template("<input type=text class='editor-text' />", args.container);
+      navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
+      input = utils.createDomElement('input', { type: 'text', className: 'editor-text' }, args.container);
       input.addEventListener("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
       input.focus()
       input.select();
 
       // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
       if (args.compositeEditorOptions) {
-        input.addEventListener("change", function () {
-          var activeCell = args.grid.getActiveCell();
-
-          // when valid, we'll also apply the new value to the dataContext item object
-          if (scope.validate().valid) {
-            scope.applyValue(scope.args.item, scope.serializeValue());
-          }
-          scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
-          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
-        });
+        input.addEventListener("change", this.onChange);
       }
     };
 
+    this.onChange = function () {
+      var activeCell = args.grid.getActiveCell();
+
+      // when valid, we'll also apply the new value to the dataContext item object
+      if (scope.validate().valid) {
+        scope.applyValue(scope.args.item, scope.serializeValue());
+      }
+      scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
+      args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
+    };
+
     this.destroy = function () {
+      input.removeEventListener("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
+      input.removeEventListener("change", this.onChange)
       input.remove();
     };
 
@@ -296,7 +306,7 @@
     var flatpickrInstance;
 
     this.init = function () {
-      input = utils.template('<input type=text class="editor-text" />', args.container);
+      input = utils.createDomElement('input', { type: 'text', className: 'editor-text' }, args.container);
       input.focus();
       input.select();
       flatpickrInstance = flatpickr(input, {
@@ -305,7 +315,7 @@
         altInput: true,
         altFormat: "m/d/Y",
         dateFormat: 'm/d/Y',
-        onChange: (e, r) => {
+        onChange: () => {
           // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
           if (args.compositeEditorOptions) {
             var activeCell = args.grid.getActiveCell();
@@ -400,25 +410,31 @@
     this.args = args;
 
     this.init = function () {
-      select = utils.template("<select tabIndex='0' class='editor-yesno'><option value='yes'>Yes</option><option value='no'>No</option></select>", args.container);
+      select = utils.createDomElement('select', { tabIndex: 0, className: 'editor-yesno' }, args.container);
+      utils.createDomElement('option', { value: 'yes', textContent: 'Yes' }, select);
+      utils.createDomElement('option', { value: 'no', textContent: 'No' }, select);
+
       select.focus();
 
       // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
       if (args.compositeEditorOptions) {
-        select.addEventListener("change", function () {
-          var activeCell = args.grid.getActiveCell();
-
-          // when valid, we'll also apply the new value to the dataContext item object
-          if (scope.validate().valid) {
-            scope.applyValue(scope.args.item, scope.serializeValue());
-          }
-          scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
-          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
-        });
+        select.addEventListener("change", this.onChange);
       }
     };
 
+    this.onChange = function () {
+      var activeCell = args.grid.getActiveCell();
+
+      // when valid, we'll also apply the new value to the dataContext item object
+      if (scope.validate().valid) {
+        scope.applyValue(scope.args.item, scope.serializeValue());
+      }
+      scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
+      args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
+    };
+
     this.destroy = function () {
+      select.removeEventListener("change", this.onChange)
       select.remove();
     };
 
@@ -428,7 +444,6 @@
 
     this.loadValue = function (item) {
       select.value = ((defaultValue = item[args.column.field]) ? "yes" : "no");
-      select.select();
     };
 
     this.serializeValue = function () {
@@ -460,25 +475,28 @@
     this.args = args;
 
     this.init = function () {
-      select = utils.template("<input type=checkbox value='true' class='editor-checkbox' hideFocus>", args.container);
+      select = utils.createDomElement('input', { className: 'editor-checkbox', type: 'checkbox', value: 'true', }, args.container);
       select.focus();
 
       // trigger onCompositeEditorChange event when input checkbox changes and it's a Composite Editor
       if (args.compositeEditorOptions) {
-        select.addEventListener("change", function () {
-          var activeCell = args.grid.getActiveCell();
-
-          // when valid, we'll also apply the new value to the dataContext item object
-          if (scope.validate().valid) {
-            scope.applyValue(scope.args.item, scope.serializeValue());
-          }
-          scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
-          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
-        });
+        select.addEventListener("change", this.onChange);
       }
     };
 
+    this.onChange = function () {
+      var activeCell = args.grid.getActiveCell();
+
+      // when valid, we'll also apply the new value to the dataContext item object
+      if (scope.validate().valid) {
+        scope.applyValue(scope.args.item, scope.serializeValue());
+      }
+      scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
+      args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
+    };
+
     this.destroy = function () {
+      select.removeEventListener("change", this.onChange);
       select.remove();
     };
 
@@ -541,11 +559,21 @@
     }
 
     this.init = function () {
-      input = utils.template('<input type="text" class="editor-percentcomplete" />', args.container);
+      input = utils.createDomElement('input', { className: 'editor-percentcomplete', type: 'text' }, args.container);
       utils.width(input, args.container.clientWidth - 25);
 
-      picker = utils.template("<div class='editor-percentcomplete-picker' />", args.container);
-      utils.template("<div class='editor-percentcomplete-helper'><div class='editor-percentcomplete-wrapper'><div class='editor-percentcomplete-slider' /><input type='range' class='editor-percentcomplete-slider' /><div class='editor-percentcomplete-buttons' /><button val='0'>Not started</button><br/><button val='50'>In Progress</button><br/><button val='100'>Complete</button></div></div>", picker);
+      picker = utils.createDomElement('div', { className: 'editor-percentcomplete-picker' }, args.container);
+      const containerHelper = utils.createDomElement('div', { className: 'editor-percentcomplete-helper' }, picker);
+      const containerWrapper = utils.createDomElement('div', { className: 'editor-percentcomplete-wrapper' }, containerHelper);
+      utils.createDomElement('div', { className: 'editor-percentcomplete-slider' }, containerWrapper);
+      utils.createDomElement('input', { className: 'editor-percentcomplete-slider', type: 'range' }, containerWrapper);
+      const containerButtons = utils.createDomElement('div', { className: 'editor-percentcomplete-buttons' }, containerWrapper);
+      utils.createDomElement('button', { value: '0', textContent: 'Not started' }, containerButtons);
+      containerButtons.appendChild(document.createElement('br'));
+      utils.createDomElement('button', { value: '50', textContent: 'In Progress' }, containerButtons);
+      containerButtons.appendChild(document.createElement('br'));
+      utils.createDomElement('button', { value: '100', textContent: 'Complete' }, containerButtons);
+
       input.focus();
       input.select();
 
@@ -557,16 +585,20 @@
 
       const buttons = picker.querySelectorAll(".editor-percentcomplete-buttons button");
       [].forEach.call(buttons, (button) => {
-        button.addEventListener("click", function (e) {
-          input.value = this.getAttribute("val");
-          slider.value = this.getAttribute("val");
-        });
+        button.addEventListener("click", this.onClick);
       });
+    };
+
+    this.onClick = function () {
+      input.value = this.getAttribute("val");
+      slider.value = this.getAttribute("val");
     };
 
     this.destroy = function () {
       slider.removeEventListener('input', sliderInputHandler);
       slider.removeEventListener('change', sliderChangeHandler);
+      picker.querySelectorAll(".editor-percentcomplete-buttons button")
+        .forEach(button => button.removeEventListener("click", this.onClick));
       input.remove();
       picker.remove();
     };
@@ -624,10 +656,10 @@
 
     this.init = function () {
       var compositeEditorOptions = args.compositeEditorOptions;
-      var navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
+      args.grid.getOptions().editorCellNavOnLRKeys;
       var container = compositeEditorOptions ? args.container : document.body;
 
-      wrapper = utils.template("<div class='slick-large-editor-text' style='z-index:10000;background:white;padding:5px;border:3px solid gray; border-radius:10px;'/>", container);
+      wrapper = utils.createDomElement('div', { className: 'slick-large-editor-text', style: { zIndex: 10000, background: 'white', padding: '5px', border: '3px solid gray', borderRadius: '10px' } }, container);
       if (compositeEditorOptions) {
         wrapper.style.position = 'relative';
         utils.setStyleSize(wrapper, "padding", 0);
@@ -636,22 +668,15 @@
         wrapper.style.position = 'absolute';
       }
 
-      input = utils.template("<textarea hidefocus rows=5 style='background:white;width:250px;height:80px;border:0;outline:0'>", wrapper);
+      input = utils.createDomElement('textarea', { rows: 5, style: { background: 'white', width: '250px', height: '80px', border: '0', outline: '0' } }, wrapper);
 
       // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
       if (compositeEditorOptions) {
-        input.addEventListener("change", function () {
-          var activeCell = args.grid.getActiveCell();
-
-          // when valid, we'll also apply the new value to the dataContext item object
-          if (scope.validate().valid) {
-            scope.applyValue(scope.args.item, scope.serializeValue());
-          }
-          scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
-          args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
-        });
+        input.addEventListener("change", this.onChange);
       } else {
-        utils.template("<div style='text-align:right'><button id='save'>Save</button><button id='cancel'>Cancel</button></div>", wrapper);
+        const btnContainer = utils.createDomElement('div', { style: 'text-align:right' }, wrapper);
+        utils.createDomElement('button', { id: 'save', textContent: 'Save' }, btnContainer);
+        utils.createDomElement('button', { id: 'cancel', textContent: 'Cancel' }, btnContainer);
 
         wrapper.querySelector("#save").addEventListener("click", this.save);
         wrapper.querySelector("#cancel").addEventListener("click", this.cancel);
@@ -661,6 +686,17 @@
 
       input.focus();
       input.select();
+    };
+
+    this.onChange = function () {
+      var activeCell = args.grid.getActiveCell();
+
+      // when valid, we'll also apply the new value to the dataContext item object
+      if (scope.validate().valid) {
+        scope.applyValue(scope.args.item, scope.serializeValue());
+      }
+      scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
+      args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
     };
 
     this.handleKeyDown = function (e) {
@@ -717,6 +753,13 @@
     };
 
     this.destroy = function () {
+      if (args.compositeEditorOptions) {
+        input.removeEventListener("change", this.onChange);
+      } else {
+        wrapper.querySelector("#save").removeEventListener("click", this.save);
+        wrapper.querySelector("#cancel").removeEventListener("click", this.cancel);
+        input.removeEventListener("keydown", this.handleKeyDown);
+      }
       wrapper.remove();
     };
 

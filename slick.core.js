@@ -711,9 +711,38 @@
   }
 
   /**
+   * Create a DOM Element with any optional attributes or properties.
+   * It will only accept valid DOM element properties that `createElement` would accept.
+   * For example: `createDomElement('div', { className: 'my-css-class' })`,
+   * for style or dataset you need to use nested object `{ style: { display: 'none' }}
+   * The last argument is to optionally append the created element to a parent container element.
+   * @param {String} tagName - html tag
+   * @param {Object} options - element properties
+   * @param {[HTMLElement]} appendToParent - parent element to append to
+   */
+  function createDomElement(tagName, elementOptions, appendToParent) {
+    const elm = document.createElement(tagName);
+
+    if (elementOptions) {
+      Object.keys(elementOptions).forEach((elmOptionKey) => {
+        const elmValue = elementOptions[elmOptionKey];
+        if (typeof elmValue === 'object') {
+          Object.assign(elm[elmOptionKey], elmValue);
+        } else {
+          elm[elmOptionKey] = (elementOptions)[elmOptionKey];
+        }
+      });
+    }
+    if (appendToParent && appendToParent.appendChild) {
+      appendToParent.appendChild(elm);
+    }
+    return elm;
+  }
+
+  /**
    * Debounce to delay JS callback execution, a wait of (-1) could be provided to execute callback without delay.
    * @param {Function} callback - callback method to execute
-   * @param {Number} wait - delay to wait before execution or -1 for no delay
+   * @param {Number} wait - delay to wait before execution or -1 delay
    */
   function debounce(callback, wait) {
     let timeoutId = null;
@@ -850,20 +879,6 @@
       }
     }
     return parents;
-  }
-
-  function template(html, parent) {
-    const template = document.createElement('template');
-    template.innerHTML = html.trim();
-
-    const first = template.content.firstChild;
-    if (parent) {
-      [].forEach.call(template.content.children, function (child) {
-        parent.appendChild(child);
-      });
-      return first;
-    }
-    return first;
   }
 
   function toFloat(value) {
@@ -1044,6 +1059,7 @@
       "debounce": debounce,
       "extend": extend,
       "calculateAvailableSpace": calculateAvailableSpace,
+      "createDomElement": createDomElement,
       "emptyElement": emptyElement,
       "innerSize": innerSize,
       "isEmptyObject": isEmptyObject,
@@ -1053,7 +1069,6 @@
       "width": width,
       "setStyleSize": setStyleSize,
       "contains": contains,
-      "template": template,
       "toFloat": toFloat,
       "parents": parents,
       "show": show,
@@ -1071,8 +1086,9 @@
         },
         get: function (element, key) {
           const el = this._storage.get(element);
-          if (el)
+          if (el) {
             return el.get(key);
+          }
           return null;
         },
         remove: function (element, key) {

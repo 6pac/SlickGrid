@@ -9,12 +9,14 @@
         "node": true
     },
     "globals": {
+        "flatpickr": true,
         "Slick": true,
         "Sortable": true
     },
     "rules": {
         "cypress/no-unnecessary-waiting": "off",
         "cypress/unsafe-to-chain-command": "off",
+        "no-cond-assign": "off",
         "no-prototype-builtins": [0]
     }
 }

@@ -361,24 +361,25 @@ if (typeof Slick === "undefined") {
         _container.style.position = "relative";
       }
 
-      _focusSink = utils.template("<div tabIndex='0' hideFocus style='position:fixed;width:0;height:0;top:0;left:0;outline:0;'></div>", _container);
+      _focusSink = utils.createDomElement('div', { tabIndex: 0, style: { position: 'fixed', width: '0px', height: '0px', top: '0px', left: '0px', outline: '0px' } }, _container);
 
       // Containers used for scrolling frozen columns and rows
-      _paneHeaderL = utils.template("<div class='slick-pane slick-pane-header slick-pane-left' tabIndex='0' />", _container);
-      _paneHeaderR = utils.template("<div class='slick-pane slick-pane-header slick-pane-right' tabIndex='0' />", _container);
-      _paneTopL = utils.template("<div class='slick-pane slick-pane-top slick-pane-left' tabIndex='0' />", _container);
-      _paneTopR = utils.template("<div class='slick-pane slick-pane-top slick-pane-right' tabIndex='0' />", _container);
-      _paneBottomL = utils.template("<div class='slick-pane slick-pane-bottom slick-pane-left' tabIndex='0' />", _container);
-      _paneBottomR = utils.template("<div class='slick-pane slick-pane-bottom slick-pane-right' tabIndex='0' />", _container);
+      _paneHeaderL = utils.createDomElement('div', { className: 'slick-pane slick-pane-header slick-pane-left', tabIndex: 0 }, _container);
+      _paneHeaderR = utils.createDomElement('div', { className: 'slick-pane slick-pane-header slick-pane-right', tabIndex: 0 }, _container);
+      _paneTopL = utils.createDomElement('div', { className: 'slick-pane slick-pane-top slick-pane-left', tabIndex: 0 }, _container);
+      _paneTopR = utils.createDomElement('div', { className: 'slick-pane slick-pane-top slick-pane-right', tabIndex: 0 }, _container);
+      _paneBottomL = utils.createDomElement('div', { className: 'slick-pane slick-pane-bottom slick-pane-left', tabIndex: 0 }, _container);
+      _paneBottomR = utils.createDomElement('div', { className: 'slick-pane slick-pane-bottom slick-pane-right', tabIndex: 0 }, _container);
 
       if (options.createPreHeaderPanel) {
-        _preHeaderPanelScroller = utils.template("<div class='slick-preheader-panel ui-state-default' style='overflow:hidden;position:relative;' />", _paneHeaderL);
-        _preHeaderPanel = utils.template("<div />", _preHeaderPanelScroller);
-        _preHeaderPanelSpacer = utils.template("<div style='display:block;height:1px;position:absolute;top:0;left:0;'></div>", _preHeaderPanelScroller);
+        _preHeaderPanelScroller = utils.createDomElement('div', { className: 'slick-preheader-panel ui-state-default', style: { overflow: 'hidden', position: 'relative' } }, _paneHeaderL);
+        _preHeaderPanelScroller.appendChild(document.createElement('div'));
+        _preHeaderPanel = utils.createDomElement('div', null, _preHeaderPanelScroller);
+        _preHeaderPanelSpacer = utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, _preHeaderPanelScroller);
 
-        _preHeaderPanelScrollerR = utils.template("<div class='slick-preheader-panel ui-state-default' style='overflow:hidden;position:relative;' />", _paneHeaderR);
-        _preHeaderPanelR = utils.template("<div />", _preHeaderPanelScrollerR);
-        _preHeaderPanelSpacerR = utils.template("<div style='display:block;height:1px;position:absolute;top:0;left:0;'></div>", _preHeaderPanelScrollerR);
+        _preHeaderPanelScrollerR = utils.createDomElement('div', { className: 'slick-preheader-panel ui-state-default', style: { overflow: 'hidden', position: 'relative' } }, _paneHeaderR);
+        _preHeaderPanelR = utils.createDomElement('div', null, _preHeaderPanelScrollerR);
+        _preHeaderPanelSpacerR = utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, _preHeaderPanelScrollerR);
 
         if (!options.showPreHeaderPanel) {
           hide(_preHeaderPanelScroller);
@@ -387,8 +388,8 @@ if (typeof Slick === "undefined") {
       }
 
       // Append the header scroller containers
-      _headerScrollerL = utils.template("<div class='slick-header ui-state-default slick-header-left' />", _paneHeaderL);
-      _headerScrollerR = utils.template("<div class='slick-header ui-state-default slick-header-right' />", _paneHeaderR);
+      _headerScrollerL = utils.createDomElement('div', { className: 'slick-header ui-state-default slick-header-left' }, _paneHeaderL);
+      _headerScrollerR = utils.createDomElement('div', { className: 'slick-header ui-state-default slick-header-right' }, _paneHeaderR);
 
       // Cache the header scroller containers
       _headerScroller.push(_headerScrollerL);
@@ -398,41 +399,41 @@ if (typeof Slick === "undefined") {
         _groupHeadersL = [];
         _groupHeadersR = [];
         for (var index = 0; index < treeColumns.getDepth() - 1; index++) {
-          _groupHeadersL[index] = utils.template("<div class='slick-group-header-columns slick-group-header-columns-left' style='left:-1000px' />", _headerScrollerL);
-          _groupHeadersR[index] = utils.template("<div class='slick-group-header-columns slick-group-header-columns-right' style='left:-1000px' />", _headerScrollerR);
+          _groupHeadersL[index] = utils.createDomElement('div', { className: 'slick-group-header-columns slick-group-header-columns-left', style: { left: '-1000px' } }, _headerScrollerL);
+          _groupHeadersR[index] = utils.createDomElement('div', { className: 'slick-group-header-columns slick-group-header-columns-right', style: { left: '-1000px' } }, _headerScrollerR);
         }
         _groupHeaders = [_groupHeadersL, _groupHeadersR];
       }
 
       // Append the columnn containers to the headers
-      _headerL = utils.template("<div class='slick-header-columns slick-header-columns-left' style='left:-1000px' />", _headerScrollerL);
-      _headerR = utils.template("<div class='slick-header-columns slick-header-columns-right' style='left:-1000px' />", _headerScrollerR);
+      _headerL = utils.createDomElement('div', { className: 'slick-header-columns slick-header-columns-left', style: { left: '-1000px' } }, _headerScrollerL);
+      _headerR = utils.createDomElement('div', { className: 'slick-header-columns slick-header-columns-right', style: { left: '-1000px' } }, _headerScrollerR);
 
       // Cache the header columns
       _headers = [_headerL, _headerR];
 
-      _headerRowScrollerL = utils.template("<div class='slick-headerrow ui-state-default' />", _paneTopL);
-      _headerRowScrollerR = utils.template("<div class='slick-headerrow ui-state-default' />", _paneTopR);
+      _headerRowScrollerL = utils.createDomElement('div', { className: 'slick-headerrow ui-state-default' }, _paneTopL);
+      _headerRowScrollerR = utils.createDomElement('div', { className: 'slick-headerrow ui-state-default' }, _paneTopR);
 
       _headerRowScroller = [_headerRowScrollerL, _headerRowScrollerR];
 
-      _headerRowSpacerL = utils.template("<div style='display:block;height:1px;position:absolute;top:0;left:0;'></div>", _headerRowScrollerL);
-      _headerRowSpacerR = utils.template("<div style='display:block;height:1px;position:absolute;top:0;left:0;'></div>", _headerRowScrollerR);
+      _headerRowSpacerL = utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, _headerRowScrollerL);
+      _headerRowSpacerR = utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, _headerRowScrollerR);
 
-      _headerRowL = utils.template("<div class='slick-headerrow-columns slick-headerrow-columns-left' />", _headerRowScrollerL);
-      _headerRowR = utils.template("<div class='slick-headerrow-columns slick-headerrow-columns-right' />", _headerRowScrollerR);
+      _headerRowL = utils.createDomElement('div', { className: 'slick-headerrow-columns slick-headerrow-columns-left' }, _headerRowScrollerL);
+      _headerRowR = utils.createDomElement('div', { className: 'slick-headerrow-columns slick-headerrow-columns-right' }, _headerRowScrollerR);
 
       _headerRows = [_headerRowL, _headerRowR];
 
       // Append the top panel scroller
-      _topPanelScrollerL = utils.template("<div class='slick-top-panel-scroller ui-state-default' />", _paneTopL);
-      _topPanelScrollerR = utils.template("<div class='slick-top-panel-scroller ui-state-default' />", _paneTopR);
+      _topPanelScrollerL = utils.createDomElement('div', { className: 'slick-top-panel-scroller ui-state-default' }, _paneTopL);
+      _topPanelScrollerR = utils.createDomElement('div', { className: 'slick-top-panel-scroller ui-state-default' }, _paneTopR);
 
       _topPanelScrollers = [_topPanelScrollerL, _topPanelScrollerR];
 
       // Append the top panel
-      _topPanelL = utils.template("<div class='slick-top-panel' style='width:10000px' />", _topPanelScrollerL);
-      _topPanelR = utils.template("<div class='slick-top-panel' style='width:10000px' />", _topPanelScrollerR);
+      _topPanelL = utils.createDomElement('div', { className: 'slick-top-panel', style: { width: '10000px' } }, _topPanelScrollerL);
+      _topPanelR = utils.createDomElement('div', { className: 'slick-top-panel', style: { width: '10000px' } }, _topPanelScrollerR);
 
       _topPanels = [_topPanelL, _topPanelR];
 
@@ -455,10 +456,10 @@ if (typeof Slick === "undefined") {
       }
 
       // Append the viewport containers
-      _viewportTopL = utils.template("<div class='slick-viewport slick-viewport-top slick-viewport-left' tabIndex='0' hideFocus />", _paneTopL);
-      _viewportTopR = utils.template("<div class='slick-viewport slick-viewport-top slick-viewport-right' tabIndex='0' hideFocus />", _paneTopR);
-      _viewportBottomL = utils.template("<div class='slick-viewport slick-viewport-bottom slick-viewport-left' tabIndex='0' hideFocus />", _paneBottomL);
-      _viewportBottomR = utils.template("<div class='slick-viewport slick-viewport-bottom slick-viewport-right' tabIndex='0' hideFocus />", _paneBottomR);
+      _viewportTopL = utils.createDomElement('div', { className: 'slick-viewport slick-viewport-top slick-viewport-left', tabIndex: 0 }, _paneTopL);
+      _viewportTopR = utils.createDomElement('div', { className: 'slick-viewport slick-viewport-top slick-viewport-right', tabIndex: 0 }, _paneTopR);
+      _viewportBottomL = utils.createDomElement('div', { className: 'slick-viewport slick-viewport-bottom slick-viewport-left', tabIndex: 0 }, _paneBottomL);
+      _viewportBottomR = utils.createDomElement('div', { className: 'slick-viewport slick-viewport-bottom slick-viewport-right', tabIndex: 0 }, _paneBottomR);
 
       // Cache the viewports
       _viewport = [_viewportTopL, _viewportTopR, _viewportBottomL, _viewportBottomR];
@@ -472,10 +473,10 @@ if (typeof Slick === "undefined") {
       _activeViewportNode = _viewportTopL;
 
       // Append the canvas containers
-      _canvasTopL = utils.template("<div class='grid-canvas grid-canvas-top grid-canvas-left' tabIndex='0' hideFocus />", _viewportTopL);
-      _canvasTopR = utils.template("<div class='grid-canvas grid-canvas-top grid-canvas-right' tabIndex='0' hideFocus />", _viewportTopR);
-      _canvasBottomL = utils.template("<div class='grid-canvas grid-canvas-bottom grid-canvas-left' tabIndex='0' hideFocus />", _viewportBottomL);
-      _canvasBottomR = utils.template("<div class='grid-canvas grid-canvas-bottom grid-canvas-right' tabIndex='0' hideFocus />", _viewportBottomR);
+      _canvasTopL = utils.createDomElement('div', { className: 'grid-canvas grid-canvas-top grid-canvas-left', tabIndex: 0 }, _viewportTopL);
+      _canvasTopR = utils.createDomElement('div', { className: 'grid-canvas grid-canvas-top grid-canvas-right', tabIndex: 0 }, _viewportTopR);
+      _canvasBottomL = utils.createDomElement('div', { className: 'grid-canvas grid-canvas-bottom grid-canvas-left', tabIndex: 0 }, _viewportBottomL);
+      _canvasBottomR = utils.createDomElement('div', { className: 'grid-canvas grid-canvas-bottom grid-canvas-right', tabIndex: 0 }, _viewportBottomR);
 
       // Cache the canvases
       _canvas = [_canvasTopL, _canvasTopR, _canvasBottomL, _canvasBottomR];
@@ -499,19 +500,19 @@ if (typeof Slick === "undefined") {
 
       // footer Row
       if (options.createFooterRow) {
-        _footerRowScrollerR = utils.template("<div class='slick-footerrow ui-state-default' />", _paneTopR);
-        _footerRowScrollerL = utils.template("<div class='slick-footerrow ui-state-default' />", _paneTopL);
+        _footerRowScrollerR = utils.createDomElement('div', { className: 'slick-footerrow ui-state-default' }, _paneTopR);
+        _footerRowScrollerL = utils.createDomElement('div', { className: 'slick-footerrow ui-state-default' }, _paneTopL);
 
         _footerRowScroller = [_footerRowScrollerL, _footerRowScrollerR];
 
-        _footerRowSpacerL = utils.template("<div style='display:block;height:1px;position:absolute;top:0;left:0;'></div>", _footerRowScrollerL);
+        _footerRowSpacerL = utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, _footerRowScrollerL);
         utils.width(_footerRowSpacerL, getCanvasWidth() + scrollbarDimensions.width);
-        _footerRowSpacerR = utils.template("<div style='display:block;height:1px;position:absolute;top:0;left:0;'></div>", _footerRowScrollerR);
+        _footerRowSpacerR = utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, _footerRowScrollerR);
         utils.width(_footerRowSpacerR, getCanvasWidth() + scrollbarDimensions.width);
 
 
-        _footerRowL = utils.template("<div class='slick-footerrow-columns slick-footerrow-columns-left' />", _footerRowScrollerL);
-        _footerRowR = utils.template("<div class='slick-footerrow-columns slick-footerrow-columns-right' />", _footerRowScrollerR);
+        _footerRowL = utils.createDomElement('div', { className: 'slick-footerrow-columns slick-footerrow-columns-left' }, _footerRowScrollerL);
+        _footerRowR = utils.createDomElement('div', { className: 'slick-footerrow-columns slick-footerrow-columns-right' }, _footerRowScrollerR);
 
         _footerRow = [_footerRowL, _footerRowR];
 
@@ -774,8 +775,8 @@ if (typeof Slick === "undefined") {
     }
 
     function measureScrollbar() {
-      var outerdiv = utils.template('<div class="' + _viewport.className + '" style="position:absolute; top:-10000px; left:-10000px; overflow:auto; width:100px; height:100px;"></div>', document.body);
-      var innerdiv = utils.template('<div style="width:200px; height:200px; overflow:auto;"></div>', outerdiv);
+      var outerdiv = utils.createDomElement('div', { className: _viewport.className, style: { position: 'absolute', top: '-10000px', left: '-10000px', overflow: 'auto', width: '100px', height: '100px' } }, document.body);
+      var innerdiv = utils.createDomElement('div', { style: { width: '200px', height: '200px', overflow: 'auto' } }, outerdiv);
       var dim = {
         width: outerdiv.offsetWidth - outerdiv.clientWidth,
         height: outerdiv.offsetHeight - outerdiv.clientHeight
@@ -995,7 +996,7 @@ if (typeof Slick === "undefined") {
       // FF reports the height back but still renders blank after ~6M px
       //var testUpTo = navigator.userAgent.toLowerCase().match(/firefox/) ? 6000000 : 1000000000;
       const testUpTo = navigator.userAgent.toLowerCase().match(/firefox/) ? options.ffMaxSupportedCssHeight : options.maxSupportedCssHeight;
-      const div = utils.template("<div style='display:hidden' />", document.body);
+      const div = utils.createDomElement('div', { style: { display: 'hidden' } }, document.body);
 
       while (true) {
         const test = supportedHeight * 2;
@@ -1180,7 +1181,7 @@ if (typeof Slick === "undefined") {
 
         for (var i = 0; i < columns.length; i++) {
           var m = columns[i];
-          const footerRowCell = utils.template("<div class='ui-state-default slick-footerrow-column l" + i + " r" + i + "'></div>", hasFrozenColumns() && (i > options.frozenColumn)? _footerRowR: _footerRowL);
+          const footerRowCell = utils.createDomElement('div', { className: `ui-state-default slick-footerrow-column l${i} r${i}` }, hasFrozenColumns() && (i > options.frozenColumn) ? _footerRowR : _footerRowL);
           const className = hasFrozenColumns() && i <= options.frozenColumn? 'frozen': null;
           if (className) {
             footerRowCell.classList.add(className);
@@ -1220,7 +1221,7 @@ if (typeof Slick === "undefined") {
             frozenColumnsValid = true;
           }
 
-          const el = utils.template("<div class='ui-state-default slick-group-header-column' />", hasFrozenColumns() && (columnsLength - 1) > options.frozenColumn ? _groupHeadersR[index]: _groupHeadersL[index]);
+          const el = utils.createDomElement('div', { className: 'ui-state-default slick-group-header-column' }, hasFrozenColumns() && (columnsLength - 1) > options.frozenColumn ? _groupHeadersR[index] : _groupHeadersL[index]);
             el.innerHTML = "<span class='slick-column-name'>" + m.name + "</span>";
             el.setAttribute("id", "" + uid + m.id);
             el.setAttribute("title", m.toolTip || "");
@@ -1324,7 +1325,7 @@ if (typeof Slick === "undefined") {
         const headerTarget = hasFrozenColumns() ? ((i <= options.frozenColumn) ? _headerL : _headerR) : _headerL;
         const headerRowTarget = hasFrozenColumns() ? ((i <= options.frozenColumn) ? _headerRowL : _headerRowR) : _headerRowL;
 
-        const header = utils.template("<div class='ui-state-default slick-header-column' />", headerTarget);
+        const header = utils.createDomElement('div', { className: 'ui-state-default slick-header-column' }, headerTarget);
 
         header.innerHTML = "<span class='slick-column-name'>" + m.name + "</span>";
         utils.width(header, m.width - headerColumnWidthDiff);
@@ -1361,9 +1362,9 @@ if (typeof Slick === "undefined") {
 
         if (m.sortable) {
           header.classList.add("slick-header-sortable");
-          utils.template("<span class='slick-sort-indicator" + (options.numberedMultiColumnSort && !options.sortColNumberInSeparateSpan ? " slick-sort-indicator-numbered" : "" ) + "' />", header);
+          utils.createDomElement('div', { className: `slick-sort-indicator ${options.numberedMultiColumnSort && !options.sortColNumberInSeparateSpan ? ' slick-sort-indicator-numbered' : ''}` }, header);
           if (options.numberedMultiColumnSort && options.sortColNumberInSeparateSpan) {
-            utils.template("<span class='slick-sort-indicator-numbered' />", header);
+            utils.createDomElement('div', { className: 'slick-sort-indicator-numbered' }, header);
            }
         }
 
@@ -1374,7 +1375,7 @@ if (typeof Slick === "undefined") {
         });
 
         if (options.showHeaderRow) {
-          const headerRowCell = utils.template("<div class='ui-state-default slick-headerrow-column l" + i + " r" + i + "'></div>", headerRowTarget);
+          const headerRowCell = utils.createDomElement('div', { className: `ui-state-default slick-headerrow-column l${i} r${i}` }, headerRowTarget);
           const classname = hasFrozenColumns() && i <= options.frozenColumn? 'frozen' : null;
           if (classname) {
             headerRowCell.classList.add(classname);
@@ -1393,7 +1394,7 @@ if (typeof Slick === "undefined") {
         }
         if (options.createFooterRow && options.showFooterRow) {
           const footerRowTarget = hasFrozenColumns() ? ((i <= options.frozenColumn) ? _footerRow[0] : _footerRow[1]) : _footerRow[0];
-          const footerRowCell = utils.template("<div class='ui-state-default slick-footerrow-column l" + i   + " r" + i + "'></div>", footerRowTarget);
+          const footerRowCell = utils.createDomElement('div', { className: `ui-state-default slick-footerrow-column l${i} r${i}` }, footerRowTarget);
           utils.storage.put(footerRowCell, "column", m)
 
           trigger(self.onFooterRowCellRendered, {
@@ -1724,7 +1725,7 @@ if (typeof Slick === "undefined") {
           continue;
         }
 
-        const resizeableHandle = utils.template("<div class='slick-resizable-handle' role='separator' aria-orientation='horizontal' />", colElm);
+        const resizeableHandle = utils.createDomElement('div', { className: 'slick-resizable-handle', role: 'separator', ariaOrientation: 'horizontal' }, colElm);
         _bindingEventService.bind(resizeableHandle, "dblclick", handleResizeableHandleDoubleClick);
 
         slickResizableInstances.push(
@@ -2111,7 +2112,7 @@ if (typeof Slick === "undefined") {
       headerColumnWidthDiff = headerColumnHeightDiff = 0;
       cellWidthDiff = cellHeightDiff = 0;
 
-      let el = utils.template("<div class='ui-state-default slick-header-column' style='visibility:hidden'>-</div>", header);
+      let el = utils.createDomElement('div', { className: 'ui-state-default slick-header-column', style: { visibility: 'hidden' }, textContent: '-' }, header);
       let style = getComputedStyle(el);
       // if (el.css("box-sizing") != "border-box" && el.css("-moz-box-sizing") != "border-box" && el.css("-webkit-box-sizing") != "border-box") {
       if (style["box-sizing"] != "border-box" && style["-moz-box-sizing"] != "border-box" && style["-webkit-box-sizing"] != "border-box") {
@@ -2124,8 +2125,8 @@ if (typeof Slick === "undefined") {
       }
       el.remove();
 
-      const r = utils.template("<div class='slick-row' />", _canvas[0]);
-      el = utils.template("<div class='slick-cell' id='' style='visibility:hidden'>-</div>", r);
+      const r = utils.createDomElement('div', { className: 'slick-row' }, _canvas[0]);
+      el = utils.createDomElement('div', { className: 'slick-cell', id: '', style: { visibility: 'hidden', textContent: '-' } }, r);
       style = getComputedStyle(el);
       // if (el.css("box-sizing") != "border-box" && el.css("-moz-box-sizing") != "border-box" && el.css("-webkit-box-sizing") != "border-box") {
       if (style["box-sizing"] != "border-box" && style["-moz-box-sizing"] != "border-box" && style["-webkit-box-sizing"] != "border-box") {
@@ -2142,7 +2143,11 @@ if (typeof Slick === "undefined") {
     }
 
     function createCssRules() {
-      _style = utils.template("<style type='text/css' rel='stylesheet' />", document.head);
+      const template = document.createElement('template');
+      template.innerHTML = '<style type="text/css" rel="stylesheet" />';
+      _style = template.content.firstChild;
+      document.head.appendChild(_style);
+
       var rowHeight = (options.rowHeight - cellHeightDiff);
       var rules = [
         "." + uid + " .slick-group-header-column { left: 1000px; }",
@@ -2732,8 +2737,8 @@ if (typeof Slick === "undefined") {
     }
 
     function getColWidth(columnDef, gridCanvas, rowInfo) {
-      const rowEl = utils.template('<div class="slick-row ui-widget-content"></div>', gridCanvas);
-      const cellEl = utils.template('<div class="slick-cell"></div>', rowEl);
+      const rowEl = utils.createDomElement('div', { className: 'slick-row ui-widget-content' }, gridCanvas);
+      const cellEl = utils.createDomElement('div', { className: 'slick-cell' }, rowEl);
 
       cellEl.style["position"] = "absolute";
       cellEl.style["visibility"] = "hidden";
@@ -2818,11 +2823,11 @@ if (typeof Slick === "undefined") {
       } else {
         // headers have not yet been created, create a new node
         var header = getHeader(columnDef);
-        headerColEl = utils.template("<div class='ui-state-default slick-header-column' />", header);
-        headerColEl.innerHTML = "<span class='slick-column-name'>" + columnDef.name + "</span>";
+        headerColEl = utils.createDomElement('div', { className: 'ui-state-default slick-header-column' }, header);
+        headerColEl.innerHTML = `<span class="slick-column-name">${columnDef.name}</span>`;
         headerColEl.id = dummyHeaderColElId;
         clone.style.cssText = 'position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;';
-        headerColEl.classList.add(columnDef.headerCssClass || "");
+        headerColEl.classList.add(columnDef.headerCssClass || '');
         width = headerColEl.offsetWidth;
         header.removeChild(headerColEl);
       }
@@ -3151,10 +3156,6 @@ if (typeof Slick === "undefined") {
         }
         if (m.maxWidth && m.width > m.maxWidth) {
           m.width = m.maxWidth;
-        }
-        if (!m.resizable) {
-          // there is difference between user resizable and autoWidth resizable
-          //m.autoSize.autosizeMode = Slick.ColAutosizeMode.Locked;
         }
       }
     }
@@ -4235,7 +4236,7 @@ if (typeof Slick === "undefined") {
         rows.push(i);
 
         // Create an entry right away so that appendRowHtml() can
-        // start populatating it.
+        // start populating it.
         rowsCache[i] = {
           "rowNode": null,
 
