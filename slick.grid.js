@@ -2114,7 +2114,6 @@ if (typeof Slick === "undefined") {
 
       let el = utils.createDomElement('div', { className: 'ui-state-default slick-header-column', style: { visibility: 'hidden' }, textContent: '-' }, header);
       let style = getComputedStyle(el);
-      // if (el.css("box-sizing") != "border-box" && el.css("-moz-box-sizing") != "border-box" && el.css("-webkit-box-sizing") != "border-box") {
       if (style["box-sizing"] != "border-box" && style["-moz-box-sizing"] != "border-box" && style["-webkit-box-sizing"] != "border-box") {
         h.forEach(function (val) {
           headerColumnWidthDiff += utils.toFloat(style[val]);
@@ -2128,7 +2127,6 @@ if (typeof Slick === "undefined") {
       const r = utils.createDomElement('div', { className: 'slick-row' }, _canvas[0]);
       el = utils.createDomElement('div', { className: 'slick-cell', id: '', style: { visibility: 'hidden', textContent: '-' } }, r);
       style = getComputedStyle(el);
-      // if (el.css("box-sizing") != "border-box" && el.css("-moz-box-sizing") != "border-box" && el.css("-webkit-box-sizing") != "border-box") {
       if (style["box-sizing"] != "border-box" && style["-moz-box-sizing"] != "border-box" && style["-webkit-box-sizing"] != "border-box") {
         h.forEach(function (val) {
           cellWidthDiff += utils.toFloat(style[val]);

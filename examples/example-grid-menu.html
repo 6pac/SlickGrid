@@ -333,7 +333,7 @@
         columnFilters[columnId] = (e.target.value || '').trim();
         dataView.refresh();
       }
-    };
+    }
 
     grid.onHeaderRowCellRendered.subscribe(function(e, args) {
       args.node.innerHTML = ''; // empty it

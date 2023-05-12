@@ -91,10 +91,6 @@
   </div>
 </div>
 
-
-<script src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -269,12 +265,19 @@ function groupByDurationEffortDrivenPercent() {
 }
 
 function toggleGrouping(expand) {
+  const groupToggleAllElm = document.querySelector(".slick-group-toggle-all");
   if(expand) {
     dataView.expandAllGroups();
-    $(".slick-group-toggle-all").removeClass('collapsed').addClass('expanded');
+    if (groupToggleAllElm) {
+      groupToggleAllElm.classList.remove('collapsed');
+      groupToggleAllElm.classList.addClass('expanded');
+    }
   } else {
     dataView.collapseAllGroups();
-    $(".slick-group-toggle-all").removeClass('expanded').addClass('collapsed');
+    if (groupToggleAllElm) {
+      groupToggleAllElm.classList.remove('expanded');
+      groupToggleAllElm.classList.addClass('collapsed');
+    }
   }
 }
 
@@ -298,17 +301,7 @@ function loadData(count) {
   dataView.setItems(data);
 }
 
-
-$(".grid-header .ui-icon")
-    .addClass("ui-state-default ui-corner-all")
-    .mouseover(function (e) {
-      $(e.target).addClass("ui-state-hover")
-    })
-    .mouseout(function (e) {
-      $(e.target).removeClass("ui-state-hover")
-    });
-
-$(function () {
+document.addEventListener("DOMContentLoaded", function() {
   var groupItemMetadataProvider = new Slick.Data.GroupItemMetadataProvider();
   dataView = new Slick.Data.DataView({
     groupItemMetadataProvider: groupItemMetadataProvider,
@@ -320,7 +313,7 @@ $(function () {
   grid.registerPlugin(groupItemMetadataProvider);
   grid.setSelectionModel(new Slick.CellSelectionModel());
 
-  var pager = new Slick.Controls.Pager(dataView, grid, $("#pager"));
+  var pager = new Slick.Controls.Pager(dataView, grid, "#pager");
   var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
 
 

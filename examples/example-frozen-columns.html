@@ -99,9 +99,6 @@
   <input style="width:100px;display:inline-block;" id="pcSlider2" type="range" min="1" max="100" value="1">
 </div>
 
-<script language="JavaScript" src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
@@ -116,8 +113,8 @@
 <script src="../controls/slick.columnpicker.js"></script>
 
 <script>
-$(function () {
-  $('#frozenColumn').val(options.frozenColumn);
+document.addEventListener("DOMContentLoaded", function() {
+  document.querySelector('#frozenColumn').value = options.frozenColumn;
 });
 function isIEPreVer9() { var v = navigator.appVersion.match(/MSIE ([\d.]+)/i); return (v ? v[1] < 9 : false); }
 
@@ -187,7 +184,7 @@ function comparer(a, b) {
 
 function addItem(newItem, columnDef) {
   var item = {"num": data.length, "id": "new_" + (Math.round(Math.random() * 10000)), "title": "New task", "duration": "1 day", "percentComplete": 0, "start": "01/01/2009", "finish": "01/01/2009", "effortDriven": false};
-  $.extend(item, newItem);
+  Slick.Utils.extend(item, newItem);
   dataView.addItem(item);
 }
 
@@ -196,17 +193,18 @@ function toggleFilterRow() {
   grid.setTopPanelVisibility(!grid.getOptions().showTopPanel);
 }
 
-
-$(".grid-header .ui-icon")
-  .addClass("ui-state-default ui-corner-all")
-  .mouseover(function (e) {
-    $(e.target).addClass("ui-state-hover")
-  })
-  .mouseout(function (e) {
-    $(e.target).removeClass("ui-state-hover")
+const gridHeaderElm = document.querySelector(".grid-header .ui-icon");
+if (gridHeaderElm) {
+  gridHeaderElm.classList.add("ui-state-default", "ui-corner-all");
+  gridHeaderElm.addEventListener('mouseover', function (e) {
+    e.target.classList.add("ui-state-hover");
   });
+  gridHeaderElm.addEventListener('mouseout', function (e) {
+    e.target.classList.remove("ui-state-hover");
+  });
+}
 
-$(function () {
+document.addEventListener("DOMContentLoaded", function() {
   // prepare the data
   for (var i = 0; i < 50000; i++) {
     var d = (data[i] = {});
@@ -230,20 +228,18 @@ $(function () {
   grid = new Slick.Grid("#myGrid", dataView, columns, options);
   grid.setSelectionModel(new Slick.RowSelectionModel());
 
-  var pager = new Slick.Controls.Pager(dataView, grid, $("#pager"));
+  var pager = new Slick.Controls.Pager(dataView, grid, "#pager");
   var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
 
 
   // move the filter panel defined in a hidden div into an inline secondary grid header row
-  var $secondaryRow = grid.getTopPanel();
-
-  $("#inlineFilterPanelL")
-    .appendTo($secondaryRow[0])
-    .show();
-
-  $("#inlineFilterPanelR")
-    .appendTo($secondaryRow[1])
-    .show();
+  var secondaryRows = grid.getTopPanels();
+  const filterLeftPanel = document.querySelector("#inlineFilterPanelL");
+  const filterRightPanel = document.querySelector("#inlineFilterPanelR");
+  filterLeftPanel.style.display = 'block';
+  filterRightPanel.style.display = 'block';
+  secondaryRows[0].appendChild(filterLeftPanel);
+  secondaryRows[1].appendChild(filterRightPanel);
 
   grid.onCellChange.subscribe(function (e, args) {
     dataView.updateItem(args.item.id, args.item);
@@ -251,7 +247,7 @@ $(function () {
 
   grid.onAddNewRow.subscribe(function (e, args) {
     var item = {"num": data.length, "id": "new_" + (Math.round(Math.random() * 10000)), "title": "New task", "duration": "1 day", "percentComplete": 0, "start": "01/01/2009", "finish": "01/01/2009", "effortDriven": false};
-    $.extend(item, args.item);
+    Slick.Utils.extend(item, args.item);
     dataView.addItem(item);
   });
 
@@ -369,12 +365,12 @@ $(function () {
       percentCompleteThreshold = this.value;
     }
   }
-  
+
   slider.oninput = sliderCallback;
   slider2.oninput = sliderCallback;
 
   // wire up the search textbox to apply the filter to the model
-  $("#txtSearch,#txtSearch2").keyup(function (e) {
+  document.querySelector('#txtSearch,#txtSearch2').addEventListener('click', function (e) {
     Slick.GlobalEditorLock.cancelCurrentEdit();
 
     // clear on Esc
@@ -385,7 +381,7 @@ $(function () {
     dataView.refresh();
   });
 
-  $("#btnSelectRows").click(function () {
+  document.querySelector('#btnSelectRows').addEventListener('click', function () {
     if (!Slick.GlobalEditorLock.commitCurrentEdit()) {
       return;
     }
@@ -401,18 +397,17 @@ $(function () {
     grid.setSelectedRows(rows);
   });
 
-
   // initialize the model after all the events have been hooked up
   dataView.beginUpdate();
   dataView.setItems(data);
   dataView.setFilter(myFilter);
   dataView.endUpdate();
 
-  $('#setFrozenColumn').click(function () {
+  document.querySelector('#setFrozenColumn').addEventListener('click', function () {
     var val = -1;
 
-    if ($('#frozenColumn').val() != '') {
-      val = parseInt($('#frozenColumn').val());
+    if (document.querySelector('#frozenColumn').value != '') {
+      val = parseInt(document.querySelector('#frozenColumn').value);
     }
 
     grid.setOptions({ 'frozenColumn': val });
