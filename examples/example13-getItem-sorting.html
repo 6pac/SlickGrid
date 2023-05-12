@@ -56,7 +56,6 @@
     </ul>
 </div>
 
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="../slick.core.js"></script>
 <script src="../slick.interactions.js"></script>
 <script src="../slick.grid.js"></script>
@@ -79,7 +78,7 @@
 
   // Copies and shuffles the specified array and returns a new shuffled array.
   function randomize(items) {
-    var randomItems = $.extend(true, null, items), randomIndex, temp, index;
+    var randomItems = Slick.Utils.extend(true, null, items), randomIndex, temp, index;
     for (index = items.length; index-- > 0;) {
       randomIndex = Math.round(Math.random() * items.length - 1);
       if (randomIndex > -1) {

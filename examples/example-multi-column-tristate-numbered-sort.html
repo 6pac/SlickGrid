@@ -32,7 +32,6 @@
   </tr>
 </table>
 
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -67,7 +66,7 @@
     sortColNumberInSeparateSpan: false
   };
 
-  $(function () {
+  document.addEventListener("DOMContentLoaded", function() {
     var MS_PER_DAY = 24 * 60 * 60 * 1000;
     var data = [];
     for (var i = 0; i < 500; i++) {
@@ -103,7 +102,7 @@
       grid.invalidate();
       grid.render();
     });
-  })
+  });
 </script>
 </body>
 </html>

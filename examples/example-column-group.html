@@ -35,9 +35,6 @@
   </div>
 </div>
 
-<script src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -47,27 +44,32 @@
 
 <script>
   function CreateAddlHeaderRow() {
-    var $preHeaderPanel = $(grid.getPreHeaderPanel())
-        .empty()
-        .addClass("slick-header-columns")
-        .css('left','-1000px')
-        .width(grid.getHeadersWidth());
-    $preHeaderPanel.parent().addClass("slick-header");
+    var preHeaderPanelElm = grid.getPreHeaderPanel();
+    preHeaderPanelElm.innerHTML = '';
+    preHeaderPanelElm.className = "slick-header-columns";
+    preHeaderPanelElm.style.left = '-1000px';
+    preHeaderPanelElm.style.width = `${grid.getHeadersWidth()}px`;
+    preHeaderPanelElm.parentElement.classList.add("slick-header");
 
     var headerColumnWidthDiff = grid.getHeaderColumnWidthDiff();
-    var m, header, lastColumnGroup = '', widthTotal = 0;
-    
+    var m, headerElm, lastColumnGroup = '', widthTotal = 0;
+
     for (var i = 0; i < columns.length; i++) {
       m = columns[i];
       if (lastColumnGroup === m.columnGroup && i>0) {
         widthTotal += m.width;
-        header.width(widthTotal - headerColumnWidthDiff)
+        headerElm.style.width = `${widthTotal - headerColumnWidthDiff}px`;
       } else {
           widthTotal = m.width;
-          header = $("<div class='ui-state-default slick-header-column' />")
-            .html("<span class='slick-column-name'>" + (m.columnGroup || '') + "</span>")
-            .width(m.width - headerColumnWidthDiff)
-            .appendTo($preHeaderPanel);
+          headerElm = document.createElement('div');
+          headerElm.className = 'ui-state-default slick-header-column';
+          headerElm.style.width = `${(m.width || 0) - headerColumnWidthDiff}px`;
+
+          const spanElm = document.createElement('span');
+          spanElm.className='slick-column-name';
+          spanElm.textContent = m.columnGroup || '';
+          headerElm.appendChild(spanElm);
+          preHeaderPanelElm.appendChild(headerElm);
       }
       lastColumnGroup = m.columnGroup;
     }
@@ -125,13 +127,13 @@
   grid.onColumnsResized.subscribe(function (e, args) {
     CreateAddlHeaderRow();
   });
-  
+
   CreateAddlHeaderRow();
-  
+
   // Initialise data
   dataView.beginUpdate();
   dataView.setItems(data);
-  dataView.endUpdate();    
+  dataView.endUpdate();
 </script>
 </body>
 </html>

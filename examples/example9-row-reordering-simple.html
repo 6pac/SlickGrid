@@ -38,9 +38,6 @@
   </div>
 </div>
 
-<script src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -95,7 +92,7 @@ var options = {
   autoEdit: false
 };
 
-$(function () {
+document.addEventListener("DOMContentLoaded", function() {
   data = [
     { name: "Make a list", complete: true},
     { name: "Check it twice", complete: false},
@@ -103,7 +100,7 @@ $(function () {
     { name: "Find out who's nice", complete: false}
   ];
   console.log(data);
-  
+
   grid = new Slick.Grid("#myGrid", data, columns, options);
 
   grid.setSelectionModel(new Slick.RowSelectionModel({
@@ -135,7 +132,7 @@ $(function () {
     s += "]"
     return s;
   }
-  
+
   moveRowsPlugin.onMoveRows.subscribe(function (e, args) {
     var extractedRows = [], left, right;
     var rows = args.rows;
@@ -177,7 +174,7 @@ $(function () {
 
   grid.onAddNewRow.subscribe(function (e, args) {
     var item = {name: "New task", complete: false};
-    $.extend(item, args.item);
+    Slick.Utils.extend(item, args.item);
     data.push(item);
     grid.invalidateRows([data.length - 1]);
     grid.updateRowCount();

@@ -66,7 +66,6 @@
     function editor(args) {
       var editors = [];
 
-
       function init() {
         var newArgs = {};
         var idx = 0;
@@ -242,9 +241,9 @@
     editor.prototype = this;
     return editor;
   }
-  
+
   // exports
   Slick.Utils.extend(Slick, {
     CompositeEditor: CompositeEditor
-  });  
+  });
 })();

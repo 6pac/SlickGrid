@@ -819,13 +819,15 @@
   }
 
   function width(el, value) {
+    if (!el) return;
     if (value === undefined) {
-      return el.getBoundingClientRect().width;
+      return el.getBoundingClientRect().width
     }
     setStyleSize(el, "width", value);
   }
 
   function height(el, value) {
+    if (!el) return;
     if (value === undefined) {
       return el.getBoundingClientRect().height;
     }

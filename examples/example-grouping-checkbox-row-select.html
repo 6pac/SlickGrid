@@ -88,10 +88,6 @@
   </div>
 </div>
 
-
-<script src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -292,17 +288,7 @@ function loadData(count) {
   dataView.setItems(data);
 }
 
-
-$(".grid-header .ui-icon")
-    .addClass("ui-state-default ui-corner-all")
-    .mouseover(function (e) {
-      $(e.target).addClass("ui-state-hover")
-    })
-    .mouseout(function (e) {
-      $(e.target).removeClass("ui-state-hover")
-    });
-
-$(function () {
+document.addEventListener("DOMContentLoaded", function() {
   var groupItemMetadataProvider = new Slick.Data.GroupItemMetadataProvider({ checkboxSelect: true, checkboxSelectPlugin: checkboxSelector });
   dataView = new Slick.Data.DataView({
     groupItemMetadataProvider: groupItemMetadataProvider,
@@ -314,11 +300,11 @@ $(function () {
   grid.registerPlugin(groupItemMetadataProvider);
   grid.setSelectionModel(new Slick.RowSelectionModel({selectActiveRow: false}));
   grid.registerPlugin(checkboxSelector);
-  var pager = new Slick.Controls.Pager(dataView, grid, $("#pager"));
+  var pager = new Slick.Controls.Pager(dataView, grid, "#pager");
   var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
 
   dataView.syncGridSelection(grid, true, true);
-    
+
   grid.onSort.subscribe(function (e, args) {
     sortdir = args.sortAsc ? 1 : -1;
     sortcol = args.sortCol.field;

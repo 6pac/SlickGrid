@@ -61,9 +61,6 @@
   <li data="High">High</li>
 </ul>
 
-<script src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -87,7 +84,7 @@
     rowHeight: 30
   };
 
-  $(function () {
+  document.addEventListener("DOMContentLoaded", function() {
     for (var i = 0; i < 100; i++) {
       var d = (data[i] = {});
       d["title"] = "Task " + i;
@@ -99,14 +96,14 @@
     grid.onContextMenu.subscribe(function (e) {
       e.preventDefault();
       var cell = grid.getCellFromEvent(e);
-      $("#contextMenu")
-          .data("row", cell.row)
-          .css("top", e.pageY)
-          .css("left", e.pageX)
-          .show();
+      const contextMenuElm = document.querySelector('#contextMenu');
+      contextMenuElm.dataset.row = cell.row;
+      contextMenuElm.style.top = `${e.pageY}px`;
+      contextMenuElm.style.left = `${e.pageX}px`;
+      contextMenuElm.style.display = 'block';
 
-      $("body").one("click", function () {
-        $("#contextMenu").hide();
+      document.body.addEventListener('click',  () => {
+        contextMenuElm.style.display = 'none';
       });
     });
 
@@ -125,15 +122,15 @@
     });
   });
 
-  $("#contextMenu").click(function (e) {
-    if (!$(e.target).is("li")) {
+  document.querySelector("#contextMenu").addEventListener('click',  (e)=> {
+    if (e.target.nodeName.toLowerCase() !== "li") {
       return;
     }
     if (!grid.getEditorLock().commitCurrentEdit()) {
       return;
     }
-    var row = $(this).data("row");
-    data[row].priority = $(e.target).attr("data");
+    const row = e.target.parentNode.dataset.row;
+    data[row].priority = e.target.getAttribute('data');
     grid.updateRow(row);
   });
 </script>

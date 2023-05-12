@@ -99,7 +99,6 @@
     </div>
   </div>
 
-  <script src="../lib/jquery-3.1.0.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
   <script src="../slick.core.js"></script>
@@ -234,9 +233,7 @@
       return ('0000' + (Math.floor(Math.random() * maxVal) + 1)).slice(-numDigits)
     }
 
-
-
-    $(function () {
+    document.addEventListener("DOMContentLoaded", function() {
       data = [];
       for (var i = 0; i < 500; i++) {
         data[i] = {
@@ -288,8 +285,7 @@
       });
 
       grid.registerPlugin(headerMenuPlugin);
-
-    })
+    });
   </script>
 </body>
 

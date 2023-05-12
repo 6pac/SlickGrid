@@ -5,7 +5,6 @@
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>External Header Sort</title>
   <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="../css/smoothness/jquery-ui.css" type="text/css"/>
   <link rel="stylesheet" href="examples.css" type="text/css"/>
 </head>
 <body>
@@ -21,15 +20,11 @@
       </ul>
       <p>- uses the options hook of passing a function (rather than true/false/undefined) as the <code>enableColumnReorder</code> option. This function will
       be used to set up the column reordering.</p>
-      <p>- the function prototype is: <code>function(grid, $headers, headerColumnWidthDiff, setColumns, setupColumnResize, columns, getColumnIndex, uid, trigger)</code></p>
+      <p>- the function prototype is: <code>function(grid, headers, headerColumnWidthDiff, setColumns, setupColumnResize, columns, getColumnIndex, uid, trigger)</code></p>
      </td>
   </tr>
 </table>
 
-<script src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
-<script src="../lib/jquery-ui.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -48,47 +43,40 @@
     {id: "finish", name: "Finish", field: "finish", minWidth: 60},
     {id: "effort-driven", name: "Effort Driven", sortable: false, width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven"}
   ];
+  var sortableInstance;
 
-    function setupColumnReorder(grid, headers, headerColumnWidthDiff, setColumns, setupColumnResize, columns, getColumnIndex, uid, trigger) {
-      var $headers = $(headers);
-      $headers.filter(":ui-sortable").sortable("destroy");
-      $headers.sortable({
-        //cancel: '#' + uid + 'title',
-        containment: "parent",
-        distance: 3,
-        axis: "x",
-        cursor: "default",
-        tolerance: "intersection",
-        helper: "clone",
-        placeholder: "slick-sortable-placeholder ui-state-default slick-header-column",
-        start: function (e, ui) {
-          ui.placeholder.width(ui.helper.outerWidth() - headerColumnWidthDiff);
-          $(ui.helper).addClass("slick-header-column-active");
-        },
-        beforeStop: function (e, ui) {
-          $(ui.helper).removeClass("slick-header-column-active");
-        },
-        stop: function (e) {
-          if (!grid.getEditorLock().commitCurrentEdit()) {
-            $(this).sortable("cancel");
-            return;
-          }
-
-          var reorderedIds = $headers.sortable("toArray");
-          var reorderedColumns = [];
-          for (var i = 0; i < reorderedIds.length; i++) {
-            reorderedColumns.push(columns[getColumnIndex(reorderedIds[i].replace(uid, ""))]);
-          }
-          setColumns(reorderedColumns);
-
-          trigger(grid.onColumnsReordered, {grid: grid});
-          e.stopPropagation();
-          setupColumnResize();
+  function setupColumnReorder(grid, headers, headerColumnWidthDiff, setColumns, setupColumnResize, columns, getColumnIndex, uid, trigger) {
+    var sortableOptions = {
+      animation: 50,
+      direction: 'horizontal',
+      chosenClass: 'slick-header-column-active',
+      ghostClass: 'slick-sortable-placeholder',
+      draggable: '.slick-header-column',
+      dragoverBubble: false,
+      revertClone: true,
+      onStart: function (e) {
+      },
+      onEnd: function (e) {
+        if (!grid.getEditorLock().commitCurrentEdit()) {
+          return;
         }
-      });
-    }
 
- 
+        var reorderedIds = sortableInstance.toArray();
+        var reorderedColumns = [];
+        for (var i = 0; i < reorderedIds.length; i++) {
+          reorderedColumns.push(columns[getColumnIndex(reorderedIds[i].replace(uid, ""))]);
+        }
+        setColumns(reorderedColumns);
+
+        trigger(grid.onColumnsReordered, {grid: grid});
+        e.stopPropagation();
+        setupColumnResize();
+      }
+    };
+
+    sortableInstance = Sortable.create(headers[0], sortableOptions);
+  }
+
   var options = {
     editable: false,
     enableAddRow: false,
@@ -96,7 +84,7 @@
     enableColumnReorder: setupColumnReorder
   };
 
-  $(function () {
+  document.addEventListener("DOMContentLoaded", function() {
     for (var i = 0; i < 5; i++) {
       var d = (data[i] = {});
 
@@ -109,7 +97,7 @@
     }
 
     grid = new Slick.Grid("#myGrid", data, columns, options);
-  })
+  });
 </script>
 </body>
 </html>

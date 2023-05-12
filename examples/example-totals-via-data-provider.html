@@ -31,9 +31,6 @@
     </ul>
 </div>
 
-<script src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -107,7 +104,7 @@
 
 
 
-  $(function () {
+  document.addEventListener("DOMContentLoaded", function() {
     for (var i = 0; i < 10; i++) {
       var d = (data[i] = {});
       d["id"] = i;
@@ -128,7 +125,7 @@
       grid.invalidateRow(dataProvider.getLength() - 1);
       grid.render();
     });
-  })
+  });
 </script>
 </body>
 </html>

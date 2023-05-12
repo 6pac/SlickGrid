@@ -28,8 +28,6 @@
 </table>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
-<script src="../lib/firebugx.js"></script>
-<script src="../lib/jquery-3.1.0.js"></script>
 
 <script src="../slick.core.js"></script>
 <script src="../slick.interactions.js"></script>
@@ -61,16 +59,15 @@
     logSanitizedHtml: true
   };
 
-  $(function () {
+  document.addEventListener("DOMContentLoaded", function() {
     var id = 1;
     for (var i = 0; i < 500; i++) {
       var d = (data[i] = {});
 
       d["id"] = id++;
     }
-
     grid = new Slick.Grid("#myGrid", data, columns, options);
-  })
+  });
 </script>
 </body>
 </html>
