@@ -5,7 +5,7 @@
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example: jQuery Accordion with a grid in each pane</title>
   <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="../css/smoothness/jquery-ui.css" type="text/css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/smoothness/jquery-ui.min.css" />
   <link rel="stylesheet" href="examples.css" type="text/css"/>
   <style>
   #myGrid01, #myGrid02 {
@@ -43,8 +43,8 @@
   </tr>
 </table>
 
-<script src="../lib/jquery-3.1.0.js"></script>
-<script src="../lib/jquery-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -87,7 +87,7 @@
     }
 	return data;
   }
-  
+
   $(function () {
     $( "#accordion" ).accordion(
 	// Workaround for IE 7-9 issue where div is blank after switching panels - need to destroy and recreate grid
@@ -101,7 +101,7 @@
 	//		}
 	//	}
 	//}
-	);	
+	);
 
     var data01 = CreateData();
     grid01 = new Slick.Grid("#myGrid01", data01, columns, options);
