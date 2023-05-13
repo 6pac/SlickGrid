@@ -3,7 +3,7 @@
 import '@4tw/cypress-drag-drop';
 
 describe('Example - Grid Menu', () => {
-  const fullTitles = ['#', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+  const fullTitles = ['', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
   beforeEach(() => {
     // create a console.log spy for later use
@@ -53,7 +53,7 @@ describe('Example - Grid Menu', () => {
   });
 
   it('should click on the Grid Menu to hide the column "A"', () => {
-    const expectedTitleList = ['#', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']; // without "A"
+    const expectedTitleList = ['', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J']; // without "A"
 
     cy.get('#myGrid')
       .find('button.slick-gridmenu-button')

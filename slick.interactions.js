@@ -204,7 +204,7 @@
     function destroy() {
       if (resizeableHandleElement && typeof resizeableHandleElement.removeEventListener === 'function') {
         resizeableHandleElement.removeEventListener('mousedown', resizeStartHandler);
-        resizeableHandleElement.removeEventListener('touchstart', resizeStartHandler, Slick.Utils.enablePassiveWhenSupported());
+        resizeableHandleElement.removeEventListener('touchstart', resizeStartHandler);
       }
     }
 
@@ -247,7 +247,7 @@
 
     // add event listeners on the draggable element
     resizeableHandleElement.addEventListener('mousedown', resizeStartHandler);
-    resizeableHandleElement.addEventListener('touchstart', resizeStartHandler, Slick.Utils.enablePassiveWhenSupported());
+    resizeableHandleElement.addEventListener('touchstart', resizeStartHandler);
 
     return { destroy };
   }
