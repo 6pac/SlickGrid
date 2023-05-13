@@ -12,7 +12,7 @@
    * code refs:
    *   https://betterprogramming.pub/perfecting-drag-and-drop-in-pure-vanilla-javascript-a761184b797a
    * available optional options:
-   *   - containerElement: container DOM element, defaults to "document" 
+   *   - containerElement: container DOM element, defaults to "document"
    *   - allowDragFrom: when defined, only allow dragging from an element that matches a specific query selector
    *   - onDragInit: drag initialized callback
    *   - onDragStart: drag started callback
@@ -40,7 +40,7 @@
 
     if (containerElement) {
       containerElement.addEventListener('mousedown', userPressed);
-      containerElement.addEventListener('touchstart', userPressed);
+      containerElement.addEventListener('touchstart', userPressed, Slick.Utils.enablePassiveWhenSupported());
     }
 
     function executeDragCallbackWhenDefined(callback, e, dd) {
@@ -52,7 +52,7 @@
     function destroy() {
       if (containerElement) {
         containerElement.removeEventListener('mousedown', userPressed);
-        containerElement.removeEventListener('touchstart', userPressed);
+        containerElement.removeEventListener('touchstart', userPressed, Slick.Utils.enablePassiveWhenSupported());
       }
     }
 
@@ -130,13 +130,13 @@
     let { element, onMouseWheel } = options;
 
     function destroy() {
-      element.removeEventListener('wheel', wheelHandler, false);
-      element.removeEventListener('mousewheel', wheelHandler, false);
+      element.removeEventListener('wheel', wheelHandler, Slick.Utils.enablePassiveWhenSupported());
+      element.removeEventListener('mousewheel', wheelHandler, Slick.Utils.enablePassiveWhenSupported());
     }
 
     function init() {
-      element.addEventListener('wheel', wheelHandler, false);
-      element.addEventListener('mousewheel', wheelHandler, false);
+      element.addEventListener('wheel', wheelHandler, Slick.Utils.enablePassiveWhenSupported());
+      element.addEventListener('mousewheel', wheelHandler, Slick.Utils.enablePassiveWhenSupported());
     }
 
     // copy over the same event handler code used in jquery.mousewheel
@@ -191,7 +191,7 @@
    *   - onResizeStart: resize start callback
    *   - onResize: resizing callback
    *   - onResizeEnd: resize ended callback
-   * @param {Object} options 
+   * @param {Object} options
    * @returns - Resizable instance which includes destroy method
    * @class Resizable
    */
@@ -204,7 +204,7 @@
     function destroy() {
       if (resizeableHandleElement && typeof resizeableHandleElement.removeEventListener === 'function') {
         resizeableHandleElement.removeEventListener('mousedown', resizeStartHandler);
-        resizeableHandleElement.removeEventListener('touchstart', resizeStartHandler);
+        resizeableHandleElement.removeEventListener('touchstart', resizeStartHandler, Slick.Utils.enablePassiveWhenSupported());
       }
     }
 
@@ -247,7 +247,7 @@
 
     // add event listeners on the draggable element
     resizeableHandleElement.addEventListener('mousedown', resizeStartHandler);
-    resizeableHandleElement.addEventListener('touchstart', resizeStartHandler);
+    resizeableHandleElement.addEventListener('touchstart', resizeStartHandler, Slick.Utils.enablePassiveWhenSupported());
 
     return { destroy };
   }
