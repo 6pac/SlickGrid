@@ -297,7 +297,7 @@
       if (_options.gridMenu && _options.gridMenu.customTitle) {
         _customTitleElm = document.createElement('div');
         _customTitleElm.className = 'title';
-        _customTitleElm.textContent = _options.gridMenu.customTitle;
+        _customTitleElm.innerHTML = _options.gridMenu.customTitle;
         customMenuElm.appendChild(_customTitleElm);
       }
 
@@ -365,7 +365,7 @@
 
         const textElm = document.createElement('span');
         textElm.className = 'slick-gridmenu-content';
-        textElm.textContent = item.title;
+        textElm.innerHTML = item.title;
 
         liElm.appendChild(textElm);
 
@@ -390,7 +390,7 @@
       if (_options.gridMenu && _options.gridMenu.columnTitle) {
         _columnTitleElm = document.createElement('div');
         _columnTitleElm.className = 'title';
-        _columnTitleElm.textContent = _options.gridMenu.columnTitle;
+        _columnTitleElm.innerHTML = _options.gridMenu.columnTitle;
         _menuElm.appendChild(_columnTitleElm);
       }
 
@@ -468,7 +468,7 @@
 
         const labelElm = document.createElement('label');
         labelElm.htmlFor = `${_gridUid}-gridmenu-colpicker-${columnId}`;
-        labelElm.textContent = columnLabel;
+        labelElm.innerHTML = columnLabel;
         liElm.appendChild(labelElm);
         _listElm.appendChild(liElm);
       }
@@ -627,11 +627,11 @@
 
     /** Update the Titles of each sections (command, customTitle, ...) */
     function updateAllTitles(gridMenuOptions) {
-      if (_customTitleElm && _customTitleElm.textContent) {
-        _customTitleElm.textContent = gridMenuOptions.customTitle;
+      if (_customTitleElm && _customTitleElm.innerHTML) {
+        _customTitleElm.innerHTML = gridMenuOptions.customTitle;
       }
-      if (_columnTitleElm && _columnTitleElm.textContent) {
-        _columnTitleElm.textContent = gridMenuOptions.columnTitle;
+      if (_columnTitleElm && _columnTitleElm.innerHTML) {
+        _columnTitleElm.innerHTML = gridMenuOptions.columnTitle;
       }
     }
 

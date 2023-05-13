@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
   <link rel="stylesheet" href="examples.css" type="text/css"/>
   <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../controls/slick.gridmenu.css" type="text/css"/>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" crossorigin="anonymous">
   <style>
     .slick-cell-checkboxsel {
@@ -84,6 +85,7 @@
 <script src="../plugins/slick.cellselectionmodel.js"></script>
 <script src="../plugins/slick.rowselectionmodel.js"></script>
 <script src="../controls/slick.columnpicker.js"></script>
+<script src="../controls/slick.gridmenu.js"></script>
 <script src="../slick.formatters.js"></script>
 <script src="../slick.editors.js"></script>
 <script src="../slick.grid.js"></script>
@@ -148,6 +150,7 @@
     grid2.registerPlugin(checkboxSelector2);
 
     var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
+    var gridMenuControl = new Slick.Controls.GridMenu(columns, grid, options);
 
     grid.onSelectedRowsChanged.subscribe(function (e, args) {
         // debugging to see the active row in response to questions

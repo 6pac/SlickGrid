@@ -151,7 +151,7 @@
 
         const labelElm = document.createElement('label');
         labelElm.htmlFor = `${_gridUid}colpicker-${columnId}`;
-        labelElm.textContent = columnLabel;
+        labelElm.innerHTML = columnLabel;
         liElm.appendChild(labelElm);
         _listElm.appendChild(liElm);
       }
@@ -243,8 +243,8 @@
 
     /** Update the Titles of each sections (command, customTitle, ...) */
     function updateAllTitles(gridMenuOptions) {
-      if (_columnTitleElm && _columnTitleElm.textContent) {
-        _columnTitleElm.textContent = gridMenuOptions.columnTitle;
+      if (_columnTitleElm && _columnTitleElm.innerHTML) {
+        _columnTitleElm.innerHTML = gridMenuOptions.columnTitle;
       }
     }
 
