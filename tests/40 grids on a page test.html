@@ -7,9 +7,9 @@
   <link rel="stylesheet" href="../css/smoothness/jquery-ui-1.11.3.custom.css" type="text/css"/>
   <link rel="stylesheet" href="../examples/examples.css" type="text/css"/>
   <style>
-  #myGrid01, #myGrid02, #myGrid03, #myGrid04, #myGrid05, #myGrid06, #myGrid07, #myGrid08, #myGrid09, #myGrid10, 
-  #myGrid11, #myGrid12, #myGrid13, #myGrid14, #myGrid15, #myGrid16, #myGrid17, #myGrid18, #myGrid19, #myGrid20, 
-  #myGrid21, #myGrid22, #myGrid23, #myGrid24, #myGrid25, #myGrid26, #myGrid27, #myGrid28, #myGrid29, #myGrid30, 
+  #myGrid01, #myGrid02, #myGrid03, #myGrid04, #myGrid05, #myGrid06, #myGrid07, #myGrid08, #myGrid09, #myGrid10,
+  #myGrid11, #myGrid12, #myGrid13, #myGrid14, #myGrid15, #myGrid16, #myGrid17, #myGrid18, #myGrid19, #myGrid20,
+  #myGrid21, #myGrid22, #myGrid23, #myGrid24, #myGrid25, #myGrid26, #myGrid27, #myGrid28, #myGrid29, #myGrid30,
   #myGrid31, #myGrid32, #myGrid33, #myGrid34, #myGrid35, #myGrid36, #myGrid37, #myGrid38, #myGrid39, #myGrid40 {
 	background: white;
 	outline: 0;
@@ -154,7 +154,7 @@
   </tr>
 </table>
 
-<script src="../lib/jquery-3.1.0.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -194,7 +194,7 @@
     }
 	return data;
   }
-  
+
   $(function () {
     var data01 = CreateData();
     grid01 = new Slick.Grid("#myGrid01", data01, columns, options);
