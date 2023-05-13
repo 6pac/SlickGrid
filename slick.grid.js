@@ -2977,7 +2977,8 @@ if (typeof Slick === "undefined") {
       _headers.forEach(function (header) {
         for (let i = 0; i < header.children.length; i++, columnIndex++) {
           const h = header.children[i];
-          const width = columns[columnIndex].width - headerColumnWidthDiff;
+          const col = columns[columnIndex] || {};
+          const width = (col.width || 0) - headerColumnWidthDiff;
           if (utils.width(h) !== width) {
             utils.width(h, width);
           }

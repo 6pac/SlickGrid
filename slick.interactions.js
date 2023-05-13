@@ -39,7 +39,7 @@
     };
 
     if (containerElement) {
-      containerElement.addEventListener('mousedown', userPressed);
+      containerElement.addEventListener('mousedown', userPressed, Slick.Utils.enablePassiveWhenSupported());
       containerElement.addEventListener('touchstart', userPressed, Slick.Utils.enablePassiveWhenSupported());
     }
 
@@ -51,7 +51,7 @@
 
     function destroy() {
       if (containerElement) {
-        containerElement.removeEventListener('mousedown', userPressed);
+        containerElement.removeEventListener('mousedown', userPressed, Slick.Utils.enablePassiveWhenSupported());
         containerElement.removeEventListener('touchstart', userPressed, Slick.Utils.enablePassiveWhenSupported());
       }
     }
@@ -130,13 +130,13 @@
     let { element, onMouseWheel } = options;
 
     function destroy() {
-      element.removeEventListener('wheel', wheelHandler, Slick.Utils.enablePassiveWhenSupported());
-      element.removeEventListener('mousewheel', wheelHandler, Slick.Utils.enablePassiveWhenSupported());
+      element.removeEventListener('wheel', wheelHandler);
+      element.removeEventListener('mousewheel', wheelHandler);
     }
 
     function init() {
-      element.addEventListener('wheel', wheelHandler, Slick.Utils.enablePassiveWhenSupported());
-      element.addEventListener('mousewheel', wheelHandler, Slick.Utils.enablePassiveWhenSupported());
+      element.addEventListener('wheel', wheelHandler);
+      element.addEventListener('mousewheel', wheelHandler);
     }
 
     // copy over the same event handler code used in jquery.mousewheel
