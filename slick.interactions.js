@@ -39,7 +39,7 @@
     };
 
     if (containerElement) {
-      containerElement.addEventListener('mousedown', userPressed);
+      containerElement.addEventListener('mousedown', userPressed, Slick.Utils.enablePassiveWhenSupported());
       containerElement.addEventListener('touchstart', userPressed, Slick.Utils.enablePassiveWhenSupported());
     }
 
@@ -51,7 +51,7 @@
 
     function destroy() {
       if (containerElement) {
-        containerElement.removeEventListener('mousedown', userPressed);
+        containerElement.removeEventListener('mousedown', userPressed, Slick.Utils.enablePassiveWhenSupported());
         containerElement.removeEventListener('touchstart', userPressed, Slick.Utils.enablePassiveWhenSupported());
       }
     }
