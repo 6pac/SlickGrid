@@ -845,7 +845,7 @@
   }
 
   function width(el, value) {
-    if (!el) return;
+    if (!el || !el.getBoundingClientRect) return;
     if (value === undefined) {
       return el.getBoundingClientRect().width
     }
