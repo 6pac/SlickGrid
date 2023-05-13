@@ -40,7 +40,7 @@
 
     if (containerElement) {
       containerElement.addEventListener('mousedown', userPressed);
-      containerElement.addEventListener('touchstart', userPressed);
+      containerElement.addEventListener('touchstart', userPressed, Slick.Utils.enablePassiveWhenSupported());
     }
 
     function executeDragCallbackWhenDefined(callback, e, dd) {
@@ -52,7 +52,7 @@
     function destroy() {
       if (containerElement) {
         containerElement.removeEventListener('mousedown', userPressed);
-        containerElement.removeEventListener('touchstart', userPressed);
+        containerElement.removeEventListener('touchstart', userPressed, Slick.Utils.enablePassiveWhenSupported());
       }
     }
 
@@ -204,7 +204,7 @@
     function destroy() {
       if (resizeableHandleElement && typeof resizeableHandleElement.removeEventListener === 'function') {
         resizeableHandleElement.removeEventListener('mousedown', resizeStartHandler);
-        resizeableHandleElement.removeEventListener('touchstart', resizeStartHandler);
+        resizeableHandleElement.removeEventListener('touchstart', resizeStartHandler, Slick.Utils.enablePassiveWhenSupported());
       }
     }
 
@@ -247,7 +247,7 @@
 
     // add event listeners on the draggable element
     resizeableHandleElement.addEventListener('mousedown', resizeStartHandler);
-    resizeableHandleElement.addEventListener('touchstart', resizeStartHandler);
+    resizeableHandleElement.addEventListener('touchstart', resizeStartHandler, Slick.Utils.enablePassiveWhenSupported());
 
     return { destroy };
   }

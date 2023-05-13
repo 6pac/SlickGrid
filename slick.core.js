@@ -624,6 +624,32 @@
     return Object.entries(obj).length === 0;
   }
 
+  /**
+   * Check if `passive` option is supported when adding event listener, follows detection provided in MDN:
+   * https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#safely_detecting_option_support
+   */
+  function passiveSupported() {
+    let passiveSupported = false;
+
+    try {
+      const options = {
+        get passive() {
+          passiveSupported = true;
+          return false;
+        },
+      };
+      window.addEventListener('test', null, options);
+      window.removeEventListener('test', null, options);
+    } catch (err) {
+      passiveSupported = false;
+    }
+    return passiveSupported;
+  }
+
+  function enablePassiveWhenSupported() {
+    return passiveSupported() ? { passive: true } : false
+  }
+
   function noop() { }
 
   function emptyElement(element) {
@@ -936,6 +962,8 @@
       "calculateAvailableSpace": calculateAvailableSpace,
       "createDomElement": createDomElement,
       "emptyElement": emptyElement,
+      "passiveSupported": passiveSupported,
+      "enablePassiveWhenSupported": enablePassiveWhenSupported,
       "innerSize": innerSize,
       "isEmptyObject": isEmptyObject,
       "noop": noop,
