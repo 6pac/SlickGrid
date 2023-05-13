@@ -904,6 +904,11 @@ if (typeof Slick === "undefined") {
         utils.width(_headerR, headersWidthR);
 
         if (hasFrozenColumns()) {
+          const cWidth = utils.width(_container) || 0;
+          if (cWidth > 0 && canvasWidthL > cWidth) {
+            throw new Error('[SlickGrid] Frozen columns cannot be wider than the actual grid container width. '
+              + 'Make sure to have less columns freezed or make your grid container wider');
+          }
           utils.width(_canvasTopR, canvasWidthR);
 
           utils.width(_paneHeaderL, canvasWidthL);
