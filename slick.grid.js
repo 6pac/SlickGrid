@@ -1080,8 +1080,9 @@ if (typeof Slick === "undefined") {
         });
 
         header.setAttribute("title", toolTip || "");
-        if(title !== undefined)
-          header.children[0].innerHTML = title;
+        if (title !== undefined) {
+          header.children[0].innerHTML = sanitizeHtmlString(title);
+        }
 
         trigger(self.onHeaderCellRendered, {
           "node": header,
@@ -1221,13 +1222,14 @@ if (typeof Slick === "undefined") {
             frozenColumnsValid = true;
           }
 
-          const el = utils.createDomElement('div', { className: 'ui-state-default slick-group-header-column' }, hasFrozenColumns() && (columnsLength - 1) > options.frozenColumn ? _groupHeadersR[index] : _groupHeadersL[index]);
-            el.innerHTML = "<span class='slick-column-name'>" + m.name + "</span>";
-            el.setAttribute("id", "" + uid + m.id);
-            el.setAttribute("title", m.toolTip || "");
-            el.classList.add(m.headerCssClass || "")
-            el.classList.add(hasFrozenColumns() && (columnsLength - 1) > options.frozenColumn? 'frozen': '');
-            utils.storage.put(el, "column", m);
+          const el = utils.createDomElement('div',
+            { id: `${uid + m.id}`, className: 'ui-state-default slick-group-header-column', title: m.toolTip || '' },
+            hasFrozenColumns() && (columnsLength - 1) > options.frozenColumn ? _groupHeadersR[index] : _groupHeadersL[index]
+          );
+          utils.createDomElement('span', { className: 'slick-column-name', innerHTML: sanitizeHtmlString(m.name) }, el);
+          el.classList.add(m.headerCssClass || "")
+          el.classList.add(hasFrozenColumns() && (columnsLength - 1) > options.frozenColumn ? 'frozen' : '');
+          utils.storage.put(el, "column", m);
         }
 
         if (hasFrozenColumns() && index === 0 && !frozenColumnsValid) {
@@ -1325,13 +1327,9 @@ if (typeof Slick === "undefined") {
         const headerTarget = hasFrozenColumns() ? ((i <= options.frozenColumn) ? _headerL : _headerR) : _headerL;
         const headerRowTarget = hasFrozenColumns() ? ((i <= options.frozenColumn) ? _headerRowL : _headerRowR) : _headerRowL;
 
-        const header = utils.createDomElement('div', { className: 'ui-state-default slick-header-column' }, headerTarget);
-
-        header.innerHTML = "<span class='slick-column-name'>" + m.name + "</span>";
+        const header = utils.createDomElement('div', { id: `${uid + m.id}`, dataset: { id: m.id }, className: 'ui-state-default slick-header-column', title: m.toolTip || '' }, headerTarget);
+        utils.createDomElement('span', { className: 'slick-column-name', innerHTML: sanitizeHtmlString(m.name) }, header);
         utils.width(header, m.width - headerColumnWidthDiff);
-        header.setAttribute("id", "" + uid + m.id);
-        header.setAttribute("title", m.toolTip || "");
-        header.setAttribute("data-id", m.id);
 
         let classname = m.headerCssClass || null;
         if (classname) {
@@ -2141,8 +2139,7 @@ if (typeof Slick === "undefined") {
     }
 
     function createCssRules() {
-      const template = document.createElement('template');
-      template.innerHTML = '<style type="text/css" rel="stylesheet" />';
+      const template = utils.createDomElement('template', { innerHTML: '<style type="text/css" rel="stylesheet" />' });
       _style = template.content.firstChild;
       document.head.appendChild(_style);
 
@@ -2820,10 +2817,9 @@ if (typeof Slick === "undefined") {
         clone.parentNode.removeChild(clone);
       } else {
         // headers have not yet been created, create a new node
-        var header = getHeader(columnDef);
-        headerColEl = utils.createDomElement('div', { className: 'ui-state-default slick-header-column' }, header);
-        headerColEl.innerHTML = `<span class="slick-column-name">${columnDef.name}</span>`;
-        headerColEl.id = dummyHeaderColElId;
+        let header = getHeader(columnDef);
+        headerColEl = utils.createDomElement('div', { id: dummyHeaderColElId, className: 'ui-state-default slick-header-column', }, header);
+        utils.createDomElement('span', { className: 'slick-column-name', innerHTML: sanitizeHtmlString(columnDef.name) }, headerColEl);
         clone.style.cssText = 'position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;';
         headerColEl.classList.add(columnDef.headerCssClass || '');
         width = headerColEl.offsetWidth;
@@ -3458,7 +3454,7 @@ if (typeof Slick === "undefined") {
 
       var frozenRowOffset = getFrozenRowOffset(row);
 
-      var rowHtml = "<div class='ui-widget-content " + rowCss + "' style='top:" + (getRowTop(row) - frozenRowOffset) + "px'>";
+      var rowHtml = `<div class="ui-widget-content ${rowCss}" style="top:${(getRowTop(row) - frozenRowOffset)}px">`;
 
       stringArrayL.push(rowHtml);
 
@@ -3513,8 +3509,7 @@ if (typeof Slick === "undefined") {
       // item: grid data for row
 
       var m = columns[cell];
-      var cellCss = "slick-cell l" + cell + " r" + Math.min(columns.length - 1, cell + colspan - 1) +
-          (m.cssClass ? " " + m.cssClass : "");
+      var cellCss = "slick-cell l" + cell + " r" + Math.min(columns.length - 1, cell + colspan - 1) + (m.cssClass ? " " + m.cssClass : "");
 
       if (hasFrozenColumns() && cell <= options.frozenColumn) {
         cellCss += (" frozen");
@@ -4198,9 +4193,7 @@ if (typeof Slick === "undefined") {
         return;
       }
 
-      var x = document.createElement("div");
-      x.innerHTML = sanitizeHtmlString(stringArray.join(""));
-
+      var x = utils.createDomElement('div', { innerHTML: sanitizeHtmlString(stringArray.join('')) });
       var processedRow;
       var node;
       while ((processedRow = processedRows.pop()) != null) {
@@ -4260,11 +4253,8 @@ if (typeof Slick === "undefined") {
 
       if (!rows.length) { return; }
 
-      var x = document.createElement("div"),
-        xRight = document.createElement("div");
-
-      x.innerHTML = sanitizeHtmlString(stringArrayL.join(""));
-      xRight.innerHTML = sanitizeHtmlString(stringArrayR.join(""));
+      let x = utils.createDomElement('div', { innerHTML: sanitizeHtmlString(stringArrayL.join('')) });
+      let xRight = utils.createDomElement('div', { innerHTML: sanitizeHtmlString(stringArrayR.join('')) });
 
       for (var i = 0, ii = rows.length; i < ii; i++) {
         if (( hasFrozenRows ) && ( rows[i] >= actualFrozenRow )) {
