@@ -108,6 +108,7 @@
     function constructPagerUI() {
       // the container might be a string, a jQuery object or a native element
       const container = getContainerElement(selectorOrElm);
+      if (!container || (container.jquery && !container[0])) return;
 
       const navElm = document.createElement('span');
       navElm.className = 'slick-pager-nav';
@@ -195,6 +196,7 @@
     }
 
     function updatePager(pagingInfo) {
+      if (!container || (container.jquery && !container[0])) return;
       let state = getNavState();
 
       // remove disabled class on all icons
