@@ -306,6 +306,7 @@ if (typeof Slick === "undefined") {
     var cssShow = { position: 'absolute', visibility: 'hidden', display: 'block' };
     var _hiddenParents;
     var oldProps = [];
+    var enforceFrozenRowHeightRecalc = false;
     var columnResizeDragging = false;
     var slickDraggableInstance = null;
     var slickMouseWheelInstances = [];
@@ -3221,6 +3222,11 @@ if (typeof Slick === "undefined") {
       validateAndEnforceOptions();
       setFrozenOptions();
 
+      // when user changed frozen row option, we need to force a recalculation of each viewport heights
+      if (args.frozenBottom !== undefined) {
+        enforceFrozenRowHeightRecalc = true;
+      }
+
       _viewport.forEach(function (view) {
         view.style["overflow-y"] = options.autoHeight ? "hidden" : "auto";
       });
@@ -3970,7 +3976,7 @@ if (typeof Slick === "undefined") {
         }
       }
 
-      if (h !== oldH) {
+      if (h !== oldH || enforceFrozenRowHeightRecalc) {
         if (hasFrozenRows && !options.frozenBottom) {
           utils.height(_canvasBottomL, h);
 
@@ -3983,6 +3989,7 @@ if (typeof Slick === "undefined") {
         }
 
         scrollTop = _viewportScrollContainerY.scrollTop;
+        enforceFrozenRowHeightRecalc = false; // reset enforce flag
       }
 
       var oldScrollTopInRange = (scrollTop + offset <= th - tempViewportH);
