@@ -3041,20 +3041,21 @@ if (typeof Slick === "undefined") {
     function applyColumnWidths() {
       var x = 0, w, rule;
       for (var i = 0; i < columns.length; i++) {
-        if (columns[i].hidden) continue;        
-        
-        w = columns[i].width;
+        if (!columns[i].hidden) {       
+          w = columns[i].width;
 
-        rule = getColumnCssRules(i);
-        rule.left.style.left = x + "px";
-        rule.right.style.right = (((options.frozenColumn != -1 && i > options.frozenColumn) ? canvasWidthR : canvasWidthL) - x - w) + "px";
+          rule = getColumnCssRules(i);
+          rule.left.style.left = x + "px";
+          rule.right.style.right = (((options.frozenColumn != -1 && i > options.frozenColumn) ? canvasWidthR : canvasWidthL) - x - w) + "px";
 
-        // If this column is frozen, reset the css left value since the
-        // column starts in a new viewport.
+          // If this column is frozen, reset the css left value since the
+          // column starts in a new viewport.
+          if (options.frozenColumn != i) {
+            x += columns[i].width;
+          }
+        }
         if (options.frozenColumn == i) {
           x = 0;
-        } else {
-          x += columns[i].width;
         }
       }
     }

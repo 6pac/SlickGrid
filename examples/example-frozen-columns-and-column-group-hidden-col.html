@@ -46,9 +46,6 @@
   </div>
 </div>
 
-<script src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -63,39 +60,42 @@
     // when it's a frozen grid, we need to render both side (left/right)
     if (options.frozenColumn >=0) {
       // Add column groups to left panel
-      var $preHeaderPanel = $(grid.getPreHeaderPanelLeft());
-      renderHeaderGroups($preHeaderPanel, 0, options.frozenColumn + 1, columns.length);
+      var preHeaderPanelElm = grid.getPreHeaderPanelLeft();
+      renderHeaderGroups(preHeaderPanelElm, 0, options.frozenColumn + 1, columns.length);
 
       // Add column groups to right panel
-      $preHeaderPanel = $(grid.getPreHeaderPanelRight());
-      renderHeaderGroups($preHeaderPanel, options.frozenColumn + 1, columns.length);
+      preHeaderPanelElm = grid.getPreHeaderPanelRight();
+      renderHeaderGroups(preHeaderPanelElm, options.frozenColumn + 1, columns.length);
     } else {
       // when it's a regular grid (without frozen rows), after clearning frozen columns, we re-render everything on the left
-      var $preHeaderPanel = $(grid.getPreHeaderPanelLeft());
-      renderHeaderGroups($preHeaderPanel, 0, columns.length);
+      var preHeaderPanelElm = grid.getPreHeaderPanelLeft();
+      renderHeaderGroups(preHeaderPanelElm, 0, columns.length);
     }
 
     function renderHeaderGroups(preHeaderPanel, start, end) {
-      preHeaderPanel.empty()
-                    .addClass("slick-header-columns")
-                    .css('left','-1000px')
-                    .width(grid.getHeadersWidth());
-      preHeaderPanel.parent().addClass("slick-header");
+      preHeaderPanel.innerHTML = '';
+      preHeaderPanel.classList.add("slick-header-columns");
+      preHeaderPanel.style.left = '-1000px';
+      preHeaderPanel.style.width = `${grid.getHeadersWidth()}px`;
+      preHeaderPanel.parentElement.classList.add("slick-header");
 
       var headerColumnWidthDiff = grid.getHeaderColumnWidthDiff();
       var m, header, lastColumnGroup = '', widthTotal = 0;
-      
+
       for (var i = start; i < end; i++) {
         m = columns[i];
+        if (m.hidden) continue;
+        
         if (lastColumnGroup === m.columnGroup && i>start) {
           widthTotal += m.width;
-          header.width(widthTotal - headerColumnWidthDiff)
+          header.style.width = `${widthTotal - headerColumnWidthDiff}px`;
         } else {
             widthTotal = m.width;
-            header = $("<div class='ui-state-default slick-header-column' />")
-              .html("<span class='slick-column-name'>" + (m.columnGroup || '') + "</span>")
-              .width(m.width - headerColumnWidthDiff)
-              .appendTo(preHeaderPanel);
+            header = document.createElement('div');
+            header.className = 'ui-state-default slick-header-column';
+            header.innerHTML = `<span class="slick-column-name">${(m.columnGroup || '')}</span>`;
+            header.style.width = `${m.width - headerColumnWidthDiff}px`;
+            preHeaderPanel.appendChild(header);
         }
         lastColumnGroup = m.columnGroup;
       }
@@ -130,7 +130,7 @@
     explicitInitialization: true,
     frozenColumn: 2,
 
-    // if you wish to include the columnGroup as part of the pickers, you can do so with following code 
+    // if you wish to include the columnGroup as part of the pickers, you can do so with following code
     columnPicker: {
       headerColumnValueExtractor: pickerHeaderColumnValueExtractor
     },
@@ -160,7 +160,7 @@
     {id: "effort-driven", name: "Effort Driven", width: 140, minWidth: 20, maxWidth: 140, field: "effortDriven", columnGroup:"Analysis"}
   ];
 
-  $(function () {
+  document.addEventListener("DOMContentLoaded", function() {
     for (var i = 0; i < 50000; i++) {
       var d = (data[i] = {});
 
@@ -201,28 +201,30 @@
         setFrozenColumns(-1);
       }
     });
-    
+
   document.querySelector('#chkHideColumn1').addEventListener("change", function(e) { 
   //$("#chkHideColumn").change(function () {
     var hideCol = document.querySelector('#chkHideColumn1').checked || false;
     columns[2].hidden = hideCol;
-    grid.setColumns(columns);
-  });
+    grid.updateColumns();
+    CreateAddlHeaderRow();
+ });
   
   document.querySelector('#chkHideColumn2').addEventListener("change", function(e) { 
   //$("#chkHideColumn").change(function () {
     var hideCol = document.querySelector('#chkHideColumn2').checked || false;
     columns[4].hidden = hideCol;
-    grid.setColumns(columns);
+    grid.updateColumns();
+    CreateAddlHeaderRow();
   });
     
     // Initialise data
     dataView.beginUpdate();
     dataView.setItems(data);
     dataView.endUpdate();
-    
+
     CreateAddlHeaderRow();
-  })
+  });
 </script>
 </body>
 </html>

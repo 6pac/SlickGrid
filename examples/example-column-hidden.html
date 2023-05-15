@@ -379,7 +379,7 @@ document.addEventListener("DOMContentLoaded", function() {
   //$("#chkHideColumn").change(function () {
     var hideCol = document.querySelector('#chkHideColumn').checked || false;
     columns[2].hidden = hideCol;
-    grid.setColumns(columns);
+    grid.updateColumns();
   });
   
   // initialize the model after all the events have been hooked up
