@@ -1194,7 +1194,7 @@ if (typeof Slick === "undefined") {
       e.target.classList.add("ui-state-hover");
     }
 
-    function handleHeaderMouseHoverOff(e) {limitPositionInGroup
+    function handleHeaderMouseHoverOff(e) {
       e.target.classList.remove("ui-state-hover");
     }
 
@@ -3086,6 +3086,10 @@ if (typeof Slick === "undefined") {
         setOverflow();
       }
 
+      if (!suppressColumnSet) {
+        setColumns(columns);
+      }
+      
       if (options.enableMouseWheelScrollHandler && _viewport && (!slickMouseWheelInstances || slickMouseWheelInstances.length === 0)) {
         _viewport.forEach(function (view) {
           slickMouseWheelInstances.push(Slick.MouseWheel({
