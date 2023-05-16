@@ -679,7 +679,7 @@
         let visibleColumns = [];
         columnCheckboxes.forEach((columnCheckbox, idx) => {
           if (columnCheckbox.checked) {
-            if (columns[idx].hidden) columns[idx].hidden = false;
+            if (columns[idx].hidden) { columns[idx].hidden = false; }
             visibleColumns.push(columns[idx]);
           }
         });
