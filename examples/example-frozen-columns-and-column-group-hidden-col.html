@@ -1,0 +1,230 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
+  <link rel="stylesheet" href="examples.css" type="text/css"/>
+  <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../controls/slick.gridmenu.css" type="text/css"/>
+  <style>
+    .slick-preheader-panel.ui-state-default  {
+      width: 100%;
+      overflow: hidden;
+      border-left: 0px !important;
+      border-bottom: 0px !important;
+    }
+    .slick-preheader-panel .slick-header-columns {
+      border-bottom: 0px !important;
+    }
+  </style>
+</head>
+<body>
+<div style="position:relative">
+  <div style="width:600px;">
+    <div id="myGrid" style="width:100%;height:500px;"></div>
+  </div>
+
+  <div class="options-panel">
+    <h2>Demonstrates:</h2>
+    <ul>
+      <li>Frozen columns with extra header row grouping columns into categories</li>
+    </ul>
+    <div style="margin-bottom:10px">
+      <button onclick="setFrozenColumns(-1)">Remove Frozen Columns</button>
+      <button onclick="setFrozenColumns(2)">Set 3 Frozen Columns</button>
+    </div>
+      <br/>
+      <input id="chkHideColumn1" type="checkbox"/> Hide Duration Column
+      <br/><br/>
+      <input id="chkHideColumn2" type="checkbox"/> Hide Finish Column
+      <br/>
+      <h2>View Source:</h2>
+      <ul>
+          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-frozen-columns-and-column-group.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+      </ul>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+
+<script src="../slick.core.js"></script>
+<script src="../slick.interactions.js"></script>
+<script src="../slick.dataview.js"></script>
+<script src="../slick.grid.js"></script>
+<script src="../controls/slick.columnpicker.js"></script>
+<script src="../controls/slick.gridmenu.js"></script>
+
+<script>
+  function CreateAddlHeaderRow() {
+    // when it's a frozen grid, we need to render both side (left/right)
+    if (options.frozenColumn >=0) {
+      // Add column groups to left panel
+      var preHeaderPanelElm = grid.getPreHeaderPanelLeft();
+      renderHeaderGroups(preHeaderPanelElm, 0, options.frozenColumn + 1, columns.length);
+
+      // Add column groups to right panel
+      preHeaderPanelElm = grid.getPreHeaderPanelRight();
+      renderHeaderGroups(preHeaderPanelElm, options.frozenColumn + 1, columns.length);
+    } else {
+      // when it's a regular grid (without frozen rows), after clearning frozen columns, we re-render everything on the left
+      var preHeaderPanelElm = grid.getPreHeaderPanelLeft();
+      renderHeaderGroups(preHeaderPanelElm, 0, columns.length);
+    }
+
+    function renderHeaderGroups(preHeaderPanel, start, end) {
+      preHeaderPanel.innerHTML = '';
+      preHeaderPanel.classList.add("slick-header-columns");
+      preHeaderPanel.style.left = '-1000px';
+      preHeaderPanel.style.width = `${grid.getHeadersWidth()}px`;
+      preHeaderPanel.parentElement.classList.add("slick-header");
+
+      var headerColumnWidthDiff = grid.getHeaderColumnWidthDiff();
+      var m, header, lastColumnGroup = '', widthTotal = 0;
+
+      for (var i = start; i < end; i++) {
+        m = columns[i];
+        if (m.hidden) continue;
+        
+        if (lastColumnGroup === m.columnGroup && i>start) {
+          widthTotal += m.width;
+          header.style.width = `${widthTotal - headerColumnWidthDiff}px`;
+        } else {
+            widthTotal = m.width;
+            header = document.createElement('div');
+            header.className = 'ui-state-default slick-header-column';
+            header.innerHTML = `<span class="slick-column-name">${(m.columnGroup || '')}</span>`;
+            header.style.width = `${m.width - headerColumnWidthDiff}px`;
+            preHeaderPanel.appendChild(header);
+        }
+        lastColumnGroup = m.columnGroup;
+      }
+    }
+  }
+
+  function setFrozenColumns(frozenCols) {
+    grid.setOptions({ frozenColumn: frozenCols });
+    options = grid.getOptions();
+    CreateAddlHeaderRow();
+  }
+
+  function pickerHeaderColumnValueExtractor(column) {
+    var headerGroup = column.columnGroup || '';
+    if (headerGroup) {
+      return headerGroup + ' - ' + column.name;
+    }
+    return column.name;
+  }
+
+  var dataView;
+  var grid;
+  var data = [];
+  var columnpicker;
+  var gridMenuControl;
+  var options = {
+    enableCellNavigation: true,
+    enableColumnReorder: false,
+    createPreHeaderPanel: true,
+    showPreHeaderPanel: true,
+    preHeaderPanelHeight: 23,
+    explicitInitialization: true,
+    frozenColumn: 2,
+
+    // if you wish to include the columnGroup as part of the pickers, you can do so with following code
+    columnPicker: {
+      headerColumnValueExtractor: pickerHeaderColumnValueExtractor
+    },
+    gridMenu: {
+      headerColumnValueExtractor: pickerHeaderColumnValueExtractor,
+      customTitle: "Commands",
+      columnTitle: "Columns",
+      customItems: [
+        {
+          iconImage: "../images/delete.png",
+          title: "Clear Frozen Columns",
+          disabled: false,
+          command: "clear-frozen-columns",
+          cssClass: 'bold',     // container css class
+          textCssClass: 'red'   // just the text css class
+        }
+      ]
+    },
+  };
+  var columns = [
+    {id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 40, resizable: false, selectable: false },
+    {id: "title", name: "Title", field: "title", width: 120, minWidth: 120, cssClass: "cell-title", columnGroup:"Common Factor"},
+    {id: "duration", name: "Duration", field: "duration", columnGroup:"Common Factor"},
+    {id: "start", name: "Start", field: "start", minWidth: 140, columnGroup:"Period"},
+    {id: "finish", name: "Finish", field: "finish", minWidth: 140, columnGroup:"Period"},
+    {id: "%", defaultSortAsc: false, name: "% Complete", field: "percentComplete", width: 140, resizable: false, columnGroup:"Analysis"},
+    {id: "effort-driven", name: "Effort Driven", width: 140, minWidth: 20, maxWidth: 140, field: "effortDriven", columnGroup:"Analysis"}
+  ];
+
+  document.addEventListener("DOMContentLoaded", function() {
+    for (var i = 0; i < 50000; i++) {
+      var d = (data[i] = {});
+
+      d["id"] = "id_" + i;
+      d["num"] = i;
+      d["title"] = "Task " + i;
+      d["duration"] = "5 days";
+      d["start"] = "01/01/2009";
+      d["finish"] = "01/05/2009";
+      d["percentComplete"] = Math.round(Math.random() * 100);
+      d["effortDriven"] = (i % 5 == 0);
+    }
+
+    dataView = new Slick.Data.DataView();
+    grid = new Slick.Grid("#myGrid", dataView, columns, options);
+    columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
+    gridMenuControl = new Slick.Controls.GridMenu(columns, grid, options);
+
+    dataView.onRowCountChanged.subscribe(function (e, args) {
+      grid.updateRowCount();
+      grid.render();
+    });
+
+    dataView.onRowsChanged.subscribe(function (e, args) {
+      grid.invalidateRows(args.rows);
+      grid.render();
+    });
+
+    grid.init();
+
+    grid.onColumnsResized.subscribe(function (e, args) {
+      CreateAddlHeaderRow();
+    });
+
+    // subscribe to Grid Menu event(s)
+    gridMenuControl.onCommand.subscribe(function(e, args) {
+      if(args.command === "clear-frozen-columns") {
+        setFrozenColumns(-1);
+      }
+    });
+
+  document.querySelector('#chkHideColumn1').addEventListener("change", function(e) { 
+  //$("#chkHideColumn").change(function () {
+    var hideCol = document.querySelector('#chkHideColumn1').checked || false;
+    columns[2].hidden = hideCol;
+    grid.updateColumns();
+    CreateAddlHeaderRow();
+ });
+  
+  document.querySelector('#chkHideColumn2').addEventListener("change", function(e) { 
+  //$("#chkHideColumn").change(function () {
+    var hideCol = document.querySelector('#chkHideColumn2').checked || false;
+    columns[4].hidden = hideCol;
+    grid.updateColumns();
+    CreateAddlHeaderRow();
+  });
+    
+    // Initialise data
+    dataView.beginUpdate();
+    dataView.setItems(data);
+    dataView.endUpdate();
+
+    CreateAddlHeaderRow();
+  });
+</script>
+</body>
+</html>
