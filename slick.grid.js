@@ -182,7 +182,6 @@ if (typeof Slick === "undefined") {
     var _canvas;
     var _style;
     var _boundAncestors = [];
-    var treeColumns;
     var stylesheet, columnCssRulesL, columnCssRulesR;
     var viewportH, viewportW;
     var canvasWidth, canvasWidthL, canvasWidthR;
@@ -337,9 +336,6 @@ if (typeof Slick === "undefined") {
 
       if (!options.suppressCssChangesOnHiddenInit) { cacheCssForHiddenInit(); }
 
-      treeColumns = new Slick.TreeColumns(columns);
-      columns = treeColumns.extractColumns();
-
       updateColumnProps();
 
       // validate loaded JavaScript modules against requested options
@@ -396,16 +392,6 @@ if (typeof Slick === "undefined") {
       // Cache the header scroller containers
       _headerScroller.push(_headerScrollerL);
       _headerScroller.push(_headerScrollerR);
-
-      if (treeColumns.hasDepth()) {
-        _groupHeadersL = [];
-        _groupHeadersR = [];
-        for (var index = 0; index < treeColumns.getDepth() - 1; index++) {
-          _groupHeadersL[index] = utils.createDomElement('div', { className: 'slick-group-header-columns slick-group-header-columns-left', style: { left: '-1000px' } }, _headerScrollerL);
-          _groupHeadersR[index] = utils.createDomElement('div', { className: 'slick-group-header-columns slick-group-header-columns-right', style: { left: '-1000px' } }, _headerScrollerR);
-        }
-        _groupHeaders = [_groupHeadersL, _groupHeadersR];
-      }
 
       // Append the columnn containers to the headers
       _headerL = utils.createDomElement('div', { className: 'slick-header-columns slick-header-columns-left', style: { left: '-1000px' } }, _headerScrollerL);
@@ -571,7 +557,6 @@ if (typeof Slick === "undefined") {
 
         updateColumnCaches();
         createColumnHeaders();
-        createColumnGroupHeaders();
         createColumnFooter();
         setupColumnSort();
         createCssRules();
@@ -1215,50 +1200,6 @@ if (typeof Slick === "undefined") {
       }
     }
 
-    function createColumnGroupHeaders() {
-      var columnsLength = 0;
-      var frozenColumnsValid = false;
-
-      if (!treeColumns.hasDepth()) {
-        return;
-      }
-
-      for (var index = 0; index < _groupHeadersL.length; index++) {
-        _groupHeadersL[index].replaceChildren();
-        _groupHeadersR[index].replaceChildren();
-
-        var groupColumns = treeColumns.getColumnsInDepth(index);
-
-        for (var indexGroup in groupColumns) {
-          var m = groupColumns[indexGroup];
-
-          columnsLength += m.extractColumns().length;
-
-          if (hasFrozenColumns() && index === 0 && (columnsLength - 1) === options.frozenColumn) {
-            frozenColumnsValid = true;
-          }
-
-          const el = utils.createDomElement('div',
-            { id: `${uid + m.id}`, className: 'ui-state-default slick-group-header-column', title: m.toolTip || '' },
-            hasFrozenColumns() && (columnsLength - 1) > options.frozenColumn ? _groupHeadersR[index] : _groupHeadersL[index]
-          );
-          utils.createDomElement('span', { className: 'slick-column-name', innerHTML: sanitizeHtmlString(m.name) }, el);
-          el.classList.add(m.headerCssClass || "")
-          el.classList.add(hasFrozenColumns() && (columnsLength - 1) > options.frozenColumn ? 'frozen' : '');
-          utils.storage.put(el, "column", m);
-        }
-
-        if (hasFrozenColumns() && index === 0 && !frozenColumnsValid) {
-          _groupHeadersL[index].replaceChildren();
-          _groupHeadersR[index].replaceChildren();
-          alert("All columns of group should to be grouped!");
-          break;
-        }
-      }
-
-      applyColumnGroupHeaderWidths();
-    }
-
     function handleHeaderMouseHoverOn(e) {
       e.target.classList.add("ui-state-hover");
     }
@@ -1543,54 +1484,12 @@ if (typeof Slick === "undefined") {
       return currentPosition;
     }
 
-    function limitPositionInGroup(idColumn) {
-      var groupColumnOfPreviousPosition,
-        startLimit = 0,
-        endLimit = 0;
-
-      treeColumns
-        .getColumnsInDepth(_groupHeadersL.length - 1)
-        .some(function (groupColumn) {
-          startLimit = endLimit;
-          endLimit += groupColumn.columns.length;
-
-          groupColumn.columns.some(function (column) {
-            if (column.id === idColumn) {
-              groupColumnOfPreviousPosition = groupColumn;
-            }
-            return groupColumnOfPreviousPosition;
-          });
-
-          return groupColumnOfPreviousPosition;
-        });
-
-      endLimit--;
-
-      return {
-        start: startLimit,
-        end: endLimit,
-        group: groupColumnOfPreviousPosition
-      };
-    }
-
     function remove(arr, elem) {
       var index = arr.lastIndexOf(elem);
       if (index > -1) {
         arr.splice(index, 1);
         remove(arr, elem);
       }
-    }
-
-    function columnPositionValidInGroup(item) {
-      var currentPosition = currentPositionInHeader(item.id);
-      var limit = limitPositionInGroup(utils.storage.get(item, "column").id);
-      var positionValid = limit.start <= currentPosition && currentPosition <= limit.end;
-
-      return {
-        limit: limit,
-        valid: positionValid,
-        message: positionValid ? '' : 'Column "'.concat(item.textContent, '" can be reordered only within the "', limit.group.name, '" group!')
-      };
     }
 
     function setupColumnReorder() {
@@ -1641,17 +1540,6 @@ if (typeof Slick === "undefined") {
           clearInterval(columnScrollTimer);
           columnScrollTimer = null;
           var limit = null;
-
-          if (treeColumns.hasDepth()) {
-            var validPositionInGroup = columnPositionValidInGroup(e.item);
-            limit = validPositionInGroup.limit;
-
-            cancel = !validPositionInGroup.valid;
-
-            if (cancel) {
-              alert(validPositionInGroup.message);
-            }
-          }
 
           if (cancel || !getEditorLock().commitCurrentEdit()) {
             return;
@@ -1981,7 +1869,6 @@ if (typeof Slick === "undefined") {
               }
 
               applyColumnHeaderWidths();
-              applyColumnGroupHeaderWidths();
               if (options.syncColumnCellResize) {
                 applyColumnWidths();
               }
@@ -1996,7 +1883,6 @@ if (typeof Slick === "undefined") {
               var triggeredByColumn = resizeElms.resizeableElement.id.replace(uid, "");
               if (trigger(self.onBeforeColumnsResize, { triggeredByColumn: triggeredByColumn }).getReturnValue() === true) {
                 applyColumnHeaderWidths();
-                applyColumnGroupHeaderWidths();
               }
               var newWidth;
               for (j = 0; j < columns.length; j++) {
@@ -2950,7 +2836,6 @@ if (typeof Slick === "undefined") {
 
     function reRenderColumns(reRender) {
       applyColumnHeaderWidths();
-      applyColumnGroupHeaderWidths();
       updateCanvasWidth(true);
 
       trigger(self.onAutosizeColumns, { "columns": columns});
@@ -2986,36 +2871,6 @@ if (typeof Slick === "undefined") {
 
     function getColumnIndex(id) {
       return columnsById[id];
-    }
-
-    function applyColumnGroupHeaderWidths() {
-      if (!treeColumns.hasDepth()) {
-        return;
-      }
-
-      for (var depth = _groupHeadersL.length - 1; depth >= 0; depth--) {
-        var groupColumns = treeColumns.getColumnsInDepth(depth);
-
-        const groupHeaders = [_groupHeadersL[depth], _groupHeadersR[depth]];
-        groupHeaders.forEach(function (groupHeader) {
-          var currentColumnIndex = 0;
-
-          utils.width(groupHeader, i === 0 ? getHeadersWidthL() : getHeadersWidthR());
-
-          groupHeader.children.forEach(function (groupHeaderColumn) {
-            var m = utils.storage.get(groupHeaderColumn, "column");
-
-            m.width = 0;
-
-            m.columns.forEach(function() {
-              const headerColumn = groupHeader.nextElementSibling.children[currentColumnIndex++];
-              m.width += headerColumn.offsetWidth;
-            });
-
-            utils.width(groupHeaderColumn, m.width - headerColumnWidthDiff);
-          });
-        });
-      }
     }
 
     function applyColumnHeaderWidths() {
@@ -3213,14 +3068,7 @@ if (typeof Slick === "undefined") {
 
     function setColumns(columnDefinitions) {
       trigger(self.onBeforeSetColumns, { previousColumns: columns, newColumns: columnDefinitions, grid: self });
-
-      var _treeColumns = new Slick.TreeColumns(columnDefinitions);
-      if (_treeColumns.hasDepth()) {
-        treeColumns = _treeColumns;
-        columns = treeColumns.extractColumns();
-      } else {
-        columns = columnDefinitions;
-      }
+      columns = columnDefinitions;
 
       columns = columnDefinitions;
       updateColumnsInternal();      
@@ -3241,7 +3089,6 @@ if (typeof Slick === "undefined") {
 
         invalidateAllRows();
         createColumnHeaders();
-        createColumnGroupHeaders();
         createColumnFooter();
         removeCssRules();
         createCssRules();
@@ -3300,9 +3147,9 @@ if (typeof Slick === "undefined") {
       }
 
       if (!suppressColumnSet) {
-        setColumns(treeColumns.extractColumns());
+        setColumns(columns);
       }
-
+      
       if (options.enableMouseWheelScrollHandler && _viewport && (!slickMouseWheelInstances || slickMouseWheelInstances.length === 0)) {
         _viewport.forEach(function (view) {
           slickMouseWheelInstances.push(Slick.MouseWheel({
