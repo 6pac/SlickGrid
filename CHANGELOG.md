@@ -4,6 +4,8 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 # [4.0.0-beta.0](https://github.com/6pac/SlickGrid/compare/3.0.4...4.0.0-beta.0) (2023-05-17)
 
+### Please read the [Migration Guide v4.0](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement)
+---
 ### Bug Fixes
 
 * add missing aria accessibility ([#764](https://github.com/6pac/SlickGrid/issues/764)) ([897cc55](https://github.com/6pac/SlickGrid/commit/897cc55441625ab1bd3dd556c7c54d4796ce5f1d)), closes [#586](https://github.com/6pac/SlickGrid/issues/586) [#587](https://github.com/6pac/SlickGrid/issues/587) [#588](https://github.com/6pac/SlickGrid/issues/588) [#678](https://github.com/6pac/SlickGrid/issues/678)
