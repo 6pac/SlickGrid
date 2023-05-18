@@ -6,12 +6,6 @@
   <title>SlickGrid plugin example: AutoTooltips</title>
   <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
   <link rel="stylesheet" href="examples.css" type="text/css"/>
-  <style>
-    .ui-tooltip {
-      background-color: yellow;
-	  background-image:none;
-    }
-  </style>
 </head>
 <body>
 <table width="100%">
@@ -20,32 +14,20 @@
       <div id="myGrid" style="width:600px;height:300px;"></div>
     </td>
     <td valign="top">
-	  <button id="btnjQTooltips">Use jQuery UI tooltips</button>
 	  <br/>
       <h2>Demonstrates:</h2>
       <ul>
         <li>AutoTooltips plugin</li>
-        <li>Optional stylable jQueryUI tooltips.</li>
       </ul>
       <h2>Instructions:</h2>
       <p>Resize the columns until see ellipsis in column or header.  Hover over cell to see tooltip.</p>
-       <p>For jQueryUI tooltips, call the .tooltips() function on the document to convert all tooltips 
-	   to jQueryUI. To style jQueryUI tooltips, use the generic jQueryUI class 'ui-tooltip', or pass in a class name as an option.</p>
       <h2>Usage:</h2>
      <pre style="background-color: white; font-size: 110%; border-radius: 5px; padding: 20px; ">plugin = new Slick.AutoTooltips(pluginOptions);
 grid.registerPlugin(plugin);
 grid.render();</pre>
-	 <p>jQueryUI Tooltips:</p>
-     <pre style="background-color: white; font-size: 110%; border-radius: 5px; padding: 20px; ">$( document ).tooltip( { tooltipClass: "my-tooltip-class" } );</pre>
-        <h2>View Source:</h2>
-        <ul>
-            <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-autotooltips.html" target="_sourcewindow"> View the source for this example on Github</a></li>
-        </ul>
-    </td>
   </tr>
 </table>
 
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -55,12 +37,6 @@ grid.render();</pre>
 
 <script>
   var tooltipsActivated = false;
-  $("#btnjQTooltips").click(function () {
-    if (!tooltipsActivated) {
-      $( document ).tooltip( { tooltipClass: "slick-tooltip" } );
-	  tooltipsActivated = true;
-    }
-  });
 
   var grid;
   var columns = [
@@ -77,23 +53,21 @@ grid.render();</pre>
     enableColumnReorder: true
   };
 
-  $(function () {
-    var data = [];
-    for (var i = 0; i < 500; i++) {
-      data[i] = {
-        title: "Task " + i,
-        duration: "5 days",
-        percentComplete: Math.round(Math.random() * 100),
-        start: "01/01/2009",
-        finish: "01/05/2009",
-        effortDriven: (i % 5 == 0)
-      };
-    }
+  var data = [];
+  for (var i = 0; i < 500; i++) {
+    data[i] = {
+      title: "Task " + i,
+      duration: "5 days",
+      percentComplete: Math.round(Math.random() * 100),
+      start: "01/01/2009",
+      finish: "01/05/2009",
+      effortDriven: (i % 5 == 0)
+    };
+  }
 
-    grid = new Slick.Grid("#myGrid", data, columns, options);
-    grid.registerPlugin( new Slick.AutoTooltips({ enableForHeaderCells: true }) );
-    grid.render();
-  })
+  grid = new Slick.Grid("#myGrid", data, columns, options);
+  grid.registerPlugin( new Slick.AutoTooltips({ enableForHeaderCells: true }) );
+  grid.render();
 </script>
 </body>
 </html>

@@ -165,9 +165,6 @@
     </div>
   </div>
 
-  <script src="../lib/firebugx.js"></script>
-
-  <script src="../lib/jquery-3.1.0.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
@@ -227,12 +224,12 @@
       autoEdit: false
     };
 
-    function validateCompositeEditors($targetElm) {
+    function validateCompositeEditors(targetElm) {
       var validationResults = { valid: true, msg: "" };
       var currentEditor = grid.getCellEditor();
 
       if (currentEditor) {
-        validationResults = currentEditor.validate($targetElm);
+        validationResults = currentEditor.validate(targetElm);
       }
       return validationResults;
     }
@@ -320,21 +317,41 @@
             break;
         }
 
-        var $modal = $(`<div class="modal"></div>`);
-        var $modalHeader = $(`<div class="modal-header"><h5>${headerTitle}</h5>
+        const modalElm = document.createElement('div');
+        modalElm.className = 'modal';
+
+        const modalHeaderElm = document.createElement('div');
+        modalHeaderElm.className = 'modal-header';
+        modalHeaderElm.innerHTML = `<h5>${headerTitle}</h5>
           <button type="button" class="close" data-action="cancel" aria-label="Close">
             <span aria-hidden="true">X</span>
-          </button></div>`);
-        var $modalBody = $(`<div class="modal-body"></div>`);
+          </button>`;
+        modalElm.appendChild(modalHeaderElm);
+
+        const modalBodyElm = document.createElement('div');
+        modalBodyElm.className = 'modal-body';
 
         for (const column of modalColumns) {
           if (column.editor) {
-            var $templateItem = $(`<div class="item-details-label editor-${column.id}">${column.name}</div>
-              <div class="item-details-editor-container" data-editorid="${column.id}" style="height: ${column.id === 'desc' ? 'inherit' : '20px'}"></div>
-              <div class="item-details-validation editor-${column.id}"></div>`);
-            $templateItem.appendTo($modalBody);
+            const detailLabelElm = document.createElement('div');
+            detailLabelElm.className = `item-details-label editor-${column.id}`;
+            detailLabelElm.textContent = column.name;
+
+            const detailContainerElm = document.createElement('div');
+            detailContainerElm.className = 'item-details-editor-container';
+            detailContainerElm.dataset.editorid=column.id;
+            detailContainerElm.style.height = column.id === 'desc' ? 'inherit' : '20px';
+
+            const detailValidationElm = document.createElement('div');
+            detailValidationElm.className = `item-details-validation editor-${column.id}`;
+
+            modalBodyElm.appendChild(detailLabelElm);
+            modalBodyElm.appendChild(detailContainerElm);
+            modalBodyElm.appendChild(detailValidationElm);
           }
         }
+        modalElm.appendChild(modalBodyElm);
+
         let saveActionType = (modalType === "create" || modalType === "edit") ? "save" : modalType;
         let saveButtonText = (modalType === "create" || modalType === "edit")
           ? "Save"
@@ -342,22 +359,27 @@
             ? "Apply Mass Update"
             : "Apply Update to Current Selection";
 
-        const $modalFooter = $(`<div class="modal-footer"></div>`);
-        const $saveBtn = $(`<button data-action="${saveActionType}">${saveButtonText}</button>`);
-        const $cancelBtn = $(`<button data-action="cancel">Cancel</button>`);
-        $saveBtn.appendTo($modalFooter);
-        $cancelBtn.appendTo($modalFooter);
+        const modalFooterElm = document.createElement('div');
+        modalFooterElm.className = 'modal-footer';
 
+        const saveBtnElm = document.createElement('button');
+        saveBtnElm.dataset.action = saveActionType;
+        saveBtnElm.textContent = saveButtonText;
 
-        $modalHeader.appendTo($modal);
-        $modalBody.appendTo($modal);
-        $modalFooter.appendTo($modal);
-        $modal.appendTo("body");
+        const cancelBtnElm = document.createElement('button');
+        cancelBtnElm.dataset.action = 'cancel';
+        cancelBtnElm.textContent = 'Cancel';
 
-        $modal.on('focusout', function (e) {
+        modalFooterElm.appendChild(saveBtnElm);
+        modalFooterElm.appendChild(cancelBtnElm);
+        modalElm.appendChild(modalFooterElm);
+
+        document.body.appendChild(modalElm);
+
+        modalElm.addEventListener('focusout', function (e) {
           validateCompositeEditors(e.target);
         });
-        $modal.on('keydown', (function (e) {
+        modalElm.addEventListener('keydown', (function (e) {
           if (e.which == Slick.keyCode.ESCAPE) {
             grid.getEditController().cancelCurrentEdit();
             grid.setActiveRow(lastActiveRowNumber);
@@ -368,78 +390,88 @@
           }
         }));
 
-        $modal.find("[data-action=save]").click(function () {
-          grid.getEditController().commitCurrentEdit();
-        });
+        if (modalElm.querySelector("[data-action=save]")) {
+          modalElm.querySelector("[data-action=save]").addEventListener('click', function () {
+            grid.getEditController().commitCurrentEdit();
+          });
+        }
 
         // Apply a Mass Update change (apply changes to all items in the dataset)
-        $modal.find("[data-action=mass-update]").click(function () {
-          var validationResults = validateCompositeEditors();
-          var isFormValid = validationResults.valid;
+        if (modalElm.querySelector("[data-action=mass-update]")) {
+          modalElm.querySelector("[data-action=mass-update]").addEventListener('click', function () {
+            var validationResults = validateCompositeEditors();
+            var isFormValid = validationResults.valid;
 
-          if (isFormValid && lastCompositeEditor && lastCompositeEditor.formValues) {
-            // from the "lastCompositeEditor" object that we kept as reference, it contains all the changes inside the "formValues" property
-            // we can loop through these changes and apply them on the selected row indexes
-            for (const itemProp in lastCompositeEditor.formValues) {
-              if (lastCompositeEditor.formValues.hasOwnProperty(itemProp)) {
-                data.forEach(function (item) {
-                  if (item.hasOwnProperty(itemProp) && lastCompositeEditor.formValues.hasOwnProperty(itemProp)) {
-                    item[itemProp] = lastCompositeEditor.formValues[itemProp];
-                  }
-                });
+            if (isFormValid && lastCompositeEditor && lastCompositeEditor.formValues) {
+              // from the "lastCompositeEditor" object that we kept as reference, it contains all the changes inside the "formValues" property
+              // we can loop through these changes and apply them on the selected row indexes
+              for (const itemProp in lastCompositeEditor.formValues) {
+                if (lastCompositeEditor.formValues.hasOwnProperty(itemProp)) {
+                  data.forEach(function (item) {
+                    if (item.hasOwnProperty(itemProp) && lastCompositeEditor.formValues.hasOwnProperty(itemProp)) {
+                      item[itemProp] = lastCompositeEditor.formValues[itemProp];
+                    }
+                  });
+                }
               }
+
+              // change the entire dataset with our updated dataset
+              grid.setData(data, true);
+              grid.invalidate();
+
+              // once we're done doing the mass update, we can cancel the current editor since we don't want to add any new row
+              // that will also destroy/close the modal window
+              grid.getEditController().cancelCurrentEdit();
+              grid.setActiveCell(0, 0, false);
             }
-
-            // change the entire dataset with our updated dataset
-            grid.setData(data, true);
-            grid.invalidate();
-
-            // once we're done doing the mass update, we can cancel the current editor since we don't want to add any new row
-            // that will also destroy/close the modal window
-            grid.getEditController().cancelCurrentEdit();
-            grid.setActiveCell(0, 0, false);
-          }
-        });
+          });
+        }
 
         // Similar to Mass Update except that we apply changes only to the selected items in the grid
-        $modal.find("[data-action=mass-selection]").click(function () {
-          var validationResults = validateCompositeEditors();
-          var isFormValid = validationResults.valid;
-          var selectedRowsIndexes = grid.getSelectedRows();
+        if (modalElm.querySelector("[data-action=mass-selection]")) {
+          modalElm.querySelector("[data-action=mass-selection]").addEventListener('click', function () {
+            var validationResults = validateCompositeEditors();
+            var isFormValid = validationResults.valid;
+            var selectedRowsIndexes = grid.getSelectedRows();
 
-          if (isFormValid && lastCompositeEditor && lastCompositeEditor.formValues) {
-            // from the "lastCompositeEditor" object that we kept as reference, it contains all the changes inside the "formValues" property
-            // we can loop through these changes and apply them on the selected row indexes
-            for (const itemProp in lastCompositeEditor.formValues) {
-              if (lastCompositeEditor.formValues.hasOwnProperty(itemProp)) {
-                selectedRowsIndexes.forEach(function (rowIndex) {
-                  if (data[rowIndex] && data[rowIndex].hasOwnProperty(itemProp) && lastCompositeEditor.formValues.hasOwnProperty(itemProp)) {
-                    data[rowIndex][itemProp] = lastCompositeEditor.formValues[itemProp];
-                    grid.updateRow(rowIndex);
-                  }
-                });
+            if (isFormValid && lastCompositeEditor && lastCompositeEditor.formValues) {
+              // from the "lastCompositeEditor" object that we kept as reference, it contains all the changes inside the "formValues" property
+              // we can loop through these changes and apply them on the selected row indexes
+              for (const itemProp in lastCompositeEditor.formValues) {
+                if (lastCompositeEditor.formValues.hasOwnProperty(itemProp)) {
+                  selectedRowsIndexes.forEach(function (rowIndex) {
+                    if (data[rowIndex] && data[rowIndex].hasOwnProperty(itemProp) && lastCompositeEditor.formValues.hasOwnProperty(itemProp)) {
+                      data[rowIndex][itemProp] = lastCompositeEditor.formValues[itemProp];
+                      grid.updateRow(rowIndex);
+                    }
+                  });
+                }
               }
-            }
 
-            // once we're done doing the mass update, we can cancel the current editor since we don't want to add any new row
-            // that will also destroy/close the modal window
+              // once we're done doing the mass update, we can cancel the current editor since we don't want to add any new row
+              // that will also destroy/close the modal window
+              grid.getEditController().cancelCurrentEdit();
+              grid.setActiveRow(lastActiveRowNumber);
+            }
+          });
+        }
+
+        if (modalElm.querySelector("[data-action=cancel]")) {
+          modalElm.querySelector("[data-action=cancel]").addEventListener('click', function () {
             grid.getEditController().cancelCurrentEdit();
             grid.setActiveRow(lastActiveRowNumber);
-          }
-        });
+          });
+        }
 
-        $modal.find("[data-action=cancel]").click(function () {
-          grid.getEditController().cancelCurrentEdit();
-          grid.setActiveRow(lastActiveRowNumber);
-        });
+        if (modalElm.querySelector("[data-action=close]")) {
+          modalElm.querySelector("[data-action=close]").addEventListener('click', function () {
+            grid.getEditController().cancelCurrentEdit();
+            grid.setActiveRow(lastActiveRowNumber);
+          });
+        }
 
-        $modal.find("[data-action=close]").click(function () {
-          grid.getEditController().cancelCurrentEdit();
-          grid.setActiveRow(lastActiveRowNumber);
-        });
-
-        var containers = $.map(modalColumns, function (c) {
-          return $modal.find("[data-editorid=" + c.id + "]");
+        var containers = modalColumns.map(function (c) {
+          return modalElm.querySelector(`[data-editorid=${c.id}]`);
         });
 
         var compositeEditor = new Slick.CompositeEditor(
@@ -447,7 +479,7 @@
           containers,
           {
             destroy: function () {
-              $modal.remove();
+              modalElm.remove();
             },
             modalType: modalType,
             // validationMsgPrefix: '* '
@@ -458,7 +490,7 @@
       }
     }
 
-    $(function () {
+    document.addEventListener("DOMContentLoaded", function() {
       for (var i = 0; i < 500; i++) {
         var d = (data[i] = {});
 
@@ -497,8 +529,8 @@
         };
 
         // add extra css styling to the composite editor input(s) that got modified
-        var $editorElm = $("[data-editorid=" + args.column.id + "]");
-        $editorElm.addClass("modified");
+        const editorElm = document.querySelector(`[data-editorid=${  args.column.id}]`);
+        editorElm.classList.add("modified");
 
         // make sure "Duration" is valid (higher or equal to 5 days) when changing the "Effort-Driven"
         // force a form validation whenever the composite editor input "Effort Driven" changes

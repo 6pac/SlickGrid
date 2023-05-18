@@ -65,8 +65,6 @@
 </table>
 
 <script src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
@@ -606,12 +604,12 @@ function bindGridEvents() {
       "start": "01/01/2009",
       "finish": "01/01/2009",
       "effortDriven": false};
-    $.extend(item, args.item);
+    Slick.Utils.extend(item, args.item);
     dataView.addItem(item);
   });
 
   grid.onClick.subscribe(function (e, args) {
-    if ($(e.target).hasClass("toggle")) {
+    if (e.getNativeEvent().target.classList.contains("toggle")) {
       var item = dataView.getItem(args.row);
       if (item) {
         if (!item._collapsed) {
@@ -657,7 +655,7 @@ function bindGridEvents() {
 
 
   // wire up the search textbox to apply the filter to the model
-  $("#txtSearch").keyup(function (e) {
+  document.getElementById("txtSearch").addEventListener("keyup", function (e) {
     Slick.GlobalEditorLock.cancelCurrentEdit();
 
     // clear on Esc
@@ -670,33 +668,27 @@ function bindGridEvents() {
   })
 }
 
-$(function () {
-  // $.ajaxSettings.async = false;
-  // $.getJSON("./data.json",function(content){
-  //   data = content;
-  // });
-  // $.ajaxSettings.async = true;
-  
-  let indent = 0;
-  let parents = [];
 
-  itemMap = groupBy(data, 'parentId');
-  data = initTree(data);
+let indent = 0;
+let parents = [];
 
-  // initialize the model
-  dataView = new Slick.Data.DataView({ inlineFilters: true });
-  dataView.beginUpdate();
-  dataView.setItems(data);
-  dataView.setFilter(myFilter);
-  dataView.endUpdate();
-  
+itemMap = groupBy(data, 'parentId');
+data = initTree(data);
 
-  // initialize the grid
-  grid = new Slick.Grid("#myGrid", dataView, columns, options);
+// initialize the model
+dataView = new Slick.Data.DataView({ inlineFilters: true });
+dataView.beginUpdate();
+dataView.setItems(data);
+dataView.setFilter(myFilter);
+dataView.endUpdate();
 
-  bindGridEvents();
 
-})
+// initialize the grid
+grid = new Slick.Grid("#myGrid", dataView, columns, options);
+
+bindGridEvents();
+
+
 </script>
 </body>
 </html>

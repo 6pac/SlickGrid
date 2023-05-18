@@ -1,6 +1,6 @@
-(function ($) {
+(function (window) {
   // register namespace
-  $.extend(true, window, {
+  Slick.Utils.extend(true, window, {
     "Slick": {
       "CellSelectionModel": CellSelectionModel
     }
@@ -8,7 +8,6 @@
 
   function CellSelectionModel(options) {
     var _grid;
-    var _canvas;
     var _ranges = [];
     var _self = this;
     var _selector;
@@ -29,9 +28,8 @@
     };
 
     function init(grid) {
-      _options = $.extend(true, {}, _defaults, options);
+      _options = Slick.Utils.extend(true, {}, _defaults, options);
       _grid = grid;
-      _canvas = _grid.getCanvasNode();
       _grid.onActiveCellChanged.subscribe(handleActiveCellChange);
       _grid.onKeyDown.subscribe(handleKeyDown);
       grid.registerPlugin(_selector);
@@ -45,7 +43,6 @@
       _selector.onCellRangeSelected.unsubscribe(handleCellRangeSelected);
       _selector.onBeforeCellRangeSelected.unsubscribe(handleBeforeCellRangeSelected);
       _grid.unregisterPlugin(_selector);
-      _canvas = null;
       if (_selector && _selector.destroy) {
         _selector.destroy();
       }
@@ -92,7 +89,7 @@
       _ranges = removeInvalidRanges(ranges);
       if (rangeHasChanged) { 
         // provide extra "caller" argument through SlickEventData to avoid breaking pubsub event that only accepts an array of selected range
-        var eventData = new Slick.EventData();
+        var eventData = new Slick.EventData(null, _ranges);
         Object.defineProperty(eventData, 'detail', { writable: true, configurable: true, value: { caller: caller || "SlickCellSelectionModel.setSelectedRanges" } });
         _self.onSelectedRangesChanged.notify(_ranges, eventData); 
       }
@@ -106,7 +103,7 @@
       setSelectedRanges(getSelectedRanges());
     }
 
-    function handleBeforeCellRangeSelected(e, args) {
+    function handleBeforeCellRangeSelected(e) {
       if (_grid.getEditorLock().isActive()) {
         e.stopPropagation();
         return false;
@@ -189,7 +186,7 @@
       }
     }
 
-    $.extend(this, {
+    Slick.Utils.extend(this, {
       "getSelectedRanges": getSelectedRanges,
       "setSelectedRanges": setSelectedRanges,
 
@@ -202,4 +199,4 @@
       "onSelectedRangesChanged": new Slick.Event()
     });
   }
-})(jQuery);
+})(window);

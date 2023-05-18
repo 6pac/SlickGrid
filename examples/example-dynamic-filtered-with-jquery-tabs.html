@@ -6,7 +6,7 @@
   <title>SlickGrid example: jQuery tabs with a dynamic filtered grid in each pane</title>
   <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
   <link rel="stylesheet" href="../controls/slick.pager.css" type="text/css"/>
-  <link rel="stylesheet" href="../css/smoothness/jquery-ui.css" type="text/css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/smoothness/jquery-ui.min.css" />
   <link rel="stylesheet" href="examples.css" type="text/css"/>
   <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css"/>
   <style>
@@ -15,7 +15,7 @@
 	  outline: 0;
 	  border: 1px solid gray;
     }
-	
+
     .cell-title {
       font-weight: bold;
     }
@@ -50,7 +50,7 @@
 		  <div id="tabs-1">
 			<div><strong><i>This tab is the original</i></strong></div>
 			<br/>
-			
+
 		    <b>Search:</b>
 			<hr/>
 			<div style="padding:6px;">
@@ -86,8 +86,8 @@
 
 <script src="../lib/firebugx.js"></script>
 
-<script src="../lib/jquery-3.1.0.js"></script>
-<script src="../lib/jquery-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -108,37 +108,37 @@
   var sliderElementName = "pcSlider_";
   var searchElementName = "txtSearch_";
   var selectButtonElementName = "btnSelectRows_";
-  
+
   var gridArray;
   var dataViewArray;
-  
+
   // -----------------------------------------------------------------------------------
   // HANDY HINTS
   //
   // There are many ways to achieve dynamic grids. The approach used in this example is
-  // to declare arrays for all the grid housekeeping objects such as search text, sort 
+  // to declare arrays for all the grid housekeeping objects such as search text, sort
   // direction etc, and for all the important objects such as grids and dataViews.
-  // In a single-grid page, these are usually variables, but for multiple grid pages, 
-  // declaring an array allows us to keep a set of data for each grid indexed by the 
+  // In a single-grid page, these are usually variables, but for multiple grid pages,
+  // declaring an array allows us to keep a set of data for each grid indexed by the
   // 'gridIndex' from 1 to n.
-  // Events are declared once within the function that creates the grid, with the grid, 
-  // dataview and gridIndex local vars being used to force a closure and lock the event 
+  // Events are declared once within the function that creates the grid, with the grid,
+  // dataview and gridIndex local vars being used to force a closure and lock the event
   // to that grid/dataView.
   //
   // Another approach would be to create single events used by all grids that can
   // determine which grid they are associated with and respond accordingly.
-  // To facilitate this, all grid events pass the args.grid parameter which is the 
+  // To facilitate this, all grid events pass the args.grid parameter which is the
   // grid itself, and all dataView events pass the args.dataView parameter similarly.
   //
   // Where the grid is available and you want the dataView, use grid.getData().
   // Where the dataView is available and you want the grid, use GetDataViewIndex()
   // and reference the grid using gridArray[gridIndex].
   //
-  // Getting the gridIndex from the grid or dataView also allows reference to the arrays 
+  // Getting the gridIndex from the grid or dataView also allows reference to the arrays
   // of housekeeping objects discussed earlier, and makes it easy get a handle on a control
   // in the grid's tab by constructing element ids eg. sliderElementName above.
-  
-  // The two following functions are not used in this page, but have been tested and can be 
+
+  // The two following functions are not used in this page, but have been tested and can be
   // utilised as just described to get the gridIndex from the grid or dataView object.
   function GetGridIndex(grid) {
 	for (var i=1; i<gridArray.length; i++) {
@@ -146,7 +146,7 @@
 	}
 	return -1;
   }
-  
+
   function GetDataViewIndex(dataView) {
 	for (var i=1; i<dataViewArray.length; i++) {
 		if (dataViewArray[i] === dataView) { return i; }
@@ -154,7 +154,7 @@
 	return -1;
   }
   // -----------------------------------------------------------------------------------
-  
+
   var sortcolArray = [];
   var sortdirArray = [];
   var percentCompleteThresholdArray = [];
@@ -225,7 +225,7 @@
     d["finish"] = "01/05/2009";
     d["effortDriven"] = (i % 5 == 0);
   }
-  
+
 	dataView.beginUpdate();
 	dataView.setItems(data);
 	dataView.setFilterArgs({
@@ -235,14 +235,14 @@
 	dataView.setFilter(myFilter);
 	dataView.endUpdate();
   }
-  
+
   function CreateGrid(gridIndex) {
     if (!gridArray) { gridArray = []; dataViewArray=[]; }
-	
+
 	// define element names
 	var gridId = gridElementName + gridIndex;
 	var pagerId = pagerElementName + gridIndex;
-	
+
 	// create grid and associated components
     var dataView = new Slick.Data.DataView({ inlineFilters: true });
 	var columns = CreateColumns();
@@ -252,24 +252,24 @@
 
 	var pager = new Slick.Controls.Pager(dataView, grid, $("#" + pagerId));
 	var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
-	
+
 	gridArray[gridIndex] = grid;
 	dataViewArray[gridIndex] = dataView;
-	
+
 	// init arrays
 	sortcolArray[gridIndex] = "title";
 	sortdirArray[gridIndex] = 1;
 	percentCompleteThresholdArray[gridIndex] = 0;
 	searchStringArray[gridIndex] = "";
 	h_runfiltersArray[gridIndex] = null;
-	
-	// wire up events. any reference to gridIndex creates a closure and locks 
+
+	// wire up events. any reference to gridIndex creates a closure and locks
 	// the function to the current grid
 	function comparer(a, b) {
 	  var x = a[sortcolArray[gridIndex]], y = b[sortcolArray[gridIndex]];
 	  return (x == y ? 0 : (x > y ? 1 : -1));
 	}
-	
+
 	  grid.onCellChange.subscribe(function (e, args) {
 		dataView.updateItem(args.item.id, args.item);
 	  });
@@ -401,11 +401,11 @@
 	  // or being on a different page) to stay selected, pass 'false' to the second arg
 	  dataView.syncGridSelection(grid, true);
   }
-  
+
   $(function () {
 	// take care of jqueryui tabs and adding tab
-    $( "div#tabs" ).tabs();	
- 
+    $( "div#tabs" ).tabs();
+
     $("button#add-tab").click(function() {
         var num_tabs = $("div#tabs ul li").length + 1;
 
@@ -432,7 +432,7 @@
 				+ '<div id="' + gridElementName + num_tabs + '" style="width:600px;height:300px;" class="my-grid"></div>'
 			+ "</div>"
         );
-		
+
 		CreateGrid(num_tabs);
         $("div#tabs").tabs("refresh");
     });

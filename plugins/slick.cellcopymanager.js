@@ -1,6 +1,6 @@
-(function ($) {
+(function (window) {
   // register namespace
-  $.extend(true, window, {
+  Slick.Utils.extend(true, window, {
     "Slick": {
       "CellCopyManager": CellCopyManager
     }
@@ -21,7 +21,7 @@
       _grid.onKeyDown.unsubscribe(handleKeyDown);
     }
 
-    function handleKeyDown(e, args) {
+    function handleKeyDown(e) {
       var ranges;
       if (!_grid.getEditorLock().isActive()) {
         if (e.which == Slick.keyCode.ESCAPE) {
@@ -75,7 +75,7 @@
       _grid.removeCellCssStyles("copy-manager");
     }
 
-    $.extend(this, {
+    Slick.Utils.extend(this, {
       "init": init,
       "destroy": destroy,
       "pluginName": "CellCopyManager",
@@ -87,4 +87,4 @@
       "onPasteCells": new Slick.Event()
     });
   }
-})(jQuery);
+})(window);

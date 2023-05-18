@@ -81,9 +81,6 @@
   </div>
 </div>
 
-<script src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -169,21 +166,21 @@ function requiredFieldValidator(value) {
   }
 }
 
-$(function () {
+document.addEventListener("DOMContentLoaded", function() {
   data = [
     { name: "Make a list", complete: true},
     { name: "Check it twice", complete: false},
     { name: "Find out who's naughty", complete: false},
     { name: "Find out who's nice", complete: false}
   ];
-  
+
   data2 = [
     { name: "Onions", complete: true},
     { name: "Vegemite", complete: false},
     { name: "Corn Flakes", complete: false},
     { name: "Beans", complete: false}
   ];
-  
+
   grid = new Slick.Grid("#myGrid", data, columns, options);
 
   grid.setSelectionModel(new Slick.RowSelectionModel({
@@ -204,7 +201,7 @@ $(function () {
   moveRowsPlugin.onMoveRows.subscribe(function (e, args) {
     var extractedRows = [], selectedRowIndexes = [], left, right;
     var rows = args.rows;
-    
+
     // insert moved rows into data array
     left = data2.slice(0, args.insertBefore);
     right = data2.slice(args.insertBefore, data2.length);
@@ -229,13 +226,13 @@ $(function () {
 
   grid.onAddNewRow.subscribe(function (e, args) {
     var item = {name: "New task", complete: false};
-    $.extend(item, args.item);
+    Slick.Utils.extend(item, args.item);
     data.push(item);
     grid.invalidateRows([data.length - 1]);
     grid.updateRowCount();
     grid.render();
   });
-})
+});
 </script>
 </body>
 </html>

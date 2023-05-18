@@ -56,6 +56,12 @@ describe('Example - Context Menu & Cell Menu', () => {
       .find('.slick-row .slick-cell:nth(1)')
       .rightclick();
 
+    cy.get('.slick-context-menu-command-list')
+      .should('exist');
+
+    cy.get('.slick-context-menu-option-list')
+      .should('not.exist');
+
     cy.window().then((win) => {
       expect(win.console.log).to.have.callCount(2);
       expect(win.console.log).to.be.calledWith('Before the global Context Menu is shown');
@@ -118,12 +124,15 @@ describe('Example - Context Menu & Cell Menu', () => {
       .find('.slick-row .slick-cell:nth(5)')
       .rightclick();
 
+    cy.get('.slick-context-menu-command-list')
+      .should('not.exist');
+
+    cy.get('.slick-context-menu-option-list')
+      .should('exist');
+
     cy.get('.slick-context-menu .slick-context-menu-option-list')
       .contains('High')
       .click();
-
-    cy.get('.slick-context-menu-command-list')
-      .should('not.exist');
 
     cy.get('#myGrid')
       .find('.slick-row .slick-cell:nth(7)')

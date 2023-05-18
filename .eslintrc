@@ -1,13 +1,22 @@
 {
-    "extends": "eslint:recommended",
+    "extends": [
+        "eslint:recommended",
+        "plugin:cypress/recommended"
+    ],
     "env": {
-        "browser": true
+        "browser": true,
+        "es6": true,
+        "node": true
     },
     "globals": {
-        "jQuery": true,
-        "Slick": true
+        "flatpickr": true,
+        "Slick": true,
+        "Sortable": true
     },
     "rules": {
+        "cypress/no-unnecessary-waiting": "off",
+        "cypress/unsafe-to-chain-command": "off",
+        "no-cond-assign": "off",
         "no-prototype-builtins": [0]
     }
 }

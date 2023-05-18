@@ -17,7 +17,7 @@
       <p>
           The container which the grid is being created in needs to be in the DOM and participate in layout
           (can be 'visibility:hidden' but not 'display:none') in order for SlickGrid to be able to make certain
-          measurements and initialize event listeners.  Normally, this is done when a SlickGrid instance is 
+          measurements and initialize event listeners.  Normally, this is done when a SlickGrid instance is
           being created.  Optionally, you can defer the initialization until the above condition is met and call
           the <b>grid.init()</b> method explicitly.  To use explicit initialization, set the <b>explicitInitialization</b>
           option to true.
@@ -33,7 +33,6 @@
   </tr>
 </table>
 
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -57,7 +56,7 @@
     explicitInitialization: true
   };
 
-  $(function () {
+  document.addEventListener("DOMContentLoaded", function() {
     var data = [];
     for (var i = 0; i < 500; i++) {
       data[i] = {
@@ -71,12 +70,17 @@
     }
 
     // create a detached container element
-    var myGrid = $("<div id='myGrid' style='width:600px;height:500px;position:relative;'></div>");
-    grid = new Slick.Grid(myGrid, data, columns, options);
+    const gridElm = document.createElement('div');
+    gridElm.id = 'myGrid';
+    gridElm.style.width = '600px';
+    gridElm.style.height = '500px';
+    gridElm.style.position = 'relative';
+
+    grid = new Slick.Grid(gridElm, data, columns, options);
 
 
     // ... later on, append the container to the DOM and initialize SlickGrid
-    myGrid.appendTo($("#myTable"));
+    document.querySelector("#myTable").appendChild(gridElm);
     grid.init();
   })
 </script>

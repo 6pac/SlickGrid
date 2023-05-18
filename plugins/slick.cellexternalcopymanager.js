@@ -1,6 +1,6 @@
-(function ($) {
+(function (window) {
   // register namespace
-  $.extend(true, window, {
+  Slick.Utils.extend(true, window, {
     "Slick": {
       "CellExternalCopyManager": CellExternalCopyManager
     }
@@ -59,8 +59,10 @@
       }
       // we give focus on the grid when a selection is done on it.
       // without this, if the user selects a range of cell without giving focus on a particular cell, the grid doesn't get the focus and key stroke handles (ctrl+c) don't work
-      cellSelectionModel.onSelectedRangesChanged.subscribe(function(e, args){
-        _grid.focus();
+      cellSelectionModel.onSelectedRangesChanged.subscribe(() => {
+        if (!_grid.getEditorLock().isActive()) {
+          _grid.focus();
+        }
       });
     }
 
@@ -78,30 +80,32 @@
       return columnDef.name;
     }
 
-    function getDataItemValueForColumn(item, columnDef, e) {
-      if (_options.dataItemColumnValueExtractor) {
-        var val = _options.dataItemColumnValueExtractor(item, columnDef);
-
-        if (val) { return val; }
+    function getDataItemValueForColumn(item, columnDef, event) {
+      if (typeof _options.dataItemColumnValueExtractor === 'function') {
+        const val = _options.dataItemColumnValueExtractor(item, columnDef);
+        if (val) {
+          return val;
+        }
       }
 
-      var retVal = '';
+      let retVal = '';
 
       // if a custom getter is not defined, we call serializeValue of the editor to serialize
-      if (columnDef.editor){
-        var editorArgs = {
-          'container':$("<p>"),  // a dummy container
-          'column':columnDef,
-          'position':{'top':0, 'left':0},  // a dummy position required by some editors
-          'grid':_grid,
-          'event':e
-        };
-        var editor = new columnDef.editor(editorArgs);
+      if (columnDef && columnDef.editor) {
+        const tmpP = document.createElement('p');
+        const editor = new columnDef.editor({
+          container: tmpP,  // a dummy container
+          column: columnDef,
+          event,
+          position: { top: 0, left: 0 },  // a dummy position required by some editors
+          grid: _grid,
+        });
         editor.loadValue(item);
         retVal = editor.serializeValue();
         editor.destroy();
+        tmpP.remove();
       } else {
-        retVal = item[columnDef.field];
+        retVal = item[columnDef.field || ''];
       }
 
       return retVal;
@@ -109,23 +113,24 @@
     
     function setDataItemValueForColumn(item, columnDef, value) {
       if (columnDef.denyPaste) { return null; }
-      
+
       if (_options.dataItemColumnValueSetter) {
         return _options.dataItemColumnValueSetter(item, columnDef, value);
       }
 
       // if a custom setter is not defined, we call applyValue of the editor to unserialize
-      if (columnDef.editor){
-        var editorArgs = {
-          'container':$("body"),  // a dummy container
-          'column':columnDef,
-          'position':{'top':0, 'left':0},  // a dummy position required by some editors
-          'grid':_grid
-        };
-        var editor = new columnDef.editor(editorArgs);
+      if (columnDef.editor) {
+        const tmpDiv = document.createElement('div');
+        const editor = new columnDef.editor({
+          container: tmpDiv, // a dummy container
+          column: columnDef,
+          position: { top: 0, left: 0 },  // a dummy position required by some editors
+          grid: _grid
+        });
         editor.loadValue(item);
         editor.applyValue(item, value);
         editor.destroy();
+        tmpDiv.remove();
       } else {
         item[columnDef.field] = value;
       }
@@ -360,14 +365,17 @@
                     if (clipTextRows.length === 0 && _options.includeHeaderWhenCopying) {
                         var clipTextHeaders = [];
                         for (var j = range.fromCell; j < range.toCell + 1 ; j++) {
-                            if (columns[j].name.length > 0)
+                            if (columns[j].name.length > 0 && !columns[j].hidden) {
                                 clipTextHeaders.push(getHeaderValueForColumn(columns[j]));
+                            }
                         }
                         clipTextRows.push(clipTextHeaders.join("\t"));
                     }
 
                     for (var j=range.fromCell; j< range.toCell+1 ; j++){
-                        clipTextCells.push(getDataItemValueForColumn(dt, columns[j], e));
+                        if (columns[j].name.length > 0 && !columns[j].hidden) {
+                            clipTextCells.push(getDataItemValueForColumn(dt, columns[j], e));
+                        }
                     }
                     clipTextRows.push(clipTextCells.join("\t"));
                 }
@@ -455,7 +463,7 @@
       _options.includeHeaderWhenCopying = includeHeaderWhenCopying;
     }
     
-    $.extend(this, {
+    Slick.Utils.extend(this, {
       "init": init,
       "destroy": destroy,
       "pluginName": "CellExternalCopyManager",
@@ -469,4 +477,4 @@
       "setIncludeHeaderWhenCopying" : setIncludeHeaderWhenCopying
     });
   }
-})(jQuery);
+})(window);

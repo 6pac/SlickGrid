@@ -69,8 +69,6 @@
   </div>
 </div>
 
-
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -86,7 +84,7 @@
   var data = [];
   var columns = [
     {id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 40, resizable: false, selectable: false },
-    {id: "title", name: "Title", field: "title", width: 120, minWidth: 120, cssClass: "cell-title"},
+    {id: "title", name: "Title", field: "title", width: 120, cssClass: "cell-title"},
     {id: "duration", name: "Duration", field: "duration"},
     {id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar},
     {id: "start", name: "Start", field: "start", minWidth: 60},
@@ -120,7 +118,7 @@
   }
 
 
-  $(function () {
+  document.addEventListener("DOMContentLoaded", function() {
     // prepare the data
     for (var i = 0; i < 500000; i++) {
       data[i] = new DataItem(i);
@@ -128,7 +126,7 @@
 
     dataView = new Slick.Data.DataView({ inlineFilters: true });
     grid = new Slick.Grid("#myGrid", dataView, columns, options);
-    var pager = new Slick.Controls.Pager(dataView, grid, $("#pager"));
+    var pager = new Slick.Controls.Pager(dataView, grid, "#pager");
 
     // wire up model events to drive the grid
     dataView.onRowCountChanged.subscribe(function (e, args) {
@@ -176,7 +174,7 @@
     dataView.setFilter(myFilter);
     dataView.setFilterArgs(0);
     dataView.endUpdate();
-  })
+  });
 </script>
 </body>
 </html>

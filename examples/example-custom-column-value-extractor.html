@@ -26,7 +26,6 @@
   </tr>
 </table>
 
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -58,7 +57,7 @@
     }
   }
 
-  $(function () {
+  document.addEventListener("DOMContentLoaded", function() {
     var data = [];
     for (var i = 0; i < 500; i++) {
       data[i] = {
@@ -72,7 +71,7 @@
     }
 
     grid = new Slick.Grid("#myGrid", data, columns, options);
-  })
+  });
 </script>
 </body>
 </html>

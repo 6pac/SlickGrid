@@ -5,14 +5,14 @@
  * @namespace Slick
  */
 
-(function ($) {
+(function () {
   /**
    * Draggable Class, enables dragging functionality for any element for example cell & row selections.
    * Note that mouse/touch start is on the specified container element but all other events are on the document body.
    * code refs:
    *   https://betterprogramming.pub/perfecting-drag-and-drop-in-pure-vanilla-javascript-a761184b797a
    * available optional options:
-   *   - containerElement: container DOM element, defaults to "document" 
+   *   - containerElement: container DOM element, defaults to "document"
    *   - allowDragFrom: when defined, only allow dragging from an element that matches a specific query selector
    *   - onDragInit: drag initialized callback
    *   - onDragStart: drag started callback
@@ -39,8 +39,8 @@
     };
 
     if (containerElement) {
-      containerElement.addEventListener('mousedown', userPressed);
-      containerElement.addEventListener('touchstart', userPressed);
+      containerElement.addEventListener('mousedown', userPressed, Slick.Utils.enablePassiveWhenSupported());
+      containerElement.addEventListener('touchstart', userPressed, Slick.Utils.enablePassiveWhenSupported());
     }
 
     function executeDragCallbackWhenDefined(callback, e, dd) {
@@ -51,8 +51,8 @@
 
     function destroy() {
       if (containerElement) {
-        containerElement.removeEventListener('mousedown', userPressed);
-        containerElement.removeEventListener('touchstart', userPressed);
+        containerElement.removeEventListener('mousedown', userPressed, Slick.Utils.enablePassiveWhenSupported());
+        containerElement.removeEventListener('touchstart', userPressed, Slick.Utils.enablePassiveWhenSupported());
       }
     }
 
@@ -130,13 +130,13 @@
     let { element, onMouseWheel } = options;
 
     function destroy() {
-      element.removeEventListener('wheel', wheelHandler, false);
-      element.removeEventListener('mousewheel', wheelHandler, false);
+      element.removeEventListener('wheel', wheelHandler);
+      element.removeEventListener('mousewheel', wheelHandler);
     }
 
     function init() {
-      element.addEventListener('wheel', wheelHandler, false);
-      element.addEventListener('mousewheel', wheelHandler, false);
+      element.addEventListener('wheel', wheelHandler);
+      element.addEventListener('mousewheel', wheelHandler);
     }
 
     // copy over the same event handler code used in jquery.mousewheel
@@ -191,7 +191,7 @@
    *   - onResizeStart: resize start callback
    *   - onResize: resizing callback
    *   - onResizeEnd: resize ended callback
-   * @param {Object} options 
+   * @param {Object} options
    * @returns - Resizable instance which includes destroy method
    * @class Resizable
    */
@@ -253,11 +253,9 @@
   }
 
   // exports
-  $.extend(true, window, {
-    "Slick": {
-      "Draggable": Draggable,
-      "MouseWheel": MouseWheel,
-      "Resizable": Resizable,
-    }
+  Slick.Utils.extend(Slick, {
+    "Draggable": Draggable,
+    "MouseWheel": MouseWheel,
+    "Resizable": Resizable,
   });
-})(jQuery);
+})();

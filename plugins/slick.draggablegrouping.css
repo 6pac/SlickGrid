@@ -53,6 +53,7 @@
 .slick-placeholder {
   font-size: 11px;
   height: 100%;
+  width: 100%;
 }
 
 .slick-droppable-sortitem-hover {

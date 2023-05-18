@@ -35,9 +35,6 @@
   </div>
 </div>
 
-<script src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -65,39 +62,43 @@
   }
 
   function NumericRangeEditor(args) {
-    var $from, $to;
+    var fromElm, toElm;
     var scope = this;
 
     this.init = function () {
-      $from = $("<INPUT type=text style='width:40px' />")
-          .appendTo(args.container)
-          .on("keydown", scope.handleKeyDown);
+      fromElm = document.createElement('input');
+      fromElm.type ='text';
+      fromElm.style.width = '40px';
+      args.container.appendChild(fromElm);
+      args.container.insertAdjacentHTML('afterend', '&nbsp; to &nbsp;');
 
-      $(args.container).append("&nbsp; to &nbsp;");
+      toElm = document.createElement('input');
+      toElm.type ='text';
+      toElm.style.width = '40px';
+      args.container.appendChild(toElm);
 
-      $to = $("<INPUT type=text style='width:40px' />")
-          .appendTo(args.container)
-          .on("keydown", scope.handleKeyDown);
+      fromElm.addEventListener('keydown', scope.handleKeyDown);
+      toElm.addEventListener('keydown', scope.handleKeyDown);
 
       scope.focus();
     };
 
     this.handleKeyDown = function (e) {
-      if (e.keyCode == $.ui.keyCode.LEFT || e.keyCode == $.ui.keyCode.RIGHT || e.keyCode == $.ui.keyCode.TAB) {
+      if (e.key == 'ArrowLeft' || e.key == 'ArrowRight' || e.key == 'Left' || e.key == 'Right' || e.key == 'Tab') {
         e.stopImmediatePropagation();
       }
     };
 
     this.destroy = function () {
-      $(args.container).empty();
+      args.container.innerHTML = '';
     };
 
     this.focus = function () {
-      $from.focus();
+      fromElm.focus();
     };
 
     this.serializeValue = function () {
-      return {from: parseInt($from.val(), 10), to: parseInt($to.val(), 10)};
+      return {from: parseInt(fromElm.value, 10), to: parseInt(toElm.value, 10)};
     };
 
     this.applyValue = function (item, state) {
@@ -106,20 +107,20 @@
     };
 
     this.loadValue = function (item) {
-      $from.val(item.from);
-      $to.val(item.to);
+      fromElm.value = item.from;
+      toElm.value = item.to;
     };
 
     this.isValueChanged = function () {
-      return args.item.from != parseInt($from.val(), 10) || args.item.to != parseInt($to.val(), 10);
+      return args.item.from != parseInt(fromElm.value, 10) || args.item.to != parseInt(toElm.value, 10);
     };
 
     this.validate = function () {
-      if (isNaN(parseInt($from.val(), 10)) || isNaN(parseInt($to.val(), 10))) {
+      if (isNaN(parseInt(fromElm.value, 10)) || isNaN(parseInt(toElm.value, 10))) {
         return {valid: false, msg: "Please type in valid numbers."};
       }
 
-      if (parseInt($from.val(), 10) > parseInt($to.val(), 10)) {
+      if (parseInt(fromElm.value, 10) > parseInt(toElm.value, 10)) {
         return {valid: false, msg: "'from' cannot be greater than 'to'"};
       }
 
@@ -129,7 +130,7 @@
     this.init();
   }
 
-  $(function () {
+  document.addEventListener("DOMContentLoaded", function() {
     for (var i = 0; i < 500; i++) {
       var d = (data[i] = {});
 
@@ -143,7 +144,7 @@
     grid.onValidationError.subscribe(function (e, args) {
       alert(args.validationResults.msg);
     });
-  })
+  });
 </script>
 </body>
 </html>

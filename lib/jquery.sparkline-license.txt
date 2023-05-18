@@ -1,0 +1,2 @@
+/* jquery.sparkline 1.6 - http://omnipotent.net/jquery.sparkline/
+** Licensed under the New BSD License - see above site for details */

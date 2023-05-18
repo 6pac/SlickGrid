@@ -32,9 +32,6 @@
     </ul>
 </div>
 
-<script src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -74,17 +71,17 @@
 
   function UpdateTotal(cell, grid) {
     var columnId = grid.getColumns()[cell].id;
-    
+
     var total = 0;
     var i = data.length;
     while (i--) {
       total += (parseInt(data[i][columnId], 10) || 0);
     }
     var columnElement = grid.getFooterRowColumn(columnId);
-    $(columnElement).html("Sum:  " + total);
+    columnElement.textContent = `Sum: ${total}`;
   }
 
-  $(function () {
+  document.addEventListener("DOMContentLoaded", function() {
     for (var i = 0; i < 20; i++) {
       var d = (data[i] = {});
       d["id"] = i;
@@ -102,7 +99,7 @@
 
     grid.onColumnsReordered.subscribe(function(e, args) {
       UpdateAllTotals(args.grid);
-    });    
+    });
   })
 </script>
 </body>

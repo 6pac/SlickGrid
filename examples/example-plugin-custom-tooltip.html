@@ -32,7 +32,7 @@
       -moz-box-sizing: border-box;
       box-sizing: border-box;
     }
-    
+
     .header-tooltip-title {
       font-weight: bold;
       font-size: 14px;
@@ -125,9 +125,6 @@
     </div>
   </div>
 
-  <script src="../lib/firebugx.js"></script>
-
-  <script src="../lib/jquery-3.1.0.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
@@ -164,7 +161,7 @@
     }
 
     function changeServerDelay(delay) {
-      serverApiDelay = $('#server-delay').val();
+      serverApiDelay = document.querySelector('#server-delay').value;
     }
 
     function filter(item) {
@@ -216,16 +213,16 @@
           // usabilityOverride: (args) => !!(args.dataContext?.id % 2) // show it only every second row
         },
       },
-      { 
-        id: "desc", name: '<span title="custom title tooltip text">Description</span>', field: "description", width: 100, editor: Slick.Editors.LongText,  
+      {
+        id: "desc", name: '<span title="custom title tooltip text">Description</span>', field: "description", width: 100, editor: Slick.Editors.LongText,
         formatter: (row, cell, value, column, dataContext) => `<span title="regular tooltip (from title attribute)\r${dataContext.title} cell value:\r${value || ''}">${value || ''}</span>`,
         // define tooltip options here OR for the entire grid via the grid options (cell tooltip options will have precedence over grid options)
         customTooltip: {
           useRegularTooltip: true, // note regular tooltip will try to find a "title" attribute in the cell formatter (it won't work without a cell formatter)
         },
       },
-      { 
-        id: "desc2", name: '<span title="custom title tooltip text">Description 2</span>', field: "description", width: 100, editor: Slick.Editors.LongText,  
+      {
+        id: "desc2", name: '<span title="custom title tooltip text">Description 2</span>', field: "description", width: 100, editor: Slick.Editors.LongText,
         formatter: (row, cell, value, column, dataContext) => `<span title="regular tooltip (from title attribute)\r${dataContext.title} cell value:\r${value || ''}">${value || ''}</span>`,
         // define tooltip options here OR for the entire grid via the grid options (cell tooltip options will have precedence over grid options)
         customTooltip: {
@@ -237,14 +234,14 @@
         },
       },
       { id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Text },
-      { 
-        id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, 
-        formatter: Slick.Formatters.PercentCompleteBar, 
+      {
+        id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false,
+        formatter: Slick.Formatters.PercentCompleteBar,
         editor: Slick.Editors.PercentComplete,
         customTooltip: { useRegularTooltip: true, position: "center" },
       },
       { id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Flatpickr },
-      { 
+      {
         id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Flatpickr,
         // you could disable the custom/regular tooltip via either of the following 2 options
         disableTooltip: true,
@@ -313,7 +310,7 @@
       return out;
     }
 
-    $(function () {
+    document.addEventListener("DOMContentLoaded", function() {
       for (var i = 0; i < 500; i++) {
         var d = (data[i] = {});
 
@@ -340,22 +337,27 @@
       grid.setSelectionModel(new Slick.CellSelectionModel());
       grid.registerPlugin(customTooltipPlugin);
 
-      $(grid.getHeaderRow()).on("change keyup", ":input", function (e) {
-        var columnId = $(this).data("columnId");
+      const headerRowElm = grid.getHeaderRow();
+      headerRowElm.addEventListener('change', filterKeyup);
+      headerRowElm.addEventListener('keyup', filterKeyup);
+
+      function filterKeyup(e) {
+        const inputFilter = e.target;
+        const columnId = inputFilter.dataset.columnid;
         if (columnId != null) {
-          // keep filter in global variable & filter dataset by calling a refresh
-          columnFilters[columnId] = $.trim($(this).val());
+          columnFilters[columnId] = (e.target.value || '').trim();
           dataView.refresh();
         }
-      });
+      }
 
       grid.onHeaderRowCellRendered.subscribe(function(e, args) {
-        $(args.node).empty();
-        $("<input type='text'>")
-            .data("columnId", args.column.id)
-            .val(columnFilters[args.column.id])
-            .appendTo(args.node);
-      });
+      args.node.innerHTML = ''; // empty it
+      const inputElm = document.createElement('input');
+      inputElm.dataset.columnid = args.column.id;
+      inputElm.value = columnFilters[args.column.id] || '';
+
+      args.node.appendChild(inputElm);
+    });
 
       dataView.onRowCountChanged.subscribe(function (e, args) {
         grid.updateRowCount();

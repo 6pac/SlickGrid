@@ -41,10 +41,10 @@
       cursor: pointer;
     }
 
-    #myGrid input[type=checkbox], 
-    .slick-columnpicker-list input[type=checkbox] { 
+    #myGrid input[type=checkbox],
+    .slick-columnpicker-list input[type=checkbox] {
       display:none; /* to hide the checkbox itself */
-    } 
+    }
     #myGrid input[type=checkbox] + label:before,
     .slick-columnpicker-list input[type=checkbox] + label:before {
       cursor: pointer;
@@ -57,13 +57,13 @@
       margin-right: 4px;
     }
     #myGrid input[type=checkbox] + label:before,
-    .slick-columnpicker-list input[type=checkbox] + label:before { 
+    .slick-columnpicker-list input[type=checkbox] + label:before {
       opacity: 0.2; /* unchecked icon */
-    } 
+    }
     #myGrid input[type=checkbox]:checked + label:before,
-    .slick-columnpicker-list input[type=checkbox]:checked + label:before { 
+    .slick-columnpicker-list input[type=checkbox]:checked + label:before {
       opacity: 1; /* checked icon */
-    } 
+    }
   </style>
 </head>
 <body>
@@ -113,17 +113,14 @@
   </div>
 </div>
 
-<script src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
+<script src="../slick.core.js"></script>
 <script src="../plugins/slick.checkboxselectcolumn.js"></script>
 <script src="../plugins/slick.rowselectionmodel.js"></script>
 <script src="../controls/slick.pager.js"></script>
 <script src="../controls/slick.columnpicker.js"></script>
 
-<script src="../slick.core.js"></script>
 <script src="../slick.dataview.js"></script>
 <script src="../slick.interactions.js"></script>
 <script src="../slick.grid.js"></script>
@@ -146,7 +143,7 @@
 
   // add an offset so that the IDs are not equal to the row number, to fully validate that DataView selected IDs work as intended
   var idOffset = 8;
-  $('#idOffset').text(idOffset);
+  document.querySelector('#idOffset').textContent = idOffset;
 
   checkboxSelector = new Slick.CheckboxSelectColumn({
     cssClass: "slick-cell-checkboxsel",
@@ -178,7 +175,8 @@
   }
 
   function clearFilters() {
-    $('.slick-headerrow-column').children().val('');
+    const filterInputs = document.querySelectorAll('.slick-headerrow-column input');
+    filterInputs.forEach(input => input.value = '');
     for (var columnId in columnFilters) {
       columnFilters[columnId] = "";
     }
@@ -201,9 +199,9 @@
   function setSelectedRowIds() {
     // change row selection even across multiple pages via DataView
     dataView.setSelectedIds([11, 13, 37]); // don't forget we have an id offset of +8
-    
+
     // you can also provide optional options (all defaults to true)
-    // dataView.setSelectedIds([4, 5, 8, 10], { 
+    // dataView.setSelectedIds([4, 5, 8, 10], {
     //   isRowBeingAdded: true,
     //   shouldTriggerEvent: true,
     //   applyGridRowSelection: true)
@@ -223,7 +221,7 @@
     });
   }
 
-  $(function () {
+  document.addEventListener("DOMContentLoaded", function() {
     for (var i = 0; i < 150; i++) {
       var d = (data[i] = {});
       d["id"] = i + idOffset;
@@ -238,7 +236,7 @@
     grid.registerPlugin(checkboxSelector);
     dataView.syncGridSelection(grid, false, true);
 
-    var pager = new Slick.Controls.Pager(dataView, grid, $("#pager"));
+    var pager = new Slick.Controls.Pager(dataView, grid, "#pager");
     var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
 
     dataView.onRowCountChanged.subscribe(function (e, args) {
@@ -257,39 +255,45 @@
 
       console.log("Previously Selected Rows: " + previousSelectedRows.toString());
       console.log("Selected Rows: " + sortedSelectedRows.toString());
-      $('#selectedRows').text(sortedSelectedRows.toString());
-      $('#rowsCount').text(sortedSelectedRows.length); 
+      document.querySelector('#selectedRows').textContent = sortedSelectedRows.toString();
+      document.querySelector('#rowsCount').textContent = sortedSelectedRows.length;
     });
-    
+
     dataView.onSelectedRowIdsChanged.subscribe(function(e, args) {
       var sortedSelectedIds = args.filteredIds.sort(function (a, b) { return a - b });
       // console.log('sortedSelectedIds', args.selectedRowIds);
-      $('#selectedIds').text(sortedSelectedIds.toString());
-      $('#idsCount').text(sortedSelectedIds.length); 
+      document.querySelector('#selectedIds').textContent = sortedSelectedIds.toString();
+      document.querySelector('#idsCount').textContent = sortedSelectedIds.length;
     });
 
-    $(grid.getHeaderRow()).on("change keyup", ":input", function (e) {
-      var columnId = $(this).data("columnId");
+    const headerRowElm = grid.getHeaderRow();
+    headerRowElm.addEventListener('change', filterInputHandler);
+    headerRowElm.addEventListener('keyup', filterInputHandler);
+
+    function filterInputHandler(e) {
+      const inputFilter = e.target;
+      const columnId = inputFilter.dataset.columnid;
       if (columnId != null) {
-        columnFilters[columnId] = $.trim($(this).val());
+        columnFilters[columnId] = (inputFilter.value || '').trim();
         dataView.refresh();
       }
-    });
+    };
 
     grid.onHeaderRowCellRendered.subscribe(function(e, args) {
       if (args.column.field !== "sel") {
-        $(args.node).empty();
-        $("<input type='text'>")
-           .data("columnId", args.column.id)
-           .val(columnFilters[args.column.id])
-           .appendTo(args.node);
+        args.node.innerHTML = ''; // empty it
+        const inputElm = document.createElement('input');
+        inputElm.dataset.columnid = args.column.id;
+        inputElm.value = columnFilters[args.column.id] || '';
+
+        args.node.appendChild(inputElm);
       }
     });
 
     grid.onSort.subscribe(function (e, args) {
       sortdir = args.sortAsc ? 1 : -1;
       sortcol = args.sortCol.field;
-    
+
       // using native sort with comparer
       // preferred method but can be very slow in IE with huge datasets
       dataView.sort(comparer, args.sortAsc);
@@ -301,7 +305,7 @@
     dataView.setItems(data);
     dataView.setFilter(filter);
     dataView.endUpdate();
-  })
+  });
 </script>
 </body>
 </html>

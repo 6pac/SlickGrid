@@ -79,9 +79,9 @@
  *        expandedRows: Array of the Expanded Rows
  *        rowIdsOutOfViewport: Array of the Out of viewport Range Rows
  */
-(function ($) {
+(function (window) {
   // register namespace
-  $.extend(true, window, {
+  Slick.Utils.extend(true, window, {
     "Slick": {
       "Plugins": {
         "RowDetailView": RowDetailView
@@ -122,7 +122,7 @@
     var _keyPrefix = _defaults.keyPrefix;
     var _gridRowBuffer = 0;
     var _rowIdsOutOfViewport = [];
-    var _options = $.extend(true, {}, _defaults, options);
+    var _options = Slick.Utils.extend(true, {}, _defaults, options);
 
     // user could override the expandable icon logic from within the options or after instantiating the plugin
     if (typeof _options.expandableOverride === 'function') {
@@ -172,7 +172,7 @@
       subscribeToOnAsyncResponse();
 
       // after data is set, let's get the DataView Id Property name used (defaults to "id")
-      _handler.subscribe(_dataView.onSetItemsCalled, function (e, args) {
+      _handler.subscribe(_dataView.onSetItemsCalled, function () {
         _dataViewIdProperty = _dataView && _dataView.getIdPropertyName() || 'id';
       });
 
@@ -206,7 +206,7 @@
 
     /** set or change some of the plugin options */
     function setOptions(options) {
-      _options = $.extend(true, {}, _options, options);
+      _options = Slick.Utils.extend(true, {}, _options, options);
       if (_options && _options.singleRowExpand) {
         collapseAll();
       }
@@ -232,7 +232,7 @@
       }
 
       // clicking on a row select checkbox
-      if (_options.useRowClick || _grid.getColumns()[args.cell]['id'] === _options.columnId && $(e.target).hasClass(_options.cssClass)) {
+      if (_options.useRowClick || _grid.getColumns()[args.cell]['id'] === _options.columnId && e.target.classList.contains(_options.cssClass || '')) {
         // if editing, try to commit
         if (_grid.getEditorLock().isActive() && !_grid.getEditorLock().commitCurrentEdit()) {
           e.preventDefault();
@@ -261,7 +261,7 @@
     }
 
     /** If we scroll save detail views that go out of cache range */
-    function handleScroll(e, args) {
+    function handleScroll() {
       if (_options.useSimpleViewportCalc) {
         calculateOutOfRangeViewsSimplerVersion();
       } else {
@@ -358,7 +358,7 @@
       }
     }
 
-	  /**
+    /**
      * Check if the row became out of visible range (when user can't see it anymore)
      * @param rowIndex
      * @param renderedRange from SlickGrid
@@ -390,7 +390,7 @@
 
       setTimeout(function () {
         // make sure View Row DOM Element really exist before notifying that it's a row that is visible again
-        if ($('.cellDetailView_' + item[_dataViewIdProperty]).length) {
+        if (document.querySelector(`.${_gridUid} .cellDetailView_${item[_dataViewIdProperty]}`)) {
           _self.onRowBackToViewportRange.notify({
             'grid': _grid,
             'item': item,
@@ -503,11 +503,11 @@
 
     /** Saves the current state of the detail view */
     function saveDetailView(item) {
-      var view = $('.' + _gridUid + ' .innerDetailView_' + item[_dataViewIdProperty]);
+      const view = document.querySelector(`.${_gridUid} .innerDetailView_${item[_dataViewIdProperty]}`);
       if (view) {
-        var html = $('.' + _gridUid + ' .innerDetailView_' + item[_dataViewIdProperty]).html();
+        const html = view.innerHTML;
         if (html !== undefined) {
-          item[_keyPrefix + 'detailContent'] = html;
+          item[`${_keyPrefix}detailContent`] = html;
         }
       }
     }
@@ -757,7 +757,7 @@
       _expandableOverride = overrideFn;
     }
 
-    $.extend(this, {
+    Slick.Utils.extend(this, {
       "init": init,
       "destroy": destroy,
       "pluginName": "RowDetailView",
@@ -783,4 +783,4 @@
       "onRowBackToViewportRange": new Slick.Event()
     });
   }
-})(jQuery);
+})(window);

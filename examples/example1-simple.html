@@ -26,8 +26,6 @@
   </tr>
 </table>
 
-<script src="../lib/jquery-3.1.0.js"></script>
-<script src="../slick.interactions.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -50,21 +48,19 @@
     enableColumnReorder: false
   };
 
-  $(function () {
-    var data = [];
-    for (var i = 0; i < 500; i++) {
-      data[i] = {
-        title: "Task " + i,
-        duration: "5 days",
-        percentComplete: Math.round(Math.random() * 100),
-        start: "01/01/2009",
-        finish: "01/05/2009",
-        effortDriven: (i % 5 == 0)
-      };
-    }
+  var data = [];
+  for (var i = 0; i < 500; i++) {
+    data[i] = {
+      title: "Task " + i,
+      duration: "5 days",
+      percentComplete: Math.round(Math.random() * 100),
+      start: "01/01/2009",
+      finish: "01/05/2009",
+      effortDriven: (i % 5 == 0)
+    };
+  }
 
-    grid = new Slick.Grid("#myGrid", data, columns, options);
-  })
+  grid = new Slick.Grid("#myGrid", data, columns, options);
 </script>
 </body>
 </html>

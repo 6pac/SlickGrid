@@ -13,8 +13,8 @@
   <h2>Demonstrates:</h2>
   <p>
     Basic Grid with the use of Slick.Plugins.Resizer
-    <button onclick="resizeToFixedDimensions()">Fixed Dimensions 800x600</button>
-    <button onclick="resumeAutoResize()">Resume Auto-Resize</button>
+    <button data-test="fixed-dimension" onclick="resizeToFixedDimensions()">Fixed Dimensions 800x600</button>
+    <button data-test="auto-resize" onclick="resumeAutoResize()">Resume Auto-Resize</button>
   </p>
 
   <h2>View Source:</h2>
@@ -34,7 +34,6 @@
     <div id="myGrid"></div>
   </div>
 
-  <script src="../lib/jquery-3.1.0.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
   <script src="../slick.core.js"></script>
@@ -74,7 +73,7 @@
       // resizer.resizeGrid(100);
     }
 
-    $(function () {
+    document.addEventListener("DOMContentLoaded", function() {
       var data = [];
       for (var i = 0; i < 500; i++) {
         data[i] = {

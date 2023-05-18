@@ -117,9 +117,6 @@
     </div>
   </div>
 
-  <script src="../lib/firebugx.js"></script>
-
-  <script src="../lib/jquery-3.1.0.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
   <script src="../slick.core.js"></script>
@@ -225,7 +222,7 @@
       return (x == y ? 0 : (x > y ? 1 : -1));
     }
 
-    $(function () {
+    document.addEventListener("DOMContentLoaded", function() {
       // prepare the data
       for (var i = 0; i < 1000; i++) {
         data[i] = new DataItem(i);
@@ -246,14 +243,14 @@
       // push the plugin as the first column
       columns.unshift(detailViewPlugin.getColumnDefinition());
 
-      // create the Checkbox Selector and push it on first index 
+      // create the Checkbox Selector and push it on first index
       var columnIndex = 1; // which column index position do we want to add the checkbox selector?
       checkboxSelectorPlugin = new Slick.CheckboxSelectColumn({ cssClass: "slick-cell-checkboxsel" });
       columns.splice(columnIndex, 0, checkboxSelectorPlugin.getColumnDefinition());
 
       grid = new Slick.Grid("#myGrid", dataView, columns, options);
 
-      // register the Selection Model that will be used for all Plugins 
+      // register the Selection Model that will be used for all Plugins
       grid.setSelectionModel(new Slick.RowSelectionModel({
         selectActiveRow: false,
         dragToSelect: true
@@ -358,7 +355,7 @@
             return item && item.title || '';
           });
         }
-        $('#selectedTitles').text(selectedTitles.toString());
+        document.querySelector('#selectedTitles').textContent = selectedTitles.toString();
       });
 
       grid.onSort.subscribe(function (e, args) {

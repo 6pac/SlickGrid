@@ -44,7 +44,6 @@
 
   <script src="../lib/firebugx.js"></script>
 
-  <script src="../lib/jquery-3.1.0.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
   <script src="../slick.core.js"></script>
@@ -161,33 +160,33 @@
 
 
 
-    $(function () {
-      grid = new Slick.Grid("#myGrid", data, columns, options);
+  document.addEventListener("DOMContentLoaded", function() {
+    grid = new Slick.Grid("#myGrid", data, columns, options);
 
-      var headerButtonsPlugin = new Slick.Plugins.HeaderButtons();
+    var headerButtonsPlugin = new Slick.Plugins.HeaderButtons();
 
-      headerButtonsPlugin.onCommand.subscribe(function (e, args) {
-        var column = args.column;
-        var button = args.button;
-        var command = args.command;
+    headerButtonsPlugin.onCommand.subscribe(function (e, args) {
+      var column = args.column;
+      var button = args.button;
+      var command = args.command;
 
-        if (command == "toggle-highlight") {
-          if (button.cssClass == "icon-highlight-on") {
-            delete columnsWithHighlightingById[column.id];
-            button.cssClass = "icon-highlight-off";
-            button.tooltip = "Highlight negative numbers."
-          } else {
-            columnsWithHighlightingById[column.id] = true;
-            button.cssClass = "icon-highlight-on";
-            button.tooltip = "Remove highlight."
-          }
-
-          grid.invalidate();
+      if (command == "toggle-highlight") {
+        if (button.cssClass == "icon-highlight-on") {
+          delete columnsWithHighlightingById[column.id];
+          button.cssClass = "icon-highlight-off";
+          button.tooltip = "Highlight negative numbers."
+        } else {
+          columnsWithHighlightingById[column.id] = true;
+          button.cssClass = "icon-highlight-on";
+          button.tooltip = "Remove highlight."
         }
-      });
 
-      grid.registerPlugin(headerButtonsPlugin);
+        grid.invalidate();
+      }
     });
+
+    grid.registerPlugin(headerButtonsPlugin);
+  });
   </script>
 </body>
 

@@ -1,4 +1,4 @@
-(function ($) {
+(function () {
   /***
    * A sample Model implementation.
    * Provides a filtered view of the underlying data.
@@ -17,7 +17,7 @@
     var idProperty = "id";          // property holding a unique row id
     var items = [];                 // data by index
     var rows = [];                  // data by row
-    var idxById = new Slick.Map();   // indexes by id
+    var idxById = new Map();   // indexes by id
     var rowsById = null;            // rows by id; lazy-calculated
     var filter = null;              // filter function
     var updated = null;             // updated item ids
@@ -25,7 +25,7 @@
     var isBulkSuspend = false;      // delays various operations like the
                                     // index update and delete to efficient
                                     // versions at endUpdate
-    var bulkDeleteIds = new Slick.Map();
+    var bulkDeleteIds = new Map();
     var sortAsc = true;
     var fastSortField;
     var sortComparer;
@@ -78,7 +78,7 @@
     var onGroupExpanded = new Slick.Event();
     var onGroupCollapsed = new Slick.Event();
 
-    options = $.extend(true, {}, defaults, options);
+    options = Slick.Utils.extend(true, {}, defaults, options);
 
     /***
      * Begins a bached update of the items in the data view.
@@ -169,7 +169,7 @@
       // inserted in the cleanup loop above.
       items.length = newIdx;
       // and finally cleanup the deleted ids to start cleanly on the next update.
-      bulkDeleteIds = new Slick.Map();
+      bulkDeleteIds = new Map();
     }
 
     function updateIdxById(startingIndex) {
@@ -214,14 +214,14 @@
       }
       items = filteredItems = data;
       onSetItemsCalled.notify({ idProperty: objectIdProperty, itemCount: items.length }, null, self);
-      idxById = new Slick.Map();
+      idxById = new Map();
       updateIdxById();
       ensureIdUniqueness();
       refresh();
     }
 
     function setPagingOptions(args) {
-      if (onBeforePagingInfoChanged.notify(getPagingInfo(), null, self) !== false) {
+      if (onBeforePagingInfoChanged.notify(getPagingInfo(), null, self).getReturnValue() !== false) {
         if (args.pageSize != undefined) {
           pagesize = args.pageSize;
           pagenum = pagesize ? Math.min(pagenum, Math.max(0, Math.ceil(totalRows / pagesize) - 1)) : 0;
@@ -253,7 +253,7 @@
       if (ascending === false) {
         items.reverse();
       }
-      idxById = new Slick.Map();
+      idxById = new Map();
       updateIdxById();
       refresh();
     }
@@ -281,7 +281,7 @@
       if (ascending === false) {
         items.reverse();
       }
-      idxById = new Slick.Map();
+      idxById = new Map();
       updateIdxById();
       refresh();
     }
@@ -330,7 +330,7 @@
       groupingInfos = (groupingInfo instanceof Array) ? groupingInfo : [groupingInfo];
 
       for (var i = 0; i < groupingInfos.length; i++) {
-        var gi = groupingInfos[i] = $.extend(true, {}, groupingInfoDefaults, groupingInfos[i]);
+        var gi = groupingInfos[i] = Slick.Utils.extend(true, {}, groupingInfoDefaults, groupingInfos[i]);
         gi.getterIsAFn = typeof gi.getter === "function";
 
         // pre-compile accumulator loops
@@ -435,7 +435,8 @@
       var ids = [];
       for (var i = 0, l = rowArray.length; i < l; i++) {
         if (rowArray[i] < rows.length) {
-          ids[ids.length] = rows[rowArray[i]][idProperty];
+          const rowItem = rows[rowArray[i]];
+          ids[ids.length] = rowItem && rowItem[idProperty];
         }
       }
       return ids;
@@ -634,8 +635,7 @@
         // item affects sorting -> must use sorted add
         deleteItem(id);
         sortedAddItem(item);
-      }
-      else { // update does not affect sorting -> regular update works fine
+      } else { // update does not affect sorting -> regular update works fine
         updateItem(id, item);
       }
     }
@@ -647,8 +647,7 @@
         var mid = low + high >>> 1;
         if (sortComparer(items[mid], searchItem) === -1) {
           low = mid + 1;
-        }
-        else {
+        } else {
           high = mid;
         }
       }
@@ -842,7 +841,7 @@
         }
       }
 
-      if(groups.length) {
+      if (groups.length) {
         addTotals(groups, level);
       }
 
@@ -966,8 +965,7 @@
         fn.name = setFunctionName(fn, fnName);
         return fn;
       } else {
-        return function noAccumulator() {
-        }
+        return function noAccumulator() { }
       }
     }
 
@@ -1206,7 +1204,7 @@
         return;
       }
 
-      var previousPagingInfo = $.extend(true, {}, getPagingInfo());
+      var previousPagingInfo = Slick.Utils.extend(true, {}, getPagingInfo());
 
       var countBefore = rows.length;
       var totalRowsBefore = totalRows;
@@ -1331,7 +1329,7 @@
             if (args.added) {
               if (preserveHiddenOnSelectionChange && grid.getOptions().multiSelect) {
                 // find the ones that are hidden
-                var hiddenSelectedRowIds = $.grep(selectedRowIds, function (id) {
+                var hiddenSelectedRowIds = selectedRowIds.filter(function (id) {
                   return self.getRowById(id) === undefined;
                 });
                 // add the newly selected ones
@@ -1342,7 +1340,7 @@
             } else {
               if (preserveHiddenOnSelectionChange && grid.getOptions().multiSelect) {
                 // remove rows whose id is on the list
-                rowIds = $.grep(selectedRowIds, function (id) {
+                rowIds = selectedRowIds.filter(function (id) {
                   return args.ids.indexOf(id) === -1;
                 });
               } else {
@@ -1427,7 +1425,7 @@
       var selectedData = [];
       var selectedIds = getAllSelectedIds();
       selectedIds.forEach(function (id) {
-        selectedData.push(self.getItemById(id));
+          selectedData.push(self.getItemById(id));
       });
       return selectedData;
     }
@@ -1495,7 +1493,7 @@
       this.onRowsOrCountChanged.subscribe(update);
     }
 
-    $.extend(this, {
+    Slick.Utils.extend(this, {
       // methods
       "beginUpdate": beginUpdate,
       "endUpdate": endUpdate,
@@ -1685,18 +1683,16 @@
   // TODO:  merge common aggregators in one to prevent needles iterating
 
   // exports
-  $.extend(true, window, {
-    Slick: {
-      Data: {
-        DataView: DataView,
-        Aggregators: {
-          Avg: AvgAggregator,
-          Min: MinAggregator,
-          Max: MaxAggregator,
-          Sum: SumAggregator,
-          Count: CountAggregator
-        }
+  Slick.Utils.extend(true, Slick, {
+    Data: {
+      DataView: DataView,
+      Aggregators: {
+        Avg: AvgAggregator,
+        Min: MinAggregator,
+        Max: MaxAggregator,
+        Sum: SumAggregator,
+        Count: CountAggregator
       }
     }
   });
-})(jQuery);
+})();

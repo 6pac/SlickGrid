@@ -1,6 +1,6 @@
-(function ($) {
+(function (window) {
   // register namespace
-  $.extend(true, window, {
+  Slick.Utils.extend(true, window, {
     "Slick": {
       "CellRangeSelector": CellRangeSelector
     }
@@ -11,7 +11,7 @@
     var _currentlySelectedRange;
     var _canvas;
     var _gridOptions;
-    var _$activeCanvas;
+    var _activeCanvas;
     var _dragging;
     var _decorator;
     var _self = this;
@@ -33,7 +33,7 @@
     var _isBottomCanvas;
 
     // autoScroll related variables
-    var _$activeViewport;
+    var _activeViewport;
     var _viewportWidth;
     var _viewportHeight;
     var _draggingMouseOffset;
@@ -52,7 +52,7 @@
         throw new Error('Slick.Draggable is undefined, make sure to import "slick.interactions.js"');
       }
 
-      options = $.extend(true, {}, _defaults, options);
+      options = Slick.Utils.extend(true, {}, _defaults, options);
       _decorator = options.cellDecorator || new Slick.CellRangeDecorator(grid, options);
       _grid = grid;
       _canvas = _grid.getCanvasNode();
@@ -67,8 +67,8 @@
 
     function destroy() {
       _handler.unsubscribeAll();
-      _$activeCanvas = null;
-      _$activeViewport = null;
+      _activeCanvas = null;
+      _activeViewport = null;
       _canvas = null;
       if (_decorator && _decorator.destroy) {
         _decorator.destroy();
@@ -84,35 +84,41 @@
       _scrollLeft = args.scrollLeft;
     }
 
-    function handleDragInit(e, dd) {
+    function handleDragInit(e) {
       // Set the active canvas node because the decorator needs to append its
       // box to the correct canvas
-      _$activeCanvas = $(_grid.getActiveCanvasNode(e));
-      _$activeViewport = $(_grid.getActiveViewportNode(e));
+      _activeCanvas = _grid.getActiveCanvasNode(e);
+      _activeViewport = _grid.getActiveViewportNode(e);
 
       var scrollbarDimensions = _grid.getDisplayedScrollbarDimensions()
-      _viewportWidth = _$activeViewport.width() - scrollbarDimensions.width;
-      _viewportHeight = _$activeViewport.height() - scrollbarDimensions.height;
+      _viewportWidth = _activeViewport.offsetWidth - scrollbarDimensions.width;
+      _viewportHeight = _activeViewport.offsetHeight - scrollbarDimensions.height;
+
       _moveDistanceForOneCell = {
         x: _grid.getAbsoluteColumnMinWidth() / 2,
         y: _grid.getOptions().rowHeight / 2
       }
       _isRowMoveRegistered = hasRowMoveManager();
 
-      var c = _$activeCanvas.offset();
-
       _rowOffset = 0;
       _columnOffset = 0;
-      _isBottomCanvas = _$activeCanvas.hasClass('grid-canvas-bottom');
+      _isBottomCanvas = _activeCanvas.classList.contains('grid-canvas-bottom');
 
       if (_gridOptions.frozenRow > -1 && _isBottomCanvas) {
-        _rowOffset = (_gridOptions.frozenBottom) ? $('.'+_grid.getUID()+' .grid-canvas-bottom').height() : $('.'+_grid.getUID()+' .grid-canvas-top').height();
+        const canvasSelector = `.${_grid.getUID()} .grid-canvas-${_gridOptions.frozenBottom ? 'bottom' : 'top'}`;
+        const canvasElm = document.querySelector(canvasSelector);
+        if (canvasElm) {
+          _rowOffset = canvasElm.clientHeight || 0;
+        }
       }
 
-      _isRightCanvas = _$activeCanvas.hasClass('grid-canvas-right');
+      _isRightCanvas = _activeCanvas.classList.contains('grid-canvas-right');
 
       if (_gridOptions.frozenColumn > -1 && _isRightCanvas) {
-        _columnOffset = $('.'+_grid.getUID()+' .grid-canvas-left').width();
+        const canvasLeftElm = document.querySelector(`.${_grid.getUID()} .grid-canvas-left`);
+        if (canvasLeftElm) {
+          _columnOffset = canvasLeftElm.clientWidth || 0;
+        }
       }
 
       // prevent the grid from cancelling drag'n'drop by default
@@ -134,12 +140,14 @@
 
       _grid.focus();
 
-      var startX = dd.startX - $(_canvas).offset().left;
+      let canvasOffset = Slick.Utils.offset(_canvas);
+
+      let startX = dd.startX - (canvasOffset.left || 0);
       if (_gridOptions.frozenColumn >= 0 && _isRightCanvas) {
         startX += _scrollLeft;
       }
 
-      var startY = dd.startY - $(_canvas).offset().top;
+      let startY = dd.startY - (canvasOffset.top || 0);
       if (_gridOptions.frozenRow >= 0 && _isBottomCanvas) {
         startY += _scrollTop;
       }
@@ -151,14 +159,15 @@
       return _decorator.show(new Slick.Range(start.row, start.cell));
     }
 
-    function handleDrag(e, dd) {
+    function handleDrag(evt, dd) {
       if (!_dragging && !_isRowMoveRegistered) {
         return;
       }
       if (!_isRowMoveRegistered) {
-        e.stopImmediatePropagation();
+        evt.stopImmediatePropagation();
       }
 
+      const e = evt.getNativeEvent();
       if (options.autoScroll) {
         _draggingMouseOffset = getMouseOffsetViewport(e, dd);
         if (_draggingMouseOffset.isOutsideViewport) {
@@ -171,14 +180,14 @@
 
     function getMouseOffsetViewport(e, dd) {
       var targetEvent = e.touches ? e.touches[0] : e;
-      var viewportLeft = _$activeViewport.scrollLeft();
-      var viewportTop = _$activeViewport.scrollTop();
+      var viewportLeft = _activeViewport.scrollLeft;
+      var viewportTop = _activeViewport.scrollTop;
       var viewportRight = viewportLeft + _viewportWidth;
       var viewportBottom = viewportTop + _viewportHeight;
 
-      var viewportOffset = _$activeViewport.offset();
-      var viewportOffsetLeft = viewportOffset.left;
-      var viewportOffsetTop = viewportOffset.top;
+      var viewportOffset = Slick.Utils.offset(_activeViewport);
+      var viewportOffsetLeft = viewportOffset.left || 0;
+      var viewportOffsetTop = viewportOffset.top || 0;
       var viewportOffsetRight = viewportOffsetLeft + _viewportWidth;
       var viewportOffsetBottom = viewportOffsetTop + _viewportHeight;
 
@@ -292,10 +301,11 @@
     }
 
     function handleDragTo(e, dd) {
-      var targetEvent = e.touches ? e.touches[0] : e;
-      var end = _grid.getCellFromPoint(
-        targetEvent.pageX - _$activeCanvas.offset().left + _columnOffset,
-        targetEvent.pageY - _$activeCanvas.offset().top + _rowOffset
+      let targetEvent = e.touches ? e.touches[0] : e;
+      let canvasOffset = Slick.Utils.offset(_activeCanvas);
+      let end = _grid.getCellFromPoint(
+        targetEvent.pageX - (canvasOffset && canvasOffset.left || 0) + _columnOffset,
+        targetEvent.pageY - (canvasOffset && canvasOffset.top || 0) + _rowOffset
       );
 
       // ... frozen column(s),
@@ -365,7 +375,7 @@
       return _currentlySelectedRange;
     }
 
-    $.extend(this, {
+    Slick.Utils.extend(this, {
       "init": init,
       "destroy": destroy,
       "pluginName": "CellRangeSelector",
@@ -378,4 +388,4 @@
       "onCellRangeSelecting": new Slick.Event()
     });
   }
-})(jQuery);
+})(window);

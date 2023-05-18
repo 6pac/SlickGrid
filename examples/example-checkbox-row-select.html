@@ -6,6 +6,7 @@
   <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
   <link rel="stylesheet" href="examples.css" type="text/css"/>
   <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../controls/slick.gridmenu.css" type="text/css"/>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" crossorigin="anonymous">
   <style>
     .slick-cell-checkboxsel {
@@ -57,9 +58,9 @@
     <ul>
       <li>Checkbox row select column</li>
       <p>
-        <button onclick="toggleHideSelectAllCheckbox()">Toggle show/hide "Select All" checkbox</button>
+        <button data-test="toggle-select-all" onclick="toggleHideSelectAllCheckbox()">Toggle show/hide "Select All" checkbox</button>
       </p>
-      
+
       <p>
         <button id="unselectRow5">Unselect row 5</button> <button id="selectRow5">Select row 5</button> <button id="unselectAllRows">Unselect all rows</button>
       </p>
@@ -72,9 +73,6 @@
   </div>
 </div>
 
-<script src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -87,6 +85,7 @@
 <script src="../plugins/slick.cellselectionmodel.js"></script>
 <script src="../plugins/slick.rowselectionmodel.js"></script>
 <script src="../controls/slick.columnpicker.js"></script>
+<script src="../controls/slick.gridmenu.js"></script>
 <script src="../slick.formatters.js"></script>
 <script src="../slick.editors.js"></script>
 <script src="../slick.grid.js"></script>
@@ -114,7 +113,7 @@
     checkboxSelector2.setOptions({ hideSelectAllCheckbox: isSelectAllCheckbox2Hidden });
   }
 
-  $(function () {
+  document.addEventListener("DOMContentLoaded", function() {
     for (var i = 0; i < 100; i++) {
       var d = (data[i] = {});
       d[0] = "Row " + i;
@@ -151,6 +150,7 @@
     grid2.registerPlugin(checkboxSelector2);
 
     var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
+    var gridMenuControl = new Slick.Controls.GridMenu(columns, grid, options);
 
     grid.onSelectedRowsChanged.subscribe(function (e, args) {
         // debugging to see the active row in response to questions
@@ -160,8 +160,8 @@
         var rtn = args.grid.getActiveCell();
         var x = args.rows;
     });
-    
-    $("#selectRow5").click(function() {
+
+    document.querySelector("#selectRow5").addEventListener('click', function() {
         var rowIndex = 5; // use row 5 for this example
         var selectedRowsIndexes = grid.getSelectedRows();
         if (selectedRowsIndexes.indexOf(rowIndex) < 0) {
@@ -170,7 +170,7 @@
         }
     });
 
-    $("#unselectRow5").click(function() {
+    document.querySelector("#unselectRow5").addEventListener('click', function() {
         var rowIndex = 5; // use row 5 for this example
         var selectedRowsIndexes = grid.getSelectedRows();
         var rowIndexInArr = selectedRowsIndexes.indexOf(rowIndex);
@@ -180,11 +180,10 @@
         }
     });
 
-    $("#unselectAllRows").click(function() {
+    document.querySelector("#unselectAllRows").addEventListener('click', function() {
         grid.setSelectedRows([]);
     });
-    
-  })
+  });
 </script>
 </body>
 </html>

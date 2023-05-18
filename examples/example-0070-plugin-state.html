@@ -2,6 +2,7 @@
 <html lang="en">
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example: Plugin: State</title>
   <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
   <link rel="stylesheet" href="../plugins/slick.headerbuttons.css" type="text/css"/>
@@ -38,12 +39,12 @@
       This example demonstrates using the <b>Slick.State</b> plugin persisting grid column width, order, visibility and sort order using Local Storage.
       For this demo, we use Local Storage, but you could technically save this data into a database and reload at any time your previous session.
     </p>
+
+    <h2>Options:</h2>
+    <button data-test="clear-storage" onclick="clearLocalStorage()">Clear Local Storage & Page Reload</button>
   </div>
 </div>
 
-<script src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -85,7 +86,12 @@
     }
   }
 
-  $(function () {
+  function clearLocalStorage() {
+    localStorage.clear();
+    window.location.reload();
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
     var dataView = new Slick.Data.DataView();
     var statePersistor = new Slick.State({
       cid: 'sample-grid',
@@ -144,9 +150,9 @@
 
     statePersistor.restore()
       .then(function (state) {
-        grid.setSortColumns(state.sortcols);
+        grid.setSortColumns(state.sortcols || []);
         var columns = grid.getColumns();
-        var sortCols = $.map(grid.getSortColumns(), function (col) {
+        var sortCols = (grid.getSortColumns() || []).map(function (col) {
           return {
             sortCol: columns[grid.getColumnIndex(col.columnId)],
             sortAsc: col.sortAsc

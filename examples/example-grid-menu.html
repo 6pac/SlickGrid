@@ -125,9 +125,6 @@
   </div>
 </div>
 
-<script src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -248,7 +245,9 @@
       ]
     }
   };
-  var columns = [{ id: 'id', field: 'id', name: '#', width: 40, excludeFromGridMenu: true }];
+
+  // show 1st column with font-awesome hashtag icon
+  var columns = [{ id: 'id', field: 'id', name: '<i class="fa fa-info"></i>', width: 40, excludeFromGridMenu: true }];
   var columnFilters = {};
   var sortcol = "id";
   var sortdir = 1;
@@ -309,7 +308,7 @@
       });
   }
 
-  $(function () {
+  document.addEventListener("DOMContentLoaded", function() {
     dataView = new Slick.Data.DataView();
     grid = new Slick.Grid("#myGrid", dataView, columns, options);
     columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
@@ -325,21 +324,26 @@
       grid.render();
     });
 
+    const headerRowElm = grid.getHeaderRow();
+    headerRowElm.addEventListener('change', filterKeyup);
+    headerRowElm.addEventListener('keyup', filterKeyup);
 
-    $(grid.getHeaderRow()).on("change keyup", ":input", function (e) {
-      var columnId = $(this).data("columnId");
+    function filterKeyup(e) {
+      const inputFilter = e.target;
+      const columnId = inputFilter.dataset.columnid;
       if (columnId != null) {
-        columnFilters[columnId] = $.trim($(this).val());
+        columnFilters[columnId] = (e.target.value || '').trim();
         dataView.refresh();
       }
-    });
+    }
 
     grid.onHeaderRowCellRendered.subscribe(function(e, args) {
-        $(args.node).empty();
-        $("<input type='text'>")
-           .data("columnId", args.column.id)
-           .val(columnFilters[args.column.id])
-           .appendTo(args.node);
+      args.node.innerHTML = ''; // empty it
+      const inputElm = document.createElement('input');
+      inputElm.dataset.columnid = args.column.id;
+      inputElm.value = columnFilters[args.column.id] || '';
+
+      args.node.appendChild(inputElm);
     });
 
     grid.init();
@@ -362,7 +366,8 @@
         grid.setTopPanelVisibility(!grid.getOptions().showTopPanel);
       }
       else if(args.command === "clear-filter") {
-        $('.slick-headerrow-column').children().val('');
+        const filterInputs = document.querySelectorAll('.slick-headerrow-column input');
+        filterInputs.forEach(input => input.value = '');
         for (var columnId in columnFilters) {
           columnFilters[columnId] = "";
         }
@@ -403,7 +408,7 @@
       sortcol = args.sortCol.field;
       dataView.sort(comparer, args.sortAsc);
     });
-  })
+  });
 </script>
 </body>
 </html>

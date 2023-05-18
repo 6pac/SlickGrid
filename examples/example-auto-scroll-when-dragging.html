@@ -94,9 +94,6 @@
   </div>
 </div>
 
-<script src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -173,7 +170,7 @@
     dataView.setItems(data);
   }
 
-  $(function () {
+  document.addEventListener("DOMContentLoaded", function() {
     var groupItemMetadataProvider = new Slick.Data.GroupItemMetadataProvider();
     loadData(groupItemMetadataProvider);
     grid = new Slick.Grid("#myGrid", dataView, columns, options);
@@ -194,23 +191,23 @@
       grid2.invalidateRows(args.rows);
       grid2.render();
     });
-  })
+  });
 
   function setDefaultOption() {
-    $('#isAutoScroll').prop('checked', true);
-    $('#minIntervalToShowNextCell').val('30');
-    $('#maxIntervalToShowNextCell').val('600');
-    $('#accelerateInterval').val('5');
+    document.querySelector('#isAutoScroll').checked =  true;
+    document.querySelector('#minIntervalToShowNextCell').value = '30';
+    document.querySelector('#maxIntervalToShowNextCell').value = '600';
+    document.querySelector('#accelerateInterval') .value  ='5';
     setOptions();
   }
 
   function setOptions() {
     grid.setSelectionModel(new Slick.CellSelectionModel({
       cellRangeSelector: new Slick.CellRangeSelector({
-        autoScroll: $('#isAutoScroll').is(":checked"),
-        minIntervalToShowNextCell: Number($('#minIntervalToShowNextCell').val()),
-        maxIntervalToShowNextCell: Number($('#maxIntervalToShowNextCell').val()),
-        accelerateInterval: Number($('#accelerateInterval').val())
+        autoScroll: document.querySelector('#isAutoScroll').checked,
+        minIntervalToShowNextCell: Number(document.querySelector('#minIntervalToShowNextCell').value),
+        maxIntervalToShowNextCell: Number(document.querySelector('#maxIntervalToShowNextCell').value),
+        accelerateInterval: Number(document.querySelector('#accelerateInterval').value)
       })
     }));
 
@@ -219,10 +216,10 @@
         selectionCss: {
           "border": "none"
         },
-        autoScroll: $('#isAutoScroll').is(":checked"),
-        minIntervalToShowNextCell: Number($('#minIntervalToShowNextCell').val()),
-        maxIntervalToShowNextCell: Number($('#maxIntervalToShowNextCell').val()),
-        accelerateInterval: Number($('#accelerateInterval').val())
+        autoScroll: document.querySelector('#isAutoScroll').checked,
+        minIntervalToShowNextCell: Number(document.querySelector('#minIntervalToShowNextCell').value),
+        maxIntervalToShowNextCell: Number(document.querySelector('#maxIntervalToShowNextCell').value),
+        accelerateInterval: Number(document.querySelector('#accelerateInterval').value)
       })
   }));
   }

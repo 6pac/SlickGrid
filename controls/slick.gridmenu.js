@@ -77,14 +77,14 @@
  * The plugin exposes the following events:
  *
  *    onAfterMenuShow:   Fired after the menu is shown.  You can customize the menu or dismiss it by returning false.
- *      * ONLY works with a jQuery event (as per slick.core code), so we cannot notify when it's a button event (when grid menu is attached to an external button, not the hamburger menu)
+ *      * ONLY works with a JS event (as per slick.core code), so we cannot notify when it's a button event (when grid menu is attached to an external button, not the hamburger menu)
  *        Event args:
  *            grid:     Reference to the grid.
  *            column:   Column definition.
  *            menu:     Menu options.  Note that you can change the menu items here.
  *
  *    onBeforeMenuShow:   Fired before the menu is shown.  You can customize the menu or dismiss it by returning false.
- *      * ONLY works with a jQuery event (as per slick.core code), so we cannot notify when it's a button event (when grid menu is attached to an external button, not the hamburger menu)
+ *      * ONLY works with a JS event (as per slick.core code), so we cannot notify when it's a button event (when grid menu is attached to an external button, not the hamburger menu)
  *        Event args:
  *            grid:     Reference to the grid.
  *            column:   Column definition.
@@ -116,9 +116,9 @@
 
 'use strict';
 
-(function ($) {
+(function (window) {
   // register namespace
-  $.extend(true, window, {
+  Slick.Utils.extend(true, window, {
     "Slick": {
       "Controls": {
         "GridMenu": SlickGridMenu
@@ -133,13 +133,13 @@
     var _isMenuOpen = false;
     var _options = options;
     var _self = this;
-    var $customTitleElm;
-    var $columnTitleElm;
-    var $customMenu;
-    var $header;
-    var $list;
-    var $button;
-    var $menu;
+    var _columnTitleElm;
+    var _customTitleElm;
+    var _customMenuElm;
+    var _headerElm;
+    var _listElm;
+    var _buttonElm;
+    var _menuElm;
     var columnCheckboxes;
     var _defaults = {
       showButton: true,
@@ -156,6 +156,7 @@
         return columnDef.name;
       }
     };
+    var _bindingEventService = new Slick.BindingEventService();
 
     // when a grid optionally changes from a regular grid to a frozen grid, we need to destroy & recreate the grid menu
     // we do this change because the Grid Menu is on the left container for a regular grid, it is however on the right container for a frozen grid
@@ -178,53 +179,81 @@
     }
 
     function setOptions(newOptions) {
-      options = $.extend({}, options, newOptions);
+      options = Slick.Utils.extend({}, options, newOptions);
     }
 
     function createGridMenu() {
       var gridMenuWidth = (_options.gridMenu && _options.gridMenu.menuWidth) || _defaults.menuWidth;
       if (_gridOptions && _gridOptions.hasOwnProperty('frozenColumn') && _gridOptions.frozenColumn >= 0) {
-        $header = $('.' + _gridUid + ' .slick-header-right');
+        _headerElm = document.querySelector(`.${_gridUid} .slick-header-right`);
       } else {
-        $header = $('.' + _gridUid + ' .slick-header-left');
+        _headerElm = document.querySelector(`.${_gridUid} .slick-header-left`);
       }
-      $header.attr('style', 'width: calc(100% - ' + gridMenuWidth + 'px)');
+      _headerElm.style.width = `calc(100% - ${gridMenuWidth}px)`;
 
-      // if header row is enabled, we need to resize it's width also
+      // if header row is enabled, we need to resize its width also
       var enableResizeHeaderRow = (_options.gridMenu && _options.gridMenu.resizeOnShowHeaderRow != undefined) ? _options.gridMenu.resizeOnShowHeaderRow : _defaults.resizeOnShowHeaderRow;
       if (enableResizeHeaderRow && _options.showHeaderRow) {
-        $('.' + _gridUid + '.slick-headerrow').attr('style', 'width: calc(100% - ' + gridMenuWidth + 'px)');
+        const headerRow = document.querySelector(`.${_gridUid}.slick-headerrow`);
+        if (headerRow) {
+          headerRow.style.width = `calc(100% - ${gridMenuWidth}px)`;
+        }
       }
 
       var showButton = (_options.gridMenu && _options.gridMenu.showButton !== undefined) ? _options.gridMenu.showButton : _defaults.showButton;
       if (showButton) {
-        $button = $('<button class="slick-gridmenu-button"/>');
+        _buttonElm = document.createElement('button');
+        _buttonElm.className = 'slick-gridmenu-button';
+        _buttonElm.ariaLabel = 'Grid Menu';
+
         if (_options.gridMenu && _options.gridMenu.iconCssClass) {
-          $button.addClass(_options.gridMenu.iconCssClass);
+          _buttonElm.classList.add(_options.gridMenu.iconCssClass);
         } else {
-          var iconImage = (_options.gridMenu && _options.gridMenu.iconImage) ? _options.gridMenu.iconImage : "../images/drag-handle.png";
-          $('<img src="' + iconImage + '"/>').appendTo($button);
+          const iconImageElm = document.createElement('img');
+          iconImageElm.src = (_options.gridMenu && _options.gridMenu.iconImage) ? _options.gridMenu.iconImage : "../images/drag-handle.png";
+          _buttonElm.appendChild(iconImageElm);
         }
-        $button.insertBefore($header);
+        if (options.iconCssClass) {
+          _buttonElm.classList.add(...options.iconCssClass.split(' '));
+        }
+        _headerElm.parentElement.insertBefore(_buttonElm, _headerElm.parentElement.firstChild);
+
         // add on click handler for the Grid Menu itself
-        $button.on("click." + _gridUid, showGridMenu);
+        _bindingEventService.bind(_buttonElm, 'click', showGridMenu);
       }
 
-      $menu = $('<div class="slick-gridmenu ' + _gridUid + '" style="display: none" />').appendTo(document.body);
-      $('<button type="button" class="close" data-dismiss="slick-gridmenu" aria-label="Close"><span class="close" aria-hidden="true">&times;</span></button>').appendTo($menu);
+      _menuElm = document.createElement('div');
+      _menuElm.className = `slick-gridmenu ${_gridUid}`;
+      _menuElm.style.display = 'none';
+      document.body.appendChild(_menuElm);
 
-      $customMenu = $('<div class="slick-gridmenu-custom" />');
-      $customMenu.appendTo($menu);
+      const buttonElm = document.createElement('button');
+      buttonElm.type = 'button';
+      buttonElm.className = 'close';
+      buttonElm.dataset.dismiss = 'slick-gridmenu';
+      buttonElm.ariaLabel = 'Close';
 
-      populateCustomMenus(_options, $customMenu);
+      const spanCloseElm = document.createElement('span');
+      spanCloseElm.className = 'close';
+      spanCloseElm.ariaHidden = 'true';
+      spanCloseElm.innerHTML = '&times;';
+      buttonElm.appendChild(spanCloseElm);
+      _menuElm.appendChild(buttonElm);
+
+      _customMenuElm = document.createElement('div');
+      _customMenuElm.className = 'slick-gridmenu-custom';
+      _customMenuElm.role = 'menu';
+
+      _menuElm.appendChild(_customMenuElm);
+
+      populateCustomMenus(_options, _customMenuElm);
       populateColumnPicker();
 
       // Hide the menu on outside click.
-      $(document.body).on("mousedown." + _gridUid, handleBodyMouseDown);
+      _bindingEventService.bind(document.body, 'mousedown', handleBodyMouseDown);
 
       // destroy the picker if user leaves the page
-      $(window).on("beforeunload", destroy);
-
+      _bindingEventService.bind(document.body, 'beforeunload', destroy);
     }
 
     /** Destroy the plugin by unsubscribing every events & also delete the menu DOM elements */
@@ -237,37 +266,28 @@
       _grid.onColumnsReordered.unsubscribe(updateColumnOrder);
       _grid.onBeforeDestroy.unsubscribe();
       _grid.onSetOptions.unsubscribe();
-      $("div.slick-gridmenu." + _gridUid).remove();
+      _bindingEventService.unbindAll();
+      if (_menuElm && _menuElm.remove) {
+        _menuElm.remove();
+      }
       deleteMenu();
-      $(window).off("beforeunload");
     }
 
     /** Delete the menu DOM element but without unsubscribing any events */
     function deleteMenu() {
-      $(document.body).off("mousedown." + _gridUid, handleBodyMouseDown);
-      $("div.slick-gridmenu." + _gridUid).hide();
-      if ($button) {
-        $button.remove();
+      _bindingEventService.unbindAll();
+      const gridMenuElm = document.querySelector(`div.slick-gridmenu.${_gridUid}`);
+      if (gridMenuElm) {
+        gridMenuElm.style.display = 'none';
       }
-      if ($menu) {
-        $menu.remove();
+      if (_headerElm) {
+        // put back original width (fixes width and frozen+gridMenu on left header)
+        _headerElm.style.width = '100%';
       }
-      if ($customMenu) {
-        $customMenu.remove();
-      }
-      if ($header) {
-        $header.attr('style', 'width: 100%'); // put back original width
-      }
-      $customTitleElm = null;
-      $columnTitleElm = null;
-      $customMenu = null;
-      $header = null;
-      $list = null;
-      $button = null;
-      $menu = null;
+      _menuElm && _menuElm.remove();
     }
 
-    function populateCustomMenus(options, $customMenu) {
+    function populateCustomMenus(options, customMenuElm) {
       // Construct the custom menu items.
       if (!options.gridMenu || !options.gridMenu.customItems) {
         return;
@@ -275,22 +295,25 @@
 
       // user could pass a title on top of the custom section
       if (_options.gridMenu && _options.gridMenu.customTitle) {
-        $customTitleElm = $('<div class="title"/>').append(_options.gridMenu.customTitle);
-        $customTitleElm.appendTo($customMenu);
+        _customTitleElm = document.createElement('div');
+        _customTitleElm.className = 'title';
+        _customTitleElm.innerHTML = _options.gridMenu.customTitle;
+        customMenuElm.appendChild(_customTitleElm);
       }
 
-      for (var i = 0, ln = options.gridMenu.customItems.length; i < ln; i++) {
-        var item = options.gridMenu.customItems[i];
-        var callbackArgs = {
+      for (let i = 0, ln = options.gridMenu.customItems.length; i < ln; i++) {
+        let addClickListener = true;
+        let item = options.gridMenu.customItems[i];
+        let callbackArgs = {
           "grid": _grid,
-          "menu": $menu,
+          "menu": _menuElm,
           "columns": columns,
           "visibleColumns": getVisibleColumns()
         };
 
         // run each override functions to know if the item is visible and usable
-        var isItemVisible = runOverrideFunctionWhenExists(item.itemVisibilityOverride, callbackArgs);
-        var isItemUsable = runOverrideFunctionWhenExists(item.itemUsabilityOverride, callbackArgs);
+        let isItemVisible = runOverrideFunctionWhenExists(item.itemVisibilityOverride, callbackArgs);
+        let isItemUsable = runOverrideFunctionWhenExists(item.itemUsabilityOverride, callbackArgs);
 
         // if the result is not visible then there's no need to go further
         if (!isItemVisible) {
@@ -303,69 +326,78 @@
           item.disabled = isItemUsable ? false : true;
         }
 
-        var $li = $("<div class='slick-gridmenu-item'></div>")
-          .data("command", item.command !== undefined ? item.command : "")
-          .data("item", item)
-          .on("click", handleMenuItemClick)
-          .appendTo($customMenu);
+        const liElm = document.createElement('div');
+        liElm.className = 'slick-gridmenu-item';
+        liElm.role = 'menuitem';
 
         if (item.divider || item === "divider") {
-          $li.addClass("slick-gridmenu-item-divider");
-          continue;
+          liElm.classList.add("slick-gridmenu-item-divider");
+          addClickListener = false;
         }
         if (item.disabled) {
-          $li.addClass("slick-gridmenu-item-disabled");
+          liElm.classList.add("slick-gridmenu-item-disabled");
         }
 
         if (item.hidden) {
-          $li.addClass("slick-gridmenu-item-hidden");
+          liElm.classList.add("slick-gridmenu-item-hidden");
         }
 
         if (item.cssClass) {
-          $li.addClass(item.cssClass);
+          liElm.classList.add(item.cssClass);
         }
 
         if (item.tooltip) {
-          $li.attr("title", item.tooltip);
+          liElm.title = item.tooltip;
         }
 
-        var $icon = $("<div class='slick-gridmenu-icon'></div>")
-          .appendTo($li);
+        const iconElm = document.createElement('div');
+        iconElm.className = 'slick-gridmenu-icon';
+
+        liElm.appendChild(iconElm);
 
         if (item.iconCssClass) {
-          $icon.addClass(item.iconCssClass);
+          iconElm.classList.add(item.iconCssClass);
         }
 
         if (item.iconImage) {
-          $icon.css("background-image", "url(" + item.iconImage + ")");
+          iconElm.style.backgroundImage = "url(" + item.iconImage + ")";
         }
 
-        var $text = $("<span class='slick-gridmenu-content'></span>")
-          .text(item.title)
-          .appendTo($li);
+        const textElm = document.createElement('span');
+        textElm.className = 'slick-gridmenu-content';
+        textElm.innerHTML = item.title;
+
+        liElm.appendChild(textElm);
 
         if (item.textCssClass) {
-          $text.addClass(item.textCssClass);
+          textElm.classList.add(item.textCssClass);
         }
-        $icon = null;
-        $li = null;
-        $text = null;
+
+        customMenuElm.appendChild(liElm);
+
+        if (addClickListener) {
+          _bindingEventService.bind(liElm, 'click', handleMenuItemClick.bind(this, item));
+        }
       }
     }
 
     /** Build the column picker, the code comes almost untouched from the file "slick.columnpicker.js" */
     function populateColumnPicker() {
       _grid.onColumnsReordered.subscribe(updateColumnOrder);
-      _options = $.extend({}, _defaults, _options);
+      _options = Slick.Utils.extend({}, _defaults, _options);
 
       // user could pass a title on top of the columns list
       if (_options.gridMenu && _options.gridMenu.columnTitle) {
-        $columnTitleElm = $('<div class="title"/>').append(_options.gridMenu.columnTitle);
-        $columnTitleElm.appendTo($menu);
+        _columnTitleElm = document.createElement('div');
+        _columnTitleElm.className = 'title';
+        _columnTitleElm.innerHTML = _options.gridMenu.columnTitle;
+        _menuElm.appendChild(_columnTitleElm);
       }
 
-      $menu.on("click", updateColumn);
-      $list = $('<span class="slick-gridmenu-list" />');
+      _bindingEventService.bind(_menuElm, 'click', updateColumn);
+      _listElm = document.createElement('span');
+      _listElm.className = 'slick-gridmenu-list';
+      _listElm.role = 'menu';
     }
 
     /** Delete and then Recreate the Grid Menu (for example when we switch from regular to a frozen grid) */
@@ -379,16 +411,16 @@
       e.preventDefault();
 
       // empty both the picker list & the command list
-      $list.empty();
-      $customMenu.empty();
+      Slick.Utils.emptyElement(_listElm);
+      Slick.Utils.emptyElement(_customMenuElm);
 
-      populateCustomMenus(_options, $customMenu);
+      populateCustomMenus(_options, _customMenuElm);
       updateColumnOrder();
       columnCheckboxes = [];
 
       var callbackArgs = {
         "grid": _grid,
-        "menu": $menu,
+        "menu": _menuElm,
         "allColumns": columns,
         "visibleColumns": getVisibleColumns()
       };
@@ -398,26 +430,34 @@
         return;
       }
 
-      // notify of the onBeforeMenuShow only works when it's a jQuery event (as per slick.core code)
+      // notify of the onBeforeMenuShow only works when
       // this mean that we cannot notify when the grid menu is attach to a button event
-      if (typeof e.isPropagationStopped === "function") {
-        if (_self.onBeforeMenuShow.notify(callbackArgs, e, _self) == false) {
+      if (typeof e.stopPropagation === "function") {
+        if (_self.onBeforeMenuShow.notify(callbackArgs, e, _self).getReturnValue() == false) {
           return;
         }
       }
 
-      var $li, $input, columnId, columnLabel, excludeCssClass;
-      for (var i = 0; i < columns.length; i++) {
+      let columnId, columnLabel, excludeCssClass;
+      for (let i = 0; i < columns.length; i++) {
         columnId = columns[i].id;
         excludeCssClass = columns[i].excludeFromGridMenu ? "hidden" : "";
-        $li = $('<li class="' + excludeCssClass + '" />').appendTo($list);
 
-        $input = $("<input type='checkbox' id='" + _gridUid + "-gridmenu-colpicker-" + columnId + "' />").data("column-id", columns[i].id).appendTo($li);
-        columnCheckboxes.push($input);
+        const liElm = document.createElement('li');
+        liElm.className = excludeCssClass;
+        liElm.ariaLabel = columns[i] && columns[i].name;
 
-        if (_grid.getColumnIndex(columns[i].id) != null) {
-          $input.attr("checked", "checked");
+        const checkboxElm = document.createElement('input');
+        checkboxElm.type = 'checkbox';
+        checkboxElm.id = `${_gridUid}-gridmenu-colpicker-${columnId}`;
+        checkboxElm.dataset.columnid = columns[i].id;
+        liElm.appendChild(checkboxElm);
+
+        if (_grid.getColumnIndex(columns[i].id) != null && !columns[i].hidden) {
+          checkboxElm.checked = true;
         }
+
+        columnCheckboxes.push(checkboxElm);
 
         // get the column label from the picker value extractor (user can optionally provide a custom extractor)
         if (_options && _options.gridMenu && _options.gridMenu.headerColumnValueExtractor) {
@@ -426,86 +466,116 @@
           columnLabel = _defaults.headerColumnValueExtractor(columns[i], _gridOptions);
         }
 
-        $("<label for='" + _gridUid + "-gridmenu-colpicker-" + columnId + "' />")
-          .html(columnLabel)
-          .appendTo($li);
+        const labelElm = document.createElement('label');
+        labelElm.htmlFor = `${_gridUid}-gridmenu-colpicker-${columnId}`;
+        labelElm.innerHTML = columnLabel;
+        liElm.appendChild(labelElm);
+        _listElm.appendChild(liElm);
       }
 
       if (_options.gridMenu && (!_options.gridMenu.hideForceFitButton || !_options.gridMenu.hideSyncResizeButton)) {
-        $("<hr/>").appendTo($list);
+        _listElm.appendChild(document.createElement('hr'));
       }
 
       if (!(_options.gridMenu && _options.gridMenu.hideForceFitButton)) {
-        var forceFitTitle = (_options.gridMenu && _options.gridMenu.forceFitTitle) || _defaults.forceFitTitle;
-        $li = $("<li />").appendTo($list);
-        $input = $("<input type='checkbox' id='" + _gridUid + "-gridmenu-colpicker-forcefit' />").data("option", "autoresize").appendTo($li);
-        $("<label for='" + _gridUid + "-gridmenu-colpicker-forcefit' />").text(forceFitTitle).appendTo($li);
+        let forceFitTitle = (_options.gridMenu && _options.gridMenu.forceFitTitle) || _defaults.forceFitTitle;
+
+        const liElm = document.createElement('li');
+        liElm.ariaLabel = forceFitTitle;
+        liElm.role = 'menuitem';
+        _listElm.appendChild(liElm);
+
+        const forceFitCheckboxElm = document.createElement('input');
+        forceFitCheckboxElm.type = 'checkbox';
+        forceFitCheckboxElm.id = `${_gridUid}-gridmenu-colpicker-forcefit`;
+        forceFitCheckboxElm.dataset.option = 'autoresize';
+        liElm.appendChild(forceFitCheckboxElm);
+
+        const labelElm = document.createElement('label');
+        labelElm.htmlFor = `${_gridUid}-gridmenu-colpicker-forcefit`;
+        labelElm.textContent = forceFitTitle;
+        liElm.appendChild(labelElm);
 
         if (_grid.getOptions().forceFitColumns) {
-          $input.attr("checked", "checked");
+          forceFitCheckboxElm.checked = true;
         }
       }
 
       if (!(_options.gridMenu && _options.gridMenu.hideSyncResizeButton)) {
-        var syncResizeTitle = (_options.gridMenu && _options.gridMenu.syncResizeTitle) || _defaults.syncResizeTitle;
-        $li = $("<li />").appendTo($list);
-        $input = $("<input type='checkbox' id='" + _gridUid + "-gridmenu-colpicker-syncresize' />").data("option", "syncresize").appendTo($li);
-        $("<label for='" + _gridUid + "-gridmenu-colpicker-syncresize' />").text(syncResizeTitle).appendTo($li);
+        let syncResizeTitle = (_options.gridMenu && _options.gridMenu.syncResizeTitle) || _defaults.syncResizeTitle;
+
+        const liElm = document.createElement('li');
+        liElm.ariaLabel = syncResizeTitle;
+        _listElm.appendChild(liElm);
+
+        const syncResizeCheckboxElm = document.createElement('input');
+        syncResizeCheckboxElm.type = 'checkbox';
+        syncResizeCheckboxElm.id = `${_gridUid}-gridmenu-colpicker-syncresize`;
+        syncResizeCheckboxElm.dataset.option = 'syncresize';
+        liElm.appendChild(syncResizeCheckboxElm);
+
+        const labelElm = document.createElement('label');
+        labelElm.htmlFor = `${_gridUid}-gridmenu-colpicker-syncresize`;
+        labelElm.textContent = syncResizeTitle;
+        liElm.appendChild(labelElm);
 
         if (_grid.getOptions().syncColumnCellResize) {
-          $input.attr("checked", "checked");
+          syncResizeCheckboxElm.checked = true;
         }
       }
 
-      var menuIconOffset = $(e.target).prop('nodeName') == "button" ? $(e.target).offset() : $(e.target).parent("button").offset(); // get button offset position
-      if (!menuIconOffset) {
-        menuIconOffset = $(e.target).offset(); // external grid menu might fall in this last case
+      let buttonElm = e.target.nodeName === 'BUTTON' ? e.target : e.target.querySelector('button'); // get button element
+      if (!buttonElm) {
+        buttonElm = e.target.parentElement; // external grid menu might fall in this last case if wrapped in a span/div
       }
-      var menuWidth = $menu.width();
-      var useClickToRepositionMenu = (_options.gridMenu && _options.gridMenu.useClickToRepositionMenu !== undefined) ? _options.gridMenu.useClickToRepositionMenu : _defaults.useClickToRepositionMenu;
-      var gridMenuIconWidth = (_options.gridMenu && _options.gridMenu.menuWidth) || _defaults.menuWidth;
-      var contentMinWidth = (_options.gridMenu && _options.gridMenu.contentMinWidth) ? _options.gridMenu.contentMinWidth : _defaults.contentMinWidth;
-      var currentMenuWidth = (contentMinWidth > menuWidth) ? contentMinWidth : (menuWidth + gridMenuIconWidth);
-      var nextPositionTop = (useClickToRepositionMenu && targetEvent.pageY > 0) ? targetEvent.pageY : menuIconOffset.top + 10;
-      var nextPositionLeft = (useClickToRepositionMenu && targetEvent.pageX > 0) ? targetEvent.pageX : menuIconOffset.left + 10;
-      var menuMarginBottom = (_options.gridMenu && _options.gridMenu.marginBottom !== undefined) ? _options.gridMenu.marginBottom : _defaults.marginBottom;
 
-      $menu
-        .css("top", nextPositionTop + 10)
-        .css("left", nextPositionLeft - currentMenuWidth + 10);
+      // we need to display the menu to properly calculate its width but we can however make it invisible
+      _menuElm.style.display = 'block';
+      _menuElm.style.opacity = '0';
+
+      let menuIconOffset = Slick.Utils.offset(buttonElm); // get button offset position
+      let menuWidth = _menuElm.offsetWidth;
+      let useClickToRepositionMenu = (_options.gridMenu && _options.gridMenu.useClickToRepositionMenu !== undefined) ? _options.gridMenu.useClickToRepositionMenu : _defaults.useClickToRepositionMenu;
+      let contentMinWidth = (_options.gridMenu && _options.gridMenu.contentMinWidth) ? _options.gridMenu.contentMinWidth : _defaults.contentMinWidth;
+      let currentMenuWidth = (contentMinWidth > menuWidth) ? contentMinWidth : menuWidth + 5;
+      let nextPositionTop = (useClickToRepositionMenu && targetEvent.pageY > 0) ? targetEvent.pageY : menuIconOffset.top + 10;
+      let nextPositionLeft = (useClickToRepositionMenu && targetEvent.pageX > 0) ? targetEvent.pageX : menuIconOffset.left + 10;
+      let menuMarginBottom = (_options.gridMenu && _options.gridMenu.marginBottom !== undefined) ? _options.gridMenu.marginBottom : _defaults.marginBottom;
+
+      _menuElm.style.top = `${nextPositionTop + 10}px`;
+      _menuElm.style.left = `${nextPositionLeft - currentMenuWidth + 10}px`;
 
       if (contentMinWidth > 0) {
-        $menu.css("min-width", contentMinWidth);
+        _menuElm.style.minWidth = `${contentMinWidth}px`;
       }
 
       // set "height" when defined OR ELSE use the "max-height" with available window size and optional margin bottom
       if (_options.gridMenu && _options.gridMenu.height !== undefined) {
-        $menu.css("height", _options.gridMenu.height);
+        _menuElm.style.height = `${_options.gridMenu.height}px`;
       } else {
-        $menu.css("max-height", $(window).height() - targetEvent.clientY - menuMarginBottom);
+        _menuElm.style.maxHeight = `${window.innerHeight - targetEvent.clientY - menuMarginBottom}px`;
       }
 
-      $menu.show();
-      $list.appendTo($menu);
+      _menuElm.style.display = 'block';
+      _menuElm.style.opacity = '1'; // restore menu visibility
+      _menuElm.appendChild(_listElm);
       _isMenuOpen = true;
 
-      if (typeof e.isPropagationStopped === "function") {
-        if (_self.onAfterMenuShow.notify(callbackArgs, e, _self) == false) {
+      if (typeof e.stopPropagation === "function") {
+        if (_self.onAfterMenuShow.notify(callbackArgs, e, _self).getReturnValue() == false) {
           return;
         }
       }
-      $input = null;
     }
 
-    function handleBodyMouseDown(e) {
-      if (($menu && $menu[0] != e.target && !$.contains($menu[0], e.target) && _isMenuOpen) || e.target.className == "close") {
-        hideMenu(e);
+    function handleBodyMouseDown(event) {
+      if ((_menuElm !== event.target && !(_menuElm && _menuElm.contains(event.target)) && _isMenuOpen) || event.target.className === 'close') {
+        hideMenu(event);
       }
     }
 
-    function handleMenuItemClick(e) {
-      var command = $(this).data("command");
-      var item = $(this).data("item");
+    function handleMenuItemClick(item, e) {
+      const command = item.command || '';
 
       if (item.disabled || item.divider || item === "divider") {
         return;
@@ -529,7 +599,7 @@
 
       // does the user want to leave open the Grid Menu after executing a command?
       var leaveOpen = (_options.gridMenu && _options.gridMenu.leaveOpen) ? true : false;
-      if (!leaveOpen && !e.isDefaultPrevented()) {
+      if (!leaveOpen && !e.defaultPrevented) {
         hideMenu(e);
       }
 
@@ -539,17 +609,17 @@
     }
 
     function hideMenu(e) {
-      if ($menu) {
-        $menu.hide();
+      if (_menuElm) {
+        Slick.Utils.hide(_menuElm);
         _isMenuOpen = false;
 
         var callbackArgs = {
           "grid": _grid,
-          "menu": $menu,
+          "menu": _menuElm,
           "allColumns": columns,
           "visibleColumns": getVisibleColumns()
         };
-        if (_self.onMenuClose.notify(callbackArgs, e, _self) == false) {
+        if (_self.onMenuClose.notify(callbackArgs, e, _self).getReturnValue() == false) {
           return;
         }
       }
@@ -557,11 +627,11 @@
 
     /** Update the Titles of each sections (command, customTitle, ...) */
     function updateAllTitles(gridMenuOptions) {
-      if ($customTitleElm && $customTitleElm.text) {
-        $customTitleElm.text(gridMenuOptions.customTitle);
+      if (_customTitleElm && _customTitleElm.innerHTML) {
+        _customTitleElm.innerHTML = gridMenuOptions.customTitle;
       }
-      if ($columnTitleElm && $columnTitleElm.text) {
-        $columnTitleElm.text(gridMenuOptions.columnTitle);
+      if (_columnTitleElm && _columnTitleElm.innerHTML) {
+        _columnTitleElm.innerHTML = gridMenuOptions.columnTitle;
       }
     }
 
@@ -588,7 +658,7 @@
     }
 
     function updateColumn(e) {
-      if ($(e.target).data("option") == "autoresize") {
+      if (e.target.dataset.option === 'autoresize') {
         // when calling setOptions, it will resize with ALL Columns (even the hidden ones)
         // we can avoid this problem by keeping a reference to the visibleColumns before setOptions and then setColumns after
         var previousVisibleColumns = getVisibleColumns();
@@ -598,31 +668,28 @@
         return;
       }
 
-      if ($(e.target).data("option") == "syncresize") {
-        if (e.target.checked) {
-          _grid.setOptions({ syncColumnCellResize: true });
-        } else {
-          _grid.setOptions({ syncColumnCellResize: false });
-        }
+      if (e.target.dataset.option === 'syncresize') {
+        _grid.setOptions({ syncColumnCellResize: !!(e.target.checked) });
         return;
       }
 
-      if ($(e.target).is(":checkbox")) {
-        var isChecked = e.target.checked;
-        var columnId = $(e.target).data("column-id") || "";
-        var visibleColumns = [];
-        $.each(columnCheckboxes, function (i) {
-          if ($(this).is(":checked")) {
-            visibleColumns.push(columns[i]);
+      if (e.target.type === 'checkbox') {
+        const isChecked = e.target.checked;
+        const columnId = e.target.dataset.columnid || '';
+        let visibleColumns = [];
+        columnCheckboxes.forEach((columnCheckbox, idx) => {
+          if (columnCheckbox.checked) {
+            if (columns[idx].hidden) { columns[idx].hidden = false; }
+            visibleColumns.push(columns[idx]);
           }
         });
 
         if (!visibleColumns.length) {
-          $(e.target).attr("checked", "checked");
+          e.target.checked = true;
           return;
         }
 
-        var callbackArgs = {
+        const callbackArgs = {
           "columnId": columnId,
           "showing": isChecked,
           "grid": _grid,
@@ -658,7 +725,7 @@
       return true;
     }
 
-    $.extend(this, {
+    Slick.Utils.extend(this, {
       "init": init,
       "getAllColumns": getAllColumns,
       "getVisibleColumns": getVisibleColumns,
@@ -677,4 +744,4 @@
       "onColumnsChanged": new Slick.Event()
     });
   }
-})(jQuery);
+})(window);

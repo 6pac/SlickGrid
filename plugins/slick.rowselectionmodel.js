@@ -1,6 +1,6 @@
-(function ($) {
+(function (window) {
   // register namespace
-  $.extend(true, window, {
+  Slick.Utils.extend(true, window, {
     "Slick": {
       "RowSelectionModel": RowSelectionModel
     }
@@ -27,7 +27,7 @@
         throw new Error('Slick.Draggable is undefined, make sure to import "slick.interactions.js"');
       }
 
-      _options = $.extend(true, {}, _defaults, options);
+      _options = Slick.Utils.extend(true, {}, _defaults, options);
       _selector = _options.cellRangeSelector;
       _grid = grid;
 
@@ -126,7 +126,7 @@
       _ranges = ranges;
       
       // provide extra "caller" argument through SlickEventData to avoid breaking pubsub event that only accepts an array of selected range
-      var eventData = new Slick.EventData();
+      var eventData = new Slick.EventData(null, _ranges);
       Object.defineProperty(eventData, 'detail', { writable: true, configurable: true, value: { caller: caller || "SlickRowSelectionModel.setSelectedRanges" } });
       _self.onSelectedRangesChanged.notify(_ranges, eventData);
     }
@@ -192,15 +192,13 @@
       }
 
       var selection = rangesToRows(_ranges);
-      var idx = $.inArray(cell.row, selection);
+      var idx = selection.indexOf(cell.row);
 
       if (idx === -1 && (e.ctrlKey || e.metaKey)) {
         selection.push(cell.row);
         _grid.setActiveCell(cell.row, cell.cell);
       } else if (idx !== -1 && (e.ctrlKey || e.metaKey)) {
-        selection = $.grep(selection, function (o, i) {
-          return (o !== cell.row);
-        });
+        selection = selection.filter((o) => o !== cell.row);
         _grid.setActiveCell(cell.row, cell.cell);
       } else if (selection.length && e.shiftKey) {
         var last = selection.pop();
@@ -226,7 +224,7 @@
     function handleBeforeCellRangeSelected(e, cell) {
       if (!_isRowMoveManagerHandler) {
         var rowMoveManager = _grid.getPluginByName('RowMoveManager') || _grid.getPluginByName('CrossGridRowMoveManager');
-        _isRowMoveManagerHandler = rowMoveManager ? rowMoveManager.isHandlerColumn : $.noop;
+        _isRowMoveManagerHandler = rowMoveManager ? rowMoveManager.isHandlerColumn : Slick.Utils.noop;
       }
       if (_grid.getEditorLock().isActive() || _isRowMoveManagerHandler(cell.cell)) {
         e.stopPropagation();
@@ -242,7 +240,7 @@
       setSelectedRanges([new Slick.Range(args.range.fromRow, 0, args.range.toRow, _grid.getColumns().length - 1)])
     }
 
-    $.extend(this, {
+    Slick.Utils.extend(this, {
       "getSelectedRows": getSelectedRows,
       "setSelectedRows": setSelectedRows,
 
@@ -258,4 +256,4 @@
       "onSelectedRangesChanged": new Slick.Event()
     });
   }
-})(jQuery);
+})(window);

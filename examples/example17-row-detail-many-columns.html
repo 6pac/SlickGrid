@@ -118,9 +118,6 @@
     </div>
   </div>
 
-  <script src="../lib/firebugx.js"></script>
-
-  <script src="../lib/jquery-3.1.0.js"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
   <script src="../slick.core.js"></script>
@@ -149,16 +146,15 @@
       {id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, sortable: true},
       {id: "start", name: "Start", field: "start", minWidth: 60},
       {id: "finish", name: "Finish", field: "finish", minWidth: 60},
-      {id: "effort-driven", name: "Effort Driven", width: 80, minWidth: 20, axWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark}	  
+      {id: "effort-driven", name: "Effort Driven", width: 80, minWidth: 20, axWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark}
     ];
-    
+
     for(var i = 0; i < 10; i++){
-    
+
     columns.push({id: "extra" + i, name: "Extra " + i, field: "extra" + i, minWidth: 60});
-    
+
     }
-    
-    
+
     var options = {
       editable: false,
       enableAddRow: false,
@@ -179,18 +175,18 @@
       this.title = "Task " + i;
       this.duration = "5 days";
     }
-    
+
     function setAlwaysRenderRowClick(val){
       var detailColumn = grid.getColumns()[0];
       detailColumn.alwaysRenderColumn = val;
     }
-    
+
     function setLoadOnce(val){
       var options = detailView.getOptions();
       options.loadOnce = val;
       detailView.setOptions(options);
     }
-    
+
     function setRowClick(val) {
       var options = detailView.getOptions();
     options.useRowClick = val;
@@ -198,7 +194,7 @@
     }
 
     function setMaxRows(amount) {
-      var value = $("#maxRowInput").val();
+      var value = document.querySelector("#maxRowInput").value;
       var maxRows = parseInt(value);
       var options = detailView.getOptions();
 
@@ -209,7 +205,7 @@
     }
 
     function setPanelRows(amount) {
-      var value = $("#panelRowInput").val();
+      var value = document.querySelector("#panelRowInput").value;
       var panelRows = parseInt(value);
       var options = detailView.getOptions();
 
@@ -220,13 +216,18 @@
     }
 
     function hookAssigneeOnClick(itemId) {
-      $("#who-is-assignee_" + itemId).off("click").on("click", function() {
-        alert("Assignee is " + $("#assignee_" + itemId).val());
-      });
+      document.querySelector("#who-is-assignee_" + itemId).addEventListener("click", assigneHandler.bind(this, itemId));
+    }
+
+    function assigneHandler(itemId) {
+      alert("Assignee is " + document.querySelector("#assignee_" + itemId).value);
     }
 
     function destroyAssigneeOnClick(itemId) {
-      $("#who-is-assignee_" + itemId).off("click");
+      const handler = document.querySelector("#who-is-assignee_" + itemId)
+      if (handler) {
+        handler.removeEventListener("click", assigneHandler.bind(this, itemId));
+      }
     }
 
     function loadingTemplate() {
@@ -369,7 +370,7 @@
       return (x == y ? 0 : (x > y ? 1 : -1));
     }
 
-    $(function () {
+    document.addEventListener("DOMContentLoaded", function() {
       // prepare the data
       for (var i = 0; i < 5000; i++) {
         data[i] = new DataItem(i);
@@ -436,8 +437,14 @@
         dataView.sort(comparer, args.sortAsc);
       });
 
-      $(grid.getHeaderRow()).on("change keyup", ":input", function (e) {
-        var columnId = $(this).data("columnId");
+      const headerRowElm = grid.getHeaderRow();
+      headerRowElm.addEventListener('change', filterKeyup);
+      headerRowElm.addEventListener('keyup', filterKeyup);
+
+      function filterKeyup(e) {
+        const inputFilter = e.target;
+        const columnId = inputFilter.dataset.columnid;
+
         if (columnId != null) {
           /* we can save the detail view content before filtering (this will save on every keyup)
             OR you can save in other area of your code (like in the "openCity()" function)
@@ -451,17 +458,18 @@
           });
 
           // keep filter in global variable & filter dataset by calling a refresh
-          columnFilters[columnId] = $.trim($(this).val());
+          columnFilters[columnId] = (e.target.value || '').trim();
           dataView.refresh();
         }
-      });
+      }
 
       grid.onHeaderRowCellRendered.subscribe(function(e, args) {
-        $(args.node).empty();
-        $("<input type='text'>")
-            .data("columnId", args.column.id)
-            .val(columnFilters[args.column.id])
-            .appendTo(args.node);
+        args.node.innerHTML = ''; // empty it
+        const inputElm = document.createElement('input');
+        inputElm.dataset.columnid = args.column.id;
+        inputElm.value = columnFilters[args.column.id] || '';
+
+        args.node.appendChild(inputElm);
       });
 
       // initialize the model after all the events have been hooked up

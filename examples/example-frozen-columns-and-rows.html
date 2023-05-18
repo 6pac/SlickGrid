@@ -6,7 +6,7 @@
   <title>SlickGrid example: Frozen Columns and Rows</title>
   <link rel="stylesheet" href="../slick.grid.css" type="text/css" media="screen" charset="utf-8"/>
   <link rel="stylesheet" href="../controls/slick.pager.css" type="text/css" media="screen" charset="utf-8"/>
-  <link rel="stylesheet" href="../css/smoothness/jquery-ui.css" type="text/css"/>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/smoothness/jquery-ui.min.css" />
   <link rel="stylesheet" href="examples.css" type="text/css" media="screen" charset="utf-8"/>
   <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css" media="screen" charset="utf-8"/>
   <style>
@@ -47,8 +47,8 @@
       box-sizing: border-box;
     }
 
-    .slick-row .slick-cell.frozen:last-child, 
-    .slick-header-column.frozen:last-child, 
+    .slick-row .slick-cell.frozen:last-child,
+    .slick-header-column.frozen:last-child,
     .slick-headerrow-column.frozen:last-child,
     .slick-footerrow-column.frozen:last-child {
       border-right: 1px solid #999;
@@ -112,15 +112,6 @@
   Show tasks with title including <input type="text" id="txtSearch2">
 </div>
 
-<div id="inlineFilterPanelR" style="display:none;background:#dddddd;padding:6px;color:black;">
-  and % at least &nbsp;
-  <div style="width:100px;display:inline-block;" id="pcSlider2"></div>
-</div>
-
-<script language="JavaScript" src="../lib/firebugx.js"></script>
-
-<script src="../lib/jquery-3.1.0.js"></script>
-<script src="../lib/jquery-ui.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -134,9 +125,6 @@
 <script src="../controls/slick.columnpicker.js"></script>
 
 <script>
-$(function () {
-  $('#frozenColumn').val(options.frozenColumn);
-});
 function isIEPreVer9() { var v = navigator.appVersion.match(/MSIE ([\d.]+)/i); return (v ? v[1] < 9 : false); }
 
 var dataView;
@@ -261,7 +249,6 @@ var options = {
 
 var sortcol = "title";
 var sortdir = 1;
-var percentCompleteThreshold = 0;
 var searchString = "";
 
 function requiredFieldValidator(value) {
@@ -280,11 +267,12 @@ function updateHeaderRow() {
   for (var i = 0; i < columns.length; i++) {
     if (columns[i].id !== "selector") {
       var header = grid.getHeaderRowColumn(columns[i].id);
-      $(header).empty();
-      $("<input type='text'>")
-        .data("columnId", columns[i].id)
-        .val(columnFilters[columns[i].id])
-        .appendTo(header);
+      header.innerHTML = '';
+
+      const filterInput = document.createElement('input');
+      filterInput.dataset.columnid = columns[i].id;
+      filterInput.value = columnFilters[columns[i].id] || '';
+      header.appendChild(filterInput);
     }
   }
 }
@@ -293,12 +281,11 @@ function myFilter(item) {
   for (var columnId in columnFilters) {
     if (columnId !== undefined && columnFilters[columnId] !== "") {
       var c = grid.getColumns()[grid.getColumnIndex(columnId)];
-      if (item[c.field] != columnFilters[columnId]) {
+      if (!item[c.field].includes(columnFilters[columnId])) {
         return false;
       }
     }
   }
-
   return true;
 }
 
@@ -323,7 +310,7 @@ function addItem(newItem, columnDef) {
     "finish": "01/01/2009",
     "effortDriven": false
   };
-  $.extend(item, newItem);
+  Slick.Utils.extend(item, newItem);
   dataView.addItem(item);
 }
 
@@ -333,13 +320,18 @@ function toggleFilterRow() {
 }
 
 
-$(".grid-header .ui-icon").addClass("ui-state-default ui-corner-all").mouseover(function (e) {
-  $(e.target).addClass("ui-state-hover")
-}).mouseout(function (e) {
-  $(e.target).removeClass("ui-state-hover")
-});
+const headerSearchIcon = document.querySelector(".grid-header .ui-icon");
+if (headerSearchIcon) {
+  headerSearchIcon.classList.add("ui-state-default", "ui-corner-all");
+  headerSearchIcon.addEventListener('mouseover', (function (e) {
+    e.target.classList.add("ui-state-hover");
+  }));
+  headerSearchIcon.addEventListener('mouseout', (function (e) {
+    e.target.classList.remove("ui-state-hover");
+  }));
+}
 
-$(function () {
+document.addEventListener("DOMContentLoaded", function() {
   // prepare the data
   for (var i = 0; i < 50000; i++) {
     var d = (data[i] = {});
@@ -358,21 +350,19 @@ $(function () {
     d["title4"] = i;
   }
 
-
   dataView = new Slick.Data.DataView();
   grid = new Slick.Grid("#myGrid", dataView, columns, options);
   grid.setSelectionModel(new Slick.RowSelectionModel());
 
-  var pager = new Slick.Controls.Pager(dataView, grid, $("#pager"));
+  var pager = new Slick.Controls.Pager(dataView, grid, "#pager");
   var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
 
+    // move the filter panel defined in a hidden div into an inline secondary grid header row
+    var topPanels = grid.getTopPanels();
 
-  // move the filter panel defined in a hidden div into an inline secondary grid header row
-  var $secondaryRow = grid.getTopPanel();
-
-  $("#inlineFilterPanelL").appendTo($secondaryRow[0]).show();
-
-  $("#inlineFilterPanelR").appendTo($secondaryRow[1]).show();
+    const topPanelLeftElm = document.querySelector("#inlineFilterPanelL");
+    topPanels[0].appendChild(topPanelLeftElm);
+    topPanelLeftElm.style.display = 'block';
 
   grid.onCellChange.subscribe(function (e, args) {
     dataView.updateItem(args.item.id, args.item);
@@ -389,7 +379,7 @@ $(function () {
       "finish": "01/01/2009",
       "effortDriven": false
     };
-    $.extend(item, args.item);
+    Slick.Utils.extend(item, args.item);
     dataView.addItem(item);
   });
 
@@ -409,8 +399,9 @@ $(function () {
 
   grid.onMouseEnter.subscribe(function (e) {
     var cell = this.getCellFromEvent(e);
-
-    this.setSelectedRows([cell.row]);
+    if (cell) {
+      this.setSelectedRows([cell.row]);
+    }
     e.preventDefault();
   });
 
@@ -468,11 +459,18 @@ $(function () {
     });
   });
 
-  $(grid.getHeaderRow()).delegate(":input", "change keyup", function (e) {
-    columnFilters[$(this).data("columnId")] = $.trim($(this).val());
-    dataView.refresh();
-  });
+  function filterInputHandler(e) {
+    const inputFilter = e.target;
+    const columnId = inputFilter.dataset.columnid;
+    if (columnId != null) {
+      columnFilters[columnId] = (inputFilter.value || '').trim();
+      dataView.refresh();
+    }
+  };
 
+  const headerRowElms = grid.getHeaderRow();
+  headerRowElms.forEach(headerRowElm => headerRowElm.addEventListener('change', filterInputHandler));
+  headerRowElms.forEach(headerRowElm => headerRowElm.addEventListener('keyup', filterInputHandler));
 
   grid.onColumnsReordered.subscribe(function (e, args) {
     updateHeaderRow();
@@ -482,45 +480,26 @@ $(function () {
     updateHeaderRow();
   });
 
-  var h_runfilters = null;
-
-  // wire up the slider to apply the filter to the model
-  // wire up the slider to apply the filter to the model
-  $("#pcSlider,#pcSlider2").slider({
-    "range": "min",
-    "slide": function (event, ui) {
-      Slick.GlobalEditorLock.cancelCurrentEdit();
-
-      if (percentCompleteThreshold != ui.value) {
-        window.clearTimeout(h_runfilters);
-        h_runfilters = window.setTimeout(dataView.refresh, 10);
-        percentCompleteThreshold = ui.value;
-      }
-    }
-  });
-
   // wire up the search textbox to apply the filter to the model
-  $("#txtSearch,#txtSearch2").keyup(function (e) {
+  document.querySelector("#txtSearch,#txtSearch2").addEventListener('keyup', (e) => {
     Slick.GlobalEditorLock.cancelCurrentEdit();
 
     // clear on Esc
-    if (e.which == 27) this.value = "";
+    if (e.which == 27) e.target.value = '';
 
-    searchString = this.value;
+    columnFilters['title'] = (e.target.value || '').trim();
     dataView.refresh();
   });
 
-  $("#btnSelectRows").click(function () {
+  document.querySelector("#btnSelectRows").addEventListener('click', function () {
     if (!Slick.GlobalEditorLock.commitCurrentEdit()) {
       return;
     }
-
     var rows = [];
 
     for (var i = 0; i < 10 && i < dataView.getLength(); i++) {
       rows.push(i);
     }
-
     grid.setSelectedRows(rows);
   });
 
@@ -536,36 +515,25 @@ $(function () {
 
   updateHeaderRow();
 
-  $("#gridContainer").resizable();
-
-  $('#setFrozenRow').click(function () {
+  document.querySelector('#setFrozenRow').addEventListener('click', () => {
     var val = -1;
-
-    if ($('#frozenRow').val() != '') {
-      val = parseInt($('#frozenRow').val());
+    if (document.querySelector('#frozenRow').value !== '') {
+      val = parseInt(document.querySelector('#frozenRow').value);
     }
-
-    grid.setOptions({
-      'frozenRow': val
-    });
-
+    grid.setOptions({ 'frozenRow': val });
     updateHeaderRow();
   });
 
-  $('#setFrozenColumn').click(function () {
+  document.querySelector('#setFrozenColumn').addEventListener('click', () => {
     var val = -1;
-
-    if ($('#frozenColumn').val() != '') {
-      val = parseInt($('#frozenColumn').val());
+    if (document.querySelector('#frozenColumn').value !== '') {
+      val = parseInt(document.querySelector('#frozenColumn').value);
     }
-
-    grid.setOptions({
-      'frozenColumn': val
-    });
-
+    grid.setOptions({ 'frozenColumn': val });
     updateHeaderRow();
   });
-})</script>
+});
+</script>
 
 </body>
 </html>

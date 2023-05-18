@@ -40,14 +40,14 @@
   <div class="options-panel">
     <b>Description:</b>
     <hr/>
-   
+
     <p>
       This page demonstrates how the bulk update operations can be used efficiently
       delete and insert new rows into the table. The example simulates a log viewer
       where for each log severity always 100 items are shown in a ring-buffer fashion.
-      If you use the browser profiler to compare the two different operations below 
-      you will notice the significant performance difference which can be crucial for 
-      systems where a lot of new events are provided from an external source and 
+      If you use the browser profiler to compare the two different operations below
+      you will notice the significant performance difference which can be crucial for
+      systems where a lot of new events are provided from an external source and
       then updated.
     </p>
     <h2>Controls</h2>
@@ -63,7 +63,6 @@
   </div>
 </div>
 
-<script src="../lib/jquery-3.1.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../slick.core.js"></script>
@@ -93,7 +92,7 @@
   var eventIndex = 0;
   var severities = ['Info', 'Warning', 'Error'];
   var maxItemsPerSeverity = 100;
-  
+
   function LogEntry() {
     eventIndex++;
     this.id = "id_" + eventIndex;
@@ -101,15 +100,15 @@
     this.time = new Date().toISOString().substring(0,19);
     this.message = "Log Entry " + eventIndex;
   }
-    
+
   // our ringbuffer to keep only 10 items per severity
-  var logsPerSeverity = {}; 
+  var logsPerSeverity = {};
   for (var i = 0; i < severities.length; i++) {
     logsPerSeverity[severities[i]] = [];
-  }  
-  
+  }
+
   // the logic to simulate new events
-  
+
   function simulateLogs(count, efficient, update) {
     var chunks = 10;
     var start = new Date();
@@ -118,12 +117,12 @@
     }
     var end = new Date();
     if (update) {
-        $('#duration').text(end - start + 'ms');
-    }      
+        document.querySelector('#duration').textContent = (end - start + 'ms');
+    }
   }
   function simulateLogChunk(count, efficient, update) {
     if(efficient) {
-      dataView.beginUpdate(true); // efficient bulk update 
+      dataView.beginUpdate(true); // efficient bulk update
       var logs = []; // we will first collect all items to be added
       for (var i = 0; i < count; i++) {
         var log = new LogEntry();
@@ -131,15 +130,15 @@
         if(group.length > maxItemsPerSeverity) {
           dataView.deleteItem(group.pop().id);
         }
-        
+
         group.unshift(log);
         logs[i] = log;
       }
       // then we insert all items in one go.
-      dataView.insertItems(0, logs);    
-      dataView.endUpdate();          
+      dataView.insertItems(0, logs);
+      dataView.endUpdate();
     } else {
-      dataView.beginUpdate(); // just a normal update 
+      dataView.beginUpdate(); // just a normal update
       for (var i = 0; i < count; i++) {
         var log = new LogEntry();
         var group = logsPerSeverity[log.severity];
@@ -150,18 +149,18 @@
             // item not yet fully inserted
           }
         }
-        
+
         group.unshift(log);
         dataView.insertItem(0, log); // individual inserts
       }
-      dataView.endUpdate();  
+      dataView.endUpdate();
     }
   }
 
-  $(function () {
+  document.addEventListener("DOMContentLoaded", function() {
     dataView = new Slick.Data.DataView({ inlineFilters: true });
     grid = new Slick.Grid("#myGrid", dataView, columns, options);
-    var pager = new Slick.Controls.Pager(dataView, grid, $("#pager"));
+    var pager = new Slick.Controls.Pager(dataView, grid, "#pager");
 
     // wire up model events to drive the grid
     dataView.onRowCountChanged.subscribe(function (e, args) {
@@ -176,7 +175,7 @@
 
     // prepare some data
     simulateLogs(severities.length * maxItemsPerSeverity, true)
-  })
+  });
 </script>
 </body>
 </html>

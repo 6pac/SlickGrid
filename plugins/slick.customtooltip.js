@@ -60,9 +60,9 @@
  * @class Slick.Plugins.CustomTooltip
  * @varructor
  */
-(function ($) {
+(function (window) {
   // Register namespace
-  $.extend(true, window, {
+  Slick.Utils.extend(true, window, {
     "Slick": {
       "Plugins": {
         "CustomTooltip": CustomTooltip
@@ -105,7 +105,7 @@
       var _data = grid && grid.getData() || [];
       _dataView = Array.isArray(_data) ? null : _data;
       _gridOptions = grid.getOptions() || {};
-      _options = $.extend(true, {}, _defaults, _gridOptions.customTooltip, options);
+      _options = Slick.Utils.extend(true, {}, _defaults, _gridOptions.customTooltip, options);
       _eventHandler
         .subscribe(grid.onMouseEnter, handleOnMouseEnter)
         .subscribe(grid.onHeaderMouseEnter, handleOnHeaderMouseEnter)
@@ -164,14 +164,13 @@
       args.grid = _grid;
       args.type = isHeaderRowType ? 'header-row' : 'header';
 
-      _cellTooltipOptions = $.extend(true, {}, _options, columnDef.customTooltip);
+      _cellTooltipOptions = Slick.Utils.extend(true, {}, _options, columnDef.customTooltip);
       if ((columnDef && columnDef.disableTooltip) || !runOverrideFunctionWhenExists(_cellTooltipOptions.usabilityOverride, args)) {
         return;
       }
 
       if (columnDef && e.target) {
         _cellNodeElm = findClosestHeaderNode(e.target, selector);
-        var isHeaderRowType = selector === 'slick-headerrow-column';
         var formatter = isHeaderRowType ? _cellTooltipOptions.headerRowFormatter : _cellTooltipOptions.headerFormatter;
 
         if (_cellTooltipOptions.useRegularTooltip || !formatter) {
@@ -208,7 +207,7 @@
           var item = _dataView ? _dataView.getItem(cell.row) : _grid.getDataItem(cell.row);
           var columnDef = _grid.getColumns()[cell.cell];
           _cellNodeElm = _grid.getCellNode(cell.row, cell.cell);
-          _cellTooltipOptions = $.extend(true, {}, _options, columnDef.customTooltip);
+          _cellTooltipOptions = Slick.Utils.extend(true, {}, _options, columnDef.customTooltip);
 
           if (item && columnDef) {
             // run the override function (when defined), if the result is false it won't go further
@@ -335,7 +334,7 @@
 
     function asyncProcessCallback(asyncResult, cell, value, columnDef, dataContext) {
       hideTooltip();
-      var itemWithAsyncData = $.extend(true, {}, dataContext, { [_cellTooltipOptions.asyncParamsPropName || '__params']: asyncResult });
+      var itemWithAsyncData = Slick.Utils.extend(true, {}, dataContext, { [_cellTooltipOptions.asyncParamsPropName || '__params']: asyncResult });
       renderTooltipFormatter(_cellTooltipOptions.asyncPostFormatter, cell, value, columnDef, itemWithAsyncData);
     }
 
@@ -496,11 +495,11 @@
       if (!tooltipText || (_cellTooltipOptions && _cellTooltipOptions.renderRegularTooltipAsHtml)) {
         finalOutputText = _grid.sanitizeHtmlString(outputText);
         _tooltipElm.innerHTML = finalOutputText;
-        _tooltipElm.style.whiteSpace = (_cellTooltipOptions && _cellTooltipOptions.whiteSpace) || _defaultOptions.whiteSpace;
+        _tooltipElm.style.whiteSpace = (_cellTooltipOptions && _cellTooltipOptions.whiteSpace) || _defaults.whiteSpace;
       } else {
         finalOutputText = outputText || '';
         _tooltipElm.textContent = finalOutputText;
-        _tooltipElm.style.whiteSpace = (_cellTooltipOptions && _cellTooltipOptions.regularTooltipWhiteSpace) || _defaultOptions.regularTooltipWhiteSpace; // use `pre` so that sequences of white space are collapsed. Lines are broken at newline characters
+        _tooltipElm.style.whiteSpace = (_cellTooltipOptions && _cellTooltipOptions.regularTooltipWhiteSpace) || _defaults.regularTooltipWhiteSpace; // use `pre` so that sequences of white space are collapsed. Lines are broken at newline characters
       }
 
       // optional max height/width of the tooltip container
@@ -542,11 +541,11 @@
     }
 
     function setOptions(newOptions) {
-      _options = $.extend({}, _options, newOptions);
+      _options = Slick.Utils.extend({}, _options, newOptions);
     }
 
     // Public API
-    $.extend(this, {
+    Slick.Utils.extend(this, {
       "init": init,
       "destroy": destroy,
       "hide": hideTooltip,
@@ -554,4 +553,4 @@
       "pluginName": "CustomTooltip"
     });
   }
-})(jQuery);
+})(window);
