@@ -31,6 +31,10 @@
     .slick-row.selected .cell-selection {
       background-color: transparent; /* show default selected row background */
     }
+    .ui-state-hover {
+      background: #6e6e6e44 !important;
+	    text-decoration: none;
+    }
   </style>
 </head>
 <body>
@@ -94,9 +98,6 @@
   <input style="width:100px;display:inline-block;" id="pcSlider2" type="range" min="1" max="100" value="1">
 </div>
 
-<script src="../lib/firebugx.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
@@ -182,16 +183,18 @@ function toggleFilterRow() {
 }
 
 
-$(".grid-header .ui-icon")
-        .addClass("ui-state-default ui-corner-all")
-        .mouseover(function (e) {
-          $(e.target).addClass("ui-state-hover")
-        })
-        .mouseout(function (e) {
-          $(e.target).removeClass("ui-state-hover")
-        });
+const headerSearchIcon = document.querySelector(".grid-header .slick-icon-search");
+if (headerSearchIcon) {
+  headerSearchIcon.classList.add("ui-state-default", "ui-corner-all");
+  headerSearchIcon.addEventListener('mouseover', (function (e) {
+    e.target.classList.add("ui-state-hover");
+  }));
+  headerSearchIcon.addEventListener('mouseout', (function (e) {
+    e.target.classList.remove("ui-state-hover");
+  }));
+}
 
-$(function () {
+document.addEventListener("DOMContentLoaded", function() {
   // prepare the data
   for (var i = 0; i < 50000; i++) {
     var d = (data[i] = {});
@@ -211,14 +214,14 @@ $(function () {
   grid = new Slick.Grid("#myGrid", dataView, columns, options);
   grid.setSelectionModel(new Slick.RowSelectionModel());
 
-  var pager = new Slick.Controls.Pager(dataView, grid, $("#pager"));
+  var pager = new Slick.Controls.Pager(dataView, grid, "#pager");
   var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
 
-
   // move the filter panel defined in a hidden div into grid top panel
-  $("#inlineFilterPanel")
-      .appendTo(grid.getTopPanel())
-      .show();
+  var topPanel = grid.getTopPanel();
+  const topPanelLeftElm = document.querySelector("#inlineFilterPanel");
+  topPanel.appendChild(topPanelLeftElm);
+  topPanelLeftElm.style.display = 'block';
 
   grid.onCellChange.subscribe(function (e, args) {
     dataView.updateItem(args.item.id, args.item);
@@ -226,7 +229,7 @@ $(function () {
 
   grid.onAddNewRow.subscribe(function (e, args) {
     var item = {"num": data.length, "id": "new_" + (Math.round(Math.random() * 10000)), "title": "New task", "duration": "1 day", "percentComplete": 0, "start": "01/01/2009", "finish": "01/01/2009", "effortDriven": false};
-    $.extend(item, args.item);
+    Slick.Utils.extend(item, args.item);
     dataView.addItem(item);
   });
 
@@ -319,16 +322,14 @@ $(function () {
   slider2.oninput = sliderCallback;
 
   // wire up the search textbox to apply the filter to the model
-  $("#txtSearch,#txtSearch2").keyup(function (e) {
+  document.querySelector("#txtSearch,#txtSearch2").addEventListener('keyup', (e) => {
     Slick.GlobalEditorLock.cancelCurrentEdit();
 
     // clear on Esc
-    if (e.which == 27) {
-      this.value = "";
-    }
+    if (e.which == 27) e.target.value = '';
 
-    searchString = this.value;
-    updateFilter();
+    columnFilters['title'] = (e.target.value || '').trim();
+    dataView.refresh();
   });
 
   function updateFilter() {
@@ -339,19 +340,17 @@ $(function () {
     dataView.refresh();
   }
 
-  $("#btnSelectRows").click(function () {
+  document.querySelector("#btnSelectRows").addEventListener('click', function () {
     if (!Slick.GlobalEditorLock.commitCurrentEdit()) {
       return;
     }
-
     var rows = [];
+
     for (var i = 0; i < 10 && i < dataView.getLength(); i++) {
       rows.push(i);
     }
-
     grid.setSelectedRows(rows);
   });
-
 
   // initialize the model after all the events have been hooked up
   dataView.beginUpdate();
