@@ -257,6 +257,9 @@ ul {
   opacity: .7
 }
 
+.slick-header-column {
+  font-weight: 700;
+}
 .slick-header-column-sorted {
   font-style: italic
 }
@@ -277,7 +280,7 @@ ul {
   position: absolute;
   right: 0;
   top: 0;
-  width: 18px
+  width: 18px;
 }
 
 .slick-header-column .slick-header-menubutton .caret {
@@ -289,11 +292,11 @@ ul {
   margin-left: 0;
   margin-top: 7px;
   vertical-align: middle;
-  width: 0
+  width: 0;
 }
 
 .slick-header-column .slick-header-menubutton.filtered {
-  color: #f1f5f8
+  color: #f1f5f8;
 }
 
 .slick-header-column.ui-state-default {
@@ -307,7 +310,7 @@ ul {
   overflow: hidden;
   padding: 4px;
   position: relative;
-  text-overflow: ellipsis
+  text-overflow: ellipsis;
 }
 
 .slick-header-column .slick-sort-indicator-asc {
@@ -326,12 +329,12 @@ ul {
   margin-left: 3px;
   margin-top: 5px;
   vertical-align: middle;
-  width: 0
+  width: 0;
 }
 
 .slick-header-column .slick-sort-indicator-desc {
   border-top: 4px dashed;
-  margin-bottom: 5px
+  margin-bottom: 5px;
 }
 
 .slick-header-columns {
@@ -341,12 +344,12 @@ ul {
   padding: 0;
   position: relative;
   text-align: center;
-  white-space: nowrap
+  white-space: nowrap;
 }
 
 .slick-column-name,
 .slick-sort-indicator {
-  display: inline-block
+  display: inline-block;
 }
 
 .slick-headerrow {
@@ -356,7 +359,7 @@ ul {
 .slick-headerrow.ui-state-default {
   border-left: 0;
   overflow: hidden;
-  width: 100%
+  width: 100%;
 }
 
 .slick-headerrow-columns {
@@ -376,9 +379,7 @@ ul {
 .slick-headerrow-column {
   border: 0;
   border-right: 1px solid #dae1e7;
-  /* height: 100%; */
   margin: 0;
-  /* padding: 0; */
   position: absolute;
   text-overflow: ellipsis;
   vertical-align: middle;
@@ -390,7 +391,6 @@ ul {
   border: 1px solid transparent;
   box-sizing: border-box;
   color: #606f7b;
-  /* height: 100%; */
   margin: 0;
   min-height: 23px;
   padding: .2rem .5rem;
