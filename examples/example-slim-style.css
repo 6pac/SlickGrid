@@ -652,6 +652,12 @@ ul {
   color: #606f7b
 }
 
+.percent-complete-bar {
+  display: inline-block;
+  height: 6px;
+  border-radius: 3px;
+}
+
 /* Slick.Editors.Text, Slick.Editors.Date */
 input.editor-text {
   width: 100%;
