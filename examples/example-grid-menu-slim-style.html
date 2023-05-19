@@ -1,0 +1,414 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
+  <link rel="stylesheet" href="example-slim-style.css" type="text/css"/>
+  <link rel="stylesheet" href="../controls/slick.gridmenu.css" type="text/css"/>
+  <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" crossorigin="anonymous">
+  <style>
+    .blue {
+      color: rgb(73, 73, 255);
+    }
+    .orange {
+      color: orange;
+    }
+    .red {
+      color: red;
+    }
+    .bold {
+      font-weight: bold;
+    }
+    .italic {
+      font-style: italic;
+    }
+    .slick-gridmenu-item-hidden {
+      display: none;
+    }
+    .slick-headerrow-column {
+      background: #e7e7e7;
+      text-overflow: clip;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+
+    .slick-headerrow-column input {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 100%;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+    .icon-help {
+      background-image: url(../images/help.png);
+    }
+
+    /** you could optionally style the grid menu column picker list with font-awesome checkboxes */
+    .slick-gridmenu-list li,
+    .slick-columnpicker-list li {
+      cursor: pointer;
+      margin: 4px;
+    }
+    .slick-gridmenu-list label,
+    .slick-columnpicker-list label {
+      padding: 1px;
+      display: block;
+      cursor: pointer;
+    }
+
+    #myGrid input[type=checkbox],
+    .slick-gridmenu-list input[type=checkbox],
+    .slick-columnpicker-list input[type=checkbox] {
+      display:none; /* to hide the checkbox itself */
+    }
+    #myGrid input[type=checkbox] + label:before,
+    .slick-gridmenu-list input[type=checkbox] + label:before,
+    .slick-columnpicker-list input[type=checkbox] + label:before {
+      cursor: pointer;
+      font-family: FontAwesome;
+      color: #013668;
+      font-weight: bold;
+      display: inline-block;
+      content: "\f00c";
+      font-size: 13px;
+      margin-right: 4px;
+    }
+    #myGrid input[type=checkbox] + label:before,
+    .slick-gridmenu-list input[type=checkbox] + label:before,
+    .slick-columnpicker-list input[type=checkbox] + label:before {
+      opacity: 0.2; /* unchecked icon */
+    }
+    #myGrid input[type=checkbox]:checked + label:before,
+    .slick-gridmenu-list input[type=checkbox]:checked + label:before,
+    .slick-columnpicker-list input[type=checkbox]:checked + label:before {
+      opacity: 1; /* checked icon */
+    }
+  </style>
+</head>
+<body>
+<div style="position:relative">
+  <div style="width:600px;">
+    <div id="myGrid" style="width:100%;height:500px;"></div>
+  </div>
+  <div class="options-panel">
+    &lt;== Top Right Corner
+    <h2>Demonstrates:</h2>
+    <ul>
+      <li>This example demonstrates using the Slick.Controls.GridMenu to add a Grid Menu (hamburger menu on top right of the grid)</li>
+      <li>Possibility to add custom menu items via a simple array provided to the grid options (same concept as the header menu plugin)</li>
+      <li>Includes column picker list.</li>
+      <li>Optional title for the custom menu items (top section)</li>
+      <li>Optional title for the columns list (bottom section)</li>
+      <li>To dismiss the Grid Menu, user can click on the "x" on top right corner or anywhere outside of the Grid Menu</li>
+      <li>Possibility to attach the Grid Menu to an external button (try clicking on the button below).</li>
+      <li>You can also use some events like "onMenuClose()" and to trigger a resize of the columns with "autosizeColumns()" when "forceFitColumns: false"</li>
+      <p>
+        <button id="external-gridmenu" onclick="toggleGridMenu(event)"><img src="../images/drag-handle.png"/> Grid Menu</button>
+      </p>
+      <p>
+        Always show vertical scroll (with "alwaysShowVerticalScroll" flag), so that it works with small and large dataset.
+        Not using this flag, might have side effect on the UI with the Grid Menu overlapping with the data in background.
+      </p>
+      <div style="margin-bottom:10px">
+        <button onclick="loadData(15)">15 rows</button>
+        <button onclick="loadData(5000)">5000 rows</button>
+        <button id="toggle-sorting" onclick="toggleSorting(event)">Toggle Sorting</button>
+      </div>
+      <h2>View Source:</h2>
+      <ul>
+          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-grid-menu.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+      </ul>
+
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+
+<script src="../slick.core.js"></script>
+<script src="../slick.interactions.js"></script>
+<script src="../slick.dataview.js"></script>
+<script src="../slick.grid.js"></script>
+<script src="../controls/slick.columnpicker.js"></script>
+<script src="../controls/slick.gridmenu.js"></script>
+
+<script>
+  var dataView;
+  var grid;
+  var gridMenu;
+  var data = [];
+  var columnpicker;
+  var gridMenuControl;
+  var isSortingDisabled = false;
+
+  function isObjectEmpty(obj) {
+    for(var key in obj) {
+      if(obj.hasOwnProperty(key) && obj[key] !== "") {
+        return false;
+      }
+    }
+    return true;
+  }
+
+  var options = {
+    enableCellNavigation: true,
+    showHeaderRow: true,
+    headerRowHeight: 30,
+    explicitInitialization: true,
+    forceFitColumns: false,
+    alwaysShowVerticalScroll: true, // this is necessary when using Grid Menu with a small dataset
+    columnPicker: {
+      fadeSpeed: 100,
+      columnTitle: "Columns",
+      hideForceFitButton: false,
+      hideSyncResizeButton: false,
+      forceFitTitle: "Force fit columns",
+      syncResizeTitle: "Synchronous resize",
+    },
+    // gridMenu Object is optional
+    // when not passed, it will act as a regular Column Picker (with default Grid Menu image of drag-handle.png)
+    gridMenu: {
+      useClickToRepositionMenu: false, // defaults to true (false would use the icon offset to reposition the grid menu)
+      menuUsabilityOverride: function (args) {
+        // we could disable the menu entirely by returning false
+        return true;
+      },
+      customTitle: "Custom Menus",
+      columnTitle: "Columns",
+      hideForceFitButton: false,
+      hideSyncResizeButton: false,
+      // iconImage: "../images/drag-handle.png", // this is the Grid Menu icon (hamburger icon)
+      // iconCssClass: "fa fa-bars",    // you can provide iconImage OR iconCssClass
+      leaveOpen: false,                 // do we want to leave the Grid Menu open after a command execution? (false by default)
+      // menuWidth: 18,                 // width that will be use to resize the column header container (18 by default)
+      resizeOnShowHeaderRow: true,
+      customItems: [
+        {
+          iconImage: "../images/delete.png",
+          title: "Clear Filters",
+          disabled: false,
+          command: "clear-filter",
+          cssClass: 'bold',     // container css class
+          textCssClass: 'red'   // just the text css class
+        },
+        {
+          iconImage: "../images/delete.png",
+          title: "Clear Sorting",
+          disabled: false,
+          command: "clear-sorting",
+          textCssClass: 'red'   // just the text css class
+        },
+        {
+          iconImage: "../images/info.gif",
+          title: "Toggle Filter Row",
+          disabled: false,
+          command: "toggle-filter",
+          itemUsabilityOverride: function (args) {
+            // for example disable the toggle of the filter bar when there's filters provided
+            return isObjectEmpty(columnFilters);
+          },
+        },
+        {
+          iconImage: "../images/info.gif",
+          title: "Toggle Top Panel",
+          disabled: false,
+          command: "toggle-toppanel",
+          cssClass: 'italic',     // container css class
+          textCssClass: 'orange'  // just the text css class
+        },
+        // you can pass divider as a string or an object with a boolean
+        // "divider",
+        { divider: true },
+        {
+          iconCssClass: "icon-help",
+          title: "Help",
+          command: "help",
+          textCssClass: "blue",
+          // you could dynamically remove a command from the list (only checks before opening the menu)
+          // for example don't show the "Help" button if we have less than 5 columns left
+          itemVisibilityOverride: function (args) {
+            return args.visibleColumns.length > 4;
+          },
+          action: function(e, args) {
+            // you can use the "action" callback and/or subscribe to the "onCallback" event, they both have the same arguments
+            console.log('execute an action on Help', args);
+          }
+        },
+        {
+          iconImage: "",
+          title: "Disabled Command",
+          disabled: true,
+          command: "custom-command"
+        }
+      ]
+    }
+  };
+
+  // show 1st column with font-awesome hashtag icon
+  var columns = [{ id: 'id', field: 'id', name: '<i class="fa fa-info"></i>', width: 40, excludeFromGridMenu: true }];
+  var columnFilters = {};
+  var sortcol = "id";
+  var sortdir = 1;
+
+  for (var i = 0; i < 10; i++) {
+    columns.push({
+      id: i,
+      name: String.fromCharCode("A".charCodeAt(0) + i),
+      field: i,
+      width: 60,
+      sortable: true,
+    });
+  }
+
+  function comparer(a, b) {
+      var x = a[sortcol], y = b[sortcol];
+      return (x == y ? 0 : (x > y ? 1 : -1));
+    }
+
+  function loadData(count) {
+    data = [];
+    for (var i = 0; i < count; i++) {
+      var d = (data[i] = {});
+      d["id"] = i;
+      for (var j = 0; j < columns.length; j++) {
+        d[j] = Math.round(Math.random() * 10);
+      }
+    }
+    dataView.setItems(data);
+  }
+
+  function filter(item) {
+    for (var columnId in columnFilters) {
+      if (columnId !== undefined && columnFilters[columnId] !== "") {
+        var c = grid.getColumns()[grid.getColumnIndex(columnId)];
+        if (item[c.field] != columnFilters[columnId]) {
+          return false;
+        }
+      }
+    }
+    return true;
+  }
+
+  function toggleGridMenu(e) {
+    gridMenuControl.showGridMenu(e);
+  }
+
+  function toggleSorting(e) {
+    isSortingDisabled = !isSortingDisabled;
+    options.gridMenu.customItems.forEach(function(menuItem) {
+        if (menuItem && typeof menuItem !== 'string') {
+          const menuCommand = menuItem.command;
+          if (menuCommand === 'clear-sorting') {
+            console.log(menuItem)
+            menuItem.hidden = isSortingDisabled;
+          }
+        }
+      });
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    dataView = new Slick.Data.DataView();
+    grid = new Slick.Grid("#myGrid", dataView, columns, options);
+    columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
+    gridMenuControl = new Slick.Controls.GridMenu(columns, grid, options);
+
+    dataView.onRowCountChanged.subscribe(function (e, args) {
+      grid.updateRowCount();
+      grid.render();
+    });
+
+    dataView.onRowsChanged.subscribe(function (e, args) {
+      grid.invalidateRows(args.rows);
+      grid.render();
+    });
+
+    const headerRowElm = grid.getHeaderRow();
+    headerRowElm.addEventListener('change', filterKeyup);
+    headerRowElm.addEventListener('keyup', filterKeyup);
+
+    function filterKeyup(e) {
+      const inputFilter = e.target;
+      const columnId = inputFilter.dataset.columnid;
+      if (columnId != null) {
+        columnFilters[columnId] = (e.target.value || '').trim();
+        dataView.refresh();
+      }
+    }
+
+    grid.onHeaderRowCellRendered.subscribe(function(e, args) {
+      args.node.innerHTML = ''; // empty it
+      const inputElm = document.createElement('input');
+      inputElm.dataset.columnid = args.column.id;
+      inputElm.value = columnFilters[args.column.id] || '';
+
+      args.node.appendChild(inputElm);
+    });
+
+    grid.init();
+
+    dataView.beginUpdate();
+    dataView.setItems(data);
+    dataView.setFilter(filter);
+    loadData(1000);
+    dataView.endUpdate();
+
+    // subscribe to Grid Menu event(s)
+
+    gridMenuControl.onCommand.subscribe(function(e, args) {
+      // e.preventDefault(); // you could do if you wish to keep the menu open
+
+      if(args.command === "toggle-filter") {
+        grid.setHeaderRowVisibility(!grid.getOptions().showHeaderRow);
+      }
+      else if(args.command === "toggle-toppanel") {
+        grid.setTopPanelVisibility(!grid.getOptions().showTopPanel);
+      }
+      else if(args.command === "clear-filter") {
+        const filterInputs = document.querySelectorAll('.slick-headerrow-column input');
+        filterInputs.forEach(input => input.value = '');
+        for (var columnId in columnFilters) {
+          columnFilters[columnId] = "";
+        }
+        dataView.refresh();
+      } else if(args.command === "clear-sorting") {
+        grid.setSortColumns([]);
+        dataView.refresh();
+      } else {
+        alert("Command: " + args.command);
+      }
+    });
+
+    // subscribe to some events
+    gridMenuControl.onBeforeMenuShow.subscribe(function(e, args) {
+      console.log('Before the Grid Menu is shown');
+    });
+    gridMenuControl.onAfterMenuShow.subscribe(function(e, args) {
+      console.log('After the Grid Menu is shown');
+    });
+
+    // subscribe to event when column visibility is changed via the menu
+    gridMenuControl.onColumnsChanged.subscribe(function(e, args) {
+      console.log('Columns changed via the menu');
+    });
+
+    // subscribe to event when menu is closing
+    gridMenuControl.onMenuClose.subscribe(function(e, args) {
+      console.log('Menu is closing');
+      grid.autosizeColumns();
+    });
+
+    grid.onAutosizeColumns.subscribe(function(e, args) {
+      console.log('onAutosize called')
+    });
+
+    grid.onSort.subscribe(function (e, args) {
+      sortdir = args.sortAsc ? 1 : -1;
+      sortcol = args.sortCol.field;
+      dataView.sort(comparer, args.sortAsc);
+    });
+  });
+</script>
+</body>
+</html>
