@@ -549,9 +549,7 @@ ul {
   background: none;
   border: none;
   height: 40px;
-  /* margin-left: 10px; */
   vertical-align: middle;
-  /* width: auto; */
 }
 
 .slick-pager {
@@ -638,6 +636,7 @@ ul {
 .slick-cell-menu,
 .slick-context-menu {
   font-family: system-ui, BlinkMacSystemFont, -apple-system, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
+  font-size: 13.5px;
   background-color: #f8fafc !important;
   color: #c5c5c5;
 }
