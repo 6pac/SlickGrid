@@ -635,39 +635,19 @@ ul {
   text-decoration: underline
 }
 
-.slim-context-menu {
-  -moz-box-shadow: 0 2px 4px 0 rgba(0, 0, 0, .1);
-  -webkit-box-shadow: 0 2px 4px 0 rgba(0, 0, 0, .1);
-  background: #f8fafc;
-  border: 1px solid #dae1e7;
-  border-radius: .25rem;
-  color: #606f7b;
-  display: inline-block;
+.slick-columnpicker,
+.slick-gridmenu,
+.slick-cell-menu,
+.slick-context-menu {
   font-family: system-ui, BlinkMacSystemFont, -apple-system, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-  font-size: .875rem;
-  margin: 0;
-  min-width: 130px;
-  padding: 0;
-  position: absolute;
-  z-index: 99999
-}
-
-.slim-context-menu .slim-context-menu-option {
-  border: 1px solid transparent;
-  border-radius: .25rem;
-  cursor: pointer;
-  list-style: none;
-  margin: .5rem;
-  padding: .5rem 1rem
-}
-
-.slick-cell-menu, .slick-context-menu {
-  font-family: system-ui, BlinkMacSystemFont, -apple-system, Segoe UI, Roboto, Oxygen, Ubuntu, Cantarell, Fira Sans, Droid Sans, Helvetica Neue, sans-serif;
-  background-color: #f8fafc;
+  background-color: #f8fafc !important;
   color: #c5c5c5;
 }
 
-.slick-cell-menu, .slick-context-menu {
+.slick-columnpicker,
+.slick-gridmenu,
+.slick-cell-menu,
+.slick-context-menu {
   border: 1px solid #dae1e7;
   color: #606f7b
 }
