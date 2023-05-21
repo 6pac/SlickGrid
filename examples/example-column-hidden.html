@@ -284,7 +284,8 @@ document.addEventListener("DOMContentLoaded", function() {
 
   document.querySelector('#chkHideColumn').addEventListener("change", function(e) { 
     var hideCol = document.querySelector('#chkHideColumn').checked || false;
-    columns[2].hidden = hideCol;
+    // use the grid's columns not the local column var, since order and visibility may have changed if we are still using the old technique to hide columns
+    grid.getColumns()[grid.getColumnIndex('duration')].hidden = hideCol;
     grid.updateColumns();
   });
   

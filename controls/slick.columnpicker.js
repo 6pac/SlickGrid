@@ -124,8 +124,6 @@
 
       let columnId, columnLabel, excludeCssClass;
       for (var i = 0; i < columns.length; i++) {
-        if (columns[i].hidden) continue;
-        
         columnId = columns[i].id;
         excludeCssClass = columns[i].excludeFromColumnPicker ? "hidden" : "";
 
@@ -141,7 +139,7 @@
 
         columnCheckboxes.push(checkboxElm);
 
-        if (_grid.getColumnIndex(columnId) != null) {
+        if (_grid.getColumnIndex(columnId) != null && !columns[i].hidden) {
           checkboxElm.checked = true;
         }
 
@@ -275,6 +273,7 @@
         const columnId = e.target.dataset.columnid || '';
         let visibleColumns = [];
         columnCheckboxes.forEach((columnCheckbox, idx) => {
+          if (columns[idx].hidden !== undefined) { columns[idx].hidden = !columnCheckbox.checked; }
           if (columnCheckbox.checked) {
             visibleColumns.push(columns[idx]);
           }
