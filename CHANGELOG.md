@@ -2,6 +2,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0](https://github.com/6pac/SlickGrid/compare/3.0.4...4.0.0) (2023-05-28)
+
+### Bug Fixes
+
+* `idxById` could be undefined when changing page in SPA ([#782](https://github.com/6pac/SlickGrid/issues/782)) ([222725f](https://github.com/6pac/SlickGrid/commit/222725f0f68b993232bc2fabb725eada6208bf67))
+* columnpicker and column order for hidden columns ([034108d](https://github.com/6pac/SlickGrid/commit/034108ddde688586e67b44f9d58e8d4d0d773767))
+* dist source map file naming was incorrect ([#730](https://github.com/6pac/SlickGrid/issues/730)) ([aa4093a](https://github.com/6pac/SlickGrid/commit/aa4093a2b1d2afa791a645c65518fb2c35f50204))
+* enable AutoScroll with SortableJS for column reordering, fixes [#735](https://github.com/6pac/SlickGrid/issues/735) ([c9ee9af](https://github.com/6pac/SlickGrid/commit/c9ee9af2df9ae8fdc8611fc0131a753a3e1e6cc3))
+* enable AutoScroll with SortableJS for column reordering, fixes [#735](https://github.com/6pac/SlickGrid/issues/735) ([#736](https://github.com/6pac/SlickGrid/issues/736)) ([9fa0860](https://github.com/6pac/SlickGrid/commit/9fa0860253e48ccd2690d7e5e65cd8fc0afccec5))
+* final fix for ColumnPicker and column hidden property ([000865d](https://github.com/6pac/SlickGrid/commit/000865d8823a66bd9f5289140bfb82d4d4b4254c))
+* make sure column is defined before calling hidden prop ([#783](https://github.com/6pac/SlickGrid/issues/783)) ([29572a6](https://github.com/6pac/SlickGrid/commit/29572a68bc8f3246feeacd41036189c59e0ad9a6))
+* rollback JS event passive mode in SlickGrid ([#778](https://github.com/6pac/SlickGrid/issues/778)) ([e61547e](https://github.com/6pac/SlickGrid/commit/e61547ea980ee42accac6cb4c2e76627c97599e4)), closes [#769](https://github.com/6pac/SlickGrid/issues/769)
+
+### Features
+
+* provide another styling theme ([#779](https://github.com/6pac/SlickGrid/issues/779)) ([bc96ddf](https://github.com/6pac/SlickGrid/commit/bc96ddf84df58bc530fcbc61f37b8db900523a27))
+
 # [4.0.0-beta.0](https://github.com/6pac/SlickGrid/compare/3.0.4...4.0.0-beta.0) (2023-05-17)
 
 ### Please read the [Migration Guide v4.0](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement)
