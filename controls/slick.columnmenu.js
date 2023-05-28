@@ -1,7 +1,6 @@
 /***
  * A control to add a Column Picker (right+click on any column header to reveal the column picker)
- * NOTE: this is the old 'complex' column pciker that hides columns by removing them from the grid
- *        for a more modern version that uses the column.hidden property and is a lot simpler, use slick.columnmenu.js
+ * NOTE: this a simplified and updated version of slick.columnpicker.js
  *
  * USAGE:
  *
