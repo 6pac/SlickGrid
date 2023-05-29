@@ -10,7 +10,7 @@ Check out the NEW SlickGrid Website! http://slickgrid.net/
 
 This is the acknowledged most active non-customised fork of SlickGrid.
 
-It aims to be a viable alternative master repo, building on the legacy of the mleibman/SlickGrid master branch, keeping libraries up to date and applying small, safe core patches and enhancements without turning into a personalised build.
+It aims to be a viable alternative master repo, building on the legacy of the mleibman/SlickGrid master branch, keeping libraries up to date and applying small, safe core patches and enhancements without turning into a personalised build. Our biggest changes include the merge of X-SlickGrid that brought Frozen columns/rows, we then also removed jQuery & jQueryUI and are now using native browser code in SlickGrid.
 
 Check out the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** for examples demonstrating new features and use cases, such as dynamic grid creation and editors with third party controls.
 
@@ -32,4 +32,4 @@ Once the Cypress UI is open, you can then click on "Run all Specs" to execute al
 We no longer require [jQueryUI](https://jqueryui.com/) in SlickGrid 3.0, we removed all associated code and replaced it with [SortableJS](https://sortablejs.github.io/Sortable/) which is a lot more modern and touch friendly. Please read [SlickGrid 3.0 - Annoucement & Migration](https://github.com/6pac/SlickGrid/wiki/Major-version-3.0----Removal-of-jQueryUI-requirement-(replaced-by-SortableJS)) Wiki for more info.
 
 ## SlickGrid 4.x drops jQuery requirement
-SlickGrid is now using native code and no longer requires jQuery in SlickGrid 4.0. Please read [SlickGrid 4.0 - Annoucement & Migration](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement)
+SlickGrid is now using browser native code and no longer requires jQuery in SlickGrid 4.0. For more info, please read [SlickGrid 4.0 - Annoucement & Migration](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement)
