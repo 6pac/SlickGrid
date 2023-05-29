@@ -4,6 +4,8 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 # [4.0.0](https://github.com/6pac/SlickGrid/compare/3.0.4...4.0.0) (2023-05-28)
 
+### Please read the [Migration Guide v4.0](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement)
+
 ### Bug Fixes
 
 * `idxById` could be undefined when changing page in SPA ([#782](https://github.com/6pac/SlickGrid/issues/782)) ([222725f](https://github.com/6pac/SlickGrid/commit/222725f0f68b993232bc2fabb725eada6208bf67))
