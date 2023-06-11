@@ -221,7 +221,7 @@
       }
 
       // make sure the menu element is an empty div before adding all list of commands
-      Slick.Utils.emptyElement(this._menuElm);
+      Slick.Utils.emptyElement(_menuElm);
 
       // Construct the menu items.
       for (var i = 0; i < menu.items.length; i++) {
