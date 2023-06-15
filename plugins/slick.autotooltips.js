@@ -75,7 +75,7 @@
       const targetElm = (e.target);
 
       if (targetElm) {
-        node = targetElm.closest < HTMLDivElement > ('.slick-header-column');
+        node = targetElm.closest('.slick-header-column');
         if (node && !(column && column.toolTip)) {
           node.title = (targetElm.clientWidth < node.clientWidth) ? column && column.name || '' : '';
       }
