@@ -11,7 +11,8 @@
     "globals": {
         "flatpickr": true,
         "Slick": true,
-        "Sortable": true
+        "Sortable": true,
+        "IIFE_ONLY": true
     },
     "rules": {
         "cypress/no-unnecessary-waiting": "off",

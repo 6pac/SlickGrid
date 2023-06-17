@@ -22,7 +22,10 @@
       <div id="myGrid01" style="width:600px;height:300px;"></div>
 	</td>
     <td valign="top">
-      <h2>Demonstrates:</h2>
+      <h2>
+        <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+        Demonstrates:
+      </h2>
       <ul>
         <li>Slickgrid with Bootstrap 3 css (bootstrap.css). This imposes 'box-sizing: border-box;' on all elements in the page.</li>
       </ul>
@@ -36,19 +39,19 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../slick.grid.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
 
 <script>
   var grid;
   var columns = [
     {id: "title", name: "Title", field: "title"},
     {id: "duration", name: "Duration", field: "duration"},
-    {id: "%", name: "% Complete", field: "percentComplete"},
+    {id: "%", name: "% Complete", field: "percentComplete", width: 95},
     {id: "start", name: "Start", field: "start"},
     {id: "finish", name: "Finish", field: "finish"},
-    {id: "effort-driven", name: "Effort Driven", field: "effortDriven"}
+    {id: "effort-driven", name: "Effort Driven", field: "effortDriven", width: 95}
   ];
 
   var options = {

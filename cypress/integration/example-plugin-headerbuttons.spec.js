@@ -29,7 +29,7 @@ describe('Example - Header Button', () => {
 
     cy.get('.slick-header-columns')
       .children('.slick-header-column:nth(2)')
-      .find('.slick-header-button.icon-highlight-off')
+      .find('.slick-header-button.sgi-lightbulb.color-orange')
       .should('exist')
       .click();
 
@@ -80,7 +80,7 @@ describe('Example - Header Button', () => {
 
     cy.get('.slick-header-columns')
       .children('.slick-header-column:nth(9)')
-      .find('.slick-header-button.icon-highlight-off')
+      .find('.slick-header-button.sgi-lightbulb.color-orange')
       .should('exist')
       .click();
 
@@ -139,7 +139,7 @@ describe('Example - Header Button', () => {
       done();
     });
 
-    // header buttons are displayed in inverse mode by default, 
+    // header buttons are displayed in inverse mode by default,
     // so we need to start at the end
     cy.get('.slick-header-columns')
       .children('.slick-header-column:nth(0)')

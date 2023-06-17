@@ -5,9 +5,10 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example 3: Editing</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css" />
   <link rel="stylesheet" href="../plugins/slick.customtooltip.css" type="text/css" />
-  <link rel="stylesheet" href="examples.css" type="text/css" />
+  <link rel="stylesheet" href="../styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/slick-icons.css" type="text/css"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <style>
     .cell-title, .bold {
@@ -15,10 +16,10 @@
     }
 
     .cell-effort-driven {
-      text-align: center;
+      justify-content: center;
     }
     .slick-headerrow-column {
-      background: #c4ddc4;
+      background: #dfdfdf;
       text-overflow: clip;
       -moz-box-sizing: border-box;
       box-sizing: border-box;
@@ -89,11 +90,14 @@
 <body>
   <div style="position:relative">
     <div style="width:718px;">
-      <div id="myGrid" style="width:100%;height:500px;"></div>
+      <div id="myGrid" class="slick-container" style="width:100%;height:500px;"></div>
     </div>
 
     <div class="options-panel" style="margin-left: 100px">
-      <h2>Demonstrates: <code>Slick.Plugins.CustomTooltip</code></h2>
+      <h2>
+        <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+        Demonstrates: <code>Slick.Plugins.CustomTooltip</code>
+      </h2>
       <ul>
         <li>Custom Tooltip Plugin</li>
         <li>1st column shows an async tooltip (could be an API with Promise), it demos a formatter which itself has a
@@ -128,18 +132,18 @@
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-  <script src="../slick.core.js"></script>
-  <script src="../slick.interactions.js"></script>
-  <script src="../plugins/slick.checkboxselectcolumn.js"></script>
-  <script src="../plugins/slick.cellrangedecorator.js"></script>
-  <script src="../plugins/slick.cellrangeselector.js"></script>
-  <script src="../plugins/slick.cellselectionmodel.js"></script>
-  <script src="../plugins/slick.rowselectionmodel.js"></script>
-  <script src="../plugins/slick.customtooltip.js"></script>
-  <script src="../slick.dataview.js"></script>
-  <script src="../slick.formatters.js"></script>
-  <script src="../slick.editors.js"></script>
-  <script src="../slick.grid.js"></script>
+  <script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+  <script src="../dist/browser/plugins/slick.checkboxselectcolumn.js"></script>
+  <script src="../dist/browser/plugins/slick.cellrangedecorator.js"></script>
+  <script src="../dist/browser/plugins/slick.cellrangeselector.js"></script>
+  <script src="../dist/browser/plugins/slick.cellselectionmodel.js"></script>
+  <script src="../dist/browser/plugins/slick.rowselectionmodel.js"></script>
+  <script src="../dist/browser/plugins/slick.customtooltip.js"></script>
+  <script src="../dist/browser/slick.dataview.js"></script>
+  <script src="../dist/browser/slick.formatters.js"></script>
+  <script src="../dist/browser/slick.editors.js"></script>
 
   <script>
     function requiredFieldValidator(value) {
@@ -235,7 +239,7 @@
       },
       { id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Text },
       {
-        id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false,
+        id: "%", name: "% Complete", field: "percentComplete", width: 95, resizable: false,
         formatter: Slick.Formatters.PercentCompleteBar,
         editor: Slick.Editors.PercentComplete,
         customTooltip: { useRegularTooltip: true, position: "center" },
@@ -249,7 +253,7 @@
         //   usabilityOverride: (args) => false,
         // },
       },
-      { id: "effortDriven", name: "Effort Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, editor: Slick.Editors.Checkbox }
+      { id: "effortDriven", name: "Effort Driven", width: 90, minWidth: 20, maxWidth: 90, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, editor: Slick.Editors.Checkbox }
     ];
 
     var gridOptions = {

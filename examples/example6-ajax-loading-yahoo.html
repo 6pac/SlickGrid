@@ -4,9 +4,9 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example 6: AJAX Load</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/smoothness/jquery-ui.min.css" />
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
     .cell-story {
       white-space: normal !important;
@@ -31,7 +31,6 @@
 
     .loading-indicator label {
       padding-left: 20px;
-      background: url('../images/ajax-loader-small.gif') no-repeat center left;
     }
   </style>
 </head>
@@ -40,11 +39,14 @@
   <div class="grid-header" style="width:100%">
     <label>Yahoo Latest News stories</label>
   </div>
-  <div id="myGrid" style="width:100%;height:600px;"></div>
+  <div id="myGrid" class="slick-container" style="width:100%;height:600px;"></div>
   <div id="pager" style="width:100%;height:20px;"></div>
 </div>
 <div style="margin-left:750px;margin-top:40px;;">
-  <h2>Demonstrates:</h2>
+  <h2>
+    <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+    Demonstrates:
+  </h2>
   <ul>
     <li>loading data through AJAX</li>
     <li>custom row height</li>
@@ -71,10 +73,10 @@
 <script src="../lib/jquery.jsonp-2.4.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../slick.remotemodel-yahoo.js"></script>
-<script src="../slick.grid.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.remotemodel-yahoo.js"></script>
 
 <script>
   var grid;
@@ -132,7 +134,7 @@
 
     loader.onDataLoading.subscribe(function () {
       if (!loadingIndicator) {
-        loadingIndicator = $("<span class='loading-indicator'><label>Buffering...</label></span>").appendTo(document.body);
+        loadingIndicator = $("<span class='loading-indicator'><i class='sgi sgi-loading sgi-spin'></i><label>Buffering...</label></span>").appendTo(document.body);
         var $g = $("#myGrid");
 
         loadingIndicator

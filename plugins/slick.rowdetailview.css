@@ -1,19 +1,23 @@
 .detailView-toggle {
     display:          inline-block;
+    cursor:           pointer;
+    border-bottom: 5px dashed;
+    border-right: 5px solid transparent;
+    border-left: 5px solid transparent;
+    color: #6190cd;
+    background-image: none;
 }
 
 .detailView-toggle.expand {
-    cursor:           pointer;
-    height:           20px;
-    width:            20px;
-    background: url(../images/arrow-right.gif) no-repeat center center;
+    height:           0px;
+    width:            0px;
+    transform: rotate(90deg);
 }
 
 .detailView-toggle.collapse {
-    cursor:           pointer;
-    height:           20px;
-    width:            20px;
-    background: url(../images/sort-desc.gif) no-repeat center center;
+  height:           0px;
+  width:            0px;
+  transform: rotate(2700deg);
 }
 
 .dynamic-cell-detail {

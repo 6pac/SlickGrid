@@ -1,14 +1,11 @@
-(function (window) {
-  // Slick.Controls.Pager
-  Slick.Utils.extend(true, window, {
-    "Slick": {
-      "Controls": {
-        "Pager": SlickGridPager
-      }
-    }
-  });
+import { BindingEventService as BindingEventService_, GlobalEditorLock as GlobalEditorLock_, Utils as Utils_ } from '../slick.core';
 
-  function SlickGridPager(dataView, grid, selectorOrElm, options) {
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
+const GlobalEditorLock = IIFE_ONLY ? Slick.GlobalEditorLock : GlobalEditorLock_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+
+export function SlickGridPager(dataView, grid, selectorOrElm, options) {
     // the container might be a string, a jQuery object or a native element
     const container = getContainerElement(selectorOrElm);
 
@@ -28,10 +25,10 @@
       ],
       showPageSizes: false
     };
-    var _bindingEventService = new Slick.BindingEventService();
+  var _bindingEventService = new BindingEventService();
 
     function init() {
-      _options = Slick.Utils.extend(true, {}, _defaults, options);
+      _options = Utils.extend(true, {}, _defaults, options);
 
       dataView.onPagingInfoChanged.subscribe(function (e, pagingInfo) {
         updatePager(pagingInfo);
@@ -49,7 +46,7 @@
     }
 
     function getNavState() {
-      let cannotLeaveEditMode = !Slick.GlobalEditorLock.commitCurrentEdit();
+      let cannotLeaveEditMode = !GlobalEditorLock.commitCurrentEdit();
       let pagingInfo = dataView.getPagingInfo();
       let lastPage = pagingInfo.totalPages - 1;
 
@@ -152,33 +149,33 @@
       // light bulb icon
       const displayPaginationContainer = document.createElement('span');
       const displayIconElm = document.createElement('span');
-      displayPaginationContainer.className = 'ui-state-default ui-corner-all ui-icon-container';
+      displayPaginationContainer.className = 'sgi-container';
       displayIconElm.ariaLabel = 'Show Pagination Options';
       displayIconElm.role = 'button';
-      displayIconElm.className = 'ui-icon ui-icon-lightbulb slick-icon-lightbulb';
+      displayIconElm.className = 'sgi sgi-lightbulb';
       displayPaginationContainer.appendChild(displayIconElm);
 
       _bindingEventService.bind(displayIconElm, 'click', () => {
         const styleDisplay = pagerSettingsElm.style.display;
-        pagerSettingsElm.style.display = styleDisplay === 'none' ? 'inline' : 'none';
+        pagerSettingsElm.style.display = styleDisplay === 'none' ? 'inline-flex' : 'none';
       });
       settingsElm.appendChild(displayPaginationContainer);
 
       const pageButtons = [
-        { key: 'first', ariaLabel: 'First Page', callback: gotoFirst },
-        { key: 'prev', ariaLabel: 'Previous Page', callback: gotoPrev },
-        { key: 'next', ariaLabel: 'Next Page', callback: gotoNext },
+        { key: 'start', ariaLabel: 'First Page', callback: gotoFirst },
+        { key: 'left', ariaLabel: 'Previous Page', callback: gotoPrev },
+        { key: 'right', ariaLabel: 'Next Page', callback: gotoNext },
         { key: 'end', ariaLabel: 'Last Page', callback: gotoLast },
       ];
 
       pageButtons.forEach(pageBtn => {
         const iconElm = document.createElement('span');
-        iconElm.className = 'ui-state-default ui-corner-all ui-icon-container';
+        iconElm.className = 'sgi-container';
 
         const innerIconElm = document.createElement('span');
         innerIconElm.role = 'button';
         innerIconElm.ariaLabel = pageBtn.ariaLabel;
-        innerIconElm.className = `ui-icon ui-icon-seek-${pageBtn.key} slick-icon-seek-${pageBtn.key}`;
+        innerIconElm.className = `sgi sgi-chevron-${pageBtn.key}`;
         _bindingEventService.bind(innerIconElm, 'click', pageBtn.callback);
 
         iconElm.appendChild(innerIconElm);
@@ -189,8 +186,8 @@
       slickPagerElm.className = 'slick-pager';
 
       slickPagerElm.appendChild(navElm);
-      slickPagerElm.appendChild(settingsElm);
       slickPagerElm.appendChild(statusElm);
+      slickPagerElm.appendChild(settingsElm);
 
       container.appendChild(slickPagerElm);
     }
@@ -201,24 +198,20 @@
 
       // remove disabled class on all icons
       container.querySelectorAll(".slick-pager-nav span")
-        .forEach(pagerIcon => pagerIcon.classList.remove("ui-state-disabled", "slick-icon-state-disabled"));
+        .forEach(pagerIcon => pagerIcon.classList.remove("sgi-state-disabled"));
 
         // add back disabled class to only necessary icons
       if (!state.canGotoFirst) {
-        container.querySelector(".ui-icon-seek-first").classList.add("ui-state-disabled");
-        container.querySelector(".slick-icon-seek-first").classList.add("slick-icon-state-disabled");
+        container.querySelector(".sgi-chevron-start").classList.add("sgi-state-disabled");
       }
       if (!state.canGotoLast) {
-        container.querySelector(".ui-icon-seek-end").classList.add("ui-state-disabled");
-        container.querySelector(".slick-icon-seek-end").classList.add("slick-icon-state-disabled");
+        container.querySelector(".sgi-chevron-end").classList.add("sgi-state-disabled");
       }
       if (!state.canGotoNext) {
-        container.querySelector(".ui-icon-seek-next").classList.add("ui-state-disabled");
-        container.querySelector(".slick-icon-seek-next").classList.add("slick-icon-state-disabled");
+        container.querySelector(".sgi-chevron-right").classList.add("sgi-state-disabled");
       }
       if (!state.canGotoPrev) {
-        container.querySelector(".ui-icon-seek-prev").classList.add("ui-state-disabled");
-        container.querySelector(".slick-icon-seek-prev").classList.add("slick-icon-state-disabled");
+        container.querySelector(".sgi-chevron-left").classList.add("sgi-state-disabled");
       }
 
       if (pagingInfo.pageSize === 0) {
@@ -246,9 +239,15 @@
 
     init();
 
-    Slick.Utils.extend(this, {
+  Utils.extend(this, {
       "init": init,
       "destroy": destroy,
     });
   }
-})(window);
+
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  window.Slick.Controls = window.Slick.Controls || {};
+  window.Slick.Controls.Pager = SlickGridPager;
+}
+

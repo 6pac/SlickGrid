@@ -24,6 +24,7 @@
   border: 0;
   margin-top: 5px;
   width: 16px;
+  z-index: 1;
 }
 
 .slick-gridmenu > .close {

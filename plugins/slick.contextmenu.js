@@ -1,12 +1,17 @@
-(function (window) {
-  // register namespace
-  Slick.Utils.extend(true, window, {
-    "Slick": {
-      "Plugins": {
-        "ContextMenu": ContextMenu
-      }
-    }
-  });
+import {
+  BindingEventService as BindingEventService_,
+  Event as SlickEvent_,
+  EventData as EventData_,
+  EventHandler as EventHandler_,
+  Utils as Utils_
+} from '../slick.core';
+
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
+const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+const EventData = IIFE_ONLY ? Slick.EventData : EventData_;
+const EventHandler = IIFE_ONLY ? Slick.EventHandler : EventHandler_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
   /***
    * A plugin to add Context Menu (mouse right+click), it subscribes to the cell "onContextMenu" event.
@@ -136,19 +141,19 @@
    * @class Slick.Plugins.ContextMenu
    * @constructor
    */
-  function ContextMenu(optionProperties) {
+export function ContextMenu(optionProperties) {
     let _contextMenuProperties;
     let _currentCell = -1;
     let _currentRow = -1;
     let _grid;
     let _gridOptions;
     let _gridUid = "";
-    let _handler = new Slick.EventHandler();
+  let _handler = new EventHandler();
     let _self = this;
     let _optionTitleElm;
     let _commandTitleElm;
     let _menuElm;
-    let _bindingEventService = new Slick.BindingEventService();
+  let _bindingEventService = new BindingEventService();
 
     let _defaults = {
       autoAdjustDrop: true,     // dropup/dropdown
@@ -165,7 +170,7 @@
     function init(grid) {
       _grid = grid;
       _gridOptions = grid.getOptions();
-      _contextMenuProperties = Slick.Utils.extend({}, _defaults, optionProperties);
+      _contextMenuProperties = Utils.extend({}, _defaults, optionProperties);
       _gridUid = (grid && grid.getUID) ? grid.getUID() : "";
       _handler.subscribe(_grid.onContextMenu, handleOnContextMenu);
       if (_contextMenuProperties.hideMenuOnScroll) {
@@ -174,7 +179,7 @@
     }
 
     function setOptions(newOptions) {
-      _contextMenuProperties = Slick.Utils.extend({}, _contextMenuProperties, newOptions);
+      _contextMenuProperties = Utils.extend({}, _contextMenuProperties, newOptions);
 
       // on the array properties, we want to make sure to overwrite them and not just extending them
       if (newOptions.commandShownOverColumnIds) {
@@ -203,7 +208,7 @@
     }
 
     function createMenu(e) {
-      if (e instanceof Slick.EventData) {
+      if (e instanceof EventData) {
         e = e.getNativeEvent();
       }
 
@@ -355,7 +360,7 @@
     }
 
     function handleOnContextMenu(e, args) {
-      if(e instanceof Slick.EventData)
+      if (e instanceof EventData)
         e = e.getNativeEvent();
 
       e.preventDefault();
@@ -461,7 +466,7 @@
         liElm.appendChild(iconElm);
 
         if (item.iconCssClass) {
-          iconElm.classList.add(item.iconCssClass);
+          iconElm.classList.add(...item.iconCssClass.split(' '));
         }
 
         if (item.iconImage) {
@@ -552,7 +557,7 @@
         liElm.appendChild(iconElm);
 
         if (item.iconCssClass) {
-          iconElm.classList.add(item.iconCssClass);
+          iconElm.classList.add(...item.iconCssClass.split(' '));
         }
 
         if (item.iconImage) {
@@ -658,7 +663,7 @@
       const targetEvent = e.touches ? e.touches[0] : e;
       const parentElm = e.target.closest(".slick-cell");
       let menuOffsetLeft = targetEvent.pageX;
-      let menuOffsetTop = parentElm ? Slick.Utils.offset(parentElm).top : targetEvent.pageY;
+      let menuOffsetTop = parentElm ? Utils.offset(parentElm).top : targetEvent.pageY;
       const menuHeight = _menuElm && _menuElm.offsetHeight || 0;
       const menuWidth = _menuElm && _menuElm.offsetWidth || _contextMenuProperties.width || 0;
       let rowHeight = _gridOptions.rowHeight;
@@ -669,8 +674,8 @@
       // without necessary toggling it's position just yet, we just want to know the future position for calculation
       if (_contextMenuProperties.autoAdjustDrop) {
         // since we reposition menu below slick cell, we need to take it in consideration and do our calculation from that element
-        let spaceBottom = Slick.Utils.calculateAvailableSpace(parentElm).bottom;
-        let spaceTop = Slick.Utils.calculateAvailableSpace(parentElm).top;
+        let spaceBottom = Utils.calculateAvailableSpace(parentElm).bottom;
+        let spaceTop = Utils.calculateAvailableSpace(parentElm).top;
         let spaceBottomRemaining = spaceBottom + dropOffset - rowHeight;
         let spaceTopRemaining = spaceTop - dropOffset + rowHeight;
         let dropPosition = (spaceBottomRemaining < menuHeight && spaceTopRemaining > spaceBottomRemaining) ? 'top' : 'bottom';
@@ -720,18 +725,29 @@
       return true;
     }
 
-    Slick.Utils.extend(this, {
+  Utils.extend(this, {
       "init": init,
       "closeMenu": destroyMenu,
       "destroy": destroy,
       "pluginName": "ContextMenu",
       "setOptions": setOptions,
 
-      "onAfterMenuShow": new Slick.Event(),
-      "onBeforeMenuShow": new Slick.Event(),
-      "onBeforeMenuClose": new Slick.Event(),
-      "onCommand": new Slick.Event(),
-      "onOptionSelected": new Slick.Event()
+    "onAfterMenuShow": new SlickEvent(),
+    "onBeforeMenuShow": new SlickEvent(),
+    "onBeforeMenuClose": new SlickEvent(),
+    "onCommand": new SlickEvent(),
+    "onOptionSelected": new SlickEvent()
     });
   }
-})(window);
+
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  Utils.extend(true, window, {
+    Slick: {
+      Plugins: {
+        ContextMenu
+      }
+    }
+  });
+}
+

@@ -1,5 +1,9 @@
-(function () {
-  /***
+import { Utils as Utils_ } from './slick.core';
+
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+
+/***
    * A composite SlickGrid editor factory.
    * Generates an editor that is composed of multiple editors for given columns.
    * Individual editors are provided given containers instead of the original cell.
@@ -26,7 +30,7 @@
    *  position                -   A function to be called when the grid asks the editor to reposition itself.
    *  destroy                 -   A function to be called when the editor is destroyed.
    */
-  function CompositeEditor(columns, containers, options) {
+export function CompositeEditor(columns, containers, options) {
     var defaultOptions = {
       modalType: 'edit', // available type (create, edit, mass)
       validationFailedMsg: "Some of the fields have failed validation",
@@ -49,7 +53,7 @@
     function getContainerBox(i) {
       var c = containers[i];
       var offset = Slick.Utils.offset(c);
-      var w = Slick.Utils.width(c);
+      var w = Slick.Utils.innerSize(c);
       var h = Slick.Utils.height(c);
 
       return {
@@ -242,8 +246,9 @@
     return editor;
   }
 
-  // exports
-  Slick.Utils.extend(Slick, {
-    CompositeEditor: CompositeEditor
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  Utils.extend(Slick, {
+    CompositeEditor
   });
-})();
+}

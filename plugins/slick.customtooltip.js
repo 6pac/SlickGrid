@@ -1,3 +1,9 @@
+import { EventHandler as EventHandler_, Utils as Utils_ } from '../slick.core';
+
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const EventHandler = IIFE_ONLY ? Slick.EventHandler : EventHandler_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+
 /**
  * A plugin to add Custom Tooltip when hovering a cell, it subscribes to the cell "onMouseEnter" and "onMouseLeave" events.
  * The "customTooltip" is defined in the Column Definition OR Grid Options (the first found will have priority over the second)
@@ -60,23 +66,14 @@
  * @class Slick.Plugins.CustomTooltip
  * @varructor
  */
-(function (window) {
-  // Register namespace
-  Slick.Utils.extend(true, window, {
-    "Slick": {
-      "Plugins": {
-        "CustomTooltip": CustomTooltip
-      }
-    }
-  });
 
-  /**
+/**
    * CustomTooltip plugin to show/hide tooltips when columns are too narrow to fit content.
    * @varructor
    * @param {boolean} [options.className="slick-custom-tooltip"]  - custom tooltip class name
    * @param {boolean} [options.offsetTop=5]                       - tooltip offset from the top
    */
-  function CustomTooltip(options) {
+export function CustomTooltip(options) {
     var _cancellablePromise;
     var _cellNodeElm;
     var _dataView;
@@ -93,7 +90,7 @@
       regularTooltipWhiteSpace: 'pre-line',
       whiteSpace: 'normal',
     };
-    var _eventHandler = new Slick.EventHandler();
+  var _eventHandler = new EventHandler();
     var _cellTooltipOptions = {};
     var _options;
 
@@ -105,7 +102,7 @@
       var _data = grid && grid.getData() || [];
       _dataView = Array.isArray(_data) ? null : _data;
       _gridOptions = grid.getOptions() || {};
-      _options = Slick.Utils.extend(true, {}, _defaults, _gridOptions.customTooltip, options);
+      _options = Utils.extend(true, {}, _defaults, _gridOptions.customTooltip, options);
       _eventHandler
         .subscribe(grid.onMouseEnter, handleOnMouseEnter)
         .subscribe(grid.onHeaderMouseEnter, handleOnHeaderMouseEnter)
@@ -164,7 +161,7 @@
       args.grid = _grid;
       args.type = isHeaderRowType ? 'header-row' : 'header';
 
-      _cellTooltipOptions = Slick.Utils.extend(true, {}, _options, columnDef.customTooltip);
+      _cellTooltipOptions = Utils.extend(true, {}, _options, columnDef.customTooltip);
       if ((columnDef && columnDef.disableTooltip) || !runOverrideFunctionWhenExists(_cellTooltipOptions.usabilityOverride, args)) {
         return;
       }
@@ -207,7 +204,7 @@
           var item = _dataView ? _dataView.getItem(cell.row) : _grid.getDataItem(cell.row);
           var columnDef = _grid.getColumns()[cell.cell];
           _cellNodeElm = _grid.getCellNode(cell.row, cell.cell);
-          _cellTooltipOptions = Slick.Utils.extend(true, {}, _options, columnDef.customTooltip);
+          _cellTooltipOptions = Utils.extend(true, {}, _options, columnDef.customTooltip);
 
           if (item && columnDef) {
             // run the override function (when defined), if the result is false it won't go further
@@ -334,7 +331,7 @@
 
     function asyncProcessCallback(asyncResult, cell, value, columnDef, dataContext) {
       hideTooltip();
-      var itemWithAsyncData = Slick.Utils.extend(true, {}, dataContext, { [_cellTooltipOptions.asyncParamsPropName || '__params']: asyncResult });
+      var itemWithAsyncData = Utils.extend(true, {}, dataContext, { [_cellTooltipOptions.asyncParamsPropName || '__params']: asyncResult });
       renderTooltipFormatter(_cellTooltipOptions.asyncPostFormatter, cell, value, columnDef, itemWithAsyncData);
     }
 
@@ -541,11 +538,11 @@
     }
 
     function setOptions(newOptions) {
-      _options = Slick.Utils.extend({}, _options, newOptions);
+      _options = Utils.extend({}, _options, newOptions);
     }
 
     // Public API
-    Slick.Utils.extend(this, {
+  Utils.extend(this, {
       "init": init,
       "destroy": destroy,
       "hide": hideTooltip,
@@ -553,4 +550,15 @@
       "pluginName": "CustomTooltip"
     });
   }
-})(window);
+
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  Utils.extend(true, window, {
+    Slick: {
+      Plugins: {
+        CustomTooltip
+      }
+    }
+  });
+}
+

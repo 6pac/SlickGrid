@@ -29,7 +29,7 @@ describe('Example - Composite Editor Modal with Create/Edit/Mass-Update/Mass-Sel
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(3)`).should('contain', '5 days');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(5)`).should('contain', '01/01/2009');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(6)`).should('contain', '01/05/2009');
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(7)`).find('img');
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(7)`).find('.sgi-check').should('exist');
   });
 
   it('should open the Edit Modal and expect same data to include "Task 0" and other specific properties', () => {
@@ -116,7 +116,7 @@ describe('Example - Composite Editor Modal with Create/Edit/Mass-Update/Mass-Sel
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(3)`).should('contain', '27 days');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(5)`).should('contain', '01/01/2009');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(6)`).should('contain', '01/05/2009');
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(7)`).find('img').should('have.length', 0);
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(7)`).find('.sgi-check').should('have.length', 0);
   });
 
   it('should open the Mass Update try to change "Duration" below 5 and expect it to become invalid', () => {
@@ -165,27 +165,27 @@ describe('Example - Composite Editor Modal with Create/Edit/Mass-Update/Mass-Sel
   it('Should expect to see "Duration" of "27 days" and "Effort-Driven" to be enabled accross the entire grid', () => {
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(1)`).should('contain', 'Task 0000');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(3)`).should('contain', '27 days');
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(7)`).find('img').should('have.length', 1);
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(7)`).find('.sgi-check').should('have.length', 1);
 
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 1}px"] > .slick-cell:nth(1)`).should('contain', 'Task 1');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 1}px"] > .slick-cell:nth(3)`).should('contain', '27 days');
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 1}px"] > .slick-cell:nth(7)`).find('img').should('have.length', 1);
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 1}px"] > .slick-cell:nth(7)`).find('.sgi-check').should('have.length', 1);
 
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 2}px"] > .slick-cell:nth(1)`).should('contain', 'Task 2');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 2}px"] > .slick-cell:nth(3)`).should('contain', '27 days');
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 2}px"] > .slick-cell:nth(7)`).find('img').should('have.length', 1);
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 2}px"] > .slick-cell:nth(7)`).find('.sgi-check').should('have.length', 1);
 
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 3}px"] > .slick-cell:nth(1)`).should('contain', 'Task 3');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 3}px"] > .slick-cell:nth(3)`).should('contain', '27 days');
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 3}px"] > .slick-cell:nth(7)`).find('img').should('have.length', 1);
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 3}px"] > .slick-cell:nth(7)`).find('.sgi-check').should('have.length', 1);
 
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 4}px"] > .slick-cell:nth(1)`).should('contain', 'Task 4');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 4}px"] > .slick-cell:nth(3)`).should('contain', '27 days');
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 4}px"] > .slick-cell:nth(7)`).find('img').should('have.length', 1);
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 4}px"] > .slick-cell:nth(7)`).find('.sgi-check').should('have.length', 1);
 
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(1)`).should('contain', 'Task 5');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(3)`).should('contain', '27 days');
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(7)`).find('img').should('have.length', 1);
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(7)`).find('.sgi-check').should('have.length', 1);
   });
 
   it('Should expect an Alert about missing row selection before executing Mass Selection', () => {
@@ -227,29 +227,29 @@ describe('Example - Composite Editor Modal with Create/Edit/Mass-Update/Mass-Sel
   it('Should expect to see "Duration" of "27 days" and "Effort-Driven" to be enabled accross the entire grid', () => {
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(1)`).should('contain', 'Task 0000');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(3)`).should('contain', '27 days');
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(7)`).find('img').should('have.length', 1);
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(7)`).find('.sgi-check').should('have.length', 1);
 
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 1}px"] > .slick-cell:nth(1)`).should('contain', 'Task 1');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 1}px"] > .slick-cell:nth(3)`).should('contain', '7 days');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 1}px"] > .slick-cell:nth(5)`).should('contain', '02/02/2020');
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 1}px"] > .slick-cell:nth(7)`).find('img').should('have.length', 1);
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 1}px"] > .slick-cell:nth(7)`).find('.sgi-check').should('have.length', 1);
 
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 2}px"] > .slick-cell:nth(1)`).should('contain', 'Task 2');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 2}px"] > .slick-cell:nth(3)`).should('contain', '7 days');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 2}px"] > .slick-cell:nth(5)`).should('contain', '02/02/2020');
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 2}px"] > .slick-cell:nth(7)`).find('img').should('have.length', 1);
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 2}px"] > .slick-cell:nth(7)`).find('.sgi-check').should('have.length', 1);
 
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 3}px"] > .slick-cell:nth(1)`).should('contain', 'Task 3');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 3}px"] > .slick-cell:nth(3)`).should('contain', '27 days');
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 3}px"] > .slick-cell:nth(7)`).find('img').should('have.length', 1);
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 3}px"] > .slick-cell:nth(7)`).find('.sgi-check').should('have.length', 1);
 
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 4}px"] > .slick-cell:nth(1)`).should('contain', 'Task 4');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 4}px"] > .slick-cell:nth(3)`).should('contain', '27 days');
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 4}px"] > .slick-cell:nth(7)`).find('img').should('have.length', 1);
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 4}px"] > .slick-cell:nth(7)`).find('.sgi-check').should('have.length', 1);
 
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(1)`).should('contain', 'Task 5');
     cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(3)`).should('contain', '27 days');
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(7)`).find('img').should('have.length', 1);
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(7)`).find('.sgi-check').should('have.length', 1);
   });
 
   it('Should open a Create Modal window and click on Effort-Driven then expect 3 validation errors', () => {
@@ -327,6 +327,6 @@ describe('Example - Composite Editor Modal with Create/Edit/Mass-Update/Mass-Sel
     });
     cy.get(`[style="top:12500px"] > .slick-cell:nth(5)`).should('contain', '02/02/2020');
     cy.get(`[style="top:12500px"] > .slick-cell:nth(6)`).should('contain', '');
-    cy.get(`[style="top:12500px"] > .slick-cell:nth(7)`).find('img').should('have.length', 1);
+    cy.get(`[style="top:12500px"] > .slick-cell:nth(7)`).find('.sgi-check').should('have.length', 1);
   });
 });

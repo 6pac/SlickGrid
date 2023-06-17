@@ -1,3 +1,11 @@
+import { BindingEventService as BindingEventService_, Event as SlickEvent_, Utils as Utils_ } from '../slick.core';
+
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
+const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+
+
 /***
  * A Resizer plugin that can be used to auto-resize a grid and/or resize with fixed dimensions.
  * When fixed height is defined, it will auto-resize only the width and vice versa with the width defined.
@@ -47,19 +55,7 @@
  * @constructor
  */
 
-'use strict';
-
-(function (window) {
-  // register namespace
-  Slick.Utils.extend(true, window, {
-    "Slick": {
-      "Plugins": {
-        "Resizer": Resizer
-      }
-    }
-  });
-
-  function Resizer(_options, fixedDimensions) {
+export function Resizer(_options, fixedDimensions) {
     // global variables, height/width are in pixels
     let DATAGRID_MIN_HEIGHT = 180;
     let DATAGRID_MIN_WIDTH = 300;
@@ -86,10 +82,10 @@
     };
 
     let options = {};
-    let _bindingEventService = new Slick.BindingEventService();
+  let _bindingEventService = new BindingEventService();
 
     function setOptions(_newOptions){
-      options = Slick.Utils.extend(true, {}, _defaults, options, _newOptions);
+      options = Utils.extend(true, {}, _defaults, options, _newOptions);
     }
 
     function init(grid) {
@@ -123,7 +119,7 @@
     * Options: we could also provide a % factor to resize on each height/width independently
     */
     function bindAutoResizeDataGrid(newSizes) {
-      const gridElmOffset = Slick.Utils.offset(_gridDomElm);
+      const gridElmOffset = Utils.offset(_gridDomElm);
 
       // if we can't find the grid to resize, return without binding anything
       if (_gridDomElm !== undefined || gridElmOffset !== undefined) {
@@ -151,7 +147,7 @@
     * Calculate the datagrid new height/width from the available space, also consider that a % factor might be applied to calculation
     */
     function calculateGridNewDimensions() {
-      const gridElmOffset = Slick.Utils.offset(_gridDomElm);
+      const gridElmOffset = Utils.offset(_gridDomElm);
 
       if (!window || _pageContainerElm === undefined || _gridDomElm === undefined || gridElmOffset === undefined) {
         return null;
@@ -167,7 +163,7 @@
       // defaults to "window"
       if (options.calculateAvailableSizeBy === 'container') {
         // uses the container's height to calculate grid height without any top offset
-        gridHeight = Slick.Utils.innerSize(_pageContainerElm, 'height') || 0;
+        gridHeight = Utils.innerSize(_pageContainerElm, 'height') || 0;
       } else {
         // uses the browser's window height with its top offset to calculate grid height
         gridHeight = window.innerHeight || 0;
@@ -175,7 +171,7 @@
       }
 
       let availableHeight = gridHeight - gridOffsetTop - bottomPadding;
-      let availableWidth = Slick.Utils.innerSize(_pageContainerElm, 'width') || window.innerWidth || 0;
+      let availableWidth = Utils.innerSize(_pageContainerElm, 'width') || window.innerWidth || 0;
       let maxHeight = options && options.maxHeight || undefined;
       let minHeight = (options && options.minHeight !== undefined) ? options.minHeight : DATAGRID_MIN_HEIGHT;
       let maxWidth = options && options.maxWidth || undefined;
@@ -319,7 +315,7 @@
       return _lastDimensions;
     }
 
-    Slick.Utils.extend(this, {
+  Utils.extend(this, {
       "init": init,
       "destroy": destroy,
       "pluginName": "Resizer",
@@ -329,8 +325,19 @@
       "resizeGrid": resizeGrid,
       "setOptions": setOptions,
 
-      "onGridAfterResize": new Slick.Event(),
-      "onGridBeforeResize": new Slick.Event()
+    "onGridAfterResize": new SlickEvent(),
+    "onGridBeforeResize": new SlickEvent()
     });
   }
-})(window);
+
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  Utils.extend(true, window, {
+    Slick: {
+      Plugins: {
+        Resizer
+      }
+    }
+  });
+}
+

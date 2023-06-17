@@ -4,16 +4,18 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example 9: Row reordering</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
     .cell-effort-driven {
-      text-align: center;
+      justify-content: center;
     }
 
     .cell-reorder {
       cursor: move;
-      background: url("../images/drag-handle.png") no-repeat center center;
+      font-size: 8px;
+      margin-left: 4px;
     }
 
     .cell-selection {
@@ -38,7 +40,7 @@
       font-weight: bold;
       color: black;
       text-align: center;
-      -moz-border-radius: 10px;
+      border-radius: 10px;
     }
 
     .red {
@@ -56,11 +58,13 @@
     <div class="grid-header" style="width:100%">
       <label>Santa's TODO list:</label>
     </div>
-    <div id="myGrid" style="width:100%;height:500px;"></div>
+    <div id="myGrid" class="slick-container" style="width:100%;height:500px;"></div>
   </div>
   <div class="options-panel">
-    <b>Tips:</b>
-    <hr/>
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Tips:
+    </h2>
     <div style="padding:6px;">
       Click to select, Ctrl-click to toggle selection, Shift-click to select a range.<br/>
       Drag one or more rows by the handle to reorder.<br/>
@@ -87,15 +91,15 @@
 <script src="../lib/jquery.event.drop-2.3.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../plugins/slick.cellrangeselector.js"></script>
-<script src="../plugins/slick.cellselectionmodel.js"></script>
-<script src="../plugins/slick.rowselectionmodel.js"></script>
-<script src="../plugins/slick.rowmovemanager.js"></script>
-<script src="../slick.formatters.js"></script>
-<script src="../slick.editors.js"></script>
-<script src="../slick.grid.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangeselector.js"></script>
+<script src="../dist/browser/plugins/slick.cellselectionmodel.js"></script>
+<script src="../dist/browser/plugins/slick.rowselectionmodel.js"></script>
+<script src="../dist/browser/plugins/slick.rowmovemanager.js"></script>
+<script src="../dist/browser/slick.formatters.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
 
 <script>
 var grid;
@@ -108,13 +112,13 @@ var columns = [
     behavior: "selectAndMove",
     selectable: false,
     resizable: false,
-    cssClass: "cell-reorder dnd"
+    cssClass: "cell-reorder dnd sgi sgi-menu"
   },
   {
     id: "name",
     name: "Name",
     field: "name",
-    width: 500,
+    width: 300,
     cssClass: "cell-title",
     editor: Slick.Editors.Text,
     validator: requiredFieldValidator

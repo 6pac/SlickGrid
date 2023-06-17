@@ -5,13 +5,21 @@
   top: 0;
   bottom: 0;
   width: 14px;
-  background-repeat: no-repeat;
-  background-position: left center;
-  background-image: url(../images/down.gif);
+  background-image: none;
   cursor: pointer;
-
   display: none;
   border-left: thin ridge silver;
+}
+.slick-header-menubutton span.caret {
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-top: 7px;
+  vertical-align: middle;
+  border-top: 4px dashed;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+  margin-left: 4px;
 }
 
 .slick-header-column:hover > .slick-header-menubutton,

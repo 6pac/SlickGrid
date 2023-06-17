@@ -5,8 +5,8 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example 12: Fill browser</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
     html, body {
       margin: 0;
@@ -40,12 +40,23 @@
     #description h2 {
       padding-left: 0.5em;
     }
+
+    /** override slick-cell to make it look like Excel sheet */
+    .slick-container {
+      --alpine-header-column-height: 20px;
+      --alpine-header-font-weight: 500;
+      --alpine-cell-border-width: 0 1px 1px 0;
+      --alpine-cell-border-color: #d4d4d4;
+    }
   </style>
 </head>
 <body>
-<div id="container"></div>
+<div id="container" class="slick-container"></div>
 <div id="description">
-  <h2>Demonstrates:</h2>
+  <h2>
+    <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+    Demonstrates:
+  </h2>
   <ul>
     <li>Grid filling browser window completely (using absolute positioning)</li>
     <li>Grid resizing when browser window changes size</li>
@@ -65,9 +76,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../slick.grid.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
 <script>
   var grid,
       data = [],

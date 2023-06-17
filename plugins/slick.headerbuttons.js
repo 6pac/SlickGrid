@@ -1,15 +1,12 @@
-(function (window) {
-  // register namespace
-  Slick.Utils.extend(true, window, {
-    "Slick": {
-      "Plugins": {
-        "HeaderButtons": HeaderButtons
-      }
-    }
-  });
+import { BindingEventService as BindingEventService_, Event as SlickEvent_, EventHandler as EventHandler_, Utils as Utils_ } from '../slick.core';
 
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
+const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+const EventHandler = IIFE_ONLY ? Slick.EventHandler : EventHandler_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
-  /***
+/***
    * A plugin to add custom buttons to column headers.
    *
    * USAGE:
@@ -74,18 +71,18 @@
    * @class Slick.Plugins.HeaderButtons
    * @constructor
    */
-  function HeaderButtons(options) {
+export function HeaderButtons(options) {
     var _grid;
     var _self = this;
-    var _handler = new Slick.EventHandler();
-    var _bindingEventService = new Slick.BindingEventService();
+  var _handler = new EventHandler();
+  var _bindingEventService = new BindingEventService();
     var _defaults = {
       buttonCssClass: "slick-header-button"
     };
 
 
     function init(grid) {
-      options = Slick.Utils.extend(true, {}, _defaults, options);
+      options = Utils.extend(true, {}, _defaults, options);
       _grid = grid;
       _handler
         .subscribe(_grid.onHeaderCellRendered, handleHeaderCellRendered)
@@ -144,7 +141,7 @@
           }
 
           if (button.cssClass) {
-            btn.classList.add(button.cssClass);
+            btn.classList.add(...button.cssClass.split(' '));
           }
 
           if (button.tooltip) {
@@ -219,12 +216,23 @@
       return true;
     }
 
-    Slick.Utils.extend(this, {
+  Utils.extend(this, {
       "init": init,
       "destroy": destroy,
       "pluginName": "HeaderButtons",
 
-      "onCommand": new Slick.Event()
+    "onCommand": new SlickEvent()
     });
   }
-})(window);
+
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  Utils.extend(true, window, {
+    Slick: {
+      Plugins: {
+        HeaderButtons
+      }
+    }
+  });
+}
+

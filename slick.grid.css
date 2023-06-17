@@ -30,7 +30,7 @@ classes should alter those!
 .slick-header-column.ui-state-default, .slick-group-header-column.ui-state-default {
   position: relative;
   display: inline-block;
-  box-sizing: content-box !important; /* this here only for Firefox! */ 
+  box-sizing: content-box !important; /* this here only for Firefox! */
   overflow: hidden;
   -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
@@ -91,12 +91,34 @@ classes should alter those!
   color: #6190CD;
 }
 
-.slick-sort-indicator-desc {
-  background: url(images/sort-desc.gif);
+.slick-sort-indicator-asc {
+  margin-bottom: 8px;
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 3px;
+  margin-top: 5px;
+  vertical-align: middle;
+  border-bottom: 4px dashed;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+  background-image: none;
+  color: #3490dc;
 }
 
-.slick-sort-indicator-asc {
-  background: url(images/sort-asc.gif);
+.slick-sort-indicator-desc {
+  margin-bottom: 5px;
+  display: inline-block;
+  width: 0;
+  height: 0;
+  margin-left: 3px;
+  margin-top: 5px;
+  vertical-align: middle;
+  border-top: 4px dashed;
+  border-right: 4px solid transparent;
+  border-left: 4px solid transparent;
+  background-image: none;
+  color: #3490dc;
 }
 
 .slick-resizable-handle {
@@ -174,6 +196,14 @@ classes should alter those!
   background: white;
   border-color: black;
   border-style: solid;
+}
+
+.slick-large-editor-text {
+  z-index: 10000;
+  background: white;
+  padding: 5px;
+  border: 2px solid gray;
+  border-radius: 10px;
 }
 
 .slick-cell:focus {

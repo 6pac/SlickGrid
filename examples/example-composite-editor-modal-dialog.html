@@ -5,9 +5,9 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example: CompositeEditor</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css" />
-  <link rel="stylesheet" href="examples-unicode-icons.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css" />
+  <link rel="stylesheet" href="../styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/slick-alpine-theme.css" type="text/css"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <style>
     .cell-title {
@@ -15,12 +15,12 @@
     }
 
     .cell-effort-driven {
-      text-align: center;
+      justify-content: center;
     }
 
     .close {
       float: right;
-      font-size: 1.5rem;
+      /* font-size: 1.5rem; */
       font-weight: 700;
       line-height: 1;
       color: #000;
@@ -89,7 +89,7 @@
       margin-top: 4px;
       padding: 0;
       padding-left: 4px;
-      padding-right: 4px;
+      padding-right: 0px;
       line-height: 20px;
     }
 
@@ -131,11 +131,14 @@
 <body>
   <div style="position:relative">
     <div style="width:625px;">
-      <div id="myGrid" style="width:100%;height:500px;"></div>
+      <div id="myGrid" class="slick-container" style="width:100%;height:500px;"></div>
     </div>
 
     <div class="options-panel">
-      <h2>Demonstrates:</h2>
+      <h2>
+        <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+        Demonstrates:
+      </h2>
       <ul>
         <li>Composite Editor Modal - Edit Form</li>
         <li>Composite Editor Modal - Insert New Row</li>
@@ -145,16 +148,21 @@
       </ul>
 
       <h2>Options:</h2>
+      <p>
+        <button data-test="auto-edit-on-btn" onclick="grid.setOptions({autoEdit:true})">Auto-edit ON</button>
+        &nbsp;
+        <button data-test="auto-edit-off-btn" onclick="grid.setOptions({autoEdit:false})">Auto-edit OFF</button>
+      </p>
       <li>Choose any of the 4 possible options</li>
       <li>1. Create New Item</li>
       <li>2. Edit Current Item</li>
       <li>3. Mass Update</li>
       <li>4. Mass Selection Change</li>
       <br />
-      <button onclick="openDetails('edit')" data-test="edit-button">Open Item Edit for active row</button>
-      <button onclick="openDetails('create')" data-test="create-button">Open Add New Row Detail</button>
-      <button onclick="openDetails('mass-update')" data-test="mass-update-button">Open Mass Update Detail</button>
-      <button onclick="openDetails('mass-selection')" data-test="mass-selection-button">Open Mass Selection
+      <button style="margin-bottom: 5px" onclick="openDetails('edit')" data-test="edit-button">Open Item Edit for active row</button><br/>
+      <button style="margin-bottom: 5px" onclick="openDetails('create')" data-test="create-button">Open Add New Row Detail</button><br/>
+      <button style="margin-bottom: 5px" onclick="openDetails('mass-update')" data-test="mass-update-button">Open Mass Update Detail</button><br/>
+      <button style="margin-bottom: 5px" onclick="openDetails('mass-selection')" data-test="mass-selection-button">Open Mass Selection
         Change</button>
 
       <h2>View Source:</h2>
@@ -167,17 +175,18 @@
 
   <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+  <script src="sortable-cdn-fallback.js"></script>
 
-  <script src="../slick.core.js"></script>
-  <script src="../slick.interactions.js"></script>
-  <script src="../plugins/slick.checkboxselectcolumn.js"></script>
-  <script src="../plugins/slick.cellrangeselector.js"></script>
-  <script src="../plugins/slick.cellselectionmodel.js"></script>
-  <script src="../plugins/slick.rowselectionmodel.js"></script>
-  <script src="../slick.formatters.js"></script>
-  <script src="../slick.editors.js"></script>
-  <script src="../slick.grid.js"></script>
-  <script src="../slick.compositeeditor.js"></script>
+  <script src="../dist/browser/slick.core.js"></script>
+  <script src="../dist/browser/slick.interactions.js"></script>
+  <script src="../dist/browser/slick.grid.js"></script>
+  <script src="../dist/browser/plugins/slick.checkboxselectcolumn.js"></script>
+  <script src="../dist/browser/plugins/slick.cellrangeselector.js"></script>
+  <script src="../dist/browser/plugins/slick.cellselectionmodel.js"></script>
+  <script src="../dist/browser/plugins/slick.rowselectionmodel.js"></script>
+  <script src="../dist/browser/slick.formatters.js"></script>
+  <script src="../dist/browser/slick.editors.js"></script>
+  <script src="../dist/browser/slick.compositeeditor.js"></script>
 
   <script>
     function taskValidator(newValue, args) {
@@ -209,12 +218,12 @@
     var columns = [
       // we use a "massUpdate" flag to know which field(s) will be added to the MassUpdate/MassSelection form in the composite modal window
       { id: "title", name: "Title", field: "title", width: 70, cssClass: "cell-title", editor: Slick.Editors.Text, validator: taskValidator, massUpdate: false, },
-      { id: "desc", name: "Description", field: "description", width: 100, editor: Slick.Editors.LongText, massUpdate: false, },
+      { id: "desc", name: "Description", field: "description", width: 95, editor: Slick.Editors.LongText, massUpdate: false, },
       { id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Integer, massUpdate: true, validator: durationValidator, formatter: durationFormatter },
-      { id: "percent", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete },
+      { id: "percent", name: "% Complete", field: "percentComplete", width: 95, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete },
       { id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Flatpickr, massUpdate: true, },
       { id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Flatpickr, massUpdate: false, },
-      { id: "effort-driven", name: "Effort Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, editor: Slick.Editors.Checkbox, massUpdate: true, }
+      { id: "effort-driven", name: "Effort Driven", width: 90, minWidth: 20, maxWidth: 90, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, editor: Slick.Editors.Checkbox, massUpdate: true, }
     ];
     var options = {
       editable: true,
@@ -318,12 +327,12 @@
         }
 
         const modalElm = document.createElement('div');
-        modalElm.className = 'modal';
+        modalElm.className = 'modal slick-composite-editor-modal';
 
         const modalHeaderElm = document.createElement('div');
         modalHeaderElm.className = 'modal-header';
         modalHeaderElm.innerHTML = `<h5>${headerTitle}</h5>
-          <button type="button" class="close" data-action="cancel" aria-label="Close">
+          <button type="button" class="close" data-action="close" aria-label="Close">
             <span aria-hidden="true">X</span>
           </button>`;
         modalElm.appendChild(modalHeaderElm);
@@ -363,10 +372,12 @@
         modalFooterElm.className = 'modal-footer';
 
         const saveBtnElm = document.createElement('button');
+        saveBtnElm.className = 'slick-btn slick-btn-primary';
         saveBtnElm.dataset.action = saveActionType;
         saveBtnElm.textContent = saveButtonText;
 
         const cancelBtnElm = document.createElement('button');
+        cancelBtnElm.className = 'slick-btn slick-btn-default';
         cancelBtnElm.dataset.action = 'cancel';
         cancelBtnElm.textContent = 'Cancel';
 
@@ -456,19 +467,13 @@
           });
         }
 
-        if (modalElm.querySelector("[data-action=cancel]")) {
-          modalElm.querySelector("[data-action=cancel]").addEventListener('click', function () {
+        const closeBtns = modalElm.querySelectorAll("[data-action=cancel],[data-action=close]");
+        closeBtns.forEach(btn => {
+          btn.addEventListener('click', function () {
             grid.getEditController().cancelCurrentEdit();
             grid.setActiveRow(lastActiveRowNumber);
-          });
-        }
-
-        if (modalElm.querySelector("[data-action=close]")) {
-          modalElm.querySelector("[data-action=close]").addEventListener('click', function () {
-            grid.getEditController().cancelCurrentEdit();
-            grid.setActiveRow(lastActiveRowNumber);
-          });
-        }
+          })
+        });
 
         var containers = modalColumns.map(function (c) {
           return modalElm.querySelector(`[data-editorid=${c.id}]`);

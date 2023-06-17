@@ -1,3 +1,8 @@
+import { Utils as Utils_ } from './slick.core';
+
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+
 /***
  * Interactions, add basic behaviors to any element.
  * All the packages are written in pure vanilla JS and supports both mouse & touch events.
@@ -5,7 +10,6 @@
  * @namespace Slick
  */
 
-(function () {
   /**
    * Draggable Class, enables dragging functionality for any element for example cell & row selections.
    * Note that mouse/touch start is on the specified container element but all other events are on the document body.
@@ -22,7 +26,7 @@
    * @returns - Draggable instance which includes destroy method
    * @class Draggable
    */
-  function Draggable(options) {
+export function Draggable(options) {
     let { containerElement, onDragInit, onDragStart, onDrag, onDragEnd } = options;
     let element, startX, startY, deltaX, deltaY, dragStarted;
 
@@ -39,8 +43,8 @@
     };
 
     if (containerElement) {
-      containerElement.addEventListener('mousedown', userPressed, Slick.Utils.enablePassiveWhenSupported());
-      containerElement.addEventListener('touchstart', userPressed, Slick.Utils.enablePassiveWhenSupported());
+      containerElement.addEventListener('mousedown', userPressed);
+      containerElement.addEventListener('touchstart', userPressed);
     }
 
     function executeDragCallbackWhenDefined(callback, e, dd) {
@@ -51,8 +55,8 @@
 
     function destroy() {
       if (containerElement) {
-        containerElement.removeEventListener('mousedown', userPressed, Slick.Utils.enablePassiveWhenSupported());
-        containerElement.removeEventListener('touchstart', userPressed, Slick.Utils.enablePassiveWhenSupported());
+        containerElement.removeEventListener('mousedown', userPressed);
+        containerElement.removeEventListener('touchstart', userPressed);
       }
     }
 
@@ -126,7 +130,7 @@
    * @returns - MouseWheel instance which includes destroy method
    * @class MouseWheel
    */
-  function MouseWheel(options) {
+export function MouseWheel(options) {
     let { element, onMouseWheel } = options;
 
     function destroy() {
@@ -195,7 +199,7 @@
    * @returns - Resizable instance which includes destroy method
    * @class Resizable
    */
-  function Resizable(options) {
+export function Resizable(options) {
     const { resizeableElement, resizeableHandleElement, onResizeStart, onResize, onResizeEnd } = options;
     if (!resizeableHandleElement || typeof resizeableHandleElement.addEventListener !== 'function') {
       throw new Error('[Slick.Resizable] You did not provide a valid html element that will be used for the handle to resize.');
@@ -252,10 +256,12 @@
     return { destroy };
   }
 
-  // exports
-  Slick.Utils.extend(Slick, {
-    "Draggable": Draggable,
-    "MouseWheel": MouseWheel,
-    "Resizable": Resizable,
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  Utils.extend(Slick, {
+    Draggable,
+    MouseWheel,
+    Resizable,
   });
-})();
+}
+

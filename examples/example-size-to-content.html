@@ -4,9 +4,9 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example: Column Content Sizing</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="../controls/slick.pager.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
     .numericIn {
       width: 30px;
@@ -43,18 +43,15 @@
       margin: 0;
     }
 
+    .cell-title {
+      display: inline-flex;
+      align-items: center;
+    }
     .toggle {
-      height: 9px;
-      width: 9px;
+      height: 1em;
+      width: 1em;
       display: inline-block;
-    }
-
-    .toggle.expand {
-      background: url(../images/expand.gif) no-repeat center center;
-    }
-
-    .toggle.collapse {
-      background: url(../images/collapse.gif) no-repeat center center;
+      font-size: 15px;
     }
 
     .column-wrapper-div {
@@ -79,7 +76,10 @@
 <body>
 <div style="position:relative">
   <div class="options-panel" style="width:900px; position: relative; left:0;">
-    <h1>Auto Column Sizing Example</h1>
+    <h1>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Auto Column Sizing Example
+    </h1>
     <h2>Plugin Options:</h2>
     <!-- GridAutosizeColsMode: None, Legacy, IgnoreViewport, FitColsToViewport, FitViewportToCols -->
     <div style="margin-left: 10px">
@@ -725,13 +725,13 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../slick.formatters.js"></script>
-<script src="../slick.grid.js"></script>
-<script src="../slick.dataview.js"></script>
-<script src="../controls/slick.pager.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.formatters.js"></script>
+<script src="../dist/browser/slick.dataview.js"></script>
 
 <script>
   //------------------------------------------------------------------------------------
@@ -783,12 +783,13 @@
 
   function hideShow(clickedEl) {
     var wrapperDiv = clickedEl.parentElement.nextElementSibling;
+    wrapperDiv.className = 'sgi';
     if (clickedEl.classList.contains('expand')) {
-      clickedEl.classList.add('collapse');
-      clickedEl.classList.remove('expand');
+      clickedEl.classList.add('sgi sgi-minus-box-outline');
+      clickedEl.classList.remove('sgi sgi-plus-box-outline');
     } else {
-      clickedEl.classList.remove('collapse');
-      clickedEl.classList.add('expand');
+      clickedEl.classList.remove('sgi sgi-minus-box-outline');
+      clickedEl.classList.add('sgi sgi-plus-box-outline');
     }
 
     wrapperDiv.style.display = (window.getComputedStyle(wrapperDiv).display === 'none') ? 'block' : 'none';
@@ -824,7 +825,7 @@
     {id: "title", name: "Title", field: "title", width: 120, cssClass: "cell-title"},
     {id: "duration", name: "Duration", field: "duration"},
     {id: "random-word", name: "Random word", field: "randomWord"},
-    {id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar},
+    {id: "%", name: "% Complete", field: "percentComplete", width: 95, resizable: false, formatter: Slick.Formatters.PercentCompleteBar},
     {id: "start", name: "Start", field: "start"},
     {id: "effort-driven", name: "Effort Driven", width: 80, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark},
     {id: "random-text", name: "Random Text", field: "randomText"}

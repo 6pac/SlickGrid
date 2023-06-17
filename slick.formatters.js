@@ -1,15 +1,19 @@
+import { Utils as Utils_ } from './slick.core';
+
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+
 /***
  * Contains basic SlickGrid formatters.
- * 
+ *
  * NOTE:  These are merely examples.  You will most likely need to implement something more
  *        robust/extensible/localizable/etc. for your use!
- * 
+ *
  * @module Formatters
  * @namespace Slick
  */
 
-(function () {
-  function PercentCompleteFormatter(row, cell, value, columnDef, dataContext) {
+export function PercentCompleteFormatter(row, cell, value, columnDef, dataContext) {
     if (value == null || value === "") {
       return "-";
     } else if (value < 50) {
@@ -19,7 +23,7 @@
     }
   }
 
-  function PercentCompleteBarFormatter(row, cell, value, columnDef, dataContext) {
+export function PercentCompleteBarFormatter(row, cell, value, columnDef, dataContext) {
     if (value == null || value === "") {
       return "";
     }
@@ -37,27 +41,30 @@
     return "<span class='percent-complete-bar' style='background:" + color + ";width:" + value + "%' title='" + value + "%'></span>";
   }
 
-  function YesNoFormatter(row, cell, value, columnDef, dataContext) {
+export function YesNoFormatter(row, cell, value, columnDef, dataContext) {
     return value ? "Yes" : "No";
   }
 
-  function CheckboxFormatter(row, cell, value, columnDef, dataContext) {
-    return '<img class="slick-edit-preclick" src="../images/' + (value ? "CheckboxY" : "CheckboxN") + '.png">';
-  }
+export function CheckboxFormatter(row, cell, value, columnDef, dataContext) {
+  return `<span class="sgi sgi-checkbox-${value ? 'intermediate' : 'blank-outline'}"></span>`;
+}
 
-  function CheckmarkFormatter(row, cell, value, columnDef, dataContext) {
-    return value ? "<img src='../images/tick.png'>" : "";
-  }
+export function CheckmarkFormatter(row, cell, value, columnDef, dataContext) {
+  return value ? `<span class="sgi sgi-check"></span>` : '';
+}
 
-  // exports
-  Slick.Utils.extend(Slick, {
-    "Formatters": {
-      "PercentComplete": PercentCompleteFormatter,
-      "PercentCompleteBar": PercentCompleteBarFormatter,
-      "YesNo": YesNoFormatter,
-      "Checkmark": CheckmarkFormatter,
-      "Checkbox": CheckboxFormatter
+export const Formatters = {
+  PercentComplete: PercentCompleteFormatter,
+  PercentCompleteBar: PercentCompleteBarFormatter,
+  YesNo: YesNoFormatter,
+  Checkmark: CheckmarkFormatter,
+  Checkbox: CheckboxFormatter
+};
 
-    }
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  Utils.extend(Slick, {
+    Formatters
   });
-})();
+}
+

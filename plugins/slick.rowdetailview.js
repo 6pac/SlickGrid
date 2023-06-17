@@ -1,3 +1,11 @@
+import { Event as SlickEvent_, EventHandler as EventHandler_, Utils as Utils_ } from '../slick.core';
+
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+const EventHandler = IIFE_ONLY ? Slick.EventHandler : EventHandler_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+
+
 /***
  * A plugin to add row detail panel
  * Original StackOverflow question & article making this possible (thanks to violet313)
@@ -79,18 +87,9 @@
  *        expandedRows: Array of the Expanded Rows
  *        rowIdsOutOfViewport: Array of the Out of viewport Range Rows
  */
-(function (window) {
-  // register namespace
-  Slick.Utils.extend(true, window, {
-    "Slick": {
-      "Plugins": {
-        "RowDetailView": RowDetailView
-      }
-    }
-  });
 
-  /** Constructor of the Row Detail View Plugin */
-  function RowDetailView(options) {
+/** Constructor of the Row Detail View Plugin */
+export function RowDetailView(options) {
     var _grid;
     var _gridOptions;
     var _gridUid;
@@ -100,7 +99,7 @@
     var _self = this;
     var _lastRange = null;
     var _expandedRows = [];
-    var _handler = new Slick.EventHandler();
+  var _handler = new EventHandler();
     var _outsideRange = 5;
     var _visibleRenderedCellCount = 0;
     var _defaults = {
@@ -122,7 +121,7 @@
     var _keyPrefix = _defaults.keyPrefix;
     var _gridRowBuffer = 0;
     var _rowIdsOutOfViewport = [];
-    var _options = Slick.Utils.extend(true, {}, _defaults, options);
+  var _options = Utils.extend(true, {}, _defaults, options);
 
     // user could override the expandable icon logic from within the options or after instantiating the plugin
     if (typeof _options.expandableOverride === 'function') {
@@ -206,7 +205,7 @@
 
     /** set or change some of the plugin options */
     function setOptions(options) {
-      _options = Slick.Utils.extend(true, {}, _options, options);
+      _options = Utils.extend(true, {}, _options, options);
       if (_options && _options.singleRowExpand) {
         collapseAll();
       }
@@ -757,7 +756,7 @@
       _expandableOverride = overrideFn;
     }
 
-    Slick.Utils.extend(this, {
+  Utils.extend(this, {
       "init": init,
       "destroy": destroy,
       "pluginName": "RowDetailView",
@@ -775,12 +774,23 @@
       "setOptions": setOptions,
 
       // events
-      "onAsyncResponse": new Slick.Event(),
-      "onAsyncEndUpdate": new Slick.Event(),
-      "onAfterRowDetailToggle": new Slick.Event(),
-      "onBeforeRowDetailToggle": new Slick.Event(),
-      "onRowOutOfViewportRange": new Slick.Event(),
-      "onRowBackToViewportRange": new Slick.Event()
+    "onAsyncResponse": new SlickEvent(),
+    "onAsyncEndUpdate": new SlickEvent(),
+    "onAfterRowDetailToggle": new SlickEvent(),
+    "onBeforeRowDetailToggle": new SlickEvent(),
+    "onRowOutOfViewportRange": new SlickEvent(),
+    "onRowBackToViewportRange": new SlickEvent()
     });
   }
-})(window);
+
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  Utils.extend(true, window, {
+    Slick: {
+      Plugins: {
+        RowDetailView
+      }
+    }
+  });
+}
+

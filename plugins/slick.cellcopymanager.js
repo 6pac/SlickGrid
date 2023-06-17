@@ -1,13 +1,11 @@
-(function (window) {
-  // register namespace
-  Slick.Utils.extend(true, window, {
-    "Slick": {
-      "CellCopyManager": CellCopyManager
-    }
-  });
+import { Event as SlickEvent_, keyCode as keyCode_, Utils as Utils_ } from '../slick.core';
 
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;
+const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
-  function CellCopyManager() {
+export function CellCopyManager() {
     var _grid;
     var _self = this;
     var _copiedRanges;
@@ -24,7 +22,7 @@
     function handleKeyDown(e) {
       var ranges;
       if (!_grid.getEditorLock().isActive()) {
-        if (e.which == Slick.keyCode.ESCAPE) {
+        if (e.which == keyCode.ESCAPE) {
           if (_copiedRanges) {
             e.preventDefault();
             clearCopySelection();
@@ -75,16 +73,24 @@
       _grid.removeCellCssStyles("copy-manager");
     }
 
-    Slick.Utils.extend(this, {
+  Utils.extend(this, {
       "init": init,
       "destroy": destroy,
       "pluginName": "CellCopyManager",
 
       "clearCopySelection": clearCopySelection,
 
-      "onCopyCells": new Slick.Event(),
-      "onCopyCancelled": new Slick.Event(),
-      "onPasteCells": new Slick.Event()
+    "onCopyCells": new SlickEvent(),
+    "onCopyCancelled": new SlickEvent(),
+    "onPasteCells": new SlickEvent()
     });
   }
-})(window);
+
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  Utils.extend(true, window, {
+    Slick: {
+      CellCopyManager
+    }
+  });
+}
