@@ -1,14 +1,6 @@
-import { BindingEventService as BindingEventService_, Event as SlickEvent_, Utils as Utils_ } from '../slick.core';
-
-// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
-const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
-const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
-const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
-
 /***
  * A control to add a Column Picker (right+click on any column header to reveal the column picker)
- * NOTE: this is the old 'complex' column pciker that hides columns by removing them from the grid
- *        for a more modern version that uses the column.hidden property and is a lot simpler, use slick.columnmenu.js
+ * NOTE: this a simplified and updated version of slick.columnpicker.js
  *
  * USAGE:
  *
@@ -34,7 +26,9 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  * @constructor
  */
 
-export function SlickColumnPicker(columns, grid, options) {
+(function (window) {
+  'use strict';
+  function SlickColumnPicker(columns, grid, options) {
     var _grid = grid;
     var _options = options;
     var _gridUid = (grid && grid.getUID) ? grid.getUID() : '';
@@ -42,8 +36,8 @@ export function SlickColumnPicker(columns, grid, options) {
     var _listElm;
     var _menuElm;
     var columnCheckboxes;
-  var onColumnsChanged = new SlickEvent();
-  var _bindingEventService = new BindingEventService();
+    var onColumnsChanged = new Slick.Event();
+    var _bindingEventService = new Slick.BindingEventService();
 
     var defaults = {
       fadeSpeed: 250,
@@ -62,7 +56,7 @@ export function SlickColumnPicker(columns, grid, options) {
     function init(grid) {
       grid.onHeaderContextMenu.subscribe(handleHeaderContextMenu);
       grid.onColumnsReordered.subscribe(updateColumnOrder);
-      _options = Utils.extend({}, defaults, options);
+      _options = Slick.Utils.extend({}, defaults, options);
 
       _menuElm = document.createElement('div');
       _menuElm.className = `slick-columnpicker ${_gridUid}`;
@@ -125,7 +119,7 @@ export function SlickColumnPicker(columns, grid, options) {
 
     function handleHeaderContextMenu(e) {
       e.preventDefault();
-      Utils.emptyElement(_listElm);
+      Slick.Utils.emptyElement(_listElm);
       updateColumnOrder();
       columnCheckboxes = [];
 
@@ -306,13 +300,13 @@ export function SlickColumnPicker(columns, grid, options) {
         col.hidden = false;
         visibleColumns.splice(idx, 0, col);
       } else {
-        let newVisibleColumns = [];
+        let newVisibleColumns = [];      
         for (let i = 0; i < visibleColumns.length; i++) {
           if (visibleColumns[i].id !== col.id) { newVisibleColumns.push(visibleColumns[i]); }
         }
         visibleColumns = newVisibleColumns;
       }
-
+ 
       _grid.setColumns(visibleColumns);
       onColumnsChanged.notify({ columnId: col.id, showing: show, allColumns: columns, columns: visibleColumns, grid: _grid });
      }
@@ -355,8 +349,6 @@ export function SlickColumnPicker(columns, grid, options) {
     };
   }
 
-// extend Slick namespace on window object when building as iife
-if (IIFE_ONLY && window.Slick) {
-  window.Slick.Controls = window.Slick.Controls || {};
-  window.Slick.Controls.ColumnPicker = SlickColumnPicker;
-}
+  // Slick.Controls.ColumnPicker
+  Slick.Utils.extend(true, window, { Slick: { Controls: { ColumnPicker: SlickColumnPicker } } });
+})(window);

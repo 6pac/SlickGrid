@@ -148,12 +148,12 @@ export function ContextMenu(optionProperties) {
     let _grid;
     let _gridOptions;
     let _gridUid = "";
-  let _handler = new EventHandler();
+    let _handler = new EventHandler();
     let _self = this;
     let _optionTitleElm;
     let _commandTitleElm;
     let _menuElm;
-  let _bindingEventService = new BindingEventService();
+    let _bindingEventService = new BindingEventService();
 
     let _defaults = {
       autoAdjustDrop: true,     // dropup/dropdown

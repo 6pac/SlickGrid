@@ -332,7 +332,11 @@ export function CheckboxSelectColumn(options) {
         sortable: false,
         cssClass: _options.cssClass,
         hideSelectAllCheckbox: _options.hideSelectAllCheckbox,
-        formatter: checkboxSelectionFormatter
+        formatter: checkboxSelectionFormatter,
+        // exclude from all menus, defaults to true unless the option is provided differently by the user
+        excludeFromColumnPicker: typeof _options.excludeFromColumnPicker !== 'undefined' ? _options.excludeFromColumnPicker : true,
+        excludeFromGridMenu: typeof _options.excludeFromGridMenu !== 'undefined' ? _options.excludeFromGridMenu : true,
+        excludeFromHeaderMenu: typeof _options.excludeFromHeaderMenu !== 'undefined' ? _options.excludeFromHeaderMenu : true,
       };
     }
 

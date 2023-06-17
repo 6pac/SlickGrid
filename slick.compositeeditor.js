@@ -53,7 +53,7 @@ export function CompositeEditor(columns, containers, options) {
     function getContainerBox(i) {
       var c = containers[i];
       var offset = Slick.Utils.offset(c);
-      var w = Slick.Utils.innerSize(c);
+      var w = Slick.Utils.width(c);
       var h = Slick.Utils.height(c);
 
       return {

@@ -362,14 +362,17 @@ export function CellExternalCopyManager(options) {
                     if (clipTextRows.length === 0 && _options.includeHeaderWhenCopying) {
                         var clipTextHeaders = [];
                         for (var j = range.fromCell; j < range.toCell + 1 ; j++) {
-                            if (columns[j].name.length > 0)
+                            if (columns[j].name.length > 0 && !columns[j].hidden) {
                                 clipTextHeaders.push(getHeaderValueForColumn(columns[j]));
+                            }
                         }
                         clipTextRows.push(clipTextHeaders.join("\t"));
                     }
 
                     for (var j=range.fromCell; j< range.toCell+1 ; j++){
-                        clipTextCells.push(getDataItemValueForColumn(dt, columns[j], e));
+                        if (columns[j].name.length > 0 && !columns[j].hidden) {
+                            clipTextCells.push(getDataItemValueForColumn(dt, columns[j], e));
+                        }
                     }
                     clipTextRows.push(clipTextCells.join("\t"));
                 }

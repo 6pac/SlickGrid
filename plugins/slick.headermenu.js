@@ -96,8 +96,8 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 export function HeaderMenu(options) {
     var _grid;
     var _self = this;
-  var _handler = new EventHandler();
-  var _bindingEventService = new BindingEventService();
+    var _handler = new EventHandler();
+    var _bindingEventService = new BindingEventService();
     var _defaults = {
       buttonCssClass: null,
       buttonImage: null,

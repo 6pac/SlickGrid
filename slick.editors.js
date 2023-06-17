@@ -594,8 +594,8 @@ export function PercentCompleteEditor(args) {
     };
 
     this.onClick = function () {
-      input.value = this.getAttribute("val");
-      slider.value = this.getAttribute("val");
+      input.value = this.value;
+      slider.value = this.value;
     };
 
     this.destroy = function () {

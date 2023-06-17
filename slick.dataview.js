@@ -153,6 +153,7 @@ export function DataView(options) {
      * by recomputing the items and idxById members.
      */
     function processBulkDelete() {
+      if (!idxById) return;
       // the bulk update is processed by
       // recomputing the whole items array and the index lookup in one go.
       // this is done by placing the not-deleted items
@@ -189,7 +190,7 @@ export function DataView(options) {
     }
 
     function updateIdxById(startingIndex) {
-      if (isBulkSuspend) { // during bulk update we do not reorganize
+      if (isBulkSuspend || !idxById) { // during bulk update we do not reorganize
         return;
       }
       startingIndex = startingIndex || 0;
@@ -204,7 +205,7 @@ export function DataView(options) {
     }
 
     function ensureIdUniqueness() {
-      if (isBulkSuspend) { // during bulk update we do not reorganize
+      if (isBulkSuspend || !idxById) { // during bulk update we do not reorganize
         return;
       }
       var id;
@@ -397,7 +398,7 @@ export function DataView(options) {
     }
 
     function getIdxById(id) {
-      return idxById.get(id);
+      return idxById && idxById.get(id);
     }
 
     function ensureRowsByIdCache() {
@@ -420,7 +421,7 @@ export function DataView(options) {
     }
 
     function getItemById(id) {
-      return items[idxById.get(id)];
+      return items[idxById && idxById.get(id)];
     }
 
     function mapItemsToRows(itemArray) {
@@ -465,6 +466,8 @@ export function DataView(options) {
      * @param item The item which should be the new value for the given id.
      */
     function updateSingleItem(id, item) {
+      if (!idxById) return;
+
       // see also https://github.com/mleibman/SlickGrid/issues/1082
       if (!idxById.has(id)) {
         throw new Error("[SlickGrid DataView] Invalid id");
@@ -575,6 +578,7 @@ export function DataView(options) {
      * @param id The id identifying the object to delete.
      */
     function deleteItem(id) {
+      if (!idxById) return;
       if (isBulkSuspend) {
         bulkDeleteIds.set(id, true);
       } else {
@@ -594,7 +598,7 @@ export function DataView(options) {
      * @param ids {Array} The ids of the items to delete.
      */
     function deleteItems(ids) {
-      if (ids.length === 0) {
+      if (ids.length === 0 || !idxById) {
         return;
       }
 
@@ -640,6 +644,7 @@ export function DataView(options) {
     }
 
     function sortedUpdateItem(id, item) {
+      if (!idxById) return;
       if (!idxById.has(id) || id !== item[idProperty]) {
         throw new Error("[SlickGrid DataView] Invalid or non-matching id " + idxById.get(id));
       }

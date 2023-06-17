@@ -2,6 +2,60 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.0.0](https://github.com/6pac/SlickGrid/compare/3.0.4...4.0.0) (2023-05-28)
+
+### Please read the [Migration Guide v4.0](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement)
+
+### Bug Fixes
+
+* `idxById` could be undefined when changing page in SPA ([#782](https://github.com/6pac/SlickGrid/issues/782)) ([222725f](https://github.com/6pac/SlickGrid/commit/222725f0f68b993232bc2fabb725eada6208bf67))
+* columnpicker and column order for hidden columns ([034108d](https://github.com/6pac/SlickGrid/commit/034108ddde688586e67b44f9d58e8d4d0d773767))
+* dist source map file naming was incorrect ([#730](https://github.com/6pac/SlickGrid/issues/730)) ([aa4093a](https://github.com/6pac/SlickGrid/commit/aa4093a2b1d2afa791a645c65518fb2c35f50204))
+* enable AutoScroll with SortableJS for column reordering, fixes [#735](https://github.com/6pac/SlickGrid/issues/735) ([c9ee9af](https://github.com/6pac/SlickGrid/commit/c9ee9af2df9ae8fdc8611fc0131a753a3e1e6cc3))
+* enable AutoScroll with SortableJS for column reordering, fixes [#735](https://github.com/6pac/SlickGrid/issues/735) ([#736](https://github.com/6pac/SlickGrid/issues/736)) ([9fa0860](https://github.com/6pac/SlickGrid/commit/9fa0860253e48ccd2690d7e5e65cd8fc0afccec5))
+* final fix for ColumnPicker and column hidden property ([000865d](https://github.com/6pac/SlickGrid/commit/000865d8823a66bd9f5289140bfb82d4d4b4254c))
+* make sure column is defined before calling hidden prop ([#783](https://github.com/6pac/SlickGrid/issues/783)) ([29572a6](https://github.com/6pac/SlickGrid/commit/29572a68bc8f3246feeacd41036189c59e0ad9a6))
+* rollback JS event passive mode in SlickGrid ([#778](https://github.com/6pac/SlickGrid/issues/778)) ([e61547e](https://github.com/6pac/SlickGrid/commit/e61547ea980ee42accac6cb4c2e76627c97599e4)), closes [#769](https://github.com/6pac/SlickGrid/issues/769)
+
+### Features
+
+* provide another styling theme ([#779](https://github.com/6pac/SlickGrid/issues/779)) ([bc96ddf](https://github.com/6pac/SlickGrid/commit/bc96ddf84df58bc530fcbc61f37b8db900523a27))
+
+# [4.0.0-beta.0](https://github.com/6pac/SlickGrid/compare/3.0.4...4.0.0-beta.0) (2023-05-17)
+
+### Please read the [Migration Guide v4.0](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement)
+---
+### Bug Fixes
+
+* add missing aria accessibility ([#764](https://github.com/6pac/SlickGrid/issues/764)) ([897cc55](https://github.com/6pac/SlickGrid/commit/897cc55441625ab1bd3dd556c7c54d4796ce5f1d)), closes [#586](https://github.com/6pac/SlickGrid/issues/586) [#587](https://github.com/6pac/SlickGrid/issues/587) [#588](https://github.com/6pac/SlickGrid/issues/588) [#678](https://github.com/6pac/SlickGrid/issues/678)
+* addresses all issues found in jQuery removal previous PR [#734](https://github.com/6pac/SlickGrid/issues/734) ([#742](https://github.com/6pac/SlickGrid/issues/742)) ([b3a6575](https://github.com/6pac/SlickGrid/commit/b3a6575bd913f5b8aa0c81dfe88b71519a7a846e))
+* **core:** set wheel/touch listeners to passive for better perf ([#769](https://github.com/6pac/SlickGrid/issues/769)) ([b62e25d](https://github.com/6pac/SlickGrid/commit/b62e25d537c9a6cfb8b2004ad898b6bb0635dfd8))
+* dist source map file naming was incorrect ([#730](https://github.com/6pac/SlickGrid/issues/730)) ([aa4093a](https://github.com/6pac/SlickGrid/commit/aa4093a2b1d2afa791a645c65518fb2c35f50204))
+* enable AutoScroll with SortableJS for column reordering, fixes [#735](https://github.com/6pac/SlickGrid/issues/735) ([#736](https://github.com/6pac/SlickGrid/issues/736)) ([2c56433](https://github.com/6pac/SlickGrid/commit/2c5643313f7379877d4e4320bbe7b9de9585438c))
+* filter header row should follow grid scroll ([98aeb9b](https://github.com/6pac/SlickGrid/commit/98aeb9b9b19ca2972af214629c62efc20330b5a0))
+* scrolling for all containers should work for regular & frozen grids ([2405fe6](https://github.com/6pac/SlickGrid/commit/2405fe62b970eb84e5f24f7f5fbcb3f7b3469c78))
+* throw error when freezing columns are wider than canvas ([#773](https://github.com/6pac/SlickGrid/issues/773)) ([bc60d8a](https://github.com/6pac/SlickGrid/commit/bc60d8ac4c9ab7fffbc38420e8a6c5b7234830dd)), closes [#667](https://github.com/6pac/SlickGrid/issues/667)
+* toggling frozen rows should recalc scroll height, closes [#737](https://github.com/6pac/SlickGrid/issues/737) ([#774](https://github.com/6pac/SlickGrid/issues/774)) ([46db491](https://github.com/6pac/SlickGrid/commit/46db4914c19dd3c6789aaeed22cda91664a415fa))
+
+### Features
+
+* **controls:** remove jQuery from Slick Pager control ([#762](https://github.com/6pac/SlickGrid/issues/762)) ([ed0507b](https://github.com/6pac/SlickGrid/commit/ed0507bff30dc28f6e8b3f3ee7bf0f7339fd2282))
+* Enable hidden property for column. Adds example-column-hidden, method… ([#765](https://github.com/6pac/SlickGrid/issues/765)) ([78540ef](https://github.com/6pac/SlickGrid/commit/78540ef2339dc3d47ca2faba78b7be3963e14ad0))
+* **plugin:** convert slick.autotooltips to vanillaJS ([#745](https://github.com/6pac/SlickGrid/issues/745)) ([133d783](https://github.com/6pac/SlickGrid/commit/133d783d508e8c55d0b8196b90725079164e986d))
+* **plugins:** convert copy manager plugins to vanillaJS ([#746](https://github.com/6pac/SlickGrid/issues/746)) ([47b571d](https://github.com/6pac/SlickGrid/commit/47b571d1fc376af01cb895d19f42205c8a34ddca))
+* **plugins:** convert slick.draggablegrouping to vanillaJS ([#744](https://github.com/6pac/SlickGrid/issues/744)) ([59b0d2e](https://github.com/6pac/SlickGrid/commit/59b0d2e9f2ad549bb67982289b6c27862bab9ee1))
+* **plugins:** remove jQuery from CellMenu & ContextMenu plugins ([#753](https://github.com/6pac/SlickGrid/issues/753)) ([c4671be](https://github.com/6pac/SlickGrid/commit/c4671be7385b8bac8fdfb82769f726bf8705bf84))
+* **plugins:** remove jQuery from CheckboxSelectColumn plugins ([#755](https://github.com/6pac/SlickGrid/issues/755)) ([57160af](https://github.com/6pac/SlickGrid/commit/57160af7e5290730c0528f1cfebcaadae86820c3))
+* **plugins:** remove jQuery from ColumnPicker & GridMenu controls ([#752](https://github.com/6pac/SlickGrid/issues/752)) ([9ea0d9a](https://github.com/6pac/SlickGrid/commit/9ea0d9a7fa5a1c453e737a60cd0f1292f822ac3b))
+* **plugins:** remove jQuery from Grid Resizer plugin ([#758](https://github.com/6pac/SlickGrid/issues/758)) ([5deb818](https://github.com/6pac/SlickGrid/commit/5deb8188424f6cbc0876f4053c0dc5400212c70b))
+* **plugins:** remove jQuery from Grid State plugin ([#757](https://github.com/6pac/SlickGrid/issues/757)) ([aa8dc63](https://github.com/6pac/SlickGrid/commit/aa8dc63b3e6e635c6a6419d79a5a2a29e2b29762))
+* **plugins:** remove jQuery from header buttons/menus plugins ([#748](https://github.com/6pac/SlickGrid/issues/748)) ([58701c4](https://github.com/6pac/SlickGrid/commit/58701c4288744a1288b8cddbd9432b0d709ead30))
+* **plugins:** remove jQuery from range decorator selection model ([#754](https://github.com/6pac/SlickGrid/issues/754)) ([6724f1d](https://github.com/6pac/SlickGrid/commit/6724f1db8d2a013d999e563ffab9a35897a72afb))
+* **plugins:** remove jQuery from Row Detail plugin ([#760](https://github.com/6pac/SlickGrid/issues/760)) ([72e6139](https://github.com/6pac/SlickGrid/commit/72e61391147656151e22bc25abb583a0cba5cc89))
+* **plugins:** remove jQuery from RowMove plugins ([#756](https://github.com/6pac/SlickGrid/issues/756)) ([8c72373](https://github.com/6pac/SlickGrid/commit/8c72373e6bcab2f1972de9a774ec89bc0ed8c187))
+* **plugins:** remove jQuery from slick.customtooltip plugin ([#747](https://github.com/6pac/SlickGrid/issues/747)) ([aac6eec](https://github.com/6pac/SlickGrid/commit/aac6eecf99cfbbad7787cdbdfd95935955148fc2))
+* remove legacy TreeColumns code - now unused ([#775](https://github.com/6pac/SlickGrid/issues/775)) ([af82a57](https://github.com/6pac/SlickGrid/commit/af82a570ba79e796400fc1e2ba265ffe2dafd480))
+
 ## [3.0.4](https://github.com/6pac/SlickGrid/compare/3.0.3...3.0.4) (2023-02-15)
 
 ### Features

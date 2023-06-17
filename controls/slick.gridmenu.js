@@ -451,7 +451,7 @@ export function SlickGridMenu(columns, grid, options) {
         checkboxElm.dataset.columnid = columns[i].id;
         liElm.appendChild(checkboxElm);
 
-        if (_grid.getColumnIndex(columns[i].id) != null) {
+        if (_grid.getColumnIndex(columns[i].id) != null && !columns[i].hidden) {
           checkboxElm.checked = true;
         }
 
@@ -677,6 +677,7 @@ export function SlickGridMenu(columns, grid, options) {
         let visibleColumns = [];
         columnCheckboxes.forEach((columnCheckbox, idx) => {
           if (columnCheckbox.checked) {
+            if (columns[idx].hidden) { columns[idx].hidden = false; }
             visibleColumns.push(columns[idx]);
           }
         });
