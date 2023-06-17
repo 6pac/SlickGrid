@@ -248,18 +248,6 @@
       checkboxSelectorPlugin = new Slick.CheckboxSelectColumn({ cssClass: "slick-cell-checkboxsel" });
       columns.splice(columnIndex, 0, checkboxSelectorPlugin.getColumnDefinition());
 
-      grid = new Slick.Grid("#myGrid", dataView, columns, options);
-
-      // register the Selection Model that will be used for all Plugins
-      grid.setSelectionModel(new Slick.RowSelectionModel({
-        selectActiveRow: false,
-        dragToSelect: true
-      }));
-
-      // register all Plugins (Row Selection / Row Detail)
-      grid.registerPlugin(checkboxSelectorPlugin);
-      grid.registerPlugin(detailViewPlugin);
-
       rowMovePlugin = new Slick.RowMoveManager({
         cancelEditOnDrag: true,
         singleRowMove: true,
@@ -274,10 +262,22 @@
           return (dataContext.id % 2 === 1);
         }
       });
-      grid.registerPlugin(rowMovePlugin);
 
       // use unshift to make it the 1st column OR splice to position it where you wish
       columns.splice(1, 0, rowMovePlugin.getColumnDefinition());
+
+      grid = new Slick.Grid("#myGrid", dataView, columns, options);
+
+      // register the Selection Model that will be used for all Plugins
+      grid.setSelectionModel(new Slick.RowSelectionModel({
+        selectActiveRow: false,
+        dragToSelect: true
+      }));
+
+      // register all Plugins (Row Selection / Row Detail)
+      grid.registerPlugin(checkboxSelectorPlugin);
+      grid.registerPlugin(detailViewPlugin);
+      grid.registerPlugin(rowMovePlugin);
 
       rowMovePlugin.onBeforeMoveRows.subscribe(function (e, args) {
         // collapse any Row Details to avoid any rendering issues
