@@ -4,8 +4,8 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example 14: Highlighting and Flashing cells</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
     .load-medium {
       color: orange;
@@ -18,23 +18,28 @@
     }
 
     .changed {
-      background: pink;
+      background: mistyrose;
+      border: 1px solid lightcoral;
     }
 
     .current-server {
       border: 1px solid black;
-      background: orange;
+      background: moccasin;
+      border: 1px solid darksalmon;
     }
   </style>
 </head>
 <body>
 <div style="position:relative">
   <div style="width:520px;">
-    <div id="myGrid" style="width:100%;height:500px;"></div>
+    <div id="myGrid" class="slick-container" style="width:100%;height:500px;"></div>
   </div>
 
   <div class="options-panel">
-    <h2>About</h2>
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Demonstrates:
+    </h2>
     This example simulates a real-time display of CPU utilization in a web farm.
     Data is updated in real-time, and cells with changed data are highlighted.
     You can also click "Find current server" to scroll the row displaying data for the current
@@ -55,12 +60,13 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../plugins/slick.cellselectionmodel.js"></script>
-<script src="../plugins/slick.rowmovemanager.js"></script>
-<script src="../slick.grid.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/plugins/slick.cellselectionmodel.js"></script>
+<script src="../dist/browser/plugins/slick.rowmovemanager.js"></script>
 
 <script>
   var grid;
@@ -68,7 +74,6 @@
   var columns = [
     {id: "server", name: "Server", field: "server", width: 180}
   ];
-  var currentServer;
 
   function cpuUtilizationFormatter(row, cell, value, columnDef, dataContext) {
     if (value > 90) {
@@ -111,8 +116,6 @@
     }
 
     grid = new Slick.Grid("#myGrid", data, columns, options);
-
-    currentServer = Math.round(Math.random() * (data.length - 1));
   });
 
 
@@ -146,6 +149,7 @@
   }
 
   function findCurrentServer() {
+    let currentServer = Math.round(Math.random() * (data.length - 1));
     grid.scrollRowIntoView(currentServer);
     grid.flashCell(currentServer, grid.getColumnIndex("server"), 100);
   }

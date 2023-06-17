@@ -1,19 +1,18 @@
-(function (window) {
-  // register namespace
-  Slick.Utils.extend(true, window, {
-    "Slick": {
-      "CheckboxSelectColumn": CheckboxSelectColumn
-    }
-  });
+import { BindingEventService as BindingEventService_, EventHandler as EventHandler_, Utils as Utils_ } from '../slick.core';
 
-  function CheckboxSelectColumn(options) {
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
+const EventHandler = IIFE_ONLY ? Slick.EventHandler : EventHandler_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+
+export function CheckboxSelectColumn(options) {
     let _dataView;
     let _grid;
     let _isUsingDataView = false;
     let _selectableOverride = null;
     let _headerRowNode;
     let _selectAll_UID = createUID();
-    let _handler = new Slick.EventHandler();
+  let _handler = new EventHandler();
     let _selectedRowsLookup = {};
     let _defaults = {
       columnId: "_checkbox_selector",
@@ -27,8 +26,8 @@
     };
     let _isSelectAllChecked = false;
 
-    let _bindingEventService = new Slick.BindingEventService();
-    let _options = Slick.Utils.extend(true, {}, _defaults, options);
+  let _bindingEventService = new BindingEventService();
+  let _options = Utils.extend(true, {}, _defaults, options);
 
     // user could override the checkbox icon logic from within the options or after instantiating the plugin
     if (typeof _options.selectableOverride === 'function') {
@@ -70,7 +69,7 @@
     }
 
     function setOptions(options) {
-      _options = Slick.Utils.extend(true, {}, _options, options);
+      _options = Utils.extend(true, {}, _options, options);
 
       if (_options.hideSelectAllCheckbox) {
         hideSelectAllFromColumnHeaderTitleRow();
@@ -344,7 +343,7 @@
     function addCheckboxToFilterHeaderRow(grid) {
       _handler.subscribe(grid.onHeaderRowCellRendered, function (e, args) {
         if (args.column.field === "sel") {
-          Slick.Utils.emptyElement(args.node);
+          Utils.emptyElement(args.node);
           const spanElm = document.createElement('span');
           spanElm.id = 'filter-checkbox-selectall-container';
 
@@ -409,7 +408,7 @@
     }
 
 
-    Slick.Utils.extend(this, {
+  Utils.extend(this, {
       "init": init,
       "destroy": destroy,
       "pluginName": "CheckboxSelectColumn",
@@ -422,4 +421,13 @@
       "setOptions": setOptions,
     });
   }
-})(window);
+
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  Utils.extend(true, window, {
+    Slick: {
+      CheckboxSelectColumn
+    }
+  });
+}
+

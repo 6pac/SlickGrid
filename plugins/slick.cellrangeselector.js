@@ -1,12 +1,16 @@
-(function (window) {
-  // register namespace
-  Slick.Utils.extend(true, window, {
-    "Slick": {
-      "CellRangeSelector": CellRangeSelector
-    }
-  });
+import { Event as SlickEvent_, EventHandler as EventHandler_, Range as SlickRange_, Utils as Utils_ } from '../slick.core';
+import { Draggable as Draggable_ } from '../slick.interactions';
+import { CellRangeDecorator as CellRangeDecorator_ } from './slick.cellrangedecorator';
 
-  function CellRangeSelector(options) {
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+const EventHandler = IIFE_ONLY ? Slick.EventHandler : EventHandler_;
+const SlickRange = IIFE_ONLY ? Slick.Range : SlickRange_;
+const Draggable = IIFE_ONLY ? Slick.Draggable : Draggable_;
+const CellRangeDecorator = IIFE_ONLY ? Slick.CellRangeDecorator : CellRangeDecorator_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+
+export function CellRangeSelector(options) {
     var _grid;
     var _currentlySelectedRange;
     var _canvas;
@@ -15,7 +19,7 @@
     var _dragging;
     var _decorator;
     var _self = this;
-    var _handler = new Slick.EventHandler();
+  var _handler = new EventHandler();
     var _defaults = {
       autoScroll: true,
       minIntervalToShowNextCell: 30,
@@ -48,12 +52,12 @@
     var _scrollLeft = 0;
 
     function init(grid) {
-      if (typeof Slick.Draggable === "undefined") {
+      if (typeof Draggable === "undefined") {
         throw new Error('Slick.Draggable is undefined, make sure to import "slick.interactions.js"');
       }
 
-      options = Slick.Utils.extend(true, {}, _defaults, options);
-      _decorator = options.cellDecorator || new Slick.CellRangeDecorator(grid, options);
+      options = Utils.extend(true, {}, _defaults, options);
+      _decorator = options.cellDecorator || new CellRangeDecorator(grid, options);
       _grid = grid;
       _canvas = _grid.getCanvasNode();
       _gridOptions = _grid.getOptions();
@@ -140,7 +144,7 @@
 
       _grid.focus();
 
-      let canvasOffset = Slick.Utils.offset(_canvas);
+      let canvasOffset = Utils.offset(_canvas);
 
       let startX = dd.startX - (canvasOffset.left || 0);
       if (_gridOptions.frozenColumn >= 0 && _isRightCanvas) {
@@ -156,7 +160,7 @@
 
       dd.range = { start: start, end: {} };
       _currentlySelectedRange = dd.range;
-      return _decorator.show(new Slick.Range(start.row, start.cell));
+      return _decorator.show(new SlickRange(start.row, start.cell));
     }
 
     function handleDrag(evt, dd) {
@@ -185,7 +189,7 @@
       var viewportRight = viewportLeft + _viewportWidth;
       var viewportBottom = viewportTop + _viewportHeight;
 
-      var viewportOffset = Slick.Utils.offset(_activeViewport);
+      var viewportOffset = Utils.offset(_activeViewport);
       var viewportOffsetLeft = viewportOffset.left || 0;
       var viewportOffsetTop = viewportOffset.top || 0;
       var viewportOffsetRight = viewportOffsetLeft + _viewportWidth;
@@ -302,7 +306,7 @@
 
     function handleDragTo(e, dd) {
       let targetEvent = e.touches ? e.touches[0] : e;
-      let canvasOffset = Slick.Utils.offset(_activeCanvas);
+      let canvasOffset = Utils.offset(_activeCanvas);
       let end = _grid.getCellFromPoint(
         targetEvent.pageX - (canvasOffset && canvasOffset.left || 0) + _columnOffset,
         targetEvent.pageY - (canvasOffset && canvasOffset.top || 0) + _rowOffset
@@ -339,7 +343,7 @@
       if (dd && dd.range) {
         dd.range.end = end;
 
-        var range = new Slick.Range(dd.range.start.row, dd.range.start.cell, end.row, end.cell);
+        var range = new SlickRange(dd.range.start.row, dd.range.start.cell, end.row, end.cell);
         _decorator.show(range);
         _self.onCellRangeSelecting.notify({
           range: range
@@ -362,7 +366,7 @@
       stopIntervalTimer();
       _decorator.hide();
       _self.onCellRangeSelected.notify({
-        range: new Slick.Range(
+        range: new SlickRange(
           dd.range.start.row,
           dd.range.start.cell,
           dd.range.end.row,
@@ -375,7 +379,7 @@
       return _currentlySelectedRange;
     }
 
-    Slick.Utils.extend(this, {
+  Utils.extend(this, {
       "init": init,
       "destroy": destroy,
       "pluginName": "CellRangeSelector",
@@ -383,9 +387,15 @@
       "getCellDecorator": getCellDecorator,
       "getCurrentRange": getCurrentRange,
 
-      "onBeforeCellRangeSelected": new Slick.Event(),
-      "onCellRangeSelected": new Slick.Event(),
-      "onCellRangeSelecting": new Slick.Event()
+    "onBeforeCellRangeSelected": new SlickEvent(),
+    "onCellRangeSelected": new SlickEvent(),
+    "onCellRangeSelecting": new SlickEvent()
     });
   }
-})(window);
+
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  Utils.extend(Slick, {
+    CellRangeSelector
+  });
+}

@@ -1,19 +1,21 @@
-(function (window) {
-  // register namespace
-  Slick.Utils.extend(true, window, {
-    "Slick": {
-      "CellSelectionModel": CellSelectionModel
-    }
-  });
+import { Event as SlickEvent_, EventData as EventData_, Range as Range_, Utils as Utils_ } from '../slick.core';
+import { CellRangeSelector as CellRangeSelector_ } from './slick.cellrangeselector';
 
-  function CellSelectionModel(options) {
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+const EventData = IIFE_ONLY ? Slick.EventData : EventData_;
+const SlickRange = IIFE_ONLY ? Slick.Range : Range_; // test
+const CellRangeSelector = IIFE_ONLY ? Slick.CellRangeSelector : CellRangeSelector_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+
+export function CellSelectionModel(options) {
     var _grid;
     var _ranges = [];
     var _self = this;
     var _selector;
 
     if (typeof options === "undefined" || typeof options.cellRangeSelector === "undefined") {
-      _selector = new Slick.CellRangeSelector({
+      _selector = new CellRangeSelector({
         "selectionCss": {
           "border": "2px solid black"
         }
@@ -28,7 +30,7 @@
     };
 
     function init(grid) {
-      _options = Slick.Utils.extend(true, {}, _defaults, options);
+      _options = Utils.extend(true, {}, _defaults, options);
       _grid = grid;
       _grid.onActiveCellChanged.subscribe(handleActiveCellChange);
       _grid.onKeyDown.subscribe(handleKeyDown);
@@ -87,11 +89,11 @@
       var rangeHasChanged = !rangesAreEqual(_ranges, ranges);
 
       _ranges = removeInvalidRanges(ranges);
-      if (rangeHasChanged) { 
+      if (rangeHasChanged) {
         // provide extra "caller" argument through SlickEventData to avoid breaking pubsub event that only accepts an array of selected range
-        var eventData = new Slick.EventData(null, _ranges);
+        var eventData = new EventData(null, _ranges);
         Object.defineProperty(eventData, 'detail', { writable: true, configurable: true, value: { caller: caller || "SlickCellSelectionModel.setSelectedRanges" } });
-        _self.onSelectedRangesChanged.notify(_ranges, eventData); 
+        _self.onSelectedRangesChanged.notify(_ranges, eventData);
       }
     }
 
@@ -117,7 +119,7 @@
 
     function handleActiveCellChange(e, args) {
       if (_options.selectActiveCell && args.row != null && args.cell != null) {
-        setSelectedRanges([new Slick.Range(args.row, args.cell)]);
+        setSelectedRanges([new SlickRange(args.row, args.cell)]);
       }
       else if (!_options.selectActiveCell) {
         // clear the previous selection once the cell changes
@@ -142,14 +144,14 @@
 
         ranges = getSelectedRanges().slice();
         if (!ranges.length)
-          ranges.push(new Slick.Range(active.row, active.cell));
+          ranges.push(new SlickRange(active.row, active.cell));
 
         // keyboard can work with last range only
         last = ranges.pop();
 
         // can't handle selection out of active cell
         if (!last.contains(active.row, active.cell))
-          last = new Slick.Range(active.row, active.cell);
+          last = new SlickRange(active.row, active.cell);
 
         var dRow = last.toRow - last.fromRow,
           dCell = last.toCell - last.fromCell,
@@ -168,7 +170,7 @@
         }
 
         // define new selection range
-        var new_last = new Slick.Range(active.row, active.cell, active.row + dirRow * dRow, active.cell + dirCell * dCell);
+        var new_last = new SlickRange(active.row, active.cell, active.row + dirRow * dRow, active.cell + dirCell * dCell);
         if (removeInvalidRanges([new_last]).length) {
           ranges.push(new_last);
           var viewRow = dirRow > 0 ? new_last.toRow : new_last.fromRow;
@@ -186,7 +188,7 @@
       }
     }
 
-    Slick.Utils.extend(this, {
+  Utils.extend(this, {
       "getSelectedRanges": getSelectedRanges,
       "setSelectedRanges": setSelectedRanges,
 
@@ -196,7 +198,15 @@
       "destroy": destroy,
       "pluginName": "CellSelectionModel",
 
-      "onSelectedRangesChanged": new Slick.Event()
+    "onSelectedRangesChanged": new SlickEvent()
     });
-  }
-})(window);
+}
+
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  Utils.extend(true, window, {
+    Slick: {
+      CellSelectionModel
+    }
+  });
+}

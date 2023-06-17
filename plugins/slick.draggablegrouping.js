@@ -1,3 +1,11 @@
+import { BindingEventService as BindingEventService_, Event as SlickEvent_, EventHandler as EventHandler_, Utils as Utils_ } from '../slick.core';
+
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
+const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+const EventHandler = IIFE_ONLY ? Slick.EventHandler : EventHandler_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+
 /**
  *
  * Draggable Grouping contributed by:  Muthukumar Selvarasu
@@ -6,44 +14,33 @@
  *
  * NOTES:
  *     This plugin provides the Draggable Grouping feature
+ * A plugin to add Draggable Grouping feature.
+ *
+ * USAGE:
+ *
+ * Add the plugin .js & .css files and register it with the grid.
+ *
+ *
+ * The plugin expose the following methods:
+ *    destroy: used to destroy the plugin
+ *    setDroppedGroups: provide option to set default grouping on loading
+ *    clearDroppedGroups: provide option to clear grouping
+ *    getSetupColumnReorder: its function to setup draggable feature agains Header Column, should be passed on grid option. Also possible to pass custom function
+ *
+ *
+ * The plugin expose the following event(s):
+ *    onGroupChanged: pass the grouped columns to who subscribed.
+ *
+ * @param options {Object} Options:
+ *    deleteIconCssClass:  an extra CSS class to add to the delete button (default undefined), if deleteIconCssClass && deleteIconImage undefined then slick-groupby-remove-image class will be added
+ *    deleteIconImage:     a url to the delete button image (default undefined)
+ *    groupIconCssClass:   an extra CSS class to add to the grouping field hint  (default undefined)
+ *    groupIconImage:      a url to the grouping field hint image (default undefined)
+ *    dropPlaceHolderText:      option to specify set own placeholder note text
+ *
  */
 
-(function (window) {
-  // Register namespace
-  Slick.Utils.extend(true, window, {
-    "Slick": {
-      "DraggableGrouping": DraggableGrouping
-    }
-  });
-
-  /***
-   * A plugin to add Draggable Grouping feature.
-   *
-   * USAGE:
-   *
-   * Add the plugin .js & .css files and register it with the grid.
-   *
-   *
-   * The plugin expose the following methods:
-   *    destroy: used to destroy the plugin
-   *    setDroppedGroups: provide option to set default grouping on loading
-   *    clearDroppedGroups: provide option to clear grouping
-   *    getSetupColumnReorder: its function to setup draggable feature agains Header Column, should be passed on grid option. Also possible to pass custom function
-   *
-   *
-   * The plugin expose the following event(s):
-   *    onGroupChanged: pass the grouped columns to who subscribed.
-   *
-   * @param options {Object} Options:
-   *    deleteIconCssClass:  an extra CSS class to add to the delete button (default undefined), if deleteIconCssClass && deleteIconImage undefined then slick-groupby-remove-image class will be added
-   *    deleteIconImage:     a url to the delete button image (default undefined)
-   *    groupIconCssClass:   an extra CSS class to add to the grouping field hint  (default undefined)
-   *    groupIconImage:      a url to the grouping field hint image (default undefined)
-   *    dropPlaceHolderText:      option to specify set own placeholder note text
-   *
-   */
-
-  function DraggableGrouping(options) {
+export function DraggableGrouping(options) {
     var _grid;
     var _gridUid;
     var _gridColumns;
@@ -54,9 +51,9 @@
     var groupToggler;
     var _defaults = {
     };
-    var onGroupChanged = new Slick.Event();
-    var _bindingEventService = new Slick.BindingEventService();
-    var _handler = new Slick.EventHandler();
+  var onGroupChanged = new SlickEvent();
+  var _bindingEventService = new BindingEventService();
+  var _handler = new EventHandler();
     var _sortableLeftInstance;
     var _sortableRightInstance;
 
@@ -64,7 +61,7 @@
      * Initialize plugin.
      */
     function init(grid) {
-      options = Slick.Utils.extend(true, {}, _defaults, options);
+      options = Utils.extend(true, {}, _defaults, options);
       _grid = grid;
       _gridUid = _grid.getUID();
       _gridColumns = _grid.getColumns();
@@ -91,7 +88,7 @@
       _handler.subscribe(_grid.onHeaderCellRendered, function (e, args) {
         var column = args.column;
         var node = args.node;
-        if (!Slick.Utils.isEmptyObject(column.grouping) && node) {
+        if (!Utils.isEmptyObject(column.grouping) && node) {
           node.style.cursor = 'pointer'; // add the pointer cursor on each column title
 
           // also optionally add an icon beside each column title that can be dragged
@@ -161,7 +158,7 @@
           }
 
           const droppedGroupingElms = dropzoneElm.querySelectorAll('.slick-dropped-grouping');
-          droppedGroupingElms.forEach(droppedGroupingElm => droppedGroupingElm.style.display = 'inline-block');
+          droppedGroupingElms.forEach(droppedGroupingElm => droppedGroupingElm.style.display = 'inline-flex');
 
           if (droppedGroupingElms.length) {
             if (draggablePlaceholderElm) {
@@ -223,7 +220,7 @@
       onGroupChanged.unsubscribe();
       _handler.unsubscribeAll();
       _bindingEventService.unbindAll();
-      Slick.Utils.emptyElement(document.querySelector(`.${_gridUid} .slick-preheader-panel`));
+      Utils.emptyElement(document.querySelector(`.${_gridUid} .slick-preheader-panel`));
     }
 
     function addDragOverDropzoneListeners() {
@@ -297,7 +294,7 @@
       if (columnAllowed) {
         for (const col of _gridColumns) {
           if (col.id === columnId) {
-            if (col.grouping && !Slick.Utils.isEmptyObject(col.grouping)) {
+            if (col.grouping && !Utils.isEmptyObject(col.grouping)) {
               const columnNameElm = headerColumnElm.querySelector('.slick-column-name');
               const entryElm = document.createElement('div');
               entryElm.id = `${_gridUid}_${col.id}_entry`;
@@ -322,7 +319,7 @@
               if (!options.deleteIconCssClass) {
                 groupRemoveIconElm.classList.add('slick-groupby-remove-icon');
               }
-              if (!options.deleteIconImage) {
+              if (!options.deleteIconCssClass && !options.deleteIconImage) {
                 groupRemoveIconElm.classList.add('slick-groupby-remove-image');
               }
 
@@ -448,16 +445,25 @@
       onGroupChanged.notify({ caller: originator, groupColumns: groupingArray });
     }
 
-    // Public API
-    Slick.Utils.extend(this, {
-      "init": init,
-      "destroy": destroy,
-      "pluginName": "DraggableGrouping",
+  // Public API
+  Utils.extend(this, {
+    "init": init,
+    "destroy": destroy,
+    "pluginName": "DraggableGrouping",
 
-      "onGroupChanged": onGroupChanged,
-      "setDroppedGroups": setDroppedGroups,
-      "clearDroppedGroups": clearDroppedGroups,
-      "getSetupColumnReorder": setupColumnReorder,
-    });
-  }
-})(window);
+    "onGroupChanged": onGroupChanged,
+    "setDroppedGroups": setDroppedGroups,
+    "clearDroppedGroups": clearDroppedGroups,
+    "getSetupColumnReorder": setupColumnReorder,
+  });
+}
+
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  Utils.extend(true, window, {
+    Slick: {
+      DraggableGrouping
+    }
+  });
+}
+

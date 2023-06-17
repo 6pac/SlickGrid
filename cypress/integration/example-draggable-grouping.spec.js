@@ -29,12 +29,8 @@ describe('Example - Draggable Grouping', { retries: 1 }, () => {
     cy.get('.slick-column-groupable')
       .should('have.length', 6);
 
-    cy.get('.slick-column-groupable')
-      .each(($elm) => {
-        if ($elm[0]) {
-          expect($elm[0].style.background).to.eq('url("../images/column-grouping.png") center center no-repeat');
-        }
-      });
+    cy.get('.slick-column-groupable.sgi-drag-vertical')
+      .should('have.length', 6);
   });
 
   describe('Grouping Tests', () => {

@@ -1,14 +1,12 @@
-(function (window) {
-  // register namespace
-  Slick.Utils.extend(true, window, {
-    "Slick": {
-      "Plugins": {
-        "HeaderMenu": HeaderMenu
-      }
-    }
-  });
+import { BindingEventService as BindingEventService_, Event as SlickEvent_, EventHandler as EventHandler_, Utils as Utils_ } from '../slick.core';
 
-  /***
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
+const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+const EventHandler = IIFE_ONLY ? Slick.EventHandler : EventHandler_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+
+/***
    * A plugin to add drop-down menus to column headers.
    *
    * USAGE:
@@ -42,8 +40,8 @@
    * Available menu options:
    *    autoAlign:              Auto-align drop menu to the left when not enough viewport space to show on the right
    *    autoAlignOffset:        When drop menu is aligned to the left, it might not be perfectly aligned with the header menu icon, if that is the case you can add an offset (positive/negative number to move right/left)
-   *    buttonCssClass:         an extra CSS class to add to the menu button
-   *    buttonImage:            a url to the menu button image (default '../images/down.gif')
+   *    buttonCssClass:         an extra CSS class to add to the menu button (default 'caret')
+   *    buttonImage:            a url to the menu button image
    *    menuUsabilityOverride:  Callback method that user can override the default behavior of enabling/disabling the menu from being usable (must be combined with a custom formatter)
    *    minWidth:               Minimum width that the drop menu will have
    *
@@ -90,16 +88,16 @@
    *
    *
    * @param options {Object} Options:
-   *    buttonCssClass:   an extra CSS class to add to the menu button
-   *    buttonImage:      a url to the menu button image (default '../images/down.gif')
+   *    buttonCssClass:   an extra CSS class to add to the menu button (default 'caret')
+   *    buttonImage:      a url to the menu button image
    * @class Slick.Plugins.HeaderButtons
    * @constructor
    */
-  function HeaderMenu(options) {
+export function HeaderMenu(options) {
     var _grid;
     var _self = this;
-    var _handler = new Slick.EventHandler();
-    var _bindingEventService = new Slick.BindingEventService();
+  var _handler = new EventHandler();
+  var _bindingEventService = new BindingEventService();
     var _defaults = {
       buttonCssClass: null,
       buttonImage: null,
@@ -111,7 +109,7 @@
     var _menuElm;
 
     function init(grid) {
-      options = Slick.Utils.extend(true, {}, _defaults, options);
+      options = Utils.extend(true, {}, _defaults, options);
       _grid = grid;
       _handler
         .subscribe(_grid.onHeaderCellRendered, handleHeaderCellRendered)
@@ -125,7 +123,7 @@
     }
 
     function setOptions(newOptions) {
-      options = Slick.Utils.extend(true, {}, options, newOptions);
+      options = Utils.extend(true, {}, options, newOptions);
     }
 
     function getGridUidSelector() {
@@ -169,6 +167,10 @@
         elm.className = "slick-header-menubutton";
         elm.ariaLabel = 'Header Menu';
         elm.role = 'button';
+
+        if (!options.buttonCssClass && !options.buttonImage) {
+          options.buttonCssClass = 'caret'; // default when nothing is provided
+        }
 
         if (options.buttonCssClass) {
           elm.classList.add(...options.buttonCssClass.split(' '));
@@ -293,8 +295,8 @@
       }
 
       const buttonElm = event.target;
-      const btnOffset = Slick.Utils.offset(buttonElm);
-      const menuOffset = Slick.Utils.offset(_menuElm);
+      const btnOffset = Utils.offset(buttonElm);
+      const menuOffset = Utils.offset(_menuElm);
       let leftPos = (btnOffset && btnOffset.left) || 0;
 
 
@@ -370,15 +372,26 @@
       return true;
     }
 
-    Slick.Utils.extend(this, {
+  Utils.extend(this, {
       "init": init,
       "destroy": destroy,
       "pluginName": "HeaderMenu",
       "setOptions": setOptions,
 
-      "onAfterMenuShow": new Slick.Event(),
-      "onBeforeMenuShow": new Slick.Event(),
-      "onCommand": new Slick.Event()
+    "onAfterMenuShow": new SlickEvent(),
+    "onBeforeMenuShow": new SlickEvent(),
+    "onCommand": new SlickEvent()
     });
   }
-})(window);
+
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  Utils.extend(true, window, {
+    Slick: {
+      Plugins: {
+        HeaderMenu
+      }
+    }
+  });
+}
+

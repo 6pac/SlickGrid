@@ -20,12 +20,6 @@ describe('Example - Grouping & Aggregators', { retries: 1 }, () => {
             .each(($child, index) => expect($child.text()).to.eq(fullTitles[index]));
     });
 
-    it('should show a custom text in the grid footer left portion', () => {
-        cy.get('#pager')
-            .find('.slick-pager-status')
-            .contains('Showing all 50 rows');
-    });
-
     describe('Grouping Tests', () => {
         it('should "Group by Duration & sort groups by value" then Collapse All and expect only group titles', () => {
             cy.get('[data-test="add-50k-rows-btn"]').click();

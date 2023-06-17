@@ -4,11 +4,12 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example: Spreadsheet with Excel compatible cut and paste</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
     .cell-effort-driven {
-      text-align: center;
+      justify-content: center;
     }
     .slick-group-title[level='0'] {
       font-weight: bold;
@@ -37,19 +38,22 @@
     }
   </style>
 </head>
-<body>
+<body style="margin: 8px 28px">
 <div style="position:relative">
   <div style="width:600px;">
-    <h1> Using Slick.CellRangeSelector </h1>
-    <div id="myGrid" class="example-grid" style="width:100%;height:350px;"></div>
+    <h3> Using Slick.CellRangeSelector </h3>
+    <div id="myGrid" class="example-grid slick-container" style="width:100%;height:350px;"></div>
     <br>
-    <h1> Using Slick.RowRangeSelector </h1>
-    <div id="myGrid2" class="example-grid" style="width:100%;height:350px;"></div>
+    <h3> Using Slick.RowRangeSelector </h3>
+    <div id="myGrid2" class="example-grid slick-container" style="width:100%;height:350px;"></div>
   </div>
   <br/>
 
   <div class="options-panel">
-    <h2>Options: (Apply to both grid)</h2>
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Options: (Apply to both grid)
+    </h2>
     <div class="option-item">
       <label for='isAutoScroll'>Auto Scroll: (need click Set Options)</label>
       <input type="checkbox" id="isAutoScroll">
@@ -96,17 +100,17 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../plugins/slick.cellrangedecorator.js"></script>
-<script src="../plugins/slick.cellrangeselector.js"></script>
-<script src="../plugins/slick.cellselectionmodel.js"></script>
-<script src="../plugins/slick.rowselectionmodel.js"></script>
-<script src="../slick.editors.js"></script>
-<script src="../slick.formatters.js"></script>
-<script src="../slick.dataview.js"></script>
-<script src="../slick.grid.js"></script>
-<script src="../slick.groupitemmetadataprovider.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangedecorator.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangeselector.js"></script>
+<script src="../dist/browser/plugins/slick.cellselectionmodel.js"></script>
+<script src="../dist/browser/plugins/slick.rowselectionmodel.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
+<script src="../dist/browser/slick.formatters.js"></script>
+<script src="../dist/browser/slick.dataview.js"></script>
+<script src="../dist/browser/slick.groupitemmetadataprovider.js"></script>
 
 <script>
   var grid;
@@ -133,11 +137,11 @@
       }
       return "";
     }},
-    {id: "%", name: "% Complete", field: "percentComplete", formatter: Slick.Formatters.PercentCompleteBar},
+    {id: "%", name: "% Complete", field: "percentComplete",width:95, formatter: Slick.Formatters.PercentCompleteBar},
     {id: "start", name: "Start", field: "start", minWidth: 60},
     {id: "finish", name: "Finish", field: "finish", minWidth: 60},
     {id: "cost", name: "Cost", field: "cost"},
-    {id: "effort-driven", name: "Effort Driven", minWidth: 20, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark}
+    {id: "effort-driven", name: "Effort Driven", width: 95, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark}
   ];
 
   for (var i = 0; i < 30; i++) {

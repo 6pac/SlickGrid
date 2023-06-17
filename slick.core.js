@@ -4,14 +4,13 @@
  * @namespace Slick
  */
 
-(function (window) {
   /***
    * An event object for passing data to event handlers and letting them control propagation.
    * <p>This is pretty much identical to how W3C and jQuery implement events.</p>
    * @class EventData
    * @constructor
    */
-  function EventData(event, args) {
+export function EventData(event, args) {
     this.event = event;
     let nativeEvent = event;
     let arguments_ = args;
@@ -114,7 +113,7 @@
    * @class Event
    * @constructor
    */
-  function Event() {
+export function Event() {
     var handlers = [];
 
     /***
@@ -169,7 +168,7 @@
     };
   }
 
-  function EventHandler() {
+export function EventHandler() {
     var handlers = [];
 
     this.subscribe = function (event, handler) {
@@ -216,7 +215,7 @@
    * @param toRow {Integer} Optional. Ending row. Defaults to <code>fromRow</code>.
    * @param toCell {Integer} Optional. Ending cell. Defaults to <code>fromCell</code>.
    */
-  function Range(fromRow, fromCell, toRow, toCell) {
+export function Range(fromRow, fromCell, toRow, toCell) {
     if (toRow === undefined && toCell === undefined) {
       toRow = fromRow;
       toCell = fromCell;
@@ -297,7 +296,7 @@
    * @class NonDataItem
    * @constructor
    */
-  function NonDataItem() {
+export function NonDataItem() {
     this.__nonDataRow = true;
   }
 
@@ -308,7 +307,7 @@
    * @extends Slick.NonDataItem
    * @constructor
    */
-  function Group() {
+export function Group() {
     this.__group = true;
 
     /**
@@ -407,7 +406,7 @@
    * @extends Slick.NonDataItem
    * @constructor
    */
-  function GroupTotals() {
+export function GroupTotals() {
     this.__groupTotals = true;
 
     /***
@@ -436,7 +435,7 @@
    * @class EditorLock
    * @constructor
    */
-  function EditorLock() {
+export function EditorLock() {
     var activeEditController = null;
 
     /***
@@ -622,32 +621,6 @@
       return true;
     }
     return Object.entries(obj).length === 0;
-  }
-
-  /**
-   * Check if `passive` option is supported when adding event listener, follows detection provided in MDN:
-   * https://developer.mozilla.org/en-US/docs/Web/API/EventTarget/addEventListener#safely_detecting_option_support
-   */
-  function passiveSupported() {
-    let passiveSupported = false;
-
-    try {
-      const options = {
-        get passive() {
-          passiveSupported = true;
-          return false;
-        },
-      };
-      window.addEventListener('test', null, options);
-      window.removeEventListener('test', null, options);
-    } catch (err) {
-      passiveSupported = false;
-    }
-    return passiveSupported;
-  }
-
-  function enablePassiveWhenSupported() {
-    return passiveSupported() ? { passive: true } : false
   }
 
   function noop() { }
@@ -906,7 +879,7 @@
    * it allows us to unbind event(s) and their listener(s) by calling a simple unbind method call.
    * Unbinding is a necessary step to make sure that all event listeners are removed to avoid memory leaks when destroing the grid
    */
-  function BindingEventService() {
+export function BindingEventService() {
     this.boundedEvents = [];
 
     this.destroy = function () {
@@ -945,25 +918,23 @@
   }
 
   // export Slick namespace on both global & window objects
-  window.Slick = {
-    "Event": Event,
-    "EventData": EventData,
-    "EventHandler": EventHandler,
-    "Range": Range,
-    "NonDataRow": NonDataItem,
-    "Group": Group,
-    "GroupTotals": GroupTotals,
-    "RegexSanitizer": regexSanitizer,
-    "EditorLock": EditorLock,
-    "BindingEventService": BindingEventService,
+const SlickCore = {
+    // "Event": Event,
+    // "EventData": EventData,
+    // "EventHandler": EventHandler,
+    // "Range": Range,
+    // "NonDataRow": NonDataItem,
+    // "Group": Group,
+    // "GroupTotals": GroupTotals,
+    // "EditorLock": EditorLock,
+  "RegexSanitizer": regexSanitizer,
+    // "BindingEventService": BindingEventService,
     "Utils": {
       "debounce": debounce,
       "extend": extend,
       "calculateAvailableSpace": calculateAvailableSpace,
       "createDomElement": createDomElement,
       "emptyElement": emptyElement,
-      "passiveSupported": passiveSupported,
-      "enablePassiveWhenSupported": enablePassiveWhenSupported,
       "innerSize": innerSize,
       "isEmptyObject": isEmptyObject,
       "noop": noop,
@@ -1071,10 +1042,13 @@
     }
   }
 
-  /*  eslint-disable no-undef */
-  // also add to global object when exist
-  if (typeof global !== "undefined") {
-    global.Slick = window.Slick;
-  }
-  /*  eslint-enable no-undef */
-})(window);
+export const { Utils, GlobalEditorLock, TreeColumn, keyCode, preClickClassName, GridAutosizeColsMode, ColAutosizeMode,
+  RowSelectionMode, ValueFilterMode, WidthEvalMode } = SlickCore;
+
+/*  eslint-disable no-undef */
+// also add to global object when exist
+if (IIFE_ONLY && typeof global !== "undefined" && window.Slick) {
+  global.Slick = window.Slick;
+}
+/*  eslint-enable no-undef */
+

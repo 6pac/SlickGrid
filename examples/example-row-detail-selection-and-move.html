@@ -4,14 +4,15 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css" />
-  <link rel="stylesheet" href="examples.css" type="text/css" />
   <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css" />
   <link rel="stylesheet" href="../plugins/slick.rowdetailview.css" type="text/css" />
+  <link rel="stylesheet" href="../styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
     .cell-reorder {
       cursor: move;
-      background: url("../images/drag-handle.png") no-repeat center center;
+      font-size: 8px;
     }
 
     .cell-selection {
@@ -54,6 +55,9 @@
       font-size: 18px;
     }
 
+    .dynamic-cell-detail {
+      background-color: #f8f8f8;
+    }
     .dynamic-cell-detail> :first-child {
       vertical-align: middle;
       line-height: 13px;
@@ -70,7 +74,10 @@
     </div>
 
     <div class="options-panel">
-      <h2>Demonstrates:</h2>
+      <h2>
+        <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+        Demonstrates:
+      </h2>
       <h3>The following three Plugins used together</h3>
       <ul>
         <li>1. Checkbox Row Selection</li>
@@ -118,18 +125,18 @@
   </div>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-  <script src="../slick.core.js"></script>
-  <script src="../slick.interactions.js"></script>
-  <script src="../slick.formatters.js"></script>
-  <script src="../plugins/slick.cellrangedecorator.js"></script>
-  <script src="../plugins/slick.cellrangeselector.js"></script>
-  <script src="../plugins/slick.checkboxselectcolumn.js"></script>
-  <script src="../plugins/slick.rowdetailview.js"></script>
-  <script src="../plugins/slick.rowmovemanager.js"></script>
-  <script src="../plugins/slick.rowselectionmodel.js"></script>
-  <script src="../controls/slick.columnpicker.js"></script>
-  <script src="../slick.grid.js"></script>
-  <script src="../slick.dataview.js"></script>
+  <script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+  <script src="../dist/browser/slick.dataview.js"></script>
+  <script src="../dist/browser/slick.formatters.js"></script>
+  <script src="../dist/browser/plugins/slick.cellrangedecorator.js"></script>
+  <script src="../dist/browser/plugins/slick.cellrangeselector.js"></script>
+  <script src="../dist/browser/plugins/slick.checkboxselectcolumn.js"></script>
+  <script src="../dist/browser/plugins/slick.rowdetailview.js"></script>
+  <script src="../dist/browser/plugins/slick.rowmovemanager.js"></script>
+  <script src="../dist/browser/plugins/slick.rowselectionmodel.js"></script>
+  <script src="../dist/browser/controls/slick.columnpicker.js"></script>
 
   <script>
     var grid;
@@ -147,10 +154,10 @@
       { id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 40, resizable: false, selectable: false },
       { id: "title", name: "Title", field: "title", width: 110, minWidth: 110, cssClass: "cell-title", sortable: true },
       { id: "duration", name: "Duration", field: "duration", sortable: true },
-      { id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, sortable: true },
+      { id: "%", name: "% Complete", field: "percentComplete", width: 95, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, sortable: true },
       { id: "start", name: "Start", field: "start", minWidth: 60 },
       { id: "finish", name: "Finish", field: "finish", minWidth: 60 },
-      { id: "effort-driven", name: "Effort Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark }
+      { id: "effort-driven", name: "Effort Driven", width: 90, minWidth: 20, maxWidth: 90, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark }
     ];
     var options = {
       editable: false,
@@ -244,6 +251,7 @@
       columns.splice(columnIndex, 0, checkboxSelectorPlugin.getColumnDefinition());
 
       rowMovePlugin = new Slick.RowMoveManager({
+        cssClass: 'sgi sgi-menu',
         cancelEditOnDrag: true,
         singleRowMove: true,
         disableRowSelection: true,

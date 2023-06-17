@@ -1,5 +1,12 @@
-(function () {
-  /***
+import { Group as Group_, keyCode as keyCode_, Utils as Utils_ } from './slick.core';
+
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const Group = IIFE_ONLY ? Slick.Group : Group_;
+const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+
+
+/***
    * Provides item metadata for group (Slick.Group) and totals (Slick.Totals) rows produced by the DataView.
    * This metadata overrides the default behavior and formatting of those rows so that they appear and function
    * correctly when processed by the grid.
@@ -13,8 +20,7 @@
    * @constructor
    * @param inputOptions
    */
-  function GroupItemMetadataProvider(inputOptions) {
-    const utils = Slick.Utils;
+export function GroupItemMetadataProvider(inputOptions) {
     var _grid;
     var _defaults = {
       checkboxSelect: false,
@@ -34,14 +40,14 @@
       includeHeaderTotals: false
     };
 
-    var options = utils.extend(true, {}, _defaults, inputOptions);
+  var options = Utils.extend(true, {}, _defaults, inputOptions);
 
     function getOptions(){
       return options;
     }
 
     function setOptions(inputOptions) {
-      utils.extend(true, options, inputOptions);
+      Utils.extend(true, options, inputOptions);
     }
 
     function defaultGroupCellFormatter(row, cell, value, columnDef, item, grid) {
@@ -84,7 +90,7 @@
     function handleGridClick(e, args) {
       var target = e.target;
       var item = this.getDataItem(args.row);
-      if (item && item instanceof Slick.Group && target.classList.contains(options.toggleCssClass)) {
+      if (item && item instanceof Group && target.classList.contains(options.toggleCssClass || '')) {
         var range = _grid.getRenderedRange();
         this.getData().setRefreshHints({
           ignoreDiffsBefore: range.top,
@@ -100,7 +106,7 @@
         e.stopImmediatePropagation();
         e.preventDefault();
       }
-      if (item && item instanceof Slick.Group && target.classList.contains(options.checkboxSelectCssClass)) {
+      if (item && item instanceof Group && target.classList.contains(options.checkboxSelectCssClass)) {
         item.selectChecked = !item.selectChecked;
         target.classList.remove((item.selectChecked ? "unchecked" : "checked"));
         target.classList.add((item.selectChecked ? "checked" : "unchecked"));
@@ -112,11 +118,11 @@
 
     // TODO:  add -/+ handling
     function handleGridKeyDown(e, args) {
-      if (options.enableExpandCollapse && (e.which == Slick.keyCode.SPACE)) {
+      if (options.enableExpandCollapse && (e.which == keyCode.SPACE)) {
         var activeCell = this.getActiveCell();
         if (activeCell) {
           var item = this.getDataItem(activeCell.row);
-          if (item && item instanceof Slick.Group) {
+          if (item && item instanceof Group) {
             var range = _grid.getRenderedRange();
             this.getData().setRefreshHints({
               ignoreDiffsBefore: range.top,
@@ -154,7 +160,7 @@
     }
 
     function getTotalsRowMetadata(item) {
-      var groupLevel = item && item.group && item.group.level;      
+      var groupLevel = item && item.group && item.group.level;
       return {
         selectable: false,
         focusable: options.totalsFocusable,
@@ -175,6 +181,8 @@
     };
   }
 
-  Slick.Data = Slick.Data || { };
-  Slick.Data.GroupItemMetadataProvider = GroupItemMetadataProvider;
-})();
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  window.Slick.Data = window.Slick.Data || {};
+  window.Slick.Data.GroupItemMetadataProvider = GroupItemMetadataProvider;
+}

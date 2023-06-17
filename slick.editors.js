@@ -1,13 +1,16 @@
+import { keyCode as keyCode_, Utils as Utils_ } from './slick.core';
+
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+
 /***
  * Contains basic SlickGrid editors.
  * @module Editors
  * @namespace Slick
  */
 
-(function (window) {
-  const utils = Slick.Utils;
-
-  function TextEditor(args) {
+export function TextEditor(args) {
     var input;
     var defaultValue;
     var scope = this;
@@ -16,7 +19,7 @@
 
     this.init = function () {
       navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
-      input = utils.createDomElement('input', { type: 'text', className: 'editor-text' }, args.container);
+      input = Utils.createDomElement('input', { type: 'text', className: 'editor-text' }, args.container);
       input.addEventListener("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
       input.focus();
       input.select();
@@ -92,7 +95,7 @@
     this.init();
   }
 
-  function IntegerEditor(args) {
+export function IntegerEditor(args) {
     var input;
     var defaultValue;
     var scope = this;
@@ -101,7 +104,7 @@
 
     this.init = function () {
       navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
-      input = utils.createDomElement('input', { type: 'text', className: 'editor-text' }, args.container);
+      input = Utils.createDomElement('input', { type: 'text', className: 'editor-text' }, args.container);
       input.addEventListener("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
       input.focus()
       input.select();
@@ -176,7 +179,7 @@
     this.init();
   }
 
-  function FloatEditor(args) {
+export function FloatEditor(args) {
     var input;
     var defaultValue;
     var scope = this;
@@ -185,7 +188,7 @@
 
     this.init = function () {
       navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
-      input = utils.createDomElement('input', { type: 'text', className: 'editor-text' }, args.container);
+      input = Utils.createDomElement('input', { type: 'text', className: 'editor-text' }, args.container);
       input.addEventListener("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
       input.focus()
       input.select();
@@ -294,7 +297,7 @@
   FloatEditor.DefaultDecimalPlaces = null;
   FloatEditor.AllowEmptyValue = false;
 
-  function FlatpickrEditor(args) {
+export function FlatpickrEditor(args) {
     if (typeof flatpickr === 'undefined') {
       throw new Error('Flatpickr not loaded but required in SlickGrid.Editors, refer to Flatpickr documentation: https://flatpickr.js.org/getting-started/');
     }
@@ -306,7 +309,7 @@
     var flatpickrInstance;
 
     this.init = function () {
-      input = utils.createDomElement('input', { type: 'text', className: 'editor-text' }, args.container);
+      input = Utils.createDomElement('input', { type: 'text', className: 'editor-text' }, args.container);
       input.focus();
       input.select();
       flatpickrInstance = flatpickr(input, {
@@ -337,7 +340,7 @@
         }, 50);
       }
 
-      utils.width(input, utils.width(input) - (!args.compositeEditorOptions ? 18 : 28));
+      Utils.width(input, Utils.width(input) - (!args.compositeEditorOptions ? 18 : 28));
     };
 
     this.destroy = function () {
@@ -403,16 +406,16 @@
     this.init();
   }
 
-  function YesNoSelectEditor(args) {
+export function YesNoSelectEditor(args) {
     var select;
     var defaultValue;
     var scope = this;
     this.args = args;
 
     this.init = function () {
-      select = utils.createDomElement('select', { tabIndex: 0, className: 'editor-yesno' }, args.container);
-      utils.createDomElement('option', { value: 'yes', textContent: 'Yes' }, select);
-      utils.createDomElement('option', { value: 'no', textContent: 'No' }, select);
+      select = Utils.createDomElement('select', { tabIndex: 0, className: 'editor-yesno' }, args.container);
+      Utils.createDomElement('option', { value: 'yes', textContent: 'Yes' }, select);
+      Utils.createDomElement('option', { value: 'no', textContent: 'No' }, select);
 
       select.focus();
 
@@ -468,14 +471,14 @@
     this.init();
   }
 
-  function CheckboxEditor(args) {
+export function CheckboxEditor(args) {
     var select;
     var defaultValue;
     var scope = this;
     this.args = args;
 
     this.init = function () {
-      select = utils.createDomElement('input', { className: 'editor-checkbox', type: 'checkbox', value: 'true', }, args.container);
+      select = Utils.createDomElement('input', { className: 'editor-checkbox', type: 'checkbox', value: 'true', }, args.container);
       select.focus();
 
       // trigger onCompositeEditorChange event when input checkbox changes and it's a Composite Editor
@@ -535,7 +538,7 @@
     this.init();
   }
 
-  function PercentCompleteEditor(args) {
+export function PercentCompleteEditor(args) {
     var input, picker;
     var defaultValue;
     var scope = this;
@@ -559,20 +562,21 @@
     }
 
     this.init = function () {
-      input = utils.createDomElement('input', { className: 'editor-percentcomplete', type: 'text' }, args.container);
-      utils.width(input, args.container.clientWidth - 25);
+      input = Utils.createDomElement('input', { className: 'editor-percentcomplete', type: 'text' }, args.container);
+      Utils.width(input, args.container.clientWidth - 25);
 
-      picker = utils.createDomElement('div', { className: 'editor-percentcomplete-picker' }, args.container);
-      const containerHelper = utils.createDomElement('div', { className: 'editor-percentcomplete-helper' }, picker);
-      const containerWrapper = utils.createDomElement('div', { className: 'editor-percentcomplete-wrapper' }, containerHelper);
-      utils.createDomElement('div', { className: 'editor-percentcomplete-slider' }, containerWrapper);
-      utils.createDomElement('input', { className: 'editor-percentcomplete-slider', type: 'range' }, containerWrapper);
-      const containerButtons = utils.createDomElement('div', { className: 'editor-percentcomplete-buttons' }, containerWrapper);
-      utils.createDomElement('button', { value: '0', textContent: 'Not started' }, containerButtons);
+      picker = Utils.createDomElement('div', { className: 'editor-percentcomplete-picker' }, args.container);
+      const pickerIcon = Utils.createDomElement('span', { className: 'editor-percentcomplete-picker-icon' }, picker);
+      const containerHelper = Utils.createDomElement('div', { className: 'editor-percentcomplete-helper' }, picker);
+      const containerWrapper = Utils.createDomElement('div', { className: 'editor-percentcomplete-wrapper' }, containerHelper);
+      Utils.createDomElement('div', { className: 'editor-percentcomplete-slider' }, containerWrapper);
+      Utils.createDomElement('input', { className: 'editor-percentcomplete-slider', type: 'range' }, containerWrapper);
+      const containerButtons = Utils.createDomElement('div', { className: 'editor-percentcomplete-buttons' }, containerWrapper);
+      Utils.createDomElement('button', { value: '0', className: 'slick-btn slick-btn-default', textContent: 'Not started' }, containerButtons);
       containerButtons.appendChild(document.createElement('br'));
-      utils.createDomElement('button', { value: '50', textContent: 'In Progress' }, containerButtons);
+      Utils.createDomElement('button', { value: '50', className: 'slick-btn slick-btn-default', textContent: 'In Progress' }, containerButtons);
       containerButtons.appendChild(document.createElement('br'));
-      utils.createDomElement('button', { value: '100', textContent: 'Complete' }, containerButtons);
+      Utils.createDomElement('button', { value: '100', className: 'slick-btn slick-btn-default', textContent: 'Complete' }, containerButtons);
 
       input.focus();
       input.select();
@@ -648,7 +652,7 @@
    * The UI is added onto document BODY and .position(), .show() and .hide() are implemented.
    * KeyDown events are also handled to provide handling for Tab, Shift-Tab, Esc and Ctrl-Enter.
    */
-  function LongTextEditor(args) {
+export function LongTextEditor(args) {
     var input, wrapper;
     var defaultValue;
     var scope = this;
@@ -659,24 +663,24 @@
       args.grid.getOptions().editorCellNavOnLRKeys;
       var container = compositeEditorOptions ? args.container : document.body;
 
-      wrapper = utils.createDomElement('div', { className: 'slick-large-editor-text', style: { zIndex: 10000, background: 'white', padding: '5px', border: '3px solid gray', borderRadius: '10px' } }, container);
+      wrapper = Utils.createDomElement('div', { className: 'slick-large-editor-text' }, container);
       if (compositeEditorOptions) {
         wrapper.style.position = 'relative';
-        utils.setStyleSize(wrapper, "padding", 0);
-        utils.setStyleSize(wrapper, "border", 0);
+        Utils.setStyleSize(wrapper, "padding", 0);
+        Utils.setStyleSize(wrapper, "border", 0);
       } else {
         wrapper.style.position = 'absolute';
       }
 
-      input = utils.createDomElement('textarea', { rows: 5, style: { background: 'white', width: '250px', height: '80px', border: '0', outline: '0' } }, wrapper);
+      input = Utils.createDomElement('textarea', { rows: 5, style: { background: 'white', width: '250px', height: '80px', border: '0', outline: '0' } }, wrapper);
 
       // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
       if (compositeEditorOptions) {
         input.addEventListener("change", this.onChange);
       } else {
-        const btnContainer = utils.createDomElement('div', { style: 'text-align:right' }, wrapper);
-        utils.createDomElement('button', { id: 'save', textContent: 'Save' }, btnContainer);
-        utils.createDomElement('button', { id: 'cancel', textContent: 'Cancel' }, btnContainer);
+        const btnContainer = Utils.createDomElement('div', { style: 'text-align:right' }, wrapper);
+        Utils.createDomElement('button', { id: 'save', className: 'slick-btn slick-btn-primary', textContent: 'Save' }, btnContainer);
+        Utils.createDomElement('button', { id: 'cancel', className: 'slick-btn slick-btn-default', textContent: 'Cancel' }, btnContainer);
 
         wrapper.querySelector("#save").addEventListener("click", this.save);
         wrapper.querySelector("#cancel").addEventListener("click", this.cancel);
@@ -700,25 +704,25 @@
     };
 
     this.handleKeyDown = function (e) {
-      if (e.which == Slick.keyCode.ENTER && e.ctrlKey) {
+      if (e.which == keyCode.ENTER && e.ctrlKey) {
         scope.save();
-      } else if (e.which == Slick.keyCode.ESCAPE) {
+      } else if (e.which == keyCode.ESCAPE) {
         e.preventDefault();
         scope.cancel();
-      } else if (e.which == Slick.keyCode.TAB && e.shiftKey) {
+      } else if (e.which == keyCode.TAB && e.shiftKey) {
         e.preventDefault();
         args.grid.navigatePrev();
-      } else if (e.which == Slick.keyCode.TAB) {
+      } else if (e.which == keyCode.TAB) {
         e.preventDefault();
         args.grid.navigateNext();
-      } else if (e.which == Slick.keyCode.LEFT || e.which == Slick.keyCode.RIGHT) {
+      } else if (e.which == keyCode.LEFT || e.which == keyCode.RIGHT) {
         if (args.grid.getOptions().editorCellNavOnLRKeys) {
           var cursorPosition = this.selectionStart;
           var textLength = this.value.length;
-          if (e.keyCode === Slick.keyCode.LEFT && cursorPosition === 0) {
+          if (e.keyCode === keyCode.LEFT && cursorPosition === 0) {
             args.grid.navigatePrev();
           }
-          if (e.keyCode === Slick.keyCode.RIGHT && cursorPosition >= textLength - 1) {
+          if (e.keyCode === keyCode.RIGHT && cursorPosition >= textLength - 1) {
             args.grid.navigateNext();
           }
         }
@@ -740,16 +744,16 @@
     };
 
     this.hide = function () {
-      utils.hide(wrapper);
+      Utils.hide(wrapper);
     };
 
     this.show = function () {
-      utils.show(wrapper);
+      Utils.show(wrapper);
     };
 
     this.position = function (position) {
-      utils.setStyleSize(wrapper, "top", position.top - 5);
-      utils.setStyleSize(wrapper, "left", position.left - 2);
+      Utils.setStyleSize(wrapper, "top", position.top - 5);
+      Utils.setStyleSize(wrapper, "left", position.left - 2);
     };
 
     this.destroy = function () {
@@ -809,31 +813,33 @@
   function handleKeydownLRNav(e) {
     var cursorPosition = this.selectionStart;
     var textLength = this.value.length;
-    if ((e.keyCode === Slick.keyCode.LEFT && cursorPosition > 0) ||
-      e.keyCode === Slick.keyCode.RIGHT && cursorPosition < textLength - 1) {
+    if ((e.keyCode === keyCode.LEFT && cursorPosition > 0) ||
+      e.keyCode === keyCode.RIGHT && cursorPosition < textLength - 1) {
       e.stopImmediatePropagation();
     }
   }
 
   function handleKeydownLRNoNav(e) {
-    if (e.keyCode === Slick.keyCode.LEFT || e.keyCode === Slick.keyCode.RIGHT) {
+    if (e.keyCode === keyCode.LEFT || e.keyCode === keyCode.RIGHT) {
       e.stopImmediatePropagation();
     }
   }
 
-  // exports
-  Slick.Utils.extend(true, window, {
-    "Slick": {
-      "Editors": {
-        "Text": TextEditor,
-        "Integer": IntegerEditor,
-        "Float": FloatEditor,
-        "Flatpickr": FlatpickrEditor,
-        "YesNoSelect": YesNoSelectEditor,
-        "Checkbox": CheckboxEditor,
-        "PercentComplete": PercentCompleteEditor,
-        "LongText": LongTextEditor
-      }
-    }
+export const Editors = {
+  Text: TextEditor,
+  Integer: IntegerEditor,
+  Float: FloatEditor,
+  Flatpickr: FlatpickrEditor,
+  YesNoSelect: YesNoSelectEditor,
+  Checkbox: CheckboxEditor,
+  PercentComplete: PercentCompleteEditor,
+  LongText: LongTextEditor
+};
+
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  Utils.extend(Slick, {
+    Editors
   });
-})(window);
+}
+

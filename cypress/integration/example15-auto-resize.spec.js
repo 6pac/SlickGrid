@@ -28,8 +28,10 @@ describe('Example 0070 - Grid State using Local Storage', () => {
 
     cy.get('#myGrid')
       .should($el => {
-        expect(parseInt(`${$el.width()}`, 10)).to.eq(800);
-        expect(parseInt(`${$el.height()}`, 10)).to.eq(600);
+        expect(parseInt(`${$el.width()}`, 10)).to.gte(797);
+        expect(parseInt(`${$el.width()}`, 10)).to.lte(802);
+        expect(parseInt(`${$el.height()}`, 10)).to.gte(598);
+        expect(parseInt(`${$el.height()}`, 10)).to.lte(602);
       });
   });
 

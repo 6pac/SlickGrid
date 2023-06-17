@@ -115,8 +115,7 @@ describe('Example - Custom Tooltip', () => {
     cy.get('.tooltip-2cols-row:nth(2)').find('div:nth(1)').find('.percent-complete-bar').should('exist');
 
     cy.get('.tooltip-2cols-row:nth(3)').find('div:nth(0)').contains('Effort Driven:');
-    cy.get('.tooltip-2cols-row:nth(3)').find('div:nth(1)')
-      .find('img').invoke('attr', 'src').then(src => expect(src).to.contain('tick.png'));
+    cy.get('.tooltip-2cols-row:nth(3)').find('div:nth(1)').find('.sgi-check').should('exist');
 
     cy.get('@duration5-cell').trigger('mouseout');
   });

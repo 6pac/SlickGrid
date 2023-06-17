@@ -1,12 +1,9 @@
-(function (window) {
-  // register namespace
-  Slick.Utils.extend(true, window, {
-    "Slick": {
-      "CellRangeDecorator": CellRangeDecorator
-    }
-  });
+import { Utils as Utils_ } from '../slick.core';
 
-  /***
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+
+/***
    * Displays an overlay on top of a given cell range.
    *
    * TODO:
@@ -17,7 +14,7 @@
    * @param {Grid} grid
    * @param {Object} options
    */
-  function CellRangeDecorator(grid, options) {
+export function CellRangeDecorator(grid, options) {
     var _elem;
     var _defaults = {
       selectionCssClass: 'slick-range-decorator',
@@ -28,7 +25,7 @@
       offset: { top: -1, left: -1, height: -2, width: -2 }
     };
 
-    options = Slick.Utils.extend(true, {}, _defaults, options);
+  options = Utils.extend(true, {}, _defaults, options);
 
     function show(range) {
       if (!_elem) {
@@ -68,11 +65,19 @@
       }
     }
 
-    Slick.Utils.extend(this, {
+  Utils.extend(this, {
       "pluginName": "CellRangeDecorator",
       "show": show,
       "hide": hide,
       "destroy": destroy
     });
   }
-})(window);
+
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  Utils.extend(true, window, {
+    Slick: {
+      CellRangeDecorator
+    }
+  });
+}

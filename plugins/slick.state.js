@@ -1,12 +1,11 @@
-(function (window) {
-  // register namespace
-  Slick.Utils.extend(true, window, {
-    Slick: {
-      State: State
-    }
-  });
+import { Event as SlickEvent_, Utils as Utils_ } from '../slick.core';
 
-  var localStorageWrapper = function() {
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+
+
+var localStorageWrapper = function () {
     var localStorage = window.localStorage;
 
     if (typeof localStorage === 'undefined') {
@@ -47,12 +46,12 @@
     scrollRowIntoView: true
   };
 
-  function State(options) {
-    options = Slick.Utils.extend(true, {}, defaults, options);
+export function State(options) {
+  options = Utils.extend(true, {}, defaults, options);
 
     var _grid, _cid,
       _store = options.storage,
-      onStateChanged = new Slick.Event();
+      onStateChanged = new SlickEvent();
 
     var userData = {
       state: null,
@@ -127,7 +126,7 @@
                   var cols = [];
                   (state.columns || []).forEach(function (columnDef) {
                     if (defaultColumnsLookup[columnDef.id]) {
-                      cols.push(Slick.Utils.extend(true, {}, defaultColumnsLookup[columnDef.id], {
+                      cols.push(Utils.extend(true, {}, defaultColumnsLookup[columnDef.id], {
                         width: columnDef.width,
                         headerCssClass: columnDef.headerCssClass
                       }));
@@ -223,7 +222,7 @@
     /*
      *  API
      */
-    Slick.Utils.extend(this, {
+  Utils.extend(this, {
       "init": init,
       "destroy": destroy,
       "save": save,
@@ -236,4 +235,13 @@
       "reset": reset
     });
   }
-})(window);
+
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  Utils.extend(true, window, {
+    Slick: {
+      State
+    }
+  });
+}
+

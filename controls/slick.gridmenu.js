@@ -1,3 +1,11 @@
+import { BindingEventService as BindingEventService_, Event as SlickEvent_, Utils as Utils_ } from '../slick.core';
+
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
+const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+
+
 /***
  * A control to add a Grid Menu (hambuger menu on top-right of the grid)
  *
@@ -15,7 +23,7 @@
  *    gridMenu: {
  *      customTitle: "Custom Menus",                // default to empty string
  *      columnTitle: "Columns",                     // default to empty string
- *      iconImage: "../images/drag-handle.png",     // this is the Grid Menu icon (hamburger icon)
+ *      iconImage: "some-image.png",                // this is the Grid Menu icon (hamburger icon)
  *      iconCssClass: "fa fa-bars",                 // you can provide iconImage OR iconCssClass
  *      leaveOpen: false,                           // do we want to leave the Grid Menu open after a command execution? (false by default)
  *      menuWidth: 18,                              // width (icon) that will be use to resize the column header container (18 by default)
@@ -108,25 +116,13 @@
  *
  *
  * @param options {Object} Options:
- *    buttonCssClass:   an extra CSS class to add to the menu button
- *    buttonImage:      a url to the menu button image (default '../images/down.gif')
+ *    buttonCssClass:   an extra CSS class to add to the menu button (default 'sgi sgi-menu')
+ *    buttonImage:      a url to the menu button image
  * @class Slick.Controls.GridMenu
  * @constructor
  */
 
-'use strict';
-
-(function (window) {
-  // register namespace
-  Slick.Utils.extend(true, window, {
-    "Slick": {
-      "Controls": {
-        "GridMenu": SlickGridMenu
-      }
-    }
-  });
-
-  function SlickGridMenu(columns, grid, options) {
+export function SlickGridMenu(columns, grid, options) {
     var _grid = grid;
     var _gridOptions;
     var _gridUid = (grid && grid.getUID) ? grid.getUID() : '';
@@ -156,7 +152,7 @@
         return columnDef.name;
       }
     };
-    var _bindingEventService = new Slick.BindingEventService();
+  var _bindingEventService = new BindingEventService();
 
     // when a grid optionally changes from a regular grid to a frozen grid, we need to destroy & recreate the grid menu
     // we do this change because the Grid Menu is on the left container for a regular grid, it is however on the right container for a frozen grid
@@ -179,7 +175,7 @@
     }
 
     function setOptions(newOptions) {
-      options = Slick.Utils.extend({}, options, newOptions);
+      options = Utils.extend({}, options, newOptions);
     }
 
     function createGridMenu() {
@@ -210,8 +206,12 @@
           _buttonElm.classList.add(..._options.gridMenu.iconCssClass.split(' '));
         } else {
           const iconImageElm = document.createElement('img');
-          iconImageElm.src = (_options.gridMenu && _options.gridMenu.iconImage) ? _options.gridMenu.iconImage : "../images/drag-handle.png";
+          iconImageElm.src = _options.gridMenu.iconImage;
           _buttonElm.appendChild(iconImageElm);
+        } else if (_options.gridMenu && _options.gridMenu.iconCssClass) {
+          _buttonElm.classList.add(..._options.gridMenu.iconCssClass.split(' '));
+        } else {
+          _buttonElm.classList.add('sgi', 'sgi-menu'); // default icon when nothing provided
         }
         if (options.iconCssClass) {
           _buttonElm.classList.add(...options.iconCssClass.split(' '));
@@ -385,7 +385,7 @@
     /** Build the column picker, the code comes almost untouched from the file "slick.columnpicker.js" */
     function populateColumnPicker() {
       _grid.onColumnsReordered.subscribe(updateColumnOrder);
-      _options = Slick.Utils.extend({}, _defaults, _options);
+      _options = Utils.extend({}, _defaults, _options);
 
       // user could pass a title on top of the columns list
       if (_options.gridMenu && _options.gridMenu.columnTitle) {
@@ -412,8 +412,8 @@
       e.preventDefault();
 
       // empty both the picker list & the command list
-      Slick.Utils.emptyElement(_listElm);
-      Slick.Utils.emptyElement(_customMenuElm);
+      Utils.emptyElement(_listElm);
+      Utils.emptyElement(_customMenuElm);
 
       populateCustomMenus(_options, _customMenuElm);
       updateColumnOrder();
@@ -534,7 +534,7 @@
       _menuElm.style.display = 'block';
       _menuElm.style.opacity = '0';
 
-      let menuIconOffset = Slick.Utils.offset(buttonElm); // get button offset position
+      let menuIconOffset = Utils.offset(buttonElm); // get button offset position
       let menuWidth = _menuElm.offsetWidth;
       let useClickToRepositionMenu = (_options.gridMenu && _options.gridMenu.useClickToRepositionMenu !== undefined) ? _options.gridMenu.useClickToRepositionMenu : _defaults.useClickToRepositionMenu;
       let contentMinWidth = (_options.gridMenu && _options.gridMenu.contentMinWidth) ? _options.gridMenu.contentMinWidth : _defaults.contentMinWidth;
@@ -611,7 +611,7 @@
 
     function hideMenu(e) {
       if (_menuElm) {
-        Slick.Utils.hide(_menuElm);
+        Utils.hide(_menuElm);
         _isMenuOpen = false;
 
         var callbackArgs = {
@@ -726,7 +726,7 @@
       return true;
     }
 
-    Slick.Utils.extend(this, {
+  Utils.extend(this, {
       "init": init,
       "getAllColumns": getAllColumns,
       "getVisibleColumns": getVisibleColumns,
@@ -738,11 +738,17 @@
       "updateAllTitles": updateAllTitles,
       "hideMenu": hideMenu,
 
-      "onAfterMenuShow": new Slick.Event(),
-      "onBeforeMenuShow": new Slick.Event(),
-      "onMenuClose": new Slick.Event(),
-      "onCommand": new Slick.Event(),
-      "onColumnsChanged": new Slick.Event()
+    "onAfterMenuShow": new SlickEvent(),
+    "onBeforeMenuShow": new SlickEvent(),
+    "onMenuClose": new SlickEvent(),
+    "onCommand": new SlickEvent(),
+    "onColumnsChanged": new SlickEvent()
     });
-  }
-})(window);
+}
+
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  window.Slick.Controls = window.Slick.Controls || {};
+  window.Slick.Controls.GridMenu = SlickGridMenu;
+}
+

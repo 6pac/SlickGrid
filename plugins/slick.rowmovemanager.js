@@ -1,3 +1,10 @@
+import { Event as SlickEvent_, EventHandler as EventHandler_, Utils as Utils_ } from '../slick.core';
+
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+const EventHandler = IIFE_ONLY ? Slick.EventHandler : EventHandler_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+
 /**
  * Row Move Manager options:
  *    cssClass:                 A CSS class to be added to the menu item container.
@@ -14,21 +21,14 @@
  *    usabilityOverride:        Callback method that user can override the default behavior of the row being moveable or not
  *
  */
-(function (window) {
-  // register namespace
-  Slick.Utils.extend(true, window, {
-    "Slick": {
-      "RowMoveManager": RowMoveManager
-    }
-  });
 
-  function RowMoveManager(options) {
+export function RowMoveManager(options) {
     var _grid;
     var _canvas;
     var _dragging;
     var _self = this;
     var _usabilityOverride = null;
-    var _handler = new Slick.EventHandler();
+  var _handler = new EventHandler();
     var _defaults = {
       columnId: "_move",
       cssClass: null,
@@ -49,7 +49,7 @@
     }
 
     function init(grid) {
-      options = Slick.Utils.extend(true, {}, _defaults, options);
+      options = Utils.extend(true, {}, _defaults, options);
       _grid = grid;
       _canvas = _grid.getCanvasNode();
       _handler
@@ -64,7 +64,7 @@
     }
 
     function setOptions(newOptions) {
-      options = Slick.Utils.extend({}, options, newOptions);
+      options = Utils.extend({}, options, newOptions);
     }
 
     function handleDragInit(e) {
@@ -150,7 +150,7 @@
       const e = evt.getNativeEvent();
 
       var targetEvent = e.touches ? e.touches[0] : e;
-      const top = targetEvent.pageY - (Slick.Utils.offset(_canvas).top || 0);
+      const top = targetEvent.pageY - (Utils.offset(_canvas).top || 0);
       dd.selectionProxy.style.top = `${top - 5}px`;
       dd.selectionProxy.style.display = 'block';
 
@@ -226,7 +226,7 @@
         behavior: "selectAndMove",
         selectable: false,
         resizable: false,
-        cssClass: options.cssClass,
+        // cssClass: options.cssClass,
         formatter: moveIconFormatter
       };
     }
@@ -235,7 +235,7 @@
       if (!checkUsabilityOverride(row, dataContext, grid)) {
         return null;
       } else {
-        return { addClasses: "cell-reorder dnd", text: "" };
+        return { addClasses: "cell-reorder dnd " + options.cssClass || '', text: "" };
       }
     }
 
@@ -259,9 +259,9 @@
       return /move|selectAndMove/.test(_grid.getColumns()[columnIndex].behavior);
     }
 
-    Slick.Utils.extend(this, {
-      "onBeforeMoveRows": new Slick.Event(),
-      "onMoveRows": new Slick.Event(),
+  Utils.extend(this, {
+    "onBeforeMoveRows": new SlickEvent(),
+    "onMoveRows": new SlickEvent(),
 
       "init": init,
       "destroy": destroy,
@@ -271,5 +271,14 @@
       "isHandlerColumn": isHandlerColumn,
       "pluginName": "RowMoveManager"
     });
-  }
-})(window);
+}
+
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  Utils.extend(true, window, {
+    Slick: {
+      RowMoveManager
+    }
+  });
+}
+

@@ -1,11 +1,27 @@
-(function () {
-  /***
+import {
+  Event as SlickEvent_,
+  EventData as EventData_,
+  Group as Group_,
+  GroupTotals as GroupTotals_,
+  Utils as Utils_
+} from './slick.core';
+import { GroupItemMetadataProvider as GroupItemMetadataProvider_ } from './slick.groupitemmetadataprovider';
+
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+const EventData = IIFE_ONLY ? Slick.EventData : EventData_;
+const Group = IIFE_ONLY ? Slick.Group : Group_;
+const GroupTotals = IIFE_ONLY ? Slick.GroupTotals : GroupTotals_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+const GroupItemMetadataProvider = IIFE_ONLY ? Slick.GroupItemMetadataProvider : GroupItemMetadataProvider_;
+
+/***
    * A sample Model implementation.
    * Provides a filtered view of the underlying data.
    *
    * Relies on the data item having an "id" property uniquely identifying it.
    */
-  function DataView(options) {
+export function DataView(options) {
     var self = this;
 
     var defaults = {
@@ -68,17 +84,17 @@
     var totalRows = 0;
 
     // events
-    var onSelectedRowIdsChanged = new Slick.Event();
-    var onSetItemsCalled = new Slick.Event();
-    var onRowCountChanged = new Slick.Event();
-    var onRowsChanged = new Slick.Event();
-    var onRowsOrCountChanged = new Slick.Event();
-    var onBeforePagingInfoChanged = new Slick.Event();
-    var onPagingInfoChanged = new Slick.Event();
-    var onGroupExpanded = new Slick.Event();
-    var onGroupCollapsed = new Slick.Event();
+  var onSelectedRowIdsChanged = new SlickEvent();
+  var onSetItemsCalled = new SlickEvent();
+  var onRowCountChanged = new SlickEvent();
+  var onRowsChanged = new SlickEvent();
+  var onRowsOrCountChanged = new SlickEvent();
+  var onBeforePagingInfoChanged = new SlickEvent();
+  var onPagingInfoChanged = new SlickEvent();
+  var onGroupExpanded = new SlickEvent();
+  var onGroupCollapsed = new SlickEvent();
 
-    options = Slick.Utils.extend(true, {}, defaults, options);
+  options = Utils.extend(true, {}, defaults, options);
 
     /***
      * Begins a bached update of the items in the data view.
@@ -322,7 +338,7 @@
 
     function setGrouping(groupingInfo) {
       if (!options.groupItemMetadataProvider) {
-        options.groupItemMetadataProvider = new Slick.Data.GroupItemMetadataProvider();
+        options.groupItemMetadataProvider = new GroupItemMetadataProvider();
       }
 
       groups = [];
@@ -331,7 +347,7 @@
       groupingInfos = (groupingInfo instanceof Array) ? groupingInfo : [groupingInfo];
 
       for (var i = 0; i < groupingInfos.length; i++) {
-        var gi = groupingInfos[i] = Slick.Utils.extend(true, {}, groupingInfoDefaults, groupingInfos[i]);
+        var gi = groupingInfos[i] = Utils.extend(true, {}, groupingInfoDefaults, groupingInfos[i]);
         gi.getterIsAFn = typeof gi.getter === "function";
 
         // pre-compile accumulator loops
@@ -814,7 +830,7 @@
         val = gi.predefinedValues[i];
         group = groupsByVal[val];
         if (!group) {
-          group = new Slick.Group();
+          group = new Group();
           group.value = val;
           group.level = level;
           group.groupingKey = (parentGroup ? parentGroup.groupingKey + groupingDelimiter : '') + val;
@@ -828,7 +844,7 @@
         val = gi.getterIsAFn ? gi.getter(r) : r[gi.getter];
         group = groupsByVal[val];
         if (!group) {
-          group = new Slick.Group();
+          group = new Group();
           group.value = val;
           group.level = level;
           group.groupingKey = (parentGroup ? parentGroup.groupingKey + groupingDelimiter : '') + val;
@@ -886,7 +902,7 @@
 
     function addGroupTotals(group) {
       var gi = groupingInfos[group.level];
-      var totals = new Slick.GroupTotals();
+      var totals = new GroupTotals();
       totals.group = group;
       group.totals = totals;
       if (!gi.lazyTotalsCalculation) {
@@ -1209,7 +1225,7 @@
         return;
       }
 
-      var previousPagingInfo = Slick.Utils.extend(true, {}, getPagingInfo());
+      var previousPagingInfo = Utils.extend(true, {}, getPagingInfo());
 
       var countBefore = rows.length;
       var totalRowsBefore = totalRows;
@@ -1260,7 +1276,7 @@
      * @param preserveHiddenOnSelectionChange {Boolean} Whether to keep selected items
      *     that are currently out of the view (see preserveHidden) as selected when selection
      *     changes.
-     * @return {Slick.Event} An event that notifies when an internal list of selected row ids
+     * @return {Event} An event that notifies when an internal list of selected row ids
      *     changes.  This is useful since, in combination with the above two options, it allows
      *     access to the full list selected row ids, and not just the ones visible to the grid.
      * @method syncGridSelection
@@ -1297,7 +1313,7 @@
             onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
               "selectedRowIds": selectedRowIds,
               "filteredIds": self.getAllSelectedFilteredIds(),
-            }), new Slick.EventData(), self);
+            }), new EventData(), self);
           }
           grid.setSelectedRows(selectedRows);
           inHandler = false;
@@ -1318,7 +1334,7 @@
           onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
             "selectedRowIds": selectedRowIds,
             "filteredIds": self.getAllSelectedFilteredIds(),
-          }), new Slick.EventData(), self);
+          }), new EventData(), self);
         }
       });
 
@@ -1413,7 +1429,7 @@
         onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
           "selectedRowIds": selectedRowIds,
           "filteredIds": self.getAllSelectedFilteredIds(),
-        }), new Slick.EventData(), self);
+        }), new EventData(), self);
       }
 
       // should we also apply the row selection in to the grid (UI) as well?
@@ -1485,6 +1501,7 @@
       }
 
       grid.onCellCssStylesChanged.subscribe(function (e, args) {
+        debugger;
         if (inHandler) { return; }
         if (key != args.key) { return; }
         if (args.hash) {
@@ -1498,7 +1515,7 @@
       this.onRowsOrCountChanged.subscribe(update);
     }
 
-    Slick.Utils.extend(this, {
+  Utils.extend(this, {
       // methods
       "beginUpdate": beginUpdate,
       "endUpdate": endUpdate,
@@ -1572,7 +1589,7 @@
     });
   }
 
-  function AvgAggregator(field) {
+export function AvgAggregator(field) {
     this.field_ = field;
 
     this.init = function () {
@@ -1600,7 +1617,7 @@
     };
   }
 
-  function MinAggregator(field) {
+export function MinAggregator(field) {
     this.field_ = field;
 
     this.init = function () {
@@ -1624,7 +1641,7 @@
     };
   }
 
-  function MaxAggregator(field) {
+export function MaxAggregator(field) {
     this.field_ = field;
 
     this.init = function () {
@@ -1648,7 +1665,7 @@
     };
   }
 
-  function SumAggregator(field) {
+export function SumAggregator(field) {
     this.field_ = field;
 
     this.init = function () {
@@ -1670,7 +1687,7 @@
     };
   }
 
-  function CountAggregator(field) {
+export function CountAggregator(field) {
     this.field_ = field;
 
     this.init = function () {
@@ -1687,17 +1704,18 @@
   // TODO:  add more built-in aggregators
   // TODO:  merge common aggregators in one to prevent needles iterating
 
-  // exports
-  Slick.Utils.extend(true, Slick, {
-    Data: {
-      DataView: DataView,
-      Aggregators: {
-        Avg: AvgAggregator,
-        Min: MinAggregator,
-        Max: MaxAggregator,
-        Sum: SumAggregator,
-        Count: CountAggregator
-      }
-    }
-  });
-})();
+export const Aggregators = {
+  Avg: AvgAggregator,
+  Min: MinAggregator,
+  Max: MaxAggregator,
+  Sum: SumAggregator,
+  Count: CountAggregator
+};
+
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  window.Slick.Data = window.Slick.Data || {};
+  window.Slick.Data.DataView = DataView;
+  window.Slick.Data.Aggregators = Aggregators;
+}
+
