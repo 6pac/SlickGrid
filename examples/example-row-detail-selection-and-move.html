@@ -69,7 +69,7 @@
 
 <body>
   <div style="position:relative">
-    <div style="width:600px;">
+    <div style="width:680px;">
       <div id="myGrid" style="width:100%;height:500px;"></div>
     </div>
 
@@ -153,8 +153,8 @@
 
     var columns = [
       { id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 40, resizable: false, selectable: false },
-      { id: "title", name: "Title", field: "title", width: 110, minWidth: 110, cssClass: "cell-title", sortable: true },
-      { id: "duration", name: "Duration", field: "duration", sortable: true },
+      { id: "title", name: "Title", field: "title", width: 100, cssClass: "cell-title", sortable: true },
+      { id: "duration", name: "Duration", field: "duration", width: 75, sortable: true },
       { id: "%", name: "% Complete", field: "percentComplete", width: 95, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, sortable: true },
       { id: "start", name: "Start", field: "start", minWidth: 60 },
       { id: "finish", name: "Finish", field: "finish", minWidth: 60 },
@@ -263,6 +263,7 @@
         hideRowMoveShadow: false,   // defaults to true
         rowMoveShadowScale: 0.7,    // defaults to 0.75
         rowMoveShadowOpacity: 0.9, // defaults to 0.95
+        width: 30,
 
         // make only every 2nd row an a moveable row,
         // you can override it here in the options or externally by calling the method on the plugin instance
