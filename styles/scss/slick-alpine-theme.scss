@@ -681,6 +681,7 @@
   box-shadow: var(--alpine-menu-box-shadow, $alpine-menu-box-shadow);
 
   button.close {
+    cursor: pointer;
     background: var(--alpine-menu-close-btn-background, $alpine-menu-close-btn-background);
     border: var(--alpine-menu-close-btn-border, $alpine-menu-close-btn-border);
   }

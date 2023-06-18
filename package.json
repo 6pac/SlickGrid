@@ -46,7 +46,7 @@
   },
   "devDependencies": {
     "@4tw/cypress-drag-drop": "^2.2.4",
-    "@octokit/rest": "^19.0.11",
+    "@octokit/rest": "^19.0.13",
     "autoprefixer": "^10.4.14",
     "browser-sync": "^2.29.3",
     "chalk": "^4.1.2",
@@ -55,7 +55,7 @@
     "cssnano": "^6.0.1",
     "cssnano-preset-lite": "^3.0.0",
     "cypress": "^9.7.0",
-    "dotenv": "^16.3.0",
+    "dotenv": "^16.3.1",
     "esbuild": "^0.18.4",
     "eslint": "^8.43.0",
     "eslint-plugin-cypress": "^2.13.3",
