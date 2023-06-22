@@ -456,19 +456,13 @@
           });
         }
 
-        if (modalElm.querySelector("[data-action=cancel]")) {
-          modalElm.querySelector("[data-action=cancel]").addEventListener('click', function () {
+        const closeBtns = modalElm.querySelectorAll("[data-action=cancel],[data-action=close]");
+        closeBtns.forEach(btn => {
+          btn.addEventListener('click', function () {
             grid.getEditController().cancelCurrentEdit();
             grid.setActiveRow(lastActiveRowNumber);
-          });
-        }
-
-        if (modalElm.querySelector("[data-action=close]")) {
-          modalElm.querySelector("[data-action=close]").addEventListener('click', function () {
-            grid.getEditController().cancelCurrentEdit();
-            grid.setActiveRow(lastActiveRowNumber);
-          });
-        }
+          })
+        });
 
         var containers = modalColumns.map(function (c) {
           return modalElm.querySelector(`[data-editorid=${c.id}]`);
