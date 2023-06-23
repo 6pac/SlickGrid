@@ -8,7 +8,7 @@ import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 const argv = yargs(hideBin(process.argv)).argv;
 
-import { ifdefPlugin, removeImportsPlugin } from './esbuild-plugins.mjs';
+import { removeImportsPlugin } from './esbuild-plugins.mjs';
 
 export const BUILD_FORMATS = ['cjs', 'esm' /*, 'iife'*/];
 
@@ -65,11 +65,6 @@ export function bundleByFormat(format) {
     target: 'es2020',
     treeShaking: true,
     define: { IIFE_ONLY: 'false' },
-    plugins: [
-      ifdefPlugin({
-        'IIFE_ONLY': false, // do not keep iife only code (in other words remove `#ifdef IIFE_ONLY` section)
-      }),
-    ],
     outdir: `dist/${format}`,
   });
 }
@@ -103,9 +98,6 @@ export async function buildIifeFile(file) {
     outfile: `dist/browser/${file.replace(/.[j|t]s/, '')}.js`,
     plugins: [
       removeImportsPlugin,
-      ifdefPlugin({
-        'IIFE_ONLY': true, // keep iife code
-      }),
     ],
   });
 }
