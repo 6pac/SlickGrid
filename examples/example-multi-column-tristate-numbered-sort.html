@@ -27,10 +27,18 @@
         <li>if option <i>sortColNumberInSeparateSpan</i> is false, the above span is also styled with css class <i>slick-sort-indicator-numbered</i></li>
         <li>if option <i>sortColNumberInSeparateSpan</i> is true, renders a separate span for the number and styles it with css class <i>slick-sort-indicator-numbered</i></li>
       </ul>
-        <h2>View Source:</h2>
-        <ul>
-            <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-multi-column-tristate-numbered-sort.html" target="_sourcewindow"> View the source for this example on Github</a></li>
-        </ul>
+
+      <h2>Options:</h2>
+      <p>
+        <button data-test="number-in-separate-span-on-btn" onclick="grid.setOptions({sortColNumberInSeparateSpan:true})">sortColNumberInSeparateSpan ON</button>
+        &nbsp;
+        <button data-test="number-in-separate-span-off-btn" onclick="grid.setOptions({sortColNumberInSeparateSpan:false})">sortColNumberInSeparateSpan OFF</button>
+      </p>
+
+      <h2>View Source:</h2>
+      <ul>
+          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-multi-column-tristate-numbered-sort.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+      </ul>
     </td>
   </tr>
 </table>
@@ -67,7 +75,7 @@
     multiColumnSort: true,
     numberedMultiColumnSort: true,
     tristateMultiColumnSort: true,
-    sortColNumberInSeparateSpan: false
+    sortColNumberInSeparateSpan: true // showing sort numbers in separate spans is prefered
   };
 
   document.addEventListener("DOMContentLoaded", function() {
