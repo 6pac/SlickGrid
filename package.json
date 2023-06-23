@@ -17,7 +17,8 @@
   ],
   "author": "Michael Leibman <michael.leibman@gmail.com>",
   "contributors": [
-    "Ben McIntyre <email.ben.mcintyre@gmail.com>"
+    "Ben McIntyre <email.ben.mcintyre@gmail.com>",
+    "Ghislain B."
   ],
   "license": "MIT",
   "bugs": {
@@ -37,9 +38,10 @@
     "build:prod": "node ./scripts/builds.mjs --prod",
     "preview:release": "node ./scripts/release.js --create-release github --dry-run --skip-checks",
     "release": "node ./scripts/release.js --create-release github",
-    "presass:build": "rimraf styles/css",
-    "sass:build": "sass styles/scss:styles/css --style=compressed --quiet-deps --no-source-map",
-    "postsass:build": "postcss styles/css/**/* --dir styles/css --base styles/css --no-map --use cssnano --use autoprefixer --style=compressed"
+    "presass:build": "rimraf dist/styles/css",
+    "sass:build": "sass src/styles/scss:dist/styles/css --style=compressed --quiet-deps --no-source-map",
+    "postsass:build": "postcss dist/styles/css/**/* --dir dist/styles/css --base dist/styles/css --no-map --use cssnano --use autoprefixer --style=compressed",
+    "sass:copy": "copyfiles -f src/styles/scss/*.scss dist/styles/sass"
   },
   "dependencies": {
     "sortablejs": "^1.15.0"
@@ -52,26 +54,33 @@
     "chalk": "^4.1.2",
     "chokidar": "^3.5.3",
     "conventional-changelog": "^3.1.25",
+    "copyfiles": "^2.4.1",
     "cssnano": "^6.0.1",
     "cssnano-preset-lite": "^3.0.0",
     "cypress": "^9.7.0",
     "dotenv": "^16.3.1",
-    "esbuild": "^0.18.4",
+    "esbuild": "^0.18.6",
     "eslint": "^8.43.0",
     "eslint-plugin-cypress": "^2.13.3",
     "fs-extra": "^11.1.1",
     "git-url-parse": "^13.1.0",
-    "glob": "^10.2.7",
+    "glob": "^10.3.0",
     "inquirer": "^9.2.7",
     "new-github-release-url": "^1.0.0",
     "path": "^0.12.7",
     "postcss": "^8.4.24",
     "postcss-cli": "^10.1.0",
     "rimraf": "^5.0.1",
-    "sass": "^1.63.4",
-    "semver": "^7.5.2",
+    "sass": "^1.63.6",
+    "semver": "^7.5.3",
     "strong-log-transformer": "^2.1.0",
     "uglify-js": "^3.17.4",
     "yargs": "^17.7.2"
-  }
+  },
+  "browserslist": [
+    "last 2 version",
+    "> 1%",
+    "IE 11",
+    "not dead"
+  ]
 }

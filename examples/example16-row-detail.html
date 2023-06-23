@@ -3,9 +3,9 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
-  <link rel="stylesheet" href="../styles/css/example-demo.css" type="text/css"/>
-  <link rel="stylesheet" href="../styles/css/slick-alpine-theme.css" type="text/css"/>
-  <link rel="stylesheet" href="../plugins/slick.rowdetailview.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.rowdetailview.css" type="text/css"/>
   <style>
     .detail {
         padding: 5px
@@ -14,6 +14,13 @@
       font-size: 18px;
     }
 
+    input.filter {
+      border: 1px solid #dadada;
+      border-radius: 2px;
+    }
+    input.filter::placeholder {
+      opacity: 0.4;
+    }
     .dynamic-cell-detail {
       background-color: #f8f8f8;
     }
@@ -24,7 +31,7 @@
       margin-left:		20px;
     }
     .slick-headerrow-column {
-      background: #dfdfdf;
+      background: #f1f1f1;
       text-overflow: clip;
       -moz-box-sizing: border-box;
       box-sizing: border-box;
@@ -144,8 +151,8 @@
   <script src="sortable-cdn-fallback.js"></script>
 
   <script src="../dist/browser/slick.core.js"></script>
-<script src="../dist/browser/slick.interactions.js"></script>
-<script src="../dist/browser/slick.grid.js"></script>
+  <script src="../dist/browser/slick.interactions.js"></script>
+  <script src="../dist/browser/slick.grid.js"></script>
   <script src="../dist/browser/slick.formatters.js"></script>
   <script src="../dist/browser/plugins/slick.rowdetailview.js"></script>
   <script src="../dist/browser/plugins/slick.rowselectionmodel.js"></script>
@@ -469,11 +476,16 @@
       headerRowElm.addEventListener('keyup', filterInputHandler);
 
       grid.onHeaderRowCellRendered.subscribe(function(e, args) {
-        args.node.innerHTML = '';
-        const filterInputElm = document.createElement('input');
-        filterInputElm.dataset.columnid = args.column.id;
-        filterInputElm.value = columnFilters[args.column.id] || '';
-        args.node.appendChild(filterInputElm);
+        if (args.column.field !== 'sel') {
+          args.node.innerHTML = ''; // empty it
+          const inputElm = document.createElement('input');
+          inputElm.className = 'filter';
+          inputElm.placeholder = '🔎︎';
+          inputElm.dataset.columnid = args.column.id;
+          inputElm.value = columnFilters[args.column.id] || '';
+
+          args.node.appendChild(inputElm);
+        }
       });
 
       // initialize the model after all the events have been hooked up

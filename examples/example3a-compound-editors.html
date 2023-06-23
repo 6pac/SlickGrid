@@ -4,11 +4,23 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example 3a: Advanced Editing</title>
-  <link rel="stylesheet" href="../styles/css/example-demo.css" type="text/css"/>
-  <link rel="stylesheet" href="../styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
     .cell-title {
       font-weight: bold;
+    }
+    .compound-cell {
+      border: 1px solid #c4c4c4;
+      border-radius: 2px;
+    }
+    .compound-cell:active,
+    .compound-cell:focus {
+      border: 1px solid navy;
+      outline: none;
+    }
+    .compound-separator {
+      margin: 0 4px;
     }
   </style>
 </head>
@@ -51,14 +63,15 @@
   var data = [];
   var columns = [
     {id: "title", name: "Title", field: "title", width: 120, cssClass: "cell-title", editor: Slick.Editors.Text},
-    {id: "range", name: "Range", width: 120, formatter: NumericRangeFormatter, editor: NumericRangeEditor}
+    {id: "range", name: "Range", width: 150, formatter: NumericRangeFormatter, editor: NumericRangeEditor}
   ];
 
   var options = {
     editable: true,
     enableAddRow: false,
     enableCellNavigation: true,
-    asyncEditorLoading: false
+    asyncEditorLoading: false,
+    rowHeight: 28
   };
 
   function NumericRangeFormatter(row, cell, value, columnDef, dataContext) {
@@ -71,12 +84,18 @@
 
     this.init = function () {
       fromElm = document.createElement('input');
-      fromElm.type ='text';
+      fromElm.className = 'compound-cell';
+      fromElm.type = 'text';
       fromElm.style.width = '40px';
       args.container.appendChild(fromElm);
-      args.container.insertAdjacentHTML('afterend', '&nbsp; to &nbsp;');
+
+      const spanElm = document.createElement('span');
+      spanElm.className = 'compound-separator';
+      spanElm.textContent = '-';
+      args.container.appendChild(spanElm);
 
       toElm = document.createElement('input');
+      toElm.className = 'compound-cell';
       toElm.type ='text';
       toElm.style.width = '40px';
       args.container.appendChild(toElm);
