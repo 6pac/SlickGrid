@@ -4,11 +4,11 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example: Hidden Columns</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="../controls/slick.pager.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.grid.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.pager.css" type="text/css"/>
   <link rel="stylesheet" href="../examples/examples.css" type="text/css"/>
   <link rel="stylesheet" href="../examples/examples-unicode-icons.css" type="text/css"/>
-  <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css"/>
   <style>
     .cell-title {
       font-weight: bold;
@@ -82,9 +82,6 @@
   and % at least &nbsp;
   <input style="width:100px;display:inline-block;" id="pcSlider2" type="range" min="1" max="100" value="1">
 </div>
-
-<script src="../lib/firebugx.js"></script>
-
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.js"></script>
 
@@ -269,7 +266,7 @@ document.addEventListener("DOMContentLoaded", function() {
     console.log('on Before Paging Info Changed - Previous Paging:: ', previousPagingInfo);
   });
 
-  document.querySelector('#btnSelectRows').addEventListener("click", function(e) { 
+  document.querySelector('#btnSelectRows').addEventListener("click", function(e) {
     if (!Slick.GlobalEditorLock.commitCurrentEdit()) {
       return;
     }
@@ -282,13 +279,13 @@ document.addEventListener("DOMContentLoaded", function() {
     grid.setSelectedRows(rows);
  });
 
-  document.querySelector('#chkHideColumn').addEventListener("change", function(e) { 
+  document.querySelector('#chkHideColumn').addEventListener("change", function(e) {
     var hideCol = document.querySelector('#chkHideColumn').checked || false;
-    
+
     // use the columnpicker since it keeps a full list of columns, hidden and visible
     columnpicker.setColumnVisibiliy('duration', !hideCol);
   });
-  
+
   // initialize the model after all the events have been hooked up
   dataView.beginUpdate();
   dataView.setItems(data);

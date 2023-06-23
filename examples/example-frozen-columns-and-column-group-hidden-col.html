@@ -3,10 +3,10 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.grid.css" type="text/css"/>
   <link rel="stylesheet" href="examples.css" type="text/css"/>
-  <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css"/>
-  <link rel="stylesheet" href="../controls/slick.gridmenu.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.gridmenu.css" type="text/css"/>
   <style>
     .slick-preheader-panel.ui-state-default  {
       width: 100%;
@@ -85,7 +85,7 @@
       for (var i = start; i < end; i++) {
         m = columns[i];
         if (m.hidden) continue;
-        
+
         if (lastColumnGroup === m.columnGroup && i>start) {
           widthTotal += m.width;
           header.style.width = `${widthTotal - headerColumnWidthDiff}px`;
@@ -202,22 +202,22 @@
       }
     });
 
-  document.querySelector('#chkHideColumn1').addEventListener("change", function(e) { 
+  document.querySelector('#chkHideColumn1').addEventListener("change", function(e) {
   //$("#chkHideColumn").change(function () {
     var hideCol = document.querySelector('#chkHideColumn1').checked || false;
     columns[2].hidden = hideCol;
     grid.updateColumns();
     CreateAddlHeaderRow();
  });
-  
-  document.querySelector('#chkHideColumn2').addEventListener("change", function(e) { 
+
+  document.querySelector('#chkHideColumn2').addEventListener("change", function(e) {
   //$("#chkHideColumn").change(function () {
     var hideCol = document.querySelector('#chkHideColumn2').checked || false;
     columns[4].hidden = hideCol;
     grid.updateColumns();
     CreateAddlHeaderRow();
   });
-    
+
     // Initialise data
     dataView.beginUpdate();
     dataView.setItems(data);

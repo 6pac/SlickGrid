@@ -13,11 +13,11 @@
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example: Droppable Grouping</title>
   <link rel="stylesheet" href="examples-unicode-icons.css" type="text/css"/>
-  <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css"/>
-  <link rel="stylesheet" href="../controls/slick.pager.css" type="text/css"/>
-  <link rel="stylesheet" href="../plugins/slick.draggablegrouping.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.pager.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.draggablegrouping.css" type="text/css"/>
   <link rel="stylesheet" href="examples.css" type="text/css"/>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.grid.css" type="text/css"/>
   <style>
     .cell-effort-driven {
       justify-content: center;
@@ -252,24 +252,26 @@ function toggleTheme(theme) {
   const gridElm = document.querySelector('#myGrid');
 
   if (theme === 'alpine') {
-    changeCSS('../styles/css/slick-alpine-theme.css', '../slick.grid.css');
-    changeCSS('../styles/css/example-demo.css', 'examples.css');
-    changeCSS('../styles/css/slick-icons.css', 'examples-unicode-icons.css');
+    changeCSS('../dist/styles/css/slick.grid.css', '../dist/styles/css/slick-alpine-theme.css');
+    changeCSS('examples.css', '../dist/styles/css/example-demo.css');
+    changeCSS('examples-unicode-icons.css', '../dist/styles/css/slick-icons.css');
     gridElm.classList.add('alpine-theme');
     gridElm.classList.remove('classic-theme');
   } else {
-    changeCSS('../slick.grid.css', '../styles/css/slick-alpine-theme.css');
-    changeCSS('examples.css', '../styles/css/example-demo.css');
-    changeCSS('examples-unicode-icons.css', '../styles/css/slick-icons.css');
+    changeCSS('../dist/styles/css/slick-alpine-theme.css', '../dist/styles/css/slick.grid.css');
+    changeCSS('../dist/styles/css/example-demo.css', 'examples.css');
+    changeCSS('../dist/styles/css/slick-icons.css', 'examples-unicode-icons.css');
     gridElm.classList.add('classic-theme');
     gridElm.classList.remove('alpine-theme');
   }
 }
-function changeCSS(newFilePath, prevFilePath) {
+
+function changeCSS(prevFilePath, newFilePath) {
   let headerIndex = 0;
   let previousCssElm = document.getElementsByTagName("head")[0].querySelector(`link[href="${prevFilePath}"]`);
-
-  previousCssElm.setAttribute('href', newFilePath)
+  if (previousCssElm) {
+    previousCssElm.setAttribute('href', newFilePath);
+  }
 }
 
 function destroyPager() {

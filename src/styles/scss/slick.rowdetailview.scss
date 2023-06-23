@@ -1,4 +1,4 @@
-.detailView-toggle {
+.detailView-toggle:not(.slick-cell) {
     display:          inline-block;
     cursor:           pointer;
     border-bottom: 5px dashed;
