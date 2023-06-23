@@ -146,11 +146,11 @@
   border-radius: var(--alpine-cell-border-radius, $alpine-cell-border-radius);
   border-width: var(--alpine-cell-border-width, $alpine-cell-border-width);
 
+  margin: 0;
   overflow: hidden;
   vertical-align: middle;
-  z-index: 1;
-  margin: 0;
   white-space: nowrap;
+  z-index: 1;
   padding: var(--alpine-cell-padding, $alpine-cell-padding);
   display: var(--alpine-cell-display, $alpine-cell-display);
   align-items: var(--alpine-cell-align-items, $alpine-cell-align-items);
@@ -309,34 +309,33 @@
     white-space: pre-wrap;
   }
 
-  .slick-sort-indicator-asc {
-    margin-bottom: 8px;
+  .slick-sort-indicator,
+  .slick-sort-indicator-numbered {
+    color: var(--alpine-sort-indicator-color, $alpine-sort-indicator-color);
+    user-select: none;
+  }
+
+  .slick-sort-indicator {
     display: inline-block;
+    background-image: none;
     width: 0;
     height: 0;
-    margin-left: 3px;
-    margin-top: 5px;
+    margin: var(--alpine-sort-indicator-margin, $alpine-sort-indicator-margin);
     vertical-align: middle;
-    border-bottom: 4px dashed;
     border-right: 4px solid transparent;
     border-left: 4px solid transparent;
-    background-image: none;
-    color: var(--alpine-sort-indicator-color, $alpine-sort-indicator-color);
+  }
+
+  .slick-sort-indicator-asc {
+    border-bottom: 4px dashed;
   }
 
   .slick-sort-indicator-desc {
-    margin-bottom: 5px;
-    display: inline-block;
-    width: 0;
-    height: 0;
-    margin-left: 3px;
-    margin-top: 5px;
-    vertical-align: middle;
     border-top: 4px dashed;
-    border-right: 4px solid transparent;
-    border-left: 4px solid transparent;
-    background-image: none;
-    color: var(--alpine-sort-indicator-color, $alpine-sort-indicator-color);
+  }
+
+  .slick-sort-indicator-numbered {
+    font-size: var(--alpine-sort-numbered-font-size, $alpine-sort-numbered-font-size);
   }
 }
 
@@ -359,12 +358,12 @@
   user-select: none;
 }
 
-// provide option to show header column on 1 or more rows and add ellipsis on last row text
 .slick-column-name {
-  display: -webkit-box;
-  text-overflow: var(--alpine-header-text-overflow, $alpine-header-text-overflow);
-  -webkit-box-orient: vertical;
-  -webkit-line-clamp: var(--alpine-header-row-count, $alpine-header-row-count);
+  display: var(--alpine-header-name-display, $alpine-header-name-display);
+  flex-grow: var(--alpine-header-name-flex-grow, $alpine-header-name-flex-grow);
+  overflow: var(--alpine-header-name-overflow, $alpine-header-name-overflow);
+  text-overflow: var(--alpine-header-name-text-overflow, $alpine-header-name-text-overflow);
+  white-space: nowrap;
 }
 
 .slick-headerrow, .slick-footerrow {

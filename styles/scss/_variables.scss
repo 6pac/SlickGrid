@@ -30,27 +30,32 @@ $alpine-cell-padding:                             2px 4px !default;
 $alpine-cell-active-box-shadow:                   inset 0 0 0 1px #5da6e3 !default;
 
 // Grid Headers
-$alpine-header-row-count:                         1 !default;
-$alpine-header-column-height:                     calc(23px * #{var(--alpine-header-row-count, $alpine-header-row-count)}) !default; // 2 rows, double height
-$alpine-header-column-line-height:                23px !default;
-$alpine-header-text-overflow:                     ellipsis !default;
+$alpine-header-display:                           inline-flex !default;
 $alpine-header-border-color:                      $alpine-border-color !default;
 $alpine-header-border-width:                      0 !default;
 $alpine-header-bg-color:                          #f8f8f8 !default;
 $alpine-header-color:                             #181d1f !default;
 $alpine-header-font-weight:                       bold !default;
-$alpine-headerrow-bg-color:                       #f8fafc !default;
-$alpine-headerrow-input-height:                   25px !default;
-$alpine-header-menubutton-width:                  18px !default;
-$alpine-header-menubutton-filtered-color:         #3490dc !default;
-$alpine-sort-indicator-color:                     #3490dc !default;
 $alpine-header-text-align:                        left !default;
 $alpine-header-resizable-handle-box-shadow:       inset 0 0 0 1px #dde2eb !default;
-$alpine-header-display:                           inline-flex !default;
 $alpine-header-align-items:                       flex-start !default;
 $alpine-header-justify-content:                   flex-start !default;
 $alpine-header-vertical-align:                    top !default;
 $alpine-header-footer-background-color:           #fff !default;
+$alpine-header-menubutton-width:                  18px !default;
+$alpine-header-menubutton-filtered-color:         #3490dc !default;
+$alpine-header-name-row-count:                    1 !default;
+$alpine-header-column-height:                     calc(23px * #{var(--alpine-header-name-row-count, $alpine-header-name-row-count)}) !default; // 2 rows, double height
+$alpine-header-column-line-height:                23px !default;
+$alpine-header-name-display:                      block !default; // you could use "block" for ellipsis or inline-flex to support RTL
+$alpine-header-name-overflow:                     hidden !default;
+$alpine-header-name-text-overflow:                ellipsis !default;
+$alpine-header-name-flex-grow:                    0 !default; // flex-grow: 1 will make sort icon float to the right
+$alpine-headerrow-bg-color:                       #f8fafc !default;
+$alpine-headerrow-input-height:                   25px !default;
+$alpine-sort-indicator-color:                     #3490dc !default;
+$alpine-sort-indicator-margin:                    5px 0 0 3px !default;
+$alpine-sort-numbered-font-size:                  10px !default;
 
 // the following 2 vars must equal 100% (or 0%) at all time (or height of 0 to never show)
 $alpine-header-resizable-handle-height:           50% !default;
