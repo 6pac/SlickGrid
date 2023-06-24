@@ -2,7 +2,24 @@
   "name": "slickgrid",
   "version": "4.0.0",
   "description": "A lightning fast JavaScript grid/spreadsheet",
-  "main": "slick.core.js",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
+  "exports": {
+    ".": {
+      "import": "./dist/esm/index.js",
+      "require": "./dist/cjs/index.js",
+      "default": "./dist/esm/index.js"
+    },
+    "./*": "./*"
+  },
+  "typesVersions": {
+    "*": {
+      "*": [
+        "./dist/types/index.d.ts"
+      ]
+    }
+  },
+  "types": "dist/types/index.d.ts",
   "directories": {
     "example": "examples",
     "test": "tests"
@@ -33,15 +50,17 @@
     "clean": "rimraf dist",
     "minify": "node ./scripts/minify.js --start",
     "prebuild:all": "rimraf dist",
-    "build:all": "node scripts/builds.mjs --prod",
+    "build:all": "node scripts/builds.mjs --prod && npm run build:types:prod",
     "build:test": "node ./scripts/builds.mjs --test",
     "build:prod": "node ./scripts/builds.mjs --prod",
+    "build:types": "tsc --emitDeclarationOnly --incremental --declarationMap false --outDir dist/types",
+    "build:types:prod": "tsc --emitDeclarationOnly --incremental --declarationMap --outDir dist/types",
     "preview:release": "node ./scripts/release.js --create-release github --dry-run --skip-checks",
     "release": "node ./scripts/release.js --create-release github",
     "presass:build": "rimraf dist/styles/css",
-    "sass:build": "sass src/styles/scss:dist/styles/css --style=compressed --quiet-deps --no-source-map",
+    "sass:build": "sass src/styles:dist/styles/css --style=compressed --quiet-deps --no-source-map",
     "postsass:build": "postcss dist/styles/css/**/* --dir dist/styles/css --base dist/styles/css --no-map --use cssnano --use autoprefixer --style=compressed",
-    "sass:copy": "copyfiles -f src/styles/scss/*.scss dist/styles/sass"
+    "sass:copy": "copyfiles -f src/styles/*.scss dist/styles/sass"
   },
   "dependencies": {
     "sortablejs": "^1.15.0"
@@ -74,6 +93,7 @@
     "sass": "^1.63.6",
     "semver": "^7.5.3",
     "strong-log-transformer": "^2.1.0",
+    "typescript": "^5.1.3",
     "uglify-js": "^3.17.4",
     "yargs": "^17.7.2"
   },

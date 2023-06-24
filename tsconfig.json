@@ -1,8 +1,10 @@
 {
   "compilerOptions": {
+    "baseUrl": ".",
     "declaration": true,
     "declarationMap": true,
-    "rootDir": "./",
+    "noImplicitAny": false,
+    "rootDir": "src",
     "outDir": "dist/esm2",
     "target": "ES2015",
     "useDefineForClassFields": true,
@@ -18,8 +20,15 @@
     "noUnusedParameters": true,
     "noImplicitReturns": true,
     "skipLibCheck": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "types": [
+      "node"
+    ],
+    "typeRoots": [
+      "src/@types",
+      "./node_modules/@types"
+    ]
   },
   "exclude": ["node_modules", "**/*.spec.ts"],
-  "include": ["src/**/*", "index.d.ts"]
+  "include": ["src/**/*", "index.d.ts", "@types/**/*.d.ts"]
 }

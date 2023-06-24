@@ -3,6 +3,17 @@ import { Utils as Utils_ } from '../slick.core';
 // for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
+export interface AutoTooltipOption {
+  /** Enable tooltip for grid cells */
+  enableForCells?: boolean;
+  /** Enable tooltip for header cells */
+  enableForHeaderCells?: boolean;
+  /** The maximum length for a tooltip */
+  maxToolTipLength?: number;
+  /** Replace existing tooltip text */
+  replaceExisting?: boolean;
+}
+
 /**
  * AutoTooltips plugin to show/hide tooltips when columns are too narrow to fit content.
  * @constructor
@@ -10,12 +21,12 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  * @param {boolean} [options.enableForHeaderCells=false] - Enable tooltip for header cells
  * @param {number}  [options.maxToolTipLength=null]      - The maximum length for a tooltip
  */
-export function AutoTooltips(options) {
+export function SlickAutoTooltips(options: AutoTooltipOption) {
   let _grid;
-  let _defaults = {
+  let _defaults: AutoTooltipOption = {
     enableForCells: true,
     enableForHeaderCells: false,
-    maxToolTipLength: null,
+    maxToolTipLength: undefined,
     replaceExisting: true
   };
 
@@ -25,30 +36,38 @@ export function AutoTooltips(options) {
   function init(grid) {
     options = Utils.extend(true, {}, _defaults, options);
     _grid = grid;
-    if (options.enableForCells) _grid.onMouseEnter.subscribe(handleMouseEnter);
-    if (options.enableForHeaderCells) _grid.onHeaderMouseEnter.subscribe(handleHeaderMouseEnter);
+    if (options.enableForCells) {
+      _grid.onMouseEnter.subscribe(handleMouseEnter);
+    }
+    if (options.enableForHeaderCells) {
+      _grid.onHeaderMouseEnter.subscribe(handleHeaderMouseEnter);
+    }
   }
 
   /**
    * Destroy plugin.
    */
   function destroy() {
-    if (options.enableForCells) _grid.onMouseEnter.unsubscribe(handleMouseEnter);
-    if (options.enableForHeaderCells) _grid.onHeaderMouseEnter.unsubscribe(handleHeaderMouseEnter);
+    if (options.enableForCells) {
+      _grid.onMouseEnter.unsubscribe(handleMouseEnter);
+    }
+    if (options.enableForHeaderCells) {
+      _grid.onHeaderMouseEnter.unsubscribe(handleHeaderMouseEnter);
+    }
   }
 
   /**
    * Handle mouse entering grid cell to add/remove tooltip.
-   * @param {MouseEvent} e - The event
+   * @param {MouseEvent} event - The event
    */
-  function handleMouseEnter() {
+  function handleMouseEnter(event: MouseEvent) {
     const cell = _grid.getCellFromEvent(event);
     if (cell) {
-      let node = _grid.getCellNode(cell.row, cell.cell);
+      let node: HTMLElement | null = _grid.getCellNode(cell.row, cell.cell);
       let text;
-      if (options && node && (!node.title || options && options.replaceExisting)) {
+      if (options && node && (!node.title || options?.replaceExisting)) {
         if (node.clientWidth < node.scrollWidth) {
-          text = node.textContent && node.textContent.trim() || '';
+          text = node.textContent?.trim() ?? '';
           if (options && (options.maxToolTipLength && text.length > options.maxToolTipLength)) {
             text = text.substring(0, options.maxToolTipLength - 3) + '...';
           }
@@ -63,36 +82,36 @@ export function AutoTooltips(options) {
 
   /**
    * Handle mouse entering header cell to add/remove tooltip.
-   * @param {MouseEvent} e     - The event
+   * @param {MouseEvent} event   - The event
    * @param {object} args.column - The column definition
    */
-  function handleHeaderMouseEnter(e, args) {
+  function handleHeaderMouseEnter(event: MouseEvent, args: { column: any; }) {
     const column = args.column;
-    let node;
-    const targetElm = (e.target);
+    let node: HTMLDivElement | null;
+    const targetElm = (event.target as HTMLDivElement);
 
     if (targetElm) {
-      node = targetElm.closest('.slick-header-column');
+      node = targetElm.closest<HTMLDivElement>('.slick-header-column');
       if (node && !(column && column.toolTip)) {
-        node.title = (targetElm.clientWidth < node.clientWidth) ? column && column.name || '' : '';
+        node.title = (targetElm.clientWidth < node.clientWidth) ? column?.name ?? '' : '';
       }
     }
     node = null;
   }
 
   // Public API
-  Utils.extend(this, {
-    "init": init,
-    "destroy": destroy,
-    "pluginName": "AutoTooltips"
-  });
+  return {
+    init,
+    destroy,
+    pluginName: 'AutoTooltips'
+  }
 }
 
 // extend Slick namespace on window object when building as iife
 if (IIFE_ONLY && window.Slick) {
   Utils.extend(true, window, {
     Slick: {
-      AutoTooltips
+      AutoTooltips: SlickAutoTooltips
     }
   });
 }

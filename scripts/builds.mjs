@@ -1,6 +1,6 @@
-import { build } from 'esbuild';
 import { execSync } from 'child_process';
 import copyfiles from 'copyfiles';
+import { build } from 'esbuild';
 import fs from 'fs-extra';
 import { globSync } from 'glob';
 import path from 'node:path';
@@ -15,21 +15,22 @@ export const BUILD_FORMATS = ['cjs', 'esm'];
 
 if (argv.prod) {
   executeFullBuild();
+  buildAllSassFiles();
   copySassFiles();
+  // execSync('npm run build:types:prod');
 }
 if (argv.test) {
-  buildAllIifeFiles(getAllJSFiles());
-  executeCjsEsmBuilds();
+  // buildAllIifeFiles(getAllJSFiles());
+  // executeCjsEsmBuilds();
   copySassFiles();
 }
 
 function copySassFiles() {
+  // copy all scss files but exclude any variables files (starting with "_")
   copyfiles(
-    ['src/styles/scss/*.scss', 'dist/styles/sass'],
-    { flat: true },
-    () => {
-      console.log('SASS files copied, proceeding to build all files');
-    }
+    ['src/styles/*.scss', 'dist/styles/sass'], // 1st in array is source, last is target
+    { flat: true, up: 2, exclude: '**/_*.scss' },
+    () => console.log('SASS files copied, proceeding to build all files')
   );
 }
 
@@ -87,7 +88,7 @@ async function buildAllIifeFiles(allFiles) {
   const startTime = new Date().getTime();
 
   for (const file of allFiles) {
-    if (/index.[j|t]s/i.test(file) || file.includes('.d.ts')) {
+    if (/index.[j|t]s/i.test(file) || /[\w\-.]*.d.ts/i.test(file)) {
       continue; // skip index.js and any *.d.ts files which are not useful for iife
     }
     buildIifeFile(file);
