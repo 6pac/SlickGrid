@@ -284,6 +284,7 @@
         // put back original width (fixes width and frozen+gridMenu on left header)
         _headerElm.style.width = '100%';
       }
+      _buttonElm && _buttonElm.remove();
       _menuElm && _menuElm.remove();
     }
 
