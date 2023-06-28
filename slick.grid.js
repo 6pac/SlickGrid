@@ -5335,7 +5335,7 @@ if (typeof Slick === "undefined") {
       // walk up the tree
       var offsetParent = elem.offsetParent;
       while ((elem = elem.parentNode) != document.body) {
-        if (elem == null) {
+        if (!elem || !elem.parentNode) {
           break;
         }
 
