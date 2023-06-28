@@ -348,7 +348,7 @@ if (typeof Slick === "undefined") {
         "cancelCurrentEdit": cancelCurrentEdit
       };
 
-      _container.replaceChildren();
+      utils.emptyElement(_container);
       _container.style.overflow = "hidden";
       _container.style.outline = 0;
       _container.classList.add(uid);
@@ -512,7 +512,7 @@ if (typeof Slick === "undefined") {
       }
 
       _focusSink2 = _focusSink.cloneNode(true);
-      _container.append(_focusSink2);
+      _container.appendChild(_focusSink2);
 
       if (!options.explicitInitialization) {
         finishInitialization();
@@ -1176,8 +1176,8 @@ if (typeof Slick === "undefined") {
         });
         });
 
-        _footerRowL.replaceChildren();
-        _footerRowR.replaceChildren();
+        utils.emptyElement(_footerRowL);
+        utils.emptyElement(_footerRowR);
 
         for (var i = 0; i < columns.length; i++) {
           var m = columns[i];
@@ -1224,8 +1224,8 @@ if (typeof Slick === "undefined") {
         });
       })
 
-      _headerL.replaceChildren();
-      _headerR.replaceChildren();
+      utils.emptyElement(_headerL);
+      utils.emptyElement(_headerR);
 
       getHeadersWidth();
 
@@ -1246,8 +1246,8 @@ if (typeof Slick === "undefined") {
         });
       });
 
-      _headerRowL.replaceChildren();
-      _headerRowR.replaceChildren();
+      utils.emptyElement(_headerRowL);
+      utils.emptyElement(_headerRowR);
 
       if (options.createFooterRow) {
         const footerRowColumnElements = _footerRowL.querySelectorAll(".slick-footerrow-column");
@@ -1261,7 +1261,7 @@ if (typeof Slick === "undefined") {
             });
           }
         });
-        _footerRowL.replaceChildren();
+        utils.emptyElement(_footerRowL);
 
         if (hasFrozenColumns()) {
           const footerRowColumnElements = _footerRowR.querySelectorAll(".slick-footerrow-column");
@@ -1275,7 +1275,7 @@ if (typeof Slick === "undefined") {
               });
             }
           });
-          _footerRowR.replaceChildren();
+          utils.emptyElement(_footerRowR);
         }
       }
 
