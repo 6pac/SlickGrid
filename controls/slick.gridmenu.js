@@ -371,7 +371,7 @@
         liElm.appendChild(textElm);
 
         if (item.textCssClass) {
-          textElm.classList.add(...item.textCssClass.splt(' '));
+          textElm.classList.add(...item.textCssClass.split(' '));
         }
 
         customMenuElm.appendChild(liElm);
