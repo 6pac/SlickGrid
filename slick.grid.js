@@ -4412,33 +4412,30 @@ if (typeof Slick === "undefined") {
         prevScrollLeft = scrollLeft;
 
         // adjust scroll position of all div containers when scrolling the grid
-        // add a delay to avoid screen flickering
-        setTimeout(function () {
-          $viewportScrollContainerX[0].scrollLeft = scrollLeft;
-          $headerScrollContainer[0].scrollLeft = scrollLeft;
-          $topPanelScroller[0].scrollLeft = scrollLeft;
-          $headerRowScrollContainer[0].scrollLeft = scrollLeft;
-          if (options.createFooterRow) {
-            $footerRowScrollContainer[0].scrollLeft = scrollLeft;
-          }
-          if (options.createPreHeaderPanel) {
-            if (hasFrozenColumns()) {
-              $preHeaderPanelScrollerR[0].scrollLeft = scrollLeft;
-            } else {
-              $preHeaderPanelScroller[0].scrollLeft = scrollLeft;
-            }
-          }
-
+        $viewportScrollContainerX[0].scrollLeft = scrollLeft;
+        $headerScrollContainer[0].scrollLeft = scrollLeft;
+        $topPanelScroller[0].scrollLeft = scrollLeft;
+        $headerRowScrollContainer[0].scrollLeft = scrollLeft;
+        if (options.createFooterRow) {
+          $footerRowScrollContainer[0].scrollLeft = scrollLeft;
+        }
+        if (options.createPreHeaderPanel) {
           if (hasFrozenColumns()) {
-            if (hasFrozenRows) {
-              $viewportTopR[0].scrollLeft = scrollLeft;
-            }
+            $preHeaderPanelScrollerR[0].scrollLeft = scrollLeft;
           } else {
-            if (hasFrozenRows) {
-              $viewportTopL[0].scrollLeft = scrollLeft;
-            }
+            $preHeaderPanelScroller[0].scrollLeft = scrollLeft;
           }
-        }, 0);
+        }
+
+        if (hasFrozenColumns()) {
+          if (hasFrozenRows) {
+            $viewportTopR[0].scrollLeft = scrollLeft;
+          }
+        } else {
+          if (hasFrozenRows) {
+            $viewportTopL[0].scrollLeft = scrollLeft;
+          }
+        }
       }
 
       // autoheight suppresses vertical scrolling, but editors can create a div larger than 
