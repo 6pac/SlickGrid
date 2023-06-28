@@ -453,7 +453,7 @@ if (typeof Slick === "undefined") {
       _viewport = [_viewportTopL, _viewportTopR, _viewportBottomL, _viewportBottomR];
       if (options.viewportClass) {
         _viewport.forEach(function (view) {
-          view.classList.add(options.viewportClass);
+          view.classList.add(...options.viewportClass.split(' '));
         });
       }
 
@@ -1292,7 +1292,7 @@ if (typeof Slick === "undefined") {
 
         let classname = m.headerCssClass || null;
         if (classname) {
-          header.classList.add(classname);
+          header.classList.add(...classname.split(' '));
         }
         classname = hasFrozenColumns() && i <= options.frozenColumn ? 'frozen' : null;
         if (classname) {
@@ -1974,10 +1974,10 @@ if (typeof Slick === "undefined") {
       _viewportBottomR.style['overflow-y'] = options.alwaysShowVerticalScroll ? "scroll" : (( hasFrozenColumns() ) ? ( hasFrozenRows ? 'auto' : 'auto'   ) : ( hasFrozenRows ? 'auto' : 'auto' ));
 
       if (options.viewportClass) {
-        _viewportTopL.classList.add(options.viewportClass);
-        _viewportTopR.classList.add(options.viewportClass);
-        _viewportBottomL.classList.add(options.viewportClass);
-        _viewportBottomR.classList.add(options.viewportClass);
+        _viewportTopL.classList.add(...options.viewportClass.split(' '));
+        _viewportTopR.classList.add(...options.viewportClass.split(' '));
+        _viewportBottomL.classList.add(...options.viewportClass.split(' '));
+        _viewportBottomR.classList.add(...options.viewportClass.split(' '));
       }
     }
 
@@ -2748,7 +2748,9 @@ if (typeof Slick === "undefined") {
         headerColEl = utils.createDomElement('div', { id: dummyHeaderColElId, className: 'ui-state-default slick-header-column', }, header);
         utils.createDomElement('span', { className: 'slick-column-name', innerHTML: sanitizeHtmlString(columnDef.name) }, headerColEl);
         clone.style.cssText = 'position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;';
-        headerColEl.classList.add(columnDef.headerCssClass || '');
+        if (columnDef.headerCssClass) {
+          headerColEl.classList.add(...columnDef.headerCssClass.split(' '));
+        }
         width = headerColEl.offsetWidth;
         header.removeChild(headerColEl);
       }

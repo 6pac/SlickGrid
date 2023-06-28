@@ -207,7 +207,7 @@
         _buttonElm.ariaLabel = 'Grid Menu';
 
         if (_options.gridMenu && _options.gridMenu.iconCssClass) {
-          _buttonElm.classList.add(_options.gridMenu.iconCssClass);
+          _buttonElm.classList.add(..._options.gridMenu.iconCssClass.split(' '));
         } else {
           const iconImageElm = document.createElement('img');
           iconImageElm.src = (_options.gridMenu && _options.gridMenu.iconImage) ? _options.gridMenu.iconImage : "../images/drag-handle.png";
@@ -344,7 +344,7 @@
         }
 
         if (item.cssClass) {
-          liElm.classList.add(item.cssClass);
+          liElm.classList.add(...item.cssClass.split(' '));
         }
 
         if (item.tooltip) {
@@ -357,7 +357,7 @@
         liElm.appendChild(iconElm);
 
         if (item.iconCssClass) {
-          iconElm.classList.add(item.iconCssClass);
+          iconElm.classList.add(...item.iconCssClass.split(' '));
         }
 
         if (item.iconImage) {
@@ -371,7 +371,7 @@
         liElm.appendChild(textElm);
 
         if (item.textCssClass) {
-          textElm.classList.add(item.textCssClass);
+          textElm.classList.add(...item.textCssClass.splt(' '));
         }
 
         customMenuElm.appendChild(liElm);
