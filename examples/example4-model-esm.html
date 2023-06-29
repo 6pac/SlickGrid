@@ -53,14 +53,20 @@
       border-radius: 2px;
       height: 22px;
     }
-    :root {
-      --alpine-header-row-count: 1;
+    .sgi-search:hover {
+      cursor: pointer;
+      color: darkcyan;
+    }
+    /* change to flex-end for RTL support */
+    .slick-container {
+      --alpine-header-justify-content: flex-start;
+      --alpine-cell-justify-content: flex-start;
     }
   </style>
 </head>
 <body>
 <div style="position:relative">
-  <div style="width:650px;">
+  <div style="width:625px;">
     <div class="grid-header" style="width:100%">
       <label>SlickGrid</label>
       <span style="float:right;margin:0px 4px auto 6px;cursor:pointer" class="sgi sgi-search" title="Toggle search panel"></span>
@@ -146,12 +152,12 @@ var grid;
 var data = [];
 var columns = [
   {id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 45, cannotTriggerInsert: true, resizable: false, selectable: false, excludeFromColumnPicker: true },
-  {id: "title", name: "Title", field: "title", width: 120, minWidth: 100, cssClass: "cell-title", editor: Editors.LongText, validator: requiredFieldValidator, sortable: true},
+  {id: "title", name: "Title", field: "title", width: 110, minWidth: 100, cssClass: "cell-title", editor: Editors.LongText, validator: requiredFieldValidator, sortable: true},
   {id: "duration", name: "Duration", field: "duration", editor: Editors.Text, sortable: true},
   {id: "%", defaultSortAsc: false, name: "% Complete", field: "percentComplete", width: 95, formatter: Formatters.PercentCompleteBar, editor: Editors.PercentComplete, sortable: true},
   {id: "start", name: "Start", field: "start", minWidth: 60, editor: Editors.Flatpickr, sortable: true},
   {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Editors.Flatpickr, sortable: true},
-  {id: "effort-driven", name: "Effort Driven", width: 100, minWidth: 20, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Formatters.Checkbox, editor: Editors.Checkbox, cannotTriggerInsert: true, sortable: true}
+  {id: "effort-driven", name: "Effort Driven", width: 120, minWidth: 20, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Formatters.Checkbox, editor: Editors.Checkbox, cannotTriggerInsert: true, sortable: true}
 ];
 
 var options = {
@@ -234,17 +240,6 @@ function comparer(a, b) {
 
 function toggleFilterRow() {
   grid.setTopPanelVisibility(!grid.getOptions().showTopPanel);
-}
-
-const headerSearchIcon = document.querySelector(".grid-header .sgi-search");
-if (headerSearchIcon) {
-  headerSearchIcon.classList.add("ui-state-default", "ui-corner-all");
-  headerSearchIcon.addEventListener('mouseover', (function (e) {
-    e.target.classList.add("ui-state-hover");
-  }));
-  headerSearchIcon.addEventListener('mouseout', (function (e) {
-    e.target.classList.remove("ui-state-hover");
-  }));
 }
 
 document.addEventListener("DOMContentLoaded", () => {
@@ -356,7 +351,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // wire up the search textbox to apply the filter to the model
   document.querySelectorAll("#txtSearch,#txtSearch2").forEach(elm => elm.addEventListener('keyup', (e) => {
-    console.log('ee', e.target.value)
     GlobalEditorLock.cancelCurrentEdit();
 
     // clear on Esc

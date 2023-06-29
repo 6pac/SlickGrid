@@ -351,16 +351,24 @@ document.addEventListener("DOMContentLoaded", function() {
   slider2.oninput = sliderCallback;
 
   // wire up the search textbox to apply the filter to the model
-  document.querySelector('#txtSearch,#txtSearch2').addEventListener('click', function (e) {
+  document.querySelectorAll("#txtSearch,#txtSearch2").forEach(elm => elm.addEventListener('keyup', (e) => {
     Slick.GlobalEditorLock.cancelCurrentEdit();
 
     // clear on Esc
-    if (e.which == 27)
-      this.value = "";
+    if (e.which == 27) e.target.value = '';
 
-    searchString = this.value;
+    searchString = (e.target.value || '').trim();
+    updateFilter();
     dataView.refresh();
-  });
+  }));
+
+  function updateFilter() {
+    dataView.setFilterArgs({
+      percentCompleteThreshold: percentCompleteThreshold,
+      searchString: searchString
+    });
+    dataView.refresh();
+  }
 
   document.querySelector('#btnSelectRows').addEventListener('click', function () {
     if (!Slick.GlobalEditorLock.commitCurrentEdit()) {

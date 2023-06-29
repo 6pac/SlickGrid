@@ -403,12 +403,12 @@ export function SlickGrid(container, data, columns, options) {
     _paneBottomR = Utils.createDomElement('div', { className: 'slick-pane slick-pane-bottom slick-pane-right', tabIndex: 0 }, _container);
 
     if (options.createPreHeaderPanel) {
-      _preHeaderPanelScroller = Utils.createDomElement('div', { className: 'slick-preheader-panel ui-state-default', style: { overflow: 'hidden', position: 'relative' } }, _paneHeaderL);
+      _preHeaderPanelScroller = Utils.createDomElement('div', { className: 'slick-preheader-panel ui-state-default slick-state-default', style: { overflow: 'hidden', position: 'relative' } }, _paneHeaderL);
       _preHeaderPanelScroller.appendChild(document.createElement('div'));
       _preHeaderPanel = Utils.createDomElement('div', null, _preHeaderPanelScroller);
       _preHeaderPanelSpacer = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, _preHeaderPanelScroller);
 
-      _preHeaderPanelScrollerR = Utils.createDomElement('div', { className: 'slick-preheader-panel ui-state-default', style: { overflow: 'hidden', position: 'relative' } }, _paneHeaderR);
+      _preHeaderPanelScrollerR = Utils.createDomElement('div', { className: 'slick-preheader-panel ui-state-default slick-state-default', style: { overflow: 'hidden', position: 'relative' } }, _paneHeaderR);
       _preHeaderPanelR = Utils.createDomElement('div', null, _preHeaderPanelScrollerR);
       _preHeaderPanelSpacerR = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, _preHeaderPanelScrollerR);
 
@@ -419,8 +419,8 @@ export function SlickGrid(container, data, columns, options) {
     }
 
     // Append the header scroller containers
-    _headerScrollerL = Utils.createDomElement('div', { className: 'slick-header ui-state-default slick-header-left' }, _paneHeaderL);
-    _headerScrollerR = Utils.createDomElement('div', { className: 'slick-header ui-state-default slick-header-right' }, _paneHeaderR);
+    _headerScrollerL = Utils.createDomElement('div', { className: 'slick-header ui-state-default slick-state-default slick-header-left' }, _paneHeaderL);
+    _headerScrollerR = Utils.createDomElement('div', { className: 'slick-header ui-state-default slick-state-default slick-header-right' }, _paneHeaderR);
 
     // Cache the header scroller containers
     _headerScroller.push(_headerScrollerL);
@@ -433,8 +433,8 @@ export function SlickGrid(container, data, columns, options) {
     // Cache the header columns
     _headers = [_headerL, _headerR];
 
-    _headerRowScrollerL = Utils.createDomElement('div', { className: 'slick-headerrow ui-state-default' }, _paneTopL);
-    _headerRowScrollerR = Utils.createDomElement('div', { className: 'slick-headerrow ui-state-default' }, _paneTopR);
+    _headerRowScrollerL = Utils.createDomElement('div', { className: 'slick-headerrow ui-state-default slick-state-default' }, _paneTopL);
+    _headerRowScrollerR = Utils.createDomElement('div', { className: 'slick-headerrow ui-state-default slick-state-default' }, _paneTopR);
 
     _headerRowScroller = [_headerRowScrollerL, _headerRowScrollerR];
 
@@ -447,8 +447,8 @@ export function SlickGrid(container, data, columns, options) {
     _headerRows = [_headerRowL, _headerRowR];
 
     // Append the top panel scroller
-    _topPanelScrollerL = Utils.createDomElement('div', { className: 'slick-top-panel-scroller ui-state-default' }, _paneTopL);
-    _topPanelScrollerR = Utils.createDomElement('div', { className: 'slick-top-panel-scroller ui-state-default' }, _paneTopR);
+    _topPanelScrollerL = Utils.createDomElement('div', { className: 'slick-top-panel-scroller ui-state-default slick-state-default' }, _paneTopL);
+    _topPanelScrollerR = Utils.createDomElement('div', { className: 'slick-top-panel-scroller ui-state-default slick-state-default' }, _paneTopR);
 
     _topPanelScrollers = [_topPanelScrollerL, _topPanelScrollerR];
 
@@ -521,8 +521,8 @@ export function SlickGrid(container, data, columns, options) {
 
     // footer Row
     if (options.createFooterRow) {
-      _footerRowScrollerR = Utils.createDomElement('div', { className: 'slick-footerrow ui-state-default' }, _paneTopR);
-      _footerRowScrollerL = Utils.createDomElement('div', { className: 'slick-footerrow ui-state-default' }, _paneTopL);
+      _footerRowScrollerR = Utils.createDomElement('div', { className: 'slick-footerrow ui-state-default slick-state-default' }, _paneTopR);
+      _footerRowScrollerL = Utils.createDomElement('div', { className: 'slick-footerrow ui-state-default slick-state-default' }, _paneTopL);
 
       _footerRowScroller = [_footerRowScrollerL, _footerRowScrollerR];
 
@@ -1215,7 +1215,7 @@ export function SlickGrid(container, data, columns, options) {
         var m = columns[i];
         if (!m || m.hidden) continue;
 
-        const footerRowCell = Utils.createDomElement('div', { className: `ui-state-default slick-footerrow-column l${i} r${i}` }, hasFrozenColumns() && (i > options.frozenColumn) ? _footerRowR : _footerRowL);
+        const footerRowCell = Utils.createDomElement('div', { className: `ui-state-default slick-state-default slick-footerrow-column l${i} r${i}` }, hasFrozenColumns() && (i > options.frozenColumn) ? _footerRowR : _footerRowL);
         const className = hasFrozenColumns() && i <= options.frozenColumn ? 'frozen' : null;
         if (className) {
           footerRowCell.classList.add(className);
@@ -1233,19 +1233,19 @@ export function SlickGrid(container, data, columns, options) {
   }
 
   function handleHeaderMouseHoverOn(e) {
-    e.target.classList.add("ui-state-hover");
+    e.target.classList.add("ui-state-hover", "slick-state-hover");
   }
 
   function handleHeaderMouseHoverOff(e) {
-    e.target.classList.remove("ui-state-hover");
+    e.target.classList.remove("ui-state-hover", "slick-state-hover");
   }
 
   function handleHeaderMouseHoverOn(e) {
-    e.target.classList.add("ui-state-hover");
+    e.target.classList.add("ui-state-hover", "slick-state-hover");
   }
 
   function handleHeaderMouseHoverOff(e) {
-    e.target.classList.remove("ui-state-hover");
+    e.target.classList.remove("ui-state-hover", "slick-state-hover");
   }
 
   function createColumnHeaders() {
@@ -1324,7 +1324,7 @@ export function SlickGrid(container, data, columns, options) {
       const headerTarget = hasFrozenColumns() ? ((i <= options.frozenColumn) ? _headerL : _headerR) : _headerL;
       const headerRowTarget = hasFrozenColumns() ? ((i <= options.frozenColumn) ? _headerRowL : _headerRowR) : _headerRowL;
 
-      const header = Utils.createDomElement('div', { id: `${uid + m.id}`, dataset: { id: m.id }, className: 'ui-state-default slick-header-column', title: m.toolTip || '' }, headerTarget);
+      const header = Utils.createDomElement('div', { id: `${uid + m.id}`, dataset: { id: m.id }, className: 'ui-state-default slick-state-default slick-header-column', title: m.toolTip || '' }, headerTarget);
       Utils.createDomElement('span', { className: 'slick-column-name', innerHTML: sanitizeHtmlString(m.name) }, header);
       Utils.width(header, m.width - headerColumnWidthDiff);
 
@@ -1370,7 +1370,7 @@ export function SlickGrid(container, data, columns, options) {
       });
 
       if (options.showHeaderRow) {
-        const headerRowCell = Utils.createDomElement('div', { className: `ui-state-default slick-headerrow-column l${i} r${i}` }, headerRowTarget);
+        const headerRowCell = Utils.createDomElement('div', { className: `ui-state-default slick-state-default slick-headerrow-column l${i} r${i}` }, headerRowTarget);
         const classname = hasFrozenColumns() && i <= options.frozenColumn ? 'frozen' : null;
         if (classname) {
           headerRowCell.classList.add(classname);
@@ -1389,7 +1389,7 @@ export function SlickGrid(container, data, columns, options) {
       }
       if (options.createFooterRow && options.showFooterRow) {
         const footerRowTarget = hasFrozenColumns() ? ((i <= options.frozenColumn) ? _footerRow[0] : _footerRow[1]) : _footerRow[0];
-        const footerRowCell = Utils.createDomElement('div', { className: `ui-state-default slick-footerrow-column l${i} r${i}` }, footerRowTarget);
+        const footerRowCell = Utils.createDomElement('div', { className: `ui-state-default slick-state-default slick-footerrow-column l${i} r${i}` }, footerRowTarget);
         Utils.storage.put(footerRowCell, "column", m)
 
         trigger(self.onFooterRowCellRendered, {
@@ -2061,7 +2061,7 @@ export function SlickGrid(container, data, columns, options) {
     headerColumnWidthDiff = headerColumnHeightDiff = 0;
     cellWidthDiff = cellHeightDiff = 0;
 
-    let el = Utils.createDomElement('div', { className: 'ui-state-default slick-header-column', style: { visibility: 'hidden' }, textContent: '-' }, header);
+    let el = Utils.createDomElement('div', { className: 'ui-state-default slick-state-default slick-header-column', style: { visibility: 'hidden' }, textContent: '-' }, header);
     let style = getComputedStyle(el);
     if (style["box-sizing"] != "border-box" && style["-moz-box-sizing"] != "border-box" && style["-webkit-box-sizing"] != "border-box") {
       h.forEach(function (val) {
@@ -2783,7 +2783,7 @@ export function SlickGrid(container, data, columns, options) {
     } else {
       // headers have not yet been created, create a new node
       let header = getHeader(columnDef);
-      headerColEl = Utils.createDomElement('div', { id: dummyHeaderColElId, className: 'ui-state-default slick-header-column', }, header);
+      headerColEl = Utils.createDomElement('div', { id: dummyHeaderColElId, className: 'ui-state-default slick-state-default slick-header-column', }, header);
       Utils.createDomElement('span', { className: 'slick-column-name', innerHTML: sanitizeHtmlString(columnDef.name) }, headerColEl);
       clone.style.cssText = 'position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;';
       headerColEl.classList.add(columnDef.headerCssClass || '');

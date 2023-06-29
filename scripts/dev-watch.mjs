@@ -11,13 +11,14 @@ import { buildAllSassFiles, buildIifeFile, buildSassFile, executeFullBuild } fro
   let watcher;
   let bsync;
 
-  /** initialize Chokidar watch & init browserSync */
+  /**
+   * initialize Chokidar watch & init browserSync
+   * we will watch for `src/` and `examples/` folders for any files that changed with the following extensions (js, ts, html, css, scss)
+   */
   async function init() {
-    // change to new dir after moving files to src folder: 'src/**/*.{ts,js}'
-    // also remove dist after we use dist folder only
     watcher = chokidar.watch('**/*.{ts,js,html,css,scss}', {
       cwd: process.cwd(),
-      ignored: ['**/.git/**', '**/dist/**', '**/dist/**', '**/node_modules/**', '**/tests/**'],
+      ignored: ['**/.git/**', '**/dist/**', '**/node_modules/**'],
       ignoreInitial: true,
       ignorePermissionErrors: true,
       persistent: true
@@ -33,11 +34,11 @@ import { buildAllSassFiles, buildIifeFile, buildSassFile, executeFullBuild } fro
     process.stdin.on('end', () => destroy());
     process.stdin.on('exit', () => process.stdin.destroy());
 
-    // run full prod build (/dist) & SASS files
+    // run full prod build `/dist` and full SASS build
     await executeFullBuild();
     buildAllSassFiles();
 
-    // start server
+    // start browser-sync server
     startBrowserSync();
   }
 
@@ -51,7 +52,6 @@ import { buildAllSassFiles, buildIifeFile, buildSassFile, executeFullBuild } fro
     bsync.init({
       server: './',
       port: 8080,
-      // proxy: "http://localhost:8080",
       watchTask: true,
       online: false,
       startPath: 'examples/index.html'
@@ -64,38 +64,41 @@ import { buildAllSassFiles, buildIifeFile, buildSassFile, executeFullBuild } fro
     console.error('Chokidar watch error', err);
   }
 
-  /** On file changes, depending on the file extension we will rebuild and/or reload browser */
+  /**
+   * On file changes, we will perform certain action(s) depending on the file extension detected,
+   * we will rebuild and/or reload browser
+   * @param {String} filepath - file path that changed
+   */
   async function onFileChanged(filepath) {
     if (filepath.endsWith('.js') || filepath.endsWith('.ts')) {
-      // 1. CJS/ESM is full build in single bundle
+      // 1. CJS/ESM requires a full build since it is bundled into a single index.js output
       executeFullBuild();
 
-      // 2. build separate iife file(s)
+      // 2. for iife format, we can rebuild each separate file
       const startTime = new Date().getTime();
       buildIifeFile(filepath);
       const endTime = new Date().getTime();
-      console.info(`⚡️ Built ${filepath} to "iife" format in ${endTime - startTime}ms`);
-    } else if (filepath.endsWith('.html')) {
-      // HTML files, reload all connected browser when html file changes
-      // bsync.reload('*.html');
+      console.info(`⚡️ Built "${filepath}" to "iife" format in ${endTime - startTime}ms`);
     } else if (filepath.endsWith('.css') || filepath.endsWith('.scss')) {
       // CSS/SCSS files
       if (filepath.endsWith('.scss')) {
         await buildSassFile(filepath);
       }
     }
+    // ELSE, reaching outside of the conditions above (ie, .html)
+    // will simply perform the common action, shown below, of reloading all connected browser
 
-    // in every case we want to reload the webpage
+
+    // in every case, we want to reload the webpage
     bsync.reload('*.html');
-    // bsync.reload(['*.js', '*.html']);
   }
 
   async function destroy() {
-    console.log('Exiting the file watch...');
+    console.log('Exiting the dev file watch...');
     bsync.exit();
     watcher.close();
   }
 
-  // start watch process
+  // start dev watch process
   init();
 })();

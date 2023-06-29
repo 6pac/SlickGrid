@@ -8,8 +8,6 @@
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
-  <!-- <link rel="stylesheet" href="examples.css" type="text/css"/> -->
-  <!-- <link rel="stylesheet" href="../dist/styles/css/slick.grid.css" type="text/css"/> -->
   <style>
     .cell-title {
       font-weight: bold;
@@ -57,6 +55,10 @@
 
     .slick-row.frozen:last-child .slick-cell {
       border-bottom: 1px solid #999;
+    }
+    .sgi-search:hover {
+      cursor: pointer;
+      color: darkcyan;
     }
   </style>
 </head>
@@ -112,7 +114,7 @@
   </div>
 </div>
 
-<div id="inlineFilterPanelL" style="display:none;background:#dddddd;padding:3px;color:black;">
+<div id="inlineFilterPanelL" style="display:none;background:#f6f6f6;padding:3px;color:black;">
   Show tasks with title including <input type="text" id="txtSearch2">
 </div>
 
@@ -321,18 +323,6 @@ function toggleFilterRow() {
   grid.setTopPanelVisibility(!grid.getOptions().showTopPanel);
 }
 
-
-const headerSearchIcon = document.querySelector(".grid-header .ui-icon");
-if (headerSearchIcon) {
-  headerSearchIcon.classList.add("ui-state-default", "ui-corner-all");
-  headerSearchIcon.addEventListener('mouseover', (function (e) {
-    e.target.classList.add("ui-state-hover");
-  }));
-  headerSearchIcon.addEventListener('mouseout', (function (e) {
-    e.target.classList.remove("ui-state-hover");
-  }));
-}
-
 document.addEventListener("DOMContentLoaded", function() {
   // prepare the data
   for (var i = 0; i < 50000; i++) {
@@ -464,15 +454,24 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   // wire up the search textbox to apply the filter to the model
-  document.querySelector("#txtSearch,#txtSearch2").addEventListener('keyup', (e) => {
+  document.querySelectorAll("#txtSearch,#txtSearch2").forEach(elm => elm.addEventListener('keyup', (e) => {
     Slick.GlobalEditorLock.cancelCurrentEdit();
 
     // clear on Esc
     if (e.which == 27) e.target.value = '';
 
     columnFilters['title'] = (e.target.value || '').trim();
+    updateFilter();
     dataView.refresh();
-  });
+  }));
+
+  function updateFilter() {
+    dataView.setFilterArgs({
+      percentCompleteThreshold: percentCompleteThreshold,
+      searchString: searchString
+    });
+    dataView.refresh();
+  }
 
   document.querySelector("#btnSelectRows").addEventListener('click', function () {
     if (!Slick.GlobalEditorLock.commitCurrentEdit()) {

@@ -56,7 +56,7 @@
     width: 100%;
   }
 
-  &.ui-state-active {
+  &.slick-state-active {
     position: absolute;
     border: 0px;
     width: 100%;
@@ -94,7 +94,6 @@
 
 .slick-group-toggle {
   cursor: pointer;
-  // display: inline-flex;
   margin-right: 5px;
 
   background-color: currentColor;
@@ -201,7 +200,7 @@
   font-weight: var(--alpine-header-font-weight, $alpine-header-font-weight);
   color: var(--alpine-header-color, $alpine-header-color);
 
-  &.ui-state-default {
+  &.slick-state-default {
     width: 100%;
     overflow: hidden;
     border-left: 0px;
@@ -234,18 +233,19 @@
   box-shadow: var(--alpine-header-resizable-handle-box-shadow, $alpine-header-resizable-handle-box-shadow);
 }
 
-.slick-reorder-proxy {
+.slick-reorder-proxy,
+.slick-reorder-guide {
   display: inline-block;
   background: blue;
+}
+.slick-reorder-proxy {
   opacity: 0.15;
   filter: alpha(opacity = 15);
   cursor: move;
 }
 
 .slick-reorder-guide {
-  display: inline-block;
   height: 2px;
-  background: blue;
   opacity: 0.7;
   filter: alpha(opacity = 70);
 }
@@ -253,8 +253,8 @@
 .slick-preheader-panel {
   .slick-header-column {
     border-style: solid;
-    border-width: var(--alpine-preheader-border-width, $alpine-preheader-border-width);
     border-color: var(--alpine-preheader-border-color, $alpine-preheader-border-color);
+    border-width: var(--alpine-preheader-border-width, $alpine-preheader-border-width);
   }
 }
 
@@ -265,12 +265,12 @@
 
 .slick-header-column {
   .slick-header-menubutton {
+    cursor: pointer;
+    display: none;
     position: absolute;
     right: 0;
     top: 0;
     bottom: 0;
-    cursor: pointer;
-    display: none;
     width: var(--alpine-header-menubutton-width, $alpine-header-menubutton-width);
     background-image: none;
     background-color:  var(--alpine-header-bg-color, $alpine-header-bg-color);
@@ -346,6 +346,10 @@
   overflow: hidden;
   margin: 0;
   padding: 0;
+
+  .slick-state-hover {
+    background: var(--alpine-header-name-hover-bg-color, $alpine-header-name-hover-bg-color);
+  }
 }
 
 .slick-column-name,
@@ -367,9 +371,10 @@
 }
 
 .slick-headerrow, .slick-footerrow {
-  background-color: var(--alpine-header-footer-background-color, $alpine-header-footer-background-color);
+  background-color: var(--alpine-header-footer-bg-color, $alpine-header-footer-bg-color);
+  position: relative;
 
-  &.ui-state-default {
+  &.slick-state-default {
     width: 100%;
     overflow: hidden;
     border-left: 0px;
@@ -388,43 +393,34 @@
   text-align: center;
 }
 
+.slick-footerrow-column,
+.slick-headerrow-column {
+  cursor: default;
+  padding: 4px;
+  position: absolute;
+  vertical-align: middle;
+  white-space: nowrap;
+  z-index: 1;
+}
+
 .slick-footerrow-column {
   font-size: var(--alpine-footerrow-font-size, $alpine-footerrow-font-size);
   overflow: ellipsis;
-  margin: 0;
-  padding: 4px;
   float: left;
   line-height: 20px;
-  vertical-align: middle;
   border-style: solid;
   border-color: var(--alpine-footerrow-border-color, $alpine-footerrow-border-color);
   border-radius: var(--alpine-footerrow-border-radius, $alpine-footerrow-border-radius);
   border-width: var(--alpine-footerrow-border-width, $alpine-footerrow-border-width);
-  position: absolute;
-  vertical-align: middle;
-  z-index: 1;
   margin: 0;
-  white-space: nowrap;
-  cursor: default;
 }
 
 .slick-headerrow-column {
-  position: absolute;
-  // border-right: 1px solid var(--alpine-border-color, $alpine-border-color);
-  // border-left: 0px;
-  // border-top: 0px;
-  // border-bottom: 0px;
   overflow: hidden;
-  vertical-align: middle;
-  z-index: 1;
-  padding: 4px;
-  white-space: nowrap;
-  cursor: default;
   height: 100%;
   box-sizing: border-box;
 
   input {
-    // margin: 0;
     width: 100%;
     height: 100%;
     box-sizing: border-box;
@@ -550,18 +546,7 @@
     background-repeat: no-repeat;
     background-position: center center;
 
-    &.sort-asc {
-      display: inline-block;
-      width: 0;
-      height: 0;
-      margin-left: 8px;
-      margin-top: 0px;
-      vertical-align: middle;
-      border-bottom: 4px dashed;
-      border-right: 4px solid transparent;
-      border-left: 4px solid transparent;
-    }
-
+    &.sort-asc,
     &.sort-desc {
       display: inline-block;
       width: 0;
@@ -569,9 +554,14 @@
       margin-left: 8px;
       margin-top: 0px;
       vertical-align: middle;
-      border-top: 4px dashed;
       border-right: 4px solid transparent;
       border-left: 4px solid transparent;
+    }
+    &.sort-asc {
+      border-bottom: 4px dashed;
+    }
+    &.sort-desc {
+      border-top: 4px dashed;
     }
   }
 
@@ -602,20 +592,19 @@
 .slick-pager {
   display: inline-flex;
   align-items: center;
-  font-family: var(--alpine-font-family, $alpine-font-family);
-  font-size: var(--alpine-font-size, $alpine-font-size);
   box-sizing: border-box;
-  height: var(--alpine-pager-height, $alpine-pager-height);
-  color: var(--alpine-font-color, $alpine-font-color);
-  border-style: solid;
+  background-color: var(--alpine-pager-bg-color, $alpine-pager-bg-color);
   border-color: var(--alpine-pager-border-color, $alpine-pager-border-color);
   border-radius: var(--alpine-pager-border-radius, $alpine-pager-border-radius);
   border-width: var(--alpine-pager-border-width, $alpine-pager-border-width);
-  width: 100%;
+  border-style: solid;
+  color: var(--alpine-font-color, $alpine-font-color);
   font-family: var(--alpine-font-family, $alpine-font-family);
-  vertical-align: middle;
-  background-color: var(--alpine-pager-bg-color, $alpine-pager-bg-color);
+  font-size: var(--alpine-font-size, $alpine-font-size);
+  height: var(--alpine-pager-height, $alpine-pager-height);
   padding: 4px;
+  vertical-align: middle;
+  width: 100%;
 
   .sgi {
     cursor: pointer;
@@ -653,17 +642,16 @@
 
     a {
       cursor: pointer;
-      padding: 2px;
-      padding-top: 0;
+      padding: 0 2px 2px 2px;
       text-decoration: underline;
     }
   }
 }
 
 .percent-complete-bar {
+  border-radius: 3px;
   display: inline-block;
   height: 6px;
-  border-radius: 3px;
 }
 
 .slick-columnpicker,
@@ -671,13 +659,13 @@
 .slick-cell-menu,
 .slick-header-menu,
 .slick-context-menu {
-  font-family: var(--alpine-font-family, $alpine-font-family);
-  font-size: var(--alpine-font-size, $alpine-font-size);
-  background-color: var(--alpine-menu-background-color, $alpine-menu-background-color);
+  background-color: var(--alpine-menu-bg-color, $alpine-menu-bg-color);
   border: var(--alpine-menu-border, $alpine-menu-border);
   border-radius: var(--alpine-menu-border-radius, $alpine-menu-border-radius);
   color: var(--alpine-menu-color, $alpine-menu-color);
   box-shadow: var(--alpine-menu-box-shadow, $alpine-menu-box-shadow);
+  font-family: var(--alpine-font-family, $alpine-font-family);
+  font-size: var(--alpine-font-size, $alpine-font-size);
 
   button.close {
     cursor: pointer;
@@ -701,16 +689,25 @@
   }
 }
 
-/* Slick.Editors.Text, Slick.Editors.Date */
-input.editor-text {
-  width: 100%;
+input.editor-checkbox,
+input.editor-text,
+input.editor-percentcomplete {
   height: 100%;
   border: 0;
-  border-radius: 0;
   margin: 0;
-  background: white;
   outline: 0;
   padding: 0;
+}
+input.editor-text,
+input.editor-percentcomplete {
+  width: 100%;
+}
+input.editor-text {
+  background: white;
+}
+input.editor-percentcomplete {
+  background: transparent;
+  float: left;
 }
 
 .editor-percentcomplete-picker {
@@ -735,17 +732,6 @@ input.editor-text {
 }
 
 /* Slick.Editors.PercentComplete */
-input.editor-percentcomplete {
-  width: 100%;
-  height: 100%;
-  border: 0;
-  margin: 0;
-  background: transparent;
-  outline: 0;
-  padding: 0;
-
-  float: left;
-}
 input[type='range'].editor-percentcomplete-slider {
   background-color: #ccc;
   transform: rotate(270deg);
@@ -799,15 +785,6 @@ select.editor-yesno {
   width: 100%;
   margin: 0;
   vertical-align: middle;
-}
-
-/* Slick.Editors.Checkbox */
-input.editor-checkbox {
-  margin: 0;
-  height: 100%;
-  padding: 0;
-  border: 0;
-  outline: 0;
 }
 
 .slick-composite-editor-modal,
