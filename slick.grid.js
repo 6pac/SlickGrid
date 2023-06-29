@@ -3457,9 +3457,13 @@ if (typeof Slick === "undefined") {
       }
 
       // get addl css class names from object type formatter return and from string type return of onBeforeAppendCell
+      // we will only use the event result as CSS classes when it is a string type (undefined event always return a true boolean which is not a valid css class)
       const evt = trigger(self.onBeforeAppendCell, { row: row, cell: cell, value: value, dataContext: item });
-      var addlCssClasses = evt.getReturnValue() || '';
-      addlCssClasses += (formatterResult && formatterResult.addClasses ? (addlCssClasses ? ' ' : '') + formatterResult.addClasses : '');
+      var appendCellResult = evt.getReturnValue();
+      var addlCssClasses = typeof appendCellResult === 'string' ? appendCellResult : '';
+      if (formatterResult && formatterResult.addClasses) {
+        addlCssClasses += (addlCssClasses ? ' ' : '') + formatterResult.addClasses;
+      }
       var toolTip = formatterResult && formatterResult.toolTip ? "title='" + formatterResult.toolTip + "'" : '';
 
       var customAttrStr = '';
