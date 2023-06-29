@@ -8,7 +8,7 @@
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
 </head>
 <body>
-<table width="100%" cellpadding="20">
+<table width="100%" cellpadding="2">
   <tr>
     <td valign="top" width="50%" id="myTable">
     </td>
@@ -59,7 +59,7 @@
     explicitInitialization: true
   };
 
-  document.addEventListener("DOMContentLoaded", function() {
+  document.addEventListener("DOMContentLoaded", () => {
     var data = [];
     for (var i = 0; i < 500; i++) {
       data[i] = {
@@ -86,7 +86,7 @@
     // ... later on, append the container to the DOM and initialize SlickGrid
     document.querySelector("#myTable").appendChild(gridElm);
     grid.init();
-  })
+  });
 </script>
 </body>
 </html>

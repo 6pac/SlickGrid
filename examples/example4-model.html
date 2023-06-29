@@ -30,15 +30,11 @@
     .slick-row.selected .cell-selection {
       background-color: transparent; /* show default selected row background */
     }
-    .ui-state-hover {
-      background: #6e6e6e44 !important;
-	    text-decoration: none;
-    }
   </style>
 </head>
 <body>
 <div style="position:relative">
-  <div style="width:600px;">
+  <div style="width:640px;">
     <div class="grid-header" style="width:100%">
       <label>SlickGrid</label>
       <span style="float:right;margin:0px 4px auto 6px;background:transparent;cursor:pointer;" class="sgi-search" title="Toggle search panel"
@@ -119,12 +115,12 @@ var grid;
 var data = [];
 var columns = [
   {id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 40, cannotTriggerInsert: true, resizable: false, selectable: false, excludeFromColumnPicker: true },
-  {id: "title", name: "Title", field: "title", width: 90, cssClass: "cell-title", editor: Slick.Editors.LongText, validator: requiredFieldValidator, sortable: true},
+  {id: "title", name: "Title", field: "title", width: 100, cssClass: "cell-title", editor: Slick.Editors.LongText, validator: requiredFieldValidator, sortable: true},
   {id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Text, sortable: true},
-  {id: "%", defaultSortAsc: false, name: "% Complete", field: "percentComplete", width: 100, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete, sortable: true},
+  {id: "%", defaultSortAsc: false, name: "% Complete", field: "percentComplete", width: 110, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete, sortable: true},
   {id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Flatpickr, sortable: true},
   {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Flatpickr, sortable: true},
-  {id: "effort-driven", name: "Effort Driven", width: 90, minWidth: 20, maxWidth: 90, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkbox, editor: Slick.Editors.Checkbox, cannotTriggerInsert: true, sortable: true}
+  {id: "effort-driven", name: "Effort Driven", width: 100, minWidth: 20, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkbox, editor: Slick.Editors.Checkbox, cannotTriggerInsert: true, sortable: true}
 ];
 
 var options = {
@@ -180,18 +176,6 @@ function comparer(a, b) {
 
 function toggleFilterRow() {
   grid.setTopPanelVisibility(!grid.getOptions().showTopPanel);
-}
-
-
-const headerSearchIcon = document.querySelector(".grid-header .slick-icon-search");
-if (headerSearchIcon) {
-  headerSearchIcon.classList.add("ui-state-default", "ui-corner-all");
-  headerSearchIcon.addEventListener('mouseover', (function (e) {
-    e.target.classList.add("ui-state-hover");
-  }));
-  headerSearchIcon.addEventListener('mouseout', (function (e) {
-    e.target.classList.remove("ui-state-hover");
-  }));
 }
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -303,15 +287,16 @@ document.addEventListener("DOMContentLoaded", function() {
   slider2.oninput = sliderCallback;
 
   // wire up the search textbox to apply the filter to the model
-  document.querySelector("#txtSearch,#txtSearch2").addEventListener('keyup', (e) => {
+  document.querySelectorAll("#txtSearch,#txtSearch2").forEach(elm => elm.addEventListener('keyup', (e) => {
     Slick.GlobalEditorLock.cancelCurrentEdit();
 
     // clear on Esc
     if (e.which == 27) e.target.value = '';
 
-    columnFilters['title'] = (e.target.value || '').trim();
+    searchString = (e.target.value || '').trim();
+    updateFilter();
     dataView.refresh();
-  });
+  }));
 
   function updateFilter() {
     dataView.setFilterArgs({

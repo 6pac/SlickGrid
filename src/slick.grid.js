@@ -409,15 +409,9 @@ export function SlickGrid(container, data, columns, options) {
         _preHeaderPanel = Utils.createDomElement('div', null, _preHeaderPanelScroller);
         _preHeaderPanelSpacer = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, _preHeaderPanelScroller);
 
-        _preHeaderPanelScrollerR = Utils.createDomElement('div', { className: 'slick-preheader-panel ui-state-default', style: { overflow: 'hidden', position: 'relative' } }, _paneHeaderR);
         _preHeaderPanelR = Utils.createDomElement('div', null, _preHeaderPanelScrollerR);
         _preHeaderPanelSpacerR = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, _preHeaderPanelScrollerR);
 
-        if (!options.showPreHeaderPanel) {
-          hide(_preHeaderPanelScroller);
-          hide(_preHeaderPanelScrollerR);
-        }
-      }
 
       // Append the header scroller containers
       _headerScrollerL = Utils.createDomElement('div', { className: 'slick-header ui-state-default slick-header-left' }, _paneHeaderL);

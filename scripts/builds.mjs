@@ -13,31 +13,31 @@ import { removeImportsPlugin } from './esbuild-plugins.mjs';
 const argv = yargs(hideBin(process.argv)).argv;
 export const BUILD_FORMATS = ['cjs', 'esm'];
 
+// when --prod is provided, we'll do a full build of all JS/TS files and also all SASS files
 if (argv.prod) {
   executeFullBuild();
   buildAllSassFiles();
   copySassFiles();
   // execSync('npm run build:types:prod');
 }
+
+// --test is only used for testing purpose,
+// TODO: this should eventually be removed before the next major release (also remove npm script)
 if (argv.test) {
   // buildAllIifeFiles(getAllJSFiles());
   // executeCjsEsmBuilds();
   copySassFiles();
 }
 
-function copySassFiles() {
-  // copy all scss files but exclude any variables files (starting with "_")
-  copyfiles(
-    ['src/styles/*.scss', 'dist/styles/sass'], // 1st in array is source, last is target
-    { flat: true, up: 2, exclude: '**/_*.scss' },
-    () => console.log('SASS files copied, proceeding to build all files')
-  );
-}
-
+/**
+ * Get a list of all JS/TS files (using glob pattern)
+ * @return {String[]} list of files
+ */
 function getAllJSFiles() {
   return globSync(['src/**/*.{js,ts}']);
 }
 
+/** Execute full build of all format types (iife, cjs & esm) */
 export async function executeFullBuild() {
   // get all JS in root(core), controls & plugins
   const allFiles = getAllJSFiles();
@@ -61,6 +61,9 @@ export async function executeFullBuild() {
   return await buildAllIifeFiles(allFiles);
 }
 
+/**
+ * Loop through all slick files and build them as separate iife files using esbuild
+ */
 export async function executeCjsEsmBuilds() {
   // build all other formats to a single bundled file
   for (const format of BUILD_FORMATS) {
@@ -71,7 +74,10 @@ export async function executeCjsEsmBuilds() {
   }
 }
 
-// bundle by either CJS or ESM formats
+/**
+ * Bundle with esbuild to either CJS or ESM format
+ * @param {"cjs" | "esm"} format - build format type
+ */
 export function bundleByFormat(format) {
   runBuild({
     entryPoints: ['src/index.js'],
@@ -87,9 +93,10 @@ export function bundleByFormat(format) {
 async function buildAllIifeFiles(allFiles) {
   const startTime = new Date().getTime();
 
+  // loop through all js/ts files and build them one at a time in iife
   for (const file of allFiles) {
     if (/index.[j|t]s/i.test(file) || /[\w\-.]*.d.ts/i.test(file)) {
-      continue; // skip index.js and any *.d.ts files which are not useful for iife
+      continue; // skip index.js and any *.d.ts files which are useless for iife
     }
     buildIifeFile(file);
   }
@@ -99,10 +106,8 @@ async function buildAllIifeFiles(allFiles) {
 
 /** build as iife, every file will be bundled separately */
 export async function buildIifeFile(file) {
-  let globalName;
-  if (/slick.core.[jt]s/gi.test(file)) {
-    globalName = 'Slick';
-  }
+  // for `slick.core.js` file only, we'll add it to the global Slick variable
+  const globalName = /slick.core.[jt]s/gi.test(file) ? 'Slick' : undefined;
 
   await runBuild({
     entryPoints: [file],
@@ -116,10 +121,14 @@ export async function buildIifeFile(file) {
   });
 }
 
-/** generic run of esbuild with some default options */
+/**
+ * Run esbuild build with default configs, merge any options provided
+ * @param {Object} [options] - optional esbuild options
+ */
 export function runBuild(options) {
   try {
     return build({
+      // default options
       ...{
         color: true,
         bundle: true,
@@ -130,21 +139,45 @@ export function runBuild(options) {
         logLevel: 'error',
         // packages: 'external', // check SortableJS
       },
+
+      // merge any optional esbuild options
       ...options,
     });
   } catch (err) {
+    // don't do anything when an error occured, this is to avoid watch mode to crash on errors
     // console.error('esbuild error: ', err);
   }
 }
 
+// --
+// SASS related methods
+// ----------------------
+
+/** Copy all SASS input files to the dist output folder */
+function copySassFiles() {
+  // copy all scss files but exclude any variable files (any file starting with "_")
+  copyfiles(
+    ['src/styles/*.scss', 'dist/styles/sass'], // 1st in array is source, last is target
+    { flat: true, up: 2, exclude: '**/_*.scss' },
+    () => console.log('SASS files copied.')
+  );
+}
+
+/** build all SASS (.scss) files, from "src/styles", to CSS (.css) */
 export function buildAllSassFiles() {
   try {
     execSync('npm run sass:build');
   } catch (err) {
+    // don't do anything when an error occured, this is to avoid watch mode to crash on errors
     // console.error('SASS error: ', JSON.stringify(err));
   }
 }
 
+/**
+ * build an input SASS (.scss) file to CSS (.css),
+ * if filename starts with "_" then it will trigger a full rebuild since it is a detected to be a SASS variable file.
+ * @param {String} sassFile
+ */
 export function buildSassFile(sassFile) {
   let sassLogged = false;
   const filename = path.basename(sassFile, '.scss');
@@ -157,7 +190,7 @@ export function buildSassFile(sassFile) {
   if (filename.startsWith('_')) {
     // when _variables changes, let's rebuild all SASS files instead of just one
     buildAllSassFiles();
-    console.log('prefixed scss file changed', sassFile)
+    console.log('variable scss file changed, triggering full SASS rebuild', sassFile)
   } else {
     const srcDir = 'src';
     const distDir = 'dist';
@@ -171,6 +204,7 @@ export function buildSassFile(sassFile) {
         sassCompile(`${srcDir ? srcDir + '/' : ''}styles/${posixPath}`, { style: 'compressed', quietDeps: true, noSourceMap: true }).css
       );
     } catch (err) {
+      // don't do anything when an error occured, this is to avoid watch mode to crash on errors
       // console.error('SASS error: ', err);
     }
   }
