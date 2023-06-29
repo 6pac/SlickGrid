@@ -171,7 +171,7 @@
         elm.role = 'button';
 
         if (options.buttonCssClass) {
-          elm.classList.add(options.buttonCssClass);
+          elm.classList.add(...options.buttonCssClass.split(' '));
         }
 
         if (options.buttonImage) {
@@ -260,7 +260,7 @@
         }
 
         if (item.cssClass) {
-          menuItem.classList.add(item.cssClass);
+          menuItem.classList.add(...item.cssClass.split(' '));
         }
 
         if (item.tooltip) {
@@ -272,7 +272,7 @@
         menuItem.appendChild(iconElm);
 
         if (item.iconCssClass) {
-          iconElm.classList.add(item.iconCssClass);
+          iconElm.classList.add(...item.iconCssClass.split(' '));
         }
 
         if (item.iconImage) {
@@ -285,7 +285,7 @@
         menuItem.appendChild(textElm);
 
         if (item.textCssClass) {
-          textElm.classList.add(item.textCssClass);
+          textElm.classList.add(...item.textCssClass.split(' '));
         }
 
         _menuElm.appendChild(menuItem);

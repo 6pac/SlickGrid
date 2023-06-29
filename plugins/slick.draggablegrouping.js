@@ -99,7 +99,7 @@
             const groupableIconElm = document.createElement('span');
             groupableIconElm.className = 'slick-column-groupable';
             if (options.groupIconCssClass) {
-              groupableIconElm.classList.add(options.groupIconCssClass.split(' '));
+              groupableIconElm.classList.add(...options.groupIconCssClass.split(' '));
             }
             if (options.groupIconImage) {
               groupableIconElm.style.background = "url(" + options.groupIconImage + ") no-repeat center center";
@@ -314,10 +314,10 @@
               const groupRemoveIconElm = document.createElement('div');
               groupRemoveIconElm.className = 'slick-groupby-remove';
               if (options.deleteIconCssClass) {
-                groupRemoveIconElm.classList.add(options.deleteIconCssClass.split(' '));
+                groupRemoveIconElm.classList.add(...options.deleteIconCssClass.split(' '));
               }
               if (options.deleteIconImage) {
-                groupRemoveIconElm.classList.add(options.deleteIconImage.split(' '));
+                groupRemoveIconElm.classList.add(...options.deleteIconImage.split(' '));
               }
               if (!options.deleteIconCssClass) {
                 groupRemoveIconElm.classList.add('slick-groupby-remove-icon');
