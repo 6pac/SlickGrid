@@ -696,6 +696,9 @@
     const hidden = selector == ":hidden";
 
     while ((el = el.parentNode) && el !== document) {
+      if (!el || !el.parentNode) {
+        break;
+      }
       if (hidden) {
         if(isHidden(el)) {
           parents.push(el);
