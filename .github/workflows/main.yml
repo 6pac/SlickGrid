@@ -56,5 +56,5 @@ jobs:
       - name: Run Cypress E2E tests
         uses: cypress-io/github-action@v5
         with:
-          wait-on: 'http://localhost:8080'
+          wait-on: 'http://localhost:8080/'
           browser: chrome
