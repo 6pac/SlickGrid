@@ -50,6 +50,6 @@ jobs:
       - name: Run Cypress E2E tests
         uses: cypress-io/github-action@v4
         with:
-          start: npm run dev
+          start: npm run serve
           wait-on: 'http://localhost:8080'
           browser: chrome

@@ -1,7 +1,11 @@
 import browserSync from 'browser-sync';
 import chokidar from 'chokidar';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 
 import { buildAllSassFiles, buildIifeFile, buildSassFile, executeFullBuild } from './builds.mjs';
+
+const argv = yargs(hideBin(process.argv)).argv;
 
 /**
  * Dev script that will watch for files changed and run esbuild for the file that changed
@@ -35,8 +39,10 @@ import { buildAllSassFiles, buildIifeFile, buildSassFile, executeFullBuild } fro
     process.stdin.on('exit', () => process.stdin.destroy());
 
     // run full prod build `/dist` and full SASS build
-    await executeFullBuild();
-    buildAllSassFiles();
+    if (!argv.serve) {
+      await executeFullBuild();
+      buildAllSassFiles();
+    }
 
     // start browser-sync server
     startBrowserSync();
@@ -52,8 +58,9 @@ import { buildAllSassFiles, buildIifeFile, buildSassFile, executeFullBuild } fro
     bsync.init({
       server: './',
       port: 8080,
-      watchTask: true,
+      watchTask: !argv.serve,
       online: false,
+      open: argv.open,
       startPath: 'examples/index.html'
     }, () => {
       console.log('Use Ctrl+C to Quit');
