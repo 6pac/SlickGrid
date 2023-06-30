@@ -61,7 +61,8 @@
     "presass:build": "rimraf dist/styles/css",
     "sass:build": "sass src/styles:dist/styles/css --style=compressed --quiet-deps --no-source-map",
     "postsass:build": "postcss dist/styles/css/**/* --dir dist/styles/css --base dist/styles/css --no-map --use cssnano --use autoprefixer --style=compressed",
-    "sass:copy": "copyfiles -f src/styles/*.scss dist/styles/sass"
+    "sass:copy": "copyfiles -f src/styles/*.scss dist/styles/sass",
+    "serve:demo": "http-server ./ -p 8080 -a localhost -s"
   },
   "dependencies": {
     "sortablejs": "^1.15.0"
@@ -85,6 +86,7 @@
     "fs-extra": "^11.1.1",
     "git-url-parse": "^13.1.0",
     "glob": "^10.3.0",
+    "http-server": "^14.1.1",
     "inquirer": "^9.2.7",
     "new-github-release-url": "^1.0.0",
     "path": "^0.12.7",
@@ -93,6 +95,7 @@
     "rimraf": "^5.0.1",
     "sass": "^1.63.6",
     "semver": "^7.5.3",
+    "servor": "^4.0.2",
     "strong-log-transformer": "^2.1.0",
     "typescript": "^5.1.3",
     "uglify-js": "^3.17.4",
