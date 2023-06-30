@@ -157,8 +157,8 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
       testInterval(0).then(newInterval => {
 
         // min scrolling speed is quicker than before
-        expect(0.8 * newInterval.cell).to.be.lessThan(defaultInterval.cell);
-        expect(0.8 * newInterval.row).to.be.lessThan(defaultInterval.row);
+        expect(1.5 * newInterval.cell).to.be.lessThan(defaultInterval.cell);
+        expect(1.5 * newInterval.row).to.be.lessThan(defaultInterval.row);
 
         cy.get('#setDefaultOption').click();
         cy.get('#maxIntervalToShowNextCell').should('have.value', '600');
