@@ -144,7 +144,7 @@
           }
 
           if (button.cssClass) {
-            btn.classList.add(button.cssClass);
+            btn.classList.add(...button.cssClass.split(' '));
           }
 
           if (button.tooltip) {

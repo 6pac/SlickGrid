@@ -492,7 +492,7 @@
         }
 
         if (item.cssClass) {
-          liElm.classList.add(item.cssClass);
+          liElm.classList.add(...item.cssClass.split(' '));
         }
 
         if (item.tooltip) {
@@ -505,7 +505,7 @@
         liElm.appendChild(iconElm);
 
         if (item.iconCssClass) {
-          iconElm.classList.add(item.iconCssClass);
+          iconElm.classList.add(...item.iconCssClass.split(' '));
         }
 
         if (item.iconImage) {
@@ -519,7 +519,7 @@
         liElm.appendChild(textElm);
 
         if (item.textCssClass) {
-          textElm.classList.add(item.textCssClass);
+          textElm.classList.add(...item.textCssClass.split(' '));
         }
 
         optionMenuElm.appendChild(liElm);
@@ -583,7 +583,7 @@
         }
 
         if (item.cssClass) {
-          liElm.classList.add(item.cssClass);
+          liElm.classList.add(...item.cssClass.split(' '));
         }
 
         if (item.tooltip) {
@@ -596,7 +596,7 @@
         liElm.appendChild(iconElm);
 
         if (item.iconCssClass) {
-          iconElm.classList.add(item.iconCssClass);
+          iconElm.classList.add(...item.iconCssClass.split(' '));
         }
 
         if (item.iconImage) {
@@ -610,7 +610,7 @@
         liElm.appendChild(textElm);
 
         if (item.textCssClass) {
-          textElm.classList.add(item.textCssClass);
+          textElm.classList.add(...item.textCssClass.split(' '));
         }
 
         commandMenuElm.appendChild(liElm);

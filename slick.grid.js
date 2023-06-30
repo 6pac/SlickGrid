@@ -347,7 +347,7 @@ if (typeof Slick === "undefined") {
         "cancelCurrentEdit": cancelCurrentEdit
       };
 
-      _container.replaceChildren();
+      utils.emptyElement(_container);
       _container.style.overflow = "hidden";
       _container.style.outline = 0;
       _container.classList.add(uid);
@@ -452,7 +452,7 @@ if (typeof Slick === "undefined") {
       _viewport = [_viewportTopL, _viewportTopR, _viewportBottomL, _viewportBottomR];
       if (options.viewportClass) {
         _viewport.forEach(function (view) {
-          view.classList.add(options.viewportClass);
+          view.classList.add(...options.viewportClass.split(' '));
         });
       }
 
@@ -511,7 +511,7 @@ if (typeof Slick === "undefined") {
       }
 
       _focusSink2 = _focusSink.cloneNode(true);
-      _container.append(_focusSink2);
+      _container.appendChild(_focusSink2);
 
       if (!options.explicitInitialization) {
         finishInitialization();
@@ -1175,8 +1175,8 @@ if (typeof Slick === "undefined") {
         });
         });
 
-        _footerRowL.replaceChildren();
-        _footerRowR.replaceChildren();
+        utils.emptyElement(_footerRowL);
+        utils.emptyElement(_footerRowR);
 
         for (var i = 0; i < columns.length; i++) {
           var m = columns[i];
@@ -1223,8 +1223,8 @@ if (typeof Slick === "undefined") {
         });
       })
 
-      _headerL.replaceChildren();
-      _headerR.replaceChildren();
+      utils.emptyElement(_headerL);
+      utils.emptyElement(_headerR);
 
       getHeadersWidth();
 
@@ -1245,8 +1245,8 @@ if (typeof Slick === "undefined") {
         });
       });
 
-      _headerRowL.replaceChildren();
-      _headerRowR.replaceChildren();
+      utils.emptyElement(_headerRowL);
+      utils.emptyElement(_headerRowR);
 
       if (options.createFooterRow) {
         const footerRowColumnElements = _footerRowL.querySelectorAll(".slick-footerrow-column");
@@ -1260,7 +1260,7 @@ if (typeof Slick === "undefined") {
             });
           }
         });
-        _footerRowL.replaceChildren();
+        utils.emptyElement(_footerRowL);
 
         if (hasFrozenColumns()) {
           const footerRowColumnElements = _footerRowR.querySelectorAll(".slick-footerrow-column");
@@ -1274,7 +1274,7 @@ if (typeof Slick === "undefined") {
               });
             }
           });
-          _footerRowR.replaceChildren();
+          utils.emptyElement(_footerRowR);
         }
       }
 
@@ -1291,7 +1291,7 @@ if (typeof Slick === "undefined") {
 
         let classname = m.headerCssClass || null;
         if (classname) {
-          header.classList.add(classname);
+          header.classList.add(...classname.split(' '));
         }
         classname = hasFrozenColumns() && i <= options.frozenColumn ? 'frozen' : null;
         if (classname) {
@@ -1973,10 +1973,10 @@ if (typeof Slick === "undefined") {
       _viewportBottomR.style['overflow-y'] = options.alwaysShowVerticalScroll ? "scroll" : (( hasFrozenColumns() ) ? ( hasFrozenRows ? 'auto' : 'auto'   ) : ( hasFrozenRows ? 'auto' : 'auto' ));
 
       if (options.viewportClass) {
-        _viewportTopL.classList.add(options.viewportClass);
-        _viewportTopR.classList.add(options.viewportClass);
-        _viewportBottomL.classList.add(options.viewportClass);
-        _viewportBottomR.classList.add(options.viewportClass);
+        _viewportTopL.classList.add(...options.viewportClass.split(' '));
+        _viewportTopR.classList.add(...options.viewportClass.split(' '));
+        _viewportBottomL.classList.add(...options.viewportClass.split(' '));
+        _viewportBottomR.classList.add(...options.viewportClass.split(' '));
       }
     }
 
@@ -2747,7 +2747,9 @@ if (typeof Slick === "undefined") {
         headerColEl = utils.createDomElement('div', { id: dummyHeaderColElId, className: 'ui-state-default slick-header-column', }, header);
         utils.createDomElement('span', { className: 'slick-column-name', innerHTML: sanitizeHtmlString(columnDef.name) }, headerColEl);
         clone.style.cssText = 'position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;';
-        headerColEl.classList.add(columnDef.headerCssClass || '');
+        if (columnDef.headerCssClass) {
+          headerColEl.classList.add(...columnDef.headerCssClass.split(' '));
+        }
         width = headerColEl.offsetWidth;
         header.removeChild(headerColEl);
       }
@@ -3456,9 +3458,13 @@ if (typeof Slick === "undefined") {
       }
 
       // get addl css class names from object type formatter return and from string type return of onBeforeAppendCell
+      // we will only use the event result as CSS classes when it is a string type (undefined event always return a true boolean which is not a valid css class)
       const evt = trigger(self.onBeforeAppendCell, { row: row, cell: cell, value: value, dataContext: item });
-      var addlCssClasses = evt.getReturnValue() || '';
-      addlCssClasses += (formatterResult && formatterResult.addClasses ? (addlCssClasses ? ' ' : '') + formatterResult.addClasses : '');
+      var appendCellResult = evt.getReturnValue();
+      var addlCssClasses = typeof appendCellResult === 'string' ? appendCellResult : '';
+      if (formatterResult && formatterResult.addClasses) {
+        addlCssClasses += (addlCssClasses ? ' ' : '') + formatterResult.addClasses;
+      }
       var toolTip = formatterResult && formatterResult.toolTip ? "title='" + formatterResult.toolTip + "'" : '';
 
       var customAttrStr = '';
@@ -5331,7 +5337,7 @@ if (typeof Slick === "undefined") {
       // walk up the tree
       var offsetParent = elem.offsetParent;
       while ((elem = elem.parentNode) != document.body) {
-        if (elem == null) {
+        if (!elem || !elem.parentNode) {
           break;
         }
 
