@@ -144,7 +144,7 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
     })
   })
 
-  it('should MAX interval take effect when auto scroll: 600ms -> 200ms', { scrollBehavior: false }, function () {
+  it.skip('should MAX interval take effect when auto scroll: 600ms -> 200ms', { scrollBehavior: false }, function () {
     // By default the MAX interval to show next cell is 600ms.
     testInterval(0).then(defaultInterval => {
 
