@@ -2,6 +2,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.1](https://github.com/6pac/SlickGrid/compare/4.0.0...4.0.1) (2023-06-30)
+
+### Bug Fixes
+
+* `getComputedStyle` could throw when DOM element is invalid ([#800](https://github.com/6pac/SlickGrid/issues/800)) ([2cecba1](https://github.com/6pac/SlickGrid/commit/2cecba1f25ca32a4c4e1384ed94c5234bb73140c))
+* `onBeforeAppendCell` should only be used when it's a string ([#802](https://github.com/6pac/SlickGrid/issues/802)) ([b367209](https://github.com/6pac/SlickGrid/commit/b36720937d7276ed344979edb83b0e281a75d9df))
+* allow for multiple css class names, fixes [#795](https://github.com/6pac/SlickGrid/issues/795) ([#797](https://github.com/6pac/SlickGrid/issues/797)) ([ab644b4](https://github.com/6pac/SlickGrid/commit/ab644b40516fb2f41f861f7010378c6f4d41adb9))
+* **demo:** calling cancel or close button should close modal ([#790](https://github.com/6pac/SlickGrid/issues/790)) ([6edfdd7](https://github.com/6pac/SlickGrid/commit/6edfdd724b7982ea49767179998413b98f7254cd))
+* **demo:** example with 3 plugins not sorting correctly ([#788](https://github.com/6pac/SlickGrid/issues/788)) ([e749aa9](https://github.com/6pac/SlickGrid/commit/e749aa968e9e2365d56ef81fa02e972b0777c722))
+* Grid Menu is shown twice after changing frozen options ([#793](https://github.com/6pac/SlickGrid/issues/793)) ([b458c23](https://github.com/6pac/SlickGrid/commit/b458c235cfa1b3b7b2b2782469eeed5aa37099d8))
+* make sure DOM element is valid before calling method on it ([#801](https://github.com/6pac/SlickGrid/issues/801)) ([b31a797](https://github.com/6pac/SlickGrid/commit/b31a797b8e1f25bd53a30b501ce20b2380e6d9f9))
+* remove invalid TS type and invalid this object ([#786](https://github.com/6pac/SlickGrid/issues/786)) ([ca2393c](https://github.com/6pac/SlickGrid/commit/ca2393c553c3250a891a1d37e1145e74c326a114))
+* replace some DOM Element functions not supported in Salesforce ([#796](https://github.com/6pac/SlickGrid/issues/796)) ([e427bd2](https://github.com/6pac/SlickGrid/commit/e427bd2e68edc14addfe04c1dc13ce1530334ea9))
+
+### Features
+
+* exclude checkbox selection from col picker/grid menu ([#787](https://github.com/6pac/SlickGrid/issues/787)) ([0b339e3](https://github.com/6pac/SlickGrid/commit/0b339e385d6341dd549a4c319b1963d702a127c7))
+
+### Reverts
+
+* Revert "feat: provide another styling theme (#779)" (#784) ([dafe1d1](https://github.com/6pac/SlickGrid/commit/dafe1d17debde0ea02635374f1eb6f2aa69c88e1)), closes [#779](https://github.com/6pac/SlickGrid/issues/779) [#784](https://github.com/6pac/SlickGrid/issues/784)
+
 # [4.0.0](https://github.com/6pac/SlickGrid/compare/3.0.4...4.0.0) (2023-05-28)
 
 ### Please read the [Migration Guide v4.0](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement)
