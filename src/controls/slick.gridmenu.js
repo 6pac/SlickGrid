@@ -342,7 +342,7 @@ export function SlickGridMenu(columns, grid, options) {
         }
 
         if (item.cssClass) {
-          liElm.classList.add(item.cssClass);
+          liElm.classList.add(...item.cssClass.split(' '));
         }
 
         if (item.tooltip) {
@@ -369,7 +369,7 @@ export function SlickGridMenu(columns, grid, options) {
         liElm.appendChild(textElm);
 
         if (item.textCssClass) {
-          textElm.classList.add(item.textCssClass);
+          textElm.classList.add(...item.textCssClass.split(' '));
         }
 
         customMenuElm.appendChild(liElm);

@@ -1,6 +1,6 @@
 {
   "name": "slickgrid",
-  "version": "4.0.0",
+  "version": "4.0.1",
   "description": "A lightning fast JavaScript grid/spreadsheet",
   "main": "dist/cjs/index.js",
   "module": "dist/esm/index.js",

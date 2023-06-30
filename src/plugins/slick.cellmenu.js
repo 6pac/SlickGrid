@@ -497,7 +497,7 @@ export function CellMenu(optionProperties) {
         }
 
         if (item.cssClass) {
-          liElm.classList.add(item.cssClass);
+          liElm.classList.add(...item.cssClass.split(' '));
         }
 
         if (item.tooltip) {
@@ -524,7 +524,7 @@ export function CellMenu(optionProperties) {
         liElm.appendChild(textElm);
 
         if (item.textCssClass) {
-          textElm.classList.add(item.textCssClass);
+          textElm.classList.add(...item.textCssClass.split(' '));
         }
 
         optionMenuElm.appendChild(liElm);
@@ -588,7 +588,7 @@ export function CellMenu(optionProperties) {
         }
 
         if (item.cssClass) {
-          liElm.classList.add(item.cssClass);
+          liElm.classList.add(...item.cssClass.split(' '));
         }
 
         if (item.tooltip) {
@@ -615,7 +615,7 @@ export function CellMenu(optionProperties) {
         liElm.appendChild(textElm);
 
         if (item.textCssClass) {
-          textElm.classList.add(item.textCssClass);
+          textElm.classList.add(...item.textCssClass.split(' '));
         }
 
         commandMenuElm.appendChild(liElm);
