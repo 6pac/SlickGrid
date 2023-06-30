@@ -39,10 +39,10 @@ const argv = yargs(hideBin(process.argv)).argv;
     process.stdin.on('exit', () => process.stdin.destroy());
 
     // run full prod build `/dist` and full SASS build
-    if (!argv.serve) {
+    // if (!argv.serve) {
       await executeFullBuild();
       buildAllSassFiles();
-    }
+    // }
 
     // start browser-sync server
     startBrowserSync();
@@ -58,7 +58,7 @@ const argv = yargs(hideBin(process.argv)).argv;
     bsync.init({
       server: './',
       port: 8080,
-      watchTask: !argv.serve,
+      watchTask: true,
       online: false,
       open: argv.open,
       startPath: 'examples/index.html'
