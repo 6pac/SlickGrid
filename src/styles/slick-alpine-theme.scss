@@ -817,11 +817,21 @@ button.slick-btn {
 
   &.slick-btn-default {
     background-color: var(--alpine-button-bg-color, $alpine-button-bg-color);
+    &:hover {
+      background-color: var(--alpine-button-default-hover-color, $alpine-button-default-hover-color);
+      border: var(--alpine-button-default-hover-border, $alpine-button-default-hover-border);
+    }
   }
 
   &.slick-btn-primary {
     border-color:  var(--alpine-button-primary-border-color, $alpine-button-primary-border-color);
     background-color: var(--alpine-button-primary-bg-color, $alpine-button-primary-bg-color);
     color: var(--alpine-button-primary-color, $alpine-button-primary-color);
+    &:active {
+      background-color: var(--alpine-button-primary-active-color, $alpine-button-primary-active-color);
+    }
+    &:hover {
+      background-color: var(--alpine-button-primary-hover-color, $alpine-button-primary-hover-color);
+    }
   }
 }
