@@ -68,9 +68,13 @@ $alpine-button-bg-color:                          #fff !default;
 $alpine-button-border:                            1px solid #ccc !default;
 $alpine-button-border-radius:                     2px !default;
 $alpine-button-padding:                           2px 4px !default;
-$alpine-button-primary-bg-color:                  darken(#3490dc, 12%) !default;
-$alpine-button-primary-color:                     #fff !default;
-$alpine-button-primary-border-color:              darken(#3490dc, 18%) !default;
+$alpine-button-default-hover-color:               rgba(68, 68, 68, 0.1) !default;
+$alpine-button-default-hover-border:              1px solid #9c9c9c !default;
+$alpine-button-primary-bg-color:                  #fff !default;
+$alpine-button-primary-active-color:              #2196f3 !default;
+$alpine-button-primary-hover-color:               rgba(33,150,243,.1) !default;
+$alpine-button-primary-color:                     #2196f3 !default;
+$alpine-button-primary-border-color:              #2196f3 !default;
 
 // Editors
 $alpine-cell-editable-border-radius:              3px !default;
