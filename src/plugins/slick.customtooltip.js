@@ -338,7 +338,7 @@ export function CustomTooltip(options) {
 
     function calculateAvailableSpaceTop(element) {
       var availableSpace = 0;
-      var pageScrollTop = windowScrollPosition().top;
+      var pageScrollTop = Utils.windowScrollPosition().top;
       var elmOffset = getHtmlElementOffset(element);
       if (elmOffset) {
         var elementOffsetTop = elmOffset.top;
@@ -364,13 +364,6 @@ export function CustomTooltip(options) {
         };
       }
       return inputPromise;
-    }
-
-    function windowScrollPosition() {
-      return {
-        left: window.pageXOffset || document.documentElement.scrollLeft || 0,
-        top: window.pageYOffset || document.documentElement.scrollTop || 0,
-      };
     }
 
     function getHtmlElementOffset(element) {

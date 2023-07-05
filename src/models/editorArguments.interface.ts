@@ -1,0 +1,45 @@
+import { Column } from "./column.interface";
+import { ElementPosition } from "./elementPosition.interface";
+import { PositionMethod } from "./positionMethod.type";
+
+export interface EditorArguments {
+  /** Column Definition */
+  column: Column;
+
+  /** Column MetaData */
+  columnMetaData: any;
+
+  /** When it's a Composite Editor (that is when it's an Editor created by the Composite Editor Modal window) */
+  compositeEditorOptions?: any;
+
+  /** Editor HTML DOM element container */
+  container: HTMLDivElement;
+
+  /** Slick DataView */
+  dataView: any;
+
+  /** Event that was triggered */
+  event: Event;
+
+  /** Slick Grid object */
+  grid: any;
+
+  /** Grid Position */
+  gridPosition: ElementPosition;
+
+  /** Item DataContext */
+  item: any;
+
+  /** Editor Position  */
+  position: PositionMethod | ElementPosition;
+
+  // ---
+  // Available Methods
+  // ------------------
+
+  /** Cancel changes callback method that will execute after user cancels an edit */
+  cancelChanges: () => void;
+
+  /** Commit changes callback method that will execute after user commits the changes */
+  commitChanges: () => void;
+}

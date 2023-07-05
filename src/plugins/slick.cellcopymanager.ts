@@ -1,0 +1,86 @@
+import { SlickEvent as SlickEvent_, keyCode as keyCode_, Utils as Utils_ } from '../slick.core';
+
+// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+const keyCode = (IIFE_ONLY ? Slick.keyCode : keyCode_) as typeof keyCode_;
+const SlickEvent = (IIFE_ONLY ? Slick.Event : SlickEvent_) as typeof SlickEvent_;
+const Utils = (IIFE_ONLY ? Slick.Utils : Utils_) as typeof Utils_;
+
+export class SlickCellCopyManager {
+  protected _grid;
+  protected _copiedRanges;
+  onCopyCells = new SlickEvent();
+  onCopyCancelled = new SlickEvent();
+  onPasteCells = new SlickEvent();
+
+  init(grid) {
+    this._grid = grid;
+    this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this));
+  }
+
+  destroy() {
+    this._grid.onKeyDown.unsubscribe(this.handleKeyDown.bind(this));
+  }
+
+  handleKeyDown(e: KeyboardEvent) {
+    let ranges;
+    if (!this._grid.getEditorLock().isActive()) {
+      if (e.which == keyCode.ESCAPE) {
+        if (this._copiedRanges) {
+          e.preventDefault();
+          this.clearCopySelection();
+          this.onCopyCancelled.notify({ ranges: this._copiedRanges });
+          this._copiedRanges = null;
+        }
+      }
+
+      if (e.which == 67 && (e.ctrlKey || e.metaKey)) {
+        ranges = this._grid.getSelectionModel().getSelectedRanges();
+        if (ranges.length !== 0) {
+          e.preventDefault();
+          this._copiedRanges = ranges;
+          this.markCopySelection(ranges);
+          this.onCopyCells.notify({ ranges });
+        }
+      }
+
+      if (e.which == 86 && (e.ctrlKey || e.metaKey)) {
+        if (this._copiedRanges) {
+          e.preventDefault();
+          ranges = this._grid.getSelectionModel().getSelectedRanges();
+          this.onPasteCells.notify({ from: this._copiedRanges, to: ranges });
+          if (!this._grid.getOptions().preserveCopiedSelectionOnPaste) {
+            this.clearCopySelection();
+            this._copiedRanges = null;
+          }
+        }
+      }
+    }
+  }
+
+  markCopySelection(ranges) {
+    let columns = this._grid.getColumns();
+    let hash = {};
+    for (let i = 0; i < ranges.length; i++) {
+      for (let j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
+        hash[j] = {};
+        for (let k = ranges[i].fromCell; k <= ranges[i].toCell; k++) {
+          hash[j][columns[k].id] = 'copied';
+        }
+      }
+    }
+    this._grid.setCellCssStyles('copy-manager', hash);
+  }
+
+  clearCopySelection() {
+    this._grid.removeCellCssStyles('copy-manager');
+  }
+}
+
+// extend Slick namespace on window object when building as iife
+if (IIFE_ONLY && window.Slick) {
+  Utils.extend(true, window, {
+    Slick: {
+      CellCopyManager: SlickCellCopyManager
+    }
+  });
+}

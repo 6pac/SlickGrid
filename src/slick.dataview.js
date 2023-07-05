@@ -5,7 +5,7 @@ import {
   GroupTotals as GroupTotals_,
   Utils as Utils_
 } from './slick.core';
-import { GroupItemMetadataProvider as GroupItemMetadataProvider_ } from './slick.groupitemmetadataprovider';
+import { SlickGroupItemMetadataProvider as SlickGroupItemMetadataProvider_ } from './slick.groupitemmetadataprovider';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
@@ -13,7 +13,7 @@ const EventData = IIFE_ONLY ? Slick.EventData : EventData_;
 const Group = IIFE_ONLY ? Slick.Group : Group_;
 const GroupTotals = IIFE_ONLY ? Slick.GroupTotals : GroupTotals_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
-const GroupItemMetadataProvider = IIFE_ONLY ? Slick.GroupItemMetadataProvider : GroupItemMetadataProvider_;
+const SlickGroupItemMetadataProvider = IIFE_ONLY ? Slick.GroupItemMetadataProvider : SlickGroupItemMetadataProvider_;
 
 /***
    * A sample Model implementation.
@@ -338,7 +338,7 @@ export function DataView(options) {
 
     function setGrouping(groupingInfo) {
       if (!options.groupItemMetadataProvider) {
-        options.groupItemMetadataProvider = new GroupItemMetadataProvider();
+        options.groupItemMetadataProvider = new SlickGroupItemMetadataProvider();
       }
 
       groups = [];
@@ -1501,7 +1501,6 @@ export function DataView(options) {
       }
 
       grid.onCellCssStylesChanged.subscribe(function (e, args) {
-        debugger;
         if (inHandler) { return; }
         if (key != args.key) { return; }
         if (args.hash) {
