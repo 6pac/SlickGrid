@@ -19,15 +19,13 @@
 import {
   BindingEventService as BindingEventService_,
   ColAutosizeMode as ColAutosizeMode_,
-  Event as SlickEvent_,
-  EventData as EventData_,
+  SlickEvent as SlickEvent_,
+  SlickEventData as EventData_,
   GlobalEditorLock as GlobalEditorLock_,
   GridAutosizeColsMode as GridAutosizeColsMode_,
-  Group as Group_,
-  GroupTotals as GroupTotals_,
   keyCode as keyCode_,
   preClickClassName as preClickClassName_,
-  Range as SlickRange_,
+  SlickRange as SlickRange_,
   RowSelectionMode as RowSelectionMode_,
   ValueFilterMode as ValueFilterMode_,
   Utils as Utils_,
@@ -42,8 +40,6 @@ const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
 const EventData = IIFE_ONLY ? Slick.EventData : EventData_;
 const GlobalEditorLock = IIFE_ONLY ? Slick.GlobalEditorLock : GlobalEditorLock_;
 const GridAutosizeColsMode = IIFE_ONLY ? Slick.GridAutosizeColsMode : GridAutosizeColsMode_;
-const Group = IIFE_ONLY ? Slick.Group : Group_;
-const GroupTotals = IIFE_ONLY ? Slick.GroupTotals : GroupTotals_;
 const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;
 const preClickClassName = IIFE_ONLY ? Slick.preClickClassName : preClickClassName_;
 const SlickRange = IIFE_ONLY ? Slick.Range : SlickRange_;
@@ -94,8 +90,7 @@ export function SlickGrid(container, data, columns, options) {
     asyncPostRenderDelay: 50,
     enableAsyncPostRenderCleanup: false,
     asyncPostRenderCleanupDelay: 40,
-    auto
-      : false,
+    auto: false,
     editorLock: GlobalEditorLock,
     showColumnHeader: true,
     showHeaderRow: false,

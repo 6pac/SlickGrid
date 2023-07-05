@@ -102,8 +102,8 @@
     Editors,
     Formatters,
     GlobalEditorLock,
-    Group,
-    GroupItemMetadataProvider,
+    SlickGroup,
+    SlickGroupItemMetadataProvider,
     RowSelectionModel,
     SlickColumnPicker,
     SlickGrid,
@@ -313,7 +313,7 @@ function loadData(count) {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-  var groupItemMetadataProvider = new GroupItemMetadataProvider();
+  var groupItemMetadataProvider = new SlickGroupItemMetadataProvider();
   dataView = new DataView({
     groupItemMetadataProvider: groupItemMetadataProvider,
     inlineFilters: true

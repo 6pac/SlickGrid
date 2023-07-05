@@ -11,3 +11,4 @@ nuget*
 testresult.xml
 yarn-error.log
 yarn.lock
+tsconfig.tsbuildinfo
