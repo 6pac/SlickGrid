@@ -4,9 +4,9 @@
  * @namespace Slick
  */
 
-import { InferDOMType } from "./models/infer.type";
+import type { InferDOMType } from './models/index';
 
-export type Handler<H = any> = (e: SlickEventData, data: H) => void;
+export type Handler<ArgType = any> = (e: any, args: ArgType) => void;
 
 export interface ElementEventListener {
   element: Element;
@@ -128,8 +128,8 @@ export class SlickEventData {
  * @class Event
  * @constructor
  */
-export class SlickEvent<T = any> {
-  protected handlers: Handler<T>[] = [];
+export class SlickEvent<EventType extends SlickEvent | SlickEventData = SlickEventData> {
+  protected handlers: Handler<any>[] = [];
 
   /***
    * Adds an event handler to be called when the event is fired.
@@ -138,7 +138,7 @@ export class SlickEvent<T = any> {
    * @method subscribe
    * @param fn {Function} Event handler.
    */
-  subscribe<T = any>(fn: () => T) {
+  subscribe<ArgType = any>(fn: Handler<ArgType>) {
     this.handlers.push(fn);
   };
 
@@ -147,7 +147,7 @@ export class SlickEvent<T = any> {
    * @method unsubscribe
    * @param fn {Function} Event handler to be removed.
    */
-  unsubscribe<T = any>(fn: () => T) {
+  unsubscribe<ArgType = any>(fn: Handler<ArgType>) {
     for (let i = this.handlers.length - 1; i >= 0; i--) {
       if (this.handlers[i] === fn) {
         this.handlers.splice(i, 1);
@@ -168,14 +168,14 @@ export class SlickEvent<T = any> {
    *      The scope ("this") within which the handler will be executed.
    *      If not specified, the scope will be set to the <code>Event</code> instance.
    */
-  notify(args: any, e?: SlickEventData, scope?: any) {
+  notify(args: any, e?: SlickEventData | Event, scope?: any) {
     if (!(e instanceof SlickEventData)) {
       e = new SlickEventData(e, args);
     }
     scope = scope || this;
 
     for (let i = 0; i < this.handlers.length && !(e.isPropagationStopped() || e.isImmediatePropagationStopped()); i++) {
-      const returnValue = this.handlers[i].call(scope, e, args);
+      const returnValue = this.handlers[i].call(scope, e as EventType, args);
       e.addReturnValue(returnValue);
     }
 
@@ -183,20 +183,17 @@ export class SlickEvent<T = any> {
   };
 }
 
-export class SlickEventHandler<T = any> {
-  protected handlers: Array<{ event: SlickEvent; handler: () => T }> = [];
+export class SlickEventHandler<ArgType = any> {
+  protected handlers: Array<{ event: SlickEvent; handler: Handler<ArgType>; }> = [];
 
-  subscribe(event: SlickEvent, handler: () => T) {
-    this.handlers.push({
-      event: event,
-      handler: handler
-    });
-    event.subscribe<T>(handler);
+  subscribe(event: SlickEvent, handler: Handler<ArgType>) {
+    this.handlers.push({ event, handler });
+    event.subscribe<ArgType>(handler);
 
     return this;  // allow chaining
   }
 
-  unsubscribe(event, handler) {
+  unsubscribe(event: SlickEvent, handler: Handler<ArgType>) {
     let i = this.handlers.length;
     while (i--) {
       if (this.handlers[i].event === event &&
@@ -575,7 +572,7 @@ function calculateAvailableSpace(element: HTMLElement) {
  */
 function createDomElement<T extends keyof HTMLElementTagNameMap, K extends keyof HTMLElementTagNameMap[T]>(
   tagName: T,
-  elementOptions?: { [P in K]: InferDOMType<HTMLElementTagNameMap[T][P]> },
+  elementOptions?: null | { [P in K]: InferDOMType<HTMLElementTagNameMap[T][P]> },
   appendToParent?: Element
 ): HTMLElementTagNameMap[T] {
   const elm = document.createElement<T>(tagName);
@@ -655,7 +652,7 @@ function isEmptyObject(obj: any) {
 
 function noop() { }
 
-function offset(el) {
+function offset(el: HTMLElement) {
   if (!el || !el.getBoundingClientRect) {
     return undefined;
   }
@@ -691,7 +688,7 @@ function height(el: HTMLElement, value?: number | string): number | void {
   setStyleSize(el, 'height', value);
 }
 
-function setStyleSize(el: HTMLElement, style: string, val: number | string | Function) {
+function setStyleSize(el: HTMLElement, style: string, val?: number | string | Function) {
   if (typeof val === 'function') {
     val = val();
   } else if (typeof val === 'string') {
@@ -743,15 +740,15 @@ function parents(el: HTMLElement | ParentNode, selector?: string) {
   return parents;
 }
 
-function toFloat(value: string) {
-  let x = parseFloat(value);
+function toFloat(value: string | number) {
+  let x = parseFloat(value as string);
   if (isNaN(x)) {
     return 0;
   }
   return x;
 }
 
-function show(el: HTMLElement, type = '') {
+function show(el: HTMLElement | HTMLElement[], type = '') {
   if (Array.isArray(el)) {
     el.forEach((e) => e.style.display = type)
   } else {
@@ -759,7 +756,7 @@ function show(el: HTMLElement, type = '') {
   }
 }
 
-function hide(el: HTMLElement) {
+function hide(el: HTMLElement | HTMLElement[]) {
   if (Array.isArray(el)) {
     el.forEach(function (e) {
       e.style.display = 'none';
@@ -769,15 +766,15 @@ function hide(el: HTMLElement) {
   }
 }
 
-function slideUp(el: HTMLElement, callback: Function) {
+function slideUp(el: HTMLElement | HTMLElement[], callback: Function) {
   return slideAnimation(el, 'slideUp', callback);
 }
 
-function slideDown(el: HTMLElement, callback: Function) {
+function slideDown(el: HTMLElement | HTMLElement[], callback: Function) {
   return slideAnimation(el, 'slideDown', callback);
 }
 
-function slideAnimation(el: HTMLElement, slideDirection: 'slideDown' | 'slideUp', callback: Function) {
+function slideAnimation(el: HTMLElement | HTMLElement[], slideDirection: 'slideDown' | 'slideUp', callback: Function) {
   if ((window as any).jQuery !== undefined) {
     (window as any).jQuery(el)[slideDirection]('fast', callback);
     return;
@@ -812,7 +809,7 @@ function isPlainObject(obj: any) {
   return typeof Ctor === 'function' && fnToString.call(Ctor) === ObjectFunctionString;
 }
 
-function extend(...args: any[]) {
+function extend<T = any>(...args: any[]): T {
   let options, name, src, copy, copyIsArray, clone,
     target = args[0],
     i = 1,
@@ -859,7 +856,7 @@ function extend(...args: any[]) {
       }
     }
   }
-  return target;
+  return target as T;
 }
 
 /**
@@ -876,13 +873,13 @@ export class BindingEventService {
   }
 
   /** Bind an event listener to any element */
-  bind(element, eventName, listener, options) {
+  bind(element: Element, eventName: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions) {
     element.addEventListener(eventName, listener, options);
     this.boundedEvents.push({ element: element, eventName, listener });
   }
 
   /** Unbind all will remove every every event handlers that were bounded earlier */
-  unbind(element, eventName, listener) {
+  unbind(element: Element, eventName: string, listener: EventListenerOrEventListenerObject) {
     if (element && element.removeEventListener) {
       element.removeEventListener(eventName, listener);
     }

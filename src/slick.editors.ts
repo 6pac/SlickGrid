@@ -1,6 +1,4 @@
-import { Editor } from './models/editor.interface';
-import { EditorArguments } from './models/editorArguments.interface';
-import { EditorValidationResult } from './models/editorValidationResult.interface';
+import type { Editor, EditorArguments, EditorValidationResult } from './models/index';
 import { keyCode as keyCode_, Utils as Utils_ } from './slick.core';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)

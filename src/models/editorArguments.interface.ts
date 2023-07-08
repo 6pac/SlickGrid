@@ -1,6 +1,6 @@
-import { Column } from "./column.interface";
-import { ElementPosition } from "./elementPosition.interface";
-import { PositionMethod } from "./positionMethod.type";
+
+import { Column, ElementPosition, PositionMethod } from './index';
+import type { SlickGrid } from '../slick.grid';
 
 export interface EditorArguments {
   /** Column Definition */
@@ -22,7 +22,7 @@ export interface EditorArguments {
   event: Event;
 
   /** Slick Grid object */
-  grid: any;
+  grid: SlickGrid;
 
   /** Grid Position */
   gridPosition: ElementPosition;

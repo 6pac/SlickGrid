@@ -1,6 +1,6 @@
-import { GroupItemMetadataProviderOption } from './models/groupItemMetadataProviderOption.interface';
-import { GroupingFormatterItem } from './models/groupingFormatterItem.interface';
+import type { Column, GroupItemMetadataProviderOption, GroupingFormatterItem } from './models/index';
 import { SlickGroup as SlickGroup_, keyCode as keyCode_, Utils as Utils_ } from './slick.core';
+import type { SlickGrid } from './slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
 const SlickGroup = (IIFE_ONLY ? Slick.Group : SlickGroup_) as typeof SlickGroup_;
@@ -22,9 +22,9 @@ const Utils = (IIFE_ONLY ? Slick.Utils : Utils_) as typeof Utils_;
  * @param inputOptions
  */
 export class SlickGroupItemMetadataProvider {
-  protected _grid;
+  protected _grid!: SlickGrid;
   protected _options: GroupItemMetadataProviderOption;
-  protected _defaults = {
+  protected _defaults: GroupItemMetadataProviderOption = {
     checkboxSelect: false,
     checkboxSelectCssClass: "slick-group-select-checkbox",
     checkboxSelectPlugin: null,
@@ -43,7 +43,7 @@ export class SlickGroupItemMetadataProvider {
   };
 
   constructor(inputOptions?: GroupItemMetadataProviderOption) {
-    this._options = Utils.extend(true, {}, this._defaults, inputOptions);
+    this._options = Utils.extend<GroupItemMetadataProviderOption>(true, {}, this._defaults, inputOptions);
   }
 
   /** Getter of SlickGrid DataView object */
@@ -59,7 +59,7 @@ export class SlickGroupItemMetadataProvider {
     Utils.extend(true, this._options, inputOptions);
   }
 
-  defaultGroupCellFormatter(_row: number, _cell: number, _value: any, _columnDef: any, item: any) {
+  defaultGroupCellFormatter(_row: number, _cell: number, _value: any, _columnDef: Column, item: any): string {
     if (!this._options.enableExpandCollapse) {
       return item.title;
     }
@@ -77,16 +77,15 @@ export class SlickGroupItemMetadataProvider {
       '</span>';
   }
 
-  defaultTotalsCellFormatter(_row: number, _cell: number, _value: any, columnDef: any, item: any, grid: any) {
-    return (columnDef.groupTotalsFormatter && columnDef.groupTotalsFormatter(item, columnDef, grid)) || '';
+  defaultTotalsCellFormatter(_row: number, _cell: number, _value: any, columnDef: Column, item: any, grid: SlickGrid) {
+    return (columnDef?.groupTotalsFormatter?.(item, columnDef, grid)) ?? '';
   }
 
 
-  init(grid) {
+  init(grid: SlickGrid) {
     this._grid = grid;
     this._grid.onClick.subscribe(this.handleGridClick.bind(this) as EventListener);
     this._grid.onKeyDown.subscribe(this.handleGridKeyDown.bind(this) as EventListener);
-
   }
 
   destroy() {
@@ -96,7 +95,7 @@ export class SlickGroupItemMetadataProvider {
     }
   }
 
-  handleGridClick(e: MouseEvent & { target: HTMLElement }, args: { row: number; cell: number; grid: any; }) {
+  handleGridClick(e: MouseEvent & { target: HTMLElement }, args: { row: number; cell: number; grid: SlickGrid; }) {
     let target = e.target;
     let item = this._grid.getDataItem(args.row);
     if (item && item instanceof SlickGroup && target.classList.contains(this._options.toggleCssClass || '')) {

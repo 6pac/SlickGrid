@@ -1,6 +1,4 @@
-import { CompositeEditorOption } from './models/compositeEditorOption.interface';
-import { Editor } from './models/editor.interface';
-import { EditorArguments } from './models/editorArguments.interface';
+import { CompositeEditorOption, Editor, EditorArguments } from './models/index';
 import { Utils as Utils_ } from './slick.core';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)

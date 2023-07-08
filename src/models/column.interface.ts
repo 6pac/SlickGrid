@@ -21,13 +21,39 @@ type Join<T extends any[], D extends string> =
   F extends string ? string extends F ? string : `${F}${D}${Join<R, D>}` : never : string;
 /* eslint-enable @typescript-eslint/indent */
 
+export interface AutoSize {
+  autosizeMode?: string;
+  widthPx?: number;
+  ignoreHeaderText?: boolean;
+  colValueArray?: any[];
+  allowAddlPercent?: number;
+  formatterOverride?: Formatter;
+  rowSelectionModeOnInit?: any;
+  rowSelectionMode?: any;
+  rowSelectionCount?: number;
+  valueFilterMode?: any;
+  widthEvalMode?: any;
+  sizeToRemaining?: any;
+  contentSizePx?: number;
+  headerWidthPx?: number;
+  colDataTypeOf?: any;
+}
+
 export interface Column<T = any> {
   /** async background post-rendering formatter */
-  asyncPostRender?: (domCellNode: any, row: number, dataContext: T, columnDef: Column) => void;
+  asyncPostRender?: (domCellNode: any, row: number, dataContext: T, columnDef: Column, process?: boolean) => void;
+  asyncPostRenderCleanup?: (node: HTMLElement, rowIdx: number, column: Column) => void;
+  autoSize?: AutoSize;
+
+  alwaysRenderColumn?: boolean;
 
   /** optional Behavior of a column with action, for example it's used by the Row Move Manager Plugin */
   behavior?: string;
 
+  headerCellAttrs?: any;
+  cellAttrs?: any;
+
+  cannotTriggerInsert?: boolean;
   /** Column group name for grouping of column headers spanning accross multiple columns */
   columnGroup?: string;
 
@@ -97,6 +123,8 @@ export interface Column<T = any> {
   /** Formatter function is to format, or visually change, the data shown in the grid (UI) in a different way without affecting the source. */
   formatter?: Formatter<T>;
 
+  formatterOverride?: any;
+
   /** Grouping option used by a Draggable Grouping Column */
   grouping?: Grouping;
 
@@ -107,7 +135,10 @@ export interface Column<T = any> {
   header?: any;
 
   /** CSS class that can be added to the column header */
-  headerCssClass?: string;
+  headerCssClass?: string | null;
+
+  /** is the column hidden? */
+  hidden?: boolean;
 
   /** ID of the column, each row have to be unique or SlickGrid will throw an error. */
   id: number | string;
@@ -129,6 +160,15 @@ export interface Column<T = any> {
 
   /** an event that can be used for executing an action after a cell click */
   onCellClick?: (e: SlickEventData, args: any) => void;
+
+  /** column offset width */
+  offsetWidth?: number;
+
+  /** column previous width */
+  previousWidth?: number;
+
+  /** Should we re-render when onResize is being triggered? */
+  rerenderOnResize?: boolean;
 
   /** Is the column resizable, can we make it wider/thinner? A resize cursor will show on the right side of the column when enabled. */
   resizable?: boolean;
@@ -158,4 +198,6 @@ export interface Column<T = any> {
 
   /** Width of the column in pixels (number only). */
   width?: number;
+
+  widthRequest?: number;
 }

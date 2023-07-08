@@ -1,18 +1,9 @@
+import type { AutoTooltipOption, Column } from '../models/index';
+import type { SlickGrid } from '../slick.grid';
 import { Utils as Utils_ } from '../slick.core';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
 const Utils = (IIFE_ONLY ? Slick.Utils : Utils_) as typeof Utils_;
-
-export interface AutoTooltipOption {
-  /** Enable tooltip for grid cells */
-  enableForCells?: boolean;
-  /** Enable tooltip for header cells */
-  enableForHeaderCells?: boolean;
-  /** The maximum length for a tooltip */
-  maxToolTipLength?: number;
-  /** Replace existing tooltip text */
-  replaceExisting?: boolean;
-}
 
 /**
  * AutoTooltips plugin to show/hide tooltips when columns are too narrow to fit content.
@@ -23,7 +14,7 @@ export interface AutoTooltipOption {
  */
 export class SlickAutoTooltips {
   pluginName: 'AutoTooltips' = 'AutoTooltips' as const;
-  protected _grid!: any;
+  protected _grid!: SlickGrid;
   protected _options?: AutoTooltipOption
   protected _defaults: AutoTooltipOption = {
     enableForCells: true,
@@ -40,14 +31,14 @@ export class SlickAutoTooltips {
   /**
    * Initialize plugin.
    */
-  init(grid) {
+  init(grid: SlickGrid) {
     this._options = Utils.extend(true, {}, this._defaults, this._options);
     this._grid = grid;
     if (this._options?.enableForCells) {
       this._grid.onMouseEnter.subscribe(this.handleMouseEnter.bind(this));
     }
     if (this._options?.enableForHeaderCells) {
-      this._grid.onHeaderMouseEnter.subscribe(this.handleHeaderMouseEnter.bind(this));
+      this._grid.onHeaderMouseEnter.subscribe<{ column: Column; }>(this.handleHeaderMouseEnter.bind(this));
     }
   }
 
@@ -92,7 +83,7 @@ export class SlickAutoTooltips {
    * @param {MouseEvent} event   - The event
    * @param {object} args.column - The column definition
    */
-  handleHeaderMouseEnter(event: MouseEvent, args: { column: any; }) {
+  handleHeaderMouseEnter(event: MouseEvent, args: { column: Column; }) {
     const column = args.column;
     let node: HTMLDivElement | null;
     const targetElm = (event.target as HTMLDivElement);
