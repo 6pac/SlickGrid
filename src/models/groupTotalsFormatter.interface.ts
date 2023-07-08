@@ -1,4 +1,4 @@
-import type { Column } from './column.interface';
-// import type { SlickGrid } from './slickGrid.interface';
+import type { Column } from './index';
+import type { SlickGrid } from '../slick.grid';
 
-export type GroupTotalsFormatter = (totals: any, columnDef: Column, grid: any) => string;
+export type GroupTotalsFormatter = (totals: any, columnDef: Column, grid: SlickGrid) => string;

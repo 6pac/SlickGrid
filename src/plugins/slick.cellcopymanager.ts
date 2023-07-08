@@ -1,8 +1,9 @@
+import { SlickGrid } from '../slick.grid';
 import { SlickEvent as SlickEvent_, keyCode as keyCode_, Utils as Utils_ } from '../slick.core';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
-const keyCode = (IIFE_ONLY ? Slick.keyCode : keyCode_) as typeof keyCode_;
-const SlickEvent = (IIFE_ONLY ? Slick.Event : SlickEvent_) as typeof SlickEvent_;
+const keyCode = (IIFE_ONLY ? Slick.keyCode : keyCode_);
+const SlickEvent = (IIFE_ONLY ? Slick.Event : SlickEvent_);
 const Utils = (IIFE_ONLY ? Slick.Utils : Utils_) as typeof Utils_;
 
 export class SlickCellCopyManager {
@@ -12,7 +13,7 @@ export class SlickCellCopyManager {
   onCopyCancelled = new SlickEvent();
   onPasteCells = new SlickEvent();
 
-  init(grid) {
+  init(grid: SlickGrid) {
     this._grid = grid;
     this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this));
   }

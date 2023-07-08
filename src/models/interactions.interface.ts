@@ -1,6 +1,9 @@
 // --
 // slick.interactions.ts
 
+export interface InteractionBase {
+  destroy: () => void;
+}
 export interface DraggableOption {
   /** container DOM element, defaults to "document" */
   containerElement?: HTMLElement | Document;

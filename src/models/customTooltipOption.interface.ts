@@ -1,5 +1,5 @@
-import { Column } from "./column.interface";
-import { Formatter } from "./formatter.interface";
+import type { SlickGrid } from '../slick.grid';
+import type { Column, Formatter } from './index';
 
 type PostProcessOutput<P> = P & { [asyncParamsPropName: string]: any; };
 export type asyncProcess<T = any> = (row: number, cell: number, value: any, columnDef: Column<T>, dataContext: T, grid?: any) => Promise<PostProcessOutput<T>>;
@@ -92,5 +92,5 @@ export interface CustomTooltipOption<T = any> {
   // Methods
 
   /** Callback method that user can override the default behavior of showing the tooltip. If it returns False, then the tooltip won't show */
-  usabilityOverride?: (args: { cell: number; row: number; column: Column; dataContext: any; type: 'cell' | 'header' | 'header-row'; grid: any; }) => boolean;
+  usabilityOverride?: (args: { cell: number; row: number; column: Column; dataContext: any; type: 'cell' | 'header' | 'header-row'; grid: SlickGrid; }) => boolean;
 }
