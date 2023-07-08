@@ -202,7 +202,11 @@ export function SlickGridMenu(columns, grid, options) {
         _buttonElm.className = 'slick-gridmenu-button';
         _buttonElm.ariaLabel = 'Grid Menu';
 
-        if (_options.gridMenu && _options.gridMenu.iconCssClass) {
+        if (_options.gridMenu && _options.gridMenu.iconImage) {
+          const iconImageElm = document.createElement('img');
+          iconImageElm.src = _options.gridMenu.iconImage;
+          _buttonElm.appendChild(iconImageElm);
+        } else if (_options.gridMenu && _options.gridMenu.iconCssClass) {
           _buttonElm.classList.add(..._options.gridMenu.iconCssClass.split(' '));
         } else {
           const iconImageElm = document.createElement('img');

@@ -57,9 +57,9 @@ export function RowMoveManager(options) {
         .subscribe(_grid.onDragStart, handleDragStart)
         .subscribe(_grid.onDrag, handleDrag)
         .subscribe(_grid.onDragEnd, handleDragEnd);
-    }
+  }
 
-    function destroy() {
+  function destroy() {
       _handler.unsubscribeAll();
     }
 

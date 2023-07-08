@@ -173,7 +173,10 @@ export function HeaderMenu(options) {
         }
 
         if (options.buttonCssClass) {
-          elm.classList.add(...options.buttonCssClass.split(' '));
+          // sgi icon with mask requires inner span to work properly
+          const icon = document.createElement('span');
+          icon.classList.add(...options.buttonCssClass.split(' '));
+          elm.appendChild(icon);
         }
 
         if (options.buttonImage) {
@@ -223,7 +226,7 @@ export function HeaderMenu(options) {
       }
 
       // make sure the menu element is an empty div before adding all list of commands
-      Slick.Utils.emptyElement(_menuElm);
+      Utils.emptyElement(_menuElm);
 
       // Construct the menu items.
       for (var i = 0; i < menu.items.length; i++) {
