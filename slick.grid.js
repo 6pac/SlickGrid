@@ -111,7 +111,9 @@ if (typeof Slick === "undefined") {
       ffMaxSupportedCssHeight: 6000000,
       maxSupportedCssHeight: 1000000000,
       sanitizer: undefined,  // sanitize function, built in basic sanitizer is: Slick.RegexSanitizer(dirtyHtml)
-      logSanitizedHtml: false // log to console when sanitised - recommend true for testing of dev and production
+      logSanitizedHtml: false, // log to console when sanitised - recommend true for testing of dev and production
+      useLegacySettingObjectConfiguration: false // if true, create new object when creating options and columns objects, 
+         // breaking references
     };
 
     var columnDefaults = {
@@ -329,7 +331,12 @@ if (typeof Slick === "undefined") {
 
       // calculate these only once and share between grid instances
       maxSupportedCssHeight = maxSupportedCssHeight || getMaxSupportedCssHeight();
-      options = utils.extend(true, {}, defaults, options);
+      if (options && options.useLegacySettingObjectConfiguration) {
+        options = utils.extend(true, {}, defaults, options);        
+      } else {
+        if (!options) { options = {}; }
+        Slick.Utils.applyDefaults(options, defaults);
+      }
       validateAndEnforceOptions();
       columnDefaults.width = options.defaultColumnWidth;
 
@@ -3052,10 +3059,17 @@ if (typeof Slick === "undefined") {
     function updateColumnProps() {
       columnsById = {};
       for (var i = 0; i < columns.length; i++) {
-        if (columns[i].width) { columns[i].widthRequest = columns[i].width; }
+        var m = columns[i];     
+        if (m.width) { m.widthRequest = m.width; }
 
-        var m = columns[i] = utils.extend({}, columnDefaults, columns[i]);
-        m.autoSize = utils.extend({}, columnAutosizeDefaults, m.autoSize);
+        if (options && options.useLegacySettingObjectConfiguration) {
+          m = columns[i] = utils.extend({}, columnDefaults, columns[i]);
+          m.autoSize = utils.extend({}, columnAutosizeDefaults, m.autoSize);
+        } else {
+          Slick.Utils.applyDefaults(m, columnDefaults);
+          if (!m.autoSize) { m.autoSize = {}; }
+          Slick.Utils.applyDefaults(m.autoSize, columnAutosizeDefaults);
+        }
 
         columnsById[m.id] = i;
         if (m.minWidth && m.width < m.minWidth) {
@@ -3108,30 +3122,44 @@ if (typeof Slick === "undefined") {
       return options;
     }
 
+    function updateOptions(suppressRender, suppressColumnSet, suppressSetOverflow) {
+      prepareForOptionsChange();
+      trigger(self.onUpdateOptions, { "options": options });
+      internal_setOptions(suppressRender, suppressColumnSet, suppressSetOverflow);
+    }
+
     function setOptions(args, suppressRender, suppressColumnSet, suppressSetOverflow) {
+      prepareForOptionsChange();
+
+      var originalOptions = utils.extend(true, {}, options);
+      options = utils.extend(options, args);
+      trigger(self.onSetOptions, { "optionsBefore": originalOptions, "optionsAfter": options });
+
+      internal_setOptions(suppressRender, suppressColumnSet, suppressSetOverflow);
+    }
+
+    function prepareForOptionsChange() {
       if (!getEditorLock().commitCurrentEdit()) {
         return;
       }
 
       makeActiveCellNormal();
 
-      if (args.showColumnHeader !== undefined) {
-        setColumnHeaderVisibility(args.showColumnHeader);
-      }
-
-      if (options.enableAddRow !== args.enableAddRow) {
+      //if (typeof args.enableAddRow !== 'undefined' && options.enableAddRow !== args.enableAddRow) {
         invalidateRow(getDataLength());
+      //}
+    }
+    
+    function internal_setOptions(suppressRender, suppressColumnSet, suppressSetOverflow) {
+      if (options.showColumnHeader !== undefined) {
+        setColumnHeaderVisibility(options.showColumnHeader);
       }
-
-      var originalOptions = utils.extend(true, {}, options);
-      options = utils.extend(options, args);
-      trigger(self.onSetOptions, { "optionsBefore": originalOptions, "optionsAfter": options });
 
       validateAndEnforceOptions();
       setFrozenOptions();
 
       // when user changed frozen row option, we need to force a recalculation of each viewport heights
-      if (args.frozenBottom !== undefined) {
+      if (options.frozenBottom !== undefined) {
         enforceFrozenRowHeightRecalc = true;
       }
 
@@ -6205,6 +6233,7 @@ if (typeof Slick === "undefined") {
       "onBeforeUpdateColumns": new Slick.Event(),
       "onRendered": new Slick.Event(),
       "onSetOptions": new Slick.Event(),
+      "onUpdateOptions": new Slick.Event(),
 
       // Methods
       "registerPlugin": registerPlugin,
@@ -6223,6 +6252,7 @@ if (typeof Slick === "undefined") {
       "autosizeColumn": autosizeColumn,
       "getOptions": getOptions,
       "setOptions": setOptions,
+      "updateOptions": updateOptions,
       "getData": getData,
       "getDataLength": getDataLength,
       "getDataItem": getDataItem,

@@ -760,6 +760,16 @@
     callback();
   }
 
+  function applyDefaults(targetObj, srcObj) {
+    for (const key in srcObj) {
+      if (srcObj.hasOwnProperty(key)) {
+        if (!targetObj.hasOwnProperty(key)) {
+          targetObj[key] = srcObj[key];
+        }
+      }
+    }
+  }
+
   // jQuery's extend
   var getProto = Object.getPrototypeOf;
   var class2type = {};
@@ -908,6 +918,7 @@
       "hide": hide,
       "slideUp": slideUp,
       "slideDown": slideDown,
+      "applyDefaults": applyDefaults,
       "storage": {
         // https://stackoverflow.com/questions/29222027/vanilla-alternative-to-jquery-data-function-any-native-javascript-alternati
         _storage: new WeakMap(),
