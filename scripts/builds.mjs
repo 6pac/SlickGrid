@@ -134,7 +134,7 @@ export function runBuild(options) {
         bundle: true,
         minify: argv['minify'] || false,
         minifySyntax: true,
-        target: 'es2015',
+        target: 'es2015', // support ES6 and IE11
         sourcemap: true,
         logLevel: 'error',
         // packages: 'external', // check SortableJS
