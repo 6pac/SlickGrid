@@ -30,7 +30,7 @@ export class SlickEventData {
   protected nativeEvent;
   protected arguments_;
 
-  constructor(protected event, protected args) {
+  constructor(protected event?: Event | null, protected args?: any) {
     this.nativeEvent = event;
     this.arguments_ = args;
 
@@ -147,7 +147,7 @@ export class SlickEvent<EventType extends SlickEvent | SlickEventData = SlickEve
    * @method unsubscribe
    * @param fn {Function} Event handler to be removed.
    */
-  unsubscribe<ArgType = any>(fn: Handler<ArgType>) {
+  unsubscribe<ArgType = any>(fn?: Handler<ArgType>) {
     for (let i = this.handlers.length - 1; i >= 0; i--) {
       if (this.handlers[i] === fn) {
         this.handlers.splice(i, 1);
@@ -168,7 +168,7 @@ export class SlickEvent<EventType extends SlickEvent | SlickEventData = SlickEve
    *      The scope ("this") within which the handler will be executed.
    *      If not specified, the scope will be set to the <code>Event</code> instance.
    */
-  notify(args: any, e?: SlickEventData | Event, scope?: any) {
+  notify(args: any, e?: SlickEventData | Event | null, scope?: any) {
     if (!(e instanceof SlickEventData)) {
       e = new SlickEventData(e, args);
     }
@@ -593,23 +593,6 @@ function createDomElement<T extends keyof HTMLElementTagNameMap, K extends keyof
   return elm;
 }
 
-/**
- * Debounce to delay JS callback execution, a wait of (-1) could be provided to execute callback without delay.
- * @param {Function} callback - callback method to execute
- * @param {Number} wait - delay to wait before execution or -1 delay
- */
-function debounce(callback: Function, wait?: number) {
-  let timeoutId: any = null;
-  return (...args) => {
-    if (wait !== undefined && wait >= 0) {
-      clearTimeout(timeoutId);
-      timeoutId = setTimeout(() => callback.apply(null, args), wait);
-    } else {
-      callback.apply(null);
-    }
-  };
-}
-
 function emptyElement(element: HTMLElement) {
   if (element?.firstChild) {
     while (element.firstChild) {
@@ -915,7 +898,6 @@ const SlickCore = {
   "RegexSanitizer": regexSanitizer,
   // "BindingEventService": BindingEventService,
   "Utils": {
-    "debounce": debounce,
     "extend": extend,
     "calculateAvailableSpace": calculateAvailableSpace,
     "createDomElement": createDomElement,

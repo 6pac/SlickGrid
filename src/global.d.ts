@@ -1,3 +1,5 @@
+import { Sortable } from 'sortablejs';
+
 import {
   BindingEventService,
   ColAutosizeMode,
@@ -19,7 +21,10 @@ import { SlickAutoTooltip } from './plugins/slick.autotooltips';
 import { SlickCellCopyManager } from './plugins/slick.cellcopymanager';
 import { SlickGroupItemMetadataProvider } from './slick.groupitemmetadataprovider';
 import { Draggable, MouseWheel, Resizable } from './slick.interactions';
-import { Sortable } from 'sortablejs';
+import { Aggregators } from './slick.dataview';
+import { Editors } from './slick.editors';
+import { Formatters } from './slick.formatters';
+import { SlickGrid } from './slick.grid';
 
 declare global {
   var IIFE_ONLY: boolean;
@@ -33,12 +38,16 @@ declare global {
     Draggable: typeof Draggable,
     ColAutosizeMode: typeof ColAutosizeMode,
     Data: {
-      DataView: any,
+      Aggregators: typeof Aggregators,
+      DataView: SlickDataView,
       GroupItemMetadataProvider: typeof SlickGroupItemMetadataProvider
     },
+    Editors: typeof Editors,
     Event: typeof SlickEvent,
     EventData: typeof SlickEventData,
+    Formatters: typeof Formatters,
     GlobalEditorLock: typeof GlobalEditorLock,
+    Grid: typeof SlickGrid,
     GridAutosizeColsMode: typeof GridAutosizeColsMode,
     Group: typeof SlickGroup,
     GroupTotals: typeof SlickGroupTotals,

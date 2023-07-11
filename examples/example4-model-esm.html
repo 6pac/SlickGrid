@@ -136,12 +136,12 @@
 
 <script type="module">
 import {
-  DataView,
   Editors,
   Formatters,
   GlobalEditorLock,
   RowSelectionModel,
   SlickColumnPicker,
+  SlickDataView,
   SlickGridPager,
   SlickGrid,
   Utils,
@@ -258,7 +258,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
 
-  dataView = new DataView({ inlineFilters: true });
+  dataView = new SlickDataView({ inlineFilters: true });
   grid = new SlickGrid("#myGrid", dataView, columns, options);
   grid.setSelectionModel(new RowSelectionModel());
 

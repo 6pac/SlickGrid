@@ -98,15 +98,15 @@
   import {
     Aggregators,
     CellSelectionModel,
-    DataView,
     Editors,
     Formatters,
     GlobalEditorLock,
-    SlickGroup,
-    SlickGroupItemMetadataProvider,
     RowSelectionModel,
     SlickColumnPicker,
+    SlickDataView,
     SlickGrid,
+    SlickGroup,
+    SlickGroupItemMetadataProvider,
     Utils,
   } from '../dist/esm/index.js';
 
@@ -314,7 +314,7 @@ function loadData(count) {
 
 document.addEventListener("DOMContentLoaded", function() {
   var groupItemMetadataProvider = new SlickGroupItemMetadataProvider();
-  dataView = new DataView({
+  dataView = new SlickDataView({
     groupItemMetadataProvider: groupItemMetadataProvider,
     inlineFilters: true
   });
