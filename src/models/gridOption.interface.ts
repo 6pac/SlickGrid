@@ -449,8 +449,6 @@ export interface GridOption {
   /** CSS class name used when cell is selected */
   selectedCellCssClass?: string;
 
-  scrollDebounceDelay?: number;
-
   /** Do we want to show column header? */
   showColumnHeader?: boolean;
 

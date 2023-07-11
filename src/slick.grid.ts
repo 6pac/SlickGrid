@@ -62,7 +62,7 @@ export interface CustomDataView { getLength: () => number; getItem: <T = any>(in
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v4.0.0
+ * SlickGrid v4.0.1
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -86,7 +86,7 @@ export interface CustomDataView { getLength: () => number; getItem: <T = any>(in
 export class SlickGrid {
   //////////////////////////////////////////////////////////////////////////////////////////////
   // Public API
-  slickGridVersion = '4.0.0';
+  slickGridVersion = '4.0.1';
 
   // Events
   onScroll = new SlickEvent();
@@ -483,7 +483,7 @@ export class SlickGrid {
       cancelCurrentEdit: this.cancelCurrentEdit.bind(this),
     };
 
-    this._container.replaceChildren();
+    Utils.emptyElement(this._container);
     this._container.style.overflow = 'hidden';
     this._container.style.outline = String(0);
     this._container.classList.add(this.uid);
@@ -588,7 +588,7 @@ export class SlickGrid {
     this._viewport = [this._viewportTopL, this._viewportTopR, this._viewportBottomL, this._viewportBottomR];
     if (this._options.viewportClass) {
       this._viewport.forEach((view) => {
-        view.classList.add(this._options.viewportClass || '');
+        view.classList.add(...(this._options.viewportClass || '').split(' '));
       });
     }
 
@@ -647,7 +647,7 @@ export class SlickGrid {
     }
 
     this._focusSink2 = this._focusSink.cloneNode(true) as HTMLDivElement;
-    this._container.append(this._focusSink2);
+    this._container.appendChild(this._focusSink2);
 
     if (!this._options.explicitInitialization) {
       this.finishInitialization();
@@ -1312,8 +1312,8 @@ export class SlickGrid {
         });
       });
 
-      this._footerRowL.replaceChildren();
-      this._footerRowR.replaceChildren();
+      Utils.emptyElement(this._footerRowL);
+      Utils.emptyElement(this._footerRowR);
 
       for (let i = 0; i < this.columns.length; i++) {
         let m = this.columns[i];
@@ -1359,8 +1359,8 @@ export class SlickGrid {
       });
     })
 
-    this._headerL.replaceChildren();
-    this._headerR.replaceChildren();
+    Utils.emptyElement(this._headerL);
+    Utils.emptyElement(this._headerR);
 
     this.getHeadersWidth();
 
@@ -1381,8 +1381,8 @@ export class SlickGrid {
       });
     });
 
-    this._headerRowL.replaceChildren();
-    this._headerRowR.replaceChildren();
+    Utils.emptyElement(this._headerRowL);
+    Utils.emptyElement(this._headerRowR);
 
     if (this._options.createFooterRow) {
       const footerRowColumnElements = this._footerRowL.querySelectorAll('.slick-footerrow-column');
@@ -1396,7 +1396,7 @@ export class SlickGrid {
           });
         }
       });
-      this._footerRowL.replaceChildren();
+      Utils.emptyElement(this._footerRowL);
 
       if (this.hasFrozenColumns()) {
         const footerRowColumnElements = this._footerRowR.querySelectorAll('.slick-footerrow-column');
@@ -1410,7 +1410,7 @@ export class SlickGrid {
             });
           }
         });
-        this._footerRowR.replaceChildren();
+        Utils.emptyElement(this._footerRowR);
       }
     }
 
@@ -1425,7 +1425,7 @@ export class SlickGrid {
 
       let classname = m.headerCssClass || null;
       if (classname) {
-        header.classList.add(classname);
+        header.classList.add(...classname.split(' '));
       }
       classname = this.hasFrozenColumns() && i <= this._options.frozenColumn ? 'frozen' : null;
       if (classname) {
@@ -2100,10 +2100,10 @@ export class SlickGrid {
     this._viewportBottomR.style['overflow-y'] = this._options.alwaysShowVerticalScroll ? 'scroll' : ((this.hasFrozenColumns()) ? (this.hasFrozenRows ? 'auto' : 'auto') : (this.hasFrozenRows ? 'auto' : 'auto'));
 
     if (this._options.viewportClass) {
-      this._viewportTopL.classList.add(this._options.viewportClass);
-      this._viewportTopR.classList.add(this._options.viewportClass);
-      this._viewportBottomL.classList.add(this._options.viewportClass);
-      this._viewportBottomR.classList.add(this._options.viewportClass);
+      this._viewportTopL.classList.add(...this._options.viewportClass.split(' '));
+      this._viewportTopR.classList.add(...this._options.viewportClass.split(' '));
+      this._viewportBottomL.classList.add(...this._options.viewportClass.split(' '));
+      this._viewportBottomR.classList.add(...this._options.viewportClass.split(' '));
     }
   }
 
@@ -2321,7 +2321,7 @@ export class SlickGrid {
       this._bindingEventService.unbindByEventName(column, 'mouseleave');
     });
 
-    this._container.replaceChildren();
+    Utils.emptyElement(this._container);
     this._container.classList.remove(this.uid);
 
     if (shouldDestroyAllElements) {
@@ -2869,7 +2869,9 @@ export class SlickGrid {
       headerColEl = Utils.createDomElement('div', { id: dummyHeaderColElId, className: 'ui-state-default slick-state-default slick-header-column' }, header);
       Utils.createDomElement('span', { className: 'slick-column-name', innerHTML: this.sanitizeHtmlString(String(columnDef.name)) }, headerColEl);
       clone.style.cssText = 'position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;';
-      headerColEl.classList.add(columnDef.headerCssClass || '');
+      if (columnDef.headerCssClass) {
+        headerColEl.classList.add(...(columnDef.headerCssClass || '').split(' '));
+      }
       width = headerColEl.offsetWidth;
       header.removeChild(headerColEl);
     }
@@ -3576,9 +3578,13 @@ export class SlickGrid {
     }
 
     // get addl css class names from object type formatter return and from string type return of onBeforeAppendCell
+    // we will only use the event result as CSS classes when it is a string type (undefined event always return a true boolean which is not a valid css class)
     const evt = this.trigger(this.onBeforeAppendCell, { row, cell, value, dataContext: item });
-    let addlCssClasses = evt.getReturnValue() || '';
-    addlCssClasses += ((formatterResult as FormatterResultObject)?.addClasses ? (addlCssClasses ? ' ' : '') + (formatterResult as FormatterResultObject).addClasses : '');
+    let appendCellResult = evt.getReturnValue();
+    var addlCssClasses = typeof appendCellResult === 'string' ? appendCellResult : '';
+    if ((formatterResult as FormatterResultObject)?.addClasses) {
+      addlCssClasses += (addlCssClasses ? ' ' : '') + (formatterResult as FormatterResultObject).addClasses;
+    }
     let toolTip = (formatterResult as FormatterResultObject)?.toolTip ? "title='" + (formatterResult as FormatterResultObject).toolTip + "'" : '';
 
     let customAttrStr = '';
@@ -5457,7 +5463,7 @@ export class SlickGrid {
     // walk up the tree
     let offsetParent = elem.offsetParent;
     while ((elem = elem.parentNode as HTMLElement) != document.body) {
-      if (elem == null) {
+      if (!elem || !elem.parentNode) {
         break;
       }
 
