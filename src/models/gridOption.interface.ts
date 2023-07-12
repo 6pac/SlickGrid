@@ -446,6 +446,9 @@ export interface GridOption {
   /** Optional sanitizer function to use for sanitizing data to avoid XSS attacks */
   sanitizer?: (dirtyHtml: string) => string;
 
+  /** Defaults to 50, render throttling when scrolling large dataset */
+  scrollRenderThrottling: number;
+
   /** CSS class name used when cell is selected */
   selectedCellCssClass?: string;
 
