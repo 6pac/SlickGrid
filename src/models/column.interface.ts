@@ -1,7 +1,7 @@
 /* eslint-disable @typescript-eslint/indent */
 
-import { ColumnEditor } from "./columnEditor.interface";
 import { CustomTooltipOption } from "./customTooltipOption.interface";
+import { Editor } from "./editor.interface";
 import { Formatter } from "./formatter.interface";
 import { GroupTotalsFormatter } from "./groupTotalsFormatter.interface";
 import { Grouping } from "./grouping.interface";
@@ -88,7 +88,7 @@ export interface Column<T = any> {
   disableTooltip?: boolean;
 
   /** Any inline editor function that implements Editor for the cell value or ColumnEditor */
-  editor?: ColumnEditor;
+  editor?: Editor;
 
   /** Editor number fixed decimal places */
   editorFixedDecimalPlaces?: number;

@@ -356,7 +356,7 @@ export class SlickGroup extends SlickNonDataItem {
    * @property title
    * @type {String}
    */
-  title = null;
+  title: string | null = null;
 
   /***
    * Whether a group is collapsed.
@@ -377,21 +377,21 @@ export class SlickGroup extends SlickNonDataItem {
    * @property totals
    * @type {GroupTotals}
    */
-  totals = null;
+  totals: SlickGroupTotals | null = null;
 
   /**
    * Rows that are part of the group.
    * @property rows
    * @type {Array}
    */
-  rows = [];
+  rows: number[] = [];
 
   /**
    * Sub-groups that are part of the group.
    * @property groups
    * @type {Array}
    */
-  groups = null;
+  groups: any[] | null = null;
 
   /**
    * A unique key used to identify the group.  This key can be used in calls to DataView
@@ -399,7 +399,7 @@ export class SlickGroup extends SlickNonDataItem {
    * @property groupingKey
    * @type {Object}
    */
-  groupingKey = null;
+  groupingKey: any = null;
 
   constructor() {
     super();
@@ -1012,7 +1012,7 @@ const SlickCore = {
 
 export const {
   Utils, Event, EventData, EventHandler, Group, GroupTotals, NonDataRow, Range,
-  GlobalEditorLock, keyCode, preClickClassName, GridAutosizeColsMode, ColAutosizeMode,
+  RegexSanitizer, GlobalEditorLock, keyCode, preClickClassName, GridAutosizeColsMode, ColAutosizeMode,
   RowSelectionMode, ValueFilterMode, WidthEvalMode
 } = SlickCore;
 

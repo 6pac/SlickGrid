@@ -1,7 +1,6 @@
 export * from './aggregator.interface';
 export * from './autoTooltipOption.interface';
 export * from './column.interface';
-export * from './columnEditor.interface';
 export * from './columnReorderFunction.type';
 export * from './columnSort.interface';
 export * from './compositeEditorOption.interface';

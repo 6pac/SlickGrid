@@ -1,5 +1,5 @@
 import { SlickGrid } from '../slick.grid';
-import { SlickEvent as SlickEvent_, keyCode as keyCode_, Utils as Utils_ } from '../slick.core';
+import { SlickEvent as SlickEvent_, keyCode as keyCode_, Utils as Utils_, SlickRange } from '../slick.core';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
 const keyCode = (IIFE_ONLY ? Slick.keyCode : keyCode_);
@@ -22,7 +22,7 @@ export class SlickCellCopyManager {
     this._grid.onKeyDown.unsubscribe(this.handleKeyDown.bind(this));
   }
 
-  handleKeyDown(e: KeyboardEvent) {
+  protected handleKeyDown(e: KeyboardEvent) {
     let ranges;
     if (!this._grid.getEditorLock().isActive()) {
       if (e.which == keyCode.ESCAPE) {
@@ -58,7 +58,7 @@ export class SlickCellCopyManager {
     }
   }
 
-  markCopySelection(ranges) {
+  protected markCopySelection(ranges: SlickRange[]) {
     let columns = this._grid.getColumns();
     let hash = {};
     for (let i = 0; i < ranges.length; i++) {
@@ -72,7 +72,7 @@ export class SlickCellCopyManager {
     this._grid.setCellCssStyles('copy-manager', hash);
   }
 
-  clearCopySelection() {
+  protected clearCopySelection() {
     this._grid.removeCellCssStyles('copy-manager');
   }
 }

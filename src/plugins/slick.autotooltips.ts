@@ -58,7 +58,7 @@ export class SlickAutoTooltips {
    * Handle mouse entering grid cell to add/remove tooltip.
    * @param {MouseEvent} event - The event
    */
-  handleMouseEnter(event: MouseEvent) {
+  protected handleMouseEnter(event: MouseEvent) {
     const cell = this._grid.getCellFromEvent(event);
     if (cell) {
       let node: HTMLElement | null = this._grid.getCellNode(cell.row, cell.cell);
@@ -75,25 +75,6 @@ export class SlickAutoTooltips {
         node = null;
       }
     }
-
-    /**
-     * Handle mouse entering header cell to add/remove tooltip.
-     * @param {MouseEvent} e     - The event
-     * @param {object} args.column - The column definition
-     */
-    function handleHeaderMouseEnter(e, args) {
-      const column = args.column;
-      let node;
-      const targetElm = (e.target);
-
-      if (targetElm) {
-        node = targetElm.closest('.slick-header-column');
-        if (node && !(column && column.toolTip)) {
-          node.title = (targetElm.clientWidth < node.clientWidth) ? column && column.name || '' : '';
-      }
-      }
-      node = null;
-    }
   }
 
   /**
@@ -101,7 +82,7 @@ export class SlickAutoTooltips {
    * @param {MouseEvent} event   - The event
    * @param {object} args.column - The column definition
    */
-  handleHeaderMouseEnter(event: MouseEvent, args: { column: Column; }) {
+  protected handleHeaderMouseEnter(event: MouseEvent, args: { column: Column; }) {
     const column = args.column;
     let node: HTMLDivElement | null;
     const targetElm = (event.target as HTMLDivElement);

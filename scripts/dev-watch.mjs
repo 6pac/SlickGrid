@@ -79,11 +79,11 @@ const argv = yargs(hideBin(process.argv)).argv;
   async function onFileChanged(filepath) {
     if (filepath.endsWith('.js') || filepath.endsWith('.ts')) {
       // 1. CJS/ESM requires a full build since it is bundled into a single index.js output
-      executeFullBuild();
+      await executeFullBuild();
 
       // 2. for iife format, we can rebuild each separate file
       const startTime = new Date().getTime();
-      buildIifeFile(filepath);
+      await buildIifeFile(filepath);
       const endTime = new Date().getTime();
       console.info(`⚡️ Built "${filepath}" to "iife" format in ${endTime - startTime}ms`);
     } else if (filepath.endsWith('.css') || filepath.endsWith('.scss')) {

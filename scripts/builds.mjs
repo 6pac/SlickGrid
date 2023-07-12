@@ -79,7 +79,7 @@ export async function executeCjsEsmBuilds() {
  * @param {"cjs" | "esm"} format - build format type
  */
 export function bundleByFormat(format) {
-  runBuild({
+  return runBuild({
     entryPoints: ['src/index.js'],
     format,
     target: 'es2020',
@@ -126,8 +126,7 @@ export async function buildIifeFile(file) {
  * @param {Object} [options] - optional esbuild options
  */
 export function runBuild(options) {
-  try {
-    return build({
+  return build({
       // default options
       ...{
         color: true,
@@ -142,11 +141,10 @@ export function runBuild(options) {
 
       // merge any optional esbuild options
       ...options,
-    });
-  } catch (err) {
+  }).catch(() => {
     // don't do anything when an error occured, this is to avoid watch mode to crash on errors
     // console.error('esbuild error: ', err);
-  }
+  });
 }
 
 // --

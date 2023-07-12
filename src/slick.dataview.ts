@@ -1,4 +1,4 @@
-import { Aggregator, Grouping } from './models';
+import { Aggregator, Grouping, PagingInfo } from './models';
 import {
   SlickEvent as SlickEvent_,
   SlickEventData as SlickEventData_,
@@ -17,6 +17,11 @@ const SlickGroup = (IIFE_ONLY ? Slick.Group : SlickGroup_) as typeof SlickGroup_
 const SlickGroupTotals = (IIFE_ONLY ? Slick.GroupTotals : SlickGroupTotals_) as typeof SlickGroupTotals_;
 const Utils = (IIFE_ONLY ? Slick.Utils : Utils_) as typeof Utils_;
 const SlickGroupItemMetadataProvider = (IIFE_ONLY ? Slick.Data?.GroupItemMetadataProvider ?? {} : SlickGroupItemMetadataProvider_) as typeof SlickGroupItemMetadataProvider_;
+
+export interface DataViewOption {
+  groupItemMetadataProvider?: SlickGroupItemMetadataProvider_;
+  inlineFilters?: boolean;
+}
 
 /***
    * A sample Model implementation.
@@ -94,7 +99,7 @@ export class SlickDataView<T = any> {
   onGroupExpanded = new SlickEvent();
   onGroupCollapsed = new SlickEvent();
 
-  constructor(options) {
+  constructor(options: DataViewOption) {
     this._options = Utils.extend(true, {}, this.defaults, options);
   }
   /***
@@ -153,7 +158,7 @@ export class SlickDataView<T = any> {
    * Processes all delete requests placed during bulk update
    * by recomputing the items and idxById members.
    */
-  processBulkDelete() {
+  protected processBulkDelete() {
     if (!this.idxById) return;
     // the bulk update is processed by
     // recomputing the whole items array and the index lookup in one go.
@@ -190,7 +195,7 @@ export class SlickDataView<T = any> {
     this.bulkDeleteIds = new Map();
   }
 
-  updateIdxById(startingIndex?: number) {
+  protected updateIdxById(startingIndex?: number) {
     if (this.isBulkSuspend || !this.idxById) { // during bulk update we do not reorganize
       return;
     }
@@ -205,7 +210,7 @@ export class SlickDataView<T = any> {
     }
   }
 
-  ensureIdUniqueness() {
+  protected ensureIdUniqueness() {
     if (this.isBulkSuspend || !this.idxById) { // during bulk update we do not reorganize
       return;
     }
@@ -238,7 +243,7 @@ export class SlickDataView<T = any> {
     this.refresh();
   }
 
-  setPagingOptions(args: any) {
+  setPagingOptions(args: PagingInfo) {
     if (this.onBeforePagingInfoChanged.notify(this.getPagingInfo(), null, this).getReturnValue() !== false) {
       if (args.pageSize != undefined) {
         this.pagesize = args.pageSize;
@@ -255,12 +260,12 @@ export class SlickDataView<T = any> {
     }
   }
 
-  getPagingInfo() {
+  getPagingInfo(): PagingInfo {
     const totalPages = this.pagesize ? Math.max(1, Math.ceil(this.totalRows / this.pagesize)) : 1;
     return { pageSize: this.pagesize, pageNum: this.pagenum, totalRows: this.totalRows, totalPages: totalPages, dataView: this as SlickDataView };
   }
 
-  sort(comparer, ascending) {
+  sort(comparer: (a: any, b: any) => number, ascending: boolean) {
     this.sortAsc = ascending;
     this.sortComparer = comparer;
     this.fastSortField = null;
@@ -281,7 +286,7 @@ export class SlickDataView<T = any> {
    * Does a [lexicographic] sort on a give column by temporarily overriding Object.prototype.toString
    * to return the value of that field and then doing a native Array.sort().
    */
-  fastSort(field, ascending) {
+  fastSort(field: string | (() => string), ascending: boolean) {
     this.sortAsc = ascending;
     this.fastSortField = field;
     this.sortComparer = null;
@@ -334,11 +339,11 @@ export class SlickDataView<T = any> {
     this.refresh();
   }
 
-  getGrouping() {
+  getGrouping(): Grouping | Grouping[] {
     return this.groupingInfos;
   }
 
-  setGrouping(groupingInfo) {
+  setGrouping(groupingInfo: Grouping | Grouping[]) {
     if (!this._options.groupItemMetadataProvider) {
       this._options.groupItemMetadataProvider = new SlickGroupItemMetadataProvider();
     }
@@ -346,7 +351,7 @@ export class SlickDataView<T = any> {
     this.groups = [];
     this.toggledGroupsByLevel = [];
     groupingInfo = groupingInfo || [];
-    this.groupingInfos = (groupingInfo instanceof Array) ? groupingInfo : [groupingInfo];
+    this.groupingInfos = ((groupingInfo instanceof Array) ? groupingInfo : [groupingInfo]) as any;
 
     for (let i = 0; i < this.groupingInfos.length; i++) {
       let gi = this.groupingInfos[i] = Utils.extend(true, {}, this.groupingInfoDefaults, this.groupingInfos[i]);
@@ -395,15 +400,15 @@ export class SlickDataView<T = any> {
     this.setGrouping(this.groupingInfos);
   }
 
-  getItemByIdx(i) {
+  getItemByIdx(i: number) {
     return this.items[i];
   }
 
-  getIdxById(id) {
+  getIdxById(id: number | string) {
     return this.idxById && this.idxById.get(id);
   }
 
-  ensureRowsByIdCache() {
+  protected ensureRowsByIdCache() {
     if (!this.rowsById) {
       this.rowsById = {};
       for (let i = 0, l = this.rows.length; i < l; i++) {
@@ -412,21 +417,21 @@ export class SlickDataView<T = any> {
     }
   }
 
-  getRowByItem(item) {
+  getRowByItem(item: T) {
     this.ensureRowsByIdCache();
     return this.rowsById[item[this.idProperty]];
   }
 
-  getRowById(id) {
+  getRowById(id: number | string) {
     this.ensureRowsByIdCache();
     return this.rowsById[id];
   }
 
-  getItemById(id) {
+  getItemById(id: number | string) {
     return this.items[this.idxById.get(id) || ''];
   }
 
-  mapItemsToRows(itemArray) {
+  mapItemsToRows(itemArray: T[]) {
     const rows: number[] = [];
     this.ensureRowsByIdCache();
     for (let i = 0, l = itemArray.length; i < l; i++) {
@@ -438,7 +443,7 @@ export class SlickDataView<T = any> {
     return rows;
   }
 
-  mapIdsToRows(idArray) {
+  mapIdsToRows(idArray: Array<number | string>) {
     const rows: number[] = [];
     this.ensureRowsByIdCache();
     for (let i = 0, l = idArray.length; i < l; i++) {
@@ -568,7 +573,7 @@ export class SlickDataView<T = any> {
 
   /***
    * Adds multiple items at the end of the data view.
-   * @param newItems {Array} The items to add at the end.
+   * @param {Array} newItems The items to add at the end.
    */
   addItems(newItems: T[]) {
     this.items = this.items.concat(newItems);
@@ -578,7 +583,7 @@ export class SlickDataView<T = any> {
 
   /***
    * Deletes a single item identified by the given id from the data view.
-   * @param id The id identifying the object to delete.
+   * @param {String|Number} id The id identifying the object to delete.
    */
   deleteItem(id: number | string) {
     if (!this.idxById) return;
@@ -598,7 +603,7 @@ export class SlickDataView<T = any> {
 
   /***
    * Deletes multiple item identified by the given ids from the data view.
-   * @param ids {Array} The ids of the items to delete.
+   * @param {Array} ids The ids of the items to delete.
    */
   deleteItems(ids: Array<number | string>) {
     if (ids.length === 0 || !this.idxById) {
@@ -664,7 +669,7 @@ export class SlickDataView<T = any> {
     }
   }
 
-  sortedIndex(searchItem: T) {
+  protected sortedIndex(searchItem: T) {
     let low = 0;
     let high = this.items.length;
 
@@ -679,34 +684,37 @@ export class SlickDataView<T = any> {
     return low;
   }
 
+  /** Get item count, that is the full dataset lenght of the DataView */
   getItemCount() {
     return this.items.length;
   }
 
+  /** Get row count (rows displayed in current page) */
   getLength() {
     return this.rows.length;
   }
 
-  getItem(i: string) {
+  /** Retrieve an item from the DataView at specific index */
+  getItem(i: number) {
     const item = this.rows[i];
 
     // if this is a group row, make sure totals are calculated and update the title
-    if (item && item.__group && item.totals && !item.totals.initialized) {
-      const gi = this.groupingInfos[item.level];
+    if ((item as SlickGroup_)?.__group && (item as SlickGroup_).totals && !(item as SlickGroup_).totals?.initialized) {
+      const gi = this.groupingInfos[(item as SlickGroup_).level];
       if (!gi.displayTotalsRow) {
-        this.calculateTotals(item.totals);
-        item.title = gi.formatter ? gi.formatter(item) : item.value;
+        this.calculateTotals((item as SlickGroup_).totals);
+        (item as SlickGroup_).title = gi.formatter ? gi.formatter((item as SlickGroup_)) : (item as SlickGroup_).value;
       }
     }
     // if this is a totals row, make sure it's calculated
-    else if (item && item.__groupTotals && !item.initialized) {
+    else if ((item as SlickGroupTotals_)?.__groupTotals && !(item as SlickGroupTotals_).initialized) {
       this.calculateTotals(item);
     }
 
     return item;
   }
 
-  getItemMetadata(i) {
+  getItemMetadata(i: number) {
     let item = this.rows[i];
     if (item === undefined) {
       return null;
@@ -725,7 +733,7 @@ export class SlickDataView<T = any> {
     return null;
   }
 
-  expandCollapseAllGroups(level: number, collapse?: boolean) {
+  protected expandCollapseAllGroups(level: number, collapse?: boolean) {
     if (level == null) {
       for (let i = 0; i < this.groupingInfos.length; i++) {
         this.toggledGroupsByLevel[i] = {};
@@ -753,14 +761,14 @@ export class SlickDataView<T = any> {
   /**
    * @param level {Number} Optional level to collapse.  If not specified, applies to all levels.
    */
-  collapseAllGroups(level) {
+  collapseAllGroups(level: number) {
     this.expandCollapseAllGroups(level, true);
   }
 
   /**
    * @param level {Number} Optional level to expand.  If not specified, applies to all levels.
    */
-  expandAllGroups(level) {
+  expandAllGroups(level: number) {
     this.expandCollapseAllGroups(level, false);
   }
 
@@ -822,7 +830,7 @@ export class SlickDataView<T = any> {
     return this.groups;
   }
 
-  extractGroups(rows: number[], parentGroup?: SlickGroup_) {
+  protected extractGroups(rows: number[], parentGroup?: SlickGroup_) {
     let group;
     let val;
     let groups: SlickGroup_[] = [];
@@ -876,7 +884,7 @@ export class SlickDataView<T = any> {
     return groups;
   }
 
-  calculateTotals(totals) {
+  protected calculateTotals(totals) {
     let group = totals.group;
     let gi = this.groupingInfos[group.level];
     let isLeafLevel = (group.level == this.groupingInfos.length);
@@ -905,7 +913,7 @@ export class SlickDataView<T = any> {
     totals.initialized = true;
   }
 
-  addGroupTotals(group) {
+  protected addGroupTotals(group) {
     let gi = this.groupingInfos[group.level];
     let totals = new SlickGroupTotals();
     totals.group = group;
@@ -915,7 +923,7 @@ export class SlickDataView<T = any> {
     }
   }
 
-  addTotals(groups, level) {
+  protected addTotals(groups, level) {
     level = level || 0;
     let gi = this.groupingInfos[level];
     let groupCollapsed = gi.collapsed;
@@ -943,7 +951,7 @@ export class SlickDataView<T = any> {
     }
   }
 
-  flattenGroupedRows(groups: Grouping[], level?: number) {
+  protected flattenGroupedRows(groups: Grouping[], level?: number) {
     level = level || 0;
     const gi = this.groupingInfos[level];
     let groupedRows: number[] = [], rows, gl = 0, g;
@@ -965,7 +973,7 @@ export class SlickDataView<T = any> {
     return groupedRows;
   }
 
-  getFunctionInfo(fn: Function) {
+  protected getFunctionInfo(fn: Function) {
     const fnStr = fn.toString();
     const usingEs5 = fnStr.indexOf('function') >= 0; // with ES6, the word function is not present
     const fnRegex = usingEs5 ? /^function[^(]*\(([^)]*)\)\s*{([\s\S]*)}$/ : /^[^(]*\(([^)]*)\)\s*{([\s\S]*)}$/;
@@ -976,7 +984,7 @@ export class SlickDataView<T = any> {
     };
   }
 
-  compileAccumulatorLoop(aggregator) {
+  protected compileAccumulatorLoop(aggregator) {
     if (aggregator.accumulate) {
       const accumulatorInfo = this.getFunctionInfo(aggregator.accumulate);
       const fn: any = new Function(
@@ -995,7 +1003,7 @@ export class SlickDataView<T = any> {
     }
   }
 
-  compileFilter() {
+  protected compileFilter() {
     const filterInfo = this.getFunctionInfo(this.filter);
 
     const filterPath1 = "{ continue _coreloop; }$1";
@@ -1034,7 +1042,7 @@ export class SlickDataView<T = any> {
     return fn;
   }
 
-  compileFilterWithCaching() {
+  protected compileFilterWithCaching() {
     const filterInfo = this.getFunctionInfo(this.filter);
 
     const filterPath1 = "{ continue _coreloop; }$1";
@@ -1084,7 +1092,7 @@ export class SlickDataView<T = any> {
    * @param {*} fn
    * @param {string} fnName
    */
-  setFunctionName(fn: any, fnName: string) {
+  protected setFunctionName(fn: any, fnName: string) {
     try {
       Object.defineProperty(fn, 'name', {
         writable: true,
@@ -1095,7 +1103,7 @@ export class SlickDataView<T = any> {
     }
   }
 
-  uncompiledFilter(items: T[], args: any) {
+  protected uncompiledFilter(items: T[], args: any) {
     let retval: any[] = [], idx = 0;
 
     for (let i = 0, ii = items.length; i < ii; i++) {
@@ -1107,7 +1115,7 @@ export class SlickDataView<T = any> {
     return retval;
   }
 
-  uncompiledFilterWithCaching(items: T[], args: any, cache: any) {
+  protected uncompiledFilterWithCaching(items: T[], args: any, cache: any) {
     let retval: any[] = [], idx = 0, item: T;
 
     for (let i = 0, ii = items.length; i < ii; i++) {
@@ -1123,7 +1131,7 @@ export class SlickDataView<T = any> {
     return retval;
   }
 
-  getFilteredAndPagedItems(items: T[]) {
+  protected getFilteredAndPagedItems(items: T[]) {
     if (this.filter) {
       const batchFilter = this._options.inlineFilters ? this.compiledFilter : this.uncompiledFilter;
       const batchFilterWithCaching = this._options.inlineFilters ? this.compiledFilterWithCaching : this.uncompiledFilterWithCaching;
@@ -1159,7 +1167,7 @@ export class SlickDataView<T = any> {
     return { totalRows: this.filteredItems.length, rows: paged };
   }
 
-  getRowDiffs(rows: any[], newRows: any[]) {
+  protected getRowDiffs(rows: any[], newRows: any[]) {
     let item, r, eitherIsNonData, diff: any[] = [];
     let from = 0, to = Math.max(newRows.length, rows.length);
 
@@ -1198,7 +1206,7 @@ export class SlickDataView<T = any> {
     return diff;
   }
 
-  recalc(_items: T[]) {
+  protected recalc(_items: T[]) {
     this.rowsById = null;
 
     if (this.refreshHints.isFilterNarrowing != this.prevRefreshHints.isFilterNarrowing ||
@@ -1303,9 +1311,9 @@ export class SlickDataView<T = any> {
     }
 
     const update = () => {
-      if (this.selectedRowIds!.length > 0 && !inHandler) {
+      if ((this.selectedRowIds || []).length > 0 && !inHandler) {
         inHandler = true;
-        let selectedRows = this.mapIdsToRows(this.selectedRowIds);
+        let selectedRows = this.mapIdsToRows(this.selectedRowIds || []);
         if (!preserveHidden) {
           let selectedRowsChangedArgs = {
             grid: this._grid,
@@ -1324,7 +1332,7 @@ export class SlickDataView<T = any> {
       }
     }
 
-    grid.onSelectedRowsChanged.subscribe((_e, args) => {
+    grid.onSelectedRowsChanged.subscribe((_e: Event, args: { rows: number[]; }) => {
       if (!inHandler) {
         let newSelectedRowIds = this.mapRowsToIds(args.rows);
         let selectedRowsChangedArgs = {
@@ -1342,7 +1350,7 @@ export class SlickDataView<T = any> {
       }
     });
 
-    this.preSelectedRowIdsChangeFn = (args: any) => {
+    this.preSelectedRowIdsChangeFn = (args: { ids: Array<number | string>; added?: boolean; }) => {
       if (!inHandler) {
         inHandler = true;
         const overwrite = (typeof args.added === typeof undefined);
