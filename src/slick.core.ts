@@ -1,4 +1,4 @@
-/***
+/**
  * Contains core SlickGrid classes.
  * @module Core
  * @namespace Slick
@@ -6,7 +6,7 @@
 
 import type { EditController, ElementEventListener, Handler, InferDOMType } from './models/index';
 
-/***
+/**
  * An event object for passing data to event handlers and letting them control propagation.
  * <p>This is pretty much identical to how W3C and jQuery implement events.</p>
  * @class EventData
@@ -41,7 +41,7 @@ export class SlickEventData {
     this.target = this.nativeEvent ? this.nativeEvent.target : undefined;
   }
 
-  /***
+  /**
    * Stops event from propagating up the DOM tree.
    * @method stopPropagation
    */
@@ -52,7 +52,7 @@ export class SlickEventData {
     }
   }
 
-  /***
+  /**
    * Returns whether stopPropagation was called on this event object.
    * @method isPropagationStopped
    * @return {Boolean}
@@ -61,7 +61,7 @@ export class SlickEventData {
     return this._isPropagationStopped;
   }
 
-  /***
+  /**
    * Prevents the rest of the handlers from being executed.
    * @method stopImmediatePropagation
    */
@@ -72,7 +72,7 @@ export class SlickEventData {
     }
   };
 
-  /***
+  /**
    * Returns whether stopImmediatePropagation was called on this event object.\
    * @method isImmediatePropagationStopped
    * @return {Boolean}
@@ -115,15 +115,15 @@ export class SlickEventData {
   }
 }
 
-/***
+/**
  * A simple publisher-subscriber implementation.
  * @class Event
  * @constructor
  */
-export class SlickEvent<EventType extends SlickEvent | SlickEventData = SlickEventData> {
+export class SlickEvent<ArgType = any> {
   protected handlers: Handler<any>[] = [];
 
-  /***
+  /**
    * Adds an event handler to be called when the event is fired.
    * <p>Event handler will receive two arguments - an <code>EventData</code> and the <code>data</code>
    * object the event was fired with.<p>
@@ -134,7 +134,7 @@ export class SlickEvent<EventType extends SlickEvent | SlickEventData = SlickEve
     this.handlers.push(fn);
   };
 
-  /***
+  /**
    * Removes an event handler added with <code>subscribe(fn)</code>.
    * @method unsubscribe
    * @param fn {Function} Event handler to be removed.
@@ -147,7 +147,7 @@ export class SlickEvent<EventType extends SlickEvent | SlickEventData = SlickEve
     }
   };
 
-  /***
+  /**
    * Fires an event notifying all subscribers.
    * @method notify
    * @param args {Object} Additional data object to be passed to all handlers.
@@ -160,14 +160,14 @@ export class SlickEvent<EventType extends SlickEvent | SlickEventData = SlickEve
    *      The scope ("this") within which the handler will be executed.
    *      If not specified, the scope will be set to the <code>Event</code> instance.
    */
-  notify(args: any, e?: SlickEventData | Event | null, scope?: any) {
+  notify(args: ArgType, e?: SlickEventData | Event | null, scope?: any) {
     if (!(e instanceof SlickEventData)) {
       e = new SlickEventData(e, args);
     }
     scope = scope || this;
 
     for (let i = 0; i < this.handlers.length && !(e.isPropagationStopped() || e.isImmediatePropagationStopped()); i++) {
-      const returnValue = this.handlers[i].call(scope, e as EventType, args);
+      const returnValue = this.handlers[i].call(scope, e as SlickEvent | SlickEventData, args);
       e.addReturnValue(returnValue);
     }
 
@@ -210,7 +210,7 @@ export class SlickEventHandler<ArgType = any> {
   };
 }
 
-/***
+/**
  * A structure containing a range of cells.
  * @class Range
  * @constructor
@@ -231,25 +231,25 @@ export class SlickRange {
       toCell = fromCell;
     }
 
-    /***
+    /**
      * @property fromRow
      * @type {Integer}
      */
     this.fromRow = Math.min(fromRow, toRow);
 
-    /***
+    /**
      * @property fromCell
      * @type {Integer}
      */
     this.fromCell = Math.min(fromCell, toCell);
 
-    /***
+    /**
      * @property toRow
      * @type {Integer}
      */
     this.toRow = Math.max(fromRow, toRow);
 
-    /***
+    /**
      * @property toCell
      * @type {Integer}
      */
@@ -257,7 +257,7 @@ export class SlickRange {
   }
 
 
-  /***
+  /**
    * Returns whether a range represents a single row.
    * @method isSingleRow
    * @return {Boolean}
@@ -266,7 +266,7 @@ export class SlickRange {
     return this.fromRow == this.toRow;
   }
 
-  /***
+  /**
    * Returns whether a range represents a single cell.
    * @method isSingleCell
    * @return {Boolean}
@@ -275,7 +275,7 @@ export class SlickRange {
     return this.fromRow == this.toRow && this.fromCell == this.toCell;
   }
 
-  /***
+  /**
    * Returns whether a range contains a given cell.
    * @method contains
    * @param row {Integer}
@@ -287,7 +287,7 @@ export class SlickRange {
       cell >= this.fromCell && cell <= this.toCell;
   }
 
-  /***
+  /**
    * Returns a readable representation of a range.
    * @method toString
    * @return {String}
@@ -303,7 +303,7 @@ export class SlickRange {
 }
 
 
-/***
+/**
  * A base class that all special / non-data rows (like Group and GroupTotals) derive from.
  * @class NonDataItem
  * @constructor
@@ -313,7 +313,7 @@ export class SlickNonDataItem {
 }
 
 
-/***
+/**
  * Information about a group of rows.
  * @class Group
  * @extends Slick.NonDataItem
@@ -329,42 +329,42 @@ export class SlickGroup extends SlickNonDataItem {
    */
   level = 0;
 
-  /***
+  /**
    * Number of rows in the group.
    * @property count
    * @type {Integer}
    */
   count = 0;
 
-  /***
+  /**
    * Grouping value.
    * @property value
    * @type {Object}
    */
   value = null;
 
-  /***
+  /**
    * Formatted display value of the group.
    * @property title
    * @type {String}
    */
   title: string | null = null;
 
-  /***
+  /**
    * Whether a group is collapsed.
    * @property collapsed
    * @type {Boolean}
    */
   collapsed = false;
 
-  /***
+  /**
    * Whether a group selection checkbox is checked.
    * @property selectChecked
    * @type {Boolean}
    */
   selectChecked = false;
 
-  /***
+  /**
    * GroupTotals, if any.
    * @property totals
    * @type {GroupTotals}
@@ -396,7 +396,7 @@ export class SlickGroup extends SlickNonDataItem {
   constructor() {
     super();
   }
-  /***
+  /**
    * Compares two Group instances.
    * @method equals
    * @return {Boolean}
@@ -410,7 +410,7 @@ export class SlickGroup extends SlickNonDataItem {
   };
 }
 
-/***
+/**
  * Information about group totals.
  * An instance of GroupTotals will be created for each totals row and passed to the aggregators
  * so that they can store arbitrary data in it.  That data can later be accessed by group totals
@@ -422,14 +422,14 @@ export class SlickGroup extends SlickNonDataItem {
 export class SlickGroupTotals extends SlickNonDataItem {
   __groupTotals = true;
 
-  /***
+  /**
    * Parent Group.
    * @param group
    * @type {Group}
    */
   group: SlickGroup = null as any;
 
-  /***
+  /**
    * Whether the totals have been fully initialized / calculated.
    * Will be set to false for lazy-calculated group totals.
    * @param initialized
@@ -442,7 +442,7 @@ export class SlickGroupTotals extends SlickNonDataItem {
   }
 }
 
-/***
+/**
  * A locking helper to track the active edit controller and ensure that only a single controller
  * can be active at a time.  This prevents a whole class of state and validation synchronization
  * issues.  An edit controller (such as SlickGrid) can query if an active edit is in progress
@@ -453,7 +453,7 @@ export class SlickGroupTotals extends SlickNonDataItem {
 export class EditorLock {
   activeEditController: any = null;
 
-  /***
+  /**
    * Returns true if a specified edit controller is active (has the edit lock).
    * If the parameter is not specified, returns true if any edit controller is active.
    * @method isActive
@@ -464,7 +464,7 @@ export class EditorLock {
     return (editController ? this.activeEditController === editController : this.activeEditController !== null);
   };
 
-  /***
+  /**
    * Sets the specified edit controller as the active edit controller (acquire edit lock).
    * If another edit controller is already active, and exception will be throw new Error(.
    * @method activate
@@ -486,7 +486,7 @@ export class EditorLock {
     this.activeEditController = editController;
   };
 
-  /***
+  /**
    * Unsets the specified edit controller as the active edit controller (release edit lock).
    * If the specified edit controller is not the active one, an exception will be throw new Error(.
    * @method deactivate
@@ -502,7 +502,7 @@ export class EditorLock {
     this.activeEditController = null;
   };
 
-  /***
+  /**
    * Attempts to commit the current edit by calling "commitCurrentEdit" method on the active edit
    * controller and returns whether the commit attempt was successful (commit may fail due to validation
    * errors, etc.).  Edit controller's "commitCurrentEdit" must return true if the commit has succeeded
@@ -514,7 +514,7 @@ export class EditorLock {
     return (this.activeEditController ? this.activeEditController.commitCurrentEdit() : true);
   };
 
-  /***
+  /**
    * Attempts to cancel the current edit by calling "cancelCurrentEdit" method on the active edit
    * controller and returns whether the edit was successfully cancelled.  If no edit controller is
    * active, returns true.
@@ -935,7 +935,7 @@ const SlickCore = {
     }
   },
 
-  /***
+  /**
    * A global singleton editor lock.
    * @class GlobalEditorLock
    * @static

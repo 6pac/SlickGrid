@@ -1,4 +1,20 @@
-import type { Aggregator, CssStyleHash, Grouping, GroupingComparerItem, GroupingFormatterItem, GroupingGetterFunction, PagingInfo, SortDirectionNumber } from './models/index';
+import type {
+  Aggregator,
+  CssStyleHash,
+  Grouping,
+  GroupingComparerItem,
+  GroupingFormatterItem,
+  GroupingGetterFunction,
+  OnGroupCollapsedEventArgs,
+  OnGroupExpandedEventArgs,
+  OnRowCountChangedEventArgs,
+  OnRowsChangedEventArgs,
+  OnRowsOrCountChangedEventArgs,
+  OnSelectedRowIdsChangedEventArgs,
+  OnSetItemsCalledEventArgs,
+  PagingInfo,
+  SortDirectionNumber
+} from './models/index';
 import {
   SlickEvent as SlickEvent_,
   SlickEventData as SlickEventData_,
@@ -37,12 +53,12 @@ export class SlickDataView<T = any> {
 
   // private
   protected idProperty = 'id';          // property holding a unique row id
-  protected items: T[] = [];                 // data by index
-  protected rows: T[] = [];                  // data by row
+  protected items: T[] = [];            // data by index
+  protected rows: T[] = [];             // data by row
   protected idxById = new Map<number | string, number>();   // indexes by id
-  protected rowsById: any = null;            // rows by id; lazy-calculated
-  protected filter: any = null;              // filter function
-  protected updated: any = null;             // updated item ids
+  protected rowsById: any = null;       // rows by id; lazy-calculated
+  protected filter: any = null;         // filter function
+  protected updated: any = null;        // updated item ids
   protected suspend = false;            // suspends the recalculation
   protected isBulkSuspend = false;      // delays protectedious operations like the
   // index update and delete to efficient
@@ -58,7 +74,7 @@ export class SlickDataView<T = any> {
   protected compiledFilter?: Function | null;
   protected compiledFilterWithCaching?: Function | null;
   protected filterCache: any[] = [];
-  protected _grid?: SlickGrid | null = null; // grid object will be defined only after using "syncGridSelection()" method"
+  protected _grid?: SlickGrid; // grid object will be defined only after using "syncGridSelection()" method"
 
   // grouping
   protected groupingInfoDefaults: Grouping = {
@@ -80,7 +96,7 @@ export class SlickDataView<T = any> {
   protected groups: any[] = [];
   protected toggledGroupsByLevel: any[] = [];
   protected groupingDelimiter = ':|:';
-  protected selectedRowIds: Array<number | string> | null = null;
+  protected selectedRowIds: Array<number | string> = [];
   protected preSelectedRowIdsChangeFn?: Function;
 
   protected pagesize = 0;
@@ -89,15 +105,15 @@ export class SlickDataView<T = any> {
   protected _options;
 
   // public events
-  onSelectedRowIdsChanged = new SlickEvent();
-  onSetItemsCalled = new SlickEvent();
-  onRowCountChanged = new SlickEvent();
-  onRowsChanged = new SlickEvent();
-  onRowsOrCountChanged = new SlickEvent();
-  onBeforePagingInfoChanged = new SlickEvent();
-  onPagingInfoChanged = new SlickEvent();
-  onGroupExpanded = new SlickEvent();
-  onGroupCollapsed = new SlickEvent();
+  onBeforePagingInfoChanged = new SlickEvent<PagingInfo>();
+  onGroupExpanded = new SlickEvent<OnGroupExpandedEventArgs>();
+  onGroupCollapsed = new SlickEvent<OnGroupCollapsedEventArgs>();
+  onPagingInfoChanged = new SlickEvent<PagingInfo>();
+  onRowCountChanged = new SlickEvent<OnRowCountChangedEventArgs>();
+  onRowsChanged = new SlickEvent<OnRowsChangedEventArgs>();
+  onRowsOrCountChanged = new SlickEvent<OnRowsOrCountChangedEventArgs>();
+  onSelectedRowIdsChanged = new SlickEvent<OnSelectedRowIdsChangedEventArgs>();
+  onSetItemsCalled = new SlickEvent<OnSetItemsCalledEventArgs>();
 
   constructor(options: DataViewOption) {
     this._options = Utils.extend(true, {}, this.defaults, options);
@@ -244,7 +260,7 @@ export class SlickDataView<T = any> {
       this.idProperty = objectIdProperty;
     }
     this.items = this.filteredItems = data;
-    this.onSetItemsCalled.notify({ idProperty: objectIdProperty, itemCount: this.items.length }, null, this);
+    this.onSetItemsCalled.notify({ idProperty: this.idProperty, itemCount: this.items.length }, null, this);
     this.idxById = new Map();
     this.updateIdxById();
     this.ensureIdUniqueness();

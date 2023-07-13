@@ -13,9 +13,9 @@ const Utils = (IIFE_ONLY ? Slick.Utils : Utils_) as typeof Utils_;
 export class SlickCellCopyManager {
   protected _grid!: SlickGrid;
   protected _copiedRanges?: SlickRange | null;
-  onCopyCells = new SlickEvent();
-  onCopyCancelled = new SlickEvent();
-  onPasteCells = new SlickEvent();
+  onCopyCells = new SlickEvent<{ ranges: SlickRange }>();
+  onCopyCancelled = new SlickEvent<{ ranges: SlickRange }>();
+  onPasteCells = new SlickEvent<{ from: SlickRange; to: SlickRange; }>();
 
   init(grid: SlickGrid) {
     this._grid = grid;
