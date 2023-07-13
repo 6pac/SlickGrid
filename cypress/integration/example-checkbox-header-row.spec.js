@@ -101,7 +101,7 @@ describe('Example - Checkbox Header Row', () => {
   });
 
   it('should display "Showing page 1 of 6" text after changing Pagination to 25 items per page', () => {
-    cy.get('.ui-icon-lightbulb')
+    cy.get('.sgi-lightbulb')
       .click();
 
     cy.get('.slick-pager-settings-expanded')
@@ -125,7 +125,7 @@ describe('Example - Checkbox Header Row', () => {
   });
 
   it('should go to next page and expect 1 row selected in that second page', () => {
-    cy.get('.ui-icon-seek-next')
+    cy.get('.sgi-chevron-right')
       .click();
 
     cy.get('input[type="checkbox"]:checked').should('have.length', 1); // only 1x row in page 2
@@ -136,7 +136,7 @@ describe('Example - Checkbox Header Row', () => {
     const expectedRows = '1,3,5,7,9,11,13,15,17,19,21,23';
 
     // go back to 1st page
-    cy.get('.ui-icon-seek-prev')
+    cy.get('.sgi-chevron-left')
       .click();
 
     cy.get('#filter-checkbox-selectall-container input[type=checkbox]')
@@ -153,7 +153,7 @@ describe('Example - Checkbox Header Row', () => {
   });
 
   it('should go to next page and still expect all rows selected in current page', () => {
-    cy.get('.ui-icon-seek-next')
+    cy.get('.sgi-chevron-right')
       .click();
 
     cy.get('.slick-cell-checkboxsel input:checked')
@@ -161,7 +161,7 @@ describe('Example - Checkbox Header Row', () => {
   });
 
   it('should go to last page and still expect all rows selected in current page', () => {
-    cy.get('.ui-icon-seek-end')
+    cy.get('.sgi-chevron-end')
       .click();
 
     cy.get('.slick-cell-checkboxsel input:checked')
@@ -198,7 +198,7 @@ describe('Example - Checkbox Header Row', () => {
   });
 
   it('should go back to first page and still expect all rows selected in current page', () => {
-    cy.get('.ui-icon-seek-first')
+    cy.get('.sgi-chevron-start')
       .click();
 
     cy.get('#filter-checkbox-selectall-container input[type=checkbox]')
@@ -218,7 +218,7 @@ describe('Example - Checkbox Header Row', () => {
   });
 
   it('should go back to last page then re-select the first row and expect "Select All" to be checked', () => {
-    cy.get('.ui-icon-seek-end')
+    cy.get('.sgi-chevron-end')
       .click();
 
     cy.get('.slick-row:nth(0) .slick-cell:nth(0) input[type=checkbox]')

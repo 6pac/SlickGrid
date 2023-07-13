@@ -14,7 +14,7 @@ const children = new Set();
  * @param {Boolean} [cmdDryRun]
  */
 function exec(command, execArgs, execOpts, cmdDryRun) {
-    const options = Object.assign({ stdio: 'pipe' }, execOpts);
+  const options = Object.assign({ stdio: 'pipe', windowsHide: false }, execOpts);
     const spawned = spawnProcess(command, execArgs, options, cmdDryRun);
 
     return cmdDryRun ? Promise.resolve() : wrapError(spawned);
@@ -30,6 +30,7 @@ function exec(command, execArgs, execOpts, cmdDryRun) {
 function execStreaming(command, execArgs, execOpts, cmdDryRun) {
     const options = Object.assign({}, execOpts);
     options.stdio = ['ignore', 'pipe'];
+  options.windowsHide = false;
     const spawned = spawnStreaming(command, execArgs, options, '', cmdDryRun);
 
     return cmdDryRun ? Promise.resolve() : wrapError(spawned);
@@ -48,7 +49,7 @@ function execSync(command, args, opts, cmdDryRun = false) {
 
 /**
  * Log the exec command without actually executing the actual command
- * @param {String} command 
+ * @param {String} command
  * @param {string[]} args
  * @returns {String} output
  */
@@ -111,33 +112,34 @@ function spawnStreaming(
     prefix,
     cmdDryRun = false
 ) {
-    const options = Object.assign({}, opts);
-    options.stdio = ['ignore', 'pipe'];
+  const options = Object.assign({}, opts);
+  options.stdio = ['ignore', 'pipe'];
+  options.windowsHide = false;
 
-    if (cmdDryRun) {
-        return logExecDryRunCommand(command, args);
-    }
-    const spawned = spawnProcess(command, args, options, cmdDryRun);
+  if (cmdDryRun) {
+    return logExecDryRunCommand(command, args);
+  }
+  const spawned = spawnProcess(command, args, options, cmdDryRun);
 
-    const stdoutOpts = {};
-    const stderrOpts = {}; // mergeMultiline causes escaped newlines :P
+  const stdoutOpts = {};
+  const stderrOpts = {}; // mergeMultiline causes escaped newlines :P
 
-    if (prefix) {
-        const color = chalk['magenta'];
-        stdoutOpts.tag = `${color.bold(prefix)}:`;
-        stderrOpts.tag = `${color(prefix)}:`;
-    }
+  if (prefix) {
+    const color = chalk['magenta'];
+    stdoutOpts.tag = `${color.bold(prefix)}:`;
+    stderrOpts.tag = `${color(prefix)}:`;
+  }
 
-    // Avoid 'Possible EventEmitter memory leak detected' warning due to piped stdio
-    if (children.size > process.stdout.listenerCount('close')) {
-        process.stdout.setMaxListeners(children.size);
-        process.stderr.setMaxListeners(children.size);
-    }
+  // Avoid 'Possible EventEmitter memory leak detected' warning due to piped stdio
+  if (children.size > process.stdout.listenerCount('close')) {
+    process.stdout.setMaxListeners(children.size);
+    process.stderr.setMaxListeners(children.size);
+  }
 
-    spawned.stdout.pipe(logTransformer(stdoutOpts)).pipe(process.stdout);
-    spawned.stderr.pipe(logTransformer(stderrOpts)).pipe(process.stderr);
+  spawned.stdout.pipe(logTransformer(stdoutOpts)).pipe(process.stdout);
+  spawned.stderr.pipe(logTransformer(stderrOpts)).pipe(process.stderr);
 
-    return wrapError(spawned);
+  return wrapError(spawned);
 }
 
 // --
@@ -145,8 +147,8 @@ function spawnStreaming(
 
 /**
  * Return the exitCode when possible or else throw an error
- * @param {*} result 
- * @returns 
+ * @param {*} result
+ * @returns
  */
 function getExitCode(result) {
     // https://nodejs.org/docs/latest-v6.x/api/child_process.html#child_process_event_close

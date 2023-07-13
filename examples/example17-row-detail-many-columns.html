@@ -3,9 +3,9 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.grid.css" type="text/css"/>
   <link rel="stylesheet" href="examples.css" type="text/css"/>
-  <link rel="stylesheet" href="../plugins/slick.rowdetailview.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.rowdetailview.css" type="text/css"/>
   <style>
     .detail {
         padding: 5px
@@ -20,8 +20,15 @@
       padding:            10px;
       margin-left:		20px;
     }
+    input.filter {
+      border: 1px solid #dadada;
+      border-radius: 2px;
+    }
+    input.filter::placeholder {
+      opacity: 0.4;
+    }
     .slick-headerrow-column {
-      background: #87ceeb;
+      background: #f1f1f1;
       text-overflow: clip;
       -moz-box-sizing: border-box;
       box-sizing: border-box;
@@ -120,13 +127,13 @@
 
   <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-  <script src="../slick.core.js"></script>
-  <script src="../slick.interactions.js"></script>
-  <script src="../slick.formatters.js"></script>
-  <script src="../plugins/slick.rowdetailview.js"></script>
-  <script src="../plugins/slick.rowselectionmodel.js"></script>
-  <script src="../slick.grid.js"></script>
-  <script src="../slick.dataview.js"></script>
+  <script src="../dist/browser/slick.core.js"></script>
+  <script src="../dist/browser/slick.interactions.js"></script>
+  <script src="../dist/browser/slick.formatters.js"></script>
+  <script src="../dist/browser/plugins/slick.rowdetailview.js"></script>
+  <script src="../dist/browser/plugins/slick.rowselectionmodel.js"></script>
+  <script src="../dist/browser/slick.grid.js"></script>
+  <script src="../dist/browser/slick.dataview.js"></script>
 
   <script>
     var dataView;
@@ -134,24 +141,24 @@
     var grid;
     var data = [];
     var columnFilters = {};
-    var sortcol = "title";
+    var sortcol = 'title';
     var sortdir = 1;
 
     var fakeNames = ['John Doe', 'Jane Doe', 'Chuck Norris', 'Bumblebee', 'Jackie Chan', 'Elvis Presley', 'Bob Marley', 'Mohammed Ali', 'Bruce Lee', 'Rocky Balboa'];
 
     var columns = [
-      {id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 40, resizable: false, selectable: false },
-      {id: "title", name: "Title", field: "title", width: 110, minWidth: 110, cssClass: "cell-title", sortable: true},
-      {id: "duration", name: "Duration", field: "duration", sortable: true},
-      {id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, sortable: true},
-      {id: "start", name: "Start", field: "start", minWidth: 60},
-      {id: "finish", name: "Finish", field: "finish", minWidth: 60},
-      {id: "effort-driven", name: "Effort Driven", width: 80, minWidth: 20, axWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark}
+      {id: 'sel', name: '#', field: 'num', behavior: 'select', cssClass: 'cell-selection', width: 40, resizable: false, selectable: false },
+      {id: 'title', name: 'Title', field: 'title', width: 110, minWidth: 110, cssClass: 'cell-title', sortable: true},
+      {id: 'duration', name: 'Duration', field: 'duration', sortable: true},
+      {id: '%', name: '% Complete', field: 'percentComplete', width: 95, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, sortable: true},
+      {id: 'start', name: 'Start', field: 'start', minWidth: 60},
+      {id: 'finish', name: 'Finish', field: 'finish', minWidth: 60},
+      {id: 'effort-driven', name: 'Effort Driven', width: 80, minWidth: 20, axWidth: 80, cssClass: 'cell-effort-driven', field: 'effortDriven', formatter: Slick.Formatters.Checkmark}
     ];
 
     for(var i = 0; i < 10; i++){
 
-    columns.push({id: "extra" + i, name: "Extra " + i, field: "extra" + i, minWidth: 60});
+    columns.push({id: `extra${i}`, name: `Extra ${i}`, field: `extra${i}`, minWidth: 60});
 
     }
 
@@ -170,10 +177,10 @@
       this.num = i;
       this.percentComplete = Math.round(Math.random() * 100);
       this.effortDriven = (i % 5 == 0);
-      this.start = "01/01/2009";
-      this.finish = "01/05/2009";
-      this.title = "Task " + i;
-      this.duration = "5 days";
+      this.start = '01/01/2009';
+      this.finish = '01/05/2009';
+      this.title = 'Task ' + i;
+      this.duration = '5 days';
     }
 
     function setAlwaysRenderRowClick(val){
@@ -194,7 +201,7 @@
     }
 
     function setMaxRows(amount) {
-      var value = document.querySelector("#maxRowInput").value;
+      var value = document.querySelector('#maxRowInput').value;
       var maxRows = parseInt(value);
       var options = detailView.getOptions();
 
@@ -205,7 +212,7 @@
     }
 
     function setPanelRows(amount) {
-      var value = document.querySelector("#panelRowInput").value;
+      var value = document.querySelector('#panelRowInput').value;
       var panelRows = parseInt(value);
       var options = detailView.getOptions();
 
@@ -216,17 +223,17 @@
     }
 
     function hookAssigneeOnClick(itemId) {
-      document.querySelector("#who-is-assignee_" + itemId).addEventListener("click", assigneHandler.bind(this, itemId));
+      document.querySelector(`#who-is-assignee_${itemId}`)?.addEventListener('click', assigneHandler.bind(this, itemId));
     }
 
     function assigneHandler(itemId) {
-      alert("Assignee is " + document.querySelector("#assignee_" + itemId).value);
+      alert(`Assignee is ${document.querySelector('#assignee_' + itemId).value}`);
     }
 
     function destroyAssigneeOnClick(itemId) {
-      const handler = document.querySelector("#who-is-assignee_" + itemId)
+      const handler = document.querySelector(`#who-is-assignee_${itemId}`)
       if (handler) {
-        handler.removeEventListener("click", assigneHandler.bind(this, itemId));
+        handler.removeEventListener('click', assigneHandler.bind(this, itemId));
       }
     }
 
@@ -343,16 +350,16 @@
     /** Callback to open a city from row detail "Task 5" */
     function openCity(evt, cityName, rowIdx) {
       var i, tabcontent, tablinks;
-      tabcontent = document.getElementsByClassName("tabcontent");
+      tabcontent = document.getElementsByClassName('tabcontent');
       for (i = 0; i < tabcontent.length; i++) {
-          tabcontent[i].style.display = "none";
+          tabcontent[i].style.display = 'none';
       }
-      tablinks = document.getElementsByClassName("tablinks");
+      tablinks = document.getElementsByClassName('tablinks');
       for (i = 0; i < tablinks.length; i++) {
-          tablinks[i].className = tablinks[i].className.replace(" active", "");
+          tablinks[i].className = tablinks[i].className.replace(' active', '');
       }
-      document.getElementById(cityName).style.display = "block";
-      evt.currentTarget.className += " active";
+      document.getElementById(cityName).style.display = 'block';
+      evt.currentTarget.className += ' active';
 
       /* You can save the detail view here OR on the filter keyup
        the reason we save the detail view is to keep the entire content of the view
@@ -370,7 +377,7 @@
       return (x == y ? 0 : (x > y ? 1 : -1));
     }
 
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener('DOMContentLoaded', function() {
       // prepare the data
       for (var i = 0; i < 5000; i++) {
         data[i] = new DataItem(i);
@@ -379,7 +386,7 @@
 
       // create the row detail plugin
       detailView = new Slick.Plugins.RowDetailView({
-        cssClass: "detailView-toggle",
+        cssClass: 'detailView-toggle',
         preTemplate: loadingTemplate,
         postTemplate: loadView,
         process: simulateServerCall,
@@ -394,7 +401,7 @@
       // push the plugin as the first column
       columns.unshift(detailView.getColumnDefinition());
 
-      grid = new Slick.Grid("#myGrid", dataView, columns, options);
+      grid = new Slick.Grid('#myGrid', dataView, columns, options);
 
       // register the column
       grid.setSelectionModel(new Slick.RowSelectionModel({selectActiveRow: false}));
@@ -464,12 +471,16 @@
       }
 
       grid.onHeaderRowCellRendered.subscribe(function(e, args) {
-        args.node.innerHTML = ''; // empty it
-        const inputElm = document.createElement('input');
-        inputElm.dataset.columnid = args.column.id;
-        inputElm.value = columnFilters[args.column.id] || '';
+        if (args.column.field !== 'sel') {
+          args.node.innerHTML = ''; // empty it
+          const inputElm = document.createElement('input');
+          inputElm.className = 'filter';
+          inputElm.placeholder = '🔎︎';
+          inputElm.dataset.columnid = args.column.id;
+          inputElm.value = columnFilters[args.column.id] || '';
 
-        args.node.appendChild(inputElm);
+          args.node.appendChild(inputElm);
+        }
       });
 
       // initialize the model after all the events have been hooked up

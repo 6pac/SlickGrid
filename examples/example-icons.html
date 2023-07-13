@@ -1,0 +1,152 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <title>SlickGrid example: jQueryUI 'Autocomplete' javascript editor</title>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+</head>
+<style>
+  h2 {
+    font-size: 1.6em;
+  }
+  h3 {
+    font-size: 1.2em;
+  }
+  .icon-count {
+    font-size: 18px;
+    color: #585858;
+  }
+  .box {
+    display: flex;
+    flex-wrap: wrap;
+    padding: 20px;
+    border: 1px solid gray;
+    width: 97%;
+    background-color: #f8f8f8;
+    border-radius: 4px;
+    display: flex;
+    column-gap: 5px;
+    row-gap: 5px;
+    margin-top: 10px;
+  }
+  .card {
+    display: inline-flex;
+    align-items: center;
+    background-color: #fff;
+    border: 1px solid #e3e3e3;
+    border-radius: 3px;
+    padding: 5px 14px 5px 8px;
+    flex-wrap: wrap;
+  }
+  .card span {
+    color: rgb(0 92 126);
+    margin-left: 4px;
+  }
+  .sgi {
+    font-size: 13px;
+    padding: 4px;
+  }
+  .my-star {
+    font-size: 18px;
+    color: plum;
+  }
+  .my-star:hover {
+    color: purple;
+  }
+</style>
+<script>
+const iconList = [
+  'sgi-chevron-start', 'sgi-chevron-left', 'sgi-chevron-right', 'sgi-chevron-end', 'sgi-cancel', 'sgi-caret', 'sgi-check', 'sgi-check-bold',
+  'sgi-close', 'sgi-checkbox-blank-outline', 'sgi-checkbox-outline', 'sgi-checkbox-marked-outline',
+  'sgi-checkbox-intermediate', 'sgi-coffee-outline', 'sgi-drag', 'sgi-drag-vertical', 'sgi-help-circle-outline', 'sgi-hashtag', 'sgi-information-outline',
+  'sgi-lightbulb', 'sgi-loading', 'sgi-menu', 'sgi-message-outline',
+  'sgi-pencil-outline', 'sgi-minus-box-outline', 'sgi-plus-box-outline', 'sgi-search', 'sgi-star', 'sgi-star-outline', 'sgi-tag-outline', 'sgi-undo', 'sgi-user'
+];
+const utilsList = [
+  { class: 'sgi-coffee-outline', label: '(original)' },
+  { class: 'sgi-coffee-outline sgi-flip-h', label: 'sgi-flip-h' },
+  { class: 'sgi-coffee-outline sgi-flip-v', label: 'sgi-flip-v' },
+  { class: 'sgi-loading sgi-spin', label: 'sgi-spin' },
+  { class: 'sgi-coffee-outline sgi-10px', label: 'sgi-10px' },
+  { class: 'sgi-coffee-outline sgi-12px', label: 'sgi-12px' },
+  { class: 'sgi-coffee-outline sgi-15px', label: 'sgi-15px' },
+  { class: 'sgi-coffee-outline sgi-18px', label: 'sgi-18px' },
+  { class: 'sgi-coffee-outline sgi-20px', label: 'sgi-20px' },
+  { class: 'sgi-coffee-outline sgi-22px', label: 'sgi-22px' },
+  { class: 'sgi-coffee-outline sgi-25px', label: 'sgi-25px' },
+  { class: 'sgi-coffee-outline sgi-28px', label: 'sgi-28px' },
+  { class: 'sgi-coffee-outline sgi-30px', label: 'sgi-30px' },
+];
+
+const pureCssList = [
+  { class: 'sgi-star',  style: 'color: teal' },
+  { class: 'sgi-star my-star', label: 'css: .my-star { color: plum } .my-star:hover { color: purple }',  },
+  { class: 'sgi-star', style: 'color: #ff0000' },
+  { class: 'sgi-star',  style: 'font-size: 25px; color: #9100ff' },
+];
+
+function addIconToBox(boxElm, iconList) {
+  if (boxElm.classList.contains('box-1')) {
+    const iconCountElm = document.querySelector('.icon-count');
+    iconCountElm.textContent = `(${iconList.length}x)`;
+  }
+
+  for (icon of iconList) {
+    const divCard = document.createElement('div');
+    const iconElm = document.createElement('i');
+    const labelElm = document.createElement('span');
+    divCard.className = 'card';
+    if (typeof icon === 'string') {
+      iconElm.className = `sgi ${icon}`;
+      labelElm.textContent = icon;
+    } else {
+      iconElm.className = `sgi ${icon.class}`;
+      iconElm.title = icon.class;
+      labelElm.textContent = icon.label;
+      if (icon.style) {
+        iconElm.style = icon.style;
+        labelElm.textContent = icon.label || `style="${icon.style}"`;
+        labelElm.style = icon.style;
+      }
+    }
+
+    divCard.appendChild(iconElm);
+    divCard.appendChild(labelElm);
+    boxElm.appendChild(divCard);
+  }
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  addIconToBox(document.querySelector('.box-1'), iconList);
+  addIconToBox(document.querySelector('.box-2'), utilsList);
+  addIconToBox(document.querySelector('.box-3'), pureCssList);
+});
+</script>
+<body>
+<h1>
+  SlickGrid icons <span class="icon-count"></span>
+  <a href="/examples/index.html" target="_blank" style="text-decoration: none; font-size: 28px">&#x2302;</a>
+</h1>
+<h3 style="font-style: italic; color: #373737">
+All SVG icons came from the <a href="https://pictogrammers.com/library/mdi/" target="_blank">Material Design Icons</a> project, we only picked the minimum icons needed by SlickGrid.
+<br>The instruction is to simply import the "slick-icons.css" file and then use any of the CSS class "sgi sgi-icon-name" as shown below (<b>Note</b>: the "sgi" class is also required).
+</h3>
+
+<!-- icon flex box container -->
+<div class="box box-1">
+</div>
+
+<!-- icon extra utils -->
+<h2>Icon extra utils <span style="color: #838383">(available sizes, from 10px to 30px)</span></h2>
+<div class="box box-2">
+</div>
+
+<!-- icon extra utils -->
+<h2>Icons are pure CSS (credits goes to UnoCSS project, see this <a href="https://antfu.me/posts/icons-in-pure-css" target="_blank">article</a>)</h2>
+<h3>You can use regular CSS to change the color of your icons and make them scalable</h3>
+<div class="box box-3">
+</div>
+</body>
+</html>

@@ -4,45 +4,34 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css" />
-  <link rel="stylesheet" href="../plugins/slick.headermenu.css" type="text/css" />
-  <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css" />
-  <link rel="stylesheet" href="examples.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick.headermenu.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
     .blue {
       color: rgb(73, 73, 255);
     }
-
-    .orange {
-      color: orange;
-    }
-
-    .red {
-      color: red;
-    }
-
     .bold {
       font-weight: bold;
     }
-
     .italic {
       font-style: italic;
     }
 
+    .slick-header-menubutton {
+      border: 1px solid #dedede;
+      border-width: 0 1px 0 1px;
+    }
+    .slick-header-menubutton span {
+      margin-top: 40%;
+    }
     /**
      * Style the drop-down menu here since the plugin stylesheet mostly contains structural CSS.
      */
-    .slick-header-menu {
-      border: 1px solid #718BB7;
-      background: #f0f0f0;
-      padding: 2px;
-      box-shadow: 2px 2px 2px silver;
-      z-index: 20;
-    }
-
-
     .slick-header-menuitem {
-      padding: 2px 4px;
+      padding: 2px;
       border: 1px solid transparent;
       border-radius: 3px;
       display: block;
@@ -60,22 +49,22 @@
     .slick-header-menuitem-hidden {
       display: none;
     }
-
-    .icon-help {
-      background-image: url(../images/help.png);
-    }
   </style>
 
 </head>
 
 <body>
   <div style="position:relative">
-    <div style="width:525px;">
-      <div id="myGrid" style="width:100%;height:500px;"></div>
+    <div style="width:575px;">
+      <div id="myGrid" class="slick-container" style="width:100%;height:500px;"></div>
     </div>
 
     <div class="options-panel">
-      <h2>Demonstrates:</h2>
+      <h2>
+        <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+        Demonstrates:
+      </h2>
+
       <p>
         This example demonstrates using the <b>Slick.Plugins.HeaderMenu</b> plugin to add drop-down menus to column
         headers. (Hover over the headers.)
@@ -101,11 +90,11 @@
 
   <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-  <script src="../slick.core.js"></script>
-  <script src="../slick.interactions.js"></script>
-  <script src="../slick.grid.js"></script>
-  <script src="../plugins/slick.headermenu.js"></script>
-  <script src="../controls/slick.columnpicker.js"></script>
+  <script src="../dist/browser/slick.core.js"></script>
+  <script src="../dist/browser/slick.interactions.js"></script>
+  <script src="../dist/browser/slick.grid.js"></script>
+  <script src="../dist/browser/plugins/slick.headermenu.js"></script>
+  <script src="../dist/browser/controls/slick.columnpicker.js"></script>
 
   <script>
     var data = [];
@@ -114,10 +103,10 @@
     var columns = [
       { id: "title", name: "Title", field: "title", width: 90 },
       { id: "duration", name: "Duration", field: "duration", sortable: true, width: 90 },
-      { id: "percentComplete", name: "% Complete", field: "percentComplete", sortable: true, width: 90 },
+      { id: "percentComplete", name: "% Complete", field: "percentComplete", sortable: true, width: 95 },
       { id: "start", name: "Start", field: "start", sortable: true },
       { id: "finish", name: "Finish", field: "finish", sortable: true },
-      { id: "effort-driven", name: "Effort Driven", field: "effortDriven" }
+      { id: "effort-driven", name: "Effort Driven", field: "effortDriven", width: 100 }
 
     ];
 
@@ -126,14 +115,14 @@
         menu: {
           items: [
             {
-              iconImage: "../images/sort-asc.gif",
+              iconCssClass: 'sgi sgi-caret sgi-flip-v',
               title: "Sort Ascending",
               disabled: !columns[i].sortable,
               // hidden: !columns[i].sortable, // you could disable or hide the command completely
               command: "sort-asc"
             },
             {
-              iconImage: "../images/sort-desc.gif",
+              iconCssClass: 'sgi sgi-caret',
               title: "Sort Descending",
               disabled: !columns[i].sortable,
               // hidden: !columns[i].sortable, // you could disable or hide the command completely
@@ -153,7 +142,7 @@
             // "divider",
             { divider: true },
             {
-              iconCssClass: "icon-help",
+              iconCssClass: 'sgi sgi-help-circle-outline sgi-14px',
               title: "Help",
               command: "help",
               cssClass: 'bold',     // container css class
@@ -248,7 +237,7 @@
 
       grid = new Slick.Grid("#myGrid", data, columns, options);
       var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
-      headerMenuPlugin = new Slick.Plugins.HeaderMenu({});
+      headerMenuPlugin = new Slick.Plugins.HeaderMenu({ buttonCssClass: 'sgi sgi-caret' });
 
       grid.onSort.subscribe(function (e, args) {
         executeSort(args.sortCols);

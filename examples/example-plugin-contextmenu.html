@@ -5,10 +5,12 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example: Cell Menu & Context Menu</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css" />
-  <link rel="stylesheet" href="../plugins/slick.cellmenu.css" type="text/css" />
-  <link rel="stylesheet" href="../plugins/slick.contextmenu.css" type="text/css" />
-  <link rel="stylesheet" href="examples.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.cellmenu.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick.contextmenu.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
   <style>
     .bold {
       font-weight: bold;
@@ -18,12 +20,20 @@
       font-style: italic;
     }
 
-    .grey {
-      color: grey;
+    .green {
+      color: #40a840
+    }
+
+    .gray {
+      color: #c0c0c0;
     }
 
     .orange {
       color: orange;
+    }
+
+    .pink {
+      color: pink;
     }
 
     .red {
@@ -32,14 +42,6 @@
 
     .pointer {
       cursor: pointer;
-    }
-
-    .checkmark {
-      background-image: url(../images/tick.png);
-    }
-
-    .icon-help {
-      background-image: url(../images/help.png);
     }
 
     .disabled {
@@ -64,7 +66,6 @@
 
     .slick-context-menu {
       border: 1px solid #718BB7;
-      background: #f0f0f0;
       box-shadow: 2px 2px 2px silver;
     }
   </style>
@@ -74,12 +75,15 @@
   <table width="100%">
     <tr>
       <td valign="top" width="50%">
-        <div id="myGrid" style="width:630px;height:700px;"></div>
+        <div id="myGrid" class="slick-container" style="width:650px;height:700px;"></div>
       </td>
       <td valign="top">
         <h2>
-          Demonstrates:
-          <span style="margin-left: 15px; font-size: 12px">Slick.Plugins.ContextMenu / Slick.Plugins.CellMenu</span>
+          <h2>
+            <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+            Demonstrates:
+            <span style="margin-left: 15px; font-size: 12px">(Slick.Plugins.ContextMenu / Slick.Plugins.CellMenu</span>)
+          </h2>
         </h2>
         <ul>
           <li><strong>Slick.Plugins.ContextMenu - Context Menu (global from any columns right+click)</strong></li>
@@ -159,15 +163,17 @@
   </table>
 
   <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+  <script src="sortable-cdn-fallback.js"></script>
 
-  <script src="../slick.core.js"></script>
-  <script src="../slick.interactions.js"></script>
-  <script src="../slick.formatters.js"></script>
-  <script src="../slick.dataview.js"></script>
-  <script src="../slick.editors.js"></script>
-  <script src="../slick.grid.js"></script>
-  <script src="../plugins/slick.cellmenu.js"></script>
-  <script src="../plugins/slick.contextmenu.js"></script>
+  <script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+  <script src="../dist/browser/slick.formatters.js"></script>
+  <script src="../dist/browser/slick.dataview.js"></script>
+  <script src="../dist/browser/slick.editors.js"></script>
+  <script src="../dist/browser/controls/slick.columnpicker.js"></script>
+  <script src="../dist/browser/plugins/slick.cellmenu.js"></script>
+  <script src="../dist/browser/plugins/slick.contextmenu.js"></script>
 
   <script>
     var grid;
@@ -295,7 +301,7 @@
       { id: "start", name: "Start", field: "start", sortable: true },
       { id: "finish", name: "Finish", field: "finish", sortable: true },
       { id: "priority", name: "Priority", field: "priority", width: 80, resizable: false, formatter: priorityFormatter },
-      { id: "effortDriven", name: "Effort Driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark },
+      { id: "effortDriven", name: "Effort Driven", field: "effortDriven", width: 95, formatter: Slick.Formatters.Checkmark },
       {
         id: "action", name: "Action", field: "id", width: 80, resizable: false,
         formatter: actionFormatter,
@@ -325,7 +331,7 @@
             },
             {
               command: "delete-row", title: "Delete Row",
-              iconImage: "../images/delete.png",
+              iconCssClass: "sgi sgi-close red",
               cssClass: "bold", textCssClass: "red",
               // only show command to "Delete Row" when there's no Effort Driven
               itemVisibilityOverride: function (args) {
@@ -335,15 +341,15 @@
             // you can pass divider as a string or an object with a boolean
             "divider",
             // { divider: true },
-            { command: "help", title: "Help", iconCssClass: "icon-help" },
+            { command: "help", title: "Help", iconCssClass: "sgi sgi-help-circle-outline" },
             { command: "something", title: "Disabled Command", disabled: true }
           ],
           optionTitle: "Change Effort Driven",
           optionItems: [
-            { option: true, title: "True", iconCssClass: 'checkmark' },
-            { option: false, title: "False" },
+            { option: true, title: "True", iconCssClass: 'sgi sgi-checkbox-marked-outline green' },
+            { option: false, title: "False", iconCssClass: 'sgi sgi-checkbox-blank-outline pink' },
             {
-              option: null, title: "null", textCssClass: "italic",
+              option: null, title: "null", iconCssClass: "sgi sgi-cancel gray", textCssClass: "italic",
               // you can use the "action" callback and/or subscribe to the "onCallback" event, they both have the same arguments
               action: function (e, args) {
                 // action callback.. do something
@@ -382,10 +388,10 @@
       commandShownOverColumnIds: ["id", "title", "complete", "start", "finish", "effortDriven" /*, "priority"*/],
       commandItems: [
         { command: "copy-text", title: "Copy Cell Value" },
-        { command: "delete-row", title: "Delete Row", iconImage: "../images/delete.png", cssClass: "bold", textCssClass: "red", },
+        { command: "delete-row", title: "Delete Row", iconCssClass: "sgi sgi-close red", cssClass: "bold", textCssClass: "red", },
         { divider: true },
         {
-          command: "help", title: "Help", iconCssClass: "icon-help",
+          command: "help", title: "Help", iconCssClass: "sgi sgi-help-circle-outline",
           // you can use the "action" callback and/or subscribe to the "onCallback" event, they both have the same arguments
           action: function (e, args) {
             // action callback.. do something
@@ -415,9 +421,9 @@
             // action callback.. do something
           },
         },
-        { option: 1, iconImage: "../images/info.gif", title: "Low" },
-        { option: 2, iconImage: "../images/info.gif", title: "Medium" },
-        { option: 3, iconImage: "../images/bullet_star.png", title: "High" },
+        { option: 1, iconCssClass: "sgi sgi-star-outline", title: "Low" },
+        { option: 2, iconCssClass: "sgi sgi-star orange", title: "Medium" },
+        { option: 3, iconCssClass: "sgi sgi-star red", title: "High" },
         // you can pass divider as a string or an object with a boolean
         // "divider",
         { divider: true },
@@ -436,6 +442,8 @@
       grid = new Slick.Grid("#myGrid", dataView, columns, gridOptions);
       cellMenuPlugin = new Slick.Plugins.CellMenu({ hideMenuOnScroll: true });
       contextMenuPlugin = new Slick.Plugins.ContextMenu(contextMenuOptions);
+      var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, gridOptions);
+
       grid.registerPlugin(cellMenuPlugin);
       grid.registerPlugin(contextMenuPlugin);
 

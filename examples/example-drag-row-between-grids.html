@@ -4,16 +4,17 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example: Dragging a row between grids</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
     .cell-effort-driven {
-      text-align: center;
+      justify-content: center;
     }
 
     .cell-drag-cross-grid {
       cursor: move;
-      background-color: lightGrey;
+      /* background-color: rgb(235, 235, 235); */
     }
 
     .cell-selection {
@@ -63,10 +64,13 @@
     <div class="grid-header" style="width:100%">
       <label>Shopping list:</label>
     </div>
-    <div id="myGrid2" class="example-grid" style="width:100%;height:200px;"></div>
+    <div id="myGrid2" class="example-grid slick-container" style="width:100%;height:200px;"></div>
   </div>
   <div class="options-panel">
-    <b>Tips:</b>
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Tips:
+    </h2>
     <hr/>
     <div style="padding:6px;">
       <b>Drag rows from the top grid to the bottom grid</b><br/>
@@ -83,16 +87,16 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../plugins/slick.cellrangedecorator.js"></script>
-<script src="../plugins/slick.cellrangeselector.js"></script>
-<script src="../plugins/slick.cellselectionmodel.js"></script>
-<script src="../plugins/slick.rowselectionmodel.js"></script>
-<script src="../plugins/slick.crossgridrowmovemanager.js"></script>
-<script src="../slick.formatters.js"></script>
-<script src="../slick.editors.js"></script>
-<script src="../slick.grid.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangedecorator.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangeselector.js"></script>
+<script src="../dist/browser/plugins/slick.cellselectionmodel.js"></script>
+<script src="../dist/browser/plugins/slick.rowselectionmodel.js"></script>
+<script src="../dist/browser/plugins/slick.crossgridrowmovemanager.js"></script>
+<script src="../dist/browser/slick.formatters.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
 
 <script>
 var grid, grid2;
@@ -105,13 +109,13 @@ var columns = [
     behavior: "selectAndMove",
     selectable: false,
     resizable: false,
-    cssClass: "cell-drag-cross-grid dnd"
+    cssClass: "cell-drag-cross-grid dnd sgi sgi-drag"
   },
   {
     id: "name",
     name: "Name",
     field: "name",
-    width: 500,
+    width: 300,
     cssClass: "cell-title",
     editor: Slick.Editors.Text,
     validator: requiredFieldValidator
@@ -133,7 +137,7 @@ var columns2 = [
     id: "name",
     name: "Name",
     field: "name",
-    width: 500,
+    width: 300,
     cssClass: "cell-title",
     editor: Slick.Editors.Text,
     validator: requiredFieldValidator

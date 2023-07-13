@@ -4,18 +4,18 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example: Frozen Columns</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css" media="screen" charset="utf-8"/>
-  <link rel="stylesheet" href="../controls/slick.pager.css" type="text/css" media="screen" charset="utf-8"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.grid.css" type="text/css" media="screen" charset="utf-8"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.pager.css" type="text/css" media="screen" charset="utf-8"/>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/smoothness/jquery-ui.min.css" />
   <link rel="stylesheet" href="examples.css" type="text/css" media="screen" charset="utf-8"/>
-  <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css" media="screen" charset="utf-8"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css" media="screen" charset="utf-8"/>
   <style>
     .cell-title {
       font-weight: bold;
     }
 
     .cell-effort-driven {
-      text-align: center;
+      justify-content: center;
     }
 
     .cell-selection {
@@ -46,12 +46,14 @@
         <span style="float:right" class="ui-icon ui-icon-search" title="Toggle search panel"
               onclick="toggleFilterRow()"></span>
       </div>
-      <div id="myGrid" style="width:100%;height:350px;"></div>
+      <div id="myGrid" class="slick-container" style="width:100%;height:350px;"></div>
       <div id="pager" style="width:100%;height:20px;"></div>
     </div>
     <div class="options-panel">
-      <b>Search:</b>
-      <hr/>
+      <h2>
+        <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+        Search:
+      </h2>
       <div style="padding:6px;">
         <label style="width:200px;float:left">Show tasks with % at least: </label>
 
@@ -106,27 +108,24 @@
   <div style="width:100px;display:inline-block;" id="pcSlider2"></div>
 </div>
 
-<script language="JavaScript" src="../lib/firebugx.js"></script>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../slick.editors.js"></script>
-<script src="../slick.formatters.js"></script>
-<script src="../plugins/slick.rowselectionmodel.js"></script>
-<script src="../slick.grid.js"></script>
-<script src="../slick.dataview.js"></script>
-<script src="../controls/slick.pager.js"></script>
-<script src="../controls/slick.columnpicker.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
+<script src="../dist/browser/slick.formatters.js"></script>
+<script src="../dist/browser/plugins/slick.rowselectionmodel.js"></script>
+<script src="../dist/browser/slick.dataview.js"></script>
+<script src="../dist/browser/controls/slick.pager.js"></script>
+<script src="../dist/browser/controls/slick.columnpicker.js"></script>
 
 <script>
 $(function () {
   $('#frozenColumn').val(options.frozenColumn);
 });
-function isIEPreVer9() { var v = navigator.appVersion.match(/MSIE ([\d.]+)/i); return (v ? v[1] < 9 : false); }
 
 var dataView;
 var grid;
@@ -140,13 +139,13 @@ var columns = [
   ,
   {id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Text, sortable: true}
   ,
-  {id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentComplete, editor: Slick.Editors.PercentComplete, sortable: true}
+  {id: "%", name: "% Complete", field: "percentComplete", width: 95, resizable: false, formatter: Slick.Formatters.PercentComplete, editor: Slick.Editors.PercentComplete, sortable: true}
   ,
   {id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Date, sortable: true}
   ,
   {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Date, sortable: true}
   ,
-  {id: "effort-driven", name: "Effort Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.YesNo, editor: Slick.Editors.YesNoSelect, cannotTriggerInsert: true, sortable: true}
+  {id: "effort-driven", name: "Effort Driven", width: 90, minWidth: 20, maxWidth: 90, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.YesNo, editor: Slick.Editors.YesNoSelect, cannotTriggerInsert: true, sortable: true}
   ,
   {id: "title1", name: "Title1", field: "title1", width: 120, minWidth: 120, cssClass: "cell-title", editor: Slick.Editors.Text, validator: requiredFieldValidator, sortable: true}
   ,
@@ -304,28 +303,9 @@ $(function () {
     sortdir = args.sortAsc ? 1 : -1;
     sortcol = args.sortCol.field;
 
-    if (isIEPreVer9()) {
-      // using temporary Object.prototype.toString override
-      // more limited and does lexicographic sort only by default, but can be much faster
-
-      var percentCompleteValueFn = function () {
-        var val = this["percentComplete"];
-        if (val < 10) {
-          return "00" + val;
-        } else if (val < 100) {
-          return "0" + val;
-        } else {
-          return val;
-        }
-      };
-
-      // use numeric sort of % and lexicographic for everything else
-      dataView.fastSort((sortcol == "percentComplete") ? percentCompleteValueFn : sortcol, args.sortAsc);
-    } else {
-      // using native sort with comparer
-      // preferred method but can be very slow in IE with huge datasets
-      dataView.sort(comparer, args.sortAsc);
-    }
+    // using native sort with comparer
+    // preferred method but can be very slow in IE with huge datasets
+    dataView.sort(comparer, args.sortAsc);
   });
 
   // wire up model events to drive the grid

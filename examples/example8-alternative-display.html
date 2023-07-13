@@ -4,8 +4,9 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example 8: Alternative display</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
     .slick-cell {
       background: white !important;
@@ -50,7 +51,12 @@
       height: 100%;
       float: left;
       border-right: 1px dotted gray;
-      background: url("../images/user_identity.gif") no-repeat top center;
+      display: inline-flex;
+      align-items: center;
+    }
+    .cell-left .sgi-user {
+      font-size: 30px;
+      color: olivedrab;
     }
 
     .cell-main {
@@ -65,7 +71,10 @@
       <div id="myGrid" style="width:600px;height:500px;"></div>
     </td>
     <td valign="top">
-      <h2>Demonstrates:</h2>
+      <h2>
+        <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+        Demonstrates:
+      </h2>
 
       <ul>
         <li>Template-based rendering using John Resig's <a href="http://ejohn.org/blog/javascript-micro-templating/"
@@ -88,7 +97,7 @@
 <!-- cell template -->
 <script type="text/html" id="cell_template">
   <div class="cell-inner">
-    <div class="cell-left"></div>
+    <div class="cell-left"><i class="sgi sgi-user"></i></div>
     <div class="cell-main">
       <b><%=name%></b><br/>
       <%=title%><br/>
@@ -99,10 +108,11 @@
 </script>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../slick.grid.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
 
 <script>
   // Simple JavaScript Templating

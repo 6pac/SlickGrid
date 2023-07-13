@@ -4,30 +4,40 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example: Spreadsheet with Excel compatible cut and paste</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
-  <link rel="stylesheet" href="examples-unicode-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
   <style>
     .slick-cell.copied {
       background: blue;
       background: rgba(0, 0, 255, 0.2);
       -webkit-transition: 0.5s background;
     }
+    /** override slick-cell to make it look like Excel sheet */
+    .slick-container {
+      --alpine-header-column-height: 20px;
+      --alpine-header-font-weight: 500;
+      --alpine-cell-border-width: 0 1px 1px 0;
+      --alpine-cell-border-color: #d4d4d4;
+    }
   </style>
 </head>
 <body>
 <div style="position:relative">
   <div style="width:600px;">
-    <div id="myGrid" style="width:100%;height:300px;"></div>
+    <div id="myGrid" class="slick-container" style="width:100%;height:300px;"></div>
   </div>
   <br/>
   <div style="width:600px;">
-    <div id="myGrid2" style="width:100%;height:300px;" class="example-grid"></div>
+    <div id="myGrid2" class="slick-container" style="width:100%;height:300px;" class="example-grid"></div>
   </div>
 
   <div class="options-panel">
-    <h2>Excel compatible copy/paste manager</h2>
-        <div>
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Excel compatible copy/paste manager
+    </h2>
+    <div>
 		 <strong>Thanks to <a href="https://github.com/Celebio/SlickGrid">Celebio</a>! <a href="http://labs.nereo.com/slick.html">(link to site)</a></strong><br /><br />
           This is basically the same example than <a href="example-spreadsheet.html">example-spreadsheet.html</a>,
 		  with the support of external excel-compatible software clipboard<br />
@@ -50,8 +60,9 @@
     <ul>
       <li>Use buttons to undo/redo copy/paste</li>
     </ul>
-    <button onclick="undoRedoBuffer.undo()"><img src="../images/arrow_undo.png" align="absmiddle"> Undo</button>
-    <button onclick="undoRedoBuffer.redo()"><img src="../images/arrow_redo.png" align="absmiddle"> Redo</button>
+
+    <button onclick="undoRedoBuffer.undo()" style="display: inline-flex; gap: 4px"><span class="sgi sgi-undo"></span> Undo</button>
+    <button onclick="undoRedoBuffer.redo()" style="display: inline-flex; gap: 4px"><span class="sgi sgi-undo sgi-flip-h"></span> Redo</button>
     <h2>View Source:</h2>
     <ul>
       <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-excel-compatible-spreadsheet.html" target="_sourcewindow"> View the source for this example on Github</a></li>
@@ -60,17 +71,18 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../plugins/slick.autotooltips.js"></script>
-<script src="../plugins/slick.cellrangedecorator.js"></script>
-<script src="../plugins/slick.cellrangeselector.js"></script>
-<script src="../plugins/slick.cellexternalcopymanager.js"></script>
-<script src="../plugins/slick.cellselectionmodel.js"></script>
-<script src="../slick.editors.js"></script>
-<script src="../slick.formatters.js"></script>
-<script src="../slick.grid.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/plugins/slick.autotooltips.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangedecorator.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangeselector.js"></script>
+<script src="../dist/browser/plugins/slick.cellexternalcopymanager.js"></script>
+<script src="../dist/browser/plugins/slick.cellselectionmodel.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
+<script src="../dist/browser/slick.formatters.js"></script>
 
 <script>
   var grid;
@@ -180,7 +192,7 @@
     });
   }
 
-  columns[4] = {id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete};
+  columns[4] = {id: "%", name: "% Complete", field: "percentComplete", width: 95, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete};
   columns[5] = {id: "start", name: "Start", field: "start", minWidth: 60};
 
 

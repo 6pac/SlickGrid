@@ -4,28 +4,10 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example: Plugin: State</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="../plugins/slick.headerbuttons.css" type="text/css"/>
-  <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
-  <style>
-    .icon-highlight-off,
-    .icon-highlight-on {
-      background-image: url(../images/bullet_blue.png);
-    }
-
-    .icon-highlight-off {
-      opacity: 0.2;
-    }
-
-    .negative-highlight {
-      background: red;
-    }
-
-    .slick-header-column.filtered {
-      background: #D8E2FF;
-    }
-  </style>
+  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
 </head>
 <body>
 <div style="position:relative">
@@ -34,7 +16,10 @@
   </div>
 
   <div class="options-panel">
-    <h2>About</h2>
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      About:
+    </h2>
     <p>
       This example demonstrates using the <b>Slick.State</b> plugin persisting grid column width, order, visibility and sort order using Local Storage.
       For this demo, we use Local Storage, but you could technically save this data into a database and reload at any time your previous session.
@@ -46,13 +31,14 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.dataview.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../slick.grid.js"></script>
-<script src="../plugins/slick.state.js"></script>
-<script src="../controls/slick.columnpicker.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.dataview.js"></script>
+<script src="../dist/browser/plugins/slick.state.js"></script>
+<script src="../dist/browser/controls/slick.columnpicker.js"></script>
 
 <script id="script_tag_example" type="text/javascript">
   var grid;
@@ -63,8 +49,6 @@
     enableCellNavigation: true
   };
   var columns = [];
-  var columnsWithHighlightingById = {};
-
 
   // Set up some test columns.
   for (var i = 0; i < 10; i++) {

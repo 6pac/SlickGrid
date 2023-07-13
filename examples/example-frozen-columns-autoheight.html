@@ -5,8 +5,9 @@
   <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example 11: No vertical scrolling (autoHeight)</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
   <style>
     html, body {
       margin: 0;
@@ -34,9 +35,12 @@
   </style>
 </head>
 <body>
-<div id="container"></div>
+<div id="container" class="slick-container"></div>
 <div id="description">
-  <h2>Demonstrates:</h2>
+  <h2>
+    <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+    Demonstrates:
+  </h2>
   <ul>
     <li>autoHeight:true grid option</li>
   </ul>
@@ -44,9 +48,9 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../slick.grid.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
 
 <script>
   var grid,

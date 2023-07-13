@@ -3,11 +3,11 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
-  <link rel="stylesheet" href="../controls/slick.gridmenu.css" type="text/css"/>
-  <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css"/>
-  <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" crossorigin="anonymous">
+  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.gridmenu.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
     .blue {
       color: rgb(73, 73, 255);
@@ -24,11 +24,18 @@
     .italic {
       font-style: italic;
     }
+    input.filter {
+      border: 1px solid #dadada;
+      border-radius: 2px;
+    }
+    input.filter::placeholder {
+      opacity: 0.4;
+    }
     .slick-gridmenu-item-hidden {
       display: none;
     }
     .slick-headerrow-column {
-      background: #BDD8E0;
+      background: #ededed;
       text-overflow: clip;
       -moz-box-sizing: border-box;
       box-sizing: border-box;
@@ -42,10 +49,6 @@
       -moz-box-sizing: border-box;
       box-sizing: border-box;
     }
-    .icon-help {
-      background-image: url(../images/help.png);
-    }
-
     /** you could optionally style the grid menu column picker list with font-awesome checkboxes */
     .slick-gridmenu-list li,
     .slick-columnpicker-list li {
@@ -55,7 +58,7 @@
     .slick-gridmenu-list label,
     .slick-columnpicker-list label {
       padding: 1px;
-      display: block;
+      display: inline-flex;
       cursor: pointer;
     }
 
@@ -68,13 +71,11 @@
     .slick-gridmenu-list input[type=checkbox] + label:before,
     .slick-columnpicker-list input[type=checkbox] + label:before {
       cursor: pointer;
-      font-family: FontAwesome;
-      color: #013668;
-      font-weight: bold;
       display: inline-block;
-      content: "\f00c";
-      font-size: 13px;
       margin-right: 4px;
+      height: 16px;
+      width: 16px;
+      content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="%23181d1f" viewBox="0 0 24 24"><path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z"/></svg>');
     }
     #myGrid input[type=checkbox] + label:before,
     .slick-gridmenu-list input[type=checkbox] + label:before,
@@ -95,7 +96,10 @@
   </div>
   <div class="options-panel">
     &lt;== Top Right Corner
-    <h2>Demonstrates:</h2>
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Demonstrates:
+    </h2>
     <ul>
       <li>This example demonstrates using the Slick.Controls.GridMenu to add a Grid Menu (hamburger menu on top right of the grid)</li>
       <li>Possibility to add custom menu items via a simple array provided to the grid options (same concept as the header menu plugin)</li>
@@ -106,7 +110,7 @@
       <li>Possibility to attach the Grid Menu to an external button (try clicking on the button below).</li>
       <li>You can also use some events like "onMenuClose()" and to trigger a resize of the columns with "autosizeColumns()" when "forceFitColumns: false"</li>
       <p>
-        <button id="external-gridmenu" onclick="toggleGridMenu(event)"><img src="../images/drag-handle.png"/> Grid Menu</button>
+        <button id="external-gridmenu" onclick="toggleGridMenu(event)" style="display: inline-flex; gap: 4px"><i class="sgi sgi-menu"></i> Grid Menu</button>
       </p>
       <p>
         Always show vertical scroll (with "alwaysShowVerticalScroll" flag), so that it works with small and large dataset.
@@ -127,12 +131,12 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../slick.dataview.js"></script>
-<script src="../slick.grid.js"></script>
-<script src="../controls/slick.columnpicker.js"></script>
-<script src="../controls/slick.gridmenu.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.dataview.js"></script>
+<script src="../dist/browser/controls/slick.columnpicker.js"></script>
+<script src="../dist/browser/controls/slick.gridmenu.js"></script>
 
 <script>
   var dataView;
@@ -179,14 +183,13 @@
       columnTitle: "Columns",
       hideForceFitButton: false,
       hideSyncResizeButton: false,
-      // iconImage: "../images/drag-handle.png", // this is the Grid Menu icon (hamburger icon)
-      // iconCssClass: "fa fa-bars",    // you can provide iconImage OR iconCssClass
+      iconCssClass: "sgi sgi-menu sgi-17px",    // you can provide iconImage OR iconCssClass
       leaveOpen: false,                 // do we want to leave the Grid Menu open after a command execution? (false by default)
       // menuWidth: 18,                 // width that will be use to resize the column header container (18 by default)
       resizeOnShowHeaderRow: true,
       customItems: [
         {
-          iconImage: "../images/delete.png",
+          iconCssClass: "sgi sgi-close red bold",
           title: "Clear Filters",
           disabled: false,
           command: "clear-filter",
@@ -194,14 +197,14 @@
           textCssClass: 'red'   // just the text css class
         },
         {
-          iconImage: "../images/delete.png",
+          iconCssClass: "sgi sgi-close red",
           title: "Clear Sorting",
           disabled: false,
           command: "clear-sorting",
           textCssClass: 'red'   // just the text css class
         },
         {
-          iconImage: "../images/info.gif",
+          iconCssClass: "sgi sgi-information-outline",
           title: "Toggle Filter Row",
           disabled: false,
           command: "toggle-filter",
@@ -211,7 +214,7 @@
           },
         },
         {
-          iconImage: "../images/info.gif",
+          iconCssClass: "sgi sgi-information-outline orange",
           title: "Toggle Top Panel",
           disabled: false,
           command: "toggle-toppanel",
@@ -222,7 +225,7 @@
         // "divider",
         { divider: true },
         {
-          iconCssClass: "icon-help",
+          iconCssClass: "sgi sgi-help-circle-outline blue",
           title: "Help",
           command: "help",
           textCssClass: "blue",
@@ -246,8 +249,8 @@
     }
   };
 
-  // show 1st column with font-awesome hashtag icon
-  var columns = [{ id: 'id', field: 'id', name: '<i class="fa fa-info"></i>', width: 40, excludeFromGridMenu: true }];
+  // show 1st column with slickgrid hashtag icon
+  var columns = [{ id: 'id', field: 'id', name: '<i class="sgi sgi-hashtag sgi-15px"></i>', width: 40, excludeFromGridMenu: true }];
   var columnFilters = {};
   var sortcol = "id";
   var sortdir = 1;
@@ -338,12 +341,16 @@
     }
 
     grid.onHeaderRowCellRendered.subscribe(function(e, args) {
-      args.node.innerHTML = ''; // empty it
-      const inputElm = document.createElement('input');
-      inputElm.dataset.columnid = args.column.id;
-      inputElm.value = columnFilters[args.column.id] || '';
+      if (args.column.field !== 'sel') {
+        args.node.innerHTML = ''; // empty it
+        const inputElm = document.createElement('input');
+        inputElm.className = 'filter';
+        inputElm.placeholder = '🔎︎';
+        inputElm.dataset.columnid = args.column.id;
+        inputElm.value = columnFilters[args.column.id] || '';
 
-      args.node.appendChild(inputElm);
+        args.node.appendChild(inputElm);
+      }
     });
 
     grid.init();

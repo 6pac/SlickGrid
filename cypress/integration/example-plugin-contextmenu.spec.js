@@ -33,11 +33,8 @@ describe('Example - Context Menu & Cell Menu', () => {
       .contains('Low');
 
     cy.get('#myGrid')
-      .find('.slick-row .slick-cell:nth(6) img')
-      .invoke('attr', 'src')
-      .then(src => {
-        expect(src).to.contain('tick.png')
-      });
+      .find('.slick-row .slick-cell:nth(6) .sgi-check')
+      .should('exist');
 
     cy.get('#myGrid')
       .find('.slick-row .slick-cell:nth(7) .disabled')

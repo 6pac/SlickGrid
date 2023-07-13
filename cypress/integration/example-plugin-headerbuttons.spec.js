@@ -22,14 +22,14 @@ describe('Example - Header Button', () => {
       .each(($child, index) => expect($child.text()).to.eq(titles[index]));
   });
 
-  it('should go over the 3rd column "C" and expect to see negative number in red after clicking on the blue header button', () => {
+  it('should go over the 3rd column "C" and expect to see negative number in red after clicking on the orange header button', () => {
     cy.get('.slick-header-columns')
       .children('.slick-header-column:nth(2)')
       .should('contain', 'C');
 
     cy.get('.slick-header-columns')
       .children('.slick-header-column:nth(2)')
-      .find('.slick-header-button.icon-highlight-off')
+      .find('.slick-header-button.sgi-lightbulb.color-orange')
       .should('exist')
       .click();
 
@@ -57,7 +57,7 @@ describe('Example - Header Button', () => {
       });
   });
 
-  it('should go over the 5th column "E" and not find the blue header button', () => {
+  it('should go over the 5th column "E" and not find the orange header button', () => {
     cy.get('.slick-header-columns')
       .children('.slick-header-column:nth(4)')
       .should('contain', 'E');
@@ -69,7 +69,7 @@ describe('Example - Header Button', () => {
       .should('not.exist');
   });
 
-  it('should go over the last column "J" and expect to find the blue header button, however it should be usable and number should not display as red', () => {
+  it('should go over the last column "J" and expect to find the orange header button, however it should be unusable and number should not display as red', () => {
     cy.get('.slick-viewport-top.slick-viewport-left')
       .scrollTo('right')
       .wait(50);
@@ -80,7 +80,7 @@ describe('Example - Header Button', () => {
 
     cy.get('.slick-header-columns')
       .children('.slick-header-column:nth(9)')
-      .find('.slick-header-button.icon-highlight-off')
+      .find('.slick-header-button.sgi-lightbulb.color-orange')
       .should('exist')
       .click();
 
@@ -139,7 +139,7 @@ describe('Example - Header Button', () => {
       done();
     });
 
-    // header buttons are displayed in inverse mode by default, 
+    // header buttons are displayed in inverse mode by default,
     // so we need to start at the end
     cy.get('.slick-header-columns')
       .children('.slick-header-column:nth(0)')

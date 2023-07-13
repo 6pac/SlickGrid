@@ -4,25 +4,26 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example 2: Formatters</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
     .cell-title {
       font-weight: bold;
     }
 
     .cell-effort-driven {
-      text-align: center;
+      justify-content: center;
     }
 
     .green {
-      background-color: #aaffaa;
+      background-color: #d1e7dd;
     }
     .red {
-      background-color: #ff7777;
+      background-color: #f8d7da;
     }
     .orange {
-      background-color: #ffbb66;
+      background-color: #fff3cd;
     }
   </style>
 </head>
@@ -30,10 +31,13 @@
 <table width="100%">
   <tr>
     <td valign="top" width="50%">
-      <div id="myGrid" style="width:700px;height:500px;"></div>
+      <div id="myGrid" class="slick-container" style="width:700px;height:500px;"></div>
     </td>
     <td valign="top">
-      <h2>Demonstrates:</h2>
+      <h2>
+        <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+        Demonstrates:
+      </h2>
       <ul>
         <li>width, minWidth, maxWidth, resizable, cssClass column attributes</li>
         <li>custom column formatters</li>
@@ -47,15 +51,14 @@
   </tr>
 </table>
 
-<script src="../lib/firebugx.js"></script>
-
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.editors.js"></script>
-<script src="../slick.formatters.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../slick.grid.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
+<script src="../dist/browser/slick.formatters.js"></script>
 
 <script>
    // a standard formatter returns a string
@@ -87,11 +90,11 @@
   var columns = [
     {id: "title", name: "Title", field: "title", width: 120, cssClass: "cell-title", formatter: formatter},
     {id: "duration", name: "Duration", field: "duration"},
-    {id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar},
+    {id: "%", name: "% Complete", field: "percentComplete", width: 95, resizable: false, formatter: Slick.Formatters.PercentCompleteBar},
     {id: "status", name: "Status", field: "percentComplete", width: 50, resizable: false, formatter: statusFormatter, editor: Slick.Editors.Text },
     {id: "start", name: "Start", field: "start", minWidth: 60},
     {id: "finish", name: "Finish", field: "finish", minWidth: 60},
-    {id: "effort-driven", name: "Effort Driven", sortable: false, width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark}
+    {id: "effort-driven", name: "Effort Driven", sortable: false, width: 90, minWidth: 20, maxWidth: 90, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark}
   ];
 
 
