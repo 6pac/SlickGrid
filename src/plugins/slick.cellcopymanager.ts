@@ -1,14 +1,18 @@
-import { SlickGrid } from '../slick.grid';
+import type { CssStyleHash } from '../models/index';
 import { SlickEvent as SlickEvent_, keyCode as keyCode_, Utils as Utils_, SlickRange } from '../slick.core';
+import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
 const keyCode = (IIFE_ONLY ? Slick.keyCode : keyCode_);
 const SlickEvent = (IIFE_ONLY ? Slick.Event : SlickEvent_);
 const Utils = (IIFE_ONLY ? Slick.Utils : Utils_) as typeof Utils_;
 
+/**
+ * This manager enables users to copy/paste cell data
+ */
 export class SlickCellCopyManager {
-  protected _grid;
-  protected _copiedRanges;
+  protected _grid!: SlickGrid;
+  protected _copiedRanges?: SlickRange | null;
   onCopyCells = new SlickEvent();
   onCopyCancelled = new SlickEvent();
   onPasteCells = new SlickEvent();
@@ -60,7 +64,7 @@ export class SlickCellCopyManager {
 
   protected markCopySelection(ranges: SlickRange[]) {
     let columns = this._grid.getColumns();
-    let hash = {};
+    let hash: CssStyleHash = {};
     for (let i = 0; i < ranges.length; i++) {
       for (let j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
         hash[j] = {};

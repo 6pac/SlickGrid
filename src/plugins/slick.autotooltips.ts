@@ -1,16 +1,12 @@
 import type { AutoTooltipOption, Column } from '../models/index';
-import type { SlickGrid } from '../slick.grid';
 import { Utils as Utils_ } from '../slick.core';
+import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
 const Utils = (IIFE_ONLY ? Slick.Utils : Utils_) as typeof Utils_;
 
 /**
  * AutoTooltips plugin to show/hide tooltips when columns are too narrow to fit content.
- * @constructor
- * @param {boolean} [options.enableForCells=true]        - Enable tooltip for grid cells
- * @param {boolean} [options.enableForHeaderCells=false] - Enable tooltip for header cells
- * @param {number}  [options.maxToolTipLength=null]      - The maximum length for a tooltip
  */
 export class SlickAutoTooltips {
   pluginName: 'AutoTooltips' = 'AutoTooltips' as const;
@@ -23,7 +19,13 @@ export class SlickAutoTooltips {
     replaceExisting: true
   };
 
-  /** Constructor of the SlickGrid 3rd party plugin, it can optionally receive options */
+  /**
+   * Constructor of the SlickGrid 3rd party plugin, it can optionally receive options
+   * @param {boolean} [options.enableForCells=true]        - Enable tooltip for grid cells
+   * @param {boolean} [options.enableForHeaderCells=false] - Enable tooltip for header cells
+   * @param {number}  [options.maxToolTipLength=null]      - The maximum length for a tooltip
+   * @param {boolean} [options.replaceExisting=null]       - Allow preventing custom tooltips from being overwritten by auto tooltips
+   */
   constructor(options?: AutoTooltipOption) {
     this._options = options;
   }

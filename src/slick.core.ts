@@ -4,15 +4,7 @@
  * @namespace Slick
  */
 
-import type { InferDOMType } from './models/index';
-
-export type Handler<ArgType = any> = (e: any, args: ArgType) => void;
-
-export interface ElementEventListener {
-  element: Element;
-  eventName: string;
-  listener: EventListenerOrEventListenerObject;
-}
+import type { EditController, ElementEventListener, Handler, InferDOMType } from './models/index';
 
 /***
  * An event object for passing data to event handlers and letting them control propagation.
@@ -377,7 +369,7 @@ export class SlickGroup extends SlickNonDataItem {
    * @property totals
    * @type {GroupTotals}
    */
-  totals: SlickGroupTotals | null = null;
+  totals: SlickGroupTotals = null as any;
 
   /**
    * Rows that are part of the group.
@@ -391,7 +383,7 @@ export class SlickGroup extends SlickNonDataItem {
    * @property groups
    * @type {Array}
    */
-  groups: any[] | null = null;
+  groups: any[] = null as any;
 
   /**
    * A unique key used to identify the group.  This key can be used in calls to DataView
@@ -435,7 +427,7 @@ export class SlickGroupTotals extends SlickNonDataItem {
    * @param group
    * @type {Group}
    */
-  group: SlickGroup | null = null;
+  group: SlickGroup = null as any;
 
   /***
    * Whether the totals have been fully initialized / calculated.
@@ -468,7 +460,7 @@ export class EditorLock {
    * @param editController {EditController}
    * @return {Boolean}
    */
-  isActive(editController): boolean {
+  isActive(editController?: EditController): boolean {
     return (editController ? this.activeEditController === editController : this.activeEditController !== null);
   };
 

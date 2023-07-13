@@ -4,6 +4,7 @@ export * from './column.interface';
 export * from './columnReorderFunction.type';
 export * from './columnSort.interface';
 export * from './compositeEditorOption.interface';
+export * from './core.interface';
 export * from './customTooltipOption.interface';
 export * from './drag.interface';
 export * from './editCommand.interface';

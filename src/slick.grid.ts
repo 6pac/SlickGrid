@@ -2,35 +2,38 @@ import SortableInstance from 'sortablejs';
 
 import type {
   AutoSize,
+  CellRange,
   Column,
-  DragPosition,
-  GridOption,
-  Plugin,
-  FormatterResultObject,
   ColumnSort,
-  InteractionBase,
+  CssStyleHash,
+  CustomDataView,
+  DragPosition,
   Editor,
-  ItemMetadata,
-  PagingInfo,
+  EditController,
   Formatter,
+  FormatterOverrideCallback,
+  FormatterResultObject,
+  GridOption,
+  InteractionBase,
+  PagingInfo,
+  Plugin,
 } from './models/index';
 import {
   BindingEventService as BindingEventService_,
   ColAutosizeMode as ColAutosizeMode_,
-  SlickEvent as SlickEvent_,
-  SlickEventData as SlickEventData_,
   GlobalEditorLock as GlobalEditorLock_,
   GridAutosizeColsMode as GridAutosizeColsMode_,
   keyCode as keyCode_,
   preClickClassName as preClickClassName_,
-  SlickRange as SlickRange_,
   RowSelectionMode as RowSelectionMode_,
-  ValueFilterMode as ValueFilterMode_,
+  SlickEvent as SlickEvent_,
+  SlickEventData as SlickEventData_,
+  SlickRange as SlickRange_,
   Utils as Utils_,
+  ValueFilterMode as ValueFilterMode_,
   WidthEvalMode as WidthEvalMode_,
 } from './slick.core';
 import { Draggable as Draggable_, MouseWheel as MouseWheel_, Resizable as Resizable_ } from './slick.interactions';
-
 
 // for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
 const BindingEventService = (IIFE_ONLY ? Slick.BindingEventService : BindingEventService_) as typeof BindingEventService_;
@@ -49,9 +52,6 @@ const WidthEvalMode = (IIFE_ONLY ? Slick.WidthEvalMode : WidthEvalMode_);
 const Draggable = (IIFE_ONLY ? Slick.Draggable : Draggable_);
 const MouseWheel = (IIFE_ONLY ? Slick.MouseWheel : MouseWheel_);
 const Resizable = (IIFE_ONLY ? Slick.Resizable : Resizable_);
-
-export interface CellRange { bottom: number; top: number; leftPx: number; rightPx: number; }
-export interface CustomDataView { getLength: () => number; getItem: <T = any>(index: number) => T; getItemMetadata(index: number): ItemMetadata | null; }
 
 /**
  * @license
@@ -72,7 +72,7 @@ export interface CustomDataView { getLength: () => number; getItem: <T = any>(in
  */
 
 //////////////////////////////////////////////////////////////////////////////////////////////
-// SlickGrid class implementation (available as Slick.Grid)
+// SlickGrid class implementation (available as SlickGrid)
 
 export class SlickGrid {
   //////////////////////////////////////////////////////////////////////////////////////////////
@@ -327,10 +327,7 @@ export class SlickGrid {
   protected activeCellNode: HTMLElement | null = null;
   protected currentEditor: Editor | null = null;
   protected serializedEditorValue;
-  protected editController?: {
-    commitCurrentEdit: () => boolean;
-    cancelCurrentEdit: () => boolean;
-  };
+  protected editController?: EditController;
 
   protected rowsCache: any = {};
   protected renderedRows = 0;
@@ -346,7 +343,7 @@ export class SlickGrid {
   protected selectedRows: number[] = [];
 
   protected plugins: Plugin[] = [];
-  protected cellCssClasses = {};
+  protected cellCssClasses: CssStyleHash = {};
 
   protected columnsById = {};
   protected sortColumns: ColumnSort[] = [];
@@ -447,6 +444,7 @@ export class SlickGrid {
   //////////////////////////////////////////////////////////////////////////////////////////////
   // Initialization
 
+  /** Initializes the grid. */
   init() {
     this.finishInitialization();
   }
@@ -656,7 +654,7 @@ export class SlickGrid {
     }
   }
 
-  finishInitialization() {
+  protected finishInitialization() {
     if (!this.initialized) {
       this.initialized = true;
 
@@ -791,15 +789,17 @@ export class SlickGrid {
     }
   }
 
-  hasFrozenColumns() {
+  protected hasFrozenColumns() {
     return this._options.frozenColumn > -1;
   }
 
+  /** Register an external Plugin */
   registerPlugin(plugin: Plugin) {
     this.plugins.unshift(plugin);
     plugin.init(this);
   }
 
+  /** Unregister (destroy) an external Plugin */
   unregisterPlugin(plugin: Plugin) {
     for (let i = this.plugins.length; i >= 0; i--) {
       if (this.plugins[i] === plugin) {
@@ -810,6 +810,7 @@ export class SlickGrid {
     }
   }
 
+  /** Get a Plugin (addon) by its name */
   getPluginByName(name: string) {
     for (let i = this.plugins.length - 1; i >= 0; i--) {
       if (this.plugins[i]?.pluginName === name) {
@@ -819,6 +820,10 @@ export class SlickGrid {
     return undefined;
   }
 
+  /**
+   * Unregisters a current selection model and registers a new one. See the definition of SelectionModel for more information.
+   * @param {Object} selectionModel A SelectionModel.
+   */
   setSelectionModel(model: any) {
     if (this.selectionModel) {
       this.selectionModel.onSelectedRangesChanged.unsubscribe(this.handleSelectedRangesChanged.bind(this));
@@ -834,14 +839,17 @@ export class SlickGrid {
     }
   }
 
+  /** Returns the current SelectionModel. See here for more information about SelectionModels. */
   getSelectionModel() {
     return this.selectionModel;
   }
 
+  /** Get Grid Canvas Node DOM Element */
   getCanvasNode(columnIdOrIdx: number | string, rowIndex: number) {
     return this._getContainerElement(this.getCanvases(), columnIdOrIdx, rowIndex);
   }
 
+  /** Get the canvas DOM element */
   getActiveCanvasNode(e: Event | SlickEventData_) {
     if (e === undefined) {
       return this._activeCanvasNode;
@@ -855,14 +863,17 @@ export class SlickGrid {
     return this._activeCanvasNode;
   }
 
+  /** Get the canvas DOM element */
   getCanvases() {
     return this._canvas;
   }
 
+  /** Get the Viewport DOM node element */
   getViewportNode(columnIdOrIdx: number | string, rowIndex: number) {
     return this._getContainerElement(this.getViewports(), columnIdOrIdx, rowIndex);
   }
 
+  /** Get all the Viewport node elements */
   getViewports() {
     return this._viewport;
   }
@@ -873,6 +884,7 @@ export class SlickGrid {
     return this._activeViewportNode;
   }
 
+  /** Sets an active viewport node */
   setActiveViewportNode(e: Event | SlickEventData_) {
     if (e instanceof SlickEventData) {
       e = e.getNativeEvent();
@@ -881,7 +893,7 @@ export class SlickGrid {
     return this._activeViewportNode;
   }
 
-  _getContainerElement(targetContainers: HTMLElement[], columnIdOrIdx: number | string, rowIndex?: number) {
+  protected _getContainerElement(targetContainers: HTMLElement[], columnIdOrIdx: number | string, rowIndex?: number) {
     if (!targetContainers) { return; }
     if (!columnIdOrIdx) { columnIdOrIdx = 0; }
     if (!rowIndex) { rowIndex = 0; }
@@ -894,7 +906,7 @@ export class SlickGrid {
     return targetContainers[(isBottomSide ? 2 : 0) + (isRightSide ? 1 : 0)];
   }
 
-  measureScrollbar() {
+  protected measureScrollbar() {
     let className = '';
     this._viewport.forEach(v => className += v.className);
     let outerdiv = Utils.createDomElement('div', { className, style: { position: 'absolute', top: '-10000px', left: '-10000px', overflow: 'auto', width: '100px', height: '100px' } }, document.body);
@@ -908,6 +920,7 @@ export class SlickGrid {
     return dim;
   }
 
+  /** Get the headers width in pixel */
   getHeadersWidth() {
     this.headersWidth = this.headersWidthL = this.headersWidthR = 0;
     let includeScrollbar = !this._options.autoHeight;
@@ -948,7 +961,7 @@ export class SlickGrid {
     return Math.max(this.headersWidth, this.viewportW) + 1000;
   }
 
-  getHeadersWidthL() {
+  protected getHeadersWidthL() {
     this.headersWidthL = 0;
 
     this.columns.forEach((column, i) => {
@@ -969,7 +982,7 @@ export class SlickGrid {
     return this.headersWidthL;
   }
 
-  getHeadersWidthR() {
+  protected getHeadersWidthR() {
     this.headersWidthR = 0;
 
     this.columns.forEach((column, i) => {
@@ -987,6 +1000,7 @@ export class SlickGrid {
     return this.headersWidthR;
   }
 
+  /** Get the grid canvas width */
   getCanvasWidth(): number {
     let availableWidth = this.viewportHasVScroll ? this.viewportW - (this.scrollbarDimensions?.width ?? 0) : this.viewportW;
     let i = this.columns.length;
@@ -1017,7 +1031,7 @@ export class SlickGrid {
     return totalRowWidth;
   }
 
-  updateCanvasWidth(forceColumnWidthsUpdate?: boolean) {
+  protected updateCanvasWidth(forceColumnWidthsUpdate?: boolean) {
     let oldCanvasWidth = this.canvasWidth;
     let oldCanvasWidthL = this.canvasWidthL;
     let oldCanvasWidthR = this.canvasWidthR;
@@ -1117,7 +1131,7 @@ export class SlickGrid {
     }
   }
 
-  disableSelection(target: HTMLElement[]) {
+  protected disableSelection(target: HTMLElement[]) {
     target.forEach((el) => {
       el.setAttribute('unselectable', 'on');
       (el.style as any).mozUserSelect = 'none';
@@ -1125,7 +1139,7 @@ export class SlickGrid {
     });
   }
 
-  getMaxSupportedCssHeight() {
+  protected getMaxSupportedCssHeight() {
     let supportedHeight = 1000000;
     // FF reports the height back but still renders blank after ~6M px
     //let testUpTo = navigator.userAgent.toLowerCase().match(/firefox/) ? 6000000 : 1000000000;
@@ -1148,18 +1162,22 @@ export class SlickGrid {
     return supportedHeight;
   }
 
+  /** Get grid unique identifier */
   getUID() {
     return this.uid;
   }
 
+  /** Get Header Column Width Difference in pixel */
   getHeaderColumnWidthDiff() {
     return this.headerColumnWidthDiff;
   }
 
+  /** Get scrollbar dimensions */
   getScrollbarDimensions() {
     return this.scrollbarDimensions;
   }
 
+  /** Get the displayed scrollbar dimensions */
   getDisplayedScrollbarDimensions() {
     return {
       width: this.viewportHasVScroll ? (this.scrollbarDimensions?.width ?? 0) : 0,
@@ -1167,12 +1185,13 @@ export class SlickGrid {
     };
   }
 
+  /** Get the absolute column minimum width */
   getAbsoluteColumnMinWidth(): number {
     return this.absoluteColumnMinWidth;
   }
 
   // TODO:  this is static.  need to handle page mutation.
-  bindAncestorScrollEvents() {
+  protected bindAncestorScrollEvents() {
     let elem: HTMLElement | null = (this.hasFrozenRows && !this._options.frozenBottom) ? this._canvasBottomL : this._canvasTopL;
     while ((elem = elem!.parentNode as HTMLElement) !== document.body && elem != null) {
       // bind to scroll containers only
@@ -1183,13 +1202,19 @@ export class SlickGrid {
     }
   }
 
-  unbindAncestorScrollEvents() {
+  protected unbindAncestorScrollEvents() {
     this._boundAncestors.forEach((ancestor) => {
       this._bindingEventService.unbindByEventName(ancestor, 'scroll');
     });
     this._boundAncestors = [];
   }
 
+  /**
+   * Updates an existing column definition and a corresponding header DOM element with the new title and tooltip.
+   * @param {Number|String} columnId Column id.
+   * @param {String} title New column name.
+   * @param {String} [toolTip] New column tooltip.
+   */
   updateColumnHeader(columnId: number | string, title: string, toolTip?: string) {
     if (!this.initialized) { return; }
     let idx = this.getColumnIndex(columnId);
@@ -1226,6 +1251,10 @@ export class SlickGrid {
     }
   }
 
+  /**
+   * Get the Header DOM element
+   * @param {Column} columnDef - column definition
+   */
   getHeader(columnDef: Column) {
     if (!columnDef) {
       return this.hasFrozenColumns() ? this._headers : this._headerL;
@@ -1234,6 +1263,10 @@ export class SlickGrid {
     return this.hasFrozenColumns() ? ((idx <= this._options.frozenColumn) ? this._headerL : this._headerR) : this._headerL;
   }
 
+  /**
+   * Get a specific Header Column DOM element
+   * @param {Number|String} [columnIdOrIdx] - column Id or index
+   */
   getHeaderColumn(columnIdOrIdx: number | string) {
     let idx = (typeof columnIdOrIdx === 'number' ? columnIdOrIdx : this.getColumnIndex(columnIdOrIdx));
     let targetHeader = this.hasFrozenColumns() ? ((idx <= this._options.frozenColumn) ? this._headerL : this._headerR) : this._headerL;
@@ -1242,10 +1275,12 @@ export class SlickGrid {
     return targetHeader.children[targetIndex];
   }
 
+  /** Get the Header Row DOM element */
   getHeaderRow() {
     return this.hasFrozenColumns() ? this._headerRows : this._headerRows[0];
   }
 
+  /** Get the Footer DOM element */
   getFooterRow() {
     return this.hasFrozenColumns() ? this._footerRow : this._footerRow[0];
   }
@@ -1255,14 +1290,20 @@ export class SlickGrid {
     return this._preHeaderPanel;
   }
 
+  /** Get the Pre-Header Panel Left DOM node element */
   getPreHeaderPanelLeft() {
     return this._preHeaderPanel;
   }
 
+  /** Get the Pre-Header Panel Right DOM node element */
   getPreHeaderPanelRight() {
     return this._preHeaderPanelR;
   }
 
+  /**
+   * Get Header Row Column DOM element by its column Id
+   * @param {Number|String} [columnIdOrIdx] - column Id or index
+   */
   getHeaderRowColumn(columnIdOrIdx: number | string) {
     let idx = (typeof columnIdOrIdx === 'number' ? columnIdOrIdx : this.getColumnIndex(columnIdOrIdx));
     let headerRowTarget;
@@ -1281,6 +1322,7 @@ export class SlickGrid {
     return headerRowTarget.children[idx];
   }
 
+  /** Get the Footer Row Column DOM element */
   getFooterRowColumn(columnIdOrIdx: number | string) {
     let idx = (typeof columnIdOrIdx === 'number' ? columnIdOrIdx : this.getColumnIndex(columnIdOrIdx));
     let footerRowTarget;
@@ -1300,7 +1342,7 @@ export class SlickGrid {
     return footerRowTarget.children[idx];
   }
 
-  createColumnFooter() {
+  protected createColumnFooter() {
     if (this._options.createFooterRow) {
       this._footerRow.forEach((footer) => {
         const columnElements = footer.querySelectorAll('.slick-footerrow-column');
@@ -1338,15 +1380,15 @@ export class SlickGrid {
     }
   }
 
-  handleHeaderMouseHoverOn(e: Event | SlickEventData_) {
+  protected handleHeaderMouseHoverOn(e: Event | SlickEventData_) {
     (e as any)?.target.classList.add('ui-state-hover', 'slick-state-hover');
   }
 
-  handleHeaderMouseHoverOff(e: Event | SlickEventData_) {
+  protected handleHeaderMouseHoverOff(e: Event | SlickEventData_) {
     (e as any)?.target.classList.remove('ui-state-hover', 'slick-state-hover');
   }
 
-  createColumnHeaders() {
+  protected createColumnHeaders() {
     this._headers.forEach((header) => {
       const columnElements = header.querySelectorAll('.slick-header-column')
       columnElements.forEach((column) => {
@@ -1508,7 +1550,7 @@ export class SlickGrid {
     }
   }
 
-  setupColumnSort() {
+  protected setupColumnSort() {
     this._headers.forEach((header) => {
       this._bindingEventService.bind(header, 'click', (e: any) => {
         if (this.columnResizeDragging) {
@@ -1605,7 +1647,7 @@ export class SlickGrid {
     });
   }
 
-  currentPositionInHeader(id: number | string) {
+  protected currentPositionInHeader(id: number | string) {
     let currentPosition = 0;
     this._headers.forEach((header) => {
       const columnElements = header.querySelectorAll('.slick-header-column')
@@ -1619,7 +1661,7 @@ export class SlickGrid {
     return currentPosition;
   }
 
-  remove(arr: any[], elem: HTMLElement) {
+  protected remove(arr: any[], elem: HTMLElement) {
     let index = arr.lastIndexOf(elem);
     if (index > -1) {
       arr.splice(index, 1);
@@ -1627,7 +1669,7 @@ export class SlickGrid {
     }
   }
 
-  setupColumnReorder() {
+  protected setupColumnReorder() {
     if (this.sortableSideLeftInstance) {
       this.sortableSideLeftInstance.destroy();
       this.sortableSideRightInstance.destroy();
@@ -1694,13 +1736,13 @@ export class SlickGrid {
     this.sortableSideRightInstance = Sortable.create(this._headerR, sortableOptions);
   }
 
-  getHeaderChildren() {
+  protected getHeaderChildren() {
     const a = Array.from(this._headers[0].children);
     const b = Array.from(this._headers[1].children);
     return a.concat(b) as HTMLElement[];
   }
 
-  getImpactedColumns(limit?: { start: number; end: number; }) {
+  protected getImpactedColumns(limit?: { start: number; end: number; }) {
     let impactedColumns: Column[] = [];
 
     if (limit) {
@@ -1714,12 +1756,12 @@ export class SlickGrid {
     return impactedColumns;
   }
 
-  handleResizeableHandleDoubleClick(evt: MouseEvent & { target: HTMLDivElement; }) {
+  protected handleResizeableHandleDoubleClick(evt: MouseEvent & { target: HTMLDivElement; }) {
     const triggeredByColumn = evt.target.parentElement!.id.replace(this.uid, '');
     this.trigger(this.onColumnsResizeDblClick, { triggeredByColumn: triggeredByColumn });
   }
 
-  setupColumnResize() {
+  protected setupColumnResize() {
     if (typeof Resizable === 'undefined') {
       throw new Error(`Slick.Resizable is undefined, make sure to import "slick.interactions.js"`);
     }
@@ -2036,7 +2078,7 @@ export class SlickGrid {
     }
   }
 
-  getVBoxDelta(el: HTMLElement) {
+  protected getVBoxDelta(el: HTMLElement) {
     let p = ['borderTopWidth', 'borderBottomWidth', 'paddingTop', 'paddingBottom'];
     let styles = getComputedStyle(el);
     let delta = 0;
@@ -2044,7 +2086,7 @@ export class SlickGrid {
     return delta;
   }
 
-  setFrozenOptions() {
+  protected setFrozenOptions() {
     this._options.frozenColumn = (this._options.frozenColumn >= 0 && this._options.frozenColumn < this.columns.length)
       ? parseInt(this._options.frozenColumn as unknown as string)
       : -1;
@@ -2062,7 +2104,7 @@ export class SlickGrid {
     }
   }
 
-  setPaneVisibility() {
+  protected setPaneVisibility() {
     if (this.hasFrozenColumns()) {
       Utils.show(this._paneHeaderR);
       Utils.show(this._paneTopR);
@@ -2088,7 +2130,7 @@ export class SlickGrid {
     }
   }
 
-  setOverflow() {
+  protected setOverflow() {
     this._viewportTopL.style['overflow-x'] = (this.hasFrozenColumns()) ? (this.hasFrozenRows && !this._options.alwaysAllowHorizontalScroll ? 'hidden' : 'scroll') : (this.hasFrozenRows && !this._options.alwaysAllowHorizontalScroll ? 'hidden' : 'auto');
     this._viewportTopL.style['overflow-y'] = (!this.hasFrozenColumns() && this._options.alwaysShowVerticalScroll) ? 'scroll' : ((this.hasFrozenColumns()) ? (this.hasFrozenRows ? 'hidden' : 'hidden') : (this.hasFrozenRows ? 'scroll' : 'auto'));
 
@@ -2109,7 +2151,7 @@ export class SlickGrid {
     }
   }
 
-  setScroller() {
+  protected setScroller() {
     if (this.hasFrozenColumns()) {
       this._headerScrollContainer = this._headerScrollerR;
       this._headerRowScrollContainer = this._headerRowScrollerR;
@@ -2143,7 +2185,7 @@ export class SlickGrid {
     }
   }
 
-  measureCellPaddingAndBorder() {
+  protected measureCellPaddingAndBorder() {
     const h = ['borderLeftWidth', 'borderRightWidth', 'paddingLeft', 'paddingRight'];
     const v = ['borderTopWidth', 'borderBottomWidth', 'paddingTop', 'paddingBottom'];
     const header = this._headers[0];
@@ -2171,7 +2213,7 @@ export class SlickGrid {
     this.absoluteColumnMinWidth = Math.max(this.headerColumnWidthDiff, this.cellWidthDiff);
   }
 
-  createCssRules() {
+  protected createCssRules() {
     const template = Utils.createDomElement('template', { innerHTML: '<style type="text/css" rel="stylesheet" />' });
     this._style = template.content.firstChild;
     document.head.appendChild(this._style);
@@ -2202,7 +2244,7 @@ export class SlickGrid {
     }
   }
 
-  getColumnCssRules(idx: number) {
+  protected getColumnCssRules(idx: number) {
     let i: number;
     if (!this.stylesheet) {
       let sheets: any = document.styleSheets;
@@ -2240,11 +2282,15 @@ export class SlickGrid {
     };
   }
 
-  removeCssRules() {
+  protected removeCssRules() {
     this._style.remove();
     this.stylesheet = null;
   }
 
+  /**
+   * Destroy (dispose) of SlickGrid
+   * @param {boolean} shouldDestroyAllElements - do we want to destroy (nullify) all DOM elements as well? This help in avoiding mem leaks
+   */
   destroy(shouldDestroyAllElements?: boolean) {
     this._bindingEventService.unbindAll();
     this.slickDraggableInstance = this.destroyAllInstances(this.slickDraggableInstance) as null;
@@ -2335,7 +2381,7 @@ export class SlickGrid {
    * call destroy method, when exists, on all the instance(s) it found
    * @params instances - can be a single instance or a an array of instances
    */
-  destroyAllInstances(inputInstances: null | InteractionBase | Array<InteractionBase>) {
+  protected destroyAllInstances(inputInstances: null | InteractionBase | Array<InteractionBase>) {
     if (inputInstances) {
       const instances = Array.isArray(inputInstances) ? inputInstances : [inputInstances];
       let instance;
@@ -2350,7 +2396,7 @@ export class SlickGrid {
     return inputInstances;
   }
 
-  destroyAllElements() {
+  protected destroyAllElements() {
     this._activeCanvasNode = null as any;
     this._activeViewportNode = null as any;
     this._boundAncestors = null as any;
@@ -2423,6 +2469,7 @@ export class SlickGrid {
   // Column Autosizing
   //////////////////////////////////////////////////////////////////////////////////////////////
 
+  /** Proportionally resize a specific column by its name, index or Id */
   autosizeColumn(columnOrIndexOrId: number | string, isInit?: boolean) {
     let colDef: Column | null = null;
     let colIndex = -1;
@@ -2442,7 +2489,7 @@ export class SlickGrid {
     this.getColAutosizeWidth(colDef, colIndex, gridCanvas, isInit || false, colIndex);
   }
 
-  treatAsLocked(autoSize: AutoSize = {}) {
+  protected treatAsLocked(autoSize: AutoSize = {}) {
     // treat as locked (don't resize) if small and header is the widest part
     return !autoSize.ignoreHeaderText
       && !autoSize.sizeToRemaining
@@ -2451,14 +2498,14 @@ export class SlickGrid {
       ;
   }
 
+  /** Proportionately resizes all columns to fill available horizontal space. This does not take the cell contents into consideration. */
   autosizeColumns(autosizeMode?: string, isInit?: boolean) {
-    let cssCache = { hiddenParents: null, oldPropArr: [] };
     this.cacheCssForHiddenInit();
     this.internalAutosizeColumns(autosizeMode, isInit);
     this.restoreCssFromHiddenInit();
   }
 
-  internalAutosizeColumns(autosizeMode?: string, isInit?: boolean) {
+  protected internalAutosizeColumns(autosizeMode?: string, isInit?: boolean) {
     //LogColWidths();
     autosizeMode = autosizeMode || this._options.autosizeColsMode;
     if (autosizeMode === GridAutosizeColsMode.LegacyForceFit || autosizeMode === GridAutosizeColsMode.LegacyOff) {
@@ -2588,13 +2635,13 @@ export class SlickGrid {
     this.reRenderColumns(reRender);
   }
 
-  LogColWidths() {
+  protected LogColWidths() {
     let s = 'Col Widths:';
     for (let i = 0; i < this.columns.length; i++) { s += ' ' + (this.columns[i].hidden ? 'H' : this.columns[i].width); }
     console.log(s);
   }
 
-  getColAutosizeWidth(columnDef: Column, colIndex: number, gridCanvas: HTMLElement, isInit: boolean, colArrayIndex: number) {
+  protected getColAutosizeWidth(columnDef: Column, colIndex: number, gridCanvas: HTMLElement, isInit: boolean, colArrayIndex: number) {
     let autoSize = columnDef.autoSize as AutoSize;
 
     // set to width as default
@@ -2668,7 +2715,7 @@ export class SlickGrid {
     autoSize.widthPx = colWidth;
   }
 
-  getColContentSize(columnDef: Column, colIndex: number, gridCanvas: HTMLElement, isInit: boolean, colArrayIndex: number) {
+  protected getColContentSize(columnDef: Column, colIndex: number, gridCanvas: HTMLElement, isInit: boolean, colArrayIndex: number) {
     let autoSize = columnDef.autoSize as AutoSize;
     let widthAdjustRatio = 1;
 
@@ -2778,7 +2825,7 @@ export class SlickGrid {
     return Math.max(autoSize.headerWidthPx, maxColWidth);
   }
 
-  getColWidth(columnDef: Column, gridCanvas: HTMLElement, rowInfo: any) {
+  protected getColWidth(columnDef: Column, gridCanvas: HTMLElement, rowInfo: any) {
     const rowEl = Utils.createDomElement('div', { className: 'slick-row ui-widget-content' }, gridCanvas);
     const cellEl = Utils.createDomElement('div', { className: 'slick-cell' }, rowEl);
 
@@ -2794,7 +2841,7 @@ export class SlickGrid {
 
     if (columnDef.autoSize?.widthEvalMode === WidthEvalMode.Auto) {
       let noFormatter = !columnDef.formatterOverride && !columnDef.formatter;
-      let formatterIsText = (columnDef?.formatterOverride?.ReturnsTextOnly)
+      let formatterIsText = ((columnDef?.formatterOverride as { ReturnsTextOnly: boolean })?.ReturnsTextOnly)
         || (!columnDef.formatterOverride && (columnDef.formatter as any)?.ReturnsTextOnly);
       useCanvas = noFormatter || formatterIsText;
     }
@@ -2808,7 +2855,7 @@ export class SlickGrid {
         val = (rowInfo.valueArr ? rowInfo.valueArr[i] : rowInfo.getRowVal(i));
         if (columnDef.formatterOverride) {
           // use formatterOverride as first preference
-          formatterResult = columnDef.formatterOverride(i, rowInfo.colIndex, val, columnDef, this.getDataItem(i), this);
+          formatterResult = (columnDef.formatterOverride as FormatterOverrideCallback)(i, rowInfo.colIndex, val, columnDef, this.getDataItem(i), this);
         } else if (columnDef.formatter) {
           // otherwise, use formatter
           formatterResult = columnDef.formatter(i, rowInfo.colIndex, val, columnDef, this.getDataItem(i), this);
@@ -2834,7 +2881,7 @@ export class SlickGrid {
       val = (rowInfo.valueArr ? rowInfo.valueArr[i] : rowInfo.getRowVal(i));
       if (columnDef.formatterOverride) {
         // use formatterOverride as first preference
-        formatterResult = columnDef.formatterOverride(i, rowInfo.colIndex, val, columnDef, this.getDataItem(i), this);
+        formatterResult = (columnDef.formatterOverride as FormatterOverrideCallback)(i, rowInfo.colIndex, val, columnDef, this.getDataItem(i), this);
       } else if (columnDef.formatter) {
         // otherwise, use formatter
         formatterResult = columnDef.formatter(i, rowInfo.colIndex, val, columnDef, this.getDataItem(i), this);
@@ -2851,7 +2898,7 @@ export class SlickGrid {
     return max;
   }
 
-  getColHeaderWidth(columnDef: Column) {
+  protected getColHeaderWidth(columnDef: Column) {
     let width = 0;
     //if (columnDef && (!columnDef.resizable || columnDef._autoCalcWidth === true)) return;
     let headerColElId = this.getUID() + columnDef.id;
@@ -2880,7 +2927,7 @@ export class SlickGrid {
     return width;
   }
 
-  legacyAutosizeColumns() {
+  protected legacyAutosizeColumns() {
     let i, c: Column | undefined,
       widths: number[] = [],
       shrinkLeeway = 0,
@@ -2959,6 +3006,10 @@ export class SlickGrid {
     this.reRenderColumns(reRender);
   }
 
+  /**
+   * Apply Columns Widths in the UI and optionally invalidate & re-render the columns when specified
+   * @param {Boolean} shouldReRender - should we invalidate and re-render the grid?
+   */
   reRenderColumns(reRender?: boolean) {
     this.applyColumnHeaderWidths();
     this.updateCanvasWidth(true);
@@ -2979,26 +3030,32 @@ export class SlickGrid {
   // General
   //////////////////////////////////////////////////////////////////////////////////////////////
 
-  trigger(evt: SlickEvent_, args?: any, e?: Event | SlickEventData_) {
+  protected trigger(evt: SlickEvent_, args?: any, e?: Event | SlickEventData_) {
     let event: SlickEventData_ = (e || new SlickEventData(e, args)) as SlickEventData_;
     args = args || {};
     args.grid = this;
     return evt.notify(args, event, this);
   }
 
+  /** Get Editor lock */
   getEditorLock() {
     return this._options.editorLock;
   }
 
+  /** Get Editor Controller */
   getEditController() {
     return this.editController;
   }
 
+  /**
+   * Returns the index of a column with a given id. Since columns can be reordered by the user, this can be used to get the column definition independent of the order:
+   * @param id A column id.
+   */
   getColumnIndex(id: number | string) {
     return this.columnsById[id];
   }
 
-  applyColumnHeaderWidths() {
+  protected applyColumnHeaderWidths() {
     if (!this.initialized) {
       return;
     }
@@ -3019,7 +3076,7 @@ export class SlickGrid {
     this.updateColumnCaches();
   }
 
-  applyColumnWidths() {
+  protected applyColumnWidths() {
     let x = 0, w = 0, rule: any;
     for (let i = 0; i < this.columns.length; i++) {
       if (!(this.columns[i] && this.columns[i].hidden)) {
@@ -3041,10 +3098,20 @@ export class SlickGrid {
     }
   }
 
+  /**
+   * Accepts a columnId string and an ascending boolean. Applies a sort glyph in either ascending or descending form to the header of the column. Note that this does not actually sort the column. It only adds the sort glyph to the header.
+   * @param columnId
+   * @param ascending
+   */
   setSortColumn(columnId: number | string, ascending: boolean) {
     this.setSortColumns([{ columnId, sortAsc: ascending }]);
   }
 
+  /**
+   * Get column by index
+   * @param {Number} id - column index
+   * @returns
+   */
   getColumnByIndex(id: number) {
     let result: HTMLElement | undefined;
     this._headers.every((header) => {
@@ -3060,6 +3127,10 @@ export class SlickGrid {
     return result;
   }
 
+  /**
+   * Accepts an array of objects in the form [ { columnId: [string], sortAsc: [boolean] }, ... ]. When called, this will apply a sort glyph in either ascending or descending form to the header of each column specified in the array. Note that this does not actually sort the column. It only adds the sort glyph to the header
+   * @param {ColumnSort[]} cols - column sort
+   */
   setSortColumns(cols: ColumnSort[]) {
     this.sortColumns = cols;
 
@@ -3105,15 +3176,16 @@ export class SlickGrid {
     });
   }
 
+  /** Get sorted columns **/
   getSortColumns(): ColumnSort[] {
     return this.sortColumns;
   }
 
-  handleSelectedRangesChanged(e: SlickEventData_, ranges: SlickRange_[]) {
+  protected handleSelectedRangesChanged(e: SlickEventData_, ranges: SlickRange_[]) {
     const ne = e.getNativeEvent();
     let previousSelectedRows = this.selectedRows.slice(0); // shallow copy previously selected rows for later comparison
     this.selectedRows = [];
-    let hash = {};
+    let hash: CssStyleHash = {};
     for (let i = 0; i < ranges.length; i++) {
       for (let j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
         if (!hash[j]) {  // prevent duplicates
@@ -3150,11 +3222,12 @@ export class SlickGrid {
     return Array.isArray(arr1) && Array.isArray(arr2) && arr2.sort().toString() !== arr1.sort().toString();
   }
 
+  /** Returns an array of column definitions. */
   getColumns() {
     return this.columns;
   }
 
-  updateColumnCaches() {
+  protected updateColumnCaches() {
     // Pre-calculate cell boundaries.
     this.columnPosLeft = [];
     this.columnPosRight = [];
@@ -3173,10 +3246,12 @@ export class SlickGrid {
     }
   }
 
-  updateColumnProps() {
+  protected updateColumnProps() {
     this.columnsById = {};
     for (let i = 0; i < this.columns.length; i++) {
-      if (this.columns[i].width) { this.columns[i].widthRequest = this.columns[i].width; }
+      if (this.columns[i].width) {
+        this.columns[i].widthRequest = this.columns[i].width;
+      }
 
       let m: Column = this.columns[i] = Utils.extend({}, this._columnDefaults, this.columns[i]);
       m.autoSize = Utils.extend({}, this._columnAutosizeDefaults, m.autoSize);
@@ -3191,18 +3266,22 @@ export class SlickGrid {
     }
   }
 
+  /**
+   * Sets grid columns. Column headers will be recreated and all rendered rows will be removed. To rerender the grid (if necessary), call render().
+   * @param columnDefinitions An array of column definitions.
+   */
   setColumns(columnDefinitions: Column[]) {
     this.trigger(this.onBeforeSetColumns, { previousColumns: this.columns, newColumns: columnDefinitions, grid: this });
     this.columns = columnDefinitions;
     this.updateColumnsInternal();
   }
 
-  updateColumns() {
+  protected updateColumns() {
     this.trigger(this.onBeforeUpdateColumns, { columns: this.columns, grid: this });
     this.updateColumnsInternal();
   }
 
-  updateColumnsInternal() {
+  protected updateColumnsInternal() {
     this.updateColumnProps();
     this.updateColumnCaches();
 
@@ -3226,10 +3305,18 @@ export class SlickGrid {
     }
   }
 
+  /** Returns an object containing all of the Grid options set on the grid. See a list of Grid Options here.  */
   getOptions() {
     return this._options;
   }
 
+  /**
+   * Extends grid options with a given hash. If an there is an active edit, the grid will attempt to commit the changes and only continue if the attempt succeeds.
+   * @param {Object} options - an object with configuration options.
+   * @param {Boolean} [suppressRender] - do we want to supress the grid re-rendering? (defaults to false)
+   * @param {Boolean} [suppressColumnSet] - do we want to supress the columns set, via "setColumns()" method? (defaults to false)
+   * @param {Boolean} [suppressSetOverflow] - do we want to suppress the call to `setOverflow`
+   */
   setOptions(args: GridOption, suppressRender?: boolean, suppressColumnSet?: boolean, suppressSetOverflow?: boolean): void {
     if (!this.getEditorLock().commitCurrentEdit()) {
       return;
@@ -3295,7 +3382,12 @@ export class SlickGrid {
     }
   }
 
-  setData(newData: CustomDataView | any[], scrollToTop: number) {
+  /**
+   * Sets a new source for databinding and removes all rendered rows. Note that this doesn't render the new rows - you can follow it with a call to render() to do that.
+   * @param {CustomDataView|Array<*>} newData New databinding source using a regular JavaScript array.. or a custom object exposing getItem(index) and getLength() functions.
+   * @param {Number} [scrollToTop] If true, the grid will reset the vertical scroll position to the top of the grid.
+   */
+  setData(newData: CustomDataView | any[], scrollToTop?: number) {
     this.data = newData;
     this.invalidateAllRows();
     this.updateRowCount();
@@ -3304,10 +3396,12 @@ export class SlickGrid {
     }
   }
 
+  /** Returns an array of every data object, unless you're using DataView in which case it returns a DataView object. */
   getData() {
     return this.data;
   }
 
+  /** Returns the size of the databinding source. */
   getDataLength() {
     if ((this.data as CustomDataView).getLength) {
       return (this.data as CustomDataView).getLength();
@@ -3316,12 +3410,16 @@ export class SlickGrid {
     }
   }
 
-  getDataLengthIncludingAddNew() {
+  protected getDataLengthIncludingAddNew() {
     return this.getDataLength() + (!this._options.enableAddRow ? 0
       : (!this.pagingActive || this.pagingIsLastPage ? 1 : 0)
     );
   }
 
+  /**
+   * Returns the databinding item at a given position.
+   * @param index Item row index.
+   */
   getDataItem(i: number) {
     if ((this.data as CustomDataView).getItem) {
       return (this.data as CustomDataView).getItem(i);
@@ -3330,15 +3428,17 @@ export class SlickGrid {
     }
   }
 
+  /** Get Top Panel DOM element */
   getTopPanel() {
     return this._topPanels[0];
   }
 
+  /** Get Top Panels (left/right) DOM element */
   getTopPanels() {
     return this._topPanels;
   }
 
-  togglePanelVisibility(option: 'showTopPanel' | 'showHeaderRow' | 'showColumnHeader' | 'showFooterRow' | 'showPreHeaderPanel', container: HTMLElement | HTMLElement[], visible?: boolean, animate?: boolean) {
+  protected togglePanelVisibility(option: 'showTopPanel' | 'showHeaderRow' | 'showColumnHeader' | 'showFooterRow' | 'showPreHeaderPanel', container: HTMLElement | HTMLElement[], visible?: boolean, animate?: boolean) {
     let animated = (animate === false) ? false : true;
 
     if (this._options[option] !== visible) {
@@ -3361,26 +3461,52 @@ export class SlickGrid {
     }
   }
 
+  /**
+   * Set the Top Panel Visibility and optionally enable/disable animation (enabled by default)
+   * @param {Boolean} [visible] - optionally set if top panel is visible or not
+   * @param {Boolean} [animate] - optionally enable an animation while toggling the panel
+   */
   setTopPanelVisibility(visible?: boolean, animate?: boolean) {
     this.togglePanelVisibility('showTopPanel', this._topPanelScrollers, visible, animate);
   }
 
+  /**
+   * Set the Header Row Visibility and optionally enable/disable animation (enabled by default)
+   * @param {Boolean} [visible] - optionally set if header row panel is visible or not
+   * @param {Boolean} [animate] - optionally enable an animation while toggling the panel
+   */
   setHeaderRowVisibility(visible?: boolean, animate?: boolean) {
     this.togglePanelVisibility('showHeaderRow', this._headerRowScroller, visible, animate);
   }
 
+  /**
+   * Set the Column Header Visibility and optionally enable/disable animation (enabled by default)
+   * @param {Boolean} [visible] - optionally set if column header is visible or not
+   * @param {Boolean} [animate] - optionally enable an animation while toggling the panel
+   */
   setColumnHeaderVisibility(visible?: boolean, animate?: boolean) {
     this.togglePanelVisibility('showColumnHeader', this._headerScroller, visible, animate);
   }
 
+  /**
+   * Set the Footer Visibility and optionally enable/disable animation (enabled by default)
+   * @param {Boolean} [visible] - optionally set if footer row panel is visible or not
+   * @param {Boolean} [animate] - optionally enable an animation while toggling the panel
+   */
   setFooterRowVisibility(visible?: boolean, animate?: boolean) {
     this.togglePanelVisibility('showFooterRow', this._footerRowScroller, visible, animate);
   }
 
+  /**
+   * Set the Pre-Header Visibility and optionally enable/disable animation (enabled by default)
+   * @param {Boolean} [visible] - optionally set if pre-header panel is visible or not
+   * @param {Boolean} [animate] - optionally enable an animation while toggling the panel
+   */
   setPreHeaderPanelVisibility(visible?: boolean, animate?: boolean) {
     this.togglePanelVisibility('showPreHeaderPanel', [this._preHeaderPanelScroller, this._preHeaderPanelScrollerR], visible, animate);
   }
 
+  /** Get Grid Canvas Node DOM Element */
   getContainerNode() {
     return this._container;
   }
@@ -3388,14 +3514,15 @@ export class SlickGrid {
   //////////////////////////////////////////////////////////////////////////////////////////////
   // Rendering / Scrolling
 
-  getRowTop(row: number) {
+  protected getRowTop(row: number) {
     return this._options.rowHeight * row - this.offset;
   }
 
-  getRowFromPosition(y: number) {
+  protected getRowFromPosition(y: number) {
     return Math.floor((y + this.offset) / this._options.rowHeight);
   }
 
+  /** Scroll to an Y position in the grid */
   scrollTo(y: number) {
     y = Math.max(y, 0);
     y = Math.min(y, (this.th || 0) - (Utils.height(this._viewportScrollContainerY) as number) + ((this.viewportHasHScroll || this.hasFrozenColumns()) ? (this.scrollbarDimensions?.height ?? 0) : 0));
@@ -3431,7 +3558,7 @@ export class SlickGrid {
     }
   }
 
-  defaultFormatter(_row: number, _cell: number, value: any) {
+  protected defaultFormatter(_row: number, _cell: number, value: any) {
     if (value == null) {
       return '';
     } else {
@@ -3439,7 +3566,7 @@ export class SlickGrid {
     }
   }
 
-  getFormatter(row: number, column: Column): Formatter {
+  protected getFormatter(row: number, column: Column): Formatter {
     let rowMetadata = (this.data as CustomDataView)?.getItemMetadata?.(row);
 
     // look up by id, then index
@@ -3453,7 +3580,7 @@ export class SlickGrid {
       this._options.defaultFormatter) as Formatter;
   }
 
-  getEditor(row: number, cell: number): Editor | undefined {
+  protected getEditor(row: number, cell: number): Editor | undefined {
     let column = this.columns[cell];
     let rowMetadata = (this.data as CustomDataView)?.getItemMetadata?.(row);
     let columnMetadata = rowMetadata?.columns;
@@ -3468,14 +3595,14 @@ export class SlickGrid {
     return column.editor || (this._options?.editorFactory?.getEditor(column));
   }
 
-  getDataItemValueForColumn(item: any, columnDef: Column) {
+  protected getDataItemValueForColumn(item: any, columnDef: Column) {
     if (this._options.dataItemColumnValueExtractor) {
       return this._options.dataItemColumnValueExtractor(item, columnDef);
     }
     return item[columnDef.field];
   }
 
-  appendRowHtml(stringArrayL: string[], stringArrayR: string[], row: number, range: CellRange, dataLength: number) {
+  protected appendRowHtml(stringArrayL: string[], stringArrayR: string[], row: number, range: CellRange, dataLength: number) {
     let d = this.getDataItem(row);
     let dataLoading = row < dataLength && !d;
     let rowCss = 'slick-row' +
@@ -3546,7 +3673,7 @@ export class SlickGrid {
     }
   }
 
-  appendCellHtml(stringArray: string[], row: number, cell: number, colspan: number, item: any) {
+  protected appendCellHtml(stringArray: string[], row: number, cell: number, colspan: number, item: any) {
     // stringArray: stringBuilder containing the HTML parts
     // row, cell: row and column index
     // colspan: HTML colspan
@@ -3611,8 +3738,7 @@ export class SlickGrid {
     this.rowsCache[row].cellColSpans[cell] = colspan;
   }
 
-
-  cleanupRows(rangeToKeep: { bottom: number; top: number; }) {
+  protected cleanupRows(rangeToKeep: { bottom: number; top: number; }) {
     for (let rowId in this.rowsCache) {
       let i = +rowId;
       let removeFrozenRow = true;
@@ -3635,12 +3761,14 @@ export class SlickGrid {
     if (this._options.enableAsyncPostRenderCleanup) { this.startPostProcessingCleanup(); }
   }
 
+  /** Invalidate all grid rows and re-render the grid rows */
   invalidate() {
     this.updateRowCount();
     this.invalidateAllRows();
     this.render();
   }
 
+  /** Invalidate all grid rows */
   invalidateAllRows() {
     if (this.currentEditor) {
       this.makeActiveCellNormal();
@@ -3651,7 +3779,32 @@ export class SlickGrid {
     if (this._options.enableAsyncPostRenderCleanup) { this.startPostProcessingCleanup(); }
   }
 
-  queuePostProcessedRowForCleanup(cacheEntry: any, postProcessedRow: any, rowIdx: number) {
+  /** Invalidate a specific set of row numbers */
+  invalidateRows(rows: number[]) {
+    let i, rl;
+    if (!rows || !rows.length) {
+      return;
+    }
+    this.vScrollDir = 0;
+    rl = rows.length;
+    for (i = 0; i < rl; i++) {
+      if (this.currentEditor && this.activeRow === rows[i]) {
+        this.makeActiveCellNormal();
+      }
+      if (this.rowsCache[rows[i]]) {
+        this.removeRowFromCache(rows[i]);
+      }
+    }
+    if (this._options.enableAsyncPostRenderCleanup) { this.startPostProcessingCleanup(); }
+  }
+
+  /** Invalidate a specific row number */
+  invalidateRow(row?: number) {
+    if (!row && row !== 0) { return; }
+    this.invalidateRows([row]);
+  }
+
+  protected queuePostProcessedRowForCleanup(cacheEntry: any, postProcessedRow: any, rowIdx: number) {
     this.postProcessgroupId++;
 
     // store and detach node for later async cleanup
@@ -3676,7 +3829,7 @@ export class SlickGrid {
     });
   }
 
-  queuePostProcessedCellForCleanup(cellnode: HTMLElement, columnIdx: number, rowIdx: number) {
+  protected queuePostProcessedCellForCleanup(cellnode: HTMLElement, columnIdx: number, rowIdx: number) {
     this.postProcessedCleanupQueue.push({
       actionType: 'C',
       groupId: this.postProcessgroupId,
@@ -3687,7 +3840,7 @@ export class SlickGrid {
     cellnode.remove();
   }
 
-  removeRowFromCache(row) {
+  protected removeRowFromCache(row) {
     let cacheEntry = this.rowsCache[row];
     if (!cacheEntry) {
       return;
@@ -3709,29 +3862,7 @@ export class SlickGrid {
     this.counter_rows_removed++;
   }
 
-  invalidateRows(rows: number[]) {
-    let i, rl;
-    if (!rows || !rows.length) {
-      return;
-    }
-    this.vScrollDir = 0;
-    rl = rows.length;
-    for (i = 0; i < rl; i++) {
-      if (this.currentEditor && this.activeRow === rows[i]) {
-        this.makeActiveCellNormal();
-      }
-      if (this.rowsCache[rows[i]]) {
-        this.removeRowFromCache(rows[i]);
-      }
-    }
-    if (this._options.enableAsyncPostRenderCleanup) { this.startPostProcessingCleanup(); }
-  }
-
-  invalidateRow(row?: number) {
-    if (!row && row !== 0) { return; }
-    this.invalidateRows([row]);
-  }
-
+  /** Apply a Formatter Result to a Cell DOM Node */
   applyFormatResultToCellNode(formatterResult: FormatterResultObject | string, cellNode: HTMLElement, suppressRemove?: boolean) {
     if (formatterResult === null || formatterResult === undefined) { formatterResult = ''; }
     if (Object.prototype.toString.call(formatterResult) !== '[object Object]') {
@@ -3756,6 +3887,11 @@ export class SlickGrid {
     }
   }
 
+  /**
+   * Update a specific cell by its row and column index
+   * @param {Number} row - grid row number
+   * @param {Number} cell - grid cell column number
+   */
   updateCell(row: number, cell: number) {
     let cellNode = this.getCellNode(row, cell);
     if (!cellNode) {
@@ -3772,6 +3908,10 @@ export class SlickGrid {
     }
   }
 
+  /**
+   * Update a specific row by its row index
+   * @param {Number} row - grid row number
+   */
   updateRow(row: number) {
     let cacheEntry = this.rowsCache[row];
     if (!cacheEntry) {
@@ -3805,7 +3945,7 @@ export class SlickGrid {
     this.invalidatePostProcessingResults(row);
   }
 
-  getViewportHeight() {
+  protected getViewportHeight() {
     if (!this._options.autoHeight || this._options.frozenColumn !== -1) {
       this.topPanelH = (this._options.showTopPanel) ? this._options.topPanelHeight + this.getVBoxDelta(this._topPanelScrollers[0]) : 0;
       this.headerRowH = (this._options.showHeaderRow) ? this._options.headerRowHeight + this.getVBoxDelta(this._headerRowScroller[0]) : 0;
@@ -3840,11 +3980,12 @@ export class SlickGrid {
     return this.viewportH;
   }
 
-  getViewportWidth() {
+  protected getViewportWidth() {
     this.viewportW = parseFloat(Utils.innerSize(this._container, 'width') as unknown as string);
     return this.viewportW;
   }
 
+  /** Execute a Resize of the Canvas */
   resizeCanvas() {
     if (!this.initialized) { return; }
     this.paneTopH = 0;
@@ -3951,11 +4092,13 @@ export class SlickGrid {
     this.render();
   }
 
+  /** Update paging information status from the View */
   updatePagingStatusFromView(pagingInfo: PagingInfo) {
     this.pagingActive = (pagingInfo.pageSize !== 0);
     this.pagingIsLastPage = (pagingInfo.pageNum == pagingInfo.totalPages - 1);
   }
 
+  /** Update the dataset row count */
   updateRowCount() {
     if (!this.initialized) { return; }
 
@@ -4071,6 +4214,7 @@ export class SlickGrid {
     };
   }
 
+  /** Get rendered range */
   getRenderedRange(viewportTop?: number, viewportLeft?: number) {
     let range = this.getVisibleRange(viewportTop, viewportLeft);
     let buffer = Math.round(this.viewportH / this._options.rowHeight);
@@ -4099,7 +4243,7 @@ export class SlickGrid {
     return range;
   }
 
-  ensureCellNodesInRowsCache(row: number) {
+  protected ensureCellNodesInRowsCache(row: number) {
     const cacheEntry = this.rowsCache[row];
     if (cacheEntry) {
       if (cacheEntry.cellRenderQueue.length) {
@@ -4118,7 +4262,7 @@ export class SlickGrid {
     }
   }
 
-  cleanUpCells(range: CellRange, row: number) {
+  protected cleanUpCells(range: CellRange, row: number) {
     // Ignore frozen rows
     if (this.hasFrozenRows
       && ((this._options.frozenBottom && row > this.actualFrozenRow) // Frozen bottom rows
@@ -4180,7 +4324,7 @@ export class SlickGrid {
     }
   }
 
-  cleanUpAndRenderCells(range: CellRange) {
+  protected cleanUpAndRenderCells(range: CellRange) {
     let cacheEntry;
     let stringArray: string[] = [];
     let processedRows: number[] = [];
@@ -4268,7 +4412,7 @@ export class SlickGrid {
     }
   }
 
-  renderRows(range: { top: number; bottom: number; leftPx: number; rightPx: number; }) {
+  protected renderRows(range: { top: number; bottom: number; leftPx: number; rightPx: number; }) {
     let stringArrayL = [],
       stringArrayR = [],
       rows: number[] = [],
@@ -4337,7 +4481,7 @@ export class SlickGrid {
     }
   }
 
-  startPostProcessing() {
+  protected startPostProcessing() {
     if (!this._options.enableAsyncPostRender) {
       return;
     }
@@ -4345,7 +4489,7 @@ export class SlickGrid {
     this.h_postrender = setTimeout(this.asyncPostProcessRows, this._options.asyncPostRenderDelay);
   }
 
-  startPostProcessingCleanup() {
+  protected startPostProcessingCleanup() {
     if (!this._options.enableAsyncPostRenderCleanup) {
       return;
     }
@@ -4353,7 +4497,7 @@ export class SlickGrid {
     this.h_postrenderCleanup = setTimeout(this.asyncPostProcessCleanupRows, this._options.asyncPostRenderCleanupDelay);
   }
 
-  invalidatePostProcessingResults(row) {
+  protected invalidatePostProcessingResults(row: number) {
     // change status of columns to be re-rendered
     for (let columnIdx in this.postProcessedRows[row]) {
       if (this.postProcessedRows[row].hasOwnProperty(columnIdx)) {
@@ -4365,13 +4509,14 @@ export class SlickGrid {
     this.startPostProcessing();
   }
 
-  updateRowPositions() {
+  protected updateRowPositions() {
     for (let row in this.rowsCache) {
       let rowNumber = row ? parseInt(row) : 0;
       Utils.setStyleSize(this.rowsCache[rowNumber].rowNode[0], 'top', this.getRowTop(rowNumber));
     }
   }
 
+  /** (re)Render the grid */
   render() {
     if (!this.initialized) { return; }
 
@@ -4426,38 +4571,38 @@ export class SlickGrid {
     this.trigger(this.onRendered, { startRow: visible.top, endRow: visible.bottom, grid: this });
   }
 
-  handleHeaderRowScroll() {
+  protected handleHeaderRowScroll() {
     let scrollLeft = this._headerRowScrollContainer.scrollLeft;
     if (scrollLeft !== this._viewportScrollContainerX.scrollLeft) {
       this._viewportScrollContainerX.scrollLeft = scrollLeft;
     }
   }
 
-  handleFooterRowScroll() {
+  protected handleFooterRowScroll() {
     let scrollLeft = this._footerRowScrollContainer.scrollLeft;
     if (scrollLeft !== this._viewportScrollContainerX.scrollLeft) {
       this._viewportScrollContainerX.scrollLeft = scrollLeft;
     }
   }
 
-  handlePreHeaderPanelScroll() {
+  protected handlePreHeaderPanelScroll() {
     this.handleElementScroll(this._preHeaderPanelScroller);
   }
 
-  handleElementScroll(element: HTMLElement) {
+  protected handleElementScroll(element: HTMLElement) {
     let scrollLeft = element.scrollLeft;
     if (scrollLeft !== this._viewportScrollContainerX.scrollLeft) {
       this._viewportScrollContainerX.scrollLeft = scrollLeft;
     }
   }
 
-  handleScroll() {
+  protected handleScroll() {
     this.scrollTop = this._viewportScrollContainerY.scrollTop;
     this.scrollLeft = this._viewportScrollContainerX.scrollLeft;
     return this._handleScroll(false);
   }
 
-  _handleScroll(isMouseWheel: boolean) {
+  protected _handleScroll(isMouseWheel: boolean) {
     let maxScrollDistanceY = this._viewportScrollContainerY.scrollHeight - this._viewportScrollContainerY.clientHeight;
     let maxScrollDistanceX = this._viewportScrollContainerY.scrollWidth - this._viewportScrollContainerY.clientWidth;
 
@@ -4571,7 +4716,7 @@ export class SlickGrid {
    * call enqueue to execute the action - it will execute either immediately or, if it was executed less than minPeriod_ms in the past, as soon as minPeriod_ms has expired.
    * call dequeue to cancel any pending action.
    */
-  actionThrottle(action: () => void, minPeriod_ms: number) {
+  protected actionThrottle(action: () => void, minPeriod_ms: number) {
     let blocked = false;
     let queued = false;
 
@@ -4608,7 +4753,7 @@ export class SlickGrid {
     };
   }
 
-  asyncPostProcessRows() {
+  protected asyncPostProcessRows() {
     let dataLength = this.getDataLength();
     while (this.postProcessFromRow <= this.postProcessToRow) {
       let row = (this.vScrollDir >= 0) ? this.postProcessFromRow++ : this.postProcessToRow--;
@@ -4645,7 +4790,7 @@ export class SlickGrid {
     }
   }
 
-  asyncPostProcessCleanupRows() {
+  protected asyncPostProcessCleanupRows() {
     if (this.postProcessedCleanupQueue.length > 0) {
       let groupId = this.postProcessedCleanupQueue[0].groupId;
 
@@ -4671,7 +4816,7 @@ export class SlickGrid {
     }
   }
 
-  updateCellCssStylesOnRenderedRows(addedHash: any, removedHash: any) {
+  protected updateCellCssStylesOnRenderedRows(addedHash?: CssStyleHash | null, removedHash?: CssStyleHash | null) {
     let node: HTMLElement | null, columnId: number | string, addedRowHash, removedRowHash;
     for (let row in this.rowsCache) {
       removedRowHash = removedHash?.[row];
@@ -4701,7 +4846,17 @@ export class SlickGrid {
     }
   }
 
-  addCellCssStyles(key: string, hash: any) {
+  /**
+   * Adds an "overlay" of CSS classes to cell DOM elements. SlickGrid can have many such overlays associated with different keys and they are frequently used by plugins. For example, SlickGrid uses this method internally to decorate selected cells with selectedCellCssClass (see options).
+   * @param key A unique key you can use in calls to setCellCssStyles and removeCellCssStyles. If a hash with that key has already been set, an exception will be thrown.
+   * @param hash A hash of additional cell CSS classes keyed by row number and then by column id. Multiple CSS classes can be specified and separated by space.
+   * @example
+   * `{
+   * 	 0: { number_column: SlickEvent; title_column: SlickEvent;	},
+   * 	 4: { percent_column: SlickEvent; }
+   * }`
+   */
+  addCellCssStyles(key: string, hash: CssStyleHash) {
     if (this.cellCssClasses[key]) {
       throw new Error(`SlickGrid addCellCssStyles: cell CSS hash with key "${key}" already exists.`);
     }
@@ -4711,6 +4866,10 @@ export class SlickGrid {
     this.trigger(this.onCellCssStylesChanged, { key, hash, grid: this });
   }
 
+  /**
+   * Removes an "overlay" of CSS classes from cell DOM elements. See setCellCssStyles for more.
+   * @param key A string key.
+   */
   removeCellCssStyles(key: string) {
     if (!this.cellCssClasses[key]) {
       return;
@@ -4721,7 +4880,15 @@ export class SlickGrid {
     this.trigger(this.onCellCssStylesChanged, { key, hash: null, grid: this });
   }
 
-  setCellCssStyles(key: string, hash: any) {
+  /**
+   * Sets CSS classes to specific grid cells by calling removeCellCssStyles(key) followed by addCellCssStyles(key, hash). key is name for this set of styles so you can reference it later - to modify it or remove it, for example. hash is a per-row-index, per-column-name nested hash of CSS classes to apply.
+   * Suppose you have a grid with columns:
+   * ["login", "name", "birthday", "age", "likes_icecream", "favorite_cake"]
+   * ...and you'd like to highlight the "birthday" and "age" columns for people whose birthday is today, in this case, rows at index 0 and 9. (The first and tenth row in the grid).
+   * @param {String} key A string key. Will overwrite any data already associated with this key.
+   * @param {Object} hash A hash of additional cell CSS classes keyed by row number and then by column id. Multiple CSS classes can be specified and separated by space.
+   */
+  setCellCssStyles(key: string, hash: CssStyleHash) {
     const prevHash = this.cellCssClasses[key];
 
     this.cellCssClasses[key] = hash;
@@ -4729,10 +4896,20 @@ export class SlickGrid {
     this.trigger(this.onCellCssStylesChanged, { key, hash, grid: this });
   }
 
-  getCellCssStyles(key: string) {
+  /**
+   * Accepts a key name, returns the group of CSS styles defined under that name. See setCellCssStyles for more info.
+   * @param {String} key A string.
+   */
+  getCellCssStyles(key: string): CssStyleHash {
     return this.cellCssClasses[key];
   }
 
+  /**
+   * Flashes the cell twice by toggling the CSS class 4 times.
+   * @param {number} row A row index.
+   * @param {number} cell A column index.
+   * @param {number} [speed] (optional) - The milliseconds delay between the toggling calls. Defaults to 100 ms.
+   */
   flashCell(row: number, cell: number, speed?: number) {
     speed = speed || 250;
 
@@ -4762,7 +4939,7 @@ export class SlickGrid {
   //////////////////////////////////////////////////////////////////////////////////////////////
   // Interactivity
 
-  handleMouseWheel(e: MouseEvent, _delta: number, deltaX: number, deltaY: number) {
+  protected handleMouseWheel(e: MouseEvent, _delta: number, deltaX: number, deltaY: number) {
     this.scrollTop = Math.max(0, this._viewportScrollContainerY.scrollTop - (deltaY * this._options.rowHeight));
     this.scrollLeft = this._viewportScrollContainerX.scrollLeft + (deltaX * 10);
     let handled = this._handleScroll(true);
@@ -4771,7 +4948,7 @@ export class SlickGrid {
     }
   }
 
-  handleDragInit(e: DragEvent, dd: DragPosition) {
+  protected handleDragInit(e: DragEvent, dd: DragPosition) {
     let cell = this.getCellFromEvent(e);
     if (!cell || !this.cellExists(cell.row, cell.cell)) {
       return false;
@@ -4787,7 +4964,7 @@ export class SlickGrid {
     return false;
   }
 
-  handleDragStart(e: DragEvent, dd: DragPosition) {
+  protected handleDragStart(e: DragEvent, dd: DragPosition) {
     let cell = this.getCellFromEvent(e);
     if (!cell || !this.cellExists(cell.row, cell.cell)) {
       return false;
@@ -4801,15 +4978,15 @@ export class SlickGrid {
     return false;
   }
 
-  handleDrag(e: DragEvent, dd: DragPosition) {
+  protected handleDrag(e: DragEvent, dd: DragPosition) {
     return this.trigger(this.onDrag, dd, e).getReturnValue();
   }
 
-  handleDragEnd(e: DragEvent, dd: DragPosition) {
+  protected handleDragEnd(e: DragEvent, dd: DragPosition) {
     this.trigger(this.onDragEnd, dd, e);
   }
 
-  handleKeyDown(e: KeyboardEvent) {
+  protected handleKeyDown(e: KeyboardEvent) {
     const retval = this.trigger(this.onKeyDown, { row: this.activeRow, cell: this.activeCell }, e);
     let handled: boolean | undefined | void = retval.isImmediatePropagationStopped();
 
@@ -4891,7 +5068,7 @@ export class SlickGrid {
     }
   }
 
-  handleClick(evt: any) {
+  protected handleClick(evt: any) {
 
     let e = evt;
     if (e instanceof SlickEventData) {
@@ -4935,7 +5112,7 @@ export class SlickGrid {
     }
   }
 
-  handleContextMenu(e: Event & { target: HTMLElement; }) {
+  protected handleContextMenu(e: Event & { target: HTMLElement; }) {
     let cell = e.target.closest('.slick-cell');
     if (!cell) {
       return;
@@ -4949,7 +5126,7 @@ export class SlickGrid {
     this.trigger(this.onContextMenu, {}, e);
   }
 
-  handleDblClick(e: MouseEvent) {
+  protected handleDblClick(e: MouseEvent) {
     let cell = this.getCellFromEvent(e);
     if (!cell || (this.currentEditor !== null && this.activeRow == cell.row && this.activeCell == cell.cell)) {
       return;
@@ -4965,7 +5142,7 @@ export class SlickGrid {
     }
   }
 
-  handleHeaderMouseEnter(e: MouseEvent & { target: HTMLElement; }) {
+  protected handleHeaderMouseEnter(e: MouseEvent & { target: HTMLElement; }) {
     const c = Utils.storage.get(e.target.closest('.slick-header-column'), 'column');
     if (!c) {
       return;
@@ -4976,7 +5153,7 @@ export class SlickGrid {
     }, e);
   }
 
-  handleHeaderMouseLeave(e: MouseEvent & { target: HTMLElement; }) {
+  protected handleHeaderMouseLeave(e: MouseEvent & { target: HTMLElement; }) {
     const c = Utils.storage.get(e.target.closest('.slick-header-column'), 'column');
     if (!c) {
       return;
@@ -4987,7 +5164,7 @@ export class SlickGrid {
     }, e);
   }
 
-  handleHeaderRowMouseEnter(e: MouseEvent & { target: HTMLElement; }) {
+  protected handleHeaderRowMouseEnter(e: MouseEvent & { target: HTMLElement; }) {
     const c = Utils.storage.get(e.target.closest('.slick-headerrow-column'), 'column');
     if (!c) {
       return;
@@ -4998,7 +5175,7 @@ export class SlickGrid {
     }, e);
   }
 
-  handleHeaderRowMouseLeave(e: MouseEvent & { target: HTMLElement; }) {
+  protected handleHeaderRowMouseLeave(e: MouseEvent & { target: HTMLElement; }) {
     const c = Utils.storage.get(e.target.closest('.slick-headerrow-column'), 'column');
     if (!c) {
       return;
@@ -5009,13 +5186,13 @@ export class SlickGrid {
     }, e);
   }
 
-  handleHeaderContextMenu(e: MouseEvent & { target: HTMLElement; }) {
+  protected handleHeaderContextMenu(e: MouseEvent & { target: HTMLElement; }) {
     let header = e.target.closest('.slick-header-column');
     let column = header && Utils.storage.get(header, 'column');
     this.trigger(this.onHeaderContextMenu, { column: column }, e);
   }
 
-  handleHeaderClick(e: MouseEvent & { target: HTMLElement; }) {
+  protected handleHeaderClick(e: MouseEvent & { target: HTMLElement; }) {
     if (this.columnResizeDragging) {
       return;
     }
@@ -5027,30 +5204,35 @@ export class SlickGrid {
     }
   }
 
-  handleFooterContextMenu(e: MouseEvent & { target: HTMLElement; }) {
+  protected handleFooterContextMenu(e: MouseEvent & { target: HTMLElement; }) {
     let footer = e.target.closest('.slick-footerrow-column');
     let column = footer && Utils.storage.get(footer, 'column');
     this.trigger(this.onFooterContextMenu, { column: column }, e);
   }
 
-  handleFooterClick(e: MouseEvent & { target: HTMLElement; }) {
+  protected handleFooterClick(e: MouseEvent & { target: HTMLElement; }) {
     let footer = e.target.closest('.slick-footerrow-column');
     let column = footer && Utils.storage.get(footer, 'column');
     this.trigger(this.onFooterClick, { column: column }, e);
   }
 
-  handleCellMouseOver(e: MouseEvent & { target: HTMLElement; }) {
+  protected handleCellMouseOver(e: MouseEvent & { target: HTMLElement; }) {
     this.trigger(this.onMouseEnter, {}, e);
   }
 
-  handleCellMouseOut(e: MouseEvent & { target: HTMLElement; }) {
+  protected handleCellMouseOut(e: MouseEvent & { target: HTMLElement; }) {
     this.trigger(this.onMouseLeave, {}, e);
   }
 
-  cellExists(row: number, cell: number) {
+  protected cellExists(row: number, cell: number) {
     return !(row < 0 || row >= this.getDataLength() || cell < 0 || cell >= this.columns.length);
   }
 
+  /**
+   * Returns a hash containing row and cell indexes. Coordinates are relative to the top left corner of the grid beginning with the first row (not including the column headers).
+   * @param x An x coordinate.
+   * @param y A y coordinate.
+   */
   getCellFromPoint(x: number, y: number) {
     let row = this.getRowFromPosition(y);
     let cell = 0;
@@ -5070,7 +5252,7 @@ export class SlickGrid {
     return { row, cell: (cell - 1) };
   }
 
-  getCellFromNode(cellNode: HTMLElement) {
+  protected getCellFromNode(cellNode: HTMLElement) {
     // read column number from .l<columnNumber> CSS class
     let cls = /l\d+/.exec(cellNode.className);
     if (!cls) {
@@ -5079,7 +5261,7 @@ export class SlickGrid {
     return parseInt(cls[0].substr(1, cls[0].length - 1), 10);
   }
 
-  getRowFromNode(rowNode: HTMLElement): number | null {
+  protected getRowFromNode(rowNode: HTMLElement): number | null {
     for (let row in this.rowsCache) {
       for (let i in this.rowsCache[row].rowNode) {
         if (this.rowsCache[row].rowNode[i] === rowNode) {
@@ -5090,6 +5272,10 @@ export class SlickGrid {
     return null;
   }
 
+  /**
+   * Get frozen (pinned) row offset
+   * @param {Number} row - grid row number
+   */
   getFrozenRowOffset(row: number) {
     //let offset = ( hasFrozenRows ) ? ( this._options.frozenBottom ) ? ( row >= actualFrozenRow ) ? ( h < viewportTopH ) ? ( actualFrozenRow * this._options.rowHeight ) : h : 0 : ( row >= actualFrozenRow ) ? frozenRowsHeight : 0 : 0; // WTF?
     let offset = 0;
@@ -5119,6 +5305,10 @@ export class SlickGrid {
     return offset;
   }
 
+  /**
+   * Returns a hash containing row and cell indexes from a standard W3C event.
+   * @param {*} event A standard W3C event.
+   */
   getCellFromEvent(e: Event | SlickEventData_) {
     if (e instanceof SlickEventData) {
       e = e.getNativeEvent();
@@ -5156,6 +5346,11 @@ export class SlickGrid {
     }
   }
 
+  /**
+   * Returns an object representing information about a cell's position. All coordinates are absolute and take into consideration the visibility and scrolling position of all ancestors.
+   * @param row A row number.
+   * @param cell A column number.
+   */
   getCellNodeBox(row: number, cell: number) {
     if (!this.cellExists(row, cell)) {
       return null;
@@ -5188,6 +5383,7 @@ export class SlickGrid {
   //////////////////////////////////////////////////////////////////////////////////////////////
   // Cell switching
 
+  /**  Resets active cell. */
   resetActiveCell() {
     this.setActiveCellInternal(null, false);
   }
@@ -5205,6 +5401,7 @@ export class SlickGrid {
     }
   }
 
+  /** Scroll to a specific cell and make it into the view */
   scrollCellIntoView(row: number, cell: number, doPaging?: boolean) {
     this.scrollRowIntoView(row, doPaging);
 
@@ -5216,7 +5413,7 @@ export class SlickGrid {
     this.internalScrollColumnIntoView(this.columnPosLeft[cell], this.columnPosRight[cell + (colspan > 1 ? colspan - 1 : 0)]);
   }
 
-  internalScrollColumnIntoView(left: number, right: number) {
+  protected internalScrollColumnIntoView(left: number, right: number) {
     let scrollRight = this.scrollLeft + (Utils.width(this._viewportScrollContainerX) as number) - (this.viewportHasVScroll ? (this.scrollbarDimensions?.width ?? 0) : 0);
 
     if (left < this.scrollLeft) {
@@ -5230,11 +5427,15 @@ export class SlickGrid {
     }
   }
 
+  /**
+   * Scroll to a specific column and show it into the viewport
+   * @param {Number} cell - cell column number
+   */
   scrollColumnIntoView(cell: number) {
     this.internalScrollColumnIntoView(this.columnPosLeft[cell], this.columnPosRight[cell]);
   }
 
-  setActiveCellInternal(newCell: HTMLElement | null, opt_editMode?: boolean | null, preClickModeOn?: boolean | null, suppressActiveCellChangedEvent?: boolean, e?: Event | SlickEvent_) {
+  protected setActiveCellInternal(newCell: HTMLElement | null, opt_editMode?: boolean | null, preClickModeOn?: boolean | null, suppressActiveCellChangedEvent?: boolean, e?: Event | SlickEvent_) {
     if (this.activeCellNode !== null) {
       this.makeActiveCellNormal();
       this.activeCellNode.classList.remove('active');
@@ -5299,7 +5500,7 @@ export class SlickGrid {
     //}
   }
 
-  clearTextSelection() {
+  protected clearTextSelection() {
     if ((document as any).selection?.empty) {
       try {
         //IE fails here if selected element is not in dom
@@ -5313,14 +5514,14 @@ export class SlickGrid {
     }
   }
 
-  isCellPotentiallyEditable(row: number, cell: number) {
+  protected isCellPotentiallyEditable(row: number, cell: number) {
     let dataLength = this.getDataLength();
     // is the data for this row loaded?
     if (row < dataLength && !this.getDataItem(row)) {
       return false;
     }
 
-    // are we in the Add New row?  can we create new from this cell?
+    // are we in the Add New row? Can we create new from this cell?
     if (this.columns[cell].cannotTriggerInsert && row >= dataLength) {
       return false;
     }
@@ -5333,7 +5534,7 @@ export class SlickGrid {
     return true;
   }
 
-  makeActiveCellNormal() {
+  protected makeActiveCellNormal() {
     if (!this.currentEditor) {
       return;
     }
@@ -5432,7 +5633,7 @@ export class SlickGrid {
     }
   }
 
-  commitEditAndSetFocus() {
+  protected commitEditAndSetFocus() {
     // if the commit fails, it would do so due to a validation error
     // if so, do not steal the focus from the editor
     if (this.getEditorLock().commitCurrentEdit()) {
@@ -5443,13 +5644,13 @@ export class SlickGrid {
     }
   }
 
-  cancelEditAndSetFocus() {
+  protected cancelEditAndSetFocus() {
     if (this.getEditorLock().cancelCurrentEdit()) {
       this.setFocus();
     }
   }
 
-  absBox(elem: HTMLElement) {
+  protected absBox(elem: HTMLElement) {
     let box = {
       top: elem.offsetTop,
       left: elem.offsetLeft,
@@ -5494,15 +5695,17 @@ export class SlickGrid {
     return box;
   }
 
+  /** Returns an object representing information about the active cell's position. All coordinates are absolute and take into consideration the visibility and scrolling position of all ancestors. */
   getActiveCellPosition() {
     return this.absBox(this.activeCellNode as HTMLElement);
   }
 
+  /** Get the Grid Position */
   getGridPosition() {
     return this.absBox(this._container);
   }
 
-  handleActiveCellPositionChange() {
+  protected handleActiveCellPositionChange() {
     if (!this.activeCellNode) {
       return;
     }
@@ -5525,25 +5728,30 @@ export class SlickGrid {
     }
   }
 
+  /** Returns the active cell editor. If there is no actively edited cell, null is returned.   */
   getCellEditor() {
     return this.currentEditor;
   }
 
+  /**
+   * Returns an object representing the coordinates of the currently active cell:
+   * @example	`{ row: activeRow, cell: activeCell }`
+   */
   getActiveCell() {
     if (!this.activeCellNode) {
       return null;
-    } else {
-      return { row: this.activeRow, cell: this.activeCell };
     }
+    return { row: this.activeRow, cell: this.activeCell };
   }
 
+  /** Returns the DOM element containing the currently active cell. If no cell is active, null is returned. */
   getActiveCellNode() {
     return this.activeCellNode;
   }
 
   //This get/set methods are used for keeping text-selection. These don't consider IE because they don't loose text-selection.
   //Fix for firefox selection. See https://github.com/mleibman/SlickGrid/pull/746/files
-  getTextSelection() {
+  protected getTextSelection() {
     let textSelection: Range | null = null;
     if (window.getSelection) {
       let selection = window.getSelection();
@@ -5554,7 +5762,7 @@ export class SlickGrid {
     return textSelection;
   }
 
-  setTextSelection(selection: Range) {
+  protected setTextSelection(selection: Range) {
     if (window.getSelection && selection) {
       let target = window.getSelection();
       if (target) {
@@ -5564,6 +5772,11 @@ export class SlickGrid {
     }
   }
 
+  /**
+   * Scroll to a specific row and make it into the view
+   * @param {Number} row - grid row number
+   * @param {Boolean} doPaging - scroll when pagination is enabled
+   */
   scrollRowIntoView(row: number, doPaging?: boolean) {
     if (!this.hasFrozenRows ||
       (!this._options.frozenBottom && row > this.actualFrozenRow - 1) ||
@@ -5593,12 +5806,16 @@ export class SlickGrid {
     }
   }
 
+  /**
+   * Scroll to the top row and make it into the view
+   * @param {Number} row - grid row number
+   */
   scrollRowToTop(row: number) {
     this.scrollTo(row * this._options.rowHeight as number);
     this.render();
   }
 
-  scrollPage(dir: number) {
+  protected scrollPage(dir: number) {
     let deltaRows = dir * this.numVisibleRows;
     /// First fully visible row crosses the line with
     /// y == bottomOfTopmostFullyVisibleRow
@@ -5635,23 +5852,27 @@ export class SlickGrid {
     }
   }
 
+  /** Navigate (scroll) by a page down */
   navigatePageDown() {
     this.scrollPage(1);
   }
 
+  /** Navigate (scroll) by a page up */
   navigatePageUp() {
     this.scrollPage(-1);
   }
 
+  /** Navigate to the top of the grid */
   navigateTop() {
     this.navigateToRow(0);
   }
 
+  /** Navigate to the bottom of the grid */
   navigateBottom() {
     this.navigateToRow(this.getDataLength() - 1);
   }
 
-  navigateToRow(row: number) {
+  protected navigateToRow(row: number) {
     let num_rows = this.getDataLength();
     if (!num_rows) { return true; }
 
@@ -5683,7 +5904,7 @@ export class SlickGrid {
     return true;
   }
 
-  getColspan(row: number, cell: number): number {
+  protected getColspan(row: number, cell: number): number {
     let metadata = (this.data as CustomDataView)?.getItemMetadata?.(row);
     if (!metadata || !metadata.columns) {
       return 1;
@@ -5700,7 +5921,7 @@ export class SlickGrid {
     return colspan as number;
   }
 
-  findFirstFocusableCell(row: number) {
+  protected findFirstFocusableCell(row: number) {
     let cell = 0;
     while (cell < this.columns.length) {
       if (this.canCellBeActive(row, cell)) {
@@ -5711,7 +5932,7 @@ export class SlickGrid {
     return null;
   }
 
-  findLastFocusableCell(row: number) {
+  protected findLastFocusableCell(row: number) {
     let cell = 0;
     let lastFocusableCell: number | null = null;
     while (cell < this.columns.length) {
@@ -5723,7 +5944,7 @@ export class SlickGrid {
     return lastFocusableCell;
   }
 
-  gotoRight(row: number, cell: number, _posX?: number) {
+  protected gotoRight(row: number, cell: number, _posX?: number) {
     if (cell >= this.columns.length) {
       return null;
     }
@@ -5743,7 +5964,7 @@ export class SlickGrid {
     return null;
   }
 
-  gotoLeft(row: number, cell: number, _posX?: number) {
+  protected gotoLeft(row: number, cell: number, _posX?: number) {
     if (cell <= 0) {
       return null;
     }
@@ -5771,7 +5992,7 @@ export class SlickGrid {
     }
   }
 
-  gotoDown(row: number, cell: number, posX: number) {
+  protected gotoDown(row: number, cell: number, posX: number) {
     let prevCell;
     let dataLengthIncludingAddNew = this.getDataLengthIncludingAddNew();
     while (true) {
@@ -5795,7 +6016,7 @@ export class SlickGrid {
     }
   }
 
-  gotoUp(row: number, cell: number, posX: number) {
+  protected gotoUp(row: number, cell: number, posX: number) {
     let prevCell;
     while (true) {
       if (--row < 0) {
@@ -5818,7 +6039,7 @@ export class SlickGrid {
     }
   }
 
-  gotoNext(row: number, cell: number, posX?: number) {
+  protected gotoNext(row: number, cell: number, posX?: number) {
     if (row == null && cell == null) {
       row = cell = posX = 0;
       if (this.canCellBeActive(row, cell)) {
@@ -5854,7 +6075,7 @@ export class SlickGrid {
     return null;
   }
 
-  gotoPrev(row: number, cell: number, posX?: number) {
+  protected gotoPrev(row: number, cell: number, posX?: number) {
     if (row == null && cell == null) {
       row = this.getDataLengthIncludingAddNew() - 1;
       cell = posX = this.columns.length - 1;
@@ -5891,7 +6112,7 @@ export class SlickGrid {
     return pos;
   }
 
-  gotoRowStart(row: number, _cell: number, _posX?: number) {
+  protected gotoRowStart(row: number, _cell: number, _posX?: number) {
     let newCell = this.findFirstFocusableCell(row);
     if (newCell === null) return null;
 
@@ -5902,7 +6123,7 @@ export class SlickGrid {
     };
   }
 
-  gotoRowEnd(row: number, _cell: number, _posX?: number) {
+  protected gotoRowEnd(row: number, _cell: number, _posX?: number) {
     let newCell = this.findLastFocusableCell(row);
     if (newCell === null) return null;
 
@@ -5913,34 +6134,42 @@ export class SlickGrid {
     };
   }
 
+  /** Switches the active cell one cell right skipping unselectable cells. Unline navigateNext, navigateRight stops at the last cell of the row. Returns a boolean saying whether it was able to complete or not. */
   navigateRight() {
     return this.navigate('right');
   }
 
+  /** Switches the active cell one cell left skipping unselectable cells. Unline navigatePrev, navigateLeft stops at the first cell of the row. Returns a boolean saying whether it was able to complete or not. */
   navigateLeft() {
     return this.navigate('left');
   }
 
+  /** Switches the active cell one row down skipping unselectable cells. Returns a boolean saying whether it was able to complete or not. */
   navigateDown() {
     return this.navigate('down');
   }
 
+  /** Switches the active cell one row up skipping unselectable cells. Returns a boolean saying whether it was able to complete or not. */
   navigateUp() {
     return this.navigate('up');
   }
 
+  /** Tabs over active cell to the next selectable cell. Returns a boolean saying whether it was able to complete or not. */
   navigateNext() {
     return this.navigate('next');
   }
 
+  /** Tabs over active cell to the previous selectable cell. Returns a boolean saying whether it was able to complete or not. */
   navigatePrev() {
     return this.navigate('prev');
   }
 
+  /** Navigate to the start row in the grid */
   navigateRowStart() {
     return this.navigate('home');
   }
 
+  /** Navigate to the end row in the grid */
   navigateRowEnd() {
     return this.navigate('end');
   }
@@ -5949,7 +6178,7 @@ export class SlickGrid {
    * @param {string} dir Navigation direction.
    * @return {boolean} Whether navigation resulted in a change of active cell.
    */
-  navigate(dir: 'up' | 'down' | 'left' | 'right' | 'prev' | 'next' | 'home' | 'end') {
+  protected navigate(dir: 'up' | 'down' | 'left' | 'right' | 'prev' | 'next' | 'home' | 'end') {
     if (!this._options.enableCellNavigation) {
       return false;
     }
@@ -6008,6 +6237,11 @@ export class SlickGrid {
     }
   }
 
+  /**
+   * Returns a DOM element containing a cell at a given row and cell.
+   * @param row A row index.
+   * @param cell A column index.
+   */
   getCellNode(row: number, cell: number): HTMLElement | null {
     if (this.rowsCache[row]) {
       this.ensureCellNodesInRowsCache(row);
@@ -6025,6 +6259,14 @@ export class SlickGrid {
     return null;
   }
 
+  /**
+   * Sets an active cell.
+   * @param {number} row - A row index.
+   * @param {number} cell - A column index.
+   * @param {boolean} [optionEditMode] Option Edit Mode is Auto-Edit?
+   * @param {boolean} [preClickModeOn] Pre-Click Mode is Enabled?
+   * @param {boolean} [suppressActiveCellChangedEvent] Are we suppressing Active Cell Changed Event (defaults to false)
+   */
   setActiveCell(row: number, cell: number, opt_editMode?: boolean, preClickModeOn?: boolean, suppressActiveCellChangedEvent?: boolean) {
     if (!this.initialized) { return; }
     if (row > this.getDataLength() || row < 0 || cell >= this.columns.length || cell < 0) {
@@ -6039,6 +6281,12 @@ export class SlickGrid {
     this.setActiveCellInternal(this.getCellNode(row, cell), opt_editMode, preClickModeOn, suppressActiveCellChangedEvent);
   }
 
+  /**
+   * Sets an active cell.
+   * @param {number} row - A row index.
+   * @param {number} cell - A column index.
+   * @param {boolean} [suppressScrollIntoView] - optionally suppress the ScrollIntoView that happens by default (defaults to false)
+   */
   setActiveRow(row: number, cell: number, suppressScrollIntoView?: boolean) {
     if (!this.initialized) { return; }
     if (row > this.getDataLength() || row < 0 || cell >= this.columns.length || cell < 0) {
@@ -6051,6 +6299,11 @@ export class SlickGrid {
     }
   }
 
+  /**
+   * Returns true if you can click on a given cell and make it the active focus.
+   * @param {number} row A row index.
+   * @param {number} col A column index.
+   */
   canCellBeActive(row: number, cell: number) {
     if (!this.options.enableCellNavigation || row >= this.getDataLengthIncludingAddNew() ||
       row < 0 || cell >= this.columns.length || cell < 0) {
@@ -6077,6 +6330,11 @@ export class SlickGrid {
     return !!(this.columns[cell].focusable);
   }
 
+  /**
+   * Returns true if selecting the row causes this particular cell to have the selectedCellCssClass applied to it. A cell can be selected if it exists and if it isn't on an empty / "Add New" row and if it is not marked as "unselectable" in the column definition.
+   * @param {number} row A row index.
+   * @param {number} col A column index.
+   */
   canCellBeSelected(row: number, cell: number) {
     if (row >= this.getDataLength() || row < 0 || cell >= this.columns.length || cell < 0) {
       return false;
@@ -6099,6 +6357,13 @@ export class SlickGrid {
     return !!this.columns[cell].selectable;
   }
 
+  /**
+   * Accepts a row integer and a cell integer, scrolling the view to the row where row is its row index, and cell is its cell index. Optionally accepts a forceEdit boolean which, if true, will attempt to initiate the edit dialogue for the field in the specified cell.
+   * Unlike setActiveCell, this scrolls the row into the viewport and sets the keyboard focus.
+   * @param {Number} row A row index.
+   * @param {Number} cell A column index.
+   * @param {Boolean} [forceEdit] If true, will attempt to initiate the edit dialogue for the field in the specified cell.
+   */
   gotoCell(row: number, cell: number, forceEdit?: boolean, e?: Event | SlickEvent_) {
     if (!this.initialized) { return; }
     if (!this.canCellBeActive(row, cell)) {
@@ -6128,7 +6393,7 @@ export class SlickGrid {
   //////////////////////////////////////////////////////////////////////////////////////////////
   // IEditor implementation for the editor lock
 
-  commitCurrentEdit() {
+  protected commitCurrentEdit() {
     const self = this as SlickGrid;
     let item = self.getDataItem(self.activeRow);
     let column = self.columns[self.activeCell];
@@ -6215,12 +6480,12 @@ export class SlickGrid {
     return true;
   }
 
-  cancelCurrentEdit() {
+  protected cancelCurrentEdit() {
     this.makeActiveCellNormal();
     return true;
   }
 
-  rowsToRanges(rows: number[]) {
+  protected rowsToRanges(rows: number[]) {
     let ranges: SlickRange_[] = [];
     let lastCell = this.columns.length - 1;
     for (let i = 0; i < rows.length; i++) {
@@ -6229,6 +6494,7 @@ export class SlickGrid {
     return ranges;
   }
 
+  /** Returns an array of row indices corresponding to the currently selected rows. */
   getSelectedRows() {
     if (!this.selectionModel) {
       throw new Error('SlickGrid Selection model is not set');
@@ -6236,6 +6502,11 @@ export class SlickGrid {
     return this.selectedRows.slice(0);
   }
 
+  /**
+   * Accepts an array of row indices and applies the current selectedCellCssClass to the cells in the row, respecting whether cells have been flagged as selectable.
+   * @param {Array<number>} rowsArray - an array of row numbers.
+   * @param {String} [caller] - an optional string to identify who called the method
+   */
   setSelectedRows(rows: number[], caller?: string) {
     if (!this.selectionModel) {
       throw new Error('SlickGrid Selection model is not set');

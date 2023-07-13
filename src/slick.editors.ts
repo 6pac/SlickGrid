@@ -41,7 +41,7 @@ export class TextEditor implements Editor {
       this.applyValue(this.args.item, this.serializeValue());
     }
     this.applyValue(this.args.compositeEditorOptions.formValues, this.serializeValue());
-    this.args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: this.args.item, column: this.args.column, formValues: this.args.compositeEditorOptions.formValues });
+    this.args.grid.onCompositeEditorChange.notify({ row: activeCell?.row, cell: activeCell?.cell, item: this.args.item, column: this.args.column, formValues: this.args.compositeEditorOptions.formValues });
   }
 
   destroy() {
@@ -126,7 +126,7 @@ export class IntegerEditor implements Editor {
       this.applyValue(this.args.item, this.serializeValue());
     }
     this.applyValue(this.args.compositeEditorOptions.formValues, this.serializeValue());
-    this.args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: this.args.item, column: this.args.column, formValues: this.args.compositeEditorOptions.formValues });
+    this.args.grid.onCompositeEditorChange.notify({ row: activeCell?.row, cell: activeCell?.cell, item: this.args.item, column: this.args.column, formValues: this.args.compositeEditorOptions.formValues });
   }
 
   destroy() {
@@ -216,7 +216,7 @@ export class FloatEditor implements Editor {
       this.applyValue(this.args.item, this.serializeValue());
     }
     this.applyValue(this.args.compositeEditorOptions.formValues, this.serializeValue());
-    this.args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: this.args.item, column: this.args.column, formValues: this.args.compositeEditorOptions.formValues });
+    this.args.grid.onCompositeEditorChange.notify({ row: activeCell?.row, cell: activeCell?.cell, item: this.args.item, column: this.args.column, formValues: this.args.compositeEditorOptions.formValues });
   };
 
   destroy() {
@@ -335,7 +335,7 @@ export class FlatpickrEditor implements Editor {
             this.applyValue(this.args.item, this.serializeValue());
           }
           this.applyValue(this.args.compositeEditorOptions.formValues, this.serializeValue());
-          this.args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: this.args.item, column: this.args.column, formValues: this.args.compositeEditorOptions.formValues });
+          this.args.grid.onCompositeEditorChange.notify({ row: activeCell?.row, cell: activeCell?.cell, item: this.args.item, column: this.args.column, formValues: this.args.compositeEditorOptions.formValues });
         }
       },
     });
@@ -440,7 +440,7 @@ export class YesNoSelectEditor implements Editor {
       this.applyValue(this.args.item, this.serializeValue());
     }
     this.applyValue(this.args.compositeEditorOptions.formValues, this.serializeValue());
-    this.args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: this.args.item, column: this.args.column, formValues: this.args.compositeEditorOptions.formValues });
+    this.args.grid.onCompositeEditorChange.notify({ row: activeCell?.row, cell: activeCell?.cell, item: this.args.item, column: this.args.column, formValues: this.args.compositeEditorOptions.formValues });
   }
 
   destroy() {
@@ -502,7 +502,7 @@ export class CheckboxEditor implements Editor {
       this.applyValue(this.args.item, this.serializeValue());
     }
     this.applyValue(this.args.compositeEditorOptions.formValues, this.serializeValue());
-    this.args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: this.args.item, column: this.args.column, formValues: this.args.compositeEditorOptions.formValues });
+    this.args.grid.onCompositeEditorChange.notify({ row: activeCell?.row, cell: activeCell?.cell, item: this.args.item, column: this.args.column, formValues: this.args.compositeEditorOptions.formValues });
   };
 
   destroy() {
@@ -567,7 +567,7 @@ export class PercentCompleteEditor implements Editor {
         this.applyValue(this.args.item, this.serializeValue());
       }
       this.applyValue(this.args.compositeEditorOptions.formValues, this.serializeValue());
-      this.args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: this.args.item, column: this.args.column, formValues: this.args.compositeEditorOptions.formValues });
+      this.args.grid.onCompositeEditorChange.notify({ row: activeCell?.row, cell: activeCell?.cell, item: this.args.item, column: this.args.column, formValues: this.args.compositeEditorOptions.formValues });
     }
   }
 
@@ -709,7 +709,7 @@ export class LongTextEditor implements Editor {
       this.applyValue(this.args.item, this.serializeValue());
     }
     this.applyValue(this.args.compositeEditorOptions.formValues, this.serializeValue());
-    this.args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: this.args.item, column: this.args.column, formValues: this.args.compositeEditorOptions.formValues });
+    this.args.grid.onCompositeEditorChange.notify({ row: activeCell?.row, cell: activeCell?.cell, item: this.args.item, column: this.args.column, formValues: this.args.compositeEditorOptions.formValues });
   };
 
   handleKeyDown(e: KeyboardEvent & { target: HTMLInputElement }) {

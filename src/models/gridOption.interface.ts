@@ -1,8 +1,22 @@
-import { Column } from "./column.interface";
-import { ColumnReorderFunction } from "./columnReorderFunction.type";
-import { EditCommand } from "./editCommand.interface";
-import { Editor } from "./editor.interface";
-import { Formatter } from "./formatter.interface";
+import type { Column, ColumnReorderFunction, EditCommand, Editor, Formatter, ItemMetadata, } from './index';
+import type { EditorLock } from '../slick.core';
+
+export interface CellRange {
+  bottom: number;
+  top: number;
+  leftPx: number;
+  rightPx: number;
+}
+
+export interface CustomDataView {
+  getLength: () => number;
+  getItem: <T = any>(index: number) => T;
+  getItemMetadata(index: number): ItemMetadata | null;
+}
+
+export interface CssStyleHash {
+  [prop: number | string]: { [columnId: number | string]: any; }
+}
 
 export interface GridOption {
   /** CSS class name used on newly added row */
@@ -87,7 +101,7 @@ export interface GridOption {
   editorFactory?: null | { getEditor: (col: Column) => Editor; };
 
   /** a global singleton editor lock. */
-  editorLock?: any;
+  editorLock: EditorLock;
 
   /** Do we want to emulate paging when we are scrolling? */
   emulatePagingWhenScrolling?: boolean;

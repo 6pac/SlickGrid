@@ -1,12 +1,7 @@
 /* eslint-disable @typescript-eslint/indent */
 
-import { CustomTooltipOption } from "./customTooltipOption.interface";
-import { Editor } from "./editor.interface";
-import { Formatter } from "./formatter.interface";
-import { GroupTotalsFormatter } from "./groupTotalsFormatter.interface";
-import { Grouping } from "./grouping.interface";
-import { EditorValidator } from "./editorValidator.interface";
-import { SlickEventData } from "../slick.core";
+import type { CustomTooltipOption, Editor, EditorValidator, Formatter, FormatterResultObject, GroupTotalsFormatter } from './index';
+import type { SlickGrid } from '../slick.grid';
 
 type PathsToStringProps<T> = T extends string | number | boolean | Date ? [] : {
   [K in Extract<keyof T, string>]: [K, ...PathsToStringProps<T[K]>]
@@ -22,43 +17,52 @@ type Join<T extends any[], D extends string> =
 /* eslint-enable @typescript-eslint/indent */
 
 export interface AutoSize {
-  autosizeMode?: string;
-  widthPx?: number;
-  ignoreHeaderText?: boolean;
-  colValueArray?: any[];
   allowAddlPercent?: number;
-  formatterOverride?: Formatter;
-  rowSelectionModeOnInit?: any;
-  rowSelectionMode?: any;
-  rowSelectionCount?: number;
-  valueFilterMode?: any;
-  widthEvalMode?: any;
-  sizeToRemaining?: any;
-  contentSizePx?: number;
-  headerWidthPx?: number;
+  autosizeMode?: string;
   colDataTypeOf?: any;
+  colValueArray?: any[];
+  contentSizePx?: number;
+  formatterOverride?: Formatter;
+  headerWidthPx?: number;
+  ignoreHeaderText?: boolean;
+  rowSelectionModeOnInit?: boolean | undefined;
+  rowSelectionMode?: string;
+  rowSelectionCount?: number;
+  sizeToRemaining?: boolean | undefined;
+  valueFilterMode?: string;
+  widthEvalMode?: string;
+  widthPx?: number;
 }
 
-export interface Column<T = any> {
-  /** async background post-rendering formatter */
-  asyncPostRender?: (domCellNode: any, row: number, dataContext: T, columnDef: Column, process?: boolean) => void;
-  asyncPostRenderCleanup?: (node: HTMLElement, rowIdx: number, column: Column) => void;
-  autoSize?: AutoSize;
+export type FormatterOverrideCallback = (row: number, cell: number, val: any, columnDef: Column, item: any, grid: SlickGrid) => string | FormatterResultObject;
 
+export interface Column<T = any> {
+  /** Defaults to false, should we always render the column? */
   alwaysRenderColumn?: boolean;
+
+  /** async background post-rendering formatter */
+  asyncPostRender?: (domCellNode: HTMLElement, row: number, dataContext: T, columnDef: Column, process?: boolean) => void;
+
+  /** async background post-render cleanup callback function */
+  asyncPostRenderCleanup?: (node: HTMLElement, rowIdx: number, column: Column) => void;
+
+  /** column autosize feature */
+  autoSize?: AutoSize;
 
   /** optional Behavior of a column with action, for example it's used by the Row Move Manager Plugin */
   behavior?: string;
 
-  headerCellAttrs?: any;
+  /** cell attributes */
   cellAttrs?: any;
 
+  /** header cell attributes */
+  headerCellAttrs?: any;
+
+  /** Block event triggering of a new row insert? */
   cannotTriggerInsert?: boolean;
+
   /** Column group name for grouping of column headers spanning accross multiple columns */
   columnGroup?: string;
-
-  /** Column group name translation key that can be used by the Translate Service (i18n) for grouping of column headers spanning accross multiple columns */
-  columnGroupKey?: string;
 
   /** Column span in pixels or `*`, only input the number value */
   colspan?: number | '*';
@@ -71,9 +75,6 @@ export interface Column<T = any> {
    * it will first try to find it in the Column that the user is hovering over or else (when not found) go and try to find it in the Grid Options
    */
   customTooltip?: CustomTooltipOption;
-
-  /** Data key, for example this could be used as a property key for complex object comparison (e.g. dataKey: 'id') */
-  dataKey?: string;
 
   /** Do we want default sort to be ascending? True by default */
   defaultSortAsc?: boolean;
@@ -123,16 +124,14 @@ export interface Column<T = any> {
   /** Formatter function is to format, or visually change, the data shown in the grid (UI) in a different way without affecting the source. */
   formatter?: Formatter<T>;
 
-  formatterOverride?: any;
-
-  /** Grouping option used by a Draggable Grouping Column */
-  grouping?: Grouping;
+  /** Formatter override function */
+  formatterOverride?: { ReturnsTextOnly: boolean; } | FormatterOverrideCallback;
 
   /** Group Totals Formatter function that can be used to add grouping totals in the grid */
   groupTotalsFormatter?: GroupTotalsFormatter;
 
-  /** Options that can be provided to the Header Menu Plugin */
-  header?: any;
+  // /** Options that can be provided to the Header Menu Plugin */
+  // header?: any;
 
   /** CSS class that can be added to the column header */
   headerCssClass?: string | null;
@@ -151,15 +150,6 @@ export interface Column<T = any> {
 
   /** Column Title Name to be displayed in the Grid (UI) */
   name?: string;
-
-  /** an event that can be used for executing an action before the cell becomes editable (that event happens before the "onCellChange" event) */
-  onBeforeEditCell?: (e: SlickEventData, args: any) => void;
-
-  /** an event that can be used for executing an action after a cell change */
-  onCellChange?: (e: SlickEventData, args: any) => void;
-
-  /** an event that can be used for executing an action after a cell click */
-  onCellClick?: (e: SlickEventData, args: any) => void;
 
   /** column offset width */
   offsetWidth?: number;
@@ -188,16 +178,9 @@ export interface Column<T = any> {
   /** Editor Validator */
   validator?: EditorValidator;
 
-  /**
-   * Defaults to false, can the value be undefined?
-   * Typically undefined values are disregarded when sorting, when setting this flag it will adds extra logic to Sorting and also sort undefined value.
-   * This is an extra flag that user has to enable by themselve because Sorting undefined values has unwanted behavior in some use case
-   * (for example Row Detail has UI inconsistencies since undefined is used in the plugin's logic)
-   */
-  valueCouldBeUndefined?: boolean;
-
   /** Width of the column in pixels (number only). */
   width?: number;
 
+  /** column width request when resizing */
   widthRequest?: number;
 }
