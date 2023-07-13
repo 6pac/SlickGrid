@@ -1,4 +1,4 @@
-import { execSync } from 'child_process';
+import { exec } from 'child_process';
 import copyfiles from 'copyfiles';
 import { build } from 'esbuild';
 import fs from 'fs-extra';
@@ -15,18 +15,26 @@ export const BUILD_FORMATS = ['cjs', 'esm'];
 
 // when --prod is provided, we'll do a full build of all JS/TS files and also all SASS files
 if (argv.prod) {
-  executeFullBuild();
-  buildAllSassFiles();
-  copySassFiles();
-  // execSync('npm run build:types:prod');
+  prodBuild();
 }
 
 // --test is only used for testing purpose,
 // TODO: this should eventually be removed before the next major release (also remove npm script)
 if (argv.test) {
-  // buildAllIifeFiles(getAllJSFiles());
-  // executeCjsEsmBuilds();
+  buildTest();
+}
+
+async function prodBuild() {
+  await executeFullBuild();
+  await buildAllSassFiles();
   copySassFiles();
+  // execSync('npm run build:types:prod');
+}
+
+async function buildTest() {
+  await buildAllIifeFiles(getAllJSFiles());
+  await executeCjsEsmBuilds();
+  await copySassFiles();
 }
 
 /**
@@ -164,7 +172,12 @@ function copySassFiles() {
 /** build all SASS (.scss) files, from "src/styles", to CSS (.css) */
 export function buildAllSassFiles() {
   try {
-    execSync('npm run sass:build');
+    return new Promise((resolve) => {
+      exec('npm run sass:build').on('close', (code) => {
+        console.log('Full SASS build completed');
+        resolve(code);
+      });
+    });
   } catch (err) {
     // don't do anything when an error occured, this is to avoid watch mode to crash on errors
     // console.error('SASS error: ', JSON.stringify(err));
@@ -176,7 +189,7 @@ export function buildAllSassFiles() {
  * if filename starts with "_" then it will trigger a full rebuild since it is a detected to be a SASS variable file.
  * @param {String} sassFile
  */
-export function buildSassFile(sassFile) {
+export async function buildSassFile(sassFile) {
   let sassLogged = false;
   const filename = path.basename(sassFile, '.scss');
   // const extension = path.extname(sassFile);
@@ -187,8 +200,8 @@ export function buildSassFile(sassFile) {
   }
   if (filename.startsWith('_')) {
     // when _variables changes, let's rebuild all SASS files instead of just one
-    buildAllSassFiles();
     console.log('variable scss file changed, triggering full SASS rebuild', sassFile)
+    await buildAllSassFiles();
   } else {
     const srcDir = 'src';
     const distDir = 'dist';

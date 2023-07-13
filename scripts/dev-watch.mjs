@@ -41,7 +41,7 @@ const argv = yargs(hideBin(process.argv)).argv;
     // run full prod build `/dist` and full SASS build
     if (!argv.serve) {
       await executeFullBuild();
-      buildAllSassFiles();
+      buildAllSassFiles(); // start SASS build but don't wait for it
     }
 
     // start browser-sync server
