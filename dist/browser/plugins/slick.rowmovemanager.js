@@ -119,3 +119,4 @@
     }
   });
 })();
+//# sourceMappingURL=slick.rowmovemanager.js.map

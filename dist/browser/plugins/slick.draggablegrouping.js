@@ -189,3 +189,4 @@
     }
   });
 })();
+//# sourceMappingURL=slick.draggablegrouping.js.map

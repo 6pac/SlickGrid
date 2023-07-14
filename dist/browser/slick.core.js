@@ -4,6 +4,7 @@ var Slick = (() => {
   var __getOwnPropDesc = Object.getOwnPropertyDescriptor;
   var __getOwnPropNames = Object.getOwnPropertyNames;
   var __hasOwnProp = Object.prototype.hasOwnProperty;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: !0, configurable: !0, writable: !0, value }) : obj[key] = value;
   var __export = (target, all) => {
     for (var name in all)
       __defProp(target, name, { get: all[name], enumerable: !0 });
@@ -14,8 +15,9 @@ var Slick = (() => {
     return to;
   };
   var __toCommonJS = (mod) => __copyProps(__defProp({}, "__esModule", { value: !0 }), mod);
+  var __publicField = (obj, key, value) => (__defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value), value);
 
-  // src/slick.core.js
+  // src/slick.core.ts
   var slick_core_exports = {};
   __export(slick_core_exports, {
     BindingEventService: () => BindingEventService,
@@ -28,150 +30,379 @@ var Slick = (() => {
     GridAutosizeColsMode: () => GridAutosizeColsMode,
     Group: () => Group,
     GroupTotals: () => GroupTotals,
-    NonDataItem: () => NonDataItem,
+    NonDataRow: () => NonDataRow,
     Range: () => Range,
+    RegexSanitizer: () => RegexSanitizer,
     RowSelectionMode: () => RowSelectionMode,
+    SlickEvent: () => SlickEvent,
+    SlickEventData: () => SlickEventData,
+    SlickEventHandler: () => SlickEventHandler,
+    SlickGroup: () => SlickGroup,
+    SlickGroupTotals: () => SlickGroupTotals,
+    SlickNonDataItem: () => SlickNonDataItem,
+    SlickRange: () => SlickRange,
     Utils: () => Utils,
     ValueFilterMode: () => ValueFilterMode,
     WidthEvalMode: () => WidthEvalMode,
     keyCode: () => keyCode,
     preClickClassName: () => preClickClassName
   });
-  function EventData(event, args) {
-    this.event = event;
-    let nativeEvent = event, arguments_ = args, isPropagationStopped = !1, isImmediatePropagationStopped = !1, isDefaultPrevented = !1, returnValues = [], returnValue;
-    if (event) {
-      let eventProps = [
-        "altKey",
-        "ctrlKey",
-        "metaKey",
-        "shiftKey",
-        "key",
-        "keyCode",
-        "clientX",
-        "clientY",
-        "offsetX",
-        "offsetY",
-        "pageX",
-        "pageY",
-        "bubbles",
-        "type",
-        "which",
-        "x",
-        "y"
-      ];
-      for (let key of eventProps)
-        this[key] = event[key];
+  var SlickEventData = class {
+    constructor(event, args) {
+      this.event = event;
+      this.args = args;
+      __publicField(this, "_isPropagationStopped", !1);
+      __publicField(this, "_isImmediatePropagationStopped", !1);
+      __publicField(this, "_isDefaultPrevented", !1);
+      __publicField(this, "returnValues", []);
+      __publicField(this, "returnValue");
+      __publicField(this, "target");
+      __publicField(this, "nativeEvent");
+      __publicField(this, "arguments_");
+      if (this.nativeEvent = event, this.arguments_ = args, event) {
+        let eventProps = [
+          "altKey",
+          "ctrlKey",
+          "metaKey",
+          "shiftKey",
+          "key",
+          "keyCode",
+          "clientX",
+          "clientY",
+          "offsetX",
+          "offsetY",
+          "pageX",
+          "pageY",
+          "bubbles",
+          "type",
+          "which",
+          "x",
+          "y"
+        ];
+        for (let key of eventProps)
+          this[key] = event[key];
+      }
+      this.target = this.nativeEvent ? this.nativeEvent.target : void 0;
     }
-    this.target = nativeEvent ? nativeEvent.target : void 0, this.stopPropagation = function() {
-      isPropagationStopped = !0, nativeEvent && nativeEvent.stopPropagation();
-    }, this.isPropagationStopped = function() {
-      return isPropagationStopped;
-    }, this.stopImmediatePropagation = function() {
-      isImmediatePropagationStopped = !0, nativeEvent && nativeEvent.stopImmediatePropagation();
-    }, this.isImmediatePropagationStopped = function() {
-      return isImmediatePropagationStopped;
-    }, this.getNativeEvent = function() {
-      return nativeEvent;
-    }, this.preventDefault = function() {
-      nativeEvent && nativeEvent.preventDefault(), isDefaultPrevented = !0;
-    }, this.isDefaultPrevented = function() {
-      return nativeEvent ? nativeEvent.defaultPrevented : isDefaultPrevented;
-    }, this.addReturnValue = function(value) {
-      returnValues.push(value), returnValue === void 0 && value !== void 0 && (returnValue = value);
-    }, this.getReturnValue = function() {
-      return returnValue;
-    }, this.getArguments = function() {
-      return arguments_;
-    };
-  }
-  function Event() {
-    var handlers = [];
-    this.subscribe = function(fn) {
-      handlers.push(fn);
-    }, this.unsubscribe = function(fn) {
-      for (var i = handlers.length - 1; i >= 0; i--)
-        handlers[i] === fn && handlers.splice(i, 1);
-    }, this.notify = function(args, e, scope) {
-      e instanceof EventData || (e = new EventData(e, args)), scope = scope || this;
-      for (var i = 0; i < handlers.length && !(e.isPropagationStopped() || e.isImmediatePropagationStopped()); i++) {
-        let returnValue = handlers[i].call(scope, e, args);
+    /**
+     * Stops event from propagating up the DOM tree.
+     * @method stopPropagation
+     */
+    stopPropagation() {
+      this._isPropagationStopped = !0, this.nativeEvent && this.nativeEvent.stopPropagation();
+    }
+    /**
+     * Returns whether stopPropagation was called on this event object.
+     * @method isPropagationStopped
+     * @return {Boolean}
+     */
+    isPropagationStopped() {
+      return this._isPropagationStopped;
+    }
+    /**
+     * Prevents the rest of the handlers from being executed.
+     * @method stopImmediatePropagation
+     */
+    stopImmediatePropagation() {
+      this._isImmediatePropagationStopped = !0, this.nativeEvent && this.nativeEvent.stopImmediatePropagation();
+    }
+    /**
+     * Returns whether stopImmediatePropagation was called on this event object.\
+     * @method isImmediatePropagationStopped
+     * @return {Boolean}
+     */
+    isImmediatePropagationStopped() {
+      return this._isImmediatePropagationStopped;
+    }
+    getNativeEvent() {
+      return this.nativeEvent;
+    }
+    preventDefault() {
+      this.nativeEvent && this.nativeEvent.preventDefault(), this._isDefaultPrevented = !0;
+    }
+    isDefaultPrevented() {
+      return this.nativeEvent ? this.nativeEvent.defaultPrevented : this._isDefaultPrevented;
+    }
+    addReturnValue(value) {
+      this.returnValues.push(value), this.returnValue === void 0 && value !== void 0 && (this.returnValue = value);
+    }
+    getReturnValue() {
+      return this.returnValue;
+    }
+    getArguments() {
+      return this.arguments_;
+    }
+  }, SlickEvent = class {
+    constructor() {
+      __publicField(this, "handlers", []);
+    }
+    /**
+     * Adds an event handler to be called when the event is fired.
+     * <p>Event handler will receive two arguments - an <code>EventData</code> and the <code>data</code>
+     * object the event was fired with.<p>
+     * @method subscribe
+     * @param fn {Function} Event handler.
+     */
+    subscribe(fn) {
+      this.handlers.push(fn);
+    }
+    /**
+     * Removes an event handler added with <code>subscribe(fn)</code>.
+     * @method unsubscribe
+     * @param fn {Function} Event handler to be removed.
+     */
+    unsubscribe(fn) {
+      for (let i = this.handlers.length - 1; i >= 0; i--)
+        this.handlers[i] === fn && this.handlers.splice(i, 1);
+    }
+    /**
+     * Fires an event notifying all subscribers.
+     * @method notify
+     * @param args {Object} Additional data object to be passed to all handlers.
+     * @param e {EventData}
+     *      Optional.
+     *      An <code>EventData</code> object to be passed to all handlers.
+     *      For DOM events, an existing W3C/jQuery event object can be passed in.
+     * @param scope {Object}
+     *      Optional.
+     *      The scope ("this") within which the handler will be executed.
+     *      If not specified, the scope will be set to the <code>Event</code> instance.
+     */
+    notify(args, e, scope) {
+      e instanceof SlickEventData || (e = new SlickEventData(e, args)), scope = scope || this;
+      for (let i = 0; i < this.handlers.length && !(e.isPropagationStopped() || e.isImmediatePropagationStopped()); i++) {
+        let returnValue = this.handlers[i].call(scope, e, args);
         e.addReturnValue(returnValue);
       }
       return e;
-    };
-  }
-  function EventHandler() {
-    var handlers = [];
-    this.subscribe = function(event, handler) {
-      return handlers.push({
-        event,
-        handler
-      }), event.subscribe(handler), this;
-    }, this.unsubscribe = function(event, handler) {
-      for (var i = handlers.length; i--; )
-        if (handlers[i].event === event && handlers[i].handler === handler) {
-          handlers.splice(i, 1), event.unsubscribe(handler);
+    }
+  }, SlickEventHandler = class {
+    constructor() {
+      __publicField(this, "handlers", []);
+    }
+    subscribe(event, handler) {
+      return this.handlers.push({ event, handler }), event.subscribe(handler), this;
+    }
+    unsubscribe(event, handler) {
+      let i = this.handlers.length;
+      for (; i--; )
+        if (this.handlers[i].event === event && this.handlers[i].handler === handler) {
+          this.handlers.splice(i, 1), event.unsubscribe(handler);
           return;
         }
       return this;
-    }, this.unsubscribeAll = function() {
-      for (var i = handlers.length; i--; )
-        handlers[i].event.unsubscribe(handlers[i].handler);
-      return handlers = [], this;
-    };
-  }
-  function Range(fromRow, fromCell, toRow, toCell) {
-    toRow === void 0 && toCell === void 0 && (toRow = fromRow, toCell = fromCell), this.fromRow = Math.min(fromRow, toRow), this.fromCell = Math.min(fromCell, toCell), this.toRow = Math.max(fromRow, toRow), this.toCell = Math.max(fromCell, toCell), this.isSingleRow = function() {
+    }
+    unsubscribeAll() {
+      let i = this.handlers.length;
+      for (; i--; )
+        this.handlers[i].event.unsubscribe(this.handlers[i].handler);
+      return this.handlers = [], this;
+    }
+  }, SlickRange = class {
+    constructor(fromRow, fromCell, toRow, toCell) {
+      __publicField(this, "fromRow");
+      __publicField(this, "fromCell");
+      __publicField(this, "toCell");
+      __publicField(this, "toRow");
+      toRow === void 0 && toCell === void 0 && (toRow = fromRow, toCell = fromCell), this.fromRow = Math.min(fromRow, toRow), this.fromCell = Math.min(fromCell, toCell), this.toRow = Math.max(fromRow, toRow), this.toCell = Math.max(fromCell, toCell);
+    }
+    /**
+     * Returns whether a range represents a single row.
+     * @method isSingleRow
+     * @return {Boolean}
+     */
+    isSingleRow() {
       return this.fromRow == this.toRow;
-    }, this.isSingleCell = function() {
+    }
+    /**
+     * Returns whether a range represents a single cell.
+     * @method isSingleCell
+     * @return {Boolean}
+     */
+    isSingleCell() {
       return this.fromRow == this.toRow && this.fromCell == this.toCell;
-    }, this.contains = function(row, cell) {
+    }
+    /**
+     * Returns whether a range contains a given cell.
+     * @method contains
+     * @param row {Integer}
+     * @param cell {Integer}
+     * @return {Boolean}
+     */
+    contains(row, cell) {
       return row >= this.fromRow && row <= this.toRow && cell >= this.fromCell && cell <= this.toCell;
-    }, this.toString = function() {
-      return this.isSingleCell() ? "(" + this.fromRow + ":" + this.fromCell + ")" : "(" + this.fromRow + ":" + this.fromCell + " - " + this.toRow + ":" + this.toCell + ")";
-    };
-  }
-  function NonDataItem() {
-    this.__nonDataRow = !0;
-  }
-  function Group() {
-    this.__group = !0, this.level = 0, this.count = 0, this.value = null, this.title = null, this.collapsed = !1, this.selectChecked = !1, this.totals = null, this.rows = [], this.groups = null, this.groupingKey = null;
-  }
-  Group.prototype = new NonDataItem();
-  Group.prototype.equals = function(group) {
-    return this.value === group.value && this.count === group.count && this.collapsed === group.collapsed && this.title === group.title;
-  };
-  function GroupTotals() {
-    this.__groupTotals = !0, this.group = null, this.initialized = !1;
-  }
-  GroupTotals.prototype = new NonDataItem();
-  function EditorLock() {
-    var activeEditController = null;
-    this.isActive = function(editController) {
-      return editController ? activeEditController === editController : activeEditController !== null;
-    }, this.activate = function(editController) {
-      if (editController !== activeEditController) {
-        if (activeEditController !== null)
+    }
+    /**
+     * Returns a readable representation of a range.
+     * @method toString
+     * @return {String}
+     */
+    toString() {
+      return this.isSingleCell() ? `(${this.fromRow}:${this.fromCell})` : `(${this.fromRow}:${this.fromCell} - ${this.toRow}:${this.toCell})`;
+    }
+  }, SlickNonDataItem = class {
+    constructor() {
+      __publicField(this, "__nonDataRow", !0);
+    }
+  }, SlickGroup = class extends SlickNonDataItem {
+    constructor() {
+      super();
+      __publicField(this, "__group", !0);
+      /**
+       * Grouping level, starting with 0.
+       * @property level
+       * @type {Number}
+       */
+      __publicField(this, "level", 0);
+      /**
+       * Number of rows in the group.
+       * @property count
+       * @type {Integer}
+       */
+      __publicField(this, "count", 0);
+      /**
+       * Grouping value.
+       * @property value
+       * @type {Object}
+       */
+      __publicField(this, "value", null);
+      /**
+       * Formatted display value of the group.
+       * @property title
+       * @type {String}
+       */
+      __publicField(this, "title", null);
+      /**
+       * Whether a group is collapsed.
+       * @property collapsed
+       * @type {Boolean}
+       */
+      __publicField(this, "collapsed", !1);
+      /**
+       * Whether a group selection checkbox is checked.
+       * @property selectChecked
+       * @type {Boolean}
+       */
+      __publicField(this, "selectChecked", !1);
+      /**
+       * GroupTotals, if any.
+       * @property totals
+       * @type {GroupTotals}
+       */
+      __publicField(this, "totals", null);
+      /**
+       * Rows that are part of the group.
+       * @property rows
+       * @type {Array}
+       */
+      __publicField(this, "rows", []);
+      /**
+       * Sub-groups that are part of the group.
+       * @property groups
+       * @type {Array}
+       */
+      __publicField(this, "groups", null);
+      /**
+       * A unique key used to identify the group.  This key can be used in calls to DataView
+       * collapseGroup() or expandGroup().
+       * @property groupingKey
+       * @type {Object}
+       */
+      __publicField(this, "groupingKey", null);
+    }
+    /**
+     * Compares two Group instances.
+     * @method equals
+     * @return {Boolean}
+     * @param group {Group} Group instance to compare to.
+     */
+    equals(group) {
+      return this.value === group.value && this.count === group.count && this.collapsed === group.collapsed && this.title === group.title;
+    }
+  }, SlickGroupTotals = class extends SlickNonDataItem {
+    constructor() {
+      super();
+      __publicField(this, "__groupTotals", !0);
+      /**
+       * Parent Group.
+       * @param group
+       * @type {Group}
+       */
+      __publicField(this, "group", null);
+      /**
+       * Whether the totals have been fully initialized / calculated.
+       * Will be set to false for lazy-calculated group totals.
+       * @param initialized
+       * @type {Boolean}
+       */
+      __publicField(this, "initialized", !1);
+    }
+  }, EditorLock = class {
+    constructor() {
+      __publicField(this, "activeEditController", null);
+    }
+    /**
+     * Returns true if a specified edit controller is active (has the edit lock).
+     * If the parameter is not specified, returns true if any edit controller is active.
+     * @method isActive
+     * @param editController {EditController}
+     * @return {Boolean}
+     */
+    isActive(editController) {
+      return editController ? this.activeEditController === editController : this.activeEditController !== null;
+    }
+    /**
+     * Sets the specified edit controller as the active edit controller (acquire edit lock).
+     * If another edit controller is already active, and exception will be throw new Error(.
+     * @method activate
+     * @param editController {EditController} edit controller acquiring the lock
+     */
+    activate(editController) {
+      if (editController !== this.activeEditController) {
+        if (this.activeEditController !== null)
           throw new Error("SlickGrid.EditorLock.activate: an editController is still active, can't activate another editController");
         if (!editController.commitCurrentEdit)
           throw new Error("SlickGrid.EditorLock.activate: editController must implement .commitCurrentEdit()");
         if (!editController.cancelCurrentEdit)
           throw new Error("SlickGrid.EditorLock.activate: editController must implement .cancelCurrentEdit()");
-        activeEditController = editController;
+        this.activeEditController = editController;
       }
-    }, this.deactivate = function(editController) {
-      if (activeEditController) {
-        if (activeEditController !== editController)
+    }
+    /**
+     * Unsets the specified edit controller as the active edit controller (release edit lock).
+     * If the specified edit controller is not the active one, an exception will be throw new Error(.
+     * @method deactivate
+     * @param editController {EditController} edit controller releasing the lock
+     */
+    deactivate(editController) {
+      if (this.activeEditController) {
+        if (this.activeEditController !== editController)
           throw new Error("SlickGrid.EditorLock.deactivate: specified editController is not the currently active one");
-        activeEditController = null;
+        this.activeEditController = null;
       }
-    }, this.commitCurrentEdit = function() {
-      return activeEditController ? activeEditController.commitCurrentEdit() : !0;
-    }, this.cancelCurrentEdit = function() {
-      return activeEditController ? activeEditController.cancelCurrentEdit() : !0;
-    };
-  }
+    }
+    /**
+     * Attempts to commit the current edit by calling "commitCurrentEdit" method on the active edit
+     * controller and returns whether the commit attempt was successful (commit may fail due to validation
+     * errors, etc.).  Edit controller's "commitCurrentEdit" must return true if the commit has succeeded
+     * and false otherwise.  If no edit controller is active, returns true.
+     * @method commitCurrentEdit
+     * @return {Boolean}
+     */
+    commitCurrentEdit() {
+      return this.activeEditController ? this.activeEditController.commitCurrentEdit() : !0;
+    }
+    /**
+     * Attempts to cancel the current edit by calling "cancelCurrentEdit" method on the active edit
+     * controller and returns whether the edit was successfully cancelled.  If no edit controller is
+     * active, returns true.
+     * @method cancelCurrentEdit
+     * @return {Boolean}
+     */
+    cancelCurrentEdit() {
+      return this.activeEditController ? this.activeEditController.cancelCurrentEdit() : !0;
+    }
+  };
   function regexSanitizer(dirtyHtml) {
     return dirtyHtml.replace(/(\b)(on[a-z]+)(\s*)=|javascript:([^>]*)[^>]*|(<\s*)(\/*)script([<>]*).*(<\s*)(\/*)script(>*)|(&lt;)(\/*)(script|script defer)(.*)(&gt;|&gt;">)/gi, "");
   }
@@ -188,16 +419,10 @@ var Slick = (() => {
     return elementOptions && Object.keys(elementOptions).forEach((elmOptionKey) => {
       let elmValue = elementOptions[elmOptionKey];
       typeof elmValue == "object" ? Object.assign(elm[elmOptionKey], elmValue) : elm[elmOptionKey] = elementOptions[elmOptionKey];
-    }), appendToParent && appendToParent.appendChild && appendToParent.appendChild(elm), elm;
-  }
-  function debounce(callback, wait) {
-    let timeoutId = null;
-    return (...args) => {
-      wait >= 0 ? (clearTimeout(timeoutId), timeoutId = setTimeout(() => callback.apply(null, args), wait)) : callback.apply(null);
-    };
+    }), appendToParent != null && appendToParent.appendChild && appendToParent.appendChild(elm), elm;
   }
   function emptyElement(element) {
-    if (element && element.firstChild)
+    if (element != null && element.firstChild)
       for (; element.firstChild; )
         element.lastChild && element.removeChild(element.lastChild);
     return element;
@@ -208,14 +433,14 @@ var Slick = (() => {
       let clientSize = type === "height" ? "clientHeight" : "clientWidth", sides = type === "height" ? ["top", "bottom"] : ["left", "right"];
       size = elm[clientSize];
       for (let side of sides) {
-        let sideSize = parseFloat(getElementProp(elm, `padding-${side}`)) || 0;
+        let sideSize = parseFloat(getElementProp(elm, `padding-${side}`) || "") || 0;
         size -= sideSize;
       }
     }
     return size;
   }
   function getElementProp(elm, property) {
-    return elm && elm.getComputedStyle ? window.getComputedStyle(elm, null).getPropertyValue(property) : null;
+    return elm != null && elm.getComputedStyle ? window.getComputedStyle(elm, null).getPropertyValue(property) : null;
   }
   function isEmptyObject(obj) {
     return obj == null ? !0 : Object.entries(obj).length === 0;
@@ -269,13 +494,11 @@ var Slick = (() => {
     return parents2;
   }
   function toFloat(value) {
-    var x = parseFloat(value);
+    let x = parseFloat(value);
     return isNaN(x) ? 0 : x;
   }
-  function show(el, type) {
-    type = type || "", Array.isArray(el) ? el.forEach(function(e) {
-      e.style.display = type;
-    }) : el.style.display = type;
+  function show(el, type = "") {
+    Array.isArray(el) ? el.forEach((e) => e.style.display = type) : el.style.display = type;
   }
   function hide(el) {
     Array.isArray(el) ? el.forEach(function(e) {
@@ -300,47 +523,55 @@ var Slick = (() => {
     return typeof obj == "function" && typeof obj.nodeType != "number" && typeof obj.item != "function";
   }
   function isPlainObject(obj) {
-    var proto, Ctor;
+    let proto, Ctor;
     return !obj || toString.call(obj) !== "[object Object]" ? !1 : (proto = getProto(obj), proto ? (Ctor = hasOwn.call(proto, "constructor") && proto.constructor, typeof Ctor == "function" && fnToString.call(Ctor) === ObjectFunctionString) : !0);
   }
-  function extend() {
-    var options, name, src, copy, copyIsArray, clone, target = arguments[0], i = 1, length = arguments.length, deep = !1;
-    for (typeof target == "boolean" ? (deep = target, target = arguments[i] || {}, i++) : target = target || {}, typeof target != "object" && !isFunction(target) && (target = {}), i === length && (target = this, i--); i < length; i++)
-      if ((options = arguments[i]) != null)
+  function extend(...args) {
+    let options, name, src, copy, copyIsArray, clone, target = args[0], i = 1, length = args.length, deep = !1;
+    for (typeof target == "boolean" ? (deep = target, target = args[i] || {}, i++) : target = target || {}, typeof target != "object" && !isFunction(target) && (target = {}), i === length && (target = this, i--); i < length; i++)
+      if ((options = args[i]) != null)
         for (name in options)
           copy = options[name], !(name === "__proto__" || target === copy) && (deep && copy && (isPlainObject(copy) || (copyIsArray = Array.isArray(copy))) ? (src = target[name], copyIsArray && !Array.isArray(src) ? clone = [] : !copyIsArray && !isPlainObject(src) ? clone = {} : clone = src, copyIsArray = !1, target[name] = extend(deep, clone, copy)) : copy !== void 0 && (target[name] = copy));
     return target;
   }
-  function BindingEventService() {
-    this.boundedEvents = [], this.destroy = function() {
+  var BindingEventService = class {
+    constructor() {
+      __publicField(this, "boundedEvents", []);
+    }
+    destroy() {
       this.unbindAll(), this.boundedEvents = [];
-    }, this.bind = function(element, eventName, listener, options) {
+    }
+    /** Bind an event listener to any element */
+    bind(element, eventName, listener, options) {
       element.addEventListener(eventName, listener, options), this.boundedEvents.push({ element, eventName, listener });
-    }, this.unbind = function(element, eventName, listener) {
+    }
+    /** Unbind all will remove every every event handlers that were bounded earlier */
+    unbind(element, eventName, listener) {
       element && element.removeEventListener && element.removeEventListener(eventName, listener);
-    }, this.unbindByEventName = function(element, eventName) {
+    }
+    unbindByEventName(element, eventName) {
       let boundedEvent = this.boundedEvents.find((e) => e.element === element && e.eventName === eventName);
       boundedEvent && this.unbind(boundedEvent.element, boundedEvent.eventName, boundedEvent.listener);
-    }, this.unbindAll = function() {
+    }
+    /** Unbind all will remove every every event handlers that were bounded earlier */
+    unbindAll() {
       for (; this.boundedEvents.length > 0; ) {
         let boundedEvent = this.boundedEvents.pop(), { element, eventName, listener } = boundedEvent;
         this.unbind(element, eventName, listener);
       }
-    };
-  }
-  var SlickCore = {
-    // "Event": Event,
-    // "EventData": EventData,
-    // "EventHandler": EventHandler,
-    // "Range": Range,
-    // "NonDataRow": NonDataItem,
-    // "Group": Group,
-    // "GroupTotals": GroupTotals,
+    }
+  }, SlickCore = {
+    Event: SlickEvent,
+    EventData: SlickEventData,
+    EventHandler: SlickEventHandler,
+    Range: SlickRange,
+    NonDataRow: SlickNonDataItem,
+    Group: SlickGroup,
+    GroupTotals: SlickGroupTotals,
     // "EditorLock": EditorLock,
     RegexSanitizer: regexSanitizer,
     // "BindingEventService": BindingEventService,
     Utils: {
-      debounce,
       extend,
       calculateAvailableSpace,
       createDomElement,
@@ -359,6 +590,7 @@ var Slick = (() => {
       hide,
       slideUp,
       slideDown,
+      windowScrollPosition,
       storage: {
         // https://stackoverflow.com/questions/29222027/vanilla-alternative-to-jquery-data-function-any-native-javascript-alternati
         _storage: /* @__PURE__ */ new WeakMap(),
@@ -370,12 +602,12 @@ var Slick = (() => {
           return el ? el.get(key) : null;
         },
         remove: function(element, key) {
-          var ret = this._storage.get(element).delete(key);
-          return !this._storage.get(element).size === 0 && this._storage.delete(element), ret;
+          let ret = this._storage.get(element).delete(key);
+          return this._storage.get(element).size !== 0 && this._storage.delete(element), ret;
         }
       }
     },
-    /***
+    /**
      * A global singleton editor lock.
      * @class GlobalEditorLock
      * @static
@@ -436,6 +668,14 @@ var Slick = (() => {
     }
   }, {
     Utils,
+    Event,
+    EventData,
+    EventHandler,
+    Group,
+    GroupTotals,
+    NonDataRow,
+    Range,
+    RegexSanitizer,
     GlobalEditorLock,
     keyCode,
     preClickClassName,
@@ -448,3 +688,4 @@ var Slick = (() => {
   typeof global != "undefined" && window.Slick && (global.Slick = window.Slick);
   return __toCommonJS(slick_core_exports);
 })();
+//# sourceMappingURL=slick.core.js.map

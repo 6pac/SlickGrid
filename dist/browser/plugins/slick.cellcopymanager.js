@@ -1,44 +1,46 @@
 "use strict";
 (() => {
-  // src/plugins/slick.cellcopymanager.js
-  var keyCode = Slick.keyCode, SlickEvent = Slick.Event, Utils = Slick.Utils;
-  function CellCopyManager() {
-    var _grid, _self = this, _copiedRanges;
-    function init(grid) {
-      _grid = grid, _grid.onKeyDown.subscribe(handleKeyDown);
+  var __defProp = Object.defineProperty;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: !0, configurable: !0, writable: !0, value }) : obj[key] = value;
+  var __publicField = (obj, key, value) => (__defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value), value);
+
+  // src/plugins/slick.cellcopymanager.ts
+  var keyCode = Slick.keyCode, SlickEvent = Slick.Event, Utils = Slick.Utils, SlickCellCopyManager = class {
+    constructor() {
+      __publicField(this, "_grid");
+      __publicField(this, "_copiedRanges");
+      __publicField(this, "onCopyCells", new SlickEvent());
+      __publicField(this, "onCopyCancelled", new SlickEvent());
+      __publicField(this, "onPasteCells", new SlickEvent());
     }
-    function destroy() {
-      _grid.onKeyDown.unsubscribe(handleKeyDown);
+    init(grid) {
+      this._grid = grid, this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this));
     }
-    function handleKeyDown(e) {
-      var ranges;
-      _grid.getEditorLock().isActive() || (e.which == keyCode.ESCAPE && _copiedRanges && (e.preventDefault(), clearCopySelection(), _self.onCopyCancelled.notify({ ranges: _copiedRanges }), _copiedRanges = null), e.which == 67 && (e.ctrlKey || e.metaKey) && (ranges = _grid.getSelectionModel().getSelectedRanges(), ranges.length !== 0 && (e.preventDefault(), _copiedRanges = ranges, markCopySelection(ranges), _self.onCopyCells.notify({ ranges }))), e.which == 86 && (e.ctrlKey || e.metaKey) && _copiedRanges && (e.preventDefault(), ranges = _grid.getSelectionModel().getSelectedRanges(), _self.onPasteCells.notify({ from: _copiedRanges, to: ranges }), _grid.getOptions().preserveCopiedSelectionOnPaste || (clearCopySelection(), _copiedRanges = null)));
+    destroy() {
+      this._grid.onKeyDown.unsubscribe(this.handleKeyDown.bind(this));
     }
-    function markCopySelection(ranges) {
-      for (var columns = _grid.getColumns(), hash = {}, i = 0; i < ranges.length; i++)
-        for (var j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
+    handleKeyDown(e) {
+      let ranges;
+      this._grid.getEditorLock().isActive() || (e.which == keyCode.ESCAPE && this._copiedRanges && (e.preventDefault(), this.clearCopySelection(), this.onCopyCancelled.notify({ ranges: this._copiedRanges }), this._copiedRanges = null), e.which == 67 && (e.ctrlKey || e.metaKey) && (ranges = this._grid.getSelectionModel().getSelectedRanges(), ranges.length !== 0 && (e.preventDefault(), this._copiedRanges = ranges, this.markCopySelection(ranges), this.onCopyCells.notify({ ranges }))), e.which == 86 && (e.ctrlKey || e.metaKey) && this._copiedRanges && (e.preventDefault(), ranges = this._grid.getSelectionModel().getSelectedRanges(), this.onPasteCells.notify({ from: this._copiedRanges, to: ranges }), this._grid.getOptions().preserveCopiedSelectionOnPaste || (this.clearCopySelection(), this._copiedRanges = null)));
+    }
+    markCopySelection(ranges) {
+      let columns = this._grid.getColumns(), hash = {};
+      for (let i = 0; i < ranges.length; i++)
+        for (let j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
           hash[j] = {};
-          for (var k = ranges[i].fromCell; k <= ranges[i].toCell; k++)
+          for (let k = ranges[i].fromCell; k <= ranges[i].toCell; k++)
             hash[j][columns[k].id] = "copied";
         }
-      _grid.setCellCssStyles("copy-manager", hash);
+      this._grid.setCellCssStyles("copy-manager", hash);
     }
-    function clearCopySelection() {
-      _grid.removeCellCssStyles("copy-manager");
+    clearCopySelection() {
+      this._grid.removeCellCssStyles("copy-manager");
     }
-    Utils.extend(this, {
-      init,
-      destroy,
-      pluginName: "CellCopyManager",
-      clearCopySelection,
-      onCopyCells: new SlickEvent(),
-      onCopyCancelled: new SlickEvent(),
-      onPasteCells: new SlickEvent()
-    });
-  }
+  };
   window.Slick && Utils.extend(!0, window, {
     Slick: {
-      CellCopyManager
+      CellCopyManager: SlickCellCopyManager
     }
   });
 })();
+//# sourceMappingURL=slick.cellcopymanager.js.map

@@ -284,3 +284,4 @@
     }
   });
 })();
+//# sourceMappingURL=slick.rowdetailview.js.map

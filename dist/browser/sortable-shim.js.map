@@ -1,0 +1,7 @@
+{
+  "version": 3,
+  "sources": ["import-ns:sortablejs.js", "import-ns:https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js.js", "../../src/sortable-shim.js"],
+  "sourcesContent": ["// empty string, do nothing", "// empty string, do nothing", "const Sortable = require('sortablejs');\nconsole.log('sortable shim')\nmodule.exports = window.Sortable | require(\"https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js\");"],
+  "mappings": ";;;;;;;;AAAA;AAAA;AAAA;AAAA;;;ACAA;AAAA;AAAA;AAAA;;;ACAA;AAAA;AAAA,UAAM,WAAW;AACjB,cAAQ,IAAI,eAAe;AAC3B,aAAO,UAAU,OAAO,WAAW;AAAA;AAAA;",
+  "names": []
+}

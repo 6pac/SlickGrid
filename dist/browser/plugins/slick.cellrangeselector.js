@@ -163,3 +163,4 @@
     CellRangeSelector
   });
 })();
+//# sourceMappingURL=slick.cellrangeselector.js.map

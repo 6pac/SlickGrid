@@ -94,3 +94,4 @@
     });
   })(jQuery);
 })();
+//# sourceMappingURL=slick.remotemodel.js.map

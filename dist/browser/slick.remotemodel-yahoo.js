@@ -91,3 +91,4 @@
     });
   })(jQuery);
 })();
+//# sourceMappingURL=slick.remotemodel-yahoo.js.map

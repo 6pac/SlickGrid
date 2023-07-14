@@ -123,3 +123,4 @@
     }
   });
 })();
+//# sourceMappingURL=slick.crossgridrowmovemanager.js.map

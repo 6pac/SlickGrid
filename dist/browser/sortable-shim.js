@@ -27,3 +27,4 @@
   });
   require_sortable_shim();
 })();
+//# sourceMappingURL=sortable-shim.js.map

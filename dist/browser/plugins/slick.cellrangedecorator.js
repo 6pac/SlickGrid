@@ -42,3 +42,4 @@
     }
   });
 })();
+//# sourceMappingURL=slick.cellrangedecorator.js.map

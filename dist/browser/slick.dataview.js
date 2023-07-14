@@ -1,388 +1,579 @@
 "use strict";
 (() => {
-  // src/slick.dataview.js
-  var SlickEvent = Slick.Event, EventData = Slick.EventData, Group = Slick.Group, GroupTotals = Slick.GroupTotals, Utils = Slick.Utils, GroupItemMetadataProvider = Slick.GroupItemMetadataProvider;
-  function DataView(options) {
-    var self = this, defaults = {
-      groupItemMetadataProvider: null,
-      inlineFilters: !1
-    }, idProperty = "id", items = [], rows = [], idxById = /* @__PURE__ */ new Map(), rowsById = null, filter = null, updated = null, suspend = !1, isBulkSuspend = !1, bulkDeleteIds = /* @__PURE__ */ new Map(), sortAsc = !0, fastSortField, sortComparer, refreshHints = {}, prevRefreshHints = {}, filterArgs, filteredItems = [], compiledFilter, compiledFilterWithCaching, filterCache = [], _grid = null, groupingInfoDefaults = {
-      getter: null,
-      formatter: null,
-      comparer: function(a, b) {
-        return a.value === b.value ? 0 : a.value > b.value ? 1 : -1;
-      },
-      predefinedValues: [],
-      aggregators: [],
-      aggregateEmpty: !1,
-      aggregateCollapsed: !1,
-      aggregateChildGroups: !1,
-      collapsed: !1,
-      displayTotalsRow: !0,
-      lazyTotalsCalculation: !1
-    }, groupingInfos = [], groups = [], toggledGroupsByLevel = [], groupingDelimiter = ":|:", selectedRowIds = null, preSelectedRowIdsChangeFn, pagesize = 0, pagenum = 0, totalRows = 0, onSelectedRowIdsChanged = new SlickEvent(), onSetItemsCalled = new SlickEvent(), onRowCountChanged = new SlickEvent(), onRowsChanged = new SlickEvent(), onRowsOrCountChanged = new SlickEvent(), onBeforePagingInfoChanged = new SlickEvent(), onPagingInfoChanged = new SlickEvent(), onGroupExpanded = new SlickEvent(), onGroupCollapsed = new SlickEvent();
-    options = Utils.extend(!0, {}, defaults, options);
-    function beginUpdate(bulkUpdate) {
-      suspend = !0, isBulkSuspend = bulkUpdate === !0;
+  var __defProp = Object.defineProperty;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: !0, configurable: !0, writable: !0, value }) : obj[key] = value;
+  var __publicField = (obj, key, value) => (__defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value), value);
+
+  // src/slick.dataview.ts
+  var SlickEvent = Slick.Event, SlickEventData = Slick.EventData, SlickGroup = Slick.Group, SlickGroupTotals = Slick.GroupTotals, Utils = Slick.Utils, _a, _b, SlickGroupItemMetadataProvider = (_b = (_a = Slick.Data) == null ? void 0 : _a.GroupItemMetadataProvider) != null ? _b : {}, SlickDataView = class {
+    constructor(options) {
+      __publicField(this, "defaults", {
+        groupItemMetadataProvider: null,
+        inlineFilters: !1
+      });
+      // private
+      __publicField(this, "idProperty", "id");
+      // property holding a unique row id
+      __publicField(this, "items", []);
+      // data by index
+      __publicField(this, "rows", []);
+      // data by row
+      __publicField(this, "idxById", /* @__PURE__ */ new Map());
+      // indexes by id
+      __publicField(this, "rowsById", null);
+      // rows by id; lazy-calculated
+      __publicField(this, "filter", null);
+      // filter function
+      __publicField(this, "updated", null);
+      // updated item ids
+      __publicField(this, "suspend", !1);
+      // suspends the recalculation
+      __publicField(this, "isBulkSuspend", !1);
+      // delays protectedious operations like the
+      // index update and delete to efficient
+      // versions at endUpdate
+      __publicField(this, "bulkDeleteIds", /* @__PURE__ */ new Map());
+      __publicField(this, "sortAsc", !0);
+      __publicField(this, "fastSortField");
+      __publicField(this, "sortComparer");
+      __publicField(this, "refreshHints", {});
+      __publicField(this, "prevRefreshHints", {});
+      __publicField(this, "filterArgs");
+      __publicField(this, "filteredItems", []);
+      __publicField(this, "compiledFilter");
+      __publicField(this, "compiledFilterWithCaching");
+      __publicField(this, "filterCache", []);
+      __publicField(this, "_grid");
+      // grid object will be defined only after using "syncGridSelection()" method"
+      // grouping
+      __publicField(this, "groupingInfoDefaults", {
+        getter: void 0,
+        formatter: void 0,
+        comparer: (a, b) => a.value === b.value ? 0 : a.value > b.value ? 1 : -1,
+        predefinedValues: [],
+        aggregators: [],
+        aggregateEmpty: !1,
+        aggregateCollapsed: !1,
+        aggregateChildGroups: !1,
+        collapsed: !1,
+        displayTotalsRow: !0,
+        lazyTotalsCalculation: !1
+      });
+      __publicField(this, "groupingInfos", []);
+      __publicField(this, "groups", []);
+      __publicField(this, "toggledGroupsByLevel", []);
+      __publicField(this, "groupingDelimiter", ":|:");
+      __publicField(this, "selectedRowIds", []);
+      __publicField(this, "preSelectedRowIdsChangeFn");
+      __publicField(this, "pagesize", 0);
+      __publicField(this, "pagenum", 0);
+      __publicField(this, "totalRows", 0);
+      __publicField(this, "_options");
+      // public events
+      __publicField(this, "onBeforePagingInfoChanged", new SlickEvent());
+      __publicField(this, "onGroupExpanded", new SlickEvent());
+      __publicField(this, "onGroupCollapsed", new SlickEvent());
+      __publicField(this, "onPagingInfoChanged", new SlickEvent());
+      __publicField(this, "onRowCountChanged", new SlickEvent());
+      __publicField(this, "onRowsChanged", new SlickEvent());
+      __publicField(this, "onRowsOrCountChanged", new SlickEvent());
+      __publicField(this, "onSelectedRowIdsChanged", new SlickEvent());
+      __publicField(this, "onSetItemsCalled", new SlickEvent());
+      this._options = Utils.extend(!0, {}, this.defaults, options);
     }
-    function endUpdate() {
-      var wasBulkSuspend = isBulkSuspend;
-      isBulkSuspend = !1, suspend = !1, wasBulkSuspend && (processBulkDelete(), ensureIdUniqueness()), refresh();
+    /**
+     * Begins a bached update of the items in the data view.
+     * including deletes and the related events are postponed to the endUpdate call.
+     * As certain operations are postponed during this update, some methods might not
+     * deliver fully consistent information.
+     * @param {Boolean} [bulkUpdate] - if set to true, most data view modifications
+     */
+    beginUpdate(bulkUpdate) {
+      this.suspend = !0, this.isBulkSuspend = bulkUpdate === !0;
     }
-    function destroy() {
-      items = [], idxById = null, rowsById = null, filter = null, updated = null, sortComparer = null, filterCache = [], filteredItems = [], compiledFilter = null, compiledFilterWithCaching = null, _grid && _grid.onSelectedRowsChanged && _grid.onCellCssStylesChanged && (_grid.onSelectedRowsChanged.unsubscribe(), _grid.onCellCssStylesChanged.unsubscribe()), self.onRowsOrCountChanged && self.onRowsOrCountChanged.unsubscribe();
+    endUpdate() {
+      let wasBulkSuspend = this.isBulkSuspend;
+      this.isBulkSuspend = !1, this.suspend = !1, wasBulkSuspend && (this.processBulkDelete(), this.ensureIdUniqueness()), this.refresh();
     }
-    function setRefreshHints(hints) {
-      refreshHints = hints;
+    destroy() {
+      this.items = [], this.idxById = null, this.rowsById = null, this.filter = null, this.updated = null, this.sortComparer = null, this.filterCache = [], this.filteredItems = [], this.compiledFilter = null, this.compiledFilterWithCaching = null, this._grid && this._grid.onSelectedRowsChanged && this._grid.onCellCssStylesChanged && (this._grid.onSelectedRowsChanged.unsubscribe(), this._grid.onCellCssStylesChanged.unsubscribe()), this.onRowsOrCountChanged && this.onRowsOrCountChanged.unsubscribe();
     }
-    function setFilterArgs(args) {
-      filterArgs = args;
+    setRefreshHints(hints) {
+      this.refreshHints = hints;
     }
-    function processBulkDelete() {
-      if (idxById) {
-        for (var id, item, newIdx = 0, i = 0, l = items.length; i < l; i++) {
-          if (item = items[i], id = item[idProperty], id === void 0)
-            throw new Error("[SlickGrid DataView] Each data element must implement a unique 'id' property");
-          bulkDeleteIds.has(id) ? idxById.delete(id) : (items[newIdx] = item, idxById.set(id, newIdx), ++newIdx);
-        }
-        items.length = newIdx, bulkDeleteIds = /* @__PURE__ */ new Map();
+    setFilterArgs(args) {
+      this.filterArgs = args;
+    }
+    /**
+     * Processes all delete requests placed during bulk update
+     * by recomputing the items and idxById members.
+     */
+    processBulkDelete() {
+      if (!this.idxById)
+        return;
+      let id, item, newIdx = 0;
+      for (let i = 0, l = this.items.length; i < l; i++) {
+        if (item = this.items[i], id = item[this.idProperty], id === void 0)
+          throw new Error("[SlickGrid DataView] Each data element must implement a unique 'id' property");
+        this.bulkDeleteIds.has(id) ? this.idxById.delete(id) : (this.items[newIdx] = item, this.idxById.set(id, newIdx), ++newIdx);
+      }
+      this.items.length = newIdx, this.bulkDeleteIds = /* @__PURE__ */ new Map();
+    }
+    updateIdxById(startingIndex) {
+      if (this.isBulkSuspend || !this.idxById)
+        return;
+      startingIndex = startingIndex || 0;
+      let id;
+      for (let i = startingIndex, l = this.items.length; i < l; i++) {
+        if (id = this.items[i][this.idProperty], id === void 0)
+          throw new Error("[SlickGrid DataView] Each data element must implement a unique 'id' property");
+        this.idxById.set(id, i);
       }
     }
-    function updateIdxById(startingIndex) {
-      if (!(isBulkSuspend || !idxById)) {
-        startingIndex = startingIndex || 0;
-        for (var id, i = startingIndex, l = items.length; i < l; i++) {
-          if (id = items[i][idProperty], id === void 0)
-            throw new Error("[SlickGrid DataView] Each data element must implement a unique 'id' property");
-          idxById.set(id, i);
-        }
-      }
+    ensureIdUniqueness() {
+      if (this.isBulkSuspend || !this.idxById)
+        return;
+      let id;
+      for (let i = 0, l = this.items.length; i < l; i++)
+        if (id = this.items[i][this.idProperty], id === void 0 || this.idxById.get(id) !== i)
+          throw new Error("[SlickGrid DataView] Each data element must implement a unique 'id' property");
     }
-    function ensureIdUniqueness() {
-      if (!(isBulkSuspend || !idxById)) {
-        for (var id, i = 0, l = items.length; i < l; i++)
-          if (id = items[i][idProperty], id === void 0 || idxById.get(id) !== i)
-            throw new Error("[SlickGrid DataView] Each data element must implement a unique 'id' property");
-      }
+    /** Get all DataView Items */
+    getItems() {
+      return this.items;
     }
-    function getItems() {
-      return items;
+    /** Get the DataView Id property name to use (defaults to "Id" but could be customized to something else when instantiating the DataView) */
+    getIdPropertyName() {
+      return this.idProperty;
     }
-    function getIdPropertyName() {
-      return idProperty;
+    /**
+     * Set the Items with a new Dataset and optionally pass a different Id property name
+     * @param {Array<*>} data - array of data
+     * @param {String} [objectIdProperty] - optional id property to use as primary id
+     */
+    setItems(data, objectIdProperty) {
+      objectIdProperty !== void 0 && (this.idProperty = objectIdProperty), this.items = this.filteredItems = data, this.onSetItemsCalled.notify({ idProperty: this.idProperty, itemCount: this.items.length }, null, this), this.idxById = /* @__PURE__ */ new Map(), this.updateIdxById(), this.ensureIdUniqueness(), this.refresh();
     }
-    function setItems(data, objectIdProperty) {
-      objectIdProperty !== void 0 && (idProperty = objectIdProperty), items = filteredItems = data, onSetItemsCalled.notify({ idProperty: objectIdProperty, itemCount: items.length }, null, self), idxById = /* @__PURE__ */ new Map(), updateIdxById(), ensureIdUniqueness(), refresh();
+    /** Set Paging Options */
+    setPagingOptions(args) {
+      this.onBeforePagingInfoChanged.notify(this.getPagingInfo(), null, this).getReturnValue() !== !1 && (args.pageSize != null && (this.pagesize = args.pageSize, this.pagenum = this.pagesize ? Math.min(this.pagenum, Math.max(0, Math.ceil(this.totalRows / this.pagesize) - 1)) : 0), args.pageNum != null && (this.pagenum = Math.min(args.pageNum, Math.max(0, Math.ceil(this.totalRows / this.pagesize) - 1))), this.onPagingInfoChanged.notify(this.getPagingInfo(), null, this), this.refresh());
     }
-    function setPagingOptions(args) {
-      onBeforePagingInfoChanged.notify(getPagingInfo(), null, self).getReturnValue() !== !1 && (args.pageSize != null && (pagesize = args.pageSize, pagenum = pagesize ? Math.min(pagenum, Math.max(0, Math.ceil(totalRows / pagesize) - 1)) : 0), args.pageNum != null && (pagenum = Math.min(args.pageNum, Math.max(0, Math.ceil(totalRows / pagesize) - 1))), onPagingInfoChanged.notify(getPagingInfo(), null, self), refresh());
+    /** Get Paging Options */
+    getPagingInfo() {
+      let totalPages = this.pagesize ? Math.max(1, Math.ceil(this.totalRows / this.pagesize)) : 1;
+      return { pageSize: this.pagesize, pageNum: this.pagenum, totalRows: this.totalRows, totalPages, dataView: this };
     }
-    function getPagingInfo() {
-      var totalPages = pagesize ? Math.max(1, Math.ceil(totalRows / pagesize)) : 1;
-      return { pageSize: pagesize, pageNum: pagenum, totalRows, totalPages, dataView: self };
+    /** Sort Method to use by the DataView */
+    sort(comparer, ascending) {
+      this.sortAsc = ascending, this.sortComparer = comparer, this.fastSortField = null, ascending === !1 && this.items.reverse(), this.items.sort(comparer), ascending === !1 && this.items.reverse(), this.idxById = /* @__PURE__ */ new Map(), this.updateIdxById(), this.refresh();
     }
-    function sort(comparer, ascending) {
-      sortAsc = ascending, sortComparer = comparer, fastSortField = null, ascending === !1 && items.reverse(), items.sort(comparer), ascending === !1 && items.reverse(), idxById = /* @__PURE__ */ new Map(), updateIdxById(), refresh();
-    }
-    function fastSort(field, ascending) {
-      sortAsc = ascending, fastSortField = field, sortComparer = null;
-      var oldToString = Object.prototype.toString;
+    /**
+     * Provides a workaround for the extremely slow sorting in IE.
+     * Does a [lexicographic] sort on a give column by temporarily overriding Object.prototype.toString
+     * to return the value of that field and then doing a native Array.sort().
+     */
+    fastSort(field, ascending) {
+      this.sortAsc = ascending, this.fastSortField = field, this.sortComparer = null;
+      let oldToString = Object.prototype.toString;
       Object.prototype.toString = typeof field == "function" ? field : function() {
         return this[field];
-      }, ascending === !1 && items.reverse(), items.sort(), Object.prototype.toString = oldToString, ascending === !1 && items.reverse(), idxById = /* @__PURE__ */ new Map(), updateIdxById(), refresh();
+      }, ascending === !1 && this.items.reverse(), this.items.sort(), Object.prototype.toString = oldToString, ascending === !1 && this.items.reverse(), this.idxById = /* @__PURE__ */ new Map(), this.updateIdxById(), this.refresh();
     }
-    function reSort() {
-      sortComparer ? sort(sortComparer, sortAsc) : fastSortField && fastSort(fastSortField, sortAsc);
+    /** Re-Sort the dataset */
+    reSort() {
+      this.sortComparer ? this.sort(this.sortComparer, this.sortAsc) : this.fastSortField && this.fastSort(this.fastSortField, this.sortAsc);
     }
-    function getFilteredItems() {
-      return filteredItems;
+    /** Get only the DataView filtered items */
+    getFilteredItems() {
+      return this.filteredItems;
     }
-    function getFilteredItemCount() {
-      return filteredItems.length;
+    /** Get the array length (count) of only the DataView filtered items */
+    getFilteredItemCount() {
+      return this.filteredItems.length;
     }
-    function getFilter() {
-      return filter;
+    /** Get current Filter used by the DataView */
+    getFilter() {
+      return this.filter;
     }
-    function setFilter(filterFn) {
-      filter = filterFn, options.inlineFilters && (compiledFilter = compileFilter(), compiledFilterWithCaching = compileFilterWithCaching()), refresh();
+    /**
+     * Set a Filter that will be used by the DataView
+     * @param {Function} fn - filter callback function
+     */
+    setFilter(filterFn) {
+      this.filter = filterFn, this._options.inlineFilters && (this.compiledFilter = this.compileFilter(), this.compiledFilterWithCaching = this.compileFilterWithCaching()), this.refresh();
     }
-    function getGrouping() {
-      return groupingInfos;
+    /** Get current Grouping info */
+    getGrouping() {
+      return this.groupingInfos;
     }
-    function setGrouping(groupingInfo) {
-      options.groupItemMetadataProvider || (options.groupItemMetadataProvider = new GroupItemMetadataProvider()), groups = [], toggledGroupsByLevel = [], groupingInfo = groupingInfo || [], groupingInfos = groupingInfo instanceof Array ? groupingInfo : [groupingInfo];
-      for (var i = 0; i < groupingInfos.length; i++) {
-        var gi = groupingInfos[i] = Utils.extend(!0, {}, groupingInfoDefaults, groupingInfos[i]);
+    /** Set some Grouping */
+    setGrouping(groupingInfo) {
+      this._options.groupItemMetadataProvider || (this._options.groupItemMetadataProvider = new SlickGroupItemMetadataProvider()), this.groups = [], this.toggledGroupsByLevel = [], groupingInfo = groupingInfo || [], this.groupingInfos = groupingInfo instanceof Array ? groupingInfo : [groupingInfo];
+      for (let i = 0; i < this.groupingInfos.length; i++) {
+        let gi = this.groupingInfos[i] = Utils.extend(!0, {}, this.groupingInfoDefaults, this.groupingInfos[i]);
         gi.getterIsAFn = typeof gi.getter == "function", gi.compiledAccumulators = [];
-        for (var idx = gi.aggregators.length; idx--; )
-          gi.compiledAccumulators[idx] = compileAccumulatorLoop(gi.aggregators[idx]);
-        toggledGroupsByLevel[i] = {};
+        let idx = gi.aggregators.length;
+        for (; idx--; )
+          gi.compiledAccumulators[idx] = this.compileAccumulatorLoop(gi.aggregators[idx]);
+        this.toggledGroupsByLevel[i] = {};
       }
-      refresh();
+      this.refresh();
     }
-    function groupBy(valueGetter, valueFormatter, sortComparer2) {
+    /**
+     * @deprecated Please use {@link setGrouping}.
+     */
+    groupBy(valueGetter, valueFormatter, sortComparer) {
       if (valueGetter == null) {
-        setGrouping([]);
+        this.setGrouping([]);
         return;
       }
-      setGrouping({
+      this.setGrouping({
         getter: valueGetter,
         formatter: valueFormatter,
-        comparer: sortComparer2
+        comparer: sortComparer
       });
     }
-    function setAggregators(groupAggregators, includeCollapsed) {
-      if (!groupingInfos.length)
+    /**
+     * @deprecated Please use {@link setGrouping}.
+     */
+    setAggregators(groupAggregators, includeCollapsed) {
+      if (!this.groupingInfos.length)
         throw new Error("[SlickGrid DataView] At least one grouping must be specified before calling setAggregators().");
-      groupingInfos[0].aggregators = groupAggregators, groupingInfos[0].aggregateCollapsed = includeCollapsed, setGrouping(groupingInfos);
+      this.groupingInfos[0].aggregators = groupAggregators, this.groupingInfos[0].aggregateCollapsed = includeCollapsed, this.setGrouping(this.groupingInfos);
     }
-    function getItemByIdx(i) {
-      return items[i];
+    /** Get an item in the DataView by its row index */
+    getItemByIdx(i) {
+      return this.items[i];
     }
-    function getIdxById(id) {
-      return idxById && idxById.get(id);
+    /** Get row index in the DataView by its Id */
+    getIdxById(id) {
+      return this.idxById && this.idxById.get(id);
     }
-    function ensureRowsByIdCache() {
-      if (!rowsById) {
-        rowsById = {};
-        for (var i = 0, l = rows.length; i < l; i++)
-          rowsById[rows[i][idProperty]] = i;
+    ensureRowsByIdCache() {
+      if (!this.rowsById) {
+        this.rowsById = {};
+        for (let i = 0, l = this.rows.length; i < l; i++)
+          this.rowsById[this.rows[i][this.idProperty]] = i;
       }
     }
-    function getRowByItem(item) {
-      return ensureRowsByIdCache(), rowsById[item[idProperty]];
+    /** Get row number in the grid by its item object */
+    getRowByItem(item) {
+      return this.ensureRowsByIdCache(), this.rowsById[item[this.idProperty]];
     }
-    function getRowById(id) {
-      return ensureRowsByIdCache(), rowsById[id];
+    /** Get row number in the grid by its Id */
+    getRowById(id) {
+      return this.ensureRowsByIdCache(), this.rowsById[id];
     }
-    function getItemById(id) {
-      return items[idxById && idxById.get(id)];
+    /** Get an item in the DataView by its Id */
+    getItemById(id) {
+      return this.items[this.idxById.get(id) || ""];
     }
-    function mapItemsToRows(itemArray) {
-      var rows2 = [];
-      ensureRowsByIdCache();
-      for (var i = 0, l = itemArray.length; i < l; i++) {
-        var row = rowsById[itemArray[i][idProperty]];
-        row != null && (rows2[rows2.length] = row);
+    /** From the items array provided, return the mapped rows */
+    mapItemsToRows(itemArray) {
+      let rows = [];
+      this.ensureRowsByIdCache();
+      for (let i = 0, l = itemArray.length; i < l; i++) {
+        let row = this.rowsById[itemArray[i][this.idProperty]];
+        row != null && (rows[rows.length] = row);
       }
-      return rows2;
+      return rows;
     }
-    function mapIdsToRows(idArray) {
-      var rows2 = [];
-      ensureRowsByIdCache();
-      for (var i = 0, l = idArray.length; i < l; i++) {
-        var row = rowsById[idArray[i]];
-        row != null && (rows2[rows2.length] = row);
+    /** From the Ids array provided, return the mapped rows */
+    mapIdsToRows(idArray) {
+      let rows = [];
+      this.ensureRowsByIdCache();
+      for (let i = 0, l = idArray.length; i < l; i++) {
+        let row = this.rowsById[idArray[i]];
+        row != null && (rows[rows.length] = row);
       }
-      return rows2;
+      return rows;
     }
-    function mapRowsToIds(rowArray) {
-      for (var ids = [], i = 0, l = rowArray.length; i < l; i++)
-        if (rowArray[i] < rows.length) {
-          let rowItem = rows[rowArray[i]];
-          ids[ids.length] = rowItem && rowItem[idProperty];
+    /** From the rows array provided, return the mapped Ids */
+    mapRowsToIds(rowArray) {
+      let ids = [];
+      for (let i = 0, l = rowArray.length; i < l; i++)
+        if (rowArray[i] < this.rows.length) {
+          let rowItem = this.rows[rowArray[i]];
+          ids[ids.length] = rowItem && rowItem[this.idProperty];
         }
       return ids;
     }
-    function updateSingleItem(id, item) {
-      if (idxById) {
-        if (!idxById.has(id))
+    /**
+     * Performs the update operations of a single item by id without
+     * triggering any events or refresh operations.
+     * @param id The new id of the item.
+     * @param item The item which should be the new value for the given id.
+     */
+    updateSingleItem(id, item) {
+      var _a2;
+      if (this.idxById) {
+        if (!this.idxById.has(id))
           throw new Error("[SlickGrid DataView] Invalid id");
-        if (id !== item[idProperty]) {
-          var newId = item[idProperty];
+        if (id !== item[this.idProperty]) {
+          let newId = item[this.idProperty];
           if (newId == null)
             throw new Error("[SlickGrid DataView] Cannot update item to associate with a null id");
-          if (idxById.has(newId))
+          if (this.idxById.has(newId))
             throw new Error("[SlickGrid DataView] Cannot update item to associate with a non-unique id");
-          idxById.set(newId, idxById.get(id)), idxById.delete(id), updated && updated[id] && delete updated[id], id = newId;
+          this.idxById.set(newId, this.idxById.get(id)), this.idxById.delete(id), (_a2 = this.updated) != null && _a2[id] && delete this.updated[id], id = newId;
         }
-        items[idxById.get(id)] = item, updated || (updated = {}), updated[id] = !0;
+        this.items[this.idxById.get(id)] = item, this.updated || (this.updated = {}), this.updated[id] = !0;
       }
     }
-    function updateItem(id, item) {
-      updateSingleItem(id, item), refresh();
+    /**
+     * Updates a single item in the data view given the id and new value.
+     * @param id The new id of the item.
+     * @param item The item which should be the new value for the given id.
+     */
+    updateItem(id, item) {
+      this.updateSingleItem(id, item), this.refresh();
     }
-    function updateItems(ids, newItems) {
+    /**
+     * Updates multiple items in the data view given the new ids and new values.
+     * @param id {Array} The array of new ids which is in the same order as the items.
+     * @param newItems {Array} The new items that should be set in the data view for the given ids.
+     */
+    updateItems(ids, newItems) {
       if (ids.length !== newItems.length)
         throw new Error("[SlickGrid DataView] Mismatch on the length of ids and items provided to update");
-      for (var i = 0, l = newItems.length; i < l; i++)
-        updateSingleItem(ids[i], newItems[i]);
-      refresh();
+      for (let i = 0, l = newItems.length; i < l; i++)
+        this.updateSingleItem(ids[i], newItems[i]);
+      this.refresh();
     }
-    function insertItem(insertBefore, item) {
-      items.splice(insertBefore, 0, item), updateIdxById(insertBefore), refresh();
+    /**
+     * Inserts a single item into the data view at the given position.
+     * @param insertBefore {Number} The 0-based index before which the item should be inserted.
+     * @param item The item to insert.
+     */
+    insertItem(insertBefore, item) {
+      this.items.splice(insertBefore, 0, item), this.updateIdxById(insertBefore), this.refresh();
     }
-    function insertItems(insertBefore, newItems) {
-      Array.prototype.splice.apply(items, [insertBefore, 0].concat(newItems)), updateIdxById(insertBefore), refresh();
+    /**
+     * Inserts multiple items into the data view at the given position.
+     * @param insertBefore {Number} The 0-based index before which the items should be inserted.
+     * @param newItems {Array}  The items to insert.
+     */
+    insertItems(insertBefore, newItems) {
+      Array.prototype.splice.apply(this.items, [insertBefore, 0].concat(newItems)), this.updateIdxById(insertBefore), this.refresh();
     }
-    function addItem(item) {
-      items.push(item), updateIdxById(items.length - 1), refresh();
+    /**
+     * Adds a single item at the end of the data view.
+     * @param item The item to add at the end.
+     */
+    addItem(item) {
+      this.items.push(item), this.updateIdxById(this.items.length - 1), this.refresh();
     }
-    function addItems(newItems) {
-      items = items.concat(newItems), updateIdxById(items.length - newItems.length), refresh();
+    /**
+     * Adds multiple items at the end of the data view.
+     * @param {Array} newItems The items to add at the end.
+     */
+    addItems(newItems) {
+      this.items = this.items.concat(newItems), this.updateIdxById(this.items.length - newItems.length), this.refresh();
     }
-    function deleteItem(id) {
-      if (idxById)
-        if (isBulkSuspend)
-          bulkDeleteIds.set(id, !0);
+    /**
+     * Deletes a single item identified by the given id from the data view.
+     * @param {String|Number} id The id identifying the object to delete.
+     */
+    deleteItem(id) {
+      if (this.idxById)
+        if (this.isBulkSuspend)
+          this.bulkDeleteIds.set(id, !0);
         else {
-          var idx = idxById.get(id);
+          let idx = this.idxById.get(id);
           if (idx === void 0)
             throw new Error("[SlickGrid DataView] Invalid id");
-          idxById.delete(id), items.splice(idx, 1), updateIdxById(idx), refresh();
+          this.idxById.delete(id), this.items.splice(idx, 1), this.updateIdxById(idx), this.refresh();
         }
     }
-    function deleteItems(ids) {
-      if (!(ids.length === 0 || !idxById))
-        if (isBulkSuspend)
-          for (var i = 0, l = ids.length; i < l; i++) {
-            var id = ids[i], idx = idxById.get(id);
-            if (idx === void 0)
+    /**
+     * Deletes multiple item identified by the given ids from the data view.
+     * @param {Array} ids The ids of the items to delete.
+     */
+    deleteItems(ids) {
+      if (!(ids.length === 0 || !this.idxById))
+        if (this.isBulkSuspend)
+          for (let i = 0, l = ids.length; i < l; i++) {
+            let id = ids[i];
+            if (this.idxById.get(id) === void 0)
               throw new Error("[SlickGrid DataView] Invalid id");
-            bulkDeleteIds.set(id, !0);
+            this.bulkDeleteIds.set(id, !0);
           }
         else {
-          for (var indexesToDelete = [], i = 0, l = ids.length; i < l; i++) {
-            var id = ids[i], idx = idxById.get(id);
+          let indexesToDelete = [];
+          for (let i = 0, l = ids.length; i < l; i++) {
+            let id = ids[i], idx = this.idxById.get(id);
             if (idx === void 0)
               throw new Error("[SlickGrid DataView] Invalid id");
-            idxById.delete(id), indexesToDelete.push(idx);
+            this.idxById.delete(id), indexesToDelete.push(idx);
           }
           indexesToDelete.sort();
-          for (var i = indexesToDelete.length - 1; i >= 0; --i)
-            items.splice(indexesToDelete[i], 1);
-          updateIdxById(indexesToDelete[0]), refresh();
+          for (let i = indexesToDelete.length - 1; i >= 0; --i)
+            this.items.splice(indexesToDelete[i], 1);
+          this.updateIdxById(indexesToDelete[0]), this.refresh();
         }
     }
-    function sortedAddItem(item) {
-      if (!sortComparer)
+    /** Add an item in a sorted dataset (a Sort function must be defined) */
+    sortedAddItem(item) {
+      if (!this.sortComparer)
         throw new Error("[SlickGrid DataView] sortedAddItem() requires a sort comparer, use sort()");
-      insertItem(sortedIndex(item), item);
+      this.insertItem(this.sortedIndex(item), item);
     }
-    function sortedUpdateItem(id, item) {
-      if (idxById) {
-        if (!idxById.has(id) || id !== item[idProperty])
-          throw new Error("[SlickGrid DataView] Invalid or non-matching id " + idxById.get(id));
-        if (!sortComparer)
-          throw new Error("[SlickGrid DataView] sortedUpdateItem() requires a sort comparer, use sort()");
-        var oldItem = getItemById(id);
-        sortComparer(oldItem, item) !== 0 ? (deleteItem(id), sortedAddItem(item)) : updateItem(id, item);
-      }
+    /** Update an item in a sorted dataset (a Sort function must be defined) */
+    sortedUpdateItem(id, item) {
+      if (!this.idxById)
+        return;
+      if (!this.idxById.has(id) || id !== item[this.idProperty])
+        throw new Error("[SlickGrid DataView] Invalid or non-matching id " + this.idxById.get(id));
+      if (!this.sortComparer)
+        throw new Error("[SlickGrid DataView] sortedUpdateItem() requires a sort comparer, use sort()");
+      let oldItem = this.getItemById(id);
+      this.sortComparer(oldItem, item) !== 0 ? (this.deleteItem(id), this.sortedAddItem(item)) : this.updateItem(id, item);
     }
-    function sortedIndex(searchItem) {
-      for (var low = 0, high = items.length; low < high; ) {
-        var mid = low + high >>> 1;
-        sortComparer(items[mid], searchItem) === -1 ? low = mid + 1 : high = mid;
+    sortedIndex(searchItem) {
+      let low = 0, high = this.items.length;
+      for (; low < high; ) {
+        let mid = low + high >>> 1;
+        this.sortComparer(this.items[mid], searchItem) === -1 ? low = mid + 1 : high = mid;
       }
       return low;
     }
-    function getItemCount() {
-      return items.length;
+    /** Get item count, that is the full dataset lenght of the DataView */
+    getItemCount() {
+      return this.items.length;
     }
-    function getLength() {
-      return rows.length;
+    /** Get row count (rows displayed in current page) */
+    getLength() {
+      return this.rows.length;
     }
-    function getItem(i) {
-      var item = rows[i];
-      if (item && item.__group && item.totals && !item.totals.initialized) {
-        var gi = groupingInfos[item.level];
-        gi.displayTotalsRow || (calculateTotals(item.totals), item.title = gi.formatter ? gi.formatter(item) : item.value);
+    /** Retrieve an item from the DataView at specific index */
+    getItem(i) {
+      var _a2;
+      let item = this.rows[i];
+      if (item != null && item.__group && item.totals && !((_a2 = item.totals) != null && _a2.initialized)) {
+        let gi = this.groupingInfos[item.level];
+        gi.displayTotalsRow || (this.calculateTotals(item.totals), item.title = gi.formatter ? gi.formatter(item) : item.value);
       } else
-        item && item.__groupTotals && !item.initialized && calculateTotals(item);
+        item != null && item.__groupTotals && !item.initialized && this.calculateTotals(item);
       return item;
     }
-    function getItemMetadata(i) {
-      var item = rows[i];
-      return item === void 0 ? null : item.__group ? options.groupItemMetadataProvider.getGroupRowMetadata(item) : item.__groupTotals ? options.groupItemMetadataProvider.getTotalsRowMetadata(item) : null;
+    getItemMetadata(i) {
+      let item = this.rows[i];
+      return item === void 0 ? null : item.__group ? this._options.groupItemMetadataProvider.getGroupRowMetadata(item) : item.__groupTotals ? this._options.groupItemMetadataProvider.getTotalsRowMetadata(item) : null;
     }
-    function expandCollapseAllGroups(level, collapse) {
+    expandCollapseAllGroups(level, collapse) {
       if (level == null)
-        for (var i = 0; i < groupingInfos.length; i++)
-          toggledGroupsByLevel[i] = {}, groupingInfos[i].collapsed = collapse, collapse === !0 ? onGroupCollapsed.notify({ level: i, groupingKey: null }) : onGroupExpanded.notify({ level: i, groupingKey: null });
+        for (let i = 0; i < this.groupingInfos.length; i++)
+          this.toggledGroupsByLevel[i] = {}, this.groupingInfos[i].collapsed = collapse, collapse === !0 ? this.onGroupCollapsed.notify({ level: i, groupingKey: null }) : this.onGroupExpanded.notify({ level: i, groupingKey: null });
       else
-        toggledGroupsByLevel[level] = {}, groupingInfos[level].collapsed = collapse, collapse === !0 ? onGroupCollapsed.notify({ level, groupingKey: null }) : onGroupExpanded.notify({ level, groupingKey: null });
-      refresh();
+        this.toggledGroupsByLevel[level] = {}, this.groupingInfos[level].collapsed = collapse, collapse === !0 ? this.onGroupCollapsed.notify({ level, groupingKey: null }) : this.onGroupExpanded.notify({ level, groupingKey: null });
+      this.refresh();
     }
-    function collapseAllGroups(level) {
-      expandCollapseAllGroups(level, !0);
+    /**
+     * @param {Number} [level] Optional level to collapse.  If not specified, applies to all levels.
+     */
+    collapseAllGroups(level) {
+      this.expandCollapseAllGroups(level, !0);
     }
-    function expandAllGroups(level) {
-      expandCollapseAllGroups(level, !1);
+    /**
+     * @param {Number} [level] Optional level to expand.  If not specified, applies to all levels.
+     */
+    expandAllGroups(level) {
+      this.expandCollapseAllGroups(level, !1);
     }
-    function expandCollapseGroup(level, groupingKey, collapse) {
-      toggledGroupsByLevel[level][groupingKey] = groupingInfos[level].collapsed ^ collapse, refresh();
+    expandCollapseGroup(level, groupingKey, collapse) {
+      this.toggledGroupsByLevel[level][groupingKey] = this.groupingInfos[level].collapsed ^ collapse, this.refresh();
     }
-    function collapseGroup(varArgs) {
-      var args = Array.prototype.slice.call(arguments), arg0 = args[0], groupingKey, level;
-      args.length === 1 && arg0.indexOf(groupingDelimiter) !== -1 ? (groupingKey = arg0, level = arg0.split(groupingDelimiter).length - 1) : (groupingKey = args.join(groupingDelimiter), level = args.length - 1), expandCollapseGroup(level, groupingKey, !0), onGroupCollapsed.notify({ level, groupingKey });
+    /**
+     * @param varArgs Either a Slick.Group's "groupingKey" property, or a
+     *     variable argument list of grouping values denoting a unique path to the row.  For
+     *     example, calling collapseGroup('high', '10%') will collapse the '10%' subgroup of
+     *     the 'high' group.
+     */
+    collapseGroup(_varArgs) {
+      let args = Array.prototype.slice.call(arguments), arg0 = args[0], groupingKey, level;
+      args.length === 1 && arg0.indexOf(this.groupingDelimiter) !== -1 ? (groupingKey = arg0, level = arg0.split(this.groupingDelimiter).length - 1) : (groupingKey = args.join(this.groupingDelimiter), level = args.length - 1), this.expandCollapseGroup(level, groupingKey, !0), this.onGroupCollapsed.notify({ level, groupingKey });
     }
-    function expandGroup(varArgs) {
-      var args = Array.prototype.slice.call(arguments), arg0 = args[0], groupingKey, level;
-      args.length === 1 && arg0.indexOf(groupingDelimiter) !== -1 ? (level = arg0.split(groupingDelimiter).length - 1, groupingKey = arg0) : (level = args.length - 1, groupingKey = args.join(groupingDelimiter)), expandCollapseGroup(level, groupingKey, !1), onGroupExpanded.notify({ level, groupingKey });
+    /**
+     * @param varArgs Either a Slick.Group's "groupingKey" property, or a
+     *     variable argument list of grouping values denoting a unique path to the row.  For
+     *     example, calling expandGroup('high', '10%') will expand the '10%' subgroup of
+     *     the 'high' group.
+     */
+    expandGroup(_varArgs) {
+      let args = Array.prototype.slice.call(arguments), arg0 = args[0], groupingKey, level;
+      args.length === 1 && arg0.indexOf(this.groupingDelimiter) !== -1 ? (level = arg0.split(this.groupingDelimiter).length - 1, groupingKey = arg0) : (level = args.length - 1, groupingKey = args.join(this.groupingDelimiter)), this.expandCollapseGroup(level, groupingKey, !1), this.onGroupExpanded.notify({ level, groupingKey });
     }
-    function getGroups() {
-      return groups;
+    getGroups() {
+      return this.groups;
     }
-    function extractGroups(rows2, parentGroup) {
-      for (var group, val, groups2 = [], groupsByVal = {}, r, level = parentGroup ? parentGroup.level + 1 : 0, gi = groupingInfos[level], i = 0, l = gi.predefinedValues.length; i < l; i++)
-        val = gi.predefinedValues[i], group = groupsByVal[val], group || (group = new Group(), group.value = val, group.level = level, group.groupingKey = (parentGroup ? parentGroup.groupingKey + groupingDelimiter : "") + val, groups2[groups2.length] = group, groupsByVal[val] = group);
-      for (var i = 0, l = rows2.length; i < l; i++)
-        r = rows2[i], val = gi.getterIsAFn ? gi.getter(r) : r[gi.getter], group = groupsByVal[val], group || (group = new Group(), group.value = val, group.level = level, group.groupingKey = (parentGroup ? parentGroup.groupingKey + groupingDelimiter : "") + val, groups2[groups2.length] = group, groupsByVal[val] = group), group.rows[group.count++] = r;
-      if (level < groupingInfos.length - 1)
-        for (var i = 0; i < groups2.length; i++)
-          group = groups2[i], group.groups = extractGroups(group.rows, group);
-      return groups2.length && addTotals(groups2, level), groups2.sort(groupingInfos[level].comparer), groups2;
+    extractGroups(rows, parentGroup) {
+      var _a2, _b2, _c;
+      let group, val, groups = [], groupsByVal = {}, r, level = parentGroup ? parentGroup.level + 1 : 0, gi = this.groupingInfos[level];
+      for (let i = 0, l = (_b2 = (_a2 = gi.predefinedValues) == null ? void 0 : _a2.length) != null ? _b2 : 0; i < l; i++)
+        val = (_c = gi.predefinedValues) == null ? void 0 : _c[i], group = groupsByVal[val], group || (group = new SlickGroup(), group.value = val, group.level = level, group.groupingKey = (parentGroup ? parentGroup.groupingKey + this.groupingDelimiter : "") + val, groups[groups.length] = group, groupsByVal[val] = group);
+      for (let i = 0, l = rows.length; i < l; i++)
+        r = rows[i], val = gi.getterIsAFn ? gi.getter(r) : r[gi.getter], group = groupsByVal[val], group || (group = new SlickGroup(), group.value = val, group.level = level, group.groupingKey = (parentGroup ? parentGroup.groupingKey + this.groupingDelimiter : "") + val, groups[groups.length] = group, groupsByVal[val] = group), group.rows[group.count++] = r;
+      if (level < this.groupingInfos.length - 1)
+        for (let i = 0; i < groups.length; i++)
+          group = groups[i], group.groups = this.extractGroups(group.rows, group);
+      return groups.length && this.addTotals(groups, level), groups.sort(this.groupingInfos[level].comparer), groups;
     }
-    function calculateTotals(totals) {
-      var group = totals.group, gi = groupingInfos[group.level], isLeafLevel = group.level == groupingInfos.length, agg, idx = gi.aggregators.length;
-      if (!isLeafLevel && gi.aggregateChildGroups)
-        for (var i = group.groups.length; i--; )
-          group.groups[i].totals.initialized || calculateTotals(group.groups[i].totals);
+    calculateTotals(totals) {
+      var _a2, _b2, _c;
+      let group = totals.group, gi = this.groupingInfos[(_a2 = group.level) != null ? _a2 : 0], isLeafLevel = group.level === this.groupingInfos.length, agg, idx = gi.aggregators.length;
+      if (!isLeafLevel && gi.aggregateChildGroups) {
+        let i = (_c = (_b2 = group.groups) == null ? void 0 : _b2.length) != null ? _c : 0;
+        for (; i--; )
+          group.groups[i].totals.initialized || this.calculateTotals(group.groups[i].totals);
+      }
       for (; idx--; )
         agg = gi.aggregators[idx], agg.init(), !isLeafLevel && gi.aggregateChildGroups ? gi.compiledAccumulators[idx].call(agg, group.groups) : gi.compiledAccumulators[idx].call(agg, group.rows), agg.storeResult(totals);
       totals.initialized = !0;
     }
-    function addGroupTotals(group) {
-      var gi = groupingInfos[group.level], totals = new GroupTotals();
-      totals.group = group, group.totals = totals, gi.lazyTotalsCalculation || calculateTotals(totals);
+    addGroupTotals(group) {
+      let gi = this.groupingInfos[group.level], totals = new SlickGroupTotals();
+      totals.group = group, group.totals = totals, gi.lazyTotalsCalculation || this.calculateTotals(totals);
     }
-    function addTotals(groups2, level) {
+    addTotals(groups, level) {
+      var _a2;
       level = level || 0;
-      for (var gi = groupingInfos[level], groupCollapsed = gi.collapsed, toggledGroups = toggledGroupsByLevel[level], idx = groups2.length, g; idx--; )
-        g = groups2[idx], !(g.collapsed && !gi.aggregateCollapsed) && (g.groups && addTotals(g.groups, level + 1), gi.aggregators.length && (gi.aggregateEmpty || g.rows.length || g.groups && g.groups.length) && addGroupTotals(g), g.collapsed = groupCollapsed ^ toggledGroups[g.groupingKey], g.title = gi.formatter ? gi.formatter(g) : g.value);
+      let gi = this.groupingInfos[level], groupCollapsed = gi.collapsed, toggledGroups = this.toggledGroupsByLevel[level], idx = groups.length, g;
+      for (; idx--; )
+        g = groups[idx], !(g.collapsed && !gi.aggregateCollapsed) && (g.groups && this.addTotals(g.groups, level + 1), (_a2 = gi.aggregators) != null && _a2.length && (gi.aggregateEmpty || g.rows.length || g.groups && g.groups.length) && this.addGroupTotals(g), g.collapsed = groupCollapsed ^ toggledGroups[g.groupingKey], g.title = gi.formatter ? gi.formatter(g) : g.value);
     }
-    function flattenGroupedRows(groups2, level) {
+    flattenGroupedRows(groups, level) {
       level = level || 0;
-      for (var gi = groupingInfos[level], groupedRows = [], rows2, gl = 0, g, i = 0, l = groups2.length; i < l; i++) {
-        if (g = groups2[i], groupedRows[gl++] = g, !g.collapsed) {
-          rows2 = g.groups ? flattenGroupedRows(g.groups, level + 1) : g.rows;
-          for (var j = 0, jj = rows2.length; j < jj; j++)
-            groupedRows[gl++] = rows2[j];
+      let gi = this.groupingInfos[level], groupedRows = [], rows, gl = 0, g;
+      for (let i = 0, l = groups.length; i < l; i++) {
+        if (g = groups[i], groupedRows[gl++] = g, !g.collapsed) {
+          rows = g.groups ? this.flattenGroupedRows(g.groups, level + 1) : g.rows;
+          for (let j = 0, jj = rows.length; j < jj; j++)
+            groupedRows[gl++] = rows[j];
         }
         g.totals && gi.displayTotalsRow && (!g.collapsed || gi.aggregateCollapsed) && (groupedRows[gl++] = g.totals);
       }
       return groupedRows;
     }
-    function getFunctionInfo(fn) {
-      var fnStr = fn.toString(), usingEs5 = fnStr.indexOf("function") >= 0, fnRegex = usingEs5 ? /^function[^(]*\(([^)]*)\)\s*{([\s\S]*)}$/ : /^[^(]*\(([^)]*)\)\s*{([\s\S]*)}$/, matches = fn.toString().match(fnRegex);
+    getFunctionInfo(fn) {
+      let fnRegex = fn.toString().indexOf("function") >= 0 ? /^function[^(]*\(([^)]*)\)\s*{([\s\S]*)}$/ : /^[^(]*\(([^)]*)\)\s*{([\s\S]*)}$/, matches = fn.toString().match(fnRegex) || [];
       return {
         params: matches[1].split(","),
         body: matches[2]
       };
     }
-    function compileAccumulatorLoop(aggregator) {
+    compileAccumulatorLoop(aggregator) {
       if (aggregator.accumulate) {
-        var accumulatorInfo = getFunctionInfo(aggregator.accumulate), fn = new Function(
+        let accumulatorInfo = this.getFunctionInfo(aggregator.accumulate), fn = new Function(
           "_items",
           "for (var " + accumulatorInfo.params[0] + ", _i=0, _il=_items.length; _i<_il; _i++) {" + accumulatorInfo.params[0] + " = _items[_i]; " + accumulatorInfo.body + "}"
         ), fnName = "compiledAccumulatorLoop";
-        return fn.displayName = fnName, fn.name = setFunctionName(fn, fnName), fn;
+        return fn.displayName = fnName, fn.name = this.setFunctionName(fn, fnName), fn;
       } else
         return function() {
         };
     }
-    function compileFilter() {
-      var filterInfo = getFunctionInfo(filter), filterPath1 = "{ continue _coreloop; }$1", filterPath2 = "{ _retval[_idx++] = $item$; continue _coreloop; }$1", filterBody = filterInfo.body.replace(/return false\s*([;}]|\}|$)/gi, filterPath1).replace(/return!1([;}]|\}|$)/gi, filterPath1).replace(/return true\s*([;}]|\}|$)/gi, filterPath2).replace(/return!0([;}]|\}|$)/gi, filterPath2).replace(
+    compileFilter() {
+      let filterInfo = this.getFunctionInfo(this.filter), filterPath1 = "{ continue _coreloop; }$1", filterPath2 = "{ _retval[_idx++] = $item$; continue _coreloop; }$1", filterBody = filterInfo.body.replace(/return false\s*([;}]|\}|$)/gi, filterPath1).replace(/return!1([;}]|\}|$)/gi, filterPath1).replace(/return true\s*([;}]|\}|$)/gi, filterPath2).replace(/return!0([;}]|\}|$)/gi, filterPath2).replace(
         /return ([^;}]+?)\s*([;}]|$)/gi,
         "{ if ($1) { _retval[_idx++] = $item$; }; continue _coreloop; }$2"
       ), tpl = [
@@ -398,11 +589,11 @@
         //"}"
       ].join("");
       tpl = tpl.replace(/\$filter\$/gi, filterBody), tpl = tpl.replace(/\$item\$/gi, filterInfo.params[0]), tpl = tpl.replace(/\$args\$/gi, filterInfo.params[1]);
-      var fn = new Function("_items,_args", tpl), fnName = "compiledFilter";
-      return fn.displayName = fnName, fn.name = setFunctionName(fn, fnName), fn;
+      let fn = new Function("_items,_args", tpl), fnName = "compiledFilter";
+      return fn.displayName = fnName, fn.name = this.setFunctionName(fn, fnName), fn;
     }
-    function compileFilterWithCaching() {
-      var filterInfo = getFunctionInfo(filter), filterPath1 = "{ continue _coreloop; }$1", filterPath2 = "{ _cache[_i] = true;_retval[_idx++] = $item$; continue _coreloop; }$1", filterBody = filterInfo.body.replace(/return false\s*([;}]|\}|$)/gi, filterPath1).replace(/return!1([;}]|\}|$)/gi, filterPath1).replace(/return true\s*([;}]|\}|$)/gi, filterPath2).replace(/return!0([;}]|\}|$)/gi, filterPath2).replace(
+    compileFilterWithCaching() {
+      let filterInfo = this.getFunctionInfo(this.filter), filterPath1 = "{ continue _coreloop; }$1", filterPath2 = "{ _cache[_i] = true;_retval[_idx++] = $item$; continue _coreloop; }$1", filterBody = filterInfo.body.replace(/return false\s*([;}]|\}|$)/gi, filterPath1).replace(/return!1([;}]|\}|$)/gi, filterPath1).replace(/return true\s*([;}]|\}|$)/gi, filterPath2).replace(/return!0([;}]|\}|$)/gi, filterPath2).replace(
         /return ([^;}]+?)\s*([;}]|$)/gi,
         "{ if ((_cache[_i] = $1)) { _retval[_idx++] = $item$; }; continue _coreloop; }$2"
       ), tpl = [
@@ -422,10 +613,17 @@
         //"}"
       ].join("");
       tpl = tpl.replace(/\$filter\$/gi, filterBody), tpl = tpl.replace(/\$item\$/gi, filterInfo.params[0]), tpl = tpl.replace(/\$args\$/gi, filterInfo.params[1]);
-      var fn = new Function("_items,_args,_cache", tpl), fnName = "compiledFilterWithCaching";
-      return fn.displayName = fnName, fn.name = setFunctionName(fn, fnName), fn;
+      let fn = new Function("_items,_args,_cache", tpl), fnName = "compiledFilterWithCaching";
+      return fn.displayName = fnName, fn.name = this.setFunctionName(fn, fnName), fn;
     }
-    function setFunctionName(fn, fnName) {
+    /**
+     * In ES5 we could set the function name on the fly but in ES6 this is forbidden and we need to set it through differently
+     * We can use Object.defineProperty and set it the property to writable, see MDN for reference
+     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty
+     * @param {*} fn
+     * @param {string} fnName
+     */
+    setFunctionName(fn, fnName) {
       try {
         Object.defineProperty(fn, "name", {
           writable: !0,
@@ -435,320 +633,336 @@
         fn.name = fnName;
       }
     }
-    function uncompiledFilter(items2, args) {
-      for (var retval = [], idx = 0, i = 0, ii = items2.length; i < ii; i++)
-        filter(items2[i], args) && (retval[idx++] = items2[i]);
+    uncompiledFilter(items, args) {
+      let retval = [], idx = 0;
+      for (let i = 0, ii = items.length; i < ii; i++)
+        this.filter(items[i], args) && (retval[idx++] = items[i]);
       return retval;
     }
-    function uncompiledFilterWithCaching(items2, args, cache) {
-      for (var retval = [], idx = 0, item, i = 0, ii = items2.length; i < ii; i++)
-        item = items2[i], cache[i] ? retval[idx++] = item : filter(item, args) && (retval[idx++] = item, cache[i] = !0);
+    uncompiledFilterWithCaching(items, args, cache) {
+      let retval = [], idx = 0, item;
+      for (let i = 0, ii = items.length; i < ii; i++)
+        item = items[i], cache[i] ? retval[idx++] = item : this.filter(item, args) && (retval[idx++] = item, cache[i] = !0);
       return retval;
     }
-    function getFilteredAndPagedItems(items2) {
-      if (filter) {
-        var batchFilter = options.inlineFilters ? compiledFilter : uncompiledFilter, batchFilterWithCaching = options.inlineFilters ? compiledFilterWithCaching : uncompiledFilterWithCaching;
-        refreshHints.isFilterNarrowing ? filteredItems = batchFilter(filteredItems, filterArgs) : refreshHints.isFilterExpanding ? filteredItems = batchFilterWithCaching(items2, filterArgs, filterCache) : refreshHints.isFilterUnchanged || (filteredItems = batchFilter(items2, filterArgs));
+    getFilteredAndPagedItems(items) {
+      if (this.filter) {
+        let batchFilter = this._options.inlineFilters ? this.compiledFilter : this.uncompiledFilter, batchFilterWithCaching = this._options.inlineFilters ? this.compiledFilterWithCaching : this.uncompiledFilterWithCaching;
+        this.refreshHints.isFilterNarrowing ? this.filteredItems = batchFilter.call(this, this.filteredItems, this.filterArgs) : this.refreshHints.isFilterExpanding ? this.filteredItems = batchFilterWithCaching.call(this, items, this.filterArgs, this.filterCache) : this.refreshHints.isFilterUnchanged || (this.filteredItems = batchFilter.call(this, items, this.filterArgs));
       } else
-        filteredItems = pagesize ? items2 : items2.concat();
-      var paged;
-      return pagesize ? (filteredItems.length <= pagenum * pagesize && (filteredItems.length === 0 ? pagenum = 0 : pagenum = Math.floor((filteredItems.length - 1) / pagesize)), paged = filteredItems.slice(pagesize * pagenum, pagesize * pagenum + pagesize)) : paged = filteredItems, { totalRows: filteredItems.length, rows: paged };
+        this.filteredItems = this.pagesize ? items : items.concat();
+      let paged;
+      return this.pagesize ? (this.filteredItems.length <= this.pagenum * this.pagesize && (this.filteredItems.length === 0 ? this.pagenum = 0 : this.pagenum = Math.floor((this.filteredItems.length - 1) / this.pagesize)), paged = this.filteredItems.slice(this.pagesize * this.pagenum, this.pagesize * this.pagenum + this.pagesize)) : paged = this.filteredItems, { totalRows: this.filteredItems.length, rows: paged };
     }
-    function getRowDiffs(rows2, newRows) {
-      var item, r, eitherIsNonData, diff = [], from = 0, to = Math.max(newRows.length, rows2.length);
-      refreshHints && refreshHints.ignoreDiffsBefore && (from = Math.max(
+    getRowDiffs(rows, newRows) {
+      var _a2;
+      let item, r, eitherIsNonData, diff = [], from = 0, to = Math.max(newRows.length, rows.length);
+      this.refreshHints && this.refreshHints.ignoreDiffsBefore && (from = Math.max(
         0,
-        Math.min(newRows.length, refreshHints.ignoreDiffsBefore)
-      )), refreshHints && refreshHints.ignoreDiffsAfter && (to = Math.min(
+        Math.min(newRows.length, this.refreshHints.ignoreDiffsBefore)
+      )), this.refreshHints && this.refreshHints.ignoreDiffsAfter && (to = Math.min(
         newRows.length,
-        Math.max(0, refreshHints.ignoreDiffsAfter)
+        Math.max(0, this.refreshHints.ignoreDiffsAfter)
       ));
-      for (var i = from, rl = rows2.length; i < to; i++)
-        i >= rl ? diff[diff.length] = i : (item = newRows[i], r = rows2[i], (!item || groupingInfos.length && (eitherIsNonData = item.__nonDataRow || r.__nonDataRow) && item.__group !== r.__group || item.__group && !item.equals(r) || eitherIsNonData && // no good way to compare totals since they are arbitrary DTOs
+      for (let i = from, rl = rows.length; i < to; i++)
+        i >= rl ? diff[diff.length] = i : (item = newRows[i], r = rows[i], (!item || this.groupingInfos.length && (eitherIsNonData = item.__nonDataRow || r.__nonDataRow) && item.__group !== r.__group || item.__group && !item.equals(r) || eitherIsNonData && // no good way to compare totals since they are arbitrary DTOs
         // deep object comparison is pretty expensive
         // always considering them 'dirty' seems easier for the time being
-        (item.__groupTotals || r.__groupTotals) || item[idProperty] != r[idProperty] || updated && updated[item[idProperty]]) && (diff[diff.length] = i));
+        (item.__groupTotals || r.__groupTotals) || item[this.idProperty] != r[this.idProperty] || (_a2 = this.updated) != null && _a2[item[this.idProperty]]) && (diff[diff.length] = i));
       return diff;
     }
-    function recalc(_items) {
-      rowsById = null, (refreshHints.isFilterNarrowing != prevRefreshHints.isFilterNarrowing || refreshHints.isFilterExpanding != prevRefreshHints.isFilterExpanding) && (filterCache = []);
-      var filteredItems2 = getFilteredAndPagedItems(_items);
-      totalRows = filteredItems2.totalRows;
-      var newRows = filteredItems2.rows;
-      groups = [], groupingInfos.length && (groups = extractGroups(newRows), groups.length && (newRows = flattenGroupedRows(groups)));
-      var diff = getRowDiffs(rows, newRows);
-      return rows = newRows, diff;
+    recalc(_items) {
+      this.rowsById = null, (this.refreshHints.isFilterNarrowing != this.prevRefreshHints.isFilterNarrowing || this.refreshHints.isFilterExpanding != this.prevRefreshHints.isFilterExpanding) && (this.filterCache = []);
+      let filteredItems = this.getFilteredAndPagedItems(_items);
+      this.totalRows = filteredItems.totalRows;
+      let newRows = filteredItems.rows;
+      this.groups = [], this.groupingInfos.length && (this.groups = this.extractGroups(newRows), this.groups.length && (newRows = this.flattenGroupedRows(this.groups)));
+      let diff = this.getRowDiffs(this.rows, newRows);
+      return this.rows = newRows, diff;
     }
-    function refresh() {
-      if (!suspend) {
-        var previousPagingInfo = Utils.extend(!0, {}, getPagingInfo()), countBefore = rows.length, totalRowsBefore = totalRows, diff = recalc(items, filter);
-        pagesize && totalRows < pagenum * pagesize && (pagenum = Math.max(0, Math.ceil(totalRows / pagesize) - 1), diff = recalc(items, filter)), updated = null, prevRefreshHints = refreshHints, refreshHints = {}, totalRowsBefore !== totalRows && onBeforePagingInfoChanged.notify(previousPagingInfo, null, self) !== !1 && onPagingInfoChanged.notify(getPagingInfo(), null, self), countBefore !== rows.length && onRowCountChanged.notify({ previous: countBefore, current: rows.length, itemCount: items.length, dataView: self, callingOnRowsChanged: diff.length > 0 }, null, self), diff.length > 0 && onRowsChanged.notify({ rows: diff, itemCount: items.length, dataView: self, calledOnRowCountChanged: countBefore !== rows.length }, null, self), (countBefore !== rows.length || diff.length > 0) && onRowsOrCountChanged.notify({
-          rowsDiff: diff,
-          previousRowCount: countBefore,
-          currentRowCount: rows.length,
-          itemCount: items.length,
-          rowCountChanged: countBefore !== rows.length,
-          rowsChanged: diff.length > 0,
-          dataView: self
-        }, null, self);
-      }
+    refresh() {
+      if (this.suspend)
+        return;
+      let previousPagingInfo = Utils.extend(!0, {}, this.getPagingInfo()), countBefore = this.rows.length, totalRowsBefore = this.totalRows, diff = this.recalc(this.items);
+      this.pagesize && this.totalRows < this.pagenum * this.pagesize && (this.pagenum = Math.max(0, Math.ceil(this.totalRows / this.pagesize) - 1), diff = this.recalc(this.items)), this.updated = null, this.prevRefreshHints = this.refreshHints, this.refreshHints = {}, totalRowsBefore !== this.totalRows && this.onBeforePagingInfoChanged.notify(previousPagingInfo, null, this).getReturnValue() !== !1 && this.onPagingInfoChanged.notify(this.getPagingInfo(), null, this), countBefore !== this.rows.length && this.onRowCountChanged.notify({ previous: countBefore, current: this.rows.length, itemCount: this.items.length, dataView: this, callingOnRowsChanged: diff.length > 0 }, null, this), diff.length > 0 && this.onRowsChanged.notify({ rows: diff, itemCount: this.items.length, dataView: this, calledOnRowCountChanged: countBefore !== this.rows.length }, null, this), (countBefore !== this.rows.length || diff.length > 0) && this.onRowsOrCountChanged.notify({
+        rowsDiff: diff,
+        previousRowCount: countBefore,
+        currentRowCount: this.rows.length,
+        itemCount: this.items.length,
+        rowCountChanged: countBefore !== this.rows.length,
+        rowsChanged: diff.length > 0,
+        dataView: this
+      }, null, this);
     }
-    function syncGridSelection(grid, preserveHidden, preserveHiddenOnSelectionChange) {
-      var self2 = this;
-      _grid = grid;
-      var inHandler;
-      selectedRowIds = self2.mapRowsToIds(grid.getSelectedRows());
-      function setSelectedRowIds(rowIds) {
-        rowIds === !1 ? selectedRowIds = [] : selectedRowIds.sort().join(",") !== rowIds.sort().join(",") && (selectedRowIds = rowIds);
-      }
-      function update() {
-        if (selectedRowIds.length > 0 && !inHandler) {
+    /**
+     * Wires the grid and the DataView together to keep row selection tied to item ids.
+     * This is useful since, without it, the grid only knows about rows, so if the items
+     * move around, the same rows stay selected instead of the selection moving along
+     * with the items.
+     *
+     * NOTE:  This doesn't work with cell selection model.
+     *
+     * @param {SlickGrid} grid - The grid to sync selection with.
+     * @param {Boolean} preserveHidden - Whether to keep selected items that go out of the
+     *     view due to them getting filtered out.
+     * @param {Boolean} [preserveHiddenOnSelectionChange] - Whether to keep selected items
+     *     that are currently out of the view (see preserveHidden) as selected when selection
+     *     changes.
+     * @return {Event} An event that notifies when an internal list of selected row ids
+     *     changes.  This is useful since, in combination with the above two options, it allows
+     *     access to the full list selected row ids, and not just the ones visible to the grid.
+     * @method syncGridSelection
+     */
+    syncGridSelection(grid, preserveHidden, preserveHiddenOnSelectionChange) {
+      this._grid = grid;
+      let inHandler;
+      this.selectedRowIds = this.mapRowsToIds(grid.getSelectedRows());
+      let setSelectedRowIds = (rowIds) => {
+        rowIds === !1 ? this.selectedRowIds = [] : this.selectedRowIds.sort().join(",") !== rowIds.sort().join(",") && (this.selectedRowIds = rowIds);
+      }, update = () => {
+        if ((this.selectedRowIds || []).length > 0 && !inHandler) {
           inHandler = !0;
-          var selectedRows = self2.mapIdsToRows(selectedRowIds);
+          let selectedRows = this.mapIdsToRows(this.selectedRowIds || []);
           if (!preserveHidden) {
-            var selectedRowsChangedArgs = {
-              grid: _grid,
-              ids: self2.mapRowsToIds(selectedRows),
+            let selectedRowsChangedArgs = {
+              grid: this._grid,
+              ids: this.mapRowsToIds(selectedRows),
               rows: selectedRows,
-              dataView: self2
+              dataView: this
             };
-            preSelectedRowIdsChangeFn(selectedRowsChangedArgs), onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
-              selectedRowIds,
-              filteredIds: self2.getAllSelectedFilteredIds()
-            }), new EventData(), self2);
+            this.preSelectedRowIdsChangeFn(selectedRowsChangedArgs), this.onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
+              selectedRowIds: this.selectedRowIds,
+              filteredIds: this.getAllSelectedFilteredIds()
+            }), new SlickEventData(), this);
           }
           grid.setSelectedRows(selectedRows), inHandler = !1;
         }
-      }
-      return grid.onSelectedRowsChanged.subscribe(function(e, args) {
+      };
+      return grid.onSelectedRowsChanged.subscribe((_e, args) => {
         if (!inHandler) {
-          var newSelectedRowIds = self2.mapRowsToIds(args.rows), selectedRowsChangedArgs = {
-            grid: _grid,
+          let newSelectedRowIds = this.mapRowsToIds(args.rows), selectedRowsChangedArgs = {
+            grid: this._grid,
             ids: newSelectedRowIds,
             rows: args.rows,
             added: !0,
-            dataView: self2
+            dataView: this
           };
-          preSelectedRowIdsChangeFn(selectedRowsChangedArgs), onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
-            selectedRowIds,
-            filteredIds: self2.getAllSelectedFilteredIds()
-          }), new EventData(), self2);
+          this.preSelectedRowIdsChangeFn(selectedRowsChangedArgs), this.onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
+            selectedRowIds: this.selectedRowIds,
+            filteredIds: this.getAllSelectedFilteredIds()
+          }), new SlickEventData(), this);
         }
-      }), preSelectedRowIdsChangeFn = function(args) {
+      }), this.preSelectedRowIdsChangeFn = (args) => {
+        var _a2;
         if (!inHandler) {
-          inHandler = !0;
-          var overwrite = typeof args.added == "undefined";
-          if (overwrite)
+          if (inHandler = !0, typeof args.added == "undefined")
             setSelectedRowIds(args.ids);
           else {
-            var rowIds;
-            if (args.added)
-              if (preserveHiddenOnSelectionChange && grid.getOptions().multiSelect) {
-                var hiddenSelectedRowIds = selectedRowIds.filter(function(id) {
-                  return self2.getRowById(id) === void 0;
-                });
-                rowIds = hiddenSelectedRowIds.concat(args.ids);
-              } else
-                rowIds = args.ids;
-            else
-              preserveHiddenOnSelectionChange && grid.getOptions().multiSelect ? rowIds = selectedRowIds.filter(function(id) {
-                return args.ids.indexOf(id) === -1;
-              }) : rowIds = [];
-            setSelectedRowIds(rowIds);
+            let rowIds;
+            args.added ? preserveHiddenOnSelectionChange && grid.getOptions().multiSelect ? rowIds = ((_a2 = this.selectedRowIds) == null ? void 0 : _a2.filter((id) => this.getRowById(id) === void 0)).concat(args.ids) : rowIds = args.ids : preserveHiddenOnSelectionChange && grid.getOptions().multiSelect ? rowIds = this.selectedRowIds.filter((id) => args.ids.indexOf(id) === -1) : rowIds = [], setSelectedRowIds(rowIds);
           }
           inHandler = !1;
         }
-      }, this.onRowsOrCountChanged.subscribe(update), onSelectedRowIdsChanged;
+      }, this.onRowsOrCountChanged.subscribe(update.bind(this)), this.onSelectedRowIdsChanged;
     }
-    function getAllSelectedIds() {
-      return selectedRowIds;
+    /**
+     * Get all selected IDs
+     * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
+     */
+    getAllSelectedIds() {
+      return this.selectedRowIds;
     }
-    function getAllSelectedFilteredIds() {
-      return getAllSelectedFilteredItems().map(function(item) {
-        return item[idProperty];
-      });
+    /**
+     * Get all selected filtered IDs (similar to "getAllSelectedIds" but only return filtered data)
+     * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
+     */
+    getAllSelectedFilteredIds() {
+      return this.getAllSelectedFilteredItems().map((item) => item[this.idProperty]);
     }
-    function setSelectedIds(selectedIds, options2) {
-      var isRowBeingAdded = options2 && options2.isRowBeingAdded, shouldTriggerEvent = options2 && options2.shouldTriggerEvent, applyRowSelectionToGrid = options2 && options2.applyRowSelectionToGrid;
+    /**
+     * Set current row selected IDs array (regardless of Pagination)
+     * NOTE: This will NOT change the selection in the grid, if you need to do that then you still need to call
+     * "grid.setSelectedRows(rows)"
+     * @param {Array} selectedIds - list of IDs which have been selected for this action
+     * @param {Object} options
+     *  - `isRowBeingAdded`: defaults to true, are the new selected IDs being added (or removed) as new row selections
+     *  - `shouldTriggerEvent`: defaults to true, should we trigger `onSelectedRowIdsChanged` event
+     *  - `applyRowSelectionToGrid`: defaults to true, should we apply the row selections to the grid in the UI
+     */
+    setSelectedIds(selectedIds, options) {
+      var _a2;
+      let isRowBeingAdded = options == null ? void 0 : options.isRowBeingAdded, shouldTriggerEvent = options == null ? void 0 : options.shouldTriggerEvent, applyRowSelectionToGrid = options == null ? void 0 : options.applyRowSelectionToGrid;
       isRowBeingAdded !== !1 && (isRowBeingAdded = !0);
-      var selectedRows = self.mapIdsToRows(selectedIds), selectedRowsChangedArgs = {
-        grid: _grid,
+      let selectedRows = this.mapIdsToRows(selectedIds), selectedRowsChangedArgs = {
+        grid: this._grid,
         ids: selectedIds,
         rows: selectedRows,
         added: isRowBeingAdded,
-        dataView: self
+        dataView: this
       };
-      preSelectedRowIdsChangeFn(selectedRowsChangedArgs), shouldTriggerEvent !== !1 && onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
-        selectedRowIds,
-        filteredIds: self.getAllSelectedFilteredIds()
-      }), new EventData(), self), applyRowSelectionToGrid !== !1 && _grid && _grid.setSelectedRows(selectedRows);
+      (_a2 = this.preSelectedRowIdsChangeFn) == null || _a2.call(this, selectedRowsChangedArgs), shouldTriggerEvent !== !1 && this.onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
+        selectedRowIds: this.selectedRowIds,
+        filteredIds: this.getAllSelectedFilteredIds()
+      }), new SlickEventData(), this), applyRowSelectionToGrid !== !1 && this._grid && this._grid.setSelectedRows(selectedRows);
     }
-    function getAllSelectedItems() {
-      var selectedData = [], selectedIds = getAllSelectedIds();
-      return selectedIds.forEach(function(id) {
-        selectedData.push(self.getItemById(id));
+    /**
+     * Get all selected dataContext items
+     * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
+     */
+    getAllSelectedItems() {
+      let selectedData = [];
+      return this.getAllSelectedIds().forEach((id) => {
+        selectedData.push(this.getItemById(id));
       }), selectedData;
     }
-    function getAllSelectedFilteredItems() {
-      if (!Array.isArray(selectedRowIds))
-        return [];
-      var intersection = filteredItems.filter(function(a) {
-        return selectedRowIds.some(function(b) {
-          return a[idProperty] === b;
-        });
-      });
-      return intersection || [];
+    /**
+    * Get all selected filtered dataContext items (similar to "getAllSelectedItems" but only return filtered data)
+    * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
+    */
+    getAllSelectedFilteredItems() {
+      return Array.isArray(this.selectedRowIds) ? this.filteredItems.filter((a) => this.selectedRowIds.some((b) => a[this.idProperty] === b)) || [] : [];
     }
-    function syncGridCellCssStyles(grid, key) {
-      var hashById, inHandler;
-      storeCellCssStyles(grid.getCellCssStyles(key));
-      function storeCellCssStyles(hash) {
+    syncGridCellCssStyles(grid, key) {
+      let hashById, inHandler, storeCellCssStyles = (hash) => {
         hashById = {};
-        for (var row in hash) {
-          var id = rows[row][idProperty];
+        for (let row in hash) {
+          let id = this.rows[row][this.idProperty];
           hashById[id] = hash[row];
         }
-      }
-      function update() {
+      };
+      storeCellCssStyles(grid.getCellCssStyles(key));
+      let update = () => {
         if (hashById) {
-          inHandler = !0, ensureRowsByIdCache();
-          var newHash = {};
-          for (var id in hashById) {
-            var row = rowsById[id];
+          inHandler = !0, this.ensureRowsByIdCache();
+          let newHash = {};
+          for (let id in hashById) {
+            let row = this.rowsById[id];
             row != null && (newHash[row] = hashById[id]);
           }
           grid.setCellCssStyles(key, newHash), inHandler = !1;
         }
-      }
-      grid.onCellCssStylesChanged.subscribe(function(e, args) {
-        debugger;
-        inHandler || key == args.key && (args.hash ? storeCellCssStyles(args.hash) : (grid.onCellCssStylesChanged.unsubscribe(), self.onRowsOrCountChanged.unsubscribe(update)));
-      }), this.onRowsOrCountChanged.subscribe(update);
+      };
+      grid.onCellCssStylesChanged.subscribe((e, args) => {
+        inHandler || key == args.key && (args.hash ? storeCellCssStyles(args.hash) : (grid.onCellCssStylesChanged.unsubscribe(), this.onRowsOrCountChanged.unsubscribe(update)));
+      }), this.onRowsOrCountChanged.subscribe(update.bind(this));
     }
-    Utils.extend(this, {
-      // methods
-      beginUpdate,
-      endUpdate,
-      destroy,
-      setPagingOptions,
-      getPagingInfo,
-      getIdPropertyName,
-      getItems,
-      setItems,
-      setFilter,
-      getFilter,
-      getFilteredItems,
-      getFilteredItemCount,
-      sort,
-      fastSort,
-      reSort,
-      setGrouping,
-      getGrouping,
-      groupBy,
-      setAggregators,
-      collapseAllGroups,
-      expandAllGroups,
-      collapseGroup,
-      expandGroup,
-      getGroups,
-      getAllSelectedIds,
-      getAllSelectedItems,
-      getAllSelectedFilteredIds,
-      getAllSelectedFilteredItems,
-      setSelectedIds,
-      getIdxById,
-      getRowByItem,
-      getRowById,
-      getItemById,
-      getItemByIdx,
-      mapItemsToRows,
-      mapRowsToIds,
-      mapIdsToRows,
-      setRefreshHints,
-      setFilterArgs,
-      refresh,
-      updateItem,
-      updateItems,
-      insertItem,
-      insertItems,
-      addItem,
-      addItems,
-      deleteItem,
-      deleteItems,
-      sortedAddItem,
-      sortedUpdateItem,
-      syncGridSelection,
-      syncGridCellCssStyles,
-      // data provider methods
-      getItemCount,
-      getLength,
-      getItem,
-      getItemMetadata,
-      // events
-      onSelectedRowIdsChanged,
-      // NOTE this will only work when used with "syncGridSelection"
-      onSetItemsCalled,
-      onRowCountChanged,
-      onRowsChanged,
-      onRowsOrCountChanged,
-      onBeforePagingInfoChanged,
-      onPagingInfoChanged,
-      onGroupExpanded,
-      onGroupCollapsed
-    });
-  }
-  function AvgAggregator(field) {
-    this.field_ = field, this.init = function() {
-      this.count_ = 0, this.nonNullCount_ = 0, this.sum_ = 0;
-    }, this.accumulate = function(item) {
-      var val = item[this.field_];
-      this.count_++, val != null && val !== "" && !isNaN(val) && (this.nonNullCount_++, this.sum_ += parseFloat(val));
-    }, this.storeResult = function(groupTotals) {
-      groupTotals.avg || (groupTotals.avg = {}), this.nonNullCount_ !== 0 && (groupTotals.avg[this.field_] = this.sum_ / this.nonNullCount_);
-    };
-  }
-  function MinAggregator(field) {
-    this.field_ = field, this.init = function() {
-      this.min_ = null;
-    }, this.accumulate = function(item) {
-      var val = item[this.field_];
-      val != null && val !== "" && !isNaN(val) && (this.min_ == null || val < this.min_) && (this.min_ = val);
-    }, this.storeResult = function(groupTotals) {
-      groupTotals.min || (groupTotals.min = {}), groupTotals.min[this.field_] = this.min_;
-    };
-  }
-  function MaxAggregator(field) {
-    this.field_ = field, this.init = function() {
-      this.max_ = null;
-    }, this.accumulate = function(item) {
-      var val = item[this.field_];
-      val != null && val !== "" && !isNaN(val) && (this.max_ == null || val > this.max_) && (this.max_ = val);
-    }, this.storeResult = function(groupTotals) {
-      groupTotals.max || (groupTotals.max = {}), groupTotals.max[this.field_] = this.max_;
-    };
-  }
-  function SumAggregator(field) {
-    this.field_ = field, this.init = function() {
-      this.sum_ = null;
-    }, this.accumulate = function(item) {
-      var val = item[this.field_];
-      val != null && val !== "" && !isNaN(val) && (this.sum_ += parseFloat(val));
-    }, this.storeResult = function(groupTotals) {
-      groupTotals.sum || (groupTotals.sum = {}), groupTotals.sum[this.field_] = this.sum_;
-    };
-  }
-  function CountAggregator(field) {
-    this.field_ = field, this.init = function() {
-    }, this.storeResult = function(groupTotals) {
-      groupTotals.count || (groupTotals.count = {}), groupTotals.count[this.field_] = groupTotals.group.rows.length;
-    };
-  }
-  var Aggregators = {
+  }, AvgAggregator = class {
+    constructor(field) {
+      __publicField(this, "_nonNullCount", 0);
+      __publicField(this, "_sum", 0);
+      __publicField(this, "_field");
+      __publicField(this, "_type", "avg");
+      this._field = field;
+    }
+    get field() {
+      return this._field;
+    }
+    get type() {
+      return this._type;
+    }
+    init() {
+      this._nonNullCount = 0, this._sum = 0;
+    }
+    accumulate(item) {
+      let val = item && item.hasOwnProperty(this._field) ? item[this._field] : null;
+      val !== null && val !== "" && !isNaN(val) && (this._nonNullCount++, this._sum += parseFloat(val));
+    }
+    storeResult(groupTotals) {
+      (!groupTotals || groupTotals[this._type] === void 0) && (groupTotals[this._type] = {}), this._nonNullCount !== 0 && (groupTotals[this._type][this._field] = this._sum / this._nonNullCount);
+    }
+  }, MinAggregator = class {
+    constructor(field) {
+      __publicField(this, "_min", null);
+      __publicField(this, "_field");
+      __publicField(this, "_type", "min");
+      this._field = field;
+    }
+    get field() {
+      return this._field;
+    }
+    get type() {
+      return this._type;
+    }
+    init() {
+      this._min = null;
+    }
+    accumulate(item) {
+      let val = item && item.hasOwnProperty(this._field) ? item[this._field] : null;
+      val !== null && val !== "" && !isNaN(val) && (this._min === null || val < this._min) && (this._min = parseFloat(val));
+    }
+    storeResult(groupTotals) {
+      (!groupTotals || groupTotals[this._type] === void 0) && (groupTotals[this._type] = {}), groupTotals[this._type][this._field] = this._min;
+    }
+  }, MaxAggregator = class {
+    constructor(field) {
+      __publicField(this, "_max", null);
+      __publicField(this, "_field");
+      __publicField(this, "_type", "max");
+      this._field = field;
+    }
+    get field() {
+      return this._field;
+    }
+    get type() {
+      return this._type;
+    }
+    init() {
+      this._max = null;
+    }
+    accumulate(item) {
+      let val = item && item.hasOwnProperty(this._field) ? item[this._field] : null;
+      val !== null && val !== "" && !isNaN(val) && (this._max === null || val > this._max) && (this._max = parseFloat(val));
+    }
+    storeResult(groupTotals) {
+      (!groupTotals || groupTotals[this._type] === void 0) && (groupTotals[this._type] = {}), groupTotals[this._type][this._field] = this._max;
+    }
+  }, SumAggregator = class {
+    constructor(field) {
+      __publicField(this, "_sum", 0);
+      __publicField(this, "_field");
+      __publicField(this, "_type", "sum");
+      this._field = field;
+    }
+    get field() {
+      return this._field;
+    }
+    get type() {
+      return this._type;
+    }
+    init() {
+      this._sum = 0;
+    }
+    accumulate(item) {
+      let val = item && item.hasOwnProperty(this._field) ? item[this._field] : null;
+      val !== null && val !== "" && !isNaN(val) && (this._sum += parseFloat(val));
+    }
+    storeResult(groupTotals) {
+      (!groupTotals || groupTotals[this._type] === void 0) && (groupTotals[this._type] = {}), groupTotals[this._type][this._field] = this._sum;
+    }
+  }, CountAggregator = class {
+    constructor(field) {
+      __publicField(this, "_field");
+      __publicField(this, "_type", "count");
+      this._field = field;
+    }
+    get field() {
+      return this._field;
+    }
+    get type() {
+      return this._type;
+    }
+    init() {
+    }
+    storeResult(groupTotals) {
+      (!groupTotals || groupTotals[this._type] === void 0) && (groupTotals[this._type] = {}), groupTotals[this._type][this._field] = groupTotals.group.rows.length;
+    }
+  }, Aggregators = {
     Avg: AvgAggregator,
     Min: MinAggregator,
     Max: MaxAggregator,
     Sum: SumAggregator,
     Count: CountAggregator
   };
-  window.Slick && (window.Slick.Data = window.Slick.Data || {}, window.Slick.Data.DataView = DataView, window.Slick.Data.Aggregators = Aggregators);
+  window.Slick && (window.Slick.Data = window.Slick.Data || {}, window.Slick.Data.DataView = SlickDataView, window.Slick.Data.Aggregators = Aggregators);
 })();
+//# sourceMappingURL=slick.dataview.js.map

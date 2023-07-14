@@ -101,7 +101,7 @@
       renderTooltipFormatter(_cellTooltipOptions.asyncPostFormatter, cell, value, columnDef, itemWithAsyncData);
     }
     function calculateAvailableSpaceTop(element) {
-      var availableSpace = 0, pageScrollTop = windowScrollPosition().top, elmOffset = getHtmlElementOffset(element);
+      var availableSpace = 0, pageScrollTop = Utils.windowScrollPosition().top, elmOffset = getHtmlElementOffset(element);
       if (elmOffset) {
         var elementOffsetTop = elmOffset.top;
         availableSpace = elementOffsetTop - pageScrollTop;
@@ -120,12 +120,6 @@
           hasCancelled = !0;
         }
       } : inputPromise;
-    }
-    function windowScrollPosition() {
-      return {
-        left: window.pageXOffset || document.documentElement.scrollLeft || 0,
-        top: window.pageYOffset || document.documentElement.scrollTop || 0
-      };
     }
     function getHtmlElementOffset(element) {
       if (element) {
@@ -182,3 +176,4 @@
     }
   });
 })();
+//# sourceMappingURL=slick.customtooltip.js.map

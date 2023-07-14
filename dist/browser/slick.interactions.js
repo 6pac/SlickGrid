@@ -1,6 +1,6 @@
 "use strict";
 (() => {
-  // src/slick.interactions.js
+  // src/slick.interactions.ts
   var Utils = Slick.Utils;
   function Draggable(options) {
     let { containerElement, onDragInit, onDragStart, onDrag, onDragEnd } = options, element, startX, startY, deltaX, deltaY, dragStarted;
@@ -18,16 +18,18 @@
       containerElement && (containerElement.removeEventListener("mousedown", userPressed), containerElement.removeEventListener("touchstart", userPressed));
     }
     function userPressed(event) {
+      var _a, _b;
       element = event.target;
-      let targetEvent = event.touches ? event.touches[0] : event, { target } = targetEvent;
+      let targetEvent = (_b = (_a = event == null ? void 0 : event.touches) == null ? void 0 : _a[0]) != null ? _b : event, { target } = targetEvent;
       if (!options.allowDragFrom || options.allowDragFrom && element.matches(options.allowDragFrom)) {
         originaldd.dragHandle = element;
-        let winScrollPos = windowScrollPosition(element);
+        let winScrollPos = Utils.windowScrollPosition();
         startX = winScrollPos.left + targetEvent.clientX, startY = winScrollPos.top + targetEvent.clientY, deltaX = targetEvent.clientX - targetEvent.clientX, deltaY = targetEvent.clientY - targetEvent.clientY, originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDragInit, event, originaldd), document.addEventListener("mousemove", userMoved), document.addEventListener("touchmove", userMoved), document.addEventListener("mouseup", userReleased), document.addEventListener("touchend", userReleased), document.addEventListener("touchcancel", userReleased);
       }
     }
     function userMoved(event) {
-      let targetEvent = event.touches ? event.touches[0] : event;
+      var _a, _b;
+      let targetEvent = (_b = (_a = event == null ? void 0 : event.touches) == null ? void 0 : _a[0]) != null ? _b : event;
       deltaX = targetEvent.clientX - startX, deltaY = targetEvent.clientY - startY;
       let { target } = targetEvent;
       dragStarted || (originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDragStart, event, originaldd), dragStarted = !0), originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDrag, event, originaldd);
@@ -35,12 +37,6 @@
     function userReleased(event) {
       let { target } = event;
       originaldd = Object.assign(originaldd, { target }), executeDragCallbackWhenDefined(onDragEnd, event, originaldd), document.removeEventListener("mousemove", userMoved), document.removeEventListener("touchmove", userMoved), document.removeEventListener("mouseup", userReleased), document.removeEventListener("touchend", userReleased), document.removeEventListener("touchcancel", userReleased), dragStarted = !1;
-    }
-    function windowScrollPosition() {
-      return {
-        left: window.pageXOffset || document.documentElement.scrollLeft || 0,
-        top: window.pageYOffset || document.documentElement.scrollTop || 0
-      };
     }
     return { destroy };
   }
@@ -63,7 +59,7 @@
     if (!resizeableHandleElement || typeof resizeableHandleElement.addEventListener != "function")
       throw new Error("[Slick.Resizable] You did not provide a valid html element that will be used for the handle to resize.");
     function destroy() {
-      resizeableHandleElement && typeof resizeableHandleElement.removeEventListener == "function" && (resizeableHandleElement.removeEventListener("mousedown", resizeStartHandler), resizeableHandleElement.removeEventListener("touchstart", resizeStartHandler));
+      typeof (resizeableHandleElement == null ? void 0 : resizeableHandleElement.removeEventListener) == "function" && (resizeableHandleElement.removeEventListener("mousedown", resizeStartHandler), resizeableHandleElement.removeEventListener("touchstart", resizeStartHandler));
     }
     function executeResizeCallbackWhenDefined(callback, e) {
       typeof callback == "function" && callback(e, { resizeableElement, resizeableHandleElement });
@@ -90,3 +86,4 @@
     Resizable
   });
 })();
+//# sourceMappingURL=slick.interactions.js.map

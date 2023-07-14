@@ -1,102 +1,122 @@
 "use strict";
 (() => {
-  // src/controls/slick.columnpicker.js
-  var BindingEventService = Slick.BindingEventService, SlickEvent = Slick.Event, Utils = Slick.Utils;
-  function SlickColumnPicker(columns, grid, options) {
-    var _grid = grid, _options = options, _gridUid = grid && grid.getUID ? grid.getUID() : "", _columnTitleElm, _listElm, _menuElm, columnCheckboxes, onColumnsChanged = new SlickEvent(), _bindingEventService = new BindingEventService(), defaults = {
-      fadeSpeed: 250,
-      // the last 2 checkboxes titles
-      hideForceFitButton: !1,
-      hideSyncResizeButton: !1,
-      forceFitTitle: "Force fit columns",
-      syncResizeTitle: "Synchronous resize",
-      headerColumnValueExtractor: function(columnDef) {
-        return columnDef.name;
-      }
-    };
-    function init(grid2) {
-      grid2.onHeaderContextMenu.subscribe(handleHeaderContextMenu), grid2.onColumnsReordered.subscribe(updateColumnOrder), _options = Utils.extend({}, defaults, options), _menuElm = document.createElement("div"), _menuElm.className = `slick-columnpicker ${_gridUid}`, _menuElm.style.display = "none", document.body.appendChild(_menuElm);
+  var __defProp = Object.defineProperty;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: !0, configurable: !0, writable: !0, value }) : obj[key] = value;
+  var __publicField = (obj, key, value) => (__defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value), value);
+
+  // src/controls/slick.columnpicker.ts
+  var BindingEventService = Slick.BindingEventService, SlickEvent = Slick.Event, Utils = Slick.Utils, SlickColumnPicker = class {
+    constructor(columns, grid, gridOptions) {
+      this.columns = columns;
+      this.grid = grid;
+      __publicField(this, "_gridUid");
+      __publicField(this, "_columnTitleElm");
+      __publicField(this, "_listElm");
+      __publicField(this, "_menuElm");
+      __publicField(this, "_columnCheckboxes", []);
+      __publicField(this, "_bindingEventService", new BindingEventService());
+      __publicField(this, "_gridOptions");
+      __publicField(this, "_defaults", {
+        fadeSpeed: 250,
+        // the last 2 checkboxes titles
+        hideForceFitButton: !1,
+        hideSyncResizeButton: !1,
+        forceFitTitle: "Force fit columns",
+        syncResizeTitle: "Synchronous resize",
+        headerColumnValueExtractor: (columnDef) => columnDef.name || ""
+      });
+      // public events
+      __publicField(this, "onColumnsChanged", new SlickEvent());
+      this._gridUid = grid.getUID(), this._gridOptions = Utils.extend({}, this._defaults, gridOptions), this.init(this.grid);
+    }
+    init(grid) {
+      var _a;
+      grid.onHeaderContextMenu.subscribe(this.handleHeaderContextMenu.bind(this)), grid.onColumnsReordered.subscribe(this.updateColumnOrder.bind(this)), this._menuElm = document.createElement("div"), this._menuElm.className = `slick-columnpicker ${this._gridUid}`, this._menuElm.style.display = "none", document.body.appendChild(this._menuElm);
       let buttonElm = document.createElement("button");
       buttonElm.type = "button", buttonElm.className = "close", buttonElm.dataset.dismiss = "slick-columnpicker", buttonElm.ariaLabel = "Close";
       let spanCloseElm = document.createElement("span");
-      if (spanCloseElm.className = "close", spanCloseElm.ariaHidden = "true", spanCloseElm.innerHTML = "&times;", buttonElm.appendChild(spanCloseElm), _menuElm.appendChild(buttonElm), _options.columnPickerTitle || _options.columnPicker && _options.columnPicker.columnTitle) {
-        var columnTitle = _options.columnPickerTitle || _options.columnPicker.columnTitle;
-        _columnTitleElm = document.createElement("div"), _columnTitleElm.className = "slick-gridmenu-custom", _columnTitleElm.textContent = columnTitle, _menuElm.appendChild(_columnTitleElm);
+      if (spanCloseElm.className = "close", spanCloseElm.ariaHidden = "true", spanCloseElm.innerHTML = "&times;", buttonElm.appendChild(spanCloseElm), this._menuElm.appendChild(buttonElm), this._gridOptions.columnPickerTitle || this._gridOptions.columnPicker && this._gridOptions.columnPicker.columnTitle) {
+        let columnTitle = this._gridOptions.columnPickerTitle || ((_a = this._gridOptions.columnPicker) == null ? void 0 : _a.columnTitle);
+        this._columnTitleElm = document.createElement("div"), this._columnTitleElm.className = "slick-gridmenu-custom", this._columnTitleElm.textContent = columnTitle || "", this._menuElm.appendChild(this._columnTitleElm);
       }
-      _bindingEventService.bind(_menuElm, "click", updateColumn), _listElm = document.createElement("span"), _listElm.className = "slick-columnpicker-list", _bindingEventService.bind(document.body, "mousedown", handleBodyMouseDown), _bindingEventService.bind(document.body, "beforeunload", destroy);
+      this._bindingEventService.bind(this._menuElm, "click", this.updateColumn.bind(this)), this._listElm = document.createElement("span"), this._listElm.className = "slick-columnpicker-list", this._bindingEventService.bind(document.body, "mousedown", this.handleBodyMouseDown.bind(this)), this._bindingEventService.bind(document.body, "beforeunload", this.destroy.bind(this));
     }
-    function destroy() {
-      _grid.onHeaderContextMenu.unsubscribe(handleHeaderContextMenu), _grid.onColumnsReordered.unsubscribe(updateColumnOrder), _bindingEventService.unbindAll(), _listElm && _listElm.remove(), _menuElm && _menuElm.remove();
+    destroy() {
+      var _a, _b;
+      this.grid.onHeaderContextMenu.unsubscribe(this.handleHeaderContextMenu.bind(this)), this.grid.onColumnsReordered.unsubscribe(this.updateColumnOrder.bind(this)), this._bindingEventService.unbindAll(), (_a = this._listElm) == null || _a.remove(), (_b = this._menuElm) == null || _b.remove();
     }
-    function handleBodyMouseDown(e) {
-      (_menuElm !== e.target && !(_menuElm && _menuElm.contains(e.target)) || e.target.className === "close") && (_menuElm.setAttribute("aria-expanded", "false"), _menuElm.style.display = "none");
+    handleBodyMouseDown(e) {
+      (this._menuElm !== e.target && !(this._menuElm && this._menuElm.contains(e.target)) || e.target.className === "close") && (this._menuElm.setAttribute("aria-expanded", "false"), this._menuElm.style.display = "none");
     }
-    function handleHeaderContextMenu(e) {
-      e.preventDefault(), Utils.emptyElement(_listElm), updateColumnOrder(), columnCheckboxes = [];
+    handleHeaderContextMenu(e) {
+      var _a, _b, _c;
+      e.preventDefault(), Utils.emptyElement(this._listElm), this.updateColumnOrder(), this._columnCheckboxes = [];
       let columnId, columnLabel, excludeCssClass;
-      for (var i = 0; i < columns.length; i++) {
-        columnId = columns[i].id, excludeCssClass = columns[i].excludeFromColumnPicker ? "hidden" : "";
+      for (let i = 0; i < this.columns.length; i++) {
+        columnId = this.columns[i].id, excludeCssClass = this.columns[i].excludeFromColumnPicker ? "hidden" : "";
         let liElm = document.createElement("li");
-        liElm.className = excludeCssClass, liElm.ariaLabel = columns[i] && columns[i].name;
+        liElm.className = excludeCssClass, liElm.ariaLabel = ((_a = this.columns[i]) == null ? void 0 : _a.name) || "";
         let checkboxElm = document.createElement("input");
-        checkboxElm.type = "checkbox", checkboxElm.id = `${_gridUid}colpicker-${columnId}`, checkboxElm.dataset.columnid = columns[i].id, liElm.appendChild(checkboxElm), columnCheckboxes.push(checkboxElm), _grid.getColumnIndex(columnId) != null && !columns[i].hidden && (checkboxElm.checked = !0), _options && _options.columnPicker && _options.columnPicker.headerColumnValueExtractor ? columnLabel = _options.columnPicker.headerColumnValueExtractor(columns[i], _options) : columnLabel = defaults.headerColumnValueExtractor(columns[i], _options);
+        checkboxElm.type = "checkbox", checkboxElm.id = `${this._gridUid}colpicker-${columnId}`, checkboxElm.dataset.columnid = String(this.columns[i].id), liElm.appendChild(checkboxElm), this._columnCheckboxes.push(checkboxElm), this.grid.getColumnIndex(columnId) != null && !this.columns[i].hidden && (checkboxElm.checked = !0), this._gridOptions && this._gridOptions.columnPicker && this._gridOptions.columnPicker.headerColumnValueExtractor ? columnLabel = this._gridOptions.columnPicker.headerColumnValueExtractor(this.columns[i], this._gridOptions) : columnLabel = this._defaults.headerColumnValueExtractor(this.columns[i], this._gridOptions);
         let labelElm = document.createElement("label");
-        labelElm.htmlFor = `${_gridUid}colpicker-${columnId}`, labelElm.innerHTML = columnLabel, liElm.appendChild(labelElm), _listElm.appendChild(liElm);
+        labelElm.htmlFor = `${this._gridUid}colpicker-${columnId}`, labelElm.innerHTML = columnLabel, liElm.appendChild(labelElm), this._listElm.appendChild(liElm);
       }
-      if (_options.columnPicker && (!_options.columnPicker.hideForceFitButton || !_options.columnPicker.hideSyncResizeButton) && _listElm.appendChild(document.createElement("hr")), !(_options.columnPicker && _options.columnPicker.hideForceFitButton)) {
-        let forceFitTitle = _options.columnPicker && _options.columnPicker.forceFitTitle || _options.forceFitTitle, liElm = document.createElement("li");
-        liElm.ariaLabel = forceFitTitle, _listElm.appendChild(liElm);
+      if (this._gridOptions.columnPicker && (!this._gridOptions.columnPicker.hideForceFitButton || !this._gridOptions.columnPicker.hideSyncResizeButton) && this._listElm.appendChild(document.createElement("hr")), !(this._gridOptions.columnPicker && this._gridOptions.columnPicker.hideForceFitButton)) {
+        let forceFitTitle = this._gridOptions.columnPicker && this._gridOptions.columnPicker.forceFitTitle || this._gridOptions.forceFitTitle, liElm = document.createElement("li");
+        liElm.ariaLabel = forceFitTitle || "", this._listElm.appendChild(liElm);
         let forceFitCheckboxElm = document.createElement("input");
-        forceFitCheckboxElm.type = "checkbox", forceFitCheckboxElm.id = `${_gridUid}colpicker-forcefit`, forceFitCheckboxElm.dataset.option = "autoresize", liElm.appendChild(forceFitCheckboxElm);
+        forceFitCheckboxElm.type = "checkbox", forceFitCheckboxElm.id = `${this._gridUid}colpicker-forcefit`, forceFitCheckboxElm.dataset.option = "autoresize", liElm.appendChild(forceFitCheckboxElm);
         let labelElm = document.createElement("label");
-        labelElm.htmlFor = `${_gridUid}colpicker-forcefit`, labelElm.textContent = forceFitTitle, liElm.appendChild(labelElm), _grid.getOptions().forceFitColumns && (forceFitCheckboxElm.checked = !0);
+        labelElm.htmlFor = `${this._gridUid}colpicker-forcefit`, labelElm.textContent = forceFitTitle || "", liElm.appendChild(labelElm), this.grid.getOptions().forceFitColumns && (forceFitCheckboxElm.checked = !0);
       }
-      if (!(_options.columnPicker && _options.columnPicker.hideSyncResizeButton)) {
-        let syncResizeTitle = _options.columnPicker && _options.columnPicker.syncResizeTitle || _options.syncResizeTitle, liElm = document.createElement("li");
-        liElm.ariaLabel = syncResizeTitle, _listElm.appendChild(liElm);
+      if (!((_b = this._gridOptions.columnPicker) != null && _b.hideSyncResizeButton)) {
+        let syncResizeTitle = ((_c = this._gridOptions.columnPicker) == null ? void 0 : _c.syncResizeTitle) || this._gridOptions.syncResizeTitle, liElm = document.createElement("li");
+        liElm.ariaLabel = syncResizeTitle || "", this._listElm.appendChild(liElm);
         let syncResizeCheckboxElm = document.createElement("input");
-        syncResizeCheckboxElm.type = "checkbox", syncResizeCheckboxElm.id = `${_gridUid}colpicker-syncresize`, syncResizeCheckboxElm.dataset.option = "syncresize", liElm.appendChild(syncResizeCheckboxElm);
+        syncResizeCheckboxElm.type = "checkbox", syncResizeCheckboxElm.id = `${this._gridUid}colpicker-syncresize`, syncResizeCheckboxElm.dataset.option = "syncresize", liElm.appendChild(syncResizeCheckboxElm);
         let labelElm = document.createElement("label");
-        labelElm.htmlFor = `${_gridUid}colpicker-syncresize`, labelElm.textContent = syncResizeTitle, liElm.appendChild(labelElm), _grid.getOptions().syncColumnCellResize && (syncResizeCheckboxElm.checked = !0);
+        labelElm.htmlFor = `${this._gridUid}colpicker-syncresize`, labelElm.textContent = syncResizeTitle || "", liElm.appendChild(labelElm), this.grid.getOptions().syncColumnCellResize && (syncResizeCheckboxElm.checked = !0);
       }
-      repositionMenu(e);
+      this.repositionMenu(e);
     }
-    function repositionMenu(event) {
-      let targetEvent = event && event.touches && event.touches[0] || event;
-      _menuElm.style.top = `${targetEvent.pageY - 10}px`, _menuElm.style.left = `${targetEvent.pageX - 10}px`, _menuElm.style.maxHeight = `${window.innerHeight - targetEvent.clientY}px`, _menuElm.style.display = "block", _menuElm.setAttribute("aria-expanded", "true"), _menuElm.appendChild(_listElm);
+    repositionMenu(event) {
+      var _a, _b;
+      let targetEvent = (_b = (_a = event == null ? void 0 : event.touches) == null ? void 0 : _a[0]) != null ? _b : event;
+      this._menuElm.style.top = `${targetEvent.pageY - 10}px`, this._menuElm.style.left = `${targetEvent.pageX - 10}px`, this._menuElm.style.maxHeight = `${window.innerHeight - targetEvent.clientY}px`, this._menuElm.style.display = "block", this._menuElm.setAttribute("aria-expanded", "true"), this._menuElm.appendChild(this._listElm);
     }
-    function updateColumnOrder() {
-      let current = _grid.getColumns().slice(0), ordered = new Array(columns.length);
+    updateColumnOrder() {
+      let current = this.grid.getColumns().slice(0), ordered = new Array(this.columns.length);
       for (let i = 0; i < ordered.length; i++)
-        _grid.getColumnIndex(columns[i].id) === void 0 ? ordered[i] = columns[i] : ordered[i] = current.shift();
-      columns = ordered;
+        this.grid.getColumnIndex(this.columns[i].id) === void 0 ? ordered[i] = this.columns[i] : ordered[i] = current.shift();
+      this.columns = ordered;
     }
-    function updateAllTitles(gridMenuOptions) {
-      _columnTitleElm && _columnTitleElm.innerHTML && (_columnTitleElm.innerHTML = gridMenuOptions.columnTitle);
+    /** Update the Titles of each sections (command, customTitle, ...) */
+    updateAllTitles(pickerOptions) {
+      this._columnTitleElm && this._columnTitleElm.innerHTML && (this._columnTitleElm.innerHTML = pickerOptions.columnTitle);
     }
-    function updateColumn(e) {
+    updateColumn(e) {
       if (e.target.dataset.option === "autoresize") {
-        var previousVisibleColumns = getVisibleColumns(), isChecked = e.target.checked;
-        _grid.setOptions({ forceFitColumns: isChecked }), _grid.setColumns(previousVisibleColumns);
+        let previousVisibleColumns = this.getVisibleColumns(), isChecked = e.target.checked || !1;
+        this.grid.setOptions({ forceFitColumns: isChecked }), this.grid.setColumns(previousVisibleColumns);
         return;
       }
       if (e.target.dataset.option === "syncresize") {
-        e.target.checked ? _grid.setOptions({ syncColumnCellResize: !0 }) : _grid.setOptions({ syncColumnCellResize: !1 });
+        e.target.checked ? this.grid.setOptions({ syncColumnCellResize: !0 }) : this.grid.setOptions({ syncColumnCellResize: !1 });
         return;
       }
       if (e.target.type === "checkbox") {
-        let isChecked2 = e.target.checked, columnId = e.target.dataset.columnid || "", visibleColumns = [];
-        if (columnCheckboxes.forEach((columnCheckbox, idx) => {
-          columns[idx].hidden !== void 0 && (columns[idx].hidden = !columnCheckbox.checked), columnCheckbox.checked && visibleColumns.push(columns[idx]);
+        let isChecked = e.target.checked, columnId = e.target.dataset.columnid || "", visibleColumns = [];
+        if (this._columnCheckboxes.forEach((columnCheckbox, idx) => {
+          this.columns[idx].hidden !== void 0 && (this.columns[idx].hidden = !columnCheckbox.checked), columnCheckbox.checked && visibleColumns.push(this.columns[idx]);
         }), !visibleColumns.length) {
           e.target.checked = !0;
           return;
         }
-        _grid.setColumns(visibleColumns), onColumnsChanged.notify({ columnId, showing: isChecked2, allColumns: columns, columns: visibleColumns, grid: _grid });
+        this.grid.setColumns(visibleColumns), this.onColumnsChanged.notify({ columnId, showing: isChecked, allColumns: this.columns, columns: visibleColumns, grid: this.grid });
       }
     }
-    function setColumnVisibiliy(idxOrId, show) {
-      var idx = typeof idxOrId == "number" ? idxOrId : getColumnIndexbyId(idxOrId), sVisible = !!_grid.getColumnIndex(columns[idx].id), visibleColumns = getVisibleColumns(), col = columns[idx];
+    setColumnVisibiliy(idxOrId, show) {
+      let idx = typeof idxOrId == "number" ? idxOrId : this.getColumnIndexbyId(idxOrId), visibleColumns = this.getVisibleColumns(), col = this.columns[idx];
       if (show)
         col.hidden = !1, visibleColumns.splice(idx, 0, col);
       else {
@@ -105,37 +125,28 @@
           visibleColumns[i].id !== col.id && newVisibleColumns.push(visibleColumns[i]);
         visibleColumns = newVisibleColumns;
       }
-      _grid.setColumns(visibleColumns), onColumnsChanged.notify({ columnId: col.id, showing: show, allColumns: columns, columns: visibleColumns, grid: _grid });
+      this.grid.setColumns(visibleColumns), this.onColumnsChanged.notify({ columnId: col.id, showing: show, allColumns: this.columns, columns: visibleColumns, grid: this.grid });
     }
-    function getAllColumns() {
-      return columns;
+    getAllColumns() {
+      return this.columns;
     }
-    function getColumnbyId(id) {
-      for (let i = 0; i < columns.length; i++)
-        if (columns[i].id === id)
-          return columns[i];
+    getColumnbyId(id) {
+      for (let i = 0; i < this.columns.length; i++)
+        if (this.columns[i].id === id)
+          return this.columns[i];
       return null;
     }
-    function getColumnIndexbyId(id) {
-      for (let i = 0; i < columns.length; i++)
-        if (columns[i].id === id)
+    getColumnIndexbyId(id) {
+      for (let i = 0; i < this.columns.length; i++)
+        if (this.columns[i].id === id)
           return i;
       return -1;
     }
-    function getVisibleColumns() {
-      return _grid.getColumns();
+    /** visible columns, we can simply get them directly from the grid */
+    getVisibleColumns() {
+      return this.grid.getColumns();
     }
-    return init(_grid), {
-      init,
-      getAllColumns,
-      getColumnbyId,
-      getColumnIndexbyId,
-      getVisibleColumns,
-      destroy,
-      updateAllTitles,
-      onColumnsChanged,
-      setColumnVisibiliy
-    };
-  }
+  };
   window.Slick && (window.Slick.Controls = window.Slick.Controls || {}, window.Slick.Controls.ColumnPicker = SlickColumnPicker);
 })();
+//# sourceMappingURL=slick.columnpicker.js.map
