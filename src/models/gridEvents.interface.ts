@@ -1,4 +1,4 @@
-import type { Column, CompositeEditorOption, Editor, EditorValidationResult, GridOption } from './index';
+import type { Column, CompositeEditorOption, CssStyleHash, Editor, EditorValidationResult, GridOption } from './index';
 import type { SlickGrid } from '../slick.grid';
 
 export interface SlickGridEventData { grid: SlickGrid; }
@@ -15,7 +15,7 @@ export interface OnBeforeHeaderRowCellDestroyEventArgs extends SlickGridEventDat
 export interface OnBeforeFooterRowCellDestroyEventArgs extends SlickGridEventData { node: HTMLElement; column: Column; }
 export interface OnBeforeSetColumnsEventArgs extends SlickGridEventData { previousColumns: Column[]; newColumns: Column[]; }
 export interface OnCellChangeEventArgs extends SlickGridEventData { row: number; cell: number; item: any; column: Column; }
-export interface OnCellCssStylesChangedEventArgs extends SlickGridEventData { key: string; hash: string; }
+export interface OnCellCssStylesChangedEventArgs extends SlickGridEventData { key: string; hash: CssStyleHash; }
 export interface OnColumnsDragEventArgs extends SlickGridEventData { triggeredByColumn: string; resizeHandle: HTMLDivElement; }
 export interface OnColumnsReorderedEventArgs extends SlickGridEventData { impactedColumns: Column[]; }
 export interface OnColumnsResizedEventArgs extends SlickGridEventData { triggeredByColumn: string; }

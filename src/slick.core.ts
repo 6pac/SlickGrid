@@ -121,7 +121,7 @@ export class SlickEventData {
  * @constructor
  */
 export class SlickEvent<ArgType = any> {
-  protected handlers: Handler<any>[] = [];
+  protected handlers: Handler<ArgType>[] = [];
 
   /**
    * Adds an event handler to be called when the event is fired.
@@ -130,22 +130,22 @@ export class SlickEvent<ArgType = any> {
    * @method subscribe
    * @param fn {Function} Event handler.
    */
-  subscribe<ArgType = any>(fn: Handler<ArgType>) {
+  subscribe(fn: Handler<ArgType>) {
     this.handlers.push(fn);
-  };
+  }
 
   /**
    * Removes an event handler added with <code>subscribe(fn)</code>.
    * @method unsubscribe
    * @param fn {Function} Event handler to be removed.
    */
-  unsubscribe<ArgType = any>(fn?: Handler<ArgType>) {
+  unsubscribe(fn?: Handler<ArgType>) {
     for (let i = this.handlers.length - 1; i >= 0; i--) {
       if (this.handlers[i] === fn) {
         this.handlers.splice(i, 1);
       }
     }
-  };
+  }
 
   /**
    * Fires an event notifying all subscribers.
@@ -172,7 +172,7 @@ export class SlickEvent<ArgType = any> {
     }
 
     return e;
-  };
+  }
 }
 
 export class SlickEventHandler<ArgType = any> {
@@ -180,7 +180,7 @@ export class SlickEventHandler<ArgType = any> {
 
   subscribe(event: SlickEvent, handler: Handler<ArgType>) {
     this.handlers.push({ event, handler });
-    event.subscribe<ArgType>(handler);
+    event.subscribe(handler);
 
     return this;  // allow chaining
   }
@@ -197,7 +197,7 @@ export class SlickEventHandler<ArgType = any> {
     }
 
     return this;  // allow chaining
-  };
+  }
 
   unsubscribeAll() {
     let i = this.handlers.length;
@@ -207,7 +207,7 @@ export class SlickEventHandler<ArgType = any> {
     this.handlers = [];
 
     return this;  // allow chaining
-  };
+  }
 }
 
 /**

@@ -1,6 +1,6 @@
-import { Sortable } from 'sortablejs';
+import type { Sortable } from 'sortablejs';
 
-import {
+import type {
   BindingEventService,
   ColAutosizeMode,
   SlickEvent,
@@ -11,20 +11,25 @@ import {
   SlickGroupTotals,
   keyCode,
   preClickClassName,
-  SlickRange,
   RowSelectionMode,
+  SlickRange,
   ValueFilterMode,
   Utils,
   WidthEvalMode,
 } from './slick.core';
-import { SlickAutoTooltip } from './plugins/slick.autotooltips';
-import { SlickCellCopyManager } from './plugins/slick.cellcopymanager';
-import { SlickGroupItemMetadataProvider } from './slick.groupitemmetadataprovider';
-import { Draggable, MouseWheel, Resizable } from './slick.interactions';
-import { Aggregators } from './slick.dataview';
-import { Editors } from './slick.editors';
-import { Formatters } from './slick.formatters';
-import { SlickGrid } from './slick.grid';
+import type { SlickColumnPicker } from './controls/slick.columnpicker';
+import type { SlickColumnMenu } from './controls/slick.columnmenu';
+import type { SlickGridPager } from './controls/slick.pager';
+import type { SlickGridMenu } from './controls/slick.gridmenu';
+import type { SlickAutoTooltip } from './plugins/slick.autotooltips';
+import type { SlickCellCopyManager } from './plugins/slick.cellcopymanager';
+import type { SlickCellExternalCopyManager } from './plugins/slick.cellcopymanager';
+import type { SlickGroupItemMetadataProvider } from './slick.cellexternalcopymanager';
+import type { Draggable, MouseWheel, Resizable } from './slick.interactions';
+import type { Aggregators } from './slick.dataview';
+import type { Editors } from './slick.editors';
+import type { Formatters } from './slick.formatters';
+import type { SlickGrid } from './slick.grid';
 
 declare global {
   var IIFE_ONLY: boolean;
@@ -35,11 +40,17 @@ declare global {
     AutoTooltips: typeof SlickAutoTooltips,
     BindingEventService: typeof BindingEventService,
     CellCopyManager: typeof SlickCellCopyManager,
+    CellExternalCopyManager: typeof SlickCellExternalCopyManager,
     Draggable: typeof Draggable,
     ColAutosizeMode: typeof ColAutosizeMode,
+    Controls: {
+      ColumnPicker: typeof SlickColumnPicker | typeof SlickColumnMenu,
+      GridMenu: typeof SlickGridMenu,
+      Pager: typeof SlickGridPager
+    },
     Data: {
       Aggregators: typeof Aggregators,
-      DataView: SlickDataView,
+      DataView: typeof SlickDataView,
       GroupItemMetadataProvider: typeof SlickGroupItemMetadataProvider
     },
     Editors: typeof Editors,

@@ -3,8 +3,9 @@
 function fallback() {
   console.log('use local SortableJS CDN fallback');
   var element = document.createElement('script');
-  element.type = 'text/javascript';
-  element.src = '../node_modules/sortablejs/Sortable.js'; // or your path to your local script
+  // element.setAttribute('defer', true);
+  // element.type = 'text/javascript';
+  element.src = '../node_modules/sortablejs/Sortable.min.js'; // or your path to your local script
   document.body.appendChild(element);
 }
 
