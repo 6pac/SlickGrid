@@ -1,7 +1,7 @@
-import type { Column, ColumnReorderFunction, EditCommand, Editor, Formatter, ItemMetadata, } from './index';
+import type { Column, ColumnPickerOption, ColumnReorderFunction, EditCommand, Editor, Formatter, GridMenu, ItemMetadata, } from './index';
 import type { EditorLock } from '../slick.core';
 
-export interface CellRange {
+export interface CellViewportRange {
   bottom: number;
   top: number;
   leftPx: number;
@@ -67,8 +67,8 @@ export interface GridOption {
   /** Cell menu options (Action menu) */
   // cellMenu?: CellMenu;
 
-  // /** Column Picker Plugin options (columnTitle, forceFitTitle, syncResizeTitle) */
-  // columnPicker?: ColumnPicker;
+  /** Column Picker Plugin options (columnTitle, forceFitTitle, syncResizeTitle) */
+  columnPicker?: Partial<ColumnPickerOption>;
 
   // /** Context menu options (mouse right+click) */
   // contextMenu?: ContextMenu;
@@ -182,8 +182,8 @@ export interface GridOption {
   /** Defaults to false, which leads to have row(s) taking full width */
   fullWidthRows?: boolean;
 
-  // /** Grid Menu options (aka hamburger menu) */
-  // gridMenu?: GridMenu;
+  /** Grid Menu options (aka hamburger menu) */
+  gridMenu?: GridMenu;
 
   /** Header row height in pixels (only type the number). Header row is where the filters are. */
   headerRowHeight: number;
@@ -278,4 +278,16 @@ export interface GridOption {
 
   /** Viewport max width in pixel */
   viewportMaxWidthPx?: number;
+
+  // --
+  // deprecated options
+
+  /** @deprecated @use `columnPicker` - column picker title */
+  columnPickerTitle?: string;
+
+  /** @deprecated @use `columnPicker` - forcefit title displayed in column picker */
+  forceFitTitle?: string;
+
+  /** @deprecated @use `columnPicker` - syncResize title displayed in column picker */
+  syncResizeTitle?: string;
 }

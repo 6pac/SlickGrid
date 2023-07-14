@@ -2,7 +2,7 @@ import SortableInstance from 'sortablejs';
 
 import type {
   AutoSize,
-  CellRange,
+  CellViewportRange,
   Column,
   ColumnSort,
   CssStyleHash,
@@ -2789,7 +2789,7 @@ export class SlickGrid {
     rowInfo.startIndex = 0;
     rowInfo.endIndex = rowInfo.rowCount - 1;
     rowInfo.valueArr = null;
-    rowInfo.getRowVal = function (i) { return this.getDataItem(i)[columnDef.field]; };
+    rowInfo.getRowVal = (i) => this.getDataItem(i)[columnDef.field];
 
     let rowSelectionMode = (isInit ? autoSize.rowSelectionModeOnInit : undefined) || autoSize.rowSelectionMode;
 
@@ -3356,7 +3356,7 @@ export class SlickGrid {
    * @param {Boolean} [suppressColumnSet] - do we want to supress the columns set, via "setColumns()" method? (defaults to false)
    * @param {Boolean} [suppressSetOverflow] - do we want to suppress the call to `setOverflow`
    */
-  setOptions(args: GridOption, suppressRender?: boolean, suppressColumnSet?: boolean, suppressSetOverflow?: boolean): void {
+  setOptions(args: Partial<GridOption>, suppressRender?: boolean, suppressColumnSet?: boolean, suppressSetOverflow?: boolean): void {
     if (!this.getEditorLock().commitCurrentEdit()) {
       return;
     }
@@ -3436,8 +3436,8 @@ export class SlickGrid {
   }
 
   /** Returns an array of every data object, unless you're using DataView in which case it returns a DataView object. */
-  getData() {
-    return this.data;
+  getData<T extends CustomDataView | any[] = any>(): T {
+    return this.data as T;
   }
 
   /** Returns the size of the databinding source. */
@@ -3641,7 +3641,7 @@ export class SlickGrid {
     return item[columnDef.field];
   }
 
-  protected appendRowHtml(stringArrayL: string[], stringArrayR: string[], row: number, range: CellRange, dataLength: number) {
+  protected appendRowHtml(stringArrayL: string[], stringArrayR: string[], row: number, range: CellViewportRange, dataLength: number) {
     let d = this.getDataItem(row);
     let dataLoading = row < dataLength && !d;
     let rowCss = 'slick-row' +
@@ -3911,15 +3911,11 @@ export class SlickGrid {
     cellNode.innerHTML = this.sanitizeHtmlString((formatterResult as FormatterResultObject).text);
     if ((formatterResult as FormatterResultObject).removeClasses && !suppressRemove) {
       const classes = (formatterResult as FormatterResultObject).removeClasses!.split(' ');
-      classes.forEach(function (c) {
-        cellNode.classList.remove(c);
-      });
+      classes.forEach((c) => cellNode.classList.remove(c));
     }
     if ((formatterResult as FormatterResultObject).addClasses) {
       const classes = (formatterResult as FormatterResultObject).addClasses!.split(' ');
-      classes.forEach(function (c) {
-        cellNode.classList.add(c);
-      });
+      classes.forEach((c) => cellNode.classList.add(c));
     }
     if ((formatterResult as FormatterResultObject).toolTip) {
       cellNode.setAttribute('title', (formatterResult as FormatterResultObject).toolTip!);
@@ -4301,7 +4297,7 @@ export class SlickGrid {
     }
   }
 
-  protected cleanUpCells(range: CellRange, row: number) {
+  protected cleanUpCells(range: CellViewportRange, row: number) {
     // Ignore frozen rows
     if (this.hasFrozenRows
       && ((this._options.frozenBottom && row > this.actualFrozenRow) // Frozen bottom rows
@@ -4363,7 +4359,7 @@ export class SlickGrid {
     }
   }
 
-  protected cleanUpAndRenderCells(range: CellRange) {
+  protected cleanUpAndRenderCells(range: CellViewportRange) {
     let cacheEntry;
     let stringArray: string[] = [];
     let processedRows: number[] = [];
@@ -5479,9 +5475,7 @@ export class SlickGrid {
       this.makeActiveCellNormal();
       this.activeCellNode.classList.remove('active');
       if (this.rowsCache[this.activeRow]) {
-        this.rowsCache[this.activeRow].rowNode.forEach(function (node) {
-          node.classList.remove('active');
-        });
+        this.rowsCache[this.activeRow].rowNode.forEach((node) => node.classList.remove('active'));
       }
     }
 
@@ -6442,36 +6436,28 @@ export class SlickGrid {
         const validationResults = self.currentEditor.validate();
 
         if (validationResults.valid) {
+          const row = self.activeRow;
+          const cell = self.activeCell;
+          const editor = self.currentEditor;
+          const serializedValue = self.currentEditor.serializeValue();
+          const prevSerializedValue = self.serializedEditorValue;
+
           if (self.activeRow < self.getDataLength()) {
             const editCommand = {
-              row: self.activeRow,
-              cell: self.activeCell,
-              editor: self.currentEditor,
-              serializedValue: self.currentEditor.serializeValue(),
-              prevSerializedValue: self.serializedEditorValue,
-              execute: function () {
-                // the "this" in this case refers to the "editCommand" object because of the local function
-                this.editor.applyValue(item, this.serializedValue);
-                self.updateRow(this.row);
-                self.trigger(self.onCellChange, {
-                  command: 'execute',
-                  row: this.row,
-                  cell: this.cell,
-                  item: item,
-                  column: column
-                });
+              row,
+              cell,
+              editor,
+              serializedValue,
+              prevSerializedValue,
+              execute: () => {
+                editor.applyValue(item, serializedValue);
+                self.updateRow(row);
+                self.trigger(self.onCellChange, { command: 'execute', row, cell, item, column });
               },
-              undo: function () {
-                // the "this" in this case refers to the "editCommand" object because of the local function
-                this.editor.applyValue(item, this.prevSerializedValue);
-                self.updateRow(this.row);
-                self.trigger(self.onCellChange, {
-                  command: 'undo',
-                  row: this.row,
-                  cell: this.cell,
-                  item: item,
-                  column: column
-                });
+              undo: () => {
+                editor.applyValue(item, prevSerializedValue);
+                self.updateRow(row);
+                self.trigger(self.onCellChange, { command: 'undo', row, cell, item, column, });
               }
             };
 
