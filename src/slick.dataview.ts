@@ -268,7 +268,7 @@ export class SlickDataView<T = any> {
   }
 
   /** Set Paging Options */
-  setPagingOptions(args: PagingInfo) {
+  setPagingOptions(args: Partial<PagingInfo>) {
     if (this.onBeforePagingInfoChanged.notify(this.getPagingInfo(), null, this).getReturnValue() !== false) {
       if (args.pageSize != undefined) {
         this.pagesize = args.pageSize;
