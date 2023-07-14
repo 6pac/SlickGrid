@@ -5808,7 +5808,7 @@ var BindingEventService5 = BindingEventService, GlobalEditorLock3 = GlobalEditor
     this._container = this.getContainerElement(selectorOrElm), this._options = Utils9.extend(!0, {}, this._defaults, options), this._bindingEventService = new BindingEventService5(), this.init();
   }
   init() {
-    this.constructPagerUI(), this.updatePager(this.dataView.getPagingInfo()), this.dataView.onPagingInfoChanged.subscribe((e, pagingInfo) => {
+    this.constructPagerUI(), this.updatePager(this.dataView.getPagingInfo()), this.dataView.onPagingInfoChanged.subscribe((_e, pagingInfo) => {
       this.updatePager(pagingInfo);
     });
   }

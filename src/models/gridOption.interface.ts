@@ -1,4 +1,4 @@
-import type { Column, ColumnPickerOption, ColumnReorderFunction, EditCommand, Editor, Formatter, GridMenu, ItemMetadata, } from './index';
+import type { Column, ColumnPickerOption, ColumnReorderFunction, EditCommand, Editor, Formatter, GridMenuOption, ItemMetadata, } from './index';
 import type { EditorLock } from '../slick.core';
 
 export interface CellViewportRange {
@@ -183,7 +183,7 @@ export interface GridOption {
   fullWidthRows?: boolean;
 
   /** Grid Menu options (aka hamburger menu) */
-  gridMenu?: GridMenu;
+  gridMenu?: GridMenuOption;
 
   /** Header row height in pixels (only type the number). Header row is where the filters are. */
   headerRowHeight: number;

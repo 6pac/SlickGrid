@@ -1,4 +1,4 @@
-import type { Column, DOMMouseOrTouchEvent, GridMenu, GridMenuCommandItemCallbackArgs, GridMenuEventWithElementCallbackArgs, GridMenuItem, GridMenuOption, GridOption, onGridMenuColumnsChangedCallbackArgs } from '../models/index';
+import type { Column, DOMMouseOrTouchEvent, GridMenuCommandItemCallbackArgs, GridMenuEventWithElementCallbackArgs, GridMenuItem, GridMenuOption, GridOption, onGridMenuColumnsChangedCallbackArgs } from '../models/index';
 import { BindingEventService as BindingEventService_, Event as SlickEvent_, Utils as Utils_ } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 
@@ -120,7 +120,7 @@ export class SlickGridMenu {
   protected _gridOptions: GridOption;
   protected _gridUid: string;
   protected _isMenuOpen = false;
-  protected _gridMenuOptions: GridMenu | null = null;
+  protected _gridMenuOptions: GridMenuOption | null = null;
   protected _columnTitleElm!: HTMLElement;
   protected _customTitleElm!: HTMLElement;
   protected _customMenuElm!: HTMLElement;

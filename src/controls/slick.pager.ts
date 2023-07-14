@@ -48,7 +48,7 @@ export class SlickGridPager {
   init() {
     this.constructPagerUI();
     this.updatePager(this.dataView.getPagingInfo());
-    this.dataView.onPagingInfoChanged.subscribe((e, pagingInfo) => {
+    this.dataView.onPagingInfoChanged.subscribe((_e, pagingInfo) => {
       this.updatePager(pagingInfo);
     });
   }

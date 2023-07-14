@@ -1,28 +1,5 @@
-import type { Column, GridMenuOption, GridMenuCommandItemCallbackArgs, } from './index';
+import type { Column, } from './index';
 import type { SlickGrid } from '../slick.grid';
-
-export interface GridMenu extends GridMenuOption {
-  // --
-  // Events
-
-  /** Callback fired After the menu is shown. */
-  onAfterMenuShow?: (e: Event, args: GridMenuEventWithElementCallbackArgs) => boolean | void;
-
-  /** Callback fired Before the menu is shown. */
-  onBeforeMenuShow?: (e: Event, args: GridMenuEventWithElementCallbackArgs) => boolean | void;
-
-  /** SlickGrid Event fired when the menu is closing. */
-  onBeforeMenuClose?: (e: Event, args: GridMenuEventWithElementCallbackArgs) => boolean | void;
-
-  /** Callback fired when any of the columns checkbox selection changes. */
-  onColumnsChanged?: (e: Event, args: onGridMenuColumnsChangedCallbackArgs) => void;
-
-  /** Callback fired when the menu is closing. */
-  onMenuClose?: (e: Event, args: GridMenuEventWithElementCallbackArgs) => boolean | void;
-
-  /** Callback fired on menu option clicked from the Command items list */
-  onCommand?: (e: Event, args: GridMenuCommandItemCallbackArgs) => void;
-}
 
 export interface GridMenuEventBaseCallbackArgs {
   /** list of all column definitions (visible & hidden) */

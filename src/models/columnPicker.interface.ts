@@ -1,5 +1,4 @@
 import type { Column, GridOption } from './index';
-import type { SlickGrid } from '../slick.grid';
 
 export interface ColumnPickerOption {
   /** Defaults to "Columns" which is the title that shows up over the columns */
@@ -34,25 +33,4 @@ export interface ColumnPickerOption {
 
   /** Callback method to override the column name output used by the ColumnPicker/GridMenu. */
   headerColumnValueExtractor: (column: Column, gridOptions?: GridOption) => string;
-
-  // --
-  // Events
-
-  /** SlickGrid Event fired when any of the columns checkbox selection changes. */
-  onColumnsChanged?: (e: Event, args: {
-    /** column definition id */
-    columnId: string;
-
-    /** last command, are we showing or not the column? */
-    showing: boolean;
-
-    /** slick grid object */
-    grid: SlickGrid;
-
-    /** list of all column definitions (visible & hidden) */
-    allColumns: Column[];
-
-    /** list of visible column definitions */
-    visibleColumns: Column[];
-  }) => void;
 }

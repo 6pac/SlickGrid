@@ -31,7 +31,7 @@
       this._container = this.getContainerElement(selectorOrElm), this._options = Utils.extend(!0, {}, this._defaults, options), this._bindingEventService = new BindingEventService(), this.init();
     }
     init() {
-      this.constructPagerUI(), this.updatePager(this.dataView.getPagingInfo()), this.dataView.onPagingInfoChanged.subscribe((e, pagingInfo) => {
+      this.constructPagerUI(), this.updatePager(this.dataView.getPagingInfo()), this.dataView.onPagingInfoChanged.subscribe((_e, pagingInfo) => {
         this.updatePager(pagingInfo);
       });
     }
