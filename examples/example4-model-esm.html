@@ -138,8 +138,8 @@
 import {
   Editors,
   Formatters,
-  GlobalEditorLock,
-  RowSelectionModel,
+  SlickGlobalEditorLock,
+  SlickRowSelectionModel,
   SlickColumnPicker,
   SlickDataView,
   SlickGridPager,
@@ -260,7 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   dataView = new SlickDataView({ inlineFilters: true });
   grid = new SlickGrid("#myGrid", dataView, columns, options);
-  grid.setSelectionModel(new RowSelectionModel());
+  grid.setSelectionModel(new SlickRowSelectionModel());
 
   var pager = new SlickGridPager(dataView, grid, "#pager");
   var columnpicker = new SlickColumnPicker(columns, grid, options);
@@ -337,7 +337,7 @@ document.addEventListener("DOMContentLoaded", () => {
   var slider = document.getElementById("pcSlider");
   var slider2 = document.getElementById("pcSlider2");
   var sliderCallback = function() {
-    GlobalEditorLock.cancelCurrentEdit();
+    SlickGlobalEditorLock.cancelCurrentEdit();
 
     if (percentCompleteThreshold != this.value) {
       window.clearTimeout(h_runfilters);

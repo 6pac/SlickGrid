@@ -225,7 +225,7 @@ export class SlickRange {
   toCell: number;
   toRow: number;
 
-  constructor(fromRow: number, fromCell: number, toRow: number, toCell: number) {
+  constructor(fromRow: number, fromCell: number, toRow?: number, toCell?: number) {
     if (toRow === undefined && toCell === undefined) {
       toRow = fromRow;
       toCell = fromCell;
@@ -235,25 +235,25 @@ export class SlickRange {
      * @property fromRow
      * @type {Integer}
      */
-    this.fromRow = Math.min(fromRow, toRow);
+    this.fromRow = Math.min(fromRow, toRow as number);
 
     /**
      * @property fromCell
      * @type {Integer}
      */
-    this.fromCell = Math.min(fromCell, toCell);
+    this.fromCell = Math.min(fromCell, toCell as number);
 
     /**
      * @property toRow
      * @type {Integer}
      */
-    this.toRow = Math.max(fromRow, toRow);
+    this.toRow = Math.max(fromRow, toRow as number);
 
     /**
      * @property toCell
      * @type {Integer}
      */
-    this.toCell = Math.max(fromCell, toCell);
+    this.toCell = Math.max(fromCell, toCell as number);
   }
 
 
@@ -450,7 +450,7 @@ export class SlickGroupTotals extends SlickNonDataItem {
  * @class EditorLock
  * @constructor
  */
-export class EditorLock {
+export class SlickEditorLock {
   activeEditController: any = null;
 
   /**
@@ -475,13 +475,13 @@ export class EditorLock {
       return;
     }
     if (this.activeEditController !== null) {
-      throw new Error("SlickGrid.EditorLock.activate: an editController is still active, can't activate another editController");
+      throw new Error(`Slick.EditorLock.activate: an editController is still active, can't activate another editController`);
     }
     if (!editController.commitCurrentEdit) {
-      throw new Error("SlickGrid.EditorLock.activate: editController must implement .commitCurrentEdit()");
+      throw new Error('Slick.EditorLock.activate: editController must implement .commitCurrentEdit()');
     }
     if (!editController.cancelCurrentEdit) {
-      throw new Error("SlickGrid.EditorLock.activate: editController must implement .cancelCurrentEdit()");
+      throw new Error('Slick.EditorLock.activate: editController must implement .cancelCurrentEdit()');
     }
     this.activeEditController = editController;
   };
@@ -497,7 +497,7 @@ export class EditorLock {
       return;
     }
     if (this.activeEditController !== editController) {
-      throw new Error("SlickGrid.EditorLock.deactivate: specified editController is not the currently active one");
+      throw new Error('Slick.EditorLock.deactivate: specified editController is not the currently active one');
     }
     this.activeEditController = null;
   };
@@ -693,8 +693,8 @@ function isHidden(el: HTMLElement) {
 
 function parents(el: HTMLElement | ParentNode, selector?: string) {
   const parents: Array<HTMLElement | ParentNode> = [];
-  const visible = selector == ":visible";
-  const hidden = selector == ":hidden";
+  const visible = selector == ':visible';
+  const hidden = selector == ':hidden';
 
   while ((el = el.parentNode as ParentNode) && el !== document) {
     if (!el || !el.parentNode) {
@@ -810,7 +810,7 @@ function extend<T = any>(...args: any[]): T {
     if ((options = args[i]) != null) {
       for (name in options) {
         copy = options[name];
-        if (name === "__proto__" || target === copy) {
+        if (name === '__proto__' || target === copy) {
           continue;
         }
         if (deep && copy && (isPlainObject(copy) ||
@@ -876,40 +876,41 @@ export class BindingEventService {
     }
   }
 }
+export const SlickGlobalEditorLock = new SlickEditorLock();
 
 // export Slick namespace on both global & window objects
 const SlickCore = {
-  "Event": SlickEvent,
-  "EventData": SlickEventData,
-  "EventHandler": SlickEventHandler,
-  "Range": SlickRange,
-  "NonDataRow": SlickNonDataItem,
-  "Group": SlickGroup,
-  "GroupTotals": SlickGroupTotals,
-  // "EditorLock": EditorLock,
-  "RegexSanitizer": regexSanitizer,
-  // "BindingEventService": BindingEventService,
-  "Utils": {
-    "extend": extend,
-    "calculateAvailableSpace": calculateAvailableSpace,
-    "createDomElement": createDomElement,
-    "emptyElement": emptyElement,
-    "innerSize": innerSize,
-    "isEmptyObject": isEmptyObject,
-    "noop": noop,
-    "offset": offset,
-    "height": height,
-    "width": width,
-    "setStyleSize": setStyleSize,
-    "contains": contains,
-    "toFloat": toFloat,
-    "parents": parents,
-    "show": show,
-    "hide": hide,
-    "slideUp": slideUp,
-    "slideDown": slideDown,
-    "windowScrollPosition": windowScrollPosition,
-    "storage": {
+  Event: SlickEvent,
+  EventData: SlickEventData,
+  EventHandler: SlickEventHandler,
+  Range: SlickRange,
+  NonDataRow: SlickNonDataItem,
+  Group: SlickGroup,
+  GroupTotals: SlickGroupTotals,
+  // EditorLock: EditorLock,
+  RegexSanitizer: regexSanitizer,
+  // BindingEventService: BindingEventService,
+  Utils: {
+    extend: extend,
+    calculateAvailableSpace: calculateAvailableSpace,
+    createDomElement: createDomElement,
+    emptyElement: emptyElement,
+    innerSize: innerSize,
+    isEmptyObject: isEmptyObject,
+    noop: noop,
+    offset: offset,
+    height: height,
+    width: width,
+    setStyleSize: setStyleSize,
+    contains: contains,
+    toFloat: toFloat,
+    parents: parents,
+    show: show,
+    hide: hide,
+    slideUp: slideUp,
+    slideDown: slideDown,
+    windowScrollPosition: windowScrollPosition,
+    storage: {
       // https://stackoverflow.com/questions/29222027/vanilla-alternative-to-jquery-data-function-any-native-javascript-alternati
       _storage: new WeakMap(),
       put: function (element: any, key: string, obj: any) {
@@ -941,9 +942,9 @@ const SlickCore = {
    * @static
    * @constructor
    */
-  "GlobalEditorLock": new EditorLock(),
+  GlobalEditorLock: SlickGlobalEditorLock,
 
-  "keyCode": {
+  keyCode: {
     SPACE: 8,
     BACKSPACE: 8,
     DELETE: 46,
@@ -961,9 +962,9 @@ const SlickCore = {
     UP: 38,
     A: 65
   },
-  "preClickClassName": "slick-edit-preclick",
+  preClickClassName: 'slick-edit-preclick',
 
-  "GridAutosizeColsMode": {
+  GridAutosizeColsMode: {
     None: 'NOA',
     LegacyOff: 'LOF',
     LegacyForceFit: 'LFF',
@@ -972,7 +973,7 @@ const SlickCore = {
     FitViewportToCols: 'FVC'
   },
 
-  "ColAutosizeMode": {
+  'ColAutosizeMode': {
     Locked: 'LCK',
     Guide: 'GUI',
     Content: 'CON',
@@ -980,14 +981,14 @@ const SlickCore = {
     ContentIntelligent: 'CTI'
   },
 
-  "RowSelectionMode": {
+  'RowSelectionMode': {
     FirstRow: 'FS1',
     FirstNRows: 'FSN',
     AllRows: 'ALL',
     LastRow: 'LS1'
   },
 
-  "ValueFilterMode": {
+  'ValueFilterMode': {
     None: 'NONE',
     DeDuplicate: 'DEDP',
     GetGreatestAndSub: 'GR8T',
@@ -995,7 +996,7 @@ const SlickCore = {
     GetLongestText: 'LNSC'
   },
 
-  "WidthEvalMode": {
+  WidthEvalMode: {
     Auto: 'AUTO',
     TextOnly: 'CANV',
     HTML: 'HTML'
@@ -1010,7 +1011,7 @@ export const {
 
 /*  eslint-disable no-undef */
 // also add to global object when exist
-if (IIFE_ONLY && typeof global !== "undefined" && window.Slick) {
+if (IIFE_ONLY && typeof global !== 'undefined' && window.Slick) {
   global.Slick = window.Slick;
 }
 /*  eslint-enable no-undef */

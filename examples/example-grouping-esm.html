@@ -97,16 +97,16 @@
 <script type="module">
   import {
     Aggregators,
-    CellSelectionModel,
     Editors,
     Formatters,
-    GlobalEditorLock,
-    RowSelectionModel,
+    SlickGlobalEditorLock,
+    SlickCellSelectionModel,
     SlickColumnPicker,
     SlickDataView,
     SlickGrid,
     SlickGroup,
     SlickGroupItemMetadataProvider,
+    SlickRowSelectionModel,
     Utils,
   } from '../dist/esm/index.js';
 
@@ -322,7 +322,7 @@ document.addEventListener("DOMContentLoaded", function() {
 
   // register the group item metadata provider to add expand/collapse group handlers
   grid.registerPlugin(groupItemMetadataProvider);
-  grid.setSelectionModel(new CellSelectionModel());
+  grid.setSelectionModel(new SlickCellSelectionModel());
 
   var columnpicker = new SlickColumnPicker(columns, grid, options);
 

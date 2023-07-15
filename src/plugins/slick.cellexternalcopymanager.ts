@@ -1,4 +1,4 @@
-import type { CellRange, Column, CssStyleHash, ExcelCopyBufferOption, ExternalCopyClipCommand } from '../models/index';
+import type { CellRange, Column, CssStyleHash, ExcelCopyBufferOption, ExternalCopyClipCommand, Plugin } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 import { SlickEvent as SlickEvent_, Utils as Utils_ } from '../slick.core';
 
@@ -31,10 +31,13 @@ const CLIPBOARD_PASTE_DELAY = 100;
     readOnlyMode: suppresses paste
     headerColumnValueExtractor : option to specify a custom column header value extractor function
 */
-export class SlickCellExternalCopyManager {
+export class SlickCellExternalCopyManager implements Plugin {
   // --
   // public API
   pluginName = 'CellExternalCopyManager' as const;
+  onCopyCells = new SlickEvent<{ ranges: CellRange[]; }>();
+  onCopyCancelled = new SlickEvent<{ ranges: CellRange[]; }>();
+  onPasteCells = new SlickEvent<{ ranges: CellRange[]; }>();
 
   // --
   // protected props
@@ -55,10 +58,6 @@ export class SlickCellExternalCopyManager {
     'ESC': 27,
     'INSERT': 45
   };
-
-  onCopyCells = new SlickEvent();
-  onCopyCancelled = new SlickEvent();
-  onPasteCells = new SlickEvent();
 
   constructor(options: ExcelCopyBufferOption) {
     this._options = options || {};

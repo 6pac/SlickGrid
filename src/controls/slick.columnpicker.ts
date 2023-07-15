@@ -34,6 +34,12 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  */
 
 export class SlickColumnPicker {
+  // --
+  // public API
+  onColumnsChanged = new SlickEvent<{ columnId: number | string; showing: boolean; allColumns: Column[]; columns: Column[]; grid: SlickGrid; }>();
+
+  // --
+  // protected props
   protected _gridUid: string;
   protected _columnTitleElm!: HTMLElement;
   protected _listElm!: HTMLElement;
@@ -51,9 +57,6 @@ export class SlickColumnPicker {
     syncResizeTitle: 'Synchronous resize',
     headerColumnValueExtractor: (columnDef: Column) => columnDef.name || ''
   };
-
-  // public events
-  onColumnsChanged = new SlickEvent<{ columnId: number | string; showing: boolean; allColumns: Column[]; columns: Column[]; grid: SlickGrid; }>();
 
   constructor(protected columns: Column[], protected readonly grid: SlickGrid, gridOptions: GridOption) {
     this._gridUid = grid.getUID();

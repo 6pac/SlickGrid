@@ -1,5 +1,5 @@
 import { BindingEventService as BindingEventService_, Event as SlickEvent_, Utils as Utils_ } from '../slick.core';
-import type { Column, ColumnPickerOption, DOMMouseOrTouchEvent, GridOption } from '../models/index';
+import type { Column, ColumnPickerOption, DOMMouseOrTouchEvent, GridOption, OnColumnsChangedArgs } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
@@ -33,6 +33,12 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  */
 
 export class SlickColumnMenu {
+  // --
+  // public API
+  onColumnsChanged = new SlickEvent<OnColumnsChangedArgs>();
+
+  // --
+  // protected props
   protected _gridUid: string;
   protected _columnTitleElm!: HTMLElement;
   protected _listElm!: HTMLElement;
@@ -50,9 +56,6 @@ export class SlickColumnMenu {
     syncResizeTitle: 'Synchronous resize',
     headerColumnValueExtractor: (columnDef: Column) => columnDef.name || ''
   };
-
-  // public events
-  onColumnsChanged = new SlickEvent<{ columnId: number | string; showing: boolean; allColumns: Column[]; columns: Column[]; grid: SlickGrid; }>();
 
   constructor(protected columns: Column[], protected readonly grid: SlickGrid, options: GridOption) {
     this._gridUid = grid.getUID();

@@ -1,4 +1,4 @@
-import type { CssStyleHash } from '../models/index';
+import type { CssStyleHash, Plugin } from '../models/index';
 import { SlickEvent as SlickEvent_, keyCode as keyCode_, Utils as Utils_, SlickRange } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 
@@ -10,7 +10,7 @@ const Utils = (IIFE_ONLY ? Slick.Utils : Utils_) as typeof Utils_;
 /**
  * This manager enables users to copy/paste cell data
  */
-export class SlickCellCopyManager {
+export class SlickCellCopyManager implements Plugin {
   // --
   // public API
   pluginName = 'CellCopyManager' as const;
