@@ -104,6 +104,7 @@ if (typeof Slick === "undefined") {
       autosizeColsMode: Slick.GridAutosizeColsMode.LegacyOff,
       autosizeColPaddingPx: 4,
       autosizeTextAvgToMWidthRatio: 0.75,
+      scrollRenderThrottling: 50,
       viewportSwitchToScrollModeWidthPercent: undefined,
       viewportMinWidthPx: undefined,
       viewportMaxWidthPx: undefined,
@@ -234,7 +235,7 @@ if (typeof Slick === "undefined") {
     var pagingActive = false;
     var pagingIsLastPage = false;
 
-    var scrollThrottle = ActionThrottle(render, 50);
+    var scrollThrottle;
 
     // async call handles
     var h_editorLoader = null;
@@ -330,6 +331,7 @@ if (typeof Slick === "undefined") {
       // calculate these only once and share between grid instances
       maxSupportedCssHeight = maxSupportedCssHeight || getMaxSupportedCssHeight();
       options = utils.extend(true, {}, defaults, options);
+      scrollThrottle = ActionThrottle(render, options.scrollRenderThrottling);
       validateAndEnforceOptions();
       columnDefaults.width = options.defaultColumnWidth;
 
