@@ -185,7 +185,7 @@
         if (!dd.canMove) {
           dd.guide.style.top = '-1000px';
         } else {
-          dd.guide.style.top = insertBefore * (_grid.getOptions().rowHeight || 0) + 'px';
+          dd.guide.style.top = (insertBefore * (_grid.getOptions().rowHeight || 0)) + 'px';
         }
 
         dd.insertBefore = insertBefore;
