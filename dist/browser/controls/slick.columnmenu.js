@@ -9,6 +9,11 @@
     constructor(columns, grid, options) {
       this.columns = columns;
       this.grid = grid;
+      // --
+      // public API
+      __publicField(this, "onColumnsChanged", new SlickEvent());
+      // --
+      // protected props
       __publicField(this, "_gridUid");
       __publicField(this, "_columnTitleElm");
       __publicField(this, "_listElm");
@@ -25,8 +30,6 @@
         syncResizeTitle: "Synchronous resize",
         headerColumnValueExtractor: (columnDef) => columnDef.name || ""
       });
-      // public events
-      __publicField(this, "onColumnsChanged", new SlickEvent());
       this._gridUid = grid.getUID(), this._options = Utils.extend({}, this._defaults, options), this.init(this.grid);
     }
     init(grid) {

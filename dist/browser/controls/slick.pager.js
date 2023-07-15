@@ -5,12 +5,16 @@
   var __publicField = (obj, key, value) => (__defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value), value);
 
   // src/controls/slick.pager.ts
-  var BindingEventService = Slick.BindingEventService, GlobalEditorLock = Slick.GlobalEditorLock, Utils = Slick.Utils, SlickGridPager = class {
+  var BindingEventService = Slick.BindingEventService, SlickGlobalEditorLock = Slick.GlobalEditorLock, Utils = Slick.Utils, SlickGridPager = class {
     constructor(dataView, grid, selectorOrElm, options) {
       this.dataView = dataView;
       this.grid = grid;
-      // the container might be a string, a jQuery object or a native element
+      // --
+      // public API
+      // --
+      // protected props
       __publicField(this, "_container");
+      // the container might be a string, a jQuery object or a native element
       __publicField(this, "_statusElm");
       __publicField(this, "_bindingEventService");
       __publicField(this, "_options");
@@ -40,7 +44,7 @@
       this.setPageSize(0), this._bindingEventService.unbindAll(), this._container.innerHTML = "";
     }
     getNavState() {
-      let cannotLeaveEditMode = !GlobalEditorLock.commitCurrentEdit(), pagingInfo = this.dataView.getPagingInfo(), lastPage = pagingInfo.totalPages - 1;
+      let cannotLeaveEditMode = !SlickGlobalEditorLock.commitCurrentEdit(), pagingInfo = this.dataView.getPagingInfo(), lastPage = pagingInfo.totalPages - 1;
       return {
         canGotoFirst: !cannotLeaveEditMode && pagingInfo.pageSize !== 0 && pagingInfo.pageNum > 0,
         canGotoLast: !cannotLeaveEditMode && pagingInfo.pageSize !== 0 && pagingInfo.pageNum !== lastPage,

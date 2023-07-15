@@ -9,6 +9,16 @@
     constructor(columns, grid, gridOptions) {
       this.columns = columns;
       this.grid = grid;
+      // --
+      // public API
+      __publicField(this, "onAfterMenuShow", new SlickEvent());
+      __publicField(this, "onBeforeMenuShow", new SlickEvent());
+      __publicField(this, "onMenuClose", new SlickEvent());
+      __publicField(this, "onCommand", new SlickEvent());
+      __publicField(this, "onColumnsChanged", new SlickEvent());
+      // --
+      // protected props
+      __publicField(this, "_bindingEventService");
       __publicField(this, "_gridOptions");
       __publicField(this, "_gridUid");
       __publicField(this, "_isMenuOpen", !1);
@@ -20,7 +30,7 @@
       __publicField(this, "_listElm");
       __publicField(this, "_buttonElm");
       __publicField(this, "_menuElm");
-      __publicField(this, "columnCheckboxes", []);
+      __publicField(this, "_columnCheckboxes", []);
       __publicField(this, "_defaults", {
         showButton: !0,
         hideForceFitButton: !1,
@@ -32,17 +42,8 @@
         resizeOnShowHeaderRow: !1,
         syncResizeTitle: "Synchronous resize",
         useClickToRepositionMenu: !0,
-        headerColumnValueExtractor: function(columnDef) {
-          return columnDef.name;
-        }
+        headerColumnValueExtractor: (columnDef) => columnDef.name
       });
-      __publicField(this, "_bindingEventService");
-      // public events
-      __publicField(this, "onAfterMenuShow", new SlickEvent());
-      __publicField(this, "onBeforeMenuShow", new SlickEvent());
-      __publicField(this, "onMenuClose", new SlickEvent());
-      __publicField(this, "onCommand", new SlickEvent());
-      __publicField(this, "onColumnsChanged", new SlickEvent());
       this._gridUid = grid.getUID(), this._gridOptions = gridOptions, this._gridMenuOptions = Utils.extend({}, gridOptions.gridMenu), this._bindingEventService = new BindingEventService(), grid.onSetOptions.subscribe((_e, args) => {
         if (args && args.optionsBefore && args.optionsAfter) {
           let switchedFromRegularToFrozen = args.optionsBefore.frozenColumn >= 0 && args.optionsAfter.frozenColumn === -1, switchedFromFrozenToRegular = args.optionsBefore.frozenColumn === -1 && args.optionsAfter.frozenColumn >= 0;
@@ -125,7 +126,7 @@
     showGridMenu(e) {
       var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
       let targetEvent = e.touches ? e.touches[0] : e;
-      e.preventDefault(), Utils.emptyElement(this._listElm), Utils.emptyElement(this._customMenuElm), this.populateCustomMenus(this._gridMenuOptions || {}, this._customMenuElm), this.updateColumnOrder(), this.columnCheckboxes = [];
+      e.preventDefault(), Utils.emptyElement(this._listElm), Utils.emptyElement(this._customMenuElm), this.populateCustomMenus(this._gridMenuOptions || {}, this._customMenuElm), this.updateColumnOrder(), this._columnCheckboxes = [];
       let callbackArgs = {
         grid: this.grid,
         menu: this._menuElm,
@@ -140,7 +141,7 @@
         let liElm = document.createElement("li");
         liElm.className = excludeCssClass, liElm.ariaLabel = ((_a = this.columns[i]) == null ? void 0 : _a.name) || "";
         let checkboxElm = document.createElement("input");
-        checkboxElm.type = "checkbox", checkboxElm.id = `${this._gridUid}-gridmenu-colpicker-${columnId}`, checkboxElm.dataset.columnid = String(this.columns[i].id), liElm.appendChild(checkboxElm), this.grid.getColumnIndex(this.columns[i].id) != null && !this.columns[i].hidden && (checkboxElm.checked = !0), this.columnCheckboxes.push(checkboxElm), (_b = this._gridMenuOptions) != null && _b.headerColumnValueExtractor ? columnLabel = this._gridMenuOptions.headerColumnValueExtractor(this.columns[i], this._gridOptions) : columnLabel = this._defaults.headerColumnValueExtractor(this.columns[i]);
+        checkboxElm.type = "checkbox", checkboxElm.id = `${this._gridUid}-gridmenu-colpicker-${columnId}`, checkboxElm.dataset.columnid = String(this.columns[i].id), liElm.appendChild(checkboxElm), this.grid.getColumnIndex(this.columns[i].id) != null && !this.columns[i].hidden && (checkboxElm.checked = !0), this._columnCheckboxes.push(checkboxElm), (_b = this._gridMenuOptions) != null && _b.headerColumnValueExtractor ? columnLabel = this._gridMenuOptions.headerColumnValueExtractor(this.columns[i], this._gridOptions) : columnLabel = this._defaults.headerColumnValueExtractor(this.columns[i]);
         let labelElm = document.createElement("label");
         labelElm.htmlFor = `${this._gridUid}-gridmenu-colpicker-${columnId}`, labelElm.innerHTML = columnLabel, liElm.appendChild(labelElm), this._listElm.appendChild(liElm);
       }
@@ -222,7 +223,7 @@
       }
       if (e.target.type === "checkbox") {
         let isChecked = e.target.checked, columnId = e.target.dataset.columnid || "", visibleColumns = [];
-        if (this.columnCheckboxes.forEach((columnCheckbox, idx) => {
+        if (this._columnCheckboxes.forEach((columnCheckbox, idx) => {
           columnCheckbox.checked && (this.columns[idx].hidden && (this.columns[idx].hidden = !1), visibleColumns.push(this.columns[idx]));
         }), !visibleColumns.length) {
           e.target.checked = !0;

@@ -24,6 +24,8 @@
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
       __publicField(this, "slickGridVersion", "4.0.1");
+      /** optional grid state clientId */
+      __publicField(this, "cid", "");
       // Events
       __publicField(this, "onActiveCellChanged", new SlickEvent());
       __publicField(this, "onActiveCellPositionChanged", new SlickEvent());
@@ -1911,10 +1913,10 @@
       needToReselectCell && (this.activeCellNode = this.getCellNode(this.activeRow, this.activeCell));
     }
     startPostProcessing() {
-      this._options.enableAsyncPostRender && (clearTimeout(this.h_postrender), this.h_postrender = setTimeout(this.asyncPostProcessRows, this._options.asyncPostRenderDelay));
+      this._options.enableAsyncPostRender && (clearTimeout(this.h_postrender), this.h_postrender = setTimeout(this.asyncPostProcessRows.bind(this), this._options.asyncPostRenderDelay));
     }
     startPostProcessingCleanup() {
-      this._options.enableAsyncPostRenderCleanup && (clearTimeout(this.h_postrenderCleanup), this.h_postrenderCleanup = setTimeout(this.asyncPostProcessCleanupRows, this._options.asyncPostRenderCleanupDelay));
+      this._options.enableAsyncPostRenderCleanup && (clearTimeout(this.h_postrenderCleanup), this.h_postrenderCleanup = setTimeout(this.asyncPostProcessCleanupRows.bind(this), this._options.asyncPostRenderCleanupDelay));
     }
     invalidatePostProcessingResults(row) {
       for (let columnIdx in this.postProcessedRows[row])
@@ -2022,7 +2024,7 @@
               node && m.asyncPostRender(node, row, this.getDataItem(row), m, processedStatus === "C"), this.postProcessedRows[row][columnIdx] = "R";
             }
           }
-          this.h_postrender = setTimeout(this.asyncPostProcessRows, this._options.asyncPostRenderDelay);
+          this.h_postrender = setTimeout(this.asyncPostProcessRows.bind(this), this._options.asyncPostRenderDelay);
           return;
         }
       }
@@ -2040,7 +2042,7 @@
             column.asyncPostRenderCleanup && entry.node && column.asyncPostRenderCleanup(entry.node, entry.rowIdx, column);
           }
         }
-        this.h_postrenderCleanup = setTimeout(this.asyncPostProcessCleanupRows, this._options.asyncPostRenderCleanupDelay);
+        this.h_postrenderCleanup = setTimeout(this.asyncPostProcessCleanupRows.bind(this), this._options.asyncPostRenderCleanupDelay);
       }
     }
     updateCellCssStylesOnRenderedRows(addedHash, removedHash) {

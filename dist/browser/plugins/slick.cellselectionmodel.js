@@ -1,34 +1,46 @@
 "use strict";
 (() => {
-  // src/plugins/slick.cellselectionmodel.js
-  var SlickEvent = Slick.Event, EventData = Slick.EventData, SlickRange = Slick.Range, CellRangeSelector = Slick.CellRangeSelector, Utils = Slick.Utils;
-  function CellSelectionModel(options) {
-    var _grid, _ranges = [], _self = this, _selector;
-    typeof options == "undefined" || typeof options.cellRangeSelector == "undefined" ? _selector = new CellRangeSelector({
-      selectionCss: {
-        border: "2px solid black"
-      }
-    }) : _selector = options.cellRangeSelector;
-    var _options, _defaults = {
-      selectActiveCell: !0
-    };
-    function init(grid) {
-      _options = Utils.extend(!0, {}, _defaults, options), _grid = grid, _grid.onActiveCellChanged.subscribe(handleActiveCellChange), _grid.onKeyDown.subscribe(handleKeyDown), grid.registerPlugin(_selector), _selector.onCellRangeSelected.subscribe(handleCellRangeSelected), _selector.onBeforeCellRangeSelected.subscribe(handleBeforeCellRangeSelected);
+  var __defProp = Object.defineProperty;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: !0, configurable: !0, writable: !0, value }) : obj[key] = value;
+  var __publicField = (obj, key, value) => (__defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value), value);
+
+  // src/plugins/slick.cellselectionmodel.ts
+  var SlickEvent = Slick.Event, SlickEventData = Slick.EventData, SlickRange = Slick.Range, SlickCellRangeSelector = Slick.CellRangeSelector, Utils = Slick.Utils, SlickCellSelectionModel = class {
+    constructor(options) {
+      // --
+      // public API
+      __publicField(this, "pluginName", "CellSelectionModel");
+      __publicField(this, "onSelectedRangesChanged", new SlickEvent());
+      // --
+      // protected props
+      __publicField(this, "_grid");
+      __publicField(this, "_ranges", []);
+      __publicField(this, "_selector");
+      __publicField(this, "_options");
+      __publicField(this, "_defaults", {
+        selectActiveCell: !0
+      });
+      options === void 0 || options.cellRangeSelector === void 0 ? this._selector = new SlickCellRangeSelector({ selectionCss: { border: "2px solid black" } }) : this._selector = options.cellRangeSelector;
     }
-    function destroy() {
-      _grid.onActiveCellChanged.unsubscribe(handleActiveCellChange), _grid.onKeyDown.unsubscribe(handleKeyDown), _selector.onCellRangeSelected.unsubscribe(handleCellRangeSelected), _selector.onBeforeCellRangeSelected.unsubscribe(handleBeforeCellRangeSelected), _grid.unregisterPlugin(_selector), _selector && _selector.destroy && _selector.destroy();
+    init(grid) {
+      this._options = Utils.extend(!0, {}, this._defaults, this._options), this._grid = grid, this._grid.onActiveCellChanged.subscribe(this.handleActiveCellChange.bind(this)), this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this)), grid.registerPlugin(this._selector), this._selector.onCellRangeSelected.subscribe(this.handleCellRangeSelected.bind(this)), this._selector.onBeforeCellRangeSelected.subscribe(this.handleBeforeCellRangeSelected.bind(this));
     }
-    function removeInvalidRanges(ranges) {
-      for (var result = [], i = 0; i < ranges.length; i++) {
-        var r = ranges[i];
-        _grid.canCellBeSelected(r.fromRow, r.fromCell) && _grid.canCellBeSelected(r.toRow, r.toCell) && result.push(r);
+    destroy() {
+      var _a;
+      this._grid.onActiveCellChanged.unsubscribe(this.handleActiveCellChange.bind(this)), this._grid.onKeyDown.unsubscribe(this.handleKeyDown.bind(this)), this._selector.onCellRangeSelected.unsubscribe(this.handleCellRangeSelected.bind(this)), this._selector.onBeforeCellRangeSelected.unsubscribe(this.handleBeforeCellRangeSelected.bind(this)), this._grid.unregisterPlugin(this._selector), (_a = this._selector) == null || _a.destroy();
+    }
+    removeInvalidRanges(ranges) {
+      let result = [];
+      for (let i = 0; i < ranges.length; i++) {
+        let r = ranges[i];
+        this._grid.canCellBeSelected(r.fromRow, r.fromCell) && this._grid.canCellBeSelected(r.toRow, r.toCell) && result.push(r);
       }
       return result;
     }
-    function rangesAreEqual(range1, range2) {
-      var areDifferent = range1.length !== range2.length;
+    rangesAreEqual(range1, range2) {
+      let areDifferent = range1.length !== range2.length;
       if (!areDifferent) {
-        for (var i = 0; i < range1.length; i++)
+        for (let i = 0; i < range1.length; i++)
           if (range1[i].fromCell !== range2[i].fromCell || range1[i].fromRow !== range2[i].fromRow || range1[i].toCell !== range2[i].toCell || range1[i].toRow !== range2[i].toRow) {
             areDifferent = !0;
             break;
@@ -36,60 +48,52 @@
       }
       return !areDifferent;
     }
-    function setSelectedRanges(ranges, caller) {
-      if (!((!_ranges || _ranges.length === 0) && (!ranges || ranges.length === 0))) {
-        var rangeHasChanged = !rangesAreEqual(_ranges, ranges);
-        if (_ranges = removeInvalidRanges(ranges), rangeHasChanged) {
-          var eventData = new EventData(null, _ranges);
-          Object.defineProperty(eventData, "detail", { writable: !0, configurable: !0, value: { caller: caller || "SlickCellSelectionModel.setSelectedRanges" } }), _self.onSelectedRangesChanged.notify(_ranges, eventData);
-        }
+    setSelectedRanges(ranges, caller = "SlickCellSelectionModel.setSelectedRanges") {
+      if ((!this._ranges || this._ranges.length === 0) && (!ranges || ranges.length === 0))
+        return;
+      let rangeHasChanged = !this.rangesAreEqual(this._ranges, ranges);
+      if (this._ranges = this.removeInvalidRanges(ranges), rangeHasChanged) {
+        let eventData = new SlickEventData(null, this._ranges);
+        Object.defineProperty(eventData, "detail", { writable: !0, configurable: !0, value: { caller: caller || "SlickCellSelectionModel.setSelectedRanges" } }), this.onSelectedRangesChanged.notify(this._ranges, eventData);
       }
     }
-    function getSelectedRanges() {
-      return _ranges;
+    getSelectedRanges() {
+      return this._ranges;
     }
-    function refreshSelections() {
-      setSelectedRanges(getSelectedRanges());
+    refreshSelections() {
+      this.setSelectedRanges(this.getSelectedRanges());
     }
-    function handleBeforeCellRangeSelected(e) {
-      if (_grid.getEditorLock().isActive())
+    handleBeforeCellRangeSelected(e) {
+      if (this._grid.getEditorLock().isActive())
         return e.stopPropagation(), !1;
     }
-    function handleCellRangeSelected(e, args) {
-      _grid.setActiveCell(args.range.fromRow, args.range.fromCell, !1, !1, !0), setSelectedRanges([args.range]);
+    handleCellRangeSelected(_e, args) {
+      this._grid.setActiveCell(args.range.fromRow, args.range.fromCell, !1, !1, !0), this.setSelectedRanges([args.range]);
     }
-    function handleActiveCellChange(e, args) {
-      _options.selectActiveCell && args.row != null && args.cell != null ? setSelectedRanges([new SlickRange(args.row, args.cell)]) : _options.selectActiveCell || setSelectedRanges([]);
+    handleActiveCellChange(_e, args) {
+      var _a, _b;
+      (_a = this._options) != null && _a.selectActiveCell && args.row != null && args.cell != null ? this.setSelectedRanges([new SlickRange(args.row, args.cell)]) : (_b = this._options) != null && _b.selectActiveCell || this.setSelectedRanges([]);
     }
-    function handleKeyDown(e) {
-      var ranges, last, active = _grid.getActiveCell(), metaKey = e.ctrlKey || e.metaKey;
+    handleKeyDown(e) {
+      let ranges, last, active = this._grid.getActiveCell(), metaKey = e.ctrlKey || e.metaKey;
       if (active && e.shiftKey && !metaKey && !e.altKey && (e.which == 37 || e.which == 39 || e.which == 38 || e.which == 40)) {
-        ranges = getSelectedRanges().slice(), ranges.length || ranges.push(new SlickRange(active.row, active.cell)), last = ranges.pop(), last.contains(active.row, active.cell) || (last = new SlickRange(active.row, active.cell));
-        var dRow = last.toRow - last.fromRow, dCell = last.toCell - last.fromCell, dirRow = active.row == last.fromRow ? 1 : -1, dirCell = active.cell == last.fromCell ? 1 : -1;
+        ranges = this.getSelectedRanges().slice(), ranges.length || ranges.push(new SlickRange(active.row, active.cell)), last = ranges.pop(), last.contains(active.row, active.cell) || (last = new SlickRange(active.row, active.cell));
+        let dRow = last.toRow - last.fromRow, dCell = last.toCell - last.fromCell, dirRow = active.row == last.fromRow ? 1 : -1, dirCell = active.cell == last.fromCell ? 1 : -1;
         e.which == 37 ? dCell -= dirCell : e.which == 39 ? dCell += dirCell : e.which == 38 ? dRow -= dirRow : e.which == 40 && (dRow += dirRow);
-        var new_last = new SlickRange(active.row, active.cell, active.row + dirRow * dRow, active.cell + dirCell * dCell);
-        if (removeInvalidRanges([new_last]).length) {
+        let new_last = new SlickRange(active.row, active.cell, active.row + dirRow * dRow, active.cell + dirCell * dCell);
+        if (this.removeInvalidRanges([new_last]).length) {
           ranges.push(new_last);
-          var viewRow = dirRow > 0 ? new_last.toRow : new_last.fromRow, viewCell = dirCell > 0 ? new_last.toCell : new_last.fromCell;
-          _grid.scrollRowIntoView(viewRow), _grid.scrollCellIntoView(viewRow, viewCell);
+          let viewRow = dirRow > 0 ? new_last.toRow : new_last.fromRow, viewCell = dirCell > 0 ? new_last.toCell : new_last.fromCell;
+          this._grid.scrollRowIntoView(viewRow), this._grid.scrollCellIntoView(viewRow, viewCell);
         } else
           ranges.push(last);
-        setSelectedRanges(ranges), e.preventDefault(), e.stopPropagation();
+        this.setSelectedRanges(ranges), e.preventDefault(), e.stopPropagation();
       }
     }
-    Utils.extend(this, {
-      getSelectedRanges,
-      setSelectedRanges,
-      refreshSelections,
-      init,
-      destroy,
-      pluginName: "CellSelectionModel",
-      onSelectedRangesChanged: new SlickEvent()
-    });
-  }
+  };
   window.Slick && Utils.extend(!0, window, {
     Slick: {
-      CellSelectionModel
+      CellSelectionModel: SlickCellSelectionModel
     }
   });
 })();

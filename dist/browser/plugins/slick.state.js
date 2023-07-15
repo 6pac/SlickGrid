@@ -1,140 +1,166 @@
 "use strict";
 (() => {
-  // src/plugins/slick.state.js
-  var SlickEvent = Slick.Event, Utils = Slick.Utils, localStorageWrapper = function() {
-    var localStorage = window.localStorage;
-    return typeof localStorage == "undefined" && console.error("localStorage is not available. slickgrid statepersistor disabled."), {
-      get: function(key) {
-        return new Promise((resolve, reject) => {
-          if (!localStorage) {
-            reject("missing localStorage");
-            return;
-          }
-          try {
-            var d = localStorage.getItem(key);
-            if (d)
-              return resolve(JSON.parse(d));
-            resolve({});
-          } catch (exc) {
-            reject(exc);
-          }
-        });
-      },
-      set: function(key, obj) {
-        localStorage && (typeof obj != "undefined" && (obj = JSON.stringify(obj)), localStorage.setItem(key, obj));
-      }
-    };
-  }, defaults = {
-    key_prefix: "slickgrid:",
-    storage: new localStorageWrapper(),
-    scrollRowIntoView: !0
-  };
-  function State(options) {
-    options = Utils.extend(!0, {}, defaults, options);
-    var _grid, _cid, _store = options.storage, onStateChanged = new SlickEvent(), userData = {
-      state: null,
-      current: null
-    };
-    function init(grid) {
-      _grid = grid, _cid = grid.cid || options.cid, _cid ? (_grid.onColumnsResized.subscribe(save), _grid.onColumnsReordered.subscribe(save), _grid.onSort.subscribe(save)) : console.warn("grid has no client id. state persisting is disabled.");
+  var __defProp = Object.defineProperty;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: !0, configurable: !0, writable: !0, value }) : obj[key] = value;
+  var __publicField = (obj, key, value) => (__defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value), value);
+
+  // src/plugins/slick.state.ts
+  var SlickEvent = Slick.Event, Utils = Slick.Utils, LocalStorageWrapper = class {
+    constructor() {
+      __publicField(this, "localStorage", window.localStorage);
+      typeof localStorage == "undefined" && console.error("localStorage is not available. slickgrid statepersistor disabled.");
     }
-    function destroy() {
-      _grid.onSort.unsubscribe(save), _grid.onColumnsReordered.unsubscribe(save), _grid.onColumnsResized.unsubscribe(save), save();
-    }
-    function save() {
-      if (_cid && _store) {
-        var state = {
-          sortcols: getSortColumns(),
-          viewport: _grid.getViewport(),
-          columns: getColumns(),
-          userData: null
-        };
-        return state.userData = userData.current, setUserDataFromState(state.userData), onStateChanged.notify(state), _store.set(options.key_prefix + _cid, state);
-      }
-    }
-    function restore() {
+    get(key) {
       return new Promise((resolve, reject) => {
-        if (!_cid) {
+        if (!localStorage) {
+          reject("missing localStorage");
+          return;
+        }
+        try {
+          let d = localStorage.getItem(key);
+          if (d)
+            return resolve(JSON.parse(d));
+          resolve({});
+        } catch (exc) {
+          reject(exc);
+        }
+      });
+    }
+    set(key, obj) {
+      localStorage && (typeof obj != "undefined" && (obj = JSON.stringify(obj)), localStorage.setItem(key, obj));
+    }
+  }, SlickState = class {
+    constructor(options) {
+      // --
+      // public API
+      __publicField(this, "pluginName", "State");
+      __publicField(this, "onStateChanged", new SlickEvent());
+      // --
+      // protected props
+      __publicField(this, "_grid");
+      __publicField(this, "_cid", "");
+      __publicField(this, "_store");
+      __publicField(this, "_options");
+      __publicField(this, "_state");
+      __publicField(this, "_userData", {
+        state: null,
+        current: null
+      });
+      let defaults = {
+        key_prefix: "slickgrid:",
+        storage: new LocalStorageWrapper(),
+        scrollRowIntoView: !0
+      };
+      this._options = Utils.extend(!0, {}, defaults, options), this._store = this._options.storage;
+    }
+    init(grid) {
+      this._grid = grid, this._cid = grid.cid || this._options.cid, this._cid ? (this._grid.onColumnsResized.subscribe(this.save.bind(this)), this._grid.onColumnsReordered.subscribe(this.save.bind(this)), this._grid.onSort.subscribe(this.save.bind(this))) : console.warn("grid has no client id. state persisting is disabled.");
+    }
+    destroy() {
+      this._grid.onSort.unsubscribe(this.save.bind(this)), this._grid.onColumnsReordered.unsubscribe(this.save.bind(this)), this._grid.onColumnsResized.unsubscribe(this.save.bind(this)), this.save();
+    }
+    save() {
+      if (this._cid && this._store)
+        return this._state = {
+          sortcols: this.getSortColumns(),
+          viewport: this._grid.getViewport(),
+          columns: this.getColumns(),
+          userData: null
+        }, this._state.userData = this._userData.current, this.setUserDataFromState(this._state.userData), this.onStateChanged.notify(this._state), this._store.set(this._options.key_prefix + this._cid, this._state);
+    }
+    restore() {
+      return new Promise((resolve, reject) => {
+        if (!this._cid) {
           reject("missing client id");
           return;
         }
-        if (!_store) {
+        if (!this._store) {
           reject("missing store");
           return;
         }
-        _store.get(options.key_prefix + _cid).then(function(state) {
+        this._store.get(this._options.key_prefix + this._cid).then((state) => {
           if (state) {
-            if (state.sortcols && _grid.setSortColumns(state.sortcols || []), state.viewport && options.scrollRowIntoView && _grid.scrollRowIntoView(state.viewport.top, !0), state.columns) {
-              var defaultColumns = options.defaultColumns;
+            if (state.sortcols && this._grid.setSortColumns(state.sortcols || []), state.viewport && this._options.scrollRowIntoView && this._grid.scrollRowIntoView(state.viewport.top, !0), state.columns) {
+              let defaultColumns = this._options.defaultColumns;
               if (defaultColumns) {
-                var defaultColumnsLookup = {};
-                defaultColumns.forEach(function(colDef) {
-                  defaultColumnsLookup[colDef.id] = colDef;
-                });
-                var cols = [];
-                (state.columns || []).forEach(function(columnDef) {
+                let defaultColumnsLookup = {};
+                defaultColumns.forEach((colDef) => defaultColumnsLookup[colDef.id] = colDef);
+                let cols = [];
+                (state.columns || []).forEach((columnDef) => {
                   defaultColumnsLookup[columnDef.id] && cols.push(Utils.extend(!0, {}, defaultColumnsLookup[columnDef.id], {
                     width: columnDef.width,
                     headerCssClass: columnDef.headerCssClass
                   }));
                 }), state.columns = cols;
               }
-              _grid.setColumns(state.columns);
+              this._grid.setColumns(state.columns);
             }
-            setUserDataFromState(state.userData);
+            this.setUserDataFromState(state.userData);
           }
           resolve(state);
-        }).catch(function(e) {
+        }).catch((e) => {
           reject(e);
         });
       });
     }
-    function setUserData(data) {
-      return userData.current = data, this;
+    /**
+     * allows users to add their own data to the grid state
+     * this function does not trigger the save() function, so the actual act of writing the state happens in save()
+     * therefore, it's necessary to call save() function after setting user-data
+     *
+     * @param data
+     * @return {State}
+     */
+    setUserData(data) {
+      return this._userData.current = data, this;
     }
-    function setUserDataFromState(data) {
-      return userData.state = data, setUserData(data);
+    /**
+     *
+     * @internal
+     * @param data
+     * @return {State}
+     */
+    setUserDataFromState(data) {
+      return this._userData.state = data, this.setUserData(data);
     }
-    function getUserData() {
-      return userData.current;
+    /**
+     * returns current value of user-data
+     * @return {Object}
+     */
+    getUserData() {
+      return this._userData.current;
     }
-    function getStateUserData() {
-      return userData.state;
+    /**
+     * returns user-data found in saved state
+     *
+     * @return {Object}
+     */
+    getStateUserData() {
+      return this._userData.state;
     }
-    function resetUserData() {
-      return userData.current = userData.state, this;
+    /**
+     * Sets user-data to the value read from state
+     * @return {State}
+     */
+    resetUserData() {
+      return this._userData.current = this._userData.state, this;
     }
-    function getColumns() {
-      return _grid.getColumns().map(function(col) {
-        return {
-          id: col.id,
-          width: col.width
-        };
-      });
+    getColumns() {
+      return this._grid.getColumns().map((col) => ({
+        id: col.id,
+        width: col.width
+      }));
     }
-    function getSortColumns() {
-      var sortCols = _grid.getSortColumns();
-      return sortCols;
+    getSortColumns() {
+      return this._grid.getSortColumns();
     }
-    function reset() {
-      _store.set(options.key_prefix + _cid, {}), setUserDataFromState(null);
+    reset() {
+      this._store.set(this._options.key_prefix + this._cid, {}), this.setUserDataFromState(null);
     }
-    Utils.extend(this, {
-      init,
-      destroy,
-      save,
-      setUserData,
-      resetUserData,
-      getUserData,
-      getStateUserData,
-      restore,
-      onStateChanged,
-      reset
-    });
-  }
+  };
   window.Slick && Utils.extend(!0, window, {
     Slick: {
-      State
+      State: SlickState
     }
   });
 })();

@@ -1,72 +1,116 @@
 "use strict";
 (() => {
-  // src/plugins/slick.cellrangeselector.js
-  var SlickEvent = Slick.Event, EventHandler = Slick.EventHandler, SlickRange = Slick.Range, Draggable = Slick.Draggable, CellRangeDecorator = Slick.CellRangeDecorator, Utils = Slick.Utils;
-  function CellRangeSelector(options) {
-    var _grid, _currentlySelectedRange, _canvas, _gridOptions, _activeCanvas, _dragging, _decorator, _self = this, _handler = new EventHandler(), _defaults = {
-      autoScroll: !0,
-      minIntervalToShowNextCell: 30,
-      maxIntervalToShowNextCell: 600,
-      // better to a multiple of minIntervalToShowNextCell
-      accelerateInterval: 5,
-      // increase 5ms when cursor 1px outside the viewport.
-      selectionCss: {
-        border: "2px dashed blue"
-      }
-    }, _rowOffset, _columnOffset, _isRightCanvas, _isBottomCanvas, _activeViewport, _viewportWidth, _viewportHeight, _draggingMouseOffset, _moveDistanceForOneCell, _autoScrollTimerId, _xDelayForNextCell, _yDelayForNextCell, _isRowMoveRegistered = !1, _scrollTop = 0, _scrollLeft = 0;
-    function init(grid) {
-      if (typeof Draggable == "undefined")
+  var __defProp = Object.defineProperty;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: !0, configurable: !0, writable: !0, value }) : obj[key] = value;
+  var __publicField = (obj, key, value) => (__defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value), value);
+
+  // src/plugins/slick.cellrangeselector.ts
+  var SlickEvent = Slick.Event, SlickEventHandler = Slick.EventHandler, SlickRange = Slick.Range, Draggable = Slick.Draggable, SlickCellRangeDecorator = Slick.CellRangeDecorator, Utils = Slick.Utils, SlickCellRangeSelector = class {
+    constructor(options) {
+      // --
+      // public API
+      __publicField(this, "pluginName", "CellRangeSelector");
+      __publicField(this, "onBeforeCellRangeSelected", new SlickEvent());
+      __publicField(this, "onCellRangeSelected", new SlickEvent());
+      __publicField(this, "onCellRangeSelecting", new SlickEvent());
+      // --
+      // protected props
+      __publicField(this, "_grid");
+      __publicField(this, "_currentlySelectedRange", null);
+      __publicField(this, "_canvas");
+      __publicField(this, "_decorator");
+      __publicField(this, "_gridOptions");
+      __publicField(this, "_activeCanvas");
+      __publicField(this, "_dragging", !1);
+      __publicField(this, "_handler", new SlickEventHandler());
+      __publicField(this, "_options");
+      __publicField(this, "_defaults", {
+        autoScroll: !0,
+        minIntervalToShowNextCell: 30,
+        maxIntervalToShowNextCell: 600,
+        // better to a multiple of minIntervalToShowNextCell
+        accelerateInterval: 5,
+        // increase 5ms when cursor 1px outside the viewport.
+        selectionCss: {
+          border: "2px dashed blue"
+        }
+      });
+      // Frozen row & column variables
+      __publicField(this, "_rowOffset", 0);
+      __publicField(this, "_columnOffset", 0);
+      __publicField(this, "_isRightCanvas", !1);
+      __publicField(this, "_isBottomCanvas", !1);
+      // autoScroll related constiables
+      __publicField(this, "_activeViewport");
+      __publicField(this, "_autoScrollTimerId");
+      __publicField(this, "_draggingMouseOffset");
+      __publicField(this, "_moveDistanceForOneCell");
+      __publicField(this, "_xDelayForNextCell", 0);
+      __publicField(this, "_yDelayForNextCell", 0);
+      __publicField(this, "_viewportHeight", 0);
+      __publicField(this, "_viewportWidth", 0);
+      __publicField(this, "_isRowMoveRegistered", !1);
+      // Scrollings
+      __publicField(this, "_scrollLeft", 0);
+      __publicField(this, "_scrollTop", 0);
+      this._options = Utils.extend(!0, {}, this._defaults, options);
+    }
+    init(grid) {
+      if (Draggable === void 0)
         throw new Error('Slick.Draggable is undefined, make sure to import "slick.interactions.js"');
-      options = Utils.extend(!0, {}, _defaults, options), _decorator = options.cellDecorator || new CellRangeDecorator(grid, options), _grid = grid, _canvas = _grid.getCanvasNode(), _gridOptions = _grid.getOptions(), _handler.subscribe(_grid.onScroll, handleScroll).subscribe(_grid.onDragInit, handleDragInit).subscribe(_grid.onDragStart, handleDragStart).subscribe(_grid.onDrag, handleDrag).subscribe(_grid.onDragEnd, handleDragEnd);
+      this._decorator = this._options.cellDecorator || new SlickCellRangeDecorator(grid, this._options), this._grid = grid, this._canvas = this._grid.getCanvasNode(), this._gridOptions = this._grid.getOptions(), this._handler.subscribe(this._grid.onScroll, this.handleScroll.bind(this)).subscribe(this._grid.onDragInit, this.handleDragInit.bind(this)).subscribe(this._grid.onDragStart, this.handleDragStart.bind(this)).subscribe(this._grid.onDrag, this.handleDrag.bind(this)).subscribe(this._grid.onDragEnd, this.handleDragEnd.bind(this));
     }
-    function destroy() {
-      _handler.unsubscribeAll(), _activeCanvas = null, _activeViewport = null, _canvas = null, _decorator && _decorator.destroy && _decorator.destroy();
+    destroy() {
+      var _a;
+      this._handler.unsubscribeAll(), this._activeCanvas = null, this._activeViewport = null, this._canvas = null, (_a = this._decorator) == null || _a.destroy();
     }
-    function getCellDecorator() {
-      return _decorator;
+    getCellDecorator() {
+      return this._decorator;
     }
-    function handleScroll(e, args) {
-      _scrollTop = args.scrollTop, _scrollLeft = args.scrollLeft;
+    handleScroll(_e, args) {
+      this._scrollTop = args.scrollTop, this._scrollLeft = args.scrollLeft;
     }
-    function handleDragInit(e) {
-      _activeCanvas = _grid.getActiveCanvasNode(e), _activeViewport = _grid.getActiveViewportNode(e);
-      var scrollbarDimensions = _grid.getDisplayedScrollbarDimensions();
-      if (_viewportWidth = _activeViewport.offsetWidth - scrollbarDimensions.width, _viewportHeight = _activeViewport.offsetHeight - scrollbarDimensions.height, _moveDistanceForOneCell = {
-        x: _grid.getAbsoluteColumnMinWidth() / 2,
-        y: _grid.getOptions().rowHeight / 2
-      }, _isRowMoveRegistered = hasRowMoveManager(), _rowOffset = 0, _columnOffset = 0, _isBottomCanvas = _activeCanvas.classList.contains("grid-canvas-bottom"), _gridOptions.frozenRow > -1 && _isBottomCanvas) {
-        let canvasSelector = `.${_grid.getUID()} .grid-canvas-${_gridOptions.frozenBottom ? "bottom" : "top"}`, canvasElm = document.querySelector(canvasSelector);
-        canvasElm && (_rowOffset = canvasElm.clientHeight || 0);
+    handleDragInit(e) {
+      this._activeCanvas = this._grid.getActiveCanvasNode(e), this._activeViewport = this._grid.getActiveViewportNode(e);
+      let scrollbarDimensions = this._grid.getDisplayedScrollbarDimensions();
+      if (this._viewportWidth = this._activeViewport.offsetWidth - scrollbarDimensions.width, this._viewportHeight = this._activeViewport.offsetHeight - scrollbarDimensions.height, this._moveDistanceForOneCell = {
+        x: this._grid.getAbsoluteColumnMinWidth() / 2,
+        y: this._grid.getOptions().rowHeight / 2
+      }, this._isRowMoveRegistered = this.hasRowMoveManager(), this._rowOffset = 0, this._columnOffset = 0, this._isBottomCanvas = this._activeCanvas.classList.contains("grid-canvas-bottom"), this._gridOptions.frozenRow > -1 && this._isBottomCanvas) {
+        let canvasSelector = `.${this._grid.getUID()} .grid-canvas-${this._gridOptions.frozenBottom ? "bottom" : "top"}`, canvasElm = document.querySelector(canvasSelector);
+        canvasElm && (this._rowOffset = canvasElm.clientHeight || 0);
       }
-      if (_isRightCanvas = _activeCanvas.classList.contains("grid-canvas-right"), _gridOptions.frozenColumn > -1 && _isRightCanvas) {
-        let canvasLeftElm = document.querySelector(`.${_grid.getUID()} .grid-canvas-left`);
-        canvasLeftElm && (_columnOffset = canvasLeftElm.clientWidth || 0);
+      if (this._isRightCanvas = this._activeCanvas.classList.contains("grid-canvas-right"), this._gridOptions.frozenColumn > -1 && this._isRightCanvas) {
+        let canvasLeftElm = document.querySelector(`.${this._grid.getUID()} .grid-canvas-left`);
+        canvasLeftElm && (this._columnOffset = canvasLeftElm.clientWidth || 0);
       }
       e.stopImmediatePropagation(), e.preventDefault();
     }
-    function handleDragStart(e, dd) {
-      var cell = _grid.getCellFromEvent(e);
-      if (_self.onBeforeCellRangeSelected.notify(cell) !== !1 && _grid.canCellBeSelected(cell.row, cell.cell) && (_dragging = !0, e.stopImmediatePropagation()), !_dragging)
+    handleDragStart(e, dd) {
+      var _a, _b;
+      let cell = this._grid.getCellFromEvent(e);
+      if (cell && this.onBeforeCellRangeSelected.notify(cell).getReturnValue() !== !1 && this._grid.canCellBeSelected(cell.row, cell.cell) && (this._dragging = !0, e.stopImmediatePropagation()), !this._dragging)
         return;
-      _grid.focus();
-      let canvasOffset = Utils.offset(_canvas), startX = dd.startX - (canvasOffset.left || 0);
-      _gridOptions.frozenColumn >= 0 && _isRightCanvas && (startX += _scrollLeft);
-      let startY = dd.startY - (canvasOffset.top || 0);
-      _gridOptions.frozenRow >= 0 && _isBottomCanvas && (startY += _scrollTop);
-      var start = _grid.getCellFromPoint(startX, startY);
-      return dd.range = { start, end: {} }, _currentlySelectedRange = dd.range, _decorator.show(new SlickRange(start.row, start.cell));
+      this._grid.focus();
+      let canvasOffset = Utils.offset(this._canvas), startX = dd.startX - ((_a = canvasOffset == null ? void 0 : canvasOffset.left) != null ? _a : 0);
+      this._gridOptions.frozenColumn >= 0 && this._isRightCanvas && (startX += this._scrollLeft);
+      let startY = dd.startY - ((_b = canvasOffset == null ? void 0 : canvasOffset.top) != null ? _b : 0);
+      this._gridOptions.frozenRow >= 0 && this._isBottomCanvas && (startY += this._scrollTop);
+      let start = this._grid.getCellFromPoint(startX, startY);
+      return dd.range = { start, end: {} }, this._currentlySelectedRange = dd.range, this._decorator.show(new SlickRange(start.row, start.cell));
     }
-    function handleDrag(evt, dd) {
-      if (!_dragging && !_isRowMoveRegistered)
+    handleDrag(evt, dd) {
+      if (!this._dragging && !this._isRowMoveRegistered)
         return;
-      _isRowMoveRegistered || evt.stopImmediatePropagation();
+      this._isRowMoveRegistered || evt.stopImmediatePropagation();
       let e = evt.getNativeEvent();
-      if (options.autoScroll && (_draggingMouseOffset = getMouseOffsetViewport(e, dd), _draggingMouseOffset.isOutsideViewport))
-        return handleDragOutsideViewport();
-      stopIntervalTimer(), handleDragTo(e, dd);
+      if (this._options.autoScroll && (this._draggingMouseOffset = this.getMouseOffsetViewport(e, dd), this._draggingMouseOffset.isOutsideViewport))
+        return this.handleDragOutsideViewport();
+      this.stopIntervalTimer(), this.handleDragTo(e, dd);
     }
-    function getMouseOffsetViewport(e, dd) {
-      var targetEvent = e.touches ? e.touches[0] : e, viewportLeft = _activeViewport.scrollLeft, viewportTop = _activeViewport.scrollTop, viewportRight = viewportLeft + _viewportWidth, viewportBottom = viewportTop + _viewportHeight, viewportOffset = Utils.offset(_activeViewport), viewportOffsetLeft = viewportOffset.left || 0, viewportOffsetTop = viewportOffset.top || 0, viewportOffsetRight = viewportOffsetLeft + _viewportWidth, viewportOffsetBottom = viewportOffsetTop + _viewportHeight, result = {
+    getMouseOffsetViewport(e, dd) {
+      var _a, _b, _c, _d;
+      let targetEvent = (_b = (_a = e == null ? void 0 : e.touches) == null ? void 0 : _a[0]) != null ? _b : e, viewportLeft = this._activeViewport.scrollLeft, viewportTop = this._activeViewport.scrollTop, viewportRight = viewportLeft + this._viewportWidth, viewportBottom = viewportTop + this._viewportHeight, viewportOffset = Utils.offset(this._activeViewport), viewportOffsetLeft = (_c = viewportOffset == null ? void 0 : viewportOffset.left) != null ? _c : 0, viewportOffsetTop = (_d = viewportOffset == null ? void 0 : viewportOffset.top) != null ? _d : 0, viewportOffsetRight = viewportOffsetLeft + this._viewportWidth, viewportOffsetBottom = viewportOffsetTop + this._viewportHeight, result = {
         e,
         dd,
         viewport: {
@@ -91,76 +135,68 @@
       };
       return targetEvent.pageX < viewportOffsetLeft ? result.offset.x = targetEvent.pageX - viewportOffsetLeft : targetEvent.pageX > viewportOffsetRight && (result.offset.x = targetEvent.pageX - viewportOffsetRight), targetEvent.pageY < viewportOffsetTop ? result.offset.y = viewportOffsetTop - targetEvent.pageY : targetEvent.pageY > viewportOffsetBottom && (result.offset.y = viewportOffsetBottom - targetEvent.pageY), result.isOutsideViewport = !!result.offset.x || !!result.offset.y, result;
     }
-    function handleDragOutsideViewport() {
-      if (_xDelayForNextCell = options.maxIntervalToShowNextCell - Math.abs(_draggingMouseOffset.offset.x) * options.accelerateInterval, _yDelayForNextCell = options.maxIntervalToShowNextCell - Math.abs(_draggingMouseOffset.offset.y) * options.accelerateInterval, !_autoScrollTimerId) {
-        var xTotalDelay = 0, yTotalDelay = 0;
-        _autoScrollTimerId = setInterval(function() {
-          var xNeedUpdate = !1, yNeedUpdate = !1;
-          _draggingMouseOffset.offset.x ? (xTotalDelay += options.minIntervalToShowNextCell, xNeedUpdate = xTotalDelay >= _xDelayForNextCell) : xTotalDelay = 0, _draggingMouseOffset.offset.y ? (yTotalDelay += options.minIntervalToShowNextCell, yNeedUpdate = yTotalDelay >= _yDelayForNextCell) : yTotalDelay = 0, (xNeedUpdate || yNeedUpdate) && (xNeedUpdate && (xTotalDelay = 0), yNeedUpdate && (yTotalDelay = 0), handleDragToNewPosition(xNeedUpdate, yNeedUpdate));
-        }, options.minIntervalToShowNextCell);
+    handleDragOutsideViewport() {
+      if (this._xDelayForNextCell = this._options.maxIntervalToShowNextCell - Math.abs(this._draggingMouseOffset.offset.x) * this._options.accelerateInterval, this._yDelayForNextCell = this._options.maxIntervalToShowNextCell - Math.abs(this._draggingMouseOffset.offset.y) * this._options.accelerateInterval, !this._autoScrollTimerId) {
+        let xTotalDelay = 0, yTotalDelay = 0;
+        this._autoScrollTimerId = setInterval(() => {
+          let xNeedUpdate = !1, yNeedUpdate = !1;
+          this._draggingMouseOffset.offset.x ? (xTotalDelay += this._options.minIntervalToShowNextCell, xNeedUpdate = xTotalDelay >= this._xDelayForNextCell) : xTotalDelay = 0, this._draggingMouseOffset.offset.y ? (yTotalDelay += this._options.minIntervalToShowNextCell, yNeedUpdate = yTotalDelay >= this._yDelayForNextCell) : yTotalDelay = 0, (xNeedUpdate || yNeedUpdate) && (xNeedUpdate && (xTotalDelay = 0), yNeedUpdate && (yTotalDelay = 0), this.handleDragToNewPosition(xNeedUpdate, yNeedUpdate));
+        }, this._options.minIntervalToShowNextCell);
       }
     }
-    function handleDragToNewPosition(xNeedUpdate, yNeedUpdate) {
-      var pageX = _draggingMouseOffset.e.pageX, pageY = _draggingMouseOffset.e.pageY, mouseOffsetX = _draggingMouseOffset.offset.x, mouseOffsetY = _draggingMouseOffset.offset.y, viewportOffset = _draggingMouseOffset.viewport.offset;
-      xNeedUpdate && mouseOffsetX && (mouseOffsetX > 0 ? pageX = viewportOffset.right + _moveDistanceForOneCell.x : pageX = viewportOffset.left - _moveDistanceForOneCell.x), yNeedUpdate && mouseOffsetY && (mouseOffsetY > 0 ? pageY = viewportOffset.top - _moveDistanceForOneCell.y : pageY = viewportOffset.bottom + _moveDistanceForOneCell.y), handleDragTo({
+    handleDragToNewPosition(xNeedUpdate, yNeedUpdate) {
+      let pageX = this._draggingMouseOffset.e.pageX, pageY = this._draggingMouseOffset.e.pageY, mouseOffsetX = this._draggingMouseOffset.offset.x, mouseOffsetY = this._draggingMouseOffset.offset.y, viewportOffset = this._draggingMouseOffset.viewport.offset;
+      xNeedUpdate && mouseOffsetX && (mouseOffsetX > 0 ? pageX = viewportOffset.right + this._moveDistanceForOneCell.x : pageX = viewportOffset.left - this._moveDistanceForOneCell.x), yNeedUpdate && mouseOffsetY && (mouseOffsetY > 0 ? pageY = viewportOffset.top - this._moveDistanceForOneCell.y : pageY = viewportOffset.bottom + this._moveDistanceForOneCell.y), this.handleDragTo({
         pageX,
         pageY
-      }, _draggingMouseOffset.dd);
+      }, this._draggingMouseOffset.dd);
     }
-    function stopIntervalTimer() {
-      clearInterval(_autoScrollTimerId), _autoScrollTimerId = null;
+    stopIntervalTimer() {
+      this._autoScrollTimerId && (clearInterval(this._autoScrollTimerId), this._autoScrollTimerId = void 0);
     }
-    function handleDragTo(e, dd) {
-      let targetEvent = e.touches ? e.touches[0] : e, canvasOffset = Utils.offset(_activeCanvas), end = _grid.getCellFromPoint(
-        targetEvent.pageX - (canvasOffset && canvasOffset.left || 0) + _columnOffset,
-        targetEvent.pageY - (canvasOffset && canvasOffset.top || 0) + _rowOffset
+    handleDragTo(e, dd) {
+      var _a, _b, _c, _d, _e, _f;
+      let targetEvent = (_b = (_a = e == null ? void 0 : e.touches) == null ? void 0 : _a[0]) != null ? _b : e, canvasOffset = Utils.offset(this._activeCanvas), end = this._grid.getCellFromPoint(
+        targetEvent.pageX - ((_c = canvasOffset == null ? void 0 : canvasOffset.left) != null ? _c : 0) + this._columnOffset,
+        targetEvent.pageY - ((_d = canvasOffset == null ? void 0 : canvasOffset.top) != null ? _d : 0) + this._rowOffset
       );
-      if (!(_gridOptions.frozenColumn >= 0 && !_isRightCanvas && end.cell > _gridOptions.frozenColumn || _isRightCanvas && end.cell <= _gridOptions.frozenColumn) && !(_gridOptions.frozenRow >= 0 && !_isBottomCanvas && end.row >= _gridOptions.frozenRow || _isBottomCanvas && end.row < _gridOptions.frozenRow)) {
-        if (options.autoScroll && _draggingMouseOffset) {
-          var endCellBox = _grid.getCellNodeBox(end.row, end.cell);
+      if (!(this._gridOptions.frozenColumn >= 0 && !this._isRightCanvas && end.cell > this._gridOptions.frozenColumn || this._isRightCanvas && end.cell <= this._gridOptions.frozenColumn) && !(this._gridOptions.frozenRow >= 0 && !this._isBottomCanvas && end.row >= this._gridOptions.frozenRow || this._isBottomCanvas && end.row < this._gridOptions.frozenRow)) {
+        if (this._options.autoScroll && this._draggingMouseOffset) {
+          let endCellBox = this._grid.getCellNodeBox(end.row, end.cell);
           if (!endCellBox)
             return;
-          var viewport = _draggingMouseOffset.viewport;
-          (endCellBox.left < viewport.left || endCellBox.right > viewport.right || endCellBox.top < viewport.top || endCellBox.bottom > viewport.bottom) && _grid.scrollCellIntoView(end.row, end.cell);
+          let viewport = this._draggingMouseOffset.viewport;
+          (endCellBox.left < viewport.left || endCellBox.right > viewport.right || endCellBox.top < viewport.top || endCellBox.bottom > viewport.bottom) && this._grid.scrollCellIntoView(end.row, end.cell);
         }
-        if (_grid.canCellBeSelected(end.row, end.cell) && dd && dd.range) {
+        if (this._grid.canCellBeSelected(end.row, end.cell) && dd != null && dd.range) {
           dd.range.end = end;
-          var range = new SlickRange(dd.range.start.row, dd.range.start.cell, end.row, end.cell);
-          _decorator.show(range), _self.onCellRangeSelecting.notify({
+          let range = new SlickRange((_e = dd.range.start.row) != null ? _e : 0, (_f = dd.range.start.cell) != null ? _f : 0, end.row, end.cell);
+          this._decorator.show(range), this.onCellRangeSelecting.notify({
             range
           });
         }
       }
     }
-    function hasRowMoveManager() {
-      return !!(_grid.getPluginByName("RowMoveManager") || _grid.getPluginByName("CrossGridRowMoveManager"));
+    hasRowMoveManager() {
+      return !!(this._grid.getPluginByName("RowMoveManager") || this._grid.getPluginByName("CrossGridRowMoveManager"));
     }
-    function handleDragEnd(e, dd) {
-      _dragging && (_dragging = !1, e.stopImmediatePropagation(), stopIntervalTimer(), _decorator.hide(), _self.onCellRangeSelected.notify({
+    handleDragEnd(e, dd) {
+      var _a, _b;
+      this._dragging && (this._dragging = !1, e.stopImmediatePropagation(), this.stopIntervalTimer(), this._decorator.hide(), this.onCellRangeSelected.notify({
         range: new SlickRange(
-          dd.range.start.row,
-          dd.range.start.cell,
+          (_a = dd.range.start.row) != null ? _a : 0,
+          (_b = dd.range.start.cell) != null ? _b : 0,
           dd.range.end.row,
           dd.range.end.cell
         )
       }));
     }
-    function getCurrentRange() {
-      return _currentlySelectedRange;
+    getCurrentRange() {
+      return this._currentlySelectedRange;
     }
-    Utils.extend(this, {
-      init,
-      destroy,
-      pluginName: "CellRangeSelector",
-      getCellDecorator,
-      getCurrentRange,
-      onBeforeCellRangeSelected: new SlickEvent(),
-      onCellRangeSelected: new SlickEvent(),
-      onCellRangeSelecting: new SlickEvent()
-    });
-  }
+  };
   window.Slick && Utils.extend(Slick, {
-    CellRangeSelector
+    CellRangeSelector: SlickCellRangeSelector
   });
 })();
 //# sourceMappingURL=slick.cellrangeselector.js.map

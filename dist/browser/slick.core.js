@@ -22,7 +22,6 @@ var Slick = (() => {
   __export(slick_core_exports, {
     BindingEventService: () => BindingEventService,
     ColAutosizeMode: () => ColAutosizeMode,
-    EditorLock: () => EditorLock,
     Event: () => Event,
     EventData: () => EventData,
     EventHandler: () => EventHandler,
@@ -34,9 +33,11 @@ var Slick = (() => {
     Range: () => Range,
     RegexSanitizer: () => RegexSanitizer,
     RowSelectionMode: () => RowSelectionMode,
+    SlickEditorLock: () => SlickEditorLock,
     SlickEvent: () => SlickEvent,
     SlickEventData: () => SlickEventData,
     SlickEventHandler: () => SlickEventHandler,
+    SlickGlobalEditorLock: () => SlickGlobalEditorLock,
     SlickGroup: () => SlickGroup,
     SlickGroupTotals: () => SlickGroupTotals,
     SlickNonDataItem: () => SlickNonDataItem,
@@ -337,7 +338,7 @@ var Slick = (() => {
        */
       __publicField(this, "initialized", !1);
     }
-  }, EditorLock = class {
+  }, SlickEditorLock = class {
     constructor() {
       __publicField(this, "activeEditController", null);
     }
@@ -360,11 +361,11 @@ var Slick = (() => {
     activate(editController) {
       if (editController !== this.activeEditController) {
         if (this.activeEditController !== null)
-          throw new Error("SlickGrid.EditorLock.activate: an editController is still active, can't activate another editController");
+          throw new Error("Slick.EditorLock.activate: an editController is still active, can't activate another editController");
         if (!editController.commitCurrentEdit)
-          throw new Error("SlickGrid.EditorLock.activate: editController must implement .commitCurrentEdit()");
+          throw new Error("Slick.EditorLock.activate: editController must implement .commitCurrentEdit()");
         if (!editController.cancelCurrentEdit)
-          throw new Error("SlickGrid.EditorLock.activate: editController must implement .cancelCurrentEdit()");
+          throw new Error("Slick.EditorLock.activate: editController must implement .cancelCurrentEdit()");
         this.activeEditController = editController;
       }
     }
@@ -377,7 +378,7 @@ var Slick = (() => {
     deactivate(editController) {
       if (this.activeEditController) {
         if (this.activeEditController !== editController)
-          throw new Error("SlickGrid.EditorLock.deactivate: specified editController is not the currently active one");
+          throw new Error("Slick.EditorLock.deactivate: specified editController is not the currently active one");
         this.activeEditController = null;
       }
     }
@@ -560,7 +561,7 @@ var Slick = (() => {
         this.unbind(element, eventName, listener);
       }
     }
-  }, SlickCore = {
+  }, SlickGlobalEditorLock = new SlickEditorLock(), SlickCore = {
     Event: SlickEvent,
     EventData: SlickEventData,
     EventHandler: SlickEventHandler,
@@ -568,9 +569,9 @@ var Slick = (() => {
     NonDataRow: SlickNonDataItem,
     Group: SlickGroup,
     GroupTotals: SlickGroupTotals,
-    // "EditorLock": EditorLock,
+    // EditorLock: EditorLock,
     RegexSanitizer: regexSanitizer,
-    // "BindingEventService": BindingEventService,
+    // BindingEventService: BindingEventService,
     Utils: {
       extend,
       calculateAvailableSpace,
@@ -613,7 +614,7 @@ var Slick = (() => {
      * @static
      * @constructor
      */
-    GlobalEditorLock: new EditorLock(),
+    GlobalEditorLock: SlickGlobalEditorLock,
     keyCode: {
       SPACE: 8,
       BACKSPACE: 8,

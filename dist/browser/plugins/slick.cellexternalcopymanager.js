@@ -10,6 +10,9 @@
       // --
       // public API
       __publicField(this, "pluginName", "CellExternalCopyManager");
+      __publicField(this, "onCopyCells", new SlickEvent());
+      __publicField(this, "onCopyCancelled", new SlickEvent());
+      __publicField(this, "onPasteCells", new SlickEvent());
       // --
       // protected props
       __publicField(this, "_grid");
@@ -28,9 +31,6 @@
         ESC: 27,
         INSERT: 45
       });
-      __publicField(this, "onCopyCells", new SlickEvent());
-      __publicField(this, "onCopyCancelled", new SlickEvent());
-      __publicField(this, "onPasteCells", new SlickEvent());
       this._options = options || {}, this._copiedCellStyleLayerKey = this._options.copiedCellStyleLayerKey || "copy-manager", this._copiedCellStyle = this._options.copiedCellStyle || "copied", this._bodyElement = this._options.bodyElement || document.body, this._onCopyInit = this._options.onCopyInit || void 0, this._onCopySuccess = this._options.onCopySuccess || void 0;
     }
     init(grid) {

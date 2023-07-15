@@ -19,15 +19,15 @@
       __publicField(this, "_handler", new SlickEventHandler());
       __publicField(this, "_bindingEventService", new BindingEventService());
       __publicField(this, "_defaults", {
-        buttonCssClass: null,
-        buttonImage: null,
+        buttonCssClass: void 0,
+        buttonImage: void 0,
         minWidth: 100,
         autoAlign: !0,
         autoAlignOffset: 0
       });
+      __publicField(this, "_options");
       __publicField(this, "_activeHeaderColumnElm");
       __publicField(this, "_menuElm");
-      __publicField(this, "_options");
       this._options = Utils.extend(!0, {}, this._defaults, options);
     }
     init(grid) {

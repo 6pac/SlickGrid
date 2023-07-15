@@ -22,12 +22,8 @@ __export(src_exports, {
   Aggregators: () => Aggregators,
   AvgAggregator: () => AvgAggregator,
   BindingEventService: () => BindingEventService,
-  CellRangeDecorator: () => CellRangeDecorator,
-  CellRangeSelector: () => CellRangeSelector,
-  CellSelectionModel: () => CellSelectionModel,
   CheckboxEditor: () => CheckboxEditor,
   CheckboxFormatter: () => CheckboxFormatter,
-  CheckboxSelectColumn: () => CheckboxSelectColumn,
   CheckmarkFormatter: () => CheckmarkFormatter,
   ColAutosizeMode: () => ColAutosizeMode,
   CompositeEditor: () => CompositeEditor,
@@ -36,7 +32,6 @@ __export(src_exports, {
   CustomTooltip: () => CustomTooltip,
   Draggable: () => Draggable,
   DraggableGrouping: () => DraggableGrouping,
-  EditorLock: () => EditorLock,
   Editors: () => Editors,
   Event: () => Event,
   EventData: () => EventData,
@@ -64,17 +59,22 @@ __export(src_exports, {
   RowDetailView: () => RowDetailView,
   RowMoveManager: () => RowMoveManager,
   RowSelectionMode: () => RowSelectionMode,
-  RowSelectionModel: () => RowSelectionModel,
   SlickAutoTooltips: () => SlickAutoTooltips,
   SlickCellCopyManager: () => SlickCellCopyManager,
   SlickCellExternalCopyManager: () => SlickCellExternalCopyManager,
   SlickCellMenu: () => SlickCellMenu,
+  SlickCellRangeDecorator: () => SlickCellRangeDecorator,
+  SlickCellRangeSelector: () => SlickCellRangeSelector,
+  SlickCellSelectionModel: () => SlickCellSelectionModel,
+  SlickCheckboxSelectColumn: () => SlickCheckboxSelectColumn,
   SlickColumnPicker: () => SlickColumnPicker,
   SlickContextMenu: () => SlickContextMenu,
   SlickDataView: () => SlickDataView,
+  SlickEditorLock: () => SlickEditorLock,
   SlickEvent: () => SlickEvent,
   SlickEventData: () => SlickEventData,
   SlickEventHandler: () => SlickEventHandler,
+  SlickGlobalEditorLock: () => SlickGlobalEditorLock,
   SlickGrid: () => SlickGrid,
   SlickGridMenu: () => SlickGridMenu,
   SlickGridPager: () => SlickGridPager,
@@ -85,7 +85,8 @@ __export(src_exports, {
   SlickHeaderMenu: () => SlickHeaderMenu,
   SlickNonDataItem: () => SlickNonDataItem,
   SlickRange: () => SlickRange,
-  State: () => State,
+  SlickRowSelectionModel: () => SlickRowSelectionModel,
+  SlickState: () => SlickState,
   SumAggregator: () => SumAggregator,
   TextEditor: () => TextEditor,
   Utils: () => Utils,
@@ -389,7 +390,7 @@ var SlickEventData = class {
      */
     __publicField(this, "initialized", !1);
   }
-}, EditorLock = class {
+}, SlickEditorLock = class {
   constructor() {
     __publicField(this, "activeEditController", null);
   }
@@ -412,11 +413,11 @@ var SlickEventData = class {
   activate(editController) {
     if (editController !== this.activeEditController) {
       if (this.activeEditController !== null)
-        throw new Error("SlickGrid.EditorLock.activate: an editController is still active, can't activate another editController");
+        throw new Error("Slick.EditorLock.activate: an editController is still active, can't activate another editController");
       if (!editController.commitCurrentEdit)
-        throw new Error("SlickGrid.EditorLock.activate: editController must implement .commitCurrentEdit()");
+        throw new Error("Slick.EditorLock.activate: editController must implement .commitCurrentEdit()");
       if (!editController.cancelCurrentEdit)
-        throw new Error("SlickGrid.EditorLock.activate: editController must implement .cancelCurrentEdit()");
+        throw new Error("Slick.EditorLock.activate: editController must implement .cancelCurrentEdit()");
       this.activeEditController = editController;
     }
   }
@@ -429,7 +430,7 @@ var SlickEventData = class {
   deactivate(editController) {
     if (this.activeEditController) {
       if (this.activeEditController !== editController)
-        throw new Error("SlickGrid.EditorLock.deactivate: specified editController is not the currently active one");
+        throw new Error("Slick.EditorLock.deactivate: specified editController is not the currently active one");
       this.activeEditController = null;
     }
   }
@@ -612,7 +613,7 @@ var BindingEventService = class {
       this.unbind(element, eventName, listener);
     }
   }
-}, SlickCore = {
+}, SlickGlobalEditorLock = new SlickEditorLock(), SlickCore = {
   Event: SlickEvent,
   EventData: SlickEventData,
   EventHandler: SlickEventHandler,
@@ -620,9 +621,9 @@ var BindingEventService = class {
   NonDataRow: SlickNonDataItem,
   Group: SlickGroup,
   GroupTotals: SlickGroupTotals,
-  // "EditorLock": EditorLock,
+  // EditorLock: EditorLock,
   RegexSanitizer: regexSanitizer,
-  // "BindingEventService": BindingEventService,
+  // BindingEventService: BindingEventService,
   Utils: {
     extend,
     calculateAvailableSpace,
@@ -665,7 +666,7 @@ var BindingEventService = class {
    * @static
    * @constructor
    */
-  GlobalEditorLock: new EditorLock(),
+  GlobalEditorLock: SlickGlobalEditorLock,
   keyCode: {
     SPACE: 8,
     BACKSPACE: 8,
@@ -2550,6 +2551,8 @@ var SlickGrid = class {
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
     __publicField(this, "slickGridVersion", "4.0.1");
+    /** optional grid state clientId */
+    __publicField(this, "cid", "");
     // Events
     __publicField(this, "onActiveCellChanged", new SlickEvent3());
     __publicField(this, "onActiveCellPositionChanged", new SlickEvent3());
@@ -4406,10 +4409,10 @@ var SlickGrid = class {
     needToReselectCell && (this.activeCellNode = this.getCellNode(this.activeRow, this.activeCell));
   }
   startPostProcessing() {
-    this._options.enableAsyncPostRender && (clearTimeout(this.h_postrender), this.h_postrender = setTimeout(this.asyncPostProcessRows, this._options.asyncPostRenderDelay));
+    this._options.enableAsyncPostRender && (clearTimeout(this.h_postrender), this.h_postrender = setTimeout(this.asyncPostProcessRows.bind(this), this._options.asyncPostRenderDelay));
   }
   startPostProcessingCleanup() {
-    this._options.enableAsyncPostRenderCleanup && (clearTimeout(this.h_postrenderCleanup), this.h_postrenderCleanup = setTimeout(this.asyncPostProcessCleanupRows, this._options.asyncPostRenderCleanupDelay));
+    this._options.enableAsyncPostRenderCleanup && (clearTimeout(this.h_postrenderCleanup), this.h_postrenderCleanup = setTimeout(this.asyncPostProcessCleanupRows.bind(this), this._options.asyncPostRenderCleanupDelay));
   }
   invalidatePostProcessingResults(row) {
     for (let columnIdx in this.postProcessedRows[row])
@@ -4517,7 +4520,7 @@ var SlickGrid = class {
             node && m.asyncPostRender(node, row, this.getDataItem(row), m, processedStatus === "C"), this.postProcessedRows[row][columnIdx] = "R";
           }
         }
-        this.h_postrender = setTimeout(this.asyncPostProcessRows, this._options.asyncPostRenderDelay);
+        this.h_postrender = setTimeout(this.asyncPostProcessRows.bind(this), this._options.asyncPostRenderDelay);
         return;
       }
     }
@@ -4534,7 +4537,7 @@ var SlickGrid = class {
           column.asyncPostRenderCleanup && entry.node && column.asyncPostRenderCleanup(entry.node, entry.rowIdx, column);
         }
       }
-      this.h_postrenderCleanup = setTimeout(this.asyncPostProcessCleanupRows, this._options.asyncPostRenderCleanupDelay);
+      this.h_postrenderCleanup = setTimeout(this.asyncPostProcessCleanupRows.bind(this), this._options.asyncPostRenderCleanupDelay);
     }
   }
   updateCellCssStylesOnRenderedRows(addedHash, removedHash) {
@@ -5402,6 +5405,11 @@ var BindingEventService3 = BindingEventService, SlickEvent4 = Event, Utils7 = Ut
   constructor(columns, grid, gridOptions) {
     this.columns = columns;
     this.grid = grid;
+    // --
+    // public API
+    __publicField(this, "onColumnsChanged", new SlickEvent4());
+    // --
+    // protected props
     __publicField(this, "_gridUid");
     __publicField(this, "_columnTitleElm");
     __publicField(this, "_listElm");
@@ -5418,8 +5426,6 @@ var BindingEventService3 = BindingEventService, SlickEvent4 = Event, Utils7 = Ut
       syncResizeTitle: "Synchronous resize",
       headerColumnValueExtractor: (columnDef) => columnDef.name || ""
     });
-    // public events
-    __publicField(this, "onColumnsChanged", new SlickEvent4());
     this._gridUid = grid.getUID(), this._gridOptions = Utils7.extend({}, this._defaults, gridOptions), this.init(this.grid);
   }
   init(grid) {
@@ -5542,6 +5548,16 @@ var BindingEventService4 = BindingEventService, SlickEvent5 = Event, Utils8 = Ut
   constructor(columns, grid, gridOptions) {
     this.columns = columns;
     this.grid = grid;
+    // --
+    // public API
+    __publicField(this, "onAfterMenuShow", new SlickEvent5());
+    __publicField(this, "onBeforeMenuShow", new SlickEvent5());
+    __publicField(this, "onMenuClose", new SlickEvent5());
+    __publicField(this, "onCommand", new SlickEvent5());
+    __publicField(this, "onColumnsChanged", new SlickEvent5());
+    // --
+    // protected props
+    __publicField(this, "_bindingEventService");
     __publicField(this, "_gridOptions");
     __publicField(this, "_gridUid");
     __publicField(this, "_isMenuOpen", !1);
@@ -5553,7 +5569,7 @@ var BindingEventService4 = BindingEventService, SlickEvent5 = Event, Utils8 = Ut
     __publicField(this, "_listElm");
     __publicField(this, "_buttonElm");
     __publicField(this, "_menuElm");
-    __publicField(this, "columnCheckboxes", []);
+    __publicField(this, "_columnCheckboxes", []);
     __publicField(this, "_defaults", {
       showButton: !0,
       hideForceFitButton: !1,
@@ -5565,17 +5581,8 @@ var BindingEventService4 = BindingEventService, SlickEvent5 = Event, Utils8 = Ut
       resizeOnShowHeaderRow: !1,
       syncResizeTitle: "Synchronous resize",
       useClickToRepositionMenu: !0,
-      headerColumnValueExtractor: function(columnDef) {
-        return columnDef.name;
-      }
+      headerColumnValueExtractor: (columnDef) => columnDef.name
     });
-    __publicField(this, "_bindingEventService");
-    // public events
-    __publicField(this, "onAfterMenuShow", new SlickEvent5());
-    __publicField(this, "onBeforeMenuShow", new SlickEvent5());
-    __publicField(this, "onMenuClose", new SlickEvent5());
-    __publicField(this, "onCommand", new SlickEvent5());
-    __publicField(this, "onColumnsChanged", new SlickEvent5());
     this._gridUid = grid.getUID(), this._gridOptions = gridOptions, this._gridMenuOptions = Utils8.extend({}, gridOptions.gridMenu), this._bindingEventService = new BindingEventService4(), grid.onSetOptions.subscribe((_e, args) => {
       if (args && args.optionsBefore && args.optionsAfter) {
         let switchedFromRegularToFrozen = args.optionsBefore.frozenColumn >= 0 && args.optionsAfter.frozenColumn === -1, switchedFromFrozenToRegular = args.optionsBefore.frozenColumn === -1 && args.optionsAfter.frozenColumn >= 0;
@@ -5652,7 +5659,7 @@ var BindingEventService4 = BindingEventService, SlickEvent5 = Event, Utils8 = Ut
   }
   showGridMenu(e) {
     let targetEvent = e.touches ? e.touches[0] : e;
-    e.preventDefault(), Utils8.emptyElement(this._listElm), Utils8.emptyElement(this._customMenuElm), this.populateCustomMenus(this._gridMenuOptions || {}, this._customMenuElm), this.updateColumnOrder(), this.columnCheckboxes = [];
+    e.preventDefault(), Utils8.emptyElement(this._listElm), Utils8.emptyElement(this._customMenuElm), this.populateCustomMenus(this._gridMenuOptions || {}, this._customMenuElm), this.updateColumnOrder(), this._columnCheckboxes = [];
     let callbackArgs = {
       grid: this.grid,
       menu: this._menuElm,
@@ -5667,7 +5674,7 @@ var BindingEventService4 = BindingEventService, SlickEvent5 = Event, Utils8 = Ut
       let liElm = document.createElement("li");
       liElm.className = excludeCssClass, liElm.ariaLabel = this.columns[i]?.name || "";
       let checkboxElm = document.createElement("input");
-      checkboxElm.type = "checkbox", checkboxElm.id = `${this._gridUid}-gridmenu-colpicker-${columnId}`, checkboxElm.dataset.columnid = String(this.columns[i].id), liElm.appendChild(checkboxElm), this.grid.getColumnIndex(this.columns[i].id) != null && !this.columns[i].hidden && (checkboxElm.checked = !0), this.columnCheckboxes.push(checkboxElm), this._gridMenuOptions?.headerColumnValueExtractor ? columnLabel = this._gridMenuOptions.headerColumnValueExtractor(this.columns[i], this._gridOptions) : columnLabel = this._defaults.headerColumnValueExtractor(this.columns[i]);
+      checkboxElm.type = "checkbox", checkboxElm.id = `${this._gridUid}-gridmenu-colpicker-${columnId}`, checkboxElm.dataset.columnid = String(this.columns[i].id), liElm.appendChild(checkboxElm), this.grid.getColumnIndex(this.columns[i].id) != null && !this.columns[i].hidden && (checkboxElm.checked = !0), this._columnCheckboxes.push(checkboxElm), this._gridMenuOptions?.headerColumnValueExtractor ? columnLabel = this._gridMenuOptions.headerColumnValueExtractor(this.columns[i], this._gridOptions) : columnLabel = this._defaults.headerColumnValueExtractor(this.columns[i]);
       let labelElm = document.createElement("label");
       labelElm.htmlFor = `${this._gridUid}-gridmenu-colpicker-${columnId}`, labelElm.innerHTML = columnLabel, liElm.appendChild(labelElm), this._listElm.appendChild(liElm);
     }
@@ -5746,7 +5753,7 @@ var BindingEventService4 = BindingEventService, SlickEvent5 = Event, Utils8 = Ut
     }
     if (e.target.type === "checkbox") {
       let isChecked = e.target.checked, columnId = e.target.dataset.columnid || "", visibleColumns = [];
-      if (this.columnCheckboxes.forEach((columnCheckbox, idx) => {
+      if (this._columnCheckboxes.forEach((columnCheckbox, idx) => {
         columnCheckbox.checked && (this.columns[idx].hidden && (this.columns[idx].hidden = !1), visibleColumns.push(this.columns[idx]));
       }), !visibleColumns.length) {
         e.target.checked = !0;
@@ -5782,12 +5789,16 @@ var BindingEventService4 = BindingEventService, SlickEvent5 = Event, Utils8 = Ut
 };
 
 // src/controls/slick.pager.ts
-var BindingEventService5 = BindingEventService, GlobalEditorLock3 = GlobalEditorLock, Utils9 = Utils, SlickGridPager = class {
+var BindingEventService5 = BindingEventService, SlickGlobalEditorLock2 = SlickGlobalEditorLock, Utils9 = Utils, SlickGridPager = class {
   constructor(dataView, grid, selectorOrElm, options) {
     this.dataView = dataView;
     this.grid = grid;
-    // the container might be a string, a jQuery object or a native element
+    // --
+    // public API
+    // --
+    // protected props
     __publicField(this, "_container");
+    // the container might be a string, a jQuery object or a native element
     __publicField(this, "_statusElm");
     __publicField(this, "_bindingEventService");
     __publicField(this, "_options");
@@ -5817,7 +5828,7 @@ var BindingEventService5 = BindingEventService, GlobalEditorLock3 = GlobalEditor
     this.setPageSize(0), this._bindingEventService.unbindAll(), this._container.innerHTML = "";
   }
   getNavState() {
-    let cannotLeaveEditMode = !GlobalEditorLock3.commitCurrentEdit(), pagingInfo = this.dataView.getPagingInfo(), lastPage = pagingInfo.totalPages - 1;
+    let cannotLeaveEditMode = !SlickGlobalEditorLock2.commitCurrentEdit(), pagingInfo = this.dataView.getPagingInfo(), lastPage = pagingInfo.totalPages - 1;
     return {
       canGotoFirst: !cannotLeaveEditMode && pagingInfo.pageSize !== 0 && pagingInfo.pageNum > 0,
       canGotoLast: !cannotLeaveEditMode && pagingInfo.pageSize !== 0 && pagingInfo.pageNum !== lastPage,
@@ -6007,6 +6018,9 @@ var CLEAR_COPY_SELECTION_DELAY = 2e3, CLIPBOARD_PASTE_DELAY = 100, SlickCellExte
     // --
     // public API
     __publicField(this, "pluginName", "CellExternalCopyManager");
+    __publicField(this, "onCopyCells", new SlickEvent7());
+    __publicField(this, "onCopyCancelled", new SlickEvent7());
+    __publicField(this, "onPasteCells", new SlickEvent7());
     // --
     // protected props
     __publicField(this, "_grid");
@@ -6025,9 +6039,6 @@ var CLEAR_COPY_SELECTION_DELAY = 2e3, CLIPBOARD_PASTE_DELAY = 100, SlickCellExte
       ESC: 27,
       INSERT: 45
     });
-    __publicField(this, "onCopyCells", new SlickEvent7());
-    __publicField(this, "onCopyCancelled", new SlickEvent7());
-    __publicField(this, "onPasteCells", new SlickEvent7());
     this._options = options || {}, this._copiedCellStyleLayerKey = this._options.copiedCellStyleLayerKey || "copy-manager", this._copiedCellStyle = this._options.copiedCellStyle || "copied", this._bodyElement = this._options.bodyElement || document.body, this._onCopyInit = this._options.onCopyInit || void 0, this._onCopySuccess = this._options.onCopySuccess || void 0;
   }
   init(grid) {
@@ -6483,110 +6494,152 @@ var BindingEventService6 = BindingEventService, SlickEvent8 = SlickEvent, SlickE
   }
 };
 
-// src/plugins/slick.cellrangedecorator.js
-var Utils12 = Utils;
-function CellRangeDecorator(grid, options) {
-  var _elem, _defaults = {
-    selectionCssClass: "slick-range-decorator",
-    selectionCss: {
-      zIndex: "9999",
-      border: "2px dashed red"
-    },
-    offset: { top: -1, left: -1, height: -2, width: -2 }
-  };
-  options = Utils12.extend(!0, {}, _defaults, options);
-  function show2(range) {
-    if (!_elem) {
-      _elem = document.createElement("div"), _elem.className = options.selectionCssClass, Object.keys(options.selectionCss).forEach((cssStyleKey) => {
-        _elem.style[cssStyleKey] = options.selectionCss[cssStyleKey];
-      }), _elem.style.position = "absolute";
-      let canvasNode = grid.getActiveCanvasNode();
-      canvasNode && canvasNode.appendChild(_elem);
+// src/plugins/slick.cellrangedecorator.ts
+var Utils12 = Utils, SlickCellRangeDecorator = class {
+  constructor(grid, options) {
+    this.grid = grid;
+    // --
+    // public API
+    __publicField(this, "pluginName", "CellRangeDecorator");
+    // --
+    // protected props
+    __publicField(this, "_elem");
+    __publicField(this, "_defaults", {
+      selectionCssClass: "slick-range-decorator",
+      selectionCss: {
+        zIndex: "9999",
+        border: "2px dashed red"
+      },
+      offset: { top: -1, left: -1, height: -2, width: -2 }
+    });
+    __publicField(this, "options");
+    this.options = Utils12.extend(!0, {}, this._defaults, options);
+  }
+  destroy() {
+    this.hide();
+  }
+  init() {
+  }
+  hide() {
+    this._elem?.remove(), this._elem = null;
+  }
+  show(range) {
+    if (!this._elem) {
+      this._elem = document.createElement("div"), this._elem.className = this.options.selectionCssClass, Object.keys(this.options.selectionCss).forEach((cssStyleKey) => {
+        this._elem.style[cssStyleKey] = this.options.selectionCss[cssStyleKey];
+      }), this._elem.style.position = "absolute";
+      let canvasNode = this.grid.getActiveCanvasNode();
+      canvasNode && canvasNode.appendChild(this._elem);
     }
-    var from = grid.getCellNodeBox(range.fromRow, range.fromCell), to = grid.getCellNodeBox(range.toRow, range.toCell);
-    return from && to && options && options.offset && (_elem.style.top = `${from.top + options.offset.top}px`, _elem.style.left = `${from.left + options.offset.left}px`, _elem.style.height = `${to.bottom - from.top + options.offset.height}px`, _elem.style.width = `${to.right - from.left + options.offset.width}px`), _elem;
+    let from = this.grid.getCellNodeBox(range.fromRow, range.fromCell), to = this.grid.getCellNodeBox(range.toRow, range.toCell);
+    return from && to && this.options && this.options.offset && (this._elem.style.top = `${from.top + this.options.offset.top}px`, this._elem.style.left = `${from.left + this.options.offset.left}px`, this._elem.style.height = `${to.bottom - from.top + this.options.offset.height}px`, this._elem.style.width = `${to.right - from.left + this.options.offset.width}px`), this._elem;
   }
-  function destroy() {
-    hide2();
-  }
-  function hide2() {
-    _elem && (_elem.remove(), _elem = null);
-  }
-  Utils12.extend(this, {
-    pluginName: "CellRangeDecorator",
-    show: show2,
-    hide: hide2,
-    destroy
-  });
-}
+};
 
-// src/plugins/slick.cellrangeselector.js
-var SlickEvent9 = Event, EventHandler3 = EventHandler, SlickRange4 = Range, Draggable3 = Draggable, CellRangeDecorator2 = CellRangeDecorator, Utils13 = Utils;
-function CellRangeSelector(options) {
-  var _grid, _currentlySelectedRange, _canvas, _gridOptions, _activeCanvas, _dragging, _decorator, _self = this, _handler = new EventHandler3(), _defaults = {
-    autoScroll: !0,
-    minIntervalToShowNextCell: 30,
-    maxIntervalToShowNextCell: 600,
-    // better to a multiple of minIntervalToShowNextCell
-    accelerateInterval: 5,
-    // increase 5ms when cursor 1px outside the viewport.
-    selectionCss: {
-      border: "2px dashed blue"
-    }
-  }, _rowOffset, _columnOffset, _isRightCanvas, _isBottomCanvas, _activeViewport, _viewportWidth, _viewportHeight, _draggingMouseOffset, _moveDistanceForOneCell, _autoScrollTimerId, _xDelayForNextCell, _yDelayForNextCell, _isRowMoveRegistered = !1, _scrollTop = 0, _scrollLeft = 0;
-  function init(grid) {
-    if (typeof Draggable3 > "u")
+// src/plugins/slick.cellrangeselector.ts
+var SlickEvent9 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange4 = SlickRange, Draggable3 = Draggable, SlickCellRangeDecorator2 = SlickCellRangeDecorator, Utils13 = Utils, SlickCellRangeSelector = class {
+  constructor(options) {
+    // --
+    // public API
+    __publicField(this, "pluginName", "CellRangeSelector");
+    __publicField(this, "onBeforeCellRangeSelected", new SlickEvent9());
+    __publicField(this, "onCellRangeSelected", new SlickEvent9());
+    __publicField(this, "onCellRangeSelecting", new SlickEvent9());
+    // --
+    // protected props
+    __publicField(this, "_grid");
+    __publicField(this, "_currentlySelectedRange", null);
+    __publicField(this, "_canvas");
+    __publicField(this, "_decorator");
+    __publicField(this, "_gridOptions");
+    __publicField(this, "_activeCanvas");
+    __publicField(this, "_dragging", !1);
+    __publicField(this, "_handler", new SlickEventHandler2());
+    __publicField(this, "_options");
+    __publicField(this, "_defaults", {
+      autoScroll: !0,
+      minIntervalToShowNextCell: 30,
+      maxIntervalToShowNextCell: 600,
+      // better to a multiple of minIntervalToShowNextCell
+      accelerateInterval: 5,
+      // increase 5ms when cursor 1px outside the viewport.
+      selectionCss: {
+        border: "2px dashed blue"
+      }
+    });
+    // Frozen row & column variables
+    __publicField(this, "_rowOffset", 0);
+    __publicField(this, "_columnOffset", 0);
+    __publicField(this, "_isRightCanvas", !1);
+    __publicField(this, "_isBottomCanvas", !1);
+    // autoScroll related constiables
+    __publicField(this, "_activeViewport");
+    __publicField(this, "_autoScrollTimerId");
+    __publicField(this, "_draggingMouseOffset");
+    __publicField(this, "_moveDistanceForOneCell");
+    __publicField(this, "_xDelayForNextCell", 0);
+    __publicField(this, "_yDelayForNextCell", 0);
+    __publicField(this, "_viewportHeight", 0);
+    __publicField(this, "_viewportWidth", 0);
+    __publicField(this, "_isRowMoveRegistered", !1);
+    // Scrollings
+    __publicField(this, "_scrollLeft", 0);
+    __publicField(this, "_scrollTop", 0);
+    this._options = Utils13.extend(!0, {}, this._defaults, options);
+  }
+  init(grid) {
+    if (Draggable3 === void 0)
       throw new Error('Slick.Draggable is undefined, make sure to import "slick.interactions.js"');
-    options = Utils13.extend(!0, {}, _defaults, options), _decorator = options.cellDecorator || new CellRangeDecorator2(grid, options), _grid = grid, _canvas = _grid.getCanvasNode(), _gridOptions = _grid.getOptions(), _handler.subscribe(_grid.onScroll, handleScroll).subscribe(_grid.onDragInit, handleDragInit).subscribe(_grid.onDragStart, handleDragStart).subscribe(_grid.onDrag, handleDrag).subscribe(_grid.onDragEnd, handleDragEnd);
+    this._decorator = this._options.cellDecorator || new SlickCellRangeDecorator2(grid, this._options), this._grid = grid, this._canvas = this._grid.getCanvasNode(), this._gridOptions = this._grid.getOptions(), this._handler.subscribe(this._grid.onScroll, this.handleScroll.bind(this)).subscribe(this._grid.onDragInit, this.handleDragInit.bind(this)).subscribe(this._grid.onDragStart, this.handleDragStart.bind(this)).subscribe(this._grid.onDrag, this.handleDrag.bind(this)).subscribe(this._grid.onDragEnd, this.handleDragEnd.bind(this));
   }
-  function destroy() {
-    _handler.unsubscribeAll(), _activeCanvas = null, _activeViewport = null, _canvas = null, _decorator && _decorator.destroy && _decorator.destroy();
+  destroy() {
+    this._handler.unsubscribeAll(), this._activeCanvas = null, this._activeViewport = null, this._canvas = null, this._decorator?.destroy();
   }
-  function getCellDecorator() {
-    return _decorator;
+  getCellDecorator() {
+    return this._decorator;
   }
-  function handleScroll(e, args) {
-    _scrollTop = args.scrollTop, _scrollLeft = args.scrollLeft;
+  handleScroll(_e, args) {
+    this._scrollTop = args.scrollTop, this._scrollLeft = args.scrollLeft;
   }
-  function handleDragInit(e) {
-    _activeCanvas = _grid.getActiveCanvasNode(e), _activeViewport = _grid.getActiveViewportNode(e);
-    var scrollbarDimensions = _grid.getDisplayedScrollbarDimensions();
-    if (_viewportWidth = _activeViewport.offsetWidth - scrollbarDimensions.width, _viewportHeight = _activeViewport.offsetHeight - scrollbarDimensions.height, _moveDistanceForOneCell = {
-      x: _grid.getAbsoluteColumnMinWidth() / 2,
-      y: _grid.getOptions().rowHeight / 2
-    }, _isRowMoveRegistered = hasRowMoveManager(), _rowOffset = 0, _columnOffset = 0, _isBottomCanvas = _activeCanvas.classList.contains("grid-canvas-bottom"), _gridOptions.frozenRow > -1 && _isBottomCanvas) {
-      let canvasSelector = `.${_grid.getUID()} .grid-canvas-${_gridOptions.frozenBottom ? "bottom" : "top"}`, canvasElm = document.querySelector(canvasSelector);
-      canvasElm && (_rowOffset = canvasElm.clientHeight || 0);
+  handleDragInit(e) {
+    this._activeCanvas = this._grid.getActiveCanvasNode(e), this._activeViewport = this._grid.getActiveViewportNode(e);
+    let scrollbarDimensions = this._grid.getDisplayedScrollbarDimensions();
+    if (this._viewportWidth = this._activeViewport.offsetWidth - scrollbarDimensions.width, this._viewportHeight = this._activeViewport.offsetHeight - scrollbarDimensions.height, this._moveDistanceForOneCell = {
+      x: this._grid.getAbsoluteColumnMinWidth() / 2,
+      y: this._grid.getOptions().rowHeight / 2
+    }, this._isRowMoveRegistered = this.hasRowMoveManager(), this._rowOffset = 0, this._columnOffset = 0, this._isBottomCanvas = this._activeCanvas.classList.contains("grid-canvas-bottom"), this._gridOptions.frozenRow > -1 && this._isBottomCanvas) {
+      let canvasSelector = `.${this._grid.getUID()} .grid-canvas-${this._gridOptions.frozenBottom ? "bottom" : "top"}`, canvasElm = document.querySelector(canvasSelector);
+      canvasElm && (this._rowOffset = canvasElm.clientHeight || 0);
     }
-    if (_isRightCanvas = _activeCanvas.classList.contains("grid-canvas-right"), _gridOptions.frozenColumn > -1 && _isRightCanvas) {
-      let canvasLeftElm = document.querySelector(`.${_grid.getUID()} .grid-canvas-left`);
-      canvasLeftElm && (_columnOffset = canvasLeftElm.clientWidth || 0);
+    if (this._isRightCanvas = this._activeCanvas.classList.contains("grid-canvas-right"), this._gridOptions.frozenColumn > -1 && this._isRightCanvas) {
+      let canvasLeftElm = document.querySelector(`.${this._grid.getUID()} .grid-canvas-left`);
+      canvasLeftElm && (this._columnOffset = canvasLeftElm.clientWidth || 0);
     }
     e.stopImmediatePropagation(), e.preventDefault();
   }
-  function handleDragStart(e, dd) {
-    var cell = _grid.getCellFromEvent(e);
-    if (_self.onBeforeCellRangeSelected.notify(cell) !== !1 && _grid.canCellBeSelected(cell.row, cell.cell) && (_dragging = !0, e.stopImmediatePropagation()), !_dragging)
+  handleDragStart(e, dd) {
+    let cell = this._grid.getCellFromEvent(e);
+    if (cell && this.onBeforeCellRangeSelected.notify(cell).getReturnValue() !== !1 && this._grid.canCellBeSelected(cell.row, cell.cell) && (this._dragging = !0, e.stopImmediatePropagation()), !this._dragging)
       return;
-    _grid.focus();
-    let canvasOffset = Utils13.offset(_canvas), startX = dd.startX - (canvasOffset.left || 0);
-    _gridOptions.frozenColumn >= 0 && _isRightCanvas && (startX += _scrollLeft);
-    let startY = dd.startY - (canvasOffset.top || 0);
-    _gridOptions.frozenRow >= 0 && _isBottomCanvas && (startY += _scrollTop);
-    var start = _grid.getCellFromPoint(startX, startY);
-    return dd.range = { start, end: {} }, _currentlySelectedRange = dd.range, _decorator.show(new SlickRange4(start.row, start.cell));
+    this._grid.focus();
+    let canvasOffset = Utils13.offset(this._canvas), startX = dd.startX - (canvasOffset?.left ?? 0);
+    this._gridOptions.frozenColumn >= 0 && this._isRightCanvas && (startX += this._scrollLeft);
+    let startY = dd.startY - (canvasOffset?.top ?? 0);
+    this._gridOptions.frozenRow >= 0 && this._isBottomCanvas && (startY += this._scrollTop);
+    let start = this._grid.getCellFromPoint(startX, startY);
+    return dd.range = { start, end: {} }, this._currentlySelectedRange = dd.range, this._decorator.show(new SlickRange4(start.row, start.cell));
   }
-  function handleDrag(evt, dd) {
-    if (!_dragging && !_isRowMoveRegistered)
+  handleDrag(evt, dd) {
+    if (!this._dragging && !this._isRowMoveRegistered)
       return;
-    _isRowMoveRegistered || evt.stopImmediatePropagation();
+    this._isRowMoveRegistered || evt.stopImmediatePropagation();
     let e = evt.getNativeEvent();
-    if (options.autoScroll && (_draggingMouseOffset = getMouseOffsetViewport(e, dd), _draggingMouseOffset.isOutsideViewport))
-      return handleDragOutsideViewport();
-    stopIntervalTimer(), handleDragTo(e, dd);
+    if (this._options.autoScroll && (this._draggingMouseOffset = this.getMouseOffsetViewport(e, dd), this._draggingMouseOffset.isOutsideViewport))
+      return this.handleDragOutsideViewport();
+    this.stopIntervalTimer(), this.handleDragTo(e, dd);
   }
-  function getMouseOffsetViewport(e, dd) {
-    var targetEvent = e.touches ? e.touches[0] : e, viewportLeft = _activeViewport.scrollLeft, viewportTop = _activeViewport.scrollTop, viewportRight = viewportLeft + _viewportWidth, viewportBottom = viewportTop + _viewportHeight, viewportOffset = Utils13.offset(_activeViewport), viewportOffsetLeft = viewportOffset.left || 0, viewportOffsetTop = viewportOffset.top || 0, viewportOffsetRight = viewportOffsetLeft + _viewportWidth, viewportOffsetBottom = viewportOffsetTop + _viewportHeight, result = {
+  getMouseOffsetViewport(e, dd) {
+    let targetEvent = e?.touches?.[0] ?? e, viewportLeft = this._activeViewport.scrollLeft, viewportTop = this._activeViewport.scrollTop, viewportRight = viewportLeft + this._viewportWidth, viewportBottom = viewportTop + this._viewportHeight, viewportOffset = Utils13.offset(this._activeViewport), viewportOffsetLeft = viewportOffset?.left ?? 0, viewportOffsetTop = viewportOffset?.top ?? 0, viewportOffsetRight = viewportOffsetLeft + this._viewportWidth, viewportOffsetBottom = viewportOffsetTop + this._viewportHeight, result = {
       e,
       dd,
       viewport: {
@@ -6611,104 +6664,101 @@ function CellRangeSelector(options) {
     };
     return targetEvent.pageX < viewportOffsetLeft ? result.offset.x = targetEvent.pageX - viewportOffsetLeft : targetEvent.pageX > viewportOffsetRight && (result.offset.x = targetEvent.pageX - viewportOffsetRight), targetEvent.pageY < viewportOffsetTop ? result.offset.y = viewportOffsetTop - targetEvent.pageY : targetEvent.pageY > viewportOffsetBottom && (result.offset.y = viewportOffsetBottom - targetEvent.pageY), result.isOutsideViewport = !!result.offset.x || !!result.offset.y, result;
   }
-  function handleDragOutsideViewport() {
-    if (_xDelayForNextCell = options.maxIntervalToShowNextCell - Math.abs(_draggingMouseOffset.offset.x) * options.accelerateInterval, _yDelayForNextCell = options.maxIntervalToShowNextCell - Math.abs(_draggingMouseOffset.offset.y) * options.accelerateInterval, !_autoScrollTimerId) {
-      var xTotalDelay = 0, yTotalDelay = 0;
-      _autoScrollTimerId = setInterval(function() {
-        var xNeedUpdate = !1, yNeedUpdate = !1;
-        _draggingMouseOffset.offset.x ? (xTotalDelay += options.minIntervalToShowNextCell, xNeedUpdate = xTotalDelay >= _xDelayForNextCell) : xTotalDelay = 0, _draggingMouseOffset.offset.y ? (yTotalDelay += options.minIntervalToShowNextCell, yNeedUpdate = yTotalDelay >= _yDelayForNextCell) : yTotalDelay = 0, (xNeedUpdate || yNeedUpdate) && (xNeedUpdate && (xTotalDelay = 0), yNeedUpdate && (yTotalDelay = 0), handleDragToNewPosition(xNeedUpdate, yNeedUpdate));
-      }, options.minIntervalToShowNextCell);
+  handleDragOutsideViewport() {
+    if (this._xDelayForNextCell = this._options.maxIntervalToShowNextCell - Math.abs(this._draggingMouseOffset.offset.x) * this._options.accelerateInterval, this._yDelayForNextCell = this._options.maxIntervalToShowNextCell - Math.abs(this._draggingMouseOffset.offset.y) * this._options.accelerateInterval, !this._autoScrollTimerId) {
+      let xTotalDelay = 0, yTotalDelay = 0;
+      this._autoScrollTimerId = setInterval(() => {
+        let xNeedUpdate = !1, yNeedUpdate = !1;
+        this._draggingMouseOffset.offset.x ? (xTotalDelay += this._options.minIntervalToShowNextCell, xNeedUpdate = xTotalDelay >= this._xDelayForNextCell) : xTotalDelay = 0, this._draggingMouseOffset.offset.y ? (yTotalDelay += this._options.minIntervalToShowNextCell, yNeedUpdate = yTotalDelay >= this._yDelayForNextCell) : yTotalDelay = 0, (xNeedUpdate || yNeedUpdate) && (xNeedUpdate && (xTotalDelay = 0), yNeedUpdate && (yTotalDelay = 0), this.handleDragToNewPosition(xNeedUpdate, yNeedUpdate));
+      }, this._options.minIntervalToShowNextCell);
     }
   }
-  function handleDragToNewPosition(xNeedUpdate, yNeedUpdate) {
-    var pageX = _draggingMouseOffset.e.pageX, pageY = _draggingMouseOffset.e.pageY, mouseOffsetX = _draggingMouseOffset.offset.x, mouseOffsetY = _draggingMouseOffset.offset.y, viewportOffset = _draggingMouseOffset.viewport.offset;
-    xNeedUpdate && mouseOffsetX && (mouseOffsetX > 0 ? pageX = viewportOffset.right + _moveDistanceForOneCell.x : pageX = viewportOffset.left - _moveDistanceForOneCell.x), yNeedUpdate && mouseOffsetY && (mouseOffsetY > 0 ? pageY = viewportOffset.top - _moveDistanceForOneCell.y : pageY = viewportOffset.bottom + _moveDistanceForOneCell.y), handleDragTo({
+  handleDragToNewPosition(xNeedUpdate, yNeedUpdate) {
+    let pageX = this._draggingMouseOffset.e.pageX, pageY = this._draggingMouseOffset.e.pageY, mouseOffsetX = this._draggingMouseOffset.offset.x, mouseOffsetY = this._draggingMouseOffset.offset.y, viewportOffset = this._draggingMouseOffset.viewport.offset;
+    xNeedUpdate && mouseOffsetX && (mouseOffsetX > 0 ? pageX = viewportOffset.right + this._moveDistanceForOneCell.x : pageX = viewportOffset.left - this._moveDistanceForOneCell.x), yNeedUpdate && mouseOffsetY && (mouseOffsetY > 0 ? pageY = viewportOffset.top - this._moveDistanceForOneCell.y : pageY = viewportOffset.bottom + this._moveDistanceForOneCell.y), this.handleDragTo({
       pageX,
       pageY
-    }, _draggingMouseOffset.dd);
+    }, this._draggingMouseOffset.dd);
   }
-  function stopIntervalTimer() {
-    clearInterval(_autoScrollTimerId), _autoScrollTimerId = null;
+  stopIntervalTimer() {
+    this._autoScrollTimerId && (clearInterval(this._autoScrollTimerId), this._autoScrollTimerId = void 0);
   }
-  function handleDragTo(e, dd) {
-    let targetEvent = e.touches ? e.touches[0] : e, canvasOffset = Utils13.offset(_activeCanvas), end = _grid.getCellFromPoint(
-      targetEvent.pageX - (canvasOffset && canvasOffset.left || 0) + _columnOffset,
-      targetEvent.pageY - (canvasOffset && canvasOffset.top || 0) + _rowOffset
+  handleDragTo(e, dd) {
+    let targetEvent = e?.touches?.[0] ?? e, canvasOffset = Utils13.offset(this._activeCanvas), end = this._grid.getCellFromPoint(
+      targetEvent.pageX - (canvasOffset?.left ?? 0) + this._columnOffset,
+      targetEvent.pageY - (canvasOffset?.top ?? 0) + this._rowOffset
     );
-    if (!(_gridOptions.frozenColumn >= 0 && !_isRightCanvas && end.cell > _gridOptions.frozenColumn || _isRightCanvas && end.cell <= _gridOptions.frozenColumn) && !(_gridOptions.frozenRow >= 0 && !_isBottomCanvas && end.row >= _gridOptions.frozenRow || _isBottomCanvas && end.row < _gridOptions.frozenRow)) {
-      if (options.autoScroll && _draggingMouseOffset) {
-        var endCellBox = _grid.getCellNodeBox(end.row, end.cell);
+    if (!(this._gridOptions.frozenColumn >= 0 && !this._isRightCanvas && end.cell > this._gridOptions.frozenColumn || this._isRightCanvas && end.cell <= this._gridOptions.frozenColumn) && !(this._gridOptions.frozenRow >= 0 && !this._isBottomCanvas && end.row >= this._gridOptions.frozenRow || this._isBottomCanvas && end.row < this._gridOptions.frozenRow)) {
+      if (this._options.autoScroll && this._draggingMouseOffset) {
+        let endCellBox = this._grid.getCellNodeBox(end.row, end.cell);
         if (!endCellBox)
           return;
-        var viewport = _draggingMouseOffset.viewport;
-        (endCellBox.left < viewport.left || endCellBox.right > viewport.right || endCellBox.top < viewport.top || endCellBox.bottom > viewport.bottom) && _grid.scrollCellIntoView(end.row, end.cell);
+        let viewport = this._draggingMouseOffset.viewport;
+        (endCellBox.left < viewport.left || endCellBox.right > viewport.right || endCellBox.top < viewport.top || endCellBox.bottom > viewport.bottom) && this._grid.scrollCellIntoView(end.row, end.cell);
       }
-      if (_grid.canCellBeSelected(end.row, end.cell) && dd && dd.range) {
+      if (this._grid.canCellBeSelected(end.row, end.cell) && dd?.range) {
         dd.range.end = end;
-        var range = new SlickRange4(dd.range.start.row, dd.range.start.cell, end.row, end.cell);
-        _decorator.show(range), _self.onCellRangeSelecting.notify({
+        let range = new SlickRange4(dd.range.start.row ?? 0, dd.range.start.cell ?? 0, end.row, end.cell);
+        this._decorator.show(range), this.onCellRangeSelecting.notify({
           range
         });
       }
     }
   }
-  function hasRowMoveManager() {
-    return !!(_grid.getPluginByName("RowMoveManager") || _grid.getPluginByName("CrossGridRowMoveManager"));
+  hasRowMoveManager() {
+    return !!(this._grid.getPluginByName("RowMoveManager") || this._grid.getPluginByName("CrossGridRowMoveManager"));
   }
-  function handleDragEnd(e, dd) {
-    _dragging && (_dragging = !1, e.stopImmediatePropagation(), stopIntervalTimer(), _decorator.hide(), _self.onCellRangeSelected.notify({
+  handleDragEnd(e, dd) {
+    this._dragging && (this._dragging = !1, e.stopImmediatePropagation(), this.stopIntervalTimer(), this._decorator.hide(), this.onCellRangeSelected.notify({
       range: new SlickRange4(
-        dd.range.start.row,
-        dd.range.start.cell,
+        dd.range.start.row ?? 0,
+        dd.range.start.cell ?? 0,
         dd.range.end.row,
         dd.range.end.cell
       )
     }));
   }
-  function getCurrentRange() {
-    return _currentlySelectedRange;
+  getCurrentRange() {
+    return this._currentlySelectedRange;
   }
-  Utils13.extend(this, {
-    init,
-    destroy,
-    pluginName: "CellRangeSelector",
-    getCellDecorator,
-    getCurrentRange,
-    onBeforeCellRangeSelected: new SlickEvent9(),
-    onCellRangeSelected: new SlickEvent9(),
-    onCellRangeSelecting: new SlickEvent9()
-  });
-}
+};
 
-// src/plugins/slick.cellselectionmodel.js
-var SlickEvent10 = Event, EventData2 = EventData, SlickRange5 = Range, CellRangeSelector2 = CellRangeSelector, Utils14 = Utils;
-function CellSelectionModel(options) {
-  var _grid, _ranges = [], _self = this, _selector;
-  typeof options > "u" || typeof options.cellRangeSelector > "u" ? _selector = new CellRangeSelector2({
-    selectionCss: {
-      border: "2px solid black"
-    }
-  }) : _selector = options.cellRangeSelector;
-  var _options, _defaults = {
-    selectActiveCell: !0
-  };
-  function init(grid) {
-    _options = Utils14.extend(!0, {}, _defaults, options), _grid = grid, _grid.onActiveCellChanged.subscribe(handleActiveCellChange), _grid.onKeyDown.subscribe(handleKeyDown), grid.registerPlugin(_selector), _selector.onCellRangeSelected.subscribe(handleCellRangeSelected), _selector.onBeforeCellRangeSelected.subscribe(handleBeforeCellRangeSelected);
+// src/plugins/slick.cellselectionmodel.ts
+var SlickEvent10 = SlickEvent, SlickEventData6 = SlickEventData, SlickRange5 = SlickRange, SlickCellRangeSelector2 = SlickCellRangeSelector, Utils14 = Utils, SlickCellSelectionModel = class {
+  constructor(options) {
+    // --
+    // public API
+    __publicField(this, "pluginName", "CellSelectionModel");
+    __publicField(this, "onSelectedRangesChanged", new SlickEvent10());
+    // --
+    // protected props
+    __publicField(this, "_grid");
+    __publicField(this, "_ranges", []);
+    __publicField(this, "_selector");
+    __publicField(this, "_options");
+    __publicField(this, "_defaults", {
+      selectActiveCell: !0
+    });
+    options === void 0 || options.cellRangeSelector === void 0 ? this._selector = new SlickCellRangeSelector2({ selectionCss: { border: "2px solid black" } }) : this._selector = options.cellRangeSelector;
   }
-  function destroy() {
-    _grid.onActiveCellChanged.unsubscribe(handleActiveCellChange), _grid.onKeyDown.unsubscribe(handleKeyDown), _selector.onCellRangeSelected.unsubscribe(handleCellRangeSelected), _selector.onBeforeCellRangeSelected.unsubscribe(handleBeforeCellRangeSelected), _grid.unregisterPlugin(_selector), _selector && _selector.destroy && _selector.destroy();
+  init(grid) {
+    this._options = Utils14.extend(!0, {}, this._defaults, this._options), this._grid = grid, this._grid.onActiveCellChanged.subscribe(this.handleActiveCellChange.bind(this)), this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this)), grid.registerPlugin(this._selector), this._selector.onCellRangeSelected.subscribe(this.handleCellRangeSelected.bind(this)), this._selector.onBeforeCellRangeSelected.subscribe(this.handleBeforeCellRangeSelected.bind(this));
   }
-  function removeInvalidRanges(ranges) {
-    for (var result = [], i = 0; i < ranges.length; i++) {
-      var r = ranges[i];
-      _grid.canCellBeSelected(r.fromRow, r.fromCell) && _grid.canCellBeSelected(r.toRow, r.toCell) && result.push(r);
+  destroy() {
+    this._grid.onActiveCellChanged.unsubscribe(this.handleActiveCellChange.bind(this)), this._grid.onKeyDown.unsubscribe(this.handleKeyDown.bind(this)), this._selector.onCellRangeSelected.unsubscribe(this.handleCellRangeSelected.bind(this)), this._selector.onBeforeCellRangeSelected.unsubscribe(this.handleBeforeCellRangeSelected.bind(this)), this._grid.unregisterPlugin(this._selector), this._selector?.destroy();
+  }
+  removeInvalidRanges(ranges) {
+    let result = [];
+    for (let i = 0; i < ranges.length; i++) {
+      let r = ranges[i];
+      this._grid.canCellBeSelected(r.fromRow, r.fromCell) && this._grid.canCellBeSelected(r.toRow, r.toCell) && result.push(r);
     }
     return result;
   }
-  function rangesAreEqual(range1, range2) {
-    var areDifferent = range1.length !== range2.length;
+  rangesAreEqual(range1, range2) {
+    let areDifferent = range1.length !== range2.length;
     if (!areDifferent) {
-      for (var i = 0; i < range1.length; i++)
+      for (let i = 0; i < range1.length; i++)
         if (range1[i].fromCell !== range2[i].fromCell || range1[i].fromRow !== range2[i].fromRow || range1[i].toCell !== range2[i].toCell || range1[i].toRow !== range2[i].toRow) {
           areDifferent = !0;
           break;
@@ -6716,276 +6766,288 @@ function CellSelectionModel(options) {
     }
     return !areDifferent;
   }
-  function setSelectedRanges(ranges, caller) {
-    if (!((!_ranges || _ranges.length === 0) && (!ranges || ranges.length === 0))) {
-      var rangeHasChanged = !rangesAreEqual(_ranges, ranges);
-      if (_ranges = removeInvalidRanges(ranges), rangeHasChanged) {
-        var eventData = new EventData2(null, _ranges);
-        Object.defineProperty(eventData, "detail", { writable: !0, configurable: !0, value: { caller: caller || "SlickCellSelectionModel.setSelectedRanges" } }), _self.onSelectedRangesChanged.notify(_ranges, eventData);
-      }
+  setSelectedRanges(ranges, caller = "SlickCellSelectionModel.setSelectedRanges") {
+    if ((!this._ranges || this._ranges.length === 0) && (!ranges || ranges.length === 0))
+      return;
+    let rangeHasChanged = !this.rangesAreEqual(this._ranges, ranges);
+    if (this._ranges = this.removeInvalidRanges(ranges), rangeHasChanged) {
+      let eventData = new SlickEventData6(null, this._ranges);
+      Object.defineProperty(eventData, "detail", { writable: !0, configurable: !0, value: { caller: caller || "SlickCellSelectionModel.setSelectedRanges" } }), this.onSelectedRangesChanged.notify(this._ranges, eventData);
     }
   }
-  function getSelectedRanges() {
-    return _ranges;
+  getSelectedRanges() {
+    return this._ranges;
   }
-  function refreshSelections() {
-    setSelectedRanges(getSelectedRanges());
+  refreshSelections() {
+    this.setSelectedRanges(this.getSelectedRanges());
   }
-  function handleBeforeCellRangeSelected(e) {
-    if (_grid.getEditorLock().isActive())
+  handleBeforeCellRangeSelected(e) {
+    if (this._grid.getEditorLock().isActive())
       return e.stopPropagation(), !1;
   }
-  function handleCellRangeSelected(e, args) {
-    _grid.setActiveCell(args.range.fromRow, args.range.fromCell, !1, !1, !0), setSelectedRanges([args.range]);
+  handleCellRangeSelected(_e, args) {
+    this._grid.setActiveCell(args.range.fromRow, args.range.fromCell, !1, !1, !0), this.setSelectedRanges([args.range]);
   }
-  function handleActiveCellChange(e, args) {
-    _options.selectActiveCell && args.row != null && args.cell != null ? setSelectedRanges([new SlickRange5(args.row, args.cell)]) : _options.selectActiveCell || setSelectedRanges([]);
+  handleActiveCellChange(_e, args) {
+    this._options?.selectActiveCell && args.row != null && args.cell != null ? this.setSelectedRanges([new SlickRange5(args.row, args.cell)]) : this._options?.selectActiveCell || this.setSelectedRanges([]);
   }
-  function handleKeyDown(e) {
-    var ranges, last, active = _grid.getActiveCell(), metaKey = e.ctrlKey || e.metaKey;
+  handleKeyDown(e) {
+    let ranges, last, active = this._grid.getActiveCell(), metaKey = e.ctrlKey || e.metaKey;
     if (active && e.shiftKey && !metaKey && !e.altKey && (e.which == 37 || e.which == 39 || e.which == 38 || e.which == 40)) {
-      ranges = getSelectedRanges().slice(), ranges.length || ranges.push(new SlickRange5(active.row, active.cell)), last = ranges.pop(), last.contains(active.row, active.cell) || (last = new SlickRange5(active.row, active.cell));
-      var dRow = last.toRow - last.fromRow, dCell = last.toCell - last.fromCell, dirRow = active.row == last.fromRow ? 1 : -1, dirCell = active.cell == last.fromCell ? 1 : -1;
+      ranges = this.getSelectedRanges().slice(), ranges.length || ranges.push(new SlickRange5(active.row, active.cell)), last = ranges.pop(), last.contains(active.row, active.cell) || (last = new SlickRange5(active.row, active.cell));
+      let dRow = last.toRow - last.fromRow, dCell = last.toCell - last.fromCell, dirRow = active.row == last.fromRow ? 1 : -1, dirCell = active.cell == last.fromCell ? 1 : -1;
       e.which == 37 ? dCell -= dirCell : e.which == 39 ? dCell += dirCell : e.which == 38 ? dRow -= dirRow : e.which == 40 && (dRow += dirRow);
-      var new_last = new SlickRange5(active.row, active.cell, active.row + dirRow * dRow, active.cell + dirCell * dCell);
-      if (removeInvalidRanges([new_last]).length) {
+      let new_last = new SlickRange5(active.row, active.cell, active.row + dirRow * dRow, active.cell + dirCell * dCell);
+      if (this.removeInvalidRanges([new_last]).length) {
         ranges.push(new_last);
-        var viewRow = dirRow > 0 ? new_last.toRow : new_last.fromRow, viewCell = dirCell > 0 ? new_last.toCell : new_last.fromCell;
-        _grid.scrollRowIntoView(viewRow), _grid.scrollCellIntoView(viewRow, viewCell);
+        let viewRow = dirRow > 0 ? new_last.toRow : new_last.fromRow, viewCell = dirCell > 0 ? new_last.toCell : new_last.fromCell;
+        this._grid.scrollRowIntoView(viewRow), this._grid.scrollCellIntoView(viewRow, viewCell);
       } else
         ranges.push(last);
-      setSelectedRanges(ranges), e.preventDefault(), e.stopPropagation();
+      this.setSelectedRanges(ranges), e.preventDefault(), e.stopPropagation();
     }
   }
-  Utils14.extend(this, {
-    getSelectedRanges,
-    setSelectedRanges,
-    refreshSelections,
-    init,
-    destroy,
-    pluginName: "CellSelectionModel",
-    onSelectedRangesChanged: new SlickEvent10()
-  });
-}
+};
 
-// src/plugins/slick.checkboxselectcolumn.js
-var BindingEventService7 = BindingEventService, EventHandler4 = EventHandler, Utils15 = Utils;
-function CheckboxSelectColumn(options) {
-  let _dataView, _grid, _isUsingDataView = !1, _selectableOverride = null, _headerRowNode, _selectAll_UID = createUID(), _handler = new EventHandler4(), _selectedRowsLookup = {}, _defaults = {
-    columnId: "_checkbox_selector",
-    cssClass: null,
-    hideSelectAllCheckbox: !1,
-    toolTip: "Select/Deselect All",
-    width: 30,
-    applySelectOnAllPages: !1,
-    // defaults to false, when that is enabled the "Select All" will be applied to all pages (when using Pagination)
-    hideInColumnTitleRow: !1,
-    hideInFilterHeaderRow: !0
-  }, _isSelectAllChecked = !1, _bindingEventService = new BindingEventService7(), _options = Utils15.extend(!0, {}, _defaults, options);
-  typeof _options.selectableOverride == "function" && selectableOverride(_options.selectableOverride);
-  function init(grid) {
-    _grid = grid, _isUsingDataView = !Array.isArray(grid.getData()), _isUsingDataView && (_dataView = grid.getData()), _handler.subscribe(_grid.onSelectedRowsChanged, handleSelectedRowsChanged).subscribe(_grid.onClick, handleClick).subscribe(_grid.onKeyDown, handleKeyDown), _isUsingDataView && _dataView && _options.applySelectOnAllPages && _handler.subscribe(_dataView.onSelectedRowIdsChanged, handleDataViewSelectedIdsChanged).subscribe(_dataView.onPagingInfoChanged, handleDataViewSelectedIdsChanged), _options.hideInFilterHeaderRow || addCheckboxToFilterHeaderRow(grid), _options.hideInColumnTitleRow || _handler.subscribe(_grid.onHeaderClick, handleHeaderClick);
+// src/plugins/slick.checkboxselectcolumn.ts
+var BindingEventService7 = BindingEventService, SlickEventHandler3 = SlickEventHandler, Utils15 = Utils, SlickCheckboxSelectColumn = class {
+  constructor(options) {
+    // --
+    // public API
+    __publicField(this, "pluginName", "CheckboxSelectColumn");
+    // --
+    // protected props
+    __publicField(this, "_dataView");
+    __publicField(this, "_grid");
+    __publicField(this, "_isUsingDataView", !1);
+    __publicField(this, "_selectableOverride", null);
+    __publicField(this, "_headerRowNode");
+    __publicField(this, "_selectAll_UID");
+    __publicField(this, "_handler", new SlickEventHandler3());
+    __publicField(this, "_selectedRowsLookup", {});
+    __publicField(this, "_checkboxColumnCellIndex", null);
+    __publicField(this, "_options");
+    __publicField(this, "_defaults", {
+      columnId: "_checkbox_selector",
+      cssClass: void 0,
+      hideSelectAllCheckbox: !1,
+      toolTip: "Select/Deselect All",
+      width: 30,
+      applySelectOnAllPages: !1,
+      // defaults to false, when that is enabled the "Select All" will be applied to all pages (when using Pagination)
+      hideInColumnTitleRow: !1,
+      hideInFilterHeaderRow: !0
+    });
+    __publicField(this, "_isSelectAllChecked", !1);
+    __publicField(this, "_bindingEventService");
+    this._bindingEventService = new BindingEventService7(), this._options = Utils15.extend(!0, {}, this._defaults, options), this._selectAll_UID = this.createUID(), typeof this._options.selectableOverride == "function" && this.selectableOverride(this._options.selectableOverride);
   }
-  function destroy() {
-    _handler.unsubscribeAll(), _bindingEventService.unbindAll();
+  init(grid) {
+    this._grid = grid, this._isUsingDataView = !Array.isArray(grid.getData()), this._isUsingDataView && (this._dataView = grid.getData()), this._handler.subscribe(this._grid.onSelectedRowsChanged, this.handleSelectedRowsChanged.bind(this)).subscribe(this._grid.onClick, this.handleClick.bind(this)).subscribe(this._grid.onKeyDown, this.handleKeyDown.bind(this)), this._isUsingDataView && this._dataView && this._options.applySelectOnAllPages && this._handler.subscribe(this._dataView.onSelectedRowIdsChanged, this.handleDataViewSelectedIdsChanged.bind(this)).subscribe(this._dataView.onPagingInfoChanged, this.handleDataViewSelectedIdsChanged.bind(this)), this._options.hideInFilterHeaderRow || this.addCheckboxToFilterHeaderRow(grid), this._options.hideInColumnTitleRow || this._handler.subscribe(this._grid.onHeaderClick, this.handleHeaderClick.bind(this));
   }
-  function getOptions() {
-    return _options;
+  destroy() {
+    this._handler.unsubscribeAll(), this._bindingEventService.unbindAll();
   }
-  function setOptions(options2) {
-    if (_options = Utils15.extend(!0, {}, _options, options2), _options.hideSelectAllCheckbox)
-      hideSelectAllFromColumnHeaderTitleRow(), hideSelectAllFromColumnHeaderFilterRow();
-    else if (_options.hideInColumnTitleRow ? hideSelectAllFromColumnHeaderTitleRow() : (renderSelectAllCheckbox(_isSelectAllChecked), _handler.subscribe(_grid.onHeaderClick, handleHeaderClick)), _options.hideInFilterHeaderRow)
-      hideSelectAllFromColumnHeaderFilterRow();
+  getOptions() {
+    return this._options;
+  }
+  setOptions(options) {
+    if (this._options = Utils15.extend(!0, {}, this._options, options), this._options.hideSelectAllCheckbox)
+      this.hideSelectAllFromColumnHeaderTitleRow(), this.hideSelectAllFromColumnHeaderFilterRow();
+    else if (this._options.hideInColumnTitleRow ? this.hideSelectAllFromColumnHeaderTitleRow() : (this.renderSelectAllCheckbox(this._isSelectAllChecked), this._handler.subscribe(this._grid.onHeaderClick, this.handleHeaderClick.bind(this))), this._options.hideInFilterHeaderRow)
+      this.hideSelectAllFromColumnHeaderFilterRow();
     else {
-      let selectAllContainerElm = _headerRowNode.querySelector("#filter-checkbox-selectall-container");
+      let selectAllContainerElm = this._headerRowNode?.querySelector("#filter-checkbox-selectall-container");
       if (selectAllContainerElm) {
         selectAllContainerElm.style.display = "flex";
         let selectAllInputElm = selectAllContainerElm.querySelector('input[type="checkbox"]');
-        selectAllInputElm && (selectAllInputElm.checked = _isSelectAllChecked);
+        selectAllInputElm && (selectAllInputElm.checked = this._isSelectAllChecked);
       }
     }
   }
-  function hideSelectAllFromColumnHeaderTitleRow() {
-    _grid.updateColumnHeader(_options.columnId, "", "");
+  hideSelectAllFromColumnHeaderTitleRow() {
+    this._grid.updateColumnHeader(this._options.columnId || "", "", "");
   }
-  function hideSelectAllFromColumnHeaderFilterRow() {
-    let selectAllContainerElm = _headerRowNode && _headerRowNode.querySelector("#filter-checkbox-selectall-container");
+  hideSelectAllFromColumnHeaderFilterRow() {
+    let selectAllContainerElm = this._headerRowNode?.querySelector("#filter-checkbox-selectall-container");
     selectAllContainerElm && (selectAllContainerElm.style.display = "none");
   }
-  function handleSelectedRowsChanged() {
-    let selectedRows = _grid.getSelectedRows(), lookup = {}, row, i, k, disabledCount = 0;
-    if (typeof _selectableOverride == "function")
-      for (k = 0; k < _grid.getDataLength(); k++) {
-        let dataItem = _grid.getDataItem(k);
-        checkSelectableOverride(i, dataItem, _grid) || disabledCount++;
+  handleSelectedRowsChanged() {
+    let selectedRows = this._grid.getSelectedRows(), lookup = {}, row = 0, i = 0, k = 0, disabledCount = 0;
+    if (typeof this._selectableOverride == "function")
+      for (k = 0; k < this._grid.getDataLength(); k++) {
+        let dataItem = this._grid.getDataItem(k);
+        this.checkSelectableOverride(i, dataItem, this._grid) || disabledCount++;
       }
     let removeList = [];
     for (i = 0; i < selectedRows.length; i++) {
       row = selectedRows[i];
-      let rowItem = _grid.getDataItem(row);
-      checkSelectableOverride(i, rowItem, _grid) ? (lookup[row] = !0, lookup[row] !== _selectedRowsLookup[row] && (_grid.invalidateRow(row), delete _selectedRowsLookup[row])) : removeList.push(row);
+      let rowItem = this._grid.getDataItem(row);
+      this.checkSelectableOverride(i, rowItem, this._grid) ? (lookup[row] = !0, lookup[row] !== this._selectedRowsLookup[row] && (this._grid.invalidateRow(row), delete this._selectedRowsLookup[row])) : removeList.push(row);
     }
-    for (i in _selectedRowsLookup)
-      _grid.invalidateRow(i);
-    if (_selectedRowsLookup = lookup, _grid.render(), _isSelectAllChecked = selectedRows && selectedRows.length + disabledCount >= _grid.getDataLength(), (!_isUsingDataView || !_options.applySelectOnAllPages) && (!_options.hideInColumnTitleRow && !_options.hideSelectAllCheckbox && renderSelectAllCheckbox(_isSelectAllChecked), !_options.hideInFilterHeaderRow)) {
-      let selectAllElm = _headerRowNode && _headerRowNode.querySelector(`#header-filter-selector${_selectAll_UID}`);
-      selectAllElm && (selectAllElm.checked = _isSelectAllChecked);
+    for (let selectedRow in this._selectedRowsLookup)
+      this._grid.invalidateRow(+selectedRow);
+    if (this._selectedRowsLookup = lookup, this._grid.render(), this._isSelectAllChecked = selectedRows && selectedRows.length + disabledCount >= this._grid.getDataLength(), (!this._isUsingDataView || !this._options.applySelectOnAllPages) && (!this._options.hideInColumnTitleRow && !this._options.hideSelectAllCheckbox && this.renderSelectAllCheckbox(this._isSelectAllChecked), !this._options.hideInFilterHeaderRow)) {
+      let selectAllElm = this._headerRowNode?.querySelector(`#header-filter-selector${this._selectAll_UID}`);
+      selectAllElm && (selectAllElm.checked = this._isSelectAllChecked);
     }
     if (removeList.length > 0) {
       for (i = 0; i < removeList.length; i++) {
         let remIdx = selectedRows.indexOf(removeList[i]);
         selectedRows.splice(remIdx, 1);
       }
-      _grid.setSelectedRows(selectedRows, "click.cleanup");
+      this._grid.setSelectedRows(selectedRows, "click.cleanup");
     }
   }
-  function handleDataViewSelectedIdsChanged() {
-    let selectedIds = _dataView.getAllSelectedFilteredIds(), filteredItems = _dataView.getFilteredItems(), disabledCount = 0;
-    if (typeof _selectableOverride == "function" && selectedIds.length > 0)
-      for (let k = 0; k < _dataView.getItemCount(); k++) {
-        let dataItem = _dataView.getItemByIdx(k), idProperty = _dataView.getIdPropertyName(), dataItemId = dataItem[idProperty];
+  handleDataViewSelectedIdsChanged() {
+    let selectedIds = this._dataView.getAllSelectedFilteredIds(), filteredItems = this._dataView.getFilteredItems(), disabledCount = 0;
+    if (typeof this._selectableOverride == "function" && selectedIds.length > 0)
+      for (let k = 0; k < this._dataView.getItemCount(); k++) {
+        let dataItem = this._dataView.getItemByIdx(k), idProperty = this._dataView.getIdPropertyName(), dataItemId = dataItem[idProperty];
         filteredItems.findIndex(function(item) {
           return item[idProperty] === dataItemId;
-        }) >= 0 && !checkSelectableOverride(k, dataItem, _grid) && disabledCount++;
+        }) >= 0 && !this.checkSelectableOverride(k, dataItem, this._grid) && disabledCount++;
       }
-    if (_isSelectAllChecked = (selectedIds && selectedIds.length) + disabledCount >= filteredItems.length, !_options.hideInColumnTitleRow && !_options.hideSelectAllCheckbox && renderSelectAllCheckbox(_isSelectAllChecked), !_options.hideInFilterHeaderRow) {
-      let selectAllElm = _headerRowNode && _headerRowNode.querySelector(`#header-filter-selector${_selectAll_UID}`);
-      selectAllElm && (selectAllElm.checked = _isSelectAllChecked);
+    if (this._isSelectAllChecked = (selectedIds && selectedIds.length) + disabledCount >= filteredItems.length, !this._options.hideInColumnTitleRow && !this._options.hideSelectAllCheckbox && this.renderSelectAllCheckbox(this._isSelectAllChecked), !this._options.hideInFilterHeaderRow) {
+      let selectAllElm = this._headerRowNode?.querySelector(`#header-filter-selector${this._selectAll_UID}`);
+      selectAllElm && (selectAllElm.checked = this._isSelectAllChecked);
     }
   }
-  function handleKeyDown(e, args) {
-    e.which == 32 && _grid.getColumns()[args.cell].id === _options.columnId && ((!_grid.getEditorLock().isActive() || _grid.getEditorLock().commitCurrentEdit()) && toggleRowSelection(args.row), e.preventDefault(), e.stopImmediatePropagation());
+  handleKeyDown(e, args) {
+    e.which == 32 && this._grid.getColumns()[args.cell].id === this._options.columnId && ((!this._grid.getEditorLock().isActive() || this._grid.getEditorLock().commitCurrentEdit()) && this.toggleRowSelection(args.row), e.preventDefault(), e.stopImmediatePropagation());
   }
-  function handleClick(e, args) {
-    if (_grid.getColumns()[args.cell].id === _options.columnId && e.target.type === "checkbox") {
-      if (_grid.getEditorLock().isActive() && !_grid.getEditorLock().commitCurrentEdit()) {
+  handleClick(e, args) {
+    if (this._grid.getColumns()[args.cell].id === this._options.columnId && e.target.type === "checkbox") {
+      if (this._grid.getEditorLock().isActive() && !this._grid.getEditorLock().commitCurrentEdit()) {
         e.preventDefault(), e.stopImmediatePropagation();
         return;
       }
-      toggleRowSelection(args.row), e.stopPropagation(), e.stopImmediatePropagation();
+      this.toggleRowSelection(args.row), e.stopPropagation(), e.stopImmediatePropagation();
     }
   }
-  function toggleRowSelection(row) {
-    let dataContext = _grid.getDataItem(row);
-    if (checkSelectableOverride(row, dataContext, _grid)) {
-      if (_selectedRowsLookup[row]) {
-        let newSelectedRows = _grid.getSelectedRows().filter((n) => n !== row);
-        _grid.setSelectedRows(newSelectedRows, "click.toggle");
+  toggleRowSelection(row) {
+    let dataContext = this._grid.getDataItem(row);
+    if (this.checkSelectableOverride(row, dataContext, this._grid)) {
+      if (this._selectedRowsLookup[row]) {
+        let newSelectedRows = this._grid.getSelectedRows().filter((n) => n !== row);
+        this._grid.setSelectedRows(newSelectedRows, "click.toggle");
       } else
-        _grid.setSelectedRows(_grid.getSelectedRows().concat(row), "click.toggle");
-      _grid.setActiveCell(row, getCheckboxColumnCellIndex());
+        this._grid.setSelectedRows(this._grid.getSelectedRows().concat(row), "click.toggle");
+      this._grid.setActiveCell(row, this.getCheckboxColumnCellIndex());
     }
   }
-  function selectRows(rowArray) {
+  selectRows(rowArray) {
     let i, l = rowArray.length, addRows = [];
     for (i = 0; i < l; i++)
-      _selectedRowsLookup[rowArray[i]] || (addRows[addRows.length] = rowArray[i]);
-    _grid.setSelectedRows(_grid.getSelectedRows().concat(addRows), "SlickCheckboxSelectColumn.selectRows");
+      this._selectedRowsLookup[rowArray[i]] || (addRows[addRows.length] = rowArray[i]);
+    this._grid.setSelectedRows(this._grid.getSelectedRows().concat(addRows), "SlickCheckboxSelectColumn.selectRows");
   }
-  function deSelectRows(rowArray) {
+  deSelectRows(rowArray) {
     let i, l = rowArray.length, removeRows = [];
     for (i = 0; i < l; i++)
-      _selectedRowsLookup[rowArray[i]] && (removeRows[removeRows.length] = rowArray[i]);
-    _grid.setSelectedRows(_grid.getSelectedRows().filter((n) => removeRows.indexOf(n) < 0), "SlickCheckboxSelectColumn.deSelectRows");
+      this._selectedRowsLookup[rowArray[i]] && (removeRows[removeRows.length] = rowArray[i]);
+    this._grid.setSelectedRows(this._grid.getSelectedRows().filter((n) => removeRows.indexOf(n) < 0), "SlickCheckboxSelectColumn.deSelectRows");
   }
-  function handleHeaderClick(e, args) {
-    if (args.column.id == _options.columnId && e.target.type === "checkbox") {
-      if (_grid.getEditorLock().isActive() && !_grid.getEditorLock().commitCurrentEdit()) {
+  handleHeaderClick(e, args) {
+    if (args.column.id == this._options.columnId && e.target.type === "checkbox") {
+      if (this._grid.getEditorLock().isActive() && !this._grid.getEditorLock().commitCurrentEdit()) {
         e.preventDefault(), e.stopImmediatePropagation();
         return;
       }
       let isAllSelected = e.target.checked, caller = isAllSelected ? "click.selectAll" : "click.unselectAll", rows = [];
       if (isAllSelected) {
-        for (let i = 0; i < _grid.getDataLength(); i++) {
-          let rowItem = _grid.getDataItem(i);
-          !rowItem.__group && !rowItem.__groupTotals && checkSelectableOverride(i, rowItem, _grid) && rows.push(i);
+        for (let i = 0; i < this._grid.getDataLength(); i++) {
+          let rowItem = this._grid.getDataItem(i);
+          !rowItem.__group && !rowItem.__groupTotals && this.checkSelectableOverride(i, rowItem, this._grid) && rows.push(i);
         }
         isAllSelected = !0;
       }
-      if (_isUsingDataView && _dataView && _options.applySelectOnAllPages) {
-        let ids = [], filteredItems = _dataView.getFilteredItems();
+      if (this._isUsingDataView && this._dataView && this._options.applySelectOnAllPages) {
+        let ids = [], filteredItems = this._dataView.getFilteredItems();
         for (let j = 0; j < filteredItems.length; j++) {
           let dataviewRowItem = filteredItems[j];
-          checkSelectableOverride(j, dataviewRowItem, _grid) && ids.push(dataviewRowItem[_dataView.getIdPropertyName()]);
+          this.checkSelectableOverride(j, dataviewRowItem, this._grid) && ids.push(dataviewRowItem[this._dataView.getIdPropertyName()]);
         }
-        _dataView.setSelectedIds(ids, { isRowBeingAdded: isAllSelected });
+        this._dataView.setSelectedIds(ids, { isRowBeingAdded: isAllSelected });
       }
-      _grid.setSelectedRows(rows, caller), e.stopPropagation(), e.stopImmediatePropagation();
+      this._grid.setSelectedRows(rows, caller), e.stopPropagation(), e.stopImmediatePropagation();
     }
   }
-  let _checkboxColumnCellIndex = null;
-  function getCheckboxColumnCellIndex() {
-    if (_checkboxColumnCellIndex === null) {
-      _checkboxColumnCellIndex = 0;
-      let colArr = _grid.getColumns();
+  getCheckboxColumnCellIndex() {
+    if (this._checkboxColumnCellIndex === null) {
+      this._checkboxColumnCellIndex = 0;
+      let colArr = this._grid.getColumns();
       for (let i = 0; i < colArr.length; i++)
-        colArr[i].id == _options.columnId && (_checkboxColumnCellIndex = i);
+        colArr[i].id == this._options.columnId && (this._checkboxColumnCellIndex = i);
     }
-    return _checkboxColumnCellIndex;
+    return this._checkboxColumnCellIndex;
   }
-  function getColumnDefinition() {
+  getColumnDefinition() {
     return {
-      id: _options.columnId,
-      name: _options.hideSelectAllCheckbox || _options.hideInColumnTitleRow ? "" : "<input id='header-selector" + _selectAll_UID + "' type='checkbox'><label for='header-selector" + _selectAll_UID + "'></label>",
-      toolTip: _options.hideSelectAllCheckbox || _options.hideInColumnTitleRow ? "" : _options.toolTip,
+      id: this._options.columnId,
+      name: this._options.hideSelectAllCheckbox || this._options.hideInColumnTitleRow ? "" : `<input id="header-selector${this._selectAll_UID}" type="checkbox"><label for="header-selector${this._selectAll_UID}"></label>`,
+      toolTip: this._options.hideSelectAllCheckbox || this._options.hideInColumnTitleRow ? "" : this._options.toolTip,
       field: "sel",
-      width: _options.width,
+      width: this._options.width,
       resizable: !1,
       sortable: !1,
-      cssClass: _options.cssClass,
-      hideSelectAllCheckbox: _options.hideSelectAllCheckbox,
-      formatter: checkboxSelectionFormatter,
+      cssClass: this._options.cssClass,
+      hideSelectAllCheckbox: this._options.hideSelectAllCheckbox,
+      formatter: this.checkboxSelectionFormatter.bind(this),
       // exclude from all menus, defaults to true unless the option is provided differently by the user
-      excludeFromColumnPicker: typeof _options.excludeFromColumnPicker < "u" ? _options.excludeFromColumnPicker : !0,
-      excludeFromGridMenu: typeof _options.excludeFromGridMenu < "u" ? _options.excludeFromGridMenu : !0,
-      excludeFromHeaderMenu: typeof _options.excludeFromHeaderMenu < "u" ? _options.excludeFromHeaderMenu : !0
+      excludeFromColumnPicker: this._options.excludeFromColumnPicker ?? !0,
+      excludeFromGridMenu: this._options.excludeFromGridMenu ?? !0,
+      excludeFromHeaderMenu: this._options.excludeFromHeaderMenu ?? !0
     };
   }
-  function addCheckboxToFilterHeaderRow(grid) {
-    _handler.subscribe(grid.onHeaderRowCellRendered, function(e, args) {
+  addCheckboxToFilterHeaderRow(grid) {
+    this._handler.subscribe(grid.onHeaderRowCellRendered, (_e, args) => {
       if (args.column.field === "sel") {
         Utils15.emptyElement(args.node);
         let spanElm = document.createElement("span");
         spanElm.id = "filter-checkbox-selectall-container";
         let inputElm = document.createElement("input");
-        inputElm.type = "checkbox", inputElm.id = `header-filter-selector${_selectAll_UID}`;
+        inputElm.type = "checkbox", inputElm.id = `header-filter-selector${this._selectAll_UID}`;
         let labelElm = document.createElement("label");
-        labelElm.htmlFor = `header-filter-selector${_selectAll_UID}`, spanElm.appendChild(inputElm), spanElm.appendChild(labelElm), args.node.appendChild(spanElm), _headerRowNode = args.node, _bindingEventService.bind(spanElm, "click", (e2) => handleHeaderClick(e2, args));
+        labelElm.htmlFor = `header-filter-selector${this._selectAll_UID}`, spanElm.appendChild(inputElm), spanElm.appendChild(labelElm), args.node.appendChild(spanElm), this._headerRowNode = args.node, this._bindingEventService.bind(spanElm, "click", (e) => this.handleHeaderClick(e, args));
       }
     });
   }
-  function createUID() {
+  createUID() {
     return Math.round(1e7 * Math.random());
   }
-  function checkboxSelectionFormatter(row, cell, value, columnDef, dataContext, grid) {
-    let UID = createUID() + row;
-    return dataContext && checkSelectableOverride(row, dataContext, grid) ? _selectedRowsLookup[row] ? "<input id='selector" + UID + "' type='checkbox' checked='checked'><label for='selector" + UID + "'></label>" : "<input id='selector" + UID + "' type='checkbox'><label for='selector" + UID + "'></label>" : null;
+  checkboxSelectionFormatter(row, _cell, _val, _columnDef, dataContext, grid) {
+    let UID = this.createUID() + row;
+    return dataContext && this.checkSelectableOverride(row, dataContext, grid) ? this._selectedRowsLookup[row] ? `<input id="selector${UID}" type="checkbox" checked="checked"><label for="selector${UID}"></label>` : `<input id="selector${UID}" type="checkbox"><label for="selector${UID}"></label>` : null;
   }
-  function checkSelectableOverride(row, dataContext, grid) {
-    return typeof _selectableOverride == "function" ? _selectableOverride(row, dataContext, grid) : !0;
+  checkSelectableOverride(row, dataContext, grid) {
+    return typeof this._selectableOverride == "function" ? this._selectableOverride(row, dataContext, grid) : !0;
   }
-  function renderSelectAllCheckbox(isSelectAllChecked) {
-    isSelectAllChecked ? _grid.updateColumnHeader(_options.columnId, "<input id='header-selector" + _selectAll_UID + "' type='checkbox' checked='checked'><label for='header-selector" + _selectAll_UID + "'></label>", _options.toolTip) : _grid.updateColumnHeader(_options.columnId, "<input id='header-selector" + _selectAll_UID + "' type='checkbox'><label for='header-selector" + _selectAll_UID + "'></label>", _options.toolTip);
+  renderSelectAllCheckbox(isSelectAllChecked) {
+    isSelectAllChecked ? this._grid.updateColumnHeader(this._options.columnId || "", `<input id="header-selector${this._selectAll_UID}" type="checkbox" checked="checked"><label for="header-selector${this._selectAll_UID}"></label>`, this._options.toolTip) : this._grid.updateColumnHeader(this._options.columnId || "", `<input id="header-selector${this._selectAll_UID}" type="checkbox"><label for="header-selector${this._selectAll_UID}"></label>`, this._options.toolTip);
   }
-  function selectableOverride(overrideFn) {
-    _selectableOverride = overrideFn;
+  /**
+   * Method that user can pass to override the default behavior or making every row a selectable row.
+   * In order word, user can choose which rows to be selectable or not by providing his own logic.
+   * @param overrideFn: override function callback
+   */
+  selectableOverride(overrideFn) {
+    this._selectableOverride = overrideFn;
   }
-  Utils15.extend(this, {
-    init,
-    destroy,
-    pluginName: "CheckboxSelectColumn",
-    deSelectRows,
-    selectRows,
-    getColumnDefinition,
-    getOptions,
-    selectableOverride,
-    setOptions
-  });
-}
+  // Utils.extend(this, {
+  //     "init": init,
+  //     "destroy": destroy,
+  //     "deSelectRows": deSelectRows,
+  //     "selectRows": selectRows,
+  //     "getColumnDefinition": getColumnDefinition,
+  //     "getOptions": getOptions,
+  //     "selectableOverride": selectableOverride,
+  //     "setOptions": setOptions,
+  //   });
+};
 
 // src/plugins/slick.contextmenu.ts
-var BindingEventService8 = BindingEventService, SlickEvent11 = SlickEvent, SlickEventData5 = SlickEventData, EventHandler5 = SlickEventHandler, Utils16 = Utils, SlickContextMenu = class {
+var BindingEventService8 = BindingEventService, SlickEvent11 = SlickEvent, SlickEventData7 = SlickEventData, EventHandler3 = SlickEventHandler, Utils16 = Utils, SlickContextMenu = class {
   constructor(optionProperties) {
     // --
     // public API
@@ -7003,7 +7065,7 @@ var BindingEventService8 = BindingEventService, SlickEvent11 = SlickEvent, Slick
     __publicField(this, "_grid");
     __publicField(this, "_gridOptions");
     __publicField(this, "_gridUid", "");
-    __publicField(this, "_handler", new EventHandler5());
+    __publicField(this, "_handler", new EventHandler3());
     __publicField(this, "_commandTitleElm");
     __publicField(this, "_optionTitleElm");
     __publicField(this, "_menuElm");
@@ -7033,7 +7095,7 @@ var BindingEventService8 = BindingEventService, SlickEvent11 = SlickEvent, Slick
     this.onAfterMenuShow.unsubscribe(), this.onBeforeMenuShow.unsubscribe(), this.onBeforeMenuClose.unsubscribe(), this.onCommand.unsubscribe(), this.onOptionSelected.unsubscribe(), this._handler.unsubscribeAll(), this._bindingEventService.unbindAll(), this._menuElm?.remove(), this._commandTitleElm = null, this._optionTitleElm = null, this._menuElm = null;
   }
   createMenu(e) {
-    e instanceof SlickEventData5 && (e = e.getNativeEvent());
+    e instanceof SlickEventData7 && (e = e.getNativeEvent());
     let targetEvent = e.touches ? e.touches[0] : e, cell = this._grid.getCellFromEvent(e);
     this._currentCell = cell?.cell ?? 0, this._currentRow = cell?.row ?? 0;
     let columnDef = this._grid.getColumns()[this._currentCell], dataContext = this._grid.getDataItem(this._currentRow), isColumnOptionAllowed = this.checkIsColumnAllowed(this._contextMenuProperties.optionShownOverColumnIds ?? [], columnDef.id), isColumnCommandAllowed = this.checkIsColumnAllowed(this._contextMenuProperties.commandShownOverColumnIds ?? [], columnDef.id), commandItems = this._contextMenuProperties.commandItems || [], optionItems = this._contextMenuProperties.optionItems || [];
@@ -7097,7 +7159,7 @@ var BindingEventService8 = BindingEventService, SlickEvent11 = SlickEvent, Slick
     return isAllowedColumn;
   }
   handleOnContextMenu(e, args) {
-    e instanceof SlickEventData5 && (e = e.getNativeEvent()), e.preventDefault();
+    e instanceof SlickEventData7 && (e = e.getNativeEvent()), e.preventDefault();
     let cell = this._grid.getCellFromEvent(e);
     if (cell) {
       let columnDef = this._grid.getColumns()[cell.cell], dataContext = this._grid.getDataItem(cell.row);
@@ -7209,9 +7271,9 @@ var BindingEventService8 = BindingEventService, SlickEvent11 = SlickEvent, Slick
 };
 
 // src/plugins/slick.crossgridrowmovemanager.js
-var SlickEvent12 = Event, EventHandler6 = EventHandler, Utils17 = Utils;
+var SlickEvent12 = Event, EventHandler4 = EventHandler, Utils17 = Utils;
 function CrossGridRowMoveManager(options) {
-  var _grid, _canvas, _toGrid, _toCanvas, _dragging, _self = this, _usabilityOverride = null, _handler = new EventHandler6(), _defaults = {
+  var _grid, _canvas, _toGrid, _toCanvas, _dragging, _self = this, _usabilityOverride = null, _handler = new EventHandler4(), _defaults = {
     columnId: "_move",
     cssClass: null,
     cancelEditOnDrag: !1,
@@ -7327,7 +7389,7 @@ function CrossGridRowMoveManager(options) {
 }
 
 // src/plugins/slick.customtooltip.js
-var EventHandler7 = EventHandler, Utils18 = Utils;
+var EventHandler5 = EventHandler, Utils18 = Utils;
 function CustomTooltip(options) {
   var _cancellablePromise, _cellNodeElm, _dataView, _grid, _gridOptions, _tooltipElm, _defaults = {
     className: "slick-custom-tooltip",
@@ -7338,7 +7400,7 @@ function CustomTooltip(options) {
     tooltipTextMaxLength: 700,
     regularTooltipWhiteSpace: "pre-line",
     whiteSpace: "normal"
-  }, _eventHandler = new EventHandler7(), _cellTooltipOptions = {}, _options;
+  }, _eventHandler = new EventHandler5(), _cellTooltipOptions = {}, _options;
   function init(grid) {
     _grid = grid;
     var _data = grid && grid.getData() || [];
@@ -7496,9 +7558,9 @@ function CustomTooltip(options) {
 }
 
 // src/plugins/slick.draggablegrouping.js
-var BindingEventService9 = BindingEventService, SlickEvent13 = Event, EventHandler8 = EventHandler, Utils19 = Utils;
+var BindingEventService9 = BindingEventService, SlickEvent13 = Event, EventHandler6 = EventHandler, Utils19 = Utils;
 function DraggableGrouping(options) {
-  var _grid, _gridUid, _gridColumns, _dataView, _dropzoneElm, _droppableInstance, dropzonePlaceholder, groupToggler, _defaults = {}, onGroupChanged = new SlickEvent13(), _bindingEventService = new BindingEventService9(), _handler = new EventHandler8(), _sortableLeftInstance, _sortableRightInstance;
+  var _grid, _gridUid, _gridColumns, _dataView, _dropzoneElm, _droppableInstance, dropzonePlaceholder, groupToggler, _defaults = {}, onGroupChanged = new SlickEvent13(), _bindingEventService = new BindingEventService9(), _handler = new EventHandler6(), _sortableLeftInstance, _sortableRightInstance;
   function init(grid) {
     options = Utils19.extend(!0, {}, _defaults, options), _grid = grid, _gridUid = _grid.getUID(), _gridColumns = _grid.getColumns(), _dataView = _grid.getData(), _dropzoneElm = grid.getPreHeaderPanel(), _dropzoneElm.classList.add("slick-dropzone");
     var dropPlaceHolderText = options.dropPlaceHolderText || "Drop a column header here to group by the column";
@@ -7680,7 +7742,7 @@ function DraggableGrouping(options) {
 }
 
 // src/plugins/slick.headerbuttons.ts
-var BindingEventService10 = BindingEventService, SlickEvent14 = Event, EventHandler9 = EventHandler, Utils20 = Utils, SlickHeaderButtons = class {
+var BindingEventService10 = BindingEventService, SlickEvent14 = Event, EventHandler7 = EventHandler, Utils20 = Utils, SlickHeaderButtons = class {
   constructor(options) {
     // --
     // public API
@@ -7689,7 +7751,7 @@ var BindingEventService10 = BindingEventService, SlickEvent14 = Event, EventHand
     // --
     // protected props
     __publicField(this, "_grid");
-    __publicField(this, "_handler", new EventHandler9());
+    __publicField(this, "_handler", new EventHandler7());
     __publicField(this, "_bindingEventService", new BindingEventService10());
     __publicField(this, "_defaults", {
       buttonCssClass: "slick-header-button"
@@ -7744,7 +7806,7 @@ var BindingEventService10 = BindingEventService, SlickEvent14 = Event, EventHand
 };
 
 // src/plugins/slick.headermenu.ts
-var BindingEventService11 = BindingEventService, SlickEvent15 = Event, SlickEventHandler2 = SlickEventHandler, Utils21 = Utils, SlickHeaderMenu = class {
+var BindingEventService11 = BindingEventService, SlickEvent15 = Event, SlickEventHandler4 = SlickEventHandler, Utils21 = Utils, SlickHeaderMenu = class {
   constructor(options) {
     // --
     // public API
@@ -7755,18 +7817,18 @@ var BindingEventService11 = BindingEventService, SlickEvent15 = Event, SlickEven
     // --
     // protected props
     __publicField(this, "_grid");
-    __publicField(this, "_handler", new SlickEventHandler2());
+    __publicField(this, "_handler", new SlickEventHandler4());
     __publicField(this, "_bindingEventService", new BindingEventService11());
     __publicField(this, "_defaults", {
-      buttonCssClass: null,
-      buttonImage: null,
+      buttonCssClass: void 0,
+      buttonImage: void 0,
       minWidth: 100,
       autoAlign: !0,
       autoAlignOffset: 0
     });
+    __publicField(this, "_options");
     __publicField(this, "_activeHeaderColumnElm");
     __publicField(this, "_menuElm");
-    __publicField(this, "_options");
     this._options = Utils21.extend(!0, {}, this._defaults, options);
   }
   init(grid) {
@@ -7954,9 +8016,9 @@ function Resizer(_options, fixedDimensions) {
 }
 
 // src/plugins/slick.rowdetailview.js
-var SlickEvent17 = Event, EventHandler10 = EventHandler, Utils23 = Utils;
+var SlickEvent17 = Event, EventHandler8 = EventHandler, Utils23 = Utils;
 function RowDetailView(options) {
-  var _grid, _gridOptions, _gridUid, _dataView, _dataViewIdProperty = "id", _expandableOverride = null, _self = this, _lastRange = null, _expandedRows = [], _handler = new EventHandler10(), _outsideRange = 5, _visibleRenderedCellCount = 0, _defaults = {
+  var _grid, _gridOptions, _gridUid, _dataView, _dataViewIdProperty = "id", _expandableOverride = null, _self = this, _lastRange = null, _expandedRows = [], _handler = new EventHandler8(), _outsideRange = 5, _visibleRenderedCellCount = 0, _defaults = {
     columnId: "_detail_selector",
     cssClass: "detailView-toggle",
     expandedClass: null,
@@ -8231,9 +8293,9 @@ function RowDetailView(options) {
 }
 
 // src/plugins/slick.rowmovemanager.js
-var SlickEvent18 = Event, EventHandler11 = EventHandler, Utils24 = Utils;
+var SlickEvent18 = Event, EventHandler9 = EventHandler, Utils24 = Utils;
 function RowMoveManager(options) {
-  var _grid, _canvas, _dragging, _self = this, _usabilityOverride = null, _handler = new EventHandler11(), _defaults = {
+  var _grid, _canvas, _dragging, _self = this, _usabilityOverride = null, _handler = new EventHandler9(), _defaults = {
     columnId: "_move",
     cssClass: null,
     cancelEditOnDrag: !1,
@@ -8344,282 +8406,299 @@ function RowMoveManager(options) {
   });
 }
 
-// src/plugins/slick.rowselectionmodel.js
-var EventData3 = EventData, EventHandler12 = EventHandler, keyCode6 = keyCode, SlickEvent19 = Event, SlickRange6 = Range, Draggable4 = Draggable, CellRangeDecorator3 = CellRangeDecorator, CellRangeSelector3 = CellRangeSelector, Utils25 = Utils;
-function RowSelectionModel(options) {
-  var _grid, _ranges = [], _self = this, _handler = new EventHandler12(), _inHandler, _options, _selector, _isRowMoveManagerHandler, _defaults = {
-    selectActiveRow: !0,
-    dragToSelect: !1,
-    autoScrollWhenDrag: !0,
-    cellRangeSelector: void 0
-  };
-  function init(grid) {
-    if (typeof Draggable4 > "u")
+// src/plugins/slick.rowselectionmodel.ts
+var Draggable4 = Draggable, keyCode6 = keyCode, SlickCellRangeDecorator3 = SlickCellRangeDecorator, SlickCellRangeSelector3 = SlickCellRangeSelector, SlickEvent19 = SlickEvent, SlickEventData8 = SlickEventData, SlickEventHandler5 = SlickEventHandler, SlickRange6 = SlickRange, Utils25 = Utils, SlickRowSelectionModel = class {
+  constructor(options) {
+    // --
+    // public API
+    __publicField(this, "pluginName", "RowSelectionModel");
+    __publicField(this, "onSelectedRangesChanged", new SlickEvent19());
+    // --
+    // protected props
+    __publicField(this, "_grid");
+    __publicField(this, "_ranges", []);
+    __publicField(this, "_handler", new SlickEventHandler5());
+    __publicField(this, "_inHandler", !1);
+    __publicField(this, "_selector");
+    __publicField(this, "_isRowMoveManagerHandler");
+    __publicField(this, "_options");
+    __publicField(this, "_defaults", {
+      selectActiveRow: !0,
+      dragToSelect: !1,
+      autoScrollWhenDrag: !0,
+      cellRangeSelector: void 0
+    });
+    this._options = Utils25.extend(!0, {}, this._defaults, options);
+  }
+  init(grid) {
+    if (Draggable4 === void 0)
       throw new Error('Slick.Draggable is undefined, make sure to import "slick.interactions.js"');
-    if (_options = Utils25.extend(!0, {}, _defaults, options), _selector = _options.cellRangeSelector, _grid = grid, !_selector && _options.dragToSelect) {
-      if (!CellRangeDecorator3)
+    if (this._selector = this._options.cellRangeSelector, this._grid = grid, !this._selector && this._options.dragToSelect) {
+      if (!SlickCellRangeDecorator3)
         throw new Error("Slick.CellRangeDecorator is required when option dragToSelect set to true");
-      _selector = new CellRangeSelector3({
-        selectionCss: {
-          border: "none"
-        },
-        autoScroll: _options.autoScrollWhenDrag
+      this._selector = new SlickCellRangeSelector3({
+        selectionCss: { border: "none" },
+        autoScroll: this._options.autoScrollWhenDrag
       });
     }
-    _handler.subscribe(
-      _grid.onActiveCellChanged,
-      wrapHandler(handleActiveCellChange)
-    ), _handler.subscribe(
-      _grid.onKeyDown,
-      wrapHandler(handleKeyDown)
-    ), _handler.subscribe(
-      _grid.onClick,
-      wrapHandler(handleClick)
-    ), _selector && (grid.registerPlugin(_selector), _selector.onCellRangeSelecting.subscribe(handleCellRangeSelected), _selector.onCellRangeSelected.subscribe(handleCellRangeSelected), _selector.onBeforeCellRangeSelected.subscribe(handleBeforeCellRangeSelected));
+    this._handler.subscribe(this._grid.onActiveCellChanged, this.wrapHandler(this.handleActiveCellChange).bind(this)), this._handler.subscribe(this._grid.onKeyDown, this.wrapHandler(this.handleKeyDown).bind(this)), this._handler.subscribe(this._grid.onClick, this.wrapHandler(this.handleClick).bind(this)), this._selector && (grid.registerPlugin(this._selector), this._selector.onCellRangeSelecting.subscribe(this.handleCellRangeSelected.bind(this)), this._selector.onCellRangeSelected.subscribe(this.handleCellRangeSelected.bind(this)), this._selector.onBeforeCellRangeSelected.subscribe(this.handleBeforeCellRangeSelected.bind(this)));
   }
-  function destroy() {
-    _handler.unsubscribeAll(), _selector && (_selector.onCellRangeSelecting.unsubscribe(handleCellRangeSelected), _selector.onCellRangeSelected.unsubscribe(handleCellRangeSelected), _selector.onBeforeCellRangeSelected.unsubscribe(handleBeforeCellRangeSelected), _grid.unregisterPlugin(_selector), _selector.destroy && _selector.destroy());
+  destroy() {
+    this._handler.unsubscribeAll(), this._selector && (this._selector.onCellRangeSelecting.unsubscribe(this.handleCellRangeSelected.bind(this)), this._selector.onCellRangeSelected.unsubscribe(this.handleCellRangeSelected.bind(this)), this._selector.onBeforeCellRangeSelected.unsubscribe(this.handleBeforeCellRangeSelected.bind(this)), this._grid.unregisterPlugin(this._selector), this._selector.destroy && this._selector.destroy());
   }
-  function wrapHandler(handler) {
-    return function() {
-      _inHandler || (_inHandler = !0, handler.apply(this, arguments), _inHandler = !1);
+  wrapHandler(handler) {
+    return (...args) => {
+      this._inHandler || (this._inHandler = !0, handler.apply(this, args), this._inHandler = !1);
     };
   }
-  function rangesToRows(ranges) {
-    for (var rows = [], i = 0; i < ranges.length; i++)
-      for (var j = ranges[i].fromRow; j <= ranges[i].toRow; j++)
+  rangesToRows(ranges) {
+    let rows = [];
+    for (let i = 0; i < ranges.length; i++)
+      for (let j = ranges[i].fromRow; j <= ranges[i].toRow; j++)
         rows.push(j);
     return rows;
   }
-  function rowsToRanges(rows) {
-    for (var ranges = [], lastCell = _grid.getColumns().length - 1, i = 0; i < rows.length; i++)
+  rowsToRanges(rows) {
+    let ranges = [], lastCell = this._grid.getColumns().length - 1;
+    for (let i = 0; i < rows.length; i++)
       ranges.push(new SlickRange6(rows[i], 0, rows[i], lastCell));
     return ranges;
   }
-  function getRowsRange(from, to) {
-    var i, rows = [];
+  getRowsRange(from, to) {
+    let i, rows = [];
     for (i = from; i <= to; i++)
       rows.push(i);
     for (i = to; i < from; i++)
       rows.push(i);
     return rows;
   }
-  function getSelectedRows() {
-    return rangesToRows(_ranges);
+  getSelectedRows() {
+    return this.rangesToRows(this._ranges);
   }
-  function setSelectedRows(rows) {
-    setSelectedRanges(rowsToRanges(rows), "SlickRowSelectionModel.setSelectedRows");
+  setSelectedRows(rows) {
+    this.setSelectedRanges(this.rowsToRanges(rows), "SlickRowSelectionModel.setSelectedRows");
   }
-  function setSelectedRanges(ranges, caller) {
-    if (!((!_ranges || _ranges.length === 0) && (!ranges || ranges.length === 0))) {
-      _ranges = ranges;
-      var eventData = new EventData3(null, _ranges);
-      Object.defineProperty(eventData, "detail", { writable: !0, configurable: !0, value: { caller: caller || "SlickRowSelectionModel.setSelectedRanges" } }), _self.onSelectedRangesChanged.notify(_ranges, eventData);
-    }
+  setSelectedRanges(ranges, caller = "SlickRowSelectionModel.setSelectedRanges") {
+    if ((!this._ranges || this._ranges.length === 0) && (!ranges || ranges.length === 0))
+      return;
+    this._ranges = ranges;
+    let eventData = new SlickEventData8(null, this._ranges);
+    Object.defineProperty(eventData, "detail", { writable: !0, configurable: !0, value: { caller: caller || "SlickRowSelectionModel.setSelectedRanges" } }), this.onSelectedRangesChanged.notify(this._ranges, eventData);
   }
-  function getSelectedRanges() {
-    return _ranges;
+  getSelectedRanges() {
+    return this._ranges;
   }
-  function refreshSelections() {
-    setSelectedRows(getSelectedRows());
+  refreshSelections() {
+    this.setSelectedRows(this.getSelectedRows());
   }
-  function handleActiveCellChange(e, data) {
-    _options.selectActiveRow && data.row != null && setSelectedRanges([new SlickRange6(data.row, 0, data.row, _grid.getColumns().length - 1)]);
+  handleActiveCellChange(_e, args) {
+    this._options.selectActiveRow && args.row != null && this.setSelectedRanges([new SlickRange6(args.row, 0, args.row, this._grid.getColumns().length - 1)]);
   }
-  function handleKeyDown(e) {
-    var activeRow = _grid.getActiveCell();
-    if (_grid.getOptions().multiSelect && activeRow && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey && (e.which == keyCode6.UP || e.which == keyCode6.DOWN)) {
-      var selectedRows = getSelectedRows();
+  handleKeyDown(e) {
+    let activeRow = this._grid.getActiveCell();
+    if (this._grid.getOptions().multiSelect && activeRow && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey && (e.which == keyCode6.UP || e.which == keyCode6.DOWN)) {
+      let selectedRows = this.getSelectedRows();
       selectedRows.sort(function(x, y) {
         return x - y;
       }), selectedRows.length || (selectedRows = [activeRow.row]);
-      var top = selectedRows[0], bottom = selectedRows[selectedRows.length - 1], active;
-      if (e.which == keyCode6.DOWN ? active = activeRow.row < bottom || top == bottom ? ++bottom : ++top : active = activeRow.row < bottom ? --bottom : --top, active >= 0 && active < _grid.getDataLength()) {
-        _grid.scrollRowIntoView(active);
-        var tempRanges = rowsToRanges(getRowsRange(top, bottom));
-        setSelectedRanges(tempRanges);
+      let top = selectedRows[0], bottom = selectedRows[selectedRows.length - 1], active;
+      if (e.which == keyCode6.DOWN ? active = activeRow.row < bottom || top == bottom ? ++bottom : ++top : active = activeRow.row < bottom ? --bottom : --top, active >= 0 && active < this._grid.getDataLength()) {
+        this._grid.scrollRowIntoView(active);
+        let tempRanges = this.rowsToRanges(this.getRowsRange(top, bottom));
+        this.setSelectedRanges(tempRanges);
       }
       e.preventDefault(), e.stopPropagation();
     }
   }
-  function handleClick(e) {
-    var cell = _grid.getCellFromEvent(e);
-    if (!cell || !_grid.canCellBeActive(cell.row, cell.cell) || !_grid.getOptions().multiSelect || !e.ctrlKey && !e.shiftKey && !e.metaKey)
+  handleClick(e) {
+    let cell = this._grid.getCellFromEvent(e);
+    if (!cell || !this._grid.canCellBeActive(cell.row, cell.cell) || !this._grid.getOptions().multiSelect || !e.ctrlKey && !e.shiftKey && !e.metaKey)
       return !1;
-    var selection = rangesToRows(_ranges), idx = selection.indexOf(cell.row);
+    let selection = this.rangesToRows(this._ranges), idx = selection.indexOf(cell.row);
     if (idx === -1 && (e.ctrlKey || e.metaKey))
-      selection.push(cell.row), _grid.setActiveCell(cell.row, cell.cell);
+      selection.push(cell.row), this._grid.setActiveCell(cell.row, cell.cell);
     else if (idx !== -1 && (e.ctrlKey || e.metaKey))
-      selection = selection.filter((o) => o !== cell.row), _grid.setActiveCell(cell.row, cell.cell);
+      selection = selection.filter((o) => o !== cell.row), this._grid.setActiveCell(cell.row, cell.cell);
     else if (selection.length && e.shiftKey) {
-      var last = selection.pop(), from = Math.min(cell.row, last), to = Math.max(cell.row, last);
+      let last = selection.pop(), from = Math.min(cell.row, last), to = Math.max(cell.row, last);
       selection = [];
-      for (var i = from; i <= to; i++)
+      for (let i = from; i <= to; i++)
         i !== last && selection.push(i);
-      selection.push(last), _grid.setActiveCell(cell.row, cell.cell);
+      selection.push(last), this._grid.setActiveCell(cell.row, cell.cell);
     }
-    var tempRanges = rowsToRanges(selection);
-    return setSelectedRanges(tempRanges), e.stopImmediatePropagation(), !0;
+    let tempRanges = this.rowsToRanges(selection);
+    return this.setSelectedRanges(tempRanges), e.stopImmediatePropagation(), !0;
   }
-  function handleBeforeCellRangeSelected(e, cell) {
-    if (!_isRowMoveManagerHandler) {
-      var rowMoveManager = _grid.getPluginByName("RowMoveManager") || _grid.getPluginByName("CrossGridRowMoveManager");
-      _isRowMoveManagerHandler = rowMoveManager ? rowMoveManager.isHandlerColumn : Utils25.noop;
+  handleBeforeCellRangeSelected(e, cell) {
+    if (!this._isRowMoveManagerHandler) {
+      let rowMoveManager = this._grid.getPluginByName("RowMoveManager") || this._grid.getPluginByName("CrossGridRowMoveManager");
+      this._isRowMoveManagerHandler = rowMoveManager ? rowMoveManager.isHandlerColumn : Utils25.noop;
     }
-    if (_grid.getEditorLock().isActive() || _isRowMoveManagerHandler(cell.cell))
+    if (this._grid.getEditorLock().isActive() || this._isRowMoveManagerHandler(cell.cell))
       return e.stopPropagation(), !1;
-    _grid.setActiveCell(cell.row, cell.cell);
+    this._grid.setActiveCell(cell.row, cell.cell);
   }
-  function handleCellRangeSelected(e, args) {
-    if (!_grid.getOptions().multiSelect || !_options.selectActiveRow)
+  handleCellRangeSelected(_e, args) {
+    if (!this._grid.getOptions().multiSelect || !this._options.selectActiveRow)
       return !1;
-    setSelectedRanges([new SlickRange6(args.range.fromRow, 0, args.range.toRow, _grid.getColumns().length - 1)]);
+    this.setSelectedRanges([new SlickRange6(args.range.fromRow, 0, args.range.toRow, this._grid.getColumns().length - 1)]);
   }
-  Utils25.extend(this, {
-    getSelectedRows,
-    setSelectedRows,
-    getSelectedRanges,
-    setSelectedRanges,
-    refreshSelections,
-    init,
-    destroy,
-    pluginName: "RowSelectionModel",
-    onSelectedRangesChanged: new SlickEvent19()
-  });
-}
-
-// src/plugins/slick.state.js
-var SlickEvent20 = Event, Utils26 = Utils, localStorageWrapper = function() {
-  var localStorage = window.localStorage;
-  return typeof localStorage > "u" && console.error("localStorage is not available. slickgrid statepersistor disabled."), {
-    get: function(key) {
-      return new Promise((resolve, reject) => {
-        if (!localStorage) {
-          reject("missing localStorage");
-          return;
-        }
-        try {
-          var d = localStorage.getItem(key);
-          if (d)
-            return resolve(JSON.parse(d));
-          resolve({});
-        } catch (exc) {
-          reject(exc);
-        }
-      });
-    },
-    set: function(key, obj) {
-      localStorage && (typeof obj < "u" && (obj = JSON.stringify(obj)), localStorage.setItem(key, obj));
-    }
-  };
-}, defaults = {
-  key_prefix: "slickgrid:",
-  storage: new localStorageWrapper(),
-  scrollRowIntoView: !0
 };
-function State(options) {
-  options = Utils26.extend(!0, {}, defaults, options);
-  var _grid, _cid, _store = options.storage, onStateChanged = new SlickEvent20(), userData = {
-    state: null,
-    current: null
-  };
-  function init(grid) {
-    _grid = grid, _cid = grid.cid || options.cid, _cid ? (_grid.onColumnsResized.subscribe(save), _grid.onColumnsReordered.subscribe(save), _grid.onSort.subscribe(save)) : console.warn("grid has no client id. state persisting is disabled.");
+
+// src/plugins/slick.state.ts
+var SlickEvent20 = SlickEvent, Utils26 = Utils, LocalStorageWrapper = class {
+  constructor() {
+    __publicField(this, "localStorage", window.localStorage);
+    typeof localStorage > "u" && console.error("localStorage is not available. slickgrid statepersistor disabled.");
   }
-  function destroy() {
-    _grid.onSort.unsubscribe(save), _grid.onColumnsReordered.unsubscribe(save), _grid.onColumnsResized.unsubscribe(save), save();
-  }
-  function save() {
-    if (_cid && _store) {
-      var state = {
-        sortcols: getSortColumns(),
-        viewport: _grid.getViewport(),
-        columns: getColumns(),
-        userData: null
-      };
-      return state.userData = userData.current, setUserDataFromState(state.userData), onStateChanged.notify(state), _store.set(options.key_prefix + _cid, state);
-    }
-  }
-  function restore() {
+  get(key) {
     return new Promise((resolve, reject) => {
-      if (!_cid) {
+      if (!localStorage) {
+        reject("missing localStorage");
+        return;
+      }
+      try {
+        let d = localStorage.getItem(key);
+        if (d)
+          return resolve(JSON.parse(d));
+        resolve({});
+      } catch (exc) {
+        reject(exc);
+      }
+    });
+  }
+  set(key, obj) {
+    localStorage && (typeof obj < "u" && (obj = JSON.stringify(obj)), localStorage.setItem(key, obj));
+  }
+}, SlickState = class {
+  constructor(options) {
+    // --
+    // public API
+    __publicField(this, "pluginName", "State");
+    __publicField(this, "onStateChanged", new SlickEvent20());
+    // --
+    // protected props
+    __publicField(this, "_grid");
+    __publicField(this, "_cid", "");
+    __publicField(this, "_store");
+    __publicField(this, "_options");
+    __publicField(this, "_state");
+    __publicField(this, "_userData", {
+      state: null,
+      current: null
+    });
+    let defaults = {
+      key_prefix: "slickgrid:",
+      storage: new LocalStorageWrapper(),
+      scrollRowIntoView: !0
+    };
+    this._options = Utils26.extend(!0, {}, defaults, options), this._store = this._options.storage;
+  }
+  init(grid) {
+    this._grid = grid, this._cid = grid.cid || this._options.cid, this._cid ? (this._grid.onColumnsResized.subscribe(this.save.bind(this)), this._grid.onColumnsReordered.subscribe(this.save.bind(this)), this._grid.onSort.subscribe(this.save.bind(this))) : console.warn("grid has no client id. state persisting is disabled.");
+  }
+  destroy() {
+    this._grid.onSort.unsubscribe(this.save.bind(this)), this._grid.onColumnsReordered.unsubscribe(this.save.bind(this)), this._grid.onColumnsResized.unsubscribe(this.save.bind(this)), this.save();
+  }
+  save() {
+    if (this._cid && this._store)
+      return this._state = {
+        sortcols: this.getSortColumns(),
+        viewport: this._grid.getViewport(),
+        columns: this.getColumns(),
+        userData: null
+      }, this._state.userData = this._userData.current, this.setUserDataFromState(this._state.userData), this.onStateChanged.notify(this._state), this._store.set(this._options.key_prefix + this._cid, this._state);
+  }
+  restore() {
+    return new Promise((resolve, reject) => {
+      if (!this._cid) {
         reject("missing client id");
         return;
       }
-      if (!_store) {
+      if (!this._store) {
         reject("missing store");
         return;
       }
-      _store.get(options.key_prefix + _cid).then(function(state) {
+      this._store.get(this._options.key_prefix + this._cid).then((state) => {
         if (state) {
-          if (state.sortcols && _grid.setSortColumns(state.sortcols || []), state.viewport && options.scrollRowIntoView && _grid.scrollRowIntoView(state.viewport.top, !0), state.columns) {
-            var defaultColumns = options.defaultColumns;
+          if (state.sortcols && this._grid.setSortColumns(state.sortcols || []), state.viewport && this._options.scrollRowIntoView && this._grid.scrollRowIntoView(state.viewport.top, !0), state.columns) {
+            let defaultColumns = this._options.defaultColumns;
             if (defaultColumns) {
-              var defaultColumnsLookup = {};
-              defaultColumns.forEach(function(colDef) {
-                defaultColumnsLookup[colDef.id] = colDef;
-              });
-              var cols = [];
-              (state.columns || []).forEach(function(columnDef) {
+              let defaultColumnsLookup = {};
+              defaultColumns.forEach((colDef) => defaultColumnsLookup[colDef.id] = colDef);
+              let cols = [];
+              (state.columns || []).forEach((columnDef) => {
                 defaultColumnsLookup[columnDef.id] && cols.push(Utils26.extend(!0, {}, defaultColumnsLookup[columnDef.id], {
                   width: columnDef.width,
                   headerCssClass: columnDef.headerCssClass
                 }));
               }), state.columns = cols;
             }
-            _grid.setColumns(state.columns);
+            this._grid.setColumns(state.columns);
           }
-          setUserDataFromState(state.userData);
+          this.setUserDataFromState(state.userData);
         }
         resolve(state);
-      }).catch(function(e) {
+      }).catch((e) => {
         reject(e);
       });
     });
   }
-  function setUserData(data) {
-    return userData.current = data, this;
+  /**
+   * allows users to add their own data to the grid state
+   * this function does not trigger the save() function, so the actual act of writing the state happens in save()
+   * therefore, it's necessary to call save() function after setting user-data
+   *
+   * @param data
+   * @return {State}
+   */
+  setUserData(data) {
+    return this._userData.current = data, this;
   }
-  function setUserDataFromState(data) {
-    return userData.state = data, setUserData(data);
+  /**
+   *
+   * @internal
+   * @param data
+   * @return {State}
+   */
+  setUserDataFromState(data) {
+    return this._userData.state = data, this.setUserData(data);
   }
-  function getUserData() {
-    return userData.current;
+  /**
+   * returns current value of user-data
+   * @return {Object}
+   */
+  getUserData() {
+    return this._userData.current;
   }
-  function getStateUserData() {
-    return userData.state;
+  /**
+   * returns user-data found in saved state
+   *
+   * @return {Object}
+   */
+  getStateUserData() {
+    return this._userData.state;
   }
-  function resetUserData() {
-    return userData.current = userData.state, this;
+  /**
+   * Sets user-data to the value read from state
+   * @return {State}
+   */
+  resetUserData() {
+    return this._userData.current = this._userData.state, this;
   }
-  function getColumns() {
-    return _grid.getColumns().map(function(col) {
-      return {
-        id: col.id,
-        width: col.width
-      };
-    });
+  getColumns() {
+    return this._grid.getColumns().map((col) => ({
+      id: col.id,
+      width: col.width
+    }));
   }
-  function getSortColumns() {
-    var sortCols = _grid.getSortColumns();
-    return sortCols;
+  getSortColumns() {
+    return this._grid.getSortColumns();
   }
-  function reset() {
-    _store.set(options.key_prefix + _cid, {}), setUserDataFromState(null);
+  reset() {
+    this._store.set(this._options.key_prefix + this._cid, {}), this.setUserDataFromState(null);
   }
-  Utils26.extend(this, {
-    init,
-    destroy,
-    save,
-    setUserData,
-    resetUserData,
-    getUserData,
-    getStateUserData,
-    restore,
-    onStateChanged,
-    reset
-  });
-}
+};
 /**
  * @license
  * (c) 2009-present Michael Leibman
