@@ -4,6 +4,7 @@ import type {
   BindingEventService,
   ColAutosizeMode,
   SlickEvent,
+  SlickEventHandler,
   SlickEventData,
   GlobalEditorLock,
   GridAutosizeColsMode,
@@ -23,6 +24,10 @@ import type { SlickGridPager } from './controls/slick.pager';
 import type { SlickGridMenu } from './controls/slick.gridmenu';
 import type { SlickAutoTooltip } from './plugins/slick.autotooltips';
 import type { SlickCellCopyManager } from './plugins/slick.cellcopymanager';
+import type { SlickCellMenu } from './plugins/slick.cellmenu';
+import type { SlickContextMenu } from './plugins/slick.contextmenu';
+import type { SlickHeaderButtons } from './plugins/slick.headerbuttons';
+import type { SlickHeaderMenu } from './plugins/slick.headermenu';
 import type { SlickCellExternalCopyManager } from './plugins/slick.cellcopymanager';
 import type { SlickGroupItemMetadataProvider } from './slick.cellexternalcopymanager';
 import type { Draggable, MouseWheel, Resizable } from './slick.interactions';
@@ -56,6 +61,7 @@ declare global {
     Editors: typeof Editors,
     Event: typeof SlickEvent,
     EventData: typeof SlickEventData,
+    EventHandler: typeof SlickEventHandler,
     Formatters: typeof Formatters,
     GlobalEditorLock: typeof GlobalEditorLock,
     Grid: typeof SlickGrid,
@@ -64,6 +70,12 @@ declare global {
     GroupTotals: typeof SlickGroupTotals,
     keyCode: typeof keyCode,
     MouseWheel: typeof MouseWheel,
+    Plugins: {
+      CellMenu: SlickCellMenu,
+      ContextMenu: SlickContextMenu,
+      HeaderButtons: SlickHeaderButtons,
+      HeaderMenu: SlickHeaderMenu
+    },
     preClickClassName: typeof preClickClassName,
     Range: typeof SlickRange,
     Resizable: typeof Resizable,

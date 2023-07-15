@@ -32,7 +32,12 @@ const CLIPBOARD_PASTE_DELAY = 100;
     headerColumnValueExtractor : option to specify a custom column header value extractor function
 */
 export class SlickCellExternalCopyManager {
+  // --
+  // public API
   pluginName = 'CellExternalCopyManager' as const;
+
+  // --
+  // protected props
   protected _grid!: SlickGrid;
   protected _bodyElement: HTMLElement;
   protected _copiedRanges: CellRange[] | null = null;

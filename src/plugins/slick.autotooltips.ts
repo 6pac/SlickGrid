@@ -9,7 +9,12 @@ const Utils = (IIFE_ONLY ? Slick.Utils : Utils_) as typeof Utils_;
  * AutoTooltips plugin to show/hide tooltips when columns are too narrow to fit content.
  */
 export class SlickAutoTooltips {
-  pluginName: 'AutoTooltips' = 'AutoTooltips' as const;
+  // --
+  // public API
+  pluginName = 'AutoTooltips' as const;
+
+  // --
+  // protected props
   protected _grid!: SlickGrid;
   protected _options?: AutoTooltipOption
   protected _defaults: AutoTooltipOption = {
@@ -40,7 +45,7 @@ export class SlickAutoTooltips {
       this._grid.onMouseEnter.subscribe(this.handleMouseEnter.bind(this));
     }
     if (this._options?.enableForHeaderCells) {
-      this._grid.onHeaderMouseEnter.subscribe<{ column: Column; }>(this.handleHeaderMouseEnter.bind(this));
+      this._grid.onHeaderMouseEnter.subscribe(this.handleHeaderMouseEnter.bind(this));
     }
   }
 
