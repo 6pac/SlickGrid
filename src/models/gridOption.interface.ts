@@ -1,5 +1,5 @@
 import type { Column, ColumnPickerOption, ColumnReorderFunction, EditCommand, Editor, Formatter, GridMenuOption, ItemMetadata, } from './index';
-import type { EditorLock } from '../slick.core';
+import type { SlickEditorLock } from '../slick.core';
 
 export interface CellViewportRange {
   bottom: number;
@@ -101,7 +101,7 @@ export interface GridOption {
   editorFactory?: null | { getEditor: (col: Column) => Editor; };
 
   /** a global singleton editor lock. */
-  editorLock: EditorLock;
+  editorLock: SlickEditorLock;
 
   /** Do we want to emulate paging when we are scrolling? */
   emulatePagingWhenScrolling?: boolean;

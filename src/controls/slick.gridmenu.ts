@@ -117,6 +117,17 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  */
 
 export class SlickGridMenu {
+  // --
+  // public API
+  onAfterMenuShow = new SlickEvent<GridMenuEventWithElementCallbackArgs>();
+  onBeforeMenuShow = new SlickEvent<GridMenuEventWithElementCallbackArgs>();
+  onMenuClose = new SlickEvent<GridMenuEventWithElementCallbackArgs>();
+  onCommand = new SlickEvent<GridMenuCommandItemCallbackArgs>();
+  onColumnsChanged = new SlickEvent<onGridMenuColumnsChangedCallbackArgs>();
+
+  // --
+  // protected props
+  protected _bindingEventService: BindingEventService_;
   protected _gridOptions: GridOption;
   protected _gridUid: string;
   protected _isMenuOpen = false;
@@ -128,7 +139,7 @@ export class SlickGridMenu {
   protected _listElm!: HTMLElement;
   protected _buttonElm!: HTMLElement;
   protected _menuElm!: HTMLElement;
-  protected columnCheckboxes: HTMLInputElement[] = [];
+  protected _columnCheckboxes: HTMLInputElement[] = [];
   protected _defaults = {
     showButton: true,
     hideForceFitButton: false,
@@ -140,18 +151,8 @@ export class SlickGridMenu {
     resizeOnShowHeaderRow: false,
     syncResizeTitle: 'Synchronous resize',
     useClickToRepositionMenu: true,
-    headerColumnValueExtractor: function (columnDef) {
-      return columnDef.name;
-    }
+    headerColumnValueExtractor: (columnDef: Column) => columnDef.name,
   };
-  protected _bindingEventService: BindingEventService_;
-
-  // public events
-  onAfterMenuShow = new SlickEvent<GridMenuEventWithElementCallbackArgs>();
-  onBeforeMenuShow = new SlickEvent<GridMenuEventWithElementCallbackArgs>();
-  onMenuClose = new SlickEvent<GridMenuEventWithElementCallbackArgs>();
-  onCommand = new SlickEvent<GridMenuCommandItemCallbackArgs>();
-  onColumnsChanged = new SlickEvent<onGridMenuColumnsChangedCallbackArgs>();
 
   constructor(protected columns: Column[], protected readonly grid: SlickGrid, gridOptions: GridOption) {
     this._gridUid = grid.getUID();
@@ -415,7 +416,7 @@ export class SlickGridMenu {
 
     this.populateCustomMenus(this._gridMenuOptions || {}, this._customMenuElm);
     this.updateColumnOrder();
-    this.columnCheckboxes = [];
+    this._columnCheckboxes = [];
 
     let callbackArgs = {
       grid: this.grid,
@@ -456,7 +457,7 @@ export class SlickGridMenu {
         checkboxElm.checked = true;
       }
 
-      this.columnCheckboxes.push(checkboxElm);
+      this._columnCheckboxes.push(checkboxElm);
 
       // get the column label from the picker value extractor (user can optionally provide a custom extractor)
       if (this._gridMenuOptions?.headerColumnValueExtractor) {
@@ -676,7 +677,7 @@ export class SlickGridMenu {
       const isChecked = e.target.checked;
       const columnId = e.target.dataset.columnid || '';
       let visibleColumns: Column[] = [];
-      this.columnCheckboxes.forEach((columnCheckbox, idx) => {
+      this._columnCheckboxes.forEach((columnCheckbox, idx) => {
         if (columnCheckbox.checked) {
           if (this.columns[idx].hidden) { this.columns[idx].hidden = false; }
           visibleColumns.push(this.columns[idx]);

@@ -1,11 +1,11 @@
-import { PagingInfo } from '../models/index';
-import { BindingEventService as BindingEventService_, GlobalEditorLock as GlobalEditorLock_, Utils as Utils_ } from '../slick.core';
-import { SlickDataView } from '../slick.dataview';
-import { SlickGrid } from '../slick.grid';
+import type { PagingInfo } from '../models/index';
+import { BindingEventService as BindingEventService_, SlickGlobalEditorLock as SlickGlobalEditorLock_, Utils as Utils_ } from '../slick.core';
+import type { SlickDataView } from '../slick.dataview';
+import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
 const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
-const GlobalEditorLock = IIFE_ONLY ? Slick.GlobalEditorLock : GlobalEditorLock_;
+const SlickGlobalEditorLock = IIFE_ONLY ? Slick.GlobalEditorLock : SlickGlobalEditorLock_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
 export interface GridPagerOption {
@@ -18,12 +18,16 @@ export interface GridPagerOption {
 }
 
 export class SlickGridPager {
-  // the container might be a string, a jQuery object or a native element
-  protected _container: HTMLElement;
+  // --
+  // public API
+
+  // --
+  // protected props
+  protected _container: HTMLElement; // the container might be a string, a jQuery object or a native element
   protected _statusElm!: HTMLElement;
   protected _bindingEventService: BindingEventService_;
-  protected _options!: GridPagerOption;
-  protected _defaults = {
+  protected _options: GridPagerOption;
+  protected _defaults: GridPagerOption = {
     showAllText: 'Showing all {rowCount} rows',
     showPageText: 'Showing page {pageNum} of {pageCount}',
     showCountText: 'From {countBegin} to {countEnd} of {rowCount} rows',
@@ -61,7 +65,7 @@ export class SlickGridPager {
   }
 
   protected getNavState() {
-    let cannotLeaveEditMode = !GlobalEditorLock.commitCurrentEdit();
+    let cannotLeaveEditMode = !SlickGlobalEditorLock.commitCurrentEdit();
     let pagingInfo = this.dataView.getPagingInfo();
     let lastPage = pagingInfo.totalPages - 1;
 

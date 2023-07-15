@@ -13,7 +13,8 @@ import type {
   MenuCommandItemCallbackArgs,
   MenuFromCellCallbackArgs,
   MenuOptionItem,
-  MenuOptionItemCallbackArgs
+  MenuOptionItemCallbackArgs,
+  Plugin
 } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
@@ -144,7 +145,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  * @param options {Object} Cell Menu Options
  * @class Slick.Plugins.CellMenu
  */
-export class SlickCellMenu {
+export class SlickCellMenu implements Plugin {
   // --
   // public API
   pluginName = 'CellMenu' as const;
@@ -181,7 +182,7 @@ export class SlickCellMenu {
     this._cellMenuProperties = Utils.extend({}, this._defaults, optionProperties);
   }
 
-  protected init(grid: SlickGrid) {
+  init(grid: SlickGrid) {
     this._grid = grid;
     this._gridOptions = grid.getOptions();
     this._gridUid = (grid && grid.getUID) ? grid.getUID() : '';

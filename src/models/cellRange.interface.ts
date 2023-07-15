@@ -1,5 +1,7 @@
 // import type { SlickCellRangeDecorator } from '../plugins/slick.cellrangedecorator';
 
+import type { SlickCellRangeDecorator } from '../plugins/slick.cellrangedecorator';
+
 export interface CellRange {
   /** Selection start from which cell? */
   fromCell: number;
@@ -34,7 +36,7 @@ export interface CellRangeSelectorOption {
   accelerateInterval: number;
 
   /** cell decorator service */
-  // cellDecorator: SlickCellRangeDecorator;
+  cellDecorator: SlickCellRangeDecorator;
 
   /** styling (for example blue background on cell) */
   selectionCss: CSSStyleDeclaration;

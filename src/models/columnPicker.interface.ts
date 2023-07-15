@@ -1,4 +1,13 @@
 import type { Column, GridOption } from './index';
+import type { SlickGrid } from '../slick.grid';
+
+export interface OnColumnsChangedArgs {
+  columnId: number | string;
+  showing: boolean;
+  allColumns: Column[];
+  columns: Column[];
+  grid: SlickGrid;
+}
 
 export interface ColumnPickerOption {
   /** Defaults to "Columns" which is the title that shows up over the columns */

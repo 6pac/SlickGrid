@@ -303,29 +303,29 @@ export class SlickGrid {
   protected initialized = false;
   protected _container!: HTMLElement;
   protected uid = `slickgrid_${Math.round(1000000 * Math.random())}`;
-  protected _focusSink!: HTMLElement;
-  protected _focusSink2!: HTMLElement;
-  protected _groupHeaders: HTMLElement[] = [];
-  protected _headerScroller: HTMLElement[] = [];
-  protected _headers: HTMLElement[] = [];
-  protected _headerRows!: HTMLElement[];
-  protected _headerRowScroller!: HTMLElement[];
-  protected _headerRowSpacerL!: HTMLElement;
-  protected _headerRowSpacerR!: HTMLElement;
-  protected _footerRow!: HTMLElement[];
-  protected _footerRowScroller!: HTMLElement[];
-  protected _footerRowSpacerL!: HTMLElement;
-  protected _footerRowSpacerR!: HTMLElement;
-  protected _preHeaderPanel!: HTMLElement;
-  protected _preHeaderPanelScroller!: HTMLElement;
-  protected _preHeaderPanelSpacer!: HTMLElement;
-  protected _preHeaderPanelR!: HTMLElement;
-  protected _preHeaderPanelScrollerR!: HTMLElement;
-  protected _preHeaderPanelSpacerR!: HTMLElement;
-  protected _topPanelScrollers!: HTMLElement[];
-  protected _topPanels!: HTMLElement[];
-  protected _viewport!: HTMLElement[];
-  protected _canvas!: HTMLElement[];
+  protected _focusSink!: HTMLDivElement;
+  protected _focusSink2!: HTMLDivElement;
+  protected _groupHeaders: HTMLDivElement[] = [];
+  protected _headerScroller: HTMLDivElement[] = [];
+  protected _headers: HTMLDivElement[] = [];
+  protected _headerRows!: HTMLDivElement[];
+  protected _headerRowScroller!: HTMLDivElement[];
+  protected _headerRowSpacerL!: HTMLDivElement;
+  protected _headerRowSpacerR!: HTMLDivElement;
+  protected _footerRow!: HTMLDivElement[];
+  protected _footerRowScroller!: HTMLDivElement[];
+  protected _footerRowSpacerL!: HTMLDivElement;
+  protected _footerRowSpacerR!: HTMLDivElement;
+  protected _preHeaderPanel!: HTMLDivElement;
+  protected _preHeaderPanelScroller!: HTMLDivElement;
+  protected _preHeaderPanelSpacer!: HTMLDivElement;
+  protected _preHeaderPanelR!: HTMLDivElement;
+  protected _preHeaderPanelScrollerR!: HTMLDivElement;
+  protected _preHeaderPanelSpacerR!: HTMLDivElement;
+  protected _topPanelScrollers!: HTMLDivElement[];
+  protected _topPanels!: HTMLDivElement[];
+  protected _viewport!: HTMLDivElement[];
+  protected _canvas!: HTMLDivElement[];
   protected _style;
   protected _boundAncestors: HTMLElement[] = [];
   protected stylesheet;
@@ -358,12 +358,12 @@ export class SlickGrid {
   protected footerRowH = 0;
 
   protected tabbingDirection = 1;
-  protected _activeCanvasNode!: HTMLElement;
-  protected _activeViewportNode!: HTMLElement;
+  protected _activeCanvasNode!: HTMLDivElement;
+  protected _activeViewportNode!: HTMLDivElement;
   protected activePosX!: number;
   protected activeRow!: number;
   protected activeCell!: number;
-  protected activeCellNode: HTMLElement | null = null;
+  protected activeCellNode: HTMLDivElement | null = null;
   protected currentEditor: Editor | null = null;
   protected serializedEditorValue;
   protected editController?: EditController;
@@ -415,43 +415,43 @@ export class SlickGrid {
   protected counter_rows_rendered = 0;
   protected counter_rows_removed = 0;
 
-  protected _paneHeaderL!: HTMLElement;
-  protected _paneHeaderR!: HTMLElement;
-  protected _paneTopL!: HTMLElement;
-  protected _paneTopR!: HTMLElement;
-  protected _paneBottomL!: HTMLElement;
-  protected _paneBottomR!: HTMLElement;
-  protected _headerScrollerL!: HTMLElement;
-  protected _headerScrollerR!: HTMLElement;
-  protected _headerL!: HTMLElement;
-  protected _headerR!: HTMLElement;
-  protected _groupHeadersL!: HTMLElement;
-  protected _groupHeadersR!: HTMLElement;
-  protected _headerRowScrollerL!: HTMLElement;
-  protected _headerRowScrollerR!: HTMLElement;
-  protected _footerRowScrollerL!: HTMLElement;
-  protected _footerRowScrollerR!: HTMLElement;
-  protected _headerRowL!: HTMLElement;
-  protected _headerRowR!: HTMLElement;
-  protected _footerRowL!: HTMLElement;
-  protected _footerRowR!: HTMLElement;
-  protected _topPanelScrollerL!: HTMLElement;
-  protected _topPanelScrollerR!: HTMLElement;
-  protected _topPanelL!: HTMLElement;
-  protected _topPanelR!: HTMLElement;
-  protected _viewportTopL!: HTMLElement;
-  protected _viewportTopR!: HTMLElement;
-  protected _viewportBottomL!: HTMLElement;
-  protected _viewportBottomR!: HTMLElement;
-  protected _canvasTopL!: HTMLElement;
-  protected _canvasTopR!: HTMLElement;
-  protected _canvasBottomL!: HTMLElement;
-  protected _canvasBottomR!: HTMLElement;
-  protected _viewportScrollContainerX!: HTMLElement;
-  protected _viewportScrollContainerY!: HTMLElement;
-  protected _headerScrollContainer!: HTMLElement;
-  protected _headerRowScrollContainer!: HTMLElement;
-  protected _footerRowScrollContainer!: HTMLElement;
+  protected _paneHeaderL!: HTMLDivElement;
+  protected _paneHeaderR!: HTMLDivElement;
+  protected _paneTopL!: HTMLDivElement;
+  protected _paneTopR!: HTMLDivElement;
+  protected _paneBottomL!: HTMLDivElement;
+  protected _paneBottomR!: HTMLDivElement;
+  protected _headerScrollerL!: HTMLDivElement;
+  protected _headerScrollerR!: HTMLDivElement;
+  protected _headerL!: HTMLDivElement;
+  protected _headerR!: HTMLDivElement;
+  protected _groupHeadersL!: HTMLDivElement;
+  protected _groupHeadersR!: HTMLDivElement;
+  protected _headerRowScrollerL!: HTMLDivElement;
+  protected _headerRowScrollerR!: HTMLDivElement;
+  protected _footerRowScrollerL!: HTMLDivElement;
+  protected _footerRowScrollerR!: HTMLDivElement;
+  protected _headerRowL!: HTMLDivElement;
+  protected _headerRowR!: HTMLDivElement;
+  protected _footerRowL!: HTMLDivElement;
+  protected _footerRowR!: HTMLDivElement;
+  protected _topPanelScrollerL!: HTMLDivElement;
+  protected _topPanelScrollerR!: HTMLDivElement;
+  protected _topPanelL!: HTMLDivElement;
+  protected _topPanelR!: HTMLDivElement;
+  protected _viewportTopL!: HTMLDivElement;
+  protected _viewportTopR!: HTMLDivElement;
+  protected _viewportBottomL!: HTMLDivElement;
+  protected _viewportBottomR!: HTMLDivElement;
+  protected _canvasTopL!: HTMLDivElement;
+  protected _canvasTopR!: HTMLDivElement;
+  protected _canvasBottomL!: HTMLDivElement;
+  protected _canvasBottomR!: HTMLDivElement;
+  protected _viewportScrollContainerX!: HTMLDivElement;
+  protected _viewportScrollContainerY!: HTMLDivElement;
+  protected _headerScrollContainer!: HTMLDivElement;
+  protected _headerRowScrollContainer!: HTMLDivElement;
+  protected _footerRowScrollContainer!: HTMLDivElement;
 
   // store css attributes if display:none is active in container or parent
   protected cssShow = { position: 'absolute', visibility: 'hidden', display: 'block' };
@@ -490,7 +490,7 @@ export class SlickGrid {
 
   protected initialize() {
     if (typeof this.container === 'string') {
-      this._container = document.querySelector(this.container) as HTMLElement;
+      this._container = document.querySelector(this.container) as HTMLDivElement;
     } else {
       this._container = this.container;
     }
@@ -884,12 +884,12 @@ export class SlickGrid {
   }
 
   /** Get Grid Canvas Node DOM Element */
-  getCanvasNode(columnIdOrIdx: number | string, rowIndex: number) {
-    return this._getContainerElement(this.getCanvases(), columnIdOrIdx, rowIndex);
+  getCanvasNode(columnIdOrIdx?: number | string, rowIndex?: number) {
+    return this._getContainerElement(this.getCanvases(), columnIdOrIdx, rowIndex) as HTMLDivElement;
   }
 
   /** Get the canvas DOM element */
-  getActiveCanvasNode(e: Event | SlickEventData_) {
+  getActiveCanvasNode(e?: Event | SlickEventData_) {
     if (e === undefined) {
       return this._activeCanvasNode;
     }
@@ -932,7 +932,7 @@ export class SlickGrid {
     return this._activeViewportNode;
   }
 
-  protected _getContainerElement(targetContainers: HTMLElement[], columnIdOrIdx: number | string, rowIndex?: number) {
+  protected _getContainerElement(targetContainers: HTMLElement[], columnIdOrIdx?: number | string, rowIndex?: number) {
     if (!targetContainers) { return; }
     if (!columnIdOrIdx) { columnIdOrIdx = 0; }
     if (!rowIndex) { rowIndex = 0; }
@@ -5470,7 +5470,7 @@ export class SlickGrid {
     this.internalScrollColumnIntoView(this.columnPosLeft[cell], this.columnPosRight[cell]);
   }
 
-  protected setActiveCellInternal(newCell: HTMLElement | null, opt_editMode?: boolean | null, preClickModeOn?: boolean | null, suppressActiveCellChangedEvent?: boolean, e?: Event | SlickEvent_) {
+  protected setActiveCellInternal(newCell: HTMLDivElement | null, opt_editMode?: boolean | null, preClickModeOn?: boolean | null, suppressActiveCellChangedEvent?: boolean, e?: Event | SlickEvent_) {
     if (this.activeCellNode !== null) {
       this.makeActiveCellNormal();
       this.activeCellNode.classList.remove('active');
@@ -6275,7 +6275,7 @@ export class SlickGrid {
    * @param row A row index.
    * @param cell A column index.
    */
-  getCellNode(row: number, cell: number): HTMLElement | null {
+  getCellNode(row: number, cell: number): HTMLDivElement | null {
     if (this.rowsCache[row]) {
       this.ensureCellNodesInRowsCache(row);
       try {
