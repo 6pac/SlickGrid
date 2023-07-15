@@ -11,11 +11,17 @@ const Utils = (IIFE_ONLY ? Slick.Utils : Utils_) as typeof Utils_;
  * This manager enables users to copy/paste cell data
  */
 export class SlickCellCopyManager {
-  protected _grid!: SlickGrid;
-  protected _copiedRanges?: SlickRange | null;
+  // --
+  // public API
+  pluginName = 'CellCopyManager' as const;
   onCopyCells = new SlickEvent<{ ranges: SlickRange }>();
   onCopyCancelled = new SlickEvent<{ ranges: SlickRange }>();
   onPasteCells = new SlickEvent<{ from: SlickRange; to: SlickRange; }>();
+
+  // --
+  // protected props
+  protected _grid!: SlickGrid;
+  protected _copiedRanges?: SlickRange | null;
 
   init(grid: SlickGrid) {
     this._grid = grid;
