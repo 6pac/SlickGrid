@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["../../../src/models/sortDirectionNumber.enum.ts"],
-  "sourcesContent": ["export enum SortDirectionNumber {\n  asc = 1,\n  desc = -1,\n  neutral = 0,\n}\n"],
-  "mappings": ";;;AAAO,MAAK,sBAAL,kBAAKA,0BACVA,0CAAA,MAAM,KAAN,OACAA,0CAAA,OAAO,MAAP,QACAA,0CAAA,UAAU,KAAV,WAHUA,uBAAA;",
-  "names": ["SortDirectionNumber"]
-}

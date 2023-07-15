@@ -7,7 +7,11 @@
   // src/plugins/slick.cellexternalcopymanager.ts
   var SlickEvent = Slick.Event, Utils = Slick.Utils, CLEAR_COPY_SELECTION_DELAY = 2e3, CLIPBOARD_PASTE_DELAY = 100, SlickCellExternalCopyManager = class {
     constructor(options) {
+      // --
+      // public API
       __publicField(this, "pluginName", "CellExternalCopyManager");
+      // --
+      // protected props
       __publicField(this, "_grid");
       __publicField(this, "_bodyElement");
       __publicField(this, "_copiedRanges", null);

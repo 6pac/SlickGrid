@@ -14,7 +14,11 @@
      * @param {boolean} [options.replaceExisting=null]       - Allow preventing custom tooltips from being overwritten by auto tooltips
      */
     constructor(options) {
+      // --
+      // public API
       __publicField(this, "pluginName", "AutoTooltips");
+      // --
+      // protected props
       __publicField(this, "_grid");
       __publicField(this, "_options");
       __publicField(this, "_defaults", {

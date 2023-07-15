@@ -1,67 +1,91 @@
 "use strict";
 (() => {
-  // src/plugins/slick.headermenu.js
-  var BindingEventService = Slick.BindingEventService, SlickEvent = Slick.Event, EventHandler = Slick.EventHandler, Utils = Slick.Utils;
-  function HeaderMenu(options) {
-    var _grid, _self = this, _handler = new EventHandler(), _bindingEventService = new BindingEventService(), _defaults = {
-      buttonCssClass: null,
-      buttonImage: null,
-      minWidth: 100,
-      autoAlign: !0,
-      autoAlignOffset: 0
-    }, _activeHeaderColumnElm, _menuElm;
-    function init(grid) {
-      options = Utils.extend(!0, {}, _defaults, options), _grid = grid, _handler.subscribe(_grid.onHeaderCellRendered, handleHeaderCellRendered).subscribe(_grid.onBeforeHeaderCellDestroy, handleBeforeHeaderCellDestroy), _grid.setColumns(_grid.getColumns()), _bindingEventService.bind(document.body, "mousedown", handleBodyMouseDown.bind(this));
+  var __defProp = Object.defineProperty;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: !0, configurable: !0, writable: !0, value }) : obj[key] = value;
+  var __publicField = (obj, key, value) => (__defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value), value);
+
+  // src/plugins/slick.headermenu.ts
+  var BindingEventService = Slick.BindingEventService, SlickEvent = Slick.Event, SlickEventHandler = Slick.EventHandler, Utils = Slick.Utils, SlickHeaderMenu = class {
+    constructor(options) {
+      // --
+      // public API
+      __publicField(this, "pluginName", "HeaderMenu");
+      __publicField(this, "onAfterMenuShow", new SlickEvent());
+      __publicField(this, "onBeforeMenuShow", new SlickEvent());
+      __publicField(this, "onCommand", new SlickEvent());
+      // --
+      // protected props
+      __publicField(this, "_grid");
+      __publicField(this, "_handler", new SlickEventHandler());
+      __publicField(this, "_bindingEventService", new BindingEventService());
+      __publicField(this, "_defaults", {
+        buttonCssClass: null,
+        buttonImage: null,
+        minWidth: 100,
+        autoAlign: !0,
+        autoAlignOffset: 0
+      });
+      __publicField(this, "_activeHeaderColumnElm");
+      __publicField(this, "_menuElm");
+      __publicField(this, "_options");
+      this._options = Utils.extend(!0, {}, this._defaults, options);
     }
-    function setOptions(newOptions) {
-      options = Utils.extend(!0, {}, options, newOptions);
+    init(grid) {
+      this._grid = grid, this._handler.subscribe(this._grid.onHeaderCellRendered, this.handleHeaderCellRendered.bind(this)).subscribe(this._grid.onBeforeHeaderCellDestroy, this.handleBeforeHeaderCellDestroy.bind(this)), this._grid.setColumns(this._grid.getColumns()), this._bindingEventService.bind(document.body, "mousedown", this.handleBodyMouseDown.bind(this));
     }
-    function getGridUidSelector() {
-      let gridUid = _grid.getUID() || "";
+    setOptions(newOptions) {
+      this._options = Utils.extend(!0, {}, this._options, newOptions);
+    }
+    getGridUidSelector() {
+      let gridUid = this._grid.getUID() || "";
       return gridUid ? `.${gridUid}` : "";
     }
-    function destroy() {
-      _handler.unsubscribeAll(), _bindingEventService.unbindAll(), _menuElm = _menuElm || document.body.querySelector(`.slick-header-menu${getGridUidSelector()}`), _menuElm && _menuElm.remove(), _activeHeaderColumnElm = void 0;
+    destroy() {
+      var _a;
+      this._handler.unsubscribeAll(), this._bindingEventService.unbindAll(), this._menuElm = this._menuElm || document.body.querySelector(`.slick-header-menu${this.getGridUidSelector()}`), (_a = this._menuElm) == null || _a.remove(), this._activeHeaderColumnElm = void 0;
     }
-    function handleBodyMouseDown(e) {
-      (_menuElm !== e.target && !(_menuElm && _menuElm.contains(e.target)) || e.target.className === "close") && hideMenu();
+    handleBodyMouseDown(e) {
+      (this._menuElm !== e.target && !(this._menuElm && this._menuElm.contains(e.target)) || e.target.className === "close") && this.hideMenu();
     }
-    function hideMenu() {
-      _menuElm && (_menuElm.remove(), _menuElm = void 0), _activeHeaderColumnElm && _activeHeaderColumnElm.classList.remove("slick-header-column-active");
+    hideMenu() {
+      var _a;
+      this._menuElm && (this._menuElm.remove(), this._menuElm = void 0), (_a = this._activeHeaderColumnElm) == null || _a.classList.remove("slick-header-column-active");
     }
-    function handleHeaderCellRendered(e, args) {
-      var column = args.column, menu = column.header && column.header.menu;
+    handleHeaderCellRendered(_e, args) {
+      var _a;
+      let column = args.column, menu = (_a = column == null ? void 0 : column.header) == null ? void 0 : _a.menu;
       if (menu) {
-        if (!runOverrideFunctionWhenExists(options.menuUsabilityOverride, args))
+        if (!this.runOverrideFunctionWhenExists(this._options.menuUsabilityOverride, args))
           return;
         let elm = document.createElement("div");
-        if (elm.className = "slick-header-menubutton", elm.ariaLabel = "Header Menu", elm.role = "button", !options.buttonCssClass && !options.buttonImage && (options.buttonCssClass = "caret"), options.buttonCssClass) {
+        if (elm.className = "slick-header-menubutton", elm.ariaLabel = "Header Menu", elm.role = "button", !this._options.buttonCssClass && !this._options.buttonImage && (this._options.buttonCssClass = "caret"), this._options.buttonCssClass) {
           let icon = document.createElement("span");
-          icon.classList.add(...options.buttonCssClass.split(" ")), elm.appendChild(icon);
+          icon.classList.add(...this._options.buttonCssClass.split(" ")), elm.appendChild(icon);
         }
-        options.buttonImage && (elm.style.backgroundImage = "url(" + options.buttonImage + ")"), options.tooltip && (elm.title = options.tooltip), _bindingEventService.bind(elm, "click", (e2) => showMenu(e2, menu, args.column)), args.node.appendChild(elm);
+        this._options.buttonImage && (elm.style.backgroundImage = `url(${this._options.buttonImage})`), this._options.tooltip && (elm.title = this._options.tooltip), this._bindingEventService.bind(elm, "click", (e) => this.showMenu(e, menu, args.column)), args.node.appendChild(elm);
       }
     }
-    function handleBeforeHeaderCellDestroy(e, args) {
-      var column = args.column;
-      column.header && column.header.menu && args.node.querySelectorAll(".slick-header-menubutton").forEach((elm) => elm.remove());
+    handleBeforeHeaderCellDestroy(_e, args) {
+      var _a;
+      (_a = args.column.header) != null && _a.menu && args.node.querySelectorAll(".slick-header-menubutton").forEach((elm) => elm.remove());
     }
-    function showMenu(event, menu, columnDef) {
-      var callbackArgs = {
-        grid: _grid,
+    showMenu(event, menu, columnDef) {
+      var _a, _b;
+      let callbackArgs = {
+        grid: this._grid,
         column: columnDef,
         menu
       };
-      if (_self.onBeforeMenuShow.notify(callbackArgs, event, _self).getReturnValue() == !1)
+      if (this.onBeforeMenuShow.notify(callbackArgs, event, this).getReturnValue() == !1)
         return;
-      if (!_menuElm) {
-        _menuElm = document.createElement("div"), _menuElm.className = "slick-header-menu", _menuElm.role = "menu", _menuElm.style.minWidth = `${options.minWidth}px`, _menuElm.setAttribute("aria-expanded", "true");
-        let containerNode = _grid.getContainerNode();
-        containerNode && containerNode.appendChild(_menuElm);
+      if (!this._menuElm) {
+        this._menuElm = document.createElement("div"), this._menuElm.className = "slick-header-menu", this._menuElm.role = "menu", this._menuElm.style.minWidth = `${this._options.minWidth}px`, this._menuElm.setAttribute("aria-expanded", "true");
+        let containerNode = this._grid.getContainerNode();
+        containerNode && containerNode.appendChild(this._menuElm);
       }
-      Utils.emptyElement(_menuElm);
-      for (var i = 0; i < menu.items.length; i++) {
-        var item = menu.items[i], isItemVisible = runOverrideFunctionWhenExists(item.itemVisibilityOverride, callbackArgs), isItemUsable = runOverrideFunctionWhenExists(item.itemUsabilityOverride, callbackArgs);
+      Utils.emptyElement(this._menuElm);
+      for (let i = 0; i < menu.items.length; i++) {
+        let item = menu.items[i], isItemVisible = this.runOverrideFunctionWhenExists(item.itemVisibilityOverride, callbackArgs), isItemUsable = this.runOverrideFunctionWhenExists(item.itemUsabilityOverride, callbackArgs);
         if (!isItemVisible)
           continue;
         Object.prototype.hasOwnProperty.call(item, "itemUsabilityOverride") && (item.disabled = !isItemUsable);
@@ -70,51 +94,48 @@
           menuItem.classList.add("slick-header-menuitem-divider");
           continue;
         }
-        item.disabled && menuItem.classList.add("slick-header-menuitem-disabled"), item.hidden && menuItem.classList.add("slick-header-menuitem-hidden"), item.cssClass && menuItem.classList.add(...item.cssClass.split(" ")), item.tooltip && (menuItem.title = item.tooltip);
+        item.disabled && menuItem.classList.add("slick-header-menuitem-disabled"), item.hidden && menuItem.classList.add("slick-header-menuitem-hidden"), item.cssClass && menuItem.classList.add(...item.cssClass.split(" ")), item.tooltip && (menuItem.title = item.tooltip || "");
         let iconElm = document.createElement("div");
         iconElm.className = "slick-header-menuicon", menuItem.appendChild(iconElm), item.iconCssClass && iconElm.classList.add(...item.iconCssClass.split(" ")), item.iconImage && (iconElm.style.backgroundImage = "url(" + item.iconImage + ")");
         let textElm = document.createElement("span");
-        textElm.className = "slick-header-menucontent", textElm.textContent = item.title, menuItem.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), _menuElm.appendChild(menuItem), _bindingEventService.bind(menuItem, "click", handleMenuItemClick.bind(this, item, columnDef));
+        textElm.className = "slick-header-menucontent", textElm.textContent = item.title || "", menuItem.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), this._menuElm.appendChild(menuItem), this._bindingEventService.bind(menuItem, "click", this.handleMenuItemClick.bind(this, item, columnDef));
       }
-      let buttonElm = event.target, btnOffset = Utils.offset(buttonElm), menuOffset = Utils.offset(_menuElm), leftPos = btnOffset && btnOffset.left || 0;
-      if (options.autoAlign) {
-        let gridPos = _grid.getGridPosition();
-        leftPos + _menuElm.offsetWidth >= gridPos.width && (leftPos = leftPos + buttonElm.clientWidth - _menuElm.clientWidth + (options.autoAlignOffset || 0));
+      let buttonElm = event.target, btnOffset = Utils.offset(buttonElm), menuOffset = Utils.offset(this._menuElm), leftPos = btnOffset && btnOffset.left || 0;
+      if (this._options.autoAlign) {
+        let gridPos = this._grid.getGridPosition();
+        leftPos + this._menuElm.offsetWidth >= gridPos.width && (leftPos = leftPos + buttonElm.clientWidth - this._menuElm.clientWidth + (this._options.autoAlignOffset || 0));
       }
-      _menuElm.style.top = `${(buttonElm.clientHeight || btnOffset && btnOffset.top || 0) + (options && options.menuOffsetTop || 0)}px`, _menuElm.style.left = `${leftPos - menuOffset.left}px`, _activeHeaderColumnElm = _menuElm.closest(".slick-header-column"), _activeHeaderColumnElm && _activeHeaderColumnElm.classList.add("slick-header-column-active"), _self.onAfterMenuShow.notify(callbackArgs, event, _self).getReturnValue() != !1 && (event.preventDefault(), event.stopPropagation());
+      this._menuElm.style.top = `${(buttonElm.clientHeight || btnOffset && btnOffset.top || 0) + (((_a = this._options) == null ? void 0 : _a.menuOffsetTop) || 0)}px`, this._menuElm.style.left = `${leftPos - ((_b = menuOffset == null ? void 0 : menuOffset.left) != null ? _b : 0)}px`, this._activeHeaderColumnElm = this._menuElm.closest(".slick-header-column"), this._activeHeaderColumnElm && this._activeHeaderColumnElm.classList.add("slick-header-column-active"), this.onAfterMenuShow.notify(callbackArgs, event, this).getReturnValue() != !1 && (event.preventDefault(), event.stopPropagation());
     }
-    function handleMenuItemClick(item, columnDef, e) {
+    handleMenuItemClick(item, columnDef, e) {
       let command = item.command || "";
       if (item.disabled || item.divider || item === "divider")
         return !1;
-      if (command != null && command !== "") {
-        var callbackArgs = {
-          grid: _grid,
+      if (command !== null && command !== "") {
+        let callbackArgs = {
+          grid: this._grid,
           column: columnDef,
           command,
           item
         };
-        _self.onCommand.notify(callbackArgs, e, _self), typeof item.action == "function" && item.action.call(this, e, callbackArgs);
+        this.onCommand.notify(callbackArgs, e, this), typeof item.action == "function" && item.action.call(this, e, callbackArgs);
       }
-      e.defaultPrevented || hideMenu(), e.preventDefault(), e.stopPropagation();
+      e.defaultPrevented || this.hideMenu(), e.preventDefault(), e.stopPropagation();
     }
-    function runOverrideFunctionWhenExists(overrideFn, args) {
+    /**
+     * Method that user can pass to override the default behavior.
+     * In order word, user can choose or an item is (usable/visible/enable) by providing his own logic.
+     * @param overrideFn: override function callback
+     * @param args: multiple arguments provided to the override (cell, row, columnDef, dataContext, grid)
+     */
+    runOverrideFunctionWhenExists(overrideFn, args) {
       return typeof overrideFn == "function" ? overrideFn.call(this, args) : !0;
     }
-    Utils.extend(this, {
-      init,
-      destroy,
-      pluginName: "HeaderMenu",
-      setOptions,
-      onAfterMenuShow: new SlickEvent(),
-      onBeforeMenuShow: new SlickEvent(),
-      onCommand: new SlickEvent()
-    });
-  }
+  };
   window.Slick && Utils.extend(!0, window, {
     Slick: {
       Plugins: {
-        HeaderMenu
+        HeaderMenu: SlickHeaderMenu
       }
     }
   });

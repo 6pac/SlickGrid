@@ -103,8 +103,9 @@ async function buildAllIifeFiles(allFiles) {
 
   // loop through all js/ts files and build them one at a time in iife
   for (const file of allFiles) {
-    if (/index.[j|t]s/i.test(file) || /.*\.d.ts/i.test(file)) {
-      continue; // skip index.js and any *.d.ts files which are useless for iife
+    // skip "index.js", "src/models/*.ts" or any *.d.ts files which are useless for iife
+    if (/index.[j|t]s/i.test(file) || /src[\\/]models[\\/].*\.ts/i.test(file) || /.*\.d.ts/i.test(file)) {
+      continue;
     }
     buildIifeFile(file);
   }

@@ -7,11 +7,16 @@
   // src/plugins/slick.cellcopymanager.ts
   var keyCode = Slick.keyCode, SlickEvent = Slick.Event, Utils = Slick.Utils, SlickCellCopyManager = class {
     constructor() {
-      __publicField(this, "_grid");
-      __publicField(this, "_copiedRanges");
+      // --
+      // public API
+      __publicField(this, "pluginName", "CellCopyManager");
       __publicField(this, "onCopyCells", new SlickEvent());
       __publicField(this, "onCopyCancelled", new SlickEvent());
       __publicField(this, "onPasteCells", new SlickEvent());
+      // --
+      // protected props
+      __publicField(this, "_grid");
+      __publicField(this, "_copiedRanges");
     }
     init(grid) {
       this._grid = grid, this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this));

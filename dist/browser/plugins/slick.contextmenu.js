@@ -1,203 +1,240 @@
 "use strict";
 (() => {
-  // src/plugins/slick.contextmenu.js
-  var BindingEventService = Slick.BindingEventService, SlickEvent = Slick.Event, EventData = Slick.EventData, EventHandler = Slick.EventHandler, Utils = Slick.Utils;
-  function ContextMenu(optionProperties) {
-    let _contextMenuProperties, _currentCell = -1, _currentRow = -1, _grid, _gridOptions, _gridUid = "", _handler = new EventHandler(), _self = this, _optionTitleElm, _commandTitleElm, _menuElm, _bindingEventService = new BindingEventService(), _defaults = {
-      autoAdjustDrop: !0,
-      // dropup/dropdown
-      autoAlignSide: !0,
-      // left/right
-      autoAdjustDropOffset: -4,
-      autoAlignSideOffset: 0,
-      hideMenuOnScroll: !1,
-      maxHeight: "none",
-      width: "auto",
-      optionShownOverColumnIds: [],
-      commandShownOverColumnIds: []
-    };
-    function init(grid) {
-      _grid = grid, _gridOptions = grid.getOptions(), _contextMenuProperties = Utils.extend({}, _defaults, optionProperties), _gridUid = grid && grid.getUID ? grid.getUID() : "", _handler.subscribe(_grid.onContextMenu, handleOnContextMenu), _contextMenuProperties.hideMenuOnScroll && _handler.subscribe(_grid.onScroll, destroyMenu);
+  var __defProp = Object.defineProperty;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: !0, configurable: !0, writable: !0, value }) : obj[key] = value;
+  var __publicField = (obj, key, value) => (__defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value), value);
+
+  // src/plugins/slick.contextmenu.ts
+  var BindingEventService = Slick.BindingEventService, SlickEvent = Slick.Event, SlickEventData = Slick.EventData, EventHandler = Slick.EventHandler, Utils = Slick.Utils, SlickContextMenu = class {
+    constructor(optionProperties) {
+      // --
+      // public API
+      __publicField(this, "pluginName", "ContextMenu");
+      __publicField(this, "onAfterMenuShow", new SlickEvent());
+      __publicField(this, "onBeforeMenuShow", new SlickEvent());
+      __publicField(this, "onBeforeMenuClose", new SlickEvent());
+      __publicField(this, "onCommand", new SlickEvent());
+      __publicField(this, "onOptionSelected", new SlickEvent());
+      // --
+      // protected props
+      __publicField(this, "_contextMenuProperties");
+      __publicField(this, "_currentCell", -1);
+      __publicField(this, "_currentRow", -1);
+      __publicField(this, "_grid");
+      __publicField(this, "_gridOptions");
+      __publicField(this, "_gridUid", "");
+      __publicField(this, "_handler", new EventHandler());
+      __publicField(this, "_commandTitleElm");
+      __publicField(this, "_optionTitleElm");
+      __publicField(this, "_menuElm");
+      __publicField(this, "_bindingEventService", new BindingEventService());
+      __publicField(this, "_defaults", {
+        autoAdjustDrop: !0,
+        // dropup/dropdown
+        autoAlignSide: !0,
+        // left/right
+        autoAdjustDropOffset: -4,
+        autoAlignSideOffset: 0,
+        hideMenuOnScroll: !1,
+        maxHeight: "none",
+        width: "auto",
+        optionShownOverColumnIds: [],
+        commandShownOverColumnIds: []
+      });
+      this._contextMenuProperties = Utils.extend({}, this._defaults, optionProperties);
     }
-    function setOptions(newOptions) {
-      _contextMenuProperties = Utils.extend({}, _contextMenuProperties, newOptions), newOptions.commandShownOverColumnIds && (_contextMenuProperties.commandShownOverColumnIds = newOptions.commandShownOverColumnIds), newOptions.optionShownOverColumnIds && (_contextMenuProperties.optionShownOverColumnIds = newOptions.optionShownOverColumnIds);
+    init(grid) {
+      this._grid = grid, this._gridOptions = grid.getOptions(), this._gridUid = grid && grid.getUID ? grid.getUID() : "", this._handler.subscribe(this._grid.onContextMenu, this.handleOnContextMenu.bind(this)), this._contextMenuProperties.hideMenuOnScroll && this._handler.subscribe(this._grid.onScroll, this.destroyMenu.bind(this));
     }
-    function destroy() {
-      _self.onAfterMenuShow.unsubscribe(), _self.onBeforeMenuShow.unsubscribe(), _self.onBeforeMenuClose.unsubscribe(), _self.onCommand.unsubscribe(), _self.onOptionSelected.unsubscribe(), _handler.unsubscribeAll(), _bindingEventService.unbindAll(), _menuElm && _menuElm.remove && _menuElm.remove(), _commandTitleElm = null, _optionTitleElm = null, _menuElm = null;
+    setOptions(newOptions) {
+      this._contextMenuProperties = Utils.extend({}, this._contextMenuProperties, newOptions), newOptions.commandShownOverColumnIds && (this._contextMenuProperties.commandShownOverColumnIds = newOptions.commandShownOverColumnIds), newOptions.optionShownOverColumnIds && (this._contextMenuProperties.optionShownOverColumnIds = newOptions.optionShownOverColumnIds);
     }
-    function createMenu(e) {
-      e instanceof EventData && (e = e.getNativeEvent());
-      let targetEvent = e.touches ? e.touches[0] : e, cell = _grid.getCellFromEvent(e);
-      _currentCell = cell && cell.cell, _currentRow = cell && cell.row;
-      let columnDef = _grid.getColumns()[_currentCell], dataContext = _grid.getDataItem(_currentRow), isColumnOptionAllowed = checkIsColumnAllowed(_contextMenuProperties.optionShownOverColumnIds, columnDef.id), isColumnCommandAllowed = checkIsColumnAllowed(_contextMenuProperties.commandShownOverColumnIds, columnDef.id), commandItems = _contextMenuProperties.commandItems || [], optionItems = _contextMenuProperties.optionItems || [];
-      if (!columnDef || !isColumnCommandAllowed && !isColumnOptionAllowed || !commandItems.length && !optionItems.length || (destroyMenu(e), _self.onBeforeMenuShow.notify({
-        cell: _currentCell,
-        row: _currentRow,
-        grid: _grid
-      }, e, _self).getReturnValue() == !1))
+    destroy() {
+      var _a;
+      this.onAfterMenuShow.unsubscribe(), this.onBeforeMenuShow.unsubscribe(), this.onBeforeMenuClose.unsubscribe(), this.onCommand.unsubscribe(), this.onOptionSelected.unsubscribe(), this._handler.unsubscribeAll(), this._bindingEventService.unbindAll(), (_a = this._menuElm) == null || _a.remove(), this._commandTitleElm = null, this._optionTitleElm = null, this._menuElm = null;
+    }
+    createMenu(e) {
+      var _a, _b, _c, _d, _e, _f;
+      e instanceof SlickEventData && (e = e.getNativeEvent());
+      let targetEvent = e.touches ? e.touches[0] : e, cell = this._grid.getCellFromEvent(e);
+      this._currentCell = (_a = cell == null ? void 0 : cell.cell) != null ? _a : 0, this._currentRow = (_b = cell == null ? void 0 : cell.row) != null ? _b : 0;
+      let columnDef = this._grid.getColumns()[this._currentCell], dataContext = this._grid.getDataItem(this._currentRow), isColumnOptionAllowed = this.checkIsColumnAllowed((_c = this._contextMenuProperties.optionShownOverColumnIds) != null ? _c : [], columnDef.id), isColumnCommandAllowed = this.checkIsColumnAllowed((_d = this._contextMenuProperties.commandShownOverColumnIds) != null ? _d : [], columnDef.id), commandItems = this._contextMenuProperties.commandItems || [], optionItems = this._contextMenuProperties.optionItems || [];
+      if (!columnDef || !isColumnCommandAllowed && !isColumnOptionAllowed || !commandItems.length && !optionItems.length || (this.destroyMenu(e), this.onBeforeMenuShow.notify({
+        cell: this._currentCell,
+        row: this._currentRow,
+        grid: this._grid
+      }, e, this).getReturnValue() == !1))
         return;
-      let maxHeight = isNaN(_contextMenuProperties.maxHeight) ? _contextMenuProperties.maxHeight : _contextMenuProperties.maxHeight + "px", width = isNaN(_contextMenuProperties.width) ? _contextMenuProperties.width : _contextMenuProperties.width + "px";
-      _menuElm = document.createElement("div"), _menuElm.className = `slick-context-menu ${_gridUid}`, _menuElm.role = "menu", _menuElm.style.width = width, _menuElm.style.maxHeight = maxHeight, _menuElm.style.top = `${targetEvent.pageY}px`, _menuElm.style.left = `${targetEvent.pageX}px`, _menuElm.style.display = "none";
+      let maxHeight = isNaN(this._contextMenuProperties.maxHeight) ? this._contextMenuProperties.maxHeight : `${(_e = this._contextMenuProperties.maxHeight) != null ? _e : 0}px`, width = isNaN(this._contextMenuProperties.width) ? this._contextMenuProperties.width : `${(_f = this._contextMenuProperties.maxWidth) != null ? _f : 0}px`;
+      this._menuElm = document.createElement("div"), this._menuElm.className = `slick-context-menu ${this._gridUid}`, this._menuElm.role = "menu", width && (this._menuElm.style.width = width), maxHeight && (this._menuElm.style.maxHeight = maxHeight), this._menuElm.style.top = `${targetEvent.pageY}px`, this._menuElm.style.left = `${targetEvent.pageX}px`, this._menuElm.style.display = "none";
       let closeButtonElm = document.createElement("button");
       closeButtonElm.type = "button", closeButtonElm.className = "close", closeButtonElm.dataset.dismiss = "slick-context-menu", closeButtonElm.ariaLabel = "Close";
       let spanCloseElm = document.createElement("span");
-      if (spanCloseElm.className = "close", spanCloseElm.ariaHidden = "true", spanCloseElm.innerHTML = "&times;", closeButtonElm.appendChild(spanCloseElm), !_contextMenuProperties.hideOptionSection && isColumnOptionAllowed && optionItems.length > 0) {
+      if (spanCloseElm.className = "close", spanCloseElm.ariaHidden = "true", spanCloseElm.innerHTML = "&times;", closeButtonElm.appendChild(spanCloseElm), !this._contextMenuProperties.hideOptionSection && isColumnOptionAllowed && optionItems.length > 0) {
         let optionMenuElm = document.createElement("div");
-        optionMenuElm.className = "slick-context-menu-option-list", optionMenuElm.role = "menu", _contextMenuProperties.hideCloseButton || (_bindingEventService.bind(closeButtonElm, "click", handleCloseButtonClicked), _menuElm.appendChild(closeButtonElm)), _menuElm.appendChild(optionMenuElm), populateOptionItems(
-          _contextMenuProperties,
+        optionMenuElm.className = "slick-context-menu-option-list", optionMenuElm.role = "menu", this._contextMenuProperties.hideCloseButton || (this._bindingEventService.bind(closeButtonElm, "click", this.handleCloseButtonClicked.bind(this)), this._menuElm.appendChild(closeButtonElm)), this._menuElm.appendChild(optionMenuElm), this.populateOptionItems(
+          this._contextMenuProperties,
           optionMenuElm,
           optionItems,
-          { cell: _currentCell, row: _currentRow, column: columnDef, dataContext, grid: _grid }
+          { cell: this._currentCell, row: this._currentRow, column: columnDef, dataContext, grid: this._grid }
         );
       }
-      if (!_contextMenuProperties.hideCommandSection && isColumnCommandAllowed && commandItems.length > 0) {
+      if (!this._contextMenuProperties.hideCommandSection && isColumnCommandAllowed && commandItems.length > 0) {
         let commandMenuElm = document.createElement("div");
-        commandMenuElm.className = "slick-context-menu-command-list", commandMenuElm.role = "menu", !_contextMenuProperties.hideCloseButton && (!isColumnOptionAllowed || optionItems.length === 0 || _contextMenuProperties.hideOptionSection) && (_bindingEventService.bind(closeButtonElm, "click", handleCloseButtonClicked), _menuElm.appendChild(closeButtonElm)), _menuElm.appendChild(commandMenuElm), populateCommandItems(
-          _contextMenuProperties,
+        commandMenuElm.className = "slick-context-menu-command-list", commandMenuElm.role = "menu", !this._contextMenuProperties.hideCloseButton && (!isColumnOptionAllowed || optionItems.length === 0 || this._contextMenuProperties.hideOptionSection) && (this._bindingEventService.bind(closeButtonElm, "click", this.handleCloseButtonClicked.bind(this)), this._menuElm.appendChild(closeButtonElm)), this._menuElm.appendChild(commandMenuElm), this.populateCommandItems(
+          this._contextMenuProperties,
           commandMenuElm,
           commandItems,
-          { cell: _currentCell, row: _currentRow, column: columnDef, dataContext, grid: _grid }
+          { cell: this._currentCell, row: this._currentRow, column: columnDef, dataContext, grid: this._grid }
         );
       }
-      if (_menuElm.style.display = "block", document.body.appendChild(_menuElm), _self.onAfterMenuShow.notify({
-        cell: _currentCell,
-        row: _currentRow,
-        grid: _grid
-      }, e, _self).getReturnValue() != !1)
-        return _menuElm;
+      if (this._menuElm.style.display = "block", document.body.appendChild(this._menuElm), this.onAfterMenuShow.notify({
+        cell: this._currentCell,
+        row: this._currentRow,
+        grid: this._grid
+      }, e, this).getReturnValue() != !1)
+        return this._menuElm;
     }
-    function handleCloseButtonClicked(e) {
-      e.defaultPrevented || destroyMenu(e);
+    handleCloseButtonClicked(e) {
+      e.defaultPrevented || this.destroyMenu(e);
     }
-    function destroyMenu(e, args) {
-      if (_menuElm = _menuElm || document.querySelector(".slick-context-menu." + _gridUid), _menuElm && _menuElm.remove) {
-        if (_self.onBeforeMenuClose.notify({
-          cell: args && args.cell,
-          row: args && args.row,
-          grid: _grid,
-          menu: _menuElm
-        }, e, _self).getReturnValue() == !1)
+    destroyMenu(e, args) {
+      var _a, _b, _c;
+      if (this._menuElm = this._menuElm || document.querySelector(`.slick-context-menu.${this._gridUid}`), (_a = this._menuElm) != null && _a.remove) {
+        if (this.onBeforeMenuClose.notify({
+          cell: (_b = args == null ? void 0 : args.cell) != null ? _b : 0,
+          row: (_c = args == null ? void 0 : args.row) != null ? _c : 0,
+          grid: this._grid
+        }, e, this).getReturnValue() == !1)
           return;
-        _menuElm.remove(), _menuElm = null;
+        this._menuElm.remove(), this._menuElm = null;
       }
     }
-    function checkIsColumnAllowed(columnIds, columnId) {
+    checkIsColumnAllowed(columnIds, columnId) {
       let isAllowedColumn = !1;
-      if (columnIds && columnIds.length > 0)
+      if ((columnIds == null ? void 0 : columnIds.length) > 0)
         for (let o = 0, ln = columnIds.length; o < ln; o++)
           columnIds[o] === columnId && (isAllowedColumn = !0);
       else
         isAllowedColumn = !0;
       return isAllowedColumn;
     }
-    function handleOnContextMenu(e, args) {
-      e instanceof EventData && (e = e.getNativeEvent()), e.preventDefault();
-      let cell = _grid.getCellFromEvent(e), columnDef = _grid.getColumns()[cell.cell], dataContext = _grid.getDataItem(cell.row);
-      args || (args = {}), args.cell = cell.cell, args.row = cell.row, args.columnDef = columnDef, args.dataContext = dataContext, args.grid = _grid, runOverrideFunctionWhenExists(_contextMenuProperties.menuUsabilityOverride, args) && (_menuElm = createMenu(e, args), _menuElm && (repositionMenu(e), _menuElm.style.display = "block"), _bindingEventService.bind(document.body, "click", (e2) => {
-        e2.defaultPrevented || destroyMenu(e2, { cell: _currentCell, row: _currentRow });
-      }));
+    handleOnContextMenu(e, args) {
+      e instanceof SlickEventData && (e = e.getNativeEvent()), e.preventDefault();
+      let cell = this._grid.getCellFromEvent(e);
+      if (cell) {
+        let columnDef = this._grid.getColumns()[cell.cell], dataContext = this._grid.getDataItem(cell.row);
+        if (args = args || {}, args.cell = cell.cell, args.row = cell.row, args.column = columnDef, args.dataContext = dataContext, args.grid = this._grid, !this.runOverrideFunctionWhenExists(this._contextMenuProperties.menuUsabilityOverride, args))
+          return;
+        this._menuElm = this.createMenu(e), this._menuElm && (this.repositionMenu(e), this._menuElm.style.display = "block"), this._bindingEventService.bind(document.body, "click", (e2) => {
+          e2.defaultPrevented || this.destroyMenu(e2, { cell: this._currentCell, row: this._currentRow });
+        });
+      }
     }
-    function populateOptionItems(contextMenu, optionMenuElm, optionItems, args) {
+    /** Construct the Option Items section. */
+    populateOptionItems(contextMenu, optionMenuElm, optionItems, args) {
       if (!(!args || !optionItems || !contextMenu)) {
-        contextMenu && contextMenu.optionTitle && (_optionTitleElm = document.createElement("div"), _optionTitleElm.className = "title", _optionTitleElm.textContent = contextMenu.optionTitle, optionMenuElm.appendChild(_optionTitleElm));
+        contextMenu != null && contextMenu.optionTitle && (this._optionTitleElm = document.createElement("div"), this._optionTitleElm.className = "title", this._optionTitleElm.textContent = contextMenu.optionTitle, optionMenuElm.appendChild(this._optionTitleElm));
         for (let i = 0, ln = optionItems.length; i < ln; i++) {
-          let addClickListener = !0, item = optionItems[i], isItemVisible = runOverrideFunctionWhenExists(item.itemVisibilityOverride, args), isItemUsable = runOverrideFunctionWhenExists(item.itemUsabilityOverride, args);
+          let addClickListener = !0, item = optionItems[i], isItemVisible = this.runOverrideFunctionWhenExists(item.itemVisibilityOverride, args), isItemUsable = this.runOverrideFunctionWhenExists(item.itemUsabilityOverride, args);
           if (!isItemVisible)
             continue;
           Object.prototype.hasOwnProperty.call(item, "itemUsabilityOverride") && (item.disabled = !isItemUsable);
           let liElm = document.createElement("div");
-          liElm.className = "slick-context-menu-item", liElm.role = "menuitem", (item.divider || item === "divider") && (liElm.classList.add("slick-context-menu-item-divider"), addClickListener = !1), (item.disabled || !isItemUsable) && liElm.classList.add("slick-context-menu-item-disabled"), item.hidden && liElm.classList.add("slick-context-menu-item-hidden"), item.cssClass && liElm.classList.add(...item.cssClass.split(" ")), item.tooltip && (liElm.title = item.tooltip);
+          liElm.className = "slick-context-menu-item", liElm.role = "menuitem", (item.divider || item === "divider") && (liElm.classList.add("slick-context-menu-item-divider"), addClickListener = !1), (item.disabled || !isItemUsable) && liElm.classList.add("slick-context-menu-item-disabled"), item.hidden && liElm.classList.add("slick-context-menu-item-hidden"), item.cssClass && liElm.classList.add(...item.cssClass.split(" ")), item.tooltip && (liElm.title = item.tooltip || "");
           let iconElm = document.createElement("div");
-          iconElm.role = "button", iconElm.className = "slick-context-menu-icon", liElm.appendChild(iconElm), item.iconCssClass && iconElm.classList.add(...item.iconCssClass.split(" ")), item.iconImage && (iconElm.style.backgroundImage = "url(" + item.iconImage + ")");
+          iconElm.role = "button", iconElm.className = "slick-context-menu-icon", liElm.appendChild(iconElm), item.iconCssClass && iconElm.classList.add(...item.iconCssClass.split(" ")), item.iconImage && (iconElm.style.backgroundImage = `url(${item.iconImage})`);
           let textElm = document.createElement("span");
-          textElm.className = "slick-context-menu-content", textElm.textContent = item.title, liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), optionMenuElm.appendChild(liElm), addClickListener && _bindingEventService.bind(liElm, "click", handleMenuItemOptionClick.bind(this, item));
+          textElm.className = "slick-context-menu-content", textElm.textContent = item.title || "", liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), optionMenuElm.appendChild(liElm), addClickListener && this._bindingEventService.bind(liElm, "click", this.handleMenuItemOptionClick.bind(this, item));
         }
       }
     }
-    function populateCommandItems(contextMenu, commandMenuElm, commandItems, args) {
+    /** Construct the Command Items section. */
+    populateCommandItems(contextMenu, commandMenuElm, commandItems, args) {
       if (!(!args || !commandItems || !contextMenu)) {
-        contextMenu && contextMenu.commandTitle && (_commandTitleElm = document.createElement("div"), _commandTitleElm.className = "title", _commandTitleElm.textContent = contextMenu.commandTitle, commandMenuElm.appendChild(_commandTitleElm));
+        contextMenu && contextMenu.commandTitle && (this._commandTitleElm = document.createElement("div"), this._commandTitleElm.className = "title", this._commandTitleElm.textContent = contextMenu.commandTitle, commandMenuElm.appendChild(this._commandTitleElm));
         for (let i = 0, ln = commandItems.length; i < ln; i++) {
-          let addClickListener = !0, item = commandItems[i], isItemVisible = runOverrideFunctionWhenExists(item.itemVisibilityOverride, args), isItemUsable = runOverrideFunctionWhenExists(item.itemUsabilityOverride, args);
+          let addClickListener = !0, item = commandItems[i], isItemVisible = this.runOverrideFunctionWhenExists(item.itemVisibilityOverride, args), isItemUsable = this.runOverrideFunctionWhenExists(item.itemUsabilityOverride, args);
           if (!isItemVisible)
             continue;
           Object.prototype.hasOwnProperty.call(item, "itemUsabilityOverride") && (item.disabled = !isItemUsable);
           let liElm = document.createElement("div");
-          liElm.className = "slick-context-menu-item", liElm.role = "menuitem", (item.divider || item === "divider") && (liElm.classList.add("slick-context-menu-item-divider"), addClickListener = !1), (item.disabled || !isItemUsable) && liElm.classList.add("slick-context-menu-item-disabled"), item.hidden && liElm.classList.add("slick-context-menu-item-hidden"), item.cssClass && liElm.classList.add(...item.cssClass.split(" ")), item.tooltip && (liElm.title = item.tooltip);
+          liElm.className = "slick-context-menu-item", liElm.role = "menuitem", (item.divider || item === "divider") && (liElm.classList.add("slick-context-menu-item-divider"), addClickListener = !1), (item.disabled || !isItemUsable) && liElm.classList.add("slick-context-menu-item-disabled"), item.hidden && liElm.classList.add("slick-context-menu-item-hidden"), item.cssClass && liElm.classList.add(...item.cssClass.split(" ")), item.tooltip && (liElm.title = item.tooltip || "");
           let iconElm = document.createElement("div");
-          iconElm.className = "slick-context-menu-icon", liElm.appendChild(iconElm), item.iconCssClass && iconElm.classList.add(...item.iconCssClass.split(" ")), item.iconImage && (iconElm.style.backgroundImage = "url(" + item.iconImage + ")");
+          iconElm.className = "slick-context-menu-icon", liElm.appendChild(iconElm), item.iconCssClass && iconElm.classList.add(...item.iconCssClass.split(" ")), item.iconImage && (iconElm.style.backgroundImage = `url(${item.iconImage})`);
           let textElm = document.createElement("span");
-          textElm.className = "slick-context-menu-content", textElm.textContent = item.title, liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), commandMenuElm.appendChild(liElm), addClickListener && _bindingEventService.bind(liElm, "click", handleMenuItemCommandClick.bind(this, item));
+          textElm.className = "slick-context-menu-content", textElm.textContent = item.title || "", liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), commandMenuElm.appendChild(liElm), addClickListener && this._bindingEventService.bind(liElm, "click", this.handleMenuItemCommandClick.bind(this, item));
         }
       }
     }
-    function handleMenuItemCommandClick(item, e) {
+    handleMenuItemCommandClick(item, e) {
       if (!item || item.disabled || item.divider)
         return;
-      let command = item.command || "", row = _currentRow, cell = _currentCell, columnDef = _grid.getColumns()[cell], dataContext = _grid.getDataItem(row), cellValue;
-      if (Object.prototype.hasOwnProperty.call(dataContext, columnDef && columnDef.field) && (cellValue = dataContext[columnDef.field]), command != null && command !== "") {
+      let command = item.command || "", row = this._currentRow, cell = this._currentCell, columnDef = this._grid.getColumns()[cell], dataContext = this._grid.getDataItem(row), cellValue;
+      if (Object.prototype.hasOwnProperty.call(dataContext, columnDef && columnDef.field) && (cellValue = dataContext[columnDef.field]), command !== null && command !== "") {
         let callbackArgs = {
           cell,
           row,
-          grid: _grid,
+          grid: this._grid,
           command,
           item,
           column: columnDef,
           dataContext,
           value: cellValue
         };
-        _self.onCommand.notify(callbackArgs, e, _self), typeof item.action == "function" && item.action.call(this, e, callbackArgs);
+        this.onCommand.notify(callbackArgs, e, this), typeof item.action == "function" && item.action.call(this, e, callbackArgs);
       }
     }
-    function handleMenuItemOptionClick(item, e) {
-      if (item.disabled || item.divider || !_grid.getEditorLock().commitCurrentEdit())
+    handleMenuItemOptionClick(item, e) {
+      if (item.disabled || item.divider || !this._grid.getEditorLock().commitCurrentEdit())
         return;
-      let option = item.option !== void 0 ? item.option : "", row = _currentRow, cell = _currentCell, columnDef = _grid.getColumns()[cell], dataContext = _grid.getDataItem(row);
+      let option = item.option !== void 0 ? item.option : "", row = this._currentRow, cell = this._currentCell, columnDef = this._grid.getColumns()[cell], dataContext = this._grid.getDataItem(row);
       if (option !== void 0) {
         let callbackArgs = {
           cell,
           row,
-          grid: _grid,
+          grid: this._grid,
           option,
           item,
           column: columnDef,
           dataContext
         };
-        _self.onOptionSelected.notify(callbackArgs, e, _self), typeof item.action == "function" && item.action.call(this, e, callbackArgs);
+        this.onOptionSelected.notify(callbackArgs, e, this), typeof item.action == "function" && item.action.call(this, e, callbackArgs);
       }
     }
-    function repositionMenu(e) {
-      let targetEvent = e.touches ? e.touches[0] : e, parentElm = e.target.closest(".slick-cell"), menuOffsetLeft = targetEvent.pageX, menuOffsetTop = parentElm ? Utils.offset(parentElm).top : targetEvent.pageY, menuHeight = _menuElm && _menuElm.offsetHeight || 0, menuWidth = _menuElm && _menuElm.offsetWidth || _contextMenuProperties.width || 0, rowHeight = _gridOptions.rowHeight, dropOffset = _contextMenuProperties.autoAdjustDropOffset, sideOffset = _contextMenuProperties.autoAlignSideOffset;
-      if (_contextMenuProperties.autoAdjustDrop) {
-        let spaceBottom = Utils.calculateAvailableSpace(parentElm).bottom, spaceTop = Utils.calculateAvailableSpace(parentElm).top, spaceBottomRemaining = spaceBottom + dropOffset - rowHeight, spaceTopRemaining = spaceTop - dropOffset + rowHeight;
-        (spaceBottomRemaining < menuHeight && spaceTopRemaining > spaceBottomRemaining ? "top" : "bottom") === "top" ? (_menuElm.classList.remove("dropdown"), _menuElm.classList.add("dropup"), menuOffsetTop = menuOffsetTop - menuHeight - dropOffset) : (_menuElm.classList.remove("dropup"), _menuElm.classList.add("dropdown"), menuOffsetTop = menuOffsetTop + rowHeight + dropOffset);
+    /**
+     * Reposition the menu drop (up/down) and the side (left/right)
+     * @param {*} event
+     */
+    repositionMenu(e) {
+      var _a, _b, _c;
+      if (this._menuElm && e.target) {
+        let targetEvent = e.touches ? e.touches[0] : e, parentElm = e.target.closest(".slick-cell"), parentOffset = parentElm && Utils.offset(parentElm), menuOffsetLeft = targetEvent.pageX, menuOffsetTop = parentElm ? (_a = parentOffset == null ? void 0 : parentOffset.top) != null ? _a : 0 : targetEvent.pageY, menuHeight = ((_b = this._menuElm) == null ? void 0 : _b.offsetHeight) || 0, menuWidth = ((_c = this._menuElm) == null ? void 0 : _c.offsetWidth) || this._contextMenuProperties.width || 0, rowHeight = this._gridOptions.rowHeight, dropOffset = this._contextMenuProperties.autoAdjustDropOffset, sideOffset = this._contextMenuProperties.autoAlignSideOffset;
+        if (this._contextMenuProperties.autoAdjustDrop) {
+          let spaceBottom = Utils.calculateAvailableSpace(parentElm).bottom, spaceTop = Utils.calculateAvailableSpace(parentElm).top, spaceBottomRemaining = spaceBottom + dropOffset - rowHeight, spaceTopRemaining = spaceTop - dropOffset + rowHeight;
+          (spaceBottomRemaining < menuHeight && spaceTopRemaining > spaceBottomRemaining ? "top" : "bottom") === "top" ? (this._menuElm.classList.remove("dropdown"), this._menuElm.classList.add("dropup"), menuOffsetTop = menuOffsetTop - menuHeight - dropOffset) : (this._menuElm.classList.remove("dropup"), this._menuElm.classList.add("dropdown"), menuOffsetTop = menuOffsetTop + rowHeight + dropOffset);
+        }
+        if (this._contextMenuProperties.autoAlignSide) {
+          let gridPos = this._grid.getGridPosition();
+          (menuOffsetLeft + +menuWidth >= gridPos.width ? "left" : "right") === "left" ? (this._menuElm.classList.remove("dropright"), this._menuElm.classList.add("dropleft"), menuOffsetLeft = menuOffsetLeft - +menuWidth - sideOffset) : (this._menuElm.classList.remove("dropleft"), this._menuElm.classList.add("dropright"), menuOffsetLeft = menuOffsetLeft + sideOffset);
+        }
+        this._menuElm.style.top = `${menuOffsetTop}px`, this._menuElm.style.left = `${menuOffsetLeft}px`;
       }
-      if (_contextMenuProperties.autoAlignSide) {
-        let gridPos = _grid.getGridPosition();
-        (menuOffsetLeft + menuWidth >= gridPos.width ? "left" : "right") === "left" ? (_menuElm.classList.remove("dropright"), _menuElm.classList.add("dropleft"), menuOffsetLeft = menuOffsetLeft - menuWidth - sideOffset) : (_menuElm.classList.remove("dropleft"), _menuElm.classList.add("dropright"), menuOffsetLeft = menuOffsetLeft + sideOffset);
-      }
-      _menuElm.style.top = `${menuOffsetTop}px`, _menuElm.style.left = `${menuOffsetLeft}px`;
     }
-    function runOverrideFunctionWhenExists(overrideFn, args) {
+    /**
+     * Method that user can pass to override the default behavior.
+     * In order word, user can choose or an item is (usable/visible/enable) by providing his own logic.
+     * @param overrideFn: override function callback
+     * @param args: multiple arguments provided to the override (cell, row, columnDef, dataContext, grid)
+     */
+    runOverrideFunctionWhenExists(overrideFn, args) {
       return typeof overrideFn == "function" ? overrideFn.call(this, args) : !0;
     }
-    Utils.extend(this, {
-      init,
-      closeMenu: destroyMenu,
-      destroy,
-      pluginName: "ContextMenu",
-      setOptions,
-      onAfterMenuShow: new SlickEvent(),
-      onBeforeMenuShow: new SlickEvent(),
-      onBeforeMenuClose: new SlickEvent(),
-      onCommand: new SlickEvent(),
-      onOptionSelected: new SlickEvent()
-    });
-  }
+  };
   window.Slick && Utils.extend(!0, window, {
     Slick: {
       Plugins: {
-        ContextMenu
+        ContextMenu: SlickContextMenu
       }
     }
   });
