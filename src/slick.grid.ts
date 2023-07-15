@@ -118,6 +118,9 @@ export class SlickGrid {
   // Public API
   slickGridVersion = '4.0.1';
 
+  /** optional grid state clientId */
+  cid = '';
+
   // Events
   onActiveCellChanged = new SlickEvent<OnActiveCellChangedEventArgs>();
   onActiveCellPositionChanged = new SlickEvent<SlickGridEventData>();
@@ -4521,7 +4524,7 @@ export class SlickGrid {
       return;
     }
     clearTimeout(this.h_postrender);
-    this.h_postrender = setTimeout(this.asyncPostProcessRows, this._options.asyncPostRenderDelay);
+    this.h_postrender = setTimeout(this.asyncPostProcessRows.bind(this), this._options.asyncPostRenderDelay);
   }
 
   protected startPostProcessingCleanup() {
@@ -4529,7 +4532,7 @@ export class SlickGrid {
       return;
     }
     clearTimeout(this.h_postrenderCleanup);
-    this.h_postrenderCleanup = setTimeout(this.asyncPostProcessCleanupRows, this._options.asyncPostRenderCleanupDelay);
+    this.h_postrenderCleanup = setTimeout(this.asyncPostProcessCleanupRows.bind(this), this._options.asyncPostRenderCleanupDelay);
   }
 
   protected invalidatePostProcessingResults(row: number) {
@@ -4820,7 +4823,7 @@ export class SlickGrid {
         }
       }
 
-      this.h_postrender = setTimeout(this.asyncPostProcessRows, this._options.asyncPostRenderDelay);
+      this.h_postrender = setTimeout(this.asyncPostProcessRows.bind(this), this._options.asyncPostRenderDelay);
       return;
     }
   }
@@ -4847,7 +4850,7 @@ export class SlickGrid {
       }
 
       // call this function again after the specified delay
-      this.h_postrenderCleanup = setTimeout(this.asyncPostProcessCleanupRows, this._options.asyncPostRenderCleanupDelay);
+      this.h_postrenderCleanup = setTimeout(this.asyncPostProcessCleanupRows.bind(this), this._options.asyncPostRenderCleanupDelay);
     }
   }
 

@@ -25,6 +25,7 @@ import type { SlickGridPager } from './controls/slick.pager';
 import type { SlickAutoTooltip } from './plugins/slick.autotooltips';
 import type { SlickCellCopyManager } from './plugins/slick.cellcopymanager';
 import type { SlickCellMenu } from './plugins/slick.cellmenu';
+import type { SlickCheckboxSelectColumn } from './plugins/slick.checkboxselectcolumn';
 import type { SlickContextMenu } from './plugins/slick.contextmenu';
 import type { SlickHeaderButtons } from './plugins/slick.headerbuttons';
 import type { SlickHeaderMenu } from './plugins/slick.headermenu';
@@ -33,6 +34,7 @@ import type { SlickCellRangeDecorator } from './plugins/slick.cellrangedecorator
 import type { SlickCellRangeSelector } from './plugins/slick.cellrangeselector';
 import type { SlickCellSelectionModel } from './plugins/slick.cellselectionmodel';
 import type { SlickRowSelectionModel } from './plugins/slick.rowselectionmodel';
+import type { SlickState } from './plugins/slick.state';
 import type { SlickGroupItemMetadataProvider } from './slick.groupitemmetadataprovider';
 import type { Draggable, MouseWheel, Resizable } from './slick.interactions';
 import type { Aggregators } from './slick.dataview';
@@ -53,6 +55,7 @@ declare global {
     CellRangeDecorator: typeof SlickCellRangeDecorator,
     CellRangeSelector: typeof SlickCellRangeSelector,
     CellSelectionModel: typeof SlickCellSelectionModel,
+    CheckboxSelectColumn: typeof SlickCheckboxSelectColumn,
     Draggable: typeof Draggable,
     ColAutosizeMode: typeof ColAutosizeMode,
     Controls: {
@@ -88,6 +91,7 @@ declare global {
     Resizable: typeof Resizable,
     RowSelectionMode: typeof RowSelectionMode,
     RowSelectionModel: typeof SlickRowSelectionModel,
+    State: typeof SlickState,
     Utils: typeof Utils,
     ValueFilterMode: typeof ValueFilterMode,
     WidthEvalMode: typeof WidthEvalMode,
