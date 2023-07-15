@@ -1182,7 +1182,7 @@ if (typeof Slick === "undefined") {
           var m = columns[i];
           if (!m || m.hidden) continue;
 
-          const footerRowCell = utils.createDomElement('div', { className: `ui-state-default slick-footerrow-column l${i} r${i}` }, hasFrozenColumns() && (i > options.frozenColumn) ? _footerRowR : _footerRowL);
+          const footerRowCell = utils.createDomElement('div', { className: 'ui-state-default slick-footerrow-column l' + i + ' r' + i }, hasFrozenColumns() && (i > options.frozenColumn) ? _footerRowR : _footerRowL);
           const className = hasFrozenColumns() && i <= options.frozenColumn? 'frozen': null;
           if (className) {
             footerRowCell.classList.add(className);
@@ -1285,7 +1285,7 @@ if (typeof Slick === "undefined") {
         const headerTarget = hasFrozenColumns() ? ((i <= options.frozenColumn) ? _headerL : _headerR) : _headerL;
         const headerRowTarget = hasFrozenColumns() ? ((i <= options.frozenColumn) ? _headerRowL : _headerRowR) : _headerRowL;
 
-        const header = utils.createDomElement('div', { id: `${uid + m.id}`, dataset: { id: m.id }, className: 'ui-state-default slick-header-column', title: m.toolTip || '' }, headerTarget);
+        const header = utils.createDomElement('div', { id: '' + uid + m.id, dataset: { id: m.id }, className: 'ui-state-default slick-header-column', title: m.toolTip || '' }, headerTarget);
         utils.createDomElement('span', { className: 'slick-column-name', innerHTML: sanitizeHtmlString(m.name) }, header);
         utils.width(header, m.width - headerColumnWidthDiff);
 
@@ -1318,7 +1318,7 @@ if (typeof Slick === "undefined") {
 
         if (m.sortable) {
           header.classList.add("slick-header-sortable");
-          utils.createDomElement('div', { className: `slick-sort-indicator ${options.numberedMultiColumnSort && !options.sortColNumberInSeparateSpan ? ' slick-sort-indicator-numbered' : ''}` }, header);
+          utils.createDomElement('div', { className: 'slick-sort-indicator ' + options.numberedMultiColumnSort && !options.sortColNumberInSeparateSpan ? ' slick-sort-indicator-numbered' : '' }, header);
           if (options.numberedMultiColumnSort && options.sortColNumberInSeparateSpan) {
             utils.createDomElement('div', { className: 'slick-sort-indicator-numbered' }, header);
            }
@@ -1331,7 +1331,7 @@ if (typeof Slick === "undefined") {
         });
 
         if (options.showHeaderRow) {
-          const headerRowCell = utils.createDomElement('div', { className: `ui-state-default slick-headerrow-column l${i} r${i}` }, headerRowTarget);
+          const headerRowCell = utils.createDomElement('div', { className: 'ui-state-default slick-headerrow-column l' + i + ' r' + i }, headerRowTarget);
           const classname = hasFrozenColumns() && i <= options.frozenColumn? 'frozen' : null;
           if (classname) {
             headerRowCell.classList.add(classname);
@@ -1350,7 +1350,7 @@ if (typeof Slick === "undefined") {
         }
         if (options.createFooterRow && options.showFooterRow) {
           const footerRowTarget = hasFrozenColumns() ? ((i <= options.frozenColumn) ? _footerRow[0] : _footerRow[1]) : _footerRow[0];
-          const footerRowCell = utils.createDomElement('div', { className: `ui-state-default slick-footerrow-column l${i} r${i}` }, footerRowTarget);
+          const footerRowCell = utils.createDomElement('div', { className: 'ui-state-default slick-footerrow-column l' + i + ' r' + i }, footerRowTarget);
           utils.storage.put(footerRowCell, "column", m)
 
           trigger(self.onFooterRowCellRendered, {
@@ -3374,7 +3374,7 @@ if (typeof Slick === "undefined") {
 
       var frozenRowOffset = getFrozenRowOffset(row);
 
-      var rowHtml = `<div class="ui-widget-content ${rowCss}" style="top:${(getRowTop(row) - frozenRowOffset)}px">`;
+      var rowHtml = '<div class="ui-widget-content ' + rowCss + '" style="top:' + (getRowTop(row) - frozenRowOffset) + 'px">';
 
       stringArrayL.push(rowHtml);
 
@@ -3476,7 +3476,7 @@ if (typeof Slick === "undefined") {
         }
       }
 
-      stringArray.push(`<div class="${cellCss + (addlCssClasses ? ' ' + addlCssClasses : '')}" ${toolTip + customAttrStr}>`);
+      stringArray.push('<div class="' + cellCss + (addlCssClasses ? ' ' + addlCssClasses : '') + '" ' + toolTip + customAttrStr + '>');
 
       // if there is a corresponding row (if not, this is the Add New row or this data hasn't been loaded yet)
       if (item) {

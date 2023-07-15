@@ -218,12 +218,12 @@
       let width = isNaN(_cellMenuProperties.width) ? _cellMenuProperties.width : _cellMenuProperties.width + "px";
 
       _menuElm = document.createElement('div');
-      _menuElm.className = `slick-cell-menu ${_gridUid}`;
+      _menuElm.className = 'slick-cell-menu ' + _gridUid;
       _menuElm.role = 'menu';
       _menuElm.style.width = width;
       _menuElm.style.maxHeight = maxHeight;
-      _menuElm.style.top = `${e.pageY + 5}px`;
-      _menuElm.style.left = `${e.pageX}px`;
+      _menuElm.style.top = (e.pageY + 5) + 'px';
+      _menuElm.style.left = e.pageX + 'px';
       _menuElm.style.display = 'none';
 
       const closeButtonElm = document.createElement('button');
@@ -369,8 +369,8 @@
       }
 
       // ready to reposition the menu
-      _menuElm.style.top = `${menuOffsetTop}px`;
-      _menuElm.style.left = `${menuOffsetLeft}px`;
+      _menuElm.style.top = menuOffsetTop + 'px';
+      _menuElm.style.left = menuOffsetLeft + 'px';
     }
 
     function handleCellClick(e, args) {

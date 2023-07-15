@@ -48,10 +48,10 @@
       var to = grid.getCellNodeBox(range.toRow, range.toCell);
 
       if (from && to && options && options.offset) {
-        _elem.style.top = `${from.top + options.offset.top}px`;
-        _elem.style.left = `${from.left + options.offset.left}px`;
-        _elem.style.height = `${to.bottom - from.top + options.offset.height}px`;
-        _elem.style.width = `${to.right - from.left + options.offset.width}px`;
+        _elem.style.top = (from.top + options.offset.top) + 'px';
+        _elem.style.left = (from.left + options.offset.left) + 'px';
+        _elem.style.height = (to.bottom - from.top + options.offset.height) + 'px';
+        _elem.style.width = (to.right - from.left + options.offset.width) + 'px';
       }
 
       return _elem;

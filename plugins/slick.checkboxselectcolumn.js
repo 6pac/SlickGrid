@@ -152,7 +152,7 @@
           renderSelectAllCheckbox(_isSelectAllChecked);
         }
         if (!_options.hideInFilterHeaderRow) {
-          const selectAllElm = _headerRowNode && _headerRowNode.querySelector(`#header-filter-selector${_selectAll_UID}`);
+          const selectAllElm = _headerRowNode && _headerRowNode.querySelector('#header-filter-selector' + _selectAll_UID);
           if (selectAllElm) {
             selectAllElm.checked = _isSelectAllChecked;
           }
@@ -194,7 +194,7 @@
         renderSelectAllCheckbox(_isSelectAllChecked);
       }
       if (!_options.hideInFilterHeaderRow) {
-        const selectAllElm = _headerRowNode && _headerRowNode.querySelector(`#header-filter-selector${_selectAll_UID}`);
+        const selectAllElm = _headerRowNode && _headerRowNode.querySelector('#header-filter-selector' + _selectAll_UID);
         if (selectAllElm) {
           selectAllElm.checked = _isSelectAllChecked;
         }
@@ -350,10 +350,10 @@
 
           const inputElm = document.createElement('input');
           inputElm.type = 'checkbox';
-          inputElm.id = `header-filter-selector${_selectAll_UID}`;
+          inputElm.id = 'header-filter-selector' + _selectAll_UID;
 
           const labelElm = document.createElement('label');
-          labelElm.htmlFor = `header-filter-selector${_selectAll_UID}`;
+          labelElm.htmlFor = 'header-filter-selector' + _selectAll_UID;
 
           spanElm.appendChild(inputElm);
           spanElm.appendChild(labelElm);

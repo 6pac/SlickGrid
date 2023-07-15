@@ -390,7 +390,7 @@
 
       setTimeout(function () {
         // make sure View Row DOM Element really exist before notifying that it's a row that is visible again
-        if (document.querySelector(`.${_gridUid} .cellDetailView_${item[_dataViewIdProperty]}`)) {
+        if (document.querySelector('.' + _gridUid + ' .cellDetailView_' + item[_dataViewIdProperty])) {
           _self.onRowBackToViewportRange.notify({
             'grid': _grid,
             'item': item,
@@ -503,11 +503,11 @@
 
     /** Saves the current state of the detail view */
     function saveDetailView(item) {
-      const view = document.querySelector(`.${_gridUid} .innerDetailView_${item[_dataViewIdProperty]}`);
+      const view = document.querySelector('.' + _gridUid + ' .innerDetailView_' + item[_dataViewIdProperty]);
       if (view) {
         const html = view.innerHTML;
         if (html !== undefined) {
-          item[`${_keyPrefix}detailContent`] = html;
+          item[_keyPrefix + 'detailContent'] = html;
         }
       }
     }

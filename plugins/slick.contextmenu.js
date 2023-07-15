@@ -242,12 +242,12 @@
       let width = isNaN(_contextMenuProperties.width) ? _contextMenuProperties.width : _contextMenuProperties.width + "px";
 
       _menuElm = document.createElement('div');
-      _menuElm.className = `slick-context-menu ${_gridUid}`;
+      _menuElm.className = 'slick-context-menu ' + _gridUid;
       _menuElm.role = 'menu';
       _menuElm.style.width = width;
       _menuElm.style.maxHeight = maxHeight;
-      _menuElm.style.top = `${targetEvent.pageY}px`;
-      _menuElm.style.left = `${targetEvent.pageX}px`;
+      _menuElm.style.top = targetEvent.pageY + 'px';
+      _menuElm.style.left = targetEvent.pageX + 'px';
       _menuElm.style.display = 'none';
 
       const closeButtonElm = document.createElement('button');
@@ -703,8 +703,8 @@
       }
 
       // ready to reposition the menu
-      _menuElm.style.top = `${menuOffsetTop}px`;
-      _menuElm.style.left = `${menuOffsetLeft}px`;
+      _menuElm.style.top = menuOffsetTop + 'px';
+      _menuElm.style.left = menuOffsetLeft + 'px';
     }
 
     /**

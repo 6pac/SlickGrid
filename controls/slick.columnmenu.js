@@ -59,7 +59,7 @@
       _options = Slick.Utils.extend({}, defaults, options);
 
       _menuElm = document.createElement('div');
-      _menuElm.className = `slick-columnpicker ${_gridUid}`;
+      _menuElm.className = 'slick-columnpicker ' + _gridUid;
       _menuElm.style.display = 'none';
       document.body.appendChild(_menuElm);
 
@@ -134,7 +134,7 @@
 
         const checkboxElm = document.createElement('input');
         checkboxElm.type = 'checkbox';
-        checkboxElm.id = `${_gridUid}colpicker-${columnId}`;
+        checkboxElm.id = _gridUid + 'colpicker-' + columnId;
         checkboxElm.dataset.columnid = columns[i].id;
         liElm.appendChild(checkboxElm);
 
@@ -151,7 +151,7 @@
         }
 
         const labelElm = document.createElement('label');
-        labelElm.htmlFor = `${_gridUid}colpicker-${columnId}`;
+        labelElm.htmlFor = _gridUid + 'colpicker-' + columnId;
         labelElm.innerHTML = columnLabel;
         liElm.appendChild(labelElm);
         _listElm.appendChild(liElm);
@@ -170,12 +170,12 @@
 
         const forceFitCheckboxElm = document.createElement('input');
         forceFitCheckboxElm.type = 'checkbox';
-        forceFitCheckboxElm.id = `${_gridUid}colpicker-forcefit`;
+        forceFitCheckboxElm.id = _gridUid + 'colpicker-forcefit';
         forceFitCheckboxElm.dataset.option = 'autoresize';
         liElm.appendChild(forceFitCheckboxElm);
 
         const labelElm = document.createElement('label');
-        labelElm.htmlFor = `${_gridUid}colpicker-forcefit`;
+        labelElm.htmlFor = _gridUid + 'colpicker-forcefit';
         labelElm.textContent = forceFitTitle;
         liElm.appendChild(labelElm);
 
@@ -193,12 +193,12 @@
 
         const syncResizeCheckboxElm = document.createElement('input');
         syncResizeCheckboxElm.type = 'checkbox';
-        syncResizeCheckboxElm.id = `${_gridUid}colpicker-syncresize`;
+        syncResizeCheckboxElm.id = _gridUid + 'colpicker-syncresize';
         syncResizeCheckboxElm.dataset.option = 'syncresize';
         liElm.appendChild(syncResizeCheckboxElm);
 
         const labelElm = document.createElement('label');
-        labelElm.htmlFor = `${_gridUid}colpicker-syncresize`;
+        labelElm.htmlFor = _gridUid + 'colpicker-syncresize';
         labelElm.textContent = syncResizeTitle;
         liElm.appendChild(labelElm);
 
@@ -212,9 +212,9 @@
 
     function repositionMenu(event) {
       const targetEvent = event && event.touches && event.touches[0] || event;
-      _menuElm.style.top = `${targetEvent.pageY - 10}px`;
-      _menuElm.style.left = `${targetEvent.pageX - 10}px`;
-      _menuElm.style.maxHeight = `${window.innerHeight - targetEvent.clientY}px`;
+      _menuElm.style.top = (targetEvent.pageY - 10) + 'px';
+      _menuElm.style.left = (targetEvent.pageX - 10) + 'px';
+      _menuElm.style.maxHeight = (window.innerHeight - targetEvent.clientY) + 'px';
       _menuElm.style.display = 'block';
       _menuElm.setAttribute('aria-expanded', 'true');
       _menuElm.appendChild(_listElm);
@@ -300,13 +300,13 @@
         col.hidden = false;
         visibleColumns.splice(idx, 0, col);
       } else {
-        let newVisibleColumns = [];      
+        let newVisibleColumns = [];
         for (let i = 0; i < visibleColumns.length; i++) {
           if (visibleColumns[i].id !== col.id) { newVisibleColumns.push(visibleColumns[i]); }
         }
         visibleColumns = newVisibleColumns;
       }
- 
+
       _grid.setColumns(visibleColumns);
       onColumnsChanged.notify({ columnId: col.id, showing: show, allColumns: columns, columns: visibleColumns, grid: _grid });
      }

@@ -284,11 +284,11 @@
 
           // apply these new height/width to the datagrid
           if (!_gridOptions.autoHeight) {
-            _gridDomElm.style.height = `${newHeight}px`;
+            _gridDomElm.style.height = newHeight + 'px';
           }
-          _gridDomElm.style.width = `${newWidth}px`;
+          _gridDomElm.style.width = newWidth + 'px';
           if (_gridContainerElm) {
-            _gridContainerElm.style.width = `${newWidth}px`;
+            _gridContainerElm.style.width = newWidth + 'px';
           }
 
           // resize the slickgrid canvas on all browser except some IE versions
@@ -301,7 +301,7 @@
           // also call the grid auto-size columns so that it takes available when going bigger
           if (_gridOptions && _gridOptions.enableAutoSizeColumns && _grid.autosizeColumns) {
             // make sure that the grid still exist (by looking if the Grid UID is found in the DOM tree) to avoid SlickGrid error "missing stylesheet"
-            if (_gridUid && document.querySelector(`.${_gridUid}`)) {
+            if (_gridUid && document.querySelector('.' + _gridUid)) {
               _grid.autosizeColumns();
             }
           }

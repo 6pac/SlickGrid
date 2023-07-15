@@ -130,13 +130,13 @@
 
     function getGridUidSelector() {
       const gridUid = _grid.getUID() || '';
-      return gridUid ? `.${gridUid}` : '';
+      return gridUid ? '.' + gridUid : '';
     }
 
     function destroy() {
       _handler.unsubscribeAll();
       _bindingEventService.unbindAll();
-      _menuElm = _menuElm || document.body.querySelector(`.slick-header-menu${getGridUidSelector()}`);
+      _menuElm = _menuElm || document.body.querySelector('.slick-header-menu' + getGridUidSelector());
       _menuElm && _menuElm.remove();
       _activeHeaderColumnElm = undefined;
     }
@@ -212,7 +212,7 @@
         _menuElm = document.createElement('div');
         _menuElm.className = 'slick-header-menu';
         _menuElm.role = 'menu';
-        _menuElm.style.minWidth = `${options.minWidth}px`;
+        _menuElm.style.minWidth = options.minWidth + 'px';
         _menuElm.setAttribute('aria-expanded', 'true');
         const containerNode = _grid.getContainerNode();
         if (containerNode) {
@@ -308,8 +308,8 @@
         }
       }
 
-      _menuElm.style.top = `${(buttonElm.clientHeight || (btnOffset && btnOffset.top) || 0) + (options && options.menuOffsetTop || 0)}px`;
-      _menuElm.style.left = `${leftPos - menuOffset.left}px`;
+      _menuElm.style.top = (buttonElm.clientHeight || (btnOffset && btnOffset.top) || 0) + (options && options.menuOffsetTop || 0) + 'px';
+      _menuElm.style.left = leftPos - menuOffset.left + 'px';
 
       // Mark the header as active to keep the highlighting.
       _activeHeaderColumnElm = _menuElm.closest('.slick-header-column');

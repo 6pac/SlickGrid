@@ -185,18 +185,18 @@
     function createGridMenu() {
       var gridMenuWidth = (_options.gridMenu && _options.gridMenu.menuWidth) || _defaults.menuWidth;
       if (_gridOptions && _gridOptions.hasOwnProperty('frozenColumn') && _gridOptions.frozenColumn >= 0) {
-        _headerElm = document.querySelector(`.${_gridUid} .slick-header-right`);
+        _headerElm = document.querySelector('.' + _gridUid + ' .slick-header-right');
       } else {
-        _headerElm = document.querySelector(`.${_gridUid} .slick-header-left`);
+        _headerElm = document.querySelector('.' + _gridUid + ' .slick-header-left');
       }
-      _headerElm.style.width = `calc(100% - ${gridMenuWidth}px)`;
+      _headerElm.style.width = 'calc(100% - ' + gridMenuWidth + 'px)';
 
       // if header row is enabled, we need to resize its width also
       var enableResizeHeaderRow = (_options.gridMenu && _options.gridMenu.resizeOnShowHeaderRow != undefined) ? _options.gridMenu.resizeOnShowHeaderRow : _defaults.resizeOnShowHeaderRow;
       if (enableResizeHeaderRow && _options.showHeaderRow) {
-        const headerRow = document.querySelector(`.${_gridUid}.slick-headerrow`);
+        const headerRow = document.querySelector('.' + _gridUid + '.slick-headerrow');
         if (headerRow) {
-          headerRow.style.width = `calc(100% - ${gridMenuWidth}px)`;
+          headerRow.style.width = 'calc(100% - ' + gridMenuWidth + 'px)';
         }
       }
 
@@ -223,7 +223,7 @@
       }
 
       _menuElm = document.createElement('div');
-      _menuElm.className = `slick-gridmenu ${_gridUid}`;
+      _menuElm.className = 'slick-gridmenu ' + _gridUid;
       _menuElm.style.display = 'none';
       document.body.appendChild(_menuElm);
 
@@ -276,7 +276,7 @@
     /** Delete the menu DOM element but without unsubscribing any events */
     function deleteMenu() {
       _bindingEventService.unbindAll();
-      const gridMenuElm = document.querySelector(`div.slick-gridmenu.${_gridUid}`);
+      const gridMenuElm = document.querySelector('div.slick-gridmenu.' + _gridUid);
       if (gridMenuElm) {
         gridMenuElm.style.display = 'none';
       }
@@ -450,7 +450,7 @@
 
         const checkboxElm = document.createElement('input');
         checkboxElm.type = 'checkbox';
-        checkboxElm.id = `${_gridUid}-gridmenu-colpicker-${columnId}`;
+        checkboxElm.id = _gridUid + '-gridmenu-colpicker-' + columnId;
         checkboxElm.dataset.columnid = columns[i].id;
         liElm.appendChild(checkboxElm);
 
@@ -468,7 +468,7 @@
         }
 
         const labelElm = document.createElement('label');
-        labelElm.htmlFor = `${_gridUid}-gridmenu-colpicker-${columnId}`;
+        labelElm.htmlFor = _gridUid + '-gridmenu-colpicker-' + columnId;
         labelElm.innerHTML = columnLabel;
         liElm.appendChild(labelElm);
         _listElm.appendChild(liElm);
@@ -488,12 +488,12 @@
 
         const forceFitCheckboxElm = document.createElement('input');
         forceFitCheckboxElm.type = 'checkbox';
-        forceFitCheckboxElm.id = `${_gridUid}-gridmenu-colpicker-forcefit`;
+        forceFitCheckboxElm.id = _gridUid + '-gridmenu-colpicker-forcefit';
         forceFitCheckboxElm.dataset.option = 'autoresize';
         liElm.appendChild(forceFitCheckboxElm);
 
         const labelElm = document.createElement('label');
-        labelElm.htmlFor = `${_gridUid}-gridmenu-colpicker-forcefit`;
+        labelElm.htmlFor = _gridUid + '-gridmenu-colpicker-forcefit';
         labelElm.textContent = forceFitTitle;
         liElm.appendChild(labelElm);
 
@@ -511,12 +511,12 @@
 
         const syncResizeCheckboxElm = document.createElement('input');
         syncResizeCheckboxElm.type = 'checkbox';
-        syncResizeCheckboxElm.id = `${_gridUid}-gridmenu-colpicker-syncresize`;
+        syncResizeCheckboxElm.id = _gridUid + '-gridmenu-colpicker-syncresize';
         syncResizeCheckboxElm.dataset.option = 'syncresize';
         liElm.appendChild(syncResizeCheckboxElm);
 
         const labelElm = document.createElement('label');
-        labelElm.htmlFor = `${_gridUid}-gridmenu-colpicker-syncresize`;
+        labelElm.htmlFor = _gridUid + '-gridmenu-colpicker-syncresize';
         labelElm.textContent = syncResizeTitle;
         liElm.appendChild(labelElm);
 
@@ -543,18 +543,18 @@
       let nextPositionLeft = (useClickToRepositionMenu && targetEvent.pageX > 0) ? targetEvent.pageX : menuIconOffset.left + 10;
       let menuMarginBottom = (_options.gridMenu && _options.gridMenu.marginBottom !== undefined) ? _options.gridMenu.marginBottom : _defaults.marginBottom;
 
-      _menuElm.style.top = `${nextPositionTop + 10}px`;
-      _menuElm.style.left = `${nextPositionLeft - currentMenuWidth + 10}px`;
+      _menuElm.style.top = nextPositionTop + 10 + 'px';
+      _menuElm.style.left = (nextPositionLeft - currentMenuWidth + 10) + 'px';
 
       if (contentMinWidth > 0) {
-        _menuElm.style.minWidth = `${contentMinWidth}px`;
+        _menuElm.style.minWidth = contentMinWidth + 'px';
       }
 
       // set "height" when defined OR ELSE use the "max-height" with available window size and optional margin bottom
       if (_options.gridMenu && _options.gridMenu.height !== undefined) {
-        _menuElm.style.height = `${_options.gridMenu.height}px`;
+        _menuElm.style.height = _options.gridMenu.height + 'px';
       } else {
-        _menuElm.style.maxHeight = `${window.innerHeight - targetEvent.clientY - menuMarginBottom}px`;
+        _menuElm.style.maxHeight = (window.innerHeight - targetEvent.clientY - menuMarginBottom) + 'px';
       }
 
       _menuElm.style.display = 'block';

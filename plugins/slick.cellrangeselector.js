@@ -105,7 +105,7 @@
       _isBottomCanvas = _activeCanvas.classList.contains('grid-canvas-bottom');
 
       if (_gridOptions.frozenRow > -1 && _isBottomCanvas) {
-        const canvasSelector = `.${_grid.getUID()} .grid-canvas-${_gridOptions.frozenBottom ? 'bottom' : 'top'}`;
+        const canvasSelector = '.' + _grid.getUID() + ' .grid-canvas-' + _gridOptions.frozenBottom ? 'bottom' : 'top';
         const canvasElm = document.querySelector(canvasSelector);
         if (canvasElm) {
           _rowOffset = canvasElm.clientHeight || 0;
@@ -115,7 +115,7 @@
       _isRightCanvas = _activeCanvas.classList.contains('grid-canvas-right');
 
       if (_gridOptions.frozenColumn > -1 && _isRightCanvas) {
-        const canvasLeftElm = document.querySelector(`.${_grid.getUID()} .grid-canvas-left`);
+        const canvasLeftElm = document.querySelector('.' + _grid.getUID() + ' .grid-canvas-left');
         if (canvasLeftElm) {
           _columnOffset = canvasLeftElm.clientWidth || 0;
         }

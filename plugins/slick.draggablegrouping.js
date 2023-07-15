@@ -201,8 +201,8 @@
         }
       }
 
-      _sortableLeftInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-left`), sortableOptions);
-      _sortableRightInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-right`), sortableOptions);
+      _sortableLeftInstance = Sortable.create(document.querySelector('.' + grid.getUID() + ' .slick-header-columns.slick-header-columns-left'), sortableOptions);
+      _sortableRightInstance = Sortable.create(document.querySelector('.' + grid.getUID() + ' .slick-header-columns.slick-header-columns-right'), sortableOptions);
 
       return {
         sortableLeftInstance: _sortableLeftInstance,
@@ -223,7 +223,7 @@
       onGroupChanged.unsubscribe();
       _handler.unsubscribeAll();
       _bindingEventService.unbindAll();
-      Slick.Utils.emptyElement(document.querySelector(`.${_gridUid} .slick-preheader-panel`));
+      Slick.Utils.emptyElement(document.querySelector('.' + _gridUid + ' .slick-preheader-panel'));
     }
 
     function addDragOverDropzoneListeners() {
@@ -300,9 +300,9 @@
             if (col.grouping && !Slick.Utils.isEmptyObject(col.grouping)) {
               const columnNameElm = headerColumnElm.querySelector('.slick-column-name');
               const entryElm = document.createElement('div');
-              entryElm.id = `${_gridUid}_${col.id}_entry`;
+              entryElm.id = _gridUid + '_' + col.id + '_entry';
               entryElm.className = 'slick-dropped-grouping';
-              entryElm.dataset.id = `${col.id}`;
+              entryElm.dataset.id = '' + col.id;
 
               const groupTextElm = document.createElement('div');
               groupTextElm.className = 'slick-dropped-grouping-title';

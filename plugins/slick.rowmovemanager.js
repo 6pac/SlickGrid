@@ -102,8 +102,8 @@
           dd.clonedSlickRow.style.display = 'none';
           dd.clonedSlickRow.style.marginLeft = Number(options.rowMoveShadowMarginLeft || 0) + 'px';
           dd.clonedSlickRow.style.marginTop = Number(options.rowMoveShadowMarginTop || 0) + 'px';
-          dd.clonedSlickRow.style.opacity = `${options.rowMoveShadowOpacity || 0.95}`;
-          dd.clonedSlickRow.style.transform = `scale(${options.rowMoveShadowScale || 0.75})`;
+          dd.clonedSlickRow.style.opacity = '' + (options.rowMoveShadowOpacity || 0.95);
+          dd.clonedSlickRow.style.transform = 'scale(' + (options.rowMoveShadowScale || 0.75);
           _canvas.appendChild(dd.clonedSlickRow);
         }
       }
@@ -126,16 +126,16 @@
       dd.selectionProxy.style.display = 'none';
       dd.selectionProxy.style.position = 'absolute';
       dd.selectionProxy.style.zIndex = '99999';
-      dd.selectionProxy.style.width = `${_canvas.clientWidth}px`;
-      dd.selectionProxy.style.height = `${rowHeight * selectedRows.length}px`;
+      dd.selectionProxy.style.width = _canvas.clientWidth + 'px';
+      dd.selectionProxy.style.height = (rowHeight * selectedRows.length) + 'px';
       _canvas.appendChild(dd.selectionProxy);
 
       dd.guide = document.createElement('div');
       dd.guide.className = 'slick-reorder-guide';
       dd.guide.style.position = 'absolute';
       dd.guide.style.zIndex = '99999';
-      dd.guide.style.width = `${_canvas.clientWidth}px`;
-      dd.guide.style.top = `-1000px`;
+      dd.guide.style.width = _canvas.clientWidth + 'px';
+      dd.guide.style.top = '-1000px';
       _canvas.appendChild(dd.guide);
 
       dd.insertBefore = -1;
@@ -151,12 +151,12 @@
 
       var targetEvent = e.touches ? e.touches[0] : e;
       const top = targetEvent.pageY - (Slick.Utils.offset(_canvas).top || 0);
-      dd.selectionProxy.style.top = `${top - 5}px`;
+      dd.selectionProxy.style.top = (top - 5) + 'px';
       dd.selectionProxy.style.display = 'block';
 
       // if the row move shadow is enabled, we'll also make it follow the mouse cursor
       if (dd.clonedSlickRow) {
-        dd.clonedSlickRow.style.top = `${top - 6}px`;
+        dd.clonedSlickRow.style.top = (top - 6) + 'px';
         dd.clonedSlickRow.style.display = 'block';
       }
 
@@ -185,7 +185,7 @@
         if (!dd.canMove) {
           dd.guide.style.top = '-1000px';
         } else {
-          dd.guide.style.top = `${insertBefore * (_grid.getOptions().rowHeight || 0)}px`;
+          dd.guide.style.top = insertBefore * (_grid.getOptions().rowHeight || 0) + 'px';
         }
 
         dd.insertBefore = insertBefore;

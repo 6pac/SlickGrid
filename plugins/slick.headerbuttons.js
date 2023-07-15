@@ -171,7 +171,7 @@
         //       you must also clean them up here to avoid memory leaks.
         const buttonCssClass = (options.buttonCssClass || '').replace(/(\s+)/g, '.');
         if (buttonCssClass) {
-          args.node.querySelectorAll(`.${buttonCssClass}`).forEach(elm => elm.remove());
+          args.node.querySelectorAll('.' + buttonCssClass).forEach(elm => elm.remove());
         }
       }
     }

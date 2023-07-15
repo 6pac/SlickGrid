@@ -178,7 +178,7 @@
         const innerIconElm = document.createElement('span');
         innerIconElm.role = 'button';
         innerIconElm.ariaLabel = pageBtn.ariaLabel;
-        innerIconElm.className = `ui-icon ui-icon-seek-${pageBtn.key} slick-icon-seek-${pageBtn.key}`;
+        innerIconElm.className = 'ui-icon ui-icon-seek-' + pageBtn.key + ' slick-icon-seek-' + pageBtn.key;
         _bindingEventService.bind(innerIconElm, 'click', pageBtn.callback);
 
         iconElm.appendChild(innerIconElm);

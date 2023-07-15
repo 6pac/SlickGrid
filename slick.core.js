@@ -603,7 +603,7 @@
       const sides = type === 'height' ? ['top', 'bottom'] : ['left', 'right'];
       size = elm[clientSize];
       for (const side of sides) {
-        const sideSize = (parseFloat(getElementProp(elm, `padding-${side}`)) || 0);
+        const sideSize = (parseFloat(getElementProp(elm, 'padding-' + side)) || 0);
         size -= sideSize;
       }
     }
