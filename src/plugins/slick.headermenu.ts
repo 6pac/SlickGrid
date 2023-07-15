@@ -1,5 +1,15 @@
 import { BindingEventService as BindingEventService_, Event as SlickEvent_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
-import type { Column, DOMEvent, HeaderMenuCommandItemCallbackArgs, HeaderMenuItems, HeaderMenuOption, MenuCommandItem, MenuCommandItemCallbackArgs, OnHeaderCellRenderedEventArgs } from '../models/index';
+import type {
+  Column,
+  DOMEvent,
+  HeaderMenuCommandItemCallbackArgs,
+  HeaderMenuItems,
+  HeaderMenuOption,
+  MenuCommandItem,
+  MenuCommandItemCallbackArgs,
+  Plugin,
+  OnHeaderCellRenderedEventArgs
+} from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
@@ -94,7 +104,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
   *    buttonImage:      a url to the menu button image
   * @class Slick.Plugins.HeaderButtons
   */
-export class SlickHeaderMenu {
+export class SlickHeaderMenu implements Plugin {
   // --
   // public API
   pluginName = 'HeaderMenu' as const;
@@ -107,22 +117,22 @@ export class SlickHeaderMenu {
   protected _grid!: SlickGrid;
   protected _handler = new SlickEventHandler();
   protected _bindingEventService = new BindingEventService();
-  protected _defaults = {
-    buttonCssClass: null,
-    buttonImage: null,
+  protected _defaults: HeaderMenuOption = {
+    buttonCssClass: undefined,
+    buttonImage: undefined,
     minWidth: 100,
     autoAlign: true,
     autoAlignOffset: 0
   };
-  protected _activeHeaderColumnElm;
-  protected _menuElm;
   protected _options: HeaderMenuOption;
+  protected _activeHeaderColumnElm?: HTMLDivElement | null;
+  protected _menuElm?: HTMLDivElement | null;
 
   constructor(options: Partial<HeaderMenuOption>) {
     this._options = Utils.extend(true, {}, this._defaults, options);
   }
 
-  protected init(grid: SlickGrid) {
+  init(grid: SlickGrid) {
     this._grid = grid;
     this._handler
       .subscribe(this._grid.onHeaderCellRendered, this.handleHeaderCellRendered.bind(this))

@@ -1,4 +1,12 @@
-import type { Column, DOMEvent, HeaderButtonItem, HeaderButtonOnCommandArgs, HeaderButtonOption, OnHeaderCellRenderedEventArgs } from '../models/index';
+import type {
+  Column,
+  DOMEvent,
+  HeaderButtonItem,
+  HeaderButtonOnCommandArgs,
+  HeaderButtonOption,
+  OnHeaderCellRenderedEventArgs,
+  Plugin
+} from '../models/index';
 import { BindingEventService as BindingEventService_, Event as SlickEvent_, EventHandler as EventHandler_, Utils as Utils_ } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 
@@ -73,7 +81,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
    * @class Slick.Plugins.HeaderButtons
    * @constructor
    */
-export class SlickHeaderButtons {
+export class SlickHeaderButtons implements Plugin {
   // --
   // public API
   pluginName = 'HeaderButtons' as const;

@@ -30,9 +30,9 @@ export class SlickRowSelectionModel {
   protected _ranges: CellRange[] = [];
   protected _handler = new SlickEventHandler();
   protected _inHandler = false;
-  protected _options: RowSelectionModelOption;
   protected _selector?: SlickCellRangeSelector_;
   protected _isRowMoveManagerHandler: any;
+  protected _options: RowSelectionModelOption;
   protected _defaults: RowSelectionModelOption = {
     selectActiveRow: true,
     dragToSelect: false,

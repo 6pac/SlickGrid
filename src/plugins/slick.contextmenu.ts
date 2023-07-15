@@ -13,7 +13,8 @@ import type {
   MenuCommandItemCallbackArgs,
   MenuFromCellCallbackArgs,
   MenuOptionItem,
-  MenuOptionItemCallbackArgs
+  MenuOptionItemCallbackArgs,
+  Plugin
 } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
@@ -151,7 +152,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  * @param options {Object} Context Menu Options
  * @class Slick.Plugins.ContextMenu
  */
-export class SlickContextMenu {
+export class SlickContextMenu implements Plugin {
   // --
   // public API
   pluginName = 'ContextMenu' as const;

@@ -30,7 +30,7 @@ export class SlickCellRangeSelector implements Plugin {
   protected _activeCanvas!: HTMLElement;
   protected _dragging = false;
   protected _handler = new SlickEventHandler();
-  protected options: CellRangeSelectorOption;
+  protected _options: CellRangeSelectorOption;
   protected _defaults = {
     autoScroll: true,
     minIntervalToShowNextCell: 30,
@@ -63,7 +63,7 @@ export class SlickCellRangeSelector implements Plugin {
   protected _scrollTop = 0;
 
   constructor(options?: Partial<CellRangeSelectorOption>) {
-    this.options = Utils.extend(true, {}, this._defaults, options);
+    this._options = Utils.extend(true, {}, this._defaults, options);
   }
 
   init(grid: SlickGrid) {
@@ -71,7 +71,7 @@ export class SlickCellRangeSelector implements Plugin {
       throw new Error('Slick.Draggable is undefined, make sure to import "slick.interactions.js"');
     }
 
-    this._decorator = this.options.cellDecorator || new SlickCellRangeDecorator(grid, this.options);
+    this._decorator = this._options.cellDecorator || new SlickCellRangeDecorator(grid, this._options);
     this._grid = grid;
     this._canvas = this._grid.getCanvasNode();
     this._gridOptions = this._grid.getOptions();
@@ -182,7 +182,7 @@ export class SlickCellRangeSelector implements Plugin {
     }
 
     const e = evt.getNativeEvent();
-    if (this.options.autoScroll) {
+    if (this._options.autoScroll) {
       this._draggingMouseOffset = this.getMouseOffsetViewport(e, dd);
       if (this._draggingMouseOffset.isOutsideViewport) {
         return this.handleDragOutsideViewport();
@@ -245,8 +245,8 @@ export class SlickCellRangeSelector implements Plugin {
   }
 
   protected handleDragOutsideViewport() {
-    this._xDelayForNextCell = this.options.maxIntervalToShowNextCell - Math.abs(this._draggingMouseOffset.offset.x) * this.options.accelerateInterval;
-    this._yDelayForNextCell = this.options.maxIntervalToShowNextCell - Math.abs(this._draggingMouseOffset.offset.y) * this.options.accelerateInterval;
+    this._xDelayForNextCell = this._options.maxIntervalToShowNextCell - Math.abs(this._draggingMouseOffset.offset.x) * this._options.accelerateInterval;
+    this._yDelayForNextCell = this._options.maxIntervalToShowNextCell - Math.abs(this._draggingMouseOffset.offset.y) * this._options.accelerateInterval;
     // only one timer is created to handle the case that cursor outside the viewport
     if (!this._autoScrollTimerId) {
       let xTotalDelay = 0;
@@ -256,14 +256,14 @@ export class SlickCellRangeSelector implements Plugin {
         let yNeedUpdate = false;
         // ... horizontal
         if (this._draggingMouseOffset.offset.x) {
-          xTotalDelay += this.options.minIntervalToShowNextCell;
+          xTotalDelay += this._options.minIntervalToShowNextCell;
           xNeedUpdate = xTotalDelay >= this._xDelayForNextCell;
         } else {
           xTotalDelay = 0;
         }
         // ... vertical
         if (this._draggingMouseOffset.offset.y) {
-          yTotalDelay += this.options.minIntervalToShowNextCell;
+          yTotalDelay += this._options.minIntervalToShowNextCell;
           yNeedUpdate = yTotalDelay >= this._yDelayForNextCell;
         } else {
           yTotalDelay = 0;
@@ -277,7 +277,7 @@ export class SlickCellRangeSelector implements Plugin {
           }
           this.handleDragToNewPosition(xNeedUpdate, yNeedUpdate);
         }
-      }, this.options.minIntervalToShowNextCell);
+      }, this._options.minIntervalToShowNextCell);
     }
   }
 
@@ -335,7 +335,7 @@ export class SlickCellRangeSelector implements Plugin {
     }
 
     // scrolling the viewport to display the target `end` cell if it is not fully displayed
-    if (this.options.autoScroll && this._draggingMouseOffset) {
+    if (this._options.autoScroll && this._draggingMouseOffset) {
       let endCellBox = this._grid.getCellNodeBox(end.row, end.cell);
       if (!endCellBox) {
         return;
