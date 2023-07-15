@@ -1285,7 +1285,7 @@ if (typeof Slick === "undefined") {
         const headerTarget = hasFrozenColumns() ? ((i <= options.frozenColumn) ? _headerL : _headerR) : _headerL;
         const headerRowTarget = hasFrozenColumns() ? ((i <= options.frozenColumn) ? _headerRowL : _headerRowR) : _headerRowL;
 
-        const header = utils.createDomElement('div', { id: '' + uid + m.id, dataset: { id: m.id }, className: 'ui-state-default slick-header-column', title: m.toolTip || '' }, headerTarget);
+        const header = utils.createDomElement('div', { id: '' + (uid + m.id), dataset: { id: m.id }, className: 'ui-state-default slick-header-column', title: m.toolTip || '' }, headerTarget);
         utils.createDomElement('span', { className: 'slick-column-name', innerHTML: sanitizeHtmlString(m.name) }, header);
         utils.width(header, m.width - headerColumnWidthDiff);
 
@@ -1318,7 +1318,7 @@ if (typeof Slick === "undefined") {
 
         if (m.sortable) {
           header.classList.add("slick-header-sortable");
-          utils.createDomElement('div', { className: 'slick-sort-indicator ' + options.numberedMultiColumnSort && !options.sortColNumberInSeparateSpan ? ' slick-sort-indicator-numbered' : '' }, header);
+          utils.createDomElement('div', { className: 'slick-sort-indicator ' + ((options.numberedMultiColumnSort && !options.sortColNumberInSeparateSpan) ? ' slick-sort-indicator-numbered' : '') }, header);
           if (options.numberedMultiColumnSort && options.sortColNumberInSeparateSpan) {
             utils.createDomElement('div', { className: 'slick-sort-indicator-numbered' }, header);
            }
@@ -3476,7 +3476,7 @@ if (typeof Slick === "undefined") {
         }
       }
 
-      stringArray.push('<div class="' + cellCss + (addlCssClasses ? ' ' + addlCssClasses : '') + '" ' + toolTip + customAttrStr + '>');
+      stringArray.push('<div class="' + cellCss + (addlCssClasses ? ' ' + addlCssClasses : '') + '" ' + (toolTip + customAttrStr) + '>');
 
       // if there is a corresponding row (if not, this is the Add New row or this data hasn't been loaded yet)
       if (item) {

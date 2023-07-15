@@ -103,7 +103,7 @@
           dd.clonedSlickRow.style.marginLeft = Number(options.rowMoveShadowMarginLeft || 0) + 'px';
           dd.clonedSlickRow.style.marginTop = Number(options.rowMoveShadowMarginTop || 0) + 'px';
           dd.clonedSlickRow.style.opacity = '' + (options.rowMoveShadowOpacity || 0.95);
-          dd.clonedSlickRow.style.transform = 'scale(' + (options.rowMoveShadowScale || 0.75);
+          dd.clonedSlickRow.style.transform = 'scale(' + (options.rowMoveShadowScale || 0.75) + ')';
           _canvas.appendChild(dd.clonedSlickRow);
         }
       }
