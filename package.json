@@ -2,8 +2,6 @@
   "name": "slickgrid",
   "version": "4.0.1",
   "description": "A lightning fast JavaScript grid/spreadsheet",
-  "main": "dist/cjs/index.js",
-  "module": "dist/esm/index.js",
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
@@ -20,6 +18,8 @@
     }
   },
   "types": "dist/types/index.d.ts",
+  "main": "dist/cjs/index.js",
+  "module": "dist/esm/index.js",
   "directories": {
     "example": "examples",
     "test": "tests"
