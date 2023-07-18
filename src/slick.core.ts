@@ -585,7 +585,7 @@ function createDomElement<T extends keyof HTMLElementTagNameMap, K extends keyof
   return elm;
 }
 
-function emptyElement(element: HTMLElement) {
+function emptyElement(element: HTMLElement | null) {
   if (element?.firstChild) {
     while (element.firstChild) {
       if (element.lastChild) {
@@ -840,28 +840,31 @@ function extend<T = any>(...args: any[]): T {
  * Unbinding is a necessary step to make sure that all event listeners are removed to avoid memory leaks when destroing the grid
  */
 export class BindingEventService {
-  protected boundedEvents: ElementEventListener[] = [];
+  protected _boundedEvents: ElementEventListener[] = [];
+
+  getBoundedEvents() {
+    return this._boundedEvents;
+  }
 
   destroy() {
     this.unbindAll();
-    this.boundedEvents = [];
   }
 
   /** Bind an event listener to any element */
   bind(element: Element, eventName: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions) {
     element.addEventListener(eventName, listener, options);
-    this.boundedEvents.push({ element: element, eventName, listener });
+    this._boundedEvents.push({ element, eventName, listener });
   }
 
   /** Unbind all will remove every every event handlers that were bounded earlier */
   unbind(element: Element, eventName: string, listener: EventListenerOrEventListenerObject) {
-    if (element && element.removeEventListener) {
+    if (element?.removeEventListener) {
       element.removeEventListener(eventName, listener);
     }
   }
 
-  unbindByEventName(element, eventName) {
-    const boundedEvent = this.boundedEvents.find(e => e.element === element && e.eventName === eventName);
+  unbindByEventName(element: Element, eventName: string) {
+    const boundedEvent = this._boundedEvents.find(e => e.element === element && e.eventName === eventName);
     if (boundedEvent) {
       this.unbind(boundedEvent.element, boundedEvent.eventName, boundedEvent.listener);
     }
@@ -869,10 +872,9 @@ export class BindingEventService {
 
   /** Unbind all will remove every every event handlers that were bounded earlier */
   unbindAll() {
-    while (this.boundedEvents.length > 0) {
-      const boundedEvent = this.boundedEvents.pop() as ElementEventListener;
-      const { element, eventName, listener } = boundedEvent;
-      this.unbind(element, eventName, listener);
+    while (this._boundedEvents.length > 0) {
+      const boundedEvent = this._boundedEvents.pop() as ElementEventListener;
+      this.unbind(boundedEvent.element, boundedEvent.eventName, boundedEvent.listener);
     }
   }
 }

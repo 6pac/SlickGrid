@@ -1,6 +1,6 @@
 /* eslint-disable @typescript-eslint/indent */
 
-import type { CellMenuOption, CustomTooltipOption, Editor, EditorValidator, Formatter, FormatterResultObject, GroupTotalsFormatter, HeaderButtonsOrMenu } from './index';
+import type { CellMenuOption, CustomTooltipOption, Editor, EditorValidator, Formatter, FormatterResultObject, GroupTotalsFormatter, Grouping, HeaderButtonsOrMenu } from './index';
 import type { SlickGrid } from '../slick.grid';
 
 type PathsToStringProps<T> = T extends string | number | boolean | Date ? [] : {
@@ -129,6 +129,9 @@ export interface Column<T = any> {
 
   /** Formatter override function */
   formatterOverride?: { ReturnsTextOnly: boolean; } | FormatterOverrideCallback;
+
+  /** Grouping option used by a Draggable Grouping Column */
+  grouping?: Grouping;
 
   /** Group Totals Formatter function that can be used to add grouping totals in the grid */
   groupTotalsFormatter?: GroupTotalsFormatter;

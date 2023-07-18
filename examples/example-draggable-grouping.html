@@ -409,7 +409,7 @@ document.addEventListener("DOMContentLoaded", function() {
   var options = {
     enableCellNavigation: true,
     editable: true,
-    enableColumnReorder: draggableGrouping.getSetupColumnReorder,
+    enableColumnReorder: draggableGrouping.getSetupColumnReorder.bind(draggableGrouping),
     createPreHeaderPanel: true,
     showPreHeaderPanel: true,
     preHeaderPanelHeight: 28,
