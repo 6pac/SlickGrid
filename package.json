@@ -5,7 +5,7 @@
   "exports": {
     ".": {
       "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js",
+      "require": "./dist/browser/index.js",
       "default": "./dist/esm/index.js"
     },
     "./*": "./*"
@@ -18,7 +18,7 @@
     }
   },
   "types": "dist/types/index.d.ts",
-  "main": "dist/cjs/index.js",
+  "main": "dist/browser/index.js",
   "module": "dist/esm/index.js",
   "directories": {
     "example": "examples",
