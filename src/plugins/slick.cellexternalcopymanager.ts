@@ -2,7 +2,7 @@ import type { CellRange, Column, CssStyleHash, ExcelCopyBufferOption, ExternalCo
 import type { SlickGrid } from '../slick.grid';
 import { SlickEvent as SlickEvent_, Utils as Utils_ } from '../slick.core';
 
-// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+// for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 

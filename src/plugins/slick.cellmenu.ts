@@ -18,7 +18,7 @@ import type {
 } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
-// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+// for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
 const SlickEventData = IIFE_ONLY ? Slick.EventData : SlickEventData_;

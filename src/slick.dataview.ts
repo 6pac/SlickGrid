@@ -26,7 +26,7 @@ import {
 import type { SlickGrid } from './slick.grid';
 import { SlickGroupItemMetadataProvider as SlickGroupItemMetadataProvider_ } from './slick.groupitemmetadataprovider';
 
-// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+// for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
 const SlickEventData = IIFE_ONLY ? Slick.EventData : SlickEventData_;
 const SlickGroup = IIFE_ONLY ? Slick.Group : SlickGroup_;

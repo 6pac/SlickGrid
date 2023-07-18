@@ -74,7 +74,7 @@ import {
 } from './slick.core';
 import { Draggable as Draggable_, MouseWheel as MouseWheel_, Resizable as Resizable_ } from './slick.interactions';
 
-// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+// for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
 const ColAutosizeMode = IIFE_ONLY ? Slick.ColAutosizeMode : ColAutosizeMode_;
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;

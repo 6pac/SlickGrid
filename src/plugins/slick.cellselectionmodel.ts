@@ -3,7 +3,7 @@ import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellr
 import type { CellRange, OnActiveCellChangedEventArgs } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
-// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+// for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
 const SlickEventData = IIFE_ONLY ? Slick.EventData : SlickEventData_;
 const SlickRange = IIFE_ONLY ? Slick.Range : SlickRange_;

@@ -95,20 +95,22 @@
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script type="module">
-  import {
-    Aggregators,
-    Editors,
-    Formatters,
-    SlickGlobalEditorLock,
-    SlickCellSelectionModel,
-    SlickColumnPicker,
-    SlickDataView,
-    SlickGrid,
-    SlickGroup,
-    SlickGroupItemMetadataProvider,
-    SlickRowSelectionModel,
-    Utils,
-  } from '../dist/esm/index.js';
+import {
+  Aggregators,
+  Editors,
+  Formatters,
+  SlickGlobalEditorLock,
+  SlickCellSelectionModel,
+  SlickColumnPicker,
+  SlickDataView,
+  SlickGrid,
+  SlickGroup,
+  SlickGroupItemMetadataProvider,
+  SlickRowSelectionModel,
+  Utils,
+} from '../dist/esm/index.js';
+// OR preferably use the code below when installing from npm
+// import { SlickGrid, ... } from 'slickgrid';
 
 var dataView;
 var grid;

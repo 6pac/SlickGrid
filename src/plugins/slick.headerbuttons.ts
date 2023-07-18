@@ -10,7 +10,7 @@ import type {
 import { BindingEventService as BindingEventService_, Event as SlickEvent_, EventHandler as EventHandler_, Utils as Utils_ } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 
-// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+// for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
 const EventHandler = IIFE_ONLY ? Slick.EventHandler : EventHandler_;

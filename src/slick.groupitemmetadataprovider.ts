@@ -2,7 +2,7 @@ import type { Column, GroupItemMetadataProviderOption, GroupingFormatterItem } f
 import { SlickGroup as SlickGroup_, keyCode as keyCode_, Utils as Utils_ } from './slick.core';
 import type { SlickGrid } from './slick.grid';
 
-// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+// for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;
 const SlickGroup = IIFE_ONLY ? Slick.Group : SlickGroup_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;

@@ -2,7 +2,7 @@ import type { CssStyleHash, Plugin } from '../models/index';
 import { SlickEvent as SlickEvent_, keyCode as keyCode_, Utils as Utils_, SlickRange } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 
-// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+// for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;

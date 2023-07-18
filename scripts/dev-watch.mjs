@@ -78,7 +78,7 @@ const argv = yargs(hideBin(process.argv)).argv;
    */
   async function onFileChanged(filepath) {
     if (filepath.endsWith('.js') || filepath.endsWith('.ts')) {
-      // 1. CJS/ESM requires a full build since it is bundled into a single index.js output
+      // 1. ESM requires a full build since it is bundled into a single "index.js" file
       await executeFullBuild();
 
       // 2. for iife format, we can rebuild each separate file

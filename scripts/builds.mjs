@@ -11,7 +11,6 @@ import { hideBin } from 'yargs/helpers';
 import { removeImportsPlugin } from './esbuild-plugins.mjs';
 
 const argv = yargs(hideBin(process.argv)).argv;
-export const BUILD_FORMATS = ['cjs', 'esm'];
 
 // when --prod is provided, we'll do a full build of all JS/TS files and also all SASS files
 if (argv.prod) {
@@ -33,7 +32,7 @@ async function prodBuild() {
 
 async function buildTest() {
   await buildAllIifeFiles(getAllJSFiles());
-  await executeCjsEsmBuilds();
+  await executeEsmBuild();
   await copySassFiles();
 }
 
@@ -45,7 +44,7 @@ function getAllJSFiles() {
   return globSync(['src/**/*.{js,ts}']);
 }
 
-/** Execute full build of all format types (iife, cjs & esm) */
+/** Execute full build of all format types (iife & esm) */
 export async function executeFullBuild() {
   // get all JS in root(core), controls & plugins
   const allFiles = getAllJSFiles();
@@ -62,8 +61,8 @@ export async function executeFullBuild() {
     return a > b;
   });
 
-  // first CJS/ESM bundle as single file
-  executeCjsEsmBuilds();
+  // first execute ESM bundle to single file
+  executeEsmBuild();
 
   // build iife in a separate process since all files are built separately instead of a single bundle
   return await buildAllIifeFiles(allFiles);
@@ -72,21 +71,19 @@ export async function executeFullBuild() {
 /**
  * Loop through all slick files and build them as separate iife files using esbuild
  */
-export async function executeCjsEsmBuilds() {
+export async function executeEsmBuild() {
   // build all other formats to a single bundled file
-  for (const format of BUILD_FORMATS) {
-    const startTime = new Date().getTime();
-    await bundleByFormat(format);
-    const endTime = new Date().getTime();
-    console.info(`⚡️ Bundled to "${format}" format in ${endTime - startTime}ms`);
-  }
+  const startTime = new Date().getTime();
+  await bundleAsEsm();
+  const endTime = new Date().getTime();
+  console.info(`⚡️ Bundled to "esm" format in ${endTime - startTime}ms`);
 }
 
 /**
- * Bundle with esbuild to either CJS or ESM format
- * @param {"cjs" | "esm"} format - build format type
+ * Bundle with esbuild to ESM format
  */
-export function bundleByFormat(format) {
+export function bundleAsEsm() {
+  const format = 'esm';
   return runBuild({
     entryPoints: ['src/index.js'],
     format,

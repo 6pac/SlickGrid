@@ -7,7 +7,7 @@ import type { RowMoveManager as RowMoveManager_ } from './slick.rowmovemanager';
 import type { CellRange, OnActiveCellChangedEventArgs, RowSelectionModelOption } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
-// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+// for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const Draggable = IIFE_ONLY ? Slick.Draggable : Draggable_;
 const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;
 const SlickCellRangeDecorator = IIFE_ONLY ? Slick.CellRangeDecorator : SlickCellRangeDecorator_;

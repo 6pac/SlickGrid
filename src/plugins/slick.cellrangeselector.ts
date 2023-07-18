@@ -4,7 +4,7 @@ import { SlickCellRangeDecorator as SlickCellRangeDecorator_ } from './slick.cel
 import type { CellRangeSelectorOption, DOMMouseOrTouchEvent, DragPosition, DragRange, GridOption, MouseOffsetViewport, OnScrollEventArgs, Plugin } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
-// for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
+// for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
 const SlickEventHandler = IIFE_ONLY ? Slick.EventHandler : SlickEventHandler_;
 const SlickRange = IIFE_ONLY ? Slick.Range : SlickRange_;
