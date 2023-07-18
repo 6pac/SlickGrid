@@ -3,7 +3,7 @@ import { Utils as Utils_ } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
-const Utils = (IIFE_ONLY ? Slick.Utils : Utils_) as typeof Utils_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
 /**
  * AutoTooltips plugin to show/hide tooltips when columns are too narrow to fit content.

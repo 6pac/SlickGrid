@@ -75,22 +75,22 @@ import {
 import { Draggable as Draggable_, MouseWheel as MouseWheel_, Resizable as Resizable_ } from './slick.interactions';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
-const BindingEventService = (IIFE_ONLY ? Slick.BindingEventService : BindingEventService_) as typeof BindingEventService_;
-const ColAutosizeMode = (IIFE_ONLY ? Slick.ColAutosizeMode : ColAutosizeMode_);
-const SlickEvent = (IIFE_ONLY ? Slick.Event : SlickEvent_) as typeof SlickEvent_;
-const SlickEventData = (IIFE_ONLY ? Slick.EventData : SlickEventData_) as typeof SlickEventData_;
-const GlobalEditorLock = (IIFE_ONLY ? Slick.GlobalEditorLock : GlobalEditorLock_) as typeof GlobalEditorLock_;
-const GridAutosizeColsMode = (IIFE_ONLY ? Slick.GridAutosizeColsMode : GridAutosizeColsMode_);
-const keyCode = (IIFE_ONLY ? Slick.keyCode : keyCode_);
-const preClickClassName = (IIFE_ONLY ? Slick.preClickClassName : preClickClassName_);
-const SlickRange = (IIFE_ONLY ? Slick.Range : SlickRange_) as typeof SlickRange_;
-const RowSelectionMode = (IIFE_ONLY ? Slick.RowSelectionMode : RowSelectionMode_);
-const ValueFilterMode = (IIFE_ONLY ? Slick.ValueFilterMode : ValueFilterMode_);
-const Utils = (IIFE_ONLY ? Slick.Utils : Utils_) as typeof Utils_;
-const WidthEvalMode = (IIFE_ONLY ? Slick.WidthEvalMode : WidthEvalMode_);
-const Draggable = (IIFE_ONLY ? Slick.Draggable : Draggable_);
-const MouseWheel = (IIFE_ONLY ? Slick.MouseWheel : MouseWheel_);
-const Resizable = (IIFE_ONLY ? Slick.Resizable : Resizable_);
+const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
+const ColAutosizeMode = IIFE_ONLY ? Slick.ColAutosizeMode : ColAutosizeMode_;
+const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+const SlickEventData = IIFE_ONLY ? Slick.EventData : SlickEventData_;
+const GlobalEditorLock = IIFE_ONLY ? Slick.GlobalEditorLock : GlobalEditorLock_;
+const GridAutosizeColsMode = IIFE_ONLY ? Slick.GridAutosizeColsMode : GridAutosizeColsMode_;
+const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;
+const preClickClassName = IIFE_ONLY ? Slick.preClickClassName : preClickClassName_;
+const SlickRange = IIFE_ONLY ? Slick.Range : SlickRange_;
+const RowSelectionMode = IIFE_ONLY ? Slick.RowSelectionMode : RowSelectionMode_;
+const ValueFilterMode = IIFE_ONLY ? Slick.ValueFilterMode : ValueFilterMode_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+const WidthEvalMode = IIFE_ONLY ? Slick.WidthEvalMode : WidthEvalMode_;
+const Draggable = IIFE_ONLY ? Slick.Draggable : Draggable_;
+const MouseWheel = IIFE_ONLY ? Slick.MouseWheel : MouseWheel_;
+const Resizable = IIFE_ONLY ? Slick.Resizable : Resizable_;
 
 /**
  * @license
@@ -1257,7 +1257,7 @@ export class SlickGrid {
    * @param {String} title New column name.
    * @param {String} [toolTip] New column tooltip.
    */
-  updateColumnHeader(columnId: number | string, title: string, toolTip?: string) {
+  updateColumnHeader(columnId: number | string, title?: string, toolTip?: string) {
     if (!this.initialized) { return; }
     let idx = this.getColumnIndex(columnId);
     if (idx == null) {
@@ -1314,7 +1314,7 @@ export class SlickGrid {
     let targetHeader = this.hasFrozenColumns() ? ((idx <= this._options.frozenColumn) ? this._headerL : this._headerR) : this._headerL;
     let targetIndex = this.hasFrozenColumns() ? ((idx <= this._options.frozenColumn) ? idx : idx - this._options.frozenColumn - 1) : idx;
 
-    return targetHeader.children[targetIndex];
+    return targetHeader.children[targetIndex] as HTMLDivElement;
   }
 
   /** Get the Header Row DOM element */
@@ -1584,7 +1584,7 @@ export class SlickGrid {
     this.setSortColumns(this.sortColumns);
     this.setupColumnResize();
     if (this._options.enableColumnReorder) {
-      if (typeof this._options.enableColumnReorder == 'function') {
+      if (typeof this._options.enableColumnReorder === 'function') {
         this._options.enableColumnReorder(this, this._headers, this.headerColumnWidthDiff, this.setColumns, this.setupColumnResize, this.columns, this.getColumnIndex, this.uid, this.trigger);
       } else {
         this.setupColumnReorder();
@@ -3093,7 +3093,7 @@ export class SlickGrid {
    * Returns the index of a column with a given id. Since columns can be reordered by the user, this can be used to get the column definition independent of the order:
    * @param id A column id.
    */
-  getColumnIndex(id: number | string) {
+  getColumnIndex(id: number | string): number {
     return this.columnsById[id];
   }
 

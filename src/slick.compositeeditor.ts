@@ -2,7 +2,7 @@ import type { CompositeEditorOption, Editor, EditorArguments } from './models/in
 import { Utils as Utils_ } from './slick.core';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
-const Utils = (IIFE_ONLY ? Slick.Utils : Utils_) as typeof Utils_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
 /**
  * A composite SlickGrid editor factory.

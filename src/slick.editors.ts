@@ -2,8 +2,8 @@ import type { Editor, EditorArguments, EditorValidationResult } from './models/i
 import { keyCode as keyCode_, Utils as Utils_ } from './slick.core';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
-const keyCode = (IIFE_ONLY ? Slick.keyCode : keyCode_) as typeof keyCode_;
-const Utils = (IIFE_ONLY ? Slick.Utils : Utils_) as typeof Utils_;
+const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
 /***
  * Contains basic SlickGrid editors.

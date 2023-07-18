@@ -14,6 +14,7 @@ export * from './customTooltipOption.interface';
 export * from './dataViewEvents.interface';
 export * from './domEvent.interface';
 export * from './drag.interface';
+export * from './draggableGroupingOption.interface';
 export * from './editCommand.interface';
 export * from './editor.interface';
 export * from './editorArguments.interface';

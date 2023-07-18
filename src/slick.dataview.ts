@@ -27,12 +27,12 @@ import type { SlickGrid } from './slick.grid';
 import { SlickGroupItemMetadataProvider as SlickGroupItemMetadataProvider_ } from './slick.groupitemmetadataprovider';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
-const SlickEvent = (IIFE_ONLY ? Slick.Event : SlickEvent_) as typeof SlickEvent_;
-const SlickEventData = (IIFE_ONLY ? Slick.EventData : SlickEventData_) as typeof SlickEventData_;
-const SlickGroup = (IIFE_ONLY ? Slick.Group : SlickGroup_) as typeof SlickGroup_;
-const SlickGroupTotals = (IIFE_ONLY ? Slick.GroupTotals : SlickGroupTotals_) as typeof SlickGroupTotals_;
-const Utils = (IIFE_ONLY ? Slick.Utils : Utils_) as typeof Utils_;
-const SlickGroupItemMetadataProvider = (IIFE_ONLY ? Slick.Data?.GroupItemMetadataProvider ?? {} : SlickGroupItemMetadataProvider_) as typeof SlickGroupItemMetadataProvider_;
+const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+const SlickEventData = IIFE_ONLY ? Slick.EventData : SlickEventData_;
+const SlickGroup = IIFE_ONLY ? Slick.Group : SlickGroup_;
+const SlickGroupTotals = IIFE_ONLY ? Slick.GroupTotals : SlickGroupTotals_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+const SlickGroupItemMetadataProvider = IIFE_ONLY ? Slick.Data?.GroupItemMetadataProvider ?? {} : SlickGroupItemMetadataProvider_;
 
 export interface DataViewOption {
   groupItemMetadataProvider?: SlickGroupItemMetadataProvider_;

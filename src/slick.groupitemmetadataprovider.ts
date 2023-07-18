@@ -3,9 +3,9 @@ import { SlickGroup as SlickGroup_, keyCode as keyCode_, Utils as Utils_ } from 
 import type { SlickGrid } from './slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
-const SlickGroup = (IIFE_ONLY ? Slick.Group : SlickGroup_) as typeof SlickGroup_;
-const keyCode = (IIFE_ONLY ? Slick.keyCode : keyCode_) as typeof keyCode_;
-const Utils = (IIFE_ONLY ? Slick.Utils : Utils_) as typeof Utils_;
+const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;
+const SlickGroup = IIFE_ONLY ? Slick.Group : SlickGroup_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
 /**
  * Provides item metadata for group (Slick.Group) and totals (Slick.Totals) rows produced by the DataView.

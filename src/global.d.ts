@@ -33,6 +33,7 @@ import type { SlickCellExternalCopyManager } from './plugins/slick.cellexternalc
 import type { SlickCellRangeDecorator } from './plugins/slick.cellrangedecorator';
 import type { SlickCellRangeSelector } from './plugins/slick.cellrangeselector';
 import type { SlickCellSelectionModel } from './plugins/slick.cellselectionmodel';
+import type { SlickDraggableGrouping } from './plugins/slick.draggablegrouping';
 import type { SlickRowSelectionModel } from './plugins/slick.rowselectionmodel';
 import type { SlickState } from './plugins/slick.state';
 import type { SlickGroupItemMetadataProvider } from './slick.groupitemmetadataprovider';
@@ -68,6 +69,7 @@ declare global {
       DataView: typeof SlickDataView,
       GroupItemMetadataProvider: typeof SlickGroupItemMetadataProvider
     },
+    DraggableGrouping: typeof SlickDraggableGrouping,
     Editors: typeof Editors,
     Event: typeof SlickEvent,
     EventData: typeof SlickEventData,
