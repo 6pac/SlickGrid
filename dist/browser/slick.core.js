@@ -537,28 +537,31 @@ var Slick = (() => {
   }
   var BindingEventService = class {
     constructor() {
-      __publicField(this, "boundedEvents", []);
+      __publicField(this, "_boundedEvents", []);
+    }
+    getBoundedEvents() {
+      return this._boundedEvents;
     }
     destroy() {
-      this.unbindAll(), this.boundedEvents = [];
+      this.unbindAll();
     }
     /** Bind an event listener to any element */
     bind(element, eventName, listener, options) {
-      element.addEventListener(eventName, listener, options), this.boundedEvents.push({ element, eventName, listener });
+      element.addEventListener(eventName, listener, options), this._boundedEvents.push({ element, eventName, listener });
     }
     /** Unbind all will remove every every event handlers that were bounded earlier */
     unbind(element, eventName, listener) {
-      element && element.removeEventListener && element.removeEventListener(eventName, listener);
+      element != null && element.removeEventListener && element.removeEventListener(eventName, listener);
     }
     unbindByEventName(element, eventName) {
-      let boundedEvent = this.boundedEvents.find((e) => e.element === element && e.eventName === eventName);
+      let boundedEvent = this._boundedEvents.find((e) => e.element === element && e.eventName === eventName);
       boundedEvent && this.unbind(boundedEvent.element, boundedEvent.eventName, boundedEvent.listener);
     }
     /** Unbind all will remove every every event handlers that were bounded earlier */
     unbindAll() {
-      for (; this.boundedEvents.length > 0; ) {
-        let boundedEvent = this.boundedEvents.pop(), { element, eventName, listener } = boundedEvent;
-        this.unbind(element, eventName, listener);
+      for (; this._boundedEvents.length > 0; ) {
+        let boundedEvent = this._boundedEvents.pop();
+        this.unbind(boundedEvent.element, boundedEvent.eventName, boundedEvent.listener);
       }
     }
   }, SlickGlobalEditorLock = new SlickEditorLock(), SlickCore = {

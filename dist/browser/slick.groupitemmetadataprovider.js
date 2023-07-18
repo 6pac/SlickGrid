@@ -5,7 +5,7 @@
   var __publicField = (obj, key, value) => (__defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value), value);
 
   // src/slick.groupitemmetadataprovider.ts
-  var SlickGroup = Slick.Group, keyCode = Slick.keyCode, Utils = Slick.Utils, SlickGroupItemMetadataProvider = class {
+  var keyCode = Slick.keyCode, SlickGroup = Slick.Group, Utils = Slick.Utils, SlickGroupItemMetadataProvider = class {
     constructor(inputOptions) {
       __publicField(this, "_grid");
       __publicField(this, "_options");

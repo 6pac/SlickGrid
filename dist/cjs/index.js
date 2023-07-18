@@ -31,7 +31,6 @@ __export(src_exports, {
   CrossGridRowMoveManager: () => CrossGridRowMoveManager,
   CustomTooltip: () => CustomTooltip,
   Draggable: () => Draggable,
-  DraggableGrouping: () => DraggableGrouping,
   Editors: () => Editors,
   Event: () => Event,
   EventData: () => EventData,
@@ -55,7 +54,6 @@ __export(src_exports, {
   Range: () => Range,
   RegexSanitizer: () => RegexSanitizer,
   Resizable: () => Resizable,
-  Resizer: () => Resizer,
   RowDetailView: () => RowDetailView,
   RowMoveManager: () => RowMoveManager,
   RowSelectionMode: () => RowSelectionMode,
@@ -70,6 +68,7 @@ __export(src_exports, {
   SlickColumnPicker: () => SlickColumnPicker,
   SlickContextMenu: () => SlickContextMenu,
   SlickDataView: () => SlickDataView,
+  SlickDraggableGrouping: () => SlickDraggableGrouping,
   SlickEditorLock: () => SlickEditorLock,
   SlickEvent: () => SlickEvent,
   SlickEventData: () => SlickEventData,
@@ -85,6 +84,7 @@ __export(src_exports, {
   SlickHeaderMenu: () => SlickHeaderMenu,
   SlickNonDataItem: () => SlickNonDataItem,
   SlickRange: () => SlickRange,
+  SlickResizer: () => SlickResizer,
   SlickRowSelectionModel: () => SlickRowSelectionModel,
   SlickState: () => SlickState,
   SumAggregator: () => SumAggregator,
@@ -589,28 +589,31 @@ function extend(...args) {
 }
 var BindingEventService = class {
   constructor() {
-    __publicField(this, "boundedEvents", []);
+    __publicField(this, "_boundedEvents", []);
+  }
+  getBoundedEvents() {
+    return this._boundedEvents;
   }
   destroy() {
-    this.unbindAll(), this.boundedEvents = [];
+    this.unbindAll();
   }
   /** Bind an event listener to any element */
   bind(element, eventName, listener, options) {
-    element.addEventListener(eventName, listener, options), this.boundedEvents.push({ element, eventName, listener });
+    element.addEventListener(eventName, listener, options), this._boundedEvents.push({ element, eventName, listener });
   }
   /** Unbind all will remove every every event handlers that were bounded earlier */
   unbind(element, eventName, listener) {
-    element && element.removeEventListener && element.removeEventListener(eventName, listener);
+    element?.removeEventListener && element.removeEventListener(eventName, listener);
   }
   unbindByEventName(element, eventName) {
-    let boundedEvent = this.boundedEvents.find((e) => e.element === element && e.eventName === eventName);
+    let boundedEvent = this._boundedEvents.find((e) => e.element === element && e.eventName === eventName);
     boundedEvent && this.unbind(boundedEvent.element, boundedEvent.eventName, boundedEvent.listener);
   }
   /** Unbind all will remove every every event handlers that were bounded earlier */
   unbindAll() {
-    for (; this.boundedEvents.length > 0; ) {
-      let boundedEvent = this.boundedEvents.pop(), { element, eventName, listener } = boundedEvent;
-      this.unbind(element, eventName, listener);
+    for (; this._boundedEvents.length > 0; ) {
+      let boundedEvent = this._boundedEvents.pop();
+      this.unbind(boundedEvent.element, boundedEvent.eventName, boundedEvent.listener);
     }
   }
 }, SlickGlobalEditorLock = new SlickEditorLock(), SlickCore = {
@@ -855,7 +858,7 @@ function CompositeEditor(columns, containers, options) {
 }
 
 // src/slick.groupitemmetadataprovider.ts
-var SlickGroup2 = SlickGroup, keyCode2 = keyCode, Utils2 = Utils, SlickGroupItemMetadataProvider = class {
+var keyCode2 = keyCode, SlickGroup2 = SlickGroup, Utils2 = Utils, SlickGroupItemMetadataProvider = class {
   constructor(inputOptions) {
     __publicField(this, "_grid");
     __publicField(this, "_options");
@@ -7557,28 +7560,80 @@ function CustomTooltip(options) {
   });
 }
 
-// src/plugins/slick.draggablegrouping.js
-var BindingEventService9 = BindingEventService, SlickEvent13 = Event, EventHandler6 = EventHandler, Utils19 = Utils;
-function DraggableGrouping(options) {
-  var _grid, _gridUid, _gridColumns, _dataView, _dropzoneElm, _droppableInstance, dropzonePlaceholder, groupToggler, _defaults = {}, onGroupChanged = new SlickEvent13(), _bindingEventService = new BindingEventService9(), _handler = new EventHandler6(), _sortableLeftInstance, _sortableRightInstance;
-  function init(grid) {
-    options = Utils19.extend(!0, {}, _defaults, options), _grid = grid, _gridUid = _grid.getUID(), _gridColumns = _grid.getColumns(), _dataView = _grid.getData(), _dropzoneElm = grid.getPreHeaderPanel(), _dropzoneElm.classList.add("slick-dropzone");
-    var dropPlaceHolderText = options.dropPlaceHolderText || "Drop a column header here to group by the column";
-    dropzonePlaceholder = document.createElement("div"), dropzonePlaceholder.className = "slick-placeholder", dropzonePlaceholder.textContent = dropPlaceHolderText, groupToggler = document.createElement("div"), groupToggler.className = "slick-group-toggle-all expanded", groupToggler.style.display = "none", _dropzoneElm.appendChild(dropzonePlaceholder), _dropzoneElm.appendChild(groupToggler), setupColumnDropbox(), _handler.subscribe(_grid.onHeaderCellRendered, function(e, args) {
-      var column = args.column, node = args.node;
-      if (!Utils19.isEmptyObject(column.grouping) && node && (node.style.cursor = "pointer", options.groupIconCssClass || options.groupIconImage)) {
+// src/plugins/slick.draggablegrouping.ts
+var BindingEventService9 = BindingEventService, SlickEvent13 = SlickEvent, SlickEventHandler4 = SlickEventHandler, Utils19 = Utils, SlickDraggableGrouping = class {
+  /**
+   * @param options {Object} Options:
+   *    deleteIconCssClass:  an extra CSS class to add to the delete button (default undefined), if deleteIconCssClass && deleteIconImage undefined then slick-groupby-remove-image class will be added
+   *    deleteIconImage:     a url to the delete button image (default undefined)
+   *    groupIconCssClass:   an extra CSS class to add to the grouping field hint  (default undefined)
+   *    groupIconImage:      a url to the grouping field hint image (default undefined)
+   *    dropPlaceHolderText:      option to specify set own placeholder note text
+   */
+  constructor(options) {
+    // --
+    // public API
+    __publicField(this, "pluginName", "DraggableGrouping");
+    __publicField(this, "onGroupChanged", new SlickEvent13());
+    // --
+    // protected props
+    __publicField(this, "_grid");
+    __publicField(this, "_gridUid", "");
+    __publicField(this, "_gridColumns", []);
+    __publicField(this, "_dataView");
+    __publicField(this, "_dropzoneElm");
+    __publicField(this, "_droppableInstance");
+    __publicField(this, "_dropzonePlaceholder");
+    __publicField(this, "_groupToggler");
+    __publicField(this, "_options");
+    __publicField(this, "_defaults", {
+      dropPlaceHolderText: "Drop a column header here to group by the column",
+      hideGroupSortIcons: !1,
+      hideToggleAllButton: !1,
+      toggleAllButtonText: "",
+      toggleAllPlaceholderText: "Toggle all Groups"
+    });
+    __publicField(this, "_bindingEventService", new BindingEventService9());
+    __publicField(this, "_handler", new SlickEventHandler4());
+    __publicField(this, "_sortableLeftInstance");
+    __publicField(this, "_sortableRightInstance");
+    __publicField(this, "_columnsGroupBy", []);
+    this._options = Utils19.extend(!0, {}, this._defaults, options);
+  }
+  /**
+   * Initialize plugin.
+   */
+  init(grid) {
+    this._grid = grid, this._gridUid = this._grid.getUID(), this._gridColumns = this._grid.getColumns(), this._dataView = this._grid.getData(), this._dropzoneElm = this._grid.getPreHeaderPanel(), this._dropzoneElm.classList.add("slick-dropzone");
+    let dropPlaceHolderText = this._options.dropPlaceHolderText || "Drop a column header here to group by the column";
+    this._dropzonePlaceholder = document.createElement("div"), this._dropzonePlaceholder.className = "slick-placeholder", this._dropzonePlaceholder.textContent = dropPlaceHolderText, this._groupToggler = document.createElement("div"), this._groupToggler.className = "slick-group-toggle-all expanded", this._groupToggler.style.display = "none", this._dropzoneElm.appendChild(this._dropzonePlaceholder), this._dropzoneElm.appendChild(this._groupToggler), this.setupColumnDropbox(), this._handler.subscribe(this._grid.onHeaderCellRendered, (e, args) => {
+      let column = args.column, node = args.node;
+      if (!Utils19.isEmptyObject(column.grouping) && node && (node.style.cursor = "pointer", this._options.groupIconCssClass || this._options.groupIconImage)) {
         let groupableIconElm = document.createElement("span");
-        groupableIconElm.className = "slick-column-groupable", options.groupIconCssClass && groupableIconElm.classList.add(...options.groupIconCssClass.split(" ")), options.groupIconImage && (groupableIconElm.style.background = "url(" + options.groupIconImage + ") no-repeat center center"), node.appendChild(groupableIconElm);
+        groupableIconElm.className = "slick-column-groupable", this._options.groupIconCssClass && groupableIconElm.classList.add(...this._options.groupIconCssClass.split(" ")), this._options.groupIconImage && (groupableIconElm.style.background = `url(${this._options.groupIconImage}) no-repeat center center`), node.appendChild(groupableIconElm);
       }
     });
-    for (var i = 0; i < _gridColumns.length; i++) {
-      var columnId = _gridColumns[i].field;
-      _grid.updateColumnHeader(columnId);
+    for (let i = 0; i < this._gridColumns.length; i++) {
+      let columnId = this._gridColumns[i].field;
+      this._grid.updateColumnHeader(columnId);
     }
   }
-  function setupColumnReorder(grid, headers, _headerColumnWidthDiff, setColumns, setupColumnResize, _columns, getColumnIndex, _uid, trigger) {
-    let dropzoneElm = grid.getPreHeaderPanel();
-    var sortableOptions = {
+  /**
+   * Setup the column reordering
+   * NOTE: this function is a standalone function and is called externally and does not have access to `this` instance
+   * @param grid - slick grid object
+   * @param headers - slick grid column header elements
+   * @param _headerColumnWidthDiff - header column width difference
+   * @param setColumns - callback to reassign columns
+   * @param setupColumnResize - callback to setup the column resize
+   * @param columns - columns array
+   * @param getColumnIndex - callback to find index of a column
+   * @param uid - grid UID
+   * @param trigger - callback to execute when triggering a column grouping
+   */
+  getSetupColumnReorder(grid, headers, _headerColumnWidthDiff, setColumns, setupColumnResize, _columns, getColumnIndex, _uid, trigger) {
+    this.destroySortableInstances();
+    let dropzoneElm = grid.getPreHeaderPanel(), groupTogglerElm = dropzoneElm.querySelector(".slick-group-toggle-all"), sortableOptions = {
       animation: 50,
       // chosenClass: 'slick-header-column-active',
       ghostClass: "slick-sortable-placeholder",
@@ -7593,156 +7648,146 @@ function DraggableGrouping(options) {
       // filter: function (_e, target) {
       //   // block column from being able to be dragged if it's already a grouped column
       //   // NOTE: need to disable for now since it also blocks the column reordering
-      //   return columnsGroupBy.some(c => c.id === target.getAttribute('data-id'));
+      //   return this.columnsGroupBy.some(c => c.id === target.getAttribute('data-id'));
       // },
-      onStart: function() {
+      onStart: () => {
         dropzoneElm.classList.add("slick-dropzone-hover"), dropzoneElm.classList.add("slick-dropzone-placeholder-hover");
         let draggablePlaceholderElm = dropzoneElm.querySelector(".slick-placeholder");
-        draggablePlaceholderElm.style.display = "inline-block", groupToggler.style.display = "none", dropzoneElm.querySelectorAll(".slick-dropped-grouping").forEach((droppedGroupingElm) => droppedGroupingElm.style.display = "none");
+        draggablePlaceholderElm && (draggablePlaceholderElm.style.display = "inline-block"), dropzoneElm.querySelectorAll(".slick-dropped-grouping").forEach((droppedGroupingElm) => droppedGroupingElm.style.display = "none"), groupTogglerElm && (groupTogglerElm.style.display = "none");
       },
-      onEnd: function(e) {
+      onEnd: (e) => {
         let draggablePlaceholderElm = dropzoneElm.querySelector(".slick-placeholder");
-        dropzoneElm.classList.remove("slick-dropzone-hover"), draggablePlaceholderElm.classList.remove("slick-dropzone-placeholder-hover"), dropzonePlaceholder && (dropzonePlaceholder.style.display = "none"), draggablePlaceholderElm && draggablePlaceholderElm.parentElement && draggablePlaceholderElm.parentElement.classList.remove("slick-dropzone-placeholder-hover");
+        dropzoneElm.classList.remove("slick-dropzone-hover"), draggablePlaceholderElm?.classList.remove("slick-dropzone-placeholder-hover"), this._dropzonePlaceholder && (this._dropzonePlaceholder.style.display = "none"), draggablePlaceholderElm && draggablePlaceholderElm.parentElement?.classList.remove("slick-dropzone-placeholder-hover");
         let droppedGroupingElms = dropzoneElm.querySelectorAll(".slick-dropped-grouping");
-        if (droppedGroupingElms.forEach((droppedGroupingElm) => droppedGroupingElm.style.display = "inline-flex"), droppedGroupingElms.length && (draggablePlaceholderElm && (draggablePlaceholderElm.style.display = "none"), groupToggler.style.display = "inline-block"), !grid.getEditorLock().commitCurrentEdit())
+        if (droppedGroupingElms.length && (droppedGroupingElms.forEach((droppedGroupingElm) => droppedGroupingElm.style.display = "inline-flex"), draggablePlaceholderElm && (draggablePlaceholderElm.style.display = "none"), groupTogglerElm && (groupTogglerElm.style.display = "inline-block")), !grid.getEditorLock().commitCurrentEdit())
           return;
-        let reorderedIds = _sortableLeftInstance && _sortableLeftInstance.toArray() || [];
+        let reorderedIds = this._sortableLeftInstance?.toArray() ?? [];
         if (headers.length > 1) {
-          let ids = _sortableRightInstance && _sortableRightInstance.toArray() || [];
+          let ids = this._sortableRightInstance?.toArray() ?? [];
           for (let id of ids)
             reorderedIds.push(id);
         }
         let finalReorderedColumns = [], reorderedColumns = grid.getColumns();
         for (let reorderedId of reorderedIds)
-          finalReorderedColumns.push(reorderedColumns[getColumnIndex(reorderedId)]);
-        setColumns(finalReorderedColumns), trigger(grid.onColumnsReordered, { grid }), e.stopPropagation(), setupColumnResize();
+          finalReorderedColumns.push(reorderedColumns[getColumnIndex.call(grid, reorderedId)]);
+        setColumns.call(grid, finalReorderedColumns), trigger.call(grid, grid.onColumnsReordered, { grid }), e.stopPropagation(), setupColumnResize.call(grid);
       }
     };
-    return _sortableLeftInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-left`), sortableOptions), _sortableRightInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-right`), sortableOptions), {
-      sortableLeftInstance: _sortableLeftInstance,
-      sortableRightInstance: _sortableRightInstance
+    return this._sortableLeftInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-left`), sortableOptions), this._sortableRightInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-right`), sortableOptions), {
+      sortableLeftInstance: this._sortableLeftInstance,
+      sortableRightInstance: this._sortableRightInstance
     };
   }
-  function destroy() {
-    _sortableLeftInstance && _sortableLeftInstance.el && _sortableLeftInstance.destroy(), _sortableRightInstance && _sortableRightInstance.el && _sortableRightInstance.destroy(), onGroupChanged.unsubscribe(), _handler.unsubscribeAll(), _bindingEventService.unbindAll(), Utils19.emptyElement(document.querySelector(`.${_gridUid} .slick-preheader-panel`));
+  /**
+   * Destroy plugin.
+   */
+  destroy() {
+    this.destroySortableInstances(), this.onGroupChanged.unsubscribe(), this._handler.unsubscribeAll(), this._bindingEventService.unbindAll(), Utils19.emptyElement(document.querySelector(`.${this._gridUid} .slick-preheader-panel`));
   }
-  function addDragOverDropzoneListeners() {
-    let draggablePlaceholderElm = _dropzoneElm.querySelector(".slick-placeholder");
-    draggablePlaceholderElm && (_bindingEventService.bind(draggablePlaceholderElm, "dragover", (e) => e.preventDefault), _bindingEventService.bind(draggablePlaceholderElm, "dragenter", () => _dropzoneElm.classList.add("slick-dropzone-hover")), _bindingEventService.bind(draggablePlaceholderElm, "dragleave", () => _dropzoneElm.classList.remove("slick-dropzone-hover")));
+  destroySortableInstances() {
+    this._sortableLeftInstance?.el && this._sortableLeftInstance?.destroy(), this._sortableRightInstance?.el && this._sortableRightInstance?.destroy();
   }
-  function setupColumnDropbox() {
-    let dropzoneElm = _dropzoneElm;
-    _droppableInstance = Sortable.create(dropzoneElm, {
+  addDragOverDropzoneListeners() {
+    let draggablePlaceholderElm = this._dropzoneElm.querySelector(".slick-placeholder");
+    draggablePlaceholderElm && this._dropzoneElm && (this._bindingEventService.bind(draggablePlaceholderElm, "dragover", (e) => e.preventDefault()), this._bindingEventService.bind(draggablePlaceholderElm, "dragenter", () => this._dropzoneElm.classList.add("slick-dropzone-hover")), this._bindingEventService.bind(draggablePlaceholderElm, "dragleave", () => this._dropzoneElm.classList.remove("slick-dropzone-hover")));
+  }
+  setupColumnDropbox() {
+    let dropzoneElm = this._dropzoneElm;
+    this._droppableInstance = Sortable.create(dropzoneElm, {
       group: "shared",
       // chosenClass: 'slick-header-column-active',
       ghostClass: "slick-droppable-sortitem-hover",
       draggable: ".slick-dropped-grouping",
       dragoverBubble: !0,
       onAdd: (evt) => {
-        let el = evt.item, elId = el.getAttribute("id");
-        elId && elId.replace(_gridUid, "") && handleGroupByDrop(dropzoneElm, Sortable.utils.clone(evt.item)), evt.clone.style.opacity = ".5", el.parentNode && el.parentNode.removeChild(el);
+        let el = evt.item;
+        el.getAttribute("id")?.replace(this._gridUid, "") && this.handleGroupByDrop(dropzoneElm, Sortable.utils.clone(evt.item)), evt.clone.style.opacity = ".5", el.parentNode?.removeChild(el);
       },
       onUpdate: () => {
-        let sortArray = _droppableInstance && _droppableInstance.toArray() || [], newGroupingOrder = [];
-        for (var i = 0, l = sortArray.length; i < l; i++)
-          for (var a = 0, b = columnsGroupBy.length; a < b; a++)
-            if (columnsGroupBy[a].id == sortArray[i]) {
-              newGroupingOrder.push(columnsGroupBy[a]);
+        let sortArray = this._droppableInstance?.toArray() ?? [], newGroupingOrder = [];
+        for (let i = 0, l = sortArray.length; i < l; i++)
+          for (let a = 0, b = this._columnsGroupBy.length; a < b; a++)
+            if (this._columnsGroupBy[a].id == sortArray[i]) {
+              newGroupingOrder.push(this._columnsGroupBy[a]);
               break;
             }
-        columnsGroupBy = newGroupingOrder, updateGroupBy("sort-group");
+        this._columnsGroupBy = newGroupingOrder, this.updateGroupBy("sort-group");
       }
-    }), addDragOverDropzoneListeners(), groupToggler && _bindingEventService.bind(groupToggler, "click", (event) => {
+    }), this.addDragOverDropzoneListeners(), this._groupToggler && this._bindingEventService.bind(this._groupToggler, "click", (event) => {
       let target = event.target;
-      toggleGroupToggler(target, target && target.classList.contains("expanded"));
+      this.toggleGroupToggler(target, target?.classList.contains("expanded"));
     });
   }
-  var columnsGroupBy = [];
-  function handleGroupByDrop(containerElm, headerColumnElm) {
-    let headerColDataId = headerColumnElm.getAttribute("data-id"), columnId = headerColDataId && headerColDataId.replace(_gridUid, ""), columnAllowed = !0;
-    for (let colGroupBy of columnsGroupBy)
+  handleGroupByDrop(containerElm, headerColumnElm) {
+    let columnId = headerColumnElm.getAttribute("data-id")?.replace(this._gridUid, ""), columnAllowed = !0;
+    for (let colGroupBy of this._columnsGroupBy)
       colGroupBy.id === columnId && (columnAllowed = !1);
     if (columnAllowed) {
-      for (let col of _gridColumns)
+      for (let col of this._gridColumns)
         if (col.id === columnId && col.grouping && !Utils19.isEmptyObject(col.grouping)) {
           let columnNameElm = headerColumnElm.querySelector(".slick-column-name"), entryElm = document.createElement("div");
-          entryElm.id = `${_gridUid}_${col.id}_entry`, entryElm.className = "slick-dropped-grouping", entryElm.dataset.id = `${col.id}`;
+          entryElm.id = `${this._gridUid}_${col.id}_entry`, entryElm.className = "slick-dropped-grouping", entryElm.dataset.id = `${col.id}`;
           let groupTextElm = document.createElement("div");
           groupTextElm.className = "slick-dropped-grouping-title", groupTextElm.style.display = "inline-flex", groupTextElm.textContent = columnNameElm ? columnNameElm.textContent : headerColumnElm.textContent, entryElm.appendChild(groupTextElm);
           let groupRemoveIconElm = document.createElement("div");
-          groupRemoveIconElm.className = "slick-groupby-remove", options.deleteIconCssClass && groupRemoveIconElm.classList.add(...options.deleteIconCssClass.split(" ")), options.deleteIconImage && groupRemoveIconElm.classList.add(...options.deleteIconImage.split(" ")), options.deleteIconCssClass || groupRemoveIconElm.classList.add("slick-groupby-remove-icon"), !options.deleteIconCssClass && !options.deleteIconImage && groupRemoveIconElm.classList.add("slick-groupby-remove-image"), options && options.hideGroupSortIcons !== !0 && col.sortable && col.grouping && col.grouping.sortAsc === void 0 && (col.grouping.sortAsc = !0), entryElm.appendChild(groupRemoveIconElm), entryElm.appendChild(document.createElement("div")), containerElm.appendChild(entryElm), addColumnGroupBy(col), addGroupByRemoveClickHandler(col.id, groupRemoveIconElm, headerColumnElm, entryElm);
+          groupRemoveIconElm.className = "slick-groupby-remove", this._options.deleteIconCssClass && groupRemoveIconElm.classList.add(...this._options.deleteIconCssClass.split(" ")), this._options.deleteIconImage && groupRemoveIconElm.classList.add(...this._options.deleteIconImage.split(" ")), this._options.deleteIconCssClass || groupRemoveIconElm.classList.add("slick-groupby-remove-icon"), !this._options.deleteIconCssClass && !this._options.deleteIconImage && groupRemoveIconElm.classList.add("slick-groupby-remove-image"), this._options?.hideGroupSortIcons !== !0 && col.sortable && col.grouping?.sortAsc === void 0 && (col.grouping.sortAsc = !0), entryElm.appendChild(groupRemoveIconElm), entryElm.appendChild(document.createElement("div")), containerElm.appendChild(entryElm), this.addColumnGroupBy(col), this.addGroupByRemoveClickHandler(col.id, groupRemoveIconElm, headerColumnElm, entryElm);
         }
-      groupToggler.style.display = "inline-block";
+      this._groupToggler && this._columnsGroupBy.length > 0 && (this._groupToggler.style.display = "inline-block");
     }
   }
-  function addColumnGroupBy(column) {
-    columnsGroupBy.push(column), updateGroupBy("add-group");
+  addColumnGroupBy(column) {
+    this._columnsGroupBy.push(column), this.updateGroupBy("add-group");
   }
-  function addGroupByRemoveClickHandler(id, groupRemoveIconElm, headerColumnElm, entry) {
-    _bindingEventService.bind(groupRemoveIconElm, "click", () => {
-      let boundedElms = _bindingEventService.boundedEvents.filter((boundedEvent) => boundedEvent.element === groupRemoveIconElm);
+  addGroupByRemoveClickHandler(id, groupRemoveIconElm, headerColumnElm, entry) {
+    this._bindingEventService.bind(groupRemoveIconElm, "click", () => {
+      let boundedElms = this._bindingEventService.getBoundedEvents().filter((boundedEvent) => boundedEvent.element === groupRemoveIconElm);
       for (let boundedEvent of boundedElms)
-        _bindingEventService.unbind(boundedEvent.element, "click", boundedEvent.listener);
-      removeGroupBy(id, headerColumnElm, entry);
+        this._bindingEventService.unbind(boundedEvent.element, "click", boundedEvent.listener);
+      this.removeGroupBy(id, headerColumnElm, entry);
     });
   }
-  function setDroppedGroups(groupingInfo) {
+  setDroppedGroups(groupingInfo) {
     let groupingInfos = Array.isArray(groupingInfo) ? groupingInfo : [groupingInfo];
-    dropzonePlaceholder.style.display = "none";
+    this._dropzonePlaceholder.style.display = "none";
     for (let groupInfo of groupingInfos) {
-      let columnElm = _grid.getHeaderColumn(groupInfo);
-      handleGroupByDrop(_dropzoneElm, columnElm);
+      let columnElm = this._grid.getHeaderColumn(groupInfo);
+      this.handleGroupByDrop(this._dropzoneElm, columnElm);
     }
   }
-  function clearDroppedGroups() {
-    columnsGroupBy = [], updateGroupBy("clear-all");
-    let allDroppedGroupingElms = _dropzoneElm.querySelectorAll(".slick-dropped-grouping");
-    groupToggler.style.display = "none";
-    for (let groupElm of Array.from(allDroppedGroupingElms)) {
-      let groupRemoveBtnElm = _dropzoneElm.querySelector(".slick-groupby-remove");
-      groupRemoveBtnElm && groupRemoveBtnElm.remove(), groupElm && groupElm.remove();
+  clearDroppedGroups() {
+    this._columnsGroupBy = [], this.updateGroupBy("clear-all");
+    let allDroppedGroupingElms = this._dropzoneElm.querySelectorAll(".slick-dropped-grouping");
+    for (let groupElm of Array.from(allDroppedGroupingElms))
+      this._dropzoneElm.querySelector(".slick-groupby-remove")?.remove(), groupElm?.remove();
+    this._dropzonePlaceholder.style.display = "inline-block", this._groupToggler && (this._groupToggler.style.display = "none");
+  }
+  removeFromArray(arrayToModify, itemToRemove) {
+    if (Array.isArray(arrayToModify)) {
+      let itemIdx = arrayToModify.findIndex((a) => a.id === itemToRemove.id);
+      itemIdx >= 0 && arrayToModify.splice(itemIdx, 1);
     }
-    dropzonePlaceholder.style.display = "inline-block";
+    return arrayToModify;
   }
-  function removeFromArray(arr) {
-    for (var what, a = arguments, L = a.length, ax; L > 1 && arr.length; )
-      for (what = a[--L]; (ax = arr.indexOf(what)) != -1; )
-        arr.splice(ax, 1);
-    return arr;
-  }
-  function removeGroupBy(id, _column, entry) {
+  removeGroupBy(id, _hdrColumnElm, entry) {
     entry.remove();
-    var groupby = [];
-    _gridColumns.forEach(function(e) {
-      groupby[e.id] = e;
-    }), removeFromArray(columnsGroupBy, groupby[id]), columnsGroupBy.length === 0 && (dropzonePlaceholder.style = "block", groupToggler.style.display = "none"), updateGroupBy("remove-group");
+    let groupby = [];
+    this._gridColumns.forEach((col) => groupby[col.id] = col), this.removeFromArray(this._columnsGroupBy, groupby[id]), this._columnsGroupBy.length === 0 && (this._dropzonePlaceholder.style.display = "block", this._groupToggler && (this._groupToggler.style.display = "none")), this.updateGroupBy("remove-group");
   }
-  function toggleGroupToggler(targetElm, collapsing = !0, shouldExecuteDataViewCommand = !0) {
-    targetElm && (collapsing === !0 ? (targetElm.classList.add("collapsed"), targetElm.classList.remove("expanded"), shouldExecuteDataViewCommand && _dataView.collapseAllGroups()) : (targetElm.classList.remove("collapsed"), targetElm.classList.add("expanded"), shouldExecuteDataViewCommand && _dataView.expandAllGroups()));
+  toggleGroupToggler(targetElm, collapsing = !0, shouldExecuteDataViewCommand = !0) {
+    targetElm && (collapsing === !0 ? (targetElm.classList.add("collapsed"), targetElm.classList.remove("expanded"), shouldExecuteDataViewCommand && this._dataView.collapseAllGroups()) : (targetElm.classList.remove("collapsed"), targetElm.classList.add("expanded"), shouldExecuteDataViewCommand && this._dataView.expandAllGroups()));
   }
-  function updateGroupBy(originator) {
-    if (columnsGroupBy.length === 0) {
-      _dataView.setGrouping([]), onGroupChanged.notify({ caller: originator, groupColumns: [] });
+  updateGroupBy(originator) {
+    if (this._columnsGroupBy.length === 0) {
+      this._dataView.setGrouping([]), this.onGroupChanged.notify({ caller: originator, groupColumns: [] });
       return;
     }
-    var groupingArray = [];
-    columnsGroupBy.forEach(function(element) {
-      groupingArray.push(element.grouping);
-    }), _dataView.setGrouping(groupingArray), onGroupChanged.notify({ caller: originator, groupColumns: groupingArray });
+    let groupingArray = [];
+    this._columnsGroupBy.forEach((element) => groupingArray.push(element.grouping)), this._dataView.setGrouping(groupingArray), this.onGroupChanged.notify({ caller: originator, groupColumns: groupingArray });
   }
-  Utils19.extend(this, {
-    init,
-    destroy,
-    pluginName: "DraggableGrouping",
-    onGroupChanged,
-    setDroppedGroups,
-    clearDroppedGroups,
-    getSetupColumnReorder: setupColumnReorder
-  });
-}
+};
 
 // src/plugins/slick.headerbuttons.ts
-var BindingEventService10 = BindingEventService, SlickEvent14 = Event, EventHandler7 = EventHandler, Utils20 = Utils, SlickHeaderButtons = class {
+var BindingEventService10 = BindingEventService, SlickEvent14 = Event, EventHandler6 = EventHandler, Utils20 = Utils, SlickHeaderButtons = class {
   constructor(options) {
     // --
     // public API
@@ -7751,7 +7796,7 @@ var BindingEventService10 = BindingEventService, SlickEvent14 = Event, EventHand
     // --
     // protected props
     __publicField(this, "_grid");
-    __publicField(this, "_handler", new EventHandler7());
+    __publicField(this, "_handler", new EventHandler6());
     __publicField(this, "_bindingEventService", new BindingEventService10());
     __publicField(this, "_defaults", {
       buttonCssClass: "slick-header-button"
@@ -7806,7 +7851,7 @@ var BindingEventService10 = BindingEventService, SlickEvent14 = Event, EventHand
 };
 
 // src/plugins/slick.headermenu.ts
-var BindingEventService11 = BindingEventService, SlickEvent15 = Event, SlickEventHandler4 = SlickEventHandler, Utils21 = Utils, SlickHeaderMenu = class {
+var BindingEventService11 = BindingEventService, SlickEvent15 = Event, SlickEventHandler5 = SlickEventHandler, Utils21 = Utils, SlickHeaderMenu = class {
   constructor(options) {
     // --
     // public API
@@ -7817,7 +7862,7 @@ var BindingEventService11 = BindingEventService, SlickEvent15 = Event, SlickEven
     // --
     // protected props
     __publicField(this, "_grid");
-    __publicField(this, "_handler", new SlickEventHandler4());
+    __publicField(this, "_handler", new SlickEventHandler5());
     __publicField(this, "_bindingEventService", new BindingEventService11());
     __publicField(this, "_defaults", {
       buttonCssClass: void 0,
@@ -7929,96 +7974,129 @@ var BindingEventService11 = BindingEventService, SlickEvent15 = Event, SlickEven
   }
 };
 
-// src/plugins/slick.resizer.js
-var BindingEventService12 = BindingEventService, SlickEvent16 = Event, Utils22 = Utils;
-function Resizer(_options, fixedDimensions) {
-  let DATAGRID_MIN_HEIGHT = 180, DATAGRID_MIN_WIDTH = 300, DATAGRID_BOTTOM_PADDING = 20, _self = this, _fixedHeight, _fixedWidth, _grid, _gridOptions, _gridUid, _lastDimensions, _timer, _resizePaused = !1, _gridDomElm, _pageContainerElm, _gridContainerElm, _defaults = {
-    bottomPadding: 20,
-    applyResizeToContainer: !1,
-    minHeight: 180,
-    minWidth: 300,
-    rightPadding: 0
-  }, options = {}, _bindingEventService = new BindingEventService12();
-  function setOptions(_newOptions) {
-    options = Utils22.extend(!0, {}, _defaults, options, _newOptions);
+// src/plugins/slick.resizer.ts
+var BindingEventService12 = BindingEventService, SlickEvent16 = Event, Utils22 = Utils, DATAGRID_MIN_HEIGHT = 180, DATAGRID_MIN_WIDTH = 300, DATAGRID_BOTTOM_PADDING = 20, SlickResizer = class {
+  constructor(options, fixedDimensions) {
+    // --
+    // public API
+    __publicField(this, "pluginName", "Resizer");
+    __publicField(this, "onGridAfterResize", new SlickEvent16());
+    __publicField(this, "onGridBeforeResize", new SlickEvent16());
+    // --
+    // protected props
+    __publicField(this, "_bindingEventService");
+    __publicField(this, "_fixedHeight");
+    __publicField(this, "_fixedWidth");
+    __publicField(this, "_grid");
+    __publicField(this, "_gridDomElm");
+    __publicField(this, "_gridContainerElm");
+    __publicField(this, "_pageContainerElm");
+    __publicField(this, "_gridOptions");
+    __publicField(this, "_gridUid", "");
+    __publicField(this, "_lastDimensions");
+    __publicField(this, "_resizePaused", !1);
+    __publicField(this, "_timer");
+    __publicField(this, "_options");
+    __publicField(this, "_defaults", {
+      bottomPadding: 20,
+      applyResizeToContainer: !1,
+      minHeight: 180,
+      minWidth: 300,
+      rightPadding: 0
+    });
+    this._bindingEventService = new BindingEventService12(), this._options = Utils22.extend(!0, {}, this._defaults, options), fixedDimensions && (this._fixedHeight = fixedDimensions.height, this._fixedWidth = fixedDimensions.width);
   }
-  function init(grid) {
-    setOptions(_options), _grid = grid, _gridOptions = _grid.getOptions(), _gridUid = _grid.getUID(), _gridDomElm = _grid.getContainerNode(), typeof _options.container == "string" ? _pageContainerElm = typeof _options.container == "string" ? document.querySelector(_options.container) : _options.container : _pageContainerElm = _options.container, options.gridContainer && (_gridContainerElm = options.gridContainer), fixedDimensions && (_fixedHeight = fixedDimensions.height, _fixedWidth = fixedDimensions.width), _gridOptions && bindAutoResizeDataGrid();
+  setOptions(newOptions) {
+    this._options = Utils22.extend(!0, {}, this._defaults, this._options, newOptions);
   }
-  function bindAutoResizeDataGrid(newSizes) {
-    let gridElmOffset = Utils22.offset(_gridDomElm);
-    (_gridDomElm !== void 0 || gridElmOffset !== void 0) && (resizeGrid(0, newSizes, null), _bindingEventService.bind(window, "resize", function(event) {
-      _self.onGridBeforeResize.notify({ grid: _grid }, event, _self), _resizePaused || (resizeGrid(0, newSizes, event), resizeGrid(0, newSizes, event));
+  init(grid) {
+    this.setOptions(this._options), this._grid = grid, this._gridOptions = this._grid.getOptions(), this._gridUid = this._grid.getUID(), this._gridDomElm = this._grid.getContainerNode(), this._pageContainerElm = typeof this._options.container == "string" ? document.querySelector(this._options.container) : this._options.container, this._options.gridContainer && (this._gridContainerElm = this._options.gridContainer), this._gridOptions && this.bindAutoResizeDataGrid();
+  }
+  /** Bind an auto resize trigger on the datagrid, if that is enable then it will resize itself to the available space
+  * Options: we could also provide a % factor to resize on each height/width independently
+  */
+  bindAutoResizeDataGrid(newSizes) {
+    let gridElmOffset = Utils22.offset(this._gridDomElm);
+    (this._gridDomElm !== void 0 || gridElmOffset !== void 0) && (this.resizeGrid(0, newSizes, null), this._bindingEventService.bind(window, "resize", (event) => {
+      this.onGridBeforeResize.notify({ grid: this._grid }, event, this), this._resizePaused || (this.resizeGrid(0, newSizes, event), this.resizeGrid(0, newSizes, event));
     }));
   }
-  function calculateGridNewDimensions() {
-    let gridElmOffset = Utils22.offset(_gridDomElm);
-    if (!window || _pageContainerElm === void 0 || _gridDomElm === void 0 || gridElmOffset === void 0)
+  /**
+   * Calculate the datagrid new height/width from the available space, also consider that a % factor might be applied to calculation
+   */
+  calculateGridNewDimensions() {
+    let gridElmOffset = Utils22.offset(this._gridDomElm);
+    if (!window || this._pageContainerElm === void 0 || this._gridDomElm === void 0 || gridElmOffset === void 0)
       return null;
-    let bottomPadding = options && options.bottomPadding !== void 0 ? options.bottomPadding : DATAGRID_BOTTOM_PADDING, gridHeight = 0, gridOffsetTop = 0;
-    options.calculateAvailableSizeBy === "container" ? gridHeight = Utils22.innerSize(_pageContainerElm, "height") || 0 : (gridHeight = window.innerHeight || 0, gridOffsetTop = gridElmOffset !== void 0 ? gridElmOffset.top : 0);
-    let availableHeight = gridHeight - gridOffsetTop - bottomPadding, availableWidth = Utils22.innerSize(_pageContainerElm, "width") || window.innerWidth || 0, maxHeight = options && options.maxHeight || void 0, minHeight = options && options.minHeight !== void 0 ? options.minHeight : DATAGRID_MIN_HEIGHT, maxWidth = options && options.maxWidth || void 0, minWidth = options && options.minWidth !== void 0 ? options.minWidth : DATAGRID_MIN_WIDTH, newHeight = availableHeight, newWidth = options && options.rightPadding ? availableWidth - options.rightPadding : availableWidth;
+    let bottomPadding = this._options?.bottomPadding !== void 0 ? this._options.bottomPadding : DATAGRID_BOTTOM_PADDING, gridHeight = 0, gridOffsetTop = 0;
+    this._options.calculateAvailableSizeBy === "container" ? gridHeight = Utils22.innerSize(this._pageContainerElm, "height") || 0 : (gridHeight = window.innerHeight || 0, gridOffsetTop = gridElmOffset !== void 0 ? gridElmOffset.top : 0);
+    let availableHeight = gridHeight - gridOffsetTop - bottomPadding, availableWidth = Utils22.innerSize(this._pageContainerElm, "width") || window.innerWidth || 0, maxHeight = this._options?.maxHeight || void 0, minHeight = this._options?.minHeight !== void 0 ? this._options.minHeight : DATAGRID_MIN_HEIGHT, maxWidth = this._options?.maxWidth || void 0, minWidth = this._options?.minWidth !== void 0 ? this._options.minWidth : DATAGRID_MIN_WIDTH, newHeight = availableHeight, newWidth = this._options?.rightPadding ? availableWidth - this._options.rightPadding : availableWidth;
     return newHeight < minHeight && (newHeight = minHeight), maxHeight && newHeight > maxHeight && (newHeight = maxHeight), newWidth < minWidth && (newWidth = minWidth), maxWidth && newWidth > maxWidth && (newWidth = maxWidth), {
-      height: _fixedHeight || newHeight,
-      width: _fixedWidth || newWidth
+      height: this._fixedHeight || newHeight,
+      width: this._fixedWidth || newWidth
     };
   }
-  function destroy() {
-    _self.onGridBeforeResize.unsubscribe(), _self.onGridAfterResize.unsubscribe(), _bindingEventService.unbindAll();
+  /** Destroy function when element is destroyed */
+  destroy() {
+    this.onGridBeforeResize.unsubscribe(), this.onGridAfterResize.unsubscribe(), this._bindingEventService.unbindAll();
   }
-  function getLastResizeDimensions() {
-    return _lastDimensions;
+  /**
+  * Return the last resize dimensions used by the service
+  * @return {object} last dimensions (height: number, width: number)
+  */
+  getLastResizeDimensions() {
+    return this._lastDimensions;
   }
-  function pauseResizer(isResizePaused) {
-    _resizePaused = isResizePaused;
+  /**
+   * Provide the possibility to pause the resizer for some time, until user decides to re-enabled it later if he wish to.
+   * @param {boolean} isResizePaused are we pausing the resizer?
+   */
+  pauseResizer(isResizePaused) {
+    this._resizePaused = isResizePaused;
   }
-  function resizeGrid(delay, newSizes, event) {
-    if (delay = delay || 0, typeof Promise == "function")
-      return new Promise(function(resolve) {
-        delay > 0 ? (clearTimeout(_timer), _timer = setTimeout(function() {
-          resolve(resizeGridCallback(newSizes, event));
-        }, delay)) : resolve(resizeGridCallback(newSizes, event));
+  /**
+   * Resize the datagrid to fit the browser height & width.
+   * @param {number} [delay] to wait before resizing, defaults to 0 (in milliseconds)
+   * @param {object} [newSizes] can optionally be passed (height: number, width: number)
+   * @param {object} [event] that triggered the resize, defaults to null
+   * @return If the browser supports it, we can return a Promise that would resolve with the new dimensions
+   */
+  resizeGrid(delay, newSizes, event) {
+    let resizeDelay = delay || 0;
+    if (typeof Promise == "function")
+      return new Promise((resolve) => {
+        resizeDelay > 0 ? (clearTimeout(this._timer), this._timer = setTimeout(() => {
+          resolve(this.resizeGridCallback(newSizes, event));
+        }, resizeDelay)) : resolve(this.resizeGridCallback(newSizes, event));
       });
-    delay > 0 ? (clearTimeout(_timer), _timer = setTimeout(function() {
-      resizeGridCallback(newSizes, event);
-    }, delay)) : resizeGridCallback(newSizes, event);
+    resizeDelay > 0 ? (clearTimeout(this._timer), this._timer = setTimeout(() => {
+      this.resizeGridCallback(newSizes, event);
+    }, resizeDelay)) : this.resizeGridCallback(newSizes, event);
   }
-  function resizeGridCallback(newSizes, event) {
-    let lastDimensions = resizeGridWithDimensions(newSizes);
-    return _self.onGridAfterResize.notify({ grid: _grid, dimensions: lastDimensions }, event, _self), lastDimensions;
+  resizeGridCallback(newSizes, event) {
+    let lastDimensions = this.resizeGridWithDimensions(newSizes);
+    return this.onGridAfterResize.notify({ grid: this._grid, dimensions: lastDimensions }, event, this), lastDimensions;
   }
-  function resizeGridWithDimensions(newSizes) {
-    let availableDimensions = calculateGridNewDimensions();
-    if ((newSizes || availableDimensions) && _gridDomElm)
+  resizeGridWithDimensions(newSizes) {
+    let availableDimensions = this.calculateGridNewDimensions();
+    if ((newSizes || availableDimensions) && this._gridDomElm)
       try {
-        let newHeight = newSizes && newSizes.height ? newSizes.height : availableDimensions.height, newWidth = newSizes && newSizes.width ? newSizes.width : availableDimensions.width;
-        _gridOptions.autoHeight || (_gridDomElm.style.height = `${newHeight}px`), _gridDomElm.style.width = `${newWidth}px`, _gridContainerElm && (_gridContainerElm.style.width = `${newWidth}px`), new RegExp("MSIE [6-8]").exec(navigator.userAgent) === null && _grid && _grid.resizeCanvas && _grid.resizeCanvas(), _gridOptions && _gridOptions.enableAutoSizeColumns && _grid.autosizeColumns && _gridUid && document.querySelector(`.${_gridUid}`) && _grid.autosizeColumns(), _lastDimensions = {
+        let newHeight = newSizes?.height ? newSizes.height : availableDimensions?.height, newWidth = newSizes?.width ? newSizes.width : availableDimensions?.width;
+        this._gridOptions.autoHeight || (this._gridDomElm.style.height = `${newHeight}px`), this._gridDomElm.style.width = `${newWidth}px`, this._gridContainerElm && (this._gridContainerElm.style.width = `${newWidth}px`), new RegExp("MSIE [6-8]").exec(navigator.userAgent) === null && this._grid?.resizeCanvas && this._grid.resizeCanvas(), this._gridOptions?.enableAutoSizeColumns && this._grid.autosizeColumns && this._gridUid && document.querySelector(`.${this._gridUid}`) && this._grid.autosizeColumns(), this._lastDimensions = {
           height: newHeight,
           width: newWidth
         };
       } catch {
-        destroy();
+        this.destroy();
       }
-    return _lastDimensions;
+    return this._lastDimensions;
   }
-  Utils22.extend(this, {
-    init,
-    destroy,
-    pluginName: "Resizer",
-    bindAutoResizeDataGrid,
-    getLastResizeDimensions,
-    pauseResizer,
-    resizeGrid,
-    setOptions,
-    onGridAfterResize: new SlickEvent16(),
-    onGridBeforeResize: new SlickEvent16()
-  });
-}
+};
 
 // src/plugins/slick.rowdetailview.js
-var SlickEvent17 = Event, EventHandler8 = EventHandler, Utils23 = Utils;
+var SlickEvent17 = Event, EventHandler7 = EventHandler, Utils23 = Utils;
 function RowDetailView(options) {
-  var _grid, _gridOptions, _gridUid, _dataView, _dataViewIdProperty = "id", _expandableOverride = null, _self = this, _lastRange = null, _expandedRows = [], _handler = new EventHandler8(), _outsideRange = 5, _visibleRenderedCellCount = 0, _defaults = {
+  var _grid, _gridOptions, _gridUid, _dataView, _dataViewIdProperty = "id", _expandableOverride = null, _self = this, _lastRange = null, _expandedRows = [], _handler = new EventHandler7(), _outsideRange = 5, _visibleRenderedCellCount = 0, _defaults = {
     columnId: "_detail_selector",
     cssClass: "detailView-toggle",
     expandedClass: null,
@@ -8293,9 +8371,9 @@ function RowDetailView(options) {
 }
 
 // src/plugins/slick.rowmovemanager.js
-var SlickEvent18 = Event, EventHandler9 = EventHandler, Utils24 = Utils;
+var SlickEvent18 = Event, EventHandler8 = EventHandler, Utils24 = Utils;
 function RowMoveManager(options) {
-  var _grid, _canvas, _dragging, _self = this, _usabilityOverride = null, _handler = new EventHandler9(), _defaults = {
+  var _grid, _canvas, _dragging, _self = this, _usabilityOverride = null, _handler = new EventHandler8(), _defaults = {
     columnId: "_move",
     cssClass: null,
     cancelEditOnDrag: !1,
@@ -8407,7 +8485,7 @@ function RowMoveManager(options) {
 }
 
 // src/plugins/slick.rowselectionmodel.ts
-var Draggable4 = Draggable, keyCode6 = keyCode, SlickCellRangeDecorator3 = SlickCellRangeDecorator, SlickCellRangeSelector3 = SlickCellRangeSelector, SlickEvent19 = SlickEvent, SlickEventData8 = SlickEventData, SlickEventHandler5 = SlickEventHandler, SlickRange6 = SlickRange, Utils25 = Utils, SlickRowSelectionModel = class {
+var Draggable4 = Draggable, keyCode6 = keyCode, SlickCellRangeDecorator3 = SlickCellRangeDecorator, SlickCellRangeSelector3 = SlickCellRangeSelector, SlickEvent19 = SlickEvent, SlickEventData8 = SlickEventData, SlickEventHandler6 = SlickEventHandler, SlickRange6 = SlickRange, Utils25 = Utils, SlickRowSelectionModel = class {
   constructor(options) {
     // --
     // public API
@@ -8417,7 +8495,7 @@ var Draggable4 = Draggable, keyCode6 = keyCode, SlickCellRangeDecorator3 = Slick
     // protected props
     __publicField(this, "_grid");
     __publicField(this, "_ranges", []);
-    __publicField(this, "_handler", new SlickEventHandler5());
+    __publicField(this, "_handler", new SlickEventHandler6());
     __publicField(this, "_inHandler", !1);
     __publicField(this, "_selector");
     __publicField(this, "_isRowMoveManagerHandler");

@@ -1,94 +1,133 @@
 "use strict";
 (() => {
-  // src/plugins/slick.resizer.js
-  var BindingEventService = Slick.BindingEventService, SlickEvent = Slick.Event, Utils = Slick.Utils;
-  function Resizer(_options, fixedDimensions) {
-    let DATAGRID_MIN_HEIGHT = 180, DATAGRID_MIN_WIDTH = 300, DATAGRID_BOTTOM_PADDING = 20, _self = this, _fixedHeight, _fixedWidth, _grid, _gridOptions, _gridUid, _lastDimensions, _timer, _resizePaused = !1, _gridDomElm, _pageContainerElm, _gridContainerElm, _defaults = {
-      bottomPadding: 20,
-      applyResizeToContainer: !1,
-      minHeight: 180,
-      minWidth: 300,
-      rightPadding: 0
-    }, options = {}, _bindingEventService = new BindingEventService();
-    function setOptions(_newOptions) {
-      options = Utils.extend(!0, {}, _defaults, options, _newOptions);
+  var __defProp = Object.defineProperty;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: !0, configurable: !0, writable: !0, value }) : obj[key] = value;
+  var __publicField = (obj, key, value) => (__defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value), value);
+
+  // src/plugins/slick.resizer.ts
+  var BindingEventService = Slick.BindingEventService, SlickEvent = Slick.Event, Utils = Slick.Utils, DATAGRID_MIN_HEIGHT = 180, DATAGRID_MIN_WIDTH = 300, DATAGRID_BOTTOM_PADDING = 20, SlickResizer = class {
+    constructor(options, fixedDimensions) {
+      // --
+      // public API
+      __publicField(this, "pluginName", "Resizer");
+      __publicField(this, "onGridAfterResize", new SlickEvent());
+      __publicField(this, "onGridBeforeResize", new SlickEvent());
+      // --
+      // protected props
+      __publicField(this, "_bindingEventService");
+      __publicField(this, "_fixedHeight");
+      __publicField(this, "_fixedWidth");
+      __publicField(this, "_grid");
+      __publicField(this, "_gridDomElm");
+      __publicField(this, "_gridContainerElm");
+      __publicField(this, "_pageContainerElm");
+      __publicField(this, "_gridOptions");
+      __publicField(this, "_gridUid", "");
+      __publicField(this, "_lastDimensions");
+      __publicField(this, "_resizePaused", !1);
+      __publicField(this, "_timer");
+      __publicField(this, "_options");
+      __publicField(this, "_defaults", {
+        bottomPadding: 20,
+        applyResizeToContainer: !1,
+        minHeight: 180,
+        minWidth: 300,
+        rightPadding: 0
+      });
+      this._bindingEventService = new BindingEventService(), this._options = Utils.extend(!0, {}, this._defaults, options), fixedDimensions && (this._fixedHeight = fixedDimensions.height, this._fixedWidth = fixedDimensions.width);
     }
-    function init(grid) {
-      setOptions(_options), _grid = grid, _gridOptions = _grid.getOptions(), _gridUid = _grid.getUID(), _gridDomElm = _grid.getContainerNode(), typeof _options.container == "string" ? _pageContainerElm = typeof _options.container == "string" ? document.querySelector(_options.container) : _options.container : _pageContainerElm = _options.container, options.gridContainer && (_gridContainerElm = options.gridContainer), fixedDimensions && (_fixedHeight = fixedDimensions.height, _fixedWidth = fixedDimensions.width), _gridOptions && bindAutoResizeDataGrid();
+    setOptions(newOptions) {
+      this._options = Utils.extend(!0, {}, this._defaults, this._options, newOptions);
     }
-    function bindAutoResizeDataGrid(newSizes) {
-      let gridElmOffset = Utils.offset(_gridDomElm);
-      (_gridDomElm !== void 0 || gridElmOffset !== void 0) && (resizeGrid(0, newSizes, null), _bindingEventService.bind(window, "resize", function(event) {
-        _self.onGridBeforeResize.notify({ grid: _grid }, event, _self), _resizePaused || (resizeGrid(0, newSizes, event), resizeGrid(0, newSizes, event));
+    init(grid) {
+      this.setOptions(this._options), this._grid = grid, this._gridOptions = this._grid.getOptions(), this._gridUid = this._grid.getUID(), this._gridDomElm = this._grid.getContainerNode(), this._pageContainerElm = typeof this._options.container == "string" ? document.querySelector(this._options.container) : this._options.container, this._options.gridContainer && (this._gridContainerElm = this._options.gridContainer), this._gridOptions && this.bindAutoResizeDataGrid();
+    }
+    /** Bind an auto resize trigger on the datagrid, if that is enable then it will resize itself to the available space
+    * Options: we could also provide a % factor to resize on each height/width independently
+    */
+    bindAutoResizeDataGrid(newSizes) {
+      let gridElmOffset = Utils.offset(this._gridDomElm);
+      (this._gridDomElm !== void 0 || gridElmOffset !== void 0) && (this.resizeGrid(0, newSizes, null), this._bindingEventService.bind(window, "resize", (event) => {
+        this.onGridBeforeResize.notify({ grid: this._grid }, event, this), this._resizePaused || (this.resizeGrid(0, newSizes, event), this.resizeGrid(0, newSizes, event));
       }));
     }
-    function calculateGridNewDimensions() {
-      let gridElmOffset = Utils.offset(_gridDomElm);
-      if (!window || _pageContainerElm === void 0 || _gridDomElm === void 0 || gridElmOffset === void 0)
+    /**
+     * Calculate the datagrid new height/width from the available space, also consider that a % factor might be applied to calculation
+     */
+    calculateGridNewDimensions() {
+      var _a, _b, _c, _d, _e, _f;
+      let gridElmOffset = Utils.offset(this._gridDomElm);
+      if (!window || this._pageContainerElm === void 0 || this._gridDomElm === void 0 || gridElmOffset === void 0)
         return null;
-      let bottomPadding = options && options.bottomPadding !== void 0 ? options.bottomPadding : DATAGRID_BOTTOM_PADDING, gridHeight = 0, gridOffsetTop = 0;
-      options.calculateAvailableSizeBy === "container" ? gridHeight = Utils.innerSize(_pageContainerElm, "height") || 0 : (gridHeight = window.innerHeight || 0, gridOffsetTop = gridElmOffset !== void 0 ? gridElmOffset.top : 0);
-      let availableHeight = gridHeight - gridOffsetTop - bottomPadding, availableWidth = Utils.innerSize(_pageContainerElm, "width") || window.innerWidth || 0, maxHeight = options && options.maxHeight || void 0, minHeight = options && options.minHeight !== void 0 ? options.minHeight : DATAGRID_MIN_HEIGHT, maxWidth = options && options.maxWidth || void 0, minWidth = options && options.minWidth !== void 0 ? options.minWidth : DATAGRID_MIN_WIDTH, newHeight = availableHeight, newWidth = options && options.rightPadding ? availableWidth - options.rightPadding : availableWidth;
+      let bottomPadding = ((_a = this._options) == null ? void 0 : _a.bottomPadding) !== void 0 ? this._options.bottomPadding : DATAGRID_BOTTOM_PADDING, gridHeight = 0, gridOffsetTop = 0;
+      this._options.calculateAvailableSizeBy === "container" ? gridHeight = Utils.innerSize(this._pageContainerElm, "height") || 0 : (gridHeight = window.innerHeight || 0, gridOffsetTop = gridElmOffset !== void 0 ? gridElmOffset.top : 0);
+      let availableHeight = gridHeight - gridOffsetTop - bottomPadding, availableWidth = Utils.innerSize(this._pageContainerElm, "width") || window.innerWidth || 0, maxHeight = ((_b = this._options) == null ? void 0 : _b.maxHeight) || void 0, minHeight = ((_c = this._options) == null ? void 0 : _c.minHeight) !== void 0 ? this._options.minHeight : DATAGRID_MIN_HEIGHT, maxWidth = ((_d = this._options) == null ? void 0 : _d.maxWidth) || void 0, minWidth = ((_e = this._options) == null ? void 0 : _e.minWidth) !== void 0 ? this._options.minWidth : DATAGRID_MIN_WIDTH, newHeight = availableHeight, newWidth = (_f = this._options) != null && _f.rightPadding ? availableWidth - this._options.rightPadding : availableWidth;
       return newHeight < minHeight && (newHeight = minHeight), maxHeight && newHeight > maxHeight && (newHeight = maxHeight), newWidth < minWidth && (newWidth = minWidth), maxWidth && newWidth > maxWidth && (newWidth = maxWidth), {
-        height: _fixedHeight || newHeight,
-        width: _fixedWidth || newWidth
+        height: this._fixedHeight || newHeight,
+        width: this._fixedWidth || newWidth
       };
     }
-    function destroy() {
-      _self.onGridBeforeResize.unsubscribe(), _self.onGridAfterResize.unsubscribe(), _bindingEventService.unbindAll();
+    /** Destroy function when element is destroyed */
+    destroy() {
+      this.onGridBeforeResize.unsubscribe(), this.onGridAfterResize.unsubscribe(), this._bindingEventService.unbindAll();
     }
-    function getLastResizeDimensions() {
-      return _lastDimensions;
+    /**
+    * Return the last resize dimensions used by the service
+    * @return {object} last dimensions (height: number, width: number)
+    */
+    getLastResizeDimensions() {
+      return this._lastDimensions;
     }
-    function pauseResizer(isResizePaused) {
-      _resizePaused = isResizePaused;
+    /**
+     * Provide the possibility to pause the resizer for some time, until user decides to re-enabled it later if he wish to.
+     * @param {boolean} isResizePaused are we pausing the resizer?
+     */
+    pauseResizer(isResizePaused) {
+      this._resizePaused = isResizePaused;
     }
-    function resizeGrid(delay, newSizes, event) {
-      if (delay = delay || 0, typeof Promise == "function")
-        return new Promise(function(resolve) {
-          delay > 0 ? (clearTimeout(_timer), _timer = setTimeout(function() {
-            resolve(resizeGridCallback(newSizes, event));
-          }, delay)) : resolve(resizeGridCallback(newSizes, event));
+    /**
+     * Resize the datagrid to fit the browser height & width.
+     * @param {number} [delay] to wait before resizing, defaults to 0 (in milliseconds)
+     * @param {object} [newSizes] can optionally be passed (height: number, width: number)
+     * @param {object} [event] that triggered the resize, defaults to null
+     * @return If the browser supports it, we can return a Promise that would resolve with the new dimensions
+     */
+    resizeGrid(delay, newSizes, event) {
+      let resizeDelay = delay || 0;
+      if (typeof Promise == "function")
+        return new Promise((resolve) => {
+          resizeDelay > 0 ? (clearTimeout(this._timer), this._timer = setTimeout(() => {
+            resolve(this.resizeGridCallback(newSizes, event));
+          }, resizeDelay)) : resolve(this.resizeGridCallback(newSizes, event));
         });
-      delay > 0 ? (clearTimeout(_timer), _timer = setTimeout(function() {
-        resizeGridCallback(newSizes, event);
-      }, delay)) : resizeGridCallback(newSizes, event);
+      resizeDelay > 0 ? (clearTimeout(this._timer), this._timer = setTimeout(() => {
+        this.resizeGridCallback(newSizes, event);
+      }, resizeDelay)) : this.resizeGridCallback(newSizes, event);
     }
-    function resizeGridCallback(newSizes, event) {
-      let lastDimensions = resizeGridWithDimensions(newSizes);
-      return _self.onGridAfterResize.notify({ grid: _grid, dimensions: lastDimensions }, event, _self), lastDimensions;
+    resizeGridCallback(newSizes, event) {
+      let lastDimensions = this.resizeGridWithDimensions(newSizes);
+      return this.onGridAfterResize.notify({ grid: this._grid, dimensions: lastDimensions }, event, this), lastDimensions;
     }
-    function resizeGridWithDimensions(newSizes) {
-      let availableDimensions = calculateGridNewDimensions();
-      if ((newSizes || availableDimensions) && _gridDomElm)
+    resizeGridWithDimensions(newSizes) {
+      var _a, _b;
+      let availableDimensions = this.calculateGridNewDimensions();
+      if ((newSizes || availableDimensions) && this._gridDomElm)
         try {
-          let newHeight = newSizes && newSizes.height ? newSizes.height : availableDimensions.height, newWidth = newSizes && newSizes.width ? newSizes.width : availableDimensions.width;
-          _gridOptions.autoHeight || (_gridDomElm.style.height = `${newHeight}px`), _gridDomElm.style.width = `${newWidth}px`, _gridContainerElm && (_gridContainerElm.style.width = `${newWidth}px`), new RegExp("MSIE [6-8]").exec(navigator.userAgent) === null && _grid && _grid.resizeCanvas && _grid.resizeCanvas(), _gridOptions && _gridOptions.enableAutoSizeColumns && _grid.autosizeColumns && _gridUid && document.querySelector(`.${_gridUid}`) && _grid.autosizeColumns(), _lastDimensions = {
+          let newHeight = newSizes != null && newSizes.height ? newSizes.height : availableDimensions == null ? void 0 : availableDimensions.height, newWidth = newSizes != null && newSizes.width ? newSizes.width : availableDimensions == null ? void 0 : availableDimensions.width;
+          this._gridOptions.autoHeight || (this._gridDomElm.style.height = `${newHeight}px`), this._gridDomElm.style.width = `${newWidth}px`, this._gridContainerElm && (this._gridContainerElm.style.width = `${newWidth}px`), new RegExp("MSIE [6-8]").exec(navigator.userAgent) === null && ((_a = this._grid) != null && _a.resizeCanvas) && this._grid.resizeCanvas(), (_b = this._gridOptions) != null && _b.enableAutoSizeColumns && this._grid.autosizeColumns && this._gridUid && document.querySelector(`.${this._gridUid}`) && this._grid.autosizeColumns(), this._lastDimensions = {
             height: newHeight,
             width: newWidth
           };
         } catch (e) {
-          destroy();
+          this.destroy();
         }
-      return _lastDimensions;
+      return this._lastDimensions;
     }
-    Utils.extend(this, {
-      init,
-      destroy,
-      pluginName: "Resizer",
-      bindAutoResizeDataGrid,
-      getLastResizeDimensions,
-      pauseResizer,
-      resizeGrid,
-      setOptions,
-      onGridAfterResize: new SlickEvent(),
-      onGridBeforeResize: new SlickEvent()
-    });
-  }
+  };
   window.Slick && Utils.extend(!0, window, {
     Slick: {
       Plugins: {
-        Resizer
+        Resizer: SlickResizer
       }
     }
   });
