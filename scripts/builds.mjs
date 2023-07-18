@@ -136,20 +136,20 @@ export async function buildIifeFile(file) {
  */
 export function runBuild(options) {
   return build({
-      // default options
-      ...{
-        color: true,
-        bundle: true,
-        minify: argv['minify'] || false,
-        minifySyntax: true,
-        target: 'es2015', // support ES6 and IE11
-        sourcemap: true,
-        logLevel: 'error',
-        // packages: 'external', // check SortableJS
-      },
+    // default options
+    ...{
+      color: true,
+      bundle: true,
+      minify: argv['minify'] || false,
+      minifySyntax: true,
+      target: 'es2018',
+      sourcemap: true,
+      logLevel: 'error',
+      // packages: 'external', // check SortableJS
+    },
 
-      // merge any optional esbuild options
-      ...options,
+    // merge any optional esbuild options
+    ...options,
   }).catch(() => {
     // don't do anything when an error occured, this is to avoid watch mode to crash on errors
     // console.error('esbuild error: ', err);
