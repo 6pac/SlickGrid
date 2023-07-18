@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         # define which version of NodeJS to run the build
-        node: [16]
+        node: [18]
 
     steps:
       - name: Clone repository
