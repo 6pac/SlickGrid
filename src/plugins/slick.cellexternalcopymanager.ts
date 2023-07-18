@@ -3,8 +3,8 @@ import type { SlickGrid } from '../slick.grid';
 import { SlickEvent as SlickEvent_, Utils as Utils_ } from '../slick.core';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (cjs/esm)
-const SlickEvent = (IIFE_ONLY ? Slick.Event : SlickEvent_) as typeof SlickEvent_;
-const Utils = (IIFE_ONLY ? Slick.Utils : Utils_) as typeof Utils_;
+const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
 const CLEAR_COPY_SELECTION_DELAY = 2000;
 const CLIPBOARD_PASTE_DELAY = 100;

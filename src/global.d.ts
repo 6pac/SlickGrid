@@ -18,11 +18,13 @@ import type {
   ValueFilterMode,
   WidthEvalMode,
 } from './slick.core';
+import type { SlickDataView } from './slick.dataview';
+import type { SlickGrid } from './slick.grid';
 import type { SlickColumnMenu } from './controls/slick.columnmenu';
 import type { SlickColumnPicker } from './controls/slick.columnpicker';
 import type { SlickGridMenu } from './controls/slick.gridmenu';
 import type { SlickGridPager } from './controls/slick.pager';
-import type { SlickAutoTooltip } from './plugins/slick.autotooltips';
+import type { SlickAutoTooltips } from './plugins/slick.autotooltips';
 import type { SlickCellCopyManager } from './plugins/slick.cellcopymanager';
 import type { SlickCellMenu } from './plugins/slick.cellmenu';
 import type { SlickCheckboxSelectColumn } from './plugins/slick.checkboxselectcolumn';
@@ -35,13 +37,13 @@ import type { SlickCellRangeSelector } from './plugins/slick.cellrangeselector';
 import type { SlickCellSelectionModel } from './plugins/slick.cellselectionmodel';
 import type { SlickDraggableGrouping } from './plugins/slick.draggablegrouping';
 import type { SlickRowSelectionModel } from './plugins/slick.rowselectionmodel';
+import type { SlickResizer } from './plugins/slick.resizer';
 import type { SlickState } from './plugins/slick.state';
 import type { SlickGroupItemMetadataProvider } from './slick.groupitemmetadataprovider';
 import type { Draggable, MouseWheel, Resizable } from './slick.interactions';
 import type { Aggregators } from './slick.dataview';
 import type { Editors } from './slick.editors';
 import type { Formatters } from './slick.formatters';
-import type { SlickGrid } from './slick.grid';
 
 declare global {
   var IIFE_ONLY: boolean;
@@ -75,7 +77,7 @@ declare global {
     EventData: typeof SlickEventData,
     EventHandler: typeof SlickEventHandler,
     Formatters: typeof Formatters,
-    GlobalEditorLock: typeof GlobalEditorLock,
+    GlobalEditorLock: typeof SlickGlobalEditorLock,
     Grid: typeof SlickGrid,
     GridAutosizeColsMode: typeof GridAutosizeColsMode,
     Group: typeof SlickGroup,
@@ -86,7 +88,8 @@ declare global {
       CellMenu: typeof SlickCellMenu,
       ContextMenu: typeof SlickContextMenu,
       HeaderButtons: typeof SlickHeaderButtons,
-      HeaderMenu: typeof SlickHeaderMenu
+      HeaderMenu: typeof SlickHeaderMenu,
+      Resizer: typeof SlickResizer
     },
     preClickClassName: typeof preClickClassName,
     Range: typeof SlickRange,
