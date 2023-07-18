@@ -7985,7 +7985,7 @@ var BindingEventService12 = BindingEventService, SlickEvent16 = Event, Utils22 =
     if ((newSizes || availableDimensions) && this._gridDomElm)
       try {
         let newHeight = newSizes?.height ? newSizes.height : availableDimensions?.height, newWidth = newSizes?.width ? newSizes.width : availableDimensions?.width;
-        this._gridOptions.autoHeight || (this._gridDomElm.style.height = `${newHeight}px`), this._gridDomElm.style.width = `${newWidth}px`, this._gridContainerElm && (this._gridContainerElm.style.width = `${newWidth}px`), new RegExp("MSIE [6-8]").exec(navigator.userAgent) === null && this._grid?.resizeCanvas && this._grid.resizeCanvas(), this._gridOptions?.enableAutoSizeColumns && this._grid.autosizeColumns && this._gridUid && document.querySelector(`.${this._gridUid}`) && this._grid.autosizeColumns(), this._lastDimensions = {
+        this._gridOptions.autoHeight || (this._gridDomElm.style.height = `${newHeight}px`), this._gridDomElm.style.width = `${newWidth}px`, this._gridContainerElm && (this._gridContainerElm.style.width = `${newWidth}px`), this._grid?.resizeCanvas && this._grid.resizeCanvas(), this._gridOptions?.enableAutoSizeColumns && this._grid.autosizeColumns && this._gridUid && document.querySelector(`.${this._gridUid}`) && this._grid.autosizeColumns(), this._lastDimensions = {
           height: newHeight,
           width: newWidth
         };

@@ -114,7 +114,7 @@
       if ((newSizes || availableDimensions) && this._gridDomElm)
         try {
           let newHeight = newSizes != null && newSizes.height ? newSizes.height : availableDimensions == null ? void 0 : availableDimensions.height, newWidth = newSizes != null && newSizes.width ? newSizes.width : availableDimensions == null ? void 0 : availableDimensions.width;
-          this._gridOptions.autoHeight || (this._gridDomElm.style.height = `${newHeight}px`), this._gridDomElm.style.width = `${newWidth}px`, this._gridContainerElm && (this._gridContainerElm.style.width = `${newWidth}px`), new RegExp("MSIE [6-8]").exec(navigator.userAgent) === null && ((_a = this._grid) != null && _a.resizeCanvas) && this._grid.resizeCanvas(), (_b = this._gridOptions) != null && _b.enableAutoSizeColumns && this._grid.autosizeColumns && this._gridUid && document.querySelector(`.${this._gridUid}`) && this._grid.autosizeColumns(), this._lastDimensions = {
+          this._gridOptions.autoHeight || (this._gridDomElm.style.height = `${newHeight}px`), this._gridDomElm.style.width = `${newWidth}px`, this._gridContainerElm && (this._gridContainerElm.style.width = `${newWidth}px`), (_a = this._grid) != null && _a.resizeCanvas && this._grid.resizeCanvas(), (_b = this._gridOptions) != null && _b.enableAutoSizeColumns && this._grid.autosizeColumns && this._gridUid && document.querySelector(`.${this._gridUid}`) && this._grid.autosizeColumns(), this._lastDimensions = {
             height: newHeight,
             width: newWidth
           };
