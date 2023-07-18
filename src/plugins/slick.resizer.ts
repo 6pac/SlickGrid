@@ -64,8 +64,8 @@ export class SlickResizer {
   // --
   // public API
   pluginName = 'Resizer' as const;
-  onGridAfterResize = new SlickEvent();
-  onGridBeforeResize = new SlickEvent();
+  onGridAfterResize = new SlickEvent<{ grid: SlickGrid; dimensions: GridSize; }>();
+  onGridBeforeResize = new SlickEvent<{ grid: SlickGrid; }>();
 
   // --
   // protected props
@@ -268,7 +268,7 @@ export class SlickResizer {
   }
 
   protected resizeGridCallback(newSizes?: GridSize, event?: Event | null) {
-    let lastDimensions = this.resizeGridWithDimensions(newSizes);
+    let lastDimensions = this.resizeGridWithDimensions(newSizes) as GridSize;
     this.onGridAfterResize.notify({ grid: this._grid, dimensions: lastDimensions }, event, this);
     return lastDimensions;
   }
