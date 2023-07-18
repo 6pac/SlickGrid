@@ -118,6 +118,9 @@ export interface GridOption {
   /** Defaults to false, which leads to showing tooltip over cell & header values that are not shown completely (... ellipsis) */
   enableAutoTooltip?: boolean;
 
+  /** Defaults to false, which will automatically resize the column headers whenever the grid size changes */
+  enableAutoSizeColumns?: boolean;
+
   /** Defaults to false, which will let user click on cell and navigate with arrow keys. */
   enableCellNavigation?: boolean;
 

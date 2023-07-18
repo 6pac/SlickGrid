@@ -1,7 +1,7 @@
 export type Handler<ArgType = any> = (e: any, args: ArgType) => void;
 
 export interface ElementEventListener {
-  element: Element;
+  element: Element | Window;
   eventName: string;
   listener: EventListenerOrEventListenerObject;
 }
