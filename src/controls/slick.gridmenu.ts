@@ -313,8 +313,8 @@ export class SlickGridMenu {
       };
 
       // run each override functions to know if the item is visible and usable
-      let isItemVisible = this.runOverrideFunctionWhenExists((item as GridMenuItem).itemVisibilityOverride, callbackArgs);
-      let isItemUsable = this.runOverrideFunctionWhenExists((item as GridMenuItem).itemUsabilityOverride, callbackArgs);
+      let isItemVisible = this.runOverrideFunctionWhenExists<typeof callbackArgs>((item as GridMenuItem).itemVisibilityOverride, callbackArgs);
+      let isItemUsable = this.runOverrideFunctionWhenExists<typeof callbackArgs>((item as GridMenuItem).itemUsabilityOverride, callbackArgs);
 
       // if the result is not visible then there's no need to go further
       if (!isItemVisible) {
@@ -426,7 +426,7 @@ export class SlickGridMenu {
     };
 
     // run the override function (when defined), if the result is false it won't go further
-    if (this._gridMenuOptions && !this.runOverrideFunctionWhenExists(this._gridMenuOptions.menuUsabilityOverride, callbackArgs)) {
+    if (this._gridMenuOptions && !this.runOverrideFunctionWhenExists<typeof callbackArgs>(this._gridMenuOptions.menuUsabilityOverride, callbackArgs)) {
       return;
     }
 
@@ -717,7 +717,7 @@ export class SlickGridMenu {
    * @param overrideFn: override function callback
    * @param args: multiple arguments provided to the override (cell, row, columnDef, dataContext, grid)
    */
-  protected runOverrideFunctionWhenExists(overrideFn, args) {
+  protected runOverrideFunctionWhenExists<T = any>(overrideFn: ((args: any) => boolean) | undefined, args: T): boolean {
     if (typeof overrideFn === 'function') {
       return overrideFn.call(this, args);
     }

@@ -27,7 +27,7 @@ export interface CustomTooltipOption<T = any> {
   hideArrow?: boolean;
 
   /** defaults to "slick-custom-tooltip" */
-  className?: string;
+  className: string;
 
   /**
    * Formatter to execute for displaying the data that will show in the tooltip

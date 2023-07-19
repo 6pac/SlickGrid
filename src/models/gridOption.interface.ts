@@ -1,4 +1,4 @@
-import type { Column, ColumnPickerOption, ColumnReorderFunction, EditCommand, Editor, Formatter, GridMenuOption, ItemMetadata, } from './index';
+import type { Column, ColumnPickerOption, ColumnReorderFunction, CustomTooltipOption, EditCommand, Editor, Formatter, GridMenuOption, ItemMetadata, } from './index';
 import type { SlickEditorLock } from '../slick.core';
 
 export interface CellViewportRange {
@@ -78,6 +78,12 @@ export interface GridOption {
 
   /** Default to false, which leads to create an extra pre-header panel (on top of column header) for column grouping purposes */
   createPreHeaderPanel?: boolean;
+
+  /**
+   * Custom Tooltip Options, the tooltip could be defined in any of the Column Definition or in the Grid Options,
+   * it will first try to find it in the Column that the user is hovering over or else (when not found) go and try to find it in the Grid Options
+   */
+  customTooltip?: CustomTooltipOption;
 
   /** Data item column value extractor (getter) that can be used by the Excel like copy buffer plugin */
   dataItemColumnValueExtractor?: null | ((item: any, columnDef: Column) => any);
