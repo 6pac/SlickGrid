@@ -1,3 +1,4 @@
+import chalk from 'chalk';
 import { exec } from 'child_process';
 import copyfiles from 'copyfiles';
 import { build } from 'esbuild';
@@ -31,7 +32,7 @@ async function prodBuild() {
 }
 
 async function buildTest() {
-  await buildAllIifeFiles(getAllJSFiles());
+  await buildAllIifeFiles();
   await executeEsmBuild();
   await copySassFiles();
 }
@@ -41,13 +42,7 @@ async function buildTest() {
  * @return {String[]} list of files
  */
 function getAllJSFiles() {
-  return globSync(['src/**/*.{js,ts}']);
-}
-
-/** Execute full build of all format types (iife & esm) */
-export async function executeFullBuild() {
-  // get all JS in root(core), controls & plugins
-  const allFiles = getAllJSFiles();
+  const allFiles = globSync(['src/**/*.{js,ts}']);
 
   // make sure "slick.core.js" (or .ts) is 1st file
   // we do this because the Slick object gets created first by slick.core.js, then we can extend Slick afterward
@@ -61,11 +56,16 @@ export async function executeFullBuild() {
     return a > b;
   });
 
+  return allFiles;
+}
+
+/** Execute full build of all format types (iife & esm) */
+export async function executeFullBuild() {
   // first execute ESM bundle to single file
-  executeEsmBuild();
+  await executeEsmBuild();
 
   // build iife in a separate process since all files are built separately instead of a single bundle
-  return await buildAllIifeFiles(allFiles);
+  return await buildAllIifeFiles();
 }
 
 /**
@@ -76,7 +76,7 @@ export async function executeEsmBuild() {
   const startTime = new Date().getTime();
   await bundleAsEsm();
   const endTime = new Date().getTime();
-  console.info(`⚡️ Bundled to "esm" format in ${endTime - startTime}ms`);
+  console.log(`[${chalk.yellow('esbuild ⚡')}] Bundled to "esm" format in ${endTime - startTime}ms`);
 }
 
 /**
@@ -95,7 +95,8 @@ export function bundleAsEsm() {
 }
 
 /** iife builds */
-async function buildAllIifeFiles(allFiles) {
+export async function buildAllIifeFiles() {
+  const allFiles = getAllJSFiles();
   const startTime = new Date().getTime();
 
   // loop through all js/ts files and build them one at a time in iife
@@ -104,17 +105,17 @@ async function buildAllIifeFiles(allFiles) {
     if (/index.[j|t]s/i.test(file) || /src[\\/]models[\\/].*\.ts/i.test(file) || /.*\.d.ts/i.test(file)) {
       continue;
     }
-    buildIifeFile(file);
+    buildIifeFile(file, false);
   }
   const endTime = new Date().getTime();
-  console.info(`⚡️ Built ${allFiles.length} files to "iife" format in ${endTime - startTime}ms`);
+  console.log(`[${chalk.yellow('esbuild ⚡')}] Built ${allFiles.length} files to "iife" format in ${endTime - startTime}ms`);
 }
 
 /** build as iife, every file will be bundled separately */
-export async function buildIifeFile(file) {
+export async function buildIifeFile(file, displayLog = true) {
   // for `slick.core.js` file only, we'll add it to the global Slick variable
   const globalName = /slick.core.[jt]s/gi.test(file) ? 'Slick' : undefined;
-
+  const startTime = new Date().getTime();
   await runBuild({
     entryPoints: [file],
     format: 'iife',
@@ -125,6 +126,11 @@ export async function buildIifeFile(file) {
       removeImportsPlugin,
     ],
   });
+
+  if (displayLog) {
+    const endTime = new Date().getTime();
+    console.log(`[${chalk.yellow('esbuild ⚡')}] Built "${file}" to "iife" format in ${endTime - startTime}ms`);
+  }
 }
 
 /**
@@ -163,7 +169,7 @@ function copySassFiles() {
   copyfiles(
     ['src/styles/*.scss', 'dist/styles/sass'], // 1st in array is source, last is target
     { flat: true, up: 2, exclude: '**/_*.scss' },
-    () => console.log('SASS files copied.')
+    () => console.log(`[${chalk.magenta('SASS')}] SASS files copied`)
   );
 }
 
@@ -172,7 +178,7 @@ export function buildAllSassFiles() {
   try {
     return new Promise((resolve) => {
       exec('npm run sass:build').on('close', (code) => {
-        console.log('Full SASS build completed');
+        console.log(`[${chalk.magenta('SASS')}] Full SASS build completed`);
         resolve(code);
       });
     });
@@ -193,12 +199,12 @@ export async function buildSassFile(sassFile) {
   // const extension = path.extname(sassFile);
 
   if (!sassLogged) {
-    console.log('SASS file changes detected');
+    console.log(`[${chalk.magenta('SASS')}] SASS file changes detected`);
     sassLogged = true;
   }
   if (filename.startsWith('_')) {
     // when _variables changes, let's rebuild all SASS files instead of just one
-    console.log('variable scss file changed, triggering full SASS rebuild', sassFile)
+    console.log(`[${chalk.magenta('SASS')}] scss variable file changed, requires full SASS rebuild (triggered by`, `"${sassFile}")`);
     await buildAllSassFiles();
   } else {
     const srcDir = 'src';

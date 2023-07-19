@@ -3,7 +3,7 @@ import chokidar from 'chokidar';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
-import { buildAllSassFiles, buildIifeFile, buildSassFile, executeFullBuild } from './builds.mjs';
+import { buildAllSassFiles, buildIifeFile, buildSassFile, buildAllIifeFiles, executeEsmBuild, executeFullBuild } from './builds.mjs';
 
 const argv = yargs(hideBin(process.argv)).argv;
 
@@ -14,6 +14,10 @@ const argv = yargs(hideBin(process.argv)).argv;
 (() => {
   let watcher;
   let bsync;
+  let timer = 0;
+  let changedFiles = new Set();
+  let processing = false;
+  let initialBuild = true; // on initial build we need to do full iife build
 
   /**
    * initialize Chokidar watch & init browserSync
@@ -76,28 +80,62 @@ const argv = yargs(hideBin(process.argv)).argv;
    * we will rebuild and/or reload browser
    * @param {String} filepath - file path that changed
    */
-  async function onFileChanged(filepath) {
-    if (filepath.endsWith('.js') || filepath.endsWith('.ts')) {
-      // 1. ESM requires a full build since it is bundled into a single "index.js" file
-      await executeFullBuild();
+  function onFileChanged(filepath) {
+    changedFiles.add(filepath);
+    return executeCommandCallback(filepath);
+  }
 
-      // 2. for iife format, we can rebuild each separate file
-      const startTime = new Date().getTime();
-      await buildIifeFile(filepath);
-      const endTime = new Date().getTime();
-      console.info(`⚡️ Built "${filepath}" to "iife" format in ${endTime - startTime}ms`);
-    } else if (filepath.endsWith('.css') || filepath.endsWith('.scss')) {
-      // CSS/SCSS files
-      if (filepath.endsWith('.scss')) {
-        await buildSassFile(filepath);
-      }
+  function hasQueuedChanges() {
+    if (changedFiles.size > 0) {
+      return true;
     }
-    // ELSE, reaching outside of the conditions above (ie, .html)
-    // will simply perform the common action, shown below, of reloading all connected browser
+
+    return false;
+  }
+
+  function executeCommandCallback(filepath) {
+    if (timer) {
+      clearTimeout(timer);
+    }
+    return new Promise((resolve) => {
+      timer = setTimeout(async () => {
+        if (!processing) {
+          processing = true;
+          if (filepath.endsWith('.js') || filepath.endsWith('.ts')) {
+            // 1. ESM requires is always a full build since it is bundled into a single "index.js" file
+            await executeEsmBuild();
+
+            // 2. for iife format, we can rebuild each separate file (unless it's the initial build, if so execute full rebuild)
+            await (initialBuild
+              ? buildAllIifeFiles()
+              : buildIifeFile(filepath)
+            );
+          } else if (filepath.endsWith('.css') || filepath.endsWith('.scss')) {
+            // CSS/SCSS files
+            if (filepath.endsWith('.scss')) {
+              await buildSassFile(filepath);
+            }
+          }
+          // ELSE, reaching outside of the conditions above (ie, .html)
+          // will simply perform the common action, shown below, of reloading all connected browser
 
 
-    // in every case, we want to reload the webpage
-    bsync.reload('*.html');
+          // in every case, we want to reload the webpage
+          bsync.reload('*.html');
+          changedFiles.delete(filepath);
+          processing = false;
+          if (initialBuild) {
+            initialBuild = false;
+          }
+
+          // we might still have other packages that have changes though, so re-execute command callback process if any were found
+          if (hasQueuedChanges()) {
+            executeCommandCallback();
+          }
+        }
+        resolve(true);
+      }, 50);
+    });
   }
 
   async function destroy() {
