@@ -1,5 +1,6 @@
 export * from './aggregator.interface';
 export * from './autoTooltipOption.interface';
+export * from './cancellablePromiseWrapper.interface';
 export * from './cellMenuOption.interface';
 export * from './cellRange.interface';
 export * from './checkboxSelectorOption.interface';
