@@ -99,8 +99,6 @@
 <script src="../dist/browser/controls/slick.columnpicker.js"></script>
 
 <script>
-function isIEPreVer9() { var v = navigator.appVersion.match(/MSIE ([\d.]+)/i); return (v ? v[1] < 9 : false); }
-
 var dataView;
 var grid;
 var data = [];
@@ -218,28 +216,9 @@ document.addEventListener("DOMContentLoaded", function() {
     sortdir = args.sortAsc ? 1 : -1;
     sortcol = args.sortCol.field;
 
-    if (isIEPreVer9()) {
-      // using temporary Object.prototype.toString override
-      // more limited and does lexicographic sort only by default, but can be much faster
-
-      var percentCompleteValueFn = function () {
-        var val = this["percentComplete"];
-        if (val < 10) {
-          return "00" + val;
-        } else if (val < 100) {
-          return "0" + val;
-        } else {
-          return val;
-        }
-      };
-
-      // use numeric sort of % and lexicographic for everything else
-      dataView.fastSort((sortcol == "percentComplete") ? percentCompleteValueFn : sortcol, args.sortAsc);
-    } else {
-      // using native sort with comparer
-      // preferred method but can be very slow in IE with huge datasets
-      dataView.sort(comparer, args.sortAsc);
-    }
+    // using native sort with comparer
+    // preferred method but can be very slow in IE with huge datasets
+    dataView.sort(comparer, args.sortAsc);
   });
 
   // wire up model events to drive the grid
