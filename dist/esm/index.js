@@ -4,8 +4,8 @@ var __publicField = (obj, key, value) => (__defNormalProp(obj, typeof key != "sy
 
 // src/slick.core.ts
 var SlickEventData = class {
-  constructor(event, args) {
-    this.event = event;
+  constructor(event2, args) {
+    this.event = event2;
     this.args = args;
     __publicField(this, "_isPropagationStopped", !1);
     __publicField(this, "_isImmediatePropagationStopped", !1);
@@ -15,7 +15,7 @@ var SlickEventData = class {
     __publicField(this, "target");
     __publicField(this, "nativeEvent");
     __publicField(this, "arguments_");
-    if (this.nativeEvent = event, this.arguments_ = args, event) {
+    if (this.nativeEvent = event2, this.arguments_ = args, event2) {
       let eventProps = [
         "altKey",
         "ctrlKey",
@@ -36,7 +36,7 @@ var SlickEventData = class {
         "y"
       ];
       for (let key of eventProps)
-        this[key] = event[key];
+        this[key] = event2[key];
     }
     this.target = this.nativeEvent ? this.nativeEvent.target : void 0;
   }
@@ -136,14 +136,14 @@ var SlickEventData = class {
   constructor() {
     __publicField(this, "handlers", []);
   }
-  subscribe(event, handler) {
-    return this.handlers.push({ event, handler }), event.subscribe(handler), this;
+  subscribe(event2, handler) {
+    return this.handlers.push({ event: event2, handler }), event2.subscribe(handler), this;
   }
-  unsubscribe(event, handler) {
+  unsubscribe(event2, handler) {
     let i = this.handlers.length;
     for (; i--; )
-      if (this.handlers[i].event === event && this.handlers[i].handler === handler) {
-        this.handlers.splice(i, 1), event.unsubscribe(handler);
+      if (this.handlers[i].event === event2 && this.handlers[i].handler === handler) {
+        this.handlers.splice(i, 1), event2.unsubscribe(handler);
         return;
       }
     return this;
@@ -2375,24 +2375,24 @@ function Draggable(options) {
   function destroy() {
     containerElement && (containerElement.removeEventListener("mousedown", userPressed), containerElement.removeEventListener("touchstart", userPressed));
   }
-  function userPressed(event) {
-    element = event.target;
-    let targetEvent = event?.touches?.[0] ?? event, { target } = targetEvent;
+  function userPressed(event2) {
+    element = event2.target;
+    let targetEvent = event2?.touches?.[0] ?? event2, { target } = targetEvent;
     if (!options.allowDragFrom || options.allowDragFrom && element.matches(options.allowDragFrom)) {
       originaldd.dragHandle = element;
       let winScrollPos = Utils5.windowScrollPosition();
-      startX = winScrollPos.left + targetEvent.clientX, startY = winScrollPos.top + targetEvent.clientY, deltaX = targetEvent.clientX - targetEvent.clientX, deltaY = targetEvent.clientY - targetEvent.clientY, originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDragInit, event, originaldd), document.addEventListener("mousemove", userMoved), document.addEventListener("touchmove", userMoved), document.addEventListener("mouseup", userReleased), document.addEventListener("touchend", userReleased), document.addEventListener("touchcancel", userReleased);
+      startX = winScrollPos.left + targetEvent.clientX, startY = winScrollPos.top + targetEvent.clientY, deltaX = targetEvent.clientX - targetEvent.clientX, deltaY = targetEvent.clientY - targetEvent.clientY, originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDragInit, event2, originaldd), document.addEventListener("mousemove", userMoved), document.addEventListener("touchmove", userMoved), document.addEventListener("mouseup", userReleased), document.addEventListener("touchend", userReleased), document.addEventListener("touchcancel", userReleased);
     }
   }
-  function userMoved(event) {
-    let targetEvent = event?.touches?.[0] ?? event;
+  function userMoved(event2) {
+    let targetEvent = event2?.touches?.[0] ?? event2;
     deltaX = targetEvent.clientX - startX, deltaY = targetEvent.clientY - startY;
     let { target } = targetEvent;
-    dragStarted || (originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDragStart, event, originaldd), dragStarted = !0), originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDrag, event, originaldd);
+    dragStarted || (originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDragStart, event2, originaldd), dragStarted = !0), originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDrag, event2, originaldd);
   }
-  function userReleased(event) {
-    let { target } = event;
-    originaldd = Object.assign(originaldd, { target }), executeDragCallbackWhenDefined(onDragEnd, event, originaldd), document.removeEventListener("mousemove", userMoved), document.removeEventListener("touchmove", userMoved), document.removeEventListener("mouseup", userReleased), document.removeEventListener("touchend", userReleased), document.removeEventListener("touchcancel", userReleased), dragStarted = !1;
+  function userReleased(event2) {
+    let { target } = event2;
+    originaldd = Object.assign(originaldd, { target }), executeDragCallbackWhenDefined(onDragEnd, event2, originaldd), document.removeEventListener("mousemove", userMoved), document.removeEventListener("touchmove", userMoved), document.removeEventListener("mouseup", userReleased), document.removeEventListener("touchend", userReleased), document.removeEventListener("touchcancel", userReleased), dragStarted = !1;
   }
   return { destroy };
 }
@@ -2404,9 +2404,9 @@ function MouseWheel(options) {
   function init() {
     element.addEventListener("wheel", wheelHandler), element.addEventListener("mousewheel", wheelHandler);
   }
-  function wheelHandler(event) {
-    let orgEvent = event || window.event, delta = 0, deltaX = 0, deltaY = 0;
-    orgEvent.wheelDelta && (delta = orgEvent.wheelDelta / 120), orgEvent.detail && (delta = -orgEvent.detail / 3), deltaY = delta, orgEvent.axis !== void 0 && orgEvent.axis === orgEvent.HORIZONTAL_AXIS && (deltaY = 0, deltaX = -1 * delta), orgEvent.wheelDeltaY !== void 0 && (deltaY = orgEvent.wheelDeltaY / 120), orgEvent.wheelDeltaX !== void 0 && (deltaX = -1 * orgEvent.wheelDeltaX / 120), typeof onMouseWheel == "function" && onMouseWheel(event, delta, deltaX, deltaY);
+  function wheelHandler(event2) {
+    let orgEvent = event2 || window.event, delta = 0, deltaX = 0, deltaY = 0;
+    orgEvent.wheelDelta && (delta = orgEvent.wheelDelta / 120), orgEvent.detail && (delta = -orgEvent.detail / 3), deltaY = delta, orgEvent.axis !== void 0 && orgEvent.axis === orgEvent.HORIZONTAL_AXIS && (deltaY = 0, deltaX = -1 * delta), orgEvent.wheelDeltaY !== void 0 && (deltaY = orgEvent.wheelDeltaY / 120), orgEvent.wheelDeltaX !== void 0 && (deltaX = -1 * orgEvent.wheelDeltaX / 120), typeof onMouseWheel == "function" && onMouseWheel(event2, delta, deltaX, deltaY);
   }
   return init(), { destroy };
 }
@@ -2422,17 +2422,17 @@ function Resizable(options) {
   }
   function resizeStartHandler(e) {
     e.preventDefault();
-    let event = e.touches ? e.changedTouches[0] : e;
-    executeResizeCallbackWhenDefined(onResizeStart, event), document.addEventListener("mousemove", resizingHandler), document.addEventListener("mouseup", resizeEndHandler), document.addEventListener("touchmove", resizingHandler), document.addEventListener("touchend", resizeEndHandler);
+    let event2 = e.touches ? e.changedTouches[0] : e;
+    executeResizeCallbackWhenDefined(onResizeStart, event2), document.addEventListener("mousemove", resizingHandler), document.addEventListener("mouseup", resizeEndHandler), document.addEventListener("touchmove", resizingHandler), document.addEventListener("touchend", resizeEndHandler);
   }
   function resizingHandler(e) {
     e.preventDefault && e.type !== "touchmove" && e.preventDefault();
-    let event = e.touches ? e.changedTouches[0] : e;
-    typeof onResize == "function" && (onResize(event, { resizeableElement, resizeableHandleElement }), onResize(event, { resizeableElement, resizeableHandleElement }));
+    let event2 = e.touches ? e.changedTouches[0] : e;
+    typeof onResize == "function" && (onResize(event2, { resizeableElement, resizeableHandleElement }), onResize(event2, { resizeableElement, resizeableHandleElement }));
   }
   function resizeEndHandler(e) {
-    let event = e.touches ? e.changedTouches[0] : e;
-    executeResizeCallbackWhenDefined(onResizeEnd, event), document.removeEventListener("mousemove", resizingHandler), document.removeEventListener("mouseup", resizeEndHandler), document.removeEventListener("touchmove", resizingHandler), document.removeEventListener("touchend", resizeEndHandler);
+    let event2 = e.touches ? e.changedTouches[0] : e;
+    executeResizeCallbackWhenDefined(onResizeEnd, event2), document.removeEventListener("mousemove", resizingHandler), document.removeEventListener("mouseup", resizeEndHandler), document.removeEventListener("touchmove", resizingHandler), document.removeEventListener("touchend", resizeEndHandler);
   }
   return resizeableHandleElement.addEventListener("mousedown", resizeStartHandler), resizeableHandleElement.addEventListener("touchstart", resizeStartHandler), { destroy };
 }
@@ -2828,8 +2828,8 @@ var SlickGrid = class {
   }
   finishInitialization() {
     this.initialized || (this.initialized = !0, this.getViewportWidth(), this.getViewportHeight(), this.measureCellPaddingAndBorder(), this.disableSelection(this._headers), this._options.enableTextSelectionOnCells || this._viewport.forEach((view) => {
-      this._bindingEventService.bind(view, "selectstart", (event) => {
-        event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement;
+      this._bindingEventService.bind(view, "selectstart", (event2) => {
+        event2.target instanceof HTMLInputElement || event2.target instanceof HTMLTextAreaElement;
       });
     }), this.setFrozenOptions(), this.setPaneVisibility(), this.setScroller(), this.setOverflow(), this.updateColumnCaches(), this.createColumnHeaders(), this.createColumnFooter(), this.setupColumnSort(), this.createCssRules(), this.resizeCanvas(), this.bindAncestorScrollEvents(), this._bindingEventService.bind(this._container, "resize", this.resizeCanvas.bind(this)), this._viewport.forEach((view) => {
       this._bindingEventService.bind(view, "scroll", this.handleScroll.bind(this));
@@ -3718,8 +3718,8 @@ var SlickGrid = class {
   // General
   //////////////////////////////////////////////////////////////////////////////////////////////
   trigger(evt, args, e) {
-    let event = e || new SlickEventData3(e, args), eventArgs = args || {};
-    return eventArgs.grid = this, evt.notify(eventArgs, event, this);
+    let event2 = e || new SlickEventData3(e, args), eventArgs = args || {};
+    return eventArgs.grid = this, evt.notify(eventArgs, event2, this);
   }
   /** Get Editor lock */
   getEditorLock() {
@@ -5381,8 +5381,8 @@ var BindingEventService3 = BindingEventService, SlickEvent4 = Event, Utils7 = Ut
     }
     this.repositionMenu(e);
   }
-  repositionMenu(event) {
-    let targetEvent = event?.touches?.[0] ?? event;
+  repositionMenu(event2) {
+    let targetEvent = event2?.touches?.[0] ?? event2;
     this._menuElm.style.top = `${targetEvent.pageY - 10}px`, this._menuElm.style.left = `${targetEvent.pageX - 10}px`, this._menuElm.style.maxHeight = `${window.innerHeight - targetEvent.clientY}px`, this._menuElm.style.display = "block", this._menuElm.setAttribute("aria-expanded", "true"), this._menuElm.appendChild(this._listElm);
   }
   updateColumnOrder() {
@@ -5605,8 +5605,8 @@ var BindingEventService4 = BindingEventService, SlickEvent5 = Event, Utils8 = Ut
     let menuIconOffset = Utils8.offset(buttonElm), menuWidth = this._menuElm.offsetWidth, useClickToRepositionMenu = this._gridMenuOptions?.useClickToRepositionMenu !== void 0 ? this._gridMenuOptions.useClickToRepositionMenu : this._defaults.useClickToRepositionMenu, contentMinWidth = this._gridMenuOptions?.contentMinWidth ? this._gridMenuOptions.contentMinWidth : this._defaults.contentMinWidth, currentMenuWidth = contentMinWidth > menuWidth ? contentMinWidth : menuWidth + 5, nextPositionTop = useClickToRepositionMenu && targetEvent.pageY > 0 ? targetEvent.pageY : menuIconOffset.top + 10, nextPositionLeft = useClickToRepositionMenu && targetEvent.pageX > 0 ? targetEvent.pageX : menuIconOffset.left + 10, menuMarginBottom = this._gridMenuOptions?.marginBottom !== void 0 ? this._gridMenuOptions.marginBottom : this._defaults.marginBottom;
     this._menuElm.style.top = `${nextPositionTop + 10}px`, this._menuElm.style.left = `${nextPositionLeft - currentMenuWidth + 10}px`, contentMinWidth > 0 && (this._menuElm.style.minWidth = `${contentMinWidth}px`), this._gridMenuOptions?.height !== void 0 ? this._menuElm.style.height = `${this._gridMenuOptions.height}px` : this._menuElm.style.maxHeight = `${window.innerHeight - targetEvent.clientY - menuMarginBottom}px`, this._menuElm.style.display = "block", this._menuElm.style.opacity = "1", this._menuElm.appendChild(this._listElm), this._isMenuOpen = !0, typeof e.stopPropagation == "function" && this.onAfterMenuShow.notify(callbackArgs, e, this).getReturnValue() == !1;
   }
-  handleBodyMouseDown(event) {
-    (this._menuElm !== event.target && !this._menuElm?.contains(event.target) && this._isMenuOpen || event.target.className === "close") && this.hideMenu(event);
+  handleBodyMouseDown(event2) {
+    (this._menuElm !== event2.target && !this._menuElm?.contains(event2.target) && this._isMenuOpen || event2.target.className === "close") && this.hideMenu(event2);
   }
   handleMenuItemClick(item, e) {
     let command = item.command || "";
@@ -5859,8 +5859,8 @@ var Utils10 = Utils, SlickAutoTooltips = class {
    * Handle mouse entering grid cell to add/remove tooltip.
    * @param {MouseEvent} event - The event
    */
-  handleMouseEnter(event) {
-    let cell = this._grid.getCellFromEvent(event);
+  handleMouseEnter(event2) {
+    let cell = this._grid.getCellFromEvent(event2);
     if (cell) {
       let node = this._grid.getCellNode(cell.row, cell.cell), text;
       this._options && node && (!node.title || this._options?.replaceExisting) && (node.clientWidth < node.scrollWidth ? (text = node.textContent?.trim() ?? "", this._options && this._options.maxToolTipLength && text.length > this._options.maxToolTipLength && (text = text.substring(0, this._options.maxToolTipLength - 3) + "...")) : text = "", node = null);
@@ -5871,8 +5871,8 @@ var Utils10 = Utils, SlickAutoTooltips = class {
    * @param {MouseEvent} event   - The event
    * @param {object} args.column - The column definition
    */
-  handleHeaderMouseEnter(event, args) {
-    let column = args.column, node, targetElm = event.target;
+  handleHeaderMouseEnter(event2, args) {
+    let column = args.column, node, targetElm = event2.target;
     targetElm && (node = targetElm.closest(".slick-header-column"), node && !column?.toolTip && (node.title = targetElm.clientWidth < node.clientWidth ? column?.name ?? "" : "")), node = null;
   }
 };
@@ -5967,7 +5967,7 @@ var CLEAR_COPY_SELECTION_DELAY = 2e3, CLIPBOARD_PASTE_DELAY = 100, SlickCellExte
     }
     return columnDef.name;
   }
-  getDataItemValueForColumn(item, columnDef, event) {
+  getDataItemValueForColumn(item, columnDef, event2) {
     if (typeof this._options.dataItemColumnValueExtractor == "function") {
       let val = this._options.dataItemColumnValueExtractor(item, columnDef);
       if (val)
@@ -5979,7 +5979,7 @@ var CLEAR_COPY_SELECTION_DELAY = 2e3, CLIPBOARD_PASTE_DELAY = 100, SlickCellExte
         container: tmpP,
         // a dummy container
         column: columnDef,
-        event,
+        event: event2,
         position: { top: 0, left: 0 },
         // a dummy position required by some editors
         grid: this._grid
@@ -7294,72 +7294,88 @@ function CrossGridRowMoveManager(options) {
   });
 }
 
-// src/plugins/slick.customtooltip.js
-var EventHandler5 = EventHandler, Utils18 = Utils;
-function CustomTooltip(options) {
-  var _cancellablePromise, _cellNodeElm, _dataView, _grid, _gridOptions, _tooltipElm, _defaults = {
-    className: "slick-custom-tooltip",
-    offsetLeft: 0,
-    offsetRight: 0,
-    offsetTopBottom: 4,
-    hideArrow: !1,
-    tooltipTextMaxLength: 700,
-    regularTooltipWhiteSpace: "pre-line",
-    whiteSpace: "normal"
-  }, _eventHandler = new EventHandler5(), _cellTooltipOptions = {}, _options;
-  function init(grid) {
-    _grid = grid;
-    var _data = grid && grid.getData() || [];
-    _dataView = Array.isArray(_data) ? null : _data, _gridOptions = grid.getOptions() || {}, _options = Utils18.extend(!0, {}, _defaults, _gridOptions.customTooltip, options), _eventHandler.subscribe(grid.onMouseEnter, handleOnMouseEnter).subscribe(grid.onHeaderMouseEnter, handleOnHeaderMouseEnter).subscribe(grid.onHeaderRowMouseEnter, handleOnHeaderRowMouseEnter).subscribe(grid.onMouseLeave, hideTooltip).subscribe(grid.onHeaderMouseLeave, hideTooltip).subscribe(grid.onHeaderRowMouseLeave, hideTooltip);
+// src/plugins/slick.customtooltip.ts
+var SlickEventHandler4 = SlickEventHandler, Utils18 = Utils, CustomTooltip = class {
+  constructor(tooltipOptions) {
+    this.tooltipOptions = tooltipOptions;
+    // --
+    // public API
+    __publicField(this, "pluginName", "CustomTooltip");
+    // --
+    // protected props
+    __publicField(this, "_cancellablePromise");
+    __publicField(this, "_cellNodeElm");
+    __publicField(this, "_dataView");
+    __publicField(this, "_grid");
+    __publicField(this, "_gridOptions");
+    __publicField(this, "_tooltipElm");
+    __publicField(this, "_options");
+    __publicField(this, "_defaults", {
+      className: "slick-custom-tooltip",
+      offsetLeft: 0,
+      offsetRight: 0,
+      offsetTopBottom: 4,
+      hideArrow: !1,
+      tooltipTextMaxLength: 700,
+      regularTooltipWhiteSpace: "pre-line",
+      whiteSpace: "normal"
+    });
+    __publicField(this, "_eventHandler", new SlickEventHandler4());
+    __publicField(this, "_cellTooltipOptions");
   }
-  function destroy() {
-    hideTooltip(), _eventHandler.unsubscribeAll();
+  /**
+   * Initialize plugin.
+   */
+  init(grid) {
+    this._grid = grid;
+    let _data = grid?.getData() || [];
+    this._dataView = Array.isArray(_data) ? null : _data, this._gridOptions = grid.getOptions() || {}, this._options = Utils18.extend(!0, {}, this._defaults, this._gridOptions.customTooltip, this.tooltipOptions), this._eventHandler.subscribe(grid.onMouseEnter, this.handleOnMouseEnter.bind(this)).subscribe(grid.onHeaderMouseEnter, (e, args) => this.handleOnHeaderMouseEnterByType(e, args, "slick-header-column")).subscribe(grid.onHeaderRowMouseEnter, (e, args) => this.handleOnHeaderMouseEnterByType(e, args, "slick-headerrow-column")).subscribe(grid.onMouseLeave, () => this.hideTooltip()).subscribe(grid.onHeaderMouseLeave, () => this.hideTooltip()).subscribe(grid.onHeaderRowMouseLeave, () => this.hideTooltip());
   }
-  function handleOnHeaderMouseEnter(e, args) {
-    handleOnHeaderMouseEnterByType(e, args, "slick-header-column");
+  /**
+   * Destroy plugin.
+   */
+  destroy() {
+    this.hideTooltip(), this._eventHandler.unsubscribeAll();
   }
-  function handleOnHeaderRowMouseEnter(e, args) {
-    handleOnHeaderMouseEnterByType(e, args, "slick-headerrow-column");
-  }
-  function handleOnHeaderMouseEnterByType(e, args, selector) {
-    hideTooltip();
-    var cell = {
+  /** depending on the selector type, execute the necessary handler code */
+  handleOnHeaderMouseEnterByType(e, args, selector) {
+    this.hideTooltip();
+    let cell = {
       row: -1,
       // negative row to avoid pulling any dataContext while rendering
-      cell: _grid.getColumns().findIndex(function(col) {
-        return args && args.column && args.column.id === col.id;
-      })
+      cell: this._grid.getColumns().findIndex((col) => args?.column?.id === col.id)
     }, columnDef = args.column, item = {}, isHeaderRowType = selector === "slick-headerrow-column";
-    if (args || (args = {}), args.cell = cell.cell, args.row = cell.row, args.columnDef = columnDef, args.dataContext = item, args.grid = _grid, args.type = isHeaderRowType ? "header-row" : "header", _cellTooltipOptions = Utils18.extend(!0, {}, _options, columnDef.customTooltip), !(columnDef && columnDef.disableTooltip || !runOverrideFunctionWhenExists(_cellTooltipOptions.usabilityOverride, args)) && columnDef && e.target) {
-      _cellNodeElm = findClosestHeaderNode(e.target, selector);
-      var formatter = isHeaderRowType ? _cellTooltipOptions.headerRowFormatter : _cellTooltipOptions.headerFormatter;
-      if (_cellTooltipOptions.useRegularTooltip || !formatter) {
-        var formatterOrText = isHeaderRowType ? _cellTooltipOptions.useRegularTooltip ? null : formatter : columnDef.name;
-        renderRegularTooltip(formatterOrText, cell, null, columnDef, item);
+    if (args = args || {}, args.cell = cell.cell, args.row = cell.row, args.columnDef = columnDef, args.dataContext = item, args.grid = this._grid, args.type = isHeaderRowType ? "header-row" : "header", this._cellTooltipOptions = Utils18.extend(!0, {}, this._options, columnDef.customTooltip), !(columnDef?.disableTooltip || !this.runOverrideFunctionWhenExists(this._cellTooltipOptions.usabilityOverride, args)) && columnDef && e.target) {
+      this._cellNodeElm = e.target.closest(`.${selector}`);
+      let formatter = isHeaderRowType ? this._cellTooltipOptions.headerRowFormatter : this._cellTooltipOptions.headerFormatter;
+      if (this._cellTooltipOptions.useRegularTooltip || !formatter) {
+        let formatterOrText = isHeaderRowType ? this._cellTooltipOptions.useRegularTooltip ? null : formatter : columnDef.name;
+        this.renderRegularTooltip(formatterOrText, cell, null, columnDef, item);
       } else
-        _cellNodeElm && typeof formatter == "function" && renderTooltipFormatter(formatter, cell, null, columnDef, item);
+        this._cellNodeElm && typeof formatter == "function" && this.renderTooltipFormatter(formatter, cell, null, columnDef, item);
     }
   }
-  function findClosestHeaderNode(elm, selector) {
-    return typeof elm.closest == "function" ? elm.closest("." + selector) : elm.classList.contains(selector) ? elm : elm.parentElement.classList.contains(selector) ? elm.parentElement : null;
-  }
-  function handleOnMouseEnter(e, args) {
-    if (hideTooltip(), _grid && e) {
-      var cell = _grid.getCellFromEvent(e);
+  /**
+   * Handle mouse entering grid cell to show tooltip.
+   * @param {jQuery.Event} e - The event
+   */
+  handleOnMouseEnter(e, args) {
+    if (this.hideTooltip(), this._grid && e) {
+      let targetClassName = event?.target?.closest(".slick-cell")?.className, cell = targetClassName && /l\d+/.exec(targetClassName || "") ? this._grid.getCellFromEvent(e) : null;
       if (cell) {
-        var item = _dataView ? _dataView.getItem(cell.row) : _grid.getDataItem(cell.row), columnDef = _grid.getColumns()[cell.cell];
-        if (_cellNodeElm = _grid.getCellNode(cell.row, cell.cell), _cellTooltipOptions = Utils18.extend(!0, {}, _options, columnDef.customTooltip), item && columnDef) {
-          if (args || (args = {}), args.cell = cell.cell, args.row = cell.row, args.columnDef = columnDef, args.dataContext = item, args.grid = _grid, args.type = "cell", columnDef && columnDef.disableTooltip || !runOverrideFunctionWhenExists(_cellTooltipOptions.usabilityOverride, args))
+        let item = this._dataView ? this._dataView.getItem(cell.row) : this._grid.getDataItem(cell.row), columnDef = this._grid.getColumns()[cell.cell];
+        if (this._cellNodeElm = this._grid.getCellNode(cell.row, cell.cell), this._cellTooltipOptions = Utils18.extend(!0, {}, this._options, columnDef.customTooltip), item && columnDef) {
+          if (args = args || {}, args.cell = cell.cell, args.row = cell.row, args.columnDef = columnDef, args.dataContext = item, args.grid = this._grid, args.type = "cell", columnDef?.disableTooltip || !this.runOverrideFunctionWhenExists(this._cellTooltipOptions.usabilityOverride, args))
             return;
-          var value = item.hasOwnProperty(columnDef.field) ? item[columnDef.field] : null;
-          if (_cellTooltipOptions.useRegularTooltip || !_cellTooltipOptions.formatter)
-            renderRegularTooltip(columnDef.formatter, cell, value, columnDef, item);
-          else if (typeof _cellTooltipOptions.formatter == "function" && renderTooltipFormatter(_cellTooltipOptions.formatter, cell, value, columnDef, item), typeof _cellTooltipOptions.asyncProcess == "function") {
-            var asyncProcess = _cellTooltipOptions.asyncProcess(cell.row, cell.cell, value, columnDef, item, _grid);
-            if (!_cellTooltipOptions.asyncPostFormatter)
+          let value = item.hasOwnProperty(columnDef.field) ? item[columnDef.field] : null;
+          if (this._cellTooltipOptions.useRegularTooltip || !this._cellTooltipOptions.formatter)
+            this.renderRegularTooltip(columnDef.formatter, cell, value, columnDef, item);
+          else if (typeof this._cellTooltipOptions.formatter == "function" && this.renderTooltipFormatter(this._cellTooltipOptions.formatter, cell, value, columnDef, item), typeof this._cellTooltipOptions.asyncProcess == "function") {
+            let asyncProcess = this._cellTooltipOptions.asyncProcess(cell.row, cell.cell, value, columnDef, item, this._grid);
+            if (!this._cellTooltipOptions.asyncPostFormatter)
               throw new Error('[SlickGrid] when using "asyncProcess", you must also provide an "asyncPostFormatter" formatter');
-            asyncProcess instanceof Promise && (_cancellablePromise = cancellablePromise(asyncProcess), _cancellablePromise.promise.then(function(asyncResult) {
-              asyncProcessCallback(asyncResult, cell, value, columnDef, item);
+            asyncProcess instanceof Promise && (this._cancellablePromise = this.cancellablePromise(asyncProcess), this._cancellablePromise.promise.then((asyncResult) => {
+              this.asyncProcessCallback(asyncResult, cell, value, columnDef, item);
             }).catch(function(error) {
               if (!error.isPromiseCancelled)
                 throw error;
@@ -7369,102 +7385,113 @@ function CustomTooltip(options) {
       }
     }
   }
-  function findFirstElementAttribute(inputElm, attributes) {
+  findFirstElementAttribute(inputElm, attributes) {
     if (inputElm) {
-      var outputAttrData;
-      return attributes.forEach(function(attribute) {
-        var attrData = inputElm.getAttribute(attribute);
+      let outputAttrData;
+      return attributes.forEach((attribute) => {
+        let attrData = inputElm.getAttribute(attribute);
         attrData && (outputAttrData = attrData);
       }), outputAttrData;
     }
     return null;
   }
-  function renderRegularTooltip(formatterOrText, cell, value, columnDef, item) {
-    var tmpDiv = document.createElement("div");
-    tmpDiv.innerHTML = parseFormatterAndSanitize(formatterOrText, cell, value, columnDef, item);
-    var tooltipText = columnDef.toolTip || "", tmpTitleElm;
-    tooltipText || (_cellNodeElm && _cellNodeElm.clientWidth < _cellNodeElm.scrollWidth && !_cellTooltipOptions.useRegularTooltipFromFormatterOnly ? (tooltipText = (_cellNodeElm.textContent || "").trim() || "", _cellTooltipOptions.tooltipTextMaxLength && tooltipText.length > _cellTooltipOptions.tooltipTextMaxLength && (tooltipText = tooltipText.substring(0, _cellTooltipOptions.tooltipTextMaxLength - 3) + "..."), tmpTitleElm = _cellNodeElm) : (_cellTooltipOptions.useRegularTooltipFromFormatterOnly ? tmpTitleElm = tmpDiv.querySelector("[title], [data-slick-tooltip]") : (tmpTitleElm = findFirstElementAttribute(_cellNodeElm, ["title", "data-slick-tooltip"]) ? _cellNodeElm : tmpDiv.querySelector("[title], [data-slick-tooltip]"), (!tmpTitleElm || !findFirstElementAttribute(tmpTitleElm, ["title", "data-slick-tooltip"])) && _cellNodeElm && (tmpTitleElm = _cellNodeElm.querySelector("[title], [data-slick-tooltip]"))), (!tooltipText || typeof formatterOrText == "function" && _cellTooltipOptions.useRegularTooltipFromFormatterOnly) && (tooltipText = findFirstElementAttribute(tmpTitleElm, ["title", "data-slick-tooltip"]) || ""))), tooltipText !== "" && renderTooltipFormatter(formatterOrText, cell, value, columnDef, item, tooltipText), swapAndClearTitleAttribute(tmpTitleElm, tooltipText);
+  /**
+   * Parse the cell formatter and assume it might be html
+   * then create a temporary html element to easily retrieve the first [title=""] attribute text content
+   * also clear the "title" attribute from the grid div text content so that it won't show also as a 2nd browser tooltip
+   */
+  renderRegularTooltip(formatterOrText, cell, value, columnDef, item) {
+    let tmpDiv = document.createElement("div");
+    tmpDiv.innerHTML = this.parseFormatterAndSanitize(formatterOrText, cell, value, columnDef, item);
+    let tooltipText = columnDef.toolTip || "", tmpTitleElm;
+    tooltipText || (this._cellNodeElm && this._cellNodeElm.clientWidth < this._cellNodeElm.scrollWidth && !this._cellTooltipOptions.useRegularTooltipFromFormatterOnly ? (tooltipText = (this._cellNodeElm.textContent || "").trim() || "", this._cellTooltipOptions.tooltipTextMaxLength && tooltipText.length > this._cellTooltipOptions.tooltipTextMaxLength && (tooltipText = tooltipText.substring(0, this._cellTooltipOptions.tooltipTextMaxLength - 3) + "..."), tmpTitleElm = this._cellNodeElm) : (this._cellTooltipOptions.useRegularTooltipFromFormatterOnly ? tmpTitleElm = tmpDiv.querySelector("[title], [data-slick-tooltip]") : (tmpTitleElm = this.findFirstElementAttribute(this._cellNodeElm, ["title", "data-slick-tooltip"]) ? this._cellNodeElm : tmpDiv.querySelector("[title], [data-slick-tooltip]"), (!tmpTitleElm || !this.findFirstElementAttribute(tmpTitleElm, ["title", "data-slick-tooltip"])) && this._cellNodeElm && (tmpTitleElm = this._cellNodeElm.querySelector("[title], [data-slick-tooltip]"))), (!tooltipText || typeof formatterOrText == "function" && this._cellTooltipOptions.useRegularTooltipFromFormatterOnly) && (tooltipText = this.findFirstElementAttribute(tmpTitleElm, ["title", "data-slick-tooltip"]) || ""))), tooltipText !== "" && this.renderTooltipFormatter(formatterOrText, cell, value, columnDef, item, tooltipText), this.swapAndClearTitleAttribute(tmpTitleElm, tooltipText);
   }
-  function swapAndClearTitleAttribute(inputTitleElm, tooltipText) {
-    var titleElm = inputTitleElm || _cellNodeElm && (_cellNodeElm.hasAttribute("title") && _cellNodeElm.getAttribute("title") ? _cellNodeElm : _cellNodeElm.querySelector("[title]"));
+  /**
+  * swap and copy the "title" attribute into a new custom attribute then clear the "title" attribute
+  * from the grid div text content so that it won't show also as a 2nd browser tooltip
+  */
+  swapAndClearTitleAttribute(inputTitleElm, tooltipText) {
+    let titleElm = inputTitleElm || this._cellNodeElm && (this._cellNodeElm.hasAttribute("title") && this._cellNodeElm.getAttribute("title") ? this._cellNodeElm : this._cellNodeElm.querySelector("[title]"));
     titleElm && (titleElm.setAttribute("data-slick-tooltip", tooltipText || ""), titleElm.hasAttribute("title") && titleElm.setAttribute("title", ""));
   }
-  function asyncProcessCallback(asyncResult, cell, value, columnDef, dataContext) {
-    hideTooltip();
-    var itemWithAsyncData = Utils18.extend(!0, {}, dataContext, { [_cellTooltipOptions.asyncParamsPropName || "__params"]: asyncResult });
-    renderTooltipFormatter(_cellTooltipOptions.asyncPostFormatter, cell, value, columnDef, itemWithAsyncData);
+  asyncProcessCallback(asyncResult, cell, value, columnDef, dataContext) {
+    this.hideTooltip();
+    let itemWithAsyncData = Utils18.extend(!0, {}, dataContext, { [this._cellTooltipOptions.asyncParamsPropName || "__params"]: asyncResult });
+    this.renderTooltipFormatter(this._cellTooltipOptions.asyncPostFormatter, cell, value, columnDef, itemWithAsyncData);
   }
-  function calculateAvailableSpaceTop(element) {
-    var availableSpace = 0, pageScrollTop = Utils18.windowScrollPosition().top, elmOffset = getHtmlElementOffset(element);
-    if (elmOffset) {
-      var elementOffsetTop = elmOffset.top;
-      availableSpace = elementOffsetTop - pageScrollTop;
-    }
-    return availableSpace;
-  }
-  function cancellablePromise(inputPromise) {
-    var hasCancelled = !1;
+  cancellablePromise(inputPromise) {
+    let hasCancelled = !1;
     return inputPromise instanceof Promise ? {
       promise: inputPromise.then(function(result) {
         if (hasCancelled)
           throw { isPromiseCancelled: !0 };
         return result;
       }),
-      cancel: function() {
-        hasCancelled = !0;
-      }
+      cancel: () => hasCancelled = !0
     } : inputPromise;
   }
-  function getHtmlElementOffset(element) {
-    if (element) {
-      var rect = element.getBoundingClientRect(), top = 0, left = 0, bottom = 0, right = 0;
-      return rect.top !== void 0 && rect.left !== void 0 && (top = rect.top + window.pageYOffset, left = rect.left + window.pageXOffset, right = rect.right, bottom = rect.bottom), { top, left, bottom, right };
+  getHtmlElementOffset(element) {
+    if (!element)
+      return;
+    let rect = element.getBoundingClientRect(), left = 0, top = 0, bottom = 0, right = 0;
+    return rect.top !== void 0 && rect.left !== void 0 && (top = rect.top + window.pageYOffset, left = rect.left + window.pageXOffset, right = rect.right, bottom = rect.bottom), { top, left, bottom, right };
+  }
+  /**
+   * hide (remove) tooltip from the DOM,
+   * when using async process, it will also cancel any opened Promise/Observable that might still be opened/pending.
+   */
+  hideTooltip() {
+    this._cancellablePromise?.cancel(), document.body.querySelector(`.${this._cellTooltipOptions?.className ?? this._defaults.className}.${this._grid.getUID()}`)?.remove();
+  }
+  /**
+   * Reposition the Tooltip to be top-left position over the cell.
+   * By default we use an "auto" mode which will allow to position the Tooltip to the best logical position in the window, also when we mention position, we are talking about the relative position against the grid cell.
+   * We can assume that in 80% of the time the default position is top-right, the default is "auto" but we can also override it and use a specific position.
+   * Most of the time positioning of the tooltip will be to the "top-right" of the cell is ok but if our column is completely on the right side then we'll want to change the position to "left" align.
+   * Same goes for the top/bottom position, Most of the time positioning the tooltip to the "top" but if we are hovering a cell at the top of the grid and there's no room to display it then we might need to reposition to "bottom" instead.
+   */
+  reposition(cell) {
+    if (this._tooltipElm) {
+      this._cellNodeElm = this._cellNodeElm || this._grid.getCellNode(cell.row, cell.cell);
+      let cellPosition = this.getHtmlElementOffset(this._cellNodeElm), cellContainerWidth = this._cellNodeElm.offsetWidth, calculatedTooltipHeight = this._tooltipElm.getBoundingClientRect().height, calculatedTooltipWidth = this._tooltipElm.getBoundingClientRect().width, calculatedBodyWidth = document.body.offsetWidth || window.innerWidth, newPositionTop = (cellPosition?.top || 0) - this._tooltipElm.offsetHeight - (this._cellTooltipOptions.offsetTopBottom ?? 0), newPositionLeft = (cellPosition?.left || 0) - (this._cellTooltipOptions.offsetRight ?? 0), position = this._cellTooltipOptions.position || "auto";
+      position === "center" ? (newPositionLeft += cellContainerWidth / 2 - calculatedTooltipWidth / 2 + (this._cellTooltipOptions.offsetRight || 0), this._tooltipElm.classList.remove("arrow-left-align"), this._tooltipElm.classList.remove("arrow-right-align"), this._tooltipElm.classList.add("arrow-center-align")) : position === "right-align" || (position === "auto" || position !== "left-align") && newPositionLeft + calculatedTooltipWidth > calculatedBodyWidth ? (newPositionLeft -= calculatedTooltipWidth - cellContainerWidth - (this._cellTooltipOptions.offsetLeft || 0), this._tooltipElm.classList.remove("arrow-center-align"), this._tooltipElm.classList.remove("arrow-left-align"), this._tooltipElm.classList.add("arrow-right-align")) : (this._tooltipElm.classList.remove("arrow-center-align"), this._tooltipElm.classList.remove("arrow-right-align"), this._tooltipElm.classList.add("arrow-left-align")), position === "bottom" || position === "auto" && calculatedTooltipHeight > Utils18.calculateAvailableSpace(this._cellNodeElm).top ? (newPositionTop = (cellPosition?.top || 0) + (this._gridOptions.rowHeight || 0) + (this._cellTooltipOptions.offsetTopBottom || 0), this._tooltipElm.classList.remove("arrow-down"), this._tooltipElm.classList.add("arrow-up")) : (this._tooltipElm.classList.add("arrow-down"), this._tooltipElm.classList.remove("arrow-up")), this._tooltipElm.style.top = newPositionTop + "px", this._tooltipElm.style.left = newPositionLeft + "px";
     }
   }
-  function hideTooltip() {
-    _cancellablePromise && _cancellablePromise.cancel && _cancellablePromise.cancel();
-    var prevTooltip = document.body.querySelector("." + _cellTooltipOptions.className + "." + _grid.getUID());
-    prevTooltip && prevTooltip.remove && prevTooltip.remove();
-  }
-  function reposition(cell) {
-    if (_tooltipElm) {
-      _cellNodeElm = _cellNodeElm || _grid.getCellNode(cell.row, cell.cell);
-      var cellPosition = getHtmlElementOffset(_cellNodeElm), cellContainerWidth = _cellNodeElm.offsetWidth, calculatedTooltipHeight = _tooltipElm.getBoundingClientRect().height, calculatedTooltipWidth = _tooltipElm.getBoundingClientRect().width, calculatedBodyWidth = document.body.offsetWidth || window.innerWidth, newPositionTop = cellPosition.top - _tooltipElm.offsetHeight - (_cellTooltipOptions.offsetTopBottom || 0), newPositionLeft = (cellPosition && cellPosition.left || 0) - (_cellTooltipOptions.offsetRight || 0), position = _cellTooltipOptions.position || "auto";
-      position === "center" ? (newPositionLeft += cellContainerWidth / 2 - calculatedTooltipWidth / 2 + (_cellTooltipOptions.offsetRight || 0), _tooltipElm.classList.remove("arrow-left-align"), _tooltipElm.classList.remove("arrow-right-align"), _tooltipElm.classList.add("arrow-center-align")) : position === "right-align" || (position === "auto" || position !== "left-align") && newPositionLeft + calculatedTooltipWidth > calculatedBodyWidth ? (newPositionLeft -= calculatedTooltipWidth - cellContainerWidth - (_cellTooltipOptions.offsetLeft || 0), _tooltipElm.classList.remove("arrow-center-align"), _tooltipElm.classList.remove("arrow-left-align"), _tooltipElm.classList.add("arrow-right-align")) : (_tooltipElm.classList.remove("arrow-center-align"), _tooltipElm.classList.remove("arrow-right-align"), _tooltipElm.classList.add("arrow-left-align")), position === "bottom" || position === "auto" && calculatedTooltipHeight > calculateAvailableSpaceTop(_cellNodeElm) ? (newPositionTop = cellPosition.top + (_gridOptions.rowHeight || 0) + (_cellTooltipOptions.offsetTopBottom || 0), _tooltipElm.classList.remove("arrow-down"), _tooltipElm.classList.add("arrow-up")) : (_tooltipElm.classList.add("arrow-down"), _tooltipElm.classList.remove("arrow-up")), _tooltipElm.style.top = newPositionTop + "px", _tooltipElm.style.left = newPositionLeft + "px";
-    }
-  }
-  function parseFormatterAndSanitize(formatterOrText, cell, value, columnDef, item) {
+  /**
+   * Parse the Custom Formatter (when provided) or return directly the text when it is already a string.
+   * We will also sanitize the text in both cases before returning it so that it can be used safely.
+   */
+  parseFormatterAndSanitize(formatterOrText, cell, value, columnDef, item) {
     if (typeof formatterOrText == "function") {
-      var tooltipText = formatterOrText(cell.row, cell.cell, value, columnDef, item, _grid), formatterText = typeof tooltipText == "object" && tooltipText && tooltipText.text ? tooltipText.text : typeof tooltipText == "string" ? tooltipText : "";
-      return _grid.sanitizeHtmlString(formatterText);
+      let tooltipText = formatterOrText(cell.row, cell.cell, value, columnDef, item, this._grid), formatterText = typeof tooltipText == "object" && tooltipText?.text ? tooltipText.text : typeof tooltipText == "string" ? tooltipText : "";
+      return this._grid.sanitizeHtmlString(formatterText);
     } else if (typeof formatterOrText == "string")
-      return _grid.sanitizeHtmlString(formatterOrText);
+      return this._grid.sanitizeHtmlString(formatterOrText);
     return "";
   }
-  function renderTooltipFormatter(formatter, cell, value, columnDef, item, tooltipText, inputTitleElm) {
-    _tooltipElm = document.createElement("div"), _tooltipElm.className = _cellTooltipOptions.className, _tooltipElm.classList.add(_grid.getUID()), _tooltipElm.classList.add("l" + cell.cell), _tooltipElm.classList.add("r" + cell.cell);
-    var outputText = tooltipText || parseFormatterAndSanitize(formatter, cell, value, columnDef, item) || "";
-    outputText = _cellTooltipOptions.tooltipTextMaxLength && outputText.length > _cellTooltipOptions.tooltipTextMaxLength ? outputText.substring(0, _cellTooltipOptions.tooltipTextMaxLength - 3) + "..." : outputText;
+  renderTooltipFormatter(formatter, cell, value, columnDef, item, tooltipText, inputTitleElm) {
+    this._tooltipElm = document.createElement("div"), this._tooltipElm.className = this._cellTooltipOptions.className || this._defaults.className, this._tooltipElm.classList.add(this._grid.getUID()), this._tooltipElm.classList.add("l" + cell.cell), this._tooltipElm.classList.add("r" + cell.cell);
+    let outputText = tooltipText || this.parseFormatterAndSanitize(formatter, cell, value, columnDef, item) || "";
+    outputText = this._cellTooltipOptions.tooltipTextMaxLength && outputText.length > this._cellTooltipOptions.tooltipTextMaxLength ? outputText.substring(0, this._cellTooltipOptions.tooltipTextMaxLength - 3) + "..." : outputText;
     let finalOutputText = "";
-    !tooltipText || _cellTooltipOptions && _cellTooltipOptions.renderRegularTooltipAsHtml ? (finalOutputText = _grid.sanitizeHtmlString(outputText), _tooltipElm.innerHTML = finalOutputText, _tooltipElm.style.whiteSpace = _cellTooltipOptions && _cellTooltipOptions.whiteSpace || _defaults.whiteSpace) : (finalOutputText = outputText || "", _tooltipElm.textContent = finalOutputText, _tooltipElm.style.whiteSpace = _cellTooltipOptions && _cellTooltipOptions.regularTooltipWhiteSpace || _defaults.regularTooltipWhiteSpace), _cellTooltipOptions.maxHeight && (_tooltipElm.style.maxHeight = _cellTooltipOptions.maxHeight + "px"), _cellTooltipOptions.maxWidth && (_tooltipElm.style.maxWidth = _cellTooltipOptions.maxWidth + "px"), finalOutputText && (document.body.appendChild(_tooltipElm), reposition(cell), _cellTooltipOptions.hideArrow || _tooltipElm.classList.add("tooltip-arrow"), swapAndClearTitleAttribute(inputTitleElm, outputText));
+    !tooltipText || this._cellTooltipOptions?.renderRegularTooltipAsHtml ? (finalOutputText = this._grid.sanitizeHtmlString(outputText), this._tooltipElm.innerHTML = finalOutputText, this._tooltipElm.style.whiteSpace = this._cellTooltipOptions?.whiteSpace ?? this._defaults.whiteSpace) : (finalOutputText = outputText || "", this._tooltipElm.textContent = finalOutputText, this._tooltipElm.style.whiteSpace = this._cellTooltipOptions?.regularTooltipWhiteSpace ?? this._defaults.regularTooltipWhiteSpace), this._cellTooltipOptions.maxHeight && (this._tooltipElm.style.maxHeight = this._cellTooltipOptions.maxHeight + "px"), this._cellTooltipOptions.maxWidth && (this._tooltipElm.style.maxWidth = this._cellTooltipOptions.maxWidth + "px"), finalOutputText && (document.body.appendChild(this._tooltipElm), this.reposition(cell), this._cellTooltipOptions.hideArrow || this._tooltipElm.classList.add("tooltip-arrow"), this.swapAndClearTitleAttribute(inputTitleElm, outputText));
   }
-  function runOverrideFunctionWhenExists(overrideFn, args) {
+  /**
+   * Method that user can pass to override the default behavior.
+   * In order word, user can choose or an item is (usable/visible/enable) by providing his own logic.
+   * @param overrideFn: override function callback
+   * @param args: multiple arguments provided to the override (cell, row, columnDef, dataContext, grid)
+   */
+  runOverrideFunctionWhenExists(overrideFn, args) {
     return typeof overrideFn == "function" ? overrideFn.call(this, args) : !0;
   }
-  function setOptions(newOptions) {
-    _options = Utils18.extend({}, _options, newOptions);
+  setOptions(newOptions) {
+    this._options = Utils18.extend({}, this._options, newOptions);
   }
-  Utils18.extend(this, {
-    init,
-    destroy,
-    hide: hideTooltip,
-    setOptions,
-    pluginName: "CustomTooltip"
-  });
-}
+};
 
 // src/plugins/slick.draggablegrouping.ts
-var BindingEventService9 = BindingEventService, SlickEvent13 = SlickEvent, SlickEventHandler4 = SlickEventHandler, Utils19 = Utils, SlickDraggableGrouping = class {
+var BindingEventService9 = BindingEventService, SlickEvent13 = SlickEvent, SlickEventHandler5 = SlickEventHandler, Utils19 = Utils, SlickDraggableGrouping = class {
   /**
    * @param options {Object} Options:
    *    deleteIconCssClass:  an extra CSS class to add to the delete button (default undefined), if deleteIconCssClass && deleteIconImage undefined then slick-groupby-remove-image class will be added
@@ -7497,7 +7524,7 @@ var BindingEventService9 = BindingEventService, SlickEvent13 = SlickEvent, Slick
       toggleAllPlaceholderText: "Toggle all Groups"
     });
     __publicField(this, "_bindingEventService", new BindingEventService9());
-    __publicField(this, "_handler", new SlickEventHandler4());
+    __publicField(this, "_handler", new SlickEventHandler5());
     __publicField(this, "_sortableLeftInstance");
     __publicField(this, "_sortableRightInstance");
     __publicField(this, "_columnsGroupBy", []);
@@ -7616,8 +7643,8 @@ var BindingEventService9 = BindingEventService, SlickEvent13 = SlickEvent, Slick
             }
         this._columnsGroupBy = newGroupingOrder, this.updateGroupBy("sort-group");
       }
-    }), this.addDragOverDropzoneListeners(), this._groupToggler && this._bindingEventService.bind(this._groupToggler, "click", (event) => {
-      let target = event.target;
+    }), this.addDragOverDropzoneListeners(), this._groupToggler && this._bindingEventService.bind(this._groupToggler, "click", (event2) => {
+      let target = event2.target;
       this.toggleGroupToggler(target, target?.classList.contains("expanded"));
     });
   }
@@ -7690,7 +7717,7 @@ var BindingEventService9 = BindingEventService, SlickEvent13 = SlickEvent, Slick
 };
 
 // src/plugins/slick.headerbuttons.ts
-var BindingEventService10 = BindingEventService, SlickEvent14 = Event, EventHandler6 = EventHandler, Utils20 = Utils, SlickHeaderButtons = class {
+var BindingEventService10 = BindingEventService, SlickEvent14 = Event, EventHandler5 = EventHandler, Utils20 = Utils, SlickHeaderButtons = class {
   constructor(options) {
     // --
     // public API
@@ -7699,7 +7726,7 @@ var BindingEventService10 = BindingEventService, SlickEvent14 = Event, EventHand
     // --
     // protected props
     __publicField(this, "_grid");
-    __publicField(this, "_handler", new EventHandler6());
+    __publicField(this, "_handler", new EventHandler5());
     __publicField(this, "_bindingEventService", new BindingEventService10());
     __publicField(this, "_defaults", {
       buttonCssClass: "slick-header-button"
@@ -7754,7 +7781,7 @@ var BindingEventService10 = BindingEventService, SlickEvent14 = Event, EventHand
 };
 
 // src/plugins/slick.headermenu.ts
-var BindingEventService11 = BindingEventService, SlickEvent15 = Event, SlickEventHandler5 = SlickEventHandler, Utils21 = Utils, SlickHeaderMenu = class {
+var BindingEventService11 = BindingEventService, SlickEvent15 = Event, SlickEventHandler6 = SlickEventHandler, Utils21 = Utils, SlickHeaderMenu = class {
   constructor(options) {
     // --
     // public API
@@ -7765,7 +7792,7 @@ var BindingEventService11 = BindingEventService, SlickEvent15 = Event, SlickEven
     // --
     // protected props
     __publicField(this, "_grid");
-    __publicField(this, "_handler", new SlickEventHandler5());
+    __publicField(this, "_handler", new SlickEventHandler6());
     __publicField(this, "_bindingEventService", new BindingEventService11());
     __publicField(this, "_defaults", {
       buttonCssClass: void 0,
@@ -7814,13 +7841,13 @@ var BindingEventService11 = BindingEventService, SlickEvent15 = Event, SlickEven
   handleBeforeHeaderCellDestroy(_e, args) {
     args.column.header?.menu && args.node.querySelectorAll(".slick-header-menubutton").forEach((elm) => elm.remove());
   }
-  showMenu(event, menu, columnDef) {
+  showMenu(event2, menu, columnDef) {
     let callbackArgs = {
       grid: this._grid,
       column: columnDef,
       menu
     };
-    if (this.onBeforeMenuShow.notify(callbackArgs, event, this).getReturnValue() == !1)
+    if (this.onBeforeMenuShow.notify(callbackArgs, event2, this).getReturnValue() == !1)
       return;
     if (!this._menuElm) {
       this._menuElm = document.createElement("div"), this._menuElm.className = "slick-header-menu", this._menuElm.role = "menu", this._menuElm.style.minWidth = `${this._options.minWidth}px`, this._menuElm.setAttribute("aria-expanded", "true");
@@ -7844,12 +7871,12 @@ var BindingEventService11 = BindingEventService, SlickEvent15 = Event, SlickEven
       let textElm = document.createElement("span");
       textElm.className = "slick-header-menucontent", textElm.textContent = item.title || "", menuItem.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), this._menuElm.appendChild(menuItem), this._bindingEventService.bind(menuItem, "click", this.handleMenuItemClick.bind(this, item, columnDef));
     }
-    let buttonElm = event.target, btnOffset = Utils21.offset(buttonElm), menuOffset = Utils21.offset(this._menuElm), leftPos = btnOffset && btnOffset.left || 0;
+    let buttonElm = event2.target, btnOffset = Utils21.offset(buttonElm), menuOffset = Utils21.offset(this._menuElm), leftPos = btnOffset && btnOffset.left || 0;
     if (this._options.autoAlign) {
       let gridPos = this._grid.getGridPosition();
       leftPos + this._menuElm.offsetWidth >= gridPos.width && (leftPos = leftPos + buttonElm.clientWidth - this._menuElm.clientWidth + (this._options.autoAlignOffset || 0));
     }
-    this._menuElm.style.top = `${(buttonElm.clientHeight || btnOffset && btnOffset.top || 0) + (this._options?.menuOffsetTop || 0)}px`, this._menuElm.style.left = `${leftPos - (menuOffset?.left ?? 0)}px`, this._activeHeaderColumnElm = this._menuElm.closest(".slick-header-column"), this._activeHeaderColumnElm && this._activeHeaderColumnElm.classList.add("slick-header-column-active"), this.onAfterMenuShow.notify(callbackArgs, event, this).getReturnValue() != !1 && (event.preventDefault(), event.stopPropagation());
+    this._menuElm.style.top = `${(buttonElm.clientHeight || btnOffset && btnOffset.top || 0) + (this._options?.menuOffsetTop || 0)}px`, this._menuElm.style.left = `${leftPos - (menuOffset?.left ?? 0)}px`, this._activeHeaderColumnElm = this._menuElm.closest(".slick-header-column"), this._activeHeaderColumnElm && this._activeHeaderColumnElm.classList.add("slick-header-column-active"), this.onAfterMenuShow.notify(callbackArgs, event2, this).getReturnValue() != !1 && (event2.preventDefault(), event2.stopPropagation());
   }
   handleMenuItemClick(item, columnDef, e) {
     let command = item.command || "";
@@ -7920,8 +7947,8 @@ var BindingEventService12 = BindingEventService, SlickEvent16 = Event, Utils22 =
   */
   bindAutoResizeDataGrid(newSizes) {
     let gridElmOffset = Utils22.offset(this._gridDomElm);
-    (this._gridDomElm !== void 0 || gridElmOffset !== void 0) && (this.resizeGrid(0, newSizes, null), this._bindingEventService.bind(window, "resize", (event) => {
-      this.onGridBeforeResize.notify({ grid: this._grid }, event, this), this._resizePaused || (this.resizeGrid(0, newSizes, event), this.resizeGrid(0, newSizes, event));
+    (this._gridDomElm !== void 0 || gridElmOffset !== void 0) && (this.resizeGrid(0, newSizes, null), this._bindingEventService.bind(window, "resize", (event2) => {
+      this.onGridBeforeResize.notify({ grid: this._grid }, event2, this), this._resizePaused || (this.resizeGrid(0, newSizes, event2), this.resizeGrid(0, newSizes, event2));
     }));
   }
   /**
@@ -7964,21 +7991,21 @@ var BindingEventService12 = BindingEventService, SlickEvent16 = Event, Utils22 =
    * @param {object} [event] that triggered the resize, defaults to null
    * @return If the browser supports it, we can return a Promise that would resolve with the new dimensions
    */
-  resizeGrid(delay, newSizes, event) {
+  resizeGrid(delay, newSizes, event2) {
     let resizeDelay = delay || 0;
     if (typeof Promise == "function")
       return new Promise((resolve) => {
         resizeDelay > 0 ? (clearTimeout(this._timer), this._timer = setTimeout(() => {
-          resolve(this.resizeGridCallback(newSizes, event));
-        }, resizeDelay)) : resolve(this.resizeGridCallback(newSizes, event));
+          resolve(this.resizeGridCallback(newSizes, event2));
+        }, resizeDelay)) : resolve(this.resizeGridCallback(newSizes, event2));
       });
     resizeDelay > 0 ? (clearTimeout(this._timer), this._timer = setTimeout(() => {
-      this.resizeGridCallback(newSizes, event);
-    }, resizeDelay)) : this.resizeGridCallback(newSizes, event);
+      this.resizeGridCallback(newSizes, event2);
+    }, resizeDelay)) : this.resizeGridCallback(newSizes, event2);
   }
-  resizeGridCallback(newSizes, event) {
+  resizeGridCallback(newSizes, event2) {
     let lastDimensions = this.resizeGridWithDimensions(newSizes);
-    return this.onGridAfterResize.notify({ grid: this._grid, dimensions: lastDimensions }, event, this), lastDimensions;
+    return this.onGridAfterResize.notify({ grid: this._grid, dimensions: lastDimensions }, event2, this), lastDimensions;
   }
   resizeGridWithDimensions(newSizes) {
     let availableDimensions = this.calculateGridNewDimensions();
@@ -7997,9 +8024,9 @@ var BindingEventService12 = BindingEventService, SlickEvent16 = Event, Utils22 =
 };
 
 // src/plugins/slick.rowdetailview.js
-var SlickEvent17 = Event, EventHandler7 = EventHandler, Utils23 = Utils;
+var SlickEvent17 = Event, EventHandler6 = EventHandler, Utils23 = Utils;
 function RowDetailView(options) {
-  var _grid, _gridOptions, _gridUid, _dataView, _dataViewIdProperty = "id", _expandableOverride = null, _self = this, _lastRange = null, _expandedRows = [], _handler = new EventHandler7(), _outsideRange = 5, _visibleRenderedCellCount = 0, _defaults = {
+  var _grid, _gridOptions, _gridUid, _dataView, _dataViewIdProperty = "id", _expandableOverride = null, _self = this, _lastRange = null, _expandedRows = [], _handler = new EventHandler6(), _outsideRange = 5, _visibleRenderedCellCount = 0, _defaults = {
     columnId: "_detail_selector",
     cssClass: "detailView-toggle",
     expandedClass: null,
@@ -8274,9 +8301,9 @@ function RowDetailView(options) {
 }
 
 // src/plugins/slick.rowmovemanager.js
-var SlickEvent18 = Event, EventHandler8 = EventHandler, Utils24 = Utils;
+var SlickEvent18 = Event, EventHandler7 = EventHandler, Utils24 = Utils;
 function RowMoveManager(options) {
-  var _grid, _canvas, _dragging, _self = this, _usabilityOverride = null, _handler = new EventHandler8(), _defaults = {
+  var _grid, _canvas, _dragging, _self = this, _usabilityOverride = null, _handler = new EventHandler7(), _defaults = {
     columnId: "_move",
     cssClass: null,
     cancelEditOnDrag: !1,
@@ -8388,7 +8415,7 @@ function RowMoveManager(options) {
 }
 
 // src/plugins/slick.rowselectionmodel.ts
-var Draggable4 = Draggable, keyCode6 = keyCode, SlickCellRangeDecorator3 = SlickCellRangeDecorator, SlickCellRangeSelector3 = SlickCellRangeSelector, SlickEvent19 = SlickEvent, SlickEventData8 = SlickEventData, SlickEventHandler6 = SlickEventHandler, SlickRange6 = SlickRange, Utils25 = Utils, SlickRowSelectionModel = class {
+var Draggable4 = Draggable, keyCode6 = keyCode, SlickCellRangeDecorator3 = SlickCellRangeDecorator, SlickCellRangeSelector3 = SlickCellRangeSelector, SlickEvent19 = SlickEvent, SlickEventData9 = SlickEventData, SlickEventHandler7 = SlickEventHandler, SlickRange6 = SlickRange, Utils25 = Utils, SlickRowSelectionModel = class {
   constructor(options) {
     // --
     // public API
@@ -8398,7 +8425,7 @@ var Draggable4 = Draggable, keyCode6 = keyCode, SlickCellRangeDecorator3 = Slick
     // protected props
     __publicField(this, "_grid");
     __publicField(this, "_ranges", []);
-    __publicField(this, "_handler", new SlickEventHandler6());
+    __publicField(this, "_handler", new SlickEventHandler7());
     __publicField(this, "_inHandler", !1);
     __publicField(this, "_selector");
     __publicField(this, "_isRowMoveManagerHandler");
@@ -8463,7 +8490,7 @@ var Draggable4 = Draggable, keyCode6 = keyCode, SlickCellRangeDecorator3 = Slick
     if ((!this._ranges || this._ranges.length === 0) && (!ranges || ranges.length === 0))
       return;
     this._ranges = ranges;
-    let eventData = new SlickEventData8(null, this._ranges);
+    let eventData = new SlickEventData9(null, this._ranges);
     Object.defineProperty(eventData, "detail", { writable: !0, configurable: !0, value: { caller: caller || "SlickRowSelectionModel.setSelectedRanges" } }), this.onSelectedRangesChanged.notify(this._ranges, eventData);
   }
   getSelectedRanges() {
