@@ -27,14 +27,14 @@
         maxToolTipLength: void 0,
         replaceExisting: !0
       });
-      this._options = options;
+      this._options = Utils.extend(!0, {}, this._defaults, options);
     }
     /**
      * Initialize plugin.
      */
     init(grid) {
       var _a, _b;
-      this._options = Utils.extend(!0, {}, this._defaults, this._options), this._grid = grid, (_a = this._options) != null && _a.enableForCells && this._grid.onMouseEnter.subscribe(this.handleMouseEnter.bind(this)), (_b = this._options) != null && _b.enableForHeaderCells && this._grid.onHeaderMouseEnter.subscribe(this.handleHeaderMouseEnter.bind(this));
+      this._grid = grid, (_a = this._options) != null && _a.enableForCells && this._grid.onMouseEnter.subscribe(this.handleMouseEnter.bind(this)), (_b = this._options) != null && _b.enableForHeaderCells && this._grid.onHeaderMouseEnter.subscribe(this.handleHeaderMouseEnter.bind(this));
     }
     /**
      * Destroy plugin.
@@ -48,11 +48,11 @@
      * @param {MouseEvent} event - The event
      */
     handleMouseEnter(event) {
-      var _a, _b, _c;
+      var _a, _b, _c, _d, _e;
       let cell = this._grid.getCellFromEvent(event);
       if (cell) {
         let node = this._grid.getCellNode(cell.row, cell.cell), text;
-        this._options && node && (!node.title || (_a = this._options) != null && _a.replaceExisting) && (node.clientWidth < node.scrollWidth ? (text = (_c = (_b = node.textContent) == null ? void 0 : _b.trim()) != null ? _c : "", this._options && this._options.maxToolTipLength && text.length > this._options.maxToolTipLength && (text = text.substring(0, this._options.maxToolTipLength - 3) + "...")) : text = "", node = null);
+        this._options && node && (!node.title || (_a = this._options) != null && _a.replaceExisting) && (node.clientWidth < node.scrollWidth ? (text = (_c = (_b = node.textContent) == null ? void 0 : _b.trim()) != null ? _c : "", (_d = this._options) != null && _d.maxToolTipLength && text.length > ((_e = this._options) == null ? void 0 : _e.maxToolTipLength) && (text = text.substring(0, this._options.maxToolTipLength - 3) + "...")) : text = "", node.title = text), node = null;
       }
     }
     /**

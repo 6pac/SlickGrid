@@ -22,6 +22,7 @@ var Slick = (() => {
   __export(slick_core_exports, {
     BindingEventService: () => BindingEventService,
     ColAutosizeMode: () => ColAutosizeMode,
+    EditorLock: () => EditorLock,
     Event: () => Event,
     EventData: () => EventData,
     EventHandler: () => EventHandler,
@@ -572,7 +573,7 @@ var Slick = (() => {
     NonDataRow: SlickNonDataItem,
     Group: SlickGroup,
     GroupTotals: SlickGroupTotals,
-    // EditorLock: EditorLock,
+    EditorLock: SlickEditorLock,
     RegexSanitizer: regexSanitizer,
     // BindingEventService: BindingEventService,
     Utils: {
@@ -672,6 +673,7 @@ var Slick = (() => {
     }
   }, {
     Utils,
+    EditorLock,
     Event,
     EventData,
     EventHandler,

@@ -1,125 +1,143 @@
 "use strict";
 (() => {
-  // src/plugins/slick.crossgridrowmovemanager.js
-  var SlickEvent = Slick.Event, EventHandler = Slick.EventHandler, Utils = Slick.Utils;
-  function CrossGridRowMoveManager(options) {
-    var _grid, _canvas, _toGrid, _toCanvas, _dragging, _self = this, _usabilityOverride = null, _handler = new EventHandler(), _defaults = {
-      columnId: "_move",
-      cssClass: null,
-      cancelEditOnDrag: !1,
-      disableRowSelection: !1,
-      hideRowMoveShadow: !0,
-      rowMoveShadowMarginTop: 0,
-      rowMoveShadowMarginLeft: 0,
-      rowMoveShadowOpacity: 0.95,
-      rowMoveShadowScale: 0.75,
-      singleRowMove: !1,
-      width: 40
-    };
-    options && typeof options.usabilityOverride == "function" && usabilityOverride(options.usabilityOverride);
-    function init(grid) {
-      options = Utils.extend(!0, {}, _defaults, options), _grid = grid, _canvas = _grid.getCanvasNode(), _toGrid = options.toGrid, _toCanvas = _toGrid.getCanvasNode(), _handler.subscribe(_grid.onDragInit, handleDragInit).subscribe(_grid.onDragStart, handleDragStart).subscribe(_grid.onDrag, handleDrag).subscribe(_grid.onDragEnd, handleDragEnd);
+  var __defProp = Object.defineProperty;
+  var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: !0, configurable: !0, writable: !0, value }) : obj[key] = value;
+  var __publicField = (obj, key, value) => (__defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value), value);
+
+  // src/plugins/slick.crossgridrowmovemanager.ts
+  var SlickEvent = Slick.Event, SlickEventHandler = Slick.EventHandler, Utils = Slick.Utils, SlickCrossGridRowMoveManager = class {
+    constructor(options) {
+      // --
+      // public API
+      __publicField(this, "pluginName", "CrossGridRowMoveManager");
+      __publicField(this, "onBeforeMoveRows", new SlickEvent());
+      __publicField(this, "onMoveRows", new SlickEvent());
+      // --
+      // protected props
+      __publicField(this, "_grid");
+      __publicField(this, "_canvas");
+      __publicField(this, "_dragging", !1);
+      __publicField(this, "_toGrid");
+      __publicField(this, "_toCanvas");
+      __publicField(this, "_usabilityOverride");
+      __publicField(this, "_eventHandler");
+      __publicField(this, "_options");
+      __publicField(this, "_defaults", {
+        columnId: "_move",
+        cssClass: void 0,
+        cancelEditOnDrag: !1,
+        disableRowSelection: !1,
+        hideRowMoveShadow: !0,
+        rowMoveShadowMarginTop: 0,
+        rowMoveShadowMarginLeft: 0,
+        rowMoveShadowOpacity: 0.95,
+        rowMoveShadowScale: 0.75,
+        singleRowMove: !1,
+        toGrid: void 0,
+        width: 40
+      });
+      this._options = Utils.extend(!0, {}, this._defaults, options), this._eventHandler = new SlickEventHandler();
     }
-    function destroy() {
-      _handler.unsubscribeAll();
+    init(grid) {
+      var _a;
+      this._grid = grid, this._canvas = this._grid.getCanvasNode(), this._toGrid = this._options.toGrid, this._toCanvas = this._toGrid.getCanvasNode(), typeof ((_a = this._options) == null ? void 0 : _a.usabilityOverride) == "function" && this.usabilityOverride(this._options.usabilityOverride), this._eventHandler.subscribe(this._grid.onDragInit, this.handleDragInit.bind(this)).subscribe(this._grid.onDragStart, this.handleDragStart.bind(this)).subscribe(this._grid.onDrag, this.handleDrag.bind(this)).subscribe(this._grid.onDragEnd, this.handleDragEnd.bind(this));
     }
-    function setOptions(newOptions) {
-      options = Utils.extend({}, options, newOptions);
+    destroy() {
+      this._eventHandler.unsubscribeAll();
     }
-    function handleDragInit(e) {
+    setOptions(newOptions) {
+      this._options = Utils.extend({}, this._options, newOptions);
+    }
+    handleDragInit(e) {
       e.stopImmediatePropagation();
     }
-    function handleDragStart(e, dd) {
-      var cell = _grid.getCellFromEvent(e), currentRow = cell && cell.row, dataContext = _grid.getDataItem(currentRow);
-      if (checkUsabilityOverride(currentRow, dataContext, _grid)) {
-        if (options.cancelEditOnDrag && _grid.getEditorLock().isActive() && _grid.getEditorLock().cancelCurrentEdit(), _grid.getEditorLock().isActive() || !isHandlerColumn(cell.cell))
-          return !1;
-        if (_dragging = !0, e.stopImmediatePropagation(), !options.hideRowMoveShadow) {
-          let cellNodeElm = _grid.getCellNode(cell.row, cell.cell), slickRowElm = cellNodeElm && cellNodeElm.closest(".slick-row");
-          slickRowElm && (dd.clonedSlickRow = slickRowElm.cloneNode(!0), dd.clonedSlickRow.classList.add("slick-reorder-shadow-row"), dd.clonedSlickRow.style.display = "none", dd.clonedSlickRow.style.marginLeft = Number(options.rowMoveShadowMarginLeft || 0) + "px", dd.clonedSlickRow.style.marginTop = Number(options.rowMoveShadowMarginTop || 0) + "px", dd.clonedSlickRow.style.opacity = `${options.rowMoveShadowOpacity || 0.95}`, dd.clonedSlickRow.style.transform = `scale(${options.rowMoveShadowScale || 0.75})`, _canvas.appendChild(dd.clonedSlickRow));
-        }
-        var selectedRows = options.singleRowMove ? [cell.row] : _grid.getSelectedRows();
-        (selectedRows.length === 0 || !selectedRows.some((selectedRow) => selectedRow === cell.row)) && (selectedRows = [cell.row], options.disableRowSelection || _grid.setSelectedRows(selectedRows)), selectedRows.sort(function(a, b) {
-          return a - b;
-        });
-        var rowHeight = _grid.getOptions().rowHeight;
-        dd.fromGrid = _grid, dd.toGrid = _toGrid, dd.selectedRows = selectedRows, dd.selectionProxy = document.createElement("div"), dd.selectionProxy.className = "slick-reorder-proxy", dd.selectionProxy.style.display = "none", dd.selectionProxy.style.position = "absolute", dd.selectionProxy.style.zIndex = "99999", dd.selectionProxy.style.width = `${_toCanvas.clientWidth}px`, dd.selectionProxy.style.height = `${rowHeight * selectedRows.length}px`, _toCanvas.appendChild(dd.selectionProxy), dd.guide = document.createElement("div"), dd.guide.className = "slick-reorder-guide", dd.guide.style.position = "absolute", dd.guide.style.zIndex = "99999", dd.guide.style.width = `${_toCanvas.clientWidth}px`, dd.guide.style.top = "-1000px", _toCanvas.appendChild(dd.guide), dd.insertBefore = -1;
+    handleDragStart(e, dd) {
+      var _a;
+      let cell = this._grid.getCellFromEvent(e) || { cell: -1, row: -1 }, currentRow = (_a = cell == null ? void 0 : cell.row) != null ? _a : 0, dataContext = this._grid.getDataItem(currentRow);
+      if (!this.checkUsabilityOverride(currentRow, dataContext, this._grid))
+        return;
+      if (this._options.cancelEditOnDrag && this._grid.getEditorLock().isActive() && this._grid.getEditorLock().cancelCurrentEdit(), this._grid.getEditorLock().isActive() || !this.isHandlerColumn(cell.cell))
+        return !1;
+      if (this._dragging = !0, e.stopImmediatePropagation(), !this._options.hideRowMoveShadow) {
+        let cellNodeElm = this._grid.getCellNode(cell.row, cell.cell), slickRowElm = cellNodeElm == null ? void 0 : cellNodeElm.closest(".slick-row");
+        slickRowElm && (dd.clonedSlickRow = slickRowElm.cloneNode(!0), dd.clonedSlickRow.classList.add("slick-reorder-shadow-row"), dd.clonedSlickRow.style.display = "none", dd.clonedSlickRow.style.marginLeft = Number(this._options.rowMoveShadowMarginLeft || 0) + "px", dd.clonedSlickRow.style.marginTop = Number(this._options.rowMoveShadowMarginTop || 0) + "px", dd.clonedSlickRow.style.opacity = `${this._options.rowMoveShadowOpacity || 0.95}`, dd.clonedSlickRow.style.transform = `scale(${this._options.rowMoveShadowScale || 0.75})`, this._canvas.appendChild(dd.clonedSlickRow));
       }
+      let selectedRows = this._options.singleRowMove ? [cell.row] : this._grid.getSelectedRows();
+      (selectedRows.length === 0 || !selectedRows.some((selectedRow) => selectedRow === cell.row)) && (selectedRows = [cell.row], this._options.disableRowSelection || this._grid.setSelectedRows(selectedRows)), selectedRows.sort((a, b) => a - b);
+      let rowHeight = this._grid.getOptions().rowHeight;
+      dd.fromGrid = this._grid, dd.toGrid = this._toGrid, dd.selectedRows = selectedRows, dd.selectionProxy = document.createElement("div"), dd.selectionProxy.className = "slick-reorder-proxy", dd.selectionProxy.style.display = "none", dd.selectionProxy.style.position = "absolute", dd.selectionProxy.style.zIndex = "99999", dd.selectionProxy.style.width = `${this._toCanvas.clientWidth}px`, dd.selectionProxy.style.height = `${rowHeight * selectedRows.length}px`, this._toCanvas.appendChild(dd.selectionProxy), dd.guide = document.createElement("div"), dd.guide.className = "slick-reorder-guide", dd.guide.style.position = "absolute", dd.guide.style.zIndex = "99999", dd.guide.style.width = `${this._toCanvas.clientWidth}px`, dd.guide.style.top = "-1000px", this._toCanvas.appendChild(dd.guide), dd.insertBefore = -1;
     }
-    function handleDrag(evt, dd) {
-      if (!_dragging)
+    handleDrag(evt, dd) {
+      var _a, _b;
+      if (!this._dragging)
         return;
       evt.stopImmediatePropagation();
-      let e = evt.getNativeEvent();
-      var targetEvent = e.touches ? e.touches[0] : e;
-      let top = targetEvent.pageY - (Utils.offset(_toCanvas).top || 0);
+      let e = evt.getNativeEvent(), top = (e.touches ? e.touches[0] : e).pageY - ((_b = (_a = Utils.offset(this._toCanvas)) == null ? void 0 : _a.top) != null ? _b : 0);
       dd.selectionProxy.style.top = `${top - 5}px`, dd.selectionProxy.style.display = "block", dd.clonedSlickRow && (dd.clonedSlickRow.style.top = `${top - 6}px`, dd.clonedSlickRow.style.display = "block");
-      var insertBefore = Math.max(0, Math.min(Math.round(top / _toGrid.getOptions().rowHeight), _toGrid.getDataLength()));
+      let insertBefore = Math.max(0, Math.min(Math.round(top / this._toGrid.getOptions().rowHeight), this._toGrid.getDataLength()));
       if (insertBefore !== dd.insertBefore) {
-        var eventData = {
-          fromGrid: _grid,
-          toGrid: _toGrid,
+        let eventData = {
+          fromGrid: this._grid,
+          toGrid: this._toGrid,
           rows: dd.selectedRows,
           insertBefore
         };
-        if (_self.onBeforeMoveRows.notify(eventData).getReturnValue() === !1 ? dd.canMove = !1 : dd.canMove = !0, _usabilityOverride && dd.canMove) {
-          var insertBeforeDataContext = _toGrid.getDataItem(insertBefore);
-          dd.canMove = checkUsabilityOverride(insertBefore, insertBeforeDataContext, _toGrid);
+        if (this.onBeforeMoveRows.notify(eventData).getReturnValue() === !1 ? dd.canMove = !1 : dd.canMove = !0, this._usabilityOverride && dd.canMove) {
+          let insertBeforeDataContext = this._toGrid.getDataItem(insertBefore);
+          dd.canMove = this.checkUsabilityOverride(insertBefore, insertBeforeDataContext, this._toGrid);
         }
-        dd.canMove ? dd.guide.style.top = `${insertBefore * (_toGrid.getOptions().rowHeight || 0)}px` : dd.guide.style.top = "-1000px", dd.insertBefore = insertBefore;
+        dd.canMove ? dd.guide.style.top = `${insertBefore * (this._toGrid.getOptions().rowHeight || 0)}px` : dd.guide.style.top = "-1000px", dd.insertBefore = insertBefore;
       }
     }
-    function handleDragEnd(e, dd) {
-      if (_dragging && (_dragging = !1, e.stopImmediatePropagation(), dd.guide.remove(), dd.selectionProxy.remove(), dd.clonedSlickRow && (dd.clonedSlickRow.remove(), dd.clonedSlickRow = null), dd.canMove)) {
-        var eventData = {
-          fromGrid: _grid,
-          toGrid: _toGrid,
+    handleDragEnd(e, dd) {
+      var _a, _b, _c;
+      if (this._dragging && (this._dragging = !1, e.stopImmediatePropagation(), (_a = dd.guide) == null || _a.remove(), (_b = dd.selectionProxy) == null || _b.remove(), (_c = dd.clonedSlickRow) == null || _c.remove(), dd.canMove)) {
+        let eventData = {
+          fromGrid: this._grid,
+          toGrid: this._toGrid,
           rows: dd.selectedRows,
           insertBefore: dd.insertBefore
         };
-        _self.onMoveRows.notify(eventData);
+        this.onMoveRows.notify(eventData);
       }
     }
-    function getColumnDefinition() {
+    getColumnDefinition() {
+      var _a, _b;
       return {
-        id: options.columnId || "_move",
+        id: String((_b = (_a = this._options) == null ? void 0 : _a.columnId) != null ? _b : this._defaults.columnId),
         name: "",
         field: "move",
-        width: options.width || 40,
         behavior: "selectAndMove",
+        excludeFromColumnPicker: !0,
+        excludeFromGridMenu: !0,
+        excludeFromHeaderMenu: !0,
         selectable: !1,
         resizable: !1,
-        cssClass: options.cssClass,
-        formatter: moveIconFormatter
+        width: this._options.width || 40,
+        formatter: this.moveIconFormatter.bind(this)
       };
     }
-    function moveIconFormatter(row, cell, value, columnDef, dataContext, grid) {
-      return checkUsabilityOverride(row, dataContext, grid) ? { addClasses: "cell-reorder dnd", text: "" } : null;
+    moveIconFormatter(row, _cell, _val, _column, dataContext, grid) {
+      return this.checkUsabilityOverride(row, dataContext, grid) ? { addClasses: `cell-reorder dnd ${this._options.cssClass || ""}`, text: "" } : "";
     }
-    function checkUsabilityOverride(row, dataContext, grid) {
-      return typeof _usabilityOverride == "function" ? _usabilityOverride(row, dataContext, grid) : !0;
+    checkUsabilityOverride(row, dataContext, grid) {
+      return typeof this._usabilityOverride == "function" ? this._usabilityOverride(row, dataContext, grid) : !0;
     }
-    function usabilityOverride(overrideFn) {
-      _usabilityOverride = overrideFn;
+    /**
+     * Method that user can pass to override the default behavior or making every row moveable.
+     * In order word, user can choose which rows to be an available as moveable (or not) by providing his own logic show/hide icon and usability.
+     * @param overrideFn: override function callback
+     */
+    usabilityOverride(overrideFn) {
+      this._usabilityOverride = overrideFn;
     }
-    function isHandlerColumn(columnIndex) {
-      return /move|selectAndMove/.test(_grid.getColumns()[columnIndex].behavior);
+    isHandlerColumn(columnIndex) {
+      return /move|selectAndMove/.test(this._grid.getColumns()[columnIndex].behavior);
     }
-    Utils.extend(this, {
-      onBeforeMoveRows: new SlickEvent(),
-      onMoveRows: new SlickEvent(),
-      init,
-      destroy,
-      getColumnDefinition,
-      setOptions,
-      usabilityOverride,
-      isHandlerColumn,
-      pluginName: "CrossGridRowMoveManager"
-    });
-  }
+  };
   window.Slick && Utils.extend(!0, window, {
     Slick: {
-      CrossGridRowMoveManager
+      CrossGridRowMoveManager: SlickCrossGridRowMoveManager
     }
   });
 })();
