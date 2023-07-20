@@ -35,9 +35,11 @@ import type { SlickCellExternalCopyManager } from './plugins/slick.cellexternalc
 import type { SlickCellRangeDecorator } from './plugins/slick.cellrangedecorator';
 import type { SlickCellRangeSelector } from './plugins/slick.cellrangeselector';
 import type { SlickCellSelectionModel } from './plugins/slick.cellselectionmodel';
+import type { SlickCrossGridRowMoveManager } from './plugins/slick.crossgridrowmovemanager';
 import type { SlickDraggableGrouping } from './plugins/slick.draggablegrouping';
 import type { SlickRowSelectionModel } from './plugins/slick.rowselectionmodel';
 import type { SlickResizer } from './plugins/slick.resizer';
+import type { SlickRowMoveManager } from './plugins/slick.rowmovemanager';
 import type { SlickState } from './plugins/slick.state';
 import type { SlickGroupItemMetadataProvider } from './slick.groupitemmetadataprovider';
 import type { Draggable, MouseWheel, Resizable } from './slick.interactions';
@@ -66,6 +68,7 @@ declare global {
       GridMenu: typeof SlickGridMenu,
       Pager: typeof SlickGridPager
     },
+    CrossGridRowMoveManager: SlickCrossGridRowMoveManager,
     Data: {
       Aggregators: typeof Aggregators,
       DataView: typeof SlickDataView,
@@ -94,6 +97,7 @@ declare global {
     preClickClassName: typeof preClickClassName,
     Range: typeof SlickRange,
     Resizable: typeof Resizable,
+    RowMoveManager: typeof SlickRowMoveManager,
     RowSelectionMode: typeof RowSelectionMode,
     RowSelectionModel: typeof SlickRowSelectionModel,
     State: typeof SlickState,

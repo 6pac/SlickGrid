@@ -1,6 +1,6 @@
 import { SlickEvent as SlickEvent_, Utils as Utils_ } from '../slick.core';
 import type { Column, ColumnSort, Plugin } from '../models/index';
-import type { SlickGrid } from 'src/slick.grid';
+import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
