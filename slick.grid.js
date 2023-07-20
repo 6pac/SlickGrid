@@ -3704,6 +3704,8 @@ if (typeof Slick === "undefined") {
 
         const style = getComputedStyle(_container);
         viewportH = utils.toFloat(style.height)
+          + utils.toFloat(style.borderBottom)
+          + utils.toFloat(style.borderTop)
           - utils.toFloat(style.paddingTop)
           - utils.toFloat(style.paddingBottom)
           - columnNamesH
