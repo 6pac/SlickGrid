@@ -889,7 +889,7 @@ const SlickCore = {
   NonDataRow: SlickNonDataItem,
   Group: SlickGroup,
   GroupTotals: SlickGroupTotals,
-  // EditorLock: EditorLock,
+  EditorLock: SlickEditorLock,
   RegexSanitizer: regexSanitizer,
   // BindingEventService: BindingEventService,
   Utils: {
@@ -1006,7 +1006,7 @@ const SlickCore = {
 }
 
 export const {
-  Utils, Event, EventData, EventHandler, Group, GroupTotals, NonDataRow, Range,
+  Utils, EditorLock, Event, EventData, EventHandler, Group, GroupTotals, NonDataRow, Range,
   RegexSanitizer, GlobalEditorLock, keyCode, preClickClassName, GridAutosizeColsMode, ColAutosizeMode,
   RowSelectionMode, ValueFilterMode, WidthEvalMode
 } = SlickCore;
