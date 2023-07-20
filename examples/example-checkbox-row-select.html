@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick.gridmenu.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" crossorigin="anonymous">
   <style>
     .slick-cell-checkboxsel {
@@ -108,7 +109,10 @@
     editable: true,
     enableCellNavigation: true,
     asyncEditorLoading: false,
-    autoEdit: false
+    autoEdit: false,
+    gridMenu: {
+      iconCssClass: "sgi sgi-menu sgi-17px",
+    }
   };
   var checkboxSelector1, checkboxSelector2;
   var columns = [];

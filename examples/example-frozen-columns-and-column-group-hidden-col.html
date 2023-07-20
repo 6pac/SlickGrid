@@ -7,6 +7,7 @@
   <link rel="stylesheet" href="examples.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick.gridmenu.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
   <style>
     .slick-preheader-panel.ui-state-default  {
       width: 100%;
@@ -138,12 +139,13 @@
       headerColumnValueExtractor: pickerHeaderColumnValueExtractor
     },
     gridMenu: {
+      iconCssClass: "sgi sgi-menu sgi-17px",
       headerColumnValueExtractor: pickerHeaderColumnValueExtractor,
       customTitle: "Commands",
       columnTitle: "Columns",
       customItems: [
         {
-          iconImage: "../images/delete.png",
+          iconImage: "sgi sgi-close",
           title: "Clear Frozen Columns",
           disabled: false,
           command: "clear-frozen-columns",
