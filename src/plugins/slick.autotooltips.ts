@@ -32,14 +32,13 @@ export class SlickAutoTooltips implements Plugin {
    * @param {boolean} [options.replaceExisting=null]       - Allow preventing custom tooltips from being overwritten by auto tooltips
    */
   constructor(options?: AutoTooltipOption) {
-    this._options = options;
+    this._options = Utils.extend(true, {}, this._defaults, options);
   }
 
   /**
    * Initialize plugin.
    */
   init(grid: SlickGrid) {
-    this._options = Utils.extend(true, {}, this._defaults, this._options);
     this._grid = grid;
     if (this._options?.enableForCells) {
       this._grid.onMouseEnter.subscribe(this.handleMouseEnter.bind(this));
@@ -73,14 +72,15 @@ export class SlickAutoTooltips implements Plugin {
       if (this._options && node && (!node.title || this._options?.replaceExisting)) {
         if (node.clientWidth < node.scrollWidth) {
           text = node.textContent?.trim() ?? '';
-          if (this._options && (this._options.maxToolTipLength && text.length > this._options.maxToolTipLength)) {
+          if (this._options?.maxToolTipLength && text.length > this._options?.maxToolTipLength) {
             text = text.substring(0, this._options.maxToolTipLength - 3) + '...';
           }
         } else {
           text = '';
         }
-        node = null;
+        node.title = text;
       }
+      node = null;
     }
   }
 
