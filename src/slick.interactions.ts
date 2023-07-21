@@ -261,4 +261,3 @@ if (IIFE_ONLY && window.Slick) {
     Resizable,
   });
 }
-
