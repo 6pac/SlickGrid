@@ -40,8 +40,11 @@ import type { SlickDraggableGrouping } from './plugins/slick.draggablegrouping';
 import type { SlickRowSelectionModel } from './plugins/slick.rowselectionmodel';
 import type { SlickResizer } from './plugins/slick.resizer';
 import type { SlickRowMoveManager } from './plugins/slick.rowmovemanager';
+import type { SlickRowDetailView } from './plugins/slick.rowdetailview';
 import type { SlickState } from './plugins/slick.state';
 import type { SlickGroupItemMetadataProvider } from './slick.groupitemmetadataprovider';
+import type { SlickRemoteModel } from './slick.remotemodel';
+import type { SlickRemoteModelYahoo } from './slick.remotemodel-yahoo';
 import type { Draggable, MouseWheel, Resizable } from './slick.interactions';
 import type { Aggregators } from './slick.dataview';
 import type { Editors } from './slick.editors';
@@ -72,7 +75,9 @@ declare global {
     Data: {
       Aggregators: typeof Aggregators,
       DataView: typeof SlickDataView,
-      GroupItemMetadataProvider: typeof SlickGroupItemMetadataProvider
+      GroupItemMetadataProvider: typeof SlickGroupItemMetadataProvider,
+      RemoteModel: typeof SlickRemoteModel
+      RemoteModelYahoo: typeof SlickRemoteModelYahoo;
     },
     DraggableGrouping: typeof SlickDraggableGrouping,
     Editors: typeof Editors,
@@ -92,7 +97,8 @@ declare global {
       ContextMenu: typeof SlickContextMenu,
       HeaderButtons: typeof SlickHeaderButtons,
       HeaderMenu: typeof SlickHeaderMenu,
-      Resizer: typeof SlickResizer
+      Resizer: typeof SlickResizer,
+      RowDetailView: typeof SlickRowDetailView
     },
     preClickClassName: typeof preClickClassName,
     Range: typeof SlickRange,

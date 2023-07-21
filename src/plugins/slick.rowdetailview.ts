@@ -89,7 +89,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  *        expandedRows: Array of the Expanded Rows
  *        rowIdsOutOfViewport: Array of the Out of viewport Range Rows
  */
-export class RowDetailView {
+export class SlickRowDetailView {
   // --
   // public API
   pluginName = 'RowDetailView' as const;
@@ -780,7 +780,7 @@ if (IIFE_ONLY && window.Slick) {
   Utils.extend(true, window, {
     Slick: {
       Plugins: {
-        RowDetailView
+        RowDetailView: SlickRowDetailView
       }
     }
   });
