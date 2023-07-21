@@ -92,7 +92,7 @@
         selectable: !1,
         focusable: this._options.groupFocusable,
         cssClasses: `${this._options.groupCssClass} slick-group-level-${groupLevel}`,
-        formatter: this._options.includeHeaderTotals && this._options.totalsFormatter,
+        formatter: this._options.includeHeaderTotals && this._options.totalsFormatter || void 0,
         columns: {
           0: {
             colspan: this._options.includeHeaderTotals ? "1" : "*",

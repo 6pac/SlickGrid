@@ -20,7 +20,7 @@
       // data by row
       __publicField(this, "idxById", /* @__PURE__ */ new Map());
       // indexes by id
-      __publicField(this, "rowsById", null);
+      __publicField(this, "rowsById");
       // rows by id; lazy-calculated
       __publicField(this, "filter", null);
       // filter function
@@ -258,11 +258,13 @@
     }
     /** Get row number in the grid by its item object */
     getRowByItem(item) {
-      return this.ensureRowsByIdCache(), this.rowsById[item[this.idProperty]];
+      var _a2;
+      return this.ensureRowsByIdCache(), (_a2 = this.rowsById) == null ? void 0 : _a2[item[this.idProperty]];
     }
     /** Get row number in the grid by its Id */
     getRowById(id) {
-      return this.ensureRowsByIdCache(), this.rowsById[id];
+      var _a2;
+      return this.ensureRowsByIdCache(), (_a2 = this.rowsById) == null ? void 0 : _a2[id];
     }
     /** Get an item in the DataView by its Id */
     getItemById(id) {
@@ -270,20 +272,22 @@
     }
     /** From the items array provided, return the mapped rows */
     mapItemsToRows(itemArray) {
+      var _a2;
       let rows = [];
       this.ensureRowsByIdCache();
       for (let i = 0, l = itemArray.length; i < l; i++) {
-        let row = this.rowsById[itemArray[i][this.idProperty]];
+        let row = (_a2 = this.rowsById) == null ? void 0 : _a2[itemArray[i][this.idProperty]];
         row != null && (rows[rows.length] = row);
       }
       return rows;
     }
     /** From the Ids array provided, return the mapped rows */
     mapIdsToRows(idArray) {
+      var _a2;
       let rows = [];
       this.ensureRowsByIdCache();
       for (let i = 0, l = idArray.length; i < l; i++) {
-        let row = this.rowsById[idArray[i]];
+        let row = (_a2 = this.rowsById) == null ? void 0 : _a2[idArray[i]];
         row != null && (rows[rows.length] = row);
       }
       return rows;
@@ -634,15 +638,17 @@
       }
     }
     uncompiledFilter(items, args) {
+      var _a2;
       let retval = [], idx = 0;
       for (let i = 0, ii = items.length; i < ii; i++)
-        this.filter(items[i], args) && (retval[idx++] = items[i]);
+        (_a2 = this.filter) != null && _a2.call(this, items[i], args) && (retval[idx++] = items[i]);
       return retval;
     }
     uncompiledFilterWithCaching(items, args, cache) {
+      var _a2;
       let retval = [], idx = 0, item;
       for (let i = 0, ii = items.length; i < ii; i++)
-        item = items[i], cache[i] ? retval[idx++] = item : this.filter(item, args) && (retval[idx++] = item, cache[i] = !0);
+        item = items[i], cache[i] ? retval[idx++] = item : (_a2 = this.filter) != null && _a2.call(this, item, args) && (retval[idx++] = item, cache[i] = !0);
       return retval;
     }
     getFilteredAndPagedItems(items) {
@@ -672,7 +678,7 @@
       return diff;
     }
     recalc(_items) {
-      this.rowsById = null, (this.refreshHints.isFilterNarrowing != this.prevRefreshHints.isFilterNarrowing || this.refreshHints.isFilterExpanding != this.prevRefreshHints.isFilterExpanding) && (this.filterCache = []);
+      this.rowsById = void 0, (this.refreshHints.isFilterNarrowing != this.prevRefreshHints.isFilterNarrowing || this.refreshHints.isFilterExpanding != this.prevRefreshHints.isFilterExpanding) && (this.filterCache = []);
       let filteredItems = this.getFilteredAndPagedItems(_items);
       this.totalRows = filteredItems.totalRows;
       let newRows = filteredItems.rows;
@@ -832,11 +838,12 @@
       };
       storeCellCssStyles(grid.getCellCssStyles(key));
       let update = () => {
+        var _a2;
         if (hashById) {
           inHandler = !0, this.ensureRowsByIdCache();
           let newHash = {};
           for (let id in hashById) {
-            let row = this.rowsById[id];
+            let row = (_a2 = this.rowsById) == null ? void 0 : _a2[id];
             row != null && (newHash[row] = hashById[id]);
           }
           grid.setCellCssStyles(key, newHash), inHandler = !1;
