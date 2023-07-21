@@ -4005,8 +4005,6 @@ export class SlickGrid {
 
       const style = getComputedStyle(this._container);
       this.viewportH = Utils.toFloat(style.height)
-        + Utils.toFloat(style.borderTop)
-        + Utils.toFloat(style.borderBottom)
         - Utils.toFloat(style.paddingTop)
         - Utils.toFloat(style.paddingBottom)
         - columnNamesH
