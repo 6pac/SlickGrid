@@ -1,5 +1,5 @@
-import type { Column, GroupItemMetadataProviderOption, GroupingFormatterItem } from './models/index';
 import { SlickGroup as SlickGroup_, keyCode as keyCode_, Utils as Utils_ } from './slick.core';
+import type { Column, GroupItemMetadataProviderOption, GroupingFormatterItem, ItemMetadata } from './models/index';
 import type { SlickGrid } from './slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -150,13 +150,13 @@ export class SlickGroupItemMetadataProvider {
     }
   }
 
-  getGroupRowMetadata(item: GroupingFormatterItem) {
+  getGroupRowMetadata(item: GroupingFormatterItem): ItemMetadata {
     let groupLevel = item?.level;
     return {
       selectable: false,
       focusable: this._options.groupFocusable,
       cssClasses: `${this._options.groupCssClass} slick-group-level-${groupLevel}`,
-      formatter: this._options.includeHeaderTotals && this._options.totalsFormatter,
+      formatter: (this._options.includeHeaderTotals && this._options.totalsFormatter) || undefined,
       columns: {
         0: {
           colspan: this._options.includeHeaderTotals ? '1' : '*',
@@ -167,7 +167,7 @@ export class SlickGroupItemMetadataProvider {
     };
   }
 
-  getTotalsRowMetadata(item: { group: GroupingFormatterItem }) {
+  getTotalsRowMetadata(item: { group: GroupingFormatterItem }): ItemMetadata | null {
     let groupLevel = item?.group?.level;
     return {
       selectable: false,

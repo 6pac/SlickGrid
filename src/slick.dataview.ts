@@ -1,10 +1,12 @@
 import type {
   Aggregator,
   CssStyleHash,
+  CustomDataView,
   Grouping,
   GroupingComparerItem,
   GroupingFormatterItem,
   GroupingGetterFunction,
+  ItemMetadata,
   OnGroupCollapsedEventArgs,
   OnGroupExpandedEventArgs,
   OnRowCountChangedEventArgs,
@@ -35,9 +37,12 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 const SlickGroupItemMetadataProvider = IIFE_ONLY ? Slick.Data?.GroupItemMetadataProvider ?? {} : SlickGroupItemMetadataProvider_;
 
 export interface DataViewOption {
-  groupItemMetadataProvider?: SlickGroupItemMetadataProvider_;
-  inlineFilters?: boolean;
+  groupItemMetadataProvider: SlickGroupItemMetadataProvider_ | null;
+  inlineFilters: boolean;
 }
+
+
+type FilterFn<T> = (a: T, b: T) => boolean;
 
 /**
    * A sample Model implementation.
@@ -45,8 +50,8 @@ export interface DataViewOption {
    *
    * Relies on the data item having an "id" property uniquely identifying it.
    */
-export class SlickDataView<T = any> {
-  protected defaults = {
+export class SlickDataView<T = any> implements CustomDataView {
+  protected defaults: DataViewOption = {
     groupItemMetadataProvider: null,
     inlineFilters: false
   };
@@ -56,9 +61,9 @@ export class SlickDataView<T = any> {
   protected items: T[] = [];            // data by index
   protected rows: T[] = [];             // data by row
   protected idxById = new Map<number | string, number>();   // indexes by id
-  protected rowsById: any = null;       // rows by id; lazy-calculated
-  protected filter: any = null;         // filter function
-  protected updated: any = null;        // updated item ids
+  protected rowsById: { [id: string]: number } | undefined = undefined;       // rows by id; lazy-calculated
+  protected filter: FilterFn<T> | null = null;         // filter function
+  protected updated: ({ [id: number | string]: boolean }) | null = null;        // updated item ids
   protected suspend = false;            // suspends the recalculation
   protected isBulkSuspend = false;      // delays protectedious operations like the
   // index update and delete to efficient
@@ -71,8 +76,8 @@ export class SlickDataView<T = any> {
   protected prevRefreshHints: any = {};
   protected filterArgs: any;
   protected filteredItems: T[] = [];
-  protected compiledFilter?: Function | null;
-  protected compiledFilterWithCaching?: Function | null;
+  protected compiledFilter?: FilterFn<T> | null;
+  protected compiledFilterWithCaching?: FilterFn<T> | null;
   protected filterCache: any[] = [];
   protected _grid?: SlickGrid; // grid object will be defined only after using "syncGridSelection()" method"
 
@@ -80,9 +85,7 @@ export class SlickDataView<T = any> {
   protected groupingInfoDefaults: Grouping = {
     getter: undefined,
     formatter: undefined,
-    comparer: (a: { value: any; }, b: { value: any; }) => {
-      return (a.value === b.value ? 0 : (a.value > b.value ? 1 : -1));
-    },
+    comparer: (a: { value: any; }, b: { value: any; }) => (a.value === b.value ? 0 : (a.value > b.value ? 1 : -1)),
     predefinedValues: [],
     aggregators: [],
     aggregateEmpty: false,
@@ -102,7 +105,7 @@ export class SlickDataView<T = any> {
   protected pagesize = 0;
   protected pagenum = 0;
   protected totalRows = 0;
-  protected _options;
+  protected _options: DataViewOption;
 
   // public events
   onBeforePagingInfoChanged = new SlickEvent<PagingInfo>();
@@ -115,7 +118,7 @@ export class SlickDataView<T = any> {
   onSelectedRowIdsChanged = new SlickEvent<OnSelectedRowIdsChangedEventArgs>();
   onSetItemsCalled = new SlickEvent<OnSetItemsCalledEventArgs>();
 
-  constructor(options: DataViewOption) {
+  constructor(options: Partial<DataViewOption>) {
     this._options = Utils.extend(true, {}, this.defaults, options);
   }
 
@@ -365,7 +368,7 @@ export class SlickDataView<T = any> {
    * Set a Filter that will be used by the DataView
    * @param {Function} fn - filter callback function
    */
-  setFilter(filterFn: (a: T, b: T) => number) {
+  setFilter(filterFn: (a: T, b: T) => boolean) {
     this.filter = filterFn;
     if (this._options.inlineFilters) {
       this.compiledFilter = this.compileFilter();
@@ -459,13 +462,13 @@ export class SlickDataView<T = any> {
   /** Get row number in the grid by its item object */
   getRowByItem(item: T) {
     this.ensureRowsByIdCache();
-    return this.rowsById[item[this.idProperty]];
+    return this.rowsById?.[item[this.idProperty]];
   }
 
   /** Get row number in the grid by its Id */
   getRowById(id: number | string) {
     this.ensureRowsByIdCache();
-    return this.rowsById[id];
+    return this.rowsById?.[id];
   }
 
   /** Get an item in the DataView by its Id */
@@ -478,7 +481,7 @@ export class SlickDataView<T = any> {
     const rows: number[] = [];
     this.ensureRowsByIdCache();
     for (let i = 0, l = itemArray.length; i < l; i++) {
-      let row = this.rowsById[itemArray[i][this.idProperty]];
+      let row = this.rowsById?.[itemArray[i][this.idProperty]];
       if (row != null) {
         rows[rows.length] = row;
       }
@@ -491,7 +494,7 @@ export class SlickDataView<T = any> {
     const rows: number[] = [];
     this.ensureRowsByIdCache();
     for (let i = 0, l = idArray.length; i < l; i++) {
-      let row = this.rowsById[idArray[i]];
+      let row = this.rowsById?.[idArray[i]];
       if (row != null) {
         rows[rows.length] = row;
       }
@@ -761,7 +764,7 @@ export class SlickDataView<T = any> {
     return item;
   }
 
-  getItemMetadata(i: number) {
+  getItemMetadata(i: number): ItemMetadata | null {
     let item = this.rows[i];
     if (item === undefined) {
       return null;
@@ -769,12 +772,12 @@ export class SlickDataView<T = any> {
 
     // overrides for grouping rows
     if ((item as SlickGroup_).__group) {
-      return this._options.groupItemMetadataProvider.getGroupRowMetadata(item);
+      return this._options.groupItemMetadataProvider!.getGroupRowMetadata(item as GroupingFormatterItem);
     }
 
     // overrides for totals rows
     if ((item as SlickGroupTotals_).__groupTotals) {
-      return this._options.groupItemMetadataProvider.getTotalsRowMetadata(item);
+      return this._options.groupItemMetadataProvider!.getTotalsRowMetadata(item as { group: GroupingFormatterItem });
     }
 
     return null;
@@ -1050,8 +1053,8 @@ export class SlickDataView<T = any> {
     }
   }
 
-  protected compileFilter(): Function {
-    const filterInfo = this.getFunctionInfo(this.filter);
+  protected compileFilter(): FilterFn<T> {
+    const filterInfo = this.getFunctionInfo(this.filter as Function);
 
     const filterPath1 = "{ continue _coreloop; }$1";
     const filterPath2 = "{ _retval[_idx++] = $item$; continue _coreloop; }$1";
@@ -1090,7 +1093,7 @@ export class SlickDataView<T = any> {
   }
 
   protected compileFilterWithCaching() {
-    const filterInfo = this.getFunctionInfo(this.filter);
+    const filterInfo = this.getFunctionInfo(this.filter as Function);
 
     const filterPath1 = "{ continue _coreloop; }$1";
     const filterPath2 = "{ _cache[_i] = true;_retval[_idx++] = $item$; continue _coreloop; }$1";
@@ -1154,7 +1157,7 @@ export class SlickDataView<T = any> {
     let retval: any[] = [], idx = 0;
 
     for (let i = 0, ii = items.length; i < ii; i++) {
-      if (this.filter(items[i], args)) {
+      if (this.filter?.(items[i], args)) {
         retval[idx++] = items[i];
       }
     }
@@ -1169,7 +1172,7 @@ export class SlickDataView<T = any> {
       item = items[i];
       if (cache[i]) {
         retval[idx++] = item;
-      } else if (this.filter(item, args)) {
+      } else if (this.filter?.(item, args)) {
         retval[idx++] = item;
         cache[i] = true;
       }
@@ -1254,7 +1257,7 @@ export class SlickDataView<T = any> {
   }
 
   protected recalc(_items: T[]) {
-    this.rowsById = null;
+    this.rowsById = undefined;
 
     if (this.refreshHints.isFilterNarrowing != this.prevRefreshHints.isFilterNarrowing ||
       this.refreshHints.isFilterExpanding != this.prevRefreshHints.isFilterExpanding) {
@@ -1344,7 +1347,7 @@ export class SlickDataView<T = any> {
    */
   syncGridSelection(grid: SlickGrid, preserveHidden: boolean, preserveHiddenOnSelectionChange?: boolean) {
     this._grid = grid;
-    let inHandler;
+    let inHandler: boolean;
     this.selectedRowIds = this.mapRowsToIds(grid.getSelectedRows());
 
     /** @param {Array} rowIds */
@@ -1481,8 +1484,8 @@ export class SlickDataView<T = any> {
 
     if (shouldTriggerEvent !== false) {
       this.onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
-        "selectedRowIds": this.selectedRowIds,
-        "filteredIds": this.getAllSelectedFilteredIds(),
+        selectedRowIds: this.selectedRowIds,
+        filteredIds: this.getAllSelectedFilteredIds(),
       }), new SlickEventData(), this);
     }
 
@@ -1540,7 +1543,7 @@ export class SlickDataView<T = any> {
         this.ensureRowsByIdCache();
         let newHash = {};
         for (let id in hashById) {
-          let row = this.rowsById[id];
+          let row = this.rowsById?.[id];
           if (row != undefined) {
             newHash[row] = hashById[id];
           }
@@ -1746,7 +1749,7 @@ export class CountAggregator implements Aggregator {
 }
 
 // TODO:  add more built-in aggregators
-// TODO:  merge common aggregators in one to prevent needles iterating
+// TODO:  merge common aggregators in one to prevent needless iterating
 
 export const Aggregators = {
   Avg: AvgAggregator,
