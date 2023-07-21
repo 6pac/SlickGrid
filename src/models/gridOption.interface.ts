@@ -8,9 +8,9 @@ export interface CellViewportRange {
   rightPx: number;
 }
 
-export interface CustomDataView {
+export interface CustomDataView<T = any> {
   getLength: () => number;
-  getItem: <T = any>(index: number) => T;
+  getItem: (index: number) => T;
   getItemMetadata(index: number): ItemMetadata | null;
 }
 

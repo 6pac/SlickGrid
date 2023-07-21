@@ -93,7 +93,7 @@ const argv = yargs(hideBin(process.argv)).argv;
     return false;
   }
 
-  function executeCommandCallback(filepath) {
+  function executeCommandCallback(filepath = '') {
     if (timer) {
       clearTimeout(timer);
     }

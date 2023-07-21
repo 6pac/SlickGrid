@@ -11,11 +11,14 @@ export interface ItemMetadata {
   /** One or more (space-separated) CSS classes to be added to the entire row. */
   cssClasses?: string;
 
+  /** Optional Editor  */
+  editor?: Editor | null;
+
   /** Whether or not any cells in the row can be set as "active". */
   focusable?: boolean;
 
   /** A custom group formatter. */
-  formatter?: GroupTotalsFormatter;
+  formatter?: GroupTotalsFormatter | Formatter;
 
   /** Whether or not a row or any cells in it can be selected. */
   selectable?: boolean;

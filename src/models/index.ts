@@ -60,6 +60,7 @@ export * from './pagingInfo.interface';
 export * from './plugin.interface';
 export * from './positionMethod.type';
 export * from './resizerOption.interface';
+export * from './rowDetailViewOption.interface';
 export * from './rowMoveManagerOption.interface';
 export * from './rowSelectionModelOption.interface';
 export * from './selectableOverrideCallback.interface';
