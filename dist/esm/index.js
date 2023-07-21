@@ -8034,7 +8034,7 @@ var BindingEventService12 = BindingEventService, SlickEvent16 = Event, Utils22 =
 };
 
 // src/plugins/slick.rowdetailview.ts
-var SlickEvent17 = SlickEvent, SlickEventHandler8 = SlickEventHandler, Utils23 = Utils, RowDetailView = class {
+var SlickEvent17 = SlickEvent, SlickEventHandler8 = SlickEventHandler, Utils23 = Utils, SlickRowDetailView = class {
   /** Constructor of the Row Detail View Plugin which accepts optional options */
   constructor(options) {
     // --
@@ -8815,7 +8815,6 @@ export {
   Range,
   RegexSanitizer,
   Resizable,
-  RowDetailView,
   RowSelectionMode,
   SlickAutoTooltips,
   SlickCellCopyManager,
@@ -8846,6 +8845,7 @@ export {
   SlickNonDataItem,
   SlickRange,
   SlickResizer,
+  SlickRowDetailView,
   SlickRowMoveManager,
   SlickRowSelectionModel,
   SlickState,

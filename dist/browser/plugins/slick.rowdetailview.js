@@ -5,7 +5,7 @@
   var __publicField = (obj, key, value) => (__defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value), value);
 
   // src/plugins/slick.rowdetailview.ts
-  var SlickEvent = Slick.Event, SlickEventHandler = Slick.EventHandler, Utils = Slick.Utils, RowDetailView = class {
+  var SlickEvent = Slick.Event, SlickEventHandler = Slick.EventHandler, Utils = Slick.Utils, SlickRowDetailView = class {
     /** Constructor of the Row Detail View Plugin which accepts optional options */
     constructor(options) {
       // --
@@ -346,7 +346,7 @@
   window.Slick && Utils.extend(!0, window, {
     Slick: {
       Plugins: {
-        RowDetailView
+        RowDetailView: SlickRowDetailView
       }
     }
   });
