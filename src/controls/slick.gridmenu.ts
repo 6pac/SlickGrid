@@ -627,7 +627,7 @@ export class SlickGridMenu {
 
   /** Update the Titles of each sections (command, customTitle, ...) */
   updateAllTitles(gridMenuOptions: GridMenuOption) {
-    if (this._customTitleElm && this._customTitleElm.innerHTML) {
+    if (this._customTitleElm?.innerHTML) {
       this._customTitleElm.innerHTML = gridMenuOptions.customTitle || '';
     }
     if (this._columnTitleElm?.innerHTML) {

@@ -93,7 +93,7 @@ export class SlickRemoteModelYahoo {
         url,
         callbackParameter: "callback",
         cache: true,
-        success: (json, textStatus, xOptions) => {
+        success: (json) => {
           this.onSuccess(json, recStart);
         },
         error: () => {

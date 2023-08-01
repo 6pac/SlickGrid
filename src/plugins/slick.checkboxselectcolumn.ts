@@ -1,5 +1,5 @@
 import type { CheckboxSelectorOption, Column, Plugin, SelectableOverrideCallback } from '../models/index';
-import { BindingEventService as BindingEventService_, SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
+import { BindingEventService as BindingEventService_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
 import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
 
@@ -159,7 +159,7 @@ export class SlickCheckboxSelectColumn<T = any> implements Plugin {
     }
     this._selectedRowsLookup = lookup;
     this._grid.render();
-    this._isSelectAllChecked = selectedRows && selectedRows.length + disabledCount >= this._grid.getDataLength();
+    this._isSelectAllChecked = (selectedRows?.length ?? 0) + disabledCount >= this._grid.getDataLength();
 
     if (!this._isUsingDataView || !this._options.applySelectOnAllPages) {
       if (!this._options.hideInColumnTitleRow && !this._options.hideSelectAllCheckbox) {

@@ -9,7 +9,7 @@ export interface OnBeforeUpdateColumnsEventArgs extends SlickGridEventData { col
 export interface OnBeforeAppendCellEventArgs extends SlickGridEventData { row: number; cell: number; value: any; dataContext: any; }
 export interface OnBeforeCellEditorDestroyEventArgs extends SlickGridEventData { editor: Editor; }
 export interface OnBeforeColumnsResizeEventArgs extends SlickGridEventData { triggeredByColumn: string; }
-export interface OnBeforeEditCellEventArgs extends SlickGridEventData { row: number; cell: number; item: any; column: Column; target?: 'grid' | 'composite'; compositeEditorOptions?: CompositeEditorOption; }
+export interface OnBeforeEditCellEventArgs extends SlickGridEventData { row?: number; cell?: number; item: any; column: Column; target?: 'grid' | 'composite'; compositeEditorOptions?: CompositeEditorOption; }
 export interface OnBeforeHeaderCellDestroyEventArgs extends SlickGridEventData { node: HTMLElement; column: Column; }
 export interface OnBeforeHeaderRowCellDestroyEventArgs extends SlickGridEventData { node: HTMLElement; column: Column; }
 export interface OnBeforeFooterRowCellDestroyEventArgs extends SlickGridEventData { node: HTMLElement; column: Column; }
@@ -20,7 +20,7 @@ export interface OnColumnsDragEventArgs extends SlickGridEventData { triggeredBy
 export interface OnColumnsReorderedEventArgs extends SlickGridEventData { impactedColumns: Column[]; }
 export interface OnColumnsResizedEventArgs extends SlickGridEventData { triggeredByColumn: string; }
 export interface OnColumnsResizeDblClickEventArgs extends SlickGridEventData { triggeredByColumn: string; }
-export interface OnCompositeEditorChangeEventArgs extends SlickGridEventData { row: number; cell: number; item: any; column: Column; formValues: any; editors: { [columnId: string]: Editor; }; triggeredBy?: 'user' | 'system'; }
+export interface OnCompositeEditorChangeEventArgs extends SlickGridEventData { row?: number; cell?: number; item: any; column: Column; formValues: any; editors: { [columnId: string]: Editor; }; triggeredBy?: 'user' | 'system'; }
 export interface OnClickEventArgs extends SlickGridEventData { row: number; cell: number; }
 export interface OnDblClickEventArgs extends SlickGridEventData { row: number; cell: number; }
 export interface OnFooterContextMenuEventArgs extends SlickGridEventData { column: Column; }

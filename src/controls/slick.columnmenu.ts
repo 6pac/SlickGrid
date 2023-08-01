@@ -148,10 +148,10 @@ export class SlickColumnMenu {
         checkboxElm.checked = true;
       }
 
-      if (this._options && this._options.columnPicker && this._options.columnPicker.headerColumnValueExtractor) {
+      if (this._options?.columnPicker?.headerColumnValueExtractor) {
         columnLabel = this._options.columnPicker.headerColumnValueExtractor(this.columns[i], this._options);
       } else {
-        columnLabel = this._defaults.headerColumnValueExtractor(this.columns[i], this._options);
+        columnLabel = this._defaults.headerColumnValueExtractor!(this.columns[i], this._options);
       }
 
       const labelElm = document.createElement('label');
@@ -165,8 +165,8 @@ export class SlickColumnMenu {
       this._listElm.appendChild(document.createElement('hr'));
     }
 
-    if (!(this._options.columnPicker && this._options.columnPicker.hideForceFitButton)) {
-      let forceFitTitle = (this._options.columnPicker && this._options.columnPicker.forceFitTitle) || this._options.forceFitTitle;
+    if (!this._options.columnPicker?.hideForceFitButton) {
+      let forceFitTitle = this._options.columnPicker?.forceFitTitle || this._options.forceFitTitle;
 
       const liElm = document.createElement('li');
       liElm.ariaLabel = forceFitTitle || '';
@@ -188,8 +188,8 @@ export class SlickColumnMenu {
       }
     }
 
-    if (!(this._options.columnPicker && this._options.columnPicker.hideSyncResizeButton)) {
-      let syncResizeTitle = (this._options.columnPicker && this._options.columnPicker.syncResizeTitle) || this._options.syncResizeTitle;
+    if (!this._options.columnPicker?.hideSyncResizeButton) {
+      let syncResizeTitle = this._options.columnPicker?.syncResizeTitle || this._options.syncResizeTitle;
 
       const liElm = document.createElement('li');
       liElm.ariaLabel = syncResizeTitle || '';
@@ -215,7 +215,7 @@ export class SlickColumnMenu {
   }
 
   repositionMenu(event: DOMMouseOrTouchEvent<HTMLDivElement>) {
-    const targetEvent = event && event.touches && event.touches[0] || event;
+    const targetEvent = event?.touches?.[0] || event;
     this._menuElm.style.top = `${targetEvent.pageY - 10}px`;
     this._menuElm.style.left = `${targetEvent.pageX - 10}px`;
     this._menuElm.style.maxHeight = `${window.innerHeight - targetEvent.clientY}px`;
@@ -248,7 +248,7 @@ export class SlickColumnMenu {
 
   /** Update the Titles of each sections (command, customTitle, ...) */
   updateAllTitles(pickerOptions: { columnTitle: string; }) {
-    if (this._columnTitleElm && this._columnTitleElm.innerHTML) {
+    if (this._columnTitleElm?.innerHTML) {
       this._columnTitleElm.innerHTML = pickerOptions.columnTitle;
     }
   }
@@ -290,7 +290,7 @@ export class SlickColumnMenu {
       }
 
       this.grid.setColumns(visibleColumns);
-      this.onColumnsChanged.notify({ columnId: columnId, showing: isChecked, allColumns: this.columns, columns: visibleColumns, grid: this.grid });
+      this.onColumnsChanged.notify({ columnId: columnId, showing: isChecked, allColumns: this.columns, columns: this.columns, visibleColumns, grid: this.grid });
     }
   }
 
@@ -310,7 +310,7 @@ export class SlickColumnMenu {
     }
 
     this.grid.setColumns(visibleColumns);
-    this.onColumnsChanged.notify({ columnId: col.id, showing: show, allColumns: this.columns, columns: visibleColumns, grid: this.grid });
+    this.onColumnsChanged.notify({ columnId: col.id, showing: show, allColumns: this.columns, columns: this.columns, visibleColumns, grid: this.grid });
   }
 
   getAllColumns() {

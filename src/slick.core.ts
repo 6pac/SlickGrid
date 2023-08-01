@@ -4,7 +4,8 @@
  * @namespace Slick
  */
 
-import type { EditController, ElementEventListener, Handler, InferDOMType } from './models/index';
+
+import type { EditController, ElementEventListener, Handler, InferDOMType, MergeTypes } from './models/index';
 
 /**
  * An event object for passing data to event handlers and letting them control propagation.
@@ -154,24 +155,24 @@ export class SlickEvent<ArgType = any> {
    * @param e {EventData}
    *      Optional.
    *      An <code>EventData</code> object to be passed to all handlers.
-   *      For DOM events, an existing W3C/jQuery event object can be passed in.
+   *      For DOM events, an existing W3C event object can be passed in.
    * @param scope {Object}
    *      Optional.
    *      The scope ("this") within which the handler will be executed.
    *      If not specified, the scope will be set to the <code>Event</code> instance.
    */
-  notify(args: ArgType, e?: SlickEventData | Event | null, scope?: any) {
-    if (!(e instanceof SlickEventData)) {
-      e = new SlickEventData(e, args);
-    }
+  notify(args: ArgType, evt?: SlickEventData | Event | MergeTypes<SlickEventData, Event> | null, scope?: any) {
+    const sed: SlickEventData = evt instanceof SlickEventData
+      ? evt
+      : new SlickEventData(evt, args);
     scope = scope || this;
 
-    for (let i = 0; i < this.handlers.length && !(e.isPropagationStopped() || e.isImmediatePropagationStopped()); i++) {
-      const returnValue = this.handlers[i].call(scope, e as SlickEvent | SlickEventData, args);
-      e.addReturnValue(returnValue);
+    for (let i = 0; i < this.handlers.length && !(sed.isPropagationStopped() || sed.isImmediatePropagationStopped()); i++) {
+      const returnValue = this.handlers[i].call(scope, sed as SlickEvent | SlickEventData, args);
+      sed.addReturnValue(returnValue);
     }
 
-    return e;
+    return sed;
   }
 }
 
@@ -627,7 +628,7 @@ function isEmptyObject(obj: any) {
 
 function noop() { }
 
-function offset(el: HTMLElement) {
+function offset(el: HTMLElement | null) {
   if (!el || !el.getBoundingClientRect) {
     return undefined;
   }

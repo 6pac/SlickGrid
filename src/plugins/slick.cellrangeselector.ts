@@ -24,7 +24,7 @@ export class SlickCellRangeSelector implements Plugin {
   // protected props
   protected _grid!: SlickGrid;
   protected _currentlySelectedRange: DragRange | null = null;
-  protected _canvas!: HTMLElement;
+  protected _canvas: HTMLElement | null = null;
   protected _decorator!: SlickCellRangeDecorator_;
   protected _gridOptions!: GridOption;
   protected _activeCanvas!: HTMLElement;
@@ -87,7 +87,7 @@ export class SlickCellRangeSelector implements Plugin {
     this._handler.unsubscribeAll();
     this._activeCanvas = null as any;
     this._activeViewport = null as any;
-    this._canvas = null as any;
+    this._canvas = null;
     this._decorator?.destroy();
   }
 
@@ -303,10 +303,7 @@ export class SlickCellRangeSelector implements Plugin {
         pageY = viewportOffset.bottom + this._moveDistanceForOneCell.y;
       }
     }
-    this.handleDragTo({
-      pageX: pageX,
-      pageY: pageY
-    }, this._draggingMouseOffset.dd);
+    this.handleDragTo({ pageX, pageY }, this._draggingMouseOffset.dd);
   }
 
   protected stopIntervalTimer() {

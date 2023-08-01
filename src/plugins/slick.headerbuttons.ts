@@ -179,7 +179,7 @@ export class SlickHeaderButtons implements Plugin {
   protected handleBeforeHeaderCellDestroy(_e: Event, args: { column: Column; node: HTMLElement; }) {
     let column = args.column;
 
-    if (column.header && column.header.buttons) {
+    if (column.header?.buttons) {
       // Removing buttons via jQuery will also clean up any event handlers and data.
       // NOTE: If you attach event handlers directly or using a different framework,
       //       you must also clean them up here to avoid memory leaks.

@@ -179,7 +179,7 @@ export class SlickRowDetailView {
       this._grid.render();
     });
 
-    this._eventHandler.subscribe(this._dataView.onRowsChanged, (e, a) => {
+    this._eventHandler.subscribe(this._dataView.onRowsChanged, (_e, a) => {
       this._grid.invalidateRows(a.rows);
       this._grid.render();
     });
@@ -196,7 +196,7 @@ export class SlickRowDetailView {
     // we will need to know how many rows are rendered on the screen and we need to wait for grid to be rendered
     // unfortunately there is no triggered event for knowing when grid is finished, so we use 250ms delay and it's typically more than enough
     if (this._options.useSimpleViewportCalc) {
-      this._eventHandler.subscribe(this._grid.onRendered, (e, args) => {
+      this._eventHandler.subscribe(this._grid.onRendered, (_e, args) => {
         if (args?.endRow) {
           this._visibleRenderedCellCount = args.endRow - args.startRow;
         }

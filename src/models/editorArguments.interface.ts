@@ -1,5 +1,6 @@
 
 import { Column, ElementPosition, PositionMethod } from './index';
+import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
 
 export interface EditorArguments {
@@ -16,7 +17,7 @@ export interface EditorArguments {
   container: HTMLDivElement;
 
   /** Slick DataView */
-  dataView: any;
+  dataView: SlickDataView;
 
   /** Event that was triggered */
   event: Event;

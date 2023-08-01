@@ -1,5 +1,5 @@
 import { SlickGroup as SlickGroup_, keyCode as keyCode_, Utils as Utils_ } from './slick.core';
-import type { Column, GroupItemMetadataProviderOption, GroupingFormatterItem, ItemMetadata } from './models/index';
+import type { Column, DOMEvent, GroupItemMetadataProviderOption, GroupingFormatterItem, ItemMetadata } from './models/index';
 import type { SlickGrid } from './slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -59,7 +59,7 @@ export class SlickGroupItemMetadataProvider {
     Utils.extend(true, this._options, inputOptions);
   }
 
-  defaultGroupCellFormatter(_row: number, _cell: number, _value: any, _columnDef: Column, item: any): string {
+  protected defaultGroupCellFormatter(_row: number, _cell: number, _value: any, _columnDef: Column, item: any): string {
     if (!this._options.enableExpandCollapse) {
       return item.title;
     }
@@ -77,40 +77,29 @@ export class SlickGroupItemMetadataProvider {
       '</span>';
   }
 
-  defaultTotalsCellFormatter(_row: number, _cell: number, _value: any, columnDef: Column, item: any, grid: SlickGrid) {
+  protected defaultTotalsCellFormatter(_row: number, _cell: number, _value: any, columnDef: Column, item: any, grid: SlickGrid) {
     return (columnDef?.groupTotalsFormatter?.(item, columnDef, grid)) ?? '';
   }
 
 
   init(grid: SlickGrid) {
     this._grid = grid;
-    this._grid.onClick.subscribe(this.handleGridClick.bind(this) as EventListener);
-    this._grid.onKeyDown.subscribe(this.handleGridKeyDown.bind(this) as EventListener);
+    this._grid.onClick.subscribe(this.handleGridClick.bind(this));
+    this._grid.onKeyDown.subscribe(this.handleGridKeyDown.bind(this));
   }
 
   destroy() {
     if (this._grid) {
-      this._grid.onClick.unsubscribe(this.handleGridClick.bind(this) as EventListener);
-      this._grid.onKeyDown.unsubscribe(this.handleGridKeyDown.bind(this) as EventListener);
+      this._grid.onClick.unsubscribe(this.handleGridClick.bind(this));
+      this._grid.onKeyDown.unsubscribe(this.handleGridKeyDown.bind(this));
     }
   }
 
-  handleGridClick(e: MouseEvent & { target: HTMLElement }, args: { row: number; cell: number; grid: SlickGrid; }) {
+  protected handleGridClick(e: DOMEvent<HTMLDivElement>, args: { row: number; cell: number; grid: SlickGrid; }) {
     let target = e.target;
     let item = this._grid.getDataItem(args.row);
     if (item && item instanceof SlickGroup && target.classList.contains(this._options.toggleCssClass || '')) {
-      let range = this._grid.getRenderedRange();
-      this.dataView.setRefreshHints({
-        ignoreDiffsBefore: range.top,
-        ignoreDiffsAfter: range.bottom + 1
-      });
-
-      if (item.collapsed) {
-        this.dataView.expandGroup(item.groupingKey);
-      } else {
-        this.dataView.collapseGroup(item.groupingKey);
-      }
-
+      this.handleDataViewExpandOrCollapse(item);
       e.stopImmediatePropagation();
       e.preventDefault();
     }
@@ -125,28 +114,31 @@ export class SlickGroupItemMetadataProvider {
   }
 
   // TODO:  add -/+ handling
-  handleGridKeyDown(e: KeyboardEvent) {
+  protected handleGridKeyDown(e: KeyboardEvent) {
     if (this._options.enableExpandCollapse && (e.which == keyCode.SPACE)) {
       let activeCell = this._grid.getActiveCell();
       if (activeCell) {
         let item = this._grid.getDataItem(activeCell.row);
         if (item && item instanceof SlickGroup) {
-          let range = this._grid.getRenderedRange();
-          this.dataView.setRefreshHints({
-            ignoreDiffsBefore: range.top,
-            ignoreDiffsAfter: range.bottom + 1
-          });
-
-          if (item.collapsed) {
-            this.dataView.expandGroup(item.groupingKey);
-          } else {
-            this.dataView.collapseGroup(item.groupingKey);
-          }
-
+          this.handleDataViewExpandOrCollapse(item);
           e.stopImmediatePropagation();
           e.preventDefault();
         }
       }
+    }
+  }
+
+  protected handleDataViewExpandOrCollapse(item: any) {
+    const range = this._grid.getRenderedRange();
+    this.dataView.setRefreshHints({
+      ignoreDiffsBefore: range.top,
+      ignoreDiffsAfter: range.bottom + 1
+    });
+
+    if (item.collapsed) {
+      this.dataView.expandGroup(item.groupingKey);
+    } else {
+      this.dataView.collapseGroup(item.groupingKey);
     }
   }
 

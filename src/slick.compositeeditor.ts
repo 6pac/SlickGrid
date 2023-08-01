@@ -1,4 +1,4 @@
-import type { CompositeEditorOption, Editor, EditorArguments } from './models/index';
+import type { Column, CompositeEditorOption, Editor, EditorArguments, HtmlElementPosition } from './models/index';
 import { Utils as Utils_ } from './slick.core';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -31,7 +31,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  *  position                -   A function to be called when the grid asks the editor to reposition itself.
  *  destroy                 -   A function to be called when the editor is destroyed.
  */
-export function CompositeEditor(columns: any[], containers: Array<HTMLDivElement>, options: CompositeEditorOption) {
+export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDivElement>, options: CompositeEditorOption) {
   let defaultOptions = {
     modalType: 'edit', // available type (create, edit, mass)
     validationFailedMsg: 'Some of the fields have failed validation',
@@ -44,8 +44,7 @@ export function CompositeEditor(columns: any[], containers: Array<HTMLDivElement
     editors: {}
   };
 
-  let noop = function () {
-  };
+  let noop = function () { };
 
   let firstInvalidEditor;
 
@@ -89,7 +88,7 @@ export function CompositeEditor(columns: any[], containers: Array<HTMLDivElement
           newArgs.compositeEditorOptions = options;
           newArgs.formValues = {};
 
-          let currentEditor = new (column.editor)(newArgs) as Editor & { args: EditorArguments };
+          let currentEditor = new (column.editor as any)(newArgs) as Editor & { args: EditorArguments };
           options.editors[column.id] = currentEditor; // add every Editor instance refs
           editors.push(currentEditor);
         }
@@ -226,7 +225,7 @@ export function CompositeEditor(columns: any[], containers: Array<HTMLDivElement
         editors[idx]?.hide?.();
         idx++;
       }
-      options.hide && options.hide();
+      options?.hide?.();
     };
 
     context.show = () => {
@@ -235,11 +234,11 @@ export function CompositeEditor(columns: any[], containers: Array<HTMLDivElement
         editors[idx]?.show?.();
         idx++;
       }
-      options.show && options.show();
+      options?.show?.();
     };
 
-    context.position = (box) => {
-      options.position && options.position(box);
+    context.position = (box: HtmlElementPosition) => {
+      options?.position?.(box);
     };
 
     init();
@@ -254,6 +253,6 @@ export function CompositeEditor(columns: any[], containers: Array<HTMLDivElement
 // extend Slick namespace on window object when building as iife
 if (IIFE_ONLY && window.Slick) {
   Utils.extend(Slick, {
-    CompositeEditor
+    CompositeEditor: SlickCompositeEditor
   });
 }
