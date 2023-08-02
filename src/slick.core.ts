@@ -35,7 +35,7 @@ export class SlickEventData {
         'clientX', 'clientY', 'offsetX', 'offsetY', 'pageX', 'pageY',
         'bubbles', 'type', 'which', 'x', 'y'
       ];
-      for (let key of eventProps) {
+      for (const key of eventProps) {
         this[key] = event[key];
       }
     }
@@ -717,7 +717,7 @@ function parents(el: HTMLElement | ParentNode, selector?: string) {
 }
 
 function toFloat(value: string | number) {
-  let x = parseFloat(value as string);
+  const x = parseFloat(value as string);
   if (isNaN(x)) {
     return 0;
   }
@@ -760,28 +760,27 @@ function slideAnimation(el: HTMLElement | HTMLElement[], slideDirection: 'slideD
 }
 
 // jQuery's extend
-let getProto = Object.getPrototypeOf;
-let class2type: any = {};
-let toString = class2type.toString;
-let hasOwn = class2type.hasOwnProperty;
-let fnToString = hasOwn.toString;
-let ObjectFunctionString = fnToString.call(Object);
+const getProto = Object.getPrototypeOf;
+const class2type: any = {};
+const toString = class2type.toString;
+const hasOwn = class2type.hasOwnProperty;
+const fnToString = hasOwn.toString;
+const ObjectFunctionString = fnToString.call(Object);
 function isFunction(obj: any) {
   return typeof obj === 'function' && typeof obj.nodeType !== 'number' &&
     typeof obj.item !== 'function';
 }
 
 function isPlainObject(obj: any) {
-  let proto, Ctor;
   if (!obj || toString.call(obj) !== '[object Object]') {
     return false;
   }
 
-  proto = getProto(obj);
+  const proto = getProto(obj);
   if (!proto) {
     return true;
   }
-  Ctor = hasOwn.call(proto, 'constructor') && proto.constructor;
+  const Ctor = hasOwn.call(proto, 'constructor') && proto.constructor;
   return typeof Ctor === 'function' && fnToString.call(Ctor) === ObjectFunctionString;
 }
 
@@ -789,8 +788,8 @@ function extend<T = any>(...args: any[]): T {
   let options, name, src, copy, copyIsArray, clone,
     target = args[0],
     i = 1,
-    length = args.length,
     deep = false;
+  const length = args.length;
 
   if (typeof target === 'boolean') {
     deep = target;
@@ -804,6 +803,7 @@ function extend<T = any>(...args: any[]): T {
   }
   if (i === length) {
     // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     target = this;
     i--;
   }
@@ -930,7 +930,7 @@ const SlickCore = {
         return null;
       },
       remove: function (element: any, key: string) {
-        let ret = this._storage.get(element).delete(key);
+        const ret = this._storage.get(element).delete(key);
         if (!(this._storage.get(element).size === 0)) {
           this._storage.delete(element);
         }

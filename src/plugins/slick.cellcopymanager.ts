@@ -69,8 +69,8 @@ export class SlickCellCopyManager implements Plugin {
   }
 
   protected markCopySelection(ranges: SlickRange[]) {
-    let columns = this._grid.getColumns();
-    let hash: CssStyleHash = {};
+    const columns = this._grid.getColumns();
+    const hash: CssStyleHash = {};
     for (let i = 0; i < ranges.length; i++) {
       for (let j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
         hash[j] = {};

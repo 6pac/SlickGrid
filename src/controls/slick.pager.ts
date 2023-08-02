@@ -65,9 +65,9 @@ export class SlickGridPager {
   }
 
   protected getNavState() {
-    let cannotLeaveEditMode = !SlickGlobalEditorLock.commitCurrentEdit();
-    let pagingInfo = this.dataView.getPagingInfo();
-    let lastPage = pagingInfo.totalPages - 1;
+    const cannotLeaveEditMode = !SlickGlobalEditorLock.commitCurrentEdit();
+    const pagingInfo = this.dataView.getPagingInfo();
+    const lastPage = pagingInfo.totalPages - 1;
 
     return {
       canGotoFirst: !cannotLeaveEditMode && pagingInfo.pageSize !== 0 && pagingInfo.pageNum > 0,
@@ -92,21 +92,21 @@ export class SlickGridPager {
   }
 
   protected gotoLast() {
-    let state = this.getNavState();
+    const state = this.getNavState();
     if (state.canGotoLast) {
       this.dataView.setPagingOptions({ pageNum: state.pagingInfo.totalPages - 1 });
     }
   }
 
   protected gotoPrev() {
-    let state = this.getNavState();
+    const state = this.getNavState();
     if (state.canGotoPrev) {
       this.dataView.setPagingOptions({ pageNum: state.pagingInfo.pageNum - 1 });
     }
   }
 
   protected gotoNext() {
-    let state = this.getNavState();
+    const state = this.getNavState();
     if (state.canGotoNext) {
       this.dataView.setPagingOptions({ pageNum: state.pagingInfo.pageNum + 1 });
     }
@@ -140,7 +140,7 @@ export class SlickGridPager {
     pagerSettingsElm.textContent = 'Show: ';
 
     for (let o = 0; o < this._options.pagingOptions.length; o++) {
-      let p = this._options.pagingOptions[o];
+      const p = this._options.pagingOptions[o];
 
       const anchorElm = document.createElement('a');
       anchorElm.textContent = p.name;
@@ -149,10 +149,10 @@ export class SlickGridPager {
       pagerSettingsElm.appendChild(anchorElm);
 
       this._bindingEventService.bind(anchorElm, 'click', ((e: any) => {
-        let pagesize = e.target.dataset.val;
+        const pagesize = e.target.dataset.val;
         if (pagesize !== undefined) {
           if (Number(pagesize) === -1) {
-            let vp = this.grid.getViewport();
+            const vp = this.grid.getViewport();
             this.setPageSize(vp.bottom - vp.top);
           } else {
             this.setPageSize(parseInt(pagesize));
@@ -213,7 +213,7 @@ export class SlickGridPager {
 
   protected updatePager(pagingInfo: PagingInfo) {
     if (!this._container || ((this._container as any).jquery && !this._container[0])) return;
-    let state = this.getNavState();
+    const state = this.getNavState();
 
     // remove disabled class on all icons
     this._container.querySelectorAll('.slick-pager-nav span')
@@ -240,7 +240,7 @@ export class SlickGridPager {
     }
 
     if (this._options.showCount && pagingInfo.pageSize !== 0) {
-      let pageBegin = pagingInfo.pageNum * pagingInfo.pageSize;
+      const pageBegin = pagingInfo.pageNum * pagingInfo.pageSize;
       let currentText = this._statusElm.textContent;
 
       if (currentText) {

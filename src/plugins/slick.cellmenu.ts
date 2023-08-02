@@ -211,14 +211,14 @@ export class SlickCellMenu implements Plugin {
   }
 
   protected createMenu(e: DOMMouseOrTouchEvent<HTMLDivElement>) {
-    let cell = this._grid.getCellFromEvent(e);
+    const cell = this._grid.getCellFromEvent(e);
     this._currentCell = cell?.cell ?? 0;
     this._currentRow = cell?.row ?? 0;
-    let columnDef = this._grid.getColumns()[this._currentCell];
-    let dataContext = this._grid.getDataItem(this._currentRow);
+    const columnDef = this._grid.getColumns()[this._currentCell];
+    const dataContext = this._grid.getDataItem(this._currentRow);
 
-    let commandItems = this._cellMenuProperties.commandItems || [];
-    let optionItems = this._cellMenuProperties.optionItems || [];
+    const commandItems = this._cellMenuProperties.commandItems || [];
+    const optionItems = this._cellMenuProperties.optionItems || [];
 
     // make sure there's at least something to show before creating the Cell Menu
     if (!columnDef || !columnDef.cellMenu || (!commandItems.length && !optionItems.length)) {
@@ -239,8 +239,8 @@ export class SlickCellMenu implements Plugin {
     }
 
     // create a new cell menu
-    let maxHeight = isNaN(this._cellMenuProperties.maxHeight as number) ? this._cellMenuProperties.maxHeight : `${this._cellMenuProperties.maxHeight ?? 0}px`;
-    let width = isNaN(this._cellMenuProperties.width as number) ? this._cellMenuProperties.width : `${this._cellMenuProperties.maxWidth ?? 0}px`;
+    const maxHeight = isNaN(this._cellMenuProperties.maxHeight as number) ? this._cellMenuProperties.maxHeight : `${this._cellMenuProperties.maxHeight ?? 0}px`;
+    const width = isNaN(this._cellMenuProperties.width as number) ? this._cellMenuProperties.width : `${this._cellMenuProperties.maxWidth ?? 0}px`;
 
     this._menuElm = document.createElement('div');
     this._menuElm.className = `slick-cell-menu ${this._gridUid}`;
@@ -384,8 +384,8 @@ export class SlickCellMenu implements Plugin {
       // if there isn't enough space on the right, it will automatically align the drop menu to the left (defaults to the right)
       // to simulate an align left, we actually need to know the width of the drop menu
       if (this._cellMenuProperties.autoAlignSide) {
-        let gridPos = this._grid.getGridPosition();
-        let dropSide = ((menuOffsetLeft + (+menuWidth)) >= gridPos.width) ? 'left' : 'right';
+        const gridPos = this._grid.getGridPosition();
+        const dropSide = ((menuOffsetLeft + (+menuWidth)) >= gridPos.width) ? 'left' : 'right';
         if (dropSide === 'left') {
           this._menuElm.classList.remove('dropright');
           this._menuElm.classList.add('dropleft');
@@ -408,10 +408,10 @@ export class SlickCellMenu implements Plugin {
       e = (e as SlickEventData_).getNativeEvent();
     }
 
-    let cell = this._grid.getCellFromEvent(e);
+    const cell = this._grid.getCellFromEvent(e);
     if (cell) {
-      let dataContext = this._grid.getDataItem(cell.row);
-      let columnDef = this._grid.getColumns()[cell.cell];
+      const dataContext = this._grid.getDataItem(cell.row);
+      const columnDef = this._grid.getColumns()[cell.cell];
 
       // prevent event from bubbling but only on column that has a cell menu defined
       if (columnDef?.cellMenu) {
@@ -483,11 +483,11 @@ export class SlickCellMenu implements Plugin {
 
     for (let i = 0, ln = optionItems.length; i < ln; i++) {
       let addClickListener = true;
-      let item = optionItems[i];
+      const item = optionItems[i];
 
       // run each override functions to know if the item is visible and usable
-      let isItemVisible = this.runOverrideFunctionWhenExists<typeof args>((item as MenuOptionItem).itemVisibilityOverride, args);
-      let isItemUsable = this.runOverrideFunctionWhenExists<typeof args>((item as MenuOptionItem).itemUsabilityOverride, args);
+      const isItemVisible = this.runOverrideFunctionWhenExists<typeof args>((item as MenuOptionItem).itemVisibilityOverride, args);
+      const isItemUsable = this.runOverrideFunctionWhenExists<typeof args>((item as MenuOptionItem).itemUsabilityOverride, args);
 
       // if the result is not visible then there's no need to go further
       if (!isItemVisible) {
@@ -574,11 +574,11 @@ export class SlickCellMenu implements Plugin {
 
     for (let i = 0, ln = commandItems.length; i < ln; i++) {
       let addClickListener = true;
-      let item = commandItems[i];
+      const item = commandItems[i];
 
       // run each override functions to know if the item is visible and usable
-      let isItemVisible = this.runOverrideFunctionWhenExists<typeof args>((item as MenuCommandItem).itemVisibilityOverride, args);
-      let isItemUsable = this.runOverrideFunctionWhenExists<typeof args>((item as MenuCommandItem).itemUsabilityOverride, args);
+      const isItemVisible = this.runOverrideFunctionWhenExists<typeof args>((item as MenuCommandItem).itemVisibilityOverride, args);
+      const isItemUsable = this.runOverrideFunctionWhenExists<typeof args>((item as MenuCommandItem).itemUsabilityOverride, args);
 
       // if the result is not visible then there's no need to go further
       if (!isItemVisible) {
@@ -657,13 +657,13 @@ export class SlickCellMenu implements Plugin {
     const command = item.command || '';
     const row = this._currentRow;
     const cell = this._currentCell;
-    let columnDef = this._grid.getColumns()[cell];
-    let dataContext = this._grid.getDataItem(row);
+    const columnDef = this._grid.getColumns()[cell];
+    const dataContext = this._grid.getDataItem(row);
 
     if (command !== null && command !== '') {
       // user could execute a callback through 2 ways
       // via the onCommand event and/or an action callback
-      let callbackArgs = {
+      const callbackArgs = {
         cell,
         row,
         grid: this._grid,

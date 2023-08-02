@@ -28,7 +28,8 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  * @class Draggable
  */
 export function Draggable(options: DraggableOption) {
-  let { containerElement, onDragInit, onDragStart, onDrag, onDragEnd } = options;
+  let { containerElement } = options;
+  const { onDragInit, onDragStart, onDrag, onDragEnd } = options;
   let element: HTMLElement | null, startX: number, startY: number, deltaX: number, deltaY: number, dragStarted: boolean;
 
   if (!containerElement) {
@@ -126,7 +127,7 @@ export function Draggable(options: DraggableOption) {
  * @class MouseWheel
  */
 export function MouseWheel(options: MouseWheelOption) {
-  let { element, onMouseWheel } = options;
+  const { element, onMouseWheel } = options;
 
   function destroy() {
     element.removeEventListener('wheel', wheelHandler as EventListener);

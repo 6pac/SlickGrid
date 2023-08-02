@@ -123,11 +123,11 @@ export class SlickHeaderButtons implements Plugin {
       // Append buttons in reverse order since they are floated to the right.
       let i = column.header.buttons.length;
       while (i--) {
-        let button = column.header.buttons[i];
+        const button = column.header.buttons[i];
 
         // run each override functions to know if the item is visible and usable
-        let isItemVisible = this.runOverrideFunctionWhenExists<typeof args>(button.itemVisibilityOverride, args);
-        let isItemUsable = this.runOverrideFunctionWhenExists<typeof args>(button.itemUsabilityOverride, args);
+        const isItemVisible = this.runOverrideFunctionWhenExists<typeof args>(button.itemVisibilityOverride, args);
+        const isItemUsable = this.runOverrideFunctionWhenExists<typeof args>(button.itemUsabilityOverride, args);
 
         // if the result is not visible then there's no need to go further
         if (!isItemVisible) {
@@ -177,7 +177,7 @@ export class SlickHeaderButtons implements Plugin {
 
 
   protected handleBeforeHeaderCellDestroy(_e: Event, args: { column: Column; node: HTMLElement; }) {
-    let column = args.column;
+    const column = args.column;
 
     if (column.header?.buttons) {
       // Removing buttons via jQuery will also clean up any event handlers and data.
