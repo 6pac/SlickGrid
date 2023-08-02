@@ -32,7 +32,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  *  destroy                 -   A function to be called when the editor is destroyed.
  */
 export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDivElement>, options: CompositeEditorOption) {
-  let defaultOptions = {
+  const defaultOptions = {
     modalType: 'edit', // available type (create, edit, mass)
     validationFailedMsg: 'Some of the fields have failed validation',
     validationMsgPrefix: null,
@@ -44,17 +44,17 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
     editors: {}
   };
 
-  let noop = function () { };
+  const noop = function () { };
 
   let firstInvalidEditor;
 
   options = Slick.Utils.extend({}, defaultOptions, options);
 
   function getContainerBox(i) {
-    let c = containers[i];
-    let offset = Slick.Utils.offset(c);
-    let w = Slick.Utils.width(c);
-    let h = Slick.Utils.height(c);
+    const c = containers[i];
+    const offset = Slick.Utils.offset(c);
+    const w = Slick.Utils.width(c);
+    const h = Slick.Utils.height(c);
 
     return {
       top: (offset?.top ?? 0),
@@ -70,6 +70,7 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
   function editor(args) {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     // @ts-ignore
+    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const context: any = this;
     let editors: Array<Editor & { args: EditorArguments }> = [];
 
@@ -78,7 +79,7 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
       let idx = 0;
       while (idx < columns.length) {
         if (columns[idx].editor) {
-          let column = columns[idx];
+          const column = columns[idx];
           newArgs = Slick.Utils.extend(false, {}, args);
           newArgs.container = containers[idx];
           newArgs.column = column;
@@ -88,7 +89,7 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
           newArgs.compositeEditorOptions = options;
           newArgs.formValues = {};
 
-          let currentEditor = new (column.editor as any)(newArgs) as Editor & { args: EditorArguments };
+          const currentEditor = new (column.editor as any)(newArgs) as Editor & { args: EditorArguments };
           options.editors[column.id] = currentEditor; // add every Editor instance refs
           editors.push(currentEditor);
         }
@@ -132,7 +133,7 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
     };
 
     context.serializeValue = () => {
-      let serializedValue: any[] = [];
+      const serializedValue: any[] = [];
       let idx = 0;
       while (idx < editors.length) {
         serializedValue[idx] = editors[idx].serializeValue();
@@ -160,19 +161,19 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
 
     context.validate = (target) => {
       let validationResults;
-      let errors: any[] = [];
+      const errors: any[] = [];
       let targetElm = target ? target : null;
 
       firstInvalidEditor = null;
 
       let idx = 0;
       while (idx < editors.length) {
-        let columnDef = editors[idx].args?.column ?? {};
+        const columnDef = editors[idx].args?.column ?? {};
         if (columnDef) {
           let validationElm = document.querySelector(`.item-details-validation.editor-${columnDef.id}`);
           let labelElm = document.querySelector(`.item-details-label.editor-${columnDef.id}`);
           let editorElm = document.querySelector(`[data-editorid=${columnDef.id}]`);
-          let validationMsgPrefix = options?.validationMsgPrefix || '';
+          const validationMsgPrefix = options?.validationMsgPrefix || '';
 
           if (!targetElm || Slick.Utils.contains(editorElm as HTMLElement, targetElm)) {
             validationResults = editors[idx].validate();

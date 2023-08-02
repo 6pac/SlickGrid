@@ -87,7 +87,7 @@ export class SlickColumnMenu {
 
     // user could pass a title on top of the columns list
     if (this._options.columnPickerTitle || (this._options.columnPicker?.columnTitle)) {
-      let columnTitle = this._options.columnPickerTitle || this._options.columnPicker?.columnTitle;
+      const columnTitle = this._options.columnPickerTitle || this._options.columnPicker?.columnTitle;
       this._columnTitleElm = document.createElement('div');
       this._columnTitleElm.className = 'slick-gridmenu-custom';
       this._columnTitleElm.textContent = columnTitle || '';
@@ -166,7 +166,7 @@ export class SlickColumnMenu {
     }
 
     if (!this._options.columnPicker?.hideForceFitButton) {
-      let forceFitTitle = this._options.columnPicker?.forceFitTitle || this._options.forceFitTitle;
+      const forceFitTitle = this._options.columnPicker?.forceFitTitle || this._options.forceFitTitle;
 
       const liElm = document.createElement('li');
       liElm.ariaLabel = forceFitTitle || '';
@@ -189,7 +189,7 @@ export class SlickColumnMenu {
     }
 
     if (!this._options.columnPicker?.hideSyncResizeButton) {
-      let syncResizeTitle = this._options.columnPicker?.syncResizeTitle || this._options.syncResizeTitle;
+      const syncResizeTitle = this._options.columnPicker?.syncResizeTitle || this._options.syncResizeTitle;
 
       const liElm = document.createElement('li');
       liElm.ariaLabel = syncResizeTitle || '';
@@ -231,8 +231,8 @@ export class SlickColumnMenu {
     // We create a new `columns` structure by leaving currently-hidden
     // columns in their original ordinal position and interleaving the results
     // of the current column sort.
-    let current = this.grid.getColumns().slice(0);
-    let ordered = new Array(this.columns.length);
+    const current = this.grid.getColumns().slice(0);
+    const ordered = new Array(this.columns.length);
     for (let i = 0; i < ordered.length; i++) {
       if (this.grid.getColumnIndex(this.columns[i].id) === undefined) {
         // If the column doesn't return a value from getColumnIndex,
@@ -276,7 +276,7 @@ export class SlickColumnMenu {
     if (e.target.type === 'checkbox') {
       const isChecked = e.target.checked;
       const columnId = e.target.dataset.columnid || '';
-      let visibleColumns: Column[] = [];
+      const visibleColumns: Column[] = [];
       this._columnCheckboxes.forEach((columnCheckbox, idx) => {
         if (this.columns[idx].hidden !== undefined) { this.columns[idx].hidden = !columnCheckbox.checked; }
         if (columnCheckbox.checked) {
@@ -302,7 +302,7 @@ export class SlickColumnMenu {
       col.hidden = false;
       visibleColumns.splice(idx, 0, col);
     } else {
-      let newVisibleColumns: Column[] = [];
+      const newVisibleColumns: Column[] = [];
       for (let i = 0; i < visibleColumns.length; i++) {
         if (visibleColumns[i].id !== col.id) { newVisibleColumns.push(visibleColumns[i]); }
       }

@@ -136,7 +136,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   endUpdate() {
-    let wasBulkSuspend = this.isBulkSuspend;
+    const wasBulkSuspend = this.isBulkSuspend;
     this.isBulkSuspend = false;
     this.suspend = false;
     if (wasBulkSuspend) {
@@ -321,7 +321,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     this.sortAsc = ascending;
     this.fastSortField = field;
     this.sortComparer = null as any;
-    let oldToString = Object.prototype.toString;
+    const oldToString = Object.prototype.toString;
     Object.prototype.toString = (typeof field === 'function') ? field : function () {
       // @ts-ignore
       return this[field];
@@ -395,7 +395,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     this.groupingInfos = ((groupingInfo instanceof Array) ? groupingInfo : [groupingInfo]) as any;
 
     for (let i = 0; i < this.groupingInfos.length; i++) {
-      let gi = this.groupingInfos[i] = Utils.extend(true, {}, this.groupingInfoDefaults, this.groupingInfos[i]);
+      const gi = this.groupingInfos[i] = Utils.extend(true, {}, this.groupingInfoDefaults, this.groupingInfos[i]);
       gi.getterIsAFn = typeof gi.getter === 'function';
 
       // pre-compile accumulator loops
@@ -482,7 +482,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     const rows: number[] = [];
     this.ensureRowsByIdCache();
     for (let i = 0, l = itemArray.length; i < l; i++) {
-      let row = this.rowsById?.[itemArray[i][this.idProperty]];
+      const row = this.rowsById?.[itemArray[i][this.idProperty]];
       if (row != null) {
         rows[rows.length] = row;
       }
@@ -495,7 +495,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     const rows: number[] = [];
     this.ensureRowsByIdCache();
     for (let i = 0, l = idArray.length; i < l; i++) {
-      let row = this.rowsById?.[idArray[i]];
+      const row = this.rowsById?.[idArray[i]];
       if (row != null) {
         rows[rows.length] = row;
       }
@@ -533,7 +533,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     // Then we'll have to update the index as well, and possibly the `updated` cache too.
     if (id !== item[this.idProperty]) {
       // make sure the new id is unique:
-      let newId = item[this.idProperty];
+      const newId = item[this.idProperty];
       if (newId == null) {
         throw new Error('[SlickGrid DataView] Cannot update item to associate with a null id');
       }
@@ -639,7 +639,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     if (this.isBulkSuspend) {
       this.bulkDeleteIds.set(id, true);
     } else {
-      let idx = this.idxById.get(id);
+      const idx = this.idxById.get(id);
       if (idx === undefined) {
         throw new Error('[SlickGrid DataView] Invalid id');
       }
@@ -661,8 +661,8 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
 
     if (this.isBulkSuspend) {
       for (let i = 0, l = ids.length; i < l; i++) {
-        let id = ids[i];
-        let idx = this.idxById.get(id);
+        const id = ids[i];
+        const idx = this.idxById.get(id);
         if (idx === undefined) {
           throw new Error('[SlickGrid DataView] Invalid id');
         }
@@ -670,10 +670,10 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       }
     } else {
       // collect all indexes
-      let indexesToDelete: number[] = [];
+      const indexesToDelete: number[] = [];
       for (let i = 0, l = ids.length; i < l; i++) {
-        let id = ids[i];
-        let idx = this.idxById.get(id);
+        const id = ids[i];
+        const idx = this.idxById.get(id);
         if (idx === undefined) {
           throw new Error('[SlickGrid DataView] Invalid id');
         }
@@ -725,7 +725,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     let high = this.items.length;
 
     while (low < high) {
-      let mid = low + high >>> 1;
+      const mid = low + high >>> 1;
       if (this.sortComparer(this.items[mid], searchItem) === -1) {
         low = mid + 1;
       } else {
@@ -766,7 +766,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   getItemMetadata(i: number): ItemMetadata | null {
-    let item = this.rows[i];
+    const item = this.rows[i];
     if (item === undefined) {
       return null;
     }
@@ -835,9 +835,9 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
    *     example, calling collapseGroup('high', '10%') will collapse the '10%' subgroup of
    *     the 'high' group.
    */
-  collapseGroup(_varArgs: any) {
-    const args = Array.prototype.slice.call(arguments);
-    const arg0 = args[0];
+  collapseGroup(...args: any) {
+    const calledArgs = Array.prototype.slice.call(args);
+    const arg0 = calledArgs[0];
     let groupingKey;
     let level;
 
@@ -859,9 +859,9 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
    *     example, calling expandGroup('high', '10%') will expand the '10%' subgroup of
    *     the 'high' group.
    */
-  expandGroup(_varArgs: any) {
-    const args = Array.prototype.slice.call(arguments);
-    const arg0 = args[0];
+  expandGroup(...args: any) {
+    const calledArgs = Array.prototype.slice.call(args);
+    const arg0 = calledArgs[0];
     let groupingKey;
     let level;
 
@@ -884,11 +884,11 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   protected extractGroups(rows: TData[], parentGroup?: SlickGroup_) {
     let group;
     let val;
-    let groups: SlickGroup_[] = [];
-    let groupsByVal = {};
+    const groups: SlickGroup_[] = [];
+    const groupsByVal = {};
     let r;
-    let level = parentGroup ? parentGroup.level + 1 : 0;
-    let gi = this.groupingInfos[level];
+    const level = parentGroup ? parentGroup.level + 1 : 0;
+    const gi = this.groupingInfos[level];
 
     for (let i = 0, l = gi.predefinedValues?.length ?? 0; i < l; i++) {
       val = gi.predefinedValues?.[i];
@@ -936,9 +936,9 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   protected calculateTotals(totals: SlickGroupTotals_) {
-    let group = totals.group;
-    let gi = this.groupingInfos[group.level ?? 0];
-    let isLeafLevel = (group.level === this.groupingInfos.length);
+    const group = totals.group;
+    const gi = this.groupingInfos[group.level ?? 0];
+    const isLeafLevel = (group.level === this.groupingInfos.length);
     let agg: Aggregator, idx = gi.aggregators.length;
 
     if (!isLeafLevel && gi.aggregateChildGroups) {
@@ -965,8 +965,8 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   protected addGroupTotals(group: SlickGroup_) {
-    let gi = this.groupingInfos[group.level];
-    let totals = new SlickGroupTotals();
+    const gi = this.groupingInfos[group.level];
+    const totals = new SlickGroupTotals();
     totals.group = group;
     group.totals = totals;
     if (!gi.lazyTotalsCalculation) {
@@ -976,9 +976,9 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
 
   protected addTotals(groups: Grouping[], level?: number) {
     level = level || 0;
-    let gi = this.groupingInfos[level];
-    let groupCollapsed = gi.collapsed;
-    let toggledGroups = this.toggledGroupsByLevel[level];
+    const gi = this.groupingInfos[level];
+    const groupCollapsed = gi.collapsed;
+    const toggledGroups = this.toggledGroupsByLevel[level];
     let idx = groups.length, g;
     while (idx--) {
       g = groups[idx];
@@ -1005,7 +1005,8 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   protected flattenGroupedRows(groups: Grouping[], level?: number) {
     level = level || 0;
     const gi = this.groupingInfos[level];
-    let groupedRows: TData[] = [], rows: TData[], gl = 0, g;
+    const groupedRows: TData[] = [];
+    let rows: TData[], gl = 0, g;
     for (let i = 0, l = groups.length; i < l; i++) {
       g = groups[i];
       groupedRows[gl++] = g;
@@ -1155,7 +1156,8 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   protected uncompiledFilter(items: TData[], args: any) {
-    let retval: any[] = [], idx = 0;
+    const retval: any[] = [];
+    let idx = 0;
 
     for (let i = 0, ii = items.length; i < ii; i++) {
       if (this.filter?.(items[i], args)) {
@@ -1167,7 +1169,9 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   protected uncompiledFilterWithCaching(items: TData[], args: any, cache: any) {
-    let retval: any[] = [], idx = 0, item: TData;
+    const retval: any[] = [];
+    let idx = 0,
+      item: TData;
 
     for (let i = 0, ii = items.length; i < ii; i++) {
       item = items[i];
@@ -1219,7 +1223,8 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   protected getRowDiffs(rows: TData[], newRows: TData[]) {
-    let item: any, r, eitherIsNonData, diff: number[] = [];
+    let item: any, r, eitherIsNonData;
+    const diff: number[] = [];
     let from = 0, to = Math.max(newRows.length, rows.length);
 
     if (this.refreshHints?.ignoreDiffsBefore) {
@@ -1277,7 +1282,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       }
     }
 
-    let diff = this.getRowDiffs(this.rows, newRows as TData[]);
+    const diff = this.getRowDiffs(this.rows, newRows as TData[]);
 
     this.rows = newRows as TData[];
 
@@ -1289,10 +1294,10 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       return;
     }
 
-    let previousPagingInfo = Utils.extend(true, {}, this.getPagingInfo());
+    const previousPagingInfo = Utils.extend(true, {}, this.getPagingInfo());
 
-    let countBefore = this.rows.length;
-    let totalRowsBefore = this.totalRows;
+    const countBefore = this.rows.length;
+    const totalRowsBefore = this.totalRows;
 
     let diff = this.recalc(this.items); // pass as direct refs to avoid closure perf hit
 
@@ -1365,9 +1370,9 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     const update = () => {
       if ((this.selectedRowIds || []).length > 0 && !inHandler) {
         inHandler = true;
-        let selectedRows = this.mapIdsToRows(this.selectedRowIds || []);
+        const selectedRows = this.mapIdsToRows(this.selectedRowIds || []);
         if (!preserveHidden) {
-          let selectedRowsChangedArgs = {
+          const selectedRowsChangedArgs = {
             grid: this._grid,
             ids: this.mapRowsToIds(selectedRows),
             rows: selectedRows,
@@ -1386,8 +1391,8 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
 
     grid.onSelectedRowsChanged.subscribe((_e: Event, args: { rows: number[]; }) => {
       if (!inHandler) {
-        let newSelectedRowIds = this.mapRowsToIds(args.rows);
-        let selectedRowsChangedArgs = {
+        const newSelectedRowIds = this.mapRowsToIds(args.rows);
+        const selectedRowsChangedArgs = {
           grid: this._grid,
           ids: newSelectedRowIds,
           rows: args.rows,
@@ -1414,7 +1419,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
           if (args.added) {
             if (preserveHiddenOnSelectionChange && grid.getOptions().multiSelect) {
               // find the ones that are hidden
-              let hiddenSelectedRowIds = this.selectedRowIds?.filter((id) => this.getRowById(id) === undefined);
+              const hiddenSelectedRowIds = this.selectedRowIds?.filter((id) => this.getRowById(id) === undefined);
               // add the newly selected ones
               rowIds = hiddenSelectedRowIds!.concat(args.ids);
             } else {
@@ -1528,8 +1533,8 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
 
     const storeCellCssStyles = (hash: CssStyleHash) => {
       hashById = {};
-      for (let row in hash) {
-        let id = this.rows[row][this.idProperty];
+      for (const row in hash) {
+        const id = this.rows[row][this.idProperty];
         hashById[id] = hash[row];
       }
     }
@@ -1542,9 +1547,9 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       if (hashById) {
         inHandler = true;
         this.ensureRowsByIdCache();
-        let newHash = {};
-        for (let id in hashById) {
-          let row = this.rowsById?.[id];
+        const newHash = {};
+        for (const id in hashById) {
+          const row = this.rowsById?.[id];
           if (row != undefined) {
             newHash[row] = hashById[id];
           }

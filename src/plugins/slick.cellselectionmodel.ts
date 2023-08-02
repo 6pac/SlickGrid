@@ -59,10 +59,10 @@ export class SlickCellSelectionModel {
   }
 
   protected removeInvalidRanges(ranges: CellRange[]) {
-    let result: CellRange[] = [];
+    const result: CellRange[] = [];
 
     for (let i = 0; i < ranges.length; i++) {
-      let r = ranges[i];
+      const r = ranges[i];
       if (this._grid.canCellBeSelected(r.fromRow, r.fromCell) && this._grid.canCellBeSelected(r.toRow, r.toCell)) {
         result.push(r);
       }
@@ -94,12 +94,12 @@ export class SlickCellSelectionModel {
     if ((!this._ranges || this._ranges.length === 0) && (!ranges || ranges.length === 0)) { return; }
 
     // if range has not changed, don't fire onSelectedRangesChanged
-    let rangeHasChanged = !this.rangesAreEqual(this._ranges, ranges);
+    const rangeHasChanged = !this.rangesAreEqual(this._ranges, ranges);
 
     this._ranges = this.removeInvalidRanges(ranges);
     if (rangeHasChanged) {
       // provide extra "caller" argument through SlickEventData to avoid breaking pubsub event that only accepts an array of selected range
-      let eventData = new SlickEventData(null, this._ranges);
+      const eventData = new SlickEventData(null, this._ranges);
       Object.defineProperty(eventData, 'detail', { writable: true, configurable: true, value: { caller: caller || "SlickCellSelectionModel.setSelectedRanges" } });
       this.onSelectedRangesChanged.notify(this._ranges, eventData);
     }
@@ -144,8 +144,8 @@ export class SlickCellSelectionModel {
      * 40 down
      */
     let ranges: CellRange[], last: SlickRange_;
-    let active = this._grid.getActiveCell();
-    let metaKey = e.ctrlKey || e.metaKey;
+    const active = this._grid.getActiveCell();
+    const metaKey = e.ctrlKey || e.metaKey;
 
     if (active && e.shiftKey && !metaKey && !e.altKey &&
       (e.which == 37 || e.which == 39 || e.which == 38 || e.which == 40)) {
@@ -162,10 +162,11 @@ export class SlickCellSelectionModel {
         last = new SlickRange(active.row, active.cell);
 
       let dRow = last.toRow - last.fromRow,
-        dCell = last.toCell - last.fromCell,
-        // walking direction
-        dirRow = active.row == last.fromRow ? 1 : -1,
-        dirCell = active.cell == last.fromCell ? 1 : -1;
+        dCell = last.toCell - last.fromCell;
+
+      // walking direction
+      const dirRow = active.row == last.fromRow ? 1 : -1;
+      const dirCell = active.cell == last.fromCell ? 1 : -1;
 
       if (e.which == 37) {
         dCell -= dirCell;
@@ -178,11 +179,11 @@ export class SlickCellSelectionModel {
       }
 
       // define new selection range
-      let new_last = new SlickRange(active.row, active.cell, active.row + dirRow * dRow, active.cell + dirCell * dCell);
+      const new_last = new SlickRange(active.row, active.cell, active.row + dirRow * dRow, active.cell + dirCell * dCell);
       if (this.removeInvalidRanges([new_last]).length) {
         ranges.push(new_last);
-        let viewRow = dirRow > 0 ? new_last.toRow : new_last.fromRow;
-        let viewCell = dirCell > 0 ? new_last.toCell : new_last.fromCell;
+        const viewRow = dirRow > 0 ? new_last.toRow : new_last.fromRow;
+        const viewCell = dirCell > 0 ? new_last.toCell : new_last.fromCell;
         this._grid.scrollRowIntoView(viewRow);
         this._grid.scrollCellIntoView(viewRow, viewCell);
       }

@@ -39,7 +39,7 @@ export class SlickRemoteModel {
   }
 
   clear() {
-    for (let key in this.data) {
+    for (const key in this.data) {
       delete this.data[key];
     }
     this.data.length = 0;

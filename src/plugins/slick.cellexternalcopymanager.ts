@@ -92,7 +92,7 @@ export class SlickCellExternalCopyManager implements Plugin {
 
   protected getHeaderValueForColumn(columnDef: Column) {
     if (this._options.headerColumnValueExtractor) {
-      let val = this._options.headerColumnValueExtractor(columnDef);
+      const val = this._options.headerColumnValueExtractor(columnDef);
       if (val) {
         return val;
       }
@@ -161,7 +161,7 @@ export class SlickCellExternalCopyManager implements Plugin {
 
 
   protected _createTextBox(innerText: string) {
-    let ta = document.createElement('textarea');
+    const ta = document.createElement('textarea');
     ta.style.position = 'absolute';
     ta.style.left = '-1000px';
     ta.style.top = document.body.scrollTop + 'px';
@@ -232,7 +232,7 @@ export class SlickCellExternalCopyManager implements Plugin {
 
     const overflowsBottomOfGrid = (activeRow || 0) + destH > grid.getDataLength();
     if (this._options.newRowCreator && overflowsBottomOfGrid) {
-      let newRowsNeeded = (activeRow || 0) + destH - grid.getDataLength();
+      const newRowsNeeded = (activeRow || 0) + destH - grid.getDataLength();
       this._options.newRowCreator(newRowsNeeded);
     }
 
@@ -262,11 +262,11 @@ export class SlickCellExternalCopyManager implements Plugin {
           this._clipCommand.h++;
           for (let x = 0; x < this._clipCommand.destW; x++) {
             this._clipCommand.w++;
-            let desty = activeRow + y;
-            let destx = activeCell + x;
+            const desty = activeRow + y;
+            const destx = activeCell + x;
 
             if (desty < this._clipCommand.maxDestY && destx < this._clipCommand.maxDestX) {
-              let dt = grid.getDataItem(desty);
+              const dt = grid.getDataItem(desty);
               this._clipCommand.oldValues[y][x] = dt[columns[destx]['field']];
               if (oneCellToMultiple)
                 this._clipCommand.setDataItemValueForColumn(dt, columns[destx], clippedRange[0][0]);
@@ -300,11 +300,11 @@ export class SlickCellExternalCopyManager implements Plugin {
       undo: () => {
         for (let y = 0; y < this._clipCommand.destH; y++) {
           for (let x = 0; x < this._clipCommand.destW; x++) {
-            let desty = activeRow + y;
-            let destx = activeCell + x;
+            const desty = activeRow + y;
+            const destx = activeCell + x;
 
             if (desty < this._clipCommand.maxDestY && destx < this._clipCommand.maxDestX) {
-              let dt = grid.getDataItem(desty);
+              const dt = grid.getDataItem(desty);
               if (oneCellToMultiple)
                 this._clipCommand.setDataItemValueForColumn(dt, columns[destx], this._clipCommand.oldValues[0][0]);
               else
@@ -335,7 +335,7 @@ export class SlickCellExternalCopyManager implements Plugin {
         }
 
         if (addRows > 1) {
-          let d = grid.getData<any[]>();
+          const d = grid.getData<any[]>();
           for (; addRows > 1; addRows--)
             d.splice(d.length - 1, 1);
           grid.setData(d);
@@ -374,18 +374,18 @@ export class SlickCellExternalCopyManager implements Plugin {
           this.markCopySelection(ranges);
           this.onCopyCells.notify({ ranges: ranges });
 
-          let columns = this._grid.getColumns();
+          const columns = this._grid.getColumns();
           let clipText = '';
 
           for (let rg = 0; rg < ranges.length; rg++) {
-            let range = ranges[rg];
-            let clipTextRows: string[] = [];
+            const range = ranges[rg];
+            const clipTextRows: string[] = [];
             for (let i = range.fromRow; i < range.toRow + 1; i++) {
-              let clipTextCells: string[] = [];
-              let dt = this._grid.getDataItem(i);
+              const clipTextCells: string[] = [];
+              const dt = this._grid.getDataItem(i);
 
               if (clipTextRows.length === 0 && this._options.includeHeaderWhenCopying) {
-                let clipTextHeaders: string[] = [];
+                const clipTextHeaders: string[] = [];
                 for (let j = range.fromCell; j < range.toCell + 1; j++) {
                   if (columns[j].name!.length > 0 && !columns[j].hidden) {
                     clipTextHeaders.push(this.getHeaderValueForColumn(columns[j]));
@@ -451,8 +451,8 @@ export class SlickCellExternalCopyManager implements Plugin {
   protected markCopySelection(ranges: CellRange[]) {
     this.clearCopySelection();
 
-    let columns = this._grid.getColumns();
-    let hash: CssStyleHash = {};
+    const columns = this._grid.getColumns();
+    const hash: CssStyleHash = {};
     for (let i = 0; i < ranges.length; i++) {
       for (let j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
         hash[j] = {};

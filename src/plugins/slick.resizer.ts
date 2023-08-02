@@ -161,7 +161,7 @@ export class SlickResizer {
     }
 
     // calculate bottom padding
-    let bottomPadding = (this._options?.bottomPadding !== undefined) ? this._options.bottomPadding : DATAGRID_BOTTOM_PADDING;
+    const bottomPadding = (this._options?.bottomPadding !== undefined) ? this._options.bottomPadding : DATAGRID_BOTTOM_PADDING;
 
     let gridHeight = 0;
     let gridOffsetTop = 0;
@@ -177,12 +177,12 @@ export class SlickResizer {
       gridOffsetTop = (gridElmOffset !== undefined) ? gridElmOffset.top : 0;
     }
 
-    let availableHeight = gridHeight - gridOffsetTop - bottomPadding;
-    let availableWidth = Utils.innerSize(this._pageContainerElm, 'width') || window.innerWidth || 0;
-    let maxHeight = this._options?.maxHeight || undefined;
-    let minHeight = (this._options?.minHeight !== undefined) ? this._options.minHeight : DATAGRID_MIN_HEIGHT;
-    let maxWidth = this._options?.maxWidth || undefined;
-    let minWidth = (this._options?.minWidth !== undefined) ? this._options.minWidth : DATAGRID_MIN_WIDTH;
+    const availableHeight = gridHeight - gridOffsetTop - bottomPadding;
+    const availableWidth = Utils.innerSize(this._pageContainerElm, 'width') || window.innerWidth || 0;
+    const maxHeight = this._options?.maxHeight || undefined;
+    const minHeight = (this._options?.minHeight !== undefined) ? this._options.minHeight : DATAGRID_MIN_HEIGHT;
+    const maxWidth = this._options?.maxWidth || undefined;
+    const minWidth = (this._options?.minWidth !== undefined) ? this._options.minWidth : DATAGRID_MIN_WIDTH;
 
     let newHeight = availableHeight;
     let newWidth = (this._options?.rightPadding) ? availableWidth - this._options.rightPadding : availableWidth;
@@ -268,22 +268,22 @@ export class SlickResizer {
   }
 
   protected resizeGridCallback(newSizes?: GridSize, event?: Event | null) {
-    let lastDimensions = this.resizeGridWithDimensions(newSizes) as GridSize;
+    const lastDimensions = this.resizeGridWithDimensions(newSizes) as GridSize;
     this.onGridAfterResize.notify({ grid: this._grid, dimensions: lastDimensions }, event, this);
     return lastDimensions;
   }
 
   protected resizeGridWithDimensions(newSizes?: GridSize): GridSize | undefined {
     // calculate the available sizes with minimum height defined as a varant
-    let availableDimensions = this.calculateGridNewDimensions();
+    const availableDimensions = this.calculateGridNewDimensions();
 
     if ((newSizes || availableDimensions) && this._gridDomElm) {
       try {
         // get the new sizes, if new sizes are passed (not 0), we will use them else use available space
         // basically if user passes 1 of the dimension, let say he passes just the height,
         // we will use the height as a fixed height but the width will be resized by it's available space
-        let newHeight = (newSizes?.height) ? newSizes.height : availableDimensions?.height;
-        let newWidth = (newSizes?.width) ? newSizes.width : availableDimensions?.width;
+        const newHeight = (newSizes?.height) ? newSizes.height : availableDimensions?.height;
+        const newWidth = (newSizes?.width) ? newSizes.width : availableDimensions?.width;
 
         // apply these new height/width to the datagrid
         if (!this._gridOptions.autoHeight) {

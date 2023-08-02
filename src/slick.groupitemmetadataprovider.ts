@@ -64,7 +64,7 @@ export class SlickGroupItemMetadataProvider {
       return item.title;
     }
 
-    let indentation = `${item.level * 15}px`;
+    const indentation = `${item.level * 15}px`;
 
     return (this._options.checkboxSelect ? '<span class="' + this._options.checkboxSelectCssClass +
       ' ' + (item.selectChecked ? 'checked' : 'unchecked') + '"></span>' : '') +
@@ -96,8 +96,8 @@ export class SlickGroupItemMetadataProvider {
   }
 
   protected handleGridClick(e: DOMEvent<HTMLDivElement>, args: { row: number; cell: number; grid: SlickGrid; }) {
-    let target = e.target;
-    let item = this._grid.getDataItem(args.row);
+    const target = e.target;
+    const item = this._grid.getDataItem(args.row);
     if (item && item instanceof SlickGroup && target.classList.contains(this._options.toggleCssClass || '')) {
       this.handleDataViewExpandOrCollapse(item);
       e.stopImmediatePropagation();
@@ -108,7 +108,7 @@ export class SlickGroupItemMetadataProvider {
       target.classList.remove((item.selectChecked ? 'unchecked' : 'checked'));
       target.classList.add((item.selectChecked ? 'checked' : 'unchecked'));
       // get rowIndexes array
-      let rowIndexes = this.dataView.mapItemsToRows(item.rows);
+      const rowIndexes = this.dataView.mapItemsToRows(item.rows);
       (item.selectChecked ? this._options.checkboxSelectPlugin.selectRows : this._options.checkboxSelectPlugin.deSelectRows)(rowIndexes);
     }
   }
@@ -116,9 +116,9 @@ export class SlickGroupItemMetadataProvider {
   // TODO:  add -/+ handling
   protected handleGridKeyDown(e: KeyboardEvent) {
     if (this._options.enableExpandCollapse && (e.which == keyCode.SPACE)) {
-      let activeCell = this._grid.getActiveCell();
+      const activeCell = this._grid.getActiveCell();
       if (activeCell) {
-        let item = this._grid.getDataItem(activeCell.row);
+        const item = this._grid.getDataItem(activeCell.row);
         if (item && item instanceof SlickGroup) {
           this.handleDataViewExpandOrCollapse(item);
           e.stopImmediatePropagation();
@@ -143,7 +143,7 @@ export class SlickGroupItemMetadataProvider {
   }
 
   getGroupRowMetadata(item: GroupingFormatterItem): ItemMetadata {
-    let groupLevel = item?.level;
+    const groupLevel = item?.level;
     return {
       selectable: false,
       focusable: this._options.groupFocusable,
@@ -160,7 +160,7 @@ export class SlickGroupItemMetadataProvider {
   }
 
   getTotalsRowMetadata(item: { group: GroupingFormatterItem }): ItemMetadata | null {
-    let groupLevel = item?.group?.level;
+    const groupLevel = item?.group?.level;
     return {
       selectable: false,
       focusable: this._options.totalsFocusable,

@@ -116,7 +116,8 @@ export class SlickRowSelectionModel {
   }
 
   protected getRowsRange(from: number, to: number) {
-    let i, rows: number[] = [];
+    let i;
+    const rows: number[] = [];
     for (i = from; i <= to; i++) {
       rows.push(i);
     }

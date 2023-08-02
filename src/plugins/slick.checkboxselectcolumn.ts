@@ -98,7 +98,7 @@ export class SlickCheckboxSelectColumn<T = any> implements Plugin {
       }
 
       if (!this._options.hideInFilterHeaderRow) {
-        let selectAllContainerElm = this._headerRowNode?.querySelector<HTMLSpanElement>('#filter-checkbox-selectall-container');
+        const selectAllContainerElm = this._headerRowNode?.querySelector<HTMLSpanElement>('#filter-checkbox-selectall-container');
         if (selectAllContainerElm) {
           selectAllContainerElm.style.display = 'flex';
           const selectAllInputElm = selectAllContainerElm.querySelector<HTMLInputElement>('input[type="checkbox"]');
@@ -124,25 +124,26 @@ export class SlickCheckboxSelectColumn<T = any> implements Plugin {
   }
 
   protected handleSelectedRowsChanged() {
-    let selectedRows = this._grid.getSelectedRows();
-    let lookup: any = {}, row = 0, i = 0, k = 0;
+    const selectedRows = this._grid.getSelectedRows();
+    const lookup: any = {};
+    let row = 0, i = 0, k = 0;
     let disabledCount = 0;
     if (typeof this._selectableOverride === 'function') {
       for (k = 0; k < this._grid.getDataLength(); k++) {
         // If we are allowed to select the row
-        let dataItem = this._grid.getDataItem(k);
+        const dataItem = this._grid.getDataItem(k);
         if (!this.checkSelectableOverride(i, dataItem, this._grid)) {
           disabledCount++;
         }
       }
     }
 
-    let removeList: number[] = [];
+    const removeList: number[] = [];
     for (i = 0; i < selectedRows.length; i++) {
       row = selectedRows[i];
 
       // If we are allowed to select the row
-      let rowItem = this._grid.getDataItem(row);
+      const rowItem = this._grid.getDataItem(row);
       if (this.checkSelectableOverride(i, rowItem, this._grid)) {
         lookup[row] = true;
         if (lookup[row] !== this._selectedRowsLookup[row]) {
@@ -176,7 +177,7 @@ export class SlickCheckboxSelectColumn<T = any> implements Plugin {
     // Remove items that shouln't of been selected in the first place (Got here Ctrl + click)
     if (removeList.length > 0) {
       for (i = 0; i < removeList.length; i++) {
-        let remIdx = selectedRows.indexOf(removeList[i]);
+        const remIdx = selectedRows.indexOf(removeList[i]);
         selectedRows.splice(remIdx, 1);
       }
       this._grid.setSelectedRows(selectedRows, 'click.cleanup');
@@ -184,17 +185,17 @@ export class SlickCheckboxSelectColumn<T = any> implements Plugin {
   }
 
   protected handleDataViewSelectedIdsChanged() {
-    let selectedIds = this._dataView.getAllSelectedFilteredIds();
-    let filteredItems = this._dataView.getFilteredItems();
+    const selectedIds = this._dataView.getAllSelectedFilteredIds();
+    const filteredItems = this._dataView.getFilteredItems();
     let disabledCount = 0;
 
     if (typeof this._selectableOverride === 'function' && selectedIds.length > 0) {
       for (let k = 0; k < this._dataView.getItemCount(); k++) {
         // If we are allowed to select the row
-        let dataItem = this._dataView.getItemByIdx(k);
-        let idProperty = this._dataView.getIdPropertyName();
-        let dataItemId = dataItem[idProperty];
-        let foundItemIdx = filteredItems.findIndex(function (item) {
+        const dataItem = this._dataView.getItemByIdx(k);
+        const idProperty = this._dataView.getIdPropertyName();
+        const dataItemId = dataItem[idProperty];
+        const foundItemIdx = filteredItems.findIndex(function (item) {
           return item[idProperty] === dataItemId;
         });
         if (foundItemIdx >= 0 && !this.checkSelectableOverride(k, dataItem, this._grid)) {
@@ -245,7 +246,7 @@ export class SlickCheckboxSelectColumn<T = any> implements Plugin {
   }
 
   protected toggleRowSelection(row) {
-    let dataContext = this._grid.getDataItem(row);
+    const dataContext = this._grid.getDataItem(row);
     if (!this.checkSelectableOverride(row, dataContext, this._grid)) {
       return;
     }
@@ -260,8 +261,8 @@ export class SlickCheckboxSelectColumn<T = any> implements Plugin {
   }
 
   selectRows(rowArray: number[]) {
-    let i, l = rowArray.length, addRows: number[] = [];
-    for (i = 0; i < l; i++) {
+    const addRows: number[] = [];
+    for (let i = 0, l = rowArray.length; i < l; i++) {
       if (!this._selectedRowsLookup[rowArray[i]]) {
         addRows[addRows.length] = rowArray[i];
       }
@@ -270,8 +271,8 @@ export class SlickCheckboxSelectColumn<T = any> implements Plugin {
   }
 
   deSelectRows(rowArray: number[]) {
-    let i: number, l = rowArray.length, removeRows: number[] = [];
-    for (i = 0; i < l; i++) {
+    const removeRows: number[] = [];
+    for (let i = 0, l = rowArray.length; i < l; i++) {
       if (this._selectedRowsLookup[rowArray[i]]) {
         removeRows[removeRows.length] = rowArray[i];
       }
@@ -290,13 +291,13 @@ export class SlickCheckboxSelectColumn<T = any> implements Plugin {
       }
 
       let isAllSelected = e.target.checked;
-      let caller = isAllSelected ? 'click.selectAll' : 'click.unselectAll';
-      let rows: number[] = [];
+      const caller = isAllSelected ? 'click.selectAll' : 'click.unselectAll';
+      const rows: number[] = [];
 
       if (isAllSelected) {
         for (let i = 0; i < this._grid.getDataLength(); i++) {
           // Get the row and check it's a selectable row before pushing it onto the stack
-          let rowItem = this._grid.getDataItem(i);
+          const rowItem = this._grid.getDataItem(i);
           if (!rowItem.__group && !rowItem.__groupTotals && this.checkSelectableOverride(i, rowItem, this._grid)) {
             rows.push(i);
           }
@@ -304,11 +305,11 @@ export class SlickCheckboxSelectColumn<T = any> implements Plugin {
         isAllSelected = true;
       }
       if (this._isUsingDataView && this._dataView && this._options.applySelectOnAllPages) {
-        let ids: Array<number | string> = [];
-        let filteredItems = this._dataView.getFilteredItems();
+        const ids: Array<number | string> = [];
+        const filteredItems = this._dataView.getFilteredItems();
         for (let j = 0; j < filteredItems.length; j++) {
           // Get the row and check it's a selectable ID (it could be in a different page) before pushing it onto the stack
-          let dataviewRowItem: any[] = filteredItems[j];
+          const dataviewRowItem: any[] = filteredItems[j];
           if (this.checkSelectableOverride(j, dataviewRowItem, this._grid)) {
             ids.push(dataviewRowItem[this._dataView.getIdPropertyName()]);
           }
@@ -324,7 +325,7 @@ export class SlickCheckboxSelectColumn<T = any> implements Plugin {
   protected getCheckboxColumnCellIndex() {
     if (this._checkboxColumnCellIndex === null) {
       this._checkboxColumnCellIndex = 0;
-      let colArr = this._grid.getColumns();
+      const colArr = this._grid.getColumns();
       for (let i = 0; i < colArr.length; i++) {
         if (colArr[i].id == this._options.columnId) {
           this._checkboxColumnCellIndex = i;
@@ -382,7 +383,7 @@ export class SlickCheckboxSelectColumn<T = any> implements Plugin {
   }
 
   protected checkboxSelectionFormatter(row: number, _cell: number, _val: any, _columnDef: Column, dataContext: any, grid: SlickGrid) {
-    let UID = this.createUID() + row;
+    const UID = this.createUID() + row;
 
     if (dataContext) {
       if (!this.checkSelectableOverride(row, dataContext, grid)) {

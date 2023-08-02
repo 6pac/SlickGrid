@@ -232,17 +232,17 @@ export class SlickContextMenu implements Plugin {
       e = (e as SlickEventData_).getNativeEvent();
     }
 
-    let targetEvent = e.touches ? e.touches[0] : e;
-    let cell = this._grid.getCellFromEvent(e);
+    const targetEvent = e.touches ? e.touches[0] : e;
+    const cell = this._grid.getCellFromEvent(e);
     this._currentCell = cell?.cell ?? 0;
     this._currentRow = cell?.row ?? 0;
-    let columnDef = this._grid.getColumns()[this._currentCell];
-    let dataContext = this._grid.getDataItem(this._currentRow);
+    const columnDef = this._grid.getColumns()[this._currentCell];
+    const dataContext = this._grid.getDataItem(this._currentRow);
 
-    let isColumnOptionAllowed = this.checkIsColumnAllowed(this._contextMenuProperties.optionShownOverColumnIds ?? [], columnDef.id);
-    let isColumnCommandAllowed = this.checkIsColumnAllowed(this._contextMenuProperties.commandShownOverColumnIds ?? [], columnDef.id);
-    let commandItems = this._contextMenuProperties.commandItems || [];
-    let optionItems = this._contextMenuProperties.optionItems || [];
+    const isColumnOptionAllowed = this.checkIsColumnAllowed(this._contextMenuProperties.optionShownOverColumnIds ?? [], columnDef.id);
+    const isColumnCommandAllowed = this.checkIsColumnAllowed(this._contextMenuProperties.commandShownOverColumnIds ?? [], columnDef.id);
+    const commandItems = this._contextMenuProperties.commandItems || [];
+    const optionItems = this._contextMenuProperties.optionItems || [];
 
     // make sure there's at least something to show before creating the Context Menu
     if (!columnDef || (!isColumnCommandAllowed && !isColumnOptionAllowed) || (!commandItems.length && !optionItems.length)) {
@@ -263,8 +263,8 @@ export class SlickContextMenu implements Plugin {
     }
 
     // create a new context menu
-    let maxHeight = isNaN(this._contextMenuProperties.maxHeight as number) ? this._contextMenuProperties.maxHeight : `${this._contextMenuProperties.maxHeight ?? 0}px`;
-    let width = isNaN(this._contextMenuProperties.width as number) ? this._contextMenuProperties.width : `${this._contextMenuProperties.maxWidth ?? 0}px`;
+    const maxHeight = isNaN(this._contextMenuProperties.maxHeight as number) ? this._contextMenuProperties.maxHeight : `${this._contextMenuProperties.maxHeight ?? 0}px`;
+    const width = isNaN(this._contextMenuProperties.width as number) ? this._contextMenuProperties.width : `${this._contextMenuProperties.maxWidth ?? 0}px`;
 
     this._menuElm = document.createElement('div');
     this._menuElm.className = `slick-context-menu ${this._gridUid}`;
@@ -387,12 +387,12 @@ export class SlickContextMenu implements Plugin {
       e = (e as SlickEventData_).getNativeEvent();
     }
     e.preventDefault();
-    let cell = this._grid.getCellFromEvent(e);
+    const cell = this._grid.getCellFromEvent(e);
 
     if (cell) {
 
-      let columnDef = this._grid.getColumns()[cell.cell];
-      let dataContext = this._grid.getDataItem(cell.row);
+      const columnDef = this._grid.getColumns()[cell.cell];
+      const dataContext = this._grid.getDataItem(cell.row);
 
       // run the override function (when defined), if the result is false it won't go further
       args = args || {};
@@ -439,11 +439,11 @@ export class SlickContextMenu implements Plugin {
 
     for (let i = 0, ln = optionItems.length; i < ln; i++) {
       let addClickListener = true;
-      let item = optionItems[i];
+      const item = optionItems[i];
 
       // run each override functions to know if the item is visible and usable
-      let isItemVisible = this.runOverrideFunctionWhenExists<typeof args>((item as MenuOptionItem).itemVisibilityOverride, args);
-      let isItemUsable = this.runOverrideFunctionWhenExists<typeof args>((item as MenuOptionItem).itemUsabilityOverride, args);
+      const isItemVisible = this.runOverrideFunctionWhenExists<typeof args>((item as MenuOptionItem).itemVisibilityOverride, args);
+      const isItemUsable = this.runOverrideFunctionWhenExists<typeof args>((item as MenuOptionItem).itemUsabilityOverride, args);
 
       // if the result is not visible then there's no need to go further
       if (!isItemVisible) {
@@ -531,11 +531,11 @@ export class SlickContextMenu implements Plugin {
 
     for (let i = 0, ln = commandItems.length; i < ln; i++) {
       let addClickListener = true;
-      let item = commandItems[i];
+      const item = commandItems[i];
 
       // run each override functions to know if the item is visible and usable
-      let isItemVisible = this.runOverrideFunctionWhenExists<typeof args>((item as MenuCommandItem).itemVisibilityOverride, args);
-      let isItemUsable = this.runOverrideFunctionWhenExists<typeof args>((item as MenuCommandItem).itemUsabilityOverride, args);
+      const isItemVisible = this.runOverrideFunctionWhenExists<typeof args>((item as MenuCommandItem).itemVisibilityOverride, args);
+      const isItemUsable = this.runOverrideFunctionWhenExists<typeof args>((item as MenuCommandItem).itemUsabilityOverride, args);
 
       // if the result is not visible then there's no need to go further
       if (!isItemVisible) {
@@ -614,8 +614,8 @@ export class SlickContextMenu implements Plugin {
     const command = (item as MenuCommandItem).command || '';
     const row = this._currentRow;
     const cell = this._currentCell;
-    let columnDef = this._grid.getColumns()[cell];
-    let dataContext = this._grid.getDataItem(row);
+    const columnDef = this._grid.getColumns()[cell];
+    const dataContext = this._grid.getDataItem(row);
     let cellValue;
 
     if (Object.prototype.hasOwnProperty.call(dataContext, columnDef?.field)) {
@@ -625,7 +625,7 @@ export class SlickContextMenu implements Plugin {
     if (command !== null && command !== '') {
       // user could execute a callback through 2 ways
       // via the onCommand event and/or an action callback
-      let callbackArgs = {
+      const callbackArgs = {
         cell,
         row,
         grid: this._grid,
@@ -661,7 +661,7 @@ export class SlickContextMenu implements Plugin {
     if (option !== undefined) {
       // user could execute a callback through 2 ways
       // via the onOptionSelected event and/or an action callback
-      let callbackArgs = {
+      const callbackArgs = {
         cell,
         row,
         grid: this._grid,
@@ -692,19 +692,19 @@ export class SlickContextMenu implements Plugin {
       let menuOffsetTop = parentElm ? parentOffset?.top ?? 0 : targetEvent.pageY;
       const menuHeight = this._menuElm?.offsetHeight || 0;
       const menuWidth = this._menuElm?.offsetWidth || this._contextMenuProperties.width || 0;
-      let rowHeight = this._gridOptions.rowHeight;
-      let dropOffset = this._contextMenuProperties.autoAdjustDropOffset;
-      let sideOffset = this._contextMenuProperties.autoAlignSideOffset;
+      const rowHeight = this._gridOptions.rowHeight;
+      const dropOffset = this._contextMenuProperties.autoAdjustDropOffset;
+      const sideOffset = this._contextMenuProperties.autoAlignSideOffset;
 
       // if autoAdjustDrop is enable, we first need to see what position the drop will be located
       // without necessary toggling it's position just yet, we just want to know the future position for calculation
       if (this._contextMenuProperties.autoAdjustDrop) {
         // since we reposition menu below slick cell, we need to take it in consideration and do our calculation from that element
-        let spaceBottom = Utils.calculateAvailableSpace(parentElm).bottom;
-        let spaceTop = Utils.calculateAvailableSpace(parentElm).top;
-        let spaceBottomRemaining = spaceBottom + dropOffset - rowHeight;
-        let spaceTopRemaining = spaceTop - dropOffset + rowHeight;
-        let dropPosition = (spaceBottomRemaining < menuHeight && spaceTopRemaining > spaceBottomRemaining) ? 'top' : 'bottom';
+        const spaceBottom = Utils.calculateAvailableSpace(parentElm).bottom;
+        const spaceTop = Utils.calculateAvailableSpace(parentElm).top;
+        const spaceBottomRemaining = spaceBottom + dropOffset - rowHeight;
+        const spaceTopRemaining = spaceTop - dropOffset + rowHeight;
+        const dropPosition = (spaceBottomRemaining < menuHeight && spaceTopRemaining > spaceBottomRemaining) ? 'top' : 'bottom';
         if (dropPosition === 'top') {
           this._menuElm.classList.remove('dropdown');
           this._menuElm.classList.add('dropup');
@@ -720,8 +720,8 @@ export class SlickContextMenu implements Plugin {
       // if there isn't enough space on the right, it will automatically align the drop menu to the left
       // to simulate an align left, we actually need to know the width of the drop menu
       if (this._contextMenuProperties.autoAlignSide) {
-        let gridPos = this._grid.getGridPosition();
-        let dropSide = ((menuOffsetLeft + (+menuWidth)) >= gridPos.width) ? 'left' : 'right';
+        const gridPos = this._grid.getGridPosition();
+        const dropSide = ((menuOffsetLeft + (+menuWidth)) >= gridPos.width) ? 'left' : 'right';
         if (dropSide === 'left') {
           this._menuElm.classList.remove('dropright');
           this._menuElm.classList.add('dropleft');

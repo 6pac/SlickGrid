@@ -296,7 +296,7 @@ export class SlickDraggableGrouping {
       },
       onUpdate: () => {
         const sortArray = this._droppableInstance?.toArray() ?? [];
-        let newGroupingOrder: Column[] = [];
+        const newGroupingOrder: Column[] = [];
         for (let i = 0, l = sortArray.length; i < l; i++) {
           for (let a = 0, b = this._columnsGroupBy.length; a < b; a++) {
             if (this._columnsGroupBy[a].id == sortArray[i]) {

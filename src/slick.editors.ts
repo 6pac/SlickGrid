@@ -34,7 +34,7 @@ export class TextEditor implements Editor {
   }
 
   onChange() {
-    let activeCell = this.args.grid.getActiveCell();
+    const activeCell = this.args.grid.getActiveCell();
 
     // when valid, we'll also apply the new value to the dataContext item object
     if (this.validate().valid) {
@@ -91,7 +91,7 @@ export class TextEditor implements Editor {
 
   validate() {
     if (this.args.column.validator) {
-      let validationResults = this.args.column.validator(this.input.value, this.args);
+      const validationResults = this.args.column.validator(this.input.value, this.args);
       if (!validationResults.valid) {
         return validationResults;
       }
@@ -127,7 +127,7 @@ export class IntegerEditor implements Editor {
   }
 
   onChange() {
-    let activeCell = this.args.grid.getActiveCell();
+    const activeCell = this.args.grid.getActiveCell();
 
     // when valid, we'll also apply the new value to the dataContext item object
     if (this.validate().valid) {
@@ -183,7 +183,7 @@ export class IntegerEditor implements Editor {
     }
 
     if (this.args.column.validator) {
-      let validationResults = this.args.column.validator(this.input.value, this.args);
+      const validationResults = this.args.column.validator(this.input.value, this.args);
       if (!validationResults.valid) {
         return validationResults;
       }
@@ -225,7 +225,7 @@ export class FloatEditor implements Editor {
   };
 
   onChange() {
-    let activeCell = this.args.grid.getActiveCell();
+    const activeCell = this.args.grid.getActiveCell();
 
     // when valid, we'll also apply the new value to the dataContext item object
     if (this.validate().valid) {
@@ -265,7 +265,7 @@ export class FloatEditor implements Editor {
   loadValue(item) {
     this.defaultValue = item[this.args.column.field];
 
-    let decPlaces = this.getDecimalPlaces();
+    const decPlaces = this.getDecimalPlaces();
     if (decPlaces !== null
       && (this.defaultValue || this.defaultValue === 0)
       && (this.defaultValue as number)?.toFixed) {
@@ -287,7 +287,7 @@ export class FloatEditor implements Editor {
       rtn = rtn || 0;
     }
 
-    let decPlaces = this.getDecimalPlaces();
+    const decPlaces = this.getDecimalPlaces();
     if (decPlaces !== null
       && (rtn || rtn === 0)
       && rtn.toFixed) {
@@ -314,7 +314,7 @@ export class FloatEditor implements Editor {
     }
 
     if (this.args.column.validator) {
-      let validationResults = this.args.column.validator(this.input.value, this.args);
+      const validationResults = this.args.column.validator(this.input.value, this.args);
       if (!validationResults.valid) {
         return validationResults;
       }
@@ -352,7 +352,7 @@ export class FlatpickrEditor implements Editor {
       onChange: () => {
         // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
         if (this.args.compositeEditorOptions) {
-          let activeCell = this.args.grid.getActiveCell();
+          const activeCell = this.args.grid.getActiveCell();
 
           // when valid, we'll also apply the new value to the dataContext item object
           if (this.validate().valid) {
@@ -430,7 +430,7 @@ export class FlatpickrEditor implements Editor {
 
   validate() {
     if (this.args.column.validator) {
-      let validationResults = this.args.column.validator(this.input.value, this.args);
+      const validationResults = this.args.column.validator(this.input.value, this.args);
       if (!validationResults.valid) {
         return validationResults;
       }
@@ -465,7 +465,7 @@ export class YesNoSelectEditor implements Editor {
   }
 
   onChange() {
-    let activeCell = this.args.grid.getActiveCell();
+    const activeCell = this.args.grid.getActiveCell();
 
     // when valid, we'll also apply the new value to the dataContext item object
     if (this.validate().valid) {
@@ -535,7 +535,7 @@ export class CheckboxEditor implements Editor {
   };
 
   onChange() {
-    let activeCell = this.args.grid.getActiveCell();
+    const activeCell = this.args.grid.getActiveCell();
 
     // when valid, we'll also apply the new value to the dataContext item object
     if (this.validate().valid) {
@@ -608,7 +608,7 @@ export class PercentCompleteEditor implements Editor {
   sliderChangeHandler() {
     // trigger onCompositeEditorChange event when slider stops and it's a Composite Editor
     if (this.args.compositeEditorOptions) {
-      let activeCell = this.args.grid.getActiveCell();
+      const activeCell = this.args.grid.getActiveCell();
 
       // when valid, we'll also apply the new value to the dataContext item object
       if (this.validate().valid) {
@@ -724,9 +724,9 @@ export class LongTextEditor implements Editor {
   }
 
   init() {
-    let compositeEditorOptions = this.args.compositeEditorOptions;
+    const compositeEditorOptions = this.args.compositeEditorOptions;
     this.args.grid.getOptions().editorCellNavOnLRKeys;
-    let container = compositeEditorOptions ? this.args.container : document.body;
+    const container = compositeEditorOptions ? this.args.container : document.body;
 
     this.wrapper = Utils.createDomElement('div', { className: 'slick-large-editor-text' }, container);
     if (compositeEditorOptions) {
@@ -758,7 +758,7 @@ export class LongTextEditor implements Editor {
   };
 
   onChange() {
-    let activeCell = this.args.grid.getActiveCell();
+    const activeCell = this.args.grid.getActiveCell();
 
     // when valid, we'll also apply the new value to the dataContext item object
     if (this.validate().valid) {
@@ -790,8 +790,8 @@ export class LongTextEditor implements Editor {
       this.args.grid.navigateNext();
     } else if (e.which == keyCode.LEFT || e.which == keyCode.RIGHT) {
       if (this.args.grid.getOptions().editorCellNavOnLRKeys) {
-        let cursorPosition = this.selectionStart;
-        let textLength = e.target.value.length;
+        const cursorPosition = this.selectionStart;
+        const textLength = e.target.value.length;
         if (e.keyCode === keyCode.LEFT && cursorPosition === 0) {
           this.args.grid.navigatePrev();
         }
@@ -863,7 +863,7 @@ export class LongTextEditor implements Editor {
 
   validate() {
     if (this.args.column.validator) {
-      let validationResults = this.args.column.validator(this.input.value, this.args);
+      const validationResults = this.args.column.validator(this.input.value, this.args);
       if (!validationResults.valid) {
         return validationResults;
       }
@@ -882,8 +882,8 @@ export class LongTextEditor implements Editor {
  * and to the right cell if it's at the end. Otherwise, move the cursor within the text
  */
 function handleKeydownLRNav(e: KeyboardEvent & { target: HTMLInputElement; selectionStart: number; }) {
-  let cursorPosition = e.selectionStart;
-  let textLength = e.target.value.length;
+  const cursorPosition = e.selectionStart;
+  const textLength = e.target.value.length;
   if ((e.keyCode === keyCode.LEFT && cursorPosition > 0) ||
     e.keyCode === keyCode.RIGHT && cursorPosition < textLength - 1) {
     e.stopImmediatePropagation();

@@ -164,8 +164,8 @@ export class SlickGridMenu {
     // we do this change because the Grid Menu is on the left container for a regular grid, it is however on the right container for a frozen grid
     grid.onSetOptions.subscribe((_e, args) => {
       if (args && args.optionsBefore && args.optionsAfter) {
-        let switchedFromRegularToFrozen = args.optionsBefore.frozenColumn >= 0 && args.optionsAfter.frozenColumn === -1;
-        let switchedFromFrozenToRegular = args.optionsBefore.frozenColumn === -1 && args.optionsAfter.frozenColumn >= 0;
+        const switchedFromRegularToFrozen = args.optionsBefore.frozenColumn >= 0 && args.optionsAfter.frozenColumn === -1;
+        const switchedFromFrozenToRegular = args.optionsBefore.frozenColumn === -1 && args.optionsAfter.frozenColumn >= 0;
         if (switchedFromRegularToFrozen || switchedFromFrozenToRegular) {
           this.recreateGridMenu();
         }
@@ -187,7 +187,7 @@ export class SlickGridMenu {
   }
 
   protected createGridMenu() {
-    let gridMenuWidth = (this._gridMenuOptions?.menuWidth) || this._defaults.menuWidth;
+    const gridMenuWidth = (this._gridMenuOptions?.menuWidth) || this._defaults.menuWidth;
     if (this._gridOptions && this._gridOptions.hasOwnProperty('frozenColumn') && this._gridOptions.frozenColumn >= 0) {
       this._headerElm = document.querySelector(`.${this._gridUid} .slick-header-right`);
     } else {
@@ -196,7 +196,7 @@ export class SlickGridMenu {
     this._headerElm!.style.width = `calc(100% - ${gridMenuWidth}px)`;
 
     // if header row is enabled, we need to resize its width also
-    let enableResizeHeaderRow = (this._gridMenuOptions?.resizeOnShowHeaderRow != undefined) ? this._gridMenuOptions.resizeOnShowHeaderRow : this._defaults.resizeOnShowHeaderRow;
+    const enableResizeHeaderRow = (this._gridMenuOptions?.resizeOnShowHeaderRow != undefined) ? this._gridMenuOptions.resizeOnShowHeaderRow : this._defaults.resizeOnShowHeaderRow;
     if (enableResizeHeaderRow && this._gridOptions.showHeaderRow) {
       const headerRow = document.querySelector<HTMLDivElement>(`.${this._gridUid}.slick-headerrow`);
       if (headerRow) {
@@ -204,7 +204,7 @@ export class SlickGridMenu {
       }
     }
 
-    let showButton = (this._gridMenuOptions?.showButton !== undefined) ? this._gridMenuOptions.showButton : this._defaults.showButton;
+    const showButton = (this._gridMenuOptions?.showButton !== undefined) ? this._gridMenuOptions.showButton : this._defaults.showButton;
     if (showButton) {
       this._buttonElm = document.createElement('button');
       this._buttonElm.className = 'slick-gridmenu-button';
@@ -304,8 +304,8 @@ export class SlickGridMenu {
 
     for (let i = 0, ln = gridMenuOptions.customItems.length; i < ln; i++) {
       let addClickListener = true;
-      let item = gridMenuOptions.customItems[i];
-      let callbackArgs = {
+      const item = gridMenuOptions.customItems[i];
+      const callbackArgs = {
         grid: this.grid,
         menu: this._menuElm,
         columns: this.columns,
@@ -313,8 +313,8 @@ export class SlickGridMenu {
       };
 
       // run each override functions to know if the item is visible and usable
-      let isItemVisible = this.runOverrideFunctionWhenExists<typeof callbackArgs>((item as GridMenuItem).itemVisibilityOverride, callbackArgs);
-      let isItemUsable = this.runOverrideFunctionWhenExists<typeof callbackArgs>((item as GridMenuItem).itemUsabilityOverride, callbackArgs);
+      const isItemVisible = this.runOverrideFunctionWhenExists<typeof callbackArgs>((item as GridMenuItem).itemVisibilityOverride, callbackArgs);
+      const isItemUsable = this.runOverrideFunctionWhenExists<typeof callbackArgs>((item as GridMenuItem).itemUsabilityOverride, callbackArgs);
 
       // if the result is not visible then there's no need to go further
       if (!isItemVisible) {
@@ -407,7 +407,7 @@ export class SlickGridMenu {
   }
 
   showGridMenu(e: DOMMouseOrTouchEvent<HTMLButtonElement>) {
-    let targetEvent = e.touches ? e.touches[0] : e;
+    const targetEvent = e.touches ? e.touches[0] : e;
     e.preventDefault();
 
     // empty both the picker list & the command list
@@ -418,7 +418,7 @@ export class SlickGridMenu {
     this.updateColumnOrder();
     this._columnCheckboxes = [];
 
-    let callbackArgs = {
+    const callbackArgs = {
       grid: this.grid,
       menu: this._menuElm,
       allColumns: this.columns,
@@ -478,7 +478,7 @@ export class SlickGridMenu {
     }
 
     if (!(this._gridMenuOptions?.hideForceFitButton)) {
-      let forceFitTitle = (this._gridMenuOptions?.forceFitTitle) || this._defaults.forceFitTitle;
+      const forceFitTitle = (this._gridMenuOptions?.forceFitTitle) || this._defaults.forceFitTitle;
 
       const liElm = document.createElement('li');
       liElm.ariaLabel = forceFitTitle;
@@ -502,7 +502,7 @@ export class SlickGridMenu {
     }
 
     if (!(this._gridMenuOptions?.hideSyncResizeButton)) {
-      let syncResizeTitle = (this._gridMenuOptions?.syncResizeTitle) || this._defaults.syncResizeTitle;
+      const syncResizeTitle = (this._gridMenuOptions?.syncResizeTitle) || this._defaults.syncResizeTitle;
 
       const liElm = document.createElement('li');
       liElm.ariaLabel = syncResizeTitle;
@@ -533,14 +533,14 @@ export class SlickGridMenu {
     this._menuElm.style.display = 'block';
     this._menuElm.style.opacity = '0';
 
-    let menuIconOffset = Utils.offset(buttonElm); // get button offset position
-    let menuWidth = this._menuElm.offsetWidth;
-    let useClickToRepositionMenu = (this._gridMenuOptions?.useClickToRepositionMenu !== undefined) ? this._gridMenuOptions.useClickToRepositionMenu : this._defaults.useClickToRepositionMenu;
-    let contentMinWidth = (this._gridMenuOptions?.contentMinWidth) ? this._gridMenuOptions.contentMinWidth : this._defaults.contentMinWidth;
-    let currentMenuWidth = (contentMinWidth > menuWidth) ? contentMinWidth : menuWidth + 5;
-    let nextPositionTop = (useClickToRepositionMenu && targetEvent.pageY > 0) ? targetEvent.pageY : menuIconOffset!.top + 10;
-    let nextPositionLeft = (useClickToRepositionMenu && targetEvent.pageX > 0) ? targetEvent.pageX : menuIconOffset!.left + 10;
-    let menuMarginBottom = (this._gridMenuOptions?.marginBottom !== undefined) ? this._gridMenuOptions.marginBottom : this._defaults.marginBottom;
+    const menuIconOffset = Utils.offset(buttonElm); // get button offset position
+    const menuWidth = this._menuElm.offsetWidth;
+    const useClickToRepositionMenu = (this._gridMenuOptions?.useClickToRepositionMenu !== undefined) ? this._gridMenuOptions.useClickToRepositionMenu : this._defaults.useClickToRepositionMenu;
+    const contentMinWidth = (this._gridMenuOptions?.contentMinWidth) ? this._gridMenuOptions.contentMinWidth : this._defaults.contentMinWidth;
+    const currentMenuWidth = (contentMinWidth > menuWidth) ? contentMinWidth : menuWidth + 5;
+    const nextPositionTop = (useClickToRepositionMenu && targetEvent.pageY > 0) ? targetEvent.pageY : menuIconOffset!.top + 10;
+    const nextPositionLeft = (useClickToRepositionMenu && targetEvent.pageX > 0) ? targetEvent.pageX : menuIconOffset!.left + 10;
+    const menuMarginBottom = (this._gridMenuOptions?.marginBottom !== undefined) ? this._gridMenuOptions.marginBottom : this._defaults.marginBottom;
 
     this._menuElm.style.top = `${nextPositionTop + 10}px`;
     this._menuElm.style.left = `${nextPositionLeft - currentMenuWidth + 10}px`;
@@ -582,7 +582,7 @@ export class SlickGridMenu {
     }
 
     if (command != null && command != '') {
-      let callbackArgs = {
+      const callbackArgs = {
         grid: this.grid,
         command: command,
         item: item,
@@ -598,7 +598,7 @@ export class SlickGridMenu {
     }
 
     // does the user want to leave open the Grid Menu after executing a command?
-    let leaveOpen = !!(this._gridMenuOptions?.leaveOpen);
+    const leaveOpen = !!(this._gridMenuOptions?.leaveOpen);
     if (!leaveOpen && !e.defaultPrevented) {
       this.hideMenu(e);
     }
@@ -613,7 +613,7 @@ export class SlickGridMenu {
       Utils.hide(this._menuElm);
       this._isMenuOpen = false;
 
-      let callbackArgs = {
+      const callbackArgs = {
         grid: this.grid,
         menu: this._menuElm,
         allColumns: this.columns,
@@ -642,8 +642,8 @@ export class SlickGridMenu {
     // We create a new `columns` structure by leaving currently-hidden
     // columns in their original ordinal position and interleaving the results
     // of the current column sort.
-    let current = this.grid.getColumns().slice(0);
-    let ordered = new Array(this.columns.length);
+    const current = this.grid.getColumns().slice(0);
+    const ordered = new Array(this.columns.length);
     for (let i = 0; i < ordered.length; i++) {
       if (this.grid.getColumnIndex(this.columns[i].id) === undefined) {
         // If the column doesn't return a value from getColumnIndex,
@@ -661,8 +661,8 @@ export class SlickGridMenu {
     if (e.target.dataset.option === 'autoresize') {
       // when calling setOptions, it will resize with ALL Columns (even the hidden ones)
       // we can avoid this problem by keeping a reference to the visibleColumns before setOptions and then setColumns after
-      let previousVisibleColumns = this.getVisibleColumns();
-      let isChecked = e.target.checked;
+      const previousVisibleColumns = this.getVisibleColumns();
+      const isChecked = e.target.checked;
       this.grid.setOptions({ forceFitColumns: isChecked });
       this.grid.setColumns(previousVisibleColumns);
       return;
@@ -676,7 +676,7 @@ export class SlickGridMenu {
     if (e.target.type === 'checkbox') {
       const isChecked = e.target.checked;
       const columnId = e.target.dataset.columnid || '';
-      let visibleColumns: Column[] = [];
+      const visibleColumns: Column[] = [];
       this._columnCheckboxes.forEach((columnCheckbox, idx) => {
         if (columnCheckbox.checked) {
           if (this.columns[idx].hidden) { this.columns[idx].hidden = false; }

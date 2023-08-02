@@ -177,8 +177,8 @@ export class SlickHeaderMenu implements Plugin {
   }
 
   protected handleHeaderCellRendered(_e: Event, args: OnHeaderCellRenderedEventArgs) {
-    let column = args.column;
-    let menu = column?.header?.menu as HeaderMenuItems;
+    const column = args.column;
+    const menu = column?.header?.menu as HeaderMenuItems;
 
     if (menu) {
       // run the override function (when defined), if the result is false it won't go further
@@ -216,7 +216,7 @@ export class SlickHeaderMenu implements Plugin {
   }
 
   protected handleBeforeHeaderCellDestroy(_e, args) {
-    let column = args.column;
+    const column = args.column;
 
     if (column.header?.menu) {
       args.node.querySelectorAll('.slick-header-menubutton').forEach(elm => elm.remove());
@@ -253,11 +253,11 @@ export class SlickHeaderMenu implements Plugin {
 
     // Construct the menu items.
     for (let i = 0; i < menu.items.length; i++) {
-      let item = menu.items[i];
+      const item = menu.items[i];
 
       // run each override functions to know if the item is visible and usable
-      let isItemVisible = this.runOverrideFunctionWhenExists((item as MenuCommandItem).itemVisibilityOverride, callbackArgs);
-      let isItemUsable = this.runOverrideFunctionWhenExists((item as MenuCommandItem).itemUsabilityOverride, callbackArgs);
+      const isItemVisible = this.runOverrideFunctionWhenExists((item as MenuCommandItem).itemVisibilityOverride, callbackArgs);
+      const isItemUsable = this.runOverrideFunctionWhenExists((item as MenuCommandItem).itemUsabilityOverride, callbackArgs);
 
       // if the result is not visible then there's no need to go further
       if (!isItemVisible) {
@@ -362,7 +362,7 @@ export class SlickHeaderMenu implements Plugin {
     }
 
     if (command !== null && command !== '') {
-      let callbackArgs = {
+      const callbackArgs = {
         grid: this._grid,
         column: columnDef,
         command,
