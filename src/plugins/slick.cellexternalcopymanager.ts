@@ -93,8 +93,9 @@ export class SlickCellExternalCopyManager implements Plugin {
   protected getHeaderValueForColumn(columnDef: Column) {
     if (this._options.headerColumnValueExtractor) {
       let val = this._options.headerColumnValueExtractor(columnDef);
-
-      if (val) { return val; }
+      if (val) {
+        return val;
+      }
     }
 
     return columnDef.name;
@@ -334,7 +335,7 @@ export class SlickCellExternalCopyManager implements Plugin {
         }
 
         if (addRows > 1) {
-          let d = grid.getData();
+          let d = grid.getData<any[]>();
           for (; addRows > 1; addRows--)
             d.splice(d.length - 1, 1);
           grid.setData(d);

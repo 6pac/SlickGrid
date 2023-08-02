@@ -106,7 +106,7 @@ export class SlickDraggableGrouping {
     this.setupColumnDropbox();
 
 
-    this._handler.subscribe(this._grid.onHeaderCellRendered, (e, args) => {
+    this._handler.subscribe(this._grid.onHeaderCellRendered, (_e, args) => {
       const column = args.column;
       const node = args.node;
       if (!Utils.isEmptyObject(column.grouping) && node) {

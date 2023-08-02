@@ -2,8 +2,8 @@ import { keyCode as keyCode_, SlickEvent as SlickEvent_, SlickEventData as Slick
 import { Draggable as Draggable_ } from '../slick.interactions';
 import { SlickCellRangeDecorator as SlickCellRangeDecorator_ } from './slick.cellrangedecorator';
 import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector';
-import type { CrossGridRowMoveManager as CrossGridRowMoveManager_ } from './slick.crossgridrowmovemanager';
-import type { RowMoveManager as RowMoveManager_ } from './slick.rowmovemanager';
+import type { SlickCrossGridRowMoveManager as SlickCrossGridRowMoveManager_ } from './slick.crossgridrowmovemanager';
+import type { SlickRowMoveManager as SlickRowMoveManager_ } from './slick.rowmovemanager';
 import type { CellRange, OnActiveCellChangedEventArgs, RowSelectionModelOption } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
@@ -23,12 +23,12 @@ export class SlickRowSelectionModel {
   // public API
   pluginName = 'RowSelectionModel' as const;
   onSelectedRangesChanged = new SlickEvent<CellRange[]>();
-
+  // _handler, _inHandler, _isRowMoveManagerHandler, _options, wrapHandler
   // --
   // protected props
   protected _grid!: SlickGrid;
   protected _ranges: CellRange[] = [];
-  protected _handler = new SlickEventHandler();
+  protected _eventHandler = new SlickEventHandler();
   protected _inHandler = false;
   protected _selector?: SlickCellRangeSelector_;
   protected _isRowMoveManagerHandler: any;
@@ -62,9 +62,9 @@ export class SlickRowSelectionModel {
       });
     }
 
-    this._handler.subscribe(this._grid.onActiveCellChanged, this.wrapHandler(this.handleActiveCellChange).bind(this));
-    this._handler.subscribe(this._grid.onKeyDown, this.wrapHandler(this.handleKeyDown).bind(this));
-    this._handler.subscribe(this._grid.onClick, this.wrapHandler(this.handleClick).bind(this));
+    this._eventHandler.subscribe(this._grid.onActiveCellChanged, this.wrapHandler(this.handleActiveCellChange).bind(this));
+    this._eventHandler.subscribe(this._grid.onKeyDown, this.wrapHandler(this.handleKeyDown).bind(this));
+    this._eventHandler.subscribe(this._grid.onClick, this.wrapHandler(this.handleClick).bind(this));
     if (this._selector) {
       grid.registerPlugin(this._selector);
       this._selector.onCellRangeSelecting.subscribe(this.handleCellRangeSelected.bind(this));
@@ -74,7 +74,7 @@ export class SlickRowSelectionModel {
   }
 
   destroy() {
-    this._handler.unsubscribeAll();
+    this._eventHandler.unsubscribeAll();
     if (this._selector) {
       this._selector.onCellRangeSelecting.unsubscribe(this.handleCellRangeSelected.bind(this));
       this._selector.onCellRangeSelected.unsubscribe(this.handleCellRangeSelected.bind(this));
@@ -239,7 +239,7 @@ export class SlickRowSelectionModel {
 
   protected handleBeforeCellRangeSelected(e: SlickEventData_, cell: { row: number; cell: number; }): boolean | void {
     if (!this._isRowMoveManagerHandler) {
-      const rowMoveManager: CrossGridRowMoveManager_ | RowMoveManager_ = this._grid.getPluginByName('RowMoveManager') || this._grid.getPluginByName('CrossGridRowMoveManager');
+      const rowMoveManager = this._grid.getPluginByName<SlickRowMoveManager_>('RowMoveManager') || this._grid.getPluginByName<SlickCrossGridRowMoveManager_>('CrossGridRowMoveManager');
       this._isRowMoveManagerHandler = rowMoveManager ? rowMoveManager.isHandlerColumn : Utils.noop;
     }
     if (this._grid.getEditorLock().isActive() || this._isRowMoveManagerHandler(cell.cell)) {

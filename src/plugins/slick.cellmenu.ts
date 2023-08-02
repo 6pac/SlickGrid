@@ -185,7 +185,7 @@ export class SlickCellMenu implements Plugin {
   init(grid: SlickGrid) {
     this._grid = grid;
     this._gridOptions = grid.getOptions();
-    this._gridUid = (grid && grid.getUID) ? grid.getUID() : '';
+    this._gridUid = grid?.getUID() || '';
     this._handler.subscribe(this._grid.onClick, this.handleCellClick.bind(this));
     if (this._cellMenuProperties.hideMenuOnScroll) {
       this._handler.subscribe(this._grid.onScroll, this.destroyMenu.bind(this));
@@ -354,11 +354,11 @@ export class SlickCellMenu implements Plugin {
       let menuOffsetLeft = parentElm ? parentOffset?.left ?? 0 : e.pageX;
       let menuOffsetTop = parentElm ? parentOffset?.top ?? 0 : e.pageY;
       const parentCellWidth = parentElm.offsetWidth || 0;
-      const menuHeight = this._menuElm && this._menuElm.offsetHeight || 0;
-      const menuWidth = this._menuElm && this._menuElm.offsetWidth || this._cellMenuProperties.width || 0;
+      const menuHeight = this._menuElm?.offsetHeight ?? 0;
+      const menuWidth = this._menuElm?.offsetWidth ?? this._cellMenuProperties.width ?? 0;
       const rowHeight = this._gridOptions.rowHeight;
-      const dropOffset = this._cellMenuProperties.autoAdjustDropOffset;
-      const sideOffset = this._cellMenuProperties.autoAlignSideOffset;
+      const dropOffset = +(this._cellMenuProperties.autoAdjustDropOffset || 0);
+      const sideOffset = +(this._cellMenuProperties.autoAlignSideOffset || 0);
 
       // if autoAdjustDrop is enable, we first need to see what position the drop will be located (defaults to bottom)
       // without necessary toggling it's position just yet, we just want to know the future position for calculation
@@ -414,7 +414,7 @@ export class SlickCellMenu implements Plugin {
       let columnDef = this._grid.getColumns()[cell.cell];
 
       // prevent event from bubbling but only on column that has a cell menu defined
-      if (columnDef && columnDef.cellMenu) {
+      if (columnDef?.cellMenu) {
         e.preventDefault();
       }
 
@@ -446,7 +446,7 @@ export class SlickCellMenu implements Plugin {
   }
 
   protected handleBodyMouseDown(e: DOMMouseOrTouchEvent<HTMLDivElement>) {
-    if (this._menuElm != e.target && !(this._menuElm && this._menuElm.contains(e.target))) {
+    if (this._menuElm != e.target && !(this._menuElm?.contains(e.target))) {
       if (!e.defaultPrevented) {
         this.closeMenu(e, { cell: this._currentCell, row: this._currentRow, grid: this._grid });
       }
@@ -462,10 +462,8 @@ export class SlickCellMenu implements Plugin {
       }, e, this).getReturnValue() == false) {
         return;
       }
-      if (this._menuElm && this._menuElm.remove) {
-        this._menuElm.remove();
-        this._menuElm = null;
-      }
+      this._menuElm?.remove();
+      this._menuElm = null;
     }
   }
 
@@ -476,7 +474,7 @@ export class SlickCellMenu implements Plugin {
     }
 
     // user could pass a title on top of the Options section
-    if (cellMenu && cellMenu.optionTitle) {
+    if (cellMenu?.optionTitle) {
       this._optionTitleElm = document.createElement('div');
       this._optionTitleElm.className = 'title';
       this._optionTitleElm.textContent = cellMenu.optionTitle;

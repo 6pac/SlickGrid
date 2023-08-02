@@ -1,4 +1,4 @@
-import type { Formatter, GroupTotalsFormatter } from './index';
+import type { Formatter } from './index';
 
 export interface GroupItemMetadataProviderOption {
   /** Whether or not we want to use group select checkbox. */

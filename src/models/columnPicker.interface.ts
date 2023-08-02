@@ -1,29 +1,21 @@
 import type { Column, GridOption } from './index';
 import type { SlickGrid } from '../slick.grid';
 
-export interface OnColumnsChangedArgs {
-  columnId: number | string;
-  showing: boolean;
-  allColumns: Column[];
-  columns: Column[];
-  grid: SlickGrid;
-}
-
 export interface ColumnPickerOption {
   /** Defaults to "Columns" which is the title that shows up over the columns */
   columnTitle?: string;
 
   /** Defaults to "Force fit columns" which is 1 of the last 2 checkbox title shown at the end of the picker list */
-  forceFitTitle: string;
+  forceFitTitle?: string;
 
   /** Animation fade speed when opening/closing the column picker */
-  fadeSpeed: number;
+  fadeSpeed?: number;
 
   /** Defaults to True, show/hide 1 of the last 2 checkbox at the end of the picker list */
-  hideForceFitButton: boolean;
+  hideForceFitButton?: boolean;
 
   /** Defaults to True, show/hide 1 of the last 2 checkbox at the end of the picker list */
-  hideSyncResizeButton: boolean;
+  hideSyncResizeButton?: boolean;
 
   /**
    * Defaults to available space at the bottom, Grid Menu minimum height.
@@ -38,8 +30,28 @@ export interface ColumnPickerOption {
   minHeight?: number | string;
 
   /** Defaults to "Synchronous resize" which is 1 of the last 2 checkbox title shown at the end of the picker list */
-  syncResizeTitle: string;
+  syncResizeTitle?: string;
 
   /** Callback method to override the column name output used by the ColumnPicker/GridMenu. */
-  headerColumnValueExtractor: (column: Column, gridOptions?: GridOption) => string;
+  headerColumnValueExtractor?: (column: Column, gridOptions?: GridOption) => string;
+}
+
+export interface OnColumnsChangedArgs {
+  /** column definition id */
+  columnId: number | string;
+
+  /** last command, are we showing or not the column? */
+  showing: boolean;
+
+  /** slick grid object */
+  grid: SlickGrid;
+
+  /** list of all column definitions (visible & hidden) */
+  allColumns: Column[];
+
+  /** list of all column definitions (visible & hidden) */
+  columns: Column[];
+
+  /** list of visible column definitions */
+  visibleColumns: Column[];
 }

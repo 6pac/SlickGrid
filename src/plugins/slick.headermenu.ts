@@ -163,7 +163,7 @@ export class SlickHeaderMenu implements Plugin {
   }
 
   protected handleBodyMouseDown(e: DOMEvent<HTMLElement>) {
-    if ((this._menuElm !== e.target && !(this._menuElm && this._menuElm.contains(e.target))) || e.target.className === 'close') {
+    if ((this._menuElm !== e.target && !this._menuElm?.contains(e.target)) || e.target.className === 'close') {
       this.hideMenu();
     }
   }
@@ -323,7 +323,7 @@ export class SlickHeaderMenu implements Plugin {
     const buttonElm = event.target as HTMLButtonElement;
     const btnOffset = Utils.offset(buttonElm);
     const menuOffset = Utils.offset(this._menuElm);
-    let leftPos = (btnOffset && btnOffset.left) || 0;
+    let leftPos = btnOffset?.left ?? 0;
 
 
     // when auto-align is set, it will calculate whether it has enough space in the viewport to show the drop menu on the right (default)
@@ -336,7 +336,7 @@ export class SlickHeaderMenu implements Plugin {
       }
     }
 
-    this._menuElm.style.top = `${(buttonElm.clientHeight || (btnOffset && btnOffset.top) || 0) + (this._options?.menuOffsetTop || 0)}px`;
+    this._menuElm.style.top = `${(buttonElm.clientHeight ?? btnOffset?.top ?? 0 + (this._options?.menuOffsetTop ?? 0))}px`;
     this._menuElm.style.left = `${leftPos - (menuOffset?.left ?? 0)}px`;
 
     // Mark the header as active to keep the highlighting.

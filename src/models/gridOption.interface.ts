@@ -1,4 +1,4 @@
-import type { Column, ColumnPickerOption, ColumnReorderFunction, CustomTooltipOption, EditCommand, Editor, Formatter, GridMenuOption, ItemMetadata, } from './index';
+import type { Column as BaseColumn, ColumnPickerOption, ColumnReorderFunction, CustomTooltipOption, EditCommand, Editor, Formatter, GridMenuOption, ItemMetadata, } from './index';
 import type { SlickEditorLock } from '../slick.core';
 
 export interface CellViewportRange {
@@ -18,7 +18,7 @@ export interface CssStyleHash {
   [prop: number | string]: { [columnId: number | string]: any; }
 }
 
-export interface GridOption {
+export interface GridOption<C extends BaseColumn = BaseColumn> {
   /** CSS class name used on newly added row */
   addNewRowCssClass?: string;
 
@@ -56,10 +56,10 @@ export interface GridOption {
   autosizeColsMode?: string;
 
   /** defaults to 4, autosize column padding in pixel */
-  autosizeColPaddingPx: number;
+  autosizeColPaddingPx?: number;
 
   /** defaults to 0.75, autosize text average to minimum width ratio */
-  autosizeTextAvgToMWidthRatio: number;
+  autosizeTextAvgToMWidthRatio?: number;
 
   /** CSS class name used to simulate cell flashing */
   cellFlashingCssClass?: string;
@@ -68,7 +68,7 @@ export interface GridOption {
   // cellMenu?: CellMenu;
 
   /** Column Picker Plugin options (columnTitle, forceFitTitle, syncResizeTitle) */
-  columnPicker?: Partial<ColumnPickerOption>;
+  columnPicker?: ColumnPickerOption;
 
   // /** Context menu options (mouse right+click) */
   // contextMenu?: ContextMenu;
@@ -86,7 +86,7 @@ export interface GridOption {
   customTooltip?: CustomTooltipOption;
 
   /** Data item column value extractor (getter) that can be used by the Excel like copy buffer plugin */
-  dataItemColumnValueExtractor?: null | ((item: any, columnDef: Column) => any);
+  dataItemColumnValueExtractor?: null | ((item: any, columnDef: C) => any);
 
   /** Default column width, is set to 80 when null */
   defaultColumnWidth: number;
@@ -101,10 +101,10 @@ export interface GridOption {
   editable?: boolean;
 
   /** option to intercept edit commands and implement undo support. */
-  editCommandHandler?: (item: any, column: Column, command: EditCommand) => void;
+  editCommandHandler?: (item: any, column: C, command: EditCommand) => void;
 
   /** Editor classes factory */
-  editorFactory?: null | { getEditor: (col: Column) => Editor; };
+  editorFactory?: null | { getEditor: (col: C) => Editor; };
 
   /** a global singleton editor lock. */
   editorLock: SlickEditorLock;
@@ -138,7 +138,7 @@ export interface GridOption {
    * When provided as a boolean, it will permits the user to move an entire column from a position to another.
    * We could also provide a Column Reorder function, there's mostly only 1 use for this which is the SlickDraggableGrouping plugin.
    */
-  enableColumnReorder?: boolean | ColumnReorderFunction;
+  enableColumnReorder?: boolean | ColumnReorderFunction<C>;
 
   /**
    * Do we want to always enable the mousewheel scroll handler?
@@ -170,7 +170,7 @@ export interface GridOption {
   forceSyncScrolling?: boolean;
 
   /** Formatter classes factory */
-  formatterFactory?: { getFormatter: (col: Column) => Formatter; } | null;
+  formatterFactory?: { getFormatter: (col: C) => Formatter; } | null;
 
   /** Defaults to false, do we want to freeze (pin) the bottom portion instead of the top */
   frozenBottom: boolean;
@@ -277,7 +277,7 @@ export interface GridOption {
   tristateMultiColumnSort?: boolean;
 
   /** Defaults to null, which is the default Viewport CSS class name */
-  viewportClass?: string | null;
+  viewportClass?: string;
 
   /** Viewport switch to scroll model with percentage */
   viewportSwitchToScrollModeWidthPercent?: number;

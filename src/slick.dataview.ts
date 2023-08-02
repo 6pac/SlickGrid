@@ -41,8 +41,9 @@ export interface DataViewOption {
   inlineFilters: boolean;
 }
 
-
 type FilterFn<T> = (a: T, b: T) => boolean;
+
+export type SlickDataItem = SlickNonDataItem | SlickGroup_ | SlickGroupTotals_ | any;
 
 /**
    * A sample Model implementation.
@@ -50,7 +51,7 @@ type FilterFn<T> = (a: T, b: T) => boolean;
    *
    * Relies on the data item having an "id" property uniquely identifying it.
    */
-export class SlickDataView<T = any> implements CustomDataView {
+export class SlickDataView<TData extends SlickDataItem = any> implements CustomDataView {
   protected defaults: DataViewOption = {
     groupItemMetadataProvider: null,
     inlineFilters: false
@@ -58,26 +59,26 @@ export class SlickDataView<T = any> implements CustomDataView {
 
   // private
   protected idProperty = 'id';          // property holding a unique row id
-  protected items: T[] = [];            // data by index
-  protected rows: T[] = [];             // data by row
+  protected items: TData[] = [];            // data by index
+  protected rows: TData[] = [];             // data by row
   protected idxById = new Map<number | string, number>();   // indexes by id
   protected rowsById: { [id: string]: number } | undefined = undefined;       // rows by id; lazy-calculated
-  protected filter: FilterFn<T> | null = null;         // filter function
+  protected filter: FilterFn<TData> | null = null;         // filter function
   protected updated: ({ [id: number | string]: boolean }) | null = null;        // updated item ids
   protected suspend = false;            // suspends the recalculation
   protected isBulkSuspend = false;      // delays protectedious operations like the
   // index update and delete to efficient
   // versions at endUpdate
   protected bulkDeleteIds = new Map<number | string, boolean>();
-  protected sortAsc = true;
+  protected sortAsc: boolean | undefined = true;
   protected fastSortField?: string | null | (() => string);
-  protected sortComparer!: ((a: T, b: T) => number);
+  protected sortComparer!: ((a: TData, b: TData) => number);
   protected refreshHints: any = {};
   protected prevRefreshHints: any = {};
   protected filterArgs: any;
-  protected filteredItems: T[] = [];
-  protected compiledFilter?: FilterFn<T> | null;
-  protected compiledFilterWithCaching?: FilterFn<T> | null;
+  protected filteredItems: TData[] = [];
+  protected compiledFilter?: FilterFn<TData> | null;
+  protected compiledFilterWithCaching?: FilterFn<TData> | null;
   protected filterCache: any[] = [];
   protected _grid?: SlickGrid; // grid object will be defined only after using "syncGridSelection()" method"
 
@@ -96,7 +97,7 @@ export class SlickDataView<T = any> implements CustomDataView {
     lazyTotalsCalculation: false
   };
   protected groupingInfos: Array<Grouping & { aggregators: Aggregator[]; getterIsAFn?: boolean; compiledAccumulators: any[]; getter: Function | string }> = [];
-  protected groups: any[] = [];
+  protected groups: Grouping[] = [];
   protected toggledGroupsByLevel: any[] = [];
   protected groupingDelimiter = ':|:';
   protected selectedRowIds: Array<number | string> = [];
@@ -258,7 +259,7 @@ export class SlickDataView<T = any> implements CustomDataView {
    * @param {Array<*>} data - array of data
    * @param {String} [objectIdProperty] - optional id property to use as primary id
    */
-  setItems(data: T[], objectIdProperty?: string) {
+  setItems(data: TData[], objectIdProperty?: string) {
     if (objectIdProperty !== undefined) {
       this.idProperty = objectIdProperty;
     }
@@ -295,7 +296,7 @@ export class SlickDataView<T = any> implements CustomDataView {
   }
 
   /** Sort Method to use by the DataView */
-  sort(comparer: (a: T, b: T) => number, ascending: boolean) {
+  sort(comparer: (a: TData, b: TData) => number, ascending?: boolean) {
     this.sortAsc = ascending;
     this.sortComparer = comparer;
     this.fastSortField = null;
@@ -316,7 +317,7 @@ export class SlickDataView<T = any> implements CustomDataView {
    * Does a [lexicographic] sort on a give column by temporarily overriding Object.prototype.toString
    * to return the value of that field and then doing a native Array.sort().
    */
-  fastSort(field: string | (() => string), ascending: boolean) {
+  fastSort(field: string | (() => string), ascending?: boolean) {
     this.sortAsc = ascending;
     this.fastSortField = field;
     this.sortComparer = null as any;
@@ -368,7 +369,7 @@ export class SlickDataView<T = any> implements CustomDataView {
    * Set a Filter that will be used by the DataView
    * @param {Function} fn - filter callback function
    */
-  setFilter(filterFn: (a: T, b: T) => boolean) {
+  setFilter(filterFn: (a: TData, b: TData) => boolean) {
     this.filter = filterFn;
     if (this._options.inlineFilters) {
       this.compiledFilter = this.compileFilter();
@@ -413,7 +414,7 @@ export class SlickDataView<T = any> implements CustomDataView {
   /**
    * @deprecated Please use {@link setGrouping}.
    */
-  groupBy(valueGetter: string | GroupingGetterFunction<T>, valueFormatter: (g: GroupingFormatterItem) => string, sortComparer?: (a: GroupingComparerItem, b: GroupingComparerItem) => SortDirectionNumber) {
+  groupBy(valueGetter: string | GroupingGetterFunction<TData>, valueFormatter: (g: GroupingFormatterItem) => string, sortComparer?: (a: GroupingComparerItem, b: GroupingComparerItem) => SortDirectionNumber) {
     if (valueGetter == null) {
       this.setGrouping([]);
       return;
@@ -447,7 +448,7 @@ export class SlickDataView<T = any> implements CustomDataView {
 
   /** Get row index in the DataView by its Id */
   getIdxById(id: number | string) {
-    return this.idxById && this.idxById.get(id);
+    return this.idxById?.get(id);
   }
 
   protected ensureRowsByIdCache() {
@@ -460,7 +461,7 @@ export class SlickDataView<T = any> implements CustomDataView {
   }
 
   /** Get row number in the grid by its item object */
-  getRowByItem(item: T) {
+  getRowByItem(item: TData) {
     this.ensureRowsByIdCache();
     return this.rowsById?.[item[this.idProperty]];
   }
@@ -473,11 +474,11 @@ export class SlickDataView<T = any> implements CustomDataView {
 
   /** Get an item in the DataView by its Id */
   getItemById(id: number | string) {
-    return this.items[this.idxById.get(id) || ''];
+    return this.items[this.idxById.get(id) ?? ''];
   }
 
   /** From the items array provided, return the mapped rows */
-  mapItemsToRows(itemArray: T[]) {
+  mapItemsToRows(itemArray: TData[]) {
     const rows: number[] = [];
     this.ensureRowsByIdCache();
     for (let i = 0, l = itemArray.length; i < l; i++) {
@@ -508,7 +509,7 @@ export class SlickDataView<T = any> implements CustomDataView {
     for (let i = 0, l = rowArray.length; i < l; i++) {
       if (rowArray[i] < this.rows.length) {
         const rowItem = this.rows[rowArray[i]];
-        ids[ids.length] = rowItem && rowItem[this.idProperty];
+        ids[ids.length] = rowItem?.[this.idProperty];
       }
     }
     return ids;
@@ -520,7 +521,7 @@ export class SlickDataView<T = any> implements CustomDataView {
    * @param id The new id of the item.
    * @param item The item which should be the new value for the given id.
    */
-  updateSingleItem(id: number | string, item: T) {
+  updateSingleItem(id: number | string, item: TData) {
     if (!this.idxById) return;
 
     // see also https://github.com/mleibman/SlickGrid/issues/1082
@@ -566,7 +567,7 @@ export class SlickDataView<T = any> implements CustomDataView {
    * @param id The new id of the item.
    * @param item The item which should be the new value for the given id.
    */
-  updateItem(id: number | string, item: T) {
+  updateItem(id: number | string, item: TData) {
     this.updateSingleItem(id, item);
     this.refresh();
   }
@@ -576,7 +577,7 @@ export class SlickDataView<T = any> implements CustomDataView {
    * @param id {Array} The array of new ids which is in the same order as the items.
    * @param newItems {Array} The new items that should be set in the data view for the given ids.
    */
-  updateItems(ids: Array<number | string>, newItems: T[]) {
+  updateItems(ids: Array<number | string>, newItems: TData[]) {
     if (ids.length !== newItems.length) {
       throw new Error("[SlickGrid DataView] Mismatch on the length of ids and items provided to update");
     }
@@ -591,7 +592,7 @@ export class SlickDataView<T = any> implements CustomDataView {
    * @param insertBefore {Number} The 0-based index before which the item should be inserted.
    * @param item The item to insert.
    */
-  insertItem(insertBefore: number, item: T) {
+  insertItem(insertBefore: number, item: TData) {
     this.items.splice(insertBefore, 0, item);
     this.updateIdxById(insertBefore);
     this.refresh();
@@ -602,7 +603,7 @@ export class SlickDataView<T = any> implements CustomDataView {
    * @param insertBefore {Number} The 0-based index before which the items should be inserted.
    * @param newItems {Array}  The items to insert.
    */
-  insertItems(insertBefore: number, newItems: T[]) {
+  insertItems(insertBefore: number, newItems: TData[]) {
     // @ts-ignore
     Array.prototype.splice.apply(this.items, [insertBefore, 0].concat(newItems));
     this.updateIdxById(insertBefore);
@@ -613,7 +614,7 @@ export class SlickDataView<T = any> implements CustomDataView {
    * Adds a single item at the end of the data view.
    * @param item The item to add at the end.
    */
-  addItem(item: T) {
+  addItem(item: TData) {
     this.items.push(item);
     this.updateIdxById(this.items.length - 1);
     this.refresh();
@@ -623,7 +624,7 @@ export class SlickDataView<T = any> implements CustomDataView {
    * Adds multiple items at the end of the data view.
    * @param {Array} newItems The items to add at the end.
    */
-  addItems(newItems: T[]) {
+  addItems(newItems: TData[]) {
     this.items = this.items.concat(newItems);
     this.updateIdxById(this.items.length - newItems.length);
     this.refresh();
@@ -693,7 +694,7 @@ export class SlickDataView<T = any> implements CustomDataView {
   }
 
   /** Add an item in a sorted dataset (a Sort function must be defined) */
-  sortedAddItem(item: T) {
+  sortedAddItem(item: TData) {
     if (!this.sortComparer) {
       throw new Error('[SlickGrid DataView] sortedAddItem() requires a sort comparer, use sort()');
     }
@@ -701,7 +702,7 @@ export class SlickDataView<T = any> implements CustomDataView {
   }
 
   /** Update an item in a sorted dataset (a Sort function must be defined) */
-  sortedUpdateItem(id: string | number, item: T) {
+  sortedUpdateItem(id: string | number, item: TData) {
     if (!this.idxById) return;
     if (!this.idxById.has(id) || id !== item[this.idProperty]) {
       throw new Error('[SlickGrid DataView] Invalid or non-matching id ' + this.idxById.get(id));
@@ -719,7 +720,7 @@ export class SlickDataView<T = any> implements CustomDataView {
     }
   }
 
-  protected sortedIndex(searchItem: T) {
+  protected sortedIndex(searchItem: TData) {
     let low = 0;
     let high = this.items.length;
 
@@ -880,7 +881,7 @@ export class SlickDataView<T = any> implements CustomDataView {
     return this.groups;
   }
 
-  protected extractGroups(rows: number[], parentGroup?: SlickGroup_) {
+  protected extractGroups(rows: TData[], parentGroup?: SlickGroup_) {
     let group;
     let val;
     let groups: SlickGroup_[] = [];
@@ -992,7 +993,7 @@ export class SlickDataView<T = any> implements CustomDataView {
       }
 
       if (gi.aggregators?.length && (
-        gi.aggregateEmpty || g.rows.length || (g.groups && g.groups.length))) {
+        gi.aggregateEmpty || g.rows.length || g.groups?.length)) {
         this.addGroupTotals(g);
       }
 
@@ -1004,7 +1005,7 @@ export class SlickDataView<T = any> implements CustomDataView {
   protected flattenGroupedRows(groups: Grouping[], level?: number) {
     level = level || 0;
     const gi = this.groupingInfos[level];
-    let groupedRows: number[] = [], rows, gl = 0, g;
+    let groupedRows: TData[] = [], rows: TData[], gl = 0, g;
     for (let i = 0, l = groups.length; i < l; i++) {
       g = groups[i];
       groupedRows[gl++] = g;
@@ -1053,7 +1054,7 @@ export class SlickDataView<T = any> implements CustomDataView {
     }
   }
 
-  protected compileFilter(): FilterFn<T> {
+  protected compileFilter(): FilterFn<TData> {
     const filterInfo = this.getFunctionInfo(this.filter as Function);
 
     const filterPath1 = "{ continue _coreloop; }$1";
@@ -1153,7 +1154,7 @@ export class SlickDataView<T = any> implements CustomDataView {
     }
   }
 
-  protected uncompiledFilter(items: T[], args: any) {
+  protected uncompiledFilter(items: TData[], args: any) {
     let retval: any[] = [], idx = 0;
 
     for (let i = 0, ii = items.length; i < ii; i++) {
@@ -1165,8 +1166,8 @@ export class SlickDataView<T = any> implements CustomDataView {
     return retval;
   }
 
-  protected uncompiledFilterWithCaching(items: T[], args: any, cache: any) {
-    let retval: any[] = [], idx = 0, item: T;
+  protected uncompiledFilterWithCaching(items: TData[], args: any, cache: any) {
+    let retval: any[] = [], idx = 0, item: TData;
 
     for (let i = 0, ii = items.length; i < ii; i++) {
       item = items[i];
@@ -1181,7 +1182,7 @@ export class SlickDataView<T = any> implements CustomDataView {
     return retval;
   }
 
-  protected getFilteredAndPagedItems(items: T[]) {
+  protected getFilteredAndPagedItems(items: TData[]) {
     if (this.filter) {
       const batchFilter = (this._options.inlineFilters ? this.compiledFilter : this.uncompiledFilter) as Function;
       const batchFilterWithCaching = (this._options.inlineFilters ? this.compiledFilterWithCaching : this.uncompiledFilterWithCaching) as Function;
@@ -1201,7 +1202,7 @@ export class SlickDataView<T = any> implements CustomDataView {
     }
 
     // get the current page
-    let paged;
+    let paged: TData[];
     if (this.pagesize) {
       if (this.filteredItems.length <= this.pagenum * this.pagesize) {
         if (this.filteredItems.length === 0) {
@@ -1217,16 +1218,16 @@ export class SlickDataView<T = any> implements CustomDataView {
     return { totalRows: this.filteredItems.length, rows: paged };
   }
 
-  protected getRowDiffs(rows: any[], newRows: any[]) {
-    let item, r, eitherIsNonData, diff: any[] = [];
+  protected getRowDiffs(rows: TData[], newRows: TData[]) {
+    let item: any, r, eitherIsNonData, diff: number[] = [];
     let from = 0, to = Math.max(newRows.length, rows.length);
 
-    if (this.refreshHints && this.refreshHints.ignoreDiffsBefore) {
+    if (this.refreshHints?.ignoreDiffsBefore) {
       from = Math.max(0,
         Math.min(newRows.length, this.refreshHints.ignoreDiffsBefore));
     }
 
-    if (this.refreshHints && this.refreshHints.ignoreDiffsAfter) {
+    if (this.refreshHints?.ignoreDiffsAfter) {
       to = Math.min(newRows.length,
         Math.max(0, this.refreshHints.ignoreDiffsAfter));
     }
@@ -1240,7 +1241,7 @@ export class SlickDataView<T = any> implements CustomDataView {
 
         if (!item || (this.groupingInfos.length && (eitherIsNonData = ((item as SlickNonDataItem).__nonDataRow) || (r.__nonDataRow)) &&
           (item as SlickGroup_).__group !== r.__group ||
-          (item as SlickGroup_).__group && !item.equals(r))
+          (item as SlickGroup_).__group && !(item as SlickGroup_).equals(r))
           || (eitherIsNonData &&
             // no good way to compare totals since they are arbitrary DTOs
             // deep object comparison is pretty expensive
@@ -1256,7 +1257,7 @@ export class SlickDataView<T = any> implements CustomDataView {
     return diff;
   }
 
-  protected recalc(_items: T[]) {
+  protected recalc(_items: TData[]) {
     this.rowsById = undefined;
 
     if (this.refreshHints.isFilterNarrowing != this.prevRefreshHints.isFilterNarrowing ||
@@ -1266,7 +1267,7 @@ export class SlickDataView<T = any> implements CustomDataView {
 
     const filteredItems = this.getFilteredAndPagedItems(_items);
     this.totalRows = filteredItems.totalRows;
-    let newRows: number[] = filteredItems.rows;
+    let newRows: TData[] = filteredItems.rows;
 
     this.groups = [];
     if (this.groupingInfos.length) {
@@ -1276,9 +1277,9 @@ export class SlickDataView<T = any> implements CustomDataView {
       }
     }
 
-    let diff = this.getRowDiffs(this.rows, newRows);
+    let diff = this.getRowDiffs(this.rows, newRows as TData[]);
 
-    this.rows = newRows as any;
+    this.rows = newRows as TData[];
 
     return diff;
   }
@@ -1500,7 +1501,7 @@ export class SlickDataView<T = any> implements CustomDataView {
    * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
    */
   getAllSelectedItems() {
-    const selectedData: T[] = [];
+    const selectedData: TData[] = [];
     const selectedIds = this.getAllSelectedIds();
     selectedIds!.forEach((id) => {
       selectedData.push(this.getItemById(id));
@@ -1553,7 +1554,7 @@ export class SlickDataView<T = any> implements CustomDataView {
       }
     }
 
-    grid.onCellCssStylesChanged.subscribe((e, args) => {
+    grid.onCellCssStylesChanged.subscribe((_e, args) => {
       if (inHandler) { return; }
       if (key != args.key) { return; }
       if (args.hash) {
@@ -1592,7 +1593,7 @@ export class AvgAggregator<T = any> implements Aggregator {
   }
 
   accumulate(item: T) {
-    const val = (item && item.hasOwnProperty(this._field)) ? item[this._field] : null;
+    const val = (item?.hasOwnProperty(this._field)) ? item[this._field] : null;
     if (val !== null && val !== '' && !isNaN(val)) {
       this._nonNullCount++;
       this._sum += parseFloat(val);
@@ -1631,7 +1632,7 @@ export class MinAggregator<T = any> implements Aggregator {
   }
 
   accumulate(item: T) {
-    const val = (item && item.hasOwnProperty(this._field)) ? item[this._field] : null;
+    const val = (item?.hasOwnProperty(this._field)) ? item[this._field] : null;
     if (val !== null && val !== '' && !isNaN(val)) {
       if (this._min === null || val < this._min) {
         this._min = parseFloat(val);
@@ -1669,7 +1670,7 @@ export class MaxAggregator<T = any> implements Aggregator {
   }
 
   accumulate(item: T) {
-    const val = (item && item.hasOwnProperty(this._field)) ? item[this._field] : null;
+    const val = (item?.hasOwnProperty(this._field)) ? item[this._field] : null;
     if (val !== null && val !== '' && !isNaN(val)) {
       if (this._max === null || val > this._max) {
         this._max = parseFloat(val);
@@ -1707,7 +1708,7 @@ export class SumAggregator<T = any> implements Aggregator {
   }
 
   accumulate(item: T) {
-    const val = (item && item.hasOwnProperty(this._field)) ? item[this._field] : null;
+    const val = (item?.hasOwnProperty(this._field)) ? item[this._field] : null;
     if (val !== null && val !== '' && !isNaN(val)) {
       this._sum += parseFloat(val);
     }

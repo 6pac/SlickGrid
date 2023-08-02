@@ -1,5 +1,5 @@
 import type { CancellablePromiseWrapper, Column, CustomTooltipOption, DOMEvent, Formatter, GridOption } from '../models/index';
-import { SlickEventData, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
+import { SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
 import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
 
@@ -87,7 +87,7 @@ export class CustomTooltip {
   // protected props
   protected _cancellablePromise?: CancellablePromiseWrapper;
   protected _cellNodeElm?: HTMLDivElement;
-  protected _dataView?: SlickDataView;
+  protected _dataView?: SlickDataView | null;
   protected _grid!: SlickGrid;
   protected _gridOptions!: GridOption
   protected _tooltipElm?: HTMLDivElement;
@@ -113,7 +113,7 @@ export class CustomTooltip {
   init(grid: SlickGrid) {
     this._grid = grid;
     const _data = grid?.getData() || [];
-    this._dataView = Array.isArray(_data) ? null : _data;
+    this._dataView = Array.isArray(_data) ? null : _data as SlickDataView;
     this._gridOptions = (grid.getOptions() || {}) as GridOption;
     this._options = Utils.extend(true, {}, this._defaults, this._gridOptions.customTooltip, this.tooltipOptions);
     this._eventHandler
@@ -442,7 +442,7 @@ export class CustomTooltip {
   protected renderTooltipFormatter(formatter: Formatter | string | undefined, cell: { row: number; cell: number; }, value: any, columnDef: Column, item: unknown, tooltipText?: string, inputTitleElm?: Element | null) {
     // create the tooltip DOM element with the text returned by the Formatter
     this._tooltipElm = document.createElement('div');
-    this._tooltipElm.className = this._cellTooltipOptions.className || this._defaults.className;
+    this._tooltipElm.className = (this._cellTooltipOptions.className || this._defaults.className) as string;
     this._tooltipElm.classList.add(this._grid.getUID());
     this._tooltipElm.classList.add('l' + cell.cell);
     this._tooltipElm.classList.add('r' + cell.cell);

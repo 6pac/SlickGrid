@@ -1,5 +1,5 @@
 import { BindingEventService as BindingEventService_, Event as SlickEvent_, Utils as Utils_ } from '../slick.core';
-import type { Column, ColumnPickerOption, DOMMouseOrTouchEvent, GridOption } from '../models/index';
+import type { Column, ColumnPickerOption, DOMMouseOrTouchEvent, GridOption, OnColumnsChangedArgs } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -36,7 +36,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 export class SlickColumnPicker {
   // --
   // public API
-  onColumnsChanged = new SlickEvent<{ columnId: number | string; showing: boolean; allColumns: Column[]; columns: Column[]; grid: SlickGrid; }>();
+  onColumnsChanged = new SlickEvent<OnColumnsChangedArgs>();
 
   // --
   // protected props
@@ -87,7 +87,7 @@ export class SlickColumnPicker {
     this._menuElm.appendChild(buttonElm);
 
     // user could pass a title on top of the columns list
-    if (this._gridOptions.columnPickerTitle || (this._gridOptions.columnPicker && this._gridOptions.columnPicker.columnTitle)) {
+    if (this._gridOptions.columnPickerTitle || (this._gridOptions.columnPicker?.columnTitle)) {
       const columnTitle = this._gridOptions.columnPickerTitle || this._gridOptions.columnPicker?.columnTitle;
       this._columnTitleElm = document.createElement('div');
       this._columnTitleElm.className = 'slick-gridmenu-custom';
@@ -116,7 +116,7 @@ export class SlickColumnPicker {
   }
 
   protected handleBodyMouseDown(e: DOMMouseOrTouchEvent<HTMLElement>) {
-    if ((this._menuElm !== e.target && !(this._menuElm && this._menuElm.contains(e.target))) || e.target.className === 'close') {
+    if ((this._menuElm !== e.target && !this._menuElm?.contains(e.target)) || e.target.className === 'close') {
       this._menuElm.setAttribute('aria-expanded', 'false');
       this._menuElm.style.display = 'none';
     }
@@ -149,10 +149,10 @@ export class SlickColumnPicker {
         checkboxElm.checked = true;
       }
 
-      if (this._gridOptions && this._gridOptions.columnPicker && this._gridOptions.columnPicker.headerColumnValueExtractor) {
+      if (this._gridOptions?.columnPicker?.headerColumnValueExtractor) {
         columnLabel = this._gridOptions.columnPicker.headerColumnValueExtractor(this.columns[i], this._gridOptions);
       } else {
-        columnLabel = this._defaults.headerColumnValueExtractor(this.columns[i], this._gridOptions);
+        columnLabel = this._defaults.headerColumnValueExtractor!(this.columns[i], this._gridOptions);
       }
 
       const labelElm = document.createElement('label');
@@ -166,8 +166,8 @@ export class SlickColumnPicker {
       this._listElm.appendChild(document.createElement('hr'));
     }
 
-    if (!(this._gridOptions.columnPicker && this._gridOptions.columnPicker.hideForceFitButton)) {
-      let forceFitTitle = (this._gridOptions.columnPicker && this._gridOptions.columnPicker.forceFitTitle) || this._gridOptions.forceFitTitle;
+    if (!(this._gridOptions.columnPicker?.hideForceFitButton)) {
+      let forceFitTitle = this._gridOptions.columnPicker?.forceFitTitle || this._gridOptions.forceFitTitle;
 
       const liElm = document.createElement('li');
       liElm.ariaLabel = forceFitTitle || '';
@@ -249,7 +249,7 @@ export class SlickColumnPicker {
 
   /** Update the Titles of each sections (command, customTitle, ...) */
   updateAllTitles(pickerOptions: { columnTitle: string; }) {
-    if (this._columnTitleElm && this._columnTitleElm.innerHTML) {
+    if (this._columnTitleElm?.innerHTML) {
       this._columnTitleElm.innerHTML = pickerOptions.columnTitle;
     }
   }
@@ -291,7 +291,7 @@ export class SlickColumnPicker {
       }
 
       this.grid.setColumns(visibleColumns);
-      this.onColumnsChanged.notify({ columnId: columnId, showing: isChecked, allColumns: this.columns, columns: visibleColumns, grid: this.grid });
+      this.onColumnsChanged.notify({ columnId: columnId, showing: isChecked, allColumns: this.columns, columns: this.columns, visibleColumns, grid: this.grid });
     }
   }
 
@@ -311,7 +311,7 @@ export class SlickColumnPicker {
     }
 
     this.grid.setColumns(visibleColumns);
-    this.onColumnsChanged.notify({ columnId: col.id, showing: show, allColumns: this.columns, columns: visibleColumns, grid: this.grid });
+    this.onColumnsChanged.notify({ columnId: col.id, showing: show, allColumns: this.columns, columns: this.columns, visibleColumns, grid: this.grid });
   }
 
   getAllColumns() {

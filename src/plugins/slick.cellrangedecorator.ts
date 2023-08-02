@@ -23,6 +23,7 @@ export class SlickCellRangeDecorator implements Plugin {
 
   // --
   // protected props
+  protected _options: CellRangeDecoratorOption;
   protected _elem?: HTMLDivElement | null;
   protected _defaults = {
     selectionCssClass: 'slick-range-decorator',
@@ -32,10 +33,9 @@ export class SlickCellRangeDecorator implements Plugin {
     },
     offset: { top: -1, left: -1, height: -2, width: -2 }
   } as CellRangeDecoratorOption;
-  protected options: CellRangeDecoratorOption;
 
   constructor(protected readonly grid: SlickGrid, options?: Partial<CellRangeDecoratorOption>) {
-    this.options = Utils.extend(true, {}, this._defaults, options);
+    this._options = Utils.extend(true, {}, this._defaults, options);
   }
 
   destroy() {
@@ -52,9 +52,9 @@ export class SlickCellRangeDecorator implements Plugin {
   show(range: CellRange) {
     if (!this._elem) {
       this._elem = document.createElement('div')
-      this._elem.className = this.options.selectionCssClass;
-      Object.keys(this.options.selectionCss as CSSStyleDeclaration).forEach((cssStyleKey) => {
-        this._elem!.style[cssStyleKey as CSSStyleDeclarationWritable] = this.options.selectionCss[cssStyleKey as CSSStyleDeclarationWritable];
+      this._elem.className = this._options.selectionCssClass;
+      Object.keys(this._options.selectionCss as CSSStyleDeclaration).forEach((cssStyleKey) => {
+        this._elem!.style[cssStyleKey as CSSStyleDeclarationWritable] = this._options.selectionCss[cssStyleKey as CSSStyleDeclarationWritable];
       });
       this._elem.style.position = 'absolute';
       const canvasNode = this.grid.getActiveCanvasNode();
@@ -66,11 +66,11 @@ export class SlickCellRangeDecorator implements Plugin {
     const from = this.grid.getCellNodeBox(range.fromRow, range.fromCell);
     const to = this.grid.getCellNodeBox(range.toRow, range.toCell);
 
-    if (from && to && this.options && this.options.offset) {
-      this._elem.style.top = `${from.top + this.options.offset.top}px`;
-      this._elem.style.left = `${from.left + this.options.offset.left}px`;
-      this._elem.style.height = `${to.bottom - from.top + this.options.offset.height}px`;
-      this._elem.style.width = `${to.right - from.left + this.options.offset.width}px`;
+    if (from && to && this._options?.offset) {
+      this._elem.style.top = `${from.top + this._options.offset.top}px`;
+      this._elem.style.left = `${from.left + this._options.offset.left}px`;
+      this._elem.style.height = `${to.bottom - from.top + this._options.offset.height}px`;
+      this._elem.style.width = `${to.right - from.left + this._options.offset.width}px`;
     }
 
     return this._elem;

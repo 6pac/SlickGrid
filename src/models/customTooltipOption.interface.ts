@@ -1,8 +1,17 @@
 import type { SlickGrid } from '../slick.grid';
 import type { Column, Formatter } from './index';
 
+export interface Observable<T = any> {
+  subscribe(next?: (value: T) => void, error?: (error: any) => void, complete?: () => void): any;
+  pipe(...fns: Array<any>): any;
+}
+export interface Subject<T = any> extends Observable<T> {
+  complete(): any;
+  next(value: T): void;
+  unsubscribe(): void;
+}
 type PostProcessOutput<P> = P & { [asyncParamsPropName: string]: any; };
-export type asyncProcess<T = any> = (row: number, cell: number, value: any, columnDef: Column<T>, dataContext: T, grid?: any) => Promise<PostProcessOutput<T>>;
+export type asyncProcess<T = any> = (row: number, cell: number, value: any, columnDef: Column<T>, dataContext: T, grid?: SlickGrid) => Promise<PostProcessOutput<T>> | Observable<PostProcessOutput<T>> | Subject<PostProcessOutput<T>>;
 
 export interface CustomTooltipOption<T = any> {
   /** defaults to "__params", optionally change the property name that will be used to merge the data returned by the async method into the `dataContext` object */
@@ -27,7 +36,7 @@ export interface CustomTooltipOption<T = any> {
   hideArrow?: boolean;
 
   /** defaults to "slick-custom-tooltip" */
-  className: string;
+  className?: string;
 
   /**
    * Formatter to execute for displaying the data that will show in the tooltip

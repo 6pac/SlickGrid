@@ -1,13 +1,22 @@
-/* eslint-disable @typescript-eslint/indent */
-
-import type { CellMenuOption, CustomTooltipOption, Editor, EditorValidator, Formatter, FormatterResultObject, GroupTotalsFormatter, Grouping, HeaderButtonsOrMenu } from './index';
+import type {
+  AutoSize,
+  CellMenuOption,
+  CustomTooltipOption,
+  Editor,
+  EditorValidator,
+  Formatter,
+  FormatterResultObject,
+  GroupTotalsFormatter,
+  Grouping,
+  HeaderButtonsOrMenu
+} from './index';
 import type { SlickGrid } from '../slick.grid';
 
+/* eslint-disable @typescript-eslint/indent */
 type PathsToStringProps<T> = T extends string | number | boolean | Date ? [] : {
   [K in Extract<keyof T, string>]: [K, ...PathsToStringProps<T[K]>]
 }[Extract<keyof T, string>];
 
-/* eslint-disable @typescript-eslint/indent */
 // disable eslint indent rule until this issue is fixed: https://github.com/typescript-eslint/typescript-eslint/issues/1824
 type Join<T extends any[], D extends string> =
   T extends [] ? never :
@@ -16,32 +25,14 @@ type Join<T extends any[], D extends string> =
   F extends string ? string extends F ? string : `${F}${D}${Join<R, D>}` : never : string;
 /* eslint-enable @typescript-eslint/indent */
 
-export interface AutoSize {
-  allowAddlPercent?: number;
-  autosizeMode?: string;
-  colDataTypeOf?: any;
-  colValueArray?: any[];
-  contentSizePx?: number;
-  formatterOverride?: Formatter;
-  headerWidthPx?: number;
-  ignoreHeaderText?: boolean;
-  rowSelectionModeOnInit?: boolean | undefined;
-  rowSelectionMode?: string;
-  rowSelectionCount?: number;
-  sizeToRemaining?: boolean | undefined;
-  valueFilterMode?: string;
-  widthEvalMode?: string;
-  widthPx?: number;
-}
-
 export type FormatterOverrideCallback = (row: number, cell: number, val: any, columnDef: Column, item: any, grid: SlickGrid) => string | FormatterResultObject;
 
-export interface Column<T = any> {
+export interface Column<TData = any> {
   /** Defaults to false, should we always render the column? */
   alwaysRenderColumn?: boolean;
 
   /** async background post-rendering formatter */
-  asyncPostRender?: (domCellNode: HTMLElement, row: number, dataContext: T, columnDef: Column, process?: boolean) => void;
+  asyncPostRender?: (domCellNode: HTMLElement, row: number, dataContext: TData, columnDef: Column, process?: boolean) => void;
 
   /** async background post-render cleanup callback function */
   asyncPostRenderCleanup?: (node: HTMLElement, rowIdx: number, column: Column) => void;
@@ -92,7 +83,7 @@ export interface Column<T = any> {
   disableTooltip?: boolean;
 
   /** Any inline editor function that implements Editor for the cell value or ColumnEditor */
-  editor?: Editor;
+  editor?: Editor | { model?: Editor; };
 
   /** Editor number fixed decimal places */
   editorFixedDecimalPlaces?: number;
@@ -115,17 +106,14 @@ export interface Column<T = any> {
   /**
    * Field property name to use from the dataset that is used to display the column data.
    * For example: { id: 'firstName', field: 'firstName' }
-   *
-   * NOTE: a field with dot notation (.) will be considered a complex object.
-   * For example: { id: 'Users', field: 'user.firstName' }
    */
-  field: Join<PathsToStringProps<T>, '.'>;
+  field: Join<PathsToStringProps<TData>, '.'>;
 
   /** are we allowed to focus on the column? */
   focusable?: boolean;
 
   /** Formatter function is to format, or visually change, the data shown in the grid (UI) in a different way without affecting the source. */
-  formatter?: Formatter<T>;
+  formatter?: Formatter<TData>;
 
   /** Formatter override function */
   formatterOverride?: { ReturnsTextOnly: boolean; } | FormatterOverrideCallback;

@@ -194,7 +194,7 @@ export class SlickContextMenu implements Plugin {
   init(grid: SlickGrid) {
     this._grid = grid;
     this._gridOptions = grid.getOptions();
-    this._gridUid = (grid && grid.getUID) ? grid.getUID() : '';
+    this._gridUid = grid?.getUID() || '';
     this._handler.subscribe(this._grid.onContextMenu, this.handleOnContextMenu.bind(this));
     if (this._contextMenuProperties.hideMenuOnScroll) {
       this._handler.subscribe(this._grid.onScroll, this.destroyMenu.bind(this));
@@ -522,7 +522,7 @@ export class SlickContextMenu implements Plugin {
     }
 
     // user could pass a title on top of the Commands section
-    if (contextMenu && contextMenu.commandTitle) {
+    if (contextMenu?.commandTitle) {
       this._commandTitleElm = document.createElement('div');
       this._commandTitleElm.className = 'title';
       this._commandTitleElm.textContent = contextMenu.commandTitle;
@@ -618,7 +618,7 @@ export class SlickContextMenu implements Plugin {
     let dataContext = this._grid.getDataItem(row);
     let cellValue;
 
-    if (Object.prototype.hasOwnProperty.call(dataContext, columnDef && columnDef.field)) {
+    if (Object.prototype.hasOwnProperty.call(dataContext, columnDef?.field)) {
       cellValue = dataContext[columnDef.field];
     }
 

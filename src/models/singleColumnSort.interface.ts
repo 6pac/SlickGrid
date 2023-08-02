@@ -1,5 +1,5 @@
-import type { ColumnSort } from './columnSort.interface';
-import type { SlickGrid } from './slickGrid.interface';
+import type { ColumnSort } from './index';
+import type { SlickGrid } from '../slick.grid';
 
 export interface SingleColumnSort extends ColumnSort {
   /** SlickGrid grid object */

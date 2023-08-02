@@ -74,5 +74,5 @@ export interface GridMenuOption {
   headerColumnValueExtractor?: (column: Column, gridOptions?: GridOption) => string;
 
   /** Callback method that user can override the default behavior of enabling/disabling an item from the list. */
-  menuUsabilityOverride?: (args: MenuCallbackArgs) => boolean;
+  menuUsabilityOverride?: (args: MenuCallbackArgs<any>) => boolean;
 }

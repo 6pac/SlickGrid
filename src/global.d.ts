@@ -20,6 +20,7 @@ import type {
 } from './slick.core';
 import type { SlickDataView } from './slick.dataview';
 import type { SlickGrid } from './slick.grid';
+import type { SlickCompositeEditor } from './slick.compositeeditor';
 import type { SlickColumnMenu } from './controls/slick.columnmenu';
 import type { SlickColumnPicker } from './controls/slick.columnpicker';
 import type { SlickGridMenu } from './controls/slick.gridmenu';
@@ -66,6 +67,7 @@ declare global {
     CheckboxSelectColumn: typeof SlickCheckboxSelectColumn,
     Draggable: typeof Draggable,
     ColAutosizeMode: typeof ColAutosizeMode,
+    CompositeEditor: typeof SlickCompositeEditor,
     Controls: {
       ColumnPicker: typeof SlickColumnPicker | typeof SlickColumnMenu,
       GridMenu: typeof SlickGridMenu,
