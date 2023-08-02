@@ -1,4 +1,4 @@
-import SortableInstance from 'sortablejs';
+import type SortableInstance from 'sortablejs';
 
 import type {
   AutoSize,

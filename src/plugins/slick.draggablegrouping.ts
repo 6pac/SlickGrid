@@ -1,4 +1,4 @@
-import SortableInstance from 'sortablejs';
+import type SortableInstance from 'sortablejs';
 
 import type { Column, DOMMouseOrTouchEvent, DraggableGroupingOption, Grouping, GroupingGetterFunction } from '../models/index';
 import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';

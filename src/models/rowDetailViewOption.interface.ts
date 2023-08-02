@@ -58,10 +58,7 @@ export interface RowDetailViewOption {
   /** Defaults to false, which will limit expanded row to only 1 at a time (it will close all other rows before opening new one). */
   singleRowExpand?: boolean;
 
-  /**
-   * Defaults to false, which will use a simpler way of calculating when rows become out (or back) of viewport range.
-   * It is recommended to enable this flag since it seems to work correctly with Slickgrid-Universal while the inverse is misbehaving
-   */
+  /** Defaults to false, which will use a simpler way of calculating when rows become out (or back) of viewport range. */
   useSimpleViewportCalc?: boolean;
 
   /** no defaults, show a tooltip text while hovering the row detail icon */
