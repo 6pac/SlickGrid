@@ -2,7 +2,7 @@
 (() => {
   // src/slick.compositeeditor.ts
   var Utils = Slick.Utils;
-  function CompositeEditor(columns, containers, options) {
+  function SlickCompositeEditor(columns, containers, options) {
     let defaultOptions = {
       modalType: "edit",
       // available type (create, edit, mass)
@@ -103,25 +103,26 @@
           msg: ""
         };
       }, context.hide = () => {
-        var _a, _b;
+        var _a, _b, _c;
         let idx = 0;
         for (; idx < editors.length; )
           (_b = (_a = editors[idx]) == null ? void 0 : _a.hide) == null || _b.call(_a), idx++;
-        options.hide && options.hide();
+        (_c = options == null ? void 0 : options.hide) == null || _c.call(options);
       }, context.show = () => {
-        var _a, _b;
+        var _a, _b, _c;
         let idx = 0;
         for (; idx < editors.length; )
           (_b = (_a = editors[idx]) == null ? void 0 : _a.show) == null || _b.call(_a), idx++;
-        options.show && options.show();
+        (_c = options == null ? void 0 : options.show) == null || _c.call(options);
       }, context.position = (box) => {
-        options.position && options.position(box);
+        var _a;
+        (_a = options == null ? void 0 : options.position) == null || _a.call(options, box);
       }, init();
     }
     return editor.prototype = this, editor;
   }
   window.Slick && Utils.extend(Slick, {
-    CompositeEditor
+    CompositeEditor: SlickCompositeEditor
   });
 })();
 //# sourceMappingURL=slick.compositeeditor.js.map

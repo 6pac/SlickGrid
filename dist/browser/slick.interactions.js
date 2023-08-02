@@ -3,7 +3,7 @@
   // src/slick.interactions.ts
   var Utils = Slick.Utils;
   function Draggable(options) {
-    let { containerElement, onDragInit, onDragStart, onDrag, onDragEnd } = options, element, startX, startY, deltaX, deltaY, dragStarted;
+    let { containerElement } = options, { onDragInit, onDragStart, onDrag, onDragEnd } = options, element, startX, startY, deltaX, deltaY, dragStarted;
     if (containerElement || (containerElement = document), !containerElement || typeof containerElement.addEventListener != "function")
       throw new Error("[Slick.Draggable] You did not provide a valid container html element that will be used for dragging.");
     let originaldd = {

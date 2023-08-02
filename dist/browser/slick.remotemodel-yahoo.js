@@ -57,7 +57,7 @@
           url,
           callbackParameter: "callback",
           cache: !0,
-          success: (json, textStatus, xOptions) => {
+          success: (json) => {
             this.onSuccess(json, recStart);
           },
           error: () => {

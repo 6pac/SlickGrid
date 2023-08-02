@@ -202,8 +202,8 @@
     }
     /** Update the Titles of each sections (command, customTitle, ...) */
     updateAllTitles(gridMenuOptions) {
-      var _a;
-      this._customTitleElm && this._customTitleElm.innerHTML && (this._customTitleElm.innerHTML = gridMenuOptions.customTitle || ""), (_a = this._columnTitleElm) != null && _a.innerHTML && (this._columnTitleElm.innerHTML = gridMenuOptions.columnTitle || "");
+      var _a, _b;
+      (_a = this._customTitleElm) != null && _a.innerHTML && (this._customTitleElm.innerHTML = gridMenuOptions.customTitle || ""), (_b = this._columnTitleElm) != null && _b.innerHTML && (this._columnTitleElm.innerHTML = gridMenuOptions.columnTitle || "");
     }
     updateColumnOrder() {
       let current = this.grid.getColumns().slice(0), ordered = new Array(this.columns.length);

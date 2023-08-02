@@ -50,7 +50,7 @@
     init(grid) {
       this._grid = grid, this._gridUid = this._grid.getUID(), this._gridColumns = this._grid.getColumns(), this._dataView = this._grid.getData(), this._dropzoneElm = this._grid.getPreHeaderPanel(), this._dropzoneElm.classList.add("slick-dropzone");
       let dropPlaceHolderText = this._options.dropPlaceHolderText || "Drop a column header here to group by the column";
-      this._dropzonePlaceholder = document.createElement("div"), this._dropzonePlaceholder.className = "slick-placeholder", this._dropzonePlaceholder.textContent = dropPlaceHolderText, this._groupToggler = document.createElement("div"), this._groupToggler.className = "slick-group-toggle-all expanded", this._groupToggler.style.display = "none", this._dropzoneElm.appendChild(this._dropzonePlaceholder), this._dropzoneElm.appendChild(this._groupToggler), this.setupColumnDropbox(), this._handler.subscribe(this._grid.onHeaderCellRendered, (e, args) => {
+      this._dropzonePlaceholder = document.createElement("div"), this._dropzonePlaceholder.className = "slick-placeholder", this._dropzonePlaceholder.textContent = dropPlaceHolderText, this._groupToggler = document.createElement("div"), this._groupToggler.className = "slick-group-toggle-all expanded", this._groupToggler.style.display = "none", this._dropzoneElm.appendChild(this._dropzonePlaceholder), this._dropzoneElm.appendChild(this._groupToggler), this.setupColumnDropbox(), this._handler.subscribe(this._grid.onHeaderCellRendered, (_e, args) => {
         let column = args.column, node = args.node;
         if (!Utils.isEmptyObject(column.grouping) && node && (node.style.cursor = "pointer", this._options.groupIconCssClass || this._options.groupIconImage)) {
           let groupableIconElm = document.createElement("span");

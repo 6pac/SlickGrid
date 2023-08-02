@@ -70,7 +70,7 @@
       selectAllContainerElm && (selectAllContainerElm.style.display = "none");
     }
     handleSelectedRowsChanged() {
-      var _a;
+      var _a, _b;
       let selectedRows = this._grid.getSelectedRows(), lookup = {}, row = 0, i = 0, k = 0, disabledCount = 0;
       if (typeof this._selectableOverride == "function")
         for (k = 0; k < this._grid.getDataLength(); k++) {
@@ -85,8 +85,8 @@
       }
       for (let selectedRow in this._selectedRowsLookup)
         this._grid.invalidateRow(+selectedRow);
-      if (this._selectedRowsLookup = lookup, this._grid.render(), this._isSelectAllChecked = selectedRows && selectedRows.length + disabledCount >= this._grid.getDataLength(), (!this._isUsingDataView || !this._options.applySelectOnAllPages) && (!this._options.hideInColumnTitleRow && !this._options.hideSelectAllCheckbox && this.renderSelectAllCheckbox(this._isSelectAllChecked), !this._options.hideInFilterHeaderRow)) {
-        let selectAllElm = (_a = this._headerRowNode) == null ? void 0 : _a.querySelector(`#header-filter-selector${this._selectAll_UID}`);
+      if (this._selectedRowsLookup = lookup, this._grid.render(), this._isSelectAllChecked = ((_a = selectedRows == null ? void 0 : selectedRows.length) != null ? _a : 0) + disabledCount >= this._grid.getDataLength(), (!this._isUsingDataView || !this._options.applySelectOnAllPages) && (!this._options.hideInColumnTitleRow && !this._options.hideSelectAllCheckbox && this.renderSelectAllCheckbox(this._isSelectAllChecked), !this._options.hideInFilterHeaderRow)) {
+        let selectAllElm = (_b = this._headerRowNode) == null ? void 0 : _b.querySelector(`#header-filter-selector${this._selectAll_UID}`);
         selectAllElm && (selectAllElm.checked = this._isSelectAllChecked);
       }
       if (removeList.length > 0) {
@@ -136,14 +136,14 @@
       }
     }
     selectRows(rowArray) {
-      let i, l = rowArray.length, addRows = [];
-      for (i = 0; i < l; i++)
+      let addRows = [];
+      for (let i = 0, l = rowArray.length; i < l; i++)
         this._selectedRowsLookup[rowArray[i]] || (addRows[addRows.length] = rowArray[i]);
       this._grid.setSelectedRows(this._grid.getSelectedRows().concat(addRows), "SlickCheckboxSelectColumn.selectRows");
     }
     deSelectRows(rowArray) {
-      let i, l = rowArray.length, removeRows = [];
-      for (i = 0; i < l; i++)
+      let removeRows = [];
+      for (let i = 0, l = rowArray.length; i < l; i++)
         this._selectedRowsLookup[rowArray[i]] && (removeRows[removeRows.length] = rowArray[i]);
       this._grid.setSelectedRows(this._grid.getSelectedRows().filter((n) => removeRows.indexOf(n) < 0), "SlickCheckboxSelectColumn.deSelectRows");
     }

@@ -44,8 +44,8 @@
       }
     }
     handleBeforeHeaderCellDestroy(_e, args) {
-      let column = args.column;
-      if (column.header && column.header.buttons) {
+      var _a;
+      if ((_a = args.column.header) != null && _a.buttons) {
         let buttonCssClass = (this._options.buttonCssClass || "").replace(/(\s+)/g, ".");
         buttonCssClass && args.node.querySelectorAll(`.${buttonCssClass}`).forEach((elm) => elm.remove());
       }

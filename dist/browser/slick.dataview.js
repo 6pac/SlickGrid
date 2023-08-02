@@ -247,7 +247,8 @@
     }
     /** Get row index in the DataView by its Id */
     getIdxById(id) {
-      return this.idxById && this.idxById.get(id);
+      var _a2;
+      return (_a2 = this.idxById) == null ? void 0 : _a2.get(id);
     }
     ensureRowsByIdCache() {
       if (!this.rowsById) {
@@ -268,7 +269,8 @@
     }
     /** Get an item in the DataView by its Id */
     getItemById(id) {
-      return this.items[this.idxById.get(id) || ""];
+      var _a2;
+      return this.items[(_a2 = this.idxById.get(id)) != null ? _a2 : ""];
     }
     /** From the items array provided, return the mapped rows */
     mapItemsToRows(itemArray) {
@@ -298,7 +300,7 @@
       for (let i = 0, l = rowArray.length; i < l; i++)
         if (rowArray[i] < this.rows.length) {
           let rowItem = this.rows[rowArray[i]];
-          ids[ids.length] = rowItem && rowItem[this.idProperty];
+          ids[ids.length] = rowItem == null ? void 0 : rowItem[this.idProperty];
         }
       return ids;
     }
@@ -493,8 +495,8 @@
      *     example, calling collapseGroup('high', '10%') will collapse the '10%' subgroup of
      *     the 'high' group.
      */
-    collapseGroup(_varArgs) {
-      let args = Array.prototype.slice.call(arguments), arg0 = args[0], groupingKey, level;
+    collapseGroup(...args) {
+      let arg0 = Array.prototype.slice.call(args)[0], groupingKey, level;
       args.length === 1 && arg0.indexOf(this.groupingDelimiter) !== -1 ? (groupingKey = arg0, level = arg0.split(this.groupingDelimiter).length - 1) : (groupingKey = args.join(this.groupingDelimiter), level = args.length - 1), this.expandCollapseGroup(level, groupingKey, !0), this.onGroupCollapsed.notify({ level, groupingKey });
     }
     /**
@@ -503,8 +505,8 @@
      *     example, calling expandGroup('high', '10%') will expand the '10%' subgroup of
      *     the 'high' group.
      */
-    expandGroup(_varArgs) {
-      let args = Array.prototype.slice.call(arguments), arg0 = args[0], groupingKey, level;
+    expandGroup(...args) {
+      let arg0 = Array.prototype.slice.call(args)[0], groupingKey, level;
       args.length === 1 && arg0.indexOf(this.groupingDelimiter) !== -1 ? (level = arg0.split(this.groupingDelimiter).length - 1, groupingKey = arg0) : (level = args.length - 1, groupingKey = args.join(this.groupingDelimiter)), this.expandCollapseGroup(level, groupingKey, !1), this.onGroupExpanded.notify({ level, groupingKey });
     }
     getGroups() {
@@ -539,11 +541,11 @@
       totals.group = group, group.totals = totals, gi.lazyTotalsCalculation || this.calculateTotals(totals);
     }
     addTotals(groups, level) {
-      var _a2;
+      var _a2, _b2;
       level = level || 0;
       let gi = this.groupingInfos[level], groupCollapsed = gi.collapsed, toggledGroups = this.toggledGroupsByLevel[level], idx = groups.length, g;
       for (; idx--; )
-        g = groups[idx], !(g.collapsed && !gi.aggregateCollapsed) && (g.groups && this.addTotals(g.groups, level + 1), (_a2 = gi.aggregators) != null && _a2.length && (gi.aggregateEmpty || g.rows.length || g.groups && g.groups.length) && this.addGroupTotals(g), g.collapsed = groupCollapsed ^ toggledGroups[g.groupingKey], g.title = gi.formatter ? gi.formatter(g) : g.value);
+        g = groups[idx], !(g.collapsed && !gi.aggregateCollapsed) && (g.groups && this.addTotals(g.groups, level + 1), (_a2 = gi.aggregators) != null && _a2.length && (gi.aggregateEmpty || g.rows.length || (_b2 = g.groups) != null && _b2.length) && this.addGroupTotals(g), g.collapsed = groupCollapsed ^ toggledGroups[g.groupingKey], g.title = gi.formatter ? gi.formatter(g) : g.value);
     }
     flattenGroupedRows(groups, level) {
       level = level || 0;
@@ -661,12 +663,12 @@
       return this.pagesize ? (this.filteredItems.length <= this.pagenum * this.pagesize && (this.filteredItems.length === 0 ? this.pagenum = 0 : this.pagenum = Math.floor((this.filteredItems.length - 1) / this.pagesize)), paged = this.filteredItems.slice(this.pagesize * this.pagenum, this.pagesize * this.pagenum + this.pagesize)) : paged = this.filteredItems, { totalRows: this.filteredItems.length, rows: paged };
     }
     getRowDiffs(rows, newRows) {
-      var _a2;
+      var _a2, _b2, _c;
       let item, r, eitherIsNonData, diff = [], from = 0, to = Math.max(newRows.length, rows.length);
-      this.refreshHints && this.refreshHints.ignoreDiffsBefore && (from = Math.max(
+      (_a2 = this.refreshHints) != null && _a2.ignoreDiffsBefore && (from = Math.max(
         0,
         Math.min(newRows.length, this.refreshHints.ignoreDiffsBefore)
-      )), this.refreshHints && this.refreshHints.ignoreDiffsAfter && (to = Math.min(
+      )), (_b2 = this.refreshHints) != null && _b2.ignoreDiffsAfter && (to = Math.min(
         newRows.length,
         Math.max(0, this.refreshHints.ignoreDiffsAfter)
       ));
@@ -674,7 +676,7 @@
         i >= rl ? diff[diff.length] = i : (item = newRows[i], r = rows[i], (!item || this.groupingInfos.length && (eitherIsNonData = item.__nonDataRow || r.__nonDataRow) && item.__group !== r.__group || item.__group && !item.equals(r) || eitherIsNonData && // no good way to compare totals since they are arbitrary DTOs
         // deep object comparison is pretty expensive
         // always considering them 'dirty' seems easier for the time being
-        (item.__groupTotals || r.__groupTotals) || item[this.idProperty] != r[this.idProperty] || (_a2 = this.updated) != null && _a2[item[this.idProperty]]) && (diff[diff.length] = i));
+        (item.__groupTotals || r.__groupTotals) || item[this.idProperty] != r[this.idProperty] || (_c = this.updated) != null && _c[item[this.idProperty]]) && (diff[diff.length] = i));
       return diff;
     }
     recalc(_items) {
@@ -849,7 +851,7 @@
           grid.setCellCssStyles(key, newHash), inHandler = !1;
         }
       };
-      grid.onCellCssStylesChanged.subscribe((e, args) => {
+      grid.onCellCssStylesChanged.subscribe((_e, args) => {
         inHandler || key == args.key && (args.hash ? storeCellCssStyles(args.hash) : (grid.onCellCssStylesChanged.unsubscribe(), this.onRowsOrCountChanged.unsubscribe(update)));
       }), this.onRowsOrCountChanged.subscribe(update.bind(this));
     }
@@ -871,7 +873,7 @@
       this._nonNullCount = 0, this._sum = 0;
     }
     accumulate(item) {
-      let val = item && item.hasOwnProperty(this._field) ? item[this._field] : null;
+      let val = item != null && item.hasOwnProperty(this._field) ? item[this._field] : null;
       val !== null && val !== "" && !isNaN(val) && (this._nonNullCount++, this._sum += parseFloat(val));
     }
     storeResult(groupTotals) {
@@ -894,7 +896,7 @@
       this._min = null;
     }
     accumulate(item) {
-      let val = item && item.hasOwnProperty(this._field) ? item[this._field] : null;
+      let val = item != null && item.hasOwnProperty(this._field) ? item[this._field] : null;
       val !== null && val !== "" && !isNaN(val) && (this._min === null || val < this._min) && (this._min = parseFloat(val));
     }
     storeResult(groupTotals) {
@@ -917,7 +919,7 @@
       this._max = null;
     }
     accumulate(item) {
-      let val = item && item.hasOwnProperty(this._field) ? item[this._field] : null;
+      let val = item != null && item.hasOwnProperty(this._field) ? item[this._field] : null;
       val !== null && val !== "" && !isNaN(val) && (this._max === null || val > this._max) && (this._max = parseFloat(val));
     }
     storeResult(groupTotals) {
@@ -940,7 +942,7 @@
       this._sum = 0;
     }
     accumulate(item) {
-      let val = item && item.hasOwnProperty(this._field) ? item[this._field] : null;
+      let val = item != null && item.hasOwnProperty(this._field) ? item[this._field] : null;
       val !== null && val !== "" && !isNaN(val) && (this._sum += parseFloat(val));
     }
     storeResult(groupTotals) {

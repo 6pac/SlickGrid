@@ -42,7 +42,7 @@
       this._cellMenuProperties = Utils.extend({}, this._defaults, optionProperties);
     }
     init(grid) {
-      this._grid = grid, this._gridOptions = grid.getOptions(), this._gridUid = grid && grid.getUID ? grid.getUID() : "", this._handler.subscribe(this._grid.onClick, this.handleCellClick.bind(this)), this._cellMenuProperties.hideMenuOnScroll && this._handler.subscribe(this._grid.onScroll, this.destroyMenu.bind(this));
+      this._grid = grid, this._gridOptions = grid.getOptions(), this._gridUid = (grid == null ? void 0 : grid.getUID()) || "", this._handler.subscribe(this._grid.onClick, this.handleCellClick.bind(this)), this._cellMenuProperties.hideMenuOnScroll && this._handler.subscribe(this._grid.onScroll, this.destroyMenu.bind(this));
     }
     setOptions(newOptions) {
       this._cellMenuProperties = Utils.extend({}, this._cellMenuProperties, newOptions);
@@ -112,9 +112,9 @@
      * @param {*} event
      */
     repositionMenu(e) {
-      var _a, _b;
+      var _a, _b, _c, _d, _e, _f, _g;
       if (this._menuElm && e.target) {
-        let parentElm = e.target.closest(".slick-cell"), parentOffset = parentElm && Utils.offset(parentElm), menuOffsetLeft = parentElm ? (_a = parentOffset == null ? void 0 : parentOffset.left) != null ? _a : 0 : e.pageX, menuOffsetTop = parentElm ? (_b = parentOffset == null ? void 0 : parentOffset.top) != null ? _b : 0 : e.pageY, parentCellWidth = parentElm.offsetWidth || 0, menuHeight = this._menuElm && this._menuElm.offsetHeight || 0, menuWidth = this._menuElm && this._menuElm.offsetWidth || this._cellMenuProperties.width || 0, rowHeight = this._gridOptions.rowHeight, dropOffset = this._cellMenuProperties.autoAdjustDropOffset, sideOffset = this._cellMenuProperties.autoAlignSideOffset;
+        let parentElm = e.target.closest(".slick-cell"), parentOffset = parentElm && Utils.offset(parentElm), menuOffsetLeft = parentElm ? (_a = parentOffset == null ? void 0 : parentOffset.left) != null ? _a : 0 : e.pageX, menuOffsetTop = parentElm ? (_b = parentOffset == null ? void 0 : parentOffset.top) != null ? _b : 0 : e.pageY, parentCellWidth = parentElm.offsetWidth || 0, menuHeight = (_d = (_c = this._menuElm) == null ? void 0 : _c.offsetHeight) != null ? _d : 0, menuWidth = (_g = (_f = (_e = this._menuElm) == null ? void 0 : _e.offsetWidth) != null ? _f : this._cellMenuProperties.width) != null ? _g : 0, rowHeight = this._gridOptions.rowHeight, dropOffset = +(this._cellMenuProperties.autoAdjustDropOffset || 0), sideOffset = +(this._cellMenuProperties.autoAlignSideOffset || 0);
         if (this._cellMenuProperties.autoAdjustDrop) {
           let spaceBottom = Utils.calculateAvailableSpace(parentElm).bottom, spaceTop = Utils.calculateAvailableSpace(parentElm).top, spaceBottomRemaining = spaceBottom + dropOffset - rowHeight, spaceTopRemaining = spaceTop - dropOffset + rowHeight;
           (spaceBottomRemaining < menuHeight && spaceTopRemaining > spaceBottomRemaining ? "top" : "bottom") === "top" ? (this._menuElm.classList.remove("dropdown"), this._menuElm.classList.add("dropup"), menuOffsetTop = menuOffsetTop - menuHeight - dropOffset) : (this._menuElm.classList.remove("dropup"), this._menuElm.classList.add("dropdown"), menuOffsetTop = menuOffsetTop + rowHeight + dropOffset);
@@ -131,15 +131,17 @@
       let cell = this._grid.getCellFromEvent(e);
       if (cell) {
         let dataContext = this._grid.getDataItem(cell.row), columnDef = this._grid.getColumns()[cell.cell];
-        if (columnDef && columnDef.cellMenu && e.preventDefault(), this._cellMenuProperties = Utils.extend({}, this._cellMenuProperties, columnDef.cellMenu), args = args || {}, args.column = columnDef, args.dataContext = dataContext, args.grid = this._grid, !this.runOverrideFunctionWhenExists(this._cellMenuProperties.menuUsabilityOverride, args))
+        if (columnDef != null && columnDef.cellMenu && e.preventDefault(), this._cellMenuProperties = Utils.extend({}, this._cellMenuProperties, columnDef.cellMenu), args = args || {}, args.column = columnDef, args.dataContext = dataContext, args.grid = this._grid, !this.runOverrideFunctionWhenExists(this._cellMenuProperties.menuUsabilityOverride, args))
           return;
         this._menuElm = this.createMenu(e), this._menuElm && (this.repositionMenu(e), this._menuElm.setAttribute("aria-expanded", "true"), this._menuElm.style.display = "block"), this._bindingEventService.bind(document.body, "mousedown", this.handleBodyMouseDown.bind(this));
       }
     }
     handleBodyMouseDown(e) {
-      this._menuElm != e.target && !(this._menuElm && this._menuElm.contains(e.target)) && (e.defaultPrevented || this.closeMenu(e, { cell: this._currentCell, row: this._currentRow, grid: this._grid }));
+      var _a;
+      this._menuElm != e.target && !((_a = this._menuElm) != null && _a.contains(e.target)) && (e.defaultPrevented || this.closeMenu(e, { cell: this._currentCell, row: this._currentRow, grid: this._grid }));
     }
     closeMenu(e, args) {
+      var _a;
       if (this._menuElm) {
         if (this.onBeforeMenuClose.notify({
           cell: args == null ? void 0 : args.cell,
@@ -147,13 +149,13 @@
           grid: this._grid
         }, e, this).getReturnValue() == !1)
           return;
-        this._menuElm && this._menuElm.remove && (this._menuElm.remove(), this._menuElm = null);
+        (_a = this._menuElm) == null || _a.remove(), this._menuElm = null;
       }
     }
     /** Construct the Option Items section. */
     populateOptionItems(cellMenu, optionMenuElm, optionItems, args) {
       if (!(!args || !optionItems || !cellMenu)) {
-        cellMenu && cellMenu.optionTitle && (this._optionTitleElm = document.createElement("div"), this._optionTitleElm.className = "title", this._optionTitleElm.textContent = cellMenu.optionTitle, optionMenuElm.appendChild(this._optionTitleElm));
+        cellMenu != null && cellMenu.optionTitle && (this._optionTitleElm = document.createElement("div"), this._optionTitleElm.className = "title", this._optionTitleElm.textContent = cellMenu.optionTitle, optionMenuElm.appendChild(this._optionTitleElm));
         for (let i = 0, ln = optionItems.length; i < ln; i++) {
           let addClickListener = !0, item = optionItems[i], isItemVisible = this.runOverrideFunctionWhenExists(item.itemVisibilityOverride, args), isItemUsable = this.runOverrideFunctionWhenExists(item.itemUsabilityOverride, args);
           if (!isItemVisible)

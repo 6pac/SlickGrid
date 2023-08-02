@@ -17,7 +17,7 @@
       // protected props
       __publicField(this, "_grid");
       __publicField(this, "_currentlySelectedRange", null);
-      __publicField(this, "_canvas");
+      __publicField(this, "_canvas", null);
       __publicField(this, "_decorator");
       __publicField(this, "_gridOptions");
       __publicField(this, "_activeCanvas");
@@ -146,10 +146,7 @@
     }
     handleDragToNewPosition(xNeedUpdate, yNeedUpdate) {
       let pageX = this._draggingMouseOffset.e.pageX, pageY = this._draggingMouseOffset.e.pageY, mouseOffsetX = this._draggingMouseOffset.offset.x, mouseOffsetY = this._draggingMouseOffset.offset.y, viewportOffset = this._draggingMouseOffset.viewport.offset;
-      xNeedUpdate && mouseOffsetX && (mouseOffsetX > 0 ? pageX = viewportOffset.right + this._moveDistanceForOneCell.x : pageX = viewportOffset.left - this._moveDistanceForOneCell.x), yNeedUpdate && mouseOffsetY && (mouseOffsetY > 0 ? pageY = viewportOffset.top - this._moveDistanceForOneCell.y : pageY = viewportOffset.bottom + this._moveDistanceForOneCell.y), this.handleDragTo({
-        pageX,
-        pageY
-      }, this._draggingMouseOffset.dd);
+      xNeedUpdate && mouseOffsetX && (mouseOffsetX > 0 ? pageX = viewportOffset.right + this._moveDistanceForOneCell.x : pageX = viewportOffset.left - this._moveDistanceForOneCell.x), yNeedUpdate && mouseOffsetY && (mouseOffsetY > 0 ? pageY = viewportOffset.top - this._moveDistanceForOneCell.y : pageY = viewportOffset.bottom + this._moveDistanceForOneCell.y), this.handleDragTo({ pageX, pageY }, this._draggingMouseOffset.dd);
     }
     stopIntervalTimer() {
       this._autoScrollTimerId && (clearInterval(this._autoScrollTimerId), this._autoScrollTimerId = void 0);

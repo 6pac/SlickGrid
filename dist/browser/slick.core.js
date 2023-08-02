@@ -164,19 +164,20 @@ var Slick = (() => {
      * @param e {EventData}
      *      Optional.
      *      An <code>EventData</code> object to be passed to all handlers.
-     *      For DOM events, an existing W3C/jQuery event object can be passed in.
+     *      For DOM events, an existing W3C event object can be passed in.
      * @param scope {Object}
      *      Optional.
      *      The scope ("this") within which the handler will be executed.
      *      If not specified, the scope will be set to the <code>Event</code> instance.
      */
-    notify(args, e, scope) {
-      e instanceof SlickEventData || (e = new SlickEventData(e, args)), scope = scope || this;
-      for (let i = 0; i < this.handlers.length && !(e.isPropagationStopped() || e.isImmediatePropagationStopped()); i++) {
-        let returnValue = this.handlers[i].call(scope, e, args);
-        e.addReturnValue(returnValue);
+    notify(args, evt, scope) {
+      let sed = evt instanceof SlickEventData ? evt : new SlickEventData(evt, args);
+      scope = scope || this;
+      for (let i = 0; i < this.handlers.length && !(sed.isPropagationStopped() || sed.isImmediatePropagationStopped()); i++) {
+        let returnValue = this.handlers[i].call(scope, sed, args);
+        sed.addReturnValue(returnValue);
       }
-      return e;
+      return sed;
     }
   }, SlickEventHandler = class {
     constructor() {
@@ -525,11 +526,16 @@ var Slick = (() => {
     return typeof obj == "function" && typeof obj.nodeType != "number" && typeof obj.item != "function";
   }
   function isPlainObject(obj) {
-    let proto, Ctor;
-    return !obj || toString.call(obj) !== "[object Object]" ? !1 : (proto = getProto(obj), proto ? (Ctor = hasOwn.call(proto, "constructor") && proto.constructor, typeof Ctor == "function" && fnToString.call(Ctor) === ObjectFunctionString) : !0);
+    if (!obj || toString.call(obj) !== "[object Object]")
+      return !1;
+    let proto = getProto(obj);
+    if (!proto)
+      return !0;
+    let Ctor = hasOwn.call(proto, "constructor") && proto.constructor;
+    return typeof Ctor == "function" && fnToString.call(Ctor) === ObjectFunctionString;
   }
   function extend(...args) {
-    let options, name, src, copy, copyIsArray, clone, target = args[0], i = 1, length = args.length, deep = !1;
+    let options, name, src, copy, copyIsArray, clone, target = args[0], i = 1, deep = !1, length = args.length;
     for (typeof target == "boolean" ? (deep = target, target = args[i] || {}, i++) : target = target || {}, typeof target != "object" && !isFunction(target) && (target = {}), i === length && (target = this, i--); i < length; i++)
       if ((options = args[i]) != null)
         for (name in options)

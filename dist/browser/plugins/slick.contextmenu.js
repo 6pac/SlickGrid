@@ -44,7 +44,7 @@
       this._contextMenuProperties = Utils.extend({}, this._defaults, optionProperties);
     }
     init(grid) {
-      this._grid = grid, this._gridOptions = grid.getOptions(), this._gridUid = grid && grid.getUID ? grid.getUID() : "", this._handler.subscribe(this._grid.onContextMenu, this.handleOnContextMenu.bind(this)), this._contextMenuProperties.hideMenuOnScroll && this._handler.subscribe(this._grid.onScroll, this.destroyMenu.bind(this));
+      this._grid = grid, this._gridOptions = grid.getOptions(), this._gridUid = (grid == null ? void 0 : grid.getUID()) || "", this._handler.subscribe(this._grid.onContextMenu, this.handleOnContextMenu.bind(this)), this._contextMenuProperties.hideMenuOnScroll && this._handler.subscribe(this._grid.onScroll, this.destroyMenu.bind(this));
     }
     setOptions(newOptions) {
       this._contextMenuProperties = Utils.extend({}, this._contextMenuProperties, newOptions), newOptions.commandShownOverColumnIds && (this._contextMenuProperties.commandShownOverColumnIds = newOptions.commandShownOverColumnIds), newOptions.optionShownOverColumnIds && (this._contextMenuProperties.optionShownOverColumnIds = newOptions.optionShownOverColumnIds);
@@ -152,7 +152,7 @@
     /** Construct the Command Items section. */
     populateCommandItems(contextMenu, commandMenuElm, commandItems, args) {
       if (!(!args || !commandItems || !contextMenu)) {
-        contextMenu && contextMenu.commandTitle && (this._commandTitleElm = document.createElement("div"), this._commandTitleElm.className = "title", this._commandTitleElm.textContent = contextMenu.commandTitle, commandMenuElm.appendChild(this._commandTitleElm));
+        contextMenu != null && contextMenu.commandTitle && (this._commandTitleElm = document.createElement("div"), this._commandTitleElm.className = "title", this._commandTitleElm.textContent = contextMenu.commandTitle, commandMenuElm.appendChild(this._commandTitleElm));
         for (let i = 0, ln = commandItems.length; i < ln; i++) {
           let addClickListener = !0, item = commandItems[i], isItemVisible = this.runOverrideFunctionWhenExists(item.itemVisibilityOverride, args), isItemUsable = this.runOverrideFunctionWhenExists(item.itemUsabilityOverride, args);
           if (!isItemVisible)
@@ -171,7 +171,7 @@
       if (!item || item.disabled || item.divider)
         return;
       let command = item.command || "", row = this._currentRow, cell = this._currentCell, columnDef = this._grid.getColumns()[cell], dataContext = this._grid.getDataItem(row), cellValue;
-      if (Object.prototype.hasOwnProperty.call(dataContext, columnDef && columnDef.field) && (cellValue = dataContext[columnDef.field]), command !== null && command !== "") {
+      if (Object.prototype.hasOwnProperty.call(dataContext, columnDef == null ? void 0 : columnDef.field) && (cellValue = dataContext[columnDef.field]), command !== null && command !== "") {
         let callbackArgs = {
           cell,
           row,

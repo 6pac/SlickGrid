@@ -62,12 +62,12 @@
         throw new Error('RowDetailView Plugin requires the Grid instance to be passed as argument to the "init()" method');
       this._grid = grid, this._gridUid = grid.getUID(), this._gridOptions = grid.getOptions() || {}, this._dataView = this._grid.getData(), this._keyPrefix = (_b = (_a = this._options) == null ? void 0 : _a.keyPrefix) != null ? _b : "_", this._gridRowBuffer = this._gridOptions.minRowBuffer, this._gridOptions.minRowBuffer = this._options.panelRows + 3, this._eventHandler.subscribe(this._grid.onClick, this.handleClick.bind(this)).subscribe(this._grid.onScroll, this.handleScroll.bind(this)), this._options.collapseAllOnSort && (this._eventHandler.subscribe(this._grid.onSort, this.collapseAll.bind(this)), this._expandedRows = [], this._rowIdsOutOfViewport = []), this._eventHandler.subscribe(this._dataView.onRowCountChanged, () => {
         this._grid.updateRowCount(), this._grid.render();
-      }), this._eventHandler.subscribe(this._dataView.onRowsChanged, (e, a) => {
+      }), this._eventHandler.subscribe(this._dataView.onRowsChanged, (_e, a) => {
         this._grid.invalidateRows(a.rows), this._grid.render();
       }), this.subscribeToOnAsyncResponse(), this._eventHandler.subscribe(this._dataView.onSetItemsCalled, () => {
         var _a2, _b2;
         this._dataViewIdProperty = (_b2 = (_a2 = this._dataView) == null ? void 0 : _a2.getIdPropertyName()) != null ? _b2 : "id";
-      }), this._options.useSimpleViewportCalc && this._eventHandler.subscribe(this._grid.onRendered, (e, args) => {
+      }), this._options.useSimpleViewportCalc && this._eventHandler.subscribe(this._grid.onRendered, (_e, args) => {
         args != null && args.endRow && (this._visibleRenderedCellCount = args.endRow - args.startRow);
       });
     }

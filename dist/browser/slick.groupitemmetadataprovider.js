@@ -57,14 +57,7 @@
     }
     handleGridClick(e, args) {
       let target = e.target, item = this._grid.getDataItem(args.row);
-      if (item && item instanceof SlickGroup && target.classList.contains(this._options.toggleCssClass || "")) {
-        let range = this._grid.getRenderedRange();
-        this.dataView.setRefreshHints({
-          ignoreDiffsBefore: range.top,
-          ignoreDiffsAfter: range.bottom + 1
-        }), item.collapsed ? this.dataView.expandGroup(item.groupingKey) : this.dataView.collapseGroup(item.groupingKey), e.stopImmediatePropagation(), e.preventDefault();
-      }
-      if (item && item instanceof SlickGroup && target.classList.contains(this._options.checkboxSelectCssClass || "")) {
+      if (item && item instanceof SlickGroup && target.classList.contains(this._options.toggleCssClass || "") && (this.handleDataViewExpandOrCollapse(item), e.stopImmediatePropagation(), e.preventDefault()), item && item instanceof SlickGroup && target.classList.contains(this._options.checkboxSelectCssClass || "")) {
         item.selectChecked = !item.selectChecked, target.classList.remove(item.selectChecked ? "unchecked" : "checked"), target.classList.add(item.selectChecked ? "checked" : "unchecked");
         let rowIndexes = this.dataView.mapItemsToRows(item.rows);
         (item.selectChecked ? this._options.checkboxSelectPlugin.selectRows : this._options.checkboxSelectPlugin.deSelectRows)(rowIndexes);
@@ -76,15 +69,16 @@
         let activeCell = this._grid.getActiveCell();
         if (activeCell) {
           let item = this._grid.getDataItem(activeCell.row);
-          if (item && item instanceof SlickGroup) {
-            let range = this._grid.getRenderedRange();
-            this.dataView.setRefreshHints({
-              ignoreDiffsBefore: range.top,
-              ignoreDiffsAfter: range.bottom + 1
-            }), item.collapsed ? this.dataView.expandGroup(item.groupingKey) : this.dataView.collapseGroup(item.groupingKey), e.stopImmediatePropagation(), e.preventDefault();
-          }
+          item && item instanceof SlickGroup && (this.handleDataViewExpandOrCollapse(item), e.stopImmediatePropagation(), e.preventDefault());
         }
       }
+    }
+    handleDataViewExpandOrCollapse(item) {
+      let range = this._grid.getRenderedRange();
+      this.dataView.setRefreshHints({
+        ignoreDiffsBefore: range.top,
+        ignoreDiffsAfter: range.bottom + 1
+      }), item.collapsed ? this.dataView.expandGroup(item.groupingKey) : this.dataView.collapseGroup(item.groupingKey);
     }
     getGroupRowMetadata(item) {
       let groupLevel = item == null ? void 0 : item.level;
