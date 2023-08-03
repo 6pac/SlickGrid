@@ -309,9 +309,9 @@ export class SlickCheckboxSelectColumn<T = any> implements Plugin {
         const filteredItems = this._dataView.getFilteredItems();
         for (let j = 0; j < filteredItems.length; j++) {
           // Get the row and check it's a selectable ID (it could be in a different page) before pushing it onto the stack
-          const dataviewRowItem: any = filteredItems[j];
+          const dataviewRowItem: T = filteredItems[j];
           if (this.checkSelectableOverride(j, dataviewRowItem, this._grid)) {
-            ids.push(dataviewRowItem[this._dataView.getIdPropertyName() as keyof T]);
+            ids.push(dataviewRowItem[this._dataView.getIdPropertyName() as keyof T] as number | string);
           }
         }
         this._dataView.setSelectedIds(ids, { isRowBeingAdded: isAllSelected });

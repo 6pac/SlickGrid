@@ -1,4 +1,4 @@
-import type { CellRange, CssStyleHash, Plugin } from '../models/index';
+import type { CssStyleHash, Plugin } from '../models/index';
 import { SlickEvent as SlickEvent_, keyCode as keyCode_, Utils as Utils_, SlickRange } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 
@@ -14,14 +14,14 @@ export class SlickCellCopyManager implements Plugin {
   // --
   // public API
   pluginName = 'CellCopyManager' as const;
-  onCopyCells = new SlickEvent<{ ranges: CellRange[] | null; }>();
-  onCopyCancelled = new SlickEvent<{ ranges: CellRange[] | null; }>();
-  onPasteCells = new SlickEvent<{ from: CellRange[] | undefined; to: CellRange[] | undefined; }>();
+  onCopyCells = new SlickEvent<{ ranges: SlickRange[] | null; }>();
+  onCopyCancelled = new SlickEvent<{ ranges: SlickRange[] | null; }>();
+  onPasteCells = new SlickEvent<{ from: SlickRange[] | undefined; to: SlickRange[] | undefined; }>();
 
   // --
   // protected props
   protected _grid!: SlickGrid;
-  protected _copiedRanges?: CellRange[] | null = null;
+  protected _copiedRanges?: SlickRange[] | null = null;
 
   init(grid: SlickGrid) {
     this._grid = grid;

@@ -913,7 +913,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     if (e instanceof SlickEventData) {
-      e = e.getNativeEvent();
+      e = e.getNativeEvent<Event>();
     }
 
     this._activeCanvasNode = (e as any)?.target.closest('.grid-canvas');
@@ -944,7 +944,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   /** Sets an active viewport node */
   setActiveViewportNode(e: Event | SlickEventData_) {
     if (e instanceof SlickEventData) {
-      e = e.getNativeEvent();
+      e = e.getNativeEvent<Event>();
     }
     this._activeViewportNode = (e as any)?.target.closest('.slick-viewport');
     return this._activeViewportNode;
@@ -3833,7 +3833,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.makeActiveCellNormal();
     }
     for (const row in this.rowsCache) {
-      this.removeRowFromCache(Number(row));
+      this.removeRowFromCache(+row);
     }
     if (this._options.enableAsyncPostRenderCleanup) { this.startPostProcessingCleanup(); }
   }
@@ -4174,7 +4174,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const r1 = dataLength - 1;
     for (const i in this.rowsCache) {
       if (Number(i) > r1) {
-        this.removeRowFromCache(Number(i));
+        this.removeRowFromCache(+i);
       }
     }
     if (this._options.enableAsyncPostRenderCleanup) {
@@ -4297,15 +4297,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (cacheEntry) {
       if (cacheEntry.cellRenderQueue.length) {
         const rowNode = cacheEntry.rowNode as HTMLElement[];
-        let children = Array.from(rowNode[0].children);
+        let children = Array.from(rowNode[0].children) as HTMLElement[];
         if (rowNode.length > 1) {
-          children = children.concat(Array.from(rowNode[1].children));
+          children = children.concat(Array.from(rowNode[1].children) as HTMLElement[]);
         }
 
         let i = children.length - 1;
         while (cacheEntry.cellRenderQueue.length) {
           const columnIdx = cacheEntry.cellRenderQueue.pop();
-          (cacheEntry.cellNodesByColumnIdx as any)[columnIdx] = children[i--];
+          (cacheEntry.cellNodesByColumnIdx as HTMLElement[])[columnIdx] = children[i--];
         }
       }
     }
@@ -5309,7 +5309,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected getRowFromNode(rowNode: HTMLElement): number | null {
     for (const row in this.rowsCache) {
       for (const i in this.rowsCache[row].rowNode) {
-        if (this.rowsCache[row].rowNode![+i] === rowNode) {
+        if (this.rowsCache[row].rowNode?.[+i] === rowNode) {
           return (row ? parseInt(row) : 0);
         }
       }
@@ -5479,9 +5479,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (this.activeCellNode !== null) {
       this.makeActiveCellNormal();
       this.activeCellNode.classList.remove('active');
-      if (this.rowsCache[this.activeRow]) {
-        this.rowsCache[this.activeRow].rowNode!.forEach((node) => node.classList.remove('active'));
-      }
+      this.rowsCache[this.activeRow].rowNode?.forEach((node) => node.classList.remove('active'));
     }
 
     // let activeCellChanged = (this.activeCellNode !== newCell);
@@ -5508,11 +5506,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       if (this._options.showCellSelection) {
         this.activeCellNode.classList.add('active');
-        if (this.rowsCache[this.activeRow]) {
-          this.rowsCache[this.activeRow].rowNode!.forEach((node) => {
-            node.classList.add('active');
-          });
-        }
+        this.rowsCache[this.activeRow].rowNode?.forEach((node) => node.classList.add('active'));
       }
 
       if (this._options.editable && opt_editMode && this.isCellPotentiallyEditable(this.activeRow, this.activeCell)) {

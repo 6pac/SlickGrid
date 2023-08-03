@@ -169,7 +169,7 @@ export class SlickCrossGridRowMoveManager {
     }
 
     evt.stopImmediatePropagation();
-    const e = evt.getNativeEvent();
+    const e = evt.getNativeEvent<MouseEvent | TouchEvent>();
 
     const targetEvent = (e as TouchEvent).touches?.[0] ?? e;
     const top = targetEvent.pageY - (Utils.offset(this._toCanvas)?.top ?? 0);
@@ -281,7 +281,7 @@ export class SlickCrossGridRowMoveManager {
   }
 
   isHandlerColumn(columnIndex: number | string) {
-    return /move|selectAndMove/.test((this._grid.getColumns() as any)[columnIndex].behavior);
+    return /move|selectAndMove/.test(this._grid.getColumns()[+columnIndex].behavior || '');
   }
 }
 

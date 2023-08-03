@@ -161,7 +161,7 @@ export class SlickRowMoveManager {
     }
 
     evt.stopImmediatePropagation();
-    const e = evt.getNativeEvent();
+    const e = evt.getNativeEvent<MouseEvent | TouchEvent>();
 
     const targetEvent = (e as TouchEvent)?.touches?.[0] ?? e;
     const top = targetEvent.pageY - (Utils.offset(this._canvas)?.top ?? 0);
@@ -271,7 +271,7 @@ export class SlickRowMoveManager {
   }
 
   isHandlerColumn(columnIndex: number | string) {
-    return /move|selectAndMove/.test((this._grid.getColumns() as any)[columnIndex].behavior);
+    return /move|selectAndMove/.test(this._grid.getColumns()[+columnIndex].behavior || '');
   }
 }
 

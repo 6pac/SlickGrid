@@ -474,7 +474,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
 
   /** Get an item in the DataView by its Id */
   getItemById(id: number | string) {
-    return this.items[(this.idxById.get(id) ?? '') as any];
+    return this.items[(this.idxById.get(id) ?? -1)];
   }
 
   /** From the items array provided, return the mapped rows */
@@ -1606,7 +1606,6 @@ export class AvgAggregator<T = any> implements Aggregator {
   }
 
   storeResult(groupTotals: SlickGroupTotals_ & { avg: Record<number | string, number>; }) {
-    console.log('groupTotals', groupTotals, this.type)
     if (!groupTotals || groupTotals[this._type] === undefined) {
       (groupTotals as any)[this._type] = {};
     }
