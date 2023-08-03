@@ -5479,7 +5479,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (this.activeCellNode !== null) {
       this.makeActiveCellNormal();
       this.activeCellNode.classList.remove('active');
-      this.rowsCache[this.activeRow].rowNode?.forEach((node) => node.classList.remove('active'));
+      this.rowsCache[this.activeRow]?.rowNode?.forEach((node) => node.classList.remove('active'));
     }
 
     // let activeCellChanged = (this.activeCellNode !== newCell);
@@ -5506,7 +5506,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       if (this._options.showCellSelection) {
         this.activeCellNode.classList.add('active');
-        this.rowsCache[this.activeRow].rowNode?.forEach((node) => node.classList.add('active'));
+        this.rowsCache[this.activeRow]?.rowNode?.forEach((node) => node.classList.add('active'));
       }
 
       if (this._options.editable && opt_editMode && this.isCellPotentiallyEditable(this.activeRow, this.activeCell)) {
