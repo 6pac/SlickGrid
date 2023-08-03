@@ -288,7 +288,7 @@ export class SlickGridMenu {
     this._menuElm?.remove();
   }
 
-  protected populateCustomMenus(gridMenuOptions: GridMenuOption, customMenuElm) {
+  protected populateCustomMenus(gridMenuOptions: GridMenuOption, customMenuElm: HTMLElement) {
     // Construct the custom menu items.
     if (!gridMenuOptions || !gridMenuOptions.customItems) {
       return;
@@ -468,7 +468,7 @@ export class SlickGridMenu {
 
       const labelElm = document.createElement('label');
       labelElm.htmlFor = `${this._gridUid}-gridmenu-colpicker-${columnId}`;
-      labelElm.innerHTML = columnLabel;
+      labelElm.innerHTML = columnLabel || '';
       liElm.appendChild(labelElm);
       this._listElm.appendChild(liElm);
     }

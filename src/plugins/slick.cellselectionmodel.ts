@@ -113,7 +113,7 @@ export class SlickCellSelectionModel {
     this.setSelectedRanges(this.getSelectedRanges());
   }
 
-  protected handleBeforeCellRangeSelected(e): boolean | void {
+  protected handleBeforeCellRangeSelected(e: Event): boolean | void {
     if (this._grid.getEditorLock().isActive()) {
       e.stopPropagation();
       return false;

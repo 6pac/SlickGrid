@@ -403,10 +403,8 @@ export class SlickCellMenu implements Plugin {
     }
   }
 
-  protected handleCellClick(e: DOMMouseOrTouchEvent<HTMLDivElement>, args: MenuCommandItemCallbackArgs) {
-    if (e instanceof SlickEventData) {
-      e = (e as SlickEventData_).getNativeEvent();
-    }
+  protected handleCellClick(evt: SlickEventData_ | DOMMouseOrTouchEvent<HTMLDivElement>, args: MenuCommandItemCallbackArgs) {
+    const e = (evt instanceof SlickEventData) ? evt.getNativeEvent<DOMMouseOrTouchEvent<HTMLDivElement>>() : evt;
 
     const cell = this._grid.getCellFromEvent(e);
     if (cell) {

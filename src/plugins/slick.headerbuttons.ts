@@ -89,7 +89,7 @@ export class SlickHeaderButtons implements Plugin {
 
   // --
   // protected props
-  protected _grid;
+  protected _grid!: SlickGrid;
   protected _handler = new EventHandler();
   protected _bindingEventService = new BindingEventService();
   protected _defaults: HeaderButtonOption = {

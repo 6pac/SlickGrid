@@ -215,7 +215,7 @@ export class SlickHeaderMenu implements Plugin {
     }
   }
 
-  protected handleBeforeHeaderCellDestroy(_e, args) {
+  protected handleBeforeHeaderCellDestroy(_e: Event, args: { column: Column; node: HTMLElement; }) {
     const column = args.column;
 
     if (column.header?.menu) {

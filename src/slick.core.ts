@@ -5,7 +5,7 @@
  */
 
 
-import type { EditController, ElementEventListener, Handler, InferDOMType, MergeTypes } from './models/index';
+import type { CSSStyleDeclarationWritable, EditController, ElementEventListener, Handler, InferDOMType, MergeTypes } from './models/index';
 
 /**
  * An event object for passing data to event handlers and letting them control propagation.
@@ -19,7 +19,7 @@ export class SlickEventData {
   protected _isDefaultPrevented = false;
   protected returnValues: string[] = [];
   protected returnValue = undefined;
-  protected target?: HTMLElement;
+  protected target?: EventTarget | null;
   protected nativeEvent;
   protected arguments_;
 
@@ -36,7 +36,7 @@ export class SlickEventData {
         'bubbles', 'type', 'which', 'x', 'y'
       ];
       for (const key of eventProps) {
-        this[key] = event[key];
+        (this as any)[key] = event[key as keyof Event];
       }
     }
     this.target = this.nativeEvent ? this.nativeEvent.target : undefined;
@@ -48,9 +48,7 @@ export class SlickEventData {
    */
   stopPropagation() {
     this._isPropagationStopped = true;
-    if (this.nativeEvent) {
-      this.nativeEvent.stopPropagation();
-    }
+    this.nativeEvent?.stopPropagation();
   }
 
   /**
@@ -82,8 +80,8 @@ export class SlickEventData {
     return this._isImmediatePropagationStopped;
   };
 
-  getNativeEvent() {
-    return this.nativeEvent;
+  getNativeEvent<E extends Event>() {
+    return this.nativeEvent as E;
   }
 
   preventDefault() {
@@ -100,7 +98,7 @@ export class SlickEventData {
     return this._isDefaultPrevented;
   }
 
-  addReturnValue(value) {
+  addReturnValue(value: any) {
     this.returnValues.push(value);
     if (this.returnValue === undefined && value !== undefined) {
       this.returnValue = value;
@@ -356,7 +354,7 @@ export class SlickGroup extends SlickNonDataItem {
    * @property collapsed
    * @type {Boolean}
    */
-  collapsed = false;
+  collapsed: boolean | number = false;
 
   /**
    * Whether a group selection checkbox is checked.
@@ -471,7 +469,7 @@ export class SlickEditorLock {
    * @method activate
    * @param editController {EditController} edit controller acquiring the lock
    */
-  activate(editController) {
+  activate(editController: EditController) {
     if (editController === this.activeEditController) { // already activated?
       return;
     }
@@ -493,7 +491,7 @@ export class SlickEditorLock {
    * @method deactivate
    * @param editController {EditController} edit controller releasing the lock
    */
-  deactivate(editController) {
+  deactivate(editController: EditController) {
     if (!this.activeEditController) {
       return;
     }
@@ -527,7 +525,7 @@ export class SlickEditorLock {
   };
 }
 
-function regexSanitizer(dirtyHtml) {
+function regexSanitizer(dirtyHtml: string) {
   return dirtyHtml.replace(/(\b)(on[a-z]+)(\s*)=|javascript:([^>]*)[^>]*|(<\s*)(\/*)script([<>]*).*(<\s*)(\/*)script(>*)|(&lt;)(\/*)(script|script defer)(.*)(&gt;|&gt;">)/gi, '');
 }
 
@@ -668,9 +666,9 @@ function setStyleSize(el: HTMLElement, style: string, val?: number | string | Fu
   if (typeof val === 'function') {
     val = val();
   } else if (typeof val === 'string') {
-    el.style[style] = val;
+    el.style[style as CSSStyleDeclarationWritable] = val;
   } else {
-    el.style[style] = val + 'px';
+    el.style[style as CSSStyleDeclarationWritable] = val + 'px';
   }
 }
 

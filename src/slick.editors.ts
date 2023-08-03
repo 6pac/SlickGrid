@@ -1,4 +1,4 @@
-import type { Editor, EditorArguments, EditorValidationResult } from './models/index';
+import type { Editor, EditorArguments, EditorValidationResult, ElementPosition } from './models/index';
 import { keyCode as keyCode_, Utils as Utils_ } from './slick.core';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -66,11 +66,11 @@ export class TextEditor implements Editor {
     return this.input.value;
   }
 
-  setValue(val) {
+  setValue(val: string) {
     this.input.value = val;
   }
 
-  loadValue(item) {
+  loadValue(item: any) {
     this.defaultValue = item[this.args.column.field] || '';
     this.input.value = String(this.defaultValue ?? '');
     this.input.defaultValue = String(this.defaultValue ?? '');
@@ -155,7 +155,7 @@ export class IntegerEditor implements Editor {
     this.input.focus();
   }
 
-  loadValue(item) {
+  loadValue(item: any) {
     this.defaultValue = item[this.args.column.field];
     this.input.value = String(this.defaultValue ?? '');
     this.input.defaultValue = String(this.defaultValue ?? '');
@@ -262,7 +262,7 @@ export class FloatEditor implements Editor {
     return (!rtn && rtn !== 0 ? null : rtn);
   }
 
-  loadValue(item) {
+  loadValue(item: any) {
     this.defaultValue = item[this.args.column.field];
 
     const decPlaces = this.getDecimalPlaces();
@@ -406,7 +406,7 @@ export class FlatpickrEditor implements Editor {
     this.input.focus();
   }
 
-  loadValue(item) {
+  loadValue(item: any) {
     this.defaultValue = item[this.args.column.field];
     this.input.value = String(this.defaultValue ?? '');
     this.input.defaultValue = String(this.defaultValue ?? '');
@@ -492,7 +492,7 @@ export class YesNoSelectEditor implements Editor {
     this.select.focus();
   }
 
-  loadValue(item) {
+  loadValue(item: any) {
     this.select.value = ((this.defaultValue = item[this.args.column.field]) ? 'yes' : 'no');
   }
 
@@ -674,7 +674,7 @@ export class PercentCompleteEditor implements Editor {
     this.input.focus();
   };
 
-  loadValue(item) {
+  loadValue(item: any) {
     this.defaultValue = item[this.args.column.field];
     this.slider!.value = String(this.defaultValue ?? '');
     this.input.value = String(this.defaultValue);
@@ -750,7 +750,7 @@ export class LongTextEditor implements Editor {
       this.wrapper.querySelector('#save')!.addEventListener('click', this.save.bind(this));
       this.wrapper.querySelector('#cancel')!.addEventListener('click', this.cancel.bind);
       this.input.addEventListener('keydown', this.handleKeyDown.bind(this) as EventListener);
-      this.position(this.args.position);
+      this.position(this.args.position as ElementPosition);
     }
 
     this.input.focus();
@@ -824,9 +824,9 @@ export class LongTextEditor implements Editor {
     Utils.show(this.wrapper);
   };
 
-  position(position) {
-    Utils.setStyleSize(this.wrapper, 'top', position.top - 5);
-    Utils.setStyleSize(this.wrapper, 'left', position.left - 2);
+  position(position: ElementPosition) {
+    Utils.setStyleSize(this.wrapper, 'top', (position.top || 0) - 5);
+    Utils.setStyleSize(this.wrapper, 'left', (position.left || 0) - 2);
   };
 
   destroy() {
@@ -844,7 +844,7 @@ export class LongTextEditor implements Editor {
     this.input.focus();
   };
 
-  loadValue(item) {
+  loadValue(item: any) {
     this.input.value = this.defaultValue = item[this.args.column.field];
     this.input.select();
   };
@@ -890,7 +890,7 @@ function handleKeydownLRNav(e: KeyboardEvent & { target: HTMLInputElement; selec
   }
 }
 
-function handleKeydownLRNoNav(e) {
+function handleKeydownLRNoNav(e: KeyboardEvent) {
   if (e.keyCode === keyCode.LEFT || e.keyCode === keyCode.RIGHT) {
     e.stopImmediatePropagation();
   }

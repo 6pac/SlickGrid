@@ -152,10 +152,10 @@ export class SlickState implements Plugin {
             if (state.columns) {
               const defaultColumns = this._options.defaultColumns;
               if (defaultColumns) {
-                const defaultColumnsLookup = {};
+                const defaultColumnsLookup: any = {};
                 defaultColumns.forEach((colDef) => defaultColumnsLookup[colDef.id] = colDef);
 
-                const cols = [];
+                const cols: Array<{ id: string | number; width: number | undefined; }> = [];
                 (state.columns || []).forEach((columnDef) => {
                   if (defaultColumnsLookup[columnDef.id]) {
                     cols.push(Utils.extend(true, {}, defaultColumnsLookup[columnDef.id], {

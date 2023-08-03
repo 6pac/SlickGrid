@@ -575,7 +575,7 @@ export class SlickRowDetailView {
 
   /** Get the Row Detail padding (which are the rows dedicated to the detail panel) */
   protected getPaddingItem(parent: any, offset: any) {
-    const item = {};
+    const item: any = {};
 
     for (const prop in this._dataView) {
       item[prop] = null;

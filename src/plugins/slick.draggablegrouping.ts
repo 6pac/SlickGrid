@@ -1,3 +1,4 @@
+// @ts-ignore
 import type SortableInstance from 'sortablejs';
 
 import type { Column, DOMMouseOrTouchEvent, DraggableGroupingOption, Grouping, GroupingGetterFunction } from '../models/index';
@@ -285,7 +286,7 @@ export class SlickDraggableGrouping {
       ghostClass: 'slick-droppable-sortitem-hover',
       draggable: '.slick-dropped-grouping',
       dragoverBubble: true,
-      onAdd: (evt) => {
+      onAdd: (evt: MouseEvent & { item: any; clone: HTMLElement; originalEvent: MouseEvent; }) => {
         const el = evt.item;
         const elId = el.getAttribute('id');
         if (elId?.replace(this._gridUid, '')) {
@@ -440,8 +441,8 @@ export class SlickDraggableGrouping {
   protected removeGroupBy(id: string | number, _hdrColumnElm: HTMLDivElement, entry: any) {
     entry.remove();
     const groupby: Column[] = [];
-    this._gridColumns.forEach((col) => groupby[col.id] = col);
-    this.removeFromArray(this._columnsGroupBy, groupby[id]);
+    this._gridColumns.forEach((col) => groupby[col.id as any] = col);
+    this.removeFromArray(this._columnsGroupBy, groupby[id as any]);
     if (this._columnsGroupBy.length === 0) {
       this._dropzonePlaceholder.style.display = 'block';
       if (this._groupToggler) {
