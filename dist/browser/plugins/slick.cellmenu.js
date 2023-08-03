@@ -126,9 +126,8 @@
         this._menuElm.style.top = `${menuOffsetTop}px`, this._menuElm.style.left = `${menuOffsetLeft}px`;
       }
     }
-    handleCellClick(e, args) {
-      e instanceof SlickEventData && (e = e.getNativeEvent());
-      let cell = this._grid.getCellFromEvent(e);
+    handleCellClick(evt, args) {
+      let e = evt instanceof SlickEventData ? evt.getNativeEvent() : evt, cell = this._grid.getCellFromEvent(e);
       if (cell) {
         let dataContext = this._grid.getDataItem(cell.row), columnDef = this._grid.getColumns()[cell.cell];
         if (columnDef != null && columnDef.cellMenu && e.preventDefault(), this._cellMenuProperties = Utils.extend({}, this._cellMenuProperties, columnDef.cellMenu), args = args || {}, args.column = columnDef, args.dataContext = dataContext, args.grid = this._grid, !this.runOverrideFunctionWhenExists(this._cellMenuProperties.menuUsabilityOverride, args))

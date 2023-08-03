@@ -53,19 +53,18 @@
       var _a;
       this.onAfterMenuShow.unsubscribe(), this.onBeforeMenuShow.unsubscribe(), this.onBeforeMenuClose.unsubscribe(), this.onCommand.unsubscribe(), this.onOptionSelected.unsubscribe(), this._handler.unsubscribeAll(), this._bindingEventService.unbindAll(), (_a = this._menuElm) == null || _a.remove(), this._commandTitleElm = null, this._optionTitleElm = null, this._menuElm = null;
     }
-    createMenu(e) {
-      var _a, _b, _c, _d, _e, _f;
-      e instanceof SlickEventData && (e = e.getNativeEvent());
-      let targetEvent = e.touches ? e.touches[0] : e, cell = this._grid.getCellFromEvent(e);
-      this._currentCell = (_a = cell == null ? void 0 : cell.cell) != null ? _a : 0, this._currentRow = (_b = cell == null ? void 0 : cell.row) != null ? _b : 0;
-      let columnDef = this._grid.getColumns()[this._currentCell], dataContext = this._grid.getDataItem(this._currentRow), isColumnOptionAllowed = this.checkIsColumnAllowed((_c = this._contextMenuProperties.optionShownOverColumnIds) != null ? _c : [], columnDef.id), isColumnCommandAllowed = this.checkIsColumnAllowed((_d = this._contextMenuProperties.commandShownOverColumnIds) != null ? _d : [], columnDef.id), commandItems = this._contextMenuProperties.commandItems || [], optionItems = this._contextMenuProperties.optionItems || [];
+    createMenu(evt) {
+      var _a, _b, _c, _d, _e, _f, _g, _h;
+      let e = evt instanceof SlickEventData ? evt.getNativeEvent() : evt, targetEvent = (_b = (_a = e.touches) == null ? void 0 : _a[0]) != null ? _b : e, cell = this._grid.getCellFromEvent(e);
+      this._currentCell = (_c = cell == null ? void 0 : cell.cell) != null ? _c : 0, this._currentRow = (_d = cell == null ? void 0 : cell.row) != null ? _d : 0;
+      let columnDef = this._grid.getColumns()[this._currentCell], dataContext = this._grid.getDataItem(this._currentRow), isColumnOptionAllowed = this.checkIsColumnAllowed((_e = this._contextMenuProperties.optionShownOverColumnIds) != null ? _e : [], columnDef.id), isColumnCommandAllowed = this.checkIsColumnAllowed((_f = this._contextMenuProperties.commandShownOverColumnIds) != null ? _f : [], columnDef.id), commandItems = this._contextMenuProperties.commandItems || [], optionItems = this._contextMenuProperties.optionItems || [];
       if (!columnDef || !isColumnCommandAllowed && !isColumnOptionAllowed || !commandItems.length && !optionItems.length || (this.destroyMenu(e), this.onBeforeMenuShow.notify({
         cell: this._currentCell,
         row: this._currentRow,
         grid: this._grid
       }, e, this).getReturnValue() == !1))
         return;
-      let maxHeight = isNaN(this._contextMenuProperties.maxHeight) ? this._contextMenuProperties.maxHeight : `${(_e = this._contextMenuProperties.maxHeight) != null ? _e : 0}px`, width = isNaN(this._contextMenuProperties.width) ? this._contextMenuProperties.width : `${(_f = this._contextMenuProperties.maxWidth) != null ? _f : 0}px`;
+      let maxHeight = isNaN(this._contextMenuProperties.maxHeight) ? this._contextMenuProperties.maxHeight : `${(_g = this._contextMenuProperties.maxHeight) != null ? _g : 0}px`, width = isNaN(this._contextMenuProperties.width) ? this._contextMenuProperties.width : `${(_h = this._contextMenuProperties.maxWidth) != null ? _h : 0}px`;
       this._menuElm = document.createElement("div"), this._menuElm.className = `slick-context-menu ${this._gridUid}`, this._menuElm.role = "menu", width && (this._menuElm.style.width = width), maxHeight && (this._menuElm.style.maxHeight = maxHeight), this._menuElm.style.top = `${targetEvent.pageY}px`, this._menuElm.style.left = `${targetEvent.pageX}px`, this._menuElm.style.display = "none";
       let closeButtonElm = document.createElement("button");
       closeButtonElm.type = "button", closeButtonElm.className = "close", closeButtonElm.dataset.dismiss = "slick-context-menu", closeButtonElm.ariaLabel = "Close";
@@ -119,8 +118,9 @@
         isAllowedColumn = !0;
       return isAllowedColumn;
     }
-    handleOnContextMenu(e, args) {
-      e instanceof SlickEventData && (e = e.getNativeEvent()), e.preventDefault();
+    handleOnContextMenu(evt, args) {
+      let e = evt instanceof SlickEventData ? evt.getNativeEvent() : evt;
+      e.preventDefault();
       let cell = this._grid.getCellFromEvent(e);
       if (cell) {
         let columnDef = this._grid.getColumns()[cell.cell], dataContext = this._grid.getDataItem(cell.row);
@@ -207,9 +207,9 @@
      * @param {*} event
      */
     repositionMenu(e) {
-      var _a, _b, _c;
+      var _a, _b, _c, _d, _e;
       if (this._menuElm && e.target) {
-        let targetEvent = e.touches ? e.touches[0] : e, parentElm = e.target.closest(".slick-cell"), parentOffset = parentElm && Utils.offset(parentElm), menuOffsetLeft = targetEvent.pageX, menuOffsetTop = parentElm ? (_a = parentOffset == null ? void 0 : parentOffset.top) != null ? _a : 0 : targetEvent.pageY, menuHeight = ((_b = this._menuElm) == null ? void 0 : _b.offsetHeight) || 0, menuWidth = ((_c = this._menuElm) == null ? void 0 : _c.offsetWidth) || this._contextMenuProperties.width || 0, rowHeight = this._gridOptions.rowHeight, dropOffset = this._contextMenuProperties.autoAdjustDropOffset, sideOffset = this._contextMenuProperties.autoAlignSideOffset;
+        let targetEvent = (_b = (_a = e.touches) == null ? void 0 : _a[0]) != null ? _b : e, parentElm = e.target.closest(".slick-cell"), parentOffset = parentElm && Utils.offset(parentElm), menuOffsetLeft = targetEvent.pageX, menuOffsetTop = parentElm ? (_c = parentOffset == null ? void 0 : parentOffset.top) != null ? _c : 0 : targetEvent.pageY, menuHeight = ((_d = this._menuElm) == null ? void 0 : _d.offsetHeight) || 0, menuWidth = ((_e = this._menuElm) == null ? void 0 : _e.offsetWidth) || this._contextMenuProperties.width || 0, rowHeight = this._gridOptions.rowHeight, dropOffset = this._contextMenuProperties.autoAdjustDropOffset, sideOffset = this._contextMenuProperties.autoAlignSideOffset;
         if (this._contextMenuProperties.autoAdjustDrop) {
           let spaceBottom = Utils.calculateAvailableSpace(parentElm).bottom, spaceTop = Utils.calculateAvailableSpace(parentElm).top, spaceBottomRemaining = spaceBottom + dropOffset - rowHeight, spaceTopRemaining = spaceTop - dropOffset + rowHeight;
           (spaceBottomRemaining < menuHeight && spaceTopRemaining > spaceBottomRemaining ? "top" : "bottom") === "top" ? (this._menuElm.classList.remove("dropdown"), this._menuElm.classList.add("dropup"), menuOffsetTop = menuOffsetTop - menuHeight - dropOffset) : (this._menuElm.classList.remove("dropup"), this._menuElm.classList.add("dropdown"), menuOffsetTop = menuOffsetTop + rowHeight + dropOffset);

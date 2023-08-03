@@ -269,8 +269,7 @@
     }
     /** Get an item in the DataView by its Id */
     getItemById(id) {
-      var _a2;
-      return this.items[(_a2 = this.idxById.get(id)) != null ? _a2 : ""];
+      return this.items[this.idxById.get(id)];
     }
     /** From the items array provided, return the mapped rows */
     mapItemsToRows(itemArray) {
@@ -300,7 +299,7 @@
       for (let i = 0, l = rowArray.length; i < l; i++)
         if (rowArray[i] < this.rows.length) {
           let rowItem = this.rows[rowArray[i]];
-          ids[ids.length] = rowItem == null ? void 0 : rowItem[this.idProperty];
+          ids[ids.length] = rowItem[this.idProperty];
         }
       return ids;
     }

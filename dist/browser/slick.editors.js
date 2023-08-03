@@ -495,7 +495,7 @@
       Utils.show(this.wrapper);
     }
     position(position) {
-      Utils.setStyleSize(this.wrapper, "top", position.top - 5), Utils.setStyleSize(this.wrapper, "left", position.left - 2);
+      Utils.setStyleSize(this.wrapper, "top", (position.top || 0) - 5), Utils.setStyleSize(this.wrapper, "left", (position.left || 0) - 2);
     }
     destroy() {
       this.args.compositeEditorOptions ? this.input.removeEventListener("change", this.onChange.bind(this)) : (this.wrapper.querySelector("#save").removeEventListener("click", this.save.bind(this)), this.wrapper.querySelector("#cancel").removeEventListener("click", this.cancel.bind(this)), this.input.removeEventListener("keydown", this.handleKeyDown.bind(this))), this.wrapper.remove();

@@ -15,7 +15,7 @@
       formValues: {},
       editors: {}
     }, noop = function() {
-    }, firstInvalidEditor;
+    }, firstInvalidEditor = null;
     options = Slick.Utils.extend({}, defaultOptions, options);
     function getContainerBox(i) {
       var _a, _b, _c, _d;

@@ -16,7 +16,7 @@
       // --
       // protected props
       __publicField(this, "_grid");
-      __publicField(this, "_copiedRanges");
+      __publicField(this, "_copiedRanges", null);
     }
     init(grid) {
       this._grid = grid, this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this));
@@ -25,8 +25,9 @@
       this._grid.onKeyDown.unsubscribe(this.handleKeyDown.bind(this));
     }
     handleKeyDown(e) {
+      var _a, _b, _c;
       let ranges;
-      this._grid.getEditorLock().isActive() || (e.which == keyCode.ESCAPE && this._copiedRanges && (e.preventDefault(), this.clearCopySelection(), this.onCopyCancelled.notify({ ranges: this._copiedRanges }), this._copiedRanges = null), e.which == 67 && (e.ctrlKey || e.metaKey) && (ranges = this._grid.getSelectionModel().getSelectedRanges(), ranges.length !== 0 && (e.preventDefault(), this._copiedRanges = ranges, this.markCopySelection(ranges), this.onCopyCells.notify({ ranges }))), e.which == 86 && (e.ctrlKey || e.metaKey) && this._copiedRanges && (e.preventDefault(), ranges = this._grid.getSelectionModel().getSelectedRanges(), this.onPasteCells.notify({ from: this._copiedRanges, to: ranges }), this._grid.getOptions().preserveCopiedSelectionOnPaste || (this.clearCopySelection(), this._copiedRanges = null)));
+      this._grid.getEditorLock().isActive() || (e.which == keyCode.ESCAPE && this._copiedRanges && (e.preventDefault(), this.clearCopySelection(), this.onCopyCancelled.notify({ ranges: this._copiedRanges }), this._copiedRanges = null), e.which == 67 && (e.ctrlKey || e.metaKey) && (ranges = (_b = (_a = this._grid.getSelectionModel()) == null ? void 0 : _a.getSelectedRanges()) != null ? _b : [], ranges.length !== 0 && (e.preventDefault(), this._copiedRanges = ranges, this.markCopySelection(ranges), this.onCopyCells.notify({ ranges }))), e.which == 86 && (e.ctrlKey || e.metaKey) && this._copiedRanges && (e.preventDefault(), ranges = (_c = this._grid.getSelectionModel()) == null ? void 0 : _c.getSelectedRanges(), this.onPasteCells.notify({ from: this._copiedRanges, to: ranges }), this._grid.getOptions().preserveCopiedSelectionOnPaste || (this.clearCopySelection(), this._copiedRanges = null)));
     }
     markCopySelection(ranges) {
       let columns = this._grid.getColumns(), hash = {};

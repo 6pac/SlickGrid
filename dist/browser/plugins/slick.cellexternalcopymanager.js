@@ -5,7 +5,7 @@
   var __publicField = (obj, key, value) => (__defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value), value);
 
   // src/plugins/slick.cellexternalcopymanager.ts
-  var SlickEvent = Slick.Event, Utils = Slick.Utils, CLEAR_COPY_SELECTION_DELAY = 2e3, CLIPBOARD_PASTE_DELAY = 100, SlickCellExternalCopyManager = class {
+  var SlickEvent = Slick.Event, SlickRange = Slick.Range, Utils = Slick.Utils, CLEAR_COPY_SELECTION_DELAY = 2e3, CLIPBOARD_PASTE_DELAY = 100, SlickCellExternalCopyManager = class {
     constructor(options) {
       // --
       // public API
@@ -98,13 +98,14 @@
       return ta.style.position = "absolute", ta.style.left = "-1000px", ta.style.top = document.body.scrollTop + "px", ta.value = innerText, this._bodyElement.appendChild(ta), ta.select(), ta;
     }
     _decodeTabularData(grid, ta) {
+      var _a;
       let columns = grid.getColumns(), clipRows = ta.value.split(/[\n\f\r]/);
       clipRows[clipRows.length - 1] === "" && clipRows.pop();
       let j = 0, clippedRange = [];
       this._bodyElement.removeChild(ta);
       for (let i = 0; i < clipRows.length; i++)
         clipRows[i] !== "" ? clippedRange[j++] = clipRows[i].split("	") : clippedRange[j++] = [""];
-      let selectedCell = grid.getActiveCell(), ranges = grid.getSelectionModel().getSelectedRanges(), selectedRange = ranges && ranges.length ? ranges[0] : null, activeRow, activeCell;
+      let selectedCell = grid.getActiveCell(), ranges = (_a = grid.getSelectionModel()) == null ? void 0 : _a.getSelectedRanges(), selectedRange = ranges && ranges.length ? ranges[0] : null, activeRow, activeCell;
       if (selectedRange)
         activeRow = selectedRange.fromRow, activeCell = selectedRange.fromCell;
       else if (selectedCell)
@@ -143,6 +144,7 @@
         h: 0,
         w: 0,
         execute: () => {
+          var _a2;
           this._clipCommand.h = 0;
           for (let y = 0; y < this._clipCommand.destH; y++) {
             this._clipCommand.oldValues[y] = [], this._clipCommand.w = 0, this._clipCommand.h++;
@@ -161,15 +163,16 @@
               }
             }
           }
-          let bRange = {
-            fromCell: activeCell,
-            fromRow: activeRow,
-            toCell: activeCell + this._clipCommand.w - 1,
-            toRow: activeRow + this._clipCommand.h - 1
-          };
-          this.markCopySelection([bRange]), grid.getSelectionModel().setSelectedRanges([bRange]), this.onPasteCells.notify({ ranges: [bRange] });
+          let bRange = new SlickRange(
+            activeCell,
+            activeRow,
+            activeCell + this._clipCommand.w - 1,
+            activeRow + this._clipCommand.h - 1
+          );
+          this.markCopySelection([bRange]), (_a2 = grid.getSelectionModel()) == null || _a2.setSelectedRanges([bRange]), this.onPasteCells.notify({ ranges: [bRange] });
         },
         undo: () => {
+          var _a2;
           for (let y = 0; y < this._clipCommand.destH; y++)
             for (let x = 0; x < this._clipCommand.destW; x++) {
               let desty = activeRow + y, destx = activeCell + x;
@@ -184,13 +187,13 @@
                 });
               }
             }
-          let bRange = {
-            fromCell: activeCell,
-            fromRow: activeRow,
-            toCell: activeCell + this._clipCommand.w - 1,
-            toRow: activeRow + this._clipCommand.h - 1
-          };
-          if (this.markCopySelection([bRange]), grid.getSelectionModel().setSelectedRanges([bRange]), typeof this._options.onPasteCells == "function" && this.onPasteCells.notify({ ranges: [bRange] }), addRows > 1) {
+          let bRange = new SlickRange(
+            activeCell,
+            activeRow,
+            activeCell + this._clipCommand.w - 1,
+            activeRow + this._clipCommand.h - 1
+          );
+          if (this.markCopySelection([bRange]), (_a2 = grid.getSelectionModel()) == null || _a2.setSelectedRanges([bRange]), typeof this._options.onPasteCells == "function" && this.onPasteCells.notify({ ranges: [bRange] }), addRows > 1) {
             let d = grid.getData();
             for (; addRows > 1; addRows--)
               d.splice(d.length - 1, 1);
@@ -200,10 +203,10 @@
       }, typeof this._options.clipboardCommandHandler == "function" ? this._options.clipboardCommandHandler(this._clipCommand) : this._clipCommand.execute();
     }
     handleKeyDown(e) {
-      var _a, _b;
+      var _a, _b, _c, _d;
       let ranges;
       if (!this._grid.getEditorLock().isActive() || this._grid.getOptions().autoEdit) {
-        if (e.which == this.keyCodes.ESC && this._copiedRanges && (e.preventDefault(), this.clearCopySelection(), this.onCopyCancelled.notify({ ranges: this._copiedRanges }), this._copiedRanges = null), (e.which === this.keyCodes.C || e.which === this.keyCodes.INSERT) && (e.ctrlKey || e.metaKey) && !e.shiftKey && (typeof this._onCopyInit == "function" && this._onCopyInit.call(this), ranges = this._grid.getSelectionModel().getSelectedRanges(), ranges.length !== 0)) {
+        if (e.which == this.keyCodes.ESC && this._copiedRanges && (e.preventDefault(), this.clearCopySelection(), this.onCopyCancelled.notify({ ranges: this._copiedRanges }), this._copiedRanges = null), (e.which === this.keyCodes.C || e.which === this.keyCodes.INSERT) && (e.ctrlKey || e.metaKey) && !e.shiftKey && (typeof this._onCopyInit == "function" && this._onCopyInit.call(this), ranges = (_b = (_a = this._grid.getSelectionModel()) == null ? void 0 : _a.getSelectedRanges()) != null ? _b : [], ranges.length !== 0)) {
           this._copiedRanges = ranges, this.markCopySelection(ranges), this.onCopyCells.notify({ ranges });
           let columns = this._grid.getColumns(), clipText = "";
           for (let rg = 0; rg < ranges.length; rg++) {
@@ -230,7 +233,7 @@
             let focusEl = document.activeElement, ta = this._createTextBox(clipText);
             if (ta.focus(), setTimeout(() => {
               this._bodyElement.removeChild(ta), focusEl ? focusEl.focus() : console.log("No element to restore focus to after copy?");
-            }, (_b = (_a = this._options) == null ? void 0 : _a.clipboardPasteDelay) != null ? _b : CLIPBOARD_PASTE_DELAY), typeof this._onCopySuccess == "function") {
+            }, (_d = (_c = this._options) == null ? void 0 : _c.clipboardPasteDelay) != null ? _d : CLIPBOARD_PASTE_DELAY), typeof this._onCopySuccess == "function") {
               let rowCount = 0;
               ranges.length === 1 ? rowCount = ranges[0].toRow + 1 - ranges[0].fromRow : rowCount = ranges.length, this._onCopySuccess(rowCount);
             }

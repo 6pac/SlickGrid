@@ -68,11 +68,11 @@
       dd.fromGrid = this._grid, dd.toGrid = this._toGrid, dd.selectedRows = selectedRows, dd.selectionProxy = document.createElement("div"), dd.selectionProxy.className = "slick-reorder-proxy", dd.selectionProxy.style.display = "none", dd.selectionProxy.style.position = "absolute", dd.selectionProxy.style.zIndex = "99999", dd.selectionProxy.style.width = `${this._toCanvas.clientWidth}px`, dd.selectionProxy.style.height = `${rowHeight * selectedRows.length}px`, this._toCanvas.appendChild(dd.selectionProxy), dd.guide = document.createElement("div"), dd.guide.className = "slick-reorder-guide", dd.guide.style.position = "absolute", dd.guide.style.zIndex = "99999", dd.guide.style.width = `${this._toCanvas.clientWidth}px`, dd.guide.style.top = "-1000px", this._toCanvas.appendChild(dd.guide), dd.insertBefore = -1;
     }
     handleDrag(evt, dd) {
-      var _a, _b;
+      var _a, _b, _c, _d;
       if (!this._dragging)
         return;
       evt.stopImmediatePropagation();
-      let e = evt.getNativeEvent(), top = (e.touches ? e.touches[0] : e).pageY - ((_b = (_a = Utils.offset(this._toCanvas)) == null ? void 0 : _a.top) != null ? _b : 0);
+      let e = evt.getNativeEvent(), top = ((_b = (_a = e.touches) == null ? void 0 : _a[0]) != null ? _b : e).pageY - ((_d = (_c = Utils.offset(this._toCanvas)) == null ? void 0 : _c.top) != null ? _d : 0);
       dd.selectionProxy.style.top = `${top - 5}px`, dd.selectionProxy.style.display = "block", dd.clonedSlickRow && (dd.clonedSlickRow.style.top = `${top - 6}px`, dd.clonedSlickRow.style.display = "block");
       let insertBefore = Math.max(0, Math.min(Math.round(top / this._toGrid.getOptions().rowHeight), this._toGrid.getDataLength()));
       if (insertBefore !== dd.insertBefore) {
@@ -132,7 +132,7 @@
       this._usabilityOverride = overrideFn;
     }
     isHandlerColumn(columnIndex) {
-      return /move|selectAndMove/.test(this._grid.getColumns()[columnIndex].behavior);
+      return /move|selectAndMove/.test(this._grid.getColumns()[+columnIndex].behavior || "");
     }
   };
   window.Slick && Utils.extend(!0, window, {

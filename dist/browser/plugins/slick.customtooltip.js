@@ -101,7 +101,7 @@
     }
     findFirstElementAttribute(inputElm, attributes) {
       if (inputElm) {
-        let outputAttrData;
+        let outputAttrData = null;
         return attributes.forEach((attribute) => {
           let attrData = inputElm.getAttribute(attribute);
           attrData && (outputAttrData = attrData);

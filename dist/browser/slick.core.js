@@ -91,7 +91,8 @@ var Slick = (() => {
      * @method stopPropagation
      */
     stopPropagation() {
-      this._isPropagationStopped = !0, this.nativeEvent && this.nativeEvent.stopPropagation();
+      var _a;
+      this._isPropagationStopped = !0, (_a = this.nativeEvent) == null || _a.stopPropagation();
     }
     /**
      * Returns whether stopPropagation was called on this event object.
