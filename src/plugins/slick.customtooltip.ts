@@ -244,7 +244,7 @@ export class CustomTooltip {
 
   protected findFirstElementAttribute(inputElm: Element | null | undefined, attributes: string[]): string | null {
     if (inputElm) {
-      let outputAttrData;
+      let outputAttrData: string | null = null;
       attributes.forEach((attribute) => {
         const attrData = inputElm.getAttribute(attribute);
         if (attrData) {

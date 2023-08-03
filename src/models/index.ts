@@ -67,6 +67,7 @@ export * from './rowInfo.interface';
 export * from './rowMoveManagerOption.interface';
 export * from './rowSelectionModelOption.interface';
 export * from './selectableOverrideCallback.interface';
+export * from './selectionModel.type';
 export * from './singleColumnSort.interface';
 export * from './slickGridModel.interface';
 export * from './sortDirectionNumber.enum';

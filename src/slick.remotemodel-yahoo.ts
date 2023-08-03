@@ -6,7 +6,7 @@
 export class SlickRemoteModelYahoo {
   // protected
   protected PAGESIZE = 10;
-  protected data = { length: 0 };
+  protected data: any = { length: 0 };
   protected h_request: any = null;
   protected req: any = null; // ajax request
 
@@ -93,7 +93,7 @@ export class SlickRemoteModelYahoo {
         url,
         callbackParameter: "callback",
         cache: true,
-        success: (json) => {
+        success: (json: any) => {
           this.onSuccess(json, recStart);
         },
         error: () => {

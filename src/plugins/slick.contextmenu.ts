@@ -227,12 +227,9 @@ export class SlickContextMenu implements Plugin {
     this._menuElm = null as any;
   }
 
-  protected createMenu(e: DOMMouseOrTouchEvent<HTMLDivElement>) {
-    if (e instanceof SlickEventData) {
-      e = (e as SlickEventData_).getNativeEvent();
-    }
-
-    const targetEvent = e.touches ? e.touches[0] : e;
+  protected createMenu(evt: SlickEventData_ | MouseEvent) {
+    const e = evt instanceof SlickEventData ? evt.getNativeEvent<MouseEvent | TouchEvent>() : evt;
+    const targetEvent = (e as TouchEvent).touches?.[0] ?? e;
     const cell = this._grid.getCellFromEvent(e);
     this._currentCell = cell?.cell ?? 0;
     this._currentRow = cell?.row ?? 0;
@@ -298,7 +295,7 @@ export class SlickContextMenu implements Plugin {
       optionMenuElm.role = 'menu';
 
       if (!this._contextMenuProperties.hideCloseButton) {
-        this._bindingEventService.bind(closeButtonElm, 'click', this.handleCloseButtonClicked.bind(this));
+        this._bindingEventService.bind(closeButtonElm, 'click', this.handleCloseButtonClicked.bind(this) as EventListener);
         this._menuElm.appendChild(closeButtonElm);
       }
       this._menuElm.appendChild(optionMenuElm)
@@ -318,7 +315,7 @@ export class SlickContextMenu implements Plugin {
       commandMenuElm.role = 'menu';
 
       if (!this._contextMenuProperties.hideCloseButton && (!isColumnOptionAllowed || optionItems.length === 0 || this._contextMenuProperties.hideOptionSection)) {
-        this._bindingEventService.bind(closeButtonElm, 'click', this.handleCloseButtonClicked.bind(this));
+        this._bindingEventService.bind(closeButtonElm, 'click', this.handleCloseButtonClicked.bind(this) as EventListener);
         this._menuElm.appendChild(closeButtonElm);
       }
 
@@ -345,7 +342,7 @@ export class SlickContextMenu implements Plugin {
     return this._menuElm;
   }
 
-  protected handleCloseButtonClicked(e) {
+  protected handleCloseButtonClicked(e: MouseEvent | TouchEvent) {
     if (!e.defaultPrevented) {
       this.destroyMenu(e);
     }
@@ -382,10 +379,8 @@ export class SlickContextMenu implements Plugin {
     return isAllowedColumn;
   }
 
-  protected handleOnContextMenu(e: DOMMouseOrTouchEvent<HTMLDivElement>, args: MenuCommandItemCallbackArgs) {
-    if (e instanceof SlickEventData) {
-      e = (e as SlickEventData_).getNativeEvent();
-    }
+  protected handleOnContextMenu(evt: SlickEventData_ | DOMMouseOrTouchEvent<HTMLDivElement>, args: MenuCommandItemCallbackArgs) {
+    const e = evt instanceof SlickEventData ? evt.getNativeEvent<DOMMouseOrTouchEvent<HTMLDivElement>>() : evt;
     e.preventDefault();
     const cell = this._grid.getCellFromEvent(e);
 
@@ -407,7 +402,7 @@ export class SlickContextMenu implements Plugin {
       }
 
       // create the DOM element
-      this._menuElm = this.createMenu(e);
+      this._menuElm = this.createMenu(e as MouseEvent);
 
       // reposition the menu to where the user clicked
       if (this._menuElm) {
@@ -685,7 +680,7 @@ export class SlickContextMenu implements Plugin {
    */
   protected repositionMenu(e: DOMMouseOrTouchEvent<HTMLDivElement>) {
     if (this._menuElm && e.target) {
-      const targetEvent = e.touches ? e.touches[0] : e;
+      const targetEvent = (e as TouchEvent).touches?.[0] ?? e;
       const parentElm = e.target.closest('.slick-cell') as HTMLDivElement;
       const parentOffset = (parentElm && Utils.offset(parentElm));
       let menuOffsetLeft = targetEvent.pageX;

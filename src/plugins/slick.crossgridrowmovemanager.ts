@@ -169,9 +169,9 @@ export class SlickCrossGridRowMoveManager {
     }
 
     evt.stopImmediatePropagation();
-    const e = evt.getNativeEvent();
+    const e = evt.getNativeEvent<MouseEvent | TouchEvent>();
 
-    const targetEvent = e.touches ? e.touches[0] : e;
+    const targetEvent = (e as TouchEvent).touches?.[0] ?? e;
     const top = targetEvent.pageY - (Utils.offset(this._toCanvas)?.top ?? 0);
     dd.selectionProxy.style.top = `${top - 5}px`;
     dd.selectionProxy.style.display = 'block';
@@ -281,7 +281,7 @@ export class SlickCrossGridRowMoveManager {
   }
 
   isHandlerColumn(columnIndex: number | string) {
-    return /move|selectAndMove/.test(this._grid.getColumns()[columnIndex].behavior);
+    return /move|selectAndMove/.test(this._grid.getColumns()[+columnIndex].behavior || '');
   }
 }
 

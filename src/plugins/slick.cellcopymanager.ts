@@ -14,14 +14,14 @@ export class SlickCellCopyManager implements Plugin {
   // --
   // public API
   pluginName = 'CellCopyManager' as const;
-  onCopyCells = new SlickEvent<{ ranges: SlickRange }>();
-  onCopyCancelled = new SlickEvent<{ ranges: SlickRange }>();
-  onPasteCells = new SlickEvent<{ from: SlickRange; to: SlickRange; }>();
+  onCopyCells = new SlickEvent<{ ranges: SlickRange[] | null; }>();
+  onCopyCancelled = new SlickEvent<{ ranges: SlickRange[] | null; }>();
+  onPasteCells = new SlickEvent<{ from: SlickRange[] | undefined; to: SlickRange[] | undefined; }>();
 
   // --
   // protected props
   protected _grid!: SlickGrid;
-  protected _copiedRanges?: SlickRange | null;
+  protected _copiedRanges?: SlickRange[] | null = null;
 
   init(grid: SlickGrid) {
     this._grid = grid;
@@ -33,7 +33,7 @@ export class SlickCellCopyManager implements Plugin {
   }
 
   protected handleKeyDown(e: KeyboardEvent) {
-    let ranges;
+    let ranges: SlickRange[] | undefined;
     if (!this._grid.getEditorLock().isActive()) {
       if (e.which == keyCode.ESCAPE) {
         if (this._copiedRanges) {
@@ -45,7 +45,7 @@ export class SlickCellCopyManager implements Plugin {
       }
 
       if (e.which == 67 && (e.ctrlKey || e.metaKey)) {
-        ranges = this._grid.getSelectionModel().getSelectedRanges();
+        ranges = this._grid.getSelectionModel()?.getSelectedRanges() ?? [];
         if (ranges.length !== 0) {
           e.preventDefault();
           this._copiedRanges = ranges;
@@ -57,7 +57,7 @@ export class SlickCellCopyManager implements Plugin {
       if (e.which == 86 && (e.ctrlKey || e.metaKey)) {
         if (this._copiedRanges) {
           e.preventDefault();
-          ranges = this._grid.getSelectionModel().getSelectedRanges();
+          ranges = this._grid.getSelectionModel()?.getSelectedRanges();
           this.onPasteCells.notify({ from: this._copiedRanges, to: ranges });
           if (!this._grid.getOptions().preserveCopiedSelectionOnPaste) {
             this.clearCopySelection();

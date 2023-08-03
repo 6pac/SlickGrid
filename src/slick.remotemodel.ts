@@ -8,7 +8,7 @@ import type { ColumnSort } from './models/index';
 export class SlickRemoteModel {
   // private
   protected PAGESIZE = 50;
-  protected data = { length: 0 };
+  protected data: any = { length: 0 };
   protected searchstr = '';
   protected sortcol: ColumnSort | null = null;
   protected sortdir = 1;
@@ -105,11 +105,11 @@ export class SlickRemoteModel {
     }, 50);
   }
 
-  protected onError(fromPage, toPage) {
+  protected onError(fromPage: number | string, toPage: number | string) {
     alert("error loading pages " + fromPage + " to " + toPage);
   }
 
-  protected onSuccess(resp) {
+  protected onSuccess(resp: any) {
     const from = resp.request.start, to = from + resp.results.length;
     this.data.length = Math.min(parseInt(resp.hits), 1000); // limitation of the API
 

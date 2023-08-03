@@ -43,7 +43,7 @@ export class SlickGridPager {
   };
 
   constructor(protected readonly dataView: SlickDataView, protected readonly grid: SlickGrid, selectorOrElm: HTMLElement | string, options?: Partial<GridPagerOption>) {
-    this._container = this.getContainerElement(selectorOrElm);
+    this._container = this.getContainerElement(selectorOrElm) as HTMLElement;
     this._options = Utils.extend(true, {}, this._defaults, options);
     this._bindingEventService = new BindingEventService();
     this.init();
@@ -112,19 +112,19 @@ export class SlickGridPager {
     }
   }
 
-  protected getContainerElement(selectorOrElm: HTMLElement | string) {
+  protected getContainerElement(selectorOrElm: object | HTMLElement | string) {
     // the container might be a string, a jQuery object or a native element
     return typeof selectorOrElm === 'string'
       ? document.querySelector(selectorOrElm)
-      : typeof selectorOrElm === 'object' && selectorOrElm[0]
-        ? selectorOrElm[0]
+      : typeof selectorOrElm === 'object' && (selectorOrElm as any)[0]
+        ? (selectorOrElm as any)[0] as HTMLElement
         : selectorOrElm;
   }
 
   protected constructPagerUI() {
     // the container might be a string, a jQuery object or a native element
-    const container = this.getContainerElement(this._container);
-    if (!container || (container.jquery && !container[0])) return;
+    const container = this.getContainerElement(this._container) as HTMLElement | HTMLElement[];
+    if (!container || ((container as any).jquery && !(container as HTMLElement[])[0])) return;
 
     const navElm = document.createElement('span');
     navElm.className = 'slick-pager-nav';
@@ -208,11 +208,11 @@ export class SlickGridPager {
     slickPagerElm.appendChild(this._statusElm);
     slickPagerElm.appendChild(settingsElm);
 
-    container.appendChild(slickPagerElm);
+    (container as HTMLElement).appendChild(slickPagerElm);
   }
 
   protected updatePager(pagingInfo: PagingInfo) {
-    if (!this._container || ((this._container as any).jquery && !this._container[0])) return;
+    if (!this._container || ((this._container as any).jquery && !(this._container as any)[0])) return;
     const state = this.getNavState();
 
     // remove disabled class on all icons

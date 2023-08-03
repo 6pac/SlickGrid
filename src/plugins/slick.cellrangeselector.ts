@@ -181,7 +181,7 @@ export class SlickCellRangeSelector implements Plugin {
       evt.stopImmediatePropagation();
     }
 
-    const e = evt.getNativeEvent();
+    const e = evt.getNativeEvent<MouseEvent>();
     if (this._options.autoScroll) {
       this._draggingMouseOffset = this.getMouseOffsetViewport(e, dd);
       if (this._draggingMouseOffset.isOutsideViewport) {

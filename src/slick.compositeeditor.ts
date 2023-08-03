@@ -46,11 +46,11 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
 
   const noop = function () { };
 
-  let firstInvalidEditor;
+  let firstInvalidEditor: Editor | null = null;
 
   options = Slick.Utils.extend({}, defaultOptions, options);
 
-  function getContainerBox(i) {
+  function getContainerBox(i: number) {
     const c = containers[i];
     const offset = Slick.Utils.offset(c);
     const w = Slick.Utils.width(c);
@@ -67,7 +67,7 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
     };
   }
 
-  function editor(args) {
+  function editor(args: any[]) {
     // eslint-disable-next-line @typescript-eslint/no-this-alias
     // @ts-ignore
     // eslint-disable-next-line @typescript-eslint/no-this-alias
@@ -142,7 +142,7 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
       return serializedValue;
     };
 
-    context.applyValue = (item, state) => {
+    context.applyValue = (item: any, state: any) => {
       let idx = 0;
       while (idx < editors.length) {
         editors[idx].applyValue(item, state[idx]);
@@ -150,7 +150,7 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
       }
     };
 
-    context.loadValue = (item) => {
+    context.loadValue = (item: any) => {
       let idx = 0;
 
       while (idx < editors.length) {
@@ -159,7 +159,7 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
       }
     };
 
-    context.validate = (target) => {
+    context.validate = (target: HTMLElement | null) => {
       let validationResults;
       const errors: any[] = [];
       let targetElm = target ? target : null;
