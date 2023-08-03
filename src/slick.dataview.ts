@@ -474,7 +474,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
 
   /** Get an item in the DataView by its Id */
   getItemById(id: number | string) {
-    return this.items[(this.idxById.get(id) ?? -1)];
+    return this.items[(this.idxById.get(id) as number)];
   }
 
   /** From the items array provided, return the mapped rows */

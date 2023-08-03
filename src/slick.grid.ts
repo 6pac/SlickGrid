@@ -4854,10 +4854,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           });
         }
         if (entry?.actionType === 'C') {
-          const column = this.columns[entry.columnIdx ?? -1];
+          const column = this.columns[entry.columnIdx as number];
           if (column.asyncPostRenderCleanup && entry.node) {
             // cleanup must also remove element
-            column.asyncPostRenderCleanup(entry.node as HTMLDivElement, entry.rowIdx ?? -1, column);
+            column.asyncPostRenderCleanup(entry.node as HTMLDivElement, entry.rowIdx as number, column);
           }
         }
       }
