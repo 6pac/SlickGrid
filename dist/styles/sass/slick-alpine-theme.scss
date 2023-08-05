@@ -1,0 +1,835 @@
+/*!
+ * SlickGrid Alpine Theme
+ * (c) 2009-2016 Michael Leibman
+ * michael{dot}leibman{at}gmail{dot}com
+ * original project: https://github.com/mleibman/slickgrid
+ * project forked as: https://github.com/6pac/slickgrid
+ *
+ * Distributed under MIT license.
+ * All rights reserved.
+ */
+
+@import './mixins';
+@import './variables';
+
+// Grid Styles
+#myGrid, .slick-container {
+  box-sizing: border-box;
+  background-color: var(--alpine-grid-bgcolor, $alpine-grid-bgcolor);
+  font-family: var(--alpine-font-family, $alpine-font-family);
+  font-size: var(--alpine-font-size, $alpine-font-size);
+  color: var(--alpine-font-color, $alpine-font-color);
+  border-style: solid;
+  border-color: var(--alpine-border-color, $alpine-border-color);
+  border-radius: var(--alpine-border-radius, $alpine-border-radius);
+  border-width: var(--alpine-border-width, $alpine-border-width);
+
+  &.bottom-rounded {
+    border-bottom-left-radius: 0.25rem;
+    border-bottom-right-radius: 0.25rem;
+  }
+
+  .text-center {
+    text-align: center;
+  }
+}
+
+.slick-viewport {
+  background-color: var(--alpine-bg-color, $alpine-bg-color);
+
+  .grid-canvas {
+    position: relative;
+    outline: 0;
+  }
+}
+
+.slick-range-decorator {
+  z-index: 9999;
+  cursor: cell;
+  border: var(--alpine-range-border, $alpine-range-border);
+}
+
+.slick-row {
+  &.ui-widget-content {
+    position: absolute;
+    border: 0px;
+    width: 100%;
+  }
+
+  &.slick-state-active {
+    position: absolute;
+    border: 0px;
+    width: 100%;
+    background: var(--alpine-cell-selected-bg-color, $alpine-cell-selected-bg-color);
+  }
+
+  .selected {
+    z-index: 10;
+    background-color: var(--alpine-cell-selected-bg-color, $alpine-cell-selected-bg-color);
+    color: var(--alpine-cell-selected-color, $alpine-cell-selected-color);
+  }
+
+  &.odd {
+    background-color: var(--alpine-odd-row-color, $alpine-odd-row-color);
+  }
+  &:hover {
+    background-color: var(--alpine-row-mouse-hover-color, $alpine-row-mouse-hover-color);
+  }
+}
+
+.slick-groupby-remove {
+  padding-right: 10px;
+}
+
+.slick-group {
+  border-bottom: 2px solid var(--alpine-border-color, $alpine-border-color);
+  background-color: var(--alpine-header-bg-color, $alpine-header-bg-color);
+
+  .slick-cell {
+    text-align: left !important;
+    padding-left: 4px;
+    padding-right: 4px;
+  }
+}
+
+.slick-group-toggle {
+  cursor: pointer;
+  margin-right: 5px;
+
+  background-color: currentColor;
+  display: inline-block;
+  color: inherit;
+  font-size: 18px;
+  width: 1em;
+  height: 1em;
+  opacity: var(--alpine-group-icon-opacity, $alpine-group-icon-opacity);
+
+  &.expanded {
+    @include createSvgStyle('alpine-group-expanded-icon-svg', $alpine-group-expanded-icon-svg-path);
+  }
+  &.collapsed {
+    @include createSvgStyle('alpine-group-collapsed-icon-svg', $alpine-group-collapsed-icon-svg-path);
+  }
+}
+
+.slick-group-totals {
+  color: var(--alpine-font-color, $alpine-font-color);
+  background: var(--alpine-bg-color, $alpine-bg-color);
+}
+.slick-group-toggle-all {
+  cursor: pointer;
+  background-color: currentColor;
+  display: inline-block;
+  color: inherit;
+  font-size: 18px;
+  width: 1em;
+  height: 1em;
+  margin-right: 5px;
+  opacity: var(--alpine-group-icon-opacity, $alpine-group-icon-opacity);
+
+  &.collapsed {
+    @include createSvgStyle('alpine-group-collapsed-icon-svg', $alpine-group-collapsed-icon-svg-path);
+  }
+  &.expanded {
+    @include createSvgStyle('alpine-group-expanded-icon-svg', $alpine-group-expanded-icon-svg-path);
+  }
+}
+
+.slick-cell {
+  cursor: default;
+  position: absolute;
+  border-style: solid;
+  border-color: var(--alpine-cell-border-color, $alpine-cell-border-color);
+  border-radius: var(--alpine-cell-border-radius, $alpine-cell-border-radius);
+  border-width: var(--alpine-cell-border-width, $alpine-cell-border-width);
+
+  margin: 0;
+  overflow: hidden;
+  vertical-align: middle;
+  white-space: nowrap;
+  z-index: 1;
+  padding: var(--alpine-cell-padding, $alpine-cell-padding);
+  display: var(--alpine-cell-display, $alpine-cell-display);
+  align-items: var(--alpine-cell-align-items, $alpine-cell-align-items);
+  justify-content: var(--alpine-cell-justify-content, $alpine-cell-justify-content);
+
+  &.selected {
+    background-color: var(--alpine-cell-selected-bg-color, $alpine-cell-selected-bg-color);
+    color: var(--alpine-cell-selected-color, $alpine-cell-selected-color);
+    span a {
+      color: #fff;
+    }
+  }
+  &.active {
+    box-shadow: var(--alpine-cell-active-box-shadow, $alpine-cell-active-box-shadow);
+  }
+
+  &.highlighted {
+    background: lightskyblue;
+    background: rgba(0, 0, 255, 0.2);
+    transition: all 0.5s;
+  }
+
+  &.flashing {
+    border: 1px solid red;
+  }
+
+  &.editable {
+    z-index: 11;
+    overflow: visible;
+    border-style: solid;
+  }
+
+  &:focus {
+    outline: none;
+  }
+}
+
+.slick-selection {
+  z-index: 10;
+  position: absolute;
+  border: 2px dashed black;
+}
+
+// Header Styles
+.slick-header {
+  border-bottom: 1px solid var(--alpine-border-color, $alpine-border-color);
+  background-color: var(--alpine-header-bg-color, $alpine-header-bg-color);
+  font-weight: var(--alpine-header-font-weight, $alpine-header-font-weight);
+  color: var(--alpine-header-color, $alpine-header-color);
+
+  &.slick-state-default {
+    width: 100%;
+    overflow: hidden;
+    border-left: 0px;
+  }
+}
+
+.grid-header {
+  box-sizing: border-box;
+  background-color: var(--alpine-header-bg-color, $alpine-header-bg-color);
+  font-family: var(--alpine-font-family, $alpine-font-family);
+  font-weight: var(--alpine-top-header-font-weight, $alpine-top-header-font-weight);
+  border-style: solid;
+  border-width: var(--alpine-top-header-border-width, $alpine-top-header-border-width);
+  border-color: var(--alpine-top-header-border-color, $alpine-top-header-border-color);
+  height: 35px;
+  padding: var(--alpine-top-header-padding, $alpine-top-header-padding);
+}
+
+.slick-resizable-handle {
+  position: absolute;
+  font-size: 0.1px;
+  display: block;
+  cursor: col-resize;
+  right: 0;
+
+  height: var(--alpine-header-resizable-handle-height, $alpine-header-resizable-handle-height);
+  top: var(--alpine-header-resizable-handle-top, $alpine-header-resizable-handle-top);
+  width: 2px;
+  border: 0;
+  box-shadow: var(--alpine-header-resizable-handle-box-shadow, $alpine-header-resizable-handle-box-shadow);
+}
+
+.slick-reorder-proxy,
+.slick-reorder-guide {
+  display: inline-block;
+  background: blue;
+}
+.slick-reorder-proxy {
+  opacity: 0.15;
+  filter: alpha(opacity = 15);
+  cursor: move;
+}
+
+.slick-reorder-guide {
+  height: 2px;
+  opacity: 0.7;
+  filter: alpha(opacity = 70);
+}
+
+.slick-preheader-panel {
+  .slick-header-column {
+    border-style: solid;
+    border-color: var(--alpine-preheader-border-color, $alpine-preheader-border-color);
+    border-width: var(--alpine-preheader-border-width, $alpine-preheader-border-width);
+  }
+}
+
+.slick-header-column:hover > .slick-header-menubutton,
+.slick-header-column-active .slick-header-menubutton {
+  display: inline-block;
+}
+
+.slick-header-column {
+  .slick-header-menubutton {
+    cursor: pointer;
+    display: none;
+    position: absolute;
+    right: 0;
+    top: 0;
+    bottom: 0;
+    width: var(--alpine-header-menubutton-width, $alpine-header-menubutton-width);
+    background-image: none;
+    background-color:  var(--alpine-header-bg-color, $alpine-header-bg-color);
+
+    .caret {
+      display: inline-block;
+      width: 0;
+      height: 0;
+      margin-top: 7px;
+      vertical-align: middle;
+      border-top: 4px dashed;
+      border-right: 4px solid transparent;
+      border-left: 4px solid transparent;
+      margin-left: 4px;
+    }
+
+    &.filtered {
+      color: var(--alpine-header-menubutton-filtered-color, $alpine-header-menubutton-filtered-color);
+    }
+  }
+
+  &.slick-header-column {
+    height: var(--alpine-header-column-height, $alpine-header-column-height); // header with 2 rows, just double the height
+    line-height: var(--alpine-header-column-line-height, $alpine-header-column-line-height);
+    position: relative;
+    overflow: hidden;
+    margin: 0;
+    padding: 4px;
+    border-style: solid;
+    border-width: var(--alpine-header-border-width, $alpine-header-border-width);
+    border-color: var(--alpine-header-border-color, $alpine-header-border-color);
+    vertical-align: var(--alpine-header-vertical-align, $alpine-header-vertical-align);
+    display: var(--alpine-header-display, $alpine-header-display);
+    align-items: var(--alpine-header-align-items, $alpine-header-align-items);
+    justify-content: var(--alpine-header-justify-content, $alpine-header-justify-content);
+    white-space: pre-wrap;
+  }
+
+  .slick-sort-indicator,
+  .slick-sort-indicator-numbered {
+    color: var(--alpine-sort-indicator-color, $alpine-sort-indicator-color);
+    user-select: none;
+  }
+
+  .slick-sort-indicator {
+    display: inline-block;
+    background-image: none;
+    width: 0;
+    height: 0;
+    margin: var(--alpine-sort-indicator-margin, $alpine-sort-indicator-margin);
+    vertical-align: middle;
+    border-right: 4px solid transparent;
+    border-left: 4px solid transparent;
+  }
+
+  .slick-sort-indicator-asc {
+    border-bottom: 4px dashed;
+  }
+
+  .slick-sort-indicator-desc {
+    border-top: 4px dashed;
+  }
+
+  .slick-sort-indicator-numbered {
+    font-size: var(--alpine-sort-numbered-font-size, $alpine-sort-numbered-font-size);
+  }
+}
+
+.slick-header-columns {
+  position: relative;
+  white-space: nowrap;
+  cursor: default;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+
+  .slick-state-hover {
+    background: var(--alpine-header-name-hover-bg-color, $alpine-header-name-hover-bg-color);
+  }
+}
+
+.slick-column-name,
+.slick-sort-indicator {
+  /**
+   * This makes all "float:right" elements after it that spill over to the next line
+   * display way below the lower boundary of the column thus hiding them.
+   */
+  display: inline-block;
+  user-select: none;
+}
+
+.slick-column-name {
+  display: var(--alpine-header-name-display, $alpine-header-name-display);
+  flex-grow: var(--alpine-header-name-flex-grow, $alpine-header-name-flex-grow);
+  overflow: var(--alpine-header-name-overflow, $alpine-header-name-overflow);
+  text-overflow: var(--alpine-header-name-text-overflow, $alpine-header-name-text-overflow);
+  white-space: nowrap;
+}
+
+.slick-headerrow, .slick-footerrow {
+  background-color: var(--alpine-header-footer-bg-color, $alpine-header-footer-bg-color);
+  position: relative;
+
+  &.slick-state-default {
+    width: 100%;
+    overflow: hidden;
+    border-left: 0px;
+  }
+}
+
+.slick-headerrow-columns, .slick-footerrow-columns {
+  cursor: default;
+  overflow: hidden;
+  position: relative;
+  white-space: nowrap;
+}
+.slick-headerrow-columns {
+  border-bottom: 1px solid var(--alpine-border-color, $alpine-border-color);
+  background-color: var(--alpine-headerrow-bg-color, $alpine-headerrow-bg-color);
+  text-align: center;
+}
+
+.slick-footerrow-column,
+.slick-headerrow-column {
+  cursor: default;
+  padding: 4px;
+  position: absolute;
+  vertical-align: middle;
+  white-space: nowrap;
+  z-index: 1;
+}
+
+.slick-footerrow-column {
+  font-size: var(--alpine-footerrow-font-size, $alpine-footerrow-font-size);
+  overflow: ellipsis;
+  float: left;
+  line-height: 20px;
+  border-style: solid;
+  border-color: var(--alpine-footerrow-border-color, $alpine-footerrow-border-color);
+  border-radius: var(--alpine-footerrow-border-radius, $alpine-footerrow-border-radius);
+  border-width: var(--alpine-footerrow-border-width, $alpine-footerrow-border-width);
+  margin: 0;
+}
+
+.slick-headerrow-column {
+  overflow: hidden;
+  height: 100%;
+  box-sizing: border-box;
+
+  input {
+    width: 100%;
+    height: 100%;
+    box-sizing: border-box;
+    border: 1px solid transparent;
+    appearance: none;
+    color: var(--alpine-font-color, $alpine-font-color);
+  }
+}
+
+// Header-Menu Styles
+.slick-header-menu {
+  color: var(--alpine-font-color, $alpine-font-color);
+  font-size: var(--alpine-font-size, $alpine-font-size);
+  background: var(--alpine-header-bg-color, $alpine-header-bg-color);
+  border: 1px solid var(--alpine-border-color, $alpine-border-color);
+  min-width: 175px;
+  z-index: 100000;
+  cursor: default;
+  position: absolute;
+  display: inline-block;
+  margin: 0;
+  padding: 4px !important;
+  font-family: var(--alpine-font-family, $alpine-font-family);
+  box-shadow: 0 2px 4px 0 rgba(0,0,0,0.10);
+  border-bottom-right-radius: var(--alpine-border-radius, $alpine-border-radius);
+  border-bottom-left-radius: var(--alpine-border-radius, $alpine-border-radius);
+
+  label {
+    font-weight: 400;
+  }
+
+  button {
+    text-transform: none;
+    overflow: visible;
+    display: inline-block;
+    margin: 2px;
+    font-weight: normal;
+    text-align: center;
+    vertical-align: middle;
+    touch-action: manipulation;
+    cursor: pointer;
+    white-space: nowrap;
+    padding: 6px 14px;
+    font-size: var(--alpine-font-size, $alpine-font-size);
+    line-height: 1.428571429;
+    background-color: transparent;
+    border: 1px solid transparent;
+    color: var(--alpine-font-color, $alpine-font-color);
+    border-radius: .25rem;
+    box-sizing: border-box;
+    user-select: none;
+    outline: 0;
+
+    &:hover {
+      color: var(--alpine-font-color, $alpine-font-color);
+      background-color: transparent;
+      border-color: var(--alpine-border-color, $alpine-border-color);
+    }
+
+    &:active:hover,
+    &:active:focus,
+    &:active.focus,
+    &.active:hover,
+    &.active:focus,
+    &.active.focus {
+      background-color: transparent;
+      color: var(--alpine-font-color, $alpine-font-color);
+      border-color: var(--alpine-border-color, $alpine-border-color);
+    }
+  }
+
+  input.input {
+    box-sizing: border-box;
+    border: 1px solid var(--alpine-border-color, $alpine-border-color);
+    border-radius: .25rem;
+    appearance: none;
+    padding-left: .75rem;
+    padding-right: .75rem;
+    color: var(--alpine-font-color, $alpine-font-color);
+    padding-top: .5rem;
+    padding-bottom: .5rem;
+    width: 100%;
+  }
+
+  .filter {
+    border: 1px solid var(--alpine-border-color, $alpine-border-color);
+    border-radius: .25rem;
+    background: var(--alpine-bg-color, $alpine-bg-color);
+    height: 200px;
+    max-height: 200px;
+    max-width: 300px;
+    margin-top: 5px;
+    margin-bottom: 5px;
+    overflow: scroll;
+    padding: 4px;
+    white-space: nowrap;
+
+    label {
+      display: block;
+      font-size: var(--alpine-font-size, $alpine-font-size);
+    }
+  }
+}
+
+.slick-header-menuitem-disabled {
+  color: silver;
+}
+
+.slick-header-menuitem {
+  border: 1px solid transparent;
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-radius: .25rem;
+  cursor: pointer;
+
+  .slick-header-menuicon {
+    display: inline-block;
+    width: 16px;
+    height: 16px;
+    vertical-align: middle;
+    margin-right: 4px;
+    background-repeat: no-repeat;
+    background-position: center center;
+
+    &.sort-asc,
+    &.sort-desc {
+      display: inline-block;
+      width: 0;
+      height: 0;
+      margin-left: 8px;
+      margin-top: 0px;
+      vertical-align: middle;
+      border-right: 4px solid transparent;
+      border-left: 4px solid transparent;
+    }
+    &.sort-asc {
+      border-bottom: 4px dashed;
+    }
+    &.sort-desc {
+      border-top: 4px dashed;
+    }
+  }
+
+  &:hover {
+    border-color: var(--alpine-border-color, $alpine-border-color);
+  }
+}
+
+.slick-header-menucontent {
+  display: inline-block;
+  vertical-align: middle;
+  margin: 5px;
+  font-size: var(--alpine-font-size, $alpine-font-size);
+}
+
+.slick-pane {
+  position: absolute;
+  outline: 0;
+  overflow: hidden;
+  width: 100%;
+}
+
+.slick-pane-header {
+  display: block;
+}
+
+// Pager Styles
+.slick-pager {
+  display: inline-flex;
+  align-items: center;
+  box-sizing: border-box;
+  background-color: var(--alpine-pager-bg-color, $alpine-pager-bg-color);
+  border-color: var(--alpine-pager-border-color, $alpine-pager-border-color);
+  border-radius: var(--alpine-pager-border-radius, $alpine-pager-border-radius);
+  border-width: var(--alpine-pager-border-width, $alpine-pager-border-width);
+  border-style: solid;
+  color: var(--alpine-font-color, $alpine-font-color);
+  font-family: var(--alpine-font-family, $alpine-font-family);
+  font-size: var(--alpine-font-size, $alpine-font-size);
+  height: var(--alpine-pager-height, $alpine-pager-height);
+  padding: 4px;
+  vertical-align: middle;
+  width: 100%;
+
+  .sgi {
+    cursor: pointer;
+  }
+  .slick-icon-state-disabled,
+  .sgi.sgi-state-disabled {
+    cursor: var(--alpine-pager-button-cursor-disabled, $alpine-pager-button-cursor-disabled);
+  }
+
+  .slick-pager-nav {
+    height: 100%;
+    .slick-icon-container {
+      margin: var(--alpine-pager-button-margin, $alpine-pager-button-margin);
+    }
+    .sgi-container {
+      display: inline-flex;
+      align-items: center;
+      height: 100%;
+    }
+  }
+
+  .slick-pager-status,
+  .slick-pager-settings {
+    font-size: var(--alpine-font-size, $alpine-font-size);
+    padding: var(--alpine-pager-padding, $alpine-pager-padding);
+    display: inline-block;
+  }
+
+  .slick-pager-settings {
+    float: right;
+    display: flex;
+    align-items: center;
+    column-gap: 1px;
+    margin-left: auto;
+
+    a {
+      cursor: pointer;
+      padding: 0 2px 2px 2px;
+      text-decoration: underline;
+    }
+  }
+}
+
+.percent-complete-bar {
+  border-radius: 3px;
+  display: inline-block;
+  height: 6px;
+}
+
+.slick-columnpicker,
+.slick-gridmenu,
+.slick-cell-menu,
+.slick-header-menu,
+.slick-context-menu {
+  background-color: var(--alpine-menu-bg-color, $alpine-menu-bg-color);
+  border: var(--alpine-menu-border, $alpine-menu-border);
+  border-radius: var(--alpine-menu-border-radius, $alpine-menu-border-radius);
+  color: var(--alpine-menu-color, $alpine-menu-color);
+  box-shadow: var(--alpine-menu-box-shadow, $alpine-menu-box-shadow);
+  font-family: var(--alpine-font-family, $alpine-font-family);
+  font-size: var(--alpine-font-size, $alpine-font-size);
+
+  button.close {
+    cursor: pointer;
+    background: var(--alpine-menu-close-btn-background, $alpine-menu-close-btn-background);
+    border: var(--alpine-menu-close-btn-border, $alpine-menu-close-btn-border);
+  }
+}
+
+.slick-cell-menu,
+.slick-context-menu {
+  box-sizing: content-box;
+}
+
+.slick-cell {
+  &.selected.editable {
+    background-color: white;
+    border-radius: var(--alpine-cell-editable-border-radius, $alpine-cell-editable-border-radius);
+  }
+  &.editable {
+    box-shadow: var(--alpine-cell-editable-box-shadow, $alpine-cell-editable-box-shadow);
+  }
+}
+
+input.editor-checkbox,
+input.editor-text,
+input.editor-percentcomplete {
+  height: 100%;
+  border: 0;
+  margin: 0;
+  outline: 0;
+  padding: 0;
+}
+input.editor-text,
+input.editor-percentcomplete {
+  width: 100%;
+}
+input.editor-text {
+  background: white;
+}
+input.editor-percentcomplete {
+  background: transparent;
+  float: left;
+}
+
+.editor-percentcomplete-picker {
+  display: inline-block;
+  position: relative;
+  overflow: visible;
+  z-index: 1000;
+  cursor: pointer;
+
+  .editor-percentcomplete-picker-icon {
+    background-color: currentColor;
+    display: inline-block;
+    color: inherit;
+    font-size: 18px;
+    width: 1em;
+    height: 1em;
+    @include createSvgStyle('alpine-percent-complete-picker-icon-svg', $alpine-percent-complete-picker-icon-svg-path);
+  }
+}
+.editor-percentcomplete-picker:hover .editor-percentcomplete-helper {
+  display: block;
+}
+
+/* Slick.Editors.PercentComplete */
+input[type='range'].editor-percentcomplete-slider {
+  background-color: #ccc;
+  transform: rotate(270deg);
+  transform-origin: left;
+  position: absolute;
+  top: 125px;
+  left: 15px;
+}
+
+.editor-percentcomplete-helper {
+  position: absolute;
+  top: -3px;
+  left: -9px;
+  padding-left: 9px;
+
+  width: 120px;
+  height: 140px;
+  display: none;
+  overflow: visible;
+}
+
+.editor-percentcomplete-wrapper {
+  background: #f9f9f9;
+  padding: 20px 8px;
+  width: 100%;
+  height: 98px;
+  border: 1px solid gray;
+  position: relative;
+  width: 120px;
+}
+
+.editor-percentcomplete-buttons {
+  float: right;
+}
+
+.editor-percentcomplete-buttons button {
+  width: 80px;
+  margin-bottom: 4px;
+}
+
+.editor-percentcomplete-slider {
+  float: left;
+}
+
+.editor-percentcomplete-helper:hover {
+  display: block;
+}
+
+/* Slick.Editors.YesNoSelect */
+select.editor-yesno {
+  width: 100%;
+  margin: 0;
+  vertical-align: middle;
+}
+
+.slick-composite-editor-modal,
+.slick-composite-editor-modal input,
+.slick-composite-editor-modal textarea {
+  font-family: var(--alpine-font-family, $alpine-font-family);
+}
+
+.slick-large-editor-text {
+  z-index: 10000;
+  padding: 5px;
+  background: var(--alpine-large-editor-bg-color, $alpine-large-editor-bg-color);
+  border: var(--alpine-large-editor-border, $alpine-large-editor-border);
+  border-radius: var(--alpine-large-editor-border-radius, $alpine-large-editor-border-radius);
+
+  button {
+    margin-left: 2px;
+  }
+  button, textarea {
+    color: var(--alpine-large-editor-color, $alpine-large-editor-color);
+    font-family: var(--alpine-large-editor-font-family, $alpine-large-editor-font-family);
+    font-size: var(--alpine-large-editor-font-size, $alpine-large-editor-font-size);
+  }
+}
+button.slick-btn {
+  cursor: pointer;
+  border: var(--alpine-button-border, $alpine-button-border);
+  border-radius: var(--alpine-button-radius, $alpine-button-radius);
+  padding: var(--alpine-button-padding, $alpine-button-padding);
+
+  &.slick-btn-default {
+    background-color: var(--alpine-button-bg-color, $alpine-button-bg-color);
+    &:hover {
+      background-color: var(--alpine-button-default-hover-color, $alpine-button-default-hover-color);
+      border: var(--alpine-button-default-hover-border, $alpine-button-default-hover-border);
+    }
+  }
+
+  &.slick-btn-primary {
+    border-color:  var(--alpine-button-primary-border-color, $alpine-button-primary-border-color);
+    background-color: var(--alpine-button-primary-bg-color, $alpine-button-primary-bg-color);
+    color: var(--alpine-button-primary-color, $alpine-button-primary-color);
+    &:active {
+      background-color: var(--alpine-button-primary-active-color, $alpine-button-primary-active-color);
+    }
+    &:hover {
+      background-color: var(--alpine-button-primary-hover-color, $alpine-button-primary-hover-color);
+    }
+  }
+}
