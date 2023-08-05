@@ -97,8 +97,8 @@ export class SlickRowDetailView {
   onAsyncEndUpdate = new SlickEvent<OnRowDetailAsyncEndUpdateArgs>();
   onAfterRowDetailToggle = new SlickEvent<OnAfterRowDetailToggleArgs>();
   onBeforeRowDetailToggle = new SlickEvent<OnBeforeRowDetailToggleArgs>();
-  onRowOutOfViewportRange = new SlickEvent<OnRowOutOfViewportRangeArgs>();
   onRowBackToViewportRange = new SlickEvent<OnRowBackToViewportRangeArgs>();
+  onRowOutOfViewportRange = new SlickEvent<OnRowOutOfViewportRangeArgs>();
 
   // --
   // protected props

@@ -15,8 +15,8 @@
       __publicField(this, "onAsyncEndUpdate", new SlickEvent());
       __publicField(this, "onAfterRowDetailToggle", new SlickEvent());
       __publicField(this, "onBeforeRowDetailToggle", new SlickEvent());
-      __publicField(this, "onRowOutOfViewportRange", new SlickEvent());
       __publicField(this, "onRowBackToViewportRange", new SlickEvent());
+      __publicField(this, "onRowOutOfViewportRange", new SlickEvent());
       // --
       // protected props
       __publicField(this, "_grid");
