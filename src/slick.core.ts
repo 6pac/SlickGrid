@@ -757,6 +757,14 @@ function slideAnimation(el: HTMLElement | HTMLElement[], slideDirection: 'slideD
   callback();
 }
 
+function applyDefaults(targetObj: any, srcObj: any) {
+  for (const key in srcObj) {
+    if (srcObj.hasOwnProperty(key) && !targetObj.hasOwnProperty(key)) {
+      targetObj[key] = srcObj[key];
+    }
+  }
+}
+          
 // jQuery's extend
 const getProto = Object.getPrototypeOf;
 const class2type: any = {};
@@ -910,6 +918,7 @@ const SlickCore = {
     hide: hide,
     slideUp: slideUp,
     slideDown: slideDown,
+    applyDefaults: applyDefaults,
     windowScrollPosition: windowScrollPosition,
     storage: {
       // https://stackoverflow.com/questions/29222027/vanilla-alternative-to-jquery-data-function-any-native-javascript-alternati
