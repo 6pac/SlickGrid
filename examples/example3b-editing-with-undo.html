@@ -34,11 +34,17 @@
     </ul>
 
     <h2>Controls:</h2>
-    <button onclick="undo()" style="display: inline-flex; gap: 4px"><i class="sgi sgi-undo"></i> Undo</button>
-      <h2>View Source:</h2>
-      <ul>
-          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example3b-editing-with-undo.html" target="_sourcewindow"> View the source for this example on Github</a></li>
-      </ul>
+    <button data-test="undo-open-editor-btn" onclick="undo()" style="display: inline-flex; gap: 4px"><i class="sgi sgi-undo"></i> Undo</button>
+    <p>
+      <button data-test="auto-edit-on-btn" onclick="grid.setOptions({autoEdit:true})">Auto-edit ON</button>
+      &nbsp;
+      <button data-test="auto-edit-off-btn" onclick="grid.setOptions({autoEdit:false})">Auto-edit OFF</button>
+    </p>
+
+    <h2>View Source:</h2>
+    <ul>
+        <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example3b-editing-with-undo.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+    </ul>
   </div>
 </div>
 

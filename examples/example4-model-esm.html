@@ -259,7 +259,6 @@ document.addEventListener("DOMContentLoaded", () => {
     d["effortDriven"] = (i % 5 == 0);
   }
 
-
   dataView = new SlickDataView({ inlineFilters: true });
   grid = new SlickGrid("#myGrid", dataView, columns, options);
   grid.setSelectionModel(new SlickRowSelectionModel());
