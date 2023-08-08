@@ -748,7 +748,7 @@ export class LongTextEditor implements Editor {
       Utils.createDomElement('button', { id: 'cancel', className: 'slick-btn slick-btn-default', textContent: 'Cancel' }, btnContainer);
 
       this.wrapper.querySelector('#save')!.addEventListener('click', this.save.bind(this));
-      this.wrapper.querySelector('#cancel')!.addEventListener('click', this.cancel.bind);
+      this.wrapper.querySelector('#cancel')!.addEventListener('click', this.cancel.bind(this));
       this.input.addEventListener('keydown', this.handleKeyDown.bind(this) as EventListener);
       this.position(this.args.position as ElementPosition);
     }
@@ -805,7 +805,7 @@ export class LongTextEditor implements Editor {
   save() {
     const gridOptions = this.args.grid.getOptions() || {};
     if (gridOptions.autoCommitEdit) {
-      this.args.grid.getEditorLock().commitCurrentEdit();
+      this.args.grid.getEditorLock()?.commitCurrentEdit();
     } else {
       this.args.commitChanges();
     }
