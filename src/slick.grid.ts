@@ -275,7 +275,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     maxSupportedCssHeight: 1000000000,
     sanitizer: undefined,  // sanitize function, built in basic sanitizer is: Slick.RegexSanitizer(dirtyHtml)
     logSanitizedHtml: false, // log to console when sanitised - recommend true for testing of dev and production
-    mixinDefaults: false
+    mixinDefaults: true
   };
 
   protected _columnDefaults = {
