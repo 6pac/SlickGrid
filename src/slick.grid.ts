@@ -185,7 +185,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   onScroll = new SlickEvent<OnScrollEventArgs>();
   onSelectedRowsChanged = new SlickEvent<OnSelectedRowsChangedEventArgs>();
   onSetOptions = new SlickEvent<OnSetOptionsEventArgs>();
-  OnActivateChangedOptions = new SlickEvent<OnActivateChangedOptionsEventArgs>();
+  onActivateChangedOptions = new SlickEvent<OnActivateChangedOptionsEventArgs>();
   onSort = new SlickEvent<SingleColumnSort | MultiColumnSort>();
   onValidationError = new SlickEvent<OnValidationErrorEventArgs>();
   onViewportChanged = new SlickEvent<SlickGridEventData>();
@@ -523,7 +523,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     // calculate these only once and share between grid instances
     if (this.options.mixinDefaults) {
       if (!this.options) { this.options = {}; }
-      this._options = Utils.applyDefaults(this.options, this._defaults);
+      Utils.applyDefaults(this.options, this._defaults);
     } else {
       this._options = Utils.extend(true, {}, this._defaults, this.options);    
     }
@@ -3392,13 +3392,16 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {Boolean} [suppressSetOverflow] - do we want to suppress the call to `setOverflow`
    */
   setOptions(args: Partial<O>, suppressRender?: boolean, suppressColumnSet?: boolean, suppressSetOverflow?: boolean): void {
-    prepareForOptionsChange();
+    this.prepareForOptionsChange();
+    if (this._options.enableAddRow !== args.enableAddRow) {
+      this.invalidateRow(this.getDataLength());
+    }
 
     const originalOptions = Utils.extend(true, {}, this._options);
     this._options = Utils.extend(this._options, args);
     this.trigger(this.onSetOptions, { optionsBefore: originalOptions, optionsAfter: this._options });
 
-    internal_setOptions(suppressRender, suppressColumnSet, suppressSetOverflow);
+    this.internal_setOptions(suppressRender, suppressColumnSet, suppressSetOverflow);
   }
 
  /**
@@ -3410,9 +3413,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {Boolean} [suppressSetOverflow] - do we want to suppress the call to `setOverflow`
    */
   activateChangedOptions(suppressRender?: boolean, suppressColumnSet?: boolean, suppressSetOverflow?: boolean): void {
-    prepareForOptionsChange();
+    this.prepareForOptionsChange();
+    this.invalidateRow(this.getDataLength());
+
     this.trigger(this.onActivateChangedOptions, { options: this._options });
-    internal_setOptions(suppressRender, suppressColumnSet, suppressSetOverflow);
+
+    this.internal_setOptions(suppressRender, suppressColumnSet, suppressSetOverflow);
   }
 
   protected prepareForOptionsChange() {
@@ -3421,21 +3427,17 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     this.makeActiveCellNormal();
-
-    //if (this._options.enableAddRow !== args.enableAddRow) {
-      this.invalidateRow(this.getDataLength());
-    //}
   }
   
   protected internal_setOptions(suppressRender?: boolean, suppressColumnSet?: boolean, suppressSetOverflow?: boolean) : void {
-    if (args.showColumnHeader !== undefined) {
-      this.setColumnHeaderVisibility(args.showColumnHeader);
+    if (this._options.showColumnHeader !== undefined) {
+      this.setColumnHeaderVisibility(this._options.showColumnHeader);
     }
     this.validateAndEnforceOptions();
     this.setFrozenOptions();
 
     // when user changed frozen row option, we need to force a recalculation of each viewport heights
-    if (args.frozenBottom !== undefined) {
+    if (this._options.frozenBottom !== undefined) {
       this.enforceFrozenRowHeightRecalc = true;
     }
 
