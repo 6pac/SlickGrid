@@ -1,5 +1,5 @@
 const autoprefixer = require('autoprefixer');
-const chalk = require('chalk');
+const c = require('picocolors');
 const cssnano = require('cssnano');
 const litePreset = require('cssnano-preset-lite');
 const postcss = require('postcss');
@@ -50,7 +50,7 @@ function execute(version) {
                 // also copy the images into the "/dist" folder so that all CSS url() still work
                 fs.copySync('./images', './dist/images');
                 console.log('\n');
-                console.log(`// ${chalk.green('DONE MINIFYING!!!')} //`);
+              console.log(`// ${c.green('DONE MINIFYING!!!')} //`);
                 console.log('-----------------------\n');
 
                 resolve(changedFiles);
@@ -62,7 +62,7 @@ function execute(version) {
 /** Minify an array of CSS files */
 async function minifyCssFiles(filenames) {
     const preset = litePreset({});
-    console.log(`//-- ${chalk.cyan('CSS Minify')} --//`);
+  console.log(`//-- ${c.cyan('CSS Minify')} --//`);
     console.log('--------------------');
 
     for (const filename of filenames) {
@@ -91,7 +91,7 @@ function minifyJsFiles(filenames, version) {
     let newVersion = version || pkg.version;
 
     console.log('\n');
-    console.log(`//-- ${chalk.cyan('JS Minify')} --//`);
+  console.log(`//-- ${c.cyan('JS Minify')} --//`);
     console.log('-------------------');
 
     for (const filename of filenames) {

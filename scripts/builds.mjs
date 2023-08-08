@@ -1,4 +1,4 @@
-import chalk from 'chalk';
+import c from 'picocolors';
 import { exec } from 'child_process';
 import copyfiles from 'copyfiles';
 import { build } from 'esbuild';
@@ -76,7 +76,7 @@ export async function executeEsmBuild() {
   const startTime = new Date().getTime();
   await bundleAsEsm();
   const endTime = new Date().getTime();
-  console.log(`[${chalk.yellow('esbuild ⚡')}] Bundled to "esm" format in ${endTime - startTime}ms`);
+  console.log(`[${c.yellow('esbuild ⚡')}] Bundled to "esm" format in ${endTime - startTime}ms`);
 }
 
 /**
@@ -108,7 +108,7 @@ export async function buildAllIifeFiles() {
     buildIifeFile(file, false);
   }
   const endTime = new Date().getTime();
-  console.log(`[${chalk.yellow('esbuild ⚡')}] Built ${allFiles.length} files to "iife" format in ${endTime - startTime}ms`);
+  console.log(`[${c.yellow('esbuild ⚡')}] Built ${allFiles.length} files to "iife" format in ${endTime - startTime}ms`);
 }
 
 /** build as iife, every file will be bundled separately */
@@ -129,7 +129,7 @@ export async function buildIifeFile(file, displayLog = true) {
 
   if (displayLog) {
     const endTime = new Date().getTime();
-    console.log(`[${chalk.yellow('esbuild ⚡')}] Built "${file}" to "iife" format in ${endTime - startTime}ms`);
+    console.log(`[${c.yellow('esbuild ⚡')}] Built "${file}" to "iife" format in ${endTime - startTime}ms`);
   }
 }
 
@@ -169,7 +169,7 @@ function copySassFiles() {
   copyfiles(
     ['src/styles/*.scss', 'dist/styles/sass'], // 1st in array is source, last is target
     { flat: true, up: 2, exclude: '**/_*.scss' },
-    () => console.log(`[${chalk.magenta('SASS')}] SASS files copied`)
+    () => console.log(`[${c.magenta('SASS')}] SASS files copied`)
   );
 }
 
@@ -178,7 +178,7 @@ export function buildAllSassFiles() {
   try {
     return new Promise((resolve) => {
       exec('npm run sass:build').on('close', (code) => {
-        console.log(`[${chalk.magenta('SASS')}] Full SASS build completed`);
+        console.log(`[${c.magenta('SASS')}] Full SASS build completed`);
         resolve(code);
       });
     });
@@ -199,12 +199,12 @@ export async function buildSassFile(sassFile) {
   // const extension = path.extname(sassFile);
 
   if (!sassLogged) {
-    console.log(`[${chalk.magenta('SASS')}] SASS file changes detected`);
+    console.log(`[${c.magenta('SASS')}] SASS file changes detected`);
     sassLogged = true;
   }
   if (filename.startsWith('_')) {
     // when _variables changes, let's rebuild all SASS files instead of just one
-    console.log(`[${chalk.magenta('SASS')}] scss variable file changed, requires full SASS rebuild (triggered by`, `"${sassFile}")`);
+    console.log(`[${c.magenta('SASS')}] scss variable file changed, requires full SASS rebuild (triggered by`, `"${sassFile}")`);
     await buildAllSassFiles();
   } else {
     const srcDir = 'src';

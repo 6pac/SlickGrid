@@ -1,6 +1,6 @@
 require('dotenv/config');
 const { Octokit } = require('@octokit/rest');
-const chalk = require('chalk');
+const c = require('picocolors');
 const parseGitUrl = require('git-url-parse');
 const newGithubReleaseUrl = require('new-github-release-url');
 const semver = require('semver');
@@ -19,10 +19,10 @@ function createGitHubClient() {
 }
 
 /**
- * 
- * @param {String} [remote] 
- * @param {Object} [opts] 
- * @returns 
+ *
+ * @param {String} [remote]
+ * @param {Object} [opts]
+ * @returns
  */
 function parseGitRepo(remote = 'origin', opts) {
   const args = ['config', '--get', `remote.${remote}.url`];
@@ -98,7 +98,7 @@ function createRelease(
     const host = 'github.com';
     console.info(
       // JSON.stringify(releaseOptions)
-      `${chalk.bgMagenta('[dry-run]')} 🔗 https://${host}/${releaseOptions.owner}/${releaseOptions.repo}/releases/tag/${releaseOptions.tag_name} 🏷️ (GitHub Release)`
+      `${c.bgMagenta('[dry-run]')} 🔗 https://${host}/${releaseOptions.owner}/${releaseOptions.repo}/releases/tag/${releaseOptions.tag_name} 🏷️ (GitHub Release)`
     );
     return Promise.resolve();
   }

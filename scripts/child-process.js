@@ -1,4 +1,4 @@
-const chalk = require('chalk');
+const c = require('picocolors');
 const os = require('os');
 const execa = require('execa');
 const logTransformer = require('strong-log-transformer');
@@ -54,15 +54,15 @@ function execSync(command, args, opts, cmdDryRun = false) {
  * @returns {String} output
  */
 function logExecDryRunCommand(command, args) {
-    const argStr = (Array.isArray(args) ? args.join(' ') : args) ?? '';
+  const argStr = (Array.isArray(args) ? args.join(' ') : args) ?? '';
 
-    const cmdList = [];
-    for (const c of [command, argStr]) {
-        cmdList.push(Array.isArray(c) ? c.join(' ') : c);
-    }
+  const cmdList = [];
+  for (const cmd of [command, argStr]) {
+    cmdList.push(Array.isArray(cmd) ? cmd.join(' ') : cmd);
+  }
 
-    console.info(chalk.bold.magenta('[dry-run] >'), cmdList.join(' '));
-    return '';
+  console.info(c.magenta(c.bold('[dry-run] >')), cmdList.join(' '));
+  return '';
 }
 
 /**
@@ -125,7 +125,7 @@ function spawnStreaming(
   const stderrOpts = {}; // mergeMultiline causes escaped newlines :P
 
   if (prefix) {
-    const color = chalk['magenta'];
+    const color = c['magenta'];
     stdoutOpts.tag = `${color.bold(prefix)}:`;
     stderrOpts.tag = `${color(prefix)}:`;
   }

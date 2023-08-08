@@ -1,4 +1,4 @@
-const chalk = require('chalk');
+const c = require('picocolors');
 const fs = require('fs-extra');
 const readline = require('readline');
 const path = require('path');
@@ -41,7 +41,7 @@ const childProcess = require('./child-process.js');
   let dryRunPrefix = options.dryRun ? '[dry-run]' : '';
   let newTag;
   if (options.dryRun) {
-    console.info(`-- ${chalk.bgMagenta('DRY-RUN')} mode --`);
+    console.info(`-- ${c.bgMagenta('DRY-RUN')} mode --`);
   }
   await gitUtils.hasUncommittedChanges(options);
   const repo = githubRelease.parseGitRepo();
@@ -63,7 +63,7 @@ const childProcess = require('./child-process.js');
   for (const bumpType of bumpTypes) {
     versionIncrements.push({
       key: bumpType.bump,
-      name: `${bumpType.bump} (${chalk.bold.magenta(bumpVersion(bumpType.bump, false))}) ${bumpType.desc}`,
+      name: `${bumpType.bump} (${c.bold.magenta(bumpVersion(bumpType.bump, false))}) ${bumpType.desc}`,
       value: bumpType.bump
     });
   }
@@ -73,7 +73,7 @@ const childProcess = require('./child-process.js');
   );
 
   const whichBumpType = await promptConfirmation(
-    `${chalk.bgMagenta(dryRunPrefix)} Select increment to apply (next version)`,
+    `${c.bgMagenta(dryRunPrefix)} Select increment to apply (next version)`,
     versionIncrements,
     defaultIndex = versionIncrements.length - 1
   );
@@ -90,7 +90,7 @@ const childProcess = require('./child-process.js');
     }
 
     newTag = `${TAG_PREFIX}${newVersion}`;
-    console.log(`${chalk.bgMagenta(dryRunPrefix)} Bumping new version to "${newTag}"`);
+    console.log(`${c.bgMagenta(dryRunPrefix)} Bumping new version to "${newTag}"`);
 
     // 2. update package.json & slick.grid.js with new version
     await updatePackageVersion(newVersion);
@@ -119,7 +119,7 @@ const childProcess = require('./child-process.js');
       : await gitUtils.gitAdd(Array.from(changedFiles), { cwd, dryRun: options.dryRun });
 
     // show git changes to user so he can confirm the changes are ok
-    const shouldCommitChanges = await promptConfirmation(`${chalk.bgMagenta(dryRunPrefix)} Ready to tag version "${newTag}" and push commits to remote? Choose No to cancel.`);
+    const shouldCommitChanges = await promptConfirmation(`${c.bgMagenta(dryRunPrefix)} Ready to tag version "${newTag}" and push commits to remote? Choose No to cancel.`);
     if (shouldCommitChanges) {
       // 7. create git tag of new release
       await gitUtils.gitTag(newTag, { cwd, dryRun: options.dryRun });
@@ -132,7 +132,7 @@ const childProcess = require('./child-process.js');
       await gitUtils.gitPushToCurrentBranch('origin', { cwd, dryRun: options.dryRun });
 
       // 10. NPM publish
-      const shouldPublish = await promptConfirmation(`${chalk.bgMagenta(dryRunPrefix)} Are you ready to publish "${newTag}" to npm?`);
+      const shouldPublish = await promptConfirmation(`${c.bgMagenta(dryRunPrefix)} Are you ready to publish "${newTag}" to npm?`);
       if (shouldPublish) {
         let publishTagName;
         if (whichBumpType.includes('alpha')) {
@@ -141,7 +141,7 @@ const childProcess = require('./child-process.js');
           publishTagName = 'beta';
         }
         await npmUtils.publishPackage(publishTagName, { cwd, dryRun: options.dryRun });
-        console.log(`${chalk.bgMagenta(dryRunPrefix)} 🔗 https://www.npmjs.com/package/${pkg.name} 📦 (npm)`.trim())
+        console.log(`${c.bgMagenta(dryRunPrefix)} 🔗 https://www.npmjs.com/package/${pkg.name} 📦 (npm)`.trim())
       }
 
       // 11. Create GitHub Release
@@ -199,7 +199,7 @@ function updatePackageVersion(newVersion) {
   pkg.version = newVersion;
 
   if (options.dryRun) {
-    console.log(`${chalk.magenta('[dry-run]')}`);
+    console.log(`${c.magenta('[dry-run]')}`);
   }
   fs.writeJsonSync(path.resolve(__dirname, '../package.json'), pkg, { spaces: 2 });
 
@@ -215,7 +215,7 @@ function updatePackageVersion(newVersion) {
 function updateSlickGridVersion(newVersion) {
   const slickGridJs = fs.readFileSync(path.resolve(__dirname, '../slick.grid.js'), { encoding: 'utf8', flag: 'r' });
 
-  // replaces version in 2 areas (a version could be "2.4.45" or "2.4.45-alpha.0"): 
+  // replaces version in 2 areas (a version could be "2.4.45" or "2.4.45-alpha.0"):
   // 1- in top comments, ie: SlickGrid v2.4.45
   // 2- in public API definitions, ie: "slickGridVersion": "2.4.45",
   const updatedSlickGridJs = slickGridJs
@@ -223,7 +223,7 @@ function updateSlickGridVersion(newVersion) {
     .replace(/("slickGridVersion"): "([0-9\.]*([\-\.]?alpha[\-\.]?|[\-\.]?beta[\-\.]?)?[0-9\-\.]*)"/gi, `$1: "${newVersion}"`);
 
   if (options.dryRun) {
-    console.log(`${chalk.magenta('[dry-run]')}`);
+    console.log(`${c.magenta('[dry-run]')}`);
   }
   fs.writeFileSync(path.resolve(__dirname, '../slick.grid.js'), updatedSlickGridJs);
 
