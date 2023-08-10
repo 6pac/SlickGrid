@@ -5,7 +5,16 @@
 *.exe
 *.pdb
 *.bak
+*.esproj
+*.sln
+.vs*
 node_modules/*
+src/models/*.js
+src/plugins/*.js
+src/controls/*.js
+src/models/*.js
+src/*.js
+dist/browser/models/*
 SlickgridRelease*
 nuget*
 testresult.xml

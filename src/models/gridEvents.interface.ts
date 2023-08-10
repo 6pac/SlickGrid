@@ -36,6 +36,7 @@ export interface OnValidationErrorEventArgs extends SlickGridEventData { row: nu
 export interface OnRenderedEventArgs extends SlickGridEventData { startRow: number; endRow: number; }
 export interface OnSelectedRowsChangedEventArgs extends SlickGridEventData { rows: number[]; previousSelectedRows: number[]; changedSelectedRows: number[]; changedUnselectedRows: number[]; caller: string; }
 export interface OnSetOptionsEventArgs extends SlickGridEventData { optionsBefore: GridOption; optionsAfter: GridOption; }
+export interface OnActivateChangedOptionsEventArgs extends SlickGridEventData { options: GridOption; }
 export interface OnScrollEventArgs extends SlickGridEventData { scrollLeft: number; scrollTop: number; }
 export interface OnDragEventArgs extends SlickGridEventData {
   count: number; deltaX: number; deltaY: number; offsetX: number; offsetY: number; originalX: number; originalY: number;
