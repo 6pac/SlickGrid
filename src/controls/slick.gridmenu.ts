@@ -164,8 +164,8 @@ export class SlickGridMenu {
     // we do this change because the Grid Menu is on the left container for a regular grid, it is however on the right container for a frozen grid
     grid.onSetOptions.subscribe((_e, args) => {
       if (args && args.optionsBefore && args.optionsAfter) {
-        const switchedFromRegularToFrozen = args.optionsBefore.frozenColumn >= 0 && args.optionsAfter.frozenColumn === -1;
-        const switchedFromFrozenToRegular = args.optionsBefore.frozenColumn === -1 && args.optionsAfter.frozenColumn >= 0;
+        const switchedFromRegularToFrozen = args.optionsBefore.frozenColumn! >= 0 && args.optionsAfter.frozenColumn === -1;
+        const switchedFromFrozenToRegular = args.optionsBefore.frozenColumn === -1 && args.optionsAfter.frozenColumn! >= 0;
         if (switchedFromRegularToFrozen || switchedFromFrozenToRegular) {
           this.recreateGridMenu();
         }
@@ -188,7 +188,7 @@ export class SlickGridMenu {
 
   protected createGridMenu() {
     const gridMenuWidth = (this._gridMenuOptions?.menuWidth) || this._defaults.menuWidth;
-    if (this._gridOptions && this._gridOptions.hasOwnProperty('frozenColumn') && this._gridOptions.frozenColumn >= 0) {
+    if (this._gridOptions && this._gridOptions.hasOwnProperty('frozenColumn') && this._gridOptions.frozenColumn! >= 0) {
       this._headerElm = document.querySelector(`.${this._gridUid} .slick-header-right`);
     } else {
       this._headerElm = document.querySelector(`.${this._gridUid} .slick-header-left`);

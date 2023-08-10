@@ -366,8 +366,8 @@ export class SlickCellMenu implements Plugin {
         // since we reposition menu below slick cell, we need to take it in consideration and do our calculation from that element
         const spaceBottom = Utils.calculateAvailableSpace(parentElm).bottom;
         const spaceTop = Utils.calculateAvailableSpace(parentElm).top;
-        const spaceBottomRemaining = spaceBottom + dropOffset - rowHeight;
-        const spaceTopRemaining = spaceTop - dropOffset + rowHeight;
+        const spaceBottomRemaining = spaceBottom + dropOffset - rowHeight!;
+        const spaceTopRemaining = spaceTop - dropOffset + rowHeight!;
         const dropPosition = (spaceBottomRemaining < menuHeight && spaceTopRemaining > spaceBottomRemaining) ? 'top' : 'bottom';
         if (dropPosition === 'top') {
           this._menuElm.classList.remove('dropdown');
@@ -376,7 +376,7 @@ export class SlickCellMenu implements Plugin {
         } else {
           this._menuElm.classList.remove('dropup');
           this._menuElm.classList.add('dropdown');
-          menuOffsetTop = menuOffsetTop + rowHeight + dropOffset;
+          menuOffsetTop = menuOffsetTop + rowHeight! + dropOffset;
         }
       }
 

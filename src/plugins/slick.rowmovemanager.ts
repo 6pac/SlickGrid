@@ -141,7 +141,7 @@ export class SlickRowMoveManager {
     dd.selectionProxy.style.position = 'absolute';
     dd.selectionProxy.style.zIndex = '99999';
     dd.selectionProxy.style.width = `${this._canvas.clientWidth}px`;
-    dd.selectionProxy.style.height = `${rowHeight * selectedRows.length}px`;
+    dd.selectionProxy.style.height = `${rowHeight! * selectedRows.length}px`;
     this._canvas.appendChild(dd.selectionProxy);
 
     dd.guide = document.createElement('div');
@@ -174,7 +174,7 @@ export class SlickRowMoveManager {
       dd.clonedSlickRow.style.display = 'block';
     }
 
-    const insertBefore = Math.max(0, Math.min(Math.round(top / this._grid.getOptions().rowHeight), this._grid.getDataLength()));
+    const insertBefore = Math.max(0, Math.min(Math.round(top / this._grid.getOptions().rowHeight!), this._grid.getDataLength()));
     if (insertBefore !== dd.insertBefore) {
       const eventData = {
         grid: this._grid,

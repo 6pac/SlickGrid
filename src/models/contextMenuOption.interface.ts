@@ -9,13 +9,13 @@ export interface ContextMenuOption {
   autoAdjustDrop?: boolean;
 
   /** Defaults to 0, Optionally add an offset to the auto-align of the drop menu */
-  autoAdjustDropOffset: number;
+  autoAdjustDropOffset?: number;
 
   /** Defaults to true, Auto-align drop menu to the left or right depending on grid viewport available space */
   autoAlignSide?: boolean;
 
   /** Defaults to 0, Optionally add an offset to the left/right side auto-align */
-  autoAlignSideOffset: number;
+  autoAlignSideOffset?: number;
 
   /** Array of Command Items (title, command, disabled, ...) */
   commandItems?: Array<MenuCommandItem | 'divider'>;

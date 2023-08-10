@@ -805,7 +805,7 @@ export class LongTextEditor implements Editor {
   save() {
     const gridOptions = this.args.grid.getOptions() || {};
     if (gridOptions.autoCommitEdit) {
-      this.args.grid.getEditorLock()?.commitCurrentEdit();
+      this.args.grid.getEditorLock().commitCurrentEdit();
     } else {
       this.args.commitChanges();
     }

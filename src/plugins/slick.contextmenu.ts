@@ -697,17 +697,17 @@ export class SlickContextMenu implements Plugin {
         // since we reposition menu below slick cell, we need to take it in consideration and do our calculation from that element
         const spaceBottom = Utils.calculateAvailableSpace(parentElm).bottom;
         const spaceTop = Utils.calculateAvailableSpace(parentElm).top;
-        const spaceBottomRemaining = spaceBottom + dropOffset - rowHeight;
-        const spaceTopRemaining = spaceTop - dropOffset + rowHeight;
+        const spaceBottomRemaining = spaceBottom + (dropOffset || 0) - rowHeight!;
+        const spaceTopRemaining = spaceTop - (dropOffset || 0) + rowHeight!;
         const dropPosition = (spaceBottomRemaining < menuHeight && spaceTopRemaining > spaceBottomRemaining) ? 'top' : 'bottom';
         if (dropPosition === 'top') {
           this._menuElm.classList.remove('dropdown');
           this._menuElm.classList.add('dropup');
-          menuOffsetTop = menuOffsetTop - menuHeight - dropOffset;
+          menuOffsetTop = menuOffsetTop - menuHeight - (dropOffset || 0);
         } else {
           this._menuElm.classList.remove('dropup');
           this._menuElm.classList.add('dropdown');
-          menuOffsetTop = menuOffsetTop + rowHeight + dropOffset;
+          menuOffsetTop = menuOffsetTop + rowHeight! + (dropOffset || 0);
         }
       }
 
@@ -720,11 +720,11 @@ export class SlickContextMenu implements Plugin {
         if (dropSide === 'left') {
           this._menuElm.classList.remove('dropright');
           this._menuElm.classList.add('dropleft');
-          menuOffsetLeft = (menuOffsetLeft - (+menuWidth) - sideOffset);
+          menuOffsetLeft = (menuOffsetLeft - (+menuWidth) - (sideOffset || 0));
         } else {
           this._menuElm.classList.remove('dropleft');
           this._menuElm.classList.add('dropright');
-          menuOffsetLeft = menuOffsetLeft + sideOffset;
+          menuOffsetLeft = menuOffsetLeft + (sideOffset || 0);
         }
       }
 
