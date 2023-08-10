@@ -3,9 +3,7 @@ import type {
   CssStyleHash,
   CustomDataView,
   Grouping,
-  GroupingComparerItem,
   GroupingFormatterItem,
-  GroupingGetterFunction,
   ItemMetadata,
   OnGroupCollapsedEventArgs,
   OnGroupExpandedEventArgs,
@@ -15,7 +13,6 @@ import type {
   OnSelectedRowIdsChangedEventArgs,
   OnSetItemsCalledEventArgs,
   PagingInfo,
-  SortDirectionNumber
 } from './models/index';
 import {
   SlickEvent as SlickEvent_,
