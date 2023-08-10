@@ -411,36 +411,6 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     this.refresh();
   }
 
-  /**
-   * @deprecated Please use {@link setGrouping}.
-   */
-  groupBy(valueGetter: string | GroupingGetterFunction<TData>, valueFormatter: (g: GroupingFormatterItem) => string, sortComparer?: (a: GroupingComparerItem, b: GroupingComparerItem) => SortDirectionNumber) {
-    if (valueGetter == null) {
-      this.setGrouping([]);
-      return;
-    }
-
-    this.setGrouping({
-      getter: valueGetter,
-      formatter: valueFormatter,
-      comparer: sortComparer
-    });
-  }
-
-  /**
-   * @deprecated Please use {@link setGrouping}.
-   */
-  setAggregators(groupAggregators: Aggregator[], includeCollapsed: boolean) {
-    if (!this.groupingInfos.length) {
-      throw new Error("[SlickGrid DataView] At least one grouping must be specified before calling setAggregators().");
-    }
-
-    this.groupingInfos[0].aggregators = groupAggregators;
-    this.groupingInfos[0].aggregateCollapsed = includeCollapsed;
-
-    this.setGrouping(this.groupingInfos);
-  }
-
   /** Get an item in the DataView by its row index */
   getItemByIdx<T extends TData>(i: number) {
     return this.items[i] as T;
