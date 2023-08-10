@@ -211,7 +211,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
 
   /** Use a mixin function when applying defaults to passed in option and columns objects, rather than creating a new object, so as not to break references */
   mixinDefaults?: boolean;
-  
+
   /** Defaults to false, which leads to be able to do multiple columns sorting (or single sort when false) */
   multiColumnSort?: boolean;
 
@@ -294,12 +294,12 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   // --
   // deprecated options
 
-  /** @deprecated @use `columnPicker` - column picker title */
+  /** @deprecated @use `columnPicker: { columnTitle: '...' }` in your column definitions. */
   columnPickerTitle?: string;
 
-  /** @deprecated @use `columnPicker` - forcefit title displayed in column picker */
+  /** @deprecated @use `columnPicker: { forceFitTitle: '...' }` in your column definitions. */
   forceFitTitle?: string;
 
-  /** @deprecated @use `columnPicker` - syncResize title displayed in column picker */
+  /** @deprecated @use `columnPicker: { syncResizeTitle: '...' }`  in your column definitions. */
   syncResizeTitle?: string;
 }
