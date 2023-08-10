@@ -1,4 +1,4 @@
-import type { Column as BaseColumn, ColumnPickerOption, ColumnReorderFunction, CustomTooltipOption, EditCommand, Editor, Formatter, GridMenuOption, ItemMetadata, } from './index';
+import type { Column as BaseColumn, CellMenuOption, ColumnPickerOption, ColumnReorderFunction, ContextMenuOption, CustomTooltipOption, EditCommand, Editor, ExcelCopyBufferOption, Formatter, GridMenuOption, ItemMetadata, } from './index';
 import type { SlickEditorLock } from '../slick.core';
 
 export interface CellViewportRange {
@@ -65,13 +65,13 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   cellFlashingCssClass?: string;
 
   /** Cell menu options (Action menu) */
-  // cellMenu?: CellMenu;
+  cellMenu?: CellMenuOption;
 
   /** Column Picker Plugin options (columnTitle, forceFitTitle, syncResizeTitle) */
   columnPicker?: ColumnPickerOption;
 
-  // /** Context menu options (mouse right+click) */
-  // contextMenu?: ContextMenu;
+  /** Context menu options (mouse right+click) */
+  contextMenu?: ContextMenuOption;
 
   /** Defaults to false, which leads to create the footer row of the grid */
   createFooterRow?: boolean;
@@ -89,7 +89,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   dataItemColumnValueExtractor?: null | ((item: any, columnDef: C) => any);
 
   /** Default column width, is set to 80 when null */
-  defaultColumnWidth: number;
+  defaultColumnWidth?: number;
 
   /** Default cell Formatter that will be used by the grid */
   defaultFormatter?: Formatter;
@@ -107,7 +107,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   editorFactory?: null | { getEditor: (col: C) => Editor; };
 
   /** a global singleton editor lock. */
-  editorLock: SlickEditorLock;
+  editorLock?: SlickEditorLock;
 
   /** Do we want to emulate paging when we are scrolling? */
   emulatePagingWhenScrolling?: boolean;
@@ -152,16 +152,16 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   enableTextSelectionOnCells?: boolean;
 
   /** Options for the ExcelCopyBuffer Extension */
-  // excelCopyBufferOptions?: ExcelCopyBufferOption;
+  excelCopyBufferOptions?: ExcelCopyBufferOption;
 
   /** Do we want explicit grid initialization? */
   explicitInitialization?: boolean;
 
   /** Firefox max supported CSS height */
-  ffMaxSupportedCssHeight: number;
+  ffMaxSupportedCssHeight?: number;
 
   /** Defaults to 25, which is the grid footer row panel height */
-  footerRowHeight: number;
+  footerRowHeight?: number;
 
   /** Do we want to force fit columns in the grid at all time? */
   forceFitColumns?: boolean;
@@ -173,20 +173,20 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   formatterFactory?: { getFormatter: (col: C) => Formatter; } | null;
 
   /** Defaults to false, do we want to freeze (pin) the bottom portion instead of the top */
-  frozenBottom: boolean;
+  frozenBottom?: boolean;
 
   /** Number of column index(es) to freeze (pin) in the grid */
-  frozenColumn: number;
+  frozenColumn?: number;
 
   /** Number of row index(es) to freeze (pin) in the grid */
-  frozenRow: number;
+  frozenRow?: number;
 
   /**
    * Defaults to 100, what is the minimum width to keep for the section on the right of a frozen grid?
    * This basically fixes an issue that if the user expand any column on the left of the frozen (pinning) section
    * and make it bigger than the viewport width, then the grid becomes unusable because the right section goes into a void/hidden area.
    */
-  frozenRightViewportMinWidth: number;
+  frozenRightViewportMinWidth?: number;
 
   /** Defaults to false, which leads to have row(s) taking full width */
   fullWidthRows?: boolean;
@@ -195,7 +195,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   gridMenu?: GridMenuOption;
 
   /** Header row height in pixels (only type the number). Header row is where the filters are. */
-  headerRowHeight: number;
+  headerRowHeight?: number;
 
   /** Do we leave space for new rows in the DOM visible buffer */
   leaveSpaceForNewRows?: boolean;
@@ -204,14 +204,14 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   logSanitizedHtml?: boolean;
 
   /** Max supported CSS height */
-  maxSupportedCssHeight: number;
+  maxSupportedCssHeight?: number;
 
   /** What is the minimum row buffer to use? */
-  minRowBuffer: number;
+  minRowBuffer?: number;
 
   /** Use a mixin function when applying defaults to passed in option and columns objects, rather than creating a new object, so as not to break references */
   mixinDefaults?: boolean;
-  
+
   /** Defaults to false, which leads to be able to do multiple columns sorting (or single sort when false) */
   multiColumnSort?: boolean;
 
@@ -222,19 +222,19 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   numberedMultiColumnSort?: boolean;
 
   /** Extra pre-header panel height (on top of column header) */
-  preHeaderPanelHeight: number;
+  preHeaderPanelHeight?: number;
 
   /** Do we want to preserve copied selection on paste? */
   preserveCopiedSelectionOnPaste?: boolean;
 
   /** Grid row height in pixels (only type the number). Row of cell values. */
-  rowHeight: number;
+  rowHeight?: number;
 
   /** Optional sanitizer function to use for sanitizing data to avoid XSS attacks */
   sanitizer?: (dirtyHtml: string) => string;
 
   /** Defaults to 50, render throttling when scrolling large dataset */
-  scrollRenderThrottling: number;
+  scrollRenderThrottling?: number;
 
   /** CSS class name used when cell is selected */
   selectedCellCssClass?: string;
@@ -274,7 +274,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   syncColumnCellResize?: boolean;
 
   /** What is the top panel height in pixels (only type the number) */
-  topPanelHeight: number;
+  topPanelHeight?: number;
 
   /** Defaults to false, when set to True will lead to multiple columns sorting without the need to hold or do shift-click to execute a multiple sort. */
   tristateMultiColumnSort?: boolean;
@@ -294,12 +294,12 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   // --
   // deprecated options
 
-  /** @deprecated @use `columnPicker` - column picker title */
+  /** @deprecated @use `columnPicker: { columnTitle: '...' }` in your column definitions. */
   columnPickerTitle?: string;
 
-  /** @deprecated @use `columnPicker` - forcefit title displayed in column picker */
+  /** @deprecated @use `columnPicker: { forceFitTitle: '...' }` in your column definitions. */
   forceFitTitle?: string;
 
-  /** @deprecated @use `columnPicker` - syncResize title displayed in column picker */
+  /** @deprecated @use `columnPicker: { syncResizeTitle: '...' }`  in your column definitions. */
   syncResizeTitle?: string;
 }

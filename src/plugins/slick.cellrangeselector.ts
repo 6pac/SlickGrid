@@ -112,7 +112,7 @@ export class SlickCellRangeSelector implements Plugin {
 
     this._moveDistanceForOneCell = {
       x: this._grid.getAbsoluteColumnMinWidth() / 2,
-      y: this._grid.getOptions().rowHeight / 2
+      y: this._grid.getOptions().rowHeight! / 2
     }
     this._isRowMoveRegistered = this.hasRowMoveManager();
 
@@ -120,7 +120,7 @@ export class SlickCellRangeSelector implements Plugin {
     this._columnOffset = 0;
     this._isBottomCanvas = this._activeCanvas.classList.contains('grid-canvas-bottom');
 
-    if (this._gridOptions.frozenRow > -1 && this._isBottomCanvas) {
+    if (this._gridOptions.frozenRow! > -1 && this._isBottomCanvas) {
       const canvasSelector = `.${this._grid.getUID()} .grid-canvas-${this._gridOptions.frozenBottom ? 'bottom' : 'top'}`;
       const canvasElm = document.querySelector(canvasSelector);
       if (canvasElm) {
@@ -130,7 +130,7 @@ export class SlickCellRangeSelector implements Plugin {
 
     this._isRightCanvas = this._activeCanvas.classList.contains('grid-canvas-right');
 
-    if (this._gridOptions.frozenColumn > -1 && this._isRightCanvas) {
+    if (this._gridOptions.frozenColumn! > -1 && this._isRightCanvas) {
       const canvasLeftElm = document.querySelector(`.${this._grid.getUID()} .grid-canvas-left`);
       if (canvasLeftElm) {
         this._columnOffset = canvasLeftElm.clientWidth || 0;
@@ -157,12 +157,12 @@ export class SlickCellRangeSelector implements Plugin {
     const canvasOffset = Utils.offset(this._canvas);
 
     let startX = dd.startX - (canvasOffset?.left ?? 0);
-    if (this._gridOptions.frozenColumn >= 0 && this._isRightCanvas) {
+    if (this._gridOptions.frozenColumn! >= 0 && this._isRightCanvas) {
       startX += this._scrollLeft;
     }
 
     let startY = dd.startY - (canvasOffset?.top ?? 0);
-    if (this._gridOptions.frozenRow >= 0 && this._isBottomCanvas) {
+    if (this._gridOptions.frozenRow! >= 0 && this._isBottomCanvas) {
       startY += this._scrollTop;
     }
 
@@ -322,12 +322,12 @@ export class SlickCellRangeSelector implements Plugin {
     );
 
     // ... frozen column(s),
-    if (this._gridOptions.frozenColumn >= 0 && (!this._isRightCanvas && (end.cell > this._gridOptions.frozenColumn)) || (this._isRightCanvas && (end.cell <= this._gridOptions.frozenColumn))) {
+    if (this._gridOptions.frozenColumn! >= 0 && (!this._isRightCanvas && (end.cell > this._gridOptions.frozenColumn!)) || (this._isRightCanvas && (end.cell <= this._gridOptions.frozenColumn!))) {
       return;
     }
 
     // ... or frozen row(s)
-    if (this._gridOptions.frozenRow >= 0 && (!this._isBottomCanvas && (end.row >= this._gridOptions.frozenRow)) || (this._isBottomCanvas && (end.row < this._gridOptions.frozenRow))) {
+    if (this._gridOptions.frozenRow! >= 0 && (!this._isBottomCanvas && (end.row >= this._gridOptions.frozenRow!)) || (this._isBottomCanvas && (end.row < this._gridOptions.frozenRow!))) {
       return;
     }
 

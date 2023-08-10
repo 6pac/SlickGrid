@@ -160,7 +160,7 @@ export class SlickRowDetailView {
     this._keyPrefix = this._options?.keyPrefix ?? '_';
 
     // Update the minRowBuffer so that the view doesn't disappear when it's at top of screen + the original default 3
-    this._gridRowBuffer = this._gridOptions.minRowBuffer;
+    this._gridRowBuffer = this._gridOptions.minRowBuffer || 0;
     this._gridOptions.minRowBuffer = this._options.panelRows + 3;
 
     this._eventHandler
@@ -601,8 +601,8 @@ export class SlickRowDetailView {
     // calculate padding requirements based on detail-content..
     // ie. worst-case: create an invisible dom node now & find it's height.
     const lineHeight = 13; // we know cuz we wrote the custom css init ;)
-    item[`${this._keyPrefix}sizePadding`] = Math.ceil(((rowCount * 2) * lineHeight) / this._gridOptions.rowHeight);
-    item[`${this._keyPrefix}height`] = (item[`${this._keyPrefix}sizePadding`] * this._gridOptions.rowHeight);
+    item[`${this._keyPrefix}sizePadding`] = Math.ceil(((rowCount * 2) * lineHeight) / this._gridOptions.rowHeight!);
+    item[`${this._keyPrefix}height`] = (item[`${this._keyPrefix}sizePadding`] * this._gridOptions.rowHeight!);
     const idxParent = this._dataView.getIdxById(item[this._dataViewIdProperty]) ?? 0;
     for (let idx = 1; idx <= item[`${this._keyPrefix}sizePadding`]; idx++) {
       this._dataView.insertItem(idxParent + idx, this.getPaddingItem(item, idx));
@@ -657,10 +657,10 @@ export class SlickRowDetailView {
       else {
         const html: string[] = [];
         const rowHeight = this._gridOptions.rowHeight;
-        let outterHeight = dataContext[`${this._keyPrefix}sizePadding`] * this._gridOptions.rowHeight;
+        let outterHeight = dataContext[`${this._keyPrefix}sizePadding`] * this._gridOptions.rowHeight!;
 
         if (this._options.maxRows !== undefined && dataContext[`${this._keyPrefix}sizePadding`] > this._options.maxRows) {
-          outterHeight = this._options.maxRows * rowHeight;
+          outterHeight = this._options.maxRows * rowHeight!;
           dataContext[`${this._keyPrefix}sizePadding`] = this._options.maxRows;
         }
 
@@ -721,19 +721,19 @@ export class SlickRowDetailView {
     const itemHeight = mainContainer.scrollHeight;
 
     // Now work out how many rows
-    const rowCount = Math.ceil(itemHeight / rowHeight);
+    const rowCount = Math.ceil(itemHeight / rowHeight!);
 
-    item[`${this._keyPrefix}sizePadding`] = Math.ceil(((rowCount * 2) * lineHeight) / rowHeight);
+    item[`${this._keyPrefix}sizePadding`] = Math.ceil(((rowCount * 2) * lineHeight) / rowHeight!);
     item[`${this._keyPrefix}height`] = itemHeight;
 
-    let outterHeight = (item[`${this._keyPrefix}sizePadding`] * rowHeight);
+    let outterHeight = (item[`${this._keyPrefix}sizePadding`] * rowHeight!);
     if (this._options.maxRows !== undefined && item[`${this._keyPrefix}sizePadding`] > this._options.maxRows) {
-      outterHeight = this._options.maxRows * rowHeight;
+      outterHeight = this._options.maxRows * rowHeight!;
       item[`${this._keyPrefix}sizePadding`] = this._options.maxRows;
     }
 
     // If the padding is now more than the original minRowBuff we need to increase it
-    if (this._grid.getOptions().minRowBuffer < item[`${this._keyPrefix}sizePadding`]) {
+    if (this._grid.getOptions().minRowBuffer! < item[`${this._keyPrefix}sizePadding`]) {
       // Update the minRowBuffer so that the view doesn't disappear when it's at top of screen + the original default 3
       this._grid.getOptions().minRowBuffer = item[`${this._keyPrefix}sizePadding`] + 3;
     }

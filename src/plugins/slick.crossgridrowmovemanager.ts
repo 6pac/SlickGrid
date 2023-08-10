@@ -149,7 +149,7 @@ export class SlickCrossGridRowMoveManager {
     dd.selectionProxy.style.position = 'absolute';
     dd.selectionProxy.style.zIndex = '99999';
     dd.selectionProxy.style.width = `${this._toCanvas.clientWidth}px`;
-    dd.selectionProxy.style.height = `${rowHeight * selectedRows.length}px`;
+    dd.selectionProxy.style.height = `${rowHeight! * selectedRows.length}px`;
     this._toCanvas.appendChild(dd.selectionProxy);
 
     dd.guide = document.createElement('div');
@@ -182,7 +182,7 @@ export class SlickCrossGridRowMoveManager {
       dd.clonedSlickRow.style.display = 'block';
     }
 
-    const insertBefore = Math.max(0, Math.min(Math.round(top / this._toGrid.getOptions().rowHeight), this._toGrid.getDataLength()));
+    const insertBefore = Math.max(0, Math.min(Math.round(top / this._toGrid.getOptions().rowHeight!), this._toGrid.getDataLength()));
     if (insertBefore !== dd.insertBefore) {
       const eventData = {
         fromGrid: this._grid,

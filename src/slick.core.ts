@@ -802,7 +802,7 @@ function extend<T = any>(...args: any[]): T {
     target = args[i] || {};
     i++;
   } else {
-    target = target || {}
+    target = target || {};
   }
   if (typeof target !== 'object' && !isFunction(target)) {
     target = {};

@@ -351,8 +351,8 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   /** Get only the DataView filtered items */
-  getFilteredItems() {
-    return this.filteredItems;
+  getFilteredItems<T extends TData>() {
+    return this.filteredItems as T[];
   }
 
   /** Get the array length (count) of only the DataView filtered items */
@@ -442,8 +442,8 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   /** Get an item in the DataView by its row index */
-  getItemByIdx(i: number) {
-    return this.items[i];
+  getItemByIdx<T extends TData>(i: number) {
+    return this.items[i] as T;
   }
 
   /** Get row index in the DataView by its Id */
@@ -473,8 +473,8 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   /** Get an item in the DataView by its Id */
-  getItemById(id: number | string) {
-    return this.items[(this.idxById.get(id) as number)];
+  getItemById<T extends TData>(id: number | string) {
+    return this.items[(this.idxById.get(id) as number)] as T;
   }
 
   /** From the items array provided, return the mapped rows */
@@ -567,7 +567,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
    * @param id The new id of the item.
    * @param item The item which should be the new value for the given id.
    */
-  updateItem(id: number | string, item: TData) {
+  updateItem<T extends TData>(id: number | string, item: T) {
     this.updateSingleItem(id, item);
     this.refresh();
   }
@@ -577,7 +577,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
    * @param id {Array} The array of new ids which is in the same order as the items.
    * @param newItems {Array} The new items that should be set in the data view for the given ids.
    */
-  updateItems(ids: Array<number | string>, newItems: TData[]) {
+  updateItems<T extends TData>(ids: Array<number | string>, newItems: T[]) {
     if (ids.length !== newItems.length) {
       throw new Error("[SlickGrid DataView] Mismatch on the length of ids and items provided to update");
     }
@@ -746,8 +746,8 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   /** Retrieve an item from the DataView at specific index */
-  getItem(i: number) {
-    const item = this.rows[i];
+  getItem<T extends TData>(i: number) {
+    const item = this.rows[i] as T;
 
     // if this is a group row, make sure totals are calculated and update the title
     if ((item as SlickGroup_)?.__group && (item as SlickGroup_).totals && !(item as SlickGroup_).totals?.initialized) {
@@ -1505,26 +1505,26 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
    * Get all selected dataContext items
    * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
    */
-  getAllSelectedItems() {
+  getAllSelectedItems<T extends TData>() {
     const selectedData: TData[] = [];
     const selectedIds = this.getAllSelectedIds();
     selectedIds!.forEach((id) => {
       selectedData.push(this.getItemById(id));
     });
-    return selectedData;
+    return selectedData as T[];
   }
 
   /**
   * Get all selected filtered dataContext items (similar to "getAllSelectedItems" but only return filtered data)
   * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
   */
-  getAllSelectedFilteredItems() {
+  getAllSelectedFilteredItems<T extends TData>() {
     if (!Array.isArray(this.selectedRowIds)) {
       return [];
     }
 
     const intersection = this.filteredItems.filter((a) => this.selectedRowIds!.some((b) => a[this.idProperty as keyof TData] === b));
-    return intersection || [];
+    return (intersection || []) as T[];
   }
 
   syncGridCellCssStyles(grid: SlickGrid, key: string) {
