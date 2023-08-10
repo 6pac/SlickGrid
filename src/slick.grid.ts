@@ -56,6 +56,7 @@ import type {
   OnRenderedEventArgs,
   OnSelectedRowsChangedEventArgs,
   OnSetOptionsEventArgs,
+  OnActivateChangedOptionsEventArgs,
   OnScrollEventArgs,
   PagingInfo,
   Plugin,
@@ -184,6 +185,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   onScroll = new SlickEvent<OnScrollEventArgs>();
   onSelectedRowsChanged = new SlickEvent<OnSelectedRowsChangedEventArgs>();
   onSetOptions = new SlickEvent<OnSetOptionsEventArgs>();
+  onActivateChangedOptions = new SlickEvent<OnActivateChangedOptionsEventArgs>();
   onSort = new SlickEvent<SingleColumnSort | MultiColumnSort>();
   onValidationError = new SlickEvent<OnValidationErrorEventArgs>();
   onViewportChanged = new SlickEvent<SlickGridEventData>();
@@ -272,7 +274,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     ffMaxSupportedCssHeight: 6000000,
     maxSupportedCssHeight: 1000000000,
     sanitizer: undefined,  // sanitize function, built in basic sanitizer is: Slick.RegexSanitizer(dirtyHtml)
-    logSanitizedHtml: false // log to console when sanitised - recommend true for testing of dev and production
+    logSanitizedHtml: false, // log to console when sanitised - recommend true for testing of dev and production
+    mixinDefaults: true
   };
 
   protected _columnDefaults = {
@@ -518,7 +521,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     // calculate these only once and share between grid instances
-    this._options = Utils.extend(true, {}, this._defaults, this.options);
+    if (this.options.mixinDefaults) {
+      if (!this.options) { this.options = {}; }
+      Utils.applyDefaults(this.options, this._defaults);
+    } else {
+      this._options = Utils.extend(true, {}, this._defaults, this.options);    
+    }
     this.scrollThrottle = this.actionThrottle(this.render.bind(this), this._options.scrollRenderThrottling);
     this.maxSupportedCssHeight = this.maxSupportedCssHeight || this.getMaxSupportedCssHeight();
     this.validateAndEnforceOptions();
@@ -3310,13 +3318,20 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected updateColumnProps() {
     this.columnsById = {};
     for (let i = 0; i < this.columns.length; i++) {
-      if (this.columns[i].width) {
-        this.columns[i].widthRequest = this.columns[i].width;
+      let m: C = this.columns[i];
+      if (m.width) {
+        m.widthRequest = m.width;
       }
 
-      const m: C = this.columns[i] = Utils.extend({}, this._columnDefaults, this.columns[i]);
-      m.autoSize = Utils.extend({}, this._columnAutosizeDefaults, m.autoSize);
-
+      if (this.options.mixinDefaults) {
+          Utils.applyDefaults(m, this._columnDefaults);
+          if (!m.autoSize) { m.autoSize = {}; }
+          Utils.applyDefaults(m.autoSize, this._columnAutosizeDefaults);
+      } else {
+        m = this.columns[i] = Utils.extend({}, this._columnDefaults, m);
+        m.autoSize = Utils.extend({}, this._columnAutosizeDefaults, m.autoSize);
+      }
+        
       this.columnsById[m.id] = i;
       if (m.minWidth && ((m.width || 0) < m.minWidth)) {
         m.width = m.minWidth;
@@ -3377,16 +3392,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {Boolean} [suppressSetOverflow] - do we want to suppress the call to `setOverflow`
    */
   setOptions(args: Partial<O>, suppressRender?: boolean, suppressColumnSet?: boolean, suppressSetOverflow?: boolean): void {
-    if (!this.getEditorLock().commitCurrentEdit()) {
-      return;
-    }
-
-    this.makeActiveCellNormal();
-
-    if (args.showColumnHeader !== undefined) {
-      this.setColumnHeaderVisibility(args.showColumnHeader);
-    }
-
+    this.prepareForOptionsChange();
     if (this._options.enableAddRow !== args.enableAddRow) {
       this.invalidateRow(this.getDataLength());
     }
@@ -3395,11 +3401,43 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this._options = Utils.extend(this._options, args);
     this.trigger(this.onSetOptions, { optionsBefore: originalOptions, optionsAfter: this._options });
 
+    this.internal_setOptions(suppressRender, suppressColumnSet, suppressSetOverflow);
+  }
+
+ /**
+   * If option.mixinDefaults is true then external code maintains a reference to the options object. In this case there is no need
+   * to call setOptions() - changes can be made directly to the object. However setOptions() also performs some recalibration of the
+   * grid in reaction to changed options. activateChangedOptions call the same recalibration routines as setOptions() would have.
+   * @param {Boolean} [suppressRender] - do we want to supress the grid re-rendering? (defaults to false)
+   * @param {Boolean} [suppressColumnSet] - do we want to supress the columns set, via "setColumns()" method? (defaults to false)
+   * @param {Boolean} [suppressSetOverflow] - do we want to suppress the call to `setOverflow`
+   */
+  activateChangedOptions(suppressRender?: boolean, suppressColumnSet?: boolean, suppressSetOverflow?: boolean): void {
+    this.prepareForOptionsChange();
+    this.invalidateRow(this.getDataLength());
+
+    this.trigger(this.onActivateChangedOptions, { options: this._options });
+
+    this.internal_setOptions(suppressRender, suppressColumnSet, suppressSetOverflow);
+  }
+
+  protected prepareForOptionsChange() {
+    if (!this.getEditorLock().commitCurrentEdit()) {
+      return;
+    }
+
+    this.makeActiveCellNormal();
+  }
+  
+  protected internal_setOptions(suppressRender?: boolean, suppressColumnSet?: boolean, suppressSetOverflow?: boolean) : void {
+    if (this._options.showColumnHeader !== undefined) {
+      this.setColumnHeaderVisibility(this._options.showColumnHeader);
+    }
     this.validateAndEnforceOptions();
     this.setFrozenOptions();
 
     // when user changed frozen row option, we need to force a recalculation of each viewport heights
-    if (args.frozenBottom !== undefined) {
+    if (this._options.frozenBottom !== undefined) {
       this.enforceFrozenRowHeightRecalc = true;
     }
 
@@ -3430,8 +3468,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.destroyAllInstances(this.slickMouseWheelInstances); // remove scroll handler when option is disable
     }
   }
-
-  validateAndEnforceOptions() {
+  
+  validateAndEnforceOptions(): void {
     if (this._options.autoHeight) {
       this._options.leaveSpaceForNewRows = false;
     }
