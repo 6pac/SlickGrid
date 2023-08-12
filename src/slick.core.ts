@@ -18,10 +18,10 @@ export class SlickEventData {
   protected _isImmediatePropagationStopped = false;
   protected _isDefaultPrevented = false;
   protected returnValues: string[] = [];
-  protected returnValue = undefined;
+  protected returnValue: any = undefined;
   protected target?: EventTarget | null;
-  protected nativeEvent;
-  protected arguments_;
+  protected nativeEvent?: Event | null;
+  protected arguments_: any;
 
   constructor(protected event?: Event | null, protected args?: any) {
     this.nativeEvent = event;

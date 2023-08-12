@@ -287,10 +287,10 @@ export class SlickCellExternalCopyManager implements Plugin {
         }
 
         const bRange = new SlickRange(
-          activeCell,
           activeRow,
-          activeCell + this._clipCommand.w - 1,
-          activeRow + this._clipCommand.h - 1
+          activeCell,
+          activeRow + this._clipCommand.h - 1,
+          activeCell + this._clipCommand.w - 1
         );
 
         this.markCopySelection([bRange]);
@@ -306,10 +306,11 @@ export class SlickCellExternalCopyManager implements Plugin {
 
             if (desty < this._clipCommand.maxDestY && destx < this._clipCommand.maxDestX) {
               const dt = grid.getDataItem(desty);
-              if (oneCellToMultiple)
+              if (oneCellToMultiple) {
                 this._clipCommand.setDataItemValueForColumn(dt, columns[destx], this._clipCommand.oldValues[0][0]);
-              else
+              } else {
                 this._clipCommand.setDataItemValueForColumn(dt, columns[destx], this._clipCommand.oldValues[y][x]);
+              }
               grid.updateCell(desty, destx);
               grid.onCellChange.notify({
                 row: desty,
@@ -323,10 +324,10 @@ export class SlickCellExternalCopyManager implements Plugin {
         }
 
         const bRange = new SlickRange(
-          activeCell,
           activeRow,
-          activeCell + this._clipCommand.w - 1,
-          activeRow + this._clipCommand.h - 1
+          activeCell,
+          activeRow + this._clipCommand.h - 1,
+          activeCell + this._clipCommand.w - 1
         );
 
         this.markCopySelection([bRange]);
