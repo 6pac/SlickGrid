@@ -528,7 +528,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     } else {
       this._options = Utils.extend<O>(true, {}, this._defaults, this.options);
     }
-    this.scrollThrottle = this.actionThrottle(this.render.bind(this), this._options.scrollRenderThrottling);
+    this.scrollThrottle = this.actionThrottle(this.render.bind(this), this._options.scrollRenderThrottling as number);
     this.maxSupportedCssHeight = this.maxSupportedCssHeight || this.getMaxSupportedCssHeight();
     this.validateAndEnforceOptions();
     this._columnDefaults.width = this._options.defaultColumnWidth;

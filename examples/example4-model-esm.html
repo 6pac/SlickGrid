@@ -352,7 +352,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // wire up the search textbox to apply the filter to the model
   document.querySelectorAll("#txtSearch,#txtSearch2").forEach(elm => elm.addEventListener('keyup', (e) => {
-    GlobalEditorLock.cancelCurrentEdit();
+    SlickGlobalEditorLock.cancelCurrentEdit();
 
     // clear on Esc
     if (e.which == 27) e.target.value = '';
@@ -371,7 +371,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   document.querySelector("#btnSelectRows").addEventListener('click', function () {
-    if (!GlobalEditorLock.commitCurrentEdit()) {
+    if (!SlickGlobalEditorLock.commitCurrentEdit()) {
       return;
     }
     var rows = [];
