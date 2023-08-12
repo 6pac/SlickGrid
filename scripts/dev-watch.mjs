@@ -3,7 +3,7 @@ import chokidar from 'chokidar';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
-import { buildAllSassFiles, buildIifeFile, buildSassFile, buildAllIifeFiles, executeEsmBuild, executeFullBuild } from './builds.mjs';
+import { buildAllSassFiles, buildIifeFile, buildSassFile, buildAllIifeFiles, executeCjsEsmBuilds, executeFullBuild } from './builds.mjs';
 
 const argv = yargs(hideBin(process.argv)).argv;
 
@@ -103,7 +103,7 @@ const argv = yargs(hideBin(process.argv)).argv;
           processing = true;
           if (filepath.endsWith('.js') || filepath.endsWith('.ts')) {
             // 1. ESM requires is always a full build since it is bundled into a single "index.js" file
-            await executeEsmBuild();
+            await executeCjsEsmBuilds();
 
             // 2. for iife format, we can rebuild each separate file (unless it's the initial build, if so execute full rebuild)
             await (initialBuild

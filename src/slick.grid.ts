@@ -1371,7 +1371,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   getHeaderRowColumn(columnIdOrIdx: number | string) {
     let idx = (typeof columnIdOrIdx === 'number' ? columnIdOrIdx : this.getColumnIndex(columnIdOrIdx));
-    let headerRowTarget;
+    let headerRowTarget: HTMLDivElement;
 
     if (this.hasFrozenColumns()) {
       if (idx <= this._options.frozenColumn!) {
@@ -1384,13 +1384,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       headerRowTarget = this._headerRowL;
     }
 
-    return headerRowTarget.children[idx];
+    return headerRowTarget.children[idx] as HTMLDivElement;
   }
 
   /** Get the Footer Row Column DOM element */
   getFooterRowColumn(columnIdOrIdx: number | string) {
     let idx = (typeof columnIdOrIdx === 'number' ? columnIdOrIdx : this.getColumnIndex(columnIdOrIdx));
-    let footerRowTarget;
+    let footerRowTarget: HTMLDivElement;
 
     if (this.hasFrozenColumns()) {
       if (idx <= this._options.frozenColumn!) {
@@ -1404,7 +1404,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       footerRowTarget = this._footerRowL;
     }
 
-    return footerRowTarget.children[idx];
+    return footerRowTarget.children[idx] as HTMLDivElement;
   }
 
   protected createColumnFooter() {
