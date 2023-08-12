@@ -410,143 +410,6 @@ var Slick = (() => {
   function regexSanitizer(dirtyHtml) {
     return dirtyHtml.replace(/(\b)(on[a-z]+)(\s*)=|javascript:([^>]*)[^>]*|(<\s*)(\/*)script([<>]*).*(<\s*)(\/*)script(>*)|(&lt;)(\/*)(script|script defer)(.*)(&gt;|&gt;">)/gi, "");
   }
-  function calculateAvailableSpace(element) {
-    let bottom = 0, top = 0, left = 0, right = 0, windowHeight = window.innerHeight || 0, windowWidth = window.innerWidth || 0, scrollPosition = windowScrollPosition(), pageScrollTop = scrollPosition.top, pageScrollLeft = scrollPosition.left, elmOffset = offset(element);
-    if (elmOffset) {
-      let elementOffsetTop = elmOffset.top || 0, elementOffsetLeft = elmOffset.left || 0;
-      top = elementOffsetTop - pageScrollTop, bottom = windowHeight - (elementOffsetTop - pageScrollTop), left = elementOffsetLeft - pageScrollLeft, right = windowWidth - (elementOffsetLeft - pageScrollLeft);
-    }
-    return { top, bottom, left, right };
-  }
-  function createDomElement(tagName, elementOptions, appendToParent) {
-    let elm = document.createElement(tagName);
-    return elementOptions && Object.keys(elementOptions).forEach((elmOptionKey) => {
-      let elmValue = elementOptions[elmOptionKey];
-      typeof elmValue == "object" ? Object.assign(elm[elmOptionKey], elmValue) : elm[elmOptionKey] = elementOptions[elmOptionKey];
-    }), appendToParent != null && appendToParent.appendChild && appendToParent.appendChild(elm), elm;
-  }
-  function emptyElement(element) {
-    if (element != null && element.firstChild)
-      for (; element.firstChild; )
-        element.lastChild && element.removeChild(element.lastChild);
-    return element;
-  }
-  function innerSize(elm, type) {
-    let size = 0;
-    if (elm) {
-      let clientSize = type === "height" ? "clientHeight" : "clientWidth", sides = type === "height" ? ["top", "bottom"] : ["left", "right"];
-      size = elm[clientSize];
-      for (let side of sides) {
-        let sideSize = parseFloat(getElementProp(elm, `padding-${side}`) || "") || 0;
-        size -= sideSize;
-      }
-    }
-    return size;
-  }
-  function getElementProp(elm, property) {
-    return elm != null && elm.getComputedStyle ? window.getComputedStyle(elm, null).getPropertyValue(property) : null;
-  }
-  function isEmptyObject(obj) {
-    return obj == null ? !0 : Object.entries(obj).length === 0;
-  }
-  function noop() {
-  }
-  function offset(el) {
-    if (!el || !el.getBoundingClientRect)
-      return;
-    let box = el.getBoundingClientRect(), docElem = document.documentElement;
-    return {
-      top: box.top + window.pageYOffset - docElem.clientTop,
-      left: box.left + window.pageXOffset - docElem.clientLeft
-    };
-  }
-  function windowScrollPosition() {
-    return {
-      left: window.pageXOffset || document.documentElement.scrollLeft || 0,
-      top: window.pageYOffset || document.documentElement.scrollTop || 0
-    };
-  }
-  function width(el, value) {
-    if (!(!el || !el.getBoundingClientRect)) {
-      if (value === void 0)
-        return el.getBoundingClientRect().width;
-      setStyleSize(el, "width", value);
-    }
-  }
-  function height(el, value) {
-    if (el) {
-      if (value === void 0)
-        return el.getBoundingClientRect().height;
-      setStyleSize(el, "height", value);
-    }
-  }
-  function setStyleSize(el, style, val) {
-    typeof val == "function" ? val = val() : typeof val == "string" ? el.style[style] = val : el.style[style] = val + "px";
-  }
-  function contains(parent, child) {
-    return !parent || !child ? !1 : !parents(child).every(function(p) {
-      return parent != p;
-    });
-  }
-  function isHidden(el) {
-    return el.offsetWidth === 0 && el.offsetHeight === 0;
-  }
-  function parents(el, selector) {
-    let parents2 = [], visible = selector == ":visible", hidden = selector == ":hidden";
-    for (; (el = el.parentNode) && el !== document && !(!el || !el.parentNode); )
-      hidden ? isHidden(el) && parents2.push(el) : visible ? isHidden(el) || parents2.push(el) : (!selector || el.matches(selector)) && parents2.push(el);
-    return parents2;
-  }
-  function toFloat(value) {
-    let x = parseFloat(value);
-    return isNaN(x) ? 0 : x;
-  }
-  function show(el, type = "") {
-    Array.isArray(el) ? el.forEach((e) => e.style.display = type) : el.style.display = type;
-  }
-  function hide(el) {
-    Array.isArray(el) ? el.forEach(function(e) {
-      e.style.display = "none";
-    }) : el.style.display = "none";
-  }
-  function slideUp(el, callback) {
-    return slideAnimation(el, "slideUp", callback);
-  }
-  function slideDown(el, callback) {
-    return slideAnimation(el, "slideDown", callback);
-  }
-  function slideAnimation(el, slideDirection, callback) {
-    if (window.jQuery !== void 0) {
-      window.jQuery(el)[slideDirection]("fast", callback);
-      return;
-    }
-    slideDirection === "slideUp" ? hide(el) : show(el), callback();
-  }
-  function applyDefaults(targetObj, srcObj) {
-    for (let key in srcObj)
-      srcObj.hasOwnProperty(key) && !targetObj.hasOwnProperty(key) && (targetObj[key] = srcObj[key]);
-  }
-  var getProto = Object.getPrototypeOf, class2type = {}, toString = class2type.toString, hasOwn = class2type.hasOwnProperty, fnToString = hasOwn.toString, ObjectFunctionString = fnToString.call(Object);
-  function isFunction(obj) {
-    return typeof obj == "function" && typeof obj.nodeType != "number" && typeof obj.item != "function";
-  }
-  function isPlainObject(obj) {
-    if (!obj || toString.call(obj) !== "[object Object]")
-      return !1;
-    let proto = getProto(obj);
-    if (!proto)
-      return !0;
-    let Ctor = hasOwn.call(proto, "constructor") && proto.constructor;
-    return typeof Ctor == "function" && fnToString.call(Ctor) === ObjectFunctionString;
-  }
-  function extend(...args) {
-    let options, name, src, copy, copyIsArray, clone, target = args[0], i = 1, deep = !1, length = args.length;
-    for (typeof target == "boolean" ? (deep = target, target = args[i] || {}, i++) : target = target || {}, typeof target != "object" && !isFunction(target) && (target = {}), i === length && (target = this, i--); i < length; i++)
-      if ((options = args[i]) != null)
-        for (name in options)
-          copy = options[name], !(name === "__proto__" || target === copy) && (deep && copy && (isPlainObject(copy) || (copyIsArray = Array.isArray(copy))) ? (src = target[name], copyIsArray && !Array.isArray(src) ? clone = [] : !copyIsArray && !isPlainObject(src) ? clone = {} : clone = src, copyIsArray = !1, target[name] = extend(deep, clone, copy)) : copy !== void 0 && (target[name] = copy));
-    return target;
-  }
   var BindingEventService = class {
     constructor() {
       __publicField(this, "_boundedEvents", []);
@@ -576,7 +439,169 @@ var Slick = (() => {
         this.unbind(boundedEvent.element, boundedEvent.eventName, boundedEvent.listener);
       }
     }
-  }, SlickGlobalEditorLock = new SlickEditorLock(), SlickCore = {
+  }, _Utils = class _Utils {
+    static isFunction(obj) {
+      return typeof obj == "function" && typeof obj.nodeType != "number" && typeof obj.item != "function";
+    }
+    static isPlainObject(obj) {
+      if (!obj || _Utils.toString.call(obj) !== "[object Object]")
+        return !1;
+      let proto = _Utils.getProto(obj);
+      if (!proto)
+        return !0;
+      let Ctor = _Utils.hasOwn.call(proto, "constructor") && proto.constructor;
+      return typeof Ctor == "function" && _Utils.fnToString.call(Ctor) === _Utils.ObjectFunctionString;
+    }
+    static calculateAvailableSpace(element) {
+      let bottom = 0, top = 0, left = 0, right = 0, windowHeight = window.innerHeight || 0, windowWidth = window.innerWidth || 0, scrollPosition = _Utils.windowScrollPosition(), pageScrollTop = scrollPosition.top, pageScrollLeft = scrollPosition.left, elmOffset = _Utils.offset(element);
+      if (elmOffset) {
+        let elementOffsetTop = elmOffset.top || 0, elementOffsetLeft = elmOffset.left || 0;
+        top = elementOffsetTop - pageScrollTop, bottom = windowHeight - (elementOffsetTop - pageScrollTop), left = elementOffsetLeft - pageScrollLeft, right = windowWidth - (elementOffsetLeft - pageScrollLeft);
+      }
+      return { top, bottom, left, right };
+    }
+    static extend(...args) {
+      let options, name, src, copy, copyIsArray, clone, target = args[0], i = 1, deep = !1, length = args.length;
+      for (typeof target == "boolean" ? (deep = target, target = args[i] || {}, i++) : target = target || {}, typeof target != "object" && !_Utils.isFunction(target) && (target = {}), i === length && (target = this, i--); i < length; i++)
+        if ((options = args[i]) != null)
+          for (name in options)
+            copy = options[name], !(name === "__proto__" || target === copy) && (deep && copy && (_Utils.isPlainObject(copy) || (copyIsArray = Array.isArray(copy))) ? (src = target[name], copyIsArray && !Array.isArray(src) ? clone = [] : !copyIsArray && !_Utils.isPlainObject(src) ? clone = {} : clone = src, copyIsArray = !1, target[name] = _Utils.extend(deep, clone, copy)) : copy !== void 0 && (target[name] = copy));
+      return target;
+    }
+    /**
+     * Create a DOM Element with any optional attributes or properties.
+     * It will only accept valid DOM element properties that `createElement` would accept.
+     * For example: `createDomElement('div', { className: 'my-css-class' })`,
+     * for style or dataset you need to use nested object `{ style: { display: 'none' }}
+     * The last argument is to optionally append the created element to a parent container element.
+     * @param {String} tagName - html tag
+     * @param {Object} options - element properties
+     * @param {[HTMLElement]} appendToParent - parent element to append to
+     */
+    static createDomElement(tagName, elementOptions, appendToParent) {
+      let elm = document.createElement(tagName);
+      return elementOptions && Object.keys(elementOptions).forEach((elmOptionKey) => {
+        let elmValue = elementOptions[elmOptionKey];
+        typeof elmValue == "object" ? Object.assign(elm[elmOptionKey], elmValue) : elm[elmOptionKey] = elementOptions[elmOptionKey];
+      }), appendToParent != null && appendToParent.appendChild && appendToParent.appendChild(elm), elm;
+    }
+    static emptyElement(element) {
+      if (element != null && element.firstChild)
+        for (; element.firstChild; )
+          element.lastChild && element.removeChild(element.lastChild);
+      return element;
+    }
+    static innerSize(elm, type) {
+      let size = 0;
+      if (elm) {
+        let clientSize = type === "height" ? "clientHeight" : "clientWidth", sides = type === "height" ? ["top", "bottom"] : ["left", "right"];
+        size = elm[clientSize];
+        for (let side of sides) {
+          let sideSize = parseFloat(_Utils.getElementProp(elm, `padding-${side}`) || "") || 0;
+          size -= sideSize;
+        }
+      }
+      return size;
+    }
+    static getElementProp(elm, property) {
+      return elm != null && elm.getComputedStyle ? window.getComputedStyle(elm, null).getPropertyValue(property) : null;
+    }
+    static isEmptyObject(obj) {
+      return obj == null ? !0 : Object.entries(obj).length === 0;
+    }
+    static noop() {
+    }
+    static offset(el) {
+      if (!el || !el.getBoundingClientRect)
+        return;
+      let box = el.getBoundingClientRect(), docElem = document.documentElement;
+      return {
+        top: box.top + window.pageYOffset - docElem.clientTop,
+        left: box.left + window.pageXOffset - docElem.clientLeft
+      };
+    }
+    static windowScrollPosition() {
+      return {
+        left: window.pageXOffset || document.documentElement.scrollLeft || 0,
+        top: window.pageYOffset || document.documentElement.scrollTop || 0
+      };
+    }
+    static width(el, value) {
+      if (!(!el || !el.getBoundingClientRect)) {
+        if (value === void 0)
+          return el.getBoundingClientRect().width;
+        _Utils.setStyleSize(el, "width", value);
+      }
+    }
+    static height(el, value) {
+      if (el) {
+        if (value === void 0)
+          return el.getBoundingClientRect().height;
+        _Utils.setStyleSize(el, "height", value);
+      }
+    }
+    static setStyleSize(el, style, val) {
+      typeof val == "function" ? val = val() : typeof val == "string" ? el.style[style] = val : el.style[style] = val + "px";
+    }
+    static contains(parent, child) {
+      return !parent || !child ? !1 : !_Utils.parents(child).every((p) => parent != p);
+    }
+    static isHidden(el) {
+      return el.offsetWidth === 0 && el.offsetHeight === 0;
+    }
+    static parents(el, selector) {
+      let parents = [], visible = selector == ":visible", hidden = selector == ":hidden";
+      for (; (el = el.parentNode) && el !== document && !(!el || !el.parentNode); )
+        hidden ? _Utils.isHidden(el) && parents.push(el) : visible ? _Utils.isHidden(el) || parents.push(el) : (!selector || el.matches(selector)) && parents.push(el);
+      return parents;
+    }
+    static toFloat(value) {
+      let x = parseFloat(value);
+      return isNaN(x) ? 0 : x;
+    }
+    static show(el, type = "") {
+      Array.isArray(el) ? el.forEach((e) => e.style.display = type) : el.style.display = type;
+    }
+    static hide(el) {
+      Array.isArray(el) ? el.forEach(function(e) {
+        e.style.display = "none";
+      }) : el.style.display = "none";
+    }
+    static slideUp(el, callback) {
+      return _Utils.slideAnimation(el, "slideUp", callback);
+    }
+    static slideDown(el, callback) {
+      return _Utils.slideAnimation(el, "slideDown", callback);
+    }
+    static slideAnimation(el, slideDirection, callback) {
+      if (window.jQuery !== void 0) {
+        window.jQuery(el)[slideDirection]("fast", callback);
+        return;
+      }
+      slideDirection === "slideUp" ? _Utils.hide(el) : _Utils.show(el), callback();
+    }
+    static applyDefaults(targetObj, srcObj) {
+      for (let key in srcObj)
+        srcObj.hasOwnProperty(key) && !targetObj.hasOwnProperty(key) && (targetObj[key] = srcObj[key]);
+    }
+  };
+  // jQuery's extend
+  __publicField(_Utils, "getProto", Object.getPrototypeOf), __publicField(_Utils, "class2type", {}), __publicField(_Utils, "toString", _Utils.class2type.toString), __publicField(_Utils, "hasOwn", _Utils.class2type.hasOwnProperty), __publicField(_Utils, "fnToString", _Utils.hasOwn.toString), __publicField(_Utils, "ObjectFunctionString", _Utils.fnToString.call(Object)), __publicField(_Utils, "storage", {
+    // https://stackoverflow.com/questions/29222027/vanilla-alternative-to-jquery-data-function-any-native-javascript-alternati
+    _storage: /* @__PURE__ */ new WeakMap(),
+    put: function(element, key, obj) {
+      this._storage.has(element) || this._storage.set(element, /* @__PURE__ */ new Map()), this._storage.get(element).set(key, obj);
+    },
+    get: function(element, key) {
+      let el = this._storage.get(element);
+      return el ? el.get(key) : null;
+    },
+    remove: function(element, key) {
+      let ret = this._storage.get(element).delete(key);
+      return this._storage.get(element).size !== 0 && this._storage.delete(element), ret;
+    }
+  });
+  var Utils = _Utils, SlickGlobalEditorLock = new SlickEditorLock(), SlickCore = {
     Event: SlickEvent,
     EventData: SlickEventData,
     EventHandler: SlickEventHandler,
@@ -586,44 +611,6 @@ var Slick = (() => {
     GroupTotals: SlickGroupTotals,
     EditorLock: SlickEditorLock,
     RegexSanitizer: regexSanitizer,
-    // BindingEventService: BindingEventService,
-    Utils: {
-      extend,
-      calculateAvailableSpace,
-      createDomElement,
-      emptyElement,
-      innerSize,
-      isEmptyObject,
-      noop,
-      offset,
-      height,
-      width,
-      setStyleSize,
-      contains,
-      toFloat,
-      parents,
-      show,
-      hide,
-      slideUp,
-      slideDown,
-      applyDefaults,
-      windowScrollPosition,
-      storage: {
-        // https://stackoverflow.com/questions/29222027/vanilla-alternative-to-jquery-data-function-any-native-javascript-alternati
-        _storage: /* @__PURE__ */ new WeakMap(),
-        put: function(element, key, obj) {
-          this._storage.has(element) || this._storage.set(element, /* @__PURE__ */ new Map()), this._storage.get(element).set(key, obj);
-        },
-        get: function(element, key) {
-          let el = this._storage.get(element);
-          return el ? el.get(key) : null;
-        },
-        remove: function(element, key) {
-          let ret = this._storage.get(element).delete(key);
-          return this._storage.get(element).size !== 0 && this._storage.delete(element), ret;
-        }
-      }
-    },
     /**
      * A global singleton editor lock.
      * @class GlobalEditorLock
@@ -684,7 +671,6 @@ var Slick = (() => {
       HTML: "HTML"
     }
   }, {
-    Utils,
     EditorLock,
     Event,
     EventData,

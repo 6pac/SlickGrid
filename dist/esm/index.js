@@ -363,143 +363,6 @@ var SlickEventData = class {
 function regexSanitizer(dirtyHtml) {
   return dirtyHtml.replace(/(\b)(on[a-z]+)(\s*)=|javascript:([^>]*)[^>]*|(<\s*)(\/*)script([<>]*).*(<\s*)(\/*)script(>*)|(&lt;)(\/*)(script|script defer)(.*)(&gt;|&gt;">)/gi, "");
 }
-function calculateAvailableSpace(element) {
-  let bottom = 0, top = 0, left = 0, right = 0, windowHeight = window.innerHeight || 0, windowWidth = window.innerWidth || 0, scrollPosition = windowScrollPosition(), pageScrollTop = scrollPosition.top, pageScrollLeft = scrollPosition.left, elmOffset = offset(element);
-  if (elmOffset) {
-    let elementOffsetTop = elmOffset.top || 0, elementOffsetLeft = elmOffset.left || 0;
-    top = elementOffsetTop - pageScrollTop, bottom = windowHeight - (elementOffsetTop - pageScrollTop), left = elementOffsetLeft - pageScrollLeft, right = windowWidth - (elementOffsetLeft - pageScrollLeft);
-  }
-  return { top, bottom, left, right };
-}
-function createDomElement(tagName, elementOptions, appendToParent) {
-  let elm = document.createElement(tagName);
-  return elementOptions && Object.keys(elementOptions).forEach((elmOptionKey) => {
-    let elmValue = elementOptions[elmOptionKey];
-    typeof elmValue == "object" ? Object.assign(elm[elmOptionKey], elmValue) : elm[elmOptionKey] = elementOptions[elmOptionKey];
-  }), appendToParent?.appendChild && appendToParent.appendChild(elm), elm;
-}
-function emptyElement(element) {
-  if (element?.firstChild)
-    for (; element.firstChild; )
-      element.lastChild && element.removeChild(element.lastChild);
-  return element;
-}
-function innerSize(elm, type) {
-  let size = 0;
-  if (elm) {
-    let clientSize = type === "height" ? "clientHeight" : "clientWidth", sides = type === "height" ? ["top", "bottom"] : ["left", "right"];
-    size = elm[clientSize];
-    for (let side of sides) {
-      let sideSize = parseFloat(getElementProp(elm, `padding-${side}`) || "") || 0;
-      size -= sideSize;
-    }
-  }
-  return size;
-}
-function getElementProp(elm, property) {
-  return elm?.getComputedStyle ? window.getComputedStyle(elm, null).getPropertyValue(property) : null;
-}
-function isEmptyObject(obj) {
-  return obj == null ? !0 : Object.entries(obj).length === 0;
-}
-function noop() {
-}
-function offset(el) {
-  if (!el || !el.getBoundingClientRect)
-    return;
-  let box = el.getBoundingClientRect(), docElem = document.documentElement;
-  return {
-    top: box.top + window.pageYOffset - docElem.clientTop,
-    left: box.left + window.pageXOffset - docElem.clientLeft
-  };
-}
-function windowScrollPosition() {
-  return {
-    left: window.pageXOffset || document.documentElement.scrollLeft || 0,
-    top: window.pageYOffset || document.documentElement.scrollTop || 0
-  };
-}
-function width(el, value) {
-  if (!(!el || !el.getBoundingClientRect)) {
-    if (value === void 0)
-      return el.getBoundingClientRect().width;
-    setStyleSize(el, "width", value);
-  }
-}
-function height(el, value) {
-  if (el) {
-    if (value === void 0)
-      return el.getBoundingClientRect().height;
-    setStyleSize(el, "height", value);
-  }
-}
-function setStyleSize(el, style, val) {
-  typeof val == "function" ? val = val() : typeof val == "string" ? el.style[style] = val : el.style[style] = val + "px";
-}
-function contains(parent, child) {
-  return !parent || !child ? !1 : !parents(child).every(function(p) {
-    return parent != p;
-  });
-}
-function isHidden(el) {
-  return el.offsetWidth === 0 && el.offsetHeight === 0;
-}
-function parents(el, selector) {
-  let parents2 = [], visible = selector == ":visible", hidden = selector == ":hidden";
-  for (; (el = el.parentNode) && el !== document && !(!el || !el.parentNode); )
-    hidden ? isHidden(el) && parents2.push(el) : visible ? isHidden(el) || parents2.push(el) : (!selector || el.matches(selector)) && parents2.push(el);
-  return parents2;
-}
-function toFloat(value) {
-  let x = parseFloat(value);
-  return isNaN(x) ? 0 : x;
-}
-function show(el, type = "") {
-  Array.isArray(el) ? el.forEach((e) => e.style.display = type) : el.style.display = type;
-}
-function hide(el) {
-  Array.isArray(el) ? el.forEach(function(e) {
-    e.style.display = "none";
-  }) : el.style.display = "none";
-}
-function slideUp(el, callback) {
-  return slideAnimation(el, "slideUp", callback);
-}
-function slideDown(el, callback) {
-  return slideAnimation(el, "slideDown", callback);
-}
-function slideAnimation(el, slideDirection, callback) {
-  if (window.jQuery !== void 0) {
-    window.jQuery(el)[slideDirection]("fast", callback);
-    return;
-  }
-  slideDirection === "slideUp" ? hide(el) : show(el), callback();
-}
-function applyDefaults(targetObj, srcObj) {
-  for (let key in srcObj)
-    srcObj.hasOwnProperty(key) && !targetObj.hasOwnProperty(key) && (targetObj[key] = srcObj[key]);
-}
-var getProto = Object.getPrototypeOf, class2type = {}, toString = class2type.toString, hasOwn = class2type.hasOwnProperty, fnToString = hasOwn.toString, ObjectFunctionString = fnToString.call(Object);
-function isFunction(obj) {
-  return typeof obj == "function" && typeof obj.nodeType != "number" && typeof obj.item != "function";
-}
-function isPlainObject(obj) {
-  if (!obj || toString.call(obj) !== "[object Object]")
-    return !1;
-  let proto = getProto(obj);
-  if (!proto)
-    return !0;
-  let Ctor = hasOwn.call(proto, "constructor") && proto.constructor;
-  return typeof Ctor == "function" && fnToString.call(Ctor) === ObjectFunctionString;
-}
-function extend(...args) {
-  let options, name, src, copy, copyIsArray, clone, target = args[0], i = 1, deep = !1, length = args.length;
-  for (typeof target == "boolean" ? (deep = target, target = args[i] || {}, i++) : target = target || {}, typeof target != "object" && !isFunction(target) && (target = {}), i === length && (target = this, i--); i < length; i++)
-    if ((options = args[i]) != null)
-      for (name in options)
-        copy = options[name], !(name === "__proto__" || target === copy) && (deep && copy && (isPlainObject(copy) || (copyIsArray = Array.isArray(copy))) ? (src = target[name], copyIsArray && !Array.isArray(src) ? clone = [] : !copyIsArray && !isPlainObject(src) ? clone = {} : clone = src, copyIsArray = !1, target[name] = extend(deep, clone, copy)) : copy !== void 0 && (target[name] = copy));
-  return target;
-}
 var BindingEventService = class {
   constructor() {
     __publicField(this, "_boundedEvents", []);
@@ -529,7 +392,169 @@ var BindingEventService = class {
       this.unbind(boundedEvent.element, boundedEvent.eventName, boundedEvent.listener);
     }
   }
-}, SlickGlobalEditorLock = new SlickEditorLock(), SlickCore = {
+}, _Utils = class _Utils {
+  static isFunction(obj) {
+    return typeof obj == "function" && typeof obj.nodeType != "number" && typeof obj.item != "function";
+  }
+  static isPlainObject(obj) {
+    if (!obj || _Utils.toString.call(obj) !== "[object Object]")
+      return !1;
+    let proto = _Utils.getProto(obj);
+    if (!proto)
+      return !0;
+    let Ctor = _Utils.hasOwn.call(proto, "constructor") && proto.constructor;
+    return typeof Ctor == "function" && _Utils.fnToString.call(Ctor) === _Utils.ObjectFunctionString;
+  }
+  static calculateAvailableSpace(element) {
+    let bottom = 0, top = 0, left = 0, right = 0, windowHeight = window.innerHeight || 0, windowWidth = window.innerWidth || 0, scrollPosition = _Utils.windowScrollPosition(), pageScrollTop = scrollPosition.top, pageScrollLeft = scrollPosition.left, elmOffset = _Utils.offset(element);
+    if (elmOffset) {
+      let elementOffsetTop = elmOffset.top || 0, elementOffsetLeft = elmOffset.left || 0;
+      top = elementOffsetTop - pageScrollTop, bottom = windowHeight - (elementOffsetTop - pageScrollTop), left = elementOffsetLeft - pageScrollLeft, right = windowWidth - (elementOffsetLeft - pageScrollLeft);
+    }
+    return { top, bottom, left, right };
+  }
+  static extend(...args) {
+    let options, name, src, copy, copyIsArray, clone, target = args[0], i = 1, deep = !1, length = args.length;
+    for (typeof target == "boolean" ? (deep = target, target = args[i] || {}, i++) : target = target || {}, typeof target != "object" && !_Utils.isFunction(target) && (target = {}), i === length && (target = this, i--); i < length; i++)
+      if ((options = args[i]) != null)
+        for (name in options)
+          copy = options[name], !(name === "__proto__" || target === copy) && (deep && copy && (_Utils.isPlainObject(copy) || (copyIsArray = Array.isArray(copy))) ? (src = target[name], copyIsArray && !Array.isArray(src) ? clone = [] : !copyIsArray && !_Utils.isPlainObject(src) ? clone = {} : clone = src, copyIsArray = !1, target[name] = _Utils.extend(deep, clone, copy)) : copy !== void 0 && (target[name] = copy));
+    return target;
+  }
+  /**
+   * Create a DOM Element with any optional attributes or properties.
+   * It will only accept valid DOM element properties that `createElement` would accept.
+   * For example: `createDomElement('div', { className: 'my-css-class' })`,
+   * for style or dataset you need to use nested object `{ style: { display: 'none' }}
+   * The last argument is to optionally append the created element to a parent container element.
+   * @param {String} tagName - html tag
+   * @param {Object} options - element properties
+   * @param {[HTMLElement]} appendToParent - parent element to append to
+   */
+  static createDomElement(tagName, elementOptions, appendToParent) {
+    let elm = document.createElement(tagName);
+    return elementOptions && Object.keys(elementOptions).forEach((elmOptionKey) => {
+      let elmValue = elementOptions[elmOptionKey];
+      typeof elmValue == "object" ? Object.assign(elm[elmOptionKey], elmValue) : elm[elmOptionKey] = elementOptions[elmOptionKey];
+    }), appendToParent?.appendChild && appendToParent.appendChild(elm), elm;
+  }
+  static emptyElement(element) {
+    if (element?.firstChild)
+      for (; element.firstChild; )
+        element.lastChild && element.removeChild(element.lastChild);
+    return element;
+  }
+  static innerSize(elm, type) {
+    let size = 0;
+    if (elm) {
+      let clientSize = type === "height" ? "clientHeight" : "clientWidth", sides = type === "height" ? ["top", "bottom"] : ["left", "right"];
+      size = elm[clientSize];
+      for (let side of sides) {
+        let sideSize = parseFloat(_Utils.getElementProp(elm, `padding-${side}`) || "") || 0;
+        size -= sideSize;
+      }
+    }
+    return size;
+  }
+  static getElementProp(elm, property) {
+    return elm?.getComputedStyle ? window.getComputedStyle(elm, null).getPropertyValue(property) : null;
+  }
+  static isEmptyObject(obj) {
+    return obj == null ? !0 : Object.entries(obj).length === 0;
+  }
+  static noop() {
+  }
+  static offset(el) {
+    if (!el || !el.getBoundingClientRect)
+      return;
+    let box = el.getBoundingClientRect(), docElem = document.documentElement;
+    return {
+      top: box.top + window.pageYOffset - docElem.clientTop,
+      left: box.left + window.pageXOffset - docElem.clientLeft
+    };
+  }
+  static windowScrollPosition() {
+    return {
+      left: window.pageXOffset || document.documentElement.scrollLeft || 0,
+      top: window.pageYOffset || document.documentElement.scrollTop || 0
+    };
+  }
+  static width(el, value) {
+    if (!(!el || !el.getBoundingClientRect)) {
+      if (value === void 0)
+        return el.getBoundingClientRect().width;
+      _Utils.setStyleSize(el, "width", value);
+    }
+  }
+  static height(el, value) {
+    if (el) {
+      if (value === void 0)
+        return el.getBoundingClientRect().height;
+      _Utils.setStyleSize(el, "height", value);
+    }
+  }
+  static setStyleSize(el, style, val) {
+    typeof val == "function" ? val = val() : typeof val == "string" ? el.style[style] = val : el.style[style] = val + "px";
+  }
+  static contains(parent, child) {
+    return !parent || !child ? !1 : !_Utils.parents(child).every((p) => parent != p);
+  }
+  static isHidden(el) {
+    return el.offsetWidth === 0 && el.offsetHeight === 0;
+  }
+  static parents(el, selector) {
+    let parents = [], visible = selector == ":visible", hidden = selector == ":hidden";
+    for (; (el = el.parentNode) && el !== document && !(!el || !el.parentNode); )
+      hidden ? _Utils.isHidden(el) && parents.push(el) : visible ? _Utils.isHidden(el) || parents.push(el) : (!selector || el.matches(selector)) && parents.push(el);
+    return parents;
+  }
+  static toFloat(value) {
+    let x = parseFloat(value);
+    return isNaN(x) ? 0 : x;
+  }
+  static show(el, type = "") {
+    Array.isArray(el) ? el.forEach((e) => e.style.display = type) : el.style.display = type;
+  }
+  static hide(el) {
+    Array.isArray(el) ? el.forEach(function(e) {
+      e.style.display = "none";
+    }) : el.style.display = "none";
+  }
+  static slideUp(el, callback) {
+    return _Utils.slideAnimation(el, "slideUp", callback);
+  }
+  static slideDown(el, callback) {
+    return _Utils.slideAnimation(el, "slideDown", callback);
+  }
+  static slideAnimation(el, slideDirection, callback) {
+    if (window.jQuery !== void 0) {
+      window.jQuery(el)[slideDirection]("fast", callback);
+      return;
+    }
+    slideDirection === "slideUp" ? _Utils.hide(el) : _Utils.show(el), callback();
+  }
+  static applyDefaults(targetObj, srcObj) {
+    for (let key in srcObj)
+      srcObj.hasOwnProperty(key) && !targetObj.hasOwnProperty(key) && (targetObj[key] = srcObj[key]);
+  }
+};
+// jQuery's extend
+__publicField(_Utils, "getProto", Object.getPrototypeOf), __publicField(_Utils, "class2type", {}), __publicField(_Utils, "toString", _Utils.class2type.toString), __publicField(_Utils, "hasOwn", _Utils.class2type.hasOwnProperty), __publicField(_Utils, "fnToString", _Utils.hasOwn.toString), __publicField(_Utils, "ObjectFunctionString", _Utils.fnToString.call(Object)), __publicField(_Utils, "storage", {
+  // https://stackoverflow.com/questions/29222027/vanilla-alternative-to-jquery-data-function-any-native-javascript-alternati
+  _storage: /* @__PURE__ */ new WeakMap(),
+  put: function(element, key, obj) {
+    this._storage.has(element) || this._storage.set(element, /* @__PURE__ */ new Map()), this._storage.get(element).set(key, obj);
+  },
+  get: function(element, key) {
+    let el = this._storage.get(element);
+    return el ? el.get(key) : null;
+  },
+  remove: function(element, key) {
+    let ret = this._storage.get(element).delete(key);
+    return this._storage.get(element).size !== 0 && this._storage.delete(element), ret;
+  }
+});
+var Utils = _Utils, SlickGlobalEditorLock = new SlickEditorLock(), SlickCore = {
   Event: SlickEvent,
   EventData: SlickEventData,
   EventHandler: SlickEventHandler,
@@ -539,44 +564,6 @@ var BindingEventService = class {
   GroupTotals: SlickGroupTotals,
   EditorLock: SlickEditorLock,
   RegexSanitizer: regexSanitizer,
-  // BindingEventService: BindingEventService,
-  Utils: {
-    extend,
-    calculateAvailableSpace,
-    createDomElement,
-    emptyElement,
-    innerSize,
-    isEmptyObject,
-    noop,
-    offset,
-    height,
-    width,
-    setStyleSize,
-    contains,
-    toFloat,
-    parents,
-    show,
-    hide,
-    slideUp,
-    slideDown,
-    applyDefaults,
-    windowScrollPosition,
-    storage: {
-      // https://stackoverflow.com/questions/29222027/vanilla-alternative-to-jquery-data-function-any-native-javascript-alternati
-      _storage: /* @__PURE__ */ new WeakMap(),
-      put: function(element, key, obj) {
-        this._storage.has(element) || this._storage.set(element, /* @__PURE__ */ new Map()), this._storage.get(element).set(key, obj);
-      },
-      get: function(element, key) {
-        let el = this._storage.get(element);
-        return el ? el.get(key) : null;
-      },
-      remove: function(element, key) {
-        let ret = this._storage.get(element).delete(key);
-        return this._storage.get(element).size !== 0 && this._storage.delete(element), ret;
-      }
-    }
-  },
   /**
    * A global singleton editor lock.
    * @class GlobalEditorLock
@@ -637,7 +624,6 @@ var BindingEventService = class {
     HTML: "HTML"
   }
 }, {
-  Utils,
   EditorLock,
   Event,
   EventData,
@@ -767,9 +753,9 @@ var BindingEventService2 = BindingEventService, SlickEvent2 = Event, Utils2 = Ut
       this.grid.setColumns(visibleColumns), this.onColumnsChanged.notify({ columnId, showing: isChecked, allColumns: this.columns, columns: this.columns, visibleColumns, grid: this.grid });
     }
   }
-  setColumnVisibiliy(idxOrId, show2) {
+  setColumnVisibiliy(idxOrId, show) {
     let idx = typeof idxOrId == "number" ? idxOrId : this.getColumnIndexbyId(idxOrId), visibleColumns = this.getVisibleColumns(), col = this.columns[idx];
-    if (show2)
+    if (show)
       col.hidden = !1, visibleColumns.splice(idx, 0, col);
     else {
       let newVisibleColumns = [];
@@ -777,7 +763,7 @@ var BindingEventService2 = BindingEventService, SlickEvent2 = Event, Utils2 = Ut
         visibleColumns[i].id !== col.id && newVisibleColumns.push(visibleColumns[i]);
       visibleColumns = newVisibleColumns;
     }
-    this.grid.setColumns(visibleColumns), this.onColumnsChanged.notify({ columnId: col.id, showing: show2, allColumns: this.columns, columns: this.columns, visibleColumns, grid: this.grid });
+    this.grid.setColumns(visibleColumns), this.onColumnsChanged.notify({ columnId: col.id, showing: show, allColumns: this.columns, columns: this.columns, visibleColumns, grid: this.grid });
   }
   getAllColumns() {
     return this.columns;
@@ -910,9 +896,9 @@ var BindingEventService3 = BindingEventService, SlickEvent3 = Event, Utils3 = Ut
       this.grid.setColumns(visibleColumns), this.onColumnsChanged.notify({ columnId, showing: isChecked, allColumns: this.columns, columns: this.columns, visibleColumns, grid: this.grid });
     }
   }
-  setColumnVisibiliy(idxOrId, show2) {
+  setColumnVisibiliy(idxOrId, show) {
     let idx = typeof idxOrId == "number" ? idxOrId : this.getColumnIndexbyId(idxOrId), visibleColumns = this.getVisibleColumns(), col = this.columns[idx];
-    if (show2)
+    if (show)
       col.hidden = !1, visibleColumns.splice(idx, 0, col);
     else {
       let newVisibleColumns = [];
@@ -920,7 +906,7 @@ var BindingEventService3 = BindingEventService, SlickEvent3 = Event, Utils3 = Ut
         visibleColumns[i].id !== col.id && newVisibleColumns.push(visibleColumns[i]);
       visibleColumns = newVisibleColumns;
     }
-    this.grid.setColumns(visibleColumns), this.onColumnsChanged.notify({ columnId: col.id, showing: show2, allColumns: this.columns, columns: this.columns, visibleColumns, grid: this.grid });
+    this.grid.setColumns(visibleColumns), this.onColumnsChanged.notify({ columnId: col.id, showing: show, allColumns: this.columns, columns: this.columns, visibleColumns, grid: this.grid });
   }
   getAllColumns() {
     return this.columns;
@@ -1806,8 +1792,8 @@ var BindingEventService6 = BindingEventService, SlickEvent7 = SlickEvent, SlickE
       grid: this._grid
     }, e, this).getReturnValue() == !1))
       return;
-    let maxHeight = isNaN(this._cellMenuProperties.maxHeight) ? this._cellMenuProperties.maxHeight : `${this._cellMenuProperties.maxHeight ?? 0}px`, width2 = isNaN(this._cellMenuProperties.width) ? this._cellMenuProperties.width : `${this._cellMenuProperties.maxWidth ?? 0}px`;
-    this._menuElm = document.createElement("div"), this._menuElm.className = `slick-cell-menu ${this._gridUid}`, this._menuElm.role = "menu", width2 && (this._menuElm.style.width = width2), maxHeight && (this._menuElm.style.maxHeight = maxHeight), this._menuElm.style.top = `${e.pageY + 5}px`, this._menuElm.style.left = `${e.pageX}px`, this._menuElm.style.display = "none";
+    let maxHeight = isNaN(this._cellMenuProperties.maxHeight) ? this._cellMenuProperties.maxHeight : `${this._cellMenuProperties.maxHeight ?? 0}px`, width = isNaN(this._cellMenuProperties.width) ? this._cellMenuProperties.width : `${this._cellMenuProperties.maxWidth ?? 0}px`;
+    this._menuElm = document.createElement("div"), this._menuElm.className = `slick-cell-menu ${this._gridUid}`, this._menuElm.role = "menu", width && (this._menuElm.style.width = width), maxHeight && (this._menuElm.style.maxHeight = maxHeight), this._menuElm.style.top = `${e.pageY + 5}px`, this._menuElm.style.left = `${e.pageX}px`, this._menuElm.style.display = "none";
     let closeButtonElm = document.createElement("button");
     closeButtonElm.type = "button", closeButtonElm.className = "close", closeButtonElm.dataset.dismiss = "slick-cell-menu", closeButtonElm.ariaLabel = "Close";
     let spanCloseElm = document.createElement("span");
@@ -2658,8 +2644,8 @@ var BindingEventService8 = BindingEventService, SlickEvent10 = SlickEvent, Slick
       grid: this._grid
     }, e, this).getReturnValue() == !1))
       return;
-    let maxHeight = isNaN(this._contextMenuProperties.maxHeight) ? this._contextMenuProperties.maxHeight : `${this._contextMenuProperties.maxHeight ?? 0}px`, width2 = isNaN(this._contextMenuProperties.width) ? this._contextMenuProperties.width : `${this._contextMenuProperties.maxWidth ?? 0}px`;
-    this._menuElm = document.createElement("div"), this._menuElm.className = `slick-context-menu ${this._gridUid}`, this._menuElm.role = "menu", width2 && (this._menuElm.style.width = width2), maxHeight && (this._menuElm.style.maxHeight = maxHeight), this._menuElm.style.top = `${targetEvent.pageY}px`, this._menuElm.style.left = `${targetEvent.pageX}px`, this._menuElm.style.display = "none";
+    let maxHeight = isNaN(this._contextMenuProperties.maxHeight) ? this._contextMenuProperties.maxHeight : `${this._contextMenuProperties.maxHeight ?? 0}px`, width = isNaN(this._contextMenuProperties.width) ? this._contextMenuProperties.width : `${this._contextMenuProperties.maxWidth ?? 0}px`;
+    this._menuElm = document.createElement("div"), this._menuElm.className = `slick-context-menu ${this._gridUid}`, this._menuElm.role = "menu", width && (this._menuElm.style.width = width), maxHeight && (this._menuElm.style.maxHeight = maxHeight), this._menuElm.style.top = `${targetEvent.pageY}px`, this._menuElm.style.left = `${targetEvent.pageX}px`, this._menuElm.style.display = "none";
     let closeButtonElm = document.createElement("button");
     closeButtonElm.type = "button", closeButtonElm.className = "close", closeButtonElm.dataset.dismiss = "slick-context-menu", closeButtonElm.ariaLabel = "Close";
     let spanCloseElm = document.createElement("span");
@@ -3921,11 +3907,11 @@ var SlickEvent16 = SlickEvent, SlickEventHandler8 = SlickEventHandler, Utils20 =
   //////////////////////////////////////////////////////////////
   //////////////////////////////////////////////////////////////
   /** Get the Row Detail padding (which are the rows dedicated to the detail panel) */
-  getPaddingItem(parent, offset2) {
+  getPaddingItem(parent, offset) {
     let item = {};
     for (let prop in this._dataView)
       item[prop] = null;
-    return item[this._dataViewIdProperty] = parent[this._dataViewIdProperty] + "." + offset2, item[`${this._keyPrefix}collapsed`] = !0, item[`${this._keyPrefix}isPadding`] = !0, item[`${this._keyPrefix}parent`] = parent, item[`${this._keyPrefix}offset`] = offset2, item;
+    return item[this._dataViewIdProperty] = parent[this._dataViewIdProperty] + "." + offset, item[`${this._keyPrefix}collapsed`] = !0, item[`${this._keyPrefix}isPadding`] = !0, item[`${this._keyPrefix}parent`] = parent, item[`${this._keyPrefix}offset`] = offset, item;
   }
   //////////////////////////////////////////////////////////////
   // create the detail ctr node. this belongs to the dev & can be custom-styled as per
@@ -4440,16 +4426,16 @@ function SlickCompositeEditor(columns, containers, options) {
     destroy: null,
     formValues: {},
     editors: {}
-  }, noop2 = function() {
+  }, noop = function() {
   }, firstInvalidEditor = null;
   options = Slick.Utils.extend({}, defaultOptions, options);
   function getContainerBox(i) {
-    let c = containers[i], offset2 = Slick.Utils.offset(c), w = Slick.Utils.width(c), h = Slick.Utils.height(c);
+    let c = containers[i], offset = Slick.Utils.offset(c), w = Slick.Utils.width(c), h = Slick.Utils.height(c);
     return {
-      top: offset2?.top ?? 0,
-      left: offset2?.left ?? 0,
-      bottom: (offset2?.top ?? 0) + (h || 0),
-      right: (offset2?.left ?? 0) + (w || 0),
+      top: offset?.top ?? 0,
+      left: offset?.left ?? 0,
+      bottom: (offset?.top ?? 0) + (h || 0),
+      right: (offset?.left ?? 0) + (w || 0),
       width: w,
       height: h,
       visible: !0
@@ -4462,7 +4448,7 @@ function SlickCompositeEditor(columns, containers, options) {
       for (; idx < columns.length; ) {
         if (columns[idx].editor) {
           let column = columns[idx];
-          newArgs = Slick.Utils.extend(!1, {}, args), newArgs.container = containers[idx], newArgs.column = column, newArgs.position = getContainerBox(idx), newArgs.commitChanges = noop2, newArgs.cancelChanges = noop2, newArgs.compositeEditorOptions = options, newArgs.formValues = {};
+          newArgs = Slick.Utils.extend(!1, {}, args), newArgs.container = containers[idx], newArgs.column = column, newArgs.position = getContainerBox(idx), newArgs.commitChanges = noop, newArgs.cancelChanges = noop, newArgs.compositeEditorOptions = options, newArgs.formValues = {};
           let currentEditor = new column.editor(newArgs);
           options.editors[column.id] = currentEditor, editors.push(currentEditor);
         }
@@ -6633,8 +6619,8 @@ var SlickGrid = class {
     for (i = 0; i < ii; i++) {
       if (!this.columns[i] || this.columns[i].hidden)
         continue;
-      let width2 = this.columns[i].width;
-      this._options.frozenColumn > -1 && i > this._options.frozenColumn ? this.headersWidthR += width2 || 0 : this.headersWidthL += width2 || 0;
+      let width = this.columns[i].width;
+      this._options.frozenColumn > -1 && i > this._options.frozenColumn ? this.headersWidthR += width || 0 : this.headersWidthL += width || 0;
     }
     return includeScrollbar && (this._options.frozenColumn > -1 && i > this._options.frozenColumn ? this.headersWidthR += this.scrollbarDimensions?.width ?? 0 : this.headersWidthL += this.scrollbarDimensions?.width ?? 0), this.hasFrozenColumns() ? (this.headersWidthL = this.headersWidthL + 1e3, this.headersWidthR = Math.max(this.headersWidthR, this.viewportW) + this.headersWidthL, this.headersWidthR += this.scrollbarDimensions?.width ?? 0) : (this.headersWidthL += this.scrollbarDimensions?.width ?? 0, this.headersWidthL = Math.max(this.headersWidthL, this.viewportW) + 1e3), this.headersWidth = this.headersWidthL + this.headersWidthR, Math.max(this.headersWidth, this.viewportW) + 1e3;
   }
@@ -6684,8 +6670,8 @@ var SlickGrid = class {
     for (; ; ) {
       let test = supportedHeight * 2;
       Utils27.height(div, test);
-      let height2 = Utils27.height(div);
-      if (test > testUpTo || height2 !== test)
+      let height = Utils27.height(div);
+      if (test > testUpTo || height !== test)
         break;
       supportedHeight = test;
     }
@@ -7337,14 +7323,14 @@ var SlickGrid = class {
     return rowEl.remove(), max;
   }
   getColHeaderWidth(columnDef) {
-    let width2 = 0, headerColElId = this.getUID() + columnDef.id, headerColEl = document.getElementById(headerColElId), dummyHeaderColElId = `${headerColElId}_`, clone = headerColEl.cloneNode(!0);
+    let width = 0, headerColElId = this.getUID() + columnDef.id, headerColEl = document.getElementById(headerColElId), dummyHeaderColElId = `${headerColElId}_`, clone = headerColEl.cloneNode(!0);
     if (headerColEl)
-      clone.id = dummyHeaderColElId, clone.style.cssText = "position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;", headerColEl.parentNode.insertBefore(clone, headerColEl), width2 = clone.offsetWidth, clone.parentNode.removeChild(clone);
+      clone.id = dummyHeaderColElId, clone.style.cssText = "position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;", headerColEl.parentNode.insertBefore(clone, headerColEl), width = clone.offsetWidth, clone.parentNode.removeChild(clone);
     else {
       let header = this.getHeader(columnDef);
-      headerColEl = Utils27.createDomElement("div", { id: dummyHeaderColElId, className: "ui-state-default slick-state-default slick-header-column" }, header), Utils27.createDomElement("span", { className: "slick-column-name", innerHTML: this.sanitizeHtmlString(String(columnDef.name)) }, headerColEl), clone.style.cssText = "position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;", columnDef.headerCssClass && headerColEl.classList.add(...(columnDef.headerCssClass || "").split(" ")), width2 = headerColEl.offsetWidth, header.removeChild(headerColEl);
+      headerColEl = Utils27.createDomElement("div", { id: dummyHeaderColElId, className: "ui-state-default slick-state-default slick-header-column" }, header), Utils27.createDomElement("span", { className: "slick-column-name", innerHTML: this.sanitizeHtmlString(String(columnDef.name)) }, headerColEl), clone.style.cssText = "position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;", columnDef.headerCssClass && headerColEl.classList.add(...(columnDef.headerCssClass || "").split(" ")), width = headerColEl.offsetWidth, header.removeChild(headerColEl);
     }
-    return width2;
+    return width;
   }
   legacyAutosizeColumns() {
     let i, c, shrinkLeeway = 0, total = 0, prevTotal = 0, widths = [], availWidth = this.viewportHasVScroll ? this.viewportW - (this.scrollbarDimensions?.width ?? 0) : this.viewportW;
@@ -7355,11 +7341,11 @@ var SlickGrid = class {
       for (i = 0; i < this.columns.length && total > availWidth; i++) {
         if (c = this.columns[i], !c || c.hidden)
           continue;
-        let width2 = widths[i];
-        if (!c.resizable || width2 <= c.minWidth || width2 <= this.absoluteColumnMinWidth)
+        let width = widths[i];
+        if (!c.resizable || width <= c.minWidth || width <= this.absoluteColumnMinWidth)
           continue;
-        let absMinWidth = Math.max(c.minWidth, this.absoluteColumnMinWidth), shrinkSize = Math.floor(shrinkProportion * (width2 - absMinWidth)) || 1;
-        shrinkSize = Math.min(shrinkSize, width2 - absMinWidth), total -= shrinkSize, shrinkLeeway -= shrinkSize, widths[i] -= shrinkSize;
+        let absMinWidth = Math.max(c.minWidth, this.absoluteColumnMinWidth), shrinkSize = Math.floor(shrinkProportion * (width - absMinWidth)) || 1;
+        shrinkSize = Math.min(shrinkSize, width - absMinWidth), total -= shrinkSize, shrinkLeeway -= shrinkSize, widths[i] -= shrinkSize;
       }
       if (prevTotal <= total)
         break;
@@ -7420,8 +7406,8 @@ var SlickGrid = class {
     let columnIndex = 0, vc = this.getVisibleColumns();
     this._headers.forEach((header) => {
       for (let i = 0; i < header.children.length; i++, columnIndex++) {
-        let h = header.children[i], width2 = ((vc[columnIndex] || {}).width || 0) - this.headerColumnWidthDiff;
-        Utils27.width(h) !== width2 && Utils27.width(h, width2);
+        let h = header.children[i], width = ((vc[columnIndex] || {}).width || 0) - this.headerColumnWidthDiff;
+        Utils27.width(h) !== width && Utils27.width(h, width);
       }
     }), this.updateColumnCaches();
   }
@@ -8357,8 +8343,8 @@ var SlickGrid = class {
    * @param {Number} row - grid row number
    */
   getFrozenRowOffset(row) {
-    let offset2 = 0;
-    return this.hasFrozenRows ? this._options.frozenBottom ? row >= this.actualFrozenRow ? this.h < this.viewportTopH ? offset2 = this.actualFrozenRow * this._options.rowHeight : offset2 = this.h : offset2 = 0 : row >= this.actualFrozenRow ? offset2 = this.frozenRowsHeight : offset2 = 0 : offset2 = 0, offset2;
+    let offset = 0;
+    return this.hasFrozenRows ? this._options.frozenBottom ? row >= this.actualFrozenRow ? this.h < this.viewportTopH ? offset = this.actualFrozenRow * this._options.rowHeight : offset = this.h : offset = 0 : row >= this.actualFrozenRow ? offset = this.frozenRowsHeight : offset = 0 : offset = 0, offset;
   }
   /**
    * Returns a hash containing row and cell indexes from a standard W3C event.
@@ -9001,8 +8987,8 @@ var SlickRemoteModelYahoo = class {
     // events
     __publicField(this, "onDataLoading", new Slick.Event());
     __publicField(this, "onDataLoaded", new Slick.Event());
-    if (!window.$ || !window.$.jsonp)
-      throw new Error("SlickRemoteModel requires jQuery jsonp library to be loaded.");
+    if (!(window.$ || window.jQuery) || !window.$.jsonp)
+      throw new Error("SlickRemoteModel requires both jQuery and jQuery jsonp library to be loaded.");
     this.init();
   }
   init() {
@@ -9141,8 +9127,8 @@ var SlickRemoteModel = class {
     // events
     __publicField(this, "onDataLoading", new Slick.Event());
     __publicField(this, "onDataLoaded", new Slick.Event());
-    if (!window.$ || !window.$.jsonp)
-      throw new Error("SlickRemoteModel requires jQuery jsonp library to be loaded.");
+    if (!(window.$ || window.jQuery) || !window.$.jsonp)
+      throw new Error("SlickRemoteModel requires both jQuery and jQuery jsonp library to be loaded.");
     this.init();
   }
   init() {
