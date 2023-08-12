@@ -52,6 +52,10 @@ import type { Editors } from './slick.editors';
 import type { Formatters } from './slick.formatters';
 
 declare global {
+  // jQuery might still be loaded for SlickRemote plugin
+  var $: any;
+  var jQuery: any;
+
   var IIFE_ONLY: boolean;
   var flatpickr: any;
   var moment: any;

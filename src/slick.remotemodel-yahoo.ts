@@ -15,8 +15,8 @@ export class SlickRemoteModelYahoo {
   protected onDataLoaded = new Slick.Event();
 
   constructor() {
-    if (!(window as any).$ || !(window as any).$.jsonp) {
-      throw new Error('SlickRemoteModel requires jQuery jsonp library to be loaded.');
+    if (!(window.$ || window.jQuery) || !window.$.jsonp) {
+      throw new Error('SlickRemoteModel requires both jQuery and jQuery jsonp library to be loaded.');
     }
     this.init();
   }
@@ -89,7 +89,7 @@ export class SlickRemoteModelYahoo {
 
       this.onDataLoading.notify({ from: from, to: to });
 
-      this.req = (window as any).$.jsonp({
+      this.req = window.$.jsonp({
         url,
         callbackParameter: "callback",
         cache: true,
