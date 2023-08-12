@@ -148,9 +148,9 @@
     },
     { id: 'company', name: 'Company', field: 'company', sortable: true, minWidth: 80, width: 130 },
     {
-      id: 'trsnType', name: 'Type', field: 'trsnType', sortable: true, minWidth: 60, width: 60,
+      id: 'trsnType', name: 'Type', field: 'trsnType', sortable: true, minWidth: 45, width: 50,
       formatter: (row, cell, value) => {
-        return `<span class="bold ${value === 'Buy' ? 'color-info' : 'color-warning'}">${value} (${value === 'Buy' ? '+' : '-'})</span>`;
+        return `<span class="bold ${value === 'Buy' ? 'color-info' : 'color-warning'}">${value}</span>`;
       }
     },
     {
