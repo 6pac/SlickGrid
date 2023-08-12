@@ -1,0 +1,459 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <title>SlickGrid example 4: Model</title>
+  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" type="text/css"/>
+  <style>
+    .bold {
+      font-weight: bold;
+    }
+
+    .slick-row.selected .cell-selection {
+      background-color: transparent; /* show default selected row background */
+    }
+    .slick-header-column:nth-child(1) {
+      justify-content: center;
+    }
+    .alpine-theme .slick-column-groupable {
+      height: 1em;
+      width: 1em;
+      mask-size: 1em;
+      -webkit-mask-size: 1em;
+    }
+    .btn-alpine-theme {
+      background-color: gray;
+      color: white;
+      border-width: 1px;
+      border-radius: 2px;
+      height: 22px;
+    }
+    /* change to flex-end for RTL support */
+    .slick-container {
+      --alpine-header-justify-content: flex-start;
+      --alpine-cell-justify-content: flex-start;
+    }
+    .changed-gain {
+      background-color: #eafae8 !important;
+    }
+    .changed-loss {
+      background-color: #ffeae8 !important;
+    }
+    .sparkline {
+      stroke: #1e5d90;
+      /* fill: none; */
+      fill: #f4faff;
+    }
+    .color-info {
+      color: #029eb7;
+    }
+    .color-warning {
+      color: #ffa700;
+    }
+  </style>
+</head>
+<body>
+<div style="position:relative">
+  <div style="width:850px;">
+    <div class="grid-header" style="width:100%">
+      <label>SlickGrid - Trading Platform</label>
+    </div>
+    <div id="myGrid" class="slick-container alpine-theme" style="width:100%;height:500px;"></div>
+  </div>
+
+  <div class="options-panel" style="margin-left:175px">
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Search:
+    </h2>
+    <div style="padding:6px;">
+      <label style="width:200px;float:left">Changes Rate(ms): </label>
+      <div style="padding:2px;">
+        <input style="width:100px;display:inline-block;" id="refreshRateSlider" type="range" min="1" max="125" value="25">
+      </div>
+      <br/>
+      <label style="width:200px;float:left">Highlight Duration (ms): </label>
+      <div style="padding:2px;">
+        <input style="width:100px;display:inline-block;" id="highlightDuration" type="number" min="1" max="125" step="10" value="100">
+      </div>
+      <br/>
+      <label style="width:200px;float:left">Simulation:</label>
+      <button id="btnStartSimulation">Start</button>
+      <button id="btnStopSimulation">Stop</button>
+      <br/><br/>
+      <button data-test="group-currency-btn">Group by Currency</button>
+      <button data-test="group-market-btn">Group by Market</button>
+      <br/>
+      <button data-test="collapse-all-btn">Collapse all groups</button>
+      <button data-test="expand-all-btn">Expand all groups</button>
+      <button data-test="clear-grouping-btn">Clear grouping</button>
+
+      <h2>Demonstrates:</h2>
+      <ul>
+        <li>High Frequency Update - Realtime Trading Platform</li>
+      </ul>
+      <h2>View Source:</h2>
+      <ul>
+          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-trading-esm.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+      </ul>
+
+    </div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/@fnando/sparkline@0.3.10/dist/sparkline.min.js"></script>
+
+<script type="module">
+  import { faker } from 'https://cdn.jsdelivr.net/npm/@faker-js/faker@8.0.2/+esm';
+  import {
+    Aggregators,
+    Editors,
+    Formatters,
+    SlickGlobalEditorLock,
+    SlickRowSelectionModel,
+    SlickColumnPicker,
+    SlickDataView,
+    SlickGrid,
+    SlickGroupItemMetadataProvider,
+    Utils,
+  } from '../dist/esm/index.js';
+  // OR preferably use the code below when installing from npm
+  // import { SlickGrid, ... } from 'slickgrid';
+  let highlightDuration = 100; // highlight duration of green/red background color
+  let itemCount = 200;
+  let minChangePerCycle = 0;
+  let maxChangePerCycle = 25;
+  let refreshRate = 25;
+  let timer;
+
+  var dataView;
+  var grid;
+  var data = [];
+  var columns = [
+    {
+      id: 'currency', name: 'Currency', field: 'currency', sortable: true, width: 75,
+      formatter: (row, cell, value) => `<img src="https://flags.fmcdn.net/data/flags/mini/${value.substring(0, 2).toLowerCase()}.png" width="18"/>&nbsp;${value}`
+    },
+    { id: 'symbol', name: 'Symbol', field: 'symbol', sortable: true, minWidth: 65, width: 65 },
+    {
+      id: 'market', name: 'Market', field: 'market', sortable: true, minWidth: 75, width: 75,
+    },
+    { id: 'company', name: 'Company', field: 'company', sortable: true, minWidth: 80, width: 130 },
+    {
+      id: 'trsnType', name: 'Type', field: 'trsnType', sortable: true, minWidth: 60, width: 60,
+      formatter: (row, cell, value) => {
+        return `<span class="bold ${value === 'Buy' ? 'color-info' : 'color-warning'}">${value} (${value === 'Buy' ? '+' : '-'})</span>`;
+      }
+    },
+    {
+      id: 'priceChange', name: 'Change', field: 'priceChange', sortable: true, minWidth: 65, width: 65,
+      formatter: currencyFormatter
+    },
+    {
+      id: 'price', name: 'Price', field: 'price', sortable: true, minWidth: 70, width: 70,
+      formatter: currencyFormatter
+    },
+    {
+      id: 'quantity', name: 'Qty', field: 'quantity', sortable: true, width: 50,
+    },
+    {
+      id: 'amount', name: 'Amount', field: 'amount', sortable: true, minWidth: 70, width: 105,
+      formatter: currencyFormatter, groupTotalsFormatter: sumTotalsFormatter
+    },
+    {
+      id: 'historic', name: 'Price History', field: 'historic', minWidth: 100, width: 150, maxWidth: 150,
+      formatter: historicSparklineFormatter
+    },
+    {
+      id: 'execution', name: 'Execution Timestamp', field: 'execution', sortable: true, width: 175,
+      formatter: (row, cell, val) => val.toISOString()
+    },
+  ];
+
+  var options = {
+    editable: true,
+    enableAddRow: true,
+    enableCellNavigation: true,
+    asyncEditorLoading: true,
+    forceFitColumns: false,
+    topPanelHeight: 35,
+    rowHeight: 28
+  };
+
+  var sortcol = "title";
+  var sortdir = 1;
+  var percentCompleteThreshold = 0;
+  var searchString = "";
+
+  function sumTotalsFormatter(totals, columnDef, grid) {
+    var val = totals.sum && totals.sum[columnDef.field];
+    if (val != null) {
+      return "total: $" + ((Math.round(parseFloat(val)*100)/100));
+    }
+    return "";
+  }
+
+  function historicSparklineFormatter(_row, _cell, _value, _col, dataContext) {
+    const svgElem = document.createElementNS('http://www.w3.org/2000/svg', 'svg');
+    svgElem.setAttributeNS(null, 'width', '135');
+    svgElem.setAttributeNS(null, 'height', '30');
+    svgElem.setAttributeNS(null, 'stroke-width', '2');
+    svgElem.classList.add('sparkline');
+    if (dataContext.historic) {
+      window.sparkline.sparkline(svgElem, dataContext.historic, { interactive: true });
+    }
+    return svgElem.outerHTML;
+  };
+
+  function currencyFormatter(row, cell, value, columnDef, dataContext) {
+    return '$' + (Math.round(value * 100) / 100).toFixed(2);
+  }
+
+  function getData(itemCount) {
+    // mock a dataset
+    const datasetTmp = [];
+    for (let i = 0; i < itemCount; i++) {
+      const randomPercent = Math.round(Math.random() * 100);
+      const randomLowQty = randomNumber(1, 50);
+      const randomHighQty = randomNumber(125, 255);
+      const priceChange = randomNumber(-25, 35, false);
+      const price = randomNumber(priceChange, 300);
+      const quantity = price < 5 ? randomHighQty : randomLowQty;
+      const amount = price * quantity;
+      const now = new Date();
+      now.setHours(9, 30, 0);
+      const currency = (Math.floor(Math.random() * 10)) % 2
+        ? 'CAD'
+        : (Math.floor(Math.random() * 10)) % 3 ? 'AUD' : 'USD';
+      const company = faker.company.name();
+
+      datasetTmp[i] = {
+        id: i,
+        currency,
+        trsnType: (Math.round(Math.random() * 100)) % 2 ? 'Buy' : 'Sell',
+        company,
+        symbol: currency === 'CAD' ? company.substring(0, 3).toUpperCase() + '.TO' : company.substring(0, 4).toUpperCase(),
+        market: currency === 'AUD' ? 'ASX' : currency === 'CAD' ? 'TSX' : price > 200 ? 'Nasdaq' : 'S&P 500',
+        duration: (i % 33 === 0) ? null : Math.random() * 100 + '',
+        percentCompleteNumber: randomPercent,
+        priceChange,
+        price,
+        quantity,
+        amount,
+        execution: now,
+        historic: [price]
+      };
+    }
+    return datasetTmp;
+  }
+
+  function groupByColumn(columnName) {
+    grid.setSortColumns([]);
+    dataView.setGrouping({
+      getter: columnName,
+      formatter: function (g) {
+        return `${columnName.replace(/(^\w|\s\w)/g, m => m.toUpperCase())}:  ${g.value}  <span style='color:#029eb7'>(${g.count} items)</span>`;
+      },
+      aggregators: [
+        new Aggregators.Sum("amount")
+      ],
+      aggregateCollapsed: true,
+      collapsed: true,
+      lazyTotalsCalculation: true
+    });
+    grid.invalidate();
+  }
+
+  function toggleGrouping(expand) {
+    const groupToggleAllElm = document.querySelector(".slick-group-toggle-all");
+    if(expand) {
+      dataView.expandAllGroups();
+      if (groupToggleAllElm) {
+        groupToggleAllElm.classList.remove('collapsed');
+        groupToggleAllElm.classList.addClass('expanded');
+      }
+    } else {
+      dataView.collapseAllGroups();
+      if (groupToggleAllElm) {
+        groupToggleAllElm.classList.remove('expanded');
+        groupToggleAllElm.classList.addClass('collapsed');
+      }
+    }
+  }
+
+  function startSimulation() {
+    const changes = {};
+    const numberOfUpdates = randomNumber(minChangePerCycle, maxChangePerCycle);
+
+    for (let i = 0; i < numberOfUpdates; i++) {
+      const randomLowQty = randomNumber(1, 50);
+      const randomHighQty = randomNumber(125, 255);
+      const rowNumber = Math.round(Math.random() * (data.length - 1));
+      const priceChange = randomNumber(-25, 25, false);
+      const prevItem = Utils.extend(true, {}, data[rowNumber]);
+      const itemTmp = { ...data[rowNumber] };
+      itemTmp.priceChange = priceChange;
+      itemTmp.price = ((itemTmp.price + priceChange) < 0) ? 0 : itemTmp.price + priceChange;
+      itemTmp.quantity = itemTmp.price < 5 ? randomHighQty : randomLowQty;
+      itemTmp.amount = itemTmp.price * itemTmp.quantity;
+      itemTmp.trsnType = (Math.round(Math.random() * 100)) % 2 ? 'Buy' : 'Sell';
+      itemTmp.execution = new Date();
+      if (itemTmp.price !== undefined) {
+        itemTmp.historic.push(itemTmp.price);
+        itemTmp.historic = itemTmp.historic.slice(-20); // keep a max of X historic values
+      }
+
+      if (!changes[rowNumber]) {
+        changes[rowNumber] = {};
+      }
+
+      // highlight whichever cell is being changed
+      changes[rowNumber]['id'] = 'changed';
+      renderCellHighlighting(itemTmp, findColumnById('priceChange'), priceChange);
+      if ((prevItem.priceChange < 0 && itemTmp.priceChange > 0) || (prevItem.priceChange > 0 && itemTmp.priceChange < 0)) {
+        renderCellHighlighting(itemTmp, findColumnById('price'), priceChange);
+      }
+      // if (prevItem.trsnType !== itemTmp.trsnType) {
+      //   renderCellHighlighting(itemTmp, findColumnById('trsnType'), priceChange);
+      // }
+
+      // update the data
+      dataView.updateItem(itemTmp.id, itemTmp);
+      // NOTE: we should also invalidate/render the row after updating cell data to see the new data rendered in the UI
+      // but the cell highlight actually does that for us so we can skip it
+    }
+
+    timer = setTimeout(startSimulation.bind(this), refreshRate || 0);
+  }
+
+  function stopSimulation() {
+    clearTimeout(timer);
+  }
+
+  function findColumnById(columnName) {
+    return columns.find(col => col.field === columnName);
+  }
+
+  function renderCellHighlighting(item, column, priceChange) {
+    if (item && column) {
+      const row = dataView.getRowByItem(item);
+      if (row >= 0) {
+        const hash = { [row]: { [column.id]: priceChange >= 0 ? 'changed-gain' : 'changed-loss' } };
+        grid.setCellCssStyles(`highlight_${[column.id]}${row}`, hash);
+
+        // remove highlight after x amount of time
+        setTimeout(() => removeCellStyling(item, column, row), highlightDuration);
+      }
+    }
+  }
+
+  /** remove change highlight css class from that cell */
+  function removeCellStyling(_item, column, row) {
+    grid.removeCellCssStyles(`highlight_${[column.id]}${row}`);
+  }
+
+  function randomNumber(min, max, floor = true) {
+    const number = Math.random() * (max - min + 1) + min;
+    return floor ? Math.floor(number) : number;
+  }
+
+document.addEventListener("DOMContentLoaded", () => {
+  // prepare the data
+  data = getData(200);
+
+  setTimeout(() => {
+    startSimulation();
+  }, refreshRate);
+
+  var groupItemMetadataProvider = new SlickGroupItemMetadataProvider();
+  dataView = new SlickDataView({
+    groupItemMetadataProvider: groupItemMetadataProvider,
+    inlineFilters: true
+  });
+  dataView = new SlickDataView();
+  grid = new SlickGrid("#myGrid", dataView, columns, options);
+  grid.registerPlugin(groupItemMetadataProvider);
+  grid.setSelectionModel(new SlickRowSelectionModel());
+
+  var columnpicker = new SlickColumnPicker(columns, grid, options);
+
+  grid.onCellChange.subscribe(function (e, args) {
+    dataView.updateItem(args.item.id, args.item);
+  });
+
+  grid.onAddNewRow.subscribe(function (e, args) {
+    var item = {"num": data.length, "id": "new_" + (Math.round(Math.random() * 10000)), "title": "New task", "duration": "1 day", "percentComplete": 0, "start": "01/01/2009", "finish": "01/01/2009", "effortDriven": false};
+    Utils.extend(item, args.item);
+    dataView.addItem(item);
+  });
+
+  grid.onKeyDown.subscribe(function (e) {
+    // select all rows on ctrl-a
+    if (e.which != 65 || !e.ctrlKey) {
+      return false;
+    }
+
+    var rows = [];
+    for (var i = 0; i < dataView.getLength(); i++) {
+      rows.push(i);
+    }
+
+    grid.setSelectedRows(rows);
+    e.preventDefault();
+  });
+
+  grid.onSort.subscribe(function (e, args) {
+    sortdir = args.sortAsc ? 1 : -1;
+    sortcol = args.sortCol.field;
+
+    // using native sort with comparer
+    dataView.sort(comparer, args.sortAsc);
+  });
+
+  // wire up model events to drive the grid
+  // !! both dataView.onRowCountChanged and dataView.onRowsChanged MUST be wired to correctly update the grid
+  // see Issue#91
+  dataView.onRowCountChanged.subscribe(function (e, args) {
+    grid.updateRowCount();
+    grid.render();
+  });
+
+  dataView.onRowsChanged.subscribe(function (e, args) {
+    grid.invalidateRows(args.rows);
+    grid.render();
+  });
+
+  // wire up the slider to apply the filter to the model
+  var highlight = document.getElementById("highlightDuration");
+  highlight.oninput = (e) => highlightDuration = e.target.value;
+
+  var slider = document.getElementById("refreshRateSlider");
+  slider.oninput = (e) => refreshRate = e.target.value;
+
+  // initialize the model after all the events have been hooked up
+  dataView.beginUpdate();
+  dataView.setItems(data);
+  dataView.endUpdate();
+
+  // if you don't want the items that are not visible (due to being filtered out
+  // or being on a different page) to stay selected, pass 'false' to the second arg
+  dataView.syncGridSelection(grid, true);
+  document.querySelector('#btnStartSimulation').addEventListener('click', () => startSimulation());
+  document.querySelector('#btnStopSimulation').addEventListener('click', () => stopSimulation());
+  document.querySelector('[data-test="group-currency-btn"]').addEventListener('click', () => groupByColumn('currency'));
+  document.querySelector('[data-test="group-market-btn"]').addEventListener('click', () => groupByColumn('market'));
+  document.querySelector('[data-test="clear-grouping-btn"]').addEventListener('click', () => dataView.setGrouping([]));
+  document.querySelector('[data-test="collapse-all-btn"]').addEventListener('click', () => toggleGrouping(false));
+  document.querySelector('[data-test="expand-all-btn"]').addEventListener('click', () => toggleGrouping(true));
+});
+</script>
+</body>
+</html>
