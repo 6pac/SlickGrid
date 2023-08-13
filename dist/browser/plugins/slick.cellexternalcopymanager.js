@@ -19,7 +19,6 @@
       __publicField(this, "_bodyElement");
       __publicField(this, "_copiedRanges", null);
       __publicField(this, "_clearCopyTI");
-      __publicField(this, "_clipCommand");
       __publicField(this, "_copiedCellStyle");
       __publicField(this, "_copiedCellStyleLayerKey");
       __publicField(this, "_onCopyInit");
@@ -126,7 +125,7 @@
         let newRowsNeeded = (activeRow || 0) + destH - grid.getDataLength();
         this._options.newRowCreator(newRowsNeeded);
       }
-      this._clipCommand = {
+      let clipCommand = {
         isClipboardCommand: !0,
         clippedRange,
         oldValues: [],
@@ -145,15 +144,15 @@
         w: 0,
         execute: () => {
           var _a2;
-          this._clipCommand.h = 0;
-          for (let y = 0; y < this._clipCommand.destH; y++) {
-            this._clipCommand.oldValues[y] = [], this._clipCommand.w = 0, this._clipCommand.h++;
-            for (let x = 0; x < this._clipCommand.destW; x++) {
-              this._clipCommand.w++;
+          clipCommand.h = 0;
+          for (let y = 0; y < clipCommand.destH; y++) {
+            clipCommand.oldValues[y] = [], clipCommand.w = 0, clipCommand.h++;
+            for (let x = 0; x < clipCommand.destW; x++) {
+              clipCommand.w++;
               let desty = activeRow + y, destx = activeCell + x;
-              if (desty < this._clipCommand.maxDestY && destx < this._clipCommand.maxDestX) {
+              if (desty < clipCommand.maxDestY && destx < clipCommand.maxDestX) {
                 let dt = grid.getDataItem(desty);
-                this._clipCommand.oldValues[y][x] = dt[columns[destx].field], oneCellToMultiple ? this._clipCommand.setDataItemValueForColumn(dt, columns[destx], clippedRange[0][0]) : this._clipCommand.setDataItemValueForColumn(dt, columns[destx], clippedRange[y] ? clippedRange[y][x] : ""), grid.updateCell(desty, destx), grid.onCellChange.notify({
+                clipCommand.oldValues[y][x] = dt[columns[destx].field], oneCellToMultiple ? clipCommand.setDataItemValueForColumn(dt, columns[destx], clippedRange[0][0]) : clipCommand.setDataItemValueForColumn(dt, columns[destx], clippedRange[y] ? clippedRange[y][x] : ""), grid.updateCell(desty, destx), grid.onCellChange.notify({
                   row: desty,
                   cell: destx,
                   item: dt,
@@ -164,21 +163,21 @@
             }
           }
           let bRange = new SlickRange(
-            activeCell,
             activeRow,
-            activeCell + this._clipCommand.w - 1,
-            activeRow + this._clipCommand.h - 1
+            activeCell,
+            activeRow + clipCommand.h - 1,
+            activeCell + clipCommand.w - 1
           );
           this.markCopySelection([bRange]), (_a2 = grid.getSelectionModel()) == null || _a2.setSelectedRanges([bRange]), this.onPasteCells.notify({ ranges: [bRange] });
         },
         undo: () => {
           var _a2;
-          for (let y = 0; y < this._clipCommand.destH; y++)
-            for (let x = 0; x < this._clipCommand.destW; x++) {
+          for (let y = 0; y < clipCommand.destH; y++)
+            for (let x = 0; x < clipCommand.destW; x++) {
               let desty = activeRow + y, destx = activeCell + x;
-              if (desty < this._clipCommand.maxDestY && destx < this._clipCommand.maxDestX) {
+              if (desty < clipCommand.maxDestY && destx < clipCommand.maxDestX) {
                 let dt = grid.getDataItem(desty);
-                oneCellToMultiple ? this._clipCommand.setDataItemValueForColumn(dt, columns[destx], this._clipCommand.oldValues[0][0]) : this._clipCommand.setDataItemValueForColumn(dt, columns[destx], this._clipCommand.oldValues[y][x]), grid.updateCell(desty, destx), grid.onCellChange.notify({
+                oneCellToMultiple ? clipCommand.setDataItemValueForColumn(dt, columns[destx], clipCommand.oldValues[0][0]) : clipCommand.setDataItemValueForColumn(dt, columns[destx], clipCommand.oldValues[y][x]), grid.updateCell(desty, destx), grid.onCellChange.notify({
                   row: desty,
                   cell: destx,
                   item: dt,
@@ -188,10 +187,10 @@
               }
             }
           let bRange = new SlickRange(
-            activeCell,
             activeRow,
-            activeCell + this._clipCommand.w - 1,
-            activeRow + this._clipCommand.h - 1
+            activeCell,
+            activeRow + clipCommand.h - 1,
+            activeCell + clipCommand.w - 1
           );
           if (this.markCopySelection([bRange]), (_a2 = grid.getSelectionModel()) == null || _a2.setSelectedRanges([bRange]), typeof this._options.onPasteCells == "function" && this.onPasteCells.notify({ ranges: [bRange] }), addRows > 1) {
             let d = grid.getData();
@@ -200,7 +199,8 @@
             grid.setData(d), grid.render();
           }
         }
-      }, typeof this._options.clipboardCommandHandler == "function" ? this._options.clipboardCommandHandler(this._clipCommand) : this._clipCommand.execute();
+      };
+      typeof this._options.clipboardCommandHandler == "function" ? this._options.clipboardCommandHandler(clipCommand) : clipCommand.execute();
     }
     handleKeyDown(e) {
       var _a, _b, _c, _d;
