@@ -142,16 +142,17 @@
   border-color: var(--alpine-cell-border-color, $alpine-cell-border-color);
   border-radius: var(--alpine-cell-border-radius, $alpine-cell-border-radius);
   border-width: var(--alpine-cell-border-width, $alpine-cell-border-width);
-
+  min-width: 0;
   margin: 0;
-  overflow: hidden;
   vertical-align: middle;
-  white-space: nowrap;
   z-index: 1;
   padding: var(--alpine-cell-padding, $alpine-cell-padding);
   display: var(--alpine-cell-display, $alpine-cell-display);
   align-items: var(--alpine-cell-align-items, $alpine-cell-align-items);
   justify-content: var(--alpine-cell-justify-content, $alpine-cell-justify-content);
+  overflow: hidden;
+  text-overflow: var(--alpine-cell-text-overflow, $alpine-cell-text-overflow);
+  white-space: nowrap;
 
   &.selected {
     background-color: var(--alpine-cell-selected-bg-color, $alpine-cell-selected-bg-color);

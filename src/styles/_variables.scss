@@ -23,11 +23,12 @@ $alpine-cell-border-radius:                       0 !default;
 $alpine-cell-border-width:                        0 0 1px 0 !default;
 $alpine-cell-selected-color:                      $alpine-font-color !default;
 $alpine-cell-selected-bg-color:                   darken($alpine-row-mouse-hover-color, 4%) !default;
-$alpine-cell-display:                             inline-flex !default;
+$alpine-cell-display:                             block !default;
 $alpine-cell-align-items:                         center !default;
 $alpine-cell-justify-content:                     flex-start !default;
 $alpine-cell-padding:                             2px 4px !default;
 $alpine-cell-active-box-shadow:                   inset 0 0 0 1px #5da6e3 !default;
+$alpine-cell-text-overflow:                       ellipsis !default;
 
 // Grid Headers
 $alpine-header-display:                           inline-flex !default;
