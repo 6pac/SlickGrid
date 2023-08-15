@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import type { CellRange, Column, ExcelCopyBufferOption, ExternalCopyClipCommand, Plugin } from '../models/index';
+import type { CellRange, Column, ExcelCopyBufferOption, Plugin } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 import { SlickEvent as SlickEvent_ } from '../slick.core';
 /***
@@ -39,7 +39,6 @@ export declare class SlickCellExternalCopyManager implements Plugin {
     protected _bodyElement: HTMLElement;
     protected _copiedRanges: CellRange[] | null;
     protected _clearCopyTI?: NodeJS.Timeout;
-    protected _clipCommand: ExternalCopyClipCommand;
     protected _copiedCellStyle: string;
     protected _copiedCellStyleLayerKey: string;
     protected _onCopyInit?: () => void;

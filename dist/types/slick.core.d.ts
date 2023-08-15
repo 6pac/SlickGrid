@@ -17,9 +17,9 @@ export declare class SlickEventData {
     protected _isImmediatePropagationStopped: boolean;
     protected _isDefaultPrevented: boolean;
     protected returnValues: string[];
-    protected returnValue: undefined;
+    protected returnValue: any;
     protected target?: EventTarget | null;
-    protected nativeEvent: Event | null | undefined;
+    protected nativeEvent?: Event | null;
     protected arguments_: any;
     constructor(event?: Event | null | undefined, args?: any);
     /**
@@ -48,7 +48,7 @@ export declare class SlickEventData {
     preventDefault(): void;
     isDefaultPrevented(): boolean;
     addReturnValue(value: any): void;
-    getReturnValue(): undefined;
+    getReturnValue(): any;
     getArguments(): any;
 }
 /**
@@ -301,48 +301,6 @@ export declare class SlickEditorLock {
     cancelCurrentEdit(): boolean;
 }
 declare function regexSanitizer(dirtyHtml: string): string;
-declare function calculateAvailableSpace(element: HTMLElement): {
-    top: number;
-    bottom: number;
-    left: number;
-    right: number;
-};
-/**
- * Create a DOM Element with any optional attributes or properties.
- * It will only accept valid DOM element properties that `createElement` would accept.
- * For example: `createDomElement('div', { className: 'my-css-class' })`,
- * for style or dataset you need to use nested object `{ style: { display: 'none' }}
- * The last argument is to optionally append the created element to a parent container element.
- * @param {String} tagName - html tag
- * @param {Object} options - element properties
- * @param {[HTMLElement]} appendToParent - parent element to append to
- */
-declare function createDomElement<T extends keyof HTMLElementTagNameMap, K extends keyof HTMLElementTagNameMap[T]>(tagName: T, elementOptions?: null | {
-    [P in K]: InferDOMType<HTMLElementTagNameMap[T][P]>;
-}, appendToParent?: Element): HTMLElementTagNameMap[T];
-declare function emptyElement(element: HTMLElement | null): HTMLElement | null;
-declare function innerSize(elm: HTMLElement, type: 'height' | 'width'): number;
-declare function isEmptyObject(obj: any): boolean;
-declare function noop(): void;
-declare function offset(el: HTMLElement | null): {
-    top: number;
-    left: number;
-} | undefined;
-declare function windowScrollPosition(): {
-    left: number;
-    top: number;
-};
-declare function width(el: HTMLElement, value?: number | string): number | void;
-declare function height(el: HTMLElement, value?: number | string): number | void;
-declare function setStyleSize(el: HTMLElement, style: string, val?: number | string | Function): void;
-declare function contains(parent: HTMLElement, child: HTMLElement): boolean;
-declare function parents(el: HTMLElement | ParentNode, selector?: string): (HTMLElement | ParentNode)[];
-declare function toFloat(value: string | number): number;
-declare function show(el: HTMLElement | HTMLElement[], type?: string): void;
-declare function hide(el: HTMLElement | HTMLElement[]): void;
-declare function slideUp(el: HTMLElement | HTMLElement[], callback: Function): void;
-declare function slideDown(el: HTMLElement | HTMLElement[], callback: Function): void;
-declare function extend<T = any>(...args: any[]): T;
 /**
  * A simple binding event service to keep track of all JavaScript events with callback listeners,
  * it allows us to unbind event(s) and their listener(s) by calling a simple unbind method call.
@@ -360,34 +318,72 @@ export declare class BindingEventService {
     /** Unbind all will remove every every event handlers that were bounded earlier */
     unbindAll(): void;
 }
-export declare const SlickGlobalEditorLock: SlickEditorLock;
-export declare const Utils: {
-    extend: typeof extend;
-    calculateAvailableSpace: typeof calculateAvailableSpace;
-    createDomElement: typeof createDomElement;
-    emptyElement: typeof emptyElement;
-    innerSize: typeof innerSize;
-    isEmptyObject: typeof isEmptyObject;
-    noop: typeof noop;
-    offset: typeof offset;
-    height: typeof height;
-    width: typeof width;
-    setStyleSize: typeof setStyleSize;
-    contains: typeof contains;
-    toFloat: typeof toFloat;
-    parents: typeof parents;
-    show: typeof show;
-    hide: typeof hide;
-    slideUp: typeof slideUp;
-    slideDown: typeof slideDown;
-    windowScrollPosition: typeof windowScrollPosition;
-    storage: {
+export declare class Utils {
+    private static getProto;
+    private static class2type;
+    private static toString;
+    private static hasOwn;
+    private static fnToString;
+    private static ObjectFunctionString;
+    static storage: {
         _storage: WeakMap<object, any>;
         put: (element: any, key: string, obj: any) => void;
         get: (element: any, key: string) => any;
         remove: (element: any, key: string) => any;
     };
-}, EditorLock: typeof SlickEditorLock, Event: typeof SlickEvent, EventData: typeof SlickEventData, EventHandler: typeof SlickEventHandler, Group: typeof SlickGroup, GroupTotals: typeof SlickGroupTotals, NonDataRow: typeof SlickNonDataItem, Range: typeof SlickRange, RegexSanitizer: typeof regexSanitizer, GlobalEditorLock: SlickEditorLock, keyCode: {
+    static isFunction(obj: any): boolean;
+    static isPlainObject(obj: any): boolean;
+    static calculateAvailableSpace(element: HTMLElement): {
+        top: number;
+        bottom: number;
+        left: number;
+        right: number;
+    };
+    static extend<T = any>(...args: any[]): T;
+    /**
+     * Create a DOM Element with any optional attributes or properties.
+     * It will only accept valid DOM element properties that `createElement` would accept.
+     * For example: `createDomElement('div', { className: 'my-css-class' })`,
+     * for style or dataset you need to use nested object `{ style: { display: 'none' }}
+     * The last argument is to optionally append the created element to a parent container element.
+     * @param {String} tagName - html tag
+     * @param {Object} options - element properties
+     * @param {[HTMLElement]} appendToParent - parent element to append to
+     */
+    static createDomElement<T extends keyof HTMLElementTagNameMap, K extends keyof HTMLElementTagNameMap[T]>(tagName: T, elementOptions?: null | {
+        [P in K]: InferDOMType<HTMLElementTagNameMap[T][P]>;
+    }, appendToParent?: Element): HTMLElementTagNameMap[T];
+    static emptyElement(element: HTMLElement | null): HTMLElement | null;
+    static innerSize(elm: HTMLElement, type: 'height' | 'width'): number;
+    static getElementProp(elm: HTMLElement & {
+        getComputedStyle?: () => CSSStyleDeclaration;
+    }, property: string): string | null;
+    static isEmptyObject(obj: any): boolean;
+    static noop(): void;
+    static offset(el: HTMLElement | null): {
+        top: number;
+        left: number;
+    } | undefined;
+    static windowScrollPosition(): {
+        left: number;
+        top: number;
+    };
+    static width(el: HTMLElement, value?: number | string): number | void;
+    static height(el: HTMLElement, value?: number | string): number | void;
+    static setStyleSize(el: HTMLElement, style: string, val?: number | string | Function): void;
+    static contains(parent: HTMLElement, child: HTMLElement): boolean;
+    static isHidden(el: HTMLElement): boolean;
+    static parents(el: HTMLElement | ParentNode, selector?: string): (HTMLElement | ParentNode)[];
+    static toFloat(value: string | number): number;
+    static show(el: HTMLElement | HTMLElement[], type?: string): void;
+    static hide(el: HTMLElement | HTMLElement[]): void;
+    static slideUp(el: HTMLElement | HTMLElement[], callback: Function): void;
+    static slideDown(el: HTMLElement | HTMLElement[], callback: Function): void;
+    static slideAnimation(el: HTMLElement | HTMLElement[], slideDirection: 'slideDown' | 'slideUp', callback: Function): void;
+    static applyDefaults(targetObj: any, srcObj: any): void;
+}
+export declare const SlickGlobalEditorLock: SlickEditorLock;
+export declare const EditorLock: typeof SlickEditorLock, Event: typeof SlickEvent, EventData: typeof SlickEventData, EventHandler: typeof SlickEventHandler, Group: typeof SlickGroup, GroupTotals: typeof SlickGroupTotals, NonDataRow: typeof SlickNonDataItem, Range: typeof SlickRange, RegexSanitizer: typeof regexSanitizer, GlobalEditorLock: SlickEditorLock, keyCode: {
     SPACE: number;
     BACKSPACE: number;
     DELETE: number;

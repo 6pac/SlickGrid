@@ -149,6 +149,9 @@ export interface OnSetOptionsEventArgs extends SlickGridEventData {
     optionsBefore: GridOption;
     optionsAfter: GridOption;
 }
+export interface OnActivateChangedOptionsEventArgs extends SlickGridEventData {
+    options: GridOption;
+}
 export interface OnScrollEventArgs extends SlickGridEventData {
     scrollLeft: number;
     scrollTop: number;

@@ -1,4 +1,4 @@
-import type { Aggregator, CustomDataView, Grouping, GroupingComparerItem, GroupingFormatterItem, GroupingGetterFunction, ItemMetadata, OnGroupCollapsedEventArgs, OnGroupExpandedEventArgs, OnRowCountChangedEventArgs, OnRowsChangedEventArgs, OnRowsOrCountChangedEventArgs, OnSelectedRowIdsChangedEventArgs, OnSetItemsCalledEventArgs, PagingInfo, SortDirectionNumber } from './models/index';
+import type { Aggregator, CustomDataView, Grouping, ItemMetadata, OnGroupCollapsedEventArgs, OnGroupExpandedEventArgs, OnRowCountChangedEventArgs, OnRowsChangedEventArgs, OnRowsOrCountChangedEventArgs, OnSelectedRowIdsChangedEventArgs, OnSetItemsCalledEventArgs, PagingInfo } from './models/index';
 import { SlickEvent as SlickEvent_, SlickGroup as SlickGroup_, SlickGroupTotals as SlickGroupTotals_, SlickNonDataItem } from './slick.core';
 import type { SlickGrid } from './slick.grid';
 import { SlickGroupItemMetadataProvider as SlickGroupItemMetadataProvider_ } from './slick.groupitemmetadataprovider';
@@ -111,7 +111,7 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     /** Re-Sort the dataset */
     reSort(): void;
     /** Get only the DataView filtered items */
-    getFilteredItems(): TData[];
+    getFilteredItems<T extends TData>(): T[];
     /** Get the array length (count) of only the DataView filtered items */
     getFilteredItemCount(): number;
     /** Get current Filter used by the DataView */
@@ -125,16 +125,8 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     getGrouping(): Grouping[];
     /** Set some Grouping */
     setGrouping(groupingInfo: Grouping | Grouping[]): void;
-    /**
-     * @deprecated Please use {@link setGrouping}.
-     */
-    groupBy(valueGetter: string | GroupingGetterFunction<TData>, valueFormatter: (g: GroupingFormatterItem) => string, sortComparer?: (a: GroupingComparerItem, b: GroupingComparerItem) => SortDirectionNumber): void;
-    /**
-     * @deprecated Please use {@link setGrouping}.
-     */
-    setAggregators(groupAggregators: Aggregator[], includeCollapsed: boolean): void;
     /** Get an item in the DataView by its row index */
-    getItemByIdx(i: number): TData;
+    getItemByIdx<T extends TData>(i: number): T;
     /** Get row index in the DataView by its Id */
     getIdxById(id: number | string): number | undefined;
     protected ensureRowsByIdCache(): void;
@@ -143,7 +135,7 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     /** Get row number in the grid by its Id */
     getRowById(id: number | string): number | undefined;
     /** Get an item in the DataView by its Id */
-    getItemById(id: number | string): TData;
+    getItemById<T extends TData>(id: number | string): T;
     /** From the items array provided, return the mapped rows */
     mapItemsToRows(itemArray: TData[]): number[];
     /** From the Ids array provided, return the mapped rows */
@@ -162,13 +154,13 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
      * @param id The new id of the item.
      * @param item The item which should be the new value for the given id.
      */
-    updateItem(id: number | string, item: TData): void;
+    updateItem<T extends TData>(id: number | string, item: T): void;
     /**
      * Updates multiple items in the data view given the new ids and new values.
      * @param id {Array} The array of new ids which is in the same order as the items.
      * @param newItems {Array} The new items that should be set in the data view for the given ids.
      */
-    updateItems(ids: Array<number | string>, newItems: TData[]): void;
+    updateItems<T extends TData>(ids: Array<number | string>, newItems: T[]): void;
     /**
      * Inserts a single item into the data view at the given position.
      * @param insertBefore {Number} The 0-based index before which the item should be inserted.
@@ -211,7 +203,7 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     /** Get row count (rows displayed in current page) */
     getLength(): number;
     /** Retrieve an item from the DataView at specific index */
-    getItem(i: number): TData;
+    getItem<T extends TData>(i: number): T;
     getItemMetadata(i: number): ItemMetadata | null;
     protected expandCollapseAllGroups(level?: number, collapse?: boolean): void;
     /**
@@ -316,12 +308,12 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
      * Get all selected dataContext items
      * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
      */
-    getAllSelectedItems(): TData[];
+    getAllSelectedItems<T extends TData>(): T[];
     /**
     * Get all selected filtered dataContext items (similar to "getAllSelectedItems" but only return filtered data)
     * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
     */
-    getAllSelectedFilteredItems(): TData[];
+    getAllSelectedFilteredItems<T extends TData>(): T[];
     syncGridCellCssStyles(grid: SlickGrid, key: string): void;
 }
 export declare class AvgAggregator<T = any> implements Aggregator {

@@ -12,7 +12,7 @@ export interface Subject<T = any> extends Observable<T> {
 type PostProcessOutput<P> = P & {
     [asyncParamsPropName: string]: any;
 };
-export type asyncProcess<T = any> = (row: number, cell: number, value: any, columnDef: Column<T>, dataContext: T, grid?: SlickGrid) => Promise<PostProcessOutput<T>> | Observable<PostProcessOutput<T>> | Subject<PostProcessOutput<T>>;
+export type AsyncProcess<T = any> = (row: number, cell: number, value: any, columnDef: Column<T>, dataContext: T, grid?: SlickGrid) => Promise<PostProcessOutput<T>> | Observable<PostProcessOutput<T>> | Subject<PostProcessOutput<T>>;
 export interface CustomTooltipOption<T = any> {
     /** defaults to "__params", optionally change the property name that will be used to merge the data returned by the async method into the `dataContext` object */
     asyncParamsPropName?: string;
@@ -20,7 +20,7 @@ export interface CustomTooltipOption<T = any> {
      * Async Post method returning a Promise, it must return an object with 1 or more properties
      * Note: internally the data that will automatically be merged into the `dataContext` object under the `__params` property so that you can use it in your `asyncPostFormatter` formatter.
      */
-    asyncProcess?: asyncProcess<T>;
+    asyncProcess?: AsyncProcess<T>;
     /** Formatter to execute once the async process is completed, to displayed the actual text result (used when dealing with an Async API to get data to display later in the tooltip) */
     asyncPostFormatter?: Formatter;
     /** Formatter to execute when custom tooltip is over a header column */

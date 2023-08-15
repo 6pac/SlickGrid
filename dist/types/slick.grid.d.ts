@@ -1,6 +1,6 @@
 import type SortableInstance from 'sortablejs';
-import type { AutoSize, CellViewportRange, Column, ColumnSort, CssStyleHash, CustomDataView, DOMEvent, DragPosition, DragRowMove, Editor, EditController, Formatter, FormatterResultObject, GridOption as BaseGridOption, InteractionBase, MultiColumnSort, OnActiveCellChangedEventArgs, OnAddNewRowEventArgs, OnAutosizeColumnsEventArgs, OnBeforeUpdateColumnsEventArgs, OnBeforeAppendCellEventArgs, OnBeforeCellEditorDestroyEventArgs, OnBeforeColumnsResizeEventArgs, OnBeforeEditCellEventArgs, OnBeforeHeaderCellDestroyEventArgs, OnBeforeHeaderRowCellDestroyEventArgs, OnBeforeFooterRowCellDestroyEventArgs, OnBeforeSetColumnsEventArgs, OnCellChangeEventArgs, OnCellCssStylesChangedEventArgs, OnColumnsDragEventArgs, OnColumnsReorderedEventArgs, OnColumnsResizedEventArgs, OnColumnsResizeDblClickEventArgs, OnCompositeEditorChangeEventArgs, OnClickEventArgs, OnDblClickEventArgs, OnFooterContextMenuEventArgs, OnFooterRowCellRenderedEventArgs, OnHeaderCellRenderedEventArgs, OnFooterClickEventArgs, OnHeaderClickEventArgs, OnHeaderContextMenuEventArgs, OnHeaderMouseEventArgs, OnHeaderRowCellRenderedEventArgs, OnKeyDownEventArgs, OnValidationErrorEventArgs, OnRenderedEventArgs, OnSelectedRowsChangedEventArgs, OnSetOptionsEventArgs, OnScrollEventArgs, PagingInfo, Plugin, RowInfo, SelectionModel, SingleColumnSort, SlickGridEventData } from './models/index';
-import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_ } from './slick.core';
+import type { AutoSize, CellViewportRange, Column, ColumnSort, CssStyleHash, CustomDataView, DOMEvent, DragPosition, DragRowMove, Editor, EditController, Formatter, FormatterResultObject, GridOption as BaseGridOption, InteractionBase, MultiColumnSort, OnActiveCellChangedEventArgs, OnAddNewRowEventArgs, OnAutosizeColumnsEventArgs, OnBeforeUpdateColumnsEventArgs, OnBeforeAppendCellEventArgs, OnBeforeCellEditorDestroyEventArgs, OnBeforeColumnsResizeEventArgs, OnBeforeEditCellEventArgs, OnBeforeHeaderCellDestroyEventArgs, OnBeforeHeaderRowCellDestroyEventArgs, OnBeforeFooterRowCellDestroyEventArgs, OnBeforeSetColumnsEventArgs, OnCellChangeEventArgs, OnCellCssStylesChangedEventArgs, OnColumnsDragEventArgs, OnColumnsReorderedEventArgs, OnColumnsResizedEventArgs, OnColumnsResizeDblClickEventArgs, OnCompositeEditorChangeEventArgs, OnClickEventArgs, OnDblClickEventArgs, OnFooterContextMenuEventArgs, OnFooterRowCellRenderedEventArgs, OnHeaderCellRenderedEventArgs, OnFooterClickEventArgs, OnHeaderClickEventArgs, OnHeaderContextMenuEventArgs, OnHeaderMouseEventArgs, OnHeaderRowCellRenderedEventArgs, OnKeyDownEventArgs, OnValidationErrorEventArgs, OnRenderedEventArgs, OnSelectedRowsChangedEventArgs, OnSetOptionsEventArgs, OnActivateChangedOptionsEventArgs, OnScrollEventArgs, PagingInfo, Plugin, RowInfo, SelectionModel, SingleColumnSort, SlickGridEventData } from './models/index';
+import { BindingEventService as BindingEventService_, type SlickEditorLock, SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_ } from './slick.core';
 /**
  * @license
  * (c) 2009-present Michael Leibman
@@ -79,6 +79,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     onScroll: SlickEvent_<OnScrollEventArgs>;
     onSelectedRowsChanged: SlickEvent_<OnSelectedRowsChangedEventArgs>;
     onSetOptions: SlickEvent_<OnSetOptionsEventArgs>;
+    onActivateChangedOptions: SlickEvent_<OnActivateChangedOptionsEventArgs>;
     onSort: SlickEvent_<SingleColumnSort | MultiColumnSort>;
     onValidationError: SlickEvent_<OnValidationErrorEventArgs>;
     onViewportChanged: SlickEvent_<SlickGridEventData>;
@@ -378,9 +379,9 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * Get Header Row Column DOM element by its column Id
      * @param {Number|String} [columnIdOrIdx] - column Id or index
      */
-    getHeaderRowColumn(columnIdOrIdx: number | string): Element;
+    getHeaderRowColumn(columnIdOrIdx: number | string): HTMLDivElement;
     /** Get the Footer Row Column DOM element */
-    getFooterRowColumn(columnIdOrIdx: number | string): Element;
+    getFooterRowColumn(columnIdOrIdx: number | string): HTMLDivElement;
     protected createColumnFooter(): void;
     protected handleHeaderMouseHoverOn(e: Event | SlickEventData_): void;
     protected handleHeaderMouseHoverOff(e: Event | SlickEventData_): void;
@@ -445,7 +446,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     getVisibleColumns(): C[];
     protected trigger<ArgType = any>(evt: SlickEvent_, args?: ArgType, e?: Event | SlickEventData_): SlickEventData_;
     /** Get Editor lock */
-    getEditorLock(): import("./slick.core").SlickEditorLock;
+    getEditorLock(): SlickEditorLock;
     /** Get Editor Controller */
     getEditController(): EditController | undefined;
     /**
@@ -497,6 +498,17 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * @param {Boolean} [suppressSetOverflow] - do we want to suppress the call to `setOverflow`
      */
     setOptions(args: Partial<O>, suppressRender?: boolean, suppressColumnSet?: boolean, suppressSetOverflow?: boolean): void;
+    /**
+      * If option.mixinDefaults is true then external code maintains a reference to the options object. In this case there is no need
+      * to call setOptions() - changes can be made directly to the object. However setOptions() also performs some recalibration of the
+      * grid in reaction to changed options. activateChangedOptions call the same recalibration routines as setOptions() would have.
+      * @param {Boolean} [suppressRender] - do we want to supress the grid re-rendering? (defaults to false)
+      * @param {Boolean} [suppressColumnSet] - do we want to supress the columns set, via "setColumns()" method? (defaults to false)
+      * @param {Boolean} [suppressSetOverflow] - do we want to suppress the call to `setOverflow`
+      */
+    activateChangedOptions(suppressRender?: boolean, suppressColumnSet?: boolean, suppressSetOverflow?: boolean): void;
+    protected prepareForOptionsChange(): void;
+    protected internal_setOptions(suppressRender?: boolean, suppressColumnSet?: boolean, suppressSetOverflow?: boolean): void;
     validateAndEnforceOptions(): void;
     /**
      * Sets a new source for databinding and removes all rendered rows. Note that this doesn't render the new rows - you can follow it with a call to render() to do that.
@@ -688,9 +700,9 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      */
     flashCell(row: number, cell: number, speed?: number): void;
     protected handleMouseWheel(e: MouseEvent, _delta: number, deltaX: number, deltaY: number): void;
-    protected handleDragInit(e: DragEvent, dd: DragPosition): false | undefined;
-    protected handleDragStart(e: DragEvent, dd: DragPosition): false | undefined;
-    protected handleDrag(e: DragEvent, dd: DragPosition): undefined;
+    protected handleDragInit(e: DragEvent, dd: DragPosition): any;
+    protected handleDragStart(e: DragEvent, dd: DragPosition): any;
+    protected handleDrag(e: DragEvent, dd: DragPosition): any;
     protected handleDragEnd(e: DragEvent, dd: DragPosition): void;
     protected handleKeyDown(e: KeyboardEvent & {
         originalEvent: Event;
