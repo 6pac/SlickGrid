@@ -11,7 +11,7 @@ describe('Example 0070 - Grid State using Local Storage', () => {
   });
 
   it('should display Example title', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example-0070-plugin-state.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-0070-plugin-state.html`);
     cy.get('h2 + p').should('contain', 'Slick.State');
 
     cy.clearLocalStorage();

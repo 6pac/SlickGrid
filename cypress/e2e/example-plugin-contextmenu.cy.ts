@@ -403,6 +403,10 @@ describe('Example - Context Menu & Cell Menu', () => {
   });
 
   it('should scroll back to top row and be able to open Context Menu', () => {
+    cy.get('.slick-viewport-top.slick-viewport-left')
+      .scrollTo('top')
+      .wait(10);
+
     cy.get('#myGrid')
       .find('.slick-row:nth(1) .slick-cell:nth(1)')
       .rightclick();

@@ -4,8 +4,14 @@
  * @namespace Slick
  */
 
-
-import type { CSSStyleDeclarationWritable, EditController, ElementEventListener, Handler, InferDOMType, MergeTypes } from './models/index';
+import type {
+  CSSStyleDeclarationWritable,
+  EditController,
+  ElementEventListener,
+  Handler,
+  InferDOMType,
+  MergeTypes
+} from './models/index';
 
 /**
  * An event object for passing data to event handlers and letting them control propagation.

@@ -1,31 +1,44 @@
 import { convertPosition } from './common';
 
-Cypress.Commands.add("dragStart", { prevSubject: true }, (subject, { cellWidth = 80, cellHeight = 25 } = {}) => {
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Cypress {
+    interface Chainable {
+      // triggerHover: (elements: NodeListOf<HTMLElement>) => void;
+      dragOutside(viewport?: string, ms?: number, px?: number, options?: { parentSelector?: string, scrollbarDimension?: number; }): Chainable<HTMLElement>;
+      dragStart(options?: { cellWidth?: number; cellHeight?: number; prevSubject: boolean; }): Chainable<HTMLElement>;
+      dragCell(addRow: number, addCell: number, options?: { cellWidth?: number; cellHeight?: number; }): Chainable<HTMLElement>;
+      dragEnd(gridSelector?: string): Chainable<HTMLElement>;
+    }
+  }
+}
+
+Cypress.Commands.add('dragStart', { prevSubject: true }, (subject, { cellWidth = 80, cellHeight = 25 } = {}) => {
   return cy.wrap(subject).click({ force: true })
     .trigger('mousedown', { which: 1 })
     .trigger('mousemove', cellWidth / 3, cellHeight / 3);
 })
 
 // use a different command name than "drag" so that it doesn't conflict with the "@4tw/cypress-drag-drop" lib
-Cypress.Commands.add("dragCell", { prevSubject: true }, (subject, addRow, addCell, { cellWidth = 80, cellHeight = 25 } = {}) => {
+Cypress.Commands.add('dragCell', { prevSubject: true }, (subject, addRow, addCell, { cellWidth = 80, cellHeight = 25 } = {}) => {
   return cy.wrap(subject).trigger('mousemove', cellWidth * (addCell + 0.5), cellHeight * (addRow + 0.5), { force: true });
 })
 
-Cypress.Commands.add("dragOutside", (viewport = 'topLeft', ms = 0, px = 0, { parentSelector = 'div[class^="slickgrid_"]', scrollbarDimension = 17 } = {}) => {
+Cypress.Commands.add('dragOutside', (viewport = 'topLeft', ms = 0, px = 0, { parentSelector = 'div[class^="slickgrid_"]', scrollbarDimension = 17 } = {}) => {
   const $parent = cy.$$(parentSelector);
   const gridWidth = $parent.width();
   const gridHeight = $parent.height();
-  var x = gridWidth / 2;
-  var y = gridHeight / 2;
+  let x = gridWidth / 2;
+  let y = gridHeight / 2;
   const position = convertPosition(viewport);
-  if (position.x === "left") {
+  if (position.x === 'left') {
     x = -px;
-  } else if (position.x === "right") {
+  } else if (position.x === 'right') {
     x = gridWidth - scrollbarDimension + 3 + px;
   }
-  if (position.y === "top") {
+  if (position.y === 'top') {
     y = -px;
-  } else if (position.y === "bottom") {
+  } else if (position.y === 'bottom') {
     y = gridHeight - scrollbarDimension + 3 + px;
   }
 
@@ -36,15 +49,15 @@ Cypress.Commands.add("dragOutside", (viewport = 'topLeft', ms = 0, px = 0, { par
   return;
 })
 
-Cypress.Commands.add("dragEnd", { prevSubject: 'optional' }, (subject, gridSelector = 'div[class^="slickgrid_"]') => {
+Cypress.Commands.add('dragEnd', { prevSubject: 'optional' }, (subject, gridSelector = 'div[class^="slickgrid_"]') => {
   cy.get(gridSelector).trigger('mouseup', { force: true });
   return;
 })
 
 export function getScrollDistanceWhenDragOutsideGrid(selector, viewport, dragDirection, fromRow, fromCol, px = 100) {
-  return cy.convertPosition(viewport).then(_viewportPosition => {
-    const viewportSelector = `${selector} .slick-viewport-${_viewportPosition.x}.slick-viewport-${_viewportPosition.y}`
-    cy.getCell(fromRow, fromCol, viewport, { parentSelector: selector })
+  return (cy as any).convertPosition(viewport).then((_viewportPosition: { x: number; y: number; }) => {
+    const viewportSelector = `${selector} .slick-viewport-${_viewportPosition.x}.slick-viewport-${_viewportPosition.y}`;
+    (cy as any).getCell(fromRow, fromCol, viewport, { parentSelector: selector })
       .dragStart();
     return cy.get(viewportSelector).then($viewport => {
       const scrollTopBefore = $viewport.scrollTop();
