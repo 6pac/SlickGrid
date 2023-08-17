@@ -1,7 +1,0 @@
-{
-  "version": 3,
-  "sources": ["import-ns:./cypress/plugins/index.js.js", "../../cypress.config.ts"],
-  "sourcesContent": ["// empty string, do nothing", "import { defineConfig } from 'cypress'\n\nexport default defineConfig({\n  baseExampleUrl: 'http://localhost:8080/examples',\n  video: false,\n  viewportWidth: 1200,\n  viewportHeight: 900,\n  e2e: {\n    experimentalRunAllSpecs: true,\n    testIsolation: false,\n    // We've imported your old cypress plugins here.\n    // You may want to clean this up later by importing these.\n    setupNodeEvents(on, config) {\n      return require('./cypress/plugins/index.js')(on, config)\n    },\n    baseUrl: 'http://localhost:8080',\n  },\n})\n"],
-  "mappings": ";;;;;;;;AAAA;AAAA;AAAA;AAAA;;;ACEA,MAAO,yBAAQ,SAAa;AAAA,IAC1B,gBAAgB;AAAA,IAChB,OAAO;AAAA,IACP,eAAe;AAAA,IACf,gBAAgB;AAAA,IAChB,KAAK;AAAA,MACH,yBAAyB;AAAA,MACzB,eAAe;AAAA;AAAA;AAAA,MAGf,gBAAgB,IAAI,QAAQ;AAC1B,eAAO,mBAAsC,IAAI,MAAM;AAAA,MACzD;AAAA,MACA,SAAS;AAAA,IACX;AAAA,EACF,CAAC;",
-  "names": []
-}

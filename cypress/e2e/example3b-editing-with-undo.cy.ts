@@ -12,7 +12,7 @@ describe('Example3 Editing', () => {
   });
 
   it('should display Example title', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example3b-editing-with-undo.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example3b-editing-with-undo.html`);
     cy.get('h2').contains('Demonstrates');
     cy.get('h2 + ul > li').first().contains('Using "editCommandHandler" option to intercept edit commands and implement undo support');
   });

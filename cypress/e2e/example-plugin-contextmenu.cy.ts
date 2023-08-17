@@ -11,7 +11,7 @@ describe('Example - Context Menu & Cell Menu', () => {
   });
 
   it('should display Example Context Menu & Cell Menu', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example-plugin-contextmenu.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-plugin-contextmenu.html`);
     cy.get('h2').should('contain', 'Demonstrates:');
     cy.get('h2 span').should('contain', 'Slick.Plugins.ContextMenu / Slick.Plugins.CellMenu');
   });

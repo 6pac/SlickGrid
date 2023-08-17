@@ -13,7 +13,7 @@ describe('Example - Grid Menu', () => {
   });
 
   it('should display Example Grid Menu', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example-grid-menu.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-grid-menu.html`);
     cy.get('h2').should('contain', 'Demonstrates:');
     cy.contains('This example demonstrates using the Slick.Controls.GridMenu ');
   });

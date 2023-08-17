@@ -6,7 +6,7 @@ describe('Example - Frozen Rows', { retries: 1 }, () => {
   const fullTitles = ['#', 'Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven', 'Title1', 'Title2', 'Title3', 'Title4'];
 
   it('should load Example', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example-frozen-rows.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-frozen-rows.html`);
   });
 
   it('should have exact column titles on 1st grid', () => {

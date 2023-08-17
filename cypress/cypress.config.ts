@@ -1,7 +1,8 @@
 import { defineConfig } from 'cypress'
 
+import plugins from './plugins/index';
+
 export default defineConfig({
-  baseExampleUrl: 'http://localhost:8080/examples',
   video: false,
   viewportWidth: 1200,
   viewportHeight: 900,
@@ -11,7 +12,7 @@ export default defineConfig({
     // We've imported your old cypress plugins here.
     // You may want to clean this up later by importing these.
     setupNodeEvents(on, config) {
-      return require('./cypress/plugins/index.js')(on, config)
+      return plugins(on, config);
     },
     baseUrl: 'http://localhost:8080',
   },

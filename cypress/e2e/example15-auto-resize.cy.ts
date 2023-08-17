@@ -3,7 +3,7 @@ describe('Example 0070 - Grid State using Local Storage', () => {
   const titles = ['Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
 
   it('should display Example title', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example15-auto-resize.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example15-auto-resize.html`);
     cy.get('h2 + p').should('contain', 'Slick.Plugins.Resizer');
   });
 

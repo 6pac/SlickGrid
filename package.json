@@ -43,8 +43,8 @@
   },
   "homepage": "https://github.com/6pac/SlickGrid#readme",
   "scripts": {
-    "cypress": "npx cypress open",
-    "cypress:ci": "npx cypress run --reporter xunit --reporter-options output=testresult.xml",
+    "cypress": "npx cypress open --config-file cypress/cypress.config.ts",
+    "cypress:ci": "npx cypress run --config-file cypress/cypress.config.ts",
     "predev": "rimraf --glob dist/{browser,esm}",
     "dev": "node ./scripts/dev-watch.mjs --open",
     "serve": "node ./scripts/dev-watch.mjs --serve",

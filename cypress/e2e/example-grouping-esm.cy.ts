@@ -8,7 +8,7 @@ describe('Example - Grouping & Aggregators (ESM)', { retries: 1 }, () => {
   }
 
   it('should display Example title', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example-grouping-esm.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-grouping-esm.html`);
     cy.get('h2').contains('Demonstrates');
     cy.get('h2 + ul > li').first().contains('Grouping & Aggregator features');
   });
