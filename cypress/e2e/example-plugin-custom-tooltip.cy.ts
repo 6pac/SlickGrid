@@ -12,7 +12,7 @@ describe('Example - Custom Tooltip', () => {
   });
 
   it('should display Example title', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example-plugin-custom-tooltip.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-plugin-custom-tooltip.html`);
     cy.get('h2').contains('Demonstrates: Slick.Plugins.CustomTooltip');
   });
 

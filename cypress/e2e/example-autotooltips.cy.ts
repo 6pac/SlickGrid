@@ -12,7 +12,7 @@ describe('Example AutoTooltips Plugin', () => {
   });
 
   it('should display Example title', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example-autotooltips.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-autotooltips.html`);
     cy.get('ul > li').should('contain', 'AutoTooltips plugin');
   });
 

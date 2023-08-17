@@ -12,7 +12,7 @@ describe('Example - Composite Editor Modal with Create/Edit/Mass-Update/Mass-Sel
   });
 
   it('should display Example title', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example-composite-editor-modal-dialog.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-composite-editor-modal-dialog.html`);
     cy.get('h2').contains('Demonstrates');
     cy.get('h2 + ul > li').first().contains('Composite Editor Modal - Edit Form');
   });

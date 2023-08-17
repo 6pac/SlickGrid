@@ -8,7 +8,7 @@ describe('Example - Grouping & Aggregators', { retries: 1 }, () => {
     }
 
     it('should display Example title', () => {
-        cy.visit(`${Cypress.config('baseExampleUrl')}/example-grouping.html`);
+        cy.visit(`${Cypress.config('baseUrl')}/examples/example-grouping.html`);
         cy.get('h2').contains('Demonstrates');
         cy.get('h2 + ul > li').first().contains('Grouping & Aggregator features');
     });

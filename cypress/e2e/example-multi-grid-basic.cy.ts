@@ -11,7 +11,7 @@ describe('Example - Multi Grid on a Page', () => {
   });
 
   it('should display Example Multi-grid Basic', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example-multi-grid-basic.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-multi-grid-basic.html`);
     cy.get('h2').should('contain', 'Demonstrates:');
     cy.contains('Two basic Grids with minimal configuration');
   });

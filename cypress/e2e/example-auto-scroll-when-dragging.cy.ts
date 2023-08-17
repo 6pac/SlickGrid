@@ -15,7 +15,7 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
   }
 
   it('should load Example', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example-auto-scroll-when-dragging.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-auto-scroll-when-dragging.html`);
   });
 
   it('should have exact column titles on grid', () => {

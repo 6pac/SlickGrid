@@ -11,7 +11,7 @@ describe('Example - Header Button', () => {
   });
 
   it('should display Example title', () => {
-    cy.visit(`${Cypress.config('baseExampleUrl')}/example-plugin-headerbuttons.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-plugin-headerbuttons.html`);
     cy.get('p').contains('This example demonstrates using the Slick.Plugins.HeaderButtons plugin');
   });
 

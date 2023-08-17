@@ -40,6 +40,7 @@
         "extendDefaults": true
       }
     ],
+    "cypress/no-assigning-return-values": "off",
     "cypress/no-unnecessary-waiting": "off",
     "cypress/unsafe-to-chain-command": "off",
     "no-cond-assign": "off",

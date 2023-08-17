@@ -58,3 +58,4 @@ jobs:
         with:
           # wait-on: 'http://localhost:8080'
           browser: chrome
+          config-file: cypress/cypress.config.ts

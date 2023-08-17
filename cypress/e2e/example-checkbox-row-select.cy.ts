@@ -6,7 +6,7 @@ describe('Example - Checkbox Row Select', () => {
 
   describe('Grid 1', () => {
     it('should display Example title', () => {
-      cy.visit(`${Cypress.config('baseExampleUrl')}/example-checkbox-row-select.html`);
+      cy.visit(`${Cypress.config('baseUrl')}/examples/example-checkbox-row-select.html`);
       cy.get('h2').contains('Demonstrates');
       cy.get('h2 + ul > li').first().contains('Checkbox row select column');
     });
