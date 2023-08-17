@@ -21,3 +21,9 @@ testresult.xml
 yarn-error.log
 yarn.lock
 tsconfig.tsbuildinfo
+
+# IDE - VSCode
+.vscode/*
+!.vscode/tasks.json
+!.vscode/launch.json
+!.vscode/extensions.json
