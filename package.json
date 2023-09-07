@@ -53,7 +53,6 @@
     "minify": "node ./scripts/minify.js --start",
     "prebuild:all": "rimraf dist && npm run lint",
     "build:all": "node scripts/builds.mjs --prod && npm run build:types",
-    "build:test": "node ./scripts/builds.mjs --test",
     "prebuild:prod": "npm run lint",
     "build:prod": "node ./scripts/builds.mjs --prod",
     "build:types": "tsc --emitDeclarationOnly --incremental --declarationMap --outDir dist/types",

@@ -48,7 +48,7 @@ jobs:
         run: npm install
 
       - name: Prod Build
-        run: npm run build:prod
+        run: npm run build:all
 
       - name: Start HTTP Server
         run: npm run serve:demo &
