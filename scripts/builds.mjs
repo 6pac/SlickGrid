@@ -1,7 +1,7 @@
 import c from 'picocolors';
 import copyfiles from 'copyfiles';
 import { build } from 'esbuild';
-import fs from 'fs-extra';
+import { outputFileSync } from 'fs-extra/esm';
 import { globSync } from 'glob';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -212,7 +212,7 @@ export async function buildSassFile(sassFile) {
     const posixPath = absoluteFilePath.replaceAll('\\', '/');
 
     try {
-      fs.outputFileSync(
+      outputFileSync(
         `${distDir ? distDir + '/' : ''}styles/css/${filename}.css`,
         sassCompile(`${srcDir ? srcDir + '/' : ''}styles/${posixPath}`, { style: 'compressed', quietDeps: true, noSourceMap: true }).css
       );

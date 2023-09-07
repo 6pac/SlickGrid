@@ -1,6 +1,6 @@
 import c from 'picocolors';
-import os from 'os';
 import execa from 'execa';
+import os from 'node:os';
 import logTransformer from 'strong-log-transformer';
 
 // bookkeeping for spawned processes

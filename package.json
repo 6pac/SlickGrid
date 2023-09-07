@@ -75,7 +75,7 @@
     "autoprefixer": "^10.4.15",
     "browser-sync": "^2.29.3",
     "chokidar": "^3.5.3",
-    "conventional-changelog": "^4.0.0",
+    "conventional-changelog": "^5.0.0",
     "copyfiles": "^2.4.1",
     "cssnano": "^6.0.1",
     "cssnano-preset-lite": "^3.0.0",

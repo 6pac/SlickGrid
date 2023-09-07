@@ -1,19 +1,20 @@
 import c from 'picocolors';
-import fs from 'fs-extra';
 import { loadJsonFileSync } from 'load-json-file';
-import readline from 'readline';
+import { writeJsonSync } from 'fs-extra/esm';
+import { readFileSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { dirname, join, resolve as pathResolve } from 'node:path';
+import readline from 'readline';
 import { rimrafSync } from 'rimraf';
 import semver from 'semver';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
-import { updateChangelog } from './changelog.mjs';
 import { gitAdd, gitCommit, gitTag, gitTagPushRemote, gitPushToCurrentBranch, hasUncommittedChanges } from './git-utils.mjs';
 import { createRelease, createReleaseClient, parseGitRepo } from './github-release.mjs';
 import { publishPackage, syncLockFile } from './npm-utils.mjs';
 import { runProdBuildWithTypes } from './builds.mjs';
+import { updateChangelog } from './changelog.mjs';
 
 const TAG_PREFIX = '';
 const VERSION_PREFIX = 'v';
@@ -22,8 +23,8 @@ const RELEASE_COMMIT_MSG = 'chore(release): publish version %s';
 const cwd = process.cwd();
 const argv = yargs(hideBin(process.argv)).argv;
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = dirname(__filename);
-const pkg = loadJsonFileSync(join(__dirname, '../', 'package.json'));
+const __dirname = path.dirname(__filename);
+const pkg = loadJsonFileSync(path.join(__dirname, '../', 'package.json'));
 
 /**
  * Main entry, this script will execute the following steps
@@ -201,7 +202,7 @@ function updatePackageVersion(newVersion) {
   if (argv.dryRun) {
     console.log(`${c.magenta('[dry-run]')}`);
   }
-  fs.writeJsonSync(pathResolve(__dirname, '../package.json'), pkg, { spaces: 2 });
+  writeJsonSync(path.resolve(__dirname, '../package.json'), pkg, { spaces: 2 });
 
   console.log('-- updating "package.json" --');
   console.log(` "version": "${pkg.version}"`);
@@ -213,7 +214,7 @@ function updatePackageVersion(newVersion) {
  * @param {String} newVersion
  */
 function updateSlickGridVersion(newVersion) {
-  const slickGridFileContent = fs.readFileSync(pathResolve(__dirname, '../src/slick.grid.ts'), { encoding: 'utf8', flag: 'r' });
+  const slickGridFileContent = readFileSync(path.resolve(__dirname, '../src/slick.grid.ts'), { encoding: 'utf8', flag: 'r' });
 
   // replaces version in 2 areas (a version could be "2.4.45" or "2.4.45-alpha.0"):
   // 1- in top comments, ie: SlickGrid v2.4.45
@@ -225,7 +226,7 @@ function updateSlickGridVersion(newVersion) {
   if (argv.dryRun) {
     console.log(`${c.magenta('[dry-run]')}`);
   }
-  fs.writeFileSync(pathResolve(__dirname, '../src/slick.grid.ts'), updatedSlickGridJs);
+  writeFileSync(path.resolve(__dirname, '../src/slick.grid.ts'), updatedSlickGridJs);
 
   console.log('-- updating "src/slick.grid.ts" --');
   console.log(` SlickGrid ${VERSION_PREFIX}${newVersion}`)

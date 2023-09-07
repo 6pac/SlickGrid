@@ -1,6 +1,7 @@
 import conventionalChangelog from 'conventional-changelog';
-import fs from 'fs-extra';
-import path from 'path';
+import { pathExistsSync } from 'fs-extra/esm';
+import { readFileSync, writeFileSync } from 'node:fs';
+import path from 'node:path';
 
 const projectRootLocation = process.cwd();
 const EOL = '\n';
@@ -28,9 +29,9 @@ export function updateChangelog(args, newVersion) {
 
     // read changelog.md if it exist or else we'll create it
     const changelogLocation = path.resolve(projectRootLocation, infile);
-    const fileExist = fs.pathExistsSync(changelogLocation);
+    const fileExist = pathExistsSync(changelogLocation);
     if (fileExist) {
-      oldContent = fs.readFileSync(path.resolve(projectRootLocation, infile), 'utf8');
+      oldContent = readFileSync(path.resolve(projectRootLocation, infile), 'utf8');
     }
 
     // find the position of the last release and remove header since we'll append it back on top
@@ -58,7 +59,7 @@ export function updateChangelog(args, newVersion) {
         .trim()
         .replace(/[\r\n]{2,}/gm, '\n\n'); // conventional-changelog adds way too many extra line breaks, let's remove a few of them
 
-      fs.writeFileSync(changelogLocation, newContent, 'utf8');
+      writeFileSync(changelogLocation, newContent, 'utf8');
 
       return resolve({ location: changelogLocation, newEntry: content });
     });
