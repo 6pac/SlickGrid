@@ -3,7 +3,14 @@ import chokidar from 'chokidar';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
-import { buildAllSassFiles, buildIifeFile, buildSassFile, buildAllIifeFiles, executeCjsEsmBuilds, executeFullBuild } from './builds.mjs';
+import {
+  buildAllSassFiles,
+  buildIifeFile,
+  buildSassFile,
+  buildAllIifeFiles,
+  executeCjsEsmBuilds,
+  executeFullBuild
+} from './builds.mjs';
 
 const argv = yargs(hideBin(process.argv)).argv;
 

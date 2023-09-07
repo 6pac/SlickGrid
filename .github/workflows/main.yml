@@ -47,8 +47,8 @@ jobs:
       - name: Install npm dependencies
         run: npm install
 
-      - name: Prod Build
-        run: npm run build:prod
+      - name: Prod Build with TS Types
+        run: npm run build:all
 
       - name: Start HTTP Server
         run: npm run serve:demo &

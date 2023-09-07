@@ -1,11 +1,11 @@
-require('dotenv/config');
-const { Octokit } = require('@octokit/rest');
-const c = require('picocolors');
-const parseGitUrl = require('git-url-parse');
-const newGithubReleaseUrl = require('new-github-release-url');
-const semver = require('semver');
+import 'dotenv/config';
+import { Octokit } from '@octokit/rest';
+import c from 'picocolors';
+import parseGitUrl from 'git-url-parse';
+import newGithubReleaseUrl from 'new-github-release-url';
+import semver from 'semver';
 
-const { execSync } = require('./child-process');
+import { execSync } from './child-process.mjs';
 
 function createGitHubClient() {
   const { GITHUB_TOKEN } = process.env;
@@ -24,7 +24,7 @@ function createGitHubClient() {
  * @param {Object} [opts]
  * @returns
  */
-function parseGitRepo(remote = 'origin', opts) {
+export function parseGitRepo(remote = 'origin', opts) {
   const args = ['config', '--get', `remote.${remote}.url`];
   const url = execSync('git', args, opts);
 
@@ -35,7 +35,7 @@ function parseGitRepo(remote = 'origin', opts) {
   return parseGitUrl(url);
 }
 
-function createReleaseClient(type) {
+export function createReleaseClient(type) {
   switch (type) {
     // case 'gitlab':
     //   return createGitLabClient();
@@ -51,7 +51,7 @@ function createReleaseClient(type) {
  * @param {{ tags: string[]; releaseNotes: { name: string; notes: string; }[] }} commandProps
  * @param {{ gitRemote: string; execOpts: import('@lerna/child-process').ExecOpts }} opts
  */
-function createRelease(
+export function createRelease(
   client,
   { tag, releaseNote },
   { gitRemote, execOpts },
@@ -104,11 +104,4 @@ function createRelease(
   }
 
   return client.repos.createRelease(releaseOptions);
-}
-
-// exports
-module.exports = {
-  createRelease,
-  createReleaseClient,
-  parseGitRepo,
 }
