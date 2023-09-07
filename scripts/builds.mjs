@@ -1,41 +1,40 @@
 import c from 'picocolors';
-import { exec } from 'child_process';
 import copyfiles from 'copyfiles';
 import { build } from 'esbuild';
 import fs from 'fs-extra';
 import { globSync } from 'glob';
 import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { compile as sassCompile } from 'sass';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
 import { removeImportsPlugin } from './esbuild-plugins.mjs';
+import { spawnStreaming } from './child-process.mjs';
 
 const argv = yargs(hideBin(process.argv)).argv;
 export const BUILD_FORMATS = ['cjs', 'esm'];
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = path.dirname(__filename);
+const projectRootPath = path.join(__dirname, '../');
 
 // when --prod is provided, we'll do a full build of all JS/TS files and also all SASS files
 if (argv.prod) {
-  prodBuild();
+  runProdBuild();
 }
 
-// --test is only used for testing purpose,
-// TODO: this should eventually be removed before the next major release (also remove npm script)
-if (argv.test) {
-  buildTest();
-}
-
-async function prodBuild() {
+/** Run a full Production build */
+export async function runProdBuild() {
   await executeFullBuild();
   await buildAllSassFiles();
   copySassFiles();
-  // execSync('npm run build:types:prod');
 }
 
-async function buildTest() {
-  await buildAllIifeFiles();
-  await executeCjsEsmBuilds();
-  await copySassFiles();
+/** Run a full Production build and also build TS Types */
+export async function runProdBuildWithTypes() {
+  await runProdBuild();
+  // exec('npm run build:types');
+  await spawnStreaming('npm', ['run', 'build:types'], { cwd: projectRootPath });
 }
 
 /**
@@ -177,14 +176,10 @@ function copySassFiles() {
 }
 
 /** build all SASS (.scss) files, from "src/styles", to CSS (.css) */
-export function buildAllSassFiles() {
+export async function buildAllSassFiles() {
   try {
-    return new Promise((resolve) => {
-      exec('npm run sass:build').on('close', (code) => {
-        console.log(`[${c.magenta('SASS')}] Full SASS build completed`);
-        resolve(code);
-      });
-    });
+    await spawnStreaming('npm', ['run', 'sass:build'], { cwd: projectRootPath });
+    console.log(`[${c.magenta('SASS')}] Full SASS build completed`);
   } catch (err) {
     // don't do anything when an error occured, this is to avoid watch mode to crash on errors
     // console.error('SASS error: ', JSON.stringify(err));

@@ -1,51 +1,53 @@
-const c = require('picocolors');
-const fs = require('fs-extra');
-const readline = require('readline');
-const path = require('path');
-const semver = require('semver');
-const yargs = require('yargs');
+import c from 'picocolors';
+import fs from 'fs-extra';
+import { loadJsonFileSync } from 'load-json-file';
+import readline from 'readline';
+import { fileURLToPath } from 'node:url';
+import { dirname, join, resolve as pathResolve } from 'node:path';
+import { rimrafSync } from 'rimraf';
+import semver from 'semver';
+import yargs from 'yargs';
+import { hideBin } from 'yargs/helpers';
 
-const changelogUtil = require('./changelog.js');
-const gitUtils = require('./git-utils.js');
-const githubRelease = require('./github-release.js');
-const minify = require('./minify.js');
-const npmUtils = require('./npm-utils.js');
-const pkg = require('../package.json');
+import { updateChangelog } from './changelog.mjs';
+import { gitAdd, gitCommit, gitTag, gitTagPushRemote, gitPushToCurrentBranch, hasUncommittedChanges } from './git-utils.mjs';
+import { createRelease, createReleaseClient, parseGitRepo } from './github-release.mjs';
+import { publishPackage, syncLockFile } from './npm-utils.mjs';
+import { runProdBuildWithTypes } from './builds.mjs';
 
 const TAG_PREFIX = '';
 const VERSION_PREFIX = 'v';
 const RELEASE_COMMIT_MSG = 'chore(release): publish version %s';
 
-const argv = yargs.argv;
-const options = argv;
 const cwd = process.cwd();
-
-const childProcess = require('./child-process.js');
-
+const argv = yargs(hideBin(process.argv)).argv;
+const __filename = fileURLToPath(import.meta.url);
+const __dirname = dirname(__filename);
+const pkg = loadJsonFileSync(join(__dirname, '../', 'package.json'));
 
 /**
  * Main entry, this script will execute the following steps
  * 1. Ask for version bump type
- * 2. Bump version in "package.json" and "slick.grid.js"
- * 3. Run minify script and add the new version number to each minified file headers
- * 4. Create/Update changelog.md
- * 5. Update (sync) npm lock file with new version
- * 6. Add all changed files to Git ("package.json", "slick.grid.js", "CHANGELOG.md" and all minified files)
- * 7. Create git tag of the new release
- * 8. Commit all files changed to git
- * 9. Push git tags and all commits to origin
- * 10. NPM publish
- * 11. Create GitHub Release
+ * 2. Delete (empty) dist folder
+ * 3. Bump version in "package.json" and "slick.grid.ts"
+ * 4. Run a prod build (TS + SASS)
+ * 5. Create/Update changelog.md
+ * 6. Update (sync) npm lock file with new version
+ * 7. Add all changed files to Git ("package.json", "slick.grid.ts", "CHANGELOG.md" and all minified files)
+ * 8. Create git tag of the new release
+ * 9. Commit all files changed to git
+ * 10. Push git tags and all commits to origin
+ * 11. NPM publish
+ * 12. Create GitHub Release
  */
 (async function main() {
-  let dryRunPrefix = options.dryRun ? '[dry-run]' : '';
+  let dryRunPrefix = argv.dryRun ? '[dry-run]' : '';
   let newTag;
-  if (options.dryRun) {
+  if (argv.dryRun) {
     console.info(`-- ${c.bgMagenta('DRY-RUN')} mode --`);
   }
-  await gitUtils.hasUncommittedChanges(options);
-  const repo = githubRelease.parseGitRepo();
-
+  await hasUncommittedChanges(argv);
+  const repo = parseGitRepo();
 
   console.log(`🚀 Let's create a new release for "${repo.owner}/${repo.name}" (currently at ${pkg.version})\n`);
 
@@ -63,7 +65,7 @@ const childProcess = require('./child-process.js');
   for (const bumpType of bumpTypes) {
     versionIncrements.push({
       key: bumpType.bump,
-      name: `${bumpType.bump} (${c.bold.magenta(bumpVersion(bumpType.bump, false))}) ${bumpType.desc}`,
+      name: `${bumpType.bump} (${c.bold(c.magenta(bumpVersion(bumpType.bump, false)))}) ${bumpType.desc}`,
       value: bumpType.bump
     });
   }
@@ -72,10 +74,11 @@ const childProcess = require('./child-process.js');
     { key: 'q', name: 'QUIT', value: 'quit' }
   );
 
+  const defaultIdx = versionIncrements.length - 1;
   const whichBumpType = await promptConfirmation(
     `${c.bgMagenta(dryRunPrefix)} Select increment to apply (next version)`,
     versionIncrements,
-    defaultIndex = versionIncrements.length - 1
+    defaultIdx
   );
 
   if (whichBumpType !== 'quit') {
@@ -92,67 +95,64 @@ const childProcess = require('./child-process.js');
     newTag = `${TAG_PREFIX}${newVersion}`;
     console.log(`${c.bgMagenta(dryRunPrefix)} Bumping new version to "${newTag}"`);
 
-    // 2. update package.json & slick.grid.js with new version
+    // 2. delete (empty) dist folder
+    console.log('Emptying dist folder');
+    rimrafSync('dist');
+
+    // 3. update package.json & slick.grid.ts with new version
     await updatePackageVersion(newVersion);
     await updateSlickGridVersion(newVersion);
 
-    // 3. minify JS/CSS files
-    const changedFiles = await minify.execute(newVersion);
-    changedFiles.add(path.resolve('./package.json'));
-    changedFiles.add(path.resolve('./slick.grid.js'));
+    // 4. run a prod build (TS + SASS)
+    await runProdBuildWithTypes();
 
-    // 4. Create/Update changelog.md
-    const { location: changelogPath, newEntry: newChangelogEntry } = await changelogUtil.updateChangelog({
+    // 5. Create/Update changelog.md
+    const { newEntry: newChangelogEntry } = await updateChangelog({
       infile: './CHANGELOG.md',
       preset: 'angular',
       tagPrefix: TAG_PREFIX,
     }, newVersion);
-    changedFiles.add(changelogPath);
 
-    // 5. Update (sync) npm lock file
-    await npmUtils.syncLockFile({ cwd, dryRun: options.dryRun });
-    changedFiles.add(path.resolve('./package-lock.json'));
+    // 6. Update (sync) npm lock file
+    await syncLockFile({ cwd, dryRun: argv.dryRun });
 
-    // 6. "git add" all changed files
-    options.dryRun
-      ? await gitUtils.gitAdd(null, { cwd, dryRun: options.dryRun })
-      : await gitUtils.gitAdd(Array.from(changedFiles), { cwd, dryRun: options.dryRun });
+    // 7. "git add ." all changed files
+    await gitAdd(null, { cwd, dryRun: argv.dryRun });
 
     // show git changes to user so he can confirm the changes are ok
     const shouldCommitChanges = await promptConfirmation(`${c.bgMagenta(dryRunPrefix)} Ready to tag version "${newTag}" and push commits to remote? Choose No to cancel.`);
     if (shouldCommitChanges) {
-      // 7. create git tag of new release
-      await gitUtils.gitTag(newTag, { cwd, dryRun: options.dryRun });
+      // 8. create git tag of new release
+      await gitTag(newTag, { cwd, dryRun: argv.dryRun });
 
-      // 8. Commit all files changed to git
-      await gitUtils.gitCommit(RELEASE_COMMIT_MSG.replace(/%s/g, newVersion), { cwd, dryRun: options.dryRun });
+      // 9. Commit all files changed to git
+      await gitCommit(RELEASE_COMMIT_MSG.replace(/%s/g, newVersion), { cwd, dryRun: argv.dryRun });
 
-      // 9. Push git tags and all commits to origin
-      await gitUtils.gitTagPushRemote(newTag, 'origin', { cwd, dryRun: options.dryRun });
-      await gitUtils.gitPushToCurrentBranch('origin', { cwd, dryRun: options.dryRun });
+      // 10. Push git tags and all commits to origin
+      await gitTagPushRemote(newTag, 'origin', { cwd, dryRun: argv.dryRun });
+      await gitPushToCurrentBranch('origin', { cwd, dryRun: argv.dryRun });
 
-      // 10. NPM publish
-      const shouldPublish = await promptConfirmation(`${c.bgMagenta(dryRunPrefix)} Are you ready to publish "${newTag}" to npm?`);
-      if (shouldPublish) {
+      // 11. NPM publish
+      if (await promptConfirmation(`${c.bgMagenta(dryRunPrefix)} Are you ready to publish "${newTag}" to npm?`)) {
         let publishTagName;
         if (whichBumpType.includes('alpha')) {
           publishTagName = 'alpha';
         } else if (whichBumpType.includes('beta')) {
           publishTagName = 'beta';
         }
-        await npmUtils.publishPackage(publishTagName, { cwd, dryRun: options.dryRun });
-        console.log(`${c.bgMagenta(dryRunPrefix)} 🔗 https://www.npmjs.com/package/${pkg.name} 📦 (npm)`.trim())
+        await publishPackage(publishTagName, { cwd, dryRun: argv.dryRun });
+        console.log(`${c.bgMagenta(dryRunPrefix)} 📦 Published to NPM - 🔗 https://www.npmjs.com/package/${pkg.name}`.trim())
       }
 
-      // 11. Create GitHub Release
-      if (options.createRelease) {
+      // 12. Create GitHub Release
+      if (argv.createRelease) {
         const releaseNote = { name: pkg.name, notes: newChangelogEntry };
-        const releaseClient = githubRelease.createReleaseClient(options.createRelease);
-        await githubRelease.createRelease(
+        const releaseClient = createReleaseClient(argv.createRelease);
+        await createRelease(
           releaseClient,
           { tag: newTag, releaseNote },
-          { gitRemote: 'origin', execOpts: { cwd: process.cwd() } },
-          options.dryRun
+          { gitRemote: 'origin', execOpts: { cwd } },
+          argv.dryRun
         );
       }
 
@@ -198,10 +198,10 @@ function bumpVersion(bump) {
 function updatePackageVersion(newVersion) {
   pkg.version = newVersion;
 
-  if (options.dryRun) {
+  if (argv.dryRun) {
     console.log(`${c.magenta('[dry-run]')}`);
   }
-  fs.writeJsonSync(path.resolve(__dirname, '../package.json'), pkg, { spaces: 2 });
+  fs.writeJsonSync(pathResolve(__dirname, '../package.json'), pkg, { spaces: 2 });
 
   console.log('-- updating "package.json" --');
   console.log(` "version": "${pkg.version}"`);
@@ -213,21 +213,21 @@ function updatePackageVersion(newVersion) {
  * @param {String} newVersion
  */
 function updateSlickGridVersion(newVersion) {
-  const slickGridJs = fs.readFileSync(path.resolve(__dirname, '../slick.grid.js'), { encoding: 'utf8', flag: 'r' });
+  const slickGridFileContent = fs.readFileSync(pathResolve(__dirname, '../src/slick.grid.ts'), { encoding: 'utf8', flag: 'r' });
 
   // replaces version in 2 areas (a version could be "2.4.45" or "2.4.45-alpha.0"):
   // 1- in top comments, ie: SlickGrid v2.4.45
   // 2- in public API definitions, ie: "slickGridVersion": "2.4.45",
-  const updatedSlickGridJs = slickGridJs
+  const updatedSlickGridJs = slickGridFileContent
     .replace(/(SlickGrid v)([0-9-.alpha|beta]*)/gi, `$1${newVersion}`)
-    .replace(/("slickGridVersion"): "([0-9\.]*([\-\.]?alpha[\-\.]?|[\-\.]?beta[\-\.]?)?[0-9\-\.]*)"/gi, `$1: "${newVersion}"`);
+    .replace(/(slickGridVersion) = '([0-9\.]*([\-\.]?alpha[\-\.]?|[\-\.]?beta[\-\.]?)?[0-9\-\.]*)'/gi, `$1 = '${newVersion}'`);
 
-  if (options.dryRun) {
+  if (argv.dryRun) {
     console.log(`${c.magenta('[dry-run]')}`);
   }
-  fs.writeFileSync(path.resolve(__dirname, '../slick.grid.js'), updatedSlickGridJs);
+  fs.writeFileSync(pathResolve(__dirname, '../src/slick.grid.ts'), updatedSlickGridJs);
 
-  console.log('-- updating "slick.grid.js" --');
+  console.log('-- updating "src/slick.grid.ts" --');
   console.log(` SlickGrid ${VERSION_PREFIX}${newVersion}`)
   console.log('----------------------------\n');
 }
@@ -268,15 +268,15 @@ async function promptConfirmation(message, choices, defaultIndex) {
 
   // display propmpt message and choices
   console.log(message.trim());
-  for (var i=0; i<choices.length; i++) {
-    console.log(' ' + (i+1) + ' - ' + choices[i].name);
+  for (var i = 0; i < choices.length; i++) {
+    console.log(' ' + (i + 1) + ' - ' + choices[i].name);
   }
 
   // get and process input
-  const input = await getConsoleInput("Enter value "  + " (default " + (defaultIndex + 1) + ') ');
+  const input = await getConsoleInput("Enter value " + " (default " + (defaultIndex + 1) + ') ');
   var index = !isNaN(input) && !isNaN(parseFloat(input)) ? +input - 1 : defaultIndex;
   if (index < 0 || index >= choices.length) {
-     throw Error('The input ' + input + ' could not be matched to a selection');
+    throw Error('The input ' + input + ' could not be matched to a selection');
   }
   return choices[index].value;
 }

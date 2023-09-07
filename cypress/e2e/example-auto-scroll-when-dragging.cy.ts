@@ -1,6 +1,6 @@
 /// <reference types="cypress" />
 
-import { getScrollDistanceWhenDragOutsideGrid } from '../support/drag'
+import { getScrollDistanceWhenDragOutsideGrid } from '../support/drag';
 
 describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
   // NOTE:  everywhere there's a * 2 is because we have a top+bottom (frozen rows) containers even after Unfreeze Columns/Rows
@@ -10,7 +10,7 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
 
   const fullTitles = ['#', 'Title', 'Duration', '% Complete', 'Start', 'Finish', 'Cost', 'Effort Driven'];
 
-  for (var i = 0; i < 30; i++) {
+  for (let i = 0; i < 30; i++) {
     fullTitles.push("Mock" + i);
   }
 
