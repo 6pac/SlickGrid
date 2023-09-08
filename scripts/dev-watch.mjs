@@ -71,6 +71,7 @@ const argv = yargs(hideBin(process.argv)).argv;
       port: 8080,
       notify: false,
       browser: argv.serve ? 'google chrome' : 'default',
+      ghostMode: !argv.serve,
       watchTask: true,
       online: false,
       open: argv.open,
