@@ -117,8 +117,8 @@
     "npm": ">=8.0.0"
   },
   "overrides": {
-    "@4tw/cypress-drag-drop@": {
-      "cypress": "*"
+    "@4tw/cypress-drag-drop": {
+      "cypress": "$cypress"
     }
   }
 }
