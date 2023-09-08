@@ -1,5 +1,3 @@
-/// <reference types="Cypress" />
-
 import '@4tw/cypress-drag-drop';
 
 describe('Example - Grid Menu', () => {

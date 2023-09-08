@@ -1,5 +1,3 @@
-/// <reference types="Cypress" />
-
 describe('Example - Row Grouping Titles', () => {
     const fullPreTitles = ['', 'Common Factor', 'Period', 'Analysis'];
     const fullTitles = ['#', 'Title', 'Duration', 'Start', 'Finish', '% Complete', 'Effort Driven'];

@@ -1,4 +1,3 @@
-/// <reference types='cypress' />
 describe('Example - Grouping & Aggregators', { retries: 1 }, () => {
     // NOTE:  everywhere there's a * 2 is because we have a top+bottom (frozen rows) containers even after Unfreeze Columns/Rows
     const GRID_ROW_HEIGHT = 25;

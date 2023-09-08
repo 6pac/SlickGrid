@@ -1,5 +1,3 @@
-/// <reference types="Cypress" />
-
 describe('Example - Optimizing Updates', () => {
   const titles = ['#', 'Severity', 'Time', 'Message'];
 
@@ -34,7 +32,7 @@ describe('Example - Optimizing Updates', () => {
 
     cy.get('#myGrid')
       .find('.slick-row')
-      .each(($child, index) => {
+      .each(($child) => {
           const message = $child.find('.cell-message').text();
           const number = parseInt(message.substring("Log Entry ".length));
           expect(number).to.be.lessThan(1000)
@@ -46,7 +44,7 @@ describe('Example - Optimizing Updates', () => {
 
     cy.get('#myGrid')
       .find('.slick-row')
-      .each(($child, index) => {
+      .each(($child) => {
           const message = $child.find('.cell-message').text();
           const number = parseInt(message.substring("Log Entry ".length));
           expect(number).to.be.greaterThan(90000)
@@ -58,7 +56,7 @@ describe('Example - Optimizing Updates', () => {
 
     cy.get('#myGrid')
       .find('.slick-row')
-      .each(($child, index) => {
+      .each(($child) => {
           const message = $child.find('.cell-message').text();
           const number = parseInt(message.substring("Log Entry ".length));
           expect(number).to.be.lessThan(1000)
@@ -70,7 +68,7 @@ describe('Example - Optimizing Updates', () => {
 
     cy.get('#myGrid')
       .find('.slick-row')
-      .each(($child, index) => {
+      .each(($child) => {
           const message = $child.find('.cell-message').text();
           const number = parseInt(message.substring("Log Entry ".length));
           expect(number).to.be.greaterThan(90000)
@@ -85,16 +83,16 @@ describe('Example - Optimizing Updates', () => {
       .contains('(inefficient)')
       .click();
     cy.get('#duration').should('not.be.empty').then($duration => {
-        let inEfficientTime = parseInt($duration.text());
+      const inEfficientTime = parseInt($duration.text());
 
-        cy.get('#duration').invoke('text', '').should('be.empty');
+      cy.get('#duration').invoke('text', '').should('be.empty');
       cy.get('.options-panel button')
-          .contains('(efficient)')
-          .click();
-        cy.get('#duration').should('not.be.empty').then($duration2 => {
-            let efficientTime = parseInt($duration2.text());
-            expect(efficientTime).to.be.lessThan(inEfficientTime / 2);
-        });
+        .contains('(efficient)')
+        .click();
+      cy.get('#duration').should('not.be.empty').then($duration2 => {
+        const efficientTime = parseInt($duration2.text());
+        expect(efficientTime).to.be.lessThan(inEfficientTime / 2);
+      });
     });
 
   });

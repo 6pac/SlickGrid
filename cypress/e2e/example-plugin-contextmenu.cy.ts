@@ -1,5 +1,3 @@
-/// <reference types="Cypress" />
-
 describe('Example - Context Menu & Cell Menu', () => {
   const fullTitles = ['#', 'Title', '% Complete', 'Start', 'Finish', 'Priority', 'Effort Driven', 'Action'];
 

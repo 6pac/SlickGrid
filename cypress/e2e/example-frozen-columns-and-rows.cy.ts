@@ -1,5 +1,3 @@
-/// <reference types="cypress" />
-
 describe('Example - Frozen Columns & Rows', { retries: 1 }, () => {
   // NOTE:  everywhere there's a * 2 is because we have a top+bottom (frozen rows) containers even after Unfreeze Columns/Rows
 

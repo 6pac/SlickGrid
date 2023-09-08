@@ -26,6 +26,19 @@
 import '@4tw/cypress-drag-drop';
 import { convertPosition } from './common';
 
+declare global {
+  // eslint-disable-next-line @typescript-eslint/no-namespace
+  namespace Cypress {
+    interface Chainable {
+      // triggerHover: (elements: NodeListOf<HTMLElement>) => void;
+      convertPosition(viewport: string): Chainable<HTMLElement | JQuery<HTMLElement> | { x: string; y: string; }>;
+      getCell(row: number, col: number, viewport?: string, options?: { parentSelector?: string, rowHeight?: number; }): Chainable<HTMLElement | JQuery<HTMLElement>>;
+      restoreLocalStorage(): Chainable<HTMLElement | JQuery<HTMLElement>>;
+      saveLocalStorage(): Chainable<HTMLElement | JQuery<HTMLElement>>;
+    }
+  }
+}
+
 // convert position like 'topLeft' to the object { x: 'left|right', y: 'top|bottom' }
 Cypress.Commands.add('convertPosition', (viewport = 'topLeft') => cy.wrap(convertPosition(viewport)))
 
@@ -37,7 +50,7 @@ Cypress.Commands.add('getCell', (row, col, viewport = 'topLeft', { parentSelecto
   return cy.get(`${parentSelector} ${canvasSelectorX}${canvasSelectorY} [style="top:${row * rowHeight}px"] > .slick-cell:nth(${col})`);
 });
 
-let LOCAL_STORAGE_MEMORY = {};
+const LOCAL_STORAGE_MEMORY = {};
 
 Cypress.Commands.add('saveLocalStorage', () => {
   Object.keys(localStorage).forEach(key => {

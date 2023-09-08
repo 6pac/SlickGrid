@@ -1,5 +1,3 @@
-/// <reference types="Cypress" />
-
 describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
     const fullTitles = ['', '', '', '#', 'Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
 

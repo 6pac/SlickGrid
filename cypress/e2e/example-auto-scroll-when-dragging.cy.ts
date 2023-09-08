@@ -1,5 +1,3 @@
-/// <reference types="cypress" />
-
 import { getScrollDistanceWhenDragOutsideGrid } from '../support/drag';
 
 describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
@@ -103,7 +101,7 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
 
       return cy.get(viewportSelector).invoke('scrollTop').then(scrollAfter => {
         cy.dragEnd(selector);
-        var interval = performance.now() - start;
+        const interval = performance.now() - start;
         expect(scrollBefore).to.be.lessThan(scrollAfter);
         cy.get(viewportSelector).scrollTo(0, 0, { ensureScrollable: false });
         return cy.wrap(interval);

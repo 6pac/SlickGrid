@@ -1,5 +1,3 @@
-/// <reference types="cypress" />
-
 describe('Example - Checkbox Header Row', () => {
   const titles = ['', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
   let selectedIdsCount = 0;
@@ -294,11 +292,11 @@ describe('Example - Checkbox Header Row', () => {
 
     cy.get('.slick-headerrow-column')
       .children()
-      .each(($child, index) => expect($child.text()).to.eq(''));
+      .each(($child) => expect($child.text()).to.eq(''));
 
     cy.get('#idsCount')
       .then($elm => {
-        let newSelectedIdsCount = +$elm[0].textContent;
+        const newSelectedIdsCount = +$elm[0].textContent;
         expect(newSelectedIdsCount).to.be.eq(75);
       });
   });
@@ -308,14 +306,14 @@ describe('Example - Checkbox Header Row', () => {
 
     cy.get('.slick-headerrow-column')
       .children()
-      .each(($child, index) => expect($child.text()).to.eq(''));
+      .each(($child) => expect($child.text()).to.eq(''));
 
     cy.get('#filter-checkbox-selectall-container input[type=checkbox]')
       .click({ force: true });
 
     cy.get('#rowsCount')
       .then($elm => {
-        let newSelectedRowsCount = +$elm[0].textContent;
+        const newSelectedRowsCount = +$elm[0].textContent;
         expect(newSelectedRowsCount).to.be.eq(0);
       });
 
@@ -351,7 +349,7 @@ describe('Example - Checkbox Header Row', () => {
 
     cy.get('.slick-headerrow-column')
       .children()
-      .each(($child, index) => expect($child.text()).to.eq(''));
+      .each(($child) => expect($child.text()).to.eq(''));
 
     cy.get('#idsCount')
       .then($elm => {
@@ -361,7 +359,7 @@ describe('Example - Checkbox Header Row', () => {
 
     cy.get('#rowsCount')
       .then($elm => {
-        let newSelectedRowsCount = +$elm[0].textContent;
+        const newSelectedRowsCount = +$elm[0].textContent;
         expect(newSelectedRowsCount).not.to.be.eq(newSelectedIdsCount);
       });
 

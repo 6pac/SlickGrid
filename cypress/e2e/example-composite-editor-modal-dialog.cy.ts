@@ -1,5 +1,3 @@
-/// <reference types="cypress" />
-
 describe('Example - Composite Editor Modal with Create/Edit/Mass-Update/Mass-Selection', () => {
   const GRID_ROW_HEIGHT = 25;
   const titles = ['', 'Title', 'Description', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];

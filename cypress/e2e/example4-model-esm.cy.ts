@@ -1,5 +1,3 @@
-/// <reference types="cypress" />
-
 describe('Example 4 - Model (ESM)', () => {
   const titles = ['#', 'Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
 
