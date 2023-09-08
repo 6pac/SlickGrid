@@ -51,7 +51,7 @@ jobs:
         run: npm run build:prod
 
       - name: Start HTTP Server
-        run: npm run serve:demo &
+        run: npm run serve &
 
       - name: Run Cypress E2E tests
         uses: cypress-io/github-action@v5
