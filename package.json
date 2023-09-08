@@ -60,7 +60,6 @@
     "sass:build": "sass src/styles:dist/styles/css --style=compressed --quiet-deps --no-source-map",
     "postsass:build": "postcss dist/styles/css/**/* --dir dist/styles/css --base dist/styles/css --no-map --use cssnano --use autoprefixer --style=compressed",
     "sass:copy": "copyfiles -f src/styles/*.scss dist/styles/sass",
-    "serve:demo": "http-server ./ -p 8080 -a localhost -s",
     "preview:publish": "clean-publish --without-publish --temp-dir tmp_publish",
     "publish": "clean-publish"
   },
@@ -90,7 +89,6 @@
     "fs-extra": "^11.1.1",
     "git-url-parse": "^13.1.0",
     "glob": "^10.3.4",
-    "http-server": "^14.1.1",
     "inquirer": "^9.2.10",
     "load-json-file": "^7.0.1",
     "new-github-release-url": "^2.0.0",
