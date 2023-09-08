@@ -62,3 +62,4 @@ export declare class SlickCrossGridRowMoveManager {
     usabilityOverride(overrideFn: UsabilityOverrideFn): void;
     isHandlerColumn(columnIndex: number | string): boolean;
 }
+//# sourceMappingURL=slick.crossgridrowmovemanager.d.ts.map

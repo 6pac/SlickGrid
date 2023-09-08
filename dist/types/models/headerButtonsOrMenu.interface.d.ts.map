@@ -1,0 +1,1 @@
+{"version":3,"file":"headerButtonsOrMenu.interface.d.ts","sourceRoot":"","sources":["../../../src/models/headerButtonsOrMenu.interface.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,gBAAgB,EAAE,MAAM,8BAA8B,CAAC;AACrE,OAAO,KAAK,EAAE,eAAe,EAAE,MAAM,6BAA6B,CAAC;AAEnE,MAAM,WAAW,mBAAmB;IAClC,4CAA4C;IAC5C,OAAO,CAAC,EAAE,KAAK,CAAC,gBAAgB,CAAC,CAAC;IAClC,IAAI,CAAC,EAAE,eAAe,CAAC;CACxB"}

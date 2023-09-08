@@ -36,3 +36,4 @@ export interface CheckboxSelectorOption {
     /** Override the logic for showing (or not) the expand icon (use case example: only every 2nd row is expandable) */
     selectableOverride?: UsabilityOverrideFn;
 }
+//# sourceMappingURL=checkboxSelectorOption.interface.d.ts.map

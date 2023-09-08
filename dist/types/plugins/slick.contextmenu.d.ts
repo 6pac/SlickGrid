@@ -178,3 +178,4 @@ export declare class SlickContextMenu implements Plugin {
      */
     protected runOverrideFunctionWhenExists<T = any>(overrideFn: ((args: any) => boolean) | undefined, args: T): boolean;
 }
+//# sourceMappingURL=slick.contextmenu.d.ts.map

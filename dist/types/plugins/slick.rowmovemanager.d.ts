@@ -55,3 +55,4 @@ export declare class SlickRowMoveManager {
     usabilityOverride(overrideFn: UsabilityOverrideFn): void;
     isHandlerColumn(columnIndex: number | string): boolean;
 }
+//# sourceMappingURL=slick.rowmovemanager.d.ts.map

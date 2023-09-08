@@ -35,3 +35,4 @@ export interface CellRangeSelectorOption {
 }
 export type CSSStyleDeclarationReadonly = 'length' | 'parentRule' | 'getPropertyPriority' | 'getPropertyValue' | 'item' | 'removeProperty' | 'setProperty';
 export type CSSStyleDeclarationWritable = keyof Omit<CSSStyleDeclaration, CSSStyleDeclarationReadonly>;
+//# sourceMappingURL=cellRange.interface.d.ts.map

@@ -28,3 +28,4 @@ export interface ResizerOption {
     /** padding on the right side of the grid (pixels) */
     rightPadding?: number;
 }
+//# sourceMappingURL=resizerOption.interface.d.ts.map

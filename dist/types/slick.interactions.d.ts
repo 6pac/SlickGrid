@@ -54,3 +54,4 @@ export declare function MouseWheel(options: MouseWheelOption): {
 export declare function Resizable(options: ResizableOption): {
     destroy: () => void;
 };
+//# sourceMappingURL=slick.interactions.d.ts.map

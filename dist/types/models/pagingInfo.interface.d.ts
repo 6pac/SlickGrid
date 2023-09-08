@@ -10,3 +10,4 @@ export interface PagingInfo {
     /** DataView object */
     dataView: any;
 }
+//# sourceMappingURL=pagingInfo.interface.d.ts.map

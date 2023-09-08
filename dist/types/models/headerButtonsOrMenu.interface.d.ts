@@ -5,3 +5,4 @@ export interface HeaderButtonsOrMenu {
     buttons?: Array<HeaderButtonItem>;
     menu?: HeaderMenuItems;
 }
+//# sourceMappingURL=headerButtonsOrMenu.interface.d.ts.map

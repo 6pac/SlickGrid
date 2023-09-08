@@ -201,3 +201,4 @@ export declare class SlickRowDetailView {
      */
     expandableOverride(overrideFn: UsabilityOverrideFn): void;
 }
+//# sourceMappingURL=slick.rowdetailview.d.ts.map

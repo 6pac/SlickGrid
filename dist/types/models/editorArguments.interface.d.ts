@@ -27,3 +27,4 @@ export interface EditorArguments {
     /** Commit changes callback method that will execute after user commits the changes */
     commitChanges: () => void;
 }
+//# sourceMappingURL=editorArguments.interface.d.ts.map

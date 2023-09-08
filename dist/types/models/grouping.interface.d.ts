@@ -29,3 +29,4 @@ export interface Grouping<T = any> {
     /** defaults to true, so far only used internally by SlickDraggableGrouping */
     sortAsc?: boolean;
 }
+//# sourceMappingURL=grouping.interface.d.ts.map

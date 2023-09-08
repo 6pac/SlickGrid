@@ -4,3 +4,4 @@ export interface GroupingComparerItem {
     /** Grouped Comparer Value */
     value: any;
 }
+//# sourceMappingURL=groupingComparerItem.interface.d.ts.map

@@ -109,3 +109,4 @@ export declare class SlickResizer {
     protected resizeGridCallback(newSizes?: GridSize, event?: Event | null): GridSize;
     protected resizeGridWithDimensions(newSizes?: GridSize): GridSize | undefined;
 }
+//# sourceMappingURL=slick.resizer.d.ts.map

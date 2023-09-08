@@ -7,3 +7,4 @@ export interface ElementPosition {
     width: number;
     visible: boolean;
 }
+//# sourceMappingURL=elementPosition.interface.d.ts.map

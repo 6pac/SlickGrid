@@ -12,3 +12,4 @@ export interface MenuCallbackArgs<T = any> {
     /** Cell Data Context(data object) */
     dataContext?: T;
 }
+//# sourceMappingURL=menuCallbackArgs.interface.d.ts.map

@@ -23,3 +23,4 @@ export declare class SlickCellRangeDecorator implements Plugin {
     hide(): void;
     show(range: CellRange): HTMLDivElement;
 }
+//# sourceMappingURL=slick.cellrangedecorator.d.ts.map

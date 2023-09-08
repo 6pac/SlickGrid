@@ -4,3 +4,4 @@ export interface Plugin {
     init: (grid: SlickGridModel) => void;
     destroy: () => void;
 }
+//# sourceMappingURL=plugin.interface.d.ts.map

@@ -6,7 +6,8 @@ export interface DataViewOption {
     groupItemMetadataProvider: SlickGroupItemMetadataProvider_ | null;
     inlineFilters: boolean;
 }
-type FilterFn<T> = (a: T, b: T) => boolean;
+export type FilterFn<T> = (a: T, b: T) => boolean;
+export type DataIdType = number | string;
 export type SlickDataItem = SlickNonDataItem | SlickGroup_ | SlickGroupTotals_ | any;
 /**
    * A sample Model implementation.
@@ -19,17 +20,17 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     protected idProperty: string;
     protected items: TData[];
     protected rows: TData[];
-    protected idxById: Map<string | number, number>;
+    protected idxById: Map<DataIdType, number>;
     protected rowsById: {
-        [id: string]: number;
+        [id: DataIdType]: number;
     } | undefined;
     protected filter: FilterFn<TData> | null;
     protected updated: ({
-        [id: number | string]: boolean;
+        [id: DataIdType]: boolean;
     }) | null;
     protected suspend: boolean;
     protected isBulkSuspend: boolean;
-    protected bulkDeleteIds: Map<string | number, boolean>;
+    protected bulkDeleteIds: Map<DataIdType, boolean>;
     protected sortAsc: boolean | undefined;
     protected fastSortField?: string | null | (() => string);
     protected sortComparer: ((a: TData, b: TData) => number);
@@ -51,7 +52,7 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     protected groups: SlickGroup_[];
     protected toggledGroupsByLevel: any[];
     protected groupingDelimiter: string;
-    protected selectedRowIds: Array<number | string>;
+    protected selectedRowIds: DataIdType[];
     protected preSelectedRowIdsChangeFn?: Function;
     protected pagesize: number;
     protected pagenum: number;
@@ -128,39 +129,39 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     /** Get an item in the DataView by its row index */
     getItemByIdx<T extends TData>(i: number): T;
     /** Get row index in the DataView by its Id */
-    getIdxById(id: number | string): number | undefined;
+    getIdxById(id: DataIdType): number | undefined;
     protected ensureRowsByIdCache(): void;
     /** Get row number in the grid by its item object */
     getRowByItem(item: TData): number | undefined;
     /** Get row number in the grid by its Id */
-    getRowById(id: number | string): number | undefined;
+    getRowById(id: DataIdType): number | undefined;
     /** Get an item in the DataView by its Id */
-    getItemById<T extends TData>(id: number | string): T;
+    getItemById<T extends TData>(id: DataIdType): T;
     /** From the items array provided, return the mapped rows */
     mapItemsToRows(itemArray: TData[]): number[];
     /** From the Ids array provided, return the mapped rows */
-    mapIdsToRows(idArray: Array<number | string>): number[];
+    mapIdsToRows(idArray: DataIdType[]): number[];
     /** From the rows array provided, return the mapped Ids */
-    mapRowsToIds(rowArray: number[]): (string | number)[];
+    mapRowsToIds(rowArray: number[]): DataIdType[];
     /**
      * Performs the update operations of a single item by id without
      * triggering any events or refresh operations.
      * @param id The new id of the item.
      * @param item The item which should be the new value for the given id.
      */
-    updateSingleItem(id: number | string, item: TData): void;
+    updateSingleItem(id: DataIdType, item: TData): void;
     /**
      * Updates a single item in the data view given the id and new value.
      * @param id The new id of the item.
      * @param item The item which should be the new value for the given id.
      */
-    updateItem<T extends TData>(id: number | string, item: T): void;
+    updateItem<T extends TData>(id: DataIdType, item: T): void;
     /**
      * Updates multiple items in the data view given the new ids and new values.
      * @param id {Array} The array of new ids which is in the same order as the items.
      * @param newItems {Array} The new items that should be set in the data view for the given ids.
      */
-    updateItems<T extends TData>(ids: Array<number | string>, newItems: T[]): void;
+    updateItems<T extends TData>(ids: DataIdType[], newItems: T[]): void;
     /**
      * Inserts a single item into the data view at the given position.
      * @param insertBefore {Number} The 0-based index before which the item should be inserted.
@@ -187,12 +188,12 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
      * Deletes a single item identified by the given id from the data view.
      * @param {String|Number} id The id identifying the object to delete.
      */
-    deleteItem(id: number | string): void;
+    deleteItem(id: DataIdType): void;
     /**
      * Deletes multiple item identified by the given ids from the data view.
      * @param {Array} ids The ids of the items to delete.
      */
-    deleteItems(ids: Array<number | string>): void;
+    deleteItems(ids: DataIdType[]): void;
     /** Add an item in a sorted dataset (a Sort function must be defined) */
     sortedAddItem(item: TData): void;
     /** Update an item in a sorted dataset (a Sort function must be defined) */
@@ -283,7 +284,7 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
      * Get all selected IDs
      * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
      */
-    getAllSelectedIds(): (string | number)[];
+    getAllSelectedIds(): DataIdType[];
     /**
      * Get all selected filtered IDs (similar to "getAllSelectedIds" but only return filtered data)
      * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
@@ -387,4 +388,4 @@ export declare const Aggregators: {
     Sum: typeof SumAggregator;
     Count: typeof CountAggregator;
 };
-export {};
+//# sourceMappingURL=slick.dataview.d.ts.map

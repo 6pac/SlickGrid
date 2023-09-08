@@ -20,3 +20,4 @@ export declare const Formatters: {
     Checkmark: Formatter;
     Checkbox: Formatter;
 };
+//# sourceMappingURL=slick.formatters.d.ts.map

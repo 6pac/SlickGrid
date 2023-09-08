@@ -18,3 +18,4 @@ export interface onGridMenuColumnsChangedCallbackArgs extends GridMenuEventBaseC
     /** last command, are we showing or not the column? */
     showing: boolean;
 }
+//# sourceMappingURL=gridMenu.interface.d.ts.map

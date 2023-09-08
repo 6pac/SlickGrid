@@ -172,3 +172,4 @@ export declare class SlickCellMenu implements Plugin {
      */
     protected runOverrideFunctionWhenExists<T = any>(overrideFn: ((args: any) => boolean) | undefined, args: T): boolean;
 }
+//# sourceMappingURL=slick.cellmenu.d.ts.map

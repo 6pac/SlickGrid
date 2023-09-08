@@ -32,3 +32,4 @@ export declare class SlickCellSelectionModel {
     protected handleActiveCellChange(_e: Event, args: OnActiveCellChangedEventArgs): void;
     protected handleKeyDown(e: KeyboardEvent): void;
 }
+//# sourceMappingURL=slick.cellselectionmodel.d.ts.map

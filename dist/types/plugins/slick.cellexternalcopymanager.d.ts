@@ -63,3 +63,4 @@ export declare class SlickCellExternalCopyManager implements Plugin {
     clearCopySelection(): void;
     setIncludeHeaderWhenCopying(includeHeaderWhenCopying: boolean): void;
 }
+//# sourceMappingURL=slick.cellexternalcopymanager.d.ts.map

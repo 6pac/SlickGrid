@@ -326,7 +326,7 @@ export declare class Utils {
     private static fnToString;
     private static ObjectFunctionString;
     static storage: {
-        _storage: WeakMap<object, any>;
+        _storage: WeakMap<WeakKey, any>;
         put: (element: any, key: string, obj: any) => void;
         get: (element: any, key: string) => any;
         remove: (element: any, key: string) => any;
@@ -430,3 +430,4 @@ export declare const EditorLock: typeof SlickEditorLock, Event: typeof SlickEven
     HTML: string;
 };
 export {};
+//# sourceMappingURL=slick.core.d.ts.map

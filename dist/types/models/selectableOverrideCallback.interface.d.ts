@@ -7,3 +7,4 @@ row: number,
 dataContext: T, 
 /** SlickGrid object */
 grid: SlickGrid) => boolean;
+//# sourceMappingURL=selectableOverrideCallback.interface.d.ts.map

@@ -33,3 +33,4 @@ export interface ResizableOption {
     /** resize ended callback */
     onResizeEnd?: Function;
 }
+//# sourceMappingURL=interactions.interface.d.ts.map

@@ -20,3 +20,4 @@ export interface MouseOffsetViewport {
     };
     isOutsideViewport?: boolean;
 }
+//# sourceMappingURL=mouseOffsetViewport.interface.d.ts.map

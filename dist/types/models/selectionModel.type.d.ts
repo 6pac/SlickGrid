@@ -6,3 +6,4 @@ export type SelectionModel = Plugin & {
     getSelectedRanges: () => SlickRange[];
     setSelectedRanges: (ranges: SlickRange[], caller?: string) => void;
 };
+//# sourceMappingURL=selectionModel.type.d.ts.map

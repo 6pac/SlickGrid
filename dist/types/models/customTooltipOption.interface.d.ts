@@ -84,3 +84,4 @@ export interface CustomTooltipOption<T = any> {
     }) => boolean;
 }
 export {};
+//# sourceMappingURL=customTooltipOption.interface.d.ts.map

@@ -31,3 +31,4 @@ export interface CompositeEditorOption {
         [columnId: string]: any;
     };
 }
+//# sourceMappingURL=compositeEditorOption.interface.d.ts.map

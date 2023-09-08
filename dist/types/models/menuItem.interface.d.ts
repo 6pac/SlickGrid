@@ -25,3 +25,4 @@ export interface MenuItem<O = MenuCallbackArgs> {
     /** Callback method that user can override the default behavior of enabling/disabling an item from the list. */
     itemUsabilityOverride?: (args: O) => boolean;
 }
+//# sourceMappingURL=menuItem.interface.d.ts.map

@@ -15,3 +15,4 @@ export interface EditCommand {
     /** Call to undo (rollback) changes */
     undo: () => void;
 }
+//# sourceMappingURL=editCommand.interface.d.ts.map

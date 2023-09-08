@@ -8,3 +8,4 @@ export interface AutoTooltipOption {
     /** Allow preventing custom tooltips from being overwritten by auto tooltips */
     replaceExisting?: boolean;
 }
+//# sourceMappingURL=autoTooltipOption.interface.d.ts.map

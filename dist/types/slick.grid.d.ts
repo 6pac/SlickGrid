@@ -985,3 +985,4 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     sanitizeHtmlString(dirtyHtml: string, suppressLogging?: boolean): string;
 }
 export {};
+//# sourceMappingURL=slick.grid.d.ts.map

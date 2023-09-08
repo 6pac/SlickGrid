@@ -19,3 +19,4 @@ export declare class SlickRemoteModelYahoo {
     onSuccess(json: any, recStart: number): void;
     reloadData(from: number, to: number): void;
 }
+//# sourceMappingURL=slick.remotemodel-yahoo.d.ts.map

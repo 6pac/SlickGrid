@@ -40,3 +40,4 @@ export interface OnColumnsChangedArgs {
     /** list of visible column definitions */
     visibleColumns: Column[];
 }
+//# sourceMappingURL=columnPicker.interface.d.ts.map

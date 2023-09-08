@@ -57,3 +57,4 @@ export declare class SlickColumnPicker {
     /** visible columns, we can simply get them directly from the grid */
     getVisibleColumns(): Column<any>[];
 }
+//# sourceMappingURL=slick.columnpicker.d.ts.map

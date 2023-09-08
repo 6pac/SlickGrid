@@ -17,3 +17,4 @@ export * from './slick.rowdetailview';
 export * from './slick.rowmovemanager';
 export * from './slick.rowselectionmodel';
 export * from './slick.state';
+//# sourceMappingURL=index.d.ts.map

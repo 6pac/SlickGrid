@@ -38,3 +38,4 @@ export interface HeaderButtonOption {
     /** an extra CSS class to add to the menu button */
     buttonCssClass?: string;
 }
+//# sourceMappingURL=headerButtonItem.interface.d.ts.map

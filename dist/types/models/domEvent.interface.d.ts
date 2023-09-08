@@ -8,3 +8,4 @@ export interface DOMMouseOrTouchEvent<T extends EventTarget> extends MouseEvent,
     target: T;
     relatedTarget: T;
 }
+//# sourceMappingURL=domEvent.interface.d.ts.map

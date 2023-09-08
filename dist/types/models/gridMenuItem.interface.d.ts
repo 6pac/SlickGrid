@@ -8,3 +8,4 @@ export interface GridMenuItem extends MenuCommandItem<GridMenuCommandItemCallbac
     /** Callback method that user can override the default behavior of enabling/disabling an item from the list. */
     itemUsabilityOverride?: (args: GridMenuCallbackArgs) => boolean;
 }
+//# sourceMappingURL=gridMenuItem.interface.d.ts.map

@@ -11,3 +11,4 @@ export interface HeaderMenuCommandItemCallbackArgs {
     /** html DOM element of the menu */
     menu: Array<MenuCommandItem | 'divider'>;
 }
+//# sourceMappingURL=headerMenuItems.interface.d.ts.map

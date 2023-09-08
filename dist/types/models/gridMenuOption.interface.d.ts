@@ -52,3 +52,4 @@ export interface GridMenuOption {
     /** Callback method that user can override the default behavior of enabling/disabling an item from the list. */
     menuUsabilityOverride?: (args: MenuCallbackArgs<any>) => boolean;
 }
+//# sourceMappingURL=gridMenuOption.interface.d.ts.map

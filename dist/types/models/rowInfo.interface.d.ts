@@ -8,3 +8,4 @@ export interface RowInfo {
     valueArr: any[] | null;
     getRowVal: (i: any) => any;
 }
+//# sourceMappingURL=rowInfo.interface.d.ts.map

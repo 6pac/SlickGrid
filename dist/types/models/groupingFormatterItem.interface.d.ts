@@ -8,3 +8,4 @@ export interface GroupingFormatterItem {
     /** Grouped Formatter Value */
     value: any;
 }
+//# sourceMappingURL=groupingFormatterItem.interface.d.ts.map

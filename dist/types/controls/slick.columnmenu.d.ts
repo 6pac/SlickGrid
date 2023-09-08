@@ -56,3 +56,4 @@ export declare class SlickColumnMenu {
     /** visible columns, we can simply get them directly from the grid */
     getVisibleColumns(): Column<any>[];
 }
+//# sourceMappingURL=slick.columnmenu.d.ts.map

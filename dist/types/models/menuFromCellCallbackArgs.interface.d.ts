@@ -12,3 +12,4 @@ export interface MenuFromCellWithColumnCallbackArgs<T = any> extends MenuFromCel
     /** Cell Column definition */
     column?: Column<T>;
 }
+//# sourceMappingURL=menuFromCellCallbackArgs.interface.d.ts.map

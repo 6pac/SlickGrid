@@ -167,3 +167,4 @@ export declare const Editors: {
     PercentComplete: typeof PercentCompleteEditor;
     LongText: typeof LongTextEditor;
 };
+//# sourceMappingURL=slick.editors.d.ts.map

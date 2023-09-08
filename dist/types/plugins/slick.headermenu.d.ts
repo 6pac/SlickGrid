@@ -121,3 +121,4 @@ export declare class SlickHeaderMenu implements Plugin {
      */
     protected runOverrideFunctionWhenExists<T = any>(overrideFn: ((args: any) => boolean) | undefined, args: T): boolean;
 }
+//# sourceMappingURL=slick.headermenu.d.ts.map

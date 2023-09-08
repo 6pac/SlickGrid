@@ -10,3 +10,4 @@ export interface Aggregator {
     /** Method to store the result into the given group total object provided as argument */
     storeResult: (groupTotals: any | undefined) => void;
 }
+//# sourceMappingURL=aggregator.interface.d.ts.map

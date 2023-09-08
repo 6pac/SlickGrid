@@ -36,3 +36,4 @@ export declare class SlickRowSelectionModel {
         range: CellRange;
     }): boolean | void;
 }
+//# sourceMappingURL=slick.rowselectionmodel.d.ts.map

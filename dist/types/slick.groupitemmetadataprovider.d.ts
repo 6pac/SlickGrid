@@ -39,3 +39,4 @@ export declare class SlickGroupItemMetadataProvider {
         group: GroupingFormatterItem;
     }): ItemMetadata | null;
 }
+//# sourceMappingURL=slick.groupitemmetadataprovider.d.ts.map

@@ -42,3 +42,4 @@ export declare class SlickGridPager {
     protected constructPagerUI(): void;
     protected updatePager(pagingInfo: PagingInfo): void;
 }
+//# sourceMappingURL=slick.pager.d.ts.map

@@ -72,3 +72,4 @@ export * from './singleColumnSort.interface';
 export * from './slickGridModel.interface';
 export * from './sortDirectionNumber.enum';
 export * from './usabilityOverrideFn.type';
+//# sourceMappingURL=index.d.ts.map

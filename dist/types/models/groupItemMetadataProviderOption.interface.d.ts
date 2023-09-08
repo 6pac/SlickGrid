@@ -33,3 +33,4 @@ export interface GroupItemMetadataProviderOption {
     /** Whether or not we want to include header totals */
     includeHeaderTotals?: boolean;
 }
+//# sourceMappingURL=groupItemMetadataProviderOption.interface.d.ts.map

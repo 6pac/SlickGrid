@@ -18,3 +18,4 @@ export interface GridMenuCommandItemCallbackArgs {
     /** only visible columns (excluding hidden columns) */
     visibleColumns: Column[];
 }
+//# sourceMappingURL=gridMenuCommandItemCallbackArgs.interface.d.ts.map

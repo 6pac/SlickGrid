@@ -24,3 +24,4 @@ export declare class SlickCellCopyManager implements Plugin {
     protected markCopySelection(ranges: SlickRange[]): void;
     protected clearCopySelection(): void;
 }
+//# sourceMappingURL=slick.cellcopymanager.d.ts.map

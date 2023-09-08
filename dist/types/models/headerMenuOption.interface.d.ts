@@ -26,3 +26,4 @@ export interface HeaderMenuOption {
         menu: HTMLElement;
     }) => boolean;
 }
+//# sourceMappingURL=headerMenuOption.interface.d.ts.map

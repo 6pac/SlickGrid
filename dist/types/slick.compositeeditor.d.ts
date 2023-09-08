@@ -30,3 +30,4 @@ export declare function SlickCompositeEditor(columns: Column[], containers: Arra
     (args: any[]): void;
     prototype: any;
 };
+//# sourceMappingURL=slick.compositeeditor.d.ts.map

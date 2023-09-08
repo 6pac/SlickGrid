@@ -10,3 +10,4 @@ export interface MultiColumnSort {
     /** previous sort columns before calling onSort */
     previousSortColumns?: ColumnSort[];
 }
+//# sourceMappingURL=multiColumnSort.interface.d.ts.map

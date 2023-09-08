@@ -48,3 +48,4 @@ export interface RowMoveManagerOption {
 export interface CrossGridRowMoveManagerOption extends RowMoveManagerOption {
     toGrid: SlickGrid;
 }
+//# sourceMappingURL=rowMoveManagerOption.interface.d.ts.map

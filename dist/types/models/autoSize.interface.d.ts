@@ -16,3 +16,4 @@ export interface AutoSize {
     widthEvalMode?: string;
     widthPx?: number;
 }
+//# sourceMappingURL=autoSize.interface.d.ts.map

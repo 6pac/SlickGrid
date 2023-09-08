@@ -4,3 +4,4 @@ export interface HtmlElementPosition {
     left?: number;
     right?: number;
 }
+//# sourceMappingURL=htmlElementPosition.interface.d.ts.map

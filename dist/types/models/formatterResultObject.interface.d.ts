@@ -8,3 +8,4 @@ export interface FormatterResultObject {
     /** Optional tooltip text */
     toolTip?: string;
 }
+//# sourceMappingURL=formatterResultObject.interface.d.ts.map

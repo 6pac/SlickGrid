@@ -164,3 +164,4 @@ export declare class CustomTooltip {
     setOptions(newOptions: Partial<CustomTooltipOption>): void;
 }
 export {};
+//# sourceMappingURL=slick.customtooltip.d.ts.map

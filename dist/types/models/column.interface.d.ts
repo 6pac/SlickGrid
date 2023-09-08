@@ -115,3 +115,4 @@ export interface Column<TData = any> {
     widthRequest?: number;
 }
 export {};
+//# sourceMappingURL=column.interface.d.ts.map

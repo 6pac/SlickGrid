@@ -36,3 +36,4 @@ export interface DragRowMove {
     startX: number;
     startY: number;
 }
+//# sourceMappingURL=drag.interface.d.ts.map

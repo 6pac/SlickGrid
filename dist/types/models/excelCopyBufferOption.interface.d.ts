@@ -42,3 +42,4 @@ export interface ExcelCopyBufferOption<T = any> {
         ranges: CellRange[];
     }) => void;
 }
+//# sourceMappingURL=excelCopyBufferOption.interface.d.ts.map

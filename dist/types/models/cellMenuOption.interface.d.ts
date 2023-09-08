@@ -40,3 +40,4 @@ export interface CellMenuOption {
     /** Callback method that user can override the default behavior of enabling/disabling an item from the list. */
     menuUsabilityOverride?: (args: MenuCallbackArgs) => boolean;
 }
+//# sourceMappingURL=cellMenuOption.interface.d.ts.map

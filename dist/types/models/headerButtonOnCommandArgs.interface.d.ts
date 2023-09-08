@@ -7,3 +7,4 @@ export interface HeaderButtonOnCommandArgs {
     command: string;
     button: HeaderButtonItem;
 }
+//# sourceMappingURL=headerButtonOnCommandArgs.interface.d.ts.map

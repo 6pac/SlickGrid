@@ -63,3 +63,4 @@ export declare class SlickCellRangeSelector implements Plugin {
     protected handleDragEnd(e: Event, dd: DragPosition): void;
     getCurrentRange(): DragRange | null;
 }
+//# sourceMappingURL=slick.cellrangeselector.d.ts.map

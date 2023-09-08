@@ -6,3 +6,4 @@ export interface EditorValidationResult {
     /** Errors property is populated only when using a Composite Editor */
     errors?: any[];
 }
+//# sourceMappingURL=editorValidationResult.interface.d.ts.map

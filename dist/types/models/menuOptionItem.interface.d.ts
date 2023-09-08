@@ -6,3 +6,4 @@ export interface MenuOptionItem extends MenuItem {
     /** Optionally define a callback function that gets executed when item is chosen (and/or use the onCommand event) */
     action?: (event: Event, callbackArgs: MenuOptionItemCallbackArgs) => void;
 }
+//# sourceMappingURL=menuOptionItem.interface.d.ts.map

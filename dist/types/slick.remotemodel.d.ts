@@ -25,3 +25,4 @@ export declare class SlickRemoteModel {
     setSort(column: ColumnSort, dir: number): void;
     setSearch(str: string): void;
 }
+//# sourceMappingURL=slick.remotemodel.d.ts.map

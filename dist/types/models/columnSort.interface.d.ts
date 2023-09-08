@@ -7,3 +7,4 @@ export interface ColumnSort {
     /** Column to be sorted */
     sortCol?: Column;
 }
+//# sourceMappingURL=columnSort.interface.d.ts.map

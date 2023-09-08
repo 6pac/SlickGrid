@@ -10,3 +10,4 @@ export interface EditController {
     /** Cancel Current Editor command */
     cancelCurrentEdit: () => boolean;
 }
+//# sourceMappingURL=core.interface.d.ts.map

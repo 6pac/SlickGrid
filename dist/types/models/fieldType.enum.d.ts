@@ -72,3 +72,4 @@ export declare const FieldType: {
     /** readonly text string */
     readonly readonly: "readonly";
 };
+//# sourceMappingURL=fieldType.enum.d.ts.map

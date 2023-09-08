@@ -68,3 +68,4 @@ export interface Editor {
      */
     validate: (targetElm?: HTMLElement, options?: any) => EditorValidationResult;
 }
+//# sourceMappingURL=editor.interface.d.ts.map

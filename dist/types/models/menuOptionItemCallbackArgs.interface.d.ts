@@ -8,3 +8,4 @@ export interface MenuOptionItemCallbackArgs extends MenuCallbackArgs {
     /** Value of the cell we triggered the context menu from */
     value?: any;
 }
+//# sourceMappingURL=menuOptionItemCallbackArgs.interface.d.ts.map

@@ -29,3 +29,4 @@ export interface DraggableGroupingOption {
     /** provide option to set default grouping on loading */
     setDroppedGroups?: (groupingInfo: Array<string | GroupingGetterFunction> | string) => void;
 }
+//# sourceMappingURL=draggableGroupingOption.interface.d.ts.map

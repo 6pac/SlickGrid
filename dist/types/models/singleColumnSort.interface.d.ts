@@ -8,3 +8,4 @@ export interface SingleColumnSort extends ColumnSort {
     /** previous sort columns before calling onSort */
     previousSortColumns?: ColumnSort[];
 }
+//# sourceMappingURL=singleColumnSort.interface.d.ts.map

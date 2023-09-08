@@ -20,3 +20,4 @@ export interface ExternalCopyClipCommand {
     setDataItemValueForColumn: (item: any, columnDef: Column, value: any) => any | void;
     undo: () => void;
 }
+//# sourceMappingURL=externalCopyClipCommand.interface.d.ts.map

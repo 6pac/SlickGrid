@@ -215,3 +215,4 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
     /** @deprecated @use `columnPicker: { syncResizeTitle: '...' }`  in your column definitions. */
     syncResizeTitle?: string;
 }
+//# sourceMappingURL=gridOption.interface.d.ts.map

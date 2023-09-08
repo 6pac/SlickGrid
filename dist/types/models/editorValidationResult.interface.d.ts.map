@@ -1,0 +1,1 @@
+{"version":3,"file":"editorValidationResult.interface.d.ts","sourceRoot":"","sources":["../../../src/models/editorValidationResult.interface.ts"],"names":[],"mappings":"AACA,MAAM,WAAW,sBAAsB;IACrC,+BAA+B;IAC/B,KAAK,EAAE,OAAO,CAAC;IAEf,qDAAqD;IACrD,GAAG,CAAC,EAAE,MAAM,GAAG,IAAI,CAAC;IAEpB,sEAAsE;IACtE,MAAM,CAAC,EAAE,GAAG,EAAE,CAAC;CAChB"}

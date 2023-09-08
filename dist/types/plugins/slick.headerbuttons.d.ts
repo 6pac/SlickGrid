@@ -91,3 +91,4 @@ export declare class SlickHeaderButtons implements Plugin {
      */
     protected runOverrideFunctionWhenExists<T = any>(overrideFn: ((args: any) => boolean) | undefined, args: T): boolean;
 }
+//# sourceMappingURL=slick.headerbuttons.d.ts.map

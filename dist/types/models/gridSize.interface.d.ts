@@ -10,3 +10,4 @@ export interface GridSize {
      */
     width?: number | string;
 }
+//# sourceMappingURL=gridSize.interface.d.ts.map

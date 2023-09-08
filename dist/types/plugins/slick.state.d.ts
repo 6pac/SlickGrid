@@ -90,3 +90,4 @@ export declare class SlickState implements Plugin {
     reset(): void;
 }
 export {};
+//# sourceMappingURL=slick.state.d.ts.map

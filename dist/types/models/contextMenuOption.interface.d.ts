@@ -44,3 +44,4 @@ export interface ContextMenuOption {
     /** Callback method that user can override the default behavior of enabling/disabling an item from the list. */
     menuUsabilityOverride?: (args: MenuCallbackArgs) => boolean;
 }
+//# sourceMappingURL=contextMenuOption.interface.d.ts.map

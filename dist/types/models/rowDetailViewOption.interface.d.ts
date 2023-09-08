@@ -129,3 +129,4 @@ export interface OnRowOutOfViewportRangeArgs {
     /** Reference to the Slick grid object */
     grid: SlickGrid;
 }
+//# sourceMappingURL=rowDetailViewOption.interface.d.ts.map

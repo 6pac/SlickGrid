@@ -63,3 +63,4 @@ export declare class SlickCheckboxSelectColumn<T = any> implements Plugin {
      */
     selectableOverride(overrideFn: SelectableOverrideCallback<T>): void;
 }
+//# sourceMappingURL=slick.checkboxselectcolumn.d.ts.map

@@ -43,3 +43,4 @@ export interface OnSetItemsCalledEventArgs {
     idProperty: string;
     itemCount: number;
 }
+//# sourceMappingURL=dataViewEvents.interface.d.ts.map

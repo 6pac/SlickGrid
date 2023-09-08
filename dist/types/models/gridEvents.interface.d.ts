@@ -176,3 +176,4 @@ export interface OnDragEventArgs extends SlickGridEventData {
     startX: number;
     startY: number;
 }
+//# sourceMappingURL=gridEvents.interface.d.ts.map

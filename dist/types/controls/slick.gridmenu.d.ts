@@ -175,3 +175,4 @@ export declare class SlickGridMenu {
      */
     protected runOverrideFunctionWhenExists<T = any>(overrideFn: ((args: any) => boolean) | undefined, args: T): boolean;
 }
+//# sourceMappingURL=slick.gridmenu.d.ts.map

@@ -31,3 +31,4 @@ export interface ItemMetadata {
         };
     };
 }
+//# sourceMappingURL=itemMetadata.interface.d.ts.map

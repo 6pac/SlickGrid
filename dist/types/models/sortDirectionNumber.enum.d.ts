@@ -3,3 +3,4 @@ export declare enum SortDirectionNumber {
     desc = -1,
     neutral = 0
 }
+//# sourceMappingURL=sortDirectionNumber.enum.d.ts.map

@@ -38,3 +38,4 @@ export declare class SlickAutoTooltips implements Plugin {
         column: Column;
     }): void;
 }
+//# sourceMappingURL=slick.autotooltips.d.ts.map

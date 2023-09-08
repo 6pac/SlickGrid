@@ -97,3 +97,4 @@ export declare class SlickDraggableGrouping {
     protected toggleGroupToggler(targetElm: Element | null, collapsing?: boolean, shouldExecuteDataViewCommand?: boolean): void;
     protected updateGroupBy(originator: string): void;
 }
+//# sourceMappingURL=slick.draggablegrouping.d.ts.map

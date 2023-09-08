@@ -8,3 +8,4 @@ export interface MenuCommandItem<A = MenuCommandItemCallbackArgs, R = MenuCallba
     /** Optionally define a callback function that gets executed when item is chosen (and/or use the onCommand event) */
     action?: (event: SlickEventData | Event, callbackArgs: A) => void;
 }
+//# sourceMappingURL=menuCommandItem.interface.d.ts.map
