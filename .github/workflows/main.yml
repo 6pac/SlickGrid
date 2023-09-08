@@ -48,7 +48,7 @@ jobs:
         run: npm install
 
       - name: Prod Build with TS Types
-        run: npm run build:all
+        run: npm run build:prod
 
       - name: Start HTTP Server
         run: npm run serve:demo &

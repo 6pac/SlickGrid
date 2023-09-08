@@ -20,20 +20,14 @@ const projectRootPath = path.join(__dirname, '../');
 
 // when --prod is provided, we'll do a full build of all JS/TS files and also all SASS files
 if (argv.prod) {
-  runProdBuild();
-}
-
-/** Run a full Production build */
-export async function runProdBuild() {
-  await executeFullBuild();
-  await buildAllSassFiles();
-  copySassFiles();
+  runProdBuildWithTypes();
 }
 
 /** Run a full Production build and also build TS Types */
 export async function runProdBuildWithTypes() {
-  await runProdBuild();
-  // exec('npm run build:types');
+  await executeFullBuild();
+  await buildAllSassFiles();
+  copySassFiles();
   await spawnStreaming('npm', ['run', 'build:types'], { cwd: projectRootPath });
 }
 

@@ -11,7 +11,7 @@ npm install
 ```
 2. Run a full build
 ```sh
-npm run build:all
+npm run build:prod
 ```
 3. Fix any Lint or TypeScript issues (if any)
 4. If you did step 2 and 3, then the final step would be go ahead with the Pull Request
