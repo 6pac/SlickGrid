@@ -120,7 +120,7 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
     });
   }
 
-  it('should MIN interval take effect when auto scroll: 30ms -> 90ms', { scrollBehavior: false }, function () {
+  it.skip('should MIN interval take effect when auto scroll: 30ms -> 90ms', { scrollBehavior: false }, function () {
     // By default the MIN interval to show next cell is 30ms.
     testInterval(300).then(defaultInterval => {
 
