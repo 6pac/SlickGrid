@@ -69,9 +69,13 @@ const argv = yargs(hideBin(process.argv)).argv;
     bsync.init({
       server: './',
       port: 8080,
-      watchTask: true,
+      notify: false,
+      browser: argv.serve ? 'default' : 'google chrome',
+      ghostMode: false,
+      watchTask: !argv.serve,
       online: false,
       open: argv.open,
+      scrollProportionally: false,
       startPath: 'examples/index.html'
     }, () => {
       console.log('Use Ctrl+C to Quit');
