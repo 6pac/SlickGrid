@@ -1,4 +1,3 @@
-
 describe('Example AutoTooltips Plugin', () => {
   const GRID_ROW_HEIGHT = 25;
   const originalTitles = ['Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];

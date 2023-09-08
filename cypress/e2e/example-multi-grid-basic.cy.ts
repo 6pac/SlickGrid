@@ -1,5 +1,3 @@
-/// <reference types="Cypress" />
-
 describe('Example - Multi Grid on a Page', () => {
   const fullTitles = ['Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
 

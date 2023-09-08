@@ -1,5 +1,3 @@
-/// <reference types="cypress" />
-
 describe('Example - Checkbox Row Select', () => {
   const titles = ['', 'A', 'B', 'C', 'D', 'E'];
   const GRID_ROW_HEIGHT = 25;

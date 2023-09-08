@@ -1,4 +1,3 @@
-
 describe('Example 0070 - Grid State using Local Storage', () => {
   const titles = ['Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
 

@@ -1,5 +1,3 @@
-/// <reference types="cypress" />
-
 describe('Example - Header Menu', () => {
   const titles = ['Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
 

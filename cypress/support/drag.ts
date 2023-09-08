@@ -5,14 +5,15 @@ declare global {
   namespace Cypress {
     interface Chainable {
       // triggerHover: (elements: NodeListOf<HTMLElement>) => void;
-      dragOutside(viewport?: string, ms?: number, px?: number, options?: { parentSelector?: string, scrollbarDimension?: number; }): Chainable<HTMLElement>;
-      dragStart(options?: { cellWidth?: number; cellHeight?: number; prevSubject: boolean; }): Chainable<HTMLElement>;
+      dragOutside(viewport?: string, ms?: number, px?: number, options?: { parentSelector?: string, scrollbarDimension?: number; rowHeight?: number; }): Chainable<HTMLElement>;
+      dragStart(options?: { cellWidth?: number; cellHeight?: number; }): Chainable<HTMLElement>;
       dragCell(addRow: number, addCell: number, options?: { cellWidth?: number; cellHeight?: number; }): Chainable<HTMLElement>;
       dragEnd(gridSelector?: string): Chainable<HTMLElement>;
     }
   }
 }
 
+// @ts-ignore
 Cypress.Commands.add('dragStart', { prevSubject: true }, (subject, { cellWidth = 80, cellHeight = 25 } = {}) => {
   return cy.wrap(subject).click({ force: true })
     .trigger('mousedown', { which: 1 })
@@ -20,6 +21,7 @@ Cypress.Commands.add('dragStart', { prevSubject: true }, (subject, { cellWidth =
 })
 
 // use a different command name than "drag" so that it doesn't conflict with the "@4tw/cypress-drag-drop" lib
+// @ts-ignore
 Cypress.Commands.add('dragCell', { prevSubject: true }, (subject, addRow, addCell, { cellWidth = 80, cellHeight = 25 } = {}) => {
   return cy.wrap(subject).trigger('mousemove', cellWidth * (addCell + 0.5), cellHeight * (addRow + 0.5), { force: true });
 })
