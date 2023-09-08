@@ -62,7 +62,9 @@
     "sass:build": "sass src/styles:dist/styles/css --style=compressed --quiet-deps --no-source-map",
     "postsass:build": "postcss dist/styles/css/**/* --dir dist/styles/css --base dist/styles/css --no-map --use cssnano --use autoprefixer --style=compressed",
     "sass:copy": "copyfiles -f src/styles/*.scss dist/styles/sass",
-    "serve:demo": "http-server ./ -p 8080 -a localhost -s"
+    "serve:demo": "http-server ./ -p 8080 -a localhost -s",
+    "preview:publish": "clean-publish --without-publish --temp-dir tmp_publish",
+    "publish": "clean-publish"
   },
   "dependencies": {
     "sortablejs": "^1.15.0"
@@ -75,6 +77,7 @@
     "autoprefixer": "^10.4.15",
     "browser-sync": "^2.29.3",
     "chokidar": "^3.5.3",
+    "clean-publish": "^4.2.0",
     "conventional-changelog": "^5.0.0",
     "copyfiles": "^2.4.1",
     "cssnano": "^6.0.1",
