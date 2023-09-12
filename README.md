@@ -38,6 +38,6 @@ Once the Cypress UI is open, you can then click on "Run all Specs" to execute al
 
 | SlickGrid | Migration Guide | Description |
 | --------- | --------------- | ----------- |
-| 3.x       | [Migration v3.0 & Annoucement](https://github.com/6pac/SlickGrid/wiki/Major-version-3.0----Removal-of-jQueryUI-requirement-(replaced-by-SortableJS)) | dropping [jQueryUI](https://jqueryui.com/) requirement and replaced it with [SortableJS](https://sortablejs.github.io/Sortable/) which is a lot more modern and touch friendly |
-| 4.x       | [Migration v4.0 & Annoucement](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement) | dropping [jQuery](https://jquery.com/) requirement, SlickGrid is now using browser native code |
-| 5.x       | [Migration v5.0 & Annoucement](https://github.com/6pac/SlickGrid/wiki/Major-version-5.0-%E2%80%90-ES6-ESM-and-TypeScript-Support) | project modernization, added TypeScript with ES6, ESM builds and added a new Alpine Theme |
+| 3.x       | [Announcing v3.0](https://github.com/6pac/SlickGrid/wiki/Major-version-3.0----Removal-of-jQueryUI-requirement-(replaced-by-SortableJS)) | dropping [jQueryUI](https://jqueryui.com/) requirement and replaced it with [SortableJS](https://sortablejs.github.io/Sortable/) which is a lot more modern and touch friendly |
+| 4.x       | [Announcing v4.0](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement) | dropping [jQuery](https://jquery.com/) requirement, SlickGrid is now using browser native code |
+| 5.x       | [Announcing v5.0](https://github.com/6pac/SlickGrid/wiki/Major-version-5.0-%E2%80%90-ES6-ESM-and-TypeScript-Support) | project modernization, added TypeScript with ES6, ESM builds and added a new Alpine Theme |
