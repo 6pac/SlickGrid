@@ -8,11 +8,18 @@
 
 Check out the NEW SlickGrid Website! http://slickgrid.net/
 
-This is the acknowledged most active non-customised fork of SlickGrid.
+This is the acknowledged most active fork of SlickGrid.
 
-It aims to be a viable alternative master repo, building on the legacy of the mleibman/SlickGrid master branch, keeping libraries up to date and applying small, safe core patches and enhancements without turning into a personalised build. Our biggest changes include the merge of X-SlickGrid that brought Frozen columns/rows, we then also removed jQuery & jQueryUI and are now using native browser code in SlickGrid.
+It aims to be a viable alternative master repo, building on the legacy of the [mleibman/SlickGrid](https://github.com/mleibman/SlickGrid) master branch, keeping libraries up to date and applying, safe core patches and enhancements to keep the project up to date.
 
-Check out the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** for examples demonstrating new features and use cases, such as dynamic grid creation and editors with third party controls.
+The project extends on the SlickGrid foundation and while also including the following changes
+- we merged [X-SlickGrid](https://github.com/ddomingues/X-SlickGrid) project into the lib which brought Frozen Columns/Rows
+- we removed jQueryUI in v3 (replaced it by [SortableJS](https://sortablejs.github.io/Sortable/))
+- we removed jQuery in v4
+- we modernized the project in v5 by migrating to TypeScript, we added ES6/ESM build targets and a new Alpine Theme
+
+### Examples
+Check out the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** Wiki for a full list of examples demonstrating new features and use cases, such as dynamic grid creation and editors with third party controls.
 
 Also check out the [Wiki](https://github.com/6pac/SlickGrid/wiki) for news and documentation.
 
@@ -27,9 +34,13 @@ npm run cypress     # open Cypress tool
 ```
 Once the Cypress UI is open, you can then click on "Run all Specs" to execute all E2E browser tests.
 
-## SlickGrid 3.x drops jQueryUI requirement
+## Migrations
 
-We no longer require [jQueryUI](https://jqueryui.com/) in SlickGrid 3.0, we removed all associated code and replaced it with [SortableJS](https://sortablejs.github.io/Sortable/) which is a lot more modern and touch friendly. Please read [SlickGrid 3.0 - Annoucement & Migration](https://github.com/6pac/SlickGrid/wiki/Major-version-3.0----Removal-of-jQueryUI-requirement-(replaced-by-SortableJS)) Wiki for more info.
+### SlickGrid 3.x drops jQueryUI requirement
+[jQueryUI](https://jqueryui.com/) requirement is dropped in SlickGrid 3.0, we removed all associated code and replaced it with [SortableJS](https://sortablejs.github.io/Sortable/) which is a lot more modern and touch friendly. Please read [SlickGrid 3.0 - Annoucement & Migration](https://github.com/6pac/SlickGrid/wiki/Major-version-3.0----Removal-of-jQueryUI-requirement-(replaced-by-SortableJS)) Wiki for more info.
 
-## SlickGrid 4.x drops jQuery requirement
-SlickGrid is now using browser native code and no longer requires jQuery in SlickGrid 4.0. For more info, please read [SlickGrid 4.0 - Annoucement & Migration](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement)
+### SlickGrid 4.x drops jQuery requirement
+SlickGrid is now using browser native code and no longer requires jQuery in SlickGrid 4.0. Please read [SlickGrid 4.0 - Annoucement & Migration](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement) for more info.
+
+### SlickGrid 5.x - project modernization
+This new version is all about modernizing the project, we added TypeScript, ES6, ESM builds and added a new Alpine Theme. Please read [SlickGrid 5.0 - Annoucement & Migration](https://github.com/6pac/SlickGrid/wiki/Major-version-5.0-%E2%80%90-ES6-ESM-and-TypeScript-Support) for more info.
