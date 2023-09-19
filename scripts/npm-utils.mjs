@@ -1,4 +1,4 @@
-import { exec } from './child-process.mjs';
+import { exec, spawnStreaming } from './child-process.mjs';
 
 /**
  * Run `npm publish`
@@ -6,7 +6,7 @@ import { exec } from './child-process.mjs';
  * @param {{ cwd: String, dryRun: Boolean}} options
  * @returns {Promise<any>}
  */
-export function publishPackage(publishTagName, { cwd, otp, dryRun }) {
+export function publishPackage(publishTagName, { cwd, otp, dryRun, stream }) {
   const execArgs = ['publish'];
   if (publishTagName) {
     execArgs.push('--tag', publishTagName);
@@ -16,6 +16,10 @@ export function publishPackage(publishTagName, { cwd, otp, dryRun }) {
   }
   if (dryRun) {
     execArgs.push('--dry-run');
+  }
+
+  if (stream) {
+    return spawnStreaming('npm', execArgs, { cwd });
   }
   return exec('npm', execArgs, { cwd });
 }

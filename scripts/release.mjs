@@ -12,7 +12,7 @@ import { hideBin } from 'yargs/helpers';
 
 import { gitAdd, gitCommit, gitTag, gitTagPushRemote, gitPushToCurrentBranch, hasUncommittedChanges } from './git-utils.mjs';
 import { createRelease, createReleaseClient, parseGitRepo } from './github-release.mjs';
-import { runScript, syncLockFile } from './npm-utils.mjs';
+import { publishPackage, syncLockFile } from './npm-utils.mjs';
 import { runProdBuildWithTypes } from './builds.mjs';
 import { updateChangelog } from './changelog.mjs';
 
@@ -144,9 +144,9 @@ const pkg = loadJsonFileSync(path.join(__dirname, '../', 'package.json'));
           publishTagName = 'beta';
           runArgs.push('--tag', publishTagName);
         }
-        await runScript('clean:publish', { cwd, args: runArgs });
+        // await runScript('clean:publish', { cwd, args: runArgs });
         // const otp = await promptOtp(dryRunPrefix);
-        // await publishPackage(publishTagName, { cwd, otp, dryRun: argv.dryRun });
+        await publishPackage(publishTagName, { cwd, dryRun: argv.dryRun, stream: true });
         console.log(`${c.bgMagenta(dryRunPrefix)} 📦 Published to NPM - 🔗 https://www.npmjs.com/package/${pkg.name}`.trim())
       }
 
