@@ -68,10 +68,10 @@
     "sortablejs": "^1.15.0"
   },
   "devDependencies": {
-    "@4tw/cypress-drag-drop": "^2.2.4",
+    "@4tw/cypress-drag-drop": "^2.2.5",
     "@octokit/rest": "^19.0.13",
-    "@typescript-eslint/eslint-plugin": "^6.7.0",
-    "@typescript-eslint/parser": "^6.7.0",
+    "@typescript-eslint/eslint-plugin": "^6.7.2",
+    "@typescript-eslint/parser": "^6.7.2",
     "autoprefixer": "^10.4.15",
     "browser-sync": "^2.29.3",
     "chokidar": "^3.5.3",
@@ -84,7 +84,7 @@
     "dotenv": "^16.3.1",
     "esbuild": "^0.19.3",
     "eslint": "^8.49.0",
-    "eslint-plugin-cypress": "^2.14.0",
+    "eslint-plugin-cypress": "^2.15.1",
     "eslint-plugin-import": "^2.28.1",
     "eslint-plugin-node": "^11.1.0",
     "fs-extra": "^11.1.1",
@@ -96,7 +96,7 @@
     "new-github-release-url": "^2.0.0",
     "path": "^0.12.7",
     "picocolors": "^1.0.0",
-    "postcss": "^8.4.29",
+    "postcss": "^8.4.30",
     "postcss-cli": "^10.1.0",
     "rimraf": "^5.0.1",
     "sass": "^1.67.0",
@@ -115,10 +115,5 @@
   "engines": {
     "node": ">=16.0.0",
     "npm": ">=8.0.0"
-  },
-  "overrides": {
-    "@4tw/cypress-drag-drop": {
-      "cypress": "$cypress"
-    }
   }
 }
