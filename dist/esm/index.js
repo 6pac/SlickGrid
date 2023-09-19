@@ -6117,7 +6117,7 @@ var SlickGrid = class {
     this.options = options;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.0.0-alpha.4");
+    __publicField(this, "slickGridVersion", "5.0.0-alpha.5");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -9291,7 +9291,7 @@ export {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.0.0-alpha.4
+ * SlickGrid v5.0.0-alpha.5
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
