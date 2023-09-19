@@ -12,7 +12,7 @@ import { hideBin } from 'yargs/helpers';
 
 import { gitAdd, gitCommit, gitTag, gitTagPushRemote, gitPushToCurrentBranch, hasUncommittedChanges } from './git-utils.mjs';
 import { createRelease, createReleaseClient, parseGitRepo } from './github-release.mjs';
-import { publishPackage, syncLockFile } from './npm-utils.mjs';
+import { runScript, syncLockFile } from './npm-utils.mjs';
 import { runProdBuildWithTypes } from './builds.mjs';
 import { updateChangelog } from './changelog.mjs';
 
