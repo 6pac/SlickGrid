@@ -5,10 +5,13 @@ import { exec } from './child-process.mjs';
  * @param {{ cwd: String, dryRun: Boolean}} options
  * @returns {Promise<any>}
  */
-export function publishPackage(publishTagName, { cwd, dryRun }) {
+export function publishPackage(publishTagName, { cwd, otp, dryRun }) {
   const execArgs = ['publish'];
   if (publishTagName) {
     execArgs.push('--tag', publishTagName);
+  }
+  if (otp) {
+    execArgs.push('--otp', otp);
   }
   if (dryRun) {
     execArgs.push('--dry-run');

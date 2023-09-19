@@ -141,7 +141,11 @@ const pkg = loadJsonFileSync(path.join(__dirname, '../', 'package.json'));
         } else if (whichBumpType.includes('beta')) {
           publishTagName = 'beta';
         }
-        await publishPackage(publishTagName, { cwd, dryRun: argv.dryRun });
+        let otp = '';
+        if (await promptConfirmation(`${c.bgMagenta(dryRunPrefix)} Do you have OTP (One-Time-Password) enabled?`, undefined, 1)) {
+          otp = await promptOtp();
+        }
+        await publishPackage(publishTagName, { cwd, otp, dryRun: argv.dryRun });
         console.log(`${c.bgMagenta(dryRunPrefix)} 📦 Published to NPM - 🔗 https://www.npmjs.com/package/${pkg.name}`.trim())
       }
 
@@ -264,7 +268,9 @@ async function promptConfirmation(message, choices, defaultIndex) {
       { key: 'y', name: 'Yes', value: true },
       { key: 'n', name: 'No', value: false },
     ];
-    defaultIndex = 0;
+    if (defaultIndex === undefined) {
+      defaultIndex = 0;
+    }
   }
 
   // display propmpt message and choices
@@ -274,10 +280,18 @@ async function promptConfirmation(message, choices, defaultIndex) {
   }
 
   // get and process input
-  const input = await getConsoleInput("Enter value " + " (default " + (defaultIndex + 1) + ') ');
+  const input = await getConsoleInput(`Enter value (default ${(defaultIndex + 1)}) `);
   var index = !isNaN(input) && !isNaN(parseFloat(input)) ? +input - 1 : defaultIndex;
   if (index < 0 || index >= choices.length) {
-    throw Error('The input ' + input + ' could not be matched to a selection');
+    throw Error(`The input ${input} could not be matched to a selection`);
   }
   return choices[index].value;
+}
+
+async function promptOtp() {
+  const otp = await getConsoleInput(`Enter OTP value:`);
+  if (otp.length < 6) {
+    throw new Error('OTP must be 6 digits.');
+  }
+  return otp;
 }
