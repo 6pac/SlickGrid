@@ -27,7 +27,11 @@ export function publishPackage(publishTagName, { cwd, otp, dryRun }) {
  * @returns {Promise<any>}
  */
 export function runScript(scriptName, { cwd, args, dryRun }) {
-  const execArgs = ['run', scriptName, args];
+  const execArgs = ['run', scriptName];
+  if (args?.length > 0) {
+    execArgs.push('--');
+    execArgs.push(args);
+  }
   if (dryRun) {
     execArgs.push('--dry-run');
   }
