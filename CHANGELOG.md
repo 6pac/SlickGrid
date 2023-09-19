@@ -2,6 +2,8 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0-alpha.1](https://github.com/6pac/SlickGrid/compare/5.0.0-alpha.0...5.0.0-alpha.1) (2023-09-19)
+
 # [5.0.0-alpha.0](https://github.com/6pac/SlickGrid/compare/4.0.1...5.0.0-alpha.0) (2023-09-19)
 
 ### Bug Fixes
