@@ -10,7 +10,7 @@ import { BindingEventService as BindingEventService_, type SlickEditorLock, Slic
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.0.0-alpha.9
+ * SlickGrid v5.0.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

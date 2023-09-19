@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0](https://github.com/6pac/SlickGrid/compare/4.0.1...5.0.0) (2023-09-19)
+
+### Reverts
+
+* fix auto-scroll issue by reverting commit 5ff56e3 ([2b40409](https://github.com/6pac/SlickGrid/commit/2b4040943d451366da92d22fed1adba3d8a2e017))
+
 # [5.0.0-alpha.9](https://github.com/6pac/SlickGrid/compare/5.0.0-alpha.8...5.0.0-alpha.9) (2023-09-19)
 
 # [5.0.0-alpha.8](https://github.com/6pac/SlickGrid/compare/5.0.0-alpha.7...5.0.0-alpha.8) (2023-09-19)
