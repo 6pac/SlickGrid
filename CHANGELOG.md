@@ -4,25 +4,10 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 # [5.0.0](https://github.com/6pac/SlickGrid/compare/4.0.1...5.0.0) (2023-09-19)
 
-### Reverts
-
-* fix auto-scroll issue by reverting commit 5ff56e3 ([2b40409](https://github.com/6pac/SlickGrid/commit/2b4040943d451366da92d22fed1adba3d8a2e017))
-
-# [5.0.0-alpha.9](https://github.com/6pac/SlickGrid/compare/5.0.0-alpha.8...5.0.0-alpha.9) (2023-09-19)
-
-# [5.0.0-alpha.8](https://github.com/6pac/SlickGrid/compare/5.0.0-alpha.7...5.0.0-alpha.8) (2023-09-19)
-
-# [5.0.0-alpha.7](https://github.com/6pac/SlickGrid/compare/5.0.0-alpha.6...5.0.0-alpha.7) (2023-09-19)
-
-# [5.0.0-alpha.6](https://github.com/6pac/SlickGrid/compare/5.0.0-alpha.5...5.0.0-alpha.6) (2023-09-19)
-
-# [5.0.0-alpha.5](https://github.com/6pac/SlickGrid/compare/5.0.0-alpha.4...5.0.0-alpha.5) (2023-09-19)
-
-# [5.0.0-alpha.4](https://github.com/6pac/SlickGrid/compare/5.0.0-alpha.3...5.0.0-alpha.4) (2023-09-19)
+### Breaking Change ⚠️
+* prepare official 5.0 version release ([#845](https://github.com/6pac/SlickGrid/pull/845)) ([ad85e1](https://github.com/6pac/SlickGrid/commit/ad85e1234eef2548f5f4df34afebf18058ef9d33))
 
 # [5.0.0-alpha.3](https://github.com/6pac/SlickGrid/compare/5.0.0-alpha.5...5.0.0-alpha.3) (2023-09-19)
-
-# [5.0.0-alpha.5](https://github.com/6pac/SlickGrid/compare/5.0.0-alpha.1...5.0.0-alpha.5) (2023-09-19)
 
 ### Bug Fixes
 
