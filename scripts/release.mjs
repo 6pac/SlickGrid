@@ -141,10 +141,7 @@ const pkg = loadJsonFileSync(path.join(__dirname, '../', 'package.json'));
         } else if (whichBumpType.includes('beta')) {
           publishTagName = 'beta';
         }
-        let otp = '';
-        if (await promptConfirmation(`${c.bgMagenta(dryRunPrefix)} Do you have OTP (One-Time-Password) enabled?`, undefined, 1)) {
-          otp = await promptOtp();
-        }
+        const otp = await promptOtp(dryRunPrefix);
         await publishPackage(publishTagName, { cwd, otp, dryRun: argv.dryRun });
         console.log(`${c.bgMagenta(dryRunPrefix)} 📦 Published to NPM - 🔗 https://www.npmjs.com/package/${pkg.name}`.trim())
       }
@@ -280,7 +277,7 @@ async function promptConfirmation(message, choices, defaultIndex) {
   }
 
   // get and process input
-  const input = await getConsoleInput(`Enter value (default ${(defaultIndex + 1)}) `);
+  const input = await getConsoleInput(`Enter value (default ${(defaultIndex + 1)}): `);
   var index = !isNaN(input) && !isNaN(parseFloat(input)) ? +input - 1 : defaultIndex;
   if (index < 0 || index >= choices.length) {
     throw Error(`The input ${input} could not be matched to a selection`);
@@ -288,10 +285,12 @@ async function promptConfirmation(message, choices, defaultIndex) {
   return choices[index].value;
 }
 
-async function promptOtp() {
-  const otp = await getConsoleInput(`Enter OTP value:`);
-  if (otp.length < 6) {
-    throw new Error('OTP must be 6 digits.');
+async function promptOtp(dryRunPrefix = '') {
+  const otp = await getConsoleInput(`${c.bgMagenta(dryRunPrefix)} If you have an OTP (One-Time-Password), type it now or press "Enter" to continue: \n`);
+  if (!otp) {
+    console.log('No OTP provided, continuing to next step...')
+  } else if (otp.length > 0 && otp.length < 6) {
+    throw new Error('OTP must be 6 exactly digits.');
   }
   return otp;
 }
