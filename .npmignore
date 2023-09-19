@@ -14,8 +14,11 @@ CODE_OF_CONDUCT.md
 nuget*
 cypress.json
 cypress/*
+lib
+node_modules
 examples
 SlickgridRelease*
+scripts
 tests
 testresult.xml
 package-lock.json

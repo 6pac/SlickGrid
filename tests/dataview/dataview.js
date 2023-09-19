@@ -529,8 +529,7 @@ test("with bulk suspend", function() {
     dv.onPagingInfoChanged.subscribe(function(e,args) {
         ok(false, "onPagingInfoChanged called");
     });
-    dv.beginUpdate(true);
-    debugger;
+  dv.beginUpdate(true);
     dv.updateItem(1,{id:1,val:1337});
     equal(count, 0, "events fired");
     same(dv.getItem(1), {id:1,val:1}, "item updated");

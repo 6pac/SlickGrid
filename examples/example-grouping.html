@@ -4,14 +4,13 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example: Grouping</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="../controls/slick.pager.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
-  <link rel="stylesheet" href="examples-unicode-icons.css" type="text/css"/>
-  <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
     .cell-effort-driven {
-      text-align: center;
+      justify-content: center;
     }
 
     .slick-group-title[level='0'] {
@@ -25,6 +24,10 @@
     .slick-group-title[level='2'] {
       font-style: italic;
     }
+    /* example to override expanded icon */
+    /* .slick-group-toggle.expanded {
+      --alpine-group-expanded-icon-svg: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 24 24" display="inline-block" height="1.2em" width="1.2em" vertical-align="text-bottom" xmlns="http://www.w3.org/2000/svg" %3E%3Cpath fill="currentColor" d="M2,21V19H20V21H2M20,8V5H18V8H20M20,3A2,2 0 0,1 22,5V8A2,2 0 0,1 20,10H18V13A4,4 0 0,1 14,17H8A4,4 0 0,1 4,13V3H20M16,5H6V13A2,2 0 0,0 8,15H14A2,2 0 0,0 16,13V5Z"/%3E%3C/svg%3E');
+    } */
   </style>
 </head>
 <body>
@@ -34,11 +37,13 @@
       <label>SlickGrid</label>
     </div>
     <div id="myGrid" style="width:100%;height:500px;"></div>
-    <div id="pager" style="width:100%;height:20px;"></div>
   </div>
 
   <div class="options-panel" style="width:450px;">
-    <h2>Demonstrates:</h2>
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Demonstrates:
+    </h2>
     <ul>
       <li>Grouping & Aggregator features</li>
       <li>Similar to regular grouping but the "grouping" must be defined in the column we want to group by</li>
@@ -93,22 +98,19 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../slick.formatters.js"></script>
-<script src="../slick.editors.js"></script>
-<script src="../plugins/slick.cellrangedecorator.js"></script>
-<script src="../plugins/slick.cellrangeselector.js"></script>
-<script src="../plugins/slick.cellselectionmodel.js"></script>
-<script src="../slick.grid.js"></script>
-<script src="../slick.groupitemmetadataprovider.js"></script>
-<script src="../slick.dataview.js"></script>
-<script src="../controls/slick.pager.js"></script>
-<script src="../controls/slick.columnpicker.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.formatters.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangedecorator.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangeselector.js"></script>
+<script src="../dist/browser/plugins/slick.cellselectionmodel.js"></script>
+<script src="../dist/browser/slick.groupitemmetadataprovider.js"></script>
+<script src="../dist/browser/slick.dataview.js"></script>
+<script src="../dist/browser/controls/slick.columnpicker.js"></script>
 
 <script>
-function isIEPreVer9() { var v = navigator.appVersion.match(/MSIE ([\d.]+)/i); return (v ? v[1] < 9 : false); }
-
 var dataView;
 var grid;
 var data = [];
@@ -116,11 +118,11 @@ var columns = [
   {id: "sel", name: "#", field: "num", cssClass: "cell-selection", width: 40, resizable: false, selectable: false, focusable: false },
   {id: "title", name: "Title", field: "title", width: 70, minWidth: 50, cssClass: "cell-title", sortable: true, editor: Slick.Editors.Text},
   {id: "duration", name: "Duration", field: "duration", width: 70, sortable: true, groupTotalsFormatter: sumTotalsFormatter},
-  {id: "%", name: "% Complete", field: "percentComplete", width: 80, formatter: Slick.Formatters.PercentCompleteBar, sortable: true, groupTotalsFormatter: avgTotalsFormatter},
+  {id: "%", name: "% Complete", field: "percentComplete", width: 95, formatter: Slick.Formatters.PercentCompleteBar, sortable: true, groupTotalsFormatter: avgTotalsFormatter},
   {id: "start", name: "Start", field: "start", minWidth: 60, sortable: true},
   {id: "finish", name: "Finish", field: "finish", minWidth: 60, sortable: true},
   {id: "cost", name: "Cost", field: "cost", width: 90, sortable: true, groupTotalsFormatter: sumTotalsFormatter},
-  {id: "effort-driven", name: "Effort-Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, sortable: true}
+  {id: "effort-driven", name: "Effort-Driven", width: 95, minWidth: 20, maxWidth: 95, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, sortable: true}
 ];
 
 var options = {
@@ -163,6 +165,7 @@ function comparer(a, b) {
 }
 
 function groupByDuration() {
+  grid.setSortColumns([]);
   dataView.setGrouping({
     getter: "duration",
     formatter: function (g) {
@@ -175,9 +178,11 @@ function groupByDuration() {
     aggregateCollapsed: false,
     lazyTotalsCalculation: true
   });
+  grid.invalidate();
 }
 
 function groupByDurationOrderByCount(aggregateCollapsed) {
+  grid.setSortColumns([]);
   dataView.setGrouping({
     getter: "duration",
     formatter: function (g) {
@@ -193,9 +198,11 @@ function groupByDurationOrderByCount(aggregateCollapsed) {
     aggregateCollapsed: aggregateCollapsed,
     lazyTotalsCalculation: true
   });
+  grid.invalidate();
 }
 
 function groupByDurationEffortDriven() {
+  grid.setSortColumns([]);
   dataView.setGrouping([
     {
       getter: "duration",
@@ -222,9 +229,11 @@ function groupByDurationEffortDriven() {
       lazyTotalsCalculation: true
     }
   ]);
+  grid.invalidate();
 }
 
 function groupByDurationEffortDrivenPercent() {
+  grid.setSortColumns([]);
   dataView.setGrouping([
     {
       getter: "duration",
@@ -262,6 +271,7 @@ function groupByDurationEffortDrivenPercent() {
       lazyTotalsCalculation: true
     }
   ]);
+  grid.invalidate();
 }
 
 function toggleGrouping(expand) {
@@ -313,7 +323,6 @@ document.addEventListener("DOMContentLoaded", function() {
   grid.registerPlugin(groupItemMetadataProvider);
   grid.setSelectionModel(new Slick.CellSelectionModel());
 
-  var pager = new Slick.Controls.Pager(dataView, grid, "#pager");
   var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
 
 
@@ -321,29 +330,9 @@ document.addEventListener("DOMContentLoaded", function() {
     sortdir = args.sortAsc ? 1 : -1;
     sortcol = args.sortCol.field;
 
-    if (isIEPreVer9()) {
-      // using temporary Object.prototype.toString override
-      // more limited and does lexicographic sort only by default, but can be much faster
-
-      var percentCompleteValueFn = function () {
-        var val = this["percentComplete"];
-        if (val < 10) {
-          return "00" + val;
-        } else if (val < 100) {
-          return "0" + val;
-        } else {
-          return val;
-        }
-      };
-
-      // use numeric sort of % and lexicographic for everything else
-      dataView.fastSort((sortcol == "percentComplete") ? percentCompleteValueFn : sortcol, args.sortAsc);
-    }
-    else {
-      // using native sort with comparer
-      // preferred method but can be very slow in IE with huge datasets
-      dataView.sort(comparer, args.sortAsc);
-    }
+    // using native sort with comparer
+    // preferred method but can be very slow in IE with huge datasets
+    dataView.sort(comparer, args.sortAsc);
   });
 
   // wire up model events to drive the grid

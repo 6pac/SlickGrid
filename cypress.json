@@ -1,7 +1,0 @@
-{
-  "baseUrl": "http://localhost:8080",
-  "baseExampleUrl": "http://localhost:8080/examples",
-  "video": false,
-  "viewportWidth": 1200,
-  "viewportHeight": 800
-}

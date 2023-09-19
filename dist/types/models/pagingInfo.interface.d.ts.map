@@ -1,0 +1,1 @@
+{"version":3,"file":"pagingInfo.interface.d.ts","sourceRoot":"","sources":["../../../src/models/pagingInfo.interface.ts"],"names":[],"mappings":"AACA,MAAM,WAAW,UAAU;IACzB,uBAAuB;IACvB,QAAQ,EAAE,MAAM,CAAC;IAEjB,0BAA0B;IAC1B,OAAO,EAAE,MAAM,CAAC;IAEhB,qCAAqC;IACrC,SAAS,EAAE,MAAM,CAAC;IAElB,4CAA4C;IAC5C,UAAU,EAAE,MAAM,CAAC;IAEnB,sBAAsB;IACtB,QAAQ,EAAE,GAAG,CAAC;CACf"}

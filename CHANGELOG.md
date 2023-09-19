@@ -2,6 +2,48 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.0.0-alpha.9](https://github.com/6pac/SlickGrid/compare/5.0.0-alpha.8...5.0.0-alpha.9) (2023-09-19)
+
+# [5.0.0-alpha.8](https://github.com/6pac/SlickGrid/compare/5.0.0-alpha.7...5.0.0-alpha.8) (2023-09-19)
+
+# [5.0.0-alpha.7](https://github.com/6pac/SlickGrid/compare/5.0.0-alpha.6...5.0.0-alpha.7) (2023-09-19)
+
+# [5.0.0-alpha.6](https://github.com/6pac/SlickGrid/compare/5.0.0-alpha.5...5.0.0-alpha.6) (2023-09-19)
+
+# [5.0.0-alpha.5](https://github.com/6pac/SlickGrid/compare/5.0.0-alpha.4...5.0.0-alpha.5) (2023-09-19)
+
+# [5.0.0-alpha.4](https://github.com/6pac/SlickGrid/compare/5.0.0-alpha.3...5.0.0-alpha.4) (2023-09-19)
+
+# [5.0.0-alpha.3](https://github.com/6pac/SlickGrid/compare/5.0.0-alpha.5...5.0.0-alpha.3) (2023-09-19)
+
+# [5.0.0-alpha.5](https://github.com/6pac/SlickGrid/compare/5.0.0-alpha.1...5.0.0-alpha.5) (2023-09-19)
+
+### Bug Fixes
+
+* invalid argument type for setSelectedIds() method ([330e0e3](https://github.com/6pac/SlickGrid/commit/330e0e3e6f233439532804cafccf65e5781a9dd3))
+
+# [5.0.0-alpha.1](https://github.com/6pac/SlickGrid/compare/5.0.0-alpha.0...5.0.0-alpha.1) (2023-09-19)
+
+### Bug Fixes
+
+* CJS fallbacks should be at the end not at beginning ([a244ada](https://github.com/6pac/SlickGrid/commit/a244ada34bf47489c6c5064e405a6d2ae6046aca))
+* copying multiple times only kept last undo CellExternalCopyManager ([cdda3fb](https://github.com/6pac/SlickGrid/commit/cdda3fb433c8350eecfe2e36f64ee26b083e3db6))
+
+### Features
+
+* add new trading platform high frequency update grid ([#835](https://github.com/6pac/SlickGrid/issues/835)) ([f86371b](https://github.com/6pac/SlickGrid/commit/f86371bdc15b76037f912717018e743c4202f232))
+* migrate all Controls to TypeScript ([#808](https://github.com/6pac/SlickGrid/issues/808)) ([0d129bd](https://github.com/6pac/SlickGrid/commit/0d129bd4ffed69d913681e7f7ad7fd558b1ca7ec))
+* migrate all Decorator & Selection Plugins to TypeScript ([#812](https://github.com/6pac/SlickGrid/issues/812)) ([cf3049e](https://github.com/6pac/SlickGrid/commit/cf3049ee05936b64bfe1abdc2aac932eb4a9751c))
+* migrate all Menu/Buttons Plugins to TypeScript ([#811](https://github.com/6pac/SlickGrid/issues/811)) ([c66c429](https://github.com/6pac/SlickGrid/commit/c66c429246be74fa13e7b0c5917f6d81c36d0049))
+* migrate CheckboxSelector & State Plugins to TypeScript ([#813](https://github.com/6pac/SlickGrid/issues/813)) ([2da9f7f](https://github.com/6pac/SlickGrid/commit/2da9f7f8fad1542bb15026bf0472d3462955b3ac))
+* migrate CustomTooltip Plugin to TypeScript ([#816](https://github.com/6pac/SlickGrid/issues/816)) ([0f2b417](https://github.com/6pac/SlickGrid/commit/0f2b417fad5fb5ef3fd0456694d55fdee9af9ae9))
+* migrate Draggable Grouping Plugins to TypeScript ([#814](https://github.com/6pac/SlickGrid/issues/814)) ([0037c7d](https://github.com/6pac/SlickGrid/commit/0037c7d831314706cc238340406e250f2d26ee64))
+* migrate RemoteModel Plugins to TypeScript ([#823](https://github.com/6pac/SlickGrid/issues/823)) ([7a816e2](https://github.com/6pac/SlickGrid/commit/7a816e22333e817cc9f8d415beeedba9e01ad20f))
+* migrate Resizer Plugin to TypeScript ([#815](https://github.com/6pac/SlickGrid/issues/815)) ([762ec3d](https://github.com/6pac/SlickGrid/commit/762ec3d3a3c08335ce2fec40d04bbaceb91ddeae))
+* migrate RowDetail Plugin to TypeScript ([#822](https://github.com/6pac/SlickGrid/issues/822)) ([685b009](https://github.com/6pac/SlickGrid/commit/685b00922fae002b946b50efdae53dfafb277c54))
+* migrate RowMoveManager Plugins to TypeScript ([#817](https://github.com/6pac/SlickGrid/issues/817)) ([8ad65ca](https://github.com/6pac/SlickGrid/commit/8ad65ca512e56a7c27d0b08ebcce656c4cf90c65))
+* remove deprecated DataView methods ([#833](https://github.com/6pac/SlickGrid/issues/833)) ([0f3ba49](https://github.com/6pac/SlickGrid/commit/0f3ba49b103e7094089f917ad36d4da294618ea2))
+
 ## [4.0.1](https://github.com/6pac/SlickGrid/compare/4.0.0...4.0.1) (2023-06-30)
 
 ### Bug Fixes

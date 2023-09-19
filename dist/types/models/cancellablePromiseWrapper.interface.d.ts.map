@@ -1,0 +1,1 @@
+{"version":3,"file":"cancellablePromiseWrapper.interface.d.ts","sourceRoot":"","sources":["../../../src/models/cancellablePromiseWrapper.interface.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,yBAAyB,CAAC,CAAC,GAAG,GAAG;IAChD,OAAO,EAAE,OAAO,CAAC,CAAC,CAAC,CAAC;IACpB,MAAM,EAAE,MAAM,OAAO,CAAC;CACvB"}

@@ -3,15 +3,22 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="../controls/slick.pager.css" type="text/css" />
-  <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
-  <link rel="stylesheet" href="examples-unicode-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" crossorigin="anonymous">
   <style>
+    input.filter {
+      border: 1px solid #dadada;
+      border-radius: 2px;
+    }
+    input.filter::placeholder {
+      opacity: 0.4;
+    }
+
     .slick-headerrow-column {
-      background: #87b6c9;
+      background: #f1f1f1;
       text-overflow: clip;
       -moz-box-sizing: border-box;
       box-sizing: border-box;
@@ -64,6 +71,10 @@
     .slick-columnpicker-list input[type=checkbox]:checked + label:before {
       opacity: 1; /* checked icon */
     }
+    #myGrid {
+      --alpine-row-mouse-hover-color: #faf0f8;
+      --alpine-cell-selected-bg-color: #ecd5e5;
+    }
   </style>
 </head>
 <body>
@@ -74,7 +85,10 @@
   </div>
 
   <div class="options-panel">
-    <h2>Demonstrates:</h2>
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Demonstrates:
+    </h2>
     <ul>
       <li>Using a fixed header row to implement column-level filters with Checkbox Selector</li>
       <li>Type numbers in textboxes to filter grid data</li>
@@ -115,15 +129,14 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../plugins/slick.checkboxselectcolumn.js"></script>
-<script src="../plugins/slick.rowselectionmodel.js"></script>
-<script src="../controls/slick.pager.js"></script>
-<script src="../controls/slick.columnpicker.js"></script>
-
-<script src="../slick.dataview.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../slick.grid.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.dataview.js"></script>
+<script src="../dist/browser/plugins/slick.checkboxselectcolumn.js"></script>
+<script src="../dist/browser/plugins/slick.rowselectionmodel.js"></script>
+<script src="../dist/browser/controls/slick.pager.js"></script>
+<script src="../dist/browser/controls/slick.columnpicker.js"></script>
 
 <script>
   var dataView;
@@ -280,9 +293,11 @@
     };
 
     grid.onHeaderRowCellRendered.subscribe(function(e, args) {
-      if (args.column.field !== "sel") {
+      if (args.column.field !== 'sel') {
         args.node.innerHTML = ''; // empty it
         const inputElm = document.createElement('input');
+        inputElm.className = 'filter';
+        inputElm.placeholder = '🔎︎';
         inputElm.dataset.columnid = args.column.id;
         inputElm.value = columnFilters[args.column.id] || '';
 

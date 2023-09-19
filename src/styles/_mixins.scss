@@ -1,0 +1,17 @@
+// credit goes to UnoCSS https://antfu.me/posts/icons-in-pure-css
+@mixin createSvgClass($cssVarName, $svgPath) {
+  .#{$cssVarName} {
+    @include createSvgStyle(#{$cssVarName + '-icon-svg'}, $svgPath); // all icon will create css variable named "[icon name]-icon-svg"
+  }
+}
+
+// create SVG as a url() and the url string must be html escaped,
+// we will also use the name to create a CSS variable so that user could override any of the icon
+// by providing the full url string without needing else since it was already created
+@mixin createSvgStyle($cssVarName, $svgPath) {
+  --#{$cssVarName}: url('data:image/svg+xml;utf8,%3Csvg viewBox="0 0 24 24" display="inline-block" height="1em" width="1em" vertical-align="text-bottom" xmlns="http://www.w3.org/2000/svg" %3E%3Cpath fill="currentColor" d="#{$svgPath}"/%3E%3C/svg%3E');
+  -webkit-mask: var(--#{$cssVarName}) no-repeat;
+  mask: var(--#{$cssVarName}) no-repeat;
+  mask-size: 100% 100%;
+  -webkit-mask-size: 100% 100%;
+}

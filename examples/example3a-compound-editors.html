@@ -4,11 +4,23 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example 3a: Advanced Editing</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
     .cell-title {
       font-weight: bold;
+    }
+    .compound-cell {
+      border: 1px solid #c4c4c4;
+      border-radius: 2px;
+    }
+    .compound-cell:active,
+    .compound-cell:focus {
+      border: 1px solid navy;
+      outline: none;
+    }
+    .compound-separator {
+      margin: 0 4px;
     }
   </style>
 </head>
@@ -16,11 +28,14 @@
 
 <div style="position:relative">
   <div style="width:600px;">
-    <div id="myGrid" style="width:100%;height:500px;"></div>
+    <div id="myGrid" class="slick-container" style="width:100%;height:500px;"></div>
   </div>
 
   <div class="options-panel">
-    <h2>Demonstrates:</h2>
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Demonstrates:
+    </h2>
     <ul>
       <li>compound cell editors driving multiple fields from one cell</li>
       <li>providing validation from the editor</li>
@@ -36,25 +51,27 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.editors.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../slick.grid.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
 
 <script>
   var grid;
   var data = [];
   var columns = [
     {id: "title", name: "Title", field: "title", width: 120, cssClass: "cell-title", editor: Slick.Editors.Text},
-    {id: "range", name: "Range", width: 120, formatter: NumericRangeFormatter, editor: NumericRangeEditor}
+    {id: "range", name: "Range", width: 150, formatter: NumericRangeFormatter, editor: NumericRangeEditor}
   ];
 
   var options = {
     editable: true,
     enableAddRow: false,
     enableCellNavigation: true,
-    asyncEditorLoading: false
+    asyncEditorLoading: false,
+    rowHeight: 28
   };
 
   function NumericRangeFormatter(row, cell, value, columnDef, dataContext) {
@@ -67,12 +84,18 @@
 
     this.init = function () {
       fromElm = document.createElement('input');
-      fromElm.type ='text';
+      fromElm.className = 'compound-cell';
+      fromElm.type = 'text';
       fromElm.style.width = '40px';
       args.container.appendChild(fromElm);
-      args.container.insertAdjacentHTML('afterend', '&nbsp; to &nbsp;');
+
+      const spanElm = document.createElement('span');
+      spanElm.className = 'compound-separator';
+      spanElm.textContent = '-';
+      args.container.appendChild(spanElm);
 
       toElm = document.createElement('input');
+      toElm.className = 'compound-cell';
       toElm.type ='text';
       toElm.style.width = '40px';
       args.container.appendChild(toElm);

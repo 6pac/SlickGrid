@@ -4,11 +4,10 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example 4: Model</title>
-  <link rel="stylesheet" href="../dist/slick.grid.min.css" type="text/css"/>
-  <link rel="stylesheet" href="../dist/controls/slick.pager.min.css" type="text/css"/>
-  <link rel="stylesheet" href="../dist/examples/examples.min.css" type="text/css"/>
-  <link rel="stylesheet" href="../dist/examples/examples-unicode-icons.min.css" type="text/css"/>
-  <link rel="stylesheet" href="../dist/controls/slick.columnpicker.min.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <style>
     .cell-title {
@@ -16,7 +15,7 @@
     }
 
     .cell-effort-driven {
-      text-align: center;
+      justify-content: center;
     }
 
     .cell-selection {
@@ -31,27 +30,25 @@
     .slick-row.selected .cell-selection {
       background-color: transparent; /* show default selected row background */
     }
-    .ui-state-hover {
-      background: #6e6e6e44 !important;
-	    text-decoration: none;
-    }
   </style>
 </head>
 <body>
 <div style="position:relative">
-  <div style="width:600px;">
+  <div style="width:640px;">
     <div class="grid-header" style="width:100%">
       <label>SlickGrid</label>
-      <span style="float:right;margin:0px 4px auto 6px;background:transparent;cursor:pointer;" class="slick-icon-search" title="Toggle search panel"
+      <span style="float:right;margin:0px 4px auto 6px;background:transparent;cursor:pointer;" class="sgi-search" title="Toggle search panel"
             onclick="toggleFilterRow()"></span>
     </div>
-    <div id="myGrid" style="width:100%;height:500px;"></div>
+    <div id="myGrid" class="slick-container" style="width:100%;height:500px;"></div>
     <div id="pager" style="width:100%;height:20px;"></div>
   </div>
 
   <div class="options-panel">
-    <b>Search:</b>
-    <hr/>
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Search:
+    </h2>
     <div style="padding:6px;">
       <label style="width:200px;float:left">Show tasks with % at least: </label>
 
@@ -92,7 +89,7 @@
   </div>
 </div>
 
-<div id="inlineFilterPanel" style="display:none;background:#dddddd;color:black;">
+<div id="inlineFilterPanel" style="display:none;background:#f6f6f6;color:black;height:100%;padding:4px">
   Show tasks with title including <input type="text" id="txtSearch2">
   and % at least &nbsp;
   <input style="width:100px;display:inline-block;" id="pcSlider2" type="range" min="1" max="100" value="1">
@@ -100,31 +97,30 @@
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
 
-<script src="../dist/slick.core.min.js"></script>
-<script src="../dist/slick.interactions.min.js"></script>
-<script src="../dist/slick.formatters.min.js"></script>
-<script src="../dist/slick.editors.min.js"></script>
-<script src="../dist/plugins/slick.rowselectionmodel.min.js"></script>
-<script src="../dist/slick.grid.min.js"></script>
-<script src="../dist/slick.dataview.min.js"></script>
-<script src="../dist/controls/slick.pager.min.js"></script>
-<script src="../dist/controls/slick.columnpicker.min.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.formatters.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
+<script src="../dist/browser/plugins/slick.rowselectionmodel.js"></script>
+<script src="../dist/browser/slick.dataview.js"></script>
+<script src="../dist/browser/controls/slick.pager.js"></script>
+<script src="../dist/browser/controls/slick.columnpicker.js"></script>
 
 <script>
-function isIEPreVer9() { var v = navigator.appVersion.match(/MSIE ([\d.]+)/i); return (v ? v[1] < 9 : false); }
-
 var dataView;
 var grid;
 var data = [];
 var columns = [
   {id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 40, cannotTriggerInsert: true, resizable: false, selectable: false, excludeFromColumnPicker: true },
-  {id: "title", name: "Title", field: "title", width: 120, minWidth: 120, cssClass: "cell-title", editor: Slick.Editors.Text, validator: requiredFieldValidator, sortable: true},
+  {id: "title", name: "Title", field: "title", width: 100, cssClass: "cell-title", editor: Slick.Editors.LongText, validator: requiredFieldValidator, sortable: true},
   {id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Text, sortable: true},
-  {id: "%", defaultSortAsc: false, name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete, sortable: true},
+  {id: "%", defaultSortAsc: false, name: "% Complete", field: "percentComplete", width: 110, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete, sortable: true},
   {id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Flatpickr, sortable: true},
   {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Flatpickr, sortable: true},
-  {id: "effort-driven", name: "Effort Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkbox, editor: Slick.Editors.Checkbox, cannotTriggerInsert: true, sortable: true}
+  {id: "effort-driven", name: "Effort Driven", width: 100, minWidth: 20, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkbox, editor: Slick.Editors.Checkbox, cannotTriggerInsert: true, sortable: true}
 ];
 
 var options = {
@@ -180,18 +176,6 @@ function comparer(a, b) {
 
 function toggleFilterRow() {
   grid.setTopPanelVisibility(!grid.getOptions().showTopPanel);
-}
-
-
-const headerSearchIcon = document.querySelector(".grid-header .slick-icon-search");
-if (headerSearchIcon) {
-  headerSearchIcon.classList.add("ui-state-default", "ui-corner-all");
-  headerSearchIcon.addEventListener('mouseover', (function (e) {
-    e.target.classList.add("ui-state-hover");
-  }));
-  headerSearchIcon.addEventListener('mouseout', (function (e) {
-    e.target.classList.remove("ui-state-hover");
-  }));
 }
 
 document.addEventListener("DOMContentLoaded", function() {
@@ -252,28 +236,9 @@ document.addEventListener("DOMContentLoaded", function() {
     sortdir = args.sortAsc ? 1 : -1;
     sortcol = args.sortCol.field;
 
-    if (isIEPreVer9()) {
-      // using temporary Object.prototype.toString override
-      // more limited and does lexicographic sort only by default, but can be much faster
-
-      var percentCompleteValueFn = function () {
-        var val = this["percentComplete"];
-        if (val < 10) {
-          return "00" + val;
-        } else if (val < 100) {
-          return "0" + val;
-        } else {
-          return val;
-        }
-      };
-
-      // use numeric sort of % and lexicographic for everything else
-      dataView.fastSort((sortcol == "percentComplete") ? percentCompleteValueFn : sortcol, args.sortAsc);
-    } else {
-      // using native sort with comparer
-      // preferred method but can be very slow in IE with huge datasets
-      dataView.sort(comparer, args.sortAsc);
-    }
+    // using native sort with comparer
+    // preferred method but can be very slow in IE with huge datasets
+    dataView.sort(comparer, args.sortAsc);
   });
 
   // wire up model events to drive the grid
@@ -322,15 +287,16 @@ document.addEventListener("DOMContentLoaded", function() {
   slider2.oninput = sliderCallback;
 
   // wire up the search textbox to apply the filter to the model
-  document.querySelector("#txtSearch,#txtSearch2").addEventListener('keyup', (e) => {
+  document.querySelectorAll("#txtSearch,#txtSearch2").forEach(elm => elm.addEventListener('keyup', (e) => {
     Slick.GlobalEditorLock.cancelCurrentEdit();
 
     // clear on Esc
     if (e.which == 27) e.target.value = '';
 
-    columnFilters['title'] = (e.target.value || '').trim();
+    searchString = (e.target.value || '').trim();
+    updateFilter();
     dataView.refresh();
-  });
+  }));
 
   function updateFilter() {
     dataView.setFilterArgs({

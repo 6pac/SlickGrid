@@ -4,8 +4,9 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example: CompositeEditor</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <style>
     .cell-title {
@@ -13,7 +14,7 @@
     }
 
     .cell-effort-driven {
-      text-align: center;
+      justify-content: center;
     }
 
     .item-details-form {
@@ -22,7 +23,7 @@
       border: 1px solid black;
       margin: 8px;
       padding: 10px;
-      background: #efefef;
+      background: #fbfbfb;
       -moz-box-shadow: 0px 0px 15px black;
       -webkit-box-shadow: 0px 0px 15px black;
       box-shadow: 0px 0px 15px black;
@@ -53,18 +54,21 @@
       margin-top: 4px;
       padding: 0;
       padding-left: 4px;
-      padding-right: 4px;
+      padding-right: 0px;
     }
   </style>
 </head>
 <body>
 <div style="position:relative">
   <div style="width:600px;">
-    <div id="myGrid" style="width:100%;height:500px;"></div>
+    <div id="myGrid" class="slick-container" style="width:100%;height:500px;"></div>
   </div>
 
   <div class="options-panel">
-    <h2>Demonstrates:</h2>
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Demonstrates:
+    </h2>
     <ul>
       <li>using a CompositeEditor to implement detached item edit form</li>
     </ul>
@@ -90,28 +94,26 @@
 
     <hr/>
     <div class='item-details-form-buttons'>
-      <button data-action='save'>Save</button>
-      <button data-action='cancel'>Cancel</button>
+      <button data-action='save' class='slick-btn slick-btn-primary'>Save</button>
+      <button data-action='cancel' class='slick-btn slick-btn-default'>Cancel</button>
     </div>
   </div>
 </script>
 
-
-<script src="../lib/firebugx.js"></script>
-
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
 <script src="../lib/jquery.tmpl.min.js"></script>
-  <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
-  <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../plugins/slick.cellrangeselector.js"></script>
-<script src="../plugins/slick.cellselectionmodel.js"></script>
-<script src="../slick.formatters.js"></script>
-<script src="../slick.editors.js"></script>
-<script src="../slick.grid.js"></script>
-<script src="../slick.compositeeditor.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangeselector.js"></script>
+<script src="../dist/browser/plugins/slick.cellselectionmodel.js"></script>
+<script src="../dist/browser/slick.formatters.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
+<script src="../dist/browser/slick.compositeeditor.js"></script>
 
 <script>
   function requiredFieldValidator(value) {
@@ -128,10 +130,10 @@
     {id: "title", name: "Title", field: "title", width: 120, cssClass: "cell-title", editor: Slick.Editors.Text, validator: requiredFieldValidator},
     {id: "desc", name: "Description", field: "description", width: 100, editor: Slick.Editors.Text},
     {id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Text},
-    {id: "percent", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete},
+    {id: "percent", name: "% Complete", field: "percentComplete", width: 95, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete},
     {id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Flatpickr},
     {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Flatpickr},
-    {id: "effort-driven", name: "Effort Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, editor: Slick.Editors.Checkbox}
+    {id: "effort-driven", name: "Effort Driven", width: 90, minWidth: 20, maxWidth: 90, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, editor: Slick.Editors.Checkbox}
   ];
   var options = {
     editable: true,

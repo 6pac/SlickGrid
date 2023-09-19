@@ -1,0 +1,1 @@
+{"version":3,"file":"columnSort.interface.d.ts","sourceRoot":"","sources":["../../../src/models/columnSort.interface.ts"],"names":[],"mappings":"AAAA,OAAO,KAAK,EAAE,MAAM,EAAE,MAAM,oBAAoB,CAAC;AAEjD,MAAM,WAAW,UAAU;IACzB,6BAA6B;IAC7B,QAAQ,EAAE,MAAM,GAAG,MAAM,CAAC;IAE1B,gCAAgC;IAChC,OAAO,EAAE,OAAO,CAAC;IAEjB,0BAA0B;IAC1B,OAAO,CAAC,EAAE,MAAM,CAAC;CAClB"}

@@ -1,22 +1,49 @@
 {
-    "extends": [
-        "eslint:recommended",
-        "plugin:cypress/recommended"
-    ],
-    "env": {
-        "browser": true,
-        "es6": true,
-        "node": true
-    },
-    "globals": {
-        "flatpickr": true,
-        "Slick": true,
-        "Sortable": true
-    },
-    "rules": {
-        "cypress/no-unnecessary-waiting": "off",
-        "cypress/unsafe-to-chain-command": "off",
-        "no-cond-assign": "off",
-        "no-prototype-builtins": [0]
+  "parser": "@typescript-eslint/parser",
+  "settings": {
+    "node": {
+      "tryExtensions": [".js", ".json", ".node", ".ts", ".d.ts"],
+      "resolvePaths": ["node_modules/@types"]
     }
+  },
+  "extends": [
+    "plugin:@typescript-eslint/eslint-recommended",
+    "plugin:@typescript-eslint/recommended",
+    "plugin:cypress/recommended"
+  ],
+  "plugins": ["@typescript-eslint", "node"],
+  "root": true,
+  "env": {
+      "browser": true,
+      "es6": true,
+      "node": true
+  },
+  "globals": {
+      "flatpickr": true,
+      "Slick": true,
+      "Sortable": true,
+      "IIFE_ONLY": true
+  },
+  "rules": {
+    "@typescript-eslint/ban-ts-comment": "off",
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_", "destructuredArrayIgnorePattern": "^_" }],
+    "@typescript-eslint/ban-types": [
+      "error",
+      {
+        "types": {
+          // accept Function type
+          "Function": false
+        },
+        "extendDefaults": true
+      }
+    ],
+    "cypress/no-assigning-return-values": "off",
+    "cypress/no-unnecessary-waiting": "off",
+    "cypress/unsafe-to-chain-command": "off",
+    "no-cond-assign": "off",
+    "no-prototype-builtins": [0]
+  }
 }

@@ -4,15 +4,15 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example 10: Async post render</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
     .cell-title {
       font-weight: bold;
     }
 
     .cell-effort-driven {
-      text-align: center;
+      justify-content: center;
     }
 
     .description * {
@@ -25,11 +25,14 @@
   <div class="grid-header" style="width:100%">
     <label>Scores:</label>
   </div>
-  <div id="myGrid" style="width:100%;height:500px;"></div>
+  <div id="myGrid" class="slick-container" style="width:100%;height:500px;"></div>
 </div>
 
 <div style="margin-left:650px;margin-top:40px;" class="description">
-  <h2>Demonstrates:</h2>
+  <h2>
+    <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+    Demonstrates:
+  </h2>
 
   <p>
     This page extends async background post-rendering to accept a cleanup function.<br/>
@@ -62,16 +65,16 @@
     </ul>
 </div>
 
-<script src="../lib/firebugx.js"></script>
-
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
-<script src="../lib/jquery.sparkline-2-1-2.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.0/jquery.min.js"></script>
+<script src="https://code.jquery.com/jquery-migrate-1.2.1.min.js"></script>
+<!-- nb: sparkline 2.x will cause a memory leak in the current architecture, so we use sparkline 1.x and jquery-migrate -->
+<script src="../lib/jquery.sparkline.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../slick.editors.js"></script>
-<script src="../slick.grid.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
 
 <script>
   function requiredFieldValidator(value) {

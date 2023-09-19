@@ -21,7 +21,7 @@ jobs:
       fail-fast: false
       matrix:
         # define which version of NodeJS to run the build
-        node: [16]
+        node: [18]
 
     steps:
       - name: Clone repository
@@ -45,11 +45,17 @@ jobs:
       - run: npm --version
 
       - name: Install npm dependencies
-        run: npm install
+        run: npm install --legacy-peer-deps
+
+      - name: Prod Build with TS Types
+        run: npm run build:prod
+
+      - name: Start HTTP Server
+        run: npm run serve:demo &
 
       - name: Run Cypress E2E tests
-        uses: cypress-io/github-action@v4
+        uses: cypress-io/github-action@v5
         with:
-          start: npm run serve
-          wait-on: 'http://localhost:8080'
+          # wait-on: 'http://localhost:8080'
           browser: chrome
+          config-file: cypress/cypress.config.ts

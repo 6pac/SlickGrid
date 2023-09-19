@@ -4,7 +4,8 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example 5: Collapsing</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.grid.css" type="text/css"/>
   <link rel="stylesheet" href="examples.css" type="text/css"/>
   <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <style>
@@ -13,21 +14,19 @@
     }
 
     .cell-effort-driven {
-      text-align: center;
+      justify-content: center;
     }
 
+    .cell-title {
+      display: inline-flex;
+      align-items: center;
+    }
     .toggle {
-      height: 9px;
-      width: 9px;
+      cursor: pointer;
+      height: 1em;
+      width: 1em;
       display: inline-block;
-    }
-
-    .toggle.expand {
-      background: url(../images/expand.gif) no-repeat center center;
-    }
-
-    .toggle.collapse {
-      background: url(../images/collapse.gif) no-repeat center center;
+      font-size: 15px;
     }
 
   </style>
@@ -51,7 +50,10 @@
       <div id="myGrid" style="width:700px;height:500px;"></div>
     </td>
     <td valign="top">
-      <h2>Demonstrates:</h2>
+      <h2>
+        <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+        Demonstrates:
+      </h2>
       <ul>
         <li>implementing expand/collapse as a filter for DataView</li>
       </ul>
@@ -64,16 +66,15 @@
   </tr>
 </table>
 
-<script src="../lib/firebugx.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.formatters.js"></script>
-<script src="../slick.editors.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../slick.grid.js"></script>
-<script src="../slick.dataview.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.formatters.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
+<script src="../dist/browser/slick.dataview.js"></script>
 
 <script>
 function requiredFieldValidator(value) {
@@ -87,15 +88,15 @@ function requiredFieldValidator(value) {
 
 var TaskNameFormatter = function (row, cell, value, columnDef, dataContext) {
   if (value == null || value == undefined || dataContext === undefined) { return ""; }
-  
+
   value = value.replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;");
   var spacer = "<span style='display:inline-block;height:1px;width:" + (15 * dataContext["indent"]) + "px'></span>";
   var idx = dataView.getIdxById(dataContext.id);
   if (data[idx + 1] && data[idx + 1].indent > data[idx].indent) {
     if (dataContext._collapsed) {
-      return spacer + " <span class='toggle expand'></span>&nbsp;" + value;
+      return spacer + " <span class='toggle sgi sgi-plus-box-outline'></span>&nbsp;" + value;
     } else {
-      return spacer + " <span class='toggle collapse'></span>&nbsp;" + value;
+      return spacer + " <span class='toggle sgi sgi-minus-box-outline'></span>&nbsp;" + value;
     }
   } else {
     return spacer + " <span class='toggle'></span>&nbsp;" + value;
@@ -275,7 +276,7 @@ data = [
 var columns = [
   {id: "title", sortable:true, name: "Title", field: "title", width: 220, cssClass: "cell-title", formatter: TaskNameFormatter, editor: Slick.Editors.Text, validator: requiredFieldValidator},
   {id: "duration", sortable:true, name: "Duration", field: "duration", editor: Slick.Editors.Text},
-  {id: "%", sortable:true, name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete},
+  {id: "%", sortable:true, name: "% Complete", field: "percentComplete", width: 95, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete},
   {id: "start", sortable:true, name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Flatpickr},
   {id: "finish", sortable:true, name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Flatpickr},
   {id: "effort-driven", sortable:true, name: "Effort Driven", width: 120, minWidth: 20, maxWidth: 120, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, editor: Slick.Editors.Checkbox, cannotTriggerInsert: true}
@@ -357,7 +358,7 @@ function addChilder(currentList, itemMap, targetList){
     if(!itemMap || null==itemMap){
       return;
     }
-    
+
     var id = element["id"];
     if(!id || null==id){
       return;
@@ -434,7 +435,7 @@ function getSubs(dRows,subs){
     // HACK may get childs enough
     // subs = getSubs(childs, subs);
   });
-  
+
   return subs;
 }
 
@@ -476,9 +477,9 @@ function sortData(dataRow1, dataRow2, args){
     if( typeof value2 === "undefined") {
       return -1;
     } else {
-      
+
       if(parentId1!==parentId2){
-        // no need to compare 
+        // no need to compare
         return 0;
       }
       var res =  (value1 === value2 ? 0 : (value1 > value2 ? 1 : -1)) * sign;
@@ -496,7 +497,7 @@ function sortData(dataRow1, dataRow2, args){
 function comparerTree(dataRows1, dataRows2, args){
   var nRows1 = getSubs(dataRows1,[]);
   var nRows2 = getSubs(dataRows2,[]);
-  
+
   if(nRows1.length<1) {
     if(nRows2.length<1) {
       return 0;
@@ -555,7 +556,7 @@ function compareRow(dataRow1, dataRow2, args){
   }
   let field = args.sortCol.field;
   let sign = args.sortAsc ? 1 : -1;
-  
+
   let value1 = dataRow1[field], value2 = dataRow2[field];
   if( typeof value1 === "undefined") {
     if( typeof value2 === "undefined") {
@@ -582,12 +583,12 @@ function bindGridEvents() {
 
     data = initTree(data);
     // console.info(data);
-    
+
     dataView.setItems(data);
     dataView.refresh();
 		grid.invalidate();
 		grid.render();
-    
+
 	});
 
   grid.onCellChange.subscribe(function (e, args) {
@@ -650,7 +651,7 @@ function bindGridEvents() {
       percentCompleteThreshold = this.value;
     }
   }
-  
+
   slider.oninput = sliderCallback;
 
 

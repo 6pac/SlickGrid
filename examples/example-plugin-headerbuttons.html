@@ -3,15 +3,11 @@
 
 <head>
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css" />
-  <link rel="stylesheet" href="examples.css" type="text/css" />
-  <link rel="stylesheet" href="../plugins/slick.headerbuttons.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.headerbuttons.css" type="text/css" />
   <style>
-    .icon-highlight-off,
-    .icon-highlight-on {
-      background-image: url(../images/bullet_blue.png);
-    }
-
     .icon-highlight-off {
       opacity: 0.2;
     }
@@ -19,16 +15,30 @@
     .negative-highlight {
       background: red;
     }
+    .slick-header-columns .slick-header-column {
+      display: inline-block;
+    }
+    .color-orange {
+      color: orange;
+    }
+    .color-red {
+      color: red;
+    }
   </style>
 </head>
 
 <body>
   <div style="position:relative">
     <div style="width:600px;">
-      <div id="myGrid" style="width:100%;height:500px;"></div>
+      <div id="myGrid" class="slick-container" style="width:100%;height:500px;"></div>
     </div>
 
     <div class="options-panel">
+      <h2>
+        <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+        Demonstrates:
+      </h2>
+
       <p>
         This example demonstrates using the <b>Slick.Plugins.HeaderButtons</b> plugin to easily add buttons to column
         headers. These buttons can be specified directly in the column definition, and are very easy to configure and
@@ -42,14 +52,12 @@
     </div>
   </div>
 
-  <script src="../lib/firebugx.js"></script>
-
   <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-  <script src="../slick.core.js"></script>
-  <script src="../slick.interactions.js"></script>
-  <script src="../slick.grid.js"></script>
-  <script src="../plugins/slick.headerbuttons.js"></script>
+  <script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+  <script src="../dist/browser/plugins/slick.headerbuttons.js"></script>
 
   <script>
     var grid;
@@ -73,7 +81,8 @@
         header: {
           buttons: [
             {
-              cssClass: "icon-highlight-off",
+              // cssClass: "icon-highlight-off",
+              cssClass: "sgi sgi-lightbulb color-orange sgi-14px",
               command: "toggle-highlight",
               tooltip: "Highlight negative numbers.",
               itemVisibilityOverride: function (args) {
@@ -100,14 +109,14 @@
     columns[0].header = {
       buttons: [
         {
-          image: "../images/tag_red.png",
+          cssClass: 'sgi sgi-tag-outline sgi-14px',
           command: "Red Tag Day",
           action: function (e, args) {
             alert("command: " + args.command);
           }
         },
         {
-          image: "../images/comment_yellow.gif",
+          cssClass: 'sgi sgi-message-outline sgi-14px',
           action: function (e, args) {
             // do something
             console.log(e, args);
@@ -115,10 +124,10 @@
           }
         },
         {
-          image: "../images/info.gif"
+          cssClass: 'sgi sgi-information-outline sgi-14px',
         },
         {
-          image: "../images/help.png"
+          cssClass: 'sgi sgi-help-circle-outline sgi-14px',
         }
       ]
     };
@@ -128,7 +137,7 @@
     columns[1].header = {
       buttons: [
         {
-          image: "../images/help.png",
+          cssClass: 'sgi sgi-information-outline sgi-14px',
           showOnHover: true,
           tooltip: "This button only appears on hover.",
           handler: function (e) {
@@ -171,13 +180,13 @@
       var command = args.command;
 
       if (command == "toggle-highlight") {
-        if (button.cssClass == "icon-highlight-on") {
+        if (button.cssClass == "sgi sgi-lightbulb color-red sgi-14px") {
           delete columnsWithHighlightingById[column.id];
-          button.cssClass = "icon-highlight-off";
+          button.cssClass = "sgi sgi-lightbulb color-orange sgi-14px";
           button.tooltip = "Highlight negative numbers."
         } else {
           columnsWithHighlightingById[column.id] = true;
-          button.cssClass = "icon-highlight-on";
+          button.cssClass = "sgi sgi-lightbulb color-red sgi-14px";
           button.tooltip = "Remove highlight."
         }
 

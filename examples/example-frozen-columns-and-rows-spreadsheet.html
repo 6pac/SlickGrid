@@ -4,24 +4,35 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid Example: Spreadsheet with Frozen Rows and Columns</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
     .slick-cell.copied {
       background: blue;
       background: rgba(0, 0, 255, 0.2);
       -webkit-transition: 0.5s background;
     }
+    /** override slick-cell to make it look like Excel sheet */
+    .slick-container {
+      --alpine-header-column-height: 20px;
+      --alpine-header-font-weight: 500;
+      --alpine-cell-border-width: 0 1px 1px 0;
+      --alpine-cell-border-color: #d4d4d4;
+    }
   </style>
 </head>
 <body>
 <div style="position:relative">
   <div style="width:600px;">
-    <div id="myGrid" style="width:100%;height:500px;"></div>
+    <div id="myGrid" class="slick-container" style="width:100%;height:500px;"></div>
   </div>
 
   <div class="options-panel">
-    <h2>Demonstrates:</h2>
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Demonstrates:
+    </h2>
     <ul>
       <li>Virtual scrolling on both rows and columns.</li>
       <li>Select a range of cells with a mouse</li>
@@ -34,15 +45,15 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../plugins/slick.autotooltips.js"></script>
-<script src="../plugins/slick.cellrangedecorator.js"></script>
-<script src="../plugins/slick.cellrangeselector.js"></script>
-<script src="../plugins/slick.cellcopymanager.js"></script>
-<script src="../plugins/slick.cellselectionmodel.js"></script>
-<script src="../slick.editors.js"></script>
-<script src="../slick.grid.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/plugins/slick.autotooltips.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangedecorator.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangeselector.js"></script>
+<script src="../dist/browser/plugins/slick.cellcopymanager.js"></script>
+<script src="../dist/browser/plugins/slick.cellselectionmodel.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
 
 <script>
   var grid;

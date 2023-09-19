@@ -3,10 +3,11 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
-  <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css"/>
-  <link rel="stylesheet" href="../controls/slick.gridmenu.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.gridmenu.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
   <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/font-awesome/4.7.0/css/font-awesome.min.css" crossorigin="anonymous">
   <style>
     .slick-cell-checkboxsel {
@@ -31,7 +32,7 @@
     #myGrid2 input[type=checkbox] + label:before {
       cursor: pointer;
       font-family: FontAwesome;
-      color: rgb(143, 14, 106);
+      color: #8f0e6a;
       font-weight: bold;
       display: inline-block;
       content: "\f00c";
@@ -39,22 +40,32 @@
     }
     #myGrid2 input[type=checkbox] + label:before { opacity: 0.1; } /* unchecked icon */
     #myGrid2 input[type=checkbox]:checked + label:before { opacity: 1; } /* checked icon */
+
+    #myGrid2 {
+      --alpine-cell-active-box-shadow: inset 0 0 0 1px #af2488;
+      --alpine-cell-editable-box-shadow: inset 0 0 0 2px #8f0e6a;
+      --alpine-row-mouse-hover-color: #faf0f8;
+      --alpine-cell-selected-bg-color: #ecd5e5;
+    }
   </style>
 </head>
 <body>
 <div style="position:relative">
   <p>Without Font Styling</p>
   <div style="width:600px;">
-    <div id="myGrid" style="width:100%;height:300px;"></div>
+    <div id="myGrid" class="slic-container" style="width:100%;height:300px;"></div>
   </div>
   <br/>
   <p>With Font Styling</p>
   <div style="width:600px;">
-    <div id="myGrid2" style="width:100%;height:300px;" class="example-grid"></div>
+    <div id="myGrid2" class="slic-container" style="width:100%;height:300px;" class="example-grid"></div>
   </div>
 
   <div class="options-panel">
-    <h2>Demonstrates:</h2>
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Demonstrates:
+    </h2>
     <ul>
       <li>Checkbox row select column</li>
       <p>
@@ -75,20 +86,20 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../plugins/slick.checkboxselectcolumn.js"></script>
-<script src="../plugins/slick.autotooltips.js"></script>
-<script src="../plugins/slick.cellrangedecorator.js"></script>
-<script src="../plugins/slick.cellrangeselector.js"></script>
-<script src="../plugins/slick.cellcopymanager.js"></script>
-<script src="../plugins/slick.cellselectionmodel.js"></script>
-<script src="../plugins/slick.rowselectionmodel.js"></script>
-<script src="../controls/slick.columnpicker.js"></script>
-<script src="../controls/slick.gridmenu.js"></script>
-<script src="../slick.formatters.js"></script>
-<script src="../slick.editors.js"></script>
-<script src="../slick.grid.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/plugins/slick.checkboxselectcolumn.js"></script>
+<script src="../dist/browser/plugins/slick.autotooltips.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangedecorator.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangeselector.js"></script>
+<script src="../dist/browser/plugins/slick.cellcopymanager.js"></script>
+<script src="../dist/browser/plugins/slick.cellselectionmodel.js"></script>
+<script src="../dist/browser/plugins/slick.rowselectionmodel.js"></script>
+<script src="../dist/browser/controls/slick.columnpicker.js"></script>
+<script src="../dist/browser/controls/slick.gridmenu.js"></script>
+<script src="../dist/browser/slick.formatters.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
 
 <script>
   var grid;
@@ -98,7 +109,10 @@
     editable: true,
     enableCellNavigation: true,
     asyncEditorLoading: false,
-    autoEdit: false
+    autoEdit: false,
+    gridMenu: {
+      iconCssClass: "sgi sgi-menu sgi-17px",
+    }
   };
   var checkboxSelector1, checkboxSelector2;
   var columns = [];
@@ -160,7 +174,6 @@
         var rtn = args.grid.getActiveCell();
         var x = args.rows;
     });
-
     document.querySelector("#selectRow5").addEventListener('click', function() {
         var rowIndex = 5; // use row 5 for this example
         var selectedRowsIndexes = grid.getSelectedRows();

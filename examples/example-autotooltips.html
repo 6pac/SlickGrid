@@ -4,8 +4,8 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid plugin example: AutoTooltips</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
 </head>
 <body>
 <table width="100%">
@@ -15,7 +15,10 @@
     </td>
     <td valign="top">
 	  <br/>
-      <h2>Demonstrates:</h2>
+      <h2>
+        <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+        Demonstrates:
+      </h2>
       <ul>
         <li>AutoTooltips plugin</li>
       </ul>
@@ -30,10 +33,10 @@ grid.render();</pre>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../slick.grid.js"></script>
-<script src="../plugins/slick.autotooltips.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/plugins/slick.autotooltips.js"></script>
 
 <script>
   var tooltipsActivated = false;
@@ -42,10 +45,10 @@ grid.render();</pre>
   var columns = [
     {id: "title", name: "Title", field: "title"},
     {id: "duration", name: "Duration", field: "duration"},
-    {id: "%", name: "% Complete", field: "percentComplete"},
+    {id: "%", name: "% Complete", field: "percentComplete", width: 95},
     {id: "start", name: "Start", field: "start"},
     {id: "finish", name: "Finish", field: "finish"},
-    {id: "effort-driven", name: "Effort Driven", field: "effortDriven"}
+    {id: "effort-driven", name: "Effort Driven", field: "effortDriven", width: 95}
   ];
 
   var options = {

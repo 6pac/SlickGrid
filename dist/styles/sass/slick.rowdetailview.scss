@@ -1,0 +1,41 @@
+.detailView-toggle:not(.slick-cell) {
+    display:          inline-block;
+    cursor:           pointer;
+    border-bottom: 5px dashed;
+    border-right: 5px solid transparent;
+    border-left: 5px solid transparent;
+    color: #6190cd;
+    background-image: none;
+}
+
+.detailView-toggle.expand {
+    height:           0px;
+    width:            0px;
+    transform: rotate(90deg);
+}
+
+.detailView-toggle.collapse {
+  height:           0px;
+  width:            0px;
+  transform: rotate(2700deg);
+}
+
+.dynamic-cell-detail {
+    z-index:            10000;
+    position:           absolute;
+    background-color:   #dae5e8;
+    margin:             0;
+    padding:            0;
+    width:              100%;
+    overflow:           auto;
+}
+
+.dynamic-cell-detail > :first-child {
+    vertical-align:     middle;
+    line-height:        13px;
+}
+
+.dynamic-cell-detail > .detail-container {
+    overflow: auto;
+    display: block !important;
+}

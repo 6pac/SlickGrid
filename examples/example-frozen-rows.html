@@ -4,17 +4,17 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example: Frozen Rows</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css" media="screen" charset="utf-8"/>
-  <link rel="stylesheet" href="../controls/slick.pager.css" type="text/css" media="screen" charset="utf-8"/>
-  <link rel="stylesheet" href="examples.css" type="text/css" media="screen" charset="utf-8"/>
-  <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css" media="screen" charset="utf-8"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css" media="screen" charset="utf-8"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
   <style>
     .cell-title {
       font-weight: bold;
     }
 
     .cell-effort-driven {
-      text-align: center;
+      justify-content: center;
     }
 
     .cell-selection {
@@ -44,8 +44,10 @@
 </div>
 
 <div class="options-panel">
-  <b>Search:</b>
-  <hr/>
+  <h2>
+    <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+    Search:
+  </h2>
   <div style="padding:6px;">
     <label style="width:200px;float:left">Show tasks with % at least: </label>
 
@@ -97,23 +99,23 @@
   <div style="width:100px;display:inline-block;" id="pcSlider2"></div>
 </div>
 
-<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js" defer></script>
+<script src="sortable-cdn-fallback.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../slick.editors.js"></script>
-<script src="../slick.formatters.js"></script>
-<script src="../plugins/slick.rowselectionmodel.js"></script>
-<script src="../slick.grid.js"></script>
-<script src="../slick.dataview.js"></script>
-<script src="../controls/slick.pager.js"></script>
-<script src="../controls/slick.columnpicker.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
+<script src="../dist/browser/slick.formatters.js"></script>
+<script src="../dist/browser/plugins/slick.rowselectionmodel.js"></script>
+<script src="../dist/browser/slick.dataview.js"></script>
+<script src="../dist/browser/controls/slick.pager.js"></script>
+<script src="../dist/browser/controls/slick.columnpicker.js"></script>
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
   document.querySelector('#frozenRow').value = options.frozenRow;
 });
-function isIEPreVer9() { var v = navigator.appVersion.match(/MSIE ([\d.]+)/i); return (v ? v[1] < 9 : false); }
 
 var dataView;
 var grid;
@@ -121,26 +123,16 @@ var data = [];
 var selectedRowIds = [];
 
 var columns = [
-  {id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 40, cannotTriggerInsert: true, resizable: false, unselectable: true }
-  ,
-  {id: "title", name: "Title", field: "title", width: 120, minWidth: 120, cssClass: "cell-title", editor: Slick.Editors.Text, validator: requiredFieldValidator, sortable: true}
-  ,
-  {id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Text, sortable: true}
-  ,
-  {id: "%", name: "% Complete", field: "percentComplete", width: 80, resizable: false, formatter: Slick.Formatters.PercentComplete, editor: Slick.Editors.PercentComplete, sortable: true}
-  ,
-  {id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Date, sortable: true}
-  ,
-  {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Date, sortable: true}
-  ,
-  {id: "effort-driven", name: "Effort Driven", width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.YesNo, editor: Slick.Editors.YesNoSelect, cannotTriggerInsert: true, sortable: true}
-  ,
-  {id: "title1", name: "Title1", field: "title1", width: 120, minWidth: 120, cssClass: "cell-title", editor: Slick.Editors.Text, validator: requiredFieldValidator, sortable: true}
-  ,
-  {id: "title2", name: "Title2", field: "title2", width: 120, minWidth: 120, cssClass: "cell-title", editor: Slick.Editors.Text, validator: requiredFieldValidator, sortable: true}
-  ,
-  {id: "title3", name: "Title3", field: "title3", width: 120, minWidth: 120, cssClass: "cell-title", editor: Slick.Editors.Text, validator: requiredFieldValidator, sortable: true}
-  ,
+  {id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 40, cannotTriggerInsert: true, resizable: false, unselectable: true },
+  {id: "title", name: "Title", field: "title", width: 120, minWidth: 120, cssClass: "cell-title", editor: Slick.Editors.Text, validator: requiredFieldValidator, sortable: true},
+  {id: "duration", name: "Duration", field: "duration", editor: Slick.Editors.Text, sortable: true},
+  {id: "%", name: "% Complete", field: "percentComplete", width: 95, resizable: false, formatter: Slick.Formatters.PercentComplete, editor: Slick.Editors.PercentComplete, sortable: true},
+  {id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Date, sortable: true},
+  {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Date, sortable: true},
+  {id: "effort-driven", name: "Effort Driven", width: 90, minWidth: 20, maxWidth: 90, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.YesNo, editor: Slick.Editors.YesNoSelect, cannotTriggerInsert: true, sortable: true},
+  {id: "title1", name: "Title1", field: "title1", width: 120, minWidth: 120, cssClass: "cell-title", editor: Slick.Editors.Text, validator: requiredFieldValidator, sortable: true},
+  {id: "title2", name: "Title2", field: "title2", width: 120, minWidth: 120, cssClass: "cell-title", editor: Slick.Editors.Text, validator: requiredFieldValidator, sortable: true},
+  {id: "title3", name: "Title3", field: "title3", width: 120, minWidth: 120, cssClass: "cell-title", editor: Slick.Editors.Text, validator: requiredFieldValidator, sortable: true},
   {id: "title4", name: "Title4", field: "title4", width: 120, minWidth: 120, cssClass: "cell-title", editor: Slick.Editors.Text, validator: requiredFieldValidator, sortable: true}
 ];
 
@@ -276,28 +268,9 @@ document.addEventListener("DOMContentLoaded", function() {
     sortdir = args.sortAsc ? 1 : -1;
     sortcol = args.sortCol.field;
 
-    if (isIEPreVer9()) {
-      // using temporary Object.prototype.toString override
-      // more limited and does lexicographic sort only by default, but can be much faster
-
-      var percentCompleteValueFn = function () {
-        var val = this["percentComplete"];
-        if (val < 10) {
-          return "00" + val;
-        } else if (val < 100) {
-          return "0" + val;
-        } else {
-          return val;
-        }
-      };
-
-      // use numeric sort of % and lexicographic for everything else
-      dataView.fastSort((sortcol == "percentComplete") ? percentCompleteValueFn : sortcol, args.sortAsc);
-    } else {
-      // using native sort with comparer
-      // preferred method but can be very slow in IE with huge datasets
-      dataView.sort(comparer, args.sortAsc);
-    }
+    // using native sort with comparer
+    // preferred method but can be very slow in IE with huge datasets
+    dataView.sort(comparer, args.sortAsc);
   });
 
   // wire up model events to drive the grid
@@ -352,16 +325,24 @@ document.addEventListener("DOMContentLoaded", function() {
   slider2.oninput = sliderCallback;
 
   // wire up the search textbox to apply the filter to the model
-  document.querySelector("#txtSearch,#txtSearch2").addEventListener('keyup', function (e) {
+  document.querySelectorAll("#txtSearch,#txtSearch2").forEach(elm => elm.addEventListener('keyup', (e) => {
     Slick.GlobalEditorLock.cancelCurrentEdit();
 
     // clear on Esc
-    if (e.which == 27)
-      this.value = "";
+    if (e.which == 27) e.target.value = '';
 
-    searchString = this.value;
+    searchString = (e.target.value || '').trim();
+    updateFilter();
     dataView.refresh();
-  });
+  }));
+
+  function updateFilter() {
+    dataView.setFilterArgs({
+      percentCompleteThreshold: percentCompleteThreshold,
+      searchString: searchString
+    });
+    dataView.refresh();
+  }
 
   document.querySelector('#btnSelectRows').addEventListener('click', function () {
     if (!Slick.GlobalEditorLock.commitCurrentEdit()) {

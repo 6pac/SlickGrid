@@ -1,0 +1,1 @@
+{"version":3,"file":"elementPosition.interface.d.ts","sourceRoot":"","sources":["../../../src/models/elementPosition.interface.ts"],"names":[],"mappings":"AAAA,MAAM,WAAW,eAAe;IAC9B,GAAG,EAAE,MAAM,CAAC;IACZ,IAAI,EAAE,MAAM,CAAC;IACb,MAAM,EAAE,MAAM,CAAC;IACf,KAAK,EAAE,MAAM,CAAC;IACd,MAAM,EAAE,MAAM,CAAC;IACf,KAAK,EAAE,MAAM,CAAC;IACd,OAAO,EAAE,OAAO,CAAC;CAClB"}

@@ -4,18 +4,17 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example: Frozen Columns and Rows</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css" media="screen" charset="utf-8"/>
-  <link rel="stylesheet" href="../controls/slick.pager.css" type="text/css" media="screen" charset="utf-8"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/smoothness/jquery-ui.min.css" />
-  <link rel="stylesheet" href="examples.css" type="text/css" media="screen" charset="utf-8"/>
-  <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css" media="screen" charset="utf-8"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css" media="screen" charset="utf-8"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
   <style>
     .cell-title {
       font-weight: bold;
     }
 
     .cell-effort-driven {
-      text-align: center;
+      justify-content: center;
     }
 
     .cell-selection {
@@ -32,7 +31,7 @@
     }
 
     .slick-headerrow-column {
-      background: #87ceeb;
+      background: #f1f1f1;
       text-overflow: clip;
       -moz-box-sizing: border-box;
       box-sizing: border-box;
@@ -57,6 +56,10 @@
     .slick-row.frozen:last-child .slick-cell {
       border-bottom: 1px solid #999;
     }
+    .sgi-search:hover {
+      cursor: pointer;
+      color: darkcyan;
+    }
   </style>
 </head>
 <body>
@@ -64,15 +67,18 @@
   <div style="width:600px;">
     <div class="grid-header" style="width:100%">
       <label>SlickGrid</label>
-      <span style="float:right" class="ui-icon ui-icon-search" title="Toggle search panel"
+      <span style="float:right" class="sgi sgi-search" title="Toggle search panel"
             onclick="toggleFilterRow()"></span>
     </div>
-    <div id="myGrid" style="width:100%;height:350px;"></div>
+    <div id="myGrid" class="slick-container" style="width:100%;height:350px;"></div>
     <div id="pager" style="width:100%;height:20px;"></div>
   </div>
 
   <div class="options-panel">
-    <b>Search:</b>
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Search:
+    </h2>
     <hr/>
     <div style="padding:6px;">
       <label style="width:200px;float:left">Frozen Row:</label>
@@ -108,25 +114,23 @@
   </div>
 </div>
 
-<div id="inlineFilterPanelL" style="display:none;background:#dddddd;padding:3px;color:black;">
+<div id="inlineFilterPanelL" style="display:none;background:#f6f6f6;padding:3px;color:black;">
   Show tasks with title including <input type="text" id="txtSearch2">
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../slick.editors.js"></script>
-<script src="../slick.formatters.js"></script>
-<script src="../plugins/slick.rowselectionmodel.js"></script>
-<script src="../slick.grid.js"></script>
-<script src="../slick.dataview.js"></script>
-<script src="../controls/slick.pager.js"></script>
-<script src="../controls/slick.columnpicker.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
+<script src="../dist/browser/slick.formatters.js"></script>
+<script src="../dist/browser/plugins/slick.rowselectionmodel.js"></script>
+<script src="../dist/browser/slick.dataview.js"></script>
+<script src="../dist/browser/controls/slick.pager.js"></script>
+<script src="../dist/browser/controls/slick.columnpicker.js"></script>
 
 <script>
-function isIEPreVer9() { var v = navigator.appVersion.match(/MSIE ([\d.]+)/i); return (v ? v[1] < 9 : false); }
-
 var dataView;
 var grid;
 var data = [];
@@ -319,18 +323,6 @@ function toggleFilterRow() {
   grid.setTopPanelVisibility(!grid.getOptions().showTopPanel);
 }
 
-
-const headerSearchIcon = document.querySelector(".grid-header .ui-icon");
-if (headerSearchIcon) {
-  headerSearchIcon.classList.add("ui-state-default", "ui-corner-all");
-  headerSearchIcon.addEventListener('mouseover', (function (e) {
-    e.target.classList.add("ui-state-hover");
-  }));
-  headerSearchIcon.addEventListener('mouseout', (function (e) {
-    e.target.classList.remove("ui-state-hover");
-  }));
-}
-
 document.addEventListener("DOMContentLoaded", function() {
   // prepare the data
   for (var i = 0; i < 50000; i++) {
@@ -414,28 +406,9 @@ document.addEventListener("DOMContentLoaded", function() {
     sortdir = args.sortAsc ? 1 : -1;
     sortcol = args.sortCol.field;
 
-    if (isIEPreVer9()) {
-      // using temporary Object.prototype.toString override
-      // more limited and does lexicographic sort only by default, but can be much faster
-
-      var percentCompleteValueFn = function () {
-        var val = this["percentComplete"];
-        if (val < 10) {
-          return "00" + val;
-        } else if (val < 100) {
-          return "0" + val;
-        } else {
-          return val;
-        }
-      };
-
-      // use numeric sort of % and lexicographic for everything else
-      dataView.fastSort((sortcol == "percentComplete") ? percentCompleteValueFn : sortcol, args.sortAsc);
-    } else {
-      // using native sort with comparer
-      // preferred method but can be very slow in IE with huge datasets
-      dataView.sort(comparer, args.sortAsc);
-    }
+    // using native sort with comparer
+    // preferred method but can be very slow in IE with huge datasets
+    dataView.sort(comparer, args.sortAsc);
   });
 
   // wire up model events to drive the grid
@@ -481,15 +454,24 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   // wire up the search textbox to apply the filter to the model
-  document.querySelector("#txtSearch,#txtSearch2").addEventListener('keyup', (e) => {
+  document.querySelectorAll("#txtSearch,#txtSearch2").forEach(elm => elm.addEventListener('keyup', (e) => {
     Slick.GlobalEditorLock.cancelCurrentEdit();
 
     // clear on Esc
     if (e.which == 27) e.target.value = '';
 
     columnFilters['title'] = (e.target.value || '').trim();
+    updateFilter();
     dataView.refresh();
-  });
+  }));
+
+  function updateFilter() {
+    dataView.setFilterArgs({
+      percentCompleteThreshold: percentCompleteThreshold,
+      searchString: searchString
+    });
+    dataView.refresh();
+  }
 
   document.querySelector("#btnSelectRows").addEventListener('click', function () {
     if (!Slick.GlobalEditorLock.commitCurrentEdit()) {

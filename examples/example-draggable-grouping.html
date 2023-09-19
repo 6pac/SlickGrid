@@ -12,16 +12,15 @@
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example: Droppable Grouping</title>
-  <link rel="stylesheet" href="../slick.grid.css" type="text/css"/>
-  <link rel="stylesheet" href="examples.css" type="text/css"/>
-  <link rel="stylesheet" href="examples-unicode-icons.css" type="text/css"/>
-  <link rel="stylesheet" href="../controls/slick.columnpicker.css" type="text/css"/>
-  <link rel="stylesheet" href="../controls/slick.pager.css" type="text/css"/>
-  <link rel="stylesheet" href="../plugins/slick.draggablegrouping.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.pager.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.draggablegrouping.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
-
     .cell-effort-driven {
-      text-align: center;
+      justify-content: center;
     }
 
     .slick-group-title[level='0'] {
@@ -35,20 +34,48 @@
     .slick-group-title[level='2'] {
       font-style: italic;
     }
+    .slick-preheader-panel {
+      border-bottom: 1px solid #dae1e7;
+    }
+    .alpine-theme .slick-column-groupable {
+      height: 1em;
+      width: 1em;
+      mask-size: 1em;
+      -webkit-mask-size: 1em;
+    }
+    .alpine-theme .slick-pane-top {
+      top: 61px !important;
+    }
+    .btn-alpine-theme {
+      background-color: gray;
+      color: white;
+      border-width: 1px;
+      border-radius: 2px;
+      height: 22px;
+    }
+    .btn-classic-theme {
+      background-color: #bbd1ee;
+      border-width: 1px;
+      border-radius: 2px;
+      height: 22px;
+    }
   </style>
 </head>
 <body>
 <div style="position:relative">
-  <div style="width:600px;">
+  <div style="width:675px;">
     <div class="grid-header" style="width:100%">
       <label>SlickGrid</label>
     </div>
-    <div id="myGrid" style="width:100%;height:500px;"></div>
+    <div id="myGrid" class="slick-container alpine-theme" style="width:100%;height:500px;"></div>
     <div id="pager" style="width:100%;height:20px;"></div>
   </div>
 
-  <div class="options-panel" style="width:450px;">
-    <h2>Demonstrates:</h2>
+  <div class="options-panel" style="width:450px; margin-left: 50px;">
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Demonstrates:
+    </h2>
     <ul>
       <li>Draggable Grouping feature</li>
       <li>Similar to regular grouping but the "grouping" must be defined in the column we want to group by</li>
@@ -85,6 +112,10 @@
       <button data-test="clear-grouping-btn" onclick="clearGroupings()">Clear grouping</button>
       <button data-test="collapse-all-btn" onclick="toggleGrouping(false)">Collapse all groups</button>
       <button data-test="expand-all-btn" onclick="toggleGrouping(true)">Expand all groups</button>
+      <hr>
+      <strong>Load CSS Theme:</strong>
+      <button class="btn-alpine-theme" data-test="theme-alpine-btn" onclick="toggleTheme('alpine')">Alpine Theme</button>
+      <button class="btn-classic-theme" data-test="theme-classic-btn" onclick="toggleTheme('classic')">Classic Theme</button>
       <br/>
     </div>
     <hr/>
@@ -104,20 +135,21 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
 
-<script src="../slick.core.js"></script>
-<script src="../slick.interactions.js"></script>
-<script src="../slick.formatters.js"></script>
-<script src="../slick.editors.js"></script>
-<script src="../plugins/slick.cellrangedecorator.js"></script>
-<script src="../plugins/slick.cellrangeselector.js"></script>
-<script src="../plugins/slick.cellselectionmodel.js"></script>
-<script src="../plugins/slick.draggablegrouping.js"></script>
-<script src="../slick.grid.js"></script>
-<script src="../slick.groupitemmetadataprovider.js"></script>
-<script src="../slick.dataview.js"></script>
-<script src="../controls/slick.pager.js"></script>
-<script src="../controls/slick.columnpicker.js"></script>
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.formatters.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangedecorator.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangeselector.js"></script>
+<script src="../dist/browser/plugins/slick.cellselectionmodel.js"></script>
+<script src="../dist/browser/plugins/slick.draggablegrouping.js"></script>
+<script src="../dist/browser/slick.groupitemmetadataprovider.js"></script>
+<script src="../dist/browser/slick.dataview.js"></script>
+<script src="../dist/browser/controls/slick.pager.js"></script>
+<script src="../dist/browser/controls/slick.columnpicker.js"></script>
 
 <script>
 var dataView;
@@ -128,7 +160,7 @@ var columns = [
   {id: "sel", name: "#", field: "sel", cssClass: "cell-selection", width: 40, resizable: false, selectable: false, focusable: false,
     grouping: {}
   },
-  {id: "title", name: "Title", field: "title", width: 70, minWidth: 50, cssClass: "cell-title", sortable: true, editor: Slick.Editors.Text,
+  {id: "title", name: "Title", field: "title", width: 90, minWidth: 50, cssClass: "cell-title", sortable: true, editor: Slick.Editors.Text,
     grouping: {
       getter: "title",
       formatter: function (g) {
@@ -141,12 +173,13 @@ var columns = [
       collapsed: false
     }
   },
-  {id: "duration", name: "Duration", field: "duration", width: 70, sortable: true, groupTotalsFormatter: sumTotalsFormatter,
+  {id: "duration", name: "Duration", field: "duration", width: 110, sortable: true, groupTotalsFormatter: sumTotalsFormatter,
     grouping: {
       getter: "duration",
       formatter: function (g) {
         return "Duration:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
       },
+      editor: Slick.Editors.PercentComplete,
       aggregators: [
         new Slick.Data.Aggregators.Sum("cost")
       ],
@@ -194,7 +227,7 @@ var columns = [
       collapsed: false
     }
   },
-  {id: "effortDriven", name: "Effort-Driven",  width: 80, minWidth: 20, maxWidth: 80, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, sortable: true,
+  {id: "effortDriven", name: "Effort-Driven",  width: 125, minWidth: 20, maxWidth: 125, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, sortable: true,
     grouping: {
       getter: "effortDriven",
       formatter :function (g) {
@@ -214,6 +247,32 @@ var sortcol = "title";
 var sortdir = 1;
 var percentCompleteThreshold = 0;
 var prevPercentCompleteThreshold = 0;
+
+function toggleTheme(theme) {
+  const gridElm = document.querySelector('#myGrid');
+
+  if (theme === 'alpine') {
+    changeCSS('../dist/styles/css/slick.grid.css', '../dist/styles/css/slick-alpine-theme.css');
+    changeCSS('examples.css', '../dist/styles/css/example-demo.css');
+    changeCSS('examples-unicode-icons.css', '../dist/styles/css/slick-icons.css');
+    gridElm.classList.add('alpine-theme');
+    gridElm.classList.remove('classic-theme');
+  } else {
+    changeCSS('../dist/styles/css/slick-alpine-theme.css', '../dist/styles/css/slick.grid.css');
+    changeCSS('../dist/styles/css/example-demo.css', 'examples.css');
+    changeCSS('../dist/styles/css/slick-icons.css', 'examples-unicode-icons.css');
+    gridElm.classList.add('classic-theme');
+    gridElm.classList.remove('alpine-theme');
+  }
+}
+
+function changeCSS(prevFilePath, newFilePath) {
+  let headerIndex = 0;
+  let previousCssElm = document.getElementsByTagName("head")[0].querySelector(`link[href="${prevFilePath}"]`);
+  if (previousCssElm) {
+    previousCssElm.setAttribute('href', newFilePath);
+  }
+}
 
 function destroyPager() {
   pager.destroy();
@@ -251,40 +310,45 @@ function comparer(a, b) {
 var draggableEnabled = true;
 
 function groupByTitle() {
+  grid.setSortColumns([]);
   clearGroupings();
   draggableGrouping.setDroppedGroups('title');
   grid.invalidate();
-  grid.render();
 }
 
 function groupByDuration() {
-    clearGroupings();
-    if (draggableGrouping.setDroppedGroups) {
-      showPreHeader();
-      draggableGrouping.setDroppedGroups('duration');
-      grid.invalidate(); // invalidate all rows and re-render
-    }
-  }
-
-  function groupByDurationOrderByCount(sortedByCount = false) {
-    durationOrderByCount = sortedByCount;
-    clearGroupings();
-    groupByDuration();
-
-    // you need to manually add the sort icon(s) in UI
-    const sortColumns = sortedByCount ? [] : [{ columnId: 'duration', sortAsc: true }];
-    grid.setSortColumns(sortColumns);
+  grid.setSortColumns([]);
+  clearGroupings();
+  if (draggableGrouping.setDroppedGroups) {
+    showPreHeader();
+    draggableGrouping.setDroppedGroups('duration');
     grid.invalidate(); // invalidate all rows and re-render
   }
+  grid.invalidate();
+}
 
-  function groupByDurationEffortDriven() {
-    clearGroupings();
-    if (draggableGrouping.setDroppedGroups) {
-      showPreHeader();
-      draggableGrouping.setDroppedGroups(['duration', 'effortDriven']);
-      grid.invalidate(); // invalidate all rows and re-render
-    }
+function groupByDurationOrderByCount(sortedByCount = false) {
+  grid.setSortColumns([]);
+  durationOrderByCount = sortedByCount;
+  clearGroupings();
+  groupByDuration();
+
+  // you need to manually add the sort icon(s) in UI
+  const sortColumns = sortedByCount ? [] : [{ columnId: 'duration', sortAsc: true }];
+  grid.setSortColumns(sortColumns);
+  grid.invalidate(); // invalidate all rows and re-render
+}
+
+function groupByDurationEffortDriven() {
+  grid.setSortColumns([]);
+  clearGroupings();
+  if (draggableGrouping.setDroppedGroups) {
+    showPreHeader();
+    draggableGrouping.setDroppedGroups(['duration', 'effortDriven']);
+    grid.invalidate(); // invalidate all rows and re-render
   }
+  grid.invalidate();
+}
 
 function clearGroupings() {
    draggableGrouping.clearDroppedGroups();
@@ -340,16 +404,15 @@ function loadData(count) {
 }
 
 document.addEventListener("DOMContentLoaded", function() {
-  draggableGrouping = new Slick.DraggableGrouping({iconImage :'../images/delete.png', groupIconImage: '../images/column-grouping.png', dropPlaceHolderText: 'Drop a column header here to group by the column :)'});
-  // draggableGrouping = new Slick.DraggableGrouping({iconCssClass :'slick-groupby-remove-image', groupIconCssClass: 'slick-column-groupable-image', dropPlaceHolderText: 'Drop a column header here to group by the column :)'});
-  // draggableGrouping = new Slick.DraggableGrouping();
+  draggableGrouping = new Slick.DraggableGrouping({iconImage :'../images/delete.png', /*deleteIconCssClass :'sgi sgi-close',*/ groupIconCssClass: 'sgi sgi-drag-vertical', dropPlaceHolderText: 'Drop a column header here to group by the column :)'});
+
   var options = {
     enableCellNavigation: true,
     editable: true,
-    enableColumnReorder: draggableGrouping.getSetupColumnReorder,
+    enableColumnReorder: draggableGrouping.getSetupColumnReorder.bind(draggableGrouping),
     createPreHeaderPanel: true,
     showPreHeaderPanel: true,
-    preHeaderPanelHeight: 25,
+    preHeaderPanelHeight: 28,
   };
 
   var groupItemMetadataProvider = new Slick.Data.GroupItemMetadataProvider();
