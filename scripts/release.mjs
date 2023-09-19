@@ -135,6 +135,7 @@ const pkg = loadJsonFileSync(path.join(__dirname, '../', 'package.json'));
 
       // 11. NPM publish
       if (await promptConfirmation(`${c.bgMagenta(dryRunPrefix)} Are you ready to publish "${newTag}" to npm?`)) {
+        runScript('clean:publish', { cwd });
         let publishTagName;
         if (whichBumpType.includes('alpha')) {
           publishTagName = 'alpha';

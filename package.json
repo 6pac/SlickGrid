@@ -54,7 +54,6 @@
     "prebuild:prod": "rimraf dist && npm run lint",
     "build:prod": "node ./scripts/builds.mjs --prod",
     "build:types": "tsc --emitDeclarationOnly --incremental --declarationMap --outDir dist/types",
-    "prepreview:release": "npm run preview:clean:publish",
     "preview:release": "node ./scripts/release.mjs --create-release github --dry-run --skip-checks",
     "prerelease": "npm run clean:publish",
     "release": "node ./scripts/release.mjs --create-release github",
@@ -63,7 +62,6 @@
     "postsass:build": "postcss dist/styles/css/**/* --dir dist/styles/css --base dist/styles/css --no-map --use cssnano --use autoprefixer --style=compressed",
     "sass:copy": "copyfiles -f src/styles/*.scss dist/styles/sass",
     "serve:demo": "http-server ./ -p 8080 -a localhost -s",
-    "preview:clean:publish": "clean-publish --without-publish --temp-dir tmp_publish",
     "clean:publish": "echo \"cleaning 'devDependencies' and 'scripts' from package.json\" && clean-publish"
   },
   "dependencies": {
