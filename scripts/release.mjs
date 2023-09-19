@@ -145,8 +145,8 @@ const pkg = loadJsonFileSync(path.join(__dirname, '../', 'package.json'));
           runArgs.push('--tag', publishTagName);
         }
         // await runScript('clean:publish', { cwd, args: runArgs });
-        // const otp = await promptOtp(dryRunPrefix);
-        await publishPackage(publishTagName, { cwd, dryRun: argv.dryRun, stream: true });
+        const otp = await promptOtp(dryRunPrefix);
+        await publishPackage(publishTagName, { cwd, otp, dryRun: argv.dryRun, stream: true });
         console.log(`${c.bgMagenta(dryRunPrefix)} 📦 Published to NPM - 🔗 https://www.npmjs.com/package/${pkg.name}`.trim())
       }
 
