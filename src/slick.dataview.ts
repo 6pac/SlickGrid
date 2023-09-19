@@ -1437,7 +1437,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
    *  - `shouldTriggerEvent`: defaults to true, should we trigger `onSelectedRowIdsChanged` event
    *  - `applyRowSelectionToGrid`: defaults to true, should we apply the row selections to the grid in the UI
    */
-  setSelectedIds(selectedIds: Array<number | string>, options: Partial<{ isRowBeingAdded: boolean; shouldTriggerEvent: boolean; applyRowSelectionToGrid: boolean; }>) {
+  setSelectedIds(selectedIds: Array<number | string>, options?: Partial<{ isRowBeingAdded: boolean; shouldTriggerEvent: boolean; applyRowSelectionToGrid: boolean; }>) {
     let isRowBeingAdded = options?.isRowBeingAdded;
     const shouldTriggerEvent = options?.shouldTriggerEvent;
     const applyRowSelectionToGrid = options?.applyRowSelectionToGrid;
