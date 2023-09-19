@@ -1,5 +1,7 @@
 .DS_Store
 .env
+.editorconfig
+.eslintignore
 .eslintrc
 .gitk*
 .gitattributes
@@ -11,6 +13,7 @@
 *.nuspec
 CHANGELOG.md
 CODE_OF_CONDUCT.md
+CONTRIBUTING.md
 nuget*
 cypress.json
 cypress/*
@@ -21,6 +24,6 @@ SlickgridRelease*
 scripts
 tests
 testresult.xml
+tsconfig.json
+tsconfig.tsbuildinfo
 package-lock.json
-yarn-error.log
-yarn.lock
