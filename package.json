@@ -107,8 +107,7 @@
   },
   "browserslist": [
     "last 2 version",
-    "> 1%",
-    "IE 11",
+    "> 0.5%",
     "not dead"
   ],
   "engines": {
