@@ -12,11 +12,11 @@ This is the acknowledged most active fork of SlickGrid.
 
 It aims to be a viable alternative master repo, building on the legacy of the [mleibman/SlickGrid](https://github.com/mleibman/SlickGrid) master branch, keeping libraries up to date and applying, safe core patches and enhancements to keep the project up to date.
 
-The project extends on the SlickGrid foundation while also including the following changes
-- merged [X-SlickGrid](https://github.com/ddomingues/X-SlickGrid) project into the lib which brought Frozen Columns/Rows
-- removed jQueryUI requirement in v3 (replaced it by [SortableJS](https://sortablejs.github.io/Sortable/))
-- removed jQuery requirement in v4
-- modernized the project in v5 by migrating to TypeScript, we added ES6/ESM build targets and a new Alpine Theme
+The project extends on the original SlickGrid foundation while also including the following changes
+- merged [X-SlickGrid](https://github.com/ddomingues/X-SlickGrid) code into the project which brought Frozen Columns/Rows (aka Pinning)
+- removed jQueryUI requirement in [v3](https://github.com/6pac/SlickGrid/wiki/Major-version-3.0----Removal-of-jQueryUI-requirement-(replaced-by-SortableJS)) (replaced it with [SortableJS](https://sortablejs.github.io/Sortable/))
+- removed jQuery requirement in [v4](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement)
+- modernized the project in [v5](https://github.com/6pac/SlickGrid/wiki/Major-version-5.0-%E2%80%90-ES6-ESM-and-TypeScript-Support) by migrating to TypeScript, we added ES6/ESM build targets and a new Alpine Theme
 
 ### Examples
 Check out the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** Wiki for a full list of examples demonstrating new features and use cases, such as dynamic grid creation and editors with third party controls.
@@ -24,13 +24,13 @@ Check out the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** Wi
 Also check out the [Wiki](https://github.com/6pac/SlickGrid/wiki) for news and documentation.
 
 ### E2E Tests with Cypress
-We are now starting to add E2E (end to end) tests in the browser with [Cypress](https://www.cypress.io/). You can see [here](https://github.com/6pac/SlickGrid/tree/master/cypress/integration) the list of Examples that now have E2E tests. We also added these tests to the [GitHub Actions](https://github.com/features/actions) Workflow to automate certain steps while making sure any new commits aren't breaking the build/test. It will basically run all the E2E tests every time someone pushes a Commit or a Pull Request.
+We are now starting to add E2E (end to end) tests in the browser with [Cypress](https://www.cypress.io/). You can see [here](https://github.com/6pac/SlickGrid/tree/next/cypress/e2e) the list of Examples that now have E2E tests. We also added these tests to the [GitHub Actions](https://github.com/features/actions) Workflow (CI) to automate certain steps while also making sure that any new commits aren't breaking the build/tests. The concept is that it automatically runs all the E2E tests every time someone pushes a Commit or a Pull Request. We currently have tests for 22+ examples with almost ~300 tests.
 
-We also welcome any new contributions (tests or fixes) and if you wish to add Cypress E2E tests, all you need to do is to clone the repo and then run the following commands
+We welcome any new contributions (tests or fixes) and if you wish to add Cypress E2E tests, all you need to do is to clone the repo and run the following commands
 ```bash
 npm install         # install all npm packages
-npm run serve       # run a local http server on port 8080
-npm run cypress     # open Cypress tool
+npm run dev         # run a local development server on port 8080 in watch mode (or `npm run serve` without watch)
+npm run cypress     # open Cypress UI tool
 ```
 Once the Cypress UI is open, you can then click on "Run all Specs" to execute all E2E browser tests.
 
