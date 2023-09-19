@@ -23,11 +23,11 @@ export function publishPackage(publishTagName, { cwd, otp, dryRun }) {
 /**
  * Run an npm script by its name
  * @param {String} [scriptName] - npm script name to execute
- * @param {{ cwd: String, dryRun: Boolean}} options
+ * @param {{ cwd: String, options: Array<String>}} options
  * @returns {Promise<any>}
  */
-export function runScript(scriptName, { cwd }) {
-  const execArgs = ['run', scriptName];
+export function runScript(scriptName, { cwd, args }) {
+  const execArgs = ['run', scriptName, args];
 
   return exec('npm', execArgs, { cwd });
 }

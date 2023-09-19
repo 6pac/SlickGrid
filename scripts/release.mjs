@@ -135,15 +135,18 @@ const pkg = loadJsonFileSync(path.join(__dirname, '../', 'package.json'));
 
       // 11. NPM publish
       if (await promptConfirmation(`${c.bgMagenta(dryRunPrefix)} Are you ready to publish "${newTag}" to npm?`)) {
-        runScript('clean:publish', { cwd });
+        const runArgs = [];
         let publishTagName;
         if (whichBumpType.includes('alpha')) {
           publishTagName = 'alpha';
+          runArgs.push('--tag', publishTagName);
         } else if (whichBumpType.includes('beta')) {
           publishTagName = 'beta';
+          runArgs.push('--tag', publishTagName);
         }
-        const otp = await promptOtp(dryRunPrefix);
-        await publishPackage(publishTagName, { cwd, otp, dryRun: argv.dryRun });
+        runScript('clean:publish', { cwd, args: runArgs });
+        // const otp = await promptOtp(dryRunPrefix);
+        // await publishPackage(publishTagName, { cwd, otp, dryRun: argv.dryRun });
         console.log(`${c.bgMagenta(dryRunPrefix)} 📦 Published to NPM - 🔗 https://www.npmjs.com/package/${pkg.name}`.trim())
       }
 
