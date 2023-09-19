@@ -134,10 +134,10 @@
   let refreshRate = 25;
   let timer;
 
-  var dataView;
-  var grid;
-  var data = [];
-  var columns = [
+  let dataView;
+  let grid;
+  let data = [];
+  let columns = [
     {
       id: 'currency', name: 'Currency', field: 'currency', sortable: true, width: 75,
       formatter: (row, cell, value) => `<img src="https://flags.fmcdn.net/data/flags/mini/${value.substring(0, 2).toLowerCase()}.png" width="18"/>&nbsp;${value}`
@@ -178,7 +178,7 @@
     },
   ];
 
-  var options = {
+  const options = {
     editable: true,
     enableAddRow: true,
     enableCellNavigation: true,
@@ -188,13 +188,13 @@
     rowHeight: 28
   };
 
-  var sortcol = "title";
-  var sortdir = 1;
-  var percentCompleteThreshold = 0;
-  var searchString = "";
+  let sortcol = "title";
+  let sortdir = 1;
+  let percentCompleteThreshold = 0;
+  let searchString = "";
 
   function sumTotalsFormatter(totals, columnDef, grid) {
-    var val = totals.sum && totals.sum[columnDef.field];
+    let val = totals.sum && totals.sum[columnDef.field];
     if (val != null) {
       return "total: $" + ((Math.round(parseFloat(val)*100)/100));
     }
@@ -373,7 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
     startSimulation();
   }, refreshRate);
 
-  var groupItemMetadataProvider = new SlickGroupItemMetadataProvider();
+  const groupItemMetadataProvider = new SlickGroupItemMetadataProvider();
   dataView = new SlickDataView({
     groupItemMetadataProvider: groupItemMetadataProvider,
     inlineFilters: true
@@ -383,31 +383,16 @@ document.addEventListener("DOMContentLoaded", () => {
   grid.registerPlugin(groupItemMetadataProvider);
   grid.setSelectionModel(new SlickRowSelectionModel());
 
-  var columnpicker = new SlickColumnPicker(columns, grid, options);
+  const columnpicker = new SlickColumnPicker(columns, grid, options);
 
   grid.onCellChange.subscribe(function (e, args) {
     dataView.updateItem(args.item.id, args.item);
   });
 
   grid.onAddNewRow.subscribe(function (e, args) {
-    var item = {"num": data.length, "id": "new_" + (Math.round(Math.random() * 10000)), "title": "New task", "duration": "1 day", "percentComplete": 0, "start": "01/01/2009", "finish": "01/01/2009", "effortDriven": false};
+    const item = {"num": data.length, "id": "new_" + (Math.round(Math.random() * 10000)), "title": "New task", "duration": "1 day", "percentComplete": 0, "start": "01/01/2009", "finish": "01/01/2009", "effortDriven": false};
     Utils.extend(item, args.item);
     dataView.addItem(item);
-  });
-
-  grid.onKeyDown.subscribe(function (e) {
-    // select all rows on ctrl-a
-    if (e.which != 65 || !e.ctrlKey) {
-      return false;
-    }
-
-    var rows = [];
-    for (var i = 0; i < dataView.getLength(); i++) {
-      rows.push(i);
-    }
-
-    grid.setSelectedRows(rows);
-    e.preventDefault();
   });
 
   grid.onSort.subscribe(function (e, args) {
@@ -432,10 +417,10 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   // wire up the slider to apply the filter to the model
-  var highlight = document.getElementById("highlightDuration");
+  const highlight = document.getElementById("highlightDuration");
   highlight.oninput = (e) => highlightDuration = e.target.value;
 
-  var slider = document.getElementById("refreshRateSlider");
+  const slider = document.getElementById("refreshRateSlider");
   slider.oninput = (e) => refreshRate = e.target.value;
 
   // initialize the model after all the events have been hooked up
