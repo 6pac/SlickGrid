@@ -12,7 +12,8 @@ This is the acknowledged most active fork of SlickGrid.
 
 It aims to be a viable alternative master repo, building on the legacy of the [mleibman/SlickGrid](https://github.com/mleibman/SlickGrid) master branch, keeping libraries up to date and applying, safe core patches and enhancements to keep the project up to date.
 
-The project extends on the original SlickGrid foundation while also including the following changes
+We extemded the project from the original SlickGrid foundation while also including the following changes:
+- added a few more Plugins: RowDetail, CellMenu, ContextMenu, GridMenu, CustomTooltip
 - merged [X-SlickGrid](https://github.com/ddomingues/X-SlickGrid) code into the project which brought Frozen Columns/Rows (aka Pinning)
 - removed jQueryUI requirement in [v3](https://github.com/6pac/SlickGrid/wiki/Major-version-3.0----Removal-of-jQueryUI-requirement-(replaced-by-SortableJS)) (replaced it with [SortableJS](https://sortablejs.github.io/Sortable/))
 - removed jQuery requirement in [v4](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement)
@@ -24,7 +25,7 @@ Check out the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** Wi
 Also check out the [Wiki](https://github.com/6pac/SlickGrid/wiki) for news and documentation.
 
 ### E2E Tests with Cypress
-We are now starting to add E2E (end to end) tests in the browser with [Cypress](https://www.cypress.io/). You can see [here](https://github.com/6pac/SlickGrid/tree/next/cypress/e2e) the list of Examples that now have E2E tests. We also added these tests to the [GitHub Actions](https://github.com/features/actions) Workflow (CI) to automate certain steps while also making sure that any new commits aren't breaking the build/tests. The concept is that it automatically runs all the E2E tests every time someone pushes a Commit or a Pull Request. We currently have tests for 22+ examples with almost ~300 tests.
+We have started to add E2E (end to end) tests in the browser with [Cypress](https://www.cypress.io/). You can see [here](https://github.com/6pac/SlickGrid/tree/next/cypress/e2e) the list of Examples that now have E2E tests. We also added these tests to the [GitHub Actions](https://github.com/features/actions) Workflow (CI) to automate certain steps while also making sure that any new commits aren't breaking the build/tests. The concept is that it automatically runs all the E2E tests every time someone pushes a Commit or a Pull Request. We currently have tests for over 20+ examples with almost 300 tests.
 
 We welcome any new contributions (tests or fixes) and if you wish to add Cypress E2E tests, all you need to do is to clone the repo and run the following commands
 ```bash
