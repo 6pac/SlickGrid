@@ -43,12 +43,13 @@
   },
   "homepage": "https://github.com/6pac/SlickGrid#readme",
   "scripts": {
+    "clean": "rimraf dist",
     "cypress": "npx cypress open --config-file cypress/cypress.config.ts",
     "cypress:ci": "npx cypress run --config-file cypress/cypress.config.ts",
     "predev": "rimraf --glob dist/{browser,esm}",
     "dev": "node ./scripts/dev-watch.mjs --open",
     "serve": "node ./scripts/dev-watch.mjs --serve",
-    "clean": "rimraf dist",
+    "serve:demo": "http-server ./ -p 8080 -a localhost -s",
     "lint": "eslint src -c .eslintrc --ext .ts",
     "minify": "node ./scripts/minify.js --start",
     "prebuild:prod": "rimraf dist && npm run lint",
@@ -59,9 +60,7 @@
     "presass:build": "rimraf dist/styles/css",
     "sass:build": "sass src/styles:dist/styles/css --style=compressed --quiet-deps --no-source-map",
     "postsass:build": "postcss dist/styles/css/**/* --dir dist/styles/css --base dist/styles/css --no-map --use cssnano --use autoprefixer --style=compressed",
-    "sass:copy": "copyfiles -f src/styles/*.scss dist/styles/sass",
-    "serve:demo": "http-server ./ -p 8080 -a localhost -s",
-    "clean:publish": "echo \"cleaning 'devDependencies' and 'scripts' from package.json\" && clean-publish"
+    "sass:copy": "copyfiles -f src/styles/*.scss dist/styles/sass"
   },
   "dependencies": {
     "sortablejs": "^1.15.0"
@@ -74,7 +73,6 @@
     "autoprefixer": "^10.4.15",
     "browser-sync": "^2.29.3",
     "chokidar": "^3.5.3",
-    "clean-publish": "^4.2.0",
     "conventional-changelog": "^5.1.0",
     "copyfiles": "^2.4.1",
     "cssnano": "^6.0.1",

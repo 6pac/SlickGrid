@@ -2,6 +2,7 @@
 .gitk*
 .idea/*
 .DS_Store
+*.backup
 *.exe
 *.pdb
 *.bak

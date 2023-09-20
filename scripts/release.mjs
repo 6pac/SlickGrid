@@ -1,7 +1,7 @@
 import c from 'picocolors';
 import { loadJsonFileSync } from 'load-json-file';
 import { writeJsonSync } from 'fs-extra/esm';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { copyFileSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import readline from 'readline';
@@ -10,12 +10,14 @@ import semver from 'semver';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
+import { exec } from './child-process.mjs';
 import { gitAdd, gitCommit, gitTag, gitTagPushRemote, gitPushToCurrentBranch, hasUncommittedChanges } from './git-utils.mjs';
 import { createRelease, createReleaseClient, parseGitRepo } from './github-release.mjs';
 import { publishPackage, syncLockFile } from './npm-utils.mjs';
 import { runProdBuildWithTypes } from './builds.mjs';
 import { updateChangelog } from './changelog.mjs';
 
+const PUBLISH_CLEAN_FIELDS = ['devDependencies', 'scripts'];
 const TAG_PREFIX = '';
 const VERSION_PREFIX = 'v';
 const RELEASE_COMMIT_MSG = 'chore(release): publish version %s';
@@ -24,7 +26,8 @@ const cwd = process.cwd();
 const argv = yargs(hideBin(process.argv)).argv;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
-const pkg = loadJsonFileSync(path.join(__dirname, '../', 'package.json'));
+const projectRootPath = path.join(__dirname, '../');
+const pkg = loadJsonFileSync(path.join(projectRootPath, 'package.json'));
 
 /**
  * Main entry, this script will execute the following steps
@@ -135,19 +138,25 @@ const pkg = loadJsonFileSync(path.join(__dirname, '../', 'package.json'));
 
       // 11. NPM publish
       if (await promptConfirmation(`${c.bgMagenta(dryRunPrefix)} Are you ready to publish "${newTag}" to npm?`)) {
-        const runArgs = [];
+        // create a copy of "package.json" to "package.json.backup" and remove (devDependencies, scripts) from "package.json"
+        await cleanPublishPackage();
+
+        // add publish --tag when version is alpha/beta
         let publishTagName;
         if (whichBumpType.includes('alpha')) {
           publishTagName = 'alpha';
-          runArgs.push('--tag', publishTagName);
         } else if (whichBumpType.includes('beta')) {
           publishTagName = 'beta';
-          runArgs.push('--tag', publishTagName);
         }
-        // await runScript('clean:publish', { cwd, args: runArgs });
+
         const otp = await promptOtp(dryRunPrefix);
         await publishPackage(publishTagName, { cwd, otp, dryRun: argv.dryRun, stream: true });
-        console.log(`${c.bgMagenta(dryRunPrefix)} 📦 Published to NPM - 🔗 https://www.npmjs.com/package/${pkg.name}`.trim())
+
+        // rename backup to original filename "package.json"
+        console.log(`Renaming "package.json" backup file to its original name.`);
+        renameSync(path.join(projectRootPath, 'package.json.backup'), path.join(projectRootPath, 'package.json'));
+
+        console.log(`${c.bgMagenta(dryRunPrefix)} 📦 Published to NPM - 🔗 https://www.npmjs.com/package/${pkg.name}`.trim());
       }
 
       // 12. Create GitHub Release
@@ -207,7 +216,7 @@ function updatePackageVersion(newVersion) {
   if (argv.dryRun) {
     console.log(`${c.magenta('[dry-run]')}`);
   }
-  writeJsonSync(path.resolve(__dirname, '../package.json'), pkg, { spaces: 2 });
+  writeJsonSync(path.resolve(projectRootPath, 'package.json'), pkg, { spaces: 2 });
 
   console.log('-- updating "package.json" --');
   console.log(` "version": "${pkg.version}"`);
@@ -219,7 +228,7 @@ function updatePackageVersion(newVersion) {
  * @param {String} newVersion
  */
 function updateSlickGridVersion(newVersion) {
-  const slickGridFileContent = readFileSync(path.resolve(__dirname, '../src/slick.grid.ts'), { encoding: 'utf8', flag: 'r' });
+  const slickGridFileContent = readFileSync(path.resolve(projectRootPath, 'src/slick.grid.ts'), { encoding: 'utf8', flag: 'r' });
 
   // replaces version in 2 areas (a version could be "2.4.45" or "2.4.45-alpha.0"):
   // 1- in top comments, ie: SlickGrid v2.4.45
@@ -231,7 +240,7 @@ function updateSlickGridVersion(newVersion) {
   if (argv.dryRun) {
     console.log(`${c.magenta('[dry-run]')}`);
   }
-  writeFileSync(path.resolve(__dirname, '../src/slick.grid.ts'), updatedSlickGridJs);
+  writeFileSync(path.resolve(projectRootPath, 'src/slick.grid.ts'), updatedSlickGridJs);
 
   console.log('-- updating "src/slick.grid.ts" --');
   console.log(` SlickGrid ${VERSION_PREFIX}${newVersion}`)
@@ -297,4 +306,15 @@ async function promptOtp(dryRunPrefix = '') {
     throw new Error('OTP must be 6 exactly digits.');
   }
   return otp;
+}
+
+/** Method that will create a backup copy of the original "package.json", remove some fields (devDependencies, scripts) */
+async function cleanPublishPackage() {
+  console.log(`Make a copy of "package.json" and rename it to "package.json.backup".`);
+  copyFileSync(path.join(projectRootPath, 'package.json'), path.join(projectRootPath, 'package.json.backup'));
+
+  // remove (devDependencies & scripts) fields from "package.json"
+  for (let field of PUBLISH_CLEAN_FIELDS) {
+    await exec('npm', ['pkg', 'delete', field]);
+  }
 }

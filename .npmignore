@@ -8,6 +8,7 @@
 .github
 .idea/*
 .vscode
+*.backup
 *.exe
 *.pdb
 *.nuspec
