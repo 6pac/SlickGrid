@@ -80,7 +80,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  *        expandedRows: Array of the Expanded Rows
  *        rowIdsOutOfViewport: Array of the Out of viewport Range Rows
  *
- *    onRowBackToViewportRange: Fired after the row detail gets toggled
+ *    onRowBackToViewportRange: Fired after a row is back to viewport range (user can visually see the row detail)
  *      Event args:
  *        grid:         Reference to the grid.
  *        item:         Item data context
@@ -399,7 +399,7 @@ export class SlickRowDetailView {
     }, null, this);
   }
 
-  /** Send a notification, through "onRowBackToViewportRange", that a row came back to the viewport */
+  /** Send a notification, through "onRowBackToViewportRange", that a row came back into the viewport visible range */
   protected notifyBackToViewportWhenDomExist(item: any, rowId: number | string) {
     const rowIndex = (item.rowIndex || this._dataView.getRowById(item[this._dataViewIdProperty])) as number;
 
@@ -419,8 +419,8 @@ export class SlickRowDetailView {
   }
 
   /**
-   * This function will sync the out of viewport array whenever necessary.
-   * The sync can add a row (when necessary, no need to add again if it already exist) or delete a row from the array.
+   * This function will sync the "out of viewport" array whenever necessary.
+   * The sync can add a detail row (when necessary, no need to add again if it already exist) or delete a row from the array.
    * @param rowId: number
    * @param isAdding: are we adding or removing a row?
    */
@@ -435,7 +435,7 @@ export class SlickRowDetailView {
     return this._rowIdsOutOfViewport;
   }
 
-  // Toggle between showing and hiding a row
+  // Toggle between showing or hiding a row
   protected toggleRowSelection(rowNumber: number, dataContext: any) {
     if (!this.checkExpandableOverride(rowNumber, dataContext, this._grid)) {
       return;
@@ -446,7 +446,7 @@ export class SlickRowDetailView {
     this._dataView.endUpdate();
   }
 
-  /** Collapse all of the open items */
+  /** Collapse all of the open detail rows */
   collapseAll() {
     this._dataView.beginUpdate();
     for (let i = this._expandedRows.length - 1; i >= 0; i--) {
@@ -455,7 +455,7 @@ export class SlickRowDetailView {
     this._dataView.endUpdate();
   }
 
-  /** Colapse an Item so it is not longer seen */
+  /** Collapse a detail row so that it is not longer open */
   collapseDetailView(item: any, isMultipleCollapsing = false) {
     if (!isMultipleCollapsing) {
       this._dataView.beginUpdate();
@@ -482,7 +482,7 @@ export class SlickRowDetailView {
     }
   }
 
-  /** Expand a row given the dataview item that is to be expanded */
+  /** Expand a detail row by providing the dataview item that is to be expanded */
   expandDetailView(item: any) {
     if (this._options?.singleRowExpand) {
       this.collapseAll();
@@ -591,9 +591,7 @@ export class SlickRowDetailView {
     return item;
   };
 
-  //////////////////////////////////////////////////////////////
-  // create the detail ctr node. this belongs to the dev & can be custom-styled as per
-  //////////////////////////////////////////////////////////////
+  /** Create the detail ctr node. this belongs to the dev & can be custom-styled as per */
   protected applyTemplateNewLineHeight(item: any) {
     // the height is calculated by the template row count (how many line of items does the template view have)
     const rowCount = this._options.panelRows;
@@ -625,12 +623,12 @@ export class SlickRowDetailView {
     };
   }
 
-  /** return the currently expanded rows */
+  /** Return the currently expanded rows */
   getExpandedRows() {
     return this._expandedRows;
   }
 
-  /** The Formatter of the toggling icon of the Row Detail */
+  /** The cell Formatter that shows the icon that will be used to toggle the Row Detail */
   protected detailSelectionFormatter(row: number, _cell: number, _val: any, _column: Column, dataContext: any, grid: SlickGrid): FormatterResultObject | string {
     if (!this.checkExpandableOverride(row, dataContext, grid)) {
       return '';
