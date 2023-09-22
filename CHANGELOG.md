@@ -4,6 +4,8 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 # [5.0.0](https://github.com/6pac/SlickGrid/compare/4.0.1...5.0.0) (2023-09-19)
 
+### Please read the [Migration Guide v5.0](https://github.com/6pac/SlickGrid/wiki/Major-version-5.0-%E2%80%90-ES6-ESM-and-TypeScript-Support)
+---
 ### Breaking Change ⚠️
 * prepare official 5.0 version release ([#845](https://github.com/6pac/SlickGrid/pull/845)) ([ad85e1](https://github.com/6pac/SlickGrid/commit/ad85e1234eef2548f5f4df34afebf18058ef9d33))
 
