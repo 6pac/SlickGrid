@@ -18,7 +18,6 @@ npm run build:prod
 
 4. Run all Cypress E2E tests
 ```bash
-npm install         # install all npm packages
 npm run dev         # run a local development server on port 8080 in watch mode (or `npm run serve` without watch)
 npm run cypress     # open Cypress UI tool
 ```
