@@ -24,6 +24,9 @@ Check out the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** Wi
 
 Also check out the [Wiki](https://github.com/6pac/SlickGrid/wiki) for news and documentation.
 
+### Contributions
+See [Contributing Guide](https://github.com/6pac/SlickGrid/blob/master/CONTRIBUTING.md)
+
 ### E2E Tests with Cypress
 We have started to add E2E (end to end) tests in the browser with [Cypress](https://www.cypress.io/). You can see [here](https://github.com/6pac/SlickGrid/tree/next/cypress/e2e) the list of Examples that now have E2E tests. We also added these tests to the [GitHub Actions](https://github.com/features/actions) Workflow (CI) to automate certain steps while also making sure that any new commits aren't breaking the build/tests. The concept is that it automatically runs all the E2E tests every time someone pushes a Commit or a Pull Request. We currently have tests for over 20+ examples with almost 300 tests.
 
