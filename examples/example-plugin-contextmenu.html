@@ -48,13 +48,23 @@
       color: #ccc;
     }
 
-    .fake-hyperlink {
+    .cell-menu-dropdown {
+      border: 1px solid #a3a3a3;
+      border-radius: 3px;
+      display: flex;
+      align-items: center;
+      height: 90%;
+      width: max-content;
+      padding: 0 6px;
       cursor: pointer;
-      color: #08c;
     }
-
-    .fake-hyperlink:hover {
-      text-decoration: underline;
+    .cell-menu-dropdown.disabled {
+      border: 1px solid #c6c6c6;
+      color: #dddddd;
+    }
+    .cell-menu-dropdown:hover:not(.disabled) {
+      background-color: #9e9e9e;
+      color: white;
     }
 
     /**
@@ -185,9 +195,9 @@
     function actionFormatter(row, cell, value, columnDef, dataContext) {
       // only enable the Action menu when Priority is set to High (3)
       if (dataContext.priority === 3) {
-        return "<div class='fake-hyperlink'>Action &#9660;</div>";
+        return `<div class="cell-menu-dropdown">Action <i class="sgi sgi-caret sgi-24px"></i></div>`;
       }
-      return "<div class='disabled'>Action &#9660;</div>";
+      return `<div class="cell-menu-dropdown disabled">Action <i class="sgi sgi-caret sgi-24px"></i></div>`;
     }
 
     function priorityFormatter(row, cell, value, columnDef, dataContext) {

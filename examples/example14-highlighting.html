@@ -19,13 +19,12 @@
 
     .changed {
       background: mistyrose;
-      border: 1px solid lightcoral;
+      box-shadow: inset 0 0 0 1px lightcoral;
     }
 
     .current-server {
-      border: 1px solid black;
       background: moccasin;
-      border: 1px solid darksalmon;
+      box-shadow: inset 0 0 0 1px darksalmon;
     }
   </style>
 </head>
@@ -51,6 +50,7 @@
     </ul>
     <h2>Controls</h2>
     <button onclick="simulateRealTimeUpdates()">Start simulation</button>
+    <button onclick="stopSimulation()">Stop simulation</button>
     <button onclick="findCurrentServer()">Find current server</button>
       <h2>View Source:</h2>
       <ul>
@@ -69,6 +69,7 @@
 <script src="../dist/browser/plugins/slick.rowmovemanager.js"></script>
 
 <script>
+  var timer;
   var grid;
   var data = [];
   var columns = [
@@ -145,7 +146,14 @@
     grid.setCellCssStyles("highlight", changes);
     grid.render();
 
-    setTimeout(simulateRealTimeUpdates, 500);
+    timer = setTimeout(simulateRealTimeUpdates, 500);
+  }
+
+  function stopSimulation() {
+    changes = {}; // clear changes
+    grid.setCellCssStyles("highlight", changes);
+    grid.render();
+    clearTimeout(timer);
   }
 
   function findCurrentServer() {
