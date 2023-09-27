@@ -74,7 +74,7 @@ import type { SlickGrid } from '../slick.grid';
  *        expandedRows: Array of the Expanded Rows
  *        rowIdsOutOfViewport: Array of the Out of viewport Range Rows
  *
- *    onRowBackToViewportRange: Fired after the row detail gets toggled
+ *    onRowBackToViewportRange: Fired after a row is back to viewport range (user can visually see the row detail)
  *      Event args:
  *        grid:         Reference to the grid.
  *        item:         Item data context
@@ -144,21 +144,21 @@ export declare class SlickRowDetailView {
     protected checkIsRowOutOfViewportRange(rowIndex: number, renderedRange: any): boolean;
     /** Send a notification, through "onRowOutOfViewportRange", that is out of the viewport range */
     protected notifyOutOfViewport(item: any, rowId: number | string): void;
-    /** Send a notification, through "onRowBackToViewportRange", that a row came back to the viewport */
+    /** Send a notification, through "onRowBackToViewportRange", that a row came back into the viewport visible range */
     protected notifyBackToViewportWhenDomExist(item: any, rowId: number | string): void;
     /**
-     * This function will sync the out of viewport array whenever necessary.
-     * The sync can add a row (when necessary, no need to add again if it already exist) or delete a row from the array.
+     * This function will sync the "out of viewport" array whenever necessary.
+     * The sync can add a detail row (when necessary, no need to add again if it already exist) or delete a row from the array.
      * @param rowId: number
      * @param isAdding: are we adding or removing a row?
      */
     protected syncOutOfViewportArray(rowId: number | string, isAdding: boolean): (string | number)[];
     protected toggleRowSelection(rowNumber: number, dataContext: any): void;
-    /** Collapse all of the open items */
+    /** Collapse all of the open detail rows */
     collapseAll(): void;
-    /** Colapse an Item so it is not longer seen */
+    /** Collapse a detail row so that it is not longer open */
     collapseDetailView(item: any, isMultipleCollapsing?: boolean): void;
-    /** Expand a row given the dataview item that is to be expanded */
+    /** Expand a detail row by providing the dataview item that is to be expanded */
     expandDetailView(item: any): void;
     /** Saves the current state of the detail view */
     saveDetailView(item: any): void;
@@ -171,6 +171,7 @@ export declare class SlickRowDetailView {
     protected handleAccordionShowHide(item: any): void;
     /** Get the Row Detail padding (which are the rows dedicated to the detail panel) */
     protected getPaddingItem(parent: any, offset: any): any;
+    /** Create the detail ctr node. this belongs to the dev & can be custom-styled as per */
     protected applyTemplateNewLineHeight(item: any): void;
     /** Get the Column Definition of the first column dedicated to toggling the Row Detail View */
     getColumnDefinition(): {
@@ -185,9 +186,9 @@ export declare class SlickRowDetailView {
         cssClass: string | undefined;
         formatter: (row: number, _cell: number, _val: any, _column: Column<any>, dataContext: any, grid: SlickGrid<any, Column<any>, GridOption<Column<any>>>) => string | FormatterResultObject;
     };
-    /** return the currently expanded rows */
+    /** Return the currently expanded rows */
     getExpandedRows(): any[];
-    /** The Formatter of the toggling icon of the Row Detail */
+    /** The cell Formatter that shows the icon that will be used to toggle the Row Detail */
     protected detailSelectionFormatter(row: number, _cell: number, _val: any, _column: Column, dataContext: any, grid: SlickGrid): FormatterResultObject | string;
     /** Resize the Row Detail View */
     resizeDetailView(item: any): void;

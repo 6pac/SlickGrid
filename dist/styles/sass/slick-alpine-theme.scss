@@ -210,6 +210,7 @@
   box-sizing: border-box;
   background-color: var(--alpine-header-bg-color, $alpine-header-bg-color);
   font-family: var(--alpine-font-family, $alpine-font-family);
+  font-size: var(--alpine-top-header-font-size, $alpine-top-header-font-size);
   font-weight: var(--alpine-top-header-font-weight, $alpine-top-header-font-weight);
   border-style: solid;
   border-width: var(--alpine-top-header-border-width, $alpine-top-header-border-width);

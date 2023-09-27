@@ -164,7 +164,7 @@
         rowIdsOutOfViewport: this.syncOutOfViewportArray(rowId, !0)
       }, null, this);
     }
-    /** Send a notification, through "onRowBackToViewportRange", that a row came back to the viewport */
+    /** Send a notification, through "onRowBackToViewportRange", that a row came back into the viewport visible range */
     notifyBackToViewportWhenDomExist(item, rowId) {
       let rowIndex = item.rowIndex || this._dataView.getRowById(item[this._dataViewIdProperty]);
       setTimeout(() => {
@@ -179,8 +179,8 @@
       }, 100);
     }
     /**
-     * This function will sync the out of viewport array whenever necessary.
-     * The sync can add a row (when necessary, no need to add again if it already exist) or delete a row from the array.
+     * This function will sync the "out of viewport" array whenever necessary.
+     * The sync can add a detail row (when necessary, no need to add again if it already exist) or delete a row from the array.
      * @param rowId: number
      * @param isAdding: are we adding or removing a row?
      */
@@ -188,25 +188,25 @@
       let arrayRowIndex = this.arrayFindIndex(this._rowIdsOutOfViewport, rowId);
       return isAdding && arrayRowIndex < 0 ? this._rowIdsOutOfViewport.push(rowId) : !isAdding && arrayRowIndex >= 0 && this._rowIdsOutOfViewport.splice(arrayRowIndex, 1), this._rowIdsOutOfViewport;
     }
-    // Toggle between showing and hiding a row
+    // Toggle between showing or hiding a row
     toggleRowSelection(rowNumber, dataContext) {
       this.checkExpandableOverride(rowNumber, dataContext, this._grid) && (this._dataView.beginUpdate(), this.handleAccordionShowHide(dataContext), this._dataView.endUpdate());
     }
-    /** Collapse all of the open items */
+    /** Collapse all of the open detail rows */
     collapseAll() {
       this._dataView.beginUpdate();
       for (let i = this._expandedRows.length - 1; i >= 0; i--)
         this.collapseDetailView(this._expandedRows[i], !0);
       this._dataView.endUpdate();
     }
-    /** Colapse an Item so it is not longer seen */
+    /** Collapse a detail row so that it is not longer open */
     collapseDetailView(item, isMultipleCollapsing = !1) {
       isMultipleCollapsing || this._dataView.beginUpdate(), this._options.loadOnce && this.saveDetailView(item), item[`${this._keyPrefix}collapsed`] = !0;
       for (let idx = 1; idx <= item[`${this._keyPrefix}sizePadding`]; idx++)
         this._dataView.deleteItem(item[this._dataViewIdProperty] + "." + idx);
       item[`${this._keyPrefix}sizePadding`] = 0, this._dataView.updateItem(item[this._dataViewIdProperty], item), this._expandedRows = this._expandedRows.filter((r) => r[this._dataViewIdProperty] !== item[this._dataViewIdProperty]), isMultipleCollapsing || this._dataView.endUpdate();
     }
-    /** Expand a row given the dataview item that is to be expanded */
+    /** Expand a detail row by providing the dataview item that is to be expanded */
     expandDetailView(item) {
       var _a, _b, _c;
       if ((_a = this._options) != null && _a.singleRowExpand && this.collapseAll(), item[`${this._keyPrefix}collapsed`] = !1, this._expandedRows.push(item), item[`${this._keyPrefix}detailContent`] || (item[`${this._keyPrefix}detailViewLoaded`] = !1), !item[`${this._keyPrefix}detailViewLoaded`] || this._options.loadOnce !== !0)
@@ -259,9 +259,7 @@
         item[prop] = null;
       return item[this._dataViewIdProperty] = parent[this._dataViewIdProperty] + "." + offset, item[`${this._keyPrefix}collapsed`] = !0, item[`${this._keyPrefix}isPadding`] = !0, item[`${this._keyPrefix}parent`] = parent, item[`${this._keyPrefix}offset`] = offset, item;
     }
-    //////////////////////////////////////////////////////////////
-    // create the detail ctr node. this belongs to the dev & can be custom-styled as per
-    //////////////////////////////////////////////////////////////
+    /** Create the detail ctr node. this belongs to the dev & can be custom-styled as per */
     applyTemplateNewLineHeight(item) {
       var _a;
       let rowCount = this._options.panelRows, lineHeight = 13;
@@ -285,11 +283,11 @@
         formatter: this.detailSelectionFormatter.bind(this)
       };
     }
-    /** return the currently expanded rows */
+    /** Return the currently expanded rows */
     getExpandedRows() {
       return this._expandedRows;
     }
-    /** The Formatter of the toggling icon of the Row Detail */
+    /** The cell Formatter that shows the icon that will be used to toggle the Row Detail */
     detailSelectionFormatter(row, _cell, _val, _column, dataContext, grid) {
       if (this.checkExpandableOverride(row, dataContext, grid)) {
         if (dataContext[`${this._keyPrefix}collapsed`] == null && (dataContext[`${this._keyPrefix}collapsed`] = !0, dataContext[`${this._keyPrefix}sizePadding`] = 0, dataContext[`${this._keyPrefix}height`] = 0, dataContext[`${this._keyPrefix}isPadding`] = !1, dataContext[`${this._keyPrefix}parent`] = void 0, dataContext[`${this._keyPrefix}offset`] = 0), !dataContext[`${this._keyPrefix}isPadding`])

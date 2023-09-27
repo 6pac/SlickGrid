@@ -6,7 +6,7 @@ export interface DataViewOption {
     groupItemMetadataProvider: SlickGroupItemMetadataProvider_ | null;
     inlineFilters: boolean;
 }
-export type FilterFn<T> = (a: T, b: T) => boolean;
+export type FilterFn<T> = (item: T, args: any) => boolean;
 export type DataIdType = number | string;
 export type SlickDataItem = SlickNonDataItem | SlickGroup_ | SlickGroupTotals_ | any;
 /**
@@ -121,7 +121,7 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
      * Set a Filter that will be used by the DataView
      * @param {Function} fn - filter callback function
      */
-    setFilter(filterFn: (a: TData, b: TData) => boolean): void;
+    setFilter(filterFn: FilterFn<TData>): void;
     /** Get current Grouping info */
     getGrouping(): Grouping[];
     /** Set some Grouping */

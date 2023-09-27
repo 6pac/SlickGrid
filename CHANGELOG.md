@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.0.1](https://github.com/6pac/SlickGrid/compare/5.0.0...5.0.1) (2023-09-27)
+
+### Bug Fixes
+
+* add missing font-size CSS var for grid top header ([9bb45a1](https://github.com/6pac/SlickGrid/commit/9bb45a144d3f185d180f8b1dc24c6e29c698fcd0))
+* DataView setFilter had incorrect type, fixes [#848](https://github.com/6pac/SlickGrid/issues/848) ([#849](https://github.com/6pac/SlickGrid/issues/849)) ([3efb3f5](https://github.com/6pac/SlickGrid/commit/3efb3f5b1832e64f436536b5a2b8fec3424e1c88))
+* remove devDependencies & scripts from npm publish ([0d9784a](https://github.com/6pac/SlickGrid/commit/0d9784a0ae82e1d6b34deb71d495803c0538a6a4))
+
 # [5.0.0](https://github.com/6pac/SlickGrid/compare/4.0.1...5.0.0) (2023-09-19)
 
 ### Please read the [Migration Guide v5.0](https://github.com/6pac/SlickGrid/wiki/Major-version-5.0-%E2%80%90-ES6-ESM-and-TypeScript-Support)
