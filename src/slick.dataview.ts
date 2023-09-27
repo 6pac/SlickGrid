@@ -37,7 +37,7 @@ export interface DataViewOption {
   groupItemMetadataProvider: SlickGroupItemMetadataProvider_ | null;
   inlineFilters: boolean;
 }
-export type FilterFn<T> = (a: T, b: T) => boolean;
+export type FilterFn<T> = (item: T, args: any) => boolean;
 export type DataIdType = number | string;
 export type SlickDataItem = SlickNonDataItem | SlickGroup_ | SlickGroupTotals_ | any;
 
@@ -366,7 +366,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
    * Set a Filter that will be used by the DataView
    * @param {Function} fn - filter callback function
    */
-  setFilter(filterFn: (a: TData, b: TData) => boolean) {
+  setFilter(filterFn: FilterFn<TData>) {
     this.filter = filterFn;
     if (this._options.inlineFilters) {
       this.compiledFilter = this.compileFilter();
