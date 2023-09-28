@@ -257,10 +257,10 @@ export class SlickRowDetailView {
       }
 
       // trigger an event before toggling
-      this.onBeforeRowDetailToggle.notify({
-        grid: this._grid,
-        item: dataContext
-      }, e, this);
+      // user could cancel the Row Detail opening when event is returning false
+      if (this.onBeforeRowDetailToggle.notify({ grid: this._grid, item: dataContext }, e, this).getReturnValue() === false) {
+        return;
+      }
 
       this.toggleRowSelection(args.row, dataContext);
 
