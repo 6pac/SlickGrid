@@ -830,8 +830,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
   }
 
+  /** handles "display:none" on container or container parents, related to issue: https://github.com/6pac/SlickGrid/issues/568 */
   cacheCssForHiddenInit() {
-    // handle display:none on container or container parents
     this._hiddenParents = Utils.parents(this._container, ':hidden') as HTMLElement[];
     for (const el of this._hiddenParents) {
       const old: Partial<CSSStyleDeclaration> = {};
