@@ -647,7 +647,7 @@ function bindGridEvents() {
 
     if (percentCompleteThreshold != this.value) {
       window.clearTimeout(h_runfilters);
-      h_runfilters = window.setTimeout(dataView.refresh, 10);
+      h_runfilters = window.setTimeout(() => dataView.refresh(), 10);
       percentCompleteThreshold = this.value;
     }
   }

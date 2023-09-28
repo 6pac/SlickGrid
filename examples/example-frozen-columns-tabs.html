@@ -352,7 +352,7 @@ $(function () {
 
       if (percentCompleteThreshold != ui.value) {
         window.clearTimeout(h_runfilters);
-        h_runfilters = window.setTimeout(dataView.refresh, 10);
+        h_runfilters = window.setTimeout(() => dataView.refresh(), 10);
         percentCompleteThreshold = ui.value;
       }
     }

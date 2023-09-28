@@ -96,7 +96,7 @@ var TaskNameFormatter = function (row, cell, value, columnDef, dataContext) {
   var idx = dataView.getIdxById(dataContext.id);
   if (data[idx + 1] && data[idx + 1].indent > data[idx].indent) {
     if (dataContext._collapsed) {
-      return spacer + " <span class='toggle expand sgi sgi-collapse sgi sgi-plus-box-outline sgi-darkgray'></span>&nbsp;" + value;
+      return spacer + " <span class='toggle expand sgi sgi-collapse sgi-plus-box-outline sgi-darkgray'></span>&nbsp;" + value;
     } else {
       return spacer + " <span class='toggle collapse sgi sgi-minus-box-outline sgi-darkgray'></span>&nbsp;" + value;
     }
@@ -256,7 +256,7 @@ var sliderCallback = function() {
 
   if (percentCompleteThreshold != this.value) {
     window.clearTimeout(h_runfilters);
-    h_runfilters = window.setTimeout(dataView.refresh, 10);
+    h_runfilters = window.setTimeout(() => dataView.refresh(), 10);
     percentCompleteThreshold = this.value;
   }
 }

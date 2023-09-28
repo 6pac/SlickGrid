@@ -149,10 +149,10 @@ import {
 // OR preferably use the code below when installing from npm
 // import { SlickGrid, ... } from 'slickgrid';
 
-var dataView;
-var grid;
-var data = [];
-var columns = [
+let dataView;
+let grid;
+let data = [];
+let columns = [
   {id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 45, cannotTriggerInsert: true, resizable: false, selectable: false, excludeFromColumnPicker: true },
   {id: "title", name: "Title", field: "title", width: 110, minWidth: 100, cssClass: "cell-title", editor: Editors.LongText, validator: requiredFieldValidator, sortable: true},
   {id: "duration", name: "Duration", field: "duration", editor: Editors.Text, sortable: true},
@@ -162,7 +162,7 @@ var columns = [
   {id: "effort-driven", name: "Effort Driven", width: 120, minWidth: 20, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Formatters.Checkbox, editor: Editors.Checkbox, cannotTriggerInsert: true, sortable: true}
 ];
 
-var options = {
+let options = {
   columnPicker: {
     columnTitle: "Columns",
     hideForceFitButton: false,
@@ -179,10 +179,10 @@ var options = {
   rowHeight: 28
 };
 
-var sortcol = "title";
-var sortdir = 1;
-var percentCompleteThreshold = 0;
-var searchString = "";
+let sortcol = "title";
+let sortdir = 1;
+let percentCompleteThreshold = 0;
+let searchString = "";
 
 function toggleTheme(theme) {
   const gridElm = document.querySelector('#myGrid');
@@ -236,7 +236,7 @@ function percentCompleteSort(a, b) {
 }
 
 function comparer(a, b) {
-  var x = a[sortcol], y = b[sortcol];
+  let x = a[sortcol], y = b[sortcol];
   return (x == y ? 0 : (x > y ? 1 : -1));
 }
 
@@ -246,8 +246,8 @@ function toggleFilterRow() {
 
 document.addEventListener("DOMContentLoaded", () => {
   // prepare the data
-  for (var i = 0; i < 50000; i++) {
-    var d = (data[i] = {});
+  for (let i = 0; i < 50000; i++) {
+    let d = (data[i] = {});
 
     d["id"] = "id_" + i;
     d["num"] = i;
@@ -263,11 +263,11 @@ document.addEventListener("DOMContentLoaded", () => {
   grid = new SlickGrid("#myGrid", dataView, columns, options);
   grid.setSelectionModel(new SlickRowSelectionModel());
 
-  var pager = new SlickGridPager(dataView, grid, "#pager");
-  var columnpicker = new SlickColumnPicker(columns, grid, options);
+  let pager = new SlickGridPager(dataView, grid, "#pager");
+  let columnpicker = new SlickColumnPicker(columns, grid, options);
 
   // move the filter panel defined in a hidden div into grid top panel
-  var topPanel = grid.getTopPanel();
+  let topPanel = grid.getTopPanel();
   const topPanelLeftElm = document.querySelector("#inlineFilterPanel");
   topPanel.appendChild(topPanelLeftElm);
   topPanelLeftElm.style.display = 'block';
@@ -277,7 +277,7 @@ document.addEventListener("DOMContentLoaded", () => {
   });
 
   grid.onAddNewRow.subscribe(function (e, args) {
-    var item = {"num": data.length, "id": "new_" + (Math.round(Math.random() * 10000)), "title": "New task", "duration": "1 day", "percentComplete": 0, "start": "01/01/2009", "finish": "01/01/2009", "effortDriven": false};
+    let item = {"num": data.length, "id": "new_" + (Math.round(Math.random() * 10000)), "title": "New task", "duration": "1 day", "percentComplete": 0, "start": "01/01/2009", "finish": "01/01/2009", "effortDriven": false};
     Utils.extend(item, args.item);
     dataView.addItem(item);
   });
@@ -288,8 +288,8 @@ document.addEventListener("DOMContentLoaded", () => {
       return false;
     }
 
-    var rows = [];
-    for (var i = 0; i < dataView.getLength(); i++) {
+    let rows = [];
+    for (let i = 0; i < dataView.getLength(); i++) {
       rows.push(i);
     }
 
@@ -332,12 +332,12 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log('on Before Paging Info Changed - Previous Paging:: ', previousPagingInfo);
   });
 
-  var h_runfilters = null;
+  let h_runfilters = null;
 
   // wire up the slider to apply the filter to the model
-  var slider = document.getElementById("pcSlider");
-  var slider2 = document.getElementById("pcSlider2");
-  var sliderCallback = function() {
+  let slider = document.getElementById("pcSlider");
+  let slider2 = document.getElementById("pcSlider2");
+  let sliderCallback = function() {
     SlickGlobalEditorLock.cancelCurrentEdit();
 
     if (percentCompleteThreshold != this.value) {
@@ -364,8 +364,8 @@ document.addEventListener("DOMContentLoaded", () => {
 
   function updateFilter() {
     dataView.setFilterArgs({
-      percentCompleteThreshold: percentCompleteThreshold,
-      searchString: searchString
+      percentCompleteThreshold,
+      searchString
     });
     dataView.refresh();
   }
@@ -374,9 +374,9 @@ document.addEventListener("DOMContentLoaded", () => {
     if (!SlickGlobalEditorLock.commitCurrentEdit()) {
       return;
     }
-    var rows = [];
+    let rows = [];
 
-    for (var i = 0; i < 10 && i < dataView.getLength(); i++) {
+    for (let i = 0; i < 10 && i < dataView.getLength(); i++) {
       rows.push(i);
     }
     grid.setSelectedRows(rows);
@@ -386,8 +386,8 @@ document.addEventListener("DOMContentLoaded", () => {
   dataView.beginUpdate();
   dataView.setItems(data);
   dataView.setFilterArgs({
-    percentCompleteThreshold: percentCompleteThreshold,
-    searchString: searchString
+    percentCompleteThreshold,
+    searchString
   });
   dataView.setFilter(myFilter);
   dataView.endUpdate();

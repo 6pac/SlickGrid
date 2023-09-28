@@ -79,7 +79,7 @@
       <br/>
       <label style="width:200px;float:left">Highlight Duration (ms): </label>
       <div style="padding:2px;">
-        <input style="width:100px;display:inline-block;" id="highlightDuration" type="number" min="1" max="125" step="10" value="100">
+        <input style="width:100px;display:inline-block;" id="highlightDuration" type="number" min="1" max="125" step="10" value="70">
       </div>
       <br/>
       <label style="width:200px;float:left">Simulation:</label>
@@ -139,33 +139,33 @@
   let data = [];
   let columns = [
     {
-      id: 'currency', name: 'Currency', field: 'currency', sortable: true, width: 75,
+      id: 'currency', name: 'Currency', field: 'currency', sortable: true, width: 74,
       formatter: (row, cell, value) => `<img src="https://flags.fmcdn.net/data/flags/mini/${value.substring(0, 2).toLowerCase()}.png" width="18"/>&nbsp;${value}`
     },
     { id: 'symbol', name: 'Symbol', field: 'symbol', sortable: true, minWidth: 65, width: 65 },
     {
-      id: 'market', name: 'Market', field: 'market', sortable: true, minWidth: 75, width: 75,
+      id: 'market', name: 'Market', field: 'market', sortable: true, minWidth: 65, width: 65,
     },
     { id: 'company', name: 'Company', field: 'company', sortable: true, minWidth: 80, width: 130 },
     {
-      id: 'trsnType', name: 'Type', field: 'trsnType', sortable: true, minWidth: 45, width: 50,
+      id: 'trsnType', name: 'Type', field: 'trsnType', minWidth: 45, width: 50,
       formatter: (row, cell, value) => {
         return `<span class="bold ${value === 'Buy' ? 'color-info' : 'color-warning'}">${value}</span>`;
       }
     },
     {
-      id: 'priceChange', name: 'Change', field: 'priceChange', sortable: true, minWidth: 65, width: 65,
+      id: 'priceChange', name: 'Change', field: 'priceChange', minWidth: 65, width: 65,
       formatter: currencyFormatter
     },
     {
-      id: 'price', name: 'Price', field: 'price', sortable: true, minWidth: 70, width: 70,
+      id: 'price', name: 'Price', field: 'price', minWidth: 70, width: 70,
       formatter: currencyFormatter
     },
     {
-      id: 'quantity', name: 'Qty', field: 'quantity', sortable: true, width: 50,
+      id: 'quantity', name: 'Qty', field: 'quantity', width: 50,
     },
     {
-      id: 'amount', name: 'Amount', field: 'amount', sortable: true, minWidth: 70, width: 110,
+      id: 'amount', name: 'Amount', field: 'amount', minWidth: 70, width: 115,
       formatter: currencyFormatter, groupTotalsFormatter: sumTotalsFormatter
     },
     {
@@ -188,9 +188,8 @@
     rowHeight: 28
   };
 
-  let sortcol = "title";
+  let sortcol = "symbol";
   let sortdir = 1;
-  let percentCompleteThreshold = 0;
   let searchString = "";
 
   function sumTotalsFormatter(totals, columnDef, grid) {
@@ -199,6 +198,11 @@
       return "total: $" + ((Math.round(parseFloat(val)*100)/100));
     }
     return "";
+  }
+
+  function comparer(a, b) {
+    var x = a[sortcol], y = b[sortcol];
+    return (x == y ? 0 : (x > y ? 1 : -1));
   }
 
   function historicSparklineFormatter(_row, _cell, _value, _col, dataContext) {
@@ -387,12 +391,6 @@ document.addEventListener("DOMContentLoaded", () => {
 
   grid.onCellChange.subscribe(function (e, args) {
     dataView.updateItem(args.item.id, args.item);
-  });
-
-  grid.onAddNewRow.subscribe(function (e, args) {
-    const item = {"num": data.length, "id": "new_" + (Math.round(Math.random() * 10000)), "title": "New task", "duration": "1 day", "percentComplete": 0, "start": "01/01/2009", "finish": "01/01/2009", "effortDriven": false};
-    Utils.extend(item, args.item);
-    dataView.addItem(item);
   });
 
   grid.onSort.subscribe(function (e, args) {
