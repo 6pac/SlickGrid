@@ -22,7 +22,7 @@ h2 {
 
 ul {
   margin-left: 0;
-  padding: 0;
+  padding-left: 20px;
   cursor: default;
 }
 
@@ -37,13 +37,6 @@ ul {
   position: absolute;
   top: 0px;
   left: 700px;
-
-  li {
-    padding: 0 0 0 14px;
-
-    list-style: none;
-    margin: 0;
-  }
 
   button, input, textarea {
     font-family: var(--alpine-font-family, $alpine-font-family);

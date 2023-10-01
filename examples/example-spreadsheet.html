@@ -38,6 +38,13 @@
       <li>Use Ctrl-C and Ctrl-V keyboard shortcuts to cut and paste cells</li>
       <li>Use Esc to cancel a copy and paste operation</li>
       <li>Edit the cell and select a cell range to paste the range</li>
+      <li>Cell Selection using "Shift+{key}" where "key" can be any of:</li>
+      <ul>
+        <li>Arrow Up/Down/Left/Right</li>
+        <li>Page Up/Down</li>
+        <li>Home</li>
+        <li>End</li>
+      </ul>
     </ul>
       <h2>View Source:</h2>
       <ul>
@@ -97,7 +104,7 @@
   /***
    * A proof-of-concept cell editor with Excel-like range selection and insertion.
    */
-  function FormulaEditor(args) {
+   function FormulaEditor(args) {
     var _self = this;
     var _editor = new Slick.Editors.Text(args);
     var _selector;
@@ -120,6 +127,26 @@
       _editor.destroy();
     };
 
+    this.isValueChanged = function() {
+      return _editor.isValueChanged();
+    };
+
+    this.loadValue = function (item) {
+      _editor.loadValue(item);
+    };
+
+    this.applyValue = function(item, state) {
+      return _editor.applyValue(item, state);
+    };
+
+    this.serializeValue = function() {
+      return _editor.serializeValue();
+    };
+
+    this.validate = function() {
+      return _editor.validate();
+    };
+
     this.handleCellRangeSelected = function (e, args) {
       _editor.setValue(
           _editor.getValue() +
@@ -131,10 +158,8 @@
       );
     };
 
-
     init();
   }
-
 
   document.addEventListener("DOMContentLoaded", function() {
     for (var i = 0; i < 100; i++) {
