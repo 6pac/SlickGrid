@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
-  <title>SlickGrid example 3: Editing</title>
+  <title>SlickGrid spreadsheet</title>
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
@@ -46,14 +46,17 @@
         <li>End</li>
       </ul>
     </ul>
-      <h2>View Source:</h2>
-      <ul>
-        <li>
-          <a href="https://github.com/6pac/SlickGrid/blob/master/examples/example-spreadsheet.html" target="_sourcewindow">
-            View the source for this example on Github
-          </a>
-        </li>
-      </ul>
+    <h2>View Source:</h2>
+    <ul>
+      <li>
+        <a href="https://github.com/6pac/SlickGrid/blob/master/examples/example-spreadsheet.html" target="_sourcewindow">
+          View the source for this example on Github
+        </a>
+      </li>
+    </ul>
+
+    <h2>Range Selection</h2>
+    <span id="selectionRange"></span>
   </div>
 </div>
 
@@ -73,6 +76,7 @@
 <script>
   var grid;
   var data = [];
+  let cellSelectionModel;
   var options = {
     editable: true,
     enableAddRow: true,
@@ -93,8 +97,9 @@
   for (var i = 0; i < 100; i++) {
     columns.push({
       id: i,
-      name: String.fromCharCode("A".charCodeAt(0) + (i / 26) | 0) +
-            String.fromCharCode("A".charCodeAt(0) + (i % 26)),
+      name: i < 26
+        ? String.fromCharCode("A".charCodeAt(0) + (i % 26))
+        : String.fromCharCode("A".charCodeAt(0) + ((i / 26) | 0) -1) + String.fromCharCode("A".charCodeAt(0) + (i % 26)),
       field: i,
       width: 60,
       editor: FormulaEditor
@@ -169,7 +174,8 @@
 
     grid = new Slick.Grid("#myGrid", data, columns, options);
 
-    grid.setSelectionModel(new Slick.CellSelectionModel());
+    cellSelectionModel = new Slick.CellSelectionModel();
+    grid.setSelectionModel(cellSelectionModel);
     grid.registerPlugin(new Slick.AutoTooltips());
 
     // set keyboard focus on the grid
@@ -205,6 +211,15 @@
       data.push(item);
       grid.updateRowCount();
       grid.render();
+    });
+
+    cellSelectionModel.onSelectedRangesChanged.subscribe((e, args) => {
+      const targetRange = document.querySelector('#selectionRange');
+      targetRange.textContent = '';
+
+      for (let slickRange of args) {
+        targetRange.textContent += JSON.stringify(slickRange);
+      }
     });
   })
 </script>
