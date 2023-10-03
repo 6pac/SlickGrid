@@ -1794,6 +1794,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         this.trigger(this.onColumnsReordered, { impactedColumns: this.getImpactedColumns(limit) });
         e.stopPropagation();
         this.setupColumnResize();
+        if (this.activeCellNode) {
+          this.setFocus(); // refocus on active cell
+        }
       }
     };
 
@@ -5606,7 +5609,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return true;
   }
 
-  protected makeActiveCellNormal() {
+  /**
+   * Make the cell normal again (for example after destroying cell editor),
+   * we can also optionally refocus on the current active cell (again possibly after closing cell editor)
+   * @param {Boolean} [refocusActiveCell]
+   */
+  protected makeActiveCellNormal(refocusActiveCell = false) {
     if (!this.currentEditor) {
       return;
     }
@@ -5624,6 +5632,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         const formatterResult = formatter(this.activeRow, this.activeCell, this.getDataItemValueForColumn(d, column), column, d, this as unknown as SlickGridModel);
         this.applyFormatResultToCellNode(formatterResult, this.activeCellNode);
         this.invalidatePostProcessingResults(this.activeRow);
+      }
+      if (refocusActiveCell) {
+        this.setFocus();
       }
     }
 
@@ -6501,17 +6512,17 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
             };
 
             if (self.options.editCommandHandler) {
-              self.makeActiveCellNormal();
+              self.makeActiveCellNormal(true);
               self.options.editCommandHandler(item, column, editCommand);
             } else {
               editCommand.execute();
-              self.makeActiveCellNormal();
+              self.makeActiveCellNormal(true);
             }
 
           } else {
             const newItem = {};
             self.currentEditor.applyValue(newItem, self.currentEditor.serializeValue());
-            self.makeActiveCellNormal();
+            self.makeActiveCellNormal(true);
             self.trigger(self.onAddNewRow, { item: newItem, column });
           }
 
@@ -6539,7 +6550,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         }
       }
 
-      self.makeActiveCellNormal();
+      self.makeActiveCellNormal(true);
     }
     return true;
   }
