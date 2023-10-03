@@ -24,6 +24,8 @@ Check out the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** Wi
 
 Also check out the [Wiki](https://github.com/6pac/SlickGrid/wiki) for news and documentation.
 
+_For a basic TypeScript example, take a look at the v5.0 Annoucement & Migration guide shown below._
+
 ### Contributions
 See [Contributing Guide](https://github.com/6pac/SlickGrid/blob/master/CONTRIBUTING.md)
 
