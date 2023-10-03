@@ -213,6 +213,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     leaveSpaceForNewRows: false,
     editable: false,
     autoEdit: true,
+    autoEditNewRow: true,
     autoCommitEdit: false,
     suppressActiveCellChangeOnEdit: false,
     enableCellNavigation: true,
@@ -5560,7 +5561,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.activeRow = cell.row;
       this.activeCell = this.activePosX = this.activeCell = this.activePosX = this.getCellFromNode(this.activeCellNode);
 
-      if (opt_editMode == null) {
+      if (opt_editMode == null && this._options.autoEditNewRow) {
         opt_editMode = (this.activeRow == this.getDataLength()) || this._options.autoEdit;
       }
 
