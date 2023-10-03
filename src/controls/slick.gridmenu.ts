@@ -133,11 +133,11 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 export class SlickGridMenu {
   // --
   // public API
-  onAfterMenuShow = new SlickEvent<GridMenuEventWithElementCallbackArgs>();
-  onBeforeMenuShow = new SlickEvent<GridMenuEventWithElementCallbackArgs>();
-  onMenuClose = new SlickEvent<GridMenuEventWithElementCallbackArgs>();
-  onCommand = new SlickEvent<GridMenuCommandItemCallbackArgs>();
-  onColumnsChanged = new SlickEvent<onGridMenuColumnsChangedCallbackArgs>();
+  onAfterMenuShow = new SlickEvent<GridMenuEventWithElementCallbackArgs>('onAfterMenuShow');
+  onBeforeMenuShow = new SlickEvent<GridMenuEventWithElementCallbackArgs>('onBeforeMenuShow');
+  onMenuClose = new SlickEvent<GridMenuEventWithElementCallbackArgs>('onMenuClose');
+  onCommand = new SlickEvent<GridMenuCommandItemCallbackArgs>('onCommand');
+  onColumnsChanged = new SlickEvent<onGridMenuColumnsChangedCallbackArgs>('onColumnsChanged');
 
   // --
   // protected props

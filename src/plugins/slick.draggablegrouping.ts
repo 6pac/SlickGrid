@@ -42,7 +42,7 @@ export class SlickDraggableGrouping {
   // --
   // public API
   pluginName = 'DraggableGrouping' as const;
-  onGroupChanged = new SlickEvent<{ caller?: string; groupColumns: Grouping[]; }>();
+  onGroupChanged = new SlickEvent<{ caller?: string; groupColumns: Grouping[]; }>('onGroupChanged');
 
   // --
   // protected props

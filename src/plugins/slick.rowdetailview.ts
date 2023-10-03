@@ -93,12 +93,12 @@ export class SlickRowDetailView {
   // --
   // public API
   pluginName = 'RowDetailView' as const;
-  onAsyncResponse = new SlickEvent<OnRowDetailAsyncResponseArgs>();
-  onAsyncEndUpdate = new SlickEvent<OnRowDetailAsyncEndUpdateArgs>();
-  onAfterRowDetailToggle = new SlickEvent<OnAfterRowDetailToggleArgs>();
-  onBeforeRowDetailToggle = new SlickEvent<OnBeforeRowDetailToggleArgs>();
-  onRowBackToViewportRange = new SlickEvent<OnRowBackToViewportRangeArgs>();
-  onRowOutOfViewportRange = new SlickEvent<OnRowOutOfViewportRangeArgs>();
+  onAsyncResponse = new SlickEvent<OnRowDetailAsyncResponseArgs>('onAsyncResponse');
+  onAsyncEndUpdate = new SlickEvent<OnRowDetailAsyncEndUpdateArgs>('onAsyncEndUpdate');
+  onAfterRowDetailToggle = new SlickEvent<OnAfterRowDetailToggleArgs>('onAfterRowDetailToggle');
+  onBeforeRowDetailToggle = new SlickEvent<OnBeforeRowDetailToggleArgs>('onBeforeRowDetailToggle');
+  onRowBackToViewportRange = new SlickEvent<OnRowBackToViewportRangeArgs>('onRowBackToViewportRange');
+  onRowOutOfViewportRange = new SlickEvent<OnRowOutOfViewportRangeArgs>('onRowOutOfViewportRange');
 
   // --
   // protected props

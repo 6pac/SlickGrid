@@ -170,6 +170,7 @@ let options = {
     forceFitTitle: "Force fit columns",
     syncResizeTitle: "Synchronous resize",
   },
+  dispatchEventTarget: '#myGrid',
   editable: true,
   enableAddRow: true,
   enableCellNavigation: true,
@@ -259,7 +260,7 @@ document.addEventListener("DOMContentLoaded", () => {
     d["effortDriven"] = (i % 5 == 0);
   }
 
-  dataView = new SlickDataView({ inlineFilters: true });
+  dataView = new SlickDataView({ inlineFilters: true, dispatchEventTarget: '#myGrid' });
   grid = new SlickGrid("#myGrid", dataView, columns, options);
   grid.setSelectionModel(new SlickRowSelectionModel());
 
@@ -332,6 +333,10 @@ document.addEventListener("DOMContentLoaded", () => {
     console.log('on Before Paging Info Changed - Previous Paging:: ', previousPagingInfo);
   });
 
+  grid.onRendered.subscribe(() => {
+    console.log('on rendered')
+  })
+
   let h_runfilters = null;
 
   // wire up the slider to apply the filter to the model
@@ -399,6 +404,16 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelector('.sgi-search').addEventListener('click', toggleFilterRow);
   document.querySelector('.btn-alpine-theme').addEventListener('click', () => toggleTheme('alpine'));
   document.querySelector('.btn-classic-theme').addEventListener('click', () => toggleTheme('classic'));
+
+  document.querySelector('#myGrid').addEventListener('onRendered', (args) => {
+    console.log('event listener', args)
+  });
+  document.querySelector('#myGrid').addEventListener('onBeforePagingInfoChanged', (args) => {
+    console.log('event listener', args)
+  });
+  document.querySelector('#myGrid').addEventListener('onColumnsChanged', (args) => {
+    console.log('event listener', args)
+  });
 });
 </script>
 </body>

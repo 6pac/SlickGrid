@@ -36,9 +36,9 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
   // --
   // public API
   pluginName = 'CellExternalCopyManager' as const;
-  onCopyCells = new SlickEvent<{ ranges: SlickRange_[]; }>();
-  onCopyCancelled = new SlickEvent<{ ranges: SlickRange_[]; }>();
-  onPasteCells = new SlickEvent<{ ranges: SlickRange_[]; }>();
+  onCopyCells = new SlickEvent<{ ranges: SlickRange_[]; }>('onCopyCells');
+  onCopyCancelled = new SlickEvent<{ ranges: SlickRange_[]; }>('onCopyCancelled');
+  onPasteCells = new SlickEvent<{ ranges: SlickRange_[]; }>('onPasteCells');
 
   // --
   // protected props

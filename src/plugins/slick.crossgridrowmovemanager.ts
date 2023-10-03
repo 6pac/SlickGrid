@@ -27,8 +27,8 @@ export class SlickCrossGridRowMoveManager {
   // --
   // public API
   pluginName = 'CrossGridRowMoveManager' as const;
-  onBeforeMoveRows = new SlickEvent<{ rows: number[]; insertBefore: number; fromGrid: SlickGrid; toGrid: SlickGrid; }>();
-  onMoveRows = new SlickEvent<{ rows: number[]; insertBefore: number; fromGrid: SlickGrid; toGrid: SlickGrid; }>();
+  onBeforeMoveRows = new SlickEvent<{ rows: number[]; insertBefore: number; fromGrid: SlickGrid; toGrid: SlickGrid; }>('onBeforeMoveRows');
+  onMoveRows = new SlickEvent<{ rows: number[]; insertBefore: number; fromGrid: SlickGrid; toGrid: SlickGrid; }>('onMoveRows');
 
   // --
   // protected props

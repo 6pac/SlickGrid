@@ -85,7 +85,7 @@ export class SlickHeaderButtons implements SlickPlugin {
   // --
   // public API
   pluginName = 'HeaderButtons' as const;
-  onCommand = new SlickEvent<HeaderButtonOnCommandArgs>();
+  onCommand = new SlickEvent<HeaderButtonOnCommandArgs>('onCommand');
 
   // --
   // protected props

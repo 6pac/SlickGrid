@@ -111,9 +111,9 @@ export class SlickHeaderMenu implements SlickPlugin {
   // --
   // public API
   pluginName = 'HeaderMenu' as const;
-  onAfterMenuShow = new SlickEvent<HeaderMenuCommandItemCallbackArgs>();
-  onBeforeMenuShow = new SlickEvent<HeaderMenuCommandItemCallbackArgs>();
-  onCommand = new SlickEvent<MenuCommandItemCallbackArgs>();
+  onAfterMenuShow = new SlickEvent<HeaderMenuCommandItemCallbackArgs>('onAfterMenuShow');
+  onBeforeMenuShow = new SlickEvent<HeaderMenuCommandItemCallbackArgs>('onBeforeMenuShow');
+  onCommand = new SlickEvent<MenuCommandItemCallbackArgs>('onCommand');
 
   // --
   // protected props

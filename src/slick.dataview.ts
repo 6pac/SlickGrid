@@ -112,20 +112,29 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   protected pagenum = 0;
   protected totalRows = 0;
   protected _options: DataViewOption;
+  protected _container?: HTMLElement;
 
   // public events
-  onBeforePagingInfoChanged = new SlickEvent<PagingInfo>();
-  onGroupExpanded = new SlickEvent<OnGroupExpandedEventArgs>();
-  onGroupCollapsed = new SlickEvent<OnGroupCollapsedEventArgs>();
-  onPagingInfoChanged = new SlickEvent<PagingInfo>();
-  onRowCountChanged = new SlickEvent<OnRowCountChangedEventArgs>();
-  onRowsChanged = new SlickEvent<OnRowsChangedEventArgs>();
-  onRowsOrCountChanged = new SlickEvent<OnRowsOrCountChangedEventArgs>();
-  onSelectedRowIdsChanged = new SlickEvent<OnSelectedRowIdsChangedEventArgs>();
-  onSetItemsCalled = new SlickEvent<OnSetItemsCalledEventArgs>();
+  onBeforePagingInfoChanged = new SlickEvent<PagingInfo>('onBeforePagingInfoChanged');
+  onGroupExpanded = new SlickEvent<OnGroupExpandedEventArgs>('onGroupExpanded');
+  onGroupCollapsed = new SlickEvent<OnGroupCollapsedEventArgs>('onGroupCollapsed');
+  onPagingInfoChanged = new SlickEvent<PagingInfo>('onPagingInfoChanged');
+  onRowCountChanged = new SlickEvent<OnRowCountChangedEventArgs>('onRowCountChanged');
+  onRowsChanged = new SlickEvent<OnRowsChangedEventArgs>('onRowsChanged');
+  onRowsOrCountChanged = new SlickEvent<OnRowsOrCountChangedEventArgs>('onRowsOrCountChanged');
+  onSelectedRowIdsChanged = new SlickEvent<OnSelectedRowIdsChangedEventArgs>('onSelectedRowIdsChanged');
+  onSetItemsCalled = new SlickEvent<OnSetItemsCalledEventArgs>('onSetItemsCalled');
 
   constructor(options: Partial<DataViewOption>) {
     this._options = Utils.extend(true, {}, this.defaults, options);
+  }
+
+  getContainerNode() {
+    return this._container;
+  }
+
+  setContainerNode(node: HTMLElement) {
+    this._container = node;
   }
 
   /**

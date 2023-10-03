@@ -70,7 +70,7 @@ export class SlickState implements SlickPlugin {
   // --
   // public API
   pluginName = 'State' as const;
-  onStateChanged = new SlickEvent<CurrentState>();
+  onStateChanged = new SlickEvent<CurrentState>('onStateChanged');
 
   // --
   // protected props

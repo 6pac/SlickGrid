@@ -29,8 +29,8 @@ export class SlickRowMoveManager {
   // --
   // public API
   pluginName = 'RowMoveManager' as const;
-  onBeforeMoveRows = new SlickEvent<{ grid: SlickGrid; rows: number[]; insertBefore: number; }>();
-  onMoveRows = new SlickEvent<{ grid: SlickGrid; rows: number[]; insertBefore: number; }>();
+  onBeforeMoveRows = new SlickEvent<{ grid: SlickGrid; rows: number[]; insertBefore: number; }>('onBeforeMoveRows');
+  onMoveRows = new SlickEvent<{ grid: SlickGrid; rows: number[]; insertBefore: number; }>('onMoveRows');
 
   // --
   // protected props

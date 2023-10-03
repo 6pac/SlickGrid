@@ -140,57 +140,57 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   cid = '';
 
   // Events
-  onActiveCellChanged = new SlickEvent<OnActiveCellChangedEventArgs>();
-  onActiveCellPositionChanged = new SlickEvent<SlickGridEventData>();
-  onAddNewRow = new SlickEvent<OnAddNewRowEventArgs>();
-  onAutosizeColumns = new SlickEvent<OnAutosizeColumnsEventArgs>();
-  onBeforeAppendCell = new SlickEvent<OnBeforeAppendCellEventArgs>();
-  onBeforeCellEditorDestroy = new SlickEvent<OnBeforeCellEditorDestroyEventArgs>();
-  onBeforeColumnsResize = new SlickEvent<OnBeforeColumnsResizeEventArgs>();
-  onBeforeDestroy = new SlickEvent<SlickGridEventData>();
-  onBeforeEditCell = new SlickEvent<OnBeforeEditCellEventArgs>();
-  onBeforeFooterRowCellDestroy = new SlickEvent<OnBeforeFooterRowCellDestroyEventArgs>();
-  onBeforeHeaderCellDestroy = new SlickEvent<OnBeforeHeaderCellDestroyEventArgs>();
-  onBeforeHeaderRowCellDestroy = new SlickEvent<OnBeforeHeaderRowCellDestroyEventArgs>();
-  onBeforeSetColumns = new SlickEvent<OnBeforeSetColumnsEventArgs>();
-  onBeforeSort = new SlickEvent<SingleColumnSort | MultiColumnSort>();
-  onBeforeUpdateColumns = new SlickEvent<OnBeforeUpdateColumnsEventArgs>();
-  onCellChange = new SlickEvent<OnCellChangeEventArgs>();
-  onCellCssStylesChanged = new SlickEvent<OnCellCssStylesChangedEventArgs>();
-  onClick = new SlickEvent<OnClickEventArgs>();
-  onColumnsReordered = new SlickEvent<OnColumnsReorderedEventArgs>();
-  onColumnsDrag = new SlickEvent<OnColumnsDragEventArgs>();
-  onColumnsResized = new SlickEvent<OnColumnsResizedEventArgs>();
-  onColumnsResizeDblClick = new SlickEvent<OnColumnsResizeDblClickEventArgs>();
-  onCompositeEditorChange = new SlickEvent<OnCompositeEditorChangeEventArgs>();
-  onContextMenu = new SlickEvent<SlickGridEventData>();
-  onDrag = new SlickEvent<DragRowMove>();
-  onDblClick = new SlickEvent<OnDblClickEventArgs>();
-  onDragInit = new SlickEvent<DragRowMove>();
-  onDragStart = new SlickEvent<DragRowMove>();
-  onDragEnd = new SlickEvent<DragRowMove>();
-  onFooterClick = new SlickEvent<OnFooterClickEventArgs>();
-  onFooterContextMenu = new SlickEvent<OnFooterContextMenuEventArgs>();
-  onFooterRowCellRendered = new SlickEvent<OnFooterRowCellRenderedEventArgs>();
-  onHeaderCellRendered = new SlickEvent<OnHeaderCellRenderedEventArgs>();
-  onHeaderClick = new SlickEvent<OnHeaderClickEventArgs>();
-  onHeaderContextMenu = new SlickEvent<OnHeaderContextMenuEventArgs>();
-  onHeaderMouseEnter = new SlickEvent<OnHeaderMouseEventArgs>();
-  onHeaderMouseLeave = new SlickEvent<OnHeaderMouseEventArgs>();
-  onHeaderRowCellRendered = new SlickEvent<OnHeaderRowCellRenderedEventArgs>();
-  onHeaderRowMouseEnter = new SlickEvent<OnHeaderMouseEventArgs>();
-  onHeaderRowMouseLeave = new SlickEvent<OnHeaderMouseEventArgs>();
-  onKeyDown = new SlickEvent<OnKeyDownEventArgs>();
-  onMouseEnter = new SlickEvent<OnHeaderMouseEventArgs>();
-  onMouseLeave = new SlickEvent<OnHeaderMouseEventArgs>();
-  onRendered = new SlickEvent<OnRenderedEventArgs>();
-  onScroll = new SlickEvent<OnScrollEventArgs>();
-  onSelectedRowsChanged = new SlickEvent<OnSelectedRowsChangedEventArgs>();
-  onSetOptions = new SlickEvent<OnSetOptionsEventArgs>();
-  onActivateChangedOptions = new SlickEvent<OnActivateChangedOptionsEventArgs>();
-  onSort = new SlickEvent<SingleColumnSort | MultiColumnSort>();
-  onValidationError = new SlickEvent<OnValidationErrorEventArgs>();
-  onViewportChanged = new SlickEvent<SlickGridEventData>();
+  onActiveCellChanged = new SlickEvent<OnActiveCellChangedEventArgs>('onActiveCellChanged');
+  onActiveCellPositionChanged = new SlickEvent<SlickGridEventData>('onActiveCellPositionChanged');
+  onAddNewRow = new SlickEvent<OnAddNewRowEventArgs>('onAddNewRow');
+  onAutosizeColumns = new SlickEvent<OnAutosizeColumnsEventArgs>('onAutosizeColumns');
+  onBeforeAppendCell = new SlickEvent<OnBeforeAppendCellEventArgs>('onBeforeAppendCell');
+  onBeforeCellEditorDestroy = new SlickEvent<OnBeforeCellEditorDestroyEventArgs>('onBeforeCellEditorDestroy');
+  onBeforeColumnsResize = new SlickEvent<OnBeforeColumnsResizeEventArgs>('onBeforeColumnsResize');
+  onBeforeDestroy = new SlickEvent<SlickGridEventData>('onBeforeDestroy');
+  onBeforeEditCell = new SlickEvent<OnBeforeEditCellEventArgs>('onBeforeEditCell');
+  onBeforeFooterRowCellDestroy = new SlickEvent<OnBeforeFooterRowCellDestroyEventArgs>('onBeforeFooterRowCellDestroy');
+  onBeforeHeaderCellDestroy = new SlickEvent<OnBeforeHeaderCellDestroyEventArgs>('onBeforeHeaderCellDestroy');
+  onBeforeHeaderRowCellDestroy = new SlickEvent<OnBeforeHeaderRowCellDestroyEventArgs>('onBeforeHeaderRowCellDestroy');
+  onBeforeSetColumns = new SlickEvent<OnBeforeSetColumnsEventArgs>('onBeforeSetColumns');
+  onBeforeSort = new SlickEvent<SingleColumnSort | MultiColumnSort>('onBeforeSort');
+  onBeforeUpdateColumns = new SlickEvent<OnBeforeUpdateColumnsEventArgs>('onBeforeUpdateColumns');
+  onCellChange = new SlickEvent<OnCellChangeEventArgs>('onCellChange');
+  onCellCssStylesChanged = new SlickEvent<OnCellCssStylesChangedEventArgs>('onCellCssStylesChanged');
+  onClick = new SlickEvent<OnClickEventArgs>('onClick');
+  onColumnsReordered = new SlickEvent<OnColumnsReorderedEventArgs>('onColumnsReordered');
+  onColumnsDrag = new SlickEvent<OnColumnsDragEventArgs>('onColumnsDrag');
+  onColumnsResized = new SlickEvent<OnColumnsResizedEventArgs>('onColumnsResized');
+  onColumnsResizeDblClick = new SlickEvent<OnColumnsResizeDblClickEventArgs>('onColumnsResizeDblClick');
+  onCompositeEditorChange = new SlickEvent<OnCompositeEditorChangeEventArgs>('onCompositeEditorChange');
+  onContextMenu = new SlickEvent<SlickGridEventData>('onContextMenu');
+  onDrag = new SlickEvent<DragRowMove>('onDrag');
+  onDblClick = new SlickEvent<OnDblClickEventArgs>('onDblClick');
+  onDragInit = new SlickEvent<DragRowMove>('onDragInit');
+  onDragStart = new SlickEvent<DragRowMove>('onDragStart');
+  onDragEnd = new SlickEvent<DragRowMove>('onDragEnd');
+  onFooterClick = new SlickEvent<OnFooterClickEventArgs>('onFooterClick');
+  onFooterContextMenu = new SlickEvent<OnFooterContextMenuEventArgs>('onFooterContextMenu');
+  onFooterRowCellRendered = new SlickEvent<OnFooterRowCellRenderedEventArgs>('onFooterRowCellRendered');
+  onHeaderCellRendered = new SlickEvent<OnHeaderCellRenderedEventArgs>('onHeaderCellRendered');
+  onHeaderClick = new SlickEvent<OnHeaderClickEventArgs>('onHeaderClick');
+  onHeaderContextMenu = new SlickEvent<OnHeaderContextMenuEventArgs>('onHeaderContextMenu');
+  onHeaderMouseEnter = new SlickEvent<OnHeaderMouseEventArgs>('onHeaderMouseEnter');
+  onHeaderMouseLeave = new SlickEvent<OnHeaderMouseEventArgs>('onHeaderMouseLeave');
+  onHeaderRowCellRendered = new SlickEvent<OnHeaderRowCellRenderedEventArgs>('onHeaderRowCellRendered');
+  onHeaderRowMouseEnter = new SlickEvent<OnHeaderMouseEventArgs>('onHeaderRowMouseEnter');
+  onHeaderRowMouseLeave = new SlickEvent<OnHeaderMouseEventArgs>('onHeaderRowMouseLeave');
+  onKeyDown = new SlickEvent<OnKeyDownEventArgs>('onKeyDown');
+  onMouseEnter = new SlickEvent<OnHeaderMouseEventArgs>('onMouseEnter');
+  onMouseLeave = new SlickEvent<OnHeaderMouseEventArgs>('onMouseLeave');
+  onRendered = new SlickEvent<OnRenderedEventArgs>('onRendered');
+  onScroll = new SlickEvent<OnScrollEventArgs>('onScroll');
+  onSelectedRowsChanged = new SlickEvent<OnSelectedRowsChangedEventArgs>('onSelectedRowsChanged');
+  onSetOptions = new SlickEvent<OnSetOptionsEventArgs>('onSetOptions');
+  onActivateChangedOptions = new SlickEvent<OnActivateChangedOptionsEventArgs>('onActivateChangedOptions');
+  onSort = new SlickEvent<SingleColumnSort | MultiColumnSort>('onSort');
+  onValidationError = new SlickEvent<OnValidationErrorEventArgs>('onValidationError');
+  onViewportChanged = new SlickEvent<SlickGridEventData>('onViewportChanged');
 
   // ---
   // protected variables
@@ -209,6 +209,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     alwaysAllowHorizontalScroll: false,
     explicitInitialization: false,
     rowHeight: 25,
+    dispatchEventTarget: undefined,
     defaultColumnWidth: 80,
     enableHtmlRendering: true,
     enableAddRow: false,
@@ -505,6 +506,20 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {Object} [options] - Grid this._options.
    **/
   constructor(protected container: HTMLElement | string, protected data: CustomDataView<TData> | TData[], protected columns: C[], protected options: Partial<O>) {
+    if (typeof this.container === 'string') {
+      this._container = document.querySelector(this.container) as HTMLDivElement;
+    } else {
+      this._container = this.container;
+    }
+
+    if (!this._container) {
+      throw new Error(`SlickGrid requires a valid container, ${this.container} does not exist in the DOM.`);
+    }
+
+    if (data && !Array.isArray(data) && typeof (data as any)?.setContainerNode === 'function') {
+      (data as any).setContainerNode(this._container);
+    }
+
     this.initialize();
   }
 
@@ -561,16 +576,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   protected initialize() {
-    if (typeof this.container === 'string') {
-      this._container = document.querySelector(this.container) as HTMLDivElement;
-    } else {
-      this._container = this.container;
-    }
-
-    if (!this._container) {
-      throw new Error(`SlickGrid requires a valid container, ${this.container} does not exist in the DOM.`);
-    }
-
     // calculate these only once and share between grid instances
     if (this.options.mixinDefaults) {
       if (!this.options) { this.options = {}; }

@@ -35,7 +35,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 export class SlickColumnMenu {
   // --
   // public API
-  onColumnsChanged = new SlickEvent<OnColumnsChangedArgs>();
+  onColumnsChanged = new SlickEvent<OnColumnsChangedArgs>('onColumnsChanged');
 
   // --
   // protected props

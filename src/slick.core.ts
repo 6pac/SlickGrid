@@ -12,6 +12,7 @@ import type {
   InferDOMType,
   MergeTypes
 } from './models/index';
+import type { SlickGrid } from './slick.grid';
 
 /**
  * An event object for passing data to event handlers and letting them control propagation.
@@ -126,28 +127,34 @@ export class SlickEventData {
  * @constructor
  */
 export class SlickEvent<ArgType = any> {
-  protected handlers: Handler<ArgType>[] = [];
+  protected _handlers: Handler<ArgType>[] = [];
+
+  /**
+   * Constructor
+   * @param {String | HTMLElement} [dispatchEventTarget]
+   */
+  constructor(public readonly eventName?: string) { }
 
   /**
    * Adds an event handler to be called when the event is fired.
    * <p>Event handler will receive two arguments - an <code>EventData</code> and the <code>data</code>
    * object the event was fired with.<p>
    * @method subscribe
-   * @param fn {Function} Event handler.
+   * @param {Function} fn - Event handler.
    */
   subscribe(fn: Handler<ArgType>) {
-    this.handlers.push(fn);
+    this._handlers.push(fn);
   }
 
   /**
    * Removes an event handler added with <code>subscribe(fn)</code>.
    * @method unsubscribe
-   * @param fn {Function} Event handler to be removed.
+   * @param {Function} [fn] - Event handler to be removed.
    */
   unsubscribe(fn?: Handler<ArgType>) {
-    for (let i = this.handlers.length - 1; i >= 0; i--) {
-      if (this.handlers[i] === fn) {
-        this.handlers.splice(i, 1);
+    for (let i = this._handlers.length - 1; i >= 0; i--) {
+      if (this._handlers[i] === fn) {
+        this._handlers.splice(i, 1);
       }
     }
   }
@@ -155,14 +162,10 @@ export class SlickEvent<ArgType = any> {
   /**
    * Fires an event notifying all subscribers.
    * @method notify
-   * @param args {Object} Additional data object to be passed to all handlers.
-   * @param e {EventData}
-   *      Optional.
-   *      An <code>EventData</code> object to be passed to all handlers.
+   * @param {Object} args Additional data object to be passed to all handlers.
+   * @param {EventData} [event] - An <code>EventData</code> object to be passed to all handlers.
    *      For DOM events, an existing W3C event object can be passed in.
-   * @param scope {Object}
-   *      Optional.
-   *      The scope ("this") within which the handler will be executed.
+   * @param {Object} [scope] - The scope ("this") within which the handler will be executed.
    *      If not specified, the scope will be set to the <code>Event</code> instance.
    */
   notify(args: ArgType, evt?: SlickEventData | Event | MergeTypes<SlickEventData, Event> | null, scope?: any) {
@@ -171,9 +174,21 @@ export class SlickEvent<ArgType = any> {
       : new SlickEventData(evt, args);
     scope = scope || this;
 
-    for (let i = 0; i < this.handlers.length && !(sed.isPropagationStopped() || sed.isImmediatePropagationStopped()); i++) {
-      const returnValue = this.handlers[i].call(scope, sed as SlickEvent | SlickEventData, args);
+    for (let i = 0; i < this._handlers.length && !(sed.isPropagationStopped() || sed.isImmediatePropagationStopped()); i++) {
+      const returnValue = this._handlers[i].call(scope, sed as SlickEvent | SlickEventData, args);
       sed.addReturnValue(returnValue);
+    }
+
+    let eventTargetElm = typeof scope?.getContainerNode === 'function' ? scope?.getContainerNode() : null;
+    if (!eventTargetElm && (args as any)?.grid) {
+      eventTargetElm = ((args as any)?.grid as SlickGrid)?.getContainerNode();
+    }
+    if (typeof eventTargetElm?.dispatchEvent === 'function') {
+      const eventInit: CustomEventInit<ArgType> = { bubbles: true, cancelable: true };
+      if (args) {
+        eventInit.detail = { ...args, nativeEvent: sed?.getNativeEvent() };
+      }
+      eventTargetElm.dispatchEvent(new CustomEvent<ArgType>(this.eventName || '', eventInit));
     }
 
     return sed;
