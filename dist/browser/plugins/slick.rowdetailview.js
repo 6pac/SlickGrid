@@ -101,10 +101,9 @@
           e.preventDefault(), e.stopImmediatePropagation();
           return;
         }
-        this.onBeforeRowDetailToggle.notify({
-          grid: this._grid,
-          item: dataContext
-        }, e, this), this.toggleRowSelection(args.row, dataContext), this.onAfterRowDetailToggle.notify({
+        if (this.onBeforeRowDetailToggle.notify({ grid: this._grid, item: dataContext }, e, this).getReturnValue() === !1)
+          return;
+        this.toggleRowSelection(args.row, dataContext), this.onAfterRowDetailToggle.notify({
           grid: this._grid,
           item: dataContext,
           expandedRows: this._expandedRows

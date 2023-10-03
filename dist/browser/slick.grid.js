@@ -23,7 +23,7 @@
       this.options = options;
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.0.1");
+      __publicField(this, "slickGridVersion", "5.1.0");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -98,6 +98,7 @@
         leaveSpaceForNewRows: !1,
         editable: !1,
         autoEdit: !0,
+        autoEditNewRow: !0,
         autoCommitEdit: !1,
         suppressActiveCellChangeOnEdit: !1,
         enableCellNavigation: !0,
@@ -426,6 +427,7 @@
         onDragEnd: this.handleDragEnd.bind(this)
       })), this._options.suppressCssChangesOnHiddenInit || this.restoreCssFromHiddenInit());
     }
+    /** handles "display:none" on container or container parents, related to issue: https://github.com/6pac/SlickGrid/issues/568 */
     cacheCssForHiddenInit() {
       this._hiddenParents = Utils.parents(this._container, ":hidden");
       for (let el of this._hiddenParents) {
@@ -869,7 +871,7 @@
           let reorderedColumns = [];
           for (let i = 0; i < reorderedIds.length; i++)
             reorderedColumns.push(this.columns[this.getColumnIndex(reorderedIds[i])]);
-          this.setColumns(reorderedColumns), this.trigger(this.onColumnsReordered, { impactedColumns: this.getImpactedColumns(limit) }), e.stopPropagation(), this.setupColumnResize();
+          this.setColumns(reorderedColumns), this.trigger(this.onColumnsReordered, { impactedColumns: this.getImpactedColumns(limit) }), e.stopPropagation(), this.setupColumnResize(), this.activeCellNode && this.setFocus();
         }
       };
       this.sortableSideLeftInstance = Sortable.create(this._headerL, sortableOptions), this.sortableSideRightInstance = Sortable.create(this._headerR, sortableOptions);
@@ -1532,6 +1534,10 @@
     getTopPanels() {
       return this._topPanels;
     }
+    /** Are we using a DataView? */
+    hasDataView() {
+      return !Array.isArray(this.data);
+    }
     togglePanelVisibility(option, container, visible, animate) {
       let animated = animate !== !1;
       if (this._options[option] !== visible)
@@ -1779,6 +1785,17 @@
         row === this.activeRow && columnIdx === this.activeCell && this.currentEditor ? this.currentEditor.loadValue(d) : d ? (formatterResult = this.getFormatter(row, m)(row, columnIdx, this.getDataItemValueForColumn(d, m), m, d, this), this.applyFormatResultToCellNode(formatterResult, node)) : node.innerHTML = "";
       }
       this.invalidatePostProcessingResults(row);
+    }
+    /**
+     * Get the number of rows displayed in the viewport
+     * Note that the row count is an approximation because it is a calculated value using this formula (viewport / rowHeight = rowCount),
+     * the viewport must also be displayed for this calculation to work.
+     * @return {Number} rowCount
+     */
+    getViewportRowCount() {
+      var _a, _b;
+      let vh = this.getViewportHeight(), scrollbarHeight = (_b = (_a = this.getScrollbarDimensions()) == null ? void 0 : _a.height) != null ? _b : 0;
+      return Math.floor((vh - scrollbarHeight) / this._options.rowHeight);
     }
     getViewportHeight() {
       var _a, _b;
@@ -2374,7 +2391,7 @@
         let activeCellOffset = Utils.offset(this.activeCellNode), rowOffset = Math.floor(Utils.offset(Utils.parents(this.activeCellNode, ".grid-canvas")[0]).top), isBottom = Utils.parents(this.activeCellNode, ".grid-canvas-bottom").length;
         this.hasFrozenRows && isBottom && (rowOffset -= this._options.frozenBottom ? Utils.height(this._canvasTopL) : this.frozenRowsHeight);
         let cell = this.getCellFromPoint(activeCellOffset.left, Math.ceil(activeCellOffset.top) - rowOffset);
-        this.activeRow = cell.row, this.activeCell = this.activePosX = this.activeCell = this.activePosX = this.getCellFromNode(this.activeCellNode), opt_editMode == null && (opt_editMode = this.activeRow == this.getDataLength() || this._options.autoEdit), this._options.showCellSelection && (this.activeCellNode.classList.add("active"), (_d = (_c = this.rowsCache[this.activeRow]) == null ? void 0 : _c.rowNode) == null || _d.forEach((node) => node.classList.add("active"))), this._options.editable && opt_editMode && this.isCellPotentiallyEditable(this.activeRow, this.activeCell) && (clearTimeout(this.h_editorLoader), this._options.asyncEditorLoading ? this.h_editorLoader = setTimeout(() => {
+        this.activeRow = cell.row, this.activeCell = this.activePosX = this.activeCell = this.activePosX = this.getCellFromNode(this.activeCellNode), opt_editMode == null && this._options.autoEditNewRow && (opt_editMode = this.activeRow == this.getDataLength() || this._options.autoEdit), this._options.showCellSelection && (this.activeCellNode.classList.add("active"), (_d = (_c = this.rowsCache[this.activeRow]) == null ? void 0 : _c.rowNode) == null || _d.forEach((node) => node.classList.add("active"))), this._options.editable && opt_editMode && this.isCellPotentiallyEditable(this.activeRow, this.activeCell) && (clearTimeout(this.h_editorLoader), this._options.asyncEditorLoading ? this.h_editorLoader = setTimeout(() => {
           this.makeActiveCellEditable(void 0, preClickModeOn, e);
         }, this._options.asyncEditorLoadDelay) : this.makeActiveCellEditable(void 0, preClickModeOn, e));
       } else
@@ -2397,7 +2414,12 @@
       let dataLength = this.getDataLength();
       return !(row < dataLength && !this.getDataItem(row) || this.columns[cell].cannotTriggerInsert && row >= dataLength || !this.columns[cell] || this.columns[cell].hidden || !this.getEditor(row, cell));
     }
-    makeActiveCellNormal() {
+    /**
+     * Make the cell normal again (for example after destroying cell editor),
+     * we can also optionally refocus on the current active cell (again possibly after closing cell editor)
+     * @param {Boolean} [refocusActiveCell]
+     */
+    makeActiveCellNormal(refocusActiveCell = !1) {
       var _a;
       if (this.currentEditor) {
         if (this.trigger(this.onBeforeCellEditorDestroy, { editor: this.currentEditor }), this.currentEditor.destroy(), this.currentEditor = null, this.activeCellNode) {
@@ -2406,6 +2428,7 @@
             let column = this.columns[this.activeCell], formatterResult = this.getFormatter(this.activeRow, column)(this.activeRow, this.activeCell, this.getDataItemValueForColumn(d, column), column, d, this);
             this.applyFormatResultToCellNode(formatterResult, this.activeCellNode), this.invalidatePostProcessingResults(this.activeRow);
           }
+          refocusActiveCell && this.setFocus();
         }
         navigator.userAgent.toLowerCase().match(/msie/) && this.clearTextSelection(), (_a = this.getEditorLock()) == null || _a.deactivate(this.editController);
       }
@@ -2891,10 +2914,10 @@
                   editor.applyValue(item, prevSerializedValue), self.updateRow(row), self.trigger(self.onCellChange, { command: "undo", row, cell, item, column });
                 }
               };
-              self.options.editCommandHandler ? (self.makeActiveCellNormal(), self.options.editCommandHandler(item, column, editCommand)) : (editCommand.execute(), self.makeActiveCellNormal());
+              self.options.editCommandHandler ? (self.makeActiveCellNormal(!0), self.options.editCommandHandler(item, column, editCommand)) : (editCommand.execute(), self.makeActiveCellNormal(!0));
             } else {
               let newItem = {};
-              self.currentEditor.applyValue(newItem, self.currentEditor.serializeValue()), self.makeActiveCellNormal(), self.trigger(self.onAddNewRow, { item: newItem, column });
+              self.currentEditor.applyValue(newItem, self.currentEditor.serializeValue()), self.makeActiveCellNormal(!0), self.trigger(self.onAddNewRow, { item: newItem, column });
             }
             return !((_a = self.getEditorLock()) != null && _a.isActive());
           } else
@@ -2907,7 +2930,7 @@
               column
             }), self.currentEditor.focus(), !1;
         }
-        self.makeActiveCellNormal();
+        self.makeActiveCellNormal(!0);
       }
       return !0;
     }
@@ -2958,7 +2981,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.0.1
+ * SlickGrid v5.1.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

@@ -13,7 +13,10 @@
       __publicField(this, "onSelectedRangesChanged", new SlickEvent());
       // --
       // protected props
+      __publicField(this, "_dataView");
       __publicField(this, "_grid");
+      __publicField(this, "_prevSelectedRow");
+      __publicField(this, "_prevKeyDown", "");
       __publicField(this, "_ranges", []);
       __publicField(this, "_selector");
       __publicField(this, "_options");
@@ -23,7 +26,7 @@
       options === void 0 || options.cellRangeSelector === void 0 ? this._selector = new SlickCellRangeSelector({ selectionCss: { border: "2px solid black" } }) : this._selector = options.cellRangeSelector;
     }
     init(grid) {
-      this._options = Utils.extend(!0, {}, this._defaults, this._options), this._grid = grid, this._grid.onActiveCellChanged.subscribe(this.handleActiveCellChange.bind(this)), this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this)), grid.registerPlugin(this._selector), this._selector.onCellRangeSelected.subscribe(this.handleCellRangeSelected.bind(this)), this._selector.onBeforeCellRangeSelected.subscribe(this.handleBeforeCellRangeSelected.bind(this));
+      this._options = Utils.extend(!0, {}, this._defaults, this._options), this._grid = grid, grid.hasDataView() && (this._dataView = grid.getData()), this._grid.onActiveCellChanged.subscribe(this.handleActiveCellChange.bind(this)), this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this)), grid.registerPlugin(this._selector), this._selector.onCellRangeSelected.subscribe(this.handleCellRangeSelected.bind(this)), this._selector.onBeforeCellRangeSelected.subscribe(this.handleBeforeCellRangeSelected.bind(this));
     }
     destroy() {
       var _a;
@@ -72,22 +75,26 @@
     }
     handleActiveCellChange(_e, args) {
       var _a, _b;
-      (_a = this._options) != null && _a.selectActiveCell && args.row != null && args.cell != null ? this.setSelectedRanges([new SlickRange(args.row, args.cell)]) : (_b = this._options) != null && _b.selectActiveCell || this.setSelectedRanges([]);
+      this._prevSelectedRow = void 0, (_a = this._options) != null && _a.selectActiveCell && args.row != null && args.cell != null ? this.setSelectedRanges([new SlickRange(args.row, args.cell)]) : (_b = this._options) != null && _b.selectActiveCell || this.setSelectedRanges([]);
+    }
+    isKeyAllowed(key) {
+      return ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "PageDown", "PageUp", "Home", "End"].some((k) => k === key);
     }
     handleKeyDown(e) {
-      let ranges, last, active = this._grid.getActiveCell(), metaKey = e.ctrlKey || e.metaKey;
-      if (active && e.shiftKey && !metaKey && !e.altKey && (e.which == 37 || e.which == 39 || e.which == 38 || e.which == 40)) {
+      var _a;
+      let ranges, last, active = this._grid.getActiveCell(), metaKey = e.ctrlKey || e.metaKey, dataLn = 0;
+      if (this._dataView ? dataLn = ((_a = this._dataView) == null ? void 0 : _a.getPagingInfo().pageSize) || this._dataView.getLength() : dataLn = this._grid.getDataLength(), active && e.shiftKey && !metaKey && !e.altKey && this.isKeyAllowed(e.key)) {
         ranges = this.getSelectedRanges().slice(), ranges.length || ranges.push(new SlickRange(active.row, active.cell)), last = ranges.pop(), last.contains(active.row, active.cell) || (last = new SlickRange(active.row, active.cell));
-        let dRow = last.toRow - last.fromRow, dCell = last.toCell - last.fromCell, dirRow = active.row == last.fromRow ? 1 : -1, dirCell = active.cell == last.fromCell ? 1 : -1;
-        e.which == 37 ? dCell -= dirCell : e.which == 39 ? dCell += dirCell : e.which == 38 ? dRow -= dirRow : e.which == 40 && (dRow += dirRow);
-        let new_last = new SlickRange(active.row, active.cell, active.row + dirRow * dRow, active.cell + dirCell * dCell);
+        let dRow = last.toRow - last.fromRow, dCell = last.toCell - last.fromCell, dirRow = active.row == last.fromRow ? 1 : -1, dirCell = active.cell == last.fromCell ? 1 : -1, pageRowCount = this._grid.getViewportRowCount(), isSingleKeyMove = e.key.startsWith("Arrow"), toRow = 0;
+        isSingleKeyMove ? (e.key === "ArrowLeft" ? dCell -= dirCell : e.key === "ArrowRight" ? dCell += dirCell : e.key === "ArrowUp" ? dRow -= dirRow : e.key === "ArrowDown" && (dRow += dirRow), toRow = active.row + dirRow * dRow) : (this._prevSelectedRow === void 0 && (this._prevSelectedRow = active.row), e.key === "Home" ? toRow = 0 : e.key === "End" ? toRow = dataLn - 1 : e.key === "PageUp" ? (this._prevSelectedRow >= 0 && (toRow = this._prevSelectedRow - pageRowCount), toRow < 0 && (toRow = 0)) : e.key === "PageDown" && (this._prevSelectedRow <= dataLn - 1 && (toRow = this._prevSelectedRow + pageRowCount), toRow > dataLn - 1 && (toRow = dataLn - 1)), this._prevSelectedRow = toRow);
+        let new_last = new SlickRange(active.row, active.cell, toRow, active.cell + dirCell * dCell);
         if (this.removeInvalidRanges([new_last]).length) {
           ranges.push(new_last);
           let viewRow = dirRow > 0 ? new_last.toRow : new_last.fromRow, viewCell = dirCell > 0 ? new_last.toCell : new_last.fromCell;
-          this._grid.scrollRowIntoView(viewRow), this._grid.scrollCellIntoView(viewRow, viewCell);
+          isSingleKeyMove ? (this._grid.scrollRowIntoView(viewRow), this._grid.scrollCellIntoView(viewRow, viewCell)) : (this._grid.scrollRowIntoView(toRow), this._grid.scrollCellIntoView(toRow, viewCell));
         } else
           ranges.push(last);
-        this.setSelectedRanges(ranges), e.preventDefault(), e.stopPropagation();
+        this.setSelectedRanges(ranges), e.preventDefault(), e.stopPropagation(), this._prevKeyDown = e.key;
       }
     }
   };

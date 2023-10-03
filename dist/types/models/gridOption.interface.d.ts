@@ -32,10 +32,18 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
     /** Defaults to 40, which is the delay before the asynchronous post renderer start cleanup execution */
     asyncPostRenderCleanupDelay?: number;
     auto?: boolean;
-    /** Defaults to false, when enabled will try to commit the current edit without focusing on the next row. If a custom editor is implemented and the grid cannot auto commit, you must use this option to implement it yourself */
+    /**
+     * Defaults to false, when enabled will try to commit the current edit without focusing on the next row.
+     * If a custom editor is implemented and the grid cannot auto commit, you must use this option to implement it yourself
+     */
     autoCommitEdit?: boolean;
-    /** Defaults to false, when enabled will automatically open the inlined editor as soon as there is a focus on the cell (can be combined with "enableCellNavigation: true"). */
+    /** Defaults to false, when enabled it will automatically open the inlined editor as soon as there is a focus on the cell (can be combined with "enableCellNavigation: true"). */
     autoEdit?: boolean;
+    /**
+     * Defaults to true, when enabled it will automatically open the editor when clicking on cell that has a defined editor.
+     * When using CellExternalCopyManager, this option could be useful to avoid opening the cell editor automatically on empty new row and we wish to paste our cell selection range.
+     */
+    autoEditNewRow?: boolean;
     /** Defaults to false, which leads to automatically adjust the size (height) of the grid to display the entire content without any scrolling in the grid. */
     autoHeight?: boolean;
     /** defaults to LegacyOff, Grid Autosize Columns Mode used when calling "autosizeColumns()" method */

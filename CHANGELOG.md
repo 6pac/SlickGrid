@@ -2,6 +2,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.1.0](https://github.com/6pac/SlickGrid/compare/5.0.1...5.1.0) (2023-10-03)
+
+### Bug Fixes
+
+* active cell loses focus after editing or column reordering ([#851](https://github.com/6pac/SlickGrid/issues/851)) ([fc3bd25](https://github.com/6pac/SlickGrid/commit/fc3bd251872ab0cd1bc5aaa264f34283a5284659))
+* add `autoEditNewRow` option to disable auto-edit new row, fix [#445](https://github.com/6pac/SlickGrid/issues/445) ([#855](https://github.com/6pac/SlickGrid/issues/855)) ([f0fa0bd](https://github.com/6pac/SlickGrid/commit/f0fa0bd25c04a6fe9c4f2ed82b8b504e63423592))
+
+### Features
+
+* add option to cancel Row Detail opening, closes [#378](https://github.com/6pac/SlickGrid/issues/378) ([#852](https://github.com/6pac/SlickGrid/issues/852)) ([1ad9f5c](https://github.com/6pac/SlickGrid/commit/1ad9f5ca388da363c81695ed711c32dc5cdc8afc))
+* add pageUp/pageDown/home/end to SlickCellSelection, fixes [#794](https://github.com/6pac/SlickGrid/issues/794) ([#854](https://github.com/6pac/SlickGrid/issues/854)) ([f4956e4](https://github.com/6pac/SlickGrid/commit/f4956e426d34c01edc007356f8b6a50328c09a71))
+
 ## [5.0.1](https://github.com/6pac/SlickGrid/compare/5.0.0...5.0.1) (2023-09-27)
 
 ### Bug Fixes

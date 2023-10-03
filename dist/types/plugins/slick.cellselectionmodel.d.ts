@@ -1,6 +1,7 @@
 import { SlickEvent as SlickEvent_ } from '../slick.core';
 import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector';
 import type { CellRange, OnActiveCellChangedEventArgs } from '../models/index';
+import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
 export interface CellSelectionModelOption {
     selectActiveCell: boolean;
@@ -9,7 +10,10 @@ export interface CellSelectionModelOption {
 export declare class SlickCellSelectionModel {
     pluginName: "CellSelectionModel";
     onSelectedRangesChanged: SlickEvent_<CellRange[]>;
+    protected _dataView?: SlickDataView;
     protected _grid: SlickGrid;
+    protected _prevSelectedRow?: number;
+    protected _prevKeyDown: string;
     protected _ranges: CellRange[];
     protected _selector: SlickCellRangeSelector_;
     protected _options?: CellSelectionModelOption;
@@ -30,6 +34,7 @@ export declare class SlickCellSelectionModel {
         range: CellRange;
     }): void;
     protected handleActiveCellChange(_e: Event, args: OnActiveCellChangedEventArgs): void;
+    protected isKeyAllowed(key: string): boolean;
     protected handleKeyDown(e: KeyboardEvent): void;
 }
 //# sourceMappingURL=slick.cellselectionmodel.d.ts.map

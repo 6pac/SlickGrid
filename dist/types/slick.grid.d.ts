@@ -10,7 +10,7 @@ import { BindingEventService as BindingEventService_, type SlickEditorLock, Slic
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.0.1
+ * SlickGrid v5.1.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -287,6 +287,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     init(): void;
     protected initialize(): void;
     protected finishInitialization(): void;
+    /** handles "display:none" on container or container parents, related to issue: https://github.com/6pac/SlickGrid/issues/568 */
     cacheCssForHiddenInit(): void;
     restoreCssFromHiddenInit(): void;
     protected hasFrozenColumns(): boolean;
@@ -530,6 +531,8 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     getTopPanel(): HTMLDivElement;
     /** Get Top Panels (left/right) DOM element */
     getTopPanels(): HTMLDivElement[];
+    /** Are we using a DataView? */
+    hasDataView(): boolean;
     protected togglePanelVisibility(option: 'showTopPanel' | 'showHeaderRow' | 'showColumnHeader' | 'showFooterRow' | 'showPreHeaderPanel', container: HTMLElement | HTMLElement[], visible?: boolean, animate?: boolean): void;
     /**
      * Set the Top Panel Visibility and optionally enable/disable animation (enabled by default)
@@ -601,8 +604,15 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * @param {Number} row - grid row number
      */
     updateRow(row: number): void;
-    protected getViewportHeight(): number;
-    protected getViewportWidth(): number;
+    /**
+     * Get the number of rows displayed in the viewport
+     * Note that the row count is an approximation because it is a calculated value using this formula (viewport / rowHeight = rowCount),
+     * the viewport must also be displayed for this calculation to work.
+     * @return {Number} rowCount
+     */
+    getViewportRowCount(): number;
+    getViewportHeight(): number;
+    getViewportWidth(): number;
     /** Execute a Resize of the Canvas */
     resizeCanvas(): void;
     /** Update paging information status from the View */
@@ -794,7 +804,12 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected setActiveCellInternal(newCell: HTMLDivElement | null, opt_editMode?: boolean | null, preClickModeOn?: boolean | null, suppressActiveCellChangedEvent?: boolean, e?: Event | SlickEvent_): void;
     protected clearTextSelection(): void;
     protected isCellPotentiallyEditable(row: number, cell: number): boolean;
-    protected makeActiveCellNormal(): void;
+    /**
+     * Make the cell normal again (for example after destroying cell editor),
+     * we can also optionally refocus on the current active cell (again possibly after closing cell editor)
+     * @param {Boolean} [refocusActiveCell]
+     */
+    protected makeActiveCellNormal(refocusActiveCell?: boolean): void;
     editActiveCell(editor: Editor, preClickModeOn?: boolean | null, e?: Event): void;
     protected makeActiveCellEditable(editor?: Editor, preClickModeOn?: boolean | null, e?: Event | SlickEvent_): void;
     protected commitEditAndSetFocus(): void;
