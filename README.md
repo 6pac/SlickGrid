@@ -17,7 +17,7 @@ We extended the project from the original SlickGrid foundation while also includ
 - merged [X-SlickGrid](https://github.com/ddomingues/X-SlickGrid) code into the project which brought Frozen Columns/Rows (aka Pinning)
 - removed jQueryUI requirement in [v3](https://github.com/6pac/SlickGrid/wiki/Major-version-3.0----Removal-of-jQueryUI-requirement-(replaced-by-SortableJS)) (replaced it with [SortableJS](https://sortablejs.github.io/Sortable/))
 - removed jQuery requirement in [v4](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement)
-- modernized the project in [v5](https://github.com/6pac/SlickGrid/wiki/Major-version-5.0-%E2%80%90-ES6-ESM-and-TypeScript-Support) by migrating to TypeScript (we kept IIFE and added ES6/ESM build targets) and a new Alpine Theme
+- modernized the project in [v5](https://github.com/6pac/SlickGrid/wiki/Major-version-5.0-%E2%80%90-ES6-ESM-and-TypeScript-Support) by migrating to TypeScript (we kept IIFE and added ES6/ESM build targets) and giving SlickGrid a fresh paint by providing a new Alpine Theme (CSS/SASS)
 
 ### Examples
 Check out the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** Wiki for a full list of examples demonstrating new features and use cases, such as dynamic grid creation and editors with third party controls.
@@ -49,4 +49,4 @@ Once the Cypress UI is open, you can then click on "Run all Specs" to execute al
 ### Quick Little Fun Survey ✨
 We are conducting a small little poll for fun, it is a single question survey about our latest releases. Thanks for taking the time to participate.
 
-[What do you think was the most exciting change(s) for you?](https://github.com/6pac/SlickGrid/discussions/853)
+**[What do you think was the most exciting change(s) for you?](https://github.com/6pac/SlickGrid/discussions/853)**
