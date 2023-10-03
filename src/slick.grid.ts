@@ -3540,6 +3540,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return this._topPanels;
   }
 
+  /** Are we using a DataView? */
+  hasDataView() {
+    return !Array.isArray(this.data);
+  }
+
   protected togglePanelVisibility(option: 'showTopPanel' | 'showHeaderRow' | 'showColumnHeader' | 'showFooterRow' | 'showPreHeaderPanel', container: HTMLElement | HTMLElement[], visible?: boolean, animate?: boolean) {
     const animated = (animate === false) ? false : true;
 
@@ -4037,7 +4042,19 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.invalidatePostProcessingResults(row);
   }
 
-  protected getViewportHeight() {
+  /**
+   * Get the number of rows displayed in the viewport
+   * Note that the row count is an approximation because it is a calculated value using this formula (viewport / rowHeight = rowCount),
+   * the viewport must also be displayed for this calculation to work.
+   * @return {Number} rowCount
+   */
+  getViewportRowCount() {
+    const vh = this.getViewportHeight();
+    const scrollbarHeight = this.getScrollbarDimensions()?.height ?? 0;
+    return Math.floor((vh - scrollbarHeight) / this._options.rowHeight!);
+  }
+
+  getViewportHeight() {
     if (!this._options.autoHeight || this._options.frozenColumn !== -1) {
       this.topPanelH = (this._options.showTopPanel) ? this._options.topPanelHeight! + this.getVBoxDelta(this._topPanelScrollers[0]) : 0;
       this.headerRowH = (this._options.showHeaderRow) ? this._options.headerRowHeight! + this.getVBoxDelta(this._headerRowScroller[0]) : 0;
@@ -4072,7 +4089,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return this.viewportH;
   }
 
-  protected getViewportWidth() {
+  getViewportWidth() {
     this.viewportW = parseFloat(Utils.innerSize(this._container, 'width') as unknown as string);
     return this.viewportW;
   }

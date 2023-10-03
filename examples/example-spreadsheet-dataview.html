@@ -3,7 +3,8 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
-  <title>SlickGrid spreadsheet</title>
+  <title>SlickGrid spreadsheet with DataView</title>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
@@ -25,6 +26,7 @@
 <div style="position:relative">
   <div style="width:600px;">
     <div id="myGrid" class="slick-container" style="width:100%;height:500px;"></div>
+    <div id="pager" style="width:100%;height:20px;"></div>
   </div>
 
   <div class="options-panel">
@@ -49,12 +51,11 @@
     <h2>View Source:</h2>
     <ul>
       <li>
-        <a href="https://github.com/6pac/SlickGrid/blob/master/examples/example-spreadsheet.html" target="_sourcewindow">
+        <a href="https://github.com/6pac/SlickGrid/blob/master/examples/example-spreadsheet-dataview.html" target="_sourcewindow">
           View the source for this example on Github
         </a>
       </li>
     </ul>
-
     <h2>Range Selection</h2>
     <span id="selectionRange"></span>
   </div>
@@ -67,16 +68,18 @@
 <script src="../dist/browser/slick.interactions.js"></script>
 <script src="../dist/browser/slick.grid.js"></script>
 <script src="../dist/browser/slick.editors.js"></script>
-<script src="../dist/browser/plugins/slick.autotooltips.js"></script>
 <script src="../dist/browser/plugins/slick.cellrangedecorator.js"></script>
 <script src="../dist/browser/plugins/slick.cellrangeselector.js"></script>
 <script src="../dist/browser/plugins/slick.cellcopymanager.js"></script>
 <script src="../dist/browser/plugins/slick.cellselectionmodel.js"></script>
+<script src="../dist/browser/slick.dataview.js"></script>
+<script src="../dist/browser/controls/slick.pager.js"></script>
 
 <script>
   var grid;
   var data = [];
   let cellSelectionModel;
+  var dataView;
   var options = {
     editable: true,
     enableAddRow: true,
@@ -109,7 +112,7 @@
   /***
    * A proof-of-concept cell editor with Excel-like range selection and insertion.
    */
-   function FormulaEditor(args) {
+  function FormulaEditor(args) {
     var _self = this;
     var _editor = new Slick.Editors.Text(args);
     var _selector;
@@ -169,14 +172,17 @@
   document.addEventListener("DOMContentLoaded", function() {
     for (var i = 0; i < 100; i++) {
       var d = (data[i] = {});
+      d["id"] = i;
       d["num"] = i;
     }
 
-    grid = new Slick.Grid("#myGrid", data, columns, options);
+    dataView = new Slick.Data.DataView();
+    grid = new Slick.Grid("#myGrid", dataView, columns, options);
+
+    var pager = new Slick.Controls.Pager(dataView, grid, "#pager");
 
     cellSelectionModel = new Slick.CellSelectionModel();
     grid.setSelectionModel(cellSelectionModel);
-    grid.registerPlugin(new Slick.AutoTooltips());
 
     // set keyboard focus on the grid
     grid.getCanvasNode().focus();
@@ -204,13 +210,34 @@
       grid.render();
     });
 
-    grid.onAddNewRow.subscribe(function (e, args) {
-      var item = args.item;
-      var column = args.column;
-      grid.invalidateRow(data.length);
-      data.push(item);
+    dataView.onRowCountChanged.subscribe(function (e, args) {
       grid.updateRowCount();
       grid.render();
+    });
+
+    dataView.onRowsChanged.subscribe(function (e, args) {
+      grid.invalidateRows(args.rows);
+      grid.render();
+    });
+
+    dataView.onPagingInfoChanged.subscribe(function (e, pagingInfo) {
+      grid.updatePagingStatusFromView( pagingInfo );
+
+      // show the pagingInfo but remove the dataView from the object, just for the Cypress E2E test
+      delete pagingInfo.dataView;
+      console.log('on After Paging Info Changed - New Paging:: ', pagingInfo);
+    });
+
+    dataView.onBeforePagingInfoChanged.subscribe(function (e, previousPagingInfo) {
+      // show the previous pagingInfo but remove the dataView from the object, just for the Cypress E2E test
+      delete previousPagingInfo.dataView;
+      console.log('on Before Paging Info Changed - Previous Paging:: ', previousPagingInfo);
+    });
+
+    grid.onAddNewRow.subscribe(function (e, args) {
+      var item = args.item;
+      Slick.Utils.extend(item, args.item);
+      dataView.addItem(item);
     });
 
     cellSelectionModel.onSelectedRangesChanged.subscribe((e, args) => {
@@ -221,7 +248,13 @@
         targetRange.textContent += JSON.stringify(slickRange);
       }
     });
-  })
+
+    // initialize the model after all the events have been hooked up
+    dataView.beginUpdate();
+    dataView.setItems(data);
+    dataView.endUpdate();
+    grid.render();
+  });
 </script>
 </body>
 </html>
