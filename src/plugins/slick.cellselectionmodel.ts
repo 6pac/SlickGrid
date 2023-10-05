@@ -24,6 +24,7 @@ export class SlickCellSelectionModel {
 
   // --
   // protected props
+  protected _cachedPageRowCount = 0;
   protected _dataView?: SlickDataView;
   protected _grid!: SlickGrid;
   protected _prevSelectedRow?: number;
@@ -94,6 +95,11 @@ export class SlickCellSelectionModel {
       }
     }
     return !areDifferent;
+  }
+
+  /** Provide a way to force a recalculation of page row count (for example on grid resize) */
+  resetPageRowCount() {
+    this._cachedPageRowCount = 0;
   }
 
   setSelectedRanges(ranges: CellRange[], caller = 'SlickCellSelectionModel.setSelectedRanges') {
@@ -177,7 +183,6 @@ export class SlickCellSelectionModel {
       // walking direction
       const dirRow = active.row == last.fromRow ? 1 : -1;
       const dirCell = active.cell == last.fromCell ? 1 : -1;
-      const pageRowCount = this._grid.getViewportRowCount();
       const isSingleKeyMove = e.key.startsWith('Arrow');
       let toRow = 0;
 
@@ -195,6 +200,9 @@ export class SlickCellSelectionModel {
         toRow = active.row + dirRow * dRow;
       } else {
         // multiple cell moves: (Home, End, Page{Up/Down})
+        if (this._cachedPageRowCount < 1) {
+          this._cachedPageRowCount = this._grid.getViewportRowCount();
+        }
         if (this._prevSelectedRow === undefined) {
           this._prevSelectedRow = active.row;
         }
@@ -205,14 +213,14 @@ export class SlickCellSelectionModel {
           toRow = dataLn - 1;
         } else if (e.key === 'PageUp') {
           if (this._prevSelectedRow >= 0) {
-            toRow = this._prevSelectedRow - pageRowCount;
+            toRow = this._prevSelectedRow - this._cachedPageRowCount;
           }
           if (toRow < 0) {
             toRow = 0;
           }
         } else if (e.key === 'PageDown') {
           if (this._prevSelectedRow <= dataLn - 1) {
-            toRow = this._prevSelectedRow + pageRowCount;
+            toRow = this._prevSelectedRow + this._cachedPageRowCount;
           }
           if (toRow > dataLn - 1) {
             toRow = dataLn - 1;

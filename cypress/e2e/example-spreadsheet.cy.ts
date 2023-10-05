@@ -24,7 +24,7 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
   it('should click on cell B10 and ArrowUp 3 times and ArrowDown 1 time and expect cell selection B8-B10', () => {
     cy.getCell(10, 2, '', { parentSelector: "#myGrid", rowHeight: cellHeight })
       .as('cell_B10')
-      .click()
+      .click();
 
     cy.get('@cell_B10')
       .type('{shift}{uparrow}{uparrow}{uparrow}{downarrow}')
@@ -39,7 +39,7 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
   it('should click on cell D10 then PageDown 2 times w/selection D10-D46 ', () => {
     cy.getCell(10, 4, '', { parentSelector: "#myGrid", rowHeight: cellHeight })
       .as('cell_D10')
-      .click()
+      .click();
 
     cy.get('@cell_D10')
       .type('{shift}{pagedown}{pagedown}');
@@ -51,7 +51,7 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
   it('should click on cell D10 then PageDown 3 times then PageUp 1 time w/selection D10-D46', () => {
     cy.getCell(10, 4, '', { parentSelector: "#myGrid", rowHeight: cellHeight })
       .as('cell_D10')
-      .click()
+      .click();
 
     cy.get('@cell_D10')
       .type('{shift}{pagedown}{pagedown}{pagedown}{pageup}');
@@ -63,7 +63,7 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
   it('should click on cell E12 then End key w/selection E46-E99', () => {
     cy.getCell(46, 5, '', { parentSelector: "#myGrid", rowHeight: cellHeight })
       .as('cell_E46')
-      .click()
+      .click();
 
     cy.get('@cell_E46')
       .type('{shift}{end}');
@@ -75,7 +75,7 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
   it('should click on cell C85 then End key w/selection C0-C85', () => {
     cy.getCell(85, 3, '', { parentSelector: "#myGrid", rowHeight: cellHeight })
       .as('cell_C85')
-      .click()
+      .click();
 
     cy.get('@cell_C85')
       .type('{shift}{home}');
