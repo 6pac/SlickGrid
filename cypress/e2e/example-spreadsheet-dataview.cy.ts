@@ -16,7 +16,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
       .children()
       .each(($child, index) => {
         if (index < titles.length) {
-          expect($child.text()).to.eq(titles[index])
+          expect($child.text()).to.eq(titles[index]);
         }
       });
   });
@@ -28,7 +28,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
         .click();
 
       cy.get('@cell_B10')
-        .type('{shift}{uparrow}{uparrow}{uparrow}{downarrow}')
+        .type('{shift}{uparrow}{uparrow}{uparrow}{downarrow}');
 
       cy.get('.slick-cell.l2.r2.selected')
         .should('have.length', 3);
@@ -128,7 +128,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
         .should('have.text', '{"fromRow":3,"fromCell":5,"toCell":5,"toRow":24}');
     });
 
-    it('should click on cell D41 then Shift+PageUp multiple times with current page selection w/selection D25-41', () => {
+    it('should change to 2nd page then click on cell D41 then Shift+PageUp multiple times with current page selection w/selection D25-41', () => {
       cy.get('.slick-pager .sgi-chevron-right').click();
 
       cy.getCell(15, 4, '', { parentSelector: "#myGrid", rowHeight: cellHeight })

@@ -16,7 +16,7 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
       .children()
       .each(($child, index) => {
         if (index < titles.length) {
-          expect($child.text()).to.eq(titles[index])
+          expect($child.text()).to.eq(titles[index]);
         }
       });
   });
@@ -27,7 +27,7 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
       .click();
 
     cy.get('@cell_B10')
-      .type('{shift}{uparrow}{uparrow}{uparrow}{downarrow}')
+      .type('{shift}{uparrow}{uparrow}{uparrow}{downarrow}');
 
     cy.get('.slick-cell.l2.r2.selected')
       .should('have.length', 3);
