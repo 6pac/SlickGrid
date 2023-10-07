@@ -65,6 +65,7 @@ export class SlickColumnPicker {
   }
 
   init(grid: SlickGrid) {
+    Utils.addSlickEventDispatchWhenDefined(this._gridOptions, this);
     grid.onHeaderContextMenu.subscribe(this.handleHeaderContextMenu.bind(this));
     grid.onColumnsReordered.subscribe(this.updateColumnOrder.bind(this));
 

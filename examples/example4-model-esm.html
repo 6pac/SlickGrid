@@ -5,6 +5,7 @@
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example 4: Model</title>
   <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.gridmenu.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick.pager.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
@@ -142,6 +143,7 @@ import {
   SlickRowSelectionModel,
   SlickColumnPicker,
   SlickDataView,
+  SlickGridMenu,
   SlickGridPager,
   SlickGrid,
   Utils,
@@ -164,6 +166,14 @@ let columns = [
 
 let options = {
   columnPicker: {
+    columnTitle: "Columns",
+    hideForceFitButton: false,
+    hideSyncResizeButton: false,
+    forceFitTitle: "Force fit columns",
+    syncResizeTitle: "Synchronous resize",
+  },
+  gridMenu: {
+    iconCssClass: "sgi sgi-menu sgi-17px",
     columnTitle: "Columns",
     hideForceFitButton: false,
     hideSyncResizeButton: false,
@@ -245,6 +255,31 @@ function toggleFilterRow() {
   grid.setTopPanelVisibility(!grid.getOptions().showTopPanel);
 }
 
+function handlePagingInfoChanged(e) {
+  const pagingInfo = e.detail; // CustomEvent "detail" prop contains our SlickEvent args
+  grid.updatePagingStatusFromView( pagingInfo );
+
+  // show the pagingInfo but remove the dataView from the object, just for the Cypress E2E test
+  delete pagingInfo.dataView;
+  console.log('on After Paging Info Changed - New Paging:: ', pagingInfo);
+}
+
+function handleBeforePagingInfoChanged(e) {
+  const previousPagingInfo = e.detail; // CustomEvent "detail" prop contains our SlickEvent args
+
+  // show the previous pagingInfo but remove the dataView from the object, just for the Cypress E2E test
+  delete previousPagingInfo.dataView;
+  console.log('on Before Paging Info Changed - Previous Paging:: ', previousPagingInfo);
+}
+
+// when leaving the page (destroy)
+document.addEventListener("beforeunload", () => {
+  myGridElm.removeEventListener('onPagingInfoChanged', handlePagingInfoChanged);
+  myGridElm.removeEventListener('onBeforePagingInfoChanged', handleBeforePagingInfoChanged);
+  dataView.destroy();
+  grid.destroy();
+});
+
 document.addEventListener("DOMContentLoaded", () => {
   // prepare the data
   for (let i = 0; i < 50000; i++) {
@@ -260,12 +295,22 @@ document.addEventListener("DOMContentLoaded", () => {
     d["effortDriven"] = (i % 5 == 0);
   }
 
-  dataView = new SlickDataView({ inlineFilters: true, dispatchEventTarget: '#myGrid' });
+  // with `dispatchEventTarget` grid option, we can use CustomEvent listeners instead of SlickEvent subscribe (don't forget to also removeEventListener to avoid leaking)
+  // CustomEvent have a `detail` property and that is were our typical `args` data will be
+  // Note: to avoid listening too late, you would typically add listeners BEFORE instantiating SlickGrid/SlickDataView
+  const myGridElm = document.querySelector('#myGrid');
+  // myGridElm.addEventListener('onClick', (e) => console.log(`event listener ${e.type}`, e.detail));
+  myGridElm.addEventListener('onPagingInfoChanged', handlePagingInfoChanged);
+  myGridElm.addEventListener('onBeforePagingInfoChanged', handleBeforePagingInfoChanged);
+
+  // instantiate SlickGrid and SlickDataView
+  dataView = new SlickDataView({ inlineFilters: true });
   grid = new SlickGrid("#myGrid", dataView, columns, options);
   grid.setSelectionModel(new SlickRowSelectionModel());
 
   let pager = new SlickGridPager(dataView, grid, "#pager");
   let columnpicker = new SlickColumnPicker(columns, grid, options);
+  let gridMenu = new SlickGridMenu(columns, grid, options);
 
   // move the filter panel defined in a hidden div into grid top panel
   let topPanel = grid.getTopPanel();
@@ -273,11 +318,11 @@ document.addEventListener("DOMContentLoaded", () => {
   topPanel.appendChild(topPanelLeftElm);
   topPanelLeftElm.style.display = 'block';
 
-  grid.onCellChange.subscribe(function (e, args) {
+  grid.onCellChange.subscribe((e, args) => {
     dataView.updateItem(args.item.id, args.item);
   });
 
-  grid.onAddNewRow.subscribe(function (e, args) {
+  grid.onAddNewRow.subscribe((e, args) => {
     let item = {"num": data.length, "id": "new_" + (Math.round(Math.random() * 10000)), "title": "New task", "duration": "1 day", "percentComplete": 0, "start": "01/01/2009", "finish": "01/01/2009", "effortDriven": false};
     Utils.extend(item, args.item);
     dataView.addItem(item);
@@ -298,7 +343,7 @@ document.addEventListener("DOMContentLoaded", () => {
     e.preventDefault();
   });
 
-  grid.onSort.subscribe(function (e, args) {
+  grid.onSort.subscribe((e, args) => {
     sortdir = args.sortAsc ? 1 : -1;
     sortcol = args.sortCol.field;
 
@@ -309,33 +354,30 @@ document.addEventListener("DOMContentLoaded", () => {
   // wire up model events to drive the grid
   // !! both dataView.onRowCountChanged and dataView.onRowsChanged MUST be wired to correctly update the grid
   // see Issue#91
-  dataView.onRowCountChanged.subscribe(function (e, args) {
+  dataView.onRowCountChanged.subscribe((e, args) => {
     grid.updateRowCount();
     grid.render();
   });
 
-  dataView.onRowsChanged.subscribe(function (e, args) {
+  dataView.onRowsChanged.subscribe((e, args) => {
     grid.invalidateRows(args.rows);
     grid.render();
   });
 
-  dataView.onPagingInfoChanged.subscribe(function (e, pagingInfo) {
-    grid.updatePagingStatusFromView( pagingInfo );
+  // -- we can use SlickEvent subscribe or CustomEvent listeners (in this demo we use the latter for these 2 events)
+  // ----
+  // dataView.onPagingInfoChanged.subscribe((e, pagingInfo) => {
+  //   grid.updatePagingStatusFromView( pagingInfo );
+  //   // show the pagingInfo but remove the dataView from the object, just for the Cypress E2E test
+  //   delete pagingInfo.dataView;
+  //   console.log('on After Paging Info Changed - New Paging:: ', pagingInfo);
+  // });
 
-    // show the pagingInfo but remove the dataView from the object, just for the Cypress E2E test
-    delete pagingInfo.dataView;
-    console.log('on After Paging Info Changed - New Paging:: ', pagingInfo);
-  });
-
-  dataView.onBeforePagingInfoChanged.subscribe(function (e, previousPagingInfo) {
-    // show the previous pagingInfo but remove the dataView from the object, just for the Cypress E2E test
-    delete previousPagingInfo.dataView;
-    console.log('on Before Paging Info Changed - Previous Paging:: ', previousPagingInfo);
-  });
-
-  grid.onRendered.subscribe(() => {
-    console.log('on rendered')
-  })
+  // dataView.onBeforePagingInfoChanged.subscribe((e, previousPagingInfo) => {
+  //   // show the previous pagingInfo but remove the dataView from the object, just for the Cypress E2E test
+  //   delete previousPagingInfo.dataView;
+  //   console.log('on Before Paging Info Changed - Previous Paging:: ', previousPagingInfo);
+  // });
 
   let h_runfilters = null;
 
@@ -375,7 +417,7 @@ document.addEventListener("DOMContentLoaded", () => {
     dataView.refresh();
   }
 
-  document.querySelector("#btnSelectRows").addEventListener('click', function () {
+  document.querySelector("#btnSelectRows").addEventListener('click', () => {
     if (!SlickGlobalEditorLock.commitCurrentEdit()) {
       return;
     }
@@ -404,16 +446,6 @@ document.addEventListener("DOMContentLoaded", () => {
   document.querySelector('.sgi-search').addEventListener('click', toggleFilterRow);
   document.querySelector('.btn-alpine-theme').addEventListener('click', () => toggleTheme('alpine'));
   document.querySelector('.btn-classic-theme').addEventListener('click', () => toggleTheme('classic'));
-
-  document.querySelector('#myGrid').addEventListener('onRendered', (args) => {
-    console.log('event listener', args)
-  });
-  document.querySelector('#myGrid').addEventListener('onBeforePagingInfoChanged', (args) => {
-    console.log('event listener', args)
-  });
-  document.querySelector('#myGrid').addEventListener('onColumnsChanged', (args) => {
-    console.log('event listener', args)
-  });
 });
 </script>
 </body>

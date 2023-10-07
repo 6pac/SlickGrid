@@ -63,6 +63,7 @@ export class SlickRowMoveManager {
   init(grid: SlickGrid) {
     this._grid = grid;
     this._canvas = this._grid.getCanvasNode();
+    Utils.addSlickEventDispatchWhenDefined(grid.getOptions(), this);
 
     // user could override the expandable icon logic from within the options or after instantiating the plugin
     if (typeof this._options?.usabilityOverride === 'function') {

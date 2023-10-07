@@ -12,6 +12,7 @@ export interface CustomDataView<T = any> {
   getLength: () => number;
   getItem: (index: number) => T;
   getItemMetadata(index: number): ItemMetadata | null;
+  addDispatchEventTarget?: (target: string | HTMLElement) => void;
 }
 
 export interface CssStyleHash {

@@ -131,6 +131,7 @@ var options = {
     forceFitTitle: "Force fit columns",
     syncResizeTitle: "Synchronous resize",
   },
+  dispatchEventTarget: '#myGrid',
   editable: true,
   enableAddRow: true,
   enableCellNavigation: true,
@@ -178,6 +179,31 @@ function toggleFilterRow() {
   grid.setTopPanelVisibility(!grid.getOptions().showTopPanel);
 }
 
+function handlePagingInfoChanged(e) {
+  const pagingInfo = e.detail; // CustomEvent "detail" prop contains our SlickEvent args
+  grid.updatePagingStatusFromView( pagingInfo );
+
+  // show the pagingInfo but remove the dataView from the object, just for the Cypress E2E test
+  delete pagingInfo.dataView;
+  console.log('on After Paging Info Changed - New Paging:: ', pagingInfo);
+}
+
+function handleBeforePagingInfoChanged(e) {
+  const previousPagingInfo = e.detail; // CustomEvent "detail" prop contains our SlickEvent args
+
+  // show the previous pagingInfo but remove the dataView from the object, just for the Cypress E2E test
+  delete previousPagingInfo.dataView;
+  console.log('on Before Paging Info Changed - Previous Paging:: ', previousPagingInfo);
+}
+
+// when leaving the page (destroy)
+document.addEventListener("beforeunload", () => {
+  myGridElm.removeEventListener('onPagingInfoChanged', handlePagingInfoChanged);
+  myGridElm.removeEventListener('onBeforePagingInfoChanged', handleBeforePagingInfoChanged);
+  dataView.destroy();
+  grid.destroy();
+});
+
 document.addEventListener("DOMContentLoaded", function() {
   // prepare the data
   for (var i = 0; i < 50000; i++) {
@@ -193,7 +219,15 @@ document.addEventListener("DOMContentLoaded", function() {
     d["effortDriven"] = (i % 5 == 0);
   }
 
+  // with `dispatchEventTarget` grid option, we can use CustomEvent listeners instead of SlickEvent subscribe (don't forget to also removeEventListener to avoid leaking)
+  // CustomEvent have a `detail` property and that is were our typical `args` data will be
+  // Note: to avoid listening too late, you would typically add listeners BEFORE instantiating SlickGrid/SlickDataView
+  const myGridElm = document.querySelector('#myGrid');
+  // myGridElm.addEventListener('onClick', (e) => console.log(`event listener ${e.type}`, e.detail));
+  myGridElm.addEventListener('onPagingInfoChanged', handlePagingInfoChanged);
+  myGridElm.addEventListener('onBeforePagingInfoChanged', handleBeforePagingInfoChanged);
 
+  // instantiate SlickGrid and SlickDataView
   dataView = new Slick.Data.DataView({ inlineFilters: true });
   grid = new Slick.Grid("#myGrid", dataView, columns, options);
   grid.setSelectionModel(new Slick.RowSelectionModel());
@@ -254,19 +288,20 @@ document.addEventListener("DOMContentLoaded", function() {
     grid.render();
   });
 
-  dataView.onPagingInfoChanged.subscribe(function (e, pagingInfo) {
-    grid.updatePagingStatusFromView( pagingInfo );
+  // -- we can use SlickEvent subscribe or CustomEvent listeners (in this demo we use the latter for these 2 events)
+  // ----
+  // dataView.onPagingInfoChanged.subscribe((e, pagingInfo) => {
+  //   grid.updatePagingStatusFromView( pagingInfo );
+  //   // show the pagingInfo but remove the dataView from the object, just for the Cypress E2E test
+  //   delete pagingInfo.dataView;
+  //   console.log('on After Paging Info Changed - New Paging:: ', pagingInfo);
+  // });
 
-    // show the pagingInfo but remove the dataView from the object, just for the Cypress E2E test
-    delete pagingInfo.dataView;
-    console.log('on After Paging Info Changed - New Paging:: ', pagingInfo);
-  });
-
-  dataView.onBeforePagingInfoChanged.subscribe(function (e, previousPagingInfo) {
-    // show the previous pagingInfo but remove the dataView from the object, just for the Cypress E2E test
-    delete previousPagingInfo.dataView;
-    console.log('on Before Paging Info Changed - Previous Paging:: ', previousPagingInfo);
-  });
+  // dataView.onBeforePagingInfoChanged.subscribe((e, previousPagingInfo) => {
+  //   // show the previous pagingInfo but remove the dataView from the object, just for the Cypress E2E test
+  //   delete previousPagingInfo.dataView;
+  //   console.log('on Before Paging Info Changed - Previous Paging:: ', previousPagingInfo);
+  // });
 
   var h_runfilters = null;
 

@@ -158,6 +158,7 @@ export class SlickRowDetailView {
     this._gridOptions = grid.getOptions() || {};
     this._dataView = this._grid.getData<SlickDataView>();
     this._keyPrefix = this._options?.keyPrefix ?? '_';
+    Utils.addSlickEventDispatchWhenDefined(this._gridOptions, this);
 
     // Update the minRowBuffer so that the view doesn't disappear when it's at top of screen + the original default 3
     this._gridRowBuffer = this._gridOptions.minRowBuffer || 0;

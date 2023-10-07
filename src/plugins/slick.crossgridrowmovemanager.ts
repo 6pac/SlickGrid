@@ -65,6 +65,7 @@ export class SlickCrossGridRowMoveManager {
     this._canvas = this._grid.getCanvasNode();
     this._toGrid = this._options.toGrid;
     this._toCanvas = this._toGrid.getCanvasNode();
+    Utils.addSlickEventDispatchWhenDefined(grid.getOptions(), this);
 
     // user could override the expandable icon logic from within the options or after instantiating the plugin
     if (typeof this._options?.usabilityOverride === 'function') {

@@ -506,18 +506,18 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {Object} [options] - Grid this._options.
    **/
   constructor(protected container: HTMLElement | string, protected data: CustomDataView<TData> | TData[], protected columns: C[], protected options: Partial<O>) {
-    if (typeof this.container === 'string') {
-      this._container = document.querySelector(this.container) as HTMLDivElement;
-    } else {
-      this._container = this.container;
-    }
+    this._container = typeof this.container === 'string'
+      ? document.querySelector(this.container) as HTMLDivElement
+      : this.container;
 
     if (!this._container) {
       throw new Error(`SlickGrid requires a valid container, ${this.container} does not exist in the DOM.`);
     }
 
-    if (data && !Array.isArray(data) && typeof (data as any)?.setContainerNode === 'function') {
-      (data as any).setContainerNode(this._container);
+    // when using a custom DataView and `dispatchEventTarget` option is defined, we need to also add it to the DataView
+    if (data && !Array.isArray(data) && options?.dispatchEventTarget && typeof (data as CustomDataView).addDispatchEventTarget === 'function') {
+      (data as CustomDataView).addDispatchEventTarget!(options.dispatchEventTarget);
+      Utils.addSlickEventDispatchWhenDefined(options as BaseGridOption, this);
     }
 
     this.initialize();
@@ -3515,10 +3515,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {Boolean} [suppressColumnSet] - do we want to supress the columns set, via "setColumns()" method? (defaults to false)
    * @param {Boolean} [suppressSetOverflow] - do we want to suppress the call to `setOverflow`
    */
-  setOptions(args: Partial<O>, suppressRender?: boolean, suppressColumnSet?: boolean, suppressSetOverflow?: boolean): void {
+  setOptions(newOptions: Partial<O>, suppressRender?: boolean, suppressColumnSet?: boolean, suppressSetOverflow?: boolean): void {
     this.prepareForOptionsChange();
 
-    if (this._options.enableAddRow !== args.enableAddRow) {
+    if (this._options.enableAddRow !== newOptions.enableAddRow) {
       this.invalidateRow(this.getDataLength());
     }
 
@@ -3529,7 +3529,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     const originalOptions = Utils.extend(true, {}, this._options);
-    this._options = Utils.extend(this._options, args);
+    this._options = Utils.extend(this._options, newOptions);
     this.trigger(this.onSetOptions, { optionsBefore: originalOptions, optionsAfter: this._options });
 
     this.internal_setOptions(suppressRender, suppressColumnSet, suppressSetOverflow);

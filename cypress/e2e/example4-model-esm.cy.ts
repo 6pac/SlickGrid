@@ -65,8 +65,8 @@ describe('Example 4 - Model (ESM)', () => {
 
     cy.window().then((win) => {
       expect(win.console.log).to.have.callCount(2);
-      expect(win.console.log).to.be.calledWith('on Before Paging Info Changed - Previous Paging:: ', { pageSize: 0, pageNum: 0, totalRows: 50000, totalPages: 1 });
-      expect(win.console.log).to.be.calledWith('on After Paging Info Changed - New Paging:: ', { pageSize: 50, pageNum: 0, totalRows: 50000, totalPages: 1000 });
+      expect(win.console.log).to.be.calledWith('on Before Paging Info Changed - Previous Paging:: ', { pageSize: 0, pageNum: 0, totalRows: 50000, totalPages: 1, nativeEvent: null });
+      expect(win.console.log).to.be.calledWith('on After Paging Info Changed - New Paging:: ', { pageSize: 50, pageNum: 0, totalRows: 50000, totalPages: 1000, nativeEvent: null });
     });
   });
 
@@ -95,8 +95,8 @@ describe('Example 4 - Model (ESM)', () => {
 
     cy.window().then((win) => {
       expect(win.console.log).to.have.callCount(2);
-      expect(win.console.log).to.be.calledWith('on Before Paging Info Changed - Previous Paging:: ', { pageSize: 50, pageNum: 0, totalRows: 50000, totalPages: 1000 });
-      expect(win.console.log).to.be.calledWith('on After Paging Info Changed - New Paging:: ', { pageSize: 50, pageNum: 1, totalRows: 50000, totalPages: 1000 });
+      expect(win.console.log).to.be.calledWith('on Before Paging Info Changed - Previous Paging:: ', { pageSize: 50, pageNum: 0, totalRows: 50000, totalPages: 1000, nativeEvent: null });
+      expect(win.console.log).to.be.calledWith('on After Paging Info Changed - New Paging:: ', { pageSize: 50, pageNum: 1, totalRows: 50000, totalPages: 1000, nativeEvent: null });
     });
   });
 
@@ -122,8 +122,8 @@ describe('Example 4 - Model (ESM)', () => {
 
     cy.window().then((win) => {
       expect(win.console.log).to.have.callCount(2);
-      expect(win.console.log).to.be.calledWith('on Before Paging Info Changed - Previous Paging:: ', { pageSize: 50, pageNum: 1, totalRows: 50000, totalPages: 1000 });
-      expect(win.console.log).to.be.calledWith('on After Paging Info Changed - New Paging:: ', { pageSize: 50, pageNum: 999, totalRows: 50000, totalPages: 1000 });
+      expect(win.console.log).to.be.calledWith('on Before Paging Info Changed - Previous Paging:: ', { pageSize: 50, pageNum: 1, totalRows: 50000, totalPages: 1000, nativeEvent: null });
+      expect(win.console.log).to.be.calledWith('on After Paging Info Changed - New Paging:: ', { pageSize: 50, pageNum: 999, totalRows: 50000, totalPages: 1000, nativeEvent: null });
     });
   });
 

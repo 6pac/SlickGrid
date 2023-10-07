@@ -25,6 +25,7 @@ export class SlickCellCopyManager implements SlickPlugin {
 
   init(grid: SlickGrid) {
     this._grid = grid;
+    Utils.addSlickEventDispatchWhenDefined(grid.getOptions(), this);
     this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this));
   }
 

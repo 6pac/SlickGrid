@@ -129,12 +129,12 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     this._options = Utils.extend(true, {}, this.defaults, options);
   }
 
-  getContainerNode() {
-    return this._container;
-  }
-
-  setContainerNode(node: HTMLElement) {
-    this._container = node;
+  addDispatchEventTarget(target: string | HTMLElement) {
+    for (const prop in this) {
+      if (this.hasOwnProperty(prop) && prop.startsWith('on') && typeof (this[prop] as SlickEvent_).addDispatchEventTarget === 'function') {
+        (this[prop] as SlickEvent_).addDispatchEventTarget(target);
+      }
+    }
   }
 
   /**

@@ -8,11 +8,11 @@ import type {
   CSSStyleDeclarationWritable,
   EditController,
   ElementEventListener,
+  GridOption,
   Handler,
   InferDOMType,
   MergeTypes
 } from './models/index';
-import type { SlickGrid } from './slick.grid';
 
 /**
  * An event object for passing data to event handlers and letting them control propagation.
@@ -128,12 +128,19 @@ export class SlickEventData {
  */
 export class SlickEvent<ArgType = any> {
   protected _handlers: Handler<ArgType>[] = [];
+  protected _eventTargetElm?: HTMLElement | null;
 
   /**
    * Constructor
-   * @param {String | HTMLElement} [dispatchEventTarget]
+   * @param {String} [eventName] - event name that could be used for dispatching CustomEvent (when enabled)
    */
   constructor(public readonly eventName?: string) { }
+
+  addDispatchEventTarget(target: string | HTMLElement) {
+    this._eventTargetElm = (typeof target === 'string')
+      ? document.querySelector(target)
+      : target;
+  }
 
   /**
    * Adds an event handler to be called when the event is fired.
@@ -179,16 +186,13 @@ export class SlickEvent<ArgType = any> {
       sed.addReturnValue(returnValue);
     }
 
-    let eventTargetElm = typeof scope?.getContainerNode === 'function' ? scope?.getContainerNode() : null;
-    if (!eventTargetElm && (args as any)?.grid) {
-      eventTargetElm = ((args as any)?.grid as SlickGrid)?.getContainerNode();
-    }
-    if (typeof eventTargetElm?.dispatchEvent === 'function') {
+    // user optionally add CustomEvent listeners, that is when both `dispatchEventTarget` grid option and event name are defined
+    if (typeof this._eventTargetElm?.dispatchEvent === 'function') {
       const eventInit: CustomEventInit<ArgType> = { bubbles: true, cancelable: true };
       if (args) {
         eventInit.detail = { ...args, nativeEvent: sed?.getNativeEvent() };
       }
-      eventTargetElm.dispatchEvent(new CustomEvent<ArgType>(this.eventName || '', eventInit));
+      this._eventTargetElm.dispatchEvent(new CustomEvent<ArgType>(this.eventName || '', eventInit));
     }
 
     return sed;
@@ -956,6 +960,22 @@ export class Utils {
     for (const key in srcObj) {
       if (srcObj.hasOwnProperty(key) && !targetObj.hasOwnProperty(key)) {
         targetObj[key] = srcObj[key];
+      }
+    }
+  }
+
+  /**
+   * User could optionally add CustomEvent dispatch through an optional "dispatchEventTarget" grid option.
+   * When it is defined then a SlickEvent `notify()` call will also dispatch a CustomEvent of the same name
+   * @param {GridOption} gridOption
+   * @param {*} scope
+   */
+  public static addSlickEventDispatchWhenDefined(gridOptions: Partial<GridOption>, scope: any) {
+    if (gridOptions?.dispatchEventTarget) {
+      for (const prop in scope) {
+        if (scope[prop] instanceof SlickEvent && typeof (scope[prop] as SlickEvent).addDispatchEventTarget === 'function') {
+          (scope[prop] as SlickEvent).addDispatchEventTarget(gridOptions.dispatchEventTarget);
+        }
       }
     }
   }

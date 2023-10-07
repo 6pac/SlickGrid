@@ -103,6 +103,7 @@ export class SlickHeaderButtons implements SlickPlugin {
 
   init(grid: SlickGrid) {
     this._grid = grid;
+    Utils.addSlickEventDispatchWhenDefined(grid.getOptions(), this);
     this._handler
       .subscribe(this._grid.onHeaderCellRendered, this.handleHeaderCellRendered.bind(this))
       .subscribe(this._grid.onBeforeHeaderCellDestroy, this.handleBeforeHeaderCellDestroy.bind(this));

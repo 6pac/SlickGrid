@@ -9,7 +9,7 @@ import type {
   MenuCommandItem,
   onGridMenuColumnsChangedCallbackArgs
 } from '../models/index';
-import { BindingEventService as BindingEventService_, Event as SlickEvent_, Utils as Utils_ } from '../slick.core';
+import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_, Utils as Utils_ } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -192,6 +192,7 @@ export class SlickGridMenu {
 
   init(grid: SlickGrid) {
     this._gridOptions = grid.getOptions();
+    Utils.addSlickEventDispatchWhenDefined(this._gridOptions, this);
     this.createGridMenu();
 
     if (this._gridMenuOptions?.customItems || this._gridMenuOptions?.customTitle) {
