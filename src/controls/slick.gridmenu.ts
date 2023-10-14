@@ -581,7 +581,7 @@ export class SlickGridMenu {
       return;
     }
 
-    if (!Utils.isDefined(command) && command !== '') {
+    if (Utils.isDefined(command) && command !== '') {
       const callbackArgs = {
         grid: this.grid,
         command,
