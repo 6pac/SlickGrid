@@ -5,7 +5,7 @@ import type {
   HeaderButtonOnCommandArgs,
   HeaderButtonOption,
   OnHeaderCellRenderedEventArgs,
-  Plugin
+  SlickPlugin
 } from '../models/index';
 import { BindingEventService as BindingEventService_, Event as SlickEvent_, EventHandler as EventHandler_, Utils as Utils_ } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
@@ -81,7 +81,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
    * @class Slick.Plugins.HeaderButtons
    * @constructor
    */
-export class SlickHeaderButtons implements Plugin {
+export class SlickHeaderButtons implements SlickPlugin {
   // --
   // public API
   pluginName = 'HeaderButtons' as const;

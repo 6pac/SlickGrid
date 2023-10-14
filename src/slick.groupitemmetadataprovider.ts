@@ -115,7 +115,7 @@ export class SlickGroupItemMetadataProvider {
 
   // TODO:  add -/+ handling
   protected handleGridKeyDown(e: KeyboardEvent) {
-    if (this._options.enableExpandCollapse && (e.which == keyCode.SPACE)) {
+    if (this._options.enableExpandCollapse && (e.which === keyCode.SPACE)) {
       const activeCell = this._grid.getActiveCell();
       if (activeCell) {
         const item = this._grid.getDataItem(activeCell.row);

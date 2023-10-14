@@ -1,5 +1,5 @@
 import type { Editor, EditorArguments, EditorValidationResult, ElementPosition } from './models/index';
-import { keyCode as keyCode_, Utils as Utils_ } from './slick.core';
+import { isDefined, keyCode as keyCode_, Utils as Utils_ } from './slick.core';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;
@@ -86,7 +86,7 @@ export class TextEditor implements Editor {
   }
 
   isValueChanged() {
-    return (!(this.input.value === '' && this.defaultValue == null)) && (this.input.value != this.defaultValue);
+    return (!(this.input.value === '' && !isDefined(this.defaultValue))) && (this.input.value !== this.defaultValue);
   }
 
   validate() {
@@ -171,7 +171,7 @@ export class IntegerEditor implements Editor {
   }
 
   isValueChanged() {
-    return (!(this.input.value === '' && this.defaultValue == null)) && (this.input.value != this.defaultValue);
+    return (!(this.input.value === '' && !isDefined(this.defaultValue))) && (this.input.value !== this.defaultValue);
   }
 
   validate() {
@@ -256,7 +256,7 @@ export class FloatEditor implements Editor {
   getDecimalPlaces() {
     // returns the number of fixed decimal places or null
     let rtn: number | undefined = this.args.column.editorFixedDecimalPlaces;
-    if (typeof rtn == 'undefined') {
+    if (!isDefined(rtn)) {
       rtn = FloatEditor.DefaultDecimalPlaces;
     }
     return (!rtn && rtn !== 0 ? null : rtn);
@@ -302,7 +302,7 @@ export class FloatEditor implements Editor {
   }
 
   isValueChanged() {
-    return (!(this.input.value === '' && this.defaultValue == null)) && (this.input.value != this.defaultValue);
+    return (!(this.input.value === '' && !isDefined(this.defaultValue))) && (this.input.value !== this.defaultValue);
   }
 
   validate() {
@@ -425,7 +425,7 @@ export class FlatpickrEditor implements Editor {
   }
 
   isValueChanged() {
-    return (!(this.input.value === '' && this.defaultValue == null)) && (this.input.value != this.defaultValue);
+    return (!(this.input.value === '' && !isDefined(this.defaultValue))) && (this.input.value !== this.defaultValue);
   }
 
   validate() {
@@ -497,7 +497,7 @@ export class YesNoSelectEditor implements Editor {
   }
 
   serializeValue() {
-    return this.select.value == 'yes';
+    return this.select.value === 'yes';
   }
 
   applyValue(item: any, state: any) {
@@ -505,7 +505,7 @@ export class YesNoSelectEditor implements Editor {
   }
 
   isValueChanged() {
-    return this.select.value != this.defaultValue;
+    return this.select.value !== this.defaultValue;
   }
 
   validate() {
@@ -690,7 +690,7 @@ export class PercentCompleteEditor implements Editor {
   };
 
   isValueChanged() {
-    return (!(this.input.value === '' && this.defaultValue == null)) && ((parseInt(this.input.value as any, 10) || 0) != this.defaultValue);
+    return (!(this.input.value === '' && !isDefined(this.defaultValue))) && ((parseInt(this.input.value as any, 10) || 0) !== this.defaultValue);
   };
 
   validate(): EditorValidationResult {
@@ -777,18 +777,18 @@ export class LongTextEditor implements Editor {
   };
 
   handleKeyDown(e: KeyboardEvent & { target: HTMLInputElement }) {
-    if (e.which == keyCode.ENTER && e.ctrlKey) {
+    if (e.which === keyCode.ENTER && e.ctrlKey) {
       this.save();
-    } else if (e.which == keyCode.ESCAPE) {
+    } else if (e.which === keyCode.ESCAPE) {
       e.preventDefault();
       this.cancel();
-    } else if (e.which == keyCode.TAB && e.shiftKey) {
+    } else if (e.which === keyCode.TAB && e.shiftKey) {
       e.preventDefault();
       this.args.grid.navigatePrev();
-    } else if (e.which == keyCode.TAB) {
+    } else if (e.which === keyCode.TAB) {
       e.preventDefault();
       this.args.grid.navigateNext();
-    } else if (e.which == keyCode.LEFT || e.which == keyCode.RIGHT) {
+    } else if (e.which === keyCode.LEFT || e.which === keyCode.RIGHT) {
       if (this.args.grid.getOptions().editorCellNavOnLRKeys) {
         const cursorPosition = this.selectionStart;
         const textLength = e.target.value.length;
@@ -858,7 +858,7 @@ export class LongTextEditor implements Editor {
   };
 
   isValueChanged() {
-    return (!(this.input.value === '' && this.defaultValue == null)) && (this.input.value != this.defaultValue);
+    return (!(this.input.value === '' && !isDefined(this.defaultValue))) && (this.input.value !== this.defaultValue);
   };
 
   validate() {

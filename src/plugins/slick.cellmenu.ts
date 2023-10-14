@@ -14,7 +14,7 @@ import type {
   MenuFromCellCallbackArgs,
   MenuOptionItem,
   MenuOptionItemCallbackArgs,
-  Plugin
+  SlickPlugin
 } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
@@ -145,7 +145,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  * @param options {Object} Cell Menu Options
  * @class Slick.Plugins.CellMenu
  */
-export class SlickCellMenu implements Plugin {
+export class SlickCellMenu implements SlickPlugin {
   // --
   // public API
   pluginName = 'CellMenu' as const;
@@ -234,7 +234,7 @@ export class SlickCellMenu implements Plugin {
       cell: this._currentCell,
       row: this._currentRow,
       grid: this._grid
-    }, e, this).getReturnValue() == false) {
+    }, e, this).getReturnValue() === false) {
       return;
     }
 
@@ -314,7 +314,7 @@ export class SlickCellMenu implements Plugin {
       cell: this._currentCell,
       row: this._currentRow,
       grid: this._grid
-    }, e, this).getReturnValue() == false) {
+    }, e, this).getReturnValue() === false) {
       return;
     }
 
@@ -335,7 +335,7 @@ export class SlickCellMenu implements Plugin {
         cell: args?.cell ?? 0,
         row: args?.row ?? 0,
         grid: this._grid,
-      }, e, this).getReturnValue() == false) {
+      }, e, this).getReturnValue() === false) {
         return;
       }
       this._menuElm.remove();
@@ -444,7 +444,7 @@ export class SlickCellMenu implements Plugin {
   }
 
   protected handleBodyMouseDown(e: DOMMouseOrTouchEvent<HTMLDivElement>) {
-    if (this._menuElm != e.target && !(this._menuElm?.contains(e.target))) {
+    if (this._menuElm !== e.target && !(this._menuElm?.contains(e.target))) {
       if (!e.defaultPrevented) {
         this.closeMenu(e, { cell: this._currentCell, row: this._currentRow, grid: this._grid });
       }
@@ -457,7 +457,7 @@ export class SlickCellMenu implements Plugin {
         cell: args?.cell,
         row: args?.row,
         grid: this._grid,
-      }, e, this).getReturnValue() == false) {
+      }, e, this).getReturnValue() === false) {
         return;
       }
       this._menuElm?.remove();

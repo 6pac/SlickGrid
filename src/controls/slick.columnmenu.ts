@@ -1,4 +1,4 @@
-import { BindingEventService as BindingEventService_, Event as SlickEvent_, Utils as Utils_ } from '../slick.core';
+import { BindingEventService as BindingEventService_, Event as SlickEvent_, isDefined, Utils as Utils_ } from '../slick.core';
 import type { Column, ColumnPickerOption, DOMMouseOrTouchEvent, GridOption, OnColumnsChangedArgs } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
@@ -144,7 +144,7 @@ export class SlickColumnMenu {
 
       this._columnCheckboxes.push(checkboxElm);
 
-      if (this.grid.getColumnIndex(columnId) != null && !this.columns[i].hidden) {
+      if (isDefined(this.grid.getColumnIndex(columnId)) && !this.columns[i].hidden) {
         checkboxElm.checked = true;
       }
 

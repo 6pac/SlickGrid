@@ -7,7 +7,7 @@ import type {
   HeaderMenuOption,
   MenuCommandItem,
   MenuCommandItemCallbackArgs,
-  Plugin,
+  SlickPlugin,
   OnHeaderCellRenderedEventArgs
 } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
@@ -104,7 +104,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
   *    buttonImage:      a url to the menu button image
   * @class Slick.Plugins.HeaderButtons
   */
-export class SlickHeaderMenu implements Plugin {
+export class SlickHeaderMenu implements SlickPlugin {
   // --
   // public API
   pluginName = 'HeaderMenu' as const;
@@ -232,7 +232,7 @@ export class SlickHeaderMenu implements Plugin {
       column: columnDef,
       menu
     } as unknown as HeaderMenuCommandItemCallbackArgs;
-    if (this.onBeforeMenuShow.notify(callbackArgs, event, this).getReturnValue() == false) {
+    if (this.onBeforeMenuShow.notify(callbackArgs, event, this).getReturnValue() === false) {
       return;
     }
 
@@ -345,7 +345,7 @@ export class SlickHeaderMenu implements Plugin {
       this._activeHeaderColumnElm.classList.add('slick-header-column-active');
     }
 
-    if (this.onAfterMenuShow.notify(callbackArgs, event, this).getReturnValue() == false) {
+    if (this.onAfterMenuShow.notify(callbackArgs, event, this).getReturnValue() === false) {
       return;
     }
 

@@ -1,4 +1,4 @@
-import type { CssStyleHash, Plugin } from '../models/index';
+import type { CssStyleHash, SlickPlugin } from '../models/index';
 import { SlickEvent as SlickEvent_, keyCode as keyCode_, Utils as Utils_, SlickRange } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 
@@ -10,7 +10,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 /**
  * This manager enables users to copy/paste cell data
  */
-export class SlickCellCopyManager implements Plugin {
+export class SlickCellCopyManager implements SlickPlugin {
   // --
   // public API
   pluginName = 'CellCopyManager' as const;
@@ -35,7 +35,7 @@ export class SlickCellCopyManager implements Plugin {
   protected handleKeyDown(e: KeyboardEvent) {
     let ranges: SlickRange[] | undefined;
     if (!this._grid.getEditorLock().isActive()) {
-      if (e.which == keyCode.ESCAPE) {
+      if (e.which === keyCode.ESCAPE) {
         if (this._copiedRanges) {
           e.preventDefault();
           this.clearCopySelection();
@@ -44,7 +44,7 @@ export class SlickCellCopyManager implements Plugin {
         }
       }
 
-      if (e.which == 67 && (e.ctrlKey || e.metaKey)) {
+      if (e.which === 67 && (e.ctrlKey || e.metaKey)) {
         ranges = this._grid.getSelectionModel()?.getSelectedRanges() ?? [];
         if (ranges.length !== 0) {
           e.preventDefault();
@@ -54,7 +54,7 @@ export class SlickCellCopyManager implements Plugin {
         }
       }
 
-      if (e.which == 86 && (e.ctrlKey || e.metaKey)) {
+      if (e.which === 86 && (e.ctrlKey || e.metaKey)) {
         if (this._copiedRanges) {
           e.preventDefault();
           ranges = this._grid.getSelectionModel()?.getSelectedRanges();

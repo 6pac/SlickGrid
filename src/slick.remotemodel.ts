@@ -30,7 +30,7 @@ export class SlickRemoteModel {
 
   isDataLoaded(from: number, to: number) {
     for (let i = from; i <= to; i++) {
-      if (this.data[i] == undefined || this.data[i] == null) {
+      if (this.data[i] === undefined || this.data[i] === null) {
         return false;
       }
     }
@@ -48,8 +48,9 @@ export class SlickRemoteModel {
   ensureData(from: number, to: number) {
     if (this.req) {
       this.req.abort();
-      for (let i = this.req.fromPage; i <= this.req.toPage; i++)
+      for (let i = this.req.fromPage; i <= this.req.toPage; i++) {
         this.data[i * this.PAGESIZE] = undefined;
+      }
     }
 
     if (from < 0) {
@@ -71,7 +72,7 @@ export class SlickRemoteModel {
       toPage--;
     }
 
-    if (fromPage > toPage || ((fromPage == toPage) && this.data[fromPage * this.PAGESIZE] !== undefined)) {
+    if (fromPage > toPage || ((fromPage === toPage) && this.data[fromPage * this.PAGESIZE] !== undefined)) {
       // TODO:  look-ahead
       this.onDataLoaded.notify({ from: from, to: to });
       return;
@@ -79,18 +80,18 @@ export class SlickRemoteModel {
 
     let url = "http://octopart.com/api/v3/parts/search?apikey=68b25f31&include[]=short_description&show[]=uid&show[]=manufacturer&show[]=mpn&show[]=brand&show[]=octopart_url&show[]=short_description&q=" + this.searchstr + "&start=" + (fromPage * this.PAGESIZE) + "&limit=" + (((toPage - fromPage) * this.PAGESIZE) + this.PAGESIZE);
 
-    if (this.sortcol != null) {
+    if (this.sortcol !== null) {
       url += ("&sortby=" + this.sortcol + ((this.sortdir > 0) ? "+asc" : "+desc"));
     }
 
-    if (this.h_request != null) {
+    if (this.h_request !== null) {
       clearTimeout(this.h_request);
     }
 
     this.h_request = setTimeout(() => {
-      for (let i = fromPage; i <= toPage; i++)
+      for (let i = fromPage; i <= toPage; i++) {
         this.data[i * this.PAGESIZE] = null; // null indicates a 'requested but not available yet'
-
+      }
       this.onDataLoading.notify({ from: from, to: to });
 
       this.req = window.$.jsonp({
@@ -124,9 +125,9 @@ export class SlickRemoteModel {
   }
 
   reloadData(from: number, to: number) {
-    for (let i = from; i <= to; i++)
+    for (let i = from; i <= to; i++) {
       delete this.data[i];
-
+    }
     this.ensureData(from, to);
   }
 

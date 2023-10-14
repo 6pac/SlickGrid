@@ -1,4 +1,4 @@
-import { keyCode as keyCode_, SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core';
+import { isDefined, keyCode as keyCode_, SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core';
 import { Draggable as Draggable_ } from '../slick.interactions';
 import { SlickCellRangeDecorator as SlickCellRangeDecorator_ } from './slick.cellrangedecorator';
 import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector';
@@ -157,7 +157,7 @@ export class SlickRowSelectionModel {
   }
 
   protected handleActiveCellChange(_e: SlickEventData_, args: OnActiveCellChangedEventArgs) {
-    if (this._options.selectActiveRow && args.row != null) {
+    if (this._options.selectActiveRow && isDefined(args.row)) {
       this.setSelectedRanges([new SlickRange(args.row, 0, args.row, this._grid.getColumns().length - 1)]);
     }
   }
@@ -166,7 +166,7 @@ export class SlickRowSelectionModel {
     const activeRow = this._grid.getActiveCell();
     if (this._grid.getOptions().multiSelect && activeRow
       && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey
-      && (e.which == keyCode.UP || e.which == keyCode.DOWN)) {
+      && (e.which === keyCode.UP || e.which === keyCode.DOWN)) {
       let selectedRows = this.getSelectedRows();
       selectedRows.sort(function (x, y) {
         return x - y;
@@ -180,8 +180,8 @@ export class SlickRowSelectionModel {
       let bottom = selectedRows[selectedRows.length - 1];
       let active: number;
 
-      if (e.which == keyCode.DOWN) {
-        active = activeRow.row < bottom || top == bottom ? ++bottom : ++top;
+      if (e.which === keyCode.DOWN) {
+        active = activeRow.row < bottom || top === bottom ? ++bottom : ++top;
       } else {
         active = activeRow.row < bottom ? --bottom : --top;
       }

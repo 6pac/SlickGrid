@@ -1,4 +1,4 @@
-import type { AutoTooltipOption, Column, Plugin } from '../models/index';
+import type { AutoTooltipOption, Column, SlickPlugin } from '../models/index';
 import { Utils as Utils_ } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 
@@ -8,7 +8,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 /**
  * AutoTooltips plugin to show/hide tooltips when columns are too narrow to fit content.
  */
-export class SlickAutoTooltips implements Plugin {
+export class SlickAutoTooltips implements SlickPlugin {
   // --
   // public API
   pluginName = 'AutoTooltips' as const;

@@ -1,7 +1,7 @@
 import { SlickEvent as SlickEvent_, SlickEventData, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core';
 import { Draggable as Draggable_ } from '../slick.interactions';
 import { SlickCellRangeDecorator as SlickCellRangeDecorator_ } from './slick.cellrangedecorator';
-import type { CellRangeSelectorOption, DOMMouseOrTouchEvent, DragPosition, DragRange, GridOption, MouseOffsetViewport, OnScrollEventArgs, Plugin } from '../models/index';
+import type { CellRangeSelectorOption, DOMMouseOrTouchEvent, DragPosition, DragRange, GridOption, MouseOffsetViewport, OnScrollEventArgs, SlickPlugin } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -12,7 +12,7 @@ const Draggable = IIFE_ONLY ? Slick.Draggable : Draggable_;
 const SlickCellRangeDecorator = IIFE_ONLY ? Slick.CellRangeDecorator : SlickCellRangeDecorator_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
-export class SlickCellRangeSelector implements Plugin {
+export class SlickCellRangeSelector implements SlickPlugin {
   // --
   // public API
   pluginName = 'CellRangeSelector' as const;

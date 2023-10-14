@@ -1,4 +1,4 @@
-import type { CSSStyleDeclarationWritable, CellRange, CellRangeDecoratorOption, Plugin } from '../models/index';
+import type { CSSStyleDeclarationWritable, CellRange, CellRangeDecoratorOption, SlickPlugin } from '../models/index';
 import { Utils as Utils_ } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 
@@ -16,7 +16,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
    * @param {Grid} grid
    * @param {Object} options
    */
-export class SlickCellRangeDecorator implements Plugin {
+export class SlickCellRangeDecorator implements SlickPlugin {
   // --
   // public API
   pluginName = 'CellRangeDecorator' as const;
