@@ -268,7 +268,7 @@ export class SlickRange {
    * @return {Boolean}
    */
   isSingleRow() {
-    return this.fromRow == this.toRow;
+    return this.fromRow === this.toRow;
   }
 
   /**
@@ -277,7 +277,7 @@ export class SlickRange {
    * @return {Boolean}
    */
   isSingleCell() {
-    return this.fromRow == this.toRow && this.fromCell == this.toCell;
+    return this.fromRow === this.toRow && this.fromCell === this.toCell;
   }
 
   /**
@@ -591,12 +591,14 @@ export class Utils {
   public static storage = {
     // https://stackoverflow.com/questions/29222027/vanilla-alternative-to-jquery-data-function-any-native-javascript-alternati
     _storage: new WeakMap(),
+    // eslint-disable-next-line object-shorthand
     put: function (element: any, key: string, obj: any) {
       if (!this._storage.has(element)) {
         this._storage.set(element, new Map());
       }
       this._storage.get(element).set(key, obj);
     },
+    // eslint-disable-next-line object-shorthand
     get: function (element: any, key: string) {
       const el = this._storage.get(element);
       if (el) {
@@ -604,6 +606,7 @@ export class Utils {
       }
       return null;
     },
+    // eslint-disable-next-line object-shorthand
     remove: function (element: any, key: string) {
       const ret = this._storage.get(element).delete(key);
       if (!(this._storage.get(element).size === 0)) {
@@ -677,7 +680,7 @@ export class Utils {
       i--;
     }
     for (; i < length; i++) {
-      if ((options = args[i]) != null) {
+      if (Utils.isDefined(options = args[i])) {
         for (name in options) {
           copy = options[name];
           if (name === '__proto__' || target === copy) {
@@ -763,6 +766,10 @@ export class Utils {
     return size;
   }
 
+  public static isDefined<T>(value: T | undefined | null): value is T {
+    return <T>value !== undefined && <T>value !== null;
+  }
+
   public static getElementProp(elm: HTMLElement & { getComputedStyle?: () => CSSStyleDeclaration }, property: string) {
     if (elm?.getComputedStyle) {
       return window.getComputedStyle(elm, null).getPropertyValue(property);
@@ -800,7 +807,7 @@ export class Utils {
   }
 
   public static width(el: HTMLElement, value?: number | string): number | void {
-    if (!el || !el.getBoundingClientRect) return;
+    if (!el || !el.getBoundingClientRect) { return; }
     if (value === undefined) {
       return el.getBoundingClientRect().width;
     }
@@ -808,7 +815,7 @@ export class Utils {
   }
 
   public static height(el: HTMLElement, value?: number | string): number | void {
-    if (!el) return;
+    if (!el) { return; }
     if (value === undefined) {
       return el.getBoundingClientRect().height;
     }
@@ -832,7 +839,7 @@ export class Utils {
 
     const parentList = Utils.parents(child);
     return !parentList.every((p) => {
-      if (parent == p) {
+      if (parent === p) {
         return false;
       }
       return true;
@@ -845,8 +852,8 @@ export class Utils {
 
   public static parents(el: HTMLElement | ParentNode, selector?: string) {
     const parents: Array<HTMLElement | ParentNode> = [];
-    const visible = selector == ':visible';
-    const hidden = selector == ':hidden';
+    const visible = selector === ':visible';
+    const hidden = selector === ':hidden';
 
     while ((el = el.parentNode as ParentNode) && el !== document) {
       if (!el || !el.parentNode) {

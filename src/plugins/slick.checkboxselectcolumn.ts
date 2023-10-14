@@ -1,4 +1,4 @@
-import type { CheckboxSelectorOption, Column, DOMEvent, Plugin, SelectableOverrideCallback } from '../models/index';
+import type { CheckboxSelectorOption, Column, DOMEvent, SlickPlugin, SelectableOverrideCallback } from '../models/index';
 import { BindingEventService as BindingEventService_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
 import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
@@ -8,7 +8,7 @@ const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEvent
 const SlickEventHandler = IIFE_ONLY ? Slick.EventHandler : SlickEventHandler_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
-export class SlickCheckboxSelectColumn<T = any> implements Plugin {
+export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
   // --
   // public API
   pluginName = 'CheckboxSelectColumn' as const;
@@ -217,7 +217,7 @@ export class SlickCheckboxSelectColumn<T = any> implements Plugin {
   }
 
   protected handleKeyDown(e: KeyboardEvent, args: any) {
-    if (e.which == 32) {
+    if (e.which === 32) {
       if (this._grid.getColumns()[args.cell].id === this._options.columnId) {
         // if editing, try to commit
         if (!this._grid.getEditorLock().isActive() || this._grid.getEditorLock().commitCurrentEdit()) {
@@ -282,7 +282,7 @@ export class SlickCheckboxSelectColumn<T = any> implements Plugin {
   }
 
   protected handleHeaderClick(e: DOMEvent<HTMLInputElement>, args: any) {
-    if (args.column.id == this._options.columnId && e.target.type === 'checkbox') {
+    if (args.column.id === this._options.columnId && e.target.type === 'checkbox') {
       // if editing, try to commit
       if (this._grid.getEditorLock().isActive() && !this._grid.getEditorLock().commitCurrentEdit()) {
         e.preventDefault();
@@ -327,7 +327,7 @@ export class SlickCheckboxSelectColumn<T = any> implements Plugin {
       this._checkboxColumnCellIndex = 0;
       const colArr = this._grid.getColumns();
       for (let i = 0; i < colArr.length; i++) {
-        if (colArr[i].id == this._options.columnId) {
+        if (colArr[i].id === this._options.columnId) {
           this._checkboxColumnCellIndex = i;
         }
       }

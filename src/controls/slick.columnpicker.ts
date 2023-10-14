@@ -145,7 +145,7 @@ export class SlickColumnPicker {
 
       this._columnCheckboxes.push(checkboxElm);
 
-      if (this.grid.getColumnIndex(columnId) != null && !this.columns[i].hidden) {
+      if (Utils.isDefined(this.grid.getColumnIndex(columnId)) && !this.columns[i].hidden) {
         checkboxElm.checked = true;
       }
 
@@ -291,7 +291,7 @@ export class SlickColumnPicker {
       }
 
       this.grid.setColumns(visibleColumns);
-      this.onColumnsChanged.notify({ columnId: columnId, showing: isChecked, allColumns: this.columns, columns: this.columns, visibleColumns, grid: this.grid });
+      this.onColumnsChanged.notify({ columnId, showing: isChecked, allColumns: this.columns, columns: this.columns, visibleColumns, grid: this.grid });
     }
   }
 

@@ -15,7 +15,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  */
 
 export const PercentCompleteFormatter: Formatter = (_row, _cell, value) => {
-  if (value == null || value === '') {
+  if (!Utils.isDefined(value) || value === '') {
     return '-';
   } else if (value < 50) {
     return `<span style="color:red;font-weight:bold;">${value}%</span>`;
@@ -25,7 +25,7 @@ export const PercentCompleteFormatter: Formatter = (_row, _cell, value) => {
 };
 
 export const PercentCompleteBarFormatter: Formatter = (_row, _cell, value) => {
-  if (value == null || value === '') {
+  if (!Utils.isDefined(value) || value === '') {
     return '';
   }
 

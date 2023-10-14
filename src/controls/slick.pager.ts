@@ -74,7 +74,7 @@ export class SlickGridPager {
       canGotoLast: !cannotLeaveEditMode && pagingInfo.pageSize !== 0 && pagingInfo.pageNum !== lastPage,
       canGotoPrev: !cannotLeaveEditMode && pagingInfo.pageSize !== 0 && pagingInfo.pageNum > 0,
       canGotoNext: !cannotLeaveEditMode && pagingInfo.pageSize !== 0 && pagingInfo.pageNum < lastPage,
-      pagingInfo: pagingInfo
+      pagingInfo
     };
   }
 
@@ -124,7 +124,7 @@ export class SlickGridPager {
   protected constructPagerUI() {
     // the container might be a string, a jQuery object or a native element
     const container = this.getContainerElement(this._container) as HTMLElement | HTMLElement[];
-    if (!container || ((container as any).jquery && !(container as HTMLElement[])[0])) return;
+    if (!container || ((container as any).jquery && !(container as HTMLElement[])[0])) { return; }
 
     const navElm = document.createElement('span');
     navElm.className = 'slick-pager-nav';
@@ -212,7 +212,7 @@ export class SlickGridPager {
   }
 
   protected updatePager(pagingInfo: PagingInfo) {
-    if (!this._container || ((this._container as any).jquery && !(this._container as any)[0])) return;
+    if (!this._container || ((this._container as any).jquery && !(this._container as any)[0])) { return; }
     const state = this.getNavState();
 
     // remove disabled class on all icons

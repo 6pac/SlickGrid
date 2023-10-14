@@ -25,7 +25,7 @@ export class SlickRemoteModelYahoo {
 
   isDataLoaded(from: number, to: number) {
     for (let i = from; i <= to; i++) {
-      if (this.data[i] == undefined || this.data[i] == null) {
+      if (this.data[i] === undefined || this.data[i] === null) {
         return false;
       }
     }
@@ -59,13 +59,13 @@ export class SlickRemoteModelYahoo {
     let fromPage = Math.floor(from / this.PAGESIZE);
     let toPage = Math.floor(to / this.PAGESIZE);
 
-    while (this.data[fromPage * this.PAGESIZE] !== undefined && fromPage < toPage)
+    while (this.data[fromPage * this.PAGESIZE] !== undefined && fromPage < toPage) {
       fromPage++;
-
-    while (this.data[toPage * this.PAGESIZE] !== undefined && fromPage < toPage)
+    }
+    while (this.data[toPage * this.PAGESIZE] !== undefined && fromPage < toPage) {
       toPage--;
-
-    if (fromPage > toPage || ((fromPage == toPage) && this.data[fromPage * this.PAGESIZE] !== undefined)) {
+    }
+    if (fromPage > toPage || ((fromPage === toPage) && this.data[fromPage * this.PAGESIZE] !== undefined)) {
       // TODO:  look-ahead
       this.onDataLoaded.notify({ from, to });
       return;
@@ -79,15 +79,15 @@ export class SlickRemoteModelYahoo {
       + "%20where%20url%3D%22http%3A%2F%2Frss.news.yahoo.com%2Frss%2Ftopstories%22"
       + "&format=json";
 
-    if (this.h_request != null) {
+    if (this.h_request !== null) {
       clearTimeout(this.h_request);
     }
 
     this.h_request = setTimeout(() => {
-      for (let i = fromPage; i <= toPage; i++)
+      for (let i = fromPage; i <= toPage; i++) {
         this.data[i * this.PAGESIZE] = null; // null indicates a 'requested but not available yet'
-
-      this.onDataLoading.notify({ from: from, to: to });
+      }
+      this.onDataLoading.notify({ from, to });
 
       this.req = window.$.jsonp({
         url,
@@ -179,9 +179,9 @@ export class SlickRemoteModelYahoo {
 
 
   reloadData(from: number, to: number) {
-    for (let i = from; i <= to; i++)
+    for (let i = from; i <= to; i++) {
       delete this.data[i];
-
+    }
     this.ensureData(from, to);
   }
 

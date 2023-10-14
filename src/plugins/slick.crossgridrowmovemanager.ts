@@ -188,7 +188,7 @@ export class SlickCrossGridRowMoveManager {
         fromGrid: this._grid,
         toGrid: this._toGrid,
         rows: dd.selectedRows,
-        insertBefore: insertBefore
+        insertBefore
       };
 
       if (this.onBeforeMoveRows.notify(eventData).getReturnValue() === false) {

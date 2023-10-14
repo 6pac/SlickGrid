@@ -210,7 +210,7 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
         return {
           valid: false,
           msg: options.validationFailedMsg,
-          errors: errors
+          errors
         };
       } else {
         return {

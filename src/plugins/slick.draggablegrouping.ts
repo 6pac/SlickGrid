@@ -300,7 +300,7 @@ export class SlickDraggableGrouping {
         const newGroupingOrder: Column[] = [];
         for (let i = 0, l = sortArray.length; i < l; i++) {
           for (let a = 0, b = this._columnsGroupBy.length; a < b; a++) {
-            if (this._columnsGroupBy[a].id == sortArray[i]) {
+            if (this._columnsGroupBy[a].id === sortArray[i]) {
               newGroupingOrder.push(this._columnsGroupBy[a]);
               break;
             }

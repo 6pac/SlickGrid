@@ -492,8 +492,9 @@ export class SlickRowDetailView {
     this._expandedRows.push(item);
 
     // In the case something went wrong loading it the first time such a scroll of screen before loaded
-    if (!item[`${this._keyPrefix}detailContent`]) item[`${this._keyPrefix}detailViewLoaded`] = false;
-
+    if (!item[`${this._keyPrefix}detailContent`]) {
+      item[`${this._keyPrefix}detailViewLoaded`] = false;
+    }
     // display pre-loading template
     if (!item[`${this._keyPrefix}detailViewLoaded`] || this._options.loadOnce !== true) {
       item[`${this._keyPrefix}detailContent`] = this._options?.preTemplate?.(item);
@@ -552,9 +553,9 @@ export class SlickRowDetailView {
 
       // trigger an event once the post template is finished loading
       this.onAsyncEndUpdate.notify({
-        'grid': this._grid,
-        'item': itemDetail,
-        'itemDetail': itemDetail
+        grid: this._grid,
+        item: itemDetail,
+        itemDetail
       }, e, this);
     });
   }
@@ -633,7 +634,7 @@ export class SlickRowDetailView {
     if (!this.checkExpandableOverride(row, dataContext, grid)) {
       return '';
     } else {
-      if (dataContext[`${this._keyPrefix}collapsed`] == undefined) {
+      if (dataContext[`${this._keyPrefix}collapsed`] === undefined) {
         dataContext[`${this._keyPrefix}collapsed`] = true;
         dataContext[`${this._keyPrefix}sizePadding`] = 0;     //the required number of pading rows
         dataContext[`${this._keyPrefix}height`] = 0;     //the actual height in pixels of the detail field
@@ -737,7 +738,9 @@ export class SlickRowDetailView {
     }
 
     mainContainer.setAttribute('style', 'min-height: ' + item[`${this._keyPrefix}height`] + 'px');
-    if (cellItem) cellItem.setAttribute('style', 'height: ' + outterHeight + 'px; top:' + rowHeight + 'px');
+    if (cellItem) {
+      cellItem.setAttribute('style', 'height: ' + outterHeight + 'px; top:' + rowHeight + 'px');
+    }
 
     const idxParent = this._dataView.getIdxById(item[this._dataViewIdProperty]) ?? 0;
     for (let idx = 1; idx <= item[`${this._keyPrefix}sizePadding`]; idx++) {

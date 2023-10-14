@@ -14,7 +14,7 @@ import type {
   MenuFromCellCallbackArgs,
   MenuOptionItem,
   MenuOptionItemCallbackArgs,
-  Plugin
+  SlickPlugin
 } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
@@ -152,7 +152,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  * @param options {Object} Context Menu Options
  * @class Slick.Plugins.ContextMenu
  */
-export class SlickContextMenu implements Plugin {
+export class SlickContextMenu implements SlickPlugin {
   // --
   // public API
   pluginName = 'ContextMenu' as const;
@@ -255,7 +255,7 @@ export class SlickContextMenu implements Plugin {
       cell: this._currentCell,
       row: this._currentRow,
       grid: this._grid
-    }, e, this).getReturnValue() == false) {
+    }, e, this).getReturnValue() === false) {
       return;
     }
 
@@ -304,7 +304,7 @@ export class SlickContextMenu implements Plugin {
         this._contextMenuProperties,
         optionMenuElm,
         optionItems,
-        { cell: this._currentCell, row: this._currentRow, column: columnDef, dataContext: dataContext, grid: this._grid }
+        { cell: this._currentCell, row: this._currentRow, column: columnDef, dataContext, grid: this._grid }
       );
     }
 
@@ -324,7 +324,7 @@ export class SlickContextMenu implements Plugin {
         this._contextMenuProperties,
         commandMenuElm,
         commandItems,
-        { cell: this._currentCell, row: this._currentRow, column: columnDef, dataContext: dataContext, grid: this._grid }
+        { cell: this._currentCell, row: this._currentRow, column: columnDef, dataContext, grid: this._grid }
       );
     }
 
@@ -335,7 +335,7 @@ export class SlickContextMenu implements Plugin {
       cell: this._currentCell,
       row: this._currentRow,
       grid: this._grid
-    }, e, this).getReturnValue() == false) {
+    }, e, this).getReturnValue() === false) {
       return;
     }
 
@@ -356,7 +356,7 @@ export class SlickContextMenu implements Plugin {
         cell: args?.cell ?? 0,
         row: args?.row ?? 0,
         grid: this._grid,
-      }, e, this).getReturnValue() == false) {
+      }, e, this).getReturnValue() === false) {
         return;
       }
       this._menuElm.remove();

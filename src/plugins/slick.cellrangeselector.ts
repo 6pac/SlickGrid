@@ -1,7 +1,7 @@
 import { SlickEvent as SlickEvent_, SlickEventData, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core';
 import { Draggable as Draggable_ } from '../slick.interactions';
 import { SlickCellRangeDecorator as SlickCellRangeDecorator_ } from './slick.cellrangedecorator';
-import type { CellRangeSelectorOption, DOMMouseOrTouchEvent, DragPosition, DragRange, GridOption, MouseOffsetViewport, OnScrollEventArgs, Plugin } from '../models/index';
+import type { CellRangeSelectorOption, DOMMouseOrTouchEvent, DragPosition, DragRange, GridOption, MouseOffsetViewport, OnScrollEventArgs, SlickPlugin } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -12,7 +12,7 @@ const Draggable = IIFE_ONLY ? Slick.Draggable : Draggable_;
 const SlickCellRangeDecorator = IIFE_ONLY ? Slick.CellRangeDecorator : SlickCellRangeDecorator_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
-export class SlickCellRangeSelector implements Plugin {
+export class SlickCellRangeSelector implements SlickPlugin {
   // --
   // public API
   pluginName = 'CellRangeSelector' as const;
@@ -168,7 +168,7 @@ export class SlickCellRangeSelector implements Plugin {
 
     const start = this._grid.getCellFromPoint(startX, startY);
 
-    dd.range = { start: start, end: {} };
+    dd.range = { start, end: {} };
     this._currentlySelectedRange = dd.range;
     return this._decorator.show(new SlickRange(start.row, start.cell));
   }
@@ -206,8 +206,8 @@ export class SlickCellRangeSelector implements Plugin {
     const viewportOffsetBottom = viewportOffsetTop + this._viewportHeight;
 
     const result = {
-      e: e,
-      dd: dd,
+      e,
+      dd,
       viewport: {
         left: viewportLeft,
         top: viewportTop,
@@ -355,7 +355,7 @@ export class SlickCellRangeSelector implements Plugin {
       const range = new SlickRange(dd.range.start.row ?? 0, dd.range.start.cell ?? 0, end.row, end.cell);
       this._decorator.show(range);
       this.onCellRangeSelecting.notify({
-        range: range
+        range
       });
     }
   }

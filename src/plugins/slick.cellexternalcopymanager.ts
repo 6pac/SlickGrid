@@ -1,4 +1,4 @@
-import type { CellRange, Column, CssStyleHash, ExcelCopyBufferOption, ExternalCopyClipCommand, Plugin } from '../models/index';
+import type { CellRange, Column, CssStyleHash, ExcelCopyBufferOption, ExternalCopyClipCommand, SlickPlugin } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 import { SlickEvent as SlickEvent_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core';
 
@@ -32,7 +32,7 @@ const CLIPBOARD_PASTE_DELAY = 100;
     readOnlyMode: suppresses paste
     headerColumnValueExtractor : option to specify a custom column header value extractor function
 */
-export class SlickCellExternalCopyManager implements Plugin {
+export class SlickCellExternalCopyManager implements SlickPlugin {
   // --
   // public API
   pluginName = 'CellExternalCopyManager' as const;
@@ -212,7 +212,7 @@ export class SlickCellExternalCopyManager implements Plugin {
     let oneCellToMultiple = false;
     let destH = clippedRange.length;
     let destW = clippedRange.length ? clippedRange[0].length : 0;
-    if (clippedRange.length == 1 && clippedRange[0].length == 1 && selectedRange) {
+    if (clippedRange.length === 1 && clippedRange[0].length === 1 && selectedRange) {
       oneCellToMultiple = true;
       destH = selectedRange.toRow - selectedRange.fromRow + 1;
       destW = selectedRange.toCell - selectedRange.fromCell + 1;
@@ -356,7 +356,7 @@ export class SlickCellExternalCopyManager implements Plugin {
   protected handleKeyDown(e: KeyboardEvent): boolean | void {
     let ranges: CellRange[];
     if (!this._grid.getEditorLock().isActive() || this._grid.getOptions().autoEdit) {
-      if (e.which == this.keyCodes.ESC) {
+      if (e.which === this.keyCodes.ESC) {
         if (this._copiedRanges) {
           e.preventDefault();
           this.clearCopySelection();
@@ -373,7 +373,7 @@ export class SlickCellExternalCopyManager implements Plugin {
         if (ranges.length !== 0) {
           this._copiedRanges = ranges;
           this.markCopySelection(ranges);
-          this.onCopyCells.notify({ ranges: ranges });
+          this.onCopyCells.notify({ ranges });
 
           const columns = this._grid.getColumns();
           let clipText = '';

@@ -196,7 +196,7 @@ export class SlickGridMenu {
     this._headerElm!.style.width = `calc(100% - ${gridMenuWidth}px)`;
 
     // if header row is enabled, we need to resize its width also
-    const enableResizeHeaderRow = (this._gridMenuOptions?.resizeOnShowHeaderRow != undefined) ? this._gridMenuOptions.resizeOnShowHeaderRow : this._defaults.resizeOnShowHeaderRow;
+    const enableResizeHeaderRow = (Utils.isDefined(this._gridMenuOptions?.resizeOnShowHeaderRow)) ? this._gridMenuOptions!.resizeOnShowHeaderRow : this._defaults.resizeOnShowHeaderRow;
     if (enableResizeHeaderRow && this._gridOptions.showHeaderRow) {
       const headerRow = document.querySelector<HTMLDivElement>(`.${this._gridUid}.slick-headerrow`);
       if (headerRow) {
@@ -433,7 +433,7 @@ export class SlickGridMenu {
     // notify of the onBeforeMenuShow only works when
     // this mean that we cannot notify when the grid menu is attach to a button event
     if (typeof e.stopPropagation === 'function') {
-      if (this.onBeforeMenuShow.notify(callbackArgs, e, this).getReturnValue() == false) {
+      if (this.onBeforeMenuShow.notify(callbackArgs, e, this).getReturnValue() === false) {
         return;
       }
     }
@@ -453,7 +453,7 @@ export class SlickGridMenu {
       checkboxElm.dataset.columnid = String(this.columns[i].id);
       liElm.appendChild(checkboxElm);
 
-      if (this.grid.getColumnIndex(this.columns[i].id) != null && !this.columns[i].hidden) {
+      if (Utils.isDefined(this.grid.getColumnIndex(this.columns[i].id)) && !this.columns[i].hidden) {
         checkboxElm.checked = true;
       }
 
@@ -562,7 +562,7 @@ export class SlickGridMenu {
     this._isMenuOpen = true;
 
     if (typeof e.stopPropagation === 'function') {
-      if (this.onAfterMenuShow.notify(callbackArgs, e, this).getReturnValue() == false) {
+      if (this.onAfterMenuShow.notify(callbackArgs, e, this).getReturnValue() === false) {
         return;
       }
     }
@@ -581,11 +581,11 @@ export class SlickGridMenu {
       return;
     }
 
-    if (command != null && command != '') {
+    if (Utils.isDefined(command) && command !== '') {
       const callbackArgs = {
         grid: this.grid,
-        command: command,
-        item: item,
+        command,
+        item,
         allColumns: this.columns,
         visibleColumns: this.getVisibleColumns()
       };
@@ -619,7 +619,7 @@ export class SlickGridMenu {
         allColumns: this.columns,
         visibleColumns: this.getVisibleColumns()
       };
-      if (this.onMenuClose.notify(callbackArgs, e, this).getReturnValue() == false) {
+      if (this.onMenuClose.notify(callbackArgs, e, this).getReturnValue() === false) {
         return;
       }
     }

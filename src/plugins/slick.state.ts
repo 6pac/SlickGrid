@@ -1,5 +1,5 @@
 import { SlickEvent as SlickEvent_, Utils as Utils_ } from '../slick.core';
-import type { Column, ColumnSort, Plugin } from '../models/index';
+import type { Column, ColumnSort, SlickPlugin } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -58,7 +58,7 @@ class LocalStorageWrapper {
   }
 
   set(key: string, obj: any) {
-    if (!localStorage) return;
+    if (!localStorage) { return; }
     if (typeof obj !== 'undefined') {
       obj = JSON.stringify(obj);
     }
@@ -66,7 +66,7 @@ class LocalStorageWrapper {
   }
 };
 
-export class SlickState implements Plugin {
+export class SlickState implements SlickPlugin {
   // --
   // public API
   pluginName = 'State' as const;

@@ -140,7 +140,7 @@ export class SlickCellSelectionModel {
 
   protected handleActiveCellChange(_e: Event, args: OnActiveCellChangedEventArgs) {
     this._prevSelectedRow = undefined;
-    if (this._options?.selectActiveCell && args.row != null && args.cell != null) {
+    if (this._options?.selectActiveCell && Utils.isDefined(args.row) && Utils.isDefined(args.cell)) {
       this.setSelectedRanges([new SlickRange(args.row, args.cell)]);
     } else if (!this._options?.selectActiveCell) {
       // clear the previous selection once the cell changes
@@ -166,9 +166,9 @@ export class SlickCellSelectionModel {
     if (active && e.shiftKey && !metaKey && !e.altKey && this.isKeyAllowed(e.key)) {
 
       ranges = this.getSelectedRanges().slice();
-      if (!ranges.length)
+      if (!ranges.length) {
         ranges.push(new SlickRange(active.row, active.cell));
-
+      }
       // keyboard can work with last range only
       last = ranges.pop() as SlickRange_;
 
@@ -181,8 +181,8 @@ export class SlickCellSelectionModel {
       let dCell = last.toCell - last.fromCell;
 
       // walking direction
-      const dirRow = active.row == last.fromRow ? 1 : -1;
-      const dirCell = active.cell == last.fromCell ? 1 : -1;
+      const dirRow = active.row === last.fromRow ? 1 : -1;
+      const dirCell = active.cell === last.fromCell ? 1 : -1;
       const isSingleKeyMove = e.key.startsWith('Arrow');
       let toRow = 0;
 

@@ -354,7 +354,7 @@ export class CustomTooltip {
       right = rect.right;
       bottom = rect.bottom;
     }
-    return { top: top, left: left, bottom: bottom, right: right };
+    return { top, left, bottom, right };
   }
 
   /**

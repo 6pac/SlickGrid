@@ -41,9 +41,12 @@
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_", "destructuredArrayIgnorePattern": "^_" }],
     "@typescript-eslint/semi": "error",
+    "curly": "error",
     "cypress/no-assigning-return-values": "off",
     "cypress/no-unnecessary-waiting": "off",
     "cypress/unsafe-to-chain-command": "off",
+    "eqeqeq": "error",
+    "object-shorthand": "error",
     "no-cond-assign": "off",
     "no-prototype-builtins": [0],
     "semi": "off"
