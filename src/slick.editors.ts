@@ -1,5 +1,5 @@
 import type { Editor, EditorArguments, EditorValidationResult, ElementPosition } from './models/index';
-import { isDefined, keyCode as keyCode_, Utils as Utils_ } from './slick.core';
+import { keyCode as keyCode_, Utils as Utils_ } from './slick.core';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;
@@ -86,7 +86,7 @@ export class TextEditor implements Editor {
   }
 
   isValueChanged() {
-    return (!(this.input.value === '' && !isDefined(this.defaultValue))) && (this.input.value !== this.defaultValue);
+    return (!(this.input.value === '' && !Utils.isDefined(this.defaultValue))) && (this.input.value !== this.defaultValue);
   }
 
   validate() {
@@ -171,7 +171,7 @@ export class IntegerEditor implements Editor {
   }
 
   isValueChanged() {
-    return (!(this.input.value === '' && !isDefined(this.defaultValue))) && (this.input.value !== this.defaultValue);
+    return (!(this.input.value === '' && !Utils.isDefined(this.defaultValue))) && (this.input.value !== this.defaultValue);
   }
 
   validate() {
@@ -256,7 +256,7 @@ export class FloatEditor implements Editor {
   getDecimalPlaces() {
     // returns the number of fixed decimal places or null
     let rtn: number | undefined = this.args.column.editorFixedDecimalPlaces;
-    if (!isDefined(rtn)) {
+    if (!Utils.isDefined(rtn)) {
       rtn = FloatEditor.DefaultDecimalPlaces;
     }
     return (!rtn && rtn !== 0 ? null : rtn);
@@ -302,7 +302,7 @@ export class FloatEditor implements Editor {
   }
 
   isValueChanged() {
-    return (!(this.input.value === '' && !isDefined(this.defaultValue))) && (this.input.value !== this.defaultValue);
+    return (!(this.input.value === '' && !Utils.isDefined(this.defaultValue))) && (this.input.value !== this.defaultValue);
   }
 
   validate() {
@@ -425,7 +425,7 @@ export class FlatpickrEditor implements Editor {
   }
 
   isValueChanged() {
-    return (!(this.input.value === '' && !isDefined(this.defaultValue))) && (this.input.value !== this.defaultValue);
+    return (!(this.input.value === '' && !Utils.isDefined(this.defaultValue))) && (this.input.value !== this.defaultValue);
   }
 
   validate() {
@@ -690,7 +690,7 @@ export class PercentCompleteEditor implements Editor {
   };
 
   isValueChanged() {
-    return (!(this.input.value === '' && !isDefined(this.defaultValue))) && ((parseInt(this.input.value as any, 10) || 0) !== this.defaultValue);
+    return (!(this.input.value === '' && !Utils.isDefined(this.defaultValue))) && ((parseInt(this.input.value as any, 10) || 0) !== this.defaultValue);
   };
 
   validate(): EditorValidationResult {
@@ -858,7 +858,7 @@ export class LongTextEditor implements Editor {
   };
 
   isValueChanged() {
-    return (!(this.input.value === '' && !isDefined(this.defaultValue))) && (this.input.value !== this.defaultValue);
+    return (!(this.input.value === '' && !Utils.isDefined(this.defaultValue))) && (this.input.value !== this.defaultValue);
   };
 
   validate() {

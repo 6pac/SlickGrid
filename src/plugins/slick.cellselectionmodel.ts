@@ -1,4 +1,4 @@
-import { isDefined, SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core';
+import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core';
 import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector';
 import type { CellRange, OnActiveCellChangedEventArgs } from '../models/index';
 import type { SlickDataView } from '../slick.dataview';
@@ -140,7 +140,7 @@ export class SlickCellSelectionModel {
 
   protected handleActiveCellChange(_e: Event, args: OnActiveCellChangedEventArgs) {
     this._prevSelectedRow = undefined;
-    if (this._options?.selectActiveCell && isDefined(args.row) && isDefined(args.cell)) {
+    if (this._options?.selectActiveCell && Utils.isDefined(args.row) && Utils.isDefined(args.cell)) {
       this.setSelectedRanges([new SlickRange(args.row, args.cell)]);
     } else if (!this._options?.selectActiveCell) {
       // clear the previous selection once the cell changes

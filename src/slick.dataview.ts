@@ -15,7 +15,6 @@ import type {
   PagingInfo,
 } from './models/index';
 import {
-  isDefined,
   SlickEvent as SlickEvent_,
   SlickEventData as SlickEventData_,
   SlickGroup as SlickGroup_,
@@ -272,12 +271,12 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   /** Set Paging Options */
   setPagingOptions(args: Partial<PagingInfo>) {
     if (this.onBeforePagingInfoChanged.notify(this.getPagingInfo(), null, this).getReturnValue() !== false) {
-      if (isDefined(args.pageSize)) {
+      if (Utils.isDefined(args.pageSize)) {
         this.pagesize = args.pageSize;
         this.pagenum = this.pagesize ? Math.min(this.pagenum, Math.max(0, Math.ceil(this.totalRows / this.pagesize) - 1)) : 0;
       }
 
-      if (isDefined(args.pageNum)) {
+      if (Utils.isDefined(args.pageNum)) {
         this.pagenum = Math.min(args.pageNum, Math.max(0, Math.ceil(this.totalRows / this.pagesize) - 1));
       }
 
@@ -451,7 +450,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     this.ensureRowsByIdCache();
     for (let i = 0, l = itemArray.length; i < l; i++) {
       const row = this.rowsById?.[itemArray[i][this.idProperty as keyof TData] as DataIdType];
-      if (isDefined(row)) {
+      if (Utils.isDefined(row)) {
         rows[rows.length] = row;
       }
     }
@@ -464,7 +463,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     this.ensureRowsByIdCache();
     for (let i = 0, l = idArray.length; i < l; i++) {
       const row = this.rowsById?.[idArray[i]];
-      if (isDefined(row)) {
+      if (Utils.isDefined(row)) {
         rows[rows.length] = row;
       }
     }
@@ -502,7 +501,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     if (id !== item[this.idProperty as keyof TData]) {
       // make sure the new id is unique:
       const newId = item[this.idProperty as keyof TData] as DataIdType;
-      if (!isDefined(newId)) {
+      if (!Utils.isDefined(newId)) {
         throw new Error('[SlickGrid DataView] Cannot update item to associate with a null id');
       }
       if (this.idxById.has(newId)) {
@@ -753,7 +752,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   protected expandCollapseAllGroups(level?: number, collapse?: boolean) {
-    if (!isDefined(level)) {
+    if (!Utils.isDefined(level)) {
       for (let i = 0; i < this.groupingInfos.length; i++) {
         this.toggledGroupsByLevel[i] = {};
         this.groupingInfos[i].collapsed = collapse;
@@ -1518,7 +1517,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
         const newHash: CssStyleHash = {};
         for (const id in hashById) {
           const row = this.rowsById?.[id];
-          if (isDefined(row)) {
+          if (Utils.isDefined(row)) {
             newHash[row] = hashById[id];
           }
         }

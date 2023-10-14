@@ -580,10 +580,6 @@ export class BindingEventService {
   }
 }
 
-export function isDefined<T>(value: T | undefined | null): value is T {
-  return <T>value !== undefined && <T>value !== null;
-}
-
 export class Utils {
   // jQuery's extend
   private static getProto = Object.getPrototypeOf;
@@ -684,7 +680,7 @@ export class Utils {
       i--;
     }
     for (; i < length; i++) {
-      if (isDefined(options = args[i])) {
+      if (Utils.isDefined(options = args[i])) {
         for (name in options) {
           copy = options[name];
           if (name === '__proto__' || target === copy) {
@@ -768,6 +764,10 @@ export class Utils {
       }
     }
     return size;
+  }
+
+  public static isDefined<T>(value: T | undefined | null): value is T {
+    return <T>value !== undefined && <T>value !== null;
   }
 
   public static getElementProp(elm: HTMLElement & { getComputedStyle?: () => CSSStyleDeclaration }, property: string) {

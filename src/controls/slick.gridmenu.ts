@@ -1,5 +1,5 @@
 import type { Column, DOMMouseOrTouchEvent, GridMenuCommandItemCallbackArgs, GridMenuEventWithElementCallbackArgs, GridMenuItem, GridMenuOption, GridOption, onGridMenuColumnsChangedCallbackArgs } from '../models/index';
-import { BindingEventService as BindingEventService_, Event as SlickEvent_, isDefined, Utils as Utils_ } from '../slick.core';
+import { BindingEventService as BindingEventService_, Event as SlickEvent_, Utils as Utils_ } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -196,7 +196,7 @@ export class SlickGridMenu {
     this._headerElm!.style.width = `calc(100% - ${gridMenuWidth}px)`;
 
     // if header row is enabled, we need to resize its width also
-    const enableResizeHeaderRow = (isDefined(this._gridMenuOptions?.resizeOnShowHeaderRow)) ? this._gridMenuOptions!.resizeOnShowHeaderRow : this._defaults.resizeOnShowHeaderRow;
+    const enableResizeHeaderRow = (Utils.isDefined(this._gridMenuOptions?.resizeOnShowHeaderRow)) ? this._gridMenuOptions!.resizeOnShowHeaderRow : this._defaults.resizeOnShowHeaderRow;
     if (enableResizeHeaderRow && this._gridOptions.showHeaderRow) {
       const headerRow = document.querySelector<HTMLDivElement>(`.${this._gridUid}.slick-headerrow`);
       if (headerRow) {
@@ -453,7 +453,7 @@ export class SlickGridMenu {
       checkboxElm.dataset.columnid = String(this.columns[i].id);
       liElm.appendChild(checkboxElm);
 
-      if (isDefined(this.grid.getColumnIndex(this.columns[i].id)) && !this.columns[i].hidden) {
+      if (Utils.isDefined(this.grid.getColumnIndex(this.columns[i].id)) && !this.columns[i].hidden) {
         checkboxElm.checked = true;
       }
 
@@ -581,7 +581,7 @@ export class SlickGridMenu {
       return;
     }
 
-    if (!isDefined(command) && command !== '') {
+    if (!Utils.isDefined(command) && command !== '') {
       const callbackArgs = {
         grid: this.grid,
         command,
