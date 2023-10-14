@@ -636,13 +636,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (!this._options.showTopPanel) {
       this._topPanelScrollers.forEach((scroller) => {
         Utils.hide(scroller);
-      })
+      });
     }
 
     if (!this._options.showHeaderRow) {
       this._headerRowScroller.forEach((scroller) => {
         Utils.hide(scroller);
-      })
+      });
     }
 
     // Append the viewport containers
@@ -683,7 +683,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     this._headers.forEach((el) => {
       Utils.width(el, this.getHeadersWidth());
-    })
+    });
 
     Utils.width(this._headerRowSpacerL, this.getCanvasWidth() + this.scrollbarDimensions.width);
     Utils.width(this._headerRowSpacerR, this.getCanvasWidth() + this.scrollbarDimensions.width);
@@ -748,7 +748,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
               return;
             }
           });
-        })
+        });
       }
 
       this.setFrozenOptions();
@@ -936,7 +936,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /** Get the Viewport DOM node element */
-  getViewportNode(columnIdOrIdx: number | string, rowIndex: number) {
+  getViewportNode(columnIdOrIdx?: number | string, rowIndex?: number) {
     return this._getContainerElement(this.getViewports(), columnIdOrIdx, rowIndex);
   }
 
@@ -1278,7 +1278,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   /**
    * Updates an existing column definition and a corresponding header DOM element with the new title and tooltip.
    * @param {Number|String} columnId Column id.
-   * @param {String} title New column name.
+   * @param {String} [title] New column name.
    * @param {String} [toolTip] New column tooltip.
    */
   updateColumnHeader(columnId: number | string, title?: string, toolTip?: string) {
@@ -1330,8 +1330,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Get a specific Header Column DOM element
-   * @param {Number|String} [columnIdOrIdx] - column Id or index
+   * Get a specific Header Column DOM element by its column Id or index
+   * @param {Number|String} columnIdOrIdx - column Id or index
    */
   getHeaderColumn(columnIdOrIdx: number | string) {
     const idx = (typeof columnIdOrIdx === 'number' ? columnIdOrIdx : this.getColumnIndex(columnIdOrIdx));
@@ -1367,8 +1367,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Get Header Row Column DOM element by its column Id
-   * @param {Number|String} [columnIdOrIdx] - column Id or index
+   * Get Header Row Column DOM element by its column Id or index
+   * @param {Number|String} columnIdOrIdx - column Id or index
    */
   getHeaderRowColumn(columnIdOrIdx: number | string) {
     let idx = (typeof columnIdOrIdx === 'number' ? columnIdOrIdx : this.getColumnIndex(columnIdOrIdx));
@@ -1388,7 +1388,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return headerRowTarget.children[idx] as HTMLDivElement;
   }
 
-  /** Get the Footer Row Column DOM element */
+  /**
+   * Get the Footer Row Column DOM element by its column Id or index
+   * @param {Number|String} columnIdOrIdx - column Id or index
+   */
   getFooterRowColumn(columnIdOrIdx: number | string) {
     let idx = (typeof columnIdOrIdx === 'number' ? columnIdOrIdx : this.getColumnIndex(columnIdOrIdx));
     let footerRowTarget: HTMLDivElement;
@@ -1456,7 +1459,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   protected createColumnHeaders() {
     this._headers.forEach((header) => {
-      const columnElements = header.querySelectorAll('.slick-header-column')
+      const columnElements = header.querySelectorAll('.slick-header-column');
       columnElements.forEach((column) => {
         const columnDef = Utils.storage.get(column, 'column');
         if (columnDef) {
@@ -1467,7 +1470,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           });
         }
       });
-    })
+    });
 
     Utils.emptyElement(this._headerL);
     Utils.emptyElement(this._headerR);
@@ -1595,7 +1598,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (this._options.createFooterRow && this._options.showFooterRow) {
         const footerRowTarget = this.hasFrozenColumns() ? ((i <= this._options.frozenColumn!) ? this._footerRow[0] : this._footerRow[1]) : this._footerRow[0];
         const footerRowCell = Utils.createDomElement('div', { className: `ui-state-default slick-state-default slick-footerrow-column l${i} r${i}` }, footerRowTarget);
-        Utils.storage.put(footerRowCell, 'column', m)
+        Utils.storage.put(footerRowCell, 'column', m);
 
         this.trigger(this.onFooterRowCellRendered, {
           node: footerRowCell,
@@ -1716,7 +1719,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected currentPositionInHeader(id: number | string) {
     let currentPosition = 0;
     this._headers.forEach((header) => {
-      const columnElements = header.querySelectorAll('.slick-header-column')
+      const columnElements = header.querySelectorAll('.slick-header-column');
       columnElements.forEach((column, i) => {
         if (column.id == id) {
           currentPosition = i;
@@ -1947,7 +1950,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
             const targetEvent = e.touches ? e.touches[0] : e;
             this.columnResizeDragging = true;
             let actualMinWidth;
-            const d = Math.min(maxPageX, Math.max(minPageX, targetEvent.pageX)) - pageX
+            const d = Math.min(maxPageX, Math.max(minPageX, targetEvent.pageX)) - pageX;
             let x;
             let newCanvasWidthL = 0, newCanvasWidthR = 0;
             const viewportWidth = this.viewportHasVScroll ? this.viewportW - (this.scrollbarDimensions?.width ?? 0) : this.viewportW;
@@ -2409,7 +2412,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     if (this._footerRow) {
       this._footerRow.forEach((footer) => {
-        this._bindingEventService.unbindByEventName(footer, 'contextmenu')
+        this._bindingEventService.unbindByEventName(footer, 'contextmenu');
         this._bindingEventService.unbindByEventName(footer, 'click');
       });
     }
@@ -3123,7 +3126,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /**
    * Returns the index of a column with a given id. Since columns can be reordered by the user, this can be used to get the column definition independent of the order:
-   * @param id A column id.
+   * @param {String | Number} id A column id.
    */
   getColumnIndex(id: number | string): number {
     return this.columnsById[id];
@@ -3174,8 +3177,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /**
    * Accepts a columnId string and an ascending boolean. Applies a sort glyph in either ascending or descending form to the header of the column. Note that this does not actually sort the column. It only adds the sort glyph to the header.
-   * @param columnId
-   * @param ascending
+   * @param {String | Number} columnId
+   * @param {Boolean} ascending
    */
   setSortColumn(columnId: number | string, ascending: boolean) {
     this.setSortColumns([{ columnId, sortAsc: ascending }]);
@@ -3349,7 +3352,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /**
    * Sets grid columns. Column headers will be recreated and all rendered rows will be removed. To rerender the grid (if necessary), call render().
-   * @param columnDefinitions An array of column definitions.
+   * @param {Column[]} columnDefinitions An array of column definitions.
    */
   setColumns(columnDefinitions: C[]) {
     this.trigger(this.onBeforeSetColumns, { previousColumns: this.columns, newColumns: columnDefinitions, grid: this });
@@ -3521,7 +3524,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /**
    * Returns the databinding item at a given position.
-   * @param index Item row index.
+   * @param {Number} index Item row index.
    */
   getDataItem(i: number): TData {
     if ((this.data as CustomDataView).getItem) {
@@ -3630,7 +3633,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return Math.floor((y + this.offset) / this._options.rowHeight!);
   }
 
-  /** Scroll to an Y position in the grid */
+  /**
+   * Scroll to an Y position in the grid
+   * @param {Number} y
+   */
   scrollTo(y: number) {
     y = Math.max(y, 0);
     y = Math.min(y, (this.th || 0) - (Utils.height(this._viewportScrollContainerY) as number) + ((this.viewportHasHScroll || this.hasFrozenColumns()) ? (this.scrollbarDimensions?.height ?? 0) : 0));
@@ -3887,7 +3893,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (this._options.enableAsyncPostRenderCleanup) { this.startPostProcessingCleanup(); }
   }
 
-  /** Invalidate a specific set of row numbers */
+  /**
+   * Invalidate a specific set of row numbers
+   * @param {Number[]} rows
+   */
   invalidateRows(rows: number[]) {
     if (!rows || !rows.length) {
       return;
@@ -3905,8 +3914,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (this._options.enableAsyncPostRenderCleanup) { this.startPostProcessingCleanup(); }
   }
 
-  /** Invalidate a specific row number */
-  invalidateRow(row?: number) {
+  /**
+   * Invalidate a specific row number
+   * @param {Number} row
+   */
+  invalidateRow(row: number) {
     if (!row && row !== 0) { return; }
     this.invalidateRows([row]);
   }
@@ -4095,7 +4107,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return this.viewportW;
   }
 
-  /** Execute a Resize of the Canvas */
+  /** Execute a Resize of the Grid Canvas */
   resizeCanvas() {
     if (!this.initialized) { return; }
     this.paneTopH = 0;
@@ -4202,7 +4214,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.render();
   }
 
-  /** Update paging information status from the View */
+  /**
+   * Update paging information status from the View
+   * @param {PagingInfo} pagingInfo
+   */
   updatePagingStatusFromView(pagingInfo: PagingInfo) {
     this.pagingActive = (pagingInfo.pageSize !== 0);
     this.pagingIsLastPage = (pagingInfo.pageNum == pagingInfo.totalPages - 1);
@@ -4838,17 +4853,17 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       } else {
         queued = true;
       }
-    }
+    };
 
     const dequeue = () => {
       queued = false;
-    }
+    };
 
     const blockAndExecute = () => {
       blocked = true;
       setTimeout(unblock, minPeriod_ms);
       action.call(this);
-    }
+    };
 
     const unblock = () => {
       if (queued) {
@@ -4857,7 +4872,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       } else {
         blocked = false;
       }
-    }
+    };
 
     return {
       enqueue: enqueue.bind(this),
@@ -4960,8 +4975,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /**
    * Adds an "overlay" of CSS classes to cell DOM elements. SlickGrid can have many such overlays associated with different keys and they are frequently used by plugins. For example, SlickGrid uses this method internally to decorate selected cells with selectedCellCssClass (see options).
-   * @param key A unique key you can use in calls to setCellCssStyles and removeCellCssStyles. If a hash with that key has already been set, an exception will be thrown.
-   * @param hash A hash of additional cell CSS classes keyed by row number and then by column id. Multiple CSS classes can be specified and separated by space.
+   * @param {String} key A unique key you can use in calls to setCellCssStyles and removeCellCssStyles. If a hash with that key has already been set, an exception will be thrown.
+   * @param {CssStyleHash} hash A hash of additional cell CSS classes keyed by row number and then by column id. Multiple CSS classes can be specified and separated by space.
    * @example
    * `{
    * 	 0: { number_column: SlickEvent; title_column: SlickEvent;	},
@@ -4980,7 +4995,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /**
    * Removes an "overlay" of CSS classes from cell DOM elements. See setCellCssStyles for more.
-   * @param key A string key.
+   * @param {String} key A string key.
    */
   removeCellCssStyles(key: string) {
     if (!this.cellCssClasses[key]) {
@@ -5018,9 +5033,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /**
    * Flashes the cell twice by toggling the CSS class 4 times.
-   * @param {number} row A row index.
-   * @param {number} cell A column index.
-   * @param {number} [speed] (optional) - The milliseconds delay between the toggling calls. Defaults to 100 ms.
+   * @param {Number} row A row index.
+   * @param {Number} cell A column index.
+   * @param {Number} [speed] (optional) - The milliseconds delay between the toggling calls. Defaults to 100 ms.
    */
   flashCell(row: number, cell: number, speed?: number) {
     speed = speed || 250;
@@ -5038,7 +5053,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         }
         toggleCellClass(cellNode, times - 1);
       }, speed);
-    }
+    };
 
     if (this.rowsCache[row]) {
       const cellNode = this.getCellNode(row, cell);
@@ -5449,8 +5464,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /**
    * Returns an object representing information about a cell's position. All coordinates are absolute and take into consideration the visibility and scrolling position of all ancestors.
-   * @param row A row number.
-   * @param cell A column number.
+   * @param {Number} row - A row number.
+   * @param {Number} cell - A column number.
    */
   getCellNodeBox(row: number, cell: number) {
     if (!this.cellExists(row, cell)) {

@@ -22,7 +22,7 @@ export const PercentCompleteFormatter: Formatter = (_row, _cell, value) => {
   } else {
     return `<span style="color:green">${value}%</span>`;
   }
-}
+};
 
 export const PercentCompleteBarFormatter: Formatter = (_row, _cell, value) => {
   if (value == null || value === '') {
@@ -40,19 +40,19 @@ export const PercentCompleteBarFormatter: Formatter = (_row, _cell, value) => {
   }
 
   return `<span class="percent-complete-bar" style="background:${color};width:${value}%" title="${value}%"></span>`;
-}
+};
 
 export const YesNoFormatter: Formatter = (_row, _cell, value) => {
   return value ? 'Yes' : 'No';
-}
+};
 
 export const CheckboxFormatter: Formatter = (_row, _cell, value) => {
   return `<span class="sgi sgi-checkbox-${value ? 'intermediate' : 'blank-outline'}"></span>`;
-}
+};
 
 export const CheckmarkFormatter: Formatter = (_row, _cell, value) => {
   return value ? `<span class="sgi sgi-check"></span>` : '';
-}
+};
 
 export const Formatters = {
   PercentComplete: PercentCompleteFormatter,

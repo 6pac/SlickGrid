@@ -287,7 +287,7 @@ export class SlickRowDetailView {
 
   /** Calculate when expanded rows become out of view range */
   protected calculateOutOfRangeViews() {
-    let scrollDir = ''
+    let scrollDir = '';
     if (this._grid) {
       const renderedRange = this._grid.getRenderedRange();
       // Only check if we have expanded rows

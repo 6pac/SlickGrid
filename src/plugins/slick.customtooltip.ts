@@ -89,7 +89,7 @@ export class CustomTooltip {
   protected _cellNodeElm?: HTMLDivElement;
   protected _dataView?: SlickDataView | null;
   protected _grid!: SlickGrid;
-  protected _gridOptions!: GridOption
+  protected _gridOptions!: GridOption;
   protected _tooltipElm?: HTMLDivElement;
   protected _options!: CustomTooltipOption;
   protected _defaults: CustomTooltipOption = {
@@ -226,7 +226,7 @@ export class CustomTooltip {
                 this._cancellablePromise = this.cancellablePromise(asyncProcess);
                 this._cancellablePromise.promise
                   .then((asyncResult) => {
-                    this.asyncProcessCallback(asyncResult, cell, value, columnDef, item)
+                    this.asyncProcessCallback(asyncResult, cell, value, columnDef, item);
                   })
                   .catch(function (error) {
                     // we will throw back any errors, unless it's a cancelled promise which in that case will be disregarded (thrown by the promise wrapper cancel() call)

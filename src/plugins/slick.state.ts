@@ -43,7 +43,7 @@ class LocalStorageWrapper {
     return new Promise<T>((resolve, reject) => {
       if (!localStorage) {
         reject('missing localStorage');
-        return
+        return;
       }
       try {
         const d = localStorage.getItem(key);
@@ -176,7 +176,7 @@ export class SlickState implements Plugin {
         })
         .catch((e) => {
           reject(e);
-        })
+        });
     });
   }
 

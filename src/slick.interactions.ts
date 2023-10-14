@@ -141,8 +141,10 @@ export function MouseWheel(options: MouseWheelOption) {
 
   // copy over the same event handler code used in jquery.mousewheel
   function wheelHandler(event: WheelEvent & { axis: number; wheelDelta: number; wheelDeltaX: number; wheelDeltaY: number; HORIZONTAL_AXIS: number; }) {
-    const orgEvent = event || window.event
-    let delta = 0, deltaX = 0, deltaY = 0;
+    const orgEvent = event || window.event;
+    let delta = 0;
+    let deltaX = 0;
+    let deltaY = 0;
 
     // Old school scrollwheel delta
     if (orgEvent.wheelDelta) {

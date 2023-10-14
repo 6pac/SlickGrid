@@ -26,10 +26,6 @@
   },
   "rules": {
     "@typescript-eslint/ban-ts-comment": "off",
-    "@typescript-eslint/no-empty-function": "off",
-    "@typescript-eslint/no-explicit-any": "off",
-    "@typescript-eslint/no-non-null-assertion": "off",
-    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_", "destructuredArrayIgnorePattern": "^_" }],
     "@typescript-eslint/ban-types": [
       "error",
       {
@@ -40,10 +36,16 @@
         "extendDefaults": true
       }
     ],
+    "@typescript-eslint/no-empty-function": "off",
+    "@typescript-eslint/no-explicit-any": "off",
+    "@typescript-eslint/no-non-null-assertion": "off",
+    "@typescript-eslint/no-unused-vars": ["error", { "argsIgnorePattern": "^_", "destructuredArrayIgnorePattern": "^_" }],
+    "@typescript-eslint/semi": "error",
     "cypress/no-assigning-return-values": "off",
     "cypress/no-unnecessary-waiting": "off",
     "cypress/unsafe-to-chain-command": "off",
     "no-cond-assign": "off",
-    "no-prototype-builtins": [0]
+    "no-prototype-builtins": [0],
+    "semi": "off"
   }
 }
