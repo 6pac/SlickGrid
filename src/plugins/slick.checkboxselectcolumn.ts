@@ -63,7 +63,7 @@ export class SlickCheckboxSelectColumn<T = any> implements Plugin {
     if (this._isUsingDataView && this._dataView && this._options.applySelectOnAllPages) {
       this._handler
         .subscribe(this._dataView.onSelectedRowIdsChanged, this.handleDataViewSelectedIdsChanged.bind(this))
-        .subscribe(this._dataView.onPagingInfoChanged, this.handleDataViewSelectedIdsChanged.bind(this))
+        .subscribe(this._dataView.onPagingInfoChanged, this.handleDataViewSelectedIdsChanged.bind(this));
     }
 
     if (!this._options.hideInFilterHeaderRow) {

@@ -636,13 +636,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (!this._options.showTopPanel) {
       this._topPanelScrollers.forEach((scroller) => {
         Utils.hide(scroller);
-      })
+      });
     }
 
     if (!this._options.showHeaderRow) {
       this._headerRowScroller.forEach((scroller) => {
         Utils.hide(scroller);
-      })
+      });
     }
 
     // Append the viewport containers
@@ -683,7 +683,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     this._headers.forEach((el) => {
       Utils.width(el, this.getHeadersWidth());
-    })
+    });
 
     Utils.width(this._headerRowSpacerL, this.getCanvasWidth() + this.scrollbarDimensions.width);
     Utils.width(this._headerRowSpacerR, this.getCanvasWidth() + this.scrollbarDimensions.width);
@@ -748,7 +748,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
               return;
             }
           });
-        })
+        });
       }
 
       this.setFrozenOptions();
@@ -1459,7 +1459,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   protected createColumnHeaders() {
     this._headers.forEach((header) => {
-      const columnElements = header.querySelectorAll('.slick-header-column')
+      const columnElements = header.querySelectorAll('.slick-header-column');
       columnElements.forEach((column) => {
         const columnDef = Utils.storage.get(column, 'column');
         if (columnDef) {
@@ -1470,7 +1470,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           });
         }
       });
-    })
+    });
 
     Utils.emptyElement(this._headerL);
     Utils.emptyElement(this._headerR);
@@ -1598,7 +1598,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (this._options.createFooterRow && this._options.showFooterRow) {
         const footerRowTarget = this.hasFrozenColumns() ? ((i <= this._options.frozenColumn!) ? this._footerRow[0] : this._footerRow[1]) : this._footerRow[0];
         const footerRowCell = Utils.createDomElement('div', { className: `ui-state-default slick-state-default slick-footerrow-column l${i} r${i}` }, footerRowTarget);
-        Utils.storage.put(footerRowCell, 'column', m)
+        Utils.storage.put(footerRowCell, 'column', m);
 
         this.trigger(this.onFooterRowCellRendered, {
           node: footerRowCell,
@@ -1719,7 +1719,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected currentPositionInHeader(id: number | string) {
     let currentPosition = 0;
     this._headers.forEach((header) => {
-      const columnElements = header.querySelectorAll('.slick-header-column')
+      const columnElements = header.querySelectorAll('.slick-header-column');
       columnElements.forEach((column, i) => {
         if (column.id == id) {
           currentPosition = i;
@@ -1950,7 +1950,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
             const targetEvent = e.touches ? e.touches[0] : e;
             this.columnResizeDragging = true;
             let actualMinWidth;
-            const d = Math.min(maxPageX, Math.max(minPageX, targetEvent.pageX)) - pageX
+            const d = Math.min(maxPageX, Math.max(minPageX, targetEvent.pageX)) - pageX;
             let x;
             let newCanvasWidthL = 0, newCanvasWidthR = 0;
             const viewportWidth = this.viewportHasVScroll ? this.viewportW - (this.scrollbarDimensions?.width ?? 0) : this.viewportW;
@@ -2412,7 +2412,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     if (this._footerRow) {
       this._footerRow.forEach((footer) => {
-        this._bindingEventService.unbindByEventName(footer, 'contextmenu')
+        this._bindingEventService.unbindByEventName(footer, 'contextmenu');
         this._bindingEventService.unbindByEventName(footer, 'click');
       });
     }
@@ -3918,7 +3918,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * Invalidate a specific row number
    * @param {Number} row
    */
-  invalidateRow(row?: number) {
+  invalidateRow(row: number) {
     if (!row && row !== 0) { return; }
     this.invalidateRows([row]);
   }
@@ -4853,17 +4853,17 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       } else {
         queued = true;
       }
-    }
+    };
 
     const dequeue = () => {
       queued = false;
-    }
+    };
 
     const blockAndExecute = () => {
       blocked = true;
       setTimeout(unblock, minPeriod_ms);
       action.call(this);
-    }
+    };
 
     const unblock = () => {
       if (queued) {
@@ -4872,7 +4872,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       } else {
         blocked = false;
       }
-    }
+    };
 
     return {
       enqueue: enqueue.bind(this),
@@ -5053,7 +5053,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         }
         toggleCellClass(cellNode, times - 1);
       }, speed);
-    }
+    };
 
     if (this.rowsCache[row]) {
       const cellNode = this.getCellNode(row, cell);

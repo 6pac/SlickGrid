@@ -298,7 +298,7 @@ export class SlickContextMenu implements Plugin {
         this._bindingEventService.bind(closeButtonElm, 'click', this.handleCloseButtonClicked.bind(this) as EventListener);
         this._menuElm.appendChild(closeButtonElm);
       }
-      this._menuElm.appendChild(optionMenuElm)
+      this._menuElm.appendChild(optionMenuElm);
 
       this.populateOptionItems(
         this._contextMenuProperties,

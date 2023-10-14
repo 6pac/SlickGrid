@@ -1018,7 +1018,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       fn.name = this.setFunctionName(fn, fnName);
       return fn;
     } else {
-      return function noAccumulator() { }
+      return function noAccumulator() { };
     }
   }
 
@@ -1332,7 +1332,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
           this.selectedRowIds = rowIds;
         }
       }
-    }
+    };
 
     const update = () => {
       if ((this.selectedRowIds || []).length > 0 && !inHandler) {
@@ -1354,7 +1354,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
         grid.setSelectedRows(selectedRows);
         inHandler = false;
       }
-    }
+    };
 
     grid.onSelectedRowsChanged.subscribe((_e: Event, args: { rows: number[]; }) => {
       if (!inHandler) {
@@ -1504,7 +1504,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
         const id = this.rows[row as any][this.idProperty as keyof TData];
         hashById[id] = hash[row];
       }
-    }
+    };
 
     // since this method can be called after the cell styles have been set,
     // get the existing ones right away
@@ -1524,7 +1524,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
         grid.setCellCssStyles(key, newHash);
         inHandler = false;
       }
-    }
+    };
 
     grid.onCellCssStylesChanged.subscribe((_e, args) => {
       if (inHandler) { return; }

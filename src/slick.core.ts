@@ -249,16 +249,16 @@ export class SlickRange {
     this.fromCell = Math.min(fromCell, toCell as number);
 
     /**
-     * @property toRow
-     * @type {Integer}
-     */
-    this.toRow = Math.max(fromRow, toRow as number);
-
-    /**
      * @property toCell
      * @type {Integer}
      */
     this.toCell = Math.max(fromCell, toCell as number);
+
+    /**
+     * @property toRow
+     * @type {Integer}
+     */
+    this.toRow = Math.max(fromRow, toRow as number);
   }
 
 
@@ -611,7 +611,7 @@ export class Utils {
       }
       return ret;
     }
-  }
+  };
 
   public static isFunction(obj: any) {
     return typeof obj === 'function' && typeof obj.nodeType !== 'number' &&
@@ -877,7 +877,7 @@ export class Utils {
 
   public static show(el: HTMLElement | HTMLElement[], type = '') {
     if (Array.isArray(el)) {
-      el.forEach((e) => e.style.display = type)
+      el.forEach((e) => e.style.display = type);
     } else {
       el.style.display = type;
     }
@@ -998,7 +998,7 @@ const SlickCore = {
     TextOnly: 'CANV',
     HTML: 'HTML'
   }
-}
+};
 
 export const {
   EditorLock, Event, EventData, EventHandler, Group, GroupTotals, NonDataRow, Range,

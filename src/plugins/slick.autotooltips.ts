@@ -16,7 +16,7 @@ export class SlickAutoTooltips implements Plugin {
   // --
   // protected props
   protected _grid!: SlickGrid;
-  protected _options?: AutoTooltipOption
+  protected _options?: AutoTooltipOption;
   protected _defaults: AutoTooltipOption = {
     enableForCells: true,
     enableForHeaderCells: false,

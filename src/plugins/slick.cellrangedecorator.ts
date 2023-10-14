@@ -51,7 +51,7 @@ export class SlickCellRangeDecorator implements Plugin {
 
   show(range: CellRange) {
     if (!this._elem) {
-      this._elem = document.createElement('div')
+      this._elem = document.createElement('div');
       this._elem.className = this._options.selectionCssClass;
       Object.keys(this._options.selectionCss as CSSStyleDeclaration).forEach((cssStyleKey) => {
         this._elem!.style[cssStyleKey as CSSStyleDeclarationWritable] = this._options.selectionCss[cssStyleKey as CSSStyleDeclarationWritable];

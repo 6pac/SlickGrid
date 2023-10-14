@@ -93,7 +93,7 @@ export class SlickDraggableGrouping {
 
     const dropPlaceHolderText = this._options.dropPlaceHolderText || 'Drop a column header here to group by the column';
 
-    this._dropzonePlaceholder = document.createElement('div')
+    this._dropzonePlaceholder = document.createElement('div');
     this._dropzonePlaceholder.className = 'slick-placeholder';
     this._dropzonePlaceholder.textContent = dropPlaceHolderText;
 
@@ -236,7 +236,7 @@ export class SlickDraggableGrouping {
         e.stopPropagation();
         setupColumnResize.call(grid);
       }
-    }
+    };
 
     this._sortableLeftInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-left`) as HTMLDivElement, sortableOptions);
     this._sortableRightInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-right`) as HTMLDivElement, sortableOptions);

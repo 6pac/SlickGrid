@@ -254,7 +254,7 @@ export class SlickRowSelectionModel {
     if (!this._grid.getOptions().multiSelect || !this._options.selectActiveRow) {
       return false;
     }
-    this.setSelectedRanges([new SlickRange(args.range.fromRow, 0, args.range.toRow, this._grid.getColumns().length - 1)])
+    this.setSelectedRanges([new SlickRange(args.range.fromRow, 0, args.range.toRow, this._grid.getColumns().length - 1)]);
   }
 }
 

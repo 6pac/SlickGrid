@@ -106,14 +106,14 @@ export class SlickCellRangeSelector implements Plugin {
     this._activeCanvas = this._grid.getActiveCanvasNode(e);
     this._activeViewport = this._grid.getActiveViewportNode(e);
 
-    const scrollbarDimensions = this._grid.getDisplayedScrollbarDimensions()
+    const scrollbarDimensions = this._grid.getDisplayedScrollbarDimensions();
     this._viewportWidth = this._activeViewport.offsetWidth - scrollbarDimensions.width;
     this._viewportHeight = this._activeViewport.offsetHeight - scrollbarDimensions.height;
 
     this._moveDistanceForOneCell = {
       x: this._grid.getAbsoluteColumnMinWidth() / 2,
       y: this._grid.getOptions().rowHeight! / 2
-    }
+    };
     this._isRowMoveRegistered = this.hasRowMoveManager();
 
     this._rowOffset = 0;
@@ -227,7 +227,7 @@ export class SlickCellRangeSelector implements Plugin {
         y: 0
       },
       isOutsideViewport: false
-    }
+    };
     // ... horizontal
     if (targetEvent.pageX < viewportOffsetLeft) {
       result.offset.x = targetEvent.pageX - viewportOffsetLeft;

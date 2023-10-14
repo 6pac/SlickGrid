@@ -54,7 +54,7 @@ export class TextEditor implements Editor {
 
   destroy() {
     this.input.removeEventListener('keydown', (this.navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav) as EventListener);
-    this.input.removeEventListener('change', this.onChange.bind(this))
+    this.input.removeEventListener('change', this.onChange.bind(this));
     this.input.remove();
   }
 
@@ -117,7 +117,7 @@ export class IntegerEditor implements Editor {
     this.navOnLR = this.args.grid.getOptions().editorCellNavOnLRKeys;
     this.input = Utils.createDomElement('input', { type: 'text', className: 'editor-text' }, this.args.container);
     this.input.addEventListener('keydown', (this.navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav) as EventListener);
-    this.input.focus()
+    this.input.focus();
     this.input.select();
 
     // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
@@ -147,7 +147,7 @@ export class IntegerEditor implements Editor {
 
   destroy() {
     this.input.removeEventListener('keydown', (this.navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav) as EventListener);
-    this.input.removeEventListener('change', this.onChange.bind(this))
+    this.input.removeEventListener('change', this.onChange.bind(this));
     this.input.remove();
   }
 
@@ -215,7 +215,7 @@ export class FloatEditor implements Editor {
     this.navOnLR = this.args.grid.getOptions().editorCellNavOnLRKeys;
     this.input = Utils.createDomElement('input', { type: 'text', className: 'editor-text' }, this.args.container);
     this.input.addEventListener('keydown', (this.navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav) as EventListener);
-    this.input.focus()
+    this.input.focus();
     this.input.select();
 
     // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
@@ -245,7 +245,7 @@ export class FloatEditor implements Editor {
 
   destroy() {
     this.input.removeEventListener('keydown', (this.navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav) as EventListener);
-    this.input.removeEventListener('change', this.onChange.bind(this))
+    this.input.removeEventListener('change', this.onChange.bind(this));
     this.input.remove();
   };
 
@@ -484,7 +484,7 @@ export class YesNoSelectEditor implements Editor {
   }
 
   destroy() {
-    this.select.removeEventListener('change', this.onChange.bind(this))
+    this.select.removeEventListener('change', this.onChange.bind(this));
     this.select.remove();
   }
 
