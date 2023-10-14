@@ -290,7 +290,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   /** Get Paging Options */
   getPagingInfo(): PagingInfo {
     const totalPages = this.pagesize ? Math.max(1, Math.ceil(this.totalRows / this.pagesize)) : 1;
-    return { pageSize: this.pagesize, pageNum: this.pagenum, totalRows: this.totalRows, totalPages: totalPages, dataView: this as SlickDataView };
+    return { pageSize: this.pagesize, pageNum: this.pagenum, totalRows: this.totalRows, totalPages, dataView: this as SlickDataView };
   }
 
   /** Sort Method to use by the DataView */
@@ -769,9 +769,9 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       this.groupingInfos[level].collapsed = collapse;
 
       if (collapse === true) {
-        this.onGroupCollapsed.notify({ level: level, groupingKey: null });
+        this.onGroupCollapsed.notify({ level, groupingKey: null });
       } else {
-        this.onGroupExpanded.notify({ level: level, groupingKey: null });
+        this.onGroupExpanded.notify({ level, groupingKey: null });
       }
     }
     this.refresh();
@@ -818,7 +818,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     }
 
     this.expandCollapseGroup(level, groupingKey, true);
-    this.onGroupCollapsed.notify({ level: level, groupingKey: groupingKey });
+    this.onGroupCollapsed.notify({ level, groupingKey });
   }
 
   /**
@@ -842,7 +842,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     }
 
     this.expandCollapseGroup(level, groupingKey, false);
-    this.onGroupExpanded.notify({ level: level, groupingKey: groupingKey });
+    this.onGroupExpanded.notify({ level, groupingKey });
   }
 
   getGroups() {

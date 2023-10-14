@@ -87,7 +87,7 @@ export class SlickRemoteModelYahoo {
       for (let i = fromPage; i <= toPage; i++) {
         this.data[i * this.PAGESIZE] = null; // null indicates a 'requested but not available yet'
       }
-      this.onDataLoading.notify({ from: from, to: to });
+      this.onDataLoading.notify({ from, to });
 
       this.req = window.$.jsonp({
         url,

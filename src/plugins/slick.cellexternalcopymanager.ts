@@ -373,7 +373,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
         if (ranges.length !== 0) {
           this._copiedRanges = ranges;
           this.markCopySelection(ranges);
-          this.onCopyCells.notify({ ranges: ranges });
+          this.onCopyCells.notify({ ranges });
 
           const columns = this._grid.getColumns();
           let clipText = '';

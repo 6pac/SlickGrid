@@ -553,9 +553,9 @@ export class SlickRowDetailView {
 
       // trigger an event once the post template is finished loading
       this.onAsyncEndUpdate.notify({
-        'grid': this._grid,
-        'item': itemDetail,
-        'itemDetail': itemDetail
+        grid: this._grid,
+        item: itemDetail,
+        itemDetail
       }, e, this);
     });
   }

@@ -304,7 +304,7 @@ export class SlickContextMenu implements SlickPlugin {
         this._contextMenuProperties,
         optionMenuElm,
         optionItems,
-        { cell: this._currentCell, row: this._currentRow, column: columnDef, dataContext: dataContext, grid: this._grid }
+        { cell: this._currentCell, row: this._currentRow, column: columnDef, dataContext, grid: this._grid }
       );
     }
 
@@ -324,7 +324,7 @@ export class SlickContextMenu implements SlickPlugin {
         this._contextMenuProperties,
         commandMenuElm,
         commandItems,
-        { cell: this._currentCell, row: this._currentRow, column: columnDef, dataContext: dataContext, grid: this._grid }
+        { cell: this._currentCell, row: this._currentRow, column: columnDef, dataContext, grid: this._grid }
       );
     }
 

@@ -595,12 +595,14 @@ export class Utils {
   public static storage = {
     // https://stackoverflow.com/questions/29222027/vanilla-alternative-to-jquery-data-function-any-native-javascript-alternati
     _storage: new WeakMap(),
+    // eslint-disable-next-line object-shorthand
     put: function (element: any, key: string, obj: any) {
       if (!this._storage.has(element)) {
         this._storage.set(element, new Map());
       }
       this._storage.get(element).set(key, obj);
     },
+    // eslint-disable-next-line object-shorthand
     get: function (element: any, key: string) {
       const el = this._storage.get(element);
       if (el) {
@@ -608,6 +610,7 @@ export class Utils {
       }
       return null;
     },
+    // eslint-disable-next-line object-shorthand
     remove: function (element: any, key: string) {
       const ret = this._storage.get(element).delete(key);
       if (!(this._storage.get(element).size === 0)) {

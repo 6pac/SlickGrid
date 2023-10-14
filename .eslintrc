@@ -46,6 +46,7 @@
     "cypress/no-unnecessary-waiting": "off",
     "cypress/unsafe-to-chain-command": "off",
     "eqeqeq": "error",
+    "object-shorthand": "error",
     "no-cond-assign": "off",
     "no-prototype-builtins": [0],
     "semi": "off"

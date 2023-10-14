@@ -283,7 +283,7 @@ export class SlickCellMenu implements SlickPlugin {
         this._cellMenuProperties,
         optionMenuElm,
         optionItems,
-        { cell: this._currentCell, row: this._currentRow, column: columnDef, dataContext: dataContext, grid: this._grid }
+        { cell: this._currentCell, row: this._currentRow, column: columnDef, dataContext, grid: this._grid }
       );
     }
 
@@ -303,7 +303,7 @@ export class SlickCellMenu implements SlickPlugin {
         this._cellMenuProperties,
         commandMenuElm,
         commandItems,
-        { cell: this._currentCell, row: this._currentRow, column: columnDef, dataContext: dataContext, grid: this._grid }
+        { cell: this._currentCell, row: this._currentRow, column: columnDef, dataContext, grid: this._grid }
       );
     }
 

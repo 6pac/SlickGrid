@@ -290,7 +290,7 @@ export class SlickColumnMenu {
       }
 
       this.grid.setColumns(visibleColumns);
-      this.onColumnsChanged.notify({ columnId: columnId, showing: isChecked, allColumns: this.columns, columns: this.columns, visibleColumns, grid: this.grid });
+      this.onColumnsChanged.notify({ columnId, showing: isChecked, allColumns: this.columns, columns: this.columns, visibleColumns, grid: this.grid });
     }
   }
 

@@ -74,7 +74,7 @@ export class SlickRemoteModel {
 
     if (fromPage > toPage || ((fromPage === toPage) && this.data[fromPage * this.PAGESIZE] !== undefined)) {
       // TODO:  look-ahead
-      this.onDataLoaded.notify({ from: from, to: to });
+      this.onDataLoaded.notify({ from, to });
       return;
     }
 
@@ -92,7 +92,7 @@ export class SlickRemoteModel {
       for (let i = fromPage; i <= toPage; i++) {
         this.data[i * this.PAGESIZE] = null; // null indicates a 'requested but not available yet'
       }
-      this.onDataLoading.notify({ from: from, to: to });
+      this.onDataLoading.notify({ from, to });
 
       this.req = window.$.jsonp({
         url,
@@ -121,7 +121,7 @@ export class SlickRemoteModel {
     }
 
     this.req = null;
-    this.onDataLoaded.notify({ from: from, to: to });
+    this.onDataLoaded.notify({ from, to });
   }
 
   reloadData(from: number, to: number) {

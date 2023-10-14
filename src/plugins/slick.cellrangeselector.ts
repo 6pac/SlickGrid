@@ -168,7 +168,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
 
     const start = this._grid.getCellFromPoint(startX, startY);
 
-    dd.range = { start: start, end: {} };
+    dd.range = { start, end: {} };
     this._currentlySelectedRange = dd.range;
     return this._decorator.show(new SlickRange(start.row, start.cell));
   }
@@ -206,8 +206,8 @@ export class SlickCellRangeSelector implements SlickPlugin {
     const viewportOffsetBottom = viewportOffsetTop + this._viewportHeight;
 
     const result = {
-      e: e,
-      dd: dd,
+      e,
+      dd,
       viewport: {
         left: viewportLeft,
         top: viewportTop,
@@ -355,7 +355,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
       const range = new SlickRange(dd.range.start.row ?? 0, dd.range.start.cell ?? 0, end.row, end.cell);
       this._decorator.show(range);
       this.onCellRangeSelecting.notify({
-        range: range
+        range
       });
     }
   }

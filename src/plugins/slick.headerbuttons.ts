@@ -195,7 +195,7 @@ export class SlickHeaderButtons implements SlickPlugin {
     const callbackArgs = {
       grid: this._grid,
       column: columnDef,
-      button: button
+      button
     } as HeaderButtonOnCommandArgs;
 
     if (command) {
