@@ -1,0 +1,556 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <title>SlickGrid example: Pivoting</title>
+  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+
+  <style>
+     .OC1 { color: white; background-color: #B63D22 !important; }
+     .OC2 { color: white; background-color: #B63D22 !important; }
+     .OC6 { color: white; background-color: #B63D22 !important; }
+     .OCA { color: white; background-color: #B63D22 !important; }
+     .OM1 { color: white; background-color: #004376 !important; }
+     .OM2 { color: white; background-color: #004376 !important; }
+     .OM4 { color: white; background-color: #004376 !important; }
+     .ON  { color: white; background-color: #1A2437 !important; }
+     .OS  { color: white; background-color: #3884AA !important; }
+     .OT  { color: white; background-color: #455D31 !important; }
+     .OW1 { color: white; background-color: #5E3419 !important; }
+     .OW2 { color: white; background-color: #5E3419 !important; }
+     .OW3 { color: white; background-color: #5E3419 !important; }
+     .OW4 { color: white; background-color: #5E3419 !important; }
+     .SW1 { color: white; background-color: #3D2250 !important; }
+     .YW1 { color: white; background-color: #B68321 !important; }
+     .YW2 { color: white; background-color: #B68321 !important; }
+     .YW3 { color: white; background-color: #B68321 !important; }
+     .BS  { color: white; background-color: #CECECE !important; }
+     .OWN { color: white; background-color: #5E3419 !important; }
+     .OS { color: white; background-color: #83FF32 !important; }
+     .OC { color: white; background-color: #B63D22 !important; }
+     .OM { color: white; background-color: #004376 !important; }
+     .ON { color: white; background-color: #1A2437 !important; }
+     .OS { color: white; background-color: #3884AA !important; }
+     .OT { color: white; background-color: #455D31 !important; }
+     .OW { color: white; background-color: #5E3419 !important; }
+     .SW { color: white; background-color: #3D2250 !important; }
+     .YW { color: white; background-color: #B68321 !important; }
+     .BS { color: white; background-color: #CECECE !important; }
+     
+     body {
+       background-color: #66efff30
+     }
+  </style>
+</head>
+<body>
+<div>
+  <div class="options-panel" style="left:1020px;">
+    <div style="padding:6px;">
+      <h2>Demonstrates:</h2>
+      <ul>
+        <li>multi column pivoting</li>
+      </ul>
+        <h2>View Source:</h2>
+        <ul>
+            <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-pivot.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+        </ul>
+    </div>
+  </div>
+  <div style="width:1000px;">
+    <div class="grid-header" style="width:100%">
+      <label>SlickGrid</label>
+    </div>
+    <div id="myGrid" class="slick-container" style="width:100%;height:500px;"></div>
+  </div>
+
+ </div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
+
+<script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
+            
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.formatters.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
+<script src="../dist/browser/plugins/slick.rowselectionmodel.js"></script>
+<script src="../dist/browser/slick.dataview.js"></script>
+<script src="../dist/browser/controls/slick.pager.js"></script>
+<script src="../dist/browser/controls/slick.columnpicker.js"></script>
+
+<script>
+
+  function clone(obj, maxDepth, depth) {
+    var copy;
+    if (typeof depth === 'undefined') depth = 0;
+    depth++;
+
+    // Handle the 3 simple types, and null or undefined
+    if (null == obj || "object" != typeof obj) return obj;
+
+    // Handle Date
+    if (obj instanceof Date) {
+      copy = new Date();
+      copy.setTime(obj.getTime());
+      return copy;
+    }
+
+    // Handle Array
+    if (obj instanceof Array) {
+      copy = [];
+      for (var i = 0, len = obj.length; i < len; i++) {
+        copy[i] = (depth > maxDepth ? obj[i] : clone(obj[i], maxDepth, depth));
+      }
+      return copy;
+    }
+
+    // Handle Object
+    if (obj instanceof Object) {
+      copy = {};
+      for (var attr in obj) {
+        if (obj.hasOwnProperty(attr)) copy[attr] = (depth > maxDepth ? obj[attr] : clone(obj[attr], maxDepth, depth));
+      }
+      return copy;
+    }
+
+    throw new Error("Unable to copy obj! Its type isn't supported.");
+  };
+
+    var data = [
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OC1","TagDurationMin":169.0,"ProgramAgeBlock_FK_ID":"A","AssetCount":9.0,"AssetDurMin":235.68333333,"RepeatFreqWeeks":16},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OC1","TagDurationMin":169.0,"ProgramAgeBlock_FK_ID":"B","AssetCount":24.0,"AssetDurMin":838.04200000,"RepeatFreqWeeks":16},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OC1","TagDurationMin":169.0,"ProgramAgeBlock_FK_ID":"C","AssetCount":19.0,"AssetDurMin":444.35400000,"RepeatFreqWeeks":14},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OC1","TagDurationMin":169.0,"ProgramAgeBlock_FK_ID":"D","AssetCount":12.0,"AssetDurMin":148.62866667,"RepeatFreqWeeks":14},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OC2","TagDurationMin":324.0,"ProgramAgeBlock_FK_ID":"A","AssetCount":12.0,"AssetDurMin":340.43466667,"RepeatFreqWeeks":10},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OC2","TagDurationMin":324.0,"ProgramAgeBlock_FK_ID":"B","AssetCount":14.0,"AssetDurMin":309.51733333,"RepeatFreqWeeks":10},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OC2","TagDurationMin":324.0,"ProgramAgeBlock_FK_ID":"C","AssetCount":19.0,"AssetDurMin":212.66666667,"RepeatFreqWeeks":10},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OC2","TagDurationMin":324.0,"ProgramAgeBlock_FK_ID":"D","AssetCount":13.0,"AssetDurMin":203.82866667,"RepeatFreqWeeks":10},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OC6","TagDurationMin":81.0,"ProgramAgeBlock_FK_ID":"A","AssetCount":4.0,"AssetDurMin":121.81333333,"RepeatFreqWeeks":12},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OC6","TagDurationMin":81.0,"ProgramAgeBlock_FK_ID":"B","AssetCount":1.0,"AssetDurMin":3.22733333,"RepeatFreqWeeks":12},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OC6","TagDurationMin":81.0,"ProgramAgeBlock_FK_ID":"C","AssetCount":1.0,"AssetDurMin":14.09000000,"RepeatFreqWeeks":10},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OC6","TagDurationMin":81.0,"ProgramAgeBlock_FK_ID":"D","AssetCount":null,"AssetDurMin":null,"RepeatFreqWeeks":10},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OM1","TagDurationMin":111.0,"ProgramAgeBlock_FK_ID":"A","AssetCount":null,"AssetDurMin":null,"RepeatFreqWeeks":12},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OM1","TagDurationMin":111.0,"ProgramAgeBlock_FK_ID":"B","AssetCount":1.0,"AssetDurMin":4.15600000,"RepeatFreqWeeks":12},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OM1","TagDurationMin":111.0,"ProgramAgeBlock_FK_ID":"C","AssetCount":18.0,"AssetDurMin":75.62866667,"RepeatFreqWeeks":10},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OM1","TagDurationMin":111.0,"ProgramAgeBlock_FK_ID":"D","AssetCount":17.0,"AssetDurMin":73.52200000,"RepeatFreqWeeks":10},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OM2","TagDurationMin":252.0,"ProgramAgeBlock_FK_ID":"A","AssetCount":null,"AssetDurMin":null,"RepeatFreqWeeks":12},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OM2","TagDurationMin":252.0,"ProgramAgeBlock_FK_ID":"B","AssetCount":null,"AssetDurMin":null,"RepeatFreqWeeks":12},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OM2","TagDurationMin":252.0,"ProgramAgeBlock_FK_ID":"C","AssetCount":8.0,"AssetDurMin":34.08466667,"RepeatFreqWeeks":10},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OM2","TagDurationMin":252.0,"ProgramAgeBlock_FK_ID":"D","AssetCount":15.0,"AssetDurMin":52.60600000,"RepeatFreqWeeks":10},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OM4","TagDurationMin":173.0,"ProgramAgeBlock_FK_ID":"A","AssetCount":null,"AssetDurMin":null,"RepeatFreqWeeks":15},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OM4","TagDurationMin":173.0,"ProgramAgeBlock_FK_ID":"B","AssetCount":1.0,"AssetDurMin":22.50000000,"RepeatFreqWeeks":14},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OM4","TagDurationMin":173.0,"ProgramAgeBlock_FK_ID":"C","AssetCount":1.0,"AssetDurMin":22.29200000,"RepeatFreqWeeks":13},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OM4","TagDurationMin":173.0,"ProgramAgeBlock_FK_ID":"D","AssetCount":null,"AssetDurMin":null,"RepeatFreqWeeks":12},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"ON","TagDurationMin":222.0,"ProgramAgeBlock_FK_ID":"A","AssetCount":128.0,"AssetDurMin":2039.15600000,"RepeatFreqWeeks":17},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"ON","TagDurationMin":222.0,"ProgramAgeBlock_FK_ID":"B","AssetCount":110.0,"AssetDurMin":1262.18600000,"RepeatFreqWeeks":16},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"ON","TagDurationMin":222.0,"ProgramAgeBlock_FK_ID":"C","AssetCount":47.0,"AssetDurMin":408.70866667,"RepeatFreqWeeks":15},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"ON","TagDurationMin":222.0,"ProgramAgeBlock_FK_ID":"D","AssetCount":23.0,"AssetDurMin":343.05533333,"RepeatFreqWeeks":14},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OS","TagDurationMin":418.0,"ProgramAgeBlock_FK_ID":"A","AssetCount":null,"AssetDurMin":null,"RepeatFreqWeeks":15},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OS","TagDurationMin":418.0,"ProgramAgeBlock_FK_ID":"B","AssetCount":null,"AssetDurMin":null,"RepeatFreqWeeks":14},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OS","TagDurationMin":418.0,"ProgramAgeBlock_FK_ID":"C","AssetCount":null,"AssetDurMin":null,"RepeatFreqWeeks":13},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OS","TagDurationMin":418.0,"ProgramAgeBlock_FK_ID":"D","AssetCount":null,"AssetDurMin":null,"RepeatFreqWeeks":12},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OT","TagDurationMin":222.0,"ProgramAgeBlock_FK_ID":"A","AssetCount":16.0,"AssetDurMin":131.22333333,"RepeatFreqWeeks":16},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OT","TagDurationMin":222.0,"ProgramAgeBlock_FK_ID":"B","AssetCount":15.0,"AssetDurMin":153.46533333,"RepeatFreqWeeks":16},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OT","TagDurationMin":222.0,"ProgramAgeBlock_FK_ID":"C","AssetCount":23.0,"AssetDurMin":113.68533333,"RepeatFreqWeeks":14},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OT","TagDurationMin":222.0,"ProgramAgeBlock_FK_ID":"D","AssetCount":19.0,"AssetDurMin":281.75000000,"RepeatFreqWeeks":14},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OW1","TagDurationMin":111.0,"ProgramAgeBlock_FK_ID":"A","AssetCount":3.0,"AssetDurMin":22.32266667,"RepeatFreqWeeks":15},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OW1","TagDurationMin":111.0,"ProgramAgeBlock_FK_ID":"B","AssetCount":2.0,"AssetDurMin":12.65933333,"RepeatFreqWeeks":14},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OW1","TagDurationMin":111.0,"ProgramAgeBlock_FK_ID":"C","AssetCount":4.0,"AssetDurMin":50.54866667,"RepeatFreqWeeks":13},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OW1","TagDurationMin":111.0,"ProgramAgeBlock_FK_ID":"D","AssetCount":4.0,"AssetDurMin":60.72333333,"RepeatFreqWeeks":12},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OW2","TagDurationMin":139.0,"ProgramAgeBlock_FK_ID":"A","AssetCount":null,"AssetDurMin":null,"RepeatFreqWeeks":15},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OW2","TagDurationMin":139.0,"ProgramAgeBlock_FK_ID":"B","AssetCount":1.0,"AssetDurMin":9.50000000,"RepeatFreqWeeks":14},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OW2","TagDurationMin":139.0,"ProgramAgeBlock_FK_ID":"C","AssetCount":4.0,"AssetDurMin":43.45000000,"RepeatFreqWeeks":13},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OW2","TagDurationMin":139.0,"ProgramAgeBlock_FK_ID":"D","AssetCount":3.0,"AssetDurMin":47.15200000,"RepeatFreqWeeks":12},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OW3","TagDurationMin":111.0,"ProgramAgeBlock_FK_ID":"A","AssetCount":2.0,"AssetDurMin":47.92866667,"RepeatFreqWeeks":14},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OW3","TagDurationMin":111.0,"ProgramAgeBlock_FK_ID":"B","AssetCount":2.0,"AssetDurMin":37.06733333,"RepeatFreqWeeks":14},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OW3","TagDurationMin":111.0,"ProgramAgeBlock_FK_ID":"C","AssetCount":7.0,"AssetDurMin":51.78266667,"RepeatFreqWeeks":13},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OW3","TagDurationMin":111.0,"ProgramAgeBlock_FK_ID":"D","AssetCount":12.0,"AssetDurMin":149.12666667,"RepeatFreqWeeks":12},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OW4","TagDurationMin":111.0,"ProgramAgeBlock_FK_ID":"A","AssetCount":null,"AssetDurMin":null,"RepeatFreqWeeks":15},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OW4","TagDurationMin":111.0,"ProgramAgeBlock_FK_ID":"B","AssetCount":null,"AssetDurMin":null,"RepeatFreqWeeks":14},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OW4","TagDurationMin":111.0,"ProgramAgeBlock_FK_ID":"C","AssetCount":8.0,"AssetDurMin":25.42200000,"RepeatFreqWeeks":13},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"OW4","TagDurationMin":111.0,"ProgramAgeBlock_FK_ID":"D","AssetCount":13.0,"AssetDurMin":81.49533333,"RepeatFreqWeeks":12},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"SW1","TagDurationMin":166.0,"ProgramAgeBlock_FK_ID":"A","AssetCount":null,"AssetDurMin":null,"RepeatFreqWeeks":15},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"SW1","TagDurationMin":166.0,"ProgramAgeBlock_FK_ID":"B","AssetCount":null,"AssetDurMin":null,"RepeatFreqWeeks":14},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"SW1","TagDurationMin":166.0,"ProgramAgeBlock_FK_ID":"C","AssetCount":1.0,"AssetDurMin":3.43933333,"RepeatFreqWeeks":13},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"SW1","TagDurationMin":166.0,"ProgramAgeBlock_FK_ID":"D","AssetCount":2.0,"AssetDurMin":72.96200000,"RepeatFreqWeeks":12},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"YW1","TagDurationMin":52.0,"ProgramAgeBlock_FK_ID":"A","AssetCount":10.0,"AssetDurMin":58.20266667,"RepeatFreqWeeks":15},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"YW1","TagDurationMin":52.0,"ProgramAgeBlock_FK_ID":"B","AssetCount":15.0,"AssetDurMin":67.45733333,"RepeatFreqWeeks":14},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"YW1","TagDurationMin":52.0,"ProgramAgeBlock_FK_ID":"C","AssetCount":13.0,"AssetDurMin":53.72800000,"RepeatFreqWeeks":13},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"YW1","TagDurationMin":52.0,"ProgramAgeBlock_FK_ID":"D","AssetCount":8.0,"AssetDurMin":30.09200000,"RepeatFreqWeeks":12},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"YW2","TagDurationMin":52.0,"ProgramAgeBlock_FK_ID":"A","AssetCount":2.0,"AssetDurMin":5.86066667,"RepeatFreqWeeks":15},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"YW2","TagDurationMin":52.0,"ProgramAgeBlock_FK_ID":"B","AssetCount":1.0,"AssetDurMin":3.61333333,"RepeatFreqWeeks":14},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"YW2","TagDurationMin":52.0,"ProgramAgeBlock_FK_ID":"C","AssetCount":5.0,"AssetDurMin":81.64866667,"RepeatFreqWeeks":13},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"YW2","TagDurationMin":52.0,"ProgramAgeBlock_FK_ID":"D","AssetCount":7.0,"AssetDurMin":21.04066667,"RepeatFreqWeeks":12},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"YW3","TagDurationMin":134.0,"ProgramAgeBlock_FK_ID":"A","AssetCount":22.0,"AssetDurMin":125.52000000,"RepeatFreqWeeks":15},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"YW3","TagDurationMin":134.0,"ProgramAgeBlock_FK_ID":"B","AssetCount":5.0,"AssetDurMin":19.83933333,"RepeatFreqWeeks":14},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"YW3","TagDurationMin":134.0,"ProgramAgeBlock_FK_ID":"C","AssetCount":14.0,"AssetDurMin":61.40066667,"RepeatFreqWeeks":13},
+      {"ProgrammingYear_LU_Str":"23-24","ProgrammingTag_FK_Str":"YW3","TagDurationMin":134.0,"ProgramAgeBlock_FK_ID":"D","AssetCount":12.0,"AssetDurMin":42.93933333,"RepeatFreqWeeks":12}];
+
+
+    function CreateAddlHeaderRow(grid) {
+        var columns = grid.getColumns();
+
+        var $preHeaderPanel = $(grid.getPreHeaderPanel())
+            .empty()
+            .addClass("slick-header-columns")
+            .css('left', '-1000px')
+            .width(grid.getHeadersWidth());
+        $preHeaderPanel.parent().addClass("slick-header");
+
+        var headerColumnWidthDiff = grid.getHeaderColumnWidthDiff();
+        var m, header, lastColumnGroup = '', widthTotal = 0;
+
+        for (var i = 0; i < columns.length; i++) {
+            m = columns[i];
+            if (lastColumnGroup === m.columnGroup && i > 0) {
+                widthTotal += m.width - 3/2.8;
+                header.width(widthTotal - headerColumnWidthDiff);
+            } else {
+                widthTotal = m.width;
+                header = $("<div class='ui-state-default slick-header-column' />")
+                    .html("<span class='slick-column-name'>" + (m.columnGroup || '') + "</span>")
+                    .width(m.width - headerColumnWidthDiff)
+                    .addClass(m.headerCssClass || "")
+                    .appendTo($preHeaderPanel);
+            }
+            lastColumnGroup = m.columnGroup;
+        }
+    }
+
+    // unique or non-unique pivot
+
+    var SimpleSum = function (origRow, currentVal, defaultColName) {
+        return (currentVal || 0) + origRow[defaultColName];
+    }
+
+    var RatioSum = function (origRow, currentVal, defaultColName) {
+        return (currentVal || 0) + origRow['AssetDurMin'] / origRow['TagDurationMin'] / origRow['RepeatFreqWeeks'];
+    }
+
+    var SimpleFirst = function (origRow, currentVal, defaultColName) {
+        return (currentVal === null || typeof currentVal === 'undefined') ? origRow[defaultColName] : currentVal;
+    }
+
+    var SimpleFirst_Repeat = function (origRow, currentVal, defaultColName) {
+        return (currentVal === null || typeof currentVal === 'undefined') ? origRow[defaultColName] : currentVal;
+    }
+
+    var Constant_Space = function (origRow, currentVal, defaultColName) {
+        return ' ';
+    }
+
+    function NumberFormatter(rowIndex, cell, value, columnDef, dataRow, grid) {
+        var tag = dataRow.ProgrammingTag_FK_Str;
+
+        var rtnVal;
+        if (value == null || value === undefined) {
+            rtnVal = '';
+        } else if (typeof value !== 'number') {
+            rtnVal = value;
+        } else {
+            var n = Math.round(value * 100);
+            rtnVal = Number.isInteger(value)
+                ? value + ''
+                : (n / 100).toFixed(n > 2000 ? 0 : 2);
+        }
+        return { text: rtnVal, removeClasses: 'OC1 OC2 OC6 OCA OM1 OM2 OM4 ON OS OT OW1 OW2 OW3 OW4 SW1 YW1 YW2 YW3 BS OWN OS OC OM ON OS OT OW SW YW BS', addClasses: tag };
+    }
+
+    function PercentFormatter(rowIndex, cell, value, columnDef, dataRow, grid) {
+        var tag = dataRow.ProgrammingTag_FK_Str;
+         
+        var rtnVal;
+        if (value == null || value === undefined) {
+            rtnVal = '';
+        } else if (typeof value !== 'number') {
+            rtnVal = value;
+        } else if (value === 0) {
+            rtnVal = '-';
+        } else {
+            rtnVal = '' + Math.round(value * 100).toFixed(0) + '%';
+        }
+        return { text: rtnVal, removeClasses: 'OC1 OC2 OC6 OCA OM1 OM2 OM4 ON OS OT OW1 OW2 OW3 OW4 SW1 YW1 YW2 YW3 BS OWN OS OC OM ON OS OT OW SW YW BS', addClasses: tag };
+    }
+
+    var ratioCol = {
+        id: "TBA_Name",
+        name: "TBA_Caption",
+        field: "TBA_Name",
+        width: 55,
+        minWidth: 12,
+        sortable: true,
+        formatter: NumberFormatter
+    };
+
+    var templateCol = {
+        id: "TBA_Name",
+        name: "TBA_Caption",
+        field: "TBA_Name",
+        width: 50,
+        minWidth: 12,
+        sortable: true,
+        formatter: NumberFormatter
+    };
+
+    var editTemplateCol = {
+        id: "TBA_Name",
+        name: "TBA_Caption",
+        field: "TBA_Name",
+        width: 50,
+        minWidth: 12,
+        sortable: true,
+        formatter: NumberFormatter,
+        editor: Slick.Editors.Text
+    };
+
+    var tagCol = {
+        id: "TBA_Name",
+        name: "TBA_Caption",
+        field: "TBA_Name",
+        width: 18,
+        minWidth: 12
+    };
+
+    //var repeatTemplateCol = bf.Helper.clone(templateCol);
+    //repeatTemplateCol.formatter = RepeatFormatter;
+
+    var pivotInfo = {
+        pivotSpec: {
+            RowGroupByColNames: ["ProgrammingTag_FK_Str", "TagDurationMin"],
+            RowAggregates: [
+                { AggregateFunc: SimpleSum, DefaultAggColName: "AssetCount",  ResultColTemplate: templateCol, ResultColName: "Count_All",  ResultColCaption: "#",   ResultColCaptionGrp: "All" },
+                { AggregateFunc: SimpleSum, DefaultAggColName: "AssetDurMin", ResultColTemplate: templateCol, ResultColName: "DurMin_All", ResultColCaption: "Dur", ResultColCaptionGrp: "All" },
+                { AggregateFunc: RatioSum, DefaultAggColName: "", ResultColTemplate: ratioCol, ResultColName: "Ratio_All", ResultColCaption: "Ratio", ResultColCaptionGrp: "All" },
+            ],
+            PivotAggregates: [
+                { AggregateFunc: SimpleFirst_Repeat, DefaultAggColName: "ProgramAgeBlock_FK_ID", ResultColTemplate: tagCol, ResultColName: "Tag", ResultColCaption: "-" },
+                { AggregateFunc: SimpleSum, DefaultAggColName: "AssetCount", ResultColTemplate: templateCol, ResultColName: "Count",  ResultColCaption: "#" },
+                { AggregateFunc: SimpleSum, DefaultAggColName: "AssetDurMin", ResultColTemplate: templateCol, ResultColName: "DurMin", ResultColCaption: "Dur" },
+                { AggregateFunc: RatioSum, DefaultAggColName: "", ResultColTemplate: ratioCol, ResultColName: "Ratio",  ResultColCaption: "Ratio" },
+            ],
+            PivotHeadColName: "ProgramAgeBlock_FK_ID",
+            PivotGroupByPivotVal: true,
+            PivotHeadAllColValArr: ["D", "C", "B", "A"], // enumerate all pivot vals, since data may not contain them all, depending on filtering
+            PivotHeadColCaptionLookupFunc: function (s) { return s; },
+            PivotColSeparator: "$$"
+        },
+        PivotHeadColValArr: null,
+        GroupInfo: null,
+        OriginalSlickGridColArray: null,
+        OriginalData: data,
+        PivotedSlickGridColArray: null,
+        PivotedData: null,
+        IsUnique: true
+    };
+
+    pivotInfo.PivotHeadColValArr = pivotInfo.pivotSpec.PivotHeadAllColValArr || [];
+
+    // Create arrays of row indexes stored by groups
+    pivotInfo.GroupInfo = (0 === pivotInfo.pivotSpec.RowGroupByColNames.length ? [] : {});
+    var curGrp, tempColName, tempGrp, tempVal;
+    for (var i = 0; i < pivotInfo.OriginalData.length; i++) {
+        curGrp = pivotInfo.GroupInfo;
+        for (var j = 0; j < pivotInfo.pivotSpec.RowGroupByColNames.length; j++) {
+            tempColName = pivotInfo.pivotSpec.RowGroupByColNames[j];
+            tempVal = pivotInfo.OriginalData[i][tempColName];
+            if (typeof tempVal === 'undefined') throw 'Group column not in OriginalData';
+            tempVal = '' + tempVal;
+
+            if (!pivotInfo.pivotSpec.PivotHeadAllColValArr && pivotInfo.PivotHeadColValArr.indexOf(tempVal) < 0) {
+                pivotInfo.PivotHeadColValArr.push(tempVal);
+            }
+
+            tempGrp = curGrp[tempVal];
+            if (typeof tempGrp === 'undefined') {
+                tempGrp = curGrp[tempVal] = (j === pivotInfo.pivotSpec.RowGroupByColNames.length - 1 ? [] : {});
+            }
+            curGrp = tempGrp;
+        }
+        curGrp.push(i);
+    }
+
+    function createGroupedDataRows(pivotInfo, groupInfo) {
+        var row, tempColName, tempColPrefix, tempAgg, i, j, k, isPivotMatch;
+        if (!Array.isArray(groupInfo)) {
+            $.each(groupInfo, function (key, val) {
+                createGroupedDataRows(pivotInfo, groupInfo[key]);
+            });
+        } else {
+            // create Aggregated Data Row
+            row = {};
+            // assign group values
+            for (j = 0; j < pivotInfo.pivotSpec.RowGroupByColNames.length; j++) {
+                tempColName = pivotInfo.pivotSpec.RowGroupByColNames[j];
+                row[tempColName] = pivotInfo.OriginalData[groupInfo[0]][tempColName];
+            }
+            // initialise pivot col values
+            for (j = 0; j < pivotInfo.pivotSpec.PivotAggregates.length; j++) {
+                tempAgg = pivotInfo.pivotSpec.PivotAggregates[j];
+                for (k = 0; k < pivotInfo.PivotHeadColValArr.length; k++) {
+                    tempColName = pivotInfo.PivotHeadColValArr[k]
+                        + pivotInfo.pivotSpec.PivotColSeparator
+                        + tempAgg.ResultColName;
+                    row[tempColName] = undefined;
+                }
+            }
+
+            for (i = 0; i < groupInfo.length; i++) {
+                for (j = 0; j < pivotInfo.pivotSpec.RowAggregates.length; j++) {
+                    tempAgg = pivotInfo.pivotSpec.RowAggregates[j];
+                    row[tempAgg.ResultColName] =
+                        tempAgg.AggregateFunc(pivotInfo.OriginalData[groupInfo[i]], row[tempAgg.ResultColName], tempAgg.DefaultAggColName, row, tempAgg.ResultColName);
+                }
+                for (j = 0; j < pivotInfo.pivotSpec.PivotAggregates.length; j++) {
+                    tempAgg = pivotInfo.pivotSpec.PivotAggregates[j];
+                    for (k = 0; k < pivotInfo.PivotHeadColValArr.length; k++) {
+                        isPivotMatch = pivotInfo.PivotHeadColValArr[k] === pivotInfo.OriginalData[groupInfo[i]][pivotInfo.pivotSpec.PivotHeadColName];
+                        if (isPivotMatch) {
+                            tempColPrefix = pivotInfo.PivotHeadColValArr[k] + pivotInfo.pivotSpec.PivotColSeparator;
+                            tempColName = tempColPrefix + tempAgg.ResultColName;
+                            if (pivotInfo.IsUnique && !typeof row[tempColName] === 'undefined') pivotInfo.IsUnique = false;
+                            row[tempColName] =
+                                tempAgg.AggregateFunc(pivotInfo.OriginalData[groupInfo[i]], row[tempColName], tempAgg.DefaultAggColName, row, tempAgg.ResultColName, tempColPrefix);
+                        }
+                    }
+                }
+            }
+            pivotInfo.PivotedData.push(row);
+        }
+    }
+
+    function createCol(pivotInfo, k, tempAgg, gridColArr) {
+        tempColName = pivotInfo.PivotHeadColValArr[k]
+            + pivotInfo.pivotSpec.PivotColSeparator
+            + tempAgg.ResultColName;
+
+        if (tempAgg.ResultColTemplate) {
+            var tempCol = clone(tempAgg.ResultColTemplate);
+            tempCol.id = tempCol.field = tempColName;
+            tempCol.name = tempAgg.ResultColCaption;
+            tempCol.columnGroup = pivotInfo.pivotSpec.PivotHeadColCaptionLookupFunc(pivotInfo.PivotHeadColValArr[k]);
+
+            gridColArr.push(tempCol);
+        }
+    }
+
+    function addGridPivotColumns(gridColArr, gridOptions, pivotInfo) {
+        var i, j, k, tempCol;
+
+        // create row aggregate cols
+        for (j = 0; j < pivotInfo.pivotSpec.RowAggregates.length; j++) {
+            tempAgg = pivotInfo.pivotSpec.RowAggregates[j];
+
+            if (tempAgg.ResultColTemplate) {
+                tempCol = clone(tempAgg.ResultColTemplate);
+                tempCol.id = tempCol.field = tempAgg.ResultColName;
+                tempCol.name = tempAgg.ResultColCaption;
+                tempCol.columnGroup = tempAgg.ResultColCaptionGrp;
+
+                gridColArr.push(tempCol);
+            }
+        }
+
+        // create pivot cols
+        if (pivotInfo.pivotSpec.PivotGroupByPivotVal) {
+            for (k = 0; k < pivotInfo.PivotHeadColValArr.length; k++) {
+                for (j = 0; j < pivotInfo.pivotSpec.PivotAggregates.length; j++) {
+                    tempAgg = pivotInfo.pivotSpec.PivotAggregates[j];
+                    createCol(pivotInfo, k, tempAgg, gridColArr);
+                }
+            }
+        } else {
+            for (j = 0; j < pivotInfo.pivotSpec.PivotAggregates.length; j++) {
+                tempAgg = pivotInfo.pivotSpec.PivotAggregates[j];
+                for (k = 0; k < pivotInfo.PivotHeadColValArr.length; k++) {
+                    createCol(pivotInfo, k, tempAgg, gridColArr);
+                }
+            }
+        }
+    }
+
+    function save() {
+        var i, j, k, tempRow, tempRow;
+
+        PC.c00_ListGrid.Grid.getEditorLock().commitCurrentEdit();
+
+        // compile data
+        var blk, val, data = [];
+        for (i = 0; i < pivotInfo.PivotedData.length; i++) {
+            tempRow = pivotInfo.PivotedData[i];
+
+            for (j = 0; j < pivotInfo.PivotHeadColValArr.length; j++) {
+                blk = pivotInfo.PivotHeadColValArr[j];
+                val = tempRow[blk + '$$Repeat'];
+
+                if (val) {
+                    tempCol = {};
+                    tempCol.ProgrammingTag_FK_Str = tempRow.ProgrammingTag_FK_Str;
+                    tempCol.Block = blk;
+                    tempCol.Repeat = val;
+
+                    data.push(tempCol);
+                }
+            }
+        }
+
+        var dataVals = {
+            GridDataAsString: JSON.stringify(data),
+            ProgYear: $('#ddProgYear').val()
+        };
+        bf.Core.SingleCustomAjaxCall(PC.c00_ListGrid, 'Year_Save', dataVals, onSaved, null);
+    }
+
+    function onSaved(cmd, callbackOptions, localDataStore) {
+        if (cmd.DataValues.status !== 'ok') {
+            PC.c00_ListGrid.UpdateMessage("An error occurred: " + cmd.DataValues.status + ". Please contact tech support.");
+            return;
+        }
+        if (cmd.DataValues.status === 'ok') {
+            var msg = "Changes Saved. Please refresh this page to see the updated statistics.";
+            bf.Controls.UpdateMessage(null, msg);
+            $('#divMessage').text(msg);
+        }
+    }
+
+    // Create dataset by aggregating groups of rows
+    pivotInfo.PivotedData = [];
+    createGroupedDataRows(pivotInfo, pivotInfo.GroupInfo);
+
+var dataView;
+var grid;
+var columns = [
+    { "id": "ProgrammingTag_FK_Str", "name": "Tag", "field": "ProgrammingTag_FK_Str", "width": 52, "minWidth": 12, "sortable": true },
+    { "id": "TagDurationMin", "name": "Dur Min", "field": "TagDurationMin", "width": 71, "minWidth": 12, "sortable": true }
+];
+            
+var options = {
+  createPreHeaderPanel: true,
+  showPreHeaderPanel: true,
+  preHeaderPanelHeight: 23,
+  forceFitColumns: false,
+  topPanelHeight: 25
+};
+
+document.addEventListener("DOMContentLoaded", function() {
+  addGridPivotColumns(columns, options, pivotInfo);
+
+  if (!pivotInfo.PivotedData || pivotInfo.PivotedData.length === 0) {
+      $("#c00_ListGrid_list_grid_container").prepend("<h2>No Data<\h2>");
+  } else {
+      $("#c00_ListGrid_grid_container").height("650px");
+
+      grid = new Slick.Grid("#myGrid", pivotInfo.PivotedData, columns, options);
+      CreateAddlHeaderRow(grid);
+  } 
+})
+</script>
+</body>
+</html>
