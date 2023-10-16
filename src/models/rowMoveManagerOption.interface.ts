@@ -22,7 +22,7 @@ export interface RowMoveManagerOption {
   cssClass?: string;
 
   /** A CSS class to be added to the cell container. */
-  cellContainerCssClass?: string;
+  containerCssClass?: string;
 
   /**  Column definition id(defaults to "_move") */
   columnId?: string;
