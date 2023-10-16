@@ -18,8 +18,11 @@ export interface RowMoveManagerOption {
    */
   cellRangeSelector?: SlickCellRangeSelector;
 
-  /**  A CSS class to be added to the menu item container. */
+  /** A CSS class to be added to the div of the cell formatter. */
   cssClass?: string;
+
+  /** A CSS class to be added to the cell container. */
+  cellContainerCssClass?: string;
 
   /**  Column definition id(defaults to "_move") */
   columnId?: string;

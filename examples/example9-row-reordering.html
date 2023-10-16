@@ -8,6 +8,9 @@
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
+    .slick-cell {
+      user-select: none;
+    }
     .cell-effort-driven {
       justify-content: center;
     }
@@ -110,7 +113,8 @@ var columns = [
     behavior: "selectAndMove",
     selectable: false,
     resizable: false,
-    cssClass: "cell-reorder dnd sgi sgi-drag sgi-12px"
+    cssClass: "cell-reorder dnd",
+    formatter: () => `<span class="sgi sgi-drag"></span>`
   },
   {
     id: "name",
