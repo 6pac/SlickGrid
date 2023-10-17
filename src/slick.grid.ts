@@ -209,7 +209,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     alwaysAllowHorizontalScroll: false,
     explicitInitialization: false,
     rowHeight: 25,
-    dispatchEventTarget: undefined,
+    enableSlickEventDispatch: false,
     defaultColumnWidth: 80,
     enableHtmlRendering: true,
     enableAddRow: false,
@@ -514,10 +514,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       throw new Error(`SlickGrid requires a valid container, ${this.container} does not exist in the DOM.`);
     }
 
-    // when using a custom DataView and `dispatchEventTarget` option is defined, we need to also add it to the DataView
-    if (data && !Array.isArray(data) && options?.dispatchEventTarget && typeof (data as CustomDataView).addDispatchEventTarget === 'function') {
-      (data as CustomDataView).addDispatchEventTarget!(options.dispatchEventTarget);
-      Utils.addSlickEventDispatchWhenDefined(options as BaseGridOption, this);
+    // when using a custom DataView and `enableSlickEventDispatch` option is defined, we need to also add it to the DataView
+    if (data && !Array.isArray(data) && options?.enableSlickEventDispatch && typeof (data as CustomDataView).addDispatchEventTarget === 'function') {
+      (data as CustomDataView).addDispatchEventTarget!(this.getContainerNode());
+      Utils.addSlickEventDispatchWhenDefined(this.getContainerNode(), this);
     }
 
     this.initialize();

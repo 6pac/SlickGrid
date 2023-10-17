@@ -51,7 +51,7 @@ export class SlickRowSelectionModel {
 
     this._selector = this._options.cellRangeSelector;
     this._grid = grid;
-    Utils.addSlickEventDispatchWhenDefined(grid.getOptions(), this);
+    Utils.addSlickEventDispatchWhenDefined(grid.getContainerNode(), this);
 
     if (!this._selector && this._options.dragToSelect) {
       if (!SlickCellRangeDecorator) {

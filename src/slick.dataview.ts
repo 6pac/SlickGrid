@@ -13,6 +13,7 @@ import type {
   OnSelectedRowIdsChangedEventArgs,
   OnSetItemsCalledEventArgs,
   PagingInfo,
+  SlickGridModel,
 } from './models/index';
 import {
   SlickEvent as SlickEvent_,
@@ -22,7 +23,6 @@ import {
   Utils as Utils_,
   SlickNonDataItem,
 } from './slick.core';
-import type { SlickGrid } from './slick.grid';
 import { SlickGroupItemMetadataProvider as SlickGroupItemMetadataProvider_ } from './slick.groupitemmetadataprovider';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -85,7 +85,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   protected compiledFilterWithCaching?: FilterFn<TData> | null;
   protected compiledFilterWithCachingCSPSafe?: FilterWithCspCachingFn<TData> | null;
   protected filterCache: any[] = [];
-  protected _grid?: SlickGrid; // grid object will be defined only after using "syncGridSelection()" method"
+  protected _grid?: SlickGridModel; // grid object will be defined only after using "syncGridSelection()" method"
 
   // grouping
   protected groupingInfoDefaults: Grouping = {
@@ -1393,7 +1393,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
    *     access to the full list selected row ids, and not just the ones visible to the grid.
    * @method syncGridSelection
    */
-  syncGridSelection(grid: SlickGrid, preserveHidden: boolean, preserveHiddenOnSelectionChange?: boolean) {
+  syncGridSelection(grid: SlickGridModel, preserveHidden: boolean, preserveHiddenOnSelectionChange?: boolean) {
     this._grid = grid;
     let inHandler: boolean;
     this.selectedRowIds = this.mapRowsToIds(grid.getSelectedRows());
@@ -1569,7 +1569,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     return (intersection || []) as T[];
   }
 
-  syncGridCellCssStyles(grid: SlickGrid, key: string) {
+  syncGridCellCssStyles(grid: SlickGridModel, key: string) {
     let hashById: any;
     let inHandler: boolean;
 

@@ -8,7 +8,6 @@ import type {
   CSSStyleDeclarationWritable,
   EditController,
   ElementEventListener,
-  GridOption,
   Handler,
   InferDOMType,
   MergeTypes
@@ -20,7 +19,7 @@ import type {
  * @class EventData
  * @constructor
  */
-export class SlickEventData {
+export class SlickEventData<ArgType = any> {
   protected _isPropagationStopped = false;
   protected _isImmediatePropagationStopped = false;
   protected _isDefaultPrevented = false;
@@ -28,9 +27,9 @@ export class SlickEventData {
   protected returnValue: any = undefined;
   protected target?: EventTarget | null;
   protected nativeEvent?: Event | null;
-  protected arguments_: any;
+  protected arguments_?: ArgType;
 
-  constructor(protected event?: Event | null, protected args?: any) {
+  constructor(protected event?: Event | null, protected args?: ArgType) {
     this.nativeEvent = event;
     this.arguments_ = args;
 
@@ -186,7 +185,7 @@ export class SlickEvent<ArgType = any> {
       sed.addReturnValue(returnValue);
     }
 
-    // user optionally add CustomEvent listeners, that is when both `dispatchEventTarget` grid option and event name are defined
+    // user optionally add CustomEvent listeners, that is when both `enableSlickEventDispatch` grid option and event name are defined
     if (typeof this._eventTargetElm?.dispatchEvent === 'function') {
       const eventInit: CustomEventInit<ArgType> = { bubbles: true, cancelable: true };
       if (args) {
@@ -655,8 +654,7 @@ export class Utils {
   };
 
   public static isFunction(obj: any) {
-    return typeof obj === 'function' && typeof obj.nodeType !== 'number' &&
-      typeof obj.item !== 'function';
+    return typeof obj === 'function' && typeof obj.nodeType !== 'number' && typeof obj.item !== 'function';
   }
 
   public static isPlainObject(obj: any) {
@@ -931,9 +929,7 @@ export class Utils {
 
   public static hide(el: HTMLElement | HTMLElement[]) {
     if (Array.isArray(el)) {
-      el.forEach(function (e) {
-        e.style.display = 'none';
-      });
+      el.forEach((e) => e.style.display = 'none');
     } else {
       el.style.display = 'none';
     }
@@ -965,16 +961,16 @@ export class Utils {
   }
 
   /**
-   * User could optionally add CustomEvent dispatch through an optional "dispatchEventTarget" grid option.
+   * User could optionally add CustomEvent dispatch through an optional "enableSlickEventDispatch" grid option.
    * When it is defined then a SlickEvent `notify()` call will also dispatch a CustomEvent of the same name
    * @param {GridOption} gridOption
    * @param {*} scope
    */
-  public static addSlickEventDispatchWhenDefined(gridOptions: Partial<GridOption>, scope: any) {
-    if (gridOptions?.dispatchEventTarget) {
+  public static addSlickEventDispatchWhenDefined<T = any>(target: string | HTMLElement, scope: T) {
+    if (target) {
       for (const prop in scope) {
         if (scope[prop] instanceof SlickEvent && typeof (scope[prop] as SlickEvent).addDispatchEventTarget === 'function') {
-          (scope[prop] as SlickEvent).addDispatchEventTarget(gridOptions.dispatchEventTarget);
+          (scope[prop] as SlickEvent).addDispatchEventTarget(target);
         }
       }
     }

@@ -73,7 +73,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
 
     this._decorator = this._options.cellDecorator || new SlickCellRangeDecorator(grid, this._options);
     this._grid = grid;
-    Utils.addSlickEventDispatchWhenDefined(this._gridOptions, this);
+    Utils.addSlickEventDispatchWhenDefined(grid.getContainerNode(), this);
     this._canvas = this._grid.getCanvasNode();
     this._gridOptions = this._grid.getOptions();
     this._handler

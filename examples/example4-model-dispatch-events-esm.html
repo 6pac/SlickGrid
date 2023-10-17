@@ -41,19 +41,6 @@
       mask-size: 1em;
       -webkit-mask-size: 1em;
     }
-    .btn-alpine-theme {
-      background-color: gray;
-      color: white;
-      border-width: 1px;
-      border-radius: 2px;
-      height: 22px;
-    }
-    .btn-classic-theme {
-      background-color: #bbd1ee;
-      border-width: 1px;
-      border-radius: 2px;
-      height: 22px;
-    }
     .sgi-search:hover {
       cursor: pointer;
       color: darkcyan;
@@ -113,13 +100,10 @@
         <li>inline filter panel</li>
       </ul>
       <strong>Load CSS Theme:</strong>
-      <button class="btn-alpine-theme" data-test="theme-alpine-btn">Alpine Theme</button>
-      <button class="btn-classic-theme" data-test="theme-classic-btn">Classic Theme</button>
-
-        <h2>View Source:</h2>
-        <ul>
-            <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example4-model-esm.html" target="_sourcewindow"> View the source for this example on Github</a></li>
-        </ul>
+      <h2>View Source:</h2>
+      <ul>
+          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example4-model-dispatch-events-esm.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+      </ul>
 
     </div>
   </div>
@@ -180,6 +164,7 @@ let options = {
     forceFitTitle: "Force fit columns",
     syncResizeTitle: "Synchronous resize",
   },
+  enableSlickEventDispatch: true,
   editable: true,
   enableAddRow: true,
   enableCellNavigation: true,
@@ -254,6 +239,85 @@ function toggleFilterRow() {
   grid.setTopPanelVisibility(!grid.getOptions().showTopPanel);
 }
 
+function handlePagingInfoChanged(e) {
+  const pagingInfo = e.detail; // CustomEvent "detail" prop contains our SlickEvent args
+  grid.updatePagingStatusFromView( pagingInfo );
+
+  // show the pagingInfo but remove the dataView from the object, just for the Cypress E2E test
+  delete pagingInfo.dataView;
+  console.log('on After Paging Info Changed - New Paging:: ', pagingInfo);
+}
+
+function handleBeforePagingInfoChanged(e) {
+  const previousPagingInfo = e.detail; // CustomEvent "detail" prop contains our SlickEvent args
+
+  // show the previous pagingInfo but remove the dataView from the object, just for the Cypress E2E test
+  delete previousPagingInfo.dataView;
+  console.log('on Before Paging Info Changed - Previous Paging:: ', previousPagingInfo);
+}
+
+function handleRowCountChanged(e) {
+  const args = e.detail;
+  grid.updateRowCount();
+  grid.render();
+}
+
+function handleRowsChanged(e) {
+  const args = e.detail;
+  grid.invalidateRows(args.rows);
+  grid.render();
+}
+
+function handleCellChange(e) {
+  const args = e.detail;
+  dataView.updateItem(args.item.id, args.item);
+}
+
+function handleAddNewRow(e) {
+  const args = e.detail;
+  let item = {"num": data.length, "id": "new_" + (Math.round(Math.random() * 10000)), "title": "New task", "duration": "1 day", "percentComplete": 0, "start": "01/01/2009", "finish": "01/01/2009", "effortDriven": false};
+  Utils.extend(item, args.item);
+  dataView.addItem(item);
+}
+
+function handleKeyDown(e) {
+  // select all rows on ctrl-a
+  if (e.which != 65 || !e.ctrlKey) {
+    return false;
+  }
+
+  let rows = [];
+  for (let i = 0; i < dataView.getLength(); i++) {
+    rows.push(i);
+  }
+
+  grid.setSelectedRows(rows);
+  e.preventDefault();
+}
+
+function handleSort(e) {
+  const args = e.detail;
+  sortdir = args.sortAsc ? 1 : -1;
+  sortcol = args.sortCol.field;
+
+  // using native sort with comparer
+  dataView.sort(comparer, args.sortAsc);
+}
+
+// when leaving the page (destroy)
+document.addEventListener("beforeunload", () => {
+  myGridElm.removeEventListener('onPagingInfoChanged', handlePagingInfoChanged);
+  myGridElm.removeEventListener('onBeforePagingInfoChanged', handleBeforePagingInfoChanged);
+  myGridElm.removeEventListener('onRowCountChanged', handleRowCountChanged);
+  myGridElm.removeEventListener('onRowsChanged', handleRowsChanged);
+  myGridElm.removeEventListener('onCellChange', handleCellChange);
+  myGridElm.removeEventListener('onAddNewRow', handleAddNewRow);
+  myGridElm.removeEventListener('onKeyDown', handleKeyDown);
+  myGridElm.removeEventListener('onSort', handleSort);
+  dataView.destroy();
+  grid.destroy();
+});
+
 document.addEventListener("DOMContentLoaded", () => {
   // prepare the data
   for (let i = 0; i < 50000; i++) {
@@ -269,6 +333,22 @@ document.addEventListener("DOMContentLoaded", () => {
     d["effortDriven"] = (i % 5 == 0);
   }
 
+  // with `enableSlickEventDispatch` grid option, we can use CustomEvent listeners instead of SlickEvent subscribe (don't forget to also removeEventListener to avoid leaking)
+  // CustomEvent have a `detail` property and that is were our typical `args` data will be
+  // Note: to avoid listening too late, you would typically add listeners BEFORE instantiating SlickGrid/SlickDataView
+  const myGridElm = document.querySelector('#myGrid');
+
+  // CustomEvent "detail" prop contains our SlickEvent args
+  // myGridElm.addEventListener('onClick', (e) => console.log(`event listener ${e.type}`, e.detail));
+  myGridElm.addEventListener('onPagingInfoChanged', handlePagingInfoChanged);
+  myGridElm.addEventListener('onBeforePagingInfoChanged', handleBeforePagingInfoChanged);
+  myGridElm.addEventListener('onRowCountChanged', handleRowCountChanged);
+  myGridElm.addEventListener('onRowsChanged', handleRowsChanged);
+  myGridElm.addEventListener('onCellChange', handleCellChange);
+  myGridElm.addEventListener('onAddNewRow', handleAddNewRow);
+  myGridElm.addEventListener('onKeyDown', handleKeyDown);
+  myGridElm.addEventListener('onSort', handleSort);
+
   // instantiate SlickGrid and SlickDataView
   dataView = new SlickDataView({ inlineFilters: true });
   grid = new SlickGrid("#myGrid", dataView, columns, options);
@@ -283,65 +363,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const topPanelLeftElm = document.querySelector("#inlineFilterPanel");
   topPanel.appendChild(topPanelLeftElm);
   topPanelLeftElm.style.display = 'block';
-
-  grid.onCellChange.subscribe((e, args) => {
-    dataView.updateItem(args.item.id, args.item);
-  });
-
-  grid.onAddNewRow.subscribe((e, args) => {
-    let item = {"num": data.length, "id": "new_" + (Math.round(Math.random() * 10000)), "title": "New task", "duration": "1 day", "percentComplete": 0, "start": "01/01/2009", "finish": "01/01/2009", "effortDriven": false};
-    Utils.extend(item, args.item);
-    dataView.addItem(item);
-  });
-
-  grid.onKeyDown.subscribe(function (e) {
-    // select all rows on ctrl-a
-    if (e.which != 65 || !e.ctrlKey) {
-      return false;
-    }
-
-    let rows = [];
-    for (let i = 0; i < dataView.getLength(); i++) {
-      rows.push(i);
-    }
-
-    grid.setSelectedRows(rows);
-    e.preventDefault();
-  });
-
-  grid.onSort.subscribe((e, args) => {
-    sortdir = args.sortAsc ? 1 : -1;
-    sortcol = args.sortCol.field;
-
-    // using native sort with comparer
-    dataView.sort(comparer, args.sortAsc);
-  });
-
-  // wire up model events to drive the grid
-  // !! both dataView.onRowCountChanged and dataView.onRowsChanged MUST be wired to correctly update the grid
-  // see Issue#91
-  dataView.onRowCountChanged.subscribe((e, args) => {
-    grid.updateRowCount();
-    grid.render();
-  });
-
-  dataView.onRowsChanged.subscribe((e, args) => {
-    grid.invalidateRows(args.rows);
-    grid.render();
-  });
-
-  dataView.onPagingInfoChanged.subscribe((e, pagingInfo) => {
-    grid.updatePagingStatusFromView( pagingInfo );
-    // show the pagingInfo but remove the dataView from the object, just for the Cypress E2E test
-    delete pagingInfo.dataView;
-    console.log('on After Paging Info Changed - New Paging:: ', pagingInfo);
-  });
-
-  dataView.onBeforePagingInfoChanged.subscribe((e, previousPagingInfo) => {
-    // show the previous pagingInfo but remove the dataView from the object, just for the Cypress E2E test
-    delete previousPagingInfo.dataView;
-    console.log('on Before Paging Info Changed - Previous Paging:: ', previousPagingInfo);
-  });
 
   let h_runfilters = null;
 
@@ -408,8 +429,6 @@ document.addEventListener("DOMContentLoaded", () => {
   dataView.syncGridSelection(grid, true);
 
   document.querySelector('.sgi-search').addEventListener('click', toggleFilterRow);
-  document.querySelector('.btn-alpine-theme').addEventListener('click', () => toggleTheme('alpine'));
-  document.querySelector('.btn-classic-theme').addEventListener('click', () => toggleTheme('classic'));
 });
 </script>
 </body>

@@ -109,11 +109,8 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   /** Default cell Formatter that will be used by the grid */
   defaultFormatter?: Formatter;
 
-  /**
-   * Defaults to none, if defined a SlickEvent notify will also dispatch a CustomEvent to the defined targeted element (typically your grid container).
-   * You must provide a valid query selector string or an HTML element.
-   */
-  dispatchEventTarget?: string | HTMLElement;
+  /** Defaults to False, if enabled a SlickEvent notify will also dispatch a CustomEvent to the grid container element. */
+  enableSlickEventDispatch?: boolean;
 
   /** Do we have paging enabled? */
   doPaging?: boolean;

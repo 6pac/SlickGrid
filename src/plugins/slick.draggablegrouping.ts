@@ -85,7 +85,7 @@ export class SlickDraggableGrouping {
    */
   init(grid: SlickGrid) {
     this._grid = grid;
-    Utils.addSlickEventDispatchWhenDefined(grid.getOptions(), this);
+    Utils.addSlickEventDispatchWhenDefined(grid.getContainerNode(), this);
 
     this._gridUid = this._grid.getUID();
     this._gridColumns = this._grid.getColumns();
