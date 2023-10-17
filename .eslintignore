@@ -1,1 +1,4 @@
 *.d.ts
+dist/
+lib/
+tests/
