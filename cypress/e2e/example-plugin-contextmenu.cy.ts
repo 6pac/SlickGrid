@@ -151,7 +151,7 @@ describe('Example - Context Menu & Cell Menu', () => {
     const stub = cy.stub();
     cy.on('window:alert', stub);
 
-    cy.get('.slick-cell-menu.level-0 .slick-cell-menu-option-list')
+    cy.get('.slick-cell-menu.slick-menu-level-0 .slick-cell-menu-option-list')
       .find('.slick-cell-menu-item')
       .contains('False')
       .click();
@@ -176,12 +176,18 @@ describe('Example - Context Menu & Cell Menu', () => {
       .contains('Action')
       .click({ force: true });
 
-    cy.get('.slick-cell-menu.level-0 .slick-cell-menu-option-list')
+    cy.get('.slick-cell-menu.slick-menu-level-0 .slick-cell-menu-option-list')
       .find('.slick-cell-menu-item')
       .contains('Sub-Options')
       .click();
 
-    cy.get('.slick-cell-menu.level-1 .slick-cell-menu-option-list')
+    cy.get('.slick-cell-menu.slick-menu-level-1 .slick-cell-menu-option-list').as('subMenuList');
+
+    cy.get('@subMenuList')
+      .find('.title')
+      .contains('Set Effort Driven');
+
+    cy.get('@subMenuList')
       .find('.slick-cell-menu-item')
       .contains('True')
       .click();
@@ -208,12 +214,12 @@ describe('Example - Context Menu & Cell Menu', () => {
       .contains('Action')
       .click({ force: true });
 
-    cy.get('.slick-cell-menu.level-0 .slick-cell-menu-option-list')
+    cy.get('.slick-cell-menu.slick-menu-level-0 .slick-cell-menu-option-list')
       .find('.slick-cell-menu-item')
       .contains('Sub-Options')
       .click();
 
-    cy.get('.slick-cell-menu.level-1 .slick-cell-menu-option-list')
+    cy.get('.slick-cell-menu.slick-menu-level-1 .slick-cell-menu-option-list')
       .find('.slick-cell-menu-item')
       .contains('False')
       .click();
@@ -289,17 +295,17 @@ describe('Example - Context Menu & Cell Menu', () => {
       .contains('Action')
       .click({ force: true });
 
-    cy.get('.slick-cell-menu.level-0 .slick-cell-menu-command-list')
+    cy.get('.slick-cell-menu.slick-menu-level-0 .slick-cell-menu-command-list')
       .find('.slick-cell-menu-item')
       .contains('Export')
       .click();
 
-    cy.get('.slick-cell-menu.level-1 .slick-cell-menu-command-list')
+    cy.get('.slick-cell-menu.slick-menu-level-1 .slick-cell-menu-command-list')
       .should('exist')
       .find('.slick-cell-menu-item')
       .each(($command, index) => expect($command.text()).to.eq(subCommands[index]));
 
-    cy.get('.slick-cell-menu.level-1 .slick-cell-menu-command-list')
+    cy.get('.slick-cell-menu.slick-menu-level-1 .slick-cell-menu-command-list')
       .find('.slick-cell-menu-item')
       .contains('PDF')
       .click()
@@ -317,27 +323,33 @@ describe('Example - Context Menu & Cell Menu', () => {
       .contains('Action')
       .click({ force: true });
 
-    cy.get('.slick-cell-menu.level-0 .slick-cell-menu-command-list')
+    cy.get('.slick-cell-menu.slick-menu-level-0 .slick-cell-menu-command-list')
       .find('.slick-cell-menu-item')
       .contains('Export')
       .click();
 
-    cy.get('.slick-cell-menu.level-1 .slick-cell-menu-command-list')
+    cy.get('.slick-cell-menu.slick-menu-level-1 .slick-cell-menu-command-list')
       .should('exist')
       .find('.slick-cell-menu-item')
       .each(($command, index) => expect($command.text()).to.eq(subCommands1[index]));
 
-    cy.get('.slick-cell-menu.level-1 .slick-cell-menu-command-list')
+    cy.get('.slick-cell-menu.slick-menu-level-1 .slick-cell-menu-command-list')
       .find('.slick-cell-menu-item')
       .contains('Excel')
       .click();
 
-    cy.get('.slick-cell-menu.level-2 .slick-cell-menu-command-list')
+    cy.get('.slick-cell-menu.slick-menu-level-2 .slick-cell-menu-command-list').as('subMenuList2');
+
+    cy.get('@subMenuList2')
+      .find('.title')
+      .contains('available formats');
+
+    cy.get('@subMenuList2')
       .should('exist')
       .find('.slick-cell-menu-item')
       .each(($command, index) => expect($command.text()).to.eq(subCommands2[index]));
 
-    cy.get('.slick-cell-menu.level-2 .slick-cell-menu-command-list')
+    cy.get('.slick-cell-menu.slick-menu-level-2 .slick-cell-menu-command-list')
       .find('.slick-cell-menu-item')
       .contains('Excel (xls)')
       .click()
@@ -354,32 +366,32 @@ describe('Example - Context Menu & Cell Menu', () => {
       .contains('Action')
       .click({ force: true });
 
-    cy.get('.slick-cell-menu.level-0 .slick-cell-menu-command-list')
+    cy.get('.slick-cell-menu.slick-menu-level-0 .slick-cell-menu-command-list')
       .find('.slick-cell-menu-item')
       .contains('Export')
       .click();
 
-    cy.get('.slick-cell-menu.level-1 .slick-cell-menu-command-list')
+    cy.get('.slick-cell-menu.slick-menu-level-1 .slick-cell-menu-command-list')
       .should('exist')
       .find('.slick-cell-menu-item')
       .each(($command, index) => expect($command.text()).to.eq(subCommands1[index]));
 
-    cy.get('.slick-cell-menu.level-1 .slick-cell-menu-command-list')
+    cy.get('.slick-cell-menu.slick-menu-level-1 .slick-cell-menu-command-list')
       .find('.slick-cell-menu-item')
       .contains('Excel')
       .click();
 
-    cy.get('.slick-cell-menu.level-2 .slick-cell-menu-command-list')
+    cy.get('.slick-cell-menu.slick-menu-level-2 .slick-cell-menu-command-list')
       .should('exist')
       .find('.slick-cell-menu-item')
       .each(($command, index) => expect($command.text()).to.eq(subCommands2[index]));
 
-    cy.get('.slick-cell-menu.level-0 .slick-cell-menu-option-list')
+    cy.get('.slick-cell-menu.slick-menu-level-0 .slick-cell-menu-option-list')
       .find('.slick-cell-menu-item')
       .contains('Sub-Options')
       .click();
 
-    cy.get('.slick-cell-menu.level-1 .slick-cell-menu-option-list')
+    cy.get('.slick-cell-menu.slick-menu-level-1 .slick-cell-menu-option-list')
       .should('exist')
       .find('.slick-cell-menu-item')
       .each(($option, index) => expect($option.text()).to.eq(subOptions[index]));

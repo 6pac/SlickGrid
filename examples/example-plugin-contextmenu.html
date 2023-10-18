@@ -363,7 +363,7 @@
               commandItems: [
                 { command: "export-pdf", title: "PDF" },
                 {
-                  command: 'sub-menu', title: 'Excel', cssClass: "green",
+                  command: 'sub-menu', title: 'Excel', cssClass: "green", subMenuTitle: "available formats",
                   commandItems: [
                     { command: "export-csv", title: "Excel (csv)" },
                     { command: "export-xls", title: "Excel (xls)" },
@@ -393,7 +393,7 @@
             },
             {
               // we can also have multiple sub-items
-              option: null, title: "Sub-Options (demo)", optionItems: [
+              option: null, title: "Sub-Options (demo)", subMenuTitle: "Set Effort Driven", optionItems: [
                 { option: true, title: "True", iconCssClass: 'sgi sgi-checkbox-marked-outline green' },
                 { option: false, title: "False", iconCssClass: 'sgi sgi-checkbox-blank-outline pink' },
               ]
@@ -567,7 +567,6 @@
 
       // subscribe to Cell Menu onOptionSelected event (or use the action callback on each option)
       cellMenuPlugin.onOptionSelected.subscribe(function (e, args) {
-        console.log('onOptionSelected', args)
         // e.preventDefault(); // you could do if you wish to keep the menu open
         var dataContext = args && args.dataContext;
 

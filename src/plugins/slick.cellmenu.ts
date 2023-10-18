@@ -7,6 +7,7 @@ import {
 } from '../slick.core';
 import type {
   CellMenuOption,
+  Column,
   DOMMouseOrTouchEvent,
   GridOption,
   MenuCommandItem,
@@ -261,7 +262,15 @@ export class SlickCellMenu implements SlickPlugin {
     return this._menuElm;
   }
 
-  protected createCellMenu(commandItems: Array<MenuCommandItem | 'divider'>, optionItems: Array<MenuOptionItem | 'divider'>, level = 0) {
+  /**
+   * Create parent menu or sub-menu(s), a parent menu will start at level 0 while sub-menu(s) will be incremented
+   * @param commandItems - array of optional commands or dividers
+   * @param optionItems - array of optional options or dividers
+   * @param level - menu level
+   * @param item - command, option or divider
+   * @returns menu DOM element
+   */
+  protected createCellMenu(commandItems: Array<MenuCommandItem | 'divider'>, optionItems: Array<MenuOptionItem | 'divider'>, level = 0, item?: MenuCommandItem  | MenuOptionItem | 'divider') {
     const columnDef = this._grid.getColumns()[this._currentCell];
     const dataContext = this._grid.getDataItem(this._currentRow);
 
@@ -269,8 +278,8 @@ export class SlickCellMenu implements SlickPlugin {
     const maxHeight = isNaN(this._cellMenuProperties.maxHeight as number) ? this._cellMenuProperties.maxHeight : `${this._cellMenuProperties.maxHeight ?? 0}px`;
     const width = isNaN(this._cellMenuProperties.width as number) ? this._cellMenuProperties.width : `${this._cellMenuProperties.maxWidth ?? 0}px`;
 
-    const menuClasses = `slick-cell-menu ${this._gridUid} level-${level}`;
-    const bodyMenuElm = document.body.querySelector<HTMLDivElement>(`.slick-cell-menu.${this._gridUid}.level-${level}`);
+    const menuClasses = `slick-cell-menu ${this._gridUid} slick-menu-level-${level}`;
+    const bodyMenuElm = document.body.querySelector<HTMLDivElement>(`.slick-cell-menu.${this._gridUid}.slick-menu-level-${level}`);
 
     // if menu/sub-menu already exist, then no need to recreate, just return it
     if (bodyMenuElm) {
@@ -280,7 +289,7 @@ export class SlickCellMenu implements SlickPlugin {
     const menuElm = document.createElement('div');
     menuElm.className = menuClasses;
     if (level > 0) {
-      menuElm.classList.add('sub-menu');
+      menuElm.classList.add('slick-submenu');
     }
     menuElm.role = 'menu';
     if (width) {
@@ -313,6 +322,11 @@ export class SlickCellMenu implements SlickPlugin {
       optionMenuElm.className = 'slick-cell-menu-option-list';
       optionMenuElm.role = 'menu';
 
+      // when creating sub-menu add its sub-menu title when exists
+      if (item && level > 0) {
+        this.addSubMenuTitleWhenExists(item, optionMenuElm); // add sub-menu title when exists
+      }
+
       if (closeButtonElm && !this._cellMenuProperties.hideCloseButton) {
         this._bindingEventService.bind(closeButtonElm, 'click', this.handleCloseButtonClicked.bind(this) as EventListener);
         menuElm.appendChild(closeButtonElm);
@@ -333,6 +347,11 @@ export class SlickCellMenu implements SlickPlugin {
       const commandMenuElm = document.createElement('div');
       commandMenuElm.className = 'slick-cell-menu-command-list';
       commandMenuElm.role = 'menu';
+
+      // when creating sub-menu add its sub-menu title when exists
+      if (item && level > 0) {
+        this.addSubMenuTitleWhenExists(item, commandMenuElm); // add sub-menu title when exists
+      }
 
       if (closeButtonElm && !this._cellMenuProperties.hideCloseButton && (optionItems.length === 0 || this._cellMenuProperties.hideOptionSection)) {
         this._bindingEventService.bind(closeButtonElm, 'click', this.handleCloseButtonClicked.bind(this) as EventListener);
@@ -355,6 +374,15 @@ export class SlickCellMenu implements SlickPlugin {
     return menuElm;
   }
 
+  protected addSubMenuTitleWhenExists(item: MenuCommandItem  | MenuOptionItem | 'divider', commandOrOptionMenu: HTMLDivElement) {
+    if (item !== 'divider' && item?.subMenuTitle) {
+      const subMenuTitleElm = document.createElement('div');
+      subMenuTitleElm.className = 'title';
+      subMenuTitleElm.textContent = (item as MenuCommandItem | MenuOptionItem).subMenuTitle as string;
+      commandOrOptionMenu.appendChild(subMenuTitleElm);
+    }
+  }
+
   protected handleCloseButtonClicked(e: DOMMouseOrTouchEvent<HTMLButtonElement>) {
     if (!e.defaultPrevented) {
       this.closeMenu(e);
@@ -371,7 +399,7 @@ export class SlickCellMenu implements SlickPlugin {
       }, e, this).getReturnValue() === false) {
         return;
       }
-      this._menuElm?.remove();
+      this._menuElm.remove();
       this._menuElm = null;
     }
     this.destroySubMenus();
@@ -393,7 +421,7 @@ export class SlickCellMenu implements SlickPlugin {
    * @param {*} event
    */
   repositionMenu(menuElm: HTMLElement, e: DOMMouseOrTouchEvent<HTMLDivElement>) {
-    const isFromSubMenu = menuElm.classList.contains('sub-menu');
+    const isFromSubMenu = menuElm.classList.contains('slick-submenu');
     const parentElm = isFromSubMenu
       ? e.target.closest('.slick-cell-menu-item') as HTMLDivElement
       : e.target.closest('.slick-cell') as HTMLDivElement;
@@ -526,7 +554,13 @@ export class SlickCellMenu implements SlickPlugin {
   }
 
   /** Build the Command Items section. */
-  protected populateCommandOrOptionItems(itemType: CellMenuType, cellMenu: CellMenuOption, commandOrOptionMenuElm: HTMLElement, commandOrOptionItems: Array<MenuCommandItem | 'divider'> | Array<MenuOptionItem | 'divider'>, args: any) {
+  protected populateCommandOrOptionItems(
+    itemType: CellMenuType,
+    cellMenu: CellMenuOption,
+    commandOrOptionMenuElm: HTMLElement,
+    commandOrOptionItems: Array<MenuCommandItem | 'divider'> | Array<MenuOptionItem | 'divider'>,
+    args: { cell: number, row: number, column: Column, dataContext: any, grid: SlickGrid, level: number }
+  ) {
     if (!args || !commandOrOptionItems || !cellMenu) {
       return;
     }
@@ -554,7 +588,7 @@ export class SlickCellMenu implements SlickPlugin {
       }
 
       // when the override is defined, we need to use its result to update the disabled property
-      // so that "handleMenuItemCommandClick" has the correct flag and won't trigger a command clicked event
+      // so that "handleMenuItemCommandClick" has the correct flag and won't trigger a command/option clicked event
       if (Object.prototype.hasOwnProperty.call(item, 'itemUsabilityOverride')) {
         (item as MenuCommandItem | MenuOptionItem).disabled = isItemUsable ? false : true;
       }
@@ -615,7 +649,7 @@ export class SlickCellMenu implements SlickPlugin {
         this._bindingEventService.bind(liElm, 'click', this.handleMenuItemClick.bind(this, item, itemType, args.level) as EventListener);
       }
 
-      // the option/command item could be a sub-menu if it has another list of options/commands
+      // the option/command item could be a sub-menu if it has another list of commands/options
       if ((item as MenuCommandItem).commandItems || (item as MenuOptionItem).optionItems) {
         const chevronElm = document.createElement('span');
         chevronElm.className = 'sub-item-chevron';
@@ -625,7 +659,7 @@ export class SlickCellMenu implements SlickPlugin {
           chevronElm.textContent = '⮞'; // ⮞ or ▸
         }
 
-        liElm.classList.add('submenu-item');
+        liElm.classList.add('slick-submenu-item');
         liElm.appendChild(chevronElm);
         continue;
       }
@@ -638,7 +672,8 @@ export class SlickCellMenu implements SlickPlugin {
       this.destroySubMenus();
     }
 
-    const subMenuElm = this.createCellMenu((item as MenuCommandItem)?.commandItems || [], (item as MenuOptionItem)?.optionItems || [], level + 1);
+    // creating sub-menu, we'll also pass level & the item object since we might have "subMenuTitle" to show
+    const subMenuElm = this.createCellMenu((item as MenuCommandItem)?.commandItems || [], (item as MenuOptionItem)?.optionItems || [], level + 1, item);
     this._subMenuElms.push(subMenuElm);
     subMenuElm.style.display = 'block';
     document.body.appendChild(subMenuElm);
@@ -658,7 +693,7 @@ export class SlickCellMenu implements SlickPlugin {
 
       if (optionOrCommand !== undefined && !(item as any)[`${type}Items`]) {
         // user could execute a callback through 2 ways
-        // via the onCommand event and/or an action callback
+        // via the onCommand/onOptionSelected event and/or an action callback
         const callbackArgs = {
           cell,
           row,
