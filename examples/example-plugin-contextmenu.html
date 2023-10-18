@@ -84,10 +84,10 @@
 <body>
   <table width="100%">
     <tr>
-      <td valign="top" width="50%">
+      <td valign="top" width="50%" style="padding-left: 0px">
         <div id="myGrid" class="slick-container" style="width:650px;height:700px;"></div>
       </td>
-      <td valign="top">
+      <td valign="top" style="display: block">
         <h2>
           <h2>
             <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
@@ -285,10 +285,13 @@
 
       switch (command) {
         case "command1":
-          alert('Command 1');
-          break;
         case "command2":
-          alert('Command 2');
+          alert(args.item.title);
+          break;
+        case "export-csv":
+        case "export-pdf":
+        case "export-xls":
+          alert("Exporting as " + args.item.title);
           break;
         case "copy-text":
           copyCellValue(args.value);
@@ -352,7 +355,22 @@
             "divider",
             // { divider: true },
             { command: "help", title: "Help", iconCssClass: "sgi sgi-help-circle-outline" },
-            { command: "something", title: "Disabled Command", disabled: true }
+            { command: "something", title: "Disabled Command", disabled: true },
+            "divider",
+            {
+              // we can also have multiple sub-items
+              command: 'export', title: 'Export',
+              commandItems: [
+                { command: "export-pdf", title: "PDF" },
+                {
+                  command: 'sub-menu', title: 'Excel', cssClass: "green",
+                  commandItems: [
+                    { command: "export-csv", title: "Excel (csv)" },
+                    { command: "export-xls", title: "Excel (xls)" },
+                  ]
+                }
+              ]
+            }
           ],
           optionTitle: "Change Effort Driven",
           optionItems: [
@@ -373,6 +391,13 @@
                 return (!args.dataContext.effortDriven);
               }
             },
+            {
+              // we can also have multiple sub-items
+              option: null, title: "Sub-Options (demo)", optionItems: [
+                { option: true, title: "True", iconCssClass: 'sgi sgi-checkbox-marked-outline green' },
+                { option: false, title: "False", iconCssClass: 'sgi sgi-checkbox-blank-outline pink' },
+              ]
+            }
           ]
         }
       }
@@ -450,7 +475,7 @@
     document.addEventListener("DOMContentLoaded", function() {
       dataView = new Slick.Data.DataView();
       grid = new Slick.Grid("#myGrid", dataView, columns, gridOptions);
-      cellMenuPlugin = new Slick.Plugins.CellMenu({ hideMenuOnScroll: true });
+      cellMenuPlugin = new Slick.Plugins.CellMenu({ hideMenuOnScroll: true, subItemChevronClass: 'sgi sgi-chevron-right' });
       contextMenuPlugin = new Slick.Plugins.ContextMenu(contextMenuOptions);
       var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, gridOptions);
 
@@ -542,6 +567,7 @@
 
       // subscribe to Cell Menu onOptionSelected event (or use the action callback on each option)
       cellMenuPlugin.onOptionSelected.subscribe(function (e, args) {
+        console.log('onOptionSelected', args)
         // e.preventDefault(); // you could do if you wish to keep the menu open
         var dataContext = args && args.dataContext;
 

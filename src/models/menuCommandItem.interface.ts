@@ -7,6 +7,9 @@ export interface MenuCommandItem<A = MenuCommandItemCallbackArgs, R = MenuCallba
   /** A command identifier to be passed to the onCommand event callback handler (when using "commandItems"). */
   command: string;
 
+  /** Array of Command Items (title, command, disabled, ...) */
+  commandItems?: Array<MenuCommandItem | 'divider'>;
+
   // --
   // action/override callbacks
 

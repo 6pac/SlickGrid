@@ -80,6 +80,10 @@
   border: 1px solid transparent;
   border-radius: 3px;
   display: block;
+
+  .sub-item-chevron {
+    float: right;
+  }
 }
 .slick-cell-menu-item:hover {
   border-color: silver;

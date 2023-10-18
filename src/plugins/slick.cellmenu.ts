@@ -25,6 +25,8 @@ const SlickEventData = IIFE_ONLY ? Slick.EventData : SlickEventData_;
 const EventHandler = IIFE_ONLY ? Slick.EventHandler : SlickEventHandler_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
+export type CellMenuType = 'command' | 'option';
+
 /**
  * A plugin to add Menu on a Cell click (click on the cell that has the cellMenu object defined)
  * The "cellMenu" is defined in a Column Definition object
@@ -81,6 +83,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  *    autoAlignSide:              Auto-align drop menu to the left or right depending on grid viewport available space (defaults to true)
  *    autoAlignSideOffset:        Optionally add an offset to the left/right side auto-align (defaults to 0)
  *    menuUsabilityOverride:      Callback method that user can override the default behavior of enabling/disabling the menu from being usable (must be combined with a custom formatter)
+ *    subItemChevronClass:        CSS class that can be added on the right side of a sub-item parent (typically a chevron-right icon)
  *
  *
  * Available menu Command/Option item properties:
@@ -167,6 +170,7 @@ export class SlickCellMenu implements SlickPlugin {
   protected _commandTitleElm?: HTMLSpanElement;
   protected _optionTitleElm?: HTMLSpanElement;
   protected _menuElm?: HTMLDivElement | null;
+  protected _subMenuElms: HTMLDivElement[] = [];
   protected _bindingEventService = new BindingEventService();
   protected _defaults: CellMenuOption = {
     autoAdjustDrop: true,     // dropup/dropdown
@@ -177,6 +181,7 @@ export class SlickCellMenu implements SlickPlugin {
     maxHeight: 'none',
     width: 'auto',
   };
+  protected _lastCellMenuTypeClicked = '';
 
   constructor(optionProperties: Partial<CellMenuOption>) {
     this._cellMenuProperties = Utils.extend({}, this._defaults, optionProperties);
@@ -188,7 +193,7 @@ export class SlickCellMenu implements SlickPlugin {
     this._gridUid = grid?.getUID() || '';
     this._handler.subscribe(this._grid.onClick, this.handleCellClick.bind(this));
     if (this._cellMenuProperties.hideMenuOnScroll) {
-      this._handler.subscribe(this._grid.onScroll, this.destroyMenu.bind(this));
+      this._handler.subscribe(this._grid.onScroll, this.closeMenu.bind(this));
     }
   }
 
@@ -215,7 +220,6 @@ export class SlickCellMenu implements SlickPlugin {
     this._currentCell = cell?.cell ?? 0;
     this._currentRow = cell?.row ?? 0;
     const columnDef = this._grid.getColumns()[this._currentCell];
-    const dataContext = this._grid.getDataItem(this._currentRow);
 
     const commandItems = this._cellMenuProperties.commandItems || [];
     const optionItems = this._cellMenuProperties.optionItems || [];
@@ -226,7 +230,7 @@ export class SlickCellMenu implements SlickPlugin {
     }
 
     // delete any prior Cell Menu
-    this.destroyMenu();
+    this.closeMenu();
 
     // Let the user modify the menu or cancel altogether,
     // or provide alternative menu implementation.
@@ -238,74 +242,10 @@ export class SlickCellMenu implements SlickPlugin {
       return;
     }
 
-    // create a new cell menu
-    const maxHeight = isNaN(this._cellMenuProperties.maxHeight as number) ? this._cellMenuProperties.maxHeight : `${this._cellMenuProperties.maxHeight ?? 0}px`;
-    const width = isNaN(this._cellMenuProperties.width as number) ? this._cellMenuProperties.width : `${this._cellMenuProperties.maxWidth ?? 0}px`;
-
-    this._menuElm = document.createElement('div');
-    this._menuElm.className = `slick-cell-menu ${this._gridUid}`;
-    this._menuElm.role = 'menu';
-    if (width) {
-      this._menuElm.style.width = width as string;
-    }
-    if (maxHeight) {
-      this._menuElm.style.maxHeight = maxHeight as string;
-    }
+    // create 1st parent menu container & reposition it
+    this._menuElm = this.createCellMenu(commandItems, optionItems);
     this._menuElm.style.top = `${e.pageY + 5}px`;
     this._menuElm.style.left = `${e.pageX}px`;
-    this._menuElm.style.display = 'none';
-
-    const closeButtonElm = document.createElement('button');
-    closeButtonElm.type = 'button';
-    closeButtonElm.className = 'close';
-    closeButtonElm.dataset.dismiss = 'slick-cell-menu';
-    closeButtonElm.ariaLabel = 'Close';
-
-    const spanCloseElm = document.createElement('span');
-    spanCloseElm.className = 'close';
-    spanCloseElm.ariaHidden = 'true';
-    spanCloseElm.innerHTML = '&times;';
-    closeButtonElm.appendChild(spanCloseElm);
-
-    // -- Option List section
-    if (!this._cellMenuProperties.hideOptionSection && optionItems.length > 0) {
-      const optionMenuElm = document.createElement('div');
-      optionMenuElm.className = 'slick-cell-menu-option-list';
-      optionMenuElm.role = 'menu';
-
-      if (!this._cellMenuProperties.hideCloseButton) {
-        this._bindingEventService.bind(closeButtonElm, 'click', this.handleCloseButtonClicked.bind(this) as EventListener);
-        this._menuElm.appendChild(closeButtonElm);
-      }
-      this._menuElm.appendChild(optionMenuElm);
-
-      this.populateOptionItems(
-        this._cellMenuProperties,
-        optionMenuElm,
-        optionItems,
-        { cell: this._currentCell, row: this._currentRow, column: columnDef, dataContext, grid: this._grid }
-      );
-    }
-
-    // -- Command List section
-    if (!this._cellMenuProperties.hideCommandSection && commandItems.length > 0) {
-      const commandMenuElm = document.createElement('div');
-      commandMenuElm.className = 'slick-cell-menu-command-list';
-      commandMenuElm.role = 'menu';
-
-      if (!this._cellMenuProperties.hideCloseButton && (optionItems.length === 0 || this._cellMenuProperties.hideOptionSection)) {
-        this._bindingEventService.bind(closeButtonElm, 'click', this.handleCloseButtonClicked.bind(this) as EventListener);
-        this._menuElm.appendChild(closeButtonElm);
-      }
-
-      this._menuElm.appendChild(commandMenuElm);
-      this.populateCommandItems(
-        this._cellMenuProperties,
-        commandMenuElm,
-        commandItems,
-        { cell: this._currentCell, row: this._currentRow, column: columnDef, dataContext, grid: this._grid }
-      );
-    }
 
     this._menuElm.style.display = 'block';
     document.body.appendChild(this._menuElm);
@@ -321,16 +261,109 @@ export class SlickCellMenu implements SlickPlugin {
     return this._menuElm;
   }
 
+  protected createCellMenu(commandItems: Array<MenuCommandItem | 'divider'>, optionItems: Array<MenuOptionItem | 'divider'>, level = 0) {
+    const columnDef = this._grid.getColumns()[this._currentCell];
+    const dataContext = this._grid.getDataItem(this._currentRow);
+
+    // create a new cell menu
+    const maxHeight = isNaN(this._cellMenuProperties.maxHeight as number) ? this._cellMenuProperties.maxHeight : `${this._cellMenuProperties.maxHeight ?? 0}px`;
+    const width = isNaN(this._cellMenuProperties.width as number) ? this._cellMenuProperties.width : `${this._cellMenuProperties.maxWidth ?? 0}px`;
+
+    const menuClasses = `slick-cell-menu ${this._gridUid} level-${level}`;
+    const bodyMenuElm = document.body.querySelector<HTMLDivElement>(`.slick-cell-menu.${this._gridUid}.level-${level}`);
+
+    // if menu/sub-menu already exist, then no need to recreate, just return it
+    if (bodyMenuElm) {
+      return bodyMenuElm;
+    }
+
+    const menuElm = document.createElement('div');
+    menuElm.className = menuClasses;
+    if (level > 0) {
+      menuElm.classList.add('sub-menu');
+    }
+    menuElm.role = 'menu';
+    if (width) {
+      menuElm.style.width = width as string;
+    }
+    if (maxHeight) {
+      menuElm.style.maxHeight = maxHeight as string;
+    }
+
+    menuElm.style.display = 'none';
+
+    let closeButtonElm: HTMLButtonElement | null = null;
+    if (level === 0) {
+      closeButtonElm = document.createElement('button');
+      closeButtonElm.type = 'button';
+      closeButtonElm.className = 'close';
+      closeButtonElm.dataset.dismiss = 'slick-cell-menu';
+      closeButtonElm.ariaLabel = 'Close';
+
+      const spanCloseElm = document.createElement('span');
+      spanCloseElm.className = 'close';
+      spanCloseElm.ariaHidden = 'true';
+      spanCloseElm.innerHTML = '&times;';
+      closeButtonElm.appendChild(spanCloseElm);
+    }
+
+    // -- Option List section
+    if (!this._cellMenuProperties.hideOptionSection && optionItems.length > 0) {
+      const optionMenuElm = document.createElement('div');
+      optionMenuElm.className = 'slick-cell-menu-option-list';
+      optionMenuElm.role = 'menu';
+
+      if (closeButtonElm && !this._cellMenuProperties.hideCloseButton) {
+        this._bindingEventService.bind(closeButtonElm, 'click', this.handleCloseButtonClicked.bind(this) as EventListener);
+        menuElm.appendChild(closeButtonElm);
+      }
+      menuElm.appendChild(optionMenuElm);
+
+      this.populateCommandOrOptionItems(
+        'option',
+        this._cellMenuProperties,
+        optionMenuElm,
+        optionItems,
+        { cell: this._currentCell, row: this._currentRow, column: columnDef, dataContext, grid: this._grid, level }
+      );
+    }
+
+    // -- Command List section
+    if (!this._cellMenuProperties.hideCommandSection && commandItems.length > 0) {
+      const commandMenuElm = document.createElement('div');
+      commandMenuElm.className = 'slick-cell-menu-command-list';
+      commandMenuElm.role = 'menu';
+
+      if (closeButtonElm && !this._cellMenuProperties.hideCloseButton && (optionItems.length === 0 || this._cellMenuProperties.hideOptionSection)) {
+        this._bindingEventService.bind(closeButtonElm, 'click', this.handleCloseButtonClicked.bind(this) as EventListener);
+        menuElm.appendChild(closeButtonElm);
+      }
+      menuElm.appendChild(commandMenuElm);
+
+      this.populateCommandOrOptionItems(
+        'command',
+        this._cellMenuProperties,
+        commandMenuElm,
+        commandItems,
+        { cell: this._currentCell, row: this._currentRow, column: columnDef, dataContext, grid: this._grid, level }
+      );
+    }
+
+    // increment level for possible next sub-menus if exists
+    level++;
+
+    return menuElm;
+  }
+
   protected handleCloseButtonClicked(e: DOMMouseOrTouchEvent<HTMLButtonElement>) {
     if (!e.defaultPrevented) {
-      this.destroyMenu(e);
+      this.closeMenu(e);
     }
   }
 
-  destroyMenu(e?: Event, args?: { cell: number; row: number; }) {
-    this._menuElm = this._menuElm || document.querySelector(`.slick-cell-menu.${this._gridUid}`);
-
-    if (this._menuElm?.remove) {
+  /** Close and destroy Cell Menu */
+  closeMenu(e?: DOMMouseOrTouchEvent<HTMLButtonElement | HTMLDivElement>, args?: MenuFromCellCallbackArgs) {
+    if (this._menuElm) {
       if (this.onBeforeMenuClose.notify({
         cell: args?.cell ?? 0,
         row: args?.row ?? 0,
@@ -338,8 +371,20 @@ export class SlickCellMenu implements SlickPlugin {
       }, e, this).getReturnValue() === false) {
         return;
       }
-      this._menuElm.remove();
-      this._menuElm = null as any;
+      this._menuElm?.remove();
+      this._menuElm = null;
+    }
+    this.destroySubMenus();
+  }
+
+  /** Close and destroy all previously opened sub-menus */
+  destroySubMenus() {
+    if (this._subMenuElms.length) {
+      let subElm = this._subMenuElms.pop();
+      while (subElm) {
+        subElm.remove();
+        subElm = this._subMenuElms.pop();
+      }
     }
   }
 
@@ -347,15 +392,19 @@ export class SlickCellMenu implements SlickPlugin {
    * Reposition the menu drop (up/down) and the side (left/right)
    * @param {*} event
    */
-  repositionMenu(e: DOMMouseOrTouchEvent<HTMLDivElement>) {
-    if (this._menuElm && e.target) {
-      const parentElm = e.target.closest('.slick-cell') as HTMLDivElement;
-      const parentOffset = (parentElm && Utils.offset(parentElm));
-      let menuOffsetLeft = parentElm ? parentOffset?.left ?? 0 : e.pageX;
-      let menuOffsetTop = parentElm ? parentOffset?.top ?? 0 : e.pageY;
-      const parentCellWidth = parentElm.offsetWidth || 0;
-      const menuHeight = this._menuElm?.offsetHeight ?? 0;
-      const menuWidth = this._menuElm?.offsetWidth ?? this._cellMenuProperties.width ?? 0;
+  repositionMenu(menuElm: HTMLElement, e: DOMMouseOrTouchEvent<HTMLDivElement>) {
+    const isFromSubMenu = menuElm.classList.contains('sub-menu');
+    const parentElm = isFromSubMenu
+      ? e.target.closest('.slick-cell-menu-item') as HTMLDivElement
+      : e.target.closest('.slick-cell') as HTMLDivElement;
+
+    if (menuElm && parentElm) {
+      const parentOffset = Utils.offset(parentElm);
+      let menuOffsetLeft = parentElm ? parentOffset?.left ?? 0 : e?.pageX ?? 0;
+      let menuOffsetTop = parentElm ? parentOffset?.top ?? 0 : e?.pageY ?? 0;
+      const parentCellWidth = parentElm?.offsetWidth || 0;
+      const menuHeight = menuElm?.offsetHeight ?? 0;
+      const menuWidth = menuElm?.offsetWidth ?? this._cellMenuProperties.width ?? 0;
       const rowHeight = this._gridOptions.rowHeight;
       const dropOffset = +(this._cellMenuProperties.autoAdjustDropOffset || 0);
       const sideOffset = +(this._cellMenuProperties.autoAlignSideOffset || 0);
@@ -370,13 +419,21 @@ export class SlickCellMenu implements SlickPlugin {
         const spaceTopRemaining = spaceTop - dropOffset + rowHeight!;
         const dropPosition = (spaceBottomRemaining < menuHeight && spaceTopRemaining > spaceBottomRemaining) ? 'top' : 'bottom';
         if (dropPosition === 'top') {
-          this._menuElm.classList.remove('dropdown');
-          this._menuElm.classList.add('dropup');
-          menuOffsetTop = menuOffsetTop - menuHeight - dropOffset;
+          menuElm.classList.remove('dropdown');
+          menuElm.classList.add('dropup');
+          if (isFromSubMenu) {
+            menuOffsetTop -= (menuHeight - dropOffset + parentElm.clientHeight);
+          } else {
+            menuOffsetTop -= menuHeight - dropOffset;
+          }
         } else {
-          this._menuElm.classList.remove('dropup');
-          this._menuElm.classList.add('dropdown');
-          menuOffsetTop = menuOffsetTop + rowHeight! + dropOffset;
+          menuElm.classList.remove('dropup');
+          menuElm.classList.add('dropdown');
+          if (isFromSubMenu) {
+            menuOffsetTop += dropOffset;
+          } else {
+            menuOffsetTop += rowHeight! + dropOffset;
+          }
         }
       }
 
@@ -387,19 +444,27 @@ export class SlickCellMenu implements SlickPlugin {
         const gridPos = this._grid.getGridPosition();
         const dropSide = ((menuOffsetLeft + (+menuWidth)) >= gridPos.width) ? 'left' : 'right';
         if (dropSide === 'left') {
-          this._menuElm.classList.remove('dropright');
-          this._menuElm.classList.add('dropleft');
-          menuOffsetLeft = (menuOffsetLeft - (+menuWidth - parentCellWidth) - sideOffset);
+          menuElm.classList.remove('dropright');
+          menuElm.classList.add('dropleft');
+          if (isFromSubMenu) {
+            menuOffsetLeft -= menuWidth - sideOffset;
+          } else {
+            menuOffsetLeft -= (+menuWidth - parentCellWidth) - sideOffset;
+          }
         } else {
-          this._menuElm.classList.remove('dropleft');
-          this._menuElm.classList.add('dropright');
-          menuOffsetLeft = menuOffsetLeft + sideOffset;
+          menuElm.classList.remove('dropleft');
+          menuElm.classList.add('dropright');
+          if (isFromSubMenu) {
+            menuOffsetLeft += sideOffset + parentElm.offsetWidth;
+          } else {
+            menuOffsetLeft += sideOffset;
+          }
         }
       }
 
       // ready to reposition the menu
-      this._menuElm.style.top = `${menuOffsetTop}px`;
-      this._menuElm.style.left = `${menuOffsetLeft}px`;
+      menuElm.style.top = `${menuOffsetTop}px`;
+      menuElm.style.left = `${menuOffsetLeft}px`;
     }
   }
 
@@ -433,7 +498,7 @@ export class SlickCellMenu implements SlickPlugin {
 
       // reposition the menu to where the user clicked
       if (this._menuElm) {
-        this.repositionMenu(e);
+        this.repositionMenu(this._menuElm, e);
         this._menuElm.setAttribute('aria-expanded', 'true');
         this._menuElm.style.display = 'block';
       }
@@ -443,140 +508,45 @@ export class SlickCellMenu implements SlickPlugin {
     }
   }
 
+  /** When users click outside the Cell Menu, we will typically close the Cell Menu (and any sub-menus) */
   protected handleBodyMouseDown(e: DOMMouseOrTouchEvent<HTMLDivElement>) {
-    if (this._menuElm !== e.target && !(this._menuElm?.contains(e.target))) {
-      if (!e.defaultPrevented) {
-        this.closeMenu(e, { cell: this._currentCell, row: this._currentRow, grid: this._grid });
+    let isMenuClicked = false;
+    this._subMenuElms.forEach(subElm => {
+      if (subElm.contains(e.target)) {
+        isMenuClicked = true;
       }
+    });
+    if (this._menuElm?.contains(e.target)) {
+      isMenuClicked = true;
+    }
+
+    if (this._menuElm !== e.target && !isMenuClicked && !e.defaultPrevented) {
+      this.closeMenu(e, { cell: this._currentCell, row: this._currentRow, grid: this._grid });
     }
   }
 
-  closeMenu(e: DOMMouseOrTouchEvent<HTMLDivElement>, args: MenuFromCellCallbackArgs) {
-    if (this._menuElm) {
-      if (this.onBeforeMenuClose.notify({
-        cell: args?.cell,
-        row: args?.row,
-        grid: this._grid,
-      }, e, this).getReturnValue() === false) {
-        return;
-      }
-      this._menuElm?.remove();
-      this._menuElm = null;
-    }
-  }
-
-  /** Construct the Option Items section. */
-  protected populateOptionItems(cellMenu: CellMenuOption, optionMenuElm: HTMLElement, optionItems: Array<MenuOptionItem | 'divider'>, args: any) {
-    if (!args || !optionItems || !cellMenu) {
-      return;
-    }
-
-    // user could pass a title on top of the Options section
-    if (cellMenu?.optionTitle) {
-      this._optionTitleElm = document.createElement('div');
-      this._optionTitleElm.className = 'title';
-      this._optionTitleElm.textContent = cellMenu.optionTitle;
-      optionMenuElm.appendChild(this._optionTitleElm);
-    }
-
-    for (let i = 0, ln = optionItems.length; i < ln; i++) {
-      let addClickListener = true;
-      const item = optionItems[i];
-
-      // run each override functions to know if the item is visible and usable
-      const isItemVisible = this.runOverrideFunctionWhenExists<typeof args>((item as MenuOptionItem).itemVisibilityOverride, args);
-      const isItemUsable = this.runOverrideFunctionWhenExists<typeof args>((item as MenuOptionItem).itemUsabilityOverride, args);
-
-      // if the result is not visible then there's no need to go further
-      if (!isItemVisible) {
-        continue;
-      }
-
-      // when the override is defined, we need to use its result to update the disabled property
-      // so that "handleMenuItemOptionClick" has the correct flag and won't trigger an option clicked event
-      if (Object.prototype.hasOwnProperty.call(item, 'itemUsabilityOverride')) {
-        (item as MenuOptionItem).disabled = isItemUsable ? false : true;
-      }
-
-      const liElm = document.createElement('div');
-      liElm.className = 'slick-cell-menu-item';
-      liElm.role = 'menuitem';
-
-      if ((item as MenuOptionItem).divider || item === 'divider') {
-        liElm.classList.add('slick-cell-menu-item-divider');
-        addClickListener = false;
-      }
-
-      // if the item is disabled then add the disabled css class
-      if ((item as MenuOptionItem).disabled || !isItemUsable) {
-        liElm.classList.add('slick-cell-menu-item-disabled');
-      }
-
-      // if the item is hidden then add the hidden css class
-      if ((item as MenuOptionItem).hidden) {
-        liElm.classList.add('slick-cell-menu-item-hidden');
-      }
-
-      if ((item as MenuOptionItem).cssClass) {
-        liElm.classList.add(...(item as MenuOptionItem).cssClass!.split(' '));
-      }
-
-      if ((item as MenuOptionItem).tooltip) {
-        liElm.title = (item as MenuOptionItem).tooltip || '';
-      }
-
-      const iconElm = document.createElement('div');
-      iconElm.className = 'slick-cell-menu-icon';
-
-      liElm.appendChild(iconElm);
-
-      if ((item as MenuOptionItem).iconCssClass) {
-        iconElm.classList.add(...(item as MenuOptionItem).iconCssClass!.split(' '));
-      }
-
-      if ((item as MenuOptionItem).iconImage) {
-        iconElm.style.backgroundImage = `url(${(item as MenuOptionItem).iconImage})`;
-      }
-
-      const textElm = document.createElement('span');
-      textElm.className = 'slick-cell-menu-content';
-      textElm.textContent = (item as MenuOptionItem).title || '';
-
-      liElm.appendChild(textElm);
-
-      if ((item as MenuOptionItem).textCssClass) {
-        textElm.classList.add(...(item as MenuOptionItem).textCssClass!.split(' '));
-      }
-
-      optionMenuElm.appendChild(liElm);
-
-      if (addClickListener) {
-        this._bindingEventService.bind(liElm, 'click', this.handleMenuItemOptionClick.bind(this, item) as EventListener);
-      }
-    }
-  }
-
-  /** Construct the Command Items section. */
-  protected populateCommandItems(cellMenu: CellMenuOption, commandMenuElm: HTMLElement, commandItems: Array<MenuCommandItem | 'divider'>, args: any) {
-    if (!args || !commandItems || !cellMenu) {
+  /** Build the Command Items section. */
+  protected populateCommandOrOptionItems(itemType: CellMenuType, cellMenu: CellMenuOption, commandOrOptionMenuElm: HTMLElement, commandOrOptionItems: Array<MenuCommandItem | 'divider'> | Array<MenuOptionItem | 'divider'>, args: any) {
+    if (!args || !commandOrOptionItems || !cellMenu) {
       return;
     }
 
     // user could pass a title on top of the Commands section
-    if (cellMenu?.commandTitle) {
-      this._commandTitleElm = document.createElement('div');
-      this._commandTitleElm.className = 'title';
-      this._commandTitleElm.textContent = cellMenu.commandTitle;
-      commandMenuElm.appendChild(this._commandTitleElm);
+    const isSubMenu = args.level > 0;
+    if (cellMenu?.[`${itemType}Title`] && !isSubMenu) {
+      this[`_${itemType}TitleElm`] = document.createElement('div');
+      this[`_${itemType}TitleElm`]!.className = 'title';
+      this[`_${itemType}TitleElm`]!.textContent = cellMenu[`${itemType}Title`] as string;
+      commandOrOptionMenuElm.appendChild(this[`_${itemType}TitleElm`]!);
     }
 
-    for (let i = 0, ln = commandItems.length; i < ln; i++) {
+    for (let i = 0, ln = commandOrOptionItems.length; i < ln; i++) {
       let addClickListener = true;
-      const item = commandItems[i];
+      const item = commandOrOptionItems[i];
 
       // run each override functions to know if the item is visible and usable
-      const isItemVisible = this.runOverrideFunctionWhenExists<typeof args>((item as MenuCommandItem).itemVisibilityOverride, args);
-      const isItemUsable = this.runOverrideFunctionWhenExists<typeof args>((item as MenuCommandItem).itemUsabilityOverride, args);
+      const isItemVisible = this.runOverrideFunctionWhenExists<typeof args>((item as MenuCommandItem | MenuOptionItem).itemVisibilityOverride, args);
+      const isItemUsable = this.runOverrideFunctionWhenExists<typeof args>((item as MenuCommandItem | MenuOptionItem).itemUsabilityOverride, args);
 
       // if the result is not visible then there's no need to go further
       if (!isItemVisible) {
@@ -586,34 +556,34 @@ export class SlickCellMenu implements SlickPlugin {
       // when the override is defined, we need to use its result to update the disabled property
       // so that "handleMenuItemCommandClick" has the correct flag and won't trigger a command clicked event
       if (Object.prototype.hasOwnProperty.call(item, 'itemUsabilityOverride')) {
-        (item as MenuCommandItem).disabled = isItemUsable ? false : true;
+        (item as MenuCommandItem | MenuOptionItem).disabled = isItemUsable ? false : true;
       }
 
       const liElm = document.createElement('div');
       liElm.className = 'slick-cell-menu-item';
       liElm.role = 'menuitem';
 
-      if ((item as MenuCommandItem).divider || item === 'divider') {
+      if ((item as MenuCommandItem | MenuOptionItem).divider || item === 'divider') {
         liElm.classList.add('slick-cell-menu-item-divider');
         addClickListener = false;
       }
 
       // if the item is disabled then add the disabled css class
-      if ((item as MenuCommandItem).disabled || !isItemUsable) {
+      if ((item as MenuCommandItem | MenuOptionItem).disabled || !isItemUsable) {
         liElm.classList.add('slick-cell-menu-item-disabled');
       }
 
       // if the item is hidden then add the hidden css class
-      if ((item as MenuCommandItem).hidden) {
+      if ((item as MenuCommandItem | MenuOptionItem).hidden) {
         liElm.classList.add('slick-cell-menu-item-hidden');
       }
 
-      if ((item as MenuCommandItem).cssClass) {
-        liElm.classList.add(...(item as MenuCommandItem).cssClass!.split(' '));
+      if ((item as MenuCommandItem | MenuOptionItem).cssClass) {
+        liElm.classList.add(...(item as MenuCommandItem | MenuOptionItem).cssClass!.split(' '));
       }
 
-      if ((item as MenuCommandItem).tooltip) {
-        liElm.title = (item as MenuCommandItem).tooltip || '';
+      if ((item as MenuCommandItem | MenuOptionItem).tooltip) {
+        liElm.title = (item as MenuCommandItem | MenuOptionItem).tooltip || '';
       }
 
       const iconElm = document.createElement('div');
@@ -621,104 +591,100 @@ export class SlickCellMenu implements SlickPlugin {
 
       liElm.appendChild(iconElm);
 
-      if ((item as MenuCommandItem).iconCssClass) {
-        iconElm.classList.add(...(item as MenuCommandItem).iconCssClass!.split(' '));
+      if ((item as MenuCommandItem | MenuOptionItem).iconCssClass) {
+        iconElm.classList.add(...(item as MenuCommandItem | MenuOptionItem).iconCssClass!.split(' '));
       }
 
-      if ((item as MenuCommandItem).iconImage) {
-        iconElm.style.backgroundImage = `url(${(item as MenuCommandItem).iconImage})`;
+      if ((item as MenuCommandItem | MenuOptionItem).iconImage) {
+        iconElm.style.backgroundImage = `url(${(item as MenuCommandItem | MenuOptionItem).iconImage})`;
       }
 
       const textElm = document.createElement('span');
       textElm.className = 'slick-cell-menu-content';
-      textElm.textContent = (item as MenuCommandItem).title || '';
+      textElm.textContent = (item as MenuCommandItem | MenuOptionItem).title || '';
 
       liElm.appendChild(textElm);
 
-      if ((item as MenuCommandItem).textCssClass) {
-        textElm.classList.add(...(item as MenuCommandItem).textCssClass!.split(' '));
+      if ((item as MenuCommandItem | MenuOptionItem).textCssClass) {
+        textElm.classList.add(...(item as MenuCommandItem | MenuOptionItem).textCssClass!.split(' '));
       }
 
-      commandMenuElm.appendChild(liElm);
+      commandOrOptionMenuElm.appendChild(liElm);
 
       if (addClickListener) {
-        this._bindingEventService.bind(liElm, 'click', this.handleMenuItemCommandClick.bind(this, item) as EventListener);
+        this._bindingEventService.bind(liElm, 'click', this.handleMenuItemClick.bind(this, item, itemType, args.level) as EventListener);
+      }
+
+      // the option/command item could be a sub-menu if it has another list of options/commands
+      if ((item as MenuCommandItem).commandItems || (item as MenuOptionItem).optionItems) {
+        const chevronElm = document.createElement('span');
+        chevronElm.className = 'sub-item-chevron';
+        if (this._cellMenuProperties.subItemChevronClass) {
+          chevronElm.classList.add(...this._cellMenuProperties.subItemChevronClass.split(' '));
+        } else {
+          chevronElm.textContent = '⮞'; // ⮞ or ▸
+        }
+
+        liElm.classList.add('submenu-item');
+        liElm.appendChild(chevronElm);
+        continue;
       }
     }
   }
 
-  protected handleMenuItemCommandClick(item: MenuCommandItem | 'divider', e: DOMMouseOrTouchEvent<HTMLDivElement>) {
-    if (!item || (item as MenuCommandItem).disabled || (item as MenuCommandItem).divider || item === 'divider') {
-      return;
+  protected repositionSubMenu(item: MenuCommandItem  | MenuOptionItem | 'divider', type: CellMenuType, level: number, e: DOMMouseOrTouchEvent<HTMLDivElement>) {
+    // when we're clicking a grid cell OR our last menu type (command/option) differs then we know that we need to start fresh and close any sub-menus that might still be open
+    if (e.target.classList.contains('slick-cell') || this._lastCellMenuTypeClicked !== type) {
+      this.destroySubMenus();
     }
 
-    const command = item.command || '';
-    const row = this._currentRow;
-    const cell = this._currentCell;
-    const columnDef = this._grid.getColumns()[cell];
-    const dataContext = this._grid.getDataItem(row);
-
-    if (command !== null && command !== '') {
-      // user could execute a callback through 2 ways
-      // via the onCommand event and/or an action callback
-      const callbackArgs = {
-        cell,
-        row,
-        grid: this._grid,
-        command,
-        item,
-        column: columnDef,
-        dataContext,
-      };
-      this.onCommand.notify(callbackArgs, e, this);
-
-      // execute action callback when defined
-      if (typeof item.action === 'function') {
-        item.action.call(this, e, callbackArgs);
-      }
-
-      if (!e.defaultPrevented) {
-        this.closeMenu(e, { cell, row, grid: this._grid });
-      }
-    }
+    const subMenuElm = this.createCellMenu((item as MenuCommandItem)?.commandItems || [], (item as MenuOptionItem)?.optionItems || [], level + 1);
+    this._subMenuElms.push(subMenuElm);
+    subMenuElm.style.display = 'block';
+    document.body.appendChild(subMenuElm);
+    this.repositionMenu(subMenuElm, e);
   }
 
-  protected handleMenuItemOptionClick(item: MenuOptionItem | 'divider', e: DOMMouseOrTouchEvent<HTMLDivElement>) {
-    if (!item || (item as MenuOptionItem).disabled || (item as MenuOptionItem).divider || item === 'divider') {
-      return;
-    }
-    if (!this._grid.getEditorLock().commitCurrentEdit()) {
-      return;
-    }
-
-    const option = item.option !== undefined ? item.option : '';
-    const row = this._currentRow;
-    const cell = this._currentCell;
-    const columnDef = this._grid.getColumns()[cell];
-    const dataContext = this._grid.getDataItem(row);
-
-    if (option !== undefined) {
-      // user could execute a callback through 2 ways
-      // via the onOptionSelected event and/or an action callback
-      const callbackArgs = {
-        cell,
-        row,
-        grid: this._grid,
-        option,
-        item,
-        column: columnDef,
-        dataContext
-      };
-      this.onOptionSelected.notify(callbackArgs, e, this);
-
-      // execute action callback when defined
-      if (typeof item.action === 'function') {
-        item.action.call(this, e, callbackArgs);
+  protected handleMenuItemClick<T extends MenuCommandItem | MenuOptionItem>(item: T | 'divider', type: CellMenuType, level = 0, e: DOMMouseOrTouchEvent<HTMLDivElement>) {
+    if ((item as never)?.[type] !== undefined && item !== 'divider' && !item.disabled && !(item as MenuCommandItem | MenuOptionItem).divider && this._currentCell !== undefined && this._currentRow !== undefined) {
+      if (type === 'option' && !this._grid.getEditorLock().commitCurrentEdit()) {
+        return;
       }
+      const optionOrCommand = (item as any)[type] !== undefined ? (item as any)[type] : '';
+      const row = this._currentRow;
+      const cell = this._currentCell;
+      const columnDef = this._grid.getColumns()[cell];
+      const dataContext = this._grid.getDataItem(row);
 
-      if (!e.defaultPrevented) {
-        this.closeMenu(e, { cell, row, grid: this._grid });
+      if (optionOrCommand !== undefined && !(item as any)[`${type}Items`]) {
+        // user could execute a callback through 2 ways
+        // via the onCommand event and/or an action callback
+        const callbackArgs = {
+          cell,
+          row,
+          grid: this._grid,
+          [type]: optionOrCommand,
+          item,
+          column: columnDef,
+          dataContext,
+        };
+        const eventType = type === 'command' ? 'onCommand' : 'onOptionSelected';
+        this[eventType].notify(callbackArgs as any, e, this);
+
+        // execute action callback when defined
+        if (typeof item.action === 'function') {
+          (item as any).action.call(this, e, callbackArgs);
+        }
+
+        if (!e.defaultPrevented) {
+          this.closeMenu(e, { cell, row, grid: this._grid });
+        }
+      } else if ((item as MenuCommandItem).commandItems || (item as MenuOptionItem).optionItems) {
+        this.repositionSubMenu(item, type, level, e);
+      } else {
+        this.destroySubMenus();
       }
+      this._lastCellMenuTypeClicked = type;
     }
   }
 

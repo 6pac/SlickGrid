@@ -5,6 +5,9 @@ export interface MenuOptionItem extends MenuItem {
   /** An option returned by the onOptionSelected (or action) event callback handler. */
   option: any;
 
+  /** Array of Option Items (title, command, disabled, ...) */
+  optionItems?: Array<MenuOptionItem | 'divider'>;
+
   // --
   // action/override callbacks
 

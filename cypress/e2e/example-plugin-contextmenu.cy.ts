@@ -39,7 +39,7 @@ describe('Example - Context Menu & Cell Menu', () => {
       .contains('Action');
 
     cy.get('.slick-cell-menu')
-      .should('not.exist')
+      .should('not.exist');
   });
 
   it('should open the Context Menu and expect onBeforeMenuShow then onAfterMenuShow to show in the console log', () => {
@@ -147,11 +147,11 @@ describe('Example - Context Menu & Cell Menu', () => {
       .should('exist');
   });
 
-  it('should change the Effort Driven to "False" in that same Action and then expect the "Command 2" to enabled and clickable', () => {
+  it('should change the Effort Driven to "False" in that same Action and then expect the "Command 2" to be enabled and clickable', () => {
     const stub = cy.stub();
     cy.on('window:alert', stub);
 
-    cy.get('.slick-cell-menu .slick-cell-menu-option-list')
+    cy.get('.slick-cell-menu.level-0 .slick-cell-menu-option-list')
       .find('.slick-cell-menu-item')
       .contains('False')
       .click();
@@ -160,6 +160,72 @@ describe('Example - Context Menu & Cell Menu', () => {
       .find('.slick-row .slick-cell:nth(7)')
       .contains('Action')
       .click({ force: true });
+
+    cy.get('.slick-cell-menu .slick-cell-menu-item')
+      .contains('Command 2')
+      .click()
+      .then(() => expect(stub.getCall(0)).to.be.calledWith('Command 2'));
+  });
+
+  it('should change the Effort Driven to "True" by using sub-options in that same Action and then expect the "Command 2" to be disabled and not clickable and "Delete Row" to not be shown', () => {
+    const stub = cy.stub();
+    cy.on('window:alert', stub);
+
+    cy.get('#myGrid')
+      .find('.slick-row .slick-cell:nth(7)')
+      .contains('Action')
+      .click({ force: true });
+
+    cy.get('.slick-cell-menu.level-0 .slick-cell-menu-option-list')
+      .find('.slick-cell-menu-item')
+      .contains('Sub-Options')
+      .click();
+
+    cy.get('.slick-cell-menu.level-1 .slick-cell-menu-option-list')
+      .find('.slick-cell-menu-item')
+      .contains('True')
+      .click();
+
+    cy.get('#myGrid')
+      .find('.slick-row .slick-cell:nth(7)')
+      .contains('Action')
+      .click({ force: true });
+
+    cy.get('.slick-cell-menu .slick-cell-menu-item.slick-cell-menu-item-disabled')
+      .contains('Command 2');
+
+    cy.get('.slick-cell-menu .slick-cell-menu-item')
+      .contains('Delete Row')
+      .should('not.exist');
+  });
+
+  it('should change the Effort Driven back to "False" by using sub-options in that same Action and then expect the "Command 2" to enabled and clickable and also show "Delete Row" command', () => {
+    const stub = cy.stub();
+    cy.on('window:alert', stub);
+
+    cy.get('#myGrid')
+      .find('.slick-row .slick-cell:nth(7)')
+      .contains('Action')
+      .click({ force: true });
+
+    cy.get('.slick-cell-menu.level-0 .slick-cell-menu-option-list')
+      .find('.slick-cell-menu-item')
+      .contains('Sub-Options')
+      .click();
+
+    cy.get('.slick-cell-menu.level-1 .slick-cell-menu-option-list')
+      .find('.slick-cell-menu-item')
+      .contains('False')
+      .click();
+
+    cy.get('#myGrid')
+      .find('.slick-row .slick-cell:nth(7)')
+      .contains('Action')
+      .click({ force: true });
+
+    cy.get('.slick-cell-menu .slick-cell-menu-item')
+      .contains('Delete Row')
+      .should('exist');
 
     cy.get('.slick-cell-menu .slick-cell-menu-item')
       .contains('Command 2')
@@ -211,6 +277,112 @@ describe('Example - Context Menu & Cell Menu', () => {
 
     cy.get('.slick-cell-menu.dropleft')
       .should('not.exist');
+  });
+
+  it('should be able to open Cell Menu and click on Export->PDF sub-commands to see 1 cell menu + 1 sub-menu then clicking on PDF should call alert action', () => {
+    const subCommands = ['PDF', 'Excel'];
+    const stub = cy.stub();
+    cy.on('window:alert', stub);
+
+    cy.get('#myGrid')
+      .find('.slick-row .slick-cell:nth(7)')
+      .contains('Action')
+      .click({ force: true });
+
+    cy.get('.slick-cell-menu.level-0 .slick-cell-menu-command-list')
+      .find('.slick-cell-menu-item')
+      .contains('Export')
+      .click();
+
+    cy.get('.slick-cell-menu.level-1 .slick-cell-menu-command-list')
+      .should('exist')
+      .find('.slick-cell-menu-item')
+      .each(($command, index) => expect($command.text()).to.eq(subCommands[index]));
+
+    cy.get('.slick-cell-menu.level-1 .slick-cell-menu-command-list')
+      .find('.slick-cell-menu-item')
+      .contains('PDF')
+      .click()
+      .then(() => expect(stub.getCall(0)).to.be.calledWith('Exporting as PDF'));
+  });
+
+  it('should be able to open Cell Menu and click on Export->Excel-> sub-commands to see 1 cell menu + 1 sub-menu then clicking on PDF should call alert action', () => {
+    const subCommands1 = ['PDF', 'Excel'];
+    const subCommands2 = ['Excel (csv)', 'Excel (xls)'];
+    const stub = cy.stub();
+    cy.on('window:alert', stub);
+
+    cy.get('#myGrid')
+      .find('.slick-row .slick-cell:nth(7)')
+      .contains('Action')
+      .click({ force: true });
+
+    cy.get('.slick-cell-menu.level-0 .slick-cell-menu-command-list')
+      .find('.slick-cell-menu-item')
+      .contains('Export')
+      .click();
+
+    cy.get('.slick-cell-menu.level-1 .slick-cell-menu-command-list')
+      .should('exist')
+      .find('.slick-cell-menu-item')
+      .each(($command, index) => expect($command.text()).to.eq(subCommands1[index]));
+
+    cy.get('.slick-cell-menu.level-1 .slick-cell-menu-command-list')
+      .find('.slick-cell-menu-item')
+      .contains('Excel')
+      .click();
+
+    cy.get('.slick-cell-menu.level-2 .slick-cell-menu-command-list')
+      .should('exist')
+      .find('.slick-cell-menu-item')
+      .each(($command, index) => expect($command.text()).to.eq(subCommands2[index]));
+
+    cy.get('.slick-cell-menu.level-2 .slick-cell-menu-command-list')
+      .find('.slick-cell-menu-item')
+      .contains('Excel (xls)')
+      .click()
+      .then(() => expect(stub.getCall(0)).to.be.calledWith('Exporting as Excel (xls)'));
+  });
+
+  it('should open Export->Excel sub-menu & open again Sub-Options on top and expect sub-menu to be recreated with that Sub-Options list instead of the Export->Excel list', () => {
+    const subCommands1 = ['PDF', 'Excel'];
+    const subCommands2 = ['Excel (csv)', 'Excel (xls)'];
+    const subOptions = ['True', 'False'];
+
+    cy.get('#myGrid')
+      .find('.slick-row .slick-cell:nth(7)')
+      .contains('Action')
+      .click({ force: true });
+
+    cy.get('.slick-cell-menu.level-0 .slick-cell-menu-command-list')
+      .find('.slick-cell-menu-item')
+      .contains('Export')
+      .click();
+
+    cy.get('.slick-cell-menu.level-1 .slick-cell-menu-command-list')
+      .should('exist')
+      .find('.slick-cell-menu-item')
+      .each(($command, index) => expect($command.text()).to.eq(subCommands1[index]));
+
+    cy.get('.slick-cell-menu.level-1 .slick-cell-menu-command-list')
+      .find('.slick-cell-menu-item')
+      .contains('Excel')
+      .click();
+
+    cy.get('.slick-cell-menu.level-2 .slick-cell-menu-command-list')
+      .should('exist')
+      .find('.slick-cell-menu-item')
+      .each(($command, index) => expect($command.text()).to.eq(subCommands2[index]));
+
+    cy.get('.slick-cell-menu.level-0 .slick-cell-menu-option-list')
+      .find('.slick-cell-menu-item')
+      .contains('Sub-Options')
+      .click();
+
+    cy.get('.slick-cell-menu.level-1 .slick-cell-menu-option-list')
+      .should('exist')
+      .find('.slick-cell-menu-item')
+      .each(($option, index) => expect($option.text()).to.eq(subOptions[index]));
   });
 
   it('should click on the "Show Commands & Priority Options" button and see both list when opening Context Menu', () => {
@@ -320,8 +492,8 @@ describe('Example - Context Menu & Cell Menu', () => {
       .click();
   });
 
-  it('should click on the "Show Action Commands Only" button and see both list when opening Context Menu', () => {
-    const commands = ['Command 1', 'Command 2', 'Delete Row', '', 'Help', 'Disabled Command'];
+  it('should click on the "Show Action Commands Only" button and see both list when opening Cell Menu', () => {
+    const commands = ['Command 1', 'Command 2', 'Delete Row', '', 'Help', 'Disabled Command', '', 'Export'];
 
     cy.get('button')
       .contains('Show Action Commands Only')
