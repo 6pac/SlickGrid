@@ -8,6 +8,9 @@
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
   <style>
+    .slick-cell {
+      user-select: none;
+    }
     .cell-title {
       zfont-weight: bold;
     }
@@ -110,7 +113,8 @@ var columns = [
     behavior: "selectAndMove",
     selectable: false,
     resizable: false,
-    cssClass: "cell-reorder dnd sgi sgi-drag sgi-12px"
+    cssClass: "cell-reorder dnd",
+    formatter: () => `<span class="sgi sgi-drag"></span>`
   },
   {
     id: "name",
@@ -213,7 +217,6 @@ $(function () {
   });
 
   moveRowsPlugin.onMoveRows.subscribe(function (e, args) {
-    console.log(args)
     var extractedRows = [], left, right;
     var rows = args.rows;
     var insertBefore = args.insertBefore;
@@ -328,13 +331,13 @@ $(function () {
 
   $.drop({mode: "mouse"});
   $("#dropzone")
-    .bind("dropstart", function (e, dd) {
+    .on("dropstart", function (e, dd) {
       $(this).css("background", "yellow");
     })
-    .bind("dropend", function (e, dd) {
+    .on("dropend", function (e, dd) {
       $(dd.available).css("background", "pink");
     })
-    .bind("drop", function (e, dd) {
+    .on("drop", function (e, dd) {
       var rowsToDelete = (dd.rows || []).sort().reverse();
       for (var i = 0; i < rowsToDelete.length; i++) {
         data.splice(rowsToDelete[i], 1);
