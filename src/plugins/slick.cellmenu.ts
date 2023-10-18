@@ -377,7 +377,7 @@ export class SlickCellMenu implements SlickPlugin {
   protected addSubMenuTitleWhenExists(item: MenuCommandItem  | MenuOptionItem | 'divider', commandOrOptionMenu: HTMLDivElement) {
     if (item !== 'divider' && item?.subMenuTitle) {
       const subMenuTitleElm = document.createElement('div');
-      subMenuTitleElm.className = 'title';
+      subMenuTitleElm.className = 'slick-menu-title';
       subMenuTitleElm.textContent = (item as MenuCommandItem | MenuOptionItem).subMenuTitle as string;
       commandOrOptionMenu.appendChild(subMenuTitleElm);
     }
@@ -571,7 +571,7 @@ export class SlickCellMenu implements SlickPlugin {
     const isSubMenu = args.level > 0;
     if (cellMenu?.[`${itemType}Title`] && !isSubMenu) {
       this[`_${itemType}TitleElm`] = document.createElement('div');
-      this[`_${itemType}TitleElm`]!.className = 'title';
+      this[`_${itemType}TitleElm`]!.className = 'slick-menu-title';
       this[`_${itemType}TitleElm`]!.textContent = cellMenu[`${itemType}Title`] as string;
       commandOrOptionMenuElm.appendChild(this[`_${itemType}TitleElm`]!);
     }
