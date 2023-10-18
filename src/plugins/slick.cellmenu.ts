@@ -216,7 +216,7 @@ export class SlickCellMenu implements SlickPlugin {
     this._menuElm = null as any;
   }
 
-  protected createMenu(e: DOMMouseOrTouchEvent<HTMLDivElement>) {
+  protected createParentMenu(e: DOMMouseOrTouchEvent<HTMLDivElement>) {
     const cell = this._grid.getCellFromEvent(e);
     this._currentCell = cell?.cell ?? 0;
     this._currentRow = cell?.row ?? 0;
@@ -244,7 +244,7 @@ export class SlickCellMenu implements SlickPlugin {
     }
 
     // create 1st parent menu container & reposition it
-    this._menuElm = this.createCellMenu(commandItems, optionItems);
+    this._menuElm = this.createMenu(commandItems, optionItems);
     this._menuElm.style.top = `${e.pageY + 5}px`;
     this._menuElm.style.left = `${e.pageX}px`;
 
@@ -270,7 +270,7 @@ export class SlickCellMenu implements SlickPlugin {
    * @param item - command, option or divider
    * @returns menu DOM element
    */
-  protected createCellMenu(commandItems: Array<MenuCommandItem | 'divider'>, optionItems: Array<MenuOptionItem | 'divider'>, level = 0, item?: MenuCommandItem  | MenuOptionItem | 'divider') {
+  protected createMenu(commandItems: Array<MenuCommandItem | 'divider'>, optionItems: Array<MenuOptionItem | 'divider'>, level = 0, item?: MenuCommandItem  | MenuOptionItem | 'divider') {
     const columnDef = this._grid.getColumns()[this._currentCell];
     const dataContext = this._grid.getDataItem(this._currentRow);
 
@@ -524,7 +524,7 @@ export class SlickCellMenu implements SlickPlugin {
       }
 
       // create the DOM element
-      this._menuElm = this.createMenu(e);
+      this._menuElm = this.createParentMenu(e);
 
       // reposition the menu to where the user clicked
       if (this._menuElm) {
@@ -675,7 +675,7 @@ export class SlickCellMenu implements SlickPlugin {
     }
 
     // creating sub-menu, we'll also pass level & the item object since we might have "subMenuTitle" to show
-    const subMenuElm = this.createCellMenu((item as MenuCommandItem)?.commandItems || [], (item as MenuOptionItem)?.optionItems || [], level + 1, item);
+    const subMenuElm = this.createMenu((item as MenuCommandItem)?.commandItems || [], (item as MenuOptionItem)?.optionItems || [], level + 1, item);
     this._subMenuElms.push(subMenuElm);
     subMenuElm.style.display = 'block';
     document.body.appendChild(subMenuElm);
