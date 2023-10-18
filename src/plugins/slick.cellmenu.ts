@@ -378,7 +378,12 @@ export class SlickCellMenu implements SlickPlugin {
     if (item !== 'divider' && item?.subMenuTitle) {
       const subMenuTitleElm = document.createElement('div');
       subMenuTitleElm.className = 'slick-menu-title';
-      subMenuTitleElm.textContent = (item as MenuCommandItem | MenuOptionItem).subMenuTitle as string;
+      subMenuTitleElm.textContent = item.subMenuTitle as string;
+      const subMenuTitleClass = item.subMenuTitleCssClass as string;
+      if (subMenuTitleClass) {
+        subMenuTitleElm.classList.add(...subMenuTitleClass.split(' '));
+      }
+
       commandOrOptionMenu.appendChild(subMenuTitleElm);
     }
   }

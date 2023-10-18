@@ -25,6 +25,9 @@ export interface MenuItem<O = MenuCallbackArgs> {
   /** Optional sub-menu title that will shows up when sub-menu commmands/options list is opened */
   subMenuTitle?: string;
 
+  /** Optional sub-menu title CSS class to use with `subMenuTitle` */
+  subMenuTitleCssClass?: string;
+
   /** CSS class to be added to the menu item text. */
   textCssClass?: string;
 
