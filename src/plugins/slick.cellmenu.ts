@@ -421,8 +421,8 @@ export class SlickCellMenu implements SlickPlugin {
    * @param {*} event
    */
   repositionMenu(menuElm: HTMLElement, e: DOMMouseOrTouchEvent<HTMLDivElement>) {
-    const isFromSubMenu = menuElm.classList.contains('slick-submenu');
-    const parentElm = isFromSubMenu
+    const isSubMenu = menuElm.classList.contains('slick-submenu');
+    const parentElm = isSubMenu
       ? e.target.closest('.slick-cell-menu-item') as HTMLDivElement
       : e.target.closest('.slick-cell') as HTMLDivElement;
 
@@ -434,8 +434,8 @@ export class SlickCellMenu implements SlickPlugin {
       const menuHeight = menuElm?.offsetHeight ?? 0;
       const menuWidth = menuElm?.offsetWidth ?? this._cellMenuProperties.width ?? 0;
       const rowHeight = this._gridOptions.rowHeight;
-      const dropOffset = +(this._cellMenuProperties.autoAdjustDropOffset || 0);
-      const sideOffset = +(this._cellMenuProperties.autoAlignSideOffset || 0);
+      const dropOffset = Number(this._cellMenuProperties.autoAdjustDropOffset || 0);
+      const sideOffset = Number(this._cellMenuProperties.autoAlignSideOffset || 0);
 
       // if autoAdjustDrop is enable, we first need to see what position the drop will be located (defaults to bottom)
       // without necessary toggling it's position just yet, we just want to know the future position for calculation
@@ -449,15 +449,15 @@ export class SlickCellMenu implements SlickPlugin {
         if (dropPosition === 'top') {
           menuElm.classList.remove('dropdown');
           menuElm.classList.add('dropup');
-          if (isFromSubMenu) {
-            menuOffsetTop -= (menuHeight - dropOffset + parentElm.clientHeight);
+          if (isSubMenu) {
+            menuOffsetTop -= (menuHeight - dropOffset - parentElm.clientHeight);
           } else {
             menuOffsetTop -= menuHeight - dropOffset;
           }
         } else {
           menuElm.classList.remove('dropup');
           menuElm.classList.add('dropdown');
-          if (isFromSubMenu) {
+          if (isSubMenu) {
             menuOffsetTop += dropOffset;
           } else {
             menuOffsetTop += rowHeight! + dropOffset;
@@ -470,19 +470,21 @@ export class SlickCellMenu implements SlickPlugin {
       // to simulate an align left, we actually need to know the width of the drop menu
       if (this._cellMenuProperties.autoAlignSide) {
         const gridPos = this._grid.getGridPosition();
-        const dropSide = ((menuOffsetLeft + (+menuWidth)) >= gridPos.width) ? 'left' : 'right';
+        const subMenuPosCalc = menuOffsetLeft + parentElm.clientWidth + Number(menuWidth); // calculate coordinate at caller element far right
+        const browserWidth = document.documentElement.clientWidth;
+        const dropSide = (subMenuPosCalc >= gridPos.width || subMenuPosCalc >= browserWidth) ? 'left' : 'right';
         if (dropSide === 'left') {
           menuElm.classList.remove('dropright');
           menuElm.classList.add('dropleft');
-          if (isFromSubMenu) {
+          if (isSubMenu) {
             menuOffsetLeft -= menuWidth - sideOffset;
           } else {
-            menuOffsetLeft -= (+menuWidth - parentCellWidth) - sideOffset;
+            menuOffsetLeft -= Number(menuWidth) - parentCellWidth - sideOffset;
           }
         } else {
           menuElm.classList.remove('dropleft');
           menuElm.classList.add('dropright');
-          if (isFromSubMenu) {
+          if (isSubMenu) {
             menuOffsetLeft += sideOffset + parentElm.offsetWidth;
           } else {
             menuOffsetLeft += sideOffset;
