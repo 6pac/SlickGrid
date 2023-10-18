@@ -65,7 +65,7 @@ describe('Example - Context Menu & Cell Menu', () => {
   });
 
   it('should expect the Context Menu to not have the "Help" menu when there is Effort Driven set to True', () => {
-    const commands = ['Copy Cell Value', 'Delete Row', '', 'Command (always disabled)'];
+    const commands = ['Copy Cell Value', 'Delete Row', '', 'Command (always disabled)', '', 'Export'];
 
     cy.get('#myGrid')
       .find('.slick-row .slick-cell:nth(1)')
@@ -78,13 +78,13 @@ describe('Example - Context Menu & Cell Menu', () => {
     cy.get('.slick-context-menu.dropright .slick-context-menu-command-list')
       .find('.slick-context-menu-item')
       .each(($command, index) => {
-        expect($command.text()).to.eq(commands[index]);
+        expect($command.text()).to.contain(commands[index]);
         expect($command.text()).not.include('Help');
       });
   });
 
   it('should expect the Context Menu to not have the "Help" menu when there is Effort Driven set to True', () => {
-    const commands = ['Copy Cell Value', 'Delete Row', '', 'Command (always disabled)'];
+    const commands = ['Copy Cell Value', 'Delete Row', '', 'Command (always disabled)', '', 'Export'];
 
     cy.get('#myGrid')
       .find('.slick-row .slick-cell:nth(1)')
@@ -97,7 +97,7 @@ describe('Example - Context Menu & Cell Menu', () => {
     cy.get('.slick-context-menu.dropright .slick-context-menu-command-list')
       .find('.slick-context-menu-item')
       .each(($command, index) => {
-        expect($command.text()).to.eq(commands[index]);
+        expect($command.text()).to.contain(commands[index]);
         expect($command.text()).not.include('Help');
       });
   });
@@ -240,7 +240,7 @@ describe('Example - Context Menu & Cell Menu', () => {
   });
 
   it('should expect the Context Menu now have the "Help" menu when Effort Driven is set to False', () => {
-    const commands = ['Copy Cell Value', 'Delete Row', '', 'Help', 'Command (always disabled)'];
+    const commands = ['Copy Cell Value', 'Delete Row', '', 'Help', 'Command (always disabled)', '', 'Export'];
 
     cy.get('#myGrid')
       .find('.slick-row .slick-cell:nth(1)')
@@ -252,7 +252,7 @@ describe('Example - Context Menu & Cell Menu', () => {
 
     cy.get('.slick-context-menu.dropleft .slick-context-menu-command-list')
       .find('.slick-context-menu-item')
-      .each(($command, index) => expect($command.text()).to.eq(commands[index]));
+      .each(($command, index) => expect($command.text()).to.contain(commands[index]));
 
     cy.get('.slick-context-menu button.close')
       .click();
@@ -391,7 +391,13 @@ describe('Example - Context Menu & Cell Menu', () => {
       .contains('Sub-Options')
       .click();
 
-    cy.get('.slick-cell-menu.slick-menu-level-1 .slick-cell-menu-option-list')
+    cy.get('.slick-cell-menu.slick-menu-level-1 .slick-cell-menu-option-list').as('optionSubList2');
+
+    cy.get('@optionSubList2')
+      .find('.slick-menu-title')
+      .contains('Set Effort Driven');
+
+    cy.get('@optionSubList2')
       .should('exist')
       .find('.slick-cell-menu-item')
       .each(($option, index) => expect($option.text()).to.eq(subOptions[index]));
@@ -420,7 +426,7 @@ describe('Example - Context Menu & Cell Menu', () => {
       .click();
   });
 
-  it('should click on the "Show Priority Options Only" button and see both list when opening Context Menu', () => {
+  it('should click on the "Show Priority Options Only" button and see both list when opening Context Menu & selecting "Medium" option should be reflected in the grid cell and expect "Action" cell menu to be disabled', () => {
     cy.get('button')
       .contains('Show Priority Options Only')
       .click();
@@ -429,15 +435,62 @@ describe('Example - Context Menu & Cell Menu', () => {
       .find('.slick-row .slick-cell:nth(5)')
       .rightclick();
 
-    cy.get('.slick-context-menu .slick-context-menu-option-list')
-      .should('exist')
-      .contains('High');
-
     cy.get('.slick-context-menu-command-list')
       .should('not.exist');
 
-    cy.get('.slick-context-menu button.close')
+    cy.get('.slick-context-menu .slick-context-menu-option-list')
+      .should('exist')
+      .contains('Medium')
       .click();
+
+    cy.get('#myGrid')
+      .find('.slick-row .slick-cell:nth(5)')
+      .contains('Medium');
+
+    cy.get('.slick-row .slick-cell:nth(7)')
+      .find('.cell-menu-dropdown.disabled')
+      .should('exist');
+  });
+
+  it('should reopen Context Menu then select "High" option from sub-menu and expect "Action" cell menu to be reenabled', () => {
+    const subOptions = ['Low', 'Medium', 'High'];
+
+    cy.get('button')
+      .contains('Show Priority Options Only')
+      .click();
+
+    cy.get('#myGrid')
+      .find('.slick-row .slick-cell:nth(5)')
+      .rightclick();
+
+    cy.get('.slick-context-menu.slick-menu-level-0 .slick-context-menu-option-list')
+      .find('.slick-context-menu-item')
+      .contains('Sub-Options (demo)')
+      .click();
+
+    cy.get('.slick-context-menu.slick-menu-level-1 .slick-context-menu-option-list').as('subMenuList');
+
+    cy.get('@subMenuList')
+      .find('.slick-menu-title')
+      .contains('Set Priority');
+
+    cy.get('@subMenuList')
+      .should('exist')
+      .find('.slick-context-menu-item')
+      .each(($command, index) => expect($command.text()).to.eq(subOptions[index]));
+
+    cy.get('@subMenuList')
+      .find('.slick-context-menu-item')
+      .contains('High')
+      .click();
+
+    cy.get('#myGrid')
+      .find('.slick-row .slick-cell:nth(5)')
+      .contains('High');
+
+    cy.get('.slick-row .slick-cell:nth(7)')
+      .find('.cell-menu-dropdown.disabled')
+      .should('not.exist');
   });
 
   it('should click on the "Show Actions Commands & Effort Options" button and see both list when opening Action Cell Menu', () => {
@@ -598,5 +651,98 @@ describe('Example - Context Menu & Cell Menu', () => {
 
     cy.get('.slick-context-menu button.close')
       .click();
+  });
+
+  it('should be able to open Context Menu and click on Export->Excel-> sub-commands to see 1 context menu + 1 sub-menu then clicking on PDF should call alert action', () => {
+    const subCommands1 = ['PDF', 'Excel'];
+    const subCommands2 = ['Excel (csv)', 'Excel (xls)'];
+    const stub = cy.stub();
+    cy.on('window:alert', stub);
+
+    cy.get('#myGrid')
+      .find('.slick-row .slick-cell:nth(1)')
+      .rightclick();
+
+    cy.get('.slick-context-menu.slick-menu-level-0 .slick-context-menu-command-list')
+      .find('.slick-context-menu-item')
+      .contains('Export')
+      .click();
+
+    cy.get('.slick-context-menu.slick-menu-level-1 .slick-context-menu-command-list')
+      .should('exist')
+      .find('.slick-context-menu-item')
+      .each(($command, index) => expect($command.text()).to.contain(subCommands1[index]));
+
+    cy.get('.slick-context-menu.slick-menu-level-1 .slick-context-menu-command-list')
+      .find('.slick-context-menu-item')
+      .contains('Excel')
+      .click();
+
+    cy.get('.slick-context-menu.slick-menu-level-2 .slick-context-menu-command-list').as('subMenuList2');
+
+    cy.get('@subMenuList2')
+      .find('.slick-menu-title')
+      .contains('available formats');
+
+    cy.get('@subMenuList2')
+      .should('exist')
+      .find('.slick-context-menu-item')
+      .each(($command, index) => expect($command.text()).to.contain(subCommands2[index]));
+
+    cy.get('.slick-context-menu.slick-menu-level-2 .slick-context-menu-command-list')
+      .find('.slick-context-menu-item')
+      .contains('Excel (xls)')
+      .click()
+      .then(() => expect(stub.getCall(0)).to.be.calledWith('Exporting as Excel (xls)'));
+  });
+
+  it('should open Export->Excel sub-menu & open again Sub-Options on top and expect sub-menu to be recreated with that Sub-Options list instead of the Export->Excel list', () => {
+    const subCommands1 = ['PDF', 'Excel'];
+    const subCommands2 = ['Excel (csv)', 'Excel (xls)'];
+    const subOptions = ['Low', 'Medium', 'High'];
+
+    cy.get('button')
+      .contains('Show Commands & Priority Options')
+      .click();
+
+    cy.get('#myGrid')
+      .find('.slick-row .slick-cell:nth(5)')
+      .rightclick();
+
+    cy.get('.slick-context-menu.slick-menu-level-0 .slick-context-menu-command-list')
+      .find('.slick-context-menu-item')
+      .contains('Export')
+      .click();
+
+    cy.get('.slick-context-menu.slick-menu-level-1 .slick-context-menu-command-list')
+      .should('exist')
+      .find('.slick-context-menu-item')
+      .each(($command, index) => expect($command.text()).to.contain(subCommands1[index]));
+
+    cy.get('.slick-context-menu.slick-menu-level-1 .slick-context-menu-command-list')
+      .find('.slick-context-menu-item')
+      .contains('Excel')
+      .click();
+
+    cy.get('.slick-context-menu.slick-menu-level-2 .slick-context-menu-command-list')
+      .should('exist')
+      .find('.slick-context-menu-item')
+      .each(($command, index) => expect($command.text()).to.contain(subCommands2[index]));
+
+    cy.get('.slick-context-menu.slick-menu-level-0 .slick-context-menu-option-list')
+      .find('.slick-context-menu-item')
+      .contains('Sub-Options')
+      .click();
+
+    cy.get('.slick-context-menu.slick-menu-level-1 .slick-context-menu-option-list').as('optionSubList2');
+
+    cy.get('@optionSubList2')
+      .find('.slick-menu-title')
+      .contains('Set Priority');
+
+    cy.get('@optionSubList2')
+      .should('exist')
+      .find('.slick-context-menu-item')
+      .each(($option, index) => expect($option.text()).to.contain(subOptions[index]));
   });
 });

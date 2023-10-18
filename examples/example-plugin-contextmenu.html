@@ -418,6 +418,8 @@
     };
 
     var contextMenuOptions = {
+      // subItemChevronClass: 'sgi sgi-chevron-right',
+
       // optionally and conditionally define when the the menu is usable,
       // this should be used with a custom formatter to show/hide/disable the menu
       menuUsabilityOverride: function (args) {
@@ -442,6 +444,21 @@
           }
         },
         { command: "something", title: "Command (always disabled)", disabled: true },
+        "divider",
+        {
+          // we can also have multiple sub-items
+          command: 'export', title: 'Export',
+          commandItems: [
+            { command: "export-pdf", title: "PDF" },
+            {
+              command: 'sub-menu', title: 'Excel', cssClass: "green", subMenuTitle: "available formats", subMenuTitleCssClass: "italic orange",
+              commandItems: [
+                { command: "export-csv", title: "Excel (csv)" },
+                { command: "export-xls", title: "Excel (xls)" },
+              ]
+            }
+          ]
+        }
       ],
 
       // Options allows you to edit a column from an option chose a list
@@ -474,6 +491,15 @@
             return (!args.dataContext.effortDriven);
           }
         },
+        "divider",
+        {
+          // we can also have multiple sub-items
+          option: null, title: "Sub-Options (demo)", subMenuTitle: "Set Priority", optionItems: [
+            { option: 1, iconCssClass: "sgi sgi-star-outline", title: "Low" },
+            { option: 2, iconCssClass: "sgi sgi-star orange", title: "Medium" },
+            { option: 3, iconCssClass: "sgi sgi-star red", title: "High" },
+          ]
+        }
       ]
     };
 

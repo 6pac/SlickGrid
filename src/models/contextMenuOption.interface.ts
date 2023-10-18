@@ -65,6 +65,9 @@ export interface ContextMenuOption {
   /** Optional Title of the Option section, it will be hidden when nothing is provided */
   optionTitle?: string;
 
+  /** CSS class that can be added on the right side of a sub-item parent (typically a chevron-right icon) */
+  subItemChevronClass?: string;
+
   // --
   // action/override callbacks
 

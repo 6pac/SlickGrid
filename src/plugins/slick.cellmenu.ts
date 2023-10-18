@@ -15,6 +15,7 @@ import type {
   MenuFromCellCallbackArgs,
   MenuOptionItem,
   MenuOptionItemCallbackArgs,
+  MenuType,
   SlickPlugin
 } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
@@ -25,8 +26,6 @@ const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
 const SlickEventData = IIFE_ONLY ? Slick.EventData : SlickEventData_;
 const EventHandler = IIFE_ONLY ? Slick.EventHandler : SlickEventHandler_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
-
-export type CellMenuType = 'command' | 'option';
 
 /**
  * A plugin to add Menu on a Cell click (click on the cell that has the cellMenu object defined)
@@ -95,6 +94,8 @@ export type CellMenuType = 'command' | 'option';
  *    divider:                    Boolean which tells if the current item is a divider, not an actual command. You could also pass "divider" instead of an object
  *    disabled:                   Whether the item/command is disabled.
  *    hidden:                     Whether the item/command is hidden.
+ *    subMenuTitle:               Optional sub-menu title that will shows up when sub-menu commmands/options list is opened
+ *    subMenuTitleCssClass:       Optional sub-menu title CSS class to use with `subMenuTitle`
  *    tooltip:                    Item tooltip.
  *    cssClass:                   A CSS class to be added to the menu item container.
  *    iconCssClass:               A CSS class to be added to the menu item icon.
@@ -170,6 +171,7 @@ export class SlickCellMenu implements SlickPlugin {
   protected _handler = new EventHandler();
   protected _commandTitleElm?: HTMLSpanElement;
   protected _optionTitleElm?: HTMLSpanElement;
+  protected _lastMenuTypeClicked = '';
   protected _menuElm?: HTMLDivElement | null;
   protected _subMenuElms: HTMLDivElement[] = [];
   protected _bindingEventService = new BindingEventService();
@@ -182,7 +184,6 @@ export class SlickCellMenu implements SlickPlugin {
     maxHeight: 'none',
     width: 'auto',
   };
-  protected _lastCellMenuTypeClicked = '';
 
   constructor(optionProperties: Partial<CellMenuOption>) {
     this._cellMenuProperties = Utils.extend({}, this._defaults, optionProperties);
@@ -247,7 +248,6 @@ export class SlickCellMenu implements SlickPlugin {
     this._menuElm = this.createMenu(commandItems, optionItems);
     this._menuElm.style.top = `${e.pageY + 5}px`;
     this._menuElm.style.left = `${e.pageX}px`;
-
     this._menuElm.style.display = 'block';
     document.body.appendChild(this._menuElm);
 
@@ -421,11 +421,25 @@ export class SlickCellMenu implements SlickPlugin {
     }
   }
 
+  protected repositionSubMenu(item: MenuCommandItem  | MenuOptionItem | 'divider', type: MenuType, level: number, e: DOMMouseOrTouchEvent<HTMLDivElement>) {
+    // when we're clicking a grid cell OR our last menu type (command/option) differs then we know that we need to start fresh and close any sub-menus that might still be open
+    if (e.target.classList.contains('slick-cell') || this._lastMenuTypeClicked !== type) {
+      this.destroySubMenus();
+    }
+
+    // creating sub-menu, we'll also pass level & the item object since we might have "subMenuTitle" to show
+    const subMenuElm = this.createMenu((item as MenuCommandItem)?.commandItems || [], (item as MenuOptionItem)?.optionItems || [], level + 1, item);
+    this._subMenuElms.push(subMenuElm);
+    subMenuElm.style.display = 'block';
+    document.body.appendChild(subMenuElm);
+    this.repositionMenu(e, subMenuElm);
+  }
+
   /**
    * Reposition the menu drop (up/down) and the side (left/right)
    * @param {*} event
    */
-  repositionMenu(menuElm: HTMLElement, e: DOMMouseOrTouchEvent<HTMLDivElement>) {
+  repositionMenu(e: DOMMouseOrTouchEvent<HTMLDivElement>, menuElm: HTMLElement) {
     const isSubMenu = menuElm.classList.contains('slick-submenu');
     const parentElm = isSubMenu
       ? e.target.closest('.slick-cell-menu-item') as HTMLDivElement
@@ -437,7 +451,7 @@ export class SlickCellMenu implements SlickPlugin {
       let menuOffsetTop = parentElm ? parentOffset?.top ?? 0 : e?.pageY ?? 0;
       const parentCellWidth = parentElm?.offsetWidth || 0;
       const menuHeight = menuElm?.offsetHeight ?? 0;
-      const menuWidth = menuElm?.offsetWidth ?? this._cellMenuProperties.width ?? 0;
+      const menuWidth = Number(menuElm?.offsetWidth ?? this._cellMenuProperties.width ?? 0);
       const rowHeight = this._gridOptions.rowHeight;
       const dropOffset = Number(this._cellMenuProperties.autoAdjustDropOffset || 0);
       const sideOffset = Number(this._cellMenuProperties.autoAlignSideOffset || 0);
@@ -475,7 +489,7 @@ export class SlickCellMenu implements SlickPlugin {
       // to simulate an align left, we actually need to know the width of the drop menu
       if (this._cellMenuProperties.autoAlignSide) {
         const gridPos = this._grid.getGridPosition();
-        const subMenuPosCalc = menuOffsetLeft + parentElm.clientWidth + Number(menuWidth); // calculate coordinate at caller element far right
+        const subMenuPosCalc = menuOffsetLeft + parentElm.clientWidth + menuWidth; // calculate coordinate at caller element far right
         const browserWidth = document.documentElement.clientWidth;
         const dropSide = (subMenuPosCalc >= gridPos.width || subMenuPosCalc >= browserWidth) ? 'left' : 'right';
         if (dropSide === 'left') {
@@ -484,7 +498,7 @@ export class SlickCellMenu implements SlickPlugin {
           if (isSubMenu) {
             menuOffsetLeft -= menuWidth - sideOffset;
           } else {
-            menuOffsetLeft -= Number(menuWidth) - parentCellWidth - sideOffset;
+            menuOffsetLeft -= menuWidth - parentCellWidth - sideOffset;
           }
         } else {
           menuElm.classList.remove('dropleft');
@@ -533,7 +547,7 @@ export class SlickCellMenu implements SlickPlugin {
 
       // reposition the menu to where the user clicked
       if (this._menuElm) {
-        this.repositionMenu(this._menuElm, e);
+        this.repositionMenu(e, this._menuElm);
         this._menuElm.setAttribute('aria-expanded', 'true');
         this._menuElm.style.display = 'block';
       }
@@ -562,7 +576,7 @@ export class SlickCellMenu implements SlickPlugin {
 
   /** Build the Command Items section. */
   protected populateCommandOrOptionItems(
-    itemType: CellMenuType,
+    itemType: MenuType,
     cellMenu: CellMenuOption,
     commandOrOptionMenuElm: HTMLElement,
     commandOrOptionItems: Array<MenuCommandItem | 'divider'> | Array<MenuOptionItem | 'divider'>,
@@ -572,7 +586,7 @@ export class SlickCellMenu implements SlickPlugin {
       return;
     }
 
-    // user could pass a title on top of the Commands section
+    // user could pass a title on top of the Commands/Options section
     const isSubMenu = args.level > 0;
     if (cellMenu?.[`${itemType}Title`] && !isSubMenu) {
       this[`_${itemType}TitleElm`] = document.createElement('div');
@@ -595,7 +609,7 @@ export class SlickCellMenu implements SlickPlugin {
       }
 
       // when the override is defined, we need to use its result to update the disabled property
-      // so that "handleMenuItemCommandClick" has the correct flag and won't trigger a command/option clicked event
+      // so that "handleMenuItemClick" has the correct flag and won't trigger a command/option clicked event
       if (Object.prototype.hasOwnProperty.call(item, 'itemUsabilityOverride')) {
         (item as MenuCommandItem | MenuOptionItem).disabled = isItemUsable ? false : true;
       }
@@ -673,21 +687,7 @@ export class SlickCellMenu implements SlickPlugin {
     }
   }
 
-  protected repositionSubMenu(item: MenuCommandItem  | MenuOptionItem | 'divider', type: CellMenuType, level: number, e: DOMMouseOrTouchEvent<HTMLDivElement>) {
-    // when we're clicking a grid cell OR our last menu type (command/option) differs then we know that we need to start fresh and close any sub-menus that might still be open
-    if (e.target.classList.contains('slick-cell') || this._lastCellMenuTypeClicked !== type) {
-      this.destroySubMenus();
-    }
-
-    // creating sub-menu, we'll also pass level & the item object since we might have "subMenuTitle" to show
-    const subMenuElm = this.createMenu((item as MenuCommandItem)?.commandItems || [], (item as MenuOptionItem)?.optionItems || [], level + 1, item);
-    this._subMenuElms.push(subMenuElm);
-    subMenuElm.style.display = 'block';
-    document.body.appendChild(subMenuElm);
-    this.repositionMenu(subMenuElm, e);
-  }
-
-  protected handleMenuItemClick<T extends MenuCommandItem | MenuOptionItem>(item: T | 'divider', type: CellMenuType, level = 0, e: DOMMouseOrTouchEvent<HTMLDivElement>) {
+  protected handleMenuItemClick(item: MenuCommandItem | MenuOptionItem | 'divider', type: MenuType, level = 0, e: DOMMouseOrTouchEvent<HTMLDivElement>) {
     if ((item as never)?.[type] !== undefined && item !== 'divider' && !item.disabled && !(item as MenuCommandItem | MenuOptionItem).divider && this._currentCell !== undefined && this._currentRow !== undefined) {
       if (type === 'option' && !this._grid.getEditorLock().commitCurrentEdit()) {
         return;
@@ -726,7 +726,7 @@ export class SlickCellMenu implements SlickPlugin {
       } else {
         this.destroySubMenus();
       }
-      this._lastCellMenuTypeClicked = type;
+      this._lastMenuTypeClicked = type;
     }
   }
 
