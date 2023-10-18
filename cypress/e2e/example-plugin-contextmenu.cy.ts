@@ -184,7 +184,7 @@ describe('Example - Context Menu & Cell Menu', () => {
     cy.get('.slick-cell-menu.slick-menu-level-1 .slick-cell-menu-option-list').as('subMenuList');
 
     cy.get('@subMenuList')
-      .find('.title')
+      .find('.slick-menu-title')
       .contains('Set Effort Driven');
 
     cy.get('@subMenuList')
@@ -341,7 +341,7 @@ describe('Example - Context Menu & Cell Menu', () => {
     cy.get('.slick-cell-menu.slick-menu-level-2 .slick-cell-menu-command-list').as('subMenuList2');
 
     cy.get('@subMenuList2')
-      .find('.title')
+      .find('.slick-menu-title')
       .contains('available formats');
 
     cy.get('@subMenuList2')
