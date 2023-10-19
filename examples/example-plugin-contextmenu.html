@@ -294,7 +294,7 @@
           alert(args.item.title);
           break;
         case "export-csv":
-        case "export-pdf":
+        case "export-txt":
         case "export-xls":
           alert("Exporting as " + args.item.title);
           break;
@@ -366,7 +366,7 @@
               // we can also have multiple sub-items
               command: 'export', title: 'Export',
               commandItems: [
-                { command: "export-pdf", title: "PDF" },
+                { command: "export-txt", title: "Text" },
                 {
                   command: 'sub-menu', title: 'Excel', cssClass: "green", subMenuTitle: "available formats", subMenuTitleCssClass: "italic orange",
                   commandItems: [
@@ -449,7 +449,7 @@
           // we can also have multiple sub-items
           command: 'export', title: 'Export',
           commandItems: [
-            { command: "export-pdf", title: "PDF" },
+            { command: "export-txt", title: "Text" },
             {
               command: 'sub-menu', title: 'Excel', cssClass: "green", subMenuTitle: "available formats", subMenuTitleCssClass: "italic orange",
               commandItems: [
