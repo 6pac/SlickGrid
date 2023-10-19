@@ -285,8 +285,8 @@ describe('Example - Context Menu & Cell Menu', () => {
       .should('not.exist');
   });
 
-  it('should be able to open Cell Menu and click on Export->PDF sub-commands to see 1 cell menu + 1 sub-menu then clicking on PDF should call alert action', () => {
-    const subCommands = ['PDF', 'Excel'];
+  it('should be able to open Cell Menu and click on Export->Text sub-commands to see 1 cell menu + 1 sub-menu then clicking on Text should call alert action', () => {
+    const subCommands = ['Text', 'Excel'];
     const stub = cy.stub();
     cy.on('window:alert', stub);
 
@@ -307,13 +307,13 @@ describe('Example - Context Menu & Cell Menu', () => {
 
     cy.get('.slick-cell-menu.slick-menu-level-1 .slick-cell-menu-command-list')
       .find('.slick-cell-menu-item')
-      .contains('PDF')
+      .contains('Text')
       .click()
-      .then(() => expect(stub.getCall(0)).to.be.calledWith('Exporting as PDF'));
+      .then(() => expect(stub.getCall(0)).to.be.calledWith('Exporting as Text'));
   });
 
-  it('should be able to open Cell Menu and click on Export->Excel-> sub-commands to see 1 cell menu + 1 sub-menu then clicking on PDF should call alert action', () => {
-    const subCommands1 = ['PDF', 'Excel'];
+  it('should be able to open Cell Menu and click on Export->Excel-> sub-commands to see 1 cell menu + 1 sub-menu then clicking on Text should call alert action', () => {
+    const subCommands1 = ['Text', 'Excel'];
     const subCommands2 = ['Excel (csv)', 'Excel (xls)'];
     const stub = cy.stub();
     cy.on('window:alert', stub);
@@ -357,7 +357,7 @@ describe('Example - Context Menu & Cell Menu', () => {
   });
 
   it('should open Export->Excel sub-menu & open again Sub-Options on top and expect sub-menu to be recreated with that Sub-Options list instead of the Export->Excel list', () => {
-    const subCommands1 = ['PDF', 'Excel'];
+    const subCommands1 = ['Text', 'Excel'];
     const subCommands2 = ['Excel (csv)', 'Excel (xls)'];
     const subOptions = ['True', 'False'];
 
@@ -653,8 +653,8 @@ describe('Example - Context Menu & Cell Menu', () => {
       .click();
   });
 
-  it('should be able to open Context Menu and click on Export->Excel-> sub-commands to see 1 context menu + 1 sub-menu then clicking on PDF should call alert action', () => {
-    const subCommands1 = ['PDF', 'Excel'];
+  it('should be able to open Context Menu and click on Export->Excel-> sub-commands to see 1 context menu + 1 sub-menu then clicking on Text should call alert action', () => {
+    const subCommands1 = ['Text', 'Excel'];
     const subCommands2 = ['Excel (csv)', 'Excel (xls)'];
     const stub = cy.stub();
     cy.on('window:alert', stub);
@@ -697,7 +697,7 @@ describe('Example - Context Menu & Cell Menu', () => {
   });
 
   it('should open Export->Excel sub-menu & open again Sub-Options on top and expect sub-menu to be recreated with that Sub-Options list instead of the Export->Excel list', () => {
-    const subCommands1 = ['PDF', 'Excel'];
+    const subCommands1 = ['Text', 'Excel'];
     const subCommands2 = ['Excel (csv)', 'Excel (xls)'];
     const subOptions = ['Low', 'Medium', 'High'];
 
