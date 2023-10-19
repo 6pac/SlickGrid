@@ -11,6 +11,9 @@
   z-index: 2000;
 	overflow:auto;
   resize: both;
+  &.slick-submenu {
+    min-width: 100px;
+  }
 }
 
 .slick-context-menu-button {
