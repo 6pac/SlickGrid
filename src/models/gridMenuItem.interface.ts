@@ -1,7 +1,10 @@
 import type { GridMenuCallbackArgs, GridMenuCommandItemCallbackArgs, MenuCommandItem } from './index';
 import type { SlickEventData } from '../slick.core';
 
-export interface GridMenuItem extends MenuCommandItem<GridMenuCommandItemCallbackArgs, GridMenuCallbackArgs> {
+export interface GridMenuItem extends Omit<MenuCommandItem<GridMenuCommandItemCallbackArgs, GridMenuCallbackArgs>, 'commandItems'> {
+  /** Array of Command Items (title, command, disabled, ...) */
+  customItems?: Array<GridMenuItem | 'divider'>;
+
   // --
   // action/override callbacks
 

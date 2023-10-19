@@ -287,4 +287,73 @@ describe('Example - Grid Menu', () => {
       .should('be.visible')
       .click({ force: true });
   });
+
+  it('should be able to open Grid Menu and click on Export->Text and expect alert triggered with Text Export', () => {
+    const subCommands1 = ['Text', 'Excel'];
+    const stub = cy.stub();
+    cy.on('window:alert', stub);
+
+    cy.get('#myGrid')
+      .find('button.slick-gridmenu-button')
+      .click({ force: true });
+
+    cy.get('.slick-gridmenu.slick-menu-level-0 .slick-gridmenu-command-list')
+      .find('.slick-gridmenu-item')
+      .contains('Export')
+      .click();
+
+    cy.get('.slick-gridmenu.slick-menu-level-1 .slick-gridmenu-command-list')
+      .should('exist')
+      .find('.slick-gridmenu-item')
+      .each(($command, index) => expect($command.text()).to.contain(subCommands1[index]));
+
+    cy.get('.slick-gridmenu.slick-menu-level-1 .slick-gridmenu-command-list')
+      .find('.slick-gridmenu-item')
+      .contains('Text')
+      .click()
+      .then(() => expect(stub.getCall(0)).to.be.calledWith('Exporting as Text'));
+  });
+
+  it('should be able to open Grid Menu and click on Export->Excel->xls and expect alert triggered with Excel (xls) Export', () => {
+    const subCommands1 = ['Text', 'Excel'];
+    const subCommands2 = ['Excel (csv)', 'Excel (xls)'];
+    const stub = cy.stub();
+    cy.on('window:alert', stub);
+
+    cy.get('#myGrid')
+      .find('button.slick-gridmenu-button')
+      .click({ force: true });
+
+    cy.get('.slick-gridmenu.slick-menu-level-0 .slick-gridmenu-command-list')
+      .find('.slick-gridmenu-item')
+      .contains('Export')
+      .click();
+
+    cy.get('.slick-gridmenu.slick-menu-level-1 .slick-gridmenu-command-list')
+      .should('exist')
+      .find('.slick-gridmenu-item')
+      .each(($command, index) => expect($command.text()).to.contain(subCommands1[index]));
+
+    cy.get('.slick-gridmenu.slick-menu-level-1 .slick-gridmenu-command-list')
+      .find('.slick-gridmenu-item')
+      .contains('Excel')
+      .click();
+
+    cy.get('.slick-gridmenu.slick-menu-level-2 .slick-gridmenu-command-list').as('subMenuList2');
+
+    cy.get('@subMenuList2')
+      .find('.slick-menu-title')
+      .contains('available formats');
+
+    cy.get('@subMenuList2')
+      .should('exist')
+      .find('.slick-gridmenu-item')
+      .each(($command, index) => expect($command.text()).to.contain(subCommands2[index]));
+
+    cy.get('.slick-gridmenu.slick-menu-level-2 .slick-gridmenu-command-list')
+      .find('.slick-gridmenu-item')
+      .contains('Excel (xls)')
+      .click()
+      .then(() => expect(stub.getCall(0)).to.be.calledWith('Exporting as Excel (xls)'));
+  });
 });
