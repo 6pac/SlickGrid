@@ -312,6 +312,33 @@ describe('Example - Context Menu & Cell Menu', () => {
       .then(() => expect(stub.getCall(0)).to.be.calledWith('Exporting as Text'));
   });
 
+  it('should be able to open Cell Menu and click on Export->Text and expect alert triggered with Text Export', () => {
+    const subCommands1 = ['Text', 'Excel'];
+    const stub = cy.stub();
+    cy.on('window:alert', stub);
+
+    cy.get('#myGrid')
+      .find('.slick-row .slick-cell:nth(7)')
+      .contains('Action')
+      .click({ force: true });
+
+    cy.get('.slick-cell-menu.slick-menu-level-0 .slick-cell-menu-command-list')
+      .find('.slick-cell-menu-item')
+      .contains('Export')
+      .click();
+
+    cy.get('.slick-cell-menu.slick-menu-level-1 .slick-cell-menu-command-list')
+      .should('exist')
+      .find('.slick-cell-menu-item')
+      .each(($command, index) => expect($command.text()).to.contain(subCommands1[index]));
+
+    cy.get('.slick-cell-menu.slick-menu-level-1 .slick-cell-menu-command-list')
+      .find('.slick-cell-menu-item')
+      .contains('Text')
+      .click()
+      .then(() => expect(stub.getCall(0)).to.be.calledWith('Exporting as Text'));
+  });
+
   it('should be able to open Cell Menu and click on Export->Excel-> sub-commands to see 1 cell menu + 1 sub-menu then clicking on Text should call alert action', () => {
     const subCommands1 = ['Text', 'Excel'];
     const subCommands2 = ['Excel (csv)', 'Excel (xls)'];
@@ -651,6 +678,32 @@ describe('Example - Context Menu & Cell Menu', () => {
 
     cy.get('.slick-context-menu button.close')
       .click();
+  });
+
+  it('should be able to open Context Menu and click on Export->Text and expect alert triggered with Text Export', () => {
+    const subCommands1 = ['Text', 'Excel'];
+    const stub = cy.stub();
+    cy.on('window:alert', stub);
+
+    cy.get('#myGrid')
+      .find('.slick-row .slick-cell:nth(1)')
+      .rightclick();
+
+    cy.get('.slick-context-menu.slick-menu-level-0 .slick-context-menu-command-list')
+      .find('.slick-context-menu-item')
+      .contains('Export')
+      .click();
+
+    cy.get('.slick-context-menu.slick-menu-level-1 .slick-context-menu-command-list')
+      .should('exist')
+      .find('.slick-context-menu-item')
+      .each(($command, index) => expect($command.text()).to.contain(subCommands1[index]));
+
+    cy.get('.slick-context-menu.slick-menu-level-1 .slick-context-menu-command-list')
+      .find('.slick-context-menu-item')
+      .contains('Text')
+      .click()
+      .then(() => expect(stub.getCall(0)).to.be.calledWith('Exporting as Text'));
   });
 
   it('should be able to open Context Menu and click on Export->Excel-> sub-commands to see 1 context menu + 1 sub-menu then clicking on Text should call alert action', () => {
