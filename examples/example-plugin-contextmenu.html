@@ -76,7 +76,13 @@
 
     .slick-context-menu {
       border: 1px solid #718BB7;
-      box-shadow: 2px 2px 2px silver;
+    }
+    .slick-cell-menu.slick-submenu,
+    .slick-context-menu.slick-submenu {
+      background-color: #fbfbfb;
+      /* border-width: 2px; */
+      box-shadow: 0 2px 4px 2px rgba(146, 152, 163, 0.4);
+      min-width: 150px;
     }
   </style>
 </head>
@@ -84,10 +90,10 @@
 <body>
   <table width="100%">
     <tr>
-      <td valign="top" width="50%">
+      <td valign="top" width="50%" style="padding-left: 0px">
         <div id="myGrid" class="slick-container" style="width:650px;height:700px;"></div>
       </td>
-      <td valign="top">
+      <td valign="top" style="display: block">
         <h2>
           <h2>
             <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
@@ -285,10 +291,13 @@
 
       switch (command) {
         case "command1":
-          alert('Command 1');
-          break;
         case "command2":
-          alert('Command 2');
+          alert(args.item.title);
+          break;
+        case "export-csv":
+        case "export-txt":
+        case "export-xls":
+          alert("Exporting as " + args.item.title);
           break;
         case "copy-text":
           copyCellValue(args.value);
@@ -300,6 +309,9 @@
           if (confirm("Do you really want to delete row " + (args.row + 1) + " with " + dataContext.title + "?")) {
             dataView.deleteItem(dataContext.id);
           }
+          break;
+        default:
+          alert("Command: " + args.command);
           break;
       }
     }
@@ -352,7 +364,37 @@
             "divider",
             // { divider: true },
             { command: "help", title: "Help", iconCssClass: "sgi sgi-help-circle-outline" },
-            { command: "something", title: "Disabled Command", disabled: true }
+            { command: "something", title: "Disabled Command", disabled: true },
+            "divider",
+            {
+              // we can also have multiple nested sub-menus
+              command: 'export', title: 'Export',
+              commandItems: [
+                { command: "export-txt", title: "Text" },
+                {
+                  command: 'sub-menu', title: 'Excel', cssClass: "green", subMenuTitle: "available formats", subMenuTitleCssClass: "italic orange",
+                  commandItems: [
+                    { command: "export-csv", title: "Excel (csv)" },
+                    { command: "export-xls", title: "Excel (xls)" },
+                  ]
+                }
+              ]
+            },
+            {
+              command: 'feedback', title: 'Feedback',
+              commandItems: [
+                { command: "request-update", title: "Request update from shipping team", iconCssClass: "sgi sgi-star", tooltip: "this will automatically send an alert to the shipping team to contact the user for an update" },
+                "divider",
+                {
+                  command: 'sub-menu', title: 'Contact Us', iconCssClass: "sgi sgi-user", subMenuTitle: "contact us...", subMenuTitleCssClass: "italic",
+                  commandItems: [
+                    { command: "contact-email", title: "Email us", iconCssClass: "sgi sgi-pencil-outline" },
+                    { command: "contact-chat", title: "Chat with us", iconCssClass: "sgi sgi-message-outline" },
+                    { command: "contact-meeting", title: "Book an appointment", iconCssClass: "sgi sgi-coffee-outline" },
+                  ]
+                }
+              ]
+            }
           ],
           optionTitle: "Change Effort Driven",
           optionItems: [
@@ -373,6 +415,13 @@
                 return (!args.dataContext.effortDriven);
               }
             },
+            {
+              // we can also have multiple nested sub-menus
+              option: null, title: "Sub-Options (demo)", subMenuTitle: "Set Effort Driven", optionItems: [
+                { option: true, title: "True", iconCssClass: 'sgi sgi-checkbox-marked-outline green' },
+                { option: false, title: "False", iconCssClass: 'sgi sgi-checkbox-blank-outline pink' },
+              ]
+            }
           ]
         }
       }
@@ -388,6 +437,8 @@
     };
 
     var contextMenuOptions = {
+      // subItemChevronClass: 'sgi sgi-chevron-right',
+
       // optionally and conditionally define when the the menu is usable,
       // this should be used with a custom formatter to show/hide/disable the menu
       menuUsabilityOverride: function (args) {
@@ -412,6 +463,36 @@
           }
         },
         { command: "something", title: "Command (always disabled)", disabled: true },
+        "divider",
+        {
+          // we can also have multiple nested sub-menus
+          command: 'export', title: 'Export',
+          commandItems: [
+            { command: "export-txt", title: "Text" },
+            {
+              command: 'sub-menu', title: 'Excel', cssClass: "green", subMenuTitle: "available formats", subMenuTitleCssClass: "italic orange",
+              commandItems: [
+                { command: "export-csv", title: "Excel (csv)" },
+                { command: "export-xls", title: "Excel (xls)" },
+              ]
+            }
+          ]
+        },
+        {
+          command: 'feedback', title: 'Feedback',
+          commandItems: [
+            { command: "column-love", title: "Request update from shipping team", iconCssClass: "sgi sgi-tag-outline", tooltip: "this will automatically send an alert to the shipping team to contact the user for an update" },
+            "divider",
+            {
+              command: 'sub-menu', title: 'Contact Us', iconCssClass: "sgi sgi-user", subMenuTitle: "contact us...", subMenuTitleCssClass: "italic",
+              commandItems: [
+                { command: "contact-email", title: "Email us", iconCssClass: "sgi sgi-pencil-outline" },
+                { command: "contact-chat", title: "Chat with us", iconCssClass: "sgi sgi-message-outline" },
+                { command: "contact-meeting", title: "Book an appointment", iconCssClass: "sgi sgi-coffee-outline" },
+              ]
+            }
+          ]
+        }
       ],
 
       // Options allows you to edit a column from an option chose a list
@@ -444,13 +525,22 @@
             return (!args.dataContext.effortDriven);
           }
         },
+        "divider",
+        {
+          // we can also have multiple nested sub-menus
+          option: null, title: "Sub-Options (demo)", subMenuTitle: "Set Priority", optionItems: [
+            { option: 1, iconCssClass: "sgi sgi-star-outline", title: "Low" },
+            { option: 2, iconCssClass: "sgi sgi-star orange", title: "Medium" },
+            { option: 3, iconCssClass: "sgi sgi-star red", title: "High" },
+          ]
+        }
       ]
     };
 
     document.addEventListener("DOMContentLoaded", function() {
       dataView = new Slick.Data.DataView();
       grid = new Slick.Grid("#myGrid", dataView, columns, gridOptions);
-      cellMenuPlugin = new Slick.Plugins.CellMenu({ hideMenuOnScroll: true });
+      cellMenuPlugin = new Slick.Plugins.CellMenu({ hideMenuOnScroll: true, subItemChevronClass: 'sgi sgi-chevron-right' });
       contextMenuPlugin = new Slick.Plugins.ContextMenu(contextMenuOptions);
       var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, gridOptions);
 
