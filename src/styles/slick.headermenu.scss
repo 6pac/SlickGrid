@@ -39,11 +39,23 @@
 
 /* Menu items */
 .slick-header-menuitem {
+  display: block;
   list-style: none;
   margin: 0;
   padding: 0;
   cursor: pointer;
-  display: block;
+
+  .sub-item-chevron {
+    vertical-align: middle;
+    float: right;
+  }
+}
+
+.slick-header-menu .slick-menu-title {
+  font-size: 16px;
+  width: calc(100% - 30px);
+  border-bottom: solid 1px #d6d6d6;
+  margin-bottom: 5px;
 }
 
 .slick-header-menuicon {

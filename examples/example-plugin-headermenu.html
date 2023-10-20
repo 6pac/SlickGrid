@@ -34,7 +34,6 @@
       padding: 2px;
       border: 1px solid transparent;
       border-radius: 3px;
-      display: block;
     }
 
     .slick-header-menuitem:hover {
@@ -48,6 +47,12 @@
     }
     .slick-header-menuitem-hidden {
       display: none;
+    }
+    .slick-header-menu.slick-submenu {
+      background-color: #fbfbfb;
+      /* border-width: 2px; */
+      box-shadow: 0 2px 4px 2px rgba(146, 152, 163, 0.4);
+      min-width: 150px;
     }
   </style>
 
@@ -138,9 +143,6 @@
                 return args.column.id === "Duration";
               },
             },
-            // you can pass divider as a string or an object with a boolean
-            // "divider",
-            { divider: true },
             {
               iconCssClass: 'sgi sgi-help-circle-outline sgi-14px',
               title: "Help",
@@ -155,6 +157,34 @@
                 // you can use the "action" callback and/or subscribe to the "onCallback" event, they both have the same arguments
                 console.log('execute an action on Help', args);
               }
+            },
+            // you can pass divider as a string or an object with a boolean
+            // "divider",
+            { divider: true },
+            {
+              // we can also have multiple nested sub-menus
+              command: 'freezing', title: 'Freeze/Pinning',
+              items: [
+                { command: "freeze-columns", title: "Freeze Columns" },
+                { command: "unfreeze-columns", title: "Unfreeze all Columns" },
+              ]
+            },
+            {
+              // we can also have multiple nested sub-menus
+              command: 'feedback', title: 'Feedback',
+              items: [
+                { command: "column-love", title: "Column is great", iconCssClass: "sgi sgi-star", tooltip: "this will automatically send us an email about this new column detail" },
+                { command: "column-hate", title: "Column is not useful", iconCssClass: "sgi sgi-information-outline", tooltip: "this will automatically send us an email about this new column detail" },
+                "divider",
+                {
+                  command: 'sub-menu', title: 'Contact Us', iconCssClass: "sgi sgi-user", subMenuTitle: "contact us...", subMenuTitleCssClass: "italic",
+                  items: [
+                    { command: "contact-email", title: "Email us", iconCssClass: "sgi sgi-pencil-outline" },
+                    { command: "contact-chat", title: "Chat with us", iconCssClass: "sgi sgi-message-outline" },
+                    { command: "contact-meeting", title: "Book an appointment", iconCssClass: "sgi sgi-coffee-outline" },
+                  ]
+                }
+              ]
             }
           ]
         }
@@ -237,7 +267,7 @@
 
       grid = new Slick.Grid("#myGrid", data, columns, options);
       var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
-      headerMenuPlugin = new Slick.Plugins.HeaderMenu({ buttonCssClass: 'sgi sgi-caret' });
+      headerMenuPlugin = new Slick.Plugins.HeaderMenu({ buttonCssClass: 'sgi sgi-caret', subItemChevronClass: 'sgi sgi-chevron-right' });
 
       grid.onSort.subscribe(function (e, args) {
         executeSort(args.sortCols);
@@ -268,7 +298,6 @@
           grid.setSortColumns(sortCols);
           executeSort(sortCols);
         } else {
-          // command not recognised
           alert("Command: " + args.command);
         }
       });
