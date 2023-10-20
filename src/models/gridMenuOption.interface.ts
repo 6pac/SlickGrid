@@ -46,6 +46,9 @@ export interface GridMenuOption {
    */
   maxHeight?: number | string;
 
+  /** Maximum width that the grid menu can have, it could be a number (250) or text ("none") */
+  maxWidth?: number | string;
+
   /** Defaults to 16 pixels (only the number), which is the width in pixels of the Grid Menu icon container */
   menuWidth?: number;
 
@@ -54,6 +57,9 @@ export interface GridMenuOption {
 
   /** Defaults to true, allows the user to control if the default gridMenu button (located on the top right corner by default CSS) should be created or omitted */
   showButton?: boolean;
+
+  /** CSS class that can be added on the right side of a sub-item parent (typically a chevron-right icon) */
+  subItemChevronClass?: string;
 
   /** Defaults to "Synchronous resize" which is 1 of the last 2 checkbox title shown at the end of the picker list */
   syncResizeTitle?: string;
