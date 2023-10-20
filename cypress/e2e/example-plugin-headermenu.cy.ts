@@ -59,7 +59,7 @@ describe('Example - Header Menu', () => {
       .find('.slick-header-menucontent.blue')
       .contains('Help')
       .click()
-      .then(() => expect(alertStub.getCall(0)).to.be.calledWith('Command: help'))
+      .then(() => expect(alertStub.getCall(0)).to.be.calledWith('Command: help'));
 
     cy.window().then((win) => {
       expect(win.console.log).to.have.callCount(1);
@@ -170,5 +170,89 @@ describe('Example - Header Menu', () => {
     cy.get('.slick-header-menuitem.slick-header-menuitem-disabled')
       .contains('Hide')
       .should('exist');
+  });
+
+  it('should open Freeze/Pinning sub-menu with 2 options expect it to be aligned to left then trigger alert when command is clicked', () => {
+    const subCommands = ['Freeze Columns', 'Unfreeze all Columns'];
+    const stub = cy.stub();
+    cy.on('window:alert', stub);
+
+    cy.get('.slick-header-menuitem.slick-header-menuitem')
+      .contains('Freeze/Pinning')
+      .should('exist')
+      .click();
+
+    cy.get('.slick-header-menu.slick-menu-level-1.dropleft')
+      .should('exist')
+      .find('.slick-header-menuitem')
+      .each(($command, index) => expect($command.text()).to.eq(subCommands[index]));
+
+    cy.get('.slick-header-menu.slick-menu-level-1')
+      .find('.slick-header-menuitem')
+      .contains('Freeze Columns')
+      .click()
+      .then(() => expect(stub.getCall(0)).to.be.calledWith('Command: freeze-columns'));
+  });
+
+  it('should open Freeze/Pinning sub-menu and expect 2 options, then open Feedback->ContactUs sub-menus and expect previous Freeze menu to no longer exists', () => {
+    const subCommands1 = ['Freeze Columns', 'Unfreeze all Columns'];
+    const subCommands2 = ['Column is great', 'Column is not useful', '', 'Contact Us'];
+    const subCommands2_1 = ['Email us', 'Chat with us', 'Book an appointment'];
+
+    const stub = cy.stub();
+    cy.on('window:alert', stub);
+
+    cy.get('#myGrid')
+      .find('.slick-header-column:nth(5)')
+      .trigger('mouseover')
+      .children('.slick-header-menubutton')
+      .invoke('show')
+      .click();
+
+    cy.get('.slick-header-menu.slick-menu-level-0')
+      .find('.slick-header-menuitem.slick-header-menuitem')
+      .contains('Freeze/Pinning')
+      .should('exist')
+      .click();
+
+    cy.get('.slick-submenu').should('have.length', 1);
+    cy.get('.slick-header-menu.slick-menu-level-1.dropleft') // left align
+      .should('exist')
+      .find('.slick-header-menuitem')
+      .each(($command, index) => expect($command.text()).to.eq(subCommands1[index]));
+
+    // click different sub-menu
+    cy.get('.slick-header-menu.slick-menu-level-0')
+      .find('.slick-header-menuitem.slick-header-menuitem')
+      .contains('Feedback')
+      .should('exist')
+      .click();
+
+    cy.get('.slick-submenu').should('have.length', 1);
+    cy.get('.slick-header-menu.slick-menu-level-1')
+      .should('exist')
+      .find('.slick-header-menuitem')
+      .each(($command, index) => expect($command.text()).to.eq(subCommands2[index]));
+
+    // click on Feedback->ContactUs
+    cy.get('.slick-header-menu.slick-menu-level-1.dropleft') // left align
+      .find('.slick-header-menuitem.slick-header-menuitem')
+      .contains('Contact Us')
+      .should('exist')
+      .click();
+
+    cy.get('.slick-submenu').should('have.length', 2);
+    cy.get('.slick-header-menu.slick-menu-level-2.dropright') // right align
+      .should('exist')
+      .find('.slick-header-menuitem')
+      .each(($command, index) => expect($command.text()).to.eq(subCommands2_1[index]));
+
+    cy.get('.slick-header-menu.slick-menu-level-2')
+      .find('.slick-header-menuitem')
+      .contains('Chat with us')
+      .click()
+      .then(() => expect(stub.getCall(0)).to.be.calledWith('Command: contact-chat'));
+
+    cy.get('.slick-submenu').should('have.length', 0);
   });
 });
