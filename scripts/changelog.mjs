@@ -46,11 +46,11 @@ export function updateChangelog(args, newVersion) {
       context,
       { merges: null, path: args.path }
     ).on('error', (err) => {
-      return reject(err)
+      return reject(err);
     });
 
     changelogStream.on('data', (buffer) => {
-      content += buffer.toString()
+      content += buffer.toString();
     });
 
     changelogStream.on('end', () => {

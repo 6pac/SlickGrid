@@ -64,7 +64,7 @@ const pkg = loadJsonFileSync(path.join(projectRootPath, 'package.json'));
     { bump: 'preminor.beta', desc: '' },
     { bump: 'premajor.alpha', desc: '' },
     { bump: 'premajor.beta', desc: '' },
-  ]
+  ];
   const versionIncrements = [];
   for (const bumpType of bumpTypes) {
     versionIncrements.push({
@@ -243,7 +243,7 @@ function updateSlickGridVersion(newVersion) {
   writeFileSync(path.resolve(projectRootPath, 'src/slick.grid.ts'), updatedSlickGridJs);
 
   console.log('-- updating "src/slick.grid.ts" --');
-  console.log(` SlickGrid ${VERSION_PREFIX}${newVersion}`)
+  console.log(` SlickGrid ${VERSION_PREFIX}${newVersion}`);
   console.log('----------------------------\n');
 }
 
@@ -261,7 +261,7 @@ function getConsoleInput(promptText) {
   return new Promise(resolve => rl.question(promptText, ans => {
     rl.close();
     resolve(ans);
-  }))
+  }));
 }
 
 /**
@@ -301,7 +301,7 @@ async function promptConfirmation(message, choices, defaultIndex) {
 async function promptOtp(dryRunPrefix = '') {
   const otp = await getConsoleInput(`${c.bgMagenta(dryRunPrefix)} If you have an OTP (One-Time-Password), type it now or press "Enter" to continue: \n`);
   if (!otp) {
-    console.log('No OTP provided, continuing to next step...')
+    console.log('No OTP provided, continuing to next step...');
   } else if (otp.length > 0 && otp.length < 6) {
     throw new Error('OTP must be 6 exactly digits.');
   }

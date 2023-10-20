@@ -4,7 +4,7 @@ export const removeImportsPlugin = {
   setup(build) {
     build.onResolve({ filter: /.*/ }, (args) => {
       if (args.kind !== 'entry-point') {
-        return { path: args.path + '.js', namespace: 'import-ns' }
+        return { path: args.path + '.js', namespace: 'import-ns' };
       }
     });
     build.onLoad({ filter: /.*/, namespace: 'import-ns' }, () => ({
@@ -12,4 +12,4 @@ export const removeImportsPlugin = {
       loader: 'js',
     }));
   }
-}
+};
