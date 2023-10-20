@@ -87,6 +87,12 @@
     .slick-columnpicker-list input[type=checkbox]:checked + label:before {
       opacity: 1; /* checked icon */
     }
+    .slick-gridmenu.slick-submenu {
+      background-color: #fbfbfb;
+      /* border-width: 2px; */
+      box-shadow: 0 2px 4px 2px rgba(146, 152, 163, 0.4);
+      /* min-width: 150px; */
+    }
   </style>
 </head>
 <body>
@@ -175,6 +181,7 @@
     // when not passed, it will act as a regular Column Picker (with default Grid Menu image of drag-handle.png)
     gridMenu: {
       useClickToRepositionMenu: false, // defaults to true (false would use the icon offset to reposition the grid menu)
+      subItemChevronClass: 'sgi sgi-chevron-right',
       menuUsabilityOverride: function (args) {
         // we could disable the menu entirely by returning false
         return true;
@@ -244,6 +251,36 @@
           title: "Disabled Command",
           disabled: true,
           command: "custom-command"
+        },
+        "divider",
+        {
+          // we can also have multiple nested sub-menus
+          command: 'export', title: 'Export',
+          customItems: [
+            { command: "export-txt", title: "Text" },
+            {
+              command: 'sub-menu', title: 'Excel', cssClass: "green", subMenuTitle: "available formats", subMenuTitleCssClass: "italic orange",
+              customItems: [
+                { command: "export-csv", title: "Excel (csv)" },
+                { command: "export-xls", title: "Excel (xls)" },
+              ]
+            }
+          ]
+        },
+        {
+          command: 'feedback', title: 'Feedback',
+          customItems: [
+            { command: "request-update", title: "Request update from shipping team", iconCssClass: "sgi sgi-tag-outline", tooltip: "this will automatically send an alert to the shipping team to contact the user for an update" },
+            "divider",
+            {
+              command: 'sub-menu', title: 'Contact Us', iconCssClass: "sgi sgi-user", subMenuTitle: "contact us...", subMenuTitleCssClass: "italic",
+              customItems: [
+                { command: "contact-email", title: "Email us", iconCssClass: "sgi sgi-pencil-outline" },
+                { command: "contact-chat", title: "Chat with us", iconCssClass: "sgi sgi-message-outline" },
+                { command: "contact-meeting", title: "Book an appointment", iconCssClass: "sgi sgi-coffee-outline" },
+              ]
+            }
+          ]
         }
       ]
     }
@@ -383,7 +420,16 @@
         grid.setSortColumns([]);
         dataView.refresh();
       } else {
-        alert("Command: " + args.command);
+        switch (args.command) {
+          case "export-csv":
+          case "export-txt":
+          case "export-xls":
+            alert("Exporting as " + args.item.title);
+            break;
+          default:
+            alert("Command: " + args.command);
+            break;
+        }
       }
     });
 
@@ -404,6 +450,11 @@
     gridMenuControl.onMenuClose.subscribe(function(e, args) {
       console.log('Menu is closing');
       grid.autosizeColumns();
+
+      // you can prevent Grid Menu from closing
+      // e.preventDefault();
+      // console.log('default prevented')
+      // return false;
     });
 
     grid.onAutosizeColumns.subscribe(function(e, args) {

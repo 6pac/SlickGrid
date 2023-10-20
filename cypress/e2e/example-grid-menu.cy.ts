@@ -287,4 +287,135 @@ describe('Example - Grid Menu', () => {
       .should('be.visible')
       .click({ force: true });
   });
+
+  it('should be able to open Grid Menu and click on Export->Text and expect alert triggered with Text Export', () => {
+    const subCommands1 = ['Text', 'Excel'];
+    const stub = cy.stub();
+    cy.on('window:alert', stub);
+
+    cy.get('#myGrid')
+      .find('button.slick-gridmenu-button')
+      .click({ force: true });
+
+    cy.get('.slick-gridmenu.slick-menu-level-0 .slick-gridmenu-command-list')
+      .find('.slick-gridmenu-item')
+      .contains('Export')
+      .click();
+
+    cy.get('.slick-gridmenu.slick-menu-level-1 .slick-gridmenu-command-list')
+      .should('exist')
+      .find('.slick-gridmenu-item')
+      .each(($command, index) => expect($command.text()).to.contain(subCommands1[index]));
+
+    cy.get('.slick-gridmenu.slick-menu-level-1 .slick-gridmenu-command-list')
+      .find('.slick-gridmenu-item')
+      .contains('Text')
+      .click()
+      .then(() => expect(stub.getCall(0)).to.be.calledWith('Exporting as Text'));
+  });
+
+  it('should be able to open Grid Menu and click on Export->Excel->xls and expect alert triggered with Excel (xls) Export', () => {
+    const subCommands1 = ['Text', 'Excel'];
+    const subCommands2 = ['Excel (csv)', 'Excel (xls)'];
+    const stub = cy.stub();
+    cy.on('window:alert', stub);
+
+    cy.get('#myGrid')
+      .find('button.slick-gridmenu-button')
+      .click({ force: true });
+
+    cy.get('.slick-gridmenu.slick-menu-level-0 .slick-gridmenu-command-list')
+      .find('.slick-gridmenu-item')
+      .contains('Export')
+      .click();
+
+    cy.get('.slick-gridmenu.slick-menu-level-1 .slick-gridmenu-command-list')
+      .should('exist')
+      .find('.slick-gridmenu-item')
+      .each(($command, index) => expect($command.text()).to.contain(subCommands1[index]));
+
+    cy.get('.slick-submenu').should('have.length', 1);
+    cy.get('.slick-gridmenu.slick-menu-level-1 .slick-gridmenu-command-list')
+     .find('.slick-gridmenu-item')
+      .contains('Excel')
+      .click();
+
+    cy.get('.slick-gridmenu.slick-menu-level-2 .slick-gridmenu-command-list').as('subMenuList2');
+
+    cy.get('@subMenuList2')
+      .find('.slick-menu-title')
+      .contains('available formats');
+
+    cy.get('@subMenuList2')
+      .should('exist')
+      .find('.slick-gridmenu-item')
+      .each(($command, index) => expect($command.text()).to.contain(subCommands2[index]));
+    cy.get('.slick-submenu').should('have.length', 2);
+
+    cy.get('.slick-gridmenu.slick-menu-level-2 .slick-gridmenu-command-list')
+      .find('.slick-gridmenu-item')
+      .contains('Excel (xls)')
+      .click()
+      .then(() => expect(stub.getCall(0)).to.be.calledWith('Exporting as Excel (xls)'));
+    cy.get('.slick-submenu').should('have.length', 0);
+  });
+
+  it('should open Export->Excel context sub-menu then open Feedback->ContactUs sub-menus and expect previous Export menu to no longer exists', () => {
+    const subCommands1 = ['Text', 'Excel'];
+    const subCommands2 = ['Request update from shipping team', '', 'Contact Us'];
+    const subCommands2_1 = ['Email us', 'Chat with us', 'Book an appointment'];
+
+    const stub = cy.stub();
+    cy.on('window:alert', stub);
+
+    cy.get('#myGrid')
+      .find('button.slick-gridmenu-button')
+      .click({ force: true });
+
+    cy.get('.slick-gridmenu.slick-menu-level-0 .slick-gridmenu-command-list')
+      .find('.slick-gridmenu-item')
+      .contains('Export')
+      .click();
+
+    cy.get('.slick-gridmenu.slick-menu-level-1 .slick-gridmenu-command-list')
+      .should('exist')
+      .find('.slick-gridmenu-item')
+      .each(($command, index) => expect($command.text()).to.contain(subCommands1[index]));
+
+    // click different sub-menu
+    cy.get('.slick-gridmenu.slick-menu-level-0')
+      .find('.slick-gridmenu-item')
+      .contains('Feedback')
+      .should('exist')
+      .click();
+
+    cy.get('.slick-submenu').should('have.length', 1);
+    cy.get('.slick-gridmenu.slick-menu-level-1')
+      .should('exist')
+      .find('.slick-gridmenu-item')
+      .each(($command, index) => expect($command.text()).to.contain(subCommands2[index]));
+
+    // click on Feedback->ContactUs
+    cy.get('.slick-gridmenu.slick-menu-level-1.dropleft') // left align
+      .find('.slick-gridmenu-item')
+      .contains('Contact Us')
+      .should('exist')
+      .click();
+
+    cy.get('.slick-submenu').should('have.length', 2);
+    cy.get('.slick-gridmenu.slick-menu-level-2.dropright') // right align
+      .should('exist')
+      .find('.slick-gridmenu-item')
+      .each(($command, index) => expect($command.text()).to.eq(subCommands2_1[index]));
+
+    cy.get('.slick-gridmenu.slick-menu-level-2');
+
+    cy.get('.slick-gridmenu.slick-menu-level-2 .slick-gridmenu-command-list')
+      .find('.slick-gridmenu-item')
+      .contains('Chat with us')
+      .click()
+      .then(() => expect(stub.getCall(0)).to.be.calledWith('Command: contact-chat'));
+
+    cy.get('.slick-submenu').should('have.length', 0);
+  });
 });

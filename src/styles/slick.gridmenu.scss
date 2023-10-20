@@ -11,6 +11,10 @@
   z-index: 2000;
 	overflow:auto;
   resize: both;
+
+  &.slick-submenu {
+    min-width: 100px;
+  }
 }
 
 .slick-gridmenu-button {
@@ -83,6 +87,9 @@
   border: 1px solid transparent;
   border-radius: 3px;
   display: block;
+  .sub-item-chevron {
+    float: right;
+  }
 }
 .slick-gridmenu-item:hover {
   border-color: silver;
