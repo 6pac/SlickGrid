@@ -162,6 +162,7 @@ export class SlickCellMenu implements SlickPlugin {
 
   // --
   // protected props
+  protected _bindingEventService = new BindingEventService();
   protected _cellMenuProperties: CellMenuOption;
   protected _currentCell = -1;
   protected _currentRow = -1;
@@ -173,8 +174,7 @@ export class SlickCellMenu implements SlickPlugin {
   protected _optionTitleElm?: HTMLSpanElement;
   protected _lastMenuTypeClicked = '';
   protected _menuElm?: HTMLDivElement | null;
-  protected _subMenuElms: HTMLDivElement[] = [];
-  protected _bindingEventService = new BindingEventService();
+  protected _subMenuParentId = '';
   protected _defaults: CellMenuOption = {
     autoAdjustDrop: true,     // dropup/dropdown
     autoAlignSide: true,      // left/right
@@ -270,7 +270,7 @@ export class SlickCellMenu implements SlickPlugin {
    * @param item - command, option or divider
    * @returns menu DOM element
    */
-  protected createMenu(commandItems: Array<MenuCommandItem | 'divider'>, optionItems: Array<MenuOptionItem | 'divider'>, level = 0, item?: MenuCommandItem  | MenuOptionItem | 'divider') {
+  protected createMenu(commandItems: Array<MenuCommandItem | 'divider'>, optionItems: Array<MenuOptionItem | 'divider'>, level = 0, item?: MenuCommandItem | MenuOptionItem | 'divider') {
     const columnDef = this._grid.getColumns()[this._currentCell];
     const dataContext = this._grid.getDataItem(this._currentRow);
 
@@ -278,19 +278,38 @@ export class SlickCellMenu implements SlickPlugin {
     const maxHeight = isNaN(this._cellMenuProperties.maxHeight as number) ? this._cellMenuProperties.maxHeight : `${this._cellMenuProperties.maxHeight ?? 0}px`;
     const width = isNaN(this._cellMenuProperties.width as number) ? this._cellMenuProperties.width : `${this._cellMenuProperties.maxWidth ?? 0}px`;
 
-    const menuClasses = `slick-cell-menu ${this._gridUid} slick-menu-level-${level}`;
-    const bodyMenuElm = document.body.querySelector<HTMLDivElement>(`.slick-cell-menu.${this._gridUid}.slick-menu-level-${level}`);
+    // to avoid having multiple sub-menu trees opened,
+    // we need to somehow keep trace of which parent menu the tree belongs to
+    // and we should keep ref of only the first sub-menu parent, we can use the command name (remove any whitespaces though)
+    const subMenuCommand = (item as MenuCommandItem)?.command;
+    let subMenuId = (level === 1 && subMenuCommand) ? subMenuCommand.replaceAll(' ', '') : '';
+    if (subMenuId) {
+      this._subMenuParentId = subMenuId;
+    }
+    if (level > 1) {
+      subMenuId = this._subMenuParentId;
+    }
 
-    // if menu/sub-menu already exist, then no need to recreate, just return it
+    const menuClasses = `slick-cell-menu slick-menu-level-${level} ${this._gridUid}`;
+    const bodyMenuElm = document.body.querySelector<HTMLDivElement>(`.slick-cell-menu.slick-menu-level-${level}${this.getGridUidSelector()}`);
+
+    // return menu/sub-menu if it's already opened unless we are on different sub-menu tree if so close them all
     if (bodyMenuElm) {
-      return bodyMenuElm;
+      if (bodyMenuElm.dataset.subMenuParent === subMenuId) {
+        return bodyMenuElm;
+      }
+      this.destroySubMenus();
     }
 
     const menuElm = document.createElement('div');
     menuElm.className = menuClasses;
     if (level > 0) {
       menuElm.classList.add('slick-submenu');
+      if (subMenuId) {
+        menuElm.dataset.subMenuParent = subMenuId;
+      }
     }
+    menuElm.ariaLabel = level > 1 ? 'SubMenu' : 'Cell Menu';
     menuElm.role = 'menu';
     if (width) {
       menuElm.style.width = width as string;
@@ -374,7 +393,7 @@ export class SlickCellMenu implements SlickPlugin {
     return menuElm;
   }
 
-  protected addSubMenuTitleWhenExists(item: MenuCommandItem  | MenuOptionItem | 'divider', commandOrOptionMenu: HTMLDivElement) {
+  protected addSubMenuTitleWhenExists(item: MenuCommandItem | MenuOptionItem | 'divider', commandOrOptionMenu: HTMLDivElement) {
     if (item !== 'divider' && item?.subMenuTitle) {
       const subMenuTitleElm = document.createElement('div');
       subMenuTitleElm.className = 'slick-menu-title';
@@ -410,18 +429,20 @@ export class SlickCellMenu implements SlickPlugin {
     this.destroySubMenus();
   }
 
-  /** Close and destroy all previously opened sub-menus */
-  destroySubMenus() {
-    if (this._subMenuElms.length) {
-      let subElm = this._subMenuElms.pop();
-      while (subElm) {
-        subElm.remove();
-        subElm = this._subMenuElms.pop();
-      }
-    }
+  /** Destroy all parent menus and any sub-menus */
+  destroyAllMenus() {
+    this.destroySubMenus();
+    document.querySelectorAll(`.slick-cell-menu${this.getGridUidSelector()}`)
+      .forEach(subElm => subElm.remove());
   }
 
-  protected repositionSubMenu(item: MenuCommandItem  | MenuOptionItem | 'divider', type: MenuType, level: number, e: DOMMouseOrTouchEvent<HTMLDivElement>) {
+  /** Close and destroy all previously opened sub-menus */
+  destroySubMenus() {
+    document.querySelectorAll(`.slick-cell-menu.slick-submenu${this.getGridUidSelector()}`)
+      .forEach(subElm => subElm.remove());
+  }
+
+  protected repositionSubMenu(item: MenuCommandItem | MenuOptionItem | 'divider', type: MenuType, level: number, e: DOMMouseOrTouchEvent<HTMLDivElement>) {
     // when we're clicking a grid cell OR our last menu type (command/option) differs then we know that we need to start fresh and close any sub-menus that might still be open
     if (e.target.classList.contains('slick-cell') || this._lastMenuTypeClicked !== type) {
       this.destroySubMenus();
@@ -429,7 +450,6 @@ export class SlickCellMenu implements SlickPlugin {
 
     // creating sub-menu, we'll also pass level & the item object since we might have "subMenuTitle" to show
     const subMenuElm = this.createMenu((item as MenuCommandItem)?.commandItems || [], (item as MenuOptionItem)?.optionItems || [], level + 1, item);
-    this._subMenuElms.push(subMenuElm);
     subMenuElm.style.display = 'block';
     document.body.appendChild(subMenuElm);
     this.repositionMenu(e, subMenuElm);
@@ -520,10 +540,16 @@ export class SlickCellMenu implements SlickPlugin {
     }
   }
 
-  protected handleCellClick(evt: SlickEventData_ | DOMMouseOrTouchEvent<HTMLDivElement>, args: MenuCommandItemCallbackArgs) {
-    const e = (evt instanceof SlickEventData) ? evt.getNativeEvent<DOMMouseOrTouchEvent<HTMLDivElement>>() : evt;
+  protected getGridUidSelector() {
+    const gridUid = this._grid.getUID() || '';
+    return gridUid ? `.${gridUid}` : '';
+  }
 
+  protected handleCellClick(evt: SlickEventData_ | DOMMouseOrTouchEvent<HTMLDivElement>, args: MenuCommandItemCallbackArgs) {
+    this.destroyAllMenus(); // make there's only 1 parent menu opened at a time
+    const e = (evt instanceof SlickEventData) ? evt.getNativeEvent<DOMMouseOrTouchEvent<HTMLDivElement>>() : evt;
     const cell = this._grid.getCellFromEvent(e);
+
     if (cell) {
       const dataContext = this._grid.getDataItem(cell.row);
       const columnDef = this._grid.getColumns()[cell.cell];
@@ -562,14 +588,19 @@ export class SlickCellMenu implements SlickPlugin {
 
   /** When users click outside the Cell Menu, we will typically close the Cell Menu (and any sub-menus) */
   protected handleBodyMouseDown(e: DOMMouseOrTouchEvent<HTMLDivElement>) {
+    // did we click inside the menu or any of its sub-menu(s)
     let isMenuClicked = false;
-    this._subMenuElms.forEach(subElm => {
-      if (subElm.contains(e.target)) {
-        isMenuClicked = true;
-      }
-    });
     if (this._menuElm?.contains(e.target)) {
       isMenuClicked = true;
+    }
+    if (!isMenuClicked) {
+      document
+        .querySelectorAll(`.slick-cell-menu.slick-submenu${this.getGridUidSelector()}`)
+        .forEach(subElm => {
+          if (subElm.contains(e.target)) {
+            isMenuClicked = true;
+          }
+        });
     }
 
     if (this._menuElm !== e.target && !isMenuClicked && !e.defaultPrevented) {
@@ -721,6 +752,7 @@ export class SlickCellMenu implements SlickPlugin {
           (item as any).action.call(this, e, callbackArgs);
         }
 
+        // unless prevented, close the menu
         if (!e.defaultPrevented) {
           this.closeMenu(e, { cell, row, grid: this._grid });
         }

@@ -310,6 +310,9 @@
             dataView.deleteItem(dataContext.id);
           }
           break;
+        default:
+          alert("Command: " + args.command);
+          break;
       }
     }
 
@@ -364,7 +367,7 @@
             { command: "something", title: "Disabled Command", disabled: true },
             "divider",
             {
-              // we can also have multiple sub-items
+              // we can also have multiple nested sub-menus
               command: 'export', title: 'Export',
               commandItems: [
                 { command: "export-txt", title: "Text" },
@@ -373,6 +376,21 @@
                   commandItems: [
                     { command: "export-csv", title: "Excel (csv)" },
                     { command: "export-xls", title: "Excel (xls)" },
+                  ]
+                }
+              ]
+            },
+            {
+              command: 'feedback', title: 'Feedback',
+              commandItems: [
+                { command: "request-update", title: "Request update from shipping team", iconCssClass: "sgi sgi-star", tooltip: "this will automatically send an alert to the shipping team to contact the user for an update" },
+                "divider",
+                {
+                  command: 'sub-menu', title: 'Contact Us', iconCssClass: "sgi sgi-user", subMenuTitle: "contact us...", subMenuTitleCssClass: "italic",
+                  commandItems: [
+                    { command: "contact-email", title: "Email us", iconCssClass: "sgi sgi-pencil-outline" },
+                    { command: "contact-chat", title: "Chat with us", iconCssClass: "sgi sgi-message-outline" },
+                    { command: "contact-meeting", title: "Book an appointment", iconCssClass: "sgi sgi-coffee-outline" },
                   ]
                 }
               ]
@@ -398,7 +416,7 @@
               }
             },
             {
-              // we can also have multiple sub-items
+              // we can also have multiple nested sub-menus
               option: null, title: "Sub-Options (demo)", subMenuTitle: "Set Effort Driven", optionItems: [
                 { option: true, title: "True", iconCssClass: 'sgi sgi-checkbox-marked-outline green' },
                 { option: false, title: "False", iconCssClass: 'sgi sgi-checkbox-blank-outline pink' },
@@ -447,7 +465,7 @@
         { command: "something", title: "Command (always disabled)", disabled: true },
         "divider",
         {
-          // we can also have multiple sub-items
+          // we can also have multiple nested sub-menus
           command: 'export', title: 'Export',
           commandItems: [
             { command: "export-txt", title: "Text" },
@@ -456,6 +474,21 @@
               commandItems: [
                 { command: "export-csv", title: "Excel (csv)" },
                 { command: "export-xls", title: "Excel (xls)" },
+              ]
+            }
+          ]
+        },
+        {
+          command: 'feedback', title: 'Feedback',
+          commandItems: [
+            { command: "column-love", title: "Request update from shipping team", iconCssClass: "sgi sgi-tag-outline", tooltip: "this will automatically send an alert to the shipping team to contact the user for an update" },
+            "divider",
+            {
+              command: 'sub-menu', title: 'Contact Us', iconCssClass: "sgi sgi-user", subMenuTitle: "contact us...", subMenuTitleCssClass: "italic",
+              commandItems: [
+                { command: "contact-email", title: "Email us", iconCssClass: "sgi sgi-pencil-outline" },
+                { command: "contact-chat", title: "Chat with us", iconCssClass: "sgi sgi-message-outline" },
+                { command: "contact-meeting", title: "Book an appointment", iconCssClass: "sgi sgi-coffee-outline" },
               ]
             }
           ]
@@ -494,7 +527,7 @@
         },
         "divider",
         {
-          // we can also have multiple sub-items
+          // we can also have multiple nested sub-menus
           option: null, title: "Sub-Options (demo)", subMenuTitle: "Set Priority", optionItems: [
             { option: 1, iconCssClass: "sgi sgi-star-outline", title: "Low" },
             { option: 2, iconCssClass: "sgi sgi-star orange", title: "Medium" },
