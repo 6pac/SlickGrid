@@ -88,7 +88,7 @@ describe('Example - Checkbox Header Row', () => {
 
     cy.get('#selectedRows')
     .invoke('text').then((text => {
-        expect(text.trim()).to.eq('')
+        expect(text.trim()).to.eq('');
     }));
 
     cy.window().then((win) => {
@@ -246,14 +246,14 @@ describe('Example - Checkbox Header Row', () => {
 
     cy.get('#idsCount')
       .then($elm => {
-        console.log($elm)
+        console.log($elm);
         prevSelectedIdsCount = +$elm[0].textContent;
         expect(prevSelectedIdsCount).to.be.greaterThan(0);
       });
 
     cy.get('#rowsCount')
       .then($elm => {
-        console.log($elm)
+        console.log($elm);
         prevSelectedRowsCount = +$elm[0].textContent;
         expect(prevSelectedRowsCount).to.be.greaterThan(0);
         expect(prevSelectedIdsCount).not.to.be.eq(prevSelectedRowsCount);

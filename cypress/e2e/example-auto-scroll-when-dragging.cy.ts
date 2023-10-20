@@ -50,7 +50,7 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
     cy.get('#myGrid2 .slick-row:nth-child(-n+6)')
       .children(':not(.cell-unselectable)')
       .each(($child) => expect($child.attr("class")).to.include('selected'));
-  })
+  });
 
   function testScroll() {
     return getScrollDistanceWhenDragOutsideGrid("#myGrid", 'topLeft', 'right', 0, 1).then(cellScrollDistance => {
@@ -84,8 +84,8 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
     });
 
     cy.get('#setDefaultOption').click();
-    cy.get('#isAutoScroll').should('have.value', 'on')
-  })
+    cy.get('#isAutoScroll').should('have.value', 'on');
+  });
 
   function getIntervalUntilRow16Displayed(selector, px) {
     const viewportSelector = (selector + ' .slick-viewport:first');
@@ -138,9 +138,9 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
 
         cy.get('#setDefaultOption').click();
         cy.get('#minIntervalToShowNextCell').should('have.value', '30');
-      })
-    })
-  })
+      });
+    });
+  });
 
   it.skip('should MAX interval take effect when auto scroll: 600ms -> 200ms', { scrollBehavior: false }, function () {
     // By default the MAX interval to show next cell is 600ms.
@@ -160,9 +160,9 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
 
         cy.get('#setDefaultOption').click();
         cy.get('#maxIntervalToShowNextCell').should('have.value', '600');
-      })
-    })
-  })
+      });
+    });
+  });
 
   it('should Delay per Px take effect when auto scroll: 5ms/px -> 50ms/px', { scrollBehavior: false }, function () {
     const allowedDiff = 0.5;
@@ -185,9 +185,9 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
 
         cy.get('#setDefaultOption').click();
         cy.get('#accelerateInterval').should('have.value', '5');
-      })
-    })
-  })
+      });
+    });
+  });
 
   it('should have a frozen grid with 4 containers with 2 columns on the left and 3 rows on the top after click Set/Clear Frozen button', () => {
     cy.get('#myGrid [style="top:0px"]').should('have.length', 1);
@@ -283,8 +283,8 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
         expect(scrollBefore).to.be.lessThan(scrollAfter);
         cy.dragEnd(selector);
         cy.get(selector + ' [style="top:350px"].slick-group').should('not.be.hidden');;
-      })
-    })
+      });
+    });
   }
 
   it('should auto scroll to display the selecting element even unselectable cell exist in grouping grid', { scrollBehavior: false }, () => {

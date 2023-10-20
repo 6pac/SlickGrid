@@ -35,7 +35,7 @@ describe('Example - Optimizing Updates', () => {
       .each(($child) => {
           const message = $child.find('.cell-message').text();
           const number = parseInt(message.substring("Log Entry ".length));
-          expect(number).to.be.lessThan(1000)
+          expect(number).to.be.lessThan(1000);
       });
 
     cy.get('.options-panel button')
@@ -47,7 +47,7 @@ describe('Example - Optimizing Updates', () => {
       .each(($child) => {
           const message = $child.find('.cell-message').text();
           const number = parseInt(message.substring("Log Entry ".length));
-          expect(number).to.be.greaterThan(90000)
+          expect(number).to.be.greaterThan(90000);
       });
   });
 
@@ -59,7 +59,7 @@ describe('Example - Optimizing Updates', () => {
       .each(($child) => {
           const message = $child.find('.cell-message').text();
           const number = parseInt(message.substring("Log Entry ".length));
-          expect(number).to.be.lessThan(1000)
+          expect(number).to.be.lessThan(1000);
       });
 
     cy.get('.options-panel button')
@@ -71,7 +71,7 @@ describe('Example - Optimizing Updates', () => {
       .each(($child) => {
           const message = $child.find('.cell-message').text();
           const number = parseInt(message.substring("Log Entry ".length));
-          expect(number).to.be.greaterThan(90000)
+          expect(number).to.be.greaterThan(90000);
       });
   });
 
@@ -94,6 +94,5 @@ describe('Example - Optimizing Updates', () => {
         expect(efficientTime).to.be.lessThan(inEfficientTime / 2);
       });
     });
-
   });
 });

@@ -27,7 +27,7 @@ describe('Example - Custom Tooltip', () => {
   });
 
   it('should mouse over 1st row checkbox column and NOT expect any tooltip to show since it is disabled on that column', () => {
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(0)`).as('checkbox0-cell')
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(0)`).as('checkbox0-cell');
     cy.get('@checkbox0-cell').trigger('mouseover');
 
     cy.get('.slick-custom-tooltip').should('not.exist');
@@ -35,7 +35,7 @@ describe('Example - Custom Tooltip', () => {
   });
 
   it('should mouse over Task 1 cell and expect async tooltip to show', () => {
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 1}px"] > .slick-cell:nth(1)`).as('task1-cell')
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 1}px"] > .slick-cell:nth(1)`).as('task1-cell');
     cy.get('@task1-cell').should('contain', 'Task 1');
     cy.get('@task1-cell').trigger('mouseover');
     cy.get('.slick-custom-tooltip').contains('loading...');
@@ -54,7 +54,7 @@ describe('Example - Custom Tooltip', () => {
   });
 
   it('should mouse over Task 5 cell and expect async tooltip to show', () => {
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(1)`).as('task5-cell')
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(1)`).as('task5-cell');
     cy.get('@task5-cell').should('contain', 'Task 5');
     cy.get('@task5-cell').trigger('mouseover');
     cy.get('.slick-custom-tooltip').contains('loading...');
@@ -73,7 +73,7 @@ describe('Example - Custom Tooltip', () => {
   });
 
   it('should mouse over 6th row Description and expect full cell content to show in a tooltip because cell has ellipsis and is too long for the cell itself', () => {
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(2)`).as('desc5-cell')
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(2)`).as('desc5-cell');
     cy.get('@desc5-cell').should('contain', 'This is a sample task description.');
     cy.get('@desc5-cell').trigger('mouseover');
 
@@ -85,7 +85,7 @@ describe('Example - Custom Tooltip', () => {
   });
 
   it('should mouse over 6th row Description 2 and expect regular tooltip title + concatenated full cell content when using "useRegularTooltipFromFormatterOnly: true"', () => {
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(3)`).as('desc2-5-cell')
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(3)`).as('desc2-5-cell');
     cy.get('@desc2-5-cell').should('contain', 'This is a sample task description.');
     cy.get('@desc2-5-cell').trigger('mouseover');
 
@@ -96,7 +96,7 @@ describe('Example - Custom Tooltip', () => {
   });
 
   it('should mouse over 6th row Duration and expect a custom tooltip shown with 4 label/value pairs displayed', () => {
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(4)`).as('duration5-cell')
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(4)`).as('duration5-cell');
     cy.get('@duration5-cell').should('contain', '5 days');
     cy.get('@duration5-cell').trigger('mouseover');
 
@@ -119,7 +119,7 @@ describe('Example - Custom Tooltip', () => {
   });
 
   it('should mouse over % Complete cell of Task 5 and expect regular tooltip to show with content "x %" where x is a number', () => {
-    cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(5)`).as('percentage-cell')
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 5}px"] > .slick-cell:nth(5)`).as('percentage-cell');
     cy.get('@percentage-cell').find('.percent-complete-bar').should('exist');
     cy.get('@percentage-cell').trigger('mouseover');
 
@@ -130,7 +130,7 @@ describe('Example - Custom Tooltip', () => {
   });
 
   it('should mouse over header-row (filter) 1st column checkbox and NOT expect any tooltip to show since it is disabled on that column', () => {
-    cy.get(`.slick-headerrow-columns .slick-headerrow-column:nth(0)`).as('checkbox0-filter')
+    cy.get(`.slick-headerrow-columns .slick-headerrow-column:nth(0)`).as('checkbox0-filter');
     cy.get('@checkbox0-filter').trigger('mouseenter');
 
     cy.get('.slick-custom-tooltip').should('not.exist');
@@ -138,7 +138,7 @@ describe('Example - Custom Tooltip', () => {
   });
 
   it('should mouse over header-row (filter) 2nd column Title and expect a tooltip to show rendered from an headerRowFormatter', () => {
-    cy.get(`.slick-headerrow-columns .slick-headerrow-column:nth(1)`).as('checkbox0-filter')
+    cy.get(`.slick-headerrow-columns .slick-headerrow-column:nth(1)`).as('checkbox0-filter');
     cy.get('@checkbox0-filter').trigger('mouseenter');
 
     cy.get('.slick-custom-tooltip').should('be.visible');
@@ -151,7 +151,7 @@ describe('Example - Custom Tooltip', () => {
   });
 
   it('should mouse over header-row (filter) Finish column and NOT expect any tooltip to show since it is disabled on that column', () => {
-    cy.get(`.slick-headerrow-columns .slick-headerrow-column:nth(7)`).as('finish-filter')
+    cy.get(`.slick-headerrow-columns .slick-headerrow-column:nth(7)`).as('finish-filter');
     cy.get('@finish-filter').trigger('mouseenter');
 
     cy.get('.slick-custom-tooltip').should('not.exist');
@@ -159,7 +159,7 @@ describe('Example - Custom Tooltip', () => {
   });
 
   it('should mouse over header title on 1st column with checkbox and NOT expect any tooltip to show since it is disabled on that column', () => {
-    cy.get(`.slick-header-columns .slick-header-column:nth(0)`).as('checkbox-header')
+    cy.get(`.slick-header-columns .slick-header-column:nth(0)`).as('checkbox-header');
     cy.get('@checkbox-header').trigger('mouseenter');
 
     cy.get('.slick-custom-tooltip').should('not.exist');
@@ -167,7 +167,7 @@ describe('Example - Custom Tooltip', () => {
   });
 
   it('should mouse over header title on 2nd column with Title name and expect a tooltip to show rendered from an headerFormatter', () => {
-    cy.get(`.slick-header-columns .slick-header-column:nth(1)`).as('checkbox0-header')
+    cy.get(`.slick-header-columns .slick-header-column:nth(1)`).as('checkbox0-header');
     cy.get('@checkbox0-header').trigger('mouseenter');
 
     cy.get('.slick-custom-tooltip').should('be.visible');
@@ -180,7 +180,7 @@ describe('Example - Custom Tooltip', () => {
   });
 
   it('should mouse over header title on 2nd column with Finish name and NOT expect any tooltip to show since it is disabled on that column', () => {
-    cy.get(`.slick-header-columns .slick-header-column:nth(7)`).as('finish-header')
+    cy.get(`.slick-header-columns .slick-header-column:nth(7)`).as('finish-header');
     cy.get('@finish-header').trigger('mouseenter');
 
     cy.get('.slick-custom-tooltip').should('not.exist');
