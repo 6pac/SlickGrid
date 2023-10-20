@@ -254,7 +254,7 @@
         },
         "divider",
         {
-          // we can also have multiple sub-items
+          // we can also have multiple nested sub-menus
           command: 'export', title: 'Export',
           customItems: [
             { command: "export-txt", title: "Text" },
@@ -263,6 +263,21 @@
               customItems: [
                 { command: "export-csv", title: "Excel (csv)" },
                 { command: "export-xls", title: "Excel (xls)" },
+              ]
+            }
+          ]
+        },
+        {
+          command: 'feedback', title: 'Feedback',
+          customItems: [
+            { command: "request-update", title: "Request update from shipping team", iconCssClass: "sgi sgi-tag-outline", tooltip: "this will automatically send an alert to the shipping team to contact the user for an update" },
+            "divider",
+            {
+              command: 'sub-menu', title: 'Contact Us', iconCssClass: "sgi sgi-user", subMenuTitle: "contact us...", subMenuTitleCssClass: "italic",
+              customItems: [
+                { command: "contact-email", title: "Email us", iconCssClass: "sgi sgi-pencil-outline" },
+                { command: "contact-chat", title: "Chat with us", iconCssClass: "sgi sgi-message-outline" },
+                { command: "contact-meeting", title: "Book an appointment", iconCssClass: "sgi sgi-coffee-outline" },
               ]
             }
           ]

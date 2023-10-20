@@ -134,16 +134,16 @@ export class SlickGridMenu {
   protected _gridOptions: GridOption;
   protected _gridUid: string;
   protected _isMenuOpen = false;
-  protected _gridMenuOptions: GridMenuOption | null = null;
+  protected _columnCheckboxes: HTMLInputElement[] = [];
   protected _columnTitleElm!: HTMLElement;
   protected _customTitleElm!: HTMLElement;
-  protected _customMenuElm!: HTMLElement;
+  protected _customMenuElm!: HTMLDivElement;
   protected _headerElm: HTMLDivElement | null = null;
   protected _listElm!: HTMLElement;
   protected _buttonElm!: HTMLElement;
   protected _menuElm!: HTMLElement;
-  protected _subMenuElms: HTMLDivElement[] = [];
-  protected _columnCheckboxes: HTMLInputElement[] = [];
+  protected _subMenuParentId = '';
+  protected _gridMenuOptions: GridMenuOption | null = null;
   protected _defaults: GridMenuOption = {
     showButton: true,
     hideForceFitButton: false,
@@ -228,33 +228,9 @@ export class SlickGridMenu {
       this._bindingEventService.bind(this._buttonElm, 'click', this.showGridMenu.bind(this) as EventListener);
     }
 
-    this._menuElm = document.createElement('div');
-    this._menuElm.className = `slick-gridmenu ${this._gridUid} slick-menu-level-0`;
-    this._menuElm.style.display = 'none';
-    document.body.appendChild(this._menuElm);
-
-    const buttonElm = document.createElement('button');
-    buttonElm.type = 'button';
-    buttonElm.className = 'close';
-    buttonElm.dataset.dismiss = 'slick-gridmenu';
-    buttonElm.ariaLabel = 'Close';
-
-    const spanCloseElm = document.createElement('span');
-    spanCloseElm.className = 'close';
-    spanCloseElm.ariaHidden = 'true';
-    spanCloseElm.innerHTML = '&times;';
-    buttonElm.appendChild(spanCloseElm);
-    this._menuElm.appendChild(buttonElm);
-
-    this._customMenuElm = document.createElement('div');
-    this._customMenuElm.className = `slick-gridmenu-custom slick-gridmenu-command-list`;
-    this._customMenuElm.role = 'menu';
-
-    this._menuElm.appendChild(this._customMenuElm);
-
-    const commandItems = this._gridMenuOptions?.customItems ?? [];
-    this.populateCustomMenus(commandItems, this._customMenuElm, { grid: this.grid, level: 0 });
+    this._menuElm = this.createMenu(0);
     this.populateColumnPicker();
+    document.body.appendChild(this._menuElm);
 
     // Hide the menu on outside click.
     this._bindingEventService.bind(document.body, 'mousedown', this.handleBodyMouseDown.bind(this) as EventListener);
@@ -263,17 +239,33 @@ export class SlickGridMenu {
     this._bindingEventService.bind(document.body, 'beforeunload', this.destroy.bind(this));
   }
 
+  /** Create the menu or sub-menu(s) but without the column picker which is a separate single process */
   createMenu(level = 0, item?: GridMenuItem | 'divider') {
     // create a new cell menu
     const maxHeight = isNaN(this._gridMenuOptions?.maxHeight as number) ? this._gridMenuOptions?.maxHeight : `${this._gridMenuOptions?.maxHeight ?? 0}px`;
     const width = isNaN(this._gridMenuOptions?.width as number) ? this._gridMenuOptions?.width : `${this._gridMenuOptions?.maxWidth ?? 0}px`;
 
-    const menuClasses = `slick-gridmenu ${this._gridUid} slick-menu-level-${level}`;
-    const bodyMenuElm = document.body.querySelector<HTMLDivElement>(`.slick-gridmenu.${this._gridUid}.slick-menu-level-${level}`);
+    // to avoid having multiple sub-menu trees opened,
+    // we need to somehow keep trace of which parent menu the tree belongs to
+    // and we should keep ref of only the first sub-menu parent, we can use the command name (remove any whitespaces though)
+    const subMenuCommand = (item as GridMenuItem)?.command;
+    let subMenuId = (level === 1 && subMenuCommand) ? subMenuCommand.replaceAll(' ', '') : '';
+    if (subMenuId) {
+      this._subMenuParentId = subMenuId;
+    }
+    if (level > 1) {
+      subMenuId = this._subMenuParentId;
+    }
 
-    // if menu/sub-menu already exist, then no need to recreate, just return it
+    const menuClasses = `slick-gridmenu slick-menu-level-${level} ${this._gridUid}`;
+    const bodyMenuElm = document.body.querySelector<HTMLDivElement>(`.slick-gridmenu.slick-menu-level-${level}${this.getGridUidSelector()}`);
+
+    // return menu/sub-menu if it's already opened unless we are on different sub-menu tree if so close them all
     if (bodyMenuElm) {
-      return bodyMenuElm;
+      if (bodyMenuElm.dataset.subMenuParent === subMenuId) {
+        return bodyMenuElm;
+      }
+      this.destroySubMenus();
     }
 
     const menuElm = document.createElement('div');
@@ -281,7 +273,11 @@ export class SlickGridMenu {
     menuElm.className = menuClasses;
     if (level > 0) {
       menuElm.classList.add('slick-submenu');
+      if (subMenuId) {
+        menuElm.dataset.subMenuParent = subMenuId;
+      }
     }
+    menuElm.ariaLabel = level > 1 ? 'SubMenu' : 'Grid Menu';
 
     if (width) {
       menuElm.style.width = width as string;
@@ -297,7 +293,7 @@ export class SlickGridMenu {
       closeButtonElm = document.createElement('button');
       closeButtonElm.type = 'button';
       closeButtonElm.className = 'close';
-      closeButtonElm.dataset.dismiss = 'slick-cell-menu';
+      closeButtonElm.dataset.dismiss = 'slick-gridmenu';
       closeButtonElm.ariaLabel = 'Close';
 
       const spanCloseElm = document.createElement('span');
@@ -305,24 +301,24 @@ export class SlickGridMenu {
       spanCloseElm.ariaHidden = 'true';
       spanCloseElm.innerHTML = '&times;';
       closeButtonElm.appendChild(spanCloseElm);
+      menuElm.appendChild(closeButtonElm);
     }
 
     // -- Command List section
+    this._customMenuElm = document.createElement('div');
+    this._customMenuElm.className = `slick-gridmenu-custom slick-gridmenu-command-list slick-menu-level-${level}`;
+    this._customMenuElm.role = 'menu';
+    menuElm.appendChild(this._customMenuElm);
+
     const commandItems = (item as GridMenuItem)?.customItems ?? this._gridMenuOptions?.customItems ?? [];
     if (commandItems.length > 0) {
-      const commandMenuElm = document.createElement('div');
-      commandMenuElm.className = `slick-gridmenu-custom slick-gridmenu-command-list slick-menu-level-${level}`;
-      commandMenuElm.role = 'menu';
 
       // when creating sub-menu add its sub-menu title when exists
       if (item && level > 0) {
-        this.addSubMenuTitleWhenExists(item, commandMenuElm); // add sub-menu title when exists
+        this.addSubMenuTitleWhenExists(item, this._customMenuElm); // add sub-menu title when exists
       }
-
-      menuElm.appendChild(commandMenuElm);
-
-      this.populateCustomMenus(commandItems, commandMenuElm, { grid: this.grid, level });
     }
+    this.populateCustomMenus(commandItems, this._customMenuElm, { grid: this.grid, level });
 
     // increment level for possible next sub-menus if exists
     level++;
@@ -360,16 +356,10 @@ export class SlickGridMenu {
     this._menuElm?.remove();
   }
 
-
   /** Close and destroy all previously opened sub-menus */
   destroySubMenus() {
-    if (this._subMenuElms.length) {
-      let subElm = this._subMenuElms.pop();
-      while (subElm) {
-        subElm.remove();
-        subElm = this._subMenuElms.pop();
-      }
-    }
+    document.querySelectorAll(`.slick-gridmenu.slick-submenu${this.getGridUidSelector()}`)
+      .forEach(subElm => subElm.remove());
   }
 
   /** Construct the custom command menu items. */
@@ -652,19 +642,29 @@ export class SlickGridMenu {
     }
   }
 
-  protected handleBodyMouseDown(event: DOMMouseOrTouchEvent<HTMLElement>) {
+  protected getGridUidSelector() {
+    const gridUid = this.grid.getUID() || '';
+    return gridUid ? `.${gridUid}` : '';
+  }
+
+  protected handleBodyMouseDown(e: DOMMouseOrTouchEvent<HTMLElement>) {
+    // did we click inside the menu or any of its sub-menu(s)
     let isMenuClicked = false;
-    this._subMenuElms.forEach(subElm => {
-      if (subElm.contains(event.target)) {
-        isMenuClicked = true;
-      }
-    });
-    if (this._menuElm?.contains(event.target) && this._isMenuOpen) {
+    if (this._menuElm?.contains(e.target)) {
       isMenuClicked = true;
     }
+    if (!isMenuClicked) {
+      document
+        .querySelectorAll(`.slick-gridmenu.slick-submenu${this.getGridUidSelector()}`)
+        .forEach(subElm => {
+          if (subElm.contains(e.target)) {
+            isMenuClicked = true;
+          }
+        });
+    }
 
-    if ((this._menuElm !== event.target && !isMenuClicked && !event.defaultPrevented && this._isMenuOpen) || event.target.className === 'close') {
-      this.hideMenu(event);
+    if ((this._menuElm !== e.target && !isMenuClicked && !e.defaultPrevented && this._isMenuOpen) || e.target.className === 'close') {
+      this.hideMenu(e);
     }
   }
 
@@ -753,7 +753,6 @@ export class SlickGridMenu {
 
     // creating sub-menu, we'll also pass level & the item object since we might have "subMenuTitle" to show
     const subMenuElm = this.createMenu(level + 1, item);
-    this._subMenuElms.push(subMenuElm);
     subMenuElm.style.display = 'block';
     document.body.appendChild(subMenuElm);
     this.repositionMenu(e, subMenuElm);
