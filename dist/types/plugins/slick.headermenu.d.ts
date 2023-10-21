@@ -1,5 +1,5 @@
 import { BindingEventService as BindingEventService_, SlickEventHandler as SlickEventHandler_ } from '../slick.core';
-import type { Column, DOMEvent, HeaderMenuCommandItemCallbackArgs, HeaderMenuItems, HeaderMenuOption, MenuCommandItem, MenuCommandItemCallbackArgs, Plugin, OnHeaderCellRenderedEventArgs } from '../models/index';
+import type { Column, DOMEvent, DOMMouseOrTouchEvent, HeaderMenuCommandItemCallbackArgs, HeaderMenuItems, HeaderMenuOption, HeaderMenuCommandItem, MenuCommandItemCallbackArgs, SlickPlugin, OnHeaderCellRenderedEventArgs } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 /**
  * A plugin to add drop-down menus to column headers.
@@ -87,32 +87,41 @@ import type { SlickGrid } from '../slick.grid';
   *    buttonImage:      a url to the menu button image
   * @class Slick.Plugins.HeaderButtons
   */
-export declare class SlickHeaderMenu implements Plugin {
+export declare class SlickHeaderMenu implements SlickPlugin {
     pluginName: "HeaderMenu";
     onAfterMenuShow: import("../slick.core").SlickEvent<HeaderMenuCommandItemCallbackArgs>;
     onBeforeMenuShow: import("../slick.core").SlickEvent<HeaderMenuCommandItemCallbackArgs>;
     onCommand: import("../slick.core").SlickEvent<MenuCommandItemCallbackArgs>;
     protected _grid: SlickGrid;
+    protected _gridUid: string;
     protected _handler: SlickEventHandler_<any>;
     protected _bindingEventService: BindingEventService_;
     protected _defaults: HeaderMenuOption;
     protected _options: HeaderMenuOption;
     protected _activeHeaderColumnElm?: HTMLDivElement | null;
     protected _menuElm?: HTMLDivElement | null;
+    protected _subMenuParentId: string;
     constructor(options: Partial<HeaderMenuOption>);
     init(grid: SlickGrid): void;
     setOptions(newOptions: Partial<HeaderMenuOption>): void;
     protected getGridUidSelector(): string;
     destroy(): void;
+    destroyAllMenus(): void;
+    /** Close and destroy all previously opened sub-menus */
+    destroySubMenus(): void;
     protected handleBodyMouseDown(e: DOMEvent<HTMLElement>): void;
     hideMenu(): void;
-    protected handleHeaderCellRendered(_e: Event, args: OnHeaderCellRenderedEventArgs): void;
+    protected handleHeaderCellRendered(_e: MouseEvent, args: OnHeaderCellRenderedEventArgs): void;
     protected handleBeforeHeaderCellDestroy(_e: Event, args: {
         column: Column;
         node: HTMLElement;
     }): void;
-    protected showMenu(event: MouseEvent, menu: HeaderMenuItems, columnDef: Column): void;
-    protected handleMenuItemClick(item: MenuCommandItem | 'divider', columnDef: Column, e: DOMEvent<HTMLDivElement>): boolean | void;
+    protected addSubMenuTitleWhenExists(item: HeaderMenuCommandItem | 'divider', commandMenuElm: HTMLDivElement): void;
+    protected createParentMenu(event: DOMMouseOrTouchEvent<HTMLDivElement>, menu: HeaderMenuItems, columnDef: Column): void;
+    protected createMenu(commandItems: Array<HeaderMenuCommandItem | 'divider'>, columnDef: Column, level?: number, item?: HeaderMenuCommandItem | 'divider'): HTMLDivElement;
+    protected handleMenuItemClick(item: HeaderMenuCommandItem | 'divider', columnDef: Column, level: number | undefined, e: DOMMouseOrTouchEvent<HTMLDivElement>): boolean | void;
+    protected repositionSubMenu(item: HeaderMenuCommandItem, columnDef: Column, level: number, e: DOMMouseOrTouchEvent<HTMLDivElement>): void;
+    protected repositionMenu(e: DOMMouseOrTouchEvent<HTMLDivElement>, menuElm: HTMLDivElement): void;
     /**
      * Method that user can pass to override the default behavior.
      * In order word, user can choose or an item is (usable/visible/enable) by providing his own logic.

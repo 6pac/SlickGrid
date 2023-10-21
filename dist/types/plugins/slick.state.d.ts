@@ -1,5 +1,5 @@
 import { SlickEvent as SlickEvent_ } from '../slick.core';
-import type { Column, ColumnSort, Plugin } from '../models/index';
+import type { Column, ColumnSort, SlickPlugin } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 export interface SlickStateOption {
     /** optional grid state clientId */
@@ -33,7 +33,7 @@ declare class LocalStorageWrapper {
     get<T = any>(key: string): Promise<T>;
     set(key: string, obj: any): void;
 }
-export declare class SlickState implements Plugin {
+export declare class SlickState implements SlickPlugin {
     pluginName: "State";
     onStateChanged: SlickEvent_<CurrentState>;
     protected _grid: SlickGrid;

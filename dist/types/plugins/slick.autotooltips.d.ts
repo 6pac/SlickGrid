@@ -1,9 +1,9 @@
-import type { AutoTooltipOption, Column, Plugin } from '../models/index';
+import type { AutoTooltipOption, Column, SlickPlugin } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 /**
  * AutoTooltips plugin to show/hide tooltips when columns are too narrow to fit content.
  */
-export declare class SlickAutoTooltips implements Plugin {
+export declare class SlickAutoTooltips implements SlickPlugin {
     pluginName: "AutoTooltips";
     protected _grid: SlickGrid;
     protected _options?: AutoTooltipOption;

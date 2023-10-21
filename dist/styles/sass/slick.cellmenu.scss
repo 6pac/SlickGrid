@@ -11,6 +11,9 @@
   z-index: 2000;
 	overflow:auto;
   resize: both;
+  &.slick-submenu {
+    min-width: 100px;
+  }
 }
 
 .slick-cell-menu-button {
@@ -30,7 +33,7 @@
   float: right;
 }
 
-.slick-cell-menu .title {
+.slick-cell-menu .slick-menu-title {
   font-size: 16px;
   width: calc(100% - 30px);
   border-bottom: solid 1px #d6d6d6;
@@ -80,6 +83,10 @@
   border: 1px solid transparent;
   border-radius: 3px;
   display: block;
+
+  .sub-item-chevron {
+    float: right;
+  }
 }
 .slick-cell-menu-item:hover {
   border-color: silver;

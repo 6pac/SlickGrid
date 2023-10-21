@@ -65,7 +65,7 @@
     }
     // TODO:  add -/+ handling
     handleGridKeyDown(e) {
-      if (this._options.enableExpandCollapse && e.which == keyCode.SPACE) {
+      if (this._options.enableExpandCollapse && e.which === keyCode.SPACE) {
         let activeCell = this._grid.getActiveCell();
         if (activeCell) {
           let item = this._grid.getDataItem(activeCell.row);

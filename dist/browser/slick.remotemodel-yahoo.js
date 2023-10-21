@@ -24,7 +24,7 @@
     }
     isDataLoaded(from, to) {
       for (let i = from; i <= to; i++)
-        if (this.data[i] == null || this.data[i] == null)
+        if (this.data[i] === void 0 || this.data[i] === null)
           return !1;
       return !0;
     }
@@ -45,12 +45,12 @@
         fromPage++;
       for (; this.data[toPage * this.PAGESIZE] !== void 0 && fromPage < toPage; )
         toPage--;
-      if (fromPage > toPage || fromPage == toPage && this.data[fromPage * this.PAGESIZE] !== void 0) {
+      if (fromPage > toPage || fromPage === toPage && this.data[fromPage * this.PAGESIZE] !== void 0) {
         this.onDataLoaded.notify({ from, to });
         return;
       }
       let recStart = fromPage * this.PAGESIZE, recCount = (toPage - fromPage) * this.PAGESIZE + this.PAGESIZE, url = "https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20rss(" + recStart + "%2C" + recCount + ")%20where%20url%3D%22http%3A%2F%2Frss.news.yahoo.com%2Frss%2Ftopstories%22&format=json";
-      this.h_request != null && clearTimeout(this.h_request), this.h_request = setTimeout(() => {
+      this.h_request !== null && clearTimeout(this.h_request), this.h_request = setTimeout(() => {
         for (let i = fromPage; i <= toPage; i++)
           this.data[i * this.PAGESIZE] = null;
         this.onDataLoading.notify({ from, to }), this.req = window.$.jsonp({

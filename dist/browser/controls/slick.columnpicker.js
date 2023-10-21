@@ -61,7 +61,7 @@
         let liElm = document.createElement("li");
         liElm.className = excludeCssClass, liElm.ariaLabel = ((_a = this.columns[i]) == null ? void 0 : _a.name) || "";
         let checkboxElm = document.createElement("input");
-        checkboxElm.type = "checkbox", checkboxElm.id = `${this._gridUid}colpicker-${columnId}`, checkboxElm.dataset.columnid = String(this.columns[i].id), liElm.appendChild(checkboxElm), this._columnCheckboxes.push(checkboxElm), this.grid.getColumnIndex(columnId) != null && !this.columns[i].hidden && (checkboxElm.checked = !0), (_c = (_b = this._gridOptions) == null ? void 0 : _b.columnPicker) != null && _c.headerColumnValueExtractor ? columnLabel = this._gridOptions.columnPicker.headerColumnValueExtractor(this.columns[i], this._gridOptions) : columnLabel = this._defaults.headerColumnValueExtractor(this.columns[i], this._gridOptions);
+        checkboxElm.type = "checkbox", checkboxElm.id = `${this._gridUid}colpicker-${columnId}`, checkboxElm.dataset.columnid = String(this.columns[i].id), liElm.appendChild(checkboxElm), this._columnCheckboxes.push(checkboxElm), Utils.isDefined(this.grid.getColumnIndex(columnId)) && !this.columns[i].hidden && (checkboxElm.checked = !0), (_c = (_b = this._gridOptions) == null ? void 0 : _b.columnPicker) != null && _c.headerColumnValueExtractor ? columnLabel = this._gridOptions.columnPicker.headerColumnValueExtractor(this.columns[i], this._gridOptions) : columnLabel = this._defaults.headerColumnValueExtractor(this.columns[i], this._gridOptions);
         let labelElm = document.createElement("label");
         labelElm.htmlFor = `${this._gridUid}colpicker-${columnId}`, labelElm.innerHTML = columnLabel, liElm.appendChild(labelElm), this._listElm.appendChild(liElm);
       }

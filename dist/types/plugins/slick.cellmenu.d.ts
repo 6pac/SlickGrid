@@ -1,5 +1,5 @@
 import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_ } from '../slick.core';
-import type { CellMenuOption, DOMMouseOrTouchEvent, GridOption, MenuCommandItem, MenuCommandItemCallbackArgs, MenuFromCellCallbackArgs, MenuOptionItem, MenuOptionItemCallbackArgs, Plugin } from '../models/index';
+import type { CellMenuOption, Column, DOMMouseOrTouchEvent, GridOption, MenuCommandItem, MenuCommandItemCallbackArgs, MenuFromCellCallbackArgs, MenuOptionItem, MenuOptionItemCallbackArgs, MenuType, SlickPlugin } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 /**
  * A plugin to add Menu on a Cell click (click on the cell that has the cellMenu object defined)
@@ -57,6 +57,7 @@ import type { SlickGrid } from '../slick.grid';
  *    autoAlignSide:              Auto-align drop menu to the left or right depending on grid viewport available space (defaults to true)
  *    autoAlignSideOffset:        Optionally add an offset to the left/right side auto-align (defaults to 0)
  *    menuUsabilityOverride:      Callback method that user can override the default behavior of enabling/disabling the menu from being usable (must be combined with a custom formatter)
+ *    subItemChevronClass:        CSS class that can be added on the right side of a sub-item parent (typically a chevron-right icon)
  *
  *
  * Available menu Command/Option item properties:
@@ -67,6 +68,8 @@ import type { SlickGrid } from '../slick.grid';
  *    divider:                    Boolean which tells if the current item is a divider, not an actual command. You could also pass "divider" instead of an object
  *    disabled:                   Whether the item/command is disabled.
  *    hidden:                     Whether the item/command is hidden.
+ *    subMenuTitle:               Optional sub-menu title that will shows up when sub-menu commmands/options list is opened
+ *    subMenuTitleCssClass:       Optional sub-menu title CSS class to use with `subMenuTitle`
  *    tooltip:                    Item tooltip.
  *    cssClass:                   A CSS class to be added to the menu item container.
  *    iconCssClass:               A CSS class to be added to the menu item icon.
@@ -121,13 +124,14 @@ import type { SlickGrid } from '../slick.grid';
  * @param options {Object} Cell Menu Options
  * @class Slick.Plugins.CellMenu
  */
-export declare class SlickCellMenu implements Plugin {
+export declare class SlickCellMenu implements SlickPlugin {
     pluginName: "CellMenu";
     onAfterMenuShow: SlickEvent_<MenuFromCellCallbackArgs>;
     onBeforeMenuShow: SlickEvent_<MenuFromCellCallbackArgs>;
     onBeforeMenuClose: SlickEvent_<MenuFromCellCallbackArgs>;
     onCommand: SlickEvent_<MenuCommandItemCallbackArgs>;
     onOptionSelected: SlickEvent_<MenuOptionItemCallbackArgs>;
+    protected _bindingEventService: BindingEventService_;
     protected _cellMenuProperties: CellMenuOption;
     protected _currentCell: number;
     protected _currentRow: number;
@@ -137,33 +141,52 @@ export declare class SlickCellMenu implements Plugin {
     protected _handler: SlickEventHandler_<any>;
     protected _commandTitleElm?: HTMLSpanElement;
     protected _optionTitleElm?: HTMLSpanElement;
+    protected _lastMenuTypeClicked: string;
     protected _menuElm?: HTMLDivElement | null;
-    protected _bindingEventService: BindingEventService_;
+    protected _subMenuParentId: string;
     protected _defaults: CellMenuOption;
     constructor(optionProperties: Partial<CellMenuOption>);
     init(grid: SlickGrid): void;
     setOptions(newOptions: Partial<CellMenuOption>): void;
     destroy(): void;
-    protected createMenu(e: DOMMouseOrTouchEvent<HTMLDivElement>): HTMLDivElement | undefined;
+    protected createParentMenu(e: DOMMouseOrTouchEvent<HTMLDivElement>): HTMLDivElement | undefined;
+    /**
+     * Create parent menu or sub-menu(s), a parent menu will start at level 0 while sub-menu(s) will be incremented
+     * @param commandItems - array of optional commands or dividers
+     * @param optionItems - array of optional options or dividers
+     * @param level - menu level
+     * @param item - command, option or divider
+     * @returns menu DOM element
+     */
+    protected createMenu(commandItems: Array<MenuCommandItem | 'divider'>, optionItems: Array<MenuOptionItem | 'divider'>, level?: number, item?: MenuCommandItem | MenuOptionItem | 'divider'): HTMLDivElement;
+    protected addSubMenuTitleWhenExists(item: MenuCommandItem | MenuOptionItem | 'divider', commandOrOptionMenu: HTMLDivElement): void;
     protected handleCloseButtonClicked(e: DOMMouseOrTouchEvent<HTMLButtonElement>): void;
-    destroyMenu(e?: Event, args?: {
-        cell: number;
-        row: number;
-    }): void;
+    /** Close and destroy Cell Menu */
+    closeMenu(e?: DOMMouseOrTouchEvent<HTMLButtonElement | HTMLDivElement>, args?: MenuFromCellCallbackArgs): void;
+    /** Destroy all parent menus and any sub-menus */
+    destroyAllMenus(): void;
+    /** Close and destroy all previously opened sub-menus */
+    destroySubMenus(): void;
+    protected repositionSubMenu(item: MenuCommandItem | MenuOptionItem | 'divider', type: MenuType, level: number, e: DOMMouseOrTouchEvent<HTMLDivElement>): void;
     /**
      * Reposition the menu drop (up/down) and the side (left/right)
      * @param {*} event
      */
-    repositionMenu(e: DOMMouseOrTouchEvent<HTMLDivElement>): void;
+    repositionMenu(e: DOMMouseOrTouchEvent<HTMLDivElement>, menuElm: HTMLElement): void;
+    protected getGridUidSelector(): string;
     protected handleCellClick(evt: SlickEventData_ | DOMMouseOrTouchEvent<HTMLDivElement>, args: MenuCommandItemCallbackArgs): void;
+    /** When users click outside the Cell Menu, we will typically close the Cell Menu (and any sub-menus) */
     protected handleBodyMouseDown(e: DOMMouseOrTouchEvent<HTMLDivElement>): void;
-    closeMenu(e: DOMMouseOrTouchEvent<HTMLDivElement>, args: MenuFromCellCallbackArgs): void;
-    /** Construct the Option Items section. */
-    protected populateOptionItems(cellMenu: CellMenuOption, optionMenuElm: HTMLElement, optionItems: Array<MenuOptionItem | 'divider'>, args: any): void;
-    /** Construct the Command Items section. */
-    protected populateCommandItems(cellMenu: CellMenuOption, commandMenuElm: HTMLElement, commandItems: Array<MenuCommandItem | 'divider'>, args: any): void;
-    protected handleMenuItemCommandClick(item: MenuCommandItem | 'divider', e: DOMMouseOrTouchEvent<HTMLDivElement>): void;
-    protected handleMenuItemOptionClick(item: MenuOptionItem | 'divider', e: DOMMouseOrTouchEvent<HTMLDivElement>): void;
+    /** Build the Command Items section. */
+    protected populateCommandOrOptionItems(itemType: MenuType, cellMenu: CellMenuOption, commandOrOptionMenuElm: HTMLElement, commandOrOptionItems: Array<MenuCommandItem | 'divider'> | Array<MenuOptionItem | 'divider'>, args: {
+        cell: number;
+        row: number;
+        column: Column;
+        dataContext: any;
+        grid: SlickGrid;
+        level: number;
+    }): void;
+    protected handleMenuItemClick(item: MenuCommandItem | MenuOptionItem | 'divider', type: MenuType, level: number | undefined, e: DOMMouseOrTouchEvent<HTMLDivElement>): void;
     /**
      * Method that user can pass to override the default behavior.
      * In order word, user can choose or an item is (usable/visible/enable) by providing his own logic.

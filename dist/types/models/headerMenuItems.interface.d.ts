@@ -1,7 +1,7 @@
 import type { Column, MenuCommandItem } from './index';
 import type { SlickGrid } from '../slick.grid';
 export interface HeaderMenuItems {
-    items: Array<MenuCommandItem | 'divider'>;
+    items: Array<HeaderMenuCommandItem | 'divider'>;
 }
 export interface HeaderMenuCommandItemCallbackArgs {
     /** Column definition */
@@ -9,6 +9,10 @@ export interface HeaderMenuCommandItemCallbackArgs {
     /** Slick Grid object */
     grid: SlickGrid;
     /** html DOM element of the menu */
-    menu: Array<MenuCommandItem | 'divider'>;
+    menu: Array<HeaderMenuCommandItem | 'divider'>;
+}
+export interface HeaderMenuCommandItem extends Omit<MenuCommandItem, 'commandItems'> {
+    /** Array of Command Items (title, command, disabled, ...) */
+    items: Array<HeaderMenuCommandItem | 'divider'>;
 }
 //# sourceMappingURL=headerMenuItems.interface.d.ts.map

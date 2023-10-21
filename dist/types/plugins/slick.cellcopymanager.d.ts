@@ -1,10 +1,10 @@
-import type { Plugin } from '../models/index';
+import type { SlickPlugin } from '../models/index';
 import { SlickEvent as SlickEvent_, SlickRange } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 /**
  * This manager enables users to copy/paste cell data
  */
-export declare class SlickCellCopyManager implements Plugin {
+export declare class SlickCellCopyManager implements SlickPlugin {
     pluginName: "CellCopyManager";
     onCopyCells: SlickEvent_<{
         ranges: SlickRange[] | null;

@@ -10,6 +10,7 @@ export interface CellSelectionModelOption {
 export declare class SlickCellSelectionModel {
     pluginName: "CellSelectionModel";
     onSelectedRangesChanged: SlickEvent_<CellRange[]>;
+    protected _cachedPageRowCount: number;
     protected _dataView?: SlickDataView;
     protected _grid: SlickGrid;
     protected _prevSelectedRow?: number;
@@ -26,6 +27,8 @@ export declare class SlickCellSelectionModel {
     destroy(): void;
     protected removeInvalidRanges(ranges: CellRange[]): CellRange[];
     protected rangesAreEqual(range1: CellRange[], range2: CellRange[]): boolean;
+    /** Provide a way to force a recalculation of page row count (for example on grid resize) */
+    resetPageRowCount(): void;
     setSelectedRanges(ranges: CellRange[], caller?: string): void;
     getSelectedRanges(): CellRange[];
     refreshSelections(): void;

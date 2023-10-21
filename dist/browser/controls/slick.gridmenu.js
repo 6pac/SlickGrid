@@ -22,7 +22,7 @@
       __publicField(this, "_gridOptions");
       __publicField(this, "_gridUid");
       __publicField(this, "_isMenuOpen", !1);
-      __publicField(this, "_gridMenuOptions", null);
+      __publicField(this, "_columnCheckboxes", []);
       __publicField(this, "_columnTitleElm");
       __publicField(this, "_customTitleElm");
       __publicField(this, "_customMenuElm");
@@ -30,7 +30,8 @@
       __publicField(this, "_listElm");
       __publicField(this, "_buttonElm");
       __publicField(this, "_menuElm");
-      __publicField(this, "_columnCheckboxes", []);
+      __publicField(this, "_subMenuParentId", "");
+      __publicField(this, "_gridMenuOptions", null);
       __publicField(this, "_defaults", {
         showButton: !0,
         hideForceFitButton: !1,
@@ -60,7 +61,7 @@
     createGridMenu() {
       var _a, _b, _c, _d, _e;
       let gridMenuWidth = ((_a = this._gridMenuOptions) == null ? void 0 : _a.menuWidth) || this._defaults.menuWidth;
-      if (this._gridOptions && this._gridOptions.hasOwnProperty("frozenColumn") && this._gridOptions.frozenColumn >= 0 ? this._headerElm = document.querySelector(`.${this._gridUid} .slick-header-right`) : this._headerElm = document.querySelector(`.${this._gridUid} .slick-header-left`), this._headerElm.style.width = `calc(100% - ${gridMenuWidth}px)`, (((_b = this._gridMenuOptions) == null ? void 0 : _b.resizeOnShowHeaderRow) != null ? this._gridMenuOptions.resizeOnShowHeaderRow : this._defaults.resizeOnShowHeaderRow) && this._gridOptions.showHeaderRow) {
+      if (this._gridOptions && this._gridOptions.hasOwnProperty("frozenColumn") && this._gridOptions.frozenColumn >= 0 ? this._headerElm = document.querySelector(`.${this._gridUid} .slick-header-right`) : this._headerElm = document.querySelector(`.${this._gridUid} .slick-header-left`), this._headerElm.style.width = `calc(100% - ${gridMenuWidth}px)`, (Utils.isDefined((_b = this._gridMenuOptions) == null ? void 0 : _b.resizeOnShowHeaderRow) ? this._gridMenuOptions.resizeOnShowHeaderRow : this._defaults.resizeOnShowHeaderRow) && this._gridOptions.showHeaderRow) {
         let headerRow = document.querySelector(`.${this._gridUid}.slick-headerrow`);
         headerRow && (headerRow.style.width = `calc(100% - ${gridMenuWidth}px)`);
       }
@@ -73,11 +74,30 @@
         }
         this._headerElm.parentElement.insertBefore(this._buttonElm, this._headerElm.parentElement.firstChild), this._bindingEventService.bind(this._buttonElm, "click", this.showGridMenu.bind(this));
       }
-      this._menuElm = document.createElement("div"), this._menuElm.className = `slick-gridmenu ${this._gridUid}`, this._menuElm.style.display = "none", document.body.appendChild(this._menuElm);
-      let buttonElm = document.createElement("button");
-      buttonElm.type = "button", buttonElm.className = "close", buttonElm.dataset.dismiss = "slick-gridmenu", buttonElm.ariaLabel = "Close";
-      let spanCloseElm = document.createElement("span");
-      spanCloseElm.className = "close", spanCloseElm.ariaHidden = "true", spanCloseElm.innerHTML = "&times;", buttonElm.appendChild(spanCloseElm), this._menuElm.appendChild(buttonElm), this._customMenuElm = document.createElement("div"), this._customMenuElm.className = "slick-gridmenu-custom", this._customMenuElm.role = "menu", this._menuElm.appendChild(this._customMenuElm), this.populateCustomMenus(this._gridMenuOptions || {}, this._customMenuElm), this.populateColumnPicker(), this._bindingEventService.bind(document.body, "mousedown", this.handleBodyMouseDown.bind(this)), this._bindingEventService.bind(document.body, "beforeunload", this.destroy.bind(this));
+      this._menuElm = this.createMenu(0), this.populateColumnPicker(), document.body.appendChild(this._menuElm), this._bindingEventService.bind(document.body, "mousedown", this.handleBodyMouseDown.bind(this)), this._bindingEventService.bind(document.body, "beforeunload", this.destroy.bind(this));
+    }
+    /** Create the menu or sub-menu(s) but without the column picker which is a separate single process */
+    createMenu(level = 0, item) {
+      var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j, _k;
+      let maxHeight = isNaN((_a = this._gridMenuOptions) == null ? void 0 : _a.maxHeight) ? (_b = this._gridMenuOptions) == null ? void 0 : _b.maxHeight : `${(_d = (_c = this._gridMenuOptions) == null ? void 0 : _c.maxHeight) != null ? _d : 0}px`, width = isNaN((_e = this._gridMenuOptions) == null ? void 0 : _e.width) ? (_f = this._gridMenuOptions) == null ? void 0 : _f.width : `${(_h = (_g = this._gridMenuOptions) == null ? void 0 : _g.maxWidth) != null ? _h : 0}px`, subMenuCommand = item == null ? void 0 : item.command, subMenuId = level === 1 && subMenuCommand ? subMenuCommand.replaceAll(" ", "") : "";
+      subMenuId && (this._subMenuParentId = subMenuId), level > 1 && (subMenuId = this._subMenuParentId);
+      let menuClasses = `slick-gridmenu slick-menu-level-${level} ${this._gridUid}`, bodyMenuElm = document.body.querySelector(`.slick-gridmenu.slick-menu-level-${level}${this.getGridUidSelector()}`);
+      if (bodyMenuElm) {
+        if (bodyMenuElm.dataset.subMenuParent === subMenuId)
+          return bodyMenuElm;
+        this.destroySubMenus();
+      }
+      let menuElm = document.createElement("div");
+      menuElm.role = "menu", menuElm.className = menuClasses, level > 0 && (menuElm.classList.add("slick-submenu"), subMenuId && (menuElm.dataset.subMenuParent = subMenuId)), menuElm.ariaLabel = level > 1 ? "SubMenu" : "Grid Menu", width && (menuElm.style.width = width), maxHeight && (menuElm.style.maxHeight = maxHeight), menuElm.style.display = "none";
+      let closeButtonElm = null;
+      if (level === 0) {
+        closeButtonElm = document.createElement("button"), closeButtonElm.type = "button", closeButtonElm.className = "close", closeButtonElm.dataset.dismiss = "slick-gridmenu", closeButtonElm.ariaLabel = "Close";
+        let spanCloseElm = document.createElement("span");
+        spanCloseElm.className = "close", spanCloseElm.ariaHidden = "true", spanCloseElm.innerHTML = "&times;", closeButtonElm.appendChild(spanCloseElm), menuElm.appendChild(closeButtonElm);
+      }
+      this._customMenuElm = document.createElement("div"), this._customMenuElm.className = `slick-gridmenu-custom slick-gridmenu-command-list slick-menu-level-${level}`, this._customMenuElm.role = "menu", menuElm.appendChild(this._customMenuElm);
+      let commandItems = (_k = (_j = item == null ? void 0 : item.customItems) != null ? _j : (_i = this._gridMenuOptions) == null ? void 0 : _i.customItems) != null ? _k : [];
+      return commandItems.length > 0 && item && level > 0 && this.addSubMenuTitleWhenExists(item, this._customMenuElm), this.populateCustomMenus(commandItems, this._customMenuElm, { grid: this.grid, level }), level++, menuElm;
     }
     /** Destroy the plugin by unsubscribing every events & also delete the menu DOM elements */
     destroy() {
@@ -91,26 +111,34 @@
       let gridMenuElm = document.querySelector(`div.slick-gridmenu.${this._gridUid}`);
       gridMenuElm && (gridMenuElm.style.display = "none"), this._headerElm && (this._headerElm.style.width = "100%"), (_a = this._buttonElm) == null || _a.remove(), (_b = this._menuElm) == null || _b.remove();
     }
-    populateCustomMenus(gridMenuOptions, customMenuElm) {
-      var _a;
-      if (!(!gridMenuOptions || !gridMenuOptions.customItems)) {
-        (_a = this._gridMenuOptions) != null && _a.customTitle && (this._customTitleElm = document.createElement("div"), this._customTitleElm.className = "title", this._customTitleElm.innerHTML = this._gridMenuOptions.customTitle, customMenuElm.appendChild(this._customTitleElm));
-        for (let i = 0, ln = gridMenuOptions.customItems.length; i < ln; i++) {
-          let addClickListener = !0, item = gridMenuOptions.customItems[i], callbackArgs = {
-            grid: this.grid,
-            menu: this._menuElm,
-            columns: this.columns,
-            visibleColumns: this.getVisibleColumns()
-          }, isItemVisible = this.runOverrideFunctionWhenExists(item.itemVisibilityOverride, callbackArgs), isItemUsable = this.runOverrideFunctionWhenExists(item.itemUsabilityOverride, callbackArgs);
-          if (!isItemVisible)
-            continue;
-          Object.prototype.hasOwnProperty.call(item, "itemUsabilityOverride") && (item.disabled = !isItemUsable);
-          let liElm = document.createElement("div");
-          liElm.className = "slick-gridmenu-item", liElm.role = "menuitem", (item.divider || item === "divider") && (liElm.classList.add("slick-gridmenu-item-divider"), addClickListener = !1), item.disabled && liElm.classList.add("slick-gridmenu-item-disabled"), item.hidden && liElm.classList.add("slick-gridmenu-item-hidden"), item.cssClass && liElm.classList.add(...item.cssClass.split(" ")), item.tooltip && (liElm.title = item.tooltip || "");
-          let iconElm = document.createElement("div");
-          iconElm.className = "slick-gridmenu-icon", liElm.appendChild(iconElm), item.iconCssClass && iconElm.classList.add(...item.iconCssClass.split(" ")), item.iconImage && (iconElm.style.backgroundImage = `url(${item.iconImage})`);
-          let textElm = document.createElement("span");
-          textElm.className = "slick-gridmenu-content", textElm.innerHTML = item.title || "", liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), customMenuElm.appendChild(liElm), addClickListener && this._bindingEventService.bind(liElm, "click", this.handleMenuItemClick.bind(this, item));
+    /** Close and destroy all previously opened sub-menus */
+    destroySubMenus() {
+      document.querySelectorAll(`.slick-gridmenu.slick-submenu${this.getGridUidSelector()}`).forEach((subElm) => subElm.remove());
+    }
+    /** Construct the custom command menu items. */
+    populateCustomMenus(customItems, customMenuElm, args) {
+      var _a, _b;
+      let isSubMenu = args.level > 0;
+      (_a = this._gridMenuOptions) != null && _a.customTitle && !isSubMenu && (this._customTitleElm = document.createElement("div"), this._customTitleElm.className = "title", this._customTitleElm.innerHTML = this._gridMenuOptions.customTitle, customMenuElm.appendChild(this._customTitleElm));
+      for (let i = 0, ln = customItems.length; i < ln; i++) {
+        let addClickListener = !0, item = customItems[i], callbackArgs = {
+          grid: this.grid,
+          menu: this._menuElm,
+          columns: this.columns,
+          visibleColumns: this.getVisibleColumns()
+        }, isItemVisible = this.runOverrideFunctionWhenExists(item.itemVisibilityOverride, callbackArgs), isItemUsable = this.runOverrideFunctionWhenExists(item.itemUsabilityOverride, callbackArgs);
+        if (!isItemVisible)
+          continue;
+        Object.prototype.hasOwnProperty.call(item, "itemUsabilityOverride") && (item.disabled = !isItemUsable);
+        let liElm = document.createElement("div");
+        liElm.className = "slick-gridmenu-item", liElm.role = "menuitem", (item.divider || item === "divider") && (liElm.classList.add("slick-gridmenu-item-divider"), addClickListener = !1), item.disabled && liElm.classList.add("slick-gridmenu-item-disabled"), item.hidden && liElm.classList.add("slick-gridmenu-item-hidden"), item.cssClass && liElm.classList.add(...item.cssClass.split(" ")), item.tooltip && (liElm.title = item.tooltip || "");
+        let iconElm = document.createElement("div");
+        iconElm.className = "slick-gridmenu-icon", liElm.appendChild(iconElm), item.iconCssClass && iconElm.classList.add(...item.iconCssClass.split(" ")), item.iconImage && (iconElm.style.backgroundImage = `url(${item.iconImage})`);
+        let textElm = document.createElement("span");
+        if (textElm.className = "slick-gridmenu-content", textElm.innerHTML = item.title || "", liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), customMenuElm.appendChild(liElm), addClickListener && this._bindingEventService.bind(liElm, "click", this.handleMenuItemClick.bind(this, item, args.level)), item.customItems) {
+          let chevronElm = document.createElement("span");
+          chevronElm.className = "sub-item-chevron", (_b = this._gridMenuOptions) != null && _b.subItemChevronClass ? chevronElm.classList.add(...this._gridMenuOptions.subItemChevronClass.split(" ")) : chevronElm.textContent = "\u2B9E", liElm.classList.add("slick-submenu-item"), liElm.appendChild(chevronElm);
+          continue;
         }
       }
     }
@@ -126,35 +154,37 @@
     showGridMenu(e) {
       var _a, _b, _c, _d, _e, _f, _g, _h, _i, _j;
       let targetEvent = e.touches ? e.touches[0] : e;
-      e.preventDefault(), Utils.emptyElement(this._listElm), Utils.emptyElement(this._customMenuElm), this.populateCustomMenus(this._gridMenuOptions || {}, this._customMenuElm), this.updateColumnOrder(), this._columnCheckboxes = [];
+      e.preventDefault(), Utils.emptyElement(this._listElm), Utils.emptyElement(this._customMenuElm);
+      let commandItems = (_b = (_a = this._gridMenuOptions) == null ? void 0 : _a.customItems) != null ? _b : [];
+      this.populateCustomMenus(commandItems, this._customMenuElm, { grid: this.grid, level: 0 }), this.updateColumnOrder(), this._columnCheckboxes = [];
       let callbackArgs = {
         grid: this.grid,
         menu: this._menuElm,
         allColumns: this.columns,
         visibleColumns: this.getVisibleColumns()
       };
-      if (this._gridMenuOptions && !this.runOverrideFunctionWhenExists(this._gridMenuOptions.menuUsabilityOverride, callbackArgs) || typeof e.stopPropagation == "function" && this.onBeforeMenuShow.notify(callbackArgs, e, this).getReturnValue() == !1)
+      if (this._gridMenuOptions && !this.runOverrideFunctionWhenExists(this._gridMenuOptions.menuUsabilityOverride, callbackArgs) || typeof e.stopPropagation == "function" && this.onBeforeMenuShow.notify(callbackArgs, e, this).getReturnValue() === !1)
         return;
       let columnId, columnLabel, excludeCssClass;
       for (let i = 0; i < this.columns.length; i++) {
         columnId = this.columns[i].id, excludeCssClass = this.columns[i].excludeFromGridMenu ? "hidden" : "";
         let liElm = document.createElement("li");
-        liElm.className = excludeCssClass, liElm.ariaLabel = ((_a = this.columns[i]) == null ? void 0 : _a.name) || "";
+        liElm.className = excludeCssClass, liElm.ariaLabel = ((_c = this.columns[i]) == null ? void 0 : _c.name) || "";
         let checkboxElm = document.createElement("input");
-        checkboxElm.type = "checkbox", checkboxElm.id = `${this._gridUid}-gridmenu-colpicker-${columnId}`, checkboxElm.dataset.columnid = String(this.columns[i].id), liElm.appendChild(checkboxElm), this.grid.getColumnIndex(this.columns[i].id) != null && !this.columns[i].hidden && (checkboxElm.checked = !0), this._columnCheckboxes.push(checkboxElm), (_b = this._gridMenuOptions) != null && _b.headerColumnValueExtractor ? columnLabel = this._gridMenuOptions.headerColumnValueExtractor(this.columns[i], this._gridOptions) : columnLabel = this._defaults.headerColumnValueExtractor(this.columns[i]);
+        checkboxElm.type = "checkbox", checkboxElm.id = `${this._gridUid}-gridmenu-colpicker-${columnId}`, checkboxElm.dataset.columnid = String(this.columns[i].id), liElm.appendChild(checkboxElm), Utils.isDefined(this.grid.getColumnIndex(this.columns[i].id)) && !this.columns[i].hidden && (checkboxElm.checked = !0), this._columnCheckboxes.push(checkboxElm), (_d = this._gridMenuOptions) != null && _d.headerColumnValueExtractor ? columnLabel = this._gridMenuOptions.headerColumnValueExtractor(this.columns[i], this._gridOptions) : columnLabel = this._defaults.headerColumnValueExtractor(this.columns[i]);
         let labelElm = document.createElement("label");
         labelElm.htmlFor = `${this._gridUid}-gridmenu-colpicker-${columnId}`, labelElm.innerHTML = columnLabel || "", liElm.appendChild(labelElm), this._listElm.appendChild(liElm);
       }
-      if (this._gridMenuOptions && (!this._gridMenuOptions.hideForceFitButton || !this._gridMenuOptions.hideSyncResizeButton) && this._listElm.appendChild(document.createElement("hr")), !((_c = this._gridMenuOptions) != null && _c.hideForceFitButton)) {
-        let forceFitTitle = ((_d = this._gridMenuOptions) == null ? void 0 : _d.forceFitTitle) || this._defaults.forceFitTitle, liElm = document.createElement("li");
+      if (this._gridMenuOptions && (!this._gridMenuOptions.hideForceFitButton || !this._gridMenuOptions.hideSyncResizeButton) && this._listElm.appendChild(document.createElement("hr")), !((_e = this._gridMenuOptions) != null && _e.hideForceFitButton)) {
+        let forceFitTitle = ((_f = this._gridMenuOptions) == null ? void 0 : _f.forceFitTitle) || this._defaults.forceFitTitle, liElm = document.createElement("li");
         liElm.ariaLabel = forceFitTitle, liElm.role = "menuitem", this._listElm.appendChild(liElm);
         let forceFitCheckboxElm = document.createElement("input");
         forceFitCheckboxElm.type = "checkbox", forceFitCheckboxElm.id = `${this._gridUid}-gridmenu-colpicker-forcefit`, forceFitCheckboxElm.dataset.option = "autoresize", liElm.appendChild(forceFitCheckboxElm);
         let labelElm = document.createElement("label");
         labelElm.htmlFor = `${this._gridUid}-gridmenu-colpicker-forcefit`, labelElm.textContent = forceFitTitle, liElm.appendChild(labelElm), this.grid.getOptions().forceFitColumns && (forceFitCheckboxElm.checked = !0);
       }
-      if (!((_e = this._gridMenuOptions) != null && _e.hideSyncResizeButton)) {
-        let syncResizeTitle = ((_f = this._gridMenuOptions) == null ? void 0 : _f.syncResizeTitle) || this._defaults.syncResizeTitle, liElm = document.createElement("li");
+      if (!((_g = this._gridMenuOptions) != null && _g.hideSyncResizeButton)) {
+        let syncResizeTitle = ((_h = this._gridMenuOptions) == null ? void 0 : _h.syncResizeTitle) || this._defaults.syncResizeTitle, liElm = document.createElement("li");
         liElm.ariaLabel = syncResizeTitle, this._listElm.appendChild(liElm);
         let syncResizeCheckboxElm = document.createElement("input");
         syncResizeCheckboxElm.type = "checkbox", syncResizeCheckboxElm.id = `${this._gridUid}-gridmenu-colpicker-syncresize`, syncResizeCheckboxElm.dataset.option = "syncresize", liElm.appendChild(syncResizeCheckboxElm);
@@ -162,48 +192,87 @@
         labelElm.htmlFor = `${this._gridUid}-gridmenu-colpicker-syncresize`, labelElm.textContent = syncResizeTitle, liElm.appendChild(labelElm), this.grid.getOptions().syncColumnCellResize && (syncResizeCheckboxElm.checked = !0);
       }
       let buttonElm = e.target.nodeName === "BUTTON" ? e.target : e.target.querySelector("button");
-      buttonElm || (buttonElm = e.target.parentElement), this._menuElm.style.display = "block", this._menuElm.style.opacity = "0";
-      let menuIconOffset = Utils.offset(buttonElm), menuWidth = this._menuElm.offsetWidth, useClickToRepositionMenu = ((_g = this._gridMenuOptions) == null ? void 0 : _g.useClickToRepositionMenu) !== void 0 ? this._gridMenuOptions.useClickToRepositionMenu : this._defaults.useClickToRepositionMenu, contentMinWidth = (_h = this._gridMenuOptions) != null && _h.contentMinWidth ? this._gridMenuOptions.contentMinWidth : this._defaults.contentMinWidth, currentMenuWidth = contentMinWidth > menuWidth ? contentMinWidth : menuWidth + 5, nextPositionTop = useClickToRepositionMenu && targetEvent.pageY > 0 ? targetEvent.pageY : menuIconOffset.top + 10, nextPositionLeft = useClickToRepositionMenu && targetEvent.pageX > 0 ? targetEvent.pageX : menuIconOffset.left + 10, menuMarginBottom = ((_i = this._gridMenuOptions) == null ? void 0 : _i.marginBottom) !== void 0 ? this._gridMenuOptions.marginBottom : this._defaults.marginBottom;
-      this._menuElm.style.top = `${nextPositionTop + 10}px`, this._menuElm.style.left = `${nextPositionLeft - currentMenuWidth + 10}px`, contentMinWidth > 0 && (this._menuElm.style.minWidth = `${contentMinWidth}px`), ((_j = this._gridMenuOptions) == null ? void 0 : _j.height) !== void 0 ? this._menuElm.style.height = `${this._gridMenuOptions.height}px` : this._menuElm.style.maxHeight = `${window.innerHeight - targetEvent.clientY - menuMarginBottom}px`, this._menuElm.style.display = "block", this._menuElm.style.opacity = "1", this._menuElm.appendChild(this._listElm), this._isMenuOpen = !0, typeof e.stopPropagation == "function" && this.onAfterMenuShow.notify(callbackArgs, e, this).getReturnValue() == !1;
+      buttonElm || (buttonElm = e.target.parentElement), this._menuElm.style.display = "block", this._menuElm.style.opacity = "0", this.repositionMenu(e, this._menuElm, buttonElm);
+      let menuMarginBottom = ((_i = this._gridMenuOptions) == null ? void 0 : _i.marginBottom) !== void 0 ? this._gridMenuOptions.marginBottom : this._defaults.marginBottom;
+      ((_j = this._gridMenuOptions) == null ? void 0 : _j.height) !== void 0 ? this._menuElm.style.height = `${this._gridMenuOptions.height}px` : this._menuElm.style.maxHeight = `${window.innerHeight - targetEvent.clientY - menuMarginBottom}px`, this._menuElm.style.display = "block", this._menuElm.style.opacity = "1", this._menuElm.appendChild(this._listElm), this._isMenuOpen = !0, typeof e.stopPropagation == "function" && this.onAfterMenuShow.notify(callbackArgs, e, this).getReturnValue();
     }
-    handleBodyMouseDown(event) {
-      var _a;
-      (this._menuElm !== event.target && !((_a = this._menuElm) != null && _a.contains(event.target)) && this._isMenuOpen || event.target.className === "close") && this.hideMenu(event);
+    getGridUidSelector() {
+      let gridUid = this.grid.getUID() || "";
+      return gridUid ? `.${gridUid}` : "";
     }
-    handleMenuItemClick(item, e) {
+    handleBodyMouseDown(e) {
       var _a;
-      let command = item.command || "";
-      if (item.disabled || item.divider || item === "divider")
-        return;
-      if (command != null && command != "") {
-        let callbackArgs = {
-          grid: this.grid,
-          command,
-          item,
-          allColumns: this.columns,
-          visibleColumns: this.getVisibleColumns()
-        };
-        this.onCommand.notify(callbackArgs, e, this), typeof item.action == "function" && item.action.call(this, e, callbackArgs);
+      let isMenuClicked = !1;
+      (_a = this._menuElm) != null && _a.contains(e.target) && (isMenuClicked = !0), isMenuClicked || document.querySelectorAll(`.slick-gridmenu.slick-submenu${this.getGridUidSelector()}`).forEach((subElm) => {
+        subElm.contains(e.target) && (isMenuClicked = !0);
+      }), (this._menuElm !== e.target && !isMenuClicked && !e.defaultPrevented && this._isMenuOpen || e.target.className === "close") && this.hideMenu(e);
+    }
+    handleMenuItemClick(item, level = 0, e) {
+      var _a;
+      if (item !== "divider" && !item.disabled && !item.divider) {
+        let command = item.command || "";
+        if (Utils.isDefined(command) && !item.customItems) {
+          let callbackArgs = {
+            grid: this.grid,
+            command,
+            item,
+            allColumns: this.columns,
+            visibleColumns: this.getVisibleColumns()
+          };
+          this.onCommand.notify(callbackArgs, e, this), typeof item.action == "function" && item.action.call(this, e, callbackArgs), !!!((_a = this._gridMenuOptions) != null && _a.leaveOpen) && !e.defaultPrevented && this.hideMenu(e), e.preventDefault(), e.stopPropagation();
+        } else
+          item.customItems ? this.repositionSubMenu(item, level, e) : this.destroySubMenus();
       }
-      !!!((_a = this._gridMenuOptions) != null && _a.leaveOpen) && !e.defaultPrevented && this.hideMenu(e), e.preventDefault(), e.stopPropagation();
     }
     hideMenu(e) {
       if (this._menuElm) {
-        Utils.hide(this._menuElm), this._isMenuOpen = !1;
         let callbackArgs = {
           grid: this.grid,
           menu: this._menuElm,
           allColumns: this.columns,
           visibleColumns: this.getVisibleColumns()
         };
-        if (this.onMenuClose.notify(callbackArgs, e, this).getReturnValue() == !1)
+        if (this._isMenuOpen && this.onMenuClose.notify(callbackArgs, e, this).getReturnValue() === !1)
           return;
+        this._isMenuOpen = !1, Utils.hide(this._menuElm);
       }
+      this.destroySubMenus();
     }
     /** Update the Titles of each sections (command, customTitle, ...) */
     updateAllTitles(gridMenuOptions) {
       var _a, _b;
       (_a = this._customTitleElm) != null && _a.innerHTML && (this._customTitleElm.innerHTML = gridMenuOptions.customTitle || ""), (_b = this._columnTitleElm) != null && _b.innerHTML && (this._columnTitleElm.innerHTML = gridMenuOptions.columnTitle || "");
+    }
+    addSubMenuTitleWhenExists(item, commandOrOptionMenu) {
+      if (item !== "divider" && (item != null && item.subMenuTitle)) {
+        let subMenuTitleElm = document.createElement("div");
+        subMenuTitleElm.className = "slick-menu-title", subMenuTitleElm.textContent = item.subMenuTitle;
+        let subMenuTitleClass = item.subMenuTitleCssClass;
+        subMenuTitleClass && subMenuTitleElm.classList.add(...subMenuTitleClass.split(" ")), commandOrOptionMenu.appendChild(subMenuTitleElm);
+      }
+    }
+    repositionSubMenu(item, level, e) {
+      e.target.classList.contains("slick-cell") && this.destroySubMenus();
+      let subMenuElm = this.createMenu(level + 1, item);
+      subMenuElm.style.display = "block", document.body.appendChild(subMenuElm), this.repositionMenu(e, subMenuElm);
+    }
+    /**
+     * Reposition the menu drop (up/down) and the side (left/right)
+     * @param {*} event
+     */
+    repositionMenu(e, menuElm, buttonElm) {
+      var _a, _b, _c, _d;
+      let targetEvent = e.touches ? e.touches[0] : e, isSubMenu = menuElm.classList.contains("slick-submenu"), parentElm = isSubMenu ? e.target.closest(".slick-gridmenu-item") : targetEvent.target, menuIconOffset = Utils.offset(buttonElm || this._buttonElm), menuWidth = menuElm.offsetWidth, useClickToRepositionMenu = ((_a = this._gridMenuOptions) == null ? void 0 : _a.useClickToRepositionMenu) !== void 0 ? this._gridMenuOptions.useClickToRepositionMenu : this._defaults.useClickToRepositionMenu, contentMinWidth = (_b = this._gridMenuOptions) != null && _b.contentMinWidth ? this._gridMenuOptions.contentMinWidth : this._defaults.contentMinWidth, currentMenuWidth = contentMinWidth > menuWidth ? contentMinWidth : menuWidth + 5, menuOffsetTop = useClickToRepositionMenu && targetEvent.pageY > 0 ? targetEvent.pageY : menuIconOffset.top + 10, menuOffsetLeft = useClickToRepositionMenu && targetEvent.pageX > 0 ? targetEvent.pageX : menuIconOffset.left + 10;
+      if (isSubMenu && parentElm) {
+        let parentOffset = Utils.offset(parentElm);
+        menuOffsetLeft = (_c = parentOffset == null ? void 0 : parentOffset.left) != null ? _c : 0, menuOffsetTop = (_d = parentOffset == null ? void 0 : parentOffset.top) != null ? _d : 0;
+        let gridPos = this.grid.getGridPosition(), subMenuPosCalc = menuOffsetLeft + Number(menuWidth);
+        isSubMenu && (subMenuPosCalc += parentElm.clientWidth);
+        let browserWidth = document.documentElement.clientWidth;
+        (subMenuPosCalc >= gridPos.width || subMenuPosCalc >= browserWidth ? "left" : "right") === "left" ? (menuElm.classList.remove("dropright"), menuElm.classList.add("dropleft"), menuOffsetLeft -= menuWidth) : (menuElm.classList.remove("dropleft"), menuElm.classList.add("dropright"), isSubMenu && (menuOffsetLeft += parentElm.offsetWidth));
+      } else
+        menuOffsetTop += 10, menuOffsetLeft = menuOffsetLeft - currentMenuWidth + 10;
+      menuElm.style.top = `${menuOffsetTop}px`, menuElm.style.left = `${menuOffsetLeft}px`, contentMinWidth > 0 && (this._menuElm.style.minWidth = `${contentMinWidth}px`);
     }
     updateColumnOrder() {
       let current = this.grid.getColumns().slice(0), ordered = new Array(this.columns.length);

@@ -2,6 +2,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.2.0](https://github.com/6pac/SlickGrid/compare/5.1.0...5.2.0) (2023-10-21)
+
+### Bug Fixes
+
+* add `containerCssClass` to RowMove to fix cell styling issue with icons ([#865](https://github.com/6pac/SlickGrid/issues/865)) ([5abad6d](https://github.com/6pac/SlickGrid/commit/5abad6d65fdb36e68e0186e69b1fdbe542fc1bfa))
+* argument of `getViewportNode()` should all be optional ([#860](https://github.com/6pac/SlickGrid/issues/860)) ([09e7617](https://github.com/6pac/SlickGrid/commit/09e7617fb978b6a9cc8f71bcc9ed4ec056c875db))
+* CellSelectionModel calculate page row count only once ([#858](https://github.com/6pac/SlickGrid/issues/858)) ([65c2382](https://github.com/6pac/SlickGrid/commit/65c2382386f45e6bae20995323515b1533b4d227))
+* should use strict ESLint & TypeScript code ([#863](https://github.com/6pac/SlickGrid/issues/863)) ([f1abfd8](https://github.com/6pac/SlickGrid/commit/f1abfd8e723a2c4f60c52700cfc290db6ad32d32))
+
+### Features
+
+* add sub-menu(s) to CellMenu & ContextMenu plugins ([#867](https://github.com/6pac/SlickGrid/issues/867)) ([0309ec4](https://github.com/6pac/SlickGrid/commit/0309ec47470ba61b47eb22bf82f253d0c733171f))
+* add sub-menu(s) to GridMenu control ([#868](https://github.com/6pac/SlickGrid/issues/868)) ([24f30f6](https://github.com/6pac/SlickGrid/commit/24f30f6220b627c3e9c1b2d5d684ed9c04b67d10))
+* add sub-menu(s) to HeaderMenu plugin ([#869](https://github.com/6pac/SlickGrid/issues/869)) ([6eaee7a](https://github.com/6pac/SlickGrid/commit/6eaee7aaeba975152fcb3bfd64f09b1896443189))
+
 # [5.1.0](https://github.com/6pac/SlickGrid/compare/5.0.1...5.1.0) (2023-10-03)
 
 ### Bug Fixes

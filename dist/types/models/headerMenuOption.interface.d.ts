@@ -15,6 +15,8 @@ export interface HeaderMenuOption {
     menuOffsetTop?: number;
     /** Minimum width that the drop menu will have */
     minWidth?: number;
+    /** CSS class that can be added on the right side of a sub-item parent (typically a chevron-right icon) */
+    subItemChevronClass?: string;
     /** Menu item text. */
     title?: string;
     /** Item tooltip. */

@@ -112,7 +112,7 @@
       else
         return;
       let oneCellToMultiple = !1, destH = clippedRange.length, destW = clippedRange.length ? clippedRange[0].length : 0;
-      clippedRange.length == 1 && clippedRange[0].length == 1 && selectedRange && (oneCellToMultiple = !0, destH = selectedRange.toRow - selectedRange.fromRow + 1, destW = selectedRange.toCell - selectedRange.fromCell + 1);
+      clippedRange.length === 1 && clippedRange[0].length === 1 && selectedRange && (oneCellToMultiple = !0, destH = selectedRange.toRow - selectedRange.fromRow + 1, destW = selectedRange.toCell - selectedRange.fromCell + 1);
       let availableRows = grid.getData().length - (activeRow || 0), addRows = 0;
       if (availableRows < destH && typeof this._options.newRowCreator == "function") {
         let d = grid.getData();
@@ -206,7 +206,7 @@
       var _a, _b, _c, _d;
       let ranges;
       if (!this._grid.getEditorLock().isActive() || this._grid.getOptions().autoEdit) {
-        if (e.which == this.keyCodes.ESC && this._copiedRanges && (e.preventDefault(), this.clearCopySelection(), this.onCopyCancelled.notify({ ranges: this._copiedRanges }), this._copiedRanges = null), (e.which === this.keyCodes.C || e.which === this.keyCodes.INSERT) && (e.ctrlKey || e.metaKey) && !e.shiftKey && (typeof this._onCopyInit == "function" && this._onCopyInit.call(this), ranges = (_b = (_a = this._grid.getSelectionModel()) == null ? void 0 : _a.getSelectedRanges()) != null ? _b : [], ranges.length !== 0)) {
+        if (e.which === this.keyCodes.ESC && this._copiedRanges && (e.preventDefault(), this.clearCopySelection(), this.onCopyCancelled.notify({ ranges: this._copiedRanges }), this._copiedRanges = null), (e.which === this.keyCodes.C || e.which === this.keyCodes.INSERT) && (e.ctrlKey || e.metaKey) && !e.shiftKey && (typeof this._onCopyInit == "function" && this._onCopyInit.call(this), ranges = (_b = (_a = this._grid.getSelectionModel()) == null ? void 0 : _a.getSelectedRanges()) != null ? _b : [], ranges.length !== 0)) {
           this._copiedRanges = ranges, this.markCopySelection(ranges), this.onCopyCells.notify({ ranges });
           let columns = this._grid.getColumns(), clipText = "";
           for (let rg = 0; rg < ranges.length; rg++) {

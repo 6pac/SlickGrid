@@ -37,6 +37,8 @@ export interface CellMenuOption {
     optionItems?: Array<MenuOptionItem | 'divider'>;
     /** Optional Title of the Option section, it will be hidden when nothing is provided */
     optionTitle?: string;
+    /** CSS class that can be added on the right side of a sub-item parent (typically a chevron-right icon) */
+    subItemChevronClass?: string;
     /** Callback method that user can override the default behavior of enabling/disabling an item from the list. */
     menuUsabilityOverride?: (args: MenuCallbackArgs) => boolean;
 }

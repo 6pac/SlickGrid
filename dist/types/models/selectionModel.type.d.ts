@@ -1,6 +1,6 @@
 import type { SlickEvent, SlickRange } from '../slick.core';
-import type { Plugin } from './index';
-export type SelectionModel = Plugin & {
+import type { SlickPlugin } from './index';
+export type SelectionModel = SlickPlugin & {
     refreshSelections: () => void;
     onSelectedRangesChanged: SlickEvent<SlickRange[]>;
     getSelectedRanges: () => SlickRange[];

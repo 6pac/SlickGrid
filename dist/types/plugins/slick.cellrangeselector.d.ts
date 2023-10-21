@@ -1,9 +1,9 @@
 /// <reference types="node" />
 import { SlickEvent as SlickEvent_, SlickEventData, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_ } from '../slick.core';
 import { SlickCellRangeDecorator as SlickCellRangeDecorator_ } from './slick.cellrangedecorator';
-import type { CellRangeSelectorOption, DOMMouseOrTouchEvent, DragPosition, DragRange, GridOption, MouseOffsetViewport, OnScrollEventArgs, Plugin } from '../models/index';
+import type { CellRangeSelectorOption, DOMMouseOrTouchEvent, DragPosition, DragRange, GridOption, MouseOffsetViewport, OnScrollEventArgs, SlickPlugin } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
-export declare class SlickCellRangeSelector implements Plugin {
+export declare class SlickCellRangeSelector implements SlickPlugin {
     pluginName: "CellRangeSelector";
     onBeforeCellRangeSelected: SlickEvent_<{
         row: number;

@@ -1,4 +1,4 @@
-import type { CellRange, CellRangeDecoratorOption, Plugin } from '../models/index';
+import type { CellRange, CellRangeDecoratorOption, SlickPlugin } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 /***
    * Displays an overlay on top of a given cell range.
@@ -11,7 +11,7 @@ import type { SlickGrid } from '../slick.grid';
    * @param {Grid} grid
    * @param {Object} options
    */
-export declare class SlickCellRangeDecorator implements Plugin {
+export declare class SlickCellRangeDecorator implements SlickPlugin {
     protected readonly grid: SlickGrid;
     pluginName: "CellRangeDecorator";
     protected _options: CellRangeDecoratorOption;

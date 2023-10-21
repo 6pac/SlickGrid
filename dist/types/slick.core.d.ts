@@ -355,6 +355,7 @@ export declare class Utils {
     }, appendToParent?: Element): HTMLElementTagNameMap[T];
     static emptyElement(element: HTMLElement | null): HTMLElement | null;
     static innerSize(elm: HTMLElement, type: 'height' | 'width'): number;
+    static isDefined<T>(value: T | undefined | null): value is T;
     static getElementProp(elm: HTMLElement & {
         getComputedStyle?: () => CSSStyleDeclaration;
     }, property: string): string | null;

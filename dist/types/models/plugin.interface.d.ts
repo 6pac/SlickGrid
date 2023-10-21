@@ -1,5 +1,5 @@
 import { SlickGridModel } from './slickGridModel.interface';
-export interface Plugin {
+export interface SlickPlugin {
     pluginName: string;
     init: (grid: SlickGridModel) => void;
     destroy: () => void;

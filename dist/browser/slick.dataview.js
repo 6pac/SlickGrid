@@ -156,7 +156,7 @@
     }
     /** Set Paging Options */
     setPagingOptions(args) {
-      this.onBeforePagingInfoChanged.notify(this.getPagingInfo(), null, this).getReturnValue() !== !1 && (args.pageSize != null && (this.pagesize = args.pageSize, this.pagenum = this.pagesize ? Math.min(this.pagenum, Math.max(0, Math.ceil(this.totalRows / this.pagesize) - 1)) : 0), args.pageNum != null && (this.pagenum = Math.min(args.pageNum, Math.max(0, Math.ceil(this.totalRows / this.pagesize) - 1))), this.onPagingInfoChanged.notify(this.getPagingInfo(), null, this), this.refresh());
+      this.onBeforePagingInfoChanged.notify(this.getPagingInfo(), null, this).getReturnValue() !== !1 && (Utils.isDefined(args.pageSize) && (this.pagesize = args.pageSize, this.pagenum = this.pagesize ? Math.min(this.pagenum, Math.max(0, Math.ceil(this.totalRows / this.pagesize) - 1)) : 0), Utils.isDefined(args.pageNum) && (this.pagenum = Math.min(args.pageNum, Math.max(0, Math.ceil(this.totalRows / this.pagesize) - 1))), this.onPagingInfoChanged.notify(this.getPagingInfo(), null, this), this.refresh());
     }
     /** Get Paging Options */
     getPagingInfo() {
@@ -256,7 +256,7 @@
       this.ensureRowsByIdCache();
       for (let i = 0, l = itemArray.length; i < l; i++) {
         let row = (_a2 = this.rowsById) == null ? void 0 : _a2[itemArray[i][this.idProperty]];
-        row != null && (rows[rows.length] = row);
+        Utils.isDefined(row) && (rows[rows.length] = row);
       }
       return rows;
     }
@@ -267,7 +267,7 @@
       this.ensureRowsByIdCache();
       for (let i = 0, l = idArray.length; i < l; i++) {
         let row = (_a2 = this.rowsById) == null ? void 0 : _a2[idArray[i]];
-        row != null && (rows[rows.length] = row);
+        Utils.isDefined(row) && (rows[rows.length] = row);
       }
       return rows;
     }
@@ -294,7 +294,7 @@
           throw new Error("[SlickGrid DataView] Invalid id");
         if (id !== item[this.idProperty]) {
           let newId = item[this.idProperty];
-          if (newId == null)
+          if (!Utils.isDefined(newId))
             throw new Error("[SlickGrid DataView] Cannot update item to associate with a null id");
           if (this.idxById.has(newId))
             throw new Error("[SlickGrid DataView] Cannot update item to associate with a non-unique id");
@@ -444,11 +444,11 @@
       return item === void 0 ? null : item.__group ? this._options.groupItemMetadataProvider.getGroupRowMetadata(item) : item.__groupTotals ? this._options.groupItemMetadataProvider.getTotalsRowMetadata(item) : null;
     }
     expandCollapseAllGroups(level, collapse) {
-      if (level == null)
+      if (Utils.isDefined(level))
+        this.toggledGroupsByLevel[level] = {}, this.groupingInfos[level].collapsed = collapse, collapse === !0 ? this.onGroupCollapsed.notify({ level, groupingKey: null }) : this.onGroupExpanded.notify({ level, groupingKey: null });
+      else
         for (let i = 0; i < this.groupingInfos.length; i++)
           this.toggledGroupsByLevel[i] = {}, this.groupingInfos[i].collapsed = collapse, collapse === !0 ? this.onGroupCollapsed.notify({ level: i, groupingKey: null }) : this.onGroupExpanded.notify({ level: i, groupingKey: null });
-      else
-        this.toggledGroupsByLevel[level] = {}, this.groupingInfos[level].collapsed = collapse, collapse === !0 ? this.onGroupCollapsed.notify({ level, groupingKey: null }) : this.onGroupExpanded.notify({ level, groupingKey: null });
       this.refresh();
     }
     /**
@@ -653,11 +653,11 @@
         i >= rl ? diff[diff.length] = i : (item = newRows[i], r = rows[i], (!item || this.groupingInfos.length && (eitherIsNonData = item.__nonDataRow || r.__nonDataRow) && item.__group !== r.__group || item.__group && !item.equals(r) || eitherIsNonData && // no good way to compare totals since they are arbitrary DTOs
         // deep object comparison is pretty expensive
         // always considering them 'dirty' seems easier for the time being
-        (item.__groupTotals || r.__groupTotals) || item[this.idProperty] != r[this.idProperty] || (_c = this.updated) != null && _c[item[this.idProperty]]) && (diff[diff.length] = i));
+        (item.__groupTotals || r.__groupTotals) || item[this.idProperty] !== r[this.idProperty] || (_c = this.updated) != null && _c[item[this.idProperty]]) && (diff[diff.length] = i));
       return diff;
     }
     recalc(_items) {
-      this.rowsById = void 0, (this.refreshHints.isFilterNarrowing != this.prevRefreshHints.isFilterNarrowing || this.refreshHints.isFilterExpanding != this.prevRefreshHints.isFilterExpanding) && (this.filterCache = []);
+      this.rowsById = void 0, (this.refreshHints.isFilterNarrowing !== this.prevRefreshHints.isFilterNarrowing || this.refreshHints.isFilterExpanding !== this.prevRefreshHints.isFilterExpanding) && (this.filterCache = []);
       let filteredItems = this.getFilteredAndPagedItems(_items);
       this.totalRows = filteredItems.totalRows;
       let newRows = filteredItems.rows;
@@ -823,13 +823,13 @@
           let newHash = {};
           for (let id in hashById) {
             let row = (_a2 = this.rowsById) == null ? void 0 : _a2[id];
-            row != null && (newHash[row] = hashById[id]);
+            Utils.isDefined(row) && (newHash[row] = hashById[id]);
           }
           grid.setCellCssStyles(key, newHash), inHandler = !1;
         }
       };
       grid.onCellCssStylesChanged.subscribe((_e, args) => {
-        inHandler || key == args.key && (args.hash ? storeCellCssStyles(args.hash) : (grid.onCellCssStylesChanged.unsubscribe(), this.onRowsOrCountChanged.unsubscribe(update)));
+        inHandler || key === args.key && (args.hash ? storeCellCssStyles(args.hash) : (grid.onCellCssStylesChanged.unsubscribe(), this.onRowsOrCountChanged.unsubscribe(update)));
       }), this.onRowsOrCountChanged.subscribe(update.bind(this));
     }
   }, AvgAggregator = class {

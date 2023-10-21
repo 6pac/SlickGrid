@@ -13,6 +13,7 @@
       __publicField(this, "onSelectedRangesChanged", new SlickEvent());
       // --
       // protected props
+      __publicField(this, "_cachedPageRowCount", 0);
       __publicField(this, "_dataView");
       __publicField(this, "_grid");
       __publicField(this, "_prevSelectedRow");
@@ -51,6 +52,10 @@
       }
       return !areDifferent;
     }
+    /** Provide a way to force a recalculation of page row count (for example on grid resize) */
+    resetPageRowCount() {
+      this._cachedPageRowCount = 0;
+    }
     setSelectedRanges(ranges, caller = "SlickCellSelectionModel.setSelectedRanges") {
       if ((!this._ranges || this._ranges.length === 0) && (!ranges || ranges.length === 0))
         return;
@@ -75,7 +80,7 @@
     }
     handleActiveCellChange(_e, args) {
       var _a, _b;
-      this._prevSelectedRow = void 0, (_a = this._options) != null && _a.selectActiveCell && args.row != null && args.cell != null ? this.setSelectedRanges([new SlickRange(args.row, args.cell)]) : (_b = this._options) != null && _b.selectActiveCell || this.setSelectedRanges([]);
+      this._prevSelectedRow = void 0, (_a = this._options) != null && _a.selectActiveCell && Utils.isDefined(args.row) && Utils.isDefined(args.cell) ? this.setSelectedRanges([new SlickRange(args.row, args.cell)]) : (_b = this._options) != null && _b.selectActiveCell || this.setSelectedRanges([]);
     }
     isKeyAllowed(key) {
       return ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "PageDown", "PageUp", "Home", "End"].some((k) => k === key);
@@ -85,8 +90,8 @@
       let ranges, last, active = this._grid.getActiveCell(), metaKey = e.ctrlKey || e.metaKey, dataLn = 0;
       if (this._dataView ? dataLn = ((_a = this._dataView) == null ? void 0 : _a.getPagingInfo().pageSize) || this._dataView.getLength() : dataLn = this._grid.getDataLength(), active && e.shiftKey && !metaKey && !e.altKey && this.isKeyAllowed(e.key)) {
         ranges = this.getSelectedRanges().slice(), ranges.length || ranges.push(new SlickRange(active.row, active.cell)), last = ranges.pop(), last.contains(active.row, active.cell) || (last = new SlickRange(active.row, active.cell));
-        let dRow = last.toRow - last.fromRow, dCell = last.toCell - last.fromCell, dirRow = active.row == last.fromRow ? 1 : -1, dirCell = active.cell == last.fromCell ? 1 : -1, pageRowCount = this._grid.getViewportRowCount(), isSingleKeyMove = e.key.startsWith("Arrow"), toRow = 0;
-        isSingleKeyMove ? (e.key === "ArrowLeft" ? dCell -= dirCell : e.key === "ArrowRight" ? dCell += dirCell : e.key === "ArrowUp" ? dRow -= dirRow : e.key === "ArrowDown" && (dRow += dirRow), toRow = active.row + dirRow * dRow) : (this._prevSelectedRow === void 0 && (this._prevSelectedRow = active.row), e.key === "Home" ? toRow = 0 : e.key === "End" ? toRow = dataLn - 1 : e.key === "PageUp" ? (this._prevSelectedRow >= 0 && (toRow = this._prevSelectedRow - pageRowCount), toRow < 0 && (toRow = 0)) : e.key === "PageDown" && (this._prevSelectedRow <= dataLn - 1 && (toRow = this._prevSelectedRow + pageRowCount), toRow > dataLn - 1 && (toRow = dataLn - 1)), this._prevSelectedRow = toRow);
+        let dRow = last.toRow - last.fromRow, dCell = last.toCell - last.fromCell, dirRow = active.row === last.fromRow ? 1 : -1, dirCell = active.cell === last.fromCell ? 1 : -1, isSingleKeyMove = e.key.startsWith("Arrow"), toRow = 0;
+        isSingleKeyMove ? (e.key === "ArrowLeft" ? dCell -= dirCell : e.key === "ArrowRight" ? dCell += dirCell : e.key === "ArrowUp" ? dRow -= dirRow : e.key === "ArrowDown" && (dRow += dirRow), toRow = active.row + dirRow * dRow) : (this._cachedPageRowCount < 1 && (this._cachedPageRowCount = this._grid.getViewportRowCount()), this._prevSelectedRow === void 0 && (this._prevSelectedRow = active.row), e.key === "Home" ? toRow = 0 : e.key === "End" ? toRow = dataLn - 1 : e.key === "PageUp" ? (this._prevSelectedRow >= 0 && (toRow = this._prevSelectedRow - this._cachedPageRowCount), toRow < 0 && (toRow = 0)) : e.key === "PageDown" && (this._prevSelectedRow <= dataLn - 1 && (toRow = this._prevSelectedRow + this._cachedPageRowCount), toRow > dataLn - 1 && (toRow = dataLn - 1)), this._prevSelectedRow = toRow);
         let new_last = new SlickRange(active.row, active.cell, toRow, active.cell + dirCell * dCell);
         if (this.removeInvalidRanges([new_last]).length) {
           ranges.push(new_last);

@@ -1,4 +1,4 @@
-import type { Column, DOMEvent, HeaderButtonItem, HeaderButtonOnCommandArgs, HeaderButtonOption, OnHeaderCellRenderedEventArgs, Plugin } from '../models/index';
+import type { Column, DOMEvent, HeaderButtonItem, HeaderButtonOnCommandArgs, HeaderButtonOption, OnHeaderCellRenderedEventArgs, SlickPlugin } from '../models/index';
 import { BindingEventService as BindingEventService_ } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 /***
@@ -66,7 +66,7 @@ import type { SlickGrid } from '../slick.grid';
    * @class Slick.Plugins.HeaderButtons
    * @constructor
    */
-export declare class SlickHeaderButtons implements Plugin {
+export declare class SlickHeaderButtons implements SlickPlugin {
     pluginName: "HeaderButtons";
     onCommand: import("../slick.core").SlickEvent<HeaderButtonOnCommandArgs>;
     protected _grid: SlickGrid;

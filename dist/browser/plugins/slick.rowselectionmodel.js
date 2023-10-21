@@ -91,17 +91,17 @@
       this.setSelectedRows(this.getSelectedRows());
     }
     handleActiveCellChange(_e, args) {
-      this._options.selectActiveRow && args.row != null && this.setSelectedRanges([new SlickRange(args.row, 0, args.row, this._grid.getColumns().length - 1)]);
+      this._options.selectActiveRow && Utils.isDefined(args.row) && this.setSelectedRanges([new SlickRange(args.row, 0, args.row, this._grid.getColumns().length - 1)]);
     }
     handleKeyDown(e) {
       let activeRow = this._grid.getActiveCell();
-      if (this._grid.getOptions().multiSelect && activeRow && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey && (e.which == keyCode.UP || e.which == keyCode.DOWN)) {
+      if (this._grid.getOptions().multiSelect && activeRow && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey && (e.which === keyCode.UP || e.which === keyCode.DOWN)) {
         let selectedRows = this.getSelectedRows();
         selectedRows.sort(function(x, y) {
           return x - y;
         }), selectedRows.length || (selectedRows = [activeRow.row]);
         let top = selectedRows[0], bottom = selectedRows[selectedRows.length - 1], active;
-        if (e.which == keyCode.DOWN ? active = activeRow.row < bottom || top == bottom ? ++bottom : ++top : active = activeRow.row < bottom ? --bottom : --top, active >= 0 && active < this._grid.getDataLength()) {
+        if (e.which === keyCode.DOWN ? active = activeRow.row < bottom || top === bottom ? ++bottom : ++top : active = activeRow.row < bottom ? --bottom : --top, active >= 0 && active < this._grid.getDataLength()) {
           this._grid.scrollRowIntoView(active);
           let tempRanges = this.rowsToRanges(this.getRowsRange(top, bottom));
           this.setSelectedRanges(tempRanges);

@@ -1,5 +1,5 @@
 import type SortableInstance from 'sortablejs';
-import type { AutoSize, CellViewportRange, Column, ColumnSort, CssStyleHash, CustomDataView, DOMEvent, DragPosition, DragRowMove, Editor, EditController, Formatter, FormatterResultObject, GridOption as BaseGridOption, InteractionBase, MultiColumnSort, OnActiveCellChangedEventArgs, OnAddNewRowEventArgs, OnAutosizeColumnsEventArgs, OnBeforeUpdateColumnsEventArgs, OnBeforeAppendCellEventArgs, OnBeforeCellEditorDestroyEventArgs, OnBeforeColumnsResizeEventArgs, OnBeforeEditCellEventArgs, OnBeforeHeaderCellDestroyEventArgs, OnBeforeHeaderRowCellDestroyEventArgs, OnBeforeFooterRowCellDestroyEventArgs, OnBeforeSetColumnsEventArgs, OnCellChangeEventArgs, OnCellCssStylesChangedEventArgs, OnColumnsDragEventArgs, OnColumnsReorderedEventArgs, OnColumnsResizedEventArgs, OnColumnsResizeDblClickEventArgs, OnCompositeEditorChangeEventArgs, OnClickEventArgs, OnDblClickEventArgs, OnFooterContextMenuEventArgs, OnFooterRowCellRenderedEventArgs, OnHeaderCellRenderedEventArgs, OnFooterClickEventArgs, OnHeaderClickEventArgs, OnHeaderContextMenuEventArgs, OnHeaderMouseEventArgs, OnHeaderRowCellRenderedEventArgs, OnKeyDownEventArgs, OnValidationErrorEventArgs, OnRenderedEventArgs, OnSelectedRowsChangedEventArgs, OnSetOptionsEventArgs, OnActivateChangedOptionsEventArgs, OnScrollEventArgs, PagingInfo, Plugin, RowInfo, SelectionModel, SingleColumnSort, SlickGridEventData } from './models/index';
+import type { AutoSize, CellViewportRange, Column, ColumnSort, CssStyleHash, CustomDataView, DOMEvent, DragPosition, DragRowMove, Editor, EditController, Formatter, FormatterResultObject, GridOption as BaseGridOption, InteractionBase, MultiColumnSort, OnActiveCellChangedEventArgs, OnAddNewRowEventArgs, OnAutosizeColumnsEventArgs, OnBeforeUpdateColumnsEventArgs, OnBeforeAppendCellEventArgs, OnBeforeCellEditorDestroyEventArgs, OnBeforeColumnsResizeEventArgs, OnBeforeEditCellEventArgs, OnBeforeHeaderCellDestroyEventArgs, OnBeforeHeaderRowCellDestroyEventArgs, OnBeforeFooterRowCellDestroyEventArgs, OnBeforeSetColumnsEventArgs, OnCellChangeEventArgs, OnCellCssStylesChangedEventArgs, OnColumnsDragEventArgs, OnColumnsReorderedEventArgs, OnColumnsResizedEventArgs, OnColumnsResizeDblClickEventArgs, OnCompositeEditorChangeEventArgs, OnClickEventArgs, OnDblClickEventArgs, OnFooterContextMenuEventArgs, OnFooterRowCellRenderedEventArgs, OnHeaderCellRenderedEventArgs, OnFooterClickEventArgs, OnHeaderClickEventArgs, OnHeaderContextMenuEventArgs, OnHeaderMouseEventArgs, OnHeaderRowCellRenderedEventArgs, OnKeyDownEventArgs, OnValidationErrorEventArgs, OnRenderedEventArgs, OnSelectedRowsChangedEventArgs, OnSetOptionsEventArgs, OnActivateChangedOptionsEventArgs, OnScrollEventArgs, PagingInfo, RowInfo, SelectionModel, SingleColumnSort, SlickGridEventData, SlickPlugin } from './models/index';
 import { BindingEventService as BindingEventService_, type SlickEditorLock, SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_ } from './slick.core';
 /**
  * @license
@@ -10,7 +10,7 @@ import { BindingEventService as BindingEventService_, type SlickEditorLock, Slic
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.1.0
+ * SlickGrid v5.2.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -191,7 +191,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected scrollLeft: number;
     protected selectionModel?: SelectionModel;
     protected selectedRows: number[];
-    protected plugins: Plugin[];
+    protected plugins: SlickPlugin[];
     protected cellCssClasses: CssStyleHash;
     protected columnsById: Record<string, number>;
     protected sortColumns: ColumnSort[];
@@ -269,8 +269,8 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected slickDraggableInstance: InteractionBase | null;
     protected slickMouseWheelInstances: Array<InteractionBase>;
     protected slickResizableInstances: Array<InteractionBase>;
-    protected sortableSideLeftInstance: SortableInstance;
-    protected sortableSideRightInstance: SortableInstance;
+    protected sortableSideLeftInstance?: SortableInstance;
+    protected sortableSideRightInstance?: SortableInstance;
     protected logMessageCount: number;
     protected logMessageMaxCount: number;
     /**
@@ -292,11 +292,11 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     restoreCssFromHiddenInit(): void;
     protected hasFrozenColumns(): boolean;
     /** Register an external Plugin */
-    registerPlugin<T extends Plugin>(plugin: T): void;
+    registerPlugin<T extends SlickPlugin>(plugin: T): void;
     /** Unregister (destroy) an external Plugin */
-    unregisterPlugin(plugin: Plugin): void;
+    unregisterPlugin(plugin: SlickPlugin): void;
     /** Get a Plugin (addon) by its name */
-    getPluginByName<P extends Plugin | undefined = undefined>(name: string): P | undefined;
+    getPluginByName<P extends SlickPlugin | undefined = undefined>(name: string): P | undefined;
     /**
      * Unregisters a current selection model and registers a new one. See the definition of SelectionModel for more information.
      * @param {Object} selectionModel A SelectionModel.
@@ -311,7 +311,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     /** Get the canvas DOM element */
     getCanvases(): HTMLDivElement[];
     /** Get the Viewport DOM node element */
-    getViewportNode(columnIdOrIdx: number | string, rowIndex: number): HTMLElement | undefined;
+    getViewportNode(columnIdOrIdx?: number | string, rowIndex?: number): HTMLElement | undefined;
     /** Get all the Viewport node elements */
     getViewports(): HTMLDivElement[];
     getActiveViewportNode(e: Event | SlickEventData_): HTMLDivElement;
@@ -352,7 +352,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     /**
      * Updates an existing column definition and a corresponding header DOM element with the new title and tooltip.
      * @param {Number|String} columnId Column id.
-     * @param {String} title New column name.
+     * @param {String} [title] New column name.
      * @param {String} [toolTip] New column tooltip.
      */
     updateColumnHeader(columnId: number | string, title?: string, toolTip?: string): void;
@@ -362,8 +362,8 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      */
     getHeader(columnDef: C): HTMLDivElement | HTMLDivElement[];
     /**
-     * Get a specific Header Column DOM element
-     * @param {Number|String} [columnIdOrIdx] - column Id or index
+     * Get a specific Header Column DOM element by its column Id or index
+     * @param {Number|String} columnIdOrIdx - column Id or index
      */
     getHeaderColumn(columnIdOrIdx: number | string): HTMLDivElement;
     /** Get the Header Row DOM element */
@@ -377,11 +377,14 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     /** Get the Pre-Header Panel Right DOM node element */
     getPreHeaderPanelRight(): HTMLDivElement;
     /**
-     * Get Header Row Column DOM element by its column Id
-     * @param {Number|String} [columnIdOrIdx] - column Id or index
+     * Get Header Row Column DOM element by its column Id or index
+     * @param {Number|String} columnIdOrIdx - column Id or index
      */
     getHeaderRowColumn(columnIdOrIdx: number | string): HTMLDivElement;
-    /** Get the Footer Row Column DOM element */
+    /**
+     * Get the Footer Row Column DOM element by its column Id or index
+     * @param {Number|String} columnIdOrIdx - column Id or index
+     */
     getFooterRowColumn(columnIdOrIdx: number | string): HTMLDivElement;
     protected createColumnFooter(): void;
     protected handleHeaderMouseHoverOn(e: Event | SlickEventData_): void;
@@ -452,15 +455,15 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     getEditController(): EditController | undefined;
     /**
      * Returns the index of a column with a given id. Since columns can be reordered by the user, this can be used to get the column definition independent of the order:
-     * @param id A column id.
+     * @param {String | Number} id A column id.
      */
     getColumnIndex(id: number | string): number;
     protected applyColumnHeaderWidths(): void;
     protected applyColumnWidths(): void;
     /**
      * Accepts a columnId string and an ascending boolean. Applies a sort glyph in either ascending or descending form to the header of the column. Note that this does not actually sort the column. It only adds the sort glyph to the header.
-     * @param columnId
-     * @param ascending
+     * @param {String | Number} columnId
+     * @param {Boolean} ascending
      */
     setSortColumn(columnId: number | string, ascending: boolean): void;
     /**
@@ -484,7 +487,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected updateColumnProps(): void;
     /**
      * Sets grid columns. Column headers will be recreated and all rendered rows will be removed. To rerender the grid (if necessary), call render().
-     * @param columnDefinitions An array of column definitions.
+     * @param {Column[]} columnDefinitions An array of column definitions.
      */
     setColumns(columnDefinitions: C[]): void;
     protected updateColumns(): void;
@@ -500,13 +503,13 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      */
     setOptions(args: Partial<O>, suppressRender?: boolean, suppressColumnSet?: boolean, suppressSetOverflow?: boolean): void;
     /**
-      * If option.mixinDefaults is true then external code maintains a reference to the options object. In this case there is no need
-      * to call setOptions() - changes can be made directly to the object. However setOptions() also performs some recalibration of the
-      * grid in reaction to changed options. activateChangedOptions call the same recalibration routines as setOptions() would have.
-      * @param {Boolean} [suppressRender] - do we want to supress the grid re-rendering? (defaults to false)
-      * @param {Boolean} [suppressColumnSet] - do we want to supress the columns set, via "setColumns()" method? (defaults to false)
-      * @param {Boolean} [suppressSetOverflow] - do we want to suppress the call to `setOverflow`
-      */
+     * If option.mixinDefaults is true then external code maintains a reference to the options object. In this case there is no need
+     * to call setOptions() - changes can be made directly to the object. However setOptions() also performs some recalibration of the
+     * grid in reaction to changed options. activateChangedOptions call the same recalibration routines as setOptions() would have.
+     * @param {Boolean} [suppressRender] - do we want to supress the grid re-rendering? (defaults to false)
+     * @param {Boolean} [suppressColumnSet] - do we want to supress the columns set, via "setColumns()" method? (defaults to false)
+     * @param {Boolean} [suppressSetOverflow] - do we want to suppress the call to `setOverflow`
+     */
     activateChangedOptions(suppressRender?: boolean, suppressColumnSet?: boolean, suppressSetOverflow?: boolean): void;
     protected prepareForOptionsChange(): void;
     protected internal_setOptions(suppressRender?: boolean, suppressColumnSet?: boolean, suppressSetOverflow?: boolean): void;
@@ -524,7 +527,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected getDataLengthIncludingAddNew(): number;
     /**
      * Returns the databinding item at a given position.
-     * @param index Item row index.
+     * @param {Number} index Item row index.
      */
     getDataItem(i: number): TData;
     /** Get Top Panel DOM element */
@@ -568,7 +571,10 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     getContainerNode(): HTMLElement;
     protected getRowTop(row: number): number;
     protected getRowFromPosition(y: number): number;
-    /** Scroll to an Y position in the grid */
+    /**
+     * Scroll to an Y position in the grid
+     * @param {Number} y
+     */
     scrollTo(y: number): void;
     protected defaultFormatter(_row: number, _cell: number, value: any): string;
     protected getFormatter(row: number, column: C): Formatter;
@@ -584,10 +590,16 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     invalidate(): void;
     /** Invalidate all grid rows */
     invalidateAllRows(): void;
-    /** Invalidate a specific set of row numbers */
+    /**
+     * Invalidate a specific set of row numbers
+     * @param {Number[]} rows
+     */
     invalidateRows(rows: number[]): void;
-    /** Invalidate a specific row number */
-    invalidateRow(row?: number): void;
+    /**
+     * Invalidate a specific row number
+     * @param {Number} row
+     */
+    invalidateRow(row: number): void;
     protected queuePostProcessedRowForCleanup(cacheEntry: RowCaching, postProcessedRow: any, rowIdx: number): void;
     protected queuePostProcessedCellForCleanup(cellnode: HTMLElement, columnIdx: number, rowIdx: number): void;
     protected removeRowFromCache(row: number): void;
@@ -613,9 +625,12 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     getViewportRowCount(): number;
     getViewportHeight(): number;
     getViewportWidth(): number;
-    /** Execute a Resize of the Canvas */
+    /** Execute a Resize of the Grid Canvas */
     resizeCanvas(): void;
-    /** Update paging information status from the View */
+    /**
+     * Update paging information status from the View
+     * @param {PagingInfo} pagingInfo
+     */
     updatePagingStatusFromView(pagingInfo: PagingInfo): void;
     /** Update the dataset row count */
     updateRowCount(): void;
@@ -674,8 +689,8 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected updateCellCssStylesOnRenderedRows(addedHash?: CssStyleHash | null, removedHash?: CssStyleHash | null): void;
     /**
      * Adds an "overlay" of CSS classes to cell DOM elements. SlickGrid can have many such overlays associated with different keys and they are frequently used by plugins. For example, SlickGrid uses this method internally to decorate selected cells with selectedCellCssClass (see options).
-     * @param key A unique key you can use in calls to setCellCssStyles and removeCellCssStyles. If a hash with that key has already been set, an exception will be thrown.
-     * @param hash A hash of additional cell CSS classes keyed by row number and then by column id. Multiple CSS classes can be specified and separated by space.
+     * @param {String} key A unique key you can use in calls to setCellCssStyles and removeCellCssStyles. If a hash with that key has already been set, an exception will be thrown.
+     * @param {CssStyleHash} hash A hash of additional cell CSS classes keyed by row number and then by column id. Multiple CSS classes can be specified and separated by space.
      * @example
      * `{
      * 	 0: { number_column: SlickEvent; title_column: SlickEvent;	},
@@ -685,7 +700,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     addCellCssStyles(key: string, hash: CssStyleHash): void;
     /**
      * Removes an "overlay" of CSS classes from cell DOM elements. See setCellCssStyles for more.
-     * @param key A string key.
+     * @param {String} key A string key.
      */
     removeCellCssStyles(key: string): void;
     /**
@@ -704,9 +719,9 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     getCellCssStyles(key: string): CssStyleHash;
     /**
      * Flashes the cell twice by toggling the CSS class 4 times.
-     * @param {number} row A row index.
-     * @param {number} cell A column index.
-     * @param {number} [speed] (optional) - The milliseconds delay between the toggling calls. Defaults to 100 ms.
+     * @param {Number} row A row index.
+     * @param {Number} cell A column index.
+     * @param {Number} [speed] (optional) - The milliseconds delay between the toggling calls. Defaults to 100 ms.
      */
     flashCell(row: number, cell: number, speed?: number): void;
     protected handleMouseWheel(e: MouseEvent, _delta: number, deltaX: number, deltaY: number): void;
@@ -779,8 +794,8 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     } | null;
     /**
      * Returns an object representing information about a cell's position. All coordinates are absolute and take into consideration the visibility and scrolling position of all ancestors.
-     * @param row A row number.
-     * @param cell A column number.
+     * @param {Number} row - A row number.
+     * @param {Number} cell - A column number.
      */
     getCellNodeBox(row: number, cell: number): {
         top: number;

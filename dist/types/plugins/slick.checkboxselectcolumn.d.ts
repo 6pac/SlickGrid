@@ -1,8 +1,8 @@
-import type { CheckboxSelectorOption, Column, DOMEvent, Plugin, SelectableOverrideCallback } from '../models/index';
+import type { CheckboxSelectorOption, Column, DOMEvent, SlickPlugin, SelectableOverrideCallback } from '../models/index';
 import { BindingEventService as BindingEventService_, SlickEventHandler as SlickEventHandler_ } from '../slick.core';
 import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
-export declare class SlickCheckboxSelectColumn<T = any> implements Plugin {
+export declare class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
     pluginName: "CheckboxSelectColumn";
     protected _dataView: SlickDataView<T>;
     protected _grid: SlickGrid;

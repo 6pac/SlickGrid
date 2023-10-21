@@ -27,7 +27,7 @@
     }
     isDataLoaded(from, to) {
       for (let i = from; i <= to; i++)
-        if (this.data[i] == null || this.data[i] == null)
+        if (this.data[i] === void 0 || this.data[i] === null)
           return !1;
       return !0;
     }
@@ -48,12 +48,12 @@
         fromPage++;
       for (; this.data[toPage * this.PAGESIZE] !== void 0 && fromPage < toPage; )
         toPage--;
-      if (fromPage > toPage || fromPage == toPage && this.data[fromPage * this.PAGESIZE] !== void 0) {
+      if (fromPage > toPage || fromPage === toPage && this.data[fromPage * this.PAGESIZE] !== void 0) {
         this.onDataLoaded.notify({ from, to });
         return;
       }
       let url = "http://octopart.com/api/v3/parts/search?apikey=68b25f31&include[]=short_description&show[]=uid&show[]=manufacturer&show[]=mpn&show[]=brand&show[]=octopart_url&show[]=short_description&q=" + this.searchstr + "&start=" + fromPage * this.PAGESIZE + "&limit=" + ((toPage - fromPage) * this.PAGESIZE + this.PAGESIZE);
-      this.sortcol != null && (url += "&sortby=" + this.sortcol + (this.sortdir > 0 ? "+asc" : "+desc")), this.h_request != null && clearTimeout(this.h_request), this.h_request = setTimeout(() => {
+      this.sortcol !== null && (url += "&sortby=" + this.sortcol + (this.sortdir > 0 ? "+asc" : "+desc")), this.h_request !== null && clearTimeout(this.h_request), this.h_request = setTimeout(() => {
         for (let i = fromPage; i <= toPage; i++)
           this.data[i * this.PAGESIZE] = null;
         this.onDataLoading.notify({ from, to }), this.req = window.$.jsonp({

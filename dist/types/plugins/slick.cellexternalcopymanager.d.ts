@@ -1,5 +1,5 @@
 /// <reference types="node" />
-import type { CellRange, Column, ExcelCopyBufferOption, Plugin } from '../models/index';
+import type { CellRange, Column, ExcelCopyBufferOption, SlickPlugin } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 import { SlickEvent as SlickEvent_ } from '../slick.core';
 /***
@@ -24,7 +24,7 @@ import { SlickEvent as SlickEvent_ } from '../slick.core';
     readOnlyMode: suppresses paste
     headerColumnValueExtractor : option to specify a custom column header value extractor function
 */
-export declare class SlickCellExternalCopyManager implements Plugin {
+export declare class SlickCellExternalCopyManager implements SlickPlugin {
     pluginName: "CellExternalCopyManager";
     onCopyCells: SlickEvent_<{
         ranges: CellRange[];

@@ -289,7 +289,7 @@
     /** The cell Formatter that shows the icon that will be used to toggle the Row Detail */
     detailSelectionFormatter(row, _cell, _val, _column, dataContext, grid) {
       if (this.checkExpandableOverride(row, dataContext, grid)) {
-        if (dataContext[`${this._keyPrefix}collapsed`] == null && (dataContext[`${this._keyPrefix}collapsed`] = !0, dataContext[`${this._keyPrefix}sizePadding`] = 0, dataContext[`${this._keyPrefix}height`] = 0, dataContext[`${this._keyPrefix}isPadding`] = !1, dataContext[`${this._keyPrefix}parent`] = void 0, dataContext[`${this._keyPrefix}offset`] = 0), !dataContext[`${this._keyPrefix}isPadding`])
+        if (dataContext[`${this._keyPrefix}collapsed`] === void 0 && (dataContext[`${this._keyPrefix}collapsed`] = !0, dataContext[`${this._keyPrefix}sizePadding`] = 0, dataContext[`${this._keyPrefix}height`] = 0, dataContext[`${this._keyPrefix}isPadding`] = !1, dataContext[`${this._keyPrefix}parent`] = void 0, dataContext[`${this._keyPrefix}offset`] = 0), !dataContext[`${this._keyPrefix}isPadding`])
           if (dataContext[`${this._keyPrefix}collapsed`]) {
             let collapsedClasses = this._options.cssClass + " expand ";
             return this._options.collapsedClass && (collapsedClasses += this._options.collapsedClass), '<div class="' + collapsedClasses + '"></div>';

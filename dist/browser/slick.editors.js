@@ -52,7 +52,7 @@
       item[this.args.column.field] = state;
     }
     isValueChanged() {
-      return !(this.input.value === "" && this.defaultValue == null) && this.input.value != this.defaultValue;
+      return !(this.input.value === "" && !Utils.isDefined(this.defaultValue)) && this.input.value !== this.defaultValue;
     }
     validate() {
       if (this.args.column.validator) {
@@ -106,7 +106,7 @@
       item[this.args.column.field] = state;
     }
     isValueChanged() {
-      return !(this.input.value === "" && this.defaultValue == null) && this.input.value != this.defaultValue;
+      return !(this.input.value === "" && !Utils.isDefined(this.defaultValue)) && this.input.value !== this.defaultValue;
     }
     validate() {
       if (isNaN(this.input.value))
@@ -156,7 +156,7 @@
     }
     getDecimalPlaces() {
       let rtn = this.args.column.editorFixedDecimalPlaces;
-      return typeof rtn == "undefined" && (rtn = _FloatEditor.DefaultDecimalPlaces), !rtn && rtn !== 0 ? null : rtn;
+      return Utils.isDefined(rtn) || (rtn = _FloatEditor.DefaultDecimalPlaces), !rtn && rtn !== 0 ? null : rtn;
     }
     loadValue(item) {
       var _a, _b, _c;
@@ -174,7 +174,7 @@
       item[this.args.column.field] = state;
     }
     isValueChanged() {
-      return !(this.input.value === "" && this.defaultValue == null) && this.input.value != this.defaultValue;
+      return !(this.input.value === "" && !Utils.isDefined(this.defaultValue)) && this.input.value !== this.defaultValue;
     }
     validate() {
       if (isNaN(this.input.value))
@@ -254,7 +254,7 @@
       item[this.args.column.field] = state;
     }
     isValueChanged() {
-      return !(this.input.value === "" && this.defaultValue == null) && this.input.value != this.defaultValue;
+      return !(this.input.value === "" && !Utils.isDefined(this.defaultValue)) && this.input.value !== this.defaultValue;
     }
     validate() {
       if (this.args.column.validator) {
@@ -300,13 +300,13 @@
       this.select.value = (this.defaultValue = item[this.args.column.field]) ? "yes" : "no";
     }
     serializeValue() {
-      return this.select.value == "yes";
+      return this.select.value === "yes";
     }
     applyValue(item, state) {
       item[this.args.column.field] = state;
     }
     isValueChanged() {
-      return this.select.value != this.defaultValue;
+      return this.select.value !== this.defaultValue;
     }
     validate() {
       return {
@@ -422,7 +422,7 @@
       item[this.args.column.field] = state;
     }
     isValueChanged() {
-      return !(this.input.value === "" && this.defaultValue == null) && (parseInt(this.input.value, 10) || 0) != this.defaultValue;
+      return !(this.input.value === "" && !Utils.isDefined(this.defaultValue)) && (parseInt(this.input.value, 10) || 0) !== this.defaultValue;
     }
     validate() {
       return isNaN(parseInt(this.input.value, 10)) ? {
@@ -468,15 +468,15 @@
       });
     }
     handleKeyDown(e) {
-      if (e.which == keyCode.ENTER && e.ctrlKey)
+      if (e.which === keyCode.ENTER && e.ctrlKey)
         this.save();
-      else if (e.which == keyCode.ESCAPE)
+      else if (e.which === keyCode.ESCAPE)
         e.preventDefault(), this.cancel();
-      else if (e.which == keyCode.TAB && e.shiftKey)
+      else if (e.which === keyCode.TAB && e.shiftKey)
         e.preventDefault(), this.args.grid.navigatePrev();
-      else if (e.which == keyCode.TAB)
+      else if (e.which === keyCode.TAB)
         e.preventDefault(), this.args.grid.navigateNext();
-      else if ((e.which == keyCode.LEFT || e.which == keyCode.RIGHT) && this.args.grid.getOptions().editorCellNavOnLRKeys) {
+      else if ((e.which === keyCode.LEFT || e.which === keyCode.RIGHT) && this.args.grid.getOptions().editorCellNavOnLRKeys) {
         let cursorPosition = this.selectionStart, textLength = e.target.value.length;
         e.keyCode === keyCode.LEFT && cursorPosition === 0 && this.args.grid.navigatePrev(), e.keyCode === keyCode.RIGHT && cursorPosition >= textLength - 1 && this.args.grid.navigateNext();
       }
@@ -513,7 +513,7 @@
       item[this.args.column.field] = state;
     }
     isValueChanged() {
-      return !(this.input.value === "" && this.defaultValue == null) && this.input.value != this.defaultValue;
+      return !(this.input.value === "" && !Utils.isDefined(this.defaultValue)) && this.input.value !== this.defaultValue;
     }
     validate() {
       if (this.args.column.validator) {

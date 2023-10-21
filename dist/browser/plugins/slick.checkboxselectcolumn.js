@@ -113,7 +113,7 @@
       }
     }
     handleKeyDown(e, args) {
-      e.which == 32 && this._grid.getColumns()[args.cell].id === this._options.columnId && ((!this._grid.getEditorLock().isActive() || this._grid.getEditorLock().commitCurrentEdit()) && this.toggleRowSelection(args.row), e.preventDefault(), e.stopImmediatePropagation());
+      e.which === 32 && this._grid.getColumns()[args.cell].id === this._options.columnId && ((!this._grid.getEditorLock().isActive() || this._grid.getEditorLock().commitCurrentEdit()) && this.toggleRowSelection(args.row), e.preventDefault(), e.stopImmediatePropagation());
     }
     handleClick(e, args) {
       if (this._grid.getColumns()[args.cell].id === this._options.columnId && e.target.type === "checkbox") {
@@ -148,7 +148,7 @@
       this._grid.setSelectedRows(this._grid.getSelectedRows().filter((n) => removeRows.indexOf(n) < 0), "SlickCheckboxSelectColumn.deSelectRows");
     }
     handleHeaderClick(e, args) {
-      if (args.column.id == this._options.columnId && e.target.type === "checkbox") {
+      if (args.column.id === this._options.columnId && e.target.type === "checkbox") {
         if (this._grid.getEditorLock().isActive() && !this._grid.getEditorLock().commitCurrentEdit()) {
           e.preventDefault(), e.stopImmediatePropagation();
           return;
@@ -177,7 +177,7 @@
         this._checkboxColumnCellIndex = 0;
         let colArr = this._grid.getColumns();
         for (let i = 0; i < colArr.length; i++)
-          colArr[i].id == this._options.columnId && (this._checkboxColumnCellIndex = i);
+          colArr[i].id === this._options.columnId && (this._checkboxColumnCellIndex = i);
       }
       return this._checkboxColumnCellIndex;
     }

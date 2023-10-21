@@ -1,4 +1,4 @@
-import type { Column, DOMMouseOrTouchEvent, GridMenuCommandItemCallbackArgs, GridMenuEventWithElementCallbackArgs, GridMenuOption, GridOption, onGridMenuColumnsChangedCallbackArgs } from '../models/index';
+import type { Column, DOMMouseOrTouchEvent, GridMenuCommandItemCallbackArgs, GridMenuEventWithElementCallbackArgs, GridMenuItem, GridMenuOption, GridOption, onGridMenuColumnsChangedCallbackArgs } from '../models/index';
 import { BindingEventService as BindingEventService_ } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 /**
@@ -49,17 +49,18 @@ import type { SlickGrid } from '../slick.grid';
  *
  *
  * Available menu options:
- *     hideForceFitButton:        Hide the "Force fit columns" button (defaults to false)
- *     hideSyncResizeButton:      Hide the "Synchronous resize" button (defaults to false)
- *     forceFitTitle:             Text of the title "Force fit columns"
- *     contentMinWidth:						minimum width of grid menu content (command, column list), defaults to 0 (auto)
- *     height:                    Height of the Grid Menu content, when provided it will be used instead of the max-height (defaults to undefined)
- *     menuWidth:                 Grid menu button width (defaults to 18)
- *     resizeOnShowHeaderRow:     Do we want to resize on the show header row event
- *     syncResizeTitle:           Text of the title "Synchronous resize"
- *     useClickToRepositionMenu:  Use the Click offset to reposition the Grid Menu (defaults to true), when set to False it will use the icon offset to reposition the grid menu
- *     menuUsabilityOverride:     Callback method that user can override the default behavior of enabling/disabling the menu from being usable (must be combined with a custom formatter)
- *     marginBottom:              Margin to use at the bottom of the grid menu, only in effect when height is undefined (defaults to 15)
+ *    hideForceFitButton:         Hide the "Force fit columns" button (defaults to false)
+ *    hideSyncResizeButton:       Hide the "Synchronous resize" button (defaults to false)
+ *    forceFitTitle:              Text of the title "Force fit columns"
+ *    contentMinWidth:						minimum width of grid menu content (command, column list), defaults to 0 (auto)
+ *    height:                     Height of the Grid Menu content, when provided it will be used instead of the max-height (defaults to undefined)
+ *    menuWidth:                  Grid menu button width (defaults to 18)
+ *    resizeOnShowHeaderRow:      Do we want to resize on the show header row event
+ *    syncResizeTitle:            Text of the title "Synchronous resize"
+ *    useClickToRepositionMenu:   Use the Click offset to reposition the Grid Menu (defaults to true), when set to False it will use the icon offset to reposition the grid menu
+ *    menuUsabilityOverride:      Callback method that user can override the default behavior of enabling/disabling the menu from being usable (must be combined with a custom formatter)
+ *    marginBottom:               Margin to use at the bottom of the grid menu, only in effect when height is undefined (defaults to 15)
+ *    subItemChevronClass:        CSS class that can be added on the right side of a sub-item parent (typically a chevron-right icon)
  *
  * Available custom menu item options:
  *    action:                     Optionally define a callback function that gets executed when item is chosen (and/or use the onCommand event)
@@ -73,6 +74,8 @@ import type { SlickGrid } from '../slick.grid';
  *    iconCssClass:               A CSS class to be added to the menu item icon.
  *    iconImage:                  A url to the icon image.
  *    textCssClass:               A CSS class to be added to the menu item text.
+ *    subMenuTitle:               Optional sub-menu title that will shows up when sub-menu commmands/options list is opened
+ *    subMenuTitleCssClass:       Optional sub-menu title CSS class to use with `subMenuTitle`
  *    itemVisibilityOverride:     Callback method that user can override the default behavior of showing/hiding an item from the list
  *    itemUsabilityOverride:      Callback method that user can override the default behavior of enabling/disabling an item from the list
  *
@@ -121,47 +124,52 @@ export declare class SlickGridMenu {
     protected _gridOptions: GridOption;
     protected _gridUid: string;
     protected _isMenuOpen: boolean;
-    protected _gridMenuOptions: GridMenuOption | null;
+    protected _columnCheckboxes: HTMLInputElement[];
     protected _columnTitleElm: HTMLElement;
     protected _customTitleElm: HTMLElement;
-    protected _customMenuElm: HTMLElement;
+    protected _customMenuElm: HTMLDivElement;
     protected _headerElm: HTMLDivElement | null;
     protected _listElm: HTMLElement;
     protected _buttonElm: HTMLElement;
     protected _menuElm: HTMLElement;
-    protected _columnCheckboxes: HTMLInputElement[];
-    protected _defaults: {
-        showButton: boolean;
-        hideForceFitButton: boolean;
-        hideSyncResizeButton: boolean;
-        forceFitTitle: string;
-        marginBottom: number;
-        menuWidth: number;
-        contentMinWidth: number;
-        resizeOnShowHeaderRow: boolean;
-        syncResizeTitle: string;
-        useClickToRepositionMenu: boolean;
-        headerColumnValueExtractor: (columnDef: Column) => string | undefined;
-    };
+    protected _subMenuParentId: string;
+    protected _gridMenuOptions: GridMenuOption | null;
+    protected _defaults: GridMenuOption;
     constructor(columns: Column[], grid: SlickGrid, gridOptions: GridOption);
     init(grid: SlickGrid): void;
     setOptions(newOptions: GridMenuOption): void;
     protected createGridMenu(): void;
+    /** Create the menu or sub-menu(s) but without the column picker which is a separate single process */
+    createMenu(level?: number, item?: GridMenuItem | 'divider'): HTMLDivElement;
     /** Destroy the plugin by unsubscribing every events & also delete the menu DOM elements */
     destroy(): void;
     /** Delete the menu DOM element but without unsubscribing any events */
     deleteMenu(): void;
-    protected populateCustomMenus(gridMenuOptions: GridMenuOption, customMenuElm: HTMLElement): void;
+    /** Close and destroy all previously opened sub-menus */
+    destroySubMenus(): void;
+    /** Construct the custom command menu items. */
+    protected populateCustomMenus(customItems: Array<GridMenuItem | 'divider'>, customMenuElm: HTMLElement, args: {
+        grid: SlickGrid;
+        level: number;
+    }): void;
     /** Build the column picker, the code comes almost untouched from the file "slick.columnpicker.js" */
     protected populateColumnPicker(): void;
     /** Delete and then Recreate the Grid Menu (for example when we switch from regular to a frozen grid) */
     recreateGridMenu(): void;
     showGridMenu(e: DOMMouseOrTouchEvent<HTMLButtonElement>): void;
-    protected handleBodyMouseDown(event: DOMMouseOrTouchEvent<HTMLElement>): void;
-    protected handleMenuItemClick(item: any, e: DOMMouseOrTouchEvent<HTMLButtonElement>): void;
+    protected getGridUidSelector(): string;
+    protected handleBodyMouseDown(e: DOMMouseOrTouchEvent<HTMLElement>): void;
+    protected handleMenuItemClick(item: GridMenuItem | 'divider', level: number | undefined, e: DOMMouseOrTouchEvent<HTMLButtonElement | HTMLDivElement>): void;
     hideMenu(e: DOMMouseOrTouchEvent<HTMLElement>): void;
     /** Update the Titles of each sections (command, customTitle, ...) */
     updateAllTitles(gridMenuOptions: GridMenuOption): void;
+    protected addSubMenuTitleWhenExists(item: GridMenuItem | 'divider', commandOrOptionMenu: HTMLDivElement): void;
+    protected repositionSubMenu(item: GridMenuItem | 'divider', level: number, e: DOMMouseOrTouchEvent<HTMLButtonElement | HTMLDivElement>): void;
+    /**
+     * Reposition the menu drop (up/down) and the side (left/right)
+     * @param {*} event
+     */
+    protected repositionMenu(e: DOMMouseOrTouchEvent<HTMLButtonElement | HTMLDivElement>, menuElm: HTMLElement, buttonElm?: HTMLButtonElement): void;
     protected updateColumnOrder(): void;
     protected updateColumn(e: DOMMouseOrTouchEvent<HTMLInputElement>): void;
     getAllColumns(): Column<any>[];
