@@ -262,7 +262,7 @@ describe('Example - Grid Menu', () => {
 
   it('should expect "Clear Sorting" command to become hidden from Grid Menu when disabling feature', () => {
     cy.get('#toggle-sorting')
-    .click();
+      .click();
 
     cy.get('#myGrid')
       .find('button.slick-gridmenu-button')
@@ -276,7 +276,7 @@ describe('Example - Grid Menu', () => {
 
   it('should expect "Clear Sorting" command to become visible agaom in Grid Menu when toggling feature again', () => {
     cy.get('#toggle-sorting')
-    .click();
+      .click();
 
     cy.get('#myGrid')
       .find('button.slick-gridmenu-button')
@@ -336,7 +336,7 @@ describe('Example - Grid Menu', () => {
 
     cy.get('.slick-submenu').should('have.length', 1);
     cy.get('.slick-gridmenu.slick-menu-level-1 .slick-gridmenu-command-list')
-     .find('.slick-gridmenu-item')
+      .find('.slick-gridmenu-item')
       .contains('Excel')
       .click();
 
@@ -387,7 +387,7 @@ describe('Example - Grid Menu', () => {
       .find('.slick-gridmenu-item')
       .contains('Feedback')
       .should('exist')
-      .click();
+      .trigger('mouseover'); // mouseover or click should work
 
     cy.get('.slick-submenu').should('have.length', 1);
     cy.get('.slick-gridmenu.slick-menu-level-1')

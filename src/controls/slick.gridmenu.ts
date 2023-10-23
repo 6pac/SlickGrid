@@ -67,6 +67,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  *    menuUsabilityOverride:      Callback method that user can override the default behavior of enabling/disabling the menu from being usable (must be combined with a custom formatter)
  *    marginBottom:               Margin to use at the bottom of the grid menu, only in effect when height is undefined (defaults to 15)
  *    subItemChevronClass:        CSS class that can be added on the right side of a sub-item parent (typically a chevron-right icon)
+ *    subMenuOpenByEvent:         defaults to "mouseover", what event type shoud we use to open sub-menu(s), 2 options are available: "mouseover" or "click"
  *
  * Available custom menu item options:
  *    action:                     Optionally define a callback function that gets executed when item is chosen (and/or use the onCommand event)
@@ -153,6 +154,7 @@ export class SlickGridMenu {
     menuWidth: 18,
     contentMinWidth: 0,
     resizeOnShowHeaderRow: false,
+    subMenuOpenByEvent: 'mouseover',
     syncResizeTitle: 'Synchronous resize',
     useClickToRepositionMenu: true,
     headerColumnValueExtractor: (columnDef: Column) => columnDef.name as string,
@@ -161,7 +163,7 @@ export class SlickGridMenu {
   constructor(protected columns: Column[], protected readonly grid: SlickGrid, gridOptions: GridOption) {
     this._gridUid = grid.getUID();
     this._gridOptions = gridOptions;
-    this._gridMenuOptions = Utils.extend({}, gridOptions.gridMenu);
+    this._gridMenuOptions = Utils.extend({}, this._defaults, gridOptions.gridMenu);
     this._bindingEventService = new BindingEventService();
 
     // when a grid optionally changes from a regular grid to a frozen grid, we need to destroy & recreate the grid menu
@@ -449,6 +451,17 @@ export class SlickGridMenu {
 
       if (addClickListener) {
         this._bindingEventService.bind(liElm, 'click', this.handleMenuItemClick.bind(this, item, args.level) as EventListener);
+      }
+
+      // optionally open sub-menu(s) by mouseover
+      if (this._gridMenuOptions?.subMenuOpenByEvent === 'mouseover') {
+        this._bindingEventService.bind(liElm, 'mouseover', ((e: DOMMouseOrTouchEvent<HTMLDivElement>) => {
+          if ((item as GridMenuItem).customItems) {
+            this.repositionSubMenu(item, args.level, e);
+          } else if (!isSubMenu) {
+            this.destroySubMenus();
+          }
+        }) as EventListener);
       }
 
       // the option/command item could be a sub-menu if it has another list of commands/options

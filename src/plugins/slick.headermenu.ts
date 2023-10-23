@@ -57,6 +57,8 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  *    buttonImage:            a url to the menu button image
  *    menuUsabilityOverride:  Callback method that user can override the default behavior of enabling/disabling the menu from being usable (must be combined with a custom formatter)
  *    minWidth:               Minimum width that the drop menu will have
+ *    subItemChevronClass:        CSS class that can be added on the right side of a sub-item parent (typically a chevron-right icon)
+ *    subMenuOpenByEvent:         defaults to "mouseover", what event type shoud we use to open sub-menu(s), 2 options are available: "mouseover" or "click"
  *
  *
  * Available menu item options:
@@ -124,7 +126,8 @@ export class SlickHeaderMenu implements SlickPlugin {
     buttonImage: undefined,
     minWidth: 100,
     autoAlign: true,
-    autoAlignOffset: 0
+    autoAlignOffset: 0,
+    subMenuOpenByEvent: 'mouseover',
   };
   protected _options: HeaderMenuOption;
   protected _activeHeaderColumnElm?: HTMLDivElement | null;
@@ -305,12 +308,13 @@ export class SlickHeaderMenu implements SlickPlugin {
     // to avoid having multiple sub-menu trees opened,
     // we need to somehow keep trace of which parent menu the tree belongs to
     // and we should keep ref of only the first sub-menu parent, we can use the command name (remove any whitespaces though)
+    const isSubMenu = level > 0;
     const subMenuCommand = (item as HeaderMenuCommandItem)?.command;
     let subMenuId = (level === 1 && subMenuCommand) ? subMenuCommand.replaceAll(' ', '') : '';
     if (subMenuId) {
       this._subMenuParentId = subMenuId;
     }
-    if (level > 1) {
+    if (isSubMenu) {
       subMenuId = this._subMenuParentId;
     }
 
@@ -369,34 +373,34 @@ export class SlickHeaderMenu implements SlickPlugin {
         (item as HeaderMenuCommandItem).disabled = isItemUsable ? false : true;
       }
 
-      const menuItem = document.createElement('div');
-      menuItem.className = 'slick-header-menuitem';
-      menuItem.role = 'menuitem';
+      const menuItemElm = document.createElement('div');
+      menuItemElm.className = 'slick-header-menuitem';
+      menuItemElm.role = 'menuitem';
 
       if ((item as HeaderMenuCommandItem).divider || item === 'divider') {
-        menuItem.classList.add('slick-header-menuitem-divider');
+        menuItemElm.classList.add('slick-header-menuitem-divider');
         addClickListener = false;
       }
 
       if ((item as HeaderMenuCommandItem).disabled) {
-        menuItem.classList.add('slick-header-menuitem-disabled');
+        menuItemElm.classList.add('slick-header-menuitem-disabled');
       }
 
       if ((item as HeaderMenuCommandItem).hidden) {
-        menuItem.classList.add('slick-header-menuitem-hidden');
+        menuItemElm.classList.add('slick-header-menuitem-hidden');
       }
 
       if ((item as HeaderMenuCommandItem).cssClass) {
-        menuItem.classList.add(...(item as HeaderMenuCommandItem).cssClass!.split(' '));
+        menuItemElm.classList.add(...(item as HeaderMenuCommandItem).cssClass!.split(' '));
       }
 
       if ((item as HeaderMenuCommandItem).tooltip) {
-        menuItem.title = (item as HeaderMenuCommandItem).tooltip || '';
+        menuItemElm.title = (item as HeaderMenuCommandItem).tooltip || '';
       }
 
       const iconElm = document.createElement('div');
       iconElm.className = 'slick-header-menuicon';
-      menuItem.appendChild(iconElm);
+      menuItemElm.appendChild(iconElm);
 
       if ((item as HeaderMenuCommandItem).iconCssClass) {
         iconElm.classList.add(...(item as HeaderMenuCommandItem).iconCssClass!.split(' '));
@@ -409,15 +413,26 @@ export class SlickHeaderMenu implements SlickPlugin {
       const textElm = document.createElement('span');
       textElm.className = 'slick-header-menucontent';
       textElm.textContent = (item as HeaderMenuCommandItem).title || '';
-      menuItem.appendChild(textElm);
+      menuItemElm.appendChild(textElm);
 
       if ((item as HeaderMenuCommandItem).textCssClass) {
         textElm.classList.add(...(item as HeaderMenuCommandItem).textCssClass!.split(' '));
       }
-      menuElm.appendChild(menuItem);
+      menuElm.appendChild(menuItemElm);
 
       if (addClickListener) {
-        this._bindingEventService.bind(menuItem, 'click', this.handleMenuItemClick.bind(this, item, columnDef, level) as EventListener);
+        this._bindingEventService.bind(menuItemElm, 'click', this.handleMenuItemClick.bind(this, item, columnDef, level) as EventListener);
+      }
+
+      // optionally open sub-menu(s) by mouseover
+      if (this._options.subMenuOpenByEvent === 'mouseover') {
+        this._bindingEventService.bind(menuItemElm, 'mouseover', ((e: DOMMouseOrTouchEvent<HTMLDivElement>) => {
+          if ((item as HeaderMenuCommandItem).items) {
+            this.repositionSubMenu(item as HeaderMenuCommandItem, columnDef, level, e);
+          } else if (!isSubMenu) {
+            this.destroySubMenus();
+          }
+        }) as EventListener);
       }
 
       // the option/command item could be a sub-menu if it has another list of commands/options
@@ -430,9 +445,8 @@ export class SlickHeaderMenu implements SlickPlugin {
           chevronElm.textContent = '⮞'; // ⮞ or ▸
         }
 
-        menuItem.classList.add('slick-submenu-item');
-        menuItem.appendChild(chevronElm);
-        continue;
+        menuItemElm.classList.add('slick-submenu-item');
+        menuItemElm.appendChild(chevronElm);
       }
     }
 
