@@ -1,10 +1,16 @@
-import type { Column, GridMenuItem, GridOption, MenuCallbackArgs, } from './index';
+import type { Column, GridMenuCallbackArgs, GridMenuCommandItemCallbackArgs, GridMenuItem, GridOption, MenuCallbackArgs, MenuCommandItem, } from './index';
 
 export interface GridMenuOption {
   /** Defaults to "Commands" which is the title that shows up over the custom commands list */
-  customTitle?: string;
+  commandTitle?: string;
 
   /** Array of command items (title, command, disabled, ...) */
+  commandItems?: Array<MenuCommandItem<GridMenuCommandItemCallbackArgs, GridMenuCallbackArgs> | 'divider'>;
+
+  /** @deprecated use `commandTitle` instead. Defaults to "Commands" which is the title that shows up over the custom commands list */
+  customTitle?: string;
+
+  /** @deprecated use `commandItems` instead. Array of command items (title, command, disabled, ...) */
   customItems?: Array<GridMenuItem | 'divider'>;
 
   /** Defaults to 0 (auto), minimum width of grid menu content (command, column list) */

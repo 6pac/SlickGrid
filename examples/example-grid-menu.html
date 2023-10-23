@@ -186,7 +186,7 @@
         // we could disable the menu entirely by returning false
         return true;
       },
-      customTitle: "Custom Menus",
+      commandTitle: "Custom Commands",
       columnTitle: "Columns",
       hideForceFitButton: false,
       hideSyncResizeButton: false,
@@ -194,7 +194,7 @@
       leaveOpen: false,                 // do we want to leave the Grid Menu open after a command execution? (false by default)
       // menuWidth: 18,                 // width that will be use to resize the column header container (18 by default)
       resizeOnShowHeaderRow: true,
-      customItems: [
+      commandItems: [
         {
           iconCssClass: "sgi sgi-close red bold",
           title: "Clear Filters",
@@ -256,11 +256,11 @@
         {
           // we can also have multiple nested sub-menus
           command: 'export', title: 'Export',
-          customItems: [
+          commandItems: [
             { command: "export-txt", title: "Text" },
             {
               command: 'sub-menu', title: 'Excel', cssClass: "green", subMenuTitle: "available formats", subMenuTitleCssClass: "italic orange",
-              customItems: [
+              commandItems: [
                 { command: "export-csv", title: "Excel (csv)" },
                 { command: "export-xls", title: "Excel (xls)" },
               ]
@@ -269,12 +269,12 @@
         },
         {
           command: 'feedback', title: 'Feedback',
-          customItems: [
+          commandItems: [
             { command: "request-update", title: "Request update from shipping team", iconCssClass: "sgi sgi-tag-outline", tooltip: "this will automatically send an alert to the shipping team to contact the user for an update" },
             "divider",
             {
               command: 'sub-menu', title: 'Contact Us', iconCssClass: "sgi sgi-user", subMenuTitle: "contact us...", subMenuTitleCssClass: "italic",
-              customItems: [
+              commandItems: [
                 { command: "contact-email", title: "Email us", iconCssClass: "sgi sgi-pencil-outline" },
                 { command: "contact-chat", title: "Chat with us", iconCssClass: "sgi sgi-message-outline" },
                 { command: "contact-meeting", title: "Book an appointment", iconCssClass: "sgi sgi-coffee-outline" },
@@ -337,7 +337,7 @@
 
   function toggleSorting(e) {
     isSortingDisabled = !isSortingDisabled;
-    options.gridMenu.customItems.forEach(function(menuItem) {
+    options.gridMenu.commandItems.forEach(function(menuItem) {
         if (menuItem && typeof menuItem !== 'string') {
           const menuCommand = menuItem.command;
           if (menuCommand === 'clear-sorting') {
