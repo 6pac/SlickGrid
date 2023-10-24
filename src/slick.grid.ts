@@ -3975,6 +3975,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         });
       }
     }
+
+    if (!cacheEntry.rowNode) {
+      cacheEntry.rowNode = [];
+    }
     this.postProcessedCleanupQueue.push({
       actionType: 'R',
       groupId: this.postProcessgroupId,
@@ -3996,7 +4000,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   protected removeRowFromCache(row: number) {
     const cacheEntry = this.rowsCache[row];
-    if (!cacheEntry) {
+    if (!cacheEntry || !cacheEntry.rowNode) {
       return;
     }
 
