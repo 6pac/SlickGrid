@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.2](https://github.com/6pac/SlickGrid/compare/4.0.1...4.0.2) (2023-10-24)
+
+### Bug Fixes
+
+* make sure rowNode exists before trying to loop on it ([244870d](https://github.com/6pac/SlickGrid/commit/244870da00e38127a98a9448b343cb2632ab2196))
+* make sure rowNode exists before trying to loop on it ([#874](https://github.com/6pac/SlickGrid/issues/874)) ([d574a43](https://github.com/6pac/SlickGrid/commit/d574a43a64465153386b0a7e32ea08f912905fc7))
+
 # [4.0.0](https://github.com/6pac/SlickGrid/compare/3.0.4...4.0.0) (2023-05-28)
 
 ### Please read the [Migration Guide v4.0](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement)
