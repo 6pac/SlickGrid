@@ -36,7 +36,7 @@ describe('Example - Grid Menu', () => {
   });
 
   it('should have the Grid Menu already opened and expect a title for "Custom Commands" and for "Columns"', () => {
-    cy.get('.slick-gridmenu-custom')
+    cy.get('.slick-gridmenu-command-list')
       .find('.title')
       .contains('Custom Commands');
 
