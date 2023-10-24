@@ -118,7 +118,7 @@
     for (var i = 0; i < columns.length; i++) {
       columns[i].header = {
         menu: {
-          items: [
+          commandItems: [
             {
               iconCssClass: 'sgi sgi-caret sgi-flip-v',
               title: "Sort Ascending",
@@ -164,7 +164,7 @@
             {
               // we can also have multiple nested sub-menus
               command: 'freezing', title: 'Freeze/Pinning',
-              items: [
+              commandItems: [
                 { command: "freeze-columns", title: "Freeze Columns" },
                 { command: "unfreeze-columns", title: "Unfreeze all Columns" },
               ]
@@ -172,13 +172,13 @@
             {
               // we can also have multiple nested sub-menus
               command: 'feedback', title: 'Feedback',
-              items: [
+              commandItems: [
                 { command: "column-love", title: "Column is great", iconCssClass: "sgi sgi-star", tooltip: "this will automatically send us an email about this new column detail" },
                 { command: "column-hate", title: "Column is not useful", iconCssClass: "sgi sgi-information-outline", tooltip: "this will automatically send us an email about this new column detail" },
                 "divider",
                 {
                   command: 'sub-menu', title: 'Contact Us', iconCssClass: "sgi sgi-user", subMenuTitle: "contact us...", subMenuTitleCssClass: "italic",
-                  items: [
+                  commandItems: [
                     { command: "contact-email", title: "Email us", iconCssClass: "sgi sgi-pencil-outline" },
                     { command: "contact-chat", title: "Chat with us", iconCssClass: "sgi sgi-message-outline" },
                     { command: "contact-meeting", title: "Book an appointment", iconCssClass: "sgi sgi-coffee-outline" },
