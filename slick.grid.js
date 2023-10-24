@@ -85,6 +85,7 @@ if (typeof Slick === "undefined") {
       frozenColumn: -1,
       frozenRow: -1,
       frozenRightViewportMinWidth: 100,
+      throwWhenFrozenNotAllViewable: false,
       fullWidthRows: false,
       multiColumnSort: false,
       numberedMultiColumnSort: false,
@@ -898,7 +899,7 @@ if (typeof Slick === "undefined") {
 
         if (hasFrozenColumns()) {
           const cWidth = utils.width(_container) || 0;
-          if (cWidth > 0 && canvasWidthL > cWidth) {
+          if (cWidth > 0 && canvasWidthL > cWidth && options.throwWhenFrozenNotAllViewable) {
             throw new Error('[SlickGrid] Frozen columns cannot be wider than the actual grid container width. '
               + 'Make sure to have less columns freezed or make your grid container wider');
           }
