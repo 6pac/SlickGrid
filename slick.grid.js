@@ -3980,7 +3980,7 @@ if (typeof Slick === "undefined") {
     function ensureCellNodesInRowsCache(row) {
       const cacheEntry = rowsCache[row];
       if (cacheEntry) {
-        if (cacheEntry.cellRenderQueue.length) {
+        if (cacheEntry.cellRenderQueue.length && cacheEntry.rowNode && cacheEntry.rowNode.length) {
           const rowNode = cacheEntry.rowNode;
           let children = Array.from(rowNode[0].children);
           if (rowNode.length > 1) {
@@ -4193,20 +4193,28 @@ if (typeof Slick === "undefined") {
       for (var i = 0, ii = rows.length; i < ii; i++) {
         if (( hasFrozenRows ) && ( rows[i] >= actualFrozenRow )) {
             if (hasFrozenColumns()) {
+              if (rowsCache && rowsCache.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild) {
                 rowsCache[rows[i]].rowNode = [x.firstChild, xRight.firstChild];
                 _canvasBottomL.appendChild(x.firstChild);
                 _canvasBottomR.appendChild(xRight.firstChild);
+              }
             } else {
+              if (rowsCache && rowsCache.hasOwnProperty(rows[i]) && x.firstChild) {
                 rowsCache[rows[i]].rowNode = [x.firstChild];
                 _canvasBottomL.appendChild(x.firstChild);
+              }
             }
         } else if (hasFrozenColumns()) {
+          if (rowsCache && rowsCache.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild) {
             rowsCache[rows[i]].rowNode = [x.firstChild, xRight.firstChild];
             _canvasTopL.appendChild(x.firstChild);
             _canvasTopR.appendChild(xRight.firstChild);
+          }
         } else {
+          if (rowsCache && rowsCache.hasOwnProperty(rows[i]) && x.firstChild) {
             rowsCache[rows[i]].rowNode = [x.firstChild];
             _canvasTopL.appendChild(x.firstChild);
+          }
         }
       }
 
