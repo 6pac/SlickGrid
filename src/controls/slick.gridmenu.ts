@@ -1,4 +1,14 @@
-import type { Column, DOMMouseOrTouchEvent, GridMenuCommandItemCallbackArgs, GridMenuEventWithElementCallbackArgs, GridMenuItem, GridMenuOption, GridOption, onGridMenuColumnsChangedCallbackArgs } from '../models/index';
+import type {
+  Column,
+  DOMMouseOrTouchEvent,
+  GridMenuCommandItemCallbackArgs,
+  GridMenuEventWithElementCallbackArgs,
+  GridMenuItem,
+  GridMenuOption,
+  GridOption,
+  MenuCommandItem,
+  onGridMenuColumnsChangedCallbackArgs
+} from '../models/index';
 import { BindingEventService as BindingEventService_, Event as SlickEvent_, Utils as Utils_ } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 
@@ -22,7 +32,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  *  let options = {
  *    enableCellNavigation: true,
  *    gridMenu: {
- *      customTitle: "Custom Menus",                // default to empty string
+ *      commandTitle: "Command List",                // default to empty string
  *      columnTitle: "Columns",                     // default to empty string
  *      iconImage: "some-image.png",                // this is the Grid Menu icon (hamburger icon)
  *      iconCssClass: "fa fa-bars",                 // you can provide iconImage OR iconCssClass
@@ -42,12 +52,12 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  *      forceFitTitle: "Force fit columns",         // default to "Force fit columns"
  *      syncResizeTitle: "Synchronous resize",      // default to "Synchronous resize"
  *
- *      customItems: [
+ *      commandItems: [
  *        {
- *          // custom menu item options
+ *          // command menu item options
  *        },
  *        {
- *          // custom menu item options
+ *          // command menu item options
  *        }
  *      ]
  *    }
@@ -68,7 +78,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  *    marginBottom:               Margin to use at the bottom of the grid menu, only in effect when height is undefined (defaults to 15)
  *    subItemChevronClass:        CSS class that can be added on the right side of a sub-item parent (typically a chevron-right icon)
  *
- * Available custom menu item options:
+ * Available command menu item options:
  *    action:                     Optionally define a callback function that gets executed when item is chosen (and/or use the onCommand event)
  *    title:                      Menu item text.
  *    divider:                    Whether the current item is a divider, not an actual command.
@@ -136,8 +146,8 @@ export class SlickGridMenu {
   protected _isMenuOpen = false;
   protected _columnCheckboxes: HTMLInputElement[] = [];
   protected _columnTitleElm!: HTMLElement;
-  protected _customTitleElm!: HTMLElement;
-  protected _customMenuElm!: HTMLDivElement;
+  protected _commandTitleElm!: HTMLElement;
+  protected _commandListElm!: HTMLDivElement;
   protected _headerElm: HTMLDivElement | null = null;
   protected _listElm!: HTMLElement;
   protected _buttonElm!: HTMLElement;
@@ -181,6 +191,10 @@ export class SlickGridMenu {
   init(grid: SlickGrid) {
     this._gridOptions = grid.getOptions();
     this.createGridMenu();
+
+    if (this._gridMenuOptions?.customItems || this._gridMenuOptions?.customTitle) {
+      console.warn('[SlickGrid] Grid Menu "customItems" and "customTitle" were deprecated to align with other Menu plugins, please use "commandItems" and "commandTitle" instead.');
+    }
 
     // subscribe to the grid, when it's destroyed, we should also destroy the Grid Menu
     grid.onBeforeDestroy.subscribe(this.destroy.bind(this));
@@ -240,7 +254,7 @@ export class SlickGridMenu {
   }
 
   /** Create the menu or sub-menu(s) but without the column picker which is a separate single process */
-  createMenu(level = 0, item?: GridMenuItem | 'divider') {
+  createMenu(level = 0, item?: GridMenuItem | MenuCommandItem | 'divider') {
     // create a new cell menu
     const maxHeight = isNaN(this._gridMenuOptions?.maxHeight as number) ? this._gridMenuOptions?.maxHeight : `${this._gridMenuOptions?.maxHeight ?? 0}px`;
     const width = isNaN(this._gridMenuOptions?.width as number) ? this._gridMenuOptions?.width : `${this._gridMenuOptions?.maxWidth ?? 0}px`;
@@ -305,20 +319,26 @@ export class SlickGridMenu {
     }
 
     // -- Command List section
-    this._customMenuElm = document.createElement('div');
-    this._customMenuElm.className = `slick-gridmenu-custom slick-gridmenu-command-list slick-menu-level-${level}`;
-    this._customMenuElm.role = 'menu';
-    menuElm.appendChild(this._customMenuElm);
+    this._commandListElm = document.createElement('div');
+    this._commandListElm.className = `slick-gridmenu-custom slick-gridmenu-command-list slick-menu-level-${level}`;
+    this._commandListElm.role = 'menu';
+    menuElm.appendChild(this._commandListElm);
 
-    const commandItems = (item as GridMenuItem)?.customItems ?? this._gridMenuOptions?.customItems ?? [];
+    const commandItems =
+      (item as GridMenuItem)?.commandItems
+      ?? (item as GridMenuItem)?.customItems
+      ?? this._gridMenuOptions?.commandItems
+      ?? this._gridMenuOptions?.customItems
+      ?? [];
+
     if (commandItems.length > 0) {
 
       // when creating sub-menu add its sub-menu title when exists
       if (item && level > 0) {
-        this.addSubMenuTitleWhenExists(item, this._customMenuElm); // add sub-menu title when exists
+        this.addSubMenuTitleWhenExists(item, this._commandListElm); // add sub-menu title when exists
       }
     }
-    this.populateCustomMenus(commandItems, this._customMenuElm, { grid: this.grid, level });
+    this.populateCommandsMenu(commandItems, this._commandListElm, { grid: this.grid, level });
 
     // increment level for possible next sub-menus if exists
     level++;
@@ -363,19 +383,19 @@ export class SlickGridMenu {
   }
 
   /** Construct the custom command menu items. */
-  protected populateCustomMenus(customItems: Array<GridMenuItem | 'divider'>, customMenuElm: HTMLElement, args: { grid: SlickGrid, level: number }) {
+  protected populateCommandsMenu(commandItems: Array<GridMenuItem | MenuCommandItem | 'divider'>, commandListElm: HTMLElement, args: { grid: SlickGrid, level: number }) {
     // user could pass a title on top of the custom section
     const isSubMenu = args.level > 0;
-    if (this._gridMenuOptions?.customTitle && !isSubMenu) {
-      this._customTitleElm = document.createElement('div');
-      this._customTitleElm.className = 'title';
-      this._customTitleElm.innerHTML = this._gridMenuOptions.customTitle;
-      customMenuElm.appendChild(this._customTitleElm);
+    if (!isSubMenu && (this._gridMenuOptions?.commandTitle || this._gridMenuOptions?.customTitle)) {
+      this._commandTitleElm = document.createElement('div');
+      this._commandTitleElm.className = 'title';
+      this._commandTitleElm.innerHTML = (this._gridMenuOptions.commandTitle || this._gridMenuOptions.customTitle) as string;
+      commandListElm.appendChild(this._commandTitleElm);
     }
 
-    for (let i = 0, ln = customItems.length; i < ln; i++) {
+    for (let i = 0, ln = commandItems.length; i < ln; i++) {
       let addClickListener = true;
-      const item = customItems[i];
+      const item = commandItems[i];
       const callbackArgs = {
         grid: this.grid,
         menu: this._menuElm,
@@ -445,14 +465,14 @@ export class SlickGridMenu {
         textElm.classList.add(...(item as GridMenuItem).textCssClass!.split(' '));
       }
 
-      customMenuElm.appendChild(liElm);
+      commandListElm.appendChild(liElm);
 
       if (addClickListener) {
         this._bindingEventService.bind(liElm, 'click', this.handleMenuItemClick.bind(this, item, args.level) as EventListener);
       }
 
       // the option/command item could be a sub-menu if it has another list of commands/options
-      if ((item as GridMenuItem).customItems) {
+      if ((item as GridMenuItem).commandItems || (item as GridMenuItem).customItems) {
         const chevronElm = document.createElement('span');
         chevronElm.className = 'sub-item-chevron';
         if (this._gridMenuOptions?.subItemChevronClass) {
@@ -498,10 +518,10 @@ export class SlickGridMenu {
 
     // empty both the picker list & the command list
     Utils.emptyElement(this._listElm);
-    Utils.emptyElement(this._customMenuElm);
+    Utils.emptyElement(this._commandListElm);
 
-    const commandItems = this._gridMenuOptions?.customItems ?? [];
-    this.populateCustomMenus(commandItems, this._customMenuElm, { grid: this.grid, level: 0 });
+    const commandItems = this._gridMenuOptions?.commandItems ?? this._gridMenuOptions?.customItems ?? [];
+    this.populateCommandsMenu(commandItems, this._commandListElm, { grid: this.grid, level: 0 });
     this.updateColumnOrder();
     this._columnCheckboxes = [];
 
@@ -668,11 +688,11 @@ export class SlickGridMenu {
     }
   }
 
-  protected handleMenuItemClick(item: GridMenuItem | 'divider', level = 0, e: DOMMouseOrTouchEvent<HTMLButtonElement | HTMLDivElement>) {
+  protected handleMenuItemClick(item: GridMenuItem | MenuCommandItem | 'divider', level = 0, e: DOMMouseOrTouchEvent<HTMLButtonElement | HTMLDivElement>) {
     if (item !== 'divider' && !item.disabled && !item.divider) {
       const command = item.command || '';
 
-      if (Utils.isDefined(command) && !item.customItems) {
+      if (Utils.isDefined(command) && !item.commandItems && !(item as GridMenuItem).customItems) {
         const callbackArgs: GridMenuCommandItemCallbackArgs = {
           grid: this.grid,
           command,
@@ -684,7 +704,7 @@ export class SlickGridMenu {
 
         // execute action callback when defined
         if (typeof item.action === 'function') {
-          item.action.call(this, e, callbackArgs);
+          (item as MenuCommandItem).action!.call(this, e, callbackArgs);
         }
 
         // does the user want to leave open the Grid Menu after executing a command?
@@ -696,7 +716,7 @@ export class SlickGridMenu {
         // Stop propagation so that it doesn't register as a header click event.
         e.preventDefault();
         e.stopPropagation();
-      } else if ((item as GridMenuItem).customItems) {
+      } else if (item.commandItems || (item as GridMenuItem).customItems) {
         this.repositionSubMenu(item, level, e);
       } else {
         this.destroySubMenus();
@@ -721,17 +741,17 @@ export class SlickGridMenu {
     this.destroySubMenus();
   }
 
-  /** Update the Titles of each sections (command, customTitle, ...) */
+  /** Update the Titles of each sections (command, commandTitle, ...) */
   updateAllTitles(gridMenuOptions: GridMenuOption) {
-    if (this._customTitleElm?.innerHTML) {
-      this._customTitleElm.innerHTML = gridMenuOptions.customTitle || '';
+    if (this._commandTitleElm?.innerHTML) {
+      this._commandTitleElm.innerHTML = gridMenuOptions.commandTitle || gridMenuOptions.customTitle || '';
     }
     if (this._columnTitleElm?.innerHTML) {
       this._columnTitleElm.innerHTML = gridMenuOptions.columnTitle || '';
     }
   }
 
-  protected addSubMenuTitleWhenExists(item: GridMenuItem | 'divider', commandOrOptionMenu: HTMLDivElement) {
+  protected addSubMenuTitleWhenExists(item: GridMenuItem | MenuCommandItem | 'divider', commandOrOptionMenu: HTMLDivElement) {
     if (item !== 'divider' && item?.subMenuTitle) {
       const subMenuTitleElm = document.createElement('div');
       subMenuTitleElm.className = 'slick-menu-title';
@@ -745,7 +765,7 @@ export class SlickGridMenu {
     }
   }
 
-  protected repositionSubMenu(item: GridMenuItem | 'divider', level: number, e: DOMMouseOrTouchEvent<HTMLButtonElement | HTMLDivElement>) {
+  protected repositionSubMenu(item: GridMenuItem | MenuCommandItem | 'divider', level: number, e: DOMMouseOrTouchEvent<HTMLButtonElement | HTMLDivElement>) {
     // when we're clicking a grid cell OR our last menu type (command/option) differs then we know that we need to start fresh and close any sub-menus that might still be open
     if (e.target.classList.contains('slick-cell')) {
       this.destroySubMenus();

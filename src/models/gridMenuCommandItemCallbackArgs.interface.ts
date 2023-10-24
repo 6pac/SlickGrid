@@ -1,4 +1,4 @@
-import type { Column, GridMenuItem } from './index';
+import type { Column, GridMenuItem, MenuCommandItem } from './index';
 import type { SlickGrid } from '../slick.grid';
 
 
@@ -14,7 +14,7 @@ export interface GridMenuCommandItemCallbackArgs {
   command: string;
 
   /** Menu item selected */
-  item: GridMenuItem;
+  item: GridMenuItem | MenuCommandItem;
 
   /** Slick Grid object */
   grid: SlickGrid;
