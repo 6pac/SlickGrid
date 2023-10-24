@@ -476,7 +476,7 @@ export class SlickGridMenu {
       // optionally open sub-menu(s) by mouseover
       if (this._gridMenuOptions?.subMenuOpenByEvent === 'mouseover') {
         this._bindingEventService.bind(liElm, 'mouseover', ((e: DOMMouseOrTouchEvent<HTMLDivElement>) => {
-          if ((item as GridMenuItem).customItems) {
+          if ((item as GridMenuItem).commandItems || (item as GridMenuItem).customItems) {
             this.repositionSubMenu(item, args.level, e);
           } else if (!isSubMenu) {
             this.destroySubMenus();
