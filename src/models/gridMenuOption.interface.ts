@@ -67,6 +67,9 @@ export interface GridMenuOption {
   /** CSS class that can be added on the right side of a sub-item parent (typically a chevron-right icon) */
   subItemChevronClass?: string;
 
+  /** Defaults to "mouseover", what event type shoud we use to open sub-menu(s), 2 options are available: "mouseover" or "click" */
+  subMenuOpenByEvent?: 'mouseover' | 'click';
+
   /** Defaults to "Synchronous resize" which is 1 of the last 2 checkbox title shown at the end of the picker list */
   syncResizeTitle?: string;
 

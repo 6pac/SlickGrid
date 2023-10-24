@@ -226,7 +226,7 @@ describe('Example - Header Menu', () => {
       .find('.slick-header-menuitem.slick-header-menuitem')
       .contains('Feedback')
       .should('exist')
-      .click();
+      .trigger('mouseover'); // mouseover or click should work
 
     cy.get('.slick-submenu').should('have.length', 1);
     cy.get('.slick-header-menu.slick-menu-level-1')

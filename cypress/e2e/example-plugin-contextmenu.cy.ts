@@ -298,7 +298,7 @@ describe('Example - Context Menu & Cell Menu', () => {
     cy.get('.slick-cell-menu.slick-menu-level-0 .slick-cell-menu-command-list')
       .find('.slick-cell-menu-item')
       .contains('Export')
-      .click();
+      .trigger('mouseover'); // mouseover or click should work
 
     cy.get('.slick-cell-menu.slick-menu-level-1 .slick-cell-menu-command-list')
       .should('exist')
@@ -458,7 +458,7 @@ describe('Example - Context Menu & Cell Menu', () => {
       .find('.slick-cell-menu-item')
       .contains('Feedback')
       .should('exist')
-      .click();
+      .trigger('mouseover'); // mouseover or click should work
 
     cy.get('.slick-submenu').should('have.length', 1);
     cy.get('.slick-cell-menu.slick-menu-level-1')
@@ -884,7 +884,7 @@ describe('Example - Context Menu & Cell Menu', () => {
       .find('.slick-context-menu-item')
       .contains('Feedback')
       .should('exist')
-      .click();
+      .trigger('mouseover'); // mouseover or click should work
 
     cy.get('.slick-submenu').should('have.length', 1);
     cy.get('.slick-context-menu.slick-menu-level-1')
