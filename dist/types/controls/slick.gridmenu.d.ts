@@ -1,4 +1,4 @@
-import type { Column, DOMMouseOrTouchEvent, GridMenuCommandItemCallbackArgs, GridMenuEventWithElementCallbackArgs, GridMenuItem, GridMenuOption, GridOption, onGridMenuColumnsChangedCallbackArgs } from '../models/index';
+import type { Column, DOMMouseOrTouchEvent, GridMenuCommandItemCallbackArgs, GridMenuEventWithElementCallbackArgs, GridMenuItem, GridMenuOption, GridOption, MenuCommandItem, onGridMenuColumnsChangedCallbackArgs } from '../models/index';
 import { BindingEventService as BindingEventService_ } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 /**
@@ -16,7 +16,7 @@ import type { SlickGrid } from '../slick.grid';
  *  let options = {
  *    enableCellNavigation: true,
  *    gridMenu: {
- *      customTitle: "Custom Menus",                // default to empty string
+ *      commandTitle: "Command List",                // default to empty string
  *      columnTitle: "Columns",                     // default to empty string
  *      iconImage: "some-image.png",                // this is the Grid Menu icon (hamburger icon)
  *      iconCssClass: "fa fa-bars",                 // you can provide iconImage OR iconCssClass
@@ -36,12 +36,12 @@ import type { SlickGrid } from '../slick.grid';
  *      forceFitTitle: "Force fit columns",         // default to "Force fit columns"
  *      syncResizeTitle: "Synchronous resize",      // default to "Synchronous resize"
  *
- *      customItems: [
+ *      commandItems: [
  *        {
- *          // custom menu item options
+ *          // command menu item options
  *        },
  *        {
- *          // custom menu item options
+ *          // command menu item options
  *        }
  *      ]
  *    }
@@ -61,8 +61,9 @@ import type { SlickGrid } from '../slick.grid';
  *    menuUsabilityOverride:      Callback method that user can override the default behavior of enabling/disabling the menu from being usable (must be combined with a custom formatter)
  *    marginBottom:               Margin to use at the bottom of the grid menu, only in effect when height is undefined (defaults to 15)
  *    subItemChevronClass:        CSS class that can be added on the right side of a sub-item parent (typically a chevron-right icon)
+ *    subMenuOpenByEvent:         defaults to "mouseover", what event type shoud we use to open sub-menu(s), 2 options are available: "mouseover" or "click"
  *
- * Available custom menu item options:
+ * Available command menu item options:
  *    action:                     Optionally define a callback function that gets executed when item is chosen (and/or use the onCommand event)
  *    title:                      Menu item text.
  *    divider:                    Whether the current item is a divider, not an actual command.
@@ -126,8 +127,8 @@ export declare class SlickGridMenu {
     protected _isMenuOpen: boolean;
     protected _columnCheckboxes: HTMLInputElement[];
     protected _columnTitleElm: HTMLElement;
-    protected _customTitleElm: HTMLElement;
-    protected _customMenuElm: HTMLDivElement;
+    protected _commandTitleElm: HTMLElement;
+    protected _commandListElm: HTMLDivElement;
     protected _headerElm: HTMLDivElement | null;
     protected _listElm: HTMLElement;
     protected _buttonElm: HTMLElement;
@@ -140,7 +141,7 @@ export declare class SlickGridMenu {
     setOptions(newOptions: GridMenuOption): void;
     protected createGridMenu(): void;
     /** Create the menu or sub-menu(s) but without the column picker which is a separate single process */
-    createMenu(level?: number, item?: GridMenuItem | 'divider'): HTMLDivElement;
+    createMenu(level?: number, item?: GridMenuItem | MenuCommandItem | 'divider'): HTMLDivElement;
     /** Destroy the plugin by unsubscribing every events & also delete the menu DOM elements */
     destroy(): void;
     /** Delete the menu DOM element but without unsubscribing any events */
@@ -148,7 +149,7 @@ export declare class SlickGridMenu {
     /** Close and destroy all previously opened sub-menus */
     destroySubMenus(): void;
     /** Construct the custom command menu items. */
-    protected populateCustomMenus(customItems: Array<GridMenuItem | 'divider'>, customMenuElm: HTMLElement, args: {
+    protected populateCommandsMenu(commandItems: Array<GridMenuItem | MenuCommandItem | 'divider'>, commandListElm: HTMLElement, args: {
         grid: SlickGrid;
         level: number;
     }): void;
@@ -159,12 +160,12 @@ export declare class SlickGridMenu {
     showGridMenu(e: DOMMouseOrTouchEvent<HTMLButtonElement>): void;
     protected getGridUidSelector(): string;
     protected handleBodyMouseDown(e: DOMMouseOrTouchEvent<HTMLElement>): void;
-    protected handleMenuItemClick(item: GridMenuItem | 'divider', level: number | undefined, e: DOMMouseOrTouchEvent<HTMLButtonElement | HTMLDivElement>): void;
+    protected handleMenuItemClick(item: GridMenuItem | MenuCommandItem | 'divider', level: number | undefined, e: DOMMouseOrTouchEvent<HTMLButtonElement | HTMLDivElement>): void;
     hideMenu(e: DOMMouseOrTouchEvent<HTMLElement>): void;
-    /** Update the Titles of each sections (command, customTitle, ...) */
+    /** Update the Titles of each sections (command, commandTitle, ...) */
     updateAllTitles(gridMenuOptions: GridMenuOption): void;
-    protected addSubMenuTitleWhenExists(item: GridMenuItem | 'divider', commandOrOptionMenu: HTMLDivElement): void;
-    protected repositionSubMenu(item: GridMenuItem | 'divider', level: number, e: DOMMouseOrTouchEvent<HTMLButtonElement | HTMLDivElement>): void;
+    protected addSubMenuTitleWhenExists(item: GridMenuItem | MenuCommandItem | 'divider', commandOrOptionMenu: HTMLDivElement): void;
+    protected repositionSubMenu(item: GridMenuItem | MenuCommandItem | 'divider', level: number, e: DOMMouseOrTouchEvent<HTMLButtonElement | HTMLDivElement>): void;
     /**
      * Reposition the menu drop (up/down) and the side (left/right)
      * @param {*} event

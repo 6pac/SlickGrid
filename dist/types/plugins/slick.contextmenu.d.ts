@@ -65,6 +65,7 @@ import type { SlickGrid } from '../slick.grid';
  *    autoAlignSideOffset:        Optionally add an offset to the left/right side auto-align (defaults to 0)
  *    menuUsabilityOverride:      Callback method that user can override the default behavior of enabling/disabling the menu from being usable (must be combined with a custom formatter)
  *    subItemChevronClass:        CSS class that can be added on the right side of a sub-item parent (typically a chevron-right icon)
+ *    subMenuOpenByEvent:         defaults to "mouseover", what event type shoud we use to open sub-menu(s), 2 options are available: "mouseover" or "click"
  *
  *
  * Available menu Command/Option item properties:

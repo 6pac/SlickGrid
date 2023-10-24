@@ -23,7 +23,7 @@
       this.options = options;
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.2.0");
+      __publicField(this, "slickGridVersion", "5.3.0");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -1734,7 +1734,7 @@
           columnIdx: +columnIdx,
           rowIdx
         });
-      this.postProcessedCleanupQueue.push({
+      cacheEntry.rowNode || (cacheEntry.rowNode = []), this.postProcessedCleanupQueue.push({
         actionType: "R",
         groupId: this.postProcessgroupId,
         node: cacheEntry.rowNode
@@ -1752,7 +1752,7 @@
     removeRowFromCache(row) {
       var _a;
       let cacheEntry = this.rowsCache[row];
-      cacheEntry && (this._options.enableAsyncPostRenderCleanup && this.postProcessedRows[row] ? this.queuePostProcessedRowForCleanup(cacheEntry, this.postProcessedRows[row], row) : (_a = cacheEntry.rowNode) == null || _a.forEach((node) => {
+      !cacheEntry || !cacheEntry.rowNode || (this._options.enableAsyncPostRenderCleanup && this.postProcessedRows[row] ? this.queuePostProcessedRowForCleanup(cacheEntry, this.postProcessedRows[row], row) : (_a = cacheEntry.rowNode) == null || _a.forEach((node) => {
         var _a2;
         return (_a2 = node.parentElement) == null ? void 0 : _a2.removeChild(node);
       }), delete this.rowsCache[row], delete this.postProcessedRows[row], this.renderedRows--, this.counter_rows_removed++);
@@ -3006,7 +3006,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.2.0
+ * SlickGrid v5.3.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

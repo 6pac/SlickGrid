@@ -41,7 +41,8 @@
         maxHeight: "none",
         width: "auto",
         optionShownOverColumnIds: [],
-        commandShownOverColumnIds: []
+        commandShownOverColumnIds: [],
+        subMenuOpenByEvent: "mouseover"
       });
       this._contextMenuProperties = Utils.extend({}, this._defaults, optionProperties);
     }
@@ -192,7 +193,9 @@
         let iconElm = document.createElement("div");
         iconElm.className = "slick-context-menu-icon", liElm.appendChild(iconElm), item.iconCssClass && iconElm.classList.add(...item.iconCssClass.split(" ")), item.iconImage && (iconElm.style.backgroundImage = `url(${item.iconImage})`);
         let textElm = document.createElement("span");
-        if (textElm.className = "slick-context-menu-content", textElm.textContent = item.title || "", liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), commandOrOptionMenuElm.appendChild(liElm), addClickListener && this._bindingEventService.bind(liElm, "click", this.handleMenuItemClick.bind(this, item, itemType, args.level)), item.commandItems || item.optionItems) {
+        if (textElm.className = "slick-context-menu-content", textElm.textContent = item.title || "", liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), commandOrOptionMenuElm.appendChild(liElm), addClickListener && this._bindingEventService.bind(liElm, "click", this.handleMenuItemClick.bind(this, item, itemType, args.level)), this._contextMenuProperties.subMenuOpenByEvent === "mouseover" && this._bindingEventService.bind(liElm, "mouseover", (e) => {
+          item.commandItems || item.optionItems ? (this.repositionSubMenu(item, itemType, args.level, e), this._lastMenuTypeClicked = itemType) : isSubMenu || this.destroySubMenus();
+        }), item.commandItems || item.optionItems) {
           let chevronElm = document.createElement("span");
           chevronElm.className = "sub-item-chevron", this._contextMenuProperties.subItemChevronClass ? chevronElm.classList.add(...this._contextMenuProperties.subItemChevronClass.split(" ")) : chevronElm.textContent = "\u2B9E", liElm.classList.add("slick-submenu-item"), liElm.appendChild(chevronElm);
           continue;

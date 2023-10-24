@@ -39,6 +39,8 @@ import type { SlickGrid } from '../slick.grid';
  *    buttonImage:            a url to the menu button image
  *    menuUsabilityOverride:  Callback method that user can override the default behavior of enabling/disabling the menu from being usable (must be combined with a custom formatter)
  *    minWidth:               Minimum width that the drop menu will have
+ *    subItemChevronClass:        CSS class that can be added on the right side of a sub-item parent (typically a chevron-right icon)
+ *    subMenuOpenByEvent:         defaults to "mouseover", what event type shoud we use to open sub-menu(s), 2 options are available: "mouseover" or "click"
  *
  *
  * Available menu item options:

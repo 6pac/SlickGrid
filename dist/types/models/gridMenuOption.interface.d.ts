@@ -1,8 +1,12 @@
-import type { Column, GridMenuItem, GridOption, MenuCallbackArgs } from './index';
+import type { Column, GridMenuCallbackArgs, GridMenuCommandItemCallbackArgs, GridMenuItem, GridOption, MenuCallbackArgs, MenuCommandItem } from './index';
 export interface GridMenuOption {
     /** Defaults to "Commands" which is the title that shows up over the custom commands list */
-    customTitle?: string;
+    commandTitle?: string;
     /** Array of command items (title, command, disabled, ...) */
+    commandItems?: Array<MenuCommandItem<GridMenuCommandItemCallbackArgs, GridMenuCallbackArgs> | 'divider'>;
+    /** @deprecated use `commandTitle` instead. Defaults to "Commands" which is the title that shows up over the custom commands list */
+    customTitle?: string;
+    /** @deprecated use `commandItems` instead. Array of command items (title, command, disabled, ...) */
     customItems?: Array<GridMenuItem | 'divider'>;
     /** Defaults to 0 (auto), minimum width of grid menu content (command, column list) */
     contentMinWidth?: number;
@@ -42,6 +46,8 @@ export interface GridMenuOption {
     showButton?: boolean;
     /** CSS class that can be added on the right side of a sub-item parent (typically a chevron-right icon) */
     subItemChevronClass?: string;
+    /** Defaults to "mouseover", what event type shoud we use to open sub-menu(s), 2 options are available: "mouseover" or "click" */
+    subMenuOpenByEvent?: 'mouseover' | 'click';
     /** Defaults to "Synchronous resize" which is 1 of the last 2 checkbox title shown at the end of the picker list */
     syncResizeTitle?: string;
     /** Use the Click offset to reposition the Grid Menu (defaults to true), when set to False it will use the icon offset to reposition the grid menu */

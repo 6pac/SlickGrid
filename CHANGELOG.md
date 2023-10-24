@@ -2,6 +2,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.3.0](https://github.com/6pac/SlickGrid/compare/5.2.0...5.3.0) (2023-10-24)
+
+### Bug Fixes
+
+* deprecate GridMenu `customItems` in favor of `commandItems` ([#872](https://github.com/6pac/SlickGrid/issues/872)) ([dd63c36](https://github.com/6pac/SlickGrid/commit/dd63c3671be15b8b6e93c3139178175271f6f611))
+* deprecate HeaderMenu `items` in favor of `commandItems` ([3987789](https://github.com/6pac/SlickGrid/commit/3987789dc371985cf9d9f777083273ab3c61380e))
+* Grid Menu mouseover event should work with `commandItems` array ([#875](https://github.com/6pac/SlickGrid/issues/875)) ([94aee91](https://github.com/6pac/SlickGrid/commit/94aee9174c51dded23281ec3a78486e4a92f3e60))
+* make sure rowNode exists before trying to loop on it ([#877](https://github.com/6pac/SlickGrid/issues/877)) ([bebec5f](https://github.com/6pac/SlickGrid/commit/bebec5ff6a55dece7eff4e54c5d14c6194035200))
+* replace `.slick-gridmenu-custom` by `.slick-gridmenu-command-list` ([#876](https://github.com/6pac/SlickGrid/issues/876)) ([2cc3175](https://github.com/6pac/SlickGrid/commit/2cc31755f420f8a4f6792b5e3be075deb0c7b3d8))
+
+### Features
+
+* add `subMenuOpenByEvent` option to open sub-menus via mouseover ([#871](https://github.com/6pac/SlickGrid/issues/871)) ([78ea6ae](https://github.com/6pac/SlickGrid/commit/78ea6ae6c0fb3209443e6db5c36f2db731bf2556))
+
 # [5.2.0](https://github.com/6pac/SlickGrid/compare/5.1.0...5.2.0) (2023-10-21)
 
 ### Bug Fixes
