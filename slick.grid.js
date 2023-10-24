@@ -3543,6 +3543,10 @@ if (typeof Slick === "undefined") {
           });
         }
       }
+
+      if (!cacheEntry.rowNode) {
+        cacheEntry.rowNode = [];
+      }
       postProcessedCleanupQueue.push({
         actionType: 'R',
         groupId: postProcessgroupId,
@@ -3566,7 +3570,7 @@ if (typeof Slick === "undefined") {
 
     function removeRowFromCache(row) {
       var cacheEntry = rowsCache[row];
-      if (!cacheEntry) {
+      if (!cacheEntry || !cacheEntry.rowNode) {
         return;
       }
 
@@ -5113,7 +5117,7 @@ if (typeof Slick === "undefined") {
       if (activeCellNode !== null) {
         makeActiveCellNormal();
         activeCellNode.classList.remove("active");
-        if (rowsCache[activeRow]) {
+        if (rowsCache[activeRow] && rowsCache[activeRow].rowNode) {
           rowsCache[activeRow].rowNode.forEach(function (node) {
             node.classList.remove("active");
           });
@@ -5146,7 +5150,7 @@ if (typeof Slick === "undefined") {
 
         if (options.showCellSelection) {
           activeCellNode.classList.add("active");
-          if (rowsCache[activeRow]) {
+          if (rowsCache[activeRow] && rowsCache[activeRow].rowNode) {
             rowsCache[activeRow].rowNode.forEach(function (node) {
               node.classList.add("active");
             });
