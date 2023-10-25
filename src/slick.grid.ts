@@ -4642,7 +4642,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           this._canvasTopR.appendChild(xRight.firstChild as ChildNode);
         }
       } else {
-        if (this.rowsCache && this.rowsCache.hasOwnProperty(rows[i]) && xRight.firstChild) {
+        if (this.rowsCache && this.rowsCache.hasOwnProperty(rows[i]) && x.firstChild) {
           this.rowsCache[rows[i]].rowNode = [x.firstChild as HTMLElement];
           this._canvasTopL.appendChild(x.firstChild as ChildNode);
         }
