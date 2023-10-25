@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.0.3](https://github.com/6pac/SlickGrid/compare/4.0.2...4.0.3) (2023-10-25)
+
+### Bug Fixes
+
+* add `throwWhenFrozenNotAllViewable` grid option to avoid throwing ([#879](https://github.com/6pac/SlickGrid/issues/879)) ([43b85f5](https://github.com/6pac/SlickGrid/commit/43b85f5a2047ed1cd188761bb028130a2b81b06f))
+* add more checks around cached rows ([#880](https://github.com/6pac/SlickGrid/issues/880)) ([3c0e10d](https://github.com/6pac/SlickGrid/commit/3c0e10d29a79ba9c6a3bceaadce31b94d6b7da87))
+
 ## [4.0.2](https://github.com/6pac/SlickGrid/compare/4.0.1...4.0.2) (2023-10-24)
 
 ### Bug Fixes
