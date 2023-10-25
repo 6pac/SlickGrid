@@ -4408,19 +4408,17 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   protected ensureCellNodesInRowsCache(row: number) {
     const cacheEntry = this.rowsCache[row];
-    if (cacheEntry) {
-      if (cacheEntry.cellRenderQueue.length) {
-        const rowNode = cacheEntry.rowNode as HTMLElement[];
-        let children = Array.from(rowNode[0].children) as HTMLElement[];
-        if (rowNode.length > 1) {
-          children = children.concat(Array.from(rowNode[1].children) as HTMLElement[]);
-        }
+    if (cacheEntry?.cellRenderQueue.length && cacheEntry.rowNode?.length) {
+      const rowNode = cacheEntry.rowNode as HTMLElement[];
+      let children = Array.from(rowNode[0].children) as HTMLElement[];
+      if (rowNode.length > 1) {
+        children = children.concat(Array.from(rowNode[1].children) as HTMLElement[]);
+      }
 
-        let i = children.length - 1;
-        while (cacheEntry.cellRenderQueue.length) {
-          const columnIdx = cacheEntry.cellRenderQueue.pop();
-          (cacheEntry.cellNodesByColumnIdx as HTMLElement[])[columnIdx] = children[i--];
-        }
+      let i = children.length - 1;
+      while (cacheEntry.cellRenderQueue.length) {
+        const columnIdx = cacheEntry.cellRenderQueue.pop();
+        (cacheEntry.cellNodesByColumnIdx as HTMLElement[])[columnIdx] = children[i--];
       }
     }
   }
@@ -4625,20 +4623,28 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     for (let i = 0, ii = rows.length; i < ii; i++) {
       if ((this.hasFrozenRows) && (rows[i] >= this.actualFrozenRow)) {
         if (this.hasFrozenColumns()) {
-          this.rowsCache[rows[i]].rowNode = [x.firstChild as HTMLElement, xRight.firstChild as HTMLElement];
-          this._canvasBottomL.appendChild(x.firstChild as ChildNode);
-          this._canvasBottomR.appendChild(xRight.firstChild as ChildNode);
+          if (this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild) {
+            this.rowsCache[rows[i]].rowNode = [x.firstChild as HTMLElement, xRight.firstChild as HTMLElement];
+            this._canvasBottomL.appendChild(x.firstChild as ChildNode);
+            this._canvasBottomR.appendChild(xRight.firstChild as ChildNode);
+          }
         } else {
-          this.rowsCache[rows[i]].rowNode = [x.firstChild as HTMLElement];
-          this._canvasBottomL.appendChild(x.firstChild as ChildNode);
+          if (this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild) {
+            this.rowsCache[rows[i]].rowNode = [x.firstChild as HTMLElement];
+            this._canvasBottomL.appendChild(x.firstChild as ChildNode);
+          }
         }
       } else if (this.hasFrozenColumns()) {
-        this.rowsCache[rows[i]].rowNode = [x.firstChild as HTMLElement, xRight.firstChild as HTMLElement];
-        this._canvasTopL.appendChild(x.firstChild as ChildNode);
-        this._canvasTopR.appendChild(xRight.firstChild as ChildNode);
+        if (this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild) {
+          this.rowsCache[rows[i]].rowNode = [x.firstChild as HTMLElement, xRight.firstChild as HTMLElement];
+          this._canvasTopL.appendChild(x.firstChild as ChildNode);
+          this._canvasTopR.appendChild(xRight.firstChild as ChildNode);
+        }
       } else {
-        this.rowsCache[rows[i]].rowNode = [x.firstChild as HTMLElement];
-        this._canvasTopL.appendChild(x.firstChild as ChildNode);
+        if (this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild) {
+          this.rowsCache[rows[i]].rowNode = [x.firstChild as HTMLElement];
+          this._canvasTopL.appendChild(x.firstChild as ChildNode);
+        }
       }
     }
 
