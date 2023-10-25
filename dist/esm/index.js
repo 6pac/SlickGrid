@@ -6307,7 +6307,7 @@ var SlickGrid = class {
     this.options = options;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.3.0");
+    __publicField(this, "slickGridVersion", "5.3.1");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -6418,6 +6418,7 @@ var SlickGrid = class {
       frozenColumn: -1,
       frozenRow: -1,
       frozenRightViewportMinWidth: 100,
+      throwWhenFrozenNotAllViewable: !1,
       fullWidthRows: !1,
       multiColumnSort: !1,
       numberedMultiColumnSort: !1,
@@ -6845,7 +6846,7 @@ var SlickGrid = class {
     if (widthChanged || this.hasFrozenColumns() || this.hasFrozenRows)
       if (Utils28.width(this._canvasTopL, this.canvasWidthL), this.getHeadersWidth(), Utils28.width(this._headerL, this.headersWidthL), Utils28.width(this._headerR, this.headersWidthR), this.hasFrozenColumns()) {
         let cWidth = Utils28.width(this._container) || 0;
-        if (cWidth > 0 && this.canvasWidthL > cWidth)
+        if (cWidth > 0 && this.canvasWidthL > cWidth && this._options.throwWhenFrozenNotAllViewable)
           throw new Error("[SlickGrid] Frozen columns cannot be wider than the actual grid container width. Make sure to have less columns freezed or make your grid container wider");
         Utils28.width(this._canvasTopR, this.canvasWidthR), Utils28.width(this._paneHeaderL, this.canvasWidthL), Utils28.setStyleSize(this._paneHeaderR, "left", this.canvasWidthL), Utils28.setStyleSize(this._paneHeaderR, "width", this.viewportW - this.canvasWidthL), Utils28.width(this._paneTopL, this.canvasWidthL), Utils28.setStyleSize(this._paneTopR, "left", this.canvasWidthL), Utils28.width(this._paneTopR, this.viewportW - this.canvasWidthL), Utils28.width(this._headerRowScrollerL, this.canvasWidthL), Utils28.width(this._headerRowScrollerR, this.viewportW - this.canvasWidthL), Utils28.width(this._headerRowL, this.canvasWidthL), Utils28.width(this._headerRowR, this.canvasWidthR), this._options.createFooterRow && (Utils28.width(this._footerRowScrollerL, this.canvasWidthL), Utils28.width(this._footerRowScrollerR, this.viewportW - this.canvasWidthL), Utils28.width(this._footerRowL, this.canvasWidthL), Utils28.width(this._footerRowR, this.canvasWidthR)), this._options.createPreHeaderPanel && Utils28.width(this._preHeaderPanel, this.canvasWidth), Utils28.width(this._viewportTopL, this.canvasWidthL), Utils28.width(this._viewportTopR, this.viewportW - this.canvasWidthL), this.hasFrozenRows && (Utils28.width(this._paneBottomL, this.canvasWidthL), Utils28.setStyleSize(this._paneBottomR, "left", this.canvasWidthL), Utils28.width(this._viewportBottomL, this.canvasWidthL), Utils28.width(this._viewportBottomR, this.viewportW - this.canvasWidthL), Utils28.width(this._canvasBottomL, this.canvasWidthL), Utils28.width(this._canvasBottomR, this.canvasWidthR));
       } else
@@ -8126,7 +8127,7 @@ var SlickGrid = class {
   }
   ensureCellNodesInRowsCache(row) {
     let cacheEntry = this.rowsCache[row];
-    if (cacheEntry && cacheEntry.cellRenderQueue.length) {
+    if (cacheEntry?.cellRenderQueue.length && cacheEntry.rowNode?.length) {
       let rowNode = cacheEntry.rowNode, children = Array.from(rowNode[0].children);
       rowNode.length > 1 && (children = children.concat(Array.from(rowNode[1].children)));
       let i = children.length - 1;
@@ -8203,7 +8204,7 @@ var SlickGrid = class {
       return;
     let x = Utils28.createDomElement("div", { innerHTML: this.sanitizeHtmlString(stringArrayL.join("")) }), xRight = Utils28.createDomElement("div", { innerHTML: this.sanitizeHtmlString(stringArrayR.join("")) });
     for (let i = 0, ii = rows.length; i < ii; i++)
-      this.hasFrozenRows && rows[i] >= this.actualFrozenRow ? this.hasFrozenColumns() ? (this.rowsCache[rows[i]].rowNode = [x.firstChild, xRight.firstChild], this._canvasBottomL.appendChild(x.firstChild), this._canvasBottomR.appendChild(xRight.firstChild)) : (this.rowsCache[rows[i]].rowNode = [x.firstChild], this._canvasBottomL.appendChild(x.firstChild)) : this.hasFrozenColumns() ? (this.rowsCache[rows[i]].rowNode = [x.firstChild, xRight.firstChild], this._canvasTopL.appendChild(x.firstChild), this._canvasTopR.appendChild(xRight.firstChild)) : (this.rowsCache[rows[i]].rowNode = [x.firstChild], this._canvasTopL.appendChild(x.firstChild));
+      this.hasFrozenRows && rows[i] >= this.actualFrozenRow ? this.hasFrozenColumns() ? this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild, xRight.firstChild], this._canvasBottomL.appendChild(x.firstChild), this._canvasBottomR.appendChild(xRight.firstChild)) : this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild], this._canvasBottomL.appendChild(x.firstChild)) : this.hasFrozenColumns() ? this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild, xRight.firstChild], this._canvasTopL.appendChild(x.firstChild), this._canvasTopR.appendChild(xRight.firstChild)) : this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild], this._canvasTopL.appendChild(x.firstChild));
     needToReselectCell && (this.activeCellNode = this.getCellNode(this.activeRow, this.activeCell));
   }
   startPostProcessing() {
@@ -9527,7 +9528,7 @@ export {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.3.0
+ * SlickGrid v5.3.1
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

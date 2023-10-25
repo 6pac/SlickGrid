@@ -204,6 +204,11 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
     suppressCssChangesOnHiddenInit?: boolean;
     /** Defaults to false, when set to True will sync the column cell resize & apply the column width */
     syncColumnCellResize?: boolean;
+    /**
+     * Defaults to false, should we throw an erro when frozenColumn is wider than the grid viewport width.
+     * When that happens the unfrozen section on the right is in a phantom area that is not viewable neither clickable unless we enable double-scroll on the grid container.
+     */
+    throwWhenFrozenNotAllViewable?: boolean;
     /** What is the top panel height in pixels (only type the number) */
     topPanelHeight?: number;
     /** Defaults to false, when set to True will lead to multiple columns sorting without the need to hold or do shift-click to execute a multiple sort. */
