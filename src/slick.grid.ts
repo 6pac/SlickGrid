@@ -249,6 +249,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     frozenColumn: -1,
     frozenRow: -1,
     frozenRightViewportMinWidth: 100,
+    throwWhenFrozenNotAllViewable: false,
     fullWidthRows: false,
     multiColumnSort: false,
     numberedMultiColumnSort: false,
@@ -1119,7 +1120,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       if (this.hasFrozenColumns()) {
         const cWidth = Utils.width(this._container) || 0;
-        if (cWidth > 0 && this.canvasWidthL > cWidth) {
+        if (cWidth > 0 && this.canvasWidthL > cWidth && this._options.throwWhenFrozenNotAllViewable) {
           throw new Error('[SlickGrid] Frozen columns cannot be wider than the actual grid container width. '
             + 'Make sure to have less columns freezed or make your grid container wider');
         }
