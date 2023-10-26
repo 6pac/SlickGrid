@@ -2299,33 +2299,27 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   protected createCssRules() {
-    const template = Utils.createDomElement('template', { innerHTML: '<style type="text/css" rel="stylesheet" />' });
-    this._style = template.content.firstChild;
+    this._style = document.createElement('style');
     document.head.appendChild(this._style);
 
-    const rowHeight = (this._options.rowHeight! - this.cellHeightDiff);
-    const rules = [
-      `.${this.uid} .slick-group-header-column { left: 1000px; }`,
-      `.${this.uid} .slick-header-column { left: 1000px; }`,
-      `.${this.uid} .slick-top-panel { height: ${this._options.topPanelHeight}px; }`,
-      `.${this.uid} .slick-preheader-panel { height: ${this._options.preHeaderPanelHeight}px; }`,
-      `.${this.uid} .slick-headerrow-columns { height: ${this._options.headerRowHeight}px; }`,
-      `.${this.uid} .slick-footerrow-columns { height: ${this._options.footerRowHeight}px; }`,
-      `.${this.uid} .slick-cell { height: ${rowHeight}px; }`,
-      `.${this.uid} .slick-row { height: ${this._options.rowHeight}px; }`
-    ];
+    const sheet = this._style.sheet;
+    if (sheet) {
+      const rowHeight = (this._options.rowHeight! - this.cellHeightDiff);
+      sheet.insertRule(`.${this.uid} .slick-group-header-column { left: 1000px; }`);
+      sheet.insertRule(`.${this.uid} .slick-header-column { left: 1000px; }`);
+      sheet.insertRule(`.${this.uid} .slick-top-panel { height: ${this._options.topPanelHeight}px; }`);
+      sheet.insertRule(`.${this.uid} .slick-preheader-panel { height: ${this._options.preHeaderPanelHeight}px; }`);
+      sheet.insertRule(`.${this.uid} .slick-headerrow-columns { height: ${this._options.headerRowHeight}px; }`);
+      sheet.insertRule(`.${this.uid} .slick-footerrow-columns { height: ${this._options.footerRowHeight}px; }`);
+      sheet.insertRule(`.${this.uid} .slick-cell { height: ${rowHeight}px; }`);
+      sheet.insertRule(`.${this.uid} .slick-row { height: ${this._options.rowHeight}px; }`);
 
-    for (let i = 0; i < this.columns.length; i++) {
-      if (!this.columns[i] || this.columns[i].hidden) { continue; }
+      for (let i = 0; i < this.columns.length; i++) {
+        if (!this.columns[i] || this.columns[i].hidden) { continue; }
 
-      rules.push(`.${this.uid} .l${i} { }`);
-      rules.push(`.${this.uid} .r${i} { }`);
-    }
-
-    if (this._style.styleSheet) { // IE
-      this._style.styleSheet.cssText = rules.join(' ');
-    } else {
-      this._style.appendChild(document.createTextNode(rules.join(' ')));
+        sheet.insertRule(`.${this.uid} .l${i} { }`);
+        sheet.insertRule(`.${this.uid} .r${i} { }`);
+      }
     }
   }
 
