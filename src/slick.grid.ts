@@ -350,7 +350,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected _topPanels!: HTMLDivElement[];
   protected _viewport!: HTMLDivElement[];
   protected _canvas!: HTMLDivElement[];
-  protected _style: any;
+  protected _style?: HTMLStyleElement;
   protected _boundAncestors: HTMLElement[] = [];
   protected stylesheet?: { cssRules: Array<{ selectorText: string; }>; rules: Array<{ selectorText: string; }>; } | null;
   protected columnCssRulesL?: Array<{ selectorText: string; }>;
@@ -2300,6 +2300,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   protected createCssRules() {
     this._style = document.createElement('style');
+    this._style.nonce = 'random-string';
     document.head.appendChild(this._style);
 
     const sheet = this._style.sheet;
@@ -2363,7 +2364,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   protected removeCssRules() {
-    this._style.remove();
+    this._style?.remove();
     this.stylesheet = null;
   }
 
