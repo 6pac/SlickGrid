@@ -2052,33 +2052,28 @@ if (typeof Slick === "undefined") {
     }
 
     function createCssRules() {
-      const template = utils.createDomElement('template', { innerHTML: '<style type="text/css" rel="stylesheet" />' });
-      _style = template.content.firstChild;
+      _style = document.createElement('style');
+      _style.nonce = 'random-string';
       document.head.appendChild(_style);
 
-      var rowHeight = (options.rowHeight - cellHeightDiff);
-      var rules = [
-        "." + uid + " .slick-group-header-column { left: 1000px; }",
-        "." + uid + " .slick-header-column { left: 1000px; }",
-        "." + uid + " .slick-top-panel { height:" + options.topPanelHeight + "px; }",
-        "." + uid + " .slick-preheader-panel { height:" + options.preHeaderPanelHeight + "px; }",
-        "." + uid + " .slick-headerrow-columns { height:" + options.headerRowHeight + "px; }",
-        "." + uid + " .slick-footerrow-columns { height:" + options.footerRowHeight + "px; }",
-        "." + uid + " .slick-cell { height:" + rowHeight + "px; }",
-        "." + uid + " .slick-row { height:" + options.rowHeight + "px; }"
-      ];
+      const sheet = _style.sheet;
+      if (sheet) {
+        const rowHeight = (options.rowHeight - cellHeightDiff);
+        sheet.insertRule(`.${uid} .slick-group-header-column { left: 1000px; }`);
+        sheet.insertRule(`.${uid} .slick-header-column { left: 1000px; }`);
+        sheet.insertRule(`.${uid} .slick-top-panel { height: ${options.topPanelHeight}px; }`);
+        sheet.insertRule(`.${uid} .slick-preheader-panel { height: ${options.preHeaderPanelHeight}px; }`);
+        sheet.insertRule(`.${uid} .slick-headerrow-columns { height: ${options.headerRowHeight}px; }`);
+        sheet.insertRule(`.${uid} .slick-footerrow-columns { height: ${options.footerRowHeight}px; }`);
+        sheet.insertRule(`.${uid} .slick-cell { height: ${rowHeight}px; }`);
+        sheet.insertRule(`.${uid} .slick-row { height: ${options.rowHeight}px; }`);
 
-      for (var i = 0; i < columns.length; i++) {
-        if (!columns[i] || columns[i].hidden) continue;
+        for (let i = 0; i < columns.length; i++) {
+          if (!columns[i] || columns[i].hidden) { continue; }
 
-        rules.push("." + uid + " .l" + i + " { }");
-        rules.push("." + uid + " .r" + i + " { }");
-      }
-
-      if (_style.styleSheet) { // IE
-        _style.styleSheet.cssText = rules.join(" ");
-      } else {
-        _style.appendChild(document.createTextNode(rules.join(" ")));
+          sheet.insertRule(`.${uid} .l${i} { }`);
+          sheet.insertRule(`.${uid} .r${i} { }`);
+        }
       }
     }
 
@@ -2121,7 +2116,9 @@ if (typeof Slick === "undefined") {
     }
 
     function removeCssRules() {
-      _style.remove();
+      if (_style) {
+        _style.remove();
+      }
       stylesheet = null;
     }
 
