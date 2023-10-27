@@ -315,7 +315,7 @@ export class SlickGridMenu {
       const spanCloseElm = document.createElement('span');
       spanCloseElm.className = 'close';
       spanCloseElm.ariaHidden = 'true';
-      spanCloseElm.innerHTML = '&times;';
+      spanCloseElm.textContent = '×';
       closeButtonElm.appendChild(spanCloseElm);
       menuElm.appendChild(closeButtonElm);
     }

@@ -2971,7 +2971,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         }
       }
 
-      cellEl.innerHTML = maxText;
+      cellEl.textContent = maxText;
       len = cellEl.offsetWidth;
 
       rowEl.remove();
@@ -4085,7 +4085,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         formatterResult = this.getFormatter(row, m)(row, columnIdx, this.getDataItemValueForColumn(d, m), m, d, this as unknown as SlickGridModel);
         this.applyFormatResultToCellNode(formatterResult, node as HTMLDivElement);
       } else {
-        node.innerHTML = '';
+        Utils.emptyElement(node);
       }
     }
 
@@ -5766,7 +5766,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     // don't clear the cell if a custom editor is passed through
     if (!editor && !useEditor.suppressClearOnEdit) {
-      this.activeCellNode.innerHTML = '';
+      Utils.emptyElement(this.activeCellNode);
     }
 
     let metadata = (this.data as CustomDataView<TData>)?.getItemMetadata?.(this.activeRow);
