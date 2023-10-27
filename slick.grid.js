@@ -2700,7 +2700,7 @@ if (typeof Slick === "undefined") {
           if (len > max) { max = len; maxText = formatterResult; }
         }
 
-          cellEl.innerHTML = maxText;
+          cellEl.textContent = maxText;
           len = cellEl.offsetWidth;
 
           rowEl.remove();
@@ -3680,7 +3680,7 @@ if (typeof Slick === "undefined") {
           formatterResult =  getFormatter(row, m)(row, columnIdx, getDataItemValueForColumn(d, m), m, d, self);
           applyFormatResultToCellNode(formatterResult, node);
         } else {
-          node.innerHTML = "";
+          utils.emptyElement(node);
         }
       }
 
@@ -5283,7 +5283,7 @@ if (typeof Slick === "undefined") {
 
       // don't clear the cell if a custom editor is passed through
       if (!editor && !useEditor.suppressClearOnEdit) {
-        activeCellNode.innerHTML = "";
+        utils.emptyElement(activeCellNode);
       }
 
       var metadata = data.getItemMetadata && data.getItemMetadata(activeRow);

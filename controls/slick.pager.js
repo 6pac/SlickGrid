@@ -45,7 +45,7 @@
     function destroy() {
       setPageSize(0);
       _bindingEventService.unbindAll();
-      container.innerHTML = '';
+      Slick.Utils.emptyElement(container);
     }
 
     function getNavState() {
