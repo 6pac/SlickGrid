@@ -552,9 +552,9 @@ export class BindingEventService {
   }
 
   /** Bind an event listener to any element */
-  bind(element: Element | Window, eventName: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions) {
+  bind(element: Element | Window, eventName: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions, groupName = '') {
     element.addEventListener(eventName, listener, options);
-    this._boundedEvents.push({ element, eventName, listener });
+    this._boundedEvents.push({ element, eventName, listener, groupName });
   }
 
   /** Unbind all will remove every every event handlers that were bounded earlier */
@@ -571,11 +571,30 @@ export class BindingEventService {
     }
   }
 
-  /** Unbind all will remove every every event handlers that were bounded earlier */
-  unbindAll() {
-    while (this._boundedEvents.length > 0) {
-      const boundedEvent = this._boundedEvents.pop() as ElementEventListener;
-      this.unbind(boundedEvent.element, boundedEvent.eventName, boundedEvent.listener);
+  /**
+   * Unbind all event listeners that were bounded, optionally provide a group name to unbind all listeners assigned to that specific group only.
+   */
+  unbindAll(groupName?: string | string[]) {
+    if (groupName) {
+      const groupNames = Array.isArray(groupName) ? groupName : [groupName];
+
+      // unbind only the bounded event with a specific group
+      // Note: we need to loop in reverse order to avoid array reindexing (causing index offset) after a splice is called
+      for (let i = this._boundedEvents.length - 1; i >= 0; --i) {
+        const boundedEvent = this._boundedEvents[i];
+        if (groupNames.some(g => g === boundedEvent.groupName)) {
+          const { element, eventName, listener } = boundedEvent;
+          this.unbind(element, eventName, listener);
+          this._boundedEvents.splice(i, 1);
+        }
+      }
+    } else {
+      // unbind everything
+      while (this._boundedEvents.length > 0) {
+        const boundedEvent = this._boundedEvents.pop() as ElementEventListener;
+        const { element, eventName, listener } = boundedEvent;
+        this.unbind(element, eventName, listener);
+      }
     }
   }
 }
