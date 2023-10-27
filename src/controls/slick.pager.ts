@@ -61,7 +61,7 @@ export class SlickGridPager {
   destroy() {
     this.setPageSize(0);
     this._bindingEventService.unbindAll();
-    this._container.innerHTML = '';
+    Utils.emptyElement(this._container);
   }
 
   protected getNavState() {
