@@ -278,7 +278,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     maxSupportedCssHeight: 1000000000,
     sanitizer: undefined,  // sanitize function, built in basic sanitizer is: Slick.RegexSanitizer(dirtyHtml)
     logSanitizedHtml: false, // log to console when sanitised - recommend true for testing of dev and production
-    mixinDefaults: true
+    mixinDefaults: true,
+    shadowRoot: undefined
   };
 
   protected _columnDefaults = {
@@ -2301,8 +2302,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected createCssRules() {
     this._style = document.createElement('style');
     this._style.nonce = 'random-string';
-    document.head.appendChild(this._style);
-
+    (this._options.shadowRoot || document.head).appendChild(this._style);
     const sheet = this._style.sheet;
     if (sheet) {
       const rowHeight = (this._options.rowHeight! - this.cellHeightDiff);
@@ -2327,7 +2327,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected getColumnCssRules(idx: number) {
     let i: number;
     if (!this.stylesheet) {
-      const sheets: any = document.styleSheets;
+      const sheets: any = (this._options.shadowRoot || document).styleSheets;
       for (i = 0; i < sheets.length; i++) {
         if ((sheets[i].ownerNode || sheets[i].owningElement) === this._style) {
           this.stylesheet = sheets[i];
