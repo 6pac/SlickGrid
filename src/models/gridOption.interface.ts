@@ -270,7 +270,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   sortColNumberInSeparateSpan?: boolean;
 
   /** Defaults to undefined. If we are inside a shadow DOM tree, this must be the shadow root of the tree */
-  shadowRoot?: ShadowRoot | undefined;
+  shadowRoot?: ShadowRoot
 
   /**
    * Defaults to false, which leads to suppress the cell from becoming active when cell as an editor and is clicked.
