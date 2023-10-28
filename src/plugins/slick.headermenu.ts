@@ -292,7 +292,7 @@ export class SlickHeaderMenu implements SlickPlugin {
     }
 
     // create 1st parent menu container & reposition it
-    this._menuElm = this.createMenu(menu.commandItems || menu.items, columnDef);
+    this._menuElm = this.createMenu((menu.commandItems || menu.items) as Array<HeaderMenuCommandItem | 'divider'>, columnDef);
     const containerNode = this._grid.getContainerNode();
     if (containerNode) {
       containerNode.appendChild(this._menuElm);
