@@ -348,7 +348,7 @@ export class SlickContextMenu implements SlickPlugin {
       const spanCloseElm = document.createElement('span');
       spanCloseElm.className = 'close';
       spanCloseElm.ariaHidden = 'true';
-      spanCloseElm.innerHTML = '&times;';
+      spanCloseElm.textContent = '×';
       closeButtonElm.appendChild(spanCloseElm);
     }
 
@@ -450,12 +450,16 @@ export class SlickContextMenu implements SlickPlugin {
   /** Destroy all parent menus and any sub-menus */
   destroyAllMenus() {
     this.destroySubMenus();
+
+    // remove all parent menu listeners before removing them from the DOM
+    this._bindingEventService.unbindAll('parent-menu');
     document.querySelectorAll(`.slick-context-menu${this.getGridUidSelector()}`)
       .forEach(subElm => subElm.remove());
   }
 
   /** Close and destroy all previously opened sub-menus */
   destroySubMenus() {
+    this._bindingEventService.unbindAll('sub-menu');
     document.querySelectorAll(`.slick-context-menu.slick-submenu${this.getGridUidSelector()}`)
       .forEach(subElm => subElm.remove());
   }
@@ -551,7 +555,8 @@ export class SlickContextMenu implements SlickPlugin {
     }
 
     // user could pass a title on top of the Commands/Options section
-    const isSubMenu = args.level > 0;
+    const level = args?.level || 0;
+    const isSubMenu = level > 0;
     if (contextMenu?.[`${itemType}Title`] && !isSubMenu) {
       this[`_${itemType}TitleElm`] = document.createElement('div');
       this[`_${itemType}TitleElm`]!.className = 'slick-menu-title';
@@ -631,14 +636,15 @@ export class SlickContextMenu implements SlickPlugin {
       commandOrOptionMenuElm.appendChild(liElm);
 
       if (addClickListener) {
-        this._bindingEventService.bind(liElm, 'click', this.handleMenuItemClick.bind(this, item, itemType, args.level) as EventListener);
+        const eventGroup = isSubMenu ? 'sub-menu' : 'parent-menu';
+        this._bindingEventService.bind(liElm, 'click', this.handleMenuItemClick.bind(this, item, itemType, level) as EventListener, undefined, eventGroup);
       }
 
       // optionally open sub-menu(s) by mouseover
       if (this._contextMenuProperties.subMenuOpenByEvent === 'mouseover') {
         this._bindingEventService.bind(liElm, 'mouseover', ((e: DOMMouseOrTouchEvent<HTMLDivElement>) => {
           if ((item as MenuCommandItem).commandItems || (item as MenuOptionItem).optionItems) {
-            this.repositionSubMenu(item, itemType, args.level, e);
+            this.repositionSubMenu(item, itemType, level, e);
             this._lastMenuTypeClicked = itemType;
           } else if (!isSubMenu) {
             this.destroySubMenus();

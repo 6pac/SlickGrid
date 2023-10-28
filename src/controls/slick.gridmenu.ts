@@ -315,7 +315,7 @@ export class SlickGridMenu {
       const spanCloseElm = document.createElement('span');
       spanCloseElm.className = 'close';
       spanCloseElm.ariaHidden = 'true';
-      spanCloseElm.innerHTML = '&times;';
+      spanCloseElm.textContent = '×';
       closeButtonElm.appendChild(spanCloseElm);
       menuElm.appendChild(closeButtonElm);
     }
@@ -380,6 +380,7 @@ export class SlickGridMenu {
 
   /** Close and destroy all previously opened sub-menus */
   destroySubMenus() {
+    this._bindingEventService.unbindAll('sub-menu');
     document.querySelectorAll(`.slick-gridmenu.slick-submenu${this.getGridUidSelector()}`)
       .forEach(subElm => subElm.remove());
   }
@@ -387,7 +388,8 @@ export class SlickGridMenu {
   /** Construct the custom command menu items. */
   protected populateCommandsMenu(commandItems: Array<GridMenuItem | MenuCommandItem | 'divider'>, commandListElm: HTMLElement, args: { grid: SlickGrid, level: number }) {
     // user could pass a title on top of the custom section
-    const isSubMenu = args.level > 0;
+    const level = args?.level || 0;
+    const isSubMenu = level > 0;
     if (!isSubMenu && (this._gridMenuOptions?.commandTitle || this._gridMenuOptions?.customTitle)) {
       this._commandTitleElm = document.createElement('div');
       this._commandTitleElm.className = 'title';
@@ -470,14 +472,15 @@ export class SlickGridMenu {
       commandListElm.appendChild(liElm);
 
       if (addClickListener) {
-        this._bindingEventService.bind(liElm, 'click', this.handleMenuItemClick.bind(this, item, args.level) as EventListener);
+        const eventGroup = isSubMenu ? 'sub-menu' : 'parent-menu';
+        this._bindingEventService.bind(liElm, 'click', this.handleMenuItemClick.bind(this, item, level) as EventListener, undefined, eventGroup);
       }
 
       // optionally open sub-menu(s) by mouseover
       if (this._gridMenuOptions?.subMenuOpenByEvent === 'mouseover') {
         this._bindingEventService.bind(liElm, 'mouseover', ((e: DOMMouseOrTouchEvent<HTMLDivElement>) => {
           if ((item as GridMenuItem).commandItems || (item as GridMenuItem).customItems) {
-            this.repositionSubMenu(item, args.level, e);
+            this.repositionSubMenu(item, level, e);
           } else if (!isSubMenu) {
             this.destroySubMenus();
           }

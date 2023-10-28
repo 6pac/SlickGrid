@@ -171,12 +171,16 @@ export class SlickHeaderMenu implements SlickPlugin {
 
   destroyAllMenus() {
     this.destroySubMenus();
+
+    // remove all parent menu listeners before removing them from the DOM
+    this._bindingEventService.unbindAll('parent-menu');
     document.querySelectorAll(`.slick-header-menu${this.getGridUidSelector()}`)
       .forEach(subElm => subElm.remove());
   }
 
   /** Close and destroy all previously opened sub-menus */
   destroySubMenus() {
+    this._bindingEventService.unbindAll('sub-menu');
     document.querySelectorAll(`.slick-header-menu.slick-submenu${this.getGridUidSelector()}`)
       .forEach(subElm => subElm.remove());
   }
@@ -425,7 +429,8 @@ export class SlickHeaderMenu implements SlickPlugin {
       menuElm.appendChild(menuItemElm);
 
       if (addClickListener) {
-        this._bindingEventService.bind(menuItemElm, 'click', this.handleMenuItemClick.bind(this, item, columnDef, level) as EventListener);
+        const eventGroup = isSubMenu ? 'sub-menu' : 'parent-menu';
+        this._bindingEventService.bind(menuItemElm, 'click', this.handleMenuItemClick.bind(this, item, columnDef, level) as EventListener, undefined, eventGroup);
       }
 
       // optionally open sub-menu(s) by mouseover
