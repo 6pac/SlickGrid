@@ -1287,7 +1287,8 @@ if (typeof Slick === "undefined") {
         const headerRowTarget = hasFrozenColumns() ? ((i <= options.frozenColumn) ? _headerRowL : _headerRowR) : _headerRowL;
 
         const header = utils.createDomElement('div', { id: `${uid + m.id}`, dataset: { id: m.id }, className: 'ui-state-default slick-header-column', title: m.toolTip || '' }, headerTarget);
-        utils.createDomElement('span', { className: 'slick-column-name', innerHTML: sanitizeHtmlString(m.name) }, header);
+        const colNameElm = utils.createDomElement('span', { className: 'slick-column-name' }, header);
+        colNameElm.innerHTML = sanitizeHtmlString(m.name);
         utils.width(header, m.width - headerColumnWidthDiff);
 
         let classname = m.headerCssClass || null;
@@ -2743,7 +2744,8 @@ if (typeof Slick === "undefined") {
         // headers have not yet been created, create a new node
         let header = getHeader(columnDef);
         headerColEl = utils.createDomElement('div', { id: dummyHeaderColElId, className: 'ui-state-default slick-header-column', }, header);
-        utils.createDomElement('span', { className: 'slick-column-name', innerHTML: sanitizeHtmlString(columnDef.name) }, headerColEl);
+        const colNameElm = utils.createDomElement('span', { className: 'slick-column-name' }, headerColEl);
+        colNameElm.innerHTML = sanitizeHtmlString(columnDef.name);
         clone.style.cssText = 'position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;';
         if (columnDef.headerCssClass) {
           headerColEl.classList.add(...columnDef.headerCssClass.split(' '));
@@ -4125,7 +4127,8 @@ if (typeof Slick === "undefined") {
         return;
       }
 
-      var x = utils.createDomElement('div', { innerHTML: sanitizeHtmlString(stringArray.join('')) });
+      var x = document.createElement('div');
+      x.innerHTML = sanitizeHtmlString(stringArray.join(''));
       var processedRow;
       var node;
       while ((processedRow = processedRows.pop()) != null) {
@@ -4185,8 +4188,10 @@ if (typeof Slick === "undefined") {
 
       if (!rows.length) { return; }
 
-      let x = utils.createDomElement('div', { innerHTML: sanitizeHtmlString(stringArrayL.join('')) });
-      let xRight = utils.createDomElement('div', { innerHTML: sanitizeHtmlString(stringArrayR.join('')) });
+      const x = document.createElement('div');
+      const xRight = document.createElement('div');
+      x.innerHTML = sanitizeHtmlString(stringArrayL.join(''));
+      xRight.innerHTML = sanitizeHtmlString(stringArrayR.join(''));
 
       for (var i = 0, ii = rows.length; i < ii; i++) {
         if (( hasFrozenRows ) && ( rows[i] >= actualFrozenRow )) {

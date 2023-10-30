@@ -1,20 +1,19 @@
-var grid;
-var columns = [
-  { id: "title", name: "Title", field: "title" },
-  { id: "duration", name: "Duration", field: "duration" },
-  { id: "%", name: "% Complete", field: "percentComplete", selectable: false, width: 100 },
-  { id: "start", name: "Start", field: "start" },
-  { id: "finish", name: "Finish", field: "finish" },
-  { id: "effort-driven", name: "Effort Driven", field: "effortDriven", width: 100 }
-];
-
-var options = {
-  enableCellNavigation: true,
-  enableColumnReorder: false,
-  sanitizer: (dirtyHtml) => DOMPurify.sanitize(dirtyHtml, { RETURN_TRUSTED_TYPE: true })
-};
-
 document.addEventListener("DOMContentLoaded", function () {
+  var grid;
+  var columns = [
+    { id: "title", name: "Title", field: "title" },
+    { id: "duration", name: "Duration", field: "duration" },
+    { id: "%", name: "% Complete", field: "percentComplete", selectable: false, width: 100 },
+    { id: "start", name: "Start", field: "start" },
+    { id: "finish", name: "Finish", field: "finish" },
+    { id: "effort-driven", name: "Effort Driven", field: "effortDriven", width: 100 }
+  ];
+
+  var options = {
+    enableCellNavigation: true,
+    enableColumnReorder: false,
+    sanitizer: (html) => window.DOMPurify.sanitize(html, { RETURN_TRUSTED_TYPE: true })
+  };
   let gridElement = document.getElementById("myGrid");
   gridElement.style.width = "600px";
   gridElement.style.height = "500px";
