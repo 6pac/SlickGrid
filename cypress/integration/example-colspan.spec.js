@@ -10,6 +10,7 @@ describe('Example - Column Span & Header Grouping', { retries: 1 }, () => {
     it('should display Example title', () => {
         cy.visit(`${Cypress.config('baseExampleUrl')}/example-colspan.html`);
         cy.get('h2').contains('Demonstrates');
+        cy.get('h2 + ul > li').first().contains('column span');
     });
 
     it('should have exact column titles', () => {
