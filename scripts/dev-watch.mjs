@@ -72,7 +72,13 @@ const argv = yargs(hideBin(process.argv)).argv;
       watchTask: true,
       online: false,
       open: argv.open,
-      startPath: 'examples/index.html'
+      startPath: 'examples/index.html',
+      snippetOptions: {
+        rule: {
+          match: /<\/head>/i,
+          fn: (snippet, match) => snippet.replace('id=', `nonce="browser-sync" id=`) + match
+        }
+      },
     }, () => {
       console.log('Use Ctrl+C to Quit');
     });
