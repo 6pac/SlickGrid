@@ -10,7 +10,8 @@ var columns = [
 
 var options = {
   enableCellNavigation: true,
-  enableColumnReorder: false
+  enableColumnReorder: false,
+  sanitizer: (dirtyHtml) => DOMPurify.sanitize(dirtyHtml, { RETURN_TRUSTED_TYPE: true })
 };
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -31,7 +32,7 @@ document.addEventListener("DOMContentLoaded", function () {
       percentComplete: Math.round(Math.random() * 100),
       start: "01/01/2009",
       finish: "01/05/2009",
-      effortDriven: (i % 5 == 0)
+      effortDriven: (i % 5 === 0)
     };
   }
 
