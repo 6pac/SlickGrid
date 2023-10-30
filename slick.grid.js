@@ -112,7 +112,8 @@ if (typeof Slick === "undefined") {
       ffMaxSupportedCssHeight: 6000000,
       maxSupportedCssHeight: 1000000000,
       sanitizer: undefined,  // sanitize function, built in basic sanitizer is: Slick.RegexSanitizer(dirtyHtml)
-      logSanitizedHtml: false // log to console when sanitised - recommend true for testing of dev and production
+      logSanitizedHtml: false, // log to console when sanitised - recommend true for testing of dev and production
+      shadowRoot: undefined
     };
 
     var columnDefaults = {
@@ -2055,6 +2056,7 @@ if (typeof Slick === "undefined") {
       _style = document.createElement('style');
       _style.nonce = 'random-string';
       document.head.appendChild(_style);
+      (options.shadowRoot || document.head).appendChild(_style);
 
       const sheet = _style.sheet;
       if (sheet) {
@@ -2080,7 +2082,7 @@ if (typeof Slick === "undefined") {
     function getColumnCssRules(idx) {
       var i;
       if (!stylesheet) {
-        var sheets = document.styleSheets;
+        var sheets = (options.shadowRoot || document).styleSheets;
         for (i = 0; i < sheets.length; i++) {
           if ((sheets[i].ownerNode || sheets[i].owningElement) == _style) {
             stylesheet = sheets[i];
