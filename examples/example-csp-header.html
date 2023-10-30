@@ -4,7 +4,8 @@
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net 'nonce-random-string' 'nonce-browser-sync'">
+  <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self' https://cdn.jsdelivr.net 'nonce-random-string' 'nonce-browser-sync'; require-trusted-types-for 'script'; trusted-types dompurify"> -->
+  <meta http-equiv="Content-Security-Policy" content="require-trusted-types-for 'script'; trusted-types dompurify">
 </head>
 <body>
 <table width="100%">
@@ -30,6 +31,7 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
+<!-- <script src="./example-csp-policy.js"></script> -->
 
 <script src="../dist/browser/slick.core.js"></script>
 <script src="../dist/browser/slick.interactions.js"></script>

@@ -726,6 +726,11 @@ export class Utils {
 
     if (elementOptions) {
       Object.keys(elementOptions).forEach((elmOptionKey) => {
+        if (elmOptionKey === 'innerHTML') {
+          console.warn(`[SlickGrid] For better CSP (Content Security Policy) support, do not use "innerHTML" directly in "createDomElement('${tagName}', { innerHTML: 'some html'})"` +
+            `, it is better as separate assignment: "const elm = createDomElement('span'); elm.innerHTML = 'some html';"`);
+        }
+
         const elmValue = elementOptions[elmOptionKey as keyof typeof elementOptions];
         if (typeof elmValue === 'object') {
           Object.assign(elm[elmOptionKey as K] as object, elmValue);

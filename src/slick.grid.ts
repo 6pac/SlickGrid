@@ -1537,7 +1537,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       const headerRowTarget = this.hasFrozenColumns() ? ((i <= this._options.frozenColumn!) ? this._headerRowL : this._headerRowR) : this._headerRowL;
 
       const header = Utils.createDomElement('div', { id: `${this.uid + m.id}`, dataset: { id: String(m.id) }, className: 'ui-state-default slick-state-default slick-header-column', title: m.toolTip || '' }, headerTarget);
-      Utils.createDomElement('span', { className: 'slick-column-name', innerHTML: this.sanitizeHtmlString(m.name as string) }, header);
+      const colNameElm = Utils.createDomElement('span', { className: 'slick-column-name' }, header);
+      colNameElm.innerHTML = this.sanitizeHtmlString(m.name as string);
+
       Utils.width(header, m.width! - this.headerColumnWidthDiff);
 
       let classname = m.headerCssClass || null;
@@ -3017,7 +3019,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       // headers have not yet been created, create a new node
       const header = this.getHeader(columnDef) as HTMLElement;
       headerColEl = Utils.createDomElement('div', { id: dummyHeaderColElId, className: 'ui-state-default slick-state-default slick-header-column' }, header);
-      Utils.createDomElement('span', { className: 'slick-column-name', innerHTML: this.sanitizeHtmlString(String(columnDef.name)) }, headerColEl);
+      const colNameElm = Utils.createDomElement('span', { className: 'slick-column-name' }, headerColEl);
+      colNameElm.innerHTML = this.sanitizeHtmlString(String(columnDef.name));
       clone.style.cssText = 'position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;';
       if (columnDef.headerCssClass) {
         headerColEl.classList.add(...(columnDef.headerCssClass || '').split(' '));
@@ -4552,7 +4555,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return;
     }
 
-    const x = Utils.createDomElement('div', { innerHTML: this.sanitizeHtmlString(stringArray.join('')) });
+    const x = document.createElement('div');
+    x.innerHTML = this.sanitizeHtmlString(stringArray.join(''));
+
     let processedRow: number | null | undefined;
     let node: HTMLElement;
     while (Utils.isDefined(processedRow = processedRows.pop())) {
@@ -4612,8 +4617,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     if (!rows.length) { return; }
 
-    const x = Utils.createDomElement('div', { innerHTML: this.sanitizeHtmlString(stringArrayL.join('')) });
-    const xRight = Utils.createDomElement('div', { innerHTML: this.sanitizeHtmlString(stringArrayR.join('')) });
+    const x = document.createElement('div');
+    const xRight = document.createElement('div');
+    x.innerHTML = this.sanitizeHtmlString(stringArrayL.join(''));
+    xRight.innerHTML = this.sanitizeHtmlString(stringArrayR.join(''));
 
     for (let i = 0, ii = rows.length; i < ii; i++) {
       if ((this.hasFrozenRows) && (rows[i] >= this.actualFrozenRow)) {

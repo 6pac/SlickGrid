@@ -11,7 +11,7 @@ var columns = [
 var options = {
   enableCellNavigation: true,
   enableColumnReorder: false,
-  sanitizer: (dirtyHtml) => DOMPurify.sanitize(dirtyHtml, { RETURN_TRUSTED_TYPE: true })
+  sanitizer: (html) => DOMPurify.sanitize(html, { RETURN_TRUSTED_TYPE: true })
 };
 
 document.addEventListener("DOMContentLoaded", function () {
