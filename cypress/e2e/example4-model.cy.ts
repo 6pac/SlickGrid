@@ -1,4 +1,5 @@
 describe('Example 4 - Model', () => {
+  const GRID_ROW_HEIGHT = 25;
   const titles = ['#', 'Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
 
   beforeEach(() => {
@@ -19,6 +20,15 @@ describe('Example 4 - Model', () => {
       .find('.slick-header-columns')
       .children()
       .each(($child, index) => expect($child.text()).to.eq(titles[index]));
+  });
+
+  it('should expect first row to include "Task 0" and other specific properties', () => {
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(1)`).should('contain', 'Task 0');
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(2)`).should('contain', '5 days');
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(3) .percent-complete-bar`).should('exist');
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(4)`).should('contain', '01/01/2009');
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(5)`).should('contain', '01/05/2009');
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(6)`).find('.sgi.sgi-checkbox-intermediate').should('have.length', 1);
   });
 
   it('should display the text "Showing all 50000 rows" without Pagination', () => {
@@ -115,5 +125,14 @@ describe('Example 4 - Model', () => {
       expect(win.console.log).to.be.calledWith('on Before Paging Info Changed - Previous Paging:: ', { pageSize: 50, pageNum: 1, totalRows: 50000, totalPages: 1000 });
       expect(win.console.log).to.be.calledWith('on After Paging Info Changed - New Paging:: ', { pageSize: 50, pageNum: 999, totalRows: 50000, totalPages: 1000 });
     });
+  });
+
+  it('should expect first row to include "Task 49950" and other specific properties', () => {
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(1)`).should('contain', 'Task 49950');
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(2)`).should('contain', '5 days');
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(3) .percent-complete-bar`).should('exist');
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(4)`).should('contain', '01/01/2009');
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(5)`).should('contain', '01/05/2009');
+    cy.get(`[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(6)`).find('.sgi.sgi-checkbox-intermediate').should('have.length', 1);
   });
 });
