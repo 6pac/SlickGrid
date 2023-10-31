@@ -155,6 +155,13 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   enableColumnReorder?: boolean | ColumnReorderFunction<C>;
 
   /**
+   * Defaults to true, do we want to allow passing HTML string to cell/row rendering by using `innerHTML`.
+   * When this is enabled and input is a string, it will use `innerHTML = 'some html'` to render the input, however when disable it will use `textContent = 'some html'`.
+   * Note: for strict CSP, you would want to disable this option and convert all your custom Formatters to return an HTMLElement instead of a string
+   */
+  enableHtmlRendering?: boolean;
+
+  /**
    * Do we want to always enable the mousewheel scroll handler?
    * In other words, do we want the mouse scrolling would work from anywhere.
    * Typically we should only enable it when using a Frozen/Pinned grid and if it does detect it to be a frozen grid,

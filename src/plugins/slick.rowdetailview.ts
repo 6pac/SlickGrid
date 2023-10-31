@@ -1,5 +1,5 @@
 import { SlickEvent as SlickEvent_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
-import type { Column, DOMEvent, FormatterResultObject, GridOption, OnAfterRowDetailToggleArgs, OnBeforeRowDetailToggleArgs, OnRowBackToViewportRangeArgs, OnRowDetailAsyncEndUpdateArgs, OnRowDetailAsyncResponseArgs, OnRowOutOfViewportRangeArgs, RowDetailViewOption, UsabilityOverrideFn } from '../models/index';
+import type { Column, DOMEvent, FormatterHtmlResultObject, FormatterResultObject, GridOption, OnAfterRowDetailToggleArgs, OnBeforeRowDetailToggleArgs, OnRowBackToViewportRangeArgs, OnRowDetailAsyncEndUpdateArgs, OnRowDetailAsyncResponseArgs, OnRowOutOfViewportRangeArgs, RowDetailViewOption, UsabilityOverrideFn } from '../models/index';
 import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
 
@@ -630,7 +630,7 @@ export class SlickRowDetailView {
   }
 
   /** The cell Formatter that shows the icon that will be used to toggle the Row Detail */
-  protected detailSelectionFormatter(row: number, _cell: number, _val: any, _column: Column, dataContext: any, grid: SlickGrid): FormatterResultObject | string {
+  protected detailSelectionFormatter(row: number, _cell: number, _val: any, _column: Column, dataContext: any, grid: SlickGrid): FormatterResultObject | FormatterHtmlResultObject | string {
     if (!this.checkExpandableOverride(row, dataContext, grid)) {
       return '';
     } else {

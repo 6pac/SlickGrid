@@ -300,7 +300,10 @@
     function tooltipFormatter(row, cell, value, column, dataContext) {
       const tooltipTitle = 'Custom Tooltip';
       const effortDrivenHtml = Slick.Formatters.Checkmark(row, cell, dataContext.effortDriven, column, dataContext);
-      const completionBarHtml = Slick.Formatters.PercentCompleteBar(row, cell, dataContext.percentComplete, column, dataContext);
+      let completionBarHtml = Slick.Formatters.PercentCompleteBar(row, cell, dataContext.percentComplete, column, dataContext);
+      if (completionBarHtml instanceof HTMLElement) {
+        completionBarHtml = completionBarHtml.outerHTML;
+      }
       return '<div class="bold">' + tooltipTitle + '</div>'
         + '<div class="tooltip-2cols-row"><div>Id:</div> <div>' + dataContext.id + '</div></div>'
         + '<div class="tooltip-2cols-row"><div>Title:</div> <div>' + dataContext.title + '</div></div>'
@@ -313,7 +316,10 @@
 
       // use a 2nd Formatter to get the percent completion
       // any properies provided from the `asyncPost` will end up in the `__params` property (unless a different prop name is provided via `asyncParamsPropName`)
-      const completionBar = Slick.Formatters.PercentCompleteBar(row, cell, dataContext.percentComplete, column, dataContext);
+      let completionBar = Slick.Formatters.PercentCompleteBar(row, cell, dataContext.percentComplete, column, dataContext);
+      if (completionBar instanceof HTMLElement) {
+        completionBar = completionBar.outerHTML;
+      }
       const out = '<div class="bold">' + tooltipTitle + '</div>'
         + '<div class="tooltip-2cols-row"><div>Completion:</div> <div>' + completionBar + '</div></div>'
         + '<div class="tooltip-2cols-row"><div>Lifespan:</div> <div>' + dataContext.__params.lifespan.toFixed(2) + '</div></div>'

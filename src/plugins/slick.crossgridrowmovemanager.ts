@@ -1,5 +1,5 @@
 import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
-import type { Column, DOMEvent, DragRowMove, FormatterResultObject, CrossGridRowMoveManagerOption, UsabilityOverrideFn } from '../models/index';
+import type { Column, DOMEvent, DragRowMove, FormatterResultObject, CrossGridRowMoveManagerOption, UsabilityOverrideFn, FormatterHtmlResultObject } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -256,7 +256,7 @@ export class SlickCrossGridRowMoveManager {
     };
   }
 
-  protected moveIconFormatter(row: number, _cell: number, _val: any, _column: Column, dataContext: any, grid: SlickGrid): FormatterResultObject | string {
+  protected moveIconFormatter(row: number, _cell: number, _val: any, _column: Column, dataContext: any, grid: SlickGrid): FormatterResultObject | FormatterHtmlResultObject | string {
     if (!this.checkUsabilityOverride(row, dataContext, grid)) {
       return '';
     } else {
