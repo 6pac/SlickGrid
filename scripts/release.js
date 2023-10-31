@@ -140,7 +140,10 @@ const childProcess = require('./child-process.js');
         } else if (whichBumpType.includes('beta')) {
           publishTagName = 'beta';
         }
-        await npmUtils.publishPackage(publishTagName, { cwd, dryRun: options.dryRun });
+
+        const otp = await promptOtp(dryRunPrefix);
+
+        await npmUtils.publishPackage(publishTagName, { cwd, otp, dryRun: options.dryRun });
         console.log(`${chalk.bgMagenta(dryRunPrefix)} 🔗 https://www.npmjs.com/package/${pkg.name} 📦 (npm)`.trim())
       }
 
@@ -191,6 +194,16 @@ function bumpVersion(bump) {
   return semver.inc(oldVersion, bump);
 }
 
+async function promptOtp(dryRunPrefix = '') {
+  const otp = await getConsoleInput(`${chalk.bgMagenta(dryRunPrefix)} If you have an OTP (One-Time-Password), type it now or press "Enter" to continue: \n`);
+  if (!otp) {
+    console.log('No OTP provided, continuing to next step...');
+  } else if (otp.length > 0 && otp.length < 6) {
+    throw new Error('OTP must be 6 exactly digits.');
+  }
+  return otp;
+}
+
 /**
  * Update version property into "package.json"
  * @param {String} newVersion
@@ -215,7 +228,7 @@ function updatePackageVersion(newVersion) {
 function updateSlickGridVersion(newVersion) {
   const slickGridJs = fs.readFileSync(path.resolve(__dirname, '../slick.grid.js'), { encoding: 'utf8', flag: 'r' });
 
-  // replaces version in 2 areas (a version could be "2.4.45" or "2.4.45-alpha.0"): 
+  // replaces version in 2 areas (a version could be "2.4.45" or "2.4.45-alpha.0"):
   // 1- in top comments, ie: SlickGrid v2.4.45
   // 2- in public API definitions, ie: "slickGridVersion": "2.4.45",
   const updatedSlickGridJs = slickGridJs
