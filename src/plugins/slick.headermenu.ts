@@ -220,7 +220,7 @@ export class SlickHeaderMenu implements SlickPlugin {
     const menu = column?.header?.menu as HeaderMenuItems;
 
     if (menu?.items) {
-      console.warn('[SlickGrid] Header Menu "items" prperty was deprecated in favor of "commandItems" to align with all other Menu plugins.');
+      console.warn('[SlickGrid] Header Menu "items" property was deprecated in favor of "commandItems" to align with all other Menu plugins.');
     }
 
     if (menu) {
