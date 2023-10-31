@@ -2203,7 +2203,7 @@ if (typeof Slick === "undefined") {
         _bindingEventService.unbindByEventName(column, 'mouseleave', handleHeaderMouseHoverOff);
       });
 
-      _container.replaceChildren();
+      utils.emptyElement(_container);
       _container.classList.remove(uid);
 
       if (shouldDestroyAllElements) {
