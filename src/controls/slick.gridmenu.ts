@@ -167,7 +167,7 @@ export class SlickGridMenu {
     subMenuOpenByEvent: 'mouseover',
     syncResizeTitle: 'Synchronous resize',
     useClickToRepositionMenu: true,
-    headerColumnValueExtractor: (columnDef: Column) => columnDef.name as string,
+    headerColumnValueExtractor: (columnDef: Column) => columnDef.name instanceof HTMLElement ? columnDef.name.innerHTML : columnDef.name || '',
   };
 
   constructor(protected columns: Column[], protected readonly grid: SlickGrid, gridOptions: GridOption) {
@@ -565,10 +565,13 @@ export class SlickGridMenu {
     for (let i = 0; i < this.columns.length; i++) {
       columnId = this.columns[i].id;
       excludeCssClass = this.columns[i].excludeFromGridMenu ? 'hidden' : '';
+      const colName: string = this.columns[i].name instanceof HTMLElement
+        ? (this.columns[i].name as HTMLElement).innerHTML
+        : (this.columns[i].name || '') as string;
 
       const liElm = document.createElement('li');
       liElm.className = excludeCssClass;
-      liElm.ariaLabel = this.columns[i]?.name || '';
+      liElm.ariaLabel = colName;
 
       const checkboxElm = document.createElement('input');
       checkboxElm.type = 'checkbox';

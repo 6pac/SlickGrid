@@ -55,7 +55,7 @@ export class SlickColumnPicker {
     hideSyncResizeButton: false,
     forceFitTitle: 'Force fit columns',
     syncResizeTitle: 'Synchronous resize',
-    headerColumnValueExtractor: (columnDef: Column) => columnDef.name || ''
+    headerColumnValueExtractor: (columnDef: Column) => columnDef.name instanceof HTMLElement ? columnDef.name.innerHTML : columnDef.name || ''
   };
 
   constructor(protected columns: Column[], protected readonly grid: SlickGrid, gridOptions: GridOption) {
@@ -131,11 +131,14 @@ export class SlickColumnPicker {
     let columnId, columnLabel, excludeCssClass;
     for (let i = 0; i < this.columns.length; i++) {
       columnId = this.columns[i].id;
+      const colName: string = this.columns[i].name instanceof HTMLElement
+        ? (this.columns[i].name as HTMLElement).innerHTML
+        : (this.columns[i].name || '') as string;
       excludeCssClass = this.columns[i].excludeFromColumnPicker ? 'hidden' : '';
 
       const liElm = document.createElement('li');
       liElm.className = excludeCssClass;
-      liElm.ariaLabel = this.columns[i]?.name || '';
+      liElm.ariaLabel = colName;
 
       const checkboxElm = document.createElement('input');
       checkboxElm.type = 'checkbox';
