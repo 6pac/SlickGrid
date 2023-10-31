@@ -5,6 +5,7 @@ import type {
   Editor,
   EditorValidator,
   Formatter,
+  FormatterHtmlResultObject,
   FormatterResultObject,
   GroupTotalsFormatter,
   Grouping,
@@ -25,7 +26,7 @@ type Join<T extends any[], D extends string> =
   F extends string ? string extends F ? string : `${F}${D}${Join<R, D>}` : never : string;
 /* eslint-enable @typescript-eslint/indent */
 
-export type FormatterOverrideCallback = (row: number, cell: number, val: any, columnDef: Column, item: any, grid: SlickGrid) => string | FormatterResultObject;
+export type FormatterOverrideCallback = (row: number, cell: number, val: any, columnDef: Column, item: any, grid: SlickGrid) => string | FormatterResultObject | FormatterHtmlResultObject;
 
 export interface Column<TData = any> {
   /** Defaults to false, should we always render the column? */
@@ -143,7 +144,7 @@ export interface Column<TData = any> {
   minWidth?: number;
 
   /** Column Title Name to be displayed in the Grid (UI) */
-  name?: string;
+  name?: string | HTMLElement;
 
   /** column offset width */
   offsetWidth?: number;

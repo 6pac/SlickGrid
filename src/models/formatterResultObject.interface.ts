@@ -6,8 +6,13 @@ export interface FormatterResultObject {
   removeClasses?: string;
 
   /** Text to be displayed in the cell, basically the formatter output. */
-  text: string;
+  text: string | HTMLElement;
 
   /** Optional tooltip text when hovering the cell div container. */
   toolTip?: string;
+}
+
+export interface FormatterHtmlResultObject extends Omit<FormatterResultObject, 'text'> {
+  /** Text to be displayed in the cell, basically the formatter output. */
+  html: HTMLElement;
 }

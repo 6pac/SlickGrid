@@ -1,0 +1,459 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <title>SlickGrid example 4: Model</title>
+  <link rel="stylesheet" href="../dist/styles/css/slick.customtooltip.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.pager.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css" type="text/css"/>
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self' 'unsafe-inline' 'unsafe-eval' https://cdn.jsdelivr.net; img-src 'self' data:; font-src data:">
+  <style>
+
+    .cell-title {
+      font-weight: 600;
+    }
+
+    .cell-effort-driven {
+      justify-content: center;
+    }
+
+    .cell-selection {
+      border-right-color: silver;
+      border-right-style: solid;
+      color: gray;
+      text-align: right;
+      font-size: 10px;
+      padding-right: 6px;
+    }
+
+    .slick-row.selected .cell-selection {
+      background-color: transparent; /* show default selected row background */
+    }
+    .slick-header-column:nth-child(1) {
+      justify-content: center;
+    }
+    .alpine-theme .slick-column-groupable {
+      height: 1em;
+      width: 1em;
+      mask-size: 1em;
+      -webkit-mask-size: 1em;
+    }
+    .btn-alpine-theme {
+      background-color: gray;
+      color: white;
+      border-width: 1px;
+      border-radius: 2px;
+      height: 22px;
+    }
+    .sgi-search:hover {
+      cursor: pointer;
+      color: darkcyan;
+    }
+    /* change to flex-end for RTL support */
+    .slick-container {
+      --alpine-header-justify-content: flex-start;
+      --alpine-cell-justify-content: flex-start;
+    }
+    .tooltip-2cols-row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      grid-template-rows: 1fr;
+      column-gap: 5px;
+      line-height: 20px;
+    }
+  </style>
+</head>
+<body>
+<div style="position:relative">
+  <div style="width:625px;">
+    <div class="grid-header" style="width:100%">
+      <label>SlickGrid</label>
+      <span style="float:right;margin:0px 4px auto 6px;cursor:pointer" class="sgi sgi-search" title="Toggle search panel"></span>
+    </div>
+    <div id="myGrid" class="slick-container alpine-theme" style="width:100%;height:500px;"></div>
+    <div id="pager" style="width:100%;"></div>
+  </div>
+
+  <div class="options-panel">
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Search:
+    </h2>
+    <div style="padding:6px;">
+      <label style="width:200px;float:left">Show tasks with % at least: </label>
+
+      <div style="padding:2px;">
+        <input style="width:100px;display:inline-block;" id="pcSlider" type="range" min="1" max="100" value="1">
+      </div>
+      <br/>
+      <label style="width:200px;float:left">And title including:</label>
+      <input type=text id="txtSearch" style="width:100px;">
+      <br/><br/>
+      <button id="btnSelectRows">Select first 10 rows</button>
+
+      <br/>
+
+      <h2>Demonstrates:</h2>
+      <ul>
+        <li>a filtered Model (DataView) as a data source instead of a simple array</li>
+        <li>grid reacting to model events (onRowCountChanged, onRowsChanged)</li>
+        <li>
+          <b>FAST</b> DataView recalculation and <b>real-time</b> grid updating in response to data changes.<br/>
+          The grid holds <b>50'000</b> rows, yet you are able to sort, filter, scroll, navigate and edit as if it had 50
+          rows.
+        </li>
+        <li>adding new rows, bidirectional sorting</li>
+        <li>column options: cannotTriggerInsert</li>
+        <li>events: onCellChange, onAddNewRow, onKeyDown, onSelectedRowsChanged, onSort</li>
+        <li><font color=red>NOTE:</font> all filters are immediately applied to new/edited rows</li>
+        <li>Handling row selection against model changes.</li>
+        <li>Paging.</li>
+        <li>inline filter panel</li>
+      </ul>
+      <h2>View Source:</h2>
+      <ul>
+          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example4-model-esm.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div id="inlineFilterPanel" style="display:none;background:#f6f6f6;color:black;height:100%;padding:4px">
+  Show tasks with title including <input type="text" id="txtSearch2">
+  and % at least &nbsp;
+  <input style="width:100px;display:inline-block;" id="pcSlider2" type="range" min="1" max="100" value="1">
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
+
+<script type="module">
+import {
+  Editors,
+  Formatters,
+  SlickGlobalEditorLock,
+  SlickRowSelectionModel,
+  SlickColumnPicker,
+  SlickDataView,
+  SlickCustomTooltip,
+  SlickGridPager,
+  SlickGrid,
+  Utils,
+} from '../dist/esm/index.js';
+// OR preferably use the code below when installing from npm
+// import { SlickGrid, ... } from 'slickgrid';
+
+let dataView;
+let grid;
+let data = [];
+const titleElm = document.createElement('span');
+titleElm.className = 'bold red';
+titleElm.textContent = 'Title';
+
+let columns = [
+  {id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 45, cannotTriggerInsert: true, resizable: false, selectable: false, excludeFromColumnPicker: true },
+  {id: "title", name: titleElm, field: "title", width: 110, minWidth: 100, cssClass: "cell-title", editor: Editors.LongText, validator: requiredFieldValidator, sortable: true},
+  {id: "duration", name: "Duration", field: "duration", editor: Editors.Text, sortable: true},
+  {id: "%", defaultSortAsc: false, name: "% Complete", field: "percentComplete", width: 95, formatter: percentCompleteBarFormatter, editor: Editors.PercentComplete, sortable: true},
+  {id: "start", name: "Start", field: "start", minWidth: 60, editor: Editors.Flatpickr, sortable: true},
+  {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Editors.Flatpickr, sortable: true},
+  {id: "effort-driven", name: "Effort Driven", width: 120, minWidth: 20, cssClass: "cell-effort-driven", field: "effortDriven", formatter: checkboxFormatter, editor: Editors.Checkbox, cannotTriggerInsert: true, sortable: true}
+];
+
+let options = {
+  columnPicker: {
+    columnTitle: "Columns",
+    hideForceFitButton: false,
+    hideSyncResizeButton: false,
+    forceFitTitle: "Force fit columns",
+    syncResizeTitle: "Synchronous resize",
+  },
+  editable: true,
+  enableAddRow: true,
+  enableCellNavigation: true,
+  asyncEditorLoading: true,
+  forceFitColumns: false,
+  enableHtmlRendering: false, // disabling HTML rendering means that `innerHTML` will not be used by SlickGrid (better for CSP)
+  topPanelHeight: 35,
+  rowHeight: 28,
+  // Custom Tooltip options can be defined in a Column or Grid Options or a mixed of both (first options found wins)
+  customTooltip: {
+    formatter: tooltipFormatter,
+  }
+};
+
+let sortcol = "title";
+let sortdir = 1;
+let percentCompleteThreshold = 0;
+let searchString = "";
+
+function checkboxFormatter(_row, _cell, value) {
+  const elm = document.createElement('span');
+  elm.className = `sgi sgi-checkbox-${value ? 'intermediate' : 'blank-outline'}`;
+  return elm;
+}
+
+function checkmarkFormatter(_row, _cell, value) {
+  const elm = document.createElement('span');
+  elm.className = value ? 'sgi sgi-check' : '';
+  return elm;
+};
+
+function percentCompleteBarFormatter(_row, _cell, value) {
+  if (Utils.isDefined(value) && value !== '') {
+    const color = value < 30
+      ? 'red'
+      : (value < 70)
+        ? 'silver'
+        : 'green';
+    const elm = document.createElement('span');
+    elm.className = 'percent-complete-bar';
+    elm.style.background = color;
+    elm.style.width = `${value}%`;
+    elm.title = `${value}%`;
+    return elm;
+  }
+  return '';
+}
+
+function tooltipFormatter(row, cell, value, column, dataContext) {
+  const tooltipContainer = document.createElement('div');
+  const tooltipTitleDiv = document.createElement('div');
+  tooltipTitleDiv.className = 'bold';
+  tooltipTitleDiv.textContent = 'Custom Tooltip';
+  tooltipContainer.appendChild(tooltipTitleDiv);
+  const items = [
+    { label: 'Id:', value: dataContext.num },
+    { label: 'Title:', value: dataContext.title },
+    { label: 'Completion:', value: percentCompleteBarFormatter(row, cell, dataContext.percentComplete, column, dataContext) },
+    { label: 'Effort Driven:', value: checkmarkFormatter(row, cell, dataContext.effortDriven, column, dataContext) },
+  ]
+
+  for (const item of items) {
+    const containerDiv = document.createElement('div');
+    containerDiv.className = 'tooltip-2cols-row';
+
+    const labelDiv = document.createElement('div');
+    labelDiv.textContent = item.label;
+
+    const valDiv = document.createElement('div');
+    if (item.value instanceof HTMLElement) {
+      valDiv.appendChild(item.value);
+    } else {
+      valDiv.textContent = item.value;
+    }
+    containerDiv.appendChild(labelDiv);
+    containerDiv.appendChild(valDiv);
+    tooltipContainer.appendChild(containerDiv);
+  }
+  return tooltipContainer;
+}
+
+function changeCSS(prevFilePath, newFilePath) {
+  let headerIndex = 0;
+  let previousCssElm = document.getElementsByTagName("head")[0].querySelector(`link[href="${prevFilePath}"]`);
+  if (previousCssElm) {
+    previousCssElm.setAttribute('href', newFilePath);
+  }
+}
+
+function requiredFieldValidator(value) {
+  if (value == null || value == undefined || !value.length) {
+    return {valid: false, msg: "This is a required field"};
+  }
+  else {
+    return {valid: true, msg: null};
+  }
+}
+
+function myFilter(item, args) {
+  if (item["percentComplete"] < args.percentCompleteThreshold) {
+    return false;
+  }
+
+  if (args.searchString != "" && item["title"].indexOf(args.searchString) == -1) {
+    return false;
+  }
+
+  return true;
+}
+
+function percentCompleteSort(a, b) {
+  return a["percentComplete"] - b["percentComplete"];
+}
+
+function comparer(a, b) {
+  let x = a[sortcol], y = b[sortcol];
+  return (x == y ? 0 : (x > y ? 1 : -1));
+}
+
+function toggleFilterRow() {
+  grid.setTopPanelVisibility(!grid.getOptions().showTopPanel);
+}
+
+document.addEventListener("DOMContentLoaded", () => {
+  // prepare the data
+  for (let i = 0; i < 50000; i++) {
+    let d = (data[i] = {});
+
+    d["id"] = "id_" + i;
+    d["num"] = i;
+    d["title"] = "Task " + i;
+    d["duration"] = "5 days";
+    d["percentComplete"] = Math.round(Math.random() * 100);
+    d["start"] = "01/01/2009";
+    d["finish"] = "01/05/2009";
+    d["effortDriven"] = (i % 5 == 0);
+  }
+
+  dataView = new SlickDataView({ inlineFilters: true });
+  grid = new SlickGrid("#myGrid", dataView, columns, options);
+  grid.setSelectionModel(new SlickRowSelectionModel());
+
+  let pager = new SlickGridPager(dataView, grid, "#pager");
+  let columnpicker = new SlickColumnPicker(columns, grid, options);
+
+  const customTooltipPlugin = new SlickCustomTooltip();
+  grid.registerPlugin(customTooltipPlugin);
+
+  // move the filter panel defined in a hidden div into grid top panel
+  let topPanel = grid.getTopPanel();
+  const topPanelLeftElm = document.querySelector("#inlineFilterPanel");
+  topPanel.appendChild(topPanelLeftElm);
+  topPanelLeftElm.style.display = 'block';
+
+  grid.onCellChange.subscribe(function (e, args) {
+    dataView.updateItem(args.item.id, args.item);
+  });
+
+  grid.onAddNewRow.subscribe(function (e, args) {
+    let item = {"num": data.length, "id": "new_" + (Math.round(Math.random() * 10000)), "title": "New task", "duration": "1 day", "percentComplete": 0, "start": "01/01/2009", "finish": "01/01/2009", "effortDriven": false};
+    Utils.extend(item, args.item);
+    dataView.addItem(item);
+  });
+
+  grid.onKeyDown.subscribe(function (e) {
+    // select all rows on ctrl-a
+    if (e.which != 65 || !e.ctrlKey) {
+      return false;
+    }
+
+    let rows = [];
+    for (let i = 0; i < dataView.getLength(); i++) {
+      rows.push(i);
+    }
+
+    grid.setSelectedRows(rows);
+    e.preventDefault();
+  });
+
+  grid.onSort.subscribe(function (e, args) {
+    sortdir = args.sortAsc ? 1 : -1;
+    sortcol = args.sortCol.field;
+
+    // using native sort with comparer
+    dataView.sort(comparer, args.sortAsc);
+  });
+
+  // wire up model events to drive the grid
+  // !! both dataView.onRowCountChanged and dataView.onRowsChanged MUST be wired to correctly update the grid
+  // see Issue#91
+  dataView.onRowCountChanged.subscribe(function (e, args) {
+    grid.updateRowCount();
+    grid.render();
+  });
+
+  dataView.onRowsChanged.subscribe(function (e, args) {
+    grid.invalidateRows(args.rows);
+    grid.render();
+  });
+
+  dataView.onPagingInfoChanged.subscribe(function (e, pagingInfo) {
+    grid.updatePagingStatusFromView( pagingInfo );
+
+    // show the pagingInfo but remove the dataView from the object, just for the Cypress E2E test
+    delete pagingInfo.dataView;
+    console.log('on After Paging Info Changed - New Paging:: ', pagingInfo);
+  });
+
+  dataView.onBeforePagingInfoChanged.subscribe(function (e, previousPagingInfo) {
+    // show the previous pagingInfo but remove the dataView from the object, just for the Cypress E2E test
+    delete previousPagingInfo.dataView;
+    console.log('on Before Paging Info Changed - Previous Paging:: ', previousPagingInfo);
+  });
+
+  let h_runfilters = null;
+
+  // wire up the slider to apply the filter to the model
+  let slider = document.getElementById("pcSlider");
+  let slider2 = document.getElementById("pcSlider2");
+  let sliderCallback = function() {
+    SlickGlobalEditorLock.cancelCurrentEdit();
+
+    if (percentCompleteThreshold != this.value) {
+      window.clearTimeout(h_runfilters);
+      h_runfilters = window.setTimeout(updateFilter, 10);
+      percentCompleteThreshold = this.value;
+    }
+  }
+
+  slider.oninput = sliderCallback;
+  slider2.oninput = sliderCallback;
+
+  // wire up the search textbox to apply the filter to the model
+  document.querySelectorAll("#txtSearch,#txtSearch2").forEach(elm => elm.addEventListener('keyup', (e) => {
+    SlickGlobalEditorLock.cancelCurrentEdit();
+
+    // clear on Esc
+    if (e.which == 27) e.target.value = '';
+
+    searchString = (e.target.value || '').trim();
+    updateFilter();
+    dataView.refresh();
+  }));
+
+  function updateFilter() {
+    dataView.setFilterArgs({
+      percentCompleteThreshold,
+      searchString
+    });
+    dataView.refresh();
+  }
+
+  document.querySelector("#btnSelectRows").addEventListener('click', function () {
+    if (!SlickGlobalEditorLock.commitCurrentEdit()) {
+      return;
+    }
+    let rows = [];
+
+    for (let i = 0; i < 10 && i < dataView.getLength(); i++) {
+      rows.push(i);
+    }
+    grid.setSelectedRows(rows);
+  });
+
+  // initialize the model after all the events have been hooked up
+  dataView.beginUpdate();
+  dataView.setItems(data);
+  dataView.setFilterArgs({
+    percentCompleteThreshold,
+    searchString
+  });
+  dataView.setFilter(myFilter);
+  dataView.endUpdate();
+
+  // if you don't want the items that are not visible (due to being filtered out
+  // or being on a different page) to stay selected, pass 'false' to the second arg
+  dataView.syncGridSelection(grid, true);
+
+  document.querySelector('.sgi-search').addEventListener('click', toggleFilterRow);
+});
+</script>
+</body>
+</html>

@@ -17,6 +17,7 @@ import type {
   EditController,
   Formatter,
   FormatterOverrideCallback,
+  FormatterHtmlResultObject,
   FormatterResultObject,
   GridOption as BaseGridOption,
   InteractionBase,
@@ -209,6 +210,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     explicitInitialization: false,
     rowHeight: 25,
     defaultColumnWidth: 80,
+    enableHtmlRendering: true,
     enableAddRow: false,
     leaveSpaceForNewRows: false,
     editable: false,
@@ -511,6 +513,26 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   /** Initializes the grid. */
   init() {
     this.finishInitialization();
+  }
+
+  /**
+   * Apply HTML code by 3 different ways depending on what is provided as input and what options are enabled.
+   * 1. value is an HTMLElement, then simply append the HTML to the target element.
+   * 2. value is string and `enableHtmlRendering` is enabled, then use `target.innerHTML = value;`
+   * 3. value is string and `enableHtmlRendering` is disabled, then use `target.textContent = value;`
+   * @param target - target element to apply to
+   * @param val - input value can be either a string or an HTMLElement
+   */
+  applyHtmlCode(target: HTMLElement, val: string | HTMLElement) {
+    if (val instanceof HTMLElement) {
+      target.appendChild(val);
+    } else {
+      if (this._options.enableHtmlRendering) {
+        target.innerHTML = this.sanitizeHtmlString(val as string);
+      } else {
+        target.textContent = this.sanitizeHtmlString(val as string);
+      }
+    }
   }
 
   protected initialize() {
@@ -1286,7 +1308,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {String} [title] New column name.
    * @param {String} [toolTip] New column tooltip.
    */
-  updateColumnHeader(columnId: number | string, title?: string, toolTip?: string) {
+  updateColumnHeader(columnId: number | string, title?: string | HTMLElement, toolTip?: string) {
     if (!this.initialized) { return; }
     const idx = this.getColumnIndex(columnId);
     if (!Utils.isDefined(idx)) {
@@ -1311,7 +1333,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       header.setAttribute('title', toolTip || '');
       if (title !== undefined) {
-        header.children[0].innerHTML = this.sanitizeHtmlString(title);
+        this.applyHtmlCode(header.children[0], title);
       }
 
       this.trigger(this.onHeaderCellRendered, {
@@ -1539,7 +1561,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       const header = Utils.createDomElement('div', { id: `${this.uid + m.id}`, dataset: { id: String(m.id) }, className: 'ui-state-default slick-state-default slick-header-column', title: m.toolTip || '' }, headerTarget);
       const colNameElm = Utils.createDomElement('span', { className: 'slick-column-name' }, header);
-      colNameElm.innerHTML = this.sanitizeHtmlString(m.name as string);
+      this.applyHtmlCode(colNameElm, m.name!);
 
       Utils.width(header, m.width! - this.headerColumnWidthDiff);
 
@@ -2936,7 +2958,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     let len: number;
     let max = 0;
     let maxText = '';
-    let formatterResult: string | FormatterResultObject;
+    let formatterResult: string | FormatterResultObject | FormatterHtmlResultObject | HTMLElement;
     let val: any;
 
     // get mode - if text only display, use canvas otherwise html element
@@ -3020,7 +3042,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       const header = this.getHeader(columnDef) as HTMLElement;
       headerColEl = Utils.createDomElement('div', { id: dummyHeaderColElId, className: 'ui-state-default slick-state-default slick-header-column' }, header);
       const colNameElm = Utils.createDomElement('span', { className: 'slick-column-name' }, headerColEl);
-      colNameElm.innerHTML = this.sanitizeHtmlString(String(columnDef.name));
+      this.applyHtmlCode(colNameElm, columnDef.name!);
       clone.style.cssText = 'position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;';
       if (columnDef.headerCssClass) {
         headerColEl.classList.add(...(columnDef.headerCssClass || '').split(' '));
@@ -3843,7 +3865,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     let value: any = null;
-    let formatterResult: FormatterResultObject | string = '';
+    let formatterResult: FormatterResultObject | FormatterHtmlResultObject | HTMLElement | string = '';
     if (item) {
       value = this.getDataItemValueForColumn(item, m);
       formatterResult = this.getFormatter(row, m)(row, cell, value, m, item, this as unknown as SlickGridModel);
@@ -3875,7 +3897,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     // if there is a corresponding row (if not, this is the Add New row or this data hasn't been loaded yet)
     if (item) {
-      stringArray.push((Object.prototype.toString.call(formatterResult) !== '[object Object]' ? formatterResult : (formatterResult as FormatterResultObject).text) as string);
+      let cellResult = (Object.prototype.toString.call(formatterResult) !== '[object Object]' ? formatterResult : (formatterResult as FormatterHtmlResultObject).html || (formatterResult as FormatterResultObject).text);
+      if (cellResult instanceof HTMLElement) {
+        cellResult = cellResult.outerHTML;
+      }
+      stringArray.push(cellResult as string);
     }
 
     stringArray.push('</div>');
@@ -4016,13 +4042,16 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /** Apply a Formatter Result to a Cell DOM Node */
-  applyFormatResultToCellNode(formatterResult: FormatterResultObject | string, cellNode: HTMLDivElement, suppressRemove?: boolean) {
+  applyFormatResultToCellNode(formatterResult: FormatterResultObject | FormatterHtmlResultObject | string | HTMLElement, cellNode: HTMLDivElement, suppressRemove?: boolean) {
     if (formatterResult === null || formatterResult === undefined) { formatterResult = ''; }
     if (Object.prototype.toString.call(formatterResult) !== '[object Object]') {
-      cellNode.innerHTML = this.sanitizeHtmlString(formatterResult as string);
+      this.applyHtmlCode(cellNode, formatterResult as string | HTMLElement);
       return;
     }
-    cellNode.innerHTML = this.sanitizeHtmlString((formatterResult as FormatterResultObject).text);
+
+    const formatterVal: HTMLElement | string = (formatterResult as FormatterHtmlResultObject).html as HTMLElement || (formatterResult as FormatterResultObject).text as string;
+    this.applyHtmlCode(cellNode, formatterVal);
+
     if ((formatterResult as FormatterResultObject).removeClasses && !suppressRemove) {
       const classes = (formatterResult as FormatterResultObject).removeClasses!.split(' ');
       classes.forEach((c) => cellNode.classList.remove(c));
@@ -4491,7 +4520,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const processedRows: number[] = [];
     let cellsAdded: number;
     let totalCellsAdded = 0;
-    let colspan;
+    let colspan: number | string;
 
     for (let row = range.top as number, btm = range.bottom as number; row <= btm; row++) {
       cacheEntry = this.rowsCache[row];
@@ -4536,12 +4565,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           }
         }
 
-        if (this.columnPosRight[Math.min(ii - 1, i + colspan - 1)] > range.leftPx) {
-          this.appendCellHtml(stringArray, row, i, colspan, d);
+        const colspanNb = colspan as number; // at this point colspan is for sure a number
+        if (this.columnPosRight[Math.min(ii - 1, i + colspanNb - 1)] > range.leftPx) {
+          this.appendCellHtml(stringArray, row, i, colspanNb, d);
           cellsAdded++;
         }
 
-        i += (colspan > 1 ? colspan - 1 : 0);
+        i += (colspanNb > 1 ? colspanNb - 1 : 0);
       }
 
       if (cellsAdded) {

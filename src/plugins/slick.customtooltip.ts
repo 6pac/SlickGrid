@@ -1,4 +1,4 @@
-import type { CancellablePromiseWrapper, Column, CustomTooltipOption, DOMEvent, Formatter, GridOption } from '../models/index';
+import type { CancellablePromiseWrapper, Column, CustomTooltipOption, DOMEvent, Formatter, FormatterHtmlResultObject, FormatterResultObject, GridOption } from '../models/index';
 import { SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
 import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
@@ -78,7 +78,7 @@ type CellType = 'slick-cell' | 'slick-header-column' | 'slick-headerrow-column';
  * @param {boolean} [options.className="slick-custom-tooltip"]  - custom tooltip class name
  * @param {boolean} [options.offsetTop=5]                       - tooltip offset from the top
  */
-export class CustomTooltip {
+export class SlickCustomTooltip {
   // --
   // public API
   pluginName = 'CustomTooltip' as const;
@@ -429,9 +429,12 @@ export class CustomTooltip {
    */
   protected parseFormatterAndSanitize(formatterOrText: Formatter | string | undefined, cell: { row: number; cell: number; }, value: any, columnDef: Column, item: unknown): string {
     if (typeof formatterOrText === 'function') {
-      const tooltipText = formatterOrText(cell.row, cell.cell, value, columnDef, item, this._grid);
-      const formatterText = (typeof tooltipText === 'object' && tooltipText?.text) ? tooltipText.text : (typeof tooltipText === 'string' ? tooltipText : '');
-      return this._grid.sanitizeHtmlString(formatterText);
+      const tooltipResult = formatterOrText(cell.row, cell.cell, value, columnDef, item, this._grid);
+      let formatterText = (Object.prototype.toString.call(tooltipResult) !== '[object Object]' ? tooltipResult : (tooltipResult as FormatterHtmlResultObject).html || (tooltipResult as FormatterResultObject).text);
+      if (formatterText instanceof HTMLElement) {
+        formatterText = formatterText.outerHTML;
+      }
+      return this._grid.sanitizeHtmlString(formatterText as string);
     } else if (typeof formatterOrText === 'string') {
       return this._grid.sanitizeHtmlString(formatterOrText);
     }
@@ -508,7 +511,7 @@ if (IIFE_ONLY && window.Slick) {
   Utils.extend(true, window, {
     Slick: {
       Plugins: {
-        CustomTooltip
+        CustomTooltip: SlickCustomTooltip
       }
     }
   });
