@@ -819,6 +819,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         this.slickDraggableInstance = Draggable({
           containerElement: this._container,
           allowDragFrom: 'div.slick-cell',
+          allowDragFromClosest: 'div.slick-cell',
           onDragInit: this.handleDragInit.bind(this),
           onDragStart: this.handleDragStart.bind(this),
           onDrag: this.handleDrag.bind(this),
