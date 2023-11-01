@@ -2057,7 +2057,6 @@ if (typeof Slick === "undefined") {
     function createCssRules() {
       _style = document.createElement('style');
       _style.nonce = 'random-string';
-      document.head.appendChild(_style);
       (options.shadowRoot || document.head).appendChild(_style);
 
       const rowHeight = (options.rowHeight - cellHeightDiff);
@@ -2085,7 +2084,7 @@ if (typeof Slick === "undefined") {
           sheet.insertRule(`.${uid} .r${i} { }`);
         }
       } else {
-        // in case the 1st approach doesn't work, let's use our previous way of create the rules which is what works in Salesforce :(
+        // fallback in case the 1st approach doesn't work, let's use our previous way of creating the css rules which is what works in Salesforce :(
         createCssRulesAlternative(rules);
       }
     }
@@ -2095,7 +2094,6 @@ if (typeof Slick === "undefined") {
       const template = document.createElement('template');
       template.innerHTML = '<style type="text/css" rel="stylesheet" />';
       _style = template.content.firstChild;
-      document.head.appendChild(_style);
       (options.shadowRoot || document.head).appendChild(_style);
 
       for (let i = 0; i < columns.length; i++) {
