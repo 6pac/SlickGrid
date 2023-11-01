@@ -5131,7 +5131,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   protected handleDragInit(e: DragEvent, dd: DragPosition) {
-    console.log('drag init')
     const cell = this.getCellFromEvent(e);
     if (!cell || !this.cellExists(cell.row, cell.cell)) {
       return false;
