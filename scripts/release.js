@@ -114,9 +114,7 @@ const childProcess = require('./child-process.js');
     changedFiles.add(path.resolve('./package-lock.json'));
 
     // 6. "git add" all changed files
-    options.dryRun
-      ? await gitUtils.gitAdd(null, { cwd, dryRun: options.dryRun })
-      : await gitUtils.gitAdd(Array.from(changedFiles), { cwd, dryRun: options.dryRun });
+    await gitUtils.gitAdd(null, { cwd, dryRun: options.dryRun });
 
     // show git changes to user so he can confirm the changes are ok
     const shouldCommitChanges = await promptConfirmation(`${chalk.bgMagenta(dryRunPrefix)} Ready to tag version "${newTag}" and push commits to remote? Choose No to cancel.`);
