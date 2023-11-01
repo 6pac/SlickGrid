@@ -113,10 +113,7 @@
       };
     }
     moveIconFormatter(row, _cell, _val, _column, dataContext, grid) {
-      return this.checkUsabilityOverride(row, dataContext, grid) ? {
-        addClasses: `cell-reorder dnd ${this._options.containerCssClass || ""}`,
-        text: `<div class="${this._options.cssClass}"></div>`
-      } : "";
+      return this.checkUsabilityOverride(row, dataContext, grid) ? { addClasses: `cell-reorder dnd ${this._options.cssClass || ""}`.trim(), text: "" } : "";
     }
     checkUsabilityOverride(row, dataContext, grid) {
       return typeof this._usabilityOverride == "function" ? this._usabilityOverride(row, dataContext, grid) : !0;

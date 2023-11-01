@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.4.1](https://github.com/6pac/SlickGrid/compare/5.4.0...5.4.1) (2023-11-01)
+
+### Bug Fixes
+
+* add `allowDragFromClosest` to make `.slick-cell` or child draggable ([#897](https://github.com/6pac/SlickGrid/issues/897)) ([282fbb4](https://github.com/6pac/SlickGrid/commit/282fbb4ce1e6a16c236d3842dd7c1d2bfc4fa016))
+* create CSS rules by style element doesn't work in salesforce ([#900](https://github.com/6pac/SlickGrid/issues/900)) ([4548fa0](https://github.com/6pac/SlickGrid/commit/4548fa08f7627c90828913888d965153a6f6eeb2))
+* regression with RowMoveManager, row could no longer be moved ([#896](https://github.com/6pac/SlickGrid/issues/896)) ([02226bd](https://github.com/6pac/SlickGrid/commit/02226bd7746482c59554b096d536e257762536c3)), closes [#865](https://github.com/6pac/SlickGrid/issues/865)
+
 # [5.4.0](https://github.com/6pac/SlickGrid/compare/5.3.1...5.4.0) (2023-11-01)
 
 ### Bug Fixes

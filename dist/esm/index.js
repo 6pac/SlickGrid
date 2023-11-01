@@ -2142,7 +2142,7 @@ function Draggable(options) {
   function userPressed(event2) {
     element = event2.target;
     let targetEvent = event2?.touches?.[0] ?? event2, { target } = targetEvent;
-    if (!options.allowDragFrom || options.allowDragFrom && element.matches(options.allowDragFrom)) {
+    if (!options.allowDragFrom || options.allowDragFrom && element.matches(options.allowDragFrom) || options.allowDragFromClosest && element.closest(options.allowDragFromClosest)) {
       originaldd.dragHandle = element;
       let winScrollPos = Utils9.windowScrollPosition();
       startX = winScrollPos.left + targetEvent.clientX, startY = winScrollPos.top + targetEvent.clientY, deltaX = targetEvent.clientX - targetEvent.clientX, deltaY = targetEvent.clientY - targetEvent.clientY, originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDragInit, event2, originaldd), document.addEventListener("mousemove", userMoved), document.addEventListener("touchmove", userMoved), document.addEventListener("mouseup", userReleased), document.addEventListener("touchend", userReleased), document.addEventListener("touchcancel", userReleased);
@@ -3084,7 +3084,7 @@ var SlickEvent11 = SlickEvent, SlickEventHandler4 = SlickEventHandler, Utils14 =
     };
   }
   moveIconFormatter(row, _cell, _val, _column, dataContext, grid) {
-    return this.checkUsabilityOverride(row, dataContext, grid) ? { addClasses: `cell-reorder dnd ${this._options.cssClass || ""}`, text: "" } : "";
+    return this.checkUsabilityOverride(row, dataContext, grid) ? { addClasses: `cell-reorder dnd ${this._options.cssClass || ""}`.trim(), text: "" } : "";
   }
   checkUsabilityOverride(row, dataContext, grid) {
     return typeof this._usabilityOverride == "function" ? this._usabilityOverride(row, dataContext, grid) : !0;
@@ -4316,10 +4316,7 @@ var SlickEvent17 = SlickEvent, SlickEventHandler9 = SlickEventHandler, Utils21 =
     };
   }
   moveIconFormatter(row, _cell, _val, _column, dataContext, grid) {
-    return this.checkUsabilityOverride(row, dataContext, grid) ? {
-      addClasses: `cell-reorder dnd ${this._options.containerCssClass || ""}`,
-      text: `<div class="${this._options.cssClass}"></div>`
-    } : "";
+    return this.checkUsabilityOverride(row, dataContext, grid) ? { addClasses: `cell-reorder dnd ${this._options.cssClass || ""}`.trim(), text: "" } : "";
   }
   checkUsabilityOverride(row, dataContext, grid) {
     return typeof this._usabilityOverride == "function" ? this._usabilityOverride(row, dataContext, grid) : !0;
@@ -6336,7 +6333,7 @@ var SlickGrid = class {
     this.options = options;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.4.0");
+    __publicField(this, "slickGridVersion", "5.4.1");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -6736,6 +6733,7 @@ var SlickGrid = class {
     }), Draggable4 && (this.slickDraggableInstance = Draggable4({
       containerElement: this._container,
       allowDragFrom: "div.slick-cell",
+      allowDragFromClosest: "div.slick-cell",
       onDragInit: this.handleDragInit.bind(this),
       onDragStart: this.handleDragStart.bind(this),
       onDrag: this.handleDrag.bind(this),
@@ -7320,13 +7318,31 @@ var SlickGrid = class {
   }
   createCssRules() {
     this._style = document.createElement("style"), this._style.nonce = "random-string", (this._options.shadowRoot || document.head).appendChild(this._style);
-    let sheet = this._style.sheet;
+    let rowHeight = this._options.rowHeight - this.cellHeightDiff, rules = [
+      `.${this.uid} .slick-group-header-column { left: 1000px; }`,
+      `.${this.uid} .slick-header-column { left: 1000px; }`,
+      `.${this.uid} .slick-top-panel { height: ${this._options.topPanelHeight}px; }`,
+      `.${this.uid} .slick-preheader-panel { height: ${this._options.preHeaderPanelHeight}px; }`,
+      `.${this.uid} .slick-headerrow-columns { height: ${this._options.headerRowHeight}px; }`,
+      `.${this.uid} .slick-footerrow-columns { height: ${this._options.footerRowHeight}px; }`,
+      `.${this.uid} .slick-cell { height: ${rowHeight}px; }`,
+      `.${this.uid} .slick-row { height: ${this._options.rowHeight}px; }`
+    ], sheet = this._style.sheet;
     if (sheet) {
-      let rowHeight = this._options.rowHeight - this.cellHeightDiff;
-      sheet.insertRule(`.${this.uid} .slick-group-header-column { left: 1000px; }`), sheet.insertRule(`.${this.uid} .slick-header-column { left: 1000px; }`), sheet.insertRule(`.${this.uid} .slick-top-panel { height: ${this._options.topPanelHeight}px; }`), sheet.insertRule(`.${this.uid} .slick-preheader-panel { height: ${this._options.preHeaderPanelHeight}px; }`), sheet.insertRule(`.${this.uid} .slick-headerrow-columns { height: ${this._options.headerRowHeight}px; }`), sheet.insertRule(`.${this.uid} .slick-footerrow-columns { height: ${this._options.footerRowHeight}px; }`), sheet.insertRule(`.${this.uid} .slick-cell { height: ${rowHeight}px; }`), sheet.insertRule(`.${this.uid} .slick-row { height: ${this._options.rowHeight}px; }`);
+      for (let rule of rules)
+        sheet.insertRule(rule);
       for (let i = 0; i < this.columns.length; i++)
         !this.columns[i] || this.columns[i].hidden || (sheet.insertRule(`.${this.uid} .l${i} { }`), sheet.insertRule(`.${this.uid} .r${i} { }`));
-    }
+    } else
+      this.createCssRulesAlternative(rules);
+  }
+  /** Create CSS rules via template in case the first approach with createElement('style') doesn't work */
+  createCssRulesAlternative(rules) {
+    let template = document.createElement("template");
+    template.innerHTML = '<style type="text/css" rel="stylesheet" />', this._style = template.content.firstChild, (this._options.shadowRoot || document.head).appendChild(this._style);
+    for (let i = 0; i < this.columns.length; i++)
+      !this.columns[i] || this.columns[i].hidden || (rules.push(`.${this.uid} .l${i} { }`), rules.push(`.${this.uid} .r${i} { }`));
+    this._style.styleSheet ? this._style.styleSheet.cssText = rules.join(" ") : this._style.appendChild(document.createTextNode(rules.join(" ")));
   }
   getColumnCssRules(idx) {
     let i;
@@ -9556,7 +9572,7 @@ export {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.4.0
+ * SlickGrid v5.4.1
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

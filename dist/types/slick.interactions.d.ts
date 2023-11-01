@@ -13,6 +13,7 @@ import type { DraggableOption, MouseWheelOption, ResizableOption } from './model
  * available optional options:
  *   - containerElement: container DOM element, defaults to "document"
  *   - allowDragFrom: when defined, only allow dragging from an element that matches a specific query selector
+ *   - allowDragFromClosest: when defined, only allow dragging from an element or its parent matching a specific .closest() query selector
  *   - onDragInit: drag initialized callback
  *   - onDragStart: drag started callback
  *   - onDrag: drag callback
