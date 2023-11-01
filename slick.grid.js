@@ -2057,20 +2057,25 @@ if (typeof Slick === "undefined") {
     function createCssRules() {
       _style = document.createElement('style');
       _style.nonce = 'random-string';
-      document.head.appendChild(_style);
       (options.shadowRoot || document.head).appendChild(_style);
+
+      const rowHeight = (options.rowHeight - cellHeightDiff);
+      const rules = [
+        `.${uid} .slick-group-header-column { left: 1000px; }`,
+        `.${uid} .slick-header-column { left: 1000px; }`,
+        `.${uid} .slick-top-panel { height: ${options.topPanelHeight}px; }`,
+        `.${uid} .slick-preheader-panel { height: ${options.preHeaderPanelHeight}px; }`,
+        `.${uid} .slick-headerrow-columns { height: ${options.headerRowHeight}px; }`,
+        `.${uid} .slick-footerrow-columns { height: ${options.footerRowHeight}px; }`,
+        `.${uid} .slick-cell { height: ${rowHeight}px; }`,
+        `.${uid} .slick-row { height: ${options.rowHeight}px; }`,
+      ];
 
       const sheet = _style.sheet;
       if (sheet) {
-        const rowHeight = (options.rowHeight - cellHeightDiff);
-        sheet.insertRule(`.${uid} .slick-group-header-column { left: 1000px; }`);
-        sheet.insertRule(`.${uid} .slick-header-column { left: 1000px; }`);
-        sheet.insertRule(`.${uid} .slick-top-panel { height: ${options.topPanelHeight}px; }`);
-        sheet.insertRule(`.${uid} .slick-preheader-panel { height: ${options.preHeaderPanelHeight}px; }`);
-        sheet.insertRule(`.${uid} .slick-headerrow-columns { height: ${options.headerRowHeight}px; }`);
-        sheet.insertRule(`.${uid} .slick-footerrow-columns { height: ${options.footerRowHeight}px; }`);
-        sheet.insertRule(`.${uid} .slick-cell { height: ${rowHeight}px; }`);
-        sheet.insertRule(`.${uid} .slick-row { height: ${options.rowHeight}px; }`);
+        for (let rule of rules) {
+          sheet.insertRule(rule);
+        }
 
         for (let i = 0; i < columns.length; i++) {
           if (!columns[i] || columns[i].hidden) { continue; }
@@ -2078,6 +2083,30 @@ if (typeof Slick === "undefined") {
           sheet.insertRule(`.${uid} .l${i} { }`);
           sheet.insertRule(`.${uid} .r${i} { }`);
         }
+      } else {
+        // fallback in case the 1st approach doesn't work, let's use our previous way of creating the css rules which is what works in Salesforce :(
+        createCssRulesAlternative(rules);
+      }
+    }
+
+    /** Create CSS rules via template in case the first approach with createElement('style') doesn't work */
+    function createCssRulesAlternative(rules) {
+      const template = document.createElement('template');
+      template.innerHTML = '<style type="text/css" rel="stylesheet" />';
+      _style = template.content.firstChild;
+      (options.shadowRoot || document.head).appendChild(_style);
+
+      for (let i = 0; i < columns.length; i++) {
+        if (!columns[i] || columns[i].hidden) continue;
+
+        rules.push(`.${uid} .l${i} { }`);
+        rules.push(`.${uid} .r${i} { }`);
+      }
+
+      if (_style.styleSheet) { // IE
+        _style.styleSheet.cssText = rules.join(" ");
+      } else {
+        _style.appendChild(document.createTextNode(rules.join(" ")));
       }
     }
 
