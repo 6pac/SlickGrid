@@ -260,7 +260,7 @@ export class SlickCrossGridRowMoveManager {
     if (!this.checkUsabilityOverride(row, dataContext, grid)) {
       return '';
     } else {
-      return { addClasses: `cell-reorder dnd ${this._options.cssClass || ''}`, text: '' };
+      return { addClasses: `cell-reorder dnd ${this._options.cssClass || ''}`.trim(), text: '' };
     }
   }
 

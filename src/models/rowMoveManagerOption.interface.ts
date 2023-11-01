@@ -21,9 +21,6 @@ export interface RowMoveManagerOption {
   /** A CSS class to be added to the div of the cell formatter. */
   cssClass?: string;
 
-  /** A CSS class to be added to the cell container. */
-  containerCssClass?: string;
-
   /**  Column definition id(defaults to "_move") */
   columnId?: string;
 
