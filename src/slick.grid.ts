@@ -17,8 +17,9 @@ import type {
   EditController,
   Formatter,
   FormatterOverrideCallback,
-  FormatterHtmlResultObject,
   FormatterResultObject,
+  FormatterResultWithHtml,
+  FormatterResultWithText,
   GridOption as BaseGridOption,
   InteractionBase,
   ItemMetadata,
@@ -2958,7 +2959,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     let len: number;
     let max = 0;
     let maxText = '';
-    let formatterResult: string | FormatterResultObject | FormatterHtmlResultObject | HTMLElement;
+    let formatterResult: string | FormatterResultWithHtml | FormatterResultWithText | HTMLElement;
     let val: any;
 
     // get mode - if text only display, use canvas otherwise html element
@@ -3865,7 +3866,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     let value: any = null;
-    let formatterResult: FormatterResultObject | FormatterHtmlResultObject | HTMLElement | string = '';
+    let formatterResult: FormatterResultWithHtml | FormatterResultWithText | HTMLElement | string = '';
     if (item) {
       value = this.getDataItemValueForColumn(item, m);
       formatterResult = this.getFormatter(row, m)(row, cell, value, m, item, this as unknown as SlickGridModel);
@@ -3897,7 +3898,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     // if there is a corresponding row (if not, this is the Add New row or this data hasn't been loaded yet)
     if (item) {
-      let cellResult = (Object.prototype.toString.call(formatterResult) !== '[object Object]' ? formatterResult : (formatterResult as FormatterHtmlResultObject).html || (formatterResult as FormatterResultObject).text);
+      let cellResult = (Object.prototype.toString.call(formatterResult) !== '[object Object]' ? formatterResult : (formatterResult as FormatterResultWithHtml).html || (formatterResult as FormatterResultWithText).text);
       if (cellResult instanceof HTMLElement) {
         cellResult = cellResult.outerHTML;
       }
@@ -4042,14 +4043,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /** Apply a Formatter Result to a Cell DOM Node */
-  applyFormatResultToCellNode(formatterResult: FormatterResultObject | FormatterHtmlResultObject | string | HTMLElement, cellNode: HTMLDivElement, suppressRemove?: boolean) {
+  applyFormatResultToCellNode(formatterResult: FormatterResultWithHtml | FormatterResultWithText | string | HTMLElement, cellNode: HTMLDivElement, suppressRemove?: boolean) {
     if (formatterResult === null || formatterResult === undefined) { formatterResult = ''; }
     if (Object.prototype.toString.call(formatterResult) !== '[object Object]') {
       this.applyHtmlCode(cellNode, formatterResult as string | HTMLElement);
       return;
     }
 
-    const formatterVal: HTMLElement | string = (formatterResult as FormatterHtmlResultObject).html as HTMLElement || (formatterResult as FormatterResultObject).text as string;
+    const formatterVal: HTMLElement | string = (formatterResult as FormatterResultWithHtml).html || (formatterResult as FormatterResultWithText).text;
     this.applyHtmlCode(cellNode, formatterVal);
 
     if ((formatterResult as FormatterResultObject).removeClasses && !suppressRemove) {

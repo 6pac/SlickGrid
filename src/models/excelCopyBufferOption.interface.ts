@@ -1,4 +1,4 @@
-import type { CellRange, Column, FormatterHtmlResultObject, FormatterResultObject, } from './index';
+import type { CellRange, Column, FormatterResultWithHtml, FormatterResultWithText } from './index';
 import type { SlickEventData } from '../slick.core';
 
 export interface ExcelCopyBufferOption<T = any> {
@@ -15,10 +15,10 @@ export interface ExcelCopyBufferOption<T = any> {
   copiedCellStyleLayerKey?: string;
 
   /** option to specify a custom column value extractor function */
-  dataItemColumnValueExtractor?: (item: any, columnDef: Column<T>) => string | FormatterResultObject | FormatterHtmlResultObject | null;
+  dataItemColumnValueExtractor?: (item: any, columnDef: Column<T>) => string | FormatterResultWithHtml | FormatterResultWithText | null;
 
   /** option to specify a custom column value setter function */
-  dataItemColumnValueSetter?: (item: any, columnDef: Column<T>, value: any) => string | FormatterResultObject | FormatterHtmlResultObject | null;
+  dataItemColumnValueSetter?: (item: any, columnDef: Column<T>, value: any) => string | FormatterResultWithHtml | FormatterResultWithText | null;
 
   /** option to specify a custom handler for paste actions */
   clipboardCommandHandler?: (editCommand: any) => void;

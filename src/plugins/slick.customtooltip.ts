@@ -1,4 +1,4 @@
-import type { CancellablePromiseWrapper, Column, CustomTooltipOption, DOMEvent, Formatter, FormatterHtmlResultObject, FormatterResultObject, GridOption } from '../models/index';
+import type { CancellablePromiseWrapper, Column, CustomTooltipOption, DOMEvent, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption } from '../models/index';
 import { SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
 import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
@@ -430,7 +430,7 @@ export class SlickCustomTooltip {
   protected parseFormatterAndSanitize(formatterOrText: Formatter | string | undefined, cell: { row: number; cell: number; }, value: any, columnDef: Column, item: unknown): string {
     if (typeof formatterOrText === 'function') {
       const tooltipResult = formatterOrText(cell.row, cell.cell, value, columnDef, item, this._grid);
-      let formatterText = (Object.prototype.toString.call(tooltipResult) !== '[object Object]' ? tooltipResult : (tooltipResult as FormatterHtmlResultObject).html || (tooltipResult as FormatterResultObject).text);
+      let formatterText = (Object.prototype.toString.call(tooltipResult) !== '[object Object]' ? tooltipResult : (tooltipResult as FormatterResultWithHtml).html || (tooltipResult as FormatterResultWithText).text);
       if (formatterText instanceof HTMLElement) {
         formatterText = formatterText.outerHTML;
       }
