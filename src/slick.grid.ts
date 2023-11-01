@@ -2321,7 +2321,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     const sheet = this._style.sheet;
     if (sheet) {
-      for (let rule of rules) {
+      for (const rule of rules) {
         sheet.insertRule(rule);
       }
 
