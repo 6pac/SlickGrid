@@ -2,6 +2,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [4.1.0](https://github.com/6pac/SlickGrid/compare/4.0.3...4.1.0) (2023-11-01)
+
+### Bug Fixes
+
+* dynamically create CSS rules via JS instead of innerHTML ([#886](https://github.com/6pac/SlickGrid/issues/886)) ([3d9aecb](https://github.com/6pac/SlickGrid/commit/3d9aecbdd2d89350a2e75cb6b6941cbe9593c6c4))
+* element `replaceChildren()` not supported by salesforce ([#895](https://github.com/6pac/SlickGrid/issues/895)) ([2e09f25](https://github.com/6pac/SlickGrid/commit/2e09f2561d088468dc0abd2e9f3172c3fdac192c))
+* replace a few innerHTML by more secure alternatives ([#887](https://github.com/6pac/SlickGrid/issues/887)) ([ada4690](https://github.com/6pac/SlickGrid/commit/ada46904dfad9cbe74eada1d6fbe3b123599e27a))
+
+### Features
+
+* add shadow dom support, backported from [#890](https://github.com/6pac/SlickGrid/issues/890) ([#892](https://github.com/6pac/SlickGrid/issues/892)) ([20565ad](https://github.com/6pac/SlickGrid/commit/20565add9b31243ba29fb45365a6899737a321da))
+
 ## [4.0.3](https://github.com/6pac/SlickGrid/compare/4.0.2...4.0.3) (2023-10-25)
 
 ### Bug Fixes
