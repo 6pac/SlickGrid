@@ -19,6 +19,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  * available optional options:
  *   - containerElement: container DOM element, defaults to "document"
  *   - allowDragFrom: when defined, only allow dragging from an element that matches a specific query selector
+ *   - allowDragFromClosest: when defined, only allow dragging from an element or its parent matching a specific .closest() query selector
  *   - onDragInit: drag initialized callback
  *   - onDragStart: drag started callback
  *   - onDrag: drag callback
@@ -67,7 +68,7 @@ export function Draggable(options: DraggableOption) {
     const targetEvent: MouseEvent | Touch = (event as TouchEvent)?.touches?.[0] ?? event;
     const { target } = targetEvent;
 
-    if (!options.allowDragFrom || (options.allowDragFrom && element.matches(options.allowDragFrom))) {
+    if (!options.allowDragFrom || (options.allowDragFrom && (element.matches(options.allowDragFrom)) || (options.allowDragFromClosest && element.closest(options.allowDragFromClosest)))) {
       originaldd.dragHandle = element as HTMLElement;
       const winScrollPos = Utils.windowScrollPosition();
       startX = winScrollPos.left + targetEvent.clientX;

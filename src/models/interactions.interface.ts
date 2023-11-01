@@ -8,8 +8,11 @@ export interface DraggableOption {
   /** container DOM element, defaults to "document" */
   containerElement?: HTMLElement | Document;
 
-  /** when defined, only allow dragging from an element that matches a specific query selector */
+  /** when defined, will allow dragging from a specific element by using the .matches() query selector. */
   allowDragFrom?: string;
+
+  /** when defined, will allow dragging from a specific element or its closest parent by using the .closest() query selector. */
+  allowDragFromClosest?: string;
 
   /** drag initialized callback */
   onDragInit?: Function;

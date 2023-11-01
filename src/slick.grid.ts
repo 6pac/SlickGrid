@@ -819,6 +819,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         this.slickDraggableInstance = Draggable({
           containerElement: this._container,
           allowDragFrom: 'div.slick-cell',
+          allowDragFromClosest: 'div.slick-cell',
           onDragInit: this.handleDragInit.bind(this),
           onDragStart: this.handleDragStart.bind(this),
           onDrag: this.handleDrag.bind(this),
@@ -5130,6 +5131,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   protected handleDragInit(e: DragEvent, dd: DragPosition) {
+    console.log('drag init')
     const cell = this.getCellFromEvent(e);
     if (!cell || !this.cellExists(cell.row, cell.cell)) {
       return false;
