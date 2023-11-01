@@ -5,8 +5,8 @@ import type {
   Editor,
   EditorValidator,
   Formatter,
-  FormatterHtmlResultObject,
-  FormatterResultObject,
+  FormatterResultWithHtml,
+  FormatterResultWithText,
   GroupTotalsFormatter,
   Grouping,
   HeaderButtonsOrMenu
@@ -26,7 +26,7 @@ type Join<T extends any[], D extends string> =
   F extends string ? string extends F ? string : `${F}${D}${Join<R, D>}` : never : string;
 /* eslint-enable @typescript-eslint/indent */
 
-export type FormatterOverrideCallback = (row: number, cell: number, val: any, columnDef: Column, item: any, grid: SlickGrid) => string | FormatterResultObject | FormatterHtmlResultObject;
+export type FormatterOverrideCallback = (row: number, cell: number, val: any, columnDef: Column, item: any, grid: SlickGrid) => string | FormatterResultWithHtml | FormatterResultWithText;
 
 export interface Column<TData = any> {
   /** Defaults to false, should we always render the column? */

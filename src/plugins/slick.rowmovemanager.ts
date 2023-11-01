@@ -1,5 +1,5 @@
 import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
-import type { Column, DOMEvent, DragRowMove, FormatterHtmlResultObject, FormatterResultObject, RowMoveManagerOption, UsabilityOverrideFn } from '../models/index';
+import type { Column, DOMEvent, DragRowMove, FormatterResultWithHtml, RowMoveManagerOption, UsabilityOverrideFn } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -247,13 +247,15 @@ export class SlickRowMoveManager {
     };
   }
 
-  protected moveIconFormatter(row: number, _cell: number, _val: any, _column: Column, dataContext: any, grid: SlickGrid): FormatterResultObject | FormatterHtmlResultObject | string {
+  protected moveIconFormatter(row: number, _cell: number, _val: any, _column: Column, dataContext: any, grid: SlickGrid): FormatterResultWithHtml | string {
     if (!this.checkUsabilityOverride(row, dataContext, grid)) {
       return '';
     } else {
+      const iconElm = document.createElement('div');
+      iconElm.className = this._options.cssClass || '';
       return {
         addClasses: `cell-reorder dnd ${this._options.containerCssClass || ''}`,
-        text: `<div class="${this._options.cssClass}"></div>`
+        html: iconElm
       };
     }
   }
