@@ -618,6 +618,7 @@ if (typeof Slick === "undefined") {
           slickDraggableInstance = Slick.Draggable({
             containerElement: _container,
             allowDragFrom: 'div.slick-cell',
+            allowDragFromClosest: 'div.slick-cell',
             onDragInit: handleDragInit,
             onDragStart: handleDragStart,
             onDrag: handleDrag,
