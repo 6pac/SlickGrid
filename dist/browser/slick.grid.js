@@ -23,7 +23,7 @@
       this.options = options;
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.3.1");
+      __publicField(this, "slickGridVersion", "5.4.0");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -166,7 +166,8 @@
         // sanitize function, built in basic sanitizer is: Slick.RegexSanitizer(dirtyHtml)
         logSanitizedHtml: !1,
         // log to console when sanitised - recommend true for testing of dev and production
-        mixinDefaults: !0
+        mixinDefaults: !0,
+        shadowRoot: void 0
       });
       __publicField(this, "_columnDefaults", {
         name: "",
@@ -771,8 +772,8 @@
         });
       }), Utils.emptyElement(this._footerRowR)));
       for (let i = 0; i < this.columns.length; i++) {
-        let m = this.columns[i], headerTarget = this.hasFrozenColumns() ? i <= this._options.frozenColumn ? this._headerL : this._headerR : this._headerL, headerRowTarget = this.hasFrozenColumns() ? i <= this._options.frozenColumn ? this._headerRowL : this._headerRowR : this._headerRowL, header = Utils.createDomElement("div", { id: `${this.uid + m.id}`, dataset: { id: String(m.id) }, className: "ui-state-default slick-state-default slick-header-column", title: m.toolTip || "" }, headerTarget);
-        Utils.createDomElement("span", { className: "slick-column-name", innerHTML: this.sanitizeHtmlString(m.name) }, header), Utils.width(header, m.width - this.headerColumnWidthDiff);
+        let m = this.columns[i], headerTarget = this.hasFrozenColumns() ? i <= this._options.frozenColumn ? this._headerL : this._headerR : this._headerL, headerRowTarget = this.hasFrozenColumns() ? i <= this._options.frozenColumn ? this._headerRowL : this._headerRowR : this._headerRowL, header = Utils.createDomElement("div", { id: `${this.uid + m.id}`, dataset: { id: String(m.id) }, className: "ui-state-default slick-state-default slick-header-column", title: m.toolTip || "" }, headerTarget), colNameElm = Utils.createDomElement("span", { className: "slick-column-name" }, header);
+        colNameElm.innerHTML = this.sanitizeHtmlString(m.name), Utils.width(header, m.width - this.headerColumnWidthDiff);
         let classname = m.headerCssClass || null;
         if (classname && header.classList.add(...classname.split(" ")), classname = this.hasFrozenColumns() && i <= this._options.frozenColumn ? "frozen" : null, classname && header.classList.add(classname), this._bindingEventService.bind(header, "mouseenter", this.handleHeaderMouseEnter.bind(this)), this._bindingEventService.bind(header, "mouseleave", this.handleHeaderMouseLeave.bind(this)), Utils.storage.put(header, "column", m), (this._options.enableColumnReorder || m.sortable) && (this._bindingEventService.bind(header, "mouseenter", this.handleHeaderMouseHoverOn.bind(this)), this._bindingEventService.bind(header, "mouseleave", this.handleHeaderMouseHoverOff.bind(this))), m.hasOwnProperty("headerCellAttrs") && m.headerCellAttrs instanceof Object)
           for (let key in m.headerCellAttrs)
@@ -1018,26 +1019,19 @@
       el = Utils.createDomElement("div", { className: "slick-cell", id: "", style: { visibility: "hidden" }, textContent: "-" }, r), style = getComputedStyle(el), style.boxSizing !== "border-box" && (h.forEach((val) => this.cellWidthDiff += Utils.toFloat(style[val])), v.forEach((val) => this.cellHeightDiff += Utils.toFloat(style[val]))), r.remove(), this.absoluteColumnMinWidth = Math.max(this.headerColumnWidthDiff, this.cellWidthDiff);
     }
     createCssRules() {
-      let template = Utils.createDomElement("template", { innerHTML: '<style type="text/css" rel="stylesheet" />' });
-      this._style = template.content.firstChild, document.head.appendChild(this._style);
-      let rowHeight = this._options.rowHeight - this.cellHeightDiff, rules = [
-        `.${this.uid} .slick-group-header-column { left: 1000px; }`,
-        `.${this.uid} .slick-header-column { left: 1000px; }`,
-        `.${this.uid} .slick-top-panel { height: ${this._options.topPanelHeight}px; }`,
-        `.${this.uid} .slick-preheader-panel { height: ${this._options.preHeaderPanelHeight}px; }`,
-        `.${this.uid} .slick-headerrow-columns { height: ${this._options.headerRowHeight}px; }`,
-        `.${this.uid} .slick-footerrow-columns { height: ${this._options.footerRowHeight}px; }`,
-        `.${this.uid} .slick-cell { height: ${rowHeight}px; }`,
-        `.${this.uid} .slick-row { height: ${this._options.rowHeight}px; }`
-      ];
-      for (let i = 0; i < this.columns.length; i++)
-        !this.columns[i] || this.columns[i].hidden || (rules.push(`.${this.uid} .l${i} { }`), rules.push(`.${this.uid} .r${i} { }`));
-      this._style.styleSheet ? this._style.styleSheet.cssText = rules.join(" ") : this._style.appendChild(document.createTextNode(rules.join(" ")));
+      this._style = document.createElement("style"), this._style.nonce = "random-string", (this._options.shadowRoot || document.head).appendChild(this._style);
+      let sheet = this._style.sheet;
+      if (sheet) {
+        let rowHeight = this._options.rowHeight - this.cellHeightDiff;
+        sheet.insertRule(`.${this.uid} .slick-group-header-column { left: 1000px; }`), sheet.insertRule(`.${this.uid} .slick-header-column { left: 1000px; }`), sheet.insertRule(`.${this.uid} .slick-top-panel { height: ${this._options.topPanelHeight}px; }`), sheet.insertRule(`.${this.uid} .slick-preheader-panel { height: ${this._options.preHeaderPanelHeight}px; }`), sheet.insertRule(`.${this.uid} .slick-headerrow-columns { height: ${this._options.headerRowHeight}px; }`), sheet.insertRule(`.${this.uid} .slick-footerrow-columns { height: ${this._options.footerRowHeight}px; }`), sheet.insertRule(`.${this.uid} .slick-cell { height: ${rowHeight}px; }`), sheet.insertRule(`.${this.uid} .slick-row { height: ${this._options.rowHeight}px; }`);
+        for (let i = 0; i < this.columns.length; i++)
+          !this.columns[i] || this.columns[i].hidden || (sheet.insertRule(`.${this.uid} .l${i} { }`), sheet.insertRule(`.${this.uid} .r${i} { }`));
+      }
     }
     getColumnCssRules(idx) {
       let i;
       if (!this.stylesheet) {
-        let sheets = document.styleSheets;
+        let sheets = (this._options.shadowRoot || document).styleSheets;
         for (i = 0; i < sheets.length; i++)
           if ((sheets[i].ownerNode || sheets[i].owningElement) === this._style) {
             this.stylesheet = sheets[i];
@@ -1058,7 +1052,8 @@
       };
     }
     removeCssRules() {
-      this._style.remove(), this.stylesheet = null;
+      var _a;
+      (_a = this._style) == null || _a.remove(), this.stylesheet = null;
     }
     /**
      * Destroy (dispose) of SlickGrid
@@ -1246,7 +1241,7 @@
         let style = getComputedStyle(cellEl);
         for (this.canvas_context.font = style.fontSize + " " + style.fontFamily, i = rowInfo.startIndex; i <= rowInfo.endIndex; i++)
           val = rowInfo.valueArr ? rowInfo.valueArr[i] : rowInfo.getRowVal(i), columnDef.formatterOverride ? formatterResult = columnDef.formatterOverride(i, rowInfo.colIndex, val, columnDef, this.getDataItem(i), this) : columnDef.formatter ? formatterResult = columnDef.formatter(i, rowInfo.colIndex, val, columnDef, this.getDataItem(i), this) : formatterResult = "" + val, len = formatterResult ? this.canvas_context.measureText(formatterResult).width : 0, len > max && (max = len, maxText = formatterResult);
-        return cellEl.innerHTML = maxText, len = cellEl.offsetWidth, rowEl.remove(), len;
+        return cellEl.textContent = maxText, len = cellEl.offsetWidth, rowEl.remove(), len;
       }
       for (i = rowInfo.startIndex; i <= rowInfo.endIndex; i++)
         val = rowInfo.valueArr ? rowInfo.valueArr[i] : rowInfo.getRowVal(i), columnDef.formatterOverride ? formatterResult = columnDef.formatterOverride(i, rowInfo.colIndex, val, columnDef, this.getDataItem(i), this) : columnDef.formatter ? formatterResult = columnDef.formatter(i, rowInfo.colIndex, val, columnDef, this.getDataItem(i), this) : formatterResult = "" + val, this.applyFormatResultToCellNode(formatterResult, cellEl), len = cellEl.offsetWidth, len > max && (max = len);
@@ -1258,7 +1253,9 @@
         clone.id = dummyHeaderColElId, clone.style.cssText = "position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;", headerColEl.parentNode.insertBefore(clone, headerColEl), width = clone.offsetWidth, clone.parentNode.removeChild(clone);
       else {
         let header = this.getHeader(columnDef);
-        headerColEl = Utils.createDomElement("div", { id: dummyHeaderColElId, className: "ui-state-default slick-state-default slick-header-column" }, header), Utils.createDomElement("span", { className: "slick-column-name", innerHTML: this.sanitizeHtmlString(String(columnDef.name)) }, headerColEl), clone.style.cssText = "position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;", columnDef.headerCssClass && headerColEl.classList.add(...(columnDef.headerCssClass || "").split(" ")), width = headerColEl.offsetWidth, header.removeChild(headerColEl);
+        headerColEl = Utils.createDomElement("div", { id: dummyHeaderColElId, className: "ui-state-default slick-state-default slick-header-column" }, header);
+        let colNameElm = Utils.createDomElement("span", { className: "slick-column-name" }, headerColEl);
+        colNameElm.innerHTML = this.sanitizeHtmlString(String(columnDef.name)), clone.style.cssText = "position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;", columnDef.headerCssClass && headerColEl.classList.add(...(columnDef.headerCssClass || "").split(" ")), width = headerColEl.offsetWidth, header.removeChild(headerColEl);
       }
       return width;
     }
@@ -1797,7 +1794,7 @@
         if (!cacheEntry.cellNodesByColumnIdx.hasOwnProperty(colIdx))
           continue;
         let columnIdx = +colIdx, m = this.columns[columnIdx], node = cacheEntry.cellNodesByColumnIdx[columnIdx];
-        row === this.activeRow && columnIdx === this.activeCell && this.currentEditor ? this.currentEditor.loadValue(d) : d ? (formatterResult = this.getFormatter(row, m)(row, columnIdx, this.getDataItemValueForColumn(d, m), m, d, this), this.applyFormatResultToCellNode(formatterResult, node)) : node.innerHTML = "";
+        row === this.activeRow && columnIdx === this.activeCell && this.currentEditor ? this.currentEditor.loadValue(d) : d ? (formatterResult = this.getFormatter(row, m)(row, columnIdx, this.getDataItemValueForColumn(d, m), m, d, this), this.applyFormatResultToCellNode(formatterResult, node)) : Utils.emptyElement(node);
       }
       this.invalidatePostProcessingResults(row);
     }
@@ -1941,7 +1938,9 @@
       }
       if (!stringArray.length)
         return;
-      let x = Utils.createDomElement("div", { innerHTML: this.sanitizeHtmlString(stringArray.join("")) }), processedRow, node;
+      let x = document.createElement("div");
+      x.innerHTML = this.sanitizeHtmlString(stringArray.join(""));
+      let processedRow, node;
       for (; Utils.isDefined(processedRow = processedRows.pop()); ) {
         cacheEntry = this.rowsCache[processedRow];
         let columnIdx;
@@ -1967,7 +1966,8 @@
         }, this.appendRowHtml(stringArrayL, stringArrayR, i, range, dataLength), this.activeCellNode && this.activeRow === i && (needToReselectCell = !0), this.counter_rows_rendered++);
       if (!rows.length)
         return;
-      let x = Utils.createDomElement("div", { innerHTML: this.sanitizeHtmlString(stringArrayL.join("")) }), xRight = Utils.createDomElement("div", { innerHTML: this.sanitizeHtmlString(stringArrayR.join("")) });
+      let x = document.createElement("div"), xRight = document.createElement("div");
+      x.innerHTML = this.sanitizeHtmlString(stringArrayL.join("")), xRight.innerHTML = this.sanitizeHtmlString(stringArrayR.join(""));
       for (let i = 0, ii = rows.length; i < ii; i++)
         this.hasFrozenRows && rows[i] >= this.actualFrozenRow ? this.hasFrozenColumns() ? (_a = this.rowsCache) != null && _a.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild, xRight.firstChild], this._canvasBottomL.appendChild(x.firstChild), this._canvasBottomR.appendChild(xRight.firstChild)) : (_b = this.rowsCache) != null && _b.hasOwnProperty(rows[i]) && x.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild], this._canvasBottomL.appendChild(x.firstChild)) : this.hasFrozenColumns() ? (_c = this.rowsCache) != null && _c.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild, xRight.firstChild], this._canvasTopL.appendChild(x.firstChild), this._canvasTopR.appendChild(xRight.firstChild)) : (_d = this.rowsCache) != null && _d.hasOwnProperty(rows[i]) && x.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild], this._canvasTopL.appendChild(x.firstChild));
       needToReselectCell && (this.activeCellNode = this.getCellNode(this.activeRow, this.activeCell));
@@ -2475,7 +2475,7 @@
       }
       (_a = this.getEditorLock()) == null || _a.activate(this.editController), this.activeCellNode.classList.add("editable");
       let useEditor = editor || this.getEditor(this.activeRow, this.activeCell);
-      !editor && !useEditor.suppressClearOnEdit && (this.activeCellNode.innerHTML = "");
+      !editor && !useEditor.suppressClearOnEdit && Utils.emptyElement(this.activeCellNode);
       let metadata = (_c = (_b = this.data) == null ? void 0 : _b.getItemMetadata) == null ? void 0 : _c.call(_b, this.activeRow);
       metadata = metadata == null ? void 0 : metadata.columns;
       let columnMetaData = metadata && (metadata[columnDef.id] || metadata[this.activeCell]);
@@ -3009,7 +3009,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.3.1
+ * SlickGrid v5.4.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

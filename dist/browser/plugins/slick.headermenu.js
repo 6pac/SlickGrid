@@ -48,11 +48,11 @@
       this._handler.unsubscribeAll(), this._bindingEventService.unbindAll(), this._menuElm = this._menuElm || document.body.querySelector(`.slick-header-menu${this.getGridUidSelector()}`), (_a = this._menuElm) == null || _a.remove(), this._activeHeaderColumnElm = void 0;
     }
     destroyAllMenus() {
-      this.destroySubMenus(), document.querySelectorAll(`.slick-header-menu${this.getGridUidSelector()}`).forEach((subElm) => subElm.remove());
+      this.destroySubMenus(), this._bindingEventService.unbindAll("parent-menu"), document.querySelectorAll(`.slick-header-menu${this.getGridUidSelector()}`).forEach((subElm) => subElm.remove());
     }
     /** Close and destroy all previously opened sub-menus */
     destroySubMenus() {
-      document.querySelectorAll(`.slick-header-menu.slick-submenu${this.getGridUidSelector()}`).forEach((subElm) => subElm.remove());
+      this._bindingEventService.unbindAll("sub-menu"), document.querySelectorAll(`.slick-header-menu.slick-submenu${this.getGridUidSelector()}`).forEach((subElm) => subElm.remove());
     }
     handleBodyMouseDown(e) {
       var _a;
@@ -68,7 +68,7 @@
     handleHeaderCellRendered(_e, args) {
       var _a;
       let column = args.column, menu = (_a = column == null ? void 0 : column.header) == null ? void 0 : _a.menu;
-      if (menu != null && menu.items && console.warn('[SlickGrid] Header Menu "items" prperty was deprecated in favor of "commandItems" to align with all other Menu plugins.'), menu) {
+      if (menu != null && menu.items && console.warn('[SlickGrid] Header Menu "items" property was deprecated in favor of "commandItems" to align with all other Menu plugins.'), menu) {
         if (!this.runOverrideFunctionWhenExists(this._options.menuUsabilityOverride, args))
           return;
         let elm = document.createElement("div");
@@ -132,7 +132,11 @@
         let iconElm = document.createElement("div");
         iconElm.className = "slick-header-menuicon", menuItemElm.appendChild(iconElm), item2.iconCssClass && iconElm.classList.add(...item2.iconCssClass.split(" ")), item2.iconImage && (iconElm.style.backgroundImage = "url(" + item2.iconImage + ")");
         let textElm = document.createElement("span");
-        if (textElm.className = "slick-header-menucontent", textElm.textContent = item2.title || "", menuItemElm.appendChild(textElm), item2.textCssClass && textElm.classList.add(...item2.textCssClass.split(" ")), menuElm.appendChild(menuItemElm), addClickListener && this._bindingEventService.bind(menuItemElm, "click", this.handleMenuItemClick.bind(this, item2, columnDef, level)), this._options.subMenuOpenByEvent === "mouseover" && this._bindingEventService.bind(menuItemElm, "mouseover", (e) => {
+        if (textElm.className = "slick-header-menucontent", textElm.textContent = item2.title || "", menuItemElm.appendChild(textElm), item2.textCssClass && textElm.classList.add(...item2.textCssClass.split(" ")), menuElm.appendChild(menuItemElm), addClickListener) {
+          let eventGroup = isSubMenu ? "sub-menu" : "parent-menu";
+          this._bindingEventService.bind(menuItemElm, "click", this.handleMenuItemClick.bind(this, item2, columnDef, level), void 0, eventGroup);
+        }
+        if (this._options.subMenuOpenByEvent === "mouseover" && this._bindingEventService.bind(menuItemElm, "mouseover", (e) => {
           item2.commandItems || item2.items ? this.repositionSubMenu(item2, columnDef, level, e) : isSubMenu || this.destroySubMenus();
         }), item2.commandItems || item2.items) {
           let chevronElm = document.createElement("div");

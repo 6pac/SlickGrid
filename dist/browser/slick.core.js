@@ -421,8 +421,8 @@ var Slick = (() => {
       this.unbindAll();
     }
     /** Bind an event listener to any element */
-    bind(element, eventName, listener, options) {
-      element.addEventListener(eventName, listener, options), this._boundedEvents.push({ element, eventName, listener });
+    bind(element, eventName, listener, options, groupName = "") {
+      element.addEventListener(eventName, listener, options), this._boundedEvents.push({ element, eventName, listener, groupName });
     }
     /** Unbind all will remove every every event handlers that were bounded earlier */
     unbind(element, eventName, listener) {
@@ -432,12 +432,24 @@ var Slick = (() => {
       let boundedEvent = this._boundedEvents.find((e) => e.element === element && e.eventName === eventName);
       boundedEvent && this.unbind(boundedEvent.element, boundedEvent.eventName, boundedEvent.listener);
     }
-    /** Unbind all will remove every every event handlers that were bounded earlier */
-    unbindAll() {
-      for (; this._boundedEvents.length > 0; ) {
-        let boundedEvent = this._boundedEvents.pop();
-        this.unbind(boundedEvent.element, boundedEvent.eventName, boundedEvent.listener);
-      }
+    /**
+     * Unbind all event listeners that were bounded, optionally provide a group name to unbind all listeners assigned to that specific group only.
+     */
+    unbindAll(groupName) {
+      if (groupName) {
+        let groupNames = Array.isArray(groupName) ? groupName : [groupName];
+        for (let i = this._boundedEvents.length - 1; i >= 0; --i) {
+          let boundedEvent = this._boundedEvents[i];
+          if (groupNames.some((g) => g === boundedEvent.groupName)) {
+            let { element, eventName, listener } = boundedEvent;
+            this.unbind(element, eventName, listener), this._boundedEvents.splice(i, 1);
+          }
+        }
+      } else
+        for (; this._boundedEvents.length > 0; ) {
+          let boundedEvent = this._boundedEvents.pop(), { element, eventName, listener } = boundedEvent;
+          this.unbind(element, eventName, listener);
+        }
     }
   }, _Utils = class _Utils {
     static isFunction(obj) {
@@ -481,6 +493,7 @@ var Slick = (() => {
     static createDomElement(tagName, elementOptions, appendToParent) {
       let elm = document.createElement(tagName);
       return elementOptions && Object.keys(elementOptions).forEach((elmOptionKey) => {
+        elmOptionKey === "innerHTML" && console.warn(`[SlickGrid] For better CSP (Content Security Policy) support, do not use "innerHTML" directly in "createDomElement('${tagName}', { innerHTML: 'some html'})", it is better as separate assignment: "const elm = createDomElement('span'); elm.innerHTML = 'some html';"`);
         let elmValue = elementOptions[elmOptionKey];
         typeof elmValue == "object" ? Object.assign(elm[elmOptionKey], elmValue) : elm[elmOptionKey] = elementOptions[elmOptionKey];
       }), appendToParent != null && appendToParent.appendChild && appendToParent.appendChild(elm), elm;

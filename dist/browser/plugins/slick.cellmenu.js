@@ -145,11 +145,11 @@
     }
     /** Destroy all parent menus and any sub-menus */
     destroyAllMenus() {
-      this.destroySubMenus(), document.querySelectorAll(`.slick-cell-menu${this.getGridUidSelector()}`).forEach((subElm) => subElm.remove());
+      this.destroySubMenus(), this._bindingEventService.unbindAll("parent-menu"), document.querySelectorAll(`.slick-cell-menu${this.getGridUidSelector()}`).forEach((subElm) => subElm.remove());
     }
     /** Close and destroy all previously opened sub-menus */
     destroySubMenus() {
-      document.querySelectorAll(`.slick-cell-menu.slick-submenu${this.getGridUidSelector()}`).forEach((subElm) => subElm.remove());
+      this._bindingEventService.unbindAll("sub-menu"), document.querySelectorAll(`.slick-cell-menu.slick-submenu${this.getGridUidSelector()}`).forEach((subElm) => subElm.remove());
     }
     repositionSubMenu(item, type, level, e) {
       (e.target.classList.contains("slick-cell") || this._lastMenuTypeClicked !== type) && this.destroySubMenus();
@@ -204,7 +204,7 @@
     populateCommandOrOptionItems(itemType, cellMenu, commandOrOptionMenuElm, commandOrOptionItems, args) {
       if (!args || !commandOrOptionItems || !cellMenu)
         return;
-      let isSubMenu = args.level > 0;
+      let level = (args == null ? void 0 : args.level) || 0, isSubMenu = level > 0;
       cellMenu != null && cellMenu[`${itemType}Title`] && !isSubMenu && (this[`_${itemType}TitleElm`] = document.createElement("div"), this[`_${itemType}TitleElm`].className = "slick-menu-title", this[`_${itemType}TitleElm`].textContent = cellMenu[`${itemType}Title`], commandOrOptionMenuElm.appendChild(this[`_${itemType}TitleElm`]));
       for (let i = 0, ln = commandOrOptionItems.length; i < ln; i++) {
         let addClickListener = !0, item = commandOrOptionItems[i], isItemVisible = this.runOverrideFunctionWhenExists(item.itemVisibilityOverride, args), isItemUsable = this.runOverrideFunctionWhenExists(item.itemUsabilityOverride, args);
@@ -216,8 +216,12 @@
         let iconElm = document.createElement("div");
         iconElm.className = "slick-cell-menu-icon", liElm.appendChild(iconElm), item.iconCssClass && iconElm.classList.add(...item.iconCssClass.split(" ")), item.iconImage && (iconElm.style.backgroundImage = `url(${item.iconImage})`);
         let textElm = document.createElement("span");
-        if (textElm.className = "slick-cell-menu-content", textElm.textContent = item.title || "", liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), commandOrOptionMenuElm.appendChild(liElm), addClickListener && this._bindingEventService.bind(liElm, "click", this.handleMenuItemClick.bind(this, item, itemType, args.level)), this._cellMenuProperties.subMenuOpenByEvent === "mouseover" && this._bindingEventService.bind(liElm, "mouseover", (e) => {
-          item.commandItems || item.optionItems ? (this.repositionSubMenu(item, itemType, args.level, e), this._lastMenuTypeClicked = itemType) : isSubMenu || this.destroySubMenus();
+        if (textElm.className = "slick-cell-menu-content", textElm.textContent = item.title || "", liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), commandOrOptionMenuElm.appendChild(liElm), addClickListener) {
+          let eventGroup = isSubMenu ? "sub-menu" : "parent-menu";
+          this._bindingEventService.bind(liElm, "click", this.handleMenuItemClick.bind(this, item, itemType, level), void 0, eventGroup);
+        }
+        if (this._cellMenuProperties.subMenuOpenByEvent === "mouseover" && this._bindingEventService.bind(liElm, "mouseover", (e) => {
+          item.commandItems || item.optionItems ? (this.repositionSubMenu(item, itemType, level, e), this._lastMenuTypeClicked = itemType) : isSubMenu || this.destroySubMenus();
         }), item.commandItems || item.optionItems) {
           let chevronElm = document.createElement("span");
           chevronElm.className = "sub-item-chevron", this._cellMenuProperties.subItemChevronClass ? chevronElm.classList.add(...this._cellMenuProperties.subItemChevronClass.split(" ")) : chevronElm.textContent = "\u2B9E", liElm.classList.add("slick-submenu-item"), liElm.appendChild(chevronElm);

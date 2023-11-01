@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.4.0](https://github.com/6pac/SlickGrid/compare/5.3.1...5.4.0) (2023-11-01)
+
+### Bug Fixes
+
+* dynamically create CSS rules via JS instead of innerHTML ([#883](https://github.com/6pac/SlickGrid/issues/883)) ([a08b0f8](https://github.com/6pac/SlickGrid/commit/a08b0f8f80ec1ce994dd71a3fde20fb85fdb2541)), closes [#878](https://github.com/6pac/SlickGrid/issues/878)
+* HeaderMenu `items` prop for sub-menus should be optional ([b5576de](https://github.com/6pac/SlickGrid/commit/b5576de70aabc1af154e88f29cf003288d0dfeb8))
+* replace a few innerHTML by more secure alternatives ([#885](https://github.com/6pac/SlickGrid/issues/885)) ([53ab293](https://github.com/6pac/SlickGrid/commit/53ab293e6fc862a2c4fa3729cb11f0b916b66bc2))
+* sub-menu event listeners leaking when closing sub-menus ([#888](https://github.com/6pac/SlickGrid/issues/888)) ([338ea2a](https://github.com/6pac/SlickGrid/commit/338ea2aa62337cba37e2e19cf9c6cac5fd884ccd))
+
 ## [5.3.1](https://github.com/6pac/SlickGrid/compare/5.3.0...5.3.1) (2023-10-25)
 
 ### Bug Fixes

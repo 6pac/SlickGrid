@@ -41,7 +41,7 @@
     }
     /** Destroy function when element is destroyed */
     destroy() {
-      this.setPageSize(0), this._bindingEventService.unbindAll(), this._container.innerHTML = "";
+      this.setPageSize(0), this._bindingEventService.unbindAll(), Utils.emptyElement(this._container);
     }
     getNavState() {
       let cannotLeaveEditMode = !SlickGlobalEditorLock.commitCurrentEdit(), pagingInfo = this.dataView.getPagingInfo(), lastPage = pagingInfo.totalPages - 1;

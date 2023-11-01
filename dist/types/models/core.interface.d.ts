@@ -3,6 +3,7 @@ export interface ElementEventListener {
     element: Element | Window;
     eventName: string;
     listener: EventListenerOrEventListenerObject;
+    groupName?: string;
 }
 export interface EditController {
     /** Commit Current Editor command */

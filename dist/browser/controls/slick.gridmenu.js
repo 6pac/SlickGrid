@@ -95,7 +95,7 @@
       if (level === 0) {
         closeButtonElm = document.createElement("button"), closeButtonElm.type = "button", closeButtonElm.className = "close", closeButtonElm.dataset.dismiss = "slick-gridmenu", closeButtonElm.ariaLabel = "Close";
         let spanCloseElm = document.createElement("span");
-        spanCloseElm.className = "close", spanCloseElm.ariaHidden = "true", spanCloseElm.innerHTML = "&times;", closeButtonElm.appendChild(spanCloseElm), menuElm.appendChild(closeButtonElm);
+        spanCloseElm.className = "close", spanCloseElm.ariaHidden = "true", spanCloseElm.textContent = "\xD7", closeButtonElm.appendChild(spanCloseElm), menuElm.appendChild(closeButtonElm);
       }
       this._commandListElm = document.createElement("div"), this._commandListElm.className = `slick-gridmenu-custom slick-gridmenu-command-list slick-menu-level-${level}`, this._commandListElm.role = "menu", menuElm.appendChild(this._commandListElm);
       let commandItems = (_n = (_m = (_k = (_i = item == null ? void 0 : item.commandItems) != null ? _i : item == null ? void 0 : item.customItems) != null ? _k : (_j = this._gridMenuOptions) == null ? void 0 : _j.commandItems) != null ? _m : (_l = this._gridMenuOptions) == null ? void 0 : _l.customItems) != null ? _n : [];
@@ -115,12 +115,12 @@
     }
     /** Close and destroy all previously opened sub-menus */
     destroySubMenus() {
-      document.querySelectorAll(`.slick-gridmenu.slick-submenu${this.getGridUidSelector()}`).forEach((subElm) => subElm.remove());
+      this._bindingEventService.unbindAll("sub-menu"), document.querySelectorAll(`.slick-gridmenu.slick-submenu${this.getGridUidSelector()}`).forEach((subElm) => subElm.remove());
     }
     /** Construct the custom command menu items. */
     populateCommandsMenu(commandItems, commandListElm, args) {
       var _a, _b, _c, _d;
-      let isSubMenu = args.level > 0;
+      let level = (args == null ? void 0 : args.level) || 0, isSubMenu = level > 0;
       !isSubMenu && ((_a = this._gridMenuOptions) != null && _a.commandTitle || (_b = this._gridMenuOptions) != null && _b.customTitle) && (this._commandTitleElm = document.createElement("div"), this._commandTitleElm.className = "title", this._commandTitleElm.innerHTML = this._gridMenuOptions.commandTitle || this._gridMenuOptions.customTitle, commandListElm.appendChild(this._commandTitleElm));
       for (let i = 0, ln = commandItems.length; i < ln; i++) {
         let addClickListener = !0, item = commandItems[i], callbackArgs = {
@@ -137,8 +137,12 @@
         let iconElm = document.createElement("div");
         iconElm.className = "slick-gridmenu-icon", liElm.appendChild(iconElm), item.iconCssClass && iconElm.classList.add(...item.iconCssClass.split(" ")), item.iconImage && (iconElm.style.backgroundImage = `url(${item.iconImage})`);
         let textElm = document.createElement("span");
-        if (textElm.className = "slick-gridmenu-content", textElm.innerHTML = item.title || "", liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), commandListElm.appendChild(liElm), addClickListener && this._bindingEventService.bind(liElm, "click", this.handleMenuItemClick.bind(this, item, args.level)), ((_c = this._gridMenuOptions) == null ? void 0 : _c.subMenuOpenByEvent) === "mouseover" && this._bindingEventService.bind(liElm, "mouseover", (e) => {
-          item.commandItems || item.customItems ? this.repositionSubMenu(item, args.level, e) : isSubMenu || this.destroySubMenus();
+        if (textElm.className = "slick-gridmenu-content", textElm.innerHTML = item.title || "", liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), commandListElm.appendChild(liElm), addClickListener) {
+          let eventGroup = isSubMenu ? "sub-menu" : "parent-menu";
+          this._bindingEventService.bind(liElm, "click", this.handleMenuItemClick.bind(this, item, level), void 0, eventGroup);
+        }
+        if (((_c = this._gridMenuOptions) == null ? void 0 : _c.subMenuOpenByEvent) === "mouseover" && this._bindingEventService.bind(liElm, "mouseover", (e) => {
+          item.commandItems || item.customItems ? this.repositionSubMenu(item, level, e) : isSubMenu || this.destroySubMenus();
         }), item.commandItems || item.customItems) {
           let chevronElm = document.createElement("span");
           chevronElm.className = "sub-item-chevron", (_d = this._gridMenuOptions) != null && _d.subItemChevronClass ? chevronElm.classList.add(...this._gridMenuOptions.subItemChevronClass.split(" ")) : chevronElm.textContent = "\u2B9E", liElm.classList.add("slick-submenu-item"), liElm.appendChild(chevronElm);

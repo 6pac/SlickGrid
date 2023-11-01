@@ -194,6 +194,8 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
     showTopPanel?: boolean;
     /** Defaults to true, which leads to render a separate span for the number and styles it with css class <i>slick-sort-indicator-numbered</i> */
     sortColNumberInSeparateSpan?: boolean;
+    /** Defaults to undefined. If we are inside a Shadow DOM tree, this must be the Shadow root of the tree */
+    shadowRoot?: ShadowRoot;
     /**
      * Defaults to false, which leads to suppress the cell from becoming active when cell as an editor and is clicked.
      * This flag was originally enabled to work properly with (Row Selections & Inline Editors) features but it caused problem when also used with CellExternalCopyManager,

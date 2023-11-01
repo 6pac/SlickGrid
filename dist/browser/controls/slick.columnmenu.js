@@ -38,7 +38,7 @@
       let buttonElm = document.createElement("button");
       buttonElm.type = "button", buttonElm.className = "close", buttonElm.dataset.dismiss = "slick-columnpicker", buttonElm.ariaLabel = "Close";
       let spanCloseElm = document.createElement("span");
-      if (spanCloseElm.className = "close", spanCloseElm.ariaHidden = "true", spanCloseElm.innerHTML = "&times;", buttonElm.appendChild(spanCloseElm), this._menuElm.appendChild(buttonElm), this._options.columnPickerTitle || (_a = this._options.columnPicker) != null && _a.columnTitle) {
+      if (spanCloseElm.className = "close", spanCloseElm.ariaHidden = "true", spanCloseElm.textContent = "\xD7", buttonElm.appendChild(spanCloseElm), this._menuElm.appendChild(buttonElm), this._options.columnPickerTitle || (_a = this._options.columnPicker) != null && _a.columnTitle) {
         let columnTitle = this._options.columnPickerTitle || ((_b = this._options.columnPicker) == null ? void 0 : _b.columnTitle);
         this._columnTitleElm = document.createElement("div"), this._columnTitleElm.className = "slick-gridmenu-custom", this._columnTitleElm.textContent = columnTitle || "", this._menuElm.appendChild(this._columnTitleElm);
       }
