@@ -44,6 +44,11 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   auto?: boolean;
 
   /**
+   * Added for CSP header because of dynamic css generation.
+   */
+  nonce?: string;
+
+  /**
    * Defaults to false, when enabled will try to commit the current edit without focusing on the next row.
    * If a custom editor is implemented and the grid cannot auto commit, you must use this option to implement it yourself
    */
