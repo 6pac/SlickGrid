@@ -6436,7 +6436,7 @@ var SlickGrid = class {
     this.options = options;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.4.1");
+    __publicField(this, "slickGridVersion", "5.4.2");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -7879,7 +7879,7 @@ var SlickGrid = class {
    * @param {Boolean} [suppressSetOverflow] - do we want to suppress the call to `setOverflow`
    */
   setOptions(args, suppressRender, suppressColumnSet, suppressSetOverflow) {
-    this.prepareForOptionsChange(), this._options.enableAddRow !== args.enableAddRow && this.invalidateRow(this.getDataLength());
+    this.prepareForOptionsChange(), this._options.enableAddRow !== args.enableAddRow && this.invalidateRow(this.getDataLength()), args.frozenColumn && (this.getViewports().forEach((vp) => vp.scrollLeft = 0), this.handleScroll());
     let originalOptions = Utils28.extend(!0, {}, this._options);
     this._options = Utils28.extend(this._options, args), this.trigger(this.onSetOptions, { optionsBefore: originalOptions, optionsAfter: this._options }), this.internal_setOptions(suppressRender, suppressColumnSet, suppressSetOverflow);
   }
@@ -9590,7 +9590,7 @@ var SlickRemoteModel = class {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.4.1
+ * SlickGrid v5.4.2
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

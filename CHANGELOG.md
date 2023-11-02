@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.4.2](https://github.com/6pac/SlickGrid/compare/5.4.1...5.4.2) (2023-11-02)
+
+### Bug Fixes
+
+* misaligned column headers after horizontal scroll then freeze ([#901](https://github.com/6pac/SlickGrid/issues/901)) ([7f11eff](https://github.com/6pac/SlickGrid/commit/7f11eff8b2b82c7541bb114d49f05be026fa60df))
+
 ## [5.4.1](https://github.com/6pac/SlickGrid/compare/5.4.0...5.4.1) (2023-11-01)
 
 ### Bug Fixes
