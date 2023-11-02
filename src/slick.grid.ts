@@ -2327,7 +2327,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   protected createCssRules() {
     this._style = document.createElement('style');
-    this._style.nonce = this.options.nonce || '';
+    this._style.nonce = this._options.nonce || '';
     (this._options.shadowRoot || document.head).appendChild(this._style);
     const sheet = this._style.sheet;
     if (sheet) {
