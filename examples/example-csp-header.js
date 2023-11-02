@@ -11,6 +11,7 @@ var columns = [
 var options = {
   enableCellNavigation: true,
   enableColumnReorder: false,
+  nonce: 'random-string',
   sanitizer: (html) => DOMPurify.sanitize(html, { RETURN_TRUSTED_TYPE: true })
 };
 

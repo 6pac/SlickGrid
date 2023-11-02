@@ -229,6 +229,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     enableAsyncPostRenderCleanup: false,
     asyncPostRenderCleanupDelay: 40,
     auto: false,
+    nonce: '',
     editorLock: GlobalEditorLock,
     showColumnHeader: true,
     showHeaderRow: false,
@@ -2326,7 +2327,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   protected createCssRules() {
     this._style = document.createElement('style');
-    this._style.nonce = 'random-string';
+    this._style.nonce = this.options.nonce || '';
     (this._options.shadowRoot || document.head).appendChild(this._style);
     const sheet = this._style.sheet;
     if (sheet) {
