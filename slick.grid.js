@@ -3155,6 +3155,12 @@ if (typeof Slick === "undefined") {
         invalidateRow(getDataLength());
       }
 
+      // before applying column freeze, we need our viewports to be scrolled back to left to avoid misaligned column headers
+      if (args.frozenColumn) {
+        getViewports().forEach(vp => vp.scrollLeft = 0);
+        handleScroll(); // trigger scroll to realign column headers as well
+      }
+
       var originalOptions = utils.extend(true, {}, options);
       options = utils.extend(options, args);
       trigger(self.onSetOptions, { "optionsBefore": originalOptions, "optionsAfter": options });
