@@ -62,6 +62,7 @@ if (typeof Slick === "undefined") {
       enableAsyncPostRenderCleanup: false,
       asyncPostRenderCleanupDelay: 40,
       autoHeight: false,
+      nonce: '',
       editorLock: Slick.GlobalEditorLock,
       showColumnHeader: true,
       showHeaderRow: false,
@@ -2056,7 +2057,7 @@ if (typeof Slick === "undefined") {
 
     function createCssRules() {
       _style = document.createElement('style');
-      _style.nonce = 'random-string';
+      _style.nonce = options.nonce || '';
       (options.shadowRoot || document.head).appendChild(_style);
 
       const rowHeight = (options.rowHeight - cellHeightDiff);
