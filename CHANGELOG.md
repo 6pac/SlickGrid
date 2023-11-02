@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.1.3](https://github.com/6pac/SlickGrid/compare/4.1.2...4.1.3) (2023-11-02)
+
+### Bug Fixes
+
+* add `nonce` grid option set the nonce value for CSP header ([#904](https://github.com/6pac/SlickGrid/issues/904)) ([21a220e](https://github.com/6pac/SlickGrid/commit/21a220ea1355fe12efb149ecd1331959ebbdced0)), closes [#902](https://github.com/6pac/SlickGrid/issues/902)
+* misaligned column headers after horizontal scroll then freeze ([#903](https://github.com/6pac/SlickGrid/issues/903)) ([abebf8a](https://github.com/6pac/SlickGrid/commit/abebf8a96b34e8dc733bcfdb94683b083d7edb3a)), closes [#901](https://github.com/6pac/SlickGrid/issues/901)
+
 ## [4.1.2](https://github.com/6pac/SlickGrid/compare/4.1.1...4.1.2) (2023-11-01)
 
 ### Bug Fixes
