@@ -80,7 +80,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   protected compiledFilterWithCachingNew?: Function | null;
   protected filterCache: any[] = [];
   protected _grid?: SlickGrid; // grid object will be defined only after using "syncGridSelection()" method"
-  protected useNewFilter = false;
+  protected useNewFilter = true;
 
   // grouping
   protected groupingInfoDefaults: Grouping = {
@@ -1031,26 +1031,18 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   protected compileFilterNew(_items: TData[], _args: any): TData[] {
-    //const filterInfo = this.getFunctionInfo(this.filter as Function);
-  
-    //how do i fix this error?
-
-    // const filterPath1 = () => { continue _coreloop; };
-    // const filterPath2 = () => { _retval[_idx++] = $item$; continue _coreloop; };
+    if (typeof this.filterNew !== 'function') {
+      return [];
+    }
     const _retval: TData[] = [];
-    let $item$; 
-  
-    _coreloop: 
-    for (let _i = 0, _il = _items.length; _i < _il; _i++) { 
-      $item$ = _items[_i]; 
-      if(this.filterNew){
-          const exists = this.filterNew($item$, _args);
-          if(exists){
-            _retval.push($item$);
-          }
+    const _il = _items.length;
+
+    for (let _i = 0; _i < _il; _i++) {
+      if (this.filterNew(_items[_i], _args)) {
+        _retval.push(_items[_i]);
       }
-    } 
-  
+    }
+
     return _retval;
   }
   protected compileFilter(): FilterFn<TData> {
@@ -1135,23 +1127,20 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     return fn;
   }
 
-  protected compileFilterWithCachingNew(_items: TData[], _args: any, filterCache: any[]): TData[]{
+  protected compileFilterWithCachingNew(_items: TData[], _args: any, filterCache: any[]): TData[] {
+    if (typeof this.filterNew !== 'function') {
+      return [];
+    }
+  
     const _retval: TData[] = [];
-    let _idx = 0;
-    let $item$; 
-    _coreloop: 
-    for (let _i = 0, _il = _items.length; _i < _il; _i++) { 
-      $item$ = _items[_i]; 
-      if (filterCache[_i]) { 
-        _retval[_idx++] = $item$; 
-        continue _coreloop; 
-      } 
-      //should only be called if it isnt present in the cache
-      if(this.filterNew && this.filterNew($item$, _args)){
-        _retval.push($item$);
+    const _il = _items.length;
+  
+    for (let _i = 0; _i < _il; _i++) {
+      if (filterCache[_i] || this.filterNew(_items[_i], _args)) {
+        _retval.push(_items[_i]);
       }
     }
-
+  
     return _retval;
   }
 
@@ -1205,15 +1194,14 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   protected getFilteredAndPagedItems(items: TData[]) {
-    console.time("start");
-
+    console.time("filtering");
     if (this.useNewFilter ? this.filterNew : this.filter) {
       let batchFilter: Function;
       let batchFilterWithCaching: Function;
-      if(this.useNewFilter){
+      if (this.useNewFilter) {
         batchFilter = (this._options.inlineFilters ? this.compiledFilterNew : this.uncompiledFilter) as Function;
         batchFilterWithCaching = (this._options.inlineFilters ? this.compiledFilterWithCachingNew : this.uncompiledFilterWithCaching) as Function;
-      }else {
+      } else {
         batchFilter = (this._options.inlineFilters ? this.compiledFilter : this.uncompiledFilter) as Function;
         batchFilterWithCaching = (this._options.inlineFilters ? this.compiledFilterWithCaching : this.uncompiledFilterWithCaching) as Function;
       }
@@ -1232,7 +1220,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       // can be caught
       this.filteredItems = this.pagesize ? items : items.concat();
     }
-    // console.timeLog("start");
+
     // get the current page
     let paged: TData[];
     if (this.pagesize) {
@@ -1247,7 +1235,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     } else {
       paged = this.filteredItems;
     }
-    console.timeEnd("start");
+    console.timeEnd("filtering");
     return { totalRows: this.filteredItems.length, rows: paged };
   }
 
@@ -1280,7 +1268,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
             // no good way to compare totals since they are arbitrary DTOs
             // deep object comparison is pretty expensive
             // always considering them 'dirty' seems easier for the time being
-          ((item as SlickGroupTotals_).__groupTotals || (r as SlickGroupTotals_).__groupTotals))
+            ((item as SlickGroupTotals_).__groupTotals || (r as SlickGroupTotals_).__groupTotals))
           || item[this.idProperty as keyof TData] !== r[this.idProperty as keyof TData]
           || (this.updated?.[item[this.idProperty as keyof TData]])
         ) {
