@@ -4,8 +4,9 @@
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
-  <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'nonce-browser-sync'; style-src 'self' 'nonce-random-string'; require-trusted-types-for 'script'; trusted-types dompurify"> -->
-  <meta http-equiv="Content-Security-Policy" content="require-trusted-types-for 'script'; trusted-types dompurify">
+  <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'nonce-browser-sync'; style-src 'self' 'nonce-random-string'; require-trusted-types-for 'script'; trusted-types dompurify sanitizeWithDomPurify"> -->
+  <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'nonce-browser-sync' 'nonce-random-string'; style-src 'self' 'unsafe-inline' 'nonce-random-string'; require-trusted-types-for 'script'; trusted-types dompurify sanitizeWithDomPurify"> -->
+    <!-- <meta http-equiv="Content-Security-Policy" content="require-trusted-types-for 'script'; trusted-types dompurify"> -->
 </head>
 <body>
 <table width="100%">
@@ -33,12 +34,17 @@
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
 <!-- <script src="./example-csp-policy.js"></script> -->
 
+
 <script src="../dist/browser/slick.core.js"></script>
 <script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.formatters.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
+<script src="../dist/browser/plugins/slick.rowselectionmodel.js"></script>
 <script src="../dist/browser/slick.grid.js"></script>
-<script src="../dist/browser/plugins/slick.cellrangedecorator.js"></script>
-<script src="../dist/browser/plugins/slick.cellrangeselector.js"></script>
-<script src="../dist/browser/plugins/slick.cellselectionmodel.js"></script>
+<script src="../dist/browser/slick.dataview.js"></script>
+<script src="../dist/browser/controls/slick.pager.js"></script>
+<script src="../dist/browser/controls/slick.columnpicker.js"></script>
+
 <script src="./example-csp-header.js"></script>
 </body>
 </html>

@@ -60,6 +60,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   protected idxById = new Map<DataIdType, number>();   // indexes by id
   protected rowsById: { [id: DataIdType]: number } | undefined = undefined;       // rows by id; lazy-calculated
   protected filter: FilterFn<TData> | null = null;         // filter function
+  protected filterNew: Function | null = null;         // filter function
   protected updated: ({ [id: DataIdType]: boolean }) | null = null;        // updated item ids
   protected suspend = false;            // suspends the recalculation
   protected isBulkSuspend = false;      // delays protectedious operations like the
@@ -74,9 +75,12 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   protected filterArgs: any;
   protected filteredItems: TData[] = [];
   protected compiledFilter?: FilterFn<TData> | null;
+  protected compiledFilterNew?: Function | null;
   protected compiledFilterWithCaching?: FilterFn<TData> | null;
+  protected compiledFilterWithCachingNew?: Function | null;
   protected filterCache: any[] = [];
   protected _grid?: SlickGrid; // grid object will be defined only after using "syncGridSelection()" method"
+  protected useNewFilter = false;
 
   // grouping
   protected groupingInfoDefaults: Grouping = {
@@ -359,16 +363,20 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
 
   /** Get current Filter used by the DataView */
   getFilter() {
-    return this.filter;
+    return this.useNewFilter ? this.filterNew : this.filter;
   }
 
   /**
    * Set a Filter that will be used by the DataView
    * @param {Function} fn - filter callback function
    */
-  setFilter(filterFn: FilterFn<TData>) {
+  setFilter(filterFn: FilterFn<TData>, filterFnNew: Function) {
+    // console.log(filterFnNew, filterFn, "hit");
+    this.filterNew = filterFnNew;
     this.filter = filterFn;
     if (this._options.inlineFilters) {
+      this.compiledFilterNew = this.compileFilterNew;
+      this.compiledFilterWithCachingNew = this.compileFilterWithCachingNew;
       this.compiledFilter = this.compileFilter();
       this.compiledFilterWithCaching = this.compileFilterWithCaching();
     }
@@ -1022,6 +1030,29 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     }
   }
 
+  protected compileFilterNew(_items: TData[], _args: any): TData[] {
+    //const filterInfo = this.getFunctionInfo(this.filter as Function);
+  
+    //how do i fix this error?
+
+    // const filterPath1 = () => { continue _coreloop; };
+    // const filterPath2 = () => { _retval[_idx++] = $item$; continue _coreloop; };
+    const _retval: TData[] = [];
+    let $item$; 
+  
+    _coreloop: 
+    for (let _i = 0, _il = _items.length; _i < _il; _i++) { 
+      $item$ = _items[_i]; 
+      if(this.filterNew){
+          const exists = this.filterNew($item$, _args);
+          if(exists){
+            _retval.push($item$);
+          }
+      }
+    } 
+  
+    return _retval;
+  }
   protected compileFilter(): FilterFn<TData> {
     const filterInfo = this.getFunctionInfo(this.filter as Function);
 
@@ -1104,6 +1135,26 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     return fn;
   }
 
+  protected compileFilterWithCachingNew(_items: TData[], _args: any, filterCache: any[]): TData[]{
+    const _retval: TData[] = [];
+    let _idx = 0;
+    let $item$; 
+    _coreloop: 
+    for (let _i = 0, _il = _items.length; _i < _il; _i++) { 
+      $item$ = _items[_i]; 
+      if (filterCache[_i]) { 
+        _retval[_idx++] = $item$; 
+        continue _coreloop; 
+      } 
+      //should only be called if it isnt present in the cache
+      if(this.filterNew && this.filterNew($item$, _args)){
+        _retval.push($item$);
+      }
+    }
+
+    return _retval;
+  }
+
   /**
    * In ES5 we could set the function name on the fly but in ES6 this is forbidden and we need to set it through differently
    * We can use Object.defineProperty and set it the property to writable, see MDN for reference
@@ -1154,10 +1205,19 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   protected getFilteredAndPagedItems(items: TData[]) {
-    if (this.filter) {
-      const batchFilter = (this._options.inlineFilters ? this.compiledFilter : this.uncompiledFilter) as Function;
-      const batchFilterWithCaching = (this._options.inlineFilters ? this.compiledFilterWithCaching : this.uncompiledFilterWithCaching) as Function;
+    console.time("start");
 
+    if (this.useNewFilter ? this.filterNew : this.filter) {
+      let batchFilter: Function;
+      let batchFilterWithCaching: Function;
+      if(this.useNewFilter){
+        batchFilter = (this._options.inlineFilters ? this.compiledFilterNew : this.uncompiledFilter) as Function;
+        batchFilterWithCaching = (this._options.inlineFilters ? this.compiledFilterWithCachingNew : this.uncompiledFilterWithCaching) as Function;
+      }else {
+        batchFilter = (this._options.inlineFilters ? this.compiledFilter : this.uncompiledFilter) as Function;
+        batchFilterWithCaching = (this._options.inlineFilters ? this.compiledFilterWithCaching : this.uncompiledFilterWithCaching) as Function;
+      }
+      // console.log(batchFilter, batchFilterWithCaching);
       if (this.refreshHints.isFilterNarrowing) {
         this.filteredItems = batchFilter.call(this, this.filteredItems, this.filterArgs);
       } else if (this.refreshHints.isFilterExpanding) {
@@ -1165,13 +1225,14 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       } else if (!this.refreshHints.isFilterUnchanged) {
         this.filteredItems = batchFilter.call(this, items, this.filterArgs);
       }
+      // console.log(this.filteredItems, "items");
     } else {
       // special case:  if not filtering and not paging, the resulting
       // rows collection needs to be a copy so that changes due to sort
       // can be caught
       this.filteredItems = this.pagesize ? items : items.concat();
     }
-
+    // console.timeLog("start");
     // get the current page
     let paged: TData[];
     if (this.pagesize) {
@@ -1186,6 +1247,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     } else {
       paged = this.filteredItems;
     }
+    console.timeEnd("start");
     return { totalRows: this.filteredItems.length, rows: paged };
   }
 

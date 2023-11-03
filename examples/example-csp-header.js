@@ -1,4 +1,6 @@
 var grid;
+var dataView;
+var searchString;
 var columns = [
   { id: "title", name: "Title", field: "title" },
   { id: "duration", name: "Duration", field: "duration" },
@@ -26,8 +28,9 @@ document.addEventListener("DOMContentLoaded", function () {
   linkElement.style.fontSize = "22px";
 
   var data = [];
-  for (var i = 0; i < 500; i++) {
+  for (var i = 0; i < 500000; i++) {
     data[i] = {
+      id: i,
       title: "Task " + i,
       duration: "5 days",
       percentComplete: Math.round(Math.random() * 100),
@@ -57,7 +60,60 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 
-  grid = new Slick.Grid("#myGrid", data, columns, options);
+  dataView = new Slick.Data.DataView({ inlineFilters: true });
+  grid = new Slick.Grid("#myGrid", dataView, columns, options);
+  dataView.grid = grid;
+  // grid.setSelectionModel(new Slick.CellSelectionModel());
+  grid.setSelectionModel(new Slick.RowSelectionModel({ selectActiveRow: true}));
 
-  grid.setSelectionModel(new Slick.CellSelectionModel());
+  grid.onSort.subscribe(function (e, args) {
+    var comparer = function (a, b) {
+      if (args.sortCols[0].sortAsc)
+        return (a[args.sortCols[0].sortCol.field] > b[args.sortCols[0].sortCol.field]) ? 1 : -1;
+      else
+        return (a[args.sortCols[0].sortCol.field] < b[args.sortCols[0].sortCol.field]) ? 1 : -1;
+    }
+
+    this.getData().sort(comparer, args.sortAsc);
+  });
+  dataView.onRowCountChanged.subscribe(function (e, args) {
+    args.dataView.grid.updateRowCount();
+    args.dataView.grid.render();
+  });
+
+  dataView.onRowsChanged.subscribe(function (e, args) {
+    args.dataView.grid.invalidateRows(args.rows);
+    args.dataView.grid.render();
+  });
+
+  dataView.beginUpdate();
+  dataView.setItems(data);
+  dataView.setFilterArgs({ searchString: searchString });
+ dataView.setFilter(myFilter);
+  dataView.endUpdate();
 });
+function updateFilter() {
+  dataView.setFilterArgs({
+    searchString: searchString
+  });
+  dataView.refresh();
+}
+function myFilter(item, args) {
+  console.log(item, args)
+  var searchForString = args.searchString?.toLowerCase();
+  //Check if input is empty
+  if (searchForString?.length == 0 || !searchForString) {
+      return true;
+  }
+  let keys = columns;// args.context.keys;
+  //Check if input value includes searchString value
+  for (var i = 0; i < keys.length; i++) {
+      if (item[keys[i]?.field] != null) {
+          if (item[keys[i]?.field].toString().toLowerCase().includes(searchForString)) {
+              return true;
+          }
+      }
+  }
+
+  return false;
+}

@@ -145,11 +145,11 @@
     // wire up the slider to apply the filter to the model
     var slider = document.getElementById("pcSlider");
     var sliderCallback = function() {
-      if (percentCompleteThreshold != this.value) {
+      // if (percentCompleteThreshold != this.value) {
         window.clearTimeout(h_runfilters);
         h_runfilters = window.setTimeout(filterAndUpdate, 10);
         percentCompleteThreshold = this.value;
-      }
+      // }
     }
     slider.oninput = sliderCallback;
 
@@ -173,7 +173,7 @@
     // initialize the model after all the events have been hooked up
     dataView.beginUpdate();
     dataView.setItems(data);
-    dataView.setFilter(myFilter);
+    dataView.setFilter(myFilter, myFilter);
     dataView.setFilterArgs(0);
     dataView.endUpdate();
   });
