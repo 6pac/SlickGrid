@@ -3806,7 +3806,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     const frozenRowOffset = this.getFrozenRowOffset(row);
 
-    const rowHtml = `<div class="ui-widget-content ${rowCss}" style="top:${(this.getRowTop(row) - frozenRowOffset)}px">`;
+    const rowHtml = `<div class="ui-widget-content ${rowCss}" data-top=${(this.getRowTop(row) - frozenRowOffset)}>`; //style="top:${(this.getRowTop(row) - frozenRowOffset)}px"
 
     stringArrayL.push(rowHtml);
 
@@ -4660,7 +4660,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const xRight = document.createElement('div');
     x.innerHTML = this.sanitizeHtmlString(stringArrayL.join(''));
     xRight.innerHTML = this.sanitizeHtmlString(stringArrayR.join(''));
-
+    const elements = x.querySelectorAll('[data-top]') as NodeListOf<HTMLElement>;
+    elements?.forEach((element: HTMLElement) => {
+      const top = element.dataset.top;
+      if (top) {
+        element.style.top = `${top}px`;
+      }
+    });
+    
     for (let i = 0, ii = rows.length; i < ii; i++) {
       if ((this.hasFrozenRows) && (rows[i] >= this.actualFrozenRow)) {
         if (this.hasFrozenColumns()) {

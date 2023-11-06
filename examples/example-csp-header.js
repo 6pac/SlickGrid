@@ -13,7 +13,7 @@ var columns = [
 var options = {
   enableCellNavigation: true,
   enableColumnReorder: false,
-  // nonce: 'random-string', //tmp removal because there is another issue which needs to get fixed before this can be added back, alteast for testing
+  nonce: 'random-string',
   sanitizer: (html) => DOMPurify.sanitize(html, { RETURN_TRUSTED_TYPE: true })
 };
 
