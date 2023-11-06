@@ -31,8 +31,8 @@ describe('Example - Checkbox Row Select', () => {
     });
 
     it('should be able to select first 2 rows and now expect 3 rows selected', () => {
-      cy.get(`.slick-row[style="top:${GRID_ROW_HEIGHT * 0}px"] > .slick-cell:nth(0) input[type=checkbox]`).click();
-      cy.get(`.slick-row[style="top:${GRID_ROW_HEIGHT * 1}px"] > .slick-cell:nth(0) input[type=checkbox]`).click();
+      cy.get(`.slick-row[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(0) input[type=checkbox]`).click();
+      cy.get(`.slick-row[style="top: ${GRID_ROW_HEIGHT * 1}px;"] > .slick-cell:nth(0) input[type=checkbox]`).click();
 
       cy.get('#myGrid')
         .find('.slick-cell-checkboxsel input:checked')
@@ -43,7 +43,7 @@ describe('Example - Checkbox Row Select', () => {
       cy.get('#unselectRow5')
         .click();
 
-      cy.get(`.slick-row[style="top:${GRID_ROW_HEIGHT * 4}px"] > .slick-cell:nth(0) input[type=checkbox]`)
+      cy.get(`.slick-row[style="top: ${GRID_ROW_HEIGHT * 4}px;"] > .slick-cell:nth(0) input[type=checkbox]`)
         .should('not.be.checked');
 
       cy.get('#myGrid')
