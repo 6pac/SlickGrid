@@ -145,39 +145,38 @@
     // wire up the slider to apply the filter to the model
     var slider = document.getElementById("pcSlider");
     var sliderCallback = function() {
-      // if (percentCompleteThreshold != this.value) {
-        // window.clearTimeout(h_runfilters);
-        // h_runfilters = window.setTimeout(filterAndUpdate, 10);
-        filterAndUpdate();
+      if (percentCompleteThreshold != this.value) {
+        window.clearTimeout(h_runfilters);
+        h_runfilters = window.setTimeout(filterAndUpdate, 10);
         percentCompleteThreshold = this.value;
-      // }
+      }
     }
     slider.oninput = sliderCallback;
 
-    
+    function filterAndUpdate() {
+      var isNarrowing = percentCompleteThreshold > prevPercentCompleteThreshold;
+      var isExpanding = percentCompleteThreshold < prevPercentCompleteThreshold;
+      var renderedRange = grid.getRenderedRange();
+
+      dataView.setFilterArgs(percentCompleteThreshold);
+      dataView.setRefreshHints({
+        ignoreDiffsBefore: renderedRange.top,
+        ignoreDiffsAfter: renderedRange.bottom + 1,
+        isFilterNarrowing: isNarrowing,
+        isFilterExpanding: isExpanding
+      });
+      dataView.refresh();
+
+      prevPercentCompleteThreshold = percentCompleteThreshold;
+    }
+
     // initialize the model after all the events have been hooked up
     dataView.beginUpdate();
     dataView.setItems(data);
-    dataView.setFilter(myFilter, myFilter);
+    dataView.setFilter(myFilter);
     dataView.setFilterArgs(0);
     dataView.endUpdate();
   });
-  function filterAndUpdate() {
-    var isNarrowing = percentCompleteThreshold > prevPercentCompleteThreshold;
-    var isExpanding = percentCompleteThreshold < prevPercentCompleteThreshold;
-    var renderedRange = grid.getRenderedRange();
-
-    dataView.setFilterArgs(percentCompleteThreshold);
-    dataView.setRefreshHints({
-      ignoreDiffsBefore: renderedRange.top,
-      ignoreDiffsAfter: renderedRange.bottom + 1,
-      isFilterNarrowing: isNarrowing,
-      isFilterExpanding: isExpanding
-    });
-    dataView.refresh();
-
-    prevPercentCompleteThreshold = percentCompleteThreshold;
-  }
 </script>
 </body>
 </html>

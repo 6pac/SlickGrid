@@ -13,7 +13,7 @@ var columns = [
 var options = {
   enableCellNavigation: true,
   enableColumnReorder: false,
-  nonce: 'random-string',
+  // nonce: 'random-string', //tmp removal because there is another issue which needs to get fixed before this can be added back, alteast for testing
   sanitizer: (html) => DOMPurify.sanitize(html, { RETURN_TRUSTED_TYPE: true })
 };
 
@@ -21,6 +21,15 @@ document.addEventListener("DOMContentLoaded", function () {
   let gridElement = document.getElementById("myGrid");
   gridElement.style.width = "600px";
   gridElement.style.height = "500px";
+  let search = document.getElementById("search");
+  let searchLabel= document.getElementById("search-label");
+  searchLabel.style.width = "200px";
+  searchLabel.style.float = "left";
+  search.style.width = "100px";
+  search.addEventListener("input", function (e) {
+    searchString = e.target.value;
+    updateFilter();
+  });
 
   let linkElement = document.getElementById("link");
   //text-decoration: none; font-size: 22px
@@ -28,7 +37,7 @@ document.addEventListener("DOMContentLoaded", function () {
   linkElement.style.fontSize = "22px";
 
   var data = [];
-  for (var i = 0; i < 500000; i++) {
+  for (var i = 0; i < 500; i++) {
     data[i] = {
       id: i,
       title: "Task " + i,
@@ -40,7 +49,8 @@ document.addEventListener("DOMContentLoaded", function () {
     };
   }
 
-  data.getItemMetadata = function (row) {
+  dataView = new Slick.Data.DataView({ inlineFilters: true, useCSPSafeFilter: true });
+  dataView.getItemMetadata = function (row) {
     if (row % 2 === 1) {
       return {
         "columns": {
@@ -60,10 +70,8 @@ document.addEventListener("DOMContentLoaded", function () {
     }
   };
 
-  dataView = new Slick.Data.DataView({ inlineFilters: true });
   grid = new Slick.Grid("#myGrid", dataView, columns, options);
   dataView.grid = grid;
-  // grid.setSelectionModel(new Slick.CellSelectionModel());
   grid.setSelectionModel(new Slick.RowSelectionModel({ selectActiveRow: true}));
 
   grid.onSort.subscribe(function (e, args) {
@@ -99,19 +107,15 @@ function updateFilter() {
   dataView.refresh();
 }
 function myFilter(item, args) {
-  console.log(item, args)
   var searchForString = args.searchString?.toLowerCase();
   //Check if input is empty
   if (searchForString?.length == 0 || !searchForString) {
       return true;
   }
-  let keys = columns;// args.context.keys;
   //Check if input value includes searchString value
-  for (var i = 0; i < keys.length; i++) {
-      if (item[keys[i]?.field] != null) {
-          if (item[keys[i]?.field].toString().toLowerCase().includes(searchForString)) {
-              return true;
-          }
+  for (var i = 0; i < columns.length; i++) {
+      if (item[columns[i]?.field] != null && item[columns[i]?.field].toString().toLowerCase().includes(searchForString)) {
+        return true;
       }
   }
 

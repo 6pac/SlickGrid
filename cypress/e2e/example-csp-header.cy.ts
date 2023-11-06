@@ -16,7 +16,7 @@ describe('Example CSP Header - with Column Span & Header Grouping', () => {
   it('should display Example title', () => {
     cy.visit(`${Cypress.config('baseUrl')}/examples/example-csp-header.html`);
     cy.get('h2').contains('Demonstrates');
-    cy.get('h2 + ul > li').first().contains('column span');
+    cy.get('h2 + ul > li').first().contains('CSP header');
   });
 
   it('should have exact column titles', () => {

@@ -5,8 +5,9 @@
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'nonce-browser-sync'; style-src 'self' 'nonce-random-string'; require-trusted-types-for 'script'; trusted-types dompurify sanitizeWithDomPurify"> -->
+  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'nonce-browser-sync'; style-src 'self' 'unsafe-inline'; require-trusted-types-for 'script'; trusted-types dompurify">
   <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'nonce-browser-sync' 'nonce-random-string'; style-src 'self' 'unsafe-inline' 'nonce-random-string'; require-trusted-types-for 'script'; trusted-types dompurify sanitizeWithDomPurify"> -->
-    <!-- <meta http-equiv="Content-Security-Policy" content="require-trusted-types-for 'script'; trusted-types dompurify"> -->
+  <!-- <meta http-equiv="Content-Security-Policy" content="require-trusted-types-for 'script'; trusted-types dompurify"> -->
 </head>
 <body>
 <table width="100%">
@@ -15,12 +16,14 @@
       <div id="myGrid"></div>
     </td>
     <td valign="top">
+      <label id="search-label">And search including:</label>
+      <input type=text id="search">
       <h2>
         <a href="/examples/index.html" id="link">&#x2302;</a>
         Demonstrates:
       </h2>
       <ul>
-        <li>column span</li>
+        <li>CSP header, Currently used "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'nonce-browser-sync'; style-src 'self' 'unsafe-inline'; require-trusted-types-for 'script'; trusted-types dompurify"</li>
       </ul>
         <h2>View Source:</h2>
         <ul>
