@@ -4660,10 +4660,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const xRight = document.createElement('div');
     x.innerHTML = this.sanitizeHtmlString(stringArrayL.join(''));
     xRight.innerHTML = this.sanitizeHtmlString(stringArrayR.join(''));
+    console.time("applying css")
     const elements1 = x.querySelectorAll('[data-top]') as NodeListOf<HTMLElement>;
     const elements2 = xRight.querySelectorAll('[data-top]') as NodeListOf<HTMLElement>;
     this.applyTopStyling(elements1);
     this.applyTopStyling(elements2);
+    console.timeEnd("applying css")
     
     for (let i = 0, ii = rows.length; i < ii; i++) {
       if ((this.hasFrozenRows) && (rows[i] >= this.actualFrozenRow)) {
@@ -4700,7 +4702,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected applyTopStyling(elements: NodeListOf<HTMLElement>) {
     elements?.forEach((element: HTMLElement) => {
       const top = element.dataset.top;
-      if (top) {
+      if (top !== undefined) {
         element.style.top = top;
       }
     });
