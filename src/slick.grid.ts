@@ -4662,7 +4662,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         node = x.lastChild as HTMLElement;
 
         //no idea why node would be null here but apparently it is..
-        if (!node && this._options.nonce) {
+        if (!node) {
           continue;
         }
         if (this.hasFrozenColumns() && (columnIdx > this._options.frozenColumn!)) {
