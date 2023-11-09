@@ -3873,12 +3873,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         i += ((colspan as number) - 1);
       }
     }
-    if(!this._options.nonce){
+    if (!this._options.nonce) {
       (stringArrayL as string[]).push('</div>');
 
-    if (this.hasFrozenColumns()) {
-      (stringArrayR as string[]).push('</div>');
-    }
+      if (this.hasFrozenColumns()) {
+        (stringArrayR as string[]).push('</div>');
+      }
     }
   }
 
