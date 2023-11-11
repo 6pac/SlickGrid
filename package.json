@@ -19,6 +19,7 @@
       "require": "./dist/cjs/index.js",
       "default": "./dist/esm/index.js"
     },
+    "./dist/styles/*": "./dist/styles/*",
     "./package.json": "./package.json"
   },
   "directories": {
