@@ -3785,7 +3785,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return item[columnDef.field as keyof TData];
   }
 
-  protected appendRowHtml(stringArrayL: HTMLElement[] | string[], stringArrayR: HTMLElement[] | string[], row: number, range: CellViewportRange, dataLength: number) {
+  protected appendRowHtml(stringArrayL: HTMLElement[], stringArrayR: HTMLElement[], row: number, range: CellViewportRange, dataLength: number) {
     const d = this.getDataItem(row);
     const dataLoading = row < dataLength && !d;
     let rowCss = 'slick-row' +
@@ -3808,14 +3808,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     const rowDiv = document.createElement('div');
     let rowDivR: HTMLElement | undefined;
-    if (!this._options.nonce) {
-      const rowHtml = `<div class="ui-widget-content ${rowCss}" style="top: ${(this.getRowTop(row) - frozenRowOffset)}px;">`;
-      (stringArrayL as string[]).push(rowHtml);
-
-      if (this.hasFrozenColumns()) {
-        (stringArrayR as string[]).push(rowHtml);
-      }
-    } else {
+   
       rowDiv.className = 'ui-widget-content ' + rowCss;
       rowDiv.style.top = `${(this.getRowTop(row) - frozenRowOffset)}px`;
       (stringArrayL as HTMLElement[]).push(rowDiv);
@@ -3825,7 +3818,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         rowDivR = rowDiv.cloneNode(true) as HTMLElement;
         (stringArrayR as HTMLElement[]).push(rowDivR);
       }
-    }
 
 
     let colspan: number | string;
@@ -3843,15 +3835,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         }
       }
 
-      let tmpRow: HTMLElement | string[] | undefined;
-      let tmpRowR: HTMLElement | string[] | undefined;
-      if (this._options.nonce) {
-        tmpRow = rowDiv;
-        tmpRowR = rowDivR;
-      } else {
-        tmpRow = (stringArrayL as string[]);
-        tmpRowR = (stringArrayR as string[]);
-      }
       // Do not render cells outside of the viewport.
       if (this.columnPosRight[Math.min(ii - 1, i + (colspan as number) - 1)] > range.leftPx) {
         if (!m.alwaysRenderColumn && this.columnPosLeft[i] > range.rightPx) {
@@ -3861,28 +3844,21 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
         if (this.hasFrozenColumns() && (i > this._options.frozenColumn!)) {
           //could add it as a check in the if the !
-          this.appendCellHtml(tmpRowR!, row, i, (colspan as number), d);
+          this.appendCellHtml(rowDivR!, row, i, (colspan as number), d);
         } else {
-          this.appendCellHtml(tmpRow, row, i, (colspan as number), d);
+          this.appendCellHtml(rowDiv, row, i, (colspan as number), d);
         }
       } else if (m.alwaysRenderColumn || (this.hasFrozenColumns() && i <= this._options.frozenColumn!)) {
-        this.appendCellHtml(tmpRow, row, i, (colspan as number), d);
+        this.appendCellHtml(rowDiv, row, i, (colspan as number), d);
       }
 
       if ((colspan as number) > 1) {
         i += ((colspan as number) - 1);
       }
     }
-    if (!this._options.nonce) {
-      (stringArrayL as string[]).push('</div>');
-
-      if (this.hasFrozenColumns()) {
-        (stringArrayR as string[]).push('</div>');
-      }
-    }
   }
 
-  protected appendCellHtml(stringArray: HTMLElement | string[], row: number, cell: number, colspan: number, item: TData) {
+  protected appendCellHtml(stringArray: HTMLElement, row: number, cell: number, colspan: number, item: TData) {
     // stringArray: stringBuilder containing the HTML parts
     // row, cell: row and column index
     // colspan: HTML colspan
@@ -3925,7 +3901,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       addlCssClasses += (addlCssClasses ? ' ' : '') + (formatterResult as FormatterResultObject).addClasses;
     }
 
-    if (this._options.nonce) {
       const toolTipText = (formatterResult as FormatterResultObject)?.toolTip ? `${(formatterResult as FormatterResultObject).toolTip}` : '';
       const cellDiv = document.createElement('div');
       cellDiv.className = cellCss + (addlCssClasses ? ' ' + addlCssClasses : '');
@@ -3945,27 +3920,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       }
 
       (stringArray as HTMLElement).appendChild(cellDiv);
-    } else {
-      const toolTip = (formatterResult as FormatterResultObject)?.toolTip ? `title="${(formatterResult as FormatterResultObject).toolTip}"` : '';
-
-      let customAttrStr = '';
-      if (m.hasOwnProperty('cellAttrs') && m.cellAttrs instanceof Object) {
-        for (const key in m.cellAttrs) {
-          if (m.cellAttrs.hasOwnProperty(key)) {
-            customAttrStr += ` ${key}="${m.cellAttrs[key]}" `;
-          }
-        }
-      }
-
-      (stringArray as string[]).push(`<div class="${cellCss + (addlCssClasses ? ' ' + addlCssClasses : '')}" ${toolTip + customAttrStr}>`);
-
-      // if there is a corresponding row (if not, this is the Add New row or this data hasn't been loaded yet)
-      if (item) {
-        (stringArray as string[]).push((Object.prototype.toString.call(formatterResult) !== '[object Object]' ? formatterResult : (formatterResult as FormatterResultObject).text) as string);
-      }
-
-      (stringArray as string[]).push('</div>');
-    }
 
 
 
@@ -4576,7 +4530,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   protected cleanUpAndRenderCells(range: CellViewportRange) {
     let cacheEntry;
-    const stringArray: HTMLElement | string[] = this._options.nonce ? document.createElement('div') : [];
+    const stringArray: HTMLElement = document.createElement('div');
     const processedRows: number[] = [];
     let cellsAdded: number;
     let totalCellsAdded = 0;
@@ -4639,19 +4593,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         processedRows.push(row);
       }
     }
-    if (this._options.nonce) {
-      if (!(stringArray as HTMLElement).children.length) {
-        return;
-      }
-    } else {
-      if (!(stringArray as string[]).length) {
-        return;
-      }
-
+    if (!(stringArray as HTMLElement).children.length) {
+      return;
     }
 
     const x = document.createElement('div');
-    x.innerHTML = this.sanitizeHtmlString(this._options.nonce ? (stringArray as HTMLElement).outerHTML : (stringArray as string[]).join(''));
+    x.innerHTML = this.sanitizeHtmlString(stringArray.outerHTML);
 
     let processedRow: number | null | undefined;
     let node: HTMLElement;
@@ -4676,8 +4623,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   protected renderRows(range: { top: number; bottom: number; leftPx: number; rightPx: number; }) {
-    const stringArrayL: HTMLElement[] | string[] = [];
-    const stringArrayR: HTMLElement[] | string[] = [];
+    const stringArrayL: HTMLElement[] = [];
+    const stringArrayR: HTMLElement[] = [];
     const rows: number[] = [];
     let needToReselectCell = false;
     const dataLength = this.getDataLength();
@@ -4718,18 +4665,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     const x = document.createElement('div');
     const xRight = document.createElement('div');
-    if (this._options.nonce) {
-      stringArrayL.forEach(elm => {
-        x.appendChild(elm as HTMLElement);
-      });
-      stringArrayR.forEach(elm => {
-        xRight.appendChild(elm as HTMLElement);
-      });
-    }
-    else {
-      x.innerHTML = this.sanitizeHtmlString(stringArrayL.join(''));
-      xRight.innerHTML = this.sanitizeHtmlString(stringArrayR.join(''));
-    }
+    stringArrayL.forEach(elm => {
+      x.appendChild(elm as HTMLElement);
+    });
+    stringArrayR.forEach(elm => {
+      xRight.appendChild(elm as HTMLElement);
+    });
     for (let i = 0, ii = rows.length; i < ii; i++) {
       if ((this.hasFrozenRows) && (rows[i] >= this.actualFrozenRow)) {
         if (this.hasFrozenColumns()) {

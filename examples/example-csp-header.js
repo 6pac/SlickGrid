@@ -14,6 +14,7 @@ var options = {
   enableCellNavigation: true,
   enableColumnReorder: false,
   nonce: 'random-string',
+  // autoHeight: true,
   sanitizer: (html) => DOMPurify.sanitize(html, { RETURN_TRUSTED_TYPE: true })
 };
 
