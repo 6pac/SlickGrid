@@ -3785,7 +3785,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return item[columnDef.field as keyof TData];
   }
 
-  protected appendRowHtml(stringArrayL: HTMLElement[], stringArrayR: HTMLElement[], row: number, range: CellViewportRange, dataLength: number) {
+  protected appendRowHtml(divArrayL: HTMLElement[], divArrayR: HTMLElement[], row: number, range: CellViewportRange, dataLength: number) {
     const d = this.getDataItem(row);
     const dataLoading = row < dataLength && !d;
     let rowCss = 'slick-row' +
@@ -3811,12 +3811,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    
       rowDiv.className = 'ui-widget-content ' + rowCss;
       rowDiv.style.top = `${(this.getRowTop(row) - frozenRowOffset)}px`;
-      (stringArrayL as HTMLElement[]).push(rowDiv);
+      divArrayL.push(rowDiv);
       if (this.hasFrozenColumns()) {
         //it has to be a deep copy otherwise we will have issues with pass by reference in js since
         //attempting to add the same element to 2 different arrays will just move 1 item to the other array
         rowDivR = rowDiv.cloneNode(true) as HTMLElement;
-        (stringArrayR as HTMLElement[]).push(rowDivR);
+        divArrayR.push(rowDivR);
       }
 
 
@@ -3858,8 +3858,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
   }
 
-  protected appendCellHtml(stringArray: HTMLElement, row: number, cell: number, colspan: number, item: TData) {
-    // stringArray: stringBuilder containing the HTML parts
+  protected appendCellHtml(divRow: HTMLElement, row: number, cell: number, colspan: number, item: TData) {
+    // divRow: the html element to append items too
     // row, cell: row and column index
     // colspan: HTML colspan
     // item: grid data for row
@@ -3919,7 +3919,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         cellDiv.innerHTML = this.sanitizeHtmlString(obj);
       }
 
-      (stringArray as HTMLElement).appendChild(cellDiv);
+      divRow.appendChild(cellDiv);
 
 
 
@@ -4530,7 +4530,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   protected cleanUpAndRenderCells(range: CellViewportRange) {
     let cacheEntry;
-    const stringArray: HTMLElement = document.createElement('div');
+    const divRow: HTMLElement = document.createElement('div');
     const processedRows: number[] = [];
     let cellsAdded: number;
     let totalCellsAdded = 0;
@@ -4580,7 +4580,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         }
 
         if (this.columnPosRight[Math.min(ii - 1, i + colspan - 1)] > range.leftPx) {
-          this.appendCellHtml(stringArray, row, i, colspan, d);
+          this.appendCellHtml(divRow, row, i, colspan, d);
           cellsAdded++;
         }
 
@@ -4593,12 +4593,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         processedRows.push(row);
       }
     }
-    if (!(stringArray as HTMLElement).children.length) {
+    if (!divRow.children.length) {
       return;
     }
 
     const x = document.createElement('div');
-    x.innerHTML = this.sanitizeHtmlString(stringArray.outerHTML);
+    x.innerHTML = this.sanitizeHtmlString(divRow.outerHTML);
 
     let processedRow: number | null | undefined;
     let node: HTMLElement;
@@ -4623,8 +4623,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   protected renderRows(range: { top: number; bottom: number; leftPx: number; rightPx: number; }) {
-    const stringArrayL: HTMLElement[] = [];
-    const stringArrayR: HTMLElement[] = [];
+    const divArrayL: HTMLElement[] = [];
+    const divArrayR: HTMLElement[] = [];
     const rows: number[] = [];
     let needToReselectCell = false;
     const dataLength = this.getDataLength();
@@ -4654,7 +4654,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         cellRenderQueue: []
       };
 
-      this.appendRowHtml(stringArrayL, stringArrayR, i, range, dataLength);
+      this.appendRowHtml(divArrayL, divArrayR, i, range, dataLength);
       if (this.activeCellNode && this.activeRow === i) {
         needToReselectCell = true;
       }
@@ -4665,10 +4665,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     const x = document.createElement('div');
     const xRight = document.createElement('div');
-    stringArrayL.forEach(elm => {
+    divArrayL.forEach(elm => {
       x.appendChild(elm as HTMLElement);
     });
-    stringArrayR.forEach(elm => {
+    divArrayR.forEach(elm => {
       xRight.appendChild(elm as HTMLElement);
     });
     for (let i = 0, ii = rows.length; i < ii; i++) {
