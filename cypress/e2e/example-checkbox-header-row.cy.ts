@@ -118,8 +118,8 @@ describe('Example - Checkbox Header Row', () => {
 
     // Row index 3, 5 and 21 (last one will be on 2nd page)
     cy.get('input[type="checkbox"]:checked').should('have.length', 2); // 2x in current page and 1x in next page
-    cy.get('[style="top:75px"] > .slick-cell:nth(0) input[type="checkbox"]').should('be.checked');
-    cy.get('[style="top:125px"] > .slick-cell:nth(0) input[type="checkbox"]').should('be.checked');
+    cy.get('[style="top: 75px;"] > .slick-cell:nth(0) input[type="checkbox"]').should('be.checked');
+    cy.get('[style="top: 125px;"] > .slick-cell:nth(0) input[type="checkbox"]').should('be.checked');
   });
 
   it('should go to next page and expect 1 row selected in that second page', () => {
@@ -127,7 +127,7 @@ describe('Example - Checkbox Header Row', () => {
       .click();
 
     cy.get('input[type="checkbox"]:checked').should('have.length', 1); // only 1x row in page 2
-    cy.get('[style="top:100px"] > .slick-cell:nth(0) input[type="checkbox"]').should('be.checked');
+    cy.get('[style="top: 100px;"] > .slick-cell:nth(0) input[type="checkbox"]').should('be.checked');
   });
 
   it('should click on "Select All" checkbox and expect all rows selected in current page', () => {

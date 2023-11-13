@@ -36,6 +36,7 @@ const SlickGroupItemMetadataProvider = IIFE_ONLY ? Slick.Data?.GroupItemMetadata
 export interface DataViewOption {
   groupItemMetadataProvider: SlickGroupItemMetadataProvider_ | null;
   inlineFilters: boolean;
+  useCSPSafeFilter: boolean;
 }
 export type FilterFn<T> = (item: T, args: any) => boolean;
 export type DataIdType = number | string;
@@ -50,7 +51,8 @@ export type SlickDataItem = SlickNonDataItem | SlickGroup_ | SlickGroupTotals_ |
 export class SlickDataView<TData extends SlickDataItem = any> implements CustomDataView {
   protected defaults: DataViewOption = {
     groupItemMetadataProvider: null,
-    inlineFilters: false
+    inlineFilters: false,
+    useCSPSafeFilter: false,
   };
 
   // private
@@ -60,6 +62,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   protected idxById = new Map<DataIdType, number>();   // indexes by id
   protected rowsById: { [id: DataIdType]: number } | undefined = undefined;       // rows by id; lazy-calculated
   protected filter: FilterFn<TData> | null = null;         // filter function
+  protected filterCSPSafe: Function | null = null;         // filter function
   protected updated: ({ [id: DataIdType]: boolean }) | null = null;        // updated item ids
   protected suspend = false;            // suspends the recalculation
   protected isBulkSuspend = false;      // delays protectedious operations like the
@@ -74,7 +77,9 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   protected filterArgs: any;
   protected filteredItems: TData[] = [];
   protected compiledFilter?: FilterFn<TData> | null;
+  protected compiledFilterCSPSafe?: Function | null;
   protected compiledFilterWithCaching?: FilterFn<TData> | null;
+  protected compiledFilterWithCachingCSPSafe?: Function | null;
   protected filterCache: any[] = [];
   protected _grid?: SlickGrid; // grid object will be defined only after using "syncGridSelection()" method"
 
@@ -147,12 +152,15 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     this.idxById = null as any;
     this.rowsById = null as any;
     this.filter = null as any;
+    this.filterCSPSafe = null as any;
     this.updated = null as any;
     this.sortComparer = null as any;
     this.filterCache = [];
     this.filteredItems = [];
     this.compiledFilter = null;
+    this.compiledFilterCSPSafe = null;
     this.compiledFilterWithCaching = null;
+    this.compiledFilterWithCachingCSPSafe = null;
 
     if (this._grid && this._grid.onSelectedRowsChanged && this._grid.onCellCssStylesChanged) {
       this._grid.onSelectedRowsChanged.unsubscribe();
@@ -359,7 +367,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
 
   /** Get current Filter used by the DataView */
   getFilter() {
-    return this.filter;
+    return this._options.useCSPSafeFilter ? this.filterCSPSafe : this.filter;
   }
 
   /**
@@ -367,10 +375,13 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
    * @param {Function} fn - filter callback function
    */
   setFilter(filterFn: FilterFn<TData>) {
+    this.filterCSPSafe = filterFn;
     this.filter = filterFn;
     if (this._options.inlineFilters) {
-      this.compiledFilter = this.compileFilter();
-      this.compiledFilterWithCaching = this.compileFilterWithCaching();
+      this.compiledFilterCSPSafe = this.compileFilterCSPSafe;
+      this.compiledFilterWithCachingCSPSafe = this.compileFilterWithCachingCSPSafe;
+      this.compiledFilter = this.compileFilter(this._options.useCSPSafeFilter);
+      this.compiledFilterWithCaching = this.compileFilterWithCaching(this._options.useCSPSafeFilter);
     }
     this.refresh();
   }
@@ -1022,7 +1033,25 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     }
   }
 
-  protected compileFilter(): FilterFn<TData> {
+  protected compileFilterCSPSafe(_items: TData[], _args: any): TData[] {
+    if (typeof this.filterCSPSafe !== 'function') {
+      return [];
+    }
+    const _retval: TData[] = [];
+    const _il = _items.length;
+
+    for (let _i = 0; _i < _il; _i++) {
+      if (this.filterCSPSafe(_items[_i], _args)) {
+        _retval.push(_items[_i]);
+      }
+    }
+
+    return _retval;
+  }
+  protected compileFilter(stopRunningIfCSPSafeIsActive: boolean = false): FilterFn<TData> {
+    if(stopRunningIfCSPSafeIsActive) {
+      return null as any;
+    }
     const filterInfo = this.getFunctionInfo(this.filter as Function);
 
     const filterPath1 = "{ continue _coreloop; }$1";
@@ -1053,7 +1082,6 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     tpl = tpl.replace(/\$filter\$/gi, filterBody);
     tpl = tpl.replace(/\$item\$/gi, filterInfo.params[0]);
     tpl = tpl.replace(/\$args\$/gi, filterInfo.params[1]);
-
     const fn: any = new Function("_items,_args", tpl);
     const fnName = "compiledFilter";
     fn.displayName = fnName;
@@ -1061,7 +1089,11 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     return fn;
   }
 
-  protected compileFilterWithCaching() {
+  protected compileFilterWithCaching(stopRunningIfCSPSafeIsActive: boolean = false) {
+    if(stopRunningIfCSPSafeIsActive) {
+      return null as any;
+    }
+
     const filterInfo = this.getFunctionInfo(this.filter as Function);
 
     const filterPath1 = "{ continue _coreloop; }$1";
@@ -1102,6 +1134,23 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     fn.displayName = fnName;
     fn.name = this.setFunctionName(fn, fnName);
     return fn;
+  }
+
+  protected compileFilterWithCachingCSPSafe(_items: TData[], _args: any, filterCache: any[]): TData[] {
+    if (typeof this.filterCSPSafe !== 'function') {
+      return [];
+    }
+  
+    const _retval: TData[] = [];
+    const _il = _items.length;
+  
+    for (let _i = 0; _i < _il; _i++) {
+      if (filterCache[_i] || this.filterCSPSafe(_items[_i], _args)) {
+        _retval.push(_items[_i]);
+      }
+    }
+  
+    return _retval;
   }
 
   /**
@@ -1154,10 +1203,16 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   protected getFilteredAndPagedItems(items: TData[]) {
-    if (this.filter) {
-      const batchFilter = (this._options.inlineFilters ? this.compiledFilter : this.uncompiledFilter) as Function;
-      const batchFilterWithCaching = (this._options.inlineFilters ? this.compiledFilterWithCaching : this.uncompiledFilterWithCaching) as Function;
-
+    if (this._options.useCSPSafeFilter ? this.filterCSPSafe : this.filter) {
+      let batchFilter: Function;
+      let batchFilterWithCaching: Function;
+      if (this._options.useCSPSafeFilter) {
+        batchFilter = (this._options.inlineFilters ? this.compiledFilterCSPSafe : this.uncompiledFilter) as Function;
+        batchFilterWithCaching = (this._options.inlineFilters ? this.compiledFilterWithCachingCSPSafe : this.uncompiledFilterWithCaching) as Function;
+      } else {
+        batchFilter = (this._options.inlineFilters ? this.compiledFilter : this.uncompiledFilter) as Function;
+        batchFilterWithCaching = (this._options.inlineFilters ? this.compiledFilterWithCaching : this.uncompiledFilterWithCaching) as Function;
+      }
       if (this.refreshHints.isFilterNarrowing) {
         this.filteredItems = batchFilter.call(this, this.filteredItems, this.filterArgs);
       } else if (this.refreshHints.isFilterExpanding) {
@@ -1218,7 +1273,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
             // no good way to compare totals since they are arbitrary DTOs
             // deep object comparison is pretty expensive
             // always considering them 'dirty' seems easier for the time being
-          ((item as SlickGroupTotals_).__groupTotals || (r as SlickGroupTotals_).__groupTotals))
+            ((item as SlickGroupTotals_).__groupTotals || (r as SlickGroupTotals_).__groupTotals))
           || item[this.idProperty as keyof TData] !== r[this.idProperty as keyof TData]
           || (this.updated?.[item[this.idProperty as keyof TData]])
         ) {
