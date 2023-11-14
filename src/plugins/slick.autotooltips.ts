@@ -97,7 +97,8 @@ export class SlickAutoTooltips implements SlickPlugin {
     if (targetElm) {
       node = targetElm.closest<HTMLDivElement>('.slick-header-column');
       if (node && !(column?.toolTip)) {
-        node.title = (targetElm.clientWidth < node.clientWidth) ? column?.name ?? '' : '';
+        const titleVal = (targetElm.clientWidth < node.clientWidth) ? column?.name ?? '' : '';
+        node.title = titleVal instanceof HTMLElement ? titleVal.innerHTML : titleVal;
       }
     }
     node = null;

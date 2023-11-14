@@ -1,4 +1,4 @@
-describe('Example 4 - Model (ESM)', () => {
+describe('Example 4 - HTML Formatters', () => {
   const GRID_ROW_HEIGHT = 25;
   const titles = ['#', 'Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
 
@@ -10,7 +10,7 @@ describe('Example 4 - Model (ESM)', () => {
   });
 
   it('should display Example title', () => {
-    cy.visit(`${Cypress.config('baseUrl')}/examples/example4-model-esm.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example4-model-html-formatters.html`);
     cy.get('h2').contains('Demonstrates');
     cy.get('h2 + ul > li').first().contains('a filtered Model (DataView) as a data source instead of a simple array');
   });

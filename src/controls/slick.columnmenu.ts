@@ -54,7 +54,7 @@ export class SlickColumnMenu {
     hideSyncResizeButton: false,
     forceFitTitle: 'Force fit columns',
     syncResizeTitle: 'Synchronous resize',
-    headerColumnValueExtractor: (columnDef: Column) => columnDef.name || ''
+    headerColumnValueExtractor: (columnDef: Column) => columnDef.name instanceof HTMLElement ? columnDef.name.innerHTML : columnDef.name || ''
   };
 
   constructor(protected columns: Column[], protected readonly grid: SlickGrid, options: GridOption) {
@@ -130,11 +130,14 @@ export class SlickColumnMenu {
     let columnId, columnLabel, excludeCssClass;
     for (let i = 0; i < this.columns.length; i++) {
       columnId = this.columns[i].id;
+      const colName: string = this.columns[i].name instanceof HTMLElement
+        ? (this.columns[i].name as HTMLElement).innerHTML
+        : (this.columns[i].name || '') as string;
       excludeCssClass = this.columns[i].excludeFromColumnPicker ? "hidden" : "";
 
       const liElm = document.createElement('li');
       liElm.className = excludeCssClass;
-      liElm.ariaLabel = this.columns[i]?.name || '';
+      liElm.ariaLabel = colName;
 
       const checkboxElm = document.createElement('input');
       checkboxElm.type = 'checkbox';
@@ -148,15 +151,13 @@ export class SlickColumnMenu {
         checkboxElm.checked = true;
       }
 
-      if (this._options?.columnPicker?.headerColumnValueExtractor) {
-        columnLabel = this._options.columnPicker.headerColumnValueExtractor(this.columns[i], this._options);
-      } else {
-        columnLabel = this._defaults.headerColumnValueExtractor!(this.columns[i], this._options);
-      }
+      columnLabel = (this._options?.columnPicker?.headerColumnValueExtractor)
+        ? this._options.columnPicker.headerColumnValueExtractor(this.columns[i], this._options)
+        : this._defaults.headerColumnValueExtractor!(this.columns[i], this._options);
 
       const labelElm = document.createElement('label');
       labelElm.htmlFor = `${this._gridUid}colpicker-${columnId}`;
-      labelElm.innerHTML = columnLabel;
+      labelElm.innerHTML = this.grid.sanitizeHtmlString(columnLabel);
       liElm.appendChild(labelElm);
       this._listElm.appendChild(liElm);
     }
@@ -249,7 +250,7 @@ export class SlickColumnMenu {
   /** Update the Titles of each sections (command, customTitle, ...) */
   updateAllTitles(pickerOptions: { columnTitle: string; }) {
     if (this._columnTitleElm?.innerHTML) {
-      this._columnTitleElm.innerHTML = pickerOptions.columnTitle;
+      this._columnTitleElm.innerHTML = this.grid.sanitizeHtmlString(pickerOptions.columnTitle);
     }
   }
 
