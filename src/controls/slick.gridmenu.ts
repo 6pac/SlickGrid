@@ -393,7 +393,7 @@ export class SlickGridMenu {
     if (!isSubMenu && (this._gridMenuOptions?.commandTitle || this._gridMenuOptions?.customTitle)) {
       this._commandTitleElm = document.createElement('div');
       this._commandTitleElm.className = 'title';
-      this._commandTitleElm.innerHTML = (this._gridMenuOptions.commandTitle || this._gridMenuOptions.customTitle) as string;
+      this._commandTitleElm.innerHTML = this.grid.sanitizeHtmlString((this._gridMenuOptions.commandTitle || this._gridMenuOptions.customTitle) as string);
       commandListElm.appendChild(this._commandTitleElm);
     }
 
@@ -461,7 +461,7 @@ export class SlickGridMenu {
 
       const textElm = document.createElement('span');
       textElm.className = 'slick-gridmenu-content';
-      textElm.innerHTML = (item as GridMenuItem).title || '';
+      textElm.innerHTML = this.grid.sanitizeHtmlString((item as GridMenuItem).title || '');
 
       liElm.appendChild(textElm);
 
@@ -512,7 +512,7 @@ export class SlickGridMenu {
     if (this._gridMenuOptions?.columnTitle) {
       this._columnTitleElm = document.createElement('div');
       this._columnTitleElm.className = 'title';
-      this._columnTitleElm.innerHTML = this._gridMenuOptions.columnTitle;
+      this._columnTitleElm.innerHTML = this.grid.sanitizeHtmlString(this._gridMenuOptions.columnTitle);
       this._menuElm.appendChild(this._columnTitleElm);
     }
 
@@ -586,15 +586,13 @@ export class SlickGridMenu {
       this._columnCheckboxes.push(checkboxElm);
 
       // get the column label from the picker value extractor (user can optionally provide a custom extractor)
-      if (this._gridMenuOptions?.headerColumnValueExtractor) {
-        columnLabel = this._gridMenuOptions.headerColumnValueExtractor(this.columns[i], this._gridOptions);
-      } else {
-        columnLabel = this._defaults.headerColumnValueExtractor!(this.columns[i]);
-      }
+      columnLabel = (this._gridMenuOptions?.headerColumnValueExtractor)
+        ? this._gridMenuOptions.headerColumnValueExtractor(this.columns[i], this._gridOptions)
+        : this._defaults.headerColumnValueExtractor!(this.columns[i]);
 
       const labelElm = document.createElement('label');
       labelElm.htmlFor = `${this._gridUid}-gridmenu-colpicker-${columnId}`;
-      labelElm.innerHTML = columnLabel || '';
+      labelElm.innerHTML = this.grid.sanitizeHtmlString(columnLabel || '');
       liElm.appendChild(labelElm);
       this._listElm.appendChild(liElm);
     }
@@ -763,10 +761,10 @@ export class SlickGridMenu {
   /** Update the Titles of each sections (command, commandTitle, ...) */
   updateAllTitles(gridMenuOptions: GridMenuOption) {
     if (this._commandTitleElm?.innerHTML) {
-      this._commandTitleElm.innerHTML = gridMenuOptions.commandTitle || gridMenuOptions.customTitle || '';
+      this._commandTitleElm.innerHTML = this.grid.sanitizeHtmlString(gridMenuOptions.commandTitle || gridMenuOptions.customTitle || '');
     }
     if (this._columnTitleElm?.innerHTML) {
-      this._columnTitleElm.innerHTML = gridMenuOptions.columnTitle || '';
+      this._columnTitleElm.innerHTML = this.grid.sanitizeHtmlString(gridMenuOptions.columnTitle || '');
     }
   }
 

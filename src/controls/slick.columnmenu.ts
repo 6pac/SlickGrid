@@ -151,15 +151,13 @@ export class SlickColumnMenu {
         checkboxElm.checked = true;
       }
 
-      if (this._options?.columnPicker?.headerColumnValueExtractor) {
-        columnLabel = this._options.columnPicker.headerColumnValueExtractor(this.columns[i], this._options);
-      } else {
-        columnLabel = this._defaults.headerColumnValueExtractor!(this.columns[i], this._options);
-      }
+      columnLabel = (this._options?.columnPicker?.headerColumnValueExtractor)
+        ? this._options.columnPicker.headerColumnValueExtractor(this.columns[i], this._options)
+        : this._defaults.headerColumnValueExtractor!(this.columns[i], this._options);
 
       const labelElm = document.createElement('label');
       labelElm.htmlFor = `${this._gridUid}colpicker-${columnId}`;
-      labelElm.innerHTML = columnLabel;
+      labelElm.innerHTML = this.grid.sanitizeHtmlString(columnLabel);
       liElm.appendChild(labelElm);
       this._listElm.appendChild(liElm);
     }
@@ -252,7 +250,7 @@ export class SlickColumnMenu {
   /** Update the Titles of each sections (command, customTitle, ...) */
   updateAllTitles(pickerOptions: { columnTitle: string; }) {
     if (this._columnTitleElm?.innerHTML) {
-      this._columnTitleElm.innerHTML = pickerOptions.columnTitle;
+      this._columnTitleElm.innerHTML = this.grid.sanitizeHtmlString(pickerOptions.columnTitle);
     }
   }
 
