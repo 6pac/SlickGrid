@@ -49,6 +49,9 @@ Once the Cypress UI is open, you can then click on "Run all Specs" to execute al
 | 4.x       | [Announcing v4.0](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement) | dropping [jQuery](https://jquery.com/) requirement, SlickGrid is now using browser native code |
 | 5.x       | [Announcing v5.0](https://github.com/6pac/SlickGrid/wiki/Major-version-5.0-%E2%80%90-ES6-ESM-and-TypeScript-Support) | project modernization, added TypeScript with ES6, ESM builds and added a new Alpine Theme |
 
+## CSP Compliance
+The library is now, at least mostly, CSP (Content Security Policy) compliant since `v5.5.0`, however there are some exceptions to be aware of. When using any html string as template (for example with Custom Formatter returning an html string), you will not be fully compliant unless you return `TrustedHTML`. You can achieve this by using the `sanitizer` method in combo with [DOMPurify](https://github.com/cure53/DOMPurify) to return `TrustedHTML`, for more info please take a look at the [CSP Compliance](https://github.com/6pac/SlickGrid/wiki/CSP-Compliance) Wiki.
+
 ### Quick Little Fun Survey ✨
 We are conducting a small little poll for fun, it is a single question survey about our latest releases. Thanks for taking the time to participate.
 
