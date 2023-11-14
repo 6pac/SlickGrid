@@ -158,7 +158,7 @@ export class SlickColumnPicker {
 
       const labelElm = document.createElement('label');
       labelElm.htmlFor = `${this._gridUid}colpicker-${columnId}`;
-      labelElm.innerHTML = this.grid.sanitizeHtmlString(columnLabel);
+      labelElm.innerHTML = this.grid.sanitizeHtmlString(columnLabel instanceof HTMLElement ? columnLabel.innerHTML : columnLabel);
       liElm.appendChild(labelElm);
       this._listElm.appendChild(liElm);
     }
