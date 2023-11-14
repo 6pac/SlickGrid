@@ -2615,8 +2615,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (typeof columnOrIndexOrId === 'number') {
       colDef = this.columns[columnOrIndexOrId];
       colIndex = columnOrIndexOrId;
-    }
-    else if (typeof columnOrIndexOrId === 'string') {
+    } else if (typeof columnOrIndexOrId === 'string') {
       for (let i = 0; i < this.columns.length; i++) {
         if (this.columns[i].id === columnOrIndexOrId) { colDef = this.columns[i]; colIndex = i; }
       }
@@ -3836,8 +3835,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     rowDiv.style.top = `${(this.getRowTop(row) - frozenRowOffset)}px`;
     divArrayL.push(rowDiv);
     if (this.hasFrozenColumns()) {
-      //it has to be a deep copy otherwise we will have issues with pass by reference in js since
-      //attempting to add the same element to 2 different arrays will just move 1 item to the other array
+      // it has to be a deep copy otherwise we will have issues with pass by reference in js since
+      // attempting to add the same element to 2 different arrays will just move 1 item to the other array
       rowDivR = rowDiv.cloneNode(true) as HTMLElement;
       divArrayR.push(rowDivR);
     }
@@ -4693,12 +4692,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     const x = document.createElement('div');
     const xRight = document.createElement('div');
-    divArrayL.forEach(elm => {
-      x.appendChild(elm as HTMLElement);
-    });
-    divArrayR.forEach(elm => {
-      xRight.appendChild(elm as HTMLElement);
-    });
+    divArrayL.forEach(elm => x.appendChild(elm as HTMLElement));
+    divArrayR.forEach(elm => xRight.appendChild(elm as HTMLElement));
+
     for (let i = 0, ii = rows.length; i < ii; i++) {
       if ((this.hasFrozenRows) && (rows[i] >= this.actualFrozenRow)) {
         if (this.hasFrozenColumns()) {

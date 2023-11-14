@@ -39,8 +39,12 @@ export interface DataViewOption {
   useCSPSafeFilter: boolean;
 }
 export type FilterFn<T> = (item: T, args: any) => boolean;
+export type FilterCspFn<T> = (item: T[], args: any) => T[];
+export type FilterWithCspCachingFn<T> = (item: T[], args: any, filterCache: any[]) => T[];
 export type DataIdType = number | string;
 export type SlickDataItem = SlickNonDataItem | SlickGroup_ | SlickGroupTotals_ | any;
+export type GroupGetterFn = (val: any) => string | number;
+export type AnyFunction = (...args: any[]) => any;
 
 /**
    * A sample Model implementation.
@@ -62,7 +66,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   protected idxById = new Map<DataIdType, number>();   // indexes by id
   protected rowsById: { [id: DataIdType]: number } | undefined = undefined;       // rows by id; lazy-calculated
   protected filter: FilterFn<TData> | null = null;         // filter function
-  protected filterCSPSafe: Function | null = null;         // filter function
+  protected filterCSPSafe: FilterFn<TData> | null = null;         // filter function
   protected updated: ({ [id: DataIdType]: boolean }) | null = null;        // updated item ids
   protected suspend = false;            // suspends the recalculation
   protected isBulkSuspend = false;      // delays protectedious operations like the
@@ -77,9 +81,9 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   protected filterArgs: any;
   protected filteredItems: TData[] = [];
   protected compiledFilter?: FilterFn<TData> | null;
-  protected compiledFilterCSPSafe?: Function | null;
+  protected compiledFilterCSPSafe?: FilterCspFn<TData> | null;
   protected compiledFilterWithCaching?: FilterFn<TData> | null;
-  protected compiledFilterWithCachingCSPSafe?: Function | null;
+  protected compiledFilterWithCachingCSPSafe?: FilterWithCspCachingFn<TData> | null;
   protected filterCache: any[] = [];
   protected _grid?: SlickGrid; // grid object will be defined only after using "syncGridSelection()" method"
 
@@ -97,12 +101,12 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     displayTotalsRow: true,
     lazyTotalsCalculation: false
   };
-  protected groupingInfos: Array<Grouping & { aggregators: Aggregator[]; getterIsAFn?: boolean; compiledAccumulators: any[]; getter: Function | string }> = [];
+  protected groupingInfos: Array<Grouping & { aggregators: Aggregator[]; getterIsAFn?: boolean; compiledAccumulators: any[]; getter: GroupGetterFn | string }> = [];
   protected groups: SlickGroup_[] = [];
   protected toggledGroupsByLevel: any[] = [];
   protected groupingDelimiter = ':|:';
   protected selectedRowIds: DataIdType[] = [];
-  protected preSelectedRowIdsChangeFn?: Function;
+  protected preSelectedRowIdsChangeFn?: (args?: any) => void;
 
   protected pagesize = 0;
   protected pagenum = 0;
@@ -462,7 +466,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     for (let i = 0, l = itemArray.length; i < l; i++) {
       const row = this.rowsById?.[itemArray[i][this.idProperty as keyof TData] as DataIdType];
       if (Utils.isDefined(row)) {
-        rows[rows.length] = row;
+        rows[rows.length] = row as number;
       }
     }
     return rows;
@@ -475,7 +479,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     for (let i = 0, l = idArray.length; i < l; i++) {
       const row = this.rowsById?.[idArray[i]];
       if (Utils.isDefined(row)) {
-        rows[rows.length] = row;
+        rows[rows.length] = row as number;
       }
     }
     return rows;
@@ -883,7 +887,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
 
     for (let i = 0, l = rows.length; i < l; i++) {
       r = rows[i];
-      val = gi.getterIsAFn ? (gi.getter as Function)(r) : r[gi.getter as keyof TData];
+      val = gi.getterIsAFn ? (gi.getter as GroupGetterFn)(r) : r[gi.getter as keyof TData];
       group = groupsByVal[val];
       if (!group) {
         group = new SlickGroup();
@@ -917,7 +921,8 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     const group = totals.group;
     const gi = this.groupingInfos[group.level ?? 0];
     const isLeafLevel = (group.level === this.groupingInfos.length);
-    let agg: Aggregator, idx = gi.aggregators.length;
+    let agg: Aggregator;
+    let idx = gi.aggregators.length;
 
     if (!isLeafLevel && gi.aggregateChildGroups) {
       // make sure all the subgroups are calculated
@@ -984,7 +989,9 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     level = level || 0;
     const gi = this.groupingInfos[level];
     const groupedRows: any[] = [];
-    let rows: any[], gl = 0, g;
+    let rows: any[];
+    let gl = 0;
+    let g;
     for (let i = 0, l = groups.length; i < l; i++) {
       g = groups[i];
       groupedRows[gl++] = g;
@@ -1003,13 +1010,13 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     return groupedRows;
   }
 
-  protected getFunctionInfo(fn: Function) {
+  protected getFunctionInfo(fn: AnyFunction) {
     const fnStr = fn.toString();
     const usingEs5 = fnStr.indexOf('function') >= 0; // with ES6, the word function is not present
     const fnRegex = usingEs5 ? /^function[^(]*\(([^)]*)\)\s*{([\s\S]*)}$/ : /^[^(]*\(([^)]*)\)\s*{([\s\S]*)}$/;
     const matches = fn.toString().match(fnRegex) || [];
     return {
-      params: matches[1].split(","),
+      params: matches[1].split(','),
       body: matches[2]
     };
   }
@@ -1018,13 +1025,13 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     if (aggregator.accumulate) {
       const accumulatorInfo = this.getFunctionInfo(aggregator.accumulate);
       const fn: any = new Function(
-        "_items",
-        "for (var " + accumulatorInfo.params[0] + ", _i=0, _il=_items.length; _i<_il; _i++) {" +
-        accumulatorInfo.params[0] + " = _items[_i]; " +
+        '_items',
+        'for (var ' + accumulatorInfo.params[0] + ', _i=0, _il=_items.length; _i<_il; _i++) {' +
+        accumulatorInfo.params[0] + ' = _items[_i]; ' +
         accumulatorInfo.body +
-        "}"
+        '}'
       );
-      const fnName = "compiledAccumulatorLoop";
+      const fnName = 'compiledAccumulatorLoop';
       fn.displayName = fnName;
       fn.name = this.setFunctionName(fn, fnName);
       return fn;
@@ -1033,29 +1040,30 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     }
   }
 
-  protected compileFilterCSPSafe(_items: TData[], _args: any): TData[] {
+  protected compileFilterCSPSafe(items: TData[], args: any): TData[] {
     if (typeof this.filterCSPSafe !== 'function') {
       return [];
     }
     const _retval: TData[] = [];
-    const _il = _items.length;
+    const _il = items.length;
 
     for (let _i = 0; _i < _il; _i++) {
-      if (this.filterCSPSafe(_items[_i], _args)) {
-        _retval.push(_items[_i]);
+      if (this.filterCSPSafe(items[_i], args)) {
+        _retval.push(items[_i]);
       }
     }
 
     return _retval;
   }
+
   protected compileFilter(stopRunningIfCSPSafeIsActive: boolean = false): FilterFn<TData> {
     if(stopRunningIfCSPSafeIsActive) {
       return null as any;
     }
-    const filterInfo = this.getFunctionInfo(this.filter as Function);
+    const filterInfo = this.getFunctionInfo(this.filter as FilterFn<TData>);
 
-    const filterPath1 = "{ continue _coreloop; }$1";
-    const filterPath2 = "{ _retval[_idx++] = $item$; continue _coreloop; }$1";
+    const filterPath1 = '{ continue _coreloop; }$1';
+    const filterPath2 = '{ _retval[_idx++] = $item$; continue _coreloop; }$1';
     // make some allowances for minification - there's only so far we can go with RegEx
     const filterBody = filterInfo.body
       .replace(/return false\s*([;}]|\}|$)/gi, filterPath1)
@@ -1063,27 +1071,27 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       .replace(/return true\s*([;}]|\}|$)/gi, filterPath2)
       .replace(/return!0([;}]|\}|$)/gi, filterPath2)
       .replace(/return ([^;}]+?)\s*([;}]|$)/gi,
-        "{ if ($1) { _retval[_idx++] = $item$; }; continue _coreloop; }$2");
+        '{ if ($1) { _retval[_idx++] = $item$; }; continue _coreloop; }$2');
 
     // This preserves the function template code after JS compression,
     // so that replace() commands still work as expected.
     let tpl = [
-      //"function(_items, _args) { ",
-      "var _retval = [], _idx = 0; ",
-      "var $item$, $args$ = _args; ",
-      "_coreloop: ",
-      "for (var _i = 0, _il = _items.length; _i < _il; _i++) { ",
-      "$item$ = _items[_i]; ",
-      "$filter$; ",
-      "} ",
-      "return _retval; "
-      //"}"
-    ].join("");
+      // 'function(_items, _args) { ',
+      'var _retval = [], _idx = 0; ',
+      'var $item$, $args$ = _args; ',
+      '_coreloop: ',
+      'for (var _i = 0, _il = _items.length; _i < _il; _i++) { ',
+      '$item$ = _items[_i]; ',
+      '$filter$; ',
+      '} ',
+      'return _retval; '
+      // '}'
+    ].join('');
     tpl = tpl.replace(/\$filter\$/gi, filterBody);
     tpl = tpl.replace(/\$item\$/gi, filterInfo.params[0]);
     tpl = tpl.replace(/\$args\$/gi, filterInfo.params[1]);
-    const fn: any = new Function("_items,_args", tpl);
-    const fnName = "compiledFilter";
+    const fn: any = new Function('_items,_args', tpl);
+    const fnName = 'compiledFilter';
     fn.displayName = fnName;
     fn.name = this.setFunctionName(fn, fnName);
     return fn;
@@ -1094,10 +1102,10 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       return null as any;
     }
 
-    const filterInfo = this.getFunctionInfo(this.filter as Function);
+    const filterInfo = this.getFunctionInfo(this.filter as FilterFn<TData>);
 
-    const filterPath1 = "{ continue _coreloop; }$1";
-    const filterPath2 = "{ _cache[_i] = true;_retval[_idx++] = $item$; continue _coreloop; }$1";
+    const filterPath1 = '{ continue _coreloop; }$1';
+    const filterPath2 = '{ _cache[_i] = true;_retval[_idx++] = $item$; continue _coreloop; }$1';
     // make some allowances for minification - there's only so far we can go with RegEx
     const filterBody = filterInfo.body
       .replace(/return false\s*([;}]|\}|$)/gi, filterPath1)
@@ -1105,52 +1113,52 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       .replace(/return true\s*([;}]|\}|$)/gi, filterPath2)
       .replace(/return!0([;}]|\}|$)/gi, filterPath2)
       .replace(/return ([^;}]+?)\s*([;}]|$)/gi,
-        "{ if ((_cache[_i] = $1)) { _retval[_idx++] = $item$; }; continue _coreloop; }$2");
+        '{ if ((_cache[_i] = $1)) { _retval[_idx++] = $item$; }; continue _coreloop; }$2');
 
     // This preserves the function template code after JS compression,
     // so that replace() commands still work as expected.
     let tpl = [
-      //"function(_items, _args, _cache) { ",
-      "var _retval = [], _idx = 0; ",
-      "var $item$, $args$ = _args; ",
-      "_coreloop: ",
-      "for (var _i = 0, _il = _items.length; _i < _il; _i++) { ",
-      "$item$ = _items[_i]; ",
-      "if (_cache[_i]) { ",
-      "_retval[_idx++] = $item$; ",
-      "continue _coreloop; ",
-      "} ",
-      "$filter$; ",
-      "} ",
-      "return _retval; "
-      //"}"
-    ].join("");
+      // 'function(_items, _args, _cache) { ',
+      'var _retval = [], _idx = 0; ',
+      'var $item$, $args$ = _args; ',
+      '_coreloop: ',
+      'for (var _i = 0, _il = _items.length; _i < _il; _i++) { ',
+      '$item$ = _items[_i]; ',
+      'if (_cache[_i]) { ',
+      '_retval[_idx++] = $item$; ',
+      'continue _coreloop; ',
+      '} ',
+      '$filter$; ',
+      '} ',
+      'return _retval; '
+      // '}'
+    ].join('');
     tpl = tpl.replace(/\$filter\$/gi, filterBody);
     tpl = tpl.replace(/\$item\$/gi, filterInfo.params[0]);
     tpl = tpl.replace(/\$args\$/gi, filterInfo.params[1]);
 
-    const fn: any = new Function("_items,_args,_cache", tpl);
-    const fnName = "compiledFilterWithCaching";
+    const fn: any = new Function('_items,_args,_cache', tpl);
+    const fnName = 'compiledFilterWithCaching';
     fn.displayName = fnName;
     fn.name = this.setFunctionName(fn, fnName);
     return fn;
   }
 
-  protected compileFilterWithCachingCSPSafe(_items: TData[], _args: any, filterCache: any[]): TData[] {
+  protected compileFilterWithCachingCSPSafe(items: TData[], args: any, filterCache: any[]): TData[] {
     if (typeof this.filterCSPSafe !== 'function') {
       return [];
     }
-  
-    const _retval: TData[] = [];
-    const _il = _items.length;
-  
-    for (let _i = 0; _i < _il; _i++) {
-      if (filterCache[_i] || this.filterCSPSafe(_items[_i], _args)) {
-        _retval.push(_items[_i]);
+
+    const retval: TData[] = [];
+    const il = items.length;
+
+    for (let _i = 0; _i < il; _i++) {
+      if (filterCache[_i] || this.filterCSPSafe(items[_i], args)) {
+        retval.push(items[_i]);
       }
     }
-  
-    return _retval;
+
+    return retval;
   }
 
   /**
@@ -1204,14 +1212,14 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
 
   protected getFilteredAndPagedItems(items: TData[]) {
     if (this._options.useCSPSafeFilter ? this.filterCSPSafe : this.filter) {
-      let batchFilter: Function;
-      let batchFilterWithCaching: Function;
+      let batchFilter: AnyFunction;
+      let batchFilterWithCaching: AnyFunction;
       if (this._options.useCSPSafeFilter) {
-        batchFilter = (this._options.inlineFilters ? this.compiledFilterCSPSafe : this.uncompiledFilter) as Function;
-        batchFilterWithCaching = (this._options.inlineFilters ? this.compiledFilterWithCachingCSPSafe : this.uncompiledFilterWithCaching) as Function;
+        batchFilter = (this._options.inlineFilters ? this.compiledFilterCSPSafe : this.uncompiledFilter) as AnyFunction;
+        batchFilterWithCaching = (this._options.inlineFilters ? this.compiledFilterWithCachingCSPSafe : this.uncompiledFilterWithCaching) as AnyFunction;
       } else {
-        batchFilter = (this._options.inlineFilters ? this.compiledFilter : this.uncompiledFilter) as Function;
-        batchFilterWithCaching = (this._options.inlineFilters ? this.compiledFilterWithCaching : this.uncompiledFilterWithCaching) as Function;
+        batchFilter = (this._options.inlineFilters ? this.compiledFilter : this.uncompiledFilter) as AnyFunction;
+        batchFilterWithCaching = (this._options.inlineFilters ? this.compiledFilterWithCaching : this.uncompiledFilterWithCaching) as AnyFunction;
       }
       if (this.refreshHints.isFilterNarrowing) {
         this.filteredItems = batchFilter.call(this, this.filteredItems, this.filterArgs);
@@ -1245,9 +1253,12 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   protected getRowDiffs(rows: TData[], newRows: TData[]) {
-    let item: any, r, eitherIsNonData;
+    let item: any;
+    let r;
+    let eitherIsNonData;
     const diff: number[] = [];
-    let from = 0, to = Math.max(newRows.length, rows.length);
+    let from = 0;
+    let to = Math.max(newRows.length, rows.length);
 
     if (this.refreshHints?.ignoreDiffsBefore) {
       from = Math.max(0,
@@ -1556,8 +1567,10 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     const storeCellCssStyles = (hash: CssStyleHash) => {
       hashById = {};
       for (const row in hash) {
-        const id = this.rows[row as any][this.idProperty as keyof TData];
-        hashById[id] = hash[row];
+        if (hash) {
+          const id = this.rows[row as any][this.idProperty as keyof TData];
+          hashById[id] = hash[row];
+        }
       }
     };
 
@@ -1571,9 +1584,11 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
         this.ensureRowsByIdCache();
         const newHash: CssStyleHash = {};
         for (const id in hashById) {
-          const row = this.rowsById?.[id];
-          if (Utils.isDefined(row)) {
-            newHash[row] = hashById[id];
+          if (hashById) {
+            const row = this.rowsById?.[id];
+            if (Utils.isDefined(row)) {
+              newHash[row] = hashById[id];
+            }
           }
         }
         grid.setCellCssStyles(key, newHash);
@@ -1581,7 +1596,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       }
     };
 
-    grid.onCellCssStylesChanged.subscribe((_e, args) => {
+    grid.onCellCssStylesChanged.subscribe((_e: Event, args: any) => {
       if (inHandler) { return; }
       if (key !== args.key) { return; }
       if (args.hash) {
