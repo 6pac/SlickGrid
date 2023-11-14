@@ -2,6 +2,20 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.5.0](https://github.com/6pac/SlickGrid/compare/5.4.2...5.5.0) (2023-11-14)
+
+### Bug Fixes
+
+* add `nonce` grid option set the nonce value for CSP header ([#902](https://github.com/6pac/SlickGrid/issues/902)) ([fc0af7a](https://github.com/6pac/SlickGrid/commit/fc0af7a33844968ef8392e8c4c17f89e9e644d6f))
+* add `nonce` grid option set the nonce value for CSP header ([#902](https://github.com/6pac/SlickGrid/issues/902)) ([#905](https://github.com/6pac/SlickGrid/issues/905)) ([fb0e4f5](https://github.com/6pac/SlickGrid/commit/fb0e4f5cb8755d9b3351eafdfbcdf2a4e4aa1016))
+* add CSP safe option for DataView filtering and adjusting inline css for CSP ([#908](https://github.com/6pac/SlickGrid/issues/908)) ([ff970c0](https://github.com/6pac/SlickGrid/commit/ff970c077f87f693e2c2d310d1315e26221e1936))
+* add missing RowMoveManager `containerCssClass` option ([#906](https://github.com/6pac/SlickGrid/issues/906)) ([5f85574](https://github.com/6pac/SlickGrid/commit/5f8557498cbd2e60de383a525542893dbe59cdc3))
+* improve build & types exports for all targets, Node, CJS/ESM ([#910](https://github.com/6pac/SlickGrid/issues/910)) ([9013526](https://github.com/6pac/SlickGrid/commit/9013526bcfc0a137817c362ca5a9963e477fa093))
+
+### Features
+
+* add grid option `enableHtmlRendering` to use pure HTML not string ([#894](https://github.com/6pac/SlickGrid/issues/894)) ([448ec4f](https://github.com/6pac/SlickGrid/commit/448ec4f380fd6f25a641d4902f7205d935c41eed))
+
 ## [5.4.2](https://github.com/6pac/SlickGrid/compare/5.4.1...5.4.2) (2023-11-02)
 
 ### Bug Fixes

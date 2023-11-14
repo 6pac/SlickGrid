@@ -1,8 +1,9 @@
 import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_ } from '../slick.core';
-import type { Column, DOMEvent, DragRowMove, FormatterResultObject, RowMoveManagerOption, UsabilityOverrideFn } from '../models/index';
+import type { Column, DOMEvent, DragRowMove, FormatterResultWithHtml, RowMoveManagerOption, UsabilityOverrideFn } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 /**
  * Row Move Manager options:
+ *    containerCssClass:        A CSS class to be added to the cell container.
  *    cssClass:                 A CSS class to be added to the div of the cell formatter.
  *    columnId:                 Column definition id (defaults to "_move")
  *    cancelEditOnDrag:         Do we want to cancel any Editing while dragging a row (defaults to false)
@@ -45,7 +46,7 @@ export declare class SlickRowMoveManager {
     protected handleDrag(evt: SlickEventData_, dd: DragRowMove): boolean | void;
     protected handleDragEnd(e: SlickEventData_, dd: DragRowMove): void;
     getColumnDefinition(): Column;
-    protected moveIconFormatter(row: number, _cell: number, _val: any, _column: Column, dataContext: any, grid: SlickGrid): FormatterResultObject | string;
+    protected moveIconFormatter(row: number, _cell: number, _val: any, _column: Column, dataContext: any, grid: SlickGrid): FormatterResultWithHtml | string;
     protected checkUsabilityOverride(row: number, dataContext: any, grid: SlickGrid): boolean;
     /**
      * Method that user can pass to override the default behavior or making every row moveable.

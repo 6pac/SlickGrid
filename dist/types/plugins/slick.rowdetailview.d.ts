@@ -1,5 +1,5 @@
 import { SlickEvent as SlickEvent_, SlickEventHandler as SlickEventHandler_ } from '../slick.core';
-import type { Column, DOMEvent, FormatterResultObject, GridOption, OnAfterRowDetailToggleArgs, OnBeforeRowDetailToggleArgs, OnRowBackToViewportRangeArgs, OnRowDetailAsyncEndUpdateArgs, OnRowDetailAsyncResponseArgs, OnRowOutOfViewportRangeArgs, RowDetailViewOption, UsabilityOverrideFn } from '../models/index';
+import type { Column, DOMEvent, FormatterResultWithHtml, FormatterResultWithText, GridOption, OnAfterRowDetailToggleArgs, OnBeforeRowDetailToggleArgs, OnRowBackToViewportRangeArgs, OnRowDetailAsyncEndUpdateArgs, OnRowDetailAsyncResponseArgs, OnRowOutOfViewportRangeArgs, RowDetailViewOption, UsabilityOverrideFn } from '../models/index';
 import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
 /**
@@ -184,12 +184,12 @@ export declare class SlickRowDetailView {
         sortable: boolean;
         alwaysRenderColumn: boolean | undefined;
         cssClass: string | undefined;
-        formatter: (row: number, _cell: number, _val: any, _column: Column<any>, dataContext: any, grid: SlickGrid<any, Column<any>, GridOption<Column<any>>>) => string | FormatterResultObject;
+        formatter: (row: number, _cell: number, _val: any, _column: Column<any>, dataContext: any, grid: SlickGrid<any, Column<any>, GridOption<Column<any>>>) => string | FormatterResultWithHtml | FormatterResultWithText;
     };
     /** Return the currently expanded rows */
     getExpandedRows(): any[];
     /** The cell Formatter that shows the icon that will be used to toggle the Row Detail */
-    protected detailSelectionFormatter(row: number, _cell: number, _val: any, _column: Column, dataContext: any, grid: SlickGrid): FormatterResultObject | string;
+    protected detailSelectionFormatter(row: number, _cell: number, _val: any, _column: Column, dataContext: any, grid: SlickGrid): FormatterResultWithHtml | FormatterResultWithText | string;
     /** Resize the Row Detail View */
     resizeDetailView(item: any): void;
     /** Takes in the item we are filtering and if it is an expanded row returns it's parents row to filter on */

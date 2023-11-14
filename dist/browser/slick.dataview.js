@@ -9,7 +9,8 @@
     constructor(options) {
       __publicField(this, "defaults", {
         groupItemMetadataProvider: null,
-        inlineFilters: !1
+        inlineFilters: !1,
+        useCSPSafeFilter: !1
       });
       // private
       __publicField(this, "idProperty", "id");
@@ -23,6 +24,8 @@
       __publicField(this, "rowsById");
       // rows by id; lazy-calculated
       __publicField(this, "filter", null);
+      // filter function
+      __publicField(this, "filterCSPSafe", null);
       // filter function
       __publicField(this, "updated", null);
       // updated item ids
@@ -41,7 +44,9 @@
       __publicField(this, "filterArgs");
       __publicField(this, "filteredItems", []);
       __publicField(this, "compiledFilter");
+      __publicField(this, "compiledFilterCSPSafe");
       __publicField(this, "compiledFilterWithCaching");
+      __publicField(this, "compiledFilterWithCachingCSPSafe");
       __publicField(this, "filterCache", []);
       __publicField(this, "_grid");
       // grid object will be defined only after using "syncGridSelection()" method"
@@ -96,7 +101,7 @@
       this.isBulkSuspend = !1, this.suspend = !1, wasBulkSuspend && (this.processBulkDelete(), this.ensureIdUniqueness()), this.refresh();
     }
     destroy() {
-      this.items = [], this.idxById = null, this.rowsById = null, this.filter = null, this.updated = null, this.sortComparer = null, this.filterCache = [], this.filteredItems = [], this.compiledFilter = null, this.compiledFilterWithCaching = null, this._grid && this._grid.onSelectedRowsChanged && this._grid.onCellCssStylesChanged && (this._grid.onSelectedRowsChanged.unsubscribe(), this._grid.onCellCssStylesChanged.unsubscribe()), this.onRowsOrCountChanged && this.onRowsOrCountChanged.unsubscribe();
+      this.items = [], this.idxById = null, this.rowsById = null, this.filter = null, this.filterCSPSafe = null, this.updated = null, this.sortComparer = null, this.filterCache = [], this.filteredItems = [], this.compiledFilter = null, this.compiledFilterCSPSafe = null, this.compiledFilterWithCaching = null, this.compiledFilterWithCachingCSPSafe = null, this._grid && this._grid.onSelectedRowsChanged && this._grid.onCellCssStylesChanged && (this._grid.onSelectedRowsChanged.unsubscribe(), this._grid.onCellCssStylesChanged.unsubscribe()), this.onRowsOrCountChanged && this.onRowsOrCountChanged.unsubscribe();
     }
     setRefreshHints(hints) {
       this.refreshHints = hints;
@@ -193,14 +198,14 @@
     }
     /** Get current Filter used by the DataView */
     getFilter() {
-      return this.filter;
+      return this._options.useCSPSafeFilter ? this.filterCSPSafe : this.filter;
     }
     /**
      * Set a Filter that will be used by the DataView
      * @param {Function} fn - filter callback function
      */
     setFilter(filterFn) {
-      this.filter = filterFn, this._options.inlineFilters && (this.compiledFilter = this.compileFilter(), this.compiledFilterWithCaching = this.compileFilterWithCaching()), this.refresh();
+      this.filterCSPSafe = filterFn, this.filter = filterFn, this._options.inlineFilters && (this.compiledFilterCSPSafe = this.compileFilterCSPSafe, this.compiledFilterWithCachingCSPSafe = this.compileFilterWithCachingCSPSafe, this.compiledFilter = this.compileFilter(this._options.useCSPSafeFilter), this.compiledFilterWithCaching = this.compileFilterWithCaching(this._options.useCSPSafeFilter)), this.refresh();
     }
     /** Get current Grouping info */
     getGrouping() {
@@ -555,7 +560,17 @@
         return function() {
         };
     }
-    compileFilter() {
+    compileFilterCSPSafe(_items, _args) {
+      if (typeof this.filterCSPSafe != "function")
+        return [];
+      let _retval = [], _il = _items.length;
+      for (let _i = 0; _i < _il; _i++)
+        this.filterCSPSafe(_items[_i], _args) && _retval.push(_items[_i]);
+      return _retval;
+    }
+    compileFilter(stopRunningIfCSPSafeIsActive = !1) {
+      if (stopRunningIfCSPSafeIsActive)
+        return null;
       let filterInfo = this.getFunctionInfo(this.filter), filterPath1 = "{ continue _coreloop; }$1", filterPath2 = "{ _retval[_idx++] = $item$; continue _coreloop; }$1", filterBody = filterInfo.body.replace(/return false\s*([;}]|\}|$)/gi, filterPath1).replace(/return!1([;}]|\}|$)/gi, filterPath1).replace(/return true\s*([;}]|\}|$)/gi, filterPath2).replace(/return!0([;}]|\}|$)/gi, filterPath2).replace(
         /return ([^;}]+?)\s*([;}]|$)/gi,
         "{ if ($1) { _retval[_idx++] = $item$; }; continue _coreloop; }$2"
@@ -575,7 +590,9 @@
       let fn = new Function("_items,_args", tpl), fnName = "compiledFilter";
       return fn.displayName = fnName, fn.name = this.setFunctionName(fn, fnName), fn;
     }
-    compileFilterWithCaching() {
+    compileFilterWithCaching(stopRunningIfCSPSafeIsActive = !1) {
+      if (stopRunningIfCSPSafeIsActive)
+        return null;
       let filterInfo = this.getFunctionInfo(this.filter), filterPath1 = "{ continue _coreloop; }$1", filterPath2 = "{ _cache[_i] = true;_retval[_idx++] = $item$; continue _coreloop; }$1", filterBody = filterInfo.body.replace(/return false\s*([;}]|\}|$)/gi, filterPath1).replace(/return!1([;}]|\}|$)/gi, filterPath1).replace(/return true\s*([;}]|\}|$)/gi, filterPath2).replace(/return!0([;}]|\}|$)/gi, filterPath2).replace(
         /return ([^;}]+?)\s*([;}]|$)/gi,
         "{ if ((_cache[_i] = $1)) { _retval[_idx++] = $item$; }; continue _coreloop; }$2"
@@ -598,6 +615,14 @@
       tpl = tpl.replace(/\$filter\$/gi, filterBody), tpl = tpl.replace(/\$item\$/gi, filterInfo.params[0]), tpl = tpl.replace(/\$args\$/gi, filterInfo.params[1]);
       let fn = new Function("_items,_args,_cache", tpl), fnName = "compiledFilterWithCaching";
       return fn.displayName = fnName, fn.name = this.setFunctionName(fn, fnName), fn;
+    }
+    compileFilterWithCachingCSPSafe(_items, _args, filterCache) {
+      if (typeof this.filterCSPSafe != "function")
+        return [];
+      let _retval = [], _il = _items.length;
+      for (let _i = 0; _i < _il; _i++)
+        (filterCache[_i] || this.filterCSPSafe(_items[_i], _args)) && _retval.push(_items[_i]);
+      return _retval;
     }
     /**
      * In ES5 we could set the function name on the fly but in ES6 this is forbidden and we need to set it through differently
@@ -631,9 +656,9 @@
       return retval;
     }
     getFilteredAndPagedItems(items) {
-      if (this.filter) {
-        let batchFilter = this._options.inlineFilters ? this.compiledFilter : this.uncompiledFilter, batchFilterWithCaching = this._options.inlineFilters ? this.compiledFilterWithCaching : this.uncompiledFilterWithCaching;
-        this.refreshHints.isFilterNarrowing ? this.filteredItems = batchFilter.call(this, this.filteredItems, this.filterArgs) : this.refreshHints.isFilterExpanding ? this.filteredItems = batchFilterWithCaching.call(this, items, this.filterArgs, this.filterCache) : this.refreshHints.isFilterUnchanged || (this.filteredItems = batchFilter.call(this, items, this.filterArgs));
+      if (this._options.useCSPSafeFilter ? this.filterCSPSafe : this.filter) {
+        let batchFilter, batchFilterWithCaching;
+        this._options.useCSPSafeFilter ? (batchFilter = this._options.inlineFilters ? this.compiledFilterCSPSafe : this.uncompiledFilter, batchFilterWithCaching = this._options.inlineFilters ? this.compiledFilterWithCachingCSPSafe : this.uncompiledFilterWithCaching) : (batchFilter = this._options.inlineFilters ? this.compiledFilter : this.uncompiledFilter, batchFilterWithCaching = this._options.inlineFilters ? this.compiledFilterWithCaching : this.uncompiledFilterWithCaching), this.refreshHints.isFilterNarrowing ? this.filteredItems = batchFilter.call(this, this.filteredItems, this.filterArgs) : this.refreshHints.isFilterExpanding ? this.filteredItems = batchFilterWithCaching.call(this, items, this.filterArgs, this.filterCache) : this.refreshHints.isFilterUnchanged || (this.filteredItems = batchFilter.call(this, items, this.filterArgs));
       } else
         this.filteredItems = this.pagesize ? items : items.concat();
       let paged;

@@ -1,5 +1,5 @@
 import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_ } from '../slick.core';
-import type { Column, DOMEvent, DragRowMove, FormatterResultObject, CrossGridRowMoveManagerOption, UsabilityOverrideFn } from '../models/index';
+import type { Column, DOMEvent, DragRowMove, CrossGridRowMoveManagerOption, FormatterResultWithText, UsabilityOverrideFn } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 /**
  * Row Move Manager options:
@@ -52,7 +52,7 @@ export declare class SlickCrossGridRowMoveManager {
     protected handleDrag(evt: SlickEventData_, dd: DragRowMove): boolean | void;
     protected handleDragEnd(e: SlickEventData_, dd: DragRowMove): void;
     getColumnDefinition(): Column;
-    protected moveIconFormatter(row: number, _cell: number, _val: any, _column: Column, dataContext: any, grid: SlickGrid): FormatterResultObject | string;
+    protected moveIconFormatter(row: number, _cell: number, _val: any, _column: Column, dataContext: any, grid: SlickGrid): FormatterResultWithText | string;
     protected checkUsabilityOverride(row: number, dataContext: any, grid: SlickGrid): boolean;
     /**
      * Method that user can pass to override the default behavior or making every row moveable.

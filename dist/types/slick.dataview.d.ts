@@ -5,6 +5,7 @@ import { SlickGroupItemMetadataProvider as SlickGroupItemMetadataProvider_ } fro
 export interface DataViewOption {
     groupItemMetadataProvider: SlickGroupItemMetadataProvider_ | null;
     inlineFilters: boolean;
+    useCSPSafeFilter: boolean;
 }
 export type FilterFn<T> = (item: T, args: any) => boolean;
 export type DataIdType = number | string;
@@ -25,6 +26,7 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
         [id: DataIdType]: number;
     } | undefined;
     protected filter: FilterFn<TData> | null;
+    protected filterCSPSafe: Function | null;
     protected updated: ({
         [id: DataIdType]: boolean;
     }) | null;
@@ -39,7 +41,9 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     protected filterArgs: any;
     protected filteredItems: TData[];
     protected compiledFilter?: FilterFn<TData> | null;
+    protected compiledFilterCSPSafe?: Function | null;
     protected compiledFilterWithCaching?: FilterFn<TData> | null;
+    protected compiledFilterWithCachingCSPSafe?: Function | null;
     protected filterCache: any[];
     protected _grid?: SlickGrid;
     protected groupingInfoDefaults: Grouping;
@@ -116,7 +120,7 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     /** Get the array length (count) of only the DataView filtered items */
     getFilteredItemCount(): number;
     /** Get current Filter used by the DataView */
-    getFilter(): FilterFn<TData> | null;
+    getFilter(): Function | null;
     /**
      * Set a Filter that will be used by the DataView
      * @param {Function} fn - filter callback function
@@ -241,8 +245,10 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
         body: string;
     };
     protected compileAccumulatorLoop(aggregator: Aggregator): any;
-    protected compileFilter(): FilterFn<TData>;
-    protected compileFilterWithCaching(): any;
+    protected compileFilterCSPSafe(_items: TData[], _args: any): TData[];
+    protected compileFilter(stopRunningIfCSPSafeIsActive?: boolean): FilterFn<TData>;
+    protected compileFilterWithCaching(stopRunningIfCSPSafeIsActive?: boolean): any;
+    protected compileFilterWithCachingCSPSafe(_items: TData[], _args: any, filterCache: any[]): TData[];
     /**
      * In ES5 we could set the function name on the fly but in ES6 this is forbidden and we need to set it through differently
      * We can use Object.defineProperty and set it the property to writable, see MDN for reference

@@ -113,7 +113,14 @@
       };
     }
     moveIconFormatter(row, _cell, _val, _column, dataContext, grid) {
-      return this.checkUsabilityOverride(row, dataContext, grid) ? { addClasses: `cell-reorder dnd ${this._options.cssClass || ""}`.trim(), text: "" } : "";
+      if (this.checkUsabilityOverride(row, dataContext, grid)) {
+        let iconElm = document.createElement("div");
+        return iconElm.className = this._options.cssClass || "", {
+          addClasses: `cell-reorder dnd ${this._options.containerCssClass || ""}`,
+          html: iconElm
+        };
+      } else
+        return "";
     }
     checkUsabilityOverride(row, dataContext, grid) {
       return typeof this._usabilityOverride == "function" ? this._usabilityOverride(row, dataContext, grid) : !0;

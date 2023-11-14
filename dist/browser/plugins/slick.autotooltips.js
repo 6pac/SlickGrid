@@ -63,7 +63,11 @@
     handleHeaderMouseEnter(event, args) {
       var _a;
       let column = args.column, node, targetElm = event.target;
-      targetElm && (node = targetElm.closest(".slick-header-column"), node && !(column != null && column.toolTip) && (node.title = targetElm.clientWidth < node.clientWidth && (_a = column == null ? void 0 : column.name) != null ? _a : "")), node = null;
+      if (targetElm && (node = targetElm.closest(".slick-header-column"), node && !(column != null && column.toolTip))) {
+        let titleVal = targetElm.clientWidth < node.clientWidth && (_a = column == null ? void 0 : column.name) != null ? _a : "";
+        node.title = titleVal instanceof HTMLElement ? titleVal.innerHTML : titleVal;
+      }
+      node = null;
     }
   };
   window.Slick && Utils.extend(!0, window, {

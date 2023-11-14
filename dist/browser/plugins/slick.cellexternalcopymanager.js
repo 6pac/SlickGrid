@@ -216,11 +216,11 @@
               if (clipTextRows.length === 0 && this._options.includeHeaderWhenCopying) {
                 let clipTextHeaders = [];
                 for (let j = range.fromCell; j < range.toCell + 1; j++)
-                  columns[j].name.length > 0 && !columns[j].hidden && clipTextHeaders.push(this.getHeaderValueForColumn(columns[j]));
+                  (columns[j].name instanceof HTMLElement ? columns[j].name.innerHTML : columns[j].name).length > 0 && !columns[j].hidden && clipTextHeaders.push(this.getHeaderValueForColumn(columns[j]));
                 clipTextRows.push(clipTextHeaders.join("	"));
               }
               for (let j = range.fromCell; j < range.toCell + 1; j++)
-                columns[j].name.length > 0 && !columns[j].hidden && clipTextCells.push(this.getDataItemValueForColumn(dt, columns[j], e));
+                (columns[j].name instanceof HTMLElement ? columns[j].name.innerHTML : columns[j].name).length > 0 && !columns[j].hidden && clipTextCells.push(this.getDataItemValueForColumn(dt, columns[j], e));
               clipTextRows.push(clipTextCells.join("	"));
             }
             clipText += clipTextRows.join(`\r

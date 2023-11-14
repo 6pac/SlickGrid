@@ -28,7 +28,7 @@
         hideSyncResizeButton: !1,
         forceFitTitle: "Force fit columns",
         syncResizeTitle: "Synchronous resize",
-        headerColumnValueExtractor: (columnDef) => columnDef.name || ""
+        headerColumnValueExtractor: (columnDef) => columnDef.name instanceof HTMLElement ? columnDef.name.innerHTML : columnDef.name || ""
       });
       this._gridUid = grid.getUID(), this._gridOptions = Utils.extend({}, this._defaults, gridOptions), this.init(this.grid);
     }
@@ -53,28 +53,30 @@
       (this._menuElm !== e.target && !((_a = this._menuElm) != null && _a.contains(e.target)) || e.target.className === "close") && (this._menuElm.setAttribute("aria-expanded", "false"), this._menuElm.style.display = "none");
     }
     handleHeaderContextMenu(e) {
-      var _a, _b, _c, _d, _e, _f, _g;
+      var _a, _b, _c, _d, _e, _f;
       e.preventDefault(), Utils.emptyElement(this._listElm), this.updateColumnOrder(), this._columnCheckboxes = [];
       let columnId, columnLabel, excludeCssClass;
       for (let i = 0; i < this.columns.length; i++) {
-        columnId = this.columns[i].id, excludeCssClass = this.columns[i].excludeFromColumnPicker ? "hidden" : "";
+        columnId = this.columns[i].id;
+        let colName = this.columns[i].name instanceof HTMLElement ? this.columns[i].name.innerHTML : this.columns[i].name || "";
+        excludeCssClass = this.columns[i].excludeFromColumnPicker ? "hidden" : "";
         let liElm = document.createElement("li");
-        liElm.className = excludeCssClass, liElm.ariaLabel = ((_a = this.columns[i]) == null ? void 0 : _a.name) || "";
+        liElm.className = excludeCssClass, liElm.ariaLabel = colName;
         let checkboxElm = document.createElement("input");
-        checkboxElm.type = "checkbox", checkboxElm.id = `${this._gridUid}colpicker-${columnId}`, checkboxElm.dataset.columnid = String(this.columns[i].id), liElm.appendChild(checkboxElm), this._columnCheckboxes.push(checkboxElm), Utils.isDefined(this.grid.getColumnIndex(columnId)) && !this.columns[i].hidden && (checkboxElm.checked = !0), (_c = (_b = this._gridOptions) == null ? void 0 : _b.columnPicker) != null && _c.headerColumnValueExtractor ? columnLabel = this._gridOptions.columnPicker.headerColumnValueExtractor(this.columns[i], this._gridOptions) : columnLabel = this._defaults.headerColumnValueExtractor(this.columns[i], this._gridOptions);
+        checkboxElm.type = "checkbox", checkboxElm.id = `${this._gridUid}colpicker-${columnId}`, checkboxElm.dataset.columnid = String(this.columns[i].id), liElm.appendChild(checkboxElm), this._columnCheckboxes.push(checkboxElm), Utils.isDefined(this.grid.getColumnIndex(columnId)) && !this.columns[i].hidden && (checkboxElm.checked = !0), columnLabel = (_b = (_a = this._gridOptions) == null ? void 0 : _a.columnPicker) != null && _b.headerColumnValueExtractor ? this._gridOptions.columnPicker.headerColumnValueExtractor(this.columns[i], this._gridOptions) : this._defaults.headerColumnValueExtractor(this.columns[i], this._gridOptions);
         let labelElm = document.createElement("label");
-        labelElm.htmlFor = `${this._gridUid}colpicker-${columnId}`, labelElm.innerHTML = columnLabel, liElm.appendChild(labelElm), this._listElm.appendChild(liElm);
+        labelElm.htmlFor = `${this._gridUid}colpicker-${columnId}`, labelElm.innerHTML = this.grid.sanitizeHtmlString(columnLabel), liElm.appendChild(labelElm), this._listElm.appendChild(liElm);
       }
-      if (this._gridOptions.columnPicker && (!this._gridOptions.columnPicker.hideForceFitButton || !this._gridOptions.columnPicker.hideSyncResizeButton) && this._listElm.appendChild(document.createElement("hr")), !((_d = this._gridOptions.columnPicker) != null && _d.hideForceFitButton)) {
-        let forceFitTitle = ((_e = this._gridOptions.columnPicker) == null ? void 0 : _e.forceFitTitle) || this._gridOptions.forceFitTitle, liElm = document.createElement("li");
+      if (this._gridOptions.columnPicker && (!this._gridOptions.columnPicker.hideForceFitButton || !this._gridOptions.columnPicker.hideSyncResizeButton) && this._listElm.appendChild(document.createElement("hr")), !((_c = this._gridOptions.columnPicker) != null && _c.hideForceFitButton)) {
+        let forceFitTitle = ((_d = this._gridOptions.columnPicker) == null ? void 0 : _d.forceFitTitle) || this._gridOptions.forceFitTitle, liElm = document.createElement("li");
         liElm.ariaLabel = forceFitTitle || "", this._listElm.appendChild(liElm);
         let forceFitCheckboxElm = document.createElement("input");
         forceFitCheckboxElm.type = "checkbox", forceFitCheckboxElm.id = `${this._gridUid}colpicker-forcefit`, forceFitCheckboxElm.dataset.option = "autoresize", liElm.appendChild(forceFitCheckboxElm);
         let labelElm = document.createElement("label");
         labelElm.htmlFor = `${this._gridUid}colpicker-forcefit`, labelElm.textContent = forceFitTitle || "", liElm.appendChild(labelElm), this.grid.getOptions().forceFitColumns && (forceFitCheckboxElm.checked = !0);
       }
-      if (!((_f = this._gridOptions.columnPicker) != null && _f.hideSyncResizeButton)) {
-        let syncResizeTitle = ((_g = this._gridOptions.columnPicker) == null ? void 0 : _g.syncResizeTitle) || this._gridOptions.syncResizeTitle, liElm = document.createElement("li");
+      if (!((_e = this._gridOptions.columnPicker) != null && _e.hideSyncResizeButton)) {
+        let syncResizeTitle = ((_f = this._gridOptions.columnPicker) == null ? void 0 : _f.syncResizeTitle) || this._gridOptions.syncResizeTitle, liElm = document.createElement("li");
         liElm.ariaLabel = syncResizeTitle || "", this._listElm.appendChild(liElm);
         let syncResizeCheckboxElm = document.createElement("input");
         syncResizeCheckboxElm.type = "checkbox", syncResizeCheckboxElm.id = `${this._gridUid}colpicker-syncresize`, syncResizeCheckboxElm.dataset.option = "syncresize", liElm.appendChild(syncResizeCheckboxElm);
@@ -97,7 +99,7 @@
     /** Update the Titles of each sections (command, customTitle, ...) */
     updateAllTitles(pickerOptions) {
       var _a;
-      (_a = this._columnTitleElm) != null && _a.innerHTML && (this._columnTitleElm.innerHTML = pickerOptions.columnTitle);
+      (_a = this._columnTitleElm) != null && _a.innerHTML && (this._columnTitleElm.innerHTML = this.grid.sanitizeHtmlString(pickerOptions.columnTitle));
     }
     updateColumn(e) {
       if (e.target.dataset.option === "autoresize") {

@@ -1,5 +1,5 @@
 import type SortableInstance from 'sortablejs';
-import type { AutoSize, CellViewportRange, Column, ColumnSort, CssStyleHash, CustomDataView, DOMEvent, DragPosition, DragRowMove, Editor, EditController, Formatter, FormatterResultObject, GridOption as BaseGridOption, InteractionBase, MultiColumnSort, OnActiveCellChangedEventArgs, OnAddNewRowEventArgs, OnAutosizeColumnsEventArgs, OnBeforeUpdateColumnsEventArgs, OnBeforeAppendCellEventArgs, OnBeforeCellEditorDestroyEventArgs, OnBeforeColumnsResizeEventArgs, OnBeforeEditCellEventArgs, OnBeforeHeaderCellDestroyEventArgs, OnBeforeHeaderRowCellDestroyEventArgs, OnBeforeFooterRowCellDestroyEventArgs, OnBeforeSetColumnsEventArgs, OnCellChangeEventArgs, OnCellCssStylesChangedEventArgs, OnColumnsDragEventArgs, OnColumnsReorderedEventArgs, OnColumnsResizedEventArgs, OnColumnsResizeDblClickEventArgs, OnCompositeEditorChangeEventArgs, OnClickEventArgs, OnDblClickEventArgs, OnFooterContextMenuEventArgs, OnFooterRowCellRenderedEventArgs, OnHeaderCellRenderedEventArgs, OnFooterClickEventArgs, OnHeaderClickEventArgs, OnHeaderContextMenuEventArgs, OnHeaderMouseEventArgs, OnHeaderRowCellRenderedEventArgs, OnKeyDownEventArgs, OnValidationErrorEventArgs, OnRenderedEventArgs, OnSelectedRowsChangedEventArgs, OnSetOptionsEventArgs, OnActivateChangedOptionsEventArgs, OnScrollEventArgs, PagingInfo, RowInfo, SelectionModel, SingleColumnSort, SlickGridEventData, SlickPlugin } from './models/index';
+import type { AutoSize, CellViewportRange, Column, ColumnSort, CssStyleHash, CustomDataView, DOMEvent, DragPosition, DragRowMove, Editor, EditController, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption as BaseGridOption, InteractionBase, MultiColumnSort, OnActiveCellChangedEventArgs, OnAddNewRowEventArgs, OnAutosizeColumnsEventArgs, OnBeforeUpdateColumnsEventArgs, OnBeforeAppendCellEventArgs, OnBeforeCellEditorDestroyEventArgs, OnBeforeColumnsResizeEventArgs, OnBeforeEditCellEventArgs, OnBeforeHeaderCellDestroyEventArgs, OnBeforeHeaderRowCellDestroyEventArgs, OnBeforeFooterRowCellDestroyEventArgs, OnBeforeSetColumnsEventArgs, OnCellChangeEventArgs, OnCellCssStylesChangedEventArgs, OnColumnsDragEventArgs, OnColumnsReorderedEventArgs, OnColumnsResizedEventArgs, OnColumnsResizeDblClickEventArgs, OnCompositeEditorChangeEventArgs, OnClickEventArgs, OnDblClickEventArgs, OnFooterContextMenuEventArgs, OnFooterRowCellRenderedEventArgs, OnHeaderCellRenderedEventArgs, OnFooterClickEventArgs, OnHeaderClickEventArgs, OnHeaderContextMenuEventArgs, OnHeaderMouseEventArgs, OnHeaderRowCellRenderedEventArgs, OnKeyDownEventArgs, OnValidationErrorEventArgs, OnRenderedEventArgs, OnSelectedRowsChangedEventArgs, OnSetOptionsEventArgs, OnActivateChangedOptionsEventArgs, OnScrollEventArgs, PagingInfo, RowInfo, SelectionModel, SingleColumnSort, SlickGridEventData, SlickPlugin } from './models/index';
 import { BindingEventService as BindingEventService_, type SlickEditorLock, SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_ } from './slick.core';
 /**
  * @license
@@ -10,7 +10,7 @@ import { BindingEventService as BindingEventService_, type SlickEditorLock, Slic
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.4.2
+ * SlickGrid v5.5.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -285,6 +285,15 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     constructor(container: HTMLElement | string, data: CustomDataView<TData> | TData[], columns: C[], options: Partial<O>);
     /** Initializes the grid. */
     init(): void;
+    /**
+     * Apply HTML code by 3 different ways depending on what is provided as input and what options are enabled.
+     * 1. value is an HTMLElement, then simply append the HTML to the target element.
+     * 2. value is string and `enableHtmlRendering` is enabled, then use `target.innerHTML = value;`
+     * 3. value is string and `enableHtmlRendering` is disabled, then use `target.textContent = value;`
+     * @param target - target element to apply to
+     * @param val - input value can be either a string or an HTMLElement
+     */
+    applyHtmlCode(target: HTMLElement, val: string | HTMLElement): void;
     protected initialize(): void;
     protected finishInitialization(): void;
     /** handles "display:none" on container or container parents, related to issue: https://github.com/6pac/SlickGrid/issues/568 */
@@ -355,7 +364,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * @param {String} [title] New column name.
      * @param {String} [toolTip] New column tooltip.
      */
-    updateColumnHeader(columnId: number | string, title?: string, toolTip?: string): void;
+    updateColumnHeader(columnId: number | string, title?: string | HTMLElement, toolTip?: string): void;
     /**
      * Get the Header DOM element
      * @param {C} columnDef - column definition
@@ -582,8 +591,8 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected getFormatter(row: number, column: C): Formatter;
     protected getEditor(row: number, cell: number): Editor | undefined;
     protected getDataItemValueForColumn(item: TData, columnDef: C): TData | TData[keyof TData];
-    protected appendRowHtml(stringArrayL: string[], stringArrayR: string[], row: number, range: CellViewportRange, dataLength: number): void;
-    protected appendCellHtml(stringArray: string[], row: number, cell: number, colspan: number, item: TData): void;
+    protected appendRowHtml(divArrayL: HTMLElement[], divArrayR: HTMLElement[], row: number, range: CellViewportRange, dataLength: number): void;
+    protected appendCellHtml(divRow: HTMLElement, row: number, cell: number, colspan: number, item: TData): void;
     protected cleanupRows(rangeToKeep: {
         bottom: number;
         top: number;
@@ -606,7 +615,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected queuePostProcessedCellForCleanup(cellnode: HTMLElement, columnIdx: number, rowIdx: number): void;
     protected removeRowFromCache(row: number): void;
     /** Apply a Formatter Result to a Cell DOM Node */
-    applyFormatResultToCellNode(formatterResult: FormatterResultObject | string, cellNode: HTMLDivElement, suppressRemove?: boolean): void;
+    applyFormatResultToCellNode(formatterResult: FormatterResultWithHtml | FormatterResultWithText | string | HTMLElement, cellNode: HTMLDivElement, suppressRemove?: boolean): void;
     /**
      * Update a specific cell by its row and column index
      * @param {Number} row - grid row number

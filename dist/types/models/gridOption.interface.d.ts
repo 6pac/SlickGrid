@@ -33,6 +33,10 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
     asyncPostRenderCleanupDelay?: number;
     auto?: boolean;
     /**
+     * Added for CSP header because of dynamic css generation.
+     */
+    nonce?: string;
+    /**
      * Defaults to false, when enabled will try to commit the current edit without focusing on the next row.
      * If a custom editor is implemented and the grid cannot auto commit, you must use this option to implement it yourself
      */
@@ -109,6 +113,12 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
      * We could also provide a Column Reorder function, there's mostly only 1 use for this which is the SlickDraggableGrouping plugin.
      */
     enableColumnReorder?: boolean | ColumnReorderFunction<C>;
+    /**
+     * Defaults to true, do we want to allow passing HTML string to cell/row rendering by using `innerHTML`.
+     * When this is enabled and input is a string, it will use `innerHTML = 'some html'` to render the input, however when disable it will use `textContent = 'some html'`.
+     * Note: for strict CSP, you would want to disable this option and convert all your custom Formatters to return an HTMLElement instead of a string
+     */
+    enableHtmlRendering?: boolean;
     /**
      * Do we want to always enable the mousewheel scroll handler?
      * In other words, do we want the mouse scrolling would work from anywhere.

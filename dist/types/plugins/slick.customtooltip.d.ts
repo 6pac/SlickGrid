@@ -71,7 +71,7 @@ type CellType = 'slick-cell' | 'slick-header-column' | 'slick-headerrow-column';
  * @param {boolean} [options.className="slick-custom-tooltip"]  - custom tooltip class name
  * @param {boolean} [options.offsetTop=5]                       - tooltip offset from the top
  */
-export declare class CustomTooltip {
+export declare class SlickCustomTooltip {
     protected readonly tooltipOptions: Partial<CustomTooltipOption>;
     pluginName: "CustomTooltip";
     protected _cancellablePromise?: CancellablePromiseWrapper;

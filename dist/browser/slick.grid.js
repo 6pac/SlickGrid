@@ -23,7 +23,7 @@
       this.options = options;
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.4.2");
+      __publicField(this, "slickGridVersion", "5.5.0");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -94,6 +94,7 @@
         explicitInitialization: !1,
         rowHeight: 25,
         defaultColumnWidth: 80,
+        enableHtmlRendering: !0,
         enableAddRow: !1,
         leaveSpaceForNewRows: !1,
         editable: !1,
@@ -111,6 +112,7 @@
         enableAsyncPostRenderCleanup: !1,
         asyncPostRenderCleanupDelay: 40,
         auto: !1,
+        nonce: "",
         editorLock: GlobalEditorLock,
         showColumnHeader: !0,
         showHeaderRow: !1,
@@ -373,6 +375,17 @@
     /** Initializes the grid. */
     init() {
       this.finishInitialization();
+    }
+    /**
+     * Apply HTML code by 3 different ways depending on what is provided as input and what options are enabled.
+     * 1. value is an HTMLElement, then simply append the HTML to the target element.
+     * 2. value is string and `enableHtmlRendering` is enabled, then use `target.innerHTML = value;`
+     * 3. value is string and `enableHtmlRendering` is disabled, then use `target.textContent = value;`
+     * @param target - target element to apply to
+     * @param val - input value can be either a string or an HTMLElement
+     */
+    applyHtmlCode(target, val) {
+      val instanceof HTMLElement ? target.appendChild(val) : this._options.enableHtmlRendering ? target.innerHTML = this.sanitizeHtmlString(val) : target.textContent = this.sanitizeHtmlString(val);
     }
     initialize() {
       if (typeof this.container == "string" ? this._container = document.querySelector(this.container) : this._container = this.container, !this._container)
@@ -647,7 +660,7 @@
         node: header,
         column: columnDef,
         grid: this
-      }), header.setAttribute("title", toolTip || ""), title !== void 0 && (header.children[0].innerHTML = this.sanitizeHtmlString(title)), this.trigger(this.onHeaderCellRendered, {
+      }), header.setAttribute("title", toolTip || ""), title !== void 0 && this.applyHtmlCode(header.children[0], title), this.trigger(this.onHeaderCellRendered, {
         node: header,
         column: columnDef,
         grid: this
@@ -774,7 +787,7 @@
       }), Utils.emptyElement(this._footerRowR)));
       for (let i = 0; i < this.columns.length; i++) {
         let m = this.columns[i], headerTarget = this.hasFrozenColumns() ? i <= this._options.frozenColumn ? this._headerL : this._headerR : this._headerL, headerRowTarget = this.hasFrozenColumns() ? i <= this._options.frozenColumn ? this._headerRowL : this._headerRowR : this._headerRowL, header = Utils.createDomElement("div", { id: `${this.uid + m.id}`, dataset: { id: String(m.id) }, className: "ui-state-default slick-state-default slick-header-column", title: m.toolTip || "" }, headerTarget), colNameElm = Utils.createDomElement("span", { className: "slick-column-name" }, header);
-        colNameElm.innerHTML = this.sanitizeHtmlString(m.name), Utils.width(header, m.width - this.headerColumnWidthDiff);
+        this.applyHtmlCode(colNameElm, m.name), Utils.width(header, m.width - this.headerColumnWidthDiff);
         let classname = m.headerCssClass || null;
         if (classname && header.classList.add(...classname.split(" ")), classname = this.hasFrozenColumns() && i <= this._options.frozenColumn ? "frozen" : null, classname && header.classList.add(classname), this._bindingEventService.bind(header, "mouseenter", this.handleHeaderMouseEnter.bind(this)), this._bindingEventService.bind(header, "mouseleave", this.handleHeaderMouseLeave.bind(this)), Utils.storage.put(header, "column", m), (this._options.enableColumnReorder || m.sortable) && (this._bindingEventService.bind(header, "mouseenter", this.handleHeaderMouseHoverOn.bind(this)), this._bindingEventService.bind(header, "mouseleave", this.handleHeaderMouseHoverOff.bind(this))), m.hasOwnProperty("headerCellAttrs") && m.headerCellAttrs instanceof Object)
           for (let key in m.headerCellAttrs)
@@ -1020,7 +1033,7 @@
       el = Utils.createDomElement("div", { className: "slick-cell", id: "", style: { visibility: "hidden" }, textContent: "-" }, r), style = getComputedStyle(el), style.boxSizing !== "border-box" && (h.forEach((val) => this.cellWidthDiff += Utils.toFloat(style[val])), v.forEach((val) => this.cellHeightDiff += Utils.toFloat(style[val]))), r.remove(), this.absoluteColumnMinWidth = Math.max(this.headerColumnWidthDiff, this.cellWidthDiff);
     }
     createCssRules() {
-      this._style = document.createElement("style"), this._style.nonce = "random-string", (this._options.shadowRoot || document.head).appendChild(this._style);
+      this._style = document.createElement("style"), this._style.nonce = this._options.nonce || "", (this._options.shadowRoot || document.head).appendChild(this._style);
       let rowHeight = this._options.rowHeight - this.cellHeightDiff, rules = [
         `.${this.uid} .slick-group-header-column { left: 1000px; }`,
         `.${this.uid} .slick-header-column { left: 1000px; }`,
@@ -1274,7 +1287,7 @@
         let header = this.getHeader(columnDef);
         headerColEl = Utils.createDomElement("div", { id: dummyHeaderColElId, className: "ui-state-default slick-state-default slick-header-column" }, header);
         let colNameElm = Utils.createDomElement("span", { className: "slick-column-name" }, headerColEl);
-        colNameElm.innerHTML = this.sanitizeHtmlString(String(columnDef.name)), clone.style.cssText = "position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;", columnDef.headerCssClass && headerColEl.classList.add(...(columnDef.headerCssClass || "").split(" ")), width = headerColEl.offsetWidth, header.removeChild(headerColEl);
+        this.applyHtmlCode(colNameElm, columnDef.name), clone.style.cssText = "position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;", columnDef.headerCssClass && headerColEl.classList.add(...(columnDef.headerCssClass || "").split(" ")), width = headerColEl.offsetWidth, header.removeChild(headerColEl);
       }
       return width;
     }
@@ -1660,14 +1673,14 @@
     getDataItemValueForColumn(item, columnDef) {
       return this._options.dataItemColumnValueExtractor ? this._options.dataItemColumnValueExtractor(item, columnDef) : item[columnDef.field];
     }
-    appendRowHtml(stringArrayL, stringArrayR, row, range, dataLength) {
+    appendRowHtml(divArrayL, divArrayR, row, range, dataLength) {
       var _a, _b;
       let d = this.getDataItem(row), dataLoading = row < dataLength && !d, rowCss = "slick-row" + (this.hasFrozenRows && row <= this._options.frozenRow ? " frozen" : "") + (dataLoading ? " loading" : "") + (row === this.activeRow && this._options.showCellSelection ? " active" : "") + (row % 2 === 1 ? " odd" : " even");
       d || (rowCss += " " + this._options.addNewRowCssClass);
       let metadata = (_b = (_a = this.data) == null ? void 0 : _a.getItemMetadata) == null ? void 0 : _b.call(_a, row);
       metadata != null && metadata.cssClasses && (rowCss += " " + metadata.cssClasses);
-      let frozenRowOffset = this.getFrozenRowOffset(row), rowHtml = `<div class="ui-widget-content ${rowCss}" style="top:${this.getRowTop(row) - frozenRowOffset}px">`;
-      stringArrayL.push(rowHtml), this.hasFrozenColumns() && stringArrayR.push(rowHtml);
+      let frozenRowOffset = this.getFrozenRowOffset(row), rowDiv = document.createElement("div"), rowDivR;
+      rowDiv.className = "ui-widget-content " + rowCss, rowDiv.style.top = `${this.getRowTop(row) - frozenRowOffset}px`, divArrayL.push(rowDiv), this.hasFrozenColumns() && (rowDivR = rowDiv.cloneNode(!0), divArrayR.push(rowDivR));
       let colspan, m;
       for (let i = 0, ii = this.columns.length; i < ii; i++)
         if (m = this.columns[i], !(!m || m.hidden)) {
@@ -1678,14 +1691,13 @@
           if (this.columnPosRight[Math.min(ii - 1, i + colspan - 1)] > range.leftPx) {
             if (!m.alwaysRenderColumn && this.columnPosLeft[i] > range.rightPx)
               break;
-            this.hasFrozenColumns() && i > this._options.frozenColumn ? this.appendCellHtml(stringArrayR, row, i, colspan, d) : this.appendCellHtml(stringArrayL, row, i, colspan, d);
+            this.hasFrozenColumns() && i > this._options.frozenColumn ? this.appendCellHtml(rowDivR, row, i, colspan, d) : this.appendCellHtml(rowDiv, row, i, colspan, d);
           } else
-            (m.alwaysRenderColumn || this.hasFrozenColumns() && i <= this._options.frozenColumn) && this.appendCellHtml(stringArrayL, row, i, colspan, d);
+            (m.alwaysRenderColumn || this.hasFrozenColumns() && i <= this._options.frozenColumn) && this.appendCellHtml(rowDiv, row, i, colspan, d);
           colspan > 1 && (i += colspan - 1);
         }
-      stringArrayL.push("</div>"), this.hasFrozenColumns() && stringArrayR.push("</div>");
     }
-    appendCellHtml(stringArray, row, cell, colspan, item) {
+    appendCellHtml(divRow, row, cell, colspan, item) {
       var _a;
       let m = this.columns[cell], cellCss = "slick-cell l" + cell + " r" + Math.min(this.columns.length - 1, cell + colspan - 1) + (m.cssClass ? " " + m.cssClass : "");
       this.hasFrozenColumns() && cell <= this._options.frozenColumn && (cellCss += " frozen"), row === this.activeRow && cell === this.activeCell && this._options.showCellSelection && (cellCss += " active");
@@ -1695,11 +1707,15 @@
       item && (value = this.getDataItemValueForColumn(item, m), formatterResult = this.getFormatter(row, m)(row, cell, value, m, item, this), formatterResult == null && (formatterResult = ""));
       let appendCellResult = this.trigger(this.onBeforeAppendCell, { row, cell, value, dataContext: item }).getReturnValue(), addlCssClasses = typeof appendCellResult == "string" ? appendCellResult : "";
       formatterResult != null && formatterResult.addClasses && (addlCssClasses += (addlCssClasses ? " " : "") + formatterResult.addClasses);
-      let toolTip = formatterResult != null && formatterResult.toolTip ? `title="${formatterResult.toolTip}"` : "", customAttrStr = "";
-      if (m.hasOwnProperty("cellAttrs") && m.cellAttrs instanceof Object)
+      let toolTipText = formatterResult != null && formatterResult.toolTip ? `${formatterResult.toolTip}` : "", cellDiv = document.createElement("div");
+      if (cellDiv.className = cellCss + (addlCssClasses ? " " + addlCssClasses : ""), cellDiv.setAttribute("title", toolTipText), m.hasOwnProperty("cellAttrs") && m.cellAttrs instanceof Object)
         for (let key in m.cellAttrs)
-          m.cellAttrs.hasOwnProperty(key) && (customAttrStr += ` ${key}="${m.cellAttrs[key]}" `);
-      stringArray.push(`<div class="${cellCss + (addlCssClasses ? " " + addlCssClasses : "")}" ${toolTip + customAttrStr}>`), item && stringArray.push(Object.prototype.toString.call(formatterResult) !== "[object Object]" ? formatterResult : formatterResult.text), stringArray.push("</div>"), this.rowsCache[row].cellRenderQueue.push(cell), this.rowsCache[row].cellColSpans[cell] = colspan;
+          m.cellAttrs.hasOwnProperty(key) && cellDiv.setAttribute(key, m.cellAttrs[key]);
+      if (item) {
+        let cellResult = Object.prototype.toString.call(formatterResult) !== "[object Object]" ? formatterResult : formatterResult.html || formatterResult.text;
+        cellResult instanceof HTMLElement ? cellDiv.appendChild(cellResult) : cellDiv.innerHTML = this.sanitizeHtmlString(cellResult);
+      }
+      divRow.appendChild(cellDiv), this.rowsCache[row].cellRenderQueue.push(cell), this.rowsCache[row].cellColSpans[cell] = colspan;
     }
     cleanupRows(rangeToKeep) {
       for (let rowId in this.rowsCache)
@@ -1777,10 +1793,11 @@
     /** Apply a Formatter Result to a Cell DOM Node */
     applyFormatResultToCellNode(formatterResult, cellNode, suppressRemove) {
       if (formatterResult == null && (formatterResult = ""), Object.prototype.toString.call(formatterResult) !== "[object Object]") {
-        cellNode.innerHTML = this.sanitizeHtmlString(formatterResult);
+        this.applyHtmlCode(cellNode, formatterResult);
         return;
       }
-      cellNode.innerHTML = this.sanitizeHtmlString(formatterResult.text), formatterResult.removeClasses && !suppressRemove && formatterResult.removeClasses.split(" ").forEach((c) => cellNode.classList.remove(c)), formatterResult.addClasses && formatterResult.addClasses.split(" ").forEach((c) => cellNode.classList.add(c)), formatterResult.toolTip && cellNode.setAttribute("title", formatterResult.toolTip);
+      let formatterVal = formatterResult.html || formatterResult.text;
+      this.applyHtmlCode(cellNode, formatterVal), formatterResult.removeClasses && !suppressRemove && formatterResult.removeClasses.split(" ").forEach((c) => cellNode.classList.remove(c)), formatterResult.addClasses && formatterResult.addClasses.split(" ").forEach((c) => cellNode.classList.add(c)), formatterResult.toolTip && cellNode.setAttribute("title", formatterResult.toolTip);
     }
     /**
      * Update a specific cell by its row and column index
@@ -1931,7 +1948,7 @@
     }
     cleanUpAndRenderCells(range) {
       var _a, _b, _c, _d;
-      let cacheEntry, stringArray = [], processedRows = [], cellsAdded, totalCellsAdded = 0, colspan;
+      let cacheEntry, divRow = document.createElement("div"), processedRows = [], cellsAdded, totalCellsAdded = 0, colspan;
       for (let row = range.top, btm = range.bottom; row <= btm; row++) {
         if (cacheEntry = this.rowsCache[row], !cacheEntry)
           continue;
@@ -1939,37 +1956,39 @@
         let metadata = (_c = (_b = (_a = this.data) == null ? void 0 : _a.getItemMetadata) == null ? void 0 : _b.call(_a, row)) != null ? _c : {};
         metadata = metadata == null ? void 0 : metadata.columns;
         let d = this.getDataItem(row);
-        for (let i = 0, ii = this.columns.length; i < ii; i++)
-          if (!(!this.columns[i] || this.columns[i].hidden)) {
-            if (this.columnPosLeft[i] > range.rightPx)
-              break;
-            if (Utils.isDefined(colspan = cacheEntry.cellColSpans[i])) {
-              i += colspan > 1 ? colspan - 1 : 0;
-              continue;
-            }
-            if (colspan = 1, metadata) {
-              let columnData = metadata[this.columns[i].id] || metadata[i];
-              colspan = (_d = columnData == null ? void 0 : columnData.colspan) != null ? _d : 1, colspan === "*" && (colspan = ii - i);
-            }
-            this.columnPosRight[Math.min(ii - 1, i + colspan - 1)] > range.leftPx && (this.appendCellHtml(stringArray, row, i, colspan, d), cellsAdded++), i += colspan > 1 ? colspan - 1 : 0;
+        for (let i = 0, ii = this.columns.length; i < ii; i++) {
+          if (!this.columns[i] || this.columns[i].hidden)
+            continue;
+          if (this.columnPosLeft[i] > range.rightPx)
+            break;
+          if (Utils.isDefined(colspan = cacheEntry.cellColSpans[i])) {
+            i += colspan > 1 ? colspan - 1 : 0;
+            continue;
           }
+          if (colspan = 1, metadata) {
+            let columnData = metadata[this.columns[i].id] || metadata[i];
+            colspan = (_d = columnData == null ? void 0 : columnData.colspan) != null ? _d : 1, colspan === "*" && (colspan = ii - i);
+          }
+          let colspanNb = colspan;
+          this.columnPosRight[Math.min(ii - 1, i + colspanNb - 1)] > range.leftPx && (this.appendCellHtml(divRow, row, i, colspanNb, d), cellsAdded++), i += colspanNb > 1 ? colspanNb - 1 : 0;
+        }
         cellsAdded && (totalCellsAdded += cellsAdded, processedRows.push(row));
       }
-      if (!stringArray.length)
+      if (!divRow.children.length)
         return;
       let x = document.createElement("div");
-      x.innerHTML = this.sanitizeHtmlString(stringArray.join(""));
+      x.innerHTML = this.sanitizeHtmlString(divRow.outerHTML);
       let processedRow, node;
       for (; Utils.isDefined(processedRow = processedRows.pop()); ) {
         cacheEntry = this.rowsCache[processedRow];
         let columnIdx;
         for (; Utils.isDefined(columnIdx = cacheEntry.cellRenderQueue.pop()); )
-          node = x.lastChild, this.hasFrozenColumns() && columnIdx > this._options.frozenColumn ? cacheEntry.rowNode[1].appendChild(node) : cacheEntry.rowNode[0].appendChild(node), cacheEntry.cellNodesByColumnIdx[columnIdx] = node;
+          node = x.lastChild, node && (this.hasFrozenColumns() && columnIdx > this._options.frozenColumn ? cacheEntry.rowNode[1].appendChild(node) : cacheEntry.rowNode[0].appendChild(node), cacheEntry.cellNodesByColumnIdx[columnIdx] = node);
       }
     }
     renderRows(range) {
       var _a, _b, _c, _d;
-      let stringArrayL = [], stringArrayR = [], rows = [], needToReselectCell = !1, dataLength = this.getDataLength();
+      let divArrayL = [], divArrayR = [], rows = [], needToReselectCell = !1, dataLength = this.getDataLength();
       for (let i = range.top, ii = range.bottom; i <= ii; i++)
         this.rowsCache[i] || this.hasFrozenRows && this._options.frozenBottom && i === this.getDataLength() || (this.renderedRows++, rows.push(i), this.rowsCache[i] = {
           rowNode: null,
@@ -1982,11 +2001,15 @@
           // cellNodesByColumnIdx.  These are in the same order as cell nodes added at the
           // end of the row.
           cellRenderQueue: []
-        }, this.appendRowHtml(stringArrayL, stringArrayR, i, range, dataLength), this.activeCellNode && this.activeRow === i && (needToReselectCell = !0), this.counter_rows_rendered++);
+        }, this.appendRowHtml(divArrayL, divArrayR, i, range, dataLength), this.activeCellNode && this.activeRow === i && (needToReselectCell = !0), this.counter_rows_rendered++);
       if (!rows.length)
         return;
       let x = document.createElement("div"), xRight = document.createElement("div");
-      x.innerHTML = this.sanitizeHtmlString(stringArrayL.join("")), xRight.innerHTML = this.sanitizeHtmlString(stringArrayR.join(""));
+      divArrayL.forEach((elm) => {
+        x.appendChild(elm);
+      }), divArrayR.forEach((elm) => {
+        xRight.appendChild(elm);
+      });
       for (let i = 0, ii = rows.length; i < ii; i++)
         this.hasFrozenRows && rows[i] >= this.actualFrozenRow ? this.hasFrozenColumns() ? (_a = this.rowsCache) != null && _a.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild, xRight.firstChild], this._canvasBottomL.appendChild(x.firstChild), this._canvasBottomR.appendChild(xRight.firstChild)) : (_b = this.rowsCache) != null && _b.hasOwnProperty(rows[i]) && x.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild], this._canvasBottomL.appendChild(x.firstChild)) : this.hasFrozenColumns() ? (_c = this.rowsCache) != null && _c.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild, xRight.firstChild], this._canvasTopL.appendChild(x.firstChild), this._canvasTopR.appendChild(xRight.firstChild)) : (_d = this.rowsCache) != null && _d.hasOwnProperty(rows[i]) && x.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild], this._canvasTopL.appendChild(x.firstChild));
       needToReselectCell && (this.activeCellNode = this.getCellNode(this.activeRow, this.activeCell));
@@ -3028,7 +3051,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.4.2
+ * SlickGrid v5.5.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

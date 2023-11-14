@@ -1,10 +1,10 @@
-import type { AutoSize, CellMenuOption, CustomTooltipOption, Editor, EditorValidator, Formatter, FormatterResultObject, GroupTotalsFormatter, Grouping, HeaderButtonsOrMenu } from './index';
+import type { AutoSize, CellMenuOption, CustomTooltipOption, Editor, EditorValidator, Formatter, FormatterResultWithHtml, FormatterResultWithText, GroupTotalsFormatter, Grouping, HeaderButtonsOrMenu } from './index';
 import type { SlickGrid } from '../slick.grid';
 type PathsToStringProps<T> = T extends string | number | boolean | Date ? [] : {
     [K in Extract<keyof T, string>]: [K, ...PathsToStringProps<T[K]>];
 }[Extract<keyof T, string>];
 type Join<T extends any[], D extends string> = T extends [] ? never : T extends [infer F] ? F : T extends [infer F, ...infer R] ? F extends string ? string extends F ? string : `${F}${D}${Join<R, D>}` : never : string;
-export type FormatterOverrideCallback = (row: number, cell: number, val: any, columnDef: Column, item: any, grid: SlickGrid) => string | FormatterResultObject;
+export type FormatterOverrideCallback = (row: number, cell: number, val: any, columnDef: Column, item: any, grid: SlickGrid) => string | FormatterResultWithHtml | FormatterResultWithText;
 export interface Column<TData = any> {
     /** Defaults to false, should we always render the column? */
     alwaysRenderColumn?: boolean;
@@ -90,7 +90,7 @@ export interface Column<TData = any> {
     /** Minimum Width of the column in pixels (number only). */
     minWidth?: number;
     /** Column Title Name to be displayed in the Grid (UI) */
-    name?: string;
+    name?: string | HTMLElement;
     /** column offset width */
     offsetWidth?: number;
     /** column previous width */

@@ -5,7 +5,7 @@
   var __publicField = (obj, key, value) => (__defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value), value);
 
   // src/plugins/slick.customtooltip.ts
-  var SlickEventHandler = Slick.EventHandler, Utils = Slick.Utils, CustomTooltip = class {
+  var SlickEventHandler = Slick.EventHandler, Utils = Slick.Utils, SlickCustomTooltip = class {
     constructor(tooltipOptions) {
       this.tooltipOptions = tooltipOptions;
       // --
@@ -181,8 +181,8 @@
      */
     parseFormatterAndSanitize(formatterOrText, cell, value, columnDef, item) {
       if (typeof formatterOrText == "function") {
-        let tooltipText = formatterOrText(cell.row, cell.cell, value, columnDef, item, this._grid), formatterText = typeof tooltipText == "object" && (tooltipText != null && tooltipText.text) ? tooltipText.text : typeof tooltipText == "string" ? tooltipText : "";
-        return this._grid.sanitizeHtmlString(formatterText);
+        let tooltipResult = formatterOrText(cell.row, cell.cell, value, columnDef, item, this._grid), formatterText = Object.prototype.toString.call(tooltipResult) !== "[object Object]" ? tooltipResult : tooltipResult.html || tooltipResult.text;
+        return formatterText instanceof HTMLElement && (formatterText = formatterText.outerHTML), this._grid.sanitizeHtmlString(formatterText);
       } else if (typeof formatterOrText == "string")
         return this._grid.sanitizeHtmlString(formatterOrText);
       return "";
@@ -211,7 +211,7 @@
   window.Slick && Utils.extend(!0, window, {
     Slick: {
       Plugins: {
-        CustomTooltip
+        CustomTooltip: SlickCustomTooltip
       }
     }
   });
