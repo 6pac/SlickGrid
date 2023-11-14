@@ -23,7 +23,7 @@
       this.options = options;
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.5.0");
+      __publicField(this, "slickGridVersion", "5.5.1");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -2005,11 +2005,7 @@
       if (!rows.length)
         return;
       let x = document.createElement("div"), xRight = document.createElement("div");
-      divArrayL.forEach((elm) => {
-        x.appendChild(elm);
-      }), divArrayR.forEach((elm) => {
-        xRight.appendChild(elm);
-      });
+      divArrayL.forEach((elm) => x.appendChild(elm)), divArrayR.forEach((elm) => xRight.appendChild(elm));
       for (let i = 0, ii = rows.length; i < ii; i++)
         this.hasFrozenRows && rows[i] >= this.actualFrozenRow ? this.hasFrozenColumns() ? (_a = this.rowsCache) != null && _a.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild, xRight.firstChild], this._canvasBottomL.appendChild(x.firstChild), this._canvasBottomR.appendChild(xRight.firstChild)) : (_b = this.rowsCache) != null && _b.hasOwnProperty(rows[i]) && x.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild], this._canvasBottomL.appendChild(x.firstChild)) : this.hasFrozenColumns() ? (_c = this.rowsCache) != null && _c.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild, xRight.firstChild], this._canvasTopL.appendChild(x.firstChild), this._canvasTopR.appendChild(xRight.firstChild)) : (_d = this.rowsCache) != null && _d.hasOwnProperty(rows[i]) && x.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild], this._canvasTopL.appendChild(x.firstChild));
       needToReselectCell && (this.activeCellNode = this.getCellNode(this.activeRow, this.activeCell));
@@ -3051,7 +3047,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.5.0
+ * SlickGrid v5.5.1
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

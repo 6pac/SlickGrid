@@ -24,7 +24,7 @@ export interface ColumnPickerOption {
     /** Defaults to "Synchronous resize" which is 1 of the last 2 checkbox title shown at the end of the picker list */
     syncResizeTitle?: string;
     /** Callback method to override the column name output used by the ColumnPicker/GridMenu. */
-    headerColumnValueExtractor?: (column: Column, gridOptions?: GridOption) => string;
+    headerColumnValueExtractor?: (column: Column, gridOptions?: GridOption) => string | HTMLElement;
 }
 export interface OnColumnsChangedArgs {
     /** column definition id */

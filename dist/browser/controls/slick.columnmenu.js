@@ -64,7 +64,7 @@
         let checkboxElm = document.createElement("input");
         checkboxElm.type = "checkbox", checkboxElm.id = `${this._gridUid}colpicker-${columnId}`, checkboxElm.dataset.columnid = String(this.columns[i].id), liElm.appendChild(checkboxElm), this._columnCheckboxes.push(checkboxElm), Utils.isDefined(this.grid.getColumnIndex(columnId)) && !this.columns[i].hidden && (checkboxElm.checked = !0), columnLabel = (_b = (_a = this._options) == null ? void 0 : _a.columnPicker) != null && _b.headerColumnValueExtractor ? this._options.columnPicker.headerColumnValueExtractor(this.columns[i], this._options) : this._defaults.headerColumnValueExtractor(this.columns[i], this._options);
         let labelElm = document.createElement("label");
-        labelElm.htmlFor = `${this._gridUid}colpicker-${columnId}`, labelElm.innerHTML = this.grid.sanitizeHtmlString(columnLabel), liElm.appendChild(labelElm), this._listElm.appendChild(liElm);
+        labelElm.htmlFor = `${this._gridUid}colpicker-${columnId}`, labelElm.innerHTML = this.grid.sanitizeHtmlString(columnLabel instanceof HTMLElement ? columnLabel.innerHTML : columnLabel), liElm.appendChild(labelElm), this._listElm.appendChild(liElm);
       }
       if (this._options.columnPicker && (!this._options.columnPicker.hideForceFitButton || !this._options.columnPicker.hideSyncResizeButton) && this._listElm.appendChild(document.createElement("hr")), !((_c = this._options.columnPicker) != null && _c.hideForceFitButton)) {
         let forceFitTitle = ((_d = this._options.columnPicker) == null ? void 0 : _d.forceFitTitle) || this._options.forceFitTitle, liElm = document.createElement("li");

@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.5.1](https://github.com/6pac/SlickGrid/compare/5.5.0...5.5.1) (2023-11-14)
+
+### Bug Fixes
+
+* interface for controls/plugins w/Formatter might return HTMLElement ([#911](https://github.com/6pac/SlickGrid/issues/911)) ([9190843](https://github.com/6pac/SlickGrid/commit/9190843818e891297acf9e4337f904c99f1ac58d))
+
 # [5.5.0](https://github.com/6pac/SlickGrid/compare/5.4.2...5.5.0) (2023-11-14)
 
 ### Bug Fixes

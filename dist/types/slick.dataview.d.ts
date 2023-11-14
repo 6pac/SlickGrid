@@ -8,8 +8,12 @@ export interface DataViewOption {
     useCSPSafeFilter: boolean;
 }
 export type FilterFn<T> = (item: T, args: any) => boolean;
+export type FilterCspFn<T> = (item: T[], args: any) => T[];
+export type FilterWithCspCachingFn<T> = (item: T[], args: any, filterCache: any[]) => T[];
 export type DataIdType = number | string;
 export type SlickDataItem = SlickNonDataItem | SlickGroup_ | SlickGroupTotals_ | any;
+export type GroupGetterFn = (val: any) => string | number;
+export type AnyFunction = (...args: any[]) => any;
 /**
    * A sample Model implementation.
    * Provides a filtered view of the underlying data.
@@ -26,7 +30,7 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
         [id: DataIdType]: number;
     } | undefined;
     protected filter: FilterFn<TData> | null;
-    protected filterCSPSafe: Function | null;
+    protected filterCSPSafe: FilterFn<TData> | null;
     protected updated: ({
         [id: DataIdType]: boolean;
     }) | null;
@@ -41,9 +45,9 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     protected filterArgs: any;
     protected filteredItems: TData[];
     protected compiledFilter?: FilterFn<TData> | null;
-    protected compiledFilterCSPSafe?: Function | null;
+    protected compiledFilterCSPSafe?: FilterCspFn<TData> | null;
     protected compiledFilterWithCaching?: FilterFn<TData> | null;
-    protected compiledFilterWithCachingCSPSafe?: Function | null;
+    protected compiledFilterWithCachingCSPSafe?: FilterWithCspCachingFn<TData> | null;
     protected filterCache: any[];
     protected _grid?: SlickGrid;
     protected groupingInfoDefaults: Grouping;
@@ -51,13 +55,13 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
         aggregators: Aggregator[];
         getterIsAFn?: boolean;
         compiledAccumulators: any[];
-        getter: Function | string;
+        getter: GroupGetterFn | string;
     }>;
     protected groups: SlickGroup_[];
     protected toggledGroupsByLevel: any[];
     protected groupingDelimiter: string;
     protected selectedRowIds: DataIdType[];
-    protected preSelectedRowIdsChangeFn?: Function;
+    protected preSelectedRowIdsChangeFn?: (args?: any) => void;
     protected pagesize: number;
     protected pagenum: number;
     protected totalRows: number;
@@ -120,7 +124,7 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     /** Get the array length (count) of only the DataView filtered items */
     getFilteredItemCount(): number;
     /** Get current Filter used by the DataView */
-    getFilter(): Function | null;
+    getFilter(): FilterFn<TData> | null;
     /**
      * Set a Filter that will be used by the DataView
      * @param {Function} fn - filter callback function
@@ -240,15 +244,15 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     protected addGroupTotals(group: SlickGroup_): void;
     protected addTotals(groups: SlickGroup_[], level?: number): void;
     protected flattenGroupedRows(groups: SlickGroup_[], level?: number): any[];
-    protected getFunctionInfo(fn: Function): {
+    protected getFunctionInfo(fn: AnyFunction): {
         params: string[];
         body: string;
     };
     protected compileAccumulatorLoop(aggregator: Aggregator): any;
-    protected compileFilterCSPSafe(_items: TData[], _args: any): TData[];
+    protected compileFilterCSPSafe(items: TData[], args: any): TData[];
     protected compileFilter(stopRunningIfCSPSafeIsActive?: boolean): FilterFn<TData>;
     protected compileFilterWithCaching(stopRunningIfCSPSafeIsActive?: boolean): any;
-    protected compileFilterWithCachingCSPSafe(_items: TData[], _args: any, filterCache: any[]): TData[];
+    protected compileFilterWithCachingCSPSafe(items: TData[], args: any, filterCache: any[]): TData[];
     /**
      * In ES5 we could set the function name on the fly but in ES6 this is forbidden and we need to set it through differently
      * We can use Object.defineProperty and set it the property to writable, see MDN for reference

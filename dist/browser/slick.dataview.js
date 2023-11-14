@@ -560,12 +560,12 @@
         return function() {
         };
     }
-    compileFilterCSPSafe(_items, _args) {
+    compileFilterCSPSafe(items, args) {
       if (typeof this.filterCSPSafe != "function")
         return [];
-      let _retval = [], _il = _items.length;
+      let _retval = [], _il = items.length;
       for (let _i = 0; _i < _il; _i++)
-        this.filterCSPSafe(_items[_i], _args) && _retval.push(_items[_i]);
+        this.filterCSPSafe(items[_i], args) && _retval.push(items[_i]);
       return _retval;
     }
     compileFilter(stopRunningIfCSPSafeIsActive = !1) {
@@ -575,7 +575,7 @@
         /return ([^;}]+?)\s*([;}]|$)/gi,
         "{ if ($1) { _retval[_idx++] = $item$; }; continue _coreloop; }$2"
       ), tpl = [
-        //"function(_items, _args) { ",
+        // 'function(_items, _args) { ',
         "var _retval = [], _idx = 0; ",
         "var $item$, $args$ = _args; ",
         "_coreloop: ",
@@ -584,7 +584,7 @@
         "$filter$; ",
         "} ",
         "return _retval; "
-        //"}"
+        // '}'
       ].join("");
       tpl = tpl.replace(/\$filter\$/gi, filterBody), tpl = tpl.replace(/\$item\$/gi, filterInfo.params[0]), tpl = tpl.replace(/\$args\$/gi, filterInfo.params[1]);
       let fn = new Function("_items,_args", tpl), fnName = "compiledFilter";
@@ -597,7 +597,7 @@
         /return ([^;}]+?)\s*([;}]|$)/gi,
         "{ if ((_cache[_i] = $1)) { _retval[_idx++] = $item$; }; continue _coreloop; }$2"
       ), tpl = [
-        //"function(_items, _args, _cache) { ",
+        // 'function(_items, _args, _cache) { ',
         "var _retval = [], _idx = 0; ",
         "var $item$, $args$ = _args; ",
         "_coreloop: ",
@@ -610,19 +610,19 @@
         "$filter$; ",
         "} ",
         "return _retval; "
-        //"}"
+        // '}'
       ].join("");
       tpl = tpl.replace(/\$filter\$/gi, filterBody), tpl = tpl.replace(/\$item\$/gi, filterInfo.params[0]), tpl = tpl.replace(/\$args\$/gi, filterInfo.params[1]);
       let fn = new Function("_items,_args,_cache", tpl), fnName = "compiledFilterWithCaching";
       return fn.displayName = fnName, fn.name = this.setFunctionName(fn, fnName), fn;
     }
-    compileFilterWithCachingCSPSafe(_items, _args, filterCache) {
+    compileFilterWithCachingCSPSafe(items, args, filterCache) {
       if (typeof this.filterCSPSafe != "function")
         return [];
-      let _retval = [], _il = _items.length;
-      for (let _i = 0; _i < _il; _i++)
-        (filterCache[_i] || this.filterCSPSafe(_items[_i], _args)) && _retval.push(_items[_i]);
-      return _retval;
+      let retval = [], il = items.length;
+      for (let _i = 0; _i < il; _i++)
+        (filterCache[_i] || this.filterCSPSafe(items[_i], args)) && retval.push(items[_i]);
+      return retval;
     }
     /**
      * In ES5 we could set the function name on the fly but in ES6 this is forbidden and we need to set it through differently
@@ -835,10 +835,11 @@
     syncGridCellCssStyles(grid, key) {
       let hashById, inHandler, storeCellCssStyles = (hash) => {
         hashById = {};
-        for (let row in hash) {
-          let id = this.rows[row][this.idProperty];
-          hashById[id] = hash[row];
-        }
+        for (let row in hash)
+          if (hash) {
+            let id = this.rows[row][this.idProperty];
+            hashById[id] = hash[row];
+          }
       };
       storeCellCssStyles(grid.getCellCssStyles(key));
       let update = () => {
@@ -846,10 +847,11 @@
         if (hashById) {
           inHandler = !0, this.ensureRowsByIdCache();
           let newHash = {};
-          for (let id in hashById) {
-            let row = (_a2 = this.rowsById) == null ? void 0 : _a2[id];
-            Utils.isDefined(row) && (newHash[row] = hashById[id]);
-          }
+          for (let id in hashById)
+            if (hashById) {
+              let row = (_a2 = this.rowsById) == null ? void 0 : _a2[id];
+              Utils.isDefined(row) && (newHash[row] = hashById[id]);
+            }
           grid.setCellCssStyles(key, newHash), inHandler = !1;
         }
       };
