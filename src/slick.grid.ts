@@ -1564,7 +1564,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       const header = Utils.createDomElement('div', { id: `${this.uid + m.id}`, dataset: { id: String(m.id) }, className: 'ui-state-default slick-state-default slick-header-column', title: m.toolTip || '' }, headerTarget);
       const colNameElm = Utils.createDomElement('span', { className: 'slick-column-name' }, header);
-      this.applyHtmlCode(colNameElm, m.name!);
+      this.applyHtmlCode(colNameElm, m.name as string);
 
       Utils.width(header, m.width! - this.headerColumnWidthDiff);
 
@@ -3832,16 +3832,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const rowDiv = document.createElement('div');
     let rowDivR: HTMLElement | undefined;
 
-      rowDiv.className = 'ui-widget-content ' + rowCss;
-      rowDiv.style.top = `${(this.getRowTop(row) - frozenRowOffset)}px`;
-      divArrayL.push(rowDiv);
-      if (this.hasFrozenColumns()) {
-        //it has to be a deep copy otherwise we will have issues with pass by reference in js since
-        //attempting to add the same element to 2 different arrays will just move 1 item to the other array
-        rowDivR = rowDiv.cloneNode(true) as HTMLElement;
-        divArrayR.push(rowDivR);
-      }
-
+    rowDiv.className = 'ui-widget-content ' + rowCss;
+    rowDiv.style.top = `${(this.getRowTop(row) - frozenRowOffset)}px`;
+    divArrayL.push(rowDiv);
+    if (this.hasFrozenColumns()) {
+      //it has to be a deep copy otherwise we will have issues with pass by reference in js since
+      //attempting to add the same element to 2 different arrays will just move 1 item to the other array
+      rowDivR = rowDiv.cloneNode(true) as HTMLElement;
+      divArrayR.push(rowDivR);
+    }
 
     let colspan: number | string;
     let m: C;
@@ -3924,29 +3923,29 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       addlCssClasses += (addlCssClasses ? ' ' : '') + (formatterResult as FormatterResultObject).addClasses;
     }
 
-      const toolTipText = (formatterResult as FormatterResultObject)?.toolTip ? `${(formatterResult as FormatterResultObject).toolTip}` : '';
-      const cellDiv = document.createElement('div');
-      cellDiv.className = cellCss + (addlCssClasses ? ' ' + addlCssClasses : '');
-      cellDiv.setAttribute('title', toolTipText);
-      if (m.hasOwnProperty('cellAttrs') && m.cellAttrs instanceof Object) {
-        for (const key in m.cellAttrs) {
-          if (m.cellAttrs.hasOwnProperty(key)) {
-            cellDiv.setAttribute(key, m.cellAttrs[key]);
-          }
+    const toolTipText = (formatterResult as FormatterResultObject)?.toolTip ? `${(formatterResult as FormatterResultObject).toolTip}` : '';
+    const cellDiv = document.createElement('div');
+    cellDiv.className = cellCss + (addlCssClasses ? ' ' + addlCssClasses : '');
+    cellDiv.setAttribute('title', toolTipText);
+    if (m.hasOwnProperty('cellAttrs') && m.cellAttrs instanceof Object) {
+      for (const key in m.cellAttrs) {
+        if (m.cellAttrs.hasOwnProperty(key)) {
+          cellDiv.setAttribute(key, m.cellAttrs[key]);
         }
       }
+    }
 
-      // if there is a corresponding row (if not, this is the Add New row or this data hasn't been loaded yet)
-      if (item) {
-        const cellResult = (Object.prototype.toString.call(formatterResult) !== '[object Object]' ? formatterResult : (formatterResult as FormatterResultWithHtml).html || (formatterResult as FormatterResultWithText).text);
-        if (cellResult instanceof HTMLElement) {
-          cellDiv.appendChild(cellResult);
-        } else {
-          cellDiv.innerHTML = this.sanitizeHtmlString(cellResult as string);
-        }
+    // if there is a corresponding row (if not, this is the Add New row or this data hasn't been loaded yet)
+    if (item) {
+      const cellResult = (Object.prototype.toString.call(formatterResult) !== '[object Object]' ? formatterResult : (formatterResult as FormatterResultWithHtml).html || (formatterResult as FormatterResultWithText).text);
+      if (cellResult instanceof HTMLElement) {
+        cellDiv.appendChild(cellResult);
+      } else {
+        cellDiv.innerHTML = this.sanitizeHtmlString(cellResult as string);
       }
+    }
 
-      divRow.appendChild(cellDiv);
+    divRow.appendChild(cellDiv);
 
     this.rowsCache[row].cellRenderQueue.push(cell);
     this.rowsCache[row].cellColSpans[cell] = colspan;
