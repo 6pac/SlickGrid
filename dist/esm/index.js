@@ -719,7 +719,7 @@ var BindingEventService2 = BindingEventService, SlickEvent2 = Event, Utils2 = Ut
       let checkboxElm = document.createElement("input");
       checkboxElm.type = "checkbox", checkboxElm.id = `${this._gridUid}colpicker-${columnId}`, checkboxElm.dataset.columnid = String(this.columns[i].id), liElm.appendChild(checkboxElm), this._columnCheckboxes.push(checkboxElm), Utils2.isDefined(this.grid.getColumnIndex(columnId)) && !this.columns[i].hidden && (checkboxElm.checked = !0), columnLabel = this._options?.columnPicker?.headerColumnValueExtractor ? this._options.columnPicker.headerColumnValueExtractor(this.columns[i], this._options) : this._defaults.headerColumnValueExtractor(this.columns[i], this._options);
       let labelElm = document.createElement("label");
-      labelElm.htmlFor = `${this._gridUid}colpicker-${columnId}`, labelElm.innerHTML = this.grid.sanitizeHtmlString(columnLabel instanceof HTMLElement ? columnLabel.innerHTML : columnLabel), liElm.appendChild(labelElm), this._listElm.appendChild(liElm);
+      labelElm.htmlFor = `${this._gridUid}colpicker-${columnId}`, this.grid.applyHtmlCode(labelElm, columnLabel), liElm.appendChild(labelElm), this._listElm.appendChild(liElm);
     }
     if (this._options.columnPicker && (!this._options.columnPicker.hideForceFitButton || !this._options.columnPicker.hideSyncResizeButton) && this._listElm.appendChild(document.createElement("hr")), !this._options.columnPicker?.hideForceFitButton) {
       let forceFitTitle = this._options.columnPicker?.forceFitTitle || this._options.forceFitTitle, liElm = document.createElement("li");
@@ -751,7 +751,7 @@ var BindingEventService2 = BindingEventService, SlickEvent2 = Event, Utils2 = Ut
   }
   /** Update the Titles of each sections (command, customTitle, ...) */
   updateAllTitles(pickerOptions) {
-    this._columnTitleElm?.innerHTML && (this._columnTitleElm.innerHTML = this.grid.sanitizeHtmlString(pickerOptions.columnTitle));
+    this.grid.applyHtmlCode(this._columnTitleElm, pickerOptions.columnTitle);
   }
   updateColumn(e) {
     if (e.target.dataset.option === "autoresize") {
@@ -864,7 +864,7 @@ var BindingEventService3 = BindingEventService, SlickEvent3 = Event, Utils3 = Ut
       let checkboxElm = document.createElement("input");
       checkboxElm.type = "checkbox", checkboxElm.id = `${this._gridUid}colpicker-${columnId}`, checkboxElm.dataset.columnid = String(this.columns[i].id), liElm.appendChild(checkboxElm), this._columnCheckboxes.push(checkboxElm), Utils3.isDefined(this.grid.getColumnIndex(columnId)) && !this.columns[i].hidden && (checkboxElm.checked = !0), columnLabel = this._gridOptions?.columnPicker?.headerColumnValueExtractor ? this._gridOptions.columnPicker.headerColumnValueExtractor(this.columns[i], this._gridOptions) : this._defaults.headerColumnValueExtractor(this.columns[i], this._gridOptions);
       let labelElm = document.createElement("label");
-      labelElm.htmlFor = `${this._gridUid}colpicker-${columnId}`, labelElm.innerHTML = this.grid.sanitizeHtmlString(columnLabel instanceof HTMLElement ? columnLabel.innerHTML : columnLabel), liElm.appendChild(labelElm), this._listElm.appendChild(liElm);
+      labelElm.htmlFor = `${this._gridUid}colpicker-${columnId}`, this.grid.applyHtmlCode(labelElm, columnLabel), liElm.appendChild(labelElm), this._listElm.appendChild(liElm);
     }
     if (this._gridOptions.columnPicker && (!this._gridOptions.columnPicker.hideForceFitButton || !this._gridOptions.columnPicker.hideSyncResizeButton) && this._listElm.appendChild(document.createElement("hr")), !this._gridOptions.columnPicker?.hideForceFitButton) {
       let forceFitTitle = this._gridOptions.columnPicker?.forceFitTitle || this._gridOptions.forceFitTitle, liElm = document.createElement("li");
@@ -896,7 +896,7 @@ var BindingEventService3 = BindingEventService, SlickEvent3 = Event, Utils3 = Ut
   }
   /** Update the Titles of each sections (command, customTitle, ...) */
   updateAllTitles(pickerOptions) {
-    this._columnTitleElm?.innerHTML && (this._columnTitleElm.innerHTML = this.grid.sanitizeHtmlString(pickerOptions.columnTitle));
+    this.grid.applyHtmlCode(this._columnTitleElm, pickerOptions.columnTitle);
   }
   updateColumn(e) {
     if (e.target.dataset.option === "autoresize") {
@@ -1063,7 +1063,7 @@ var BindingEventService4 = BindingEventService, SlickEvent4 = Event, Utils4 = Ut
   /** Construct the custom command menu items. */
   populateCommandsMenu(commandItems, commandListElm, args) {
     let level = args?.level || 0, isSubMenu = level > 0;
-    !isSubMenu && (this._gridMenuOptions?.commandTitle || this._gridMenuOptions?.customTitle) && (this._commandTitleElm = document.createElement("div"), this._commandTitleElm.className = "title", this._commandTitleElm.innerHTML = this.grid.sanitizeHtmlString(this._gridMenuOptions.commandTitle || this._gridMenuOptions.customTitle), commandListElm.appendChild(this._commandTitleElm));
+    !isSubMenu && (this._gridMenuOptions?.commandTitle || this._gridMenuOptions?.customTitle) && (this._commandTitleElm = document.createElement("div"), this._commandTitleElm.className = "title", this.grid.applyHtmlCode(this._commandTitleElm, this.grid.sanitizeHtmlString(this._gridMenuOptions.commandTitle || this._gridMenuOptions.customTitle)), commandListElm.appendChild(this._commandTitleElm));
     for (let i = 0, ln = commandItems.length; i < ln; i++) {
       let addClickListener = !0, item = commandItems[i], callbackArgs = {
         grid: this.grid,
@@ -1079,7 +1079,7 @@ var BindingEventService4 = BindingEventService, SlickEvent4 = Event, Utils4 = Ut
       let iconElm = document.createElement("div");
       iconElm.className = "slick-gridmenu-icon", liElm.appendChild(iconElm), item.iconCssClass && iconElm.classList.add(...item.iconCssClass.split(" ")), item.iconImage && (iconElm.style.backgroundImage = `url(${item.iconImage})`);
       let textElm = document.createElement("span");
-      if (textElm.className = "slick-gridmenu-content", textElm.innerHTML = this.grid.sanitizeHtmlString(item.title || ""), liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), commandListElm.appendChild(liElm), addClickListener) {
+      if (textElm.className = "slick-gridmenu-content", this.grid.applyHtmlCode(textElm, this.grid.sanitizeHtmlString(item.title || "")), liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), commandListElm.appendChild(liElm), addClickListener) {
         let eventGroup = isSubMenu ? "sub-menu" : "parent-menu";
         this._bindingEventService.bind(liElm, "click", this.handleMenuItemClick.bind(this, item, level), void 0, eventGroup);
       }
@@ -1094,7 +1094,7 @@ var BindingEventService4 = BindingEventService, SlickEvent4 = Event, Utils4 = Ut
   }
   /** Build the column picker, the code comes almost untouched from the file "slick.columnpicker.js" */
   populateColumnPicker() {
-    this.grid.onColumnsReordered.subscribe(this.updateColumnOrder.bind(this)), this._gridMenuOptions?.columnTitle && (this._columnTitleElm = document.createElement("div"), this._columnTitleElm.className = "title", this._columnTitleElm.innerHTML = this.grid.sanitizeHtmlString(this._gridMenuOptions.columnTitle), this._menuElm.appendChild(this._columnTitleElm)), this._bindingEventService.bind(this._menuElm, "click", this.updateColumn.bind(this)), this._listElm = document.createElement("span"), this._listElm.className = "slick-gridmenu-list", this._listElm.role = "menu";
+    this.grid.onColumnsReordered.subscribe(this.updateColumnOrder.bind(this)), this._gridMenuOptions?.columnTitle && (this._columnTitleElm = document.createElement("div"), this._columnTitleElm.className = "title", this.grid.applyHtmlCode(this._columnTitleElm, this.grid.sanitizeHtmlString(this._gridMenuOptions.columnTitle)), this._menuElm.appendChild(this._columnTitleElm)), this._bindingEventService.bind(this._menuElm, "click", this.updateColumn.bind(this)), this._listElm = document.createElement("span"), this._listElm.className = "slick-gridmenu-list", this._listElm.role = "menu";
   }
   /** Delete and then Recreate the Grid Menu (for example when we switch from regular to a frozen grid) */
   recreateGridMenu() {
@@ -1121,7 +1121,7 @@ var BindingEventService4 = BindingEventService, SlickEvent4 = Event, Utils4 = Ut
       let checkboxElm = document.createElement("input");
       checkboxElm.type = "checkbox", checkboxElm.id = `${this._gridUid}-gridmenu-colpicker-${columnId}`, checkboxElm.dataset.columnid = String(this.columns[i].id), liElm.appendChild(checkboxElm), Utils4.isDefined(this.grid.getColumnIndex(this.columns[i].id)) && !this.columns[i].hidden && (checkboxElm.checked = !0), this._columnCheckboxes.push(checkboxElm), columnLabel = this._gridMenuOptions?.headerColumnValueExtractor ? this._gridMenuOptions.headerColumnValueExtractor(this.columns[i], this._gridOptions) : this._defaults.headerColumnValueExtractor(this.columns[i]);
       let labelElm = document.createElement("label");
-      labelElm.htmlFor = `${this._gridUid}-gridmenu-colpicker-${columnId}`, labelElm.innerHTML = this.grid.sanitizeHtmlString((columnLabel instanceof HTMLElement ? columnLabel.innerHTML : columnLabel) || ""), liElm.appendChild(labelElm), this._listElm.appendChild(liElm);
+      labelElm.htmlFor = `${this._gridUid}-gridmenu-colpicker-${columnId}`, this.grid.applyHtmlCode(labelElm, this.grid.sanitizeHtmlString((columnLabel instanceof HTMLElement ? columnLabel.innerHTML : columnLabel) || "")), liElm.appendChild(labelElm), this._listElm.appendChild(liElm);
     }
     if (this._gridMenuOptions && (!this._gridMenuOptions.hideForceFitButton || !this._gridMenuOptions.hideSyncResizeButton) && this._listElm.appendChild(document.createElement("hr")), !this._gridMenuOptions?.hideForceFitButton) {
       let forceFitTitle = this._gridMenuOptions?.forceFitTitle || this._defaults.forceFitTitle, liElm = document.createElement("li");
@@ -1186,7 +1186,7 @@ var BindingEventService4 = BindingEventService, SlickEvent4 = Event, Utils4 = Ut
   }
   /** Update the Titles of each sections (command, commandTitle, ...) */
   updateAllTitles(gridMenuOptions) {
-    this._commandTitleElm?.innerHTML && (this._commandTitleElm.innerHTML = this.grid.sanitizeHtmlString(gridMenuOptions.commandTitle || gridMenuOptions.customTitle || "")), this._columnTitleElm?.innerHTML && (this._columnTitleElm.innerHTML = this.grid.sanitizeHtmlString(gridMenuOptions.columnTitle || ""));
+    this._commandTitleElm && this.grid.applyHtmlCode(this._commandTitleElm, this.grid.sanitizeHtmlString(gridMenuOptions.commandTitle || gridMenuOptions.customTitle || "")), this._columnTitleElm && this.grid.applyHtmlCode(this._columnTitleElm, this.grid.sanitizeHtmlString(gridMenuOptions.columnTitle || ""));
   }
   addSubMenuTitleWhenExists(item, commandOrOptionMenu) {
     if (item !== "divider" && item?.subMenuTitle) {
@@ -1924,7 +1924,7 @@ var BindingEventService6 = BindingEventService, SlickEvent7 = SlickEvent, SlickE
     if (level === 0) {
       closeButtonElm = document.createElement("button"), closeButtonElm.type = "button", closeButtonElm.className = "close", closeButtonElm.dataset.dismiss = "slick-cell-menu", closeButtonElm.ariaLabel = "Close";
       let spanCloseElm = document.createElement("span");
-      spanCloseElm.className = "close", spanCloseElm.ariaHidden = "true", spanCloseElm.innerHTML = "&times;", closeButtonElm.appendChild(spanCloseElm);
+      spanCloseElm.className = "close", spanCloseElm.ariaHidden = "true", spanCloseElm.textContent = "\xD7", closeButtonElm.appendChild(spanCloseElm);
     }
     if (!this._cellMenuProperties.hideOptionSection && optionItems.length > 0) {
       let optionMenuElm = document.createElement("div");
@@ -3218,7 +3218,7 @@ var SlickEventHandler5 = SlickEventHandler, Utils15 = Utils, SlickCustomTooltip 
    */
   renderRegularTooltip(formatterOrText, cell, value, columnDef, item) {
     let tmpDiv = document.createElement("div");
-    tmpDiv.innerHTML = this.parseFormatterAndSanitize(formatterOrText, cell, value, columnDef, item);
+    this._grid.applyHtmlCode(tmpDiv, this.parseFormatterAndSanitize(formatterOrText, cell, value, columnDef, item));
     let tooltipText = columnDef.toolTip || "", tmpTitleElm;
     tooltipText || (this._cellNodeElm && this._cellNodeElm.clientWidth < this._cellNodeElm.scrollWidth && !this._cellTooltipOptions.useRegularTooltipFromFormatterOnly ? (tooltipText = (this._cellNodeElm.textContent || "").trim() || "", this._cellTooltipOptions.tooltipTextMaxLength && tooltipText.length > this._cellTooltipOptions.tooltipTextMaxLength && (tooltipText = tooltipText.substring(0, this._cellTooltipOptions.tooltipTextMaxLength - 3) + "..."), tmpTitleElm = this._cellNodeElm) : (this._cellTooltipOptions.useRegularTooltipFromFormatterOnly ? tmpTitleElm = tmpDiv.querySelector("[title], [data-slick-tooltip]") : (tmpTitleElm = this.findFirstElementAttribute(this._cellNodeElm, ["title", "data-slick-tooltip"]) ? this._cellNodeElm : tmpDiv.querySelector("[title], [data-slick-tooltip]"), (!tmpTitleElm || !this.findFirstElementAttribute(tmpTitleElm, ["title", "data-slick-tooltip"])) && this._cellNodeElm && (tmpTitleElm = this._cellNodeElm.querySelector("[title], [data-slick-tooltip]"))), (!tooltipText || typeof formatterOrText == "function" && this._cellTooltipOptions.useRegularTooltipFromFormatterOnly) && (tooltipText = this.findFirstElementAttribute(tmpTitleElm, ["title", "data-slick-tooltip"]) || ""))), tooltipText !== "" && this.renderTooltipFormatter(formatterOrText, cell, value, columnDef, item, tooltipText), this.swapAndClearTitleAttribute(tmpTitleElm, tooltipText);
   }
@@ -3280,7 +3280,7 @@ var SlickEventHandler5 = SlickEventHandler, Utils15 = Utils, SlickCustomTooltip 
   parseFormatterAndSanitize(formatterOrText, cell, value, columnDef, item) {
     if (typeof formatterOrText == "function") {
       let tooltipResult = formatterOrText(cell.row, cell.cell, value, columnDef, item, this._grid), formatterText = Object.prototype.toString.call(tooltipResult) !== "[object Object]" ? tooltipResult : tooltipResult.html || tooltipResult.text;
-      return formatterText instanceof HTMLElement && (formatterText = formatterText.outerHTML), this._grid.sanitizeHtmlString(formatterText);
+      return formatterText instanceof HTMLElement ? formatterText : this._grid.sanitizeHtmlString(formatterText);
     } else if (typeof formatterOrText == "string")
       return this._grid.sanitizeHtmlString(formatterOrText);
     return "";
@@ -3288,9 +3288,13 @@ var SlickEventHandler5 = SlickEventHandler, Utils15 = Utils, SlickCustomTooltip 
   renderTooltipFormatter(formatter, cell, value, columnDef, item, tooltipText, inputTitleElm) {
     this._tooltipElm = document.createElement("div"), this._tooltipElm.className = this._cellTooltipOptions.className || this._defaults.className, this._tooltipElm.classList.add(this._grid.getUID()), this._tooltipElm.classList.add("l" + cell.cell), this._tooltipElm.classList.add("r" + cell.cell);
     let outputText = tooltipText || this.parseFormatterAndSanitize(formatter, cell, value, columnDef, item) || "";
-    outputText = this._cellTooltipOptions.tooltipTextMaxLength && outputText.length > this._cellTooltipOptions.tooltipTextMaxLength ? outputText.substring(0, this._cellTooltipOptions.tooltipTextMaxLength - 3) + "..." : outputText;
+    if (outputText instanceof HTMLElement) {
+      let content = outputText.textContent || "";
+      this._cellTooltipOptions.tooltipTextMaxLength && content.length > this._cellTooltipOptions.tooltipTextMaxLength && (outputText.textContent = content.substring(0, this._cellTooltipOptions.tooltipTextMaxLength - 3) + "...");
+    } else
+      outputText = this._cellTooltipOptions.tooltipTextMaxLength && outputText.length > this._cellTooltipOptions.tooltipTextMaxLength ? outputText.substring(0, this._cellTooltipOptions.tooltipTextMaxLength - 3) + "..." : outputText;
     let finalOutputText = "";
-    !tooltipText || this._cellTooltipOptions?.renderRegularTooltipAsHtml ? (finalOutputText = this._grid.sanitizeHtmlString(outputText), this._tooltipElm.innerHTML = finalOutputText, this._tooltipElm.style.whiteSpace = this._cellTooltipOptions?.whiteSpace ?? this._defaults.whiteSpace) : (finalOutputText = outputText || "", this._tooltipElm.textContent = finalOutputText, this._tooltipElm.style.whiteSpace = this._cellTooltipOptions?.regularTooltipWhiteSpace ?? this._defaults.regularTooltipWhiteSpace), this._cellTooltipOptions.maxHeight && (this._tooltipElm.style.maxHeight = this._cellTooltipOptions.maxHeight + "px"), this._cellTooltipOptions.maxWidth && (this._tooltipElm.style.maxWidth = this._cellTooltipOptions.maxWidth + "px"), finalOutputText && (document.body.appendChild(this._tooltipElm), this.reposition(cell), this._cellTooltipOptions.hideArrow || this._tooltipElm.classList.add("tooltip-arrow"), this.swapAndClearTitleAttribute(inputTitleElm, outputText));
+    !tooltipText || this._cellTooltipOptions?.renderRegularTooltipAsHtml ? (outputText instanceof HTMLElement ? (this._grid.applyHtmlCode(this._tooltipElm, outputText), finalOutputText = this._grid.sanitizeHtmlString(outputText.textContent || "")) : (finalOutputText = this._grid.sanitizeHtmlString(outputText), this._tooltipElm.innerHTML = finalOutputText), this._tooltipElm.style.whiteSpace = this._cellTooltipOptions?.whiteSpace ?? this._defaults.whiteSpace) : (finalOutputText = (outputText instanceof HTMLElement ? outputText.textContent : outputText) || "", this._tooltipElm.textContent = finalOutputText, this._tooltipElm.style.whiteSpace = this._cellTooltipOptions?.regularTooltipWhiteSpace ?? this._defaults.regularTooltipWhiteSpace), this._cellTooltipOptions.maxHeight && (this._tooltipElm.style.maxHeight = this._cellTooltipOptions.maxHeight + "px"), this._cellTooltipOptions.maxWidth && (this._tooltipElm.style.maxWidth = this._cellTooltipOptions.maxWidth + "px"), finalOutputText && (document.body.appendChild(this._tooltipElm), this.reposition(cell), this._cellTooltipOptions.hideArrow || this._tooltipElm.classList.add("tooltip-arrow"), this.swapAndClearTitleAttribute(inputTitleElm, (outputText instanceof HTMLElement ? outputText.textContent : outputText) || ""));
   }
   /**
    * Method that user can pass to override the default behavior.
@@ -6375,7 +6379,7 @@ var SlickGrid = class {
     this.options = options;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.5.1");
+    __publicField(this, "slickGridVersion", "5.5.2");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -6737,7 +6741,7 @@ var SlickGrid = class {
    * @param val - input value can be either a string or an HTMLElement
    */
   applyHtmlCode(target, val) {
-    val instanceof HTMLElement ? target.appendChild(val) : this._options.enableHtmlRendering ? target.innerHTML = this.sanitizeHtmlString(val) : target.textContent = this.sanitizeHtmlString(val);
+    target && (val instanceof HTMLElement ? target.appendChild(val) : this._options.enableHtmlRendering ? target.innerHTML = this.sanitizeHtmlString(val) : target.textContent = this.sanitizeHtmlString(val));
   }
   initialize() {
     if (typeof this.container == "string" ? this._container = document.querySelector(this.container) : this._container = this.container, !this._container)
@@ -7998,26 +8002,27 @@ var SlickGrid = class {
   getDataItemValueForColumn(item, columnDef) {
     return this._options.dataItemColumnValueExtractor ? this._options.dataItemColumnValueExtractor(item, columnDef) : item[columnDef.field];
   }
-  appendRowHtml(divArrayL, divArrayR, row, range, dataLength) {
+  appendRowHtml(stringArrayL, stringArrayR, row, range, dataLength) {
     let d = this.getDataItem(row), dataLoading = row < dataLength && !d, rowCss = "slick-row" + (this.hasFrozenRows && row <= this._options.frozenRow ? " frozen" : "") + (dataLoading ? " loading" : "") + (row === this.activeRow && this._options.showCellSelection ? " active" : "") + (row % 2 === 1 ? " odd" : " even");
     d || (rowCss += " " + this._options.addNewRowCssClass);
     let metadata = this.data?.getItemMetadata?.(row);
     metadata?.cssClasses && (rowCss += " " + metadata.cssClasses);
-    let frozenRowOffset = this.getFrozenRowOffset(row), rowDiv = document.createElement("div"), rowDivR;
-    rowDiv.className = "ui-widget-content " + rowCss, rowDiv.style.top = `${this.getRowTop(row) - frozenRowOffset}px`, divArrayL.push(rowDiv), this.hasFrozenColumns() && (rowDivR = rowDiv.cloneNode(!0), divArrayR.push(rowDivR));
+    let frozenRowOffset = this.getFrozenRowOffset(row), rowHtml = `<div class="ui-widget-content ${rowCss}" data-top="${this.getRowTop(row) - frozenRowOffset}px">`;
+    stringArrayL.push(rowHtml), this.hasFrozenColumns() && stringArrayR.push(rowHtml);
     let colspan, m;
     for (let i = 0, ii = this.columns.length; i < ii; i++)
       if (m = this.columns[i], !(!m || m.hidden)) {
         if (colspan = 1, metadata?.columns && (colspan = (metadata.columns[m.id] || metadata.columns[i])?.colspan || 1, colspan === "*" && (colspan = ii - i)), this.columnPosRight[Math.min(ii - 1, i + colspan - 1)] > range.leftPx) {
           if (!m.alwaysRenderColumn && this.columnPosLeft[i] > range.rightPx)
             break;
-          this.hasFrozenColumns() && i > this._options.frozenColumn ? this.appendCellHtml(rowDivR, row, i, colspan, d) : this.appendCellHtml(rowDiv, row, i, colspan, d);
+          this.hasFrozenColumns() && i > this._options.frozenColumn ? this.appendCellHtml(stringArrayR, row, i, colspan, d) : this.appendCellHtml(stringArrayL, row, i, colspan, d);
         } else
-          (m.alwaysRenderColumn || this.hasFrozenColumns() && i <= this._options.frozenColumn) && this.appendCellHtml(rowDiv, row, i, colspan, d);
+          (m.alwaysRenderColumn || this.hasFrozenColumns() && i <= this._options.frozenColumn) && this.appendCellHtml(stringArrayL, row, i, colspan, d);
         colspan > 1 && (i += colspan - 1);
       }
+    stringArrayL.push("</div>"), this.hasFrozenColumns() && stringArrayR.push("</div>");
   }
-  appendCellHtml(divRow, row, cell, colspan, item) {
+  appendCellHtml(stringArray, row, cell, colspan, item) {
     let m = this.columns[cell], cellCss = "slick-cell l" + cell + " r" + Math.min(this.columns.length - 1, cell + colspan - 1) + (m.cssClass ? " " + m.cssClass : "");
     this.hasFrozenColumns() && cell <= this._options.frozenColumn && (cellCss += " frozen"), row === this.activeRow && cell === this.activeCell && this._options.showCellSelection && (cellCss += " active");
     for (let key in this.cellCssClasses)
@@ -8026,15 +8031,15 @@ var SlickGrid = class {
     item && (value = this.getDataItemValueForColumn(item, m), formatterResult = this.getFormatter(row, m)(row, cell, value, m, item, this), formatterResult == null && (formatterResult = ""));
     let appendCellResult = this.trigger(this.onBeforeAppendCell, { row, cell, value, dataContext: item }).getReturnValue(), addlCssClasses = typeof appendCellResult == "string" ? appendCellResult : "";
     formatterResult?.addClasses && (addlCssClasses += (addlCssClasses ? " " : "") + formatterResult.addClasses);
-    let toolTipText = formatterResult?.toolTip ? `${formatterResult.toolTip}` : "", cellDiv = document.createElement("div");
-    if (cellDiv.className = cellCss + (addlCssClasses ? " " + addlCssClasses : ""), cellDiv.setAttribute("title", toolTipText), m.hasOwnProperty("cellAttrs") && m.cellAttrs instanceof Object)
+    let toolTip = formatterResult?.toolTip ? `title="${formatterResult.toolTip}"` : "", customAttrStr = "";
+    if (m.hasOwnProperty("cellAttrs") && m.cellAttrs instanceof Object)
       for (let key in m.cellAttrs)
-        m.cellAttrs.hasOwnProperty(key) && cellDiv.setAttribute(key, m.cellAttrs[key]);
-    if (item) {
-      let cellResult = Object.prototype.toString.call(formatterResult) !== "[object Object]" ? formatterResult : formatterResult.html || formatterResult.text;
-      cellResult instanceof HTMLElement ? cellDiv.appendChild(cellResult) : cellDiv.innerHTML = this.sanitizeHtmlString(cellResult);
+        m.cellAttrs.hasOwnProperty(key) && (customAttrStr += ` ${key}="${m.cellAttrs[key]}" `);
+    if (stringArray.push(`<div class="${cellCss + (addlCssClasses ? " " + addlCssClasses : "")}" ${toolTip + customAttrStr}>`), item) {
+      let cellResult = Object.prototype.toString.call(formatterResult) !== "[object Object]" ? formatterResult : formatterResult.html || formatterResult.text, formattedCellResult = cellResult instanceof HTMLElement ? cellResult.outerHTML : cellResult;
+      stringArray.push(formattedCellResult);
     }
-    divRow.appendChild(cellDiv), this.rowsCache[row].cellRenderQueue.push(cell), this.rowsCache[row].cellColSpans[cell] = colspan;
+    stringArray.push("</div>"), this.rowsCache[row].cellRenderQueue.push(cell), this.rowsCache[row].cellColSpans[cell] = colspan;
   }
   cleanupRows(rangeToKeep) {
     for (let rowId in this.rowsCache)
@@ -8255,7 +8260,7 @@ var SlickGrid = class {
       cellNode = cacheEntry.cellNodesByColumnIdx[cellToRemove], this._options.enableAsyncPostRenderCleanup && this.postProcessedRows[row]?.[cellToRemove] ? this.queuePostProcessedCellForCleanup(cellNode, cellToRemove, row) : cellNode.parentElement?.removeChild(cellNode), delete cacheEntry.cellColSpans[cellToRemove], delete cacheEntry.cellNodesByColumnIdx[cellToRemove], this.postProcessedRows[row] && delete this.postProcessedRows[row][cellToRemove], totalCellsRemoved++;
   }
   cleanUpAndRenderCells(range) {
-    let cacheEntry, divRow = document.createElement("div"), processedRows = [], cellsAdded, totalCellsAdded = 0, colspan;
+    let cacheEntry, stringArray = [], processedRows = [], cellsAdded, totalCellsAdded = 0, colspan;
     for (let row = range.top, btm = range.bottom; row <= btm; row++) {
       if (cacheEntry = this.rowsCache[row], !cacheEntry)
         continue;
@@ -8274,14 +8279,14 @@ var SlickGrid = class {
         }
         colspan = 1, metadata && (colspan = (metadata[this.columns[i].id] || metadata[i])?.colspan ?? 1, colspan === "*" && (colspan = ii - i));
         let colspanNb = colspan;
-        this.columnPosRight[Math.min(ii - 1, i + colspanNb - 1)] > range.leftPx && (this.appendCellHtml(divRow, row, i, colspanNb, d), cellsAdded++), i += colspanNb > 1 ? colspanNb - 1 : 0;
+        this.columnPosRight[Math.min(ii - 1, i + colspanNb - 1)] > range.leftPx && (this.appendCellHtml(stringArray, row, i, colspanNb, d), cellsAdded++), i += colspanNb > 1 ? colspanNb - 1 : 0;
       }
       cellsAdded && (totalCellsAdded += cellsAdded, processedRows.push(row));
     }
-    if (!divRow.children.length)
+    if (!stringArray.length)
       return;
     let x = document.createElement("div");
-    x.innerHTML = this.sanitizeHtmlString(divRow.outerHTML);
+    x.innerHTML = this.sanitizeHtmlString(stringArray.join(""));
     let processedRow, node;
     for (; Utils28.isDefined(processedRow = processedRows.pop()); ) {
       cacheEntry = this.rowsCache[processedRow];
@@ -8291,7 +8296,7 @@ var SlickGrid = class {
     }
   }
   renderRows(range) {
-    let divArrayL = [], divArrayR = [], rows = [], needToReselectCell = !1, dataLength = this.getDataLength();
+    let stringArrayL = [], stringArrayR = [], rows = [], needToReselectCell = !1, dataLength = this.getDataLength();
     for (let i = range.top, ii = range.bottom; i <= ii; i++)
       this.rowsCache[i] || this.hasFrozenRows && this._options.frozenBottom && i === this.getDataLength() || (this.renderedRows++, rows.push(i), this.rowsCache[i] = {
         rowNode: null,
@@ -8304,14 +8309,22 @@ var SlickGrid = class {
         // cellNodesByColumnIdx.  These are in the same order as cell nodes added at the
         // end of the row.
         cellRenderQueue: []
-      }, this.appendRowHtml(divArrayL, divArrayR, i, range, dataLength), this.activeCellNode && this.activeRow === i && (needToReselectCell = !0), this.counter_rows_rendered++);
+      }, this.appendRowHtml(stringArrayL, stringArrayR, i, range, dataLength), this.activeCellNode && this.activeRow === i && (needToReselectCell = !0), this.counter_rows_rendered++);
     if (!rows.length)
       return;
     let x = document.createElement("div"), xRight = document.createElement("div");
-    divArrayL.forEach((elm) => x.appendChild(elm)), divArrayR.forEach((elm) => xRight.appendChild(elm));
+    x.innerHTML = this.sanitizeHtmlString(stringArrayL.join("")), xRight.innerHTML = this.sanitizeHtmlString(stringArrayR.join(""));
+    let elements1 = x.querySelectorAll("[data-top]"), elements2 = xRight.querySelectorAll("[data-top]");
+    this.applyTopStyling(elements1), this.applyTopStyling(elements2);
     for (let i = 0, ii = rows.length; i < ii; i++)
       this.hasFrozenRows && rows[i] >= this.actualFrozenRow ? this.hasFrozenColumns() ? this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild, xRight.firstChild], this._canvasBottomL.appendChild(x.firstChild), this._canvasBottomR.appendChild(xRight.firstChild)) : this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild], this._canvasBottomL.appendChild(x.firstChild)) : this.hasFrozenColumns() ? this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild, xRight.firstChild], this._canvasTopL.appendChild(x.firstChild), this._canvasTopR.appendChild(xRight.firstChild)) : this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild], this._canvasTopL.appendChild(x.firstChild));
     needToReselectCell && (this.activeCellNode = this.getCellNode(this.activeRow, this.activeCell));
+  }
+  applyTopStyling(elements) {
+    elements?.forEach((element) => {
+      let top = element.dataset.top;
+      top !== void 0 && (element.style.top = top);
+    });
   }
   startPostProcessing() {
     this._options.enableAsyncPostRender && (clearTimeout(this.h_postrender), this.h_postrender = setTimeout(this.asyncPostProcessRows.bind(this), this._options.asyncPostRenderDelay));
@@ -9634,7 +9647,7 @@ export {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.5.1
+ * SlickGrid v5.5.2
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

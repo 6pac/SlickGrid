@@ -121,7 +121,7 @@
     populateCommandsMenu(commandItems, commandListElm, args) {
       var _a, _b, _c, _d;
       let level = (args == null ? void 0 : args.level) || 0, isSubMenu = level > 0;
-      !isSubMenu && ((_a = this._gridMenuOptions) != null && _a.commandTitle || (_b = this._gridMenuOptions) != null && _b.customTitle) && (this._commandTitleElm = document.createElement("div"), this._commandTitleElm.className = "title", this._commandTitleElm.innerHTML = this.grid.sanitizeHtmlString(this._gridMenuOptions.commandTitle || this._gridMenuOptions.customTitle), commandListElm.appendChild(this._commandTitleElm));
+      !isSubMenu && ((_a = this._gridMenuOptions) != null && _a.commandTitle || (_b = this._gridMenuOptions) != null && _b.customTitle) && (this._commandTitleElm = document.createElement("div"), this._commandTitleElm.className = "title", this.grid.applyHtmlCode(this._commandTitleElm, this.grid.sanitizeHtmlString(this._gridMenuOptions.commandTitle || this._gridMenuOptions.customTitle)), commandListElm.appendChild(this._commandTitleElm));
       for (let i = 0, ln = commandItems.length; i < ln; i++) {
         let addClickListener = !0, item = commandItems[i], callbackArgs = {
           grid: this.grid,
@@ -137,7 +137,7 @@
         let iconElm = document.createElement("div");
         iconElm.className = "slick-gridmenu-icon", liElm.appendChild(iconElm), item.iconCssClass && iconElm.classList.add(...item.iconCssClass.split(" ")), item.iconImage && (iconElm.style.backgroundImage = `url(${item.iconImage})`);
         let textElm = document.createElement("span");
-        if (textElm.className = "slick-gridmenu-content", textElm.innerHTML = this.grid.sanitizeHtmlString(item.title || ""), liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), commandListElm.appendChild(liElm), addClickListener) {
+        if (textElm.className = "slick-gridmenu-content", this.grid.applyHtmlCode(textElm, this.grid.sanitizeHtmlString(item.title || "")), liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), commandListElm.appendChild(liElm), addClickListener) {
           let eventGroup = isSubMenu ? "sub-menu" : "parent-menu";
           this._bindingEventService.bind(liElm, "click", this.handleMenuItemClick.bind(this, item, level), void 0, eventGroup);
         }
@@ -153,7 +153,7 @@
     /** Build the column picker, the code comes almost untouched from the file "slick.columnpicker.js" */
     populateColumnPicker() {
       var _a;
-      this.grid.onColumnsReordered.subscribe(this.updateColumnOrder.bind(this)), (_a = this._gridMenuOptions) != null && _a.columnTitle && (this._columnTitleElm = document.createElement("div"), this._columnTitleElm.className = "title", this._columnTitleElm.innerHTML = this.grid.sanitizeHtmlString(this._gridMenuOptions.columnTitle), this._menuElm.appendChild(this._columnTitleElm)), this._bindingEventService.bind(this._menuElm, "click", this.updateColumn.bind(this)), this._listElm = document.createElement("span"), this._listElm.className = "slick-gridmenu-list", this._listElm.role = "menu";
+      this.grid.onColumnsReordered.subscribe(this.updateColumnOrder.bind(this)), (_a = this._gridMenuOptions) != null && _a.columnTitle && (this._columnTitleElm = document.createElement("div"), this._columnTitleElm.className = "title", this.grid.applyHtmlCode(this._columnTitleElm, this.grid.sanitizeHtmlString(this._gridMenuOptions.columnTitle)), this._menuElm.appendChild(this._columnTitleElm)), this._bindingEventService.bind(this._menuElm, "click", this.updateColumn.bind(this)), this._listElm = document.createElement("span"), this._listElm.className = "slick-gridmenu-list", this._listElm.role = "menu";
     }
     /** Delete and then Recreate the Grid Menu (for example when we switch from regular to a frozen grid) */
     recreateGridMenu() {
@@ -181,7 +181,7 @@
         let checkboxElm = document.createElement("input");
         checkboxElm.type = "checkbox", checkboxElm.id = `${this._gridUid}-gridmenu-colpicker-${columnId}`, checkboxElm.dataset.columnid = String(this.columns[i].id), liElm.appendChild(checkboxElm), Utils.isDefined(this.grid.getColumnIndex(this.columns[i].id)) && !this.columns[i].hidden && (checkboxElm.checked = !0), this._columnCheckboxes.push(checkboxElm), columnLabel = (_e = this._gridMenuOptions) != null && _e.headerColumnValueExtractor ? this._gridMenuOptions.headerColumnValueExtractor(this.columns[i], this._gridOptions) : this._defaults.headerColumnValueExtractor(this.columns[i]);
         let labelElm = document.createElement("label");
-        labelElm.htmlFor = `${this._gridUid}-gridmenu-colpicker-${columnId}`, labelElm.innerHTML = this.grid.sanitizeHtmlString((columnLabel instanceof HTMLElement ? columnLabel.innerHTML : columnLabel) || ""), liElm.appendChild(labelElm), this._listElm.appendChild(liElm);
+        labelElm.htmlFor = `${this._gridUid}-gridmenu-colpicker-${columnId}`, this.grid.applyHtmlCode(labelElm, this.grid.sanitizeHtmlString((columnLabel instanceof HTMLElement ? columnLabel.innerHTML : columnLabel) || "")), liElm.appendChild(labelElm), this._listElm.appendChild(liElm);
       }
       if (this._gridMenuOptions && (!this._gridMenuOptions.hideForceFitButton || !this._gridMenuOptions.hideSyncResizeButton) && this._listElm.appendChild(document.createElement("hr")), !((_f = this._gridMenuOptions) != null && _f.hideForceFitButton)) {
         let forceFitTitle = ((_g = this._gridMenuOptions) == null ? void 0 : _g.forceFitTitle) || this._defaults.forceFitTitle, liElm = document.createElement("li");
@@ -248,8 +248,7 @@
     }
     /** Update the Titles of each sections (command, commandTitle, ...) */
     updateAllTitles(gridMenuOptions) {
-      var _a, _b;
-      (_a = this._commandTitleElm) != null && _a.innerHTML && (this._commandTitleElm.innerHTML = this.grid.sanitizeHtmlString(gridMenuOptions.commandTitle || gridMenuOptions.customTitle || "")), (_b = this._columnTitleElm) != null && _b.innerHTML && (this._columnTitleElm.innerHTML = this.grid.sanitizeHtmlString(gridMenuOptions.columnTitle || ""));
+      this._commandTitleElm && this.grid.applyHtmlCode(this._commandTitleElm, this.grid.sanitizeHtmlString(gridMenuOptions.commandTitle || gridMenuOptions.customTitle || "")), this._columnTitleElm && this.grid.applyHtmlCode(this._columnTitleElm, this.grid.sanitizeHtmlString(gridMenuOptions.columnTitle || ""));
     }
     addSubMenuTitleWhenExists(item, commandOrOptionMenu) {
       if (item !== "divider" && (item != null && item.subMenuTitle)) {

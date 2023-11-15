@@ -116,7 +116,7 @@
      */
     renderRegularTooltip(formatterOrText, cell, value, columnDef, item) {
       let tmpDiv = document.createElement("div");
-      tmpDiv.innerHTML = this.parseFormatterAndSanitize(formatterOrText, cell, value, columnDef, item);
+      this._grid.applyHtmlCode(tmpDiv, this.parseFormatterAndSanitize(formatterOrText, cell, value, columnDef, item));
       let tooltipText = columnDef.toolTip || "", tmpTitleElm;
       tooltipText || (this._cellNodeElm && this._cellNodeElm.clientWidth < this._cellNodeElm.scrollWidth && !this._cellTooltipOptions.useRegularTooltipFromFormatterOnly ? (tooltipText = (this._cellNodeElm.textContent || "").trim() || "", this._cellTooltipOptions.tooltipTextMaxLength && tooltipText.length > this._cellTooltipOptions.tooltipTextMaxLength && (tooltipText = tooltipText.substring(0, this._cellTooltipOptions.tooltipTextMaxLength - 3) + "..."), tmpTitleElm = this._cellNodeElm) : (this._cellTooltipOptions.useRegularTooltipFromFormatterOnly ? tmpTitleElm = tmpDiv.querySelector("[title], [data-slick-tooltip]") : (tmpTitleElm = this.findFirstElementAttribute(this._cellNodeElm, ["title", "data-slick-tooltip"]) ? this._cellNodeElm : tmpDiv.querySelector("[title], [data-slick-tooltip]"), (!tmpTitleElm || !this.findFirstElementAttribute(tmpTitleElm, ["title", "data-slick-tooltip"])) && this._cellNodeElm && (tmpTitleElm = this._cellNodeElm.querySelector("[title], [data-slick-tooltip]"))), (!tooltipText || typeof formatterOrText == "function" && this._cellTooltipOptions.useRegularTooltipFromFormatterOnly) && (tooltipText = this.findFirstElementAttribute(tmpTitleElm, ["title", "data-slick-tooltip"]) || ""))), tooltipText !== "" && this.renderTooltipFormatter(formatterOrText, cell, value, columnDef, item, tooltipText), this.swapAndClearTitleAttribute(tmpTitleElm, tooltipText);
     }
@@ -182,7 +182,7 @@
     parseFormatterAndSanitize(formatterOrText, cell, value, columnDef, item) {
       if (typeof formatterOrText == "function") {
         let tooltipResult = formatterOrText(cell.row, cell.cell, value, columnDef, item, this._grid), formatterText = Object.prototype.toString.call(tooltipResult) !== "[object Object]" ? tooltipResult : tooltipResult.html || tooltipResult.text;
-        return formatterText instanceof HTMLElement && (formatterText = formatterText.outerHTML), this._grid.sanitizeHtmlString(formatterText);
+        return formatterText instanceof HTMLElement ? formatterText : this._grid.sanitizeHtmlString(formatterText);
       } else if (typeof formatterOrText == "string")
         return this._grid.sanitizeHtmlString(formatterOrText);
       return "";
@@ -191,9 +191,13 @@
       var _a, _b, _c, _d, _e;
       this._tooltipElm = document.createElement("div"), this._tooltipElm.className = this._cellTooltipOptions.className || this._defaults.className, this._tooltipElm.classList.add(this._grid.getUID()), this._tooltipElm.classList.add("l" + cell.cell), this._tooltipElm.classList.add("r" + cell.cell);
       let outputText = tooltipText || this.parseFormatterAndSanitize(formatter, cell, value, columnDef, item) || "";
-      outputText = this._cellTooltipOptions.tooltipTextMaxLength && outputText.length > this._cellTooltipOptions.tooltipTextMaxLength ? outputText.substring(0, this._cellTooltipOptions.tooltipTextMaxLength - 3) + "..." : outputText;
+      if (outputText instanceof HTMLElement) {
+        let content = outputText.textContent || "";
+        this._cellTooltipOptions.tooltipTextMaxLength && content.length > this._cellTooltipOptions.tooltipTextMaxLength && (outputText.textContent = content.substring(0, this._cellTooltipOptions.tooltipTextMaxLength - 3) + "...");
+      } else
+        outputText = this._cellTooltipOptions.tooltipTextMaxLength && outputText.length > this._cellTooltipOptions.tooltipTextMaxLength ? outputText.substring(0, this._cellTooltipOptions.tooltipTextMaxLength - 3) + "..." : outputText;
       let finalOutputText = "";
-      !tooltipText || (_a = this._cellTooltipOptions) != null && _a.renderRegularTooltipAsHtml ? (finalOutputText = this._grid.sanitizeHtmlString(outputText), this._tooltipElm.innerHTML = finalOutputText, this._tooltipElm.style.whiteSpace = (_c = (_b = this._cellTooltipOptions) == null ? void 0 : _b.whiteSpace) != null ? _c : this._defaults.whiteSpace) : (finalOutputText = outputText || "", this._tooltipElm.textContent = finalOutputText, this._tooltipElm.style.whiteSpace = (_e = (_d = this._cellTooltipOptions) == null ? void 0 : _d.regularTooltipWhiteSpace) != null ? _e : this._defaults.regularTooltipWhiteSpace), this._cellTooltipOptions.maxHeight && (this._tooltipElm.style.maxHeight = this._cellTooltipOptions.maxHeight + "px"), this._cellTooltipOptions.maxWidth && (this._tooltipElm.style.maxWidth = this._cellTooltipOptions.maxWidth + "px"), finalOutputText && (document.body.appendChild(this._tooltipElm), this.reposition(cell), this._cellTooltipOptions.hideArrow || this._tooltipElm.classList.add("tooltip-arrow"), this.swapAndClearTitleAttribute(inputTitleElm, outputText));
+      !tooltipText || (_a = this._cellTooltipOptions) != null && _a.renderRegularTooltipAsHtml ? (outputText instanceof HTMLElement ? (this._grid.applyHtmlCode(this._tooltipElm, outputText), finalOutputText = this._grid.sanitizeHtmlString(outputText.textContent || "")) : (finalOutputText = this._grid.sanitizeHtmlString(outputText), this._tooltipElm.innerHTML = finalOutputText), this._tooltipElm.style.whiteSpace = (_c = (_b = this._cellTooltipOptions) == null ? void 0 : _b.whiteSpace) != null ? _c : this._defaults.whiteSpace) : (finalOutputText = (outputText instanceof HTMLElement ? outputText.textContent : outputText) || "", this._tooltipElm.textContent = finalOutputText, this._tooltipElm.style.whiteSpace = (_e = (_d = this._cellTooltipOptions) == null ? void 0 : _d.regularTooltipWhiteSpace) != null ? _e : this._defaults.regularTooltipWhiteSpace), this._cellTooltipOptions.maxHeight && (this._tooltipElm.style.maxHeight = this._cellTooltipOptions.maxHeight + "px"), this._cellTooltipOptions.maxWidth && (this._tooltipElm.style.maxWidth = this._cellTooltipOptions.maxWidth + "px"), finalOutputText && (document.body.appendChild(this._tooltipElm), this.reposition(cell), this._cellTooltipOptions.hideArrow || this._tooltipElm.classList.add("tooltip-arrow"), this.swapAndClearTitleAttribute(inputTitleElm, (outputText instanceof HTMLElement ? outputText.textContent : outputText) || ""));
     }
     /**
      * Method that user can pass to override the default behavior.

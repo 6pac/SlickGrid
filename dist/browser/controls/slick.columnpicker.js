@@ -65,7 +65,7 @@
         let checkboxElm = document.createElement("input");
         checkboxElm.type = "checkbox", checkboxElm.id = `${this._gridUid}colpicker-${columnId}`, checkboxElm.dataset.columnid = String(this.columns[i].id), liElm.appendChild(checkboxElm), this._columnCheckboxes.push(checkboxElm), Utils.isDefined(this.grid.getColumnIndex(columnId)) && !this.columns[i].hidden && (checkboxElm.checked = !0), columnLabel = (_b = (_a = this._gridOptions) == null ? void 0 : _a.columnPicker) != null && _b.headerColumnValueExtractor ? this._gridOptions.columnPicker.headerColumnValueExtractor(this.columns[i], this._gridOptions) : this._defaults.headerColumnValueExtractor(this.columns[i], this._gridOptions);
         let labelElm = document.createElement("label");
-        labelElm.htmlFor = `${this._gridUid}colpicker-${columnId}`, labelElm.innerHTML = this.grid.sanitizeHtmlString(columnLabel instanceof HTMLElement ? columnLabel.innerHTML : columnLabel), liElm.appendChild(labelElm), this._listElm.appendChild(liElm);
+        labelElm.htmlFor = `${this._gridUid}colpicker-${columnId}`, this.grid.applyHtmlCode(labelElm, columnLabel), liElm.appendChild(labelElm), this._listElm.appendChild(liElm);
       }
       if (this._gridOptions.columnPicker && (!this._gridOptions.columnPicker.hideForceFitButton || !this._gridOptions.columnPicker.hideSyncResizeButton) && this._listElm.appendChild(document.createElement("hr")), !((_c = this._gridOptions.columnPicker) != null && _c.hideForceFitButton)) {
         let forceFitTitle = ((_d = this._gridOptions.columnPicker) == null ? void 0 : _d.forceFitTitle) || this._gridOptions.forceFitTitle, liElm = document.createElement("li");
@@ -98,8 +98,7 @@
     }
     /** Update the Titles of each sections (command, customTitle, ...) */
     updateAllTitles(pickerOptions) {
-      var _a;
-      (_a = this._columnTitleElm) != null && _a.innerHTML && (this._columnTitleElm.innerHTML = this.grid.sanitizeHtmlString(pickerOptions.columnTitle));
+      this.grid.applyHtmlCode(this._columnTitleElm, pickerOptions.columnTitle);
     }
     updateColumn(e) {
       if (e.target.dataset.option === "autoresize") {

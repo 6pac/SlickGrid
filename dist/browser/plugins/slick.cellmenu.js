@@ -94,7 +94,7 @@
       if (level === 0) {
         closeButtonElm = document.createElement("button"), closeButtonElm.type = "button", closeButtonElm.className = "close", closeButtonElm.dataset.dismiss = "slick-cell-menu", closeButtonElm.ariaLabel = "Close";
         let spanCloseElm = document.createElement("span");
-        spanCloseElm.className = "close", spanCloseElm.ariaHidden = "true", spanCloseElm.innerHTML = "&times;", closeButtonElm.appendChild(spanCloseElm);
+        spanCloseElm.className = "close", spanCloseElm.ariaHidden = "true", spanCloseElm.textContent = "\xD7", closeButtonElm.appendChild(spanCloseElm);
       }
       if (!this._cellMenuProperties.hideOptionSection && optionItems.length > 0) {
         let optionMenuElm = document.createElement("div");

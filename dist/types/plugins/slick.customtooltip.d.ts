@@ -149,7 +149,7 @@ export declare class SlickCustomTooltip {
     protected parseFormatterAndSanitize(formatterOrText: Formatter | string | undefined, cell: {
         row: number;
         cell: number;
-    }, value: any, columnDef: Column, item: unknown): string;
+    }, value: any, columnDef: Column, item: unknown): string | HTMLElement;
     protected renderTooltipFormatter(formatter: Formatter | string | undefined, cell: {
         row: number;
         cell: number;

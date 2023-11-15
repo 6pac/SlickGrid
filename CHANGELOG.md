@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.5.2](https://github.com/6pac/SlickGrid/compare/5.5.1...5.5.2) (2023-11-15)
+
+### Bug Fixes
+
+* replace leftover `innerHTML` assignment with CSP safe approach ([#912](https://github.com/6pac/SlickGrid/issues/912)) ([4793068](https://github.com/6pac/SlickGrid/commit/479306864aacf53a84f5525e7a4fae1aadc519da))
+* rollback portion of CSP safe code causing regression, fixes [#914](https://github.com/6pac/SlickGrid/issues/914) ([#915](https://github.com/6pac/SlickGrid/issues/915)) ([815922b](https://github.com/6pac/SlickGrid/commit/815922bd1d0c84ed90fad587729ccd13695e13f9))
+
 ## [5.5.1](https://github.com/6pac/SlickGrid/compare/5.5.0...5.5.1) (2023-11-14)
 
 ### Bug Fixes

@@ -10,7 +10,7 @@ import { BindingEventService as BindingEventService_, type SlickEditorLock, Slic
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.5.1
+ * SlickGrid v5.5.2
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -591,8 +591,8 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected getFormatter(row: number, column: C): Formatter;
     protected getEditor(row: number, cell: number): Editor | undefined;
     protected getDataItemValueForColumn(item: TData, columnDef: C): TData | TData[keyof TData];
-    protected appendRowHtml(divArrayL: HTMLElement[], divArrayR: HTMLElement[], row: number, range: CellViewportRange, dataLength: number): void;
-    protected appendCellHtml(divRow: HTMLElement, row: number, cell: number, colspan: number, item: TData): void;
+    protected appendRowHtml(stringArrayL: string[], stringArrayR: string[], row: number, range: CellViewportRange, dataLength: number): void;
+    protected appendCellHtml(stringArray: string[], row: number, cell: number, colspan: number, item: TData): void;
     protected cleanupRows(rangeToKeep: {
         bottom: number;
         top: number;
@@ -674,6 +674,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
         leftPx: number;
         rightPx: number;
     }): void;
+    protected applyTopStyling(elements: NodeListOf<HTMLElement>): void;
     protected startPostProcessing(): void;
     protected startPostProcessingCleanup(): void;
     protected invalidatePostProcessingResults(row: number): void;
