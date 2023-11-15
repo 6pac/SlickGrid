@@ -526,13 +526,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param val - input value can be either a string or an HTMLElement
    */
   applyHtmlCode(target: HTMLElement, val: string | HTMLElement) {
-    if (val instanceof HTMLElement) {
-      target.appendChild(val);
-    } else {
-      if (this._options.enableHtmlRendering) {
-        target.innerHTML = this.sanitizeHtmlString(val as string);
+    if (target) {
+      if (val instanceof HTMLElement) {
+        target.appendChild(val);
       } else {
-        target.textContent = this.sanitizeHtmlString(val as string);
+        if (this._options.enableHtmlRendering) {
+          target.innerHTML = this.sanitizeHtmlString(val as string);
+        } else {
+          target.textContent = this.sanitizeHtmlString(val as string);
+        }
       }
     }
   }
@@ -3937,11 +3939,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     // if there is a corresponding row (if not, this is the Add New row or this data hasn't been loaded yet)
     if (item) {
       const cellResult = (Object.prototype.toString.call(formatterResult) !== '[object Object]' ? formatterResult : (formatterResult as FormatterResultWithHtml).html || (formatterResult as FormatterResultWithText).text);
-      if (cellResult instanceof HTMLElement) {
-        cellDiv.appendChild(cellResult);
-      } else {
-        cellDiv.innerHTML = this.sanitizeHtmlString(cellResult as string);
-      }
+      this.applyHtmlCode(cellDiv, cellResult as string | HTMLElement);
     }
 
     divRow.appendChild(cellDiv);
@@ -4625,7 +4623,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     const x = document.createElement('div');
-    x.innerHTML = this.sanitizeHtmlString(divRow.outerHTML);
+    x.appendChild(divRow);
 
     let processedRow: number | null | undefined;
     let node: HTMLElement;

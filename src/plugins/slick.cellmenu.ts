@@ -333,7 +333,7 @@ export class SlickCellMenu implements SlickPlugin {
       const spanCloseElm = document.createElement('span');
       spanCloseElm.className = 'close';
       spanCloseElm.ariaHidden = 'true';
-      spanCloseElm.innerHTML = '&times;';
+      spanCloseElm.textContent = '×';
       closeButtonElm.appendChild(spanCloseElm);
     }
 

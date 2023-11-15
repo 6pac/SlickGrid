@@ -263,7 +263,7 @@ export class SlickCustomTooltip {
    */
   protected renderRegularTooltip(formatterOrText: Formatter | string | undefined, cell: { row: number; cell: number; }, value: any, columnDef: Column, item: any) {
     const tmpDiv = document.createElement('div');
-    tmpDiv.innerHTML = this.parseFormatterAndSanitize(formatterOrText, cell, value, columnDef, item);
+    this._grid.applyHtmlCode(tmpDiv, this.parseFormatterAndSanitize(formatterOrText, cell, value, columnDef, item));
     let tooltipText = columnDef.toolTip || '';
     let tmpTitleElm;
 
@@ -427,12 +427,12 @@ export class SlickCustomTooltip {
    * Parse the Custom Formatter (when provided) or return directly the text when it is already a string.
    * We will also sanitize the text in both cases before returning it so that it can be used safely.
    */
-  protected parseFormatterAndSanitize(formatterOrText: Formatter | string | undefined, cell: { row: number; cell: number; }, value: any, columnDef: Column, item: unknown): string {
+  protected parseFormatterAndSanitize(formatterOrText: Formatter | string | undefined, cell: { row: number; cell: number; }, value: any, columnDef: Column, item: unknown): string | HTMLElement {
     if (typeof formatterOrText === 'function') {
       const tooltipResult = formatterOrText(cell.row, cell.cell, value, columnDef, item, this._grid);
-      let formatterText = (Object.prototype.toString.call(tooltipResult) !== '[object Object]' ? tooltipResult : (tooltipResult as FormatterResultWithHtml).html || (tooltipResult as FormatterResultWithText).text);
+      const formatterText = (Object.prototype.toString.call(tooltipResult) !== '[object Object]' ? tooltipResult : (tooltipResult as FormatterResultWithHtml).html || (tooltipResult as FormatterResultWithText).text);
       if (formatterText instanceof HTMLElement) {
-        formatterText = formatterText.outerHTML;
+        return formatterText;
       }
       return this._grid.sanitizeHtmlString(formatterText as string);
     } else if (typeof formatterOrText === 'string') {
@@ -450,15 +450,27 @@ export class SlickCustomTooltip {
     this._tooltipElm.classList.add('l' + cell.cell);
     this._tooltipElm.classList.add('r' + cell.cell);
     let outputText = tooltipText || this.parseFormatterAndSanitize(formatter, cell, value, columnDef, item) || '';
-    outputText = (this._cellTooltipOptions.tooltipTextMaxLength && outputText.length > this._cellTooltipOptions.tooltipTextMaxLength) ? outputText.substring(0, this._cellTooltipOptions.tooltipTextMaxLength - 3) + '...' : outputText;
+    if (outputText instanceof HTMLElement) {
+      const content = outputText.textContent || '';
+      if (this._cellTooltipOptions.tooltipTextMaxLength && content.length > this._cellTooltipOptions.tooltipTextMaxLength) {
+        outputText.textContent = content.substring(0, this._cellTooltipOptions.tooltipTextMaxLength - 3) + '...';
+      }
+    } else {
+      outputText = (this._cellTooltipOptions.tooltipTextMaxLength && outputText.length > this._cellTooltipOptions.tooltipTextMaxLength) ? outputText.substring(0, this._cellTooltipOptions.tooltipTextMaxLength - 3) + '...' : outputText;
+    }
 
     let finalOutputText = '';
     if (!tooltipText || (this._cellTooltipOptions?.renderRegularTooltipAsHtml)) {
-      finalOutputText = this._grid.sanitizeHtmlString(outputText);
-      this._tooltipElm.innerHTML = finalOutputText;
+      if (outputText instanceof HTMLElement) {
+        this._grid.applyHtmlCode(this._tooltipElm, outputText);
+        finalOutputText = this._grid.sanitizeHtmlString(outputText.textContent || '');
+      } else {
+        finalOutputText = this._grid.sanitizeHtmlString(outputText);
+        this._tooltipElm.innerHTML = finalOutputText;
+      }
       this._tooltipElm.style.whiteSpace = this._cellTooltipOptions?.whiteSpace ?? this._defaults.whiteSpace as string;
     } else {
-      finalOutputText = outputText || '';
+      finalOutputText = (outputText instanceof HTMLElement ? outputText.textContent : outputText) || '';
       this._tooltipElm.textContent = finalOutputText;
       this._tooltipElm.style.whiteSpace = this._cellTooltipOptions?.regularTooltipWhiteSpace ?? this._defaults.regularTooltipWhiteSpace as string; // use `pre` so that sequences of white space are collapsed. Lines are broken at newline characters
     }
@@ -484,7 +496,7 @@ export class SlickCustomTooltip {
       }
 
       // also clear any "title" attribute to avoid showing a 2nd browser tooltip
-      this.swapAndClearTitleAttribute(inputTitleElm, outputText);
+      this.swapAndClearTitleAttribute(inputTitleElm, (outputText instanceof HTMLElement ? outputText.textContent : outputText) || '');
     }
   }
 

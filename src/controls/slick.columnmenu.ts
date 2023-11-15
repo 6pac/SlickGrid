@@ -157,7 +157,7 @@ export class SlickColumnMenu {
 
       const labelElm = document.createElement('label');
       labelElm.htmlFor = `${this._gridUid}colpicker-${columnId}`;
-      labelElm.innerHTML = this.grid.sanitizeHtmlString(columnLabel instanceof HTMLElement ? columnLabel.innerHTML : columnLabel);
+      this.grid.applyHtmlCode(labelElm, columnLabel);
       liElm.appendChild(labelElm);
       this._listElm.appendChild(liElm);
     }
@@ -249,9 +249,7 @@ export class SlickColumnMenu {
 
   /** Update the Titles of each sections (command, customTitle, ...) */
   updateAllTitles(pickerOptions: { columnTitle: string; }) {
-    if (this._columnTitleElm?.innerHTML) {
-      this._columnTitleElm.innerHTML = this.grid.sanitizeHtmlString(pickerOptions.columnTitle);
-    }
+    this.grid.applyHtmlCode(this._columnTitleElm, pickerOptions.columnTitle);
   }
 
   updateColumn(e: DOMMouseOrTouchEvent<HTMLInputElement>) {
