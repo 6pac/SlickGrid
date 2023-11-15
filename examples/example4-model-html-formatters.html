@@ -6,6 +6,7 @@
   <title>SlickGrid example 4: Model</title>
   <link rel="stylesheet" href="../dist/styles/css/slick.customtooltip.css" type="text/css" />
   <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.gridmenu.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick.pager.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
@@ -131,7 +132,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
-<script src="sortable-cdn-fallback.js"></script>
 
 <script type="module">
 import {
@@ -142,6 +142,7 @@ import {
   SlickColumnPicker,
   SlickDataView,
   SlickCustomTooltip,
+  SlickGridMenu,
   SlickGridPager,
   SlickGrid,
   Utils,
@@ -173,6 +174,9 @@ let options = {
     hideSyncResizeButton: false,
     forceFitTitle: "Force fit columns",
     syncResizeTitle: "Synchronous resize",
+  },
+  gridMenu: {
+    iconCssClass: "sgi sgi-menu sgi-17px",    // you can provide iconImage OR iconCssClass
   },
   editable: true,
   enableAddRow: true,
@@ -312,12 +316,13 @@ document.addEventListener("DOMContentLoaded", () => {
     d["effortDriven"] = (i % 5 == 0);
   }
 
-  dataView = new SlickDataView({ inlineFilters: true });
+  dataView = new SlickDataView({ inlineFilters: true, useCSPSafeFilter: true });
   grid = new SlickGrid("#myGrid", dataView, columns, options);
   grid.setSelectionModel(new SlickRowSelectionModel());
 
   let pager = new SlickGridPager(dataView, grid, "#pager");
   let columnpicker = new SlickColumnPicker(columns, grid, options);
+  let gridMenu = new SlickGridMenu(columns, grid, options);
 
   const customTooltipPlugin = new SlickCustomTooltip();
   grid.registerPlugin(customTooltipPlugin);
