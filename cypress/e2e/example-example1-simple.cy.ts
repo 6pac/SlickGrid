@@ -79,11 +79,18 @@ describe('Example 1 - Basic Grid', () => {
 
     cy.get('.slick-resizable-handle:nth(1)')
       .trigger('mousedown', { which: 1, force: true })
-      .trigger('mousemove', 'bottomRight');
+      .trigger('mousemove', { which: 1, force: true, pageX: 250, pageY: 25 })
+      .trigger('mouseup', { force: true });
 
-    cy.get('.slick-header-column:nth(3)')
-      .trigger('mousemove', 'bottomRight')
-      .trigger('mouseup', 'bottomRight', { which: 1, force: true });
+    // resize Title column
+    cy.get('.slick-header-columns')
+      .children('.slick-header-column:nth(0)')
+      .should('contain', 'Title');
+
+    cy.get('.slick-resizable-handle:nth(0)')
+      .trigger('mousedown', { which: 1, force: true })
+      .trigger('mousemove', { which: 1, force: true, pageX: 80, pageY: 25 })
+      .trigger('mouseup', { force: true });
   });
 
   it('should scroll horizontally completely to the right and expect all cell to be rendered', () => {
