@@ -78,11 +78,11 @@ export function Draggable(options: DraggableOption) {
       originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target });
       executeDragCallbackWhenDefined(onDragInit as Function, event, originaldd);
 
-      document.addEventListener('mousemove', userMoved);
-      document.addEventListener('touchmove', userMoved);
-      document.addEventListener('mouseup', userReleased);
-      document.addEventListener('touchend', userReleased);
-      document.addEventListener('touchcancel', userReleased);
+      document.body.addEventListener('mousemove', userMoved);
+      document.body.addEventListener('touchmove', userMoved);
+      document.body.addEventListener('mouseup', userReleased);
+      document.body.addEventListener('touchend', userReleased);
+      document.body.addEventListener('touchcancel', userReleased);
     }
   }
 
@@ -106,11 +106,11 @@ export function Draggable(options: DraggableOption) {
     const { target } = event;
     originaldd = Object.assign(originaldd, { target });
     executeDragCallbackWhenDefined(onDragEnd, event, originaldd);
-    document.removeEventListener('mousemove', userMoved);
-    document.removeEventListener('touchmove', userMoved);
-    document.removeEventListener('mouseup', userReleased);
-    document.removeEventListener('touchend', userReleased);
-    document.removeEventListener('touchcancel', userReleased);
+    document.body.removeEventListener('mousemove', userMoved);
+    document.body.removeEventListener('touchmove', userMoved);
+    document.body.removeEventListener('mouseup', userReleased);
+    document.body.removeEventListener('touchend', userReleased);
+    document.body.removeEventListener('touchcancel', userReleased);
     dragStarted = false;
   }
 
@@ -205,6 +205,12 @@ export function Resizable(options: ResizableOption) {
     throw new Error('[Slick.Resizable] You did not provide a valid html element that will be used for the handle to resize.');
   }
 
+  function init() {
+    // add event listeners on the draggable element
+    resizeableHandleElement.addEventListener('mousedown', resizeStartHandler);
+    resizeableHandleElement.addEventListener('touchstart', resizeStartHandler);
+  }
+
   function destroy() {
     if (typeof resizeableHandleElement?.removeEventListener === 'function') {
       resizeableHandleElement.removeEventListener('mousedown', resizeStartHandler);
@@ -222,10 +228,10 @@ export function Resizable(options: ResizableOption) {
     e.preventDefault();
     const event = (e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e;
     executeResizeCallbackWhenDefined(onResizeStart, event);
-    document.addEventListener('mousemove', resizingHandler);
-    document.addEventListener('mouseup', resizeEndHandler);
-    document.addEventListener('touchmove', resizingHandler);
-    document.addEventListener('touchend', resizeEndHandler);
+    document.body.addEventListener('mousemove', resizingHandler);
+    document.body.addEventListener('mouseup', resizeEndHandler);
+    document.body.addEventListener('touchmove', resizingHandler);
+    document.body.addEventListener('touchend', resizeEndHandler);
   }
 
   function resizingHandler(e: MouseEvent | TouchEvent) {
@@ -235,7 +241,6 @@ export function Resizable(options: ResizableOption) {
     const event = (e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e;
     if (typeof onResize === 'function') {
       onResize(event, { resizeableElement, resizeableHandleElement });
-      onResize(event, { resizeableElement, resizeableHandleElement });
     }
   }
 
@@ -243,15 +248,13 @@ export function Resizable(options: ResizableOption) {
   function resizeEndHandler(e: MouseEvent | TouchEvent) {
     const event = (e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e;
     executeResizeCallbackWhenDefined(onResizeEnd, event);
-    document.removeEventListener('mousemove', resizingHandler);
-    document.removeEventListener('mouseup', resizeEndHandler);
-    document.removeEventListener('touchmove', resizingHandler);
-    document.removeEventListener('touchend', resizeEndHandler);
+    document.body.removeEventListener('mousemove', resizingHandler);
+    document.body.removeEventListener('mouseup', resizeEndHandler);
+    document.body.removeEventListener('touchmove', resizingHandler);
+    document.body.removeEventListener('touchend', resizeEndHandler);
   }
 
-  // add event listeners on the draggable element
-  resizeableHandleElement.addEventListener('mousedown', resizeStartHandler);
-  resizeableHandleElement.addEventListener('touchstart', resizeStartHandler);
+  init();
 
   // public API
   return { destroy };
