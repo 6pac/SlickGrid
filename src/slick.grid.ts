@@ -3867,7 +3867,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (this.columnPosRight[Math.min(ii - 1, i + (colspan as number) - 1)] > range.leftPx) {
         if (!m.alwaysRenderColumn && this.columnPosLeft[i] > range.rightPx) {
           // All columns to the right are outside the range.
-          console.log("do not render", i, m.alwaysRenderColumn, this.columnPosLeft[i], range.rightPx)
+          console.log("do not render", i, m.alwaysRenderColumn, this.columnPosLeft[i], range.rightPx);
           break;
         }
 
@@ -3884,7 +3884,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         i += ((colspan as number) - 1);
       }
     }
-    console.log(rowDiv, rowDivR)
+    console.log(rowDiv, rowDivR);
 
     // divArrayL.push('</div>');
 
@@ -4712,10 +4712,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     const x = document.createElement('div');
     const xRight = document.createElement('div');
-    console.log("rendering", divArrayL, divArrayR)
+    console.log("rendering", divArrayL, divArrayR);
     divArrayL.forEach(elm => x.appendChild(elm as HTMLElement));
-    divArrayR.forEach(elm => xRight.appendChild(elm as HTMLElement))
-    debugger
+    divArrayR.forEach(elm => xRight.appendChild(elm as HTMLElement));
+    // debugger;
 
     for (let i = 0, ii = rows.length; i < ii; i++) {
       if ((this.hasFrozenRows) && (rows[i] >= this.actualFrozenRow)) {
