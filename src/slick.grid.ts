@@ -10,7 +10,6 @@ import type {
   CSSStyleDeclarationWritable,
   CustomDataView,
   DOMEvent,
-  DOMMouseOrTouchEvent,
   DragPosition,
   DragRowMove,
   Editor,
@@ -1919,12 +1918,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         Resizable({
           resizeableElement: colElm as HTMLElement,
           resizeableHandleElement: resizeableHandle,
-          onResizeStart: (e: DOMMouseOrTouchEvent<HTMLDivElement>, resizeElms: { resizeableElement: HTMLElement; }): boolean | void => {
-            const targetEvent = e.touches ? e.touches[0] : e;
+          onResizeStart: (e, resizeElms): boolean | void => {
+            const targetEvent = (e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e;
             if (!this.getEditorLock()?.commitCurrentEdit()) {
               return false;
             }
-            pageX = targetEvent.pageX;
+            pageX = (targetEvent as MouseEvent).pageX;
             frozenLeftColMaxWidth = 0;
             resizeElms.resizeableElement.classList.add('slick-header-column-active');
             let shrinkLeewayOnRight: number | null = null;
@@ -1985,11 +1984,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
             maxPageX = pageX + Math.min(shrinkLeewayOnRight, stretchLeewayOnLeft);
             minPageX = pageX - Math.min(shrinkLeewayOnLeft, stretchLeewayOnRight);
           },
-          onResize: (e: DOMMouseOrTouchEvent<HTMLDivElement>, resizeElms: { resizeableElement: HTMLElement; resizeableHandleElement: HTMLElement; }) => {
-            const targetEvent = e.touches ? e.touches[0] : e;
+          onResize: (e, resizeElms) => {
+            const targetEvent = (e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e;
             this.columnResizeDragging = true;
             let actualMinWidth;
-            const d = Math.min(maxPageX, Math.max(minPageX, targetEvent.pageX)) - pageX;
+            const d = Math.min(maxPageX, Math.max(minPageX, (targetEvent as MouseEvent).pageX)) - pageX;
             let x;
             let newCanvasWidthL = 0;
             let newCanvasWidthR = 0;
@@ -2166,7 +2165,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
               resizeHandle: resizeElms.resizeableHandleElement
             });
           },
-          onResizeEnd: (_e: Event, resizeElms: { resizeableElement: HTMLElement; }) => {
+          onResizeEnd: (_e, resizeElms) => {
             resizeElms.resizeableElement.classList.remove('slick-header-column-active');
 
             const triggeredByColumn = resizeElms.resizeableElement.id.replace(this.uid, '');
@@ -4566,12 +4565,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.cleanUpCells(range, row);
       // Render missing cells.
       cellsAdded = 0;
-      
+
       let metadata = (this.data as CustomDataView<TData>)?.getItemMetadata?.(row) ?? {} as ItemMetadata;
       metadata = metadata?.columns as ItemMetadata;
-      
+
       const d = this.getDataItem(row);
-      
+
       // TODO:  shorten this loop (index? heuristics? binary search?)
       for (let i = 0, ii = this.columns.length; i < ii; i++) {
         if (!this.columns[i] || this.columns[i].hidden) { continue; }
@@ -4643,7 +4642,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const rows: number[] = [];
     let needToReselectCell = false;
     const dataLength = this.getDataLength();
-    
+
     for (let i = range.top as number, ii = range.bottom as number; i <= ii; i++) {
       if (this.rowsCache[i] || (this.hasFrozenRows && this._options.frozenBottom && i === this.getDataLength())) {
         continue;
@@ -4680,7 +4679,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     const x = document.createElement('div');
     const xRight = document.createElement('div');
-    
+
     divArrayL.forEach(elm => x.appendChild(elm as HTMLElement));
     divArrayR.forEach(elm => xRight.appendChild(elm as HTMLElement));
 
