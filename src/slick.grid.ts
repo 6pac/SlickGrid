@@ -3829,10 +3829,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     const frozenRowOffset = this.getFrozenRowOffset(row);
-    const rowDiv = document.createElement('div');
+    const rowDiv = Utils.createDomElement('div', { className: `ui-widget-content ${rowCss}`, style: { top: `${this.getRowTop(row) - frozenRowOffset}px` } });
     let rowDivR: HTMLElement | undefined;
-    rowDiv.className = 'ui-widget-content ' + rowCss;
-    rowDiv.style.top = `${(this.getRowTop(row) - frozenRowOffset)}px`;
     divArrayL.push(rowDiv);
     if (this.hasFrozenColumns()) {
       // it has to be a deep copy otherwise we will have issues with pass by reference in js since
@@ -3923,7 +3921,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     const toolTipText = (formatterResult as FormatterResultObject)?.toolTip ? `${(formatterResult as FormatterResultObject).toolTip}` : '';
     const cellDiv = document.createElement('div');
-    cellDiv.className = cellCss + (addlCssClasses ? ' ' + addlCssClasses : '');
+    cellDiv.className = `${cellCss} ${addlCssClasses || ''}`.trim();
     cellDiv.setAttribute('title', toolTipText);
     if (m.hasOwnProperty('cellAttrs') && m.cellAttrs instanceof Object) {
       for (const key in m.cellAttrs) {
