@@ -1,4 +1,4 @@
-import type { DraggableOption, MouseWheelOption, ResizableOption } from './models/index';
+import type { DragItem, DragPosition, DraggableOption, MouseWheelOption, ResizableOption } from './models/index';
 import { Utils as Utils_ } from './slick.core';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -31,28 +31,32 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 export function Draggable(options: DraggableOption) {
   let { containerElement } = options;
   const { onDragInit, onDragStart, onDrag, onDragEnd } = options;
-  let element: HTMLElement | null, startX: number, startY: number, deltaX: number, deltaY: number, dragStarted: boolean;
+  let element: HTMLElement | null;
+  let startX: number;
+  let startY: number;
+  let deltaX: number;
+  let deltaY: number;
+  let dragStarted: boolean;
 
   if (!containerElement) {
-    containerElement = document;
-  }
-  if (!containerElement || typeof containerElement.addEventListener !== 'function') {
-    throw new Error('[Slick.Draggable] You did not provide a valid container html element that will be used for dragging.');
+    containerElement = document.body;
   }
 
-  let originaldd: { dragSource: HTMLElement | Document | null, dragHandle: HTMLElement | null } = {
+  let originaldd: Partial<DragItem> = {
     dragSource: containerElement,
     dragHandle: null,
   };
 
-  if (containerElement) {
-    containerElement.addEventListener('mousedown', userPressed as EventListener);
-    containerElement.addEventListener('touchstart', userPressed as EventListener);
+  function init() {
+    if (containerElement) {
+      containerElement.addEventListener('mousedown', userPressed as EventListener);
+      containerElement.addEventListener('touchstart', userPressed as EventListener);
+    }
   }
 
-  function executeDragCallbackWhenDefined(callback?: Function, e?: MouseEvent | Touch | TouchEvent, dd?: any) {
+  function executeDragCallbackWhenDefined(callback?: (e: DragEvent, dd: DragItem) => boolean | void, evt?: MouseEvent | Touch | TouchEvent, dd?: DragItem) {
     if (typeof callback === 'function') {
-      callback(e, dd);
+      callback(evt as DragEvent, dd as DragItem);
     }
   }
 
@@ -76,7 +80,7 @@ export function Draggable(options: DraggableOption) {
       deltaX = targetEvent.clientX - targetEvent.clientX;
       deltaY = targetEvent.clientY - targetEvent.clientY;
       originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target });
-      executeDragCallbackWhenDefined(onDragInit as Function, event, originaldd);
+      executeDragCallbackWhenDefined(onDragInit as (e: DragEvent, dd: DragPosition) => boolean | void, event, originaldd as DragItem);
 
       document.body.addEventListener('mousemove', userMoved);
       document.body.addEventListener('touchmove', userMoved);
@@ -94,18 +98,18 @@ export function Draggable(options: DraggableOption) {
 
     if (!dragStarted) {
       originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target });
-      executeDragCallbackWhenDefined(onDragStart, event, originaldd);
+      executeDragCallbackWhenDefined(onDragStart, event, originaldd as DragItem);
       dragStarted = true;
     }
 
     originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target });
-    executeDragCallbackWhenDefined(onDrag, event, originaldd);
+    executeDragCallbackWhenDefined(onDrag, event, originaldd as DragItem);
   }
 
   function userReleased(event: MouseEvent | TouchEvent) {
     const { target } = event;
     originaldd = Object.assign(originaldd, { target });
-    executeDragCallbackWhenDefined(onDragEnd, event, originaldd);
+    executeDragCallbackWhenDefined(onDragEnd, event, originaldd as DragItem);
     document.body.removeEventListener('mousemove', userMoved);
     document.body.removeEventListener('touchmove', userMoved);
     document.body.removeEventListener('mouseup', userReleased);
@@ -113,6 +117,9 @@ export function Draggable(options: DraggableOption) {
     document.body.removeEventListener('touchcancel', userReleased);
     dragStarted = false;
   }
+
+  // initialize Slick.MouseWheel by attaching mousewheel event
+  init();
 
   // public API
   return { destroy };

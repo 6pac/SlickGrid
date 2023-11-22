@@ -1,5 +1,16 @@
 import type { SlickGrid } from '../slick.grid';
 
+export interface DragItem {
+  dragSource: HTMLElement | Document | null;
+  dragHandle: HTMLElement | null;
+  deltaX: number;
+  deltaY: number;
+  range: DragRange;
+  target: HTMLElement;
+  startX: number;
+  startY: number;
+}
+
 export interface DragPosition {
   startX: number;
   startY: number;
