@@ -97,15 +97,19 @@
     }
 
     function userReleased(event) {
-      const { target } = event;
-      originaldd = Object.assign(originaldd, { target });
-      executeDragCallbackWhenDefined(onDragEnd, event, originaldd);
       document.removeEventListener('mousemove', userMoved);
       document.removeEventListener('touchmove', userMoved);
       document.removeEventListener('mouseup', userReleased);
       document.removeEventListener('touchend', userReleased);
       document.removeEventListener('touchcancel', userReleased);
-      dragStarted = false;
+
+      // trigger a dragEnd event only after dragging started and stopped
+      if (dragStarted) {
+        const { target } = event;
+        originaldd = Object.assign(originaldd, { target });
+        executeDragCallbackWhenDefined(onDragEnd, event, originaldd);
+        dragStarted = false;
+      }
     }
 
     function windowScrollPosition() {
