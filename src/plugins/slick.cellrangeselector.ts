@@ -365,6 +365,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
   }
 
   protected handleDragEnd(e: Event, dd: DragPosition) {
+    this._decorator.hide();
     if (!this._dragging) {
       return;
     }
@@ -373,7 +374,6 @@ export class SlickCellRangeSelector implements SlickPlugin {
     e.stopImmediatePropagation();
 
     this.stopIntervalTimer();
-    this._decorator.hide();
     this.onCellRangeSelected.notify({
       range: new SlickRange(
         dd.range.start.row ?? 0,
