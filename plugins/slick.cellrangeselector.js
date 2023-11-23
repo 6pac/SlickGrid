@@ -352,6 +352,7 @@
     }
 
     function handleDragEnd(e, dd) {
+      _decorator.hide();
       if (!_dragging) {
         return;
       }
@@ -360,7 +361,6 @@
       e.stopImmediatePropagation();
 
       stopIntervalTimer();
-      _decorator.hide();
       _self.onCellRangeSelected.notify({
         range: new Slick.Range(
           dd.range.start.row,
