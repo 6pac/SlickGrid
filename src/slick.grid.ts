@@ -524,11 +524,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param target - target element to apply to
    * @param val - input value can be either a string or an HTMLElement
    */
-  applyHtmlCode(target: HTMLElement, val: string | HTMLElement) {
+  applyHtmlCode(target: HTMLElement, val: string | HTMLElement | DocumentFragment) {
     if (target) {
-      if (val instanceof HTMLElement) {
+      if (val instanceof HTMLElement || val instanceof DocumentFragment) {
         target.appendChild(val);
-      } else {
+      } else if (typeof val === 'string') {
         if (this._options.enableHtmlRendering) {
           target.innerHTML = this.sanitizeHtmlString(val as string);
         } else {

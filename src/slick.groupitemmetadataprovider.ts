@@ -59,22 +59,41 @@ export class SlickGroupItemMetadataProvider {
     Utils.extend(true, this._options, inputOptions);
   }
 
-  protected defaultGroupCellFormatter(_row: number, _cell: number, _value: any, _columnDef: Column, item: any): string {
+  protected defaultGroupCellFormatter(_row: number, _cell: number, _value: any, _columnDef: Column, item: any) {
     if (!this._options.enableExpandCollapse) {
       return item.title;
     }
 
     const indentation = `${item.level * 15}px`;
 
-    return (this._options.checkboxSelect ? '<span class="' + this._options.checkboxSelectCssClass +
-      ' ' + (item.selectChecked ? 'checked' : 'unchecked') + '"></span>' : '') +
-      '<span class="' + this._options.toggleCssClass + ' ' +
-      (item.collapsed ? this._options.toggleCollapsedCssClass : this._options.toggleExpandedCssClass) +
-      '" style="margin-left:' + indentation + '">' +
-      '</span>' +
-      '<span class="' + this._options.groupTitleCssClass + '" level="' + item.level + '">' +
-      item.title +
-      '</span>';
+    // previous code had 2 or 3 <span>
+    // return (this._options.checkboxSelect ? `<span class="${this._options.checkboxSelectCssClass} ${item.selectChecked ? 'checked' : 'unchecked'}"></span>` : '') +
+    //   `<span class="${this._options.toggleCssClass} ${item.collapsed ? this._options.toggleCollapsedCssClass : this._options.toggleExpandedCssClass}" style="margin-left: ${indentation}"></span>` +
+    //   `<span class="${this._options.groupTitleCssClass}" level="${item.level}">${item.title}</span>`;
+
+    // use a DocumentFragment to avoid creating an extra div container
+    const containerElm = document.createDocumentFragment();
+
+    // 1. optional row checkbox span
+    if (this._options.checkboxSelect) {
+      containerElm.appendChild(Utils.createDomElement('span', { className: `${this._options.checkboxSelectCssClass} ${item.selectChecked ? 'checked' : 'unchecked'}` }));
+    }
+
+    // 2. group toggle span
+    containerElm.appendChild(Utils.createDomElement('span', {
+      className: `${this._options.toggleCssClass} ${item.collapsed ? this._options.toggleCollapsedCssClass : this._options.toggleExpandedCssClass}`,
+      style: { marginLeft: indentation }
+    }));
+
+    // 3. group title span
+    const groupTitleElm = Utils.createDomElement('span', { className: this._options.groupTitleCssClass || '' });
+    (item.title instanceof HTMLElement)
+      ? groupTitleElm.appendChild(item.title)
+      : this._grid.applyHtmlCode(groupTitleElm, item.title ?? '');
+    groupTitleElm.setAttribute('level', item.level);
+    containerElm.appendChild(groupTitleElm);
+
+    return containerElm;
   }
 
   protected defaultTotalsCellFormatter(_row: number, _cell: number, _value: any, columnDef: Column, item: any, grid: SlickGrid) {
