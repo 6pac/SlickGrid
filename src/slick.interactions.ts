@@ -107,15 +107,19 @@ export function Draggable(options: DraggableOption) {
   }
 
   function userReleased(event: MouseEvent | TouchEvent) {
-    const { target } = event;
-    originaldd = Object.assign(originaldd, { target });
-    executeDragCallbackWhenDefined(onDragEnd, event, originaldd as DragItem);
     document.body.removeEventListener('mousemove', userMoved);
     document.body.removeEventListener('touchmove', userMoved);
     document.body.removeEventListener('mouseup', userReleased);
     document.body.removeEventListener('touchend', userReleased);
     document.body.removeEventListener('touchcancel', userReleased);
-    dragStarted = false;
+
+    // trigger a dragEnd event only after dragging started and stopped
+    if (dragStarted) {
+      const { target } = event;
+      originaldd = Object.assign(originaldd, { target });
+      executeDragCallbackWhenDefined(onDragEnd, event, originaldd as DragItem);
+      dragStarted = false;
+    }
   }
 
   // initialize Slick.MouseWheel by attaching mousewheel event
