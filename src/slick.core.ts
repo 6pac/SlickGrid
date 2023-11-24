@@ -764,13 +764,9 @@ export class Utils {
     return elm;
   }
 
-  public static emptyElement(element: HTMLElement | null) {
-    if (element?.firstChild) {
-      while (element.firstChild) {
-        if (element.lastChild) {
-          element.removeChild(element.lastChild);
-        }
-      }
+  public static emptyElement<T extends Element = Element>(element?: T | null): T | undefined | null {
+    while (element?.firstChild) {
+      element.removeChild(element.firstChild);
     }
     return element;
   }
