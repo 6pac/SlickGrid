@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.5.4](https://github.com/6pac/SlickGrid/compare/5.5.3...5.5.4) (2023-11-24)
+
+### Bug Fixes
+
+* `applyHtmlCode` util should always clear targeted native element ([#926](https://github.com/6pac/SlickGrid/issues/926)) ([3167f5f](https://github.com/6pac/SlickGrid/commit/3167f5f30d3f991ecbdabb474d46e02b82d8fdec))
+
 ## [5.5.3](https://github.com/6pac/SlickGrid/compare/5.5.2...5.5.3) (2023-11-24)
 
 ### Bug Fixes

@@ -112,7 +112,7 @@ const Resizable = IIFE_ONLY ? Slick.Resizable : Resizable_;
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.5.3
+ * SlickGrid v5.5.4
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -134,7 +134,7 @@ interface RowCaching {
 export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O extends BaseGridOption<C> = BaseGridOption<C>> {
   //////////////////////////////////////////////////////////////////////////////////////////////
   // Public API
-  slickGridVersion = '5.5.3';
+  slickGridVersion = '5.5.4';
 
   /** optional grid state clientId */
   cid = '';

@@ -10,7 +10,7 @@ import { BindingEventService as BindingEventService_, type SlickEditorLock, Slic
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.5.3
+ * SlickGrid v5.5.4
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -287,13 +287,13 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     init(): void;
     /**
      * Apply HTML code by 3 different ways depending on what is provided as input and what options are enabled.
-     * 1. value is an HTMLElement, then simply append the HTML to the target element.
+     * 1. value is an HTMLElement or DocumentFragment, then first empty the target and simply append the HTML to the target element.
      * 2. value is string and `enableHtmlRendering` is enabled, then use `target.innerHTML = value;`
      * 3. value is string and `enableHtmlRendering` is disabled, then use `target.textContent = value;`
      * @param target - target element to apply to
      * @param val - input value can be either a string or an HTMLElement
      */
-    applyHtmlCode(target: HTMLElement, val: string | HTMLElement | DocumentFragment): void;
+    applyHtmlCode(target: HTMLElement, val: string | HTMLElement | DocumentFragment, emptyTarget?: boolean): void;
     protected initialize(): void;
     protected finishInitialization(): void;
     /** handles "display:none" on container or container parents, related to issue: https://github.com/6pac/SlickGrid/issues/568 */
@@ -615,7 +615,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected queuePostProcessedCellForCleanup(cellnode: HTMLElement, columnIdx: number, rowIdx: number): void;
     protected removeRowFromCache(row: number): void;
     /** Apply a Formatter Result to a Cell DOM Node */
-    applyFormatResultToCellNode(formatterResult: FormatterResultWithHtml | FormatterResultWithText | string | HTMLElement, cellNode: HTMLDivElement, suppressRemove?: boolean): void;
+    applyFormatResultToCellNode(formatterResult: FormatterResultWithHtml | FormatterResultWithText | string | HTMLElement | DocumentFragment, cellNode: HTMLDivElement, suppressRemove?: boolean): void;
     /**
      * Update a specific cell by its row and column index
      * @param {Number} row - grid row number

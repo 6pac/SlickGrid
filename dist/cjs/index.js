@@ -6494,7 +6494,7 @@ var SlickGrid = class {
     this.options = options;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.5.3");
+    __publicField(this, "slickGridVersion", "5.5.4");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -6849,14 +6849,14 @@ var SlickGrid = class {
   }
   /**
    * Apply HTML code by 3 different ways depending on what is provided as input and what options are enabled.
-   * 1. value is an HTMLElement, then simply append the HTML to the target element.
+   * 1. value is an HTMLElement or DocumentFragment, then first empty the target and simply append the HTML to the target element.
    * 2. value is string and `enableHtmlRendering` is enabled, then use `target.innerHTML = value;`
    * 3. value is string and `enableHtmlRendering` is disabled, then use `target.textContent = value;`
    * @param target - target element to apply to
    * @param val - input value can be either a string or an HTMLElement
    */
-  applyHtmlCode(target, val) {
-    target && (val instanceof HTMLElement || val instanceof DocumentFragment ? target.appendChild(val) : typeof val == "string" && (this._options.enableHtmlRendering ? target.innerHTML = this.sanitizeHtmlString(val) : target.textContent = this.sanitizeHtmlString(val)));
+  applyHtmlCode(target, val, emptyTarget = !0) {
+    target && (val instanceof HTMLElement || val instanceof DocumentFragment ? (emptyTarget && Utils28.emptyElement(target), target.appendChild(val)) : this._options.enableHtmlRendering ? target.innerHTML = this.sanitizeHtmlString(val) : target.textContent = this.sanitizeHtmlString(val));
   }
   initialize() {
     if (typeof this.container == "string" ? this._container = document.querySelector(this.container) : this._container = this.container, !this._container)
@@ -9666,7 +9666,7 @@ var SlickRemoteModel = class {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.5.3
+ * SlickGrid v5.5.4
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
