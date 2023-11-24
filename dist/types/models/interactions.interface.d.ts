@@ -1,3 +1,4 @@
+import { DragPosition } from './drag.interface';
 export interface InteractionBase {
     destroy: () => void;
 }
@@ -9,19 +10,19 @@ export interface DraggableOption {
     /** when defined, will allow dragging from a specific element or its closest parent by using the .closest() query selector. */
     allowDragFromClosest?: string;
     /** drag initialized callback */
-    onDragInit?: Function;
+    onDragInit?: (e: DragEvent, dd: DragPosition) => boolean | void;
     /** drag started callback */
-    onDragStart?: Function;
+    onDragStart?: (e: DragEvent, dd: DragPosition) => boolean | void;
     /** drag callback */
-    onDrag?: Function;
+    onDrag?: (e: DragEvent, dd: DragPosition) => boolean | void;
     /** drag ended callback */
-    onDragEnd?: Function;
+    onDragEnd?: (e: DragEvent, dd: DragPosition) => boolean | void;
 }
 export interface MouseWheelOption {
     /** optional DOM element to attach mousewheel values, if undefined we'll attach it to the "window" object */
     element: HTMLElement | Document;
     /** mousewheel callback */
-    onMouseWheel?: Function;
+    onMouseWheel?: (e: MouseEvent, delta: number, deltaX: number, deltaY: number) => boolean | void;
 }
 export interface ResizableOption {
     /** resizable DOM element */
@@ -29,10 +30,17 @@ export interface ResizableOption {
     /** resizable DOM element */
     resizeableHandleElement: HTMLElement;
     /** resize start callback */
-    onResizeStart?: Function;
+    onResizeStart?: (e: MouseEvent | Touch | TouchEvent, resizeElms: {
+        resizeableElement: HTMLElement;
+    }) => boolean | void;
     /** resizing callback */
-    onResize?: Function;
+    onResize?: (e: MouseEvent | Touch | TouchEvent, resizeElms: {
+        resizeableElement: HTMLElement;
+        resizeableHandleElement: HTMLElement;
+    }) => boolean | void;
     /** resize ended callback */
-    onResizeEnd?: Function;
+    onResizeEnd?: (e: MouseEvent | Touch | TouchEvent, resizeElms: {
+        resizeableElement: HTMLElement;
+    }) => boolean | void;
 }
 //# sourceMappingURL=interactions.interface.d.ts.map

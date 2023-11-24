@@ -2134,15 +2134,16 @@ var Utils8 = Utils, SlickCellRangeDecorator = class {
 var Utils9 = Utils;
 function Draggable(options) {
   let { containerElement } = options, { onDragInit, onDragStart, onDrag, onDragEnd } = options, element, startX, startY, deltaX, deltaY, dragStarted;
-  if (containerElement || (containerElement = document), !containerElement || typeof containerElement.addEventListener != "function")
-    throw new Error("[Slick.Draggable] You did not provide a valid container html element that will be used for dragging.");
+  containerElement || (containerElement = document.body);
   let originaldd = {
     dragSource: containerElement,
     dragHandle: null
   };
-  containerElement && (containerElement.addEventListener("mousedown", userPressed), containerElement.addEventListener("touchstart", userPressed));
-  function executeDragCallbackWhenDefined(callback, e, dd) {
-    typeof callback == "function" && callback(e, dd);
+  function init() {
+    containerElement && (containerElement.addEventListener("mousedown", userPressed), containerElement.addEventListener("touchstart", userPressed));
+  }
+  function executeDragCallbackWhenDefined(callback, evt, dd) {
+    typeof callback == "function" && callback(evt, dd);
   }
   function destroy() {
     containerElement && (containerElement.removeEventListener("mousedown", userPressed), containerElement.removeEventListener("touchstart", userPressed));
@@ -2153,7 +2154,7 @@ function Draggable(options) {
     if (!options.allowDragFrom || options.allowDragFrom && element.matches(options.allowDragFrom) || options.allowDragFromClosest && element.closest(options.allowDragFromClosest)) {
       originaldd.dragHandle = element;
       let winScrollPos = Utils9.windowScrollPosition();
-      startX = winScrollPos.left + targetEvent.clientX, startY = winScrollPos.top + targetEvent.clientY, deltaX = targetEvent.clientX - targetEvent.clientX, deltaY = targetEvent.clientY - targetEvent.clientY, originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDragInit, event2, originaldd), document.addEventListener("mousemove", userMoved), document.addEventListener("touchmove", userMoved), document.addEventListener("mouseup", userReleased), document.addEventListener("touchend", userReleased), document.addEventListener("touchcancel", userReleased);
+      startX = winScrollPos.left + targetEvent.clientX, startY = winScrollPos.top + targetEvent.clientY, deltaX = targetEvent.clientX - targetEvent.clientX, deltaY = targetEvent.clientY - targetEvent.clientY, originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDragInit, event2, originaldd), document.body.addEventListener("mousemove", userMoved), document.body.addEventListener("touchmove", userMoved), document.body.addEventListener("mouseup", userReleased), document.body.addEventListener("touchend", userReleased), document.body.addEventListener("touchcancel", userReleased);
     }
   }
   function userMoved(event2) {
@@ -2163,10 +2164,12 @@ function Draggable(options) {
     dragStarted || (originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDragStart, event2, originaldd), dragStarted = !0), originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDrag, event2, originaldd);
   }
   function userReleased(event2) {
-    let { target } = event2;
-    originaldd = Object.assign(originaldd, { target }), executeDragCallbackWhenDefined(onDragEnd, event2, originaldd), document.removeEventListener("mousemove", userMoved), document.removeEventListener("touchmove", userMoved), document.removeEventListener("mouseup", userReleased), document.removeEventListener("touchend", userReleased), document.removeEventListener("touchcancel", userReleased), dragStarted = !1;
+    if (document.body.removeEventListener("mousemove", userMoved), document.body.removeEventListener("touchmove", userMoved), document.body.removeEventListener("mouseup", userReleased), document.body.removeEventListener("touchend", userReleased), document.body.removeEventListener("touchcancel", userReleased), dragStarted) {
+      let { target } = event2;
+      originaldd = Object.assign(originaldd, { target }), executeDragCallbackWhenDefined(onDragEnd, event2, originaldd), dragStarted = !1;
+    }
   }
-  return { destroy };
+  return init(), { destroy };
 }
 function MouseWheel(options) {
   let { element, onMouseWheel } = options;
@@ -2186,6 +2189,9 @@ function Resizable(options) {
   let { resizeableElement, resizeableHandleElement, onResizeStart, onResize, onResizeEnd } = options;
   if (!resizeableHandleElement || typeof resizeableHandleElement.addEventListener != "function")
     throw new Error("[Slick.Resizable] You did not provide a valid html element that will be used for the handle to resize.");
+  function init() {
+    resizeableHandleElement.addEventListener("mousedown", resizeStartHandler), resizeableHandleElement.addEventListener("touchstart", resizeStartHandler);
+  }
   function destroy() {
     typeof resizeableHandleElement?.removeEventListener == "function" && (resizeableHandleElement.removeEventListener("mousedown", resizeStartHandler), resizeableHandleElement.removeEventListener("touchstart", resizeStartHandler));
   }
@@ -2195,18 +2201,18 @@ function Resizable(options) {
   function resizeStartHandler(e) {
     e.preventDefault();
     let event2 = e.touches ? e.changedTouches[0] : e;
-    executeResizeCallbackWhenDefined(onResizeStart, event2), document.addEventListener("mousemove", resizingHandler), document.addEventListener("mouseup", resizeEndHandler), document.addEventListener("touchmove", resizingHandler), document.addEventListener("touchend", resizeEndHandler);
+    executeResizeCallbackWhenDefined(onResizeStart, event2), document.body.addEventListener("mousemove", resizingHandler), document.body.addEventListener("mouseup", resizeEndHandler), document.body.addEventListener("touchmove", resizingHandler), document.body.addEventListener("touchend", resizeEndHandler);
   }
   function resizingHandler(e) {
     e.preventDefault && e.type !== "touchmove" && e.preventDefault();
     let event2 = e.touches ? e.changedTouches[0] : e;
-    typeof onResize == "function" && (onResize(event2, { resizeableElement, resizeableHandleElement }), onResize(event2, { resizeableElement, resizeableHandleElement }));
+    typeof onResize == "function" && onResize(event2, { resizeableElement, resizeableHandleElement });
   }
   function resizeEndHandler(e) {
     let event2 = e.touches ? e.changedTouches[0] : e;
-    executeResizeCallbackWhenDefined(onResizeEnd, event2), document.removeEventListener("mousemove", resizingHandler), document.removeEventListener("mouseup", resizeEndHandler), document.removeEventListener("touchmove", resizingHandler), document.removeEventListener("touchend", resizeEndHandler);
+    executeResizeCallbackWhenDefined(onResizeEnd, event2), document.body.removeEventListener("mousemove", resizingHandler), document.body.removeEventListener("mouseup", resizeEndHandler), document.body.removeEventListener("touchmove", resizingHandler), document.body.removeEventListener("touchend", resizeEndHandler);
   }
-  return resizeableHandleElement.addEventListener("mousedown", resizeStartHandler), resizeableHandleElement.addEventListener("touchstart", resizeStartHandler), { destroy };
+  return init(), { destroy };
 }
 
 // src/plugins/slick.cellrangeselector.ts
@@ -2379,7 +2385,7 @@ var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange
     return !!(this._grid.getPluginByName("RowMoveManager") || this._grid.getPluginByName("CrossGridRowMoveManager"));
   }
   handleDragEnd(e, dd) {
-    this._dragging && (this._dragging = !1, e.stopImmediatePropagation(), this.stopIntervalTimer(), this._decorator.hide(), this.onCellRangeSelected.notify({
+    this._decorator.hide(), this._dragging && (this._dragging = !1, e.stopImmediatePropagation(), this.stopIntervalTimer(), this.onCellRangeSelected.notify({
       range: new SlickRange4(
         dd.range.start.row ?? 0,
         dd.range.start.cell ?? 0,
@@ -4800,8 +4806,14 @@ var keyCode4 = keyCode, SlickGroup2 = SlickGroup, Utils24 = Utils, SlickGroupIte
   defaultGroupCellFormatter(_row, _cell, _value, _columnDef, item) {
     if (!this._options.enableExpandCollapse)
       return item.title;
-    let indentation = `${item.level * 15}px`;
-    return (this._options.checkboxSelect ? '<span class="' + this._options.checkboxSelectCssClass + " " + (item.selectChecked ? "checked" : "unchecked") + '"></span>' : "") + '<span class="' + this._options.toggleCssClass + " " + (item.collapsed ? this._options.toggleCollapsedCssClass : this._options.toggleExpandedCssClass) + '" style="margin-left:' + indentation + '"></span><span class="' + this._options.groupTitleCssClass + '" level="' + item.level + '">' + item.title + "</span>";
+    let indentation = `${item.level * 15}px`, toggleClass = item.collapsed ? this._options.toggleCollapsedCssClass : this._options.toggleExpandedCssClass, containerElm = document.createDocumentFragment();
+    this._options.checkboxSelect && containerElm.appendChild(Utils24.createDomElement("span", { className: `${this._options.checkboxSelectCssClass} ${item.selectChecked ? "checked" : "unchecked"}` })), containerElm.appendChild(Utils24.createDomElement("span", {
+      className: `${this._options.toggleCssClass} ${toggleClass}`,
+      ariaExpanded: String(!item.collapsed),
+      style: { marginLeft: indentation }
+    }));
+    let groupTitleElm = Utils24.createDomElement("span", { className: this._options.groupTitleCssClass || "" });
+    return groupTitleElm.setAttribute("level", item.level), item.title instanceof HTMLElement ? groupTitleElm.appendChild(item.title) : this._grid.applyHtmlCode(groupTitleElm, item.title ?? ""), containerElm.appendChild(groupTitleElm), containerElm;
   }
   defaultTotalsCellFormatter(_row, _cell, _value, columnDef, item, grid) {
     return columnDef?.groupTotalsFormatter?.(item, columnDef, grid) ?? "";
@@ -6379,7 +6391,7 @@ var SlickGrid = class {
     this.options = options;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.5.2");
+    __publicField(this, "slickGridVersion", "5.5.3");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -6741,7 +6753,7 @@ var SlickGrid = class {
    * @param val - input value can be either a string or an HTMLElement
    */
   applyHtmlCode(target, val) {
-    target && (val instanceof HTMLElement ? target.appendChild(val) : this._options.enableHtmlRendering ? target.innerHTML = this.sanitizeHtmlString(val) : target.textContent = this.sanitizeHtmlString(val));
+    target && (val instanceof HTMLElement || val instanceof DocumentFragment ? target.appendChild(val) : typeof val == "string" && (this._options.enableHtmlRendering ? target.innerHTML = this.sanitizeHtmlString(val) : target.textContent = this.sanitizeHtmlString(val)));
   }
   initialize() {
     if (typeof this.container == "string" ? this._container = document.querySelector(this.container) : this._container = this.container, !this._container)
@@ -7275,7 +7287,7 @@ var SlickGrid = class {
             resizeableElement: colElm,
             resizeableHandleElement: resizeableHandle,
             onResizeStart: (e, resizeElms) => {
-              let targetEvent = e.touches ? e.touches[0] : e;
+              let targetEvent = e.touches ? e.changedTouches[0] : e;
               if (!this.getEditorLock()?.commitCurrentEdit())
                 return !1;
               pageX = targetEvent.pageX, frozenLeftColMaxWidth = 0, resizeElms.resizeableElement.classList.add("slick-header-column-active");
@@ -7291,7 +7303,7 @@ var SlickGrid = class {
               shrinkLeewayOnRight === null && (shrinkLeewayOnRight = 1e5), shrinkLeewayOnLeft === null && (shrinkLeewayOnLeft = 1e5), stretchLeewayOnRight === null && (stretchLeewayOnRight = 1e5), stretchLeewayOnLeft === null && (stretchLeewayOnLeft = 1e5), maxPageX = pageX + Math.min(shrinkLeewayOnRight, stretchLeewayOnLeft), minPageX = pageX - Math.min(shrinkLeewayOnLeft, stretchLeewayOnRight);
             },
             onResize: (e, resizeElms) => {
-              let targetEvent = e.touches ? e.touches[0] : e;
+              let targetEvent = e.touches ? e.changedTouches[0] : e;
               this.columnResizeDragging = !0;
               let actualMinWidth, d = Math.min(maxPageX, Math.max(minPageX, targetEvent.pageX)) - pageX, x, newCanvasWidthL = 0, newCanvasWidthR = 0, viewportWidth = this.viewportHasVScroll ? this.viewportW - (this.scrollbarDimensions?.width ?? 0) : this.viewportW;
               if (d < 0) {
@@ -8002,27 +8014,26 @@ var SlickGrid = class {
   getDataItemValueForColumn(item, columnDef) {
     return this._options.dataItemColumnValueExtractor ? this._options.dataItemColumnValueExtractor(item, columnDef) : item[columnDef.field];
   }
-  appendRowHtml(stringArrayL, stringArrayR, row, range, dataLength) {
+  appendRowHtml(divArrayL, divArrayR, row, range, dataLength) {
     let d = this.getDataItem(row), dataLoading = row < dataLength && !d, rowCss = "slick-row" + (this.hasFrozenRows && row <= this._options.frozenRow ? " frozen" : "") + (dataLoading ? " loading" : "") + (row === this.activeRow && this._options.showCellSelection ? " active" : "") + (row % 2 === 1 ? " odd" : " even");
     d || (rowCss += " " + this._options.addNewRowCssClass);
     let metadata = this.data?.getItemMetadata?.(row);
     metadata?.cssClasses && (rowCss += " " + metadata.cssClasses);
-    let frozenRowOffset = this.getFrozenRowOffset(row), rowHtml = `<div class="ui-widget-content ${rowCss}" data-top="${this.getRowTop(row) - frozenRowOffset}px">`;
-    stringArrayL.push(rowHtml), this.hasFrozenColumns() && stringArrayR.push(rowHtml);
+    let frozenRowOffset = this.getFrozenRowOffset(row), rowDiv = Utils28.createDomElement("div", { className: `ui-widget-content ${rowCss}`, style: { top: `${this.getRowTop(row) - frozenRowOffset}px` } }), rowDivR;
+    divArrayL.push(rowDiv), this.hasFrozenColumns() && (rowDivR = rowDiv.cloneNode(!0), divArrayR.push(rowDivR));
     let colspan, m;
     for (let i = 0, ii = this.columns.length; i < ii; i++)
       if (m = this.columns[i], !(!m || m.hidden)) {
         if (colspan = 1, metadata?.columns && (colspan = (metadata.columns[m.id] || metadata.columns[i])?.colspan || 1, colspan === "*" && (colspan = ii - i)), this.columnPosRight[Math.min(ii - 1, i + colspan - 1)] > range.leftPx) {
           if (!m.alwaysRenderColumn && this.columnPosLeft[i] > range.rightPx)
             break;
-          this.hasFrozenColumns() && i > this._options.frozenColumn ? this.appendCellHtml(stringArrayR, row, i, colspan, d) : this.appendCellHtml(stringArrayL, row, i, colspan, d);
+          this.hasFrozenColumns() && i > this._options.frozenColumn ? this.appendCellHtml(rowDivR, row, i, colspan, d) : this.appendCellHtml(rowDiv, row, i, colspan, d);
         } else
-          (m.alwaysRenderColumn || this.hasFrozenColumns() && i <= this._options.frozenColumn) && this.appendCellHtml(stringArrayL, row, i, colspan, d);
+          (m.alwaysRenderColumn || this.hasFrozenColumns() && i <= this._options.frozenColumn) && this.appendCellHtml(rowDiv, row, i, colspan, d);
         colspan > 1 && (i += colspan - 1);
       }
-    stringArrayL.push("</div>"), this.hasFrozenColumns() && stringArrayR.push("</div>");
   }
-  appendCellHtml(stringArray, row, cell, colspan, item) {
+  appendCellHtml(divRow, row, cell, colspan, item) {
     let m = this.columns[cell], cellCss = "slick-cell l" + cell + " r" + Math.min(this.columns.length - 1, cell + colspan - 1) + (m.cssClass ? " " + m.cssClass : "");
     this.hasFrozenColumns() && cell <= this._options.frozenColumn && (cellCss += " frozen"), row === this.activeRow && cell === this.activeCell && this._options.showCellSelection && (cellCss += " active");
     for (let key in this.cellCssClasses)
@@ -8031,15 +8042,15 @@ var SlickGrid = class {
     item && (value = this.getDataItemValueForColumn(item, m), formatterResult = this.getFormatter(row, m)(row, cell, value, m, item, this), formatterResult == null && (formatterResult = ""));
     let appendCellResult = this.trigger(this.onBeforeAppendCell, { row, cell, value, dataContext: item }).getReturnValue(), addlCssClasses = typeof appendCellResult == "string" ? appendCellResult : "";
     formatterResult?.addClasses && (addlCssClasses += (addlCssClasses ? " " : "") + formatterResult.addClasses);
-    let toolTip = formatterResult?.toolTip ? `title="${formatterResult.toolTip}"` : "", customAttrStr = "";
-    if (m.hasOwnProperty("cellAttrs") && m.cellAttrs instanceof Object)
+    let toolTipText = formatterResult?.toolTip ? `${formatterResult.toolTip}` : "", cellDiv = document.createElement("div");
+    if (cellDiv.className = `${cellCss} ${addlCssClasses || ""}`.trim(), cellDiv.setAttribute("title", toolTipText), m.hasOwnProperty("cellAttrs") && m.cellAttrs instanceof Object)
       for (let key in m.cellAttrs)
-        m.cellAttrs.hasOwnProperty(key) && (customAttrStr += ` ${key}="${m.cellAttrs[key]}" `);
-    if (stringArray.push(`<div class="${cellCss + (addlCssClasses ? " " + addlCssClasses : "")}" ${toolTip + customAttrStr}>`), item) {
-      let cellResult = Object.prototype.toString.call(formatterResult) !== "[object Object]" ? formatterResult : formatterResult.html || formatterResult.text, formattedCellResult = cellResult instanceof HTMLElement ? cellResult.outerHTML : cellResult;
-      stringArray.push(formattedCellResult);
+        m.cellAttrs.hasOwnProperty(key) && cellDiv.setAttribute(key, m.cellAttrs[key]);
+    if (item) {
+      let cellResult = Object.prototype.toString.call(formatterResult) !== "[object Object]" ? formatterResult : formatterResult.html || formatterResult.text;
+      this.applyHtmlCode(cellDiv, cellResult);
     }
-    stringArray.push("</div>"), this.rowsCache[row].cellRenderQueue.push(cell), this.rowsCache[row].cellColSpans[cell] = colspan;
+    divRow.appendChild(cellDiv), this.rowsCache[row].cellRenderQueue.push(cell), this.rowsCache[row].cellColSpans[cell] = colspan;
   }
   cleanupRows(rangeToKeep) {
     for (let rowId in this.rowsCache)
@@ -8260,7 +8271,7 @@ var SlickGrid = class {
       cellNode = cacheEntry.cellNodesByColumnIdx[cellToRemove], this._options.enableAsyncPostRenderCleanup && this.postProcessedRows[row]?.[cellToRemove] ? this.queuePostProcessedCellForCleanup(cellNode, cellToRemove, row) : cellNode.parentElement?.removeChild(cellNode), delete cacheEntry.cellColSpans[cellToRemove], delete cacheEntry.cellNodesByColumnIdx[cellToRemove], this.postProcessedRows[row] && delete this.postProcessedRows[row][cellToRemove], totalCellsRemoved++;
   }
   cleanUpAndRenderCells(range) {
-    let cacheEntry, stringArray = [], processedRows = [], cellsAdded, totalCellsAdded = 0, colspan;
+    let cacheEntry, divRow = document.createElement("div"), processedRows = [], cellsAdded, totalCellsAdded = 0, colspan;
     for (let row = range.top, btm = range.bottom; row <= btm; row++) {
       if (cacheEntry = this.rowsCache[row], !cacheEntry)
         continue;
@@ -8279,24 +8290,22 @@ var SlickGrid = class {
         }
         colspan = 1, metadata && (colspan = (metadata[this.columns[i].id] || metadata[i])?.colspan ?? 1, colspan === "*" && (colspan = ii - i));
         let colspanNb = colspan;
-        this.columnPosRight[Math.min(ii - 1, i + colspanNb - 1)] > range.leftPx && (this.appendCellHtml(stringArray, row, i, colspanNb, d), cellsAdded++), i += colspanNb > 1 ? colspanNb - 1 : 0;
+        this.columnPosRight[Math.min(ii - 1, i + colspanNb - 1)] > range.leftPx && (this.appendCellHtml(divRow, row, i, colspanNb, d), cellsAdded++), i += colspanNb > 1 ? colspanNb - 1 : 0;
       }
       cellsAdded && (totalCellsAdded += cellsAdded, processedRows.push(row));
     }
-    if (!stringArray.length)
+    if (!divRow.children.length)
       return;
-    let x = document.createElement("div");
-    x.innerHTML = this.sanitizeHtmlString(stringArray.join(""));
     let processedRow, node;
     for (; Utils28.isDefined(processedRow = processedRows.pop()); ) {
       cacheEntry = this.rowsCache[processedRow];
       let columnIdx;
       for (; Utils28.isDefined(columnIdx = cacheEntry.cellRenderQueue.pop()); )
-        node = x.lastChild, node && (this.hasFrozenColumns() && columnIdx > this._options.frozenColumn ? cacheEntry.rowNode[1].appendChild(node) : cacheEntry.rowNode[0].appendChild(node), cacheEntry.cellNodesByColumnIdx[columnIdx] = node);
+        node = divRow.lastChild, node && (this.hasFrozenColumns() && columnIdx > this._options.frozenColumn ? cacheEntry.rowNode[1].appendChild(node) : cacheEntry.rowNode[0].appendChild(node), cacheEntry.cellNodesByColumnIdx[columnIdx] = node);
     }
   }
   renderRows(range) {
-    let stringArrayL = [], stringArrayR = [], rows = [], needToReselectCell = !1, dataLength = this.getDataLength();
+    let divArrayL = [], divArrayR = [], rows = [], needToReselectCell = !1, dataLength = this.getDataLength();
     for (let i = range.top, ii = range.bottom; i <= ii; i++)
       this.rowsCache[i] || this.hasFrozenRows && this._options.frozenBottom && i === this.getDataLength() || (this.renderedRows++, rows.push(i), this.rowsCache[i] = {
         rowNode: null,
@@ -8309,22 +8318,14 @@ var SlickGrid = class {
         // cellNodesByColumnIdx.  These are in the same order as cell nodes added at the
         // end of the row.
         cellRenderQueue: []
-      }, this.appendRowHtml(stringArrayL, stringArrayR, i, range, dataLength), this.activeCellNode && this.activeRow === i && (needToReselectCell = !0), this.counter_rows_rendered++);
+      }, this.appendRowHtml(divArrayL, divArrayR, i, range, dataLength), this.activeCellNode && this.activeRow === i && (needToReselectCell = !0), this.counter_rows_rendered++);
     if (!rows.length)
       return;
     let x = document.createElement("div"), xRight = document.createElement("div");
-    x.innerHTML = this.sanitizeHtmlString(stringArrayL.join("")), xRight.innerHTML = this.sanitizeHtmlString(stringArrayR.join(""));
-    let elements1 = x.querySelectorAll("[data-top]"), elements2 = xRight.querySelectorAll("[data-top]");
-    this.applyTopStyling(elements1), this.applyTopStyling(elements2);
+    divArrayL.forEach((elm) => x.appendChild(elm)), divArrayR.forEach((elm) => xRight.appendChild(elm));
     for (let i = 0, ii = rows.length; i < ii; i++)
       this.hasFrozenRows && rows[i] >= this.actualFrozenRow ? this.hasFrozenColumns() ? this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild, xRight.firstChild], this._canvasBottomL.appendChild(x.firstChild), this._canvasBottomR.appendChild(xRight.firstChild)) : this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild], this._canvasBottomL.appendChild(x.firstChild)) : this.hasFrozenColumns() ? this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild, xRight.firstChild], this._canvasTopL.appendChild(x.firstChild), this._canvasTopR.appendChild(xRight.firstChild)) : this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild], this._canvasTopL.appendChild(x.firstChild));
     needToReselectCell && (this.activeCellNode = this.getCellNode(this.activeRow, this.activeCell));
-  }
-  applyTopStyling(elements) {
-    elements?.forEach((element) => {
-      let top = element.dataset.top;
-      top !== void 0 && (element.style.top = top);
-    });
   }
   startPostProcessing() {
     this._options.enableAsyncPostRender && (clearTimeout(this.h_postrender), this.h_postrender = setTimeout(this.asyncPostProcessRows.bind(this), this._options.asyncPostRenderDelay));
@@ -9647,7 +9648,7 @@ export {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.5.2
+ * SlickGrid v5.5.3
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

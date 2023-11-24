@@ -22,17 +22,17 @@ export interface Column<TData = any> {
     cellMenu?: CellMenuOption;
     /** header cell attributes */
     headerCellAttrs?: any;
-    /** Block event triggering of a new row insert? */
+    /** Block event triggering of a new row insert */
     cannotTriggerInsert?: boolean;
     /** Column group name for grouping of column headers spanning accross multiple columns */
     columnGroup?: string;
-    /** Column span in pixels or `*`, only input the number value */
+    /** Column span in cell count or use `*` to span across the entire row */
     colspan?: number | '*';
     /** CSS class to add to the column cell */
     cssClass?: string;
     /**
      * Custom Tooltip Options, the tooltip could be defined in any of the Column Definition or in the Grid Options,
-     * it will first try to find it in the Column that the user is hovering over or else (when not found) go and try to find it in the Grid Options
+     * it will first try to find it in the Column that the user is hovering over or else (when not found) it will try to find it in the Grid Options
      */
     customTooltip?: CustomTooltipOption;
     /** Do we want default sort to be ascending? True by default */
@@ -67,7 +67,7 @@ export interface Column<TData = any> {
     field: Join<PathsToStringProps<TData>, '.'>;
     /** are we allowed to focus on the column? */
     focusable?: boolean;
-    /** Formatter function is to format, or visually change, the data shown in the grid (UI) in a different way without affecting the source. */
+    /** Formatter function is meant to format, or visually change, the data shown in the grid (UI) in a different way without affecting the source. */
     formatter?: Formatter<TData>;
     /** Formatter override function */
     formatterOverride?: {
@@ -83,7 +83,7 @@ export interface Column<TData = any> {
     headerCssClass?: string | null;
     /** is the column hidden? */
     hidden?: boolean;
-    /** ID of the column, each row have to be unique or SlickGrid will throw an error. */
+    /** ID of the column, each column definition ID must be unique or else SlickGrid will throw an error. */
     id: number | string;
     /** Maximum Width of the column in pixels (number only). */
     maxWidth?: number;

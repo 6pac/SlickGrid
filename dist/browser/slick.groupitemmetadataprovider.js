@@ -40,10 +40,17 @@
       Utils.extend(!0, this._options, inputOptions);
     }
     defaultGroupCellFormatter(_row, _cell, _value, _columnDef, item) {
+      var _a;
       if (!this._options.enableExpandCollapse)
         return item.title;
-      let indentation = `${item.level * 15}px`;
-      return (this._options.checkboxSelect ? '<span class="' + this._options.checkboxSelectCssClass + " " + (item.selectChecked ? "checked" : "unchecked") + '"></span>' : "") + '<span class="' + this._options.toggleCssClass + " " + (item.collapsed ? this._options.toggleCollapsedCssClass : this._options.toggleExpandedCssClass) + '" style="margin-left:' + indentation + '"></span><span class="' + this._options.groupTitleCssClass + '" level="' + item.level + '">' + item.title + "</span>";
+      let indentation = `${item.level * 15}px`, toggleClass = item.collapsed ? this._options.toggleCollapsedCssClass : this._options.toggleExpandedCssClass, containerElm = document.createDocumentFragment();
+      this._options.checkboxSelect && containerElm.appendChild(Utils.createDomElement("span", { className: `${this._options.checkboxSelectCssClass} ${item.selectChecked ? "checked" : "unchecked"}` })), containerElm.appendChild(Utils.createDomElement("span", {
+        className: `${this._options.toggleCssClass} ${toggleClass}`,
+        ariaExpanded: String(!item.collapsed),
+        style: { marginLeft: indentation }
+      }));
+      let groupTitleElm = Utils.createDomElement("span", { className: this._options.groupTitleCssClass || "" });
+      return groupTitleElm.setAttribute("level", item.level), item.title instanceof HTMLElement ? groupTitleElm.appendChild(item.title) : this._grid.applyHtmlCode(groupTitleElm, (_a = item.title) != null ? _a : ""), containerElm.appendChild(groupTitleElm), containerElm;
     }
     defaultTotalsCellFormatter(_row, _cell, _value, columnDef, item, grid) {
       var _a, _b;

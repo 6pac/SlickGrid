@@ -2,6 +2,19 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.5.3](https://github.com/6pac/SlickGrid/compare/5.5.2...5.5.3) (2023-11-24)
+
+### Bug Fixes
+
+* change dynamic html string w/CSP safe code to fix scroll, fix [#914](https://github.com/6pac/SlickGrid/issues/914) ([#919](https://github.com/6pac/SlickGrid/issues/919)) ([b672d96](https://github.com/6pac/SlickGrid/commit/b672d96cf28c057c7aec0cbf5097b29c711322d2))
+* **common:** cell range decorator should be hidden after onDragEnd ([#924](https://github.com/6pac/SlickGrid/issues/924)) ([b6d02cd](https://github.com/6pac/SlickGrid/commit/b6d02cd10e662f0ce9b361122c5ffeb9d16f4273))
+* Draggable shouldn't trigger dragEnd without first dragging ([#921](https://github.com/6pac/SlickGrid/issues/921)) ([012b74c](https://github.com/6pac/SlickGrid/commit/012b74c2ae69fbdcf7405505629c91252bece252))
+* interactions remove callback 2x call & add event listeners  to body ([#918](https://github.com/6pac/SlickGrid/issues/918)) ([a37d263](https://github.com/6pac/SlickGrid/commit/a37d263ff315e9b2d2bb1a79efd9612095f46b5b))
+
+### Features
+
+* convert GroupItemMetadataProvider Formatter to native HTML for CSP ([#925](https://github.com/6pac/SlickGrid/issues/925)) ([7ec4309](https://github.com/6pac/SlickGrid/commit/7ec43094e2a70c9dc3abc9f697bb6bdffc1665e7))
+
 ## [5.5.2](https://github.com/6pac/SlickGrid/compare/5.5.1...5.5.2) (2023-11-15)
 
 ### Bug Fixes

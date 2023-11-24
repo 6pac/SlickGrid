@@ -4,15 +4,16 @@
   var Utils = Slick.Utils;
   function Draggable(options) {
     let { containerElement } = options, { onDragInit, onDragStart, onDrag, onDragEnd } = options, element, startX, startY, deltaX, deltaY, dragStarted;
-    if (containerElement || (containerElement = document), !containerElement || typeof containerElement.addEventListener != "function")
-      throw new Error("[Slick.Draggable] You did not provide a valid container html element that will be used for dragging.");
+    containerElement || (containerElement = document.body);
     let originaldd = {
       dragSource: containerElement,
       dragHandle: null
     };
-    containerElement && (containerElement.addEventListener("mousedown", userPressed), containerElement.addEventListener("touchstart", userPressed));
-    function executeDragCallbackWhenDefined(callback, e, dd) {
-      typeof callback == "function" && callback(e, dd);
+    function init() {
+      containerElement && (containerElement.addEventListener("mousedown", userPressed), containerElement.addEventListener("touchstart", userPressed));
+    }
+    function executeDragCallbackWhenDefined(callback, evt, dd) {
+      typeof callback == "function" && callback(evt, dd);
     }
     function destroy() {
       containerElement && (containerElement.removeEventListener("mousedown", userPressed), containerElement.removeEventListener("touchstart", userPressed));
@@ -24,7 +25,7 @@
       if (!options.allowDragFrom || options.allowDragFrom && element.matches(options.allowDragFrom) || options.allowDragFromClosest && element.closest(options.allowDragFromClosest)) {
         originaldd.dragHandle = element;
         let winScrollPos = Utils.windowScrollPosition();
-        startX = winScrollPos.left + targetEvent.clientX, startY = winScrollPos.top + targetEvent.clientY, deltaX = targetEvent.clientX - targetEvent.clientX, deltaY = targetEvent.clientY - targetEvent.clientY, originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDragInit, event, originaldd), document.addEventListener("mousemove", userMoved), document.addEventListener("touchmove", userMoved), document.addEventListener("mouseup", userReleased), document.addEventListener("touchend", userReleased), document.addEventListener("touchcancel", userReleased);
+        startX = winScrollPos.left + targetEvent.clientX, startY = winScrollPos.top + targetEvent.clientY, deltaX = targetEvent.clientX - targetEvent.clientX, deltaY = targetEvent.clientY - targetEvent.clientY, originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDragInit, event, originaldd), document.body.addEventListener("mousemove", userMoved), document.body.addEventListener("touchmove", userMoved), document.body.addEventListener("mouseup", userReleased), document.body.addEventListener("touchend", userReleased), document.body.addEventListener("touchcancel", userReleased);
       }
     }
     function userMoved(event) {
@@ -35,10 +36,12 @@
       dragStarted || (originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDragStart, event, originaldd), dragStarted = !0), originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDrag, event, originaldd);
     }
     function userReleased(event) {
-      let { target } = event;
-      originaldd = Object.assign(originaldd, { target }), executeDragCallbackWhenDefined(onDragEnd, event, originaldd), document.removeEventListener("mousemove", userMoved), document.removeEventListener("touchmove", userMoved), document.removeEventListener("mouseup", userReleased), document.removeEventListener("touchend", userReleased), document.removeEventListener("touchcancel", userReleased), dragStarted = !1;
+      if (document.body.removeEventListener("mousemove", userMoved), document.body.removeEventListener("touchmove", userMoved), document.body.removeEventListener("mouseup", userReleased), document.body.removeEventListener("touchend", userReleased), document.body.removeEventListener("touchcancel", userReleased), dragStarted) {
+        let { target } = event;
+        originaldd = Object.assign(originaldd, { target }), executeDragCallbackWhenDefined(onDragEnd, event, originaldd), dragStarted = !1;
+      }
     }
-    return { destroy };
+    return init(), { destroy };
   }
   function MouseWheel(options) {
     let { element, onMouseWheel } = options;
@@ -58,6 +61,9 @@
     let { resizeableElement, resizeableHandleElement, onResizeStart, onResize, onResizeEnd } = options;
     if (!resizeableHandleElement || typeof resizeableHandleElement.addEventListener != "function")
       throw new Error("[Slick.Resizable] You did not provide a valid html element that will be used for the handle to resize.");
+    function init() {
+      resizeableHandleElement.addEventListener("mousedown", resizeStartHandler), resizeableHandleElement.addEventListener("touchstart", resizeStartHandler);
+    }
     function destroy() {
       typeof (resizeableHandleElement == null ? void 0 : resizeableHandleElement.removeEventListener) == "function" && (resizeableHandleElement.removeEventListener("mousedown", resizeStartHandler), resizeableHandleElement.removeEventListener("touchstart", resizeStartHandler));
     }
@@ -67,18 +73,18 @@
     function resizeStartHandler(e) {
       e.preventDefault();
       let event = e.touches ? e.changedTouches[0] : e;
-      executeResizeCallbackWhenDefined(onResizeStart, event), document.addEventListener("mousemove", resizingHandler), document.addEventListener("mouseup", resizeEndHandler), document.addEventListener("touchmove", resizingHandler), document.addEventListener("touchend", resizeEndHandler);
+      executeResizeCallbackWhenDefined(onResizeStart, event), document.body.addEventListener("mousemove", resizingHandler), document.body.addEventListener("mouseup", resizeEndHandler), document.body.addEventListener("touchmove", resizingHandler), document.body.addEventListener("touchend", resizeEndHandler);
     }
     function resizingHandler(e) {
       e.preventDefault && e.type !== "touchmove" && e.preventDefault();
       let event = e.touches ? e.changedTouches[0] : e;
-      typeof onResize == "function" && (onResize(event, { resizeableElement, resizeableHandleElement }), onResize(event, { resizeableElement, resizeableHandleElement }));
+      typeof onResize == "function" && onResize(event, { resizeableElement, resizeableHandleElement });
     }
     function resizeEndHandler(e) {
       let event = e.touches ? e.changedTouches[0] : e;
-      executeResizeCallbackWhenDefined(onResizeEnd, event), document.removeEventListener("mousemove", resizingHandler), document.removeEventListener("mouseup", resizeEndHandler), document.removeEventListener("touchmove", resizingHandler), document.removeEventListener("touchend", resizeEndHandler);
+      executeResizeCallbackWhenDefined(onResizeEnd, event), document.body.removeEventListener("mousemove", resizingHandler), document.body.removeEventListener("mouseup", resizeEndHandler), document.body.removeEventListener("touchmove", resizingHandler), document.body.removeEventListener("touchend", resizeEndHandler);
     }
-    return resizeableHandleElement.addEventListener("mousedown", resizeStartHandler), resizeableHandleElement.addEventListener("touchstart", resizeStartHandler), { destroy };
+    return init(), { destroy };
   }
   window.Slick && Utils.extend(Slick, {
     Draggable,

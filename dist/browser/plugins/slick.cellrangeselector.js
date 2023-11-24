@@ -179,7 +179,7 @@
     }
     handleDragEnd(e, dd) {
       var _a, _b;
-      this._dragging && (this._dragging = !1, e.stopImmediatePropagation(), this.stopIntervalTimer(), this._decorator.hide(), this.onCellRangeSelected.notify({
+      this._decorator.hide(), this._dragging && (this._dragging = !1, e.stopImmediatePropagation(), this.stopIntervalTimer(), this.onCellRangeSelected.notify({
         range: new SlickRange(
           (_a = dd.range.start.row) != null ? _a : 0,
           (_b = dd.range.start.cell) != null ? _b : 0,

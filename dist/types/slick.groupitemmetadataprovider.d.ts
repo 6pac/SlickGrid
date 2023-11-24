@@ -23,7 +23,7 @@ export declare class SlickGroupItemMetadataProvider {
     protected get dataView(): any;
     getOptions(): GroupItemMetadataProviderOption;
     setOptions(inputOptions: GroupItemMetadataProviderOption): void;
-    protected defaultGroupCellFormatter(_row: number, _cell: number, _value: any, _columnDef: Column, item: any): string;
+    protected defaultGroupCellFormatter(_row: number, _cell: number, _value: any, _columnDef: Column, item: any): any;
     protected defaultTotalsCellFormatter(_row: number, _cell: number, _value: any, columnDef: Column, item: any, grid: SlickGrid): string;
     init(grid: SlickGrid): void;
     destroy(): void;
