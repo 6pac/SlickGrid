@@ -1,6 +1,6 @@
 {
   "name": "slickgrid",
-  "version": "4.1.3",
+  "version": "4.1.4",
   "description": "A lightning fast JavaScript grid/spreadsheet",
   "main": "slick.core.js",
   "directories": {

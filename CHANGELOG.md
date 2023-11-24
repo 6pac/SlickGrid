@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.1.4](https://github.com/6pac/SlickGrid/compare/4.1.3...4.1.4) (2023-11-24)
+
+### Bug Fixes
+
+* **common:** cell range decorator should be hidden after onDragEnd ([#923](https://github.com/6pac/SlickGrid/issues/923)) ([27c500c](https://github.com/6pac/SlickGrid/commit/27c500c9a68d4d3c44a1beb58330224663619cc4))
+* Draggable shouldn't trigger dragEnd without first dragging ([#922](https://github.com/6pac/SlickGrid/issues/922)) ([7ac8a62](https://github.com/6pac/SlickGrid/commit/7ac8a62b2726c05b9e4449f9c51480bcb3b408d7))
+
 ## [4.1.3](https://github.com/6pac/SlickGrid/compare/4.1.2...4.1.3) (2023-11-02)
 
 ### Bug Fixes
