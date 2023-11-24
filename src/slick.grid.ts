@@ -518,17 +518,21 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /**
    * Apply HTML code by 3 different ways depending on what is provided as input and what options are enabled.
-   * 1. value is an HTMLElement, then simply append the HTML to the target element.
+   * 1. value is an HTMLElement or DocumentFragment, then first empty the target and simply append the HTML to the target element.
    * 2. value is string and `enableHtmlRendering` is enabled, then use `target.innerHTML = value;`
    * 3. value is string and `enableHtmlRendering` is disabled, then use `target.textContent = value;`
    * @param target - target element to apply to
    * @param val - input value can be either a string or an HTMLElement
    */
-  applyHtmlCode(target: HTMLElement, val: string | HTMLElement | DocumentFragment) {
+  applyHtmlCode(target: HTMLElement, val: string | HTMLElement | DocumentFragment, emptyTarget = true) {
     if (target) {
       if (val instanceof HTMLElement || val instanceof DocumentFragment) {
+        // first empty target and then append new HTML element
+        if (emptyTarget) {
+          Utils.emptyElement(target);
+        }
         target.appendChild(val);
-      } else if (typeof val === 'string') {
+      } else {
         if (this._options.enableHtmlRendering) {
           target.innerHTML = this.sanitizeHtmlString(val as string);
         } else {
