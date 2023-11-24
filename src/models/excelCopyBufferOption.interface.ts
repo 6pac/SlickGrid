@@ -1,5 +1,5 @@
-import type { CellRange, Column, FormatterResultWithHtml, FormatterResultWithText } from './index';
-import type { SlickEventData } from '../slick.core';
+import type { Column, FormatterResultWithHtml, FormatterResultWithText } from './index';
+import type { SlickEventData, SlickRange } from '../slick.core';
 
 export interface ExcelCopyBufferOption<T = any> {
   /** defaults to 2000(ms), delay in ms to wait before clearing the selection after a paste action */
@@ -49,11 +49,11 @@ export interface ExcelCopyBufferOption<T = any> {
   // ------------
 
   /** Fired when a copy cell is triggered */
-  onCopyCells?: (e: SlickEventData, args: { ranges: CellRange[] }) => void;
+  onCopyCells?: (e: SlickEventData, args: { ranges: SlickRange[] }) => void;
 
   /** Fired when the command to copy the cells is cancelled */
-  onCopyCancelled?: (e: SlickEventData, args: { ranges: CellRange[] }) => void;
+  onCopyCancelled?: (e: SlickEventData, args: { ranges: SlickRange[] }) => void;
 
   /** Fired when the user paste cells to the grid */
-  onPasteCells?: (e: SlickEventData, args: { ranges: CellRange[] }) => void;
+  onPasteCells?: (e: SlickEventData, args: { ranges: SlickRange[] }) => void;
 }

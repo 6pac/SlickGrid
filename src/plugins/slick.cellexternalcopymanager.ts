@@ -1,4 +1,4 @@
-import type { CellRange, Column, CssStyleHash, ExcelCopyBufferOption, ExternalCopyClipCommand, SlickPlugin } from '../models/index';
+import type { Column, CssStyleHash, ExcelCopyBufferOption, ExternalCopyClipCommand, SlickPlugin } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 import { SlickEvent as SlickEvent_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core';
 
@@ -36,15 +36,15 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
   // --
   // public API
   pluginName = 'CellExternalCopyManager' as const;
-  onCopyCells = new SlickEvent<{ ranges: CellRange[]; }>();
-  onCopyCancelled = new SlickEvent<{ ranges: CellRange[]; }>();
-  onPasteCells = new SlickEvent<{ ranges: CellRange[]; }>();
+  onCopyCells = new SlickEvent<{ ranges: SlickRange_[]; }>();
+  onCopyCancelled = new SlickEvent<{ ranges: SlickRange_[]; }>();
+  onPasteCells = new SlickEvent<{ ranges: SlickRange_[]; }>();
 
   // --
   // protected props
   protected _grid!: SlickGrid;
   protected _bodyElement: HTMLElement;
-  protected _copiedRanges: CellRange[] | null = null;
+  protected _copiedRanges: SlickRange_[] | null = null;
   protected _clearCopyTI?: NodeJS.Timeout;
   protected _copiedCellStyle: string;
   protected _copiedCellStyleLayerKey: string;
@@ -354,7 +354,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
   }
 
   protected handleKeyDown(e: KeyboardEvent): boolean | void {
-    let ranges: CellRange[];
+    let ranges: SlickRange_[];
     if (!this._grid.getEditorLock().isActive() || this._grid.getOptions().autoEdit) {
       if (e.which === this.keyCodes.ESC) {
         if (this._copiedRanges) {
@@ -455,7 +455,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
     }
   }
 
-  protected markCopySelection(ranges: CellRange[]) {
+  protected markCopySelection(ranges: SlickRange_[]) {
     this.clearCopySelection();
 
     const columns = this._grid.getColumns();
