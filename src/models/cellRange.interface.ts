@@ -1,20 +1,4 @@
-// import type { SlickCellRangeDecorator } from '../plugins/slick.cellrangedecorator';
-
 import type { SlickCellRangeDecorator } from '../plugins/slick.cellrangedecorator';
-
-export interface CellRange {
-  /** Selection start from which cell? */
-  fromCell: number;
-
-  /** Selection start from which row? */
-  fromRow: number;
-
-  /** Selection goes to which cell? */
-  toCell: number;
-
-  /** Selection goes to which row? */
-  toRow: number;
-}
 
 export interface CellRangeDecoratorOption {
   selectionCssClass: string;
@@ -41,6 +25,3 @@ export interface CellRangeSelectorOption {
   /** styling (for example blue background on cell) */
   selectionCss: CSSStyleDeclaration;
 }
-
-export type CSSStyleDeclarationReadonly = 'length' | 'parentRule' | 'getPropertyPriority' | 'getPropertyValue' | 'item' | 'removeProperty' | 'setProperty';
-export type CSSStyleDeclarationWritable = keyof Omit<CSSStyleDeclaration, CSSStyleDeclarationReadonly>;

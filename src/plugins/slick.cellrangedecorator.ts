@@ -1,5 +1,5 @@
-import type { CSSStyleDeclarationWritable, CellRange, CellRangeDecoratorOption, SlickPlugin } from '../models/index';
-import { Utils as Utils_ } from '../slick.core';
+import type { CSSStyleDeclarationWritable, CellRangeDecoratorOption, SlickPlugin } from '../models/index';
+import { Utils as Utils_, SlickRange } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -49,7 +49,7 @@ export class SlickCellRangeDecorator implements SlickPlugin {
     this._elem = null;
   }
 
-  show(range: CellRange) {
+  show(range: SlickRange) {
     if (!this._elem) {
       this._elem = document.createElement('div');
       this._elem.className = this._options.selectionCssClass;

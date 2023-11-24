@@ -4,7 +4,7 @@ import { SlickCellRangeDecorator as SlickCellRangeDecorator_ } from './slick.cel
 import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector';
 import type { SlickCrossGridRowMoveManager as SlickCrossGridRowMoveManager_ } from './slick.crossgridrowmovemanager';
 import type { SlickRowMoveManager as SlickRowMoveManager_ } from './slick.rowmovemanager';
-import type { CellRange, OnActiveCellChangedEventArgs, RowSelectionModelOption } from '../models/index';
+import type { OnActiveCellChangedEventArgs, RowSelectionModelOption } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -22,12 +22,12 @@ export class SlickRowSelectionModel {
   // --
   // public API
   pluginName = 'RowSelectionModel' as const;
-  onSelectedRangesChanged = new SlickEvent<CellRange[]>();
+  onSelectedRangesChanged = new SlickEvent<SlickRange_[]>();
   // _handler, _inHandler, _isRowMoveManagerHandler, _options, wrapHandler
   // --
   // protected props
   protected _grid!: SlickGrid;
-  protected _ranges: CellRange[] = [];
+  protected _ranges: SlickRange_[] = [];
   protected _eventHandler = new SlickEventHandler();
   protected _inHandler = false;
   protected _selector?: SlickCellRangeSelector_;
@@ -96,7 +96,7 @@ export class SlickRowSelectionModel {
     };
   }
 
-  protected rangesToRows(ranges: CellRange[]): number[] {
+  protected rangesToRows(ranges: SlickRange_[]): number[] {
     const rows: number[] = [];
     for (let i = 0; i < ranges.length; i++) {
       for (let j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
@@ -135,7 +135,7 @@ export class SlickRowSelectionModel {
     this.setSelectedRanges(this.rowsToRanges(rows), 'SlickRowSelectionModel.setSelectedRows');
   }
 
-  setSelectedRanges(ranges: CellRange[], caller = 'SlickRowSelectionModel.setSelectedRanges') {
+  setSelectedRanges(ranges: SlickRange_[], caller = 'SlickRowSelectionModel.setSelectedRanges') {
     // simple check for: empty selection didn't change, prevent firing onSelectedRangesChanged
     if ((!this._ranges || this._ranges.length === 0) && (!ranges || ranges.length === 0)) {
       return;
@@ -250,7 +250,7 @@ export class SlickRowSelectionModel {
     this._grid.setActiveCell(cell.row, cell.cell);
   }
 
-  protected handleCellRangeSelected(_e: SlickEventData_, args: { range: CellRange; }): boolean | void {
+  protected handleCellRangeSelected(_e: SlickEventData_, args: { range: SlickRange_; }): boolean | void {
     if (!this._grid.getOptions().multiSelect || !this._options.selectActiveRow) {
       return false;
     }
