@@ -3002,11 +3002,14 @@ if (typeof Slick === "undefined") {
           if (column) {
             column.classList.add("slick-header-column-sorted");
             let indicator = column.querySelector(".slick-sort-indicator");
-            indicator.classList.add(col.sortAsc ? "slick-sort-indicator-asc" : "slick-sort-indicator-desc");
-
+            if (indicator) {
+              indicator.classList.add(col.sortAsc ? "slick-sort-indicator-asc" : "slick-sort-indicator-desc");
+            }
             if (numberCols) {
               indicator = column.querySelector(".slick-sort-indicator-numbered");
-              indicator.textContent = i;
+              if (indicator) {
+                indicator.textContent = i;
+              }
             }
           }
         }
