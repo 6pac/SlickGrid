@@ -65,32 +65,29 @@ export class SlickGroupItemMetadataProvider {
     }
 
     const indentation = `${item.level * 15}px`;
-
-    // previous code had 2 or 3 <span>
-    // return (this._options.checkboxSelect ? `<span class="${this._options.checkboxSelectCssClass} ${item.selectChecked ? 'checked' : 'unchecked'}"></span>` : '') +
-    //   `<span class="${this._options.toggleCssClass} ${item.collapsed ? this._options.toggleCollapsedCssClass : this._options.toggleExpandedCssClass}" style="margin-left: ${indentation}"></span>` +
-    //   `<span class="${this._options.groupTitleCssClass}" level="${item.level}">${item.title}</span>`;
+    const toggleClass = item.collapsed ? this._options.toggleCollapsedCssClass : this._options.toggleExpandedCssClass;
 
     // use a DocumentFragment to avoid creating an extra div container
     const containerElm = document.createDocumentFragment();
 
-    // 1. optional row checkbox span
+    // 1. optional row checkbox span to select the entire group rows
     if (this._options.checkboxSelect) {
       containerElm.appendChild(Utils.createDomElement('span', { className: `${this._options.checkboxSelectCssClass} ${item.selectChecked ? 'checked' : 'unchecked'}` }));
     }
 
     // 2. group toggle span
     containerElm.appendChild(Utils.createDomElement('span', {
-      className: `${this._options.toggleCssClass} ${item.collapsed ? this._options.toggleCollapsedCssClass : this._options.toggleExpandedCssClass}`,
+      className: `${this._options.toggleCssClass} ${toggleClass}`,
+      ariaExpanded: String(!item.collapsed),
       style: { marginLeft: indentation }
     }));
 
     // 3. group title span
     const groupTitleElm = Utils.createDomElement('span', { className: this._options.groupTitleCssClass || '' });
+    groupTitleElm.setAttribute('level', item.level);
     (item.title instanceof HTMLElement)
       ? groupTitleElm.appendChild(item.title)
       : this._grid.applyHtmlCode(groupTitleElm, item.title ?? '');
-    groupTitleElm.setAttribute('level', item.level);
     containerElm.appendChild(groupTitleElm);
 
     return containerElm;
