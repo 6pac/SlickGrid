@@ -2992,7 +2992,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     let len: number;
     let max = 0;
     let maxText = '';
-    let formatterResult: string | FormatterResultWithHtml | FormatterResultWithText | HTMLElement;
+    let formatterResult: string | FormatterResultWithHtml | FormatterResultWithText | HTMLElement | DocumentFragment;
     let val: any;
 
     // get mode - if text only display, use canvas otherwise html element
@@ -3900,7 +3900,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     let value: any = null;
-    let formatterResult: FormatterResultWithHtml | FormatterResultWithText | HTMLElement | string = '';
+    let formatterResult: FormatterResultWithHtml | FormatterResultWithText | HTMLElement | DocumentFragment | string = '';
     if (item) {
       value = this.getDataItemValueForColumn(item, m);
       formatterResult = this.getFormatter(row, m)(row, cell, value, m, item, this as unknown as SlickGridModel);
@@ -4073,7 +4073,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /** Apply a Formatter Result to a Cell DOM Node */
-  applyFormatResultToCellNode(formatterResult: FormatterResultWithHtml | FormatterResultWithText | string | HTMLElement, cellNode: HTMLDivElement, suppressRemove?: boolean) {
+  applyFormatResultToCellNode(formatterResult: FormatterResultWithHtml | FormatterResultWithText | string | HTMLElement | DocumentFragment, cellNode: HTMLDivElement, suppressRemove?: boolean) {
     if (formatterResult === null || formatterResult === undefined) { formatterResult = ''; }
     if (Object.prototype.toString.call(formatterResult) !== '[object Object]') {
       this.applyHtmlCode(cellNode, formatterResult as string | HTMLElement);
