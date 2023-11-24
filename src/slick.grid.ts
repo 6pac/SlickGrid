@@ -3330,12 +3330,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         const column = this.getColumnByIndex(columnIndex);
         if (column) {
           column.classList.add('slick-header-column-sorted');
-          let indicator = column.querySelector('.slick-sort-indicator') as HTMLElement;
-          indicator.classList.add(col.sortAsc ? 'slick-sort-indicator-asc' : 'slick-sort-indicator-desc');
+          let indicator = column.querySelector('.slick-sort-indicator');
+          indicator?.classList.add(col.sortAsc ? 'slick-sort-indicator-asc' : 'slick-sort-indicator-desc');
 
           if (numberCols) {
-            indicator = column.querySelector('.slick-sort-indicator-numbered') as HTMLElement;
-            indicator.textContent = String(i);
+            indicator = column.querySelector('.slick-sort-indicator-numbered');
+            if (indicator) {
+              indicator.textContent = String(i);
+            }
           }
         }
       }
