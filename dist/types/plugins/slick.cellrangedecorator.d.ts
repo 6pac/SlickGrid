@@ -1,4 +1,5 @@
-import type { CellRange, CellRangeDecoratorOption, SlickPlugin } from '../models/index';
+import type { CellRangeDecoratorOption, SlickPlugin } from '../models/index';
+import { SlickRange } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 /***
    * Displays an overlay on top of a given cell range.
@@ -21,6 +22,6 @@ export declare class SlickCellRangeDecorator implements SlickPlugin {
     destroy(): void;
     init(): void;
     hide(): void;
-    show(range: CellRange): HTMLDivElement;
+    show(range: SlickRange): HTMLDivElement;
 }
 //# sourceMappingURL=slick.cellrangedecorator.d.ts.map

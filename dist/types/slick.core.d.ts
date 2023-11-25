@@ -355,7 +355,7 @@ export declare class Utils {
     static createDomElement<T extends keyof HTMLElementTagNameMap, K extends keyof HTMLElementTagNameMap[T]>(tagName: T, elementOptions?: null | {
         [P in K]: InferDOMType<HTMLElementTagNameMap[T][P]>;
     }, appendToParent?: Element): HTMLElementTagNameMap[T];
-    static emptyElement(element: HTMLElement | null): HTMLElement | null;
+    static emptyElement<T extends Element = Element>(element?: T | null): T | undefined | null;
     static innerSize(elm: HTMLElement, type: 'height' | 'width'): number;
     static isDefined<T>(value: T | undefined | null): value is T;
     static getElementProp(elm: HTMLElement & {

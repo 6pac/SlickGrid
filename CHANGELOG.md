@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.5.5](https://github.com/6pac/SlickGrid/compare/5.5.4...5.5.5) (2023-11-25)
+
+### Bug Fixes
+
+* remove unused CellRange interface, use core SlickRange, fix [#927](https://github.com/6pac/SlickGrid/issues/927) ([#928](https://github.com/6pac/SlickGrid/issues/928)) ([7675dc5](https://github.com/6pac/SlickGrid/commit/7675dc5bb37656e8ea69fc0dd3943e8a42e25244))
+* try adding sort icon on non `sortable` column shouldn't throw ([#929](https://github.com/6pac/SlickGrid/issues/929)) ([15d53f5](https://github.com/6pac/SlickGrid/commit/15d53f5ba26ed443185b12cffb6344145ceaf882))
+
 ## [5.5.4](https://github.com/6pac/SlickGrid/compare/5.5.3...5.5.4) (2023-11-24)
 
 ### Bug Fixes

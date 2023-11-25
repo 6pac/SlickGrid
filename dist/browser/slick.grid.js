@@ -23,7 +23,7 @@
       this.options = options;
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.5.4");
+      __publicField(this, "slickGridVersion", "5.5.5");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -1423,7 +1423,7 @@
           if (column) {
             column.classList.add("slick-header-column-sorted");
             let indicator = column.querySelector(".slick-sort-indicator");
-            indicator.classList.add(col.sortAsc ? "slick-sort-indicator-asc" : "slick-sort-indicator-desc"), numberCols && (indicator = column.querySelector(".slick-sort-indicator-numbered"), indicator.textContent = String(i));
+            indicator == null || indicator.classList.add(col.sortAsc ? "slick-sort-indicator-asc" : "slick-sort-indicator-desc"), numberCols && (indicator = column.querySelector(".slick-sort-indicator-numbered"), indicator && (indicator.textContent = String(i)));
           }
         }
         i++;
@@ -3045,7 +3045,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.5.4
+ * SlickGrid v5.5.5
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

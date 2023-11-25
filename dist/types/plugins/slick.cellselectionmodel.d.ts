@@ -1,6 +1,6 @@
-import { SlickEvent as SlickEvent_ } from '../slick.core';
+import { SlickEvent as SlickEvent_, SlickRange as SlickRange_ } from '../slick.core';
 import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector';
-import type { CellRange, OnActiveCellChangedEventArgs } from '../models/index';
+import type { OnActiveCellChangedEventArgs } from '../models/index';
 import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
 export interface CellSelectionModelOption {
@@ -9,13 +9,13 @@ export interface CellSelectionModelOption {
 }
 export declare class SlickCellSelectionModel {
     pluginName: "CellSelectionModel";
-    onSelectedRangesChanged: SlickEvent_<CellRange[]>;
+    onSelectedRangesChanged: SlickEvent_<SlickRange_[]>;
     protected _cachedPageRowCount: number;
     protected _dataView?: SlickDataView;
     protected _grid: SlickGrid;
     protected _prevSelectedRow?: number;
     protected _prevKeyDown: string;
-    protected _ranges: CellRange[];
+    protected _ranges: SlickRange_[];
     protected _selector: SlickCellRangeSelector_;
     protected _options?: CellSelectionModelOption;
     protected _defaults: CellSelectionModelOption;
@@ -25,16 +25,16 @@ export declare class SlickCellSelectionModel {
     });
     init(grid: SlickGrid): void;
     destroy(): void;
-    protected removeInvalidRanges(ranges: CellRange[]): CellRange[];
-    protected rangesAreEqual(range1: CellRange[], range2: CellRange[]): boolean;
+    protected removeInvalidRanges(ranges: SlickRange_[]): SlickRange_[];
+    protected rangesAreEqual(range1: SlickRange_[], range2: SlickRange_[]): boolean;
     /** Provide a way to force a recalculation of page row count (for example on grid resize) */
     resetPageRowCount(): void;
-    setSelectedRanges(ranges: CellRange[], caller?: string): void;
-    getSelectedRanges(): CellRange[];
+    setSelectedRanges(ranges: SlickRange_[], caller?: string): void;
+    getSelectedRanges(): SlickRange_[];
     refreshSelections(): void;
     protected handleBeforeCellRangeSelected(e: Event): boolean | void;
     protected handleCellRangeSelected(_e: any, args: {
-        range: CellRange;
+        range: SlickRange_;
     }): void;
     protected handleActiveCellChange(_e: Event, args: OnActiveCellChangedEventArgs): void;
     protected isKeyAllowed(key: string): boolean;

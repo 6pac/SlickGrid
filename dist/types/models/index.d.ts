@@ -12,6 +12,7 @@ export * from './columnSort.interface';
 export * from './compositeEditorOption.interface';
 export * from './contextMenuOption.interface';
 export * from './core.interface';
+export * from './cssDeclaration.interface';
 export * from './customTooltipOption.interface';
 export * from './dataViewEvents.interface';
 export * from './domEvent.interface';

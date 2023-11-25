@@ -499,9 +499,8 @@ var Slick = (() => {
       }), appendToParent != null && appendToParent.appendChild && appendToParent.appendChild(elm), elm;
     }
     static emptyElement(element) {
-      if (element != null && element.firstChild)
-        for (; element.firstChild; )
-          element.lastChild && element.removeChild(element.lastChild);
+      for (; element != null && element.firstChild; )
+        element.removeChild(element.firstChild);
       return element;
     }
     static innerSize(elm, type) {

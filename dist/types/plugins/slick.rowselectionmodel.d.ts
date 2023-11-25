@@ -1,12 +1,12 @@
 import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_ } from '../slick.core';
 import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector';
-import type { CellRange, OnActiveCellChangedEventArgs, RowSelectionModelOption } from '../models/index';
+import type { OnActiveCellChangedEventArgs, RowSelectionModelOption } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 export declare class SlickRowSelectionModel {
     pluginName: "RowSelectionModel";
-    onSelectedRangesChanged: SlickEvent_<CellRange[]>;
+    onSelectedRangesChanged: SlickEvent_<SlickRange_[]>;
     protected _grid: SlickGrid;
-    protected _ranges: CellRange[];
+    protected _ranges: SlickRange_[];
     protected _eventHandler: SlickEventHandler_<any>;
     protected _inHandler: boolean;
     protected _selector?: SlickCellRangeSelector_;
@@ -17,13 +17,13 @@ export declare class SlickRowSelectionModel {
     init(grid: SlickGrid): void;
     destroy(): void;
     protected wrapHandler(handler: (...args: any) => void): (...args: any) => void;
-    protected rangesToRows(ranges: CellRange[]): number[];
+    protected rangesToRows(ranges: SlickRange_[]): number[];
     protected rowsToRanges(rows: number[]): SlickRange_[];
     protected getRowsRange(from: number, to: number): number[];
     getSelectedRows(): number[];
     setSelectedRows(rows: number[]): void;
-    setSelectedRanges(ranges: CellRange[], caller?: string): void;
-    getSelectedRanges(): CellRange[];
+    setSelectedRanges(ranges: SlickRange_[], caller?: string): void;
+    getSelectedRanges(): SlickRange_[];
     refreshSelections(): void;
     protected handleActiveCellChange(_e: SlickEventData_, args: OnActiveCellChangedEventArgs): void;
     protected handleKeyDown(e: KeyboardEvent): void;
@@ -33,7 +33,7 @@ export declare class SlickRowSelectionModel {
         cell: number;
     }): boolean | void;
     protected handleCellRangeSelected(_e: SlickEventData_, args: {
-        range: CellRange;
+        range: SlickRange_;
     }): boolean | void;
 }
 //# sourceMappingURL=slick.rowselectionmodel.d.ts.map
