@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.1.5](https://github.com/6pac/SlickGrid/compare/4.1.4...4.1.5) (2023-11-25)
+
+### Bug Fixes
+
+* try adding sort icon on non `sortable` column shouldn't throw ([#930](https://github.com/6pac/SlickGrid/issues/930)) ([4ef172d](https://github.com/6pac/SlickGrid/commit/4ef172d984199f223ca2b8b269cc9e1b69a05d1c))
+
 ## [4.1.4](https://github.com/6pac/SlickGrid/compare/4.1.3...4.1.4) (2023-11-24)
 
 ### Bug Fixes
