@@ -1,7 +1,7 @@
-var grid;
-var dataView;
-var searchString;
-var columns = [
+let grid;
+let dataView;
+let searchString;
+let columns = [
   { id: "title", name: "Title", field: "title" },
   { id: "duration", name: "Duration", field: "duration" },
   { id: "%", name: "% Complete", field: "percentComplete", selectable: false, width: 100 },
@@ -10,12 +10,12 @@ var columns = [
   { id: "effort-driven", name: "Effort Driven", field: "effortDriven", width: 100 }
 ];
 
-var options = {
+let options = {
   enableCellNavigation: true,
   enableColumnReorder: false,
   nonce: 'random-string',
   // autoHeight: true,
-  sanitizer: (html) => DOMPurify.sanitize(html, { RETURN_TRUSTED_TYPE: true })
+  sanitizer: (html) => DOMPurify.sanitize(html, { RETURN_TRUSTED_TYPE: true }) // this sanitizer fixes CSP:: require-trusted-types-for 'script'
 };
 
 document.addEventListener("DOMContentLoaded", function () {
@@ -37,8 +37,8 @@ document.addEventListener("DOMContentLoaded", function () {
   linkElement.style.textDecoration = "none";
   linkElement.style.fontSize = "22px";
 
-  var data = [];
-  for (var i = 0; i < 500; i++) {
+  let data = [];
+  for (let i = 0; i < 500; i++) {
     data[i] = {
       id: i,
       title: "Task " + i,
@@ -76,15 +76,16 @@ document.addEventListener("DOMContentLoaded", function () {
   grid.setSelectionModel(new Slick.RowSelectionModel({ selectActiveRow: true}));
 
   grid.onSort.subscribe(function (e, args) {
-    var comparer = function (a, b) {
-      if (args.sortCols[0].sortAsc)
+    const comparer = function (a, b) {
+      if (args.sortCols[0].sortAsc) {
         return (a[args.sortCols[0].sortCol.field] > b[args.sortCols[0].sortCol.field]) ? 1 : -1;
-      else
+      } else {
         return (a[args.sortCols[0].sortCol.field] < b[args.sortCols[0].sortCol.field]) ? 1 : -1;
-    }
-
+      }
+    };
     this.getData().sort(comparer, args.sortAsc);
   });
+
   dataView.onRowCountChanged.subscribe(function (e, args) {
     args.dataView.grid.updateRowCount();
     args.dataView.grid.render();
@@ -97,27 +98,29 @@ document.addEventListener("DOMContentLoaded", function () {
 
   dataView.beginUpdate();
   dataView.setItems(data);
-  dataView.setFilterArgs({ searchString: searchString });
- dataView.setFilter(myFilter);
+  dataView.setFilterArgs({ searchString });
+  dataView.setFilter(myFilter);
   dataView.endUpdate();
 });
+
 function updateFilter() {
   dataView.setFilterArgs({
-    searchString: searchString
+    searchString
   });
   dataView.refresh();
 }
+
 function myFilter(item, args) {
-  var searchForString = args.searchString?.toLowerCase();
+  let searchForString = args.searchString?.toLowerCase();
   //Check if input is empty
-  if (searchForString?.length == 0 || !searchForString) {
+  if (searchForString?.length === 0 || !searchForString) {
       return true;
   }
-  //Check if input value includes searchString value
-  for (var i = 0; i < columns.length; i++) {
-      if (item[columns[i]?.field] != null && item[columns[i]?.field].toString().toLowerCase().includes(searchForString)) {
-        return true;
-      }
+  // Check if input value includes searchString value
+  for (let i = 0; i < columns.length; i++) {
+    if (item[columns[i]?.field] !== null && item[columns[i]?.field].toString().toLowerCase().includes(searchForString)) {
+      return true;
+    }
   }
 
   return false;

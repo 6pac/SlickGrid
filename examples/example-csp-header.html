@@ -2,12 +2,15 @@
 <html>
 <head>
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <link rel="stylesheet" href="./example-csp-header.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
-  <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net 'nonce-browser-sync'; style-src 'self' 'nonce-random-string'; require-trusted-types-for 'script'; trusted-types dompurify sanitizeWithDomPurify"> -->
-  <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'nonce-browser-sync'; style-src 'self' 'nonce-random-string'; require-trusted-types-for 'script'; trusted-types dompurify">
-  <!-- <meta http-equiv="Content-Security-Policy" content="default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'nonce-browser-sync' 'nonce-random-string'; style-src 'self' 'unsafe-inline' 'nonce-random-string'; require-trusted-types-for 'script'; trusted-types dompurify sanitizeWithDomPurify"> -->
-  <!-- <meta http-equiv="Content-Security-Policy" content="require-trusted-types-for 'script'; trusted-types dompurify"> -->
+  <meta http-equiv="Content-Security-Policy" content="
+    default-src 'self';
+    script-src 'self' https://cdn.jsdelivr.net 'nonce-browser-sync';
+    style-src 'self' 'nonce-random-string'; require-trusted-types-for 'script';
+    trusted-types dompurify
+  ">
 </head>
 <body>
 <table width="100%">
@@ -23,7 +26,14 @@
         Demonstrates:
       </h2>
       <ul>
-        <li>CSP header, Currently used "default-src 'self'; script-src 'self' https://cdn.jsdelivr.net https://cdnjs.cloudflare.com 'nonce-browser-sync'; style-src 'self' 'unsafe-inline'; require-trusted-types-for 'script'; trusted-types dompurify"</li>
+        <li>CSP header, currently using
+          <code>
+            default-src 'self';
+            script-src 'self' https://cdn.jsdelivr.net 'nonce-browser-sync';
+            style-src 'self' 'nonce-random-string'; require-trusted-types-for 'script';
+            trusted-types dompurify;
+          </code>
+        </li>
       </ul>
         <h2>View Source:</h2>
         <ul>
@@ -35,8 +45,6 @@
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/dompurify@3.0.6/dist/purify.min.js"></script>
-<!-- <script src="./example-csp-policy.js"></script> -->
-
 
 <script src="../dist/browser/slick.core.js"></script>
 <script src="../dist/browser/slick.interactions.js"></script>
@@ -48,6 +56,7 @@
 <script src="../dist/browser/controls/slick.pager.js"></script>
 <script src="../dist/browser/controls/slick.columnpicker.js"></script>
 
+<!-- <script src="./example-csp-policy.js"></script> -->
 <script src="./example-csp-header.js"></script>
 </body>
 </html>
