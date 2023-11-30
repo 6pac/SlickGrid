@@ -787,7 +787,7 @@ export class Utils {
   }
 
   public static isDefined<T>(value: T | undefined | null): value is T {
-    return <T>value !== undefined && <T>value !== null;
+    return <T>value !== undefined && <T>value !== null && <T>value !== '';
   }
 
   public static getElementProp(elm: HTMLElement & { getComputedStyle?: () => CSSStyleDeclaration }, property: string) {
