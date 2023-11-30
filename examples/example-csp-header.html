@@ -28,11 +28,16 @@
       <ul>
         <li>CSP header, currently using
           <code>
-            default-src 'self';
-            script-src 'self' https://cdn.jsdelivr.net 'nonce-browser-sync';
-            style-src 'self' 'nonce-random-string'; require-trusted-types-for 'script';
-            trusted-types dompurify;
+            <pre>
+              default-src 'self';
+              script-src 'self' https://cdn.jsdelivr.net 'nonce-browser-sync';
+              style-src 'self' 'nonce-random-string'; require-trusted-types-for 'script';
+              trusted-types dompurify;
+            </pre>
           </code>
+        </li>
+        <li>
+          <strong>Do not use <code>https://cdn.jsdelivr.net</code> as CSP since that is too broad and risky. We only do it for demo purposes</strong>
         </li>
       </ul>
         <h2>View Source:</h2>
