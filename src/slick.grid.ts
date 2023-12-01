@@ -858,8 +858,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (Draggable) {
         this.slickDraggableInstance = Draggable({
           containerElement: this._container,
-          allowDragFrom: 'div.slick-cell',
-          allowDragFromClosest: 'div.slick-cell',
+          // the slick cell must contain `.dnd` and/or `.cell-reorder` class to be identified as draggable
+          allowDragFrom: 'div.slick-cell.dnd, div.slick-cell.cell-reorder',
+          allowDragFromClosest: 'div.slick-cell.dnd, div.slick-cell.cell-reorder',
           onDragInit: this.handleDragInit.bind(this),
           onDragStart: this.handleDragStart.bind(this),
           onDrag: this.handleDrag.bind(this),
