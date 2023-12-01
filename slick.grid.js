@@ -619,7 +619,8 @@ if (typeof Slick === "undefined") {
           slickDraggableInstance = Slick.Draggable({
             containerElement: _container,
             allowDragFrom: 'div.slick-cell',
-            allowDragFromClosest: 'div.slick-cell',
+            // the slick cell parent must always contain `.dnd` and/or `.cell-reorder` class to be identified as draggable
+            allowDragFromClosest: 'div.slick-cell.dnd, div.slick-cell.cell-reorder',
             onDragInit: handleDragInit,
             onDragStart: handleDragStart,
             onDrag: handleDrag,
