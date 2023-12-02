@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.1.6](https://github.com/6pac/SlickGrid/compare/4.1.5...4.1.6) (2023-12-02)
+
+### Bug Fixes
+
+* `setActiveCellInternal()` shouldn't throw when cell/row undefined ([#941](https://github.com/6pac/SlickGrid/issues/941)) ([e00a493](https://github.com/6pac/SlickGrid/commit/e00a4938f711b7124f4687e2ad3c522afc819f33))
+* only allow row drag on cell w/`dnd` or `cell-reorder` ([#939](https://github.com/6pac/SlickGrid/issues/939)) ([0f07161](https://github.com/6pac/SlickGrid/commit/0f07161314f4a366ce31080a87121afb5e53910f)), closes [#897](https://github.com/6pac/SlickGrid/issues/897)
+
 ## [4.1.5](https://github.com/6pac/SlickGrid/compare/4.1.4...4.1.5) (2023-11-25)
 
 ### Bug Fixes
