@@ -5168,7 +5168,7 @@ if (typeof Slick === "undefined") {
     }
 
     function setActiveCellInternal(newCell, opt_editMode, preClickModeOn, suppressActiveCellChangedEvent, e) {
-      if (activeCellNode !== null) {
+      if (activeCellNode !== null && activeCellNode !== undefined) {
         makeActiveCellNormal();
         activeCellNode.classList.remove("active");
         if (rowsCache[activeRow] && rowsCache[activeRow].rowNode) {
@@ -5181,7 +5181,7 @@ if (typeof Slick === "undefined") {
       var activeCellChanged = (activeCellNode !== newCell);
       activeCellNode = newCell;
 
-      if (activeCellNode != null) {
+      if (activeCellNode !== null && activeCellNode !== undefined) {
         var activeCellOffset = utils.offset(activeCellNode);
 
         var rowOffset = Math.floor(utils.offset(utils.parents(activeCellNode, '.grid-canvas')[0]).top);
