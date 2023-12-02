@@ -140,9 +140,12 @@ export class SlickCellSelectionModel {
 
   protected handleActiveCellChange(_e: Event, args: OnActiveCellChangedEventArgs) {
     this._prevSelectedRow = undefined;
-    if (this._options?.selectActiveCell && Utils.isDefined(args.row) && Utils.isDefined(args.cell)) {
+    const isCellDefined = Utils.isDefined(args.cell);
+    const isRowDefined = Utils.isDefined(args.row);
+
+    if (this._options?.selectActiveCell && isRowDefined && isCellDefined) {
       this.setSelectedRanges([new SlickRange(args.row, args.cell)]);
-    } else if (!this._options?.selectActiveCell) {
+    } else if (!this._options?.selectActiveCell || (!isRowDefined && !isCellDefined)) {
       // clear the previous selection once the cell changes
       this.setSelectedRanges([]);
     }
@@ -154,8 +157,8 @@ export class SlickCellSelectionModel {
 
   protected handleKeyDown(e: KeyboardEvent) {
     let ranges: SlickRange_[], last: SlickRange_;
+    const colLn = this._grid.getColumns().length;
     const active = this._grid.getActiveCell();
-    const metaKey = e.ctrlKey || e.metaKey;
     let dataLn = 0;
     if (this._dataView) {
       dataLn = this._dataView?.getPagingInfo().pageSize || this._dataView.getLength();
@@ -163,8 +166,7 @@ export class SlickCellSelectionModel {
       dataLn = this._grid.getDataLength();
     }
 
-    if (active && e.shiftKey && !metaKey && !e.altKey && this.isKeyAllowed(e.key)) {
-
+    if (active && (e.shiftKey || e.ctrlKey) && !e.altKey && this.isKeyAllowed(e.key)) {
       ranges = this.getSelectedRanges().slice();
       if (!ranges.length) {
         ranges.push(new SlickRange(active.row, active.cell));
@@ -184,9 +186,10 @@ export class SlickCellSelectionModel {
       const dirRow = active.row === last.fromRow ? 1 : -1;
       const dirCell = active.cell === last.fromCell ? 1 : -1;
       const isSingleKeyMove = e.key.startsWith('Arrow');
+      let toCell: undefined | number = undefined;
       let toRow = 0;
 
-      if (isSingleKeyMove) {
+      if (isSingleKeyMove && !e.ctrlKey) {
         // single cell move: (Arrow{Up/ArrowDown/ArrowLeft/ArrowRight})
         if (e.key === 'ArrowLeft') {
           dCell -= dirCell;
@@ -207,9 +210,17 @@ export class SlickCellSelectionModel {
           this._prevSelectedRow = active.row;
         }
 
-        if (e.key === 'Home') {
+        if (e.shiftKey && !e.ctrlKey && e.key === 'Home') {
+          toCell = 0;
+          toRow = active.row;
+        } else if (e.shiftKey && !e.ctrlKey && e.key === 'End') {
+          toCell = colLn - 1;
+          toRow = active.row;
+        } else if (e.ctrlKey && e.shiftKey && e.key === 'Home') {
+          toCell = 0;
           toRow = 0;
-        } else if (e.key === 'End') {
+        } else if (e.ctrlKey && e.shiftKey && e.key === 'End') {
+          toCell = colLn - 1;
           toRow = dataLn - 1;
         } else if (e.key === 'PageUp') {
           if (this._prevSelectedRow >= 0) {
@@ -230,7 +241,8 @@ export class SlickCellSelectionModel {
       }
 
       // define new selection range
-      const new_last = new SlickRange(active.row, active.cell, toRow, active.cell + dirCell * dCell);
+      toCell ??= active.cell + dirCell * dCell;
+      const new_last = new SlickRange(active.row, active.cell, toRow, toCell);
       if (this.removeInvalidRanges([new_last]).length) {
         ranges.push(new_last);
         const viewRow = dirRow > 0 ? new_last.toRow : new_last.fromRow;

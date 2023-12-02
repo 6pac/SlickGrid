@@ -33,6 +33,7 @@ declare global {
       // triggerHover: (elements: NodeListOf<HTMLElement>) => void;
       convertPosition(viewport: string): Chainable<HTMLElement | JQuery<HTMLElement> | { x: string; y: string; }>;
       getCell(row: number, col: number, viewport?: string, options?: { parentSelector?: string, rowHeight?: number; }): Chainable<HTMLElement | JQuery<HTMLElement>>;
+      getNthCell(row: number, nthCol: number, viewport?: string, options?: { parentSelector?: string, rowHeight?: number; }): Chainable<HTMLElement | JQuery<HTMLElement>>;
       restoreLocalStorage(): Chainable<HTMLElement | JQuery<HTMLElement>>;
       saveLocalStorage(): Chainable<HTMLElement | JQuery<HTMLElement>>;
     }
@@ -40,14 +41,22 @@ declare global {
 }
 
 // convert position like 'topLeft' to the object { x: 'left|right', y: 'top|bottom' }
-Cypress.Commands.add('convertPosition', (viewport = 'topLeft') => cy.wrap(convertPosition(viewport)))
+Cypress.Commands.add('convertPosition', (viewport = 'topLeft') => cy.wrap(convertPosition(viewport)));
 
 Cypress.Commands.add('getCell', (row, col, viewport = 'topLeft', { parentSelector = '', rowHeight = 25 } = {}) => {
   const position = convertPosition(viewport);
   const canvasSelectorX = position.x ? `.grid-canvas-${position.x}` : '';
   const canvasSelectorY = position.y ? `.grid-canvas-${position.y}` : '';
 
-  return cy.get(`${parentSelector} ${canvasSelectorX}${canvasSelectorY} [style="top: ${row * rowHeight}px;"] > .slick-cell:nth(${col})`);
+  return cy.get(`${parentSelector} ${canvasSelectorX}${canvasSelectorY} [style="top: ${row * rowHeight}px;"] > .slick-cell.l${col}.r${col}`);
+});
+
+Cypress.Commands.add('getNthCell', (row, nthCol, viewport = 'topLeft', { parentSelector = '', rowHeight = 25 } = {}) => {
+  const position = convertPosition(viewport);
+  const canvasSelectorX = position.x ? `.grid-canvas-${position.x}` : '';
+  const canvasSelectorY = position.y ? `.grid-canvas-${position.y}` : '';
+
+  return cy.get(`${parentSelector} ${canvasSelectorX}${canvasSelectorY} [style="top: ${row * rowHeight}px;"] > .slick-cell:nth(${nthCol})`);
 });
 
 const LOCAL_STORAGE_MEMORY = {};

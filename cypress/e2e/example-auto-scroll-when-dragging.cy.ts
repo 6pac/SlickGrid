@@ -28,7 +28,7 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
   });
 
   it('should select border shown in cell selection model, and hidden in row selection model when dragging', { scrollBehavior: false }, function () {
-    cy.getCell(0, 1, '', { parentSelector: "#myGrid", rowHeight: cellHeight })
+    cy.getNthCell(0, 1, '', { parentSelector: "#myGrid", rowHeight: cellHeight })
       .as('cell1')
       .dragStart();
 
@@ -39,7 +39,7 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
     cy.get('#myGrid .slick-range-decorator').should('not.be.exist');
     cy.get('#myGrid .slick-cell.selected').should('have.length', 6);
 
-    cy.getCell(0, 1, '', { parentSelector: "#myGrid2", rowHeight: cellHeight })
+    cy.getNthCell(0, 1, '', { parentSelector: "#myGrid2", rowHeight: cellHeight })
       .as('cell2')
       .dragStart();
     cy.get('#myGrid2 .slick-range-decorator').should('be.exist').and('have.css', 'border-style').and('equal', 'none');
@@ -89,7 +89,7 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
 
   function getIntervalUntilRow16Displayed(selector, px) {
     const viewportSelector = (selector + ' .slick-viewport:first');
-    cy.getCell(0, 1, '', { parentSelector: selector, rowHeight: cellHeight })
+    cy.getNthCell(0, 1, '', { parentSelector: selector, rowHeight: cellHeight })
       .dragStart();
     return cy.get(viewportSelector).invoke('scrollTop').then(scrollBefore => {
       cy.dragOutside('bottom', 0, px, { parentSelector: selector, rowHeight: cellHeight });
@@ -275,7 +275,7 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
   });
 
   function testDragInGrouping(selector) {
-    cy.getCell(7, 0, 'bottomRight', { parentSelector: selector, rowHeight: cellHeight })
+    cy.getNthCell(7, 0, 'bottomRight', { parentSelector: selector, rowHeight: cellHeight })
       .dragStart();
     cy.get(selector + ' .slick-viewport:last').as('viewport').invoke('scrollTop').then(scrollBefore => {
       cy.dragOutside('bottom', 400, 300, { parentSelector: selector, rowHeight: cellHeight });
