@@ -23,7 +23,7 @@
       this.options = options;
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.5.5");
+      __publicField(this, "slickGridVersion", "5.5.6");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -383,9 +383,19 @@
      * 3. value is string and `enableHtmlRendering` is disabled, then use `target.textContent = value;`
      * @param target - target element to apply to
      * @param val - input value can be either a string or an HTMLElement
+     * @param options -
+     *   `emptyTarget`, defaults to true, will empty the target.
+     *   `skipEmptyReassignment`, defaults to true, when enabled it will not try to reapply an empty value when the target is already empty
      */
-    applyHtmlCode(target, val, emptyTarget = !0) {
-      target && (val instanceof HTMLElement || val instanceof DocumentFragment ? (emptyTarget && Utils.emptyElement(target), target.appendChild(val)) : this._options.enableHtmlRendering ? target.innerHTML = this.sanitizeHtmlString(val) : target.textContent = this.sanitizeHtmlString(val));
+    applyHtmlCode(target, val, options) {
+      if (target)
+        if (val instanceof HTMLElement || val instanceof DocumentFragment)
+          (options == null ? void 0 : options.emptyTarget) !== !1 && Utils.emptyElement(target), target.appendChild(val);
+        else {
+          if ((options == null ? void 0 : options.skipEmptyReassignment) !== !1 && !Utils.isDefined(val) && !target.innerHTML)
+            return;
+          this._options.enableHtmlRendering && val ? target.innerHTML = this.sanitizeHtmlString(val) : target.textContent = this.sanitizeHtmlString(val);
+        }
     }
     initialize() {
       if (typeof this.container == "string" ? this._container = document.querySelector(this.container) : this._container = this.container, !this._container)
@@ -436,7 +446,8 @@
       }), Draggable && (this.slickDraggableInstance = Draggable({
         containerElement: this._container,
         allowDragFrom: "div.slick-cell",
-        allowDragFromClosest: "div.slick-cell",
+        // the slick cell parent must always contain `.dnd` and/or `.cell-reorder` class to be identified as draggable
+        allowDragFromClosest: "div.slick-cell.dnd, div.slick-cell.cell-reorder",
         onDragInit: this.handleDragInit.bind(this),
         onDragStart: this.handleDragStart.bind(this),
         onDrag: this.handleDrag.bind(this),
@@ -2447,7 +2458,7 @@
     }
     setActiveCellInternal(newCell, opt_editMode, preClickModeOn, suppressActiveCellChangedEvent, e) {
       var _a, _b, _c, _d;
-      if (this.activeCellNode !== null && (this.makeActiveCellNormal(), this.activeCellNode.classList.remove("active"), (_b = (_a = this.rowsCache[this.activeRow]) == null ? void 0 : _a.rowNode) == null || _b.forEach((node) => node.classList.remove("active"))), this.activeCellNode = newCell, Utils.isDefined(this.activeCellNode)) {
+      if (Utils.isDefined(this.activeCellNode) && (this.makeActiveCellNormal(), this.activeCellNode.classList.remove("active"), (_b = (_a = this.rowsCache[this.activeRow]) == null ? void 0 : _a.rowNode) == null || _b.forEach((node) => node.classList.remove("active"))), this.activeCellNode = newCell, Utils.isDefined(this.activeCellNode)) {
         let activeCellOffset = Utils.offset(this.activeCellNode), rowOffset = Math.floor(Utils.offset(Utils.parents(this.activeCellNode, ".grid-canvas")[0]).top), isBottom = Utils.parents(this.activeCellNode, ".grid-canvas-bottom").length;
         this.hasFrozenRows && isBottom && (rowOffset -= this._options.frozenBottom ? Utils.height(this._canvasTopL) : this.frozenRowsHeight);
         let cell = this.getCellFromPoint(activeCellOffset.left, Math.ceil(activeCellOffset.top) - rowOffset);
@@ -3045,7 +3056,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.5.5
+ * SlickGrid v5.5.6
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

@@ -516,7 +516,7 @@ var Slick = (() => {
       return size;
     }
     static isDefined(value) {
-      return value != null;
+      return value != null && value !== "";
     }
     static getElementProp(elm, property) {
       return elm != null && elm.getComputedStyle ? window.getComputedStyle(elm, null).getPropertyValue(property) : null;

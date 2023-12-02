@@ -10,7 +10,7 @@ import { BindingEventService as BindingEventService_, type SlickEditorLock, Slic
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.5.5
+ * SlickGrid v5.5.6
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -292,8 +292,14 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * 3. value is string and `enableHtmlRendering` is disabled, then use `target.textContent = value;`
      * @param target - target element to apply to
      * @param val - input value can be either a string or an HTMLElement
+     * @param options -
+     *   `emptyTarget`, defaults to true, will empty the target.
+     *   `skipEmptyReassignment`, defaults to true, when enabled it will not try to reapply an empty value when the target is already empty
      */
-    applyHtmlCode(target: HTMLElement, val: string | HTMLElement | DocumentFragment, emptyTarget?: boolean): void;
+    applyHtmlCode(target: HTMLElement, val: string | HTMLElement | DocumentFragment, options?: {
+        emptyTarget?: boolean;
+        skipEmptyReassignment?: boolean;
+    }): void;
     protected initialize(): void;
     protected finishInitialization(): void;
     /** handles "display:none" on container or container parents, related to issue: https://github.com/6pac/SlickGrid/issues/568 */

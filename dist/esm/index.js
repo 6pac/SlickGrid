@@ -469,7 +469,7 @@ var BindingEventService = class {
     return size;
   }
   static isDefined(value) {
-    return value != null;
+    return value != null && value !== "";
   }
   static getElementProp(elm, property) {
     return elm?.getComputedStyle ? window.getComputedStyle(elm, null).getPropertyValue(property) : null;
@@ -2472,18 +2472,20 @@ var SlickEvent9 = SlickEvent, SlickEventData4 = SlickEventData, SlickRange6 = Sl
     this._grid.setActiveCell(args.range.fromRow, args.range.fromCell, !1, !1, !0), this.setSelectedRanges([args.range]);
   }
   handleActiveCellChange(_e, args) {
-    this._prevSelectedRow = void 0, this._options?.selectActiveCell && Utils11.isDefined(args.row) && Utils11.isDefined(args.cell) ? this.setSelectedRanges([new SlickRange6(args.row, args.cell)]) : this._options?.selectActiveCell || this.setSelectedRanges([]);
+    this._prevSelectedRow = void 0;
+    let isCellDefined = Utils11.isDefined(args.cell), isRowDefined = Utils11.isDefined(args.row);
+    this._options?.selectActiveCell && isRowDefined && isCellDefined ? this.setSelectedRanges([new SlickRange6(args.row, args.cell)]) : (!this._options?.selectActiveCell || !isRowDefined && !isCellDefined) && this.setSelectedRanges([]);
   }
   isKeyAllowed(key) {
     return ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "PageDown", "PageUp", "Home", "End"].some((k) => k === key);
   }
   handleKeyDown(e) {
-    let ranges, last, active = this._grid.getActiveCell(), metaKey = e.ctrlKey || e.metaKey, dataLn = 0;
-    if (this._dataView ? dataLn = this._dataView?.getPagingInfo().pageSize || this._dataView.getLength() : dataLn = this._grid.getDataLength(), active && e.shiftKey && !metaKey && !e.altKey && this.isKeyAllowed(e.key)) {
+    let ranges, last, colLn = this._grid.getColumns().length, active = this._grid.getActiveCell(), dataLn = 0;
+    if (this._dataView ? dataLn = this._dataView?.getPagingInfo().pageSize || this._dataView.getLength() : dataLn = this._grid.getDataLength(), active && (e.shiftKey || e.ctrlKey) && !e.altKey && this.isKeyAllowed(e.key)) {
       ranges = this.getSelectedRanges().slice(), ranges.length || ranges.push(new SlickRange6(active.row, active.cell)), last = ranges.pop(), last.contains(active.row, active.cell) || (last = new SlickRange6(active.row, active.cell));
-      let dRow = last.toRow - last.fromRow, dCell = last.toCell - last.fromCell, dirRow = active.row === last.fromRow ? 1 : -1, dirCell = active.cell === last.fromCell ? 1 : -1, isSingleKeyMove = e.key.startsWith("Arrow"), toRow = 0;
-      isSingleKeyMove ? (e.key === "ArrowLeft" ? dCell -= dirCell : e.key === "ArrowRight" ? dCell += dirCell : e.key === "ArrowUp" ? dRow -= dirRow : e.key === "ArrowDown" && (dRow += dirRow), toRow = active.row + dirRow * dRow) : (this._cachedPageRowCount < 1 && (this._cachedPageRowCount = this._grid.getViewportRowCount()), this._prevSelectedRow === void 0 && (this._prevSelectedRow = active.row), e.key === "Home" ? toRow = 0 : e.key === "End" ? toRow = dataLn - 1 : e.key === "PageUp" ? (this._prevSelectedRow >= 0 && (toRow = this._prevSelectedRow - this._cachedPageRowCount), toRow < 0 && (toRow = 0)) : e.key === "PageDown" && (this._prevSelectedRow <= dataLn - 1 && (toRow = this._prevSelectedRow + this._cachedPageRowCount), toRow > dataLn - 1 && (toRow = dataLn - 1)), this._prevSelectedRow = toRow);
-      let new_last = new SlickRange6(active.row, active.cell, toRow, active.cell + dirCell * dCell);
+      let dRow = last.toRow - last.fromRow, dCell = last.toCell - last.fromCell, dirRow = active.row === last.fromRow ? 1 : -1, dirCell = active.cell === last.fromCell ? 1 : -1, isSingleKeyMove = e.key.startsWith("Arrow"), toCell, toRow = 0;
+      isSingleKeyMove && !e.ctrlKey ? (e.key === "ArrowLeft" ? dCell -= dirCell : e.key === "ArrowRight" ? dCell += dirCell : e.key === "ArrowUp" ? dRow -= dirRow : e.key === "ArrowDown" && (dRow += dirRow), toRow = active.row + dirRow * dRow) : (this._cachedPageRowCount < 1 && (this._cachedPageRowCount = this._grid.getViewportRowCount()), this._prevSelectedRow === void 0 && (this._prevSelectedRow = active.row), e.shiftKey && !e.ctrlKey && e.key === "Home" ? (toCell = 0, toRow = active.row) : e.shiftKey && !e.ctrlKey && e.key === "End" ? (toCell = colLn - 1, toRow = active.row) : e.ctrlKey && e.shiftKey && e.key === "Home" ? (toCell = 0, toRow = 0) : e.ctrlKey && e.shiftKey && e.key === "End" ? (toCell = colLn - 1, toRow = dataLn - 1) : e.key === "PageUp" ? (this._prevSelectedRow >= 0 && (toRow = this._prevSelectedRow - this._cachedPageRowCount), toRow < 0 && (toRow = 0)) : e.key === "PageDown" && (this._prevSelectedRow <= dataLn - 1 && (toRow = this._prevSelectedRow + this._cachedPageRowCount), toRow > dataLn - 1 && (toRow = dataLn - 1)), this._prevSelectedRow = toRow), toCell ?? (toCell = active.cell + dirCell * dCell);
+      let new_last = new SlickRange6(active.row, active.cell, toRow, toCell);
       if (this.removeInvalidRanges([new_last]).length) {
         ranges.push(new_last);
         let viewRow = dirRow > 0 ? new_last.toRow : new_last.fromRow, viewCell = dirCell > 0 ? new_last.toCell : new_last.fromCell;
@@ -6390,7 +6392,7 @@ var SlickGrid = class {
     this.options = options;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.5.5");
+    __publicField(this, "slickGridVersion", "5.5.6");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -6750,9 +6752,19 @@ var SlickGrid = class {
    * 3. value is string and `enableHtmlRendering` is disabled, then use `target.textContent = value;`
    * @param target - target element to apply to
    * @param val - input value can be either a string or an HTMLElement
+   * @param options -
+   *   `emptyTarget`, defaults to true, will empty the target.
+   *   `skipEmptyReassignment`, defaults to true, when enabled it will not try to reapply an empty value when the target is already empty
    */
-  applyHtmlCode(target, val, emptyTarget = !0) {
-    target && (val instanceof HTMLElement || val instanceof DocumentFragment ? (emptyTarget && Utils28.emptyElement(target), target.appendChild(val)) : this._options.enableHtmlRendering ? target.innerHTML = this.sanitizeHtmlString(val) : target.textContent = this.sanitizeHtmlString(val));
+  applyHtmlCode(target, val, options) {
+    if (target)
+      if (val instanceof HTMLElement || val instanceof DocumentFragment)
+        options?.emptyTarget !== !1 && Utils28.emptyElement(target), target.appendChild(val);
+      else {
+        if (options?.skipEmptyReassignment !== !1 && !Utils28.isDefined(val) && !target.innerHTML)
+          return;
+        this._options.enableHtmlRendering && val ? target.innerHTML = this.sanitizeHtmlString(val) : target.textContent = this.sanitizeHtmlString(val);
+      }
   }
   initialize() {
     if (typeof this.container == "string" ? this._container = document.querySelector(this.container) : this._container = this.container, !this._container)
@@ -6803,7 +6815,8 @@ var SlickGrid = class {
     }), Draggable4 && (this.slickDraggableInstance = Draggable4({
       containerElement: this._container,
       allowDragFrom: "div.slick-cell",
-      allowDragFromClosest: "div.slick-cell",
+      // the slick cell parent must always contain `.dnd` and/or `.cell-reorder` class to be identified as draggable
+      allowDragFromClosest: "div.slick-cell.dnd, div.slick-cell.cell-reorder",
       onDragInit: this.handleDragInit.bind(this),
       onDragStart: this.handleDragStart.bind(this),
       onDrag: this.handleDrag.bind(this),
@@ -8759,7 +8772,7 @@ var SlickGrid = class {
     this.internalScrollColumnIntoView(this.columnPosLeft[cell], this.columnPosRight[cell]);
   }
   setActiveCellInternal(newCell, opt_editMode, preClickModeOn, suppressActiveCellChangedEvent, e) {
-    if (this.activeCellNode !== null && (this.makeActiveCellNormal(), this.activeCellNode.classList.remove("active"), this.rowsCache[this.activeRow]?.rowNode?.forEach((node) => node.classList.remove("active"))), this.activeCellNode = newCell, Utils28.isDefined(this.activeCellNode)) {
+    if (Utils28.isDefined(this.activeCellNode) && (this.makeActiveCellNormal(), this.activeCellNode.classList.remove("active"), this.rowsCache[this.activeRow]?.rowNode?.forEach((node) => node.classList.remove("active"))), this.activeCellNode = newCell, Utils28.isDefined(this.activeCellNode)) {
       let activeCellOffset = Utils28.offset(this.activeCellNode), rowOffset = Math.floor(Utils28.offset(Utils28.parents(this.activeCellNode, ".grid-canvas")[0]).top), isBottom = Utils28.parents(this.activeCellNode, ".grid-canvas-bottom").length;
       this.hasFrozenRows && isBottom && (rowOffset -= this._options.frozenBottom ? Utils28.height(this._canvasTopL) : this.frozenRowsHeight);
       let cell = this.getCellFromPoint(activeCellOffset.left, Math.ceil(activeCellOffset.top) - rowOffset);
@@ -9647,7 +9660,7 @@ export {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.5.5
+ * SlickGrid v5.5.6
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

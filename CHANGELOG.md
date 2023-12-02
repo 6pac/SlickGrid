@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.5.6](https://github.com/6pac/SlickGrid/compare/5.5.5...5.5.6) (2023-12-02)
+
+### Bug Fixes
+
+* only allow row drag on cell w/`dnd` or `cell-reorder`, fix [#937](https://github.com/6pac/SlickGrid/issues/937) ([#938](https://github.com/6pac/SlickGrid/issues/938)) ([251c91e](https://github.com/6pac/SlickGrid/commit/251c91e9be9314a1cb040ed7efc09062354f9968)), closes [#897](https://github.com/6pac/SlickGrid/issues/897)
+* revamp all cell selection range with key combos, fixes [#935](https://github.com/6pac/SlickGrid/issues/935) ([#940](https://github.com/6pac/SlickGrid/issues/940)) ([c44eda8](https://github.com/6pac/SlickGrid/commit/c44eda86f67a22ff839d849db4e12d84d41718a0))
+
+### Performance Improvements
+
+* skip reapplying empty html when target is already empty ([#932](https://github.com/6pac/SlickGrid/issues/932)) ([564c38d](https://github.com/6pac/SlickGrid/commit/564c38da5d90056f5c0d21511d943c1260b7f675))
+
 ## [5.5.5](https://github.com/6pac/SlickGrid/compare/5.5.4...5.5.5) (2023-11-25)
 
 ### Bug Fixes
