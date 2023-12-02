@@ -65,13 +65,13 @@
     "sass:copy": "copyfiles -f src/styles/*.scss dist/styles/sass"
   },
   "dependencies": {
-    "sortablejs": "^1.15.0"
+    "sortablejs": "^1.15.1"
   },
   "devDependencies": {
     "@4tw/cypress-drag-drop": "^2.2.5",
     "@octokit/rest": "^19.0.13",
-    "@typescript-eslint/eslint-plugin": "^6.12.0",
-    "@typescript-eslint/parser": "^6.12.0",
+    "@typescript-eslint/eslint-plugin": "^6.13.1",
+    "@typescript-eslint/parser": "^6.13.1",
     "autoprefixer": "^10.4.16",
     "browser-sync": "^2.29.3",
     "chokidar": "^3.5.3",
@@ -81,12 +81,12 @@
     "cssnano-preset-lite": "^3.0.0",
     "cypress": "^13.6.0",
     "dotenv": "^16.3.1",
-    "esbuild": "^0.19.7",
-    "eslint": "^8.54.0",
+    "esbuild": "^0.19.8",
+    "eslint": "^8.55.0",
     "eslint-plugin-cypress": "^2.15.1",
     "eslint-plugin-import": "^2.29.0",
     "eslint-plugin-node": "^11.1.0",
-    "fs-extra": "^11.1.1",
+    "fs-extra": "^11.2.0",
     "git-url-parse": "^13.1.1",
     "glob": "^10.3.10",
     "http-server": "^14.1.1",
@@ -95,7 +95,7 @@
     "new-github-release-url": "^2.0.0",
     "path": "^0.12.7",
     "picocolors": "^1.0.0",
-    "postcss": "^8.4.31",
+    "postcss": "^8.4.32",
     "postcss-cli": "^10.1.0",
     "rimraf": "^5.0.5",
     "sass": "^1.69.5",
