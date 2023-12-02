@@ -140,9 +140,12 @@ export class SlickCellSelectionModel {
 
   protected handleActiveCellChange(_e: Event, args: OnActiveCellChangedEventArgs) {
     this._prevSelectedRow = undefined;
-    if (this._options?.selectActiveCell && Utils.isDefined(args.row) && Utils.isDefined(args.cell)) {
+    const isCellDefined = Utils.isDefined(args.cell);
+    const isRowDefined = Utils.isDefined(args.row);
+
+    if (this._options?.selectActiveCell && isRowDefined && isCellDefined) {
       this.setSelectedRanges([new SlickRange(args.row, args.cell)]);
-    } else if (!this._options?.selectActiveCell) {
+    } else if (!this._options?.selectActiveCell || (!isRowDefined && !isCellDefined)) {
       // clear the previous selection once the cell changes
       this.setSelectedRanges([]);
     }

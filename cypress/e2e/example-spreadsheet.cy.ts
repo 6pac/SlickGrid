@@ -60,7 +60,7 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
       .should('have.text', '{"fromRow":10,"fromCell":4,"toCell":4,"toRow":46}');
   });
 
-  it('should click on cell E12 then End key w/selection E46-E99', () => {
+  it('should click on cell E46 then Shift+End key with full row horizontal selection E46-CV46', () => {
     cy.getCell(46, 5, '', { parentSelector: "#myGrid", rowHeight: cellHeight })
       .as('cell_E46')
       .click();
@@ -69,18 +69,42 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
       .type('{shift}{end}');
 
     cy.get('#selectionRange')
-      .should('have.text', '{"fromRow":46,"fromCell":5,"toCell":5,"toRow":99}');
+      .should('have.text', '{"fromRow":46,"fromCell":5,"toCell":100,"toRow":46}');
   });
 
-  it('should click on cell C85 then End key w/selection C0-C85', () => {
-    cy.getCell(85, 3, '', { parentSelector: "#myGrid", rowHeight: cellHeight })
-      .as('cell_C85')
+  it('should click on cell CP54 then Ctrl+Shift+End keys with selection E46-CV99', () => {
+    cy.getCell(54, 94, '', { parentSelector: "#myGrid", rowHeight: cellHeight })
+      .as('cell_CP54')
       .click();
 
-    cy.get('@cell_C85')
-      .type('{shift}{home}');
+    cy.get('@cell_CP54')
+      .type('{ctrl}{shift}{end}');
 
     cy.get('#selectionRange')
-      .should('have.text', '{"fromRow":0,"fromCell":3,"toCell":3,"toRow":85}');
+      .should('have.text', '{"fromRow":54,"fromCell":94,"toCell":100,"toRow":99}');
+  });
+
+  it('should click on cell CP95 then Ctrl+Shift+Home keys with selection C0-CP95', () => {
+    cy.getCell(95, 98, '', { parentSelector: "#myGrid", rowHeight: cellHeight })
+      .as('cell_CP95')
+      .click();
+
+    cy.get('@cell_CP95')
+      .type('{ctrl}{shift}{home}');
+
+    cy.get('#selectionRange')
+      .should('have.text', '{"fromRow":0,"fromCell":0,"toCell":98,"toRow":95}');
+  });
+
+  it('should click on cell CR5 then Ctrl+Home keys and expect to scroll back to cell A0 without any selection range', () => {
+    cy.getCell(5, 95, '', { parentSelector: "#myGrid", rowHeight: cellHeight })
+      .as('cell_CR95')
+      .click();
+
+    cy.get('@cell_CR95')
+      .type('{ctrl}{home}');
+
+    cy.get('#selectionRange')
+      .should('have.text', '');
   });
 });

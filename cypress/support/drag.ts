@@ -18,13 +18,13 @@ Cypress.Commands.add('dragStart', { prevSubject: true }, (subject, { cellWidth =
   return cy.wrap(subject).click({ force: true })
     .trigger('mousedown', { which: 1 })
     .trigger('mousemove', cellWidth / 3, cellHeight / 3);
-})
+});
 
 // use a different command name than "drag" so that it doesn't conflict with the "@4tw/cypress-drag-drop" lib
 // @ts-ignore
 Cypress.Commands.add('dragCell', { prevSubject: true }, (subject, addRow, addCell, { cellWidth = 80, cellHeight = 25 } = {}) => {
   return cy.wrap(subject).trigger('mousemove', cellWidth * (addCell + 0.5), cellHeight * (addRow + 0.5), { force: true });
-})
+});
 
 Cypress.Commands.add('dragOutside', (viewport = 'topLeft', ms = 0, px = 0, { parentSelector = 'div[class^="slickgrid_"]', scrollbarDimension = 17 } = {}) => {
   const $parent = cy.$$(parentSelector);
@@ -49,17 +49,17 @@ Cypress.Commands.add('dragOutside', (viewport = 'topLeft', ms = 0, px = 0, { par
     cy.wait(ms);
   }
   return;
-})
+});
 
 Cypress.Commands.add('dragEnd', { prevSubject: 'optional' }, (subject, gridSelector = 'div[class^="slickgrid_"]') => {
   cy.get(gridSelector).trigger('mouseup', { force: true });
   return;
-})
+});
 
 export function getScrollDistanceWhenDragOutsideGrid(selector, viewport, dragDirection, fromRow, fromCol, px = 100) {
   return (cy as any).convertPosition(viewport).then((_viewportPosition: { x: number; y: number; }) => {
     const viewportSelector = `${selector} .slick-viewport-${_viewportPosition.x}.slick-viewport-${_viewportPosition.y}`;
-    (cy as any).getCell(fromRow, fromCol, viewport, { parentSelector: selector })
+    (cy as any).getNthCell(fromRow, fromCol, viewport, { parentSelector: selector })
       .dragStart();
     return cy.get(viewportSelector).then($viewport => {
       const scrollTopBefore = $viewport.scrollTop();
