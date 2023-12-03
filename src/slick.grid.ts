@@ -543,11 +543,18 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           return;
         }
 
-        // apply HTML when enableHtmlRendering is enabled but make sure we do have a value (without a value, it will simply use `textContent` to clear text content)
-        if (this._options.enableHtmlRendering && val) {
-          target.innerHTML = this.sanitizeHtmlString(val as string);
+        let sanitizedText = val;
+        if (typeof sanitizedText === 'number' || typeof sanitizedText === 'boolean') {
+          target.textContent = sanitizedText;
         } else {
-          target.textContent = this.sanitizeHtmlString(val as string);
+          sanitizedText = this.sanitizeHtmlString(val as string);
+
+          // apply HTML when enableHtmlRendering is enabled but make sure we do have a value (without a value, it will simply use `textContent` to clear text content)
+          if (this._options.enableHtmlRendering && sanitizedText) {
+            target.innerHTML = sanitizedText;
+          } else {
+            target.textContent = sanitizedText;
+          }
         }
       }
     }
