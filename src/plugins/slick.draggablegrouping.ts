@@ -252,6 +252,9 @@ export class SlickDraggableGrouping {
    */
   destroy() {
     this.destroySortableInstances();
+    if (this._droppableInstance?.el) {
+      this._droppableInstance?.destroy();
+    }
     this.onGroupChanged.unsubscribe();
     this._handler.unsubscribeAll();
     this._bindingEventService.unbindAll();
