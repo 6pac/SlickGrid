@@ -114,7 +114,8 @@ if (typeof Slick === "undefined") {
       maxSupportedCssHeight: 1000000000,
       sanitizer: undefined,  // sanitize function, built in basic sanitizer is: Slick.RegexSanitizer(dirtyHtml)
       logSanitizedHtml: false, // log to console when sanitised - recommend true for testing of dev and production
-      shadowRoot: undefined
+      shadowRoot: undefined,
+      devMode: false
     };
 
     var columnDefaults = {
@@ -2116,6 +2117,11 @@ if (typeof Slick === "undefined") {
       var i;
       if (!stylesheet) {
         var sheets = (options.shadowRoot || document).styleSheets;
+
+        if (options.devMode?.ownerNodeIndex >= 0) {
+          sheets[options.devMode.ownerNodeIndex].ownerNode = _style;
+        }
+
         for (i = 0; i < sheets.length; i++) {
           if ((sheets[i].ownerNode || sheets[i].owningElement) == _style) {
             stylesheet = sheets[i];
@@ -3765,7 +3771,7 @@ if (typeof Slick === "undefined") {
     }
 
     function getViewportWidth() {
-      viewportW = parseFloat(utils.innerSize(_container, 'width'));
+      viewportW = parseFloat(utils.innerSize(_container, 'width')) || options.devMode?.containerClientWidth;
     }
 
     function resizeCanvas() {
