@@ -117,7 +117,7 @@ export class SlickResizer {
       this._gridContainerElm = this._options.gridContainer as HTMLElement;
     }
 
-    Utils.addSlickEventDispatchWhenDefined(grid.getContainerNode(), this);
+    Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
     if (this._gridOptions) {
       this.bindAutoResizeDataGrid();
     }

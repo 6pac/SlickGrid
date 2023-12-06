@@ -204,7 +204,7 @@ export class SlickContextMenu implements SlickPlugin {
     this._grid = grid;
     this._gridOptions = grid.getOptions();
     this._gridUid = grid.getUID() || '';
-    Utils.addSlickEventDispatchWhenDefined(grid.getContainerNode(), this);
+    Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
     this._handler.subscribe(this._grid.onContextMenu, this.handleOnContextMenu.bind(this));
     if (this._contextMenuProperties.hideMenuOnScroll) {
       this._handler.subscribe(this._grid.onScroll, this.destroyMenu.bind(this));

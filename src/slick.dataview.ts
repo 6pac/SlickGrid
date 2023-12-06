@@ -16,6 +16,7 @@ import type {
   SlickGridModel,
 } from './models/index';
 import {
+  type BasePubSub,
   SlickEvent as SlickEvent_,
   SlickEventData as SlickEventData_,
   SlickGroup as SlickGroup_,
@@ -115,26 +116,28 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   protected _container?: HTMLElement;
 
   // public events
-  onBeforePagingInfoChanged = new SlickEvent<PagingInfo>('onBeforePagingInfoChanged');
-  onGroupExpanded = new SlickEvent<OnGroupExpandedEventArgs>('onGroupExpanded');
-  onGroupCollapsed = new SlickEvent<OnGroupCollapsedEventArgs>('onGroupCollapsed');
-  onPagingInfoChanged = new SlickEvent<PagingInfo>('onPagingInfoChanged');
-  onRowCountChanged = new SlickEvent<OnRowCountChangedEventArgs>('onRowCountChanged');
-  onRowsChanged = new SlickEvent<OnRowsChangedEventArgs>('onRowsChanged');
-  onRowsOrCountChanged = new SlickEvent<OnRowsOrCountChangedEventArgs>('onRowsOrCountChanged');
-  onSelectedRowIdsChanged = new SlickEvent<OnSelectedRowIdsChangedEventArgs>('onSelectedRowIdsChanged');
-  onSetItemsCalled = new SlickEvent<OnSetItemsCalledEventArgs>('onSetItemsCalled');
+  onBeforePagingInfoChanged: SlickEvent_<PagingInfo>;
+  onGroupExpanded: SlickEvent_<OnGroupExpandedEventArgs>;
+  onGroupCollapsed: SlickEvent_<OnGroupCollapsedEventArgs>;
+  onPagingInfoChanged: SlickEvent_<PagingInfo>;
+  onRowCountChanged: SlickEvent_<OnRowCountChangedEventArgs>;
+  onRowsChanged: SlickEvent_<OnRowsChangedEventArgs>;
+  onRowsOrCountChanged: SlickEvent_<OnRowsOrCountChangedEventArgs>;
+  onSelectedRowIdsChanged: SlickEvent_<OnSelectedRowIdsChangedEventArgs>;
+  onSetItemsCalled: SlickEvent_<OnSetItemsCalledEventArgs>;
 
-  constructor(options: Partial<DataViewOption>) {
+  constructor(options: Partial<DataViewOption>, protected externalPubSub?: BasePubSub) {
+    this.onBeforePagingInfoChanged = new SlickEvent<PagingInfo>('onBeforePagingInfoChanged', externalPubSub);
+    this.onGroupExpanded = new SlickEvent<OnGroupExpandedEventArgs>('onGroupExpanded', externalPubSub);
+    this.onGroupCollapsed = new SlickEvent<OnGroupCollapsedEventArgs>('onGroupCollapsed', externalPubSub);
+    this.onPagingInfoChanged = new SlickEvent<PagingInfo>('onPagingInfoChanged', externalPubSub);
+    this.onRowCountChanged = new SlickEvent<OnRowCountChangedEventArgs>('onRowCountChanged', externalPubSub);
+    this.onRowsChanged = new SlickEvent<OnRowsChangedEventArgs>('onRowsChanged', externalPubSub);
+    this.onRowsOrCountChanged = new SlickEvent<OnRowsOrCountChangedEventArgs>('onRowsOrCountChanged', externalPubSub);
+    this.onSelectedRowIdsChanged = new SlickEvent<OnSelectedRowIdsChangedEventArgs>('onSelectedRowIdsChanged', externalPubSub);
+    this.onSetItemsCalled = new SlickEvent<OnSetItemsCalledEventArgs>('onSetItemsCalled', externalPubSub);
+
     this._options = Utils.extend(true, {}, this.defaults, options);
-  }
-
-  addDispatchEventTarget(target: string | HTMLElement) {
-    for (const prop in this) {
-      if (this.hasOwnProperty(prop) && prop.startsWith('on') && typeof (this[prop] as SlickEvent_).addDispatchEventTarget === 'function') {
-        (this[prop] as SlickEvent_).addDispatchEventTarget(target);
-      }
-    }
   }
 
   /**

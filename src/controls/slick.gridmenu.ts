@@ -192,7 +192,7 @@ export class SlickGridMenu {
 
   init(grid: SlickGrid) {
     this._gridOptions = grid.getOptions();
-    Utils.addSlickEventDispatchWhenDefined(grid.getContainerNode(), this);
+    Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
     this.createGridMenu();
 
     if (this._gridMenuOptions?.customItems || this._gridMenuOptions?.customTitle) {

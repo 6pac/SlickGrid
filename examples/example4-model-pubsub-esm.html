@@ -135,6 +135,53 @@ import {
 // OR preferably use the code below when installing from npm
 // import { SlickGrid, ... } from 'slickgrid';
 
+// --
+// Simple PubSub Service using JS CustomEvent to dispatch events
+// -------------------------------------------------------------
+class EventPubSubService {
+  // temp element to dispatch event to, we can use our grid container
+  constructor(elementSource) {
+      this._subscribedEvents = [];
+      this._elementSource = elementSource || document.createElement('div');
+  }
+
+  dispose() {
+      this.unsubscribeAll();
+      this._subscribedEvents = [];
+      this._elementSource?.remove();
+      this._elementSource = null;
+  }
+
+  publish(eventName, data) {
+    const eventInit = { bubbles: true, cancelable: true };
+    if (data) {
+        eventInit.detail = data;
+    }
+    return this._elementSource?.dispatchEvent(new CustomEvent(eventName, eventInit));
+  }
+
+  subscribe(eventName, callback) {
+    // the event listener will return the data in the "event.detail", so we need to return its content to the final callback
+    // basically we substitute the "data" with "event.detail" so that the user ends up with only the "data" result
+    this._elementSource.addEventListener(eventName, (event) => callback.call(null, event.detail));
+    this._subscribedEvents.push({ name: eventName, listener: callback });
+
+    return {
+      // return a subscription that we can unsubscribe
+      unsubscribe: () => this.unsubscribe(eventName, callback)
+    };
+  }
+
+  /** Unsubscribes all events that currently exists */
+  unsubscribeAll() {
+    let pubSubEvent = this._subscribedEvents.pop();
+    while (pubSubEvent) {
+      this._elementSource.removeEventListener(pubSubEvent.name, pubSubEvent.listener);
+        pubSubEvent = this._subscribedEvents.pop();
+    }
+  }
+}
+
 let dataView;
 let grid;
 let data = [];
@@ -239,48 +286,45 @@ function toggleFilterRow() {
   grid.setTopPanelVisibility(!grid.getOptions().showTopPanel);
 }
 
-function handlePagingInfoChanged(e) {
-  const pagingInfo = e.detail; // CustomEvent "detail" prop contains our SlickEvent args
-  grid.updatePagingStatusFromView( pagingInfo );
+function handlePagingInfoChanged({eventData, args}) {
+  const pagingInfo = args;
+  grid.updatePagingStatusFromView(pagingInfo);
 
   // show the pagingInfo but remove the dataView from the object, just for the Cypress E2E test
   delete pagingInfo.dataView;
   console.log('on After Paging Info Changed - New Paging:: ', pagingInfo);
 }
 
-function handleBeforePagingInfoChanged(e) {
-  const previousPagingInfo = e.detail; // CustomEvent "detail" prop contains our SlickEvent args
+function handleBeforePagingInfoChanged({eventData, args}) {
+  const previousPagingInfo = args;
 
   // show the previous pagingInfo but remove the dataView from the object, just for the Cypress E2E test
   delete previousPagingInfo.dataView;
   console.log('on Before Paging Info Changed - Previous Paging:: ', previousPagingInfo);
 }
 
-function handleRowCountChanged(e) {
-  const args = e.detail;
+function handleRowCountChanged({eventData, args}) {
   grid.updateRowCount();
   grid.render();
 }
 
-function handleRowsChanged(e) {
-  const args = e.detail;
+function handleRowsChanged({eventData, args}) {
   grid.invalidateRows(args.rows);
   grid.render();
 }
 
-function handleCellChange(e) {
-  const args = e.detail;
+function handleCellChange({eventData, args}) {
   dataView.updateItem(args.item.id, args.item);
 }
 
-function handleAddNewRow(e) {
-  const args = e.detail;
+function handleAddNewRow({eventData, args}) {
   let item = {"num": data.length, "id": "new_" + (Math.round(Math.random() * 10000)), "title": "New task", "duration": "1 day", "percentComplete": 0, "start": "01/01/2009", "finish": "01/01/2009", "effortDriven": false};
   Utils.extend(item, args.item);
   dataView.addItem(item);
 }
 
-function handleKeyDown(e) {
+function handleKeyDown({eventData, args}) {
+  const e = eventData.nativeEvent;
   // select all rows on ctrl-a
   if (e.which != 65 || !e.ctrlKey) {
     return false;
@@ -306,14 +350,8 @@ function handleSort(e) {
 
 // when leaving the page (destroy)
 document.addEventListener("beforeunload", () => {
-  myGridElm.removeEventListener('onPagingInfoChanged', handlePagingInfoChanged);
-  myGridElm.removeEventListener('onBeforePagingInfoChanged', handleBeforePagingInfoChanged);
-  myGridElm.removeEventListener('onRowCountChanged', handleRowCountChanged);
-  myGridElm.removeEventListener('onRowsChanged', handleRowsChanged);
-  myGridElm.removeEventListener('onCellChange', handleCellChange);
-  myGridElm.removeEventListener('onAddNewRow', handleAddNewRow);
-  myGridElm.removeEventListener('onKeyDown', handleKeyDown);
-  myGridElm.removeEventListener('onSort', handleSort);
+  // myGridElm.removeEventListener('onPagingInfoChanged', handlePagingInfoChanged);
+  pubSub.unsubscribeAll();
   dataView.destroy();
   grid.destroy();
 });
@@ -333,26 +371,32 @@ document.addEventListener("DOMContentLoaded", () => {
     d["effortDriven"] = (i % 5 == 0);
   }
 
-  // with `enableSlickEventDispatch` grid option, we can use CustomEvent listeners instead of SlickEvent subscribe (don't forget to also removeEventListener to avoid leaking)
-  // CustomEvent have a `detail` property and that is were our typical `args` data will be
-  // Note: to avoid listening too late, you would typically add listeners BEFORE instantiating SlickGrid/SlickDataView
+  // we can use a PubSub Service instead of SlickEvent subscribe
+  // in this example we use a JS CustomEvent based and those have a `detail` property and that is were our typical `args` data will be
+  // the PubSub Service must include 2 required methods: publish() and subscribe()
   const myGridElm = document.querySelector('#myGrid');
 
-  // CustomEvent "detail" prop contains our SlickEvent args
-  // myGridElm.addEventListener('onClick', (e) => console.log(`event listener ${e.type}`, e.detail));
-  myGridElm.addEventListener('onPagingInfoChanged', handlePagingInfoChanged);
-  myGridElm.addEventListener('onBeforePagingInfoChanged', handleBeforePagingInfoChanged);
-  myGridElm.addEventListener('onRowCountChanged', handleRowCountChanged);
-  myGridElm.addEventListener('onRowsChanged', handleRowsChanged);
-  myGridElm.addEventListener('onCellChange', handleCellChange);
-  myGridElm.addEventListener('onAddNewRow', handleAddNewRow);
-  myGridElm.addEventListener('onKeyDown', handleKeyDown);
-  myGridElm.addEventListener('onSort', handleSort);
-
   // instantiate SlickGrid and SlickDataView
-  dataView = new SlickDataView({ inlineFilters: true });
-  grid = new SlickGrid("#myGrid", dataView, columns, options);
+  const gridContainerElm = document.querySelector('#myGrid');
+  const pubSub = new EventPubSubService(gridContainerElm);
+  dataView = new SlickDataView({ inlineFilters: true }, pubSub);
+  grid = new SlickGrid(gridContainerElm, dataView, columns, options, pubSub);
   grid.setSelectionModel(new SlickRowSelectionModel());
+
+  // use our PubSub to subscribe to any events
+  // the subscribe is holds 2 properties "eventData" and "args" (when provided)
+  pubSub.subscribe('onPagingInfoChanged', handlePagingInfoChanged);
+  pubSub.subscribe('onBeforePagingInfoChanged', handleBeforePagingInfoChanged);
+  pubSub.subscribe('onRowCountChanged', handleRowCountChanged);
+  pubSub.subscribe('onRowsChanged', handleRowsChanged);
+  pubSub.subscribe('onCellChange', handleCellChange);
+  pubSub.subscribe('onAddNewRow', handleAddNewRow);
+  pubSub.subscribe('onKeyDown', handleKeyDown);
+  pubSub.subscribe('onSort', handleSort);
+
+  // OR since we use a JS PubSub CustomEvent based, we could also use addEventListener
+  // since we use a CustomEvent the "detail" prop will contain the 2 properties "eventData" and "args" (when provided)
+  // myGridElm.addEventListener('onClick', (e) => console.log(`event listener ${e.type}`, e.detail));
 
   let pager = new SlickGridPager(dataView, grid, "#pager");
   let columnpicker = new SlickColumnPicker(columns, grid, options);

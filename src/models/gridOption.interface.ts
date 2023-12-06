@@ -12,7 +12,6 @@ export interface CustomDataView<T = any> {
   getLength: () => number;
   getItem: (index: number) => T;
   getItemMetadata(index: number): ItemMetadata | null;
-  addDispatchEventTarget?: (target: string | HTMLElement) => void;
 }
 
 export interface CssStyleHash {
@@ -108,9 +107,6 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
 
   /** Default cell Formatter that will be used by the grid */
   defaultFormatter?: Formatter;
-
-  /** Defaults to False, if enabled a SlickEvent notify will also dispatch a CustomEvent to the grid container element. */
-  enableSlickEventDispatch?: boolean;
 
   /** Do we have paging enabled? */
   doPaging?: boolean;

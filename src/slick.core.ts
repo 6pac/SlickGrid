@@ -13,6 +13,11 @@ import type {
   MergeTypes
 } from './models/index';
 
+export interface BasePubSub {
+  publish<ArgType = any>(_eventName: string | any, _data?: ArgType): any;
+  subscribe<ArgType = any>(_eventName: string | Function, _callback: (data: ArgType) => void): any;
+}
+
 /**
  * An event object for passing data to event handlers and letting them control propagation.
  * <p>This is pretty much identical to how W3C and jQuery implement events.</p>
@@ -127,18 +132,19 @@ export class SlickEventData<ArgType = any> {
  */
 export class SlickEvent<ArgType = any> {
   protected _handlers: Handler<ArgType>[] = [];
-  protected _eventTargetElm?: HTMLElement | null;
+  protected _pubSubService?: BasePubSub;
+
+  get subscriberCount() {
+    return this._handlers.length;
+  }
 
   /**
    * Constructor
    * @param {String} [eventName] - event name that could be used for dispatching CustomEvent (when enabled)
+   * @param {BasePubSub} [pubSubService] - event name that could be used for dispatching CustomEvent (when enabled)
    */
-  constructor(public readonly eventName?: string) { }
-
-  addDispatchEventTarget(target: string | HTMLElement) {
-    this._eventTargetElm = (typeof target === 'string')
-      ? document.querySelector(target)
-      : target;
+  constructor(protected readonly eventName?: string, protected readonly pubSub?: BasePubSub) {
+    this._pubSubService = pubSub;
   }
 
   /**
@@ -185,16 +191,16 @@ export class SlickEvent<ArgType = any> {
       sed.addReturnValue(returnValue);
     }
 
-    // user optionally add CustomEvent listeners, that is when both `enableSlickEventDispatch` grid option and event name are defined
-    if (typeof this._eventTargetElm?.dispatchEvent === 'function') {
-      const eventInit: CustomEventInit<ArgType> = { bubbles: true, cancelable: true };
-      if (args) {
-        eventInit.detail = { ...args, nativeEvent: sed?.getNativeEvent() };
-      }
-      this._eventTargetElm.dispatchEvent(new CustomEvent<ArgType>(this.eventName || '', eventInit));
+    // user can optionally add a global PubSub Service which makes it easy to publish/subscribe to events
+    if (typeof this._pubSubService?.publish === 'function' && this.eventName) {
+      const ret = this._pubSubService.publish<{ args: ArgType; eventData?: Event | SlickEventData; nativeEvent?: Event; }>(this.eventName, { args, eventData: sed });
+      sed.addReturnValue(ret);
     }
-
     return sed;
+  }
+
+  setPubSubService(pubSub: BasePubSub) {
+    this._pubSubService = pubSub;
   }
 }
 
@@ -961,16 +967,16 @@ export class Utils {
   }
 
   /**
-   * User could optionally add CustomEvent dispatch through an optional "enableSlickEventDispatch" grid option.
-   * When it is defined then a SlickEvent `notify()` call will also dispatch a CustomEvent of the same name
-   * @param {GridOption} gridOption
+   * User could optionally add PubSub Service to SlickEvent
+   * When it is defined then a SlickEvent `notify()` call will also dispatch it by using the PubSub publish() method
+   * @param {BasePubSub} [pubSubService]
    * @param {*} scope
    */
-  public static addSlickEventDispatchWhenDefined<T = any>(target: string | HTMLElement, scope: T) {
-    if (target) {
+  public static addSlickEventPubSubWhenDefined<T = any>(pubSub?: BasePubSub, scope?: T) {
+    if (pubSub) {
       for (const prop in scope) {
-        if (scope[prop] instanceof SlickEvent && typeof (scope[prop] as SlickEvent).addDispatchEventTarget === 'function') {
-          (scope[prop] as SlickEvent).addDispatchEventTarget(target);
+        if (scope[prop] instanceof SlickEvent && typeof (scope[prop] as SlickEvent).setPubSubService === 'function') {
+          (scope[prop] as SlickEvent).setPubSubService(pubSub);
         }
       }
     }

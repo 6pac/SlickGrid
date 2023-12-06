@@ -194,7 +194,7 @@ export class SlickCellMenu implements SlickPlugin {
   init(grid: SlickGrid) {
     this._grid = grid;
     this._gridOptions = grid.getOptions();
-    Utils.addSlickEventDispatchWhenDefined(grid.getContainerNode(), this);
+    Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
     this._gridUid = grid?.getUID() || '';
     this._handler.subscribe(this._grid.onClick, this.handleCellClick.bind(this));
     if (this._cellMenuProperties.hideMenuOnScroll) {
