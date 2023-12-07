@@ -338,7 +338,7 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
   getColumnDefinition() {
     return {
       id: this._options.columnId,
-      name: (this._options.hideSelectAllCheckbox || this._options.hideInColumnTitleRow) ? '' : `<input id="header-selector${this._selectAll_UID}" type="checkbox"><label for="header-selector${this._selectAll_UID}"></label>`,
+      name: (this._options.hideSelectAllCheckbox || this._options.hideInColumnTitleRow) ? this._options.name : `<input id="header-selector${this._selectAll_UID}" type="checkbox"><label for="header-selector${this._selectAll_UID}"></label>`,
       toolTip: (this._options.hideSelectAllCheckbox || this._options.hideInColumnTitleRow) ? '' : this._options.toolTip,
       field: "sel",
       width: this._options.width,
