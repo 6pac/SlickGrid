@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Questions
+    url: https://stackoverflow.com/search?q=slickgrid
+    about: Use Stack Overflow to ask for any SlickGrid questions

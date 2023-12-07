@@ -1,0 +1,5 @@
+blank_issues_enabled: false
+contact_links:
+  - name: Discussions
+    url: https://github.com/6pac/SlickGrid/discussions
+    about: Use GitHub Discussions for message-board style questions and discussions.
