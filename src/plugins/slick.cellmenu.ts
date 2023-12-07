@@ -155,11 +155,11 @@ export class SlickCellMenu implements SlickPlugin {
   // --
   // public API
   pluginName = 'CellMenu' as const;
-  onAfterMenuShow = new SlickEvent<MenuFromCellCallbackArgs>();
-  onBeforeMenuShow = new SlickEvent<MenuFromCellCallbackArgs>();
-  onBeforeMenuClose = new SlickEvent<MenuFromCellCallbackArgs>();
-  onCommand = new SlickEvent<MenuCommandItemCallbackArgs>();
-  onOptionSelected = new SlickEvent<MenuOptionItemCallbackArgs>();
+  onAfterMenuShow = new SlickEvent<MenuFromCellCallbackArgs>('onAfterMenuShow');
+  onBeforeMenuShow = new SlickEvent<MenuFromCellCallbackArgs>('onBeforeMenuShow');
+  onBeforeMenuClose = new SlickEvent<MenuFromCellCallbackArgs>('onBeforeMenuClose');
+  onCommand = new SlickEvent<MenuCommandItemCallbackArgs>('onCommand');
+  onOptionSelected = new SlickEvent<MenuOptionItemCallbackArgs>('onOptionSelected');
 
   // --
   // protected props
@@ -194,6 +194,7 @@ export class SlickCellMenu implements SlickPlugin {
   init(grid: SlickGrid) {
     this._grid = grid;
     this._gridOptions = grid.getOptions();
+    Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
     this._gridUid = grid?.getUID() || '';
     this._handler.subscribe(this._grid.onClick, this.handleCellClick.bind(this));
     if (this._cellMenuProperties.hideMenuOnScroll) {

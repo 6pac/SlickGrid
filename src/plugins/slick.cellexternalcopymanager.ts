@@ -36,9 +36,9 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
   // --
   // public API
   pluginName = 'CellExternalCopyManager' as const;
-  onCopyCells = new SlickEvent<{ ranges: SlickRange_[]; }>();
-  onCopyCancelled = new SlickEvent<{ ranges: SlickRange_[]; }>();
-  onPasteCells = new SlickEvent<{ ranges: SlickRange_[]; }>();
+  onCopyCells = new SlickEvent<{ ranges: SlickRange_[]; }>('onCopyCells');
+  onCopyCancelled = new SlickEvent<{ ranges: SlickRange_[]; }>('onCopyCancelled');
+  onPasteCells = new SlickEvent<{ ranges: SlickRange_[]; }>('onPasteCells');
 
   // --
   // protected props
@@ -70,6 +70,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
 
   init(grid: SlickGrid) {
     this._grid = grid;
+    Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
     this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this));
 
     // we need a cell selection model

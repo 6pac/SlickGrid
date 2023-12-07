@@ -22,7 +22,7 @@ export class SlickRowSelectionModel {
   // --
   // public API
   pluginName = 'RowSelectionModel' as const;
-  onSelectedRangesChanged = new SlickEvent<SlickRange_[]>();
+  onSelectedRangesChanged = new SlickEvent<SlickRange_[]>('onSelectedRangesChanged');
   // _handler, _inHandler, _isRowMoveManagerHandler, _options, wrapHandler
   // --
   // protected props
@@ -51,6 +51,7 @@ export class SlickRowSelectionModel {
 
     this._selector = this._options.cellRangeSelector;
     this._grid = grid;
+    Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
 
     if (!this._selector && this._options.dragToSelect) {
       if (!SlickCellRangeDecorator) {

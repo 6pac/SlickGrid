@@ -14,9 +14,9 @@ export class SlickCellCopyManager implements SlickPlugin {
   // --
   // public API
   pluginName = 'CellCopyManager' as const;
-  onCopyCells = new SlickEvent<{ ranges: SlickRange[] | null; }>();
-  onCopyCancelled = new SlickEvent<{ ranges: SlickRange[] | null; }>();
-  onPasteCells = new SlickEvent<{ from: SlickRange[] | undefined; to: SlickRange[] | undefined; }>();
+  onCopyCells = new SlickEvent<{ ranges: SlickRange[] | null; }>('onCopyCells');
+  onCopyCancelled = new SlickEvent<{ ranges: SlickRange[] | null; }>('onCopyCancelled');
+  onPasteCells = new SlickEvent<{ from: SlickRange[] | undefined; to: SlickRange[] | undefined; }>('onPasteCells');
 
   // --
   // protected props
@@ -25,6 +25,7 @@ export class SlickCellCopyManager implements SlickPlugin {
 
   init(grid: SlickGrid) {
     this._grid = grid;
+    Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
     this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this));
   }
 

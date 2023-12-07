@@ -16,9 +16,9 @@ export class SlickCellRangeSelector implements SlickPlugin {
   // --
   // public API
   pluginName = 'CellRangeSelector' as const;
-  onBeforeCellRangeSelected = new SlickEvent<{ row: number; cell: number; }>();
-  onCellRangeSelected = new SlickEvent<{ range: SlickRange_; }>();
-  onCellRangeSelecting = new SlickEvent<{ range: SlickRange_; }>();
+  onBeforeCellRangeSelected = new SlickEvent<{ row: number; cell: number; }>('onBeforeCellRangeSelected');
+  onCellRangeSelected = new SlickEvent<{ range: SlickRange_; }>('onCellRangeSelected');
+  onCellRangeSelecting = new SlickEvent<{ range: SlickRange_; }>('onCellRangeSelecting');
 
   // --
   // protected props
@@ -73,6 +73,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
 
     this._decorator = this._options.cellDecorator || new SlickCellRangeDecorator(grid, this._options);
     this._grid = grid;
+    Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
     this._canvas = this._grid.getCanvasNode();
     this._gridOptions = this._grid.getOptions();
     this._handler

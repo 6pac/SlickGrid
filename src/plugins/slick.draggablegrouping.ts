@@ -42,7 +42,7 @@ export class SlickDraggableGrouping {
   // --
   // public API
   pluginName = 'DraggableGrouping' as const;
-  onGroupChanged = new SlickEvent<{ caller?: string; groupColumns: Grouping[]; }>();
+  onGroupChanged = new SlickEvent<{ caller?: string; groupColumns: Grouping[]; }>('onGroupChanged');
 
   // --
   // protected props
@@ -85,6 +85,8 @@ export class SlickDraggableGrouping {
    */
   init(grid: SlickGrid) {
     this._grid = grid;
+    Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
+
     this._gridUid = this._grid.getUID();
     this._gridColumns = this._grid.getColumns();
     this._dataView = this._grid.getData();

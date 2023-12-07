@@ -111,9 +111,9 @@ export class SlickHeaderMenu implements SlickPlugin {
   // --
   // public API
   pluginName = 'HeaderMenu' as const;
-  onAfterMenuShow = new SlickEvent<HeaderMenuCommandItemCallbackArgs>();
-  onBeforeMenuShow = new SlickEvent<HeaderMenuCommandItemCallbackArgs>();
-  onCommand = new SlickEvent<MenuCommandItemCallbackArgs>();
+  onAfterMenuShow = new SlickEvent<HeaderMenuCommandItemCallbackArgs>('onAfterMenuShow');
+  onBeforeMenuShow = new SlickEvent<HeaderMenuCommandItemCallbackArgs>('onBeforeMenuShow');
+  onCommand = new SlickEvent<MenuCommandItemCallbackArgs>('onCommand');
 
   // --
   // protected props
@@ -141,6 +141,7 @@ export class SlickHeaderMenu implements SlickPlugin {
   init(grid: SlickGrid) {
     this._grid = grid;
     this._gridUid = grid?.getUID() || '';
+    Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
     this._handler
       .subscribe(this._grid.onHeaderCellRendered, this.handleHeaderCellRendered.bind(this))
       .subscribe(this._grid.onBeforeHeaderCellDestroy, this.handleBeforeHeaderCellDestroy.bind(this));

@@ -193,7 +193,7 @@ document.addEventListener("DOMContentLoaded", function() {
     d["effortDriven"] = (i % 5 == 0);
   }
 
-
+  // instantiate SlickGrid and SlickDataView
   dataView = new Slick.Data.DataView({ inlineFilters: true });
   grid = new Slick.Grid("#myGrid", dataView, columns, options);
   grid.setSelectionModel(new Slick.RowSelectionModel());
@@ -254,15 +254,14 @@ document.addEventListener("DOMContentLoaded", function() {
     grid.render();
   });
 
-  dataView.onPagingInfoChanged.subscribe(function (e, pagingInfo) {
+  dataView.onPagingInfoChanged.subscribe((e, pagingInfo) => {
     grid.updatePagingStatusFromView( pagingInfo );
-
     // show the pagingInfo but remove the dataView from the object, just for the Cypress E2E test
     delete pagingInfo.dataView;
     console.log('on After Paging Info Changed - New Paging:: ', pagingInfo);
   });
 
-  dataView.onBeforePagingInfoChanged.subscribe(function (e, previousPagingInfo) {
+  dataView.onBeforePagingInfoChanged.subscribe((e, previousPagingInfo) => {
     // show the previous pagingInfo but remove the dataView from the object, just for the Cypress E2E test
     delete previousPagingInfo.dataView;
     console.log('on Before Paging Info Changed - Previous Paging:: ', previousPagingInfo);

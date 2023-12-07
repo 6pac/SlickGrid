@@ -9,7 +9,7 @@ import type {
   MenuCommandItem,
   onGridMenuColumnsChangedCallbackArgs
 } from '../models/index';
-import { BindingEventService as BindingEventService_, Event as SlickEvent_, Utils as Utils_ } from '../slick.core';
+import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_, Utils as Utils_ } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -133,11 +133,11 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 export class SlickGridMenu {
   // --
   // public API
-  onAfterMenuShow = new SlickEvent<GridMenuEventWithElementCallbackArgs>();
-  onBeforeMenuShow = new SlickEvent<GridMenuEventWithElementCallbackArgs>();
-  onMenuClose = new SlickEvent<GridMenuEventWithElementCallbackArgs>();
-  onCommand = new SlickEvent<GridMenuCommandItemCallbackArgs>();
-  onColumnsChanged = new SlickEvent<onGridMenuColumnsChangedCallbackArgs>();
+  onAfterMenuShow = new SlickEvent<GridMenuEventWithElementCallbackArgs>('onAfterMenuShow');
+  onBeforeMenuShow = new SlickEvent<GridMenuEventWithElementCallbackArgs>('onBeforeMenuShow');
+  onMenuClose = new SlickEvent<GridMenuEventWithElementCallbackArgs>('onMenuClose');
+  onCommand = new SlickEvent<GridMenuCommandItemCallbackArgs>('onCommand');
+  onColumnsChanged = new SlickEvent<onGridMenuColumnsChangedCallbackArgs>('onColumnsChanged');
 
   // --
   // protected props
@@ -192,6 +192,7 @@ export class SlickGridMenu {
 
   init(grid: SlickGrid) {
     this._gridOptions = grid.getOptions();
+    Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
     this.createGridMenu();
 
     if (this._gridMenuOptions?.customItems || this._gridMenuOptions?.customTitle) {

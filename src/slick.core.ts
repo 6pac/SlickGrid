@@ -13,13 +13,18 @@ import type {
   MergeTypes
 } from './models/index';
 
+export interface BasePubSub {
+  publish<ArgType = any>(_eventName: string | any, _data?: ArgType): any;
+  subscribe<ArgType = any>(_eventName: string | Function, _callback: (data: ArgType) => void): any;
+}
+
 /**
  * An event object for passing data to event handlers and letting them control propagation.
  * <p>This is pretty much identical to how W3C and jQuery implement events.</p>
  * @class EventData
  * @constructor
  */
-export class SlickEventData {
+export class SlickEventData<ArgType = any> {
   protected _isPropagationStopped = false;
   protected _isImmediatePropagationStopped = false;
   protected _isDefaultPrevented = false;
@@ -27,9 +32,9 @@ export class SlickEventData {
   protected returnValue: any = undefined;
   protected target?: EventTarget | null;
   protected nativeEvent?: Event | null;
-  protected arguments_: any;
+  protected arguments_?: ArgType;
 
-  constructor(protected event?: Event | null, protected args?: any) {
+  constructor(protected event?: Event | null, protected args?: ArgType) {
     this.nativeEvent = event;
     this.arguments_ = args;
 
@@ -126,28 +131,42 @@ export class SlickEventData {
  * @constructor
  */
 export class SlickEvent<ArgType = any> {
-  protected handlers: Handler<ArgType>[] = [];
+  protected _handlers: Handler<ArgType>[] = [];
+  protected _pubSubService?: BasePubSub;
+
+  get subscriberCount() {
+    return this._handlers.length;
+  }
+
+  /**
+   * Constructor
+   * @param {String} [eventName] - event name that could be used for dispatching CustomEvent (when enabled)
+   * @param {BasePubSub} [pubSubService] - event name that could be used for dispatching CustomEvent (when enabled)
+   */
+  constructor(protected readonly eventName?: string, protected readonly pubSub?: BasePubSub) {
+    this._pubSubService = pubSub;
+  }
 
   /**
    * Adds an event handler to be called when the event is fired.
    * <p>Event handler will receive two arguments - an <code>EventData</code> and the <code>data</code>
    * object the event was fired with.<p>
    * @method subscribe
-   * @param fn {Function} Event handler.
+   * @param {Function} fn - Event handler.
    */
   subscribe(fn: Handler<ArgType>) {
-    this.handlers.push(fn);
+    this._handlers.push(fn);
   }
 
   /**
    * Removes an event handler added with <code>subscribe(fn)</code>.
    * @method unsubscribe
-   * @param fn {Function} Event handler to be removed.
+   * @param {Function} [fn] - Event handler to be removed.
    */
   unsubscribe(fn?: Handler<ArgType>) {
-    for (let i = this.handlers.length - 1; i >= 0; i--) {
-      if (this.handlers[i] === fn) {
-        this.handlers.splice(i, 1);
+    for (let i = this._handlers.length - 1; i >= 0; i--) {
+      if (this._handlers[i] === fn) {
+        this._handlers.splice(i, 1);
       }
     }
   }
@@ -155,14 +174,10 @@ export class SlickEvent<ArgType = any> {
   /**
    * Fires an event notifying all subscribers.
    * @method notify
-   * @param args {Object} Additional data object to be passed to all handlers.
-   * @param e {EventData}
-   *      Optional.
-   *      An <code>EventData</code> object to be passed to all handlers.
+   * @param {Object} args Additional data object to be passed to all handlers.
+   * @param {EventData} [event] - An <code>EventData</code> object to be passed to all handlers.
    *      For DOM events, an existing W3C event object can be passed in.
-   * @param scope {Object}
-   *      Optional.
-   *      The scope ("this") within which the handler will be executed.
+   * @param {Object} [scope] - The scope ("this") within which the handler will be executed.
    *      If not specified, the scope will be set to the <code>Event</code> instance.
    */
   notify(args: ArgType, evt?: SlickEventData | Event | MergeTypes<SlickEventData, Event> | null, scope?: any) {
@@ -171,12 +186,21 @@ export class SlickEvent<ArgType = any> {
       : new SlickEventData(evt, args);
     scope = scope || this;
 
-    for (let i = 0; i < this.handlers.length && !(sed.isPropagationStopped() || sed.isImmediatePropagationStopped()); i++) {
-      const returnValue = this.handlers[i].call(scope, sed as SlickEvent | SlickEventData, args);
+    for (let i = 0; i < this._handlers.length && !(sed.isPropagationStopped() || sed.isImmediatePropagationStopped()); i++) {
+      const returnValue = this._handlers[i].call(scope, sed as SlickEvent | SlickEventData, args);
       sed.addReturnValue(returnValue);
     }
 
+    // user can optionally add a global PubSub Service which makes it easy to publish/subscribe to events
+    if (typeof this._pubSubService?.publish === 'function' && this.eventName) {
+      const ret = this._pubSubService.publish<{ args: ArgType; eventData?: Event | SlickEventData; nativeEvent?: Event; }>(this.eventName, { args, eventData: sed });
+      sed.addReturnValue(ret);
+    }
     return sed;
+  }
+
+  setPubSubService(pubSub: BasePubSub) {
+    this._pubSubService = pubSub;
   }
 }
 
@@ -636,8 +660,7 @@ export class Utils {
   };
 
   public static isFunction(obj: any) {
-    return typeof obj === 'function' && typeof obj.nodeType !== 'number' &&
-      typeof obj.item !== 'function';
+    return typeof obj === 'function' && typeof obj.nodeType !== 'number' && typeof obj.item !== 'function';
   }
 
   public static isPlainObject(obj: any) {
@@ -912,9 +935,7 @@ export class Utils {
 
   public static hide(el: HTMLElement | HTMLElement[]) {
     if (Array.isArray(el)) {
-      el.forEach(function (e) {
-        e.style.display = 'none';
-      });
+      el.forEach((e) => e.style.display = 'none');
     } else {
       el.style.display = 'none';
     }
@@ -941,6 +962,22 @@ export class Utils {
     for (const key in srcObj) {
       if (srcObj.hasOwnProperty(key) && !targetObj.hasOwnProperty(key)) {
         targetObj[key] = srcObj[key];
+      }
+    }
+  }
+
+  /**
+   * User could optionally add PubSub Service to SlickEvent
+   * When it is defined then a SlickEvent `notify()` call will also dispatch it by using the PubSub publish() method
+   * @param {BasePubSub} [pubSubService]
+   * @param {*} scope
+   */
+  public static addSlickEventPubSubWhenDefined<T = any>(pubSub?: BasePubSub, scope?: T) {
+    if (pubSub) {
+      for (const prop in scope) {
+        if (scope[prop] instanceof SlickEvent && typeof (scope[prop] as SlickEvent).setPubSubService === 'function') {
+          (scope[prop] as SlickEvent).setPubSubService(pubSub);
+        }
       }
     }
   }

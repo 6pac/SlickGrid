@@ -32,48 +32,25 @@
     .slick-row.selected .cell-selection {
       background-color: transparent; /* show default selected row background */
     }
-    .slick-header-column:nth-child(1) {
-      justify-content: center;
-    }
-    .alpine-theme .slick-column-groupable {
-      height: 1em;
-      width: 1em;
-      mask-size: 1em;
-      -webkit-mask-size: 1em;
-    }
-    .btn-alpine-theme {
-      background-color: gray;
-      color: white;
-      border-width: 1px;
-      border-radius: 2px;
-      height: 22px;
-    }
-    .btn-classic-theme {
-      background-color: #bbd1ee;
-      border-width: 1px;
-      border-radius: 2px;
-      height: 22px;
-    }
-    .sgi-search:hover {
-      cursor: pointer;
-      color: darkcyan;
-    }
-    /* change to flex-end for RTL support */
-    .slick-container {
-      --alpine-header-justify-content: flex-start;
-      --alpine-cell-justify-content: flex-start;
+    .text-right {
+      justify-content: flex-end !important;
     }
   </style>
 </head>
 <body>
 <div style="position:relative">
   <div style="width:625px;">
-    <div class="grid-header" style="width:100%">
-      <label>SlickGrid</label>
-      <span style="float:right;margin:0px 4px auto 6px;cursor:pointer" class="sgi sgi-search" title="Toggle search panel"></span>
-    </div>
-    <div id="myGrid" class="slick-container alpine-theme" style="width:100%;height:500px;"></div>
-    <div id="pager" style="width:100%;"></div>
+    <!-- simple web componet example -->
+    <my-component
+        on-columns-changed="onColumnsChanged"
+        on-before-menu-show="onBeforeMenuShow"
+        on-menu-close="onMenuClose"
+        on-paging-info-changed="onPagingInfoChanged"
+        on-before-paging-info-changed="onBeforePagingInfoChanged">
+
+      <div id="myGrid" class="slick-container alpine-theme" style="width:100%;height:500px;"></div>
+      <div id="pager" style="width:100%;"></div>
+    </my-component>
   </div>
 
   <div class="options-panel">
@@ -113,13 +90,10 @@
         <li>inline filter panel</li>
       </ul>
       <strong>Load CSS Theme:</strong>
-      <button class="btn-alpine-theme" data-test="theme-alpine-btn">Alpine Theme</button>
-      <button class="btn-classic-theme" data-test="theme-classic-btn">Classic Theme</button>
-
-        <h2>View Source:</h2>
-        <ul>
-            <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example4-model-esm.html" target="_sourcewindow"> View the source for this example on Github</a></li>
-        </ul>
+      <h2>View Source:</h2>
+      <ul>
+          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-web-component-pubsub-esm.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+      </ul>
 
     </div>
   </div>
@@ -151,11 +125,72 @@ import {
 // OR preferably use the code below when installing from npm
 // import { SlickGrid, ... } from 'slickgrid';
 
+// --
+// Simple PubSub Service using JS CustomEvent to dispatch events
+// -------------------------------------------------------------
+class EventPubSubService {
+  // temp element to dispatch event to, we can use our grid container
+  constructor(elementSource) {
+      this._subscribedEvents = [];
+      this._elementSource = elementSource || document.createElement('div');
+  }
+
+  dispose() {
+      this.unsubscribeAll();
+      this._subscribedEvents = [];
+      this._elementSource?.remove();
+      this._elementSource = null;
+  }
+
+  publish(eventName, data) {
+    const eventInit = { bubbles: true, cancelable: true };
+    if (data) {
+        eventInit.detail = data;
+    }
+    return this._elementSource?.dispatchEvent(new CustomEvent(eventName, eventInit));
+  }
+
+  subscribe(eventName, callback) {
+    // the event listener will return the data in the "event.detail", so we need to return its content to the final callback
+    // basically we substitute the "data" with "event.detail" so that the user ends up with only the "data" result
+    this._elementSource.addEventListener(eventName, (event) => callback.call(null, event.detail));
+    this._subscribedEvents.push({ name: eventName, listener: callback });
+
+    return {
+      // return a subscription that we can unsubscribe
+      unsubscribe: () => this.unsubscribe(eventName, callback)
+    };
+  }
+
+  unsubscribe(eventName, listener) {
+    const eventNameByConvention = this.getEventNameByNamingConvention(eventName, '');
+    this._elementSource.removeEventListener(eventNameByConvention, listener);
+  }
+
+  /** Unsubscribes all events that currently exists */
+  unsubscribeAll() {
+    let pubSubEvent = this._subscribedEvents.pop();
+    while (pubSubEvent) {
+      this._elementSource.removeEventListener(pubSubEvent.name, pubSubEvent.listener);
+        pubSubEvent = this._subscribedEvents.pop();
+    }
+  }
+}
+
+function toCamelCase(inputStr) {
+  return inputStr.replace(/(?:^\w|[A-Z]|\b\w|[\s+\-_\/])/g, (match, offset) => {
+    if (/[\s+\-_\/]/.test(match)) {
+      return '';
+    }
+    return offset === 0 ? match.toLowerCase() : match.toUpperCase();
+  });
+}
+
 let dataView;
 let grid;
 let data = [];
 let columns = [
-  {id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 45, cannotTriggerInsert: true, resizable: false, selectable: false, excludeFromColumnPicker: true },
+  {id: "sel", name: "#", field: "num", behavior: "select", headerCssClass: "text-right", cssClass: "cell-selection", width: 45, cannotTriggerInsert: true, resizable: false, selectable: false, excludeFromColumnPicker: true },
   {id: "title", name: "Title", field: "title", width: 110, minWidth: 100, cssClass: "cell-title", editor: Editors.LongText, validator: requiredFieldValidator, sortable: true},
   {id: "duration", name: "Duration", field: "duration", editor: Editors.Text, sortable: true},
   {id: "%", defaultSortAsc: false, name: "% Complete", field: "percentComplete", width: 95, formatter: Formatters.PercentCompleteBar, editor: Editors.PercentComplete, sortable: true},
@@ -180,6 +215,7 @@ let options = {
     forceFitTitle: "Force fit columns",
     syncResizeTitle: "Synchronous resize",
   },
+  enableSlickEventDispatch: true,
   editable: true,
   enableAddRow: true,
   enableCellNavigation: true,
@@ -254,6 +290,90 @@ function toggleFilterRow() {
   grid.setTopPanelVisibility(!grid.getOptions().showTopPanel);
 }
 
+function handlePagingInfoChanged({eventData, args}) {
+  const pagingInfo = args;
+  grid.updatePagingStatusFromView(pagingInfo);
+
+  // show the pagingInfo but remove the dataView from the object, just for the Cypress E2E test
+  delete pagingInfo.dataView;
+  console.log('on After Paging Info Changed - New Paging:: ', pagingInfo);
+}
+
+function handleBeforePagingInfoChanged({eventData, args}) {
+  const previousPagingInfo = args;
+
+  // show the previous pagingInfo but remove the dataView from the object, just for the Cypress E2E test
+  delete previousPagingInfo.dataView;
+  console.log('on Before Paging Info Changed - Previous Paging:: ', previousPagingInfo);
+}
+
+function handleRowCountChanged({eventData, args}) {
+  grid.updateRowCount();
+  grid.render();
+}
+
+function handleRowsChanged({eventData, args}) {
+  grid.invalidateRows(args.rows);
+  grid.render();
+}
+
+function handleCellChange({eventData, args}) {
+  dataView.updateItem(args.item.id, args.item);
+}
+
+function handleAddNewRow({eventData, args}) {
+  let item = {"num": data.length, "id": "new_" + (Math.round(Math.random() * 10000)), "title": "New task", "duration": "1 day", "percentComplete": 0, "start": "01/01/2009", "finish": "01/01/2009", "effortDriven": false};
+  Utils.extend(item, args.item);
+  dataView.addItem(item);
+}
+
+function handleKeyDown({eventData, args}) {
+  const e = eventData.nativeEvent;
+  // select all rows on ctrl-a
+  if (e.which != 65 || !e.ctrlKey) {
+    return false;
+  }
+
+  let rows = [];
+  for (let i = 0; i < dataView.getLength(); i++) {
+    rows.push(i);
+  }
+
+  grid.setSelectedRows(rows);
+  e.preventDefault();
+}
+
+function handleSort(e) {
+  const args = e.detail;
+  sortdir = args.sortAsc ? 1 : -1;
+  sortcol = args.sortCol.field;
+
+  // using native sort with comparer
+  dataView.sort(comparer, args.sortAsc);
+}
+
+// when leaving the page (destroy), make sure to unsubscribe everything to avoid event memory leaks
+document.addEventListener("beforeunload", () => {
+  pubSub.unsubscribeAll();
+  dataView.destroy();
+  grid.destroy();
+});
+
+// simple list of methods to easily reference when looping through all component attributes and assign as PubSub callbacks
+// the only reason we do it this way is to easily assign a function name to the PubSub list of methods when looping attribtues, e.g.: methods['onClick']
+const methods = {
+  // called by Grid Menu
+  onBeforeMenuShow: (event) => {
+    console.log('Grid Menu onBeforeMenuShow::', event); // this will log an object with 2 properties "eventData" and "args" (when provided)
+  },
+  onMenuClose: (event) => console.log('Grid Menu onMenuClose:: ' + event.args.menu.className.split(' ')[0]), // should display "slick-gridmenu"
+  onColumnsChanged: (event) => console.log('onColumnsChanged::', event.args),
+
+  // just assign to existing functions
+  onPagingInfoChanged: handlePagingInfoChanged,
+  onBeforePagingInfoChanged: handleBeforePagingInfoChanged,
+}
+
 document.addEventListener("DOMContentLoaded", () => {
   // prepare the data
   for (let i = 0; i < 50000; i++) {
@@ -269,10 +389,47 @@ document.addEventListener("DOMContentLoaded", () => {
     d["effortDriven"] = (i % 5 == 0);
   }
 
+  // we can use a PubSub Service instead of SlickEvent subscribe
+  // in this example we use a JS CustomEvent based and those have a `detail` property and that is were our typical `args` data will be
+  // the PubSub Service must include 2 required methods: publish() and subscribe()
+  const myCompElm = document.querySelector('my-component');
+  const gridContainerElm = document.querySelector('#myGrid');
+
   // instantiate SlickGrid and SlickDataView
-  dataView = new SlickDataView({ inlineFilters: true });
-  grid = new SlickGrid("#myGrid", dataView, columns, options);
+  const ps = new EventPubSubService(myCompElm);
+  dataView = new SlickDataView({ inlineFilters: true }, ps);
+  grid = new SlickGrid(gridContainerElm, dataView, columns, options, ps);
   grid.setSelectionModel(new SlickRowSelectionModel());
+
+  // 1. first use case, use the PubSub from anywhere
+  // use our PubSub to subscribe to any events
+  // the subscribe is holds 2 properties "eventData" and "args" (when provided)
+  ps.subscribe('onRowCountChanged', handleRowCountChanged);
+  ps.subscribe('onRowsChanged', handleRowsChanged);
+  ps.subscribe('onCellChange', handleCellChange);
+  ps.subscribe('onAddNewRow', handleAddNewRow);
+  ps.subscribe('onKeyDown', handleKeyDown);
+  ps.subscribe('onSort', handleSort);
+  // ps.subscribe('onPagingInfoChanged', handlePagingInfoChanged);
+  // ps.subscribe('onBeforePagingInfoChanged', handleBeforePagingInfoChanged);
+
+  // 2. second use case when using Web Component
+  // the code below is only DEMO purposes, DO NOT USE in production
+  // typically that would be handled by a Component based framework (like Angular/React/Vue/...)
+  for (const attr of myCompElm.attributes){
+      if (attr.nodeName.startsWith('on-')) {
+        // nodeName values are always lowercase,
+        // so let's convert kebab-case event name to camelCase to match our PubSub events
+        ps.subscribe(toCamelCase(attr.nodeName), (e) => {
+          methods[attr.nodeValue].call(null, e)
+        });
+      }
+  }
+
+  // 3. third use case
+  // OR since we use a JS PubSub CustomEvent based, we could also use addEventListener
+  // since we use a CustomEvent the "detail" prop will contain the 2 properties "eventData" and "args" (when provided)
+  // myGridElm.addEventListener('onClick', (e) => console.log(`event listener ${e.type}`, e.detail));
 
   let pager = new SlickGridPager(dataView, grid, "#pager");
   let columnpicker = new SlickColumnPicker(columns, grid, options);
@@ -283,65 +440,6 @@ document.addEventListener("DOMContentLoaded", () => {
   const topPanelLeftElm = document.querySelector("#inlineFilterPanel");
   topPanel.appendChild(topPanelLeftElm);
   topPanelLeftElm.style.display = 'block';
-
-  grid.onCellChange.subscribe((e, args) => {
-    dataView.updateItem(args.item.id, args.item);
-  });
-
-  grid.onAddNewRow.subscribe((e, args) => {
-    let item = {"num": data.length, "id": "new_" + (Math.round(Math.random() * 10000)), "title": "New task", "duration": "1 day", "percentComplete": 0, "start": "01/01/2009", "finish": "01/01/2009", "effortDriven": false};
-    Utils.extend(item, args.item);
-    dataView.addItem(item);
-  });
-
-  grid.onKeyDown.subscribe(function (e) {
-    // select all rows on ctrl-a
-    if (e.which != 65 || !e.ctrlKey) {
-      return false;
-    }
-
-    let rows = [];
-    for (let i = 0; i < dataView.getLength(); i++) {
-      rows.push(i);
-    }
-
-    grid.setSelectedRows(rows);
-    e.preventDefault();
-  });
-
-  grid.onSort.subscribe((e, args) => {
-    sortdir = args.sortAsc ? 1 : -1;
-    sortcol = args.sortCol.field;
-
-    // using native sort with comparer
-    dataView.sort(comparer, args.sortAsc);
-  });
-
-  // wire up model events to drive the grid
-  // !! both dataView.onRowCountChanged and dataView.onRowsChanged MUST be wired to correctly update the grid
-  // see Issue#91
-  dataView.onRowCountChanged.subscribe((e, args) => {
-    grid.updateRowCount();
-    grid.render();
-  });
-
-  dataView.onRowsChanged.subscribe((e, args) => {
-    grid.invalidateRows(args.rows);
-    grid.render();
-  });
-
-  dataView.onPagingInfoChanged.subscribe((e, pagingInfo) => {
-    grid.updatePagingStatusFromView( pagingInfo );
-    // show the pagingInfo but remove the dataView from the object, just for the Cypress E2E test
-    delete pagingInfo.dataView;
-    console.log('on After Paging Info Changed - New Paging:: ', pagingInfo);
-  });
-
-  dataView.onBeforePagingInfoChanged.subscribe((e, previousPagingInfo) => {
-    // show the previous pagingInfo but remove the dataView from the object, just for the Cypress E2E test
-    delete previousPagingInfo.dataView;
-    console.log('on Before Paging Info Changed - Previous Paging:: ', previousPagingInfo);
-  });
 
   let h_runfilters = null;
 
@@ -406,10 +504,6 @@ document.addEventListener("DOMContentLoaded", () => {
   // if you don't want the items that are not visible (due to being filtered out
   // or being on a different page) to stay selected, pass 'false' to the second arg
   dataView.syncGridSelection(grid, true);
-
-  document.querySelector('.sgi-search').addEventListener('click', toggleFilterRow);
-  document.querySelector('.btn-alpine-theme').addEventListener('click', () => toggleTheme('alpine'));
-  document.querySelector('.btn-classic-theme').addEventListener('click', () => toggleTheme('classic'));
 });
 </script>
 </body>
