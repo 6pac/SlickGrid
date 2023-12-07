@@ -1,4 +1,4 @@
-describe('Example 4 with PubSub Service (ESM)', () => {
+describe('Example - Web Component with PubSub Service instead of SlickEvent (ESM)', () => {
   const titles = ['#', 'Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
 
   beforeEach(() => {
@@ -9,7 +9,7 @@ describe('Example 4 with PubSub Service (ESM)', () => {
   });
 
   it('should display Example title', () => {
-    cy.visit(`${Cypress.config('baseUrl')}/examples/example4-model-pubsub-esm.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-web-component-pubsub-esm.html`);
     cy.get('h2').contains('Demonstrates');
     cy.get('h2 + ul > li').first().contains('a filtered Model (DataView) as a data source instead of a simple array');
   });
@@ -114,6 +114,27 @@ describe('Example 4 with PubSub Service (ESM)', () => {
       expect(win.console.log).to.have.callCount(2);
       expect(win.console.log).to.be.calledWith('on Before Paging Info Changed - Previous Paging:: ', { pageSize: 50, pageNum: 1, totalRows: 50000, totalPages: 1000 });
       expect(win.console.log).to.be.calledWith('on After Paging Info Changed - New Paging:: ', { pageSize: 50, pageNum: 999, totalRows: 50000, totalPages: 1000 });
+    });
+  });
+
+  it('Should display console log when opening Grid Menu', () => {
+    cy.get('#myGrid')
+      .find('button.slick-gridmenu-button')
+      .click({ force: true });
+
+    cy.window().then((win) => {
+      expect(win.console.log).to.have.callCount(1);
+      expect(win.console.log).to.be.calledWith('Grid Menu onBeforeMenuShow::');
+    });
+
+    cy.get('#myGrid')
+      .get('.slick-gridmenu:visible')
+      .find('span.close')
+      .click();
+
+    cy.window().then((win) => {
+      expect(win.console.log).to.have.callCount(2);
+      expect(win.console.log).to.be.calledWith('Grid Menu onMenuClose:: slick-gridmenu');
     });
   });
 });
