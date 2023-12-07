@@ -2,6 +2,7 @@ import type {
   Aggregator,
   CssStyleHash,
   CustomDataView,
+  DataViewHints,
   Grouping,
   GroupingFormatterItem,
   ItemMetadata,
@@ -77,8 +78,8 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   protected sortAsc: boolean | undefined = true;
   protected fastSortField?: string | null | (() => string);
   protected sortComparer!: ((a: TData, b: TData) => number);
-  protected refreshHints: any = {};
-  protected prevRefreshHints: any = {};
+  protected refreshHints: DataViewHints = {};
+  protected prevRefreshHints: DataViewHints = {};
   protected filterArgs: any;
   protected filteredItems: TData[] = [];
   protected compiledFilter?: FilterFn<TData> | null;
@@ -187,7 +188,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     }
   }
 
-  setRefreshHints(hints: any) {
+  setRefreshHints(hints: DataViewHints) {
     this.refreshHints = hints;
   }
 
@@ -832,8 +833,8 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   collapseGroup(...args: any) {
     const calledArgs = Array.prototype.slice.call(args);
     const arg0 = calledArgs[0];
-    let groupingKey;
-    let level;
+    let groupingKey: string;
+    let level: number;
 
     if (args.length === 1 && arg0.indexOf(this.groupingDelimiter) !== -1) {
       groupingKey = arg0;
@@ -856,8 +857,8 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   expandGroup(...args: any) {
     const calledArgs = Array.prototype.slice.call(args);
     const arg0 = calledArgs[0];
-    let groupingKey;
-    let level;
+    let groupingKey: string;
+    let level: number;
 
     if (args.length === 1 && arg0.indexOf(this.groupingDelimiter) !== -1) {
       level = arg0.split(this.groupingDelimiter).length - 1;
@@ -876,8 +877,8 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   protected extractGroups(rows: any[], parentGroup?: SlickGroup_) {
-    let group;
-    let val;
+    let group: SlickGroup_;
+    let val: any;
     const groups: SlickGroup_[] = [];
     const groupsByVal: any = {};
     let r;
@@ -1182,10 +1183,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
    */
   protected setFunctionName(fn: any, fnName: string) {
     try {
-      Object.defineProperty(fn, 'name', {
-        writable: true,
-        value: fnName
-      });
+      Object.defineProperty(fn, 'name', { writable: true, value: fnName });
     } catch (err) {
       fn.name = fnName;
     }
@@ -1265,7 +1263,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   protected getRowDiffs(rows: TData[], newRows: TData[]) {
-    let item: any;
+    let item: TData | SlickNonDataItem | SlickDataItem | SlickGroup_;
     let r;
     let eitherIsNonData;
     const diff: number[] = [];
