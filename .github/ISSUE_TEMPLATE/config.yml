@@ -1,5 +1,8 @@
 blank_issues_enabled: false
 contact_links:
+  - name: Questions
+    url: https://stackoverflow.com/search?q=slickgrid
+    about: Use Stack Overflow to ask for any SlickGrid questions
   - name: Discussions
     url: https://github.com/6pac/SlickGrid/discussions
     about: Use GitHub Discussions for message-board style questions and discussions.
