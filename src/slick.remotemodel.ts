@@ -16,8 +16,8 @@ export class SlickRemoteModel {
   protected req: any = null; // ajax request
 
   // events
-  onDataLoading = new Slick.Event();
-  onDataLoaded = new Slick.Event();
+  onDataLoading = new Slick.Event('onDataLoading');
+  onDataLoaded = new Slick.Event('onDataLoaded');
 
   constructor() {
     if (!(window.$ || window.jQuery) || !window.$.jsonp) {

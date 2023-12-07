@@ -11,8 +11,8 @@ export class SlickRemoteModelYahoo {
   protected req: any = null; // ajax request
 
   // events
-  protected onDataLoading = new Slick.Event();
-  protected onDataLoaded = new Slick.Event();
+  protected onDataLoading = new Slick.Event('onDataLoading');
+  protected onDataLoaded = new Slick.Event('onDataLoaded');
 
   constructor() {
     if (!(window.$ || window.jQuery) || !window.$.jsonp) {

@@ -27,8 +27,8 @@ export class SlickCrossGridRowMoveManager {
   // --
   // public API
   pluginName = 'CrossGridRowMoveManager' as const;
-  onBeforeMoveRows = new SlickEvent<{ rows: number[]; insertBefore: number; fromGrid: SlickGrid; toGrid: SlickGrid; }>();
-  onMoveRows = new SlickEvent<{ rows: number[]; insertBefore: number; fromGrid: SlickGrid; toGrid: SlickGrid; }>();
+  onBeforeMoveRows = new SlickEvent<{ rows: number[]; insertBefore: number; fromGrid: SlickGrid; toGrid: SlickGrid; }>('onBeforeMoveRows');
+  onMoveRows = new SlickEvent<{ rows: number[]; insertBefore: number; fromGrid: SlickGrid; toGrid: SlickGrid; }>('onMoveRows');
 
   // --
   // protected props
@@ -65,6 +65,7 @@ export class SlickCrossGridRowMoveManager {
     this._canvas = this._grid.getCanvasNode();
     this._toGrid = this._options.toGrid;
     this._toCanvas = this._toGrid.getCanvasNode();
+    Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
 
     // user could override the expandable icon logic from within the options or after instantiating the plugin
     if (typeof this._options?.usabilityOverride === 'function') {

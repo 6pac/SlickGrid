@@ -93,12 +93,12 @@ export class SlickRowDetailView {
   // --
   // public API
   pluginName = 'RowDetailView' as const;
-  onAsyncResponse = new SlickEvent<OnRowDetailAsyncResponseArgs>();
-  onAsyncEndUpdate = new SlickEvent<OnRowDetailAsyncEndUpdateArgs>();
-  onAfterRowDetailToggle = new SlickEvent<OnAfterRowDetailToggleArgs>();
-  onBeforeRowDetailToggle = new SlickEvent<OnBeforeRowDetailToggleArgs>();
-  onRowBackToViewportRange = new SlickEvent<OnRowBackToViewportRangeArgs>();
-  onRowOutOfViewportRange = new SlickEvent<OnRowOutOfViewportRangeArgs>();
+  onAsyncResponse = new SlickEvent<OnRowDetailAsyncResponseArgs>('onAsyncResponse');
+  onAsyncEndUpdate = new SlickEvent<OnRowDetailAsyncEndUpdateArgs>('onAsyncEndUpdate');
+  onAfterRowDetailToggle = new SlickEvent<OnAfterRowDetailToggleArgs>('onAfterRowDetailToggle');
+  onBeforeRowDetailToggle = new SlickEvent<OnBeforeRowDetailToggleArgs>('onBeforeRowDetailToggle');
+  onRowBackToViewportRange = new SlickEvent<OnRowBackToViewportRangeArgs>('onRowBackToViewportRange');
+  onRowOutOfViewportRange = new SlickEvent<OnRowOutOfViewportRangeArgs>('onRowOutOfViewportRange');
 
   // --
   // protected props
@@ -158,6 +158,7 @@ export class SlickRowDetailView {
     this._gridOptions = grid.getOptions() || {};
     this._dataView = this._grid.getData<SlickDataView>();
     this._keyPrefix = this._options?.keyPrefix ?? '_';
+    Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
 
     // Update the minRowBuffer so that the view doesn't disappear when it's at top of screen + the original default 3
     this._gridRowBuffer = this._gridOptions.minRowBuffer || 0;

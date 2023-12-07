@@ -29,8 +29,8 @@ export class SlickRowMoveManager {
   // --
   // public API
   pluginName = 'RowMoveManager' as const;
-  onBeforeMoveRows = new SlickEvent<{ grid: SlickGrid; rows: number[]; insertBefore: number; }>();
-  onMoveRows = new SlickEvent<{ grid: SlickGrid; rows: number[]; insertBefore: number; }>();
+  onBeforeMoveRows = new SlickEvent<{ grid: SlickGrid; rows: number[]; insertBefore: number; }>('onBeforeMoveRows');
+  onMoveRows = new SlickEvent<{ grid: SlickGrid; rows: number[]; insertBefore: number; }>('onMoveRows');
 
   // --
   // protected props
@@ -63,6 +63,7 @@ export class SlickRowMoveManager {
   init(grid: SlickGrid) {
     this._grid = grid;
     this._canvas = this._grid.getCanvasNode();
+    Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
 
     // user could override the expandable icon logic from within the options or after instantiating the plugin
     if (typeof this._options?.usabilityOverride === 'function') {

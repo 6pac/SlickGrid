@@ -64,8 +64,8 @@ export class SlickResizer {
   // --
   // public API
   pluginName = 'Resizer' as const;
-  onGridAfterResize = new SlickEvent<{ grid: SlickGrid; dimensions: GridSize; }>();
-  onGridBeforeResize = new SlickEvent<{ grid: SlickGrid; }>();
+  onGridAfterResize = new SlickEvent<{ grid: SlickGrid; dimensions: GridSize; }>('onGridAfterResize');
+  onGridBeforeResize = new SlickEvent<{ grid: SlickGrid; }>('onGridBeforeResize');
 
   // --
   // protected props
@@ -117,6 +117,7 @@ export class SlickResizer {
       this._gridContainerElm = this._options.gridContainer as HTMLElement;
     }
 
+    Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
     if (this._gridOptions) {
       this.bindAutoResizeDataGrid();
     }

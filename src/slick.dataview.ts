@@ -13,8 +13,10 @@ import type {
   OnSelectedRowIdsChangedEventArgs,
   OnSetItemsCalledEventArgs,
   PagingInfo,
+  SlickGridModel,
 } from './models/index';
 import {
+  type BasePubSub,
   SlickEvent as SlickEvent_,
   SlickEventData as SlickEventData_,
   SlickGroup as SlickGroup_,
@@ -22,7 +24,6 @@ import {
   Utils as Utils_,
   SlickNonDataItem,
 } from './slick.core';
-import type { SlickGrid } from './slick.grid';
 import { SlickGroupItemMetadataProvider as SlickGroupItemMetadataProvider_ } from './slick.groupitemmetadataprovider';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -85,7 +86,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   protected compiledFilterWithCaching?: FilterFn<TData> | null;
   protected compiledFilterWithCachingCSPSafe?: FilterWithCspCachingFn<TData> | null;
   protected filterCache: any[] = [];
-  protected _grid?: SlickGrid; // grid object will be defined only after using "syncGridSelection()" method"
+  protected _grid?: SlickGridModel; // grid object will be defined only after using "syncGridSelection()" method"
 
   // grouping
   protected groupingInfoDefaults: Grouping = {
@@ -112,19 +113,30 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   protected pagenum = 0;
   protected totalRows = 0;
   protected _options: DataViewOption;
+  protected _container?: HTMLElement;
 
   // public events
-  onBeforePagingInfoChanged = new SlickEvent<PagingInfo>();
-  onGroupExpanded = new SlickEvent<OnGroupExpandedEventArgs>();
-  onGroupCollapsed = new SlickEvent<OnGroupCollapsedEventArgs>();
-  onPagingInfoChanged = new SlickEvent<PagingInfo>();
-  onRowCountChanged = new SlickEvent<OnRowCountChangedEventArgs>();
-  onRowsChanged = new SlickEvent<OnRowsChangedEventArgs>();
-  onRowsOrCountChanged = new SlickEvent<OnRowsOrCountChangedEventArgs>();
-  onSelectedRowIdsChanged = new SlickEvent<OnSelectedRowIdsChangedEventArgs>();
-  onSetItemsCalled = new SlickEvent<OnSetItemsCalledEventArgs>();
+  onBeforePagingInfoChanged: SlickEvent_<PagingInfo>;
+  onGroupExpanded: SlickEvent_<OnGroupExpandedEventArgs>;
+  onGroupCollapsed: SlickEvent_<OnGroupCollapsedEventArgs>;
+  onPagingInfoChanged: SlickEvent_<PagingInfo>;
+  onRowCountChanged: SlickEvent_<OnRowCountChangedEventArgs>;
+  onRowsChanged: SlickEvent_<OnRowsChangedEventArgs>;
+  onRowsOrCountChanged: SlickEvent_<OnRowsOrCountChangedEventArgs>;
+  onSelectedRowIdsChanged: SlickEvent_<OnSelectedRowIdsChangedEventArgs>;
+  onSetItemsCalled: SlickEvent_<OnSetItemsCalledEventArgs>;
 
-  constructor(options: Partial<DataViewOption>) {
+  constructor(options: Partial<DataViewOption>, protected externalPubSub?: BasePubSub) {
+    this.onBeforePagingInfoChanged = new SlickEvent<PagingInfo>('onBeforePagingInfoChanged', externalPubSub);
+    this.onGroupExpanded = new SlickEvent<OnGroupExpandedEventArgs>('onGroupExpanded', externalPubSub);
+    this.onGroupCollapsed = new SlickEvent<OnGroupCollapsedEventArgs>('onGroupCollapsed', externalPubSub);
+    this.onPagingInfoChanged = new SlickEvent<PagingInfo>('onPagingInfoChanged', externalPubSub);
+    this.onRowCountChanged = new SlickEvent<OnRowCountChangedEventArgs>('onRowCountChanged', externalPubSub);
+    this.onRowsChanged = new SlickEvent<OnRowsChangedEventArgs>('onRowsChanged', externalPubSub);
+    this.onRowsOrCountChanged = new SlickEvent<OnRowsOrCountChangedEventArgs>('onRowsOrCountChanged', externalPubSub);
+    this.onSelectedRowIdsChanged = new SlickEvent<OnSelectedRowIdsChangedEventArgs>('onSelectedRowIdsChanged', externalPubSub);
+    this.onSetItemsCalled = new SlickEvent<OnSetItemsCalledEventArgs>('onSetItemsCalled', externalPubSub);
+
     this._options = Utils.extend(true, {}, this.defaults, options);
   }
 
@@ -1384,7 +1396,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
    *     access to the full list selected row ids, and not just the ones visible to the grid.
    * @method syncGridSelection
    */
-  syncGridSelection(grid: SlickGrid, preserveHidden: boolean, preserveHiddenOnSelectionChange?: boolean) {
+  syncGridSelection(grid: SlickGridModel, preserveHidden: boolean, preserveHiddenOnSelectionChange?: boolean) {
     this._grid = grid;
     let inHandler: boolean;
     this.selectedRowIds = this.mapRowsToIds(grid.getSelectedRows());
@@ -1560,7 +1572,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     return (intersection || []) as T[];
   }
 
-  syncGridCellCssStyles(grid: SlickGrid, key: string) {
+  syncGridCellCssStyles(grid: SlickGridModel, key: string) {
     let hashById: any;
     let inHandler: boolean;
 

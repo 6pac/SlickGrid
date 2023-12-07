@@ -70,7 +70,7 @@ export class SlickState implements SlickPlugin {
   // --
   // public API
   pluginName = 'State' as const;
-  onStateChanged = new SlickEvent<CurrentState>();
+  onStateChanged = new SlickEvent<CurrentState>('onStateChanged');
 
   // --
   // protected props
@@ -97,6 +97,8 @@ export class SlickState implements SlickPlugin {
   init(grid: SlickGrid) {
     this._grid = grid;
     this._cid = grid.cid || this._options.cid;
+    Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
+
     if (this._cid) {
       this._grid.onColumnsResized.subscribe(this.save.bind(this));
       this._grid.onColumnsReordered.subscribe(this.save.bind(this));
