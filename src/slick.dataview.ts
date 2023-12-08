@@ -188,10 +188,12 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     }
   }
 
+  /** provide some refresh hints as to what to rows needs refresh */
   setRefreshHints(hints: DataViewHints) {
     this.refreshHints = hints;
   }
 
+  /** add extra filter arguments to the filter method */
   setFilterArgs(args: any) {
     this.filterArgs = args;
   }
@@ -930,6 +932,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     return groups;
   }
 
+  /** claculate Group Totals */
   protected calculateTotals(totals: SlickGroupTotals_) {
     const group = totals.group;
     const gi = this.groupingInfos[group.level ?? 0];
