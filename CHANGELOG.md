@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [4.1.7](https://github.com/6pac/SlickGrid/compare/4.1.6...4.1.7) (2023-12-08)
+
+### Features
+
+* introduce devMode to support nodejs based unit testing ([#944](https://github.com/6pac/SlickGrid/issues/944)) ([40d2dc4](https://github.com/6pac/SlickGrid/commit/40d2dc4d1fddd9c523029cc214a366608ff71f94))
+
 ## [4.1.6](https://github.com/6pac/SlickGrid/compare/4.1.5...4.1.6) (2023-12-02)
 
 ### Bug Fixes
