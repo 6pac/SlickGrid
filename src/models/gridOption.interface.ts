@@ -108,7 +108,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   /** Default cell Formatter that will be used by the grid */
   defaultFormatter?: Formatter;
 
-  /** Escape hatch geared towards testing Slickgrid in jsdom based environments to circumvent the lack of stylesheet.ownerNode and clientWidth calculations */
+  /** Escape hatch geared towards testing Slickgrid in JSDOM based environments to circumvent the lack of stylesheet.ownerNode and clientWidth calculations */
   devMode?: false | { ownerNodeIndex?: number; containerClientWidth?: number; };
 
   /** Do we have paging enabled? */
