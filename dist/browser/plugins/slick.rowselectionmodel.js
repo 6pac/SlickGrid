@@ -10,7 +10,7 @@
       // --
       // public API
       __publicField(this, "pluginName", "RowSelectionModel");
-      __publicField(this, "onSelectedRangesChanged", new SlickEvent());
+      __publicField(this, "onSelectedRangesChanged", new SlickEvent("onSelectedRangesChanged"));
       // _handler, _inHandler, _isRowMoveManagerHandler, _options, wrapHandler
       // --
       // protected props
@@ -32,7 +32,7 @@
     init(grid) {
       if (Draggable === void 0)
         throw new Error('Slick.Draggable is undefined, make sure to import "slick.interactions.js"');
-      if (this._selector = this._options.cellRangeSelector, this._grid = grid, !this._selector && this._options.dragToSelect) {
+      if (this._selector = this._options.cellRangeSelector, this._grid = grid, Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), !this._selector && this._options.dragToSelect) {
         if (!SlickCellRangeDecorator)
           throw new Error("Slick.CellRangeDecorator is required when option dragToSelect set to true");
         this._selector = new SlickCellRangeSelector({

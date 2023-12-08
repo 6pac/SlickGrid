@@ -1,5 +1,5 @@
 import type { Column, DOMMouseOrTouchEvent, GridMenuCommandItemCallbackArgs, GridMenuEventWithElementCallbackArgs, GridMenuItem, GridMenuOption, GridOption, MenuCommandItem, onGridMenuColumnsChangedCallbackArgs } from '../models/index';
-import { BindingEventService as BindingEventService_ } from '../slick.core';
+import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_ } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 /**
  * A control to add a Grid Menu (hambuger menu on top-right of the grid)
@@ -116,11 +116,11 @@ import type { SlickGrid } from '../slick.grid';
 export declare class SlickGridMenu {
     protected columns: Column[];
     protected readonly grid: SlickGrid;
-    onAfterMenuShow: import("../slick.core").SlickEvent<GridMenuEventWithElementCallbackArgs>;
-    onBeforeMenuShow: import("../slick.core").SlickEvent<GridMenuEventWithElementCallbackArgs>;
-    onMenuClose: import("../slick.core").SlickEvent<GridMenuEventWithElementCallbackArgs>;
-    onCommand: import("../slick.core").SlickEvent<GridMenuCommandItemCallbackArgs>;
-    onColumnsChanged: import("../slick.core").SlickEvent<onGridMenuColumnsChangedCallbackArgs>;
+    onAfterMenuShow: SlickEvent_<GridMenuEventWithElementCallbackArgs>;
+    onBeforeMenuShow: SlickEvent_<GridMenuEventWithElementCallbackArgs>;
+    onMenuClose: SlickEvent_<GridMenuEventWithElementCallbackArgs>;
+    onCommand: SlickEvent_<GridMenuCommandItemCallbackArgs>;
+    onColumnsChanged: SlickEvent_<onGridMenuColumnsChangedCallbackArgs>;
     protected _bindingEventService: BindingEventService_;
     protected _gridOptions: GridOption;
     protected _gridUid: string;

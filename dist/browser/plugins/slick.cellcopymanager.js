@@ -10,16 +10,16 @@
       // --
       // public API
       __publicField(this, "pluginName", "CellCopyManager");
-      __publicField(this, "onCopyCells", new SlickEvent());
-      __publicField(this, "onCopyCancelled", new SlickEvent());
-      __publicField(this, "onPasteCells", new SlickEvent());
+      __publicField(this, "onCopyCells", new SlickEvent("onCopyCells"));
+      __publicField(this, "onCopyCancelled", new SlickEvent("onCopyCancelled"));
+      __publicField(this, "onPasteCells", new SlickEvent("onPasteCells"));
       // --
       // protected props
       __publicField(this, "_grid");
       __publicField(this, "_copiedRanges", null);
     }
     init(grid) {
-      this._grid = grid, this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this));
+      this._grid = grid, Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this));
     }
     destroy() {
       this._grid.onKeyDown.unsubscribe(this.handleKeyDown.bind(this));

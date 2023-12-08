@@ -2,6 +2,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.6.0](https://github.com/6pac/SlickGrid/compare/5.5.6...5.6.0) (2023-12-08)
+
+### Bug Fixes
+
+* calling `applyHtmlCode()` with number/boolean ([#942](https://github.com/6pac/SlickGrid/issues/942)) ([b1b4fa2](https://github.com/6pac/SlickGrid/commit/b1b4fa29b2cd7bac43ed43880f0ce2b7820e025f))
+* Draggable Grouping, destroy all Sortable instances fixes mem leak ([#943](https://github.com/6pac/SlickGrid/issues/943)) ([eb30086](https://github.com/6pac/SlickGrid/commit/eb30086a93d61396bcd6702359a2a20c58acac09))
+
+### Features
+
+* introduce devMode to support nodejs based unit testing ([#946](https://github.com/6pac/SlickGrid/issues/946)) ([918efa4](https://github.com/6pac/SlickGrid/commit/918efa4b2076e014813ec868aa4cc40349ba271b))
+* use PubSub Service with Web Component demo to subscribe instead of SlickEvent ([#859](https://github.com/6pac/SlickGrid/issues/859)) ([7d602e6](https://github.com/6pac/SlickGrid/commit/7d602e61dde840c714daab6b55d8b0eae9eefe98))
+
 ## [5.5.6](https://github.com/6pac/SlickGrid/compare/5.5.5...5.5.6) (2023-12-02)
 
 ### Bug Fixes

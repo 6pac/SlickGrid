@@ -10,7 +10,7 @@
       // --
       // public API
       __publicField(this, "pluginName", "HeaderButtons");
-      __publicField(this, "onCommand", new SlickEvent());
+      __publicField(this, "onCommand", new SlickEvent("onCommand"));
       // --
       // protected props
       __publicField(this, "_grid");
@@ -23,7 +23,7 @@
       this._options = Utils.extend(!0, {}, this._defaults, options);
     }
     init(grid) {
-      this._grid = grid, this._handler.subscribe(this._grid.onHeaderCellRendered, this.handleHeaderCellRendered.bind(this)).subscribe(this._grid.onBeforeHeaderCellDestroy, this.handleBeforeHeaderCellDestroy.bind(this)), this._grid.setColumns(this._grid.getColumns());
+      this._grid = grid, Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), this._handler.subscribe(this._grid.onHeaderCellRendered, this.handleHeaderCellRendered.bind(this)).subscribe(this._grid.onBeforeHeaderCellDestroy, this.handleBeforeHeaderCellDestroy.bind(this)), this._grid.setColumns(this._grid.getColumns());
     }
     destroy() {
       this._handler.unsubscribeAll(), this._bindingEventService.unbindAll();

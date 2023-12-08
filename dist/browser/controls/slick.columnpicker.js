@@ -11,7 +11,7 @@
       this.grid = grid;
       // --
       // public API
-      __publicField(this, "onColumnsChanged", new SlickEvent());
+      __publicField(this, "onColumnsChanged", new SlickEvent("onColumnsChanged"));
       // --
       // protected props
       __publicField(this, "_gridUid");
@@ -34,7 +34,7 @@
     }
     init(grid) {
       var _a, _b;
-      grid.onHeaderContextMenu.subscribe(this.handleHeaderContextMenu.bind(this)), grid.onColumnsReordered.subscribe(this.updateColumnOrder.bind(this)), this._menuElm = document.createElement("div"), this._menuElm.className = `slick-columnpicker ${this._gridUid}`, this._menuElm.style.display = "none", document.body.appendChild(this._menuElm);
+      Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), grid.onHeaderContextMenu.subscribe(this.handleHeaderContextMenu.bind(this)), grid.onColumnsReordered.subscribe(this.updateColumnOrder.bind(this)), this._menuElm = document.createElement("div"), this._menuElm.className = `slick-columnpicker ${this._gridUid}`, this._menuElm.style.display = "none", document.body.appendChild(this._menuElm);
       let buttonElm = document.createElement("button");
       buttonElm.type = "button", buttonElm.className = "close", buttonElm.dataset.dismiss = "slick-columnpicker", buttonElm.ariaLabel = "Close";
       let spanCloseElm = document.createElement("span");

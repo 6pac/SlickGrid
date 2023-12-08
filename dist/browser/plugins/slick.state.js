@@ -34,7 +34,7 @@
       // --
       // public API
       __publicField(this, "pluginName", "State");
-      __publicField(this, "onStateChanged", new SlickEvent());
+      __publicField(this, "onStateChanged", new SlickEvent("onStateChanged"));
       // --
       // protected props
       __publicField(this, "_grid");
@@ -54,7 +54,7 @@
       this._options = Utils.extend(!0, {}, defaults, options), this._store = this._options.storage;
     }
     init(grid) {
-      this._grid = grid, this._cid = grid.cid || this._options.cid, this._cid ? (this._grid.onColumnsResized.subscribe(this.save.bind(this)), this._grid.onColumnsReordered.subscribe(this.save.bind(this)), this._grid.onSort.subscribe(this.save.bind(this))) : console.warn("grid has no client id. state persisting is disabled.");
+      this._grid = grid, this._cid = grid.cid || this._options.cid, Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), this._cid ? (this._grid.onColumnsResized.subscribe(this.save.bind(this)), this._grid.onColumnsReordered.subscribe(this.save.bind(this)), this._grid.onSort.subscribe(this.save.bind(this))) : console.warn("grid has no client id. state persisting is disabled.");
     }
     destroy() {
       this._grid.onSort.unsubscribe(this.save.bind(this)), this._grid.onColumnsReordered.unsubscribe(this.save.bind(this)), this._grid.onColumnsResized.unsubscribe(this.save.bind(this)), this.save();

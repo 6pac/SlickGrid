@@ -10,9 +10,9 @@
       // --
       // public API
       __publicField(this, "pluginName", "CellRangeSelector");
-      __publicField(this, "onBeforeCellRangeSelected", new SlickEvent());
-      __publicField(this, "onCellRangeSelected", new SlickEvent());
-      __publicField(this, "onCellRangeSelecting", new SlickEvent());
+      __publicField(this, "onBeforeCellRangeSelected", new SlickEvent("onBeforeCellRangeSelected"));
+      __publicField(this, "onCellRangeSelected", new SlickEvent("onCellRangeSelected"));
+      __publicField(this, "onCellRangeSelecting", new SlickEvent("onCellRangeSelecting"));
       // --
       // protected props
       __publicField(this, "_grid");
@@ -58,7 +58,7 @@
     init(grid) {
       if (Draggable === void 0)
         throw new Error('Slick.Draggable is undefined, make sure to import "slick.interactions.js"');
-      this._decorator = this._options.cellDecorator || new SlickCellRangeDecorator(grid, this._options), this._grid = grid, this._canvas = this._grid.getCanvasNode(), this._gridOptions = this._grid.getOptions(), this._handler.subscribe(this._grid.onScroll, this.handleScroll.bind(this)).subscribe(this._grid.onDragInit, this.handleDragInit.bind(this)).subscribe(this._grid.onDragStart, this.handleDragStart.bind(this)).subscribe(this._grid.onDrag, this.handleDrag.bind(this)).subscribe(this._grid.onDragEnd, this.handleDragEnd.bind(this));
+      this._decorator = this._options.cellDecorator || new SlickCellRangeDecorator(grid, this._options), this._grid = grid, Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), this._canvas = this._grid.getCanvasNode(), this._gridOptions = this._grid.getOptions(), this._handler.subscribe(this._grid.onScroll, this.handleScroll.bind(this)).subscribe(this._grid.onDragInit, this.handleDragInit.bind(this)).subscribe(this._grid.onDragStart, this.handleDragStart.bind(this)).subscribe(this._grid.onDrag, this.handleDrag.bind(this)).subscribe(this._grid.onDragEnd, this.handleDragEnd.bind(this));
     }
     destroy() {
       var _a;

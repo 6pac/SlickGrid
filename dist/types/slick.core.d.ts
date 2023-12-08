@@ -4,15 +4,19 @@
  * @namespace Slick
  */
 import type { EditController, ElementEventListener, Handler, InferDOMType, MergeTypes } from './models/index';
+export interface BasePubSub {
+    publish<ArgType = any>(_eventName: string | any, _data?: ArgType): any;
+    subscribe<ArgType = any>(_eventName: string | Function, _callback: (data: ArgType) => void): any;
+}
 /**
  * An event object for passing data to event handlers and letting them control propagation.
  * <p>This is pretty much identical to how W3C and jQuery implement events.</p>
  * @class EventData
  * @constructor
  */
-export declare class SlickEventData {
+export declare class SlickEventData<ArgType = any> {
     protected event?: Event | null | undefined;
-    protected args?: any;
+    protected args?: ArgType | undefined;
     protected _isPropagationStopped: boolean;
     protected _isImmediatePropagationStopped: boolean;
     protected _isDefaultPrevented: boolean;
@@ -20,8 +24,8 @@ export declare class SlickEventData {
     protected returnValue: any;
     protected target?: EventTarget | null;
     protected nativeEvent?: Event | null;
-    protected arguments_: any;
-    constructor(event?: Event | null | undefined, args?: any);
+    protected arguments_?: ArgType;
+    constructor(event?: Event | null | undefined, args?: ArgType | undefined);
     /**
      * Stops event from propagating up the DOM tree.
      * @method stopPropagation
@@ -49,7 +53,7 @@ export declare class SlickEventData {
     isDefaultPrevented(): boolean;
     addReturnValue(value: any): void;
     getReturnValue(): any;
-    getArguments(): any;
+    getArguments(): ArgType | undefined;
 }
 /**
  * A simple publisher-subscriber implementation.
@@ -57,35 +61,42 @@ export declare class SlickEventData {
  * @constructor
  */
 export declare class SlickEvent<ArgType = any> {
-    protected handlers: Handler<ArgType>[];
+    protected readonly eventName?: string | undefined;
+    protected readonly pubSub?: BasePubSub | undefined;
+    protected _handlers: Handler<ArgType>[];
+    protected _pubSubService?: BasePubSub;
+    get subscriberCount(): number;
+    /**
+     * Constructor
+     * @param {String} [eventName] - event name that could be used for dispatching CustomEvent (when enabled)
+     * @param {BasePubSub} [pubSubService] - event name that could be used for dispatching CustomEvent (when enabled)
+     */
+    constructor(eventName?: string | undefined, pubSub?: BasePubSub | undefined);
     /**
      * Adds an event handler to be called when the event is fired.
      * <p>Event handler will receive two arguments - an <code>EventData</code> and the <code>data</code>
      * object the event was fired with.<p>
      * @method subscribe
-     * @param fn {Function} Event handler.
+     * @param {Function} fn - Event handler.
      */
     subscribe(fn: Handler<ArgType>): void;
     /**
      * Removes an event handler added with <code>subscribe(fn)</code>.
      * @method unsubscribe
-     * @param fn {Function} Event handler to be removed.
+     * @param {Function} [fn] - Event handler to be removed.
      */
     unsubscribe(fn?: Handler<ArgType>): void;
     /**
      * Fires an event notifying all subscribers.
      * @method notify
-     * @param args {Object} Additional data object to be passed to all handlers.
-     * @param e {EventData}
-     *      Optional.
-     *      An <code>EventData</code> object to be passed to all handlers.
+     * @param {Object} args Additional data object to be passed to all handlers.
+     * @param {EventData} [event] - An <code>EventData</code> object to be passed to all handlers.
      *      For DOM events, an existing W3C event object can be passed in.
-     * @param scope {Object}
-     *      Optional.
-     *      The scope ("this") within which the handler will be executed.
+     * @param {Object} [scope] - The scope ("this") within which the handler will be executed.
      *      If not specified, the scope will be set to the <code>Event</code> instance.
      */
-    notify(args: ArgType, evt?: SlickEventData | Event | MergeTypes<SlickEventData, Event> | null, scope?: any): SlickEventData;
+    notify(args: ArgType, evt?: SlickEventData | Event | MergeTypes<SlickEventData, Event> | null, scope?: any): SlickEventData<any>;
+    setPubSubService(pubSub: BasePubSub): void;
 }
 export declare class SlickEventHandler<ArgType = any> {
     protected handlers: Array<{
@@ -384,6 +395,13 @@ export declare class Utils {
     static slideDown(el: HTMLElement | HTMLElement[], callback: Function): void;
     static slideAnimation(el: HTMLElement | HTMLElement[], slideDirection: 'slideDown' | 'slideUp', callback: Function): void;
     static applyDefaults(targetObj: any, srcObj: any): void;
+    /**
+     * User could optionally add PubSub Service to SlickEvent
+     * When it is defined then a SlickEvent `notify()` call will also dispatch it by using the PubSub publish() method
+     * @param {BasePubSub} [pubSubService]
+     * @param {*} scope
+     */
+    static addSlickEventPubSubWhenDefined<T = any>(pubSub?: BasePubSub, scope?: T): void;
 }
 export declare const SlickGlobalEditorLock: SlickEditorLock;
 export declare const EditorLock: typeof SlickEditorLock, Event: typeof SlickEvent, EventData: typeof SlickEventData, EventHandler: typeof SlickEventHandler, Group: typeof SlickGroup, GroupTotals: typeof SlickGroupTotals, NonDataRow: typeof SlickNonDataItem, Range: typeof SlickRange, RegexSanitizer: typeof regexSanitizer, GlobalEditorLock: SlickEditorLock, keyCode: {

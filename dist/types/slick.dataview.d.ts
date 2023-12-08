@@ -1,6 +1,5 @@
-import type { Aggregator, CustomDataView, Grouping, ItemMetadata, OnGroupCollapsedEventArgs, OnGroupExpandedEventArgs, OnRowCountChangedEventArgs, OnRowsChangedEventArgs, OnRowsOrCountChangedEventArgs, OnSelectedRowIdsChangedEventArgs, OnSetItemsCalledEventArgs, PagingInfo } from './models/index';
-import { SlickEvent as SlickEvent_, SlickGroup as SlickGroup_, SlickGroupTotals as SlickGroupTotals_, SlickNonDataItem } from './slick.core';
-import type { SlickGrid } from './slick.grid';
+import type { Aggregator, CustomDataView, DataViewHints, Grouping, ItemMetadata, OnGroupCollapsedEventArgs, OnGroupExpandedEventArgs, OnRowCountChangedEventArgs, OnRowsChangedEventArgs, OnRowsOrCountChangedEventArgs, OnSelectedRowIdsChangedEventArgs, OnSetItemsCalledEventArgs, PagingInfo, SlickGridModel } from './models/index';
+import { type BasePubSub, SlickEvent as SlickEvent_, SlickGroup as SlickGroup_, SlickGroupTotals as SlickGroupTotals_, SlickNonDataItem } from './slick.core';
 import { SlickGroupItemMetadataProvider as SlickGroupItemMetadataProvider_ } from './slick.groupitemmetadataprovider';
 export interface DataViewOption {
     groupItemMetadataProvider: SlickGroupItemMetadataProvider_ | null;
@@ -21,6 +20,7 @@ export type AnyFunction = (...args: any[]) => any;
    * Relies on the data item having an "id" property uniquely identifying it.
    */
 export declare class SlickDataView<TData extends SlickDataItem = any> implements CustomDataView {
+    protected externalPubSub?: BasePubSub | undefined;
     protected defaults: DataViewOption;
     protected idProperty: string;
     protected items: TData[];
@@ -40,8 +40,8 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     protected sortAsc: boolean | undefined;
     protected fastSortField?: string | null | (() => string);
     protected sortComparer: ((a: TData, b: TData) => number);
-    protected refreshHints: any;
-    protected prevRefreshHints: any;
+    protected refreshHints: DataViewHints;
+    protected prevRefreshHints: DataViewHints;
     protected filterArgs: any;
     protected filteredItems: TData[];
     protected compiledFilter?: FilterFn<TData> | null;
@@ -49,7 +49,7 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     protected compiledFilterWithCaching?: FilterFn<TData> | null;
     protected compiledFilterWithCachingCSPSafe?: FilterWithCspCachingFn<TData> | null;
     protected filterCache: any[];
-    protected _grid?: SlickGrid;
+    protected _grid?: SlickGridModel;
     protected groupingInfoDefaults: Grouping;
     protected groupingInfos: Array<Grouping & {
         aggregators: Aggregator[];
@@ -66,6 +66,7 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     protected pagenum: number;
     protected totalRows: number;
     protected _options: DataViewOption;
+    protected _container?: HTMLElement;
     onBeforePagingInfoChanged: SlickEvent_<PagingInfo>;
     onGroupExpanded: SlickEvent_<OnGroupExpandedEventArgs>;
     onGroupCollapsed: SlickEvent_<OnGroupCollapsedEventArgs>;
@@ -75,7 +76,7 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     onRowsOrCountChanged: SlickEvent_<OnRowsOrCountChangedEventArgs>;
     onSelectedRowIdsChanged: SlickEvent_<OnSelectedRowIdsChangedEventArgs>;
     onSetItemsCalled: SlickEvent_<OnSetItemsCalledEventArgs>;
-    constructor(options: Partial<DataViewOption>);
+    constructor(options: Partial<DataViewOption>, externalPubSub?: BasePubSub | undefined);
     /**
      * Begins a bached update of the items in the data view.
      * including deletes and the related events are postponed to the endUpdate call.
@@ -86,7 +87,9 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     beginUpdate(bulkUpdate?: boolean): void;
     endUpdate(): void;
     destroy(): void;
-    setRefreshHints(hints: any): void;
+    /** provide some refresh hints as to what to rows needs refresh */
+    setRefreshHints(hints: DataViewHints): void;
+    /** add extra filter arguments to the filter method */
     setFilterArgs(args: any): void;
     /**
      * Processes all delete requests placed during bulk update
@@ -240,6 +243,7 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     expandGroup(...args: any): void;
     getGroups(): SlickGroup_[];
     protected extractGroups(rows: any[], parentGroup?: SlickGroup_): SlickGroup_[];
+    /** claculate Group Totals */
     protected calculateTotals(totals: SlickGroupTotals_): void;
     protected addGroupTotals(group: SlickGroup_): void;
     protected addTotals(groups: SlickGroup_[], level?: number): void;
@@ -289,7 +293,7 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
      *     access to the full list selected row ids, and not just the ones visible to the grid.
      * @method syncGridSelection
      */
-    syncGridSelection(grid: SlickGrid, preserveHidden: boolean, preserveHiddenOnSelectionChange?: boolean): SlickEvent_<OnSelectedRowIdsChangedEventArgs>;
+    syncGridSelection(grid: SlickGridModel, preserveHidden: boolean, preserveHiddenOnSelectionChange?: boolean): SlickEvent_<OnSelectedRowIdsChangedEventArgs>;
     /**
      * Get all selected IDs
      * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
@@ -325,7 +329,7 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
     */
     getAllSelectedFilteredItems<T extends TData>(): T[];
-    syncGridCellCssStyles(grid: SlickGrid, key: string): void;
+    syncGridCellCssStyles(grid: SlickGridModel, key: string): void;
 }
 export declare class AvgAggregator<T = any> implements Aggregator {
     private _nonNullCount;

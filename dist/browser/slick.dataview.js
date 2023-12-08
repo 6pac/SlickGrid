@@ -6,7 +6,8 @@
 
   // src/slick.dataview.ts
   var SlickEvent = Slick.Event, SlickEventData = Slick.EventData, SlickGroup = Slick.Group, SlickGroupTotals = Slick.GroupTotals, Utils = Slick.Utils, _a, _b, SlickGroupItemMetadataProvider = (_b = (_a = Slick.Data) == null ? void 0 : _a.GroupItemMetadataProvider) != null ? _b : {}, SlickDataView = class {
-    constructor(options) {
+    constructor(options, externalPubSub) {
+      this.externalPubSub = externalPubSub;
       __publicField(this, "defaults", {
         groupItemMetadataProvider: null,
         inlineFilters: !1,
@@ -74,17 +75,18 @@
       __publicField(this, "pagenum", 0);
       __publicField(this, "totalRows", 0);
       __publicField(this, "_options");
+      __publicField(this, "_container");
       // public events
-      __publicField(this, "onBeforePagingInfoChanged", new SlickEvent());
-      __publicField(this, "onGroupExpanded", new SlickEvent());
-      __publicField(this, "onGroupCollapsed", new SlickEvent());
-      __publicField(this, "onPagingInfoChanged", new SlickEvent());
-      __publicField(this, "onRowCountChanged", new SlickEvent());
-      __publicField(this, "onRowsChanged", new SlickEvent());
-      __publicField(this, "onRowsOrCountChanged", new SlickEvent());
-      __publicField(this, "onSelectedRowIdsChanged", new SlickEvent());
-      __publicField(this, "onSetItemsCalled", new SlickEvent());
-      this._options = Utils.extend(!0, {}, this.defaults, options);
+      __publicField(this, "onBeforePagingInfoChanged");
+      __publicField(this, "onGroupExpanded");
+      __publicField(this, "onGroupCollapsed");
+      __publicField(this, "onPagingInfoChanged");
+      __publicField(this, "onRowCountChanged");
+      __publicField(this, "onRowsChanged");
+      __publicField(this, "onRowsOrCountChanged");
+      __publicField(this, "onSelectedRowIdsChanged");
+      __publicField(this, "onSetItemsCalled");
+      this.onBeforePagingInfoChanged = new SlickEvent("onBeforePagingInfoChanged", externalPubSub), this.onGroupExpanded = new SlickEvent("onGroupExpanded", externalPubSub), this.onGroupCollapsed = new SlickEvent("onGroupCollapsed", externalPubSub), this.onPagingInfoChanged = new SlickEvent("onPagingInfoChanged", externalPubSub), this.onRowCountChanged = new SlickEvent("onRowCountChanged", externalPubSub), this.onRowsChanged = new SlickEvent("onRowsChanged", externalPubSub), this.onRowsOrCountChanged = new SlickEvent("onRowsOrCountChanged", externalPubSub), this.onSelectedRowIdsChanged = new SlickEvent("onSelectedRowIdsChanged", externalPubSub), this.onSetItemsCalled = new SlickEvent("onSetItemsCalled", externalPubSub), this._options = Utils.extend(!0, {}, this.defaults, options);
     }
     /**
      * Begins a bached update of the items in the data view.
@@ -103,9 +105,11 @@
     destroy() {
       this.items = [], this.idxById = null, this.rowsById = null, this.filter = null, this.filterCSPSafe = null, this.updated = null, this.sortComparer = null, this.filterCache = [], this.filteredItems = [], this.compiledFilter = null, this.compiledFilterCSPSafe = null, this.compiledFilterWithCaching = null, this.compiledFilterWithCachingCSPSafe = null, this._grid && this._grid.onSelectedRowsChanged && this._grid.onCellCssStylesChanged && (this._grid.onSelectedRowsChanged.unsubscribe(), this._grid.onCellCssStylesChanged.unsubscribe()), this.onRowsOrCountChanged && this.onRowsOrCountChanged.unsubscribe();
     }
+    /** provide some refresh hints as to what to rows needs refresh */
     setRefreshHints(hints) {
       this.refreshHints = hints;
     }
+    /** add extra filter arguments to the filter method */
     setFilterArgs(args) {
       this.filterArgs = args;
     }
@@ -506,6 +510,7 @@
           group = groups[i], group.groups = this.extractGroups(group.rows, group);
       return groups.length && this.addTotals(groups, level), groups.sort(this.groupingInfos[level].comparer), groups;
     }
+    /** claculate Group Totals */
     calculateTotals(totals) {
       var _a2, _b2, _c;
       let group = totals.group, gi = this.groupingInfos[(_a2 = group.level) != null ? _a2 : 0], isLeafLevel = group.level === this.groupingInfos.length, agg, idx = gi.aggregators.length;
@@ -633,10 +638,7 @@
      */
     setFunctionName(fn, fnName) {
       try {
-        Object.defineProperty(fn, "name", {
-          writable: !0,
-          value: fnName
-        });
+        Object.defineProperty(fn, "name", { writable: !0, value: fnName });
       } catch (err) {
         fn.name = fnName;
       }

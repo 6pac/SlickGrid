@@ -10,8 +10,8 @@
       // --
       // public API
       __publicField(this, "pluginName", "Resizer");
-      __publicField(this, "onGridAfterResize", new SlickEvent());
-      __publicField(this, "onGridBeforeResize", new SlickEvent());
+      __publicField(this, "onGridAfterResize", new SlickEvent("onGridAfterResize"));
+      __publicField(this, "onGridBeforeResize", new SlickEvent("onGridBeforeResize"));
       // --
       // protected props
       __publicField(this, "_bindingEventService");
@@ -40,7 +40,7 @@
       this._options = Utils.extend(!0, {}, this._defaults, this._options, newOptions);
     }
     init(grid) {
-      this.setOptions(this._options), this._grid = grid, this._gridOptions = this._grid.getOptions(), this._gridUid = this._grid.getUID(), this._gridDomElm = this._grid.getContainerNode(), this._pageContainerElm = typeof this._options.container == "string" ? document.querySelector(this._options.container) : this._options.container, this._options.gridContainer && (this._gridContainerElm = this._options.gridContainer), this._gridOptions && this.bindAutoResizeDataGrid();
+      this.setOptions(this._options), this._grid = grid, this._gridOptions = this._grid.getOptions(), this._gridUid = this._grid.getUID(), this._gridDomElm = this._grid.getContainerNode(), this._pageContainerElm = typeof this._options.container == "string" ? document.querySelector(this._options.container) : this._options.container, this._options.gridContainer && (this._gridContainerElm = this._options.gridContainer), Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), this._gridOptions && this.bindAutoResizeDataGrid();
     }
     /** Bind an auto resize trigger on the datagrid, if that is enable then it will resize itself to the available space
     * Options: we could also provide a % factor to resize on each height/width independently

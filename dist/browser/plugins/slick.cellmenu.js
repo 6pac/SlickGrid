@@ -10,11 +10,11 @@
       // --
       // public API
       __publicField(this, "pluginName", "CellMenu");
-      __publicField(this, "onAfterMenuShow", new SlickEvent());
-      __publicField(this, "onBeforeMenuShow", new SlickEvent());
-      __publicField(this, "onBeforeMenuClose", new SlickEvent());
-      __publicField(this, "onCommand", new SlickEvent());
-      __publicField(this, "onOptionSelected", new SlickEvent());
+      __publicField(this, "onAfterMenuShow", new SlickEvent("onAfterMenuShow"));
+      __publicField(this, "onBeforeMenuShow", new SlickEvent("onBeforeMenuShow"));
+      __publicField(this, "onBeforeMenuClose", new SlickEvent("onBeforeMenuClose"));
+      __publicField(this, "onCommand", new SlickEvent("onCommand"));
+      __publicField(this, "onOptionSelected", new SlickEvent("onOptionSelected"));
       // --
       // protected props
       __publicField(this, "_bindingEventService", new BindingEventService());
@@ -45,7 +45,7 @@
       this._cellMenuProperties = Utils.extend({}, this._defaults, optionProperties);
     }
     init(grid) {
-      this._grid = grid, this._gridOptions = grid.getOptions(), this._gridUid = (grid == null ? void 0 : grid.getUID()) || "", this._handler.subscribe(this._grid.onClick, this.handleCellClick.bind(this)), this._cellMenuProperties.hideMenuOnScroll && this._handler.subscribe(this._grid.onScroll, this.closeMenu.bind(this));
+      this._grid = grid, this._gridOptions = grid.getOptions(), Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), this._gridUid = (grid == null ? void 0 : grid.getUID()) || "", this._handler.subscribe(this._grid.onClick, this.handleCellClick.bind(this)), this._cellMenuProperties.hideMenuOnScroll && this._handler.subscribe(this._grid.onScroll, this.closeMenu.bind(this));
     }
     setOptions(newOptions) {
       this._cellMenuProperties = Utils.extend({}, this._cellMenuProperties, newOptions);

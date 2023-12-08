@@ -10,8 +10,8 @@
       // --
       // public API
       __publicField(this, "pluginName", "RowMoveManager");
-      __publicField(this, "onBeforeMoveRows", new SlickEvent());
-      __publicField(this, "onMoveRows", new SlickEvent());
+      __publicField(this, "onBeforeMoveRows", new SlickEvent("onBeforeMoveRows"));
+      __publicField(this, "onMoveRows", new SlickEvent("onMoveRows"));
       // --
       // protected props
       __publicField(this, "_grid");
@@ -37,7 +37,7 @@
     }
     init(grid) {
       var _a;
-      this._grid = grid, this._canvas = this._grid.getCanvasNode(), typeof ((_a = this._options) == null ? void 0 : _a.usabilityOverride) == "function" && this.usabilityOverride(this._options.usabilityOverride), this._eventHandler.subscribe(this._grid.onDragInit, this.handleDragInit.bind(this)).subscribe(this._grid.onDragStart, this.handleDragStart.bind(this)).subscribe(this._grid.onDrag, this.handleDrag.bind(this)).subscribe(this._grid.onDragEnd, this.handleDragEnd.bind(this));
+      this._grid = grid, this._canvas = this._grid.getCanvasNode(), Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), typeof ((_a = this._options) == null ? void 0 : _a.usabilityOverride) == "function" && this.usabilityOverride(this._options.usabilityOverride), this._eventHandler.subscribe(this._grid.onDragInit, this.handleDragInit.bind(this)).subscribe(this._grid.onDragStart, this.handleDragStart.bind(this)).subscribe(this._grid.onDrag, this.handleDrag.bind(this)).subscribe(this._grid.onDragEnd, this.handleDragEnd.bind(this));
     }
     destroy() {
       this._eventHandler.unsubscribeAll();

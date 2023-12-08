@@ -17,8 +17,8 @@
       __publicField(this, "req", null);
       // ajax request
       // events
-      __publicField(this, "onDataLoading", new Slick.Event());
-      __publicField(this, "onDataLoaded", new Slick.Event());
+      __publicField(this, "onDataLoading", new Slick.Event("onDataLoading"));
+      __publicField(this, "onDataLoaded", new Slick.Event("onDataLoaded"));
       if (!(window.$ || window.jQuery) || !window.$.jsonp)
         throw new Error("SlickRemoteModel requires both jQuery and jQuery jsonp library to be loaded.");
       this.init();

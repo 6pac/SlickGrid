@@ -10,7 +10,7 @@
       // --
       // public API
       __publicField(this, "pluginName", "CellSelectionModel");
-      __publicField(this, "onSelectedRangesChanged", new SlickEvent());
+      __publicField(this, "onSelectedRangesChanged", new SlickEvent("onSelectedRangesChanged"));
       // --
       // protected props
       __publicField(this, "_cachedPageRowCount", 0);

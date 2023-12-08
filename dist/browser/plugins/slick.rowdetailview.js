@@ -11,12 +11,12 @@
       // --
       // public API
       __publicField(this, "pluginName", "RowDetailView");
-      __publicField(this, "onAsyncResponse", new SlickEvent());
-      __publicField(this, "onAsyncEndUpdate", new SlickEvent());
-      __publicField(this, "onAfterRowDetailToggle", new SlickEvent());
-      __publicField(this, "onBeforeRowDetailToggle", new SlickEvent());
-      __publicField(this, "onRowBackToViewportRange", new SlickEvent());
-      __publicField(this, "onRowOutOfViewportRange", new SlickEvent());
+      __publicField(this, "onAsyncResponse", new SlickEvent("onAsyncResponse"));
+      __publicField(this, "onAsyncEndUpdate", new SlickEvent("onAsyncEndUpdate"));
+      __publicField(this, "onAfterRowDetailToggle", new SlickEvent("onAfterRowDetailToggle"));
+      __publicField(this, "onBeforeRowDetailToggle", new SlickEvent("onBeforeRowDetailToggle"));
+      __publicField(this, "onRowBackToViewportRange", new SlickEvent("onRowBackToViewportRange"));
+      __publicField(this, "onRowOutOfViewportRange", new SlickEvent("onRowOutOfViewportRange"));
       // --
       // protected props
       __publicField(this, "_grid");
@@ -60,7 +60,7 @@
       var _a, _b;
       if (!grid)
         throw new Error('RowDetailView Plugin requires the Grid instance to be passed as argument to the "init()" method');
-      this._grid = grid, this._gridUid = grid.getUID(), this._gridOptions = grid.getOptions() || {}, this._dataView = this._grid.getData(), this._keyPrefix = (_b = (_a = this._options) == null ? void 0 : _a.keyPrefix) != null ? _b : "_", this._gridRowBuffer = this._gridOptions.minRowBuffer || 0, this._gridOptions.minRowBuffer = this._options.panelRows + 3, this._eventHandler.subscribe(this._grid.onClick, this.handleClick.bind(this)).subscribe(this._grid.onScroll, this.handleScroll.bind(this)), this._options.collapseAllOnSort && (this._eventHandler.subscribe(this._grid.onSort, this.collapseAll.bind(this)), this._expandedRows = [], this._rowIdsOutOfViewport = []), this._eventHandler.subscribe(this._dataView.onRowCountChanged, () => {
+      this._grid = grid, this._gridUid = grid.getUID(), this._gridOptions = grid.getOptions() || {}, this._dataView = this._grid.getData(), this._keyPrefix = (_b = (_a = this._options) == null ? void 0 : _a.keyPrefix) != null ? _b : "_", Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), this._gridRowBuffer = this._gridOptions.minRowBuffer || 0, this._gridOptions.minRowBuffer = this._options.panelRows + 3, this._eventHandler.subscribe(this._grid.onClick, this.handleClick.bind(this)).subscribe(this._grid.onScroll, this.handleScroll.bind(this)), this._options.collapseAllOnSort && (this._eventHandler.subscribe(this._grid.onSort, this.collapseAll.bind(this)), this._expandedRows = [], this._rowIdsOutOfViewport = []), this._eventHandler.subscribe(this._dataView.onRowCountChanged, () => {
         this._grid.updateRowCount(), this._grid.render();
       }), this._eventHandler.subscribe(this._dataView.onRowsChanged, (_e, a) => {
         this._grid.invalidateRows(a.rows), this._grid.render();

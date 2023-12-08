@@ -10,9 +10,9 @@
       // --
       // public API
       __publicField(this, "pluginName", "CellExternalCopyManager");
-      __publicField(this, "onCopyCells", new SlickEvent());
-      __publicField(this, "onCopyCancelled", new SlickEvent());
-      __publicField(this, "onPasteCells", new SlickEvent());
+      __publicField(this, "onCopyCells", new SlickEvent("onCopyCells"));
+      __publicField(this, "onCopyCancelled", new SlickEvent("onCopyCancelled"));
+      __publicField(this, "onPasteCells", new SlickEvent("onPasteCells"));
       // --
       // protected props
       __publicField(this, "_grid");
@@ -33,7 +33,7 @@
       this._options = options || {}, this._copiedCellStyleLayerKey = this._options.copiedCellStyleLayerKey || "copy-manager", this._copiedCellStyle = this._options.copiedCellStyle || "copied", this._bodyElement = this._options.bodyElement || document.body, this._onCopyInit = this._options.onCopyInit || void 0, this._onCopySuccess = this._options.onCopySuccess || void 0;
     }
     init(grid) {
-      this._grid = grid, this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this));
+      this._grid = grid, Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this));
       let cellSelectionModel = grid.getSelectionModel();
       if (!cellSelectionModel)
         throw new Error("Selection model is mandatory for this plugin. Please set a selection model on the grid before adding this plugin: grid.setSelectionModel(new Slick.CellSelectionModel())");

@@ -11,11 +11,11 @@
       this.grid = grid;
       // --
       // public API
-      __publicField(this, "onAfterMenuShow", new SlickEvent());
-      __publicField(this, "onBeforeMenuShow", new SlickEvent());
-      __publicField(this, "onMenuClose", new SlickEvent());
-      __publicField(this, "onCommand", new SlickEvent());
-      __publicField(this, "onColumnsChanged", new SlickEvent());
+      __publicField(this, "onAfterMenuShow", new SlickEvent("onAfterMenuShow"));
+      __publicField(this, "onBeforeMenuShow", new SlickEvent("onBeforeMenuShow"));
+      __publicField(this, "onMenuClose", new SlickEvent("onMenuClose"));
+      __publicField(this, "onCommand", new SlickEvent("onCommand"));
+      __publicField(this, "onColumnsChanged", new SlickEvent("onColumnsChanged"));
       // --
       // protected props
       __publicField(this, "_bindingEventService");
@@ -55,7 +55,7 @@
     }
     init(grid) {
       var _a, _b;
-      this._gridOptions = grid.getOptions(), this.createGridMenu(), ((_a = this._gridMenuOptions) != null && _a.customItems || (_b = this._gridMenuOptions) != null && _b.customTitle) && console.warn('[SlickGrid] Grid Menu "customItems" and "customTitle" were deprecated to align with other Menu plugins, please use "commandItems" and "commandTitle" instead.'), grid.onBeforeDestroy.subscribe(this.destroy.bind(this));
+      this._gridOptions = grid.getOptions(), Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), this.createGridMenu(), ((_a = this._gridMenuOptions) != null && _a.customItems || (_b = this._gridMenuOptions) != null && _b.customTitle) && console.warn('[SlickGrid] Grid Menu "customItems" and "customTitle" were deprecated to align with other Menu plugins, please use "commandItems" and "commandTitle" instead.'), grid.onBeforeDestroy.subscribe(this.destroy.bind(this));
     }
     setOptions(newOptions) {
       this._gridMenuOptions = Utils.extend({}, this._gridMenuOptions, newOptions);

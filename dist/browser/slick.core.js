@@ -136,49 +136,65 @@ var Slick = (() => {
       return this.arguments_;
     }
   }, SlickEvent = class {
-    constructor() {
-      __publicField(this, "handlers", []);
+    /**
+     * Constructor
+     * @param {String} [eventName] - event name that could be used for dispatching CustomEvent (when enabled)
+     * @param {BasePubSub} [pubSubService] - event name that could be used for dispatching CustomEvent (when enabled)
+     */
+    constructor(eventName, pubSub) {
+      this.eventName = eventName;
+      this.pubSub = pubSub;
+      __publicField(this, "_handlers", []);
+      __publicField(this, "_pubSubService");
+      this._pubSubService = pubSub;
+    }
+    get subscriberCount() {
+      return this._handlers.length;
     }
     /**
      * Adds an event handler to be called when the event is fired.
      * <p>Event handler will receive two arguments - an <code>EventData</code> and the <code>data</code>
      * object the event was fired with.<p>
      * @method subscribe
-     * @param fn {Function} Event handler.
+     * @param {Function} fn - Event handler.
      */
     subscribe(fn) {
-      this.handlers.push(fn);
+      this._handlers.push(fn);
     }
     /**
      * Removes an event handler added with <code>subscribe(fn)</code>.
      * @method unsubscribe
-     * @param fn {Function} Event handler to be removed.
+     * @param {Function} [fn] - Event handler to be removed.
      */
     unsubscribe(fn) {
-      for (let i = this.handlers.length - 1; i >= 0; i--)
-        this.handlers[i] === fn && this.handlers.splice(i, 1);
+      for (let i = this._handlers.length - 1; i >= 0; i--)
+        this._handlers[i] === fn && this._handlers.splice(i, 1);
     }
     /**
      * Fires an event notifying all subscribers.
      * @method notify
-     * @param args {Object} Additional data object to be passed to all handlers.
-     * @param e {EventData}
-     *      Optional.
-     *      An <code>EventData</code> object to be passed to all handlers.
+     * @param {Object} args Additional data object to be passed to all handlers.
+     * @param {EventData} [event] - An <code>EventData</code> object to be passed to all handlers.
      *      For DOM events, an existing W3C event object can be passed in.
-     * @param scope {Object}
-     *      Optional.
-     *      The scope ("this") within which the handler will be executed.
+     * @param {Object} [scope] - The scope ("this") within which the handler will be executed.
      *      If not specified, the scope will be set to the <code>Event</code> instance.
      */
     notify(args, evt, scope) {
+      var _a;
       let sed = evt instanceof SlickEventData ? evt : new SlickEventData(evt, args);
       scope = scope || this;
-      for (let i = 0; i < this.handlers.length && !(sed.isPropagationStopped() || sed.isImmediatePropagationStopped()); i++) {
-        let returnValue = this.handlers[i].call(scope, sed, args);
+      for (let i = 0; i < this._handlers.length && !(sed.isPropagationStopped() || sed.isImmediatePropagationStopped()); i++) {
+        let returnValue = this._handlers[i].call(scope, sed, args);
         sed.addReturnValue(returnValue);
       }
+      if (typeof ((_a = this._pubSubService) == null ? void 0 : _a.publish) == "function" && this.eventName) {
+        let ret = this._pubSubService.publish(this.eventName, { args, eventData: sed });
+        sed.addReturnValue(ret);
+      }
       return sed;
+    }
+    setPubSubService(pubSub) {
+      this._pubSubService = pubSub;
     }
   }, SlickEventHandler = class {
     constructor() {
@@ -578,9 +594,7 @@ var Slick = (() => {
       Array.isArray(el) ? el.forEach((e) => e.style.display = type) : el.style.display = type;
     }
     static hide(el) {
-      Array.isArray(el) ? el.forEach(function(e) {
-        e.style.display = "none";
-      }) : el.style.display = "none";
+      Array.isArray(el) ? el.forEach((e) => e.style.display = "none") : el.style.display = "none";
     }
     static slideUp(el, callback) {
       return _Utils.slideAnimation(el, "slideUp", callback);
@@ -598,6 +612,17 @@ var Slick = (() => {
     static applyDefaults(targetObj, srcObj) {
       for (let key in srcObj)
         srcObj.hasOwnProperty(key) && !targetObj.hasOwnProperty(key) && (targetObj[key] = srcObj[key]);
+    }
+    /**
+     * User could optionally add PubSub Service to SlickEvent
+     * When it is defined then a SlickEvent `notify()` call will also dispatch it by using the PubSub publish() method
+     * @param {BasePubSub} [pubSubService]
+     * @param {*} scope
+     */
+    static addSlickEventPubSubWhenDefined(pubSub, scope) {
+      if (pubSub)
+        for (let prop in scope)
+          scope[prop] instanceof SlickEvent && typeof scope[prop].setPubSubService == "function" && scope[prop].setPubSubService(pubSub);
     }
   };
   // jQuery's extend

@@ -10,9 +10,9 @@
       // --
       // public API
       __publicField(this, "pluginName", "HeaderMenu");
-      __publicField(this, "onAfterMenuShow", new SlickEvent());
-      __publicField(this, "onBeforeMenuShow", new SlickEvent());
-      __publicField(this, "onCommand", new SlickEvent());
+      __publicField(this, "onAfterMenuShow", new SlickEvent("onAfterMenuShow"));
+      __publicField(this, "onBeforeMenuShow", new SlickEvent("onBeforeMenuShow"));
+      __publicField(this, "onCommand", new SlickEvent("onCommand"));
       // --
       // protected props
       __publicField(this, "_grid");
@@ -34,7 +34,7 @@
       this._options = Utils.extend(!0, {}, options, this._defaults);
     }
     init(grid) {
-      this._grid = grid, this._gridUid = (grid == null ? void 0 : grid.getUID()) || "", this._handler.subscribe(this._grid.onHeaderCellRendered, this.handleHeaderCellRendered.bind(this)).subscribe(this._grid.onBeforeHeaderCellDestroy, this.handleBeforeHeaderCellDestroy.bind(this)), this._grid.setColumns(this._grid.getColumns()), this._bindingEventService.bind(document.body, "click", this.handleBodyMouseDown.bind(this));
+      this._grid = grid, this._gridUid = (grid == null ? void 0 : grid.getUID()) || "", Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), this._handler.subscribe(this._grid.onHeaderCellRendered, this.handleHeaderCellRendered.bind(this)).subscribe(this._grid.onBeforeHeaderCellDestroy, this.handleBeforeHeaderCellDestroy.bind(this)), this._grid.setColumns(this._grid.getColumns()), this._bindingEventService.bind(document.body, "click", this.handleBodyMouseDown.bind(this));
     }
     setOptions(newOptions) {
       this._options = Utils.extend(!0, {}, this._options, newOptions);
