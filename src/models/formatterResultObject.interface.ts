@@ -7,6 +7,13 @@ export interface FormatterResultObject {
 
   /** Optional tooltip text when hovering the cell div container. */
   toolTip?: string;
+
+  /**
+   * optionally insert an HTML element after the element target
+   * for example we use this technique to take a div containing the row detail and insert it after the `.slick-cell`
+   * e.g.: <div class="slick-cell"></div><div class="row-detail">...</div>
+   */
+  insertElementAfterTarget?: HTMLElement;
 }
 
 export interface FormatterResultWithText extends FormatterResultObject {

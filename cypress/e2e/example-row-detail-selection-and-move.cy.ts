@@ -1,13 +1,6 @@
 describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
     const fullTitles = ['', '', '', '#', 'Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
 
-    beforeEach(() => {
-        // create a console.log spy for later use
-        cy.window().then((win) => {
-            cy.spy(win.console, "log");
-        });
-    });
-
     it('should display Example Row Detail/Row Move/Checkbox Selector Plugins', () => {
         cy.visit(`${Cypress.config('baseUrl')}/examples/example-row-detail-selection-and-move.html`);
         cy.get('h2').should('contain', 'Demonstrates:');
@@ -26,7 +19,7 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
             .click()
             .wait(250);
 
-        cy.get('.innerDetailView_3')
+      cy.get('.slick-cell + .dynamic-cell-detail .innerDetailView_3')
             .find('h2')
             .should('contain', 'Task 3');
 
@@ -158,7 +151,7 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
             .click()
             .wait(250);
 
-        cy.get('.innerDetailView_3')
+      cy.get('.slick-cell + .dynamic-cell-detail .innerDetailView_3')
             .find('h2')
             .should('contain', 'Task 3');
 

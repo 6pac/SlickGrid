@@ -820,6 +820,10 @@ export class Utils {
     return null;
   }
 
+  public static insertAfterElement(referenceNode: HTMLElement, newNode: HTMLElement) {
+    referenceNode.parentNode?.insertBefore(newNode, referenceNode.nextSibling);
+  }
+
   public static isEmptyObject(obj: any) {
     if (obj === null || obj === undefined) {
       return true;
