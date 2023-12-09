@@ -2,6 +2,15 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.6.1](https://github.com/6pac/SlickGrid/compare/5.6.0...5.6.1) (2023-12-09)
+
+### Bug Fixes
+
+* Row Detail no longer displayed after CSP safe code implemented ([#947](https://github.com/6pac/SlickGrid/issues/947)) ([ba5cea9](https://github.com/6pac/SlickGrid/commit/ba5cea94c983afed2c4cf21c380445da67590ebc))
+* the `devMode` should be `false` or an object with other options ([e7ccc1d](https://github.com/6pac/SlickGrid/commit/e7ccc1d60295c417a0ac26b6dcee48b10dc5722e))
+* the `devMode` should be `false` or an object with other options ([bbddea7](https://github.com/6pac/SlickGrid/commit/bbddea7aa16982f55406dc7250dd7860d49b2973))
+* the `devMode` should be `false` or an object with other options ([8478ff1](https://github.com/6pac/SlickGrid/commit/8478ff13cfb59cb15b500db59cdc065a73aff10f))
+
 # [5.6.0](https://github.com/6pac/SlickGrid/compare/5.5.6...5.6.0) (2023-12-08)
 
 ### Bug Fixes

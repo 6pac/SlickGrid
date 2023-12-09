@@ -24,7 +24,7 @@
       this.externalPubSub = externalPubSub;
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.6.0");
+      __publicField(this, "slickGridVersion", "5.6.1");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -1082,7 +1082,7 @@
       let i;
       if (!this.stylesheet) {
         let sheets = (this._options.shadowRoot || document).styleSheets;
-        for (typeof ((_a = this.options.devMode) == null ? void 0 : _a.ownerNodeIndex) == "number" && this.options.devMode.ownerNodeIndex >= 0 && (sheets[this.options.devMode.ownerNodeIndex].ownerNode = this._style), i = 0; i < sheets.length; i++)
+        for (this.options.devMode && typeof ((_a = this.options.devMode) == null ? void 0 : _a.ownerNodeIndex) == "number" && this.options.devMode.ownerNodeIndex >= 0 && (sheets[this.options.devMode.ownerNodeIndex].ownerNode = this._style), i = 0; i < sheets.length; i++)
           if ((sheets[i].ownerNode || sheets[i].owningElement) === this._style) {
             this.stylesheet = sheets[i];
             break;
@@ -1733,7 +1733,7 @@
         let cellResult = Object.prototype.toString.call(formatterResult) !== "[object Object]" ? formatterResult : formatterResult.html || formatterResult.text;
         this.applyHtmlCode(cellDiv, cellResult);
       }
-      divRow.appendChild(cellDiv), this.rowsCache[row].cellRenderQueue.push(cell), this.rowsCache[row].cellColSpans[cell] = colspan;
+      divRow.appendChild(cellDiv), formatterResult.insertElementAfterTarget && Utils.insertAfterElement(cellDiv, formatterResult.insertElementAfterTarget), this.rowsCache[row].cellRenderQueue.push(cell), this.rowsCache[row].cellColSpans[cell] = colspan;
     }
     cleanupRows(rangeToKeep) {
       for (let rowId in this.rowsCache)
@@ -1875,8 +1875,7 @@
       return this.numVisibleRows = Math.ceil(this.viewportH / this._options.rowHeight), this.viewportH;
     }
     getViewportWidth() {
-      var _a;
-      return this.viewportW = parseFloat(Utils.innerSize(this._container, "width")) || ((_a = this.options.devMode) == null ? void 0 : _a.containerClientWidth) || 0, this.viewportW;
+      return this.viewportW = parseFloat(Utils.innerSize(this._container, "width")) || this.options.devMode && this.options.devMode.containerClientWidth || 0, this.viewportW;
     }
     /** Execute a Resize of the Grid Canvas */
     resizeCanvas() {
@@ -3064,7 +3063,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.6.0
+ * SlickGrid v5.6.1
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

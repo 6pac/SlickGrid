@@ -292,12 +292,20 @@
         if (dataContext[`${this._keyPrefix}collapsed`] === void 0 && (dataContext[`${this._keyPrefix}collapsed`] = !0, dataContext[`${this._keyPrefix}sizePadding`] = 0, dataContext[`${this._keyPrefix}height`] = 0, dataContext[`${this._keyPrefix}isPadding`] = !1, dataContext[`${this._keyPrefix}parent`] = void 0, dataContext[`${this._keyPrefix}offset`] = 0), !dataContext[`${this._keyPrefix}isPadding`])
           if (dataContext[`${this._keyPrefix}collapsed`]) {
             let collapsedClasses = this._options.cssClass + " expand ";
-            return this._options.collapsedClass && (collapsedClasses += this._options.collapsedClass), '<div class="' + collapsedClasses + '"></div>';
+            return this._options.collapsedClass && (collapsedClasses += this._options.collapsedClass), Utils.createDomElement("div", { className: collapsedClasses });
           } else {
-            let html = [], rowHeight = this._gridOptions.rowHeight, outterHeight = dataContext[`${this._keyPrefix}sizePadding`] * this._gridOptions.rowHeight;
+            let rowHeight = this._gridOptions.rowHeight, outterHeight = dataContext[`${this._keyPrefix}sizePadding`] * this._gridOptions.rowHeight;
             this._options.maxRows !== void 0 && dataContext[`${this._keyPrefix}sizePadding`] > this._options.maxRows && (outterHeight = this._options.maxRows * rowHeight, dataContext[`${this._keyPrefix}sizePadding`] = this._options.maxRows);
             let expandedClasses = this._options.cssClass + " collapse ";
-            return this._options.expandedClass && (expandedClasses += this._options.expandedClass), html.push('<div class="' + expandedClasses + '"></div></div>'), html.push(`<div class="dynamic-cell-detail cellDetailView_${dataContext[this._dataViewIdProperty]}" `), html.push(`style="height: ${outterHeight}px;`), html.push(`top: ${rowHeight}px">`), html.push(`<div class="detail-container detailViewContainer_${dataContext[this._dataViewIdProperty]}">`), html.push(`<div class="innerDetailView_${dataContext[this._dataViewIdProperty]}">${dataContext[`${this._keyPrefix}detailContent`]}</div></div>`), html.join("");
+            this._options.expandedClass && (expandedClasses += this._options.expandedClass);
+            let cellDetailContainerElm = Utils.createDomElement("div", {
+              className: `dynamic-cell-detail cellDetailView_${dataContext[this._dataViewIdProperty]}`,
+              style: { height: `${outterHeight}px`, top: `${rowHeight}px` }
+            }), innerContainerElm = Utils.createDomElement("div", { className: `detail-container detailViewContainer_${dataContext[this._dataViewIdProperty]}` }), innerDetailViewElm = Utils.createDomElement("div", { className: `innerDetailView_${dataContext[this._dataViewIdProperty]}` });
+            return innerDetailViewElm.innerHTML = this._grid.sanitizeHtmlString(dataContext[`${this._keyPrefix}detailContent`]), innerContainerElm.appendChild(innerDetailViewElm), cellDetailContainerElm.appendChild(innerContainerElm), {
+              html: Utils.createDomElement("div", { className: expandedClasses }),
+              insertElementAfterTarget: cellDetailContainerElm
+            };
           }
       } else
         return "";

@@ -537,6 +537,10 @@ var Slick = (() => {
     static getElementProp(elm, property) {
       return elm != null && elm.getComputedStyle ? window.getComputedStyle(elm, null).getPropertyValue(property) : null;
     }
+    static insertAfterElement(referenceNode, newNode) {
+      var _a;
+      (_a = referenceNode.parentNode) == null || _a.insertBefore(newNode, referenceNode.nextSibling);
+    }
     static isEmptyObject(obj) {
       return obj == null ? !0 : Object.entries(obj).length === 0;
     }

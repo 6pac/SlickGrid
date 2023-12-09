@@ -489,6 +489,9 @@ var BindingEventService = class {
   static getElementProp(elm, property) {
     return elm?.getComputedStyle ? window.getComputedStyle(elm, null).getPropertyValue(property) : null;
   }
+  static insertAfterElement(referenceNode, newNode) {
+    referenceNode.parentNode?.insertBefore(newNode, referenceNode.nextSibling);
+  }
   static isEmptyObject(obj) {
     return obj == null ? !0 : Object.entries(obj).length === 0;
   }
@@ -4205,12 +4208,20 @@ var SlickEvent16 = SlickEvent, SlickEventHandler8 = SlickEventHandler, Utils22 =
       if (dataContext[`${this._keyPrefix}collapsed`] === void 0 && (dataContext[`${this._keyPrefix}collapsed`] = !0, dataContext[`${this._keyPrefix}sizePadding`] = 0, dataContext[`${this._keyPrefix}height`] = 0, dataContext[`${this._keyPrefix}isPadding`] = !1, dataContext[`${this._keyPrefix}parent`] = void 0, dataContext[`${this._keyPrefix}offset`] = 0), !dataContext[`${this._keyPrefix}isPadding`])
         if (dataContext[`${this._keyPrefix}collapsed`]) {
           let collapsedClasses = this._options.cssClass + " expand ";
-          return this._options.collapsedClass && (collapsedClasses += this._options.collapsedClass), '<div class="' + collapsedClasses + '"></div>';
+          return this._options.collapsedClass && (collapsedClasses += this._options.collapsedClass), Utils22.createDomElement("div", { className: collapsedClasses });
         } else {
-          let html = [], rowHeight = this._gridOptions.rowHeight, outterHeight = dataContext[`${this._keyPrefix}sizePadding`] * this._gridOptions.rowHeight;
+          let rowHeight = this._gridOptions.rowHeight, outterHeight = dataContext[`${this._keyPrefix}sizePadding`] * this._gridOptions.rowHeight;
           this._options.maxRows !== void 0 && dataContext[`${this._keyPrefix}sizePadding`] > this._options.maxRows && (outterHeight = this._options.maxRows * rowHeight, dataContext[`${this._keyPrefix}sizePadding`] = this._options.maxRows);
           let expandedClasses = this._options.cssClass + " collapse ";
-          return this._options.expandedClass && (expandedClasses += this._options.expandedClass), html.push('<div class="' + expandedClasses + '"></div></div>'), html.push(`<div class="dynamic-cell-detail cellDetailView_${dataContext[this._dataViewIdProperty]}" `), html.push(`style="height: ${outterHeight}px;`), html.push(`top: ${rowHeight}px">`), html.push(`<div class="detail-container detailViewContainer_${dataContext[this._dataViewIdProperty]}">`), html.push(`<div class="innerDetailView_${dataContext[this._dataViewIdProperty]}">${dataContext[`${this._keyPrefix}detailContent`]}</div></div>`), html.join("");
+          this._options.expandedClass && (expandedClasses += this._options.expandedClass);
+          let cellDetailContainerElm = Utils22.createDomElement("div", {
+            className: `dynamic-cell-detail cellDetailView_${dataContext[this._dataViewIdProperty]}`,
+            style: { height: `${outterHeight}px`, top: `${rowHeight}px` }
+          }), innerContainerElm = Utils22.createDomElement("div", { className: `detail-container detailViewContainer_${dataContext[this._dataViewIdProperty]}` }), innerDetailViewElm = Utils22.createDomElement("div", { className: `innerDetailView_${dataContext[this._dataViewIdProperty]}` });
+          return innerDetailViewElm.innerHTML = this._grid.sanitizeHtmlString(dataContext[`${this._keyPrefix}detailContent`]), innerContainerElm.appendChild(innerDetailViewElm), cellDetailContainerElm.appendChild(innerContainerElm), {
+            html: Utils22.createDomElement("div", { className: expandedClasses }),
+            insertElementAfterTarget: cellDetailContainerElm
+          };
         }
     } else
       return "";
@@ -6417,7 +6428,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.6.0");
+    __publicField(this, "slickGridVersion", "5.6.1");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -7461,7 +7472,7 @@ var SlickGrid = class {
     let i;
     if (!this.stylesheet) {
       let sheets = (this._options.shadowRoot || document).styleSheets;
-      for (typeof this.options.devMode?.ownerNodeIndex == "number" && this.options.devMode.ownerNodeIndex >= 0 && (sheets[this.options.devMode.ownerNodeIndex].ownerNode = this._style), i = 0; i < sheets.length; i++)
+      for (this.options.devMode && typeof this.options.devMode?.ownerNodeIndex == "number" && this.options.devMode.ownerNodeIndex >= 0 && (sheets[this.options.devMode.ownerNodeIndex].ownerNode = this._style), i = 0; i < sheets.length; i++)
         if ((sheets[i].ownerNode || sheets[i].owningElement) === this._style) {
           this.stylesheet = sheets[i];
           break;
@@ -8092,7 +8103,7 @@ var SlickGrid = class {
       let cellResult = Object.prototype.toString.call(formatterResult) !== "[object Object]" ? formatterResult : formatterResult.html || formatterResult.text;
       this.applyHtmlCode(cellDiv, cellResult);
     }
-    divRow.appendChild(cellDiv), this.rowsCache[row].cellRenderQueue.push(cell), this.rowsCache[row].cellColSpans[cell] = colspan;
+    divRow.appendChild(cellDiv), formatterResult.insertElementAfterTarget && Utils30.insertAfterElement(cellDiv, formatterResult.insertElementAfterTarget), this.rowsCache[row].cellRenderQueue.push(cell), this.rowsCache[row].cellColSpans[cell] = colspan;
   }
   cleanupRows(rangeToKeep) {
     for (let rowId in this.rowsCache)
@@ -8227,7 +8238,7 @@ var SlickGrid = class {
     return this.numVisibleRows = Math.ceil(this.viewportH / this._options.rowHeight), this.viewportH;
   }
   getViewportWidth() {
-    return this.viewportW = parseFloat(Utils30.innerSize(this._container, "width")) || this.options.devMode?.containerClientWidth || 0, this.viewportW;
+    return this.viewportW = parseFloat(Utils30.innerSize(this._container, "width")) || this.options.devMode && this.options.devMode.containerClientWidth || 0, this.viewportW;
   }
   /** Execute a Resize of the Grid Canvas */
   resizeCanvas() {
@@ -9690,7 +9701,7 @@ export {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.6.0
+ * SlickGrid v5.6.1
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

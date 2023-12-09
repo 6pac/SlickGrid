@@ -10,7 +10,7 @@ import { type BasePubSub, BindingEventService as BindingEventService_, type Slic
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.6.0
+ * SlickGrid v5.6.1
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

@@ -372,6 +372,7 @@ export declare class Utils {
     static getElementProp(elm: HTMLElement & {
         getComputedStyle?: () => CSSStyleDeclaration;
     }, property: string): string | null;
+    static insertAfterElement(referenceNode: HTMLElement, newNode: HTMLElement): void;
     static isEmptyObject(obj: any): boolean;
     static noop(): void;
     static offset(el: HTMLElement | null): {
