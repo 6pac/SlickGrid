@@ -6,13 +6,6 @@ describe('Example CSP Header - with Column Span & Header Grouping', () => {
     fullTitles.push(`Mock${i}`);
   }
 
-  beforeEach(() => {
-    // create a console.log spy for later use
-    cy.window().then((win) => {
-      cy.spy(win.console, "log");
-    });
-  });
-
   it('should display Example title', () => {
     cy.visit(`${Cypress.config('baseUrl')}/examples/example-csp-header.html`);
     cy.get('h2').contains('Demonstrates');

@@ -2,13 +2,6 @@ describe('Example3 Editing', () => {
   const titles = ['Title', 'Description', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
   const GRID_ROW_HEIGHT = 28;
 
-  beforeEach(() => {
-    // create a console.log spy for later use
-    cy.window().then((win) => {
-      cy.spy(win.console, "log");
-    });
-  });
-
   it('should display Example title', () => {
     cy.visit(`${Cypress.config('baseUrl')}/examples/example3-editing.html`);
     cy.get('h2').contains('Demonstrates');

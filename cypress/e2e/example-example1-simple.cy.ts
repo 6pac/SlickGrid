@@ -2,13 +2,6 @@ describe('Example 1 - Basic Grid', () => {
   const GRID_ROW_HEIGHT = 25;
   const fullTitles = ['Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
 
-  beforeEach(() => {
-    // create a console.log spy for later use
-    cy.window().then((win) => {
-      cy.spy(win.console, "log");
-    });
-  });
-
   it('should display Example 1 with Basic Basic', () => {
     cy.visit(`${Cypress.config('baseUrl')}/examples/example1-simple.html`);
     cy.get('h2').should('contain', 'Demonstrates:');

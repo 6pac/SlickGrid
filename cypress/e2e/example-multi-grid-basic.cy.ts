@@ -1,13 +1,6 @@
 describe('Example - Multi Grid on a Page', () => {
   const fullTitles = ['Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
 
-  beforeEach(() => {
-    // create a console.log spy for later use
-    cy.window().then((win) => {
-      cy.spy(win.console, "log");
-    });
-  });
-
   it('should display Example Multi-grid Basic', () => {
     cy.visit(`${Cypress.config('baseUrl')}/examples/example-multi-grid-basic.html`);
     cy.get('h2').should('contain', 'Demonstrates:');
