@@ -204,17 +204,17 @@ export class SlickEvent<ArgType = any> {
   }
 }
 
-export class SlickEventHandler<ArgType = any> {
-  protected handlers: Array<{ event: SlickEvent; handler: Handler<ArgType>; }> = [];
+export class SlickEventHandler {
+  protected handlers: Array<{ event: SlickEvent; handler: Handler<any>; }> = [];
 
-  subscribe(event: SlickEvent, handler: Handler<ArgType>) {
+  subscribe<T = any>(event: SlickEvent<T>, handler: Handler<T>) {
     this.handlers.push({ event, handler });
     event.subscribe(handler);
 
-    return this;  // allow chaining
+    return this as SlickEventHandler;  // allow chaining
   }
 
-  unsubscribe(event: SlickEvent, handler: Handler<ArgType>) {
+  unsubscribe<T = any>(event: SlickEvent<T>, handler: Handler<T>) {
     let i = this.handlers.length;
     while (i--) {
       if (this.handlers[i].event === event &&
@@ -225,7 +225,7 @@ export class SlickEventHandler<ArgType = any> {
       }
     }
 
-    return this;  // allow chaining
+    return this as SlickEventHandler;  // allow chaining
   }
 
   unsubscribeAll() {
@@ -235,7 +235,7 @@ export class SlickEventHandler<ArgType = any> {
     }
     this.handlers = [];
 
-    return this;  // allow chaining
+    return this as SlickEventHandler;  // allow chaining
   }
 }
 

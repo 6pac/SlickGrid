@@ -74,7 +74,7 @@ export class SlickCrossGridRowMoveManager {
 
     this._eventHandler
       .subscribe(this._grid.onDragInit, this.handleDragInit.bind(this))
-      .subscribe(this._grid.onDragStart, this.handleDragStart.bind(this))
+      .subscribe(this._grid.onDragStart as any, this.handleDragStart.bind(this))
       .subscribe(this._grid.onDrag, this.handleDrag.bind(this))
       .subscribe(this._grid.onDragEnd, this.handleDragEnd.bind(this));
   }

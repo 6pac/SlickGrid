@@ -1,4 +1,4 @@
-import type { CheckboxSelectorOption, Column, DOMEvent, SlickPlugin, SelectableOverrideCallback } from '../models/index';
+import type { CheckboxSelectorOption, Column, DOMEvent, SlickPlugin, SelectableOverrideCallback, OnHeaderClickEventArgs } from '../models/index';
 import { BindingEventService as BindingEventService_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
 import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
@@ -281,7 +281,7 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
     this._grid.setSelectedRows(this._grid.getSelectedRows().filter((n) => removeRows.indexOf(n) < 0), 'SlickCheckboxSelectColumn.deSelectRows');
   }
 
-  protected handleHeaderClick(e: DOMEvent<HTMLInputElement>, args: any) {
+  protected handleHeaderClick(e: DOMEvent<HTMLInputElement>, args: OnHeaderClickEventArgs) {
     if (args.column.id === this._options.columnId && e.target.type === 'checkbox') {
       // if editing, try to commit
       if (this._grid.getEditorLock().isActive() && !this._grid.getEditorLock().commitCurrentEdit()) {

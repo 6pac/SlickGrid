@@ -42,7 +42,6 @@ import type {
   OnColumnsResizedEventArgs,
   OnColumnsResizeDblClickEventArgs,
   OnCompositeEditorChangeEventArgs,
-  OnClickEventArgs,
   OnDblClickEventArgs,
   OnFooterContextMenuEventArgs,
   OnFooterRowCellRenderedEventArgs,
@@ -66,6 +65,8 @@ import type {
   SlickGridEventData,
   SlickGridModel,
   SlickPlugin,
+  MenuCommandItemCallbackArgs,
+  OnClickEventArgs,
 } from './models/index';
 import {
   type BasePubSub,
@@ -164,7 +165,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   onColumnsResized: SlickEvent_<OnColumnsResizedEventArgs>;
   onColumnsResizeDblClick: SlickEvent_<OnColumnsResizeDblClickEventArgs>;
   onCompositeEditorChange: SlickEvent_<OnCompositeEditorChangeEventArgs>;
-  onContextMenu: SlickEvent_<SlickGridEventData>;
+  onContextMenu: SlickEvent_<MenuCommandItemCallbackArgs>;
   onDrag: SlickEvent_<DragRowMove>;
   onDblClick: SlickEvent_<OnDblClickEventArgs>;
   onDragInit: SlickEvent_<DragRowMove>;
@@ -539,7 +540,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.onColumnsResized = new SlickEvent<OnColumnsResizedEventArgs>('onColumnsResized', externalPubSub);
     this.onColumnsResizeDblClick = new SlickEvent<OnColumnsResizeDblClickEventArgs>('onColumnsResizeDblClick', externalPubSub);
     this.onCompositeEditorChange = new SlickEvent<OnCompositeEditorChangeEventArgs>('onCompositeEditorChange', externalPubSub);
-    this.onContextMenu = new SlickEvent<SlickGridEventData>('onContextMenu', externalPubSub);
+    this.onContextMenu = new SlickEvent<MenuCommandItemCallbackArgs>('onContextMenu', externalPubSub);
     this.onDrag = new SlickEvent<DragRowMove>('onDrag', externalPubSub);
     this.onDblClick = new SlickEvent<OnDblClickEventArgs>('onDblClick', externalPubSub);
     this.onDragInit = new SlickEvent<DragRowMove>('onDragInit', externalPubSub);

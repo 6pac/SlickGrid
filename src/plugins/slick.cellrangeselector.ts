@@ -1,7 +1,7 @@
 import { SlickEvent as SlickEvent_, SlickEventData, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core';
 import { Draggable as Draggable_ } from '../slick.interactions';
 import { SlickCellRangeDecorator as SlickCellRangeDecorator_ } from './slick.cellrangedecorator';
-import type { CellRangeSelectorOption, DOMMouseOrTouchEvent, DragPosition, DragRange, GridOption, MouseOffsetViewport, OnScrollEventArgs, SlickPlugin } from '../models/index';
+import type { CellRangeSelectorOption, DOMMouseOrTouchEvent, DragPosition, DragRange, DragRowMove, GridOption, MouseOffsetViewport, OnScrollEventArgs, SlickPlugin } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -143,7 +143,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
     e.preventDefault();
   }
 
-  protected handleDragStart(e: DOMMouseOrTouchEvent<HTMLDivElement>, dd: DragPosition) {
+  protected handleDragStart(e: DOMMouseOrTouchEvent<HTMLDivElement>, dd: DragRowMove) {
     const cell = this._grid.getCellFromEvent(e);
     if (cell && this.onBeforeCellRangeSelected.notify(cell).getReturnValue() !== false && this._grid.canCellBeSelected(cell.row, cell.cell)) {
       this._dragging = true;
@@ -174,7 +174,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
     return this._decorator.show(new SlickRange(start.row, start.cell));
   }
 
-  protected handleDrag(evt: SlickEventData, dd: DragPosition) {
+  protected handleDrag(evt: SlickEventData, dd: DragRowMove) {
     if (!this._dragging && !this._isRowMoveRegistered) {
       return;
     }
@@ -193,7 +193,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
     this.handleDragTo(e, dd);
   }
 
-  protected getMouseOffsetViewport(e: MouseEvent | TouchEvent, dd: DragPosition): MouseOffsetViewport {
+  protected getMouseOffsetViewport(e: MouseEvent | TouchEvent, dd: DragRowMove): MouseOffsetViewport {
     const targetEvent: MouseEvent | Touch = (e as TouchEvent)?.touches?.[0] ?? e;
     const viewportLeft = this._activeViewport.scrollLeft;
     const viewportTop = this._activeViewport.scrollTop;
