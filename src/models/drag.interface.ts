@@ -49,4 +49,5 @@ export interface DragRowMove {
   selectedRows: number[];
   startX: number;
   startY: number;
+  range: DragRange;
 }
