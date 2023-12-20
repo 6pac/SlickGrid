@@ -17,6 +17,8 @@ $alpine-icon-size:                                18px !default;
 
 $alpine-odd-row-color:                            #fbfbfb !default;
 $alpine-row-mouse-hover-color:                    #e8f4fe !default;
+$alpine-row-highlight-fade-animation:             1s linear !default;
+$alpine-row-highlight-background-color:           darken($alpine-row-mouse-hover-color, 3%) !default;
 
 $alpine-cell-border-color:                        #dae1e7 !default;
 $alpine-cell-border-radius:                       0 !default;

@@ -12,6 +12,11 @@
 @import './mixins';
 @import './variables';
 
+@keyframes fade {
+  0%, 100% { background: none }
+  50% { background: var(--alpine-row-highlight-fade-animation, $alpine-row-highlight-fade-animation) }
+}
+
 // Grid Styles
 #myGrid, .slick-container {
   box-sizing: border-box;
@@ -74,6 +79,10 @@
   }
   &:hover {
     background-color: var(--alpine-row-mouse-hover-color, $alpine-row-mouse-hover-color);
+  }
+  &.highlight-animate {
+    background: var(--alpine-row-highlight-background-color, $alpine-row-highlight-background-color) !important;
+    animation: fade var(--alpine-row-highlight-fade-animation, $alpine-row-highlight-fade-animation);
   }
 }
 

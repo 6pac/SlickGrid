@@ -68,6 +68,7 @@
     <button id="setFrozenColumn">Set</button>
     <br/><br/>
     <button id="btnSelectRows">Select first 10 rows</button>
+    <button onclick="highlightSecondRow()">Highlight 2nd Row (750ms)</button>
 
     <br/>
 
@@ -188,6 +189,9 @@ function addItem(newItem, columnDef) {
   dataView.addItem(item);
 }
 
+function highlightSecondRow() {
+  grid.highlightRow(1, 750);
+}
 
 function toggleFilterRow() {
   grid.setTopPanelVisibility(!grid.getOptions().showTopPanel);
