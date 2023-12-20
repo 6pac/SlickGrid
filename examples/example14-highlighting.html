@@ -7,6 +7,11 @@
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
+    @keyframes fade {
+      0%, 100% { background: none }
+      50% { background: #e8f8d0 }
+    }
+
     .load-medium {
       color: orange;
       font-weight: bold;
@@ -25,6 +30,11 @@
     .current-server {
       background: moccasin;
       box-shadow: inset 0 0 0 1px darksalmon;
+    }
+
+    .slick-row.highlighting-animation {
+      background: #e8f8d0 !important;
+      animation: fade 1.5s linear;
     }
   </style>
 </head>
@@ -52,6 +62,9 @@
     <button onclick="simulateRealTimeUpdates()">Start simulation</button>
     <button onclick="stopSimulation()">Stop simulation</button>
     <button onclick="findCurrentServer()">Find current server</button>
+    <section style="margin-top: 5px">
+      <button onclick="highlightSecondRow()">Highlight 2nd Row (500ms)</button>
+    </section>
       <h2>View Source:</h2>
       <ul>
           <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example14-highlighting.html" target="_sourcewindow"> View the source for this example on Github</a></li>
@@ -160,6 +173,12 @@
     let currentServer = Math.round(Math.random() * (data.length - 1));
     grid.scrollRowIntoView(currentServer);
     grid.flashCell(currentServer, grid.getColumnIndex("server"), 100);
+  }
+
+  function highlightSecondRow() {
+    // default is: { rowHighlightCssClass: 'highlight-animate' }
+    grid.setOptions({ rowHighlightCssClass: 'highlighting-animation' });
+    grid.highlightRow(1, 500);
   }
 </script>
 </body>

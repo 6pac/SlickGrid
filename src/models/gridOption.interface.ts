@@ -254,6 +254,13 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   /** Grid row height in pixels (only type the number). Row of cell values. */
   rowHeight?: number;
 
+  /**
+   * Defaults to "highlight-animate", a CSS class name used to simulate row highlight with an optional duration (e.g. after insert).
+   * Note: make sure that the duration is always lower than the duration defined in the CSS/SASS variable `$alpine-row-highlight-fade-animation`.
+   * Also note that the highlight is temporary and will also disappear as soon as the user starts scrolling or a `render()` is being called
+   */
+  rowHighlightCssClass?: string;
+
   /** Optional sanitizer function to use for sanitizing data to avoid XSS attacks */
   sanitizer?: (dirtyHtml: string) => string;
 

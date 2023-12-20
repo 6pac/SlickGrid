@@ -246,6 +246,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     formatterFactory: null,
     editorFactory: null,
     cellFlashingCssClass: 'flashing',
+    rowHighlightCssClass: 'highlight-animate',
     selectedCellCssClass: 'selected',
     multiSelect: true,
     enableTextSelectionOnCells: false,
@@ -318,6 +319,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     headerWidthPx: 0,
     colDataTypeOf: undefined
   };
+
+  protected _columnResizeTimer?: any;
+  protected _executionBlockTimer?: any;
+  protected _flashCellTimer?: any;
+  protected _highlightRowTimer?: any;
 
   // scroller
   protected th!: number;   // virtual height
@@ -2267,7 +2273,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
             this.updateCanvasWidth(true);
             this.render();
             this.trigger(this.onColumnsResized, { triggeredByColumn });
-            setTimeout(() => { this.columnResizeDragging = false; }, 300);
+            clearTimeout(this._columnResizeTimer);
+            this._columnResizeTimer = setTimeout(() => { this.columnResizeDragging = false; }, 300);
           }
         })
       );
@@ -2514,6 +2521,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.stylesheet = null;
   }
 
+  /** Clear all highlight timers that might have been left opened */
+  protected clearAllTimers() {
+    clearTimeout(this._columnResizeTimer);
+    clearTimeout(this._executionBlockTimer);
+    clearTimeout(this._flashCellTimer);
+    clearTimeout(this._highlightRowTimer);
+    clearTimeout(this.h_editorLoader);
+  }
+
   /**
    * Destroy (dispose) of SlickGrid
    * @param {boolean} shouldDestroyAllElements - do we want to destroy (nullify) all DOM elements as well? This help in avoiding mem leaks
@@ -2598,6 +2614,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     Utils.emptyElement(this._container);
     this._container.classList.remove(this.uid);
+    this.clearAllTimers();
 
     if (shouldDestroyAllElements) {
       this.destroyAllElements();
@@ -5065,7 +5082,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     const blockAndExecute = () => {
       blocked = true;
-      setTimeout(unblock, minPeriod_ms);
+      clearTimeout(this._executionBlockTimer);
+      this._executionBlockTimer = setTimeout(unblock, minPeriod_ms);
       action.call(this);
     };
 
@@ -5244,17 +5262,16 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * Flashes the cell twice by toggling the CSS class 4 times.
    * @param {Number} row A row index.
    * @param {Number} cell A column index.
-   * @param {Number} [speed] (optional) - The milliseconds delay between the toggling calls. Defaults to 100 ms.
+   * @param {Number} [speed] (optional) - The milliseconds delay between the toggling calls. Defaults to 250 ms.
    */
-  flashCell(row: number, cell: number, speed?: number) {
-    speed = speed || 250;
-
+  flashCell(row: number, cell: number, speed = 250) {
     const toggleCellClass = (cellNode: HTMLElement, times: number) => {
       if (times < 1) {
         return;
       }
 
-      setTimeout(() => {
+      clearTimeout(this._flashCellTimer);
+      this._flashCellTimer = setTimeout(() => {
         if (times % 2 === 0) {
           cellNode.classList.add(this._options.cellFlashingCssClass || '');
         } else {
@@ -5269,6 +5286,23 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (cellNode) {
         toggleCellClass(cellNode, 5);
       }
+    }
+  }
+
+  /**
+   * Highlight a row for a certain duration (ms) of time.
+   * @param {Number} row - grid row number
+   * @param {Number} [duration] - duration (ms), defaults to 500ms
+   */
+  highlightRow(row: number, duration = 500) {
+    const rowCache = this.rowsCache[row];
+
+    if (Array.isArray(rowCache?.rowNode) && this._options.rowHighlightCssClass) {
+      rowCache.rowNode.forEach(node => node.classList.add(this._options.rowHighlightCssClass || ''));
+      clearTimeout(this._highlightRowTimer);
+      this._highlightRowTimer = setTimeout(() => {
+        rowCache.rowNode?.forEach(node => node.classList.remove(this._options.rowHighlightCssClass || ''));
+      }, duration);
     }
   }
 
