@@ -429,7 +429,11 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       gi.compiledAccumulators = [];
       let idx = gi.aggregators.length;
       while (idx--) {
-        gi.compiledAccumulators[idx] = this.compileAccumulatorLoop(gi.aggregators[idx]);
+        if(this._options.useCSPSafeFilter){
+          gi.compiledAccumulators[idx] = this.compileAccumulatorLoopCSPSafe(gi.aggregators[idx]);
+        }else {
+          gi.compiledAccumulators[idx] = this.compileAccumulatorLoop(gi.aggregators[idx]);
+        }
       }
 
       this.toggledGroupsByLevel[i] = {};
@@ -1051,6 +1055,21 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       fn.displayName = fnName;
       fn.name = this.setFunctionName(fn, fnName);
       return fn;
+    } else {
+      return function noAccumulator() { };
+    }
+  }
+
+  protected compileAccumulatorLoopCSPSafe(aggregator: Aggregator) {
+
+    if (aggregator.accumulate) {
+      return function(items: any[]) {
+        let result;
+        for (const item of items) {
+          result = aggregator.accumulate!.call(aggregator, item);
+        }
+        return result;
+      };
     } else {
       return function noAccumulator() { };
     }

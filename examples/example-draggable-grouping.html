@@ -421,7 +421,8 @@ document.addEventListener("DOMContentLoaded", function() {
   var groupItemMetadataProvider = new Slick.Data.GroupItemMetadataProvider();
   dataView = new Slick.Data.DataView({
     groupItemMetadataProvider: groupItemMetadataProvider,
-    inlineFilters: true
+    inlineFilters: true,
+    useCSPSafeFilter: true,
   });
 
   grid = new Slick.Grid("#myGrid", dataView, columns, options);
