@@ -1579,11 +1579,13 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
 
     const storeCellCssStyles = (hash: CssStyleHash) => {
       hashById = {};
-      for (const row in hash) {
-        if (hash) {
-          const id = this.rows[row as any][this.idProperty as keyof TData];
-          hashById[id] = hash[row];
-        }
+      if (typeof hash === 'object') {
+        Object.keys(hash).forEach(row => {
+          if (hash) {
+            const id = this.rows[row as any][this.idProperty as keyof TData];
+            hashById[id] = hash[row];
+          }
+        });
       }
     };
 
@@ -1592,18 +1594,16 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     storeCellCssStyles(grid.getCellCssStyles(key));
 
     const update = () => {
-      if (hashById) {
+      if (typeof hashById === 'object') {
         inHandler = true;
         this.ensureRowsByIdCache();
         const newHash: CssStyleHash = {};
-        for (const id in hashById) {
-          if (hashById) {
-            const row = this.rowsById?.[id];
-            if (Utils.isDefined(row)) {
-              newHash[row] = hashById[id];
-            }
+        Object.keys(hashById).forEach(id => {
+          const row = this.rowsById?.[id];
+          if (Utils.isDefined(row)) {
+            newHash[row as number] = hashById[id];
           }
-        }
+        });
         grid.setCellCssStyles(key, newHash);
         inHandler = false;
       }

@@ -41,14 +41,11 @@ export class SlickEventData<ArgType = any> {
     // when we already have an event, we want to keep some of the event properties
     // looping through some props is the only way to keep and sync these properties to the returned EventData
     if (event) {
-      const eventProps = [
+      [
         'altKey', 'ctrlKey', 'metaKey', 'shiftKey', 'key', 'keyCode',
         'clientX', 'clientY', 'offsetX', 'offsetY', 'pageX', 'pageY',
         'bubbles', 'type', 'which', 'x', 'y'
-      ];
-      for (const key of eventProps) {
-        (this as any)[key] = event[key as keyof Event];
-      }
+      ].forEach(key => (this as any)[key] = event[key as keyof Event]);
     }
     this.target = this.nativeEvent ? this.nativeEvent.target : undefined;
   }
@@ -963,10 +960,12 @@ export class Utils {
   }
 
   public static applyDefaults(targetObj: any, srcObj: any) {
-    for (const key in srcObj) {
-      if (srcObj.hasOwnProperty(key) && !targetObj.hasOwnProperty(key)) {
-        targetObj[key] = srcObj[key];
-      }
+    if (typeof srcObj === 'object') {
+      Object.keys(srcObj).forEach(key => {
+        if (srcObj.hasOwnProperty(key) && !targetObj.hasOwnProperty(key)) {
+          targetObj[key] = srcObj[key];
+        }
+      });
     }
   }
 
