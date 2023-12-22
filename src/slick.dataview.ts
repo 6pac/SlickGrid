@@ -429,9 +429,9 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       gi.compiledAccumulators = [];
       let idx = gi.aggregators.length;
       while (idx--) {
-        if(this._options.useCSPSafeFilter){
+        if (this._options.useCSPSafeFilter) {
           gi.compiledAccumulators[idx] = this.compileAccumulatorLoopCSPSafe(gi.aggregators[idx]);
-        }else {
+        } else {
           gi.compiledAccumulators[idx] = this.compileAccumulatorLoop(gi.aggregators[idx]);
         }
       }
@@ -1061,9 +1061,8 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   protected compileAccumulatorLoopCSPSafe(aggregator: Aggregator) {
-
     if (aggregator.accumulate) {
-      return function(items: any[]) {
+      return function (items: any[]) {
         let result;
         for (const item of items) {
           result = aggregator.accumulate!.call(aggregator, item);
@@ -1092,7 +1091,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   protected compileFilter(stopRunningIfCSPSafeIsActive: boolean = false): FilterFn<TData> {
-    if(stopRunningIfCSPSafeIsActive) {
+    if (stopRunningIfCSPSafeIsActive) {
       return null as any;
     }
     const filterInfo = this.getFunctionInfo(this.filter as FilterFn<TData>);
@@ -1133,7 +1132,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   protected compileFilterWithCaching(stopRunningIfCSPSafeIsActive: boolean = false) {
-    if(stopRunningIfCSPSafeIsActive) {
+    if (stopRunningIfCSPSafeIsActive) {
       return null as any;
     }
 
