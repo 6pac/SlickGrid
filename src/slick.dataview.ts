@@ -1073,7 +1073,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   protected compileFilter(stopRunningIfCSPSafeIsActive: boolean = false): FilterFn<TData> {
-    if(stopRunningIfCSPSafeIsActive) {
+    if (stopRunningIfCSPSafeIsActive) {
       return null as any;
     }
     const filterInfo = this.getFunctionInfo(this.filter as FilterFn<TData>);
@@ -1114,7 +1114,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   protected compileFilterWithCaching(stopRunningIfCSPSafeIsActive: boolean = false) {
-    if(stopRunningIfCSPSafeIsActive) {
+    if (stopRunningIfCSPSafeIsActive) {
       return null as any;
     }
 

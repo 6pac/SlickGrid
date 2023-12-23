@@ -49,6 +49,8 @@
     "object-shorthand": "error",
     "no-cond-assign": "off",
     "no-prototype-builtins": [0],
-    "semi": "off"
+    "semi": "off",
+    "keyword-spacing": "error",
+    "space-before-blocks": "error"
   }
 }
