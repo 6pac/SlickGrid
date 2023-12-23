@@ -634,7 +634,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected initialize(options: Partial<O>) {
     // calculate these only once and share between grid instances
     if (options?.mixinDefaults) {
-      if (!this._options) { this._options = {} as O; }
+      // use provided options and then assign defaults
+      if (!this._options) { this._options = options as O; }
       Utils.applyDefaults(this._options, this._defaults);
     } else {
       this._options = Utils.extend<O>(true, {}, this._defaults, options);
