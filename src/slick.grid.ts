@@ -1145,45 +1145,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return Math.max(this.headersWidth, this.viewportW) + 1000;
   }
 
-  protected getHeadersWidthL() {
-    this.headersWidthL = 0;
-
-    this.columns.forEach((column, i) => {
-      if (column.hidden) { return; }
-
-      if (!((this._options.frozenColumn!) > -1 && (i > this._options.frozenColumn!))) {
-        this.headersWidthL += column.width || 0;
-      }
-    });
-
-    if (this.hasFrozenColumns()) {
-      this.headersWidthL += 1000;
-    } else {
-      this.headersWidthL += this.scrollbarDimensions?.width ?? 0;
-      this.headersWidthL = Math.max(this.headersWidthL, this.viewportW) + 1000;
-    }
-
-    return this.headersWidthL;
-  }
-
-  protected getHeadersWidthR() {
-    this.headersWidthR = 0;
-
-    this.columns.forEach((column, i) => {
-      if (column.hidden) { return; }
-      if ((this._options.frozenColumn!) > -1 && (i > this._options.frozenColumn!)) {
-        this.headersWidthR += column.width || 0;
-      }
-    });
-
-    if (this.hasFrozenColumns()) {
-      this.headersWidthR = Math.max(this.headersWidthR, this.viewportW) + this.getHeadersWidthL();
-      this.headersWidthR += this.scrollbarDimensions?.width ?? 0;
-    }
-
-    return this.headersWidthR;
-  }
-
   /** Get the grid canvas width */
   getCanvasWidth(): number {
     const availableWidth = this.viewportHasVScroll ? this.viewportW - (this.scrollbarDimensions?.width ?? 0) : this.viewportW;
