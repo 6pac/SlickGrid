@@ -3516,6 +3516,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.updateColumnsInternal();
   }
 
+  /** Update columns for when a hidden property has changed but the column list itself has not changed. */
   updateColumns() {
     this.trigger(this.onBeforeUpdateColumns, { columns: this.columns, grid: this });
     this.updateColumnsInternal();
