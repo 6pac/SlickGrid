@@ -3655,7 +3655,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {CustomDataView|Array<*>} newData New databinding source using a regular JavaScript array.. or a custom object exposing getItem(index) and getLength() functions.
    * @param {Number} [scrollToTop] If true, the grid will reset the vertical scroll position to the top of the grid.
    */
-  setData(newData: CustomDataView<TData> | TData[], scrollToTop?: number) {
+  setData(newData: CustomDataView<TData> | TData[], scrollToTop?: boolean) {
     this.data = newData;
     this.invalidateAllRows();
     this.updateRowCount();
