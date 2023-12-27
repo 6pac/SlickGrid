@@ -3516,7 +3516,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.updateColumnsInternal();
   }
 
-  protected updateColumns() {
+  updateColumns() {
     this.trigger(this.onBeforeUpdateColumns, { columns: this.columns, grid: this });
     this.updateColumnsInternal();
   }
