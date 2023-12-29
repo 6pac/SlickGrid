@@ -36,8 +36,16 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 const SlickGroupItemMetadataProvider = IIFE_ONLY ? Slick.Data?.GroupItemMetadataProvider ?? {} : SlickGroupItemMetadataProvider_;
 
 export interface DataViewOption {
+  /** Optional GroupItemMetadataProvider when using the Grouping feature */
   groupItemMetadataProvider: SlickGroupItemMetadataProvider_ | null;
+
+  /** defaults to false, are we using inline filters? */
   inlineFilters: boolean;
+
+  /**
+   * defaults to false, option to use CSP Safe approach,
+   * it is an opt-in option because it has a slight perf impact when compared to the non-CSP safe approach.
+   */
   useCSPSafeFilter: boolean;
 }
 export type FilterFn<T> = (item: T, args: any) => boolean;
@@ -49,11 +57,10 @@ export type GroupGetterFn = (val: any) => string | number;
 export type AnyFunction = (...args: any[]) => any;
 
 /**
-   * A sample Model implementation.
-   * Provides a filtered view of the underlying data.
-   *
-   * Relies on the data item having an "id" property uniquely identifying it.
-   */
+  * A simple Model implementation.
+  * Provides a filtered view of the underlying data.
+  * Relies on the data item having an "id" property uniquely identifying it.
+  */
 export class SlickDataView<TData extends SlickDataItem = any> implements CustomDataView {
   protected defaults: DataViewOption = {
     groupItemMetadataProvider: null,
