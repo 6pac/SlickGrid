@@ -429,11 +429,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       gi.compiledAccumulators = [];
       let idx = gi.aggregators.length;
       while (idx--) {
-        if (this._options.useCSPSafeFilter) {
-          gi.compiledAccumulators[idx] = this.compileAccumulatorLoopCSPSafe(gi.aggregators[idx]);
-        } else {
-          gi.compiledAccumulators[idx] = this.compileAccumulatorLoop(gi.aggregators[idx]);
-        }
+        gi.compiledAccumulators[idx] = this.compileAccumulatorLoopCSPSafe(gi.aggregators[idx]);
       }
 
       this.toggledGroupsByLevel[i] = {};
@@ -1039,25 +1035,6 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       params: matches[1].split(','),
       body: matches[2]
     };
-  }
-
-  protected compileAccumulatorLoop(aggregator: Aggregator) {
-    if (aggregator.accumulate) {
-      const accumulatorInfo = this.getFunctionInfo(aggregator.accumulate);
-      const fn: any = new Function(
-        '_items',
-        'for (var ' + accumulatorInfo.params[0] + ', _i=0, _il=_items.length; _i<_il; _i++) {' +
-        accumulatorInfo.params[0] + ' = _items[_i]; ' +
-        accumulatorInfo.body +
-        '}'
-      );
-      const fnName = 'compiledAccumulatorLoop';
-      fn.displayName = fnName;
-      fn.name = this.setFunctionName(fn, fnName);
-      return fn;
-    } else {
-      return function noAccumulator() { };
-    }
   }
 
   protected compileAccumulatorLoopCSPSafe(aggregator: Aggregator) {
