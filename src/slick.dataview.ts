@@ -36,7 +36,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 const SlickGroupItemMetadataProvider = IIFE_ONLY ? Slick.Data?.GroupItemMetadataProvider ?? {} : SlickGroupItemMetadataProvider_;
 
 export interface DataViewOption {
-  /** Optional GroupItemMetadataProvider when using the Grouping feature */
+  /** Optionally provide a GroupItemMetadataProvider in order to use Grouping/DraggableGrouping features */
   groupItemMetadataProvider: SlickGroupItemMetadataProvider_ | null;
 
   /** defaults to false, are we using inline filters? */
@@ -44,7 +44,7 @@ export interface DataViewOption {
 
   /**
    * defaults to false, option to use CSP Safe approach,
-   * it is an opt-in option because it has a slight perf impact when compared to the non-CSP safe approach.
+   * Note: it is an opt-in option because it is slightly slower (perf impact) when compared to the non-CSP safe approach.
    */
   useCSPSafeFilter: boolean;
 }
