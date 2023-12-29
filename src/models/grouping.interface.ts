@@ -3,7 +3,7 @@ import { GroupingComparerItem } from "./groupingComparerItem.interface";
 import { GroupingFormatterItem } from "./groupingFormatterItem.interface";
 import { SortDirectionNumber } from "./sortDirectionNumber.enum";
 
-export type GroupingGetterFunction<T = any> = (value: T) => string;
+export type GroupingGetterFunction<T = any> = (value: T) => any;
 
 export interface Grouping<T = any> {
   /** Grouping Aggregators array */
