@@ -344,7 +344,7 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
       id: this._options.columnId,
       name: (this._options.hideSelectAllCheckbox || this._options.hideInColumnTitleRow) ? '' : `<input id="header-selector${this._selectAll_UID}" type="checkbox"><label for="header-selector${this._selectAll_UID}"></label>`,
       toolTip: (this._options.hideSelectAllCheckbox || this._options.hideInColumnTitleRow) ? '' : this._options.toolTip,
-      field: "sel",
+      field: 'sel',
       width: this._options.width,
       resizable: false,
       sortable: false,
@@ -360,7 +360,7 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
 
   protected addCheckboxToFilterHeaderRow(grid: SlickGrid) {
     this._handler.subscribe(grid.onHeaderRowCellRendered, (_e: any, args: any) => {
-      if (args.column.field === "sel") {
+      if (args.column.field === 'sel') {
         Utils.emptyElement(args.node);
         const spanElm = document.createElement('span');
         spanElm.id = 'filter-checkbox-selectall-container';

@@ -312,7 +312,7 @@ export class SlickDraggableGrouping {
           }
         }
         this._columnsGroupBy = newGroupingOrder;
-        this.updateGroupBy("sort-group");
+        this.updateGroupBy('sort-group');
       },
     });
 
@@ -393,7 +393,7 @@ export class SlickDraggableGrouping {
 
   protected addColumnGroupBy(column: Column) {
     this._columnsGroupBy.push(column);
-    this.updateGroupBy("add-group");
+    this.updateGroupBy('add-group');
   }
 
   protected addGroupByRemoveClickHandler(id: string | number, groupRemoveIconElm: HTMLDivElement, headerColumnElm: HTMLDivElement, entry: any) {
@@ -454,7 +454,7 @@ export class SlickDraggableGrouping {
         this._groupToggler.style.display = 'none';
       }
     }
-    this.updateGroupBy("remove-group");
+    this.updateGroupBy('remove-group');
   }
 
   protected toggleGroupToggler(targetElm: Element | null, collapsing = true, shouldExecuteDataViewCommand = true) {

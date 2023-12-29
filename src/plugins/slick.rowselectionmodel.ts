@@ -143,7 +143,7 @@ export class SlickRowSelectionModel {
 
     // provide extra "caller" argument through SlickEventData to avoid breaking pubsub event that only accepts an array of selected range
     const eventData = new SlickEventData(null, this._ranges);
-    Object.defineProperty(eventData, 'detail', { writable: true, configurable: true, value: { caller: caller || "SlickRowSelectionModel.setSelectedRanges" } });
+    Object.defineProperty(eventData, 'detail', { writable: true, configurable: true, value: { caller: caller || 'SlickRowSelectionModel.setSelectedRanges' } });
     this.onSelectedRangesChanged.notify(this._ranges, eventData);
   }
 

@@ -134,7 +134,7 @@ export class SlickColumnMenu {
       const colName: string = this.columns[i].name instanceof HTMLElement
         ? (this.columns[i].name as HTMLElement).innerHTML
         : (this.columns[i].name || '') as string;
-      excludeCssClass = this.columns[i].excludeFromColumnPicker ? "hidden" : "";
+      excludeCssClass = this.columns[i].excludeFromColumnPicker ? 'hidden' : '';
 
       const liElm = document.createElement('li');
       liElm.className = excludeCssClass;
