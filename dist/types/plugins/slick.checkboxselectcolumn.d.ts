@@ -1,4 +1,4 @@
-import type { CheckboxSelectorOption, Column, DOMEvent, SlickPlugin, SelectableOverrideCallback } from '../models/index';
+import type { CheckboxSelectorOption, Column, DOMEvent, SlickPlugin, SelectableOverrideCallback, OnHeaderClickEventArgs } from '../models/index';
 import { BindingEventService as BindingEventService_, SlickEventHandler as SlickEventHandler_ } from '../slick.core';
 import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
@@ -10,7 +10,7 @@ export declare class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
     protected _selectableOverride: SelectableOverrideCallback<T> | null;
     protected _headerRowNode?: HTMLElement;
     protected _selectAll_UID: number;
-    protected _handler: SlickEventHandler_<any>;
+    protected _handler: SlickEventHandler_;
     protected _selectedRowsLookup: any;
     protected _checkboxColumnCellIndex: number | null;
     protected _options: CheckboxSelectorOption;
@@ -34,7 +34,7 @@ export declare class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
     protected toggleRowSelection(row: number): void;
     selectRows(rowArray: number[]): void;
     deSelectRows(rowArray: number[]): void;
-    protected handleHeaderClick(e: DOMEvent<HTMLInputElement>, args: any): void;
+    protected handleHeaderClick(e: DOMEvent<HTMLInputElement>, args: OnHeaderClickEventArgs): void;
     protected getCheckboxColumnCellIndex(): number;
     getColumnDefinition(): {
         id: string | undefined;

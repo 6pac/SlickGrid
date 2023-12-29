@@ -1,4 +1,4 @@
-import type { Column, DOMEvent, GroupItemMetadataProviderOption, GroupingFormatterItem, ItemMetadata } from './models/index';
+import type { Column, DOMEvent, GroupItemMetadataProviderOption, GroupingFormatterItem, ItemMetadata, SlickPlugin } from './models/index';
 import type { SlickGrid } from './slick.grid';
 /**
  * Provides item metadata for group (Slick.Group) and totals (Slick.Totals) rows produced by the DataView.
@@ -14,7 +14,8 @@ import type { SlickGrid } from './slick.grid';
  * @constructor
  * @param inputOptions
  */
-export declare class SlickGroupItemMetadataProvider {
+export declare class SlickGroupItemMetadataProvider implements SlickPlugin {
+    pluginName: "GroupItemMetadataProvider";
     protected _grid: SlickGrid;
     protected _options: GroupItemMetadataProviderOption;
     protected _defaults: GroupItemMetadataProviderOption;

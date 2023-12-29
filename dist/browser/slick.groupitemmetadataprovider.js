@@ -7,6 +7,7 @@
   // src/slick.groupitemmetadataprovider.ts
   var keyCode = Slick.keyCode, SlickGroup = Slick.Group, Utils = Slick.Utils, SlickGroupItemMetadataProvider = class {
     constructor(inputOptions) {
+      __publicField(this, "pluginName", "GroupItemMetadataProvider");
       __publicField(this, "_grid");
       __publicField(this, "_options");
       __publicField(this, "_defaults", {

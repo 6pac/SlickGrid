@@ -252,7 +252,7 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
         params: string[];
         body: string;
     };
-    protected compileAccumulatorLoop(aggregator: Aggregator): any;
+    protected compileAccumulatorLoopCSPSafe(aggregator: Aggregator): (items: any[]) => void;
     protected compileFilterCSPSafe(items: TData[], args: any): TData[];
     protected compileFilter(stopRunningIfCSPSafeIsActive?: boolean): FilterFn<TData>;
     protected compileFilterWithCaching(stopRunningIfCSPSafeIsActive?: boolean): any;

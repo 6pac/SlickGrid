@@ -82,7 +82,7 @@ export declare class SlickCustomTooltip {
     protected _tooltipElm?: HTMLDivElement;
     protected _options: CustomTooltipOption;
     protected _defaults: CustomTooltipOption;
-    protected _eventHandler: SlickEventHandler_<any>;
+    protected _eventHandler: SlickEventHandler_;
     protected _cellTooltipOptions: CustomTooltipOption;
     constructor(tooltipOptions: Partial<CustomTooltipOption>);
     /**

@@ -61,30 +61,25 @@ var Slick = (() => {
       __publicField(this, "target");
       __publicField(this, "nativeEvent");
       __publicField(this, "arguments_");
-      if (this.nativeEvent = event, this.arguments_ = args, event) {
-        let eventProps = [
-          "altKey",
-          "ctrlKey",
-          "metaKey",
-          "shiftKey",
-          "key",
-          "keyCode",
-          "clientX",
-          "clientY",
-          "offsetX",
-          "offsetY",
-          "pageX",
-          "pageY",
-          "bubbles",
-          "type",
-          "which",
-          "x",
-          "y"
-        ];
-        for (let key of eventProps)
-          this[key] = event[key];
-      }
-      this.target = this.nativeEvent ? this.nativeEvent.target : void 0;
+      this.nativeEvent = event, this.arguments_ = args, event && [
+        "altKey",
+        "ctrlKey",
+        "metaKey",
+        "shiftKey",
+        "key",
+        "keyCode",
+        "clientX",
+        "clientY",
+        "offsetX",
+        "offsetY",
+        "pageX",
+        "pageY",
+        "bubbles",
+        "type",
+        "which",
+        "x",
+        "y"
+      ].forEach((key) => this[key] = event[key]), this.target = this.nativeEvent ? this.nativeEvent.target : void 0;
     }
     /**
      * Stops event from propagating up the DOM tree.
@@ -614,8 +609,9 @@ var Slick = (() => {
       slideDirection === "slideUp" ? _Utils.hide(el) : _Utils.show(el), callback();
     }
     static applyDefaults(targetObj, srcObj) {
-      for (let key in srcObj)
+      typeof srcObj == "object" && Object.keys(srcObj).forEach((key) => {
         srcObj.hasOwnProperty(key) && !targetObj.hasOwnProperty(key) && (targetObj[key] = srcObj[key]);
+      });
     }
     /**
      * User could optionally add PubSub Service to SlickEvent

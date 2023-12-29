@@ -59,9 +59,7 @@
     }
     rowsToRanges(rows) {
       let ranges = [], lastCell = this._grid.getColumns().length - 1;
-      for (let i = 0; i < rows.length; i++)
-        ranges.push(new SlickRange(rows[i], 0, rows[i], lastCell));
-      return ranges;
+      return rows.forEach((row) => ranges.push(new SlickRange(row, 0, row, lastCell))), ranges;
     }
     getRowsRange(from, to) {
       let i, rows = [];

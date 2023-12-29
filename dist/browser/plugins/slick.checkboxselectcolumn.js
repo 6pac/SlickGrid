@@ -83,9 +83,9 @@
         let rowItem = this._grid.getDataItem(row);
         this.checkSelectableOverride(i, rowItem, this._grid) ? (lookup[row] = !0, lookup[row] !== this._selectedRowsLookup[row] && (this._grid.invalidateRow(row), delete this._selectedRowsLookup[row])) : removeList.push(row);
       }
-      for (let selectedRow in this._selectedRowsLookup)
-        this._grid.invalidateRow(+selectedRow);
-      if (this._selectedRowsLookup = lookup, this._grid.render(), this._isSelectAllChecked = ((_a = selectedRows == null ? void 0 : selectedRows.length) != null ? _a : 0) + disabledCount >= this._grid.getDataLength(), (!this._isUsingDataView || !this._options.applySelectOnAllPages) && (!this._options.hideInColumnTitleRow && !this._options.hideSelectAllCheckbox && this.renderSelectAllCheckbox(this._isSelectAllChecked), !this._options.hideInFilterHeaderRow)) {
+      if (typeof this._selectedRowsLookup == "object" && Object.keys(this._selectedRowsLookup).forEach((selectedRow) => {
+        selectedRow !== void 0 && this._grid.invalidateRow(+selectedRow);
+      }), this._selectedRowsLookup = lookup, this._grid.render(), this._isSelectAllChecked = ((_a = selectedRows == null ? void 0 : selectedRows.length) != null ? _a : 0) + disabledCount >= this._grid.getDataLength(), (!this._isUsingDataView || !this._options.applySelectOnAllPages) && (!this._options.hideInColumnTitleRow && !this._options.hideSelectAllCheckbox && this.renderSelectAllCheckbox(this._isSelectAllChecked), !this._options.hideInFilterHeaderRow)) {
         let selectAllElm = (_b = this._headerRowNode) == null ? void 0 : _b.querySelector(`#header-filter-selector${this._selectAll_UID}`);
         selectAllElm && (selectAllElm.checked = this._isSelectAllChecked);
       }

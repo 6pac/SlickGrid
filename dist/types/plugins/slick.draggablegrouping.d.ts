@@ -46,7 +46,7 @@ export declare class SlickDraggableGrouping {
     protected _options: DraggableGroupingOption;
     protected _defaults: DraggableGroupingOption;
     protected _bindingEventService: BindingEventService_;
-    protected _handler: SlickEventHandler_<any>;
+    protected _handler: SlickEventHandler_;
     protected _sortableLeftInstance?: SortableInstance;
     protected _sortableRightInstance?: SortableInstance;
     protected _columnsGroupBy: Column[];

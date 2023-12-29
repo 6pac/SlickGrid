@@ -70,7 +70,7 @@ export declare class SlickHeaderButtons implements SlickPlugin {
     pluginName: "HeaderButtons";
     onCommand: import("../slick.core").SlickEvent<HeaderButtonOnCommandArgs>;
     protected _grid: SlickGrid;
-    protected _handler: import("../slick.core").SlickEventHandler<any>;
+    protected _handler: import("../slick.core").SlickEventHandler;
     protected _bindingEventService: BindingEventService_;
     protected _defaults: HeaderButtonOption;
     protected _options: HeaderButtonOption;

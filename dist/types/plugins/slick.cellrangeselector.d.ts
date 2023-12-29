@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import { SlickEvent as SlickEvent_, SlickEventData, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_ } from '../slick.core';
 import { SlickCellRangeDecorator as SlickCellRangeDecorator_ } from './slick.cellrangedecorator';
-import type { CellRangeSelectorOption, DOMMouseOrTouchEvent, DragPosition, DragRange, GridOption, MouseOffsetViewport, OnScrollEventArgs, SlickPlugin } from '../models/index';
+import type { CellRangeSelectorOption, DOMMouseOrTouchEvent, DragPosition, DragRange, DragRowMove, GridOption, MouseOffsetViewport, OnScrollEventArgs, SlickPlugin } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 export declare class SlickCellRangeSelector implements SlickPlugin {
     pluginName: "CellRangeSelector";
@@ -22,7 +22,7 @@ export declare class SlickCellRangeSelector implements SlickPlugin {
     protected _gridOptions: GridOption;
     protected _activeCanvas: HTMLElement;
     protected _dragging: boolean;
-    protected _handler: SlickEventHandler_<any>;
+    protected _handler: SlickEventHandler_;
     protected _options: CellRangeSelectorOption;
     protected _defaults: CellRangeSelectorOption;
     protected _rowOffset: number;
@@ -49,9 +49,9 @@ export declare class SlickCellRangeSelector implements SlickPlugin {
     getCellDecorator(): SlickCellRangeDecorator_;
     protected handleScroll(_e: DOMMouseOrTouchEvent<HTMLDivElement>, args: OnScrollEventArgs): void;
     protected handleDragInit(e: Event): void;
-    protected handleDragStart(e: DOMMouseOrTouchEvent<HTMLDivElement>, dd: DragPosition): HTMLDivElement | undefined;
-    protected handleDrag(evt: SlickEventData, dd: DragPosition): void;
-    protected getMouseOffsetViewport(e: MouseEvent | TouchEvent, dd: DragPosition): MouseOffsetViewport;
+    protected handleDragStart(e: DOMMouseOrTouchEvent<HTMLDivElement>, dd: DragRowMove): HTMLDivElement | undefined;
+    protected handleDrag(evt: SlickEventData, dd: DragRowMove): void;
+    protected getMouseOffsetViewport(e: MouseEvent | TouchEvent, dd: DragRowMove): MouseOffsetViewport;
     protected handleDragOutsideViewport(): void;
     protected handleDragToNewPosition(xNeedUpdate: boolean, yNeedUpdate: boolean): void;
     protected stopIntervalTimer(): void;

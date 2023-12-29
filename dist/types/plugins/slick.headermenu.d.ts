@@ -96,7 +96,7 @@ export declare class SlickHeaderMenu implements SlickPlugin {
     onCommand: import("../slick.core").SlickEvent<MenuCommandItemCallbackArgs>;
     protected _grid: SlickGrid;
     protected _gridUid: string;
-    protected _handler: SlickEventHandler_<any>;
+    protected _handler: SlickEventHandler_;
     protected _bindingEventService: BindingEventService_;
     protected _defaults: HeaderMenuOption;
     protected _options: HeaderMenuOption;

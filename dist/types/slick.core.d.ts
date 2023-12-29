@@ -98,14 +98,14 @@ export declare class SlickEvent<ArgType = any> {
     notify(args: ArgType, evt?: SlickEventData | Event | MergeTypes<SlickEventData, Event> | null, scope?: any): SlickEventData<any>;
     setPubSubService(pubSub: BasePubSub): void;
 }
-export declare class SlickEventHandler<ArgType = any> {
+export declare class SlickEventHandler {
     protected handlers: Array<{
         event: SlickEvent;
-        handler: Handler<ArgType>;
+        handler: Handler<any>;
     }>;
-    subscribe(event: SlickEvent, handler: Handler<ArgType>): this;
-    unsubscribe(event: SlickEvent, handler: Handler<ArgType>): this | undefined;
-    unsubscribeAll(): this;
+    subscribe<T = any>(event: SlickEvent<T>, handler: Handler<T>): SlickEventHandler;
+    unsubscribe<T = any>(event: SlickEvent<T>, handler: Handler<T>): SlickEventHandler | undefined;
+    unsubscribeAll(): SlickEventHandler;
 }
 /**
  * A structure containing a range of cells.

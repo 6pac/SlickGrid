@@ -155,6 +155,8 @@ export interface OnActivateChangedOptionsEventArgs extends SlickGridEventData {
 export interface OnScrollEventArgs extends SlickGridEventData {
     scrollLeft: number;
     scrollTop: number;
+    cell: number;
+    row: number;
 }
 export interface OnDragEventArgs extends SlickGridEventData {
     count: number;

@@ -2,6 +2,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.7.0](https://github.com/6pac/SlickGrid/compare/5.6.1...5.7.0) (2023-12-29)
+
+### Bug Fixes
+
+* `updateColumns()` should be public use with column hidden ([0dc5f6d](https://github.com/6pac/SlickGrid/commit/0dc5f6d75709f9be04c8dd21541d0bdd59704e00))
+* `updateColumns()` should be public use with column hidden ([ee8f72f](https://github.com/6pac/SlickGrid/commit/ee8f72f714dcd2783666c3a8e8cd6b34635b52c8))
+* applyDefaults should make sure grid options object is defined ([13d2ed0](https://github.com/6pac/SlickGrid/commit/13d2ed04d73cd31051a962249189ca9402c90eb3))
+* applyDefaults use provided grid options before applying defaults ([7867d49](https://github.com/6pac/SlickGrid/commit/7867d4960f3215a1db1fb2ded6050d32e4686e3f))
+* changing `enableCellNavigation` grid option not working ([#949](https://github.com/6pac/SlickGrid/issues/949)) ([861a268](https://github.com/6pac/SlickGrid/commit/861a268ae3e72e1c8f7453d5dcb8d4c729038a7e))
+* **core:** SlickEventHandler should infer handler args Types ([#948](https://github.com/6pac/SlickGrid/issues/948)) ([95d2156](https://github.com/6pac/SlickGrid/commit/95d2156e1bf0174ab33e23269bf08925ac55bf17))
+* **deps:** update all dependencies & require Node 18 ([#959](https://github.com/6pac/SlickGrid/issues/959)) ([ddbf5bb](https://github.com/6pac/SlickGrid/commit/ddbf5bb2a4ab8fa21b24e64bb9c7973af1cbd6c2))
+* GroupItemMetaDataProvider should implements SlickPlugin ([#956](https://github.com/6pac/SlickGrid/issues/956)) ([508aa7b](https://github.com/6pac/SlickGrid/commit/508aa7b872408c9371f77267921bb053d1f7e290))
+* use correct argument type on `setData()` ([0402700](https://github.com/6pac/SlickGrid/commit/0402700b7911bbd4f0f27a0fb27572ec36b29c1e))
+
+### Features
+
+* change DataView Grouping `compileAccumulatorLoop` for CSP safe  ([#952](https://github.com/6pac/SlickGrid/issues/952)) ([be5f74e](https://github.com/6pac/SlickGrid/commit/be5f74ec51170ec96615dbc990aad867d66c6f13))
+* **core:** add `rowHighlightCssClass` & `highlightRow()` to SlickGrid ([#950](https://github.com/6pac/SlickGrid/issues/950)) ([33e9f2e](https://github.com/6pac/SlickGrid/commit/33e9f2e724bd9d42a16df48a49f83ddb3efed50f))
+
+### Performance Improvements
+
+* prefer `.forEach` over `for...in` and `for...of` ([#953](https://github.com/6pac/SlickGrid/issues/953)) ([1938048](https://github.com/6pac/SlickGrid/commit/19380484cb4f8abe5553475b9e1f6498a9e20ac1))
+
 ## [5.6.1](https://github.com/6pac/SlickGrid/compare/5.6.0...5.6.1) (2023-12-09)
 
 ### Bug Fixes

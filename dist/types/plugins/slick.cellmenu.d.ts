@@ -139,7 +139,7 @@ export declare class SlickCellMenu implements SlickPlugin {
     protected _grid: SlickGrid;
     protected _gridOptions: GridOption;
     protected _gridUid: string;
-    protected _handler: SlickEventHandler_<any>;
+    protected _handler: SlickEventHandler_;
     protected _commandTitleElm?: HTMLSpanElement;
     protected _optionTitleElm?: HTMLSpanElement;
     protected _lastMenuTypeClicked: string;

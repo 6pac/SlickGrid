@@ -223,7 +223,7 @@
         gi.getterIsAFn = typeof gi.getter == "function", gi.compiledAccumulators = [];
         let idx = gi.aggregators.length;
         for (; idx--; )
-          gi.compiledAccumulators[idx] = this.compileAccumulatorLoop(gi.aggregators[idx]);
+          gi.compiledAccumulators[idx] = this.compileAccumulatorLoopCSPSafe(gi.aggregators[idx]);
         this.toggledGroupsByLevel[i] = {};
       }
       this.refresh();
@@ -554,16 +554,16 @@
         body: matches[2]
       };
     }
-    compileAccumulatorLoop(aggregator) {
-      if (aggregator.accumulate) {
-        let accumulatorInfo = this.getFunctionInfo(aggregator.accumulate), fn = new Function(
-          "_items",
-          "for (var " + accumulatorInfo.params[0] + ", _i=0, _il=_items.length; _i<_il; _i++) {" + accumulatorInfo.params[0] + " = _items[_i]; " + accumulatorInfo.body + "}"
-        ), fnName = "compiledAccumulatorLoop";
-        return fn.displayName = fnName, fn.name = this.setFunctionName(fn, fnName), fn;
-      } else
-        return function() {
-        };
+    compileAccumulatorLoopCSPSafe(aggregator) {
+      return aggregator.accumulate ? function(items) {
+        let result;
+        for (let i = 0; i < items.length; i++) {
+          let item = items[i];
+          result = aggregator.accumulate.call(aggregator, item);
+        }
+        return result;
+      } : function() {
+      };
     }
     compileFilterCSPSafe(items, args) {
       if (typeof this.filterCSPSafe != "function")
@@ -836,25 +836,23 @@
     }
     syncGridCellCssStyles(grid, key) {
       let hashById, inHandler, storeCellCssStyles = (hash) => {
-        hashById = {};
-        for (let row in hash)
+        hashById = {}, typeof hash == "object" && Object.keys(hash).forEach((row) => {
           if (hash) {
             let id = this.rows[row][this.idProperty];
             hashById[id] = hash[row];
           }
+        });
       };
       storeCellCssStyles(grid.getCellCssStyles(key));
       let update = () => {
-        var _a2;
-        if (hashById) {
+        if (typeof hashById == "object") {
           inHandler = !0, this.ensureRowsByIdCache();
           let newHash = {};
-          for (let id in hashById)
-            if (hashById) {
-              let row = (_a2 = this.rowsById) == null ? void 0 : _a2[id];
-              Utils.isDefined(row) && (newHash[row] = hashById[id]);
-            }
-          grid.setCellCssStyles(key, newHash), inHandler = !1;
+          Object.keys(hashById).forEach((id) => {
+            var _a2;
+            let row = (_a2 = this.rowsById) == null ? void 0 : _a2[id];
+            Utils.isDefined(row) && (newHash[row] = hashById[id]);
+          }), grid.setCellCssStyles(key, newHash), inHandler = !1;
         }
       };
       grid.onCellCssStylesChanged.subscribe((_e, args) => {

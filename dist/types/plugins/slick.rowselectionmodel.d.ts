@@ -7,7 +7,7 @@ export declare class SlickRowSelectionModel {
     onSelectedRangesChanged: SlickEvent_<SlickRange_[]>;
     protected _grid: SlickGrid;
     protected _ranges: SlickRange_[];
-    protected _eventHandler: SlickEventHandler_<any>;
+    protected _eventHandler: SlickEventHandler_;
     protected _inHandler: boolean;
     protected _selector?: SlickCellRangeSelector_;
     protected _isRowMoveManagerHandler: any;
