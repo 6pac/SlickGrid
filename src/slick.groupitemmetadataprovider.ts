@@ -1,5 +1,5 @@
 import { SlickGroup as SlickGroup_, keyCode as keyCode_, Utils as Utils_ } from './slick.core';
-import type { Column, DOMEvent, GroupItemMetadataProviderOption, GroupingFormatterItem, ItemMetadata } from './models/index';
+import type { Column, DOMEvent, GroupItemMetadataProviderOption, GroupingFormatterItem, ItemMetadata, SlickPlugin } from './models/index';
 import type { SlickGrid } from './slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -21,7 +21,9 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  * @constructor
  * @param inputOptions
  */
-export class SlickGroupItemMetadataProvider {
+export class SlickGroupItemMetadataProvider implements SlickPlugin {
+  pluginName = "GroupItemMetadataProvider" as const;
+
   protected _grid!: SlickGrid;
   protected _options: GroupItemMetadataProviderOption;
   protected _defaults: GroupItemMetadataProviderOption = {
