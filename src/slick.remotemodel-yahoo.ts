@@ -74,10 +74,10 @@ export class SlickRemoteModelYahoo {
     const recStart = (fromPage * this.PAGESIZE);
     const recCount = (((toPage - fromPage) * this.PAGESIZE) + this.PAGESIZE);
 
-    const url = "https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20rss"
-      + "(" + recStart + "%2C" + recCount + ")"
-      + "%20where%20url%3D%22http%3A%2F%2Frss.news.yahoo.com%2Frss%2Ftopstories%22"
-      + "&format=json";
+    const url = 'https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20rss'
+      + '(' + recStart + '%2C' + recCount + ')'
+      + '%20where%20url%3D%22http%3A%2F%2Frss.news.yahoo.com%2Frss%2Ftopstories%22'
+      + '&format=json';
 
     if (this.h_request !== null) {
       clearTimeout(this.h_request);
@@ -91,7 +91,7 @@ export class SlickRemoteModelYahoo {
 
       this.req = window.$.jsonp({
         url,
-        callbackParameter: "callback",
+        callbackParameter: 'callback',
         cache: true,
         success: (json: any) => {
           this.onSuccess(json, recStart);
@@ -108,7 +108,7 @@ export class SlickRemoteModelYahoo {
 
 
   onError(fromPage: number, toPage: number) {
-    alert("error loading pages " + fromPage + " to " + toPage);
+    alert('error loading pages ' + fromPage + ' to ' + toPage);
   }
 
   // SAMPLE DATA

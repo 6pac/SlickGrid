@@ -2441,7 +2441,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (!this.stylesheet) {
       const sheets: any = (this._options.shadowRoot || document).styleSheets;
 
-      if (this._options.devMode && typeof this._options.devMode?.ownerNodeIndex === "number" && this._options.devMode.ownerNodeIndex >= 0) {
+      if (this._options.devMode && typeof this._options.devMode?.ownerNodeIndex === 'number' && this._options.devMode.ownerNodeIndex >= 0) {
         sheets[this._options.devMode.ownerNodeIndex].ownerNode = this._style;
       }
 

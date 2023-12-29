@@ -217,7 +217,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       item = this.items[i];
       id = item[this.idProperty as keyof TData] as DataIdType;
       if (id === undefined) {
-        throw new Error("[SlickGrid DataView] Each data element must implement a unique 'id' property");
+        throw new Error(`[SlickGrid DataView] Each data element must implement a unique 'id' property`);
       }
 
       // if items have been marked as deleted we skip them for the new final items array
@@ -249,7 +249,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     for (let i = startingIndex, l = this.items.length; i < l; i++) {
       id = this.items[i][this.idProperty as keyof TData] as DataIdType;
       if (id === undefined) {
-        throw new Error("[SlickGrid DataView] Each data element must implement a unique 'id' property");
+        throw new Error(`[SlickGrid DataView] Each data element must implement a unique 'id' property`);
       }
       this.idxById.set(id, i);
     }
@@ -263,7 +263,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     for (let i = 0, l = this.items.length; i < l; i++) {
       id = this.items[i][this.idProperty as keyof TData] as DataIdType;
       if (id === undefined || this.idxById.get(id) !== i) {
-        throw new Error("[SlickGrid DataView] Each data element must implement a unique 'id' property");
+        throw new Error(`[SlickGrid DataView] Each data element must implement a unique 'id' property`);
       }
     }
   }
@@ -576,7 +576,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
    */
   updateItems<T extends TData>(ids: DataIdType[], newItems: T[]) {
     if (ids.length !== newItems.length) {
-      throw new Error("[SlickGrid DataView] Mismatch on the length of ids and items provided to update");
+      throw new Error('[SlickGrid DataView] Mismatch on the length of ids and items provided to update');
     }
     for (let i = 0, l = newItems.length; i < l; i++) {
       this.updateSingleItem(ids[i], newItems[i]);
@@ -705,7 +705,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       throw new Error('[SlickGrid DataView] Invalid or non-matching id ' + this.idxById.get(id));
     }
     if (!this.sortComparer) {
-      throw new Error("[SlickGrid DataView] sortedUpdateItem() requires a sort comparer, use sort()");
+      throw new Error('[SlickGrid DataView] sortedUpdateItem() requires a sort comparer, use sort()');
     }
     const oldItem = this.getItemById(id);
     if (this.sortComparer(oldItem, item) !== 0) {
