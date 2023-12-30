@@ -1623,7 +1623,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       let classname = m.headerCssClass || null;
       if (classname) {
-        header.classList.add(...classname.split(' '));
+        header.classList.add(...classname.split(' ').filter((cls) => cls));
       }
       classname = this.hasFrozenColumns() && i <= this._options.frozenColumn! ? 'frozen' : null;
       if (classname) {
