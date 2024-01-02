@@ -5,6 +5,7 @@
  */
 
 import type {
+  AnyFunction,
   CSSStyleDeclarationWritable,
   EditController,
   ElementEventListener,
@@ -826,6 +827,50 @@ export class Utils {
       return window.getComputedStyle(elm, null).getPropertyValue(property);
     }
     return null;
+  }
+
+  /**
+   * Get the function details (param & body) of a function.
+   * It supports regular function and also ES6 arrow functions
+   * @param {Function} fn - function to analyze
+   * @param {Boolean} [addReturn] - when using ES6 function as single liner, we could add the missing `return ...`
+   * @returns
+   */
+  public static getFunctionDetails(fn: AnyFunction, addReturn = true) {
+    let isAsyncFn = false;
+
+    const getFunctionBody = (func: AnyFunction) => {
+      const fnStr = func.toString();
+      isAsyncFn = fnStr.includes('async ');
+
+      // when fn is one liner arrow fn returning an object in brackets e.g. `() => ({ hello: 'world' })`
+      if ((fnStr.replaceAll(' ', '').includes('=>({'))) {
+        const matches = fnStr.match(/(({.*}))/g) || [];
+        return matches.length >= 1 ? `return ${matches[0]!.trimStart()}` : fnStr;
+      }
+      const isOneLinerArrowFn = (!fnStr.includes('{') && fnStr.includes('=>'));
+      const body = fnStr.substring(
+        (fnStr.indexOf('{') + 1) || (fnStr.indexOf('=>') + 2),
+        fnStr.includes('}') ? fnStr.lastIndexOf('}') : fnStr.length
+      );
+      if (addReturn && isOneLinerArrowFn && !body.startsWith('return')) {
+        return 'return ' + body.trimStart(); // add the `return ...` to the body for ES6 arrow fn
+      }
+      return body;
+    };
+
+    const getFunctionParams = (func: AnyFunction): string[] => {
+      const STRIP_COMMENTS = /(\/\/.*$)|(\/\*[\s\S]*?\*\/)|(\s*=[^,\)]*(('(?:\\'|[^'\r\n])*')|("(?:\\"|[^"\r\n])*"))|(\s*=[^,\)]*))/mg;
+      const ARG_NAMES = /([^\s,]+)/g;
+      const fnStr = func.toString().replace(STRIP_COMMENTS, '');
+      return fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(ARG_NAMES) ?? [];
+    };
+
+    return {
+      params: getFunctionParams(fn),
+      body: getFunctionBody(fn),
+      isAsync: isAsyncFn,
+    };
   }
 
   public static insertAfterElement(referenceNode: HTMLElement, newNode: HTMLElement) {
