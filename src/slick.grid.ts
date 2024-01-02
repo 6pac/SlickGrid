@@ -766,7 +766,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this._viewport = [this._viewportTopL, this._viewportTopR, this._viewportBottomL, this._viewportBottomR];
     if (this._options.viewportClass) {
       this._viewport.forEach((view) => {
-        view.classList.add(...(this._options.viewportClass || '').split(' '));
+        view.classList.add(...Utils.classNameToList((this._options.viewportClass)));
       });
     }
 
@@ -1623,7 +1623,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       let classname = m.headerCssClass || null;
       if (classname) {
-        header.classList.add(...classname.split(' ').filter((cls) => cls));
+        header.classList.add(...Utils.classNameToList(classname));
       }
       classname = this.hasFrozenColumns() && i <= this._options.frozenColumn! ? 'frozen' : null;
       if (classname) {
@@ -2311,10 +2311,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this._viewportBottomR.style.overflowY = this._options.alwaysShowVerticalScroll ? 'scroll' : ((this.hasFrozenColumns()) ? (this.hasFrozenRows ? 'auto' : 'auto') : (this.hasFrozenRows ? 'auto' : 'auto'));
 
     if (this._options.viewportClass) {
-      this._viewportTopL.classList.add(...this._options.viewportClass.split(' '));
-      this._viewportTopR.classList.add(...this._options.viewportClass.split(' '));
-      this._viewportBottomL.classList.add(...this._options.viewportClass.split(' '));
-      this._viewportBottomR.classList.add(...this._options.viewportClass.split(' '));
+      const viewportClassList = Utils.classNameToList(this._options.viewportClass);
+      this._viewportTopL.classList.add(...viewportClassList);
+      this._viewportTopR.classList.add(...viewportClassList);
+      this._viewportBottomL.classList.add(...viewportClassList);
+      this._viewportBottomR.classList.add(...viewportClassList);
     }
   }
 
@@ -3147,7 +3148,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.applyHtmlCode(colNameElm, columnDef.name!);
       clone.style.cssText = 'position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;';
       if (columnDef.headerCssClass) {
-        headerColEl.classList.add(...(columnDef.headerCssClass || '').split(' '));
+        headerColEl.classList.add(...Utils.classNameToList(columnDef.headerCssClass));
       }
       width = headerColEl.offsetWidth;
       header.removeChild(headerColEl);
@@ -4168,11 +4169,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.applyHtmlCode(cellNode, formatterVal);
 
     if ((formatterResult as FormatterResultObject).removeClasses && !suppressRemove) {
-      const classes = (formatterResult as FormatterResultObject).removeClasses!.split(' ');
+      const classes = Utils.classNameToList((formatterResult as FormatterResultObject).removeClasses);
       classes.forEach((c) => cellNode.classList.remove(c));
     }
     if ((formatterResult as FormatterResultObject).addClasses) {
-      const classes = (formatterResult as FormatterResultObject).addClasses!.split(' ');
+      const classes = Utils.classNameToList((formatterResult as FormatterResultObject).addClasses);
       classes.forEach((c) => cellNode.classList.add(c));
     }
     if ((formatterResult as FormatterResultObject).toolTip) {
