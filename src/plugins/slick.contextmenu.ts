@@ -418,7 +418,7 @@ export class SlickContextMenu implements SlickPlugin {
       subMenuTitleElm.textContent = item.subMenuTitle as string;
       const subMenuTitleClass = item.subMenuTitleCssClass as string;
       if (subMenuTitleClass) {
-        subMenuTitleElm.classList.add(...subMenuTitleClass.split(' '));
+        subMenuTitleElm.classList.add(...Utils.classNameToList(subMenuTitleClass));
       }
 
       commandOrOptionMenu.appendChild(subMenuTitleElm);
@@ -604,7 +604,7 @@ export class SlickContextMenu implements SlickPlugin {
       }
 
       if ((item as MenuCommandItem | MenuOptionItem).cssClass) {
-        liElm.classList.add(...(item as MenuCommandItem | MenuOptionItem).cssClass!.split(' '));
+        liElm.classList.add(...Utils.classNameToList((item as MenuCommandItem | MenuOptionItem).cssClass));
       }
 
       if ((item as MenuCommandItem | MenuOptionItem).tooltip) {
@@ -617,7 +617,7 @@ export class SlickContextMenu implements SlickPlugin {
       liElm.appendChild(iconElm);
 
       if ((item as MenuCommandItem | MenuOptionItem).iconCssClass) {
-        iconElm.classList.add(...(item as MenuCommandItem | MenuOptionItem).iconCssClass!.split(' '));
+        iconElm.classList.add(...Utils.classNameToList((item as MenuCommandItem | MenuOptionItem).iconCssClass));
       }
 
       if ((item as MenuCommandItem | MenuOptionItem).iconImage) {
@@ -631,7 +631,7 @@ export class SlickContextMenu implements SlickPlugin {
       liElm.appendChild(textElm);
 
       if ((item as MenuCommandItem | MenuOptionItem).textCssClass) {
-        textElm.classList.add(...(item as MenuCommandItem | MenuOptionItem).textCssClass!.split(' '));
+        textElm.classList.add(...Utils.classNameToList((item as MenuCommandItem | MenuOptionItem).textCssClass));
       }
 
       commandOrOptionMenuElm.appendChild(liElm);
@@ -658,7 +658,7 @@ export class SlickContextMenu implements SlickPlugin {
         const chevronElm = document.createElement('span');
         chevronElm.className = 'sub-item-chevron';
         if (this._contextMenuProperties.subItemChevronClass) {
-          chevronElm.classList.add(...this._contextMenuProperties.subItemChevronClass.split(' '));
+          chevronElm.classList.add(...Utils.classNameToList(this._contextMenuProperties.subItemChevronClass));
         } else {
           chevronElm.textContent = '⮞'; // ⮞ or ▸
         }
@@ -837,4 +837,3 @@ if (IIFE_ONLY && window.Slick) {
     }
   });
 }
-

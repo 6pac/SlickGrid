@@ -232,7 +232,7 @@ export class SlickGridMenu {
       this._buttonElm.ariaLabel = 'Grid Menu';
 
       if (this._gridMenuOptions?.iconCssClass) {
-        this._buttonElm.classList.add(...this._gridMenuOptions.iconCssClass.split(' '));
+        this._buttonElm.classList.add(...Utils.classNameToList(this._gridMenuOptions.iconCssClass));
       } else {
         const iconImageElm = document.createElement('img');
         iconImageElm.src = (this._gridMenuOptions?.iconImage) ? this._gridMenuOptions.iconImage : '../images/drag-handle.png';
@@ -440,7 +440,7 @@ export class SlickGridMenu {
       }
 
       if ((item as GridMenuItem).cssClass) {
-        liElm.classList.add(...(item as GridMenuItem).cssClass!.split(' '));
+        liElm.classList.add(...Utils.classNameToList((item as GridMenuItem).cssClass));
       }
 
       if ((item as GridMenuItem).tooltip) {
@@ -453,7 +453,7 @@ export class SlickGridMenu {
       liElm.appendChild(iconElm);
 
       if ((item as GridMenuItem).iconCssClass) {
-        iconElm.classList.add(...(item as GridMenuItem).iconCssClass!.split(' '));
+        iconElm.classList.add(...Utils.classNameToList((item as GridMenuItem).iconCssClass));
       }
 
       if ((item as GridMenuItem).iconImage) {
@@ -467,7 +467,7 @@ export class SlickGridMenu {
       liElm.appendChild(textElm);
 
       if ((item as GridMenuItem).textCssClass) {
-        textElm.classList.add(...(item as GridMenuItem).textCssClass!.split(' '));
+        textElm.classList.add(...Utils.classNameToList((item as GridMenuItem).textCssClass));
       }
 
       commandListElm.appendChild(liElm);
@@ -493,7 +493,7 @@ export class SlickGridMenu {
         const chevronElm = document.createElement('span');
         chevronElm.className = 'sub-item-chevron';
         if (this._gridMenuOptions?.subItemChevronClass) {
-          chevronElm.classList.add(...this._gridMenuOptions.subItemChevronClass.split(' '));
+          chevronElm.classList.add(...Utils.classNameToList(this._gridMenuOptions.subItemChevronClass));
         } else {
           chevronElm.textContent = '⮞'; // ⮞ or ▸
         }
@@ -776,7 +776,7 @@ export class SlickGridMenu {
       subMenuTitleElm.textContent = item.subMenuTitle as string;
       const subMenuTitleClass = item.subMenuTitleCssClass as string;
       if (subMenuTitleClass) {
-        subMenuTitleElm.classList.add(...subMenuTitleClass.split(' '));
+        subMenuTitleElm.classList.add(...Utils.classNameToList(subMenuTitleClass));
       }
 
       commandOrOptionMenu.appendChild(subMenuTitleElm);
@@ -945,4 +945,3 @@ if (IIFE_ONLY && window.Slick) {
   window.Slick.Controls = window.Slick.Controls || {};
   window.Slick.Controls.GridMenu = SlickGridMenu;
 }
-
