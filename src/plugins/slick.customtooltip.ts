@@ -1,6 +1,5 @@
-import type { CancellablePromiseWrapper, Column, CustomTooltipOption, DOMEvent, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption } from '../models/index';
+import type { CancellablePromiseWrapper, Column, CustomDataView, CustomTooltipOption, DOMEvent, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption } from '../models/index';
 import { SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
-import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -87,7 +86,7 @@ export class SlickCustomTooltip {
   // protected props
   protected _cancellablePromise?: CancellablePromiseWrapper;
   protected _cellNodeElm?: HTMLDivElement;
-  protected _dataView?: SlickDataView | null;
+  protected _dataView?: CustomDataView | null;
   protected _grid!: SlickGrid;
   protected _gridOptions!: GridOption;
   protected _tooltipElm?: HTMLDivElement;
@@ -113,7 +112,7 @@ export class SlickCustomTooltip {
   init(grid: SlickGrid) {
     this._grid = grid;
     const _data = grid?.getData() || [];
-    this._dataView = Array.isArray(_data) ? null : _data as SlickDataView;
+    this._dataView = Array.isArray(_data) ? null : _data as CustomDataView;
     this._gridOptions = (grid.getOptions() || {}) as GridOption;
     this._options = Utils.extend(true, {}, this._defaults, this._gridOptions.customTooltip, this.tooltipOptions);
     this._eventHandler
@@ -528,4 +527,3 @@ if (IIFE_ONLY && window.Slick) {
     }
   });
 }
-
