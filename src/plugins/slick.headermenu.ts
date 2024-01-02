@@ -242,7 +242,7 @@ export class SlickHeaderMenu implements SlickPlugin {
       if (this._options.buttonCssClass) {
         // sgi icon with mask requires inner span to work properly
         const icon = document.createElement('span');
-        icon.classList.add(...this._options.buttonCssClass.split(' '));
+        icon.classList.add(...Utils.classNameToList(this._options.buttonCssClass));
         elm.appendChild(icon);
       }
 
@@ -277,7 +277,7 @@ export class SlickHeaderMenu implements SlickPlugin {
       subMenuTitleElm.textContent = item.subMenuTitle as string;
       const subMenuTitleClass = item.subMenuTitleCssClass as string;
       if (subMenuTitleClass) {
-        subMenuTitleElm.classList.add(...subMenuTitleClass.split(' '));
+        subMenuTitleElm.classList.add(...Utils.classNameToList(subMenuTitleClass));
       }
 
       commandMenuElm.appendChild(subMenuTitleElm);
@@ -400,7 +400,7 @@ export class SlickHeaderMenu implements SlickPlugin {
       }
 
       if ((item as HeaderMenuCommandItem).cssClass) {
-        menuItemElm.classList.add(...(item as HeaderMenuCommandItem).cssClass!.split(' '));
+        menuItemElm.classList.add(...Utils.classNameToList((item as HeaderMenuCommandItem).cssClass));
       }
 
       if ((item as HeaderMenuCommandItem).tooltip) {
@@ -412,7 +412,7 @@ export class SlickHeaderMenu implements SlickPlugin {
       menuItemElm.appendChild(iconElm);
 
       if ((item as HeaderMenuCommandItem).iconCssClass) {
-        iconElm.classList.add(...(item as HeaderMenuCommandItem).iconCssClass!.split(' '));
+        iconElm.classList.add(...Utils.classNameToList((item as HeaderMenuCommandItem).iconCssClass));
       }
 
       if ((item as HeaderMenuCommandItem).iconImage) {
@@ -425,7 +425,7 @@ export class SlickHeaderMenu implements SlickPlugin {
       menuItemElm.appendChild(textElm);
 
       if ((item as HeaderMenuCommandItem).textCssClass) {
-        textElm.classList.add(...(item as HeaderMenuCommandItem).textCssClass!.split(' '));
+        textElm.classList.add(...Utils.classNameToList((item as HeaderMenuCommandItem).textCssClass));
       }
       menuElm.appendChild(menuItemElm);
 
@@ -450,7 +450,7 @@ export class SlickHeaderMenu implements SlickPlugin {
         const chevronElm = document.createElement('div');
         chevronElm.className = 'sub-item-chevron';
         if (this._options.subItemChevronClass) {
-          chevronElm.classList.add(...this._options.subItemChevronClass.split(' '));
+          chevronElm.classList.add(...Utils.classNameToList(this._options.subItemChevronClass));
         } else {
           chevronElm.textContent = '⮞'; // ⮞ or ▸
         }
@@ -585,4 +585,3 @@ if (IIFE_ONLY && window.Slick) {
     }
   });
 }
-

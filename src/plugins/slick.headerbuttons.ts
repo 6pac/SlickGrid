@@ -159,7 +159,7 @@ export class SlickHeaderButtons implements SlickPlugin {
         }
 
         if (button.cssClass) {
-          btn.classList.add(...button.cssClass.split(' '));
+          btn.classList.add(...Utils.classNameToList(button.cssClass));
         }
 
         if (button.tooltip) {
@@ -244,4 +244,3 @@ if (IIFE_ONLY && window.Slick) {
     }
   });
 }
-

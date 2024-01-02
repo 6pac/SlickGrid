@@ -120,7 +120,7 @@ export class SlickDraggableGrouping {
           const groupableIconElm = document.createElement('span');
           groupableIconElm.className = 'slick-column-groupable';
           if (this._options.groupIconCssClass) {
-            groupableIconElm.classList.add(...this._options.groupIconCssClass.split(' '));
+            groupableIconElm.classList.add(...Utils.classNameToList(this._options.groupIconCssClass));
           }
           if (this._options.groupIconImage) {
             groupableIconElm.style.background = `url(${this._options.groupIconImage}) no-repeat center center`;
@@ -356,10 +356,10 @@ export class SlickDraggableGrouping {
           const groupRemoveIconElm = document.createElement('div');
           groupRemoveIconElm.className = 'slick-groupby-remove';
           if (this._options.deleteIconCssClass) {
-            groupRemoveIconElm.classList.add(...this._options.deleteIconCssClass.split(' '));
+            groupRemoveIconElm.classList.add(...Utils.classNameToList(this._options.deleteIconCssClass));
           }
           if (this._options.deleteIconImage) {
-            groupRemoveIconElm.classList.add(...this._options.deleteIconImage.split(' '));
+            groupRemoveIconElm.classList.add(...Utils.classNameToList(this._options.deleteIconImage));
           }
           if (!this._options.deleteIconCssClass) {
             groupRemoveIconElm.classList.add('slick-groupby-remove-icon');
@@ -496,4 +496,3 @@ if (IIFE_ONLY && window.Slick) {
     }
   });
 }
-
