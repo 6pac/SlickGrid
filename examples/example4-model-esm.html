@@ -229,18 +229,6 @@ function requiredFieldValidator(value) {
   }
 }
 
-function myFilter(item, args) {
-  if (item["percentComplete"] < args.percentCompleteThreshold) {
-    return false;
-  }
-
-  if (args.searchString != "" && item["title"].indexOf(args.searchString) == -1) {
-    return false;
-  }
-
-  return true;
-}
-
 function percentCompleteSort(a, b) {
   return a["percentComplete"] - b["percentComplete"];
 }
@@ -400,7 +388,18 @@ document.addEventListener("DOMContentLoaded", () => {
     percentCompleteThreshold,
     searchString
   });
-  dataView.setFilter(myFilter);
+  dataView.setFilter((item, args) => {
+    if (item['percentComplete'] < args.percentCompleteThreshold) {
+      return false;
+    }
+
+    const searchString = args.searchString.toLowerCase();
+    if (args.searchString != '' && !item['title'].toLowerCase().includes(searchString)) {
+      return false;
+    }
+
+    return true;
+  });
   dataView.endUpdate();
 
   // if you don't want the items that are not visible (due to being filtered out
