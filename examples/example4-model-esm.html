@@ -388,6 +388,8 @@ document.addEventListener("DOMContentLoaded", () => {
     percentCompleteThreshold,
     searchString
   });
+  // `inlineFilters` can be a regular function or an ES6 arrow function like below
+  // dataView.setFilter((item, args) => item['percentComplete'] > args.percentCompleteThreshold);
   dataView.setFilter((item, args) => {
     if (item['percentComplete'] < args.percentCompleteThreshold) {
       return false;
