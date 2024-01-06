@@ -54,7 +54,7 @@
         let column = args.column, node = args.node;
         if (!Utils.isEmptyObject(column.grouping) && node && (node.style.cursor = "pointer", this._options.groupIconCssClass || this._options.groupIconImage)) {
           let groupableIconElm = document.createElement("span");
-          groupableIconElm.className = "slick-column-groupable", this._options.groupIconCssClass && groupableIconElm.classList.add(...this._options.groupIconCssClass.split(" ")), this._options.groupIconImage && (groupableIconElm.style.background = `url(${this._options.groupIconImage}) no-repeat center center`), node.appendChild(groupableIconElm);
+          groupableIconElm.className = "slick-column-groupable", this._options.groupIconCssClass && groupableIconElm.classList.add(...Utils.classNameToList(this._options.groupIconCssClass)), this._options.groupIconImage && (groupableIconElm.style.background = `url(${this._options.groupIconImage}) no-repeat center center`), node.appendChild(groupableIconElm);
         }
       });
       for (let i = 0; i < this._gridColumns.length; i++) {
@@ -180,7 +180,7 @@
             let groupTextElm = document.createElement("div");
             groupTextElm.className = "slick-dropped-grouping-title", groupTextElm.style.display = "inline-flex", groupTextElm.textContent = columnNameElm ? columnNameElm.textContent : headerColumnElm.textContent, entryElm.appendChild(groupTextElm);
             let groupRemoveIconElm = document.createElement("div");
-            groupRemoveIconElm.className = "slick-groupby-remove", this._options.deleteIconCssClass && groupRemoveIconElm.classList.add(...this._options.deleteIconCssClass.split(" ")), this._options.deleteIconImage && groupRemoveIconElm.classList.add(...this._options.deleteIconImage.split(" ")), this._options.deleteIconCssClass || groupRemoveIconElm.classList.add("slick-groupby-remove-icon"), !this._options.deleteIconCssClass && !this._options.deleteIconImage && groupRemoveIconElm.classList.add("slick-groupby-remove-image"), ((_a = this._options) == null ? void 0 : _a.hideGroupSortIcons) !== !0 && col.sortable && ((_b = col.grouping) == null ? void 0 : _b.sortAsc) === void 0 && (col.grouping.sortAsc = !0), entryElm.appendChild(groupRemoveIconElm), entryElm.appendChild(document.createElement("div")), containerElm.appendChild(entryElm), this.addColumnGroupBy(col), this.addGroupByRemoveClickHandler(col.id, groupRemoveIconElm, headerColumnElm, entryElm);
+            groupRemoveIconElm.className = "slick-groupby-remove", this._options.deleteIconCssClass && groupRemoveIconElm.classList.add(...Utils.classNameToList(this._options.deleteIconCssClass)), this._options.deleteIconImage && groupRemoveIconElm.classList.add(...Utils.classNameToList(this._options.deleteIconImage)), this._options.deleteIconCssClass || groupRemoveIconElm.classList.add("slick-groupby-remove-icon"), !this._options.deleteIconCssClass && !this._options.deleteIconImage && groupRemoveIconElm.classList.add("slick-groupby-remove-image"), ((_a = this._options) == null ? void 0 : _a.hideGroupSortIcons) !== !0 && col.sortable && ((_b = col.grouping) == null ? void 0 : _b.sortAsc) === void 0 && (col.grouping.sortAsc = !0), entryElm.appendChild(groupRemoveIconElm), entryElm.appendChild(document.createElement("div")), containerElm.appendChild(entryElm), this.addColumnGroupBy(col), this.addGroupByRemoveClickHandler(col.id, groupRemoveIconElm, headerColumnElm, entryElm);
           }
         this._groupToggler && this._columnsGroupBy.length > 0 && (this._groupToggler.style.display = "inline-block");
       }

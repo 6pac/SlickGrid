@@ -1,6 +1,6 @@
 import { SlickEvent as SlickEvent_, SlickRange as SlickRange_ } from '../slick.core';
 import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector';
-import type { OnActiveCellChangedEventArgs } from '../models/index';
+import type { CustomDataView, OnActiveCellChangedEventArgs } from '../models/index';
 import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
 export interface CellSelectionModelOption {
@@ -11,7 +11,7 @@ export declare class SlickCellSelectionModel {
     pluginName: "CellSelectionModel";
     onSelectedRangesChanged: SlickEvent_<SlickRange_[]>;
     protected _cachedPageRowCount: number;
-    protected _dataView?: SlickDataView;
+    protected _dataView?: CustomDataView | SlickDataView;
     protected _grid: SlickGrid;
     protected _prevSelectedRow?: number;
     protected _prevKeyDown: string;

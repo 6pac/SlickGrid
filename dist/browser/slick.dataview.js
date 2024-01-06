@@ -547,13 +547,6 @@
       }
       return groupedRows;
     }
-    getFunctionInfo(fn) {
-      let fnRegex = fn.toString().indexOf("function") >= 0 ? /^function[^(]*\(([^)]*)\)\s*{([\s\S]*)}$/ : /^[^(]*\(([^)]*)\)\s*{([\s\S]*)}$/, matches = fn.toString().match(fnRegex) || [];
-      return {
-        params: matches[1].split(","),
-        body: matches[2]
-      };
-    }
     compileAccumulatorLoopCSPSafe(aggregator) {
       return aggregator.accumulate ? function(items) {
         let result;
@@ -576,7 +569,7 @@
     compileFilter(stopRunningIfCSPSafeIsActive = !1) {
       if (stopRunningIfCSPSafeIsActive)
         return null;
-      let filterInfo = this.getFunctionInfo(this.filter), filterPath1 = "{ continue _coreloop; }$1", filterPath2 = "{ _retval[_idx++] = $item$; continue _coreloop; }$1", filterBody = filterInfo.body.replace(/return false\s*([;}]|\}|$)/gi, filterPath1).replace(/return!1([;}]|\}|$)/gi, filterPath1).replace(/return true\s*([;}]|\}|$)/gi, filterPath2).replace(/return!0([;}]|\}|$)/gi, filterPath2).replace(
+      let filterInfo = Utils.getFunctionDetails(this.filter), filterPath1 = "{ continue _coreloop; }$1", filterPath2 = "{ _retval[_idx++] = $item$; continue _coreloop; }$1", filterBody = filterInfo.body.replace(/return false\s*([;}]|\}|$)/gi, filterPath1).replace(/return!1([;}]|\}|$)/gi, filterPath1).replace(/return true\s*([;}]|\}|$)/gi, filterPath2).replace(/return!0([;}]|\}|$)/gi, filterPath2).replace(
         /return ([^;}]+?)\s*([;}]|$)/gi,
         "{ if ($1) { _retval[_idx++] = $item$; }; continue _coreloop; }$2"
       ), tpl = [
@@ -598,7 +591,7 @@
     compileFilterWithCaching(stopRunningIfCSPSafeIsActive = !1) {
       if (stopRunningIfCSPSafeIsActive)
         return null;
-      let filterInfo = this.getFunctionInfo(this.filter), filterPath1 = "{ continue _coreloop; }$1", filterPath2 = "{ _cache[_i] = true;_retval[_idx++] = $item$; continue _coreloop; }$1", filterBody = filterInfo.body.replace(/return false\s*([;}]|\}|$)/gi, filterPath1).replace(/return!1([;}]|\}|$)/gi, filterPath1).replace(/return true\s*([;}]|\}|$)/gi, filterPath2).replace(/return!0([;}]|\}|$)/gi, filterPath2).replace(
+      let filterInfo = Utils.getFunctionDetails(this.filter), filterPath1 = "{ continue _coreloop; }$1", filterPath2 = "{ _cache[_i] = true;_retval[_idx++] = $item$; continue _coreloop; }$1", filterBody = filterInfo.body.replace(/return false\s*([;}]|\}|$)/gi, filterPath1).replace(/return!1([;}]|\}|$)/gi, filterPath1).replace(/return true\s*([;}]|\}|$)/gi, filterPath2).replace(/return!0([;}]|\}|$)/gi, filterPath2).replace(
         /return ([^;}]+?)\s*([;}]|$)/gi,
         "{ if ((_cache[_i] = $1)) { _retval[_idx++] = $item$; }; continue _coreloop; }$2"
       ), tpl = [

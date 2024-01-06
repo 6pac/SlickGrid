@@ -569,6 +569,16 @@ var BindingEventService = class {
       element.removeChild(element.firstChild);
     return element;
   }
+  /**
+   * Accepts string containing the class or space-separated list of classes, and
+   * returns list of individual classes.
+   * Method properly takes into account extra whitespaces in the `className`
+   * (e.g. ' class1  class2') will result in `['class1', 'class2']`.
+   * @param {String} className - space separated list of classes
+   */
+  static classNameToList(className = "") {
+    return className.split(" ").filter((cls) => cls);
+  }
   static innerSize(elm, type) {
     let size = 0;
     if (elm) {
@@ -586,6 +596,35 @@ var BindingEventService = class {
   }
   static getElementProp(elm, property) {
     return elm?.getComputedStyle ? window.getComputedStyle(elm, null).getPropertyValue(property) : null;
+  }
+  /**
+   * Get the function details (param & body) of a function.
+   * It supports regular function and also ES6 arrow functions
+   * @param {Function} fn - function to analyze
+   * @param {Boolean} [addReturn] - when using ES6 function as single liner, we could add the missing `return ...`
+   * @returns
+   */
+  static getFunctionDetails(fn, addReturn = !0) {
+    let isAsyncFn = !1, getFunctionBody = (func) => {
+      let fnStr = func.toString();
+      if (isAsyncFn = fnStr.includes("async "), fnStr.replaceAll(" ", "").includes("=>({")) {
+        let matches = fnStr.match(/(({.*}))/g) || [];
+        return matches.length >= 1 ? `return ${matches[0].trimStart()}` : fnStr;
+      }
+      let isOneLinerArrowFn = !fnStr.includes("{") && fnStr.includes("=>"), body = fnStr.substring(
+        fnStr.indexOf("{") + 1 || fnStr.indexOf("=>") + 2,
+        fnStr.includes("}") ? fnStr.lastIndexOf("}") : fnStr.length
+      );
+      return addReturn && isOneLinerArrowFn && !body.startsWith("return") ? "return " + body.trimStart() : body;
+    };
+    return {
+      params: ((func) => {
+        let STRIP_COMMENTS = /(\/\/.*$)|(\/\*[\s\S]*?\*\/)|(\s*=[^,\)]*(('(?:\\'|[^'\r\n])*')|("(?:\\"|[^"\r\n])*"))|(\s*=[^,\)]*))/mg, ARG_NAMES = /([^\s,]+)/g, fnStr = func.toString().replace(STRIP_COMMENTS, "");
+        return fnStr.slice(fnStr.indexOf("(") + 1, fnStr.indexOf(")")).match(ARG_NAMES) ?? [];
+      })(fn),
+      body: getFunctionBody(fn),
+      isAsync: isAsyncFn
+    };
   }
   static insertAfterElement(referenceNode, newNode) {
     referenceNode.parentNode?.insertBefore(newNode, referenceNode.nextSibling);
@@ -1140,7 +1179,7 @@ var BindingEventService4 = BindingEventService, SlickEvent4 = SlickEvent, Utils4
     }
     if (this._gridMenuOptions?.showButton !== void 0 ? this._gridMenuOptions.showButton : this._defaults.showButton) {
       if (this._buttonElm = document.createElement("button"), this._buttonElm.className = "slick-gridmenu-button", this._buttonElm.ariaLabel = "Grid Menu", this._gridMenuOptions?.iconCssClass)
-        this._buttonElm.classList.add(...this._gridMenuOptions.iconCssClass.split(" "));
+        this._buttonElm.classList.add(...Utils4.classNameToList(this._gridMenuOptions.iconCssClass));
       else {
         let iconImageElm = document.createElement("img");
         iconImageElm.src = this._gridMenuOptions?.iconImage ? this._gridMenuOptions.iconImage : "../images/drag-handle.png", this._buttonElm.appendChild(iconImageElm);
@@ -1200,11 +1239,11 @@ var BindingEventService4 = BindingEventService, SlickEvent4 = SlickEvent, Utils4
         continue;
       Object.prototype.hasOwnProperty.call(item, "itemUsabilityOverride") && (item.disabled = !isItemUsable);
       let liElm = document.createElement("div");
-      liElm.className = "slick-gridmenu-item", liElm.role = "menuitem", (item.divider || item === "divider") && (liElm.classList.add("slick-gridmenu-item-divider"), addClickListener = !1), item.disabled && liElm.classList.add("slick-gridmenu-item-disabled"), item.hidden && liElm.classList.add("slick-gridmenu-item-hidden"), item.cssClass && liElm.classList.add(...item.cssClass.split(" ")), item.tooltip && (liElm.title = item.tooltip || "");
+      liElm.className = "slick-gridmenu-item", liElm.role = "menuitem", (item.divider || item === "divider") && (liElm.classList.add("slick-gridmenu-item-divider"), addClickListener = !1), item.disabled && liElm.classList.add("slick-gridmenu-item-disabled"), item.hidden && liElm.classList.add("slick-gridmenu-item-hidden"), item.cssClass && liElm.classList.add(...Utils4.classNameToList(item.cssClass)), item.tooltip && (liElm.title = item.tooltip || "");
       let iconElm = document.createElement("div");
-      iconElm.className = "slick-gridmenu-icon", liElm.appendChild(iconElm), item.iconCssClass && iconElm.classList.add(...item.iconCssClass.split(" ")), item.iconImage && (iconElm.style.backgroundImage = `url(${item.iconImage})`);
+      iconElm.className = "slick-gridmenu-icon", liElm.appendChild(iconElm), item.iconCssClass && iconElm.classList.add(...Utils4.classNameToList(item.iconCssClass)), item.iconImage && (iconElm.style.backgroundImage = `url(${item.iconImage})`);
       let textElm = document.createElement("span");
-      if (textElm.className = "slick-gridmenu-content", this.grid.applyHtmlCode(textElm, this.grid.sanitizeHtmlString(item.title || "")), liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), commandListElm.appendChild(liElm), addClickListener) {
+      if (textElm.className = "slick-gridmenu-content", this.grid.applyHtmlCode(textElm, this.grid.sanitizeHtmlString(item.title || "")), liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...Utils4.classNameToList(item.textCssClass)), commandListElm.appendChild(liElm), addClickListener) {
         let eventGroup = isSubMenu ? "sub-menu" : "parent-menu";
         this._bindingEventService.bind(liElm, "click", this.handleMenuItemClick.bind(this, item, level), void 0, eventGroup);
       }
@@ -1212,7 +1251,7 @@ var BindingEventService4 = BindingEventService, SlickEvent4 = SlickEvent, Utils4
         item.commandItems || item.customItems ? this.repositionSubMenu(item, level, e) : isSubMenu || this.destroySubMenus();
       }), item.commandItems || item.customItems) {
         let chevronElm = document.createElement("span");
-        chevronElm.className = "sub-item-chevron", this._gridMenuOptions?.subItemChevronClass ? chevronElm.classList.add(...this._gridMenuOptions.subItemChevronClass.split(" ")) : chevronElm.textContent = "\u2B9E", liElm.classList.add("slick-submenu-item"), liElm.appendChild(chevronElm);
+        chevronElm.className = "sub-item-chevron", this._gridMenuOptions?.subItemChevronClass ? chevronElm.classList.add(...Utils4.classNameToList(this._gridMenuOptions.subItemChevronClass)) : chevronElm.textContent = "\u2B9E", liElm.classList.add("slick-submenu-item"), liElm.appendChild(chevronElm);
         continue;
       }
     }
@@ -1318,7 +1357,7 @@ var BindingEventService4 = BindingEventService, SlickEvent4 = SlickEvent, Utils4
       let subMenuTitleElm = document.createElement("div");
       subMenuTitleElm.className = "slick-menu-title", subMenuTitleElm.textContent = item.subMenuTitle;
       let subMenuTitleClass = item.subMenuTitleCssClass;
-      subMenuTitleClass && subMenuTitleElm.classList.add(...subMenuTitleClass.split(" ")), commandOrOptionMenu.appendChild(subMenuTitleElm);
+      subMenuTitleClass && subMenuTitleElm.classList.add(...Utils4.classNameToList(subMenuTitleClass)), commandOrOptionMenu.appendChild(subMenuTitleElm);
     }
   }
   repositionSubMenu(item, level, e) {
@@ -2076,7 +2115,7 @@ var BindingEventService6 = BindingEventService, SlickEvent7 = SlickEvent, SlickE
       let subMenuTitleElm = document.createElement("div");
       subMenuTitleElm.className = "slick-menu-title", subMenuTitleElm.textContent = item.subMenuTitle;
       let subMenuTitleClass = item.subMenuTitleCssClass;
-      subMenuTitleClass && subMenuTitleElm.classList.add(...subMenuTitleClass.split(" ")), commandOrOptionMenu.appendChild(subMenuTitleElm);
+      subMenuTitleClass && subMenuTitleElm.classList.add(...Utils9.classNameToList(subMenuTitleClass)), commandOrOptionMenu.appendChild(subMenuTitleElm);
     }
   }
   handleCloseButtonClicked(e) {
@@ -2162,11 +2201,11 @@ var BindingEventService6 = BindingEventService, SlickEvent7 = SlickEvent, SlickE
         continue;
       Object.prototype.hasOwnProperty.call(item, "itemUsabilityOverride") && (item.disabled = !isItemUsable);
       let liElm = document.createElement("div");
-      liElm.className = "slick-cell-menu-item", liElm.role = "menuitem", (item.divider || item === "divider") && (liElm.classList.add("slick-cell-menu-item-divider"), addClickListener = !1), (item.disabled || !isItemUsable) && liElm.classList.add("slick-cell-menu-item-disabled"), item.hidden && liElm.classList.add("slick-cell-menu-item-hidden"), item.cssClass && liElm.classList.add(...item.cssClass.split(" ")), item.tooltip && (liElm.title = item.tooltip || "");
+      liElm.className = "slick-cell-menu-item", liElm.role = "menuitem", (item.divider || item === "divider") && (liElm.classList.add("slick-cell-menu-item-divider"), addClickListener = !1), (item.disabled || !isItemUsable) && liElm.classList.add("slick-cell-menu-item-disabled"), item.hidden && liElm.classList.add("slick-cell-menu-item-hidden"), item.cssClass && liElm.classList.add(...Utils9.classNameToList(item.cssClass)), item.tooltip && (liElm.title = item.tooltip || "");
       let iconElm = document.createElement("div");
-      iconElm.className = "slick-cell-menu-icon", liElm.appendChild(iconElm), item.iconCssClass && iconElm.classList.add(...item.iconCssClass.split(" ")), item.iconImage && (iconElm.style.backgroundImage = `url(${item.iconImage})`);
+      iconElm.className = "slick-cell-menu-icon", liElm.appendChild(iconElm), item.iconCssClass && iconElm.classList.add(...Utils9.classNameToList(item.iconCssClass)), item.iconImage && (iconElm.style.backgroundImage = `url(${item.iconImage})`);
       let textElm = document.createElement("span");
-      if (textElm.className = "slick-cell-menu-content", textElm.textContent = item.title || "", liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), commandOrOptionMenuElm.appendChild(liElm), addClickListener) {
+      if (textElm.className = "slick-cell-menu-content", textElm.textContent = item.title || "", liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...Utils9.classNameToList(item.textCssClass)), commandOrOptionMenuElm.appendChild(liElm), addClickListener) {
         let eventGroup = isSubMenu ? "sub-menu" : "parent-menu";
         this._bindingEventService.bind(liElm, "click", this.handleMenuItemClick.bind(this, item, itemType, level), void 0, eventGroup);
       }
@@ -2174,7 +2213,7 @@ var BindingEventService6 = BindingEventService, SlickEvent7 = SlickEvent, SlickE
         item.commandItems || item.optionItems ? (this.repositionSubMenu(item, itemType, level, e), this._lastMenuTypeClicked = itemType) : isSubMenu || this.destroySubMenus();
       }), item.commandItems || item.optionItems) {
         let chevronElm = document.createElement("span");
-        chevronElm.className = "sub-item-chevron", this._cellMenuProperties.subItemChevronClass ? chevronElm.classList.add(...this._cellMenuProperties.subItemChevronClass.split(" ")) : chevronElm.textContent = "\u2B9E", liElm.classList.add("slick-submenu-item"), liElm.appendChild(chevronElm);
+        chevronElm.className = "sub-item-chevron", this._cellMenuProperties.subItemChevronClass ? chevronElm.classList.add(...Utils9.classNameToList(this._cellMenuProperties.subItemChevronClass)) : chevronElm.textContent = "\u2B9E", liElm.classList.add("slick-submenu-item"), liElm.appendChild(chevronElm);
         continue;
       }
     }
@@ -2605,7 +2644,7 @@ var SlickEvent9 = SlickEvent, SlickEventData4 = SlickEventData, SlickRange6 = Sl
   }
   handleKeyDown(e) {
     let ranges, last, colLn = this._grid.getColumns().length, active = this._grid.getActiveCell(), dataLn = 0;
-    if (this._dataView ? dataLn = this._dataView?.getPagingInfo().pageSize || this._dataView.getLength() : dataLn = this._grid.getDataLength(), active && (e.shiftKey || e.ctrlKey) && !e.altKey && this.isKeyAllowed(e.key)) {
+    if (this._dataView && "getPagingInfo" in this._dataView ? dataLn = this._dataView?.getPagingInfo().pageSize || this._dataView.getLength() : dataLn = this._grid.getDataLength(), active && (e.shiftKey || e.ctrlKey) && !e.altKey && this.isKeyAllowed(e.key)) {
       ranges = this.getSelectedRanges().slice(), ranges.length || ranges.push(new SlickRange6(active.row, active.cell)), last = ranges.pop(), last.contains(active.row, active.cell) || (last = new SlickRange6(active.row, active.cell));
       let dRow = last.toRow - last.fromRow, dCell = last.toCell - last.fromCell, dirRow = active.row === last.fromRow ? 1 : -1, dirCell = active.cell === last.fromCell ? 1 : -1, isSingleKeyMove = e.key.startsWith("Arrow"), toCell, toRow = 0;
       isSingleKeyMove && !e.ctrlKey ? (e.key === "ArrowLeft" ? dCell -= dirCell : e.key === "ArrowRight" ? dCell += dirCell : e.key === "ArrowUp" ? dRow -= dirRow : e.key === "ArrowDown" && (dRow += dirRow), toRow = active.row + dirRow * dRow) : (this._cachedPageRowCount < 1 && (this._cachedPageRowCount = this._grid.getViewportRowCount()), this._prevSelectedRow === void 0 && (this._prevSelectedRow = active.row), e.shiftKey && !e.ctrlKey && e.key === "Home" ? (toCell = 0, toRow = active.row) : e.shiftKey && !e.ctrlKey && e.key === "End" ? (toCell = colLn - 1, toRow = active.row) : e.ctrlKey && e.shiftKey && e.key === "Home" ? (toCell = 0, toRow = 0) : e.ctrlKey && e.shiftKey && e.key === "End" ? (toCell = colLn - 1, toRow = dataLn - 1) : e.key === "PageUp" ? (this._prevSelectedRow >= 0 && (toRow = this._prevSelectedRow - this._cachedPageRowCount), toRow < 0 && (toRow = 0)) : e.key === "PageDown" && (this._prevSelectedRow <= dataLn - 1 && (toRow = this._prevSelectedRow + this._cachedPageRowCount), toRow > dataLn - 1 && (toRow = dataLn - 1)), this._prevSelectedRow = toRow), toCell ?? (toCell = active.cell + dirCell * dCell);
@@ -2968,7 +3007,7 @@ var BindingEventService8 = BindingEventService, SlickEvent10 = SlickEvent, Slick
       let subMenuTitleElm = document.createElement("div");
       subMenuTitleElm.className = "slick-menu-title", subMenuTitleElm.textContent = item.subMenuTitle;
       let subMenuTitleClass = item.subMenuTitleCssClass;
-      subMenuTitleClass && subMenuTitleElm.classList.add(...subMenuTitleClass.split(" ")), commandOrOptionMenu.appendChild(subMenuTitleElm);
+      subMenuTitleClass && subMenuTitleElm.classList.add(...Utils15.classNameToList(subMenuTitleClass)), commandOrOptionMenu.appendChild(subMenuTitleElm);
     }
   }
   handleCloseButtonClicked(e) {
@@ -3038,11 +3077,11 @@ var BindingEventService8 = BindingEventService, SlickEvent10 = SlickEvent, Slick
         continue;
       Object.prototype.hasOwnProperty.call(item, "itemUsabilityOverride") && (item.disabled = !isItemUsable);
       let liElm = document.createElement("div");
-      liElm.className = "slick-context-menu-item", liElm.role = "menuitem", (item.divider || item === "divider") && (liElm.classList.add("slick-context-menu-item-divider"), addClickListener = !1), (item.disabled || !isItemUsable) && liElm.classList.add("slick-context-menu-item-disabled"), item.hidden && liElm.classList.add("slick-context-menu-item-hidden"), item.cssClass && liElm.classList.add(...item.cssClass.split(" ")), item.tooltip && (liElm.title = item.tooltip || "");
+      liElm.className = "slick-context-menu-item", liElm.role = "menuitem", (item.divider || item === "divider") && (liElm.classList.add("slick-context-menu-item-divider"), addClickListener = !1), (item.disabled || !isItemUsable) && liElm.classList.add("slick-context-menu-item-disabled"), item.hidden && liElm.classList.add("slick-context-menu-item-hidden"), item.cssClass && liElm.classList.add(...Utils15.classNameToList(item.cssClass)), item.tooltip && (liElm.title = item.tooltip || "");
       let iconElm = document.createElement("div");
-      iconElm.className = "slick-context-menu-icon", liElm.appendChild(iconElm), item.iconCssClass && iconElm.classList.add(...item.iconCssClass.split(" ")), item.iconImage && (iconElm.style.backgroundImage = `url(${item.iconImage})`);
+      iconElm.className = "slick-context-menu-icon", liElm.appendChild(iconElm), item.iconCssClass && iconElm.classList.add(...Utils15.classNameToList(item.iconCssClass)), item.iconImage && (iconElm.style.backgroundImage = `url(${item.iconImage})`);
       let textElm = document.createElement("span");
-      if (textElm.className = "slick-context-menu-content", textElm.textContent = item.title || "", liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), commandOrOptionMenuElm.appendChild(liElm), addClickListener) {
+      if (textElm.className = "slick-context-menu-content", textElm.textContent = item.title || "", liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...Utils15.classNameToList(item.textCssClass)), commandOrOptionMenuElm.appendChild(liElm), addClickListener) {
         let eventGroup = isSubMenu ? "sub-menu" : "parent-menu";
         this._bindingEventService.bind(liElm, "click", this.handleMenuItemClick.bind(this, item, itemType, level), void 0, eventGroup);
       }
@@ -3050,7 +3089,7 @@ var BindingEventService8 = BindingEventService, SlickEvent10 = SlickEvent, Slick
         item.commandItems || item.optionItems ? (this.repositionSubMenu(item, itemType, level, e), this._lastMenuTypeClicked = itemType) : isSubMenu || this.destroySubMenus();
       }), item.commandItems || item.optionItems) {
         let chevronElm = document.createElement("span");
-        chevronElm.className = "sub-item-chevron", this._contextMenuProperties.subItemChevronClass ? chevronElm.classList.add(...this._contextMenuProperties.subItemChevronClass.split(" ")) : chevronElm.textContent = "\u2B9E", liElm.classList.add("slick-submenu-item"), liElm.appendChild(chevronElm);
+        chevronElm.className = "sub-item-chevron", this._contextMenuProperties.subItemChevronClass ? chevronElm.classList.add(...Utils15.classNameToList(this._contextMenuProperties.subItemChevronClass)) : chevronElm.textContent = "\u2B9E", liElm.classList.add("slick-submenu-item"), liElm.appendChild(chevronElm);
         continue;
       }
     }
@@ -3491,7 +3530,7 @@ var BindingEventService9 = BindingEventService, SlickEvent12 = SlickEvent, Slick
       let column = args.column, node = args.node;
       if (!Utils18.isEmptyObject(column.grouping) && node && (node.style.cursor = "pointer", this._options.groupIconCssClass || this._options.groupIconImage)) {
         let groupableIconElm = document.createElement("span");
-        groupableIconElm.className = "slick-column-groupable", this._options.groupIconCssClass && groupableIconElm.classList.add(...this._options.groupIconCssClass.split(" ")), this._options.groupIconImage && (groupableIconElm.style.background = `url(${this._options.groupIconImage}) no-repeat center center`), node.appendChild(groupableIconElm);
+        groupableIconElm.className = "slick-column-groupable", this._options.groupIconCssClass && groupableIconElm.classList.add(...Utils18.classNameToList(this._options.groupIconCssClass)), this._options.groupIconImage && (groupableIconElm.style.background = `url(${this._options.groupIconImage}) no-repeat center center`), node.appendChild(groupableIconElm);
       }
     });
     for (let i = 0; i < this._gridColumns.length; i++) {
@@ -3611,7 +3650,7 @@ var BindingEventService9 = BindingEventService, SlickEvent12 = SlickEvent, Slick
           let groupTextElm = document.createElement("div");
           groupTextElm.className = "slick-dropped-grouping-title", groupTextElm.style.display = "inline-flex", groupTextElm.textContent = columnNameElm ? columnNameElm.textContent : headerColumnElm.textContent, entryElm.appendChild(groupTextElm);
           let groupRemoveIconElm = document.createElement("div");
-          groupRemoveIconElm.className = "slick-groupby-remove", this._options.deleteIconCssClass && groupRemoveIconElm.classList.add(...this._options.deleteIconCssClass.split(" ")), this._options.deleteIconImage && groupRemoveIconElm.classList.add(...this._options.deleteIconImage.split(" ")), this._options.deleteIconCssClass || groupRemoveIconElm.classList.add("slick-groupby-remove-icon"), !this._options.deleteIconCssClass && !this._options.deleteIconImage && groupRemoveIconElm.classList.add("slick-groupby-remove-image"), this._options?.hideGroupSortIcons !== !0 && col.sortable && col.grouping?.sortAsc === void 0 && (col.grouping.sortAsc = !0), entryElm.appendChild(groupRemoveIconElm), entryElm.appendChild(document.createElement("div")), containerElm.appendChild(entryElm), this.addColumnGroupBy(col), this.addGroupByRemoveClickHandler(col.id, groupRemoveIconElm, headerColumnElm, entryElm);
+          groupRemoveIconElm.className = "slick-groupby-remove", this._options.deleteIconCssClass && groupRemoveIconElm.classList.add(...Utils18.classNameToList(this._options.deleteIconCssClass)), this._options.deleteIconImage && groupRemoveIconElm.classList.add(...Utils18.classNameToList(this._options.deleteIconImage)), this._options.deleteIconCssClass || groupRemoveIconElm.classList.add("slick-groupby-remove-icon"), !this._options.deleteIconCssClass && !this._options.deleteIconImage && groupRemoveIconElm.classList.add("slick-groupby-remove-image"), this._options?.hideGroupSortIcons !== !0 && col.sortable && col.grouping?.sortAsc === void 0 && (col.grouping.sortAsc = !0), entryElm.appendChild(groupRemoveIconElm), entryElm.appendChild(document.createElement("div")), containerElm.appendChild(entryElm), this.addColumnGroupBy(col), this.addGroupByRemoveClickHandler(col.id, groupRemoveIconElm, headerColumnElm, entryElm);
         }
       this._groupToggler && this._columnsGroupBy.length > 0 && (this._groupToggler.style.display = "inline-block");
     }
@@ -3701,7 +3740,7 @@ var BindingEventService10 = BindingEventService, SlickEvent13 = Event, EventHand
           continue;
         Object.prototype.hasOwnProperty.call(button, "itemUsabilityOverride") && (button.disabled = !isItemUsable);
         let btn = document.createElement("div");
-        btn.className = this._options.buttonCssClass || "", btn.ariaLabel = "Header Button", btn.role = "button", button.disabled && btn.classList.add("slick-header-button-disabled"), button.showOnHover && btn.classList.add("slick-header-button-hidden"), button.image && (btn.style.backgroundImage = `url(${button.image})`), button.cssClass && btn.classList.add(...button.cssClass.split(" ")), button.tooltip && (btn.title = button.tooltip), button.handler && !button.disabled && this._bindingEventService.bind(btn, "click", button.handler), this._bindingEventService.bind(btn, "click", this.handleButtonClick.bind(this, button, args.column)), args.node.appendChild(btn);
+        btn.className = this._options.buttonCssClass || "", btn.ariaLabel = "Header Button", btn.role = "button", button.disabled && btn.classList.add("slick-header-button-disabled"), button.showOnHover && btn.classList.add("slick-header-button-hidden"), button.image && (btn.style.backgroundImage = `url(${button.image})`), button.cssClass && btn.classList.add(...Utils19.classNameToList(button.cssClass)), button.tooltip && (btn.title = button.tooltip), button.handler && !button.disabled && this._bindingEventService.bind(btn, "click", button.handler), this._bindingEventService.bind(btn, "click", this.handleButtonClick.bind(this, button, args.column)), args.node.appendChild(btn);
       }
     }
   }
@@ -3796,7 +3835,7 @@ var BindingEventService11 = BindingEventService, SlickEvent14 = Event, SlickEven
       let elm = document.createElement("div");
       if (elm.className = "slick-header-menubutton", elm.ariaLabel = "Header Menu", elm.role = "button", !this._options.buttonCssClass && !this._options.buttonImage && (this._options.buttonCssClass = "caret"), this._options.buttonCssClass) {
         let icon = document.createElement("span");
-        icon.classList.add(...this._options.buttonCssClass.split(" ")), elm.appendChild(icon);
+        icon.classList.add(...Utils20.classNameToList(this._options.buttonCssClass)), elm.appendChild(icon);
       }
       this._options.buttonImage && (elm.style.backgroundImage = `url(${this._options.buttonImage})`), this._options.tooltip && (elm.title = this._options.tooltip), this._bindingEventService.bind(elm, "click", (e) => {
         this.destroyAllMenus(), this.createParentMenu(e, menu, args.column);
@@ -3811,7 +3850,7 @@ var BindingEventService11 = BindingEventService, SlickEvent14 = Event, SlickEven
       let subMenuTitleElm = document.createElement("div");
       subMenuTitleElm.className = "slick-menu-title", subMenuTitleElm.textContent = item.subMenuTitle;
       let subMenuTitleClass = item.subMenuTitleCssClass;
-      subMenuTitleClass && subMenuTitleElm.classList.add(...subMenuTitleClass.split(" ")), commandMenuElm.appendChild(subMenuTitleElm);
+      subMenuTitleClass && subMenuTitleElm.classList.add(...Utils20.classNameToList(subMenuTitleClass)), commandMenuElm.appendChild(subMenuTitleElm);
     }
   }
   createParentMenu(event2, menu, columnDef) {
@@ -3849,11 +3888,11 @@ var BindingEventService11 = BindingEventService, SlickEvent14 = Event, SlickEven
         continue;
       Object.prototype.hasOwnProperty.call(item2, "itemUsabilityOverride") && (item2.disabled = !isItemUsable);
       let menuItemElm = document.createElement("div");
-      menuItemElm.className = "slick-header-menuitem", menuItemElm.role = "menuitem", (item2.divider || item2 === "divider") && (menuItemElm.classList.add("slick-header-menuitem-divider"), addClickListener = !1), item2.disabled && menuItemElm.classList.add("slick-header-menuitem-disabled"), item2.hidden && menuItemElm.classList.add("slick-header-menuitem-hidden"), item2.cssClass && menuItemElm.classList.add(...item2.cssClass.split(" ")), item2.tooltip && (menuItemElm.title = item2.tooltip || "");
+      menuItemElm.className = "slick-header-menuitem", menuItemElm.role = "menuitem", (item2.divider || item2 === "divider") && (menuItemElm.classList.add("slick-header-menuitem-divider"), addClickListener = !1), item2.disabled && menuItemElm.classList.add("slick-header-menuitem-disabled"), item2.hidden && menuItemElm.classList.add("slick-header-menuitem-hidden"), item2.cssClass && menuItemElm.classList.add(...Utils20.classNameToList(item2.cssClass)), item2.tooltip && (menuItemElm.title = item2.tooltip || "");
       let iconElm = document.createElement("div");
-      iconElm.className = "slick-header-menuicon", menuItemElm.appendChild(iconElm), item2.iconCssClass && iconElm.classList.add(...item2.iconCssClass.split(" ")), item2.iconImage && (iconElm.style.backgroundImage = "url(" + item2.iconImage + ")");
+      iconElm.className = "slick-header-menuicon", menuItemElm.appendChild(iconElm), item2.iconCssClass && iconElm.classList.add(...Utils20.classNameToList(item2.iconCssClass)), item2.iconImage && (iconElm.style.backgroundImage = "url(" + item2.iconImage + ")");
       let textElm = document.createElement("span");
-      if (textElm.className = "slick-header-menucontent", textElm.textContent = item2.title || "", menuItemElm.appendChild(textElm), item2.textCssClass && textElm.classList.add(...item2.textCssClass.split(" ")), menuElm.appendChild(menuItemElm), addClickListener) {
+      if (textElm.className = "slick-header-menucontent", textElm.textContent = item2.title || "", menuItemElm.appendChild(textElm), item2.textCssClass && textElm.classList.add(...Utils20.classNameToList(item2.textCssClass)), menuElm.appendChild(menuItemElm), addClickListener) {
         let eventGroup = isSubMenu ? "sub-menu" : "parent-menu";
         this._bindingEventService.bind(menuItemElm, "click", this.handleMenuItemClick.bind(this, item2, columnDef, level), void 0, eventGroup);
       }
@@ -3861,7 +3900,7 @@ var BindingEventService11 = BindingEventService, SlickEvent14 = Event, SlickEven
         item2.commandItems || item2.items ? this.repositionSubMenu(item2, columnDef, level, e) : isSubMenu || this.destroySubMenus();
       }), item2.commandItems || item2.items) {
         let chevronElm = document.createElement("div");
-        chevronElm.className = "sub-item-chevron", this._options.subItemChevronClass ? chevronElm.classList.add(...this._options.subItemChevronClass.split(" ")) : chevronElm.textContent = "\u2B9E", menuItemElm.classList.add("slick-submenu-item"), menuItemElm.appendChild(chevronElm);
+        chevronElm.className = "sub-item-chevron", this._options.subItemChevronClass ? chevronElm.classList.add(...Utils20.classNameToList(this._options.subItemChevronClass)) : chevronElm.textContent = "\u2B9E", menuItemElm.classList.add("slick-submenu-item"), menuItemElm.appendChild(chevronElm);
       }
     }
     return menuElm;
@@ -5542,13 +5581,6 @@ var SlickEvent20 = SlickEvent, SlickEventData7 = SlickEventData, SlickGroup3 = S
     }
     return groupedRows;
   }
-  getFunctionInfo(fn) {
-    let fnRegex = fn.toString().indexOf("function") >= 0 ? /^function[^(]*\(([^)]*)\)\s*{([\s\S]*)}$/ : /^[^(]*\(([^)]*)\)\s*{([\s\S]*)}$/, matches = fn.toString().match(fnRegex) || [];
-    return {
-      params: matches[1].split(","),
-      body: matches[2]
-    };
-  }
   compileAccumulatorLoopCSPSafe(aggregator) {
     return aggregator.accumulate ? function(items) {
       let result;
@@ -5571,7 +5603,7 @@ var SlickEvent20 = SlickEvent, SlickEventData7 = SlickEventData, SlickGroup3 = S
   compileFilter(stopRunningIfCSPSafeIsActive = !1) {
     if (stopRunningIfCSPSafeIsActive)
       return null;
-    let filterInfo = this.getFunctionInfo(this.filter), filterPath1 = "{ continue _coreloop; }$1", filterPath2 = "{ _retval[_idx++] = $item$; continue _coreloop; }$1", filterBody = filterInfo.body.replace(/return false\s*([;}]|\}|$)/gi, filterPath1).replace(/return!1([;}]|\}|$)/gi, filterPath1).replace(/return true\s*([;}]|\}|$)/gi, filterPath2).replace(/return!0([;}]|\}|$)/gi, filterPath2).replace(
+    let filterInfo = Utils27.getFunctionDetails(this.filter), filterPath1 = "{ continue _coreloop; }$1", filterPath2 = "{ _retval[_idx++] = $item$; continue _coreloop; }$1", filterBody = filterInfo.body.replace(/return false\s*([;}]|\}|$)/gi, filterPath1).replace(/return!1([;}]|\}|$)/gi, filterPath1).replace(/return true\s*([;}]|\}|$)/gi, filterPath2).replace(/return!0([;}]|\}|$)/gi, filterPath2).replace(
       /return ([^;}]+?)\s*([;}]|$)/gi,
       "{ if ($1) { _retval[_idx++] = $item$; }; continue _coreloop; }$2"
     ), tpl = [
@@ -5593,7 +5625,7 @@ var SlickEvent20 = SlickEvent, SlickEventData7 = SlickEventData, SlickGroup3 = S
   compileFilterWithCaching(stopRunningIfCSPSafeIsActive = !1) {
     if (stopRunningIfCSPSafeIsActive)
       return null;
-    let filterInfo = this.getFunctionInfo(this.filter), filterPath1 = "{ continue _coreloop; }$1", filterPath2 = "{ _cache[_i] = true;_retval[_idx++] = $item$; continue _coreloop; }$1", filterBody = filterInfo.body.replace(/return false\s*([;}]|\}|$)/gi, filterPath1).replace(/return!1([;}]|\}|$)/gi, filterPath1).replace(/return true\s*([;}]|\}|$)/gi, filterPath2).replace(/return!0([;}]|\}|$)/gi, filterPath2).replace(
+    let filterInfo = Utils27.getFunctionDetails(this.filter), filterPath1 = "{ continue _coreloop; }$1", filterPath2 = "{ _cache[_i] = true;_retval[_idx++] = $item$; continue _coreloop; }$1", filterBody = filterInfo.body.replace(/return false\s*([;}]|\}|$)/gi, filterPath1).replace(/return!1([;}]|\}|$)/gi, filterPath1).replace(/return true\s*([;}]|\}|$)/gi, filterPath2).replace(/return!0([;}]|\}|$)/gi, filterPath2).replace(
       /return ([^;}]+?)\s*([;}]|$)/gi,
       "{ if ((_cache[_i] = $1)) { _retval[_idx++] = $item$; }; continue _coreloop; }$2"
     ), tpl = [
@@ -6524,7 +6556,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.7.0");
+    __publicField(this, "slickGridVersion", "5.7.1");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -6922,7 +6954,7 @@ var SlickGrid = class {
     }), this._options.showHeaderRow || this._headerRowScroller.forEach((scroller) => {
       Utils30.hide(scroller);
     }), this._viewportTopL = Utils30.createDomElement("div", { className: "slick-viewport slick-viewport-top slick-viewport-left", tabIndex: 0 }, this._paneTopL), this._viewportTopR = Utils30.createDomElement("div", { className: "slick-viewport slick-viewport-top slick-viewport-right", tabIndex: 0 }, this._paneTopR), this._viewportBottomL = Utils30.createDomElement("div", { className: "slick-viewport slick-viewport-bottom slick-viewport-left", tabIndex: 0 }, this._paneBottomL), this._viewportBottomR = Utils30.createDomElement("div", { className: "slick-viewport slick-viewport-bottom slick-viewport-right", tabIndex: 0 }, this._paneBottomR), this._viewport = [this._viewportTopL, this._viewportTopR, this._viewportBottomL, this._viewportBottomR], this._options.viewportClass && this._viewport.forEach((view) => {
-      view.classList.add(...(this._options.viewportClass || "").split(" "));
+      view.classList.add(...Utils30.classNameToList(this._options.viewportClass));
     }), this._activeViewportNode = this._viewportTopL, this._canvasTopL = Utils30.createDomElement("div", { className: "grid-canvas grid-canvas-top grid-canvas-left", tabIndex: 0 }, this._viewportTopL), this._canvasTopR = Utils30.createDomElement("div", { className: "grid-canvas grid-canvas-top grid-canvas-right", tabIndex: 0 }, this._viewportTopR), this._canvasBottomL = Utils30.createDomElement("div", { className: "grid-canvas grid-canvas-bottom grid-canvas-left", tabIndex: 0 }, this._viewportBottomL), this._canvasBottomR = Utils30.createDomElement("div", { className: "grid-canvas grid-canvas-bottom grid-canvas-right", tabIndex: 0 }, this._viewportBottomR), this._canvas = [this._canvasTopL, this._canvasTopR, this._canvasBottomL, this._canvasBottomR], this.scrollbarDimensions = this.scrollbarDimensions || this.measureScrollbar(), this._activeCanvasNode = this._canvasTopL, this._preHeaderPanelSpacer && Utils30.width(this._preHeaderPanelSpacer, this.getCanvasWidth() + this.scrollbarDimensions.width), this._headers.forEach((el) => {
       Utils30.width(el, this.getHeadersWidth());
     }), Utils30.width(this._headerRowSpacerL, this.getCanvasWidth() + this.scrollbarDimensions.width), Utils30.width(this._headerRowSpacerR, this.getCanvasWidth() + this.scrollbarDimensions.width), this._options.createFooterRow && (this._footerRowScrollerR = Utils30.createDomElement("div", { className: "slick-footerrow ui-state-default slick-state-default" }, this._paneTopR), this._footerRowScrollerL = Utils30.createDomElement("div", { className: "slick-footerrow ui-state-default slick-state-default" }, this._paneTopL), this._footerRowScroller = [this._footerRowScrollerL, this._footerRowScrollerR], this._footerRowSpacerL = Utils30.createDomElement("div", { style: { display: "block", height: "1px", position: "absolute", top: "0px", left: "0px" } }, this._footerRowScrollerL), Utils30.width(this._footerRowSpacerL, this.getCanvasWidth() + this.scrollbarDimensions.width), this._footerRowSpacerR = Utils30.createDomElement("div", { style: { display: "block", height: "1px", position: "absolute", top: "0px", left: "0px" } }, this._footerRowScrollerR), Utils30.width(this._footerRowSpacerR, this.getCanvasWidth() + this.scrollbarDimensions.width), this._footerRowL = Utils30.createDomElement("div", { className: "slick-footerrow-columns slick-footerrow-columns-left" }, this._footerRowScrollerL), this._footerRowR = Utils30.createDomElement("div", { className: "slick-footerrow-columns slick-footerrow-columns-right" }, this._footerRowScrollerR), this._footerRow = [this._footerRowL, this._footerRowR], this._options.showFooterRow || this._footerRowScroller.forEach((scroller) => {
@@ -7292,7 +7324,7 @@ var SlickGrid = class {
       let m = this.columns[i], headerTarget = this.hasFrozenColumns() ? i <= this._options.frozenColumn ? this._headerL : this._headerR : this._headerL, headerRowTarget = this.hasFrozenColumns() ? i <= this._options.frozenColumn ? this._headerRowL : this._headerRowR : this._headerRowL, header = Utils30.createDomElement("div", { id: `${this.uid + m.id}`, dataset: { id: String(m.id) }, className: "ui-state-default slick-state-default slick-header-column", title: m.toolTip || "" }, headerTarget), colNameElm = Utils30.createDomElement("span", { className: "slick-column-name" }, header);
       this.applyHtmlCode(colNameElm, m.name), Utils30.width(header, m.width - this.headerColumnWidthDiff);
       let classname = m.headerCssClass || null;
-      if (classname && header.classList.add(...classname.split(" ")), classname = this.hasFrozenColumns() && i <= this._options.frozenColumn ? "frozen" : null, classname && header.classList.add(classname), this._bindingEventService.bind(header, "mouseenter", this.handleHeaderMouseEnter.bind(this)), this._bindingEventService.bind(header, "mouseleave", this.handleHeaderMouseLeave.bind(this)), Utils30.storage.put(header, "column", m), (this._options.enableColumnReorder || m.sortable) && (this._bindingEventService.bind(header, "mouseenter", this.handleHeaderMouseHoverOn.bind(this)), this._bindingEventService.bind(header, "mouseleave", this.handleHeaderMouseHoverOff.bind(this))), m.hasOwnProperty("headerCellAttrs") && m.headerCellAttrs instanceof Object)
+      if (classname && header.classList.add(...Utils30.classNameToList(classname)), classname = this.hasFrozenColumns() && i <= this._options.frozenColumn ? "frozen" : null, classname && header.classList.add(classname), this._bindingEventService.bind(header, "mouseenter", this.handleHeaderMouseEnter.bind(this)), this._bindingEventService.bind(header, "mouseleave", this.handleHeaderMouseLeave.bind(this)), Utils30.storage.put(header, "column", m), (this._options.enableColumnReorder || m.sortable) && (this._bindingEventService.bind(header, "mouseenter", this.handleHeaderMouseHoverOn.bind(this)), this._bindingEventService.bind(header, "mouseleave", this.handleHeaderMouseHoverOff.bind(this))), m.hasOwnProperty("headerCellAttrs") && m.headerCellAttrs instanceof Object)
         for (let key in m.headerCellAttrs)
           m.headerCellAttrs.hasOwnProperty(key) && header.setAttribute(key, m.headerCellAttrs[key]);
       if (m.sortable && (header.classList.add("slick-header-sortable"), Utils30.createDomElement("div", { className: `slick-sort-indicator ${this._options.numberedMultiColumnSort && !this._options.sortColNumberInSeparateSpan ? " slick-sort-indicator-numbered" : ""}` }, header), this._options.numberedMultiColumnSort && this._options.sortColNumberInSeparateSpan && Utils30.createDomElement("div", { className: "slick-sort-indicator-numbered" }, header)), this.trigger(this.onHeaderCellRendered, {
@@ -7517,7 +7549,10 @@ var SlickGrid = class {
     this.hasFrozenColumns() ? (Utils30.show(this._paneHeaderR), Utils30.show(this._paneTopR), this.hasFrozenRows ? (Utils30.show(this._paneBottomL), Utils30.show(this._paneBottomR)) : (Utils30.hide(this._paneBottomR), Utils30.hide(this._paneBottomL))) : (Utils30.hide(this._paneHeaderR), Utils30.hide(this._paneTopR), Utils30.hide(this._paneBottomR), this.hasFrozenRows ? Utils30.show(this._paneBottomL) : (Utils30.hide(this._paneBottomR), Utils30.hide(this._paneBottomL)));
   }
   setOverflow() {
-    this._viewportTopL.style.overflowX = this.hasFrozenColumns() ? this.hasFrozenRows && !this._options.alwaysAllowHorizontalScroll ? "hidden" : "scroll" : this.hasFrozenRows && !this._options.alwaysAllowHorizontalScroll ? "hidden" : "auto", this._viewportTopL.style.overflowY = !this.hasFrozenColumns() && this._options.alwaysShowVerticalScroll ? "scroll" : this.hasFrozenColumns() ? (this.hasFrozenRows, "hidden") : this.hasFrozenRows ? "scroll" : "auto", this._viewportTopR.style.overflowX = this.hasFrozenColumns() ? this.hasFrozenRows && !this._options.alwaysAllowHorizontalScroll ? "hidden" : "scroll" : this.hasFrozenRows && !this._options.alwaysAllowHorizontalScroll ? "hidden" : "auto", this._viewportTopR.style.overflowY = this._options.alwaysShowVerticalScroll ? "scroll" : this.hasFrozenColumns() ? this.hasFrozenRows ? "scroll" : "auto" : this.hasFrozenRows ? "scroll" : "auto", this._viewportBottomL.style.overflowX = this.hasFrozenColumns() ? this.hasFrozenRows && !this._options.alwaysAllowHorizontalScroll ? "scroll" : "auto" : (this.hasFrozenRows && !this._options.alwaysAllowHorizontalScroll, "auto"), this._viewportBottomL.style.overflowY = !this.hasFrozenColumns() && this._options.alwaysShowVerticalScroll ? "scroll" : this.hasFrozenColumns() ? (this.hasFrozenRows, "hidden") : this.hasFrozenRows ? "scroll" : "auto", this._viewportBottomR.style.overflowX = this.hasFrozenColumns() ? this.hasFrozenRows && !this._options.alwaysAllowHorizontalScroll ? "scroll" : "auto" : (this.hasFrozenRows && !this._options.alwaysAllowHorizontalScroll, "auto"), this._viewportBottomR.style.overflowY = this._options.alwaysShowVerticalScroll ? "scroll" : this.hasFrozenColumns() ? (this.hasFrozenRows, "auto") : (this.hasFrozenRows, "auto"), this._options.viewportClass && (this._viewportTopL.classList.add(...this._options.viewportClass.split(" ")), this._viewportTopR.classList.add(...this._options.viewportClass.split(" ")), this._viewportBottomL.classList.add(...this._options.viewportClass.split(" ")), this._viewportBottomR.classList.add(...this._options.viewportClass.split(" ")));
+    if (this._viewportTopL.style.overflowX = this.hasFrozenColumns() ? this.hasFrozenRows && !this._options.alwaysAllowHorizontalScroll ? "hidden" : "scroll" : this.hasFrozenRows && !this._options.alwaysAllowHorizontalScroll ? "hidden" : "auto", this._viewportTopL.style.overflowY = !this.hasFrozenColumns() && this._options.alwaysShowVerticalScroll ? "scroll" : this.hasFrozenColumns() ? (this.hasFrozenRows, "hidden") : this.hasFrozenRows ? "scroll" : "auto", this._viewportTopR.style.overflowX = this.hasFrozenColumns() ? this.hasFrozenRows && !this._options.alwaysAllowHorizontalScroll ? "hidden" : "scroll" : this.hasFrozenRows && !this._options.alwaysAllowHorizontalScroll ? "hidden" : "auto", this._viewportTopR.style.overflowY = this._options.alwaysShowVerticalScroll ? "scroll" : this.hasFrozenColumns() ? this.hasFrozenRows ? "scroll" : "auto" : this.hasFrozenRows ? "scroll" : "auto", this._viewportBottomL.style.overflowX = this.hasFrozenColumns() ? this.hasFrozenRows && !this._options.alwaysAllowHorizontalScroll ? "scroll" : "auto" : (this.hasFrozenRows && !this._options.alwaysAllowHorizontalScroll, "auto"), this._viewportBottomL.style.overflowY = !this.hasFrozenColumns() && this._options.alwaysShowVerticalScroll ? "scroll" : this.hasFrozenColumns() ? (this.hasFrozenRows, "hidden") : this.hasFrozenRows ? "scroll" : "auto", this._viewportBottomR.style.overflowX = this.hasFrozenColumns() ? this.hasFrozenRows && !this._options.alwaysAllowHorizontalScroll ? "scroll" : "auto" : (this.hasFrozenRows && !this._options.alwaysAllowHorizontalScroll, "auto"), this._viewportBottomR.style.overflowY = this._options.alwaysShowVerticalScroll ? "scroll" : this.hasFrozenColumns() ? (this.hasFrozenRows, "auto") : (this.hasFrozenRows, "auto"), this._options.viewportClass) {
+      let viewportClassList = Utils30.classNameToList(this._options.viewportClass);
+      this._viewportTopL.classList.add(...viewportClassList), this._viewportTopR.classList.add(...viewportClassList), this._viewportBottomL.classList.add(...viewportClassList), this._viewportBottomR.classList.add(...viewportClassList);
+    }
   }
   setScroller() {
     this.hasFrozenColumns() ? (this._headerScrollContainer = this._headerScrollerR, this._headerRowScrollContainer = this._headerRowScrollerR, this._footerRowScrollContainer = this._footerRowScrollerR, this.hasFrozenRows ? this._options.frozenBottom ? (this._viewportScrollContainerX = this._viewportBottomR, this._viewportScrollContainerY = this._viewportTopR) : this._viewportScrollContainerX = this._viewportScrollContainerY = this._viewportBottomR : this._viewportScrollContainerX = this._viewportScrollContainerY = this._viewportTopR) : (this._headerScrollContainer = this._headerScrollerL, this._headerRowScrollContainer = this._headerRowScrollerL, this._footerRowScrollContainer = this._footerRowScrollerL, this.hasFrozenRows ? this._options.frozenBottom ? (this._viewportScrollContainerX = this._viewportBottomL, this._viewportScrollContainerY = this._viewportTopL) : this._viewportScrollContainerX = this._viewportScrollContainerY = this._viewportBottomL : this._viewportScrollContainerX = this._viewportScrollContainerY = this._viewportTopL);
@@ -7784,7 +7819,7 @@ var SlickGrid = class {
       let header = this.getHeader(columnDef);
       headerColEl = Utils30.createDomElement("div", { id: dummyHeaderColElId, className: "ui-state-default slick-state-default slick-header-column" }, header);
       let colNameElm = Utils30.createDomElement("span", { className: "slick-column-name" }, headerColEl);
-      this.applyHtmlCode(colNameElm, columnDef.name), clone.style.cssText = "position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;", columnDef.headerCssClass && headerColEl.classList.add(...(columnDef.headerCssClass || "").split(" ")), width = headerColEl.offsetWidth, header.removeChild(headerColEl);
+      this.applyHtmlCode(colNameElm, columnDef.name), clone.style.cssText = "position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;", columnDef.headerCssClass && headerColEl.classList.add(...Utils30.classNameToList(columnDef.headerCssClass)), width = headerColEl.offsetWidth, header.removeChild(headerColEl);
     }
     return width;
   }
@@ -8273,7 +8308,7 @@ var SlickGrid = class {
       return;
     }
     let formatterVal = formatterResult.html || formatterResult.text;
-    this.applyHtmlCode(cellNode, formatterVal), formatterResult.removeClasses && !suppressRemove && formatterResult.removeClasses.split(" ").forEach((c) => cellNode.classList.remove(c)), formatterResult.addClasses && formatterResult.addClasses.split(" ").forEach((c) => cellNode.classList.add(c)), formatterResult.toolTip && cellNode.setAttribute("title", formatterResult.toolTip);
+    this.applyHtmlCode(cellNode, formatterVal), formatterResult.removeClasses && !suppressRemove && Utils30.classNameToList(formatterResult.removeClasses).forEach((c) => cellNode.classList.remove(c)), formatterResult.addClasses && Utils30.classNameToList(formatterResult.addClasses).forEach((c) => cellNode.classList.add(c)), formatterResult.toolTip && cellNode.setAttribute("title", formatterResult.toolTip);
   }
   /**
    * Update a specific cell by its row and column index
@@ -9721,7 +9756,7 @@ var SlickRemoteModel = class {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.7.0
+ * SlickGrid v5.7.1
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

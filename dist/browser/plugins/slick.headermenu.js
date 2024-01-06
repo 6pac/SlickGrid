@@ -74,7 +74,7 @@
         let elm = document.createElement("div");
         if (elm.className = "slick-header-menubutton", elm.ariaLabel = "Header Menu", elm.role = "button", !this._options.buttonCssClass && !this._options.buttonImage && (this._options.buttonCssClass = "caret"), this._options.buttonCssClass) {
           let icon = document.createElement("span");
-          icon.classList.add(...this._options.buttonCssClass.split(" ")), elm.appendChild(icon);
+          icon.classList.add(...Utils.classNameToList(this._options.buttonCssClass)), elm.appendChild(icon);
         }
         this._options.buttonImage && (elm.style.backgroundImage = `url(${this._options.buttonImage})`), this._options.tooltip && (elm.title = this._options.tooltip), this._bindingEventService.bind(elm, "click", (e) => {
           this.destroyAllMenus(), this.createParentMenu(e, menu, args.column);
@@ -90,7 +90,7 @@
         let subMenuTitleElm = document.createElement("div");
         subMenuTitleElm.className = "slick-menu-title", subMenuTitleElm.textContent = item.subMenuTitle;
         let subMenuTitleClass = item.subMenuTitleCssClass;
-        subMenuTitleClass && subMenuTitleElm.classList.add(...subMenuTitleClass.split(" ")), commandMenuElm.appendChild(subMenuTitleElm);
+        subMenuTitleClass && subMenuTitleElm.classList.add(...Utils.classNameToList(subMenuTitleClass)), commandMenuElm.appendChild(subMenuTitleElm);
       }
     }
     createParentMenu(event, menu, columnDef) {
@@ -128,11 +128,11 @@
           continue;
         Object.prototype.hasOwnProperty.call(item2, "itemUsabilityOverride") && (item2.disabled = !isItemUsable);
         let menuItemElm = document.createElement("div");
-        menuItemElm.className = "slick-header-menuitem", menuItemElm.role = "menuitem", (item2.divider || item2 === "divider") && (menuItemElm.classList.add("slick-header-menuitem-divider"), addClickListener = !1), item2.disabled && menuItemElm.classList.add("slick-header-menuitem-disabled"), item2.hidden && menuItemElm.classList.add("slick-header-menuitem-hidden"), item2.cssClass && menuItemElm.classList.add(...item2.cssClass.split(" ")), item2.tooltip && (menuItemElm.title = item2.tooltip || "");
+        menuItemElm.className = "slick-header-menuitem", menuItemElm.role = "menuitem", (item2.divider || item2 === "divider") && (menuItemElm.classList.add("slick-header-menuitem-divider"), addClickListener = !1), item2.disabled && menuItemElm.classList.add("slick-header-menuitem-disabled"), item2.hidden && menuItemElm.classList.add("slick-header-menuitem-hidden"), item2.cssClass && menuItemElm.classList.add(...Utils.classNameToList(item2.cssClass)), item2.tooltip && (menuItemElm.title = item2.tooltip || "");
         let iconElm = document.createElement("div");
-        iconElm.className = "slick-header-menuicon", menuItemElm.appendChild(iconElm), item2.iconCssClass && iconElm.classList.add(...item2.iconCssClass.split(" ")), item2.iconImage && (iconElm.style.backgroundImage = "url(" + item2.iconImage + ")");
+        iconElm.className = "slick-header-menuicon", menuItemElm.appendChild(iconElm), item2.iconCssClass && iconElm.classList.add(...Utils.classNameToList(item2.iconCssClass)), item2.iconImage && (iconElm.style.backgroundImage = "url(" + item2.iconImage + ")");
         let textElm = document.createElement("span");
-        if (textElm.className = "slick-header-menucontent", textElm.textContent = item2.title || "", menuItemElm.appendChild(textElm), item2.textCssClass && textElm.classList.add(...item2.textCssClass.split(" ")), menuElm.appendChild(menuItemElm), addClickListener) {
+        if (textElm.className = "slick-header-menucontent", textElm.textContent = item2.title || "", menuItemElm.appendChild(textElm), item2.textCssClass && textElm.classList.add(...Utils.classNameToList(item2.textCssClass)), menuElm.appendChild(menuItemElm), addClickListener) {
           let eventGroup = isSubMenu ? "sub-menu" : "parent-menu";
           this._bindingEventService.bind(menuItemElm, "click", this.handleMenuItemClick.bind(this, item2, columnDef, level), void 0, eventGroup);
         }
@@ -140,7 +140,7 @@
           item2.commandItems || item2.items ? this.repositionSubMenu(item2, columnDef, level, e) : isSubMenu || this.destroySubMenus();
         }), item2.commandItems || item2.items) {
           let chevronElm = document.createElement("div");
-          chevronElm.className = "sub-item-chevron", this._options.subItemChevronClass ? chevronElm.classList.add(...this._options.subItemChevronClass.split(" ")) : chevronElm.textContent = "\u2B9E", menuItemElm.classList.add("slick-submenu-item"), menuItemElm.appendChild(chevronElm);
+          chevronElm.className = "sub-item-chevron", this._options.subItemChevronClass ? chevronElm.classList.add(...Utils.classNameToList(this._options.subItemChevronClass)) : chevronElm.textContent = "\u2B9E", menuItemElm.classList.add("slick-submenu-item"), menuItemElm.appendChild(chevronElm);
         }
       }
       return menuElm;

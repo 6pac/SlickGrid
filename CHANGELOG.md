@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.7.1](https://github.com/6pac/SlickGrid/compare/5.7.0...5.7.1) (2024-01-06)
+
+### Bug Fixes
+
+* allow extra spaces in headerCssClass and other cssClass ([#960](https://github.com/6pac/SlickGrid/issues/960)) ([dc30aea](https://github.com/6pac/SlickGrid/commit/dc30aea72a530cc089a5f32293f657737555961b))
+* CellSelectionModel for CustomDataView and SlickCustomTooltip ([#963](https://github.com/6pac/SlickGrid/issues/963)) ([a8b48eb](https://github.com/6pac/SlickGrid/commit/a8b48eb5ba9f741887bd1b8e2819511c4a3cfa47))
+* DataView `inlineFilters` should allow ES6 arrow functions ([#962](https://github.com/6pac/SlickGrid/issues/962)) ([d7d1f6d](https://github.com/6pac/SlickGrid/commit/d7d1f6d553ba512f069ac74d494b9ad32f427dd4))
+
 # [5.7.0](https://github.com/6pac/SlickGrid/compare/5.6.1...5.7.0) (2023-12-29)
 
 ### Bug Fixes

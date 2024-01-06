@@ -3,7 +3,7 @@
  * @module Core
  * @namespace Slick
  */
-import type { EditController, ElementEventListener, Handler, InferDOMType, MergeTypes } from './models/index';
+import type { AnyFunction, EditController, ElementEventListener, Handler, InferDOMType, MergeTypes } from './models/index';
 export interface BasePubSub {
     publish<ArgType = any>(_eventName: string | any, _data?: ArgType): any;
     subscribe<ArgType = any>(_eventName: string | Function, _callback: (data: ArgType) => void): any;
@@ -367,11 +367,31 @@ export declare class Utils {
         [P in K]: InferDOMType<HTMLElementTagNameMap[T][P]>;
     }, appendToParent?: Element): HTMLElementTagNameMap[T];
     static emptyElement<T extends Element = Element>(element?: T | null): T | undefined | null;
+    /**
+     * Accepts string containing the class or space-separated list of classes, and
+     * returns list of individual classes.
+     * Method properly takes into account extra whitespaces in the `className`
+     * (e.g. ' class1  class2') will result in `['class1', 'class2']`.
+     * @param {String} className - space separated list of classes
+     */
+    static classNameToList(className?: string): string[];
     static innerSize(elm: HTMLElement, type: 'height' | 'width'): number;
     static isDefined<T>(value: T | undefined | null): value is T;
     static getElementProp(elm: HTMLElement & {
         getComputedStyle?: () => CSSStyleDeclaration;
     }, property: string): string | null;
+    /**
+     * Get the function details (param & body) of a function.
+     * It supports regular function and also ES6 arrow functions
+     * @param {Function} fn - function to analyze
+     * @param {Boolean} [addReturn] - when using ES6 function as single liner, we could add the missing `return ...`
+     * @returns
+     */
+    static getFunctionDetails(fn: AnyFunction, addReturn?: boolean): {
+        params: string[];
+        body: string;
+        isAsync: boolean;
+    };
     static insertAfterElement(referenceNode: HTMLElement, newNode: HTMLElement): void;
     static isEmptyObject(obj: any): boolean;
     static noop(): void;

@@ -69,7 +69,7 @@
       }
       if (((_c = this._gridMenuOptions) == null ? void 0 : _c.showButton) !== void 0 ? this._gridMenuOptions.showButton : this._defaults.showButton) {
         if (this._buttonElm = document.createElement("button"), this._buttonElm.className = "slick-gridmenu-button", this._buttonElm.ariaLabel = "Grid Menu", (_d = this._gridMenuOptions) != null && _d.iconCssClass)
-          this._buttonElm.classList.add(...this._gridMenuOptions.iconCssClass.split(" "));
+          this._buttonElm.classList.add(...Utils.classNameToList(this._gridMenuOptions.iconCssClass));
         else {
           let iconImageElm = document.createElement("img");
           iconImageElm.src = (_e = this._gridMenuOptions) != null && _e.iconImage ? this._gridMenuOptions.iconImage : "../images/drag-handle.png", this._buttonElm.appendChild(iconImageElm);
@@ -133,11 +133,11 @@
           continue;
         Object.prototype.hasOwnProperty.call(item, "itemUsabilityOverride") && (item.disabled = !isItemUsable);
         let liElm = document.createElement("div");
-        liElm.className = "slick-gridmenu-item", liElm.role = "menuitem", (item.divider || item === "divider") && (liElm.classList.add("slick-gridmenu-item-divider"), addClickListener = !1), item.disabled && liElm.classList.add("slick-gridmenu-item-disabled"), item.hidden && liElm.classList.add("slick-gridmenu-item-hidden"), item.cssClass && liElm.classList.add(...item.cssClass.split(" ")), item.tooltip && (liElm.title = item.tooltip || "");
+        liElm.className = "slick-gridmenu-item", liElm.role = "menuitem", (item.divider || item === "divider") && (liElm.classList.add("slick-gridmenu-item-divider"), addClickListener = !1), item.disabled && liElm.classList.add("slick-gridmenu-item-disabled"), item.hidden && liElm.classList.add("slick-gridmenu-item-hidden"), item.cssClass && liElm.classList.add(...Utils.classNameToList(item.cssClass)), item.tooltip && (liElm.title = item.tooltip || "");
         let iconElm = document.createElement("div");
-        iconElm.className = "slick-gridmenu-icon", liElm.appendChild(iconElm), item.iconCssClass && iconElm.classList.add(...item.iconCssClass.split(" ")), item.iconImage && (iconElm.style.backgroundImage = `url(${item.iconImage})`);
+        iconElm.className = "slick-gridmenu-icon", liElm.appendChild(iconElm), item.iconCssClass && iconElm.classList.add(...Utils.classNameToList(item.iconCssClass)), item.iconImage && (iconElm.style.backgroundImage = `url(${item.iconImage})`);
         let textElm = document.createElement("span");
-        if (textElm.className = "slick-gridmenu-content", this.grid.applyHtmlCode(textElm, this.grid.sanitizeHtmlString(item.title || "")), liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...item.textCssClass.split(" ")), commandListElm.appendChild(liElm), addClickListener) {
+        if (textElm.className = "slick-gridmenu-content", this.grid.applyHtmlCode(textElm, this.grid.sanitizeHtmlString(item.title || "")), liElm.appendChild(textElm), item.textCssClass && textElm.classList.add(...Utils.classNameToList(item.textCssClass)), commandListElm.appendChild(liElm), addClickListener) {
           let eventGroup = isSubMenu ? "sub-menu" : "parent-menu";
           this._bindingEventService.bind(liElm, "click", this.handleMenuItemClick.bind(this, item, level), void 0, eventGroup);
         }
@@ -145,7 +145,7 @@
           item.commandItems || item.customItems ? this.repositionSubMenu(item, level, e) : isSubMenu || this.destroySubMenus();
         }), item.commandItems || item.customItems) {
           let chevronElm = document.createElement("span");
-          chevronElm.className = "sub-item-chevron", (_d = this._gridMenuOptions) != null && _d.subItemChevronClass ? chevronElm.classList.add(...this._gridMenuOptions.subItemChevronClass.split(" ")) : chevronElm.textContent = "\u2B9E", liElm.classList.add("slick-submenu-item"), liElm.appendChild(chevronElm);
+          chevronElm.className = "sub-item-chevron", (_d = this._gridMenuOptions) != null && _d.subItemChevronClass ? chevronElm.classList.add(...Utils.classNameToList(this._gridMenuOptions.subItemChevronClass)) : chevronElm.textContent = "\u2B9E", liElm.classList.add("slick-submenu-item"), liElm.appendChild(chevronElm);
           continue;
         }
       }
@@ -255,7 +255,7 @@
         let subMenuTitleElm = document.createElement("div");
         subMenuTitleElm.className = "slick-menu-title", subMenuTitleElm.textContent = item.subMenuTitle;
         let subMenuTitleClass = item.subMenuTitleCssClass;
-        subMenuTitleClass && subMenuTitleElm.classList.add(...subMenuTitleClass.split(" ")), commandOrOptionMenu.appendChild(subMenuTitleElm);
+        subMenuTitleClass && subMenuTitleElm.classList.add(...Utils.classNameToList(subMenuTitleClass)), commandOrOptionMenu.appendChild(subMenuTitleElm);
       }
     }
     repositionSubMenu(item, level, e) {

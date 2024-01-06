@@ -2,8 +2,14 @@ import type { Aggregator, CustomDataView, DataViewHints, Grouping, ItemMetadata,
 import { type BasePubSub, SlickEvent as SlickEvent_, SlickGroup as SlickGroup_, SlickGroupTotals as SlickGroupTotals_, SlickNonDataItem } from './slick.core';
 import { SlickGroupItemMetadataProvider as SlickGroupItemMetadataProvider_ } from './slick.groupitemmetadataprovider';
 export interface DataViewOption {
+    /** Optionally provide a GroupItemMetadataProvider in order to use Grouping/DraggableGrouping features */
     groupItemMetadataProvider: SlickGroupItemMetadataProvider_ | null;
+    /** defaults to false, are we using inline filters? */
     inlineFilters: boolean;
+    /**
+     * defaults to false, option to use CSP Safe approach,
+     * Note: it is an opt-in option because it is slightly slower (perf impact) when compared to the non-CSP safe approach.
+     */
     useCSPSafeFilter: boolean;
 }
 export type FilterFn<T> = (item: T, args: any) => boolean;
@@ -12,13 +18,11 @@ export type FilterWithCspCachingFn<T> = (item: T[], args: any, filterCache: any[
 export type DataIdType = number | string;
 export type SlickDataItem = SlickNonDataItem | SlickGroup_ | SlickGroupTotals_ | any;
 export type GroupGetterFn = (val: any) => string | number;
-export type AnyFunction = (...args: any[]) => any;
 /**
-   * A sample Model implementation.
-   * Provides a filtered view of the underlying data.
-   *
-   * Relies on the data item having an "id" property uniquely identifying it.
-   */
+  * A simple Model implementation.
+  * Provides a filtered view of the underlying data.
+  * Relies on the data item having an "id" property uniquely identifying it.
+  */
 export declare class SlickDataView<TData extends SlickDataItem = any> implements CustomDataView {
     protected externalPubSub?: BasePubSub | undefined;
     protected defaults: DataViewOption;
@@ -248,10 +252,6 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     protected addGroupTotals(group: SlickGroup_): void;
     protected addTotals(groups: SlickGroup_[], level?: number): void;
     protected flattenGroupedRows(groups: SlickGroup_[], level?: number): any[];
-    protected getFunctionInfo(fn: AnyFunction): {
-        params: string[];
-        body: string;
-    };
     protected compileAccumulatorLoopCSPSafe(aggregator: Aggregator): (items: any[]) => void;
     protected compileFilterCSPSafe(items: TData[], args: any): TData[];
     protected compileFilter(stopRunningIfCSPSafeIsActive?: boolean): FilterFn<TData>;

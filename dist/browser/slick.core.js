@@ -514,6 +514,16 @@ var Slick = (() => {
         element.removeChild(element.firstChild);
       return element;
     }
+    /**
+     * Accepts string containing the class or space-separated list of classes, and
+     * returns list of individual classes.
+     * Method properly takes into account extra whitespaces in the `className`
+     * (e.g. ' class1  class2') will result in `['class1', 'class2']`.
+     * @param {String} className - space separated list of classes
+     */
+    static classNameToList(className = "") {
+      return className.split(" ").filter((cls) => cls);
+    }
     static innerSize(elm, type) {
       let size = 0;
       if (elm) {
@@ -531,6 +541,36 @@ var Slick = (() => {
     }
     static getElementProp(elm, property) {
       return elm != null && elm.getComputedStyle ? window.getComputedStyle(elm, null).getPropertyValue(property) : null;
+    }
+    /**
+     * Get the function details (param & body) of a function.
+     * It supports regular function and also ES6 arrow functions
+     * @param {Function} fn - function to analyze
+     * @param {Boolean} [addReturn] - when using ES6 function as single liner, we could add the missing `return ...`
+     * @returns
+     */
+    static getFunctionDetails(fn, addReturn = !0) {
+      let isAsyncFn = !1, getFunctionBody = (func) => {
+        let fnStr = func.toString();
+        if (isAsyncFn = fnStr.includes("async "), fnStr.replaceAll(" ", "").includes("=>({")) {
+          let matches = fnStr.match(/(({.*}))/g) || [];
+          return matches.length >= 1 ? `return ${matches[0].trimStart()}` : fnStr;
+        }
+        let isOneLinerArrowFn = !fnStr.includes("{") && fnStr.includes("=>"), body = fnStr.substring(
+          fnStr.indexOf("{") + 1 || fnStr.indexOf("=>") + 2,
+          fnStr.includes("}") ? fnStr.lastIndexOf("}") : fnStr.length
+        );
+        return addReturn && isOneLinerArrowFn && !body.startsWith("return") ? "return " + body.trimStart() : body;
+      };
+      return {
+        params: ((func) => {
+          var _a;
+          let STRIP_COMMENTS = /(\/\/.*$)|(\/\*[\s\S]*?\*\/)|(\s*=[^,\)]*(('(?:\\'|[^'\r\n])*')|("(?:\\"|[^"\r\n])*"))|(\s*=[^,\)]*))/mg, ARG_NAMES = /([^\s,]+)/g, fnStr = func.toString().replace(STRIP_COMMENTS, "");
+          return (_a = fnStr.slice(fnStr.indexOf("(") + 1, fnStr.indexOf(")")).match(ARG_NAMES)) != null ? _a : [];
+        })(fn),
+        body: getFunctionBody(fn),
+        isAsync: isAsyncFn
+      };
     }
     static insertAfterElement(referenceNode, newNode) {
       var _a;

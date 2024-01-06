@@ -30,6 +30,7 @@ export * from './externalCopyClipCommand.interface';
 export * from './fieldType.enum';
 export * from './formatter.interface';
 export * from './formatterResultObject.interface';
+export * from './function.type';
 export * from './gridEvents.interface';
 export * from './gridMenu.interface';
 export * from './gridMenuCommandItemCallbackArgs.interface';
