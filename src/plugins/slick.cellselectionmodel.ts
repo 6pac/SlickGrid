@@ -1,6 +1,6 @@
 import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core';
 import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector';
-import type { OnActiveCellChangedEventArgs } from '../models/index';
+import type { CustomDataView, OnActiveCellChangedEventArgs } from '../models/index';
 import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
 
@@ -25,7 +25,7 @@ export class SlickCellSelectionModel {
   // --
   // protected props
   protected _cachedPageRowCount = 0;
-  protected _dataView?: SlickDataView;
+  protected _dataView?: CustomDataView | SlickDataView;
   protected _grid!: SlickGrid;
   protected _prevSelectedRow?: number;
   protected _prevKeyDown = '';
@@ -48,7 +48,7 @@ export class SlickCellSelectionModel {
     this._options = Utils.extend(true, {}, this._defaults, this._options);
     this._grid = grid;
     if (grid.hasDataView()) {
-      this._dataView = grid.getData<SlickDataView>();
+      this._dataView = grid.getData<CustomDataView | SlickDataView>();
     }
     this._grid.onActiveCellChanged.subscribe(this.handleActiveCellChange.bind(this));
     this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this));
@@ -160,7 +160,7 @@ export class SlickCellSelectionModel {
     const colLn = this._grid.getColumns().length;
     const active = this._grid.getActiveCell();
     let dataLn = 0;
-    if (this._dataView) {
+    if (this._dataView && 'getPagingInfo' in this._dataView) {
       dataLn = this._dataView?.getPagingInfo().pageSize || this._dataView.getLength();
     } else {
       dataLn = this._grid.getDataLength();
