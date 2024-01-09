@@ -4406,7 +4406,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * Update paging information status from the View
    * @param {PagingInfo} pagingInfo
    */
-  updatePagingStatusFromView(pagingInfo: PagingInfo) {
+  updatePagingStatusFromView(pagingInfo: Pick<PagingInfo, 'pageSize' | 'pageNum' | 'totalPages'>) {
     this.pagingActive = (pagingInfo.pageSize !== 0);
     this.pagingIsLastPage = (pagingInfo.pageNum === pagingInfo.totalPages - 1);
   }
