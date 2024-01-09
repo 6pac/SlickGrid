@@ -60,7 +60,7 @@ export interface Column<TData = any> {
   columnGroup?: string;
 
   /** Column span in cell count or use `*` to span across the entire row */
-  colspan?: number | '*';
+  colspan?: number | string | '*';
 
   /** CSS class to add to the column cell */
   cssClass?: string;
@@ -84,7 +84,7 @@ export interface Column<TData = any> {
   disableTooltip?: boolean;
 
   /** Any inline editor function that implements Editor for the cell value or ColumnEditor */
-  editor?: Editor | { model?: Editor; };
+  editor?: Editor | { model?: Editor; } | null;
 
   /** Editor number fixed decimal places */
   editorFixedDecimalPlaces?: number;
