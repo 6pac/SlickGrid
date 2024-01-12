@@ -1,4 +1,4 @@
-import { BindingEventService as BindingEventService_, Event as SlickEvent_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
+import { BindingEventService as BindingEventService_, Event as SlickEvent_, type SlickEventData, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
 import type {
   Column,
   DOMEvent,
@@ -216,7 +216,7 @@ export class SlickHeaderMenu implements SlickPlugin {
     this.destroySubMenus();
   }
 
-  protected handleHeaderCellRendered(_e: MouseEvent, args: OnHeaderCellRenderedEventArgs) {
+  protected handleHeaderCellRendered(_e: SlickEventData, args: OnHeaderCellRenderedEventArgs) {
     const column = args.column;
     const menu = column?.header?.menu as HeaderMenuItems;
 
@@ -262,7 +262,7 @@ export class SlickHeaderMenu implements SlickPlugin {
     }
   }
 
-  protected handleBeforeHeaderCellDestroy(_e: Event, args: { column: Column; node: HTMLElement; }) {
+  protected handleBeforeHeaderCellDestroy(_e: SlickEventData, args: { column: Column; node: HTMLElement; }) {
     const column = args.column;
 
     if (column.header?.menu) {

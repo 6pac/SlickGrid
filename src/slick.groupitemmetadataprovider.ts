@@ -1,5 +1,5 @@
-import { SlickGroup as SlickGroup_, keyCode as keyCode_, Utils as Utils_ } from './slick.core';
-import type { Column, DOMEvent, GroupItemMetadataProviderOption, GroupingFormatterItem, ItemMetadata, SlickPlugin } from './models/index';
+import { type SlickEventData, SlickGroup as SlickGroup_, keyCode as keyCode_, Utils as Utils_ } from './slick.core';
+import type { Column, GroupItemMetadataProviderOption, GroupingFormatterItem, ItemMetadata, SlickPlugin } from './models/index';
 import type { SlickGrid } from './slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -113,8 +113,8 @@ export class SlickGroupItemMetadataProvider implements SlickPlugin {
     }
   }
 
-  protected handleGridClick(e: DOMEvent<HTMLDivElement>, args: { row: number; cell: number; grid: SlickGrid; }) {
-    const target = e.target;
+  protected handleGridClick(e: SlickEventData, args: { row: number; cell: number; grid: SlickGrid; }) {
+    const target = e.target as HTMLElement;
     const item = this._grid.getDataItem(args.row);
     if (item && item instanceof SlickGroup && target.classList.contains(this._options.toggleCssClass || '')) {
       this.handleDataViewExpandOrCollapse(item);
@@ -132,7 +132,7 @@ export class SlickGroupItemMetadataProvider implements SlickPlugin {
   }
 
   // TODO:  add -/+ handling
-  protected handleGridKeyDown(e: KeyboardEvent) {
+  protected handleGridKeyDown(e: SlickEventData) {
     if (this._options.enableExpandCollapse && (e.which === keyCode.SPACE)) {
       const activeCell = this._grid.getActiveCell();
       if (activeCell) {

@@ -1,5 +1,5 @@
 import type { CssStyleHash, SlickPlugin } from '../models/index';
-import { SlickEvent as SlickEvent_, keyCode as keyCode_, Utils as Utils_, SlickRange } from '../slick.core';
+import { keyCode as keyCode_, SlickEvent as SlickEvent_, type SlickEventData, Utils as Utils_, SlickRange } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -33,7 +33,7 @@ export class SlickCellCopyManager implements SlickPlugin {
     this._grid.onKeyDown.unsubscribe(this.handleKeyDown.bind(this));
   }
 
-  protected handleKeyDown(e: KeyboardEvent) {
+  protected handleKeyDown(e: SlickEventData) {
     let ranges: SlickRange[] | undefined;
     if (!this._grid.getEditorLock().isActive()) {
       if (e.which === keyCode.ESCAPE) {

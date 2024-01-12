@@ -1,5 +1,5 @@
-import { SlickEvent as SlickEvent_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
-import type { Column, DOMEvent, FormatterResultWithHtml, GridOption, OnAfterRowDetailToggleArgs, OnBeforeRowDetailToggleArgs, OnRowBackToViewportRangeArgs, OnRowDetailAsyncEndUpdateArgs, OnRowDetailAsyncResponseArgs, OnRowOutOfViewportRangeArgs, RowDetailViewOption, UsabilityOverrideFn } from '../models/index';
+import { SlickEvent as SlickEvent_, type SlickEventData, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
+import type { Column, FormatterResultWithHtml, GridOption, OnAfterRowDetailToggleArgs, OnBeforeRowDetailToggleArgs, OnRowBackToViewportRangeArgs, OnRowDetailAsyncEndUpdateArgs, OnRowDetailAsyncResponseArgs, OnRowOutOfViewportRangeArgs, RowDetailViewOption, UsabilityOverrideFn } from '../models/index';
 import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
 
@@ -242,14 +242,14 @@ export class SlickRowDetailView {
   }
 
   /** Handle mouse click event */
-  protected handleClick(e: DOMEvent<HTMLDivElement>, args: { row: number; cell: number; }) {
+  protected handleClick(e: SlickEventData, args: { row: number; cell: number; }) {
     const dataContext = this._grid.getDataItem(args.row);
     if (!this.checkExpandableOverride(args.row, dataContext, this._grid)) {
       return;
     }
 
     // clicking on a row select checkbox
-    if (this._options.useRowClick || this._grid.getColumns()[args.cell]['id'] === this._options.columnId && e.target.classList.contains(this._options.cssClass || '')) {
+    if (this._options.useRowClick || this._grid.getColumns()[args.cell]['id'] === this._options.columnId && (e.target as HTMLDivElement).classList.contains(this._options.cssClass || '')) {
       // if editing, try to commit
       if (this._grid.getEditorLock().isActive() && !this._grid.getEditorLock().commitCurrentEdit()) {
         e.preventDefault();

@@ -1,5 +1,5 @@
 import type { AutoTooltipOption, Column, SlickPlugin } from '../models/index';
-import { Utils as Utils_ } from '../slick.core';
+import { type SlickEventData, Utils as Utils_ } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -62,9 +62,9 @@ export class SlickAutoTooltips implements SlickPlugin {
 
   /**
    * Handle mouse entering grid cell to add/remove tooltip.
-   * @param {MouseEvent} event - The event
+   * @param {SlickEventData} event - The event
    */
-  protected handleMouseEnter(event: MouseEvent) {
+  protected handleMouseEnter(event: SlickEventData) {
     const cell = this._grid.getCellFromEvent(event);
     if (cell) {
       let node: HTMLElement | null = this._grid.getCellNode(cell.row, cell.cell);
@@ -86,10 +86,10 @@ export class SlickAutoTooltips implements SlickPlugin {
 
   /**
    * Handle mouse entering header cell to add/remove tooltip.
-   * @param {MouseEvent} event   - The event
+   * @param {SlickEventData} event   - The event
    * @param {object} args.column - The column definition
    */
-  protected handleHeaderMouseEnter(event: MouseEvent, args: { column: Column; }) {
+  protected handleHeaderMouseEnter(event: SlickEventData, args: { column: Column; }) {
     const column = args.column;
     let node: HTMLDivElement | null;
     const targetElm = (event.target as HTMLDivElement);

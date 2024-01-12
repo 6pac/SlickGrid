@@ -126,19 +126,19 @@ export class SlickCellSelectionModel {
     this.setSelectedRanges(this.getSelectedRanges());
   }
 
-  protected handleBeforeCellRangeSelected(e: Event): boolean | void {
+  protected handleBeforeCellRangeSelected(e: SlickEventData_): boolean | void {
     if (this._grid.getEditorLock().isActive()) {
       e.stopPropagation();
       return false;
     }
   }
 
-  protected handleCellRangeSelected(_e: any, args: { range: SlickRange_; }) {
+  protected handleCellRangeSelected(_e: SlickEventData_, args: { range: SlickRange_; }) {
     this._grid.setActiveCell(args.range.fromRow, args.range.fromCell, false, false, true);
     this.setSelectedRanges([args.range]);
   }
 
-  protected handleActiveCellChange(_e: Event, args: OnActiveCellChangedEventArgs) {
+  protected handleActiveCellChange(_e: SlickEventData_, args: OnActiveCellChangedEventArgs) {
     this._prevSelectedRow = undefined;
     const isCellDefined = Utils.isDefined(args.cell);
     const isRowDefined = Utils.isDefined(args.row);
@@ -155,7 +155,7 @@ export class SlickCellSelectionModel {
     return ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'PageDown', 'PageUp', 'Home', 'End'].some(k => k === key);
   }
 
-  protected handleKeyDown(e: KeyboardEvent) {
+  protected handleKeyDown(e: SlickEventData_) {
     let ranges: SlickRange_[], last: SlickRange_;
     const colLn = this._grid.getColumns().length;
     const active = this._grid.getActiveCell();
@@ -166,7 +166,7 @@ export class SlickCellSelectionModel {
       dataLn = this._grid.getDataLength();
     }
 
-    if (active && (e.shiftKey || e.ctrlKey) && !e.altKey && this.isKeyAllowed(e.key)) {
+    if (active && (e.shiftKey || e.ctrlKey) && !e.altKey && this.isKeyAllowed(e.key as string)) {
       ranges = this.getSelectedRanges().slice();
       if (!ranges.length) {
         ranges.push(new SlickRange(active.row, active.cell));
@@ -185,7 +185,7 @@ export class SlickCellSelectionModel {
       // walking direction
       const dirRow = active.row === last.fromRow ? 1 : -1;
       const dirCell = active.cell === last.fromCell ? 1 : -1;
-      const isSingleKeyMove = e.key.startsWith('Arrow');
+      const isSingleKeyMove = e.key!.startsWith('Arrow');
       let toCell: undefined | number = undefined;
       let toRow = 0;
 
@@ -263,7 +263,7 @@ export class SlickCellSelectionModel {
 
       e.preventDefault();
       e.stopPropagation();
-      this._prevKeyDown = e.key;
+      this._prevKeyDown = e.key as string;
     }
   }
 }

@@ -7,7 +7,7 @@ import type {
   OnHeaderCellRenderedEventArgs,
   SlickPlugin
 } from '../models/index';
-import { BindingEventService as BindingEventService_, Event as SlickEvent_, EventHandler as EventHandler_, Utils as Utils_ } from '../slick.core';
+import { BindingEventService as BindingEventService_,  EventHandler as EventHandler_, SlickEvent as SlickEvent_, type SlickEventData, Utils as Utils_ } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -117,7 +117,7 @@ export class SlickHeaderButtons implements SlickPlugin {
     this._bindingEventService.unbindAll();
   }
 
-  protected handleHeaderCellRendered(_e: Event, args: OnHeaderCellRenderedEventArgs) {
+  protected handleHeaderCellRendered(_e: SlickEventData, args: OnHeaderCellRenderedEventArgs) {
     const column = args.column;
 
     if (column.header?.buttons) {
@@ -177,7 +177,7 @@ export class SlickHeaderButtons implements SlickPlugin {
   }
 
 
-  protected handleBeforeHeaderCellDestroy(_e: Event, args: { column: Column; node: HTMLElement; }) {
+  protected handleBeforeHeaderCellDestroy(_e: SlickEventData, args: { column: Column; node: HTMLElement; }) {
     const column = args.column;
 
     if (column.header?.buttons) {

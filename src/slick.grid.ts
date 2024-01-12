@@ -62,7 +62,6 @@ import type {
   RowInfo,
   SelectionModel,
   SingleColumnSort,
-  SlickGridEventData,
   SlickGridModel,
   SlickPlugin,
   MenuCommandItemCallbackArgs,
@@ -143,13 +142,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   // Events
   onActiveCellChanged: SlickEvent_<OnActiveCellChangedEventArgs>;
-  onActiveCellPositionChanged: SlickEvent_<SlickGridEventData>;
+  onActiveCellPositionChanged: SlickEvent_<{ grid: SlickGrid; }>;
   onAddNewRow: SlickEvent_<OnAddNewRowEventArgs>;
   onAutosizeColumns: SlickEvent_<OnAutosizeColumnsEventArgs>;
   onBeforeAppendCell: SlickEvent_<OnBeforeAppendCellEventArgs>;
   onBeforeCellEditorDestroy: SlickEvent_<OnBeforeCellEditorDestroyEventArgs>;
   onBeforeColumnsResize: SlickEvent_<OnBeforeColumnsResizeEventArgs>;
-  onBeforeDestroy: SlickEvent_<SlickGridEventData>;
+  onBeforeDestroy: SlickEvent_<{ grid: SlickGrid; }>;
   onBeforeEditCell: SlickEvent_<OnBeforeEditCellEventArgs>;
   onBeforeFooterRowCellDestroy: SlickEvent_<OnBeforeFooterRowCellDestroyEventArgs>;
   onBeforeHeaderCellDestroy: SlickEvent_<OnBeforeHeaderCellDestroyEventArgs>;
@@ -192,7 +191,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   onActivateChangedOptions: SlickEvent_<OnActivateChangedOptionsEventArgs>;
   onSort: SlickEvent_<SingleColumnSort | MultiColumnSort>;
   onValidationError: SlickEvent_<OnValidationErrorEventArgs>;
-  onViewportChanged: SlickEvent_<SlickGridEventData>;
+  onViewportChanged: SlickEvent_<{ grid: SlickGrid; }>;
 
   // ---
   // protected variables
@@ -525,13 +524,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     this._pubSubService = externalPubSub;
     this.onActiveCellChanged = new SlickEvent<OnActiveCellChangedEventArgs>('onActiveCellChanged', externalPubSub);
-    this.onActiveCellPositionChanged = new SlickEvent<SlickGridEventData>('onActiveCellPositionChanged', externalPubSub);
+    this.onActiveCellPositionChanged = new SlickEvent<{ grid: SlickGrid; }>('onActiveCellPositionChanged', externalPubSub);
     this.onAddNewRow = new SlickEvent<OnAddNewRowEventArgs>('onAddNewRow', externalPubSub);
     this.onAutosizeColumns = new SlickEvent<OnAutosizeColumnsEventArgs>('onAutosizeColumns', externalPubSub);
     this.onBeforeAppendCell = new SlickEvent<OnBeforeAppendCellEventArgs>('onBeforeAppendCell', externalPubSub);
     this.onBeforeCellEditorDestroy = new SlickEvent<OnBeforeCellEditorDestroyEventArgs>('onBeforeCellEditorDestroy', externalPubSub);
     this.onBeforeColumnsResize = new SlickEvent<OnBeforeColumnsResizeEventArgs>('onBeforeColumnsResize', externalPubSub);
-    this.onBeforeDestroy = new SlickEvent<SlickGridEventData>('onBeforeDestroy', externalPubSub);
+    this.onBeforeDestroy = new SlickEvent<{ grid: SlickGrid; }>('onBeforeDestroy', externalPubSub);
     this.onBeforeEditCell = new SlickEvent<OnBeforeEditCellEventArgs>('onBeforeEditCell', externalPubSub);
     this.onBeforeFooterRowCellDestroy = new SlickEvent<OnBeforeFooterRowCellDestroyEventArgs>('onBeforeFooterRowCellDestroy', externalPubSub);
     this.onBeforeHeaderCellDestroy = new SlickEvent<OnBeforeHeaderCellDestroyEventArgs>('onBeforeHeaderCellDestroy', externalPubSub);
@@ -574,7 +573,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.onActivateChangedOptions = new SlickEvent<OnActivateChangedOptionsEventArgs>('onActivateChangedOptions', externalPubSub);
     this.onSort = new SlickEvent<SingleColumnSort | MultiColumnSort>('onSort', externalPubSub);
     this.onValidationError = new SlickEvent<OnValidationErrorEventArgs>('onValidationError', externalPubSub);
-    this.onViewportChanged = new SlickEvent<SlickGridEventData>('onViewportChanged', externalPubSub);
+    this.onViewportChanged = new SlickEvent<{ grid: SlickGrid; }>('onViewportChanged', externalPubSub);
 
     this.initialize(options);
   }

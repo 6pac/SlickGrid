@@ -1427,7 +1427,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       }
     };
 
-    grid.onSelectedRowsChanged.subscribe((_e: Event, args: { rows: number[]; }) => {
+    grid.onSelectedRowsChanged.subscribe((_e: SlickEventData_, args: { rows: number[]; }) => {
       if (!inHandler) {
         const newSelectedRowIds = this.mapRowsToIds(args.rows);
         const selectedRowsChangedArgs = {
@@ -1601,7 +1601,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       }
     };
 
-    grid.onCellCssStylesChanged.subscribe((_e: Event, args: any) => {
+    grid.onCellCssStylesChanged.subscribe((_e: SlickEventData_, args: any) => {
       if (inHandler) { return; }
       if (key !== args.key) { return; }
       if (args.hash) {
