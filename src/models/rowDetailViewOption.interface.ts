@@ -101,6 +101,9 @@ export interface OnRowDetailAsyncResponseArgs {
 
   /** An explicit view to use instead of template (Optional) */
   detailView?: any;
+
+  /** SlickGrid instance */
+  grid?: SlickGrid;
 }
 
 /** Fired when the async response finished */
@@ -112,7 +115,7 @@ export interface OnRowDetailAsyncEndUpdateArgs {
   itemDetail: any;
 
   /** Reference to the Slick grid object */
-  grid: SlickGrid;
+  grid?: SlickGrid;
 }
 
 /** Fired after the row detail gets toggled */

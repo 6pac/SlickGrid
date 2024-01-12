@@ -203,7 +203,7 @@ export class SlickEvent<ArgType = any> {
    * @param {Object} [scope] - The scope ("this") within which the handler will be executed.
    *      If not specified, the scope will be set to the <code>Event</code> instance.
    */
-  notify(args: ArgType, evt?: SlickEventData | Event | MergeTypes<SlickEventData, Event> | null, scope?: any) {
+  notify(args: ArgType, evt?: SlickEventData<ArgType> | Event | MergeTypes<SlickEventData<ArgType>, Event> | null, scope?: any) {
     const sed: SlickEventData = evt instanceof SlickEventData
       ? evt
       : new SlickEventData(evt, args);
@@ -216,7 +216,7 @@ export class SlickEvent<ArgType = any> {
 
     // user can optionally add a global PubSub Service which makes it easy to publish/subscribe to events
     if (typeof this._pubSubService?.publish === 'function' && this.eventName) {
-      const ret = this._pubSubService.publish<{ args: ArgType; eventData?: SlickEventData; nativeEvent?: Event; }>(this.eventName, { args, eventData: sed });
+      const ret = this._pubSubService.publish<{ args: ArgType; eventData?: SlickEventData<ArgType>; nativeEvent?: Event; }>(this.eventName, { args, eventData: sed });
       sed.addReturnValue(ret);
     }
     return sed;
