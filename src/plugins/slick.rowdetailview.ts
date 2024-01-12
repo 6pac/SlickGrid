@@ -503,7 +503,8 @@ export class SlickRowDetailView {
       this.onAsyncResponse.notify({
         item,
         itemDetail: item,
-        detailView: item[`${this._keyPrefix}detailContent`]
+        detailView: item[`${this._keyPrefix}detailContent`],
+        grid: this._grid
       }, undefined, this);
       this.applyTemplateNewLineHeight(item);
       this._dataView.updateItem(item[this._dataViewIdProperty], item);
