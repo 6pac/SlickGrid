@@ -1,4 +1,4 @@
-import { BindingEventService as BindingEventService_, Event as SlickEvent_, Utils as Utils_ } from '../slick.core';
+import { BindingEventService as BindingEventService_, Event as SlickEvent_, type SlickEventData, Utils as Utils_ } from '../slick.core';
 import type { Column, ColumnPickerOption, DOMMouseOrTouchEvent, GridOption, OnColumnsChangedArgs } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
@@ -122,7 +122,7 @@ export class SlickColumnMenu {
     }
   }
 
-  handleHeaderContextMenu(e: DOMMouseOrTouchEvent<HTMLDivElement>) {
+  handleHeaderContextMenu(e: SlickEventData) {
     e.preventDefault();
     Utils.emptyElement(this._listElm);
     this.updateColumnOrder();
@@ -216,8 +216,8 @@ export class SlickColumnMenu {
     this.repositionMenu(e);
   }
 
-  repositionMenu(event: DOMMouseOrTouchEvent<HTMLDivElement>) {
-    const targetEvent = event?.touches?.[0] || event;
+  repositionMenu(event: DOMMouseOrTouchEvent<HTMLDivElement> | SlickEventData) {
+    const targetEvent = (event as TouchEvent)?.touches?.[0] || event;
     this._menuElm.style.top = `${targetEvent.pageY - 10}px`;
     this._menuElm.style.left = `${targetEvent.pageX - 10}px`;
     this._menuElm.style.maxHeight = `${window.innerHeight - targetEvent.clientY}px`;

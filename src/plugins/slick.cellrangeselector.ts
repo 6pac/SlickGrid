@@ -1,7 +1,7 @@
-import { SlickEvent as SlickEvent_, SlickEventData, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core';
+import { SlickEvent as SlickEvent_, type SlickEventData, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core';
 import { Draggable as Draggable_ } from '../slick.interactions';
 import { SlickCellRangeDecorator as SlickCellRangeDecorator_ } from './slick.cellrangedecorator';
-import type { CellRangeSelectorOption, DOMMouseOrTouchEvent, DragPosition, DragRange, DragRowMove, GridOption, MouseOffsetViewport, OnScrollEventArgs, SlickPlugin } from '../models/index';
+import type { CellRangeSelectorOption, DragPosition, DragRange, DragRowMove, GridOption, MouseOffsetViewport, OnScrollEventArgs, SlickPlugin } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -96,12 +96,12 @@ export class SlickCellRangeSelector implements SlickPlugin {
     return this._decorator;
   }
 
-  protected handleScroll(_e: DOMMouseOrTouchEvent<HTMLDivElement>, args: OnScrollEventArgs) {
+  protected handleScroll(_e: SlickEventData, args: OnScrollEventArgs) {
     this._scrollTop = args.scrollTop;
     this._scrollLeft = args.scrollLeft;
   }
 
-  protected handleDragInit(e: Event) {
+  protected handleDragInit(e: SlickEventData) {
     // Set the active canvas node because the decorator needs to append its
     // box to the correct canvas
     this._activeCanvas = this._grid.getActiveCanvasNode(e);
@@ -143,7 +143,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
     e.preventDefault();
   }
 
-  protected handleDragStart(e: DOMMouseOrTouchEvent<HTMLDivElement>, dd: DragRowMove) {
+  protected handleDragStart(e: SlickEventData, dd: DragRowMove) {
     const cell = this._grid.getCellFromEvent(e);
     if (cell && this.onBeforeCellRangeSelected.notify(cell).getReturnValue() !== false && this._grid.canCellBeSelected(cell.row, cell.cell)) {
       this._dragging = true;
@@ -365,7 +365,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
     return !!(this._grid.getPluginByName('RowMoveManager') || this._grid.getPluginByName('CrossGridRowMoveManager'));
   }
 
-  protected handleDragEnd(e: Event, dd: DragPosition) {
+  protected handleDragEnd(e: SlickEventData, dd: DragPosition) {
     this._decorator.hide();
     if (!this._dragging) {
       return;

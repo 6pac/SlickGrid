@@ -31,9 +31,34 @@ export class SlickEventData<ArgType = any> {
   protected _isDefaultPrevented = false;
   protected returnValues: string[] = [];
   protected returnValue: any = undefined;
-  protected target?: EventTarget | null;
+  protected _eventTarget?: EventTarget | null;
   protected nativeEvent?: Event | null;
   protected arguments_?: ArgType;
+
+  // public props that can be optionally pulled from the provided Event in constructor
+  // they are all optional props because it really depends on the type of Event provided (KeyboardEvent, MouseEvent, ...)
+  readonly altKey?: boolean;
+  readonly ctrlKey?: boolean;
+  readonly metaKey?: boolean;
+  readonly shiftKey?: boolean;
+  readonly key?: string;
+  readonly keyCode?: number;
+  readonly clientX?: number;
+  readonly clientY?: number;
+  readonly offsetX?: number;
+  readonly offsetY?: number;
+  readonly pageX?: number;
+  readonly pageY?: number;
+  readonly bubbles?: boolean;
+  readonly target?: HTMLElement;
+  readonly type?: string;
+  readonly which?: number;
+  readonly x?: number;
+  readonly y?: number;
+
+  get defaultPrevented() {
+    return this._isDefaultPrevented;
+  }
 
   constructor(protected event?: Event | null, protected args?: ArgType) {
     this.nativeEvent = event;
@@ -45,10 +70,10 @@ export class SlickEventData<ArgType = any> {
       [
         'altKey', 'ctrlKey', 'metaKey', 'shiftKey', 'key', 'keyCode',
         'clientX', 'clientY', 'offsetX', 'offsetY', 'pageX', 'pageY',
-        'bubbles', 'type', 'which', 'x', 'y'
+        'bubbles', 'target', 'type', 'which', 'x', 'y'
       ].forEach(key => (this as any)[key] = event[key as keyof Event]);
     }
-    this.target = this.nativeEvent ? this.nativeEvent.target : undefined;
+    this._eventTarget = this.nativeEvent ? this.nativeEvent.target : undefined;
   }
 
   /**
@@ -185,13 +210,13 @@ export class SlickEvent<ArgType = any> {
     scope = scope || this;
 
     for (let i = 0; i < this._handlers.length && !(sed.isPropagationStopped() || sed.isImmediatePropagationStopped()); i++) {
-      const returnValue = this._handlers[i].call(scope, sed as SlickEvent | SlickEventData, args);
+      const returnValue = this._handlers[i].call(scope, sed, args);
       sed.addReturnValue(returnValue);
     }
 
     // user can optionally add a global PubSub Service which makes it easy to publish/subscribe to events
     if (typeof this._pubSubService?.publish === 'function' && this.eventName) {
-      const ret = this._pubSubService.publish<{ args: ArgType; eventData?: Event | SlickEventData; nativeEvent?: Event; }>(this.eventName, { args, eventData: sed });
+      const ret = this._pubSubService.publish<{ args: ArgType; eventData?: SlickEventData; nativeEvent?: Event; }>(this.eventName, { args, eventData: sed });
       sed.addReturnValue(ret);
     }
     return sed;

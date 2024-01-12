@@ -1,5 +1,5 @@
 import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
-import type { Column, DOMEvent, DragRowMove, CrossGridRowMoveManagerOption, FormatterResultWithText, UsabilityOverrideFn } from '../models/index';
+import type { Column, DragRowMove, CrossGridRowMoveManagerOption, FormatterResultWithText, UsabilityOverrideFn } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -92,7 +92,7 @@ export class SlickCrossGridRowMoveManager {
     e.stopImmediatePropagation();
   }
 
-  protected handleDragStart(e: DOMEvent<HTMLDivElement>, dd: DragRowMove & { fromGrid: SlickGrid; toGrid: SlickGrid; }): boolean | void {
+  protected handleDragStart(e: SlickEventData_, dd: DragRowMove & { fromGrid: SlickGrid; toGrid: SlickGrid; }): boolean | void {
     const cell = this._grid.getCellFromEvent(e) || { cell: -1, row: -1 };
     const currentRow = cell?.row ?? 0;
     const dataContext = this._grid.getDataItem(currentRow);

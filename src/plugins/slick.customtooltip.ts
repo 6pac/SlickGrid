@@ -1,5 +1,5 @@
-import type { CancellablePromiseWrapper, Column, CustomDataView, CustomTooltipOption, DOMEvent, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption } from '../models/index';
-import { SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
+import type { CancellablePromiseWrapper, Column, CustomDataView, CustomTooltipOption, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption } from '../models/index';
+import { type SlickEventData, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -133,7 +133,7 @@ export class SlickCustomTooltip {
   }
 
   /** depending on the selector type, execute the necessary handler code */
-  protected handleOnHeaderMouseEnterByType(e: DOMEvent<HTMLDivElement>, args: any, selector: CellType) {
+  protected handleOnHeaderMouseEnterByType(e: SlickEventData, args: any, selector: CellType) {
     // before doing anything, let's remove any previous tooltip before
     // and cancel any opened Promise/Observable when using async
     this.hideTooltip();
@@ -177,7 +177,7 @@ export class SlickCustomTooltip {
    * Handle mouse entering grid cell to show tooltip.
    * @param {jQuery.Event} e - The event
    */
-  protected handleOnMouseEnter(e: DOMEvent<HTMLDivElement>, args: any) {
+  protected handleOnMouseEnter(e: SlickEventData, args: any) {
     // before doing anything, let's remove any previous tooltip before
     // and cancel any opened Promise/Observable when using async
     this.hideTooltip();

@@ -1,5 +1,5 @@
 import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
-import type { Column, DOMEvent, DragRowMove, FormatterResultWithHtml, RowMoveManagerOption, UsabilityOverrideFn } from '../models/index';
+import type { Column, DragRowMove, FormatterResultWithHtml, RowMoveManagerOption, UsabilityOverrideFn } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -85,12 +85,12 @@ export class SlickRowMoveManager {
     this._options = Utils.extend({}, this._options, newOptions);
   }
 
-  protected handleDragInit(e: MouseEvent) {
+  protected handleDragInit(e: SlickEventData_) {
     // prevent the grid from cancelling drag'n'drop by default
     e.stopImmediatePropagation();
   }
 
-  protected handleDragStart(e: DOMEvent<HTMLDivElement>, dd: DragRowMove): boolean | void {
+  protected handleDragStart(e: SlickEventData_, dd: DragRowMove): boolean | void {
     const cell = this._grid.getCellFromEvent(e) || { cell: -1, row: -1 };
     const currentRow = cell?.row;
     const dataContext = this._grid.getDataItem(currentRow);
@@ -208,7 +208,7 @@ export class SlickRowMoveManager {
     }
   }
 
-  protected handleDragEnd(e: MouseEvent, dd: DragRowMove) {
+  protected handleDragEnd(e: SlickEventData_, dd: DragRowMove) {
     if (!this._dragging) {
       return;
     }

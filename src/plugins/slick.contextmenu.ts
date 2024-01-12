@@ -431,7 +431,7 @@ export class SlickContextMenu implements SlickPlugin {
     }
   }
 
-  destroyMenu(e?: Event, args?: { cell: number; row: number; }) {
+  destroyMenu(e?: Event | SlickEventData_, args?: { cell: number; row: number; }) {
     this._menuElm = this._menuElm || document.querySelector(`.slick-context-menu${this.getGridUidSelector()}`);
 
     if (this._menuElm?.remove) {

@@ -1,4 +1,6 @@
-export type Handler<ArgType = any> = (e: any, args: ArgType) => void;
+import { type SlickEventData } from '../slick.core';
+
+export type Handler<ArgType = any> = (e: SlickEventData, args: ArgType) => void;
 
 export interface ElementEventListener {
   element: Element | Window;

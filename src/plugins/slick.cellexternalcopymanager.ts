@@ -1,6 +1,6 @@
 import type { Column, CssStyleHash, ExcelCopyBufferOption, ExternalCopyClipCommand, SlickPlugin } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
-import { SlickEvent as SlickEvent_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core';
+import { SlickEvent as SlickEvent_, type SlickEventData, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
@@ -102,7 +102,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
     return columnDef.name;
   }
 
-  protected getDataItemValueForColumn(item: any, columnDef: Column, event: Event): string {
+  protected getDataItemValueForColumn(item: any, columnDef: Column, event: SlickEventData): string {
     if (typeof this._options.dataItemColumnValueExtractor === 'function') {
       const val = this._options.dataItemColumnValueExtractor(item, columnDef) as string | null;
       if (val) {
@@ -354,7 +354,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
     }
   }
 
-  protected handleKeyDown(e: KeyboardEvent): boolean | void {
+  protected handleKeyDown(e: SlickEventData): boolean | void {
     let ranges: SlickRange_[];
     if (!this._grid.getEditorLock().isActive() || this._grid.getOptions().autoEdit) {
       if (e.which === this.keyCodes.ESC) {

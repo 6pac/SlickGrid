@@ -417,7 +417,7 @@ export class SlickCellMenu implements SlickPlugin {
   }
 
   /** Close and destroy Cell Menu */
-  closeMenu(e?: DOMMouseOrTouchEvent<HTMLButtonElement | HTMLDivElement>, args?: MenuFromCellCallbackArgs) {
+  closeMenu(e?: DOMMouseOrTouchEvent<HTMLButtonElement | HTMLDivElement> | SlickEventData_, args?: MenuFromCellCallbackArgs) {
     if (this._menuElm) {
       if (this.onBeforeMenuClose.notify({
         cell: args?.cell ?? 0,
