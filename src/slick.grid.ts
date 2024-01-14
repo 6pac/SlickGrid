@@ -1834,7 +1834,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const scrollColumnsRight = () => this._viewportScrollContainerX.scrollLeft = this._viewportScrollContainerX.scrollLeft + 10;
     const scrollColumnsLeft = () => this._viewportScrollContainerX.scrollLeft = this._viewportScrollContainerX.scrollLeft - 10;
 
-    let canDragScroll;
+    let canDragScroll = false;
     const sortableOptions = {
       animation: 50,
       direction: 'horizontal',
@@ -1862,12 +1862,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         }
       },
       onEnd: (e: MouseEvent & { item: any; originalEvent: MouseEvent; }) => {
-        const cancel = false;
         clearInterval(columnScrollTimer);
         columnScrollTimer = null;
-        let limit;
 
-        if (cancel || !this.getEditorLock()?.commitCurrentEdit()) {
+        if (!this.getEditorLock()?.commitCurrentEdit()) {
           return;
         }
 
@@ -1880,7 +1878,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         }
         this.setColumns(reorderedColumns);
 
-        this.trigger(this.onColumnsReordered, { impactedColumns: this.getImpactedColumns(limit) });
+        this.trigger(this.onColumnsReordered, { impactedColumns: this.columns });
         e.stopPropagation();
         this.setupColumnResize();
         if (this.activeCellNode) {
@@ -1897,20 +1895,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const a = Array.from(this._headers[0].children);
     const b = Array.from(this._headers[1].children);
     return a.concat(b) as HTMLElement[];
-  }
-
-  protected getImpactedColumns(limit?: { start: number; end: number; }) {
-    let impactedColumns: C[] = [];
-
-    if (limit) {
-      for (let i = limit.start; i <= limit.end; i++) {
-        impactedColumns.push(this.columns[i]);
-      }
-    } else {
-      impactedColumns = this.columns;
-    }
-
-    return impactedColumns;
   }
 
   protected handleResizeableHandleDoubleClick(evt: MouseEvent & { target: HTMLDivElement; }) {
