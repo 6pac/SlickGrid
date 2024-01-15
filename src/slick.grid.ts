@@ -1803,28 +1803,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     });
   }
 
-  protected currentPositionInHeader(id: number | string) {
-    let currentPosition = 0;
-    this._headers.forEach((header) => {
-      const columnElements = header.querySelectorAll('.slick-header-column');
-      columnElements.forEach((column, i) => {
-        if (column.id === id) {
-          currentPosition = i;
-        }
-      });
-    });
-
-    return currentPosition;
-  }
-
-  protected remove(arr: any[], elem: HTMLElement) {
-    const index = arr.lastIndexOf(elem);
-    if (index > -1) {
-      arr.splice(index, 1);
-      this.remove(arr, elem);
-    }
-  }
-
   protected setupColumnReorder() {
     this.sortableSideLeftInstance?.destroy();
     this.sortableSideRightInstance?.destroy();
@@ -1834,7 +1812,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const scrollColumnsRight = () => this._viewportScrollContainerX.scrollLeft = this._viewportScrollContainerX.scrollLeft + 10;
     const scrollColumnsLeft = () => this._viewportScrollContainerX.scrollLeft = this._viewportScrollContainerX.scrollLeft - 10;
 
-    let canDragScroll;
+    let canDragScroll = false;
     const sortableOptions = {
       animation: 50,
       direction: 'horizontal',
@@ -1862,12 +1840,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         }
       },
       onEnd: (e: MouseEvent & { item: any; originalEvent: MouseEvent; }) => {
-        const cancel = false;
         clearInterval(columnScrollTimer);
         columnScrollTimer = null;
-        let limit;
 
-        if (cancel || !this.getEditorLock()?.commitCurrentEdit()) {
+        if (!this.getEditorLock()?.commitCurrentEdit()) {
           return;
         }
 
@@ -1880,7 +1856,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         }
         this.setColumns(reorderedColumns);
 
-        this.trigger(this.onColumnsReordered, { impactedColumns: this.getImpactedColumns(limit) });
+        this.trigger(this.onColumnsReordered, { impactedColumns: this.columns });
         e.stopPropagation();
         this.setupColumnResize();
         if (this.activeCellNode) {
@@ -1899,21 +1875,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return a.concat(b) as HTMLElement[];
   }
 
-  protected getImpactedColumns(limit?: { start: number; end: number; }) {
-    let impactedColumns: C[] = [];
-
-    if (limit) {
-      for (let i = limit.start; i <= limit.end; i++) {
-        impactedColumns.push(this.columns[i]);
-      }
-    } else {
-      impactedColumns = this.columns;
-    }
-
-    return impactedColumns;
-  }
-
-  protected handleResizeableHandleDoubleClick(evt: MouseEvent & { target: HTMLDivElement; }) {
+  protected handleResizeableDoubleClick(evt: MouseEvent & { target: HTMLDivElement; }) {
     const triggeredByColumn = evt.target.parentElement!.id.replace(this.uid, '');
     this.trigger(this.onColumnsResizeDblClick, { triggeredByColumn });
   }
@@ -1966,7 +1928,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       }
 
       const resizeableHandle = Utils.createDomElement('div', { className: 'slick-resizable-handle', role: 'separator', ariaOrientation: 'horizontal' }, colElm);
-      this._bindingEventService.bind(resizeableHandle, 'dblclick', this.handleResizeableHandleDoubleClick.bind(this) as EventListener);
+      this._bindingEventService.bind(resizeableHandle, 'dblclick', this.handleResizeableDoubleClick.bind(this) as EventListener);
 
       this.slickResizableInstances.push(
         Resizable({
