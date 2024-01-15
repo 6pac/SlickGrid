@@ -55,7 +55,7 @@ export class SlickColumnPicker {
     hideSyncResizeButton: false,
     forceFitTitle: 'Force fit columns',
     syncResizeTitle: 'Synchronous resize',
-    headerColumnValueExtractor: (columnDef: Column) => columnDef.name instanceof HTMLElement ? columnDef.name.innerHTML : columnDef.name || ''
+    headerColumnValueExtractor: (columnDef: Column) => Utils.getHtmlStringOutput(columnDef.name || '', 'innerHTML'),
   };
 
   constructor(protected columns: Column[], protected readonly grid: SlickGrid, gridOptions: GridOption) {

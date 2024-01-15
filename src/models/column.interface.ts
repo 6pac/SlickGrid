@@ -144,7 +144,7 @@ export interface Column<TData = any> {
   minWidth?: number;
 
   /** Column Title Name to be displayed in the Grid (UI) */
-  name?: string | HTMLElement;
+  name?: string | HTMLElement | DocumentFragment;
 
   /** column offset width */
   offsetWidth?: number;

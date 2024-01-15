@@ -348,7 +348,7 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
       id: this._options.columnId,
       name: (this._options.hideSelectAllCheckbox || this._options.hideInColumnTitleRow)
         ? this._options.name || ''
-        : `<input id="header-selector${this._selectAll_UID}" type="checkbox"><label for="header-selector${this._selectAll_UID}"></label>`,
+        : this.createCheckboxElement(`header-selector${this._selectAll_UID}`),
       toolTip: (this._options.hideSelectAllCheckbox || this._options.hideInColumnTitleRow) ? '' : this._options.toolTip,
       field: 'sel',
       width: this._options.width,
@@ -368,18 +368,14 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
     this._handler.subscribe(grid.onHeaderRowCellRendered, (_e: any, args: any) => {
       if (args.column.field === 'sel') {
         Utils.emptyElement(args.node);
-        const spanElm = document.createElement('span');
-        spanElm.id = 'filter-checkbox-selectall-container';
+        const spanElm = Utils.createDomElement('span', { id: 'filter-checkbox-selectall-container', ariaChecked: 'false' });
+        spanElm.appendChild(
+          Utils.createDomElement('input', { type: 'checkbox', id: `header-filter-selector${this._selectAll_UID}` })
+        );
+        spanElm.appendChild(
+          Utils.createDomElement('label', { htmlFor: `header-filter-selector${this._selectAll_UID}` })
+        );
 
-        const inputElm = document.createElement('input');
-        inputElm.type = 'checkbox';
-        inputElm.id = `header-filter-selector${this._selectAll_UID}`;
-
-        const labelElm = document.createElement('label');
-        labelElm.htmlFor = `header-filter-selector${this._selectAll_UID}`;
-
-        spanElm.appendChild(inputElm);
-        spanElm.appendChild(labelElm);
         args.node.appendChild(spanElm);
         this._headerRowNode = args.node;
 
@@ -388,21 +384,33 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
     });
   }
 
+  /**
+   * use a DocumentFragment to return a fragment including an <input> then a <label> as siblings,
+   * the label is using `for` to link it to the input `id`
+   * @param {String} inputId - id to link the label
+   * @param {Boolean} [checked] - is the input checkbox checked? (defaults to false)
+   * @returns
+   */
+  protected createCheckboxElement(inputId: string, checked = false) {
+    const fragmentElm = new DocumentFragment();
+    fragmentElm.appendChild(
+      Utils.createDomElement('input', { id: inputId, type: 'checkbox', checked, ariaChecked: String(checked) })
+    );
+    fragmentElm.appendChild(
+      Utils.createDomElement('label', { htmlFor: inputId })
+    );
+
+    return fragmentElm;
+  }
+
   protected createUID() {
     return Math.round(10000000 * Math.random());
   }
 
   protected checkboxSelectionFormatter(row: number, _cell: number, _val: any, _columnDef: Column, dataContext: any, grid: SlickGrid) {
-    const UID = this.createUID() + row;
-
-    if (dataContext) {
-      if (!this.checkSelectableOverride(row, dataContext, grid)) {
-        return null;
-      } else {
-        return this._selectedRowsLookup[row]
-          ? `<input id="selector${UID}" type="checkbox" checked="checked"><label for="selector${UID}"></label>`
-          : `<input id="selector${UID}" type="checkbox"><label for="selector${UID}"></label>`;
-      }
+    if (dataContext && this.checkSelectableOverride(row, dataContext, grid)) {
+      const UID = this.createUID() + row;
+      return this.createCheckboxElement(`selector${UID}`, !!this._selectedRowsLookup[row]);
     }
     return null;
   }
@@ -415,11 +423,11 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
   }
 
   protected renderSelectAllCheckbox(isSelectAllChecked?: boolean) {
-    if (isSelectAllChecked) {
-      this._grid.updateColumnHeader(this._options.columnId || '', `<input id="header-selector${this._selectAll_UID}" type="checkbox" checked="checked"><label for="header-selector${this._selectAll_UID}"></label>`, this._options.toolTip);
-    } else {
-      this._grid.updateColumnHeader(this._options.columnId || '', `<input id="header-selector${this._selectAll_UID}" type="checkbox"><label for="header-selector${this._selectAll_UID}"></label>`, this._options.toolTip);
-    }
+    this._grid.updateColumnHeader(
+      this._options.columnId || '',
+      this.createCheckboxElement(`header-selector${this._selectAll_UID}`, !!isSelectAllChecked),
+      this._options.toolTip
+    );
   }
 
   /**

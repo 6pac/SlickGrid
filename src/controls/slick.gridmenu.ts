@@ -167,7 +167,7 @@ export class SlickGridMenu {
     subMenuOpenByEvent: 'mouseover',
     syncResizeTitle: 'Synchronous resize',
     useClickToRepositionMenu: true,
-    headerColumnValueExtractor: (columnDef: Column) => columnDef.name instanceof HTMLElement ? columnDef.name.innerHTML : columnDef.name || '',
+    headerColumnValueExtractor: (columnDef: Column) => Utils.getHtmlStringOutput(columnDef.name || '', 'innerHTML'),
   };
 
   constructor(protected columns: Column[], protected readonly grid: SlickGrid, gridOptions: GridOption) {
@@ -593,7 +593,7 @@ export class SlickGridMenu {
 
       const labelElm = document.createElement('label');
       labelElm.htmlFor = `${this._gridUid}-gridmenu-colpicker-${columnId}`;
-      this.grid.applyHtmlCode(labelElm, this.grid.sanitizeHtmlString((columnLabel instanceof HTMLElement ? columnLabel.innerHTML : columnLabel) || ''));
+      this.grid.applyHtmlCode(labelElm, this.grid.sanitizeHtmlString(Utils.getHtmlStringOutput(columnLabel || '')));
       liElm.appendChild(labelElm);
       this._listElm.appendChild(liElm);
     }

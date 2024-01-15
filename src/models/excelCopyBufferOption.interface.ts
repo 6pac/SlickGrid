@@ -42,7 +42,7 @@ export interface ExcelCopyBufferOption<T = any> {
   readOnlyMode?: boolean;
 
   /** option to specify a custom column header value extractor function */
-  headerColumnValueExtractor?: (columnDef: Column<T>) => any;
+  headerColumnValueExtractor?: (columnDef: Column<T>) => string | HTMLElement | DocumentFragment;
 
   // --
   // Events
