@@ -95,10 +95,10 @@
       <li>Checkbox row select column</li>
       <li>User can override the logic to display the row checkbox with "selectableOverride". e.g. every 2nd rows is selectable</li>
       <p>
-        <button onclick="toggleHideSelectAllCheckbox()">Toggle show/hide "Select All" checkbox</button>
+        <button data-test="toggle-select-all" onclick="toggleHideSelectAllCheckbox()">Toggle show/hide "Select All" checkbox</button>
       </p>
       <p>
-        <button onclick="toggleWhichRowToShowSelectAll()">Toggle which row to show "Select All" checkbox</button>
+        <button data-test="toggle-select-all-row" onclick="toggleWhichRowToShowSelectAll()">Toggle which row to show "Select All" checkbox</button>
       </p>
       <p>
         <button data-test="clear-filters" onclick="clearFilters()">Clear Filters</button>
@@ -163,6 +163,7 @@
     applySelectOnAllPages: true, // defaults to false, when that is enabled the "Select All" will be applied to all pages
     hideInColumnTitleRow: !isSelectAllShownAsColumnTitle,
     hideInFilterHeaderRow: isSelectAllShownAsColumnTitle,
+    name: 'Sel', // column name will only show when `hideInColumnTitleRow` is true
 
     // make only 2nd rows as selectable by using the override function
     selectableOverride: function(row, dataContext, grid) {

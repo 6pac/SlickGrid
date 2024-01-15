@@ -1,5 +1,6 @@
 describe('Example - Checkbox Header Row', () => {
-  const titles = ['', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+  const withTitleRowTitles = ['Sel', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
+  const withoutTitleRowTitles = ['', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
   let selectedIdsCount = 0;
 
   beforeEach(() => {
@@ -19,7 +20,7 @@ describe('Example - Checkbox Header Row', () => {
     cy.get('#myGrid')
       .find('.slick-header-columns')
       .children()
-      .each(($child, index) => expect($child.text()).to.eq(titles[index]));
+      .each(($child, index) => expect($child.text()).to.eq(withTitleRowTitles[index]));
   });
 
   it('should select a single row and display new and previous selected rows in the console (previous should be empty)', () => {
@@ -395,5 +396,54 @@ describe('Example - Checkbox Header Row', () => {
 
     cy.get('#filter-checkbox-selectall-container input[type=checkbox]')
       .should('be.checked');
+  });
+
+  it('should show Select All checkbox in header column titles row', () => {
+    cy.get('[data-test="toggle-select-all-row"]').click();
+
+    cy.get('#myGrid [data-id=_checkbox_selector] input[type=checkbox]')
+      .should('exist');
+    cy.get('.slick-header-column:nth(0)')
+      .find('.slick-column-name')
+      .should('not.contain', 'Sel');
+
+    cy.get('[data-test="toggle-select-all"]')
+      .click();
+
+    cy.get('.slick-header-column:nth(0)')
+      .find('.slick-column-name')
+      .should('contain', 'Sel');
+    cy.get('#myGrid [data-id=_checkbox_selector] input[type=checkbox]')
+      .should('not.exist');
+
+    cy.get('[data-test="toggle-select-all"]')
+      .click();
+
+    cy.get('.slick-header-column:nth(0)')
+      .find('.slick-column-name')
+      .should('not.contain', 'Sel');
+    cy.get('#myGrid [data-id=_checkbox_selector] input[type=checkbox]')
+      .should('exist');
+  });
+
+  it('should toggle back Select All to show under filter row and expect back "Sel" column name to show again', () => {
+    cy.get('.slick-header-column:nth(0)')
+      .find('.slick-column-name')
+      .should('not.contain', 'Sel');
+    cy.get('#myGrid')
+      .find('.slick-header-columns')
+      .children()
+      .each(($child, index) => expect($child.text()).to.eq(withoutTitleRowTitles[index]));
+
+    cy.get('[data-test="toggle-select-all-row"]').click();
+
+    cy.get('.slick-header-column:nth(0)')
+      .find('.slick-column-name')
+      .should('contain', 'Sel');
+
+    cy.get('#myGrid')
+      .find('.slick-header-columns')
+      .children()
+      .each(($child, index) => expect($child.text()).to.eq(withTitleRowTitles[index]));
   });
 });

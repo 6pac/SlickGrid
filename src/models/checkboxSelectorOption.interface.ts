@@ -41,6 +41,12 @@ export interface CheckboxSelectorOption {
   /** defaults to true, do we want to hide the "Select All" checkbox from the Column Header Filter Row? */
   hideInFilterHeaderRow?: boolean;
 
+  /**
+   * defaults to empty string, column name.
+   * This will only work when the "Select All" checkbox is NOT shown in the column header row (`hideInColumnTitleRow: true`)
+   */
+  name?: string;
+
   /** Defaults to "Select/Deselect All", provide a tooltip that will be shown over the "Select All" checkbox */
   toolTip?: string;
 
