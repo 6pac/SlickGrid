@@ -5540,27 +5540,34 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Returns a hash containing row and cell indexes. Coordinates are relative to the top left corner of the grid beginning with the first row (not including the column headers).
+   * Returns row and cell indexes by providing x,y coordinates.
+   * Coordinates are relative to the top left corner of the grid beginning with the first row (not including the column headers).
    * @param x An x coordinate.
    * @param y A y coordinate.
    */
   getCellFromPoint(x: number, y: number) {
-    const row = this.getRowFromPosition(y);
+    let row = this.getRowFromPosition(y);
     let cell = 0;
 
     let w = 0;
-    for (let i = 0; i < this.columns.length && w < x; i++) {
-      if (!this.columns[i] || this.columns[i].hidden) { continue; }
-
+    for (let i = 0; i < this.columns.length && w <= x; i++) {
+      if (!this.columns[i] || this.columns[i].hidden) {
+        continue;
+      }
       w += this.columns[i].width as number;
       cell++;
     }
+    cell -= 1;
 
-    if (cell < 0) {
-      cell = 0;
+    // we'll return -1 when coordinate falls outside the grid canvas
+    if (row < -1) {
+      row = -1;
+    }
+    if (cell < -1) {
+      cell = -1;
     }
 
-    return { row, cell: (cell - 1) };
+    return { row, cell };
   }
 
   protected getCellFromNode(cellNode: HTMLElement) {
