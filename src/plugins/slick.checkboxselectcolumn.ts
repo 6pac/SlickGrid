@@ -343,6 +343,25 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
     return this._checkboxColumnCellIndex;
   }
 
+  /**
+   * use a DocumentFragment to return a fragment including an <input> then a <label> as siblings,
+   * the label is using `for` to link it to the input `id`
+   * @param {String} inputId - id to link the label
+   * @param {Boolean} [checked] - is the input checkbox checked? (defaults to false)
+   * @returns
+   */
+  createCheckboxElement(inputId: string, checked = false) {
+    const fragmentElm = new DocumentFragment();
+    fragmentElm.appendChild(
+      Utils.createDomElement('input', { id: inputId, type: 'checkbox', checked, ariaChecked: String(checked) })
+    );
+    fragmentElm.appendChild(
+      Utils.createDomElement('label', { htmlFor: inputId })
+    );
+
+    return fragmentElm;
+  }
+
   getColumnDefinition() {
     return {
       id: this._options.columnId,
@@ -382,25 +401,6 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
         this._bindingEventService.bind(spanElm, 'click', ((e: DOMEvent<HTMLInputElement>) => this.handleHeaderClick(e, args)) as EventListener);
       }
     });
-  }
-
-  /**
-   * use a DocumentFragment to return a fragment including an <input> then a <label> as siblings,
-   * the label is using `for` to link it to the input `id`
-   * @param {String} inputId - id to link the label
-   * @param {Boolean} [checked] - is the input checkbox checked? (defaults to false)
-   * @returns
-   */
-  protected createCheckboxElement(inputId: string, checked = false) {
-    const fragmentElm = new DocumentFragment();
-    fragmentElm.appendChild(
-      Utils.createDomElement('input', { id: inputId, type: 'checkbox', checked, ariaChecked: String(checked) })
-    );
-    fragmentElm.appendChild(
-      Utils.createDomElement('label', { htmlFor: inputId })
-    );
-
-    return fragmentElm;
   }
 
   protected createUID() {
