@@ -29,6 +29,7 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
     columnId: '_checkbox_selector',
     cssClass: undefined,
     hideSelectAllCheckbox: false,
+    name: '',
     toolTip: 'Select/Deselect All',
     width: 30,
     applySelectOnAllPages: false, // defaults to false, when that is enabled the "Select All" will be applied to all pages (when using Pagination)
@@ -95,6 +96,9 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
         this._handler.subscribe(this._grid.onHeaderClick, this.handleHeaderClick.bind(this));
       } else {
         this.hideSelectAllFromColumnHeaderTitleRow();
+        if (this._options.name) {
+          this._grid.updateColumnHeader(this._options.columnId || '', this._options.name, '');
+        }
       }
 
       if (!this._options.hideInFilterHeaderRow) {
@@ -113,7 +117,7 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
   }
 
   protected hideSelectAllFromColumnHeaderTitleRow() {
-    this._grid.updateColumnHeader(this._options.columnId || '', '', '');
+    this._grid.updateColumnHeader(this._options.columnId || '', this._options.name || '', '');
   }
 
   protected hideSelectAllFromColumnHeaderFilterRow() {
@@ -420,18 +424,6 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
   selectableOverride(overrideFn: SelectableOverrideCallback<T>) {
     this._selectableOverride = overrideFn;
   }
-
-
-  // Utils.extend(this, {
-  //     "init": init,
-  //     "destroy": destroy,
-  //     "deSelectRows": deSelectRows,
-  //     "selectRows": selectRows,
-  //     "getColumnDefinition": getColumnDefinition,
-  //     "getOptions": getOptions,
-  //     "selectableOverride": selectableOverride,
-  //     "setOptions": setOptions,
-  //   });
 }
 
 // extend Slick namespace on window object when building as iife
