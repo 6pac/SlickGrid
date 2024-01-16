@@ -3133,7 +3133,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     for (i = 0; i < this.columns.length; i++) {
       c = this.columns[i];
-      if (!c || c.hidden) { continue; }
+      if (!c || c.hidden) {
+        widths.push(0);
+        continue;
+      }
       widths.push(c.width || 0);
       total += c.width || 0;
       if (c.resizable) {
