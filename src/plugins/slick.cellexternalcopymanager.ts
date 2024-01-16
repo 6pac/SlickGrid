@@ -91,15 +91,15 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
     this._grid.onKeyDown.unsubscribe(this.handleKeyDown.bind(this));
   }
 
-  protected getHeaderValueForColumn(columnDef: Column) {
+  protected getHeaderValueForColumn(columnDef: Column): string {
     if (this._options.headerColumnValueExtractor) {
-      const val = this._options.headerColumnValueExtractor(columnDef);
+      const val = Utils.getHtmlStringOutput(this._options.headerColumnValueExtractor(columnDef));
       if (val) {
         return val;
       }
     }
 
-    return columnDef.name;
+    return Utils.getHtmlStringOutput(columnDef.name || '');
   }
 
   protected getDataItemValueForColumn(item: any, columnDef: Column, event: SlickEventData): string {
@@ -393,7 +393,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
                     ? (columns[j].name as HTMLElement).innerHTML
                     : columns[j].name as string;
                   if (colName.length > 0 && !columns[j].hidden) {
-                    clipTextHeaders.push(this.getHeaderValueForColumn(columns[j]));
+                    clipTextHeaders.push(this.getHeaderValueForColumn(columns[j]) || '');
                   }
                 }
                 clipTextRows.push(clipTextHeaders.join('\t'));

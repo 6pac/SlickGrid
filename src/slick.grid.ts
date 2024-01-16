@@ -1360,42 +1360,43 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   /**
    * Updates an existing column definition and a corresponding header DOM element with the new title and tooltip.
    * @param {Number|String} columnId Column id.
-   * @param {String} [title] New column name.
+   * @param {string | HTMLElement | DocumentFragment} [title] New column name.
    * @param {String} [toolTip] New column tooltip.
    */
-  updateColumnHeader(columnId: number | string, title?: string | HTMLElement, toolTip?: string) {
-    if (!this.initialized) { return; }
-    const idx = this.getColumnIndex(columnId);
-    if (!Utils.isDefined(idx)) {
-      return;
-    }
-
-    const columnDef = this.columns[idx];
-    const header: any = this.getColumnByIndex(idx);
-    if (header) {
-      if (title !== undefined) {
-        this.columns[idx].name = title;
-      }
-      if (toolTip !== undefined) {
-        this.columns[idx].toolTip = toolTip;
+  updateColumnHeader(columnId: number | string, title?: string | HTMLElement | DocumentFragment, toolTip?: string) {
+    if (this.initialized) {
+      const idx = this.getColumnIndex(columnId);
+      if (!Utils.isDefined(idx)) {
+        return;
       }
 
-      this.trigger(this.onBeforeHeaderCellDestroy, {
-        node: header,
-        column: columnDef,
-        grid: this
-      });
+      const columnDef = this.columns[idx];
+      const header: HTMLElement | undefined = this.getColumnByIndex(idx);
+      if (header) {
+        if (title !== undefined) {
+          this.columns[idx].name = title;
+        }
+        if (toolTip !== undefined) {
+          this.columns[idx].toolTip = toolTip;
+        }
 
-      header.setAttribute('title', toolTip || '');
-      if (title !== undefined) {
-        this.applyHtmlCode(header.children[0], title);
+        this.trigger(this.onBeforeHeaderCellDestroy, {
+          node: header,
+          column: columnDef,
+          grid: this
+        });
+
+        header.setAttribute('title', toolTip || '');
+        if (title !== undefined) {
+          this.applyHtmlCode(header.children[0] as HTMLElement, title);
+        }
+
+        this.trigger(this.onHeaderCellRendered, {
+          node: header,
+          column: columnDef,
+          grid: this
+        });
       }
-
-      this.trigger(this.onHeaderCellRendered, {
-        node: header,
-        column: columnDef,
-        grid: this
-      });
     }
   }
 

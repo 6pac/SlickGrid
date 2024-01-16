@@ -810,6 +810,24 @@ export class Utils {
     return elm;
   }
 
+  /**
+   * From any input provided, return the HTML string (when a string is provided, it will be returned "as is" but when it's a number it will be converted to string)
+   * When detecting HTMLElement/DocumentFragment, we can also specify which HTML type to retrieve innerHTML or outerHTML.
+   * We can get the HTML by looping through all fragment `childNodes`
+   * @param {DocumentFragment | HTMLElement | string | number} input
+   * @param {'innerHTML' | 'outerHTML'} [type] - when the input is a DocumentFragment or HTMLElement, which type of HTML do you want to return? 'innerHTML' or 'outerHTML'
+   * @returns {String}
+   */
+  public static getHtmlStringOutput(input: DocumentFragment | HTMLElement | string | number, type: 'innerHTML' | 'outerHTML' = 'innerHTML'): string {
+    if (input instanceof DocumentFragment) {
+      // a DocumentFragment doesn't have innerHTML/outerHTML, but we can loop through all children and concatenate them all to an HTML string
+      return [].map.call(input.childNodes, (x: HTMLElement) => x[type]).join('') || input.textContent || '';
+    } else if (input instanceof HTMLElement) {
+      return input[type];
+    }
+    return String(input) ?? ''; // reaching this line means it's already a string (or number) so just return it as string
+  }
+
   public static emptyElement<T extends Element = Element>(element?: T | null): T | undefined | null {
     while (element?.firstChild) {
       element.removeChild(element.firstChild);

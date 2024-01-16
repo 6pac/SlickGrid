@@ -156,15 +156,14 @@ describe('Example - Checkbox Header Row', () => {
       .click();
 
     cy.get('.slick-cell-checkboxsel input:checked')
-      .should('have.length', 11);
+      .should('have.length', 13);
   });
 
   it('should go to last page and still expect all rows selected in current page', () => {
     cy.get('.sgi-chevron-end')
       .click();
 
-    cy.get('.slick-cell-checkboxsel input:checked')
-      .should('have.length', 11);
+    cy.get('.slick-cell-checkboxsel input:checked').should('have.length', 13);
 
     cy.get('.slick-pager-status')
       .contains('Showing page 6 of 6');
@@ -187,7 +186,7 @@ describe('Example - Checkbox Header Row', () => {
       .should('not.be.checked');
 
     cy.get('.slick-cell-checkboxsel input:checked')
-      .should('have.length', 10);
+      .should('have.length', 12);
 
     cy.get('#selectedRows')
       .should('contain', '2,4,6,8,10,12,14,16,18,20,22,24');
@@ -204,7 +203,7 @@ describe('Example - Checkbox Header Row', () => {
       .should('not.be.checked');
 
     cy.get('.slick-cell-checkboxsel input:checked')
-      .should('have.length', 11);
+      .should('have.length', 12);
 
     cy.get('.slick-pager-status')
       .contains('Showing page 1 of 6');
@@ -227,7 +226,7 @@ describe('Example - Checkbox Header Row', () => {
       .should('be.checked');
 
     cy.get('.slick-cell-checkboxsel input:checked')
-      .should('have.length', 11);
+      .should('have.length', 13);
 
     cy.get('.slick-pager-status')
       .contains('Showing page 6 of 6');
