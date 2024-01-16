@@ -665,6 +665,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this._container.style.outline = String(0);
     this._container.classList.add(this.uid);
     this._container.classList.add('ui-widget');
+    this._container.setAttribute('role', 'grid');
 
     const containerStyles = window.getComputedStyle(this._container);
     if (!(/relative|absolute|fixed/).test(containerStyles.position)) {
@@ -706,8 +707,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this._headerScroller.push(this._headerScrollerR);
 
     // Append the columnn containers to the headers
-    this._headerL = Utils.createDomElement('div', { className: 'slick-header-columns slick-header-columns-left', style: { left: '-1000px' } }, this._headerScrollerL);
-    this._headerR = Utils.createDomElement('div', { className: 'slick-header-columns slick-header-columns-right', style: { left: '-1000px' } }, this._headerScrollerR);
+    this._headerL = Utils.createDomElement('div', { className: 'slick-header-columns slick-header-columns-left', role: 'row', style: { left: '-1000px' } }, this._headerScrollerL);
+    this._headerR = Utils.createDomElement('div', { className: 'slick-header-columns slick-header-columns-right', role: 'row', style: { left: '-1000px' } }, this._headerScrollerR);
 
     // Cache the header columns
     this._headers = [this._headerL, this._headerR];
@@ -1615,7 +1616,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       const headerTarget = this.hasFrozenColumns() ? ((i <= this._options.frozenColumn!) ? this._headerL : this._headerR) : this._headerL;
       const headerRowTarget = this.hasFrozenColumns() ? ((i <= this._options.frozenColumn!) ? this._headerRowL : this._headerRowR) : this._headerRowL;
 
-      const header = Utils.createDomElement('div', { id: `${this.uid + m.id}`, dataset: { id: String(m.id) }, className: 'ui-state-default slick-state-default slick-header-column' }, headerTarget);
+      const header = Utils.createDomElement('div', { id: `${this.uid + m.id}`, dataset: { id: String(m.id) }, role: 'columnheader', className: 'ui-state-default slick-state-default slick-header-column' }, headerTarget);
       if (m.toolTip) {
         header.title = m.toolTip;
       }
@@ -3865,7 +3866,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     const frozenRowOffset = this.getFrozenRowOffset(row);
-    const rowDiv = Utils.createDomElement('div', { className: `ui-widget-content ${rowCss}`, style: { top: `${this.getRowTop(row) - frozenRowOffset}px` } });
+    const rowDiv = Utils.createDomElement('div', { className: `ui-widget-content ${rowCss}`, role: 'row', style: { top: `${this.getRowTop(row) - frozenRowOffset}px` } });
     let rowDivR: HTMLElement | undefined;
     divArrayL.push(rowDiv);
     if (this.hasFrozenColumns()) {
@@ -3956,9 +3957,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     const toolTipText = (formatterResult as FormatterResultObject)?.toolTip ? `${(formatterResult as FormatterResultObject).toolTip}` : '';
-    const cellDiv = document.createElement('div');
-    cellDiv.className = `${cellCss} ${addlCssClasses || ''}`.trim();
-    cellDiv.setAttribute('title', toolTipText);
+    const cellDiv = Utils.createDomElement('div', { className: `${cellCss} ${addlCssClasses || ''}`.trim(), role: 'gridcell', tabIndex: -1 });
+    cellDiv.setAttribute('aria-describedby', this.uid + m.id);
+    if (toolTipText) {
+      cellDiv.setAttribute('title', toolTipText);
+    }
+
     if (m.hasOwnProperty('cellAttrs') && m.cellAttrs instanceof Object) {
       Object.keys(m.cellAttrs).forEach(key => {
         if (m.cellAttrs.hasOwnProperty(key)) {
