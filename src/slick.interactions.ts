@@ -56,7 +56,7 @@ export function Draggable(options: DraggableOption) {
 
   function executeDragCallbackWhenDefined(callback?: (e: DragEvent, dd: DragItem) => boolean | void, evt?: MouseEvent | Touch | TouchEvent, dd?: DragItem) {
     if (typeof callback === 'function') {
-      callback(evt as DragEvent, dd as DragItem);
+      return callback(evt as DragEvent, dd as DragItem);
     }
   }
 
@@ -80,13 +80,15 @@ export function Draggable(options: DraggableOption) {
       deltaX = targetEvent.clientX - targetEvent.clientX;
       deltaY = targetEvent.clientY - targetEvent.clientY;
       originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target });
-      executeDragCallbackWhenDefined(onDragInit as (e: DragEvent, dd: DragPosition) => boolean | void, event, originaldd as DragItem);
+      const result = executeDragCallbackWhenDefined(onDragInit as (e: DragEvent, dd: DragPosition) => boolean | void, event, originaldd as DragItem);
 
-      document.body.addEventListener('mousemove', userMoved);
-      document.body.addEventListener('touchmove', userMoved);
-      document.body.addEventListener('mouseup', userReleased);
-      document.body.addEventListener('touchend', userReleased);
-      document.body.addEventListener('touchcancel', userReleased);
+      if (result !== false) {
+        document.body.addEventListener('mousemove', userMoved);
+        document.body.addEventListener('touchmove', userMoved);
+        document.body.addEventListener('mouseup', userReleased);
+        document.body.addEventListener('touchend', userReleased);
+        document.body.addEventListener('touchcancel', userReleased);
+      }
     }
   }
 
