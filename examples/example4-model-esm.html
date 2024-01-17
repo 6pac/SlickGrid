@@ -222,7 +222,9 @@ function changeCSS(prevFilePath, newFilePath) {
 
 function requiredFieldValidator(value) {
   if (value == null || value == undefined || !value.length) {
-    return {valid: false, msg: "This is a required field"};
+    return {valid: false, msg: 'This is a required field'};
+  } else if (!/^(task\s\d+)*$/i.test(value)) {
+    return { valid: false, msg: 'Your title is invalid, it must start with "Task" followed by a number.' };
   }
   else {
     return {valid: true, msg: null};
