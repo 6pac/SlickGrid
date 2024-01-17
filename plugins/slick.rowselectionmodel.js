@@ -120,14 +120,13 @@
 
     function setSelectedRanges(ranges, caller) {
       // simple check for: empty selection didn't change, prevent firing onSelectedRangesChanged
-      if ((!_ranges || _ranges.length === 0) && (!ranges || ranges.length === 0)) { 
-        return; 
+      if ((!_ranges || _ranges.length === 0) && (!ranges || ranges.length === 0)) {
+        return;
       }
       _ranges = ranges;
-      
+
       // provide extra "caller" argument through SlickEventData to avoid breaking pubsub event that only accepts an array of selected range
-      var eventData = new Slick.EventData(null, _ranges);
-      Object.defineProperty(eventData, 'detail', { writable: true, configurable: true, value: { caller: caller || "SlickRowSelectionModel.setSelectedRanges" } });
+      var eventData = new Slick.EventData(new CustomEvent('click', { detail: { caller: caller || "SlickRowSelectionModel.setSelectedRanges" } }), _ranges);
       _self.onSelectedRangesChanged.notify(_ranges, eventData);
     }
 
@@ -147,8 +146,8 @@
 
     function handleKeyDown(e) {
       var activeRow = _grid.getActiveCell();
-      if (_grid.getOptions().multiSelect && activeRow 
-      && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey 
+      if (_grid.getOptions().multiSelect && activeRow
+        && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey
       && (e.which == Slick.keyCode.UP || e.which == Slick.keyCode.DOWN)) {
         var selectedRows = getSelectedRows();
         selectedRows.sort(function (x, y) {
