@@ -177,6 +177,7 @@
 
   function highlightSecondRow() {
     // default is: { rowHighlightCssClass: 'highlight-animate' }
+    grid.navigateTop();
     grid.setOptions({ rowHighlightCssClass: 'highlighting-animation' });
     grid.highlightRow(1, 500);
   }

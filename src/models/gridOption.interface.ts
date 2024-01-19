@@ -261,6 +261,9 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
    */
   rowHighlightCssClass?: string;
 
+  /** Defaults to 400, duration to show the row highlight (e.g. after CRUD executions) */
+  rowHighlightDuration?: number;
+
   /** Optional sanitizer function to use for sanitizing data to avoid XSS attacks */
   sanitizer?: (dirtyHtml: string) => string;
 
