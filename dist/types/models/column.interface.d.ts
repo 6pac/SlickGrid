@@ -27,7 +27,7 @@ export interface Column<TData = any> {
     /** Column group name for grouping of column headers spanning accross multiple columns */
     columnGroup?: string;
     /** Column span in cell count or use `*` to span across the entire row */
-    colspan?: number | '*';
+    colspan?: number | string | '*';
     /** CSS class to add to the column cell */
     cssClass?: string;
     /**
@@ -47,7 +47,7 @@ export interface Column<TData = any> {
     /** Any inline editor function that implements Editor for the cell value or ColumnEditor */
     editor?: Editor | {
         model?: Editor;
-    };
+    } | null;
     /** Editor number fixed decimal places */
     editorFixedDecimalPlaces?: number;
     /** Default to false, which leads to exclude the column title from the Column Picker. */
@@ -90,11 +90,16 @@ export interface Column<TData = any> {
     /** Minimum Width of the column in pixels (number only). */
     minWidth?: number;
     /** Column Title Name to be displayed in the Grid (UI) */
-    name?: string | HTMLElement;
+    name?: string | HTMLElement | DocumentFragment;
     /** column offset width */
     offsetWidth?: number;
     /** column previous width */
     previousWidth?: number;
+    /**
+     * Defaults to true, makes the column reorderable to another position in the grid.
+     * NOTE: Works best when used as first or last columns of the grid (e.g.: row selection checkbox as first column).
+     */
+    reorderable?: boolean;
     /** Should we re-render when onResize is being triggered? */
     rerenderOnResize?: boolean;
     /** Is the column resizable, can we make it wider/thinner? A resize cursor will show on the right side of the column when enabled. */

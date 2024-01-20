@@ -118,6 +118,8 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
      * We could also provide a Column Reorder function, there's mostly only 1 use for this which is the SlickDraggableGrouping plugin.
      */
     enableColumnReorder?: boolean | ColumnReorderFunction<C>;
+    /** Defaults to "unorderable", a CSS class name that will be added to the column classes when the column cannot be reordered. */
+    unorderableColumnCssClass?: string;
     /**
      * Defaults to true, do we want to allow passing HTML string to cell/row rendering by using `innerHTML`.
      * When this is enabled and input is a string, it will use `innerHTML = 'some html'` to render the input, however when disable it will use `textContent = 'some html'`.
@@ -195,6 +197,8 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
      * Also note that the highlight is temporary and will also disappear as soon as the user starts scrolling or a `render()` is being called
      */
     rowHighlightCssClass?: string;
+    /** Defaults to 400, duration to show the row highlight (e.g. after CRUD executions) */
+    rowHighlightDuration?: number;
     /** Optional sanitizer function to use for sanitizing data to avoid XSS attacks */
     sanitizer?: (dirtyHtml: string) => string;
     /** Defaults to 50, render throttling when scrolling large dataset */

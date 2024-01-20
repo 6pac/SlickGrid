@@ -163,7 +163,7 @@ export declare class SlickCellMenu implements SlickPlugin {
     protected addSubMenuTitleWhenExists(item: MenuCommandItem | MenuOptionItem | 'divider', commandOrOptionMenu: HTMLDivElement): void;
     protected handleCloseButtonClicked(e: DOMMouseOrTouchEvent<HTMLButtonElement>): void;
     /** Close and destroy Cell Menu */
-    closeMenu(e?: DOMMouseOrTouchEvent<HTMLButtonElement | HTMLDivElement>, args?: MenuFromCellCallbackArgs): void;
+    closeMenu(e?: DOMMouseOrTouchEvent<HTMLButtonElement | HTMLDivElement> | SlickEventData_, args?: MenuFromCellCallbackArgs): void;
     /** Destroy all parent menus and any sub-menus */
     destroyAllMenus(): void;
     /** Close and destroy all previously opened sub-menus */

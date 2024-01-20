@@ -1,5 +1,5 @@
 import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_ } from '../slick.core';
-import type { Column, DOMEvent, DragRowMove, CrossGridRowMoveManagerOption, FormatterResultWithText, UsabilityOverrideFn } from '../models/index';
+import type { Column, DragRowMove, CrossGridRowMoveManagerOption, FormatterResultWithText, UsabilityOverrideFn } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 /**
  * Row Move Manager options:
@@ -45,7 +45,7 @@ export declare class SlickCrossGridRowMoveManager {
     destroy(): void;
     setOptions(newOptions: CrossGridRowMoveManagerOption): void;
     protected handleDragInit(e: SlickEventData_): void;
-    protected handleDragStart(e: DOMEvent<HTMLDivElement>, dd: DragRowMove & {
+    protected handleDragStart(e: SlickEventData_, dd: DragRowMove & {
         fromGrid: SlickGrid;
         toGrid: SlickGrid;
     }): boolean | void;

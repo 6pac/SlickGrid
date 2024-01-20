@@ -1,4 +1,4 @@
-import type { Editor, Formatter, GroupTotalsFormatter } from './index';
+import type { Column, Editor, Formatter, GroupTotalsFormatter } from './index';
 /**
  * Provides a powerful way of specifying additional information about a data item that let the grid customize the appearance
  * and handling of a particular data item. The method should return null if the item requires no special handling,
@@ -17,18 +17,7 @@ export interface ItemMetadata {
     selectable?: boolean;
     /** column-level metadata */
     columns?: {
-        [colIdOrIdx in string | number]: {
-            /** Number of columns this cell will span. Can also contain "*" to indicate that the cell should span the rest of the row. */
-            colspan?: number | string | '*';
-            /** A custom cell editor. */
-            editor?: Editor | null;
-            /** Whether or not a cell can be set as "active". */
-            focusable?: boolean;
-            /** A custom cell formatter. */
-            formatter?: Formatter | GroupTotalsFormatter;
-            /** Whether or not a cell can be selected. */
-            selectable?: boolean;
-        };
+        [colIdOrIdx in string | number]: Pick<Column, 'colspan' | 'editor' | 'focusable' | 'formatter' | 'selectable'>;
     };
 }
 //# sourceMappingURL=itemMetadata.interface.d.ts.map

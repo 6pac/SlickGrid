@@ -1,5 +1,5 @@
 import type { CheckboxSelectorOption, Column, DOMEvent, SlickPlugin, SelectableOverrideCallback, OnHeaderClickEventArgs } from '../models/index';
-import { BindingEventService as BindingEventService_, SlickEventHandler as SlickEventHandler_ } from '../slick.core';
+import { BindingEventService as BindingEventService_, type SlickEventData, SlickEventHandler as SlickEventHandler_ } from '../slick.core';
 import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
 export declare class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
@@ -26,19 +26,28 @@ export declare class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
     protected hideSelectAllFromColumnHeaderFilterRow(): void;
     protected handleSelectedRowsChanged(): void;
     protected handleDataViewSelectedIdsChanged(): void;
-    protected handleKeyDown(e: KeyboardEvent, args: any): void;
-    protected handleClick(e: DOMEvent<HTMLInputElement>, args: {
+    protected handleKeyDown(e: SlickEventData, args: any): void;
+    protected handleClick(e: SlickEventData, args: {
         row: number;
         cell: number;
     }): void;
     protected toggleRowSelection(row: number): void;
     selectRows(rowArray: number[]): void;
     deSelectRows(rowArray: number[]): void;
-    protected handleHeaderClick(e: DOMEvent<HTMLInputElement>, args: OnHeaderClickEventArgs): void;
+    protected handleHeaderClick(e: DOMEvent<HTMLInputElement> | SlickEventData, args: OnHeaderClickEventArgs): void;
     protected getCheckboxColumnCellIndex(): number;
+    /**
+     * use a DocumentFragment to return a fragment including an <input> then a <label> as siblings,
+     * the label is using `for` to link it to the input `id`
+     * @param {String} inputId - id to link the label
+     * @param {Boolean} [checked] - is the input checkbox checked? (defaults to false)
+     * @returns
+     */
+    createCheckboxElement(inputId: string, checked?: boolean): DocumentFragment;
     getColumnDefinition(): {
         id: string | undefined;
-        name: string;
+        reorderable: boolean | undefined;
+        name: string | DocumentFragment;
         toolTip: string | undefined;
         field: string;
         width: number | undefined;
@@ -46,14 +55,14 @@ export declare class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
         sortable: boolean;
         cssClass: string | undefined;
         hideSelectAllCheckbox: boolean | undefined;
-        formatter: (row: number, _cell: number, _val: any, _columnDef: Column<any>, dataContext: any, grid: SlickGrid<any, Column<any>, import("../models/gridOption.interface").GridOption<Column<any>>>) => string | null;
+        formatter: (row: number, _cell: number, _val: any, _columnDef: Column<any>, dataContext: any, grid: SlickGrid<any, Column<any>, import("../models/gridOption.interface").GridOption<Column<any>>>) => DocumentFragment | null;
         excludeFromColumnPicker: boolean;
         excludeFromGridMenu: boolean;
         excludeFromHeaderMenu: boolean;
     };
     protected addCheckboxToFilterHeaderRow(grid: SlickGrid): void;
     protected createUID(): number;
-    protected checkboxSelectionFormatter(row: number, _cell: number, _val: any, _columnDef: Column, dataContext: any, grid: SlickGrid): string | null;
+    protected checkboxSelectionFormatter(row: number, _cell: number, _val: any, _columnDef: Column, dataContext: any, grid: SlickGrid): DocumentFragment | null;
     protected checkSelectableOverride(row: number, dataContext: any, grid: SlickGrid): boolean;
     protected renderSelectAllCheckbox(isSelectAllChecked?: boolean): void;
     /**

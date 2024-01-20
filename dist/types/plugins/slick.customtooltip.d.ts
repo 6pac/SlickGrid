@@ -1,5 +1,5 @@
-import type { CancellablePromiseWrapper, Column, CustomDataView, CustomTooltipOption, DOMEvent, Formatter, GridOption } from '../models/index';
-import { SlickEventHandler as SlickEventHandler_ } from '../slick.core';
+import type { CancellablePromiseWrapper, Column, CustomDataView, CustomTooltipOption, Formatter, GridOption } from '../models/index';
+import { type SlickEventData, SlickEventHandler as SlickEventHandler_ } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 /**
  * A plugin to add Custom Tooltip when hovering a cell, it subscribes to the cell "onMouseEnter" and "onMouseLeave" events.
@@ -93,12 +93,12 @@ export declare class SlickCustomTooltip {
      */
     destroy(): void;
     /** depending on the selector type, execute the necessary handler code */
-    protected handleOnHeaderMouseEnterByType(e: DOMEvent<HTMLDivElement>, args: any, selector: CellType): void;
+    protected handleOnHeaderMouseEnterByType(e: SlickEventData, args: any, selector: CellType): void;
     /**
      * Handle mouse entering grid cell to show tooltip.
      * @param {jQuery.Event} e - The event
      */
-    protected handleOnMouseEnter(e: DOMEvent<HTMLDivElement>, args: any): void;
+    protected handleOnMouseEnter(e: SlickEventData, args: any): void;
     protected findFirstElementAttribute(inputElm: Element | null | undefined, attributes: string[]): string | null;
     /**
      * Parse the cell formatter and assume it might be html

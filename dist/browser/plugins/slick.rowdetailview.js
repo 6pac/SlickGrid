@@ -39,6 +39,7 @@
         keyPrefix: "_",
         loadOnce: !1,
         collapseAllOnSort: !0,
+        reorderable: !1,
         saveDetailViewOnScroll: !0,
         singleRowExpand: !1,
         useSimpleViewportCalc: !1,
@@ -214,7 +215,8 @@
         this.onAsyncResponse.notify({
           item,
           itemDetail: item,
-          detailView: item[`${this._keyPrefix}detailContent`]
+          detailView: item[`${this._keyPrefix}detailContent`],
+          grid: this._grid
         }, void 0, this), this.applyTemplateNewLineHeight(item), this._dataView.updateItem(item[this._dataViewIdProperty], item);
         return;
       }
@@ -272,6 +274,7 @@
       return {
         id: this._options.columnId,
         name: "",
+        reorderable: this._options.reorderable,
         toolTip: this._options.toolTip,
         field: "sel",
         width: this._options.width,

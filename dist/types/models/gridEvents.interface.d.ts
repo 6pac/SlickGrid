@@ -1,35 +1,35 @@
 import type { Column, CompositeEditorOption, CssStyleHash, Editor, EditorValidationResult, GridOption } from './index';
 import type { SlickGrid } from '../slick.grid';
-export interface SlickGridEventData {
+export interface SlickGridArg {
     grid: SlickGrid;
 }
-export interface OnActiveCellChangedEventArgs extends SlickGridEventData {
+export interface OnActiveCellChangedEventArgs extends SlickGridArg {
     cell: number;
     row: number;
 }
-export interface OnAddNewRowEventArgs extends SlickGridEventData {
+export interface OnAddNewRowEventArgs extends SlickGridArg {
     item: any;
     column: Column;
 }
-export interface OnAutosizeColumnsEventArgs extends SlickGridEventData {
+export interface OnAutosizeColumnsEventArgs extends SlickGridArg {
     columns: Column[];
 }
-export interface OnBeforeUpdateColumnsEventArgs extends SlickGridEventData {
+export interface OnBeforeUpdateColumnsEventArgs extends SlickGridArg {
     columns: Column[];
 }
-export interface OnBeforeAppendCellEventArgs extends SlickGridEventData {
+export interface OnBeforeAppendCellEventArgs extends SlickGridArg {
     row: number;
     cell: number;
     value: any;
     dataContext: any;
 }
-export interface OnBeforeCellEditorDestroyEventArgs extends SlickGridEventData {
+export interface OnBeforeCellEditorDestroyEventArgs extends SlickGridArg {
     editor: Editor;
 }
-export interface OnBeforeColumnsResizeEventArgs extends SlickGridEventData {
+export interface OnBeforeColumnsResizeEventArgs extends SlickGridArg {
     triggeredByColumn: string;
 }
-export interface OnBeforeEditCellEventArgs extends SlickGridEventData {
+export interface OnBeforeEditCellEventArgs extends SlickGridArg {
     row?: number;
     cell?: number;
     item: any;
@@ -37,46 +37,46 @@ export interface OnBeforeEditCellEventArgs extends SlickGridEventData {
     target?: 'grid' | 'composite';
     compositeEditorOptions?: CompositeEditorOption;
 }
-export interface OnBeforeHeaderCellDestroyEventArgs extends SlickGridEventData {
+export interface OnBeforeHeaderCellDestroyEventArgs extends SlickGridArg {
     node: HTMLElement;
     column: Column;
 }
-export interface OnBeforeHeaderRowCellDestroyEventArgs extends SlickGridEventData {
+export interface OnBeforeHeaderRowCellDestroyEventArgs extends SlickGridArg {
     node: HTMLElement;
     column: Column;
 }
-export interface OnBeforeFooterRowCellDestroyEventArgs extends SlickGridEventData {
+export interface OnBeforeFooterRowCellDestroyEventArgs extends SlickGridArg {
     node: HTMLElement;
     column: Column;
 }
-export interface OnBeforeSetColumnsEventArgs extends SlickGridEventData {
+export interface OnBeforeSetColumnsEventArgs extends SlickGridArg {
     previousColumns: Column[];
     newColumns: Column[];
 }
-export interface OnCellChangeEventArgs extends SlickGridEventData {
+export interface OnCellChangeEventArgs extends SlickGridArg {
     row: number;
     cell: number;
     item: any;
     column: Column;
 }
-export interface OnCellCssStylesChangedEventArgs extends SlickGridEventData {
+export interface OnCellCssStylesChangedEventArgs extends SlickGridArg {
     key: string;
     hash: CssStyleHash;
 }
-export interface OnColumnsDragEventArgs extends SlickGridEventData {
+export interface OnColumnsDragEventArgs extends SlickGridArg {
     triggeredByColumn: string;
     resizeHandle: HTMLDivElement;
 }
-export interface OnColumnsReorderedEventArgs extends SlickGridEventData {
+export interface OnColumnsReorderedEventArgs extends SlickGridArg {
     impactedColumns: Column[];
 }
-export interface OnColumnsResizedEventArgs extends SlickGridEventData {
+export interface OnColumnsResizedEventArgs extends SlickGridArg {
     triggeredByColumn: string;
 }
-export interface OnColumnsResizeDblClickEventArgs extends SlickGridEventData {
+export interface OnColumnsResizeDblClickEventArgs extends SlickGridArg {
     triggeredByColumn: string;
 }
-export interface OnCompositeEditorChangeEventArgs extends SlickGridEventData {
+export interface OnCompositeEditorChangeEventArgs extends SlickGridArg {
     row?: number;
     cell?: number;
     item: any;
@@ -87,46 +87,46 @@ export interface OnCompositeEditorChangeEventArgs extends SlickGridEventData {
     };
     triggeredBy?: 'user' | 'system';
 }
-export interface OnClickEventArgs extends SlickGridEventData {
+export interface OnClickEventArgs extends SlickGridArg {
     row: number;
     cell: number;
 }
-export interface OnDblClickEventArgs extends SlickGridEventData {
+export interface OnDblClickEventArgs extends SlickGridArg {
     row: number;
     cell: number;
 }
-export interface OnFooterContextMenuEventArgs extends SlickGridEventData {
+export interface OnFooterContextMenuEventArgs extends SlickGridArg {
     column: Column;
 }
-export interface OnFooterRowCellRenderedEventArgs extends SlickGridEventData {
+export interface OnFooterRowCellRenderedEventArgs extends SlickGridArg {
     node: HTMLDivElement;
     column: Column;
 }
-export interface OnHeaderCellRenderedEventArgs extends SlickGridEventData {
+export interface OnHeaderCellRenderedEventArgs extends SlickGridArg {
     node: HTMLDivElement;
     column: Column;
 }
-export interface OnFooterClickEventArgs extends SlickGridEventData {
+export interface OnFooterClickEventArgs extends SlickGridArg {
     column: Column;
 }
-export interface OnHeaderClickEventArgs extends SlickGridEventData {
+export interface OnHeaderClickEventArgs extends SlickGridArg {
     column: Column;
 }
-export interface OnHeaderContextMenuEventArgs extends SlickGridEventData {
+export interface OnHeaderContextMenuEventArgs extends SlickGridArg {
     column: Column;
 }
-export interface OnHeaderMouseEventArgs extends SlickGridEventData {
+export interface OnHeaderMouseEventArgs extends SlickGridArg {
     column: Column;
 }
-export interface OnHeaderRowCellRenderedEventArgs extends SlickGridEventData {
+export interface OnHeaderRowCellRenderedEventArgs extends SlickGridArg {
     node: HTMLDivElement;
     column: Column;
 }
-export interface OnKeyDownEventArgs extends SlickGridEventData {
+export interface OnKeyDownEventArgs extends SlickGridArg {
     row: number;
     cell: number;
 }
-export interface OnValidationErrorEventArgs extends SlickGridEventData {
+export interface OnValidationErrorEventArgs extends SlickGridArg {
     row: number;
     cell: number;
     validationResults: EditorValidationResult;
@@ -134,31 +134,31 @@ export interface OnValidationErrorEventArgs extends SlickGridEventData {
     editor: Editor;
     cellNode: HTMLDivElement;
 }
-export interface OnRenderedEventArgs extends SlickGridEventData {
+export interface OnRenderedEventArgs extends SlickGridArg {
     startRow: number;
     endRow: number;
 }
-export interface OnSelectedRowsChangedEventArgs extends SlickGridEventData {
+export interface OnSelectedRowsChangedEventArgs extends SlickGridArg {
     rows: number[];
     previousSelectedRows: number[];
     changedSelectedRows: number[];
     changedUnselectedRows: number[];
     caller: string;
 }
-export interface OnSetOptionsEventArgs extends SlickGridEventData {
+export interface OnSetOptionsEventArgs extends SlickGridArg {
     optionsBefore: GridOption;
     optionsAfter: GridOption;
 }
-export interface OnActivateChangedOptionsEventArgs extends SlickGridEventData {
+export interface OnActivateChangedOptionsEventArgs extends SlickGridArg {
     options: GridOption;
 }
-export interface OnScrollEventArgs extends SlickGridEventData {
+export interface OnScrollEventArgs extends SlickGridArg {
     scrollLeft: number;
     scrollTop: number;
     cell: number;
     row: number;
 }
-export interface OnDragEventArgs extends SlickGridEventData {
+export interface OnDragEventArgs extends SlickGridArg {
     count: number;
     deltaX: number;
     deltaY: number;

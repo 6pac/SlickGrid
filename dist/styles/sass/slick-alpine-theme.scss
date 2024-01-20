@@ -273,6 +273,21 @@
 }
 
 .slick-header-column {
+  height: var(--alpine-header-column-height, $alpine-header-column-height); // header with 2 rows, just double the height
+  line-height: var(--alpine-header-column-line-height, $alpine-header-column-line-height);
+  position: relative;
+  overflow: hidden;
+  margin: 0;
+  padding: 4px;
+  border-style: solid;
+  border-width: var(--alpine-header-border-width, $alpine-header-border-width);
+  border-color: var(--alpine-header-border-color, $alpine-header-border-color);
+  vertical-align: var(--alpine-header-vertical-align, $alpine-header-vertical-align);
+  display: var(--alpine-header-display, $alpine-header-display);
+  align-items: var(--alpine-header-align-items, $alpine-header-align-items);
+  justify-content: var(--alpine-header-justify-content, $alpine-header-justify-content);
+  white-space: pre-wrap;
+
   .slick-header-menubutton {
     cursor: pointer;
     display: none;
@@ -299,23 +314,6 @@
     &.filtered {
       color: var(--alpine-header-menubutton-filtered-color, $alpine-header-menubutton-filtered-color);
     }
-  }
-
-  &.slick-header-column {
-    height: var(--alpine-header-column-height, $alpine-header-column-height); // header with 2 rows, just double the height
-    line-height: var(--alpine-header-column-line-height, $alpine-header-column-line-height);
-    position: relative;
-    overflow: hidden;
-    margin: 0;
-    padding: 4px;
-    border-style: solid;
-    border-width: var(--alpine-header-border-width, $alpine-header-border-width);
-    border-color: var(--alpine-header-border-color, $alpine-header-border-color);
-    vertical-align: var(--alpine-header-vertical-align, $alpine-header-vertical-align);
-    display: var(--alpine-header-display, $alpine-header-display);
-    align-items: var(--alpine-header-align-items, $alpine-header-align-items);
-    justify-content: var(--alpine-header-justify-content, $alpine-header-justify-content);
-    white-space: pre-wrap;
   }
 
   .slick-sort-indicator,
@@ -345,6 +343,10 @@
 
   .slick-sort-indicator-numbered {
     font-size: var(--alpine-sort-numbered-font-size, $alpine-sort-numbered-font-size);
+  }
+
+  &.unorderable {
+    background-color: var(--alpine-header-unorderable-bg-color, $alpine-header-unorderable-bg-color);
   }
 }
 

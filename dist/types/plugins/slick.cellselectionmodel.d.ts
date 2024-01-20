@@ -1,4 +1,4 @@
-import { SlickEvent as SlickEvent_, SlickRange as SlickRange_ } from '../slick.core';
+import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_ } from '../slick.core';
 import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector';
 import type { CustomDataView, OnActiveCellChangedEventArgs } from '../models/index';
 import type { SlickDataView } from '../slick.dataview';
@@ -32,12 +32,12 @@ export declare class SlickCellSelectionModel {
     setSelectedRanges(ranges: SlickRange_[], caller?: string): void;
     getSelectedRanges(): SlickRange_[];
     refreshSelections(): void;
-    protected handleBeforeCellRangeSelected(e: Event): boolean | void;
-    protected handleCellRangeSelected(_e: any, args: {
+    protected handleBeforeCellRangeSelected(e: SlickEventData_): boolean | void;
+    protected handleCellRangeSelected(_e: SlickEventData_, args: {
         range: SlickRange_;
     }): void;
-    protected handleActiveCellChange(_e: Event, args: OnActiveCellChangedEventArgs): void;
+    protected handleActiveCellChange(_e: SlickEventData_, args: OnActiveCellChangedEventArgs): void;
     protected isKeyAllowed(key: string): boolean;
-    protected handleKeyDown(e: KeyboardEvent): void;
+    protected handleKeyDown(e: SlickEventData_): void;
 }
 //# sourceMappingURL=slick.cellselectionmodel.d.ts.map

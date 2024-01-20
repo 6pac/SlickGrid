@@ -58,7 +58,7 @@ export interface GridMenuOption {
      */
     width?: number | string;
     /** Callback method to override the column name output used by the ColumnPicker/GridMenu. */
-    headerColumnValueExtractor?: (column: Column, gridOptions?: GridOption) => string | HTMLElement;
+    headerColumnValueExtractor?: (column: Column, gridOptions?: GridOption) => string | HTMLElement | DocumentFragment;
     /** Callback method that user can override the default behavior of enabling/disabling an item from the list. */
     menuUsabilityOverride?: (args: MenuCallbackArgs<any>) => boolean;
 }

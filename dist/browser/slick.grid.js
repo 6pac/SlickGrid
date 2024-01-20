@@ -24,7 +24,7 @@
       this.externalPubSub = externalPubSub;
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.7.1");
+      __publicField(this, "slickGridVersion", "5.8.0");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -105,6 +105,7 @@
         suppressActiveCellChangeOnEdit: !1,
         enableCellNavigation: !0,
         enableColumnReorder: !0,
+        unorderableColumnCssClass: "unorderable",
         asyncEditorLoading: !1,
         asyncEditorLoadDelay: 100,
         forceFitColumns: !1,
@@ -130,6 +131,7 @@
         editorFactory: null,
         cellFlashingCssClass: "flashing",
         rowHighlightCssClass: "highlight-animate",
+        rowHighlightDuration: 400,
         selectedCellCssClass: "selected",
         multiSelect: !0,
         enableTextSelectionOnCells: !1,
@@ -175,16 +177,17 @@
       });
       __publicField(this, "_columnDefaults", {
         name: "",
-        resizable: !0,
-        sortable: !1,
-        minWidth: 30,
-        maxWidth: void 0,
-        rerenderOnResize: !1,
         headerCssClass: null,
         defaultSortAsc: !0,
         focusable: !0,
-        selectable: !0,
-        hidden: !1
+        hidden: !1,
+        minWidth: 30,
+        maxWidth: void 0,
+        rerenderOnResize: !1,
+        reorderable: !0,
+        resizable: !0,
+        sortable: !1,
+        selectable: !0
       });
       __publicField(this, "_columnAutosizeDefaults", {
         ignoreHeaderText: !1,
@@ -413,9 +416,9 @@
       this.editController = {
         commitCurrentEdit: this.commitCurrentEdit.bind(this),
         cancelCurrentEdit: this.cancelCurrentEdit.bind(this)
-      }, Utils.emptyElement(this._container), this._container.style.overflow = "hidden", this._container.style.outline = String(0), this._container.classList.add(this.uid), this._container.classList.add("ui-widget");
+      }, Utils.emptyElement(this._container), this._container.style.overflow = "hidden", this._container.style.outline = String(0), this._container.classList.add(this.uid), this._container.classList.add("ui-widget"), this._container.setAttribute("role", "grid");
       let containerStyles = window.getComputedStyle(this._container);
-      /relative|absolute|fixed/.test(containerStyles.position) || (this._container.style.position = "relative"), this._focusSink = Utils.createDomElement("div", { tabIndex: 0, style: { position: "fixed", width: "0px", height: "0px", top: "0px", left: "0px", outline: "0px" } }, this._container), this._paneHeaderL = Utils.createDomElement("div", { className: "slick-pane slick-pane-header slick-pane-left", tabIndex: 0 }, this._container), this._paneHeaderR = Utils.createDomElement("div", { className: "slick-pane slick-pane-header slick-pane-right", tabIndex: 0 }, this._container), this._paneTopL = Utils.createDomElement("div", { className: "slick-pane slick-pane-top slick-pane-left", tabIndex: 0 }, this._container), this._paneTopR = Utils.createDomElement("div", { className: "slick-pane slick-pane-top slick-pane-right", tabIndex: 0 }, this._container), this._paneBottomL = Utils.createDomElement("div", { className: "slick-pane slick-pane-bottom slick-pane-left", tabIndex: 0 }, this._container), this._paneBottomR = Utils.createDomElement("div", { className: "slick-pane slick-pane-bottom slick-pane-right", tabIndex: 0 }, this._container), this._options.createPreHeaderPanel && (this._preHeaderPanelScroller = Utils.createDomElement("div", { className: "slick-preheader-panel ui-state-default slick-state-default", style: { overflow: "hidden", position: "relative" } }, this._paneHeaderL), this._preHeaderPanelScroller.appendChild(document.createElement("div")), this._preHeaderPanel = Utils.createDomElement("div", null, this._preHeaderPanelScroller), this._preHeaderPanelSpacer = Utils.createDomElement("div", { style: { display: "block", height: "1px", position: "absolute", top: "0px", left: "0px" } }, this._preHeaderPanelScroller), this._preHeaderPanelScrollerR = Utils.createDomElement("div", { className: "slick-preheader-panel ui-state-default slick-state-default", style: { overflow: "hidden", position: "relative" } }, this._paneHeaderR), this._preHeaderPanelR = Utils.createDomElement("div", null, this._preHeaderPanelScrollerR), this._preHeaderPanelSpacerR = Utils.createDomElement("div", { style: { display: "block", height: "1px", position: "absolute", top: "0px", left: "0px" } }, this._preHeaderPanelScrollerR), this._options.showPreHeaderPanel || (Utils.hide(this._preHeaderPanelScroller), Utils.hide(this._preHeaderPanelScrollerR))), this._headerScrollerL = Utils.createDomElement("div", { className: "slick-header ui-state-default slick-state-default slick-header-left" }, this._paneHeaderL), this._headerScrollerR = Utils.createDomElement("div", { className: "slick-header ui-state-default slick-state-default slick-header-right" }, this._paneHeaderR), this._headerScroller.push(this._headerScrollerL), this._headerScroller.push(this._headerScrollerR), this._headerL = Utils.createDomElement("div", { className: "slick-header-columns slick-header-columns-left", style: { left: "-1000px" } }, this._headerScrollerL), this._headerR = Utils.createDomElement("div", { className: "slick-header-columns slick-header-columns-right", style: { left: "-1000px" } }, this._headerScrollerR), this._headers = [this._headerL, this._headerR], this._headerRowScrollerL = Utils.createDomElement("div", { className: "slick-headerrow ui-state-default slick-state-default" }, this._paneTopL), this._headerRowScrollerR = Utils.createDomElement("div", { className: "slick-headerrow ui-state-default slick-state-default" }, this._paneTopR), this._headerRowScroller = [this._headerRowScrollerL, this._headerRowScrollerR], this._headerRowSpacerL = Utils.createDomElement("div", { style: { display: "block", height: "1px", position: "absolute", top: "0px", left: "0px" } }, this._headerRowScrollerL), this._headerRowSpacerR = Utils.createDomElement("div", { style: { display: "block", height: "1px", position: "absolute", top: "0px", left: "0px" } }, this._headerRowScrollerR), this._headerRowL = Utils.createDomElement("div", { className: "slick-headerrow-columns slick-headerrow-columns-left" }, this._headerRowScrollerL), this._headerRowR = Utils.createDomElement("div", { className: "slick-headerrow-columns slick-headerrow-columns-right" }, this._headerRowScrollerR), this._headerRows = [this._headerRowL, this._headerRowR], this._topPanelScrollerL = Utils.createDomElement("div", { className: "slick-top-panel-scroller ui-state-default slick-state-default" }, this._paneTopL), this._topPanelScrollerR = Utils.createDomElement("div", { className: "slick-top-panel-scroller ui-state-default slick-state-default" }, this._paneTopR), this._topPanelScrollers = [this._topPanelScrollerL, this._topPanelScrollerR], this._topPanelL = Utils.createDomElement("div", { className: "slick-top-panel", style: { width: "10000px" } }, this._topPanelScrollerL), this._topPanelR = Utils.createDomElement("div", { className: "slick-top-panel", style: { width: "10000px" } }, this._topPanelScrollerR), this._topPanels = [this._topPanelL, this._topPanelR], this._options.showColumnHeader || this._headerScroller.forEach((el) => {
+      /relative|absolute|fixed/.test(containerStyles.position) || (this._container.style.position = "relative"), this._focusSink = Utils.createDomElement("div", { tabIndex: 0, style: { position: "fixed", width: "0px", height: "0px", top: "0px", left: "0px", outline: "0px" } }, this._container), this._paneHeaderL = Utils.createDomElement("div", { className: "slick-pane slick-pane-header slick-pane-left", tabIndex: 0 }, this._container), this._paneHeaderR = Utils.createDomElement("div", { className: "slick-pane slick-pane-header slick-pane-right", tabIndex: 0 }, this._container), this._paneTopL = Utils.createDomElement("div", { className: "slick-pane slick-pane-top slick-pane-left", tabIndex: 0 }, this._container), this._paneTopR = Utils.createDomElement("div", { className: "slick-pane slick-pane-top slick-pane-right", tabIndex: 0 }, this._container), this._paneBottomL = Utils.createDomElement("div", { className: "slick-pane slick-pane-bottom slick-pane-left", tabIndex: 0 }, this._container), this._paneBottomR = Utils.createDomElement("div", { className: "slick-pane slick-pane-bottom slick-pane-right", tabIndex: 0 }, this._container), this._options.createPreHeaderPanel && (this._preHeaderPanelScroller = Utils.createDomElement("div", { className: "slick-preheader-panel ui-state-default slick-state-default", style: { overflow: "hidden", position: "relative" } }, this._paneHeaderL), this._preHeaderPanelScroller.appendChild(document.createElement("div")), this._preHeaderPanel = Utils.createDomElement("div", null, this._preHeaderPanelScroller), this._preHeaderPanelSpacer = Utils.createDomElement("div", { style: { display: "block", height: "1px", position: "absolute", top: "0px", left: "0px" } }, this._preHeaderPanelScroller), this._preHeaderPanelScrollerR = Utils.createDomElement("div", { className: "slick-preheader-panel ui-state-default slick-state-default", style: { overflow: "hidden", position: "relative" } }, this._paneHeaderR), this._preHeaderPanelR = Utils.createDomElement("div", null, this._preHeaderPanelScrollerR), this._preHeaderPanelSpacerR = Utils.createDomElement("div", { style: { display: "block", height: "1px", position: "absolute", top: "0px", left: "0px" } }, this._preHeaderPanelScrollerR), this._options.showPreHeaderPanel || (Utils.hide(this._preHeaderPanelScroller), Utils.hide(this._preHeaderPanelScrollerR))), this._headerScrollerL = Utils.createDomElement("div", { className: "slick-header ui-state-default slick-state-default slick-header-left" }, this._paneHeaderL), this._headerScrollerR = Utils.createDomElement("div", { className: "slick-header ui-state-default slick-state-default slick-header-right" }, this._paneHeaderR), this._headerScroller.push(this._headerScrollerL), this._headerScroller.push(this._headerScrollerR), this._headerL = Utils.createDomElement("div", { className: "slick-header-columns slick-header-columns-left", role: "row", style: { left: "-1000px" } }, this._headerScrollerL), this._headerR = Utils.createDomElement("div", { className: "slick-header-columns slick-header-columns-right", role: "row", style: { left: "-1000px" } }, this._headerScrollerR), this._headers = [this._headerL, this._headerR], this._headerRowScrollerL = Utils.createDomElement("div", { className: "slick-headerrow ui-state-default slick-state-default" }, this._paneTopL), this._headerRowScrollerR = Utils.createDomElement("div", { className: "slick-headerrow ui-state-default slick-state-default" }, this._paneTopR), this._headerRowScroller = [this._headerRowScrollerL, this._headerRowScrollerR], this._headerRowSpacerL = Utils.createDomElement("div", { style: { display: "block", height: "1px", position: "absolute", top: "0px", left: "0px" } }, this._headerRowScrollerL), this._headerRowSpacerR = Utils.createDomElement("div", { style: { display: "block", height: "1px", position: "absolute", top: "0px", left: "0px" } }, this._headerRowScrollerR), this._headerRowL = Utils.createDomElement("div", { className: "slick-headerrow-columns slick-headerrow-columns-left" }, this._headerRowScrollerL), this._headerRowR = Utils.createDomElement("div", { className: "slick-headerrow-columns slick-headerrow-columns-right" }, this._headerRowScrollerR), this._headerRows = [this._headerRowL, this._headerRowR], this._topPanelScrollerL = Utils.createDomElement("div", { className: "slick-top-panel-scroller ui-state-default slick-state-default" }, this._paneTopL), this._topPanelScrollerR = Utils.createDomElement("div", { className: "slick-top-panel-scroller ui-state-default slick-state-default" }, this._paneTopR), this._topPanelScrollers = [this._topPanelScrollerL, this._topPanelScrollerR], this._topPanelL = Utils.createDomElement("div", { className: "slick-top-panel", style: { width: "10000px" } }, this._topPanelScrollerL), this._topPanelR = Utils.createDomElement("div", { className: "slick-top-panel", style: { width: "10000px" } }, this._topPanelScrollerR), this._topPanels = [this._topPanelL, this._topPanelR], this._options.showColumnHeader || this._headerScroller.forEach((el) => {
         Utils.hide(el);
       }), this._options.showTopPanel || this._topPanelScrollers.forEach((scroller) => {
         Utils.hide(scroller);
@@ -655,25 +658,25 @@
     /**
      * Updates an existing column definition and a corresponding header DOM element with the new title and tooltip.
      * @param {Number|String} columnId Column id.
-     * @param {String} [title] New column name.
+     * @param {string | HTMLElement | DocumentFragment} [title] New column name.
      * @param {String} [toolTip] New column tooltip.
      */
     updateColumnHeader(columnId, title, toolTip) {
-      if (!this.initialized)
-        return;
-      let idx = this.getColumnIndex(columnId);
-      if (!Utils.isDefined(idx))
-        return;
-      let columnDef = this.columns[idx], header = this.getColumnByIndex(idx);
-      header && (title !== void 0 && (this.columns[idx].name = title), toolTip !== void 0 && (this.columns[idx].toolTip = toolTip), this.trigger(this.onBeforeHeaderCellDestroy, {
-        node: header,
-        column: columnDef,
-        grid: this
-      }), header.setAttribute("title", toolTip || ""), title !== void 0 && this.applyHtmlCode(header.children[0], title), this.trigger(this.onHeaderCellRendered, {
-        node: header,
-        column: columnDef,
-        grid: this
-      }));
+      if (this.initialized) {
+        let idx = this.getColumnIndex(columnId);
+        if (!Utils.isDefined(idx))
+          return;
+        let columnDef = this.columns[idx], header = this.getColumnByIndex(idx);
+        header && (title !== void 0 && (this.columns[idx].name = title), toolTip !== void 0 && (this.columns[idx].toolTip = toolTip), this.trigger(this.onBeforeHeaderCellDestroy, {
+          node: header,
+          column: columnDef,
+          grid: this
+        }), header.setAttribute("title", toolTip || ""), title !== void 0 && this.applyHtmlCode(header.children[0], title), this.trigger(this.onHeaderCellRendered, {
+          node: header,
+          column: columnDef,
+          grid: this
+        }));
+      }
     }
     /**
      * Get the Header DOM element
@@ -795,7 +798,9 @@
         });
       }), Utils.emptyElement(this._footerRowR)));
       for (let i = 0; i < this.columns.length; i++) {
-        let m = this.columns[i], headerTarget = this.hasFrozenColumns() ? i <= this._options.frozenColumn ? this._headerL : this._headerR : this._headerL, headerRowTarget = this.hasFrozenColumns() ? i <= this._options.frozenColumn ? this._headerRowL : this._headerRowR : this._headerRowL, header = Utils.createDomElement("div", { id: `${this.uid + m.id}`, dataset: { id: String(m.id) }, className: "ui-state-default slick-state-default slick-header-column", title: m.toolTip || "" }, headerTarget), colNameElm = Utils.createDomElement("span", { className: "slick-column-name" }, header);
+        let m = this.columns[i], headerTarget = this.hasFrozenColumns() ? i <= this._options.frozenColumn ? this._headerL : this._headerR : this._headerL, headerRowTarget = this.hasFrozenColumns() ? i <= this._options.frozenColumn ? this._headerRowL : this._headerRowR : this._headerRowL, header = Utils.createDomElement("div", { id: `${this.uid + m.id}`, dataset: { id: String(m.id) }, role: "columnheader", className: "ui-state-default slick-state-default slick-header-column" }, headerTarget);
+        m.toolTip && (header.title = m.toolTip), m.reorderable || header.classList.add(this._options.unorderableColumnCssClass);
+        let colNameElm = Utils.createDomElement("span", { className: "slick-column-name" }, header);
         this.applyHtmlCode(colNameElm, m.name), Utils.width(header, m.width - this.headerColumnWidthDiff);
         let classname = m.headerCssClass || null;
         if (classname && header.classList.add(...Utils.classNameToList(classname)), classname = this.hasFrozenColumns() && i <= this._options.frozenColumn ? "frozen" : null, classname && header.classList.add(classname), this._bindingEventService.bind(header, "mouseenter", this.handleHeaderMouseEnter.bind(this)), this._bindingEventService.bind(header, "mouseleave", this.handleHeaderMouseLeave.bind(this)), Utils.storage.put(header, "column", m), (this._options.enableColumnReorder || m.sortable) && (this._bindingEventService.bind(header, "mouseenter", this.handleHeaderMouseHoverOn.bind(this)), this._bindingEventService.bind(header, "mouseleave", this.handleHeaderMouseHoverOff.bind(this))), m.hasOwnProperty("headerCellAttrs") && m.headerCellAttrs instanceof Object)
@@ -861,22 +866,10 @@
         });
       });
     }
-    currentPositionInHeader(id) {
-      let currentPosition = 0;
-      return this._headers.forEach((header) => {
-        header.querySelectorAll(".slick-header-column").forEach((column, i) => {
-          column.id === id && (currentPosition = i);
-        });
-      }), currentPosition;
-    }
-    remove(arr, elem) {
-      let index = arr.lastIndexOf(elem);
-      index > -1 && (arr.splice(index, 1), this.remove(arr, elem));
-    }
     setupColumnReorder() {
       var _a, _b;
       (_a = this.sortableSideLeftInstance) == null || _a.destroy(), (_b = this.sortableSideRightInstance) == null || _b.destroy();
-      let columnScrollTimer = null, scrollColumnsRight = () => this._viewportScrollContainerX.scrollLeft = this._viewportScrollContainerX.scrollLeft + 10, scrollColumnsLeft = () => this._viewportScrollContainerX.scrollLeft = this._viewportScrollContainerX.scrollLeft - 10, canDragScroll, sortableOptions = {
+      let columnScrollTimer = null, scrollColumnsRight = () => this._viewportScrollContainerX.scrollLeft = this._viewportScrollContainerX.scrollLeft + 10, scrollColumnsLeft = () => this._viewportScrollContainerX.scrollLeft = this._viewportScrollContainerX.scrollLeft - 10, canDragScroll = !1, sortableOptions = {
         animation: 50,
         direction: "horizontal",
         chosenClass: "slick-header-column-active",
@@ -886,21 +879,22 @@
         revertClone: !0,
         scroll: !this.hasFrozenColumns(),
         // enable auto-scroll
+        // lock unorderable columns by using a combo of filter + onMove
+        filter: `.${this._options.unorderableColumnCssClass}`,
+        onMove: (event) => !event.related.classList.contains(this._options.unorderableColumnCssClass),
         onStart: (e) => {
           canDragScroll = !this.hasFrozenColumns() || Utils.offset(e.item).left > Utils.offset(this._viewportScrollContainerX).left, canDragScroll && e.originalEvent.pageX > this._container.clientWidth ? columnScrollTimer || (columnScrollTimer = setInterval(scrollColumnsRight, 100)) : canDragScroll && e.originalEvent.pageX < Utils.offset(this._viewportScrollContainerX).left ? columnScrollTimer || (columnScrollTimer = setInterval(scrollColumnsLeft, 100)) : (clearInterval(columnScrollTimer), columnScrollTimer = null);
         },
         onEnd: (e) => {
           var _a2, _b2, _c, _d, _e;
-          clearInterval(columnScrollTimer), columnScrollTimer = null;
-          let limit;
-          if (!((_a2 = this.getEditorLock()) != null && _a2.commitCurrentEdit()))
+          if (clearInterval(columnScrollTimer), columnScrollTimer = null, !((_a2 = this.getEditorLock()) != null && _a2.commitCurrentEdit()))
             return;
           let reorderedIds = (_c = (_b2 = this.sortableSideLeftInstance) == null ? void 0 : _b2.toArray()) != null ? _c : [];
           reorderedIds = reorderedIds.concat((_e = (_d = this.sortableSideRightInstance) == null ? void 0 : _d.toArray()) != null ? _e : []);
           let reorderedColumns = [];
           for (let i = 0; i < reorderedIds.length; i++)
             reorderedColumns.push(this.columns[this.getColumnIndex(reorderedIds[i])]);
-          this.setColumns(reorderedColumns), this.trigger(this.onColumnsReordered, { impactedColumns: this.getImpactedColumns(limit) }), e.stopPropagation(), this.setupColumnResize(), this.activeCellNode && this.setFocus();
+          this.setColumns(reorderedColumns), this.trigger(this.onColumnsReordered, { impactedColumns: this.columns }), e.stopPropagation(), this.setupColumnResize(), this.activeCellNode && this.setFocus();
         }
       };
       this.sortableSideLeftInstance = Sortable.create(this._headerL, sortableOptions), this.sortableSideRightInstance = Sortable.create(this._headerR, sortableOptions);
@@ -909,16 +903,7 @@
       let a = Array.from(this._headers[0].children), b = Array.from(this._headers[1].children);
       return a.concat(b);
     }
-    getImpactedColumns(limit) {
-      let impactedColumns = [];
-      if (limit)
-        for (let i = limit.start; i <= limit.end; i++)
-          impactedColumns.push(this.columns[i]);
-      else
-        impactedColumns = this.columns;
-      return impactedColumns;
-    }
-    handleResizeableHandleDoubleClick(evt) {
+    handleResizeableDoubleClick(evt) {
       let triggeredByColumn = evt.target.parentElement.id.replace(this.uid, "");
       this.trigger(this.onColumnsResizeDblClick, { triggeredByColumn });
     }
@@ -934,7 +919,7 @@
           if (i >= this.columns.length || !this.columns[i] || this.columns[i].hidden || i < firstResizable || this._options.forceFitColumns && i >= lastResizable)
             continue;
           let resizeableHandle = Utils.createDomElement("div", { className: "slick-resizable-handle", role: "separator", ariaOrientation: "horizontal" }, colElm);
-          this._bindingEventService.bind(resizeableHandle, "dblclick", this.handleResizeableHandleDoubleClick.bind(this)), this.slickResizableInstances.push(
+          this._bindingEventService.bind(resizeableHandle, "dblclick", this.handleResizeableDoubleClick.bind(this)), this.slickResizableInstances.push(
             Resizable({
               resizeableElement: colElm,
               resizeableHandleElement: resizeableHandle,
@@ -1312,8 +1297,13 @@
     legacyAutosizeColumns() {
       var _a, _b;
       let i, c, shrinkLeeway = 0, total = 0, prevTotal = 0, widths = [], availWidth = this.viewportHasVScroll ? this.viewportW - ((_b = (_a = this.scrollbarDimensions) == null ? void 0 : _a.width) != null ? _b : 0) : this.viewportW;
-      for (i = 0; i < this.columns.length; i++)
-        c = this.columns[i], !(!c || c.hidden) && (widths.push(c.width || 0), total += c.width || 0, c.resizable && (shrinkLeeway += (c.width || 0) - Math.max(c.minWidth || 0, this.absoluteColumnMinWidth)));
+      for (i = 0; i < this.columns.length; i++) {
+        if (c = this.columns[i], !c || c.hidden) {
+          widths.push(0);
+          continue;
+        }
+        widths.push(c.width || 0), total += c.width || 0, c.resizable && (shrinkLeeway += (c.width || 0) - Math.max(c.minWidth || 0, this.absoluteColumnMinWidth));
+      }
       for (prevTotal = total; total > availWidth && shrinkLeeway; ) {
         let shrinkProportion = (total - availWidth) / shrinkLeeway;
         for (i = 0; i < this.columns.length && total > availWidth; i++) {
@@ -1698,7 +1688,7 @@
       d || (rowCss += " " + this._options.addNewRowCssClass);
       let metadata = (_b = (_a = this.data) == null ? void 0 : _a.getItemMetadata) == null ? void 0 : _b.call(_a, row);
       metadata != null && metadata.cssClasses && (rowCss += " " + metadata.cssClasses);
-      let frozenRowOffset = this.getFrozenRowOffset(row), rowDiv = Utils.createDomElement("div", { className: `ui-widget-content ${rowCss}`, style: { top: `${this.getRowTop(row) - frozenRowOffset}px` } }), rowDivR;
+      let frozenRowOffset = this.getFrozenRowOffset(row), rowDiv = Utils.createDomElement("div", { className: `ui-widget-content ${rowCss}`, role: "row", style: { top: `${this.getRowTop(row) - frozenRowOffset}px` } }), rowDivR;
       divArrayL.push(rowDiv), this.hasFrozenColumns() && (rowDivR = rowDiv.cloneNode(!0), divArrayR.push(rowDivR));
       let colspan, m;
       for (let i = 0, ii = this.columns.length; i < ii; i++)
@@ -1725,9 +1715,13 @@
       let value = null, formatterResult = "";
       item && (value = this.getDataItemValueForColumn(item, m), formatterResult = this.getFormatter(row, m)(row, cell, value, m, item, this), formatterResult == null && (formatterResult = ""));
       let appendCellResult = this.trigger(this.onBeforeAppendCell, { row, cell, value, dataContext: item }).getReturnValue(), addlCssClasses = typeof appendCellResult == "string" ? appendCellResult : "";
-      formatterResult != null && formatterResult.addClasses && (addlCssClasses += (addlCssClasses ? " " : "") + formatterResult.addClasses);
-      let toolTipText = formatterResult != null && formatterResult.toolTip ? `${formatterResult.toolTip}` : "", cellDiv = document.createElement("div");
-      if (cellDiv.className = `${cellCss} ${addlCssClasses || ""}`.trim(), cellDiv.setAttribute("title", toolTipText), m.hasOwnProperty("cellAttrs") && m.cellAttrs instanceof Object && Object.keys(m.cellAttrs).forEach((key) => {
+      formatterResult != null && formatterResult.addClasses && (addlCssClasses += Utils.classNameToList((addlCssClasses ? " " : "") + formatterResult.addClasses).join(" "));
+      let toolTipText = formatterResult != null && formatterResult.toolTip ? `${formatterResult.toolTip}` : "", cellDiv = Utils.createDomElement("div", {
+        className: Utils.classNameToList(`${cellCss} ${addlCssClasses || ""}`).join(" "),
+        role: "gridcell",
+        tabIndex: -1
+      });
+      if (cellDiv.setAttribute("aria-describedby", this.uid + m.id), toolTipText && cellDiv.setAttribute("title", toolTipText), m.hasOwnProperty("cellAttrs") && m.cellAttrs instanceof Object && Object.keys(m.cellAttrs).forEach((key) => {
         m.cellAttrs.hasOwnProperty(key) && cellDiv.setAttribute(key, m.cellAttrs[key]);
       }), item) {
         let cellResult = Object.prototype.toString.call(formatterResult) !== "[object Object]" ? formatterResult : formatterResult.html || formatterResult.text;
@@ -1813,7 +1807,7 @@
         return;
       }
       let formatterVal = formatterResult.html || formatterResult.text;
-      this.applyHtmlCode(cellNode, formatterVal), formatterResult.removeClasses && !suppressRemove && Utils.classNameToList(formatterResult.removeClasses).forEach((c) => cellNode.classList.remove(c)), formatterResult.addClasses && Utils.classNameToList(formatterResult.addClasses).forEach((c) => cellNode.classList.add(c)), formatterResult.toolTip && cellNode.setAttribute("title", formatterResult.toolTip);
+      this.applyHtmlCode(cellNode, formatterVal), formatterResult.removeClasses && !suppressRemove && cellNode.classList.remove(...Utils.classNameToList(formatterResult.removeClasses)), formatterResult.addClasses && cellNode.classList.add(...Utils.classNameToList(formatterResult.addClasses)), formatterResult.toolTip && cellNode.setAttribute("title", formatterResult.toolTip);
     }
     /**
      * Update a specific cell by its row and column index
@@ -2232,13 +2226,13 @@
     /**
      * Highlight a row for a certain duration (ms) of time.
      * @param {Number} row - grid row number
-     * @param {Number} [duration] - duration (ms), defaults to 500ms
+     * @param {Number} [duration] - duration (ms), defaults to 400ms
      */
-    highlightRow(row, duration = 500) {
+    highlightRow(row, duration) {
       let rowCache = this.rowsCache[row];
-      Array.isArray(rowCache == null ? void 0 : rowCache.rowNode) && this._options.rowHighlightCssClass && (rowCache.rowNode.forEach((node) => node.classList.add(this._options.rowHighlightCssClass || "")), clearTimeout(this._highlightRowTimer), this._highlightRowTimer = setTimeout(() => {
+      duration || (duration = this._options.rowHighlightDuration), Array.isArray(rowCache == null ? void 0 : rowCache.rowNode) && this._options.rowHighlightCssClass && (rowCache.rowNode.forEach((node) => node.classList.add(...Utils.classNameToList(this._options.rowHighlightCssClass))), clearTimeout(this._highlightRowTimer), this._highlightRowTimer = setTimeout(() => {
         var _a;
-        (_a = rowCache.rowNode) == null || _a.forEach((node) => node.classList.remove(this._options.rowHighlightCssClass || ""));
+        (_a = rowCache.rowNode) == null || _a.forEach((node) => node.classList.remove(...Utils.classNameToList(this._options.rowHighlightCssClass)));
       }, duration));
     }
     //////////////////////////////////////////////////////////////////////////////////////////////
@@ -2372,15 +2366,16 @@
       return !(row < 0 || row >= this.getDataLength() || cell < 0 || cell >= this.columns.length);
     }
     /**
-     * Returns a hash containing row and cell indexes. Coordinates are relative to the top left corner of the grid beginning with the first row (not including the column headers).
+     * Returns row and cell indexes by providing x,y coordinates.
+     * Coordinates are relative to the top left corner of the grid beginning with the first row (not including the column headers).
      * @param x An x coordinate.
      * @param y A y coordinate.
      */
     getCellFromPoint(x, y) {
       let row = this.getRowFromPosition(y), cell = 0, w = 0;
-      for (let i = 0; i < this.columns.length && w < x; i++)
+      for (let i = 0; i < this.columns.length && w <= x; i++)
         !this.columns[i] || this.columns[i].hidden || (w += this.columns[i].width, cell++);
-      return cell < 0 && (cell = 0), { row, cell: cell - 1 };
+      return cell -= 1, row < -1 && (row = -1), { row, cell };
     }
     getCellFromNode(cellNode) {
       let cls = /l\d+/.exec(cellNode.className);
@@ -3074,7 +3069,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.7.1
+ * SlickGrid v5.8.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

@@ -46,11 +46,11 @@
     }
     getHeaderValueForColumn(columnDef) {
       if (this._options.headerColumnValueExtractor) {
-        let val = this._options.headerColumnValueExtractor(columnDef);
+        let val = Utils.getHtmlStringOutput(this._options.headerColumnValueExtractor(columnDef));
         if (val)
           return val;
       }
-      return columnDef.name;
+      return Utils.getHtmlStringOutput(columnDef.name || "");
     }
     getDataItemValueForColumn(item, columnDef, event) {
       if (typeof this._options.dataItemColumnValueExtractor == "function") {
@@ -216,7 +216,7 @@
               if (clipTextRows.length === 0 && this._options.includeHeaderWhenCopying) {
                 let clipTextHeaders = [];
                 for (let j = range.fromCell; j < range.toCell + 1; j++)
-                  (columns[j].name instanceof HTMLElement ? columns[j].name.innerHTML : columns[j].name).length > 0 && !columns[j].hidden && clipTextHeaders.push(this.getHeaderValueForColumn(columns[j]));
+                  (columns[j].name instanceof HTMLElement ? columns[j].name.innerHTML : columns[j].name).length > 0 && !columns[j].hidden && clipTextHeaders.push(this.getHeaderValueForColumn(columns[j]) || "");
                 clipTextRows.push(clipTextHeaders.join("	"));
               }
               for (let j = range.fromCell; j < range.toCell + 1; j++)

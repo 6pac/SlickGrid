@@ -1,4 +1,5 @@
 import type { AutoTooltipOption, Column, SlickPlugin } from '../models/index';
+import { type SlickEventData } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 /**
  * AutoTooltips plugin to show/hide tooltips when columns are too narrow to fit content.
@@ -26,15 +27,15 @@ export declare class SlickAutoTooltips implements SlickPlugin {
     destroy(): void;
     /**
      * Handle mouse entering grid cell to add/remove tooltip.
-     * @param {MouseEvent} event - The event
+     * @param {SlickEventData} event - The event
      */
-    protected handleMouseEnter(event: MouseEvent): void;
+    protected handleMouseEnter(event: SlickEventData): void;
     /**
      * Handle mouse entering header cell to add/remove tooltip.
-     * @param {MouseEvent} event   - The event
+     * @param {SlickEventData} event   - The event
      * @param {object} args.column - The column definition
      */
-    protected handleHeaderMouseEnter(event: MouseEvent, args: {
+    protected handleHeaderMouseEnter(event: SlickEventData, args: {
         column: Column;
     }): void;
 }

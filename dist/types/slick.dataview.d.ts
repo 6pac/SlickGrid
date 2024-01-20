@@ -80,7 +80,7 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     onRowsOrCountChanged: SlickEvent_<OnRowsOrCountChangedEventArgs>;
     onSelectedRowIdsChanged: SlickEvent_<OnSelectedRowIdsChangedEventArgs>;
     onSetItemsCalled: SlickEvent_<OnSetItemsCalledEventArgs>;
-    constructor(options: Partial<DataViewOption>, externalPubSub?: BasePubSub | undefined);
+    constructor(options?: Partial<DataViewOption>, externalPubSub?: BasePubSub | undefined);
     /**
      * Begins a bached update of the items in the data view.
      * including deletes and the related events are postponed to the endUpdate call.

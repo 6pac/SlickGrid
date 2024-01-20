@@ -1,5 +1,5 @@
 import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_ } from '../slick.core';
-import type { Column, DOMEvent, DragRowMove, FormatterResultWithHtml, RowMoveManagerOption, UsabilityOverrideFn } from '../models/index';
+import type { Column, DragRowMove, FormatterResultWithHtml, RowMoveManagerOption, UsabilityOverrideFn } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 /**
  * Row Move Manager options:
@@ -41,10 +41,10 @@ export declare class SlickRowMoveManager {
     init(grid: SlickGrid): void;
     destroy(): void;
     setOptions(newOptions: Partial<RowMoveManagerOption>): void;
-    protected handleDragInit(e: MouseEvent): void;
-    protected handleDragStart(e: DOMEvent<HTMLDivElement>, dd: DragRowMove): boolean | void;
+    protected handleDragInit(e: SlickEventData_): void;
+    protected handleDragStart(e: SlickEventData_, dd: DragRowMove): boolean | void;
     protected handleDrag(evt: SlickEventData_, dd: DragRowMove): boolean | void;
-    protected handleDragEnd(e: MouseEvent, dd: DragRowMove): void;
+    protected handleDragEnd(e: SlickEventData_, dd: DragRowMove): void;
     getColumnDefinition(): Column;
     protected moveIconFormatter(row: number, _cell: number, _val: any, _column: Column, dataContext: any, grid: SlickGrid): FormatterResultWithHtml | string;
     protected checkUsabilityOverride(row: number, dataContext: any, grid: SlickGrid): boolean;

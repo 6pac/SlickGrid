@@ -22,9 +22,28 @@ export declare class SlickEventData<ArgType = any> {
     protected _isDefaultPrevented: boolean;
     protected returnValues: string[];
     protected returnValue: any;
-    protected target?: EventTarget | null;
+    protected _eventTarget?: EventTarget | null;
     protected nativeEvent?: Event | null;
     protected arguments_?: ArgType;
+    readonly altKey?: boolean;
+    readonly ctrlKey?: boolean;
+    readonly metaKey?: boolean;
+    readonly shiftKey?: boolean;
+    readonly key?: string;
+    readonly keyCode?: number;
+    readonly clientX?: number;
+    readonly clientY?: number;
+    readonly offsetX?: number;
+    readonly offsetY?: number;
+    readonly pageX?: number;
+    readonly pageY?: number;
+    readonly bubbles?: boolean;
+    readonly target?: HTMLElement;
+    readonly type?: string;
+    readonly which?: number;
+    readonly x?: number;
+    readonly y?: number;
+    get defaultPrevented(): boolean;
     constructor(event?: Event | null | undefined, args?: ArgType | undefined);
     /**
      * Stops event from propagating up the DOM tree.
@@ -95,7 +114,7 @@ export declare class SlickEvent<ArgType = any> {
      * @param {Object} [scope] - The scope ("this") within which the handler will be executed.
      *      If not specified, the scope will be set to the <code>Event</code> instance.
      */
-    notify(args: ArgType, evt?: SlickEventData | Event | MergeTypes<SlickEventData, Event> | null, scope?: any): SlickEventData<any>;
+    notify(args: ArgType, evt?: SlickEventData<ArgType> | Event | MergeTypes<SlickEventData<ArgType>, Event> | null, scope?: any): SlickEventData<any>;
     setPubSubService(pubSub: BasePubSub): void;
 }
 export declare class SlickEventHandler {
@@ -366,13 +385,22 @@ export declare class Utils {
     static createDomElement<T extends keyof HTMLElementTagNameMap, K extends keyof HTMLElementTagNameMap[T]>(tagName: T, elementOptions?: null | {
         [P in K]: InferDOMType<HTMLElementTagNameMap[T][P]>;
     }, appendToParent?: Element): HTMLElementTagNameMap[T];
+    /**
+     * From any input provided, return the HTML string (when a string is provided, it will be returned "as is" but when it's a number it will be converted to string)
+     * When detecting HTMLElement/DocumentFragment, we can also specify which HTML type to retrieve innerHTML or outerHTML.
+     * We can get the HTML by looping through all fragment `childNodes`
+     * @param {DocumentFragment | HTMLElement | string | number} input
+     * @param {'innerHTML' | 'outerHTML'} [type] - when the input is a DocumentFragment or HTMLElement, which type of HTML do you want to return? 'innerHTML' or 'outerHTML'
+     * @returns {String}
+     */
+    static getHtmlStringOutput(input: DocumentFragment | HTMLElement | string | number, type?: 'innerHTML' | 'outerHTML'): string;
     static emptyElement<T extends Element = Element>(element?: T | null): T | undefined | null;
     /**
      * Accepts string containing the class or space-separated list of classes, and
      * returns list of individual classes.
      * Method properly takes into account extra whitespaces in the `className`
-     * (e.g. ' class1  class2') will result in `['class1', 'class2']`.
-     * @param {String} className - space separated list of classes
+     * e.g.: " class1    class2   " => will result in `['class1', 'class2']`.
+     * @param {String} className - space separated list of class names
      */
     static classNameToList(className?: string): string[];
     static innerSize(elm: HTMLElement, type: 'height' | 'width'): number;

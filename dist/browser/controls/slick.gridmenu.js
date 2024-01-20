@@ -44,7 +44,7 @@
         subMenuOpenByEvent: "mouseover",
         syncResizeTitle: "Synchronous resize",
         useClickToRepositionMenu: !0,
-        headerColumnValueExtractor: (columnDef) => columnDef.name instanceof HTMLElement ? columnDef.name.innerHTML : columnDef.name || ""
+        headerColumnValueExtractor: (columnDef) => Utils.getHtmlStringOutput(columnDef.name || "", "innerHTML")
       });
       this._gridUid = grid.getUID(), this._gridOptions = gridOptions, this._gridMenuOptions = Utils.extend({}, this._defaults, gridOptions.gridMenu), this._bindingEventService = new BindingEventService(), grid.onSetOptions.subscribe((_e, args) => {
         if (args && args.optionsBefore && args.optionsAfter) {
@@ -181,7 +181,7 @@
         let checkboxElm = document.createElement("input");
         checkboxElm.type = "checkbox", checkboxElm.id = `${this._gridUid}-gridmenu-colpicker-${columnId}`, checkboxElm.dataset.columnid = String(this.columns[i].id), liElm.appendChild(checkboxElm), Utils.isDefined(this.grid.getColumnIndex(this.columns[i].id)) && !this.columns[i].hidden && (checkboxElm.checked = !0), this._columnCheckboxes.push(checkboxElm), columnLabel = (_e = this._gridMenuOptions) != null && _e.headerColumnValueExtractor ? this._gridMenuOptions.headerColumnValueExtractor(this.columns[i], this._gridOptions) : this._defaults.headerColumnValueExtractor(this.columns[i]);
         let labelElm = document.createElement("label");
-        labelElm.htmlFor = `${this._gridUid}-gridmenu-colpicker-${columnId}`, this.grid.applyHtmlCode(labelElm, this.grid.sanitizeHtmlString((columnLabel instanceof HTMLElement ? columnLabel.innerHTML : columnLabel) || "")), liElm.appendChild(labelElm), this._listElm.appendChild(liElm);
+        labelElm.htmlFor = `${this._gridUid}-gridmenu-colpicker-${columnId}`, this.grid.applyHtmlCode(labelElm, this.grid.sanitizeHtmlString(Utils.getHtmlStringOutput(columnLabel || ""))), liElm.appendChild(labelElm), this._listElm.appendChild(liElm);
       }
       if (this._gridMenuOptions && (!this._gridMenuOptions.hideForceFitButton || !this._gridMenuOptions.hideSyncResizeButton) && this._listElm.appendChild(document.createElement("hr")), !((_f = this._gridMenuOptions) != null && _f.hideForceFitButton)) {
         let forceFitTitle = ((_g = this._gridMenuOptions) == null ? void 0 : _g.forceFitTitle) || this._defaults.forceFitTitle, liElm = document.createElement("li");

@@ -28,7 +28,7 @@
         hideSyncResizeButton: !1,
         forceFitTitle: "Force fit columns",
         syncResizeTitle: "Synchronous resize",
-        headerColumnValueExtractor: (columnDef) => columnDef.name instanceof HTMLElement ? columnDef.name.innerHTML : columnDef.name || ""
+        headerColumnValueExtractor: (columnDef) => Utils.getHtmlStringOutput(columnDef.name || "", "innerHTML")
       });
       this._gridUid = grid.getUID(), this._gridOptions = Utils.extend({}, this._defaults, gridOptions), this.init(this.grid);
     }

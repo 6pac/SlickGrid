@@ -36,6 +36,8 @@ export interface RowDetailViewOption {
      * note:: If anyone finds a better way of passing the parent to the row detail extension, please reach out and/or create a PR
      */
     parent?: any;
+    /** Defaults to false, makes the column reorderable to another position in the grid. */
+    reorderable?: boolean;
     /** Defaults to false, when True will open the row detail on a row click (from any column) */
     useRowClick?: boolean;
     /** Defaults to true, which will save the row detail view in a cache when it detects that it will become out of the viewport buffer */
@@ -73,6 +75,8 @@ export interface OnRowDetailAsyncResponseArgs {
     itemDetail: any;
     /** An explicit view to use instead of template (Optional) */
     detailView?: any;
+    /** SlickGrid instance */
+    grid?: SlickGrid;
 }
 /** Fired when the async response finished */
 export interface OnRowDetailAsyncEndUpdateArgs {
@@ -81,7 +85,7 @@ export interface OnRowDetailAsyncEndUpdateArgs {
     /** @alias `item` */
     itemDetail: any;
     /** Reference to the Slick grid object */
-    grid: SlickGrid;
+    grid?: SlickGrid;
 }
 /** Fired after the row detail gets toggled */
 export interface OnAfterRowDetailToggleArgs {

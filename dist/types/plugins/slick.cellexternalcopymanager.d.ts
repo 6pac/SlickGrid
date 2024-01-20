@@ -1,7 +1,7 @@
 /// <reference types="node" />
 import type { Column, ExcelCopyBufferOption, SlickPlugin } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
-import { SlickEvent as SlickEvent_, SlickRange as SlickRange_ } from '../slick.core';
+import { SlickEvent as SlickEvent_, type SlickEventData, SlickRange as SlickRange_ } from '../slick.core';
 /***
   This manager enables users to copy/paste data from/to an external Spreadsheet application
   such as MS-Excel® or OpenOffice-Spreadsheet.
@@ -53,12 +53,12 @@ export declare class SlickCellExternalCopyManager implements SlickPlugin {
     constructor(options: ExcelCopyBufferOption);
     init(grid: SlickGrid): void;
     destroy(): void;
-    protected getHeaderValueForColumn(columnDef: Column): any;
-    protected getDataItemValueForColumn(item: any, columnDef: Column, event: Event): string;
+    protected getHeaderValueForColumn(columnDef: Column): string;
+    protected getDataItemValueForColumn(item: any, columnDef: Column, event: SlickEventData): string;
     protected setDataItemValueForColumn(item: any, columnDef: Column, value: string): null | string | void;
     protected _createTextBox(innerText: string): HTMLTextAreaElement;
     protected _decodeTabularData(grid: SlickGrid, ta: HTMLTextAreaElement): void;
-    protected handleKeyDown(e: KeyboardEvent): boolean | void;
+    protected handleKeyDown(e: SlickEventData): boolean | void;
     protected markCopySelection(ranges: SlickRange_[]): void;
     clearCopySelection(): void;
     setIncludeHeaderWhenCopying(includeHeaderWhenCopying: boolean): void;

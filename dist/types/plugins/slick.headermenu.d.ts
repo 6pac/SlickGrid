@@ -1,4 +1,4 @@
-import { BindingEventService as BindingEventService_, SlickEventHandler as SlickEventHandler_ } from '../slick.core';
+import { BindingEventService as BindingEventService_, type SlickEventData, SlickEventHandler as SlickEventHandler_ } from '../slick.core';
 import type { Column, DOMEvent, DOMMouseOrTouchEvent, HeaderMenuCommandItemCallbackArgs, HeaderMenuItems, HeaderMenuOption, HeaderMenuCommandItem, MenuCommandItemCallbackArgs, SlickPlugin, OnHeaderCellRenderedEventArgs } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 /**
@@ -113,8 +113,8 @@ export declare class SlickHeaderMenu implements SlickPlugin {
     destroySubMenus(): void;
     protected handleBodyMouseDown(e: DOMEvent<HTMLElement>): void;
     hideMenu(): void;
-    protected handleHeaderCellRendered(_e: MouseEvent, args: OnHeaderCellRenderedEventArgs): void;
-    protected handleBeforeHeaderCellDestroy(_e: Event, args: {
+    protected handleHeaderCellRendered(_e: SlickEventData, args: OnHeaderCellRenderedEventArgs): void;
+    protected handleBeforeHeaderCellDestroy(_e: SlickEventData, args: {
         column: Column;
         node: HTMLElement;
     }): void;

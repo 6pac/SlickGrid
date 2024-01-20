@@ -2,6 +2,29 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.8.0](https://github.com/6pac/SlickGrid/compare/5.7.1...5.8.0) (2024-01-20)
+
+### Bug Fixes
+
+* add grid & cell `role` for screen ready accessibility, fixes [#518](https://github.com/6pac/SlickGrid/issues/518) ([#976](https://github.com/6pac/SlickGrid/issues/976)) ([f4184ef](https://github.com/6pac/SlickGrid/commit/f4184ef302be15401b0ae1e16e12eb2e97ecc815))
+* add missing option to control row highlight duration ([#982](https://github.com/6pac/SlickGrid/issues/982)) ([4a49239](https://github.com/6pac/SlickGrid/commit/4a4923967034661f6411e7dcb28fc79d12b0f523))
+* **core:** SlickEvent handler event should be type of ArgType ([#970](https://github.com/6pac/SlickGrid/issues/970)) ([1d1b727](https://github.com/6pac/SlickGrid/commit/1d1b727c3b7c43d81b565e040eb23963e4aa5349)), closes [#969](https://github.com/6pac/SlickGrid/issues/969) [#967](https://github.com/6pac/SlickGrid/issues/967)
+* DataView options should be optional (TypeScript) ([feb154c](https://github.com/6pac/SlickGrid/commit/feb154c5ddded4f78885ce2acdd6399f90fc4257))
+* don't show column header empty title tooltip ([#964](https://github.com/6pac/SlickGrid/issues/964)) ([8ee0f2c](https://github.com/6pac/SlickGrid/commit/8ee0f2c568abb595cc8af1abbcbc9f2cd9b519a7))
+* EventHandler subscribed event should be SlickEventData type ([#969](https://github.com/6pac/SlickGrid/issues/969)) ([d960f90](https://github.com/6pac/SlickGrid/commit/d960f90b80988a399d35ba1061cafd29f826af76)), closes [#967](https://github.com/6pac/SlickGrid/issues/967)
+* legacyAutosizeColumns should push hidden width as 0 ([#977](https://github.com/6pac/SlickGrid/issues/977)) ([ab634eb](https://github.com/6pac/SlickGrid/commit/ab634eb0b1c83542c5e6ac75f84e16fa02510609))
+* regression with `onSelectedRowsChanged` not receiving correct `caller` prop ([#980](https://github.com/6pac/SlickGrid/issues/980)) ([ffbb335](https://github.com/6pac/SlickGrid/commit/ffbb335a3797d932f0860bc223f6cf43eb9068bb))
+* TS build error from ItemMetadata and Column intefaces ([e8fd4c8](https://github.com/6pac/SlickGrid/commit/e8fd4c8100b370292e9dfb0c66594a5061b4bb7b))
+* updatePagingStatusFromView() should partial PagingInfo ([28198a8](https://github.com/6pac/SlickGrid/commit/28198a882f8c4812cbd40b0f1832652cfea4fd1a))
+* when `onDragInit` return false it should stop ([#979](https://github.com/6pac/SlickGrid/issues/979)) ([5471666](https://github.com/6pac/SlickGrid/commit/5471666ae9e41fc1e7dccebe487b0d9d2bf501db)), closes [#978](https://github.com/6pac/SlickGrid/issues/978)
+* when `onResizeStart` return false it should stop ([#978](https://github.com/6pac/SlickGrid/issues/978)) ([8c659c9](https://github.com/6pac/SlickGrid/commit/8c659c991bdbc63b93fd8f04ca72e46b020b09a2))
+
+### Features
+
+* add `name` option to CheckboxSelectColumn plugin on columDef ([#972](https://github.com/6pac/SlickGrid/issues/972)) ([039f4ae](https://github.com/6pac/SlickGrid/commit/039f4aefe517488dd16e61f0fa91d104ba9b3e80))
+* add column `reorderable` option to optionally lock a column ([#983](https://github.com/6pac/SlickGrid/issues/983)) ([fbcac63](https://github.com/6pac/SlickGrid/commit/fbcac630f43d053c723fc7ae4253764954f554ed))
+* change CheckSelectColumn plugin to native HTML for CSP safe code ([#973](https://github.com/6pac/SlickGrid/issues/973)) ([bef663c](https://github.com/6pac/SlickGrid/commit/bef663cb169afaf899052bb977f0760f52e0cb32))
+
 ## [5.7.1](https://github.com/6pac/SlickGrid/compare/5.7.0...5.7.1) (2024-01-06)
 
 ### Bug Fixes

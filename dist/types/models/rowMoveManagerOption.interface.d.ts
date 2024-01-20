@@ -32,6 +32,8 @@ export interface RowMoveManagerOption {
     dragToSelect?: boolean;
     /** Defaults to True, do we want to hide the row move shadow of what we're dragging? */
     hideRowMoveShadow?: boolean;
+    /** Defaults to false, makes the column reorderable to another position in the grid. */
+    reorderable?: boolean;
     /** Defaults to 0, optional left margin of the row move shadown element when enabled */
     rowMoveShadowMarginLeft?: number | string;
     /** Defaults to 0, optional top margin of the row move shadown element when enabled */

@@ -79,8 +79,8 @@
       if ((!this._ranges || this._ranges.length === 0) && (!ranges || ranges.length === 0))
         return;
       this._ranges = ranges;
-      let eventData = new SlickEventData(null, this._ranges);
-      Object.defineProperty(eventData, "detail", { writable: !0, configurable: !0, value: { caller: caller || "SlickRowSelectionModel.setSelectedRanges" } }), this.onSelectedRangesChanged.notify(this._ranges, eventData);
+      let eventData = new SlickEventData(new CustomEvent("click", { detail: { caller } }), this._ranges);
+      this.onSelectedRangesChanged.notify(this._ranges, eventData);
     }
     getSelectedRanges() {
       return this._ranges;

@@ -1,5 +1,5 @@
-import { SlickEvent as SlickEvent_, SlickEventHandler as SlickEventHandler_ } from '../slick.core';
-import type { Column, DOMEvent, FormatterResultWithHtml, GridOption, OnAfterRowDetailToggleArgs, OnBeforeRowDetailToggleArgs, OnRowBackToViewportRangeArgs, OnRowDetailAsyncEndUpdateArgs, OnRowDetailAsyncResponseArgs, OnRowOutOfViewportRangeArgs, RowDetailViewOption, UsabilityOverrideFn } from '../models/index';
+import { SlickEvent as SlickEvent_, type SlickEventData, SlickEventHandler as SlickEventHandler_ } from '../slick.core';
+import type { Column, FormatterResultWithHtml, GridOption, OnAfterRowDetailToggleArgs, OnBeforeRowDetailToggleArgs, OnRowBackToViewportRangeArgs, OnRowDetailAsyncEndUpdateArgs, OnRowDetailAsyncResponseArgs, OnRowOutOfViewportRangeArgs, RowDetailViewOption, UsabilityOverrideFn } from '../models/index';
 import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
 /**
@@ -126,7 +126,7 @@ export declare class SlickRowDetailView {
     /** Find a value in an array and return the index when (or -1 when not found) */
     protected arrayFindIndex(sourceArray: any[], value: any): number;
     /** Handle mouse click event */
-    protected handleClick(e: DOMEvent<HTMLDivElement>, args: {
+    protected handleClick(e: SlickEventData, args: {
         row: number;
         cell: number;
     }): void;
@@ -177,6 +177,7 @@ export declare class SlickRowDetailView {
     getColumnDefinition(): {
         id: string | undefined;
         name: string;
+        reorderable: boolean | undefined;
         toolTip: string | undefined;
         field: string;
         width: number | undefined;

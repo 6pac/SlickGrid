@@ -26,8 +26,10 @@
         columnId: "_checkbox_selector",
         cssClass: void 0,
         hideSelectAllCheckbox: !1,
+        name: "",
         toolTip: "Select/Deselect All",
         width: 30,
+        reorderable: !1,
         applySelectOnAllPages: !1,
         // defaults to false, when that is enabled the "Select All" will be applied to all pages (when using Pagination)
         hideInColumnTitleRow: !1,
@@ -50,7 +52,7 @@
       var _a;
       if (this._options = Utils.extend(!0, {}, this._options, options), this._options.hideSelectAllCheckbox)
         this.hideSelectAllFromColumnHeaderTitleRow(), this.hideSelectAllFromColumnHeaderFilterRow();
-      else if (this._options.hideInColumnTitleRow ? this.hideSelectAllFromColumnHeaderTitleRow() : (this.renderSelectAllCheckbox(this._isSelectAllChecked), this._handler.subscribe(this._grid.onHeaderClick, this.handleHeaderClick.bind(this))), this._options.hideInFilterHeaderRow)
+      else if (this._options.hideInColumnTitleRow ? (this.hideSelectAllFromColumnHeaderTitleRow(), this._options.name && this._grid.updateColumnHeader(this._options.columnId || "", this._options.name, "")) : (this.renderSelectAllCheckbox(this._isSelectAllChecked), this._handler.subscribe(this._grid.onHeaderClick, this.handleHeaderClick.bind(this))), this._options.hideInFilterHeaderRow)
         this.hideSelectAllFromColumnHeaderFilterRow();
       else {
         let selectAllContainerElm = (_a = this._headerRowNode) == null ? void 0 : _a.querySelector("#filter-checkbox-selectall-container");
@@ -62,7 +64,7 @@
       }
     }
     hideSelectAllFromColumnHeaderTitleRow() {
-      this._grid.updateColumnHeader(this._options.columnId || "", "", "");
+      this._grid.updateColumnHeader(this._options.columnId || "", this._options.name || "", "");
     }
     hideSelectAllFromColumnHeaderFilterRow() {
       var _a;
@@ -181,11 +183,27 @@
       }
       return this._checkboxColumnCellIndex;
     }
+    /**
+     * use a DocumentFragment to return a fragment including an <input> then a <label> as siblings,
+     * the label is using `for` to link it to the input `id`
+     * @param {String} inputId - id to link the label
+     * @param {Boolean} [checked] - is the input checkbox checked? (defaults to false)
+     * @returns
+     */
+    createCheckboxElement(inputId, checked = !1) {
+      let fragmentElm = new DocumentFragment();
+      return fragmentElm.appendChild(
+        Utils.createDomElement("input", { id: inputId, type: "checkbox", checked, ariaChecked: String(checked) })
+      ), fragmentElm.appendChild(
+        Utils.createDomElement("label", { htmlFor: inputId })
+      ), fragmentElm;
+    }
     getColumnDefinition() {
       var _a, _b, _c;
       return {
         id: this._options.columnId,
-        name: this._options.hideSelectAllCheckbox || this._options.hideInColumnTitleRow ? "" : `<input id="header-selector${this._selectAll_UID}" type="checkbox"><label for="header-selector${this._selectAll_UID}"></label>`,
+        reorderable: this._options.reorderable,
+        name: this._options.hideSelectAllCheckbox || this._options.hideInColumnTitleRow ? this._options.name || "" : this.createCheckboxElement(`header-selector${this._selectAll_UID}`),
         toolTip: this._options.hideSelectAllCheckbox || this._options.hideInColumnTitleRow ? "" : this._options.toolTip,
         field: "sel",
         width: this._options.width,
@@ -204,12 +222,12 @@
       this._handler.subscribe(grid.onHeaderRowCellRendered, (_e, args) => {
         if (args.column.field === "sel") {
           Utils.emptyElement(args.node);
-          let spanElm = document.createElement("span");
-          spanElm.id = "filter-checkbox-selectall-container";
-          let inputElm = document.createElement("input");
-          inputElm.type = "checkbox", inputElm.id = `header-filter-selector${this._selectAll_UID}`;
-          let labelElm = document.createElement("label");
-          labelElm.htmlFor = `header-filter-selector${this._selectAll_UID}`, spanElm.appendChild(inputElm), spanElm.appendChild(labelElm), args.node.appendChild(spanElm), this._headerRowNode = args.node, this._bindingEventService.bind(spanElm, "click", (e) => this.handleHeaderClick(e, args));
+          let spanElm = Utils.createDomElement("span", { id: "filter-checkbox-selectall-container", ariaChecked: "false" });
+          spanElm.appendChild(
+            Utils.createDomElement("input", { type: "checkbox", id: `header-filter-selector${this._selectAll_UID}` })
+          ), spanElm.appendChild(
+            Utils.createDomElement("label", { htmlFor: `header-filter-selector${this._selectAll_UID}` })
+          ), args.node.appendChild(spanElm), this._headerRowNode = args.node, this._bindingEventService.bind(spanElm, "click", (e) => this.handleHeaderClick(e, args));
         }
       });
     }
@@ -217,14 +235,21 @@
       return Math.round(1e7 * Math.random());
     }
     checkboxSelectionFormatter(row, _cell, _val, _columnDef, dataContext, grid) {
-      let UID = this.createUID() + row;
-      return dataContext && this.checkSelectableOverride(row, dataContext, grid) ? this._selectedRowsLookup[row] ? `<input id="selector${UID}" type="checkbox" checked="checked"><label for="selector${UID}"></label>` : `<input id="selector${UID}" type="checkbox"><label for="selector${UID}"></label>` : null;
+      if (dataContext && this.checkSelectableOverride(row, dataContext, grid)) {
+        let UID = this.createUID() + row;
+        return this.createCheckboxElement(`selector${UID}`, !!this._selectedRowsLookup[row]);
+      }
+      return null;
     }
     checkSelectableOverride(row, dataContext, grid) {
       return typeof this._selectableOverride == "function" ? this._selectableOverride(row, dataContext, grid) : !0;
     }
     renderSelectAllCheckbox(isSelectAllChecked) {
-      isSelectAllChecked ? this._grid.updateColumnHeader(this._options.columnId || "", `<input id="header-selector${this._selectAll_UID}" type="checkbox" checked="checked"><label for="header-selector${this._selectAll_UID}"></label>`, this._options.toolTip) : this._grid.updateColumnHeader(this._options.columnId || "", `<input id="header-selector${this._selectAll_UID}" type="checkbox"><label for="header-selector${this._selectAll_UID}"></label>`, this._options.toolTip);
+      this._grid.updateColumnHeader(
+        this._options.columnId || "",
+        this.createCheckboxElement(`header-selector${this._selectAll_UID}`, !!isSelectAllChecked),
+        this._options.toolTip
+      );
     }
     /**
      * Method that user can pass to override the default behavior or making every row a selectable row.
@@ -234,16 +259,6 @@
     selectableOverride(overrideFn) {
       this._selectableOverride = overrideFn;
     }
-    // Utils.extend(this, {
-    //     "init": init,
-    //     "destroy": destroy,
-    //     "deSelectRows": deSelectRows,
-    //     "selectRows": selectRows,
-    //     "getColumnDefinition": getColumnDefinition,
-    //     "getOptions": getOptions,
-    //     "selectableOverride": selectableOverride,
-    //     "setOptions": setOptions,
-    //   });
   };
   window.Slick && Utils.extend(!0, window, {
     Slick: {

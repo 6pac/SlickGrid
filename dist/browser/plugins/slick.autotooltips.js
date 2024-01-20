@@ -45,7 +45,7 @@
     }
     /**
      * Handle mouse entering grid cell to add/remove tooltip.
-     * @param {MouseEvent} event - The event
+     * @param {SlickEventData} event - The event
      */
     handleMouseEnter(event) {
       var _a, _b, _c, _d, _e;
@@ -57,7 +57,7 @@
     }
     /**
      * Handle mouse entering header cell to add/remove tooltip.
-     * @param {MouseEvent} event   - The event
+     * @param {SlickEventData} event   - The event
      * @param {object} args.column - The column definition
      */
     handleHeaderMouseEnter(event, args) {
@@ -65,7 +65,7 @@
       let column = args.column, node, targetElm = event.target;
       if (targetElm && (node = targetElm.closest(".slick-header-column"), node && !(column != null && column.toolTip))) {
         let titleVal = targetElm.clientWidth < node.clientWidth && (_a = column == null ? void 0 : column.name) != null ? _a : "";
-        node.title = titleVal instanceof HTMLElement ? titleVal.innerHTML : titleVal;
+        node.title = Utils.getHtmlStringOutput(titleVal, "innerHTML");
       }
       node = null;
     }

@@ -28,7 +28,7 @@ export interface ExcelCopyBufferOption<T = any> {
     /** suppresses paste */
     readOnlyMode?: boolean;
     /** option to specify a custom column header value extractor function */
-    headerColumnValueExtractor?: (columnDef: Column<T>) => any;
+    headerColumnValueExtractor?: (columnDef: Column<T>) => string | HTMLElement | DocumentFragment;
     /** Fired when a copy cell is triggered */
     onCopyCells?: (e: SlickEventData, args: {
         ranges: SlickRange[];

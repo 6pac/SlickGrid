@@ -1,4 +1,4 @@
-import { BindingEventService as BindingEventService_ } from '../slick.core';
+import { BindingEventService as BindingEventService_, type SlickEventData } from '../slick.core';
 import type { Column, ColumnPickerOption, DOMMouseOrTouchEvent, GridOption, OnColumnsChangedArgs } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 /***
@@ -41,8 +41,8 @@ export declare class SlickColumnMenu {
     init(grid: SlickGrid): void;
     destroy(): void;
     handleBodyMouseDown(e: DOMMouseOrTouchEvent<HTMLDivElement>): void;
-    handleHeaderContextMenu(e: DOMMouseOrTouchEvent<HTMLDivElement>): void;
-    repositionMenu(event: DOMMouseOrTouchEvent<HTMLDivElement>): void;
+    handleHeaderContextMenu(e: SlickEventData): void;
+    repositionMenu(event: DOMMouseOrTouchEvent<HTMLDivElement> | SlickEventData): void;
     updateColumnOrder(): void;
     /** Update the Titles of each sections (command, customTitle, ...) */
     updateAllTitles(pickerOptions: {

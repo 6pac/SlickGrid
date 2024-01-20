@@ -61,8 +61,8 @@
         return;
       let rangeHasChanged = !this.rangesAreEqual(this._ranges, ranges);
       if (this._ranges = this.removeInvalidRanges(ranges), rangeHasChanged) {
-        let eventData = new SlickEventData(null, this._ranges);
-        Object.defineProperty(eventData, "detail", { writable: !0, configurable: !0, value: { caller: caller || "SlickCellSelectionModel.setSelectedRanges" } }), this.onSelectedRangesChanged.notify(this._ranges, eventData);
+        let eventData = new SlickEventData(new CustomEvent("click", { detail: { caller } }), this._ranges);
+        this.onSelectedRangesChanged.notify(this._ranges, eventData);
       }
     }
     getSelectedRanges() {

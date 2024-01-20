@@ -1,7 +1,7 @@
 /// <reference types="node" />
-import { SlickEvent as SlickEvent_, SlickEventData, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_ } from '../slick.core';
+import { SlickEvent as SlickEvent_, type SlickEventData, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_ } from '../slick.core';
 import { SlickCellRangeDecorator as SlickCellRangeDecorator_ } from './slick.cellrangedecorator';
-import type { CellRangeSelectorOption, DOMMouseOrTouchEvent, DragPosition, DragRange, DragRowMove, GridOption, MouseOffsetViewport, OnScrollEventArgs, SlickPlugin } from '../models/index';
+import type { CellRangeSelectorOption, DragPosition, DragRange, DragRowMove, GridOption, MouseOffsetViewport, OnScrollEventArgs, SlickPlugin } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 export declare class SlickCellRangeSelector implements SlickPlugin {
     pluginName: "CellRangeSelector";
@@ -47,9 +47,9 @@ export declare class SlickCellRangeSelector implements SlickPlugin {
     init(grid: SlickGrid): void;
     destroy(): void;
     getCellDecorator(): SlickCellRangeDecorator_;
-    protected handleScroll(_e: DOMMouseOrTouchEvent<HTMLDivElement>, args: OnScrollEventArgs): void;
-    protected handleDragInit(e: Event): void;
-    protected handleDragStart(e: DOMMouseOrTouchEvent<HTMLDivElement>, dd: DragRowMove): HTMLDivElement | undefined;
+    protected handleScroll(_e: SlickEventData, args: OnScrollEventArgs): void;
+    protected handleDragInit(e: SlickEventData): void;
+    protected handleDragStart(e: SlickEventData, dd: DragRowMove): HTMLDivElement | undefined;
     protected handleDrag(evt: SlickEventData, dd: DragRowMove): void;
     protected getMouseOffsetViewport(e: MouseEvent | TouchEvent, dd: DragRowMove): MouseOffsetViewport;
     protected handleDragOutsideViewport(): void;
@@ -60,7 +60,7 @@ export declare class SlickCellRangeSelector implements SlickPlugin {
         pageY: number;
     }, dd: DragPosition): void;
     protected hasRowMoveManager(): boolean;
-    protected handleDragEnd(e: Event, dd: DragPosition): void;
+    protected handleDragEnd(e: SlickEventData, dd: DragPosition): void;
     getCurrentRange(): DragRange | null;
 }
 //# sourceMappingURL=slick.cellrangeselector.d.ts.map

@@ -13,7 +13,8 @@
       containerElement && (containerElement.addEventListener("mousedown", userPressed), containerElement.addEventListener("touchstart", userPressed));
     }
     function executeDragCallbackWhenDefined(callback, evt, dd) {
-      typeof callback == "function" && callback(evt, dd);
+      if (typeof callback == "function")
+        return callback(evt, dd);
     }
     function destroy() {
       containerElement && (containerElement.removeEventListener("mousedown", userPressed), containerElement.removeEventListener("touchstart", userPressed));
@@ -25,7 +26,7 @@
       if (!options.allowDragFrom || options.allowDragFrom && element.matches(options.allowDragFrom) || options.allowDragFromClosest && element.closest(options.allowDragFromClosest)) {
         originaldd.dragHandle = element;
         let winScrollPos = Utils.windowScrollPosition();
-        startX = winScrollPos.left + targetEvent.clientX, startY = winScrollPos.top + targetEvent.clientY, deltaX = targetEvent.clientX - targetEvent.clientX, deltaY = targetEvent.clientY - targetEvent.clientY, originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDragInit, event, originaldd), document.body.addEventListener("mousemove", userMoved), document.body.addEventListener("touchmove", userMoved), document.body.addEventListener("mouseup", userReleased), document.body.addEventListener("touchend", userReleased), document.body.addEventListener("touchcancel", userReleased);
+        startX = winScrollPos.left + targetEvent.clientX, startY = winScrollPos.top + targetEvent.clientY, deltaX = targetEvent.clientX - targetEvent.clientX, deltaY = targetEvent.clientY - targetEvent.clientY, originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDragInit, event, originaldd) !== !1 && (document.body.addEventListener("mousemove", userMoved), document.body.addEventListener("touchmove", userMoved), document.body.addEventListener("mouseup", userReleased), document.body.addEventListener("touchend", userReleased), document.body.addEventListener("touchcancel", userReleased));
       }
     }
     function userMoved(event) {
@@ -68,12 +69,13 @@
       typeof (resizeableHandleElement == null ? void 0 : resizeableHandleElement.removeEventListener) == "function" && (resizeableHandleElement.removeEventListener("mousedown", resizeStartHandler), resizeableHandleElement.removeEventListener("touchstart", resizeStartHandler));
     }
     function executeResizeCallbackWhenDefined(callback, e) {
-      typeof callback == "function" && callback(e, { resizeableElement, resizeableHandleElement });
+      if (typeof callback == "function")
+        return callback(e, { resizeableElement, resizeableHandleElement });
     }
     function resizeStartHandler(e) {
       e.preventDefault();
       let event = e.touches ? e.changedTouches[0] : e;
-      executeResizeCallbackWhenDefined(onResizeStart, event), document.body.addEventListener("mousemove", resizingHandler), document.body.addEventListener("mouseup", resizeEndHandler), document.body.addEventListener("touchmove", resizingHandler), document.body.addEventListener("touchend", resizeEndHandler);
+      executeResizeCallbackWhenDefined(onResizeStart, event) !== !1 && (document.body.addEventListener("mousemove", resizingHandler), document.body.addEventListener("mouseup", resizeEndHandler), document.body.addEventListener("touchmove", resizingHandler), document.body.addEventListener("touchend", resizeEndHandler));
     }
     function resizingHandler(e) {
       e.preventDefault && e.type !== "touchmove" && e.preventDefault();

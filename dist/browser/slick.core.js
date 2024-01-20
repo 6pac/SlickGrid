@@ -58,9 +58,29 @@ var Slick = (() => {
       __publicField(this, "_isDefaultPrevented", !1);
       __publicField(this, "returnValues", []);
       __publicField(this, "returnValue");
-      __publicField(this, "target");
+      __publicField(this, "_eventTarget");
       __publicField(this, "nativeEvent");
       __publicField(this, "arguments_");
+      // public props that can be optionally pulled from the provided Event in constructor
+      // they are all optional props because it really depends on the type of Event provided (KeyboardEvent, MouseEvent, ...)
+      __publicField(this, "altKey");
+      __publicField(this, "ctrlKey");
+      __publicField(this, "metaKey");
+      __publicField(this, "shiftKey");
+      __publicField(this, "key");
+      __publicField(this, "keyCode");
+      __publicField(this, "clientX");
+      __publicField(this, "clientY");
+      __publicField(this, "offsetX");
+      __publicField(this, "offsetY");
+      __publicField(this, "pageX");
+      __publicField(this, "pageY");
+      __publicField(this, "bubbles");
+      __publicField(this, "target");
+      __publicField(this, "type");
+      __publicField(this, "which");
+      __publicField(this, "x");
+      __publicField(this, "y");
       this.nativeEvent = event, this.arguments_ = args, event && [
         "altKey",
         "ctrlKey",
@@ -75,11 +95,15 @@ var Slick = (() => {
         "pageX",
         "pageY",
         "bubbles",
+        "target",
         "type",
         "which",
         "x",
         "y"
-      ].forEach((key) => this[key] = event[key]), this.target = this.nativeEvent ? this.nativeEvent.target : void 0;
+      ].forEach((key) => this[key] = event[key]), this._eventTarget = this.nativeEvent ? this.nativeEvent.target : void 0;
+    }
+    get defaultPrevented() {
+      return this._isDefaultPrevented;
     }
     /**
      * Stops event from propagating up the DOM tree.
@@ -509,6 +533,18 @@ var Slick = (() => {
         typeof elmValue == "object" ? Object.assign(elm[elmOptionKey], elmValue) : elm[elmOptionKey] = elementOptions[elmOptionKey];
       }), appendToParent != null && appendToParent.appendChild && appendToParent.appendChild(elm), elm;
     }
+    /**
+     * From any input provided, return the HTML string (when a string is provided, it will be returned "as is" but when it's a number it will be converted to string)
+     * When detecting HTMLElement/DocumentFragment, we can also specify which HTML type to retrieve innerHTML or outerHTML.
+     * We can get the HTML by looping through all fragment `childNodes`
+     * @param {DocumentFragment | HTMLElement | string | number} input
+     * @param {'innerHTML' | 'outerHTML'} [type] - when the input is a DocumentFragment or HTMLElement, which type of HTML do you want to return? 'innerHTML' or 'outerHTML'
+     * @returns {String}
+     */
+    static getHtmlStringOutput(input, type = "innerHTML") {
+      var _a;
+      return input instanceof DocumentFragment ? [].map.call(input.childNodes, (x) => x[type]).join("") || input.textContent || "" : input instanceof HTMLElement ? input[type] : (_a = String(input)) != null ? _a : "";
+    }
     static emptyElement(element) {
       for (; element != null && element.firstChild; )
         element.removeChild(element.firstChild);
@@ -518,8 +554,8 @@ var Slick = (() => {
      * Accepts string containing the class or space-separated list of classes, and
      * returns list of individual classes.
      * Method properly takes into account extra whitespaces in the `className`
-     * (e.g. ' class1  class2') will result in `['class1', 'class2']`.
-     * @param {String} className - space separated list of classes
+     * e.g.: " class1    class2   " => will result in `['class1', 'class2']`.
+     * @param {String} className - space separated list of class names
      */
     static classNameToList(className = "") {
       return className.split(" ").filter((cls) => cls);

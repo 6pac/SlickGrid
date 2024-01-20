@@ -161,7 +161,7 @@ export declare class SlickContextMenu implements SlickPlugin {
     protected createMenu(commandItems: Array<MenuCommandItem | 'divider'>, optionItems: Array<MenuOptionItem | 'divider'>, level?: number, item?: MenuCommandItem | MenuOptionItem | 'divider'): HTMLDivElement;
     protected addSubMenuTitleWhenExists(item: MenuCommandItem | MenuOptionItem | 'divider', commandOrOptionMenu: HTMLDivElement): void;
     protected handleCloseButtonClicked(e: MouseEvent | TouchEvent): void;
-    destroyMenu(e?: Event, args?: {
+    destroyMenu(e?: Event | SlickEventData_, args?: {
         cell: number;
         row: number;
     }): void;

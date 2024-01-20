@@ -1,5 +1,5 @@
 import type SortableInstance from 'sortablejs';
-import type { AutoSize, CellViewportRange, Column, ColumnSort, CssStyleHash, CustomDataView, DOMEvent, DragPosition, DragRowMove, Editor, EditController, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption as BaseGridOption, InteractionBase, MultiColumnSort, OnActiveCellChangedEventArgs, OnAddNewRowEventArgs, OnAutosizeColumnsEventArgs, OnBeforeUpdateColumnsEventArgs, OnBeforeAppendCellEventArgs, OnBeforeCellEditorDestroyEventArgs, OnBeforeColumnsResizeEventArgs, OnBeforeEditCellEventArgs, OnBeforeHeaderCellDestroyEventArgs, OnBeforeHeaderRowCellDestroyEventArgs, OnBeforeFooterRowCellDestroyEventArgs, OnBeforeSetColumnsEventArgs, OnCellChangeEventArgs, OnCellCssStylesChangedEventArgs, OnColumnsDragEventArgs, OnColumnsReorderedEventArgs, OnColumnsResizedEventArgs, OnColumnsResizeDblClickEventArgs, OnCompositeEditorChangeEventArgs, OnDblClickEventArgs, OnFooterContextMenuEventArgs, OnFooterRowCellRenderedEventArgs, OnHeaderCellRenderedEventArgs, OnFooterClickEventArgs, OnHeaderClickEventArgs, OnHeaderContextMenuEventArgs, OnHeaderMouseEventArgs, OnHeaderRowCellRenderedEventArgs, OnKeyDownEventArgs, OnValidationErrorEventArgs, OnRenderedEventArgs, OnSelectedRowsChangedEventArgs, OnSetOptionsEventArgs, OnActivateChangedOptionsEventArgs, OnScrollEventArgs, PagingInfo, RowInfo, SelectionModel, SingleColumnSort, SlickGridEventData, SlickPlugin, MenuCommandItemCallbackArgs, OnClickEventArgs } from './models/index';
+import type { AutoSize, CellViewportRange, Column, ColumnSort, CssStyleHash, CustomDataView, DOMEvent, DragPosition, DragRowMove, Editor, EditController, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption as BaseGridOption, InteractionBase, MultiColumnSort, OnActiveCellChangedEventArgs, OnAddNewRowEventArgs, OnAutosizeColumnsEventArgs, OnBeforeUpdateColumnsEventArgs, OnBeforeAppendCellEventArgs, OnBeforeCellEditorDestroyEventArgs, OnBeforeColumnsResizeEventArgs, OnBeforeEditCellEventArgs, OnBeforeHeaderCellDestroyEventArgs, OnBeforeHeaderRowCellDestroyEventArgs, OnBeforeFooterRowCellDestroyEventArgs, OnBeforeSetColumnsEventArgs, OnCellChangeEventArgs, OnCellCssStylesChangedEventArgs, OnColumnsDragEventArgs, OnColumnsReorderedEventArgs, OnColumnsResizedEventArgs, OnColumnsResizeDblClickEventArgs, OnCompositeEditorChangeEventArgs, OnDblClickEventArgs, OnFooterContextMenuEventArgs, OnFooterRowCellRenderedEventArgs, OnHeaderCellRenderedEventArgs, OnFooterClickEventArgs, OnHeaderClickEventArgs, OnHeaderContextMenuEventArgs, OnHeaderMouseEventArgs, OnHeaderRowCellRenderedEventArgs, OnKeyDownEventArgs, OnValidationErrorEventArgs, OnRenderedEventArgs, OnSelectedRowsChangedEventArgs, OnSetOptionsEventArgs, OnActivateChangedOptionsEventArgs, OnScrollEventArgs, PagingInfo, RowInfo, SelectionModel, SingleColumnSort, SlickPlugin, MenuCommandItemCallbackArgs, OnClickEventArgs } from './models/index';
 import { type BasePubSub, BindingEventService as BindingEventService_, type SlickEditorLock, SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_ } from './slick.core';
 /**
  * @license
@@ -10,7 +10,7 @@ import { type BasePubSub, BindingEventService as BindingEventService_, type Slic
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.7.1
+ * SlickGrid v5.8.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -33,13 +33,17 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     /** optional grid state clientId */
     cid: string;
     onActiveCellChanged: SlickEvent_<OnActiveCellChangedEventArgs>;
-    onActiveCellPositionChanged: SlickEvent_<SlickGridEventData>;
+    onActiveCellPositionChanged: SlickEvent_<{
+        grid: SlickGrid;
+    }>;
     onAddNewRow: SlickEvent_<OnAddNewRowEventArgs>;
     onAutosizeColumns: SlickEvent_<OnAutosizeColumnsEventArgs>;
     onBeforeAppendCell: SlickEvent_<OnBeforeAppendCellEventArgs>;
     onBeforeCellEditorDestroy: SlickEvent_<OnBeforeCellEditorDestroyEventArgs>;
     onBeforeColumnsResize: SlickEvent_<OnBeforeColumnsResizeEventArgs>;
-    onBeforeDestroy: SlickEvent_<SlickGridEventData>;
+    onBeforeDestroy: SlickEvent_<{
+        grid: SlickGrid;
+    }>;
     onBeforeEditCell: SlickEvent_<OnBeforeEditCellEventArgs>;
     onBeforeFooterRowCellDestroy: SlickEvent_<OnBeforeFooterRowCellDestroyEventArgs>;
     onBeforeHeaderCellDestroy: SlickEvent_<OnBeforeHeaderCellDestroyEventArgs>;
@@ -82,7 +86,9 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     onActivateChangedOptions: SlickEvent_<OnActivateChangedOptionsEventArgs>;
     onSort: SlickEvent_<SingleColumnSort | MultiColumnSort>;
     onValidationError: SlickEvent_<OnValidationErrorEventArgs>;
-    onViewportChanged: SlickEvent_<SlickGridEventData>;
+    onViewportChanged: SlickEvent_<{
+        grid: SlickGrid;
+    }>;
     protected scrollbarDimensions?: {
         height: number;
         width: number;
@@ -372,10 +378,10 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     /**
      * Updates an existing column definition and a corresponding header DOM element with the new title and tooltip.
      * @param {Number|String} columnId Column id.
-     * @param {String} [title] New column name.
+     * @param {string | HTMLElement | DocumentFragment} [title] New column name.
      * @param {String} [toolTip] New column tooltip.
      */
-    updateColumnHeader(columnId: number | string, title?: string | HTMLElement, toolTip?: string): void;
+    updateColumnHeader(columnId: number | string, title?: string | HTMLElement | DocumentFragment, toolTip?: string): void;
     /**
      * Get the Header DOM element
      * @param {C} columnDef - column definition
@@ -411,15 +417,9 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected handleHeaderMouseHoverOff(e: Event | SlickEventData_): void;
     protected createColumnHeaders(): void;
     protected setupColumnSort(): void;
-    protected currentPositionInHeader(id: number | string): number;
-    protected remove(arr: any[], elem: HTMLElement): void;
     protected setupColumnReorder(): void;
     protected getHeaderChildren(): HTMLElement[];
-    protected getImpactedColumns(limit?: {
-        start: number;
-        end: number;
-    }): C[];
-    protected handleResizeableHandleDoubleClick(evt: MouseEvent & {
+    protected handleResizeableDoubleClick(evt: MouseEvent & {
         target: HTMLDivElement;
     }): void;
     protected setupColumnResize(): void;
@@ -656,7 +656,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * Update paging information status from the View
      * @param {PagingInfo} pagingInfo
      */
-    updatePagingStatusFromView(pagingInfo: PagingInfo): void;
+    updatePagingStatusFromView(pagingInfo: Pick<PagingInfo, 'pageSize' | 'pageNum' | 'totalPages'>): void;
     /** Update the dataset row count */
     updateRowCount(): void;
     /** @alias `getVisibleRange` */
@@ -752,7 +752,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     /**
      * Highlight a row for a certain duration (ms) of time.
      * @param {Number} row - grid row number
-     * @param {Number} [duration] - duration (ms), defaults to 500ms
+     * @param {Number} [duration] - duration (ms), defaults to 400ms
      */
     highlightRow(row: number, duration?: number): void;
     protected handleMouseWheel(e: MouseEvent, _delta: number, deltaX: number, deltaY: number): void;
@@ -800,7 +800,8 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     }): void;
     protected cellExists(row: number, cell: number): boolean;
     /**
-     * Returns a hash containing row and cell indexes. Coordinates are relative to the top left corner of the grid beginning with the first row (not including the column headers).
+     * Returns row and cell indexes by providing x,y coordinates.
+     * Coordinates are relative to the top left corner of the grid beginning with the first row (not including the column headers).
      * @param x An x coordinate.
      * @param y A y coordinate.
      */

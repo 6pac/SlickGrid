@@ -1,4 +1,5 @@
-import type { Column, DOMEvent, GroupItemMetadataProviderOption, GroupingFormatterItem, ItemMetadata, SlickPlugin } from './models/index';
+import { type SlickEventData } from './slick.core';
+import type { Column, GroupItemMetadataProviderOption, GroupingFormatterItem, ItemMetadata, SlickPlugin } from './models/index';
 import type { SlickGrid } from './slick.grid';
 /**
  * Provides item metadata for group (Slick.Group) and totals (Slick.Totals) rows produced by the DataView.
@@ -28,12 +29,12 @@ export declare class SlickGroupItemMetadataProvider implements SlickPlugin {
     protected defaultTotalsCellFormatter(_row: number, _cell: number, _value: any, columnDef: Column, item: any, grid: SlickGrid): string;
     init(grid: SlickGrid): void;
     destroy(): void;
-    protected handleGridClick(e: DOMEvent<HTMLDivElement>, args: {
+    protected handleGridClick(e: SlickEventData, args: {
         row: number;
         cell: number;
         grid: SlickGrid;
     }): void;
-    protected handleGridKeyDown(e: KeyboardEvent): void;
+    protected handleGridKeyDown(e: SlickEventData): void;
     protected handleDataViewExpandOrCollapse(item: any): void;
     getGroupRowMetadata(item: GroupingFormatterItem): ItemMetadata;
     getTotalsRowMetadata(item: {
