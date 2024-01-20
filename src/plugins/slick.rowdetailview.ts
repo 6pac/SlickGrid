@@ -122,6 +122,7 @@ export class SlickRowDetailView {
     keyPrefix: '_',
     loadOnce: false,
     collapseAllOnSort: true,
+    reorderable: false,
     saveDetailViewOnScroll: true,
     singleRowExpand: false,
     useSimpleViewportCalc: false,
@@ -615,6 +616,7 @@ export class SlickRowDetailView {
     return {
       id: this._options.columnId,
       name: '',
+      reorderable: this._options.reorderable,
       toolTip: this._options.toolTip,
       field: 'sel',
       width: this._options.width,

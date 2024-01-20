@@ -49,6 +49,9 @@ export interface RowDetailViewOption {
    */
   parent?: any;
 
+  /** Defaults to false, makes the column reorderable to another position in the grid. */
+  reorderable?: boolean;
+
   /** Defaults to false, when True will open the row detail on a row click (from any column) */
   useRowClick?: boolean;
 

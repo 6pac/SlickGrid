@@ -152,6 +152,12 @@ export interface Column<TData = any> {
   /** column previous width */
   previousWidth?: number;
 
+  /**
+   * Defaults to true, makes the column reorderable to another position in the grid.
+   * NOTE: Works best when used as first or last columns of the grid (e.g.: row selection checkbox as first column).
+   */
+  reorderable?: boolean;
+
   /** Should we re-render when onResize is being triggered? */
   rerenderOnResize?: boolean;
 

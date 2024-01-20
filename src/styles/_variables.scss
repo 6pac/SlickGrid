@@ -37,6 +37,7 @@ $alpine-header-display:                           inline-flex !default;
 $alpine-header-border-color:                      $alpine-border-color !default;
 $alpine-header-border-width:                      0 !default;
 $alpine-header-bg-color:                          #f8f8f8 !default;
+$alpine-header-unorderable-bg-color:              darken($alpine-header-bg-color, 3%) !default;
 $alpine-header-color:                             #181d1f !default;
 $alpine-header-font-weight:                       bold !default;
 $alpine-header-text-align:                        left !default;
