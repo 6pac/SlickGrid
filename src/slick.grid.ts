@@ -290,17 +290,17 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   protected _columnDefaults = {
     name: '',
-    minWidth: 30,
-    maxWidth: undefined,
-    rerenderOnResize: false,
     headerCssClass: null,
     defaultSortAsc: true,
     focusable: true,
+    hidden: false,
+    minWidth: 30,
+    maxWidth: undefined,
+    rerenderOnResize: false,
     reorderable: true,
     resizable: true,
     sortable: false,
     selectable: true,
-    hidden: false,
   } as Partial<C>;
 
   protected _columnAutosizeDefaults: AutoSize = {
