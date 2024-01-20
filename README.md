@@ -27,15 +27,15 @@ Check out the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** Wi
 
 Also check out the [Wiki](https://github.com/6pac/SlickGrid/wiki) for news and documentation.
 
-_For a basic TypeScript example, take a look at the v5.0 Annoucement & Migration guide shown below._
+_For a basic TypeScript example, take a look at the v5.0 Annoucement & Migration guide shown below and [TypeScript Example Wiki](https://github.com/6pac/SlickGrid/wiki/TypeScript-Examples)._
 
 ### Contributions
 See [Contributing Guide](https://github.com/6pac/SlickGrid/blob/master/CONTRIBUTING.md)
 
 ### E2E Tests with Cypress
-We have started to add E2E (end to end) tests in the browser by using [Cypress](https://www.cypress.io/). You can see [here](https://github.com/6pac/SlickGrid/tree/master/cypress/e2e) the list of Examples that now have E2E tests. We also run these tests in the [GitHub Actions](https://github.com/features/actions) Workflow (CI) on every Pull Request to avoid committing changes that might break the library. We currently have tests for over 30+ examples with over 300+ tests.
+We have started to add E2E (end to end) tests in the browser by using [Cypress](https://www.cypress.io/). You can see [here](https://github.com/6pac/SlickGrid/tree/master/cypress/e2e) the list of Examples that now have E2E tests. We also run these tests in the [GitHub Actions](https://github.com/features/actions) Workflow (CI) on every Pull Request to avoid committing changes that might break the library. We currently have tests for over 30+ examples with over 350+ tests.
 
-We welcome any new contributions (tests or fixes) and if you wish to add Cypress E2E tests, all you need to do is to clone the repo and run the following commands
+We welcome any new contributions and if you wish to add Cypress E2E tests, all you need to do is to clone the repo and run the following commands
 ```bash
 npm install         # install all npm packages
 npm run dev         # run a local development server on port 8080 in watch mode (or `npm run serve` without watch)
