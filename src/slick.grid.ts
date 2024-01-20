@@ -221,6 +221,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     suppressActiveCellChangeOnEdit: false,
     enableCellNavigation: true,
     enableColumnReorder: true,
+    unorderableColumnCssClass: 'unorderable',
     asyncEditorLoading: false,
     asyncEditorLoadDelay: 100,
     forceFitColumns: false,
@@ -290,16 +291,17 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   protected _columnDefaults = {
     name: '',
-    resizable: true,
-    sortable: false,
-    minWidth: 30,
-    maxWidth: undefined,
-    rerenderOnResize: false,
     headerCssClass: null,
     defaultSortAsc: true,
     focusable: true,
+    hidden: false,
+    minWidth: 30,
+    maxWidth: undefined,
+    rerenderOnResize: false,
+    reorderable: true,
+    resizable: true,
+    sortable: false,
     selectable: true,
-    hidden: false
   } as Partial<C>;
 
   protected _columnAutosizeDefaults: AutoSize = {
@@ -1621,6 +1623,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (m.toolTip) {
         header.title = m.toolTip;
       }
+      if (!m.reorderable) {
+        header.classList.add(this._options.unorderableColumnCssClass!);
+      }
       const colNameElm = Utils.createDomElement('span', { className: 'slick-column-name' }, header);
       this.applyHtmlCode(colNameElm, m.name as string);
 
@@ -1825,6 +1830,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       dragoverBubble: false,
       revertClone: true,
       scroll: !this.hasFrozenColumns(), // enable auto-scroll
+      // lock unorderable columns by using a combo of filter + onMove
+      filter: `.${this._options.unorderableColumnCssClass}`,
+      onMove: (event: MouseEvent & { related: HTMLElement; }) => {
+        return !event.related.classList.contains(this._options.unorderableColumnCssClass as string);
+      },
       onStart: (e: { item: any; originalEvent: MouseEvent; }) => {
         canDragScroll = !this.hasFrozenColumns() ||
           Utils.offset(e.item)!.left > Utils.offset(this._viewportScrollContainerX)!.left;

@@ -157,6 +157,9 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
    */
   enableColumnReorder?: boolean | ColumnReorderFunction<C>;
 
+  /** Defaults to "unorderable", a CSS class name that will be added to the column classes when the column cannot be reordered. */
+  unorderableColumnCssClass?: string;
+
   /**
    * Defaults to true, do we want to allow passing HTML string to cell/row rendering by using `innerHTML`.
    * When this is enabled and input is a string, it will use `innerHTML = 'some html'` to render the input, however when disable it will use `textContent = 'some html'`.

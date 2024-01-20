@@ -47,6 +47,9 @@ export interface CheckboxSelectorOption {
    */
   name?: string;
 
+  /** Defaults to false, makes the column reorderable to another position in the grid. */
+  reorderable?: boolean;
+
   /** Defaults to "Select/Deselect All", provide a tooltip that will be shown over the "Select All" checkbox */
   toolTip?: string;
 
