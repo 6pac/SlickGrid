@@ -127,7 +127,11 @@ export class SlickGroupItemMetadataProvider implements SlickPlugin {
       target.classList.add((item.selectChecked ? 'checked' : 'unchecked'));
       // get rowIndexes array
       const rowIndexes = this.dataView.mapItemsToRows(item.rows);
-      (item.selectChecked ? this._options.checkboxSelectPlugin.selectRows : this._options.checkboxSelectPlugin.deSelectRows)(rowIndexes);
+      if (item.selectChecked) { 
+        this._options.checkboxSelectPlugin.selectRows(rowIndexes); 
+      } else {
+        this._options.checkboxSelectPlugin.deSelectRows(rowIndexes);
+      }
     }
   }
 
