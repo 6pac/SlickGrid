@@ -1625,7 +1625,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       }
       if (!m.reorderable) {
         header.classList.add(this._options.unorderableColumnCssClass!);
-      }      
+      }
       const colNameElm = Utils.createDomElement('span', { className: 'slick-column-name' }, header);
       this.applyHtmlCode(colNameElm, m.name as string);
 
