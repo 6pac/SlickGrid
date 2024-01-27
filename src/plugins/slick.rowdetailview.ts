@@ -581,9 +581,10 @@ export class SlickRowDetailView {
   protected getPaddingItem(parent: any, offset: any) {
     const item: any = {};
 
-    for (const prop in this._dataView) {
+    Object.keys(this._dataView).forEach(prop => {
+      console.log(item[prop]);
       item[prop] = null;
-    }
+    });
     item[this._dataViewIdProperty] = parent[this._dataViewIdProperty] + '.' + offset;
 
     // additional hidden padding metadata fields
