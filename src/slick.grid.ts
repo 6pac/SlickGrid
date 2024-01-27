@@ -1616,6 +1616,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     for (let i = 0; i < this.columns.length; i++) {
       const m: C = this.columns[i];
+      if (m.hidden) { continue; }
+      
       const headerTarget = this.hasFrozenColumns() ? ((i <= this._options.frozenColumn!) ? this._headerL : this._headerR) : this._headerL;
       const headerRowTarget = this.hasFrozenColumns() ? ((i <= this._options.frozenColumn!) ? this._headerRowL : this._headerRowR) : this._headerRowL;
 
