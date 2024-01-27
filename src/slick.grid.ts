@@ -951,12 +951,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this._hiddenParents = Utils.parents(this._container, ':hidden') as HTMLElement[];
     this._hiddenParents.forEach(el => {
       const old: Partial<CSSStyleDeclaration> = {};
-      for (const name in this.cssShow) {
+      Object.keys(this.cssShow).forEach(name => {
         if (this.cssShow) {
           old[name as any] = el.style[name as 'position' | 'visibility' | 'display'];
           el.style[name as any] = this.cssShow[name as 'position' | 'visibility' | 'display'];
         }
-      }
+      });
       this.oldProps.push(old);
     });
   }
@@ -968,11 +968,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (this._hiddenParents) {
       this._hiddenParents.forEach(el => {
         const old = this.oldProps[i++];
-        for (const name in this.cssShow) {
+        Object.keys(this.cssShow).forEach(name => {
           if (this.cssShow) {
             el.style[name as CSSStyleDeclarationWritable] = (old as any)[name];
           }
-        }
+        });
       });
     }
   }
@@ -1651,11 +1651,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       }
 
       if (m.hasOwnProperty('headerCellAttrs') && m.headerCellAttrs instanceof Object) {
-        for (const key in m.headerCellAttrs) {
+        Object.keys(m.headerCellAttrs).forEach(key => {
           if (m.headerCellAttrs.hasOwnProperty(key)) {
             header.setAttribute(key, m.headerCellAttrs[key]);
           }
-        }
+        });
       }
 
       if (m.sortable) {
@@ -3944,12 +3944,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       cellCss += (' active');
     }
 
-    // TODO:  merge them together in the setter
-    for (const key in this.cellCssClasses) {
+    // TODO: merge them together in the setter
+    Object.keys(this.cellCssClasses).forEach(key => {
       if (this.cellCssClasses[key][row]?.[m.id]) {
         cellCss += (' ' + this.cellCssClasses[key][row][m.id]);
       }
-    }
+    });
 
     let value: any = null;
     let formatterResult: FormatterResultWithHtml | FormatterResultWithText | HTMLElement | DocumentFragment | string = '';
@@ -4006,7 +4006,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   protected cleanupRows(rangeToKeep: { bottom: number; top: number; }) {
-    for (const rowId in this.rowsCache) {
+    Object.keys(this.rowsCache).forEach(rowId => {
       if (this.rowsCache) {
         let i = +rowId;
         let removeFrozenRow = true;
@@ -4026,8 +4026,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           this.removeRowFromCache(i);
         }
       }
+    });
+    if (this._options.enableAsyncPostRenderCleanup) {
+      this.startPostProcessingCleanup();
     }
-    if (this._options.enableAsyncPostRenderCleanup) { this.startPostProcessingCleanup(); }
   }
 
   /** Invalidate all grid rows and re-render the grid rows */
@@ -4203,9 +4205,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     let formatterResult;
     const d = this.getDataItem(row);
 
-    for (const colIdx in cacheEntry.cellNodesByColumnIdx) {
+    Object.keys(cacheEntry.cellNodesByColumnIdx).forEach(colIdx => {
       if (!cacheEntry.cellNodesByColumnIdx.hasOwnProperty(colIdx)) {
-        continue;
+        return;
       }
 
       const columnIdx = +colIdx;
@@ -4220,7 +4222,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       } else {
         Utils.emptyElement(node);
       }
-    }
+    });
 
     this.invalidatePostProcessingResults(row);
   }
@@ -4570,10 +4572,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     // Remove cells outside the range.
     const cellsToRemove: number[] = [];
-    for (const cellNodeIdx in cacheEntry.cellNodesByColumnIdx) {
+    Object.keys(cacheEntry.cellNodesByColumnIdx).forEach(cellNodeIdx => {
       // I really hate it when people mess with Array.prototype.
       if (!cacheEntry.cellNodesByColumnIdx.hasOwnProperty(cellNodeIdx)) {
-        continue;
+        return;
       }
 
       // This is a string, so it needs to be cast back to a number.
@@ -4581,12 +4583,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       // Ignore frozen columns
       if (i <= this._options.frozenColumn!) {
-        continue;
+        return;
       }
 
       // Ignore alwaysRenderedColumns
       if (Array.isArray(this.columns) && this.columns[i] && this.columns[i].alwaysRenderColumn) {
-        continue;
+        return;
       }
 
       const colspan = cacheEntry.cellColSpans[i];
@@ -4596,7 +4598,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           cellsToRemove.push((i as unknown as number));
         }
       }
-    }
+    });
 
     let cellToRemove;
     let cellNode;
@@ -5081,23 +5083,20 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       }
 
       this.ensureCellNodesInRowsCache(row);
-      for (const colIdx in cacheEntry.cellNodesByColumnIdx) {
-        if (!cacheEntry.cellNodesByColumnIdx.hasOwnProperty(colIdx)) {
-          continue;
-        }
-
-        const columnIdx = +colIdx;
-
-        const m = this.columns[columnIdx];
-        const processedStatus = this.postProcessedRows[row][columnIdx]; // C=cleanup and re-render, R=rendered
-        if (m.asyncPostRender && processedStatus !== 'R') {
-          const node = cacheEntry.cellNodesByColumnIdx[columnIdx];
-          if (node) {
-            m.asyncPostRender(node, row, this.getDataItem(row), m, (processedStatus === 'C'));
+      Object.keys(cacheEntry.cellNodesByColumnIdx).forEach(colIdx => {
+        if (cacheEntry.cellNodesByColumnIdx.hasOwnProperty(colIdx)) {
+          const columnIdx = +colIdx;
+          const m = this.columns[columnIdx];
+          const processedStatus = this.postProcessedRows[row][columnIdx]; // C=cleanup and re-render, R=rendered
+          if (m.asyncPostRender && processedStatus !== 'R') {
+            const node = cacheEntry.cellNodesByColumnIdx[columnIdx];
+            if (node) {
+              m.asyncPostRender(node, row, this.getDataItem(row), m, (processedStatus === 'C'));
+            }
+            this.postProcessedRows[row][columnIdx] = 'R';
           }
-          this.postProcessedRows[row][columnIdx] = 'R';
         }
-      }
+      });
 
       this.h_postrender = setTimeout(this.asyncPostProcessRows.bind(this), this._options.asyncPostRenderDelay);
       return;
@@ -5132,9 +5131,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   protected updateCellCssStylesOnRenderedRows(addedHash?: CssStyleHash | null, removedHash?: CssStyleHash | null) {
     let node: HTMLElement | null;
-    let columnId: number | string;
-    let addedRowHash;
-    let removedRowHash;
+    let addedRowHash: any;
+    let removedRowHash: any;
     if (typeof this.rowsCache === 'object') {
       Object.keys(this.rowsCache).forEach(row => {
         if (this.rowsCache) {
@@ -5142,25 +5140,25 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           addedRowHash = addedHash?.[row];
 
           if (removedRowHash) {
-            for (columnId in removedRowHash) {
+            Object.keys(removedRowHash).forEach(columnId => {
               if (!addedRowHash || removedRowHash[columnId] !== addedRowHash[columnId]) {
                 node = this.getCellNode(+row, this.getColumnIndex(columnId));
                 if (node) {
                   node.classList.remove(removedRowHash[columnId]);
                 }
               }
-            }
+            });
           }
 
           if (addedRowHash) {
-            for (columnId in addedRowHash) {
+            Object.keys(addedRowHash).forEach(columnId => {
               if (!removedRowHash || removedRowHash[columnId] !== addedRowHash[columnId]) {
                 node = this.getCellNode(+row, this.getColumnIndex(columnId));
                 if (node) {
                   node.classList.add(addedRowHash[columnId]);
                 }
               }
-            }
+            });
           }
         }
       });
