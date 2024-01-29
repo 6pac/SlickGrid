@@ -1973,7 +1973,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
               // colums on right affect maxPageX/minPageX
               for (j = i + 1; j < vc.length; j++) {
                 c = vc[j];
-                if (c && c.resizable) {
+                if (c?.resizable) {
                   if (stretchLeewayOnRight !== null) {
                     if (c.maxWidth) {
                       stretchLeewayOnRight += c.maxWidth - (c.previousWidth || 0);
@@ -1990,7 +1990,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
             for (j = 0; j <= i; j++) {
               // columns on left only affect minPageX
               c = vc[j];
-              if (c && c.resizable) {
+              if (c?.resizable) {
                 if (stretchLeewayOnLeft !== null) {
                   if (c.maxWidth) {
                     stretchLeewayOnLeft += c.maxWidth - (c.previousWidth || 0);
@@ -2031,7 +2031,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
               for (j = i; j >= 0; j--) {
                 c = vc[j];
-                if (c && c.resizable && !c.hidden) {
+                if (c?.resizable && !c.hidden) {
                   actualMinWidth = Math.max(c.minWidth || 0, this.absoluteColumnMinWidth);
                   if (x && (c.previousWidth || 0) + x < actualMinWidth) {
                     x += (c.previousWidth || 0) - actualMinWidth;
