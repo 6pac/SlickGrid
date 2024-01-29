@@ -1616,6 +1616,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     for (let i = 0; i < this.columns.length; i++) {
       const m: C = this.columns[i];
+      if (m.hidden) { continue; }
+      
       const headerTarget = this.hasFrozenColumns() ? ((i <= this._options.frozenColumn!) ? this._headerL : this._headerR) : this._headerL;
       const headerRowTarget = this.hasFrozenColumns() ? ((i <= this._options.frozenColumn!) ? this._headerRowL : this._headerRowR) : this._headerRowL;
 
@@ -1909,16 +1911,17 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     let frozenLeftColMaxWidth = 0;
 
     const children: HTMLElement[] = this.getHeaderChildren();
+    const vc = this.getVisibleColumns();
     for (let i = 0; i < children.length; i++) {
       const child = children[i];
       const handles = child.querySelectorAll('.slick-resizable-handle');
       handles.forEach((handle) => handle.remove());
 
-      if (i >= this.columns.length || !this.columns[i] || this.columns[i].hidden) {
+      if (i >= vc.length || !vc[i]) {
         continue;
       }
 
-      if (this.columns[i].resizable) {
+      if (vc[i].resizable) {
         if (firstResizable === undefined) {
           firstResizable = i;
         }
@@ -1933,7 +1936,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     for (let i = 0; i < children.length; i++) {
       const colElm = children[i];
 
-      if (i >= this.columns.length || !this.columns[i] || this.columns[i].hidden) {
+      if (i >= vc.length || !vc[i]) {
         continue;
       }
       if (i < firstResizable || (this._options.forceFitColumns && i >= lastResizable)) {
@@ -1959,18 +1962,18 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
             let stretchLeewayOnRight: number | null = null;
             // lock each column's width option to current width
             for (let pw = 0; pw < children.length; pw++) {
-              if (pw >= this.columns.length || !this.columns[pw] || this.columns[pw].hidden) {
+              if (pw >= vc.length || !vc[pw]) {
                 continue;
               }
-              this.columns[pw].previousWidth = children[pw].offsetWidth;
+              vc[pw].previousWidth = children[pw].offsetWidth;
             }
             if (this._options.forceFitColumns) {
               shrinkLeewayOnRight = 0;
               stretchLeewayOnRight = 0;
               // colums on right affect maxPageX/minPageX
-              for (j = i + 1; j < this.columns.length; j++) {
-                c = this.columns[j];
-                if (c && c.resizable && !c.hidden) {
+              for (j = i + 1; j < vc.length; j++) {
+                c = vc[j];
+                if (c?.resizable) {
                   if (stretchLeewayOnRight !== null) {
                     if (c.maxWidth) {
                       stretchLeewayOnRight += c.maxWidth - (c.previousWidth || 0);
@@ -1986,8 +1989,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
             let stretchLeewayOnLeft: number | null = 0;
             for (j = 0; j <= i; j++) {
               // columns on left only affect minPageX
-              c = this.columns[j];
-              if (c && c.resizable && !c.hidden) {
+              c = vc[j];
+              if (c?.resizable) {
                 if (stretchLeewayOnLeft !== null) {
                   if (c.maxWidth) {
                     stretchLeewayOnLeft += c.maxWidth - (c.previousWidth || 0);
@@ -2027,8 +2030,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
               x = d;
 
               for (j = i; j >= 0; j--) {
-                c = this.columns[j];
-                if (c && c.resizable && !c.hidden) {
+                c = vc[j];
+                if (c?.resizable && !c.hidden) {
                   actualMinWidth = Math.max(c.minWidth || 0, this.absoluteColumnMinWidth);
                   if (x && (c.previousWidth || 0) + x < actualMinWidth) {
                     x += (c.previousWidth || 0) - actualMinWidth;
@@ -2041,7 +2044,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
               }
 
               for (k = 0; k <= i; k++) {
-                c = this.columns[k];
+                c = vc[k];
                 if (!c || c.hidden) { continue; }
 
                 if (this.hasFrozenColumns() && (k > this._options.frozenColumn!)) {
@@ -2053,8 +2056,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
               if (this._options.forceFitColumns) {
                 x = -d;
-                for (j = i + 1; j < this.columns.length; j++) {
-                  c = this.columns[j];
+                for (j = i + 1; j < vc.length; j++) {
+                  c = vc[j];
                   if (!c || c.hidden) { continue; }
                   if (c.resizable) {
                     if (x && c.maxWidth && (c.maxWidth - (c.previousWidth || 0) < x)) {
@@ -2073,8 +2076,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
                   }
                 }
               } else {
-                for (j = i + 1; j < this.columns.length; j++) {
-                  c = this.columns[j];
+                for (j = i + 1; j < vc.length; j++) {
+                  c = vc[j];
                   if (!c || c.hidden) { continue; }
 
                   if (this.hasFrozenColumns() && (j > this._options.frozenColumn!)) {
@@ -2087,8 +2090,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
               if (this._options.forceFitColumns) {
                 x = -d;
-                for (j = i + 1; j < this.columns.length; j++) {
-                  c = this.columns[j];
+                for (j = i + 1; j < vc.length; j++) {
+                  c = vc[j];
                   if (!c || c.hidden) { continue; }
                   if (c.resizable) {
                     if (x && c.maxWidth && (c.maxWidth - (c.previousWidth || 0) < x)) {
@@ -2108,7 +2111,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
               newCanvasWidthR = 0;
 
               for (j = i; j >= 0; j--) {
-                c = this.columns[j];
+                c = vc[j];
                 if (!c || c.hidden) { continue; }
                 if (c.resizable) {
                   if (x && c.maxWidth && (c.maxWidth - (c.previousWidth || 0) < x)) {
@@ -2133,7 +2136,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
               }
 
               for (k = 0; k <= i; k++) {
-                c = this.columns[k];
+                c = vc[k];
                 if (!c || c.hidden) { continue; }
 
                 if (this.hasFrozenColumns() && (k > this._options.frozenColumn!)) {
@@ -2145,8 +2148,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
               if (this._options.forceFitColumns) {
                 x = -d;
-                for (j = i + 1; j < this.columns.length; j++) {
-                  c = this.columns[j];
+                for (j = i + 1; j < vc.length; j++) {
+                  c = vc[j];
                   if (!c || c.hidden) { continue; }
                   if (c.resizable) {
                     actualMinWidth = Math.max(c.minWidth || 0, this.absoluteColumnMinWidth);
@@ -2166,8 +2169,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
                   }
                 }
               } else {
-                for (j = i + 1; j < this.columns.length; j++) {
-                  c = this.columns[j];
+                for (j = i + 1; j < vc.length; j++) {
+                  c = vc[j];
                   if (!c || c.hidden) { continue; }
 
                   if (this.hasFrozenColumns() && (j > this._options.frozenColumn!)) {
@@ -2202,8 +2205,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
               this.applyColumnHeaderWidths();
             }
             let newWidth;
-            for (j = 0; j < this.columns.length; j++) {
-              c = this.columns[j];
+            for (j = 0; j < vc.length; j++) {
+              c = vc[j];
               if (!c || c.hidden) { continue; }
               newWidth = children[j].offsetWidth;
 
