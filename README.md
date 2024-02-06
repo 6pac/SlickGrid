@@ -29,6 +29,27 @@ Also check out the [Wiki](https://github.com/6pac/SlickGrid/wiki) for news and d
 
 _For a basic TypeScript example, take a look at the v5.0 Annoucement & Migration guide shown below and [TypeScript Example Wiki](https://github.com/6pac/SlickGrid/wiki/TypeScript-Examples)._
 
+### Installation
+There are multiple ways to use and install SlickGrid, you can use it as a standalone (IIFE) or install it through NPM then `import` or `require` SlickGrid.
+
+```sh
+# script standalone (IIFE) from CDN
+<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.8.0/dist/browser/slick.core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.8.0/dist/browser/slick.grid.min.js"></script>
+<script>
+  const grid = new Slick.Grid("#myGrid", dataView, columns, options);
+</script>
+
+# or install from NPM
+npm install slickgrid
+
+<script type="module">
+  import { SlickGrid, SlickDataView } from 'slickgrid';
+  const dataView = new SlickDataView({ inlineFilters: true });
+  const grid = new SlickGrid("#myGrid", dataView, columns, options);
+</script>
+```
+
 ### Contributions
 See [Contributing Guide](https://github.com/6pac/SlickGrid/blob/master/CONTRIBUTING.md)
 
