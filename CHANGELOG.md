@@ -4,6 +4,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [5.8.1](https://github.com/6pac/SlickGrid/compare/5.8.0...5.8.1) (2024-02-13)
 
+### Bug Fixes
+fix for hidden column issue fixes ([#985](https://github.com/6pac/SlickGrid/pull/985)) ([02d0fd2b](02d0fd2b3ee19f2caeef65b8395a15a2640bfe26))
+
 ### Performance Improvements
 
 * **core:** convert `for..in` to `Object.keys().forEach` for better perf ([#987](https://github.com/6pac/SlickGrid/issues/987)) ([c0f7b7c](https://github.com/6pac/SlickGrid/commit/c0f7b7c74c3423f9cab44472cc8c8b56ac71e5ad))
