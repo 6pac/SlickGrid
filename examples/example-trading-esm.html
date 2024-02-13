@@ -264,7 +264,7 @@
     dataView.setGrouping({
       getter: columnName,
       formatter: function (g) {
-        return `${columnName.replace(/(^\w|\s\w)/g, m => m.toUpperCase())}:  ${g.value}  <span style='color:#029eb7'>(${g.count} items)</span>`;
+        return `${columnName.replace(/(^\w|\s\w)/g, m => m.toUpperCase())}: ${g.value}  <span style='color:#029eb7'>(${g.count} items)</span>`;
       },
       aggregators: [
         new Aggregators.Sum("amount")
