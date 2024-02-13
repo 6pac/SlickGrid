@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.8.1](https://github.com/6pac/SlickGrid/compare/5.8.0...5.8.1) (2024-02-13)
+
+### Performance Improvements
+
+* **core:** convert `for..in` to `Object.keys().forEach` for better perf ([#987](https://github.com/6pac/SlickGrid/issues/987)) ([c0f7b7c](https://github.com/6pac/SlickGrid/commit/c0f7b7c74c3423f9cab44472cc8c8b56ac71e5ad))
+
 # [5.8.0](https://github.com/6pac/SlickGrid/compare/5.7.1...5.8.0) (2024-01-20)
 
 ### Bug Fixes

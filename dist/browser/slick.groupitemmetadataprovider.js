@@ -68,7 +68,7 @@
       if (item && item instanceof SlickGroup && target.classList.contains(this._options.toggleCssClass || "") && (this.handleDataViewExpandOrCollapse(item), e.stopImmediatePropagation(), e.preventDefault()), item && item instanceof SlickGroup && target.classList.contains(this._options.checkboxSelectCssClass || "")) {
         item.selectChecked = !item.selectChecked, target.classList.remove(item.selectChecked ? "unchecked" : "checked"), target.classList.add(item.selectChecked ? "checked" : "unchecked");
         let rowIndexes = this.dataView.mapItemsToRows(item.rows);
-        (item.selectChecked ? this._options.checkboxSelectPlugin.selectRows : this._options.checkboxSelectPlugin.deSelectRows)(rowIndexes);
+        item.selectChecked ? this._options.checkboxSelectPlugin.selectRows(rowIndexes) : this._options.checkboxSelectPlugin.deSelectRows(rowIndexes);
       }
     }
     // TODO:  add -/+ handling

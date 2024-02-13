@@ -4260,9 +4260,9 @@ var SlickEvent16 = SlickEvent, SlickEventHandler8 = SlickEventHandler, Utils22 =
   /** Get the Row Detail padding (which are the rows dedicated to the detail panel) */
   getPaddingItem(parent, offset) {
     let item = {};
-    for (let prop in this._dataView)
-      item[prop] = null;
-    return item[this._dataViewIdProperty] = parent[this._dataViewIdProperty] + "." + offset, item[`${this._keyPrefix}collapsed`] = !0, item[`${this._keyPrefix}isPadding`] = !0, item[`${this._keyPrefix}parent`] = parent, item[`${this._keyPrefix}offset`] = offset, item;
+    return Object.keys(this._dataView).forEach((prop) => {
+      console.log(item[prop]), item[prop] = null;
+    }), item[this._dataViewIdProperty] = parent[this._dataViewIdProperty] + "." + offset, item[`${this._keyPrefix}collapsed`] = !0, item[`${this._keyPrefix}isPadding`] = !0, item[`${this._keyPrefix}parent`] = parent, item[`${this._keyPrefix}offset`] = offset, item;
   }
   /** Create the detail ctr node. this belongs to the dev & can be custom-styled as per */
   applyTemplateNewLineHeight(item) {
@@ -4954,7 +4954,7 @@ var keyCode4 = keyCode, SlickGroup2 = SlickGroup, Utils26 = Utils, SlickGroupIte
     if (item && item instanceof SlickGroup2 && target.classList.contains(this._options.toggleCssClass || "") && (this.handleDataViewExpandOrCollapse(item), e.stopImmediatePropagation(), e.preventDefault()), item && item instanceof SlickGroup2 && target.classList.contains(this._options.checkboxSelectCssClass || "")) {
       item.selectChecked = !item.selectChecked, target.classList.remove(item.selectChecked ? "unchecked" : "checked"), target.classList.add(item.selectChecked ? "checked" : "unchecked");
       let rowIndexes = this.dataView.mapItemsToRows(item.rows);
-      (item.selectChecked ? this._options.checkboxSelectPlugin.selectRows : this._options.checkboxSelectPlugin.deSelectRows)(rowIndexes);
+      item.selectChecked ? this._options.checkboxSelectPlugin.selectRows(rowIndexes) : this._options.checkboxSelectPlugin.deSelectRows(rowIndexes);
     }
   }
   // TODO:  add -/+ handling
@@ -6510,7 +6510,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.8.0");
+    __publicField(this, "slickGridVersion", "5.8.1");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -6955,17 +6955,18 @@ var SlickGrid = class {
   cacheCssForHiddenInit() {
     this._hiddenParents = Utils30.parents(this._container, ":hidden"), this._hiddenParents.forEach((el) => {
       let old = {};
-      for (let name in this.cssShow)
+      Object.keys(this.cssShow).forEach((name) => {
         this.cssShow && (old[name] = el.style[name], el.style[name] = this.cssShow[name]);
-      this.oldProps.push(old);
+      }), this.oldProps.push(old);
     });
   }
   restoreCssFromHiddenInit() {
     let i = 0;
     this._hiddenParents && this._hiddenParents.forEach((el) => {
       let old = this.oldProps[i++];
-      for (let name in this.cssShow)
+      Object.keys(this.cssShow).forEach((name) => {
         this.cssShow && (el.style[name] = old[name]);
+      });
     });
   }
   hasFrozenColumns() {
@@ -7278,15 +7279,17 @@ var SlickGrid = class {
       });
     }), Utils30.emptyElement(this._footerRowR)));
     for (let i = 0; i < this.columns.length; i++) {
-      let m = this.columns[i], headerTarget = this.hasFrozenColumns() ? i <= this._options.frozenColumn ? this._headerL : this._headerR : this._headerL, headerRowTarget = this.hasFrozenColumns() ? i <= this._options.frozenColumn ? this._headerRowL : this._headerRowR : this._headerRowL, header = Utils30.createDomElement("div", { id: `${this.uid + m.id}`, dataset: { id: String(m.id) }, role: "columnheader", className: "ui-state-default slick-state-default slick-header-column" }, headerTarget);
+      let m = this.columns[i];
+      if (m.hidden)
+        continue;
+      let headerTarget = this.hasFrozenColumns() ? i <= this._options.frozenColumn ? this._headerL : this._headerR : this._headerL, headerRowTarget = this.hasFrozenColumns() ? i <= this._options.frozenColumn ? this._headerRowL : this._headerRowR : this._headerRowL, header = Utils30.createDomElement("div", { id: `${this.uid + m.id}`, dataset: { id: String(m.id) }, role: "columnheader", className: "ui-state-default slick-state-default slick-header-column" }, headerTarget);
       m.toolTip && (header.title = m.toolTip), m.reorderable || header.classList.add(this._options.unorderableColumnCssClass);
       let colNameElm = Utils30.createDomElement("span", { className: "slick-column-name" }, header);
       this.applyHtmlCode(colNameElm, m.name), Utils30.width(header, m.width - this.headerColumnWidthDiff);
       let classname = m.headerCssClass || null;
-      if (classname && header.classList.add(...Utils30.classNameToList(classname)), classname = this.hasFrozenColumns() && i <= this._options.frozenColumn ? "frozen" : null, classname && header.classList.add(classname), this._bindingEventService.bind(header, "mouseenter", this.handleHeaderMouseEnter.bind(this)), this._bindingEventService.bind(header, "mouseleave", this.handleHeaderMouseLeave.bind(this)), Utils30.storage.put(header, "column", m), (this._options.enableColumnReorder || m.sortable) && (this._bindingEventService.bind(header, "mouseenter", this.handleHeaderMouseHoverOn.bind(this)), this._bindingEventService.bind(header, "mouseleave", this.handleHeaderMouseHoverOff.bind(this))), m.hasOwnProperty("headerCellAttrs") && m.headerCellAttrs instanceof Object)
-        for (let key in m.headerCellAttrs)
-          m.headerCellAttrs.hasOwnProperty(key) && header.setAttribute(key, m.headerCellAttrs[key]);
-      if (m.sortable && (header.classList.add("slick-header-sortable"), Utils30.createDomElement("div", { className: `slick-sort-indicator ${this._options.numberedMultiColumnSort && !this._options.sortColNumberInSeparateSpan ? " slick-sort-indicator-numbered" : ""}` }, header), this._options.numberedMultiColumnSort && this._options.sortColNumberInSeparateSpan && Utils30.createDomElement("div", { className: "slick-sort-indicator-numbered" }, header)), this.trigger(this.onHeaderCellRendered, {
+      if (classname && header.classList.add(...Utils30.classNameToList(classname)), classname = this.hasFrozenColumns() && i <= this._options.frozenColumn ? "frozen" : null, classname && header.classList.add(classname), this._bindingEventService.bind(header, "mouseenter", this.handleHeaderMouseEnter.bind(this)), this._bindingEventService.bind(header, "mouseleave", this.handleHeaderMouseLeave.bind(this)), Utils30.storage.put(header, "column", m), (this._options.enableColumnReorder || m.sortable) && (this._bindingEventService.bind(header, "mouseenter", this.handleHeaderMouseHoverOn.bind(this)), this._bindingEventService.bind(header, "mouseleave", this.handleHeaderMouseHoverOff.bind(this))), m.hasOwnProperty("headerCellAttrs") && m.headerCellAttrs instanceof Object && Object.keys(m.headerCellAttrs).forEach((key) => {
+        m.headerCellAttrs.hasOwnProperty(key) && header.setAttribute(key, m.headerCellAttrs[key]);
+      }), m.sortable && (header.classList.add("slick-header-sortable"), Utils30.createDomElement("div", { className: `slick-sort-indicator ${this._options.numberedMultiColumnSort && !this._options.sortColNumberInSeparateSpan ? " slick-sort-indicator-numbered" : ""}` }, header), this._options.numberedMultiColumnSort && this._options.sortColNumberInSeparateSpan && Utils30.createDomElement("div", { className: "slick-sort-indicator-numbered" }, header)), this.trigger(this.onHeaderCellRendered, {
         node: header,
         column: m,
         grid: this
@@ -7387,13 +7390,13 @@ var SlickGrid = class {
   setupColumnResize() {
     if (typeof Resizable2 > "u")
       throw new Error('Slick.Resizable is undefined, make sure to import "slick.interactions.js"');
-    let j, k, c, pageX, minPageX, maxPageX, firstResizable, lastResizable = -1, frozenLeftColMaxWidth = 0, children = this.getHeaderChildren();
+    let j, k, c, pageX, minPageX, maxPageX, firstResizable, lastResizable = -1, frozenLeftColMaxWidth = 0, children = this.getHeaderChildren(), vc = this.getVisibleColumns();
     for (let i = 0; i < children.length; i++)
-      children[i].querySelectorAll(".slick-resizable-handle").forEach((handle) => handle.remove()), !(i >= this.columns.length || !this.columns[i] || this.columns[i].hidden) && this.columns[i].resizable && (firstResizable === void 0 && (firstResizable = i), lastResizable = i);
+      children[i].querySelectorAll(".slick-resizable-handle").forEach((handle) => handle.remove()), !(i >= vc.length || !vc[i]) && vc[i].resizable && (firstResizable === void 0 && (firstResizable = i), lastResizable = i);
     if (firstResizable !== void 0)
       for (let i = 0; i < children.length; i++) {
         let colElm = children[i];
-        if (i >= this.columns.length || !this.columns[i] || this.columns[i].hidden || i < firstResizable || this._options.forceFitColumns && i >= lastResizable)
+        if (i >= vc.length || !vc[i] || i < firstResizable || this._options.forceFitColumns && i >= lastResizable)
           continue;
         let resizeableHandle = Utils30.createDomElement("div", { className: "slick-resizable-handle", role: "separator", ariaOrientation: "horizontal" }, colElm);
         this._bindingEventService.bind(resizeableHandle, "dblclick", this.handleResizeableDoubleClick.bind(this)), this.slickResizableInstances.push(
@@ -7407,13 +7410,13 @@ var SlickGrid = class {
               pageX = targetEvent.pageX, frozenLeftColMaxWidth = 0, resizeElms.resizeableElement.classList.add("slick-header-column-active");
               let shrinkLeewayOnRight = null, stretchLeewayOnRight = null;
               for (let pw = 0; pw < children.length; pw++)
-                pw >= this.columns.length || !this.columns[pw] || this.columns[pw].hidden || (this.columns[pw].previousWidth = children[pw].offsetWidth);
+                pw >= vc.length || !vc[pw] || (vc[pw].previousWidth = children[pw].offsetWidth);
               if (this._options.forceFitColumns)
-                for (shrinkLeewayOnRight = 0, stretchLeewayOnRight = 0, j = i + 1; j < this.columns.length; j++)
-                  c = this.columns[j], c && c.resizable && !c.hidden && (stretchLeewayOnRight !== null && (c.maxWidth ? stretchLeewayOnRight += c.maxWidth - (c.previousWidth || 0) : stretchLeewayOnRight = null), shrinkLeewayOnRight += (c.previousWidth || 0) - Math.max(c.minWidth || 0, this.absoluteColumnMinWidth));
+                for (shrinkLeewayOnRight = 0, stretchLeewayOnRight = 0, j = i + 1; j < vc.length; j++)
+                  c = vc[j], c?.resizable && (stretchLeewayOnRight !== null && (c.maxWidth ? stretchLeewayOnRight += c.maxWidth - (c.previousWidth || 0) : stretchLeewayOnRight = null), shrinkLeewayOnRight += (c.previousWidth || 0) - Math.max(c.minWidth || 0, this.absoluteColumnMinWidth));
               let shrinkLeewayOnLeft = 0, stretchLeewayOnLeft = 0;
               for (j = 0; j <= i; j++)
-                c = this.columns[j], c && c.resizable && !c.hidden && (stretchLeewayOnLeft !== null && (c.maxWidth ? stretchLeewayOnLeft += c.maxWidth - (c.previousWidth || 0) : stretchLeewayOnLeft = null), shrinkLeewayOnLeft += (c.previousWidth || 0) - Math.max(c.minWidth || 0, this.absoluteColumnMinWidth));
+                c = vc[j], c?.resizable && (stretchLeewayOnLeft !== null && (c.maxWidth ? stretchLeewayOnLeft += c.maxWidth - (c.previousWidth || 0) : stretchLeewayOnLeft = null), shrinkLeewayOnLeft += (c.previousWidth || 0) - Math.max(c.minWidth || 0, this.absoluteColumnMinWidth));
               shrinkLeewayOnRight === null && (shrinkLeewayOnRight = 1e5), shrinkLeewayOnLeft === null && (shrinkLeewayOnLeft = 1e5), stretchLeewayOnRight === null && (stretchLeewayOnRight = 1e5), stretchLeewayOnLeft === null && (stretchLeewayOnLeft = 1e5), maxPageX = pageX + Math.min(shrinkLeewayOnRight, stretchLeewayOnLeft), minPageX = pageX - Math.min(shrinkLeewayOnLeft, stretchLeewayOnRight);
             },
             onResize: (e, resizeElms) => {
@@ -7422,21 +7425,21 @@ var SlickGrid = class {
               let actualMinWidth, d = Math.min(maxPageX, Math.max(minPageX, targetEvent.pageX)) - pageX, x, newCanvasWidthL = 0, newCanvasWidthR = 0, viewportWidth = this.viewportHasVScroll ? this.viewportW - (this.scrollbarDimensions?.width ?? 0) : this.viewportW;
               if (d < 0) {
                 for (x = d, j = i; j >= 0; j--)
-                  c = this.columns[j], c && c.resizable && !c.hidden && (actualMinWidth = Math.max(c.minWidth || 0, this.absoluteColumnMinWidth), x && (c.previousWidth || 0) + x < actualMinWidth ? (x += (c.previousWidth || 0) - actualMinWidth, c.width = actualMinWidth) : (c.width = (c.previousWidth || 0) + x, x = 0));
+                  c = vc[j], c?.resizable && !c.hidden && (actualMinWidth = Math.max(c.minWidth || 0, this.absoluteColumnMinWidth), x && (c.previousWidth || 0) + x < actualMinWidth ? (x += (c.previousWidth || 0) - actualMinWidth, c.width = actualMinWidth) : (c.width = (c.previousWidth || 0) + x, x = 0));
                 for (k = 0; k <= i; k++)
-                  c = this.columns[k], !(!c || c.hidden) && (this.hasFrozenColumns() && k > this._options.frozenColumn ? newCanvasWidthR += c.width || 0 : newCanvasWidthL += c.width || 0);
+                  c = vc[k], !(!c || c.hidden) && (this.hasFrozenColumns() && k > this._options.frozenColumn ? newCanvasWidthR += c.width || 0 : newCanvasWidthL += c.width || 0);
                 if (this._options.forceFitColumns)
-                  for (x = -d, j = i + 1; j < this.columns.length; j++)
-                    c = this.columns[j], !(!c || c.hidden) && c.resizable && (x && c.maxWidth && c.maxWidth - (c.previousWidth || 0) < x ? (x -= c.maxWidth - (c.previousWidth || 0), c.width = c.maxWidth) : (c.width = (c.previousWidth || 0) + x, x = 0), this.hasFrozenColumns() && j > this._options.frozenColumn ? newCanvasWidthR += c.width || 0 : newCanvasWidthL += c.width || 0);
+                  for (x = -d, j = i + 1; j < vc.length; j++)
+                    c = vc[j], !(!c || c.hidden) && c.resizable && (x && c.maxWidth && c.maxWidth - (c.previousWidth || 0) < x ? (x -= c.maxWidth - (c.previousWidth || 0), c.width = c.maxWidth) : (c.width = (c.previousWidth || 0) + x, x = 0), this.hasFrozenColumns() && j > this._options.frozenColumn ? newCanvasWidthR += c.width || 0 : newCanvasWidthL += c.width || 0);
                 else
-                  for (j = i + 1; j < this.columns.length; j++)
-                    c = this.columns[j], !(!c || c.hidden) && (this.hasFrozenColumns() && j > this._options.frozenColumn ? newCanvasWidthR += c.width || 0 : newCanvasWidthL += c.width || 0);
+                  for (j = i + 1; j < vc.length; j++)
+                    c = vc[j], !(!c || c.hidden) && (this.hasFrozenColumns() && j > this._options.frozenColumn ? newCanvasWidthR += c.width || 0 : newCanvasWidthL += c.width || 0);
                 if (this._options.forceFitColumns)
-                  for (x = -d, j = i + 1; j < this.columns.length; j++)
-                    c = this.columns[j], !(!c || c.hidden) && c.resizable && (x && c.maxWidth && c.maxWidth - (c.previousWidth || 0) < x ? (x -= c.maxWidth - (c.previousWidth || 0), c.width = c.maxWidth) : (c.width = (c.previousWidth || 0) + x, x = 0));
+                  for (x = -d, j = i + 1; j < vc.length; j++)
+                    c = vc[j], !(!c || c.hidden) && c.resizable && (x && c.maxWidth && c.maxWidth - (c.previousWidth || 0) < x ? (x -= c.maxWidth - (c.previousWidth || 0), c.width = c.maxWidth) : (c.width = (c.previousWidth || 0) + x, x = 0));
               } else {
                 for (x = d, newCanvasWidthL = 0, newCanvasWidthR = 0, j = i; j >= 0; j--)
-                  if (c = this.columns[j], !(!c || c.hidden) && c.resizable)
+                  if (c = vc[j], !(!c || c.hidden) && c.resizable)
                     if (x && c.maxWidth && c.maxWidth - (c.previousWidth || 0) < x)
                       x -= c.maxWidth - (c.previousWidth || 0), c.width = c.maxWidth;
                     else {
@@ -7444,13 +7447,13 @@ var SlickGrid = class {
                       this.hasFrozenColumns() && j <= this._options.frozenColumn ? (newWidth > frozenLeftColMaxWidth && resizedCanvasWidthL < viewportWidth - this._options.frozenRightViewportMinWidth && (frozenLeftColMaxWidth = newWidth), c.width = resizedCanvasWidthL + this._options.frozenRightViewportMinWidth > viewportWidth ? frozenLeftColMaxWidth : newWidth) : c.width = newWidth, x = 0;
                     }
                 for (k = 0; k <= i; k++)
-                  c = this.columns[k], !(!c || c.hidden) && (this.hasFrozenColumns() && k > this._options.frozenColumn ? newCanvasWidthR += c.width || 0 : newCanvasWidthL += c.width || 0);
+                  c = vc[k], !(!c || c.hidden) && (this.hasFrozenColumns() && k > this._options.frozenColumn ? newCanvasWidthR += c.width || 0 : newCanvasWidthL += c.width || 0);
                 if (this._options.forceFitColumns)
-                  for (x = -d, j = i + 1; j < this.columns.length; j++)
-                    c = this.columns[j], !(!c || c.hidden) && c.resizable && (actualMinWidth = Math.max(c.minWidth || 0, this.absoluteColumnMinWidth), x && (c.previousWidth || 0) + x < actualMinWidth ? (x += (c.previousWidth || 0) - actualMinWidth, c.width = actualMinWidth) : (c.width = (c.previousWidth || 0) + x, x = 0), this.hasFrozenColumns() && j > this._options.frozenColumn ? newCanvasWidthR += c.width || 0 : newCanvasWidthL += c.width || 0);
+                  for (x = -d, j = i + 1; j < vc.length; j++)
+                    c = vc[j], !(!c || c.hidden) && c.resizable && (actualMinWidth = Math.max(c.minWidth || 0, this.absoluteColumnMinWidth), x && (c.previousWidth || 0) + x < actualMinWidth ? (x += (c.previousWidth || 0) - actualMinWidth, c.width = actualMinWidth) : (c.width = (c.previousWidth || 0) + x, x = 0), this.hasFrozenColumns() && j > this._options.frozenColumn ? newCanvasWidthR += c.width || 0 : newCanvasWidthL += c.width || 0);
                 else
-                  for (j = i + 1; j < this.columns.length; j++)
-                    c = this.columns[j], !(!c || c.hidden) && (this.hasFrozenColumns() && j > this._options.frozenColumn ? newCanvasWidthR += c.width || 0 : newCanvasWidthL += c.width || 0);
+                  for (j = i + 1; j < vc.length; j++)
+                    c = vc[j], !(!c || c.hidden) && (this.hasFrozenColumns() && j > this._options.frozenColumn ? newCanvasWidthR += c.width || 0 : newCanvasWidthL += c.width || 0);
               }
               this.hasFrozenColumns() && newCanvasWidthL !== this.canvasWidthL && (Utils30.width(this._headerL, newCanvasWidthL + 1e3), Utils30.setStyleSize(this._paneHeaderR, "left", newCanvasWidthL)), this.applyColumnHeaderWidths(), this._options.syncColumnCellResize && this.applyColumnWidths(), this.trigger(this.onColumnsDrag, {
                 triggeredByColumn: resizeElms.resizeableElement,
@@ -7462,8 +7465,8 @@ var SlickGrid = class {
               let triggeredByColumn = resizeElms.resizeableElement.id.replace(this.uid, "");
               this.trigger(this.onBeforeColumnsResize, { triggeredByColumn }).getReturnValue() === !0 && this.applyColumnHeaderWidths();
               let newWidth;
-              for (j = 0; j < this.columns.length; j++)
-                c = this.columns[j], !(!c || c.hidden) && (newWidth = children[j].offsetWidth, c.previousWidth !== newWidth && c.rerenderOnResize && this.invalidateAllRows());
+              for (j = 0; j < vc.length; j++)
+                c = vc[j], !(!c || c.hidden) && (newWidth = children[j].offsetWidth, c.previousWidth !== newWidth && c.rerenderOnResize && this.invalidateAllRows());
               this.updateCanvasWidth(!0), this.render(), this.trigger(this.onColumnsResized, { triggeredByColumn }), clearTimeout(this._columnResizeTimer), this._columnResizeTimer = setTimeout(() => {
                 this.columnResizeDragging = !1;
               }, 300);
@@ -8163,9 +8166,9 @@ var SlickGrid = class {
   }
   appendCellHtml(divRow, row, cell, colspan, item) {
     let m = this.columns[cell], cellCss = "slick-cell l" + cell + " r" + Math.min(this.columns.length - 1, cell + colspan - 1) + (m.cssClass ? " " + m.cssClass : "");
-    this.hasFrozenColumns() && cell <= this._options.frozenColumn && (cellCss += " frozen"), row === this.activeRow && cell === this.activeCell && this._options.showCellSelection && (cellCss += " active");
-    for (let key in this.cellCssClasses)
+    this.hasFrozenColumns() && cell <= this._options.frozenColumn && (cellCss += " frozen"), row === this.activeRow && cell === this.activeCell && this._options.showCellSelection && (cellCss += " active"), Object.keys(this.cellCssClasses).forEach((key) => {
       this.cellCssClasses[key][row]?.[m.id] && (cellCss += " " + this.cellCssClasses[key][row][m.id]);
+    });
     let value = null, formatterResult = "";
     item && (value = this.getDataItemValueForColumn(item, m), formatterResult = this.getFormatter(row, m)(row, cell, value, m, item, this), formatterResult == null && (formatterResult = ""));
     let appendCellResult = this.trigger(this.onBeforeAppendCell, { row, cell, value, dataContext: item }).getReturnValue(), addlCssClasses = typeof appendCellResult == "string" ? appendCellResult : "";
@@ -8184,12 +8187,12 @@ var SlickGrid = class {
     divRow.appendChild(cellDiv), formatterResult.insertElementAfterTarget && Utils30.insertAfterElement(cellDiv, formatterResult.insertElementAfterTarget), this.rowsCache[row].cellRenderQueue.push(cell), this.rowsCache[row].cellColSpans[cell] = colspan;
   }
   cleanupRows(rangeToKeep) {
-    for (let rowId in this.rowsCache)
+    Object.keys(this.rowsCache).forEach((rowId) => {
       if (this.rowsCache) {
         let i = +rowId, removeFrozenRow = !0;
         this.hasFrozenRows && (this._options.frozenBottom && i >= this.actualFrozenRow || !this._options.frozenBottom && i <= this.actualFrozenRow) && (removeFrozenRow = !1), (i = parseInt(rowId, 10)) !== this.activeRow && (i < rangeToKeep.top || i > rangeToKeep.bottom) && removeFrozenRow && this.removeRowFromCache(i);
       }
-    this._options.enableAsyncPostRenderCleanup && this.startPostProcessingCleanup();
+    }), this._options.enableAsyncPostRenderCleanup && this.startPostProcessingCleanup();
   }
   /** Invalidate all grid rows and re-render the grid rows */
   invalidate() {
@@ -8285,13 +8288,12 @@ var SlickGrid = class {
       return;
     this.ensureCellNodesInRowsCache(row);
     let formatterResult, d = this.getDataItem(row);
-    for (let colIdx in cacheEntry.cellNodesByColumnIdx) {
+    Object.keys(cacheEntry.cellNodesByColumnIdx).forEach((colIdx) => {
       if (!cacheEntry.cellNodesByColumnIdx.hasOwnProperty(colIdx))
-        continue;
+        return;
       let columnIdx = +colIdx, m = this.columns[columnIdx], node = cacheEntry.cellNodesByColumnIdx[columnIdx];
       row === this.activeRow && columnIdx === this.activeCell && this.currentEditor ? this.currentEditor.loadValue(d) : d ? (formatterResult = this.getFormatter(row, m)(row, columnIdx, this.getDataItemValueForColumn(d, m), m, d, this), this.applyFormatResultToCellNode(formatterResult, node)) : Utils30.emptyElement(node);
-    }
-    this.invalidatePostProcessingResults(row);
+    }), this.invalidatePostProcessingResults(row);
   }
   /**
    * Get the number of rows displayed in the viewport
@@ -8387,15 +8389,15 @@ var SlickGrid = class {
     if (this.hasFrozenRows && (this._options.frozenBottom && row > this.actualFrozenRow || row <= this.actualFrozenRow))
       return;
     let totalCellsRemoved = 0, cacheEntry = this.rowsCache[row], cellsToRemove = [];
-    for (let cellNodeIdx in cacheEntry.cellNodesByColumnIdx) {
+    Object.keys(cacheEntry.cellNodesByColumnIdx).forEach((cellNodeIdx) => {
       if (!cacheEntry.cellNodesByColumnIdx.hasOwnProperty(cellNodeIdx))
-        continue;
+        return;
       let i = +cellNodeIdx;
       if (i <= this._options.frozenColumn || Array.isArray(this.columns) && this.columns[i] && this.columns[i].alwaysRenderColumn)
-        continue;
+        return;
       let colspan = cacheEntry.cellColSpans[i];
       (this.columnPosLeft[i] > range.rightPx || this.columnPosRight[Math.min(this.columns.length - 1, (i || 0) + colspan - 1)] < range.leftPx) && (row === this.activeRow && Number(i) === this.activeCell || cellsToRemove.push(i));
-    }
+    });
     let cellToRemove, cellNode;
     for (; Utils30.isDefined(cellToRemove = cellsToRemove.pop()); )
       cellNode = cacheEntry.cellNodesByColumnIdx[cellToRemove], this._options.enableAsyncPostRenderCleanup && this.postProcessedRows[row]?.[cellToRemove] ? this.queuePostProcessedCellForCleanup(cellNode, cellToRemove, row) : cellNode.parentElement?.removeChild(cellNode), delete cacheEntry.cellColSpans[cellToRemove], delete cacheEntry.cellNodesByColumnIdx[cellToRemove], this.postProcessedRows[row] && delete this.postProcessedRows[row][cellToRemove], totalCellsRemoved++;
@@ -8560,17 +8562,15 @@ var SlickGrid = class {
     for (; this.postProcessFromRow <= this.postProcessToRow; ) {
       let row = this.vScrollDir >= 0 ? this.postProcessFromRow++ : this.postProcessToRow--, cacheEntry = this.rowsCache[row];
       if (!(!cacheEntry || row >= dataLength)) {
-        this.postProcessedRows[row] || (this.postProcessedRows[row] = {}), this.ensureCellNodesInRowsCache(row);
-        for (let colIdx in cacheEntry.cellNodesByColumnIdx) {
-          if (!cacheEntry.cellNodesByColumnIdx.hasOwnProperty(colIdx))
-            continue;
-          let columnIdx = +colIdx, m = this.columns[columnIdx], processedStatus = this.postProcessedRows[row][columnIdx];
-          if (m.asyncPostRender && processedStatus !== "R") {
-            let node = cacheEntry.cellNodesByColumnIdx[columnIdx];
-            node && m.asyncPostRender(node, row, this.getDataItem(row), m, processedStatus === "C"), this.postProcessedRows[row][columnIdx] = "R";
+        this.postProcessedRows[row] || (this.postProcessedRows[row] = {}), this.ensureCellNodesInRowsCache(row), Object.keys(cacheEntry.cellNodesByColumnIdx).forEach((colIdx) => {
+          if (cacheEntry.cellNodesByColumnIdx.hasOwnProperty(colIdx)) {
+            let columnIdx = +colIdx, m = this.columns[columnIdx], processedStatus = this.postProcessedRows[row][columnIdx];
+            if (m.asyncPostRender && processedStatus !== "R") {
+              let node = cacheEntry.cellNodesByColumnIdx[columnIdx];
+              node && m.asyncPostRender(node, row, this.getDataItem(row), m, processedStatus === "C"), this.postProcessedRows[row][columnIdx] = "R";
+            }
           }
-        }
-        this.h_postrender = setTimeout(this.asyncPostProcessRows.bind(this), this._options.asyncPostRenderDelay);
+        }), this.h_postrender = setTimeout(this.asyncPostProcessRows.bind(this), this._options.asyncPostRenderDelay);
         return;
       }
     }
@@ -8591,16 +8591,13 @@ var SlickGrid = class {
     }
   }
   updateCellCssStylesOnRenderedRows(addedHash, removedHash) {
-    let node, columnId, addedRowHash, removedRowHash;
+    let node, addedRowHash, removedRowHash;
     typeof this.rowsCache == "object" && Object.keys(this.rowsCache).forEach((row) => {
-      if (this.rowsCache) {
-        if (removedRowHash = removedHash?.[row], addedRowHash = addedHash?.[row], removedRowHash)
-          for (columnId in removedRowHash)
-            (!addedRowHash || removedRowHash[columnId] !== addedRowHash[columnId]) && (node = this.getCellNode(+row, this.getColumnIndex(columnId)), node && node.classList.remove(removedRowHash[columnId]));
-        if (addedRowHash)
-          for (columnId in addedRowHash)
-            (!removedRowHash || removedRowHash[columnId] !== addedRowHash[columnId]) && (node = this.getCellNode(+row, this.getColumnIndex(columnId)), node && node.classList.add(addedRowHash[columnId]));
-      }
+      this.rowsCache && (removedRowHash = removedHash?.[row], addedRowHash = addedHash?.[row], removedRowHash && Object.keys(removedRowHash).forEach((columnId) => {
+        (!addedRowHash || removedRowHash[columnId] !== addedRowHash[columnId]) && (node = this.getCellNode(+row, this.getColumnIndex(columnId)), node && node.classList.remove(removedRowHash[columnId]));
+      }), addedRowHash && Object.keys(addedRowHash).forEach((columnId) => {
+        (!removedRowHash || removedRowHash[columnId] !== addedRowHash[columnId]) && (node = this.getCellNode(+row, this.getColumnIndex(columnId)), node && node.classList.add(addedRowHash[columnId]));
+      }));
     });
   }
   /**
@@ -9790,7 +9787,7 @@ export {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.8.0
+ * SlickGrid v5.8.1
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
