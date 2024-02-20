@@ -33,9 +33,10 @@ _For a basic TypeScript example, take a look at the v5.0 Annoucement & Migration
 There are multiple ways to use and install SlickGrid, you can use it as a standalone (IIFE) or install it through NPM then `import` or `require` SlickGrid.
 
 ```sh
-# script standalone (IIFE) from CDN
-<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.8.0/dist/browser/slick.core.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.8.0/dist/browser/slick.grid.min.js"></script>
+# styles/scripts standalone (IIFE) from CDN
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slickgrid@5.8.1/dist/styles/css/slick-alpine-theme.min.css">
+<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.8.1/dist/browser/slick.core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.8.1/dist/browser/slick.grid.min.js"></script>
 <script>
   const grid = new Slick.Grid("#myGrid", dataView, columns, options);
 </script>
