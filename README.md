@@ -13,7 +13,7 @@ Check out the NEW SlickGrid Website! http://slickgrid.net/
 
 This is the acknowledged and most active fork of SlickGrid.
 
-It aims to be a viable alternative master repo, building on the legacy of the [mleibman/SlickGrid](https://github.com/mleibman/SlickGrid) master branch, keeping libraries up to date and applying, safe core patches and enhancements to keep the project up to date.
+It aims to be a viable alternative master repo, building on the legacy of the [mleibman/SlickGrid](https://github.com/mleibman/SlickGrid) master branch, keeping dependencies up to date and applying, safe core patches and enhancements to keep the project up to date.
 
 We extended the project from the original SlickGrid foundation while also including the following changes:
 - added a few more Plugins: RowDetail, CellMenu, ContextMenu, GridMenu, CustomTooltip, GridState
@@ -30,11 +30,13 @@ Also check out the [Wiki](https://github.com/6pac/SlickGrid/wiki) for news and d
 _For a basic TypeScript example, take a look at the v5.0 Annoucement & Migration guide shown below and [TypeScript Example Wiki](https://github.com/6pac/SlickGrid/wiki/TypeScript-Examples)._
 
 ### Installation
-There are multiple ways to use and install SlickGrid, you can use it as a standalone (IIFE) or install it through NPM then `import` or `require` SlickGrid.
+There are multiple ways to use and install SlickGrid, you can use it as a standalone (IIFE) or install it through NPM then `import` or `require` SlickGrid. 
 
 ```sh
-# styles/scripts standalone (IIFE) from CDN
+# Alpine style from CDN
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slickgrid@5.8.1/dist/styles/css/slick-alpine-theme.min.css">
+
+# standalone scripts (IIFE) from CDN
 <script src="https://cdn.jsdelivr.net/npm/slickgrid@5.8.1/dist/browser/slick.core.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/slickgrid@5.8.1/dist/browser/slick.grid.min.js"></script>
 <script>
@@ -50,6 +52,8 @@ npm install slickgrid
   const grid = new SlickGrid("#myGrid", dataView, columns, options);
 </script>
 ```
+
+For more CDN links, like controls and plugins, just headover to [jsDevlivr - SlickGrid](https://www.jsdelivr.com/package/npm/slickgrid) for the full list and click on the "Files" tab.
 
 ### Contributions
 See [Contributing Guide](https://github.com/6pac/SlickGrid/blob/master/CONTRIBUTING.md)
