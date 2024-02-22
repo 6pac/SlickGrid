@@ -111,6 +111,7 @@
         <li>Handling row selection against model changes.</li>
         <li>Paging.</li>
         <li>inline filter panel</li>
+        <li>block editing of "Task 18" row when <b>onBeforeEditCell</b> returns false</li>
       </ul>
       <strong>Load CSS Theme:</strong>
       <button class="btn-alpine-theme" data-test="theme-alpine-btn">Alpine Theme</button>
@@ -305,6 +306,12 @@ document.addEventListener("DOMContentLoaded", () => {
 
     // using native sort with comparer
     dataView.sort(comparer, args.sortAsc);
+  });
+
+  grid.onBeforeEditCell.subscribe((e, args) => {
+    if (args.item.title === 'Task 18') {
+      return false;
+    }
   });
 
   // wire up model events to drive the grid
