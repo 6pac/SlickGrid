@@ -2,8 +2,9 @@
 import { Column, ElementPosition, PositionMethod } from './index';
 import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
+import type { GridOption } from '../models/gridOption.interface';     
 
-export interface EditorArguments {
+export interface EditorArguments<TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>> {
   /** Column Definition */
   column: Column;
 
@@ -17,13 +18,13 @@ export interface EditorArguments {
   container: HTMLDivElement;
 
   /** Slick DataView */
-  dataView: SlickDataView;
+  dataView?: SlickDataView;
 
   /** Event that was triggered */
   event: Event;
 
   /** Slick Grid object */
-  grid: SlickGrid;
+  grid: SlickGrid<TData, C, O>;
 
   /** Grid Position */
   gridPosition: ElementPosition;

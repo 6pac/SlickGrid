@@ -1,6 +1,7 @@
 import type { EditorArguments } from './editorArguments.interface';
 import type { EditorValidationResult } from './editorValidationResult.interface';
-
+import type { GridOption } from '../models/gridOption.interface';
+import type { Column } from '../models/column.interface';
 /**
  * SlickGrid Editor interface, more info can be found on the SlickGrid repo
  * https://github.com/6pac/SlickGrid/wiki/Writing-custom-cell-editors
@@ -86,3 +87,10 @@ export interface Editor {
    */
   validate: (targetElm?: HTMLElement, options?: any) => EditorValidationResult;
 }
+
+export type EditorConstructor = {
+  new <TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>>(args?: EditorArguments<TData, C, O>): Editor;
+
+  /** static flag used in makeActiveCellEditable*/
+  suppressClearOnEdit?: boolean;
+};
