@@ -85,7 +85,7 @@ export interface Column<TData = any> {
   disableTooltip?: boolean;
 
   /** Any inline editor function that implements Editor for the cell value or ColumnEditor */
-  editor?: Editor /*| { model?: Editor; }*/ | EditorConstructor | null;
+  editor?: Editor | EditorConstructor | null;
 
   /** Editor number fixed decimal places */
   editorFixedDecimalPlaces?: number;

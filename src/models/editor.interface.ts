@@ -78,8 +78,7 @@ export interface Editor {
 
   /** Update the Editor DOM element value with a provided value, we can optionally apply the value to the item dataContext object */
   setValue?: (value: any, isApplyingValue?: boolean, triggerOnCompositeEditorChange?: boolean) => void;
-
-  suppressClearOnEdit?: boolean;
+  
   /**
    * Validate user input and return the result along with the validation message.
    * if the input is valid then the validation result output would be returning { valid:true, msg:null }
@@ -91,6 +90,6 @@ export interface Editor {
 export type EditorConstructor = {
   new <TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>>(args?: EditorArguments<TData, C, O>): Editor;
 
-  /** static flag used in makeActiveCellEditable*/
+  /** Static flag used in makeActiveCellEditable. */
   suppressClearOnEdit?: boolean;
 };

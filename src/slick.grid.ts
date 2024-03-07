@@ -13,7 +13,9 @@ import type {
   DragPosition,
   DragRowMove,
   Editor,
-  EditController,
+  EditorArguments,
+  EditorConstructor,
+  EditController, 
   Formatter,
   FormatterOverrideCallback,
   FormatterResultObject,
@@ -66,8 +68,6 @@ import type {
   SlickPlugin,
   MenuCommandItemCallbackArgs,
   OnClickEventArgs,
-  EditorConstructor,
-  EditorArguments,
 } from './models/index';
 import {
   type BasePubSub,
@@ -5903,11 +5903,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
 
-  editActiveCell(editor: Editor | EditorConstructor, preClickModeOn?: boolean | null, e?: Event) {
+  editActiveCell(editor: EditorConstructor, preClickModeOn?: boolean | null, e?: Event) {
     this.makeActiveCellEditable(editor, preClickModeOn, e);
   }
 
-  protected makeActiveCellEditable(editor?: Editor | EditorConstructor, preClickModeOn?: boolean | null, e?: Event | SlickEvent_) {
+  protected makeActiveCellEditable(editor?: EditorConstructor, preClickModeOn?: boolean | null, e?: Event | SlickEvent_) {
     if (!this.activeCellNode) {
       return;
     }
@@ -5934,9 +5934,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.activeCellNode.classList.add('editable');
 
     const useEditor = editor || this.getEditor(this.activeRow, this.activeCell);
+    // editor was null and columnMetadata and editorFactory returned null or undefined
+    // the editor must be constructable. Also makes sure that useEditor is of type EditorConstructor
+    if (!useEditor || typeof useEditor !== 'function') {
+      return;
+    }
 
     // don't clear the cell if a custom editor is passed through
-    if (!editor && !useEditor?.suppressClearOnEdit) {
+    if (!editor && !useEditor.suppressClearOnEdit) {
       Utils.emptyElement(this.activeCellNode);
     }
 
@@ -5944,10 +5949,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     metadata = metadata?.columns as any;
     const columnMetaData = metadata && (metadata[columnDef.id as keyof ItemMetadata] || (metadata as any)[this.activeCell]);
 
-    //the editor must be constructable
-    if (typeof useEditor !== 'function') {
-      return;
-    }
+    
     const editorArgs: EditorArguments<TData, C, O> = {
       grid: this,
       gridPosition: this.absBox(this._container),
