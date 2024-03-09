@@ -2448,10 +2448,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       for (i = 0; i < cssRules.length; i++) {
         const selector = cssRules[i].selectorText;
         if (matches = /\.l\d+/.exec(selector)) {
-          columnIdx = parseInt(matches[0].slice(2), 10);
+          columnIdx = parseInt(matches[0].substr(2, matches[0].length - 2), 10);
           this.columnCssRulesL[columnIdx] = cssRules[i];
         } else if (matches = /\.r\d+/.exec(selector)) {
-          columnIdx = parseInt(matches[0].slice(2), 10);
+          columnIdx = parseInt(matches[0].substr(2, matches[0].length - 2), 10);
           this.columnCssRulesR[columnIdx] = cssRules[i];
         }
       }
@@ -5598,7 +5598,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (!cls) {
       throw new Error(`SlickGrid getCellFromNode: cannot get cell - ${cellNode.className}`);
     }
-    return parseInt(cls[0].slice(1), 10);
+    return parseInt(cls[0].substr(1, cls[0].length - 1), 10);
   }
 
   protected getRowFromNode(rowNode: HTMLElement): number | null {
