@@ -1,4 +1,4 @@
-import type { Column as BaseColumn, CellMenuOption, ColumnPickerOption, ColumnReorderFunction, ContextMenuOption, CustomTooltipOption, EditCommand, Editor, ExcelCopyBufferOption, Formatter, GridMenuOption, ItemMetadata, } from './index';
+import type { Column as BaseColumn, CellMenuOption, ColumnPickerOption, ColumnReorderFunction, ContextMenuOption, CustomTooltipOption, EditCommand, EditorConstructor, ExcelCopyBufferOption, Formatter, GridMenuOption, ItemMetadata, } from './index';
 import type { SlickEditorLock } from '../slick.core';
 
 export interface CellViewportRange {
@@ -121,7 +121,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   editCommandHandler?: (item: any, column: C, command: EditCommand) => void;
 
   /** Editor classes factory */
-  editorFactory?: null | { getEditor: (col: C) => Editor; };
+  editorFactory?: null | { getEditor: (col: C) => EditorConstructor; };
 
   /** a global singleton editor lock. */
   editorLock?: SlickEditorLock;
