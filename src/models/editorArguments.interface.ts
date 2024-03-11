@@ -2,7 +2,7 @@
 import { Column, ElementPosition, PositionMethod } from './index';
 import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
-import type { GridOption } from '../models/gridOption.interface';     
+import type { Column, ElementPosition, GridOption, PositionMethod } from './index';
 
 export interface EditorArguments<TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>> {
   /** Column Definition */
