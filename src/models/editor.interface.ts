@@ -1,6 +1,3 @@
-import type { EditorArguments } from './editorArguments.interface';
-import type { EditorValidationResult } from './editorValidationResult.interface';
-import type { GridOption } from '../models/gridOption.interface';
 import type { Column, EditorArguments, EditorValidationResult, GridOption } from './index';
 /**
  * SlickGrid Editor interface, more info can be found on the SlickGrid repo

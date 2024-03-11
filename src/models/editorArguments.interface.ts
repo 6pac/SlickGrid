@@ -1,5 +1,3 @@
-
-import { Column, ElementPosition, PositionMethod } from './index';
 import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
 import type { Column, ElementPosition, GridOption, PositionMethod } from './index';
