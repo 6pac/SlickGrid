@@ -85,7 +85,7 @@ export interface Editor {
 }
 
 export type EditorConstructor = {
-  new <TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>>(args?: EditorArguments<TData, C, O>): Editor;
+  new <TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>>(args: EditorArguments<TData, C, O>): Editor;
 
   /** Static flag used in makeActiveCellEditable. */
   suppressClearOnEdit?: boolean;
