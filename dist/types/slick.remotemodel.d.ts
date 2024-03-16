@@ -12,8 +12,8 @@ export declare class SlickRemoteModel {
     protected sortdir: number;
     protected h_request: any;
     protected req: any;
-    onDataLoading: import("./slick.core").SlickEvent<any>;
-    onDataLoaded: import("./slick.core").SlickEvent<any>;
+    onDataLoading: import("src").SlickEvent<any>;
+    onDataLoaded: import("src").SlickEvent<any>;
     constructor();
     init(): void;
     isDataLoaded(from: number, to: number): boolean;

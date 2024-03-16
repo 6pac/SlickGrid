@@ -1,7 +1,7 @@
-import { Column, ElementPosition, PositionMethod } from './index';
 import type { SlickDataView } from '../slick.dataview';
 import type { SlickGrid } from '../slick.grid';
-export interface EditorArguments {
+import type { Column, ElementPosition, GridOption, PositionMethod } from './index';
+export interface EditorArguments<TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>> {
     /** Column Definition */
     column: Column;
     /** Column MetaData */
@@ -11,11 +11,11 @@ export interface EditorArguments {
     /** Editor HTML DOM element container */
     container: HTMLDivElement;
     /** Slick DataView */
-    dataView: SlickDataView;
+    dataView?: SlickDataView;
     /** Event that was triggered */
     event: Event;
     /** Slick Grid object */
-    grid: SlickGrid;
+    grid: SlickGrid<TData, C, O>;
     /** Grid Position */
     gridPosition: ElementPosition;
     /** Item DataContext */

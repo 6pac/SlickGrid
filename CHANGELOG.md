@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.8.2](https://github.com/6pac/SlickGrid/compare/5.8.1...5.8.2) (2024-03-16)
+
+### Bug Fixes
+
+* `column.editor` and `gridOptions.editorFactory` type changed ([#995](https://github.com/6pac/SlickGrid/issues/995)) ([e02cf64](https://github.com/6pac/SlickGrid/commit/e02cf641a393528ae366edacf86b8f3eec6ef8a5))
+* realtime trading demo grouping wasn't working ([#991](https://github.com/6pac/SlickGrid/issues/991)) ([180e4e7](https://github.com/6pac/SlickGrid/commit/180e4e7725383f25dca251191a0027788c7f29a2))
+
 ## [5.8.1](https://github.com/6pac/SlickGrid/compare/5.8.0...5.8.1) (2024-02-13)
 
 ### Bug Fixes

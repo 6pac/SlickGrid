@@ -1,9 +1,10 @@
-import type { AutoSize, CellMenuOption, CustomTooltipOption, Editor, EditorValidator, Formatter, FormatterResultWithHtml, FormatterResultWithText, GroupTotalsFormatter, Grouping, HeaderButtonsOrMenu } from './index';
+import type { AutoSize, CellMenuOption, CustomTooltipOption, Editor, EditorConstructor, EditorValidator, Formatter, FormatterResultWithHtml, FormatterResultWithText, GroupTotalsFormatter, Grouping, HeaderButtonsOrMenu } from './index';
 import type { SlickGrid } from '../slick.grid';
 type PathsToStringProps<T> = T extends string | number | boolean | Date ? [] : {
     [K in Extract<keyof T, string>]: [K, ...PathsToStringProps<T[K]>];
 }[Extract<keyof T, string>];
-type Join<T extends any[], D extends string> = T extends [] ? never : T extends [infer F] ? F : T extends [infer F, ...infer R] ? F extends string ? string extends F ? string : `${F}${D}${Join<R, D>}` : never : string;
+type AllowedJoinTypes = string | number | boolean;
+type Join<T extends (AllowedJoinTypes | unknown)[], D extends string> = T extends [] ? never : T extends [infer F] ? F : T extends [infer F, ...infer R] ? F extends AllowedJoinTypes ? string extends F ? string : `${F}${D}${Join<Extract<R, AllowedJoinTypes[]>, D>}` : never : string;
 export type FormatterOverrideCallback = (row: number, cell: number, val: any, columnDef: Column, item: any, grid: SlickGrid) => string | FormatterResultWithHtml | FormatterResultWithText;
 export interface Column<TData = any> {
     /** Defaults to false, should we always render the column? */
@@ -45,9 +46,7 @@ export interface Column<TData = any> {
      */
     disableTooltip?: boolean;
     /** Any inline editor function that implements Editor for the cell value or ColumnEditor */
-    editor?: Editor | {
-        model?: Editor;
-    } | null;
+    editor?: Editor | EditorConstructor | null;
     /** Editor number fixed decimal places */
     editorFixedDecimalPlaces?: number;
     /** Default to false, which leads to exclude the column title from the Column Picker. */

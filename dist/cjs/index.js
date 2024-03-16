@@ -6613,7 +6613,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.8.1");
+    __publicField(this, "slickGridVersion", "5.8.2");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -9063,11 +9063,12 @@ var SlickGrid = class {
     }
     this.getEditorLock()?.activate(this.editController), this.activeCellNode.classList.add("editable");
     let useEditor = editor || this.getEditor(this.activeRow, this.activeCell);
+    if (!useEditor || typeof useEditor != "function")
+      return;
     !editor && !useEditor.suppressClearOnEdit && Utils30.emptyElement(this.activeCellNode);
     let metadata = this.data?.getItemMetadata?.(this.activeRow);
     metadata = metadata?.columns;
-    let columnMetaData = metadata && (metadata[columnDef.id] || metadata[this.activeCell]);
-    this.currentEditor = new useEditor({
+    let columnMetaData = metadata && (metadata[columnDef.id] || metadata[this.activeCell]), editorArgs = {
       grid: this,
       gridPosition: this.absBox(this._container),
       position: this.absBox(this.activeCellNode),
@@ -9078,7 +9079,8 @@ var SlickGrid = class {
       event: e,
       commitChanges: this.commitEditAndSetFocus.bind(this),
       cancelChanges: this.cancelEditAndSetFocus.bind(this)
-    }), item && this.currentEditor && (this.currentEditor.loadValue(item), preClickModeOn && this.currentEditor?.preClick && this.currentEditor.preClick()), this.serializedEditorValue = this.currentEditor?.serializeValue(), this.currentEditor?.position && this.handleActiveCellPositionChange();
+    };
+    this.currentEditor = new useEditor(editorArgs), item && this.currentEditor && (this.currentEditor.loadValue(item), preClickModeOn && this.currentEditor?.preClick && this.currentEditor.preClick()), this.serializedEditorValue = this.currentEditor?.serializeValue(), this.currentEditor?.position && this.handleActiveCellPositionChange();
   }
   commitEditAndSetFocus() {
     this.getEditorLock()?.commitCurrentEdit() && (this.setFocus(), this._options.autoEdit && !this._options.autoCommitEdit && this.navigateDown());
@@ -9805,7 +9807,7 @@ var SlickRemoteModel = class {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.8.1
+ * SlickGrid v5.8.2
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

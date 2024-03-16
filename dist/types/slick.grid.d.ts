@@ -1,5 +1,5 @@
 import type SortableInstance from 'sortablejs';
-import type { AutoSize, CellViewportRange, Column, ColumnSort, CssStyleHash, CustomDataView, DOMEvent, DragPosition, DragRowMove, Editor, EditController, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption as BaseGridOption, InteractionBase, MultiColumnSort, OnActiveCellChangedEventArgs, OnAddNewRowEventArgs, OnAutosizeColumnsEventArgs, OnBeforeUpdateColumnsEventArgs, OnBeforeAppendCellEventArgs, OnBeforeCellEditorDestroyEventArgs, OnBeforeColumnsResizeEventArgs, OnBeforeEditCellEventArgs, OnBeforeHeaderCellDestroyEventArgs, OnBeforeHeaderRowCellDestroyEventArgs, OnBeforeFooterRowCellDestroyEventArgs, OnBeforeSetColumnsEventArgs, OnCellChangeEventArgs, OnCellCssStylesChangedEventArgs, OnColumnsDragEventArgs, OnColumnsReorderedEventArgs, OnColumnsResizedEventArgs, OnColumnsResizeDblClickEventArgs, OnCompositeEditorChangeEventArgs, OnDblClickEventArgs, OnFooterContextMenuEventArgs, OnFooterRowCellRenderedEventArgs, OnHeaderCellRenderedEventArgs, OnFooterClickEventArgs, OnHeaderClickEventArgs, OnHeaderContextMenuEventArgs, OnHeaderMouseEventArgs, OnHeaderRowCellRenderedEventArgs, OnKeyDownEventArgs, OnValidationErrorEventArgs, OnRenderedEventArgs, OnSelectedRowsChangedEventArgs, OnSetOptionsEventArgs, OnActivateChangedOptionsEventArgs, OnScrollEventArgs, PagingInfo, RowInfo, SelectionModel, SingleColumnSort, SlickPlugin, MenuCommandItemCallbackArgs, OnClickEventArgs } from './models/index';
+import type { AutoSize, CellViewportRange, Column, ColumnSort, CssStyleHash, CustomDataView, DOMEvent, DragPosition, DragRowMove, Editor, EditorConstructor, EditController, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption as BaseGridOption, InteractionBase, MultiColumnSort, OnActiveCellChangedEventArgs, OnAddNewRowEventArgs, OnAutosizeColumnsEventArgs, OnBeforeUpdateColumnsEventArgs, OnBeforeAppendCellEventArgs, OnBeforeCellEditorDestroyEventArgs, OnBeforeColumnsResizeEventArgs, OnBeforeEditCellEventArgs, OnBeforeHeaderCellDestroyEventArgs, OnBeforeHeaderRowCellDestroyEventArgs, OnBeforeFooterRowCellDestroyEventArgs, OnBeforeSetColumnsEventArgs, OnCellChangeEventArgs, OnCellCssStylesChangedEventArgs, OnColumnsDragEventArgs, OnColumnsReorderedEventArgs, OnColumnsResizedEventArgs, OnColumnsResizeDblClickEventArgs, OnCompositeEditorChangeEventArgs, OnDblClickEventArgs, OnFooterContextMenuEventArgs, OnFooterRowCellRenderedEventArgs, OnHeaderCellRenderedEventArgs, OnFooterClickEventArgs, OnHeaderClickEventArgs, OnHeaderContextMenuEventArgs, OnHeaderMouseEventArgs, OnHeaderRowCellRenderedEventArgs, OnKeyDownEventArgs, OnValidationErrorEventArgs, OnRenderedEventArgs, OnSelectedRowsChangedEventArgs, OnSetOptionsEventArgs, OnActivateChangedOptionsEventArgs, OnScrollEventArgs, PagingInfo, RowInfo, SelectionModel, SingleColumnSort, SlickPlugin, MenuCommandItemCallbackArgs, OnClickEventArgs } from './models/index';
 import { type BasePubSub, BindingEventService as BindingEventService_, type SlickEditorLock, SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_ } from './slick.core';
 /**
  * @license
@@ -10,7 +10,7 @@ import { type BasePubSub, BindingEventService as BindingEventService_, type Slic
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.8.1
+ * SlickGrid v5.8.2
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -603,7 +603,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     scrollTo(y: number): void;
     protected defaultFormatter(_row: number, _cell: number, value: any): string;
     protected getFormatter(row: number, column: C): Formatter;
-    protected getEditor(row: number, cell: number): Editor | undefined;
+    protected getEditor(row: number, cell: number): Editor | EditorConstructor | null | undefined;
     protected getDataItemValueForColumn(item: TData, columnDef: C): TData | TData[keyof TData];
     protected appendRowHtml(divArrayL: HTMLElement[], divArrayR: HTMLElement[], row: number, range: CellViewportRange, dataLength: number): void;
     protected appendCellHtml(divRow: HTMLElement, row: number, cell: number, colspan: number, item: TData): void;
@@ -857,8 +857,8 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * @param {Boolean} [refocusActiveCell]
      */
     protected makeActiveCellNormal(refocusActiveCell?: boolean): void;
-    editActiveCell(editor: Editor, preClickModeOn?: boolean | null, e?: Event): void;
-    protected makeActiveCellEditable(editor?: Editor, preClickModeOn?: boolean | null, e?: Event | SlickEvent_): void;
+    editActiveCell(editor: EditorConstructor, preClickModeOn?: boolean | null, e?: Event): void;
+    protected makeActiveCellEditable(editor?: EditorConstructor, preClickModeOn?: boolean | null, e?: Event | SlickEvent_): void;
     protected commitEditAndSetFocus(): void;
     protected cancelEditAndSetFocus(): void;
     protected absBox(elem: HTMLElement): {

@@ -24,7 +24,7 @@
       this.externalPubSub = externalPubSub;
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.8.1");
+      __publicField(this, "slickGridVersion", "5.8.2");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -2532,11 +2532,12 @@
       }
       (_a = this.getEditorLock()) == null || _a.activate(this.editController), this.activeCellNode.classList.add("editable");
       let useEditor = editor || this.getEditor(this.activeRow, this.activeCell);
+      if (!useEditor || typeof useEditor != "function")
+        return;
       !editor && !useEditor.suppressClearOnEdit && Utils.emptyElement(this.activeCellNode);
       let metadata = (_c = (_b = this.data) == null ? void 0 : _b.getItemMetadata) == null ? void 0 : _c.call(_b, this.activeRow);
       metadata = metadata == null ? void 0 : metadata.columns;
-      let columnMetaData = metadata && (metadata[columnDef.id] || metadata[this.activeCell]);
-      this.currentEditor = new useEditor({
+      let columnMetaData = metadata && (metadata[columnDef.id] || metadata[this.activeCell]), editorArgs = {
         grid: this,
         gridPosition: this.absBox(this._container),
         position: this.absBox(this.activeCellNode),
@@ -2547,7 +2548,8 @@
         event: e,
         commitChanges: this.commitEditAndSetFocus.bind(this),
         cancelChanges: this.cancelEditAndSetFocus.bind(this)
-      }), item && this.currentEditor && (this.currentEditor.loadValue(item), preClickModeOn && ((_d = this.currentEditor) != null && _d.preClick) && this.currentEditor.preClick()), this.serializedEditorValue = (_e = this.currentEditor) == null ? void 0 : _e.serializeValue(), (_f = this.currentEditor) != null && _f.position && this.handleActiveCellPositionChange();
+      };
+      this.currentEditor = new useEditor(editorArgs), item && this.currentEditor && (this.currentEditor.loadValue(item), preClickModeOn && ((_d = this.currentEditor) != null && _d.preClick) && this.currentEditor.preClick()), this.serializedEditorValue = (_e = this.currentEditor) == null ? void 0 : _e.serializeValue(), (_f = this.currentEditor) != null && _f.position && this.handleActiveCellPositionChange();
     }
     commitEditAndSetFocus() {
       var _a;
@@ -3066,7 +3068,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.8.1
+ * SlickGrid v5.8.2
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
