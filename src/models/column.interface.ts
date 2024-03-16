@@ -14,18 +14,17 @@ import type {
 } from './index';
 import type { SlickGrid } from '../slick.grid';
 
-/* eslint-disable @typescript-eslint/indent */
 type PathsToStringProps<T> = T extends string | number | boolean | Date ? [] : {
   [K in Extract<keyof T, string>]: [K, ...PathsToStringProps<T[K]>]
 }[Extract<keyof T, string>];
 
-// disable eslint indent rule until this issue is fixed: https://github.com/typescript-eslint/typescript-eslint/issues/1824
-type Join<T extends any[], D extends string> =
+type AllowedJoinTypes = string | number | boolean;
+
+type Join<T extends (AllowedJoinTypes | unknown)[], D extends string> =
   T extends [] ? never :
   T extends [infer F] ? F :
   T extends [infer F, ...infer R] ?
-  F extends string ? string extends F ? string : `${F}${D}${Join<R, D>}` : never : string;
-/* eslint-enable @typescript-eslint/indent */
+  F extends AllowedJoinTypes ? string extends F ? string : `${F}${D}${Join<Extract<R, AllowedJoinTypes[]>, D>}` : never : string;
 
 export type FormatterOverrideCallback = (row: number, cell: number, val: any, columnDef: Column, item: any, grid: SlickGrid) => string | FormatterResultWithHtml | FormatterResultWithText;
 
