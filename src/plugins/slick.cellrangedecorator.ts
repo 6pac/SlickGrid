@@ -1,5 +1,5 @@
 import type { CSSStyleDeclarationWritable, CellRangeDecoratorOption, SlickPlugin } from '../models/index';
-import { Utils as Utils_, SlickRange } from '../slick.core';
+import { Utils as Utils_, type SlickRange } from '../slick.core';
 import type { SlickGrid } from '../slick.grid';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)

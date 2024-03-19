@@ -1,4 +1,4 @@
-import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
+import { SlickEvent as SlickEvent_, type SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
 import type { Column, DragRowMove, FormatterResultWithHtml, RowMoveManagerOption, UsabilityOverrideFn } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 

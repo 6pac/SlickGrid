@@ -24,7 +24,7 @@ import {
   SlickGroup as SlickGroup_,
   SlickGroupTotals as SlickGroupTotals_,
   Utils as Utils_,
-  SlickNonDataItem,
+  type SlickNonDataItem,
 } from './slick.core';
 import { SlickGroupItemMetadataProvider as SlickGroupItemMetadataProvider_ } from './slick.groupitemmetadataprovider';
 
