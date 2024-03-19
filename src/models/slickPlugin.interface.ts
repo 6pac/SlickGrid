@@ -1,4 +1,4 @@
-import { SlickGridModel } from './slickGridModel.interface';
+import type { SlickGridModel } from './slickGridModel.interface';
 
 export interface SlickPlugin {
   pluginName: string;
