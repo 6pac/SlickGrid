@@ -24,7 +24,7 @@
       this.externalPubSub = externalPubSub;
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.8.2");
+      __publicField(this, "slickGridVersion", "5.8.3");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -3068,7 +3068,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.8.2
+ * SlickGrid v5.8.3
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

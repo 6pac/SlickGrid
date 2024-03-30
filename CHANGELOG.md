@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.8.3](https://github.com/6pac/SlickGrid/compare/5.8.2...5.8.3) (2024-03-30)
+
+### Bug Fixes
+
+* don't exclude mixin/var SASS files from prod build, fixes [#1003](https://github.com/6pac/SlickGrid/issues/1003) ([a4f980e](https://github.com/6pac/SlickGrid/commit/a4f980e3d8e0387034f42d0815010bed8ed4793e))
+
 ## [5.8.2](https://github.com/6pac/SlickGrid/compare/5.8.1...5.8.2) (2024-03-16)
 
 ### Bug Fixes

@@ -1,0 +1,143 @@
+
+
+// NOTE: SVG can only be changed via SASS variable since it requires to use a SASS mixin
+
+// Base Grid
+$alpine-grid-bgcolor:                             #fff !default;
+$alpine-font-family:                              -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif !default;
+$alpine-font-color:                               #181d1f !default; // #2e383c #606f7b !default;
+$alpine-font-size:                                13px !default;
+$alpine-bg-color:                                 #ffffff !default;
+$alpine-border:                                   1px !default;
+$alpine-border-color:                             #dae1e7 !default;
+$alpine-border-radius:                            0 !default;
+$alpine-border-width:                             1px !default;
+$alpine-range-border:                             3px solid #000000 !default;
+$alpine-icon-size:                                18px !default;
+
+$alpine-odd-row-color:                            #fbfbfb !default;
+$alpine-row-mouse-hover-color:                    #e8f4fe !default;
+$alpine-row-highlight-fade-animation:             1s linear !default;
+$alpine-row-highlight-background-color:           darken($alpine-row-mouse-hover-color, 3%) !default;
+
+$alpine-cell-border-color:                        #dae1e7 !default;
+$alpine-cell-border-radius:                       0 !default;
+$alpine-cell-border-width:                        0 0 1px 0 !default;
+$alpine-cell-selected-color:                      $alpine-font-color !default;
+$alpine-cell-selected-bg-color:                   darken($alpine-row-mouse-hover-color, 4%) !default;
+$alpine-cell-display:                             block !default;
+$alpine-cell-align-items:                         center !default;
+$alpine-cell-justify-content:                     flex-start !default;
+$alpine-cell-padding:                             2px 4px !default;
+$alpine-cell-active-box-shadow:                   inset 0 0 0 1px #5da6e3 !default;
+$alpine-cell-text-overflow:                       ellipsis !default;
+
+// Grid Headers
+$alpine-header-display:                           inline-flex !default;
+$alpine-header-border-color:                      $alpine-border-color !default;
+$alpine-header-border-width:                      0 !default;
+$alpine-header-bg-color:                          #f8f8f8 !default;
+$alpine-header-unorderable-bg-color:              darken($alpine-header-bg-color, 3%) !default;
+$alpine-header-color:                             #181d1f !default;
+$alpine-header-font-weight:                       bold !default;
+$alpine-header-text-align:                        left !default;
+$alpine-header-resizable-handle-box-shadow:       inset 0 0 0 1px #dde2eb !default;
+$alpine-header-align-items:                       flex-start !default;
+$alpine-header-justify-content:                   flex-start !default;
+$alpine-header-vertical-align:                    top !default;
+$alpine-header-footer-bg-color:                   #fff !default;
+$alpine-header-menubutton-width:                  18px !default;
+$alpine-header-menubutton-filtered-color:         #3490dc !default;
+$alpine-header-name-row-count:                    1 !default;
+$alpine-header-column-height:                     calc(23px * #{var(--alpine-header-name-row-count, $alpine-header-name-row-count)}) !default; // 2 rows, double height
+$alpine-header-column-line-height:                23px !default;
+$alpine-header-name-display:                      block !default; // you could use "block" for ellipsis or inline-flex to support RTL
+$alpine-header-name-overflow:                     hidden !default;
+$alpine-header-name-text-overflow:                ellipsis !default;
+$alpine-header-name-flex-grow:                    0 !default; // flex-grow: 1 will make sort icon float to the right
+$alpine-header-name-hover-bg-color:               #bdbdbd44; // flex-grow: 1 will make sort icon float to the right
+$alpine-headerrow-bg-color:                       #f8fafc !default;
+$alpine-headerrow-input-height:                   25px !default;
+$alpine-sort-indicator-color:                     #3490dc !default;
+$alpine-sort-indicator-margin:                    5px 0 0 3px !default;
+$alpine-sort-numbered-font-size:                  10px !default;
+
+// the following 2 vars must equal 100% (or 0%) at all time (or height of 0 to never show)
+$alpine-header-resizable-handle-height:           50% !default;
+$alpine-header-resizable-handle-top:              25% !default;
+
+// Buttons used by some Editors
+$alpine-button-radius:                            2px !default;
+$alpine-button-bg-color:                          #fff !default;
+$alpine-button-border:                            1px solid #ccc !default;
+$alpine-button-border-radius:                     2px !default;
+$alpine-button-padding:                           2px 4px !default;
+$alpine-button-default-hover-color:               rgba(68, 68, 68, 0.1) !default;
+$alpine-button-default-hover-border:              1px solid #9c9c9c !default;
+$alpine-button-primary-bg-color:                  #fff !default;
+$alpine-button-primary-active-color:              #2196f3 !default;
+$alpine-button-primary-hover-color:               rgba(33,150,243,.1) !default;
+$alpine-button-primary-color:                     #2196f3 !default;
+$alpine-button-primary-border-color:              #2196f3 !default;
+
+// Editors
+$alpine-cell-editable-border-radius:              3px !default;
+$alpine-cell-editable-box-shadow:                 inset 0 0 0 2px #3490dc !default;
+$alpine-large-editor-bg-color:                    #fff !default;
+$alpine-large-editor-border:                      2px solid #b0b0b0 !default;
+$alpine-large-editor-border-radius:               8px !default;
+$alpine-large-editor-color:                       $alpine-font-color !default;
+$alpine-large-editor-font-family:                 $alpine-font-family !default;
+$alpine-large-editor-font-size:                   $alpine-font-size !default;
+$alpine-percent-complete-picker-icon-svg-path:    "M14.06,9L15,9.94L5.92,19H5V18.08L14.06,9M17.66,3C17.41,3 17.15,3.1 16.96,3.29L15.13,5.12L18.88,8.87L20.71,7.04C21.1,6.65 21.1,6 20.71,5.63L18.37,3.29C18.17,3.09 17.92,3 17.66,3M14.06,6.19L3,17.25V21H6.75L17.81,9.94L14.06,6.19Z" !default;
+
+// Grouping icons
+$alpine-group-icon-opacity:                       0.8 !default;
+$alpine-group-icon-color-filter:                  none !default; // use filter to change SVG colro
+$alpine-group-expanded-icon-svg-path:             "M19,19V5H5V19H19M19,3A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5C3,3.89 3.9,3 5,3H19M17,11V13H7V11H17Z" !default;
+$alpine-group-collapsed-icon-svg-path:            "M19,19V5H5V19H19M19,3A2,2 0 0,1 21,5V19A2,2 0 0,1 19,21H5A2,2 0 0,1 3,19V5C3,3.89 3.9,3 5,3H19M11,7H13V11H17V13H13V17H11V13H7V11H11V7Z" !default;
+
+// Grid Top Header
+$alpine-top-header-font-size:                     15px !default;
+$alpine-top-header-font-weight:                   bold !default;
+$alpine-top-header-border-color:                  $alpine-border-color !default;
+$alpine-top-header-border-width:                  1px 1px 0 1px !default;
+$alpine-top-header-padding:                       8px 6px 0 8px !default;
+
+// Grid PreHeader
+$alpine-preheader-border-color:                   $alpine-border-color !default;
+$alpine-preheader-border-width:                   0 !default;
+
+// Grid Footer row
+$alpine-footerrow-border-color:                   #dae1e7 !default;
+$alpine-footerrow-border-radius:                  0 !default;
+$alpine-footerrow-border-width:                   1px 1px 1px 0 !default;
+$alpine-footerrow-font-size:                      12px !default;
+
+// Grid Pager
+$alpine-pager-height:                             40px !default;
+$alpine-pager-padding:                            6px !default;
+$alpine-pager-bg-color:                           #f8f8f8 !default;
+$alpine-pager-border-color:                       #dae1e7 !default;
+$alpine-pager-border-radius:                      0 !default;
+$alpine-pager-border-width:                       0 1px 1px 1px !default;
+$alpine-pager-button-cursor-disabled:             default !default;
+$alpine-pager-button-margin:                      0 2px !default;
+
+// Context Menu
+$alpine-context-menu-border-color:                #dae1e7 !default;
+$alpine-context-menu-bg-color:                    #f8fafc !default;
+$alpine-context-menu-shadow:                      0 2px 4px 0 rgba(0, 0, 0, 0.1) !default;
+$alpine-context-menu-opt-disabled-font-color:     #c5c5c5 !default;
+$alpine-context-menu-opt-disabled-bg-color:       $alpine-context-menu-bg-color !default;
+$alpine-context-menu-opt-hover-font-color:        $alpine-font-color !default;
+$alpine-context-menu-opt-hover-border:            1px solid #dae1e7 !default;
+
+// all menu plugins
+$alpine-menu-bg-color:                            #fbfbfb !default;
+$alpine-menu-color:                               #181d1f !default;
+$alpine-menu-border:                              1px solid #babfc7 !default;
+$alpine-menu-border-radius:                       2px !default;
+$alpine-menu-box-shadow:                          none !default;
+$alpine-menu-close-btn-background:                transparent !default;
+$alpine-menu-close-btn-border:                    1px solid #babfc7 !default;

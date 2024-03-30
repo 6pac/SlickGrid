@@ -1776,7 +1776,7 @@ var keyCode2 = keyCode, SlickEvent5 = SlickEvent, Utils7 = Utils, SlickCellCopyM
 };
 
 // src/plugins/slick.cellexternalcopymanager.ts
-var SlickEvent6 = SlickEvent, SlickRange3 = SlickRange, Utils8 = Utils, CLEAR_COPY_SELECTION_DELAY = 2e3, CLIPBOARD_PASTE_DELAY = 100, SlickCellExternalCopyManager = class {
+var SlickEvent6 = SlickEvent, SlickRange2 = SlickRange, Utils8 = Utils, CLEAR_COPY_SELECTION_DELAY = 2e3, CLIPBOARD_PASTE_DELAY = 100, SlickCellExternalCopyManager = class {
   constructor(options) {
     // --
     // public API
@@ -1931,7 +1931,7 @@ var SlickEvent6 = SlickEvent, SlickRange3 = SlickRange, Utils8 = Utils, CLEAR_CO
             }
           }
         }
-        let bRange = new SlickRange3(
+        let bRange = new SlickRange2(
           activeRow,
           activeCell,
           activeRow + clipCommand.h - 1,
@@ -1954,7 +1954,7 @@ var SlickEvent6 = SlickEvent, SlickRange3 = SlickRange, Utils8 = Utils, CLEAR_CO
               });
             }
           }
-        let bRange = new SlickRange3(
+        let bRange = new SlickRange2(
           activeRow,
           activeCell,
           activeRow + clipCommand.h - 1,
@@ -2415,7 +2415,7 @@ function Resizable(options) {
 }
 
 // src/plugins/slick.cellrangeselector.ts
-var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange5 = SlickRange, Draggable2 = Draggable, SlickCellRangeDecorator2 = SlickCellRangeDecorator, Utils12 = Utils, SlickCellRangeSelector = class {
+var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange3 = SlickRange, Draggable2 = Draggable, SlickCellRangeDecorator2 = SlickCellRangeDecorator, Utils12 = Utils, SlickCellRangeSelector = class {
   constructor(options) {
     // --
     // public API
@@ -2505,7 +2505,7 @@ var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange
     let startY = dd.startY - (canvasOffset?.top ?? 0);
     this._gridOptions.frozenRow >= 0 && this._isBottomCanvas && (startY += this._scrollTop);
     let start = this._grid.getCellFromPoint(startX, startY);
-    return dd.range = { start, end: {} }, this._currentlySelectedRange = dd.range, this._decorator.show(new SlickRange5(start.row, start.cell));
+    return dd.range = { start, end: {} }, this._currentlySelectedRange = dd.range, this._decorator.show(new SlickRange3(start.row, start.cell));
   }
   handleDrag(evt, dd) {
     if (!this._dragging && !this._isRowMoveRegistered)
@@ -2573,7 +2573,7 @@ var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange
       }
       if (this._grid.canCellBeSelected(end.row, end.cell) && dd?.range) {
         dd.range.end = end;
-        let range = new SlickRange5(dd.range.start.row ?? 0, dd.range.start.cell ?? 0, end.row, end.cell);
+        let range = new SlickRange3(dd.range.start.row ?? 0, dd.range.start.cell ?? 0, end.row, end.cell);
         this._decorator.show(range), this.onCellRangeSelecting.notify({
           range
         });
@@ -2585,7 +2585,7 @@ var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange
   }
   handleDragEnd(e, dd) {
     this._decorator.hide(), this._dragging && (this._dragging = !1, e.stopImmediatePropagation(), this.stopIntervalTimer(), this.onCellRangeSelected.notify({
-      range: new SlickRange5(
+      range: new SlickRange3(
         dd.range.start.row ?? 0,
         dd.range.start.cell ?? 0,
         dd.range.end.row,
@@ -2599,7 +2599,7 @@ var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange
 };
 
 // src/plugins/slick.cellselectionmodel.ts
-var SlickEvent9 = SlickEvent, SlickEventData3 = SlickEventData, SlickRange6 = SlickRange, SlickCellRangeSelector2 = SlickCellRangeSelector, Utils13 = Utils, SlickCellSelectionModel = class {
+var SlickEvent9 = SlickEvent, SlickEventData3 = SlickEventData, SlickRange4 = SlickRange, SlickCellRangeSelector2 = SlickCellRangeSelector, Utils13 = Utils, SlickCellSelectionModel = class {
   constructor(options) {
     // --
     // public API
@@ -2674,7 +2674,7 @@ var SlickEvent9 = SlickEvent, SlickEventData3 = SlickEventData, SlickRange6 = Sl
   handleActiveCellChange(_e, args) {
     this._prevSelectedRow = void 0;
     let isCellDefined = Utils13.isDefined(args.cell), isRowDefined = Utils13.isDefined(args.row);
-    this._options?.selectActiveCell && isRowDefined && isCellDefined ? this.setSelectedRanges([new SlickRange6(args.row, args.cell)]) : (!this._options?.selectActiveCell || !isRowDefined && !isCellDefined) && this.setSelectedRanges([]);
+    this._options?.selectActiveCell && isRowDefined && isCellDefined ? this.setSelectedRanges([new SlickRange4(args.row, args.cell)]) : (!this._options?.selectActiveCell || !isRowDefined && !isCellDefined) && this.setSelectedRanges([]);
   }
   isKeyAllowed(key) {
     return ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "PageDown", "PageUp", "Home", "End"].some((k) => k === key);
@@ -2682,10 +2682,10 @@ var SlickEvent9 = SlickEvent, SlickEventData3 = SlickEventData, SlickRange6 = Sl
   handleKeyDown(e) {
     let ranges, last, colLn = this._grid.getColumns().length, active = this._grid.getActiveCell(), dataLn = 0;
     if (this._dataView && "getPagingInfo" in this._dataView ? dataLn = this._dataView?.getPagingInfo().pageSize || this._dataView.getLength() : dataLn = this._grid.getDataLength(), active && (e.shiftKey || e.ctrlKey) && !e.altKey && this.isKeyAllowed(e.key)) {
-      ranges = this.getSelectedRanges().slice(), ranges.length || ranges.push(new SlickRange6(active.row, active.cell)), last = ranges.pop(), last.contains(active.row, active.cell) || (last = new SlickRange6(active.row, active.cell));
+      ranges = this.getSelectedRanges().slice(), ranges.length || ranges.push(new SlickRange4(active.row, active.cell)), last = ranges.pop(), last.contains(active.row, active.cell) || (last = new SlickRange4(active.row, active.cell));
       let dRow = last.toRow - last.fromRow, dCell = last.toCell - last.fromCell, dirRow = active.row === last.fromRow ? 1 : -1, dirCell = active.cell === last.fromCell ? 1 : -1, isSingleKeyMove = e.key.startsWith("Arrow"), toCell, toRow = 0;
       isSingleKeyMove && !e.ctrlKey ? (e.key === "ArrowLeft" ? dCell -= dirCell : e.key === "ArrowRight" ? dCell += dirCell : e.key === "ArrowUp" ? dRow -= dirRow : e.key === "ArrowDown" && (dRow += dirRow), toRow = active.row + dirRow * dRow) : (this._cachedPageRowCount < 1 && (this._cachedPageRowCount = this._grid.getViewportRowCount()), this._prevSelectedRow === void 0 && (this._prevSelectedRow = active.row), e.shiftKey && !e.ctrlKey && e.key === "Home" ? (toCell = 0, toRow = active.row) : e.shiftKey && !e.ctrlKey && e.key === "End" ? (toCell = colLn - 1, toRow = active.row) : e.ctrlKey && e.shiftKey && e.key === "Home" ? (toCell = 0, toRow = 0) : e.ctrlKey && e.shiftKey && e.key === "End" ? (toCell = colLn - 1, toRow = dataLn - 1) : e.key === "PageUp" ? (this._prevSelectedRow >= 0 && (toRow = this._prevSelectedRow - this._cachedPageRowCount), toRow < 0 && (toRow = 0)) : e.key === "PageDown" && (this._prevSelectedRow <= dataLn - 1 && (toRow = this._prevSelectedRow + this._cachedPageRowCount), toRow > dataLn - 1 && (toRow = dataLn - 1)), this._prevSelectedRow = toRow), toCell ?? (toCell = active.cell + dirCell * dCell);
-      let new_last = new SlickRange6(active.row, active.cell, toRow, toCell);
+      let new_last = new SlickRange4(active.row, active.cell, toRow, toCell);
       if (this.removeInvalidRanges([new_last]).length) {
         ranges.push(new_last);
         let viewRow = dirRow > 0 ? new_last.toRow : new_last.fromRow, viewCell = dirCell > 0 ? new_last.toCell : new_last.fromCell;
@@ -4589,7 +4589,7 @@ var SlickEvent17 = SlickEvent, SlickEventHandler9 = SlickEventHandler, Utils23 =
 };
 
 // src/plugins/slick.rowselectionmodel.ts
-var Draggable3 = Draggable, keyCode3 = keyCode, SlickCellRangeDecorator3 = SlickCellRangeDecorator, SlickCellRangeSelector3 = SlickCellRangeSelector, SlickEvent18 = SlickEvent, SlickEventData5 = SlickEventData, SlickEventHandler10 = SlickEventHandler, SlickRange7 = SlickRange, Utils24 = Utils, SlickRowSelectionModel = class {
+var Draggable3 = Draggable, keyCode3 = keyCode, SlickCellRangeDecorator3 = SlickCellRangeDecorator, SlickCellRangeSelector3 = SlickCellRangeSelector, SlickEvent18 = SlickEvent, SlickEventData5 = SlickEventData, SlickEventHandler10 = SlickEventHandler, SlickRange5 = SlickRange, Utils24 = Utils, SlickRowSelectionModel = class {
   constructor(options) {
     // --
     // public API
@@ -4643,7 +4643,7 @@ var Draggable3 = Draggable, keyCode3 = keyCode, SlickCellRangeDecorator3 = Slick
   }
   rowsToRanges(rows) {
     let ranges = [], lastCell = this._grid.getColumns().length - 1;
-    return rows.forEach((row) => ranges.push(new SlickRange7(row, 0, row, lastCell))), ranges;
+    return rows.forEach((row) => ranges.push(new SlickRange5(row, 0, row, lastCell))), ranges;
   }
   getRowsRange(from, to) {
     let i, rows = [];
@@ -4673,7 +4673,7 @@ var Draggable3 = Draggable, keyCode3 = keyCode, SlickCellRangeDecorator3 = Slick
     this.setSelectedRows(this.getSelectedRows());
   }
   handleActiveCellChange(_e, args) {
-    this._options.selectActiveRow && Utils24.isDefined(args.row) && this.setSelectedRanges([new SlickRange7(args.row, 0, args.row, this._grid.getColumns().length - 1)]);
+    this._options.selectActiveRow && Utils24.isDefined(args.row) && this.setSelectedRanges([new SlickRange5(args.row, 0, args.row, this._grid.getColumns().length - 1)]);
   }
   handleKeyDown(e) {
     let activeRow = this._grid.getActiveCell();
@@ -4722,7 +4722,7 @@ var Draggable3 = Draggable, keyCode3 = keyCode, SlickCellRangeDecorator3 = Slick
   handleCellRangeSelected(_e, args) {
     if (!this._grid.getOptions().multiSelect || !this._options.selectActiveRow)
       return !1;
-    this.setSelectedRanges([new SlickRange7(args.range.fromRow, 0, args.range.toRow, this._grid.getColumns().length - 1)]);
+    this.setSelectedRanges([new SlickRange5(args.range.fromRow, 0, args.range.toRow, this._grid.getColumns().length - 1)]);
   }
 };
 
@@ -6594,7 +6594,7 @@ var Utils29 = Utils, PercentCompleteFormatter = (_row, _cell, value) => !Utils29
 };
 
 // src/slick.grid.ts
-var BindingEventService13 = BindingEventService, ColAutosizeMode2 = ColAutosizeMode, SlickEvent21 = SlickEvent, SlickEventData7 = SlickEventData, GlobalEditorLock2 = GlobalEditorLock, GridAutosizeColsMode2 = GridAutosizeColsMode, keyCode6 = keyCode, preClickClassName2 = preClickClassName, SlickRange8 = SlickRange, RowSelectionMode2 = RowSelectionMode, ValueFilterMode2 = ValueFilterMode, Utils30 = Utils, WidthEvalMode2 = WidthEvalMode, Draggable4 = Draggable, MouseWheel2 = MouseWheel, Resizable2 = Resizable;
+var BindingEventService13 = BindingEventService, ColAutosizeMode2 = ColAutosizeMode, SlickEvent21 = SlickEvent, SlickEventData7 = SlickEventData, GlobalEditorLock2 = GlobalEditorLock, GridAutosizeColsMode2 = GridAutosizeColsMode, keyCode6 = keyCode, preClickClassName2 = preClickClassName, SlickRange6 = SlickRange, RowSelectionMode2 = RowSelectionMode, ValueFilterMode2 = ValueFilterMode, Utils30 = Utils, WidthEvalMode2 = WidthEvalMode, Draggable4 = Draggable, MouseWheel2 = MouseWheel, Resizable2 = Resizable;
 var SlickGrid = class {
   /**
    * Creates a new instance of the grid.
@@ -6613,7 +6613,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.8.2");
+    __publicField(this, "slickGridVersion", "5.8.3");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -9548,7 +9548,7 @@ var SlickGrid = class {
   rowsToRanges(rows) {
     let ranges = [], lastCell = this.columns.length - 1;
     for (let i = 0; i < rows.length; i++)
-      ranges.push(new SlickRange8(rows[i], 0, rows[i], lastCell));
+      ranges.push(new SlickRange6(rows[i], 0, rows[i], lastCell));
     return ranges;
   }
   /** Returns an array of row indices corresponding to the currently selected rows. */
@@ -9807,7 +9807,7 @@ var SlickRemoteModel = class {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.8.2
+ * SlickGrid v5.8.3
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

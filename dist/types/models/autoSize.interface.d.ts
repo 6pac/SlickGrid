@@ -1,4 +1,4 @@
-import { Formatter } from './formatter.interface';
+import type { Formatter } from './formatter.interface';
 export interface AutoSize {
     allowAddlPercent?: number;
     autosizeMode?: string;
