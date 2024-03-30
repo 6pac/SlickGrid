@@ -161,10 +161,9 @@ export function runBuild(options) {
 
 /** Copy all SASS input files to the dist output folder */
 function copySassFiles() {
-  // copy all scss files but exclude any variable files (any file starting with "_")
   copyfiles(
     ['src/styles/*.scss', 'dist/styles/sass'], // 1st in array is source, last is target
-    { flat: true, up: 2, exclude: '**/_*.scss' },
+    { flat: true, up: 2 },
     () => console.log(`[${c.magenta('SASS')}] SASS files copied`)
   );
 }
