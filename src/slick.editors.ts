@@ -1,4 +1,4 @@
-import type { Editor, EditorArguments, EditorValidationResult, ElementPosition } from './models/index';
+import type { Column, Editor, EditorArguments, EditorValidationResult, ElementPosition, GridOption, OnCompositeEditorChangeEventArgs } from './models/index';
 import { keyCode as keyCode_, Utils as Utils_ } from './slick.core';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -11,12 +11,12 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  * @namespace Slick
  */
 
-export class TextEditor implements Editor {
+export class TextEditor<TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>> implements Editor {
   protected input!: HTMLInputElement;
   protected defaultValue?: number | string;
   protected navOnLR?: boolean;
 
-  constructor(protected readonly args: EditorArguments) {
+  constructor(protected readonly args: EditorArguments<TData, C, O>) {
     this.init();
   }
 
@@ -49,7 +49,7 @@ export class TextEditor implements Editor {
       formValues: this.args.compositeEditorOptions.formValues,
       grid: this.args.grid,
       editors: this.args.compositeEditorOptions.editors
-    });
+    } as unknown as OnCompositeEditorChangeEventArgs);
   }
 
   destroy() {
@@ -104,12 +104,12 @@ export class TextEditor implements Editor {
   }
 }
 
-export class IntegerEditor implements Editor {
+export class IntegerEditor<TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>> implements Editor {
   protected input!: HTMLInputElement;
   protected defaultValue?: string | number;
   protected navOnLR?: boolean;
 
-  constructor(protected readonly args: EditorArguments) {
+  constructor(protected readonly args: EditorArguments<TData, C, O>) {
     this.init();
   }
 
@@ -142,7 +142,7 @@ export class IntegerEditor implements Editor {
       formValues: this.args.compositeEditorOptions.formValues,
       grid: this.args.grid,
       editors: this.args.compositeEditorOptions.editors
-    });
+    } as unknown as OnCompositeEditorChangeEventArgs);
   }
 
   destroy() {
@@ -196,7 +196,7 @@ export class IntegerEditor implements Editor {
   }
 }
 
-export class FloatEditor implements Editor {
+export class FloatEditor<TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>> implements Editor {
   protected input!: HTMLInputElement;
   protected defaultValue?: string | number;
   protected navOnLR?: boolean;
@@ -207,7 +207,7 @@ export class FloatEditor implements Editor {
   /** Should we allow empty value when using FloatEditor */
   static AllowEmptyValue = false;
 
-  constructor(protected readonly args: EditorArguments) {
+  constructor(protected readonly args: EditorArguments<TData, C, O>) {
     this.init();
   }
 
@@ -240,7 +240,7 @@ export class FloatEditor implements Editor {
       formValues: this.args.compositeEditorOptions.formValues,
       grid: this.args.grid,
       editors: this.args.compositeEditorOptions.editors
-    });
+    } as unknown as OnCompositeEditorChangeEventArgs);
   };
 
   destroy() {
@@ -327,12 +327,12 @@ export class FloatEditor implements Editor {
   }
 }
 
-export class FlatpickrEditor implements Editor {
+export class FlatpickrEditor<TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>> implements Editor {
   protected input!: HTMLInputElement;
   protected defaultValue?: string | number;
   protected flatpickrInstance: any;
 
-  constructor(protected readonly args: EditorArguments) {
+  constructor(protected readonly args: EditorArguments<TData, C, O>) {
     this.init();
     if (typeof flatpickr === 'undefined') {
       throw new Error('Flatpickr not loaded but required in SlickGrid.Editors, refer to Flatpickr documentation: https://flatpickr.js.org/getting-started/');
@@ -367,7 +367,7 @@ export class FlatpickrEditor implements Editor {
             formValues: this.args.compositeEditorOptions.formValues,
             grid: this.args.grid,
             editors: this.args.compositeEditorOptions.editors
-          });
+          } as unknown as OnCompositeEditorChangeEventArgs);
         }
       },
     });
@@ -443,11 +443,11 @@ export class FlatpickrEditor implements Editor {
   }
 }
 
-export class YesNoSelectEditor implements Editor {
+export class YesNoSelectEditor<TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>> implements Editor {
   protected select!: HTMLSelectElement;
   protected defaultValue?: string | number;
 
-  constructor(protected readonly args: EditorArguments) {
+  constructor(protected readonly args: EditorArguments<TData, C, O>) {
     this.init();
   }
 
@@ -480,7 +480,7 @@ export class YesNoSelectEditor implements Editor {
       formValues: this.args.compositeEditorOptions.formValues,
       grid: this.args.grid,
       editors: this.args.compositeEditorOptions.editors
-    });
+    } as unknown as OnCompositeEditorChangeEventArgs);
   }
 
   destroy() {
@@ -516,11 +516,11 @@ export class YesNoSelectEditor implements Editor {
   }
 }
 
-export class CheckboxEditor implements Editor {
+export class CheckboxEditor<TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>> implements Editor {
   protected input!: HTMLInputElement;
   protected defaultValue?: boolean;
 
-  constructor(protected readonly args: EditorArguments) {
+  constructor(protected readonly args: EditorArguments<TData, C, O>) {
     this.init();
   }
 
@@ -550,7 +550,7 @@ export class CheckboxEditor implements Editor {
       formValues: this.args.compositeEditorOptions.formValues,
       grid: this.args.grid,
       editors: this.args.compositeEditorOptions.editors
-    });
+    } as unknown as OnCompositeEditorChangeEventArgs);
   };
 
   destroy() {
@@ -591,13 +591,13 @@ export class CheckboxEditor implements Editor {
   }
 }
 
-export class PercentCompleteEditor implements Editor {
+export class PercentCompleteEditor<TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>> implements Editor {
   protected input!: HTMLInputElement;
   protected defaultValue?: number;
   protected picker!: HTMLDivElement;
   protected slider!: HTMLInputElement | null;
 
-  constructor(protected readonly args: EditorArguments) {
+  constructor(protected readonly args: EditorArguments<TData, C, O>) {
     this.init();
   }
 
@@ -623,7 +623,7 @@ export class PercentCompleteEditor implements Editor {
         formValues: this.args.compositeEditorOptions.formValues,
         grid: this.args.grid,
         editors: this.args.compositeEditorOptions.editors
-      });
+      } as unknown as OnCompositeEditorChangeEventArgs);
     }
   }
 
@@ -713,13 +713,13 @@ export class PercentCompleteEditor implements Editor {
  * The UI is added onto document BODY and .position(), .show() and .hide() are implemented.
  * KeyDown events are also handled to provide handling for Tab, Shift-Tab, Esc and Ctrl-Enter.
  */
-export class LongTextEditor implements Editor {
+export class LongTextEditor<TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>> implements Editor {
   protected input!: HTMLTextAreaElement;
   protected wrapper!: HTMLDivElement;
   protected defaultValue?: string;
   protected selectionStart = 0;
 
-  constructor(protected readonly args: EditorArguments) {
+  constructor(protected readonly args: EditorArguments<TData, C, O>) {
     this.init();
   }
 
@@ -773,7 +773,7 @@ export class LongTextEditor implements Editor {
       formValues: this.args.compositeEditorOptions.formValues,
       grid: this.args.grid,
       editors: this.args.compositeEditorOptions.editors
-    });
+    } as unknown as OnCompositeEditorChangeEventArgs);
   };
 
   handleKeyDown(e: KeyboardEvent & { target: HTMLInputElement }) {
