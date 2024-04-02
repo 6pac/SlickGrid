@@ -15,7 +15,7 @@ import type {
   Editor,
   EditorArguments,
   EditorConstructor,
-  EditController, 
+  EditController,
   Formatter,
   FormatterOverrideCallback,
   FormatterResultObject,
@@ -1619,7 +1619,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     for (let i = 0; i < this.columns.length; i++) {
       const m: C = this.columns[i];
       if (m.hidden) { continue; }
-      
+
       const headerTarget = this.hasFrozenColumns() ? ((i <= this._options.frozenColumn!) ? this._headerL : this._headerR) : this._headerL;
       const headerRowTarget = this.hasFrozenColumns() ? ((i <= this._options.frozenColumn!) ? this._headerRowL : this._headerRowR) : this._headerRowL;
 
@@ -5334,7 +5334,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (!handled) {
       if (!e.shiftKey && !e.altKey) {
         if (this._options.editable && this.currentEditor?.keyCaptureList) {
-          if (this.currentEditor.keyCaptureList.indexOf(String(e.which)) > -1) {
+          if (this.currentEditor.keyCaptureList.indexOf(e.which) > -1) {
             return;
           }
         }
@@ -5349,7 +5349,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (!e.shiftKey && !e.altKey && !e.ctrlKey) {
         // editor may specify an array of keys to bubble
         if (this._options.editable && this.currentEditor?.keyCaptureList) {
-          if (this.currentEditor.keyCaptureList.indexOf(String(e.which)) > -1) {
+          if (this.currentEditor.keyCaptureList.indexOf(e.which) > -1) {
             return;
           }
         }
@@ -5949,7 +5949,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     metadata = metadata?.columns as any;
     const columnMetaData = metadata && (metadata[columnDef.id as keyof ItemMetadata] || (metadata as any)[this.activeCell]);
 
-    
+
     const editorArgs: EditorArguments<TData, C, O> = {
       grid: this,
       gridPosition: this.absBox(this._container),
