@@ -201,7 +201,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   }
 
   /** get extra filter arguments of the filter method */
-  getFilterArgs(): any {
+  getFilterArgs() {
     return this.filterArgs;
   }
 
