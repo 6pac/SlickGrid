@@ -5107,6 +5107,10 @@ var SlickEvent20 = SlickEvent, SlickEventData6 = SlickEventData, SlickGroup3 = S
   setRefreshHints(hints) {
     this.refreshHints = hints;
   }
+  /** get extra filter arguments of the filter method */
+  getFilterArgs() {
+    return this.filterArgs;
+  }
   /** add extra filter arguments to the filter method */
   setFilterArgs(args) {
     this.filterArgs = args;
@@ -6510,7 +6514,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.8.3");
+    __publicField(this, "slickGridVersion", "5.9.0");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -8697,13 +8701,13 @@ var SlickGrid = class {
   handleKeyDown(e) {
     let handled = this.trigger(this.onKeyDown, { row: this.activeRow, cell: this.activeCell }, e).isImmediatePropagationStopped();
     if (!handled && !e.shiftKey && !e.altKey) {
-      if (this._options.editable && this.currentEditor?.keyCaptureList && this.currentEditor.keyCaptureList.indexOf(String(e.which)) > -1)
+      if (this._options.editable && this.currentEditor?.keyCaptureList && this.currentEditor.keyCaptureList.indexOf(e.which) > -1)
         return;
       e.which === keyCode6.HOME ? handled = e.ctrlKey ? this.navigateTop() : this.navigateRowStart() : e.which === keyCode6.END && (handled = e.ctrlKey ? this.navigateBottom() : this.navigateRowEnd());
     }
     if (!handled)
       if (!e.shiftKey && !e.altKey && !e.ctrlKey) {
-        if (this._options.editable && this.currentEditor?.keyCaptureList && this.currentEditor.keyCaptureList.indexOf(String(e.which)) > -1)
+        if (this._options.editable && this.currentEditor?.keyCaptureList && this.currentEditor.keyCaptureList.indexOf(e.which) > -1)
           return;
         if (e.which === keyCode6.ESCAPE) {
           if (!this.getEditorLock()?.isActive())
@@ -9789,7 +9793,7 @@ export {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.8.3
+ * SlickGrid v5.9.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

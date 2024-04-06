@@ -8,7 +8,8 @@ export interface Editor {
     dataContext?: any;
     /** is the Editor disabled when we first open it? This could happen when we use "collectionAsync" and we wait for the "collection" to be filled before enabling the Editor. */
     disabled?: boolean;
-    keyCaptureList?: string;
+    /** List of key codes, which will not be captured by default slickgrid hotkeys listeners */
+    keyCaptureList?: number[];
     /** Initialize the Editor */
     init: (args?: EditorArguments) => void;
     /** Saves the Editor value */

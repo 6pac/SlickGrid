@@ -1,15 +1,15 @@
-import type { Editor, EditorArguments, EditorValidationResult, ElementPosition } from './models/index';
+import type { Column, Editor, EditorArguments, EditorValidationResult, ElementPosition, GridOption } from './models/index';
 /***
  * Contains basic SlickGrid editors.
  * @module Editors
  * @namespace Slick
  */
-export declare class TextEditor implements Editor {
-    protected readonly args: EditorArguments;
+export declare class TextEditor<TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>> implements Editor {
+    protected readonly args: EditorArguments<TData, C, O>;
     protected input: HTMLInputElement;
     protected defaultValue?: number | string;
     protected navOnLR?: boolean;
-    constructor(args: EditorArguments);
+    constructor(args: EditorArguments<TData, C, O>);
     init(): void;
     onChange(): void;
     destroy(): void;
@@ -22,12 +22,12 @@ export declare class TextEditor implements Editor {
     isValueChanged(): boolean;
     validate(): EditorValidationResult;
 }
-export declare class IntegerEditor implements Editor {
-    protected readonly args: EditorArguments;
+export declare class IntegerEditor<TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>> implements Editor {
+    protected readonly args: EditorArguments<TData, C, O>;
     protected input: HTMLInputElement;
     protected defaultValue?: string | number;
     protected navOnLR?: boolean;
-    constructor(args: EditorArguments);
+    constructor(args: EditorArguments<TData, C, O>);
     init(): void;
     onChange(): void;
     destroy(): void;
@@ -38,8 +38,8 @@ export declare class IntegerEditor implements Editor {
     isValueChanged(): boolean;
     validate(): EditorValidationResult;
 }
-export declare class FloatEditor implements Editor {
-    protected readonly args: EditorArguments;
+export declare class FloatEditor<TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>> implements Editor {
+    protected readonly args: EditorArguments<TData, C, O>;
     protected input: HTMLInputElement;
     protected defaultValue?: string | number;
     protected navOnLR?: boolean;
@@ -47,7 +47,7 @@ export declare class FloatEditor implements Editor {
     static DefaultDecimalPlaces?: number;
     /** Should we allow empty value when using FloatEditor */
     static AllowEmptyValue: boolean;
-    constructor(args: EditorArguments);
+    constructor(args: EditorArguments<TData, C, O>);
     init(): void;
     onChange(): void;
     destroy(): void;
@@ -59,12 +59,12 @@ export declare class FloatEditor implements Editor {
     isValueChanged(): boolean;
     validate(): EditorValidationResult;
 }
-export declare class FlatpickrEditor implements Editor {
-    protected readonly args: EditorArguments;
+export declare class FlatpickrEditor<TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>> implements Editor {
+    protected readonly args: EditorArguments<TData, C, O>;
     protected input: HTMLInputElement;
     protected defaultValue?: string | number;
     protected flatpickrInstance: any;
-    constructor(args: EditorArguments);
+    constructor(args: EditorArguments<TData, C, O>);
     init(): void;
     destroy(): void;
     show(): void;
@@ -76,11 +76,11 @@ export declare class FlatpickrEditor implements Editor {
     isValueChanged(): boolean;
     validate(): EditorValidationResult;
 }
-export declare class YesNoSelectEditor implements Editor {
-    protected readonly args: EditorArguments;
+export declare class YesNoSelectEditor<TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>> implements Editor {
+    protected readonly args: EditorArguments<TData, C, O>;
     protected select: HTMLSelectElement;
     protected defaultValue?: string | number;
-    constructor(args: EditorArguments);
+    constructor(args: EditorArguments<TData, C, O>);
     init(): void;
     onChange(): void;
     destroy(): void;
@@ -94,11 +94,11 @@ export declare class YesNoSelectEditor implements Editor {
         msg: null;
     };
 }
-export declare class CheckboxEditor implements Editor {
-    protected readonly args: EditorArguments;
+export declare class CheckboxEditor<TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>> implements Editor {
+    protected readonly args: EditorArguments<TData, C, O>;
     protected input: HTMLInputElement;
     protected defaultValue?: boolean;
-    constructor(args: EditorArguments);
+    constructor(args: EditorArguments<TData, C, O>);
     init(): void;
     onChange(): void;
     destroy(): void;
@@ -109,13 +109,13 @@ export declare class CheckboxEditor implements Editor {
     isValueChanged(): boolean;
     validate(): EditorValidationResult;
 }
-export declare class PercentCompleteEditor implements Editor {
-    protected readonly args: EditorArguments;
+export declare class PercentCompleteEditor<TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>> implements Editor {
+    protected readonly args: EditorArguments<TData, C, O>;
     protected input: HTMLInputElement;
     protected defaultValue?: number;
     protected picker: HTMLDivElement;
     protected slider: HTMLInputElement | null;
-    constructor(args: EditorArguments);
+    constructor(args: EditorArguments<TData, C, O>);
     sliderInputHandler(e: MouseEvent & {
         target: HTMLButtonElement;
     }): void;
@@ -132,13 +132,13 @@ export declare class PercentCompleteEditor implements Editor {
     isValueChanged(): boolean;
     validate(): EditorValidationResult;
 }
-export declare class LongTextEditor implements Editor {
-    protected readonly args: EditorArguments;
+export declare class LongTextEditor<TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>> implements Editor {
+    protected readonly args: EditorArguments<TData, C, O>;
     protected input: HTMLTextAreaElement;
     protected wrapper: HTMLDivElement;
     protected defaultValue?: string;
     protected selectionStart: number;
-    constructor(args: EditorArguments);
+    constructor(args: EditorArguments<TData, C, O>);
     init(): void;
     onChange(): void;
     handleKeyDown(e: KeyboardEvent & {

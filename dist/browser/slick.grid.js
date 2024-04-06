@@ -24,7 +24,7 @@
       this.externalPubSub = externalPubSub;
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.8.3");
+      __publicField(this, "slickGridVersion", "5.9.0");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -2261,13 +2261,13 @@
       var _a, _b, _c, _d;
       let handled = this.trigger(this.onKeyDown, { row: this.activeRow, cell: this.activeCell }, e).isImmediatePropagationStopped();
       if (!handled && !e.shiftKey && !e.altKey) {
-        if (this._options.editable && ((_a = this.currentEditor) != null && _a.keyCaptureList) && this.currentEditor.keyCaptureList.indexOf(String(e.which)) > -1)
+        if (this._options.editable && ((_a = this.currentEditor) != null && _a.keyCaptureList) && this.currentEditor.keyCaptureList.indexOf(e.which) > -1)
           return;
         e.which === keyCode.HOME ? handled = e.ctrlKey ? this.navigateTop() : this.navigateRowStart() : e.which === keyCode.END && (handled = e.ctrlKey ? this.navigateBottom() : this.navigateRowEnd());
       }
       if (!handled)
         if (!e.shiftKey && !e.altKey && !e.ctrlKey) {
-          if (this._options.editable && ((_b = this.currentEditor) != null && _b.keyCaptureList) && this.currentEditor.keyCaptureList.indexOf(String(e.which)) > -1)
+          if (this._options.editable && ((_b = this.currentEditor) != null && _b.keyCaptureList) && this.currentEditor.keyCaptureList.indexOf(e.which) > -1)
             return;
           if (e.which === keyCode.ESCAPE) {
             if (!((_c = this.getEditorLock()) != null && _c.isActive()))
@@ -3068,7 +3068,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.8.3
+ * SlickGrid v5.9.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

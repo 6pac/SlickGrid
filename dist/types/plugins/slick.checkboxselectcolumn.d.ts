@@ -55,7 +55,7 @@ export declare class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
         sortable: boolean;
         cssClass: string | undefined;
         hideSelectAllCheckbox: boolean | undefined;
-        formatter: (row: number, _cell: number, _val: any, _columnDef: Column<any>, dataContext: any, grid: SlickGrid<any, Column<any>, import("src/models/gridOption.interface").GridOption<Column<any>>>) => DocumentFragment | null;
+        formatter: (row: number, _cell: number, _val: any, _columnDef: Column<any>, dataContext: any, grid: SlickGrid<any, Column<any>, import("../models/gridOption.interface").GridOption<Column<any>>>) => DocumentFragment | null;
         excludeFromColumnPicker: boolean;
         excludeFromGridMenu: boolean;
         excludeFromHeaderMenu: boolean;

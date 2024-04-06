@@ -8,8 +8,8 @@ export declare class SlickRemoteModelYahoo {
     protected data: any;
     protected h_request: any;
     protected req: any;
-    protected onDataLoading: import("src").SlickEvent<any>;
-    protected onDataLoaded: import("src").SlickEvent<any>;
+    protected onDataLoading: import("./slick.core").SlickEvent<any>;
+    protected onDataLoaded: import("./slick.core").SlickEvent<any>;
     constructor();
     init(): void;
     isDataLoaded(from: number, to: number): boolean;

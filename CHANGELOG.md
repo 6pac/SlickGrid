@@ -2,6 +2,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.9.0](https://github.com/6pac/SlickGrid/compare/5.8.3...5.9.0) (2024-04-06)
+
+### Bug Fixes
+
+* default SlickGrid editors are not assignable to column field 'editor' ([#1005](https://github.com/6pac/SlickGrid/issues/1005)) ([9e1de20](https://github.com/6pac/SlickGrid/commit/9e1de206d9552d6f270b2a46804d42f8994d8013))
+* Editor.keyCaptureList is an array of numbers ([#1006](https://github.com/6pac/SlickGrid/issues/1006)) ([fbbff04](https://github.com/6pac/SlickGrid/commit/fbbff041eda3195df3e1d85b543dd43e6c32c642))
+* primary entry point to the program isn't set correctly ([#1008](https://github.com/6pac/SlickGrid/issues/1008)) ([0714221](https://github.com/6pac/SlickGrid/commit/07142214b5c32cee617d7fd93f35546d18d07681))
+
+### Features
+
+* add the ability to receive extra filter arguments ([#1007](https://github.com/6pac/SlickGrid/issues/1007)) ([e22d814](https://github.com/6pac/SlickGrid/commit/e22d814e4deae9acc5a7c3c3d68da7982d3cc36d))
+
 ## [5.8.3](https://github.com/6pac/SlickGrid/compare/5.8.2...5.8.3) (2024-03-30)
 
 ### Bug Fixes

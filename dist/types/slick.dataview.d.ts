@@ -93,6 +93,8 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     destroy(): void;
     /** provide some refresh hints as to what to rows needs refresh */
     setRefreshHints(hints: DataViewHints): void;
+    /** get extra filter arguments of the filter method */
+    getFilterArgs(): any;
     /** add extra filter arguments to the filter method */
     setFilterArgs(args: any): void;
     /**

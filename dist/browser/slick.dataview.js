@@ -109,6 +109,10 @@
     setRefreshHints(hints) {
       this.refreshHints = hints;
     }
+    /** get extra filter arguments of the filter method */
+    getFilterArgs() {
+      return this.filterArgs;
+    }
     /** add extra filter arguments to the filter method */
     setFilterArgs(args) {
       this.filterArgs = args;
