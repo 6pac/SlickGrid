@@ -451,13 +451,11 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
       )) {    // CTRL+V or Shift+INS
         const focusEl = document.activeElement as HTMLElement;
         const ta = this._createTextBox('');
-        setTimeout(() =>
-          {
+        setTimeout(() => {
             this._decodeTabularData(this._grid, ta);
             // restore focus when possible
             focusEl?.focus();
-          }
-        , 100);
+        }, this._options?.clipboardPasteDelay ?? CLIPBOARD_PASTE_DELAY);
         return false;
       }
     }
