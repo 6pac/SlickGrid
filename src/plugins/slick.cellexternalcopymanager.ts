@@ -449,8 +449,17 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
         (e.which === this.keyCodes.V && (e.ctrlKey || e.metaKey) && !e.shiftKey)
         || (e.which === this.keyCodes.INSERT && e.shiftKey && !e.ctrlKey)
       )) {    // CTRL+V or Shift+INS
+        const focusEl = document.activeElement as HTMLElement;
         const ta = this._createTextBox('');
-        setTimeout(() => this._decodeTabularData(this._grid, ta), 100);
+        setTimeout(() =>
+          {
+            this._decodeTabularData(this._grid, ta);
+            // restore focus when possible
+            focusEl
+              ? focusEl.focus()
+              : console.log('No element to restore focus to after copy?');
+          }
+        , 100);
         return false;
       }
     }
