@@ -455,9 +455,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
           {
             this._decodeTabularData(this._grid, ta);
             // restore focus when possible
-            focusEl
-              ? focusEl.focus()
-              : console.log('No element to restore focus to after copy?');
+            focusEl?.focus();
           }
         , 100);
         return false;
