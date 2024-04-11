@@ -3633,7 +3633,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
     if (this._options.forceFitColumns) {
       this._options.autosizeColsMode = GridAutosizeColsMode.LegacyForceFit;
-      console.log('forceFitColumns option is deprecated - use autosizeColsMode');
     }
   }
 
