@@ -96,9 +96,9 @@ var TaskNameFormatter = function (row, cell, value, columnDef, dataContext) {
   var idx = dataView.getIdxById(dataContext.id);
   if (data[idx + 1] && data[idx + 1].indent > data[idx].indent) {
     if (dataContext._collapsed) {
-      return spacer + " <span class='toggle expand sgi sgi-collapse sgi-plus-box-outline sgi-darkgray'></span>&nbsp;" + value;
+      return spacer + " <span class='toggle expand sgi sgi-plus-box-outline'></span>&nbsp;" + value;
     } else {
-      return spacer + " <span class='toggle collapse sgi sgi-minus-box-outline sgi-darkgray'></span>&nbsp;" + value;
+      return spacer + " <span class='toggle collapse sgi sgi-minus-box-outline'></span>&nbsp;" + value;
     }
   } else {
     return spacer + " <span class='toggle'></span>&nbsp;" + value;
