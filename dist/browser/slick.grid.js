@@ -24,7 +24,7 @@
       this.externalPubSub = externalPubSub;
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.9.0");
+      __publicField(this, "slickGridVersion", "5.9.1");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -1543,7 +1543,7 @@
       }) : this._options.enableMouseWheelScrollHandler === !1 && this.destroyAllInstances(this.slickMouseWheelInstances);
     }
     validateAndEnforceOptions() {
-      this._options.autoHeight && (this._options.leaveSpaceForNewRows = !1), this._options.forceFitColumns && (this._options.autosizeColsMode = GridAutosizeColsMode.LegacyForceFit, console.log("forceFitColumns option is deprecated - use autosizeColsMode"));
+      this._options.autoHeight && (this._options.leaveSpaceForNewRows = !1), this._options.forceFitColumns && (this._options.autosizeColsMode = GridAutosizeColsMode.LegacyForceFit);
     }
     /**
      * Sets a new source for databinding and removes all rendered rows. Note that this doesn't render the new rows - you can follow it with a call to render() to do that.
@@ -3068,7 +3068,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.9.0
+ * SlickGrid v5.9.1
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

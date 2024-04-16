@@ -2008,8 +2008,10 @@ var SlickEvent6 = SlickEvent, SlickRange2 = SlickRange, Utils8 = Utils, CLEAR_CO
         }
       }
       if (!this._options.readOnlyMode && (e.which === this.keyCodes.V && (e.ctrlKey || e.metaKey) && !e.shiftKey || e.which === this.keyCodes.INSERT && e.shiftKey && !e.ctrlKey)) {
-        let ta = this._createTextBox("");
-        return setTimeout(() => this._decodeTabularData(this._grid, ta), 100), !1;
+        let focusEl = document.activeElement, ta = this._createTextBox("");
+        return setTimeout(() => {
+          this._decodeTabularData(this._grid, ta), focusEl?.focus();
+        }, this._options?.clipboardPasteDelay ?? CLIPBOARD_PASTE_DELAY), !1;
       }
     }
   }
@@ -6617,7 +6619,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.9.0");
+    __publicField(this, "slickGridVersion", "5.9.1");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -8114,7 +8116,7 @@ var SlickGrid = class {
     }) : this._options.enableMouseWheelScrollHandler === !1 && this.destroyAllInstances(this.slickMouseWheelInstances);
   }
   validateAndEnforceOptions() {
-    this._options.autoHeight && (this._options.leaveSpaceForNewRows = !1), this._options.forceFitColumns && (this._options.autosizeColsMode = GridAutosizeColsMode2.LegacyForceFit, console.log("forceFitColumns option is deprecated - use autosizeColsMode"));
+    this._options.autoHeight && (this._options.leaveSpaceForNewRows = !1), this._options.forceFitColumns && (this._options.autosizeColsMode = GridAutosizeColsMode2.LegacyForceFit);
   }
   /**
    * Sets a new source for databinding and removes all rendered rows. Note that this doesn't render the new rows - you can follow it with a call to render() to do that.
@@ -9811,7 +9813,7 @@ var SlickRemoteModel = class {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.9.0
+ * SlickGrid v5.9.1
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

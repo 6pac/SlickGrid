@@ -203,7 +203,7 @@
       typeof this._options.clipboardCommandHandler == "function" ? this._options.clipboardCommandHandler(clipCommand) : clipCommand.execute();
     }
     handleKeyDown(e) {
-      var _a, _b, _c, _d;
+      var _a, _b, _c, _d, _e, _f;
       let ranges;
       if (!this._grid.getEditorLock().isActive() || this._grid.getOptions().autoEdit) {
         if (e.which === this.keyCodes.ESC && this._copiedRanges && (e.preventDefault(), this.clearCopySelection(), this.onCopyCancelled.notify({ ranges: this._copiedRanges }), this._copiedRanges = null), (e.which === this.keyCodes.C || e.which === this.keyCodes.INSERT) && (e.ctrlKey || e.metaKey) && !e.shiftKey && (typeof this._onCopyInit == "function" && this._onCopyInit.call(this), ranges = (_b = (_a = this._grid.getSelectionModel()) == null ? void 0 : _a.getSelectedRanges()) != null ? _b : [], ranges.length !== 0)) {
@@ -241,8 +241,10 @@
           }
         }
         if (!this._options.readOnlyMode && (e.which === this.keyCodes.V && (e.ctrlKey || e.metaKey) && !e.shiftKey || e.which === this.keyCodes.INSERT && e.shiftKey && !e.ctrlKey)) {
-          let ta = this._createTextBox("");
-          return setTimeout(() => this._decodeTabularData(this._grid, ta), 100), !1;
+          let focusEl = document.activeElement, ta = this._createTextBox("");
+          return setTimeout(() => {
+            this._decodeTabularData(this._grid, ta), focusEl == null || focusEl.focus();
+          }, (_f = (_e = this._options) == null ? void 0 : _e.clipboardPasteDelay) != null ? _f : CLIPBOARD_PASTE_DELAY), !1;
         }
       }
     }
