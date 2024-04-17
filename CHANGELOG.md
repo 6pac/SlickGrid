@@ -4,6 +4,11 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [5.9.1](https://github.com/6pac/SlickGrid/compare/5.9.0...5.9.1) (2024-04-16)
 
+### Bug Fixes
+
+* Remove ForceFit deprecation message, fixes ([#603](https://github.com/6pac/SlickGrid/issues/603))
+* CellExternalCopyManager plugin restores focus on paste
+
 # [5.9.0](https://github.com/6pac/SlickGrid/compare/5.8.3...5.9.0) (2024-04-06)
 
 ### Bug Fixes
