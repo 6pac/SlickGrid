@@ -2,7 +2,7 @@
 (() => {
   var __defProp = Object.defineProperty;
   var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: !0, configurable: !0, writable: !0, value }) : obj[key] = value;
-  var __publicField = (obj, key, value) => (__defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value), value);
+  var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value);
 
   // src/controls/slick.gridmenu.ts
   var BindingEventService = Slick.BindingEventService, SlickEvent = Slick.Event, Utils = Slick.Utils, SlickGridMenu = class {
@@ -228,8 +228,7 @@
             visibleColumns: this.getVisibleColumns()
           };
           this.onCommand.notify(callbackArgs, e, this), typeof item.action == "function" && item.action.call(this, e, callbackArgs), !!!((_a = this._gridMenuOptions) != null && _a.leaveOpen) && !e.defaultPrevented && this.hideMenu(e), e.preventDefault(), e.stopPropagation();
-        } else
-          item.commandItems || item.customItems ? this.repositionSubMenu(item, level, e) : this.destroySubMenus();
+        } else item.commandItems || item.customItems ? this.repositionSubMenu(item, level, e) : this.destroySubMenus();
       }
     }
     hideMenu(e) {

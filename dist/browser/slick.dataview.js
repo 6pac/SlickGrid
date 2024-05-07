@@ -2,7 +2,7 @@
 (() => {
   var __defProp = Object.defineProperty;
   var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: !0, configurable: !0, writable: !0, value }) : obj[key] = value;
-  var __publicField = (obj, key, value) => (__defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value), value);
+  var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value);
 
   // src/slick.dataview.ts
   var SlickEvent = Slick.Event, SlickEventData = Slick.EventData, SlickGroup = Slick.Group, SlickGroupTotals = Slick.GroupTotals, Utils = Slick.Utils, _a, _b, SlickGroupItemMetadataProvider = (_b = (_a = Slick.Data) == null ? void 0 : _a.GroupItemMetadataProvider) != null ? _b : {}, SlickDataView = class {
@@ -448,8 +448,7 @@
       if (item != null && item.__group && item.totals && !((_a2 = item.totals) != null && _a2.initialized)) {
         let gi = this.groupingInfos[item.level];
         gi.displayTotalsRow || (this.calculateTotals(item.totals), item.title = gi.formatter ? gi.formatter(item) : item.value);
-      } else
-        item != null && item.__groupTotals && !item.initialized && this.calculateTotals(item);
+      } else item != null && item.__groupTotals && !item.initialized && this.calculateTotals(item);
       return item;
     }
     getItemMetadata(i) {

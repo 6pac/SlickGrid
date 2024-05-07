@@ -1,6 +1,6 @@
 var __defProp = Object.defineProperty;
 var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: !0, configurable: !0, writable: !0, value }) : obj[key] = value;
-var __publicField = (obj, key, value) => (__defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value), value);
+var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value);
 
 // src/slick.core.ts
 var SlickEventData = class {
@@ -1262,8 +1262,7 @@ var BindingEventService4 = BindingEventService, SlickEvent4 = SlickEvent, Utils4
           visibleColumns: this.getVisibleColumns()
         };
         this.onCommand.notify(callbackArgs, e, this), typeof item.action == "function" && item.action.call(this, e, callbackArgs), !!!this._gridMenuOptions?.leaveOpen && !e.defaultPrevented && this.hideMenu(e), e.preventDefault(), e.stopPropagation();
-      } else
-        item.commandItems || item.customItems ? this.repositionSubMenu(item, level, e) : this.destroySubMenus();
+      } else item.commandItems || item.customItems ? this.repositionSubMenu(item, level, e) : this.destroySubMenus();
     }
   }
   hideMenu(e) {
@@ -2168,8 +2167,7 @@ var BindingEventService6 = BindingEventService, SlickEvent7 = SlickEvent, SlickE
           dataContext
         };
         this[type === "command" ? "onCommand" : "onOptionSelected"].notify(callbackArgs, e, this), typeof item.action == "function" && item.action.call(this, e, callbackArgs), e.defaultPrevented || this.closeMenu(e, { cell, row, grid: this._grid });
-      } else
-        item.commandItems || item.optionItems ? this.repositionSubMenu(item, type, level, e) : this.destroySubMenus();
+      } else item.commandItems || item.optionItems ? this.repositionSubMenu(item, type, level, e) : this.destroySubMenus();
       this._lastMenuTypeClicked = type;
     }
   }
@@ -3062,8 +3060,7 @@ var BindingEventService8 = BindingEventService, SlickEvent10 = SlickEvent, Slick
           value: cellValue
         };
         this[type === "command" ? "onCommand" : "onOptionSelected"].notify(callbackArgs, e, this), typeof item.action == "function" && item.action.call(this, e, callbackArgs), e.defaultPrevented || this.destroyMenu(e, { cell, row });
-      } else
-        item.commandItems || item.optionItems ? this.repositionSubMenu(item, type, level, e) : this.destroySubMenus();
+      } else item.commandItems || item.optionItems ? this.repositionSubMenu(item, type, level, e) : this.destroySubMenus();
       this._lastMenuTypeClicked = type;
     }
   }
@@ -3288,8 +3285,7 @@ var SlickEventHandler5 = SlickEventHandler, Utils17 = Utils, SlickCustomTooltip 
       if (this._cellTooltipOptions.useRegularTooltip || !formatter) {
         let formatterOrText = isHeaderRowType ? this._cellTooltipOptions.useRegularTooltip ? null : formatter : columnDef.name;
         this.renderRegularTooltip(formatterOrText, cell, null, columnDef, item);
-      } else
-        this._cellNodeElm && typeof formatter == "function" && this.renderTooltipFormatter(formatter, cell, null, columnDef, item);
+      } else this._cellNodeElm && typeof formatter == "function" && this.renderTooltipFormatter(formatter, cell, null, columnDef, item);
     }
   }
   /**
@@ -3867,8 +3863,7 @@ var BindingEventService11 = BindingEventService, SlickEvent14 = Event, SlickEven
           item
         };
         this.onCommand.notify(callbackArgs, e, this), typeof item.action == "function" && item.action.call(this, e, callbackArgs), e.defaultPrevented || this.hideMenu();
-      } else
-        item.commandItems || item.items ? this.repositionSubMenu(item, columnDef, level, e) : this.destroySubMenus();
+      } else item.commandItems || item.items ? this.repositionSubMenu(item, columnDef, level, e) : this.destroySubMenus();
     }
   }
   repositionSubMenu(item, columnDef, level, e) {
@@ -5441,8 +5436,7 @@ var SlickEvent20 = SlickEvent, SlickEventData6 = SlickEventData, SlickGroup3 = S
     if (item?.__group && item.totals && !item.totals?.initialized) {
       let gi = this.groupingInfos[item.level];
       gi.displayTotalsRow || (this.calculateTotals(item.totals), item.title = gi.formatter ? gi.formatter(item) : item.value);
-    } else
-      item?.__groupTotals && !item.initialized && this.calculateTotals(item);
+    } else item?.__groupTotals && !item.initialized && this.calculateTotals(item);
     return item;
   }
   getItemMetadata(i) {
@@ -6516,7 +6510,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.9.1");
+    __publicField(this, "slickGridVersion", "5.9.2");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -7342,7 +7336,10 @@ var SlickGrid = class {
           this._options.multiColumnSort ? onSortArgs = {
             multiColumnSort: !0,
             previousSortColumns,
-            sortCols: this.sortColumns.map((col) => ({ columnId: this.columns[this.getColumnIndex(col.columnId)].id, sortCol: this.columns[this.getColumnIndex(col.columnId)], sortAsc: col.sortAsc }))
+            sortCols: this.sortColumns.map((col) => {
+              let tempCol = this.columns[this.getColumnIndex(col.columnId)];
+              return !tempCol || tempCol.hidden ? null : { columnId: tempCol.id, sortCol: tempCol, sortAsc: col.sortAsc };
+            }).filter((el) => el)
           } : onSortArgs = {
             multiColumnSort: !1,
             previousSortColumns,
@@ -8165,8 +8162,7 @@ var SlickGrid = class {
           if (!m.alwaysRenderColumn && this.columnPosLeft[i] > range.rightPx)
             break;
           this.hasFrozenColumns() && i > this._options.frozenColumn ? this.appendCellHtml(rowDivR, row, i, colspan, d) : this.appendCellHtml(rowDiv, row, i, colspan, d);
-        } else
-          (m.alwaysRenderColumn || this.hasFrozenColumns() && i <= this._options.frozenColumn) && this.appendCellHtml(rowDiv, row, i, colspan, d);
+        } else (m.alwaysRenderColumn || this.hasFrozenColumns() && i <= this._options.frozenColumn) && this.appendCellHtml(rowDiv, row, i, colspan, d);
         colspan > 1 && (i += colspan - 1);
       }
   }
@@ -8715,10 +8711,8 @@ var SlickGrid = class {
           if (!this.getEditorLock()?.isActive())
             return;
           this.cancelEditAndSetFocus();
-        } else
-          e.which === keyCode6.PAGE_DOWN ? (this.navigatePageDown(), handled = !0) : e.which === keyCode6.PAGE_UP ? (this.navigatePageUp(), handled = !0) : e.which === keyCode6.LEFT ? handled = this.navigateLeft() : e.which === keyCode6.RIGHT ? handled = this.navigateRight() : e.which === keyCode6.UP ? handled = this.navigateUp() : e.which === keyCode6.DOWN ? handled = this.navigateDown() : e.which === keyCode6.TAB ? handled = this.navigateNext() : e.which === keyCode6.ENTER && (this._options.editable && (this.currentEditor ? this.activeRow === this.getDataLength() ? this.navigateDown() : this.commitEditAndSetFocus() : this.getEditorLock()?.commitCurrentEdit() && this.makeActiveCellEditable(void 0, void 0, e)), handled = !0);
-      } else
-        e.which === keyCode6.TAB && e.shiftKey && !e.ctrlKey && !e.altKey && (handled = this.navigatePrev());
+        } else e.which === keyCode6.PAGE_DOWN ? (this.navigatePageDown(), handled = !0) : e.which === keyCode6.PAGE_UP ? (this.navigatePageUp(), handled = !0) : e.which === keyCode6.LEFT ? handled = this.navigateLeft() : e.which === keyCode6.RIGHT ? handled = this.navigateRight() : e.which === keyCode6.UP ? handled = this.navigateUp() : e.which === keyCode6.DOWN ? handled = this.navigateDown() : e.which === keyCode6.TAB ? handled = this.navigateNext() : e.which === keyCode6.ENTER && (this._options.editable && (this.currentEditor ? this.activeRow === this.getDataLength() ? this.navigateDown() : this.commitEditAndSetFocus() : this.getEditorLock()?.commitCurrentEdit() && this.makeActiveCellEditable(void 0, void 0, e)), handled = !0);
+      } else e.which === keyCode6.TAB && e.shiftKey && !e.ctrlKey && !e.altKey && (handled = this.navigatePrev());
     if (handled) {
       e.stopPropagation(), e.preventDefault();
       try {
@@ -9795,7 +9789,7 @@ export {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.9.1
+ * SlickGrid v5.9.2
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

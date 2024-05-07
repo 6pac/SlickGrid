@@ -2,7 +2,7 @@
 (() => {
   var __defProp = Object.defineProperty;
   var __defNormalProp = (obj, key, value) => key in obj ? __defProp(obj, key, { enumerable: !0, configurable: !0, writable: !0, value }) : obj[key] = value;
-  var __publicField = (obj, key, value) => (__defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value), value);
+  var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value);
 
   // src/plugins/slick.customtooltip.ts
   var SlickEventHandler = Slick.EventHandler, Utils = Slick.Utils, SlickCustomTooltip = class {
@@ -64,8 +64,7 @@
         if (this._cellTooltipOptions.useRegularTooltip || !formatter) {
           let formatterOrText = isHeaderRowType ? this._cellTooltipOptions.useRegularTooltip ? null : formatter : columnDef.name;
           this.renderRegularTooltip(formatterOrText, cell, null, columnDef, item);
-        } else
-          this._cellNodeElm && typeof formatter == "function" && this.renderTooltipFormatter(formatter, cell, null, columnDef, item);
+        } else this._cellNodeElm && typeof formatter == "function" && this.renderTooltipFormatter(formatter, cell, null, columnDef, item);
       }
     }
     /**
