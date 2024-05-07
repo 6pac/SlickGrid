@@ -4,6 +4,10 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [5.9.2](https://github.com/6pac/SlickGrid/compare/5.9.1...5.9.2) (2024-05-07)
 
+### Bug Fixes
+
+* Fix: Tweak setupColumnSort() to fix exception when col no longer exists ([#1016](https://github.com/6pac/SlickGrid/pull/1016))
+
 ## [5.9.1](https://github.com/6pac/SlickGrid/compare/5.9.0...5.9.1) (2024-04-16)
 
 ### Bug Fixes
