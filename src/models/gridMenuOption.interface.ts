@@ -34,10 +34,13 @@ export interface GridMenuOption {
   /** Defaults to false, show/hide 1 of the last 2 checkbox at the end of the picker list */
   hideSyncResizeButton?: boolean;
 
+  /** Defaults to "header", where should we display the grid menu button? Should it be inside the "preheader" (when exists) or always inside the column "header" (default). */
+  iconButtonContainer?: 'preheader' | 'header';
+
   /**  Grid Menu icon (hamburger icon) */
   iconImage?: string;
 
-  /** CSS class for the displaying the Grid menu icon (basically the hamburger menu) */
+  /** CSS class for the displaying the Grid menu icon (aka the hamburger menu button) */
   iconCssClass?: string;
 
   /** Defaults to False, which leads to leaving the menu open after a click */
