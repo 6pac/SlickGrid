@@ -139,6 +139,7 @@
       headerColumnValueExtractor: pickerHeaderColumnValueExtractor
     },
     gridMenu: {
+      iconButtonContainer: 'preheader', // we can display the grid menu icon in either the preheader or in the column header (default)
       iconCssClass: "sgi sgi-menu sgi-17px",
       headerColumnValueExtractor: pickerHeaderColumnValueExtractor,
       customTitle: "Commands",
@@ -208,7 +209,6 @@
     });
 
   document.querySelector('#chkHideColumn1').addEventListener("change", function(e) {
-  //$("#chkHideColumn").change(function () {
     var hideCol = document.querySelector('#chkHideColumn1').checked || false;
     columns[2].hidden = hideCol;
     grid.updateColumns();
@@ -216,7 +216,6 @@
  });
 
   document.querySelector('#chkHideColumn2').addEventListener("change", function(e) {
-  //$("#chkHideColumn").change(function () {
     var hideCol = document.querySelector('#chkHideColumn2').checked || false;
     columns[4].hidden = hideCol;
     grid.updateColumns();

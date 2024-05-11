@@ -239,7 +239,9 @@ export class SlickGridMenu {
         this._buttonElm.appendChild(iconImageElm);
       }
 
-      this._headerElm!.parentElement!.insertBefore(this._buttonElm, this._headerElm!.parentElement!.firstChild);
+      // add the grid menu button in the preheader (when exists) or always in the column header (default)
+      const buttonContainerTarget = this._gridMenuOptions?.iconButtonContainer === 'preheader' ? 'firstChild' : 'lastChild';
+      this._headerElm!.parentElement!.insertBefore(this._buttonElm, this._headerElm!.parentElement![buttonContainerTarget]);
 
       // add on click handler for the Grid Menu itself
       this._bindingEventService.bind(this._buttonElm, 'click', this.showGridMenu.bind(this) as EventListener);
