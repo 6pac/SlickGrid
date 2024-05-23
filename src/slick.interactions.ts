@@ -30,7 +30,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  */
 export function Draggable(options: DraggableOption) {
   let { containerElement } = options;
-  const { onDragInit, onDragStart, onDrag, onDragEnd } = options;
+  const { onDragInit, onDragStart, onDrag, onDragEnd, preventDragFromKeys } = options;
   let element: HTMLElement | null;
   let startX: number;
   let startY: number;
@@ -54,7 +54,7 @@ export function Draggable(options: DraggableOption) {
     }
   }
 
-  function executeDragCallbackWhenDefined(callback?: (e: DragEvent, dd: DragItem) => boolean | void, evt?: MouseEvent | Touch | TouchEvent, dd?: DragItem) {
+  function executeDragCallbackWhenDefined(callback?: (e: DragEvent, dd: DragItem) => boolean | void, evt?: MouseEvent | Touch | TouchEvent | KeyboardEvent, dd?: DragItem) {
     if (typeof callback === 'function') {
       return callback(evt as DragEvent, dd as DragItem);
     }
@@ -67,45 +67,62 @@ export function Draggable(options: DraggableOption) {
     }
   }
 
-  function userPressed(event: MouseEvent | TouchEvent) {
-    element = event.target as HTMLElement;
-    const targetEvent: MouseEvent | Touch = (event as TouchEvent)?.touches?.[0] ?? event;
-    const { target } = targetEvent;
+  /** Do we want to prevent Drag events from happening (for example prevent onDrag when Ctrl key is pressed while dragging) */
+  function preventDrag(event: MouseEvent | TouchEvent | KeyboardEvent) {
+    let eventPrevented = false;
+    if (preventDragFromKeys) {
+      preventDragFromKeys.forEach(key => {
+        if ((event as KeyboardEvent)[key]) {
+          eventPrevented = true;
+        }
+      });
+    }
+    return eventPrevented;
+  }
 
-    if (!options.allowDragFrom || (options.allowDragFrom && (element.matches(options.allowDragFrom)) || (options.allowDragFromClosest && element.closest(options.allowDragFromClosest)))) {
-      originaldd.dragHandle = element as HTMLElement;
-      const winScrollPos = Utils.windowScrollPosition();
-      startX = winScrollPos.left + targetEvent.clientX;
-      startY = winScrollPos.top + targetEvent.clientY;
-      deltaX = targetEvent.clientX - targetEvent.clientX;
-      deltaY = targetEvent.clientY - targetEvent.clientY;
-      originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target });
-      const result = executeDragCallbackWhenDefined(onDragInit as (e: DragEvent, dd: DragPosition) => boolean | void, event, originaldd as DragItem);
+  function userPressed(event: MouseEvent | TouchEvent | KeyboardEvent) {
+    if (!preventDrag(event)) {
+      element = event.target as HTMLElement;
+      const targetEvent: MouseEvent | Touch = (event as TouchEvent)?.touches?.[0] ?? event;
+      const { target } = targetEvent;
 
-      if (result !== false) {
-        document.body.addEventListener('mousemove', userMoved);
-        document.body.addEventListener('touchmove', userMoved);
-        document.body.addEventListener('mouseup', userReleased);
-        document.body.addEventListener('touchend', userReleased);
-        document.body.addEventListener('touchcancel', userReleased);
+      if (!options.allowDragFrom || (options.allowDragFrom && (element.matches(options.allowDragFrom)) || (options.allowDragFromClosest && element.closest(options.allowDragFromClosest)))) {
+        originaldd.dragHandle = element as HTMLElement;
+        const winScrollPos = Utils.windowScrollPosition();
+        startX = winScrollPos.left + targetEvent.clientX;
+        startY = winScrollPos.top + targetEvent.clientY;
+        deltaX = targetEvent.clientX - targetEvent.clientX;
+        deltaY = targetEvent.clientY - targetEvent.clientY;
+        originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target });
+        const result = executeDragCallbackWhenDefined(onDragInit as (e: DragEvent, dd: DragPosition) => boolean | void, event, originaldd as DragItem);
+
+        if (result !== false) {
+          document.body.addEventListener('mousemove', userMoved);
+          document.body.addEventListener('touchmove', userMoved);
+          document.body.addEventListener('mouseup', userReleased);
+          document.body.addEventListener('touchend', userReleased);
+          document.body.addEventListener('touchcancel', userReleased);
+        }
       }
     }
   }
 
-  function userMoved(event: MouseEvent | TouchEvent) {
-    const targetEvent: MouseEvent | Touch = (event as TouchEvent)?.touches?.[0] ?? event;
-    deltaX = targetEvent.clientX - startX;
-    deltaY = targetEvent.clientY - startY;
-    const { target } = targetEvent;
+  function userMoved(event: MouseEvent | TouchEvent | KeyboardEvent) {
+    if (!preventDrag(event)) {
+      const targetEvent: MouseEvent | Touch = (event as TouchEvent)?.touches?.[0] ?? event;
+      deltaX = targetEvent.clientX - startX;
+      deltaY = targetEvent.clientY - startY;
+      const { target } = targetEvent;
 
-    if (!dragStarted) {
+      if (!dragStarted) {
+        originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target });
+        executeDragCallbackWhenDefined(onDragStart, event, originaldd as DragItem);
+        dragStarted = true;
+      }
+
       originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target });
-      executeDragCallbackWhenDefined(onDragStart, event, originaldd as DragItem);
-      dragStarted = true;
+      executeDragCallbackWhenDefined(onDrag, event, originaldd as DragItem);
     }
-
-    originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target });
-    executeDragCallbackWhenDefined(onDrag, event, originaldd as DragItem);
   }
 
   function userReleased(event: MouseEvent | TouchEvent) {
