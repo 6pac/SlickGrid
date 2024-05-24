@@ -16,6 +16,9 @@ export interface DraggableOption {
   /** when defined, will allow dragging from a specific element or its closest parent by using the .closest() query selector. */
   allowDragFromClosest?: string;
 
+  /** Defaults to `['ctrlKey', 'metaKey']`, list of keys that when pressed will prevent Draggable events from triggering (e.g. prevent onDrag when Ctrl key is pressed while dragging) */
+  preventDragFromKeys?: Array<'altKey' | 'ctrlKey' | 'metaKey' | 'shiftKey'>;
+
   /** drag initialized callback */
   onDragInit?: (e: DragEvent, dd: DragPosition) => boolean | void;
 

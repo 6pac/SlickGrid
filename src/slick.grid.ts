@@ -268,6 +268,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     forceSyncScrolling: false,
     addNewRowCssClass: 'new-row',
     preserveCopiedSelectionOnPaste: false,
+    preventDragFromKeys: ['ctrlKey', 'metaKey'],
     showCellSelection: true,
     viewportClass: undefined,
     minRowBuffer: 3,
@@ -935,6 +936,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           allowDragFrom: 'div.slick-cell',
           // the slick cell parent must always contain `.dnd` and/or `.cell-reorder` class to be identified as draggable
           allowDragFromClosest: 'div.slick-cell.dnd, div.slick-cell.cell-reorder',
+          preventDragFromKeys: this._options.preventDragFromKeys,
           onDragInit: this.handleDragInit.bind(this),
           onDragStart: this.handleDragStart.bind(this),
           onDrag: this.handleDrag.bind(this),

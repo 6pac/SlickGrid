@@ -254,6 +254,9 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   /** Do we want to preserve copied selection on paste? */
   preserveCopiedSelectionOnPaste?: boolean;
 
+  /** Defaults to `['ctrlKey', 'metaKey']`, list of keys that when pressed will prevent Draggable events from triggering (e.g. prevent onDrag when Ctrl key is pressed while dragging) */
+  preventDragFromKeys?: Array<'altKey' | 'ctrlKey' | 'metaKey' | 'shiftKey'>;
+
   /** Grid row height in pixels (only type the number). Row of cell values. */
   rowHeight?: number;
 
