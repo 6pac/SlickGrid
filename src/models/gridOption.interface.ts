@@ -251,6 +251,9 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   /** Extra pre-header panel height (on top of column header) */
   preHeaderPanelHeight?: number;
 
+  /** Defaults to "auto", extra pre-header panel (on top of column header) width, it could be a number (pixels) or a string ("100%" or "auto") */
+  preHeaderPanelWidth?: number | string;
+
   /** Do we want to preserve copied selection on paste? */
   preserveCopiedSelectionOnPaste?: boolean;
 
