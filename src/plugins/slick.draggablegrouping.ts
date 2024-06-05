@@ -234,7 +234,7 @@ export class SlickDraggableGrouping {
           finalReorderedColumns.push(reorderedColumns[getColumnIndex.call(grid, reorderedId)]);
         }
         setColumns.call(grid, finalReorderedColumns);
-        trigger.call(grid, grid.onColumnsReordered, { grid });
+        trigger.call(grid, grid.onColumnsReordered, { grid, impactedColumns: finalReorderedColumns });
         e.stopPropagation();
         setupColumnResize.call(grid);
       }
