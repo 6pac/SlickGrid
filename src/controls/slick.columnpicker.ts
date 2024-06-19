@@ -66,9 +66,13 @@ export class SlickColumnPicker {
 
   init(grid: SlickGrid) {
     Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
-    grid.onPreHeaderContextMenu.subscribe(this.handleHeaderContextMenu.bind(this));
-    grid.onHeaderContextMenu.subscribe(this.handleHeaderContextMenu.bind(this));
     grid.onColumnsReordered.subscribe(this.updateColumnOrder.bind(this));
+    grid.onHeaderContextMenu.subscribe(this.handleHeaderContextMenu.bind(this));
+    grid.onPreHeaderContextMenu.subscribe((e) => {
+      if (e.target?.classList.contains('slick-header-column')) {
+        this.handleHeaderContextMenu(e); // open picker only when preheader has column groups
+      }
+    });
 
     this._menuElm = document.createElement('div');
     this._menuElm.className = `slick-columnpicker ${this._gridUid}`;
