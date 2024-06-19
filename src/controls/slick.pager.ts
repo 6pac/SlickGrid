@@ -221,16 +221,16 @@ export class SlickGridPager {
 
     // add back disabled class to only necessary icons
     if (!state.canGotoFirst) {
-      this._container!.querySelector('.sgi-chevron-start')!.classList.add('sgi-state-disabled');
+      this._container!.querySelector('.sgi-chevron-start')?.classList.add('sgi-state-disabled');
     }
     if (!state.canGotoLast) {
-      this._container!.querySelector('.sgi-chevron-end')!.classList.add('sgi-state-disabled');
+      this._container!.querySelector('.sgi-chevron-end')?.classList.add('sgi-state-disabled');
     }
     if (!state.canGotoNext) {
-      this._container!.querySelector('.sgi-chevron-right')!.classList.add('sgi-state-disabled');
+      this._container!.querySelector('.sgi-chevron-right')?.classList.add('sgi-state-disabled');
     }
     if (!state.canGotoPrev) {
-      this._container!.querySelector('.sgi-chevron-left')!.classList.add('sgi-state-disabled');
+      this._container!.querySelector('.sgi-chevron-left')?.classList.add('sgi-state-disabled');
     }
 
     if (pagingInfo.pageSize === 0) {
