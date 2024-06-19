@@ -4,7 +4,7 @@ describe('Example - Web Component with PubSub Service instead of SlickEvent (ESM
   beforeEach(() => {
     // create a console.log spy for later use
     cy.window().then((win) => {
-      cy.spy(win.console, "log");
+      cy.spy(win.console, 'log');
     });
   });
 

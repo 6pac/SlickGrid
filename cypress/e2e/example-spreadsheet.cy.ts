@@ -22,7 +22,7 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
   });
 
   it('should click on cell B10 and ArrowUp 3 times and ArrowDown 1 time and expect cell selection B8-B10', () => {
-    cy.getCell(10, 2, '', { parentSelector: "#myGrid", rowHeight: cellHeight })
+    cy.getCell(10, 2, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
       .as('cell_B10')
       .click();
 
@@ -37,7 +37,7 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
   });
 
   it('should click on cell D10 then PageDown 2 times w/selection D10-D46 ', () => {
-    cy.getCell(10, 4, '', { parentSelector: "#myGrid", rowHeight: cellHeight })
+    cy.getCell(10, 4, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
       .as('cell_D10')
       .click();
 
@@ -49,7 +49,7 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
   });
 
   it('should click on cell D10 then PageDown 3 times then PageUp 1 time w/selection D10-D46', () => {
-    cy.getCell(10, 4, '', { parentSelector: "#myGrid", rowHeight: cellHeight })
+    cy.getCell(10, 4, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
       .as('cell_D10')
       .click();
 
@@ -61,7 +61,7 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
   });
 
   it('should click on cell E46 then Shift+End key with full row horizontal selection E46-CV46', () => {
-    cy.getCell(46, 5, '', { parentSelector: "#myGrid", rowHeight: cellHeight })
+    cy.getCell(46, 5, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
       .as('cell_E46')
       .click();
 
@@ -73,7 +73,7 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
   });
 
   it('should click on cell CP54 then Ctrl+Shift+End keys with selection E46-CV99', () => {
-    cy.getCell(54, 94, '', { parentSelector: "#myGrid", rowHeight: cellHeight })
+    cy.getCell(54, 94, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
       .as('cell_CP54')
       .click();
 
@@ -85,7 +85,7 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
   });
 
   it('should click on cell CP95 then Ctrl+Shift+Home keys with selection C0-CP95', () => {
-    cy.getCell(95, 98, '', { parentSelector: "#myGrid", rowHeight: cellHeight })
+    cy.getCell(95, 98, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
       .as('cell_CP95')
       .click();
 
@@ -97,7 +97,7 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
   });
 
   it('should click on cell CR5 then Ctrl+Home keys and expect to scroll back to cell A0 without any selection range', () => {
-    cy.getCell(5, 95, '', { parentSelector: "#myGrid", rowHeight: cellHeight })
+    cy.getCell(5, 95, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
       .as('cell_CR95')
       .click();
 

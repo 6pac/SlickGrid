@@ -26,9 +26,9 @@ describe('Example - Optimizing Updates', () => {
     cy.get('#myGrid')
       .find('.slick-row')
       .each(($child) => {
-          const message = $child.find('.cell-message').text();
-          const number = parseInt(message.substring("Log Entry ".length));
-          expect(number).to.be.lessThan(1000);
+        const message = $child.find('.cell-message').text();
+        const number = parseInt(message.substring('Log Entry '.length));
+        expect(number).to.be.lessThan(1000);
       });
 
     cy.get('.options-panel button')
@@ -38,9 +38,9 @@ describe('Example - Optimizing Updates', () => {
     cy.get('#myGrid')
       .find('.slick-row')
       .each(($child) => {
-          const message = $child.find('.cell-message').text();
-          const number = parseInt(message.substring("Log Entry ".length));
-          expect(number).to.be.greaterThan(90000);
+        const message = $child.find('.cell-message').text();
+        const number = parseInt(message.substring('Log Entry '.length));
+        expect(number).to.be.greaterThan(90000);
       });
   });
 
@@ -50,9 +50,9 @@ describe('Example - Optimizing Updates', () => {
     cy.get('#myGrid')
       .find('.slick-row')
       .each(($child) => {
-          const message = $child.find('.cell-message').text();
-          const number = parseInt(message.substring("Log Entry ".length));
-          expect(number).to.be.lessThan(1000);
+        const message = $child.find('.cell-message').text();
+        const number = parseInt(message.substring('Log Entry '.length));
+        expect(number).to.be.lessThan(1000);
       });
 
     cy.get('.options-panel button')
@@ -62,9 +62,9 @@ describe('Example - Optimizing Updates', () => {
     cy.get('#myGrid')
       .find('.slick-row')
       .each(($child) => {
-          const message = $child.find('.cell-message').text();
-          const number = parseInt(message.substring("Log Entry ".length));
-          expect(number).to.be.greaterThan(90000);
+        const message = $child.find('.cell-message').text();
+        const number = parseInt(message.substring('Log Entry '.length));
+        expect(number).to.be.greaterThan(90000);
       });
   });
 

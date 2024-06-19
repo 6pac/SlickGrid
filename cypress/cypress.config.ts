@@ -1,4 +1,4 @@
-import { defineConfig } from 'cypress'
+import { defineConfig } from 'cypress';
 
 import plugins from './plugins/index';
 
@@ -16,4 +16,4 @@ export default defineConfig({
     },
     baseUrl: 'http://localhost:8080',
   },
-})
+});

@@ -742,7 +742,6 @@ export class Utils {
     }
     if (i === length) {
       // @ts-ignore
-      // eslint-disable-next-line @typescript-eslint/no-this-alias
       target = this;
       i--;
     }
@@ -827,7 +826,7 @@ export class Utils {
     } else if (input instanceof HTMLElement) {
       return input[type];
     }
-    return String(input) ?? ''; // reaching this line means it's already a string (or number) so just return it as string
+    return String(input); // reaching this line means it's already a string (or number) so just return it as string
   }
 
   public static emptyElement<T extends Element = Element>(element?: T | null): T | undefined | null {
@@ -905,7 +904,7 @@ export class Utils {
     };
 
     const getFunctionParams = (func: AnyFunction): string[] => {
-      const STRIP_COMMENTS = /(\/\/.*$)|(\/\*[\s\S]*?\*\/)|(\s*=[^,\)]*(('(?:\\'|[^'\r\n])*')|("(?:\\"|[^"\r\n])*"))|(\s*=[^,\)]*))/mg;
+      const STRIP_COMMENTS = /(\/\/.*$)|(\/\*[\s\S]*?\*\/)|(\s*=[^,)]*(('(?:\\'|[^'\r\n])*')|("(?:\\"|[^"\r\n])*"))|(\s*=[^,)]*))/mg;
       const ARG_NAMES = /([^\s,]+)/g;
       const fnStr = func.toString().replace(STRIP_COMMENTS, '');
       return fnStr.slice(fnStr.indexOf('(') + 1, fnStr.indexOf(')')).match(ARG_NAMES) ?? [];
@@ -1174,9 +1173,7 @@ export const {
   RowSelectionMode, ValueFilterMode, WidthEvalMode
 } = SlickCore;
 
-/*  eslint-disable no-undef */
 // also add to global object when exist
 if (IIFE_ONLY && typeof global !== 'undefined' && window.Slick) {
   global.Slick = window.Slick;
 }
-/*  eslint-enable no-undef */

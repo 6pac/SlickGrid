@@ -4,7 +4,7 @@ describe('Example - Context Menu & Cell Menu', () => {
   beforeEach(() => {
     // create a console.log spy for later use
     cy.window().then((win) => {
-      cy.spy(win.console, "log");
+      cy.spy(win.console, 'log');
     });
   });
 

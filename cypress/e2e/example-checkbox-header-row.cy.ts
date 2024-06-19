@@ -6,7 +6,7 @@ describe('Example - Checkbox Header Row', () => {
   beforeEach(() => {
     // create a console.log spy for later use
     cy.window().then((win) => {
-      cy.spy(win.console, "log");
+      cy.spy(win.console, 'log');
     });
   });
 
@@ -88,9 +88,9 @@ describe('Example - Checkbox Header Row', () => {
       .click({ force: true });
 
     cy.get('#selectedRows')
-    .invoke('text').then((text => {
+      .invoke('text').then((text => {
         expect(text.trim()).to.eq('');
-    }));
+      }));
 
     cy.window().then((win) => {
       expect(win.console.log).to.have.callCount(2);
