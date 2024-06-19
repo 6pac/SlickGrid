@@ -19,7 +19,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  *  github.com/muthukumarse/Slickgrid
  *
  * NOTES:
- *     This plugin provides the Draggable Grouping feature
+ *     This plugin provides the Draggable Grouping feature which could be located in either the Top-Header or the Pre-Header
  * A plugin to add Draggable Grouping feature.
  *
  * USAGE:
@@ -90,7 +90,7 @@ export class SlickDraggableGrouping {
     this._gridUid = this._grid.getUID();
     this._gridColumns = this._grid.getColumns();
     this._dataView = this._grid.getData();
-    this._dropzoneElm = this._grid.getPreHeaderPanel();
+    this._dropzoneElm = this._grid.getTopHeaderPanel() || this._grid.getPreHeaderPanel();
     this._dropzoneElm.classList.add('slick-dropzone');
 
     const dropPlaceHolderText = this._options.dropPlaceHolderText || 'Drop a column header here to group by the column';
@@ -151,7 +151,7 @@ export class SlickDraggableGrouping {
    */
   getSetupColumnReorder(grid: SlickGrid, headers: any, _headerColumnWidthDiff: any, setColumns: (columns: Column[]) => void, setupColumnResize: () => void, _columns: Column[], getColumnIndex: (columnId: string) => number, _uid: string, trigger: (slickEvent: SlickEvent_, data?: any) => void) {
     this.destroySortableInstances();
-    const dropzoneElm = grid.getPreHeaderPanel();
+    const dropzoneElm = grid.getTopHeaderPanel() || grid.getPreHeaderPanel();
     const groupTogglerElm = dropzoneElm.querySelector<HTMLDivElement>('.slick-group-toggle-all');
 
     const sortableOptions = {
@@ -260,7 +260,7 @@ export class SlickDraggableGrouping {
     this.onGroupChanged.unsubscribe();
     this._handler.unsubscribeAll();
     this._bindingEventService.unbindAll();
-    Utils.emptyElement(document.querySelector(`.${this._gridUid} .slick-preheader-panel`));
+    Utils.emptyElement(document.querySelector(`.${this._gridUid} .slick-preheader-panel,.${this._gridUid} .slick-topheader-panel`));
   }
 
   protected destroySortableInstances() {
