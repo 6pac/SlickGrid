@@ -259,7 +259,8 @@
   filter: alpha(opacity = 70);
 }
 
-.slick-preheader-panel {
+.slick-preheader-panel,
+.slick-topheader-panel {
   .slick-header-column {
     border-style: solid;
     border-color: var(--alpine-preheader-border-color, $alpine-preheader-border-color);

@@ -1,25 +1,28 @@
 describe('Example - Draggable Grouping', { retries: 1 }, () => {
   // NOTE:  everywhere there's a * 2 is because we have a top+bottom (frozen rows) containers even after Unfreeze Columns/Rows
   const GRID_ROW_HEIGHT = 25;
+  const preHeaders = ['', 'Common Factor', 'Period', 'Analysis', ''];
   const fullTitles = ['#', 'Title', 'Duration', 'Start', 'Finish', 'Cost', 'Effort-Driven'];
   for (let i = 0; i < 30; i++) {
     fullTitles.push(`Mock${i}`);
   }
 
   it('should display Example title', () => {
-    cy.visit(`${Cypress.config('baseUrl')}/examples/example-draggable-grouping.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-draggable-header-grouping.html`);
     cy.get('h2').contains('Demonstrates');
     cy.get('h2 + ul > li').first().contains('Draggable Grouping feature');
   });
 
+  it('should have exact column (pre-header) grouping titles in grid', () => {
+    cy.get('#myGrid')
+      .find('.slick-preheader-panel .slick-header-columns')
+      .children()
+      .each(($child, index) => expect($child.text()).to.eq(preHeaders[index]));
+  });
+
   it('should have exact column titles in grid', () => {
     cy.get('#myGrid')
-      .find('.slick-header-columns')
-      .children()
-      .each(($child, index) => expect($child.text()).to.eq(fullTitles[index]));
-
-    cy.get('#myGrid')
-      .find('.slick-header-columns')
+      .find('.slick-header:not(.slick-preheader-panel) .slick-header-columns')
       .children()
       .each(($child, index) => expect($child.text()).to.eq(fullTitles[index]));
   });
@@ -101,8 +104,8 @@ describe('Example - Draggable Grouping', { retries: 1 }, () => {
       cy.get(`[style="top: ${GRID_ROW_HEIGHT * 2}px;"] > .slick-cell:nth(2)`).should('contain', '0');
     });
 
-    it('should use the preheader Toggle All button and expect all groups to now be collapsed', () => {
-      cy.get('.slick-preheader-panel .slick-group-toggle-all').click();
+    it('should use the topheader Toggle All button and expect all groups to now be collapsed', () => {
+      cy.get('.slick-topheader-panel .slick-group-toggle-all').click();
 
       cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(0) .slick-group-toggle.collapsed`).should('have.length', 1);
       cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(0) .slick-group-title`).should('contain', 'Effort-Driven:  False');
@@ -149,8 +152,8 @@ describe('Example - Draggable Grouping', { retries: 1 }, () => {
         .should('exist');
     });
 
-    it('should use the preheader Toggle All button and expect all groups to now be expanded', () => {
-      cy.get('.slick-preheader-panel .slick-group-toggle-all').click();
+    it('should use the topheader Toggle All button and expect all groups to now be expanded', () => {
+      cy.get('.slick-topheader-panel .slick-group-toggle-all').click();
 
       cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(0) .slick-group-toggle.expanded`).should('have.length', 1);
       cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(0) .slick-group-title`).should('contain', 'Effort-Driven:  False');
@@ -161,8 +164,8 @@ describe('Example - Draggable Grouping', { retries: 1 }, () => {
         .should('have.css', 'marginLeft').and('eq', `15px`);
     });
 
-    it('should use the preheader Toggle All button again and expect all groups to now be collapsed', () => {
-      cy.get('.slick-preheader-panel .slick-group-toggle-all').click();
+    it('should use the topheader Toggle All button again and expect all groups to now be collapsed', () => {
+      cy.get('.slick-topheader-panel .slick-group-toggle-all').click();
 
       cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(0) .slick-group-toggle.collapsed`).should('have.length', 1);
       cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(0) .slick-group-title`).should('contain', 'Effort-Driven:  False');
@@ -187,25 +190,29 @@ describe('Example - Draggable Grouping', { retries: 1 }, () => {
         .should('have.text', 'Drop a column header here to group by the column :)');
     });
 
-    it('should add 500 items and expect 500 of 500 items displayed', () => {
+    it('should add 500 items and expect last row to be Task 500', () => {
       cy.get('[data-test="add-500-rows-btn"]')
         .click();
 
-      cy.get('.slick-pager-status')
-        .contains('Showing all 500 rows');
+      cy.get('#myGrid')
+        .find('.slick-viewport-top.slick-viewport-left')
+        .scrollTo('bottom')
+        .wait(10);
+
+      cy.get(`#myGrid [style="top: ${GRID_ROW_HEIGHT * 499}px;"] > .slick-cell:nth(1)`).should('have.text', 'Task 499');
     });
-  });
 
-  describe('Pagination', () => {
-    it('should be able to destroy pager (pagination)', () => {
-      cy.get('.slick-pager')
-        .should('exist');
-
-      cy.get('[data-test="destroy-pager"]')
+    it('should add 50K items and expect last row to be Task 50,000', () => {
+      cy.get('[data-test="add-50k-rows-btn"]')
         .click();
 
-      cy.get('.slick-pager')
-        .should('not.exist');
+      cy.get('#myGrid')
+        .find('.slick-viewport-top.slick-viewport-left')
+        .scrollTo('bottom')
+        .wait(10);
+
+      // cy.get(`#myGrid [style="top: ${GRID_ROW_HEIGHT * 49999}px;"] > .slick-cell:nth(1)`).should('have.text', 'Task 49999');
+      cy.get(`#myGrid [style="top: 1.24998e+06px;"] > .slick-cell:nth(1)`).should('have.text', 'Task 49999');
     });
   });
 });

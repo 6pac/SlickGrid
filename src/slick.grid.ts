@@ -241,11 +241,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     showFooterRow: false,
     footerRowHeight: 25,
     createPreHeaderPanel: false,
+    createTopHeaderPanel: false,
     showPreHeaderPanel: false,
+    showTopHeaderPanel: false,
     preHeaderPanelHeight: 25,
     showTopPanel: false,
     topPanelHeight: 25,
     preHeaderPanelWidth: 'auto', // mostly useful for Draggable Grouping dropzone to take full width
+    topHeaderPanelHeight: 25,
+    topHeaderPanelWidth: 'auto', // mostly useful for Draggable Grouping dropzone to take full width
     formatterFactory: null,
     editorFactory: null,
     cellFlashingCssClass: 'flashing',
@@ -364,6 +368,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected _preHeaderPanelR!: HTMLDivElement;
   protected _preHeaderPanelScrollerR!: HTMLDivElement;
   protected _preHeaderPanelSpacerR!: HTMLDivElement;
+  protected _topHeaderPanel!: HTMLDivElement;
+  protected _topHeaderPanelScroller!: HTMLDivElement;
+  protected _topHeaderPanelSpacer!: HTMLDivElement;
   protected _topPanelScrollers!: HTMLDivElement[];
   protected _topPanels!: HTMLDivElement[];
   protected _viewport!: HTMLDivElement[];
@@ -681,6 +688,17 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     this._focusSink = Utils.createDomElement('div', { tabIndex: 0, style: { position: 'fixed', width: '0px', height: '0px', top: '0px', left: '0px', outline: '0px' } }, this._container);
 
+    if (this._options.createTopHeaderPanel) {
+      this._topHeaderPanelScroller = Utils.createDomElement('div', { className: 'slick-topheader-panel slick-state-default', style: { overflow: 'hidden', position: 'relative' } }, this._container);
+      this._topHeaderPanelScroller.appendChild(document.createElement('div'));
+      this._topHeaderPanel = Utils.createDomElement('div', null, this._topHeaderPanelScroller);
+      this._topHeaderPanelSpacer = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, this._topHeaderPanelScroller);
+
+      if (!this._options.showTopHeaderPanel) {
+        Utils.hide(this._topHeaderPanelScroller);
+      }
+    }
+
     // Containers used for scrolling frozen columns and rows
     this._paneHeaderL = Utils.createDomElement('div', { className: 'slick-pane slick-pane-header slick-pane-left', tabIndex: 0 }, this._container);
     this._paneHeaderR = Utils.createDomElement('div', { className: 'slick-pane slick-pane-header slick-pane-right', tabIndex: 0 }, this._container);
@@ -793,6 +811,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     // Default the active canvas to the top left
     this._activeCanvasNode = this._canvasTopL;
+
+    // top-header
+    if (this._topHeaderPanelSpacer) {
+      Utils.width(this._topHeaderPanelSpacer, this.getCanvasWidth() + this.scrollbarDimensions.width);
+    }
 
     // pre-header
     if (this._preHeaderPanelSpacer) {
@@ -913,6 +936,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         this._footerRowScroller.forEach((scroller) => {
           this._bindingEventService.bind(scroller, 'scroll', this.handleFooterRowScroll.bind(this) as EventListener);
         });
+      }
+
+      if (this._options.createTopHeaderPanel) {
+        this._bindingEventService.bind(this._topHeaderPanelScroller, 'scroll', this.handleTopHeaderPanelScroll.bind(this) as EventListener);
       }
 
       if (this._options.createPreHeaderPanel) {
@@ -1191,6 +1218,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const oldCanvasWidthR = this.canvasWidthR;
     this.canvasWidth = this.getCanvasWidth();
 
+    if (this._options.createTopHeaderPanel) {
+      Utils.width(this._topHeaderPanel, this._options.topHeaderPanelWidth ?? this.canvasWidth);
+    }
+
     const widthChanged = this.canvasWidth !== oldCanvasWidth || this.canvasWidthL !== oldCanvasWidthL || this.canvasWidthR !== oldCanvasWidthR;
 
     if (widthChanged || this.hasFrozenColumns() || this.hasFrozenRows) {
@@ -1456,6 +1487,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   /** Get the Pre-Header Panel Right DOM node element */
   getPreHeaderPanelRight() {
     return this._preHeaderPanelR;
+  }
+
+  /** Get the Top-Header Panel DOM node element */
+  getTopHeaderPanel() {
+    return this._topHeaderPanel;
   }
 
   /**
@@ -2378,6 +2414,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       `.${this.uid} .slick-header-column { left: 1000px; }`,
       `.${this.uid} .slick-top-panel { height: ${this._options.topPanelHeight}px; }`,
       `.${this.uid} .slick-preheader-panel { height: ${this._options.preHeaderPanelHeight}px; }`,
+      `.${this.uid} .slick-topheader-panel { height: ${this._options.topHeaderPanelHeight}px; }`,
       `.${this.uid} .slick-headerrow-columns { height: ${this._options.headerRowHeight}px; }`,
       `.${this.uid} .slick-footerrow-columns { height: ${this._options.footerRowHeight}px; }`,
       `.${this.uid} .slick-cell { height: ${rowHeight}px; }`,
@@ -2544,6 +2581,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     if (this._preHeaderPanelScroller) {
       this._bindingEventService.unbindByEventName(this._preHeaderPanelScroller, 'scroll');
+    }
+
+    if (this._topHeaderPanelScroller) {
+      this._bindingEventService.unbindByEventName(this._topHeaderPanelScroller, 'scroll');
     }
 
     this._bindingEventService.unbindByEventName(this._focusSink, 'keydown');
@@ -3701,7 +3742,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return !Array.isArray(this.data);
   }
 
-  protected togglePanelVisibility(option: 'showTopPanel' | 'showHeaderRow' | 'showColumnHeader' | 'showFooterRow' | 'showPreHeaderPanel', container: HTMLElement | HTMLElement[], visible?: boolean, animate?: boolean) {
+  protected togglePanelVisibility(option: 'showTopPanel' | 'showHeaderRow' | 'showColumnHeader' | 'showFooterRow' | 'showPreHeaderPanel' | 'showTopHeaderPanel', container: HTMLElement | HTMLElement[], visible?: boolean, animate?: boolean) {
     const animated = (animate === false) ? false : true;
 
     if (this._options[option] !== visible) {
@@ -3767,6 +3808,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   setPreHeaderPanelVisibility(visible?: boolean, animate?: boolean) {
     this.togglePanelVisibility('showPreHeaderPanel', [this._preHeaderPanelScroller, this._preHeaderPanelScrollerR], visible, animate);
+  }
+
+  /**
+   * Set the Top-Header Visibility
+   * @param {Boolean} [visible] - optionally set if top-header panel is visible or not
+   */
+  setTopHeaderPanelVisibility(visible?: boolean) {
+    this.togglePanelVisibility('showTopHeaderPanel', this._topHeaderPanelScroller, visible);
   }
 
   /** Get Grid Canvas Node DOM Element */
@@ -4266,6 +4315,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     } else {
       const columnNamesH = (this._options.showColumnHeader) ? Utils.toFloat(Utils.height(this._headerScroller[0]) as number) + this.getVBoxDelta(this._headerScroller[0]) : 0;
       const preHeaderH = (this._options.createPreHeaderPanel && this._options.showPreHeaderPanel) ? this._options.preHeaderPanelHeight! + this.getVBoxDelta(this._preHeaderPanelScroller) : 0;
+      const topHeaderH = (this._options.createTopHeaderPanel && this._options.showTopHeaderPanel) ? this._options.topHeaderPanelHeight! + this.getVBoxDelta(this._topHeaderPanelScroller) : 0;
 
       const style = getComputedStyle(this._container);
       this.viewportH = Utils.toFloat(style.height)
@@ -4275,7 +4325,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         - this.topPanelH
         - this.headerRowH
         - this.footerRowH
-        - preHeaderH;
+        - preHeaderH
+        - topHeaderH;
     }
 
     this.numVisibleRows = Math.ceil(this.viewportH / this._options.rowHeight!);
@@ -4330,7 +4381,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this._paneTopL.style.position = 'relative';
     }
 
-    Utils.setStyleSize(this._paneTopL, 'top', Utils.height(this._paneHeaderL) || (this._options.showHeaderRow ? this._options.headerRowHeight! : 0) + (this._options.showPreHeaderPanel ? this._options.preHeaderPanelHeight! : 0));
+    let topHeightOffset = Utils.height(this._paneHeaderL);
+    if (topHeightOffset) {
+      topHeightOffset += (this._options.showTopHeaderPanel ? this._options.topHeaderPanelHeight! : 0);
+    } else {
+      topHeightOffset = (this._options.showHeaderRow ? this._options.headerRowHeight! : 0) + (this._options.showPreHeaderPanel ? this._options.preHeaderPanelHeight! : 0);
+    }
+    Utils.setStyleSize(this._paneTopL, 'top', topHeightOffset || topHeightOffset);
     Utils.height(this._paneTopL, this.paneTopH);
 
     const paneBottomTop = this._paneTopL.offsetTop + this.paneTopH;
@@ -4340,7 +4397,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     if (this.hasFrozenColumns()) {
-      Utils.setStyleSize(this._paneTopR, 'top', Utils.height(this._paneHeaderL) as number);
+      let topHeightOffset = Utils.height(this._paneHeaderL);
+      if (topHeightOffset) {
+        topHeightOffset += (this._options.showTopHeaderPanel ? this._options.topHeaderPanelHeight! : 0);
+      }
+      Utils.setStyleSize(this._paneTopR, 'top', topHeightOffset as number);
       Utils.height(this._paneTopR, this.paneTopH);
       Utils.height(this._viewportTopR, this.viewportTopH);
 
@@ -4912,6 +4973,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.handleElementScroll(this._preHeaderPanelScroller);
   }
 
+  protected handleTopHeaderPanelScroll() {
+    this.handleElementScroll(this._topHeaderPanelScroller);
+  }
+
   protected handleElementScroll(element: HTMLElement) {
     const scrollLeft = element.scrollLeft;
     if (scrollLeft !== this._viewportScrollContainerX.scrollLeft) {
@@ -4961,6 +5026,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         } else {
           this._preHeaderPanelScroller.scrollLeft = this.scrollLeft;
         }
+      }
+      if (this._options.createTopHeaderPanel) {
+        this._topHeaderPanelScroller.scrollLeft = this.scrollLeft;
       }
 
       if (this.hasFrozenColumns()) {
