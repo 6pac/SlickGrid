@@ -542,6 +542,9 @@
 }
 
 .slick-header-menuitem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
   border: 1px solid transparent;
   list-style: none;
   margin: 0;
@@ -577,16 +580,17 @@
     }
   }
 
+  .slick-header-menucontent {
+    display: inline-block;
+    vertical-align: middle;
+    flex-grow: 1;
+    margin: var(--alpine-menu-content-margin, $alpine-menu-content-margin);
+    font-size: var(--alpine-font-size, $alpine-font-size);
+  }
+
   &:hover {
     border-color: var(--alpine-border-color, $alpine-border-color);
   }
-}
-
-.slick-header-menucontent {
-  display: inline-block;
-  vertical-align: middle;
-  margin: 5px;
-  font-size: var(--alpine-font-size, $alpine-font-size);
 }
 
 .slick-pane {
