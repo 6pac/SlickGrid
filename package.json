@@ -52,7 +52,7 @@
     "dev": "node ./scripts/dev-watch.mjs --open",
     "serve": "node ./scripts/dev-watch.mjs --serve",
     "serve:demo": "http-server ./ -p 8080 -a localhost -s",
-    "lint": "eslint src -c .eslintrc --ext .ts",
+    "lint": "eslint .",
     "minify": "node ./scripts/minify.js --start",
     "prebuild:prod": "rimraf dist && npm run lint",
     "build:prod": "node ./scripts/builds.mjs --prod",
@@ -70,7 +70,6 @@
   "devDependencies": {
     "@4tw/cypress-drag-drop": "^2.2.5",
     "@octokit/rest": "^20.1.1",
-    "@typescript-eslint/eslint-plugin": "^7.13.1",
     "@typescript-eslint/parser": "^7.13.1",
     "autoprefixer": "^10.4.19",
     "browser-sync": "^3.0.2",
@@ -83,9 +82,8 @@
     "cypress-real-events": "^1.13.0",
     "dotenv": "^16.4.5",
     "esbuild": "^0.21.5",
-    "eslint": "^8.57.0",
+    "eslint": "^9.5.0",
     "eslint-plugin-cypress": "^3.3.0",
-    "eslint-plugin-import": "^2.29.1",
     "eslint-plugin-n": "^17.9.0",
     "fs-extra": "^11.2.0",
     "git-url-parse": "^14.0.0",
@@ -104,6 +102,7 @@
     "servor": "^4.0.2",
     "strong-log-transformer": "^2.1.0",
     "typescript": "^5.4.5",
+    "typescript-eslint": "^7.13.1",
     "yargs": "^17.7.2"
   },
   "browserslist": [

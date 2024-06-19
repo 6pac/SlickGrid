@@ -117,7 +117,7 @@ describe('Example - Custom Tooltip', () => {
     cy.get('@percentage-cell').trigger('mouseover');
 
     cy.get('.slick-custom-tooltip').should('be.visible');
-    cy.get('.slick-custom-tooltip').contains(/\d+\%$/);
+    cy.get('.slick-custom-tooltip').contains(/\d+%$/);
 
     cy.get('@percentage-cell').trigger('mouseout');
   });

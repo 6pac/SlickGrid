@@ -4,7 +4,7 @@ describe('Example - Header Menu', () => {
   beforeEach(() => {
     // create a console.log spy for later use
     cy.window().then((win) => {
-      cy.spy(win.console, "log");
+      cy.spy(win.console, 'log');
     });
   });
 

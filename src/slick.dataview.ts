@@ -1069,7 +1069,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     return _retval;
   }
 
-  protected compileFilter(stopRunningIfCSPSafeIsActive: boolean = false): FilterFn<TData> {
+  protected compileFilter(stopRunningIfCSPSafeIsActive = false): FilterFn<TData> | null {
     if (stopRunningIfCSPSafeIsActive) {
       return null as any;
     }
@@ -1110,7 +1110,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     return fn;
   }
 
-  protected compileFilterWithCaching(stopRunningIfCSPSafeIsActive: boolean = false) {
+  protected compileFilterWithCaching(stopRunningIfCSPSafeIsActive = false) {
     if (stopRunningIfCSPSafeIsActive) {
       return null as any;
     }

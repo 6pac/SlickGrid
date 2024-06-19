@@ -68,9 +68,7 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
   }
 
   function editor(args: any[]) {
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
     // @ts-ignore
-    // eslint-disable-next-line @typescript-eslint/no-this-alias
     const context: any = this;
     let editors: Array<Editor & { args: EditorArguments }> = [];
 

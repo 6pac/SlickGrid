@@ -9,6 +9,7 @@
 *.esproj
 *.sln
 .vs*
+.eslintcache
 node_modules/*
 src/models/*.js
 src/plugins/*.js

@@ -9,7 +9,7 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
   const fullTitles = ['#', 'Title', 'Duration', '% Complete', 'Start', 'Finish', 'Cost', 'Effort Driven'];
 
   for (let i = 0; i < 30; i++) {
-    fullTitles.push("Mock" + i);
+    fullTitles.push('Mock' + i);
   }
 
   it('should load Example', () => {
@@ -28,7 +28,7 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
   });
 
   it('should select border shown in cell selection model, and hidden in row selection model when dragging', { scrollBehavior: false }, function () {
-    cy.getNthCell(0, 1, '', { parentSelector: "#myGrid", rowHeight: cellHeight })
+    cy.getNthCell(0, 1, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
       .as('cell1')
       .dragStart();
 
@@ -39,7 +39,7 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
     cy.get('#myGrid .slick-range-decorator').should('not.be.exist');
     cy.get('#myGrid .slick-cell.selected').should('have.length', 6);
 
-    cy.getNthCell(0, 1, '', { parentSelector: "#myGrid2", rowHeight: cellHeight })
+    cy.getNthCell(0, 1, '', { parentSelector: '#myGrid2', rowHeight: cellHeight })
       .as('cell2')
       .dragStart();
     cy.get('#myGrid2 .slick-range-decorator').should('be.exist').and('have.css', 'border-style').and('equal', 'none');
@@ -49,12 +49,12 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
     cy.get('#myGrid2 .slick-range-decorator').should('not.be.exist');
     cy.get('#myGrid2 .slick-row:nth-child(-n+6)')
       .children(':not(.cell-unselectable)')
-      .each(($child) => expect($child.attr("class")).to.include('selected'));
+      .each(($child) => expect($child.attr('class')).to.include('selected'));
   });
 
   function testScroll() {
-    return getScrollDistanceWhenDragOutsideGrid("#myGrid", 'topLeft', 'right', 0, 1).then(cellScrollDistance => {
-      return getScrollDistanceWhenDragOutsideGrid("#myGrid2", 'topLeft', 'bottom', 0, 1).then(rowScrollDistance => {
+    return getScrollDistanceWhenDragOutsideGrid('#myGrid', 'topLeft', 'right', 0, 1).then(cellScrollDistance => {
+      return getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'topLeft', 'bottom', 0, 1).then(rowScrollDistance => {
         return cy.wrap({
           cell: {
             scrollBefore: cellScrollDistance.scrollLeftBefore,
@@ -110,8 +110,8 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
   }
 
   function testInterval(px) {
-    return getIntervalUntilRow16Displayed("#myGrid", px).then(intervalCell => {
-      return getIntervalUntilRow16Displayed("#myGrid2", px).then(intervalRow => {
+    return getIntervalUntilRow16Displayed('#myGrid', px).then(intervalCell => {
+      return getIntervalUntilRow16Displayed('#myGrid2', px).then(intervalRow => {
         return cy.wrap({
           cell: intervalCell,
           row: intervalRow

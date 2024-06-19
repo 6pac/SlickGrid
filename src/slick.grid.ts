@@ -6387,7 +6387,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return lastFocusableCell;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected gotoRight(row: number, cell: number, _posX?: number) {
     if (cell >= this.columns.length) {
       return null;
@@ -6408,7 +6407,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return null;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected gotoLeft(row: number, cell: number, _posX?: number) {
     if (cell <= 0) {
       return null;
@@ -6557,7 +6555,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return pos;
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected gotoRowStart(row: number, _cell: number, _posX?: number) {
     const newCell = this.findFirstFocusableCell(row);
     if (newCell === null) { return null; }
@@ -6569,7 +6566,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     };
   }
 
-  // eslint-disable-next-line @typescript-eslint/no-unused-vars
   protected gotoRowEnd(row: number, _cell: number, _posX?: number) {
     const newCell = this.findLastFocusableCell(row);
     if (newCell === null) { return null; }
