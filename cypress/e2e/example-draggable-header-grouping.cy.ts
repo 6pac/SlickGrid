@@ -214,5 +214,42 @@ describe('Example - Draggable Grouping', { retries: 1 }, () => {
       // cy.get(`#myGrid [style="top: ${GRID_ROW_HEIGHT * 49999}px;"] > .slick-cell:nth(1)`).should('have.text', 'Task 49999');
       cy.get(`#myGrid [style="top: 1.24998e+06px;"] > .slick-cell:nth(1)`).should('have.text', 'Task 49999');
     });
+
+    it('should be able to call column picker from the pre-header', () => {
+      const preHeadersWithoutId = ['Common Factor', 'Period', 'Analysis', ''];
+      const titlesWithoutId = ['Title', 'Duration', 'Start', 'Finish', 'Cost', 'Effort-Driven'];
+
+      cy.get('#myGrid')
+        .find('.slick-preheader-panel .slick-header-column:nth(1)')
+        .trigger('mouseover')
+        .trigger('contextmenu')
+        .invoke('show');
+
+      cy.get('.slick-columnpicker')
+        .find('.slick-columnpicker-list')
+        .children()
+        .each(($child, index) => {
+          if (index <= 5) {
+            expect($child.text()).to.eq(fullTitles[index]);
+          }
+        });
+
+      cy.get('.slick-columnpicker')
+        .find('.slick-columnpicker-list')
+        .children('li:nth-child(1)')
+        .children('label')
+        .should('contain', '#')
+        .click();
+
+      cy.get('#myGrid')
+        .find('.slick-preheader-panel .slick-header-columns')
+        .children()
+        .each(($child, index) => expect($child.text()).to.eq(preHeadersWithoutId[index]));
+
+      cy.get('#myGrid')
+        .find('.slick-header:not(.slick-preheader-panel) .slick-header-columns')
+        .children()
+        .each(($child, index) => expect($child.text()).to.eq(titlesWithoutId[index]));
+    });
   });
 });

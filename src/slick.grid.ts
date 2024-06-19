@@ -24,7 +24,9 @@ import type {
   GridOption as BaseGridOption,
   InteractionBase,
   ItemMetadata,
+  MenuCommandItemCallbackArgs,
   MultiColumnSort,
+  OnActivateChangedOptionsEventArgs,
   OnActiveCellChangedEventArgs,
   OnAddNewRowEventArgs,
   OnAutosizeColumnsEventArgs,
@@ -39,6 +41,7 @@ import type {
   OnBeforeSetColumnsEventArgs,
   OnCellChangeEventArgs,
   OnCellCssStylesChangedEventArgs,
+  OnClickEventArgs,
   OnColumnsDragEventArgs,
   OnColumnsReorderedEventArgs,
   OnColumnsResizedEventArgs,
@@ -54,20 +57,19 @@ import type {
   OnHeaderMouseEventArgs,
   OnHeaderRowCellRenderedEventArgs,
   OnKeyDownEventArgs,
-  OnValidationErrorEventArgs,
+  OnPreHeaderContextMenuEventArgs,
+  OnPreHeaderClickEventArgs,
   OnRenderedEventArgs,
   OnSelectedRowsChangedEventArgs,
   OnSetOptionsEventArgs,
-  OnActivateChangedOptionsEventArgs,
   OnScrollEventArgs,
+  OnValidationErrorEventArgs,
   PagingInfo,
   RowInfo,
   SelectionModel,
   SingleColumnSort,
   SlickGridModel,
   SlickPlugin,
-  MenuCommandItemCallbackArgs,
-  OnClickEventArgs,
 } from './models/index';
 import {
   type BasePubSub,
@@ -183,6 +185,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   onHeaderRowCellRendered: SlickEvent_<OnHeaderRowCellRenderedEventArgs>;
   onHeaderRowMouseEnter: SlickEvent_<OnHeaderMouseEventArgs>;
   onHeaderRowMouseLeave: SlickEvent_<OnHeaderMouseEventArgs>;
+  onPreHeaderContextMenu: SlickEvent_<OnPreHeaderContextMenuEventArgs>;
+  onPreHeaderClick: SlickEvent_<OnPreHeaderClickEventArgs>;
   onKeyDown: SlickEvent_<OnKeyDownEventArgs>;
   onMouseEnter: SlickEvent_<OnHeaderMouseEventArgs>;
   onMouseLeave: SlickEvent_<OnHeaderMouseEventArgs>;
@@ -577,6 +581,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.onHeaderRowCellRendered = new SlickEvent<OnHeaderRowCellRenderedEventArgs>('onHeaderRowCellRendered', externalPubSub);
     this.onHeaderRowMouseEnter = new SlickEvent<OnHeaderMouseEventArgs>('onHeaderRowMouseEnter', externalPubSub);
     this.onHeaderRowMouseLeave = new SlickEvent<OnHeaderMouseEventArgs>('onHeaderRowMouseLeave', externalPubSub);
+    this.onPreHeaderClick = new SlickEvent<OnPreHeaderClickEventArgs>('onPreHeaderClick', externalPubSub);
+    this.onPreHeaderContextMenu = new SlickEvent<OnPreHeaderContextMenuEventArgs>('onPreHeaderContextMenu', externalPubSub);
     this.onKeyDown = new SlickEvent<OnKeyDownEventArgs>('onKeyDown', externalPubSub);
     this.onMouseEnter = new SlickEvent<OnHeaderMouseEventArgs>('onMouseEnter', externalPubSub);
     this.onMouseLeave = new SlickEvent<OnHeaderMouseEventArgs>('onMouseLeave', externalPubSub);
@@ -944,6 +950,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       if (this._options.createPreHeaderPanel) {
         this._bindingEventService.bind(this._preHeaderPanelScroller, 'scroll', this.handlePreHeaderPanelScroll.bind(this) as EventListener);
+        this._bindingEventService.bind(this._preHeaderPanelScroller, 'contextmenu', this.handlePreHeaderContextMenu.bind(this) as EventListener);
+        this._bindingEventService.bind(this._preHeaderPanelScrollerR, 'contextmenu', this.handlePreHeaderContextMenu.bind(this) as EventListener);
+        this._bindingEventService.bind(this._preHeaderPanelScroller, 'click', this.handlePreHeaderClick.bind(this) as EventListener);
+        this._bindingEventService.bind(this._preHeaderPanelScrollerR, 'click', this.handlePreHeaderClick.bind(this) as EventListener);
       }
 
       this._bindingEventService.bind(this._focusSink, 'keydown', this.handleKeyDown.bind(this) as EventListener);
@@ -5608,6 +5618,22 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const column = header && Utils.storage.get(header, 'column');
     if (column) {
       this.trigger(this.onHeaderClick, { column }, e);
+    }
+  }
+
+  protected handlePreHeaderContextMenu(e: MouseEvent & { target: HTMLElement; }) {
+    const header = e.target.closest('.slick-header-column');
+    this.trigger(this.onPreHeaderContextMenu, { node: header }, e);
+  }
+
+  protected handlePreHeaderClick(e: MouseEvent & { target: HTMLElement; }) {
+    if (this.columnResizeDragging) {
+      return;
+    }
+
+    const header = e.target.closest('.slick-header-column');
+    if (header) {
+      this.trigger(this.onPreHeaderClick, { node: header }, e);
     }
   }
 

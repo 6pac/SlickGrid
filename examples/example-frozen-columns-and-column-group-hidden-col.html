@@ -64,7 +64,7 @@
     // when it's a frozen grid, we need to render both side (left/right)
     if (options.frozenColumn >=0) {
       // Add column groups to left panel
-      var preHeaderPanelElm = grid.getPreHeaderPanelLeft();
+      let preHeaderPanelElm = grid.getPreHeaderPanelLeft();
       renderHeaderGroups(preHeaderPanelElm, 0, options.frozenColumn + 1, columns.length);
 
       // Add column groups to right panel
@@ -72,7 +72,7 @@
       renderHeaderGroups(preHeaderPanelElm, options.frozenColumn + 1, columns.length);
     } else {
       // when it's a regular grid (without frozen rows), after clearning frozen columns, we re-render everything on the left
-      var preHeaderPanelElm = grid.getPreHeaderPanelLeft();
+      let preHeaderPanelElm = grid.getPreHeaderPanelLeft();
       renderHeaderGroups(preHeaderPanelElm, 0, columns.length);
     }
 
@@ -83,25 +83,28 @@
       preHeaderPanel.style.width = `${grid.getHeadersWidth()}px`;
       preHeaderPanel.parentElement.classList.add("slick-header");
 
-      var headerColumnWidthDiff = grid.getHeaderColumnWidthDiff();
-      var m, header, lastColumnGroup = '', widthTotal = 0;
+      let headerColumnWidthDiff = grid.getHeaderColumnWidthDiff();
+      let m, header, lastColumnGroup = '', widthTotal = 0;
+      const columns = grid.getColumns();
 
-      for (var i = start; i < end; i++) {
+      for (let i = start; i < end; i++) {
         m = columns[i];
         if (m.hidden) continue;
 
-        if (lastColumnGroup === m.columnGroup && i>start) {
-          widthTotal += m.width;
-          header.style.width = `${widthTotal - headerColumnWidthDiff}px`;
-        } else {
-            widthTotal = m.width;
-            header = document.createElement('div');
-            header.className = 'ui-state-default slick-header-column';
-            header.innerHTML = `<span class="slick-column-name">${(m.columnGroup || '')}</span>`;
-            header.style.width = `${m.width - headerColumnWidthDiff}px`;
-            preHeaderPanel.appendChild(header);
+        if (m) {
+          if (lastColumnGroup === m.columnGroup && i>start) {
+            widthTotal += m.width;
+            header.style.width = `${widthTotal - headerColumnWidthDiff}px`;
+          } else {
+              widthTotal = m.width;
+              header = document.createElement('div');
+              header.className = 'ui-state-default slick-header-column';
+              header.innerHTML = `<span class="slick-column-name">${(m.columnGroup || '')}</span>`;
+              header.style.width = `${m.width - headerColumnWidthDiff}px`;
+              preHeaderPanel.appendChild(header);
+          }
+          lastColumnGroup = m.columnGroup;
         }
-        lastColumnGroup = m.columnGroup;
       }
     }
   }
@@ -113,19 +116,19 @@
   }
 
   function pickerHeaderColumnValueExtractor(column) {
-    var headerGroup = column.columnGroup || '';
+    let headerGroup = column.columnGroup || '';
     if (headerGroup) {
       return headerGroup + ' - ' + column.name;
     }
     return column.name;
   }
 
-  var dataView;
-  var grid;
-  var data = [];
-  var columnpicker;
-  var gridMenuControl;
-  var options = {
+  let dataView;
+  let grid;
+  let data = [];
+  let columnpicker;
+  let gridMenuControl;
+  let options = {
     enableCellNavigation: true,
     enableColumnReorder: false,
     createPreHeaderPanel: true,
@@ -156,7 +159,7 @@
       ]
     },
   };
-  var columns = [
+  let columns = [
     {id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 40, resizable: false, selectable: false },
     {id: "title", name: "Title", field: "title", width: 120, minWidth: 120, cssClass: "cell-title", columnGroup:"Common Factor"},
     {id: "duration", name: "Duration", field: "duration", columnGroup:"Common Factor"},
@@ -167,8 +170,8 @@
   ];
 
   document.addEventListener("DOMContentLoaded", function() {
-    for (var i = 0; i < 50000; i++) {
-      var d = (data[i] = {});
+    for (let i = 0; i < 50000; i++) {
+      let d = (data[i] = {});
 
       d["id"] = "id_" + i;
       d["num"] = i;
@@ -200,6 +203,9 @@
     grid.onColumnsResized.subscribe(function (e, args) {
       CreateAddlHeaderRow();
     });
+    grid.onColumnsReordered.subscribe(function (e, args) {
+      CreateAddlHeaderRow();
+    });
 
     // subscribe to Grid Menu event(s)
     gridMenuControl.onCommand.subscribe(function(e, args) {
@@ -209,14 +215,14 @@
     });
 
   document.querySelector('#chkHideColumn1').addEventListener("change", function(e) {
-    var hideCol = document.querySelector('#chkHideColumn1').checked || false;
+    let hideCol = document.querySelector('#chkHideColumn1').checked || false;
     columns[2].hidden = hideCol;
     grid.updateColumns();
     CreateAddlHeaderRow();
  });
 
   document.querySelector('#chkHideColumn2').addEventListener("change", function(e) {
-    var hideCol = document.querySelector('#chkHideColumn2').checked || false;
+    let hideCol = document.querySelector('#chkHideColumn2').checked || false;
     columns[4].hidden = hideCol;
     grid.updateColumns();
     CreateAddlHeaderRow();
