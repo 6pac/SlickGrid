@@ -600,8 +600,10 @@ export class BindingEventService {
 
   /** Bind an event listener to any element */
   bind(element: Element | Window, eventName: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions, groupName = '') {
-    element.addEventListener(eventName, listener, options);
-    this._boundedEvents.push({ element, eventName, listener, groupName });
+    if (element) {
+      element.addEventListener(eventName, listener, options);
+      this._boundedEvents.push({ element, eventName, listener, groupName });
+    }
   }
 
   /** Unbind all will remove every every event handlers that were bounded earlier */

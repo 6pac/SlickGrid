@@ -150,34 +150,38 @@
 
 <script>
   function CreateAddlHeaderRow() {
-    var preHeaderPanelElm = grid.getPreHeaderPanel();
-    preHeaderPanelElm.innerHTML = '';
+    const preHeaderPanelElm = grid.getPreHeaderPanel();
+    preHeaderPanelElm.textContent = '';
     preHeaderPanelElm.className = "slick-header-columns";
     preHeaderPanelElm.style.left = '-1000px';
     preHeaderPanelElm.style.width = `${grid.getHeadersWidth()}px`;
-    preHeaderPanelElm.parentElement.classList.add("slick-header");
+    preHeaderPanelElm.parentElement?.classList.add("slick-header");
 
-    var headerColumnWidthDiff = grid.getHeaderColumnWidthDiff();
-    var m, headerElm, lastColumnGroup = '', widthTotal = 0;
+    const headerColumnWidthDiff = grid.getHeaderColumnWidthDiff();
+    let m, headerElm, lastColumnGroup = '', widthTotal = 0;
+    const columns = grid.getColumns();
 
     for (var i = 0; i < columns.length; i++) {
       m = columns[i];
-      if (lastColumnGroup === m.columnGroup && i>0) {
-        widthTotal += m.width;
-        headerElm.style.width = `${widthTotal - headerColumnWidthDiff}px`;
-      } else {
-          widthTotal = m.width;
-          headerElm = document.createElement('div');
-          headerElm.className = 'ui-state-default slick-header-column';
-          headerElm.style.width = `${(m.width || 0) - headerColumnWidthDiff}px`;
+      if (m) {
+        if (lastColumnGroup === m.columnGroup && i > 0) {
+          widthTotal += m.width || 0;
+          headerElm.style.width = `${widthTotal - headerColumnWidthDiff}px`;
+        } else {
+            widthTotal = m.width || 0;
+            headerElm = document.createElement('div');
+            headerElm.className = 'ui-state-default slick-header-column';
+            headerElm.style.width = `${(m.width || 0) - headerColumnWidthDiff}px`;
+            headerElm.dataset.group = m.columnGroup || '';
 
-          const spanElm = document.createElement('span');
-          spanElm.className='slick-column-name';
-          spanElm.textContent = m.columnGroup || '';
-          headerElm.appendChild(spanElm);
-          preHeaderPanelElm.appendChild(headerElm);
+            const spanElm = document.createElement('span');
+            spanElm.className = 'slick-column-name';
+            spanElm.textContent = m.columnGroup || '';
+            headerElm.appendChild(spanElm);
+            preHeaderPanelElm.appendChild(headerElm);
+        }
+        lastColumnGroup = m.columnGroup;
       }
-      lastColumnGroup = m.columnGroup;
     }
   }
 
@@ -192,7 +196,7 @@ var columns = [
   },
   {
     id: "title", name: "Title", field: "title", width: 90, minWidth: 50, cssClass: "cell-title", sortable: true, editor: Slick.Editors.Text,
-    columnGroup:"Common Factor", grouping: {
+    columnGroup: "Common Factor", grouping: {
       getter: "title",
       formatter: function (g) {
         return "Title:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
@@ -206,7 +210,7 @@ var columns = [
   },
   {
     id: "duration", name: "Duration", field: "duration", width: 110, sortable: true, groupTotalsFormatter: sumTotalsFormatter,
-    columnGroup:"Common Factor", grouping: {
+    columnGroup: "Common Factor", grouping: {
       getter: "duration",
       formatter: function (g) {
         return "Duration:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
@@ -221,7 +225,7 @@ var columns = [
   },
   {
     id: "start", name: "Start", field: "start", minWidth: 60, sortable: true,
-    columnGroup:"Period", grouping: {
+    columnGroup: "Period", grouping: {
       getter: "start",
       formatter: function (g) {
         return "Start:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
@@ -235,7 +239,7 @@ var columns = [
   },
   {
     id: "finish", name: "Finish", field: "finish", minWidth: 60, sortable: true,
-    columnGroup:"Period", grouping: {
+    columnGroup: "Period", grouping: {
       getter: "finish",
       formatter: function (g) {
         return "Finish:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
@@ -249,7 +253,7 @@ var columns = [
   },
   {
     id: "cost", name: "Cost", field: "cost", width: 90, sortable: true, groupTotalsFormatter: sumTotalsFormatter,
-    columnGroup:"Analysis", grouping: {
+    columnGroup: "Analysis", grouping: {
       getter: "cost",
       formatter: function (g) {
         return "Cost:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
@@ -263,7 +267,7 @@ var columns = [
   },
   {
     id: "effortDriven", name: "Effort-Driven",  width: 125, minWidth: 20, maxWidth: 125, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark, sortable: true,
-    columnGroup:"Analysis", grouping: {
+    columnGroup: "Analysis", grouping: {
       getter: "effortDriven",
       formatter :function (g) {
         return "Effort-Driven:  " + (g.value ? "True" : "False") + "  <span style='color:green'>(" + g.count + " items)</span>";
@@ -467,6 +471,9 @@ document.addEventListener("DOMContentLoaded", function() {
   grid.registerPlugin(draggableGrouping);
   grid.setSelectionModel(new Slick.CellSelectionModel());
   columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
+  columnpicker.onColumnsChanged.subscribe(function () {
+    CreateAddlHeaderRow();
+  });
 
   grid.onSort.subscribe(function (e, args) {
     sortdir = args.sortAsc ? 1 : -1;
@@ -534,6 +541,9 @@ document.addEventListener("DOMContentLoaded", function() {
   dataView.endUpdate();
 
   grid.onColumnsResized.subscribe(function (e, args) {
+    CreateAddlHeaderRow();
+  });
+  grid.onColumnsReordered.subscribe(function (e, args) {
     CreateAddlHeaderRow();
   });
 

@@ -49,41 +49,45 @@
 
 <script>
   function CreateAddlHeaderRow() {
-    var preHeaderPanelElm = grid.getPreHeaderPanel();
+    let preHeaderPanelElm = grid.getPreHeaderPanel();
     preHeaderPanelElm.innerHTML = '';
     preHeaderPanelElm.className = "slick-header-columns";
     preHeaderPanelElm.style.left = '-1000px';
     preHeaderPanelElm.style.width = `${grid.getHeadersWidth()}px`;
     preHeaderPanelElm.parentElement.classList.add("slick-header");
 
-    var headerColumnWidthDiff = grid.getHeaderColumnWidthDiff();
-    var m, headerElm, lastColumnGroup = '', widthTotal = 0;
+    let headerColumnWidthDiff = grid.getHeaderColumnWidthDiff();
+    let m, headerElm, lastColumnGroup = '', widthTotal = 0;
+    const columns = grid.getColumns();
 
-    for (var i = 0; i < columns.length; i++) {
+    for (let i = 0; i < columns.length; i++) {
       m = columns[i];
-      if (lastColumnGroup === m.columnGroup && i>0) {
-        widthTotal += m.width;
-        headerElm.style.width = `${widthTotal - headerColumnWidthDiff}px`;
-      } else {
-          widthTotal = m.width;
-          headerElm = document.createElement('div');
-          headerElm.className = 'ui-state-default slick-header-column';
-          headerElm.style.width = `${(m.width || 0) - headerColumnWidthDiff}px`;
+      if (m) {
+        if (lastColumnGroup === m.columnGroup && i>0) {
+          widthTotal += m.width;
+          headerElm.style.width = `${widthTotal - headerColumnWidthDiff}px`;
+        } else {
+            widthTotal = m.width;
+            headerElm = document.createElement('div');
+            headerElm.className = 'ui-state-default slick-header-column';
+            headerElm.style.width = `${(m.width || 0) - headerColumnWidthDiff}px`;
+            headerElm.dataset.group = m.columnGroup || '';
 
-          const spanElm = document.createElement('span');
-          spanElm.className='slick-column-name';
-          spanElm.textContent = m.columnGroup || '';
-          headerElm.appendChild(spanElm);
-          preHeaderPanelElm.appendChild(headerElm);
+            const spanElm = document.createElement('span');
+            spanElm.className = 'slick-column-name';
+            spanElm.textContent = m.columnGroup || '';
+            headerElm.appendChild(spanElm);
+            preHeaderPanelElm.appendChild(headerElm);
+        }
+        lastColumnGroup = m.columnGroup;
       }
-      lastColumnGroup = m.columnGroup;
     }
   }
 
-  var dataView;
-  var grid;
-  var data = [];
-  var options = {
+  let dataView;
+  let grid;
+  let data = [];
+  let options = {
     enableCellNavigation: true,
     enableColumnReorder: false,
     createPreHeaderPanel: true,
@@ -91,18 +95,18 @@
     preHeaderPanelHeight: 23,
     explicitInitialization: true
   };
-  var columns = [
+  let columns = [
     {id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 40, resizable: false, selectable: false },
-    {id: "title", name: "Title", field: "title", width: 120, minWidth: 120, cssClass: "cell-title", columnGroup:"Common Factor"},
-    {id: "duration", name: "Duration", field: "duration", columnGroup:"Common Factor"},
-    {id: "start", name: "Start", field: "start", minWidth: 60, columnGroup:"Period"},
-    {id: "finish", name: "Finish", field: "finish", minWidth: 60, columnGroup:"Period"},
-    {id: "%", defaultSortAsc: false, name: "% Complete", field: "percentComplete", width: 95, resizable: false, columnGroup:"Analysis"},
-    {id: "effort-driven", name: "Effort Driven", width: 90, minWidth: 20, maxWidth: 90, field: "effortDriven", columnGroup:"Analysis"}
+    {id: "title", name: "Title", field: "title", width: 120, minWidth: 120, cssClass: "cell-title", columnGroup: "Common Factor"},
+    {id: "duration", name: "Duration", field: "duration", columnGroup: "Common Factor"},
+    {id: "start", name: "Start", field: "start", minWidth: 60, columnGroup: "Period"},
+    {id: "finish", name: "Finish", field: "finish", minWidth: 60, columnGroup: "Period"},
+    {id: "%", defaultSortAsc: false, name: "% Complete", field: "percentComplete", width: 95, resizable: false, columnGroup: "Analysis"},
+    {id: "effort-driven", name: "Effort Driven", width: 90, minWidth: 20, maxWidth: 90, field: "effortDriven", columnGroup: "Analysis"}
   ];
 
-  for (var i = 0; i < 50000; i++) {
-    var d = (data[i] = {});
+  for (let i = 0; i < 50000; i++) {
+    let d = (data[i] = {});
 
     d["id"] = "id_" + i;
     d["num"] = i;
@@ -130,6 +134,10 @@
   grid.init();
 
   grid.onColumnsResized.subscribe(function (e, args) {
+    CreateAddlHeaderRow();
+  });
+
+  grid.onColumnsReordered.subscribe(function (e, args) {
     CreateAddlHeaderRow();
   });
 
