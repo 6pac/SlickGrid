@@ -87,6 +87,7 @@
     "fs-extra": "^11.2.0",
     "git-url-parse": "^14.0.0",
     "glob": "^10.4.2",
+    "globals": "^15.6.0",
     "http-server": "^14.1.1",
     "inquirer": "^9.2.23",
     "load-json-file": "^7.0.1",
