@@ -69,7 +69,7 @@ export class SlickColumnPicker {
     grid.onColumnsReordered.subscribe(this.updateColumnOrder.bind(this));
     grid.onHeaderContextMenu.subscribe(this.handleHeaderContextMenu.bind(this));
     grid.onPreHeaderContextMenu.subscribe((e) => {
-      if (e.target?.classList.contains('slick-header-column')) {
+      if (['slick-column-name', 'slick-header-column'].some(className => e.target?.classList.contains(className))) {
         this.handleHeaderContextMenu(e); // open picker only when preheader has column groups
       }
     });
