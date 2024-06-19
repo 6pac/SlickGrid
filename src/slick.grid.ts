@@ -681,7 +681,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     };
 
     Utils.emptyElement(this._container);
-    this._container.style.overflow = 'hidden';
     this._container.style.outline = String(0);
     this._container.classList.add(this.uid);
     this._container.classList.add('ui-widget');
