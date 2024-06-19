@@ -457,7 +457,7 @@ var Slick = (() => {
     }
     /** Bind an event listener to any element */
     bind(element, eventName, listener, options, groupName = "") {
-      element.addEventListener(eventName, listener, options), this._boundedEvents.push({ element, eventName, listener, groupName });
+      element && (element.addEventListener(eventName, listener, options), this._boundedEvents.push({ element, eventName, listener, groupName }));
     }
     /** Unbind all will remove every every event handlers that were bounded earlier */
     unbind(element, eventName, listener) {
@@ -542,8 +542,7 @@ var Slick = (() => {
      * @returns {String}
      */
     static getHtmlStringOutput(input, type = "innerHTML") {
-      var _a;
-      return input instanceof DocumentFragment ? [].map.call(input.childNodes, (x) => x[type]).join("") || input.textContent || "" : input instanceof HTMLElement ? input[type] : (_a = String(input)) != null ? _a : "";
+      return input instanceof DocumentFragment ? [].map.call(input.childNodes, (x) => x[type]).join("") || input.textContent || "" : input instanceof HTMLElement ? input[type] : String(input);
     }
     static emptyElement(element) {
       for (; element != null && element.firstChild; )
@@ -601,7 +600,7 @@ var Slick = (() => {
       return {
         params: ((func) => {
           var _a;
-          let STRIP_COMMENTS = /(\/\/.*$)|(\/\*[\s\S]*?\*\/)|(\s*=[^,\)]*(('(?:\\'|[^'\r\n])*')|("(?:\\"|[^"\r\n])*"))|(\s*=[^,\)]*))/mg, ARG_NAMES = /([^\s,]+)/g, fnStr = func.toString().replace(STRIP_COMMENTS, "");
+          let STRIP_COMMENTS = /(\/\/.*$)|(\/\*[\s\S]*?\*\/)|(\s*=[^,)]*(('(?:\\'|[^'\r\n])*')|("(?:\\"|[^"\r\n])*"))|(\s*=[^,)]*))/mg, ARG_NAMES = /([^\s,]+)/g, fnStr = func.toString().replace(STRIP_COMMENTS, "");
           return (_a = fnStr.slice(fnStr.indexOf("(") + 1, fnStr.indexOf(")")).match(ARG_NAMES)) != null ? _a : [];
         })(fn),
         body: getFunctionBody(fn),

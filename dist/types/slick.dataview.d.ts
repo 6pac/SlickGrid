@@ -256,7 +256,7 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     protected flattenGroupedRows(groups: SlickGroup_[], level?: number): any[];
     protected compileAccumulatorLoopCSPSafe(aggregator: Aggregator): (items: any[]) => void;
     protected compileFilterCSPSafe(items: TData[], args: any): TData[];
-    protected compileFilter(stopRunningIfCSPSafeIsActive?: boolean): FilterFn<TData>;
+    protected compileFilter(stopRunningIfCSPSafeIsActive?: boolean): FilterFn<TData> | null;
     protected compileFilterWithCaching(stopRunningIfCSPSafeIsActive?: boolean): any;
     protected compileFilterWithCachingCSPSafe(items: TData[], args: any, filterCache: any[]): TData[];
     /**

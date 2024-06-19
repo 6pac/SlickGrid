@@ -122,6 +122,12 @@ export interface OnHeaderRowCellRenderedEventArgs extends SlickGridArg {
     node: HTMLDivElement;
     column: Column;
 }
+export interface OnPreHeaderClickEventArgs extends SlickGridArg {
+    node: HTMLElement;
+}
+export interface OnPreHeaderContextMenuEventArgs extends SlickGridArg {
+    node: HTMLElement;
+}
 export interface OnKeyDownEventArgs extends SlickGridArg {
     row: number;
     cell: number;

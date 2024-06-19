@@ -61,7 +61,7 @@
       this._gridMenuOptions = Utils.extend({}, this._gridMenuOptions, newOptions);
     }
     createGridMenu() {
-      var _a, _b, _c, _d, _e;
+      var _a, _b, _c, _d, _e, _f;
       let gridMenuWidth = ((_a = this._gridMenuOptions) == null ? void 0 : _a.menuWidth) || this._defaults.menuWidth;
       if (this._gridOptions && this._gridOptions.hasOwnProperty("frozenColumn") && this._gridOptions.frozenColumn >= 0 ? this._headerElm = document.querySelector(`.${this._gridUid} .slick-header-right`) : this._headerElm = document.querySelector(`.${this._gridUid} .slick-header-left`), this._headerElm.style.width = `calc(100% - ${gridMenuWidth}px)`, (Utils.isDefined((_b = this._gridMenuOptions) == null ? void 0 : _b.resizeOnShowHeaderRow) ? this._gridMenuOptions.resizeOnShowHeaderRow : this._defaults.resizeOnShowHeaderRow) && this._gridOptions.showHeaderRow) {
         let headerRow = document.querySelector(`.${this._gridUid}.slick-headerrow`);
@@ -74,7 +74,8 @@
           let iconImageElm = document.createElement("img");
           iconImageElm.src = (_e = this._gridMenuOptions) != null && _e.iconImage ? this._gridMenuOptions.iconImage : "../images/drag-handle.png", this._buttonElm.appendChild(iconImageElm);
         }
-        this._headerElm.parentElement.insertBefore(this._buttonElm, this._headerElm.parentElement.firstChild), this._bindingEventService.bind(this._buttonElm, "click", this.showGridMenu.bind(this));
+        let buttonContainerTarget = ((_f = this._gridMenuOptions) == null ? void 0 : _f.iconButtonContainer) === "preheader" ? "firstChild" : "lastChild";
+        this._headerElm.parentElement.insertBefore(this._buttonElm, this._headerElm.parentElement[buttonContainerTarget]), this._bindingEventService.bind(this._buttonElm, "click", this.showGridMenu.bind(this));
       }
       this._menuElm = this.createMenu(0), this.populateColumnPicker(), document.body.appendChild(this._menuElm), this._bindingEventService.bind(document.body, "mousedown", this.handleBodyMouseDown.bind(this)), this._bindingEventService.bind(document.body, "beforeunload", this.destroy.bind(this));
     }

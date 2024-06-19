@@ -1,5 +1,5 @@
 import type SortableInstance from 'sortablejs';
-import type { AutoSize, CellViewportRange, Column, ColumnSort, CssStyleHash, CustomDataView, DOMEvent, DragPosition, DragRowMove, Editor, EditorConstructor, EditController, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption as BaseGridOption, InteractionBase, MultiColumnSort, OnActiveCellChangedEventArgs, OnAddNewRowEventArgs, OnAutosizeColumnsEventArgs, OnBeforeUpdateColumnsEventArgs, OnBeforeAppendCellEventArgs, OnBeforeCellEditorDestroyEventArgs, OnBeforeColumnsResizeEventArgs, OnBeforeEditCellEventArgs, OnBeforeHeaderCellDestroyEventArgs, OnBeforeHeaderRowCellDestroyEventArgs, OnBeforeFooterRowCellDestroyEventArgs, OnBeforeSetColumnsEventArgs, OnCellChangeEventArgs, OnCellCssStylesChangedEventArgs, OnColumnsDragEventArgs, OnColumnsReorderedEventArgs, OnColumnsResizedEventArgs, OnColumnsResizeDblClickEventArgs, OnCompositeEditorChangeEventArgs, OnDblClickEventArgs, OnFooterContextMenuEventArgs, OnFooterRowCellRenderedEventArgs, OnHeaderCellRenderedEventArgs, OnFooterClickEventArgs, OnHeaderClickEventArgs, OnHeaderContextMenuEventArgs, OnHeaderMouseEventArgs, OnHeaderRowCellRenderedEventArgs, OnKeyDownEventArgs, OnValidationErrorEventArgs, OnRenderedEventArgs, OnSelectedRowsChangedEventArgs, OnSetOptionsEventArgs, OnActivateChangedOptionsEventArgs, OnScrollEventArgs, PagingInfo, RowInfo, SelectionModel, SingleColumnSort, SlickPlugin, MenuCommandItemCallbackArgs, OnClickEventArgs } from './models/index';
+import type { AutoSize, CellViewportRange, Column, ColumnSort, CssStyleHash, CustomDataView, DOMEvent, DragPosition, DragRowMove, Editor, EditorConstructor, EditController, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption as BaseGridOption, InteractionBase, MenuCommandItemCallbackArgs, MultiColumnSort, OnActivateChangedOptionsEventArgs, OnActiveCellChangedEventArgs, OnAddNewRowEventArgs, OnAutosizeColumnsEventArgs, OnBeforeUpdateColumnsEventArgs, OnBeforeAppendCellEventArgs, OnBeforeCellEditorDestroyEventArgs, OnBeforeColumnsResizeEventArgs, OnBeforeEditCellEventArgs, OnBeforeHeaderCellDestroyEventArgs, OnBeforeHeaderRowCellDestroyEventArgs, OnBeforeFooterRowCellDestroyEventArgs, OnBeforeSetColumnsEventArgs, OnCellChangeEventArgs, OnCellCssStylesChangedEventArgs, OnClickEventArgs, OnColumnsDragEventArgs, OnColumnsReorderedEventArgs, OnColumnsResizedEventArgs, OnColumnsResizeDblClickEventArgs, OnCompositeEditorChangeEventArgs, OnDblClickEventArgs, OnFooterContextMenuEventArgs, OnFooterRowCellRenderedEventArgs, OnHeaderCellRenderedEventArgs, OnFooterClickEventArgs, OnHeaderClickEventArgs, OnHeaderContextMenuEventArgs, OnHeaderMouseEventArgs, OnHeaderRowCellRenderedEventArgs, OnKeyDownEventArgs, OnPreHeaderContextMenuEventArgs, OnPreHeaderClickEventArgs, OnRenderedEventArgs, OnSelectedRowsChangedEventArgs, OnSetOptionsEventArgs, OnScrollEventArgs, OnValidationErrorEventArgs, PagingInfo, RowInfo, SelectionModel, SingleColumnSort, SlickPlugin } from './models/index';
 import { type BasePubSub, BindingEventService as BindingEventService_, type SlickEditorLock, SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_ } from './slick.core';
 /**
  * @license
@@ -10,7 +10,7 @@ import { type BasePubSub, BindingEventService as BindingEventService_, type Slic
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.9.2
+ * SlickGrid v5.10.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -76,6 +76,8 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     onHeaderRowCellRendered: SlickEvent_<OnHeaderRowCellRenderedEventArgs>;
     onHeaderRowMouseEnter: SlickEvent_<OnHeaderMouseEventArgs>;
     onHeaderRowMouseLeave: SlickEvent_<OnHeaderMouseEventArgs>;
+    onPreHeaderContextMenu: SlickEvent_<OnPreHeaderContextMenuEventArgs>;
+    onPreHeaderClick: SlickEvent_<OnPreHeaderClickEventArgs>;
     onKeyDown: SlickEvent_<OnKeyDownEventArgs>;
     onMouseEnter: SlickEvent_<OnHeaderMouseEventArgs>;
     onMouseLeave: SlickEvent_<OnHeaderMouseEventArgs>;
@@ -135,6 +137,9 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected _preHeaderPanelR: HTMLDivElement;
     protected _preHeaderPanelScrollerR: HTMLDivElement;
     protected _preHeaderPanelSpacerR: HTMLDivElement;
+    protected _topHeaderPanel: HTMLDivElement;
+    protected _topHeaderPanelScroller: HTMLDivElement;
+    protected _topHeaderPanelSpacer: HTMLDivElement;
     protected _topPanelScrollers: HTMLDivElement[];
     protected _topPanels: HTMLDivElement[];
     protected _viewport: HTMLDivElement[];
@@ -402,6 +407,8 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     getPreHeaderPanelLeft(): HTMLDivElement;
     /** Get the Pre-Header Panel Right DOM node element */
     getPreHeaderPanelRight(): HTMLDivElement;
+    /** Get the Top-Header Panel DOM node element */
+    getTopHeaderPanel(): HTMLDivElement;
     /**
      * Get Header Row Column DOM element by its column Id or index
      * @param {Number|String} columnIdOrIdx - column Id or index
@@ -561,7 +568,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     getTopPanels(): HTMLDivElement[];
     /** Are we using a DataView? */
     hasDataView(): boolean;
-    protected togglePanelVisibility(option: 'showTopPanel' | 'showHeaderRow' | 'showColumnHeader' | 'showFooterRow' | 'showPreHeaderPanel', container: HTMLElement | HTMLElement[], visible?: boolean, animate?: boolean): void;
+    protected togglePanelVisibility(option: 'showTopPanel' | 'showHeaderRow' | 'showColumnHeader' | 'showFooterRow' | 'showPreHeaderPanel' | 'showTopHeaderPanel', container: HTMLElement | HTMLElement[], visible?: boolean, animate?: boolean): void;
     /**
      * Set the Top Panel Visibility and optionally enable/disable animation (enabled by default)
      * @param {Boolean} [visible] - optionally set if top panel is visible or not
@@ -592,6 +599,11 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * @param {Boolean} [animate] - optionally enable an animation while toggling the panel
      */
     setPreHeaderPanelVisibility(visible?: boolean, animate?: boolean): void;
+    /**
+     * Set the Top-Header Visibility
+     * @param {Boolean} [visible] - optionally set if top-header panel is visible or not
+     */
+    setTopHeaderPanelVisibility(visible?: boolean): void;
     /** Get Grid Canvas Node DOM Element */
     getContainerNode(): HTMLElement;
     protected getRowTop(row: number): number;
@@ -697,6 +709,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected handleHeaderRowScroll(): void;
     protected handleFooterRowScroll(): void;
     protected handlePreHeaderPanelScroll(): void;
+    protected handleTopHeaderPanelScroll(): void;
     protected handleElementScroll(element: HTMLElement): void;
     protected handleScroll(): boolean;
     protected _handleScroll(isMouseWheel: boolean): boolean;
@@ -784,6 +797,12 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
         target: HTMLElement;
     }): void;
     protected handleHeaderClick(e: MouseEvent & {
+        target: HTMLElement;
+    }): void;
+    protected handlePreHeaderContextMenu(e: MouseEvent & {
+        target: HTMLElement;
+    }): void;
+    protected handlePreHeaderClick(e: MouseEvent & {
         target: HTMLElement;
     }): void;
     protected handleFooterContextMenu(e: MouseEvent & {

@@ -34,7 +34,12 @@
     }
     init(grid) {
       var _a, _b;
-      Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), grid.onHeaderContextMenu.subscribe(this.handleHeaderContextMenu.bind(this)), grid.onColumnsReordered.subscribe(this.updateColumnOrder.bind(this)), this._menuElm = document.createElement("div"), this._menuElm.className = `slick-columnpicker ${this._gridUid}`, this._menuElm.style.display = "none", document.body.appendChild(this._menuElm);
+      Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), grid.onColumnsReordered.subscribe(this.updateColumnOrder.bind(this)), grid.onHeaderContextMenu.subscribe(this.handleHeaderContextMenu.bind(this)), grid.onPreHeaderContextMenu.subscribe((e) => {
+        ["slick-column-name", "slick-header-column"].some((className) => {
+          var _a2;
+          return (_a2 = e.target) == null ? void 0 : _a2.classList.contains(className);
+        }) && this.handleHeaderContextMenu(e);
+      }), this._menuElm = document.createElement("div"), this._menuElm.className = `slick-columnpicker ${this._gridUid}`, this._menuElm.style.display = "none", document.body.appendChild(this._menuElm);
       let buttonElm = document.createElement("button");
       buttonElm.type = "button", buttonElm.className = "close", buttonElm.dataset.dismiss = "slick-columnpicker", buttonElm.ariaLabel = "Close";
       let spanCloseElm = document.createElement("span");
@@ -46,7 +51,7 @@
     }
     destroy() {
       var _a, _b;
-      this.grid.onHeaderContextMenu.unsubscribe(this.handleHeaderContextMenu.bind(this)), this.grid.onColumnsReordered.unsubscribe(this.updateColumnOrder.bind(this)), this._bindingEventService.unbindAll(), (_a = this._listElm) == null || _a.remove(), (_b = this._menuElm) == null || _b.remove();
+      this.grid.onPreHeaderContextMenu.unsubscribe(this.handleHeaderContextMenu.bind(this)), this.grid.onHeaderContextMenu.unsubscribe(this.handleHeaderContextMenu.bind(this)), this.grid.onColumnsReordered.unsubscribe(this.updateColumnOrder.bind(this)), this._bindingEventService.unbindAll(), (_a = this._listElm) == null || _a.remove(), (_b = this._menuElm) == null || _b.remove();
     }
     handleBodyMouseDown(e) {
       var _a;

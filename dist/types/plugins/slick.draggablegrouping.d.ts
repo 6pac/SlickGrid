@@ -10,7 +10,7 @@ import type { SlickGrid } from '../slick.grid';
  *  github.com/muthukumarse/Slickgrid
  *
  * NOTES:
- *     This plugin provides the Draggable Grouping feature
+ *     This plugin provides the Draggable Grouping feature which could be located in either the Top-Header or the Pre-Header
  * A plugin to add Draggable Grouping feature.
  *
  * USAGE:

@@ -64,10 +64,12 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
     columnPicker?: ColumnPickerOption;
     /** Context menu options (mouse right+click) */
     contextMenu?: ContextMenuOption;
-    /** Defaults to false, which leads to create the footer row of the grid */
+    /** Defaults to false, which leads to creating the footer row of the grid */
     createFooterRow?: boolean;
-    /** Default to false, which leads to create an extra pre-header panel (on top of column header) for column grouping purposes */
+    /** Default to false, which leads to creating an extra pre-header panel (on top of column header) for column grouping purposes */
     createPreHeaderPanel?: boolean;
+    /** Default to false, which leads to creating an extra top-header panel (on top of column header & pre-header) for column grouping purposes */
+    createTopHeaderPanel?: boolean;
     /**
      * Custom Tooltip Options, the tooltip could be defined in any of the Column Definition or in the Grid Options,
      * it will first try to find it in the Column that the user is hovering over or else (when not found) go and try to find it in the Grid Options
@@ -187,8 +189,16 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
     numberedMultiColumnSort?: boolean;
     /** Extra pre-header panel height (on top of column header) */
     preHeaderPanelHeight?: number;
+    /** Defaults to "auto", extra pre-header panel (on top of column header) width, it could be a number (pixels) or a string ("100%" or "auto") */
+    preHeaderPanelWidth?: number | string;
+    /** Extra top-header panel height (on top of column header & pre-header) */
+    topHeaderPanelHeight?: number;
+    /** Defaults to "auto", extra top-header panel (on top of column header & pre-header) width, it could be a number (pixels) or a string ("100%" or "auto") */
+    topHeaderPanelWidth?: number | string;
     /** Do we want to preserve copied selection on paste? */
     preserveCopiedSelectionOnPaste?: boolean;
+    /** Defaults to `['ctrlKey', 'metaKey']`, list of keys that when pressed will prevent Draggable events from triggering (e.g. prevent onDrag when Ctrl key is pressed while dragging) */
+    preventDragFromKeys?: Array<'altKey' | 'ctrlKey' | 'metaKey' | 'shiftKey'>;
     /** Grid row height in pixels (only type the number). Row of cell values. */
     rowHeight?: number;
     /**
@@ -215,6 +225,8 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
     showHeaderRow?: boolean;
     /** Do we want to show the extra pre-header panel (on top of column header) for column grouping purposes */
     showPreHeaderPanel?: boolean;
+    /** Do we want to show the extra top-header panel (on top of column header & pre-header) for column grouping purposes */
+    showTopHeaderPanel?: boolean;
     /** Do we want to show top panel row? */
     showTopPanel?: boolean;
     /** Defaults to true, which leads to render a separate span for the number and styles it with css class <i>slick-sort-indicator-numbered</i> */

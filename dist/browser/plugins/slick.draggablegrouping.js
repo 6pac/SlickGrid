@@ -48,7 +48,7 @@
      * Initialize plugin.
      */
     init(grid) {
-      this._grid = grid, Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), this._gridUid = this._grid.getUID(), this._gridColumns = this._grid.getColumns(), this._dataView = this._grid.getData(), this._dropzoneElm = this._grid.getPreHeaderPanel(), this._dropzoneElm.classList.add("slick-dropzone");
+      this._grid = grid, Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), this._gridUid = this._grid.getUID(), this._gridColumns = this._grid.getColumns(), this._dataView = this._grid.getData(), this._dropzoneElm = this._grid.getTopHeaderPanel() || this._grid.getPreHeaderPanel(), this._dropzoneElm.classList.add("slick-dropzone");
       let dropPlaceHolderText = this._options.dropPlaceHolderText || "Drop a column header here to group by the column";
       this._dropzonePlaceholder = document.createElement("div"), this._dropzonePlaceholder.className = "slick-placeholder", this._dropzonePlaceholder.textContent = dropPlaceHolderText, this._groupToggler = document.createElement("div"), this._groupToggler.className = "slick-group-toggle-all expanded", this._groupToggler.style.display = "none", this._dropzoneElm.appendChild(this._dropzonePlaceholder), this._dropzoneElm.appendChild(this._groupToggler), this.setupColumnDropbox(), this._handler.subscribe(this._grid.onHeaderCellRendered, (_e, args) => {
         let column = args.column, node = args.node;
@@ -77,7 +77,7 @@
      */
     getSetupColumnReorder(grid, headers, _headerColumnWidthDiff, setColumns, setupColumnResize, _columns, getColumnIndex, _uid, trigger) {
       this.destroySortableInstances();
-      let dropzoneElm = grid.getPreHeaderPanel(), groupTogglerElm = dropzoneElm.querySelector(".slick-group-toggle-all"), sortableOptions = {
+      let dropzoneElm = grid.getTopHeaderPanel() || grid.getPreHeaderPanel(), groupTogglerElm = dropzoneElm.querySelector(".slick-group-toggle-all"), sortableOptions = {
         animation: 50,
         // chosenClass: 'slick-header-column-active',
         ghostClass: "slick-sortable-placeholder",
@@ -115,7 +115,7 @@
           let finalReorderedColumns = [], reorderedColumns = grid.getColumns();
           for (let reorderedId of reorderedIds)
             finalReorderedColumns.push(reorderedColumns[getColumnIndex.call(grid, reorderedId)]);
-          setColumns.call(grid, finalReorderedColumns), trigger.call(grid, grid.onColumnsReordered, { grid }), e.stopPropagation(), setupColumnResize.call(grid);
+          setColumns.call(grid, finalReorderedColumns), trigger.call(grid, grid.onColumnsReordered, { grid, impactedColumns: finalReorderedColumns }), e.stopPropagation(), setupColumnResize.call(grid);
         }
       };
       return this._sortableLeftInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-left`), sortableOptions), this._sortableRightInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-right`), sortableOptions), {
@@ -128,7 +128,7 @@
      */
     destroy() {
       var _a, _b;
-      this.destroySortableInstances(), (_a = this._droppableInstance) != null && _a.el && ((_b = this._droppableInstance) == null || _b.destroy()), this.onGroupChanged.unsubscribe(), this._handler.unsubscribeAll(), this._bindingEventService.unbindAll(), Utils.emptyElement(document.querySelector(`.${this._gridUid} .slick-preheader-panel`));
+      this.destroySortableInstances(), (_a = this._droppableInstance) != null && _a.el && ((_b = this._droppableInstance) == null || _b.destroy()), this.onGroupChanged.unsubscribe(), this._handler.unsubscribeAll(), this._bindingEventService.unbindAll(), Utils.emptyElement(document.querySelector(`.${this._gridUid} .slick-preheader-panel,.${this._gridUid} .slick-topheader-panel`));
     }
     destroySortableInstances() {
       var _a, _b, _c, _d;
