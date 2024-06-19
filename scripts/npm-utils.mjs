@@ -29,5 +29,5 @@ export function publishPackage(publishTagName, { cwd, otp, dryRun, stream }) {
  * @returns {Promise<any>}
  */
 export function syncLockFile({ cwd, dryRun }) {
-  return exec('npm', ['install', '--package-lock-only'], { cwd }, dryRun);
+  return exec('npm', ['install', '--package-lock-only', '--legacy-peer-deps'], { cwd }, dryRun);
 }
