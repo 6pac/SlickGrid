@@ -3,7 +3,6 @@ import cypress from 'eslint-plugin-cypress';
 import globals from 'globals';
 import n from 'eslint-plugin-n';
 import tseslint from 'typescript-eslint';
-import tsParser from '@typescript-eslint/parser';
 
 export default tseslint.config(
   eslint.configs.recommended,
@@ -48,7 +47,7 @@ export default tseslint.config(
         Sortable: true,
         IIFE_ONLY: true
       },
-      parser: tsParser,
+      parser: tseslint.parser,
       parserOptions: {
         project: ['./tsconfig.json', 'cypress/tsconfig.json']
       }
