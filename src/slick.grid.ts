@@ -5609,30 +5609,22 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   protected handleHeaderClick(e: MouseEvent & { target: HTMLElement; }) {
-    if (this.columnResizeDragging) {
-      return;
-    }
-
-    const header = e.target.closest('.slick-header-column');
-    const column = header && Utils.storage.get(header, 'column');
-    if (column) {
-      this.trigger(this.onHeaderClick, { column }, e);
+    if (!this.columnResizeDragging) {
+      const header = e.target.closest('.slick-header-column');
+      const column = header && Utils.storage.get(header, 'column');
+      if (column) {
+        this.trigger(this.onHeaderClick, { column }, e);
+      }
     }
   }
 
   protected handlePreHeaderContextMenu(e: MouseEvent & { target: HTMLElement; }) {
-    const header = e.target.closest('.slick-header-column');
-    this.trigger(this.onPreHeaderContextMenu, { node: header }, e);
+    this.trigger(this.onPreHeaderContextMenu, { node: e.target }, e);
   }
 
   protected handlePreHeaderClick(e: MouseEvent & { target: HTMLElement; }) {
-    if (this.columnResizeDragging) {
-      return;
-    }
-
-    const header = e.target.closest('.slick-header-column');
-    if (header) {
-      this.trigger(this.onPreHeaderClick, { node: header }, e);
+    if (!this.columnResizeDragging) {
+      this.trigger(this.onPreHeaderClick, { node: e.target }, e);
     }
   }
 
