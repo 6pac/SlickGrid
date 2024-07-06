@@ -32,7 +32,7 @@ import type { SlickGrid } from '../slick.grid';
 export declare class SlickDraggableGrouping {
     pluginName: "DraggableGrouping";
     onGroupChanged: SlickEvent_<{
-        caller?: string | undefined;
+        caller?: string;
         groupColumns: Grouping[];
     }>;
     protected _grid: SlickGrid;

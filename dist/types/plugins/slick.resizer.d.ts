@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { BindingEventService as BindingEventService_ } from '../slick.core';
 import type { GridOption, GridSize, ResizerOption } from '../models/index';
 import type { SlickGrid } from '../slick.grid';

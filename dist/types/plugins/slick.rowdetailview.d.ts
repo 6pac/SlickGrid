@@ -185,7 +185,7 @@ export declare class SlickRowDetailView {
         sortable: boolean;
         alwaysRenderColumn: boolean | undefined;
         cssClass: string | undefined;
-        formatter: (row: number, _cell: number, _val: any, _column: Column<any>, dataContext: any, grid: SlickGrid<any, Column<any>, GridOption<Column<any>>>) => "" | HTMLElement | FormatterResultWithHtml;
+        formatter: (row: number, _cell: number, _val: any, _column: Column, dataContext: any, grid: SlickGrid) => FormatterResultWithHtml | HTMLElement | "";
     };
     /** Return the currently expanded rows */
     getExpandedRows(): any[];

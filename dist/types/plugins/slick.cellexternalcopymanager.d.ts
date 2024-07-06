@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import type { Column, ExcelCopyBufferOption, SlickPlugin } from '../models/index';
 import type { SlickGrid } from '../slick.grid';
 import { SlickEvent as SlickEvent_, type SlickEventData, SlickRange as SlickRange_ } from '../slick.core';

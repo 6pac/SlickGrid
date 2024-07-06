@@ -6523,7 +6523,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.10.0");
+    __publicField(this, "slickGridVersion", "5.10.1");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -6928,7 +6928,7 @@ var SlickGrid = class {
     this.editController = {
       commitCurrentEdit: this.commitCurrentEdit.bind(this),
       cancelCurrentEdit: this.cancelCurrentEdit.bind(this)
-    }, Utils30.emptyElement(this._container), this._container.style.overflow = "hidden", this._container.style.outline = String(0), this._container.classList.add(this.uid), this._container.classList.add("ui-widget"), this._container.setAttribute("role", "grid");
+    }, Utils30.emptyElement(this._container), this._container.style.outline = String(0), this._container.classList.add(this.uid), this._container.classList.add("ui-widget"), this._container.setAttribute("role", "grid");
     let containerStyles = window.getComputedStyle(this._container);
     /relative|absolute|fixed/.test(containerStyles.position) || (this._container.style.position = "relative"), this._focusSink = Utils30.createDomElement("div", { tabIndex: 0, style: { position: "fixed", width: "0px", height: "0px", top: "0px", left: "0px", outline: "0px" } }, this._container), this._options.createTopHeaderPanel && (this._topHeaderPanelScroller = Utils30.createDomElement("div", { className: "slick-topheader-panel slick-state-default", style: { overflow: "hidden", position: "relative" } }, this._container), this._topHeaderPanelScroller.appendChild(document.createElement("div")), this._topHeaderPanel = Utils30.createDomElement("div", null, this._topHeaderPanelScroller), this._topHeaderPanelSpacer = Utils30.createDomElement("div", { style: { display: "block", height: "1px", position: "absolute", top: "0px", left: "0px" } }, this._topHeaderPanelScroller), this._options.showTopHeaderPanel || Utils30.hide(this._topHeaderPanelScroller)), this._paneHeaderL = Utils30.createDomElement("div", { className: "slick-pane slick-pane-header slick-pane-left", tabIndex: 0 }, this._container), this._paneHeaderR = Utils30.createDomElement("div", { className: "slick-pane slick-pane-header slick-pane-right", tabIndex: 0 }, this._container), this._paneTopL = Utils30.createDomElement("div", { className: "slick-pane slick-pane-top slick-pane-left", tabIndex: 0 }, this._container), this._paneTopR = Utils30.createDomElement("div", { className: "slick-pane slick-pane-top slick-pane-right", tabIndex: 0 }, this._container), this._paneBottomL = Utils30.createDomElement("div", { className: "slick-pane slick-pane-bottom slick-pane-left", tabIndex: 0 }, this._container), this._paneBottomR = Utils30.createDomElement("div", { className: "slick-pane slick-pane-bottom slick-pane-right", tabIndex: 0 }, this._container), this._options.createPreHeaderPanel && (this._preHeaderPanelScroller = Utils30.createDomElement("div", { className: "slick-preheader-panel ui-state-default slick-state-default", style: { overflow: "hidden", position: "relative" } }, this._paneHeaderL), this._preHeaderPanelScroller.appendChild(document.createElement("div")), this._preHeaderPanel = Utils30.createDomElement("div", null, this._preHeaderPanelScroller), this._preHeaderPanelSpacer = Utils30.createDomElement("div", { style: { display: "block", height: "1px", position: "absolute", top: "0px", left: "0px" } }, this._preHeaderPanelScroller), this._preHeaderPanelScrollerR = Utils30.createDomElement("div", { className: "slick-preheader-panel ui-state-default slick-state-default", style: { overflow: "hidden", position: "relative" } }, this._paneHeaderR), this._preHeaderPanelR = Utils30.createDomElement("div", null, this._preHeaderPanelScrollerR), this._preHeaderPanelSpacerR = Utils30.createDomElement("div", { style: { display: "block", height: "1px", position: "absolute", top: "0px", left: "0px" } }, this._preHeaderPanelScrollerR), this._options.showPreHeaderPanel || (Utils30.hide(this._preHeaderPanelScroller), Utils30.hide(this._preHeaderPanelScrollerR))), this._headerScrollerL = Utils30.createDomElement("div", { className: "slick-header ui-state-default slick-state-default slick-header-left" }, this._paneHeaderL), this._headerScrollerR = Utils30.createDomElement("div", { className: "slick-header ui-state-default slick-state-default slick-header-right" }, this._paneHeaderR), this._headerScroller.push(this._headerScrollerL), this._headerScroller.push(this._headerScrollerR), this._headerL = Utils30.createDomElement("div", { className: "slick-header-columns slick-header-columns-left", role: "row", style: { left: "-1000px" } }, this._headerScrollerL), this._headerR = Utils30.createDomElement("div", { className: "slick-header-columns slick-header-columns-right", role: "row", style: { left: "-1000px" } }, this._headerScrollerR), this._headers = [this._headerL, this._headerR], this._headerRowScrollerL = Utils30.createDomElement("div", { className: "slick-headerrow ui-state-default slick-state-default" }, this._paneTopL), this._headerRowScrollerR = Utils30.createDomElement("div", { className: "slick-headerrow ui-state-default slick-state-default" }, this._paneTopR), this._headerRowScroller = [this._headerRowScrollerL, this._headerRowScrollerR], this._headerRowSpacerL = Utils30.createDomElement("div", { style: { display: "block", height: "1px", position: "absolute", top: "0px", left: "0px" } }, this._headerRowScrollerL), this._headerRowSpacerR = Utils30.createDomElement("div", { style: { display: "block", height: "1px", position: "absolute", top: "0px", left: "0px" } }, this._headerRowScrollerR), this._headerRowL = Utils30.createDomElement("div", { className: "slick-headerrow-columns slick-headerrow-columns-left" }, this._headerRowScrollerL), this._headerRowR = Utils30.createDomElement("div", { className: "slick-headerrow-columns slick-headerrow-columns-right" }, this._headerRowScrollerR), this._headerRows = [this._headerRowL, this._headerRowR], this._topPanelScrollerL = Utils30.createDomElement("div", { className: "slick-top-panel-scroller ui-state-default slick-state-default" }, this._paneTopL), this._topPanelScrollerR = Utils30.createDomElement("div", { className: "slick-top-panel-scroller ui-state-default slick-state-default" }, this._paneTopR), this._topPanelScrollers = [this._topPanelScrollerL, this._topPanelScrollerR], this._topPanelL = Utils30.createDomElement("div", { className: "slick-top-panel", style: { width: "10000px" } }, this._topPanelScrollerL), this._topPanelR = Utils30.createDomElement("div", { className: "slick-top-panel", style: { width: "10000px" } }, this._topPanelScrollerR), this._topPanels = [this._topPanelL, this._topPanelR], this._options.showColumnHeader || this._headerScroller.forEach((el) => {
       Utils30.hide(el);
@@ -8823,20 +8823,16 @@ var SlickGrid = class {
     this.trigger(this.onHeaderContextMenu, { column }, e);
   }
   handleHeaderClick(e) {
-    if (this.columnResizeDragging)
-      return;
-    let header = e.target.closest(".slick-header-column"), column = header && Utils30.storage.get(header, "column");
-    column && this.trigger(this.onHeaderClick, { column }, e);
+    if (!this.columnResizeDragging) {
+      let header = e.target.closest(".slick-header-column"), column = header && Utils30.storage.get(header, "column");
+      column && this.trigger(this.onHeaderClick, { column }, e);
+    }
   }
   handlePreHeaderContextMenu(e) {
-    let header = e.target.closest(".slick-header-column");
-    this.trigger(this.onPreHeaderContextMenu, { node: header }, e);
+    this.trigger(this.onPreHeaderContextMenu, { node: e.target }, e);
   }
   handlePreHeaderClick(e) {
-    if (this.columnResizeDragging)
-      return;
-    let header = e.target.closest(".slick-header-column");
-    header && this.trigger(this.onPreHeaderClick, { node: header }, e);
+    this.columnResizeDragging || this.trigger(this.onPreHeaderClick, { node: e.target }, e);
   }
   handleFooterContextMenu(e) {
     let footer = e.target.closest(".slick-footerrow-column"), column = footer && Utils30.storage.get(footer, "column");
@@ -9843,7 +9839,7 @@ export {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.10.0
+ * SlickGrid v5.10.1
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

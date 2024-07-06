@@ -1,4 +1,3 @@
-/// <reference types="node" />
 import { SlickEvent as SlickEvent_, type SlickEventData, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_ } from '../slick.core';
 import { SlickCellRangeDecorator as SlickCellRangeDecorator_ } from './slick.cellrangedecorator';
 import type { CellRangeSelectorOption, DragPosition, DragRange, DragRowMove, GridOption, MouseOffsetViewport, OnScrollEventArgs, SlickPlugin } from '../models/index';

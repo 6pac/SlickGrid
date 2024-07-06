@@ -15,7 +15,7 @@ export interface BasePubSub {
  * @constructor
  */
 export declare class SlickEventData<ArgType = any> {
-    protected event?: Event | null | undefined;
+    protected event?: (Event | null) | undefined;
     protected args?: ArgType | undefined;
     protected _isPropagationStopped: boolean;
     protected _isImmediatePropagationStopped: boolean;
@@ -44,7 +44,7 @@ export declare class SlickEventData<ArgType = any> {
     readonly x?: number;
     readonly y?: number;
     get defaultPrevented(): boolean;
-    constructor(event?: Event | null | undefined, args?: ArgType | undefined);
+    constructor(event?: (Event | null) | undefined, args?: ArgType | undefined);
     /**
      * Stops event from propagating up the DOM tree.
      * @method stopPropagation

@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.10.1](https://github.com/6pac/SlickGrid/compare/5.10.0...5.10.1) (2024-07-06)
+
+### Bug Fixes
+
+* Header Menu should be on top of grid not inside ([#1033](https://github.com/6pac/SlickGrid/issues/1033)) ([b704a81](https://github.com/6pac/SlickGrid/commit/b704a815e97c45d81f59421db36073a4db470981))
+* new preheader event should work with any prehader content ([#1034](https://github.com/6pac/SlickGrid/issues/1034)) ([28113f4](https://github.com/6pac/SlickGrid/commit/28113f4473c78fa9fccda7ade279d57c7b4b5d5e))
+
 # [5.10.0](https://github.com/6pac/SlickGrid/compare/5.9.2...5.10.0) (2024-06-19)
 
 ### Bug Fixes
