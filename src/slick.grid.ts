@@ -3604,7 +3604,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     // before applying column freeze, we need our viewports to be scrolled back to left to avoid misaligned column headers
-    if (newOptions.frozenColumn) {
+    if (newOptions.frozenColumn !== undefined && newOptions.frozenColumn >= 0) {
       this.getViewports().forEach(vp => vp.scrollLeft = 0);
       this.handleScroll(); // trigger scroll to realign column headers as well
     }
