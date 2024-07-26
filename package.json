@@ -3,25 +3,19 @@
   "version": "5.10.1",
   "description": "A lightning fast JavaScript grid/spreadsheet",
   "main": "./dist/cjs/index.js",
-  "module": "./dist/esm/index.js",
-  "types": "index.d.ts",
-  "typesVersions": {
-    ">=4.2": {
-      "*": [
-        "dist/types/*"
-      ]
-    }
-  },
+  "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/types/index.d.ts",
       "node": "./dist/cjs/index.js",
+      "import": "./dist/esm/index.js",
       "require": "./dist/cjs/index.js",
       "default": "./dist/esm/index.js"
     },
     "./dist/styles/*": "./dist/styles/*",
     "./package.json": "./package.json"
   },
+  "module": "./dist/esm/index.js",
   "directories": {
     "example": "examples",
     "test": "tests"
