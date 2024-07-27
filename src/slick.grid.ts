@@ -425,6 +425,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected renderedRows = 0;
   protected numVisibleRows = 0;
   protected prevScrollTop = 0;
+  protected scrollHeight = 0;
   protected scrollTop = 0;
   protected lastRenderedScrollTop = 0;
   protected lastRenderedScrollLeft = 0;
@@ -4547,6 +4548,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       }
 
       this.scrollTop = this._viewportScrollContainerY.scrollTop;
+      this.scrollHeight = this._viewportScrollContainerY.scrollHeight;
       this.enforceFrozenRowHeightRecalc = false; // reset enforce flag
     }
 
@@ -4993,13 +4995,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
   }
 
-  protected handleScroll() {
+  protected handleScroll(e?: Event) {
+    this.scrollHeight = this._viewportScrollContainerY.scrollHeight;
     this.scrollTop = this._viewportScrollContainerY.scrollTop;
     this.scrollLeft = this._viewportScrollContainerX.scrollLeft;
-    return this._handleScroll(false);
+    return this._handleScroll(e ? 'scroll' : 'system');
   }
 
-  protected _handleScroll(isMouseWheel: boolean) {
+  protected _handleScroll(eventType: 'mousewheel' | 'scroll' | 'system' = 'system') {
     let maxScrollDistanceY = this._viewportScrollContainerY.scrollHeight - this._viewportScrollContainerY.clientHeight;
     let maxScrollDistanceX = this._viewportScrollContainerY.scrollWidth - this._viewportScrollContainerY.clientWidth;
 
@@ -5011,6 +5014,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     // Ceiling the max scroll values
     if (this.scrollTop > maxScrollDistanceY) {
       this.scrollTop = maxScrollDistanceY;
+      this.scrollHeight = maxScrollDistanceY;
     }
     if (this.scrollLeft > maxScrollDistanceX) {
       this.scrollLeft = maxScrollDistanceX;
@@ -5060,7 +5064,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.vScrollDir = this.prevScrollTop < this.scrollTop ? 1 : -1;
       this.prevScrollTop = this.scrollTop;
 
-      if (isMouseWheel) {
+      if (eventType === 'mousewheel') {
         this._viewportScrollContainerY.scrollTop = this.scrollTop;
       }
 
@@ -5105,7 +5109,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       }
     }
 
-    this.trigger(this.onScroll, { scrollLeft: this.scrollLeft, scrollTop: this.scrollTop });
+    this.trigger(this.onScroll, {
+      triggeredBy: eventType,
+      scrollHeight: this.scrollHeight,
+      scrollLeft: this.scrollLeft,
+      scrollTop: this.scrollTop,
+    });
 
     if (hScrollDist || vScrollDist) { return true; }
     return false;
@@ -5361,9 +5370,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   // Interactivity
 
   protected handleMouseWheel(e: MouseEvent, _delta: number, deltaX: number, deltaY: number) {
+    this.scrollHeight = this._viewportScrollContainerY.scrollHeight;
     this.scrollTop = Math.max(0, this._viewportScrollContainerY.scrollTop - (deltaY * this._options.rowHeight!));
     this.scrollLeft = this._viewportScrollContainerX.scrollLeft + (deltaX * 10);
-    const handled = this._handleScroll(true);
+    const handled = this._handleScroll('mousewheel');
     if (handled) {
       e.preventDefault();
     }
