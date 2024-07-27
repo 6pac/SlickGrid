@@ -2,11 +2,28 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.11.0](https://github.com/6pac/SlickGrid/compare/5.10.1...5.11.0) (2024-07-27)
+
+### Bug Fixes
+
+* issue where pinning the first column caused the header to get misaligned, fixes [#1038](https://github.com/6pac/SlickGrid/issues/1038) ([#1039](https://github.com/6pac/SlickGrid/issues/1039)) ([d006605](https://github.com/6pac/SlickGrid/commit/d006605de4adea3ed3e18d7bc180e81d7f1b8493))
+
+### Features
+
+* add new Infinite Scroll example ([#1040](https://github.com/6pac/SlickGrid/issues/1040)) ([060c8a0](https://github.com/6pac/SlickGrid/commit/060c8a0c6c13e4e0389e61bb10403927df508d46))
+
+# Change Log
+
+All notable changes to this project will be documented in this file.
+
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
 ## [5.10.1](https://github.com/6pac/SlickGrid/compare/5.10.0...5.10.1) (2024-07-06)
 
 ### Bug Fixes
 
 * Header Menu should be on top of grid not inside ([#1033](https://github.com/6pac/SlickGrid/issues/1033)) ([b704a81](https://github.com/6pac/SlickGrid/commit/b704a815e97c45d81f59421db36073a4db470981))
+
 * new preheader event should work with any prehader content ([#1034](https://github.com/6pac/SlickGrid/issues/1034)) ([28113f4](https://github.com/6pac/SlickGrid/commit/28113f4473c78fa9fccda7ade279d57c7b4b5d5e))
 
 # [5.10.0](https://github.com/6pac/SlickGrid/compare/5.9.2...5.10.0) (2024-06-19)
@@ -14,14 +31,19 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 ### Bug Fixes
 
 * Draggable Grouping drop zone in preheader should take full width ([#1025](https://github.com/6pac/SlickGrid/issues/1025)) ([2c0a41f](https://github.com/6pac/SlickGrid/commit/2c0a41fb11c6b2e2dc136c6c5d766d0b176fd855))
+
 * Draggable Grouping onColumnsReordered missing impactedColumns ([#1026](https://github.com/6pac/SlickGrid/issues/1026)) ([3d342cc](https://github.com/6pac/SlickGrid/commit/3d342cccbe1db9bfd8f2c15a7f746cce738614d6))
+
 * make sure pager element exists before toggling CSS classes ([#1028](https://github.com/6pac/SlickGrid/issues/1028)) ([fe46af0](https://github.com/6pac/SlickGrid/commit/fe46af08662894dc26f1bbd4d182aa0d67cfa1cf))
 
 ### Features
 
 * add `iconButtonContainer` option to Grid Menu ([#1018](https://github.com/6pac/SlickGrid/issues/1018)) ([56a24db](https://github.com/6pac/SlickGrid/commit/56a24db1627546d3ff11967af3cc943acba6de44))
+
 * add new `preventDragFromKeys` grid option ([#1024](https://github.com/6pac/SlickGrid/issues/1024)) ([b82f476](https://github.com/6pac/SlickGrid/commit/b82f4762da4d8c8d8f72432c3bdcea7f83bd812f))
+
 * add onPreHeaderContextMenu for Column Picker usage ([#1030](https://github.com/6pac/SlickGrid/issues/1030)) ([ea2c175](https://github.com/6pac/SlickGrid/commit/ea2c1759fa78c47411ba65fda5a8d619d0d8f7e3))
+
 * add optional Top-Header for Drag Grouping + Header Grouping ([#1029](https://github.com/6pac/SlickGrid/issues/1029)) ([cec789c](https://github.com/6pac/SlickGrid/commit/cec789c563378d190529db4836b60d7e34878788))
 
 # Change Log

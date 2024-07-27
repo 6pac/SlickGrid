@@ -10,7 +10,7 @@ import { type BasePubSub, BindingEventService as BindingEventService_, type Slic
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.10.1
+ * SlickGrid v5.11.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -199,6 +199,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected renderedRows: number;
     protected numVisibleRows: number;
     protected prevScrollTop: number;
+    protected scrollHeight: number;
     protected scrollTop: number;
     protected lastRenderedScrollTop: number;
     protected lastRenderedScrollLeft: number;
@@ -711,8 +712,8 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected handlePreHeaderPanelScroll(): void;
     protected handleTopHeaderPanelScroll(): void;
     protected handleElementScroll(element: HTMLElement): void;
-    protected handleScroll(): boolean;
-    protected _handleScroll(isMouseWheel: boolean): boolean;
+    protected handleScroll(e?: Event): boolean;
+    protected _handleScroll(eventType?: 'mousewheel' | 'scroll' | 'system'): boolean;
     /**
      * limits the frequency at which the provided action is executed.
      * call enqueue to execute the action - it will execute either immediately or, if it was executed less than minPeriod_ms in the past, as soon as minPeriod_ms has expired.
