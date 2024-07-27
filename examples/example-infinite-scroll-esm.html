@@ -178,21 +178,22 @@
         const newData = loadData(0, FETCH_SIZE);
         grid.scrollTo(0); // scroll back to top to avoid unwanted onScroll end triggered
         dataView.setItems(newData);
+        dataView.reSort();
       }
     });
 
-    // add Infinite Scroll when
+    // add onScroll listener to append items to the dataset whenever reaching the scroll bottom (scroll end)
     grid.onScroll.subscribe((e, args) => {
       const viewportElm = args.grid.getViewportNode();
-      if (['mousewheel', 'scroll'].includes(args.triggeredBy || '')
+      if (
+        ['mousewheel', 'scroll'].includes(args.triggeredBy || '')
+        && !scrollEndCalled
         && viewportElm.scrollTop > 0
         && Math.ceil(viewportElm.offsetHeight + args.scrollTop) >= args.scrollHeight
       ) {
-        if (!scrollEndCalled) {
-          const vpLeft = document.querySelector('.slick-viewport-top.slick-viewport-left');
-          scrollEndCalled = true;
-          handleOnScrollEnd();
-        }
+        const vpLeft = document.querySelector('.slick-viewport-top.slick-viewport-left');
+        scrollEndCalled = true;
+        handleOnScrollEnd();
       }
     });
 
