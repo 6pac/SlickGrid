@@ -6,6 +6,7 @@
   <title>SlickGrid example 9: Row reordering</title>
   <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
     .slickgrid-cell-reorder {
@@ -60,16 +61,6 @@ var grid;
 var data = [];
 var columns = [
   {
-    id: "#",
-    name: "",
-    width: 40,
-    behavior: "selectAndMove",
-    selectable: false,
-    resizable: false,
-    cssClass: "slickgrid-cell-reorder",
-    formatter: () => `<span class="sgi sgi-drag"></span>`
-  },
-  {
     id: "name",
     name: "Name",
     field: "name",
@@ -104,17 +95,20 @@ document.addEventListener("DOMContentLoaded", function() {
     { name: "Find out who's naughty", complete: false},
     { name: "Find out who's nice", complete: false}
   ];
-  console.log(data);
+
+  var moveRowsPlugin = new Slick.RowMoveManager({
+    cssClass: 'sgi sgi-drag',
+    cancelEditOnDrag: true
+  });
+
+  // use unshift to make it the 1st column OR splice to position it where you wish
+  columns.unshift(moveRowsPlugin.getColumnDefinition());
 
   grid = new Slick.Grid("#myGrid", data, columns, options);
 
   grid.setSelectionModel(new Slick.RowSelectionModel({
     dragToSelect: true
   }));
-
-  var moveRowsPlugin = new Slick.RowMoveManager({
-    cancelEditOnDrag: true
-  });
 
   moveRowsPlugin.onBeforeMoveRows.subscribe(function (e, data) {
     for (var i = 0; i < data.rows.length; i++) {
