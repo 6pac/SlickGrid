@@ -60,26 +60,19 @@ export default tseslint.config(
     },
     rules: {
       '@typescript-eslint/ban-ts-comment': 'off',
-      '@typescript-eslint/ban-types': [
-        'error',
-        {
-          'types': {
-            // accept Function type
-            'Function': false
-          },
-          'extendDefaults': true
-        }
-      ],
       '@typescript-eslint/consistent-type-exports': 'error',
       '@typescript-eslint/consistent-type-imports': 'error',
+      '@typescript-eslint/no-empty-object-type': [
+        'error',
+        { allowInterfaces: 'with-single-extends' }, // maybe we should turn this on in a new PR
+      ],
       '@typescript-eslint/no-empty-function': 'off',
+      '@typescript-eslint/no-unsafe-function-type': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
       '@typescript-eslint/no-non-null-assertion': 'off',
       '@typescript-eslint/no-inferrable-types': 'error',
-      '@typescript-eslint/no-unused-vars': ['error', { 'argsIgnorePattern': '^_', 'destructuredArrayIgnorePattern': '^_' }],
-      '@typescript-eslint/no-this-alias': 'off',
-      '@typescript-eslint/quotes': ['error', 'single', { 'allowTemplateLiterals': true }],
-      '@typescript-eslint/semi': 'error',
+      '@typescript-eslint/no-unused-expressions': 'off',
+      '@typescript-eslint/no-unused-vars': ['error', { 'argsIgnorePattern': '^_', 'destructuredArrayIgnorePattern': '^_', caughtErrors: 'none' }],
       'curly': 'error',
       'cypress/no-assigning-return-values': 'off',
       'cypress/no-unnecessary-waiting': 'off',
@@ -93,6 +86,6 @@ export default tseslint.config(
       'no-extra-boolean-cast': 'off',
       'semi': 'off',
       'keyword-spacing': 'error',
-      'space-before-blocks': 'error'
+      'space-before-blocks': 'error',
     }
   });
