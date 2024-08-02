@@ -741,7 +741,7 @@ export class Utils {
       target = {};
     }
     if (i === length) {
-      // @ts-ignore
+      // eslint-disable-next-line @typescript-eslint/no-this-alias
       target = this;
       i--;
     }
