@@ -124,14 +124,6 @@
     this.duration = "5 days";
   }
 
-  function handleOnScrollEnd() {
-    console.log('onScroll end reached, add more items');
-    const startIdx = dataView.getItemCount();
-
-    dataView.addItems(loadData(startIdx, FETCH_SIZE));
-    scrollEndCalled = false;
-  }
-
   function loadData(startIdx, count) {
     let tmpData = [];
     for (let i = startIdx; i < startIdx + count; i++) {
@@ -173,7 +165,8 @@
       // using native sort with comparer
       dataView.sort(comparer, args.sortAsc);
 
-      // reset data loaded
+      // do we want to reset the dataset when Sorting?
+      // if answering Yes then use the code below
       if (shouldResetOnSort) {
         const newData = loadData(0, FETCH_SIZE);
         grid.scrollTo(0); // scroll back to top to avoid unwanted onScroll end triggered
@@ -182,7 +175,8 @@
       }
     });
 
-    // add onScroll listener to append items to the dataset whenever reaching the scroll bottom (scroll end)
+    // add onScroll listener which will detect when we reach the scroll end
+    // if so, then append items to the dataset
     grid.onScroll.subscribe((e, args) => {
       const viewportElm = args.grid.getViewportNode();
       if (
@@ -191,8 +185,11 @@
         && viewportElm.scrollTop > 0
         && Math.ceil(viewportElm.offsetHeight + args.scrollTop) >= args.scrollHeight
       ) {
-        scrollEndCalled = true;
-        handleOnScrollEnd();
+        console.log('onScroll end reached, add more items');
+        const startIdx = dataView.getItemCount();
+
+        dataView.addItems(loadData(startIdx, FETCH_SIZE));
+        scrollEndCalled = false;
       }
     });
 
