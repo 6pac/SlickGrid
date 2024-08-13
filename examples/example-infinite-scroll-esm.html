@@ -91,7 +91,6 @@
     {id: "effort-driven", name: "Effort Driven", width: 100, minWidth: 20, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Formatters.Checkmark, sortable: true }
   ];
   let shouldResetOnSort = false;
-  let scrollEndCalled = false;
   let sortcol = "title";
   let sortdir = 1;
 
@@ -181,7 +180,6 @@
       const viewportElm = args.grid.getViewportNode();
       if (
         ['mousewheel', 'scroll'].includes(args.triggeredBy || '')
-        && !scrollEndCalled
         && viewportElm.scrollTop > 0
         && Math.ceil(viewportElm.offsetHeight + args.scrollTop) >= args.scrollHeight
       ) {
@@ -189,7 +187,6 @@
         const startIdx = dataView.getItemCount();
 
         dataView.addItems(loadData(startIdx, FETCH_SIZE));
-        scrollEndCalled = false;
       }
     });
 
