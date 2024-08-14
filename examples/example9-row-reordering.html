@@ -70,8 +70,8 @@
     </h2>
     <div style="padding:6px;">
       Click to select, Ctrl-click to toggle selection, Shift-click to select a range.<br/>
-      Drag one or more rows by the handle to reorder.<br/>
-      Drag one or more rows to the recycle bin to delete.
+      Drag one or more rows by the handle icon to reorder.<br/>
+      Drag one or more rows by selection and drag to the recycle bin to delete.
 
       <br/>
       <br/>
@@ -87,11 +87,7 @@
   </div>
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
-<script src="../lib/jquery.event.drag-2.3.0.js"></script>
-<script src="../lib/jquery.event.drop-2.3.0.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
-
 <script src="../dist/browser/slick.core.js"></script>
 <script src="../dist/browser/slick.interactions.js"></script>
 <script src="../dist/browser/slick.grid.js"></script>
@@ -153,7 +149,9 @@ function requiredFieldValidator(value) {
   }
 }
 
-$(function () {
+document.addEventListener("DOMContentLoaded", function() {
+  const dropzoneElm = document.querySelector('#dropzone');
+
   data = [
     { name: "Make a list", complete: true},
     { name: "Check it twice", complete: false},
@@ -243,7 +241,7 @@ $(function () {
 
     var selectedRows = grid.getSelectedRows();
 
-    if (!selectedRows.length || $.inArray(dd.row, selectedRows) == -1) {
+    if (!selectedRows.length || selectedRows.findIndex(row => row === dd.row) === -1 ) {
       selectedRows = [dd.row];
       grid.setSelectedRows(selectedRows);
     }
@@ -251,23 +249,19 @@ $(function () {
     dd.rows = selectedRows;
     dd.count = selectedRows.length;
 
-    var proxy = $("<span></span>")
-        .css({
-          position: "absolute",
-          display: "inline-block",
-          padding: "4px 10px",
-          background: "#e0e0e0",
-          border: "1px solid gray",
-          "z-index": 99999,
-          "-moz-border-radius": "8px",
-          "-moz-box-shadow": "2px 2px 6px silver"
-        })
-        .text("Drag to Recycle Bin to delete " + dd.count + " selected row(s)")
-        .appendTo("body");
+    const proxy = document.createElement("span");
+    proxy.style.position = "absolute";
+    proxy.style.display = "inline-block",
+    proxy.style.padding = "4px 10px",
+    proxy.style.background = "#e0e0e0",
+    proxy.style.border = "1px solid gray",
+    proxy.style.zIndex = 99999;
+    proxy.style.borderRadius = "8px";
+    proxy.style.boxShadow = "2px 2px 6px silver";
+    proxy.textContent = "Drag to Recycle Bin to delete " + dd.count + " selected row(s)";
+    document.body.appendChild(proxy);
 
     dd.helper = proxy;
-
-    $(dd.available).css("background", "pink");
 
     return proxy;
   });
@@ -276,8 +270,21 @@ $(function () {
     if (dd.mode != "recycle") {
       return;
     }
-    var targetEvent = e.touches ? e.touches[0] : e;
-    dd.helper.css({top: targetEvent.pageY + 5, left: targetEvent.pageX + 5});
+    const targetEvent = e.touches ? e.touches[0] : e;
+    if (dd.helper instanceof HTMLElement) {
+      dd.helper.style.top = `${targetEvent.pageY + 5}px`;
+      dd.helper.style.left = `${targetEvent.pageX + 5}px`;
+    }
+
+    // add/remove pink background color when hovering recycle bin
+    if (dd.target instanceof HTMLElement && (dd.target.id === 'dropzone' || dd.target === dropzoneElm)) {
+      dropzoneElm.style.background = 'pink'; // OR: dd.target.style.background = 'pink';
+      dropzoneElm.style.cursor = 'crosshair';
+
+    } else {
+      dropzoneElm.style.cursor = 'default';
+      dropzoneElm.style.background = '';
+    }
   });
 
   grid.onDragEnd.subscribe(function (e, dd) {
@@ -285,45 +292,29 @@ $(function () {
       return;
     }
     dd.helper.remove();
-    $(dd.available).css("background", "beige");
+
+    if (dd.mode != "recycle" || dd.target.id !== 'dropzone') {
+      return;
+    }
+
+    // reaching here means that we'll remove the row that we started dragging from the dataset
+    const rowsToDelete = dd.rows.sort().reverse();
+    for (var i = 0; i < rowsToDelete.length; i++) {
+      data.splice(rowsToDelete[i], 1);
+    }
+    grid.invalidate();
+    grid.setSelectedRows([]);
+    dropzoneElm.style.background = '';
   });
-
-  $.drop({mode: "mouse"});
-  $("#dropzone")
-      .on("dropstart", function (e, dd) {
-        if (dd.mode != "recycle") {
-          return;
-        }
-        $(this).css("background", "yellow");
-      })
-      .on("dropend", function (e, dd) {
-        if (dd.mode != "recycle") {
-          return;
-        }
-        $(dd.available).css("background", "pink");
-      })
-      .on("drop", function (e, dd) {
-        if (dd.mode != "recycle") {
-          return;
-        }
-        var rowsToDelete = dd.rows.sort().reverse();
-        for (var i = 0; i < rowsToDelete.length; i++) {
-          data.splice(rowsToDelete[i], 1);
-        }
-        grid.invalidate();
-        grid.setSelectedRows([]);
-      });
-
 
   grid.onAddNewRow.subscribe(function (e, args) {
     var item = {name: "New task", complete: false};
-    $.extend(item, args.item);
-    data.push(item);
+    data.push({ ...item, ...args.item });
     grid.invalidateRows([data.length - 1]);
     grid.updateRowCount();
     grid.render();
   });
-})
+});
 </script>
 </body>
 </html>
