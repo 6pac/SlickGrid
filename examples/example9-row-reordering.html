@@ -36,7 +36,7 @@
 
     .recycle-bin {
       width: 120px;
-      border: 1px solid gray;
+      border: 2px solid #e4e4e4;
       background: beige;
       padding: 4px;
       font-size: 12pt;
@@ -262,6 +262,7 @@ document.addEventListener("DOMContentLoaded", function() {
     document.body.appendChild(proxy);
 
     dd.helper = proxy;
+    dropzoneElm.style.border = '2px dashed pink';
 
     return proxy;
   });
@@ -292,6 +293,8 @@ document.addEventListener("DOMContentLoaded", function() {
       return;
     }
     dd.helper.remove();
+    dropzoneElm.style.border = '2px solid #e4e4e4';
+    dropzoneElm.style.background = '';
 
     if (dd.mode != "recycle" || dd.target.id !== 'dropzone') {
       return;
@@ -304,7 +307,6 @@ document.addEventListener("DOMContentLoaded", function() {
     }
     grid.invalidate();
     grid.setSelectedRows([]);
-    dropzoneElm.style.background = '';
   });
 
   grid.onAddNewRow.subscribe(function (e, args) {
