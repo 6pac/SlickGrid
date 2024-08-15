@@ -343,12 +343,13 @@ export class FlatpickrEditor<TData = any, C extends Column<TData> = Column<TData
     this.input = Utils.createDomElement('input', { type: 'text', className: 'editor-text' }, this.args.container);
     this.input.focus();
     this.input.select();
+    const editorOptions = this.args.column.params?.editorOptions; // i.e.: { id: 'start', params: { editorOptions: {altFormat: 'd/m/Y', dateFormat: 'd/m/Y'}} }
     this.flatpickrInstance = flatpickr(this.input, {
       closeOnSelect: true,
       allowInput: true,
       altInput: true,
-      altFormat: 'm/d/Y',
-      dateFormat: 'm/d/Y',
+      altFormat: editorOptions?.altFormat ?? 'm/d/Y',
+      dateFormat: editorOptions?.dateFormat ?? 'm/d/Y',
       onChange: () => {
         // trigger onCompositeEditorChange event when input changes and it's a Composite Editor
         if (this.args.compositeEditorOptions) {
