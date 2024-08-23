@@ -196,7 +196,10 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   /** Do we want to force fit columns in the grid at all time? */
   forceFitColumns?: boolean;
 
-  /** Defaults to false, force synchronous scrolling */
+  /**
+   * Defaults to false, force synchronous scrolling without throttling the UI render when scrolling.
+   * Note: it might be risky to disable this option on large dataset, use at your own risk
+   */
   forceSyncScrolling?: boolean;
 
   /** Formatter classes factory */
