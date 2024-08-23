@@ -24,7 +24,7 @@
       this.externalPubSub = externalPubSub;
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.11.0");
+      __publicField(this, "slickGridVersion", "5.12.0");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -170,7 +170,8 @@
         doPaging: !0,
         autosizeColsMode: GridAutosizeColsMode.LegacyOff,
         autosizeColPaddingPx: 4,
-        scrollRenderThrottling: 50,
+        rowTopOffsetRenderType: "top",
+        scrollRenderThrottling: 10,
         autosizeTextAvgToMWidthRatio: 0.75,
         viewportSwitchToScrollModeWidthPercent: void 0,
         viewportMinWidthPx: void 0,
@@ -1678,7 +1679,7 @@
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Rendering / Scrolling
     getRowTop(row) {
-      return this._options.rowHeight * row - this.offset;
+      return Math.round(this._options.rowHeight * row - this.offset);
     }
     getRowFromPosition(y) {
       return Math.floor((y + this.offset) / this._options.rowHeight);
@@ -1721,7 +1722,9 @@
       d || (rowCss += " " + this._options.addNewRowCssClass);
       let metadata = (_b = (_a = this.data) == null ? void 0 : _a.getItemMetadata) == null ? void 0 : _b.call(_a, row);
       metadata != null && metadata.cssClasses && (rowCss += " " + metadata.cssClasses);
-      let frozenRowOffset = this.getFrozenRowOffset(row), rowDiv = Utils.createDomElement("div", { className: `ui-widget-content ${rowCss}`, role: "row", style: { top: `${this.getRowTop(row) - frozenRowOffset}px` } }), rowDivR;
+      let rowDiv = Utils.createDomElement("div", { className: `ui-widget-content ${rowCss}`, role: "row" }), frozenRowOffset = this.getFrozenRowOffset(row), topOffset = this.getRowTop(row) - frozenRowOffset;
+      this._options.rowTopOffsetRenderType === "transform" ? rowDiv.style.transform = `translateY(${topOffset}px)` : rowDiv.style.top = `${topOffset}px`;
+      let rowDivR;
       divArrayL.push(rowDiv), this.hasFrozenColumns() && (rowDivR = rowDiv.cloneNode(!0), divArrayR.push(rowDivR));
       let colspan, m;
       for (let i = 0, ii = this.columns.length; i < ii; i++)
@@ -2070,8 +2073,8 @@
     updateRowPositions() {
       for (let row in this.rowsCache)
         if (this.rowsCache) {
-          let rowNumber = row ? parseInt(row, 10) : 0;
-          Utils.setStyleSize(this.rowsCache[rowNumber].rowNode[0], "top", this.getRowTop(rowNumber));
+          let rowNumber = row ? parseInt(row, 10) : 0, rowNode = this.rowsCache[rowNumber].rowNode[0];
+          this._options.rowTopOffsetRenderType === "transform" ? rowNode.style.transform = `translateY(${this.getRowTop(rowNumber)}px)` : rowNode.style.top = `${this.getRowTop(rowNumber)}px`;
         }
     }
     /** (re)Render the grid */
@@ -3111,7 +3114,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.11.0
+ * SlickGrid v5.12.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

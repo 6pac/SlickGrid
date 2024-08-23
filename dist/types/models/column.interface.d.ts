@@ -92,6 +92,8 @@ export interface Column<TData = any> {
     name?: string | HTMLElement | DocumentFragment;
     /** column offset width */
     offsetWidth?: number;
+    /** extra custom generic parameters that could be used by your Formatter/Editor or anything else */
+    params?: any | any[];
     /** column previous width */
     previousWidth?: number;
     /**

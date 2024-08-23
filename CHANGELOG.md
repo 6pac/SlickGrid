@@ -2,6 +2,21 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.12.0](https://github.com/6pac/SlickGrid/compare/5.11.0...5.12.0) (2024-08-23)
+
+### Bug Fixes
+
+* increase virtual scroll render throttling to 10ms ([64bf6ff](https://github.com/6pac/SlickGrid/commit/64bf6ff1c526da3686559092cfe4292db7b6ddf9))
+
+### Features
+
+* add `params.editorOptions` to change Flatpickr Editor date format ([#1048](https://github.com/6pac/SlickGrid/issues/1048)) ([8b46763](https://github.com/6pac/SlickGrid/commit/8b46763ac4aeb38a0098c38cad0b078852b3b399))
+
+### Performance Improvements
+
+* add new `rowTopOffsetRenderType` grid option to use "transform" ([#1050](https://github.com/6pac/SlickGrid/issues/1050)) ([7b7ff83](https://github.com/6pac/SlickGrid/commit/7b7ff831fdb7984633e77d832cc33ceaea3e4253))
+* decrease virtual scroll render throttling to 5ms ([#1049](https://github.com/6pac/SlickGrid/issues/1049)) ([b0e7706](https://github.com/6pac/SlickGrid/commit/b0e7706ee4b011f34b382bbb38826ee711b5889f))
+
 # [5.11.0](https://github.com/6pac/SlickGrid/compare/5.10.1...5.11.0) (2024-07-27)
 
 ### Bug Fixes

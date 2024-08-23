@@ -6264,12 +6264,14 @@ var FloatEditor = _FloatEditor, FlatpickrEditor = class {
       throw new Error("Flatpickr not loaded but required in SlickGrid.Editors, refer to Flatpickr documentation: https://flatpickr.js.org/getting-started/");
   }
   init() {
-    this.input = Utils28.createDomElement("input", { type: "text", className: "editor-text" }, this.args.container), this.input.focus(), this.input.select(), this.flatpickrInstance = flatpickr(this.input, {
+    this.input = Utils28.createDomElement("input", { type: "text", className: "editor-text" }, this.args.container), this.input.focus(), this.input.select();
+    let editorOptions = this.args.column.params?.editorOptions;
+    this.flatpickrInstance = flatpickr(this.input, {
       closeOnSelect: !0,
       allowInput: !0,
       altInput: !0,
-      altFormat: "m/d/Y",
-      dateFormat: "m/d/Y",
+      altFormat: editorOptions?.altFormat ?? "m/d/Y",
+      dateFormat: editorOptions?.dateFormat ?? "m/d/Y",
       onChange: () => {
         if (this.args.compositeEditorOptions) {
           let activeCell = this.args.grid.getActiveCell();
@@ -6626,7 +6628,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.11.0");
+    __publicField(this, "slickGridVersion", "5.12.0");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -6772,7 +6774,8 @@ var SlickGrid = class {
       doPaging: !0,
       autosizeColsMode: GridAutosizeColsMode2.LegacyOff,
       autosizeColPaddingPx: 4,
-      scrollRenderThrottling: 50,
+      rowTopOffsetRenderType: "top",
+      scrollRenderThrottling: 10,
       autosizeTextAvgToMWidthRatio: 0.75,
       viewportSwitchToScrollModeWidthPercent: void 0,
       viewportMinWidthPx: void 0,
@@ -8257,7 +8260,7 @@ var SlickGrid = class {
   //////////////////////////////////////////////////////////////////////////////////////////////
   // Rendering / Scrolling
   getRowTop(row) {
-    return this._options.rowHeight * row - this.offset;
+    return Math.round(this._options.rowHeight * row - this.offset);
   }
   getRowFromPosition(y) {
     return Math.floor((y + this.offset) / this._options.rowHeight);
@@ -8296,7 +8299,9 @@ var SlickGrid = class {
     d || (rowCss += " " + this._options.addNewRowCssClass);
     let metadata = this.data?.getItemMetadata?.(row);
     metadata?.cssClasses && (rowCss += " " + metadata.cssClasses);
-    let frozenRowOffset = this.getFrozenRowOffset(row), rowDiv = Utils30.createDomElement("div", { className: `ui-widget-content ${rowCss}`, role: "row", style: { top: `${this.getRowTop(row) - frozenRowOffset}px` } }), rowDivR;
+    let rowDiv = Utils30.createDomElement("div", { className: `ui-widget-content ${rowCss}`, role: "row" }), frozenRowOffset = this.getFrozenRowOffset(row), topOffset = this.getRowTop(row) - frozenRowOffset;
+    this._options.rowTopOffsetRenderType === "transform" ? rowDiv.style.transform = `translateY(${topOffset}px)` : rowDiv.style.top = `${topOffset}px`;
+    let rowDivR;
     divArrayL.push(rowDiv), this.hasFrozenColumns() && (rowDivR = rowDiv.cloneNode(!0), divArrayR.push(rowDivR));
     let colspan, m;
     for (let i = 0, ii = this.columns.length; i < ii; i++)
@@ -8624,8 +8629,8 @@ var SlickGrid = class {
   updateRowPositions() {
     for (let row in this.rowsCache)
       if (this.rowsCache) {
-        let rowNumber = row ? parseInt(row, 10) : 0;
-        Utils30.setStyleSize(this.rowsCache[rowNumber].rowNode[0], "top", this.getRowTop(rowNumber));
+        let rowNumber = row ? parseInt(row, 10) : 0, rowNode = this.rowsCache[rowNumber].rowNode[0];
+        this._options.rowTopOffsetRenderType === "transform" ? rowNode.style.transform = `translateY(${this.getRowTop(rowNumber)}px)` : rowNode.style.top = `${this.getRowTop(rowNumber)}px`;
       }
   }
   /** (re)Render the grid */
@@ -9863,7 +9868,7 @@ var SlickRemoteModel = class {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.11.0
+ * SlickGrid v5.12.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

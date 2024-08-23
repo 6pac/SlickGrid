@@ -147,7 +147,10 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
     footerRowHeight?: number;
     /** Do we want to force fit columns in the grid at all time? */
     forceFitColumns?: boolean;
-    /** Defaults to false, force synchronous scrolling */
+    /**
+     * Defaults to false, force synchronous scrolling without throttling the UI render when scrolling.
+     * Note: it might be risky to disable this option on large dataset, use at your own risk
+     */
     forceSyncScrolling?: boolean;
     /** Formatter classes factory */
     formatterFactory?: {
@@ -209,9 +212,15 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
     rowHighlightCssClass?: string;
     /** Defaults to 400, duration to show the row highlight (e.g. after CRUD executions) */
     rowHighlightDuration?: number;
+    /**
+     * Defaults to "top", what CSS style to we want to use to render each row top offset (we can use "top" or "transform").
+     * For example, with a default `rowHeight: 22`, the 2nd row will have a `top` offset of 44px and by default have a CSS style of `top: 44px`.
+     * NOTE: for perf reasons, the "transform" might become the default in our future major version.
+     */
+    rowTopOffsetRenderType?: 'top' | 'transform';
     /** Optional sanitizer function to use for sanitizing data to avoid XSS attacks */
     sanitizer?: (dirtyHtml: string) => string;
-    /** Defaults to 50, render throttling when scrolling large dataset */
+    /** Defaults to 10(ms), render throttling when using virtual scroll on large dataset */
     scrollRenderThrottling?: number;
     /** CSS class name used when cell is selected */
     selectedCellCssClass?: string;

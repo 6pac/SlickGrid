@@ -206,19 +206,22 @@
         throw new Error("Flatpickr not loaded but required in SlickGrid.Editors, refer to Flatpickr documentation: https://flatpickr.js.org/getting-started/");
     }
     init() {
-      this.input = Utils.createDomElement("input", { type: "text", className: "editor-text" }, this.args.container), this.input.focus(), this.input.select(), this.flatpickrInstance = flatpickr(this.input, {
+      var _a, _b, _c;
+      this.input = Utils.createDomElement("input", { type: "text", className: "editor-text" }, this.args.container), this.input.focus(), this.input.select();
+      let editorOptions = (_a = this.args.column.params) == null ? void 0 : _a.editorOptions;
+      this.flatpickrInstance = flatpickr(this.input, {
         closeOnSelect: !0,
         allowInput: !0,
         altInput: !0,
-        altFormat: "m/d/Y",
-        dateFormat: "m/d/Y",
+        altFormat: (_b = editorOptions == null ? void 0 : editorOptions.altFormat) != null ? _b : "m/d/Y",
+        dateFormat: (_c = editorOptions == null ? void 0 : editorOptions.dateFormat) != null ? _c : "m/d/Y",
         onChange: () => {
-          var _a, _b;
+          var _a2, _b2;
           if (this.args.compositeEditorOptions) {
             let activeCell = this.args.grid.getActiveCell();
             this.validate().valid && this.applyValue(this.args.item, this.serializeValue()), this.applyValue(this.args.compositeEditorOptions.formValues, this.serializeValue()), this.args.grid.onCompositeEditorChange.notify({
-              row: (_a = activeCell == null ? void 0 : activeCell.row) != null ? _a : 0,
-              cell: (_b = activeCell == null ? void 0 : activeCell.cell) != null ? _b : 0,
+              row: (_a2 = activeCell == null ? void 0 : activeCell.row) != null ? _a2 : 0,
+              cell: (_b2 = activeCell == null ? void 0 : activeCell.cell) != null ? _b2 : 0,
               item: this.args.item,
               column: this.args.column,
               formValues: this.args.compositeEditorOptions.formValues,
