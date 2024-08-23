@@ -287,7 +287,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     doPaging: true,
     autosizeColsMode: GridAutosizeColsMode.LegacyOff,
     autosizeColPaddingPx: 4,
-    scrollRenderThrottling: 5,
+    scrollRenderThrottling: 10,
     autosizeTextAvgToMWidthRatio: 0.75,
     viewportSwitchToScrollModeWidthPercent: undefined,
     viewportMinWidthPx: undefined,
