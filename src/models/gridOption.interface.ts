@@ -285,6 +285,12 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   /** Defaults to 400, duration to show the row highlight (e.g. after CRUD executions) */
   rowHighlightDuration?: number;
 
+  /**
+   * Defaults to "top", what CSS style to we want to use to render each row top offset (we can use "top" or "transform").
+   * For example, with a default `rowHeight: 22`, the 2nd row will have a `top` offset of 44px and by default have a CSS style of `top: 44px`
+   */
+  rowTopOffsetRenderType?: 'top' | 'transform';
+
   /** Optional sanitizer function to use for sanitizing data to avoid XSS attacks */
   sanitizer?: (dirtyHtml: string) => string;
 
