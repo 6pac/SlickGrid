@@ -288,7 +288,7 @@
 
     // fill the template with a delay to simulate a server call
     function simulateServerCall(item) {
-      setTimeout(function() {
+      window.setTimeout(function() {
         // let's add some property to our item for a better simulation
         var itemDetail = item;
         itemDetail.assignee = fakeNames[randomNumber(0, 9)];

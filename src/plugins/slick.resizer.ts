@@ -80,7 +80,7 @@ export class SlickResizer {
   protected _gridUid = '';
   protected _lastDimensions?: GridSize;
   protected _resizePaused = false;
-  protected _timer!: NodeJS.Timeout;
+  protected _timer?: number;
   protected _options: ResizerOption;
   protected _defaults: ResizerOption = {
     bottomPadding: 20,
@@ -247,8 +247,8 @@ export class SlickResizer {
     if (typeof Promise === 'function') {
       return new Promise((resolve) => {
         if (resizeDelay > 0) {
-          clearTimeout(this._timer);
-          this._timer = setTimeout(() => {
+          window.clearTimeout(this._timer);
+          this._timer = window.setTimeout(() => {
             resolve(this.resizeGridCallback(newSizes, event));
           }, resizeDelay);
         } else {
@@ -258,8 +258,8 @@ export class SlickResizer {
     } else {
       // OR no return when Promise isn't supported
       if (resizeDelay > 0) {
-        clearTimeout(this._timer);
-        this._timer = setTimeout(() => {
+        window.clearTimeout(this._timer);
+        this._timer = window.setTimeout(() => {
           this.resizeGridCallback(newSizes, event);
         }, resizeDelay);
       } else {

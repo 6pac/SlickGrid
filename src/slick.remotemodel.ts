@@ -12,7 +12,7 @@ export class SlickRemoteModel {
   protected searchstr = '';
   protected sortcol: ColumnSort | null = null;
   protected sortdir = 1;
-  protected h_request: any = null;
+  protected h_request?: number;
   protected req: any = null; // ajax request
 
   // events
@@ -84,11 +84,11 @@ export class SlickRemoteModel {
       url += ('&sortby=' + this.sortcol + ((this.sortdir > 0) ? '+asc' : '+desc'));
     }
 
-    if (this.h_request !== null) {
-      clearTimeout(this.h_request);
+    if (this.h_request) {
+      window.clearTimeout(this.h_request);
     }
 
-    this.h_request = setTimeout(() => {
+    this.h_request = window.setTimeout(() => {
       for (let i = fromPage; i <= toPage; i++) {
         this.data[i * this.PAGESIZE] = null; // null indicates a 'requested but not available yet'
       }

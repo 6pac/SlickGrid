@@ -216,7 +216,7 @@
           // you will need to provide an `asyncPost` function returning a Promise and also `asyncPostFormatter` formatter to display the result once the Promise resolves
           formatter: () => `<div>loading...</div>`,
           asyncProcess: () => new Promise(resolve => {
-            setTimeout(() => resolve({ ratio: Math.random() * 10 / 10, lifespan: Math.random() * 100 }), serverApiDelay);
+            window.setTimeout(() => resolve({ ratio: Math.random() * 10 / 10, lifespan: Math.random() * 100 }), serverApiDelay);
           }),
           asyncPostFormatter: this.tooltipTaskFormatter.bind(this),
 

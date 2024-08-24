@@ -335,11 +335,11 @@
       // but the cell highlight actually does that for us so we can skip it
     }
 
-    timer = setTimeout(startSimulation.bind(this), refreshRate || 0);
+    timer = window.setTimeout(startSimulation.bind(this), refreshRate || 0);
   }
 
   function stopSimulation() {
-    clearTimeout(timer);
+    window.clearTimeout(timer);
   }
 
   function findColumnById(columnName) {
@@ -354,7 +354,7 @@
         grid.setCellCssStyles(`highlight_${[column.id]}${row}`, hash);
 
         // remove highlight after x amount of time
-        setTimeout(() => removeCellStyling(item, column, row), highlightDuration);
+        window.setTimeout(() => removeCellStyling(item, column, row), highlightDuration);
       }
     }
   }
@@ -373,7 +373,7 @@ document.addEventListener("DOMContentLoaded", () => {
   // prepare the data
   data = getData(200);
 
-  setTimeout(() => {
+  window.setTimeout(() => {
     startSimulation();
   }, refreshRate);
 
