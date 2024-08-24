@@ -254,25 +254,36 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
       maxDestX: grid.getColumns().length,
       h: 0,
       w: 0,
-
       execute: () => {
         clipCommand.h = 0;
         for (let y = 0; y < clipCommand.destH; y++) {
           clipCommand.oldValues[y] = [];
           clipCommand.w = 0;
           clipCommand.h++;
+          let xOffset = 0; // the x offset for hidden col
+
           for (let x = 0; x < clipCommand.destW; x++) {
-            clipCommand.w++;
             const desty = activeRow + y;
             const destx = activeCell + x;
+            const column = columns[destx];
+
+            // paste on hidden column will be skipped, but we need to paste 1 cell further on X axis
+            // we'll increase our X and increase the offset`
+            if (column.hidden) {
+              clipCommand.destW++;
+              xOffset++;
+              continue;
+            }
+            clipCommand.w++;
 
             if (desty < clipCommand.maxDestY && destx < clipCommand.maxDestX) {
               const dt = grid.getDataItem(desty);
-              clipCommand.oldValues[y][x] = dt[columns[destx]['field']];
+
+              clipCommand.oldValues[y][x - xOffset] = dt[column['field']];
               if (oneCellToMultiple) {
-                clipCommand.setDataItemValueForColumn(dt, columns[destx], clippedRange[0][0]);
+                clipCommand.setDataItemValueForColumn(dt, column, clippedRange[0][0]);
               } else {
-                clipCommand.setDataItemValueForColumn(dt, columns[destx], clippedRange[y] ? clippedRange[y][x] : '');
+                clipCommand.setDataItemValueForColumn(dt, column, clippedRange[y] ? clippedRange[y][x - xOffset] : '');
               }
               grid.updateCell(desty, destx);
               grid.onCellChange.notify({
@@ -297,7 +308,6 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
         grid.getSelectionModel()?.setSelectedRanges([bRange]);
         this.onPasteCells.notify({ ranges: [bRange] });
       },
-
       undo: () => {
         for (let y = 0; y < clipCommand.destH; y++) {
           for (let x = 0; x < clipCommand.destW; x++) {
@@ -452,9 +462,9 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
         const focusEl = document.activeElement as HTMLElement;
         const ta = this._createTextBox('');
         setTimeout(() => {
-            this._decodeTabularData(this._grid, ta);
-            // restore focus when possible
-            focusEl?.focus();
+          this._decodeTabularData(this._grid, ta);
+          // restore focus when possible
+          focusEl?.focus();
         }, this._options?.clipboardPasteDelay ?? CLIPBOARD_PASTE_DELAY);
         return false;
       }
