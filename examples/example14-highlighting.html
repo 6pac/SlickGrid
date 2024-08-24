@@ -159,14 +159,14 @@
     grid.setCellCssStyles("highlight", changes);
     grid.render();
 
-    timer = setTimeout(simulateRealTimeUpdates, 500);
+    timer = window.setTimeout(simulateRealTimeUpdates, 500);
   }
 
   function stopSimulation() {
     changes = {}; // clear changes
     grid.setCellCssStyles("highlight", changes);
     grid.render();
-    clearTimeout(timer);
+    window.clearTimeout(timer);
   }
 
   function findCurrentServer() {

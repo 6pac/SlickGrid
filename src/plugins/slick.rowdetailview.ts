@@ -405,7 +405,7 @@ export class SlickRowDetailView {
   protected notifyBackToViewportWhenDomExist(item: any, rowId: number | string) {
     const rowIndex = (item.rowIndex || this._dataView.getRowById(item[this._dataViewIdProperty])) as number;
 
-    setTimeout(() => {
+    window.setTimeout(() => {
       // make sure View Row DOM Element really exist before notifying that it's a row that is visible again
       if (document.querySelector(`.${this._gridUid} .cellDetailView_${item[this._dataViewIdProperty]}`)) {
         this.onRowBackToViewportRange.notify({

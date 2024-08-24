@@ -45,7 +45,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
   protected _grid!: SlickGrid;
   protected _bodyElement: HTMLElement;
   protected _copiedRanges: SlickRange_[] | null = null;
-  protected _clearCopyTI?: NodeJS.Timeout;
+  protected _clearCopyTI?: number;
   protected _copiedCellStyle: string;
   protected _copiedCellStyleLayerKey: string;
   protected _onCopyInit?: () => void;
@@ -431,7 +431,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
             const ta = this._createTextBox(clipText);
             ta.focus();
 
-            setTimeout(() => {
+            window.setTimeout(() => {
               this._bodyElement.removeChild(ta);
               // restore focus when possible
               focusEl
@@ -461,7 +461,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
       )) {    // CTRL+V or Shift+INS
         const focusEl = document.activeElement as HTMLElement;
         const ta = this._createTextBox('');
-        setTimeout(() => {
+        window.setTimeout(() => {
           this._decodeTabularData(this._grid, ta);
           // restore focus when possible
           focusEl?.focus();
@@ -485,8 +485,8 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
       }
     }
     this._grid.setCellCssStyles(this._copiedCellStyleLayerKey, hash);
-    clearTimeout(this._clearCopyTI as NodeJS.Timeout);
-    this._clearCopyTI = setTimeout(() => {
+    window.clearTimeout(this._clearCopyTI);
+    this._clearCopyTI = window.setTimeout(() => {
       this.clearCopySelection();
     }, this._options?.clearCopySelectionDelay || CLEAR_COPY_SELECTION_DELAY);
   }

@@ -7,7 +7,7 @@ export class SlickRemoteModelYahoo {
   // protected
   protected PAGESIZE = 10;
   protected data: any = { length: 0 };
-  protected h_request: any = null;
+  protected h_request?: number;
   protected req: any = null; // ajax request
 
   // events
@@ -79,11 +79,11 @@ export class SlickRemoteModelYahoo {
       + '%20where%20url%3D%22http%3A%2F%2Frss.news.yahoo.com%2Frss%2Ftopstories%22'
       + '&format=json';
 
-    if (this.h_request !== null) {
-      clearTimeout(this.h_request);
+    if (this.h_request) {
+      window.clearTimeout(this.h_request);
     }
 
-    this.h_request = setTimeout(() => {
+    this.h_request = window.setTimeout(() => {
       for (let i = fromPage; i <= toPage; i++) {
         this.data[i * this.PAGESIZE] = null; // null indicates a 'requested but not available yet'
       }

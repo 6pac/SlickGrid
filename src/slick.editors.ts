@@ -374,7 +374,7 @@ export class FlatpickrEditor<TData = any, C extends Column<TData> = Column<TData
     });
 
     if (!this.args.compositeEditorOptions) {
-      setTimeout(() => {
+      window.setTimeout(() => {
         this.show();
         this.focus();
       }, 50);
