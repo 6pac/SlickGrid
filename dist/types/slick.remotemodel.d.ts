@@ -10,7 +10,7 @@ export declare class SlickRemoteModel {
     protected searchstr: string;
     protected sortcol: ColumnSort | null;
     protected sortdir: number;
-    protected h_request: any;
+    protected h_request?: number;
     protected req: any;
     onDataLoading: import("./slick.core").SlickEvent<any>;
     onDataLoaded: import("./slick.core").SlickEvent<any>;

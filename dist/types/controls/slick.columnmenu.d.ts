@@ -49,7 +49,9 @@ export declare class SlickColumnMenu {
         columnTitle: string;
     }): void;
     updateColumn(e: DOMMouseOrTouchEvent<HTMLInputElement>): void;
+    /** @deprecated because of a typo @use `setColumnVisibility()` instead */
     setColumnVisibiliy(idxOrId: number | string, show: boolean): void;
+    setColumnVisibility(idxOrId: number | string, show: boolean): void;
     getAllColumns(): Column<any>[];
     getColumnbyId(id: number | string): Column<any> | null;
     getColumnIndexbyId(id: number | string): number;

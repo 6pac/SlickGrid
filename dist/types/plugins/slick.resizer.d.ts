@@ -68,7 +68,7 @@ export declare class SlickResizer {
     protected _gridUid: string;
     protected _lastDimensions?: GridSize;
     protected _resizePaused: boolean;
-    protected _timer: NodeJS.Timeout;
+    protected _timer?: number;
     protected _options: ResizerOption;
     protected _defaults: ResizerOption;
     constructor(options: Partial<ResizerOption>, fixedDimensions?: {

@@ -6,7 +6,7 @@
 export declare class SlickRemoteModelYahoo {
     protected PAGESIZE: number;
     protected data: any;
-    protected h_request: any;
+    protected h_request?: number;
     protected req: any;
     protected onDataLoading: import("./slick.core").SlickEvent<any>;
     protected onDataLoaded: import("./slick.core").SlickEvent<any>;

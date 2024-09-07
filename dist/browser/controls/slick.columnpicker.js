@@ -126,7 +126,11 @@
         this.grid.setColumns(visibleColumns), this.onColumnsChanged.notify({ columnId, showing: isChecked, allColumns: this.columns, columns: this.columns, visibleColumns, grid: this.grid });
       }
     }
+    /** @deprecated because of a typo @use `setColumnVisibility()` instead */
     setColumnVisibiliy(idxOrId, show) {
+      this.setColumnVisibility(idxOrId, show);
+    }
+    setColumnVisibility(idxOrId, show) {
       let idx = typeof idxOrId == "number" ? idxOrId : this.getColumnIndexbyId(idxOrId), visibleColumns = this.getVisibleColumns(), col = this.columns[idx];
       if (show)
         col.hidden = !1, visibleColumns.splice(idx, 0, col);

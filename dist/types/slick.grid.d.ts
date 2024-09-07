@@ -10,7 +10,7 @@ import { type BasePubSub, BindingEventService as BindingEventService_, type Slic
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.12.0
+ * SlickGrid v5.12.1
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -102,10 +102,10 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected _defaults: BaseGridOption;
     protected _columnDefaults: Partial<C>;
     protected _columnAutosizeDefaults: AutoSize;
-    protected _columnResizeTimer?: any;
-    protected _executionBlockTimer?: any;
-    protected _flashCellTimer?: any;
-    protected _highlightRowTimer?: any;
+    protected _columnResizeTimer?: number;
+    protected _executionBlockTimer?: number;
+    protected _flashCellTimer?: number;
+    protected _highlightRowTimer?: number;
     protected th: number;
     protected h: number;
     protected ph: number;
@@ -219,10 +219,10 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
         enqueue: () => void;
         dequeue: () => void;
     };
-    protected h_editorLoader: any;
+    protected h_editorLoader?: number;
     protected h_render: null;
-    protected h_postrender: any;
-    protected h_postrenderCleanup: any;
+    protected h_postrender?: number;
+    protected h_postrenderCleanup?: number;
     protected postProcessedRows: any;
     protected postProcessToRow: number;
     protected postProcessFromRow: number;

@@ -96,11 +96,11 @@
       let resizeDelay = delay || 0;
       if (typeof Promise == "function")
         return new Promise((resolve) => {
-          resizeDelay > 0 ? (clearTimeout(this._timer), this._timer = setTimeout(() => {
+          resizeDelay > 0 ? (window.clearTimeout(this._timer), this._timer = window.setTimeout(() => {
             resolve(this.resizeGridCallback(newSizes, event));
           }, resizeDelay)) : resolve(this.resizeGridCallback(newSizes, event));
         });
-      resizeDelay > 0 ? (clearTimeout(this._timer), this._timer = setTimeout(() => {
+      resizeDelay > 0 ? (window.clearTimeout(this._timer), this._timer = window.setTimeout(() => {
         this.resizeGridCallback(newSizes, event);
       }, resizeDelay)) : this.resizeGridCallback(newSizes, event);
     }

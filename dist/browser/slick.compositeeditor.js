@@ -43,7 +43,7 @@
           }
           idx++;
         }
-        setTimeout(function() {
+        window.setTimeout(() => {
           Array.isArray(editors) && editors.length > 0 && typeof editors[0].focus == "function" && editors[0].focus();
         }, 0);
       }

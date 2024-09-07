@@ -147,12 +147,16 @@
           clipCommand.h = 0;
           for (let y = 0; y < clipCommand.destH; y++) {
             clipCommand.oldValues[y] = [], clipCommand.w = 0, clipCommand.h++;
+            let xOffset = 0;
             for (let x = 0; x < clipCommand.destW; x++) {
-              clipCommand.w++;
-              let desty = activeRow + y, destx = activeCell + x;
-              if (desty < clipCommand.maxDestY && destx < clipCommand.maxDestX) {
+              let desty = activeRow + y, destx = activeCell + x, column = columns[destx];
+              if (column.hidden) {
+                clipCommand.destW++, xOffset++;
+                continue;
+              }
+              if (clipCommand.w++, desty < clipCommand.maxDestY && destx < clipCommand.maxDestX) {
                 let dt = grid.getDataItem(desty);
-                clipCommand.oldValues[y][x] = dt[columns[destx].field], oneCellToMultiple ? clipCommand.setDataItemValueForColumn(dt, columns[destx], clippedRange[0][0]) : clipCommand.setDataItemValueForColumn(dt, columns[destx], clippedRange[y] ? clippedRange[y][x] : ""), grid.updateCell(desty, destx), grid.onCellChange.notify({
+                clipCommand.oldValues[y][x - xOffset] = dt[column.field], oneCellToMultiple ? clipCommand.setDataItemValueForColumn(dt, column, clippedRange[0][0]) : clipCommand.setDataItemValueForColumn(dt, column, clippedRange[y] ? clippedRange[y][x - xOffset] : ""), grid.updateCell(desty, destx), grid.onCellChange.notify({
                   row: desty,
                   cell: destx,
                   item: dt,
@@ -231,7 +235,7 @@
             return window.clipboardData.setData("Text", clipText), !0;
           {
             let focusEl = document.activeElement, ta = this._createTextBox(clipText);
-            if (ta.focus(), setTimeout(() => {
+            if (ta.focus(), window.setTimeout(() => {
               this._bodyElement.removeChild(ta), focusEl ? focusEl.focus() : console.log("No element to restore focus to after copy?");
             }, (_d = (_c = this._options) == null ? void 0 : _c.clipboardPasteDelay) != null ? _d : CLIPBOARD_PASTE_DELAY), typeof this._onCopySuccess == "function") {
               let rowCount = 0;
@@ -242,7 +246,7 @@
         }
         if (!this._options.readOnlyMode && (e.which === this.keyCodes.V && (e.ctrlKey || e.metaKey) && !e.shiftKey || e.which === this.keyCodes.INSERT && e.shiftKey && !e.ctrlKey)) {
           let focusEl = document.activeElement, ta = this._createTextBox("");
-          return setTimeout(() => {
+          return window.setTimeout(() => {
             this._decodeTabularData(this._grid, ta), focusEl == null || focusEl.focus();
           }, (_f = (_e = this._options) == null ? void 0 : _e.clipboardPasteDelay) != null ? _f : CLIPBOARD_PASTE_DELAY), !1;
         }
@@ -258,7 +262,7 @@
           for (let k = ranges[i].fromCell; k <= ranges[i].toCell && k < columns.length; k++)
             hash[j][columns[k].id] = this._copiedCellStyle;
         }
-      this._grid.setCellCssStyles(this._copiedCellStyleLayerKey, hash), clearTimeout(this._clearCopyTI), this._clearCopyTI = setTimeout(() => {
+      this._grid.setCellCssStyles(this._copiedCellStyleLayerKey, hash), window.clearTimeout(this._clearCopyTI), this._clearCopyTI = window.setTimeout(() => {
         this.clearCopySelection();
       }, ((_a = this._options) == null ? void 0 : _a.clearCopySelectionDelay) || CLEAR_COPY_SELECTION_DELAY);
     }

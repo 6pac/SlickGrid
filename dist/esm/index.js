@@ -870,7 +870,11 @@ var BindingEventService2 = BindingEventService, SlickEvent2 = Event, Utils2 = Ut
       this.grid.setColumns(visibleColumns), this.onColumnsChanged.notify({ columnId, showing: isChecked, allColumns: this.columns, columns: this.columns, visibleColumns, grid: this.grid });
     }
   }
+  /** @deprecated because of a typo @use `setColumnVisibility()` instead */
   setColumnVisibiliy(idxOrId, show) {
+    this.setColumnVisibility(idxOrId, show);
+  }
+  setColumnVisibility(idxOrId, show) {
     let idx = typeof idxOrId == "number" ? idxOrId : this.getColumnIndexbyId(idxOrId), visibleColumns = this.getVisibleColumns(), col = this.columns[idx];
     if (show)
       col.hidden = !1, visibleColumns.splice(idx, 0, col);
@@ -1017,7 +1021,11 @@ var BindingEventService3 = BindingEventService, SlickEvent3 = Event, Utils3 = Ut
       this.grid.setColumns(visibleColumns), this.onColumnsChanged.notify({ columnId, showing: isChecked, allColumns: this.columns, columns: this.columns, visibleColumns, grid: this.grid });
     }
   }
+  /** @deprecated because of a typo @use `setColumnVisibility()` instead */
   setColumnVisibiliy(idxOrId, show) {
+    this.setColumnVisibility(idxOrId, show);
+  }
+  setColumnVisibility(idxOrId, show) {
     let idx = typeof idxOrId == "number" ? idxOrId : this.getColumnIndexbyId(idxOrId), visibleColumns = this.getVisibleColumns(), col = this.columns[idx];
     if (show)
       col.hidden = !1, visibleColumns.splice(idx, 0, col);
@@ -1815,12 +1823,16 @@ var SlickEvent6 = SlickEvent, SlickRange2 = SlickRange, Utils8 = Utils, CLEAR_CO
         clipCommand.h = 0;
         for (let y = 0; y < clipCommand.destH; y++) {
           clipCommand.oldValues[y] = [], clipCommand.w = 0, clipCommand.h++;
+          let xOffset = 0;
           for (let x = 0; x < clipCommand.destW; x++) {
-            clipCommand.w++;
-            let desty = activeRow + y, destx = activeCell + x;
-            if (desty < clipCommand.maxDestY && destx < clipCommand.maxDestX) {
+            let desty = activeRow + y, destx = activeCell + x, column = columns[destx];
+            if (column.hidden) {
+              clipCommand.destW++, xOffset++;
+              continue;
+            }
+            if (clipCommand.w++, desty < clipCommand.maxDestY && destx < clipCommand.maxDestX) {
               let dt = grid.getDataItem(desty);
-              clipCommand.oldValues[y][x] = dt[columns[destx].field], oneCellToMultiple ? clipCommand.setDataItemValueForColumn(dt, columns[destx], clippedRange[0][0]) : clipCommand.setDataItemValueForColumn(dt, columns[destx], clippedRange[y] ? clippedRange[y][x] : ""), grid.updateCell(desty, destx), grid.onCellChange.notify({
+              clipCommand.oldValues[y][x - xOffset] = dt[column.field], oneCellToMultiple ? clipCommand.setDataItemValueForColumn(dt, column, clippedRange[0][0]) : clipCommand.setDataItemValueForColumn(dt, column, clippedRange[y] ? clippedRange[y][x - xOffset] : ""), grid.updateCell(desty, destx), grid.onCellChange.notify({
                 row: desty,
                 cell: destx,
                 item: dt,
@@ -1897,7 +1909,7 @@ var SlickEvent6 = SlickEvent, SlickRange2 = SlickRange, Utils8 = Utils, CLEAR_CO
           return window.clipboardData.setData("Text", clipText), !0;
         {
           let focusEl = document.activeElement, ta = this._createTextBox(clipText);
-          if (ta.focus(), setTimeout(() => {
+          if (ta.focus(), window.setTimeout(() => {
             this._bodyElement.removeChild(ta), focusEl ? focusEl.focus() : console.log("No element to restore focus to after copy?");
           }, this._options?.clipboardPasteDelay ?? CLIPBOARD_PASTE_DELAY), typeof this._onCopySuccess == "function") {
             let rowCount = 0;
@@ -1908,7 +1920,7 @@ var SlickEvent6 = SlickEvent, SlickRange2 = SlickRange, Utils8 = Utils, CLEAR_CO
       }
       if (!this._options.readOnlyMode && (e.which === this.keyCodes.V && (e.ctrlKey || e.metaKey) && !e.shiftKey || e.which === this.keyCodes.INSERT && e.shiftKey && !e.ctrlKey)) {
         let focusEl = document.activeElement, ta = this._createTextBox("");
-        return setTimeout(() => {
+        return window.setTimeout(() => {
           this._decodeTabularData(this._grid, ta), focusEl?.focus();
         }, this._options?.clipboardPasteDelay ?? CLIPBOARD_PASTE_DELAY), !1;
       }
@@ -1923,7 +1935,7 @@ var SlickEvent6 = SlickEvent, SlickRange2 = SlickRange, Utils8 = Utils, CLEAR_CO
         for (let k = ranges[i].fromCell; k <= ranges[i].toCell && k < columns.length; k++)
           hash[j][columns[k].id] = this._copiedCellStyle;
       }
-    this._grid.setCellCssStyles(this._copiedCellStyleLayerKey, hash), clearTimeout(this._clearCopyTI), this._clearCopyTI = setTimeout(() => {
+    this._grid.setCellCssStyles(this._copiedCellStyleLayerKey, hash), window.clearTimeout(this._clearCopyTI), this._clearCopyTI = window.setTimeout(() => {
       this.clearCopySelection();
     }, this._options?.clearCopySelectionDelay || CLEAR_COPY_SELECTION_DELAY);
   }
@@ -2455,7 +2467,7 @@ var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange
   handleDragOutsideViewport() {
     if (this._xDelayForNextCell = this._options.maxIntervalToShowNextCell - Math.abs(this._draggingMouseOffset.offset.x) * this._options.accelerateInterval, this._yDelayForNextCell = this._options.maxIntervalToShowNextCell - Math.abs(this._draggingMouseOffset.offset.y) * this._options.accelerateInterval, !this._autoScrollTimerId) {
       let xTotalDelay = 0, yTotalDelay = 0;
-      this._autoScrollTimerId = setInterval(() => {
+      this._autoScrollTimerId = window.setInterval(() => {
         let xNeedUpdate = !1, yNeedUpdate = !1;
         this._draggingMouseOffset.offset.x ? (xTotalDelay += this._options.minIntervalToShowNextCell, xNeedUpdate = xTotalDelay >= this._xDelayForNextCell) : xTotalDelay = 0, this._draggingMouseOffset.offset.y ? (yTotalDelay += this._options.minIntervalToShowNextCell, yNeedUpdate = yTotalDelay >= this._yDelayForNextCell) : yTotalDelay = 0, (xNeedUpdate || yNeedUpdate) && (xNeedUpdate && (xTotalDelay = 0), yNeedUpdate && (yTotalDelay = 0), this.handleDragToNewPosition(xNeedUpdate, yNeedUpdate));
       }, this._options.minIntervalToShowNextCell);
@@ -2466,7 +2478,7 @@ var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange
     xNeedUpdate && mouseOffsetX && (mouseOffsetX > 0 ? pageX = viewportOffset.right + this._moveDistanceForOneCell.x : pageX = viewportOffset.left - this._moveDistanceForOneCell.x), yNeedUpdate && mouseOffsetY && (mouseOffsetY > 0 ? pageY = viewportOffset.top - this._moveDistanceForOneCell.y : pageY = viewportOffset.bottom + this._moveDistanceForOneCell.y), this.handleDragTo({ pageX, pageY }, this._draggingMouseOffset.dd);
   }
   stopIntervalTimer() {
-    this._autoScrollTimerId && (clearInterval(this._autoScrollTimerId), this._autoScrollTimerId = void 0);
+    this._autoScrollTimerId && (window.clearInterval(this._autoScrollTimerId), this._autoScrollTimerId = void 0);
   }
   handleDragTo(e, dd) {
     let targetEvent = e?.touches?.[0] ?? e, canvasOffset = Utils12.offset(this._activeCanvas), end = this._grid.getCellFromPoint(
@@ -3997,11 +4009,11 @@ var BindingEventService12 = BindingEventService, SlickEvent15 = Event, Utils21 =
     let resizeDelay = delay || 0;
     if (typeof Promise == "function")
       return new Promise((resolve) => {
-        resizeDelay > 0 ? (clearTimeout(this._timer), this._timer = setTimeout(() => {
+        resizeDelay > 0 ? (window.clearTimeout(this._timer), this._timer = window.setTimeout(() => {
           resolve(this.resizeGridCallback(newSizes, event2));
         }, resizeDelay)) : resolve(this.resizeGridCallback(newSizes, event2));
       });
-    resizeDelay > 0 ? (clearTimeout(this._timer), this._timer = setTimeout(() => {
+    resizeDelay > 0 ? (window.clearTimeout(this._timer), this._timer = window.setTimeout(() => {
       this.resizeGridCallback(newSizes, event2);
     }, resizeDelay)) : this.resizeGridCallback(newSizes, event2);
   }
@@ -4183,7 +4195,7 @@ var SlickEvent16 = SlickEvent, SlickEventHandler8 = SlickEventHandler, Utils22 =
   /** Send a notification, through "onRowBackToViewportRange", that a row came back into the viewport visible range */
   notifyBackToViewportWhenDomExist(item, rowId) {
     let rowIndex = item.rowIndex || this._dataView.getRowById(item[this._dataViewIdProperty]);
-    setTimeout(() => {
+    window.setTimeout(() => {
       document.querySelector(`.${this._gridUid} .cellDetailView_${item[this._dataViewIdProperty]}`) && this.onRowBackToViewportRange.notify({
         grid: this._grid,
         item,
@@ -4829,7 +4841,7 @@ function SlickCompositeEditor(columns, containers, options) {
         }
         idx++;
       }
-      setTimeout(function() {
+      window.setTimeout(() => {
         Array.isArray(editors) && editors.length > 0 && typeof editors[0].focus == "function" && editors[0].focus();
       }, 0);
     }
@@ -6183,7 +6195,7 @@ var FloatEditor = _FloatEditor, FlatpickrEditor = class {
           });
         }
       }
-    }), this.args.compositeEditorOptions || setTimeout(() => {
+    }), this.args.compositeEditorOptions || window.setTimeout(() => {
       this.show(), this.focus();
     }, 50), Utils28.width(this.input, Utils28.width(this.input) - (this.args.compositeEditorOptions ? 28 : 18));
   }
@@ -6525,7 +6537,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.12.0");
+    __publicField(this, "slickGridVersion", "5.12.1");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -6831,10 +6843,10 @@ var SlickGrid = class {
     __publicField(this, "pagingIsLastPage", !1);
     __publicField(this, "scrollThrottle");
     // async call handles
-    __publicField(this, "h_editorLoader", null);
+    __publicField(this, "h_editorLoader");
     __publicField(this, "h_render", null);
-    __publicField(this, "h_postrender", null);
-    __publicField(this, "h_postrenderCleanup", null);
+    __publicField(this, "h_postrender");
+    __publicField(this, "h_postrenderCleanup");
     __publicField(this, "postProcessedRows", {});
     __publicField(this, "postProcessToRow", null);
     __publicField(this, "postProcessFromRow", null);
@@ -7402,10 +7414,10 @@ var SlickGrid = class {
       filter: `.${this._options.unorderableColumnCssClass}`,
       onMove: (event2) => !event2.related.classList.contains(this._options.unorderableColumnCssClass),
       onStart: (e) => {
-        canDragScroll = !this.hasFrozenColumns() || Utils30.offset(e.item).left > Utils30.offset(this._viewportScrollContainerX).left, canDragScroll && e.originalEvent.pageX > this._container.clientWidth ? columnScrollTimer || (columnScrollTimer = setInterval(scrollColumnsRight, 100)) : canDragScroll && e.originalEvent.pageX < Utils30.offset(this._viewportScrollContainerX).left ? columnScrollTimer || (columnScrollTimer = setInterval(scrollColumnsLeft, 100)) : (clearInterval(columnScrollTimer), columnScrollTimer = null);
+        canDragScroll = !this.hasFrozenColumns() || Utils30.offset(e.item).left > Utils30.offset(this._viewportScrollContainerX).left, canDragScroll && e.originalEvent.pageX > this._container.clientWidth ? columnScrollTimer || (columnScrollTimer = window.setInterval(scrollColumnsRight, 100)) : canDragScroll && e.originalEvent.pageX < Utils30.offset(this._viewportScrollContainerX).left ? columnScrollTimer || (columnScrollTimer = window.setInterval(scrollColumnsLeft, 100)) : (window.clearInterval(columnScrollTimer), columnScrollTimer = null);
       },
       onEnd: (e) => {
-        if (clearInterval(columnScrollTimer), columnScrollTimer = null, !this.getEditorLock()?.commitCurrentEdit())
+        if (window.clearInterval(columnScrollTimer), columnScrollTimer = null, !this.getEditorLock()?.commitCurrentEdit())
           return;
         let reorderedIds = this.sortableSideLeftInstance?.toArray() ?? [];
         reorderedIds = reorderedIds.concat(this.sortableSideRightInstance?.toArray() ?? []);
@@ -7505,7 +7517,7 @@ var SlickGrid = class {
               let newWidth;
               for (j = 0; j < vc.length; j++)
                 c = vc[j], !(!c || c.hidden) && (newWidth = children[j].offsetWidth, c.previousWidth !== newWidth && c.rerenderOnResize && this.invalidateAllRows());
-              this.updateCanvasWidth(!0), this.render(), this.trigger(this.onColumnsResized, { triggeredByColumn }), clearTimeout(this._columnResizeTimer), this._columnResizeTimer = setTimeout(() => {
+              this.updateCanvasWidth(!0), this.render(), this.trigger(this.onColumnsResized, { triggeredByColumn }), window.clearTimeout(this._columnResizeTimer), this._columnResizeTimer = window.setTimeout(() => {
                 this.columnResizeDragging = !1;
               }, 300);
             }
@@ -7603,7 +7615,7 @@ var SlickGrid = class {
   }
   /** Clear all highlight timers that might have been left opened */
   clearAllTimers() {
-    clearTimeout(this._columnResizeTimer), clearTimeout(this._executionBlockTimer), clearTimeout(this._flashCellTimer), clearTimeout(this._highlightRowTimer), clearTimeout(this.h_editorLoader);
+    window.clearTimeout(this._columnResizeTimer), window.clearTimeout(this._executionBlockTimer), window.clearTimeout(this._flashCellTimer), window.clearTimeout(this._highlightRowTimer), window.clearTimeout(this.h_editorLoader);
   }
   /**
    * Destroy (dispose) of SlickGrid
@@ -8513,10 +8525,10 @@ var SlickGrid = class {
     needToReselectCell && (this.activeCellNode = this.getCellNode(this.activeRow, this.activeCell));
   }
   startPostProcessing() {
-    this._options.enableAsyncPostRender && (clearTimeout(this.h_postrender), this.h_postrender = setTimeout(this.asyncPostProcessRows.bind(this), this._options.asyncPostRenderDelay));
+    this._options.enableAsyncPostRender && (window.clearTimeout(this.h_postrender), this.h_postrender = window.setTimeout(this.asyncPostProcessRows.bind(this), this._options.asyncPostRenderDelay));
   }
   startPostProcessingCleanup() {
-    this._options.enableAsyncPostRenderCleanup && (clearTimeout(this.h_postrenderCleanup), this.h_postrenderCleanup = setTimeout(this.asyncPostProcessCleanupRows.bind(this), this._options.asyncPostRenderCleanupDelay));
+    this._options.enableAsyncPostRenderCleanup && (window.clearTimeout(this.h_postrenderCleanup), this.h_postrenderCleanup = window.setTimeout(this.asyncPostProcessCleanupRows.bind(this), this._options.asyncPostRenderCleanupDelay));
   }
   invalidatePostProcessingResults(row) {
     typeof this.postProcessedRows[row] == "object" && Object.keys(this.postProcessedRows[row]).forEach((columnIdx) => {
@@ -8609,7 +8621,7 @@ var SlickGrid = class {
     }, dequeue = () => {
       queued = !1;
     }, blockAndExecute = () => {
-      blocked = !0, clearTimeout(this._executionBlockTimer), this._executionBlockTimer = setTimeout(unblock, minPeriod_ms), action.call(this);
+      blocked = !0, window.clearTimeout(this._executionBlockTimer), this._executionBlockTimer = window.setTimeout(unblock, minPeriod_ms), action.call(this);
     }, unblock = () => {
       queued ? (dequeue(), blockAndExecute()) : blocked = !1;
     };
@@ -8631,7 +8643,7 @@ var SlickGrid = class {
               node && m.asyncPostRender(node, row, this.getDataItem(row), m, processedStatus === "C"), this.postProcessedRows[row][columnIdx] = "R";
             }
           }
-        }), this.h_postrender = setTimeout(this.asyncPostProcessRows.bind(this), this._options.asyncPostRenderDelay);
+        }), this.h_postrender = window.setTimeout(this.asyncPostProcessRows.bind(this), this._options.asyncPostRenderDelay);
         return;
       }
     }
@@ -8648,7 +8660,7 @@ var SlickGrid = class {
           column.asyncPostRenderCleanup && entry.node && column.asyncPostRenderCleanup(entry.node, entry.rowIdx, column);
         }
       }
-      this.h_postrenderCleanup = setTimeout(this.asyncPostProcessCleanupRows.bind(this), this._options.asyncPostRenderCleanupDelay);
+      this.h_postrenderCleanup = window.setTimeout(this.asyncPostProcessCleanupRows.bind(this), this._options.asyncPostRenderCleanupDelay);
     }
   }
   updateCellCssStylesOnRenderedRows(addedHash, removedHash) {
@@ -8710,7 +8722,7 @@ var SlickGrid = class {
    */
   flashCell(row, cell, speed = 250) {
     let toggleCellClass = (cellNode, times) => {
-      times < 1 || (clearTimeout(this._flashCellTimer), this._flashCellTimer = setTimeout(() => {
+      times < 1 || (window.clearTimeout(this._flashCellTimer), this._flashCellTimer = window.setTimeout(() => {
         times % 2 === 0 ? cellNode.classList.add(this._options.cellFlashingCssClass || "") : cellNode.classList.remove(this._options.cellFlashingCssClass || ""), toggleCellClass(cellNode, times - 1);
       }, speed));
     };
@@ -8726,7 +8738,7 @@ var SlickGrid = class {
    */
   highlightRow(row, duration) {
     let rowCache = this.rowsCache[row];
-    duration || (duration = this._options.rowHighlightDuration), Array.isArray(rowCache?.rowNode) && this._options.rowHighlightCssClass && (rowCache.rowNode.forEach((node) => node.classList.add(...Utils30.classNameToList(this._options.rowHighlightCssClass))), clearTimeout(this._highlightRowTimer), this._highlightRowTimer = setTimeout(() => {
+    duration || (duration = this._options.rowHighlightDuration), Array.isArray(rowCache?.rowNode) && this._options.rowHighlightCssClass && (rowCache.rowNode.forEach((node) => node.classList.add(...Utils30.classNameToList(this._options.rowHighlightCssClass))), window.clearTimeout(this._highlightRowTimer), this._highlightRowTimer = window.setTimeout(() => {
       rowCache.rowNode?.forEach((node) => node.classList.remove(...Utils30.classNameToList(this._options.rowHighlightCssClass)));
     }, duration));
   }
@@ -8871,7 +8883,7 @@ var SlickGrid = class {
   getCellFromPoint(x, y) {
     let row = this.getRowFromPosition(y), cell = 0, w = 0;
     for (let i = 0; i < this.columns.length && w <= x; i++)
-      !this.columns[i] || this.columns[i].hidden || (w += this.columns[i].width, cell++);
+      this.columns[i] && (w += this.columns[i].width, cell++);
     return cell -= 1, row < -1 && (row = -1), { row, cell };
   }
   getCellFromNode(cellNode) {
@@ -8968,7 +8980,7 @@ var SlickGrid = class {
       let activeCellOffset = Utils30.offset(this.activeCellNode), rowOffset = Math.floor(Utils30.offset(Utils30.parents(this.activeCellNode, ".grid-canvas")[0]).top), isBottom = Utils30.parents(this.activeCellNode, ".grid-canvas-bottom").length;
       this.hasFrozenRows && isBottom && (rowOffset -= this._options.frozenBottom ? Utils30.height(this._canvasTopL) : this.frozenRowsHeight);
       let cell = this.getCellFromPoint(activeCellOffset.left, Math.ceil(activeCellOffset.top) - rowOffset);
-      this.activeRow = cell.row, this.activeCell = this.activePosX = this.activeCell = this.activePosX = this.getCellFromNode(this.activeCellNode), !Utils30.isDefined(opt_editMode) && this._options.autoEditNewRow && (opt_editMode = this.activeRow === this.getDataLength() || this._options.autoEdit), this._options.showCellSelection && (this.activeCellNode.classList.add("active"), this.rowsCache[this.activeRow]?.rowNode?.forEach((node) => node.classList.add("active"))), this._options.editable && opt_editMode && this.isCellPotentiallyEditable(this.activeRow, this.activeCell) && (clearTimeout(this.h_editorLoader), this._options.asyncEditorLoading ? this.h_editorLoader = setTimeout(() => {
+      this.activeRow = cell.row, this.activeCell = this.activePosX = this.activeCell = this.activePosX = this.getCellFromNode(this.activeCellNode), !Utils30.isDefined(opt_editMode) && this._options.autoEditNewRow && (opt_editMode = this.activeRow === this.getDataLength() || this._options.autoEdit), this._options.showCellSelection && (this.activeCellNode.classList.add("active"), this.rowsCache[this.activeRow]?.rowNode?.forEach((node) => node.classList.add("active"))), this._options.editable && opt_editMode && this.isCellPotentiallyEditable(this.activeRow, this.activeCell) && (window.clearTimeout(this.h_editorLoader), this._options.asyncEditorLoading ? this.h_editorLoader = window.setTimeout(() => {
         this.makeActiveCellEditable(void 0, preClickModeOn, e);
       }, this._options.asyncEditorLoadDelay) : this.makeActiveCellEditable(void 0, preClickModeOn, e));
     } else
@@ -9016,7 +9028,7 @@ var SlickGrid = class {
       return;
     if (!this._options.editable)
       throw new Error("SlickGrid makeActiveCellEditable : should never get called when this._options.editable is false");
-    if (clearTimeout(this.h_editorLoader), !this.isCellPotentiallyEditable(this.activeRow, this.activeCell))
+    if (window.clearTimeout(this.h_editorLoader), !this.isCellPotentiallyEditable(this.activeRow, this.activeCell))
       return;
     let columnDef = this.columns[this.activeCell], item = this.getDataItem(this.activeRow);
     if (this.trigger(this.onBeforeEditCell, { row: this.activeRow, cell: this.activeCell, item, column: columnDef, target: "grid" }).getReturnValue() === !1) {
@@ -9540,7 +9552,7 @@ var SlickRemoteModelYahoo = class {
     // protected
     __publicField(this, "PAGESIZE", 10);
     __publicField(this, "data", { length: 0 });
-    __publicField(this, "h_request", null);
+    __publicField(this, "h_request");
     __publicField(this, "req", null);
     // ajax request
     // events
@@ -9580,7 +9592,7 @@ var SlickRemoteModelYahoo = class {
       return;
     }
     let recStart = fromPage * this.PAGESIZE, recCount = (toPage - fromPage) * this.PAGESIZE + this.PAGESIZE, url = "https://query.yahooapis.com/v1/public/yql?q=select%20*%20from%20rss(" + recStart + "%2C" + recCount + ")%20where%20url%3D%22http%3A%2F%2Frss.news.yahoo.com%2Frss%2Ftopstories%22&format=json";
-    this.h_request !== null && clearTimeout(this.h_request), this.h_request = setTimeout(() => {
+    this.h_request && window.clearTimeout(this.h_request), this.h_request = window.setTimeout(() => {
       for (let i = fromPage; i <= toPage; i++)
         this.data[i * this.PAGESIZE] = null;
       this.onDataLoading.notify({ from, to }), this.req = window.$.jsonp({
@@ -9680,7 +9692,7 @@ var SlickRemoteModel = class {
     __publicField(this, "searchstr", "");
     __publicField(this, "sortcol", null);
     __publicField(this, "sortdir", 1);
-    __publicField(this, "h_request", null);
+    __publicField(this, "h_request");
     __publicField(this, "req", null);
     // ajax request
     // events
@@ -9720,7 +9732,7 @@ var SlickRemoteModel = class {
       return;
     }
     let url = "http://octopart.com/api/v3/parts/search?apikey=68b25f31&include[]=short_description&show[]=uid&show[]=manufacturer&show[]=mpn&show[]=brand&show[]=octopart_url&show[]=short_description&q=" + this.searchstr + "&start=" + fromPage * this.PAGESIZE + "&limit=" + ((toPage - fromPage) * this.PAGESIZE + this.PAGESIZE);
-    this.sortcol !== null && (url += "&sortby=" + this.sortcol + (this.sortdir > 0 ? "+asc" : "+desc")), this.h_request !== null && clearTimeout(this.h_request), this.h_request = setTimeout(() => {
+    this.sortcol !== null && (url += "&sortby=" + this.sortcol + (this.sortdir > 0 ? "+asc" : "+desc")), this.h_request && window.clearTimeout(this.h_request), this.h_request = window.setTimeout(() => {
       for (let i = fromPage; i <= toPage; i++)
         this.data[i * this.PAGESIZE] = null;
       this.onDataLoading.notify({ from, to }), this.req = window.$.jsonp({
@@ -9850,7 +9862,7 @@ export {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.12.0
+ * SlickGrid v5.12.1
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

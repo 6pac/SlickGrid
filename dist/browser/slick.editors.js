@@ -230,7 +230,7 @@
             });
           }
         }
-      }), this.args.compositeEditorOptions || setTimeout(() => {
+      }), this.args.compositeEditorOptions || window.setTimeout(() => {
         this.show(), this.focus();
       }, 50), Utils.width(this.input, Utils.width(this.input) - (this.args.compositeEditorOptions ? 28 : 18));
     }

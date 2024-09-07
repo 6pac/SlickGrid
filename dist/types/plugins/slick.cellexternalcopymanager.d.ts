@@ -37,7 +37,7 @@ export declare class SlickCellExternalCopyManager implements SlickPlugin {
     protected _grid: SlickGrid;
     protected _bodyElement: HTMLElement;
     protected _copiedRanges: SlickRange_[] | null;
-    protected _clearCopyTI?: NodeJS.Timeout;
+    protected _clearCopyTI?: number;
     protected _copiedCellStyle: string;
     protected _copiedCellStyleLayerKey: string;
     protected _onCopyInit?: () => void;

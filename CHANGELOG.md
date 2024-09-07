@@ -2,6 +2,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.12.1](https://github.com/6pac/SlickGrid/compare/5.12.0...5.12.1) (2024-09-07)
+
+### Bug Fixes
+
+* SlickCellExternalCopyManager should work w/hidden cols ([#1053](https://github.com/6pac/SlickGrid/issues/1053)) ([0895deb](https://github.com/6pac/SlickGrid/commit/0895deba5d25225889d8330f7343327d96b8f8b8))
+* typo in `setColumnVisibiliy` ([#1057](https://github.com/6pac/SlickGrid/issues/1057)) ([9fcadba](https://github.com/6pac/SlickGrid/commit/9fcadbafa58f6f02c815f76385391a7240e025b8))
+* use setTimeout/setInterval from window object with correct TS type ([#1054](https://github.com/6pac/SlickGrid/issues/1054)) ([1995037](https://github.com/6pac/SlickGrid/commit/199503736b79151aca4da8a7abe05f85ed568293))
+
 # [5.12.0](https://github.com/6pac/SlickGrid/compare/5.11.0...5.12.0) (2024-08-23)
 
 ### Bug Fixes

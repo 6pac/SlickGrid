@@ -24,7 +24,7 @@
       this.externalPubSub = externalPubSub;
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.12.0");
+      __publicField(this, "slickGridVersion", "5.12.1");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -330,10 +330,10 @@
       __publicField(this, "pagingIsLastPage", !1);
       __publicField(this, "scrollThrottle");
       // async call handles
-      __publicField(this, "h_editorLoader", null);
+      __publicField(this, "h_editorLoader");
       __publicField(this, "h_render", null);
-      __publicField(this, "h_postrender", null);
-      __publicField(this, "h_postrenderCleanup", null);
+      __publicField(this, "h_postrender");
+      __publicField(this, "h_postrenderCleanup");
       __publicField(this, "postProcessedRows", {});
       __publicField(this, "postProcessToRow", null);
       __publicField(this, "postProcessFromRow", null);
@@ -909,11 +909,11 @@
         filter: `.${this._options.unorderableColumnCssClass}`,
         onMove: (event) => !event.related.classList.contains(this._options.unorderableColumnCssClass),
         onStart: (e) => {
-          canDragScroll = !this.hasFrozenColumns() || Utils.offset(e.item).left > Utils.offset(this._viewportScrollContainerX).left, canDragScroll && e.originalEvent.pageX > this._container.clientWidth ? columnScrollTimer || (columnScrollTimer = setInterval(scrollColumnsRight, 100)) : canDragScroll && e.originalEvent.pageX < Utils.offset(this._viewportScrollContainerX).left ? columnScrollTimer || (columnScrollTimer = setInterval(scrollColumnsLeft, 100)) : (clearInterval(columnScrollTimer), columnScrollTimer = null);
+          canDragScroll = !this.hasFrozenColumns() || Utils.offset(e.item).left > Utils.offset(this._viewportScrollContainerX).left, canDragScroll && e.originalEvent.pageX > this._container.clientWidth ? columnScrollTimer || (columnScrollTimer = window.setInterval(scrollColumnsRight, 100)) : canDragScroll && e.originalEvent.pageX < Utils.offset(this._viewportScrollContainerX).left ? columnScrollTimer || (columnScrollTimer = window.setInterval(scrollColumnsLeft, 100)) : (window.clearInterval(columnScrollTimer), columnScrollTimer = null);
         },
         onEnd: (e) => {
           var _a2, _b2, _c, _d, _e;
-          if (clearInterval(columnScrollTimer), columnScrollTimer = null, !((_a2 = this.getEditorLock()) != null && _a2.commitCurrentEdit()))
+          if (window.clearInterval(columnScrollTimer), columnScrollTimer = null, !((_a2 = this.getEditorLock()) != null && _a2.commitCurrentEdit()))
             return;
           let reorderedIds = (_c = (_b2 = this.sortableSideLeftInstance) == null ? void 0 : _b2.toArray()) != null ? _c : [];
           reorderedIds = reorderedIds.concat((_e = (_d = this.sortableSideRightInstance) == null ? void 0 : _d.toArray()) != null ? _e : []);
@@ -1015,7 +1015,7 @@
                 let newWidth;
                 for (j = 0; j < vc.length; j++)
                   c = vc[j], !(!c || c.hidden) && (newWidth = children[j].offsetWidth, c.previousWidth !== newWidth && c.rerenderOnResize && this.invalidateAllRows());
-                this.updateCanvasWidth(!0), this.render(), this.trigger(this.onColumnsResized, { triggeredByColumn }), clearTimeout(this._columnResizeTimer), this._columnResizeTimer = setTimeout(() => {
+                this.updateCanvasWidth(!0), this.render(), this.trigger(this.onColumnsResized, { triggeredByColumn }), window.clearTimeout(this._columnResizeTimer), this._columnResizeTimer = window.setTimeout(() => {
                   this.columnResizeDragging = !1;
                 }, 300);
               }
@@ -1115,7 +1115,7 @@
     }
     /** Clear all highlight timers that might have been left opened */
     clearAllTimers() {
-      clearTimeout(this._columnResizeTimer), clearTimeout(this._executionBlockTimer), clearTimeout(this._flashCellTimer), clearTimeout(this._highlightRowTimer), clearTimeout(this.h_editorLoader);
+      window.clearTimeout(this._columnResizeTimer), window.clearTimeout(this._executionBlockTimer), window.clearTimeout(this._flashCellTimer), window.clearTimeout(this._highlightRowTimer), window.clearTimeout(this.h_editorLoader);
     }
     /**
      * Destroy (dispose) of SlickGrid
@@ -2060,10 +2060,10 @@
       needToReselectCell && (this.activeCellNode = this.getCellNode(this.activeRow, this.activeCell));
     }
     startPostProcessing() {
-      this._options.enableAsyncPostRender && (clearTimeout(this.h_postrender), this.h_postrender = setTimeout(this.asyncPostProcessRows.bind(this), this._options.asyncPostRenderDelay));
+      this._options.enableAsyncPostRender && (window.clearTimeout(this.h_postrender), this.h_postrender = window.setTimeout(this.asyncPostProcessRows.bind(this), this._options.asyncPostRenderDelay));
     }
     startPostProcessingCleanup() {
-      this._options.enableAsyncPostRenderCleanup && (clearTimeout(this.h_postrenderCleanup), this.h_postrenderCleanup = setTimeout(this.asyncPostProcessCleanupRows.bind(this), this._options.asyncPostRenderCleanupDelay));
+      this._options.enableAsyncPostRenderCleanup && (window.clearTimeout(this.h_postrenderCleanup), this.h_postrenderCleanup = window.setTimeout(this.asyncPostProcessCleanupRows.bind(this), this._options.asyncPostRenderCleanupDelay));
     }
     invalidatePostProcessingResults(row) {
       typeof this.postProcessedRows[row] == "object" && Object.keys(this.postProcessedRows[row]).forEach((columnIdx) => {
@@ -2156,7 +2156,7 @@
       }, dequeue = () => {
         queued = !1;
       }, blockAndExecute = () => {
-        blocked = !0, clearTimeout(this._executionBlockTimer), this._executionBlockTimer = setTimeout(unblock, minPeriod_ms), action.call(this);
+        blocked = !0, window.clearTimeout(this._executionBlockTimer), this._executionBlockTimer = window.setTimeout(unblock, minPeriod_ms), action.call(this);
       }, unblock = () => {
         queued ? (dequeue(), blockAndExecute()) : blocked = !1;
       };
@@ -2178,7 +2178,7 @@
                 node && m.asyncPostRender(node, row, this.getDataItem(row), m, processedStatus === "C"), this.postProcessedRows[row][columnIdx] = "R";
               }
             }
-          }), this.h_postrender = setTimeout(this.asyncPostProcessRows.bind(this), this._options.asyncPostRenderDelay);
+          }), this.h_postrender = window.setTimeout(this.asyncPostProcessRows.bind(this), this._options.asyncPostRenderDelay);
           return;
         }
       }
@@ -2195,7 +2195,7 @@
             column.asyncPostRenderCleanup && entry.node && column.asyncPostRenderCleanup(entry.node, entry.rowIdx, column);
           }
         }
-        this.h_postrenderCleanup = setTimeout(this.asyncPostProcessCleanupRows.bind(this), this._options.asyncPostRenderCleanupDelay);
+        this.h_postrenderCleanup = window.setTimeout(this.asyncPostProcessCleanupRows.bind(this), this._options.asyncPostRenderCleanupDelay);
       }
     }
     updateCellCssStylesOnRenderedRows(addedHash, removedHash) {
@@ -2257,7 +2257,7 @@
      */
     flashCell(row, cell, speed = 250) {
       let toggleCellClass = (cellNode, times) => {
-        times < 1 || (clearTimeout(this._flashCellTimer), this._flashCellTimer = setTimeout(() => {
+        times < 1 || (window.clearTimeout(this._flashCellTimer), this._flashCellTimer = window.setTimeout(() => {
           times % 2 === 0 ? cellNode.classList.add(this._options.cellFlashingCssClass || "") : cellNode.classList.remove(this._options.cellFlashingCssClass || ""), toggleCellClass(cellNode, times - 1);
         }, speed));
       };
@@ -2273,7 +2273,7 @@
      */
     highlightRow(row, duration) {
       let rowCache = this.rowsCache[row];
-      duration || (duration = this._options.rowHighlightDuration), Array.isArray(rowCache == null ? void 0 : rowCache.rowNode) && this._options.rowHighlightCssClass && (rowCache.rowNode.forEach((node) => node.classList.add(...Utils.classNameToList(this._options.rowHighlightCssClass))), clearTimeout(this._highlightRowTimer), this._highlightRowTimer = setTimeout(() => {
+      duration || (duration = this._options.rowHighlightDuration), Array.isArray(rowCache == null ? void 0 : rowCache.rowNode) && this._options.rowHighlightCssClass && (rowCache.rowNode.forEach((node) => node.classList.add(...Utils.classNameToList(this._options.rowHighlightCssClass))), window.clearTimeout(this._highlightRowTimer), this._highlightRowTimer = window.setTimeout(() => {
         var _a;
         (_a = rowCache.rowNode) == null || _a.forEach((node) => node.classList.remove(...Utils.classNameToList(this._options.rowHighlightCssClass)));
       }, duration));
@@ -2421,7 +2421,7 @@
     getCellFromPoint(x, y) {
       let row = this.getRowFromPosition(y), cell = 0, w = 0;
       for (let i = 0; i < this.columns.length && w <= x; i++)
-        !this.columns[i] || this.columns[i].hidden || (w += this.columns[i].width, cell++);
+        this.columns[i] && (w += this.columns[i].width, cell++);
       return cell -= 1, row < -1 && (row = -1), { row, cell };
     }
     getCellFromNode(cellNode) {
@@ -2522,7 +2522,7 @@
         let activeCellOffset = Utils.offset(this.activeCellNode), rowOffset = Math.floor(Utils.offset(Utils.parents(this.activeCellNode, ".grid-canvas")[0]).top), isBottom = Utils.parents(this.activeCellNode, ".grid-canvas-bottom").length;
         this.hasFrozenRows && isBottom && (rowOffset -= this._options.frozenBottom ? Utils.height(this._canvasTopL) : this.frozenRowsHeight);
         let cell = this.getCellFromPoint(activeCellOffset.left, Math.ceil(activeCellOffset.top) - rowOffset);
-        this.activeRow = cell.row, this.activeCell = this.activePosX = this.activeCell = this.activePosX = this.getCellFromNode(this.activeCellNode), !Utils.isDefined(opt_editMode) && this._options.autoEditNewRow && (opt_editMode = this.activeRow === this.getDataLength() || this._options.autoEdit), this._options.showCellSelection && (this.activeCellNode.classList.add("active"), (_d = (_c = this.rowsCache[this.activeRow]) == null ? void 0 : _c.rowNode) == null || _d.forEach((node) => node.classList.add("active"))), this._options.editable && opt_editMode && this.isCellPotentiallyEditable(this.activeRow, this.activeCell) && (clearTimeout(this.h_editorLoader), this._options.asyncEditorLoading ? this.h_editorLoader = setTimeout(() => {
+        this.activeRow = cell.row, this.activeCell = this.activePosX = this.activeCell = this.activePosX = this.getCellFromNode(this.activeCellNode), !Utils.isDefined(opt_editMode) && this._options.autoEditNewRow && (opt_editMode = this.activeRow === this.getDataLength() || this._options.autoEdit), this._options.showCellSelection && (this.activeCellNode.classList.add("active"), (_d = (_c = this.rowsCache[this.activeRow]) == null ? void 0 : _c.rowNode) == null || _d.forEach((node) => node.classList.add("active"))), this._options.editable && opt_editMode && this.isCellPotentiallyEditable(this.activeRow, this.activeCell) && (window.clearTimeout(this.h_editorLoader), this._options.asyncEditorLoading ? this.h_editorLoader = window.setTimeout(() => {
           this.makeActiveCellEditable(void 0, preClickModeOn, e);
         }, this._options.asyncEditorLoadDelay) : this.makeActiveCellEditable(void 0, preClickModeOn, e));
       } else
@@ -2573,7 +2573,7 @@
         return;
       if (!this._options.editable)
         throw new Error("SlickGrid makeActiveCellEditable : should never get called when this._options.editable is false");
-      if (clearTimeout(this.h_editorLoader), !this.isCellPotentiallyEditable(this.activeRow, this.activeCell))
+      if (window.clearTimeout(this.h_editorLoader), !this.isCellPotentiallyEditable(this.activeRow, this.activeCell))
         return;
       let columnDef = this.columns[this.activeCell], item = this.getDataItem(this.activeRow);
       if (this.trigger(this.onBeforeEditCell, { row: this.activeRow, cell: this.activeCell, item, column: columnDef, target: "grid" }).getReturnValue() === !1) {
@@ -3114,7 +3114,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.12.0
+ * SlickGrid v5.12.1
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

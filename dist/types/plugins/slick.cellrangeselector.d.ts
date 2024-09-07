@@ -29,7 +29,7 @@ export declare class SlickCellRangeSelector implements SlickPlugin {
     protected _isRightCanvas: boolean;
     protected _isBottomCanvas: boolean;
     protected _activeViewport: HTMLElement;
-    protected _autoScrollTimerId?: NodeJS.Timeout;
+    protected _autoScrollTimerId?: number;
     protected _draggingMouseOffset: MouseOffsetViewport;
     protected _moveDistanceForOneCell: {
         x: number;

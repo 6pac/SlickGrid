@@ -167,7 +167,7 @@
     /** Send a notification, through "onRowBackToViewportRange", that a row came back into the viewport visible range */
     notifyBackToViewportWhenDomExist(item, rowId) {
       let rowIndex = item.rowIndex || this._dataView.getRowById(item[this._dataViewIdProperty]);
-      setTimeout(() => {
+      window.setTimeout(() => {
         document.querySelector(`.${this._gridUid} .cellDetailView_${item[this._dataViewIdProperty]}`) && this.onRowBackToViewportRange.notify({
           grid: this._grid,
           item,

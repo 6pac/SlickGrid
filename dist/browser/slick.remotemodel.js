@@ -13,7 +13,7 @@
       __publicField(this, "searchstr", "");
       __publicField(this, "sortcol", null);
       __publicField(this, "sortdir", 1);
-      __publicField(this, "h_request", null);
+      __publicField(this, "h_request");
       __publicField(this, "req", null);
       // ajax request
       // events
@@ -53,7 +53,7 @@
         return;
       }
       let url = "http://octopart.com/api/v3/parts/search?apikey=68b25f31&include[]=short_description&show[]=uid&show[]=manufacturer&show[]=mpn&show[]=brand&show[]=octopart_url&show[]=short_description&q=" + this.searchstr + "&start=" + fromPage * this.PAGESIZE + "&limit=" + ((toPage - fromPage) * this.PAGESIZE + this.PAGESIZE);
-      this.sortcol !== null && (url += "&sortby=" + this.sortcol + (this.sortdir > 0 ? "+asc" : "+desc")), this.h_request !== null && clearTimeout(this.h_request), this.h_request = setTimeout(() => {
+      this.sortcol !== null && (url += "&sortby=" + this.sortcol + (this.sortdir > 0 ? "+asc" : "+desc")), this.h_request && window.clearTimeout(this.h_request), this.h_request = window.setTimeout(() => {
         for (let i = fromPage; i <= toPage; i++)
           this.data[i * this.PAGESIZE] = null;
         this.onDataLoading.notify({ from, to }), this.req = window.$.jsonp({
