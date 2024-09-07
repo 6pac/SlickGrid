@@ -301,7 +301,12 @@ export class SlickColumnPicker {
     }
   }
 
+  /** @deprecated because of a typo @use `setColumnVisibility()` instead */
   setColumnVisibiliy(idxOrId: number | string, show: boolean) {
+    this.setColumnVisibility(idxOrId, show);
+  }
+
+  setColumnVisibility(idxOrId: number | string, show: boolean) {
     const idx = typeof idxOrId === 'number' ? idxOrId : this.getColumnIndexbyId(idxOrId);
     let visibleColumns = this.getVisibleColumns();
     const col = this.columns[idx];
