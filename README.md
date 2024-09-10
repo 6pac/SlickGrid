@@ -35,11 +35,12 @@ There are multiple ways to use and install SlickGrid, you can use it as a standa
 
 ```sh
 # Alpine style from CDN
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slickgrid@5.9.1/dist/styles/css/slick-alpine-theme.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slickgrid@5.12.1/dist/styles/css/slick-alpine-theme.min.css">
 
 # standalone scripts (IIFE) from CDN
-<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.9.1/dist/browser/slick.core.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.9.1/dist/browser/slick.grid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.12.1/dist/browser/slick.core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.12.1/dist/browser/slick.interactions.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.12.1/dist/browser/slick.grid.min.js"></script>
 <script>
   const grid = new Slick.Grid("#myGrid", dataView, columns, options);
 </script>
