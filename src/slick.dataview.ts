@@ -1471,7 +1471,8 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
           } else {
             if (preserveHiddenOnSelectionChange && grid.getOptions().multiSelect) {
               // remove rows whose id is on the list
-              rowIds = this.selectedRowIds!.filter((id) => args.ids.indexOf(id) === -1);
+              const argsIdsSet = new Set(args.ids);
+              rowIds = this.selectedRowIds?.filter((id) => !argsIdsSet.has(id));
             } else {
               rowIds = [];
             }
@@ -1566,7 +1567,8 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       return [];
     }
 
-    const intersection = this.filteredItems.filter((a) => this.selectedRowIds!.some((b) => a[this.idProperty as keyof TData] === b));
+    const selectedRowIdSet = new Set<DataIdType>(this.selectedRowIds);
+    const intersection = this.filteredItems.filter((a) => selectedRowIdSet.has(a[this.idProperty as keyof TData] as DataIdType));
     return (intersection || []) as T[];
   }
 
