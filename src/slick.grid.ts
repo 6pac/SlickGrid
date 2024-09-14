@@ -3479,8 +3479,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     if (this.simpleArrayEquals(previousSelectedRows, this.selectedRows)) {
       const caller = ne?.detail?.caller ?? 'click';
-      const newSelectedAdditions = this.getSelectedRows().filter((i) => previousSelectedRows.indexOf(i) < 0);
-      const newSelectedDeletions = previousSelectedRows.filter((i) => this.getSelectedRows().indexOf(i) < 0);
+      // Use Set for faster performance
+      const selectedRowsSet = new Set(this.getSelectedRows());
+      const previousSelectedRowsSet = new Set(previousSelectedRows);
+
+      const newSelectedAdditions = Array.from(selectedRowsSet).filter(i => !previousSelectedRowsSet.has(i));
+      const newSelectedDeletions = Array.from(previousSelectedRowsSet).filter(i => !selectedRowsSet.has(i));
 
       this.trigger(this.onSelectedRowsChanged, {
         rows: this.getSelectedRows(),
