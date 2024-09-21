@@ -1,4 +1,4 @@
-
+@use 'sass:color';
 
 // NOTE: SVG can only be changed via SASS variable since it requires to use a SASS mixin
 
@@ -18,13 +18,13 @@ $alpine-icon-size:                                18px !default;
 $alpine-odd-row-color:                            #fbfbfb !default;
 $alpine-row-mouse-hover-color:                    #e8f4fe !default;
 $alpine-row-highlight-fade-animation:             1s linear !default;
-$alpine-row-highlight-background-color:           darken($alpine-row-mouse-hover-color, 3%) !default;
+$alpine-row-highlight-background-color:           color.adjust($alpine-row-mouse-hover-color, $lightness: -3%) !default;
 
 $alpine-cell-border-color:                        #dae1e7 !default;
 $alpine-cell-border-radius:                       0 !default;
 $alpine-cell-border-width:                        0 0 1px 0 !default;
 $alpine-cell-selected-color:                      $alpine-font-color !default;
-$alpine-cell-selected-bg-color:                   darken($alpine-row-mouse-hover-color, 4%) !default;
+$alpine-cell-selected-bg-color:                   color.adjust($alpine-row-mouse-hover-color, $lightness: -4%) !default;
 $alpine-cell-display:                             block !default;
 $alpine-cell-align-items:                         center !default;
 $alpine-cell-justify-content:                     flex-start !default;
@@ -37,7 +37,7 @@ $alpine-header-display:                           inline-flex !default;
 $alpine-header-border-color:                      $alpine-border-color !default;
 $alpine-header-border-width:                      0 !default;
 $alpine-header-bg-color:                          #f8f8f8 !default;
-$alpine-header-unorderable-bg-color:              darken($alpine-header-bg-color, 3%) !default;
+$alpine-header-unorderable-bg-color:              color.adjust($alpine-header-bg-color, $lightness: -3%) !default;
 $alpine-header-color:                             #181d1f !default;
 $alpine-header-font-weight:                       bold !default;
 $alpine-header-text-align:                        left !default;
