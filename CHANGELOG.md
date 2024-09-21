@@ -2,6 +2,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.13.0](https://github.com/6pac/SlickGrid/compare/5.12.1...5.13.0) (2024-09-21)
+
+### Bug Fixes
+
+* SASS deprecated `lighten` and `darken` methods ([#1063](https://github.com/6pac/SlickGrid/issues/1063)) ([74713b5](https://github.com/6pac/SlickGrid/commit/74713b51461bae8217bd1fab65b100b2dc05869d))
+
+### Performance Improvements
+
+* Optimize SlickGrid handleSelectedRangesChanged by using Set ([#1061](https://github.com/6pac/SlickGrid/issues/1061)) ([8ff354b](https://github.com/6pac/SlickGrid/commit/8ff354bb458b6a96ae92ced7c30748cc5bb3c494))
+* Reduce iterative time complexity ([#1060](https://github.com/6pac/SlickGrid/issues/1060)) ([0d07e60](https://github.com/6pac/SlickGrid/commit/0d07e60a36d81f6dd68eb3091b2508c3036357b0))
+
 ## [5.12.1](https://github.com/6pac/SlickGrid/compare/5.12.0...5.12.1) (2024-09-07)
 
 ### Bug Fixes

@@ -761,13 +761,20 @@
           }), new SlickEventData(), this);
         }
       }), this.preSelectedRowIdsChangeFn = (args) => {
-        var _a2;
+        var _a2, _b2;
         if (!inHandler) {
           if (inHandler = !0, typeof args.added == "undefined")
             setSelectedRowIds(args.ids);
           else {
             let rowIds;
-            args.added ? preserveHiddenOnSelectionChange && grid.getOptions().multiSelect ? rowIds = ((_a2 = this.selectedRowIds) == null ? void 0 : _a2.filter((id) => this.getRowById(id) === void 0)).concat(args.ids) : rowIds = args.ids : preserveHiddenOnSelectionChange && grid.getOptions().multiSelect ? rowIds = this.selectedRowIds.filter((id) => args.ids.indexOf(id) === -1) : rowIds = [], setSelectedRowIds(rowIds);
+            if (args.added)
+              preserveHiddenOnSelectionChange && grid.getOptions().multiSelect ? rowIds = ((_a2 = this.selectedRowIds) == null ? void 0 : _a2.filter((id) => this.getRowById(id) === void 0)).concat(args.ids) : rowIds = args.ids;
+            else if (preserveHiddenOnSelectionChange && grid.getOptions().multiSelect) {
+              let argsIdsSet = new Set(args.ids);
+              rowIds = (_b2 = this.selectedRowIds) == null ? void 0 : _b2.filter((id) => !argsIdsSet.has(id));
+            } else
+              rowIds = [];
+            setSelectedRowIds(rowIds);
           }
           inHandler = !1;
         }
@@ -828,7 +835,10 @@
     * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
     */
     getAllSelectedFilteredItems() {
-      return Array.isArray(this.selectedRowIds) ? this.filteredItems.filter((a) => this.selectedRowIds.some((b) => a[this.idProperty] === b)) || [] : [];
+      if (!Array.isArray(this.selectedRowIds))
+        return [];
+      let selectedRowIdSet = new Set(this.selectedRowIds);
+      return this.filteredItems.filter((a) => selectedRowIdSet.has(a[this.idProperty])) || [];
     }
     syncGridCellCssStyles(grid, key) {
       let hashById, inHandler, storeCellCssStyles = (hash) => {

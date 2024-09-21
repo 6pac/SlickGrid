@@ -5876,7 +5876,14 @@ var SlickEvent20 = SlickEvent, SlickEventData6 = SlickEventData, SlickGroup3 = S
           setSelectedRowIds(args.ids);
         else {
           let rowIds;
-          args.added ? preserveHiddenOnSelectionChange && grid.getOptions().multiSelect ? rowIds = (this.selectedRowIds?.filter((id) => this.getRowById(id) === void 0)).concat(args.ids) : rowIds = args.ids : preserveHiddenOnSelectionChange && grid.getOptions().multiSelect ? rowIds = this.selectedRowIds.filter((id) => args.ids.indexOf(id) === -1) : rowIds = [], setSelectedRowIds(rowIds);
+          if (args.added)
+            preserveHiddenOnSelectionChange && grid.getOptions().multiSelect ? rowIds = (this.selectedRowIds?.filter((id) => this.getRowById(id) === void 0)).concat(args.ids) : rowIds = args.ids;
+          else if (preserveHiddenOnSelectionChange && grid.getOptions().multiSelect) {
+            let argsIdsSet = new Set(args.ids);
+            rowIds = this.selectedRowIds?.filter((id) => !argsIdsSet.has(id));
+          } else
+            rowIds = [];
+          setSelectedRowIds(rowIds);
         }
         inHandler = !1;
       }
@@ -5936,7 +5943,10 @@ var SlickEvent20 = SlickEvent, SlickEventData6 = SlickEventData, SlickGroup3 = S
   * Note: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true.
   */
   getAllSelectedFilteredItems() {
-    return Array.isArray(this.selectedRowIds) ? this.filteredItems.filter((a) => this.selectedRowIds.some((b) => a[this.idProperty] === b)) || [] : [];
+    if (!Array.isArray(this.selectedRowIds))
+      return [];
+    let selectedRowIdSet = new Set(this.selectedRowIds);
+    return this.filteredItems.filter((a) => selectedRowIdSet.has(a[this.idProperty])) || [];
   }
   syncGridCellCssStyles(grid, key) {
     let hashById, inHandler, storeCellCssStyles = (hash) => {
@@ -6640,7 +6650,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.12.1");
+    __publicField(this, "slickGridVersion", "5.13.0");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -8075,7 +8085,7 @@ var SlickGrid = class {
           this.canCellBeSelected(j, k) && (hash[j][this.columns[k].id] = this._options.selectedCellCssClass);
       }
     if (this.setCellCssStyles(this._options.selectedCellCssClass || "", hash), this.simpleArrayEquals(previousSelectedRows, this.selectedRows)) {
-      let caller = ne?.detail?.caller ?? "click", newSelectedAdditions = this.getSelectedRows().filter((i) => previousSelectedRows.indexOf(i) < 0), newSelectedDeletions = previousSelectedRows.filter((i) => this.getSelectedRows().indexOf(i) < 0);
+      let caller = ne?.detail?.caller ?? "click", selectedRowsSet = new Set(this.getSelectedRows()), previousSelectedRowsSet = new Set(previousSelectedRows), newSelectedAdditions = Array.from(selectedRowsSet).filter((i) => !previousSelectedRowsSet.has(i)), newSelectedDeletions = Array.from(previousSelectedRowsSet).filter((i) => !selectedRowsSet.has(i));
       this.trigger(this.onSelectedRowsChanged, {
         rows: this.getSelectedRows(),
         previousSelectedRows,
@@ -9880,7 +9890,7 @@ var SlickRemoteModel = class {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.12.1
+ * SlickGrid v5.13.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
