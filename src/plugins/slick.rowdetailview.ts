@@ -582,7 +582,6 @@ export class SlickRowDetailView {
     const item: any = {};
 
     Object.keys(this._dataView).forEach(prop => {
-      console.log(item[prop]);
       item[prop] = null;
     });
     item[this._dataViewIdProperty] = parent[this._dataViewIdProperty] + '.' + offset;
