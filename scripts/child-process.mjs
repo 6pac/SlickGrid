@@ -1,7 +1,7 @@
-import c from 'picocolors';
 import execa from 'execa';
 import os from 'node:os';
 import logTransformer from 'strong-log-transformer';
+import c from 'tinyrainbow';
 
 // bookkeeping for spawned processes
 const children = new Set();

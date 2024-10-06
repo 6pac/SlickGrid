@@ -1,12 +1,11 @@
-import c from 'picocolors';
-import { loadJsonFileSync } from 'load-json-file';
-import { writeJsonSync } from 'fs-extra/esm';
+import { readJSONSync, writeJsonSync } from 'fs-extra/esm';
 import { copyFileSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
-import path from 'node:path';
+import { dirname as pDirname, join as pJoin, resolve as pResolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
 import readline from 'readline';
 import { rimrafSync } from 'rimraf';
 import semver from 'semver';
+import c from 'tinyrainbow';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
@@ -25,9 +24,9 @@ const RELEASE_COMMIT_MSG = 'chore(release): publish version %s';
 const cwd = process.cwd();
 const argv = yargs(hideBin(process.argv)).argv;
 const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const projectRootPath = path.join(__dirname, '../');
-const pkg = loadJsonFileSync(path.join(projectRootPath, 'package.json'));
+const __dirname = pDirname(__filename);
+const projectRootPath = pJoin(__dirname, '../');
+const pkg = readJSONSync(pJoin(projectRootPath, 'package.json'));
 
 /**
  * Main entry, this script will execute the following steps
@@ -154,7 +153,7 @@ const pkg = loadJsonFileSync(path.join(projectRootPath, 'package.json'));
 
         // rename backup to original filename "package.json"
         console.log(`Renaming "package.json" backup file to its original name.`);
-        renameSync(path.join(projectRootPath, 'package.json.backup'), path.join(projectRootPath, 'package.json'));
+        renameSync(pJoin(projectRootPath, 'package.json.backup'), pJoin(projectRootPath, 'package.json'));
 
         console.log(`${c.bgMagenta(dryRunPrefix)} 📦 Published to NPM - 🔗 https://www.npmjs.com/package/${pkg.name}`.trim());
       }
@@ -216,7 +215,7 @@ function updatePackageVersion(newVersion) {
   if (argv.dryRun) {
     console.log(`${c.magenta('[dry-run]')}`);
   }
-  writeJsonSync(path.resolve(projectRootPath, 'package.json'), pkg, { spaces: 2 });
+  writeJsonSync(pResolve(projectRootPath, 'package.json'), pkg, { spaces: 2 });
 
   console.log('-- updating "package.json" --');
   console.log(` "version": "${pkg.version}"`);
@@ -228,7 +227,7 @@ function updatePackageVersion(newVersion) {
  * @param {String} newVersion
  */
 function updateSlickGridVersion(newVersion) {
-  const slickGridFileContent = readFileSync(path.resolve(projectRootPath, 'src/slick.grid.ts'), { encoding: 'utf8', flag: 'r' });
+  const slickGridFileContent = readFileSync(pResolve(projectRootPath, 'src/slick.grid.ts'), { encoding: 'utf8', flag: 'r' });
 
   // replaces version in 2 areas (a version could be "2.4.45" or "2.4.45-alpha.0"):
   // 1- in top comments, ie: SlickGrid v2.4.45
@@ -240,7 +239,7 @@ function updateSlickGridVersion(newVersion) {
   if (argv.dryRun) {
     console.log(`${c.magenta('[dry-run]')}`);
   }
-  writeFileSync(path.resolve(projectRootPath, 'src/slick.grid.ts'), updatedSlickGridJs);
+  writeFileSync(pResolve(projectRootPath, 'src/slick.grid.ts'), updatedSlickGridJs);
 
   console.log('-- updating "src/slick.grid.ts" --');
   console.log(` SlickGrid ${VERSION_PREFIX}${newVersion}`);
@@ -311,7 +310,7 @@ async function promptOtp(dryRunPrefix = '') {
 /** Method that will create a backup copy of the original "package.json", remove some fields (devDependencies, scripts) */
 async function cleanPublishPackage() {
   console.log(`Make a copy of "package.json" and rename it to "package.json.backup".`);
-  copyFileSync(path.join(projectRootPath, 'package.json'), path.join(projectRootPath, 'package.json.backup'));
+  copyFileSync(pJoin(projectRootPath, 'package.json'), pJoin(projectRootPath, 'package.json.backup'));
 
   // remove (devDependencies & scripts) fields from "package.json"
   for (let field of PUBLISH_CLEAN_FIELDS) {
