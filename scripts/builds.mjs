@@ -1,11 +1,11 @@
-import c from 'picocolors';
 import copyfiles from 'copyfiles';
 import { build } from 'esbuild';
 import { outputFileSync } from 'fs-extra/esm';
-import { globSync } from 'glob';
+import { globSync } from 'tinyglobby';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compile as sassCompile } from 'sass';
+import c from 'tinyrainbow';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 

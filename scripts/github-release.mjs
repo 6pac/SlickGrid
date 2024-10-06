@@ -1,9 +1,9 @@
 import 'dotenv/config';
 import { Octokit } from '@octokit/rest';
-import c from 'picocolors';
 import parseGitUrl from 'git-url-parse';
 import newGithubReleaseUrl from 'new-github-release-url';
 import semver from 'semver';
+import c from 'tinyrainbow';
 
 import { execSync } from './child-process.mjs';
 
