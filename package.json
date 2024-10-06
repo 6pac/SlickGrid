@@ -47,6 +47,7 @@
     "serve": "node ./scripts/dev-watch.mjs --serve",
     "serve:demo": "http-server ./ -p 8080 -a localhost -s",
     "lint": "eslint .",
+    "lint:fix": "eslint . --fix",
     "minify": "node ./scripts/minify.js --start",
     "prebuild:prod": "rimraf dist && npm run lint",
     "build:prod": "node ./scripts/builds.mjs --prod",
