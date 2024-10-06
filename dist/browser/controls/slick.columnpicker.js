@@ -93,7 +93,11 @@
     repositionMenu(event) {
       var _a, _b;
       let targetEvent = (_b = (_a = event == null ? void 0 : event.touches) == null ? void 0 : _a[0]) != null ? _b : event;
-      this._menuElm.style.top = `${targetEvent.pageY - 10}px`, this._menuElm.style.left = `${targetEvent.pageX - 10}px`, this._menuElm.style.maxHeight = `${window.innerHeight - targetEvent.clientY}px`, this._menuElm.style.display = "block", this._menuElm.setAttribute("aria-expanded", "true"), this._menuElm.appendChild(this._listElm);
+      if (this._menuElm) {
+        this._menuElm.style.display = "block";
+        let gridPos = this.grid.getGridPosition(), menuWidth = this._menuElm.clientWidth || 0, menuOffsetLeft = targetEvent.pageX || 0;
+        gridPos != null && gridPos.width && menuOffsetLeft + menuWidth >= gridPos.width && (menuOffsetLeft = menuOffsetLeft - menuWidth), this._menuElm.style.top = `${targetEvent.pageY - 10}px`, this._menuElm.style.left = `${menuOffsetLeft}px`, this._menuElm.style.maxHeight = `${window.innerHeight - targetEvent.clientY}px`, this._menuElm.setAttribute("aria-expanded", "true"), this._menuElm.appendChild(this._listElm);
+      }
     }
     updateColumnOrder() {
       let current = this.grid.getColumns().slice(0), ordered = new Array(this.columns.length);

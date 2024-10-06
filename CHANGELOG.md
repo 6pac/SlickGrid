@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.13.1](https://github.com/6pac/SlickGrid/compare/5.13.0...5.13.1) (2024-10-06)
+
+### Bug Fixes
+
+* removed console.log ([#1067](https://github.com/6pac/SlickGrid/issues/1067)) ([79c1034](https://github.com/6pac/SlickGrid/commit/79c10344a7fea74d2fb3d67b28f87e480f033be6))
+* reposition column picker to always be visible ([#1069](https://github.com/6pac/SlickGrid/issues/1069)) ([ff4047f](https://github.com/6pac/SlickGrid/commit/ff4047f7f2bb81183df87217bb92ef54c4e1e7e3))
+
 # [5.13.0](https://github.com/6pac/SlickGrid/compare/5.12.1...5.13.0) (2024-09-21)
 
 ### Bug Fixes

@@ -988,7 +988,11 @@ var BindingEventService3 = BindingEventService, SlickEvent3 = Event, Utils3 = Ut
   }
   repositionMenu(event2) {
     let targetEvent = event2?.touches?.[0] ?? event2;
-    this._menuElm.style.top = `${targetEvent.pageY - 10}px`, this._menuElm.style.left = `${targetEvent.pageX - 10}px`, this._menuElm.style.maxHeight = `${window.innerHeight - targetEvent.clientY}px`, this._menuElm.style.display = "block", this._menuElm.setAttribute("aria-expanded", "true"), this._menuElm.appendChild(this._listElm);
+    if (this._menuElm) {
+      this._menuElm.style.display = "block";
+      let gridPos = this.grid.getGridPosition(), menuWidth = this._menuElm.clientWidth || 0, menuOffsetLeft = targetEvent.pageX || 0;
+      gridPos?.width && menuOffsetLeft + menuWidth >= gridPos.width && (menuOffsetLeft = menuOffsetLeft - menuWidth), this._menuElm.style.top = `${targetEvent.pageY - 10}px`, this._menuElm.style.left = `${menuOffsetLeft}px`, this._menuElm.style.maxHeight = `${window.innerHeight - targetEvent.clientY}px`, this._menuElm.setAttribute("aria-expanded", "true"), this._menuElm.appendChild(this._listElm);
+    }
   }
   updateColumnOrder() {
     let current = this.grid.getColumns().slice(0), ordered = new Array(this.columns.length);
@@ -4283,7 +4287,7 @@ var SlickEvent16 = SlickEvent, SlickEventHandler8 = SlickEventHandler, Utils22 =
   getPaddingItem(parent, offset) {
     let item = {};
     return Object.keys(this._dataView).forEach((prop) => {
-      console.log(item[prop]), item[prop] = null;
+      item[prop] = null;
     }), item[this._dataViewIdProperty] = parent[this._dataViewIdProperty] + "." + offset, item[`${this._keyPrefix}collapsed`] = !0, item[`${this._keyPrefix}isPadding`] = !0, item[`${this._keyPrefix}parent`] = parent, item[`${this._keyPrefix}offset`] = offset, item;
   }
   /** Create the detail ctr node. this belongs to the dev & can be custom-styled as per */
@@ -5201,6 +5205,7 @@ var SlickEvent20 = SlickEvent, SlickEventData6 = SlickEventData, SlickGroup3 = S
     this.sortAsc = ascending, this.sortComparer = comparer, this.fastSortField = null, ascending === !1 && this.items.reverse(), this.items.sort(comparer), ascending === !1 && this.items.reverse(), this.idxById = /* @__PURE__ */ new Map(), this.updateIdxById(), this.refresh();
   }
   /**
+   * @deprecated, to be more removed in next major since IE is no longer supported and this is no longer useful.
    * Provides a workaround for the extremely slow sorting in IE.
    * Does a [lexicographic] sort on a give column by temporarily overriding Object.prototype.toString
    * to return the value of that field and then doing a native Array.sort().
@@ -6547,7 +6552,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.13.0");
+    __publicField(this, "slickGridVersion", "5.13.1");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -9872,7 +9877,7 @@ export {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.13.0
+ * SlickGrid v5.13.1
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

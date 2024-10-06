@@ -257,7 +257,7 @@
     getPaddingItem(parent, offset) {
       let item = {};
       return Object.keys(this._dataView).forEach((prop) => {
-        console.log(item[prop]), item[prop] = null;
+        item[prop] = null;
       }), item[this._dataViewIdProperty] = parent[this._dataViewIdProperty] + "." + offset, item[`${this._keyPrefix}collapsed`] = !0, item[`${this._keyPrefix}isPadding`] = !0, item[`${this._keyPrefix}parent`] = parent, item[`${this._keyPrefix}offset`] = offset, item;
     }
     /** Create the detail ctr node. this belongs to the dev & can be custom-styled as per */

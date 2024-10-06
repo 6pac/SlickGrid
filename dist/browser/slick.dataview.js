@@ -181,6 +181,7 @@
       this.sortAsc = ascending, this.sortComparer = comparer, this.fastSortField = null, ascending === !1 && this.items.reverse(), this.items.sort(comparer), ascending === !1 && this.items.reverse(), this.idxById = /* @__PURE__ */ new Map(), this.updateIdxById(), this.refresh();
     }
     /**
+     * @deprecated, to be more removed in next major since IE is no longer supported and this is no longer useful.
      * Provides a workaround for the extremely slow sorting in IE.
      * Does a [lexicographic] sort on a give column by temporarily overriding Object.prototype.toString
      * to return the value of that field and then doing a native Array.sort().
