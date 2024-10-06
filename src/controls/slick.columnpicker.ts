@@ -225,12 +225,23 @@ export class SlickColumnPicker {
 
   protected repositionMenu(event: DOMMouseOrTouchEvent<HTMLDivElement> | SlickEventData) {
     const targetEvent: MouseEvent | Touch = (event as TouchEvent)?.touches?.[0] ?? event;
-    this._menuElm.style.top = `${targetEvent.pageY - 10}px`;
-    this._menuElm.style.left = `${targetEvent.pageX - 10}px`;
-    this._menuElm.style.maxHeight = `${window.innerHeight - targetEvent.clientY}px`;
-    this._menuElm.style.display = 'block';
-    this._menuElm.setAttribute('aria-expanded', 'true');
-    this._menuElm.appendChild(this._listElm);
+    if (this._menuElm) {
+      this._menuElm.style.display = 'block';
+
+      // auto-positioned menu left/right by available position
+      const gridPos = this.grid.getGridPosition();
+      const menuWidth = this._menuElm.clientWidth || 0;
+      let menuOffsetLeft = targetEvent.pageX || 0;
+      if (gridPos?.width && (menuOffsetLeft + menuWidth >= gridPos.width)) {
+        menuOffsetLeft = menuOffsetLeft - menuWidth;
+      }
+
+      this._menuElm.style.top = `${targetEvent.pageY - 10}px`;
+      this._menuElm.style.left = `${menuOffsetLeft}px`;
+      this._menuElm.style.maxHeight = `${window.innerHeight - targetEvent.clientY}px`;
+      this._menuElm.setAttribute('aria-expanded', 'true');
+      this._menuElm.appendChild(this._listElm);
+    }
   }
 
   protected updateColumnOrder() {
