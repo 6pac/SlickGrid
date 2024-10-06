@@ -31,16 +31,16 @@ Also take a look at the [Wiki](https://github.com/6pac/SlickGrid/wiki) and [Rele
 _For a basic TypeScript example, take a look at the v5.0 Annoucement & Migration guide shown below and also the [TypeScript Example Wiki](https://github.com/6pac/SlickGrid/wiki/TypeScript-Examples)._
 
 ### Installation
-There are multiple ways to use and install SlickGrid, you can use it as a standalone (IIFE) or install it through NPM then `import` or `require` SlickGrid (`import` is preferred for tree shaking). 
+There are multiple ways to use and install SlickGrid, you can use it as a standalone (IIFE) or install it through NPM then `import` or `require` SlickGrid (`import` is preferred for tree shaking).
 
 ```sh
 # Alpine style from CDN
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slickgrid@5.12.1/dist/styles/css/slick-alpine-theme.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slickgrid@5.13.1/dist/styles/css/slick-alpine-theme.min.css">
 
 # standalone scripts (IIFE) from CDN
-<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.12.1/dist/browser/slick.core.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.12.1/dist/browser/slick.interactions.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.12.1/dist/browser/slick.grid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.13.1/dist/browser/slick.core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.13.1/dist/browser/slick.interactions.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.13.1/dist/browser/slick.grid.min.js"></script>
 <script>
   const grid = new Slick.Grid("#myGrid", dataView, columns, options);
 </script>
