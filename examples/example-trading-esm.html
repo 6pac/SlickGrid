@@ -5,6 +5,9 @@
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example 4: Model</title>
   <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.gridmenu.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.contextmenu.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick.headermenu.css" type="text/css" />
   <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
@@ -54,6 +57,13 @@
     }
     .color-warning {
       color: #ffa700;
+    }
+    .slick-header-menubutton {
+      border: 1px solid #dedede;
+      border-width: 0 1px 0 1px;
+    }
+    .slick-header-menubutton span {
+      margin-top: 40%;
     }
   </style>
 </head>
@@ -120,8 +130,11 @@
     SlickGlobalEditorLock,
     SlickRowSelectionModel,
     SlickColumnPicker,
+    SlickContextMenu,
     SlickDataView,
     SlickGrid,
+    SlickGridMenu,
+    SlickHeaderMenu,
     SlickGroupItemMetadataProvider,
     Utils,
   } from '../dist/esm/index.js';
@@ -178,12 +191,48 @@
     },
   ];
 
+  // also add Header Menu options
+  for (var i = 0; i < columns.length; i++) {
+    columns[i].header = {
+      menu: {
+        commandItems: [
+          {
+            iconCssClass: 'sgi sgi-caret sgi-flip-v',
+            title: "Sort Ascending",
+            disabled: !columns[i].sortable,
+            // hidden: !columns[i].sortable, // you could disable or hide the command completely
+            command: "sort-asc"
+          },
+          {
+            iconCssClass: 'sgi sgi-caret',
+            title: "Sort Descending",
+            disabled: !columns[i].sortable,
+            // hidden: !columns[i].sortable, // you could disable or hide the command completely
+            cssClass: !columns[i].sortable ? 'italic' : '',
+            command: "sort-desc"
+          },
+          {
+            title: "Hide Column",
+            command: "hide",
+          },
+        ]
+      }
+    };
+  }
+
+  // keep a copy of all column for the array of visible columns
+  var visibleColumns = columns;
+
   const options = {
     editable: true,
     enableAddRow: true,
     enableCellNavigation: true,
     asyncEditorLoading: true,
     forceFitColumns: false,
+    gridMenu: {
+      iconCssClass: "sgi sgi-menu sgi-17px",
+      columnTitle: "Columns",
+    },
     topPanelHeight: 35,
     rowHeight: 28
   };
@@ -369,6 +418,18 @@
     return floor ? Math.floor(number) : number;
   }
 
+  function removeColumnById(array, idVal) {
+    return array.filter(function (el, i) {
+      return el.id !== idVal;
+    });
+  }
+
+  function removeSortColumnById(array, idVal) {
+    return array.filter(function (el, i) {
+      return el.columnId !== idVal;
+    });
+  }
+
 document.addEventListener("DOMContentLoaded", () => {
   // prepare the data
   data = getData(200);
@@ -387,12 +448,55 @@ document.addEventListener("DOMContentLoaded", () => {
   grid.setSelectionModel(new SlickRowSelectionModel());
 
   const columnpicker = new SlickColumnPicker(columns, grid, options);
+  const gridMenuControl = new SlickGridMenu(columns, grid, options);
 
-  grid.onCellChange.subscribe(function (e, args) {
+  const contextMenuOptions = {
+    commandTitle: "Commands",
+    commandItems: [
+      {
+        command: "group-collapse", iconCssClass: "sgi sgi-arrow-collapse", title: "Collapse all Groups",
+        action: () => toggleGrouping(false),
+        itemUsabilityOverride: () => dataView.getGrouping().length
+      },
+      {
+        command: "group-expand", iconCssClass: "sgi sgi-arrow-expand", title: "Expand all Groups",
+        action: () => toggleGrouping(true),
+        itemUsabilityOverride: () => dataView.getGrouping().length
+      },
+      {
+        command: "group-clearing", iconCssClass: "sgi sgi-close", title: "Clear Grouping",
+        action: () => dataView.setGrouping([]),
+        itemUsabilityOverride: () => dataView.getGrouping().length
+      },
+    ],
+  };
+  const contextMenuPlugin = new SlickContextMenu(contextMenuOptions);
+  const headerMenuPlugin = new SlickHeaderMenu({ buttonCssClass: 'sgi sgi-caret' });
+  grid.registerPlugin(contextMenuPlugin);
+  grid.registerPlugin(headerMenuPlugin);
+
+
+  headerMenuPlugin.onCommand.subscribe((e, args) => {
+    if (args.command === "hide") {
+      // hide column
+      visibleColumns = removeColumnById(visibleColumns, args.column.id);
+      grid.setColumns(visibleColumns);
+    } else if (args.command === "sort-asc" || args.command === "sort-desc") {
+      const isSortedAsc = (args.command === "sort-asc");
+      const sortCols = removeSortColumnById(grid.getSortColumns(), args.column.id);
+      sortCols.push({ sortAsc: isSortedAsc, columnId: args.column.id });
+      grid.setSortColumns(sortCols);
+      dataView.sort(comparer, isSortedAsc);
+    } else {
+      alert("Command: " + args.command);
+    }
+  });
+
+  grid.onCellChange.subscribe((e, args) => {
     dataView.updateItem(args.item.id, args.item);
   });
 
-  grid.onSort.subscribe(function (e, args) {
+  grid.onSort.subscribe((e, args) => {
     sortdir = args.sortAsc ? 1 : -1;
     sortcol = args.sortCol.field;
 
@@ -403,12 +507,12 @@ document.addEventListener("DOMContentLoaded", () => {
   // wire up model events to drive the grid
   // !! both dataView.onRowCountChanged and dataView.onRowsChanged MUST be wired to correctly update the grid
   // see Issue#91
-  dataView.onRowCountChanged.subscribe(function (e, args) {
+  dataView.onRowCountChanged.subscribe((e, args) => {
     grid.updateRowCount();
     grid.render();
   });
 
-  dataView.onRowsChanged.subscribe(function (e, args) {
+  dataView.onRowsChanged.subscribe((e, args) => {
     grid.invalidateRows(args.rows);
     grid.render();
   });
