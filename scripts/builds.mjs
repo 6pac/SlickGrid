@@ -1,6 +1,6 @@
 import copyfiles from 'copyfiles';
 import { build } from 'esbuild';
-import { outputFileSync } from 'fs-extra/esm';
+import { outputFileSync } from './fs-utils.mjs';
 import { globSync } from 'tinyglobby';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';

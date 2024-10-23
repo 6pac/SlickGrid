@@ -1,4 +1,4 @@
-import { readJSONSync, writeJsonSync } from 'fs-extra/esm';
+import { readJSONSync, writeJsonSync } from './fs-utils.mjs';
 import { copyFileSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname as pDirname, join as pJoin, resolve as pResolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
