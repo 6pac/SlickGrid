@@ -1,5 +1,5 @@
 import conventionalChangelog from 'conventional-changelog';
-import { pathExistsSync } from 'fs-extra/esm';
+import { pathExistsSync } from './fs-utils.mjs';
 import { readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
