@@ -34,7 +34,7 @@ Here's one of the available examples from above [Realtime Trading](https://6pac.
 
 ![Realtime Trading Demo](https://github.com/user-attachments/assets/654fb4e1-c11d-42fb-b8d5-6c4161d16c00)
 
-#### Vite Demo
+### Vite Demo
 You can also see a [ViteJS](https://vite.dev/) demo in the [./vite-demo](https://github.com/6pac/SlickGrid/tree/master/vite-demo) folder, this Vite demo was created mostly to test the project ESM build and also the SASS imports as well.
 
 ### Installation
@@ -42,12 +42,12 @@ There are multiple ways to use and install SlickGrid, you can use it as a standa
 
 ```sh
 # Alpine style from CDN
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slickgrid@5.13.1/dist/styles/css/slick-alpine-theme.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slickgrid@5.14.0/dist/styles/css/slick-alpine-theme.min.css">
 
 # standalone scripts (IIFE) from CDN
-<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.13.1/dist/browser/slick.core.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.13.1/dist/browser/slick.interactions.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.13.1/dist/browser/slick.grid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.14.0/dist/browser/slick.core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.14.0/dist/browser/slick.interactions.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.14.0/dist/browser/slick.grid.min.js"></script>
 <script>
   const grid = new Slick.Grid("#myGrid", dataView, columns, options);
 </script>
