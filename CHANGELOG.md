@@ -7,7 +7,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 ### Features
 
 * add ViteJS demo ([#1075](https://github.com/6pac/SlickGrid/issues/1075)) ([65724ad](https://github.com/6pac/SlickGrid/commit/65724adf37a55bc5c74a63ffe9ebef518af0f55f))
-* replace `[@import](https://github.com/import)` with `[@use](https://github.com/use)` to fix SASS 2.0 deprecations ([#1074](https://github.com/6pac/SlickGrid/issues/1074)) ([2d084f9](https://github.com/6pac/SlickGrid/commit/2d084f92ad691fc0db8fe475071e728ae14aa18e))
+* replace `@import` with `@use` to fix SASS 2.0 deprecations ([#1074](https://github.com/6pac/SlickGrid/issues/1074)) ([2d084f9](https://github.com/6pac/SlickGrid/commit/2d084f92ad691fc0db8fe475071e728ae14aa18e))
 
 # Change Log
 
