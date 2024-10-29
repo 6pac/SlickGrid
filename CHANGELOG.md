@@ -1,5 +1,7 @@
 # Change Log
+
 All notable changes to this project will be documented in this file.
+
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
 # [5.14.0](https://github.com/6pac/SlickGrid/compare/5.13.1...5.14.0) (2024-10-29)
@@ -7,13 +9,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 ### Features
 
 * add ViteJS demo ([#1075](https://github.com/6pac/SlickGrid/issues/1075)) ([65724ad](https://github.com/6pac/SlickGrid/commit/65724adf37a55bc5c74a63ffe9ebef518af0f55f))
-* replace `[@import](https://github.com/import)` with `[@use](https://github.com/use)` to fix SASS 2.0 deprecations ([#1074](https://github.com/6pac/SlickGrid/issues/1074)) ([2d084f9](https://github.com/6pac/SlickGrid/commit/2d084f92ad691fc0db8fe475071e728ae14aa18e))
-
-# Change Log
-
-All notable changes to this project will be documented in this file.
-
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+* replace `@import` with `@use` to fix SASS 2.0 deprecations ([#1074](https://github.com/6pac/SlickGrid/issues/1074)) ([2d084f9](https://github.com/6pac/SlickGrid/commit/2d084f92ad691fc0db8fe475071e728ae14aa18e))
 
 ## [5.13.1](https://github.com/6pac/SlickGrid/compare/5.13.0...5.13.1) (2024-10-06)
 
@@ -71,12 +67,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 * add new Infinite Scroll example ([#1040](https://github.com/6pac/SlickGrid/issues/1040)) ([060c8a0](https://github.com/6pac/SlickGrid/commit/060c8a0c6c13e4e0389e61bb10403927df508d46))
 
-# Change Log
-
-All notable changes to this project will be documented in this file.
-
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
-
 ## [5.10.1](https://github.com/6pac/SlickGrid/compare/5.10.0...5.10.1) (2024-07-06)
 
 ### Bug Fixes
@@ -104,12 +94,6 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 * add onPreHeaderContextMenu for Column Picker usage ([#1030](https://github.com/6pac/SlickGrid/issues/1030)) ([ea2c175](https://github.com/6pac/SlickGrid/commit/ea2c1759fa78c47411ba65fda5a8d619d0d8f7e3))
 
 * add optional Top-Header for Drag Grouping + Header Grouping ([#1029](https://github.com/6pac/SlickGrid/issues/1029)) ([cec789c](https://github.com/6pac/SlickGrid/commit/cec789c563378d190529db4836b60d7e34878788))
-
-# Change Log
-
-All notable changes to this project will be documented in this file.
-
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
 ## [5.9.2](https://github.com/6pac/SlickGrid/compare/5.9.1...5.9.2) (2024-05-07)
 
