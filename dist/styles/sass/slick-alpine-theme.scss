@@ -9,25 +9,28 @@
  * All rights reserved.
  */
 
-@import './mixins';
-@import './variables';
+@forward './mixins';
+@forward './variables';
+
+@use './mixins' as m;
+@use './variables' as v;
 
 @keyframes fade {
   0%, 100% { background: none }
-  50% { background: var(--alpine-row-highlight-fade-animation, $alpine-row-highlight-fade-animation) }
+  50% { background: var(--alpine-row-highlight-fade-animation, v.$alpine-row-highlight-fade-animation) }
 }
 
 // Grid Styles
 #myGrid, .slick-container {
   box-sizing: border-box;
-  background-color: var(--alpine-grid-bgcolor, $alpine-grid-bgcolor);
-  font-family: var(--alpine-font-family, $alpine-font-family);
-  font-size: var(--alpine-font-size, $alpine-font-size);
-  color: var(--alpine-font-color, $alpine-font-color);
+  background-color: var(--alpine-grid-bgcolor, v.$alpine-grid-bgcolor);
+  font-family: var(--alpine-font-family, v.$alpine-font-family);
+  font-size: var(--alpine-font-size, v.$alpine-font-size);
+  color: var(--alpine-font-color, v.$alpine-font-color);
   border-style: solid;
-  border-color: var(--alpine-border-color, $alpine-border-color);
-  border-radius: var(--alpine-border-radius, $alpine-border-radius);
-  border-width: var(--alpine-border-width, $alpine-border-width);
+  border-color: var(--alpine-border-color, v.$alpine-border-color);
+  border-radius: var(--alpine-border-radius, v.$alpine-border-radius);
+  border-width: var(--alpine-border-width, v.$alpine-border-width);
 
   &.bottom-rounded {
     border-bottom-left-radius: 0.25rem;
@@ -40,7 +43,7 @@
 }
 
 .slick-viewport {
-  background-color: var(--alpine-bg-color, $alpine-bg-color);
+  background-color: var(--alpine-bg-color, v.$alpine-bg-color);
 
   .grid-canvas {
     position: relative;
@@ -51,7 +54,7 @@
 .slick-range-decorator {
   z-index: 9999;
   cursor: cell;
-  border: var(--alpine-range-border, $alpine-range-border);
+  border: var(--alpine-range-border, v.$alpine-range-border);
 }
 
 .slick-row {
@@ -65,24 +68,24 @@
     position: absolute;
     border: 0px;
     width: 100%;
-    background: var(--alpine-cell-selected-bg-color, $alpine-cell-selected-bg-color);
+    background: var(--alpine-cell-selected-bg-color, v.$alpine-cell-selected-bg-color);
   }
 
   .selected {
     z-index: 10;
-    background-color: var(--alpine-cell-selected-bg-color, $alpine-cell-selected-bg-color);
-    color: var(--alpine-cell-selected-color, $alpine-cell-selected-color);
+    background-color: var(--alpine-cell-selected-bg-color, v.$alpine-cell-selected-bg-color);
+    color: var(--alpine-cell-selected-color, v.$alpine-cell-selected-color);
   }
 
   &.odd {
-    background-color: var(--alpine-odd-row-color, $alpine-odd-row-color);
+    background-color: var(--alpine-odd-row-color, v.$alpine-odd-row-color);
   }
   &:hover {
-    background-color: var(--alpine-row-mouse-hover-color, $alpine-row-mouse-hover-color);
+    background-color: var(--alpine-row-mouse-hover-color, v.$alpine-row-mouse-hover-color);
   }
   &.highlight-animate {
-    background: var(--alpine-row-highlight-background-color, $alpine-row-highlight-background-color) !important;
-    animation: fade var(--alpine-row-highlight-fade-animation, $alpine-row-highlight-fade-animation);
+    background: var(--alpine-row-highlight-background-color, v.$alpine-row-highlight-background-color) !important;
+    animation: fade var(--alpine-row-highlight-fade-animation, v.$alpine-row-highlight-fade-animation);
   }
 }
 
@@ -91,8 +94,8 @@
 }
 
 .slick-group {
-  border-bottom: 2px solid var(--alpine-border-color, $alpine-border-color);
-  background-color: var(--alpine-header-bg-color, $alpine-header-bg-color);
+  border-bottom: 2px solid var(--alpine-border-color, v.$alpine-border-color);
+  background-color: var(--alpine-header-bg-color, v.$alpine-header-bg-color);
 
   .slick-cell {
     text-align: left !important;
@@ -111,19 +114,19 @@
   font-size: 18px;
   width: 1em;
   height: 1em;
-  opacity: var(--alpine-group-icon-opacity, $alpine-group-icon-opacity);
+  opacity: var(--alpine-group-icon-opacity, v.$alpine-group-icon-opacity);
 
   &.expanded {
-    @include createSvgStyle('alpine-group-expanded-icon-svg', $alpine-group-expanded-icon-svg-path);
+    @include m.createSvgStyle('alpine-group-expanded-icon-svg', v.$alpine-group-expanded-icon-svg-path);
   }
   &.collapsed {
-    @include createSvgStyle('alpine-group-collapsed-icon-svg', $alpine-group-collapsed-icon-svg-path);
+    @include m.createSvgStyle('alpine-group-collapsed-icon-svg', v.$alpine-group-collapsed-icon-svg-path);
   }
 }
 
 .slick-group-totals {
-  color: var(--alpine-font-color, $alpine-font-color);
-  background: var(--alpine-bg-color, $alpine-bg-color);
+  color: var(--alpine-font-color, v.$alpine-font-color);
+  background: var(--alpine-bg-color, v.$alpine-bg-color);
 }
 .slick-group-toggle-all {
   cursor: pointer;
@@ -134,13 +137,13 @@
   width: 1em;
   height: 1em;
   margin-right: 5px;
-  opacity: var(--alpine-group-icon-opacity, $alpine-group-icon-opacity);
+  opacity: var(--alpine-group-icon-opacity, v.$alpine-group-icon-opacity);
 
   &.collapsed {
-    @include createSvgStyle('alpine-group-collapsed-icon-svg', $alpine-group-collapsed-icon-svg-path);
+    @include m.createSvgStyle('alpine-group-collapsed-icon-svg', v.$alpine-group-collapsed-icon-svg-path);
   }
   &.expanded {
-    @include createSvgStyle('alpine-group-expanded-icon-svg', $alpine-group-expanded-icon-svg-path);
+    @include m.createSvgStyle('alpine-group-expanded-icon-svg', v.$alpine-group-expanded-icon-svg-path);
   }
 }
 
@@ -148,30 +151,30 @@
   cursor: default;
   position: absolute;
   border-style: solid;
-  border-color: var(--alpine-cell-border-color, $alpine-cell-border-color);
-  border-radius: var(--alpine-cell-border-radius, $alpine-cell-border-radius);
-  border-width: var(--alpine-cell-border-width, $alpine-cell-border-width);
+  border-color: var(--alpine-cell-border-color, v.$alpine-cell-border-color);
+  border-radius: var(--alpine-cell-border-radius, v.$alpine-cell-border-radius);
+  border-width: var(--alpine-cell-border-width, v.$alpine-cell-border-width);
   min-width: 0;
   margin: 0;
   vertical-align: middle;
   z-index: 1;
-  padding: var(--alpine-cell-padding, $alpine-cell-padding);
-  display: var(--alpine-cell-display, $alpine-cell-display);
-  align-items: var(--alpine-cell-align-items, $alpine-cell-align-items);
-  justify-content: var(--alpine-cell-justify-content, $alpine-cell-justify-content);
+  padding: var(--alpine-cell-padding, v.$alpine-cell-padding);
+  display: var(--alpine-cell-display, v.$alpine-cell-display);
+  align-items: var(--alpine-cell-align-items, v.$alpine-cell-align-items);
+  justify-content: var(--alpine-cell-justify-content, v.$alpine-cell-justify-content);
   overflow: hidden;
-  text-overflow: var(--alpine-cell-text-overflow, $alpine-cell-text-overflow);
+  text-overflow: var(--alpine-cell-text-overflow, v.$alpine-cell-text-overflow);
   white-space: nowrap;
 
   &.selected {
-    background-color: var(--alpine-cell-selected-bg-color, $alpine-cell-selected-bg-color);
-    color: var(--alpine-cell-selected-color, $alpine-cell-selected-color);
+    background-color: var(--alpine-cell-selected-bg-color, v.$alpine-cell-selected-bg-color);
+    color: var(--alpine-cell-selected-color, v.$alpine-cell-selected-color);
     span a {
       color: #fff;
     }
   }
   &.active {
-    box-shadow: var(--alpine-cell-active-box-shadow, $alpine-cell-active-box-shadow);
+    box-shadow: var(--alpine-cell-active-box-shadow, v.$alpine-cell-active-box-shadow);
   }
 
   &.highlighted {
@@ -203,10 +206,10 @@
 
 // Header Styles
 .slick-header {
-  border-bottom: 1px solid var(--alpine-border-color, $alpine-border-color);
-  background-color: var(--alpine-header-bg-color, $alpine-header-bg-color);
-  font-weight: var(--alpine-header-font-weight, $alpine-header-font-weight);
-  color: var(--alpine-header-color, $alpine-header-color);
+  border-bottom: 1px solid var(--alpine-border-color, v.$alpine-border-color);
+  background-color: var(--alpine-header-bg-color, v.$alpine-header-bg-color);
+  font-weight: var(--alpine-header-font-weight, v.$alpine-header-font-weight);
+  color: var(--alpine-header-color, v.$alpine-header-color);
 
   &.slick-state-default {
     width: 100%;
@@ -217,15 +220,15 @@
 
 .grid-header {
   box-sizing: border-box;
-  background-color: var(--alpine-header-bg-color, $alpine-header-bg-color);
-  font-family: var(--alpine-font-family, $alpine-font-family);
-  font-size: var(--alpine-top-header-font-size, $alpine-top-header-font-size);
-  font-weight: var(--alpine-top-header-font-weight, $alpine-top-header-font-weight);
+  background-color: var(--alpine-header-bg-color, v.$alpine-header-bg-color);
+  font-family: var(--alpine-font-family, v.$alpine-font-family);
+  font-size: var(--alpine-top-header-font-size, v.$alpine-top-header-font-size);
+  font-weight: var(--alpine-top-header-font-weight, v.$alpine-top-header-font-weight);
   border-style: solid;
-  border-width: var(--alpine-top-header-border-width, $alpine-top-header-border-width);
-  border-color: var(--alpine-top-header-border-color, $alpine-top-header-border-color);
+  border-width: var(--alpine-top-header-border-width, v.$alpine-top-header-border-width);
+  border-color: var(--alpine-top-header-border-color, v.$alpine-top-header-border-color);
   height: 35px;
-  padding: var(--alpine-top-header-padding, $alpine-top-header-padding);
+  padding: var(--alpine-top-header-padding, v.$alpine-top-header-padding);
 }
 
 .slick-resizable-handle {
@@ -235,11 +238,11 @@
   cursor: col-resize;
   right: 0;
 
-  height: var(--alpine-header-resizable-handle-height, $alpine-header-resizable-handle-height);
-  top: var(--alpine-header-resizable-handle-top, $alpine-header-resizable-handle-top);
+  height: var(--alpine-header-resizable-handle-height, v.$alpine-header-resizable-handle-height);
+  top: var(--alpine-header-resizable-handle-top, v.$alpine-header-resizable-handle-top);
   width: 2px;
   border: 0;
-  box-shadow: var(--alpine-header-resizable-handle-box-shadow, $alpine-header-resizable-handle-box-shadow);
+  box-shadow: var(--alpine-header-resizable-handle-box-shadow, v.$alpine-header-resizable-handle-box-shadow);
 }
 
 .slick-reorder-proxy,
@@ -263,8 +266,8 @@
 .slick-topheader-panel {
   .slick-header-column {
     border-style: solid;
-    border-color: var(--alpine-preheader-border-color, $alpine-preheader-border-color);
-    border-width: var(--alpine-preheader-border-width, $alpine-preheader-border-width);
+    border-color: var(--alpine-preheader-border-color, v.$alpine-preheader-border-color);
+    border-width: var(--alpine-preheader-border-width, v.$alpine-preheader-border-width);
   }
 }
 
@@ -274,19 +277,19 @@
 }
 
 .slick-header-column {
-  height: var(--alpine-header-column-height, $alpine-header-column-height); // header with 2 rows, just double the height
-  line-height: var(--alpine-header-column-line-height, $alpine-header-column-line-height);
+  height: var(--alpine-header-column-height, v.$alpine-header-column-height); // header with 2 rows, just double the height
+  line-height: var(--alpine-header-column-line-height, v.$alpine-header-column-line-height);
   position: relative;
   overflow: hidden;
   margin: 0;
   padding: 4px;
   border-style: solid;
-  border-width: var(--alpine-header-border-width, $alpine-header-border-width);
-  border-color: var(--alpine-header-border-color, $alpine-header-border-color);
-  vertical-align: var(--alpine-header-vertical-align, $alpine-header-vertical-align);
-  display: var(--alpine-header-display, $alpine-header-display);
-  align-items: var(--alpine-header-align-items, $alpine-header-align-items);
-  justify-content: var(--alpine-header-justify-content, $alpine-header-justify-content);
+  border-width: var(--alpine-header-border-width, v.$alpine-header-border-width);
+  border-color: var(--alpine-header-border-color, v.$alpine-header-border-color);
+  vertical-align: var(--alpine-header-vertical-align, v.$alpine-header-vertical-align);
+  display: var(--alpine-header-display, v.$alpine-header-display);
+  align-items: var(--alpine-header-align-items, v.$alpine-header-align-items);
+  justify-content: var(--alpine-header-justify-content, v.$alpine-header-justify-content);
   white-space: pre-wrap;
 
   .slick-header-menubutton {
@@ -296,9 +299,9 @@
     right: 0;
     top: 0;
     bottom: 0;
-    width: var(--alpine-header-menubutton-width, $alpine-header-menubutton-width);
+    width: var(--alpine-header-menubutton-width, v.$alpine-header-menubutton-width);
     background-image: none;
-    background-color:  var(--alpine-header-bg-color, $alpine-header-bg-color);
+    background-color:  var(--alpine-header-bg-color, v.$alpine-header-bg-color);
 
     .caret {
       display: inline-block;
@@ -313,13 +316,13 @@
     }
 
     &.filtered {
-      color: var(--alpine-header-menubutton-filtered-color, $alpine-header-menubutton-filtered-color);
+      color: var(--alpine-header-menubutton-filtered-color, v.$alpine-header-menubutton-filtered-color);
     }
   }
 
   .slick-sort-indicator,
   .slick-sort-indicator-numbered {
-    color: var(--alpine-sort-indicator-color, $alpine-sort-indicator-color);
+    color: var(--alpine-sort-indicator-color, v.$alpine-sort-indicator-color);
     user-select: none;
   }
 
@@ -328,7 +331,7 @@
     background-image: none;
     width: 0;
     height: 0;
-    margin: var(--alpine-sort-indicator-margin, $alpine-sort-indicator-margin);
+    margin: var(--alpine-sort-indicator-margin, v.$alpine-sort-indicator-margin);
     vertical-align: middle;
     border-right: 4px solid transparent;
     border-left: 4px solid transparent;
@@ -343,11 +346,11 @@
   }
 
   .slick-sort-indicator-numbered {
-    font-size: var(--alpine-sort-numbered-font-size, $alpine-sort-numbered-font-size);
+    font-size: var(--alpine-sort-numbered-font-size, v.$alpine-sort-numbered-font-size);
   }
 
   &.unorderable {
-    background-color: var(--alpine-header-unorderable-bg-color, $alpine-header-unorderable-bg-color);
+    background-color: var(--alpine-header-unorderable-bg-color, v.$alpine-header-unorderable-bg-color);
   }
 }
 
@@ -360,7 +363,7 @@
   padding: 0;
 
   .slick-state-hover {
-    background: var(--alpine-header-name-hover-bg-color, $alpine-header-name-hover-bg-color);
+    background: var(--alpine-header-name-hover-bg-color, v.$alpine-header-name-hover-bg-color);
   }
 }
 
@@ -375,15 +378,15 @@
 }
 
 .slick-column-name {
-  display: var(--alpine-header-name-display, $alpine-header-name-display);
-  flex-grow: var(--alpine-header-name-flex-grow, $alpine-header-name-flex-grow);
-  overflow: var(--alpine-header-name-overflow, $alpine-header-name-overflow);
-  text-overflow: var(--alpine-header-name-text-overflow, $alpine-header-name-text-overflow);
+  display: var(--alpine-header-name-display, v.$alpine-header-name-display);
+  flex-grow: var(--alpine-header-name-flex-grow, v.$alpine-header-name-flex-grow);
+  overflow: var(--alpine-header-name-overflow, v.$alpine-header-name-overflow);
+  text-overflow: var(--alpine-header-name-text-overflow, v.$alpine-header-name-text-overflow);
   white-space: nowrap;
 }
 
 .slick-headerrow, .slick-footerrow {
-  background-color: var(--alpine-header-footer-bg-color, $alpine-header-footer-bg-color);
+  background-color: var(--alpine-header-footer-bg-color, v.$alpine-header-footer-bg-color);
   position: relative;
 
   &.slick-state-default {
@@ -400,8 +403,8 @@
   white-space: nowrap;
 }
 .slick-headerrow-columns {
-  border-bottom: 1px solid var(--alpine-border-color, $alpine-border-color);
-  background-color: var(--alpine-headerrow-bg-color, $alpine-headerrow-bg-color);
+  border-bottom: 1px solid var(--alpine-border-color, v.$alpine-border-color);
+  background-color: var(--alpine-headerrow-bg-color, v.$alpine-headerrow-bg-color);
   text-align: center;
 }
 
@@ -416,14 +419,14 @@
 }
 
 .slick-footerrow-column {
-  font-size: var(--alpine-footerrow-font-size, $alpine-footerrow-font-size);
+  font-size: var(--alpine-footerrow-font-size, v.$alpine-footerrow-font-size);
   overflow: ellipsis;
   float: left;
   line-height: 20px;
   border-style: solid;
-  border-color: var(--alpine-footerrow-border-color, $alpine-footerrow-border-color);
-  border-radius: var(--alpine-footerrow-border-radius, $alpine-footerrow-border-radius);
-  border-width: var(--alpine-footerrow-border-width, $alpine-footerrow-border-width);
+  border-color: var(--alpine-footerrow-border-color, v.$alpine-footerrow-border-color);
+  border-radius: var(--alpine-footerrow-border-radius, v.$alpine-footerrow-border-radius);
+  border-width: var(--alpine-footerrow-border-width, v.$alpine-footerrow-border-width);
   margin: 0;
 }
 
@@ -438,16 +441,16 @@
     box-sizing: border-box;
     border: 1px solid transparent;
     appearance: none;
-    color: var(--alpine-font-color, $alpine-font-color);
+    color: var(--alpine-font-color, v.$alpine-font-color);
   }
 }
 
 // Header-Menu Styles
 .slick-header-menu {
-  color: var(--alpine-font-color, $alpine-font-color);
-  font-size: var(--alpine-font-size, $alpine-font-size);
-  background: var(--alpine-header-bg-color, $alpine-header-bg-color);
-  border: 1px solid var(--alpine-border-color, $alpine-border-color);
+  color: var(--alpine-font-color, v.$alpine-font-color);
+  font-size: var(--alpine-font-size, v.$alpine-font-size);
+  background: var(--alpine-header-bg-color, v.$alpine-header-bg-color);
+  border: 1px solid var(--alpine-border-color, v.$alpine-border-color);
   min-width: 175px;
   z-index: 100000;
   cursor: default;
@@ -455,10 +458,10 @@
   display: inline-block;
   margin: 0;
   padding: 4px !important;
-  font-family: var(--alpine-font-family, $alpine-font-family);
+  font-family: var(--alpine-font-family, v.$alpine-font-family);
   box-shadow: 0 2px 4px 0 rgba(0,0,0,0.10);
-  border-bottom-right-radius: var(--alpine-border-radius, $alpine-border-radius);
-  border-bottom-left-radius: var(--alpine-border-radius, $alpine-border-radius);
+  border-bottom-right-radius: var(--alpine-border-radius, v.$alpine-border-radius);
+  border-bottom-left-radius: var(--alpine-border-radius, v.$alpine-border-radius);
 
   label {
     font-weight: 400;
@@ -476,20 +479,20 @@
     cursor: pointer;
     white-space: nowrap;
     padding: 6px 14px;
-    font-size: var(--alpine-font-size, $alpine-font-size);
+    font-size: var(--alpine-font-size, v.$alpine-font-size);
     line-height: 1.428571429;
     background-color: transparent;
     border: 1px solid transparent;
-    color: var(--alpine-font-color, $alpine-font-color);
+    color: var(--alpine-font-color, v.$alpine-font-color);
     border-radius: .25rem;
     box-sizing: border-box;
     user-select: none;
     outline: 0;
 
     &:hover {
-      color: var(--alpine-font-color, $alpine-font-color);
+      color: var(--alpine-font-color, v.$alpine-font-color);
       background-color: transparent;
-      border-color: var(--alpine-border-color, $alpine-border-color);
+      border-color: var(--alpine-border-color, v.$alpine-border-color);
     }
 
     &:active:hover,
@@ -499,28 +502,28 @@
     &.active:focus,
     &.active.focus {
       background-color: transparent;
-      color: var(--alpine-font-color, $alpine-font-color);
-      border-color: var(--alpine-border-color, $alpine-border-color);
+      color: var(--alpine-font-color, v.$alpine-font-color);
+      border-color: var(--alpine-border-color, v.$alpine-border-color);
     }
   }
 
   input.input {
     box-sizing: border-box;
-    border: 1px solid var(--alpine-border-color, $alpine-border-color);
+    border: 1px solid var(--alpine-border-color, v.$alpine-border-color);
     border-radius: .25rem;
     appearance: none;
     padding-left: .75rem;
     padding-right: .75rem;
-    color: var(--alpine-font-color, $alpine-font-color);
+    color: var(--alpine-font-color, v.$alpine-font-color);
     padding-top: .5rem;
     padding-bottom: .5rem;
     width: 100%;
   }
 
   .filter {
-    border: 1px solid var(--alpine-border-color, $alpine-border-color);
+    border: 1px solid var(--alpine-border-color, v.$alpine-border-color);
     border-radius: .25rem;
-    background: var(--alpine-bg-color, $alpine-bg-color);
+    background: var(--alpine-bg-color, v.$alpine-bg-color);
     height: 200px;
     max-height: 200px;
     max-width: 300px;
@@ -532,7 +535,7 @@
 
     label {
       display: block;
-      font-size: var(--alpine-font-size, $alpine-font-size);
+      font-size: var(--alpine-font-size, v.$alpine-font-size);
     }
   }
 }
@@ -584,12 +587,12 @@
     display: inline-block;
     vertical-align: middle;
     flex-grow: 1;
-    margin: var(--alpine-menu-content-margin, $alpine-menu-content-margin);
-    font-size: var(--alpine-font-size, $alpine-font-size);
+    margin: var(--alpine-menu-content-margin, v.$alpine-menu-content-margin);
+    font-size: var(--alpine-font-size, v.$alpine-font-size);
   }
 
   &:hover {
-    border-color: var(--alpine-border-color, $alpine-border-color);
+    border-color: var(--alpine-border-color, v.$alpine-border-color);
   }
 }
 
@@ -609,15 +612,15 @@
   display: inline-flex;
   align-items: center;
   box-sizing: border-box;
-  background-color: var(--alpine-pager-bg-color, $alpine-pager-bg-color);
-  border-color: var(--alpine-pager-border-color, $alpine-pager-border-color);
-  border-radius: var(--alpine-pager-border-radius, $alpine-pager-border-radius);
-  border-width: var(--alpine-pager-border-width, $alpine-pager-border-width);
+  background-color: var(--alpine-pager-bg-color, v.$alpine-pager-bg-color);
+  border-color: var(--alpine-pager-border-color, v.$alpine-pager-border-color);
+  border-radius: var(--alpine-pager-border-radius, v.$alpine-pager-border-radius);
+  border-width: var(--alpine-pager-border-width, v.$alpine-pager-border-width);
   border-style: solid;
-  color: var(--alpine-font-color, $alpine-font-color);
-  font-family: var(--alpine-font-family, $alpine-font-family);
-  font-size: var(--alpine-font-size, $alpine-font-size);
-  height: var(--alpine-pager-height, $alpine-pager-height);
+  color: var(--alpine-font-color, v.$alpine-font-color);
+  font-family: var(--alpine-font-family, v.$alpine-font-family);
+  font-size: var(--alpine-font-size, v.$alpine-font-size);
+  height: var(--alpine-pager-height, v.$alpine-pager-height);
   padding: 4px;
   vertical-align: middle;
   width: 100%;
@@ -627,13 +630,13 @@
   }
   .slick-icon-state-disabled,
   .sgi.sgi-state-disabled {
-    cursor: var(--alpine-pager-button-cursor-disabled, $alpine-pager-button-cursor-disabled);
+    cursor: var(--alpine-pager-button-cursor-disabled, v.$alpine-pager-button-cursor-disabled);
   }
 
   .slick-pager-nav {
     height: 100%;
     .slick-icon-container {
-      margin: var(--alpine-pager-button-margin, $alpine-pager-button-margin);
+      margin: var(--alpine-pager-button-margin, v.$alpine-pager-button-margin);
     }
     .sgi-container {
       display: inline-flex;
@@ -644,8 +647,8 @@
 
   .slick-pager-status,
   .slick-pager-settings {
-    font-size: var(--alpine-font-size, $alpine-font-size);
-    padding: var(--alpine-pager-padding, $alpine-pager-padding);
+    font-size: var(--alpine-font-size, v.$alpine-font-size);
+    padding: var(--alpine-pager-padding, v.$alpine-pager-padding);
     display: inline-block;
   }
 
@@ -675,18 +678,18 @@
 .slick-cell-menu,
 .slick-header-menu,
 .slick-context-menu {
-  background-color: var(--alpine-menu-bg-color, $alpine-menu-bg-color);
-  border: var(--alpine-menu-border, $alpine-menu-border);
-  border-radius: var(--alpine-menu-border-radius, $alpine-menu-border-radius);
-  color: var(--alpine-menu-color, $alpine-menu-color);
-  box-shadow: var(--alpine-menu-box-shadow, $alpine-menu-box-shadow);
-  font-family: var(--alpine-font-family, $alpine-font-family);
-  font-size: var(--alpine-font-size, $alpine-font-size);
+  background-color: var(--alpine-menu-bg-color, v.$alpine-menu-bg-color);
+  border: var(--alpine-menu-border, v.$alpine-menu-border);
+  border-radius: var(--alpine-menu-border-radius, v.$alpine-menu-border-radius);
+  color: var(--alpine-menu-color, v.$alpine-menu-color);
+  box-shadow: var(--alpine-menu-box-shadow, v.$alpine-menu-box-shadow);
+  font-family: var(--alpine-font-family, v.$alpine-font-family);
+  font-size: var(--alpine-font-size, v.$alpine-font-size);
 
   button.close {
     cursor: pointer;
-    background: var(--alpine-menu-close-btn-background, $alpine-menu-close-btn-background);
-    border: var(--alpine-menu-close-btn-border, $alpine-menu-close-btn-border);
+    background: var(--alpine-menu-close-btn-background, v.$alpine-menu-close-btn-background);
+    border: var(--alpine-menu-close-btn-border, v.$alpine-menu-close-btn-border);
   }
 }
 
@@ -698,10 +701,10 @@
 .slick-cell {
   &.selected.editable {
     background-color: white;
-    border-radius: var(--alpine-cell-editable-border-radius, $alpine-cell-editable-border-radius);
+    border-radius: var(--alpine-cell-editable-border-radius, v.$alpine-cell-editable-border-radius);
   }
   &.editable {
-    box-shadow: var(--alpine-cell-editable-box-shadow, $alpine-cell-editable-box-shadow);
+    box-shadow: var(--alpine-cell-editable-box-shadow, v.$alpine-cell-editable-box-shadow);
   }
 }
 
@@ -740,7 +743,7 @@ input.editor-percentcomplete {
     font-size: 18px;
     width: 1em;
     height: 1em;
-    @include createSvgStyle('alpine-percent-complete-picker-icon-svg', $alpine-percent-complete-picker-icon-svg-path);
+    @include m.createSvgStyle('alpine-percent-complete-picker-icon-svg', v.$alpine-percent-complete-picker-icon-svg-path);
   }
 }
 .editor-percentcomplete-picker:hover .editor-percentcomplete-helper {
@@ -806,48 +809,48 @@ select.editor-yesno {
 .slick-composite-editor-modal,
 .slick-composite-editor-modal input,
 .slick-composite-editor-modal textarea {
-  font-family: var(--alpine-font-family, $alpine-font-family);
+  font-family: var(--alpine-font-family, v.$alpine-font-family);
 }
 
 .slick-large-editor-text {
   z-index: 10000;
   padding: 5px;
-  background: var(--alpine-large-editor-bg-color, $alpine-large-editor-bg-color);
-  border: var(--alpine-large-editor-border, $alpine-large-editor-border);
-  border-radius: var(--alpine-large-editor-border-radius, $alpine-large-editor-border-radius);
+  background: var(--alpine-large-editor-bg-color, v.$alpine-large-editor-bg-color);
+  border: var(--alpine-large-editor-border, v.$alpine-large-editor-border);
+  border-radius: var(--alpine-large-editor-border-radius, v.$alpine-large-editor-border-radius);
 
   button {
     margin-left: 2px;
   }
   button, textarea {
-    color: var(--alpine-large-editor-color, $alpine-large-editor-color);
-    font-family: var(--alpine-large-editor-font-family, $alpine-large-editor-font-family);
-    font-size: var(--alpine-large-editor-font-size, $alpine-large-editor-font-size);
+    color: var(--alpine-large-editor-color, v.$alpine-large-editor-color);
+    font-family: var(--alpine-large-editor-font-family, v.$alpine-large-editor-font-family);
+    font-size: var(--alpine-large-editor-font-size, v.$alpine-large-editor-font-size);
   }
 }
 button.slick-btn {
   cursor: pointer;
-  border: var(--alpine-button-border, $alpine-button-border);
-  border-radius: var(--alpine-button-radius, $alpine-button-radius);
-  padding: var(--alpine-button-padding, $alpine-button-padding);
+  border: var(--alpine-button-border, v.$alpine-button-border);
+  border-radius: var(--alpine-button-radius, v.$alpine-button-radius);
+  padding: var(--alpine-button-padding, v.$alpine-button-padding);
 
   &.slick-btn-default {
-    background-color: var(--alpine-button-bg-color, $alpine-button-bg-color);
+    background-color: var(--alpine-button-bg-color, v.$alpine-button-bg-color);
     &:hover {
-      background-color: var(--alpine-button-default-hover-color, $alpine-button-default-hover-color);
-      border: var(--alpine-button-default-hover-border, $alpine-button-default-hover-border);
+      background-color: var(--alpine-button-default-hover-color, v.$alpine-button-default-hover-color);
+      border: var(--alpine-button-default-hover-border, v.$alpine-button-default-hover-border);
     }
   }
 
   &.slick-btn-primary {
-    border-color:  var(--alpine-button-primary-border-color, $alpine-button-primary-border-color);
-    background-color: var(--alpine-button-primary-bg-color, $alpine-button-primary-bg-color);
-    color: var(--alpine-button-primary-color, $alpine-button-primary-color);
+    border-color:  var(--alpine-button-primary-border-color, v.$alpine-button-primary-border-color);
+    background-color: var(--alpine-button-primary-bg-color, v.$alpine-button-primary-bg-color);
+    color: var(--alpine-button-primary-color, v.$alpine-button-primary-color);
     &:active {
-      background-color: var(--alpine-button-primary-active-color, $alpine-button-primary-active-color);
+      background-color: var(--alpine-button-primary-active-color, v.$alpine-button-primary-active-color);
     }
     &:hover {
-      background-color: var(--alpine-button-primary-hover-color, $alpine-button-primary-hover-color);
+      background-color: var(--alpine-button-primary-hover-color, v.$alpine-button-primary-hover-color);
     }
   }
 }

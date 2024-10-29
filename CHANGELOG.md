@@ -2,11 +2,25 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.14.0](https://github.com/6pac/SlickGrid/compare/5.13.1...5.14.0) (2024-10-29)
+
+### Features
+
+* add ViteJS demo ([#1075](https://github.com/6pac/SlickGrid/issues/1075)) ([65724ad](https://github.com/6pac/SlickGrid/commit/65724adf37a55bc5c74a63ffe9ebef518af0f55f))
+* replace `[@import](https://github.com/import)` with `[@use](https://github.com/use)` to fix SASS 2.0 deprecations ([#1074](https://github.com/6pac/SlickGrid/issues/1074)) ([2d084f9](https://github.com/6pac/SlickGrid/commit/2d084f92ad691fc0db8fe475071e728ae14aa18e))
+
+# Change Log
+
+All notable changes to this project will be documented in this file.
+
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
 ## [5.13.1](https://github.com/6pac/SlickGrid/compare/5.13.0...5.13.1) (2024-10-06)
 
 ### Bug Fixes
 
 * removed console.log ([#1067](https://github.com/6pac/SlickGrid/issues/1067)) ([79c1034](https://github.com/6pac/SlickGrid/commit/79c10344a7fea74d2fb3d67b28f87e480f033be6))
+
 * reposition column picker to always be visible ([#1069](https://github.com/6pac/SlickGrid/issues/1069)) ([ff4047f](https://github.com/6pac/SlickGrid/commit/ff4047f7f2bb81183df87217bb92ef54c4e1e7e3))
 
 # [5.13.0](https://github.com/6pac/SlickGrid/compare/5.12.1...5.13.0) (2024-09-21)
@@ -18,6 +32,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 ### Performance Improvements
 
 * Optimize SlickGrid handleSelectedRangesChanged by using Set ([#1061](https://github.com/6pac/SlickGrid/issues/1061)) ([8ff354b](https://github.com/6pac/SlickGrid/commit/8ff354bb458b6a96ae92ced7c30748cc5bb3c494))
+
 * Reduce iterative time complexity ([#1060](https://github.com/6pac/SlickGrid/issues/1060)) ([0d07e60](https://github.com/6pac/SlickGrid/commit/0d07e60a36d81f6dd68eb3091b2508c3036357b0))
 
 ## [5.12.1](https://github.com/6pac/SlickGrid/compare/5.12.0...5.12.1) (2024-09-07)
@@ -25,7 +40,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 ### Bug Fixes
 
 * SlickCellExternalCopyManager should work w/hidden cols ([#1053](https://github.com/6pac/SlickGrid/issues/1053)) ([0895deb](https://github.com/6pac/SlickGrid/commit/0895deba5d25225889d8330f7343327d96b8f8b8))
+
 * typo in `setColumnVisibiliy` ([#1057](https://github.com/6pac/SlickGrid/issues/1057)) ([9fcadba](https://github.com/6pac/SlickGrid/commit/9fcadbafa58f6f02c815f76385391a7240e025b8))
+
 * use setTimeout/setInterval from window object with correct TS type ([#1054](https://github.com/6pac/SlickGrid/issues/1054)) ([1995037](https://github.com/6pac/SlickGrid/commit/199503736b79151aca4da8a7abe05f85ed568293))
 
 # [5.12.0](https://github.com/6pac/SlickGrid/compare/5.11.0...5.12.0) (2024-08-23)
@@ -41,6 +58,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 ### Performance Improvements
 
 * add new `rowTopOffsetRenderType` grid option to use "transform" ([#1050](https://github.com/6pac/SlickGrid/issues/1050)) ([7b7ff83](https://github.com/6pac/SlickGrid/commit/7b7ff831fdb7984633e77d832cc33ceaea3e4253))
+
 * decrease virtual scroll render throttling to 5ms ([#1049](https://github.com/6pac/SlickGrid/issues/1049)) ([b0e7706](https://github.com/6pac/SlickGrid/commit/b0e7706ee4b011f34b382bbb38826ee711b5889f))
 
 # [5.11.0](https://github.com/6pac/SlickGrid/compare/5.10.1...5.11.0) (2024-07-27)

@@ -6655,7 +6655,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.13.1");
+    __publicField(this, "slickGridVersion", "5.14.0");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -9895,7 +9895,7 @@ var SlickRemoteModel = class {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.13.1
+ * SlickGrid v5.14.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
