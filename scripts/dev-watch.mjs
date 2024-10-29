@@ -1,5 +1,6 @@
 import browserSync from 'browser-sync';
 import chokidar from 'chokidar';
+import { globSync } from 'tinyglobby';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
@@ -31,9 +32,11 @@ const argv = yargs(hideBin(process.argv)).argv;
    * we will watch for `src/` and `examples/` folders for any files that changed with the following extensions (js, ts, html, css, scss)
    */
   async function init() {
-    watcher = chokidar.watch('**/*.{ts,js,html,css,scss}', {
+    watcher = chokidar.watch(
+      Array.from(globSync('**/*.{ts,js,html,css,scss}', {
+        ignore: ['**/.git/**', '**/dist/**', '**/node_modules/**']
+      })), {
       cwd: process.cwd(),
-      ignored: ['**/.git/**', '**/dist/**', '**/node_modules/**'],
       ignoreInitial: true,
       ignorePermissionErrors: true,
       persistent: true
