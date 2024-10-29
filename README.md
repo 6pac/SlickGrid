@@ -34,6 +34,9 @@ Here's one of the available examples from above [Realtime Trading](https://6pac.
 
 ![Realtime Trading Demo](https://github.com/user-attachments/assets/654fb4e1-c11d-42fb-b8d5-6c4161d16c00)
 
+#### Vite Demo
+You can also see a [ViteJS](https://vite.dev/) demo in the [./vite-demo](https://github.com/6pac/SlickGrid/tree/master/vite-demo) folder, this Vite demo was created mostly to test the project ESM build and also the SASS imports as well.
+
 ### Installation
 There are multiple ways to use and install SlickGrid, you can use it as a standalone (IIFE) or install it through NPM then `import` or `require` SlickGrid (`import` is preferred for tree shaking).
 
