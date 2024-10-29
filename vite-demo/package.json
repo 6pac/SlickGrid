@@ -10,9 +10,9 @@
   },
   "dependencies": {
     "flatpickr": "^4.6.13",
-    "slickgrid": "^5.13.1"
+    "slickgrid": "^5.14.0"
   },
   "devDependencies": {
-    "vite": "^5.4.9"
+    "vite": "^5.4.10"
   }
 }
