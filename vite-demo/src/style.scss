@@ -1,0 +1,22 @@
+// -- 1. modern SASS approach with @use
+// the Alpine Theme must be the first @use before any other SlickGrid styles imported
+@use 'slickgrid/dist/styles/sass/slick-alpine-theme.scss' with (
+  $alpine-row-mouse-hover-color: rgb(254, 234, 254),
+  $alpine-cell-selected-bg-color: rgb(234, 214, 234),
+);
+@use 'slickgrid/dist/styles/sass/slick.columnpicker.scss' as picker;
+@use 'slickgrid/dist/styles/sass/slick.gridmenu.scss' as gridmenu;
+@use 'slickgrid/dist/styles/sass/slick.pager.scss' as pager;
+@use 'slickgrid/dist/styles/sass/slick-icons.scss' as icons;
+@use 'slickgrid/dist/styles/sass/example-demo.scss' as demo;
+
+// -- 2. legacy SASS approach with @import
+// $alpine-row-mouse-hover-color: rgb(247, 254, 234);
+// $alpine-cell-selected-bg-color: rgb(231, 237, 220);
+
+// @import 'slickgrid/dist/styles/sass/slick.columnpicker.scss';
+// @import 'slickgrid/dist/styles/sass/slick.gridmenu.scss';
+// @import 'slickgrid/dist/styles/sass/slick.pager.scss';
+// @import 'slickgrid/dist/styles/sass/slick-icons.scss';
+// @import 'slickgrid/dist/styles/sass/example-demo.scss';
+// @import 'slickgrid/dist/styles/sass/slick-alpine-theme.scss';

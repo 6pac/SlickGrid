@@ -44,6 +44,7 @@
     "cypress:ci": "npx cypress run --config-file cypress/cypress.config.ts",
     "predev": "rimraf --glob dist/{browser,esm}",
     "dev": "node ./scripts/dev-watch.mjs --open",
+    "dev:vite": "npm run dev --workspace=vite-demo",
     "serve": "node ./scripts/dev-watch.mjs --serve",
     "serve:demo": "http-server ./ -p 8080 -a localhost -s",
     "lint": "eslint .",
@@ -94,6 +95,10 @@
     "typescript-eslint": "^8.8.0",
     "yargs": "^17.7.2"
   },
+  "workspaces": [
+    "vite-demo",
+    "src"
+  ],
   "browserslist": [
     "last 2 version",
     "> 0.5%",
