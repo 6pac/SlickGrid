@@ -162,12 +162,12 @@ export class ExampleTrading {
       commandItems: [
         {
           command: "group-collapse", iconCssClass: "sgi sgi-arrow-collapse", title: "Collapse all Groups",
-          action: () => toggleGrouping(false),
+          action: () => this.toggleGrouping(false),
           itemUsabilityOverride: () => this.dataView.getGrouping().length
         },
         {
           command: "group-expand", iconCssClass: "sgi sgi-arrow-expand", title: "Expand all Groups",
-          action: () => toggleGrouping(true),
+          action: () => this.toggleGrouping(true),
           itemUsabilityOverride: () => this.dataView.getGrouping().length
         },
         {
@@ -186,7 +186,7 @@ export class ExampleTrading {
     headerMenuPlugin.onCommand.subscribe((e, args) => {
       if (args.command === "hide") {
         // hide column
-        this.visibleColumns = removeColumnById(this.visibleColumns, args.column.id);
+        this.visibleColumns = this.removeColumnById(this.visibleColumns, args.column.id);
         this.grid.setColumns(this.visibleColumns);
       } else if (args.command === "sort-asc" || args.command === "sort-desc") {
         const isSortedAsc = (args.command === "sort-asc");

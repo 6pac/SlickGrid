@@ -10,6 +10,7 @@
   $alpine-row-mouse-hover-color: rgb(245, 254, 234),
   $alpine-cell-selected-bg-color: rgb(223, 234, 214),
 );
+// @use of icons must be last because the @forward is defined in the Alpine Theme
 @use 'slickgrid/dist/styles/sass/slick-icons.scss' as icons;
 
 // -- 2. legacy SASS approach with @import
