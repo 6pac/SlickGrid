@@ -18,19 +18,30 @@ document.querySelector('#app').innerHTML =
   <div id="router-view"></div>`;
 
 // load default example
-loadTradingExample()
+let currentExample;
+currentExample = loadTradingExample();
 
-document.querySelector('#trading').addEventListener('click', () => loadTradingExample());
-document.querySelector('#example4').addEventListener('click', () => loadExample4());
+document.querySelector('#trading').addEventListener('click', () => currentExample = loadTradingExample());
+document.querySelector('#example4').addEventListener('click', () => currentExample = loadExample4());
 
 function loadTradingExample() {
+  destroyPreviousExample();
   const trading = new ExampleTrading();
   document.querySelector('#router-view').innerHTML = trading.render();
   trading.init();
+  return trading;
 }
 
 function loadExample4() {
+  destroyPreviousExample();
   const demo4 = new Example4();
   document.querySelector('#router-view').innerHTML = demo4.render();
   demo4.init();
+  return demo4;
+}
+
+function destroyPreviousExample() {
+  if (currentExample?.destroy) {
+    currentExample.destroy();
+  }
 }

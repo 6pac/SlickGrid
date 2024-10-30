@@ -39,7 +39,7 @@ Also take a look at the [Wiki](https://github.com/6pac/SlickGrid/wiki) and [Rele
 
 _For a basic TypeScript example, take a look at the v5.0 Annoucement & Migration guide shown below and also the [TypeScript Example Wiki](https://github.com/6pac/SlickGrid/wiki/TypeScript-Examples)._
 
-Here's one of the available examples from above [Realtime Trading](https://6pac.github.io/SlickGrid/examples/example-trading-esm.html)
+Here's one of the available examples from Stackblitz just above [Realtime Trading](https://6pac.github.io/SlickGrid/examples/example-trading-esm.html)
 
 ![Realtime Trading Demo](https://github.com/user-attachments/assets/654fb4e1-c11d-42fb-b8d5-6c4161d16c00)
 
