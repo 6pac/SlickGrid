@@ -23,6 +23,15 @@ We extended the project from the original SlickGrid foundation while also includ
 - modernized the project in [v5](https://github.com/6pac/SlickGrid/wiki/Major-version-5.0-%E2%80%90-ES6-ESM-and-TypeScript-Support) by migrating to TypeScript (we kept IIFE and added ES6/ESM build targets) and we also gave SlickGrid a fresh and more modern look via a new Alpine Theme (CSS/SASS)
 - the project now has only 1 required dependency which is [SortableJS](https://sortablejs.github.io/Sortable/)
 
+### Vite Demo
+You can also see a [ViteJS](https://vite.dev/) demo in the [./vite-demo](https://github.com/6pac/SlickGrid/tree/master/vite-demo) folder, this Vite demo was created mostly to test the project ESM build and also the SASS imports as well.
+
+### Stackblitz
+
+You can also see this Vite demo working live in Stackblitz
+
+[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/6pac/SlickGrid/tree/master/vite-demo)
+
 ### Examples
 Check out the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** Wiki for a full list of examples demonstrating new features and use cases, such as dynamic grid creation and editors with third party controls.
 
@@ -33,13 +42,6 @@ _For a basic TypeScript example, take a look at the v5.0 Annoucement & Migration
 Here's one of the available examples from above [Realtime Trading](https://6pac.github.io/SlickGrid/examples/example-trading-esm.html)
 
 ![Realtime Trading Demo](https://github.com/user-attachments/assets/654fb4e1-c11d-42fb-b8d5-6c4161d16c00)
-
-### Vite Demo
-You can also see a [ViteJS](https://vite.dev/) demo in the [./vite-demo](https://github.com/6pac/SlickGrid/tree/master/vite-demo) folder, this Vite demo was created mostly to test the project ESM build and also the SASS imports as well.
-
-### Stackblitz
-
-[![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/6pac/SlickGrid/tree/master/vite-demo)
 
 ### Installation
 There are multiple ways to use and install SlickGrid, you can use it as a standalone (IIFE) or install it through NPM then `import` or `require` SlickGrid (`import` is preferred for tree shaking).
