@@ -9,7 +9,7 @@ import './style.scss';
 // assign SortableJS to the Window object
 window.Sortable = Sortable;
 
-// load example html, assign it to App and then init the JS code
+// create simple router & container to change displayed example
 document.querySelector('#app').innerHTML =
   `<div id="router">
     <div class="router-link" id="trading">Realtime Trading</div>
@@ -25,27 +25,20 @@ document.querySelector('#app').innerHTML =
 
 // load default example
 let currentExample;
-currentExample = loadTradingExample();
+currentExample = loadExample(new ExampleTrading());
 
-document.querySelector('#trading').addEventListener('click', () => currentExample = loadTradingExample());
-document.querySelector('#example4').addEventListener('click', () => currentExample = loadExample4());
+document.querySelector('#trading').addEventListener('click', () => currentExample = loadExample(new ExampleTrading()));
+document.querySelector('#example4').addEventListener('click', () => currentExample = loadExample(new Example4()));
 
-function loadTradingExample() {
+/** load a new example in the DOM and initialize it but destroy any previous example if any */
+function loadExample(example) {
   destroyPreviousExample();
-  const trading = new ExampleTrading();
-  document.querySelector('#router-view').innerHTML = trading.render();
-  trading.init();
-  return trading;
+  document.querySelector('#router-view').innerHTML = example.render();
+  example.init();
+  return example;
 }
 
-function loadExample4() {
-  destroyPreviousExample();
-  const demo4 = new Example4();
-  document.querySelector('#router-view').innerHTML = demo4.render();
-  demo4.init();
-  return demo4;
-}
-
+/** if a previous example was loaded, destroy it before loading the new one */
 function destroyPreviousExample() {
   if (currentExample?.destroy) {
     currentExample.destroy();
