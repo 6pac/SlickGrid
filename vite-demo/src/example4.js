@@ -30,6 +30,13 @@ export class Example4 {
     return example4Html;
   }
 
+  destroy() {
+    document.querySelector('.sgi-search').removeEventListener('click', this.toggleFilterRow.bind(this));
+    document.querySelector('[data-test="add-50k-rows-btn"]').removeEventListener('click', () => this.setData(this.getData(50000)));
+    document.querySelector('[data-test="add-500k-rows-btn"]').removeEventListener('click', () => this.setData(this.getData(500000)));
+    document.querySelector('[data-test="add-1M-rows-btn"]').removeEventListener('click', () => this.setData(this.getData(1000000)));
+  }
+
   /** initialize Example JS code */
   init() {
     this.dataView;

@@ -1,14 +1,16 @@
 // -- 1. modern SASS approach with @use
-// the Alpine Theme must be the first @use before any other SlickGrid styles imported
-@use 'slickgrid/dist/styles/sass/slick-alpine-theme.scss' with (
-  $alpine-row-mouse-hover-color: rgb(254, 234, 254),
-  $alpine-cell-selected-bg-color: rgb(234, 214, 234),
-);
+// the Alpine Theme must be @use before the icon any other SlickGrid styles imported
+@use 'slickgrid/dist/styles/sass/slick.contextmenu.scss' as cm;
 @use 'slickgrid/dist/styles/sass/slick.columnpicker.scss' as picker;
-@use 'slickgrid/dist/styles/sass/slick.gridmenu.scss' as gridmenu;
+@use 'slickgrid/dist/styles/sass/slick.gridmenu.scss' as gm;
+@use 'slickgrid/dist/styles/sass/slick.headermenu.scss' as hm;
 @use 'slickgrid/dist/styles/sass/slick.pager.scss' as pager;
-@use 'slickgrid/dist/styles/sass/slick-icons.scss' as icons;
 @use 'slickgrid/dist/styles/sass/example-demo.scss' as demo;
+@use 'slickgrid/dist/styles/sass/slick-alpine-theme.scss' with (
+  $alpine-row-mouse-hover-color: rgb(245, 254, 234),
+  $alpine-cell-selected-bg-color: rgb(223, 234, 214),
+);
+@use 'slickgrid/dist/styles/sass/slick-icons.scss' as icons;
 
 // -- 2. legacy SASS approach with @import
 // $alpine-row-mouse-hover-color: rgb(247, 254, 234);
@@ -20,3 +22,97 @@
 // @import 'slickgrid/dist/styles/sass/slick-icons.scss';
 // @import 'slickgrid/dist/styles/sass/example-demo.scss';
 // @import 'slickgrid/dist/styles/sass/slick-alpine-theme.scss';
+
+body {
+  background-color: #ffffff;
+  margin: 0;
+}
+
+.button {
+  margin: 1px;
+  padding: .5em;
+  box-shadow: none;
+  background-color: #fff;
+  border: 1px solid rgb(172, 172, 172);
+  border-radius: 2px;
+  height: 25px;
+  display: inline-flex;
+  column-gap: 4px;
+  align-items: center;
+  justify-content: space-between;
+  outline: 0;
+
+  &:active {
+    background-color: #e7e9eb;
+  }
+  &:hover {
+    background-color: #f0f2f4;
+  }
+  &:focus {
+    outline: 0;
+  }
+}
+
+#router {
+  background-color: #353535;
+  padding: 8px;
+  display: flex;
+  cursor: pointer;
+}
+#router-view {
+  padding: 4px;
+}
+
+.router-link {
+  color: white;
+  font-size: 14px;
+  padding: 6px 12px;
+  &:hover {
+    background-color: #5050508f;
+  }
+}
+
+/** you could optionally style the grid menu column picker list with slickgrid icons (.sgi) */
+.slick-gridmenu-list li,
+.slick-columnpicker-list li {
+  cursor: pointer;
+  margin: 4px;
+}
+.slick-gridmenu-list label,
+.slick-columnpicker-list label {
+  padding: 1px;
+  display: inline-flex;
+  cursor: pointer;
+}
+
+#myGrid input[type=checkbox],
+.slick-gridmenu-list input[type=checkbox],
+.slick-columnpicker-list input[type=checkbox] {
+  display:none; /* to hide the checkbox itself */
+}
+#myGrid input[type=checkbox] + label:before,
+.slick-gridmenu-list input[type=checkbox] + label:before,
+.slick-columnpicker-list input[type=checkbox] + label:before {
+  cursor: pointer;
+  display: inline-block;
+  margin-right: 4px;
+  height: 16px;
+  width: 16px;
+  content: url('data:image/svg+xml,<svg xmlns="http://www.w3.org/2000/svg" fill="%23181d1f" viewBox="0 0 24 24"><path d="M9,20.42L2.79,14.21L5.62,11.38L9,14.77L18.88,4.88L21.71,7.71L9,20.42Z"/></svg>');
+}
+#myGrid input[type=checkbox] + label:before,
+.slick-gridmenu-list input[type=checkbox] + label:before,
+.slick-columnpicker-list input[type=checkbox] + label:before {
+  opacity: 0.2; /* unchecked icon */
+}
+#myGrid input[type=checkbox]:checked + label:before,
+.slick-gridmenu-list input[type=checkbox]:checked + label:before,
+.slick-columnpicker-list input[type=checkbox]:checked + label:before {
+  opacity: 1; /* checked icon */
+}
+.slick-gridmenu.slick-submenu {
+  background-color: #fbfbfb;
+  /* border-width: 2px; */
+  box-shadow: 0 2px 4px 2px rgba(146, 152, 163, 0.4);
+  /* min-width: 150px; */
+}

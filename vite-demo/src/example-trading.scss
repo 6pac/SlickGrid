@@ -1,0 +1,52 @@
+.bold {
+  font-weight: bold;
+}
+
+.slick-row.selected .cell-selection {
+  background-color: transparent; /* show default selected row background */
+}
+.slick-header-column:nth-child(1) {
+  justify-content: center;
+}
+.alpine-theme .slick-column-groupable {
+  height: 1em;
+  width: 1em;
+  mask-size: 1em;
+  -webkit-mask-size: 1em;
+}
+.btn-alpine-theme {
+  background-color: gray;
+  color: white;
+  border-width: 1px;
+  border-radius: 2px;
+  height: 22px;
+}
+/* change to flex-end for RTL support */
+.slick-container {
+  --alpine-header-justify-content: flex-start;
+  --alpine-cell-justify-content: flex-start;
+}
+.changed-gain {
+  background-color: #eafae8 !important;
+}
+.changed-loss {
+  background-color: #ffeae8 !important;
+}
+.sparkline {
+  stroke: #1e5d90;
+  /* fill: none; */
+  fill: #f4faff;
+}
+.color-info {
+  color: #029eb7;
+}
+.color-warning {
+  color: #ffa700;
+}
+.slick-header-menubutton {
+  border: 1px solid #dedede;
+  border-width: 0 1px 0 1px;
+}
+.slick-header-menubutton span {
+  margin-top: 40%;
+}
