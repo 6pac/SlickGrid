@@ -28,9 +28,11 @@ You can also see a [ViteJS](https://vite.dev/) demo in the [./vite-demo](https:/
 
 ### Stackblitz
 
-You can also see this Vite demo working live in Stackblitz
+You can also try out this Vite demo (mentioned just above) live in Stackblitz
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/6pac/SlickGrid/tree/master/vite-demo)
+
+> Note: there are many more examples in the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** Wiki
 
 ### Examples
 Check out the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** Wiki for a full list of examples demonstrating new features and use cases, such as dynamic grid creation and editors with third party controls.
