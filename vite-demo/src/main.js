@@ -14,6 +14,12 @@ document.querySelector('#app').innerHTML =
   `<div id="router">
     <div class="router-link" id="trading">Realtime Trading</div>
     <div class="router-link" id="example4">Example 4</div>
+    <div class="router-link">
+      <span class="sgi sgi-lightbulb"></span>
+      <a href="https://github.com/6pac/SlickGrid/wiki/Examples" title="for many more examples, please visit the project Examples Wiki">
+        Visit Examples Wikis
+      </a>
+    </div>
   </div>
   <div id="router-view"></div>`;
 

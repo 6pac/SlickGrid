@@ -66,10 +66,16 @@ body {
 
 .router-link {
   color: white;
+  display: inline-flex;
   font-size: 14px;
   padding: 6px 12px;
   &:hover {
     background-color: #5050508f;
+  }
+  a {
+    color: white;
+    display: inline-flex;
+    margin-left: 4px;
   }
 }
 
