@@ -1,13 +1,13 @@
-import { exec } from './child-process.mjs';
+import { execAsyncPiped } from './child-process.mjs';
 
 /**
  * @param {Array<String>} [files]
  * @param {{ cwd: String, dryRun: Boolean}} options
  * @returns {Promise<any>}
  */
-export function gitAdd(files, { cwd, dryRun }) {
+export async function gitAdd(files, { cwd, dryRun }) {
   const execArgs = files ? ['add', '--', ...files] : ['add', '.'];
-  return exec('git', execArgs, { cwd }, dryRun);
+  return execAsyncPiped('git', execArgs, { cwd }, dryRun);
 }
 
 /**
@@ -15,9 +15,9 @@ export function gitAdd(files, { cwd, dryRun }) {
  * @param {{ cwd: String, dryRun: Boolean}} options
  * @returns {Promise<any>}
  */
-export function gitCommit(commitMsg, { cwd, dryRun }) {
+export async function gitCommit(commitMsg, { cwd, dryRun }) {
   const execArgs = ['commit', '-m', commitMsg];
-  return exec('git', execArgs, { cwd }, dryRun);
+  return execAsyncPiped('git', execArgs, { cwd }, dryRun);
 }
 
 /**
@@ -27,7 +27,7 @@ export function gitCommit(commitMsg, { cwd, dryRun }) {
  */
 export async function gitCurrentBranchName({ cwd }) {
   const execArgs = ['branch', '--show-current'];
-  const procRtn = await exec('git', execArgs, { cwd });
+  const procRtn = await execAsyncPiped('git', execArgs, { cwd });
   return procRtn.stdout;
 }
 
@@ -36,9 +36,9 @@ export async function gitCurrentBranchName({ cwd }) {
  * @param {{ cwd: String, dryRun: Boolean}} options
  * @returns {Promise<any>}
  */
-export function gitTag(tag, { cwd, dryRun }) {
+export async function gitTag(tag, { cwd, dryRun }) {
   const execArgs = ['tag', tag, '-m', tag];
-  return exec('git', execArgs, { cwd }, dryRun);
+  return execAsyncPiped('git', execArgs, { cwd }, dryRun);
 }
 
 /**
@@ -47,9 +47,9 @@ export function gitTag(tag, { cwd, dryRun }) {
  * @param {{ cwd: String, dryRun: Boolean}} options
  * @returns {Promise<any>}
  */
-export function gitTagPushRemote(tag, remote = 'origin', { cwd, dryRun }) {
+export async function gitTagPushRemote(tag, remote = 'origin', { cwd, dryRun }) {
   const execArgs = ['push', remote, tag];
-  return exec('git', execArgs, { cwd }, dryRun);
+  return execAsyncPiped('git', execArgs, { cwd }, dryRun);
 }
 
 /**
@@ -61,7 +61,7 @@ export function gitTagPushRemote(tag, remote = 'origin', { cwd, dryRun }) {
 export async function gitPushToCurrentBranch(remote = 'origin', { cwd, dryRun }) {
   const branchName = await gitCurrentBranchName({ cwd });
   const execArgs = ['push', remote, branchName];
-  return exec('git', execArgs, { cwd }, dryRun);
+  return execAsyncPiped('git', execArgs, { cwd }, dryRun);
 }
 
 /**
@@ -70,7 +70,7 @@ export async function gitPushToCurrentBranch(remote = 'origin', { cwd, dryRun })
  */
 export async function hasUncommittedChanges({ cwd, skipChecks }) {
   const execArgs = ['status', '--porcelain', '-uno'];
-  const { stdout } = await exec('git', execArgs, { cwd });
+  const { stdout } = await execAsyncPiped('git', execArgs, { cwd });
   if (stdout.length && !skipChecks) {
     throw Error('Working tree has uncommitted changes, please commit or remove the following changes before continuing.');
   }

@@ -5,7 +5,7 @@ import newGithubReleaseUrl from 'new-github-release-url';
 import semver from 'semver';
 import c from 'tinyrainbow';
 
-import { execSync } from './child-process.mjs';
+import { execAsync } from './child-process.mjs';
 
 function createGitHubClient() {
   const { GITHUB_TOKEN } = process.env;
@@ -19,14 +19,14 @@ function createGitHubClient() {
 }
 
 /**
- *
+ * Parse git repo to get all its details
  * @param {String} [remote]
  * @param {Object} [opts]
  * @returns
  */
-export function parseGitRepo(remote = 'origin', opts) {
+export async function parseGitRepo(remote = 'origin', opts) {
   const args = ['config', '--get', `remote.${remote}.url`];
-  const url = execSync('git', args, opts);
+  const url = await execAsync('git', args, opts);
 
   if (!url) {
     throw new Error(`Git remote URL could not be found using "${remote}".`);

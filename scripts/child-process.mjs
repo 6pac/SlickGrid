@@ -1,6 +1,6 @@
-import execa from 'execa';
 import os from 'node:os';
 import logTransformer from 'strong-log-transformer';
+import { x } from 'tinyexec';
 import c from 'tinyrainbow';
 
 // bookkeeping for spawned processes
@@ -8,13 +8,18 @@ const children = new Set();
 
 /**
  * Execute a command asynchronously, piping stdio by default.
- * @param {string} command
- * @param {string[]} execArgs
- * @param {import("execa").Options} [opts]
+ * @param {String} command - shell command
+ * @param {String[]} execArgs - shell command arguments
+ * @param {import("tinyexec").Options} [opts] - tinyexec node options
  * @param {Boolean} [cmdDryRun]
  */
-export function exec(command, execArgs, execOpts, cmdDryRun) {
-  const options = Object.assign({ stdio: 'pipe', windowsHide: false }, execOpts);
+export function execAsyncPiped(command, execArgs, execOpts, cmdDryRun) {
+  const options = {
+    nodeOptions: {
+      ...execOpts,
+      stdio: ['pipe'],
+    }
+  };
   const spawned = spawnProcess(command, execArgs, options, cmdDryRun);
 
   return cmdDryRun ? Promise.resolve() : wrapError(spawned);
@@ -22,19 +27,21 @@ export function exec(command, execArgs, execOpts, cmdDryRun) {
 
 /**
  * Execute a command synchronously.
- * @param {string} command
- * @param {string[]} args
- * @param {import("execa").SyncOptions} [opts]
- * @param {Boolean} [cmdDryRun]
+ * @param {String} command - shell command
+ * @param {String[]} args - shell command arguments
+ * @param {import("tinyexec").Options} [opts] - tinyexec options
+ * @param {Boolean} [cmdDryRun] - dry-run flag
  */
-export function execSync(command, args, opts, cmdDryRun = false) {
-  return cmdDryRun ? logExecDryRunCommand(command, args) : execa.sync(command, args, opts).stdout;
+export async function execAsync(command, args, opts, cmdDryRun = false) {
+  return cmdDryRun
+    ? logExecDryRunCommand(command, args)
+    : (await x('git', args, opts)).stdout.trim();
 }
 
 /**
  * Log the exec command without actually executing the actual command
- * @param {String} command
- * @param {string[]} args
+ * @param {String} command - shell command
+ * @param {String[]} args - shell command arguments
  * @returns {String} output
  */
 export function logExecDryRunCommand(command, args) {
@@ -50,11 +57,12 @@ export function logExecDryRunCommand(command, args) {
 }
 
 /**
- * @param {string} command
- * @param {string[]} args
- * @param {import("execa").Options} execOpts
+ * @param {String} command - shell command
+ * @param {String[]} args - shell command arguments
+ * @param {import("tinyexec").Options} execOpts - tinyexec options
+ * @returns {Promise<any>}
  */
-export function spawnProcess(
+export async function spawnProcess(
   command,
   args,
   execOpts,
@@ -63,18 +71,18 @@ export function spawnProcess(
   if (cmdDryRun) {
     return logExecDryRunCommand(command, args);
   }
-  const child = execa(command, args, execOpts);
+  const child = x(command, args, execOpts);
   const drain = (_code, signal) => {
     children.delete(child);
 
     // don't run repeatedly if this is the error event
     if (signal === undefined) {
-      child.removeListener('exit', drain);
+      child.process.removeListener('exit', drain);
     }
   };
 
-  child.once('exit', drain);
-  child.once('error', drain);
+  child.process.once('exit', drain);
+  child.process.once('error', drain);
   children.add(child);
 
   return child;
@@ -82,10 +90,10 @@ export function spawnProcess(
 
 /**
  * Spawn a command asynchronously, streaming stdio with optional prefix.
- * @param {string} command
- * @param {string[]} args
- * @param {import("execa").Options} [opts]
- * @param {string} [prefix]
+ * @param {String} command
+ * @param {String[]} args
+ * @param {import("tinyexec").Options} [opts]
+ * @param {String} [prefix]
  * @param {Boolean} [cmdDryRun=false]
  */
 // istanbul ignore next
@@ -96,9 +104,12 @@ export function spawnStreaming(
   prefix,
   cmdDryRun = false
 ) {
-  const options = Object.assign({}, opts);
-  options.stdio = ['ignore', 'pipe'];
-  options.windowsHide = false;
+  const options = {
+    ...opts,
+    nodeOptions: {
+      stdio: ['ignore', 'pipe'],
+    }
+  };
 
   if (cmdDryRun) {
     return logExecDryRunCommand(command, args);
@@ -152,9 +163,7 @@ function getExitCode(result) {
 
 /**
  * Spawn a command asynchronously, _always_ inheriting stdio.
- * @param {string} command
- * @param {string[]} args
- * @param {import("execa").Options} [opts]
+ * @param {import("tinyexec").Output} spawned
  */
 function wrapError(spawned) {
   return spawned.catch((err) => {

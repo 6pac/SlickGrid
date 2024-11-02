@@ -17,6 +17,24 @@
         "name": "Launch Edge against localhost",
         "url": "http://localhost:8080/examples/",
         "webRoot": "${workspaceFolder}"
+    },
+    {
+      "name": "Release Preview",
+      "type": "node",
+      "request": "launch",
+      "runtimeExecutable": "node",
+      "runtimeArgs": ["--nolazy"],
+      "args": [
+        "scripts/release.mjs",
+        "--create-release",
+        "github",
+        "--dry-run",
+        "--skip-checks"
+      ],
+      "cwd": "${workspaceRoot}",
+      "console": "integratedTerminal",
+      "internalConsoleOptions": "openOnSessionStart",
+      "skipFiles": ["<node_internals>/**", "node_modules/**"]
     }
   ]
 }

@@ -1,4 +1,3 @@
-import { readJSONSync, writeJsonSync } from './fs-utils.mjs';
 import { copyFileSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname as pDirname, join as pJoin, resolve as pResolve } from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -9,12 +8,13 @@ import c from 'tinyrainbow';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
-import { exec } from './child-process.mjs';
+import { runProdBuildWithTypes } from './builds.mjs';
+import { updateChangelog } from './changelog.mjs';
+import { execAsyncPiped } from './child-process.mjs';
+import { readJSONSync, writeJsonSync } from './fs-utils.mjs';
 import { gitAdd, gitCommit, gitTag, gitTagPushRemote, gitPushToCurrentBranch, hasUncommittedChanges } from './git-utils.mjs';
 import { createRelease, createReleaseClient, parseGitRepo } from './github-release.mjs';
 import { publishPackage, syncLockFile } from './npm-utils.mjs';
-import { runProdBuildWithTypes } from './builds.mjs';
-import { updateChangelog } from './changelog.mjs';
 
 const PUBLISH_CLEAN_FIELDS = ['devDependencies', 'scripts'];
 const TAG_PREFIX = '';
@@ -50,7 +50,7 @@ const pkg = readJSONSync(pJoin(projectRootPath, 'package.json'));
     console.info(`-- ${c.bgMagenta('DRY-RUN')} mode --`);
   }
   await hasUncommittedChanges(argv);
-  const repo = parseGitRepo();
+  const repo = await parseGitRepo();
 
   console.log(`🚀 Let's create a new release for "${repo.owner}/${repo.name}" (currently at ${pkg.version})\n`);
 
@@ -302,7 +302,7 @@ async function promptOtp(dryRunPrefix = '') {
   if (!otp) {
     console.log('No OTP provided, continuing to next step...');
   } else if (otp.length > 0 && otp.length < 6) {
-    throw new Error('OTP must be 6 exactly digits.');
+    throw new Error('OTP must be exactly 6 digits.');
   }
   return otp;
 }
@@ -314,6 +314,6 @@ async function cleanPublishPackage() {
 
   // remove (devDependencies & scripts) fields from "package.json"
   for (let field of PUBLISH_CLEAN_FIELDS) {
-    await exec('npm', ['pkg', 'delete', field]);
+    await execAsyncPiped('npm', ['pkg', 'delete', field]);
   }
 }

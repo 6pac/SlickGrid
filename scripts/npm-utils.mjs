@@ -1,4 +1,4 @@
-import { exec, spawnStreaming } from './child-process.mjs';
+import { execAsyncPiped, spawnStreaming } from './child-process.mjs';
 
 /**
  * Run `npm publish`
@@ -21,7 +21,7 @@ export function publishPackage(publishTagName, { cwd, otp, dryRun, stream }) {
   if (stream) {
     return spawnStreaming('npm', execArgs, { cwd });
   }
-  return exec('npm', execArgs, { cwd });
+  return execAsyncPiped('npm', execArgs, { cwd });
 }
 
 /**
@@ -29,5 +29,5 @@ export function publishPackage(publishTagName, { cwd, otp, dryRun, stream }) {
  * @returns {Promise<any>}
  */
 export function syncLockFile({ cwd, dryRun }) {
-  return exec('npm', ['install', '--package-lock-only', '--legacy-peer-deps'], { cwd }, dryRun);
+  return execAsyncPiped('npm', ['install', '--package-lock-only', '--legacy-peer-deps'], { cwd }, dryRun);
 }
