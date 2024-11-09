@@ -146,7 +146,7 @@ const argv = yargs(hideBin(process.argv)).argv;
 
           // we might still have other packages that have changes though, so re-execute command callback process if any were found
           if (hasQueuedChanges()) {
-            executeCommandCallback();
+            executeCommandCallback(Array.from(changedFiles).pop());
           }
         }
         resolve(true);
