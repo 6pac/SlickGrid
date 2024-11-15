@@ -4,9 +4,10 @@
  */
 
 import { existsSync, mkdirSync, readFileSync, writeFileSync } from 'node:fs';
+import { dirname } from 'node:path';
 
 export function outputFileSync(file, ...args) {
-  const dir = path.dirname(file);
+  const dir = dirname(file);
   if (!existsSync(dir)) {
     mkdirSync(outDir, { recursive: true });
   }
