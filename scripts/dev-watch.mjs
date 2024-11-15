@@ -1,6 +1,5 @@
+import { subscribe } from '@parcel/watcher';
 import browserSync from 'browser-sync';
-import chokidar from 'chokidar';
-import { globSync } from 'tinyglobby';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
@@ -16,11 +15,11 @@ import {
 const argv = yargs(hideBin(process.argv)).argv;
 
 /**
- * Dev script that will watch for files changed and run esbuild for the file that changed
- * We use Chokidar to watch source files and then run esbuild for all 3 formats defined.
+ * Dev script that will watch for files changed and run esbuild/sass for the file(s) that changed
+ * We use @parcel/watcher to watch source files and then run esbuild/sass for all 3 formats defined.
  */
 (() => {
-  let watcher;
+  let subscription;
   let bsync;
   let timer = 0;
   let changedFiles = new Set();
@@ -28,23 +27,25 @@ const argv = yargs(hideBin(process.argv)).argv;
   let initialBuild = true; // on initial build we need to do full iife build
 
   /**
-   * initialize Chokidar watch & init browserSync
-   * we will watch for `src/` and `examples/` folders for any files that changed with the following extensions (js, ts, html, css, scss)
+   * initialize @parcel/watcher watch & init browserSync
+   * We are watching the files with extensions (.js, .ts, .html, .css, .scss) but we'll ignore folders like node_modules, dist & .git
+   * Note: the watcher often send duplicate events, however the use of Set of file changes & the use of a setTimeout delay gets rid of this problem.
    */
   async function init() {
-    watcher = chokidar.watch(
-      Array.from(globSync('**/*.{ts,js,html,css,scss}', {
-        ignore: ['**/.git/**', '**/dist/**', '**/node_modules/**']
-      })), {
-      cwd: process.cwd(),
-      ignoreInitial: true,
-      ignorePermissionErrors: true,
-      persistent: true
-    });
+    subscription = subscribe(process.cwd(), (err, events) => {
+      if (err) return onError(err);
 
-    watcher
-      .on('all', (_event, path) => onFileChanged(path))
-      .on('error', (error) => onError(error));
+      for (const event of events) {
+        onFileChanged(event.path);
+      }
+    }, {
+      ignore: [
+        '**/.git/**',
+        '**/dist/**',
+        '**/node_modules/**',
+        '!**/*.{ts,js,html,css,scss}' // which file extensions to watch
+      ]
+    });
 
     // also watch for any Signal termination to cleanly exit the watch command
     process.once('SIGINT', () => destroy());
@@ -63,7 +64,7 @@ const argv = yargs(hideBin(process.argv)).argv;
   }
 
   /**
-   * Start and initialize BrowserSync
+   * Initialize and start BrowserSync
    * see https://browsersync.io/docs/api#api-watch
    */
   async function startBrowserSync() {
@@ -87,18 +88,24 @@ const argv = yargs(hideBin(process.argv)).argv;
     });
   }
 
+  /** Log to the terminal any watch errors */
   function onError(err) {
-    console.error('Chokidar watch error', err);
+    console.error('File watcher error', err);
   }
 
   /**
-   * On file changes, we will perform certain action(s) depending on the file extension detected,
-   * we will rebuild and/or reload browser
+   * On file changes, we will perform a rebuild and/or reload the browser depending on the file extension being detected.
+   * We add a setTimeout delay to throttle the callbacks to avoid calling the build too often.
    * @param {String} filepath - file path that changed
    */
   function onFileChanged(filepath) {
+    if (timer) {
+      clearTimeout(timer);
+    }
     changedFiles.add(filepath);
-    return executeCommandCallback(filepath);
+    timer = setTimeout(() => {
+      executeCommandCallback(Array.from(changedFiles).pop());
+    }, 50);
   }
 
   function hasQueuedChanges() {
@@ -110,54 +117,48 @@ const argv = yargs(hideBin(process.argv)).argv;
   }
 
   function executeCommandCallback(filepath = '') {
-    if (timer) {
-      clearTimeout(timer);
-    }
-    return new Promise((resolve) => {
-      timer = setTimeout(async () => {
-        if (!processing) {
-          processing = true;
-          if (filepath.endsWith('.js') || filepath.endsWith('.ts')) {
-            // 1. ESM requires is always a full build since it is bundled into a single "index.js" file
-            await executeCjsEsmBuilds();
+    return new Promise(async (resolve) => {
+      if (!processing) {
+        processing = true;
+        if (filepath.endsWith('.js') || filepath.endsWith('.ts')) {
+          // 1. ESM requires is always a full build since it is bundled into a single "index.js" file
+          await executeCjsEsmBuilds();
 
-            // 2. for iife format, we can rebuild each separate file (unless it's the initial build, if so execute full rebuild)
-            await (initialBuild
-              ? buildAllIifeFiles()
-              : buildIifeFile(filepath)
-            );
-          } else if (filepath.endsWith('.css') || filepath.endsWith('.scss')) {
-            // CSS/SCSS files
-            if (filepath.endsWith('.scss')) {
-              await buildSassFile(filepath);
-            }
-          }
-          // ELSE, reaching outside of the conditions above (ie, .html)
-          // will simply perform the common action, shown below, of reloading all connected browser
-
-
-          // in every case, we want to reload the webpage
-          bsync.reload('*.html');
-          changedFiles.delete(filepath);
-          processing = false;
-          if (initialBuild) {
-            initialBuild = false;
-          }
-
-          // we might still have other packages that have changes though, so re-execute command callback process if any were found
-          if (hasQueuedChanges()) {
-            executeCommandCallback(Array.from(changedFiles).pop());
+          // 2. for iife format, we can rebuild each separate file (unless it's the initial build, if so execute full rebuild)
+          await (initialBuild
+            ? buildAllIifeFiles()
+            : buildIifeFile(filepath)
+          );
+        } else if (filepath.endsWith('.css') || filepath.endsWith('.scss')) {
+          // CSS/SCSS files
+          if (filepath.endsWith('.scss')) {
+            await buildSassFile(filepath);
           }
         }
-        resolve(true);
-      }, 50);
+        // ELSE, reaching outside of the conditions above (ie, .html)
+        // will simply perform the common action, shown below, of reloading all connected browser
+
+        // in every case, we want to reload the webpage
+        bsync.reload('*.html');
+        changedFiles.delete(filepath);
+        processing = false;
+        if (initialBuild) {
+          initialBuild = false;
+        }
+
+        // we might still have other packages that have changes though, so re-execute command callback process if any were found
+        if (hasQueuedChanges()) {
+          executeCommandCallback(Array.from(changedFiles).pop());
+        }
+      }
+      resolve(true);
     });
   }
 
   async function destroy() {
     console.log('Exiting the dev file watch...');
     bsync.exit();
-    watcher.close();
+    (await subscription).unsubscribe();
   }
 
   // start dev watch process

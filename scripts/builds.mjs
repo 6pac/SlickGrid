@@ -1,16 +1,16 @@
 import copyfiles from 'copyfiles';
 import { build } from 'esbuild';
-import { outputFileSync } from './fs-utils.mjs';
-import { globSync } from 'tinyglobby';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { compile as sassCompile } from 'sass';
+import { globSync } from 'tinyglobby';
 import c from 'tinyrainbow';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
-import { removeImportsPlugin } from './esbuild-plugins.mjs';
 import { spawnStreaming } from './child-process.mjs';
+import { removeImportsPlugin } from './esbuild-plugins.mjs';
+import { outputFileSync } from './fs-utils.mjs';
 
 const argv = yargs(hideBin(process.argv)).argv;
 export const BUILD_FORMATS = ['cjs', 'esm'];
