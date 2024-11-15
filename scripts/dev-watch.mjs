@@ -105,7 +105,7 @@ const argv = yargs(hideBin(process.argv)).argv;
     changedFiles.add(filepath);
     timer = setTimeout(() => {
       executeCommandCallback(Array.from(changedFiles).pop());
-    }, 50);
+    }, 150);
   }
 
   function hasQueuedChanges() {

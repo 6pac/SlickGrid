@@ -211,7 +211,7 @@ export async function buildSassFile(sassFile) {
       );
     } catch (err) {
       // don't do anything when an error occured, this is to avoid watch mode to crash on errors
-      // console.error('SASS error: ', err);
+      console.error('SASS error: ', err);
     }
   }
 }
