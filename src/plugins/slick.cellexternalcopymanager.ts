@@ -162,11 +162,12 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
 
 
   protected _createTextBox(innerText: string) {
+    const scrollPos = document.documentElement.scrollTop || document.body.scrollTop;
     const ta = document.createElement('textarea');
     ta.style.position = 'absolute';
-    ta.style.left = '-1000px';
-    ta.style.top = document.body.scrollTop + 'px';
+    ta.style.opacity = '0';
     ta.value = innerText;
+    ta.style.top = `${scrollPos}px`;
     this._bodyElement.appendChild(ta);
     ta.select();
 
