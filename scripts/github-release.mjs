@@ -51,14 +51,14 @@ export function createReleaseClient(type) {
  * @param {{ tags: string[]; releaseNotes: { name: string; notes: string; }[] }} commandProps
  * @param {{ gitRemote: string; execOpts: import('@lerna/child-process').ExecOpts }} opts
  */
-export function createRelease(
+export async function createRelease(
   client,
   { tag, releaseNote },
   { gitRemote, execOpts },
   gitDryRun = false
 ) {
   const { GITHUB_TOKEN } = process.env;
-  const repo = parseGitRepo(gitRemote, execOpts);
+  const repo = await parseGitRepo(gitRemote, execOpts);
   const { notes, name } = releaseNote;
 
   if (!tag) {
@@ -103,5 +103,5 @@ export function createRelease(
     return Promise.resolve();
   }
 
-  return client.repos.createRelease(releaseOptions);
+  return await client.repos.createRelease(releaseOptions);
 }
