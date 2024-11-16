@@ -1878,8 +1878,8 @@ var SlickEvent6 = SlickEvent, SlickRange2 = SlickRange, Utils8 = Utils, CLEAR_CO
       item[columnDef.field] = value;
   }
   _createTextBox(innerText) {
-    let ta = document.createElement("textarea");
-    return ta.style.position = "absolute", ta.style.left = "-1000px", ta.style.top = document.body.scrollTop + "px", ta.value = innerText, this._bodyElement.appendChild(ta), ta.select(), ta;
+    let scrollPos = document.documentElement.scrollTop || document.body.scrollTop, ta = document.createElement("textarea");
+    return ta.style.position = "absolute", ta.style.opacity = "0", ta.value = innerText, ta.style.top = `${scrollPos}px`, this._bodyElement.appendChild(ta), ta.select(), ta;
   }
   _decodeTabularData(grid, ta) {
     let columns = grid.getColumns(), clipRows = ta.value.split(/[\n\f\r]/);
@@ -6655,7 +6655,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.14.0");
+    __publicField(this, "slickGridVersion", "5.14.2");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -9895,7 +9895,7 @@ var SlickRemoteModel = class {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.14.0
+ * SlickGrid v5.14.2
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

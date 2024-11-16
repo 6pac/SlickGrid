@@ -5,7 +5,7 @@
 $alpine-font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif !default;
 
 body {
-  background: #f2f2f2;
+  background: #fff;
   padding: 0;
   margin: 8px;
   font-family: var(--alpine-font-family, $alpine-font-family);
@@ -17,6 +17,10 @@ h2 {
   border-bottom: 1px dotted gray;
   .sgi {
     display: inline-flex;
+  }
+  &.title {
+    font-size: 1.25rem;
+    border: 0;
   }
 }
 

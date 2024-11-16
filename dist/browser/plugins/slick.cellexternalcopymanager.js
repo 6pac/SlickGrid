@@ -93,8 +93,8 @@
         item[columnDef.field] = value;
     }
     _createTextBox(innerText) {
-      let ta = document.createElement("textarea");
-      return ta.style.position = "absolute", ta.style.left = "-1000px", ta.style.top = document.body.scrollTop + "px", ta.value = innerText, this._bodyElement.appendChild(ta), ta.select(), ta;
+      let scrollPos = document.documentElement.scrollTop || document.body.scrollTop, ta = document.createElement("textarea");
+      return ta.style.position = "absolute", ta.style.opacity = "0", ta.value = innerText, ta.style.top = `${scrollPos}px`, this._bodyElement.appendChild(ta), ta.select(), ta;
     }
     _decodeTabularData(grid, ta) {
       var _a;

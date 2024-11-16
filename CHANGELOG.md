@@ -1,4 +1,10 @@
 # Change Log
+All notable changes to this project will be documented in this file.
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## [5.14.2](https://github.com/6pac/SlickGrid/compare/5.14.1...5.14.2) (2024-11-16)
+
+# Change Log
 
 All notable changes to this project will be documented in this file.
 
@@ -9,6 +15,7 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 ### Features
 
 * add ViteJS demo ([#1075](https://github.com/6pac/SlickGrid/issues/1075)) ([65724ad](https://github.com/6pac/SlickGrid/commit/65724adf37a55bc5c74a63ffe9ebef518af0f55f))
+
 * replace `@import` with `@use` to fix SASS 2.0 deprecations ([#1074](https://github.com/6pac/SlickGrid/issues/1074)) ([2d084f9](https://github.com/6pac/SlickGrid/commit/2d084f92ad691fc0db8fe475071e728ae14aa18e))
 
 ## [5.13.1](https://github.com/6pac/SlickGrid/compare/5.13.0...5.13.1) (2024-10-06)
