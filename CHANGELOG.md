@@ -4,11 +4,9 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [5.14.2](https://github.com/6pac/SlickGrid/compare/5.14.1...5.14.2) (2024-11-16)
 
-# Change Log
+### Bug Fixes
 
-All notable changes to this project will be documented in this file.
-
-See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+* ExternalCopyManager shouldn't change body scroll pos, fixes [#1078](https://github.com/6pac/SlickGrid/issues/1078) ([#1080](https://github.com/6pac/SlickGrid/issues/1080)) ([3112099](https://github.com/6pac/SlickGrid/commit/3112099500bc682762bc9d3b0ed0a00fbc9b5f95))
 
 # [5.14.0](https://github.com/6pac/SlickGrid/compare/5.13.1...5.14.0) (2024-10-29)
 
