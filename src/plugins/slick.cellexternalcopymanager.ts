@@ -8,7 +8,6 @@ const SlickRange = IIFE_ONLY ? Slick.Range : SlickRange_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
 const CLEAR_COPY_SELECTION_DELAY = 2000;
-const CLIPBOARD_PASTE_DELAY = 100;
 
 /***
   This manager enables users to copy/paste data from/to an external Spreadsheet application
@@ -43,7 +42,6 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
   // --
   // protected props
   protected _grid!: SlickGrid;
-  protected _bodyElement: HTMLElement;
   protected _copiedRanges: SlickRange_[] | null = null;
   protected _clearCopyTI?: number;
   protected _copiedCellStyle: string;
@@ -63,7 +61,6 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
     this._options = options || {};
     this._copiedCellStyleLayerKey = this._options.copiedCellStyleLayerKey || 'copy-manager';
     this._copiedCellStyle = this._options.copiedCellStyle || 'copied';
-    this._bodyElement = this._options.bodyElement || document.body;
     this._onCopyInit = this._options.onCopyInit || undefined;
     this._onCopySuccess = this._options.onCopySuccess || undefined;
   }
@@ -160,23 +157,12 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
     }
   }
 
-
-  protected _createTextBox(innerText: string) {
-    const ta = document.createElement('textarea');
-    ta.style.position = 'absolute';
-    ta.style.left = '-1000px';
-    ta.style.top = document.body.scrollTop + 'px';
-    ta.value = innerText;
-    this._bodyElement.appendChild(ta);
-    ta.select();
-
-    return ta;
-  }
-
-  protected _decodeTabularData(grid: SlickGrid, ta: HTMLTextAreaElement) {
+  protected _decodeTabularData(grid: SlickGrid, clipText: string) {
     const columns = grid.getColumns();
-    const clipText = ta.value;
-    const clipRows = clipText.split(/[\n\f\r]/);
+    const clipRows = clipText
+      .replace('\r\n', '\n')
+      .split(/[\n\f]/);
+
     // trim trailing CR if present
     if (clipRows[clipRows.length - 1] === '') {
       clipRows.pop();
@@ -185,7 +171,6 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
     let j = 0;
     const clippedRange: any[] = [];
 
-    this._bodyElement.removeChild(ta);
     for (let i = 0; i < clipRows.length; i++) {
       if (clipRows[i] !== '') {
         clippedRange[j++] = clipRows[i].split('\t');
@@ -427,17 +412,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
             return true;
           }
           else {
-            const focusEl = document.activeElement as HTMLElement;
-            const ta = this._createTextBox(clipText);
-            ta.focus();
-
-            window.setTimeout(() => {
-              this._bodyElement.removeChild(ta);
-              // restore focus when possible
-              focusEl
-                ? focusEl.focus()
-                : console.log('No element to restore focus to after copy?');
-            }, this._options?.clipboardPasteDelay ?? CLIPBOARD_PASTE_DELAY);
+            this.copyTextToClipboardPromise(clipText);
 
             if (typeof this._onCopySuccess === 'function') {
               let rowCount = 0;
@@ -459,16 +434,18 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
         (e.which === this.keyCodes.V && (e.ctrlKey || e.metaKey) && !e.shiftKey)
         || (e.which === this.keyCodes.INSERT && e.shiftKey && !e.ctrlKey)
       )) {    // CTRL+V or Shift+INS
-        const focusEl = document.activeElement as HTMLElement;
-        const ta = this._createTextBox('');
-        window.setTimeout(() => {
-          this._decodeTabularData(this._grid, ta);
-          // restore focus when possible
-          focusEl?.focus();
-        }, this._options?.clipboardPasteDelay ?? CLIPBOARD_PASTE_DELAY);
-        return false;
+        navigator.clipboard.readText().then(pastedText => {
+          this._decodeTabularData(this._grid, pastedText);
+        });
       }
     }
+  }
+
+  copyTextToClipboardPromise(text: string) {
+    navigator.clipboard.writeText(text).then(
+      () => { },
+      err => console.error('Failed to copy: ', err)
+    );
   }
 
   protected markCopySelection(ranges: SlickRange_[]) {
