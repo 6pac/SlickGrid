@@ -1,5 +1,6 @@
 import { subscribe } from '@parcel/watcher';
 import browserSync from 'browser-sync';
+import { relative } from 'node:path';
 import yargs from 'yargs';
 import { hideBin } from 'yargs/helpers';
 
@@ -36,7 +37,8 @@ const argv = yargs(hideBin(process.argv)).argv;
       if (err) return onError(err);
 
       for (const event of events) {
-        onFileChanged(event.path);
+        const absoluteFilePath = relative(process.cwd(), event.path);
+        onFileChanged(absoluteFilePath);
       }
     }, {
       ignore: [
@@ -120,6 +122,8 @@ const argv = yargs(hideBin(process.argv)).argv;
     return new Promise(async (resolve) => {
       if (!processing) {
         processing = true;
+        changedFiles.delete(filepath);
+
         if (filepath.endsWith('.js') || filepath.endsWith('.ts')) {
           // 1. ESM requires is always a full build since it is bundled into a single "index.js" file
           await executeCjsEsmBuilds();
@@ -140,7 +144,6 @@ const argv = yargs(hideBin(process.argv)).argv;
 
         // in every case, we want to reload the webpage
         bsync.reload('*.html');
-        changedFiles.delete(filepath);
         processing = false;
         if (initialBuild) {
           initialBuild = false;

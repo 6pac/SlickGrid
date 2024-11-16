@@ -9,7 +9,7 @@ import { dirname } from 'node:path';
 export function outputFileSync(file, ...args) {
   const dir = dirname(file);
   if (!existsSync(dir)) {
-    mkdirSync(outDir, { recursive: true });
+    mkdirSync(dir, { recursive: true });
   }
 
   writeFileSync(file, ...args);
