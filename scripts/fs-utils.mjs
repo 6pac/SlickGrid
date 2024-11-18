@@ -15,10 +15,6 @@ export function outputFileSync(file, ...args) {
   writeFileSync(file, ...args);
 }
 
-export function pathExistsSync(path) {
-  return existsSync(path);
-}
-
 export function readJSONSync(file, options = {}) {
   if (typeof options === 'string') {
     options = { encoding: options };
