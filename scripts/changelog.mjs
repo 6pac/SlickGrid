@@ -1,6 +1,5 @@
 import conventionalChangelog from 'conventional-changelog';
-import { pathExistsSync } from './fs-utils.mjs';
-import { readFileSync, writeFileSync } from 'node:fs';
+import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 const projectRootLocation = process.cwd();
@@ -29,7 +28,7 @@ export function updateChangelog(args, newVersion) {
 
     // read changelog.md if it exist or else we'll create it
     const changelogLocation = path.resolve(projectRootLocation, infile);
-    const fileExist = pathExistsSync(changelogLocation);
+    const fileExist = existsSync(changelogLocation);
     if (fileExist) {
       oldContent = readFileSync(path.resolve(projectRootLocation, infile), 'utf8');
     }
