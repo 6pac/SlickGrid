@@ -1,4 +1,4 @@
-import { SlickEvent as SlickEvent_, type SlickEventData, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core';
+import { SlickEvent as SlickEvent_, type SlickEventData, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_, Utils as Utils_, CellSelectionMode as CellSelectionMode_ } from '../slick.core';
 import { Draggable as Draggable_ } from '../slick.interactions';
 import { SlickCellRangeDecorator as SlickCellRangeDecorator_ } from './slick.cellrangedecorator';
 import type { CellRangeSelectorOption, DragPosition, DragRange, DragRowMove, GridOption, MouseOffsetViewport, OnScrollEventArgs, SlickPlugin } from '../models/index';
@@ -11,14 +11,15 @@ const SlickRange = IIFE_ONLY ? Slick.Range : SlickRange_;
 const Draggable = IIFE_ONLY ? Slick.Draggable : Draggable_;
 const SlickCellRangeDecorator = IIFE_ONLY ? Slick.CellRangeDecorator : SlickCellRangeDecorator_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+const CellSelectionMode = IIFE_ONLY ? Slick.CellSelectionMode : CellSelectionMode_;
 
 export class SlickCellRangeSelector implements SlickPlugin {
   // --
   // public API
   pluginName = 'CellRangeSelector' as const;
   onBeforeCellRangeSelected = new SlickEvent<{ row: number; cell: number; }>('onBeforeCellRangeSelected');
-  onCellRangeSelected = new SlickEvent<{ range: SlickRange_; }>('onCellRangeSelected');
-  onCellRangeSelecting = new SlickEvent<{ range: SlickRange_; }>('onCellRangeSelecting');
+  onCellRangeSelected = new SlickEvent<{ range: SlickRange_; selectionMode: string; }>('onCellRangeSelected');
+  onCellRangeSelecting = new SlickEvent<{ range: SlickRange_; selectionMode: string; }>('onCellRangeSelecting');
 
   // --
   // protected props
@@ -31,6 +32,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
   protected _dragging = false;
   protected _handler = new SlickEventHandler();
   protected _options: CellRangeSelectorOption;
+  protected _selectionMode: string = CellSelectionMode.Select;
   protected _defaults = {
     autoScroll: true,
     minIntervalToShowNextCell: 30,
@@ -94,6 +96,14 @@ export class SlickCellRangeSelector implements SlickPlugin {
 
   getCellDecorator() {
     return this._decorator;
+  }
+
+  getSelectionMode() {
+    return this._selectionMode;
+  }
+
+  setSelectionMode(mode: string) {
+    this._selectionMode = mode;
   }
 
   protected handleScroll(_e: SlickEventData, args: OnScrollEventArgs) {
@@ -167,11 +177,18 @@ export class SlickCellRangeSelector implements SlickPlugin {
       startY += this._scrollTop;
     }
 
-    const start = this._grid.getCellFromPoint(startX, startY);
+    let start: { row: number | undefined, cell: number | undefined; } | null;
+    this._selectionMode = CellSelectionMode.Select;
+    if (dd.matchClassTag !== 'dragReplaceHandle') {
+      start = this._grid.getCellFromPoint(startX, startY);
+    } else {
+      start = this._grid.getActiveCell() || { row: undefined, cell: undefined };
+      this._selectionMode = CellSelectionMode.Replace;
+    }
 
     dd.range = { start, end: {} };
     this._currentlySelectedRange = dd.range;
-    return this._decorator.show(new SlickRange(start.row, start.cell));
+    return this._decorator.show(new SlickRange(start.row ?? 0, start.cell ?? 0));
   }
 
   protected handleDrag(evt: SlickEventData, dd: DragRowMove) {
@@ -381,7 +398,8 @@ export class SlickCellRangeSelector implements SlickPlugin {
         dd.range.start.cell ?? 0,
         dd.range.end.row,
         dd.range.end.cell
-      )
+      ),
+      selectionMode: this._selectionMode
     });
   }
 

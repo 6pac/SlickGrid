@@ -354,6 +354,39 @@ export class SlickRange {
   };
 }
 
+/**
+ * Create a handle element for Excel style drag-replace
+ * @class DragExtendHandle
+ * @constructor
+ * @param gridUid {String} string UID of parent grid
+ */
+export class SlickDragExtendHandle {
+  id: string;
+  cssClass: string = 'slick-drag-replace-handle';
+
+  constructor(gridUid: string) {
+    this.id = gridUid + "_drag_replace_handle";
+  }
+
+  getHandleHtml() {
+    return '<div id="' + this.id + '" class="slick-drag-replace-handle"></div>';
+    //console.log('DragReplaceEl.getStringEl');
+  }
+
+  removeEl() {
+    let dragReplaceEl = document.getElementById(this.id);
+    if (dragReplaceEl) { dragReplaceEl.remove(); }
+    //console.log('DragReplaceEl.removeEl');
+  }
+
+  createEl(activeCellNode: any) {
+    let dragReplaceEl = document.createElement("div");
+    dragReplaceEl.classList.add("slick-drag-replace-handle");
+    dragReplaceEl.setAttribute("id", this.id);
+    activeCellNode.appendChild(dragReplaceEl);
+    console.log('DragReplaceEl.createEl');
+  }
+}
 
 /**
  * A base class that all special / non-data rows (like Group and GroupTotals) derive from.
@@ -1094,6 +1127,7 @@ const SlickCore = {
   EventData: SlickEventData,
   EventHandler: SlickEventHandler,
   Range: SlickRange,
+  DragExtendHandle: SlickDragExtendHandle,
   NonDataRow: SlickNonDataItem,
   Group: SlickGroup,
   GroupTotals: SlickGroupTotals,
@@ -1152,6 +1186,11 @@ const SlickCore = {
     LastRow: 'LS1'
   },
 
+  'CellSelectionMode': {
+    Select: "SEL",
+    Replace: "REP"
+  },
+
   'ValueFilterMode': {
     None: 'NONE',
     DeDuplicate: 'DEDP',
@@ -1168,9 +1207,9 @@ const SlickCore = {
 };
 
 export const {
-  EditorLock, Event, EventData, EventHandler, Group, GroupTotals, NonDataRow, Range,
+  EditorLock, Event, EventData, EventHandler, Group, GroupTotals, NonDataRow, Range, DragExtendHandle,
   RegexSanitizer, GlobalEditorLock, keyCode, preClickClassName, GridAutosizeColsMode, ColAutosizeMode,
-  RowSelectionMode, ValueFilterMode, WidthEvalMode
+  RowSelectionMode, CellSelectionMode,ValueFilterMode, WidthEvalMode
 } = SlickCore;
 
 // also add to global object when exist

@@ -25,6 +25,7 @@ export class SlickCellRangeDecorator implements SlickPlugin {
   // protected props
   protected _options: CellRangeDecoratorOption;
   protected _elem?: HTMLDivElement | null;
+  protected _selectionCss: CSSStyleDeclaration;
   protected _defaults = {
     selectionCssClass: 'slick-range-decorator',
     selectionCss: {
@@ -36,10 +37,19 @@ export class SlickCellRangeDecorator implements SlickPlugin {
 
   constructor(protected readonly grid: SlickGrid, options?: Partial<CellRangeDecoratorOption>) {
     this._options = Utils.extend(true, {}, this._defaults, options);
+    this._selectionCss = options?.selectionCss || {} as CSSStyleDeclaration;
   }
 
   destroy() {
     this.hide();
+  }
+
+  getSelectionCss() {
+    return this._selectionCss;
+  }
+
+  setSelectionCss(cssProps: CSSStyleDeclaration) {
+    this._selectionCss = cssProps;
   }
 
   init() { }
@@ -53,8 +63,8 @@ export class SlickCellRangeDecorator implements SlickPlugin {
     if (!this._elem) {
       this._elem = document.createElement('div');
       this._elem.className = this._options.selectionCssClass;
-      Object.keys(this._options.selectionCss as CSSStyleDeclaration).forEach((cssStyleKey) => {
-        this._elem!.style[cssStyleKey as CSSStyleDeclarationWritable] = this._options.selectionCss[cssStyleKey as CSSStyleDeclarationWritable];
+      Object.keys(this._selectionCss as CSSStyleDeclaration).forEach((cssStyleKey) => {
+        this._elem!.style[cssStyleKey as CSSStyleDeclarationWritable] = this._selectionCss[cssStyleKey as CSSStyleDeclarationWritable];
       });
       this._elem.style.position = 'absolute';
       const canvasNode = this.grid.getActiveCanvasNode();

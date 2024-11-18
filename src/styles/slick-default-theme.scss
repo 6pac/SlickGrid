@@ -156,6 +156,15 @@ classes should alter those!
   -webkit-animation-name: slickgrid-invalid-hilite;
 }
 
+.slick-drag-replace-handle {
+  height: 5px;
+  width: 5px;
+  background: gray;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}
+
 @-moz-keyframes slickgrid-invalid-hilite {
   from { box-shadow: 0 0 6px red; }
   to { box-shadow: none; }
