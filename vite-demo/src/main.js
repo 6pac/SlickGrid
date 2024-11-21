@@ -19,7 +19,7 @@ document.querySelector('#app').innerHTML =
     <div class="router-link">
       <span class="sgi sgi-lightbulb"></span>
       <a href="https://github.com/6pac/SlickGrid/wiki/Examples" target="__blank" title="for many more examples, please visit the project Examples Wiki">
-        Visit Examples Wikis
+        Visit Examples Wiki
       </a>
     </div>
   </div>
