@@ -1,51 +1,54 @@
-.cell-title {
-  font-weight: 600;
-}
+.grid4 {
 
-.cell-effort-driven {
-  justify-content: center;
-}
+  .cell-title {
+    font-weight: 600;
+  }
 
-.cell-selection {
-  border-right-color: silver;
-  border-right-style: solid;
-  color: gray;
-  text-align: right;
-  font-size: 10px;
-  padding-right: 6px;
-}
+  .cell-effort-driven {
+    justify-content: center;
+  }
 
-.slick-row.selected .cell-selection {
-  background-color: transparent; /* show default selected row background */
-}
-.slick-header-column:nth-child(1) {
-  justify-content: center;
-}
-.alpine-theme .slick-column-groupable {
-  height: 1em;
-  width: 1em;
-  mask-size: 1em;
-  -webkit-mask-size: 1em;
-}
-.btn-alpine-theme {
-  background-color: gray;
-  color: white;
-  border-width: 1px;
-  border-radius: 2px;
-  height: 22px;
-}
-.btn-classic-theme {
-  background-color: #bbd1ee;
-  border-width: 1px;
-  border-radius: 2px;
-  height: 22px;
-}
-.sgi-search:hover {
-  cursor: pointer;
-  color: darkcyan;
-}
-/* change to flex-end for RTL support */
-.slick-container {
-  --alpine-header-justify-content: flex-start;
-  --alpine-cell-justify-content: flex-start;
+  .cell-selection {
+    border-right-color: silver;
+    border-right-style: solid;
+    color: gray;
+    text-align: right;
+    font-size: 10px;
+    padding-right: 6px;
+  }
+
+  .slick-row.selected .cell-selection {
+    background-color: transparent; /* show default selected row background */
+  }
+  .slick-header-column:nth-child(1) {
+    justify-content: center;
+  }
+  .alpine-theme .slick-column-groupable {
+    height: 1em;
+    width: 1em;
+    mask-size: 1em;
+    -webkit-mask-size: 1em;
+  }
+  .btn-alpine-theme {
+    background-color: gray;
+    color: white;
+    border-width: 1px;
+    border-radius: 2px;
+    height: 22px;
+  }
+  .btn-classic-theme {
+    background-color: #bbd1ee;
+    border-width: 1px;
+    border-radius: 2px;
+    height: 22px;
+  }
+  .sgi-search:hover {
+    cursor: pointer;
+    color: darkcyan;
+  }
+  /* change to flex-end for RTL support */
+  .slick-container {
+    --alpine-header-justify-content: flex-start;
+    --alpine-cell-justify-content: flex-start;
+  }
 }
