@@ -24,29 +24,29 @@ We extended the project from the original SlickGrid foundation while also includ
 - the project now has only 1 required small dependency which is [SortableJS](https://sortablejs.github.io/Sortable/)
 
 ### Vite Demo
-You can also see a [ViteJS](https://vite.dev/) demo in the [./vite-demo](https://github.com/6pac/SlickGrid/tree/master/vite-demo) folder (also available via the Stackblitz link below). This Vite demo was created mostly to test the project ESM build and also the SASS imports as well.
+You can also see a [ViteJS](https://vite.dev/) demo in the [./vite-demo](https://github.com/6pac/SlickGrid/tree/master/vite-demo) folder (also available via the Stackblitz link below). This Vite demo was created mostly to test the project ESM build and also the SASS imports as well, it could also be used to provide bug repro.
 
 ### Stackblitz
 
-You can also try out the Vite demo (mentioned just above) live via Stackblitz
+You can also try out the Vite demo (mentioned just above) live via Stackblitz. It can also be use to provide a repro when you openening any new bug/feature requests.
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/6pac/SlickGrid/tree/master/vite-demo)
 
-> Note: the Stackblitz demo only includes 2 examples, however there are a lot more example in the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** Wiki page
+> Note: the Stackblitz demo only includes couple of examples, note however that there are a lot more example in the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** Wiki page
 
 ### Examples
 Check out the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** Wiki for a full list of examples demonstrating new features and use cases, such as dynamic grid creation and editors with third party controls.
 
-Also take a look at the [Wiki](https://github.com/6pac/SlickGrid/wiki) and [Releases](https://github.com/6pac/SlickGrid/releases) for documentation and news.
+Also take a look at the [Wiki](https://github.com/6pac/SlickGrid/wiki) and [Releases](https://github.com/6pac/SlickGrid/releases) for documentation and recent news.
 
 _For a basic TypeScript example, take a look at the v5.0 Annoucement & Migration guide shown below and also the [TypeScript Example Wiki](https://github.com/6pac/SlickGrid/wiki/TypeScript-Examples)._
 
-Below is one of the available examples from Stackblitz which is mentioned just above
+Below is one of the available examples available in Stackblitz (which is mentioned just above)
 
 ![Realtime Trading Demo](https://github.com/user-attachments/assets/db5303f9-bddf-4418-9906-fa0b11d237bd)
 
 ### Installation
-There are multiple ways to use and install SlickGrid, you can use it as a standalone (IIFE) or install it through NPM then `import` or `require` SlickGrid (`import` is preferred for tree shaking).
+There are multiple ways to use and install SlickGrid, you can use it as a standalone `<script>` (IIFE) or install it through NPM and then `import` or `require` SlickGrid (`import` is preferred for tree shaking).
 
 ```sh
 # Alpine style from CDN
