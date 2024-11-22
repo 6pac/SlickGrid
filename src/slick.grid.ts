@@ -992,6 +992,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   /** handles "display:none" on container or container parents, related to issue: https://github.com/6pac/SlickGrid/issues/568 */
   cacheCssForHiddenInit() {
     this._hiddenParents = Utils.parents(this._container, ':hidden') as HTMLElement[];
+    this.oldProps = [];
     this._hiddenParents.forEach(el => {
       const old: Partial<CSSStyleDeclaration> = {};
       Object.keys(this.cssShow).forEach(name => {
@@ -1017,6 +1018,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           }
         });
       });
+      this._hiddenParents = [];
     }
   }
 
@@ -2745,9 +2747,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /** Proportionately resizes all columns to fill available horizontal space. This does not take the cell contents into consideration. */
   autosizeColumns(autosizeMode?: string, isInit?: boolean) {
-    this.cacheCssForHiddenInit();
+    const checkHiddenParents= !(this._hiddenParents?.length);
+    if (checkHiddenParents) {
+      this.cacheCssForHiddenInit();
+    }
     this.internalAutosizeColumns(autosizeMode, isInit);
-    this.restoreCssFromHiddenInit();
+    if (checkHiddenParents) {
+      this.restoreCssFromHiddenInit();
+    }
   }
 
   protected internalAutosizeColumns(autosizeMode?: string, isInit?: boolean) {
