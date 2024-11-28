@@ -170,6 +170,9 @@ const pkg = readJSONSync(pJoin(projectRootPath, 'package.json'));
         );
       }
 
+      // 13. Git sync/push all changes
+      await gitPushToCurrentBranch('origin', { cwd, dryRun: argv.dryRun });
+
       // END
       console.log(`🏁 Done (in ${Math.floor(process.uptime())}s.)`);
     }
