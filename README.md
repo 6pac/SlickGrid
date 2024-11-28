@@ -43,7 +43,7 @@ _For a basic TypeScript example, take a look at the v5.0 Annoucement & Migration
 
 Below is one of the available examples available in Stackblitz (which is mentioned just above)
 
-![Realtime Trading Demo](https://github.com/user-attachments/assets/db5303f9-bddf-4418-9906-fa0b11d237bd)
+![Realtime Trading Demo](https://github.com/user-attachments/assets/a098b242-88e5-418d-a40b-3a8e44e93ca4)
 
 ### Installation
 There are multiple ways to use and install SlickGrid, you can use it as a standalone `<script>` (IIFE) or install it through NPM and then `import` or `require` SlickGrid (`import` is preferred for tree shaking).
