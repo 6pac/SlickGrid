@@ -1,6 +1,6 @@
-import type { CssStyleHash, SlickPlugin } from '../models/index';
-import { keyCode as keyCode_, SlickEvent as SlickEvent_, type SlickEventData, Utils as Utils_, type SlickRange } from '../slick.core';
-import type { SlickGrid } from '../slick.grid';
+import type { CssStyleHash, SlickPlugin } from '../models/index.js';
+import { keyCode as keyCode_, SlickEvent as SlickEvent_, type SlickEventData, Utils as Utils_, type SlickRange } from '../slick.core.js';
+import type { SlickGrid } from '../slick.grid.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;

@@ -16,7 +16,7 @@ import type {
   OnSetItemsCalledEventArgs,
   PagingInfo,
   SlickGridModel,
-} from './models/index';
+} from './models/index.js';
 import {
   type BasePubSub,
   SlickEvent as SlickEvent_,
@@ -25,8 +25,8 @@ import {
   SlickGroupTotals as SlickGroupTotals_,
   Utils as Utils_,
   type SlickNonDataItem,
-} from './slick.core';
-import { SlickGroupItemMetadataProvider as SlickGroupItemMetadataProvider_ } from './slick.groupitemmetadataprovider';
+} from './slick.core.js';
+import { SlickGroupItemMetadataProvider as SlickGroupItemMetadataProvider_ } from './slick.groupitemmetadataprovider.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;

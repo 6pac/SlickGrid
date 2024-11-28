@@ -1,5 +1,5 @@
-import type { ColumnSort } from './index';
-import type { SlickGrid } from '../slick.grid';
+import type { ColumnSort } from './index.js';
+import type { SlickGrid } from '../slick.grid.js';
 
 export interface MultiColumnSort {
   /** SlickGrid grid object */

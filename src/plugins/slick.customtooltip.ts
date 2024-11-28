@@ -1,6 +1,6 @@
-import type { CancellablePromiseWrapper, Column, CustomDataView, CustomTooltipOption, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption } from '../models/index';
-import { type SlickEventData, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
-import type { SlickGrid } from '../slick.grid';
+import type { CancellablePromiseWrapper, Column, CustomDataView, CustomTooltipOption, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption } from '../models/index.js';
+import { type SlickEventData, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core.js';
+import type { SlickGrid } from '../slick.grid.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const SlickEventHandler = IIFE_ONLY ? Slick.EventHandler : SlickEventHandler_;

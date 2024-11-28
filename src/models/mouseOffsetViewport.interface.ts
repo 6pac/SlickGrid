@@ -1,4 +1,4 @@
-import type { DragPosition } from './drag.interface';
+import type { DragPosition } from './drag.interface.js';
 
 export interface MouseOffsetViewport {
   e: any,

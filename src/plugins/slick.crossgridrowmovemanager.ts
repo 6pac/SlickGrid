@@ -1,6 +1,6 @@
-import { SlickEvent as SlickEvent_, type SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
-import type { Column, DragRowMove, CrossGridRowMoveManagerOption, FormatterResultWithText, UsabilityOverrideFn } from '../models/index';
-import type { SlickGrid } from '../slick.grid';
+import { SlickEvent as SlickEvent_, type SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core.js';
+import type { Column, DragRowMove, CrossGridRowMoveManagerOption, FormatterResultWithText, UsabilityOverrideFn } from '../models/index.js';
+import type { SlickGrid } from '../slick.grid.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;

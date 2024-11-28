@@ -70,7 +70,7 @@ import type {
   SingleColumnSort,
   SlickGridModel,
   SlickPlugin,
-} from './models/index';
+} from './models/index.js';
 import {
   type BasePubSub,
   BindingEventService as BindingEventService_,
@@ -87,8 +87,8 @@ import {
   Utils as Utils_,
   ValueFilterMode as ValueFilterMode_,
   WidthEvalMode as WidthEvalMode_,
-} from './slick.core';
-import { Draggable as Draggable_, MouseWheel as MouseWheel_, Resizable as Resizable_ } from './slick.interactions';
+} from './slick.core.js';
+import { Draggable as Draggable_, MouseWheel as MouseWheel_, Resizable as Resizable_ } from './slick.interactions.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
@@ -2747,7 +2747,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /** Proportionately resizes all columns to fill available horizontal space. This does not take the cell contents into consideration. */
   autosizeColumns(autosizeMode?: string, isInit?: boolean) {
-    const checkHiddenParents= !(this._hiddenParents?.length);
+    const checkHiddenParents = !(this._hiddenParents?.length);
     if (checkHiddenParents) {
       this.cacheCssForHiddenInit();
     }

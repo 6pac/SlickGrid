@@ -1,7 +1,7 @@
-import type { CheckboxSelectorOption, Column, DOMEvent, SlickPlugin, SelectableOverrideCallback, OnHeaderClickEventArgs } from '../models/index';
-import { BindingEventService as BindingEventService_, type SlickEventData, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
-import type { SlickDataView } from '../slick.dataview';
-import type { SlickGrid } from '../slick.grid';
+import type { CheckboxSelectorOption, Column, DOMEvent, SlickPlugin, SelectableOverrideCallback, OnHeaderClickEventArgs } from '../models/index.js';
+import { BindingEventService as BindingEventService_, type SlickEventData, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core.js';
+import type { SlickDataView } from '../slick.dataview.js';
+import type { SlickGrid } from '../slick.grid.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;

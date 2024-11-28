@@ -1,5 +1,5 @@
-import type { UsabilityOverrideFn } from './index';
-import type { SlickGrid } from '../slick.grid';
+import type { UsabilityOverrideFn } from './index.js';
+import type { SlickGrid } from '../slick.grid.js';
 
 export interface RowDetailViewOption {
   /** Defaults to True, do we always render/reRender the column */

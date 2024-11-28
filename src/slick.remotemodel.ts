@@ -1,4 +1,4 @@
-import type { ColumnSort } from './models/index';
+import type { ColumnSort } from './models/index.js';
 
 /***
  * A sample AJAX data store implementation.

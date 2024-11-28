@@ -17,39 +17,39 @@ import type {
   Utils,
   ValueFilterMode,
   WidthEvalMode,
-} from './slick.core';
-import type { SlickDataView } from './slick.dataview';
-import type { SlickGrid } from './slick.grid';
-import type { SlickCompositeEditor } from './slick.compositeeditor';
-import type { SlickColumnMenu } from './controls/slick.columnmenu';
-import type { SlickColumnPicker } from './controls/slick.columnpicker';
-import type { SlickGridMenu } from './controls/slick.gridmenu';
-import type { SlickGridPager } from './controls/slick.pager';
-import type { SlickAutoTooltips } from './plugins/slick.autotooltips';
-import type { SlickCellCopyManager } from './plugins/slick.cellcopymanager';
-import type { SlickCellMenu } from './plugins/slick.cellmenu';
-import type { SlickCheckboxSelectColumn } from './plugins/slick.checkboxselectcolumn';
-import type { SlickContextMenu } from './plugins/slick.contextmenu';
-import type { SlickHeaderButtons } from './plugins/slick.headerbuttons';
-import type { SlickHeaderMenu } from './plugins/slick.headermenu';
-import type { SlickCellExternalCopyManager } from './plugins/slick.cellexternalcopymanager';
-import type { SlickCellRangeDecorator } from './plugins/slick.cellrangedecorator';
-import type { SlickCellRangeSelector } from './plugins/slick.cellrangeselector';
-import type { SlickCellSelectionModel } from './plugins/slick.cellselectionmodel';
-import type { SlickCrossGridRowMoveManager } from './plugins/slick.crossgridrowmovemanager';
-import type { SlickDraggableGrouping } from './plugins/slick.draggablegrouping';
-import type { SlickRowSelectionModel } from './plugins/slick.rowselectionmodel';
-import type { SlickResizer } from './plugins/slick.resizer';
-import type { SlickRowMoveManager } from './plugins/slick.rowmovemanager';
-import type { SlickRowDetailView } from './plugins/slick.rowdetailview';
-import type { SlickState } from './plugins/slick.state';
-import type { SlickGroupItemMetadataProvider } from './slick.groupitemmetadataprovider';
-import type { SlickRemoteModel } from './slick.remotemodel';
-import type { SlickRemoteModelYahoo } from './slick.remotemodel-yahoo';
-import type { Draggable, MouseWheel, Resizable } from './slick.interactions';
-import type { Aggregators } from './slick.dataview';
-import type { Editors } from './slick.editors';
-import type { Formatters } from './slick.formatters';
+} from './slick.core.js';
+import type { SlickDataView } from './slick.dataview.js';
+import type { SlickGrid } from './slick.grid.js';
+import type { SlickCompositeEditor } from './slick.compositeeditor.js';
+import type { SlickColumnMenu } from './controls/slick.columnmenu.js';
+import type { SlickColumnPicker } from './controls/slick.columnpicker.js';
+import type { SlickGridMenu } from './controls/slick.gridmenu.js';
+import type { SlickGridPager } from './controls/slick.pager.js';
+import type { SlickAutoTooltips } from './plugins/slick.autotooltips.js';
+import type { SlickCellCopyManager } from './plugins/slick.cellcopymanager.js';
+import type { SlickCellMenu } from './plugins/slick.cellmenu.js';
+import type { SlickCheckboxSelectColumn } from './plugins/slick.checkboxselectcolumn.js';
+import type { SlickContextMenu } from './plugins/slick.contextmenu.js';
+import type { SlickHeaderButtons } from './plugins/slick.headerbuttons.js';
+import type { SlickHeaderMenu } from './plugins/slick.headermenu.js';
+import type { SlickCellExternalCopyManager } from './plugins/slick.cellexternalcopymanager.js';
+import type { SlickCellRangeDecorator } from './plugins/slick.cellrangedecorator.js';
+import type { SlickCellRangeSelector } from './plugins/slick.cellrangeselector.js';
+import type { SlickCellSelectionModel } from './plugins/slick.cellselectionmodel.js';
+import type { SlickCrossGridRowMoveManager } from './plugins/slick.crossgridrowmovemanager.js';
+import type { SlickDraggableGrouping } from './plugins/slick.draggablegrouping.js';
+import type { SlickRowSelectionModel } from './plugins/slick.rowselectionmodel.js';
+import type { SlickResizer } from './plugins/slick.resizer.js';
+import type { SlickRowMoveManager } from './plugins/slick.rowmovemanager.js';
+import type { SlickRowDetailView } from './plugins/slick.rowdetailview.js';
+import type { SlickState } from './plugins/slick.state.js';
+import type { SlickGroupItemMetadataProvider } from './slick.groupitemmetadataprovider.js';
+import type { SlickRemoteModel } from './slick.remotemodel.js';
+import type { SlickRemoteModelYahoo } from './slick.remotemodel-yahoo.js';
+import type { Draggable, MouseWheel, Resizable } from './slick.interactions.js';
+import type { Aggregators } from './slick.dataview.js';
+import type { Editors } from './slick.editors.js';
+import type { Formatters } from './slick.formatters.js';
 
 declare global {
   // jQuery might still be loaded for SlickRemote plugin

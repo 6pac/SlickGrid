@@ -1,5 +1,5 @@
-import type { Column, MenuCommandItem } from './index';
-import type { SlickGrid } from '../slick.grid';
+import type { Column, MenuCommandItem } from './index.js';
+import type { SlickGrid } from '../slick.grid.js';
 
 export interface HeaderMenuItems {
   /** List of command items to show in the header menu. */

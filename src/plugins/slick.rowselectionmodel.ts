@@ -1,11 +1,18 @@
-import { keyCode as keyCode_, SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core';
-import { Draggable as Draggable_ } from '../slick.interactions';
-import { SlickCellRangeDecorator as SlickCellRangeDecorator_ } from './slick.cellrangedecorator';
-import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector';
-import type { SlickCrossGridRowMoveManager as SlickCrossGridRowMoveManager_ } from './slick.crossgridrowmovemanager';
-import type { SlickRowMoveManager as SlickRowMoveManager_ } from './slick.rowmovemanager';
-import type { OnActiveCellChangedEventArgs, RowSelectionModelOption } from '../models/index';
-import type { SlickGrid } from '../slick.grid';
+import {
+  keyCode as keyCode_,
+  SlickEvent as SlickEvent_,
+  SlickEventData as SlickEventData_,
+  SlickEventHandler as SlickEventHandler_,
+  SlickRange as SlickRange_,
+  Utils as Utils_
+} from '../slick.core.js';
+import { Draggable as Draggable_ } from '../slick.interactions.js';
+import { SlickCellRangeDecorator as SlickCellRangeDecorator_ } from './slick.cellrangedecorator.js';
+import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector.js';
+import type { SlickCrossGridRowMoveManager as SlickCrossGridRowMoveManager_ } from './slick.crossgridrowmovemanager.js';
+import type { SlickRowMoveManager as SlickRowMoveManager_ } from './slick.rowmovemanager.js';
+import type { OnActiveCellChangedEventArgs, RowSelectionModelOption } from '../models/index.js';
+import type { SlickGrid } from '../slick.grid.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const Draggable = IIFE_ONLY ? Slick.Draggable : Draggable_;
