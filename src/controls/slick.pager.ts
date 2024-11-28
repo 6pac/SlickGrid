@@ -1,7 +1,7 @@
-import type { PagingInfo } from '../models/index';
-import { BindingEventService as BindingEventService_, SlickGlobalEditorLock as SlickGlobalEditorLock_, Utils as Utils_ } from '../slick.core';
-import type { SlickDataView } from '../slick.dataview';
-import type { SlickGrid } from '../slick.grid';
+import type { PagingInfo } from '../models/index.js';
+import { BindingEventService as BindingEventService_, SlickGlobalEditorLock as SlickGlobalEditorLock_, Utils as Utils_ } from '../slick.core.js';
+import type { SlickDataView } from '../slick.dataview.js';
+import type { SlickGrid } from '../slick.grid.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;

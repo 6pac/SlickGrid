@@ -1,8 +1,8 @@
-import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core';
-import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector';
-import type { CustomDataView, OnActiveCellChangedEventArgs } from '../models/index';
-import type { SlickDataView } from '../slick.dataview';
-import type { SlickGrid } from '../slick.grid';
+import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core.js';
+import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector.js';
+import type { CustomDataView, OnActiveCellChangedEventArgs } from '../models/index.js';
+import type { SlickDataView } from '../slick.dataview.js';
+import type { SlickGrid } from '../slick.grid.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;

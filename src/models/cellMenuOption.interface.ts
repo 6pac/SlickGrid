@@ -2,7 +2,7 @@ import type {
   MenuCallbackArgs,
   MenuCommandItem,
   MenuOptionItem,
-} from './index';
+} from './index.js';
 
 export interface CellMenuOption {
   /** Defaults to true, Auto-align dropup or dropdown menu to the left or right depending on grid viewport available space */

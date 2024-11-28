@@ -1,5 +1,5 @@
-import type { GridMenuCallbackArgs, GridMenuCommandItemCallbackArgs, MenuCommandItem } from './index';
-import type { SlickEventData } from '../slick.core';
+import type { GridMenuCallbackArgs, GridMenuCommandItemCallbackArgs, MenuCommandItem } from './index.js';
+import type { SlickEventData } from '../slick.core.js';
 
 export interface GridMenuItem extends MenuCommandItem<GridMenuCommandItemCallbackArgs, GridMenuCallbackArgs> {
   /** @deprecated use `commandItems` instead. Array of Command Items (title, command, disabled, ...) */

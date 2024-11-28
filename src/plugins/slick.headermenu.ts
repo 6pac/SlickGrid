@@ -1,4 +1,10 @@
-import { BindingEventService as BindingEventService_, Event as SlickEvent_, type SlickEventData, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
+import {
+  BindingEventService as BindingEventService_,
+  Event as SlickEvent_,
+  type SlickEventData,
+  SlickEventHandler as SlickEventHandler_,
+  Utils as Utils_
+} from '../slick.core.js';
 import type {
   Column,
   DOMEvent,
@@ -10,8 +16,8 @@ import type {
   MenuCommandItemCallbackArgs,
   SlickPlugin,
   OnHeaderCellRenderedEventArgs,
-} from '../models/index';
-import type { SlickGrid } from '../slick.grid';
+} from '../models/index.js';
+import type { SlickGrid } from '../slick.grid.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;

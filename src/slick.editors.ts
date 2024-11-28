@@ -1,5 +1,5 @@
-import type { Column, Editor, EditorArguments, EditorValidationResult, ElementPosition, GridOption, OnCompositeEditorChangeEventArgs } from './models/index';
-import { keyCode as keyCode_, Utils as Utils_ } from './slick.core';
+import type { Column, Editor, EditorArguments, EditorValidationResult, ElementPosition, GridOption, OnCompositeEditorChangeEventArgs } from './models/index.js';
+import { keyCode as keyCode_, Utils as Utils_ } from './slick.core.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;

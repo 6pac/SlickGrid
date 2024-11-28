@@ -1,4 +1,4 @@
-import type { UsabilityOverrideFn } from './usabilityOverrideFn.type';
+import type { UsabilityOverrideFn } from './usabilityOverrideFn.type.js';
 
 export interface CheckboxSelectorOption {
   /**
