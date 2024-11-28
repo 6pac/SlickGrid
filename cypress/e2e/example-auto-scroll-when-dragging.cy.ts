@@ -1,4 +1,4 @@
-import { getScrollDistanceWhenDragOutsideGrid } from '../support/drag.js';
+import { getScrollDistanceWhenDragOutsideGrid } from '../support/drag';
 
 describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
   // NOTE:  everywhere there's a * 2 is because we have a top+bottom (frozen rows) containers even after Unfreeze Columns/Rows
