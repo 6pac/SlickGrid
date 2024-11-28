@@ -6552,7 +6552,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.14.2");
+    __publicField(this, "slickGridVersion", "5.14.3");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -7011,7 +7011,7 @@ var SlickGrid = class {
   }
   /** handles "display:none" on container or container parents, related to issue: https://github.com/6pac/SlickGrid/issues/568 */
   cacheCssForHiddenInit() {
-    this._hiddenParents = Utils30.parents(this._container, ":hidden"), this._hiddenParents.forEach((el) => {
+    this._hiddenParents = Utils30.parents(this._container, ":hidden"), this.oldProps = [], this._hiddenParents.forEach((el) => {
       let old = {};
       Object.keys(this.cssShow).forEach((name) => {
         this.cssShow && (old[name] = el.style[name], el.style[name] = this.cssShow[name]);
@@ -7020,12 +7020,12 @@ var SlickGrid = class {
   }
   restoreCssFromHiddenInit() {
     let i = 0;
-    this._hiddenParents && this._hiddenParents.forEach((el) => {
+    this._hiddenParents && (this._hiddenParents.forEach((el) => {
       let old = this.oldProps[i++];
       Object.keys(this.cssShow).forEach((name) => {
         this.cssShow && (el.style[name] = old[name]);
       });
-    });
+    }), this._hiddenParents = []);
   }
   hasFrozenColumns() {
     return this._options.frozenColumn > -1;
@@ -7699,7 +7699,8 @@ var SlickGrid = class {
   }
   /** Proportionately resizes all columns to fill available horizontal space. This does not take the cell contents into consideration. */
   autosizeColumns(autosizeMode, isInit) {
-    this.cacheCssForHiddenInit(), this.internalAutosizeColumns(autosizeMode, isInit), this.restoreCssFromHiddenInit();
+    let checkHiddenParents = !this._hiddenParents?.length;
+    checkHiddenParents && this.cacheCssForHiddenInit(), this.internalAutosizeColumns(autosizeMode, isInit), checkHiddenParents && this.restoreCssFromHiddenInit();
   }
   internalAutosizeColumns(autosizeMode, isInit) {
     if (autosizeMode = autosizeMode || this._options.autosizeColsMode, autosizeMode === GridAutosizeColsMode2.LegacyForceFit || autosizeMode === GridAutosizeColsMode2.LegacyOff) {
@@ -9877,7 +9878,7 @@ export {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.14.2
+ * SlickGrid v5.14.3
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

@@ -1,4 +1,4 @@
-import type { Formatter } from './index';
+import type { Formatter } from './index.js';
 export interface GroupItemMetadataProviderOption {
     /** Whether or not we want to use group select checkbox. */
     checkboxSelect?: boolean;

@@ -1,6 +1,6 @@
-import type { CellRangeDecoratorOption, SlickPlugin } from '../models/index';
-import { type SlickRange } from '../slick.core';
-import type { SlickGrid } from '../slick.grid';
+import type { CellRangeDecoratorOption, SlickPlugin } from '../models/index.js';
+import { type SlickRange } from '../slick.core.js';
+import type { SlickGrid } from '../slick.grid.js';
 /***
    * Displays an overlay on top of a given cell range.
    *

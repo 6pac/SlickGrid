@@ -1,6 +1,6 @@
-import type { Aggregator, CustomDataView, DataViewHints, Grouping, ItemMetadata, OnGroupCollapsedEventArgs, OnGroupExpandedEventArgs, OnRowCountChangedEventArgs, OnRowsChangedEventArgs, OnRowsOrCountChangedEventArgs, OnSelectedRowIdsChangedEventArgs, OnSetItemsCalledEventArgs, PagingInfo, SlickGridModel } from './models/index';
-import { type BasePubSub, SlickEvent as SlickEvent_, SlickGroup as SlickGroup_, SlickGroupTotals as SlickGroupTotals_, type SlickNonDataItem } from './slick.core';
-import { SlickGroupItemMetadataProvider as SlickGroupItemMetadataProvider_ } from './slick.groupitemmetadataprovider';
+import type { Aggregator, CustomDataView, DataViewHints, Grouping, ItemMetadata, OnGroupCollapsedEventArgs, OnGroupExpandedEventArgs, OnRowCountChangedEventArgs, OnRowsChangedEventArgs, OnRowsOrCountChangedEventArgs, OnSelectedRowIdsChangedEventArgs, OnSetItemsCalledEventArgs, PagingInfo, SlickGridModel } from './models/index.js';
+import { type BasePubSub, SlickEvent as SlickEvent_, SlickGroup as SlickGroup_, SlickGroupTotals as SlickGroupTotals_, type SlickNonDataItem } from './slick.core.js';
+import { SlickGroupItemMetadataProvider as SlickGroupItemMetadataProvider_ } from './slick.groupitemmetadataprovider.js';
 export interface DataViewOption {
     /** Optionally provide a GroupItemMetadataProvider in order to use Grouping/DraggableGrouping features */
     groupItemMetadataProvider: SlickGroupItemMetadataProvider_ | null;

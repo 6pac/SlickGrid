@@ -1,4 +1,4 @@
-import type { ColumnReorderFunction, GroupingGetterFunction } from './index';
+import type { ColumnReorderFunction, GroupingGetterFunction } from './index.js';
 export interface DraggableGroupingOption {
     /** an extra CSS class to add to the delete button (default undefined), if deleteIconCssClass is undefined then slick-groupby-remove-icon class will be added */
     deleteIconCssClass?: string;

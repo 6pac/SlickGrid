@@ -1,4 +1,4 @@
-import type { ColumnSort } from './models/index';
+import type { ColumnSort } from './models/index.js';
 /***
  * A sample AJAX data store implementation.
  * Right now, it's hooked up to load search results from Octopart, but can
@@ -12,8 +12,8 @@ export declare class SlickRemoteModel {
     protected sortdir: number;
     protected h_request?: number;
     protected req: any;
-    onDataLoading: import("./slick.core").SlickEvent<any>;
-    onDataLoaded: import("./slick.core").SlickEvent<any>;
+    onDataLoading: import("./slick.core.js").SlickEvent<any>;
+    onDataLoaded: import("./slick.core.js").SlickEvent<any>;
     constructor();
     init(): void;
     isDataLoaded(from: number, to: number): boolean;

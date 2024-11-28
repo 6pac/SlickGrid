@@ -1,5 +1,5 @@
-import type { AutoSize, CellMenuOption, CustomTooltipOption, Editor, EditorConstructor, EditorValidator, Formatter, FormatterResultWithHtml, FormatterResultWithText, GroupTotalsFormatter, Grouping, HeaderButtonsOrMenu } from './index';
-import type { SlickGrid } from '../slick.grid';
+import type { AutoSize, CellMenuOption, CustomTooltipOption, Editor, EditorConstructor, EditorValidator, Formatter, FormatterResultWithHtml, FormatterResultWithText, GroupTotalsFormatter, Grouping, HeaderButtonsOrMenu } from './index.js';
+import type { SlickGrid } from '../slick.grid.js';
 type PathsToStringProps<T> = T extends string | number | boolean | Date ? [] : {
     [K in Extract<keyof T, string>]: [K, ...PathsToStringProps<T[K]>];
 }[Extract<keyof T, string>];

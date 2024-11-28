@@ -1,4 +1,4 @@
-import type { DraggableOption, MouseWheelOption, ResizableOption } from './models/index';
+import type { DraggableOption, MouseWheelOption, ResizableOption } from './models/index.js';
 /***
  * Interactions, add basic behaviors to any element.
  * All the packages are written in pure vanilla JS and supports both mouse & touch events.

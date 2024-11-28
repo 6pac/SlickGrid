@@ -1,5 +1,5 @@
-import type { SlickGrid } from '../slick.grid';
-import type { Column, Formatter } from './index';
+import type { SlickGrid } from '../slick.grid.js';
+import type { Column, Formatter } from './index.js';
 export interface Observable<T = any> {
     subscribe(next?: (value: T) => void, error?: (error: any) => void, complete?: () => void): any;
     pipe(...fns: Array<any>): any;

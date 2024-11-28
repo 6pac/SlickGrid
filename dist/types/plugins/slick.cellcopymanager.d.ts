@@ -1,6 +1,6 @@
-import type { SlickPlugin } from '../models/index';
-import { SlickEvent as SlickEvent_, type SlickEventData, type SlickRange } from '../slick.core';
-import type { SlickGrid } from '../slick.grid';
+import type { SlickPlugin } from '../models/index.js';
+import { SlickEvent as SlickEvent_, type SlickEventData, type SlickRange } from '../slick.core.js';
+import type { SlickGrid } from '../slick.grid.js';
 /**
  * This manager enables users to copy/paste cell data
  */

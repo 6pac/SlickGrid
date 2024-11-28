@@ -1,8 +1,9 @@
-import type { Column, GridMenuCallbackArgs, GridMenuCommandItemCallbackArgs, GridMenuItem, GridOption, MenuCallbackArgs, MenuCommandItem } from './index';
+import type { Column, GridMenuCallbackArgs, GridMenuCommandItemCallbackArgs, GridMenuItem, GridOption, MenuCallbackArgs, MenuCommandItem } from './index.js';
 export interface GridMenuOption {
     /** Defaults to "Commands" which is the title that shows up over the custom commands list */
     commandTitle?: string;
-    /** Array of command items (title, command, disabled, ...) */
+    /** Array of command items (title,
+     * command, disabled, ...) */
     commandItems?: Array<MenuCommandItem<GridMenuCommandItemCallbackArgs, GridMenuCallbackArgs> | 'divider'>;
     /** @deprecated use `commandTitle` instead. Defaults to "Commands" which is the title that shows up over the custom commands list */
     customTitle?: string;

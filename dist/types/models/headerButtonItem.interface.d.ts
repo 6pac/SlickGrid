@@ -1,4 +1,4 @@
-import type { Column, SlickGridModel } from './index';
+import type { Column, SlickGridModel } from './index.js';
 export interface HeaderButtonItem {
     /** A command identifier to be passed to the onCommand event handlers. */
     command?: string;

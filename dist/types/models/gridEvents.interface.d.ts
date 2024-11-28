@@ -1,5 +1,5 @@
-import type { Column, CompositeEditorOption, CssStyleHash, Editor, EditorValidationResult, GridOption } from './index';
-import type { SlickGrid } from '../slick.grid';
+import type { Column, CompositeEditorOption, CssStyleHash, Editor, EditorValidationResult, GridOption } from './index.js';
+import type { SlickGrid } from '../slick.grid.js';
 export interface SlickGridArg {
     grid: SlickGrid;
 }

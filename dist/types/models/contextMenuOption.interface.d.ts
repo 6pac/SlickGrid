@@ -1,4 +1,4 @@
-import type { MenuCallbackArgs, MenuCommandItem, MenuOptionItem } from '../models/index';
+import type { MenuCallbackArgs, MenuCommandItem, MenuOptionItem } from '../models/index.js';
 export interface ContextMenuOption {
     /** Defaults to true, Auto-align dropup or dropdown menu to the left or right depending on grid viewport available space */
     autoAdjustDrop?: boolean;

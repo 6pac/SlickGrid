@@ -1,4 +1,4 @@
-import type { Column, EditorArguments, EditorValidationResult, GridOption } from './index';
+import type { Column, EditorArguments, EditorValidationResult, GridOption } from './index.js';
 /**
  * SlickGrid Editor interface, more info can be found on the SlickGrid repo
  * https://github.com/6pac/SlickGrid/wiki/Writing-custom-cell-editors

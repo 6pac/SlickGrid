@@ -1,6 +1,6 @@
-import type { Column, ExcelCopyBufferOption, SlickPlugin } from '../models/index';
-import type { SlickGrid } from '../slick.grid';
-import { SlickEvent as SlickEvent_, type SlickEventData, SlickRange as SlickRange_ } from '../slick.core';
+import type { Column, ExcelCopyBufferOption, SlickPlugin } from '../models/index.js';
+import type { SlickGrid } from '../slick.grid.js';
+import { SlickEvent as SlickEvent_, type SlickEventData, SlickRange as SlickRange_ } from '../slick.core.js';
 /***
   This manager enables users to copy/paste data from/to an external Spreadsheet application
   such as MS-Excel® or OpenOffice-Spreadsheet.

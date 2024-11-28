@@ -1,6 +1,6 @@
-import type { AutoTooltipOption, Column, SlickPlugin } from '../models/index';
-import { type SlickEventData } from '../slick.core';
-import type { SlickGrid } from '../slick.grid';
+import type { AutoTooltipOption, Column, SlickPlugin } from '../models/index.js';
+import { type SlickEventData } from '../slick.core.js';
+import type { SlickGrid } from '../slick.grid.js';
 /**
  * AutoTooltips plugin to show/hide tooltips when columns are too narrow to fit content.
  */

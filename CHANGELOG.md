@@ -2,6 +2,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.14.3](https://github.com/6pac/SlickGrid/compare/5.14.2...5.14.3) (2024-11-28)
+
+### Bug Fixes
+
+* ensure DOM alterations during initialization are always cleaned up when there are hidden parents and forceFitColumns=true ([#1085](https://github.com/6pac/SlickGrid/issues/1085)) ([c32fe5a](https://github.com/6pac/SlickGrid/commit/c32fe5a0401fbc9e11aa861328eb0163d78f8ad7))
+
 ## [5.14.2](https://github.com/6pac/SlickGrid/compare/5.14.1...5.14.2) (2024-11-16)
 
 ### Bug Fixes

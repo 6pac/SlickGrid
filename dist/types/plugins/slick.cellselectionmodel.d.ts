@@ -1,8 +1,8 @@
-import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_ } from '../slick.core';
-import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector';
-import type { CustomDataView, OnActiveCellChangedEventArgs } from '../models/index';
-import type { SlickDataView } from '../slick.dataview';
-import type { SlickGrid } from '../slick.grid';
+import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_ } from '../slick.core.js';
+import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector.js';
+import type { CustomDataView, OnActiveCellChangedEventArgs } from '../models/index.js';
+import type { SlickDataView } from '../slick.dataview.js';
+import type { SlickGrid } from '../slick.grid.js';
 export interface CellSelectionModelOption {
     selectActiveCell: boolean;
     cellRangeSelector?: SlickCellRangeSelector_;

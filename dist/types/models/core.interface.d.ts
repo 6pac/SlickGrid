@@ -1,4 +1,4 @@
-import { type SlickEventData } from '../slick.core';
+import { type SlickEventData } from '../slick.core.js';
 export type Handler<ArgType = any> = (e: SlickEventData<ArgType>, args: ArgType) => void;
 export interface ElementEventListener {
     element: Element | Window;

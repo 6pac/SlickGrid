@@ -1,5 +1,5 @@
-import type { Column as BaseColumn, CellMenuOption, ColumnPickerOption, ColumnReorderFunction, ContextMenuOption, CustomTooltipOption, EditCommand, EditorConstructor, ExcelCopyBufferOption, Formatter, GridMenuOption, ItemMetadata } from './index';
-import type { SlickEditorLock } from '../slick.core';
+import type { Column as BaseColumn, CellMenuOption, ColumnPickerOption, ColumnReorderFunction, ContextMenuOption, CustomTooltipOption, EditCommand, EditorConstructor, ExcelCopyBufferOption, Formatter, GridMenuOption, ItemMetadata } from './index.js';
+import type { SlickEditorLock } from '../slick.core.js';
 export interface CellViewportRange {
     bottom: number;
     top: number;
