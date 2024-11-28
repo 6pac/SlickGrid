@@ -6,27 +6,27 @@
   "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/types/index.d.ts",
-      "node": "./dist/cjs/index.js",
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js",
-      "default": "./dist/esm/index.js"
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/esm/index.mjs"
+      },
+      "require": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
     },
     "./dist/styles/*": "./dist/styles/*",
     "./package.json": "./package.json"
   },
   "module": "./dist/esm/index.js",
-  "directories": {
-    "example": "examples",
-    "test": "tests"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/6pac/SlickGrid.git"
   },
   "keywords": [
     "slickgrid",
-    "grid"
+    "grid",
+    "datagrid"
   ],
   "author": "Michael Leibman <michael.leibman@gmail.com>",
   "contributors": [
@@ -106,6 +106,6 @@
     "not dead"
   ],
   "engines": {
-    "node": ">=18.0.0"
+    "node": "^18.0.0"
   }
 }
