@@ -1,7 +1,7 @@
 import { copyFileSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname as pDirname, join as pJoin, resolve as pResolve } from 'node:path';
+import readline from 'node:readline';
 import { fileURLToPath } from 'node:url';
-import readline from 'readline';
 import { rimrafSync } from 'rimraf';
 import semver from 'semver';
 import c from 'tinyrainbow';
