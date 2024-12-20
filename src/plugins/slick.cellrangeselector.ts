@@ -148,12 +148,19 @@ export class SlickCellRangeSelector implements SlickPlugin {
       }
     }
 
+console.log('CellRangeSelector.handleDragInit() _activeViewport is ' + (this._activeViewport ? 'defined' : 'undefined'));
+
     // prevent the grid from cancelling drag'n'drop by default
     e.stopImmediatePropagation();
     e.preventDefault();
   }
 
   protected handleDragStart(e: SlickEventData, dd: DragRowMove) {
+    console.log('CellRangeSelector.handleDragStart() _activeViewport is ' + (this._activeViewport ? 'defined' : 'undefined'));
+    if (!this._activeViewport) {
+      var x=1;
+     }
+
     const cell = this._grid.getCellFromEvent(e);
     if (cell && this.onBeforeCellRangeSelected.notify(cell).getReturnValue() !== false && this._grid.canCellBeSelected(cell.row, cell.cell)) {
       this._dragging = true;
@@ -211,6 +218,11 @@ export class SlickCellRangeSelector implements SlickPlugin {
   }
 
   protected getMouseOffsetViewport(e: MouseEvent | TouchEvent, dd: DragRowMove): MouseOffsetViewport {
+    console.log('Drag.getMouseOffsetViewport() _activeViewport is ' + (this._activeViewport ? 'defined' : 'undefined'));
+if (!this._activeViewport) {
+ var x=1;
+}
+
     const targetEvent: MouseEvent | Touch = (e as TouchEvent)?.touches?.[0] ?? e;
     const viewportLeft = this._activeViewport.scrollLeft;
     const viewportTop = this._activeViewport.scrollTop;
@@ -401,6 +413,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
       ),
       selectionMode: this._selectionMode
     });
+    console.log('handleDragEnd');
   }
 
   getCurrentRange() {

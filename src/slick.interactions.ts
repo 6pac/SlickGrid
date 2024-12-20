@@ -119,6 +119,7 @@ export function Draggable(options: DraggableOption) {
           document.body.addEventListener('touchend', userReleased);
           document.body.addEventListener('touchcancel', userReleased);
         }
+        console.log('userPressed.matchClassTag: ' + matchClassTag);
       }
     }
   }

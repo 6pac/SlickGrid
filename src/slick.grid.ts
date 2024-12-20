@@ -980,7 +980,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (Draggable) {
         this.slickDraggableInstance = Draggable({
           containerElement: this._container,
-          allowDragFrom: 'div.slick-cell',
+          allowDragFrom: 'div.slick-cell, div.' + this.dragReplaceEl.cssClass,
           dragFromClassDetectArr: [{ tag: 'dragReplaceHandle', id: this.dragReplaceEl.id }],
           // the slick cell parent must always contain `.dnd` and/or `.cell-reorder` class to be identified as draggable
           allowDragFromClosest: 'div.slick-cell.dnd, div.slick-cell.cell-reorder',
@@ -5498,6 +5498,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   protected handleDragInit(e: DragEvent, dd: DragPosition) {
+    console.log('SlickGrid.handleDragInit ' + dd.matchClassTag);
+
     const cell = this.getCellFromEvent(e);
     if (!cell || !this.cellExists(cell.row, cell.cell)) {
       return false;
@@ -5514,6 +5516,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   protected handleDragStart(e: DragEvent, dd: DragPosition) {
+    console.log('SlickGrid.handleDragStart ' + dd.matchClassTag);
+
     const cell = this.getCellFromEvent(e);
     if (!cell || !this.cellExists(cell.row, cell.cell)) {
       return false;
@@ -5528,10 +5532,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   protected handleDrag(e: DragEvent, dd: DragPosition) {
+    console.log('SlickGrid.handleDrag ' + dd.matchClassTag);
+
     return this.trigger(this.onDrag, dd, e).getReturnValue();
   }
 
   protected handleDragEnd(e: DragEvent, dd: DragPosition) {
+    console.log('SlickGrid.handleDragEnd ' + dd.matchClassTag);
+
     if (dd.matchClassTag === 'dragReplaceHandle') {
       this.dragReplaceEl.removeEl();
     }
