@@ -48,6 +48,9 @@
         <li>End</li>
       </ul>
     </ul>
+
+    <h2>Range Selection</h2>
+    <span id="selectionRange"></span>
   </div>
 </div>
 
@@ -66,6 +69,7 @@
 <script>
   var grid;
   var data = [];
+  let cellSelectionModel;
   var options = {
     editable: true,
     enableAddRow: true,
@@ -86,9 +90,9 @@
   for (var i = 0; i < 100; i++) {
     columns.push({
       id: i,
-      //name: String.fromCharCode("A".charCodeAt(0) + (i / 26) | 0) +
-      //      String.fromCharCode("A".charCodeAt(0) + (i % 26)),
-      name: i,
+      name: i < 26
+        ? String.fromCharCode("A".charCodeAt(0) + (i % 26))
+        : String.fromCharCode("A".charCodeAt(0) + ((i / 26) | 0) -1) + String.fromCharCode("A".charCodeAt(0) + (i % 26)),
       field: i,
       width: 60,
       editor: FormulaEditor
@@ -163,7 +167,8 @@
 
     grid = new Slick.Grid("#myGrid", data, columns, options);
 
-    grid.setSelectionModel(new Slick.CellSelectionModel());
+    cellSelectionModel = new Slick.CellSelectionModel();
+    grid.setSelectionModel(cellSelectionModel);
     grid.registerPlugin(new Slick.AutoTooltips());
 
     // set keyboard focus on the grid
@@ -199,6 +204,15 @@
       data.push(item);
       grid.updateRowCount();
       grid.render();
+    });
+
+    cellSelectionModel.onSelectedRangesChanged.subscribe((e, args) => {
+      const targetRange = document.querySelector('#selectionRange');
+      targetRange.textContent = '';
+
+      for (let slickRange of args) {
+        targetRange.textContent += JSON.stringify(slickRange);
+      }
     });
   });
 </script>
