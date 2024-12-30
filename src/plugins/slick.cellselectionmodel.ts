@@ -152,7 +152,7 @@ export class SlickCellSelectionModel {
   }
 
   protected isKeyAllowed(key: string) {
-    return ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'PageDown', 'PageUp', 'Home', 'End'].some(k => k === key);
+    return ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'PageDown', 'PageUp', 'Home', 'End', 'a', 'A'].some(k => k === key);
   }
 
   protected handleKeyDown(e: SlickEventData_) {
@@ -181,13 +181,22 @@ export class SlickCellSelectionModel {
 
       let dRow = last.toRow - last.fromRow;
       let dCell = last.toCell - last.fromCell;
+      let toCell: undefined | number;
+      let toRow = 0;
+
+      // when using Ctrl+{a, A} we will change our position to cell 0,0 and select all grid cells
+      if (e.ctrlKey && e.key?.toLowerCase() === 'a') {
+        this._grid.setActiveCell(0, 0, false, false, true);
+        active.row = 0;
+        active.cell = 0;
+        toCell = colLn - 1;
+        toRow = dataLn - 1;
+      }
 
       // walking direction
       const dirRow = active.row === last.fromRow ? 1 : -1;
       const dirCell = active.cell === last.fromCell ? 1 : -1;
       const isSingleKeyMove = e.key!.startsWith('Arrow');
-      let toCell: undefined | number = undefined;
-      let toRow = 0;
 
       if (isSingleKeyMove && !e.ctrlKey) {
         // single cell move: (Arrow{Up/ArrowDown/ArrowLeft/ArrowRight})
@@ -210,12 +219,16 @@ export class SlickCellSelectionModel {
           this._prevSelectedRow = active.row;
         }
 
-        if (e.shiftKey && !e.ctrlKey && e.key === 'Home') {
+        if ((!e.ctrlKey && e.shiftKey && e.key === 'Home') || (e.ctrlKey && e.shiftKey && e.key === 'ArrowLeft')) {
           toCell = 0;
           toRow = active.row;
-        } else if (e.shiftKey && !e.ctrlKey && e.key === 'End') {
+        } else if ((!e.ctrlKey && e.shiftKey && e.key === 'End') || (e.ctrlKey && e.shiftKey && e.key === 'ArrowRight')) {
           toCell = colLn - 1;
           toRow = active.row;
+        } else if (e.ctrlKey && e.shiftKey && e.key === 'ArrowUp') {
+          toRow = 0;
+        } else if (e.ctrlKey && e.shiftKey && e.key === 'ArrowDown') {
+          toRow = dataLn - 1;
         } else if (e.ctrlKey && e.shiftKey && e.key === 'Home') {
           toCell = 0;
           toRow = 0;
