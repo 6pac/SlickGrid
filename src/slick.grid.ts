@@ -5860,7 +5860,16 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   //////////////////////////////////////////////////////////////////////////////////////////////
   // Cell switching
 
-  /**  Resets active cell. */
+  /** Clear active cell by making cell normal & removing "active" CSS class. */
+  clearActiveCell() {
+    if (Utils.isDefined(this.activeCellNode)) {
+      this.makeActiveCellNormal();
+      this.activeCellNode.classList.remove('active');
+      this.rowsCache[this.activeRow]?.rowNode?.forEach((node) => node.classList.remove('active'));
+    }
+  }
+
+  /** Resets active cell by making cell normal and other internal resets. */
   resetActiveCell() {
     this.setActiveCellInternal(null, false);
   }
@@ -5913,11 +5922,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   protected setActiveCellInternal(newCell: HTMLDivElement | null, opt_editMode?: boolean | null, preClickModeOn?: boolean | null, suppressActiveCellChangedEvent?: boolean, e?: Event | SlickEvent_) {
-    if (Utils.isDefined(this.activeCellNode)) {
-      this.makeActiveCellNormal();
-      this.activeCellNode.classList.remove('active');
-      this.rowsCache[this.activeRow]?.rowNode?.forEach((node) => node.classList.remove('active'));
-    }
+    // make current active cell as normal cell & remove "active" CSS classes
+    this.clearActiveCell();
 
     // let activeCellChanged = (this.activeCellNode !== newCell);
     this.activeCellNode = newCell;
@@ -6350,11 +6356,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /** Navigate to the top of the grid */
   navigateTop() {
+    this.clearActiveCell();
     this.navigateToRow(0);
   }
 
   /** Navigate to the bottom of the grid */
   navigateBottom() {
+    this.clearActiveCell();
     this.navigateToRow(this.getDataLength() - 1);
   }
 
@@ -6662,12 +6670,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /** Navigate to coordinate 0,0 (top left home) */
   navigateTopStart(): boolean | undefined {
+    this.clearActiveCell();
     this.navigateToRow(0);
     return this.navigate('home');
   }
 
   /** Navigate to bottom row end (bottom right end) */
   navigateBottomEnd(): boolean | undefined {
+    this.clearActiveCell();
     this.navigateBottom();
     return this.navigate('end');
   }
