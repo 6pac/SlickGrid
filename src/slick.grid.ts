@@ -6670,14 +6670,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /** Navigate to coordinate 0,0 (top left home) */
   navigateTopStart(): boolean | undefined {
-    this.unsetActiveCell();
     this.navigateToRow(0);
     return this.navigate('home');
   }
 
   /** Navigate to bottom row end (bottom right end) */
   navigateBottomEnd(): boolean | undefined {
-    this.unsetActiveCell();
     this.navigateBottom();
     return this.navigate('end');
   }
@@ -6699,6 +6697,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return true;
     }
     this.setFocus();
+    this.unsetActiveCell();
 
     const tabbingDirections = {
       'up': -1,
