@@ -164,7 +164,7 @@ export class SlickGroupItemMetadataProvider implements SlickPlugin {
     }
   }
 
-  getGroupRowMetadata(item: GroupingFormatterItem): ItemMetadata {
+  getGroupRowMetadata(item: GroupingFormatterItem, _row: number): ItemMetadata {
     const groupLevel = item?.level;
     return {
       selectable: false,
@@ -181,7 +181,7 @@ export class SlickGroupItemMetadataProvider implements SlickPlugin {
     };
   }
 
-  getTotalsRowMetadata(item: { group: GroupingFormatterItem }): ItemMetadata | null {
+  getTotalsRowMetadata(item: { group: GroupingFormatterItem }, _row: number): ItemMetadata | null {
     const groupLevel = item?.group?.level;
     return {
       selectable: false,
