@@ -5860,6 +5860,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   //////////////////////////////////////////////////////////////////////////////////////////////
   // Cell switching
 
+  /** Resets active cell by making cell normal and other internal resets. */
+  resetActiveCell() {
+    this.setActiveCellInternal(null, false);
+  }
+
   /** Clear active cell by making cell normal & removing "active" CSS class. */
   unsetActiveCell() {
     if (Utils.isDefined(this.activeCellNode)) {
@@ -5867,11 +5872,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.activeCellNode.classList.remove('active');
       this.rowsCache[this.activeRow]?.rowNode?.forEach((node) => node.classList.remove('active'));
     }
-  }
-
-  /** Resets active cell by making cell normal and other internal resets. */
-  resetActiveCell() {
-    this.setActiveCellInternal(null, false);
   }
 
   /** @alias `setFocus` */
