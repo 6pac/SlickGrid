@@ -6,7 +6,7 @@
     "importHelpers": true,
     "rootDir": "src",
     "outDir": "dist/esm",
-    "target": "ES2015",
+    "target": "ES2018",
     "pretty": true,
     "lib": ["ESNext", "DOM"],
     "module": "ESNext",
