@@ -211,12 +211,12 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
           msg: options.validationFailedMsg,
           errors
         };
-      } else {
-        return {
-          valid: true,
-          msg: ''
-        };
       }
+
+      return {
+        valid: true,
+        msg: ''
+      };
     };
 
     context.hide = () => {
