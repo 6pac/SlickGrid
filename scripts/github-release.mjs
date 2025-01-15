@@ -37,8 +37,6 @@ export async function parseGitRepo(remote = 'origin', opts) {
 
 export function createReleaseClient(type) {
   switch (type) {
-    // case 'gitlab':
-    //   return createGitLabClient();
     case 'github':
       return createGitHubClient();
     default:
@@ -91,13 +89,8 @@ export async function createRelease(
   };
 
   if (gitDryRun) {
-    // const repo = await client.repos.get({
-    //     owner: releaseOptions.owner,
-    //     repo: releaseOptions.repo,
-    // });
     const host = 'github.com';
     console.info(
-      // JSON.stringify(releaseOptions)
       `${c.bgMagenta('[dry-run]')} 🔗 https://${host}/${releaseOptions.owner}/${releaseOptions.repo}/releases/tag/${releaseOptions.tag_name} 🏷️ (GitHub Release)`
     );
     return Promise.resolve();
