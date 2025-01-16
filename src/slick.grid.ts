@@ -5952,6 +5952,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       }
 
       if (this._options.showCellSelection) {
+        // make sure to never activate more than 1 cell at a time
+        document.querySelectorAll('.slick-cell.active').forEach((node) => node.classList.remove('active'));
         this.activeCellNode.classList.add('active');
         this.rowsCache[this.activeRow]?.rowNode?.forEach((node) => node.classList.add('active'));
       }
