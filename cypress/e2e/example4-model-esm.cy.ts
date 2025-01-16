@@ -23,12 +23,12 @@ describe('Example 4 - Model (ESM)', () => {
   });
 
   it('should expect first row to include "Task 0" and other specific properties', () => {
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(1)`).should('contain', 'Task 0');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(2)`).should('contain', '5 days');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(3) .percent-complete-bar`).should('exist');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(4)`).should('contain', '01/01/2009');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(5)`).should('contain', '01/05/2009');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(6)`).find('.sgi.sgi-checkbox-intermediate').should('have.length', 1);
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(1)`).should('contain', 'Task 0');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(2)`).should('contain', '5 days');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(3) .percent-complete-bar`).should('exist');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(4)`).should('contain', '01/01/2009');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(5)`).should('contain', '01/05/2009');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(6)`).find('.sgi.sgi-checkbox-intermediate').should('have.length', 1);
   });
 
   it('should display the text "Showing all 50000 rows" without Pagination', () => {
@@ -128,12 +128,12 @@ describe('Example 4 - Model (ESM)', () => {
   });
 
   it('should expect first row to include "Task 49950" and other specific properties', () => {
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(1)`).should('contain', 'Task 49950');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(2)`).should('contain', '5 days');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(3) .percent-complete-bar`).should('exist');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(4)`).should('contain', '01/01/2009');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(5)`).should('contain', '01/05/2009');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(6)`).find('.sgi.sgi-checkbox-intermediate').should('have.length', 1);
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(1)`).should('contain', 'Task 49950');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(2)`).should('contain', '5 days');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(3) .percent-complete-bar`).should('exist');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(4)`).should('contain', '01/01/2009');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(5)`).should('contain', '01/05/2009');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(6)`).find('.sgi.sgi-checkbox-intermediate').should('have.length', 1);
   });
 
   it('should remove pagination and scroll back to top', () => {
@@ -149,17 +149,17 @@ describe('Example 4 - Model (ESM)', () => {
   });
 
   it('should expect "Task 19" row to be editable', () => {
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 19}px;"] > .slick-cell:nth(1)`).should('contain', 'Task 19').click();
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 19}px;"] > .slick-cell:nth(1)`).should('contain', 'Task 19').click();
     cy.get('.slick-large-editor-text textarea').type('Task 2222');
     cy.get('.slick-large-editor-text #save').click();
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 19}px;"] > .slick-cell:nth(1)`).should('contain', 'Task 2222');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 19}px;"] > .slick-cell:nth(1)`).should('contain', 'Task 2222');
   });
 
   it('should expect "Task 18" row to NOT be editable when "onBeforeEditCell" returns false', () => {
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 18}px;"] > .slick-cell:nth(1)`).should('contain', 'Task 18').click();
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 18}px;"] > .slick-cell:nth(1)`).should('contain', 'Task 18').click();
     cy.get('.slick-large-editor-text textarea').should('not.exist');
 
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 18}px;"] > .slick-cell:nth(2)`).should('contain', '5 days').click();
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 18}px;"] > .slick-cell:nth(2)`).should('contain', '5 days').click();
     cy.get('.editor-text').should('not.exist');
   });
 });

@@ -1,5 +1,5 @@
 describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 }, () => {
-  const cellHeight = 25;
+  const GRID_ROW_HEIGHT = 25;
   const titles = [
     '', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J', 'K', 'L',
     'M', 'N', 'O', 'P', 'Q', 'R', 'S', 'T', 'U', 'V', 'W', 'X', 'Y',
@@ -21,9 +21,89 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
       });
   });
 
+  describe('no pagination - basic key navigations', () => {
+    it('should start at D10, then type "Arrow Up" key and expect active cell to become D9', () => {
+      cy.getCell(10, 4, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT })
+        .as('cell_D10')
+        .click();
+
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":4,"toCell":4,"toRow":10}');
+      cy.get('[data-row=10] .slick-cell.l4.r4.selected').should('have.length', 1);
+
+      cy.get('@cell_D10').type('{uparrow}');
+      cy.get('[data-row=9] .slick-cell.l4.r4.selected').should('have.length', 1);
+      cy.get('#selectionRange').should('have.text', '{"fromRow":9,"fromCell":4,"toCell":4,"toRow":9}');
+    });
+
+    it('should start at D10, then type "Arrow Down" key and expect active cell to become D11', () => {
+      cy.getCell(10, 4, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT })
+        .as('cell_D10')
+        .click();
+
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":4,"toCell":4,"toRow":10}');
+      cy.get('[data-row=10] .slick-cell.l4.r4.selected').should('have.length', 1);
+
+      cy.get('@cell_D10').type('{downarrow}');
+      cy.get('[data-row=11] .slick-cell.l4.r4.selected').should('have.length', 1);
+      cy.get('#selectionRange').should('have.text', '{"fromRow":11,"fromCell":4,"toCell":4,"toRow":11}');
+    });
+
+    it('should start at D10, then type "Arrow Left" key and expect active cell to become C10', () => {
+      cy.getCell(10, 4, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT })
+        .as('cell_D10')
+        .click();
+
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":4,"toCell":4,"toRow":10}');
+      cy.get('[data-row=10] .slick-cell.l4.r4.selected').should('have.length', 1);
+
+      cy.get('@cell_D10').type('{leftarrow}');
+      cy.get('[data-row=10] .slick-cell.l3.r3.selected').should('have.length', 1);
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":3,"toCell":3,"toRow":10}');
+    });
+
+    it('should start at D10, then type "Arrow Right" key and expect active cell to become E10', () => {
+      cy.getCell(10, 4, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT })
+        .as('cell_D10')
+        .click();
+
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":4,"toCell":4,"toRow":10}');
+      cy.get('[data-row=10] .slick-cell.l4.r4.selected').should('have.length', 1);
+
+      cy.get('@cell_D10').type('{rightarrow}');
+      cy.get('[data-row=10] .slick-cell.l5.r5.selected').should('have.length', 1);
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":5,"toCell":5,"toRow":10}');
+    });
+
+    it('should start at D10, then type "Home" key and expect active cell to become CV10', () => {
+      cy.getCell(10, 4, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT })
+        .as('cell_D10')
+        .click();
+
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":4,"toCell":4,"toRow":10}');
+      cy.get('[data-row=10] .slick-cell.l4.r4.selected').should('have.length', 1);
+
+      cy.get('@cell_D10').type('{end}');
+      cy.get('[data-row=10] .slick-cell.l100.r100.selected').should('have.length', 1);
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":100,"toCell":100,"toRow":10}');
+    });
+
+    it('should start at D10, then type "Home" key and expect active cell to become {A-1}10', () => {
+      cy.getCell(10, 4, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT })
+        .as('cell_D10')
+        .click();
+
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":4,"toCell":4,"toRow":10}');
+      cy.get('[data-row=10] .slick-cell.l4.r4.selected').should('have.length', 1);
+
+      cy.get('@cell_D10').type('{home}');
+      cy.get('[data-row=10] .slick-cell.l0.r0.selected').should('have.length', 1);
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":0,"toCell":0,"toRow":10}');
+    });
+  });
+
   describe('no Pagination - showing all', () => {
     it('should click on cell B10 and ArrowUp 3 times and ArrowDown 1 time and expect cell selection B8-B10', () => {
-      cy.getCell(10, 2, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
+      cy.getCell(10, 2, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT })
         .as('cell_B10')
         .click();
 
@@ -38,7 +118,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
     });
 
     it('should click on cell D10 then PageDown 2 times w/selection D10-D46 ', () => {
-      cy.getCell(10, 4, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
+      cy.getCell(10, 4, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT })
         .as('cell_D10')
         .click();
 
@@ -50,7 +130,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
     });
 
     it('should click on cell D10 then PageDown 3 times then PageUp 1 time w/selection D10-D46', () => {
-      cy.getCell(10, 4, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
+      cy.getCell(10, 4, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT })
         .as('cell_D10')
         .click();
 
@@ -62,7 +142,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
     });
 
     it('should click on cell E46 then Shift+End key with full row horizontal selection E46-CV46', () => {
-      cy.getCell(46, 5, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
+      cy.getCell(46, 5, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT })
         .as('cell_E46')
         .click();
 
@@ -74,7 +154,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
     });
 
     it('should click on cell CP54 then Ctrl+Shift+End keys with selection E46-CV99', () => {
-      cy.getCell(54, 94, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
+      cy.getCell(54, 94, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT })
         .as('cell_CP54')
         .click();
 
@@ -86,7 +166,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
     });
 
     it('should click on cell CP95 then Ctrl+Shift+Home keys with selection C0-CP95', () => {
-      cy.getCell(95, 98, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
+      cy.getCell(95, 98, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT })
         .as('cell_CP95')
         .click();
 
@@ -98,7 +178,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
     });
 
     it('should click on cell CR5 then Ctrl+Home keys and expect to scroll back to cell A0 without any selection range', () => {
-      cy.getCell(5, 95, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
+      cy.getCell(5, 95, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT })
         .as('cell_CR95')
         .click();
 
@@ -117,7 +197,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
     });
 
     it('should click on cell B14 then Shift+End with selection B14-24', () => {
-      cy.getCell(14, 2, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
+      cy.getCell(14, 2, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT })
         .as('cell_B14')
         .click();
 
@@ -129,7 +209,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
     });
 
     it('should click on cell CS14 then Shift+Home with selection A14-CS14', () => {
-      cy.getCell(14, 97, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
+      cy.getCell(14, 97, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT })
         .as('cell_CS14')
         .click();
 
@@ -141,7 +221,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
     });
 
     it('should click on cell CN3 then Shift+PageDown multiple times with current page selection starting at E3 w/selection E3-24', () => {
-      cy.getCell(3, 95, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
+      cy.getCell(3, 95, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT })
         .as('cell_CN3')
         .click();
 
@@ -155,7 +235,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
     it('should change to 2nd page then click on cell CN41 then Shift+PageUp multiple times with current page selection w/selection D25-41', () => {
       cy.get('.slick-pager .sgi-chevron-right').click();
 
-      cy.getCell(15, 92, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
+      cy.getCell(15, 92, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT })
         .as('cell_CN41')
         .click();
 

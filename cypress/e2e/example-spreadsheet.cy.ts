@@ -107,4 +107,84 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
     cy.get('#selectionRange')
       .should('have.text', '');
   });
+
+  describe('basic key navigations', () => {
+    it('should start at D10, then type "Arrow Up" key and expect active cell to become D9', () => {
+      cy.getCell(10, 4, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
+        .as('cell_D10')
+        .click();
+
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":4,"toCell":4,"toRow":10}');
+      cy.get('[data-row=10] .slick-cell.l4.r4.selected').should('have.length', 1);
+
+      cy.get('@cell_D10').type('{uparrow}');
+      cy.get('[data-row=9] .slick-cell.l4.r4.selected').should('have.length', 1);
+      cy.get('#selectionRange').should('have.text', '{"fromRow":9,"fromCell":4,"toCell":4,"toRow":9}');
+    });
+
+    it('should start at D10, then type "Arrow Down" key and expect active cell to become D11', () => {
+      cy.getCell(10, 4, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
+        .as('cell_D10')
+        .click();
+
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":4,"toCell":4,"toRow":10}');
+      cy.get('[data-row=10] .slick-cell.l4.r4.selected').should('have.length', 1);
+
+      cy.get('@cell_D10').type('{downarrow}');
+      cy.get('[data-row=11] .slick-cell.l4.r4.selected').should('have.length', 1);
+      cy.get('#selectionRange').should('have.text', '{"fromRow":11,"fromCell":4,"toCell":4,"toRow":11}');
+    });
+
+    it('should start at D10, then type "Arrow Left" key and expect active cell to become C10', () => {
+      cy.getCell(10, 4, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
+        .as('cell_D10')
+        .click();
+
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":4,"toCell":4,"toRow":10}');
+      cy.get('[data-row=10] .slick-cell.l4.r4.selected').should('have.length', 1);
+
+      cy.get('@cell_D10').type('{leftarrow}');
+      cy.get('[data-row=10] .slick-cell.l3.r3.selected').should('have.length', 1);
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":3,"toCell":3,"toRow":10}');
+    });
+
+    it('should start at D10, then type "Arrow Right" key and expect active cell to become E10', () => {
+      cy.getCell(10, 4, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
+        .as('cell_D10')
+        .click();
+
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":4,"toCell":4,"toRow":10}');
+      cy.get('[data-row=10] .slick-cell.l4.r4.selected').should('have.length', 1);
+
+      cy.get('@cell_D10').type('{rightarrow}');
+      cy.get('[data-row=10] .slick-cell.l5.r5.selected').should('have.length', 1);
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":5,"toCell":5,"toRow":10}');
+    });
+
+    it('should start at D10, then type "Home" key and expect active cell to become CV10', () => {
+      cy.getCell(10, 4, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
+        .as('cell_D10')
+        .click();
+
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":4,"toCell":4,"toRow":10}');
+      cy.get('[data-row=10] .slick-cell.l4.r4.selected').should('have.length', 1);
+
+      cy.get('@cell_D10').type('{end}');
+      cy.get('[data-row=10] .slick-cell.l100.r100.selected').should('have.length', 1);
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":100,"toCell":100,"toRow":10}');
+    });
+
+    it('should start at D10, then type "Home" key and expect active cell to become {A-1}10', () => {
+      cy.getCell(10, 4, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
+        .as('cell_D10')
+        .click();
+
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":4,"toCell":4,"toRow":10}');
+      cy.get('[data-row=10] .slick-cell.l4.r4.selected').should('have.length', 1);
+
+      cy.get('@cell_D10').type('{home}');
+      cy.get('[data-row=10] .slick-cell.l0.r0.selected').should('have.length', 1);
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":0,"toCell":0,"toRow":10}');
+    });
+  });
 });

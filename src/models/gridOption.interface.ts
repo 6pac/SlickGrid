@@ -22,9 +22,9 @@ export interface CellViewportRange {
 }
 
 export interface CustomDataView<T = any> {
-  getLength: () => number;
   getItem: (index: number) => T;
-  getItemMetadata(index: number): ItemMetadata | null;
+  getItemMetadata(row: number, cell?: boolean | number): ItemMetadata | null;
+  getLength: () => number;
 }
 
 export interface CssStyleHash {
@@ -167,6 +167,13 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   editorCellNavOnLRKeys?: boolean;
 
   /**
+   * Do we want to enable cell rowspan?
+   * Note: this is an opt-in option because of the multiple row/column/cells looping that it has to do
+   * (which is at least an O^n3 but only for visible range)
+   */
+  enableCellRowSpan?: boolean;
+
+  /**
    * Defaults to true, this option can be a boolean or a Column Reorder function.
    * When provided as a boolean, it will permits the user to move an entire column from a position to another.
    * We could also provide a Column Reorder function, there's mostly only 1 use for this which is the SlickDraggableGrouping plugin.
@@ -254,6 +261,9 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
 
   /** What is the minimum row buffer to use? */
   minRowBuffer?: number;
+
+  /** What is the maximum row buffer to use? */
+  maxRowBuffer?: number;
 
   /** Use a mixin function when applying defaults to passed in option and columns objects, rather than creating a new object, so as not to break references */
   mixinDefaults?: boolean;
