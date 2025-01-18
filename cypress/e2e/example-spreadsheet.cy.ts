@@ -115,10 +115,10 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
         .click();
 
       cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":4,"toCell":4,"toRow":10}');
-      cy.get(`[style="top: ${GRID_ROW_HEIGHT * 10}px;"] > .slick-cell.l4.r4.selected`).should('have.length', 1);
+      cy.get('[data-row=10] .slick-cell.l4.r4.selected').should('have.length', 1);
 
       cy.get('@cell_D10').type('{uparrow}');
-      cy.get(`[style="top: ${GRID_ROW_HEIGHT * 9}px;"] > .slick-cell.l4.r4.selected`).should('have.length', 1);
+      cy.get('[data-row=9] .slick-cell.l4.r4.selected').should('have.length', 1);
       cy.get('#selectionRange').should('have.text', '{"fromRow":9,"fromCell":4,"toCell":4,"toRow":9}');
     });
 

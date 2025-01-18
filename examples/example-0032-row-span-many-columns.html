@@ -1,0 +1,321 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=us-ascii">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+	<title>SlickGrid Example: colspan & rowspan spanning many columns</title>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+	<style>
+    /* add some colors to emphasize the colspan/rowspan a bit more */
+		.slick-row.even .slick-cell.cell-very-high {
+        background: #F0FFE0;
+    }
+    .slick-row.odd .slick-cell.cell-var-span {
+        background: #87ceeb;
+    }
+    .slick-row .slick-cell.rowspan {
+      background: #95b7a2;
+    }
+    .slick-row[data-row="2"] .slick-cell.l3.r5 {
+     background-color: #ddfffc;
+    }
+    .slick-row[data-row="0"] .slick-cell.rowspan,
+    .slick-row[data-row="8"] .slick-cell.rowspan {
+      background: url(data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAkAAAAJCAYAAADgkQYQAAAAQ0lEQVQYV2N8/fr1fwY84M6dOwyM+BSBFKioqOBWBFMAsgSrScgKsCpCV4ChCJsCFEW4FMAV4VMAVnT8+PH/IG/iAwDA1DlezHn8bwAAAABJRU5ErkJggg==);
+    }
+    .slick-row[data-row="8"] .slick-cell.rowspan:nth-child(4) {
+      background: #F0FFE0;
+    }
+    .slick-row[data-row="12"] .slick-cell.rowspan {
+      background: #bd8b8b;
+    }
+    .slick-row[data-row="15"] .slick-cell.rowspan {
+      background: #edc12e;
+    }
+    .slick-row[data-row="85"] .slick-cell.rowspan {
+      background: #8baebd;
+    }
+    .slick-cell.active {
+      /* use a different active cell color to make it a bit more obvious */
+      box-shadow: inset 0 0 0 1px #e35ddc;
+    }
+    .cellValue {
+        float: right;
+        font-size: 14px;
+    }
+    .valueComment {
+      color: #7c8983;
+      font-size: 12px;
+      font-style: italic;
+      width: fit-content;
+    }
+    button {
+      margin: 4px 1px;
+    }
+    label {
+      font-weight: 600;
+    }
+    #dataln {
+      margin-left: 5px;
+    }
+	</style>
+</head>
+
+<body>
+  <h2 class="title">Example colspan/rowspan spanning many columns/cells</h2>
+  <div style="position:relative">
+    <div style="width:750px;">
+      <div class="grid-header" style="width:100%">
+        <label>SlickGrid</label>
+      </div>
+      <div id="myGrid" class="slick-container" style="width:100%;height:500px;"></div>
+    </div>
+
+    <div class="options-panel" style="left: 775px; width: 420px">
+      <h2>
+        <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+        Demonstrates:
+      </h2>
+      <p>
+        This page demonstrates colspan & rowspan using DataView with item metadata.
+        Note: the extra color styling was only added to emphasize a little more the colspan/rowspan sizes.
+      </p>
+      <div>
+        <b>NOTE</b>: "rowspan" is an opt-in feature, because of its small perf hit (it needs to loop through all row metadatas to map all rowspan), and requires the <code>enableCellRowSpan</code> grid option to be enabled to work properly.
+      </div>
+      <div>
+        <b>NOTE 2</b>: <code>colspan</code>/<code>rowspan</code> are both using DataView item metadata and are both based on row indexes and will <b>not</b>
+        update neither keep the row in sync with the data. It is really up to you the user to update the metadata logic of how and where the cells should span.
+        (i.e: Filtering/Sorting/Paging/... will <b>not</b> change/update the spanning in the grid by itself)
+      </div>
+      <hr style="margin: 15px"/>
+      <button data-test="add-500-rows-btn" onclick="loadData(500)">500 rows</button>
+      <button data-test="add-5k-rows-btn" onclick="loadData(5000)">5k rows</button>
+      <button data-test="add-50k-rows-btn" onclick="loadData(50000)">50k rows</button>
+      <button data-test="add-500k-rows-btn" onclick="loadData(500000)">500k rows</button>
+      <label style="margin-left: 5px">data length:</label><span id="dataln"></span>
+
+      <br>
+      <button data-test="scrollToBtn" id="scrollTo">Scroll To Row</button>
+      <input data-test="nbrows" id="nRow" type="text" value="100" style="width: 50px;" />
+      <button data-test="clearScrollTo" id="clearScroll">&times;</button><br>
+      <button data-test="toggleSpans" id="toggleSpans">Toggle blue cell colspan &amp; rowspan</button>
+
+			<h2>View Source:</h2>
+      <ul>
+        <li>
+          <a href="https://github.com/6pac/SlickGrid/blob/master/examples/example-0032-row-span-many-columns.html" target="_sourcewindow">
+            View the source for this example on Github
+          </a>
+        </li>
+      </ul>
+	</table>
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+  <script src="sortable-cdn-fallback.js"></script>
+	<script src="../dist/browser/slick.core.js"></script>
+  <script src="../dist/browser/slick.interactions.js"></script>
+  <script src="../dist/browser/slick.grid.js"></script>
+  <script src="../dist/browser/slick.dataview.js"></script>
+  <script type="text/javascript">
+    function rowCellValueFormatter(row, cell, value, columnDef, rowDataItem, cellMetaInfo) {
+      return '<div class="cellValue">' + value.toFixed(2) + '</div><div class="valueComment">' + row + '.' + cell + '</div>';
+    }
+
+    let dataView;
+		let grid;
+		let columns = [
+      { id: "title", name: "Title", field: "title", width: 80 },
+      { id: "revenueGrowth", name: "Revenue Growth", field: "revenueGrowth", formatter: rowCellValueFormatter, width: 120 },
+      { id: "pricingPolicy", name: "Pricing Policy", field: "pricingPolicy", width: 110, sortable: true, formatter: rowCellValueFormatter },
+      { id: "policyIndex", name: "Policy Index", field: "policyIndex", width: 100, formatter: rowCellValueFormatter },
+      { id: "expenseControl", name: "Expense Control", field: "expenseControl", width: 110, formatter: rowCellValueFormatter },
+      { id: "excessCash", name: "Excess Cash", field: "excessCash", width: 100, formatter: rowCellValueFormatter },
+      { id: "netTradeCycle", name: "Net Trade Cycle", field: "netTradeCycle", width: 110, formatter: rowCellValueFormatter },
+      { id: "costCapital", name: "Cost of Capital", field: "costCapital", width: 100, formatter: rowCellValueFormatter },
+      { id: "revenueGrowth2", name: "Revenue Growth", field: "revenueGrowth2", formatter: rowCellValueFormatter, width: 120 },
+      { id: "pricingPolicy2", name: "Pricing Policy", field: "pricingPolicy2", width: 110, sortable: true, formatter: rowCellValueFormatter },
+      { id: "policyIndex2", name: "Policy Index", field: "policyIndex2", width: 100, formatter: rowCellValueFormatter },
+      { id: "expenseControl2", name: "Expense Control", field: "expenseControl2", width: 110, formatter: rowCellValueFormatter },
+      { id: "excessCash2", name: "Excess Cash", field: "excessCash2", width: 100, formatter: rowCellValueFormatter },
+      { id: "netTradeCycle2", name: "Net Trade Cycle", field: "netTradeCycle2", width: 110, formatter: rowCellValueFormatter },
+      { id: "costCapital2", name: "Cost of Capital", field: "costCapital2", width: 100, formatter: rowCellValueFormatter },
+      { id: "revenueGrowth3", name: "Revenue Growth", field: "revenueGrowth3", formatter: rowCellValueFormatter, width: 120 },
+      { id: "pricingPolicy3", name: "Pricing Policy", field: "pricingPolicy3", width: 110, sortable: true, formatter: rowCellValueFormatter },
+      { id: "policyIndex3", name: "Policy Index", field: "policyIndex3", width: 100, formatter: rowCellValueFormatter },
+      { id: "expenseControl3", name: "Expense Control", field: "expenseControl3", width: 110, formatter: rowCellValueFormatter },
+      { id: "excessCash3", name: "Excess Cash", field: "excessCash3", width: 100, formatter: rowCellValueFormatter },
+      { id: "netTradeCycle3", name: "Net Trade Cycle", field: "netTradeCycle3", width: 110, formatter: rowCellValueFormatter },
+      { id: "costCapital3", name: "Cost of Capital", field: "costCapital3", width: 100, formatter: rowCellValueFormatter },
+    ];
+
+		let options = {
+			enableCellNavigation: true,
+			enableColumnReorder: true,
+      enableCellRowSpan: true, // required flag for rowspan
+      rowTopOffsetRenderType: 'top' // rowspan doesn't render well with 'transform', default is 'top'
+		};
+    let metadata;
+
+    function loadData(count) {
+      document.querySelector('#dataln').textContent = '...loading';
+
+      // add delay just to show "loading" text before loading new dataset
+      setTimeout(() => {
+        let data = [];
+        for (let i = 0; i < count; i++) {
+          data[i] = {
+            id: i,
+            title: "Task " + i,
+            revenueGrowth: Math.random() * Math.pow(10, Math.random() * 3),
+            pricingPolicy: Math.random() * Math.pow(10, Math.random() * 3),
+            policyIndex: Math.random() * Math.pow(10, Math.random() * 3),
+            expenseControl: Math.random() * Math.pow(10, Math.random() * 3),
+            excessCash: Math.random() * Math.pow(10, Math.random() * 3),
+            netTradeCycle: Math.random() * Math.pow(10, Math.random() * 3),
+            costCapital: Math.random() * Math.pow(10, Math.random() * 3),
+            revenueGrowth2: Math.random() * Math.pow(10, Math.random() * 3),
+            pricingPolicy2: Math.random() * Math.pow(10, Math.random() * 3),
+            policyIndex2: Math.random() * Math.pow(10, Math.random() * 3),
+            expenseControl2: Math.random() * Math.pow(10, Math.random() * 3),
+            excessCash2: Math.random() * Math.pow(10, Math.random() * 3),
+            netTradeCycle2: Math.random() * Math.pow(10, Math.random() * 3),
+            costCapital2: Math.random() * Math.pow(10, Math.random() * 3),
+            revenueGrowth3: Math.random() * Math.pow(10, Math.random() * 3),
+            pricingPolicy3: Math.random() * Math.pow(10, Math.random() * 3),
+            policyIndex3: Math.random() * Math.pow(10, Math.random() * 3),
+            expenseControl3: Math.random() * Math.pow(10, Math.random() * 3),
+            excessCash3: Math.random() * Math.pow(10, Math.random() * 3),
+            netTradeCycle3: Math.random() * Math.pow(10, Math.random() * 3),
+            costCapital3: Math.random() * Math.pow(10, Math.random() * 3),
+          };
+        }
+
+        // let's keep column 3-4 as the row spanning from row 8 until the end of the grid
+        metadata[8].columns[3].rowspan = data.length - 8;
+
+        dataView.beginUpdate();
+        dataView.setItems(data);
+        dataView.endUpdate();
+
+        // since we have a rowspan that spans nearly the entire length to the bottom,
+        // we need to invalidate everything so that it recalculate all rowspan cell heights
+        // NOTE: this invalidate() is probably not required all the time, it is in this case because of our dynamic metadata
+        grid.invalidate();
+        document.querySelector('#dataln').textContent = data.length;
+      });
+    }
+
+    document.addEventListener("DOMContentLoaded", () => {
+			let data = [];
+			metadata = {
+        0: {
+          columns: {
+            1: { rowspan: 3 }
+          }
+        },
+        2: {
+          columns: {
+            0: { rowspan: 3 },
+            3: { colspan: 3 }
+          }
+        },
+        3: {
+          columns: {
+            1: { rowspan: 5, colspan: 1, cssClass: "cell-var-span" },
+            // 1: { rowspan: 3, colspan: 2, cssClass: "cell-var-span" },
+            3: { rowspan: 3, colspan: 5 }
+          }
+        },
+        8: {
+          columns: {
+            1: { rowspan: 80 },
+            3: { rowspan: 1999, colspan: 2, cssClass: "cell-very-high" }
+          }
+        },
+        12: {
+          columns: {
+            11: { rowspan: 3 },
+          }
+        },
+        15: {
+          columns: {
+            18: { colspan: 4, rowspan: 3 },
+          }
+        },
+        85: {
+          columns: {
+            5: { rowspan: 20 },
+          },
+        },
+      };
+
+      dataView = new Slick.Data.DataView();
+
+      // Option #1
+      dataView.getItemMetadata = (row) => {
+        return metadata[row] && metadata.attributes
+          ? metadata[row]
+          : (metadata[row] = {attributes: {'data-row': row}, ...metadata[row]});
+      };
+
+      // Option #2
+      // const dataView = new Slick.Data.DataView({
+      //   globalItemMetadataProvider: {
+      //     getRowMetadata: (item, row) => {
+      //       return metadata[row];
+      //     }
+      //   }
+      // });
+
+			grid = new Slick.Grid("#myGrid", dataView, columns, options);
+
+      dataView.onRowCountChanged.subscribe((e, args) => {
+        grid.updateRowCount();
+        grid.render();
+      });
+
+      dataView.onRowsChanged.subscribe((e, args) => {
+        grid.invalidateRows(args.rows);
+        grid.render();
+      });
+
+      grid.init();
+
+			loadData(500);
+
+      document.querySelector('#toggleSpans').addEventListener('click', (e) => {
+        const cell = metadata[3].columns[1];
+        if (cell.colspan === 1) {
+          cell.rowspan = 3;
+          cell.colspan = 2;
+        } else {
+          cell.rowspan = 5;
+          cell.colspan = 1;
+        }
+
+        // row index 3 can have a rowspan of up to 5 rows, so we need to invalidate from row 3 + 5 (-1 because of zero index)
+        // so: 3 + 5 - 1 => row indexes 3 to 7
+        grid.invalidateRows([3, 4, 5, 6, 7]);
+        grid.render();
+        // grid.invalidate();
+      });
+
+      document.querySelector('#clearScroll').addEventListener('click', (e) => {
+        document.querySelector('#nRow').value = '';
+        document.querySelector('#nRow').focus();
+      });
+      document.querySelector('#scrollTo').addEventListener('click', (e) => {
+        grid.scrollRowToTop(document.querySelector('#nRow').value);
+      });
+
+      document.querySelector('#nRow').addEventListener('keydown', (e) => {
+        if (e.keyCode == 13) {
+          document.querySelector('#scrollTo').click();
+        }
+      });
+		});
+	</script>
+</body>
+</html>

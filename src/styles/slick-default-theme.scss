@@ -130,6 +130,9 @@ classes should alter those!
   border-color: gray;
   border-style: solid;
 }
+.slick-cell.hidden {
+  display: none;
+}
 
 .slick-sortable-placeholder {
   background: #d9d9d9 !important;

@@ -16,11 +16,11 @@ describe('Example3 Editing', () => {
   });
 
   it('should be able to edit "Description" by double-clicking on first row and expect no more editable cell', () => {
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(1)`).should('contain', 'This is a sample');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(1)`).click();
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(1)`).should('contain', 'This is a sample');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(1)`).click();
     cy.get('.slick-large-editor-text').should('have.length', 0);
 
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(1)`).dblclick();
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(1)`).dblclick();
     cy.get('.slick-large-editor-text').should('have.length', 1);
 
     cy.get('.slick-large-editor-text textarea')
@@ -38,8 +38,8 @@ describe('Example3 Editing', () => {
   });
 
   it('should be able to edit "Description" by clicking once on second row and expect next row to become editable after clicking "Save" button', () => {
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 1}px;"] > .slick-cell:nth(1)`).should('contain', 'This is a sample');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 1}px;"] > .slick-cell:nth(1)`).click();
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 1}px;"] > .slick-cell:nth(1)`).should('contain', 'This is a sample');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 1}px;"] > .slick-cell:nth(1)`).click();
     cy.get('.slick-large-editor-text').should('have.length', 1);
 
     cy.get('.slick-large-editor-text textarea')
@@ -76,8 +76,8 @@ describe('Example3 Editing', () => {
   });
 
   it('should be able to edit "Description" and expect once again that the next line will become editable', () => {
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 3}px;"] > .slick-cell:nth(1)`).should('contain', 'This is a sample');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 3}px;"] > .slick-cell:nth(1)`).click();
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 3}px;"] > .slick-cell:nth(1)`).should('contain', 'This is a sample');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 3}px;"] > .slick-cell:nth(1)`).click();
     cy.get('.slick-large-editor-text').should('have.length', 1);
 
     cy.get('.slick-large-editor-text textarea')
@@ -87,7 +87,7 @@ describe('Example3 Editing', () => {
       .contains('Save')
       .click();
 
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 3}px;"] > .slick-cell:nth(1)`).should('contain', 'Fourth Row');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 3}px;"] > .slick-cell:nth(1)`).should('contain', 'Fourth Row');
     cy.get('.slick-large-editor-text').should('have.length', 1);
 
     cy.get('.slick-large-editor-text textarea')
@@ -108,12 +108,12 @@ describe('Example3 Editing', () => {
   });
 
   it('should expect Task 0,3,4 to have descriptions other than original text', () => {
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(0)`).should('contain', 'Task 0');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 3}px;"] > .slick-cell:nth(0)`).should('contain', 'Task 3');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 4}px;"] > .slick-cell:nth(0)`).should('contain', 'Task 4');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(1)`).should('not.contain', 'This is a sample');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 3}px;"] > .slick-cell:nth(1)`).should('not.contain', 'This is a sample');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 4}px;"] > .slick-cell:nth(1)`).should('not.contain', 'This is a sample');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(0)`).should('contain', 'Task 0');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 3}px;"] > .slick-cell:nth(0)`).should('contain', 'Task 3');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 4}px;"] > .slick-cell:nth(0)`).should('contain', 'Task 4');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(1)`).should('not.contain', 'This is a sample');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 3}px;"] > .slick-cell:nth(1)`).should('not.contain', 'This is a sample');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 4}px;"] > .slick-cell:nth(1)`).should('not.contain', 'This is a sample');
   });
 
   it('should click undo edits twice and expect Task 3-4 to be undoned but Task 0 to still be changed', () => {
@@ -133,12 +133,12 @@ describe('Example3 Editing', () => {
   });
 
   it('should expect Task 3-4 to have descriptions other than original text', () => {
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(0)`).should('contain', 'Task 0');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 3}px;"] > .slick-cell:nth(0)`).should('contain', 'Task 3');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 4}px;"] > .slick-cell:nth(0)`).should('contain', 'Task 4');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(1)`).should('not.contain', 'This is a sample');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(1)`).should('contain', 'Something else');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 3}px;"] > .slick-cell:nth(1)`).should('contain', 'This is a sample');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 4}px;"] > .slick-cell:nth(1)`).should('contain', 'This is a sample');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(0)`).should('contain', 'Task 0');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 3}px;"] > .slick-cell:nth(0)`).should('contain', 'Task 3');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 4}px;"] > .slick-cell:nth(0)`).should('contain', 'Task 4');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(1)`).should('not.contain', 'This is a sample');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(1)`).should('contain', 'Something else');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 3}px;"] > .slick-cell:nth(1)`).should('contain', 'This is a sample');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 4}px;"] > .slick-cell:nth(1)`).should('contain', 'This is a sample');
   });
 });

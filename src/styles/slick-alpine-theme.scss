@@ -707,6 +707,9 @@
   &.editable {
     box-shadow: var(--alpine-cell-editable-box-shadow, v.$alpine-cell-editable-box-shadow);
   }
+  &.hidden {
+    display: none;
+  }
 }
 
 input.editor-checkbox,
