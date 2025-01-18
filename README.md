@@ -1,6 +1,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/)
 [![NPM downloads](https://img.shields.io/npm/dm/slickgrid.svg)](https://npmjs.org/package/slickgrid)
+[![npm bundle size](https://img.shields.io/bundlephobia/minzip/slickgrid?color=5dade2&label=gzip)](https://bundlephobia.com/result?p=slickgrid)
 [![jsdelivr hits/month](https://data.jsdelivr.com/v1/package/npm/slickgrid/badge)](https://www.jsdelivr.com/package/npm/slickgrid)
 
 [![Cypress.io](https://img.shields.io/badge/tested%20with-Cypress-04C38E.svg)](https://www.cypress.io/)

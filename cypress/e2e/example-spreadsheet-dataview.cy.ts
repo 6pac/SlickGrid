@@ -108,7 +108,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
         .click();
 
       cy.get('@cell_B10')
-        .type('{shift}{uparrow}{uparrow}{uparrow}{downarrow}');
+        .type('{shift}{uparrow}{uparrow}{uparrow}{downarrow}', { release: false });
 
       cy.get('.slick-cell.l2.r2.selected')
         .should('have.length', 3);
@@ -123,7 +123,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
         .click();
 
       cy.get('@cell_D10')
-        .type('{shift}{pagedown}{pagedown}');
+        .type('{shift}{pagedown}{pagedown}', { release: false });
 
       cy.get('#selectionRange')
         .should('have.text', '{"fromRow":10,"fromCell":4,"toCell":4,"toRow":46}');
@@ -135,7 +135,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
         .click();
 
       cy.get('@cell_D10')
-        .type('{shift}{pagedown}{pagedown}{pagedown}{pageup}');
+        .type('{shift}{pagedown}{pagedown}{pagedown}{pageup}', { release: false });
 
       cy.get('#selectionRange')
         .should('have.text', '{"fromRow":10,"fromCell":4,"toCell":4,"toRow":46}');
@@ -147,7 +147,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
         .click();
 
       cy.get('@cell_E46')
-        .type('{shift}{end}');
+        .type('{shift}{end}', { release: false });
 
       cy.get('#selectionRange')
         .should('have.text', '{"fromRow":46,"fromCell":5,"toCell":100,"toRow":46}');
@@ -159,7 +159,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
         .click();
 
       cy.get('@cell_CP54')
-        .type('{ctrl}{shift}{end}');
+        .type('{ctrl}{shift}{end}', { release: false });
 
       cy.get('#selectionRange')
         .should('have.text', '{"fromRow":54,"fromCell":94,"toCell":100,"toRow":99}');
@@ -171,7 +171,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
         .click();
 
       cy.get('@cell_CP95')
-        .type('{ctrl}{shift}{home}');
+        .type('{ctrl}{shift}{home}', { release: false });
 
       cy.get('#selectionRange')
         .should('have.text', '{"fromRow":0,"fromCell":0,"toCell":98,"toRow":95}');
@@ -183,10 +183,82 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
         .click();
 
       cy.get('@cell_CR95')
-        .type('{ctrl}{home}');
+        .type('{ctrl}{home}', { release: false });
 
       cy.get('#selectionRange')
         .should('have.text', '');
+    });
+
+    it('should click on cell E10 then Shift+Home with selection A10-E10', () => {
+      cy.getCell(10, 5, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT }).as('cell_E10').click();
+
+      cy.get('@cell_E10').type('{shift}{home}', { release: false });
+
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":0,"toCell":5,"toRow":10}');
+    });
+
+    it('should click on cell E10 then Shift+End with selection E10-CV10', () => {
+      cy.getCell(10, 5, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT }).as('cell_E10').click();
+
+      cy.get('@cell_E10').type('{shift}{end}', { release: false });
+
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":5,"toCell":100,"toRow":10}');
+    });
+
+    it('should click on cell CN10 then Shift+Ctrl+ArrowLeft with selection A10-CN10', () => {
+      cy.getCell(10, 92, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT }).as('cell_CN10').click();
+
+      cy.get('@cell_CN10').type('{shift}{ctrl}{leftarrow}', { release: false });
+
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":0,"toCell":92,"toRow":10}');
+    });
+
+    it('should click on cell CN10 then Shift+Ctrl+ArrowRight key with full row horizontal selection CN10-CV10', () => {
+      cy.getCell(10, 92, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT }).as('cell_CN10').click();
+
+      cy.get('@cell_CN10').type('{shift}{ctrl}{rightarrow}', { release: false });
+
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":92,"toCell":100,"toRow":10}');
+    });
+
+    it('should click on cell CN10 then Shift+Ctrl+ArrowUp key with full column vertical top selection E0-CN10', () => {
+      cy.getCell(10, 92, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT }).as('cell_CN10').click();
+
+      cy.get('@cell_CN10').type('{shift}{ctrl}{uparrow}', { release: false });
+
+      cy.get('#selectionRange').should('have.text', '{"fromRow":0,"fromCell":92,"toCell":92,"toRow":10}');
+    });
+
+    it('should click on cell CN10 then Shift+Ctrl+ArrowDown key with full column vertical bottom selection CN10-E99', () => {
+      cy.getCell(10, 92, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT }).as('cell_CN10').click();
+
+      cy.get('@cell_CN10').type('{shift}{ctrl}{downarrow}', { release: false });
+
+      cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":92,"toCell":92,"toRow":99}');
+    });
+
+    it('should click on cell CL91 then Ctrl+Shift+End keys with selection CL91-CV99', () => {
+      cy.getCell(91, 90, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT }).as('cell_CL91').click();
+
+      cy.get('@cell_CL91').type('{ctrl}{shift}{end}', { release: false });
+
+      cy.get('#selectionRange').should('have.text', '{"fromRow":91,"fromCell":90,"toCell":100,"toRow":99}');
+    });
+
+    it('should click on cell CP91 again then Ctrl+A keys and expect to scroll select everything in the grid', () => {
+      cy.getCell(91, 94, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT }).as('cell_CP91').click();
+
+      cy.get('@cell_CP91').type('{ctrl}{a}', { release: false });
+
+      cy.get('#selectionRange').should('have.text', '{"fromRow":0,"fromCell":0,"toCell":100,"toRow":99}');
+    });
+
+    it('should click on cell F92 then Ctrl+Home keys to navigate to 0,0 coordinates', () => {
+      cy.getCell(92, 6, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT }).as('cell_F92').click();
+
+      cy.get('@cell_F92').type('{ctrl}{home}', { release: false });
+
+      cy.get('#selectionRange').should('have.text', '{"fromRow":0,"fromCell":0,"toCell":0,"toRow":0}');
     });
   });
 
@@ -202,7 +274,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
         .click();
 
       cy.get('@cell_B14')
-        .type('{shift}{end}');
+        .type('{shift}{end}', { release: false });
 
       cy.get('#selectionRange')
         .should('have.text', '{"fromRow":14,"fromCell":2,"toCell":100,"toRow":14}');
@@ -214,7 +286,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
         .click();
 
       cy.get('@cell_CS14')
-        .type('{shift}{home}');
+        .type('{shift}{home}', { release: false });
 
       cy.get('#selectionRange')
         .should('have.text', '{"fromRow":14,"fromCell":0,"toCell":97,"toRow":14}');
@@ -226,7 +298,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
         .click();
 
       cy.get('@cell_CN3')
-        .type('{shift}{pagedown}{pagedown}{pagedown}');
+        .type('{shift}{pagedown}{pagedown}{pagedown}', { release: false });
 
       cy.get('#selectionRange')
         .should('have.text', '{"fromRow":3,"fromCell":95,"toCell":95,"toRow":24}');
@@ -240,7 +312,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
         .click();
 
       cy.get('@cell_CN41')
-        .type('{shift}{pageup}{pageup}{pageup}');
+        .type('{shift}{pageup}{pageup}{pageup}', { release: false });
 
       cy.get('#selectionRange')
         .should('have.text', '{"fromRow":0,"fromCell":92,"toCell":92,"toRow":15}');

@@ -16,8 +16,8 @@ import {
 const argv = yargs(hideBin(process.argv)).argv;
 
 /**
- * Dev script that will watch for files changed and run esbuild/sass for the file(s) that changed
- * We use @parcel/watcher to watch source files and then run esbuild/sass for all 3 formats defined.
+ * Dev script that will watch for files changed and run esbuild/sass for the file(s) that changed.
+ * We use @parcel/watcher to watch source files and then run esbuild or SASS CLIs to build our supported formats (.js, .ts, .html, .css, .scss).
  */
 (() => {
   let subscription;
@@ -59,7 +59,7 @@ const argv = yargs(hideBin(process.argv)).argv;
     // run full prod build `/dist` and full SASS build
     if (!argv.serve) {
       await executeFullBuild();
-      buildAllSassFiles(); // start SASS build but don't wait for it
+      buildAllSassFiles(); // start SASS build but no need to await it
     }
 
     // start browser-sync server
@@ -126,10 +126,10 @@ const argv = yargs(hideBin(process.argv)).argv;
         changedFiles.delete(filepath);
 
         if (filepath.endsWith('.js') || filepath.endsWith('.ts')) {
-          // 1. ESM requires is always a full build since it is bundled into a single "index.js" file
+          // 1. ESM requires is always a full build because it ends up being bundled into a single "index.js" file
           await executeCjsEsmBuilds();
 
-          // 2. for iife format, we can rebuild each separate file (unless it's the initial build, if so execute full rebuild)
+          // 2. for iife format, we can rebuild each separate file (unless it's the initial build, if so execute a full rebuild)
           await (initialBuild
             ? buildAllIifeFiles()
             : buildIifeFile(filepath)
@@ -140,17 +140,17 @@ const argv = yargs(hideBin(process.argv)).argv;
             await buildSassFile(filepath);
           }
         }
-        // ELSE, reaching outside of the conditions above (ie, .html)
-        // will simply perform the common action, shown below, of reloading all connected browser
+        // ELSE, reaching outside of the conditions above (i.e.: .html)
+        // will simply perform the common action, of reloading all connected browsers
 
-        // in every case, we want to reload the webpage
+        // in every case, we want to reload the web page
         bsync.reload('*.html');
         processing = false;
         if (initialBuild) {
           initialBuild = false;
         }
 
-        // we might still have other packages that have changes though, so re-execute command callback process if any were found
+        // we might still have other packages that have changes though, so re-execute the command callback process if any were found
         if (hasQueuedChanges()) {
           executeCommandCallback(Array.from(changedFiles).pop());
         }

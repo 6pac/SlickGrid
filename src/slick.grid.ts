@@ -6682,7 +6682,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     } while (--tmpRow > 0);
   }
 
-  protected navigateToRow(row: number) {
+  navigateToRow(row: number) {
     const num_rows = this.getDataLength();
     if (!num_rows) { return false; }
 
@@ -7075,7 +7075,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /** Navigate to coordinate 0,0 (top left home) */
   navigateTopStart(): boolean | undefined {
-    this.unsetActiveCell();
     this.navigateToRow(0);
     return this.navigate('home');
   }
