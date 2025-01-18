@@ -162,4 +162,12 @@ describe('Example 4 - Model (ESM)', () => {
     cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 18}px;"] > .slick-cell:nth(2)`).should('contain', '5 days').click();
     cy.get('.editor-text').should('not.exist');
   });
+
+  it('should navigate to bottom/top of the grid with command execution', () => {
+    cy.get('[data-test="navigate-bottom"]').click();
+    cy.get('[data-row=49999]').should('contain', 'Task 49999');
+
+    cy.get('[data-test="navigate-top"]').click();
+    cy.get('[data-row=1]').should('contain', 'Task 1');
+  });
 });
