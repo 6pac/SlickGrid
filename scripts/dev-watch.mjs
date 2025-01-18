@@ -44,6 +44,7 @@ const argv = yargs(hideBin(process.argv)).argv;
       ignore: [
         '**/.git/**',
         '**/dist/**',
+        '**/cypress/**',
         '**/node_modules/**',
         '!**/*.{ts,js,html,css,scss}' // which file extensions to watch
       ]

@@ -1,5 +1,4 @@
 describe('Example CSP Header - with Column Span & Header Grouping', () => {
-  // NOTE:  everywhere there's a * 2 is because we have a top+bottom (frozen rows) containers even after Unfreeze Columns/Rows
   const GRID_ROW_HEIGHT = 25;
   const fullTitles = ['Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
   for (let i = 0; i < 30; i++) {

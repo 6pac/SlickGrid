@@ -780,25 +780,25 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     return item;
   }
 
-  getItemMetadata(row: number, cell: number): ItemMetadata | null {
+  getItemMetadata(row: number): ItemMetadata | null {
     const item = this.rows[row];
     if (item === undefined) {
       return null;
     }
 
-    // global override for all rows
+    // global override for all regular rows
     if (this._options.globalItemMetadataProvider?.getRowMetadata) {
-      return this._options.globalItemMetadataProvider.getRowMetadata(item, row, cell);
+      return this._options.globalItemMetadataProvider.getRowMetadata(item, row);
     }
 
     // overrides for grouping rows
     if ((item as SlickGroup_).__group && this._options.groupItemMetadataProvider?.getGroupRowMetadata) {
-      return this._options.groupItemMetadataProvider.getGroupRowMetadata(item as GroupingFormatterItem, row, cell);
+      return this._options.groupItemMetadataProvider.getGroupRowMetadata(item as GroupingFormatterItem, row);
     }
 
     // overrides for totals rows
     if ((item as SlickGroupTotals_).__groupTotals && this._options.groupItemMetadataProvider?.getTotalsRowMetadata) {
-      return this._options.groupItemMetadataProvider.getTotalsRowMetadata(item as { group: GroupingFormatterItem }, row, cell);
+      return this._options.groupItemMetadataProvider.getTotalsRowMetadata(item as { group: GroupingFormatterItem }, row);
     }
 
     return null;

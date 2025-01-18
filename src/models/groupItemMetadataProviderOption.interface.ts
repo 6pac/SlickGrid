@@ -1,7 +1,7 @@
 import type { Formatter } from './index.js';
 
 export interface ItemMetadataProvider {
-  getRowMetadata(item: any, row?: number, cell?: number): any;
+  getRowMetadata(item: any, row?: number): any;
 }
 
 export interface GroupItemMetadataProviderOption {
