@@ -1,7 +1,9 @@
-import type { Aggregator, CustomDataView, DataViewHints, Grouping, ItemMetadata, OnGroupCollapsedEventArgs, OnGroupExpandedEventArgs, OnRowCountChangedEventArgs, OnRowsChangedEventArgs, OnRowsOrCountChangedEventArgs, OnSelectedRowIdsChangedEventArgs, OnSetItemsCalledEventArgs, PagingInfo, SlickGridModel } from './models/index.js';
+import type { Aggregator, CustomDataView, DataViewHints, Grouping, ItemMetadata, ItemMetadataProvider, OnGroupCollapsedEventArgs, OnGroupExpandedEventArgs, OnRowCountChangedEventArgs, OnRowsChangedEventArgs, OnRowsOrCountChangedEventArgs, OnSelectedRowIdsChangedEventArgs, OnSetItemsCalledEventArgs, PagingInfo, SlickGridModel } from './models/index.js';
 import { type BasePubSub, SlickEvent as SlickEvent_, SlickGroup as SlickGroup_, SlickGroupTotals as SlickGroupTotals_, type SlickNonDataItem } from './slick.core.js';
 import { SlickGroupItemMetadataProvider as SlickGroupItemMetadataProvider_ } from './slick.groupitemmetadataprovider.js';
 export interface DataViewOption {
+    /** global override for all rows */
+    globalItemMetadataProvider: ItemMetadataProvider | null;
     /** Optionally provide a GroupItemMetadataProvider in order to use Grouping/DraggableGrouping features */
     groupItemMetadataProvider: SlickGroupItemMetadataProvider_ | null;
     /** defaults to false, are we using inline filters? */
@@ -223,7 +225,7 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     getLength(): number;
     /** Retrieve an item from the DataView at specific index */
     getItem<T extends TData>(i: number): T;
-    getItemMetadata(i: number): ItemMetadata | null;
+    getItemMetadata(row: number): ItemMetadata | null;
     protected expandCollapseAllGroups(level?: number, collapse?: boolean): void;
     /**
      * @param {Number} [level] Optional level to collapse.  If not specified, applies to all levels.

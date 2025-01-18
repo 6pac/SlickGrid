@@ -24,6 +24,12 @@ h2 {
   }
 }
 
+code {
+  color: #f96079;
+  font-family: 'Courier New', Courier, monospace;
+  font-weight: 600;
+}
+
 ul {
   margin-left: 0;
   padding-left: 20px;
@@ -46,4 +52,28 @@ ul {
     font-family: var(--alpine-font-family, $alpine-font-family);
     font-size: 12px;
   }
+}
+
+button.btn {
+  cursor: pointer;
+  background-color: white;
+  border: 1px solid #9a9a9a;
+  border-radius: 3px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  padding: 6px 8px;
+  gap: 4px;
+}
+.rotate-90 {
+  transform: rotate(90deg);
+}
+.rotate-180 {
+  transform: rotate(180deg);
+}
+.rotate-270 {
+  transform: rotate(270deg);
+}
+.text-italic {
+  font-style: italic;
 }

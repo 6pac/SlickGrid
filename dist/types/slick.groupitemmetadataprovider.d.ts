@@ -36,9 +36,9 @@ export declare class SlickGroupItemMetadataProvider implements SlickPlugin {
     }): void;
     protected handleGridKeyDown(e: SlickEventData): void;
     protected handleDataViewExpandOrCollapse(item: any): void;
-    getGroupRowMetadata(item: GroupingFormatterItem): ItemMetadata;
+    getGroupRowMetadata(item: GroupingFormatterItem, _row?: number, _cell?: number): ItemMetadata;
     getTotalsRowMetadata(item: {
         group: GroupingFormatterItem;
-    }): ItemMetadata | null;
+    }, _row?: number, _cell?: number): ItemMetadata | null;
 }
 //# sourceMappingURL=slick.groupitemmetadataprovider.d.ts.map

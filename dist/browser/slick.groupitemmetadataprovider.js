@@ -88,7 +88,7 @@
         ignoreDiffsAfter: range.bottom + 1
       }), item.collapsed ? this.dataView.expandGroup(item.groupingKey) : this.dataView.collapseGroup(item.groupingKey);
     }
-    getGroupRowMetadata(item) {
+    getGroupRowMetadata(item, _row, _cell) {
       let groupLevel = item == null ? void 0 : item.level;
       return {
         selectable: !1,
@@ -104,7 +104,7 @@
         }
       };
     }
-    getTotalsRowMetadata(item) {
+    getTotalsRowMetadata(item, _row, _cell) {
       var _a;
       let groupLevel = (_a = item == null ? void 0 : item.group) == null ? void 0 : _a.level;
       return {

@@ -105,6 +105,8 @@ export interface Column<TData = any> {
     rerenderOnResize?: boolean;
     /** Is the column resizable, can we make it wider/thinner? A resize cursor will show on the right side of the column when enabled. */
     resizable?: boolean;
+    /** Row span in cell count or use `*` to span across the entire row */
+    rowspan?: number;
     /** Is the column selectable? Goes with grid option "enableCellNavigation: true". */
     selectable?: boolean;
     /** Is the column sortable? Goes with grid option "enableSorting: true". */

@@ -24,7 +24,7 @@
       this.externalPubSub = externalPubSub;
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.14.3");
+      __publicField(this, "slickGridVersion", "5.15.0");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -143,6 +143,7 @@
         rowHighlightDuration: 400,
         selectedCellCssClass: "selected",
         multiSelect: !0,
+        enableCellRowSpan: !1,
         enableTextSelectionOnCells: !1,
         dataItemColumnValueExtractor: null,
         frozenBottom: !1,
@@ -179,6 +180,7 @@
         suppressCssChangesOnHiddenInit: !1,
         ffMaxSupportedCssHeight: 6e6,
         maxSupportedCssHeight: 1e9,
+        maxPartialRowSpanRemap: 5e3,
         sanitizer: void 0,
         // sanitize function, built in basic sanitizer is: Slick.RegexSanitizer(dirtyHtml)
         logSanitizedHtml: !1,
@@ -302,12 +304,17 @@
       __publicField(this, "_activeCanvasNode");
       __publicField(this, "_activeViewportNode");
       __publicField(this, "activePosX");
+      __publicField(this, "activePosY");
       __publicField(this, "activeRow");
       __publicField(this, "activeCell");
       __publicField(this, "activeCellNode", null);
       __publicField(this, "currentEditor", null);
       __publicField(this, "serializedEditorValue");
       __publicField(this, "editController");
+      __publicField(this, "_prevDataLength", 0);
+      __publicField(this, "_prevInvalidatedRowsCount", 0);
+      __publicField(this, "_rowSpanIsCached", !1);
+      __publicField(this, "_colsWithRowSpanCache", {});
       __publicField(this, "rowsCache", {});
       __publicField(this, "renderedRows", 0);
       __publicField(this, "numVisibleRows", 0);
@@ -331,7 +338,6 @@
       __publicField(this, "scrollThrottle");
       // async call handles
       __publicField(this, "h_editorLoader");
-      __publicField(this, "h_render", null);
       __publicField(this, "h_postrender");
       __publicField(this, "h_postrenderCleanup");
       __publicField(this, "postProcessedRows", {});
@@ -452,7 +458,7 @@
         this._bindingEventService.bind(view, "selectstart", (event) => {
           event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement;
         });
-      }), this.setFrozenOptions(), this.setPaneVisibility(), this.setScroller(), this.setOverflow(), this.updateColumnCaches(), this.createColumnHeaders(), this.createColumnFooter(), this.setupColumnSort(), this.createCssRules(), this.resizeCanvas(), this.bindAncestorScrollEvents(), this._bindingEventService.bind(this._container, "resize", this.resizeCanvas.bind(this)), this._viewport.forEach((view) => {
+      }), this.setFrozenOptions(), this.setPaneFrozenClasses(), this.setPaneVisibility(), this.setScroller(), this.setOverflow(), this.updateColumnCaches(), this.createColumnHeaders(), this.createColumnFooter(), this.setupColumnSort(), this.createCssRules(), this.resizeCanvas(), this.bindAncestorScrollEvents(), this._bindingEventService.bind(this._container, "resize", this.resizeCanvas.bind(this)), this._viewport.forEach((view) => {
         this._bindingEventService.bind(view, "scroll", this.handleScroll.bind(this));
       }), this._options.enableMouseWheelScrollHandler && this._viewport.forEach((view) => {
         this.slickMouseWheelInstances.push(MouseWheel({
@@ -1035,6 +1041,12 @@
       } else
         this.hasFrozenRows = !1;
     }
+    /** add/remove frozen class to left headers/footer when defined */
+    setPaneFrozenClasses() {
+      let classAction = this.hasFrozenColumns() ? "add" : "remove";
+      for (let elm of [this._paneHeaderL, this._paneTopL, this._paneBottomL])
+        elm.classList[classAction]("frozen");
+    }
     setPaneVisibility() {
       this.hasFrozenColumns() ? (Utils.show(this._paneHeaderR), Utils.show(this._paneTopR), this.hasFrozenRows ? (Utils.show(this._paneBottomL), Utils.show(this._paneBottomR)) : (Utils.hide(this._paneBottomR), Utils.hide(this._paneBottomL))) : (Utils.hide(this._paneHeaderR), Utils.hide(this._paneTopR), Utils.hide(this._paneBottomR), this.hasFrozenRows ? Utils.show(this._paneBottomL) : (Utils.hide(this._paneBottomR), Utils.hide(this._paneBottomL)));
     }
@@ -1526,7 +1538,7 @@
     }
     updateColumnsInternal() {
       var _a;
-      this.updateColumnProps(), this.updateColumnCaches(), this.initialized && (this.setPaneVisibility(), this.setOverflow(), this.invalidateAllRows(), this.createColumnHeaders(), this.createColumnFooter(), this.removeCssRules(), this.createCssRules(), this.resizeCanvas(), this.updateCanvasWidth(), this.applyColumnHeaderWidths(), this.applyColumnWidths(), this.handleScroll(), (_a = this.getSelectionModel()) == null || _a.refreshSelections());
+      this.updateColumnProps(), this.updateColumnCaches(), this.initialized && (this.setPaneFrozenClasses(), this.setPaneVisibility(), this.setOverflow(), this.invalidateAllRows(), this.createColumnHeaders(), this.createColumnFooter(), this.removeCssRules(), this.createCssRules(), this.resizeCanvas(), this.updateCanvasWidth(), this.applyColumnHeaderWidths(), this.applyColumnWidths(), this.handleScroll(), (_a = this.getSelectionModel()) == null || _a.refreshSelections());
     }
     /** Returns an object containing all of the Grid options set on the grid. See a list of Grid Options here.  */
     getOptions() {
@@ -1597,6 +1609,14 @@
      */
     getDataItem(i) {
       return this.data.getItem ? this.data.getItem(i) : this.data[i];
+    }
+    /**
+     * Returns item metadata by a row index when it exists
+     * @param {Number} row
+     * @returns {ItemMetadata | null}
+     */
+    getItemMetadaWhenExists(row) {
+      return "getItemMetadata" in this.data ? this.data.getItemMetadata(row) : null;
     }
     /** Get Top Panel DOM element */
     getTopPanel() {
@@ -1680,8 +1700,14 @@
     }
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Rendering / Scrolling
+    getRowHeight() {
+      return this._options.rowHeight;
+    }
     getRowTop(row) {
       return Math.round(this._options.rowHeight * row - this.offset);
+    }
+    getRowBottom(row) {
+      return this.getRowTop(row) + this._options.rowHeight;
     }
     getRowFromPosition(y) {
       return Math.floor((y + this.offset) / this._options.rowHeight);
@@ -1711,43 +1737,48 @@
       return (columnOverrides == null ? void 0 : columnOverrides.formatter) || (rowMetadata == null ? void 0 : rowMetadata.formatter) || column.formatter || ((_c = this._options.formatterFactory) == null ? void 0 : _c.getFormatter(column)) || this._options.defaultFormatter;
     }
     getEditor(row, cell) {
-      var _a, _b, _c, _d, _e, _f;
-      let column = this.columns[cell], rowMetadata = (_b = (_a = this.data) == null ? void 0 : _a.getItemMetadata) == null ? void 0 : _b.call(_a, row), columnMetadata = rowMetadata == null ? void 0 : rowMetadata.columns;
-      return ((_c = columnMetadata == null ? void 0 : columnMetadata[column.id]) == null ? void 0 : _c.editor) !== void 0 ? columnMetadata[column.id].editor : ((_d = columnMetadata == null ? void 0 : columnMetadata[cell]) == null ? void 0 : _d.editor) !== void 0 ? columnMetadata[cell].editor : column.editor || ((_f = (_e = this._options) == null ? void 0 : _e.editorFactory) == null ? void 0 : _f.getEditor(column));
+      var _a, _b, _c, _d;
+      let column = this.columns[cell], rowMetadata = this.getItemMetadaWhenExists(row), columnMetadata = rowMetadata == null ? void 0 : rowMetadata.columns;
+      return ((_a = columnMetadata == null ? void 0 : columnMetadata[column.id]) == null ? void 0 : _a.editor) !== void 0 ? columnMetadata[column.id].editor : ((_b = columnMetadata == null ? void 0 : columnMetadata[cell]) == null ? void 0 : _b.editor) !== void 0 ? columnMetadata[cell].editor : column.editor || ((_d = (_c = this._options) == null ? void 0 : _c.editorFactory) == null ? void 0 : _d.getEditor(column));
     }
     getDataItemValueForColumn(item, columnDef) {
       return this._options.dataItemColumnValueExtractor ? this._options.dataItemColumnValueExtractor(item, columnDef) : item[columnDef.field];
     }
     appendRowHtml(divArrayL, divArrayR, row, range, dataLength) {
-      var _a, _b;
       let d = this.getDataItem(row), dataLoading = row < dataLength && !d, rowCss = "slick-row" + (this.hasFrozenRows && row <= this._options.frozenRow ? " frozen" : "") + (dataLoading ? " loading" : "") + (row === this.activeRow && this._options.showCellSelection ? " active" : "") + (row % 2 === 1 ? " odd" : " even");
-      d || (rowCss += " " + this._options.addNewRowCssClass);
-      let metadata = (_b = (_a = this.data) == null ? void 0 : _a.getItemMetadata) == null ? void 0 : _b.call(_a, row);
-      metadata != null && metadata.cssClasses && (rowCss += " " + metadata.cssClasses);
-      let rowDiv = Utils.createDomElement("div", { className: `ui-widget-content ${rowCss}`, role: "row" }), frozenRowOffset = this.getFrozenRowOffset(row), topOffset = this.getRowTop(row) - frozenRowOffset;
+      d || (rowCss += ` ${this._options.addNewRowCssClass}`);
+      let metadata = this.getItemMetadaWhenExists(row);
+      metadata != null && metadata.cssClasses && (rowCss += ` ${metadata.cssClasses}`);
+      let rowDiv = Utils.createDomElement("div", {
+        className: `ui-widget-content ${rowCss}`,
+        role: "row",
+        dataset: { row: `${row}` }
+      }), frozenRowOffset = this.getFrozenRowOffset(row), topOffset = this.getRowTop(row) - frozenRowOffset;
       this._options.rowTopOffsetRenderType === "transform" ? rowDiv.style.transform = `translateY(${topOffset}px)` : rowDiv.style.top = `${topOffset}px`;
       let rowDivR;
       divArrayL.push(rowDiv), this.hasFrozenColumns() && (rowDivR = rowDiv.cloneNode(!0), divArrayR.push(rowDivR));
-      let colspan, m;
-      for (let i = 0, ii = this.columns.length; i < ii; i++)
-        if (m = this.columns[i], !(!m || m.hidden)) {
-          if (colspan = 1, metadata != null && metadata.columns) {
-            let columnData = metadata.columns[m.id] || metadata.columns[i];
-            colspan = (columnData == null ? void 0 : columnData.colspan) || 1, colspan === "*" && (colspan = ii - i);
-          }
-          if (this.columnPosRight[Math.min(ii - 1, i + colspan - 1)] > range.leftPx) {
-            if (!m.alwaysRenderColumn && this.columnPosLeft[i] > range.rightPx)
-              break;
-            this.hasFrozenColumns() && i > this._options.frozenColumn ? this.appendCellHtml(rowDivR, row, i, colspan, d) : this.appendCellHtml(rowDiv, row, i, colspan, d);
-          } else (m.alwaysRenderColumn || this.hasFrozenColumns() && i <= this._options.frozenColumn) && this.appendCellHtml(rowDiv, row, i, colspan, d);
-          colspan > 1 && (i += colspan - 1);
+      let columnCount = this.columns.length, columnData, colspan, rowspan, m, isRenderCell = !0;
+      for (let i = 0, ii = columnCount; i < ii; i++) {
+        if (isRenderCell = !0, m = this.columns[i], !m || m.hidden)
+          continue;
+        colspan = 1, rowspan = 1, columnData = null, metadata != null && metadata.columns && (columnData = metadata.columns[m.id] || metadata.columns[i], colspan = (columnData == null ? void 0 : columnData.colspan) || 1, rowspan = (columnData == null ? void 0 : columnData.rowspan) || 1, colspan === "*" && (colspan = ii - i), rowspan > dataLength - row && (rowspan = dataLength - row)), !this._options.enableCellRowSpan && rowspan > 1 && console.warn('[SlickGrid] Cell "rowspan" is an opt-in grid option because of its small perf hit, you must enable it via the "enableCellRowSpan" grid option.');
+        let ncolspan = colspan;
+        if (!this.getParentRowSpanByCell(row, i)) {
+          if (this.columnPosRight[Math.min(ii - 1, i + ncolspan - 1)] > range.leftPx) {
+            if (!m.alwaysRenderColumn && this.columnPosLeft[i] > range.rightPx && (isRenderCell = !1), isRenderCell) {
+              let targetedRowDiv = this.hasFrozenColumns() && i > this._options.frozenColumn ? rowDivR : rowDiv;
+              this.appendCellHtml(targetedRowDiv, row, i, ncolspan, rowspan, columnData, d);
+            }
+          } else (m.alwaysRenderColumn || this.hasFrozenColumns() && i <= this._options.frozenColumn) && this.appendCellHtml(rowDiv, row, i, ncolspan, rowspan, columnData, d);
+          ncolspan > 1 && (i += ncolspan - 1);
         }
+      }
     }
-    appendCellHtml(divRow, row, cell, colspan, item) {
-      let m = this.columns[cell], cellCss = "slick-cell l" + cell + " r" + Math.min(this.columns.length - 1, cell + colspan - 1) + (m.cssClass ? " " + m.cssClass : "");
+    appendCellHtml(divRow, row, cell, colspan, rowspan, columnMetadata, item) {
+      let m = this.columns[cell], cellCss = `slick-cell l${cell} r${Math.min(this.columns.length - 1, cell + colspan - 1)}` + (m.cssClass ? ` ${m.cssClass}` : "") + (rowspan > 1 ? " rowspan" : "") + (columnMetadata != null && columnMetadata.cssClass ? ` ${columnMetadata.cssClass}` : "");
       this.hasFrozenColumns() && cell <= this._options.frozenColumn && (cellCss += " frozen"), row === this.activeRow && cell === this.activeCell && this._options.showCellSelection && (cellCss += " active"), Object.keys(this.cellCssClasses).forEach((key) => {
         var _a;
-        (_a = this.cellCssClasses[key][row]) != null && _a[m.id] && (cellCss += " " + this.cellCssClasses[key][row][m.id]);
+        (_a = this.cellCssClasses[key][row]) != null && _a[m.id] && (cellCss += ` ${this.cellCssClasses[key][row][m.id]}`);
       });
       let value = null, formatterResult = "";
       item && (value = this.getDataItemValueForColumn(item, m), formatterResult = this.getFormatter(row, m)(row, cell, value, m, item, this), formatterResult == null && (formatterResult = ""));
@@ -1758,7 +1789,9 @@
         role: "gridcell",
         tabIndex: -1
       });
-      if (cellDiv.setAttribute("aria-describedby", this.uid + m.id), toolTipText && cellDiv.setAttribute("title", toolTipText), m.hasOwnProperty("cellAttrs") && m.cellAttrs instanceof Object && Object.keys(m.cellAttrs).forEach((key) => {
+      cellDiv.setAttribute("aria-describedby", this.uid + m.id), toolTipText && cellDiv.setAttribute("title", toolTipText);
+      let cellHeight = this.getCellHeight(row, rowspan);
+      if (rowspan > 1 && cellHeight !== this._options.rowHeight - this.cellHeightDiff && (cellDiv.style.height = `${cellHeight || 0}px`), m.hasOwnProperty("cellAttrs") && m.cellAttrs instanceof Object && Object.keys(m.cellAttrs).forEach((key) => {
         m.cellAttrs.hasOwnProperty(key) && cellDiv.setAttribute(key, m.cellAttrs[key]);
       }), item) {
         let cellResult = Object.prototype.toString.call(formatterResult) !== "[object Object]" ? formatterResult : formatterResult.html || formatterResult.text;
@@ -1767,14 +1800,103 @@
       divRow.appendChild(cellDiv), formatterResult.insertElementAfterTarget && Utils.insertAfterElement(cellDiv, formatterResult.insertElementAfterTarget), this.rowsCache[row].cellRenderQueue.push(cell), this.rowsCache[row].cellColSpans[cell] = colspan;
     }
     cleanupRows(rangeToKeep) {
+      let mandatoryRows = /* @__PURE__ */ new Set();
+      if (this._options.enableCellRowSpan)
+        for (let i = rangeToKeep.top, ln = rangeToKeep.bottom; i <= ln; i++) {
+          let parentRowSpan = this.getRowSpanIntersect(i);
+          parentRowSpan !== null && mandatoryRows.add(parentRowSpan);
+        }
       Object.keys(this.rowsCache).forEach((rowId) => {
         if (this.rowsCache) {
           let i = +rowId, removeFrozenRow = !0;
-          this.hasFrozenRows && (this._options.frozenBottom && i >= this.actualFrozenRow || !this._options.frozenBottom && i <= this.actualFrozenRow) && (removeFrozenRow = !1), (i = parseInt(rowId, 10)) !== this.activeRow && (i < rangeToKeep.top || i > rangeToKeep.bottom) && removeFrozenRow && this.removeRowFromCache(i);
+          this.hasFrozenRows && (this._options.frozenBottom && i >= this.actualFrozenRow || !this._options.frozenBottom && i <= this.actualFrozenRow) && (removeFrozenRow = !1), (i = parseInt(rowId, 10)) !== this.activeRow && (i < rangeToKeep.top || i > rangeToKeep.bottom) && removeFrozenRow && !mandatoryRows.has(i) && this.removeRowFromCache(i);
         }
       }), this._options.enableAsyncPostRenderCleanup && this.startPostProcessingCleanup();
     }
-    /** Invalidate all grid rows and re-render the grid rows */
+    /**
+     * from a row number, return any column indexes that intersected with the grid row including the cell
+     * @param {Number} row - grid row index
+     */
+    getRowSpanColumnIntersects(row) {
+      return this.getRowSpanIntersection(row, "columns");
+    }
+    /**
+     * from a row number, verify if the rowspan is intersecting and return it when found,
+     * otherwise return `null` when nothing is found or when the rowspan feature is disabled.
+     * @param {Number} row - grid row index
+     */
+    getRowSpanIntersect(row) {
+      return this.getRowSpanIntersection(row);
+    }
+    getRowSpanIntersection(row, outputType) {
+      let columnIntersects = [], rowStartIntersect = null;
+      for (let col = 0, cln = this.columns.length; col < cln; col++) {
+        let rmeta = this._colsWithRowSpanCache[col];
+        if (rmeta)
+          for (let range of Array.from(rmeta)) {
+            let [start, end] = range.split(":").map(Number);
+            if (row >= start && row <= end)
+              if (outputType === "columns")
+                columnIntersects.push(col);
+              else {
+                rowStartIntersect = start;
+                break;
+              }
+          }
+      }
+      return outputType === "columns" ? columnIntersects : rowStartIntersect;
+    }
+    /**
+     * Returns the parent rowspan details when child cell are spanned from a rowspan or `null` when it's not spanned.
+     * By default it will exclude the parent cell that holds the rowspan, and return `null`, that initiated the rowspan unless the 3rd argument is disabled.
+     * The exclusion is helpful to find out when we're dealing with a child cell of a rowspan
+     * @param {Number} row - grid row index
+     * @param {Number} cell - grid cell/column index
+     * @param {Boolean} [excludeParentRow] - should we exclude the parent who initiated the rowspan in the search (defaults to true)?
+     */
+    getParentRowSpanByCell(row, cell, excludeParentRow = !0) {
+      let spanDetail = null, rowspanRange = this._colsWithRowSpanCache[cell] || /* @__PURE__ */ new Set();
+      for (let range of Array.from(rowspanRange)) {
+        let [start, end] = range.split(":").map(Number);
+        if ((excludeParentRow ? row > start : row >= start) && row <= end) {
+          spanDetail = { start, end, range };
+          break;
+        }
+      }
+      return spanDetail;
+    }
+    /**
+     * Remap all the rowspan metadata by looping through all dataset rows and keep a cache of rowspan by column indexes
+     * For example:
+     *  1- if 2nd row of the 1st column has a metadata.rowspan of 3 then the cache will be: `{ 0: '1:4' }`
+     *  2- if 2nd row if the 1st column has a metadata.rowspan of 3 AND a colspan of 2 then the cache will be: `{ 0: '1:4', 1: '1:4' }`
+     */
+    remapAllColumnsRowSpan() {
+      let ln = this.getDataLength();
+      if (ln > 0) {
+        this._colsWithRowSpanCache = {};
+        for (let row = 0; row < ln; row++)
+          this.remapRowSpanMetadataByRow(row);
+        this._rowSpanIsCached = !0;
+      }
+    }
+    remapRowSpanMetadataByRow(row) {
+      let colMeta = this.getItemMetadaWhenExists(row);
+      colMeta != null && colMeta.columns && Object.keys(colMeta.columns).forEach((col) => {
+        let colIdx = +col, columnMeta = colMeta.columns[colIdx], colspan = +((columnMeta == null ? void 0 : columnMeta.colspan) || 1), rowspan = +((columnMeta == null ? void 0 : columnMeta.rowspan) || 1);
+        this.remapRowSpanMetadata(row, colIdx, colspan, rowspan);
+      });
+    }
+    remapRowSpanMetadata(row, cell, colspan, rowspan) {
+      var _a, _b, _c, _d, _e;
+      if (rowspan > 1) {
+        let rspan = `${row}:${row + rowspan - 1}`;
+        if ((_b = (_a = this._colsWithRowSpanCache)[cell]) != null || (_a[cell] = /* @__PURE__ */ new Set()), this._colsWithRowSpanCache[cell].add(rspan), colspan > 1)
+          for (let i = 1; i < colspan; i++)
+            (_e = (_c = this._colsWithRowSpanCache)[_d = cell + i]) != null || (_c[_d] = /* @__PURE__ */ new Set()), this._colsWithRowSpanCache[cell + i].add(rspan);
+      }
+    }
+    /** Invalidate all grid rows and re-render the visible grid rows */
     invalidate() {
       this.updateRowCount(), this.invalidateAllRows(), this.render();
     }
@@ -1791,18 +1913,41 @@
     invalidateRows(rows) {
       if (!rows || !rows.length)
         return;
+      let row;
       this.vScrollDir = 0;
-      let rl = rows.length;
+      let rl = rows.length, invalidatedRows = /* @__PURE__ */ new Set(), requiredRemapRows = /* @__PURE__ */ new Set(), isRowSpanFullRemap = rows.length > this._options.maxPartialRowSpanRemap || rows.length === this.getDataLength() || this._prevInvalidatedRowsCount + rows.length === this.getDataLength();
       for (let i = 0; i < rl; i++)
-        this.currentEditor && this.activeRow === rows[i] && this.makeActiveCellNormal(), this.rowsCache[rows[i]] && this.removeRowFromCache(rows[i]);
-      this._options.enableAsyncPostRenderCleanup && this.startPostProcessingCleanup();
+        if (row = rows[i], this.currentEditor && this.activeRow === row && this.makeActiveCellNormal(), this.rowsCache[row] && this.removeRowFromCache(row), this._options.enableCellRowSpan && !isRowSpanFullRemap) {
+          invalidatedRows.add(row);
+          let parentRowSpan = this.getRowSpanIntersect(row);
+          parentRowSpan !== null && invalidatedRows.add(parentRowSpan);
+        }
+      if (this._options.enableCellRowSpan && !isRowSpanFullRemap) {
+        for (let ir of Array.from(invalidatedRows)) {
+          let colIdxs = this.getRowSpanColumnIntersects(ir);
+          for (let cidx of colIdxs) {
+            let prs = this.getParentRowSpanByCell(ir, cidx);
+            prs && this._colsWithRowSpanCache[cidx] && (this._colsWithRowSpanCache[cidx].delete(prs.range), requiredRemapRows.add(prs.range.split(":").map(Number)[0]));
+          }
+        }
+        for (let row2 of Array.from(requiredRemapRows))
+          this.remapRowSpanMetadataByRow(row2);
+      }
+      this._options.enableAsyncPostRenderCleanup && this.startPostProcessingCleanup(), this._prevInvalidatedRowsCount = rows.length;
     }
     /**
      * Invalidate a specific row number
      * @param {Number} row
      */
     invalidateRow(row) {
-      !row && row !== 0 || this.invalidateRows([row]);
+      if (row >= 0) {
+        let rows = [row];
+        if (this._options.enableCellRowSpan) {
+          let intersectedRow = this.getRowSpanIntersect(row);
+          intersectedRow !== null && rows.push(intersectedRow);
+        }
+        this.invalidateRows(rows);
+      }
     }
     queuePostProcessedRowForCleanup(cacheEntry, postProcessedRow, rowIdx) {
       var _a;
@@ -1880,6 +2025,17 @@
         row === this.activeRow && columnIdx === this.activeCell && this.currentEditor ? this.currentEditor.loadValue(d) : d ? (formatterResult = this.getFormatter(row, m)(row, columnIdx, this.getDataItemValueForColumn(d, m), m, d, this), this.applyFormatResultToCellNode(formatterResult, node)) : Utils.emptyElement(node);
       }), this.invalidatePostProcessingResults(row);
     }
+    getCellHeight(row, rowspan) {
+      let cellHeight = this._options.rowHeight || 0;
+      if (rowspan > 1) {
+        let rowSpanBottomIdx = row + rowspan - 1;
+        cellHeight = this.getRowBottom(rowSpanBottomIdx) - this.getRowTop(row);
+      } else {
+        let rowHeight = this.getRowHeight();
+        rowHeight !== cellHeight - this.cellHeightDiff && (cellHeight = rowHeight);
+      }
+      return cellHeight -= this.cellHeightDiff, Math.ceil(cellHeight);
+    }
     /**
      * Get the number of rows displayed in the viewport
      * Note that the row count is an approximation because it is a calculated value using this formula (viewport / rowHeight = rowCount),
@@ -1939,7 +2095,9 @@
       var _a, _b, _c, _d;
       if (!this.initialized)
         return;
-      let dataLength = this.getDataLength(), dataLengthIncludingAddNew = this.getDataLengthIncludingAddNew(), numberOfRows = 0, oldH = this.hasFrozenRows && !this._options.frozenBottom ? Utils.height(this._canvasBottomL) : Utils.height(this._canvasTopL);
+      let dataLength = this.getDataLength();
+      dataLength > 0 && dataLength !== this._prevDataLength && (this._rowSpanIsCached = !1), this._options.enableCellRowSpan && !this._rowSpanIsCached && this.remapAllColumnsRowSpan(), this._prevDataLength = dataLength;
+      let dataLengthIncludingAddNew = this.getDataLengthIncludingAddNew(), numberOfRows = 0, oldH = this.hasFrozenRows && !this._options.frozenBottom ? Utils.height(this._canvasBottomL) : Utils.height(this._canvasTopL);
       this.hasFrozenRows ? numberOfRows = this.getDataLength() - this._options.frozenRow : numberOfRows = dataLengthIncludingAddNew + (this._options.leaveSpaceForNewRows ? this.numVisibleRows - 1 : 0);
       let tempViewportH = Utils.height(this._viewportScrollContainerY), oldViewportHasVScroll = this.viewportHasVScroll;
       this.viewportHasVScroll = this._options.alwaysShowVerticalScroll || !this._options.autoHeight && numberOfRows * this._options.rowHeight > tempViewportH, this.makeActiveCellNormal();
@@ -1987,10 +2145,11 @@
         return;
       let totalCellsRemoved = 0, cacheEntry = this.rowsCache[row], cellsToRemove = [];
       Object.keys(cacheEntry.cellNodesByColumnIdx).forEach((cellNodeIdx) => {
+        var _a2;
         if (!cacheEntry.cellNodesByColumnIdx.hasOwnProperty(cellNodeIdx))
           return;
         let i = +cellNodeIdx;
-        if (i <= this._options.frozenColumn || Array.isArray(this.columns) && this.columns[i] && this.columns[i].alwaysRenderColumn)
+        if (i <= this._options.frozenColumn || Array.isArray(this.columns) && ((_a2 = this.columns[i]) != null && _a2.alwaysRenderColumn))
           return;
         let colspan = cacheEntry.cellColSpans[i];
         (this.columnPosLeft[i] > range.rightPx || this.columnPosRight[Math.min(this.columns.length - 1, (i || 0) + colspan - 1)] < range.leftPx) && (row === this.activeRow && Number(i) === this.activeCell || cellsToRemove.push(i));
@@ -2000,16 +2159,16 @@
         cellNode = cacheEntry.cellNodesByColumnIdx[cellToRemove], this._options.enableAsyncPostRenderCleanup && ((_a = this.postProcessedRows[row]) != null && _a[cellToRemove]) ? this.queuePostProcessedCellForCleanup(cellNode, cellToRemove, row) : (_b = cellNode.parentElement) == null || _b.removeChild(cellNode), delete cacheEntry.cellColSpans[cellToRemove], delete cacheEntry.cellNodesByColumnIdx[cellToRemove], this.postProcessedRows[row] && delete this.postProcessedRows[row][cellToRemove], totalCellsRemoved++;
     }
     cleanUpAndRenderCells(range) {
-      var _a, _b, _c, _d;
-      let cacheEntry, divRow = document.createElement("div"), processedRows = [], cellsAdded, totalCellsAdded = 0, colspan;
+      var _a;
+      let cacheEntry, divRow = document.createElement("div"), processedRows = [], cellsAdded, totalCellsAdded = 0, colspan, columnData, columnCount = this.columns.length;
       for (let row = range.top, btm = range.bottom; row <= btm; row++) {
         if (cacheEntry = this.rowsCache[row], !cacheEntry)
           continue;
-        this.ensureCellNodesInRowsCache(row), this.cleanUpCells(range, row), cellsAdded = 0;
-        let metadata = (_c = (_b = (_a = this.data) == null ? void 0 : _a.getItemMetadata) == null ? void 0 : _b.call(_a, row)) != null ? _c : {};
+        this.ensureCellNodesInRowsCache(row), (!this._options.enableCellRowSpan || this.getRowSpanIntersect(row) === null) && this.cleanUpCells(range, row), cellsAdded = 0;
+        let metadata = this.getItemMetadaWhenExists(row);
         metadata = metadata == null ? void 0 : metadata.columns;
         let d = this.getDataItem(row);
-        for (let i = 0, ii = this.columns.length; i < ii; i++) {
+        for (let i = 0, ii = columnCount; i < ii; i++) {
           if (!this.columns[i] || this.columns[i].hidden)
             continue;
           if (this.columnPosLeft[i] > range.rightPx)
@@ -2018,12 +2177,15 @@
             i += colspan > 1 ? colspan - 1 : 0;
             continue;
           }
-          if (colspan = 1, metadata) {
-            let columnData = metadata[this.columns[i].id] || metadata[i];
-            colspan = (_d = columnData == null ? void 0 : columnData.colspan) != null ? _d : 1, colspan === "*" && (colspan = ii - i);
+          colspan = 1, columnData = null, metadata && (columnData = metadata[this.columns[i].id] || metadata[i], colspan = (_a = columnData == null ? void 0 : columnData.colspan) != null ? _a : 1, colspan === "*" && (colspan = ii - i));
+          let ncolspan = colspan;
+          if (!this.getParentRowSpanByCell(row, i)) {
+            if (this.columnPosRight[Math.min(ii - 1, i + ncolspan - 1)] > range.leftPx) {
+              let rowspan = this.getRowspan(row, i);
+              this.appendCellHtml(divRow, row, i, ncolspan, rowspan, columnData, d), cellsAdded++;
+            }
+            i += ncolspan > 1 ? ncolspan - 1 : 0;
           }
-          let colspanNb = colspan;
-          this.columnPosRight[Math.min(ii - 1, i + colspanNb - 1)] > range.leftPx && (this.appendCellHtml(divRow, row, i, colspanNb, d), cellsAdded++), i += colspanNb > 1 ? colspanNb - 1 : 0;
         }
         cellsAdded && (totalCellsAdded += cellsAdded, processedRows.push(row));
       }
@@ -2037,29 +2199,45 @@
           node = divRow.lastChild, node && (this.hasFrozenColumns() && columnIdx > this._options.frozenColumn ? cacheEntry.rowNode[1].appendChild(node) : cacheEntry.rowNode[0].appendChild(node), cacheEntry.cellNodesByColumnIdx[columnIdx] = node);
       }
     }
+    createEmptyCachingRow() {
+      return {
+        rowNode: null,
+        // ColSpans of rendered cells (by column idx).
+        // Can also be used for checking whether a cell has been rendered.
+        cellColSpans: [],
+        // Cell nodes (by column idx).  Lazy-populated by ensureCellNodesInRowsCache().
+        cellNodesByColumnIdx: [],
+        // Column indices of cell nodes that have been rendered, but not yet indexed in
+        // cellNodesByColumnIdx.  These are in the same order as cell nodes added at the
+        // end of the row.
+        cellRenderQueue: []
+      };
+    }
     renderRows(range) {
       var _a, _b, _c, _d;
-      let divArrayL = [], divArrayR = [], rows = [], needToReselectCell = !1, dataLength = this.getDataLength();
+      let divArrayL = [], divArrayR = [], rows = [], needToReselectCell = !1, dataLength = this.getDataLength(), mustRenderRows = /* @__PURE__ */ new Set(), renderingRows = /* @__PURE__ */ new Set();
       for (let i = range.top, ii = range.bottom; i <= ii; i++)
-        this.rowsCache[i] || this.hasFrozenRows && this._options.frozenBottom && i === this.getDataLength() || (this.renderedRows++, rows.push(i), this.rowsCache[i] = {
-          rowNode: null,
-          // ColSpans of rendered cells (by column idx).
-          // Can also be used for checking whether a cell has been rendered.
-          cellColSpans: [],
-          // Cell nodes (by column idx).  Lazy-populated by ensureCellNodesInRowsCache().
-          cellNodesByColumnIdx: [],
-          // Column indices of cell nodes that have been rendered, but not yet indexed in
-          // cellNodesByColumnIdx.  These are in the same order as cell nodes added at the
-          // end of the row.
-          cellRenderQueue: []
-        }, this.appendRowHtml(divArrayL, divArrayR, i, range, dataLength), this.activeCellNode && this.activeRow === i && (needToReselectCell = !0), this.counter_rows_rendered++);
-      if (!rows.length)
-        return;
-      let x = document.createElement("div"), xRight = document.createElement("div");
-      divArrayL.forEach((elm) => x.appendChild(elm)), divArrayR.forEach((elm) => xRight.appendChild(elm));
-      for (let i = 0, ii = rows.length; i < ii; i++)
-        this.hasFrozenRows && rows[i] >= this.actualFrozenRow ? this.hasFrozenColumns() ? (_a = this.rowsCache) != null && _a.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild, xRight.firstChild], this._canvasBottomL.appendChild(x.firstChild), this._canvasBottomR.appendChild(xRight.firstChild)) : (_b = this.rowsCache) != null && _b.hasOwnProperty(rows[i]) && x.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild], this._canvasBottomL.appendChild(x.firstChild)) : this.hasFrozenColumns() ? (_c = this.rowsCache) != null && _c.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild, xRight.firstChild], this._canvasTopL.appendChild(x.firstChild), this._canvasTopR.appendChild(xRight.firstChild)) : (_d = this.rowsCache) != null && _d.hasOwnProperty(rows[i]) && x.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild], this._canvasTopL.appendChild(x.firstChild));
-      needToReselectCell && (this.activeCellNode = this.getCellNode(this.activeRow, this.activeCell));
+        if (!(this.rowsCache[i] || this.hasFrozenRows && this._options.frozenBottom && i === this.getDataLength())) {
+          if (this.renderedRows++, rows.push(i), renderingRows.add(i), this.rowsCache[i] = this.createEmptyCachingRow(), this._options.enableCellRowSpan) {
+            let parentRowSpan = this.getRowSpanIntersect(i);
+            parentRowSpan !== null && renderingRows.add(parentRowSpan);
+          }
+          this.appendRowHtml(divArrayL, divArrayR, i, range, dataLength), mustRenderRows.add(i), this.activeCellNode && this.activeRow === i && (needToReselectCell = !0), this.counter_rows_rendered++;
+        }
+      let mandatorySpanRows = this.setDifference(renderingRows, mustRenderRows);
+      if (mandatorySpanRows.size > 0 && mandatorySpanRows.forEach((r) => {
+        this.removeRowFromCache(r), rows.push(r), this.rowsCache[r] = this.createEmptyCachingRow(), this.appendRowHtml(divArrayL, divArrayR, r, range, dataLength);
+      }), rows.length) {
+        let x = document.createElement("div"), xRight = document.createElement("div");
+        divArrayL.forEach((elm) => x.appendChild(elm)), divArrayR.forEach((elm) => xRight.appendChild(elm));
+        for (let i = 0, ii = rows.length; i < ii; i++)
+          this.hasFrozenRows && rows[i] >= this.actualFrozenRow ? this.hasFrozenColumns() ? (_a = this.rowsCache) != null && _a.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild, xRight.firstChild], this._canvasBottomL.appendChild(x.firstChild), this._canvasBottomR.appendChild(xRight.firstChild)) : (_b = this.rowsCache) != null && _b.hasOwnProperty(rows[i]) && x.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild], this._canvasBottomL.appendChild(x.firstChild)) : this.hasFrozenColumns() ? (_c = this.rowsCache) != null && _c.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild, xRight.firstChild], this._canvasTopL.appendChild(x.firstChild), this._canvasTopR.appendChild(xRight.firstChild)) : (_d = this.rowsCache) != null && _d.hasOwnProperty(rows[i]) && x.firstChild && (this.rowsCache[rows[i]].rowNode = [x.firstChild], this._canvasTopL.appendChild(x.firstChild));
+        needToReselectCell && (this.activeCellNode = this.getCellNode(this.activeRow, this.activeCell));
+      }
+    }
+    /** polyfill if the new Set.difference() added in ES2024 */
+    setDifference(a, b) {
+      return new Set(Array.from(a).filter((item) => !b.has(item)));
     }
     startPostProcessing() {
       this._options.enableAsyncPostRender && (window.clearTimeout(this.h_postrender), this.h_postrender = window.setTimeout(this.asyncPostProcessRows.bind(this), this._options.asyncPostRenderDelay));
@@ -2102,7 +2280,7 @@
         bottom: this._options.frozenRow - 1,
         leftPx: rendered.leftPx,
         rightPx: rendered.rightPx
-      })), this.postProcessFromRow = visible.top, this.postProcessToRow = Math.min(this.getDataLengthIncludingAddNew() - 1, visible.bottom), this.startPostProcessing(), this.lastRenderedScrollTop = this.scrollTop, this.lastRenderedScrollLeft = this.scrollLeft, this.h_render = null, this.trigger(this.onRendered, { startRow: visible.top, endRow: visible.bottom, grid: this });
+      })), this.postProcessFromRow = visible.top, this.postProcessToRow = Math.min(this.getDataLengthIncludingAddNew() - 1, visible.bottom), this.startPostProcessing(), this.lastRenderedScrollTop = this.scrollTop, this.lastRenderedScrollLeft = this.scrollLeft, this.trigger(this.onRendered, { startRow: visible.top, endRow: visible.bottom, grid: this });
     }
     handleHeaderRowScroll() {
       let scrollLeft = this._headerRowScrollContainer.scrollLeft;
@@ -2283,7 +2461,7 @@
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Interactivity
     handleMouseWheel(e, _delta, deltaX, deltaY) {
-      this.scrollHeight = this._viewportScrollContainerY.scrollHeight, this.scrollTop = Math.max(0, this._viewportScrollContainerY.scrollTop - deltaY * this._options.rowHeight), this.scrollLeft = this._viewportScrollContainerX.scrollLeft + deltaX * 10, this._handleScroll("mousewheel") && e.preventDefault();
+      this.scrollHeight = this._viewportScrollContainerY.scrollHeight, e.shiftKey ? this.scrollLeft = this._viewportScrollContainerX.scrollLeft + deltaX * 10 : (this.scrollTop = Math.max(0, this._viewportScrollContainerY.scrollTop - deltaY * this._options.rowHeight), this.scrollLeft = this._viewportScrollContainerX.scrollLeft + deltaX * 10), this._handleScroll("mousewheel") && e.preventDefault();
     }
     handleDragInit(e, dd) {
       let cell = this.getCellFromEvent(e);
@@ -2311,7 +2489,7 @@
       if (!handled && !e.shiftKey && !e.altKey) {
         if (this._options.editable && ((_a = this.currentEditor) != null && _a.keyCaptureList) && this.currentEditor.keyCaptureList.indexOf(e.which) > -1)
           return;
-        e.which === keyCode.HOME ? handled = e.ctrlKey ? this.navigateTop() : this.navigateRowStart() : e.which === keyCode.END && (handled = e.ctrlKey ? this.navigateBottom() : this.navigateRowEnd());
+        e.ctrlKey && e.key === "Home" ? this.navigateTopStart() : e.ctrlKey && e.key === "End" ? this.navigateBottomEnd() : e.ctrlKey && e.key === "ArrowUp" ? this.navigateTop() : e.ctrlKey && e.key === "ArrowDown" ? this.navigateBottom() : e.ctrlKey && e.key === "ArrowLeft" || !e.ctrlKey && e.key === "Home" ? this.navigateRowStart() : (e.ctrlKey && e.key === "ArrowRight" || !e.ctrlKey && e.key === "End") && this.navigateRowEnd();
       }
       if (!handled)
         if (!e.shiftKey && !e.altKey && !e.ctrlKey) {
@@ -2488,9 +2666,14 @@
     }
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Cell switching
-    /**  Resets active cell. */
+    /** Resets active cell by making cell normal and other internal reset. */
     resetActiveCell() {
       this.setActiveCellInternal(null, !1);
+    }
+    /** Clear active cell by making cell normal & removing "active" CSS class. */
+    unsetActiveCell() {
+      var _a, _b;
+      Utils.isDefined(this.activeCellNode) && (this.makeActiveCellNormal(), this.activeCellNode.classList.remove("active"), (_b = (_a = this.rowsCache[this.activeRow]) == null ? void 0 : _a.rowNode) == null || _b.forEach((node) => node.classList.remove("active")));
     }
     /** @alias `setFocus` */
     focus() {
@@ -2519,14 +2702,14 @@
       this.internalScrollColumnIntoView(this.columnPosLeft[cell], this.columnPosRight[cell]);
     }
     setActiveCellInternal(newCell, opt_editMode, preClickModeOn, suppressActiveCellChangedEvent, e) {
-      var _a, _b, _c, _d;
-      if (Utils.isDefined(this.activeCellNode) && (this.makeActiveCellNormal(), this.activeCellNode.classList.remove("active"), (_b = (_a = this.rowsCache[this.activeRow]) == null ? void 0 : _a.rowNode) == null || _b.forEach((node) => node.classList.remove("active"))), this.activeCellNode = newCell, Utils.isDefined(this.activeCellNode)) {
+      var _a, _b;
+      if (this.unsetActiveCell(), this.activeCellNode = newCell, Utils.isDefined(this.activeCellNode)) {
         let activeCellOffset = Utils.offset(this.activeCellNode), rowOffset = Math.floor(Utils.offset(Utils.parents(this.activeCellNode, ".grid-canvas")[0]).top), isBottom = Utils.parents(this.activeCellNode, ".grid-canvas-bottom").length;
         this.hasFrozenRows && isBottom && (rowOffset -= this._options.frozenBottom ? Utils.height(this._canvasTopL) : this.frozenRowsHeight);
         let cell = this.getCellFromPoint(activeCellOffset.left, Math.ceil(activeCellOffset.top) - rowOffset);
-        this.activeRow = cell.row, this.activeCell = this.activePosX = this.activeCell = this.activePosX = this.getCellFromNode(this.activeCellNode), !Utils.isDefined(opt_editMode) && this._options.autoEditNewRow && (opt_editMode = this.activeRow === this.getDataLength() || this._options.autoEdit), this._options.showCellSelection && (this.activeCellNode.classList.add("active"), (_d = (_c = this.rowsCache[this.activeRow]) == null ? void 0 : _c.rowNode) == null || _d.forEach((node) => node.classList.add("active"))), this._options.editable && opt_editMode && this.isCellPotentiallyEditable(this.activeRow, this.activeCell) && (window.clearTimeout(this.h_editorLoader), this._options.asyncEditorLoading ? this.h_editorLoader = window.setTimeout(() => {
+        this.activeRow = cell.row, this.activePosY = cell.row, this.activeCell = this.activePosX = this.getCellFromNode(this.activeCellNode), !Utils.isDefined(opt_editMode) && this._options.autoEditNewRow && (opt_editMode = this.activeRow === this.getDataLength() || this._options.autoEdit), this._options.showCellSelection && (document.querySelectorAll(".slick-cell.active").forEach((node) => node.classList.remove("active")), this.activeCellNode.classList.add("active"), (_b = (_a = this.rowsCache[this.activeRow]) == null ? void 0 : _a.rowNode) == null || _b.forEach((node) => node.classList.add("active"))), this._options.editable && opt_editMode && this.isCellPotentiallyEditable(this.activeRow, this.activeCell) && (this._options.asyncEditorLoading ? (window.clearTimeout(this.h_editorLoader), this.h_editorLoader = window.setTimeout(() => {
           this.makeActiveCellEditable(void 0, preClickModeOn, e);
-        }, this._options.asyncEditorLoadDelay) : this.makeActiveCellEditable(void 0, preClickModeOn, e));
+        }, this._options.asyncEditorLoadDelay)) : this.makeActiveCellEditable(void 0, preClickModeOn, e));
       } else
         this.activeRow = this.activeCell = null;
       suppressActiveCellChangedEvent || this.trigger(this.onActiveCellChanged, this.getActiveCell());
@@ -2570,7 +2753,7 @@
       this.makeActiveCellEditable(editor, preClickModeOn, e);
     }
     makeActiveCellEditable(editor, preClickModeOn, e) {
-      var _a, _b, _c, _d, _e, _f;
+      var _a, _b, _c, _d;
       if (!this.activeCellNode)
         return;
       if (!this._options.editable)
@@ -2587,7 +2770,7 @@
       if (!useEditor || typeof useEditor != "function")
         return;
       !editor && !useEditor.suppressClearOnEdit && Utils.emptyElement(this.activeCellNode);
-      let metadata = (_c = (_b = this.data) == null ? void 0 : _b.getItemMetadata) == null ? void 0 : _c.call(_b, this.activeRow);
+      let metadata = this.getItemMetadaWhenExists(this.activeRow);
       metadata = metadata == null ? void 0 : metadata.columns;
       let columnMetaData = metadata && (metadata[columnDef.id] || metadata[this.activeCell]), editorArgs = {
         grid: this,
@@ -2601,7 +2784,7 @@
         commitChanges: this.commitEditAndSetFocus.bind(this),
         cancelChanges: this.cancelEditAndSetFocus.bind(this)
       };
-      this.currentEditor = new useEditor(editorArgs), item && this.currentEditor && (this.currentEditor.loadValue(item), preClickModeOn && ((_d = this.currentEditor) != null && _d.preClick) && this.currentEditor.preClick()), this.serializedEditorValue = (_e = this.currentEditor) == null ? void 0 : _e.serializeValue(), (_f = this.currentEditor) != null && _f.position && this.handleActiveCellPositionChange();
+      this.currentEditor = new useEditor(editorArgs), item && this.currentEditor && (this.currentEditor.loadValue(item), preClickModeOn && ((_b = this.currentEditor) != null && _b.preClick) && this.currentEditor.preClick()), this.serializedEditorValue = (_c = this.currentEditor) == null ? void 0 : _c.serializeValue(), (_d = this.currentEditor) != null && _d.position && this.handleActiveCellPositionChange();
     }
     commitEditAndSetFocus() {
       var _a;
@@ -2699,10 +2882,8 @@
       if (this.scrollTo((this.getRowFromPosition(bottomOfTopmostFullyVisibleRow) + deltaRows) * this._options.rowHeight), this.render(), this._options.enableCellNavigation && Utils.isDefined(this.activeRow)) {
         let row = this.activeRow + deltaRows, dataLengthIncludingAddNew = this.getDataLengthIncludingAddNew();
         row >= dataLengthIncludingAddNew && (row = dataLengthIncludingAddNew - 1), row < 0 && (row = 0);
-        let cell = 0, prevCell = null, prevActivePosX = this.activePosX;
-        for (; cell <= this.activePosX; )
-          this.canCellBeActive(row, cell) && (prevCell = cell), cell += this.getColspan(row, cell);
-        prevCell !== null ? (this.setActiveCellInternal(this.getCellNode(row, prevCell)), this.activePosX = prevActivePosX) : this.resetActiveCell();
+        let pos = dir === 1 ? this.gotoDown(row - 1 || 0, this.activeCell, this.activePosY, this.activePosX) : this.gotoUp(row + 1, this.activeCell, this.activePosY, this.activePosX);
+        this.navigateToPos(pos);
       }
     }
     /** Navigate (scroll) by a page down */
@@ -2715,161 +2896,217 @@
     }
     /** Navigate to the top of the grid */
     navigateTop() {
-      this.navigateToRow(0);
+      this.unsetActiveCell(), this.navigateToRow(0);
     }
     /** Navigate to the bottom of the grid */
     navigateBottom() {
-      this.navigateToRow(this.getDataLength() - 1);
+      var _a, _b;
+      let row = this.getDataLength() - 1, tmpRow = (_b = (_a = this.getParentRowSpanByCell(row, this.activeCell)) == null ? void 0 : _a.start) != null ? _b : row;
+      do
+        if (this._options.enableCellRowSpan && this.setActiveRow(tmpRow), this.navigateToRow(tmpRow) && this.activeCell === this.activePosX || !Utils.isDefined(this.activeCell))
+          break;
+      while (--tmpRow > 0);
     }
     navigateToRow(row) {
       let num_rows = this.getDataLength();
       if (!num_rows)
-        return !0;
-      if (row < 0 ? row = 0 : row >= num_rows && (row = num_rows - 1), this.scrollCellIntoView(row, 0, !0), this._options.enableCellNavigation && Utils.isDefined(this.activeRow)) {
+        return !1;
+      row < 0 ? row = 0 : row >= num_rows && (row = num_rows - 1), this.scrollCellIntoView(row, 0, !0);
+      let isValidMove = !Utils.isDefined(this.activeCell) || !Utils.isDefined(this.activeRow);
+      if (this._options.enableCellNavigation && Utils.isDefined(this.activeRow)) {
         let cell = 0, prevCell = null, prevActivePosX = this.activePosX;
         for (; cell <= this.activePosX; )
-          this.canCellBeActive(row, cell) && (prevCell = cell), cell += this.getColspan(row, cell);
+          this.canCellBeActive(row, cell) && (prevCell = cell, (!Utils.isDefined(this.activeCell) || cell === this.activeCell) && (isValidMove = !0)), cell += this.getColspan(row, cell);
         prevCell !== null ? (this.setActiveCellInternal(this.getCellNode(row, prevCell)), this.activePosX = prevActivePosX) : this.resetActiveCell();
       }
-      return !0;
+      return isValidMove;
     }
     getColspan(row, cell) {
-      var _a, _b;
-      let metadata = (_b = (_a = this.data) == null ? void 0 : _a.getItemMetadata) == null ? void 0 : _b.call(_a, row);
+      let metadata = this.getItemMetadaWhenExists(row);
       if (!metadata || !metadata.columns)
         return 1;
+      cell >= this.columns.length && (cell = this.columns.length - 1);
       let columnData = metadata.columns[this.columns[cell].id] || metadata.columns[cell], colspan = columnData == null ? void 0 : columnData.colspan;
       return colspan === "*" ? colspan = this.columns.length - cell : colspan = colspan || 1, colspan;
     }
+    getRowspan(row, cell) {
+      let rowspan = 1, metadata = this.getItemMetadaWhenExists(row);
+      return metadata != null && metadata.columns && Object.keys(metadata.columns).forEach((col) => {
+        let colIdx = Number(col);
+        if (colIdx === cell) {
+          let columnMeta = metadata.columns[colIdx];
+          rowspan = Number((columnMeta == null ? void 0 : columnMeta.rowspan) || 1);
+        }
+      }), rowspan;
+    }
+    findFocusableRow(row, cell, dir) {
+      let r = row, rowRange = this._colsWithRowSpanCache[cell] || /* @__PURE__ */ new Set(), found = !1;
+      return Array.from(rowRange).forEach((rrange) => {
+        let [start, end] = rrange.split(":").map(Number);
+        !found && row >= start && row <= end && (r = dir === "up" ? start : end, this.canCellBeActive(r, cell) && (found = !0));
+      }), r < 0 && (r = 0), r;
+    }
     findFirstFocusableCell(row) {
-      let cell = 0;
+      let cell = 0, focusableRow = row, ff = -1;
       for (; cell < this.columns.length; ) {
-        if (this.canCellBeActive(row, cell))
-          return cell;
-        cell += this.getColspan(row, cell);
+        let prs = this.getParentRowSpanByCell(row, cell);
+        if (focusableRow = prs !== null && prs.start !== row ? prs.start : row, this.canCellBeActive(focusableRow, cell)) {
+          ff = cell;
+          break;
+        }
+        cell += this.getColspan(focusableRow, cell);
       }
-      return null;
+      return { cell: ff, row: focusableRow };
     }
     findLastFocusableCell(row) {
-      let cell = 0, lastFocusableCell = null;
-      for (; cell < this.columns.length; )
-        this.canCellBeActive(row, cell) && (lastFocusableCell = cell), cell += this.getColspan(row, cell);
-      return lastFocusableCell;
+      let cell = 0, focusableRow = row, lf = -1;
+      for (; cell < this.columns.length; ) {
+        let prs = this.getParentRowSpanByCell(row, cell);
+        focusableRow = prs !== null && prs.start !== row ? prs.start : row, this.canCellBeActive(focusableRow, cell) && (lf = cell), cell += this.getColspan(focusableRow, cell);
+      }
+      return { cell: lf, row: focusableRow };
     }
-    gotoRight(row, cell, _posX) {
+    /**
+     * From any row/cell indexes that might have colspan/rowspan, find its starting indexes
+     * For example, if we start at 0,0 and we have colspan/rowspan of 4 for both and our indexes is row:2,cell:3
+     * then our starting row/cell is 0,0. If a cell has no spanning at all then row/cell output is same as input
+     */
+    findSpanStartingCell(row, cell) {
+      let prs = this.getParentRowSpanByCell(row, cell), focusableRow = prs !== null && prs.start !== row ? prs.start : row, fc = 0, prevCell = 0;
+      for (; fc < this.columns.length; ) {
+        if (fc += this.getColspan(focusableRow, fc), fc > cell)
+          return fc = prevCell, { cell: fc, row: focusableRow };
+        prevCell = fc;
+      }
+      return { cell: fc, row: focusableRow };
+    }
+    gotoRight(_row, cell, posY, _posX) {
       if (cell >= this.columns.length)
         return null;
-      do
-        cell += this.getColspan(row, cell);
-      while (cell < this.columns.length && !this.canCellBeActive(row, cell));
-      return cell < this.columns.length ? {
-        row,
-        cell,
-        posX: cell
+      let fc = cell + 1, fr = posY;
+      do {
+        let sc = this.findSpanStartingCell(posY, fc);
+        if (fr = sc.row, fc = sc.cell, this.canCellBeActive(fr, fc) && fc > cell)
+          break;
+        fc += this.getColspan(fr, sc.cell);
+      } while (fc < this.columns.length);
+      return fc < this.columns.length ? {
+        row: fr,
+        cell: fc,
+        posX: fc,
+        posY
       } : null;
     }
-    gotoLeft(row, cell, _posX) {
+    gotoLeft(row, cell, posY, _posX) {
       if (cell <= 0)
         return null;
-      let firstFocusableCell = this.findFirstFocusableCell(row);
-      if (firstFocusableCell === null || firstFocusableCell >= cell)
+      let ff = this.findFirstFocusableCell(row);
+      if (ff.cell === null || ff.cell >= cell)
         return null;
-      let prev = {
+      let pos, prev = {
         row,
-        cell: firstFocusableCell,
-        posX: firstFocusableCell
-      }, pos;
+        cell: ff.cell,
+        posX: ff.cell,
+        posY
+      };
       for (; ; ) {
-        if (pos = this.gotoRight(prev.row, prev.cell, prev.posX), !pos)
+        if (pos = this.gotoRight(prev.row, prev.cell, prev.posY, prev.posX), !pos)
           return null;
-        if (pos.cell >= cell)
-          return prev;
+        if (pos.cell >= cell) {
+          let nextRow = this.findFocusableRow(posY, prev.cell, "up");
+          return nextRow !== prev.row && (prev.row = nextRow), prev;
+        }
         prev = pos;
       }
     }
-    gotoDown(row, cell, posX) {
-      let prevCell, dataLengthIncludingAddNew = this.getDataLengthIncludingAddNew();
-      for (; ; ) {
-        if (++row >= dataLengthIncludingAddNew)
-          return null;
-        for (prevCell = cell = 0; cell <= posX; )
+    gotoDown(row, cell, _posY, posX) {
+      let prevCell, ub = this.getDataLengthIncludingAddNew();
+      do
+        for (row += this.getRowspan(row, posX), prevCell = cell = 0; cell <= posX; )
           prevCell = cell, cell += this.getColspan(row, cell);
-        if (this.canCellBeActive(row, prevCell))
-          return {
-            row,
-            cell: prevCell,
-            posX
-          };
-      }
+      while (row <= ub && !this.canCellBeActive(row, prevCell));
+      return row <= ub ? {
+        row,
+        cell: prevCell,
+        posX,
+        posY: row
+      } : null;
     }
-    gotoUp(row, cell, posX) {
+    gotoUp(row, cell, _posY, posX) {
       let prevCell;
-      for (; ; ) {
-        if (--row < 0)
-          return null;
-        for (prevCell = cell = 0; cell <= posX; )
+      if (row <= 0)
+        return null;
+      do
+        for (row = this.findFocusableRow(row - 1, posX, "up"), prevCell = cell = 0; cell <= posX; )
           prevCell = cell, cell += this.getColspan(row, cell);
-        if (this.canCellBeActive(row, prevCell))
-          return {
-            row,
-            cell: prevCell,
-            posX
-          };
-      }
+      while (row >= 0 && !this.canCellBeActive(row, prevCell));
+      return cell <= this.columns.length ? {
+        row,
+        cell: prevCell,
+        posX,
+        posY: row
+      } : null;
     }
-    gotoNext(row, cell, posX) {
-      if (!Utils.isDefined(row) && !Utils.isDefined(cell) && (row = cell = posX = 0, this.canCellBeActive(row, cell)))
+    gotoNext(row, cell, posY, posX) {
+      var _a, _b;
+      if (!Utils.isDefined(row) && !Utils.isDefined(cell) && (row = cell = posY = posX = 0, this.canCellBeActive(row, cell)))
         return {
           row,
           cell,
-          posX: cell
+          posX: cell,
+          posY
         };
-      let pos = this.gotoRight(row, cell, posX);
-      if (pos)
-        return pos;
-      let firstFocusableCell = null, dataLengthIncludingAddNew = this.getDataLengthIncludingAddNew();
-      for (row === dataLengthIncludingAddNew - 1 && row--; ++row < dataLengthIncludingAddNew; )
-        if (firstFocusableCell = this.findFirstFocusableCell(row), firstFocusableCell !== null)
-          return {
+      let pos = this.gotoRight(row, cell, posY, posX);
+      if (!pos) {
+        let ff;
+        for (; !pos && ++posY < this.getDataLength() + (this._options.enableAddRow ? 1 : 0); )
+          ff = this.findFirstFocusableCell(posY), ff.cell !== null && (row = (_b = (_a = this.getParentRowSpanByCell(posY, ff.cell)) == null ? void 0 : _a.start) != null ? _b : posY, pos = {
             row,
-            cell: firstFocusableCell,
-            posX: firstFocusableCell
-          };
-      return null;
-    }
-    gotoPrev(row, cell, posX) {
-      if (!Utils.isDefined(row) && !Utils.isDefined(cell) && (row = this.getDataLengthIncludingAddNew() - 1, cell = posX = this.columns.length - 1, this.canCellBeActive(row, cell)))
-        return {
-          row,
-          cell,
-          posX: cell
-        };
-      let pos, lastSelectableCell;
-      for (; !pos && (pos = this.gotoLeft(row, cell, posX), !pos); ) {
-        if (--row < 0)
-          return null;
-        cell = 0, lastSelectableCell = this.findLastFocusableCell(row), lastSelectableCell !== null && (pos = {
-          row,
-          cell: lastSelectableCell,
-          posX: lastSelectableCell
-        });
+            cell: ff.cell,
+            posX: ff.cell,
+            posY
+          });
       }
       return pos;
     }
-    gotoRowStart(row, _cell, _posX) {
-      let newCell = this.findFirstFocusableCell(row);
-      return newCell === null ? null : {
-        row,
-        cell: newCell,
-        posX: newCell
+    gotoPrev(row, cell, posY, posX) {
+      var _a, _b;
+      if (!Utils.isDefined(row) && !Utils.isDefined(cell) && (row = posY = this.getDataLengthIncludingAddNew() - 1, cell = posX = this.columns.length - 1, this.canCellBeActive(row, cell)))
+        return {
+          row,
+          cell,
+          posX: cell,
+          posY
+        };
+      let pos = this.gotoLeft(row, cell, posY, posX);
+      if (!pos) {
+        let lf;
+        for (; !pos && --posY >= 0; )
+          lf = this.findLastFocusableCell(posY), lf.cell > -1 && (row = (_b = (_a = this.getParentRowSpanByCell(posY, lf.cell)) == null ? void 0 : _a.start) != null ? _b : posY, pos = {
+            row,
+            cell: lf.cell,
+            posX: lf.cell,
+            posY
+          });
+      }
+      return pos;
+    }
+    gotoRowStart(row, _cell, _posY, _posX) {
+      let ff = this.findFirstFocusableCell(row);
+      return ff.cell === null ? null : {
+        row: ff.row,
+        cell: ff.cell,
+        posX: ff.cell,
+        posY: row
       };
     }
-    gotoRowEnd(row, _cell, _posX) {
-      let newCell = this.findLastFocusableCell(row);
-      return newCell === null ? null : {
-        row,
-        cell: newCell,
-        posX: newCell
+    gotoRowEnd(row, _cell, _posY, _posX) {
+      let lf = this.findLastFocusableCell(row);
+      return lf.cell === -1 ? null : {
+        row: lf.row,
+        cell: lf.cell,
+        posX: lf.cell,
+        posY: row
       };
     }
     /** Switches the active cell one cell right skipping unselectable cells. Unline navigateNext, navigateRight stops at the last cell of the row. Returns a boolean saying whether it was able to complete or not. */
@@ -2904,6 +3141,14 @@
     navigateRowEnd() {
       return this.navigate("end");
     }
+    /** Navigate to coordinate 0,0 (top left home) */
+    navigateTopStart() {
+      return this.navigateToRow(0), this.navigate("home");
+    }
+    /** Navigate to bottom row end (bottom right end) */
+    navigateBottomEnd() {
+      return this.navigateBottom(), this.navigate("end");
+    }
     /**
      * @param {string} dir Navigation direction.
      * @return {boolean} Whether navigation resulted in a change of active cell.
@@ -2914,7 +3159,7 @@
         return !1;
       if (!((_a = this.getEditorLock()) != null && _a.commitCurrentEdit()))
         return !0;
-      this.setFocus();
+      this.setFocus(), this.unsetActiveCell();
       let tabbingDirections = {
         up: -1,
         down: 1,
@@ -2935,12 +3180,15 @@
         next: this.gotoNext,
         home: this.gotoRowStart,
         end: this.gotoRowEnd
-      }[dir].call(this, this.activeRow, this.activeCell, this.activePosX);
+      }[dir].call(this, this.activeRow, this.activeCell, this.activePosY, this.activePosX);
+      return this.navigateToPos(pos);
+    }
+    navigateToPos(pos) {
       if (pos) {
         if (this.hasFrozenRows && this._options.frozenBottom && pos.row === this.getDataLength())
           return;
         let isAddNewRow = pos.row === this.getDataLength();
-        return (!this._options.frozenBottom && pos.row >= this.actualFrozenRow || this._options.frozenBottom && pos.row < this.actualFrozenRow) && this.scrollCellIntoView(pos.row, pos.cell, !isAddNewRow && this._options.emulatePagingWhenScrolling), this.setActiveCellInternal(this.getCellNode(pos.row, pos.cell)), this.activePosX = pos.posX, !0;
+        return (!this._options.frozenBottom && pos.row >= this.actualFrozenRow || this._options.frozenBottom && pos.row < this.actualFrozenRow) && this.scrollCellIntoView(pos.row, pos.cell, !isAddNewRow && this._options.emulatePagingWhenScrolling), this.setActiveCellInternal(this.getCellNode(pos.row, pos.cell)), this.activePosX = pos.posX, this.activePosY = pos.posY, !0;
       } else
         return this.setActiveCellInternal(this.getCellNode(this.activeRow, this.activeCell)), !1;
     }
@@ -2987,9 +3235,9 @@
      */
     canCellBeActive(row, cell) {
       var _a, _b, _c, _d;
-      if (!this._options.enableCellNavigation || row >= this.getDataLengthIncludingAddNew() || row < 0 || cell >= this.columns.length || cell < 0 || !this.columns[cell] || this.columns[cell].hidden)
+      if (!this._options.enableCellNavigation || row >= this.getDataLengthIncludingAddNew() || row < 0 || cell >= this.columns.length || cell < 0 || !this.columns[cell] || this.columns[cell].hidden || ((_b = (_a = this.getParentRowSpanByCell(row, cell)) == null ? void 0 : _a.start) != null ? _b : row) !== row)
         return !1;
-      let rowMetadata = (_b = (_a = this.data) == null ? void 0 : _a.getItemMetadata) == null ? void 0 : _b.call(_a, row);
+      let rowMetadata = this.getItemMetadaWhenExists(row);
       if ((rowMetadata == null ? void 0 : rowMetadata.focusable) !== void 0)
         return !!rowMetadata.focusable;
       let columnMetadata = rowMetadata == null ? void 0 : rowMetadata.columns;
@@ -3001,10 +3249,9 @@
      * @param {number} col A column index.
      */
     canCellBeSelected(row, cell) {
-      var _a, _b;
       if (row >= this.getDataLength() || row < 0 || cell >= this.columns.length || cell < 0 || !this.columns[cell] || this.columns[cell].hidden)
         return !1;
-      let rowMetadata = (_b = (_a = this.data) == null ? void 0 : _a.getItemMetadata) == null ? void 0 : _b.call(_a, row);
+      let rowMetadata = this.getItemMetadaWhenExists(row);
       if ((rowMetadata == null ? void 0 : rowMetadata.selectable) !== void 0)
         return !!rowMetadata.selectable;
       let columnMetadata = (rowMetadata == null ? void 0 : rowMetadata.columns) && (rowMetadata.columns[this.columns[cell].id] || rowMetadata.columns[cell]);
@@ -3116,7 +3363,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.14.3
+ * SlickGrid v5.15.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

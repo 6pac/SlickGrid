@@ -9,6 +9,7 @@
     constructor(options, externalPubSub) {
       this.externalPubSub = externalPubSub;
       __publicField(this, "defaults", {
+        globalItemMetadataProvider: null,
         groupItemMetadataProvider: null,
         inlineFilters: !1,
         useCSPSafeFilter: !1
@@ -452,9 +453,10 @@
       } else item != null && item.__groupTotals && !item.initialized && this.calculateTotals(item);
       return item;
     }
-    getItemMetadata(i) {
-      let item = this.rows[i];
-      return item === void 0 ? null : item.__group ? this._options.groupItemMetadataProvider.getGroupRowMetadata(item) : item.__groupTotals ? this._options.groupItemMetadataProvider.getTotalsRowMetadata(item) : null;
+    getItemMetadata(row) {
+      var _a2, _b2, _c;
+      let item = this.rows[row];
+      return item === void 0 ? null : (_a2 = this._options.globalItemMetadataProvider) != null && _a2.getRowMetadata ? this._options.globalItemMetadataProvider.getRowMetadata(item, row) : item.__group && ((_b2 = this._options.groupItemMetadataProvider) != null && _b2.getGroupRowMetadata) ? this._options.groupItemMetadataProvider.getGroupRowMetadata(item, row) : item.__groupTotals && ((_c = this._options.groupItemMetadataProvider) != null && _c.getTotalsRowMetadata) ? this._options.groupItemMetadataProvider.getTotalsRowMetadata(item, row) : null;
     }
     expandCollapseAllGroups(level, collapse) {
       if (Utils.isDefined(level))

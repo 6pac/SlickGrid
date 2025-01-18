@@ -1,5 +1,5 @@
 import type SortableInstance from 'sortablejs';
-import type { AutoSize, CellViewportRange, Column, ColumnSort, CssStyleHash, CustomDataView, DOMEvent, DragPosition, DragRowMove, Editor, EditorConstructor, EditController, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption as BaseGridOption, InteractionBase, MenuCommandItemCallbackArgs, MultiColumnSort, OnActivateChangedOptionsEventArgs, OnActiveCellChangedEventArgs, OnAddNewRowEventArgs, OnAutosizeColumnsEventArgs, OnBeforeUpdateColumnsEventArgs, OnBeforeAppendCellEventArgs, OnBeforeCellEditorDestroyEventArgs, OnBeforeColumnsResizeEventArgs, OnBeforeEditCellEventArgs, OnBeforeHeaderCellDestroyEventArgs, OnBeforeHeaderRowCellDestroyEventArgs, OnBeforeFooterRowCellDestroyEventArgs, OnBeforeSetColumnsEventArgs, OnCellChangeEventArgs, OnCellCssStylesChangedEventArgs, OnClickEventArgs, OnColumnsDragEventArgs, OnColumnsReorderedEventArgs, OnColumnsResizedEventArgs, OnColumnsResizeDblClickEventArgs, OnCompositeEditorChangeEventArgs, OnDblClickEventArgs, OnFooterContextMenuEventArgs, OnFooterRowCellRenderedEventArgs, OnHeaderCellRenderedEventArgs, OnFooterClickEventArgs, OnHeaderClickEventArgs, OnHeaderContextMenuEventArgs, OnHeaderMouseEventArgs, OnHeaderRowCellRenderedEventArgs, OnKeyDownEventArgs, OnPreHeaderContextMenuEventArgs, OnPreHeaderClickEventArgs, OnRenderedEventArgs, OnSelectedRowsChangedEventArgs, OnSetOptionsEventArgs, OnScrollEventArgs, OnValidationErrorEventArgs, PagingInfo, RowInfo, SelectionModel, SingleColumnSort, SlickPlugin } from './models/index.js';
+import type { AutoSize, CellPosition, CellViewportRange, Column, ColumnMetadata, ColumnSort, CssStyleHash, CustomDataView, DOMEvent, DragPosition, DragRowMove, Editor, EditorConstructor, EditController, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption as BaseGridOption, InteractionBase, ItemMetadata, MenuCommandItemCallbackArgs, MultiColumnSort, OnActivateChangedOptionsEventArgs, OnActiveCellChangedEventArgs, OnAddNewRowEventArgs, OnAutosizeColumnsEventArgs, OnBeforeUpdateColumnsEventArgs, OnBeforeAppendCellEventArgs, OnBeforeCellEditorDestroyEventArgs, OnBeforeColumnsResizeEventArgs, OnBeforeEditCellEventArgs, OnBeforeHeaderCellDestroyEventArgs, OnBeforeHeaderRowCellDestroyEventArgs, OnBeforeFooterRowCellDestroyEventArgs, OnBeforeSetColumnsEventArgs, OnCellChangeEventArgs, OnCellCssStylesChangedEventArgs, OnClickEventArgs, OnColumnsDragEventArgs, OnColumnsReorderedEventArgs, OnColumnsResizedEventArgs, OnColumnsResizeDblClickEventArgs, OnCompositeEditorChangeEventArgs, OnDblClickEventArgs, OnFooterContextMenuEventArgs, OnFooterRowCellRenderedEventArgs, OnHeaderCellRenderedEventArgs, OnFooterClickEventArgs, OnHeaderClickEventArgs, OnHeaderContextMenuEventArgs, OnHeaderMouseEventArgs, OnHeaderRowCellRenderedEventArgs, OnKeyDownEventArgs, OnPreHeaderContextMenuEventArgs, OnPreHeaderClickEventArgs, OnRenderedEventArgs, OnSelectedRowsChangedEventArgs, OnSetOptionsEventArgs, OnScrollEventArgs, OnValidationErrorEventArgs, PagingInfo, RowInfo, SelectionModel, SingleColumnSort, SlickPlugin } from './models/index.js';
 import { type BasePubSub, BindingEventService as BindingEventService_, type SlickEditorLock, SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_ } from './slick.core.js';
 /**
  * @license
@@ -10,7 +10,7 @@ import { type BasePubSub, BindingEventService as BindingEventService_, type Slic
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.14.3
+ * SlickGrid v5.15.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -189,13 +189,20 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected _activeCanvasNode: HTMLDivElement;
     protected _activeViewportNode: HTMLDivElement;
     protected activePosX: number;
+    protected activePosY: number;
     protected activeRow: number;
     protected activeCell: number;
     protected activeCellNode: HTMLDivElement | null;
     protected currentEditor: Editor | null;
     protected serializedEditorValue: any;
     protected editController?: EditController;
-    protected rowsCache: Array<RowCaching>;
+    protected _prevDataLength: number;
+    protected _prevInvalidatedRowsCount: number;
+    protected _rowSpanIsCached: boolean;
+    protected _colsWithRowSpanCache: {
+        [colIdx: number]: Set<string>;
+    };
+    protected rowsCache: Record<number, RowCaching>;
     protected renderedRows: number;
     protected numVisibleRows: number;
     protected prevScrollTop: number;
@@ -220,7 +227,6 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
         dequeue: () => void;
     };
     protected h_editorLoader?: number;
-    protected h_render: null;
     protected h_postrender?: number;
     protected h_postrenderCleanup?: number;
     protected postProcessedRows: any;
@@ -433,6 +439,8 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected setupColumnResize(): void;
     protected getVBoxDelta(el: HTMLElement): number;
     protected setFrozenOptions(): void;
+    /** add/remove frozen class to left headers/footer when defined */
+    protected setPaneFrozenClasses(): void;
     protected setPaneVisibility(): void;
     protected setOverflow(): void;
     protected setScroller(): void;
@@ -563,6 +571,12 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * @param {Number} index Item row index.
      */
     getDataItem(i: number): TData;
+    /**
+     * Returns item metadata by a row index when it exists
+     * @param {Number} row
+     * @returns {ItemMetadata | null}
+     */
+    getItemMetadaWhenExists(row: number): ItemMetadata | null;
     /** Get Top Panel DOM element */
     getTopPanel(): HTMLDivElement;
     /** Get Top Panels (left/right) DOM element */
@@ -607,7 +621,9 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     setTopHeaderPanelVisibility(visible?: boolean): void;
     /** Get Grid Canvas Node DOM Element */
     getContainerNode(): HTMLElement;
+    protected getRowHeight(): number;
     protected getRowTop(row: number): number;
+    protected getRowBottom(row: number): number;
     protected getRowFromPosition(y: number): number;
     /**
      * Scroll to an Y position in the grid
@@ -619,12 +635,46 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected getEditor(row: number, cell: number): Editor | EditorConstructor | null | undefined;
     protected getDataItemValueForColumn(item: TData, columnDef: C): TData | TData[keyof TData];
     protected appendRowHtml(divArrayL: HTMLElement[], divArrayR: HTMLElement[], row: number, range: CellViewportRange, dataLength: number): void;
-    protected appendCellHtml(divRow: HTMLElement, row: number, cell: number, colspan: number, item: TData): void;
+    protected appendCellHtml(divRow: HTMLElement, row: number, cell: number, colspan: number, rowspan: number, columnMetadata: ColumnMetadata | null, item: TData): void;
     protected cleanupRows(rangeToKeep: {
         bottom: number;
         top: number;
     }): void;
-    /** Invalidate all grid rows and re-render the grid rows */
+    /**
+     * from a row number, return any column indexes that intersected with the grid row including the cell
+     * @param {Number} row - grid row index
+     */
+    getRowSpanColumnIntersects(row: number): number[];
+    /**
+     * from a row number, verify if the rowspan is intersecting and return it when found,
+     * otherwise return `null` when nothing is found or when the rowspan feature is disabled.
+     * @param {Number} row - grid row index
+     */
+    getRowSpanIntersect(row: number): number | null;
+    protected getRowSpanIntersection<R>(row: number, outputType?: 'columns' | 'start'): R;
+    /**
+     * Returns the parent rowspan details when child cell are spanned from a rowspan or `null` when it's not spanned.
+     * By default it will exclude the parent cell that holds the rowspan, and return `null`, that initiated the rowspan unless the 3rd argument is disabled.
+     * The exclusion is helpful to find out when we're dealing with a child cell of a rowspan
+     * @param {Number} row - grid row index
+     * @param {Number} cell - grid cell/column index
+     * @param {Boolean} [excludeParentRow] - should we exclude the parent who initiated the rowspan in the search (defaults to true)?
+     */
+    getParentRowSpanByCell(row: number, cell: number, excludeParentRow?: boolean): {
+        start: number;
+        end: number;
+        range: string;
+    } | null;
+    /**
+     * Remap all the rowspan metadata by looping through all dataset rows and keep a cache of rowspan by column indexes
+     * For example:
+     *  1- if 2nd row of the 1st column has a metadata.rowspan of 3 then the cache will be: `{ 0: '1:4' }`
+     *  2- if 2nd row if the 1st column has a metadata.rowspan of 3 AND a colspan of 2 then the cache will be: `{ 0: '1:4', 1: '1:4' }`
+     */
+    protected remapAllColumnsRowSpan(): void;
+    protected remapRowSpanMetadataByRow(row: number): void;
+    protected remapRowSpanMetadata(row: number, cell: number, colspan: number, rowspan: number): void;
+    /** Invalidate all grid rows and re-render the visible grid rows */
     invalidate(): void;
     /** Invalidate all grid rows */
     invalidateAllRows(): void;
@@ -654,6 +704,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * @param {Number} row - grid row number
      */
     updateRow(row: number): void;
+    getCellHeight(row: number, rowspan: number): number;
     /**
      * Get the number of rows displayed in the viewport
      * Note that the row count is an approximation because it is a calculated value using this formula (viewport / rowHeight = rowCount),
@@ -695,12 +746,15 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected ensureCellNodesInRowsCache(row: number): void;
     protected cleanUpCells(range: CellViewportRange, row: number): void;
     protected cleanUpAndRenderCells(range: CellViewportRange): void;
+    protected createEmptyCachingRow(): RowCaching;
     protected renderRows(range: {
         top: number;
         bottom: number;
         leftPx: number;
         rightPx: number;
     }): void;
+    /** polyfill if the new Set.difference() added in ES2024 */
+    protected setDifference(a: Set<number>, b: Set<number>): Set<number>;
     protected startPostProcessing(): void;
     protected startPostProcessingCleanup(): void;
     protected invalidatePostProcessingResults(row: number): void;
@@ -855,8 +909,10 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
         bottom: number;
         right: number;
     } | null;
-    /**  Resets active cell. */
+    /** Resets active cell by making cell normal and other internal reset. */
     resetActiveCell(): void;
+    /** Clear active cell by making cell normal & removing "active" CSS class. */
+    unsetActiveCell(): void;
     /** @alias `setFocus` */
     focus(): void;
     protected setFocus(): void;
@@ -945,49 +1001,74 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     navigateTop(): void;
     /** Navigate to the bottom of the grid */
     navigateBottom(): void;
-    protected navigateToRow(row: number): boolean;
+    navigateToRow(row: number): boolean;
     protected getColspan(row: number, cell: number): number;
-    protected findFirstFocusableCell(row: number): number | null;
-    protected findLastFocusableCell(row: number): number | null;
-    protected gotoRight(row: number, cell: number, _posX?: number): {
+    protected getRowspan(row: number, cell: number): number;
+    protected findFocusableRow(row: number, cell: number, dir: 'up' | 'down'): number;
+    protected findFirstFocusableCell(row: number): {
+        cell: number;
+        row: number;
+    };
+    protected findLastFocusableCell(row: number): {
+        cell: number;
+        row: number;
+    };
+    /**
+     * From any row/cell indexes that might have colspan/rowspan, find its starting indexes
+     * For example, if we start at 0,0 and we have colspan/rowspan of 4 for both and our indexes is row:2,cell:3
+     * then our starting row/cell is 0,0. If a cell has no spanning at all then row/cell output is same as input
+     */
+    findSpanStartingCell(row: number, cell: number): {
+        cell: number;
+        row: number;
+    };
+    protected gotoRight(_row: number, cell: number, posY: number, _posX?: number): {
         row: number;
         cell: number;
         posX: number;
+        posY: number;
     } | null;
-    protected gotoLeft(row: number, cell: number, _posX?: number): {
+    protected gotoLeft(row: number, cell: number, posY: number, _posX?: number): {
         row: number;
         cell: number;
         posX: number;
+        posY: number;
     } | null;
-    protected gotoDown(row: number, cell: number, posX: number): {
+    protected gotoDown(row: number, cell: number, _posY: number, posX: number): {
         row: number;
         cell: number;
         posX: number;
+        posY: number;
     } | null;
-    protected gotoUp(row: number, cell: number, posX: number): {
+    protected gotoUp(row: number, cell: number, _posY: number, posX: number): {
         row: number;
         cell: number;
         posX: number;
+        posY: number;
     } | null;
-    protected gotoNext(row: number, cell: number, posX?: number): {
+    protected gotoNext(row: number, cell: number, posY: number, posX: number): {
         row: number;
         cell: number;
         posX: number;
+        posY: number;
     } | null;
-    protected gotoPrev(row: number, cell: number, posX?: number): {
+    protected gotoPrev(row: number, cell: number, posY: number, posX: number): {
         row: number;
         cell: number;
         posX: number;
+        posY: number;
     } | null;
-    protected gotoRowStart(row: number, _cell: number, _posX?: number): {
+    protected gotoRowStart(row: number, _cell: number, _posY: number, _posX: number): {
         row: number;
         cell: number;
         posX: number;
+        posY: number;
     } | null;
-    protected gotoRowEnd(row: number, _cell: number, _posX?: number): {
+    protected gotoRowEnd(row: number, _cell: number, _posY: number, _posX: number): {
         row: number;
         cell: number;
         posX: number;
+        posY: number;
     } | null;
     /** Switches the active cell one cell right skipping unselectable cells. Unline navigateNext, navigateRight stops at the last cell of the row. Returns a boolean saying whether it was able to complete or not. */
     navigateRight(): boolean | undefined;
@@ -1005,11 +1086,16 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     navigateRowStart(): boolean | undefined;
     /** Navigate to the end row in the grid */
     navigateRowEnd(): boolean | undefined;
+    /** Navigate to coordinate 0,0 (top left home) */
+    navigateTopStart(): boolean | undefined;
+    /** Navigate to bottom row end (bottom right end) */
+    navigateBottomEnd(): boolean | undefined;
     /**
      * @param {string} dir Navigation direction.
      * @return {boolean} Whether navigation resulted in a change of active cell.
      */
     protected navigate(dir: 'up' | 'down' | 'left' | 'right' | 'prev' | 'next' | 'home' | 'end'): boolean | undefined;
+    protected navigateToPos(pos: CellPosition | null): boolean | undefined;
     /**
      * Returns a DOM element containing a cell at a given row and cell.
      * @param row A row index.
