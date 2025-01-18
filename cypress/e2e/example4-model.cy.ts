@@ -51,10 +51,10 @@ describe('Example 4 - Model', () => {
 
   it('should navigate to bottom/top of the grid with command execution', () => {
     cy.get('[data-test="navigate-bottom"]').click();
-    cy.get('[data-row=49999]').should('contain', 'Task 49999');
+    cy.get('[data-row=49999] > .slick-cell.l1.r1').should('contain', 'Task 49999');
 
     cy.get('[data-test="navigate-top"]').click();
-    cy.get('[data-row=1]').should('contain', 'Task 1');
+    cy.get('[data-row=1] > .slick-cell.l1.r1').should('contain', 'Task 1');
   });
 
   it('Should display "Showing page 1 of 1000" text after changing Pagination to 50 items per page', () => {
