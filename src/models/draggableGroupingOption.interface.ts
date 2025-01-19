@@ -22,6 +22,9 @@ export interface DraggableGroupingOption {
   /** Defaults to False, should we show the Sorting icons on each group by element? */
   hideGroupSortIcons?: boolean;
 
+  /** optionally add an initial set of columns to group by */
+  initialGroupBy?: Array<string | GroupingGetterFunction>;
+
   /** an extra CSS class to add to the sort ascending icon (default undefined), if sortAscIconCssClass is undefined then slick-groupby-sort-asc-icon class will be added */
   sortAscIconCssClass?: string;
 

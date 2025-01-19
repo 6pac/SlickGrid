@@ -54,6 +54,7 @@ export class SlickDraggableGrouping {
   protected _droppableInstance?: SortableInstance;
   protected _dropzonePlaceholder!: HTMLDivElement;
   protected _groupToggler?: HTMLDivElement;
+  protected _isInitialized = false;
   protected _options: DraggableGroupingOption;
   protected _defaults: DraggableGroupingOption = {
     dropPlaceHolderText: 'Drop a column header here to group by the column',
@@ -91,6 +92,11 @@ export class SlickDraggableGrouping {
     this._gridColumns = this._grid.getColumns();
     this._dataView = this._grid.getData();
     this._dropzoneElm = this._grid.getTopHeaderPanel() || this._grid.getPreHeaderPanel();
+    if (!this._dropzoneElm) {
+      throw new Error(
+        '[Slickgrid] Draggable Grouping requires the pre-header to be created and shown for the plugin to work correctly (use `createPreHeaderPanel` and `showPreHeaderPanel`).'
+      );
+    }
     this._dropzoneElm.classList.add('slick-dropzone');
 
     const dropPlaceHolderText = this._options.dropPlaceHolderText || 'Drop a column header here to group by the column';
@@ -242,6 +248,12 @@ export class SlickDraggableGrouping {
 
     this._sortableLeftInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-left`) as HTMLDivElement, sortableOptions);
     this._sortableRightInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-right`) as HTMLDivElement, sortableOptions);
+
+    // user can optionally provide initial groupBy columns
+    if (this._options.initialGroupBy && !this._isInitialized) {
+      queueMicrotask(() => this.setDroppedGroups(this._options.initialGroupBy!));
+    }
+    this._isInitialized = true;
 
     return {
       sortableLeftInstance: this._sortableLeftInstance,

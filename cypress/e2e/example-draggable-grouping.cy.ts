@@ -1,4 +1,4 @@
-describe('Example - Draggable Grouping', { retries: 1 }, () => {
+describe('Example - Draggable Grouping', { retries: 0 }, () => {
   const GRID_ROW_HEIGHT = 25;
   const fullTitles = ['#', 'Title', 'Duration', 'Start', 'Finish', 'Cost', 'Effort-Driven'];
   for (let i = 0; i < 30; i++) {
@@ -21,6 +21,21 @@ describe('Example - Draggable Grouping', { retries: 1 }, () => {
       .find('.slick-header-columns')
       .children()
       .each(($child, index) => expect($child.text()).to.eq(fullTitles[index]));
+  });
+
+  it('should initially be grouped by "Duration" when loading the grid', () => {
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(0) .slick-group-title`).should('contain', 'Duration:  0');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 1}px;"] > .slick-cell:nth(2)`).should('contain', '0');
+  });
+
+  it('should clear all groups with "Clear all Grouping" and no longer expect any grouping', () => {
+    cy.get('[data-test="clear-grouping-btn"]').click();
+    cy.get('.slick-group-toggle-all').should('be.hidden');
+
+    cy.get('#myGrid')
+      .find('.slick-placeholder')
+      .should('be.visible')
+      .should('have.text', 'Drop a column header here to group by the column :)');
   });
 
   it('should have 6x draggable icons', () => {
