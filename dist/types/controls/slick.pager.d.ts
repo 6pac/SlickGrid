@@ -1,7 +1,7 @@
-import type { PagingInfo } from '../models/index';
-import { BindingEventService as BindingEventService_ } from '../slick.core';
-import type { SlickDataView } from '../slick.dataview';
-import type { SlickGrid } from '../slick.grid';
+import type { PagingInfo } from '../models/index.js';
+import { BindingEventService as BindingEventService_ } from '../slick.core.js';
+import type { SlickDataView } from '../slick.dataview.js';
+import type { SlickGrid } from '../slick.grid.js';
 export interface GridPagerOption {
     showAllText: string;
     showPageText: string;

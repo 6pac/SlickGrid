@@ -1,6 +1,6 @@
-import type { SlickDataView } from '../slick.dataview';
-import type { SlickGrid } from '../slick.grid';
-import type { Column, ElementPosition, GridOption, PositionMethod } from './index';
+import type { SlickDataView } from '../slick.dataview.js';
+import type { SlickGrid } from '../slick.grid.js';
+import type { Column, ElementPosition, GridOption, PositionMethod } from './index.js';
 export interface EditorArguments<TData = any, C extends Column<TData> = Column<TData>, O extends GridOption<C> = GridOption<C>> {
     /** Column Definition */
     column: Column;

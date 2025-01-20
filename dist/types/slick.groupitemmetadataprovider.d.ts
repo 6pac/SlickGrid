@@ -1,6 +1,6 @@
-import { type SlickEventData } from './slick.core';
-import type { Column, GroupItemMetadataProviderOption, GroupingFormatterItem, ItemMetadata, SlickPlugin } from './models/index';
-import type { SlickGrid } from './slick.grid';
+import { type SlickEventData } from './slick.core.js';
+import type { Column, GroupItemMetadataProviderOption, GroupingFormatterItem, ItemMetadata, SlickPlugin } from './models/index.js';
+import type { SlickGrid } from './slick.grid.js';
 /**
  * Provides item metadata for group (Slick.Group) and totals (Slick.Totals) rows produced by the DataView.
  * This metadata overrides the default behavior and formatting of those rows so that they appear and function
@@ -36,9 +36,9 @@ export declare class SlickGroupItemMetadataProvider implements SlickPlugin {
     }): void;
     protected handleGridKeyDown(e: SlickEventData): void;
     protected handleDataViewExpandOrCollapse(item: any): void;
-    getGroupRowMetadata(item: GroupingFormatterItem): ItemMetadata;
+    getGroupRowMetadata(item: GroupingFormatterItem, _row?: number, _cell?: number): ItemMetadata;
     getTotalsRowMetadata(item: {
         group: GroupingFormatterItem;
-    }): ItemMetadata | null;
+    }, _row?: number, _cell?: number): ItemMetadata | null;
 }
 //# sourceMappingURL=slick.groupitemmetadataprovider.d.ts.map

@@ -1,5 +1,5 @@
-import type { Column, GridOption } from './index';
-import type { SlickGrid } from '../slick.grid';
+import type { Column, GridOption } from './index.js';
+import type { SlickGrid } from '../slick.grid.js';
 
 export interface ColumnPickerOption {
   /** Defaults to "Columns" which is the title that shows up over the columns */

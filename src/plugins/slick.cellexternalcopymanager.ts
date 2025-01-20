@@ -1,6 +1,6 @@
-import type { Column, CssStyleHash, ExcelCopyBufferOption, ExternalCopyClipCommand, SlickPlugin } from '../models/index';
-import type { SlickGrid } from '../slick.grid';
-import { SlickEvent as SlickEvent_, type SlickEventData, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core';
+import type { Column, CssStyleHash, ExcelCopyBufferOption, ExternalCopyClipCommand, SlickPlugin } from '../models/index.js';
+import type { SlickGrid } from '../slick.grid.js';
+import { SlickEvent as SlickEvent_, type SlickEventData, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;

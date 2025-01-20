@@ -1,6 +1,6 @@
-import { BindingEventService as BindingEventService_ } from '../slick.core';
-import type { GridOption, GridSize, ResizerOption } from '../models/index';
-import type { SlickGrid } from '../slick.grid';
+import { BindingEventService as BindingEventService_ } from '../slick.core.js';
+import type { GridOption, GridSize, ResizerOption } from '../models/index.js';
+import type { SlickGrid } from '../slick.grid.js';
 /***
  * A Resizer plugin that can be used to auto-resize a grid and/or resize with fixed dimensions.
  * When fixed height is defined, it will auto-resize only the width and vice versa with the width defined.
@@ -50,11 +50,11 @@ import type { SlickGrid } from '../slick.grid';
  */
 export declare class SlickResizer {
     pluginName: "Resizer";
-    onGridAfterResize: import("../slick.core").SlickEvent<{
+    onGridAfterResize: import("../slick.core.js").SlickEvent<{
         grid: SlickGrid;
         dimensions: GridSize;
     }>;
-    onGridBeforeResize: import("../slick.core").SlickEvent<{
+    onGridBeforeResize: import("../slick.core.js").SlickEvent<{
         grid: SlickGrid;
     }>;
     protected _bindingEventService: BindingEventService_;

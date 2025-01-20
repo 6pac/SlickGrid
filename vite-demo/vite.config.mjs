@@ -7,11 +7,4 @@ export default defineConfig({
     minify: true,
     sourcemap: false,
   },
-  css: {
-    preprocessorOptions: {
-      scss: {
-        api: 'modern-compiler'
-      }
-    }
-  }
 });

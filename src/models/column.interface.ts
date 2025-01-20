@@ -11,8 +11,8 @@ import type {
   GroupTotalsFormatter,
   Grouping,
   HeaderButtonsOrMenu
-} from './index';
-import type { SlickGrid } from '../slick.grid';
+} from './index.js';
+import type { SlickGrid } from '../slick.grid.js';
 
 type PathsToStringProps<T> = T extends string | number | boolean | Date ? [] : {
   [K in Extract<keyof T, string>]: [K, ...PathsToStringProps<T[K]>]
@@ -166,6 +166,9 @@ export interface Column<TData = any> {
 
   /** Is the column resizable, can we make it wider/thinner? A resize cursor will show on the right side of the column when enabled. */
   resizable?: boolean;
+
+  /** Row span in cell count or use `*` to span across the entire row */
+  rowspan?: number;
 
   /** Is the column selectable? Goes with grid option "enableCellNavigation: true". */
   selectable?: boolean;

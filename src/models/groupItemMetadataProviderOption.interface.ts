@@ -1,4 +1,8 @@
-import type { Formatter } from './index';
+import type { Formatter } from './index.js';
+
+export interface ItemMetadataProvider {
+  getRowMetadata(item: any, row?: number): any;
+}
 
 export interface GroupItemMetadataProviderOption {
   /** Whether or not we want to use group select checkbox. */

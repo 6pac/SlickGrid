@@ -1,7 +1,7 @@
 import { copyFileSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname as pDirname, join as pJoin, resolve as pResolve } from 'node:path';
+import readline from 'node:readline';
 import { fileURLToPath } from 'node:url';
-import readline from 'readline';
 import { rimrafSync } from 'rimraf';
 import semver from 'semver';
 import c from 'tinyrainbow';
@@ -169,6 +169,9 @@ const pkg = readJSONSync(pJoin(projectRootPath, 'package.json'));
           argv.dryRun
         );
       }
+
+      // 13. Git sync/push all changes
+      await gitPushToCurrentBranch('origin', { cwd, dryRun: argv.dryRun });
 
       // END
       console.log(`🏁 Done (in ${Math.floor(process.uptime())}s.)`);

@@ -1,6 +1,6 @@
-import type { Column, ExcelCopyBufferOption } from './index';
-import type { SlickCellExternalCopyManager } from '../plugins/slick.cellexternalcopymanager';
-import type { SlickRange } from '../slick.core';
+import type { Column, ExcelCopyBufferOption } from './index.js';
+import type { SlickCellExternalCopyManager } from '../plugins/slick.cellexternalcopymanager.js';
+import type { SlickRange } from '../slick.core.js';
 export interface ExternalCopyClipCommand {
     activeCell: number;
     activeRow: number;

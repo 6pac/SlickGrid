@@ -1,6 +1,6 @@
-import { SlickEvent as SlickEvent_ } from '../slick.core';
-import type { Column, ColumnSort, SlickPlugin } from '../models/index';
-import type { SlickGrid } from '../slick.grid';
+import { SlickEvent as SlickEvent_ } from '../slick.core.js';
+import type { Column, ColumnSort, SlickPlugin } from '../models/index.js';
+import type { SlickGrid } from '../slick.grid.js';
 export interface SlickStateOption {
     /** optional grid state clientId */
     cid: string;

@@ -7,6 +7,7 @@ import type {
   Grouping,
   GroupingFormatterItem,
   ItemMetadata,
+  ItemMetadataProvider,
   OnGroupCollapsedEventArgs,
   OnGroupExpandedEventArgs,
   OnRowCountChangedEventArgs,
@@ -16,7 +17,7 @@ import type {
   OnSetItemsCalledEventArgs,
   PagingInfo,
   SlickGridModel,
-} from './models/index';
+} from './models/index.js';
 import {
   type BasePubSub,
   SlickEvent as SlickEvent_,
@@ -25,8 +26,8 @@ import {
   SlickGroupTotals as SlickGroupTotals_,
   Utils as Utils_,
   type SlickNonDataItem,
-} from './slick.core';
-import { SlickGroupItemMetadataProvider as SlickGroupItemMetadataProvider_ } from './slick.groupitemmetadataprovider';
+} from './slick.core.js';
+import { SlickGroupItemMetadataProvider as SlickGroupItemMetadataProvider_ } from './slick.groupitemmetadataprovider.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
@@ -37,6 +38,9 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 const SlickGroupItemMetadataProvider = IIFE_ONLY ? Slick.Data?.GroupItemMetadataProvider ?? {} : SlickGroupItemMetadataProvider_;
 
 export interface DataViewOption {
+  /** global override for all rows */
+  globalItemMetadataProvider: ItemMetadataProvider | null;
+
   /** Optionally provide a GroupItemMetadataProvider in order to use Grouping/DraggableGrouping features */
   groupItemMetadataProvider: SlickGroupItemMetadataProvider_ | null;
 
@@ -63,6 +67,7 @@ export type GroupGetterFn = (val: any) => string | number;
   */
 export class SlickDataView<TData extends SlickDataItem = any> implements CustomDataView {
   protected defaults: DataViewOption = {
+    globalItemMetadataProvider: null,
     groupItemMetadataProvider: null,
     inlineFilters: false,
     useCSPSafeFilter: false,
@@ -775,20 +780,25 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     return item;
   }
 
-  getItemMetadata(i: number): ItemMetadata | null {
-    const item = this.rows[i];
+  getItemMetadata(row: number): ItemMetadata | null {
+    const item = this.rows[row];
     if (item === undefined) {
       return null;
     }
 
+    // global override for all regular rows
+    if (this._options.globalItemMetadataProvider?.getRowMetadata) {
+      return this._options.globalItemMetadataProvider.getRowMetadata(item, row);
+    }
+
     // overrides for grouping rows
-    if ((item as SlickGroup_).__group) {
-      return this._options.groupItemMetadataProvider!.getGroupRowMetadata(item as GroupingFormatterItem);
+    if ((item as SlickGroup_).__group && this._options.groupItemMetadataProvider?.getGroupRowMetadata) {
+      return this._options.groupItemMetadataProvider.getGroupRowMetadata(item as GroupingFormatterItem, row);
     }
 
     // overrides for totals rows
-    if ((item as SlickGroupTotals_).__groupTotals) {
-      return this._options.groupItemMetadataProvider!.getTotalsRowMetadata(item as { group: GroupingFormatterItem });
+    if ((item as SlickGroupTotals_).__groupTotals && this._options.groupItemMetadataProvider?.getTotalsRowMetadata) {
+      return this._options.groupItemMetadataProvider.getTotalsRowMetadata(item as { group: GroupingFormatterItem }, row);
     }
 
     return null;

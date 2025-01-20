@@ -12,7 +12,7 @@ import type {
   Handler,
   InferDOMType,
   MergeTypes
-} from './models/index';
+} from './models/index.js';
 
 export interface BasePubSub {
   publish<ArgType = any>(_eventName: string | any, _data?: ArgType): any;

@@ -1,6 +1,6 @@
-import type { Column, DOMEvent, HeaderButtonItem, HeaderButtonOnCommandArgs, HeaderButtonOption, OnHeaderCellRenderedEventArgs, SlickPlugin } from '../models/index';
-import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_, type SlickEventData } from '../slick.core';
-import type { SlickGrid } from '../slick.grid';
+import type { Column, DOMEvent, HeaderButtonItem, HeaderButtonOnCommandArgs, HeaderButtonOption, OnHeaderCellRenderedEventArgs, SlickPlugin } from '../models/index.js';
+import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_, type SlickEventData } from '../slick.core.js';
+import type { SlickGrid } from '../slick.grid.js';
 /***
    * A plugin to add custom buttons to column headers.
    *
@@ -70,7 +70,7 @@ export declare class SlickHeaderButtons implements SlickPlugin {
     pluginName: "HeaderButtons";
     onCommand: SlickEvent_<HeaderButtonOnCommandArgs>;
     protected _grid: SlickGrid;
-    protected _handler: import("../slick.core").SlickEventHandler;
+    protected _handler: import("../slick.core.js").SlickEventHandler;
     protected _bindingEventService: BindingEventService_;
     protected _defaults: HeaderButtonOption;
     protected _options: HeaderButtonOption;

@@ -1,5 +1,5 @@
-import type { Column, } from './index';
-import type { SlickGrid } from '../slick.grid';
+import type { Column, } from './index.js';
+import type { SlickGrid } from '../slick.grid.js';
 
 export interface GridMenuEventBaseCallbackArgs {
   /** list of all column definitions (visible & hidden) */

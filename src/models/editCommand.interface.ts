@@ -1,4 +1,4 @@
-import type { Editor } from './editor.interface';
+import type { Editor } from './editor.interface.js';
 
 export interface EditCommand {
   /** The row of the cell being edited */

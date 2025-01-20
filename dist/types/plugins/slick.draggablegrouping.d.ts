@@ -1,8 +1,8 @@
 import type SortableInstance from 'sortablejs';
-import type { Column, DraggableGroupingOption, Grouping, GroupingGetterFunction } from '../models/index';
-import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_, SlickEventHandler as SlickEventHandler_ } from '../slick.core';
-import type { SlickDataView } from '../slick.dataview';
-import type { SlickGrid } from '../slick.grid';
+import type { Column, DraggableGroupingOption, Grouping, GroupingGetterFunction } from '../models/index.js';
+import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_, SlickEventHandler as SlickEventHandler_ } from '../slick.core.js';
+import type { SlickDataView } from '../slick.dataview.js';
+import type { SlickGrid } from '../slick.grid.js';
 /**
  *
  * Draggable Grouping contributed by:  Muthukumar Selvarasu

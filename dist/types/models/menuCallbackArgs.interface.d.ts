@@ -1,5 +1,5 @@
-import type { Column } from './column.interface';
-import type { SlickGrid } from '../slick.grid';
+import type { Column } from './column.interface.js';
+import type { SlickGrid } from '../slick.grid.js';
 export interface MenuCallbackArgs<T = any> {
     /** Cell or column index */
     cell?: number;

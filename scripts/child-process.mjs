@@ -107,8 +107,8 @@ export function spawnStreaming(
   const options = {
     ...opts,
     nodeOptions: {
-      stdio: ['ignore', 'pipe'],
-    }
+      stdio: ['pipe', 'inherit', 'inherit'],
+    },
   };
 
   if (cmdDryRun) {

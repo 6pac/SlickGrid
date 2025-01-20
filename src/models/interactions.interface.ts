@@ -1,7 +1,7 @@
 // --
 // slick.interactions.ts
 
-import type { DragPosition } from './drag.interface';
+import type { DragPosition } from './drag.interface.js';
 
 export interface InteractionBase {
   destroy: () => void;

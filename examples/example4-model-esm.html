@@ -92,7 +92,15 @@
       <label style="width:200px;float:left">And title including:</label>
       <input type=text id="txtSearch" style="width:100px;">
       <br/><br/>
-      <button id="btnSelectRows">Select first 10 rows</button>
+      <div style="display: flex; gap: 4px;">
+        <button class="btn" id="btnSelectRows">Select first 10 rows</button>
+        <button class="btn" id="btnNavigateBottom" data-test="navigate-bottom" title="Navigate to Bottom of Grid">
+          <span class="sgi sgi-chevron-left rotate-270"> </span>
+        </button>
+        <button class="btn" id="btnNavigateTop" data-test="navigate-top" title="Navigate to Top of Grid">
+          <span class="sgi sgi-chevron-left rotate-90"> </span>
+        </button>
+      </div>
 
       <br/>
 
@@ -378,6 +386,13 @@ document.addEventListener("DOMContentLoaded", () => {
     });
     dataView.refresh();
   }
+
+  document.querySelector("#btnNavigateBottom").addEventListener('click', () => {
+    grid.navigateBottom();
+  });
+  document.querySelector("#btnNavigateTop").addEventListener('click', () => {
+    grid.navigateTop();
+  });
 
   document.querySelector("#btnSelectRows").addEventListener('click', () => {
     if (!SlickGlobalEditorLock.commitCurrentEdit()) {

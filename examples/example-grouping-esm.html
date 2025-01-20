@@ -333,7 +333,7 @@ function updateFilter() {
 document.addEventListener("DOMContentLoaded", function() {
   let groupItemMetadataProvider = new SlickGroupItemMetadataProvider();
   dataView = new SlickDataView({
-    groupItemMetadataProvider: groupItemMetadataProvider,
+    groupItemMetadataProvider,
     inlineFilters: true
   });
   grid = new SlickGrid("#myGrid", dataView, columns, options);
@@ -343,7 +343,6 @@ document.addEventListener("DOMContentLoaded", function() {
   grid.setSelectionModel(new SlickCellSelectionModel());
 
   let columnpicker = new SlickColumnPicker(columns, grid, options);
-
 
   grid.onSort.subscribe(function (e, args) {
     sortdir = args.sortAsc ? 1 : -1;

@@ -1,4 +1,4 @@
-import type { MenuCallbackArgs } from './menuCallbackArgs.interface';
+import type { MenuCallbackArgs } from './menuCallbackArgs.interface.js';
 export type MenuType = 'command' | 'option';
 export interface MenuItem<O = MenuCallbackArgs> {
     /** A CSS class to be added to the menu item container. */

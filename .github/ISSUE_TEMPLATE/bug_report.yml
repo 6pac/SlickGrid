@@ -22,6 +22,12 @@ body:
       placeholder: Reproduction
     validations:
       required: true
+  - type: textarea
+    id: expectation
+    attributes:
+      label: Expectation
+      description: Optionally tell us what you expect the library to behave.
+      placeholder: Expectation
   - type: dropdown
     id: framework-used
     attributes:

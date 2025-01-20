@@ -1,0 +1,20 @@
+.grid3 {
+  .cell-effort-driven {
+    justify-content: center;
+  }
+
+  .slick-group-title[level='0'] {
+    font-weight: bold;
+  }
+
+  .slick-group-title[level='1'] {
+    text-decoration: underline;
+  }
+
+  .slick-group-title[level='2'] {
+    font-style: italic;
+  }
+  .cell-selection {
+    display: flex;
+  }
+}

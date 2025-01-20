@@ -1,8 +1,8 @@
-import { SlickEvent as SlickEvent_, type SlickEventData, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_, Utils as Utils_, CellSelectionMode as CellSelectionMode_ } from '../slick.core';
-import { Draggable as Draggable_ } from '../slick.interactions';
-import { SlickCellRangeDecorator as SlickCellRangeDecorator_ } from './slick.cellrangedecorator';
-import type { CellRangeSelectorOption, DragPosition, DragRange, DragRowMove, GridOption, MouseOffsetViewport, OnScrollEventArgs, SlickPlugin } from '../models/index';
-import type { SlickGrid } from '../slick.grid';
+import { CellSelectionMode as CellSelectionMode_, SlickEvent as SlickEvent_, type SlickEventData, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core.js';
+import { Draggable as Draggable_ } from '../slick.interactions.js';
+import { SlickCellRangeDecorator as SlickCellRangeDecorator_ } from './slick.cellrangedecorator.js';
+import type { CellRangeSelectorOption, DragPosition, DragRange, DragRowMove, GridOption, MouseOffsetViewport, OnScrollEventArgs, SlickPlugin } from '../models/index.js';
+import type { SlickGrid } from '../slick.grid.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;

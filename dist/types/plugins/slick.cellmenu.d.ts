@@ -1,6 +1,6 @@
-import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_ } from '../slick.core';
-import type { CellMenuOption, Column, DOMMouseOrTouchEvent, GridOption, MenuCommandItem, MenuCommandItemCallbackArgs, MenuFromCellCallbackArgs, MenuOptionItem, MenuOptionItemCallbackArgs, MenuType, SlickPlugin } from '../models/index';
-import type { SlickGrid } from '../slick.grid';
+import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_ } from '../slick.core.js';
+import type { CellMenuOption, Column, DOMMouseOrTouchEvent, GridOption, MenuCommandItem, MenuCommandItemCallbackArgs, MenuFromCellCallbackArgs, MenuOptionItem, MenuOptionItemCallbackArgs, MenuType, SlickPlugin } from '../models/index.js';
+import type { SlickGrid } from '../slick.grid.js';
 /**
  * A plugin to add Menu on a Cell click (click on the cell that has the cellMenu object defined)
  * The "cellMenu" is defined in a Column Definition object

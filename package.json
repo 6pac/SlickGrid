@@ -1,32 +1,32 @@
 {
   "name": "slickgrid",
-  "version": "5.14.2",
+  "version": "5.15.0",
   "description": "A lightning fast JavaScript grid/spreadsheet",
   "main": "./dist/cjs/index.js",
   "types": "./dist/types/index.d.ts",
   "exports": {
     ".": {
-      "types": "./dist/types/index.d.ts",
-      "node": "./dist/cjs/index.js",
-      "import": "./dist/esm/index.js",
-      "require": "./dist/cjs/index.js",
-      "default": "./dist/esm/index.js"
+      "import": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/esm/index.mjs"
+      },
+      "require": {
+        "types": "./dist/types/index.d.ts",
+        "default": "./dist/cjs/index.js"
+      }
     },
     "./dist/styles/*": "./dist/styles/*",
     "./package.json": "./package.json"
   },
   "module": "./dist/esm/index.js",
-  "directories": {
-    "example": "examples",
-    "test": "tests"
-  },
   "repository": {
     "type": "git",
     "url": "git+https://github.com/6pac/SlickGrid.git"
   },
   "keywords": [
     "slickgrid",
-    "grid"
+    "grid",
+    "datagrid"
   ],
   "author": "Michael Leibman <michael.leibman@gmail.com>",
   "contributors": [
@@ -61,39 +61,39 @@
     "sass:copy": "copyfiles -f src/styles/*.scss dist/styles/sass"
   },
   "dependencies": {
-    "sortablejs": "^1.15.3"
+    "sortablejs": "^1.15.6"
   },
   "devDependencies": {
     "@4tw/cypress-drag-drop": "^2.2.5",
-    "@octokit/rest": "^21.0.2",
+    "@octokit/rest": "^21.1.0",
     "@parcel/watcher": "^2.5.0",
     "autoprefixer": "^10.4.20",
     "browser-sync": "^3.0.3",
     "conventional-changelog": "^6.0.0",
     "copyfiles": "^2.4.1",
     "cssnano": "^7.0.6",
-    "cypress": "^13.15.2",
+    "cypress": "^13.17.0",
     "cypress-real-events": "^1.13.0",
-    "dotenv": "^16.4.5",
-    "esbuild": "^0.24.0",
-    "eslint": "^9.15.0",
+    "dotenv": "^16.4.7",
+    "esbuild": "^0.24.2",
+    "eslint": "^9.18.0",
     "eslint-plugin-cypress": "^4.1.0",
-    "eslint-plugin-n": "^17.13.2",
+    "eslint-plugin-n": "^17.15.1",
     "git-url-parse": "^15.0.0",
-    "globals": "^15.12.0",
+    "globals": "^15.14.0",
     "http-server": "^14.1.1",
     "new-github-release-url": "^2.0.0",
-    "postcss": "^8.4.49",
+    "postcss": "^8.5.1",
     "postcss-cli": "^11.0.0",
     "rimraf": "^5.0.10",
-    "sass": "^1.81.0",
+    "sass": "^1.83.4",
     "semver": "^7.6.3",
     "strong-log-transformer": "^2.1.0",
-    "tinyexec": "^0.3.1",
+    "tinyexec": "^0.3.2",
     "tinyglobby": "^0.2.10",
-    "tinyrainbow": "^1.2.0",
-    "typescript": "^5.6.3",
-    "typescript-eslint": "^8.14.0",
+    "tinyrainbow": "^2.0.0",
+    "typescript": "^5.7.3",
+    "typescript-eslint": "^8.20.0",
     "yargs": "^17.7.2"
   },
   "workspaces": [

@@ -1,6 +1,6 @@
-import { BindingEventService as BindingEventService_, type SlickEventData } from '../slick.core';
-import type { Column, ColumnPickerOption, DOMMouseOrTouchEvent, GridOption, OnColumnsChangedArgs } from '../models/index';
-import type { SlickGrid } from '../slick.grid';
+import { BindingEventService as BindingEventService_, type SlickEventData } from '../slick.core.js';
+import type { Column, ColumnPickerOption, DOMMouseOrTouchEvent, GridOption, OnColumnsChangedArgs } from '../models/index.js';
+import type { SlickGrid } from '../slick.grid.js';
 /***
  * A control to add a Column Picker (right+click on any column header to reveal the column picker)
  * NOTE: this is the old 'complex' column pciker that hides columns by removing them from the grid
@@ -29,7 +29,7 @@ import type { SlickGrid } from '../slick.grid';
 export declare class SlickColumnPicker {
     protected columns: Column[];
     protected readonly grid: SlickGrid;
-    onColumnsChanged: import("../slick.core").SlickEvent<OnColumnsChangedArgs>;
+    onColumnsChanged: import("../slick.core.js").SlickEvent<OnColumnsChangedArgs>;
     protected _gridUid: string;
     protected _columnTitleElm: HTMLElement;
     protected _listElm: HTMLElement;
