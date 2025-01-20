@@ -1,5 +1,5 @@
 // @ts-ignore
-import type SortableInstance from 'sortablejs';
+import type { SortableEvent, SortableInstance, SortableOptions } from 'sortablejs';
 
 import type { Column, DOMMouseOrTouchEvent, DraggableGroupingOption, Grouping, GroupingGetterFunction } from '../models/index.js';
 import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core.js';
@@ -177,7 +177,8 @@ export class SlickDraggableGrouping {
       //   // NOTE: need to disable for now since it also blocks the column reordering
       //   return this.columnsGroupBy.some(c => c.id === target.getAttribute('data-id'));
       // },
-      onStart: () => {
+      onStart: (e: SortableEvent) => {
+        e.item.classList.add('slick-header-column-active');
         dropzoneElm.classList.add('slick-dropzone-hover');
         dropzoneElm.classList.add('slick-dropzone-placeholder-hover');
         const draggablePlaceholderElm = dropzoneElm.querySelector<HTMLDivElement>('.slick-placeholder');
@@ -191,7 +192,8 @@ export class SlickDraggableGrouping {
           groupTogglerElm.style.display = 'none';
         }
       },
-      onEnd: (e: Event & { item: any; clone: HTMLElement; }) => {
+      onEnd: (e: SortableEvent) => {
+        e.item.classList.remove('slick-header-column-active');
         const draggablePlaceholderElm = dropzoneElm.querySelector<HTMLDivElement>('.slick-placeholder');
         dropzoneElm.classList.remove('slick-dropzone-hover');
         draggablePlaceholderElm?.classList.remove('slick-dropzone-placeholder-hover');
@@ -244,7 +246,7 @@ export class SlickDraggableGrouping {
         e.stopPropagation();
         setupColumnResize.call(grid);
       }
-    };
+    } as SortableOptions;
 
     this._sortableLeftInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-left`) as HTMLDivElement, sortableOptions);
     this._sortableRightInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-right`) as HTMLDivElement, sortableOptions);
