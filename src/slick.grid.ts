@@ -1,5 +1,5 @@
 // @ts-ignore
-import type SortableInstance from 'sortablejs';
+import type { SortableEvent, SortableInstance, SortableOptions } from 'sortablejs';
 
 import type {
   AutoSize,
@@ -1900,9 +1900,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       onMove: (event: MouseEvent & { related: HTMLElement; }) => {
         return !event.related.classList.contains(this._options.unorderableColumnCssClass as string);
       },
-      onStart: (e: { item: any; originalEvent: MouseEvent; }) => {
-        canDragScroll = !this.hasFrozenColumns() ||
-          Utils.offset(e.item)!.left > Utils.offset(this._viewportScrollContainerX)!.left;
+      onStart: (e: SortableEvent) => {
+        e.item.classList.add('slick-header-column-active');
+        canDragScroll = !this.hasFrozenColumns() || Utils.offset(e.item)!.left > Utils.offset(this._viewportScrollContainerX)!.left;
 
         if (canDragScroll && e.originalEvent.pageX > this._container.clientWidth) {
           if (!(columnScrollTimer)) {
@@ -1917,7 +1917,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           columnScrollTimer = null;
         }
       },
-      onEnd: (e: MouseEvent & { item: any; originalEvent: MouseEvent; }) => {
+      onEnd: (e: SortableEvent) => {
+        e.item.classList.remove('slick-header-column-active');
         window.clearInterval(columnScrollTimer);
         columnScrollTimer = null;
 
@@ -1941,7 +1942,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           this.setFocus(); // refocus on active cell
         }
       }
-    };
+    } as SortableOptions;
 
     this.sortableSideLeftInstance = Sortable.create(this._headerL, sortableOptions);
     this.sortableSideRightInstance = Sortable.create(this._headerR, sortableOptions);
