@@ -362,7 +362,7 @@ export class SlickRange {
  */
 export class SlickDragExtendHandle {
   id: string;
-  cssClass: string = 'slick-drag-replace-handle';
+  cssClass = 'slick-drag-replace-handle';
 
   constructor(gridUid: string) {
     this.id = gridUid + "_drag_replace_handle";
@@ -374,13 +374,13 @@ export class SlickDragExtendHandle {
   }
 
   removeEl() {
-    let dragReplaceEl = document.getElementById(this.id);
+    const dragReplaceEl = document.getElementById(this.id);
     if (dragReplaceEl) { dragReplaceEl.remove(); }
     //console.log('DragReplaceEl.removeEl');
   }
 
   createEl(activeCellNode: any) {
-    let dragReplaceEl = document.createElement("div");
+    const dragReplaceEl = document.createElement("div");
     dragReplaceEl.classList.add("slick-drag-replace-handle");
     dragReplaceEl.setAttribute("id", this.id);
     activeCellNode.appendChild(dragReplaceEl);

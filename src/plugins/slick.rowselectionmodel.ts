@@ -1,5 +1,5 @@
 import {
-  CellSelectionMode as CellSelectionMode_,
+  // CellSelectionMode as CellSelectionMode_,
   keyCode as keyCode_,
   SlickEvent as SlickEvent_,
   SlickEventData as SlickEventData_,

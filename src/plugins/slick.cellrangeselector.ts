@@ -18,8 +18,8 @@ export class SlickCellRangeSelector implements SlickPlugin {
   // public API
   pluginName = 'CellRangeSelector' as const;
   onBeforeCellRangeSelected = new SlickEvent<{ row: number; cell: number; }>('onBeforeCellRangeSelected');
-  onCellRangeSelected = new SlickEvent<{ range: SlickRange_; selectionMode: string; }>('onCellRangeSelected');
-  onCellRangeSelecting = new SlickEvent<{ range: SlickRange_; selectionMode: string; }>('onCellRangeSelecting');
+  onCellRangeSelected = new SlickEvent<{ range: SlickRange_; selectionMode?: string; }>('onCellRangeSelected');
+  onCellRangeSelecting = new SlickEvent<{ range: SlickRange_; selectionMode?: string; }>('onCellRangeSelecting');
 
   // --
   // protected props
@@ -148,7 +148,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
       }
     }
 
-console.log('CellRangeSelector.handleDragInit() _activeViewport is ' + (this._activeViewport ? 'defined' : 'undefined'));
+    console.log('CellRangeSelector.handleDragInit() _activeViewport is ' + (this._activeViewport ? 'defined' : 'undefined'));
 
     // prevent the grid from cancelling drag'n'drop by default
     e.stopImmediatePropagation();
@@ -158,8 +158,8 @@ console.log('CellRangeSelector.handleDragInit() _activeViewport is ' + (this._ac
   protected handleDragStart(e: SlickEventData, dd: DragRowMove) {
     console.log('CellRangeSelector.handleDragStart() _activeViewport is ' + (this._activeViewport ? 'defined' : 'undefined'));
     if (!this._activeViewport) {
-      var x=1;
-     }
+      // const x = 1;
+    }
 
     const cell = this._grid.getCellFromEvent(e);
     if (cell && this.onBeforeCellRangeSelected.notify(cell).getReturnValue() !== false && this._grid.canCellBeSelected(cell.row, cell.cell)) {
@@ -219,9 +219,9 @@ console.log('CellRangeSelector.handleDragInit() _activeViewport is ' + (this._ac
 
   protected getMouseOffsetViewport(e: MouseEvent | TouchEvent, dd: DragRowMove): MouseOffsetViewport {
     console.log('Drag.getMouseOffsetViewport() _activeViewport is ' + (this._activeViewport ? 'defined' : 'undefined'));
-if (!this._activeViewport) {
- var x=1;
-}
+    if (!this._activeViewport) {
+      // const x = 1;
+    }
 
     const targetEvent: MouseEvent | Touch = (e as TouchEvent)?.touches?.[0] ?? e;
     const viewportLeft = this._activeViewport.scrollLeft;
@@ -385,7 +385,7 @@ if (!this._activeViewport) {
       const range = new SlickRange(dd.range.start.row ?? 0, dd.range.start.cell ?? 0, end.row, end.cell);
       this._decorator.show(range);
       this.onCellRangeSelecting.notify({
-        range
+        range,
       });
     }
   }

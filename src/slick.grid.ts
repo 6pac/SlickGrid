@@ -3493,20 +3493,20 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const selectionMode = ne?.detail?.selectionMode ?? '';
 
     // drag and replace functionality
-    var prevSelectedRanges = this.selectedRanges.slice(0);
+    const prevSelectedRanges = this.selectedRanges.slice(0);
     this.selectedRanges = ranges;
 
     if (selectionMode === CellSelectionMode.Replace
       && prevSelectedRanges && prevSelectedRanges.length === 1
       && this.selectedRanges && this.selectedRanges.length === 1) {
-      var prevSelectedRange = prevSelectedRanges[0];
+      const prevSelectedRange = prevSelectedRanges[0];
 
-      let prevSelectedRange_rowCount = prevSelectedRange.toRow - prevSelectedRange.fromRow + 1;
-      let prevSelectedRange_cellCount = prevSelectedRange.toCell - prevSelectedRange.fromCell + 1;
+      const prevSelectedRange_rowCount = prevSelectedRange.toRow - prevSelectedRange.fromRow + 1;
+      const prevSelectedRange_cellCount = prevSelectedRange.toCell - prevSelectedRange.fromCell + 1;
 
-      var selectedRange = this.selectedRanges[0];
-      let selectedRange_rowCount = selectedRange.toRow - selectedRange.fromRow + 1;
-      let selectedRange_cellCount = selectedRange.toCell - selectedRange.fromCell + 1;
+      const selectedRange = this.selectedRanges[0];
+      const selectedRange_rowCount = selectedRange.toRow - selectedRange.fromRow + 1;
+      const selectedRange_cellCount = selectedRange.toCell - selectedRange.fromCell + 1;
 
       //   |---0----|---1----|---2----|---3----|---4----|---5----|
       // 0 |        |        |        |     ^  |        |        | 
@@ -3525,10 +3525,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       // check range has expanded
       if (selectedRange_rowCount >= prevSelectedRange_rowCount
         && selectedRange_cellCount >= prevSelectedRange_cellCount) {
-        let copyUp = selectedRange.fromRow < prevSelectedRange.fromRow;
+        const copyUp = selectedRange.fromRow < prevSelectedRange.fromRow;
         //var copyLeft = selectedRange.fromCell < prevSelectedRange.fromCell;
 
-        let copyToRange = {
+        const copyToRange = {
           fromRow: copyUp ? selectedRange.fromRow : prevSelectedRange.toRow + 1
           , rowCount: selectedRange_rowCount - prevSelectedRange_rowCount
           , fromCell: selectedRange.fromCell // copyLeft ? selectedRange.fromCell : prevSelectedRange.toCell + 1
@@ -3538,13 +3538,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         let fromRowOffset = 0;
         let fromCellOffset = 0;
         for (let i = 0; i < copyToRange.rowCount; i++) {
-          let toRow = this.getDataItem(copyToRange.fromRow + i);
-          let fromRow = this.getDataItem(prevSelectedRange.fromRow + fromRowOffset);
+          const toRow = this.getDataItem(copyToRange.fromRow + i);
+          const fromRow = this.getDataItem(prevSelectedRange.fromRow + fromRowOffset);
           fromCellOffset = 0;
 
           for (let j = 0; j < copyToRange.cellCount; j++) {
-            let toColDef = this.columns[copyToRange.fromCell + j];
-            let fromColDef = this.columns[prevSelectedRange.fromCell + fromCellOffset];
+            const toColDef = this.columns[copyToRange.fromCell + j];
+            const fromColDef = this.columns[prevSelectedRange.fromCell + fromCellOffset];
 
             if (!toColDef.hidden && !fromColDef.hidden) {
               let val = fromRow[fromColDef.field as keyof TData];
@@ -3555,11 +3555,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
             }
 
             fromCellOffset++;
-            if (fromCellOffset >= prevSelectedRange_cellCount) fromCellOffset = 0;
+            if (fromCellOffset >= prevSelectedRange_cellCount) {fromCellOffset = 0;}
           }
 
           fromRowOffset++;
-          if (fromRowOffset >= prevSelectedRange_rowCount) fromRowOffset = 0;
+          if (fromRowOffset >= prevSelectedRange_rowCount) {fromRowOffset = 0;}
         }
         this.invalidate();
       }
@@ -3585,14 +3585,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           }
         }
       }
-      if (this.selectionBottomRow < ranges[i].toRow) this.selectionBottomRow = ranges[i].toRow;
-      if (this.selectionRightCell < ranges[i].toCell) this.selectionRightCell = ranges[i].toCell;
+      if (this.selectionBottomRow < ranges[i].toRow) {this.selectionBottomRow = ranges[i].toRow;}
+      if (this.selectionRightCell < ranges[i].toCell) {this.selectionRightCell = ranges[i].toCell;}
     }
 
     this.setCellCssStyles(this._options.selectedCellCssClass || '', hash);
 
     if (this.selectionBottomRow >= 0 && this.selectionRightCell >= 0) {
-      var lowerRightCell = this.getCellNode(this.selectionBottomRow, this.selectionRightCell)
+      const lowerRightCell = this.getCellNode(this.selectionBottomRow, this.selectionRightCell)
       this.dragReplaceEl.createEl(lowerRightCell);
     }
 

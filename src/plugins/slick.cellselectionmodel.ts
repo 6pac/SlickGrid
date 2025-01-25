@@ -113,7 +113,7 @@ export class SlickCellSelectionModel {
     if (rangeHasChanged) {
       // provide extra "caller" argument through SlickEventData event to avoid breaking the previous pubsub event structure
       // that only accepts an array of selected range `SlickRange[]`, the SlickEventData args will be merged and used later by `onSelectedRowsChanged`
-      const eventData = new SlickEventData(new CustomEvent('click', { detail: { caller: caller, selectionMode: selectionMode } }), this._ranges);
+      const eventData = new SlickEventData(new CustomEvent('click', { detail: { caller, selectionMode } }), this._ranges);
       this.onSelectedRangesChanged.notify(this._ranges, eventData);
     }
   }

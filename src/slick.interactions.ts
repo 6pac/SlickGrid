@@ -94,7 +94,7 @@ export function Draggable(options: DraggableOption) {
 
         matchClassTag = '';
         if (options.dragFromClassDetectArr) {
-          for (let o: ClassDetectElement, i: number = 0; i < options.dragFromClassDetectArr.length; i++) {
+          for (let o: ClassDetectElement, i = 0; i < options.dragFromClassDetectArr.length; i++) {
             o = options.dragFromClassDetectArr[i];
 
             if ((o.id && element.id === o.id) || (o.cssSelector && element.matches(o.cssSelector))) {
