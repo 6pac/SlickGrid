@@ -51,12 +51,12 @@ There are multiple ways to use and install SlickGrid, you can use it as a standa
 
 ```sh
 # Alpine style from CDN
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slickgrid@5.14.0/dist/styles/css/slick-alpine-theme.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slickgrid@5.15.0/dist/styles/css/slick-alpine-theme.min.css">
 
 # standalone scripts (IIFE) from CDN
-<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.14.0/dist/browser/slick.core.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.14.0/dist/browser/slick.interactions.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.14.0/dist/browser/slick.grid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.15.0/dist/browser/slick.core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.15.0/dist/browser/slick.interactions.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.15.0/dist/browser/slick.grid.min.js"></script>
 <script>
   const grid = new Slick.Grid("#myGrid", dataView, columns, options);
 </script>
@@ -78,7 +78,7 @@ For more CDN links, like controls and plugins, just headover to [jsDevlivr - Sli
 See [Contributing Guide](https://github.com/6pac/SlickGrid/blob/master/CONTRIBUTING.md)
 
 ### E2E Tests with Cypress
-A lot of our Examples now have [Cypress](https://www.cypress.io/) E2E (end to end) tests in the browser. You can see [here](https://github.com/6pac/SlickGrid/tree/master/cypress/e2e) the complete list of Examples that now have E2E tests. The biggest advantage is that these tests are executed in the [GitHub Actions](https://github.com/features/actions) Workflow (CI) for every Pull Request and that is to avoid committing changes that might break the library. We currently have tests for over 35+ examples with about 400 tests.
+A lot of our Examples now have [Cypress](https://www.cypress.io/) E2E (end to end) tests in the browser. You can see [here](https://github.com/6pac/SlickGrid/tree/master/cypress/e2e) the complete list of Examples that now have E2E tests. The biggest advantage is that these tests are executed in the [GitHub Actions](https://github.com/features/actions) Workflow (CI) for every Pull Request which makes sure the project is stable with every new commit. We currently have tests for over 40 examples with a total of over 500 tests.
 
 We welcome any new contributions and if you wish to add Cypress E2E tests, all you need to do is to clone the repo and run the following commands
 ```bash
@@ -86,7 +86,7 @@ npm install         # install all npm packages
 npm run dev         # run a local development server on port 8080 in watch mode (or `npm run serve` without watch)
 npm run cypress     # open Cypress UI tool
 ```
-Once the Cypress UI is open, you can then click on "Run all Specs" to execute all E2E browser tests.
+Once the Cypress UI is open, you can then click on "Run all Specs" to execute all automated E2E browser tests.
 
 ## Migrations
 
