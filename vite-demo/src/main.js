@@ -1,4 +1,4 @@
-ting import 'flatpickr';
+import 'flatpickr';
 import 'flatpickr/dist/flatpickr.css';
 import Sortable from 'sortablejs';
 
