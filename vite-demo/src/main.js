@@ -1,4 +1,4 @@
-import 'flatpickr';
+ting import 'flatpickr';
 import 'flatpickr/dist/flatpickr.css';
 import Sortable from 'sortablejs';
 
@@ -14,12 +14,12 @@ window.Sortable = Sortable;
 document.querySelector('#app').innerHTML =
   `<div id="router">
     <div class="router-link" id="trading">1. Realtime Trading</div>
-    <div class="router-link" id="example4">2. Example with DataView</div>
+    <div class="router-link" id="example4">2. Editing with DataView</div>
     <div class="router-link" id="example-grouping">3. Example Grouping</div>
     <div class="router-link">
       <span class="sgi sgi-lightbulb"></span>
       <a href="https://github.com/6pac/SlickGrid/wiki/Examples" target="__blank" title="for many more examples, please visit the project Examples Wiki">
-        Visit Examples Wiki
+        Visit All Examples Wiki
       </a>
     </div>
   </div>
