@@ -1,4 +1,4 @@
-import copyfiles from 'copyfiles';
+import { copyfiles } from 'native-copyfiles';
 import { build } from 'esbuild';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -166,7 +166,7 @@ export function runBuild(options) {
 function copySassFiles() {
   copyfiles(
     ['src/styles/*.scss', 'dist/styles/sass'], // 1st in array is source, last is target
-    { flat: true, up: 2 },
+    { flat: true, stat: true },
     () => console.log(`[${c.magenta('SASS')}] SASS files copied`)
   );
 }
