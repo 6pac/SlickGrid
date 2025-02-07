@@ -15,6 +15,7 @@ export interface DragPosition {
   startX: number;
   startY: number;
   range: DragRange;
+  matchClassTag: string;
 }
 
 export interface DragRange {
@@ -50,4 +51,5 @@ export interface DragRowMove {
   startX: number;
   startY: number;
   range: DragRange;
+  matchClassTag: string;
 }
