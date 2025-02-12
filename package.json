@@ -74,7 +74,7 @@
     "cypress": "^13.17.0",
     "cypress-real-events": "^1.14.0",
     "dotenv": "^16.4.7",
-    "esbuild": "^0.24.2",
+    "esbuild": "^0.25.0",
     "eslint": "^9.18.0",
     "eslint-plugin-cypress": "^4.1.0",
     "eslint-plugin-n": "^17.15.1",
