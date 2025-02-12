@@ -607,9 +607,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.initialize(options);
   }
 
-//////////////////////////////////////////////////////////////////////////////////////////////
-// Grid and Dom Initialisation
-//////////////////////////////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////////////////////////////
+  // Grid and Dom Initialisation
+  //////////////////////////////////////////////////////////////////////////////////////////////
 
   /** Initializes the grid. */
   init() {
@@ -617,11 +617,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Processes the provided grid options (mixing in default settings as needed), 
-   * validates required modules (for example, ensuring Sortable.js is loaded if column reordering is enabled), 
-   * and creates all necessary DOM elements for the grid (including header containers, viewports, canvases, panels, etc.). 
+   * Processes the provided grid options (mixing in default settings as needed),
+   * validates required modules (for example, ensuring Sortable.js is loaded if column reordering is enabled),
+   * and creates all necessary DOM elements for the grid (including header containers, viewports, canvases, panels, etc.).
    * It also caches CSS if the container or its ancestors are hidden and calls finish.
-   * 
+   *
    * @param {Partial<O>} options - Partial grid options to be applied during initialization.
    */
   protected initialize(options: Partial<O>) {
@@ -841,11 +841,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Completes grid initialisation by calculating viewport dimensions, measuring cell padding and border differences, 
-   * disabling text selection (except on editable inputs), setting frozen options and pane visibility, 
-   * updating column caches, creating column headers and footers, setting up column sorting, 
-   * creating CSS rules, binding ancestor scroll events, and binding various event handlers 
-   * (e.g. for scrolling, mouse, keyboard, drag-and-drop). 
+   * Completes grid initialisation by calculating viewport dimensions, measuring cell padding and border differences,
+   * disabling text selection (except on editable inputs), setting frozen options and pane visibility,
+   * updating column caches, creating column headers and footers, setting up column sorting,
+   * creating CSS rules, binding ancestor scroll events, and binding various event handlers
+   * (e.g. for scrolling, mouse, keyboard, drag-and-drop).
    * It also starts up any asynchronous post–render processing if enabled.
    */
   protected finishInitialization() {
@@ -970,15 +970,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
   }
 
-
-
-
-  /** 
-   * Finds all container ancestors/parents (including the grid container itself) that are hidden (i.e. have display:none) 
-   * and temporarily applies visible CSS properties (absolute positioning, hidden visibility, block display) 
-   * so that dimensions can be measured correctly. 
+  /**
+   * Finds all container ancestors/parents (including the grid container itself) that are hidden (i.e. have display:none)
+   * and temporarily applies visible CSS properties (absolute positioning, hidden visibility, block display)
+   * so that dimensions can be measured correctly.
    * It stores the original CSS properties in an internal array for later restoration.
-   * 
+   *
    * Related to issue: https://github.com/6pac/SlickGrid/issues/568 */
   cacheCssForHiddenInit() {
     this._hiddenParents = Utils.parents(this._container, ':hidden') as HTMLElement[];
@@ -996,9 +993,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Restores the original CSS properties for the container and its hidden 
-   * ancestors that were modified by cacheCssForHiddenInit. 
-   * This ensures that after initial measurements the DOM elements revert 
+   * Restores the original CSS properties for the container and its hidden
+   * ancestors that were modified by cacheCssForHiddenInit.
+   * This ensures that after initial measurements the DOM elements revert
    * to their original style settings.
    */
   restoreCssFromHiddenInit() {
@@ -1019,8 +1016,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Registers an external plugin to the grid’s internal plugin list. 
-   * Once added, it immediately initialises the plugin by calling its init() 
+   * Registers an external plugin to the grid’s internal plugin list.
+   * Once added, it immediately initialises the plugin by calling its init()
    * method with the grid instance.
    * @param {T} plugin - The plugin instance to be registered.
    */
@@ -1031,8 +1028,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /**
    * Unregister (destroy) an external Plugin.
-   * Searches for the specified plugin in the grid’s plugin list. 
-   * When found, it calls the plugin’s destroy() method and removes the plugin from the list, 
+   * Searches for the specified plugin in the grid’s plugin list.
+   * When found, it calls the plugin’s destroy() method and removes the plugin from the list,
    * thereby unregistering it from the grid.
    * @param {T} plugin - The plugin instance to be registered.
    */
@@ -1046,16 +1043,16 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
   }
 
-    /**
+  /**
    * Destroy (dispose) of SlickGrid
-   * 
-   * Unbinds all event handlers, cancels any active cell edits, triggers the onBeforeDestroy event, 
-   * unregisters and destroys plugins, destroys sortable and other interaction instances, 
-   * unbinds ancestor scroll events, removes CSS rules, unbinds events from all key DOM elements 
-   * (canvas, viewports, header, footer, etc.), empties the grid container, removes the grid’s uid class, 
-   * and clears all timers. Optionally, if shouldDestroyAllElements is true, 
+   *
+   * Unbinds all event handlers, cancels any active cell edits, triggers the onBeforeDestroy event,
+   * unregisters and destroys plugins, destroys sortable and other interaction instances,
+   * unbinds ancestor scroll events, removes CSS rules, unbinds events from all key DOM elements
+   * (canvas, viewports, header, footer, etc.), empties the grid container, removes the grid’s uid class,
+   * and clears all timers. Optionally, if shouldDestroyAllElements is true,
    * calls destroyAllElements to nullify all DOM references.
-   * 
+   *
    * @param {boolean} shouldDestroyAllElements - do we want to destroy (nullify) all DOM elements as well? This help in avoiding mem leaks
    */
   destroy(shouldDestroyAllElements?: boolean) {
@@ -1151,11 +1148,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /**
    * Call destroy method, when exists, on all the instance(s) it found
-   * 
-   * Given either a single instance or an array of instances (e.g. draggable, mousewheel, resizable), 
-   * pops each one and calls its destroy method if available, then resets the input to an empty array 
+   *
+   * Given either a single instance or an array of instances (e.g. draggable, mousewheel, resizable),
+   * pops each one and calls its destroy method if available, then resets the input to an empty array
    * (or null for a single instance). Returns the reset value.
-   * 
+   *
    * @params  instances - can be a single instance or a an array of instances
    */
   protected destroyAllInstances(inputInstances: null | InteractionBase | Array<InteractionBase>) {
@@ -1173,10 +1170,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return inputInstances;
   }
 
-
   /**
-   * Sets all internal references to DOM elements 
-   * (e.g. canvas containers, headers, viewports, focus sinks, etc.) 
+   * Sets all internal references to DOM elements
+   * (e.g. canvas containers, headers, viewports, focus sinks, etc.)
    * to null so that they can be garbage collected.
    */
   protected destroyAllElements() {
@@ -1248,7 +1244,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this._viewportScrollContainerY = null as any;
   }
 
-
   /** Returns an object containing all of the Grid options set on the grid. See a list of Grid Options here.  */
   getOptions() {
     return this._options;
@@ -1300,7 +1295,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /**
    * Attempts to commit any active cell edit via the editor lock; if successful, calls makeActiveCellNormal to exit edit mode.
-   * 
+   *
    * @returns {void} - Does not return a value.
    */
   protected prepareForOptionsChange() {
@@ -1312,10 +1307,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Depending on new options, sets column header visibility, validates options, sets frozen options, 
-   * forces viewport height recalculation if needed, updates viewport overflow, re-renders the grid (unless suppressed), 
+   * Depending on new options, sets column header visibility, validates options, sets frozen options,
+   * forces viewport height recalculation if needed, updates viewport overflow, re-renders the grid (unless suppressed),
    * sets the scroller elements, and reinitialises mouse wheel scrolling as needed.
-   * 
+   *
    * @param {boolean} [suppressRender] - If `true`, prevents the grid from re-rendering.
    * @param {boolean} [suppressColumnSet] - If `true`, prevents the columns from being reset.
    * @param {boolean} [suppressSetOverflow] - If `true`, prevents updating the viewport overflow setting.
@@ -1361,10 +1356,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * 
+   *
    * Ensures consistency in option setting, by thastIF autoHeight IS enabled, leaveSpaceForNewRows is set to FALSE.
    * And, if forceFitColumns is True, then autosizeColsMode is set to LegacyForceFit.
-   */ 
+   */
   validateAndEnforceOptions(): void {
     if (this._options.autoHeight) {
       this._options.leaveSpaceForNewRows = false;
@@ -1405,7 +1400,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       elm.classList[classAction]('frozen');
     }
   }
-
 
   //////////////////////////////////////////////////////////////////////
   // End Grid and DOM Initialisation
@@ -1476,7 +1470,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return this.hasFrozenColumns() ? ((idx <= this._options.frozenColumn!) ? this._headerL : this._headerR) : this._headerL;
   }
 
-
   /**
    * Get a specific Header Column DOM element by its column Id or index
    * @param {Number|String} columnIdOrIdx - column Id or index
@@ -1545,8 +1538,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * If footer rows are enabled, clears existing footer cells then iterates over all columns. 
-   * For each visible column, it creates a footer cell element (adding “frozen” classes if needed), 
+   * If footer rows are enabled, clears existing footer cells then iterates over all columns.
+   * For each visible column, it creates a footer cell element (adding “frozen” classes if needed),
    * stores the column definition in the element’s storage, and triggers the onFooterRowCellRendered event.
    */
   protected createColumnFooter() {
@@ -1590,7 +1583,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   /**
    * For each header container, binds a click event that—
    *    if the clicked header is sortable and no column resizing is in progress—
-   *      --> toggles the sort direction (or adds/removes the column in a multi–column sort), 
+   *      --> toggles the sort direction (or adds/removes the column in a multi–column sort),
    *      --> triggers onBeforeSort
    *      --> and if not cancelled, updates the sort columns and triggers onSort.
    */
@@ -1692,11 +1685,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     });
   }
 
-
   /**
-   * Clears any existing header cells and header row cells, recalculates header widths, 
-   * then iterates over each visible column to create header cell elements 
-   * (and header row cells if enabled) with appropriate content, CSS classes, event bindings, 
+   * Clears any existing header cells and header row cells, recalculates header widths,
+   * then iterates over each visible column to create header cell elements
+   * (and header row cells if enabled) with appropriate content, CSS classes, event bindings,
    * and sort indicator elements. Also triggers before–destroy and rendered events as needed.
    */
   protected createColumnHeaders() {
@@ -1871,10 +1863,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
   }
 
-    /**
-   * Destroys any existing sortable instances and creates new ones on the left and right header 
-   * containers using the Sortable library. Configures options including animation, 
-   * drag handle selectors, auto-scroll, and callbacks (onStart, onEnd) that 
+  /**
+   * Destroys any existing sortable instances and creates new ones on the left and right header
+   * containers using the Sortable library. Configures options including animation,
+   * drag handle selectors, auto-scroll, and callbacks (onStart, onEnd) that
    * update the column order, set columns, trigger onColumnsReordered, and reapply column resizing.
    */
   protected setupColumnReorder() {
@@ -1960,7 +1952,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * When a resizable handle is double–clicked, extracts the column identifier from the parent element’s id 
+   * When a resizable handle is double–clicked, extracts the column identifier from the parent element’s id
    * (by removing the grid uid) and triggers the onColumnsResizeDblClick event with that identifier.
    * @param {MouseEvent & { target: HTMLDivElement }} evt - The double-click event on the resizable handle.
    */
@@ -1970,12 +1962,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Ensures the Resizable module is available and then iterates over header children to remove 
-   * any existing resizable handles. Determines which columns are resizable (tracking the first 
-   * and last resizable columns) and for each eligible column, creates a resizable handle, 
-   * binds a double–click event, and creates a Resizable instance with callbacks for onResizeStart, 
-   * onResize, and onResizeEnd. These callbacks manage column width adjustments (including force–fit 
-   * and frozen column considerations), update header and canvas widths, trigger related events, 
+   * Ensures the Resizable module is available and then iterates over header children to remove
+   * any existing resizable handles. Determines which columns are resizable (tracking the first
+   * and last resizable columns) and for each eligible column, creates a resizable handle,
+   * binds a double–click event, and creates a Resizable instance with callbacks for onResizeStart,
+   * onResize, and onResizeEnd. These callbacks manage column width adjustments (including force–fit
+   * and frozen column considerations), update header and canvas widths, trigger related events,
    * and re–render the grid as needed.
    * @returns {void}
    */
@@ -2309,11 +2301,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
   }
 
-
   /**
-   * Validates and sets the frozenColumn option (ensuring it is within valid bounds, or setting it to –1) 
-   * and, if a frozenRow is specified (greater than –1), sets the grid’s frozen–row flags, 
-   * computes the frozenRowsHeight (based on rowHeight), and determines the actual frozen row index 
+   * Validates and sets the frozenColumn option (ensuring it is within valid bounds, or setting it to –1)
+   * and, if a frozenRow is specified (greater than –1), sets the grid’s frozen–row flags,
+   * computes the frozenRowsHeight (based on rowHeight), and determines the actual frozen row index
    * depending on whether frozenBottom is enabled.
    */
   protected setFrozenOptions() {
@@ -2338,9 +2329,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   // Column Management - Autosizing
   //////////////////////////////////////////////////////////////////////////////////////////////
 
-  /** 
+  /**
    * Proportionally resize a specific column by its name, index or Id
-   * 
+   *
    * Resizes based on its content, but determines the column definition from the provided identifier or index.
    * Then, obtains a grid canvas and calls getColAutosizeWidth to compute and update the column’s width.
    */
@@ -2363,10 +2354,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Returns true if the column should be treated as locked (i.e. not resized) based on autosize settings. 
-   * The decision is based on whether header text is not ignored, sizeToRemaining is false, 
+   * Returns true if the column should be treated as locked (i.e. not resized) based on autosize settings.
+   * The decision is based on whether header text is not ignored, sizeToRemaining is false,
    * content size equals header width, and the current width is less than 100 pixels.
-   * 
+   *
    * @param {AutoSize} [autoSize={}] - The autosize configuration for the column.
    * @returns {boolean} - Returns `true` if the column should be treated as locked, otherwise `false`.
    */
@@ -2378,13 +2369,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       && ((autoSize.widthPx ?? 0) < 100);
   }
 
-  /** Proportionately resizes all columns to fill available horizontal space. 
-   * This does not take the cell contents into consideration. 
-   * 
-   * It does this by temporarily caching CSS for hidden containers, calling the internal autosizing logic 
-   * (internalAutosizeColumns) with the autosize mode and initialisation flag, 
+  /** Proportionately resizes all columns to fill available horizontal space.
+   * This does not take the cell contents into consideration.
+   *
+   * It does this by temporarily caching CSS for hidden containers, calling the internal autosizing logic
+   * (internalAutosizeColumns) with the autosize mode and initialisation flag,
    * then restores the original CSS.
-   * */
+   */
   autosizeColumns(autosizeMode?: string, isInit?: boolean) {
     const checkHiddenParents = !(this._hiddenParents?.length);
     if (checkHiddenParents) {
@@ -2397,12 +2388,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Implements the main autosizing algorithm. Depending on the autosize mode, 
-   * it may call legacyAutosizeColumns (for legacy force–fit modes), or proceed 
-   * to compute column widths based on available viewport width. It iterates over columns 
-   * to accumulate total widths, locked widths, and then adjusts widths proportionally. 
+   * Implements the main autosizing algorithm. Depending on the autosize mode,
+   * it may call legacyAutosizeColumns (for legacy force–fit modes), or proceed
+   * to compute column widths based on available viewport width. It iterates over columns
+   * to accumulate total widths, locked widths, and then adjusts widths proportionally.
    * Finally, it calls reRenderColumns to update the grid.
-   * 
+   *
    * @param {string} [autosizeMode] - The autosize mode. If undefined, defaults to `autosizeColsMode` from options.
    * @param {boolean} [isInit] - If `true`, applies initial settings for autosizing.
    */
@@ -2545,13 +2536,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Calculates the ideal autosize width for a given column. First, it sets the default width from the column definition. 
-   * If the autosize mode is not Locked or Guide, then for ContentIntelligent mode it determines the column’s data type 
-   * (handling booleans, numbers, strings, dates, moments) and adjusts autosize settings accordingly. 
-   * It then calls getColContentSize to compute the width needed by the content, applies an additional 
-   * percentage multiplier and padding, clamps to min/max widths, and if in ContentExpandOnly mode ensures 
+   * Calculates the ideal autosize width for a given column. First, it sets the default width from the column definition.
+   * If the autosize mode is not Locked or Guide, then for ContentIntelligent mode it determines the column’s data type
+   * (handling booleans, numbers, strings, dates, moments) and adjusts autosize settings accordingly.
+   * It then calls getColContentSize to compute the width needed by the content, applies an additional
+   * percentage multiplier and padding, clamps to min/max widths, and if in ContentExpandOnly mode ensures
    * the width is at least the default width. The computed width is stored in autoSize.widthPx.
-   * 
+   *
    * @param {C} columnDef - The column definition containing autosize settings and constraints.
    * @param {number} colIndex - The index of the column within the grid.
    * @param {HTMLElement} gridCanvas - The grid's canvas element where temporary elements will be created.
@@ -2633,13 +2624,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Determines the width needed to render a column’s content. It first measures the header width (if not ignored) 
-   * and uses it as a baseline. If an explicit colValueArray is provided, it measures that; otherwise, it creates 
-   * a RowInfo object to select a range of rows based on the rowSelectionMode. Depending on the valueFilterMode 
-   * (e.g. DeDuplicate, GetGreatestAndSub, GetLongestTextAndSub, GetLongestText), it adjusts the values to measure. 
-   * It then calls getColWidth (using either canvas text measurement or DOM measurement) and returns the maximum 
+   * Determines the width needed to render a column’s content. It first measures the header width (if not ignored)
+   * and uses it as a baseline. If an explicit colValueArray is provided, it measures that; otherwise, it creates
+   * a RowInfo object to select a range of rows based on the rowSelectionMode. Depending on the valueFilterMode
+   * (e.g. DeDuplicate, GetGreatestAndSub, GetLongestTextAndSub, GetLongestText), it adjusts the values to measure.
+   * It then calls getColWidth (using either canvas text measurement or DOM measurement) and returns the maximum
    * of the header width and computed content width (adjusted by a ratio, if applicable).
-   * 
+   *
    * @param {C} columnDef - The column definition containing formatting and auto-sizing options.
    * @param {number} colIndex - The index of the column within the grid.
    * @param {HTMLElement} gridCanvas - The grid's canvas element where temporary elements will be created.
@@ -2766,12 +2757,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Creates a temporary row and cell element (with absolute positioning, hidden visibility, and nowrap) and iterates 
-   * over the selected rows (as defined in a RowInfo object or provided value array) to render the cell content using 
-   * the column formatter. If in text-only mode and canvas measurement is enabled, uses canvas.measureText; 
-   * otherwise, uses DOM offsetWidth after applying the formatter result to the cell. 
+   * Creates a temporary row and cell element (with absolute positioning, hidden visibility, and nowrap) and iterates
+   * over the selected rows (as defined in a RowInfo object or provided value array) to render the cell content using
+   * the column formatter. If in text-only mode and canvas measurement is enabled, uses canvas.measureText;
+   * otherwise, uses DOM offsetWidth after applying the formatter result to the cell.
    * Returns the maximum measured width.
-   * 
+   *
    * @param {C} columnDef - The column definition containing formatting and auto-sizing options.
    * @param {HTMLElement} gridCanvas - The grid's canvas element where the temporary row will be added.
    * @param {RowInfo} rowInfo - Object containing row start/end indices and values for width evaluation.
@@ -2856,12 +2847,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Determines the width of a column header by first attempting to find the header element using an ID composed of the 
-   * grid’s uid and the column’s id. If found, clones the element, makes it absolutely positioned and hidden, 
-   * inserts it into the DOM, measures its offsetWidth, and then removes it. If the header element does not exist yet, 
-   * creates a temporary header element with the column’s name and measures its width before removing it. 
+   * Determines the width of a column header by first attempting to find the header element using an ID composed of the
+   * grid’s uid and the column’s id. If found, clones the element, makes it absolutely positioned and hidden,
+   * inserts it into the DOM, measures its offsetWidth, and then removes it. If the header element does not exist yet,
+   * creates a temporary header element with the column’s name and measures its width before removing it.
    * Returns the computed header width.
-   * 
+   *
    * @param {C} columnDef - The column definition containing the header information.
    * @returns {number} - The computed width of the column header in pixels.
    */
@@ -2896,9 +2887,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Iterates over all columns to collect current widths (skipping hidden ones), calculates total width 
-   * and available shrink leeway, then enters a “shrink” loop if the total width exceeds the available 
-   * viewport width and a “grow” loop if below. Finally, it applies the computed widths to the columns 
+   * Iterates over all columns to collect current widths (skipping hidden ones), calculates total width
+   * and available shrink leeway, then enters a “shrink” loop if the total width exceeds the available
+   * viewport width and a “grow” loop if below. Finally, it applies the computed widths to the columns
    * and calls reRenderColumns (with a flag if any width changed) to update the grid.
    */
   protected legacyAutosizeColumns() {
@@ -3002,8 +2993,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /**
    * Returns an array of column definitions filtered to exclude any that are marked as hidden.
-   * 
-   * @returns 
+   *
+   * @returns
    */
   getVisibleColumns() {
     return this.columns.filter(c => !c.hidden);
@@ -3018,11 +3009,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Iterates over the header elements (from both left and right headers) and updates each header’s width based on the 
-   * corresponding visible column’s width minus a computed adjustment (headerColumnWidthDiff). 
+   * Iterates over the header elements (from both left and right headers) and updates each header’s width based on the
+   * corresponding visible column’s width minus a computed adjustment (headerColumnWidthDiff).
    * Finally, it updates the internal column caches.
-   * 
-   * @returns 
+   *
+   * @returns
    */
   protected applyColumnHeaderWidths() {
     if (!this.initialized) {
@@ -3046,8 +3037,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Iterates over all columns (skipping hidden ones) and, for each, retrieves the associated CSS rules 
-   * (using getColumnCssRules). It then sets the left and right CSS properties so that the columns align 
+   * Iterates over all columns (skipping hidden ones) and, for each, retrieves the associated CSS rules
+   * (using getColumnCssRules). It then sets the left and right CSS properties so that the columns align
    * correctly within the grid canvas. It also updates the cumulative offset for non–frozen columns.
    */
   protected applyColumnWidths() {
@@ -3075,11 +3066,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * A convenience method that creates a sort configuration for one column (with the given sort direction) 
-   * and calls setSortColumns with it. Accepts a columnId string and an ascending boolean. 
-   * Applies a sort glyph in either ascending or descending form to the header of the column. 
+   * A convenience method that creates a sort configuration for one column (with the given sort direction)
+   * and calls setSortColumns with it. Accepts a columnId string and an ascending boolean.
+   * Applies a sort glyph in either ascending or descending form to the header of the column.
    * Note that this does not actually sort the column. It only adds the sort glyph to the header.
-   * 
+   *
    * @param {String | Number} columnId
    * @param {Boolean} ascending
    */
@@ -3088,9 +3079,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Get column by index - iterates over header containers and returns the header column 
+   * Get column by index - iterates over header containers and returns the header column
    * element corresponding to the given index.
-   * 
+   *
    * @param {Number} id - column index
    * @returns
    */
@@ -3110,11 +3101,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Accepts an array of objects in the form [ { columnId: [string], sortAsc: [boolean] }, ... ] to 
-   * define the grid's sort order. When called, this will apply a sort glyph in either ascending 
-   * or descending form to the header of each column specified in the array. 
+   * Accepts an array of objects in the form [ { columnId: [string], sortAsc: [boolean] }, ... ] to
+   * define the grid's sort order. When called, this will apply a sort glyph in either ascending
+   * or descending form to the header of each column specified in the array.
    * Note that this does not actually sort the column. It only adds the sort glyph to the header.
-   * 
+   *
    * @param {ColumnSort[]} cols - column sort
    */
   setSortColumns(cols: ColumnSort[]) {
@@ -3164,12 +3155,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     });
   }
 
-
   /** Returns the current array of column definitions. */
   getColumns() {
     return this.columns;
   }
-
 
   /** Get sorted columns representing the current sorting state of the grid **/
   getSortColumns(): ColumnSort[] {
@@ -3177,7 +3166,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Iterates over all columns to compute and store their left and right boundaries 
+   * Iterates over all columns to compute and store their left and right boundaries
    * (based on cumulative widths). Resets the offset when a frozen column is encountered.
    */
   protected updateColumnCaches() {
@@ -3200,9 +3189,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Iterates over each column to (a) save its original width as widthRequest, 
-   * (b) apply default properties (using mixinDefaults if set) to both the column 
-   * and its autoSize property, (c) update the columnsById mapping, and (d) adjust 
+   * Iterates over each column to (a) save its original width as widthRequest,
+   * (b) apply default properties (using mixinDefaults if set) to both the column
+   * and its autoSize property, (c) update the columnsById mapping, and (d) adjust
    * the width if it is less than minWidth or greater than maxWidth.
    */
   protected updateColumnProps() {
@@ -3233,7 +3222,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Sets grid columns. Column headers will be recreated and all rendered rows will be removed. 
+   * Sets grid columns. Column headers will be recreated and all rendered rows will be removed.
    * To rerender the grid (if necessary), call render().
    * @param {Column[]} columnDefinitions An array of column definitions.
    */
@@ -3250,7 +3239,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Triggers onBeforeUpdateColumns and calls updateColumnsInternal to update column properties, 
+   * Triggers onBeforeUpdateColumns and calls updateColumnsInternal to update column properties,
    * caches, header/footer elements, CSS rules, canvas dimensions, and selections without changing the column array.
    */
   protected updateColumnsInternal() {
@@ -3324,8 +3313,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /**
    * Returns the number of data items plus an extra row if enableAddRow is true and paging conditions allow.
-   * 
-   * @returns 
+   *
+   * @returns
    */
   protected getDataLengthIncludingAddNew() {
     return this.getDataLength() + (!this._options.enableAddRow ? 0
@@ -3350,7 +3339,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return !Array.isArray(this.data);
   }
 
-    /**
+  /**
    * Returns item metadata by a row index when it exists
    * @param {Number} row
    * @returns {ItemMetadata | null}
@@ -3359,11 +3348,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return 'getItemMetadata' in this.data ? (this.data as CustomDataView<TData>).getItemMetadata(row) : null;
   }
 
-
   /**
-   * Determines the proper formatter for a given cell by checking row metadata for column overrides, 
+   * Determines the proper formatter for a given cell by checking row metadata for column overrides,
    * then falling back to the column’s formatter, a formatter from the formatterFactory, or the default formatter.
-   * 
+   *
    * @param {number} row - The row index of the cell.
    * @param {C} column - The column definition containing formatting options.
    * @returns {Formatter} - The resolved formatter function for the specified cell.
@@ -3383,13 +3371,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-  * Retrieves the editor (or editor constructor) for the specified cell by first checking for an override 
-  * in row metadata and then falling back to the column’s editor or an editor from the editorFactory.
-  * 
-  * @param {number} row - The row index of the cell.
-  * @param {number} cell - The column index of the cell.
-  * @returns {Editor | EditorConstructor | null | undefined} - The editor instance or constructor if available, otherwise `null` or `undefined`.
-  */
+   * Retrieves the editor (or editor constructor) for the specified cell by first checking for an override
+   * in row metadata and then falling back to the column’s editor or an editor from the editorFactory.
+   *
+   * @param {number} row - The row index of the cell.
+   * @param {number} cell - The column index of the cell.
+   * @returns {Editor | EditorConstructor | null | undefined} - The editor instance or constructor if available, otherwise `null` or `undefined`.
+   */
   protected getEditor(row: number, cell: number): Editor | EditorConstructor | null | undefined {
     const column = this.columns[cell];
     const rowMetadata = this.getItemMetadaWhenExists(row);
@@ -3406,21 +3394,19 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-  * Returns the value for the specified column from a given data item. If a dataItemColumnValueExtractor 
-  * is provided in options, it is used; otherwise, the property named by the column’s field is returned.
-  * 
-  * @param {TData} item - The data item containing the requested value.
-  * @param {C} columnDef - The column definition containing the field key.
-  * @returns {*} - The extracted value from the data item based on the column definition.
-  */
+   * Returns the value for the specified column from a given data item. If a dataItemColumnValueExtractor
+   * is provided in options, it is used; otherwise, the property named by the column’s field is returned.
+   *
+   * @param {TData} item - The data item containing the requested value.
+   * @param {C} columnDef - The column definition containing the field key.
+   * @returns {*} - The extracted value from the data item based on the column definition.
+   */
   protected getDataItemValueForColumn(item: TData, columnDef: C) {
     if (this._options.dataItemColumnValueExtractor) {
       return this._options.dataItemColumnValueExtractor(item, columnDef) as TData;
     }
     return item[columnDef.field as keyof TData];
   }
-
-
 
   //////////////////////////////////////////////////////////////////////////////////////////////
   // Data Management and Editing - Cell Switchers
@@ -3453,20 +3439,21 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this._focusSink2.focus();
     }
   }
+
   /**
-  * Clears any previously active cell (removing “active” CSS classes), sets the new active cell, 
-  * calculates its position, and updates active row and cell indices. 
-  * If conditions are met (grid is editable and `opt_editMode` is `true`), 
-  * it initiates editing on the cell (with an asynchronous delay if configured). 
-  * Finally, it triggers `onActiveCellChanged` unless suppressed.
-  * 
-  * @param {HTMLDivElement | null} newCell - The new active cell element, or `null` to deactivate the current cell.
-  * @param {boolean | null} [opt_editMode] - If `true`, enables edit mode for the active cell. 
-  *                                          If `null` or `undefined`, it follows `autoEditNewRow` and `autoEdit` settings.
-  * @param {boolean | null} [preClickModeOn] - If `true`, indicates that the cell was activated by a pre-click action.
-  * @param {boolean} [suppressActiveCellChangedEvent] - If `true`, prevents triggering `onActiveCellChanged` event.
-  * @param {Event | SlickEvent_} [e] - The event that triggered the cell activation (if applicable).
-  */
+   * Clears any previously active cell (removing “active” CSS classes), sets the new active cell,
+   * calculates its position, and updates active row and cell indices.
+   * If conditions are met (grid is editable and `opt_editMode` is `true`),
+   * it initiates editing on the cell (with an asynchronous delay if configured).
+   * Finally, it triggers `onActiveCellChanged` unless suppressed.
+   *
+   * @param {HTMLDivElement | null} newCell - The new active cell element, or `null` to deactivate the current cell.
+   * @param {boolean | null} [opt_editMode] - If `true`, enables edit mode for the active cell.
+   *                                          If `null` or `undefined`, it follows `autoEditNewRow` and `autoEdit` settings.
+   * @param {boolean | null} [preClickModeOn] - If `true`, indicates that the cell was activated by a pre-click action.
+   * @param {boolean} [suppressActiveCellChangedEvent] - If `true`, prevents triggering `onActiveCellChanged` event.
+   * @param {Event | SlickEvent_} [e] - The event that triggered the cell activation (if applicable).
+   */
   protected setActiveCellInternal(newCell: HTMLDivElement | null, opt_editMode?: boolean | null, preClickModeOn?: boolean | null, suppressActiveCellChangedEvent?: boolean, e?: Event | SlickEvent_) {
     // make current active cell as normal cell & remove "active" CSS classes
     this.unsetActiveCell();
@@ -3524,10 +3511,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Checks whether data for the row is loaded, whether the cell is in an “Add New” row 
-   * (and the column disallows insert triggering), and whether an editor exists and the cell is not hidden. 
+   * Checks whether data for the row is loaded, whether the cell is in an “Add New” row
+   * (and the column disallows insert triggering), and whether an editor exists and the cell is not hidden.
    * Returns true if the cell is editable.
-   * 
+   *
    * @param {number} row - The row index of the cell.
    * @param {number} cell - The cell index (column index) within the row.
    * @returns {boolean} - Returns `true` if the cell is editable, otherwise `false`.
@@ -3555,13 +3542,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   /**
    * Make the cell normal again (for example after destroying cell editor),
    * we can also optionally refocus on the current active cell (again possibly after closing cell editor)
-   * 
-   * If an editor is active, triggers onBeforeCellEditorDestroy and calls the editor’s destroy method. 
-   * It then removes “editable” and “invalid” CSS classes from the active cell, re–applies the formatter 
-   * to restore the cell’s original content, invalidates any post–processing results, 
-   * and deactivates the editor lock. Optionally, it can also re–focus the grid. 
+   *
+   * If an editor is active, triggers onBeforeCellEditorDestroy and calls the editor’s destroy method.
+   * It then removes “editable” and “invalid” CSS classes from the active cell, re–applies the formatter
+   * to restore the cell’s original content, invalidates any post–processing results,
+   * and deactivates the editor lock. Optionally, it can also re–focus the grid.
    * In IE, it clears any text selection to ensure focus is properly reset.
-   * 
+   *
    * @param {Boolean} [refocusActiveCell]
    */
   protected makeActiveCellNormal(refocusActiveCell = false) {
@@ -3598,7 +3585,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * A public method that starts editing on the active cell by calling 
+   * A public method that starts editing on the active cell by calling
    * makeActiveCellEditable with the provided editor, pre–click flag, and event.
    */
   editActiveCell(editor: EditorConstructor, preClickModeOn?: boolean | null, e?: Event) {
@@ -3606,14 +3593,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
- * Makes the currently active cell editable by initializing an editor instance.
- *
- * @param {EditorConstructor} [editor] - An optional custom editor constructor to use for editing.
- * @param {boolean | null} [preClickModeOn] - Indicates if pre-click mode is enabled.
- * @param {Event | SlickEvent_} [e] - The event that triggered editing.
- *
- * @throws {Error} If called when the grid is not editable.
- */
+   * Makes the currently active cell editable by initializing an editor instance.
+   *
+   * @param {EditorConstructor} [editor] - An optional custom editor constructor to use for editing.
+   * @param {boolean | null} [preClickModeOn] - Indicates if pre-click mode is enabled.
+   * @param {Event | SlickEvent_} [e] - The event that triggered editing.
+   *
+   * @throws {Error} If called when the grid is not editable.
+   */
   protected makeActiveCellEditable(editor?: EditorConstructor, preClickModeOn?: boolean | null, e?: Event | SlickEvent_) {
     if (!this.activeCellNode) {
       return;
@@ -3686,10 +3673,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
   }
 
- /**
- * Commits the current edit and sets focus back to the grid.
- * If the commit fails due to validation, the focus remains in the editor.
- */
+  /**
+   * Commits the current edit and sets focus back to the grid.
+   * If the commit fails due to validation, the focus remains in the editor.
+   */
   protected commitEditAndSetFocus() {
     // if the commit fails, it would do so due to a validation error
     // if so, do not steal the focus from the editor
@@ -3701,9 +3688,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
   }
 
- /**
- * Cancels the current edit and restores focus to the grid.
- */
+  /**
+   * Cancels the current edit and restores focus to the grid.
+   */
   protected cancelEditAndSetFocus() {
     if (this.getEditorLock()?.cancelCurrentEdit()) {
       this.setFocus();
@@ -3712,12 +3699,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   // IEditor implementation for the editor lock
 
-/**
- * Commits the current edit, validating and applying changes if necessary.
- * If validation fails, an error is triggered and focus remains in the editor.
- *
- * @returns {boolean} Whether the edit was successfully committed.
- */
+  /**
+   * Commits the current edit, validating and applying changes if necessary.
+   * If validation fails, an error is triggered and focus remains in the editor.
+   *
+   * @returns {boolean} Whether the edit was successfully committed.
+   */
   protected commitCurrentEdit() {
     const self = this as SlickGrid<TData, C, O>;
     const item = self.getDataItem(self.activeRow);
@@ -3797,16 +3784,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return true;
   }
 
-/**
- * Cancels the current edit and restores the cell to normal mode.
- *
- * @returns {boolean} Always returns true.
- */
+  /**
+   * Cancels the current edit and restores the cell to normal mode.
+   *
+   * @returns {boolean} Always returns true.
+   */
   protected cancelCurrentEdit() {
     this.makeActiveCellNormal();
     return true;
   }
-
 
   /** Returns an array of row indices corresponding to the currently selected rows. */
   getSelectedRows() {
@@ -3830,16 +3816,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
   }
 
-
-///////////////////////////////////////////////////////////////////////////
+  ///////////////////////////////////////////////////////////////////////////
   // Event Handling and Interactivity
   /////////////////////////////////////////////////////////////////////////
 
   /**
-   * A generic helper that creates (or uses) a SlickEventData from the provided event, 
-   * attaches the grid instance to the event arguments, and calls notify on the given event. 
+   * A generic helper that creates (or uses) a SlickEventData from the provided event,
+   * attaches the grid instance to the event arguments, and calls notify on the given event.
    * Returns the result of the notification.
-   * 
+   *
    * @param {SlickEvent_} evt - The Slick event instance to trigger.
    * @param {ArgType} [args] - Optional arguments to pass with the event.
    * @param {Event | SlickEventData_} [e] - The original event object or SlickEventData.
@@ -3853,41 +3838,41 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
- * Handles the mouseout event for a cell.
- * Triggers the `onMouseLeave` event.
- *
- * @param {MouseEvent & { target: HTMLElement }} e - The mouse event.
- */
+   * Handles the mouseout event for a cell.
+   * Triggers the `onMouseLeave` event.
+   *
+   * @param {MouseEvent & { target: HTMLElement }} e - The mouse event.
+   */
   protected handleCellMouseOut(e: MouseEvent & { target: HTMLElement; }) {
     this.trigger(this.onMouseLeave, {}, e);
   }
 
-/**
- * Handles mouse hover over a header cell.
- * Adds CSS classes to indicate a hover state.
- *
- * @param {Event | SlickEventData_} e - The mouse event.
- */
+  /**
+   * Handles mouse hover over a header cell.
+   * Adds CSS classes to indicate a hover state.
+   *
+   * @param {Event | SlickEventData_} e - The mouse event.
+   */
   protected handleHeaderMouseHoverOn(e: Event | SlickEventData_) {
     (e as any)?.target.classList.add('ui-state-hover', 'slick-state-hover');
   }
 
-/**
- * Handles mouse hover off a header cell.
- * Removes CSS classes indicating a hover state.
- *
- * @param {Event | SlickEventData_} e - The mouse event.
- */
+  /**
+   * Handles mouse hover off a header cell.
+   * Removes CSS classes indicating a hover state.
+   *
+   * @param {Event | SlickEventData_} e - The mouse event.
+   */
   protected handleHeaderMouseHoverOff(e: Event | SlickEventData_) {
     (e as any)?.target.classList.remove('ui-state-hover', 'slick-state-hover');
   }
 
   /**
-   * Called when the grid’s selection model reports a change. It builds a new selection 
-   * (and CSS hash for selected cells) from the provided ranges, applies the new cell CSS styles, 
-   * and if the selection has changed from the previous state, triggers the onSelectedRowsChanged 
+   * Called when the grid’s selection model reports a change. It builds a new selection
+   * (and CSS hash for selected cells) from the provided ranges, applies the new cell CSS styles,
+   * and if the selection has changed from the previous state, triggers the onSelectedRowsChanged
    * event with details about added and removed selections.
-   * 
+   *
   * @param {SlickEventData_} e - The Slick event data for selection changes.
   * @param {SlickRange_[]} ranges - The list of selected row and cell ranges.
    */
@@ -3932,10 +3917,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Processes a mouse wheel event by adjusting the vertical scroll (scrollTop) based on deltaY (scaled by rowHeight) 
-   * and horizontal scroll (scrollLeft) based on deltaX. It then calls the internal scroll handler with the “mousewheel” 
+   * Processes a mouse wheel event by adjusting the vertical scroll (scrollTop) based on deltaY (scaled by rowHeight)
+   * and horizontal scroll (scrollLeft) based on deltaX. It then calls the internal scroll handler with the “mousewheel”
    * type and, if any scrolling occurred, prevents the default action.
-   * 
+   *
    * @param {MouseEvent} e - The mouse event.
    * @param {number} _delta - Unused delta value.
    * @param {number} deltaX - The horizontal scroll delta.
@@ -3956,10 +3941,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Called when a drag is initiated. It retrieves the cell from the event; if the cell does not exist or is not selectable, 
-   * it returns false. Otherwise, it triggers the onDragInit event and returns the event’s return value if 
+   * Called when a drag is initiated. It retrieves the cell from the event; if the cell does not exist or is not selectable,
+   * it returns false. Otherwise, it triggers the onDragInit event and returns the event’s return value if
    * propagation is stopped, else returns false to cancel the drag.
-   * 
+   *
    * @param {DragEvent} e - The drag event.
    * @param {DragPosition} dd - The drag position data.
    * @returns {boolean} - Whether the drag is valid or should be cancelled.
@@ -3981,10 +3966,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Similar to handleDragInit, this method retrieves the cell from the event 
-   * and triggers the `onDragStart` event. If the event propagation is stopped, 
+   * Similar to handleDragInit, this method retrieves the cell from the event
+   * and triggers the `onDragStart` event. If the event propagation is stopped,
    * it returns the specified value; otherwise, it returns false.
-   * 
+   *
    * @param {DragEvent} e - The drag event that initiated the action.
    * @param {DragPosition} dd - The current drag position.
    * @returns {boolean} - The result of the event trigger or false if propagation was not stopped.
@@ -4014,13 +3999,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-  * Handles keydown events for grid navigation and editing.
-  * It triggers the `onKeyDown` event and, based on the key pressed (such as HOME, END, arrow keys, PAGE_UP/DOWN, TAB, ENTER, ESC), 
-  * calls the appropriate navigation or editing method. If the key event is handled, 
-  * it stops propagation and prevents the default browser behaviour.
-  * 
-  * @param {KeyboardEvent & { originalEvent: Event; }} e - The keydown event, with the original event attached.
-  */
+   * Handles keydown events for grid navigation and editing.
+   * It triggers the `onKeyDown` event and, based on the key pressed (such as HOME, END, arrow keys, PAGE_UP/DOWN, TAB, ENTER, ESC),
+   * calls the appropriate navigation or editing method. If the key event is handled,
+   * it stops propagation and prevents the default browser behaviour.
+   *
+   * @param {KeyboardEvent & { originalEvent: Event; }} e - The keydown event, with the original event attached.
+   */
   protected handleKeyDown(e: KeyboardEvent & { originalEvent: Event; }) {
     const retval = this.trigger(this.onKeyDown, { row: this.activeRow, cell: this.activeCell }, e);
     let handled: boolean | undefined | void = retval.isImmediatePropagationStopped();
@@ -4113,10 +4098,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Handles a click event on the grid. It logs the event (for debugging), ensures focus is restored if necessary, 
-   * triggers the onClick event, and if the clicked cell is selectable and not already active, scrolls it into view 
+   * Handles a click event on the grid. It logs the event (for debugging), ensures focus is restored if necessary,
+   * triggers the onClick event, and if the clicked cell is selectable and not already active, scrolls it into view
    * and activates it.
-   * 
+   *
    * @param {DOMEvent<HTMLDivElement> | SlickEventData_} evt - The click event, either a native DOM event or a Slick event.
    */
   protected handleClick(evt: DOMEvent<HTMLDivElement> | SlickEventData_) {
@@ -4158,7 +4143,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Retrieves the cell DOM element from the event target. 
+   * Retrieves the cell DOM element from the event target.
    * If the cell exists and is not currently being edited, triggers the onContextMenu event.
    */
   protected handleContextMenu(e: Event & { target: HTMLElement; }) {
@@ -4176,8 +4161,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Retrieves the cell from the event and triggers the onDblClick event. 
-   * If the event is not prevented and the grid is editable, 
+   * Retrieves the cell from the event and triggers the onDblClick event.
+   * If the event is not prevented and the grid is editable,
    * it initiates cell editing by calling gotoCell with edit mode enabled.
    */
   protected handleDblClick(e: MouseEvent) {
@@ -4197,7 +4182,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * When the mouse enters a header column element, retrieves the column definition from the element’s 
+   * When the mouse enters a header column element, retrieves the column definition from the element’s
    * stored data and triggers the onHeaderMouseEnter event with the column and grid reference.
    */
   protected handleHeaderMouseEnter(e: MouseEvent & { target: HTMLElement; }) {
@@ -4212,7 +4197,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Similar to handleHeaderMouseEnter, but triggers the onHeaderMouseLeave event 
+   * Similar to handleHeaderMouseEnter, but triggers the onHeaderMouseLeave event
    * when the mouse leaves a header column element.
    */
   protected handleHeaderMouseLeave(e: MouseEvent & { target: HTMLElement; }) {
@@ -4255,7 +4240,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Retrieves the header column element and its associated column definition, 
+   * Retrieves the header column element and its associated column definition,
    * then triggers the onHeaderContextMenu event with the column data.
    */
   protected handleHeaderContextMenu(e: MouseEvent & { target: HTMLElement; }) {
@@ -4345,8 +4330,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
   }
 
-
-    /**
+  /**
    * limits the frequency at which the provided action is executed.
    * call enqueue to execute the action - it will execute either immediately or, if it was executed less than minPeriod_ms in the past, as soon as minPeriod_ms has expired.
    * call dequeue to cancel any pending action.
@@ -4389,8 +4373,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     };
   }
 
-
-
   /**
    * Returns a hash containing row and cell indexes from a standard W3C event.
    * @param {*} event A standard W3C event.
@@ -4422,16 +4404,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     if (!Utils.isDefined(row) || !Utils.isDefined(cell)) {
       return null;
-    } else {
-      return { row, cell };
     }
+    return { row, cell };
   }
 
-/////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////
   // End Event Management and Interactivity
   ///////////////////////////////////////////////////////////////////
 
-//////////////////////////////////////////////////////////////////////
+  //////////////////////////////////////////////////////////////////////
   // Rendering and Layout Management
   ///////////////////////////////////////////////////////////////////
 
@@ -4514,11 +4495,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Calls setActiveViewportNode (using the provided event) to set the active viewport, 
+   * Calls setActiveViewportNode (using the provided event) to set the active viewport,
    * then returns the active viewport DOM element.
-   * 
-   * @param e 
-   * @returns 
+   *
+   * @param e
+   * @returns
    */
   getActiveViewportNode(e: Event | SlickEventData_) {
     this.setActiveViewportNode(e);
@@ -4526,12 +4507,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return this._activeViewportNode;
   }
 
-  /** Sets an active viewport node 
-  * 
-  * @param {number | string} [columnIdOrIdx] - The column identifier or index.
-  * @param {number} [rowIndex] - The row index.
-  * @returns {HTMLElement} The corresponding viewport element.
-  */
+  /**
+   * Sets an active viewport node
+   *
+   * @param {number | string} [columnIdOrIdx] - The column identifier or index.
+   * @param {number} [rowIndex] - The row index.
+   * @returns {HTMLElement} The corresponding viewport element.
+   */
   setActiveViewportNode(e: Event | SlickEventData_) {
     if (e instanceof SlickEventData) {
       e = e.getNativeEvent<Event>();
@@ -4540,10 +4522,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return this._activeViewportNode;
   }
 
-  /** Get the headers width in pixel 
-   * 
-   * Iterates over all columns to accumulate the widths for the left and right header sections, 
-   * adds scrollbar width if needed, and adjusts for frozen columns. 
+  /** Get the headers width in pixel
+   *
+   * Iterates over all columns to accumulate the widths for the left and right header sections,
+   * adds scrollbar width if needed, and adjusts for frozen columns.
    * Returns the computed overall header width in pixels.
   */
   getHeadersWidth() {
@@ -4586,10 +4568,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return Math.max(this.headersWidth, this.viewportW) + 1000;
   }
 
-  /** Get the grid canvas width 
-   * 
-   * Computes the available width (considering vertical scrollbar if present), 
-   * then iterates over the columns (left vs. right based on frozen columns) to sum their widths. 
+  /** Get the grid canvas width
+   *
+   * Computes the available width (considering vertical scrollbar if present),
+   * then iterates over the columns (left vs. right based on frozen columns) to sum their widths.
    * If full–width rows are enabled, extra width is added. Returns the total calculated width.
   */
   getCanvasWidth(): number {
@@ -4623,10 +4605,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Recalculates the canvas width by calling getCanvasWidth and then adjusts widths of header containers, 
-   * canvases, panels, and viewports. If widths have changed (or forced), it applies the new column widths 
+   * Recalculates the canvas width by calling getCanvasWidth and then adjusts widths of header containers,
+   * canvases, panels, and viewports. If widths have changed (or forced), it applies the new column widths
    * by calling applyColumnWidths.
-   * 
+   *
    * @param {boolean} [forceColumnWidthsUpdate] - Whether to force an update of column widths.
    */
   protected updateCanvasWidth(forceColumnWidthsUpdate?: boolean) {
@@ -4753,8 +4735,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Based on whether frozen columns (and/or rows) are enabled, shows or hides the right–side header 
-   * and top panes as well as the bottom panes. If no frozen columns exist, hides right–side panes; 
+   * Based on whether frozen columns (and/or rows) are enabled, shows or hides the right–side header
+   * and top panes as well as the bottom panes. If no frozen columns exist, hides right–side panes;
    * otherwise, conditionally shows or hides the bottom panes depending on whether frozen rows exist.
    */
   protected setPaneVisibility() {
@@ -4784,9 +4766,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Sets the CSS overflowX and overflowY styles for all four viewport elements 
-   * (top–left, top–right, bottom–left, bottom–right) based on the grid’s frozen columns/rows status 
-   * and options such as alwaysAllowHorizontalScroll and alwaysShowVerticalScroll. 
+   * Sets the CSS overflowX and overflowY styles for all four viewport elements
+   * (top–left, top–right, bottom–left, bottom–right) based on the grid’s frozen columns/rows status
+   * and options such as alwaysAllowHorizontalScroll and alwaysShowVerticalScroll.
    * If a viewportClass is specified in options, the class is added to each viewport.
    */
   protected setOverflow() {
@@ -4812,9 +4794,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Creates a <style> element (using a provided nonce if available) and appends it to the shadowRoot (or document head). 
-   * Inserts rules that set heights for panels, header rows, footer rows, and cells based on grid options. 
-   * It also loops through each column (if not hidden) to add empty rules for left and right column classes. 
+   * Creates a <style> element (using a provided nonce if available) and appends it to the shadowRoot (or document head).
+   * Inserts rules that set heights for panels, header rows, footer rows, and cells based on grid options.
+   * It also loops through each column (if not hidden) to add empty rules for left and right column classes.
    * If the stylesheet cannot be accessed via the modern API, it falls back to createCssRulesAlternative.
    */
   protected createCssRules() {
@@ -4854,10 +4836,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /** Create CSS rules via template in case the first approach with createElement('style') doesn't work.
-   * 
-   * In cases where the standard method of inserting CSS rules fails (as may occur in some environments), 
-   * this function creates a <style> element using a template, appends it to the document, and then adds 
-   * the provided CSS rules as a concatenated text node. 
+   *
+   * In cases where the standard method of inserting CSS rules fails (as may occur in some environments),
+   * this function creates a <style> element using a template, appends it to the document, and then adds
+   * the provided CSS rules as a concatenated text node.
    * Also appends rules for each visible column for left and right classes.
    */
   protected createCssRulesAlternative(rules: string[]) {
@@ -4881,13 +4863,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Finds and caches the CSS rules from the grid’s dynamically created stylesheet 
-   * that correspond to a column’s left (".lX") and right (".rX") classes. 
-   * Returns an object containing the left and right rule objects for the specified column index. 
+   * Finds and caches the CSS rules from the grid’s dynamically created stylesheet
+   * that correspond to a column’s left (".lX") and right (".rX") classes.
+   * Returns an object containing the left and right rule objects for the specified column index.
    * If the stylesheet has not been located yet, it iterates through available styleSheets to find it.
-   * 
-   * @param idx 
-   * @returns 
+   *
+   * @param idx
+   * @returns
    */
   protected getColumnCssRules(idx: number) {
     let i: number;
@@ -4934,7 +4916,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Removes the dynamically created <style> element (if it exists) from the DOM and 
+   * Removes the dynamically created <style> element (if it exists) from the DOM and
    * clears the cached stylesheet reference.
    */
   protected removeCssRules() {
@@ -4953,8 +4935,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Based on the provided option (e.g. showTopPanel, showHeaderRow, etc.) and the target container(s), 
-   * sets the grid option to the desired visibility. It then either slides down/up the container 
+   * Based on the provided option (e.g. showTopPanel, showHeaderRow, etc.) and the target container(s),
+   * sets the grid option to the desired visibility. It then either slides down/up the container
    * (if animation is enabled) or shows/hides it immediately, followed by a canvas resize.
    * @param {'showTopPanel' | 'showHeaderRow' | 'showColumnHeader' | 'showFooterRow' | 'showPreHeaderPanel' | 'showTopHeaderPanel'} option - The grid option to modify.
    * @param {HTMLElement | HTMLElement[]} container - The panel element(s) to show or hide.
@@ -5037,57 +5019,57 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.togglePanelVisibility('showTopHeaderPanel', this._topHeaderPanelScroller, visible);
   }
 
-/**
- * Retrieves the height of a row.
- *
- * @returns {number} The row height defined in the grid options.
- */
+  /**
+   * Retrieves the height of a row.
+   *
+   * @returns {number} The row height defined in the grid options.
+   */
   protected getRowHeight() {
     return this._options.rowHeight!;
   }
 
   /**
-  * Returns the top pixel position for a given row, based on the row height and current vertical offset.
-  * 
-  * @param {number} row - The row index.
-  * @returns {number} The pixel position of the top of the row.
-  */
+   * Returns the top pixel position for a given row, based on the row height and current vertical offset.
+   *
+   * @param {number} row - The row index.
+   * @returns {number} The pixel position of the top of the row.
+   */
   protected getRowTop(row: number) {
     return Math.round(this._options.rowHeight! * row - this.offset);
   }
-  
- /**
- * Returns the bottom pixel position for a given row, based on the row height and current vertical offset.
- *
- * @param {number} row - The row index.
- * @returns {number} The pixel position of the bottom of the row.
- */
+
+  /**
+   * Returns the bottom pixel position for a given row, based on the row height and current vertical offset.
+   *
+   * @param {number} row - The row index.
+   * @returns {number} The pixel position of the bottom of the row.
+   */
   protected getRowBottom(row: number) {
     return this.getRowTop(row) + this._options.rowHeight!;
   }
 
-/**
- * Computes the row index corresponding to a given vertical pixel position (taking the current offset into account).
- *
- * @param {number} y - The vertical position in pixels.
- * @returns {number} The calculated row index.
- */
+  /**
+   * Computes the row index corresponding to a given vertical pixel position (taking the current offset into account).
+   *
+   * @param {number} y - The vertical position in pixels.
+   * @returns {number} The calculated row index.
+   */
   protected getRowFromPosition(y: number) {
     return Math.floor((y + this.offset) / this._options.rowHeight!);
   }
 
   /**
-   * Creates a row container element with CSS classes (e.g. active, odd/even, frozen, loading) based on the row’s state 
-   * and metadata. It positions the row using getRowTop (adjusting for frozen rows), clones the row for frozen-column 
-   * support if needed, and iterates over each column to call appendCellHtml 
+   * Creates a row container element with CSS classes (e.g. active, odd/even, frozen, loading) based on the row’s state
+   * and metadata. It positions the row using getRowTop (adjusting for frozen rows), clones the row for frozen-column
+   * support if needed, and iterates over each column to call appendCellHtml
    * for each cell that is within the visible viewport range.
-   * 
-    * @param {HTMLElement[]} divArrayL - The array to store left-side row elements.
-    * @param {HTMLElement[]} divArrayR - The array to store right-side row elements (for frozen columns).
-    * @param {number} row - The row index to be rendered.
-    * @param {CellViewportRange} range - The visible viewport range for rendering cells.
-    * @param {number} dataLength - The total data length to determine if the row is loading.
-    */
+   *
+   * @param {HTMLElement[]} divArrayL - The array to store left-side row elements.
+   * @param {HTMLElement[]} divArrayR - The array to store right-side row elements (for frozen columns).
+   * @param {number} row - The row index to be rendered.
+   * @param {CellViewportRange} range - The visible viewport range for rendering cells.
+   * @param {number} dataLength - The total data length to determine if the row is loading.
+   */
   protected appendRowHtml(divArrayL: HTMLElement[], divArrayR: HTMLElement[], row: number, range: CellViewportRange, dataLength: number) {
     const d = this.getDataItem(row);
     const dataLoading = row < dataLength && !d;
@@ -5189,9 +5171,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Creates a cell element with appropriate CSS classes (including frozen and active classes) and retrieves its value 
-   * via the formatter. It applies additional CSS classes from event return values and formatter results, 
-   * sets tooltips if provided, and inserts any additional DOM elements if required. It then appends the cell element 
+   * Creates a cell element with appropriate CSS classes (including frozen and active classes) and retrieves its value
+   * via the formatter. It applies additional CSS classes from event return values and formatter results,
+   * sets tooltips if provided, and inserts any additional DOM elements if required. It then appends the cell element
    * to the row container and updates the row’s cellRenderQueue and cellColSpans in the rowsCache.
    *
    * @param {HTMLElement} divRow - The row container element to append the cell to.
@@ -5290,10 +5272,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Iterates over keys in the rowsCache and, for each row that is not the active row and falls 
-   * outside the provided visible range (and is not a frozen row), calls removeRowFromCache to remove 
+   * Iterates over keys in the rowsCache and, for each row that is not the active row and falls
+   * outside the provided visible range (and is not a frozen row), calls removeRowFromCache to remove
    * its DOM elements. If asynchronous post–render cleanup is enabled, it triggers that process afterward.
-   * 
+   *
    * @param {{ bottom: number; top: number; }} rangeToKeep - The range of rows to keep.
    */
   protected cleanupRows(rangeToKeep: { bottom: number; top: number; }) {
@@ -5449,11 +5431,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Given a row index, retrieves the corresponding cache entry. If asynchronous post–render cleanup is enabled 
-   * and post–processed results exist, queues cleanup actions; otherwise, removes the row nodes from the DOM. 
-   * It then deletes the row’s entry from rowsCache and postProcessedRows, decrements the rendered row count, 
+   * Given a row index, retrieves the corresponding cache entry. If asynchronous post–render cleanup is enabled
+   * and post–processed results exist, queues cleanup actions; otherwise, removes the row nodes from the DOM.
+   * It then deletes the row’s entry from rowsCache and postProcessedRows, decrements the rendered row count,
    * and increments a removal counter.
-   * 
+   *
    * @param {number} row - The index of the row to remove.
    */
   protected removeRowFromCache(row: number) {
@@ -5552,9 +5534,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Calculates the vertical height available for displaying grid rows. In auto–height mode it sums panel heights 
-   * (header, footer, top panel) plus the total row height; otherwise, it subtracts header, footer, pre–header, 
-   * top–header heights and container paddings from the container’s computed height. It also computes and stores 
+   * Calculates the vertical height available for displaying grid rows. In auto–height mode it sums panel heights
+   * (header, footer, top panel) plus the total row height; otherwise, it subtracts header, footer, pre–header,
+   * top–header heights and container paddings from the container’s computed height. It also computes and stores
    * the number of visible rows.
    */
   getViewportHeight() {
@@ -5595,7 +5577,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Returns the width of the grid’s viewport by measuring the inner width of the grid container (using a utility function). 
+   * Returns the width of the grid’s viewport by measuring the inner width of the grid container (using a utility function).
    * It falls back to a devMode–specified width if necessary.
    */
   getViewportWidth() {
@@ -5604,12 +5586,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /** Execute a Resize of the Grid Canvas.
-   * 
-   * Recalculates the grid’s canvas, pane, and viewport dimensions based on the current container size, 
-   * frozen rows/columns settings, and auto–height configuration. It then applies these dimensions to various DOM elements 
-   * (panes, viewports, canvases) and updates the scrollbar dimensions. 
+   *
+   * Recalculates the grid’s canvas, pane, and viewport dimensions based on the current container size,
+   * frozen rows/columns settings, and auto–height configuration. It then applies these dimensions to various DOM elements
+   * (panes, viewports, canvases) and updates the scrollbar dimensions.
    * Finally, it updates the row count, handles scrolling, and forces a re–render.
-  */
+   */
   resizeCanvas() {
     if (!this.initialized) { return; }
     this.paneTopH = 0;
@@ -5842,10 +5824,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Returns an object with the top and bottom row indices that are visible in the viewport, as well 
-   * as the left and right pixel boundaries. 
+   * Returns an object with the top and bottom row indices that are visible in the viewport, as well
+   * as the left and right pixel boundaries.
    * It uses the current (or provided) scroll positions and viewport dimensions.
-   * 
+   *
    * @param {number} [viewportTop] - The top scroll position.
    * @param {number} [viewportLeft] - The left scroll position.
    * @returns {{ top: number; bottom: number; leftPx: number; rightPx: number }} The visible range.
@@ -5862,16 +5844,16 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     };
   }
 
-  /** 
-   * Computes the range of rows (and horizontal pixel boundaries) that should be rendered, 
-   * including an additional buffer (based on row height and a minimum buffer) determined by 
-   * the current vertical scroll direction. 
+  /**
+   * Computes the range of rows (and horizontal pixel boundaries) that should be rendered,
+   * including an additional buffer (based on row height and a minimum buffer) determined by
+   * the current vertical scroll direction.
    * This range is used to decide which rows and cells to render.
-   * 
+   *
    * @param {number} [viewportTop] - The top scroll position.
    * @param {number} [viewportLeft] - The left scroll position.
    * @returns {{ top: number; bottom: number; leftPx: number; rightPx: number }} The rendered range.
-  */
+   */
   getRenderedRange(viewportTop?: number, viewportLeft?: number) {
     const range = this.getVisibleRange(viewportTop, viewportLeft);
     const buffer = Math.round(this.viewportH / this._options.rowHeight!);
@@ -5901,10 +5883,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Ensures that the row’s cache entry contains all cell DOM nodes by transferring nodes 
-   * from the cellRenderQueue into the cellNodesByColumnIdx array. This is used to guarantee 
+   * Ensures that the row’s cache entry contains all cell DOM nodes by transferring nodes
+   * from the cellRenderQueue into the cellNodesByColumnIdx array. This is used to guarantee
    * that each cell is indexed properly for later updates.
-   * 
+   *
    * @param {number} row - The row index to ensure cell nodes exist for.
    */
   protected ensureCellNodesInRowsCache(row: number) {
@@ -5925,8 +5907,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * For the specified row and a given horizontal visible range, iterates over the cached cell nodes and 
-   * removes those cells that fall completely outside the visible range (except for frozen or always–rendered cells). 
+   * For the specified row and a given horizontal visible range, iterates over the cached cell nodes and
+   * removes those cells that fall completely outside the visible range (except for frozen or always–rendered cells).
    * Cells are either removed immediately or queued for asynchronous cleanup if enabled.
    * @param {CellViewportRange} range - The visible cell viewport range.
    * @param {number} row - The row index to clean up.
@@ -5996,9 +5978,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Iterates over each row in the provided rendered range. For each row, ensures cell nodes exist, 
-   * calls cleanUpCells to remove outdated cells, and then renders any missing cells (by calling appendCellHtml) 
-   * for columns that are now within the viewport. Finally, processes the row’s cellRenderQueue to attach rendered 
+   * Iterates over each row in the provided rendered range. For each row, ensures cell nodes exist,
+   * calls cleanUpCells to remove outdated cells, and then renders any missing cells (by calling appendCellHtml)
+   * for columns that are now within the viewport. Finally, processes the row’s cellRenderQueue to attach rendered
    * cells to the correct row containers (handling frozen columns), and reselects the active cell if needed.
    */
   protected cleanUpAndRenderCells(range: CellViewportRange) {
@@ -6107,11 +6089,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Iterates over the row indices in the given rendered range and, for each row not yet in the cache, 
-   * creates a new cache entry and calls appendRowHtml to build the row’s cell content. Once built, 
-   * the row is appended to the appropriate canvas element (top or bottom, left or right depending on frozen settings). 
+   * Iterates over the row indices in the given rendered range and, for each row not yet in the cache,
+   * creates a new cache entry and calls appendRowHtml to build the row’s cell content. Once built,
+   * the row is appended to the appropriate canvas element (top or bottom, left or right depending on frozen settings).
    * If the active cell is rendered, it reselects it.
-   * 
+   *
    * @param {{ top: number; bottom: number; leftPx: number; rightPx: number; }} range - The range of rows to render.
    */
   protected renderRows(range: { top: number; bottom: number; leftPx: number; rightPx: number; }) {
@@ -6203,8 +6185,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Iterates over each row in the rowsCache and updates the top position of the row’s DOM element 
-   * using the getRowTop calculation. Depending on the grid option, it either uses CSS transform 
+   * Iterates over each row in the rowsCache and updates the top position of the row’s DOM element
+   * using the getRowTop calculation. Depending on the grid option, it either uses CSS transform
    * or sets the top property directly.
    */
   protected updateRowPositions() {
@@ -6221,13 +6203,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
   }
 
-  /** (re)Render the grid 
-   * 
-   * Main rendering method that first dequeues any pending scroll throttling, then obtains the visible and rendered ranges. 
-   * It removes rows no longer visible, calls cleanUpAndRenderCells and renderRows to render missing cells and new rows, 
-   * and, if frozen rows are present, renders them separately. It then sets post–processing boundaries, starts post–processing, 
+  /**
+   * (re)Render the grid
+   *
+   * Main rendering method that first dequeues any pending scroll throttling, then obtains the visible and rendered ranges.
+   * It removes rows no longer visible, calls cleanUpAndRenderCells and renderRows to render missing cells and new rows,
+   * and, if frozen rows are present, renders them separately. It then sets post–processing boundaries, starts post–processing,
    * updates scroll positions, and triggers the onRendered event.
-  */
+   */
   render() {
     if (!this.initialized) { return; }
 
@@ -6283,11 +6266,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /**
    * Get frozen (pinned) row offset
-   * 
-   * Returns the vertical pixel offset to apply for frozen rows. 
-   * Depending on whether frozen rows are pinned at the bottom or top and based on grid height, 
+   *
+   * Returns the vertical pixel offset to apply for frozen rows.
+   * Depending on whether frozen rows are pinned at the bottom or top and based on grid height,
    * it returns either a fixed frozen rows height or a calculated offset.
-   * 
+   *
    * @param {Number} row - grid row number
    */
   getFrozenRowOffset(row: number) {
@@ -6319,18 +6302,18 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return offset;
   }
 
-////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////
   // End Rendering and Layout Management
   //////////////////////////////////////////////////////
 
-////////////////////////////////////////////////////////
+  ////////////////////////////////////////////////////////
   // Scrolling and Virtualisation
   /////////////////////////////////////////////////////
 
   // TODO:  this is static.  need to handle page mutation.
   /**
-   * Traverses up from a specific canvas element and binds a scroll event handler 
-   * (to update active cell positions) on each ancestor element that is scrollable. 
+   * Traverses up from a specific canvas element and binds a scroll event handler
+   * (to update active cell positions) on each ancestor element that is scrollable.
    * Also stores these ancestors for later unbinding.
    */
   protected bindAncestorScrollEvents() {
@@ -6345,7 +6328,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Iterates through the stored ancestor elements (in _boundAncestors) 
+   * Iterates through the stored ancestor elements (in _boundAncestors)
    * and unbinds any scroll events previously attached, then clears the stored array.
    */
   protected unbindAncestorScrollEvents() {
@@ -6354,9 +6337,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     });
     this._boundAncestors = [];
   }
-  
+
   /**
-   * Chooses which viewport container(s) will serve as the scroll container for horizontal and vertical scrolling. 
+   * Chooses which viewport container(s) will serve as the scroll container for horizontal and vertical scrolling.
    * The selection depends on whether the grid has frozen columns and/or frozen rows and whether frozenBottom is set.
    */
   protected setScroller() {
@@ -6395,10 +6378,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /**
    * Scroll to a Y position in the grid (clamped to valid bounds)
-   * 
-   * Updates internal offsets, recalculates the visible range, cleans up rows outside the viewport, 
+   *
+   * Updates internal offsets, recalculates the visible range, cleans up rows outside the viewport,
    * updates row positions, and triggers the onViewportChanged event.
-   * 
+   *
    * @param {Number} y
    */
   scrollTo(y: number) {
@@ -6452,15 +6435,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
   }
 
-  /** Invokes handleElementScroll for the pre–header panel scroller to synchronize its 
-  * horizontal scroll position with the main viewport.
-  */
+  /** Invokes handleElementScroll for the pre–header panel scroller to synchronize its
+   * horizontal scroll position with the main viewport.
+   */
   protected handlePreHeaderPanelScroll() {
     this.handleElementScroll(this._preHeaderPanelScroller);
   }
 
   /**
-   * Invokes handleElementScroll for the top–header panel scroller to synchronize its horizontal 
+   * Invokes handleElementScroll for the top–header panel scroller to synchronize its horizontal
    * scroll position with the main viewport.
    */
   protected handleTopHeaderPanelScroll() {
@@ -6468,9 +6451,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Given a DOM element, checks its scrollLeft value and, if it differs from the viewport scroll 
+   * Given a DOM element, checks its scrollLeft value and, if it differs from the viewport scroll
    * container’s scrollLeft, updates the latter to match.
-   * 
+   *
    * @param {HTMLElement} element - The element whose scroll position needs to be synced.
    */
   protected handleElementScroll(element: HTMLElement) {
@@ -6481,11 +6464,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Called when the grid’s main scroll container scrolls. Updates internal scroll properties (scrollHeight, 
-   * scrollTop, scrollLeft) from the container, then calls _handleScroll (with an argument 
-   * indicating whether the event came from a system event or a mousewheel). 
+   * Called when the grid’s main scroll container scrolls. Updates internal scroll properties (scrollHeight,
+   * scrollTop, scrollLeft) from the container, then calls _handleScroll (with an argument
+   * indicating whether the event came from a system event or a mousewheel).
    * Returns the result of _handleScroll.
-   * 
+   *
    * @param {Event} [e] - The scroll event.
    * @returns {boolean} The result of `_handleScroll`.
    */
@@ -6497,16 +6480,16 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Handles the detailed processing of a scroll event. It calculates maximum allowed scroll distances, 
-   * clamps the current scrollTop/scrollLeft to valid bounds, computes vertical and horizontal scroll distances, 
-   * and if significant horizontal scroll occurred, synchronizes various elements (header, panels, etc.) 
-   * to the new scrollLeft. For vertical scroll (if autoHeight is off), updates the virtual scrolling page, 
-   * offset, and may invalidate all rows. Finally, if scroll distances exceed thresholds, either calls render 
-   * immediately or enqueues rendering via a throttle; triggers onViewportChanged and onScroll events with 
-   * detailed parameters (including the cell at the top–left). 
-   * 
+   * Handles the detailed processing of a scroll event. It calculates maximum allowed scroll distances,
+   * clamps the current scrollTop/scrollLeft to valid bounds, computes vertical and horizontal scroll distances,
+   * and if significant horizontal scroll occurred, synchronizes various elements (header, panels, etc.)
+   * to the new scrollLeft. For vertical scroll (if autoHeight is off), updates the virtual scrolling page,
+   * offset, and may invalidate all rows. Finally, if scroll distances exceed thresholds, either calls render
+   * immediately or enqueues rendering via a throttle; triggers onViewportChanged and onScroll events with
+   * detailed parameters (including the cell at the top–left).
+   *
    * Returns true if any scroll movement occurred, else false.
-   * 
+   *
    * @param {'mousewheel' | 'scroll' | 'system'} [eventType='system'] - The type of scroll event.
    * @returns {boolean} True if any scroll movement occurred, otherwise false.
    */
@@ -6628,12 +6611,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return false;
   }
 
-  /** Scroll to a specific cell and make it into the view 
-   * 
-   * First calls scrollRowIntoView for the row. If the cell is not in a frozen column, 
-   * calculates the cell’s colspan and then calls internalScrollColumnIntoView with the 
+  /** Scroll to a specific cell and make it into the view
+   *
+   * First calls scrollRowIntoView for the row. If the cell is not in a frozen column,
+   * calculates the cell’s colspan and then calls internalScrollColumnIntoView with the
    * cell’s left and right boundaries.
-  */
+   */
   scrollCellIntoView(row: number, cell: number, doPaging?: boolean) {
     this.scrollRowIntoView(row, doPaging);
 
@@ -6646,12 +6629,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Checks if the given left/right pixel boundaries are outside the current 
-   * horizontal scroll position of the viewport container. 
+   * Checks if the given left/right pixel boundaries are outside the current
+   * horizontal scroll position of the viewport container.
    * If so, adjusts scrollLeft appropriately and triggers a re–render.
-   * 
-   * @param left 
-   * @param right 
+   *
+   * @param left
+   * @param right
    */
   protected internalScrollColumnIntoView(left: number, right: number) {
     const scrollRight = this.scrollLeft + (Utils.width(this._viewportScrollContainerX) as number) - (this.viewportHasVScroll ? (this.scrollbarDimensions?.width ?? 0) : 0);
@@ -6701,18 +6684,18 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return this.getRowSpanIntersection<number | null>(row);
   }
 
-/**
- * Determines the intersection of a given row with row span metadata.
- * Depending on the `outputType` parameter, it returns either the intersecting columns
- * or the start row of the span.
- *
- * @template R - The return type, either an array of column indices or a single row index.
- * @param {number} row - The row index to check for intersections.
- * @param {'columns' | 'start'} [outputType] - Determines the output type:
- *   - `'columns'`: Returns an array of column indices that intersect with the row span.
- *   - `'start'`: Returns the starting row index of the intersecting row span.
- * @returns {R} The intersection result based on the specified output type.
- */
+  /**
+   * Determines the intersection of a given row with row span metadata.
+   * Depending on the `outputType` parameter, it returns either the intersecting columns
+   * or the start row of the span.
+   *
+   * @template R - The return type, either an array of column indices or a single row index.
+   * @param {number} row - The row index to check for intersections.
+   * @param {'columns' | 'start'} [outputType] - Determines the output type:
+   *   - `'columns'`: Returns an array of column indices that intersect with the row span.
+   *   - `'start'`: Returns the starting row index of the intersecting row span.
+   * @returns {R} The intersection result based on the specified output type.
+   */
   protected getRowSpanIntersection<R>(row: number, outputType?: 'columns' | 'start'): R {
     const columnIntersects: number[] = [];
     let rowStartIntersect = null;
@@ -6778,12 +6761,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
   }
 
-/**
- * Remaps row span metadata for a given row by iterating through its column metadata.
- * Calls `remapRowSpanMetadata` for each column to update row span information.
- *
- * @param {number} row - The row index for which to remap row span metadata.
- */
+  /**
+   * Remaps row span metadata for a given row by iterating through its column metadata.
+   * Calls `remapRowSpanMetadata` for each column to update row span information.
+   *
+   * @param {number} row - The row index for which to remap row span metadata.
+   */
   protected remapRowSpanMetadataByRow(row: number) {
     const colMeta = this.getItemMetadaWhenExists(row);
     if (colMeta?.columns) {
@@ -6797,15 +6780,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
   }
 
-/**
- * Updates the row span metadata for a given row and cell.
- * If a cell spans multiple rows, it records the span in `_colsWithRowSpanCache`.
- *
- * @param {number} row - The row index.
- * @param {number} cell - The column index.
- * @param {number} colspan - The number of columns the cell spans.
- * @param {number} rowspan - The number of rows the cell spans.
- */
+  /**
+   * Updates the row span metadata for a given row and cell.
+   * If a cell spans multiple rows, it records the span in `_colsWithRowSpanCache`.
+   *
+   * @param {number} row - The row index.
+   * @param {number} cell - The column index.
+   * @param {number} colspan - The number of columns the cell spans.
+   * @param {number} rowspan - The number of rows the cell spans.
+   */
   protected remapRowSpanMetadata(row: number, cell: number, colspan: number, rowspan: number) {
     if (rowspan > 1) {
       const rspan = `${row}:${row + rowspan - 1}`;
@@ -6842,7 +6825,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     };
   }
 
-    /**
+  /**
    * Scroll to a specific row and make it into the view
    * @param {Number} row - grid row number
    * @param {Boolean} doPaging - scroll when pagination is enabled
@@ -6889,7 +6872,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * Scrolls the grid by a full page in the specified direction.
    * Adjusts the scroll position and re-renders the grid accordingly.
    * If cell navigation is enabled, it also updates the active cell position.
-   * 
+   *
    *  * @param {number} dir - The direction to scroll:
    *   - `1` for scrolling down
    *   - `-1` for scrolling up
@@ -6955,13 +6938,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     } while (--tmpRow > 0);
   }
 
-/**
- * Navigates to a specified row, ensuring it is visible and selecting an active cell if applicable.
- * Adjusts the scroll position and updates the active cell based on cell navigation rules.
- *
- * @param {number} row - The row index to navigate to.
- * @returns {boolean} Whether the navigation was successful.
- */
+  /**
+   * Navigates to a specified row, ensuring it is visible and selecting an active cell if applicable.
+   * Adjusts the scroll position and updates the active cell based on cell navigation rules.
+   *
+   * @param {number} row - The row index to navigate to.
+   * @returns {boolean} Whether the navigation was successful.
+   */
   navigateToRow(row: number) {
     const num_rows = this.getDataLength();
     if (!num_rows) { return false; }
@@ -6999,14 +6982,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return isValidMove;
   }
 
-/**
- * Retrieves the colspan for a specified cell in a row, determining how many columns it spans.
- * Uses column metadata to derive the correct colspan value.
- *
- * @param {number} row - The row index.
- * @param {number} cell - The column index.
- * @returns {number} The number of columns the cell spans.
- */
+  /**
+   * Retrieves the colspan for a specified cell in a row, determining how many columns it spans.
+   * Uses column metadata to derive the correct colspan value.
+   *
+   * @param {number} row - The row index.
+   * @param {number} cell - The column index.
+   * @returns {number} The number of columns the cell spans.
+   */
   protected getColspan(row: number, cell: number): number {
     const metadata = this.getItemMetadaWhenExists(row);
     if (!metadata || !metadata.columns) {
@@ -7030,20 +7013,20 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
 
 
-/////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////
   // End Scrolling and Virtualisation
   ///////////////////////////////////////////////////////
 
 
-/////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////
   // Cell and Row Post-Processing and CSS Styling
   ///////////////////////////////////////////////////////
 
   /**
-   * Increments an internal group id and, for each column in the provided postProcessedRow object, 
-   * queues a cleanup action (action type 'C') for that cell. It also queues a cleanup action for the 
+   * Increments an internal group id and, for each column in the provided postProcessedRow object,
+   * queues a cleanup action (action type 'C') for that cell. It also queues a cleanup action for the
    * entire row (action type 'R') and removes all row nodes from the DOM.
-   * 
+   *
    * @param {RowCaching} cacheEntry - The cache entry for the row.
    * @param {any} postProcessedRow - The object containing post-processed row data.
    * @param {number} rowIdx - The index of the row being processed.
@@ -7078,9 +7061,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Queues a cleanup action (action type 'C') for the provided cell DOM element and 
+   * Queues a cleanup action (action type 'C') for the provided cell DOM element and
    * immediately removes the cell element from the DOM.
-   * 
+   *
    * @param {HTMLElement} cellnode - The DOM element representing the cell.
    * @param {number} columnIdx - The column index of the cell.
    * @param {number} rowIdx - The row index of the cell.
@@ -7096,12 +7079,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     cellnode.remove();
   }
 
-  /** Apply a Formatter Result to a Cell DOM Node 
-   * 
-   * If the formatter result is not an object, it is applied directly as HTML/text; 
-   * otherwise, it extracts the content (from a property such as “html” or “text”) and applies it. 
+  /** Apply a Formatter Result to a Cell DOM Node
+   *
+   * If the formatter result is not an object, it is applied directly as HTML/text;
+   * otherwise, it extracts the content (from a property such as “html” or “text”) and applies it.
    * Additionally, it conditionally removes or adds CSS classes and sets a tooltip on the cell.
-  */
+   */
   applyFormatResultToCellNode(formatterResult: FormatterResultWithHtml | FormatterResultWithText | string | HTMLElement | DocumentFragment, cellNode: HTMLDivElement, suppressRemove?: boolean) {
     if (formatterResult === null || formatterResult === undefined) { formatterResult = ''; }
     if (Object.prototype.toString.call(formatterResult) !== '[object Object]') {
@@ -7124,9 +7107,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * If asynchronous post–rendering is enabled, clears any existing post–render timer and sets a new timeout 
+   * If asynchronous post–rendering is enabled, clears any existing post–render timer and sets a new timeout
    * to call asyncPostProcessRows after the configured delay.
-   * 
+   *
    * @returns {void}
    */
   protected startPostProcessing() {
@@ -7138,9 +7121,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * If asynchronous post–render cleanup is enabled, clears any existing cleanup timer and 
+   * If asynchronous post–render cleanup is enabled, clears any existing cleanup timer and
    * sets a new timeout to call asyncPostProcessCleanupRows after the configured delay.
-   * 
+   *
    * @returns {void}
    */
   protected startPostProcessingCleanup() {
@@ -7152,9 +7135,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * For the specified row, if post–processed results exist, sets each column’s status to “C” (indicating cleanup is needed), 
+   * For the specified row, if post–processed results exist, sets each column’s status to “C” (indicating cleanup is needed),
    * adjusts the postProcessFromRow and postProcessToRow boundaries, and starts the post–processing timer.
-   * 
+   *
    * @param {number} row - The index of the row to invalidate.
    */
   protected invalidatePostProcessingResults(row: number) {
@@ -7172,13 +7155,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Iterates over the range of rows defined by postProcessFromRow and postProcessToRow 
-   * (direction determined by vScrollDir). For each row found in the cache, 
-   * it ensures cell nodes exist, then for each cell that has an async post–render function 
-   * and is not yet rendered (status not “R”), it calls the asyncPostRender callback 
-   * (passing a flag if cleanup is needed). Finally, it schedules another asynchronous 
+   * Iterates over the range of rows defined by postProcessFromRow and postProcessToRow
+   * (direction determined by vScrollDir). For each row found in the cache,
+   * it ensures cell nodes exist, then for each cell that has an async post–render function
+   * and is not yet rendered (status not “R”), it calls the asyncPostRender callback
+   * (passing a flag if cleanup is needed). Finally, it schedules another asynchronous
    * processing cycle using a timeout with the configured delay.
-   * 
+   *
    * @returns {void}
    */
   protected asyncPostProcessRows() {
@@ -7216,9 +7199,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Checks if there are cleanup queue entries; if so, it retrieves the group id from the first entry and processes 
-   * (removes) all entries in the queue with that group id. For each entry, if the action type is “R”, 
-   * it removes all nodes in the array; if “C”, it calls the asyncPostRenderCleanup callback on the 
+   * Checks if there are cleanup queue entries; if so, it retrieves the group id from the first entry and processes
+   * (removes) all entries in the queue with that group id. For each entry, if the action type is “R”,
+   * it removes all nodes in the array; if “C”, it calls the asyncPostRenderCleanup callback on the
    * corresponding column. It then schedules another cleanup cycle using the configured delay.
    */
   protected asyncPostProcessCleanupRows() {
@@ -7248,11 +7231,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Iterates over every row in the rows cache. For each row, if there is a removed hash (previous CSS classes) 
-   * and/or an added hash (new CSS classes), then for each column key it retrieves the cell node and removes any 
-   * CSS class from the removed hash (if not re–added) and adds CSS classes from the added hash. 
+   * Iterates over every row in the rows cache. For each row, if there is a removed hash (previous CSS classes)
+   * and/or an added hash (new CSS classes), then for each column key it retrieves the cell node and removes any
+   * CSS class from the removed hash (if not re–added) and adds CSS classes from the added hash.
    * This synchronises the cell CSS overlays with the provided hash changes.
-   * 
+   *
    * @param {CssStyleHash | null} [addedHash] - A hash of CSS styles to be added.
    * @param {CssStyleHash | null} [removedHash] - A hash of CSS styles to be removed.
    */
@@ -7408,17 +7391,16 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   // Shared Utilities and Accessors
   ////////////////////////////////////////////////////////////////////////
 
-
   /**
-  * Helper method that selects the proper container element from a provided array based on the column 
-  * identifier/index and row index. It calculates whether the target should be from the “bottom” or 
-  * “right” side based on frozen rows/columns.
-  * 
-  * @param {HTMLElement[]} targetContainers - The array of possible container elements.
-  * @param {number | string} [columnIdOrIdx] - The column identifier or index.
-  * @param {number} [rowIndex] - The row index.
-  * @returns {HTMLElement | undefined} The selected container element or undefined if not found.
-  */
+   * Helper method that selects the proper container element from a provided array based on the column
+   * identifier/index and row index. It calculates whether the target should be from the “bottom” or
+   * “right” side based on frozen rows/columns.
+   *
+   * @param {HTMLElement[]} targetContainers - The array of possible container elements.
+   * @param {number | string} [columnIdOrIdx] - The column identifier or index.
+   * @param {number} [rowIndex] - The row index.
+   * @returns {HTMLElement | undefined} The selected container element or undefined if not found.
+   */
   protected _getContainerElement(targetContainers: HTMLElement[], columnIdOrIdx?: number | string, rowIndex?: number) {
     if (!targetContainers) { return; }
     if (!columnIdOrIdx) { columnIdOrIdx = 0; }
@@ -7433,8 +7415,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Dynamically creates temporary DOM elements to measure the difference between offsetWidth/Height 
-   * and clientWidth/Height, thereby computing the scrollbar width and height. After measuring, it 
+   * Dynamically creates temporary DOM elements to measure the difference between offsetWidth/Height
+   * and clientWidth/Height, thereby computing the scrollbar width and height. After measuring, it
    * removes the temporary elements and returns the dimensions.
    *
    * @returns {{ width: number; height: number }} The computed scrollbar dimensions.
@@ -7454,9 +7436,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Dynamically doubles a test height on a temporary element until the element no longer accepts the height 
+   * Dynamically doubles a test height on a temporary element until the element no longer accepts the height
    * (or exceeds a browser-specific maximum). Returns the highest supported CSS height in pixels.
-   * 
+   *
    * @returns {number} The highest supported CSS height in pixels.
    */
   protected getMaxSupportedCssHeight() {
@@ -7513,11 +7495,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Calculates the total vertical offset (the sum of top/bottom borders and paddings) 
+   * Calculates the total vertical offset (the sum of top/bottom borders and paddings)
    * for a given element by reading its computed style.
-   * 
-   * @param el 
-   * @returns 
+   *
+   * @param el
+   * @returns
    */
   protected getVBoxDelta(el: HTMLElement) {
     const p = ['borderTopWidth', 'borderBottomWidth', 'paddingTop', 'paddingBottom'];
@@ -7528,11 +7510,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Creates temporary elements in the header and a grid cell to calculate the extra width 
-   * and height added by borders and padding (when box-sizing is not “border-box”). 
-   * Sets internal properties (headerColumnWidthDiff, headerColumnHeightDiff, cellWidthDiff, cellHeightDiff) 
+   * Creates temporary elements in the header and a grid cell to calculate the extra width
+   * and height added by borders and padding (when box-sizing is not “border-box”).
+   * Sets internal properties (headerColumnWidthDiff, headerColumnHeightDiff, cellWidthDiff, cellHeightDiff)
    * and computes the absoluteColumnMinWidth as the maximum of the header and cell width differences.
-   * 
+   *
    */
   protected measureCellPaddingAndBorder() {
     const h = ['borderLeftWidth', 'borderRightWidth', 'paddingLeft', 'paddingRight'];
@@ -7640,10 +7622,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * For each provided element in target, sets the “unselectable” attribute, disables Mozilla’s user selection style, 
+   * For each provided element in target, sets the “unselectable” attribute, disables Mozilla’s user selection style,
    * and binds a “selectstart” event that always returns false, thus disabling text selection.
-   * 
-   * @param target 
+   *
+   * @param target
    */
   protected disableSelection(target: HTMLElement[]) {
     target.forEach((el) => {
@@ -7657,7 +7639,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   getPubSubService(): BasePubSub | undefined {
     return this._pubSubService;
   }
-
 
   /**
    * Returns row and cell indexes by providing x,y coordinates.
@@ -7687,7 +7668,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return { row, cell };
   }
 
-
   /** Get a Plugin (addon) by its name */
   getPluginByName<P extends SlickPlugin | undefined = undefined>(name: string) {
     for (let i = this.plugins.length - 1; i >= 0; i--) {
@@ -7702,7 +7682,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   getContainerNode() {
     return this._container;
   }
-
 
   /**
    * Computes the height of a cell, taking into account row span if applicable.
@@ -7772,21 +7751,21 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     };
   }
 
-/**
- * Computes the absolute position of an element relative to the document,
- * taking into account offsets, scrolling, and visibility within scrollable containers.
- *
- * @param {HTMLElement} elem - The element to compute the absolute position for.
- * @returns {Object} An object containing:
- *   - `top`: The top position relative to the document.
- *   - `left`: The left position relative to the document.
- *   - `bottom`: The bottom position relative to the document.
- *   - `right`: The right position relative to the document.
- *   - `width`: The width of the element.
- *   - `height`: The height of the element.
- *   - `visible`: A boolean indicating whether the element is visible within its scrollable container.
- *     This accounts for both vertical (`overflowY`) and horizontal (`overflowX`) visibility.
- */
+  /**
+   * Computes the absolute position of an element relative to the document,
+   * taking into account offsets, scrolling, and visibility within scrollable containers.
+   *
+   * @param {HTMLElement} elem - The element to compute the absolute position for.
+   * @returns {Object} An object containing:
+   *   - `top`: The top position relative to the document.
+   *   - `left`: The left position relative to the document.
+   *   - `bottom`: The bottom position relative to the document.
+   *   - `right`: The right position relative to the document.
+   *   - `width`: The width of the element.
+   *   - `height`: The height of the element.
+   *   - `visible`: A boolean indicating whether the element is visible within its scrollable container.
+   *     This accounts for both vertical (`overflowY`) and horizontal (`overflowX`) visibility.
+   */
   protected absBox(elem: HTMLElement) {
     const box = {
       top: elem.offsetTop,
@@ -7847,7 +7826,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return this.currentEditor;
   }
 
-
   /**
    * Returns an object representing the coordinates of the currently active cell:
    * @example	`{ row: activeRow, cell: activeCell }`
@@ -7859,13 +7837,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return { row: this.activeRow, cell: this.activeCell };
   }
 
-
   /** Returns the DOM element containing the currently active cell. If no cell is active, null is returned. */
   getActiveCellNode() {
     return this.activeCellNode;
   }
 
-    // This get/set methods are used for keeping text-selection. These don't consider IE because they don't loose text-selection.
+  // This get/set methods are used for keeping text-selection. These don't consider IE because they don't loose text-selection.
   // Fix for firefox selection. See https://github.com/mleibman/SlickGrid/pull/746/files
   protected getTextSelection() {
     let textSelection: Range | null = null;
@@ -7878,12 +7855,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return textSelection;
   }
 
-/**
- * Sets the text selection to the specified range within the document.
- * Clears any existing selections before applying the new range.
- *
- * @param {Range} selection - The text range to be selected.
- */
+  /**
+   * Sets the text selection to the specified range within the document.
+   * Clears any existing selections before applying the new range.
+   *
+   * @param {Range} selection - The text range to be selected.
+   */
   protected setTextSelection(selection: Range) {
     if (window.getSelection && selection) {
       const target = window.getSelection();
@@ -7922,12 +7899,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   ///////////////////////////////////////////////////////////////
 
   /**
-  * Retrieves the rowspan value for a specific cell in a row.
-  *
-  * @param {number} row - The row index.
-  * @param {number} cell - The column index.
-  * @returns {number} The number of rows the cell spans.
-  */
+   * Retrieves the rowspan value for a specific cell in a row.
+   *
+   * @param {number} row - The row index.
+   * @param {number} cell - The column index.
+   * @returns {number} The number of rows the cell spans.
+   */
   protected getRowspan(row: number, cell: number) {
     let rowspan = 1;
     const metadata = this.getItemMetadaWhenExists(row);
@@ -7971,7 +7948,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     return r;
   }
-
 
   /**
    * Finds the first focusable cell in a given row.
@@ -8038,7 +8014,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * From any row/cell indexes that might have colspan/rowspan, find its starting indexes
    * For example, if we start at 0,0 and we have colspan/rowspan of 4 for both and our indexes is row:2,cell:3
    * then our starting row/cell is 0,0. If a cell has no spanning at all then row/cell output is same as input
-   * 
+   *
    * @param {number} row - The row index.
    * @param {number} cell - The column index.
    * @returns {{ cell: number; row: number; }} The starting cell position.
@@ -8061,15 +8037,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return { cell: fc, row: focusableRow };
   }
 
-/**
- * Moves the focus to the right within the grid.
- *
- * @param {number} _row - The row index.
- * @param {number} cell - The column index.
- * @param {number} posY - The current vertical position.
- * @param {number} [_posX] - The current horizontal position.
- * @returns {CellPosition | null} The new cell position, or null if not found.
- */
+  /**
+   * Moves the focus to the right within the grid.
+   *
+   * @param {number} _row - The row index.
+   * @param {number} cell - The column index.
+   * @param {number} posY - The current vertical position.
+   * @param {number} [_posX] - The current horizontal position.
+   * @returns {CellPosition | null} The new cell position, or null if not found.
+   */
   protected gotoRight(_row: number, cell: number, posY: number, _posX?: number) {
     if (cell >= this.columns.length) {
       return null;
@@ -8099,14 +8075,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
- * Moves the focus to the left within the grid.
-  *
-  * @param {number} row - The row index.
-  * @param {number} cell - The column index.
-  * @param {number} posY - The current vertical position.
-  * @param {number} [_posX] - The current horizontal position.
-  * @returns {CellPosition | null} The new cell position, or null if not found.
-  */
+   * Moves the focus to the left within the grid.
+   *
+   * @param {number} row - The row index.
+   * @param {number} cell - The column index.
+   * @param {number} posY - The current vertical position.
+   * @param {number} [_posX] - The current horizontal position.
+   * @returns {CellPosition | null} The new cell position, or null if not found.
+   */
   protected gotoLeft(row: number, cell: number, posY: number, _posX?: number) {
     if (cell <= 0) {
       return null;
@@ -8210,15 +8186,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return null;
   }
 
-/**
- * Moves the focus to the next cell in the grid.
- *
- * @param {number} row - The row index.
- * @param {number} cell - The column index.
- * @param {number} posY - The current vertical position.
- * @param {number} posX - The current horizontal position.
- * @returns {CellPosition | null} The new cell position, or null if not found.
- */
+  /**
+   * Moves the focus to the next cell in the grid.
+   *
+   * @param {number} row - The row index.
+   * @param {number} cell - The column index.
+   * @param {number} posY - The current vertical position.
+   * @param {number} posX - The current horizontal position.
+   * @returns {CellPosition | null} The new cell position, or null if not found.
+   */
   protected gotoNext(row: number, cell: number, posY: number, posX: number) {
     if (!Utils.isDefined(row) && !Utils.isDefined(cell)) {
       row = cell = posY = posX = 0;
@@ -8622,13 +8598,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.setFocus();
     }
   }
-/////////////////////////////////////////////////////////////////////////////////
+  /////////////////////////////////////////////////////////////////////////////////
   // End Shared Utilities and Navigation Helpers
   ///////////////////////////////////////////////////////////////////////////////
-
-
 }
-
 
 // extend Slick namespace on window object when building as iife
 if (IIFE_ONLY && window.Slick) {
