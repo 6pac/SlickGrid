@@ -2100,7 +2100,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
             let x;
             let newCanvasWidthL = 0;
             let newCanvasWidthR = 0;
-            const viewportWidth = this.viewportHasVScroll ? this.viewportW - (this.scrollbarDimensions?.width ?? 0) : this.viewportW;
+            const viewportWidth = this.getViewportInnerWidth();
 
             if (d < 0) { // shrink column
               x = d;
@@ -2415,7 +2415,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     // pass in the grid canvas
     const gridCanvas = this.getCanvasNode(0, 0) as HTMLElement;
-    const viewportWidth = this.viewportHasVScroll ? this.viewportW - (this.scrollbarDimensions?.width ?? 0) : this.viewportW;
+    const viewportWidth = this.getViewportInnerWidth();
 
     // iterate columns to get autosizes
     let i: number;
@@ -2899,7 +2899,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     let total = 0;
     let prevTotal = 0;
     const widths: number[] = [];
-    const availWidth = this.viewportHasVScroll ? this.viewportW - (this.scrollbarDimensions?.width ?? 0) : this.viewportW;
+    const availWidth = this.getViewportInnerWidth();
 
     for (i = 0; i < this.columns.length; i++) {
       c = this.columns[i];
@@ -4575,7 +4575,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * If full–width rows are enabled, extra width is added. Returns the total calculated width.
   */
   getCanvasWidth(): number {
-    const availableWidth = this.viewportHasVScroll ? this.viewportW - (this.scrollbarDimensions?.width ?? 0) : this.viewportW;
+    const availableWidth = this.getViewportInnerWidth();
     let i = this.columns.length;
 
     this.canvasWidthL = this.canvasWidthR = 0;
@@ -5574,6 +5574,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     this.numVisibleRows = Math.ceil(this.viewportH / this._options.rowHeight!);
     return this.viewportH;
+  }
+
+  /** returns the available viewport inner width, that is the viewport width minus the scrollbar when shown */
+  protected getViewportInnerWidth(): number {
+    return this.viewportHasVScroll ? this.viewportW - (this.scrollbarDimensions?.width || 0) : this.viewportW;
   }
 
   /**
