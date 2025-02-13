@@ -234,7 +234,7 @@
         },
       },
       {
-        id: "desc2", name: '<span title="custom title tooltip text">Description 2</span>', field: "description", width: 100, editor: Slick.Editors.LongText,
+        id: "desc2", name: '<span title="custom title tooltip text">Description 2</span>', field: "description", width: 110, editor: Slick.Editors.LongText,
         formatter: (row, cell, value, column, dataContext) => `<span title="regular tooltip (from title attribute)\r${dataContext.title} cell value:\r${value || ''}">${value || ''}</span>`,
         // define tooltip options here OR for the entire grid via the grid options (cell tooltip options will have precedence over grid options)
         customTooltip: {
