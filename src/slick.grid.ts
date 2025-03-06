@@ -159,6 +159,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   onBeforeFooterRowCellDestroy: SlickEvent_<OnBeforeFooterRowCellDestroyEventArgs>;
   onBeforeHeaderCellDestroy: SlickEvent_<OnBeforeHeaderCellDestroyEventArgs>;
   onBeforeHeaderRowCellDestroy: SlickEvent_<OnBeforeHeaderRowCellDestroyEventArgs>;
+  onBeforeRemoveCachedRow: SlickEvent_<{ row: number; grid: SlickGrid }>;
   onBeforeSetColumns: SlickEvent_<OnBeforeSetColumnsEventArgs>;
   onBeforeSort: SlickEvent_<SingleColumnSort | MultiColumnSort>;
   onBeforeUpdateColumns: SlickEvent_<OnBeforeUpdateColumnsEventArgs>;
@@ -562,6 +563,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.onBeforeFooterRowCellDestroy = new SlickEvent<OnBeforeFooterRowCellDestroyEventArgs>('onBeforeFooterRowCellDestroy', externalPubSub);
     this.onBeforeHeaderCellDestroy = new SlickEvent<OnBeforeHeaderCellDestroyEventArgs>('onBeforeHeaderCellDestroy', externalPubSub);
     this.onBeforeHeaderRowCellDestroy = new SlickEvent<OnBeforeHeaderRowCellDestroyEventArgs>('onBeforeHeaderRowCellDestroy', externalPubSub);
+    this.onBeforeRemoveCachedRow = new SlickEvent<{ row: number; grid: SlickGrid }>('onRowRemovedFromCache', externalPubSub);
     this.onBeforeSetColumns = new SlickEvent<OnBeforeSetColumnsEventArgs>('onBeforeSetColumns', externalPubSub);
     this.onBeforeSort = new SlickEvent<SingleColumnSort | MultiColumnSort>('onBeforeSort', externalPubSub);
     this.onBeforeUpdateColumns = new SlickEvent<OnBeforeUpdateColumnsEventArgs>('onBeforeUpdateColumns', externalPubSub);
@@ -5438,22 +5440,20 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    *
    * @param {number} row - The index of the row to remove.
    */
-  protected removeRowFromCache(row: number) {
+  protected removeRowFromCache(row: number): void {
     const cacheEntry = this.rowsCache[row];
-    if (!cacheEntry || !cacheEntry.rowNode) {
-      return;
+    if (cacheEntry?.rowNode) {
+      this.trigger(this.onBeforeRemoveCachedRow, { row });
+      if (this._options.enableAsyncPostRenderCleanup && this.postProcessedRows[row]) {
+        this.queuePostProcessedRowForCleanup(cacheEntry, this.postProcessedRows[row], row);
+      } else {
+        cacheEntry.rowNode?.forEach((node: HTMLElement) => node.parentElement?.removeChild(node));
+      }
+      delete this.rowsCache[row];
+      delete this.postProcessedRows[row];
+      this.renderedRows--;
+      this.counter_rows_removed++;
     }
-
-    if (this._options.enableAsyncPostRenderCleanup && this.postProcessedRows[row]) {
-      this.queuePostProcessedRowForCleanup(cacheEntry, this.postProcessedRows[row], row);
-    } else {
-      cacheEntry.rowNode?.forEach((node: HTMLElement) => node.parentElement?.removeChild(node));
-    }
-
-    delete this.rowsCache[row];
-    delete this.postProcessedRows[row];
-    this.renderedRows--;
-    this.counter_rows_removed++;
   }
 
   /**
@@ -5885,6 +5885,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     range.rightPx = Math.min(this.canvasWidth, range.rightPx);
 
     return range;
+  }
+
+  /**
+   * Returns the rows cache that are currently rendered in the DOM,
+   * the cache includes certain properties like the row div element, cell rendered queue and the row colspan when defined.
+   */
+  getRowCache(): Record<number, RowCaching> {
+    return this.rowsCache;
   }
 
   /**
