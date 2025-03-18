@@ -55,23 +55,28 @@
         View the source for this example on Github
       </a>
     </h2>
-    <button class="btn" data-test="goto-up" onclick="grid.navigateUp()" title="from an active cell, navigate to cell above">
-      <span class="sgi sgi-chevron-left rotate-90"> </span>Navigate Up Cell
-    </button>
-    <button class="btn" data-test="goto-down" onclick="grid.navigateDown()" title="from an active cell, navigate to cell below">
-      <span class="sgi sgi-chevron-left rotate-270"> </span>Navigate Down Cell
-    </button>
-    <button class="btn" data-test="goto-prev" onclick="grid.navigatePrev()" title="from an active cell, navigate to previous left cell">
-      <span class="sgi sgi-chevron-left"></span> Navigate to Left Cell
-    </button>
-    <button class="btn" data-test="goto-next" onclick="grid.navigateNext()" title="from an active cell, navigate to next right cell">
-      <span class="sgi sgi-chevron-left rotate-180"> </span>Navigate to Right Cell
-    </button>
+    <div style="display: inline-flex; gap: 5px">
+      <button class="btn" data-test="goto-up" onclick="grid.navigateUp()" title="from an active cell, navigate to cell above">
+        <span class="sgi sgi-chevron-left rotate-90"> </span>Navigate Up Cell
+      </button>
+      <button class="btn" data-test="goto-down" onclick="grid.navigateDown()" title="from an active cell, navigate to cell below">
+        <span class="sgi sgi-chevron-left rotate-270"> </span>Navigate Down Cell
+      </button>
+      <button class="btn" data-test="goto-prev" onclick="grid.navigatePrev()" title="from an active cell, navigate to previous left cell">
+        <span class="sgi sgi-chevron-left"></span> Navigate to Left Cell
+      </button>
+      <button class="btn" data-test="goto-next" onclick="grid.navigateNext()" title="from an active cell, navigate to next right cell">
+        <span class="sgi sgi-chevron-left rotate-180"> </span>Navigate to Right Cell
+      </button>
+      <button class="btn" data-test="toggle-employee-id" onclick="toggleEmployeeIdVisibility()">
+        Show/Hide EmployeeID
+      </button>
 
-    <button class="btn" style="margin-left: 10px" data-test="toggle-editing" onclick="toggleEditing()" title="from an active cell, navigate to next right cell">
-      <span class="sgi sgi-pencil-outline"> </span>
-      Toggle Editing: <span id="isEditable" class="text-italic">false</span>
-    </button>
+      <button class="btn" style="margin-left: 10px" data-test="toggle-editing" onclick="toggleEditing()" title="from an active cell, navigate to next right cell">
+        <span class="sgi sgi-pencil-outline"> </span>
+        Toggle Editing: <span id="isEditable" class="text-italic">false</span>
+      </button>
+    </div>
   </div>
   <br>
 
@@ -124,6 +129,99 @@
       { id: "4:30", name: "4:30 PM", field: "4:30", editor: Slick.Editors.Text, width: 120 },
       { id: "5:00", name: "5:00 PM", field: "5:00", editor: Slick.Editors.Text, width: 120 },
     ];
+    let metadata = {
+      // 10001: Davolio
+      0: {
+        columns: {
+          1: { rowspan: 2 },
+          2: { colspan: 2 },
+          6: { colspan: 3 },
+          10: { colspan: 3, rowspan: 10 },
+          13: { colspan: 2 },
+          17: { colspan: 2, rowspan: 2 }
+        }
+      },
+      // 10002: (Buchanan... name not shown since Davolio has rowspan=2)
+      1: {
+        columns: {
+          3: { colspan: 3 },
+          6: { colspan: 4 },
+          13: { colspan: 2, rowspan: 5 },
+          15: { colspan: 2 },
+        }
+      },
+      // 10003: Fuller
+      2: {
+        columns: {
+          2: { colspan: 3, rowspan: 2 },
+          5: { colspan: 2 },
+          7: { colspan: 3 },
+          15: { colspan: 2 },
+          17: { colspan: 2 },
+        }
+      },
+      // 10004: Leverling
+      3: {
+        columns: {
+          6: { colspan: 4 },
+          16: { colspan: 2 },
+        }
+      },
+      // 10005: Peacock
+      4: {
+        columns: {
+          2: { colspan: 4 },
+          7: { colspan: 3 },
+          15: { colspan: 2, rowspan: 2 },
+          17: { colspan: 2 },
+        }
+      },
+      // 10006: Janet
+      5: {
+        columns: {
+          2: { colspan: 2 },
+          4: { colspan: 3 },
+          7: { colspan: 3 },
+          17: { colspan: 2 },
+        }
+      },
+      // 10007: Suyama
+      6: {
+        columns: {
+          2: { colspan: 2 },
+          5: { colspan: 2 },
+          7: { colspan: 3 },
+          14: { colspan: 2 },
+          16: { colspan: 3 },
+        }
+      },
+      // 10008: Robert
+      7: {
+        columns: {
+          2: { colspan: 3 },
+          5: { colspan: 3 },
+          13: { colspan: 3, rowspan: 2 },
+          16: { colspan: 2 }
+        }
+      },
+      // 10009: Andrew
+      8: {
+        columns: {
+          2: { colspan: 3 },
+          7: { colspan: 3, rowspan: 2 },
+          17: { colspan: 2 }
+        }
+      },
+      // 10010: Michael
+      9: {
+        columns: {
+          2: { colspan: 3 },
+          5: { colspan: 2 },
+          13: { colspan: 3 },
+          16: { colspan: 3 },
+        }
+      },
+    };
 
 		let options = {
       editable: false,
@@ -134,6 +232,7 @@
       rowHeight: 30,
       rowTopOffsetRenderType: 'top' // rowspan doesn't render well with 'transform', default is 'top'
 		};
+    let showEmployeeId = true;
 
     function toggleEditing() {
       const isEditable = !grid.getOptions().editable;
@@ -141,101 +240,40 @@
       document.querySelector('#isEditable').textContent = isEditable;
     }
 
+    // when a side effect happens (e.g. show/hide EmployeeID),
+    // you have to recalculate the metadata by yourself
+    // if column index(es) aren't changing then "invalidateRows()" or "invalidate()" might be sufficient
+    // however, when column index(es) changed then you will have to call "remapAllColumnsRowSpan()" to clear & reevaluate the rowspan cache
+    function toggleEmployeeIdVisibility() {
+      const newMetadata = {};
+      showEmployeeId = !showEmployeeId;
+
+      // direction to calculate new column indexes (-1 or +1 on the column index)
+      // e.g. metadata = `{0:{columns:{1:{rowspan: 2}}}}` if we hide then new result is `{0:{columns:{0:{rowspan: 2}}}}`
+      const dir = showEmployeeId ? 1 : -1;
+      for (let row of Object.keys(metadata)) {
+        newMetadata[row] = { columns: {} };
+        for (let col of Object.keys(metadata[row].columns)) {
+          newMetadata[row].columns[Number(col) + dir] = metadata[row].columns[col];
+        }
+      }
+
+      // update column definitions
+      if (showEmployeeId) {
+        columns.unshift({ id: "employeeID", name: "Employee ID", field: "employeeID", width: 100 });
+      } else {
+        columns.splice(0, 1);
+      }
+      grid.setColumns(columns);
+
+      // update & remap rowspans
+      metadata = newMetadata;
+      grid.remapAllColumnsRowSpan();
+      grid.invalidate();
+    }
+
     document.addEventListener("DOMContentLoaded", () => {
 			let data = [];
-			let metadata = {
-        // 10001: Davolio
-				0: {
-					columns: {
-						1: { rowspan: 2 },
-            2: { colspan: 2 },
-            6: { colspan: 3 },
-            10: { colspan: 3, rowspan: 10 },
-            13: { colspan: 2 },
-            17: { colspan: 2, rowspan: 2 }
-					}
-				},
-        // 10002: (Buchanan... name not shown since Davolio has rowspan=2)
-				1: {
-					columns: {
-						3: { colspan: 3 },
-						6: { colspan: 4 },
-            13: { colspan: 2, rowspan: 5 },
-            15: { colspan: 2 },
-					}
-				},
-        // 10003: Fuller
-				2: {
-					columns: {
-						2: { colspan: 3, rowspan: 2 },
-            5: { colspan: 2 },
-            7: { colspan: 3 },
-            15: { colspan: 2 },
-            17: { colspan: 2 },
-					}
-				},
-        // 10004: Leverling
-				3: {
-					columns: {
-            6: { colspan: 4 },
-            16: { colspan: 2 },
-					}
-				},
-        // 10005: Peacock
-				4: {
-					columns: {
-            2: { colspan: 4 },
-            7: { colspan: 3 },
-            15: { colspan: 2, rowspan: 2 },
-            17: { colspan: 2 },
-					}
-				},
-        // 10006: Janet
-				5: {
-					columns: {
-            2: { colspan: 2 },
-            4: { colspan: 3 },
-            7: { colspan: 3 },
-            17: { colspan: 2 },
-					}
-				},
-        // 10007: Suyama
-				6: {
-					columns: {
-            2: { colspan: 2 },
-            5: { colspan: 2 },
-            7: { colspan: 3 },
-            14: { colspan: 2 },
-            16: { colspan: 3 },
-					}
-				},
-        // 10008: Robert
-				7: {
-					columns: {
-            2: { colspan: 3 },
-            5: { colspan: 3 },
-            13: { colspan: 3, rowspan: 2 },
-            16: { colspan: 2 }
-					}
-				},
-        // 10009: Andrew
-				8: {
-					columns: {
-            2: { colspan: 3 },
-            7: { colspan: 3, rowspan: 2 },
-            17: { colspan: 2 }
-					}
-				},
-        // 10010: Michael
-				9: {
-					columns: {
-            2: { colspan: 3 },
-            5: { colspan: 2 },
-            13: { colspan: 3 },
-            16: { colspan: 3 },
-					}
-				},
-			};
 
       // Option #1
       // dataView.getItemMetadata = (row) => {

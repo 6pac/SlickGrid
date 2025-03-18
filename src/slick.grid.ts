@@ -6762,7 +6762,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    *  1- if 2nd row of the 1st column has a metadata.rowspan of 3 then the cache will be: `{ 0: '1:4' }`
    *  2- if 2nd row if the 1st column has a metadata.rowspan of 3 AND a colspan of 2 then the cache will be: `{ 0: '1:4', 1: '1:4' }`
    */
-  protected remapAllColumnsRowSpan() {
+  remapAllColumnsRowSpan() {
     const ln = this.getDataLength();
     if (ln > 0) {
       this._colsWithRowSpanCache = {};
