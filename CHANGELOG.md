@@ -2,6 +2,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.15.1](https://github.com/6pac/SlickGrid/compare/5.15.0...5.15.1) (2025-03-19)
+
+### Bug Fixes
+
+* expose `remapAllColumnsRowSpan()` to fix [#1114](https://github.com/6pac/SlickGrid/issues/1114) ([#1115](https://github.com/6pac/SlickGrid/issues/1115)) ([2004591](https://github.com/6pac/SlickGrid/commit/2004591873629c72b26037539c7bfd205333ff4d))
+* opening Header Menu shouldn't add Active Header Cell ([#1102](https://github.com/6pac/SlickGrid/issues/1102)) ([4ad285b](https://github.com/6pac/SlickGrid/commit/4ad285b4d46432ded043a37b46f91f2495db7876))
+
+### Features
+
+* add `initialGroupBy` to Draggable Grouping ([878b6cd](https://github.com/6pac/SlickGrid/commit/878b6cdc39f04340e6a2c930b8e3f7885ee8ba2e))
+* add `onBeforeRemoveCachedRow` SlickGrid event ([#1113](https://github.com/6pac/SlickGrid/issues/1113)) ([68c773d](https://github.com/6pac/SlickGrid/commit/68c773df04c455ee28fce3596e34389ad0c876fc))
+
 # [5.15.0](https://github.com/6pac/SlickGrid/compare/5.14.3...5.15.0) (2025-01-18)
 
 ### Bug Fixes

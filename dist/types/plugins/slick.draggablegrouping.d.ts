@@ -1,4 +1,4 @@
-import type SortableInstance from 'sortablejs';
+import type { SortableInstance } from 'sortablejs';
 import type { Column, DraggableGroupingOption, Grouping, GroupingGetterFunction } from '../models/index.js';
 import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_, SlickEventHandler as SlickEventHandler_ } from '../slick.core.js';
 import type { SlickDataView } from '../slick.dataview.js';
@@ -43,6 +43,7 @@ export declare class SlickDraggableGrouping {
     protected _droppableInstance?: SortableInstance;
     protected _dropzonePlaceholder: HTMLDivElement;
     protected _groupToggler?: HTMLDivElement;
+    protected _isInitialized: boolean;
     protected _options: DraggableGroupingOption;
     protected _defaults: DraggableGroupingOption;
     protected _bindingEventService: BindingEventService_;
