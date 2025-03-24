@@ -25,11 +25,11 @@ We extended the project from the original SlickGrid foundation while also includ
 - the project now has only 1 required small dependency which is [SortableJS](https://sortablejs.github.io/Sortable/)
 
 ### Vite Demo
-You can also see a [ViteJS](https://vite.dev/) demo in the [./vite-demo](https://github.com/6pac/SlickGrid/tree/master/vite-demo) folder (also available via the Stackblitz link below). This Vite demo was created mostly to test the project ESM build and also the SASS imports as well, it could also be used to provide bug repro.
+You can also see a [ViteJS](https://vite.dev/) demo in the [./vite-demo](https://github.com/6pac/SlickGrid/tree/master/vite-demo) folder (also available via the Stackblitz link below). This Vite demo was created mostly to test the project ESM build and also the SASS imports as well.
 
 ### Stackblitz
 
-You can also try out the Vite demo (mentioned just above) live via Stackblitz. It can also be use to provide a repro when you openening any new bug/feature requests.
+You can also try out the Vite demo (mentioned just above) live via Stackblitz. It can also be use to provide a repro when you opening any new bug/feature requests.
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/6pac/SlickGrid/tree/master/vite-demo)
 
