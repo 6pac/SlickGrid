@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.15.2](https://github.com/6pac/SlickGrid/compare/5.15.1...5.15.2) (2025-04-05)
+
+### Bug Fixes
+
+* Select All checkbox shouldn't disappear w/column toggle, fix [#1119](https://github.com/6pac/SlickGrid/issues/1119) ([#1120](https://github.com/6pac/SlickGrid/issues/1120)) ([23a9557](https://github.com/6pac/SlickGrid/commit/23a955737df6bf007821ca8d9e45dd0d357ce839))
+* shift + a should not select all cells upwards ([#1118](https://github.com/6pac/SlickGrid/issues/1118)) ([d7ae402](https://github.com/6pac/SlickGrid/commit/d7ae40228415f1210c5ec06fbbaa50234cf1745c))
+
 ## [5.15.1](https://github.com/6pac/SlickGrid/compare/5.15.0...5.15.1) (2025-03-19)
 
 ### Bug Fixes

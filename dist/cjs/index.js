@@ -2705,12 +2705,22 @@ var SlickEvent9 = SlickEvent, SlickEventData3 = SlickEventData, SlickRange4 = Sl
     let isCellDefined = Utils13.isDefined(args.cell), isRowDefined = Utils13.isDefined(args.row);
     this._options?.selectActiveCell && isRowDefined && isCellDefined ? this.setSelectedRanges([new SlickRange4(args.row, args.cell)]) : (!this._options?.selectActiveCell || !isRowDefined && !isCellDefined) && this.setSelectedRanges([]);
   }
-  isKeyAllowed(key) {
-    return ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "PageDown", "PageUp", "Home", "End", "a", "A"].some((k) => k === key);
+  isKeyAllowed(key, isShiftKeyPressed) {
+    return [
+      "ArrowLeft",
+      "ArrowRight",
+      "ArrowUp",
+      "ArrowDown",
+      "PageDown",
+      "PageUp",
+      "Home",
+      "End",
+      ...isShiftKeyPressed ? [] : ["a", "A"]
+    ].some((k) => k === key);
   }
   handleKeyDown(e) {
     let ranges, last, colLn = this._grid.getColumns().length, active = this._grid.getActiveCell(), dataLn = 0;
-    if (this._dataView && "getPagingInfo" in this._dataView ? dataLn = this._dataView?.getPagingInfo().pageSize || this._dataView.getLength() : dataLn = this._grid.getDataLength(), active && (e.shiftKey || e.ctrlKey) && !e.altKey && this.isKeyAllowed(e.key)) {
+    if (this._dataView && "getPagingInfo" in this._dataView ? dataLn = this._dataView?.getPagingInfo().pageSize || this._dataView.getLength() : dataLn = this._grid.getDataLength(), active && (e.shiftKey || e.ctrlKey) && !e.altKey && this.isKeyAllowed(e.key, e.shiftKey)) {
       ranges = this.getSelectedRanges().slice(), ranges.length || ranges.push(new SlickRange4(active.row, active.cell)), last = ranges.pop(), last.contains(active.row, active.cell) || (last = new SlickRange4(active.row, active.cell));
       let dRow = last.toRow - last.fromRow, dCell = last.toCell - last.fromCell, toCell, toRow = 0;
       e.ctrlKey && e.key?.toLowerCase() === "a" && (this._grid.setActiveCell(0, 0, !1, !1, !0), active.row = 0, active.cell = 0, toCell = colLn - 1, toRow = dataLn - 1);
@@ -2764,7 +2774,7 @@ var BindingEventService7 = BindingEventService, SlickEventHandler3 = SlickEventH
     this._bindingEventService = new BindingEventService7(), this._options = Utils14.extend(!0, {}, this._defaults, options), this._selectAll_UID = this.createUID(), typeof this._options.selectableOverride == "function" && this.selectableOverride(this._options.selectableOverride);
   }
   init(grid) {
-    this._grid = grid, this._isUsingDataView = !Array.isArray(grid.getData()), this._isUsingDataView && (this._dataView = grid.getData()), this._handler.subscribe(this._grid.onSelectedRowsChanged, this.handleSelectedRowsChanged.bind(this)).subscribe(this._grid.onClick, this.handleClick.bind(this)).subscribe(this._grid.onKeyDown, this.handleKeyDown.bind(this)), this._isUsingDataView && this._dataView && this._options.applySelectOnAllPages && this._handler.subscribe(this._dataView.onSelectedRowIdsChanged, this.handleDataViewSelectedIdsChanged.bind(this)).subscribe(this._dataView.onPagingInfoChanged, this.handleDataViewSelectedIdsChanged.bind(this)), this._options.hideInFilterHeaderRow || this.addCheckboxToFilterHeaderRow(grid), this._options.hideInColumnTitleRow || this._handler.subscribe(this._grid.onHeaderClick, this.handleHeaderClick.bind(this));
+    this._grid = grid, this._isUsingDataView = !Array.isArray(grid.getData()), this._isUsingDataView && (this._dataView = grid.getData()), this._handler.subscribe(this._grid.onSelectedRowsChanged, this.handleSelectedRowsChanged.bind(this)).subscribe(this._grid.onClick, this.handleClick.bind(this)).subscribe(this._grid.onKeyDown, this.handleKeyDown.bind(this)).subscribe(this._grid.onAfterSetColumns, () => this.renderSelectAllCheckbox(this._isSelectAllChecked)), this._isUsingDataView && this._dataView && this._options.applySelectOnAllPages && this._handler.subscribe(this._dataView.onSelectedRowIdsChanged, this.handleDataViewSelectedIdsChanged.bind(this)).subscribe(this._dataView.onPagingInfoChanged, this.handleDataViewSelectedIdsChanged.bind(this)), this._options.hideInFilterHeaderRow || this.addCheckboxToFilterHeaderRow(grid), this._options.hideInColumnTitleRow || this._handler.subscribe(this._grid.onHeaderClick, this.handleHeaderClick.bind(this));
   }
   destroy() {
     this._handler.unsubscribeAll(), this._bindingEventService.unbindAll();
@@ -6664,13 +6674,14 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.15.1");
+    __publicField(this, "slickGridVersion", "5.15.2");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
     __publicField(this, "onActiveCellChanged");
     __publicField(this, "onActiveCellPositionChanged");
     __publicField(this, "onAddNewRow");
+    __publicField(this, "onAfterSetColumns");
     __publicField(this, "onAutosizeColumns");
     __publicField(this, "onBeforeAppendCell");
     __publicField(this, "onBeforeCellEditorDestroy");
@@ -7042,7 +7053,7 @@ var SlickGrid = class {
     __publicField(this, "_pubSubService");
     if (this._container = typeof this.container == "string" ? document.querySelector(this.container) : this.container, !this._container)
       throw new Error(`SlickGrid requires a valid container, ${this.container} does not exist in the DOM.`);
-    this._pubSubService = externalPubSub, this.onActiveCellChanged = new SlickEvent21("onActiveCellChanged", externalPubSub), this.onActiveCellPositionChanged = new SlickEvent21("onActiveCellPositionChanged", externalPubSub), this.onAddNewRow = new SlickEvent21("onAddNewRow", externalPubSub), this.onAutosizeColumns = new SlickEvent21("onAutosizeColumns", externalPubSub), this.onBeforeAppendCell = new SlickEvent21("onBeforeAppendCell", externalPubSub), this.onBeforeCellEditorDestroy = new SlickEvent21("onBeforeCellEditorDestroy", externalPubSub), this.onBeforeColumnsResize = new SlickEvent21("onBeforeColumnsResize", externalPubSub), this.onBeforeDestroy = new SlickEvent21("onBeforeDestroy", externalPubSub), this.onBeforeEditCell = new SlickEvent21("onBeforeEditCell", externalPubSub), this.onBeforeFooterRowCellDestroy = new SlickEvent21("onBeforeFooterRowCellDestroy", externalPubSub), this.onBeforeHeaderCellDestroy = new SlickEvent21("onBeforeHeaderCellDestroy", externalPubSub), this.onBeforeHeaderRowCellDestroy = new SlickEvent21("onBeforeHeaderRowCellDestroy", externalPubSub), this.onBeforeRemoveCachedRow = new SlickEvent21("onRowRemovedFromCache", externalPubSub), this.onBeforeSetColumns = new SlickEvent21("onBeforeSetColumns", externalPubSub), this.onBeforeSort = new SlickEvent21("onBeforeSort", externalPubSub), this.onBeforeUpdateColumns = new SlickEvent21("onBeforeUpdateColumns", externalPubSub), this.onCellChange = new SlickEvent21("onCellChange", externalPubSub), this.onCellCssStylesChanged = new SlickEvent21("onCellCssStylesChanged", externalPubSub), this.onClick = new SlickEvent21("onClick", externalPubSub), this.onColumnsReordered = new SlickEvent21("onColumnsReordered", externalPubSub), this.onColumnsDrag = new SlickEvent21("onColumnsDrag", externalPubSub), this.onColumnsResized = new SlickEvent21("onColumnsResized", externalPubSub), this.onColumnsResizeDblClick = new SlickEvent21("onColumnsResizeDblClick", externalPubSub), this.onCompositeEditorChange = new SlickEvent21("onCompositeEditorChange", externalPubSub), this.onContextMenu = new SlickEvent21("onContextMenu", externalPubSub), this.onDrag = new SlickEvent21("onDrag", externalPubSub), this.onDblClick = new SlickEvent21("onDblClick", externalPubSub), this.onDragInit = new SlickEvent21("onDragInit", externalPubSub), this.onDragStart = new SlickEvent21("onDragStart", externalPubSub), this.onDragEnd = new SlickEvent21("onDragEnd", externalPubSub), this.onFooterClick = new SlickEvent21("onFooterClick", externalPubSub), this.onFooterContextMenu = new SlickEvent21("onFooterContextMenu", externalPubSub), this.onFooterRowCellRendered = new SlickEvent21("onFooterRowCellRendered", externalPubSub), this.onHeaderCellRendered = new SlickEvent21("onHeaderCellRendered", externalPubSub), this.onHeaderClick = new SlickEvent21("onHeaderClick", externalPubSub), this.onHeaderContextMenu = new SlickEvent21("onHeaderContextMenu", externalPubSub), this.onHeaderMouseEnter = new SlickEvent21("onHeaderMouseEnter", externalPubSub), this.onHeaderMouseLeave = new SlickEvent21("onHeaderMouseLeave", externalPubSub), this.onHeaderRowCellRendered = new SlickEvent21("onHeaderRowCellRendered", externalPubSub), this.onHeaderRowMouseEnter = new SlickEvent21("onHeaderRowMouseEnter", externalPubSub), this.onHeaderRowMouseLeave = new SlickEvent21("onHeaderRowMouseLeave", externalPubSub), this.onPreHeaderClick = new SlickEvent21("onPreHeaderClick", externalPubSub), this.onPreHeaderContextMenu = new SlickEvent21("onPreHeaderContextMenu", externalPubSub), this.onKeyDown = new SlickEvent21("onKeyDown", externalPubSub), this.onMouseEnter = new SlickEvent21("onMouseEnter", externalPubSub), this.onMouseLeave = new SlickEvent21("onMouseLeave", externalPubSub), this.onRendered = new SlickEvent21("onRendered", externalPubSub), this.onScroll = new SlickEvent21("onScroll", externalPubSub), this.onSelectedRowsChanged = new SlickEvent21("onSelectedRowsChanged", externalPubSub), this.onSetOptions = new SlickEvent21("onSetOptions", externalPubSub), this.onActivateChangedOptions = new SlickEvent21("onActivateChangedOptions", externalPubSub), this.onSort = new SlickEvent21("onSort", externalPubSub), this.onValidationError = new SlickEvent21("onValidationError", externalPubSub), this.onViewportChanged = new SlickEvent21("onViewportChanged", externalPubSub), this.initialize(options);
+    this._pubSubService = externalPubSub, this.onActiveCellChanged = new SlickEvent21("onActiveCellChanged", externalPubSub), this.onActiveCellPositionChanged = new SlickEvent21("onActiveCellPositionChanged", externalPubSub), this.onAddNewRow = new SlickEvent21("onAddNewRow", externalPubSub), this.onAfterSetColumns = new SlickEvent21("onAfterSetColumns", externalPubSub), this.onAutosizeColumns = new SlickEvent21("onAutosizeColumns", externalPubSub), this.onBeforeAppendCell = new SlickEvent21("onBeforeAppendCell", externalPubSub), this.onBeforeCellEditorDestroy = new SlickEvent21("onBeforeCellEditorDestroy", externalPubSub), this.onBeforeColumnsResize = new SlickEvent21("onBeforeColumnsResize", externalPubSub), this.onBeforeDestroy = new SlickEvent21("onBeforeDestroy", externalPubSub), this.onBeforeEditCell = new SlickEvent21("onBeforeEditCell", externalPubSub), this.onBeforeFooterRowCellDestroy = new SlickEvent21("onBeforeFooterRowCellDestroy", externalPubSub), this.onBeforeHeaderCellDestroy = new SlickEvent21("onBeforeHeaderCellDestroy", externalPubSub), this.onBeforeHeaderRowCellDestroy = new SlickEvent21("onBeforeHeaderRowCellDestroy", externalPubSub), this.onBeforeRemoveCachedRow = new SlickEvent21("onRowRemovedFromCache", externalPubSub), this.onBeforeSetColumns = new SlickEvent21("onBeforeSetColumns", externalPubSub), this.onBeforeSort = new SlickEvent21("onBeforeSort", externalPubSub), this.onBeforeUpdateColumns = new SlickEvent21("onBeforeUpdateColumns", externalPubSub), this.onCellChange = new SlickEvent21("onCellChange", externalPubSub), this.onCellCssStylesChanged = new SlickEvent21("onCellCssStylesChanged", externalPubSub), this.onClick = new SlickEvent21("onClick", externalPubSub), this.onColumnsReordered = new SlickEvent21("onColumnsReordered", externalPubSub), this.onColumnsDrag = new SlickEvent21("onColumnsDrag", externalPubSub), this.onColumnsResized = new SlickEvent21("onColumnsResized", externalPubSub), this.onColumnsResizeDblClick = new SlickEvent21("onColumnsResizeDblClick", externalPubSub), this.onCompositeEditorChange = new SlickEvent21("onCompositeEditorChange", externalPubSub), this.onContextMenu = new SlickEvent21("onContextMenu", externalPubSub), this.onDrag = new SlickEvent21("onDrag", externalPubSub), this.onDblClick = new SlickEvent21("onDblClick", externalPubSub), this.onDragInit = new SlickEvent21("onDragInit", externalPubSub), this.onDragStart = new SlickEvent21("onDragStart", externalPubSub), this.onDragEnd = new SlickEvent21("onDragEnd", externalPubSub), this.onFooterClick = new SlickEvent21("onFooterClick", externalPubSub), this.onFooterContextMenu = new SlickEvent21("onFooterContextMenu", externalPubSub), this.onFooterRowCellRendered = new SlickEvent21("onFooterRowCellRendered", externalPubSub), this.onHeaderCellRendered = new SlickEvent21("onHeaderCellRendered", externalPubSub), this.onHeaderClick = new SlickEvent21("onHeaderClick", externalPubSub), this.onHeaderContextMenu = new SlickEvent21("onHeaderContextMenu", externalPubSub), this.onHeaderMouseEnter = new SlickEvent21("onHeaderMouseEnter", externalPubSub), this.onHeaderMouseLeave = new SlickEvent21("onHeaderMouseLeave", externalPubSub), this.onHeaderRowCellRendered = new SlickEvent21("onHeaderRowCellRendered", externalPubSub), this.onHeaderRowMouseEnter = new SlickEvent21("onHeaderRowMouseEnter", externalPubSub), this.onHeaderRowMouseLeave = new SlickEvent21("onHeaderRowMouseLeave", externalPubSub), this.onPreHeaderClick = new SlickEvent21("onPreHeaderClick", externalPubSub), this.onPreHeaderContextMenu = new SlickEvent21("onPreHeaderContextMenu", externalPubSub), this.onKeyDown = new SlickEvent21("onKeyDown", externalPubSub), this.onMouseEnter = new SlickEvent21("onMouseEnter", externalPubSub), this.onMouseLeave = new SlickEvent21("onMouseLeave", externalPubSub), this.onRendered = new SlickEvent21("onRendered", externalPubSub), this.onScroll = new SlickEvent21("onScroll", externalPubSub), this.onSelectedRowsChanged = new SlickEvent21("onSelectedRowsChanged", externalPubSub), this.onSetOptions = new SlickEvent21("onSetOptions", externalPubSub), this.onActivateChangedOptions = new SlickEvent21("onActivateChangedOptions", externalPubSub), this.onSort = new SlickEvent21("onSort", externalPubSub), this.onValidationError = new SlickEvent21("onValidationError", externalPubSub), this.onViewportChanged = new SlickEvent21("onViewportChanged", externalPubSub), this.initialize(options);
   }
   //////////////////////////////////////////////////////////////////////////////////////////////
   // Grid and Dom Initialisation
@@ -8134,7 +8145,7 @@ var SlickGrid = class {
    * @param {Column[]} columnDefinitions An array of column definitions.
    */
   setColumns(columnDefinitions) {
-    this.trigger(this.onBeforeSetColumns, { previousColumns: this.columns, newColumns: columnDefinitions, grid: this }), this.columns = columnDefinitions, this.updateColumnsInternal();
+    this.trigger(this.onBeforeSetColumns, { previousColumns: this.columns, newColumns: columnDefinitions, grid: this }), this.columns = columnDefinitions, this.updateColumnsInternal(), this.trigger(this.onAfterSetColumns, { newColumns: columnDefinitions, grid: this });
   }
   /** Update columns for when a hidden property has changed but the column list itself has not changed. */
   updateColumns() {
@@ -11300,7 +11311,7 @@ var SlickRemoteModel = class {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.15.1
+ * SlickGrid v5.15.2
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

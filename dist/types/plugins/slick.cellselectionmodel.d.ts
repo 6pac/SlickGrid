@@ -37,7 +37,7 @@ export declare class SlickCellSelectionModel {
         range: SlickRange_;
     }): void;
     protected handleActiveCellChange(_e: SlickEventData_, args: OnActiveCellChangedEventArgs): void;
-    protected isKeyAllowed(key: string): boolean;
+    protected isKeyAllowed(key: string, isShiftKeyPressed?: boolean): boolean;
     protected handleKeyDown(e: SlickEventData_): void;
 }
 //# sourceMappingURL=slick.cellselectionmodel.d.ts.map
