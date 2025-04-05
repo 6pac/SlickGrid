@@ -31,6 +31,7 @@ import type {
   OnActivateChangedOptionsEventArgs,
   OnActiveCellChangedEventArgs,
   OnAddNewRowEventArgs,
+  OnAfterSetColumnsEventArgs,
   OnAutosizeColumnsEventArgs,
   OnBeforeUpdateColumnsEventArgs,
   OnBeforeAppendCellEventArgs,
@@ -150,6 +151,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   onActiveCellChanged: SlickEvent_<OnActiveCellChangedEventArgs>;
   onActiveCellPositionChanged: SlickEvent_<{ grid: SlickGrid; }>;
   onAddNewRow: SlickEvent_<OnAddNewRowEventArgs>;
+  onAfterSetColumns: SlickEvent_<OnAfterSetColumnsEventArgs>;
   onAutosizeColumns: SlickEvent_<OnAutosizeColumnsEventArgs>;
   onBeforeAppendCell: SlickEvent_<OnBeforeAppendCellEventArgs>;
   onBeforeCellEditorDestroy: SlickEvent_<OnBeforeCellEditorDestroyEventArgs>;
@@ -554,6 +556,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.onActiveCellChanged = new SlickEvent<OnActiveCellChangedEventArgs>('onActiveCellChanged', externalPubSub);
     this.onActiveCellPositionChanged = new SlickEvent<{ grid: SlickGrid; }>('onActiveCellPositionChanged', externalPubSub);
     this.onAddNewRow = new SlickEvent<OnAddNewRowEventArgs>('onAddNewRow', externalPubSub);
+    this.onAfterSetColumns = new SlickEvent<OnAfterSetColumnsEventArgs>('onAfterSetColumns', externalPubSub);
     this.onAutosizeColumns = new SlickEvent<OnAutosizeColumnsEventArgs>('onAutosizeColumns', externalPubSub);
     this.onBeforeAppendCell = new SlickEvent<OnBeforeAppendCellEventArgs>('onBeforeAppendCell', externalPubSub);
     this.onBeforeCellEditorDestroy = new SlickEvent<OnBeforeCellEditorDestroyEventArgs>('onBeforeCellEditorDestroy', externalPubSub);
@@ -3232,6 +3235,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.trigger(this.onBeforeSetColumns, { previousColumns: this.columns, newColumns: columnDefinitions, grid: this });
     this.columns = columnDefinitions;
     this.updateColumnsInternal();
+    this.trigger(this.onAfterSetColumns, { newColumns: columnDefinitions, grid: this });
   }
 
   /** Update columns for when a hidden property has changed but the column list itself has not changed. */
