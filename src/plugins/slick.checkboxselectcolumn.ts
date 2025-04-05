@@ -62,7 +62,7 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
       .subscribe(this._grid.onClick, this.handleClick.bind(this))
       .subscribe(this._grid.onKeyDown, this.handleKeyDown.bind(this))
       // whenever columns changed, we need to rerender Select All checkbox
-      .subscribe(grid.onAfterSetColumns, this.handleDataViewSelectedIdsChanged.bind(this));
+      .subscribe(this._grid.onAfterSetColumns, () => this.renderSelectAllCheckbox(this._isSelectAllChecked));
 
     if (this._isUsingDataView && this._dataView && this._options.applySelectOnAllPages) {
       this._handler
