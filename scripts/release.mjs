@@ -16,7 +16,7 @@ import { gitAdd, gitCommit, gitTag, gitTagPushRemote, gitPushToCurrentBranch, ha
 import { createRelease, createReleaseClient, parseGitRepo } from './github-release.mjs';
 import { publishPackage, syncLockFile } from './npm-utils.mjs';
 
-const PUBLISH_CLEAN_FIELDS = ['devDependencies', 'scripts'];
+const PUBLISH_CLEAN_FIELDS = ['devDependencies', 'scripts', 'workspaces'];
 const TAG_PREFIX = '';
 const VERSION_PREFIX = 'v';
 const RELEASE_COMMIT_MSG = 'chore(release): publish version %s';
