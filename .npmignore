@@ -18,9 +18,11 @@ CONTRIBUTING.md
 nuget*
 cypress.json
 cypress/*
+vite-demo/*
 lib
 node_modules
 examples
+eslint.config.mjs
 SlickgridRelease*
 scripts
 tests
