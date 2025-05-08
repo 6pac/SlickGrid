@@ -5552,6 +5552,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     if (this._options.autoHeight) {
       let fullHeight = this._paneHeaderL.offsetHeight;
+      fullHeight += (this._options.showPreHeaderPanel) ? this._options.preHeaderPanelHeight! + this.getVBoxDelta(this._preHeaderPanelScroller) : 0;
       fullHeight += (this._options.showHeaderRow) ? this._options.headerRowHeight! + this.getVBoxDelta(this._headerRowScroller[0]) : 0;
       fullHeight += (this._options.showFooterRow) ? this._options.footerRowHeight! + this.getVBoxDelta(this._footerRowScroller[0]) : 0;
       fullHeight += (this.getCanvasWidth() > this.viewportW) ? (this.scrollbarDimensions?.height ?? 0) : 0;
@@ -5636,8 +5637,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     if (this._options.autoHeight) {
       if (this.hasFrozenColumns()) {
-        const style = getComputedStyle(this._headerScrollerL);
-        Utils.height(this._container, this.paneTopH + Utils.toFloat(style.height));
+        let fullHeight = this.paneTopH + this._headerScrollerL.offsetHeight;
+        fullHeight += this.getVBoxDelta(this._container);
+        if (this._options.showPreHeaderPanel) {
+          fullHeight += this._options.preHeaderPanelHeight!;
+        }
+        Utils.height(this._container, fullHeight);
       }
 
       this._paneTopL.style.position = 'relative';

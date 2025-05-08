@@ -1,15 +1,17 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-  <meta http-equiv="Content-Type" content="text/html; charset=utf-8"/>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example 11: No vertical scrolling (autoHeight)</title>
-  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
-  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
-  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css" />
   <style>
-    html, body {
+    html,
+    body {
       margin: 0;
       padding: 0;
       overflow: auto;
@@ -19,7 +21,8 @@
       font: 11px Helvetica, Arial, sans-serif;
     }
 
-    #container {
+    #container,
+    #container2 {
       margin: 10px;
       border: solid 1px gray;
       width: 480px;
@@ -34,55 +37,133 @@
     }
   </style>
 </head>
+
 <body>
-<h2 class="title">Example - Frozen Columns with Auto-Height</h2>
-<div id="container" class="slick-container"></div>
-<div id="description">
-  <h2>
-    <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
-    Demonstrates:
-  </h2>
-  <ul>
-    <li>autoHeight:true grid option</li>
-  </ul>
-</div>
+  <h2 class="title">Example - Frozen Columns with Auto-Height</h2>
+  <div id="container" class="slick-container"></div>
 
-<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+  <h2 class="title">Frozen Columns with Auto-Height and Header Grouping</h2>
+  <div id="container2" class="slick-container"></div>
+  <div id="description">
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Demonstrates:
+    </h2>
+    <ul>
+      <li>autoHeight:true grid option</li>
+    </ul>
+  </div>
 
-<script src="../dist/browser/slick.core.js"></script>
-<script src="../dist/browser/slick.interactions.js"></script>
-<script src="../dist/browser/slick.grid.js"></script>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-<script>
-  var grid,
-    data = [],
-    columns = [
-      { id: "title", name: "Title", field: "title", width: 100},
+  <script src="../dist/browser/slick.core.js"></script>
+  <script src="../dist/browser/slick.interactions.js"></script>
+  <script src="../dist/browser/slick.grid.js"></script>
+
+  <script>
+    function CreateAddlHeaderRow() {
+      // when it's a frozen grid, we need to render both side (left/right)
+      if (options2.frozenColumn >= 0) {
+        // Add column groups to left panel
+        let preHeaderPanelElm = grid2.getPreHeaderPanelLeft();
+        renderHeaderGroups(preHeaderPanelElm, 0, options2.frozenColumn + 1, columns2.length);
+
+        // Add column groups to right panel
+        preHeaderPanelElm = grid2.getPreHeaderPanelRight();
+        renderHeaderGroups(preHeaderPanelElm, options2.frozenColumn + 1, columns2.length);
+      } else {
+        // when it's a regular grid (without frozen rows), after clearning frozen columns, we re-render everything on the left
+        let preHeaderPanelElm = grid2.getPreHeaderPanelLeft();
+        renderHeaderGroups(preHeaderPanelElm, 0, columns2.length);
+      }
+
+      function renderHeaderGroups(preHeaderPanel, start, end) {
+        preHeaderPanel.innerHTML = '';
+        preHeaderPanel.classList.add("slick-header-columns");
+        preHeaderPanel.style.left = '-1000px';
+        preHeaderPanel.style.width = `${grid2.getHeadersWidth()}px`;
+        preHeaderPanel.parentElement.classList.add("slick-header");
+
+        let headerColumnWidthDiff = grid2.getHeaderColumnWidthDiff();
+        let m, header, lastColumnGroup = '', widthTotal = 0;
+        const columns = grid2.getColumns();
+
+        for (let i = start; i < end; i++) {
+          m = columns[i];
+          if (m) {
+            if (lastColumnGroup === m.columnGroup && i > start) {
+              widthTotal += m.width;
+              header.style.width = `${widthTotal - headerColumnWidthDiff}px`;
+            } else {
+              widthTotal = m.width;
+              header = document.createElement('div');
+              header.className = 'ui-state-default slick-header-column';
+              header.innerHTML = `<span class="slick-column-name">${(m.columnGroup || '')}</span>`;
+              header.style.width = `${m.width - headerColumnWidthDiff}px`;
+              preHeaderPanel.appendChild(header);
+            }
+            lastColumnGroup = m.columnGroup;
+          }
+        }
+      }
+    }
+
+    let grid;
+    let grid2;
+    let data = [];
+    let columns1 = [
+      { id: "title", name: "Title", field: "title", width: 100 },
       { id: "duration", name: "Duration", field: "duration" },
       { id: "%", name: "% Complete", field: "percentComplete" },
       { id: "start", name: "Start", field: "start" },
       { id: "finish", name: "Finish", field: "finish" },
       { id: "effort-driven", name: "Effort Driven", field: "effortDriven" }
-    ],
-    options = {
+    ];
+    let columns2 = [
+      { id: "title", name: "Title", field: "title", width: 110, minWidth: 110, cssClass: "cell-title", columnGroup: "Common Factor" },
+      { id: "duration", name: "Duration", field: "duration", columnGroup: "Common Factor" },
+      { id: "start", name: "Start", field: "start", minWidth: 60, columnGroup: "Period" },
+      { id: "finish", name: "Finish", field: "finish", minWidth: 60, columnGroup: "Period" },
+      { id: "%", defaultSortAsc: false, name: "% Complete", field: "percentComplete", width: 95, resizable: false, columnGroup: "Analysis" },
+      { id: "effort-driven", name: "Effort Driven", width: 90, minWidth: 20, maxWidth: 90, field: "effortDriven", columnGroup: "Analysis" }
+    ];
+
+    let options1 = {
       editable: false,
       enableAddRow: false,
       enableCellNavigation: false,
-      autoHeight: true, frozenColumn: 2
+      autoHeight: true,
+      frozenColumn: 2
+    };
+    let options2 = {
+      ...options1,
+      createPreHeaderPanel: true,
+      showPreHeaderPanel: true,
     };
 
-  for (var i = 10; i-- > 0;) {
-    data[i] = {
-      title: "Task " + i,
-      duration: "5 days",
-      percentComplete: Math.round(Math.random() * 100),
-      start: "01/01/2009",
-      finish: "01/05/2009",
-      effortDriven: (i % 5 == 0)
-    };
-  }
+    for (var i = 10; i-- > 0;) {
+      data[i] = {
+        title: "Task " + i,
+        duration: "5 days",
+        percentComplete: Math.round(Math.random() * 100),
+        start: "01/01/2009",
+        finish: "01/05/2009",
+        effortDriven: (i % 5 == 0)
+      };
+    }
 
-  grid = new Slick.Grid("#container", data, columns, options);
-</script>
+    grid = new Slick.Grid("#container", data, columns1, options1);
+    grid2 = new Slick.Grid("#container2", data, columns2, options2);
+    grid2.onColumnsResized.subscribe(function (e, args) {
+      CreateAddlHeaderRow();
+    });
+
+    grid2.onColumnsReordered.subscribe(function (e, args) {
+      CreateAddlHeaderRow();
+    });
+
+    CreateAddlHeaderRow();
+  </script>
 </body>
+
 </html>
