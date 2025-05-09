@@ -10,7 +10,7 @@ import { type BasePubSub, BindingEventService as BindingEventService_, type Slic
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.15.2
+ * SlickGrid v5.15.3
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -1844,11 +1844,10 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     /** Get the absolute column minimum width */
     getAbsoluteColumnMinWidth(): number;
     /**
-     * Calculates the total vertical offset (the sum of top/bottom borders and paddings)
+     * Calculates the vertical box sizes (the sum of top/bottom borders and paddings)
      * for a given element by reading its computed style.
-     *
      * @param el
-     * @returns
+     * @returns number
      */
     protected getVBoxDelta(el: HTMLElement): number;
     /**

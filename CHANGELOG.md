@@ -2,6 +2,13 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.15.3](https://github.com/6pac/SlickGrid/compare/5.15.2...5.15.3) (2025-05-09)
+
+### Bug Fixes
+
+* autoHeight should add preHeader height when enabled, fixes [#1122](https://github.com/6pac/SlickGrid/issues/1122) ([#1123](https://github.com/6pac/SlickGrid/issues/1123)) ([c8f6c27](https://github.com/6pac/SlickGrid/commit/c8f6c27de80eb218dd1d1458cd4c6dc26fdbdcdb))
+* incorrect grid container box size calculation border not showing ([#1124](https://github.com/6pac/SlickGrid/issues/1124)) ([699e337](https://github.com/6pac/SlickGrid/commit/699e3370c9488bc6157e855617857dc0941c4a13))
+
 ## [5.15.2](https://github.com/6pac/SlickGrid/compare/5.15.1...5.15.2) (2025-04-05)
 
 ### Bug Fixes
