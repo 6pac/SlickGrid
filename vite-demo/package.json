@@ -10,7 +10,7 @@
   },
   "dependencies": {
     "flatpickr": "^4.6.13",
-    "slickgrid": "^5.15.2",
+    "slickgrid": "^5.15.3",
     "sortablejs": "^1.15.6"
   },
   "devDependencies": {
