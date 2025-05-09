@@ -792,26 +792,27 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this._canvas = [this._canvasTopL, this._canvasTopR, this._canvasBottomL, this._canvasBottomR];
 
     this.scrollbarDimensions = this.scrollbarDimensions || this.measureScrollbar();
+    const canvasWithScrollbarWidth = this.getCanvasWidth() + this.scrollbarDimensions.width;
 
     // Default the active canvas to the top left
     this._activeCanvasNode = this._canvasTopL;
 
     // top-header
     if (this._topHeaderPanelSpacer) {
-      Utils.width(this._topHeaderPanelSpacer, this.getCanvasWidth() + this.scrollbarDimensions.width);
+      Utils.width(this._topHeaderPanelSpacer, canvasWithScrollbarWidth);
     }
 
     // pre-header
     if (this._preHeaderPanelSpacer) {
-      Utils.width(this._preHeaderPanelSpacer, this.getCanvasWidth() + this.scrollbarDimensions.width);
+      Utils.width(this._preHeaderPanelSpacer, canvasWithScrollbarWidth);
     }
 
     this._headers.forEach((el) => {
       Utils.width(el, this.getHeadersWidth());
     });
 
-    Utils.width(this._headerRowSpacerL, this.getCanvasWidth() + this.scrollbarDimensions.width);
-    Utils.width(this._headerRowSpacerR, this.getCanvasWidth() + this.scrollbarDimensions.width);
+    Utils.width(this._headerRowSpacerL, canvasWithScrollbarWidth);
+    Utils.width(this._headerRowSpacerR, canvasWithScrollbarWidth);
 
     // footer Row
     if (this._options.createFooterRow) {
@@ -821,9 +822,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this._footerRowScroller = [this._footerRowScrollerL, this._footerRowScrollerR];
 
       this._footerRowSpacerL = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, this._footerRowScrollerL);
-      Utils.width(this._footerRowSpacerL, this.getCanvasWidth() + this.scrollbarDimensions.width);
+      Utils.width(this._footerRowSpacerL, canvasWithScrollbarWidth);
       this._footerRowSpacerR = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, this._footerRowScrollerR);
-      Utils.width(this._footerRowSpacerR, this.getCanvasWidth() + this.scrollbarDimensions.width);
+      Utils.width(this._footerRowSpacerR, canvasWithScrollbarWidth);
 
       this._footerRowL = Utils.createDomElement('div', { className: 'slick-footerrow-columns slick-footerrow-columns-left' }, this._footerRowScrollerL);
       this._footerRowR = Utils.createDomElement('div', { className: 'slick-footerrow-columns slick-footerrow-columns-right' }, this._footerRowScrollerR);
@@ -4630,7 +4631,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const widthChanged = this.canvasWidth !== oldCanvasWidth || this.canvasWidthL !== oldCanvasWidthL || this.canvasWidthR !== oldCanvasWidthR;
 
     if (widthChanged || this.hasFrozenColumns() || this.hasFrozenRows) {
-      Utils.width(this._canvasTopL, this.canvasWidthL);
+      // in some browsers horizontal is showing when it shouldn't and removing 0.1px patches this issue (or even 0.0001 would be enough)
+      Utils.width(this._canvasTopL, this.canvasWidthL - 0.1);
 
       this.getHeadersWidth();
 
@@ -5561,20 +5563,21 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         * this.getDataLengthIncludingAddNew()
         + ((this._options.frozenColumn === -1) ? fullHeight : 0);
     } else {
-      const columnNamesH = (this._options.showColumnHeader) ? Utils.toFloat(Utils.height(this._headerScroller[0]) as number) + this.getVBoxDelta(this._headerScroller[0]) : 0;
-      const preHeaderH = (this._options.createPreHeaderPanel && this._options.showPreHeaderPanel) ? this._options.preHeaderPanelHeight! + this.getVBoxDelta(this._preHeaderPanelScroller) : 0;
-      const topHeaderH = (this._options.createTopHeaderPanel && this._options.showTopHeaderPanel) ? this._options.topHeaderPanelHeight! + this.getVBoxDelta(this._topHeaderPanelScroller) : 0;
-
       const style = getComputedStyle(this._container);
+      const containerBoxH = style.boxSizing !== 'content-box' ? this.getVBoxDelta(this._container) : 0;
+      const topHeaderH = (this._options.createTopHeaderPanel && this._options.showTopHeaderPanel) ? this._options.topHeaderPanelHeight! + this.getVBoxDelta(this._topHeaderPanelScroller) : 0;
+      const preHeaderH = (this._options.createPreHeaderPanel && this._options.showPreHeaderPanel) ? this._options.preHeaderPanelHeight! + this.getVBoxDelta(this._preHeaderPanelScroller) : 0;
+      const columnNamesH = (this._options.showColumnHeader) ? Utils.toFloat(Utils.height(this._headerScroller[0]) as number) : 0;
       this.viewportH = Utils.toFloat(style.height)
         - Utils.toFloat(style.paddingTop)
         - Utils.toFloat(style.paddingBottom)
-        - columnNamesH
         - this.topPanelH
-        - this.headerRowH
-        - this.footerRowH
+        - topHeaderH
         - preHeaderH
-        - topHeaderH;
+        - this.headerRowH
+        - columnNamesH
+        - this.footerRowH
+        - containerBoxH
     }
 
     this.numVisibleRows = Math.ceil(this.viewportH / this._options.rowHeight!);
@@ -7517,17 +7520,16 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Calculates the total vertical offset (the sum of top/bottom borders and paddings)
+   * Calculates the vertical box sizes (the sum of top/bottom borders and paddings)
    * for a given element by reading its computed style.
-   *
    * @param el
-   * @returns
+   * @returns number
    */
-  protected getVBoxDelta(el: HTMLElement) {
+  protected getVBoxDelta(el: HTMLElement): number {
     const p = ['borderTopWidth', 'borderBottomWidth', 'paddingTop', 'paddingBottom'];
     const styles = getComputedStyle(el);
     let delta = 0;
-    p.forEach((val) => delta += Utils.toFloat(styles[val as any]));
+    p.forEach((val) => (delta += Utils.toFloat(styles[val as any])));
     return delta;
   }
 
