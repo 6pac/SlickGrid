@@ -4631,8 +4631,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const widthChanged = this.canvasWidth !== oldCanvasWidth || this.canvasWidthL !== oldCanvasWidthL || this.canvasWidthR !== oldCanvasWidthR;
 
     if (widthChanged || this.hasFrozenColumns() || this.hasFrozenRows) {
-      // in some browsers horizontal is showing when it shouldn't and removing 0.1px patches this issue (or even 0.0001 would be enough)
-      Utils.width(this._canvasTopL, this.canvasWidthL - 0.1);
+      Utils.width(this._canvasTopL, this.canvasWidthL);
 
       this.getHeadersWidth();
 
