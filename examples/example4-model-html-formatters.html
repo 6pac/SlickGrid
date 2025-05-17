@@ -160,7 +160,7 @@ titleElm.textContent = 'Title';
 
 let columns = [
   {id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 45, cannotTriggerInsert: true, resizable: false, selectable: false, excludeFromColumnPicker: true },
-  {id: "title", name: titleElm, field: "title", width: 110, minWidth: 100, cssClass: "cell-title", editor: Editors.LongText, validator: requiredFieldValidator, sortable: true},
+  {id: "title", name: titleElm, field: "title", width: 100, minWidth: 100, cssClass: "cell-title", editor: Editors.LongText, validator: requiredFieldValidator, sortable: true},
   {id: "duration", name: "Duration", field: "duration", editor: Editors.Text, sortable: true},
   {id: "%", defaultSortAsc: false, name: "% Complete", field: "percentComplete", width: 95, formatter: percentCompleteBarFormatter, editor: Editors.PercentComplete, sortable: true},
   {id: "start", name: "Start", field: "start", minWidth: 60, editor: Editors.Flatpickr, sortable: true},

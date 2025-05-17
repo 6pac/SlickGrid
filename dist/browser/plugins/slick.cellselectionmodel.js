@@ -84,13 +84,23 @@
       let isCellDefined = Utils.isDefined(args.cell), isRowDefined = Utils.isDefined(args.row);
       (_a = this._options) != null && _a.selectActiveCell && isRowDefined && isCellDefined ? this.setSelectedRanges([new SlickRange(args.row, args.cell)]) : (!((_b = this._options) != null && _b.selectActiveCell) || !isRowDefined && !isCellDefined) && this.setSelectedRanges([]);
     }
-    isKeyAllowed(key) {
-      return ["ArrowLeft", "ArrowRight", "ArrowUp", "ArrowDown", "PageDown", "PageUp", "Home", "End", "a", "A"].some((k) => k === key);
+    isKeyAllowed(key, isShiftKeyPressed) {
+      return [
+        "ArrowLeft",
+        "ArrowRight",
+        "ArrowUp",
+        "ArrowDown",
+        "PageDown",
+        "PageUp",
+        "Home",
+        "End",
+        ...isShiftKeyPressed ? [] : ["a", "A"]
+      ].some((k) => k === key);
     }
     handleKeyDown(e) {
       var _a, _b;
       let ranges, last, colLn = this._grid.getColumns().length, active = this._grid.getActiveCell(), dataLn = 0;
-      if (this._dataView && "getPagingInfo" in this._dataView ? dataLn = ((_a = this._dataView) == null ? void 0 : _a.getPagingInfo().pageSize) || this._dataView.getLength() : dataLn = this._grid.getDataLength(), active && (e.shiftKey || e.ctrlKey) && !e.altKey && this.isKeyAllowed(e.key)) {
+      if (this._dataView && "getPagingInfo" in this._dataView ? dataLn = ((_a = this._dataView) == null ? void 0 : _a.getPagingInfo().pageSize) || this._dataView.getLength() : dataLn = this._grid.getDataLength(), active && (e.shiftKey || e.ctrlKey) && !e.altKey && this.isKeyAllowed(e.key, e.shiftKey)) {
         ranges = this.getSelectedRanges().slice(), ranges.length || ranges.push(new SlickRange(active.row, active.cell)), last = ranges.pop(), last.contains(active.row, active.cell) || (last = new SlickRange(active.row, active.cell));
         let dRow = last.toRow - last.fromRow, dCell = last.toCell - last.fromCell, toCell, toRow = 0;
         e.ctrlKey && ((_b = e.key) == null ? void 0 : _b.toLowerCase()) === "a" && (this._grid.setActiveCell(0, 0, !1, !1, !0), active.row = 0, active.cell = 0, toCell = colLn - 1, toRow = dataLn - 1);

@@ -151,8 +151,18 @@ export class SlickCellSelectionModel {
     }
   }
 
-  protected isKeyAllowed(key: string) {
-    return ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'PageDown', 'PageUp', 'Home', 'End', 'a', 'A'].some(k => k === key);
+  protected isKeyAllowed(key: string, isShiftKeyPressed?: boolean): boolean {
+    return [
+      'ArrowLeft',
+      'ArrowRight',
+      'ArrowUp',
+      'ArrowDown',
+      'PageDown',
+      'PageUp',
+      'Home',
+      'End',
+      ...(!isShiftKeyPressed ? ['a', 'A'] : []),
+    ].some((k) => k === key);
   }
 
   protected handleKeyDown(e: SlickEventData_) {
@@ -166,7 +176,7 @@ export class SlickCellSelectionModel {
       dataLn = this._grid.getDataLength();
     }
 
-    if (active && (e.shiftKey || e.ctrlKey) && !e.altKey && this.isKeyAllowed(e.key as string)) {
+    if (active && (e.shiftKey || e.ctrlKey) && !e.altKey && this.isKeyAllowed(e.key as string, e.shiftKey)) {
       ranges = this.getSelectedRanges().slice();
       if (!ranges.length) {
         ranges.push(new SlickRange(active.row, active.cell));

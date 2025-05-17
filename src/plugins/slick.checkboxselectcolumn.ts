@@ -60,7 +60,9 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
     this._handler
       .subscribe(this._grid.onSelectedRowsChanged, this.handleSelectedRowsChanged.bind(this))
       .subscribe(this._grid.onClick, this.handleClick.bind(this))
-      .subscribe(this._grid.onKeyDown, this.handleKeyDown.bind(this));
+      .subscribe(this._grid.onKeyDown, this.handleKeyDown.bind(this))
+      // whenever columns changed, we need to rerender Select All checkbox
+      .subscribe(this._grid.onAfterSetColumns, () => this.renderSelectAllCheckbox(this._isSelectAllChecked));
 
     if (this._isUsingDataView && this._dataView && this._options.applySelectOnAllPages) {
       this._handler
@@ -386,7 +388,7 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
   }
 
   protected addCheckboxToFilterHeaderRow(grid: SlickGrid) {
-    this._handler.subscribe(grid.onHeaderRowCellRendered, (_e: any, args: any) => {
+    this._handler.subscribe(grid.onHeaderRowCellRendered, (_e, args) => {
       if (args.column.field === 'sel') {
         Utils.emptyElement(args.node);
         const spanElm = Utils.createDomElement('span', { id: 'filter-checkbox-selectall-container', ariaChecked: 'false' });

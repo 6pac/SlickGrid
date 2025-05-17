@@ -11,6 +11,9 @@ export interface OnAddNewRowEventArgs extends SlickGridArg {
     item: any;
     column: Column;
 }
+export interface OnAfterSetColumnsEventArgs extends SlickGridArg {
+    newColumns: Column[];
+}
 export interface OnAutosizeColumnsEventArgs extends SlickGridArg {
     columns: Column[];
 }

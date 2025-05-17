@@ -2,6 +2,32 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.15.3](https://github.com/6pac/SlickGrid/compare/5.15.2...5.15.3) (2025-05-09)
+
+### Bug Fixes
+
+* autoHeight should add preHeader height when enabled, fixes [#1122](https://github.com/6pac/SlickGrid/issues/1122) ([#1123](https://github.com/6pac/SlickGrid/issues/1123)) ([c8f6c27](https://github.com/6pac/SlickGrid/commit/c8f6c27de80eb218dd1d1458cd4c6dc26fdbdcdb))
+* incorrect grid container box size calculation border not showing ([#1124](https://github.com/6pac/SlickGrid/issues/1124)) ([699e337](https://github.com/6pac/SlickGrid/commit/699e3370c9488bc6157e855617857dc0941c4a13))
+
+## [5.15.2](https://github.com/6pac/SlickGrid/compare/5.15.1...5.15.2) (2025-04-05)
+
+### Bug Fixes
+
+* Select All checkbox shouldn't disappear w/column toggle, fix [#1119](https://github.com/6pac/SlickGrid/issues/1119) ([#1120](https://github.com/6pac/SlickGrid/issues/1120)) ([23a9557](https://github.com/6pac/SlickGrid/commit/23a955737df6bf007821ca8d9e45dd0d357ce839))
+* shift + a should not select all cells upwards ([#1118](https://github.com/6pac/SlickGrid/issues/1118)) ([d7ae402](https://github.com/6pac/SlickGrid/commit/d7ae40228415f1210c5ec06fbbaa50234cf1745c))
+
+## [5.15.1](https://github.com/6pac/SlickGrid/compare/5.15.0...5.15.1) (2025-03-19)
+
+### Bug Fixes
+
+* expose `remapAllColumnsRowSpan()` to fix [#1114](https://github.com/6pac/SlickGrid/issues/1114) ([#1115](https://github.com/6pac/SlickGrid/issues/1115)) ([2004591](https://github.com/6pac/SlickGrid/commit/2004591873629c72b26037539c7bfd205333ff4d))
+* opening Header Menu shouldn't add Active Header Cell ([#1102](https://github.com/6pac/SlickGrid/issues/1102)) ([4ad285b](https://github.com/6pac/SlickGrid/commit/4ad285b4d46432ded043a37b46f91f2495db7876))
+
+### Features
+
+* add `initialGroupBy` to Draggable Grouping ([878b6cd](https://github.com/6pac/SlickGrid/commit/878b6cdc39f04340e6a2c930b8e3f7885ee8ba2e))
+* add `onBeforeRemoveCachedRow` SlickGrid event ([#1113](https://github.com/6pac/SlickGrid/issues/1113)) ([68c773d](https://github.com/6pac/SlickGrid/commit/68c773df04c455ee28fce3596e34389ad0c876fc))
+
 # [5.15.0](https://github.com/6pac/SlickGrid/compare/5.14.3...5.15.0) (2025-01-18)
 
 ### Bug Fixes

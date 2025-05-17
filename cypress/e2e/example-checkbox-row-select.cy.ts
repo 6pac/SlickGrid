@@ -94,5 +94,22 @@ describe('Example - Checkbox Row Select', () => {
       cy.get('#myGrid [data-id=_checkbox_selector] input[type=checkbox]')
         .should('exist');
     });
+
+    it('should expect Select All checkbox to still be rendered even after hiding any of the column', () => {
+      cy.get('#myGrid .slick-header-columns .slick-header-column:nth(3)')
+        .trigger('mouseover')
+        .trigger('contextmenu')
+        .invoke('show');
+
+      cy.get('.slick-columnpicker')
+        .find('.slick-columnpicker-list')
+        .children('li:nth-child(5)')
+        .children('label')
+        .should('contain', 'D')
+        .click();
+
+      cy.get('#myGrid [data-id=_checkbox_selector] input[type=checkbox]')
+        .should('be.visible');
+    });
   });
 });
