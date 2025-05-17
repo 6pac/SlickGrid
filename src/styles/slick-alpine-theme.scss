@@ -858,3 +858,11 @@ button.slick-btn {
     }
   }
 }
+.slick-drag-replace-handle {
+  height: 7px;
+  width: 7px;
+  background: gray;
+  position: absolute;
+  bottom: 0;
+  right: 0;
+}

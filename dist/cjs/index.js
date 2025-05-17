@@ -22,11 +22,13 @@ __export(index_exports, {
   Aggregators: () => Aggregators,
   AvgAggregator: () => AvgAggregator,
   BindingEventService: () => BindingEventService,
+  CellSelectionMode: () => CellSelectionMode,
   CheckboxEditor: () => CheckboxEditor,
   CheckboxFormatter: () => CheckboxFormatter,
   CheckmarkFormatter: () => CheckmarkFormatter,
   ColAutosizeMode: () => ColAutosizeMode,
   CountAggregator: () => CountAggregator,
+  DragExtendHandle: () => DragExtendHandle,
   Draggable: () => Draggable,
   EditorLock: () => EditorLock,
   Editors: () => Editors,
@@ -69,6 +71,7 @@ __export(index_exports, {
   SlickCrossGridRowMoveManager: () => SlickCrossGridRowMoveManager,
   SlickCustomTooltip: () => SlickCustomTooltip,
   SlickDataView: () => SlickDataView,
+  SlickDragExtendHandle: () => SlickDragExtendHandle,
   SlickDraggableGrouping: () => SlickDraggableGrouping,
   SlickEditorLock: () => SlickEditorLock,
   SlickEvent: () => SlickEvent,
@@ -333,6 +336,23 @@ var SlickEventData = class {
    */
   toString() {
     return this.isSingleCell() ? `(${this.fromRow}:${this.fromCell})` : `(${this.fromRow}:${this.fromCell} - ${this.toRow}:${this.toCell})`;
+  }
+}, SlickDragExtendHandle = class {
+  constructor(gridUid) {
+    __publicField(this, "id");
+    __publicField(this, "cssClass", "slick-drag-replace-handle");
+    this.id = gridUid + "_drag_replace_handle";
+  }
+  getHandleHtml() {
+    return '<div id="' + this.id + '" class="slick-drag-replace-handle"></div>';
+  }
+  removeEl() {
+    let dragReplaceEl = document.getElementById(this.id);
+    dragReplaceEl && dragReplaceEl.remove();
+  }
+  createEl(activeCellNode) {
+    let dragReplaceEl = document.createElement("div");
+    dragReplaceEl.classList.add("slick-drag-replace-handle"), dragReplaceEl.setAttribute("id", this.id), activeCellNode.appendChild(dragReplaceEl), console.log("DragReplaceEl.createEl");
   }
 }, SlickNonDataItem = class {
   constructor() {
@@ -777,6 +797,7 @@ var Utils = _Utils, SlickGlobalEditorLock = new SlickEditorLock(), SlickCore = {
   EventData: SlickEventData,
   EventHandler: SlickEventHandler,
   Range: SlickRange,
+  DragExtendHandle: SlickDragExtendHandle,
   NonDataRow: SlickNonDataItem,
   Group: SlickGroup,
   GroupTotals: SlickGroupTotals,
@@ -829,6 +850,10 @@ var Utils = _Utils, SlickGlobalEditorLock = new SlickEditorLock(), SlickCore = {
     AllRows: "ALL",
     LastRow: "LS1"
   },
+  CellSelectionMode: {
+    Select: "SEL",
+    Replace: "REP"
+  },
   ValueFilterMode: {
     None: "NONE",
     DeDuplicate: "DEDP",
@@ -850,6 +875,7 @@ var Utils = _Utils, SlickGlobalEditorLock = new SlickEditorLock(), SlickCore = {
   GroupTotals,
   NonDataRow,
   Range,
+  DragExtendHandle,
   RegexSanitizer,
   GlobalEditorLock,
   keyCode,
@@ -857,6 +883,7 @@ var Utils = _Utils, SlickGlobalEditorLock = new SlickEditorLock(), SlickCore = {
   GridAutosizeColsMode,
   ColAutosizeMode,
   RowSelectionMode,
+  CellSelectionMode,
   ValueFilterMode,
   WidthEvalMode
 } = SlickCore;
@@ -2315,6 +2342,7 @@ var Utils10 = Utils, SlickCellRangeDecorator = class {
     // protected props
     __publicField(this, "_options");
     __publicField(this, "_elem");
+    __publicField(this, "_selectionCss");
     __publicField(this, "_defaults", {
       selectionCssClass: "slick-range-decorator",
       selectionCss: {
@@ -2323,10 +2351,16 @@ var Utils10 = Utils, SlickCellRangeDecorator = class {
       },
       offset: { top: -1, left: -1, height: -2, width: -2 }
     });
-    this._options = Utils10.extend(!0, {}, this._defaults, options);
+    this._options = Utils10.extend(!0, {}, this._defaults, options), this._selectionCss = options?.selectionCss || {};
   }
   destroy() {
     this.hide();
+  }
+  getSelectionCss() {
+    return this._selectionCss;
+  }
+  setSelectionCss(cssProps) {
+    this._selectionCss = cssProps;
   }
   init() {
   }
@@ -2335,8 +2369,8 @@ var Utils10 = Utils, SlickCellRangeDecorator = class {
   }
   show(range) {
     if (!this._elem) {
-      this._elem = document.createElement("div"), this._elem.className = this._options.selectionCssClass, Object.keys(this._options.selectionCss).forEach((cssStyleKey) => {
-        this._elem.style[cssStyleKey] = this._options.selectionCss[cssStyleKey];
+      this._elem = document.createElement("div"), this._elem.className = this._options.selectionCssClass, Object.keys(this._selectionCss).forEach((cssStyleKey) => {
+        this._elem.style[cssStyleKey] = this._selectionCss[cssStyleKey];
       }), this._elem.style.position = "absolute";
       let canvasNode = this.grid.getActiveCanvasNode();
       canvasNode && canvasNode.appendChild(this._elem);
@@ -2349,7 +2383,7 @@ var Utils10 = Utils, SlickCellRangeDecorator = class {
 // src/slick.interactions.ts
 var Utils11 = Utils;
 function Draggable(options) {
-  let { containerElement } = options, { onDragInit, onDragStart, onDrag, onDragEnd, preventDragFromKeys } = options, element, startX, startY, deltaX, deltaY, dragStarted;
+  let { containerElement } = options, { onDragInit, onDragStart, onDrag, onDragEnd, preventDragFromKeys } = options, element, startX, startY, deltaX, deltaY, dragStarted, matchClassTag;
   containerElement || (containerElement = document.body);
   let originaldd = {
     dragSource: containerElement,
@@ -2376,9 +2410,15 @@ function Draggable(options) {
       element = event2.target;
       let targetEvent = event2?.touches?.[0] ?? event2, { target } = targetEvent;
       if (!options.allowDragFrom || options.allowDragFrom && element.matches(options.allowDragFrom) || options.allowDragFromClosest && element.closest(options.allowDragFromClosest)) {
-        originaldd.dragHandle = element;
+        if (originaldd.dragHandle = element, matchClassTag = "", options.dragFromClassDetectArr) {
+          for (let o, i = 0; i < options.dragFromClassDetectArr.length; i++)
+            if (o = options.dragFromClassDetectArr[i], o.id && element.id === o.id || o.cssSelector && element.matches(o.cssSelector)) {
+              matchClassTag = o.tag;
+              break;
+            }
+        }
         let winScrollPos = Utils11.windowScrollPosition();
-        startX = winScrollPos.left + targetEvent.clientX, startY = winScrollPos.top + targetEvent.clientY, deltaX = targetEvent.clientX - targetEvent.clientX, deltaY = targetEvent.clientY - targetEvent.clientY, originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDragInit, event2, originaldd) !== !1 && (document.body.addEventListener("mousemove", userMoved), document.body.addEventListener("touchmove", userMoved), document.body.addEventListener("mouseup", userReleased), document.body.addEventListener("touchend", userReleased), document.body.addEventListener("touchcancel", userReleased));
+        startX = winScrollPos.left + targetEvent.clientX, startY = winScrollPos.top + targetEvent.clientY, deltaX = targetEvent.clientX - targetEvent.clientX, deltaY = targetEvent.clientY - targetEvent.clientY, originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target, matchClassTag }), executeDragCallbackWhenDefined(onDragInit, event2, originaldd) !== !1 && (document.body.addEventListener("mousemove", userMoved), document.body.addEventListener("touchmove", userMoved), document.body.addEventListener("mouseup", userReleased), document.body.addEventListener("touchend", userReleased), document.body.addEventListener("touchcancel", userReleased)), console.log("userPressed.matchClassTag: " + matchClassTag);
       }
     }
   }
@@ -2387,7 +2427,7 @@ function Draggable(options) {
       let targetEvent = event2?.touches?.[0] ?? event2;
       deltaX = targetEvent.clientX - startX, deltaY = targetEvent.clientY - startY;
       let { target } = targetEvent;
-      dragStarted || (originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDragStart, event2, originaldd), dragStarted = !0), originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDrag, event2, originaldd);
+      dragStarted || (originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target, matchClassTag }), executeDragCallbackWhenDefined(onDragStart, event2, originaldd), dragStarted = !0), originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target, matchClassTag }), executeDragCallbackWhenDefined(onDrag, event2, originaldd);
     }
   }
   function userReleased(event2) {
@@ -2444,7 +2484,7 @@ function Resizable(options) {
 }
 
 // src/plugins/slick.cellrangeselector.ts
-var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange3 = SlickRange, Draggable2 = Draggable, SlickCellRangeDecorator2 = SlickCellRangeDecorator, Utils12 = Utils, SlickCellRangeSelector = class {
+var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange3 = SlickRange, Draggable2 = Draggable, SlickCellRangeDecorator2 = SlickCellRangeDecorator, Utils12 = Utils, CellSelectionMode2 = CellSelectionMode, SlickCellRangeSelector = class {
   constructor(options) {
     // --
     // public API
@@ -2463,6 +2503,7 @@ var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange
     __publicField(this, "_dragging", !1);
     __publicField(this, "_handler", new SlickEventHandler2());
     __publicField(this, "_options");
+    __publicField(this, "_selectionMode", CellSelectionMode2.Select);
     __publicField(this, "_defaults", {
       autoScroll: !0,
       minIntervalToShowNextCell: 30,
@@ -2505,6 +2546,12 @@ var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange
   getCellDecorator() {
     return this._decorator;
   }
+  getSelectionMode() {
+    return this._selectionMode;
+  }
+  setSelectionMode(mode) {
+    this._selectionMode = mode;
+  }
   handleScroll(_e, args) {
     this._scrollTop = args.scrollTop, this._scrollLeft = args.scrollLeft;
   }
@@ -2522,9 +2569,10 @@ var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange
       let canvasLeftElm = document.querySelector(`.${this._grid.getUID()} .grid-canvas-left`);
       canvasLeftElm && (this._columnOffset = canvasLeftElm.clientWidth || 0);
     }
-    e.stopImmediatePropagation(), e.preventDefault();
+    console.log("CellRangeSelector.handleDragInit() _activeViewport is " + (this._activeViewport ? "defined" : "undefined")), e.stopImmediatePropagation(), e.preventDefault();
   }
   handleDragStart(e, dd) {
+    console.log("CellRangeSelector.handleDragStart() _activeViewport is " + (this._activeViewport ? "defined" : "undefined")), this._activeViewport;
     let cell = this._grid.getCellFromEvent(e);
     if (cell && this.onBeforeCellRangeSelected.notify(cell).getReturnValue() !== !1 && this._grid.canCellBeSelected(cell.row, cell.cell) && (this._dragging = !0, e.stopImmediatePropagation()), !this._dragging)
       return;
@@ -2533,8 +2581,8 @@ var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange
     this._gridOptions.frozenColumn >= 0 && this._isRightCanvas && (startX += this._scrollLeft);
     let startY = dd.startY - (canvasOffset?.top ?? 0);
     this._gridOptions.frozenRow >= 0 && this._isBottomCanvas && (startY += this._scrollTop);
-    let start = this._grid.getCellFromPoint(startX, startY);
-    return dd.range = { start, end: {} }, this._currentlySelectedRange = dd.range, this._decorator.show(new SlickRange3(start.row, start.cell));
+    let start;
+    return this._selectionMode = CellSelectionMode2.Select, dd.matchClassTag !== "dragReplaceHandle" ? start = this._grid.getCellFromPoint(startX, startY) : (start = this._grid.getActiveCell() || { row: void 0, cell: void 0 }, this._selectionMode = CellSelectionMode2.Replace), dd.range = { start, end: {} }, this._currentlySelectedRange = dd.range, this._decorator.show(new SlickRange3(start.row ?? 0, start.cell ?? 0));
   }
   handleDrag(evt, dd) {
     if (!this._dragging && !this._isRowMoveRegistered)
@@ -2546,6 +2594,7 @@ var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange
     this.stopIntervalTimer(), this.handleDragTo(e, dd);
   }
   getMouseOffsetViewport(e, dd) {
+    console.log("Drag.getMouseOffsetViewport() _activeViewport is " + (this._activeViewport ? "defined" : "undefined")), this._activeViewport;
     let targetEvent = e?.touches?.[0] ?? e, viewportLeft = this._activeViewport.scrollLeft, viewportTop = this._activeViewport.scrollTop, viewportRight = viewportLeft + this._viewportWidth, viewportBottom = viewportTop + this._viewportHeight, viewportOffset = Utils12.offset(this._activeViewport), viewportOffsetLeft = viewportOffset?.left ?? 0, viewportOffsetTop = viewportOffset?.top ?? 0, viewportOffsetRight = viewportOffsetLeft + this._viewportWidth, viewportOffsetBottom = viewportOffsetTop + this._viewportHeight, result = {
       e,
       dd,
@@ -2619,8 +2668,9 @@ var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange
         dd.range.start.cell ?? 0,
         dd.range.end.row,
         dd.range.end.cell
-      )
-    }));
+      ),
+      selectionMode: this._selectionMode
+    }), console.log("handleDragEnd"));
   }
   getCurrentRange() {
     return this._currentlySelectedRange;
@@ -2678,12 +2728,12 @@ var SlickEvent9 = SlickEvent, SlickEventData3 = SlickEventData, SlickRange4 = Sl
   resetPageRowCount() {
     this._cachedPageRowCount = 0;
   }
-  setSelectedRanges(ranges, caller = "SlickCellSelectionModel.setSelectedRanges") {
+  setSelectedRanges(ranges, caller = "SlickCellSelectionModel.setSelectedRanges", selectionMode) {
     if ((!this._ranges || this._ranges.length === 0) && (!ranges || ranges.length === 0))
       return;
     let rangeHasChanged = !this.rangesAreEqual(this._ranges, ranges);
     if (this._ranges = this.removeInvalidRanges(ranges), rangeHasChanged) {
-      let eventData = new SlickEventData3(new CustomEvent("click", { detail: { caller } }), this._ranges);
+      let eventData = new SlickEventData3(new CustomEvent("click", { detail: { caller, selectionMode } }), this._ranges);
       this.onSelectedRangesChanged.notify(this._ranges, eventData);
     }
   }
@@ -2691,19 +2741,19 @@ var SlickEvent9 = SlickEvent, SlickEventData3 = SlickEventData, SlickRange4 = Sl
     return this._ranges;
   }
   refreshSelections() {
-    this.setSelectedRanges(this.getSelectedRanges());
+    this.setSelectedRanges(this.getSelectedRanges(), void 0, "");
   }
   handleBeforeCellRangeSelected(e) {
     if (this._grid.getEditorLock().isActive())
       return e.stopPropagation(), !1;
   }
   handleCellRangeSelected(_e, args) {
-    this._grid.setActiveCell(args.range.fromRow, args.range.fromCell, !1, !1, !0), this.setSelectedRanges([args.range]);
+    this._grid.setActiveCell(args.range.fromRow, args.range.fromCell, !1, !1, !0), this.setSelectedRanges([args.range], void 0, args.selectionMode);
   }
   handleActiveCellChange(_e, args) {
     this._prevSelectedRow = void 0;
     let isCellDefined = Utils13.isDefined(args.cell), isRowDefined = Utils13.isDefined(args.row);
-    this._options?.selectActiveCell && isRowDefined && isCellDefined ? this.setSelectedRanges([new SlickRange4(args.row, args.cell)]) : (!this._options?.selectActiveCell || !isRowDefined && !isCellDefined) && this.setSelectedRanges([]);
+    this._options?.selectActiveCell && isRowDefined && isCellDefined ? this.setSelectedRanges([new SlickRange4(args.row, args.cell)], void 0, "") : (!this._options?.selectActiveCell || !isRowDefined && !isCellDefined) && this.setSelectedRanges([], void 0, "");
   }
   isKeyAllowed(key, isShiftKeyPressed) {
     return [
@@ -2733,7 +2783,7 @@ var SlickEvent9 = SlickEvent, SlickEventData3 = SlickEventData, SlickRange4 = Sl
         isSingleKeyMove ? (this._grid.scrollRowIntoView(viewRow), this._grid.scrollCellIntoView(viewRow, viewCell)) : (this._grid.scrollRowIntoView(toRow), this._grid.scrollCellIntoView(toRow, viewCell));
       } else
         ranges.push(last);
-      this.setSelectedRanges(ranges), e.preventDefault(), e.stopPropagation(), this._prevKeyDown = e.key;
+      this.setSelectedRanges(ranges, void 0, ""), e.preventDefault(), e.stopPropagation(), this._prevKeyDown = e.key;
     }
   }
 };
@@ -4703,11 +4753,11 @@ var Draggable3 = Draggable, keyCode3 = keyCode, SlickCellRangeDecorator3 = Slick
   setSelectedRows(rows) {
     this.setSelectedRanges(this.rowsToRanges(rows), "SlickRowSelectionModel.setSelectedRows");
   }
-  setSelectedRanges(ranges, caller = "SlickRowSelectionModel.setSelectedRanges") {
+  setSelectedRanges(ranges, caller = "SlickRowSelectionModel.setSelectedRanges", selectionMode) {
     if ((!this._ranges || this._ranges.length === 0) && (!ranges || ranges.length === 0))
       return;
     this._ranges = ranges;
-    let eventData = new SlickEventData5(new CustomEvent("click", { detail: { caller } }), this._ranges);
+    let eventData = new SlickEventData5(new CustomEvent("click", { detail: { caller, selectionMode } }), this._ranges);
     this.onSelectedRangesChanged.notify(this._ranges, eventData);
   }
   getSelectedRanges() {
@@ -4766,7 +4816,7 @@ var Draggable3 = Draggable, keyCode3 = keyCode, SlickCellRangeDecorator3 = Slick
   handleCellRangeSelected(_e, args) {
     if (!this._grid.getOptions().multiSelect || !this._options.selectActiveRow)
       return !1;
-    this.setSelectedRanges([new SlickRange5(args.range.fromRow, 0, args.range.toRow, this._grid.getColumns().length - 1)]);
+    this.setSelectedRanges([new SlickRange5(args.range.fromRow, 0, args.range.toRow, this._grid.getColumns().length - 1)], void 0, args.selectionMode);
   }
 };
 
@@ -6655,7 +6705,7 @@ var Utils29 = Utils, PercentCompleteFormatter = (_row, _cell, value) => !Utils29
 };
 
 // src/slick.grid.ts
-var BindingEventService13 = BindingEventService, ColAutosizeMode2 = ColAutosizeMode, SlickEvent21 = SlickEvent, SlickEventData7 = SlickEventData, GlobalEditorLock2 = GlobalEditorLock, GridAutosizeColsMode2 = GridAutosizeColsMode, keyCode6 = keyCode, preClickClassName2 = preClickClassName, SlickRange6 = SlickRange, RowSelectionMode2 = RowSelectionMode, ValueFilterMode2 = ValueFilterMode, Utils30 = Utils, WidthEvalMode2 = WidthEvalMode, Draggable4 = Draggable, MouseWheel2 = MouseWheel, Resizable2 = Resizable;
+var BindingEventService13 = BindingEventService, ColAutosizeMode2 = ColAutosizeMode, SlickEvent21 = SlickEvent, SlickEventData7 = SlickEventData, GlobalEditorLock2 = GlobalEditorLock, GridAutosizeColsMode2 = GridAutosizeColsMode, keyCode6 = keyCode, preClickClassName2 = preClickClassName, SlickRange6 = SlickRange, RowSelectionMode2 = RowSelectionMode, CellSelectionMode3 = CellSelectionMode, ValueFilterMode2 = ValueFilterMode, Utils30 = Utils, WidthEvalMode2 = WidthEvalMode, Draggable4 = Draggable, MouseWheel2 = MouseWheel, Resizable2 = Resizable, DragExtendHandle2 = DragExtendHandle;
 var SlickGrid = class {
   /**
    * Creates a new instance of the grid.
@@ -6895,6 +6945,7 @@ var SlickGrid = class {
     __publicField(this, "initialized", !1);
     __publicField(this, "_container");
     __publicField(this, "uid", `slickgrid_${Math.round(1e6 * Math.random())}`);
+    __publicField(this, "dragReplaceEl", new DragExtendHandle2(this.uid));
     __publicField(this, "_focusSink");
     __publicField(this, "_focusSink2");
     __publicField(this, "_groupHeaders", []);
@@ -6959,6 +7010,8 @@ var SlickGrid = class {
     __publicField(this, "activePosY");
     __publicField(this, "activeRow");
     __publicField(this, "activeCell");
+    __publicField(this, "selectionBottomRow");
+    __publicField(this, "selectionRightCell");
     __publicField(this, "activeCellNode", null);
     __publicField(this, "currentEditor", null);
     __publicField(this, "serializedEditorValue");
@@ -6979,6 +7032,7 @@ var SlickGrid = class {
     __publicField(this, "scrollLeft", 0);
     __publicField(this, "selectionModel");
     __publicField(this, "selectedRows", []);
+    __publicField(this, "selectedRanges", []);
     __publicField(this, "plugins", []);
     __publicField(this, "cellCssClasses", {});
     __publicField(this, "columnsById", {});
@@ -7126,7 +7180,8 @@ var SlickGrid = class {
       this._bindingEventService.bind(element, "keydown", this.handleKeyDown.bind(this)), this._bindingEventService.bind(element, "click", this.handleClick.bind(this)), this._bindingEventService.bind(element, "dblclick", this.handleDblClick.bind(this)), this._bindingEventService.bind(element, "contextmenu", this.handleContextMenu.bind(this)), this._bindingEventService.bind(element, "mouseover", this.handleCellMouseOver.bind(this)), this._bindingEventService.bind(element, "mouseout", this.handleCellMouseOut.bind(this));
     }), Draggable4 && (this.slickDraggableInstance = Draggable4({
       containerElement: this._container,
-      allowDragFrom: "div.slick-cell",
+      allowDragFrom: "div.slick-cell, div." + this.dragReplaceEl.cssClass,
+      dragFromClassDetectArr: [{ tag: "dragReplaceHandle", id: this.dragReplaceEl.id }],
       // the slick cell parent must always contain `.dnd` and/or `.cell-reorder` class to be identified as draggable
       allowDragFromClosest: "div.slick-cell.dnd, div.slick-cell.cell-reorder",
       preventDragFromKeys: this._options.preventDragFromKeys,
@@ -8523,16 +8578,49 @@ var SlickGrid = class {
   * @param {SlickRange_[]} ranges - The list of selected row and cell ranges.
    */
   handleSelectedRangesChanged(e, ranges) {
-    let ne = e.getNativeEvent(), previousSelectedRows = this.selectedRows.slice(0);
-    this.selectedRows = [];
+    let ne = e.getNativeEvent(), selectionMode = ne?.detail?.selectionMode ?? "", prevSelectedRanges = this.selectedRanges.slice(0);
+    if (this.selectedRanges = ranges, selectionMode === CellSelectionMode3.Replace && prevSelectedRanges && prevSelectedRanges.length === 1 && this.selectedRanges && this.selectedRanges.length === 1) {
+      let prevSelectedRange = prevSelectedRanges[0], prevSelectedRange_rowCount = prevSelectedRange.toRow - prevSelectedRange.fromRow + 1, prevSelectedRange_cellCount = prevSelectedRange.toCell - prevSelectedRange.fromCell + 1, selectedRange = this.selectedRanges[0], selectedRange_rowCount = selectedRange.toRow - selectedRange.fromRow + 1, selectedRange_cellCount = selectedRange.toCell - selectedRange.fromCell + 1;
+      if (selectedRange_rowCount >= prevSelectedRange_rowCount && selectedRange_cellCount >= prevSelectedRange_cellCount) {
+        let copyToRange = {
+          fromRow: selectedRange.fromRow < prevSelectedRange.fromRow ? selectedRange.fromRow : prevSelectedRange.toRow + 1,
+          rowCount: selectedRange_rowCount - prevSelectedRange_rowCount,
+          fromCell: selectedRange.fromCell,
+          cellCount: selectedRange_cellCount
+          // - prevSelectedRange_cellCount
+        }, fromRowOffset = 0, fromCellOffset = 0;
+        for (let i = 0; i < copyToRange.rowCount; i++) {
+          let toRow = this.getDataItem(copyToRange.fromRow + i), fromRow = this.getDataItem(prevSelectedRange.fromRow + fromRowOffset);
+          fromCellOffset = 0;
+          for (let j = 0; j < copyToRange.cellCount; j++) {
+            let toColDef = this.columns[copyToRange.fromCell + j], fromColDef = this.columns[prevSelectedRange.fromCell + fromCellOffset];
+            if (!toColDef.hidden && !fromColDef.hidden) {
+              let val = fromRow[fromColDef.field];
+              this._options.dataItemColumnValueExtractor && (val = this._options.dataItemColumnValueExtractor(fromRow, fromColDef)), toRow[toColDef.field] = val;
+            }
+            fromCellOffset++, fromCellOffset >= prevSelectedRange_cellCount && (fromCellOffset = 0);
+          }
+          fromRowOffset++, fromRowOffset >= prevSelectedRange_rowCount && (fromRowOffset = 0);
+        }
+        this.invalidate();
+      }
+    }
+    let previousSelectedRows = this.selectedRows.slice(0);
+    this.selectionBottomRow = -1, this.selectionRightCell = -1, this.dragReplaceEl.removeEl(), this.selectedRows = [];
     let hash = {};
-    for (let i = 0; i < ranges.length; i++)
+    for (let i = 0; i < ranges.length; i++) {
       for (let j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
         hash[j] || (this.selectedRows.push(j), hash[j] = {});
         for (let k = ranges[i].fromCell; k <= ranges[i].toCell; k++)
           this.canCellBeSelected(j, k) && (hash[j][this.columns[k].id] = this._options.selectedCellCssClass);
       }
-    if (this.setCellCssStyles(this._options.selectedCellCssClass || "", hash), this.simpleArrayEquals(previousSelectedRows, this.selectedRows)) {
+      this.selectionBottomRow < ranges[i].toRow && (this.selectionBottomRow = ranges[i].toRow), this.selectionRightCell < ranges[i].toCell && (this.selectionRightCell = ranges[i].toCell);
+    }
+    if (this.setCellCssStyles(this._options.selectedCellCssClass || "", hash), this.selectionBottomRow >= 0 && this.selectionRightCell >= 0) {
+      let lowerRightCell = this.getCellNode(this.selectionBottomRow, this.selectionRightCell);
+      this.dragReplaceEl.createEl(lowerRightCell);
+    }
+    if (this.simpleArraysNotEqual(previousSelectedRows, this.selectedRows)) {
       let caller = ne?.detail?.caller ?? "click", selectedRowsSet = new Set(this.getSelectedRows()), previousSelectedRowsSet = new Set(previousSelectedRows), newSelectedAdditions = Array.from(selectedRowsSet).filter((i) => !previousSelectedRowsSet.has(i)), newSelectedDeletions = Array.from(previousSelectedRowsSet).filter((i) => !selectedRowsSet.has(i));
       this.trigger(this.onSelectedRowsChanged, {
         rows: this.getSelectedRows(),
@@ -8542,6 +8630,10 @@ var SlickGrid = class {
         changedUnselectedRows: newSelectedDeletions
       }, e);
     }
+  }
+  // compare 2 simple arrays (integers or strings only, do not use to compare object arrays)
+  simpleArraysNotEqual(arr1, arr2) {
+    return Array.isArray(arr1) && Array.isArray(arr2) && arr2.sort().toString() !== arr1.sort().toString();
   }
   /**
    * Processes a mouse wheel event by adjusting the vertical scroll (scrollTop) based on deltaY (scaled by rowHeight)
@@ -8594,7 +8686,7 @@ var SlickGrid = class {
   }
   // Called when a drag operation completes; it triggers the onDragEnd event with the current drag position and event.
   handleDragEnd(e, dd) {
-    this.trigger(this.onDragEnd, dd, e);
+    console.log("SlickGrid.handleDragEnd " + dd.matchClassTag), dd.matchClassTag === "dragReplaceHandle" && this.dragReplaceEl.removeEl(), this.trigger(this.onDragEnd, dd, e);
   }
   /**
    * Handles keydown events for grid navigation and editing.
@@ -8917,7 +9009,7 @@ var SlickGrid = class {
     this.canvasWidth = this.getCanvasWidth(), this._options.createTopHeaderPanel && Utils30.width(this._topHeaderPanel, this._options.topHeaderPanelWidth ?? this.canvasWidth);
     let widthChanged = this.canvasWidth !== oldCanvasWidth || this.canvasWidthL !== oldCanvasWidthL || this.canvasWidthR !== oldCanvasWidthR;
     if (widthChanged || this.hasFrozenColumns() || this.hasFrozenRows)
-      if (Utils30.width(this._canvasTopL, this.canvasWidthL - 0.1), this.getHeadersWidth(), Utils30.width(this._headerL, this.headersWidthL), Utils30.width(this._headerR, this.headersWidthR), this.hasFrozenColumns()) {
+      if (Utils30.width(this._canvasTopL, this.canvasWidthL), this.getHeadersWidth(), Utils30.width(this._headerL, this.headersWidthL), Utils30.width(this._headerR, this.headersWidthR), this.hasFrozenColumns()) {
         let cWidth = Utils30.width(this._container) || 0;
         if (cWidth > 0 && this.canvasWidthL > cWidth && this._options.throwWhenFrozenNotAllViewable)
           throw new Error("[SlickGrid] Frozen columns cannot be wider than the actual grid container width. Make sure to have less columns freezed or make your grid container wider");
@@ -9235,7 +9327,7 @@ var SlickGrid = class {
       m.cellAttrs.hasOwnProperty(key) && cellDiv.setAttribute(key, m.cellAttrs[key]);
     }), item) {
       let cellResult = Object.prototype.toString.call(formatterResult) !== "[object Object]" ? formatterResult : formatterResult.html || formatterResult.text;
-      this.applyHtmlCode(cellDiv, cellResult);
+      this.applyHtmlCode(cellDiv, cellResult), row === this.selectionBottomRow && cell === this.selectionRightCell && this._options.showCellSelection && this.dragReplaceEl.createEl(cellDiv);
     }
     divRow.appendChild(cellDiv), formatterResult.insertElementAfterTarget && Utils30.insertAfterElement(cellDiv, formatterResult.insertElementAfterTarget), this.rowsCache[row].cellRenderQueue.push(cell), this.rowsCache[row].cellColSpans[cell] = colspan;
   }

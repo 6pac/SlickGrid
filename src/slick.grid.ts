@@ -83,6 +83,7 @@ import {
   keyCode as keyCode_,
   preClickClassName as preClickClassName_,
   RowSelectionMode as RowSelectionMode_,
+  CellSelectionMode as CellSelectionMode_,
   type SlickEditorLock,
   SlickEvent as SlickEvent_,
   SlickEventData as SlickEventData_,
@@ -90,6 +91,7 @@ import {
   Utils as Utils_,
   ValueFilterMode as ValueFilterMode_,
   WidthEvalMode as WidthEvalMode_,
+  DragExtendHandle as DragExtendHandle_
 } from './slick.core.js';
 import { Draggable as Draggable_, MouseWheel as MouseWheel_, Resizable as Resizable_ } from './slick.interactions.js';
 
@@ -104,12 +106,14 @@ const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;
 const preClickClassName = IIFE_ONLY ? Slick.preClickClassName : preClickClassName_;
 const SlickRange = IIFE_ONLY ? Slick.Range : SlickRange_;
 const RowSelectionMode = IIFE_ONLY ? Slick.RowSelectionMode : RowSelectionMode_;
+const CellSelectionMode = IIFE_ONLY ? Slick.CellSelectionMode : CellSelectionMode_;
 const ValueFilterMode = IIFE_ONLY ? Slick.ValueFilterMode : ValueFilterMode_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 const WidthEvalMode = IIFE_ONLY ? Slick.WidthEvalMode : WidthEvalMode_;
 const Draggable = IIFE_ONLY ? Slick.Draggable : Draggable_;
 const MouseWheel = IIFE_ONLY ? Slick.MouseWheel : MouseWheel_;
 const Resizable = IIFE_ONLY ? Slick.Resizable : Resizable_;
+const DragExtendHandle = IIFE_ONLY ? Slick.DragExtendHandle : DragExtendHandle_;
 
 /**
  * @license
@@ -361,6 +365,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected initialized = false;
   protected _container!: HTMLElement;
   protected uid = `slickgrid_${Math.round(1000000 * Math.random())}`;
+  protected dragReplaceEl = new DragExtendHandle(this.uid);
   protected _focusSink!: HTMLDivElement;
   protected _focusSink2!: HTMLDivElement;
   protected _groupHeaders: HTMLDivElement[] = [];
@@ -425,6 +430,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected activePosY!: number;
   protected activeRow!: number;
   protected activeCell!: number;
+  protected selectionBottomRow!: number;
+  protected selectionRightCell!: number;
   protected activeCellNode: HTMLDivElement | null = null;
   protected currentEditor: Editor | null = null;
   protected serializedEditorValue: any;
@@ -446,6 +453,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   protected selectionModel?: SelectionModel;
   protected selectedRows: number[] = [];
+  protected selectedRanges: SlickRange_[] = [];
 
   protected plugins: SlickPlugin[] = [];
   protected cellCssClasses: CssStyleHash = {};
@@ -959,7 +967,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (Draggable) {
         this.slickDraggableInstance = Draggable({
           containerElement: this._container,
-          allowDragFrom: 'div.slick-cell',
+          allowDragFrom: 'div.slick-cell, div.' + this.dragReplaceEl.cssClass,
+          dragFromClassDetectArr: [{ tag: 'dragReplaceHandle', id: this.dragReplaceEl.id }],
           // the slick cell parent must always contain `.dnd` and/or `.cell-reorder` class to be identified as draggable
           allowDragFromClosest: 'div.slick-cell.dnd, div.slick-cell.cell-reorder',
           preventDragFromKeys: this._options.preventDragFromKeys,
@@ -3885,7 +3894,87 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   protected handleSelectedRangesChanged(e: SlickEventData_, ranges: SlickRange_[]) {
     const ne = e.getNativeEvent<CustomEvent>();
+    const selectionMode = ne?.detail?.selectionMode ?? '';
+
+    // drag and replace functionality
+    const prevSelectedRanges = this.selectedRanges.slice(0);
+    this.selectedRanges = ranges;
+
+    if (selectionMode === CellSelectionMode.Replace
+      && prevSelectedRanges && prevSelectedRanges.length === 1
+      && this.selectedRanges && this.selectedRanges.length === 1) {
+      const prevSelectedRange = prevSelectedRanges[0];
+
+      const prevSelectedRange_rowCount = prevSelectedRange.toRow - prevSelectedRange.fromRow + 1;
+      const prevSelectedRange_cellCount = prevSelectedRange.toCell - prevSelectedRange.fromCell + 1;
+
+      const selectedRange = this.selectedRanges[0];
+      const selectedRange_rowCount = selectedRange.toRow - selectedRange.fromRow + 1;
+      const selectedRange_cellCount = selectedRange.toCell - selectedRange.fromCell + 1;
+
+      //   |---0----|---1----|---2----|---3----|---4----|---5----|
+      // 0 |        |        |        |     ^  |        |        |
+      //   |--------|--------|--------|--------|--------|--------|
+      // 1 |        |        |        |        |        |        |
+      //   |--------|--------|--------|--------|--------|--------|
+      // 2 |        |        |   1    |   2    |        |        |
+      //   |--------|--------|--------|--------|--------|--------|
+      // 3 |   <    |        |   4    |   5   x|        |    >   |
+      //   |--------|--------|--------|--------|--------|--------|
+      // 4 |        |        |        |        |        |        |
+      //   |--------|--------|--------|--------|--------|--------|
+      // 5 |        |        |        |    v   |        |        |
+      //   |--------|--------|--------|--------|--------|--------|
+
+      // check range has expanded
+      if (selectedRange_rowCount >= prevSelectedRange_rowCount
+        && selectedRange_cellCount >= prevSelectedRange_cellCount) {
+        const copyUp = selectedRange.fromRow < prevSelectedRange.fromRow;
+        //var copyLeft = selectedRange.fromCell < prevSelectedRange.fromCell;
+
+        const copyToRange = {
+          fromRow: copyUp ? selectedRange.fromRow : prevSelectedRange.toRow + 1
+          , rowCount: selectedRange_rowCount - prevSelectedRange_rowCount
+          , fromCell: selectedRange.fromCell // copyLeft ? selectedRange.fromCell : prevSelectedRange.toCell + 1
+          , cellCount: selectedRange_cellCount // - prevSelectedRange_cellCount
+        };
+
+        let fromRowOffset = 0;
+        let fromCellOffset = 0;
+        for (let i = 0; i < copyToRange.rowCount; i++) {
+          const toRow = this.getDataItem(copyToRange.fromRow + i);
+          const fromRow = this.getDataItem(prevSelectedRange.fromRow + fromRowOffset);
+          fromCellOffset = 0;
+
+          for (let j = 0; j < copyToRange.cellCount; j++) {
+            const toColDef = this.columns[copyToRange.fromCell + j];
+            const fromColDef = this.columns[prevSelectedRange.fromCell + fromCellOffset];
+
+            if (!toColDef.hidden && !fromColDef.hidden) {
+              let val = fromRow[fromColDef.field as keyof TData];
+              if (this._options.dataItemColumnValueExtractor) {
+                val = this._options.dataItemColumnValueExtractor(fromRow, fromColDef);
+              }
+              toRow[toColDef.field as keyof TData] = val;
+            }
+
+            fromCellOffset++;
+            if (fromCellOffset >= prevSelectedRange_cellCount) { fromCellOffset = 0; }
+          }
+
+          fromRowOffset++;
+          if (fromRowOffset >= prevSelectedRange_rowCount) { fromRowOffset = 0; }
+        }
+        this.invalidate();
+      }
+    }
+
     const previousSelectedRows = this.selectedRows.slice(0); // shallow copy previously selected rows for later comparison
+
+    this.selectionBottomRow = -1;
+    this.selectionRightCell = -1;
+    this.dragReplaceEl.removeEl();
+
     this.selectedRows = [];
     const hash: CssStyleHash = {};
     for (let i = 0; i < ranges.length; i++) {
@@ -3900,11 +3989,18 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           }
         }
       }
+      if (this.selectionBottomRow < ranges[i].toRow) { this.selectionBottomRow = ranges[i].toRow; }
+      if (this.selectionRightCell < ranges[i].toCell) { this.selectionRightCell = ranges[i].toCell; }
     }
 
     this.setCellCssStyles(this._options.selectedCellCssClass || '', hash);
 
-    if (this.simpleArrayEquals(previousSelectedRows, this.selectedRows)) {
+    if (this.selectionBottomRow >= 0 && this.selectionRightCell >= 0) {
+      const lowerRightCell = this.getCellNode(this.selectionBottomRow, this.selectionRightCell)
+      this.dragReplaceEl.createEl(lowerRightCell);
+    }
+
+    if (this.simpleArraysNotEqual(previousSelectedRows, this.selectedRows)) {
       const caller = ne?.detail?.caller ?? 'click';
       // Use Set for faster performance
       const selectedRowsSet = new Set(this.getSelectedRows());
@@ -3921,6 +4017,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         changedUnselectedRows: newSelectedDeletions
       }, e);
     }
+  }
+
+  // compare 2 simple arrays (integers or strings only, do not use to compare object arrays)
+  simpleArraysNotEqual(arr1: any[], arr2: any[]) {
+    return Array.isArray(arr1) && Array.isArray(arr2) && arr2.sort().toString() !== arr1.sort().toString();
   }
 
   /**
@@ -4002,6 +4103,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   // Called when a drag operation completes; it triggers the onDragEnd event with the current drag position and event.
   protected handleDragEnd(e: DragEvent, dd: DragPosition) {
+    console.log('SlickGrid.handleDragEnd ' + dd.matchClassTag);
+
+    if (dd.matchClassTag === 'dragReplaceHandle') {
+      this.dragReplaceEl.removeEl();
+    }
     this.trigger(this.onDragEnd, dd, e);
   }
 
@@ -5266,6 +5372,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (item) {
       const cellResult = (Object.prototype.toString.call(formatterResult) !== '[object Object]' ? formatterResult : (formatterResult as FormatterResultWithHtml).html || (formatterResult as FormatterResultWithText).text);
       this.applyHtmlCode(cellDiv, cellResult as string | HTMLElement);
+
+      // add drag-to-replace handle
+      if (row === this.selectionBottomRow && cell === this.selectionRightCell && this._options.showCellSelection) {
+        this.dragReplaceEl.createEl(cellDiv);
+      }
     }
     divRow.appendChild(cellDiv);
 
