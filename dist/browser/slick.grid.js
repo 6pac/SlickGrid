@@ -5,7 +5,7 @@
   var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value);
 
   // src/slick.grid.ts
-  var BindingEventService = Slick.BindingEventService, ColAutosizeMode = Slick.ColAutosizeMode, SlickEvent = Slick.Event, SlickEventData = Slick.EventData, GlobalEditorLock = Slick.GlobalEditorLock, GridAutosizeColsMode = Slick.GridAutosizeColsMode, keyCode = Slick.keyCode, preClickClassName = Slick.preClickClassName, SlickRange = Slick.Range, RowSelectionMode = Slick.RowSelectionMode, ValueFilterMode = Slick.ValueFilterMode, Utils = Slick.Utils, WidthEvalMode = Slick.WidthEvalMode, Draggable = Slick.Draggable, MouseWheel = Slick.MouseWheel, Resizable = Slick.Resizable;
+  var BindingEventService = Slick.BindingEventService, ColAutosizeMode = Slick.ColAutosizeMode, SlickEvent = Slick.Event, SlickEventData = Slick.EventData, GlobalEditorLock = Slick.GlobalEditorLock, GridAutosizeColsMode = Slick.GridAutosizeColsMode, keyCode = Slick.keyCode, preClickClassName = Slick.preClickClassName, SlickRange = Slick.Range, RowSelectionMode = Slick.RowSelectionMode, CellSelectionMode = Slick.CellSelectionMode, ValueFilterMode = Slick.ValueFilterMode, Utils = Slick.Utils, WidthEvalMode = Slick.WidthEvalMode, Draggable = Slick.Draggable, MouseWheel = Slick.MouseWheel, Resizable = Slick.Resizable, DragExtendHandle = Slick.DragExtendHandle;
   var SlickGrid = class {
     /**
      * Creates a new instance of the grid.
@@ -245,6 +245,7 @@
       __publicField(this, "initialized", !1);
       __publicField(this, "_container");
       __publicField(this, "uid", `slickgrid_${Math.round(1e6 * Math.random())}`);
+      __publicField(this, "dragReplaceEl", new DragExtendHandle(this.uid));
       __publicField(this, "_focusSink");
       __publicField(this, "_focusSink2");
       __publicField(this, "_groupHeaders", []);
@@ -309,6 +310,8 @@
       __publicField(this, "activePosY");
       __publicField(this, "activeRow");
       __publicField(this, "activeCell");
+      __publicField(this, "selectionBottomRow");
+      __publicField(this, "selectionRightCell");
       __publicField(this, "activeCellNode", null);
       __publicField(this, "currentEditor", null);
       __publicField(this, "serializedEditorValue");
@@ -329,6 +332,7 @@
       __publicField(this, "scrollLeft", 0);
       __publicField(this, "selectionModel");
       __publicField(this, "selectedRows", []);
+      __publicField(this, "selectedRanges", []);
       __publicField(this, "plugins", []);
       __publicField(this, "cellCssClasses", {});
       __publicField(this, "columnsById", {});
@@ -476,7 +480,8 @@
         this._bindingEventService.bind(element, "keydown", this.handleKeyDown.bind(this)), this._bindingEventService.bind(element, "click", this.handleClick.bind(this)), this._bindingEventService.bind(element, "dblclick", this.handleDblClick.bind(this)), this._bindingEventService.bind(element, "contextmenu", this.handleContextMenu.bind(this)), this._bindingEventService.bind(element, "mouseover", this.handleCellMouseOver.bind(this)), this._bindingEventService.bind(element, "mouseout", this.handleCellMouseOut.bind(this));
       }), Draggable && (this.slickDraggableInstance = Draggable({
         containerElement: this._container,
-        allowDragFrom: "div.slick-cell",
+        allowDragFrom: "div.slick-cell, div." + this.dragReplaceEl.cssClass,
+        dragFromClassDetectArr: [{ tag: "dragReplaceHandle", id: this.dragReplaceEl.id }],
         // the slick cell parent must always contain `.dnd` and/or `.cell-reorder` class to be identified as draggable
         allowDragFromClosest: "div.slick-cell.dnd, div.slick-cell.cell-reorder",
         preventDragFromKeys: this._options.preventDragFromKeys,
@@ -1897,18 +1902,51 @@
     * @param {SlickRange_[]} ranges - The list of selected row and cell ranges.
      */
     handleSelectedRangesChanged(e, ranges) {
-      var _a, _b;
-      let ne = e.getNativeEvent(), previousSelectedRows = this.selectedRows.slice(0);
-      this.selectedRows = [];
+      var _a, _b, _c, _d;
+      let ne = e.getNativeEvent(), selectionMode = (_b = (_a = ne == null ? void 0 : ne.detail) == null ? void 0 : _a.selectionMode) != null ? _b : "", prevSelectedRanges = this.selectedRanges.slice(0);
+      if (this.selectedRanges = ranges, selectionMode === CellSelectionMode.Replace && prevSelectedRanges && prevSelectedRanges.length === 1 && this.selectedRanges && this.selectedRanges.length === 1) {
+        let prevSelectedRange = prevSelectedRanges[0], prevSelectedRange_rowCount = prevSelectedRange.toRow - prevSelectedRange.fromRow + 1, prevSelectedRange_cellCount = prevSelectedRange.toCell - prevSelectedRange.fromCell + 1, selectedRange = this.selectedRanges[0], selectedRange_rowCount = selectedRange.toRow - selectedRange.fromRow + 1, selectedRange_cellCount = selectedRange.toCell - selectedRange.fromCell + 1;
+        if (selectedRange_rowCount >= prevSelectedRange_rowCount && selectedRange_cellCount >= prevSelectedRange_cellCount) {
+          let copyToRange = {
+            fromRow: selectedRange.fromRow < prevSelectedRange.fromRow ? selectedRange.fromRow : prevSelectedRange.toRow + 1,
+            rowCount: selectedRange_rowCount - prevSelectedRange_rowCount,
+            fromCell: selectedRange.fromCell,
+            cellCount: selectedRange_cellCount
+            // - prevSelectedRange_cellCount
+          }, fromRowOffset = 0, fromCellOffset = 0;
+          for (let i = 0; i < copyToRange.rowCount; i++) {
+            let toRow = this.getDataItem(copyToRange.fromRow + i), fromRow = this.getDataItem(prevSelectedRange.fromRow + fromRowOffset);
+            fromCellOffset = 0;
+            for (let j = 0; j < copyToRange.cellCount; j++) {
+              let toColDef = this.columns[copyToRange.fromCell + j], fromColDef = this.columns[prevSelectedRange.fromCell + fromCellOffset];
+              if (!toColDef.hidden && !fromColDef.hidden) {
+                let val = fromRow[fromColDef.field];
+                this._options.dataItemColumnValueExtractor && (val = this._options.dataItemColumnValueExtractor(fromRow, fromColDef)), toRow[toColDef.field] = val;
+              }
+              fromCellOffset++, fromCellOffset >= prevSelectedRange_cellCount && (fromCellOffset = 0);
+            }
+            fromRowOffset++, fromRowOffset >= prevSelectedRange_rowCount && (fromRowOffset = 0);
+          }
+          this.invalidate();
+        }
+      }
+      let previousSelectedRows = this.selectedRows.slice(0);
+      this.selectionBottomRow = -1, this.selectionRightCell = -1, this.dragReplaceEl.removeEl(), this.selectedRows = [];
       let hash = {};
-      for (let i = 0; i < ranges.length; i++)
+      for (let i = 0; i < ranges.length; i++) {
         for (let j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
           hash[j] || (this.selectedRows.push(j), hash[j] = {});
           for (let k = ranges[i].fromCell; k <= ranges[i].toCell; k++)
             this.canCellBeSelected(j, k) && (hash[j][this.columns[k].id] = this._options.selectedCellCssClass);
         }
-      if (this.setCellCssStyles(this._options.selectedCellCssClass || "", hash), this.simpleArrayEquals(previousSelectedRows, this.selectedRows)) {
-        let caller = (_b = (_a = ne == null ? void 0 : ne.detail) == null ? void 0 : _a.caller) != null ? _b : "click", selectedRowsSet = new Set(this.getSelectedRows()), previousSelectedRowsSet = new Set(previousSelectedRows), newSelectedAdditions = Array.from(selectedRowsSet).filter((i) => !previousSelectedRowsSet.has(i)), newSelectedDeletions = Array.from(previousSelectedRowsSet).filter((i) => !selectedRowsSet.has(i));
+        this.selectionBottomRow < ranges[i].toRow && (this.selectionBottomRow = ranges[i].toRow), this.selectionRightCell < ranges[i].toCell && (this.selectionRightCell = ranges[i].toCell);
+      }
+      if (this.setCellCssStyles(this._options.selectedCellCssClass || "", hash), this.selectionBottomRow >= 0 && this.selectionRightCell >= 0) {
+        let lowerRightCell = this.getCellNode(this.selectionBottomRow, this.selectionRightCell);
+        this.dragReplaceEl.createEl(lowerRightCell);
+      }
+      if (this.simpleArraysNotEqual(previousSelectedRows, this.selectedRows)) {
+        let caller = (_d = (_c = ne == null ? void 0 : ne.detail) == null ? void 0 : _c.caller) != null ? _d : "click", selectedRowsSet = new Set(this.getSelectedRows()), previousSelectedRowsSet = new Set(previousSelectedRows), newSelectedAdditions = Array.from(selectedRowsSet).filter((i) => !previousSelectedRowsSet.has(i)), newSelectedDeletions = Array.from(previousSelectedRowsSet).filter((i) => !selectedRowsSet.has(i));
         this.trigger(this.onSelectedRowsChanged, {
           rows: this.getSelectedRows(),
           previousSelectedRows,
@@ -1917,6 +1955,10 @@
           changedUnselectedRows: newSelectedDeletions
         }, e);
       }
+    }
+    // compare 2 simple arrays (integers or strings only, do not use to compare object arrays)
+    simpleArraysNotEqual(arr1, arr2) {
+      return Array.isArray(arr1) && Array.isArray(arr2) && arr2.sort().toString() !== arr1.sort().toString();
     }
     /**
      * Processes a mouse wheel event by adjusting the vertical scroll (scrollTop) based on deltaY (scaled by rowHeight)
@@ -1969,7 +2011,7 @@
     }
     // Called when a drag operation completes; it triggers the onDragEnd event with the current drag position and event.
     handleDragEnd(e, dd) {
-      this.trigger(this.onDragEnd, dd, e);
+      console.log("SlickGrid.handleDragEnd " + dd.matchClassTag), dd.matchClassTag === "dragReplaceHandle" && this.dragReplaceEl.removeEl(), this.trigger(this.onDragEnd, dd, e);
     }
     /**
      * Handles keydown events for grid navigation and editing.
@@ -2296,7 +2338,7 @@
       this.canvasWidth = this.getCanvasWidth(), this._options.createTopHeaderPanel && Utils.width(this._topHeaderPanel, (_a = this._options.topHeaderPanelWidth) != null ? _a : this.canvasWidth);
       let widthChanged = this.canvasWidth !== oldCanvasWidth || this.canvasWidthL !== oldCanvasWidthL || this.canvasWidthR !== oldCanvasWidthR;
       if (widthChanged || this.hasFrozenColumns() || this.hasFrozenRows)
-        if (Utils.width(this._canvasTopL, this.canvasWidthL - 0.1), this.getHeadersWidth(), Utils.width(this._headerL, this.headersWidthL), Utils.width(this._headerR, this.headersWidthR), this.hasFrozenColumns()) {
+        if (Utils.width(this._canvasTopL, this.canvasWidthL), this.getHeadersWidth(), Utils.width(this._headerL, this.headersWidthL), Utils.width(this._headerR, this.headersWidthR), this.hasFrozenColumns()) {
           let cWidth = Utils.width(this._container) || 0;
           if (cWidth > 0 && this.canvasWidthL > cWidth && this._options.throwWhenFrozenNotAllViewable)
             throw new Error("[SlickGrid] Frozen columns cannot be wider than the actual grid container width. Make sure to have less columns freezed or make your grid container wider");
@@ -2617,7 +2659,7 @@
         m.cellAttrs.hasOwnProperty(key) && cellDiv.setAttribute(key, m.cellAttrs[key]);
       }), item) {
         let cellResult = Object.prototype.toString.call(formatterResult) !== "[object Object]" ? formatterResult : formatterResult.html || formatterResult.text;
-        this.applyHtmlCode(cellDiv, cellResult);
+        this.applyHtmlCode(cellDiv, cellResult), row === this.selectionBottomRow && cell === this.selectionRightCell && this._options.showCellSelection && this.dragReplaceEl.createEl(cellDiv);
       }
       divRow.appendChild(cellDiv), formatterResult.insertElementAfterTarget && Utils.insertAfterElement(cellDiv, formatterResult.insertElementAfterTarget), this.rowsCache[row].cellRenderQueue.push(cell), this.rowsCache[row].cellColSpans[cell] = colspan;
     }
