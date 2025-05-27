@@ -1,15 +1,17 @@
-import conventionalChangelog from 'conventional-changelog';
+import { ConventionalChangelog } from 'conventional-changelog';
 import { existsSync, readFileSync, writeFileSync } from 'node:fs';
 import path from 'node:path';
 
 const projectRootLocation = process.cwd();
 const EOL = '\n';
 const BLANK_LINE = EOL + EOL;
-const CHANGELOG_HEADER = [
+const headerEntries = [
   '# Change Log',
+  '',
   'All notable changes to this project will be documented in this file.',
   'See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.'
-].join(EOL);
+]
+const CHANGELOG_HEADER = headerEntries.join(EOL);
 
 /**
  * Insert/Update "CHANGELOG.md" with conventional commits since last tagged version
@@ -18,9 +20,7 @@ const CHANGELOG_HEADER = [
  * @returns
  */
 export function updateChangelog(args, newVersion) {
-  const default_args = { preset: 'angular' };
-  args = Object.assign({}, default_args, args);
-  const { infile, preset, tagPrefix } = args;
+  const { infile, tagPrefix } = args;
 
   return new Promise((resolve, reject) => {
     let content = '';
@@ -35,23 +35,20 @@ export function updateChangelog(args, newVersion) {
 
     // find the position of the last release and remove header since we'll append it back on top
     let oldContentWithoutHeader = oldContent;
-    if (oldContent.includes(CHANGELOG_HEADER)) {
-      oldContentWithoutHeader = oldContent.substring(CHANGELOG_HEADER.length);
+    if (oldContent.includes(headerEntries.at(-1))) {
+      oldContentWithoutHeader = oldContent.substring(CHANGELOG_HEADER.length + 1);
     }
 
-    const context = { version: newVersion };
-    const changelogStream = conventionalChangelog(
-      { preset, tagPrefix },
-      context,
-      { merges: null, path: args.path }
-    ).on('error', (err) => {
-      return reject(err);
-    });
+    const changelogStream = new ConventionalChangelog()
+      .readPackage()
+      .loadPreset('angular')
+      .commits({ path: args.path })
+      .context({ version: newVersion })
+      .tags({ prefix: tagPrefix })
+      .writeStream();
 
-    changelogStream.on('data', (buffer) => {
-      content += buffer.toString();
-    });
-
+    changelogStream.on('data', (buffer) => content += buffer.toString());
+    changelogStream.on('error', (err) => reject(err));
     changelogStream.on('end', () => {
       const newContent = [CHANGELOG_HEADER, content, oldContentWithoutHeader]
         .join(BLANK_LINE)

@@ -112,7 +112,6 @@ const pkg = readJSONSync(pJoin(projectRootPath, 'package.json'));
     // 5. Create/Update changelog.md
     const { newEntry: newChangelogEntry } = await updateChangelog({
       infile: './CHANGELOG.md',
-      preset: 'angular',
       tagPrefix: TAG_PREFIX,
     }, newVersion);
 
