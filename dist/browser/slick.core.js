@@ -21,7 +21,9 @@ var Slick = (() => {
   var slick_core_exports = {};
   __export(slick_core_exports, {
     BindingEventService: () => BindingEventService,
+    CellSelectionMode: () => CellSelectionMode,
     ColAutosizeMode: () => ColAutosizeMode,
+    DragExtendHandle: () => DragExtendHandle,
     EditorLock: () => EditorLock,
     Event: () => Event,
     EventData: () => EventData,
@@ -34,6 +36,7 @@ var Slick = (() => {
     Range: () => Range,
     RegexSanitizer: () => RegexSanitizer,
     RowSelectionMode: () => RowSelectionMode,
+    SlickDragExtendHandle: () => SlickDragExtendHandle,
     SlickEditorLock: () => SlickEditorLock,
     SlickEvent: () => SlickEvent,
     SlickEventData: () => SlickEventData,
@@ -278,6 +281,23 @@ var Slick = (() => {
      */
     toString() {
       return this.isSingleCell() ? `(${this.fromRow}:${this.fromCell})` : `(${this.fromRow}:${this.fromCell} - ${this.toRow}:${this.toCell})`;
+    }
+  }, SlickDragExtendHandle = class {
+    constructor(gridUid) {
+      __publicField(this, "id");
+      __publicField(this, "cssClass", "slick-drag-replace-handle");
+      this.id = gridUid + "_drag_replace_handle";
+    }
+    getHandleHtml() {
+      return '<div id="' + this.id + '" class="slick-drag-replace-handle"></div>';
+    }
+    removeEl() {
+      let dragReplaceEl = document.getElementById(this.id);
+      dragReplaceEl && dragReplaceEl.remove();
+    }
+    createEl(activeCellNode) {
+      let dragReplaceEl = document.createElement("div");
+      dragReplaceEl.classList.add("slick-drag-replace-handle"), dragReplaceEl.setAttribute("id", this.id), activeCellNode.appendChild(dragReplaceEl), console.log("DragReplaceEl.createEl");
     }
   }, SlickNonDataItem = class {
     constructor() {
@@ -724,6 +744,7 @@ var Slick = (() => {
     EventData: SlickEventData,
     EventHandler: SlickEventHandler,
     Range: SlickRange,
+    DragExtendHandle: SlickDragExtendHandle,
     NonDataRow: SlickNonDataItem,
     Group: SlickGroup,
     GroupTotals: SlickGroupTotals,
@@ -776,6 +797,10 @@ var Slick = (() => {
       AllRows: "ALL",
       LastRow: "LS1"
     },
+    CellSelectionMode: {
+      Select: "SEL",
+      Replace: "REP"
+    },
     ValueFilterMode: {
       None: "NONE",
       DeDuplicate: "DEDP",
@@ -797,6 +822,7 @@ var Slick = (() => {
     GroupTotals,
     NonDataRow,
     Range,
+    DragExtendHandle,
     RegexSanitizer,
     GlobalEditorLock,
     keyCode,
@@ -804,6 +830,7 @@ var Slick = (() => {
     GridAutosizeColsMode,
     ColAutosizeMode,
     RowSelectionMode,
+    CellSelectionMode,
     ValueFilterMode,
     WidthEvalMode
   } = SlickCore;

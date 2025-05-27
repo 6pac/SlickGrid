@@ -15,6 +15,7 @@
       // protected props
       __publicField(this, "_options");
       __publicField(this, "_elem");
+      __publicField(this, "_selectionCss");
       __publicField(this, "_defaults", {
         selectionCssClass: "slick-range-decorator",
         selectionCss: {
@@ -23,10 +24,16 @@
         },
         offset: { top: -1, left: -1, height: -2, width: -2 }
       });
-      this._options = Utils.extend(!0, {}, this._defaults, options);
+      this._options = Utils.extend(!0, {}, this._defaults, options), this._selectionCss = (options == null ? void 0 : options.selectionCss) || {};
     }
     destroy() {
       this.hide();
+    }
+    getSelectionCss() {
+      return this._selectionCss;
+    }
+    setSelectionCss(cssProps) {
+      this._selectionCss = cssProps;
     }
     init() {
     }
@@ -37,8 +44,8 @@
     show(range) {
       var _a;
       if (!this._elem) {
-        this._elem = document.createElement("div"), this._elem.className = this._options.selectionCssClass, Object.keys(this._options.selectionCss).forEach((cssStyleKey) => {
-          this._elem.style[cssStyleKey] = this._options.selectionCss[cssStyleKey];
+        this._elem = document.createElement("div"), this._elem.className = this._options.selectionCssClass, Object.keys(this._selectionCss).forEach((cssStyleKey) => {
+          this._elem.style[cssStyleKey] = this._selectionCss[cssStyleKey];
         }), this._elem.style.position = "absolute";
         let canvasNode = this.grid.getActiveCanvasNode();
         canvasNode && canvasNode.appendChild(this._elem);

@@ -5,7 +5,7 @@
   var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value);
 
   // src/plugins/slick.cellrangeselector.ts
-  var SlickEvent = Slick.Event, SlickEventHandler = Slick.EventHandler, SlickRange = Slick.Range, Draggable = Slick.Draggable, SlickCellRangeDecorator = Slick.CellRangeDecorator, Utils = Slick.Utils, SlickCellRangeSelector = class {
+  var SlickEvent = Slick.Event, SlickEventHandler = Slick.EventHandler, SlickRange = Slick.Range, Draggable = Slick.Draggable, SlickCellRangeDecorator = Slick.CellRangeDecorator, Utils = Slick.Utils, CellSelectionMode = Slick.CellSelectionMode, SlickCellRangeSelector = class {
     constructor(options) {
       // --
       // public API
@@ -24,6 +24,7 @@
       __publicField(this, "_dragging", !1);
       __publicField(this, "_handler", new SlickEventHandler());
       __publicField(this, "_options");
+      __publicField(this, "_selectionMode", CellSelectionMode.Select);
       __publicField(this, "_defaults", {
         autoScroll: !0,
         minIntervalToShowNextCell: 30,
@@ -67,6 +68,12 @@
     getCellDecorator() {
       return this._decorator;
     }
+    getSelectionMode() {
+      return this._selectionMode;
+    }
+    setSelectionMode(mode) {
+      this._selectionMode = mode;
+    }
     handleScroll(_e, args) {
       this._scrollTop = args.scrollTop, this._scrollLeft = args.scrollLeft;
     }
@@ -84,10 +91,11 @@
         let canvasLeftElm = document.querySelector(`.${this._grid.getUID()} .grid-canvas-left`);
         canvasLeftElm && (this._columnOffset = canvasLeftElm.clientWidth || 0);
       }
-      e.stopImmediatePropagation(), e.preventDefault();
+      console.log("CellRangeSelector.handleDragInit() _activeViewport is " + (this._activeViewport ? "defined" : "undefined")), e.stopImmediatePropagation(), e.preventDefault();
     }
     handleDragStart(e, dd) {
-      var _a, _b;
+      var _a, _b, _c, _d;
+      console.log("CellRangeSelector.handleDragStart() _activeViewport is " + (this._activeViewport ? "defined" : "undefined")), this._activeViewport;
       let cell = this._grid.getCellFromEvent(e);
       if (cell && this.onBeforeCellRangeSelected.notify(cell).getReturnValue() !== !1 && this._grid.canCellBeSelected(cell.row, cell.cell) && (this._dragging = !0, e.stopImmediatePropagation()), !this._dragging)
         return;
@@ -96,8 +104,8 @@
       this._gridOptions.frozenColumn >= 0 && this._isRightCanvas && (startX += this._scrollLeft);
       let startY = dd.startY - ((_b = canvasOffset == null ? void 0 : canvasOffset.top) != null ? _b : 0);
       this._gridOptions.frozenRow >= 0 && this._isBottomCanvas && (startY += this._scrollTop);
-      let start = this._grid.getCellFromPoint(startX, startY);
-      return dd.range = { start, end: {} }, this._currentlySelectedRange = dd.range, this._decorator.show(new SlickRange(start.row, start.cell));
+      let start;
+      return this._selectionMode = CellSelectionMode.Select, dd.matchClassTag !== "dragReplaceHandle" ? start = this._grid.getCellFromPoint(startX, startY) : (start = this._grid.getActiveCell() || { row: void 0, cell: void 0 }, this._selectionMode = CellSelectionMode.Replace), dd.range = { start, end: {} }, this._currentlySelectedRange = dd.range, this._decorator.show(new SlickRange((_c = start.row) != null ? _c : 0, (_d = start.cell) != null ? _d : 0));
     }
     handleDrag(evt, dd) {
       if (!this._dragging && !this._isRowMoveRegistered)
@@ -110,6 +118,7 @@
     }
     getMouseOffsetViewport(e, dd) {
       var _a, _b, _c, _d;
+      console.log("Drag.getMouseOffsetViewport() _activeViewport is " + (this._activeViewport ? "defined" : "undefined")), this._activeViewport;
       let targetEvent = (_b = (_a = e == null ? void 0 : e.touches) == null ? void 0 : _a[0]) != null ? _b : e, viewportLeft = this._activeViewport.scrollLeft, viewportTop = this._activeViewport.scrollTop, viewportRight = viewportLeft + this._viewportWidth, viewportBottom = viewportTop + this._viewportHeight, viewportOffset = Utils.offset(this._activeViewport), viewportOffsetLeft = (_c = viewportOffset == null ? void 0 : viewportOffset.left) != null ? _c : 0, viewportOffsetTop = (_d = viewportOffset == null ? void 0 : viewportOffset.top) != null ? _d : 0, viewportOffsetRight = viewportOffsetLeft + this._viewportWidth, viewportOffsetBottom = viewportOffsetTop + this._viewportHeight, result = {
         e,
         dd,
@@ -185,8 +194,9 @@
           (_b = dd.range.start.cell) != null ? _b : 0,
           dd.range.end.row,
           dd.range.end.cell
-        )
-      }));
+        ),
+        selectionMode: this._selectionMode
+      }), console.log("handleDragEnd"));
     }
     getCurrentRange() {
       return this._currentlySelectedRange;
