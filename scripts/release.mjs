@@ -5,8 +5,6 @@ import { fileURLToPath } from 'node:url';
 import { rimrafSync } from 'rimraf';
 import semver from 'semver';
 import c from 'tinyrainbow';
-import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers';
 
 import { runProdBuildWithTypes } from './builds.mjs';
 import { updateChangelog } from './changelog.mjs';
@@ -22,11 +20,16 @@ const VERSION_PREFIX = 'v';
 const RELEASE_COMMIT_MSG = 'chore(release): publish version %s';
 
 const cwd = process.cwd();
-const argv = yargs(hideBin(process.argv)).argv;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = pDirname(__filename);
 const projectRootPath = pJoin(__dirname, '../');
 const pkg = readJSONSync(pJoin(projectRootPath, 'package.json'));
+
+const args = process.argv.slice(2);
+const hasCreateRelease = args.includes('--create-release');
+const createReleaseValue = hasCreateRelease && args[args.indexOf('--create-release') + 1];
+const dryRun = args.includes('--dry-run') || args.includes('--dryRun');
+const skipChecks = args.includes('--skip-checks') || args.includes('--skipChecks');
 
 /**
  * Main entry, this script will execute the following steps
@@ -44,12 +47,12 @@ const pkg = readJSONSync(pJoin(projectRootPath, 'package.json'));
  * 12. Create GitHub Release
  */
 (async function main() {
-  let dryRunPrefix = argv.dryRun ? '[dry-run]' : '';
+  let dryRunPrefix = dryRun ? '[dry-run]' : '';
   let newTag;
-  if (argv.dryRun) {
+  if (dryRun) {
     console.info(`-- ${c.bgMagenta('DRY-RUN')} mode --`);
   }
-  await hasUncommittedChanges(argv);
+  await hasUncommittedChanges({ cwd, skipChecks });
   const repo = await parseGitRepo();
 
   console.log(`🚀 Let's create a new release for "${repo.owner}/${repo.name}" (currently at ${pkg.version})\n`);
@@ -116,23 +119,23 @@ const pkg = readJSONSync(pJoin(projectRootPath, 'package.json'));
     }, newVersion);
 
     // 6. Update (sync) npm lock file
-    await syncLockFile({ cwd, dryRun: argv.dryRun });
+    await syncLockFile({ cwd, dryRun: dryRun });
 
     // 7. "git add ." all changed files
-    await gitAdd(null, { cwd, dryRun: argv.dryRun });
+    await gitAdd(null, { cwd, dryRun: dryRun });
 
     // show git changes to user so he can confirm the changes are ok
     const shouldCommitChanges = await promptConfirmation(`${c.bgMagenta(dryRunPrefix)} Ready to tag version "${newTag}" and push commits to remote? Choose No to cancel.`);
     if (shouldCommitChanges) {
       // 8. create git tag of new release
-      await gitTag(newTag, { cwd, dryRun: argv.dryRun });
+      await gitTag(newTag, { cwd, dryRun: dryRun });
 
       // 9. Commit all files changed to git
-      await gitCommit(RELEASE_COMMIT_MSG.replace(/%s/g, newVersion), { cwd, dryRun: argv.dryRun });
+      await gitCommit(RELEASE_COMMIT_MSG.replace(/%s/g, newVersion), { cwd, dryRun: dryRun });
 
       // 10. Push git tags and all commits to origin
-      await gitTagPushRemote(newTag, 'origin', { cwd, dryRun: argv.dryRun });
-      await gitPushToCurrentBranch('origin', { cwd, dryRun: argv.dryRun });
+      await gitTagPushRemote(newTag, 'origin', { cwd, dryRun: dryRun });
+      await gitPushToCurrentBranch('origin', { cwd, dryRun: dryRun });
 
       // 11. NPM publish
       if (await promptConfirmation(`${c.bgMagenta(dryRunPrefix)} Are you ready to publish "${newTag}" to npm?`)) {
@@ -148,7 +151,7 @@ const pkg = readJSONSync(pJoin(projectRootPath, 'package.json'));
         }
 
         const otp = await promptOtp(dryRunPrefix);
-        await publishPackage(publishTagName, { cwd, otp, dryRun: argv.dryRun, stream: true });
+        await publishPackage(publishTagName, { cwd, otp, dryRun: dryRun, stream: true });
 
         // rename backup to original filename "package.json"
         console.log(`Renaming "package.json" backup file to its original name.`);
@@ -158,19 +161,19 @@ const pkg = readJSONSync(pJoin(projectRootPath, 'package.json'));
       }
 
       // 12. Create GitHub Release
-      if (argv.createRelease) {
+      if (createReleaseValue) {
         const releaseNote = { name: pkg.name, notes: newChangelogEntry };
-        const releaseClient = createReleaseClient(argv.createRelease);
+        const releaseClient = createReleaseClient(createReleaseValue);
         await createRelease(
           releaseClient,
           { tag: newTag, releaseNote },
           { gitRemote: 'origin', execOpts: { cwd } },
-          argv.dryRun
+          dryRun
         );
       }
 
       // 13. Git sync/push all changes
-      await gitPushToCurrentBranch('origin', { cwd, dryRun: argv.dryRun });
+      await gitPushToCurrentBranch('origin', { cwd, dryRun: dryRun });
 
       // END
       console.log(`🏁 Done (in ${Math.floor(process.uptime())}s.)`);
@@ -214,7 +217,7 @@ function bumpVersion(bump) {
 function updatePackageVersion(newVersion) {
   pkg.version = newVersion;
 
-  if (argv.dryRun) {
+  if (dryRun) {
     console.log(`${c.magenta('[dry-run]')}`);
   }
   writeJsonSync(pResolve(projectRootPath, 'package.json'), pkg, { spaces: 2 });
@@ -238,7 +241,7 @@ function updateSlickGridVersion(newVersion) {
     .replace(/(SlickGrid v)([0-9-.alpha|beta]*)/gi, `$1${newVersion}`)
     .replace(/(slickGridVersion) = '([0-9\.]*([\-\.]?alpha[\-\.]?|[\-\.]?beta[\-\.]?)?[0-9\-\.]*)'/gi, `$1 = '${newVersion}'`);
 
-  if (argv.dryRun) {
+  if (dryRun) {
     console.log(`${c.magenta('[dry-run]')}`);
   }
   writeFileSync(pResolve(projectRootPath, 'src/slick.grid.ts'), updatedSlickGridJs);

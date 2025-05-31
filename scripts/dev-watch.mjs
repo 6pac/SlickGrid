@@ -1,8 +1,6 @@
 import { subscribe } from '@parcel/watcher';
 import browserSync from 'browser-sync';
 import { relative } from 'node:path';
-import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers';
 
 import {
   buildAllSassFiles,
@@ -13,7 +11,9 @@ import {
   executeFullBuild
 } from './builds.mjs';
 
-const argv = yargs(hideBin(process.argv)).argv;
+const args = process.argv.slice(2);
+const open = args.includes('--open');
+const serve = args.includes('--serve');
 
 /**
  * Dev script that will watch for files changed and run esbuild/sass for the file(s) that changed.
@@ -57,7 +57,7 @@ const argv = yargs(hideBin(process.argv)).argv;
     process.stdin.on('exit', () => process.stdin.destroy());
 
     // run full prod build `/dist` and full SASS build
-    if (!argv.serve) {
+    if (!serve) {
       await executeFullBuild();
       buildAllSassFiles(); // start SASS build but no need to await it
     }
@@ -78,7 +78,7 @@ const argv = yargs(hideBin(process.argv)).argv;
       port: 8080,
       watchTask: true,
       online: false,
-      open: argv.open,
+      open,
       startPath: 'examples/index.html',
       snippetOptions: {
         rule: {
