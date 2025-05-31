@@ -3595,7 +3595,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * A public method that starts editing on the active cell by calling
    * makeActiveCellEditable with the provided editor, pre–click flag, and event.
    */
-  editActiveCell(editor: EditorConstructor, preClickModeOn?: boolean | null, e?: Event) {
+  editActiveCell(editor?: EditorConstructor, preClickModeOn?: boolean | null, e?: Event) {
     this.makeActiveCellEditable(editor, preClickModeOn, e);
   }
 
