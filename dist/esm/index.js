@@ -6571,7 +6571,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.15.3");
+    __publicField(this, "slickGridVersion", "5.15.4");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -8814,7 +8814,7 @@ var SlickGrid = class {
     this.canvasWidth = this.getCanvasWidth(), this._options.createTopHeaderPanel && Utils30.width(this._topHeaderPanel, this._options.topHeaderPanelWidth ?? this.canvasWidth);
     let widthChanged = this.canvasWidth !== oldCanvasWidth || this.canvasWidthL !== oldCanvasWidthL || this.canvasWidthR !== oldCanvasWidthR;
     if (widthChanged || this.hasFrozenColumns() || this.hasFrozenRows)
-      if (Utils30.width(this._canvasTopL, this.canvasWidthL - 0.1), this.getHeadersWidth(), Utils30.width(this._headerL, this.headersWidthL), Utils30.width(this._headerR, this.headersWidthR), this.hasFrozenColumns()) {
+      if (Utils30.width(this._canvasTopL, this.canvasWidthL), this.getHeadersWidth(), Utils30.width(this._headerL, this.headersWidthL), Utils30.width(this._headerR, this.headersWidthR), this.hasFrozenColumns()) {
         let cWidth = Utils30.width(this._container) || 0;
         if (cWidth > 0 && this.canvasWidthL > cWidth && this._options.throwWhenFrozenNotAllViewable)
           throw new Error("[SlickGrid] Frozen columns cannot be wider than the actual grid container width. Make sure to have less columns freezed or make your grid container wider");
@@ -11294,7 +11294,7 @@ export {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.15.3
+ * SlickGrid v5.15.4
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

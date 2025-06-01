@@ -10,7 +10,7 @@ import { type BasePubSub, BindingEventService as BindingEventService_, type Slic
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.15.3
+ * SlickGrid v5.15.4
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -824,7 +824,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * A public method that starts editing on the active cell by calling
      * makeActiveCellEditable with the provided editor, pre–click flag, and event.
      */
-    editActiveCell(editor: EditorConstructor, preClickModeOn?: boolean | null, e?: Event): void;
+    editActiveCell(editor?: EditorConstructor, preClickModeOn?: boolean | null, e?: Event): void;
     /**
      * Makes the currently active cell editable by initializing an editor instance.
      *
