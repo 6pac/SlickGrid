@@ -10,10 +10,12 @@ import {
   executeCjsEsmBuilds,
   executeFullBuild
 } from './builds.mjs';
+import { parseArgs } from './npm-utils.mjs';
 
-const args = process.argv.slice(2);
-const open = args.includes('--open');
-const serve = args.includes('--serve');
+const argv = parseArgs({
+  serve: { type: 'boolean' },
+  open: { type: 'boolean' },
+});
 
 /**
  * Dev script that will watch for files changed and run esbuild/sass for the file(s) that changed.
@@ -57,7 +59,7 @@ const serve = args.includes('--serve');
     process.stdin.on('exit', () => process.stdin.destroy());
 
     // run full prod build `/dist` and full SASS build
-    if (!serve) {
+    if (!argv.serve) {
       await executeFullBuild();
       buildAllSassFiles(); // start SASS build but no need to await it
     }
@@ -78,7 +80,7 @@ const serve = args.includes('--serve');
       port: 8080,
       watchTask: true,
       online: false,
-      open,
+      open: argv.open,
       startPath: 'examples/index.html',
       snippetOptions: {
         rule: {

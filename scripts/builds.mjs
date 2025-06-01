@@ -9,18 +9,20 @@ import c from 'tinyrainbow';
 import { spawnStreaming } from './child-process.mjs';
 import { removeImportsPlugin } from './esbuild-plugins.mjs';
 import { outputFileSync } from './fs-utils.mjs';
+import { parseArgs } from './npm-utils.mjs';
 
 export const BUILD_FORMATS = ['cjs', 'esm', 'mjs'];
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRootPath = path.join(__dirname, '../');
 
-const args = process.argv.slice(2);
-const minify = args.includes('--minify');
-const prod = args.includes('--prod');
+const argv = parseArgs({
+  minify: { type: 'boolean' },
+  prod: { type: 'boolean' },
+});
 
 // when --prod is provided, we'll do a full build of all JS/TS files and also all SASS files
-if (prod) {
+if (argv.prod) {
   runProdBuildWithTypes();
 }
 
@@ -143,7 +145,7 @@ export function runBuild(options) {
     ...{
       color: true,
       bundle: true,
-      minify: minify || false,
+      minify: argv.minify || false,
       minifySyntax: true,
       target: 'es2018',
       sourcemap: true,

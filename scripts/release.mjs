@@ -12,7 +12,7 @@ import { execAsyncPiped } from './child-process.mjs';
 import { readJSONSync, writeJsonSync } from './fs-utils.mjs';
 import { gitAdd, gitCommit, gitTag, gitTagPushRemote, gitPushToCurrentBranch, hasUncommittedChanges } from './git-utils.mjs';
 import { createRelease, createReleaseClient, parseGitRepo } from './github-release.mjs';
-import { publishPackage, syncLockFile } from './npm-utils.mjs';
+import { parseArgs, publishPackage, syncLockFile } from './npm-utils.mjs';
 
 const PUBLISH_CLEAN_FIELDS = ['devDependencies', 'scripts', 'workspaces'];
 const TAG_PREFIX = '';
@@ -25,11 +25,12 @@ const __dirname = pDirname(__filename);
 const projectRootPath = pJoin(__dirname, '../');
 const pkg = readJSONSync(pJoin(projectRootPath, 'package.json'));
 
-const args = process.argv.slice(2);
-const hasCreateRelease = args.includes('--create-release');
-const createReleaseValue = hasCreateRelease && args[args.indexOf('--create-release') + 1];
-const dryRun = args.includes('--dry-run') || args.includes('--dryRun');
-const skipChecks = args.includes('--skip-checks') || args.includes('--skipChecks');
+const argv = parseArgs({
+  createRelease: { type: 'string' },
+  dryRun: { type: 'boolean' },
+  skipChecks: { type: 'boolean' },
+  open: { type: 'boolean' },
+});
 
 /**
  * Main entry, this script will execute the following steps
@@ -47,12 +48,12 @@ const skipChecks = args.includes('--skip-checks') || args.includes('--skipChecks
  * 12. Create GitHub Release
  */
 (async function main() {
-  let dryRunPrefix = dryRun ? '[dry-run]' : '';
+  let dryRunPrefix = argv.dryRun ? '[dry-run]' : '';
   let newTag;
-  if (dryRun) {
+  if (argv.dryRun) {
     console.info(`-- ${c.bgMagenta('DRY-RUN')} mode --`);
   }
-  await hasUncommittedChanges({ cwd, skipChecks });
+  await hasUncommittedChanges(argv);
   const repo = await parseGitRepo();
 
   console.log(`🚀 Let's create a new release for "${repo.owner}/${repo.name}" (currently at ${pkg.version})\n`);
@@ -119,23 +120,23 @@ const skipChecks = args.includes('--skip-checks') || args.includes('--skipChecks
     }, newVersion);
 
     // 6. Update (sync) npm lock file
-    await syncLockFile({ cwd, dryRun: dryRun });
+    await syncLockFile({ cwd, dryRun: argv.dryRun });
 
     // 7. "git add ." all changed files
-    await gitAdd(null, { cwd, dryRun: dryRun });
+    await gitAdd(null, { cwd, dryRun: argv.dryRun });
 
     // show git changes to user so he can confirm the changes are ok
     const shouldCommitChanges = await promptConfirmation(`${c.bgMagenta(dryRunPrefix)} Ready to tag version "${newTag}" and push commits to remote? Choose No to cancel.`);
     if (shouldCommitChanges) {
       // 8. create git tag of new release
-      await gitTag(newTag, { cwd, dryRun: dryRun });
+      await gitTag(newTag, { cwd, dryRun: argv.dryRun });
 
       // 9. Commit all files changed to git
-      await gitCommit(RELEASE_COMMIT_MSG.replace(/%s/g, newVersion), { cwd, dryRun: dryRun });
+      await gitCommit(RELEASE_COMMIT_MSG.replace(/%s/g, newVersion), { cwd, dryRun: argv.dryRun });
 
       // 10. Push git tags and all commits to origin
-      await gitTagPushRemote(newTag, 'origin', { cwd, dryRun: dryRun });
-      await gitPushToCurrentBranch('origin', { cwd, dryRun: dryRun });
+      await gitTagPushRemote(newTag, 'origin', { cwd, dryRun: argv.dryRun });
+      await gitPushToCurrentBranch('origin', { cwd, dryRun: argv.dryRun });
 
       // 11. NPM publish
       if (await promptConfirmation(`${c.bgMagenta(dryRunPrefix)} Are you ready to publish "${newTag}" to npm?`)) {
@@ -151,7 +152,7 @@ const skipChecks = args.includes('--skip-checks') || args.includes('--skipChecks
         }
 
         const otp = await promptOtp(dryRunPrefix);
-        await publishPackage(publishTagName, { cwd, otp, dryRun: dryRun, stream: true });
+        await publishPackage(publishTagName, { cwd, otp, dryRun: argv.dryRun, stream: true });
 
         // rename backup to original filename "package.json"
         console.log(`Renaming "package.json" backup file to its original name.`);
@@ -161,19 +162,19 @@ const skipChecks = args.includes('--skip-checks') || args.includes('--skipChecks
       }
 
       // 12. Create GitHub Release
-      if (createReleaseValue) {
+      if (argv.createRelease) {
         const releaseNote = { name: pkg.name, notes: newChangelogEntry };
-        const releaseClient = createReleaseClient(createReleaseValue);
+        const releaseClient = createReleaseClient(argv.createRelease);
         await createRelease(
           releaseClient,
           { tag: newTag, releaseNote },
           { gitRemote: 'origin', execOpts: { cwd } },
-          dryRun
+          argv.dryRun
         );
       }
 
       // 13. Git sync/push all changes
-      await gitPushToCurrentBranch('origin', { cwd, dryRun: dryRun });
+      await gitPushToCurrentBranch('origin', { cwd, dryRun: argv.dryRun });
 
       // END
       console.log(`🏁 Done (in ${Math.floor(process.uptime())}s.)`);
@@ -217,7 +218,7 @@ function bumpVersion(bump) {
 function updatePackageVersion(newVersion) {
   pkg.version = newVersion;
 
-  if (dryRun) {
+  if (argv.dryRun) {
     console.log(`${c.magenta('[dry-run]')}`);
   }
   writeJsonSync(pResolve(projectRootPath, 'package.json'), pkg, { spaces: 2 });
@@ -241,7 +242,7 @@ function updateSlickGridVersion(newVersion) {
     .replace(/(SlickGrid v)([0-9-.alpha|beta]*)/gi, `$1${newVersion}`)
     .replace(/(slickGridVersion) = '([0-9\.]*([\-\.]?alpha[\-\.]?|[\-\.]?beta[\-\.]?)?[0-9\-\.]*)'/gi, `$1 = '${newVersion}'`);
 
-  if (dryRun) {
+  if (argv.dryRun) {
     console.log(`${c.magenta('[dry-run]')}`);
   }
   writeFileSync(pResolve(projectRootPath, 'src/slick.grid.ts'), updatedSlickGridJs);
