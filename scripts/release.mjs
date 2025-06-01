@@ -5,8 +5,6 @@ import { fileURLToPath } from 'node:url';
 import { rimrafSync } from 'rimraf';
 import semver from 'semver';
 import c from 'tinyrainbow';
-import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers';
 
 import { runProdBuildWithTypes } from './builds.mjs';
 import { updateChangelog } from './changelog.mjs';
@@ -14,7 +12,7 @@ import { execAsyncPiped } from './child-process.mjs';
 import { readJSONSync, writeJsonSync } from './fs-utils.mjs';
 import { gitAdd, gitCommit, gitTag, gitTagPushRemote, gitPushToCurrentBranch, hasUncommittedChanges } from './git-utils.mjs';
 import { createRelease, createReleaseClient, parseGitRepo } from './github-release.mjs';
-import { publishPackage, syncLockFile } from './npm-utils.mjs';
+import { parseArgs, publishPackage, syncLockFile } from './npm-utils.mjs';
 
 const PUBLISH_CLEAN_FIELDS = ['devDependencies', 'scripts', 'workspaces'];
 const TAG_PREFIX = '';
@@ -22,11 +20,17 @@ const VERSION_PREFIX = 'v';
 const RELEASE_COMMIT_MSG = 'chore(release): publish version %s';
 
 const cwd = process.cwd();
-const argv = yargs(hideBin(process.argv)).argv;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = pDirname(__filename);
 const projectRootPath = pJoin(__dirname, '../');
 const pkg = readJSONSync(pJoin(projectRootPath, 'package.json'));
+
+const argv = parseArgs({
+  createRelease: { type: 'string' },
+  dryRun: { type: 'boolean' },
+  skipChecks: { type: 'boolean' },
+  open: { type: 'boolean' },
+});
 
 /**
  * Main entry, this script will execute the following steps

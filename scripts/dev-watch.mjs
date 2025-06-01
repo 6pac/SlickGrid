@@ -1,8 +1,6 @@
 import { subscribe } from '@parcel/watcher';
 import browserSync from 'browser-sync';
 import { relative } from 'node:path';
-import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers';
 
 import {
   buildAllSassFiles,
@@ -12,8 +10,12 @@ import {
   executeCjsEsmBuilds,
   executeFullBuild
 } from './builds.mjs';
+import { parseArgs } from './npm-utils.mjs';
 
-const argv = yargs(hideBin(process.argv)).argv;
+const argv = parseArgs({
+  serve: { type: 'boolean' },
+  open: { type: 'boolean' },
+});
 
 /**
  * Dev script that will watch for files changed and run esbuild/sass for the file(s) that changed.

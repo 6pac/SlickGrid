@@ -5,18 +5,21 @@ import { fileURLToPath } from 'node:url';
 import { compile as sassCompile } from 'sass';
 import { globSync } from 'tinyglobby';
 import c from 'tinyrainbow';
-import yargs from 'yargs';
-import { hideBin } from 'yargs/helpers';
 
 import { spawnStreaming } from './child-process.mjs';
 import { removeImportsPlugin } from './esbuild-plugins.mjs';
 import { outputFileSync } from './fs-utils.mjs';
+import { parseArgs } from './npm-utils.mjs';
 
-const argv = yargs(hideBin(process.argv)).argv;
 export const BUILD_FORMATS = ['cjs', 'esm', 'mjs'];
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRootPath = path.join(__dirname, '../');
+
+const argv = parseArgs({
+  minify: { type: 'boolean' },
+  prod: { type: 'boolean' },
+});
 
 // when --prod is provided, we'll do a full build of all JS/TS files and also all SASS files
 if (argv.prod) {
@@ -142,7 +145,7 @@ export function runBuild(options) {
     ...{
       color: true,
       bundle: true,
-      minify: argv['minify'] || false,
+      minify: argv.minify || false,
       minifySyntax: true,
       target: 'es2018',
       sourcemap: true,
