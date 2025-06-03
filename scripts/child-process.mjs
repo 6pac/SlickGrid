@@ -1,10 +1,36 @@
 import os from 'node:os';
-import logTransformer from 'strong-log-transformer';
 import { x } from 'tinyexec';
 import c from 'tinyrainbow';
 
 // bookkeeping for spawned processes
 const children = new Set();
+
+/**
+ * Create a transform stream that prefixes each line with a tag.
+ * @param {Object} opts
+ * @param {string} [opts.tag]
+ */
+function createLogPrefixer(opts = {}) {
+  const tag = opts.tag || '';
+  let leftover = '';
+  return new Transform({
+    transform(chunk, encoding, callback) {
+      const data = leftover + chunk.toString();
+      const lines = data.split(/\r?\n/);
+      leftover = lines.pop();
+      for (const line of lines) {
+        this.push(tag ? `${tag} ${line}\n` : `${line}\n`);
+      }
+      callback();
+    },
+    flush(callback) {
+      if (leftover) {
+        this.push(tag ? `${tag} ${leftover}\n` : `${leftover}\n`);
+      }
+      callback();
+    }
+  });
+}
 
 /**
  * Execute a command asynchronously, piping stdio by default.
@@ -131,8 +157,8 @@ export function spawnStreaming(
     process.stderr.setMaxListeners(children.size);
   }
 
-  spawned.stdout?.pipe(logTransformer(stdoutOpts)).pipe(process.stdout);
-  spawned.stderr?.pipe(logTransformer(stderrOpts)).pipe(process.stderr);
+  spawned.stdout?.pipe(createLogPrefixer(stdoutOpts)).pipe(process.stdout);
+  spawned.stderr?.pipe(createLogPrefixer(stderrOpts)).pipe(process.stderr);
 
   return wrapError(spawned);
 }
