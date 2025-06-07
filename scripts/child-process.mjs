@@ -1,6 +1,6 @@
 import os from 'node:os';
+import { styleText } from 'node:util';
 import { x } from 'tinyexec';
-import c from 'tinyrainbow';
 
 // bookkeeping for spawned processes
 const children = new Set();
@@ -78,7 +78,7 @@ export function logExecDryRunCommand(command, args) {
     cmdList.push(Array.isArray(cmd) ? cmd.join(' ') : cmd);
   }
 
-  console.info(c.magenta(c.bold('[dry-run] >')), cmdList.join(' '));
+  console.info(styleText(['bold', 'magenta'], '[dry-run] >'), cmdList.join(' '));
   return '';
 }
 

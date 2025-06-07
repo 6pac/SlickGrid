@@ -2,8 +2,8 @@ import 'dotenv/config';
 import { Octokit } from '@octokit/rest';
 import parseGitUrl from 'git-url-parse';
 import newGithubReleaseUrl from 'new-github-release-url';
+import { styleText } from 'node:util';
 import semver from 'semver';
-import c from 'tinyrainbow';
 
 import { execAsync } from './child-process.mjs';
 
@@ -91,7 +91,7 @@ export async function createRelease(
   if (gitDryRun) {
     const host = 'github.com';
     console.info(
-      `${c.bgMagenta('[dry-run]')} 🔗 https://${host}/${releaseOptions.owner}/${releaseOptions.repo}/releases/tag/${releaseOptions.tag_name} 🏷️ (GitHub Release)`
+      `${styleText('bgMagenta', '[dry-run]')} 🔗 https://${host}/${releaseOptions.owner}/${releaseOptions.repo}/releases/tag/${releaseOptions.tag_name} 🏷️ (GitHub Release)`
     );
     return Promise.resolve();
   }
