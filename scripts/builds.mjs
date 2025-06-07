@@ -9,7 +9,7 @@ import { globSync } from 'tinyglobby';
 import { spawnStreaming } from './child-process.mjs';
 import { removeImportsPlugin } from './esbuild-plugins.mjs';
 import { outputFileSync } from './fs-utils.mjs';
-import { parseArgs } from './npm-utils.mjs';
+import { parseArgs } from './parse-args.mjs';
 
 export const BUILD_FORMATS = ['cjs', 'esm', 'mjs'];
 const __filename = fileURLToPath(import.meta.url);

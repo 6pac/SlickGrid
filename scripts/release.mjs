@@ -12,7 +12,8 @@ import { execAsyncPiped } from './child-process.mjs';
 import { readJSONSync, writeJsonSync } from './fs-utils.mjs';
 import { gitAdd, gitCommit, gitTag, gitTagPushRemote, gitPushToCurrentBranch, hasUncommittedChanges } from './git-utils.mjs';
 import { createRelease, createReleaseClient, parseGitRepo } from './github-release.mjs';
-import { parseArgs, publishPackage, syncLockFile } from './npm-utils.mjs';
+import { publishPackage, syncLockFile } from './npm-utils.mjs';
+import { parseArgs } from './parse-args.mjs';
 
 const PUBLISH_CLEAN_FIELDS = ['devDependencies', 'scripts', 'workspaces'];
 const TAG_PREFIX = '';

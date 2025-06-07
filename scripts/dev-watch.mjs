@@ -10,7 +10,7 @@ import {
   executeCjsEsmBuilds,
   executeFullBuild
 } from './builds.mjs';
-import { parseArgs } from './npm-utils.mjs';
+import { parseArgs } from './parse-args.mjs';
 
 const argv = parseArgs({
   serve: { type: 'boolean' },
