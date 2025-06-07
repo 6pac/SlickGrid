@@ -2,9 +2,9 @@ import { copyFileSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname as pDirname, join as pJoin, resolve as pResolve } from 'node:path';
 import readline from 'node:readline';
 import { fileURLToPath } from 'node:url';
+import { styleText } from 'node:util';
 import { rimrafSync } from 'rimraf';
 import semver from 'semver';
-import c from 'tinyrainbow';
 
 import { runProdBuildWithTypes } from './builds.mjs';
 import { updateChangelog } from './changelog.mjs';
@@ -51,7 +51,7 @@ const argv = parseArgs({
   let dryRunPrefix = argv.dryRun ? '[dry-run]' : '';
   let newTag;
   if (argv.dryRun) {
-    console.info(`-- ${c.bgMagenta('DRY-RUN')} mode --`);
+    console.info(`-- ${styleText('bgMagenta', 'DRY-RUN')} mode --`);
   }
   await hasUncommittedChanges(argv);
   const repo = await parseGitRepo();
@@ -72,7 +72,7 @@ const argv = parseArgs({
   for (const bumpType of bumpTypes) {
     versionIncrements.push({
       key: bumpType.bump,
-      name: `${bumpType.bump} (${c.bold(c.magenta(bumpVersion(bumpType.bump, false)))}) ${bumpType.desc}`,
+      name: `${bumpType.bump} (${styleText(['bold', 'magenta'], bumpVersion(bumpType.bump, false))}) ${bumpType.desc}`,
       value: bumpType.bump
     });
   }
@@ -83,7 +83,7 @@ const argv = parseArgs({
 
   const defaultIdx = versionIncrements.length - 1;
   const whichBumpType = await promptConfirmation(
-    `${c.bgMagenta(dryRunPrefix)} Select increment to apply (next version)`,
+    `${styleText('bgMagenta', dryRunPrefix)} Select increment to apply (next version)`,
     versionIncrements,
     defaultIdx
   );
@@ -100,7 +100,7 @@ const argv = parseArgs({
     }
 
     newTag = `${TAG_PREFIX}${newVersion}`;
-    console.log(`${c.bgMagenta(dryRunPrefix)} Bumping new version to "${newTag}"`);
+    console.log(`${styleText('bgMagenta', dryRunPrefix)} Bumping new version to "${newTag}"`);
 
     // 2. delete (empty) dist folder
     console.log('Emptying dist folder');
@@ -126,7 +126,7 @@ const argv = parseArgs({
     await gitAdd(null, { cwd, dryRun: argv.dryRun });
 
     // show git changes to user so he can confirm the changes are ok
-    const shouldCommitChanges = await promptConfirmation(`${c.bgMagenta(dryRunPrefix)} Ready to tag version "${newTag}" and push commits to remote? Choose No to cancel.`);
+    const shouldCommitChanges = await promptConfirmation(`${styleText('bgMagenta', dryRunPrefix)} Ready to tag version "${newTag}" and push commits to remote? Choose No to cancel.`);
     if (shouldCommitChanges) {
       // 8. create git tag of new release
       await gitTag(newTag, { cwd, dryRun: argv.dryRun });
@@ -139,7 +139,7 @@ const argv = parseArgs({
       await gitPushToCurrentBranch('origin', { cwd, dryRun: argv.dryRun });
 
       // 11. NPM publish
-      if (await promptConfirmation(`${c.bgMagenta(dryRunPrefix)} Are you ready to publish "${newTag}" to npm?`)) {
+      if (await promptConfirmation(`${styleText('bgMagenta', dryRunPrefix)} Are you ready to publish "${newTag}" to npm?`)) {
         // create a copy of "package.json" to "package.json.backup" and remove (devDependencies, scripts) from "package.json"
         await cleanPublishPackage();
 
@@ -158,7 +158,7 @@ const argv = parseArgs({
         console.log(`Renaming "package.json" backup file to its original name.`);
         renameSync(pJoin(projectRootPath, 'package.json.backup'), pJoin(projectRootPath, 'package.json'));
 
-        console.log(`${c.bgMagenta(dryRunPrefix)} 📦 Published to NPM - 🔗 https://www.npmjs.com/package/${pkg.name}`.trim());
+        console.log(`${styleText('bgMagenta', dryRunPrefix)} 📦 Published to NPM - 🔗 https://www.npmjs.com/package/${pkg.name}`.trim());
       }
 
       // 12. Create GitHub Release
@@ -219,7 +219,7 @@ function updatePackageVersion(newVersion) {
   pkg.version = newVersion;
 
   if (argv.dryRun) {
-    console.log(`${c.magenta('[dry-run]')}`);
+    console.log(styleText('magenta', '[dry-run]'));
   }
   writeJsonSync(pResolve(projectRootPath, 'package.json'), pkg, { spaces: 2 });
 
@@ -243,7 +243,7 @@ function updateSlickGridVersion(newVersion) {
     .replace(/(slickGridVersion) = '([0-9\.]*([\-\.]?alpha[\-\.]?|[\-\.]?beta[\-\.]?)?[0-9\-\.]*)'/gi, `$1 = '${newVersion}'`);
 
   if (argv.dryRun) {
-    console.log(`${c.magenta('[dry-run]')}`);
+    console.log(styleText('magenta', '[dry-run]'));
   }
   writeFileSync(pResolve(projectRootPath, 'src/slick.grid.ts'), updatedSlickGridJs);
 
@@ -304,7 +304,7 @@ async function promptConfirmation(message, choices, defaultIndex) {
 }
 
 async function promptOtp(dryRunPrefix = '') {
-  const otp = await getConsoleInput(`${c.bgMagenta(dryRunPrefix)} If you have an OTP (One-Time-Password), type it now or press "Enter" to continue: \n`);
+  const otp = await getConsoleInput(`${styleText('bgMagenta', dryRunPrefix)} If you have an OTP (One-Time-Password), type it now or press "Enter" to continue: \n`);
   if (!otp) {
     console.log('No OTP provided, continuing to next step...');
   } else if (otp.length > 0 && otp.length < 6) {

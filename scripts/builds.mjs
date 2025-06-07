@@ -2,9 +2,9 @@ import { copyfiles } from 'native-copyfiles';
 import { build } from 'esbuild';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
+import { styleText } from 'node:util';
 import { compile as sassCompile } from 'sass';
 import { globSync } from 'tinyglobby';
-import c from 'tinyrainbow';
 
 import { spawnStreaming } from './child-process.mjs';
 import { removeImportsPlugin } from './esbuild-plugins.mjs';
@@ -74,7 +74,7 @@ export async function executeCjsEsmBuilds() {
     const startTime = new Date().getTime();
     await bundleByFormat(format);
     const endTime = new Date().getTime();
-    console.log(`[${c.yellow('esbuild ⚡')}] Bundled to "${format === 'mjs' ? 'esm (mjs)' : format}" format in ${endTime - startTime}ms`);
+    console.log(`[${styleText('yellow', 'esbuild ⚡')}] Bundled to "${format === 'mjs' ? 'esm (mjs)' : format}" format in ${endTime - startTime}ms`);
   }
 }
 
@@ -110,7 +110,7 @@ export async function buildAllIifeFiles() {
     buildIifeFile(file, false);
   }
   const endTime = new Date().getTime();
-  console.log(`[${c.yellow('esbuild ⚡')}] Built ${allFiles.length} files to "iife" format in ${endTime - startTime}ms`);
+  console.log(`[${styleText('yellow', 'esbuild ⚡')}] Built ${allFiles.length} files to "iife" format in ${endTime - startTime}ms`);
 }
 
 /** build as iife, every file will be bundled separately */
@@ -131,7 +131,7 @@ export async function buildIifeFile(file, displayLog = true) {
 
   if (displayLog) {
     const endTime = new Date().getTime();
-    console.log(`[${c.yellow('esbuild ⚡')}] Built "${file}" to "iife" format in ${endTime - startTime}ms`);
+    console.log(`[${styleText('yellow', 'esbuild ⚡')}] Built "${file}" to "iife" format in ${endTime - startTime}ms`);
   }
 }
 
@@ -170,7 +170,7 @@ function copySassFiles() {
   copyfiles(
     ['src/styles/*.scss', 'dist/styles/sass'], // 1st in array is source, last is target
     { flat: true, stat: true },
-    () => console.log(`[${c.magenta('SASS')}] SASS files copied`)
+    () => console.log(`[${styleText('magenta', 'SASS')}] SASS files copied`)
   );
 }
 
@@ -178,7 +178,7 @@ function copySassFiles() {
 export async function buildAllSassFiles() {
   try {
     await spawnStreaming('npm', ['run', 'sass:build'], { cwd: projectRootPath });
-    console.log(`[${c.magenta('SASS')}] Full SASS build completed`);
+    console.log(`[${styleText('magenta', 'SASS')}] Full SASS build completed`);
   } catch (err) {
     // don't do anything when an error occured, this is to avoid watch mode to crash on errors
     // console.error('SASS error: ', JSON.stringify(err));
@@ -196,12 +196,12 @@ export async function buildSassFile(sassFile) {
   // const extension = path.extname(sassFile);
 
   if (!sassLogged) {
-    console.log(`[${c.magenta('SASS')}] SASS file changes detected`);
+    console.log(`[${styleText('magenta', 'SASS')}] SASS file changes detected`);
     sassLogged = true;
   }
   if (filename.startsWith('_')) {
     // when _variables changes, let's rebuild all SASS files instead of just one
-    console.log(`[${c.magenta('SASS')}] scss variable file changed, requires full SASS rebuild (triggered by`, `"${sassFile}")`);
+    console.log(`[${styleText('magenta', 'SASS')}] scss variable file changed, requires full SASS rebuild (triggered by`, `"${sassFile}")`);
     await buildAllSassFiles();
   } else {
     const srcDir = 'src';
