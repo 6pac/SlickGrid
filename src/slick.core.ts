@@ -355,6 +355,30 @@ export class SlickRange {
 }
 
 /**
+ * A structure containing a range of cells to copy to.
+ * @class SlickCopyRange
+ * @constructor
+ * @param fromRow {Integer} Starting row.
+ * @param fromCell {Integer} Starting cell.
+ * @param rowCount {Integer} Row Count.
+ * @param cellCount {Integer} Cell Count.
+ */
+export class SlickCopyRange {
+  fromRow: number;
+  fromCell: number;
+  rowCount: number;
+  cellCount: number;
+
+  constructor(fromRow: number, fromCell: number, rowCount: number, cellCount: number) {
+    this.fromRow = fromRow;
+    this.fromCell = fromCell;
+    this.rowCount = rowCount;
+    this.cellCount = cellCount;
+  }
+
+}
+
+/**
  * Create a handle element for Excel style drag-replace
  * @class DragExtendHandle
  * @constructor
@@ -1127,6 +1151,7 @@ const SlickCore = {
   EventData: SlickEventData,
   EventHandler: SlickEventHandler,
   Range: SlickRange,
+  CopyRange: SlickCopyRange,
   DragExtendHandle: SlickDragExtendHandle,
   NonDataRow: SlickNonDataItem,
   Group: SlickGroup,
@@ -1207,7 +1232,7 @@ const SlickCore = {
 };
 
 export const {
-  EditorLock, Event, EventData, EventHandler, Group, GroupTotals, NonDataRow, Range, DragExtendHandle,
+  EditorLock, Event, EventData, EventHandler, Group, GroupTotals, NonDataRow, Range, CopyRange, DragExtendHandle,
   RegexSanitizer, GlobalEditorLock, keyCode, preClickClassName, GridAutosizeColsMode, ColAutosizeMode,
   RowSelectionMode, CellSelectionMode,ValueFilterMode, WidthEvalMode
 } = SlickCore;

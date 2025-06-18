@@ -18,8 +18,8 @@ export class SlickCellRangeSelector implements SlickPlugin {
   // public API
   pluginName = 'CellRangeSelector' as const;
   onBeforeCellRangeSelected = new SlickEvent<{ row: number; cell: number; }>('onBeforeCellRangeSelected');
-  onCellRangeSelected = new SlickEvent<{ range: SlickRange_; selectionMode: string; }>('onCellRangeSelected');
-  onCellRangeSelecting = new SlickEvent<{ range: SlickRange_; selectionMode: string; }>('onCellRangeSelecting');
+  onCellRangeSelected = new SlickEvent<{ range: SlickRange_; selectionMode: string; allowAutoEdit: boolean; }>('onCellRangeSelected');
+  onCellRangeSelecting = new SlickEvent<{ range: SlickRange_; selectionMode: string; allowAutoEdit: boolean; }>('onCellRangeSelecting');
 
   // --
   // protected props
@@ -385,7 +385,8 @@ if (!this._activeViewport) {
       const range = new SlickRange(dd.range.start.row ?? 0, dd.range.start.cell ?? 0, end.row, end.cell);
       this._decorator.show(range);
       this.onCellRangeSelecting.notify({
-        range
+        range, selectionMode: '', 
+        allowAutoEdit: false
       });
     }
   }
@@ -404,15 +405,14 @@ if (!this._activeViewport) {
     e.stopImmediatePropagation();
 
     this.stopIntervalTimer();
-    this.onCellRangeSelected.notify({
-      range: new SlickRange(
+    let r = new SlickRange(
         dd.range.start.row ?? 0,
         dd.range.start.cell ?? 0,
         dd.range.end.row,
         dd.range.end.cell
-      ),
-      selectionMode: this._selectionMode
-    });
+      );
+
+    this.onCellRangeSelected.notify({ range: r, selectionMode: this._selectionMode, allowAutoEdit: (this._selectionMode === "SEL" && r.isSingleCell()) });
     console.log('handleDragEnd');
   }
 

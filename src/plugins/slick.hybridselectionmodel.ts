@@ -28,7 +28,7 @@ export interface HybridSelectionModelOption {
   dragToSelect: boolean;
   autoScrollWhenDrag: boolean;
   handleRowMoveManagerColumn: boolean;  // Row Selection on RowMoveManage column
-  rowSelectColumnObjectArr: Column[];        // Row Selection on these columns
+  rowSelectColumnIdArr: string[];        // Row Selection on these columns
   rowSelectOverride: RowSelectOverride | undefined;          // function to toggle Row Selection Models
 }
 
@@ -59,13 +59,15 @@ export class SlickHybridSelectionModel {
     dragToSelect: false,
     autoScrollWhenDrag: true,
     handleRowMoveManagerColumn: true, // Row Selection on RowMoveManage column
-    rowSelectColumnObjectArr: [],     // Row Selection on these columns
+    rowSelectColumnIdArr: [],         // Row Selection on these columns
     rowSelectOverride: undefined,     // function to toggle Row Selection Models
     cellRangeSelector: undefined
 
   };
 
-  constructor(options?: { selectActiveCell: boolean; cellRangeSelector: SlickCellRangeSelector_; }) {
+  constructor(options?: HybridSelectionModelOption) {
+    this._options = Utils.extend(true, {}, this._defaults, options);
+
     if (options === undefined || options.cellRangeSelector === undefined) {
       this._selector = new SlickCellRangeSelector({ selectionCss: { border: '2px solid black' } as CSSStyleDeclaration });
     } else {
@@ -81,17 +83,16 @@ export class SlickHybridSelectionModel {
       throw new Error('Slick.Draggable is undefined, make sure to import "slick.interactions.js"');
     }
     
-    this._options = Utils.extend(true, {}, this._defaults, this._options);
     this._grid = grid;
     Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
   
-    if (!this._selector && this._options.dragToSelect) {
+    if (!this._selector && this._options?.dragToSelect) {
       if (!SlickCellRangeDecorator) {
         throw new Error('Slick.CellRangeDecorator is required when option dragToSelect set to true');
       }
       this._selector = new SlickCellRangeSelector({
         selectionCss: { border: 'none' } as CSSStyleDeclaration,
-        autoScroll: this._options.autoScrollWhenDrag
+        autoScroll: this._options?.autoScrollWhenDrag
       });
     }
   
@@ -259,7 +260,7 @@ export class SlickHybridSelectionModel {
     }
     
     var targetColumn = this._grid.getVisibleColumns()[data.cell];
-    return this._options?.rowSelectColumnObjectArr.includes(targetColumn) || false;
+    return this._options?.rowSelectColumnIdArr.includes('' + targetColumn.id) || false;
   }
 
   protected handleActiveCellChange(_e: SlickEventData_, args: OnActiveCellChangedEventArgs) {
@@ -495,14 +496,14 @@ export class SlickHybridSelectionModel {
     }
   }
 
-  protected handleCellRangeSelected(_e: SlickEventData_, args: { range: SlickRange_; selectionMode: string; }) {
+  protected handleCellRangeSelected(_e: SlickEventData_, args: { range: SlickRange_; selectionMode: string; allowAutoEdit?: boolean; }) {
     if (this._activeSelectionIsRow) { 
       if (!this._grid.getOptions().multiSelect || !this._options?.selectActiveRow) {
         return false;
       }
       this.setSelectedRanges([new SlickRange(args.range.fromRow, 0, args.range.toRow, this._grid.getColumns().length - 1)], undefined, args.selectionMode);
     } else {
-      this._grid.setActiveCell(args.range.fromRow, args.range.fromCell, false, false, true);
+      this._grid.setActiveCell(args.range.fromRow, args.range.fromCell, (args.allowAutoEdit ? undefined : false), false, true);
       this.setSelectedRanges([args.range], undefined, args.selectionMode);
     }  
     return true;

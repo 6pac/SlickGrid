@@ -64,6 +64,7 @@ import type {
   OnSetOptionsEventArgs,
   OnScrollEventArgs,
   OnValidationErrorEventArgs,
+  OnDragReplaceCellsEventArgs,
   PagingInfo,
   RowInfo,
   SelectionModel,
@@ -88,9 +89,11 @@ import {
   Utils as Utils_,
   ValueFilterMode as ValueFilterMode_,
   WidthEvalMode as WidthEvalMode_,
-  DragExtendHandle as DragExtendHandle_
+  DragExtendHandle as DragExtendHandle_,
+  SlickCopyRange as SlickCopyRange_
 } from './slick.core';
 import { Draggable as Draggable_, MouseWheel as MouseWheel_, Resizable as Resizable_ } from './slick.interactions';
+import { SlickColumnPicker } from 'dist/types';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
@@ -102,6 +105,7 @@ const GridAutosizeColsMode = IIFE_ONLY ? Slick.GridAutosizeColsMode : GridAutosi
 const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;
 const preClickClassName = IIFE_ONLY ? Slick.preClickClassName : preClickClassName_;
 const SlickRange = IIFE_ONLY ? Slick.Range : SlickRange_;
+const SlickCopyRange = IIFE_ONLY ? Slick.CopyRange : SlickCopyRange_;
 const RowSelectionMode = IIFE_ONLY ? Slick.RowSelectionMode : RowSelectionMode_;
 const CellSelectionMode = IIFE_ONLY ? Slick.CellSelectionMode : CellSelectionMode_;
 const ValueFilterMode = IIFE_ONLY ? Slick.ValueFilterMode : ValueFilterMode_;
@@ -202,6 +206,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   onSort: SlickEvent_<SingleColumnSort | MultiColumnSort>;
   onValidationError: SlickEvent_<OnValidationErrorEventArgs>;
   onViewportChanged: SlickEvent_<{ grid: SlickGrid; }>;
+  onDragReplaceCells: SlickEvent_<OnDragReplaceCellsEventArgs>;
 
   // ---
   // protected variables
@@ -604,6 +609,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.onSort = new SlickEvent<SingleColumnSort | MultiColumnSort>('onSort', externalPubSub);
     this.onValidationError = new SlickEvent<OnValidationErrorEventArgs>('onValidationError', externalPubSub);
     this.onViewportChanged = new SlickEvent<{ grid: SlickGrid; }>('onViewportChanged', externalPubSub);
+    this.onDragReplaceCells = new SlickEvent<OnDragReplaceCellsEventArgs>('onDragReplaceCells', externalPubSub);
 
     this.initialize(options);
   }
@@ -3465,7 +3471,36 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return this.sortColumns;
   }
 
-  protected handleSelectedRangesChanged(e: SlickEventData_, ranges: SlickRange_[]) {
+  defaultCopyDraggedCellRange(e: SlickEventData_, args: OnDragReplaceCellsEventArgs) {
+      let fromRowOffset = 0;
+      let fromCellOffset = 0;
+      for (var i=0; i < args.copyToRange.rowCount ; i++){
+        let toRow = this.getDataItem(args.copyToRange.fromRow + i);
+        let fromRow = this.getDataItem(args.prevSelectedRange.fromRow + fromRowOffset);
+        fromCellOffset = 0;
+        
+        for (let j = 0; j < args.copyToRange.cellCount; j++) {
+          let toColDef = this.columns[args.copyToRange.fromCell + j];
+          let fromColDef = this.columns[args.prevSelectedRange.fromCell + fromCellOffset];
+
+          if (!toColDef.hidden && !fromColDef.hidden) {
+            let val = fromRow[fromColDef.field as keyof TData];
+            if (this._options.dataItemColumnValueExtractor) {
+              val = this._options.dataItemColumnValueExtractor(fromRow, fromColDef);
+            }
+            toRow[toColDef.field as keyof TData] = val;
+          }
+
+          fromCellOffset++;
+          if (fromCellOffset >= args.copyToRange.cellCount) fromCellOffset = 0;
+        }
+                  
+        fromRowOffset++;
+        if (fromRowOffset >= args.copyToRange.rowCount) fromRowOffset = 0;
+      } 
+  }
+
+   protected handleSelectedRangesChanged(e: SlickEventData_, ranges: SlickRange_[]) {
     const ne = e.getNativeEvent<CustomEvent>();
     const selectionMode = ne?.detail?.selectionMode ?? '';
 
@@ -3505,39 +3540,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         let copyUp = selectedRange.fromRow < prevSelectedRange.fromRow;
         //var copyLeft = selectedRange.fromCell < prevSelectedRange.fromCell;
 
-        let copyToRange = {
-          fromRow: copyUp ? selectedRange.fromRow : prevSelectedRange.toRow + 1
-          , rowCount: selectedRange_rowCount - prevSelectedRange_rowCount
-          , fromCell: selectedRange.fromCell // copyLeft ? selectedRange.fromCell : prevSelectedRange.toCell + 1
-          , cellCount: selectedRange_cellCount // - prevSelectedRange_cellCount
-        };
+        let copyToRange = new SlickCopyRange(
+            copyUp ? selectedRange.fromRow : prevSelectedRange.toRow + 1
+          , selectedRange.fromCell // copyLeft ? selectedRange.fromCell : prevSelectedRange.toCell + 1
+          , selectedRange_rowCount - prevSelectedRange_rowCount
+          , selectedRange_cellCount // - prevSelectedRange_cellCount
+        );
 
-        let fromRowOffset = 0;
-        let fromCellOffset = 0;
-        for (let i = 0; i < copyToRange.rowCount; i++) {
-          let toRow = this.getDataItem(copyToRange.fromRow + i);
-          let fromRow = this.getDataItem(prevSelectedRange.fromRow + fromRowOffset);
-          fromCellOffset = 0;
+        this.trigger(this.onDragReplaceCells, { prevSelectedRange: prevSelectedRange, selectedRange: selectedRange, copyToRange: copyToRange });
 
-          for (let j = 0; j < copyToRange.cellCount; j++) {
-            let toColDef = this.columns[copyToRange.fromCell + j];
-            let fromColDef = this.columns[prevSelectedRange.fromCell + fromCellOffset];
-
-            if (!toColDef.hidden && !fromColDef.hidden) {
-              let val = fromRow[fromColDef.field as keyof TData];
-              if (this._options.dataItemColumnValueExtractor) {
-                val = this._options.dataItemColumnValueExtractor(fromRow, fromColDef);
-              }
-              toRow[toColDef.field as keyof TData] = val;
-            }
-
-            fromCellOffset++;
-            if (fromCellOffset >= prevSelectedRange_cellCount) fromCellOffset = 0;
-          }
-
-          fromRowOffset++;
-          if (fromRowOffset >= prevSelectedRange_rowCount) fromRowOffset = 0;
-        }
         this.invalidate();
       }
     }
@@ -5522,6 +5533,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (!cell || !this.cellExists(cell.row, cell.cell)) {
       return false;
     }
+
+    if (this.currentEditor) { this.getEditorLock().commitCurrentEdit(); }
 
     const retval = this.trigger(this.onDragStart, dd, e);
     if (retval.isImmediatePropagationStopped()) {
