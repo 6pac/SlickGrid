@@ -1,4 +1,4 @@
-import type { UsabilityOverrideFn } from './usabilityOverrideFn.type';
+import type { UsabilityOverrideFn } from './usabilityOverrideFn.type.js';
 export interface CheckboxSelectorOption {
     /**
      * Defaults to true, should we apply the row selection on all pages?

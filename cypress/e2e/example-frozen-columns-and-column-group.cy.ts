@@ -21,16 +21,16 @@ describe('Example - Row Grouping Titles', () => {
   });
 
   it('should have a frozen grid on page load with 3 columns on the left and 4 columns on the right', () => {
-    cy.get('[style="top: 0px;"]').should('have.length', 2);
-    cy.get('.grid-canvas-left > [style="top: 0px;"]').children().should('have.length', 3);
-    cy.get('.grid-canvas-right > [style="top: 0px;"]').children().should('have.length', 4);
+    cy.get('div.slick-row[style*="top: 0px;"]').should('have.length', 2);
+    cy.get('.grid-canvas-left > [style*="top: 0px;"]').children().should('have.length', 3);
+    cy.get('.grid-canvas-right > [style*="top: 0px;"]').children().should('have.length', 4);
 
-    cy.get('.grid-canvas-left > [style="top: 0px;"] > .slick-cell:nth(0)').should('contain', '0');
-    cy.get('.grid-canvas-left > [style="top: 0px;"] > .slick-cell:nth(1)').should('contain', 'Task 0');
-    cy.get('.grid-canvas-left > [style="top: 0px;"] > .slick-cell:nth(2)').should('contain', '5 days');
+    cy.get('.grid-canvas-left > [style*="top: 0px;"] > .slick-cell:nth(0)').should('contain', '0');
+    cy.get('.grid-canvas-left > [style*="top: 0px;"] > .slick-cell:nth(1)').should('contain', 'Task 0');
+    cy.get('.grid-canvas-left > [style*="top: 0px;"] > .slick-cell:nth(2)').should('contain', '5 days');
 
-    cy.get('.grid-canvas-right > [style="top: 0px;"] > .slick-cell:nth(0)').should('contain', '01/01/2009');
-    cy.get('.grid-canvas-right > [style="top: 0px;"] > .slick-cell:nth(1)').should('contain', '01/05/2009');
+    cy.get('.grid-canvas-right > [style*="top: 0px;"] > .slick-cell:nth(0)').should('contain', '01/01/2009');
+    cy.get('.grid-canvas-right > [style*="top: 0px;"] > .slick-cell:nth(1)').should('contain', '01/05/2009');
   });
 
   it('should have exact Column Pre-Header & Column Header Titles in the grid', () => {
@@ -46,17 +46,18 @@ describe('Example - Row Grouping Titles', () => {
   });
 
   it('should click on the "Remove Frozen Columns" button to switch to a regular grid without frozen columns and expect 7 columns on the left container', () => {
-    cy.contains('Remove Frozen Columns')
+    cy.get('[data-test="remove-frozen-btn"]')
+      .contains('Remove Frozen Columns')
       .click({ force: true });
 
-    cy.get('[style="top: 0px;"]').should('have.length', 1);
-    cy.get('.grid-canvas-left > [style="top: 0px;"]').children().should('have.length', 7);
+    cy.get('div.slick-row[style*="top: 0px;"]').should('have.length', 1);
+    cy.get('.grid-canvas-left > [style*="top: 0px;"]').children().should('have.length', 7);
 
-    cy.get('.grid-canvas-left > [style="top: 0px;"] > .slick-cell:nth(0)').should('contain', '0');
-    cy.get('.grid-canvas-left > [style="top: 0px;"] > .slick-cell:nth(1)').should('contain', 'Task 0');
-    cy.get('.grid-canvas-left > [style="top: 0px;"] > .slick-cell:nth(2)').should('contain', '5 days');
-    cy.get('.grid-canvas-left > [style="top: 0px;"] > .slick-cell:nth(3)').should('contain', '01/01/2009');
-    cy.get('.grid-canvas-left > [style="top: 0px;"] > .slick-cell:nth(4)').should('contain', '01/05/2009');
+    cy.get('.grid-canvas-left > [style*="top: 0px;"] > .slick-cell:nth(0)').should('contain', '0');
+    cy.get('.grid-canvas-left > [style*="top: 0px;"] > .slick-cell:nth(1)').should('contain', 'Task 0');
+    cy.get('.grid-canvas-left > [style*="top: 0px;"] > .slick-cell:nth(2)').should('contain', '5 days');
+    cy.get('.grid-canvas-left > [style*="top: 0px;"] > .slick-cell:nth(3)').should('contain', '01/01/2009');
+    cy.get('.grid-canvas-left > [style*="top: 0px;"] > .slick-cell:nth(4)').should('contain', '01/05/2009');
   });
 
   it('should have exact Column Pre-Header & Column Header Titles in the grid', () => {
@@ -72,19 +73,20 @@ describe('Example - Row Grouping Titles', () => {
   });
 
   it('should click on the "Set 3 Frozen Columns" button to switch frozen columns grid and expect 3 frozen columns on the left and 4 columns on the right', () => {
-    cy.contains('Set 3 Frozen Columns')
+    cy.get('[data-test="set-frozen-btn"]')
+      .contains('Set 3 Frozen Columns')
       .click({ force: true });
 
-    cy.get('[style="top: 0px;"]').should('have.length', 2);
-    cy.get('.grid-canvas-left > [style="top: 0px;"]').children().should('have.length', 3);
-    cy.get('.grid-canvas-right > [style="top: 0px;"]').children().should('have.length', 4);
+    cy.get('div.slick-row[style*="top: 0px;"]').should('have.length', 2);
+    cy.get('.grid-canvas-left > [style*="top: 0px;"]').children().should('have.length', 3);
+    cy.get('.grid-canvas-right > [style*="top: 0px;"]').children().should('have.length', 4);
 
-    cy.get('.grid-canvas-left > [style="top: 0px;"] > .slick-cell:nth(0)').should('contain', '0');
-    cy.get('.grid-canvas-left > [style="top: 0px;"] > .slick-cell:nth(1)').should('contain', 'Task 0');
-    cy.get('.grid-canvas-left > [style="top: 0px;"] > .slick-cell:nth(2)').should('contain', '5 days');
+    cy.get('.grid-canvas-left > [style*="top: 0px;"] > .slick-cell:nth(0)').should('contain', '0');
+    cy.get('.grid-canvas-left > [style*="top: 0px;"] > .slick-cell:nth(1)').should('contain', 'Task 0');
+    cy.get('.grid-canvas-left > [style*="top: 0px;"] > .slick-cell:nth(2)').should('contain', '5 days');
 
-    cy.get('.grid-canvas-right > [style="top: 0px;"] > .slick-cell:nth(0)').should('contain', '01/01/2009');
-    cy.get('.grid-canvas-right > [style="top: 0px;"] > .slick-cell:nth(1)').should('contain', '01/05/2009');
+    cy.get('.grid-canvas-right > [style*="top: 0px;"] > .slick-cell:nth(0)').should('contain', '01/01/2009');
+    cy.get('.grid-canvas-right > [style*="top: 0px;"] > .slick-cell:nth(1)').should('contain', '01/05/2009');
   });
 
   it('should have exact Column Pre-Header & Column Header Titles in the grid', () => {
@@ -137,5 +139,15 @@ describe('Example - Row Grouping Titles', () => {
       .find('.slick-header:not(.slick-preheader-panel) .slick-header-columns')
       .children()
       .each(($child, index) => expect($child.text()).to.eq(fullTitlesWithoutId[index]));
+  });
+
+  it('should scroll to the bottom of the grid and expect last row to contain Task 49999', () => {
+    cy.get('#myGrid')
+      .find('.slick-viewport-top.slick-viewport-right')
+      .scrollTo('bottom')
+      .wait(10);
+
+    cy.get(`#myGrid [data-row="49999"] > .slick-cell:nth(0)`)
+      .should('have.text', 'Task 49999');
   });
 });

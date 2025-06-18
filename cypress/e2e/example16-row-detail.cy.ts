@@ -32,7 +32,7 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
   });
 
   it('should open the 2nd Row Detail of the 4th row and expect to find some details', () => {
-    cy.get(`.slick-row[style="top: ${GRID_ROW_HEIGHT * 10}px;"] .slick-cell:nth(1)`)
+    cy.get(`.slick-row[style*="top: ${GRID_ROW_HEIGHT * 10}px;"] .slick-cell:nth(1)`)
       .click()
       .wait(50);
 
@@ -54,7 +54,7 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
   });
 
   it('should open the Task 3 Row Detail and still expect same detail', () => {
-    cy.get(`.slick-row[style="top: ${GRID_ROW_HEIGHT * 3}px;"] .slick-cell:nth(1)`)
+    cy.get(`.slick-row[style*="top: ${GRID_ROW_HEIGHT * 3}px;"] .slick-cell:nth(1)`)
       .click()
       .wait(50);
 

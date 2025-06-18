@@ -61,7 +61,7 @@ body {
   cursor: pointer;
 }
 #router-view {
-  padding: 4px;
+  padding: 8px;
 }
 
 .router-link {
@@ -71,6 +71,9 @@ body {
   padding: 6px 12px;
   &:hover {
     background-color: #5050508f;
+  }
+  &.active {
+    background-color: #5a5a5a;
   }
   a {
     color: white;

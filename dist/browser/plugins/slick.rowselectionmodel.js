@@ -75,11 +75,11 @@
     setSelectedRows(rows) {
       this.setSelectedRanges(this.rowsToRanges(rows), "SlickRowSelectionModel.setSelectedRows");
     }
-    setSelectedRanges(ranges, caller = "SlickRowSelectionModel.setSelectedRanges") {
+    setSelectedRanges(ranges, caller = "SlickRowSelectionModel.setSelectedRanges", selectionMode) {
       if ((!this._ranges || this._ranges.length === 0) && (!ranges || ranges.length === 0))
         return;
       this._ranges = ranges;
-      let eventData = new SlickEventData(new CustomEvent("click", { detail: { caller } }), this._ranges);
+      let eventData = new SlickEventData(new CustomEvent("click", { detail: { caller, selectionMode } }), this._ranges);
       this.onSelectedRangesChanged.notify(this._ranges, eventData);
     }
     getSelectedRanges() {
@@ -138,7 +138,7 @@
     handleCellRangeSelected(_e, args) {
       if (!this._grid.getOptions().multiSelect || !this._options.selectActiveRow)
         return !1;
-      this.setSelectedRanges([new SlickRange(args.range.fromRow, 0, args.range.toRow, this._grid.getColumns().length - 1)]);
+      this.setSelectedRanges([new SlickRange(args.range.fromRow, 0, args.range.toRow, this._grid.getColumns().length - 1)], void 0, args.selectionMode);
     }
   };
   window.Slick && Utils.extend(!0, window, {

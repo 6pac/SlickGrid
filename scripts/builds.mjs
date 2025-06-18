@@ -1,4 +1,4 @@
-import copyfiles from 'copyfiles';
+import { copyfiles } from 'native-copyfiles';
 import { build } from 'esbuild';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
@@ -13,7 +13,7 @@ import { removeImportsPlugin } from './esbuild-plugins.mjs';
 import { outputFileSync } from './fs-utils.mjs';
 
 const argv = yargs(hideBin(process.argv)).argv;
-export const BUILD_FORMATS = ['cjs', 'esm'];
+export const BUILD_FORMATS = ['cjs', 'esm', 'mjs'];
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRootPath = path.join(__dirname, '../');
@@ -71,7 +71,7 @@ export async function executeCjsEsmBuilds() {
     const startTime = new Date().getTime();
     await bundleByFormat(format);
     const endTime = new Date().getTime();
-    console.log(`[${c.yellow('esbuild ⚡')}] Bundled to "${format}" format in ${endTime - startTime}ms`);
+    console.log(`[${c.yellow('esbuild ⚡')}] Bundled to "${format === 'mjs' ? 'esm (mjs)' : format}" format in ${endTime - startTime}ms`);
   }
 }
 
@@ -80,13 +80,16 @@ export async function executeCjsEsmBuilds() {
  * @param {"cjs" | "esm"} format - build format type
  */
 export async function bundleByFormat(format) {
+  const esbuildFormat = format === 'mjs' ? 'esm' : format;
+  const esbuildExt = format === 'mjs' ? 'mjs' : 'js';
+
   return runBuild({
     entryPoints: ['src/index.js'],
-    format,
+    format: esbuildFormat,
     target: 'es2020',
     treeShaking: true,
     define: { IIFE_ONLY: 'false' },
-    outdir: `dist/${format}`,
+    outfile: `dist/${esbuildFormat}/index.${esbuildExt}`,
   });
 }
 
@@ -163,7 +166,7 @@ export function runBuild(options) {
 function copySassFiles() {
   copyfiles(
     ['src/styles/*.scss', 'dist/styles/sass'], // 1st in array is source, last is target
-    { flat: true, up: 2 },
+    { flat: true, stat: true },
     () => console.log(`[${c.magenta('SASS')}] SASS files copied`)
   );
 }

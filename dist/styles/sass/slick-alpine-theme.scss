@@ -597,6 +597,7 @@
 }
 
 .slick-pane {
+  box-sizing: border-box;
   position: absolute;
   outline: 0;
   overflow: hidden;
@@ -705,6 +706,9 @@
   }
   &.editable {
     box-shadow: var(--alpine-cell-editable-box-shadow, v.$alpine-cell-editable-box-shadow);
+  }
+  &.hidden {
+    display: none;
   }
 }
 

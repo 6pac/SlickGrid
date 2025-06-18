@@ -1,6 +1,6 @@
-import { type SlickEventData, SlickGroup as SlickGroup_, keyCode as keyCode_, Utils as Utils_ } from './slick.core';
-import type { Column, GroupItemMetadataProviderOption, GroupingFormatterItem, ItemMetadata, SlickPlugin } from './models/index';
-import type { SlickGrid } from './slick.grid';
+import { type SlickEventData, SlickGroup as SlickGroup_, keyCode as keyCode_, Utils as Utils_ } from './slick.core.js';
+import type { Column, GroupItemMetadataProviderOption, GroupingFormatterItem, ItemMetadata, SlickPlugin } from './models/index.js';
+import type { SlickGrid } from './slick.grid.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;
@@ -127,8 +127,8 @@ export class SlickGroupItemMetadataProvider implements SlickPlugin {
       target.classList.add((item.selectChecked ? 'checked' : 'unchecked'));
       // get rowIndexes array
       const rowIndexes = this.dataView.mapItemsToRows(item.rows);
-      if (item.selectChecked) { 
-        this._options.checkboxSelectPlugin.selectRows(rowIndexes); 
+      if (item.selectChecked) {
+        this._options.checkboxSelectPlugin.selectRows(rowIndexes);
       } else {
         this._options.checkboxSelectPlugin.deSelectRows(rowIndexes);
       }
@@ -164,7 +164,7 @@ export class SlickGroupItemMetadataProvider implements SlickPlugin {
     }
   }
 
-  getGroupRowMetadata(item: GroupingFormatterItem): ItemMetadata {
+  getGroupRowMetadata(item: GroupingFormatterItem, _row?: number, _cell?: number): ItemMetadata {
     const groupLevel = item?.level;
     return {
       selectable: false,
@@ -181,7 +181,7 @@ export class SlickGroupItemMetadataProvider implements SlickPlugin {
     };
   }
 
-  getTotalsRowMetadata(item: { group: GroupingFormatterItem }): ItemMetadata | null {
+  getTotalsRowMetadata(item: { group: GroupingFormatterItem }, _row?: number, _cell?: number): ItemMetadata | null {
     const groupLevel = item?.group?.level;
     return {
       selectable: false,

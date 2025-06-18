@@ -1,4 +1,4 @@
-import type { Formatter } from './models/index';
+import type { Formatter } from './models/index.js';
 /***
  * Contains basic SlickGrid formatters.
  *

@@ -1,5 +1,5 @@
-import type { Column as BaseColumn, CellMenuOption, ColumnPickerOption, ColumnReorderFunction, ContextMenuOption, CustomTooltipOption, EditCommand, EditorConstructor, ExcelCopyBufferOption, Formatter, GridMenuOption, ItemMetadata } from './index';
-import type { SlickEditorLock } from '../slick.core';
+import type { Column as BaseColumn, CellMenuOption, ColumnPickerOption, ColumnReorderFunction, ContextMenuOption, CustomTooltipOption, EditCommand, EditorConstructor, ExcelCopyBufferOption, Formatter, GridMenuOption, ItemMetadata } from './index.js';
+import type { SlickEditorLock } from '../slick.core.js';
 export interface CellViewportRange {
     bottom: number;
     top: number;
@@ -7,9 +7,9 @@ export interface CellViewportRange {
     rightPx: number;
 }
 export interface CustomDataView<T = any> {
-    getLength: () => number;
     getItem: (index: number) => T;
-    getItemMetadata(index: number): ItemMetadata | null;
+    getItemMetadata(row: number, cell?: boolean | number): ItemMetadata | null;
+    getLength: () => number;
 }
 export interface CssStyleHash {
     [prop: number | string]: {
@@ -115,6 +115,12 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
     /** Defaults to false, editor cell navigation left/right keys */
     editorCellNavOnLRKeys?: boolean;
     /**
+     * Do we want to enable cell rowspan?
+     * Note: this is an opt-in option because of the multiple row/column/cells looping that it has to do
+     * (which is at least an O^n3 but only for visible range)
+     */
+    enableCellRowSpan?: boolean;
+    /**
      * Defaults to true, this option can be a boolean or a Column Reorder function.
      * When provided as a boolean, it will permits the user to move an entire column from a position to another.
      * We could also provide a Column Reorder function, there's mostly only 1 use for this which is the SlickDraggableGrouping plugin.
@@ -178,10 +184,17 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
     leaveSpaceForNewRows?: boolean;
     /** Should we log the sanitized html? */
     logSanitizedHtml?: boolean;
+    /**
+     * Defaults to 5000, max number of rows that we'll consider doing a partial rowspan remapping.
+     * Anything else will be considered to require a full rowspan remap when necessary
+     */
+    maxPartialRowSpanRemap?: number;
     /** Max supported CSS height */
     maxSupportedCssHeight?: number;
     /** What is the minimum row buffer to use? */
     minRowBuffer?: number;
+    /** What is the maximum row buffer to use? */
+    maxRowBuffer?: number;
     /** Use a mixin function when applying defaults to passed in option and columns objects, rather than creating a new object, so as not to break references */
     mixinDefaults?: boolean;
     /** Defaults to false, which leads to be able to do multiple columns sorting (or single sort when false) */

@@ -1,6 +1,6 @@
-import { BindingEventService as BindingEventService_, type SlickEventData, SlickEventHandler as SlickEventHandler_ } from '../slick.core';
-import type { Column, DOMEvent, DOMMouseOrTouchEvent, HeaderMenuCommandItemCallbackArgs, HeaderMenuItems, HeaderMenuOption, HeaderMenuCommandItem, MenuCommandItemCallbackArgs, SlickPlugin, OnHeaderCellRenderedEventArgs } from '../models/index';
-import type { SlickGrid } from '../slick.grid';
+import { BindingEventService as BindingEventService_, type SlickEventData, SlickEventHandler as SlickEventHandler_ } from '../slick.core.js';
+import type { Column, DOMEvent, DOMMouseOrTouchEvent, HeaderMenuCommandItemCallbackArgs, HeaderMenuItems, HeaderMenuOption, HeaderMenuCommandItem, MenuCommandItemCallbackArgs, SlickPlugin, OnHeaderCellRenderedEventArgs } from '../models/index.js';
+import type { SlickGrid } from '../slick.grid.js';
 /**
  * A plugin to add drop-down menus to column headers.
  *
@@ -91,9 +91,9 @@ import type { SlickGrid } from '../slick.grid';
   */
 export declare class SlickHeaderMenu implements SlickPlugin {
     pluginName: "HeaderMenu";
-    onAfterMenuShow: import("../slick.core").SlickEvent<HeaderMenuCommandItemCallbackArgs>;
-    onBeforeMenuShow: import("../slick.core").SlickEvent<HeaderMenuCommandItemCallbackArgs>;
-    onCommand: import("../slick.core").SlickEvent<MenuCommandItemCallbackArgs>;
+    onAfterMenuShow: import("../slick.core.js").SlickEvent<HeaderMenuCommandItemCallbackArgs>;
+    onBeforeMenuShow: import("../slick.core.js").SlickEvent<HeaderMenuCommandItemCallbackArgs>;
+    onCommand: import("../slick.core.js").SlickEvent<MenuCommandItemCallbackArgs>;
     protected _grid: SlickGrid;
     protected _gridUid: string;
     protected _handler: SlickEventHandler_;

@@ -1,5 +1,5 @@
-import type { SlickDataView } from '../slick.dataview';
-import type { SlickGrid } from '../slick.grid';
+import type { SlickDataView } from '../slick.dataview.js';
+import type { SlickGrid } from '../slick.grid.js';
 
 export interface OnGroupExpandedEventArgs { level: number; groupingKey: string | number | null; }
 export interface OnGroupCollapsedEventArgs { level: number; groupingKey: string | number | null; }

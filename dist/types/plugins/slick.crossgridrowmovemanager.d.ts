@@ -1,6 +1,6 @@
-import { SlickEvent as SlickEvent_, type SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_ } from '../slick.core';
-import type { Column, DragRowMove, CrossGridRowMoveManagerOption, FormatterResultWithText, UsabilityOverrideFn } from '../models/index';
-import type { SlickGrid } from '../slick.grid';
+import { SlickEvent as SlickEvent_, type SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_ } from '../slick.core.js';
+import type { Column, DragRowMove, CrossGridRowMoveManagerOption, FormatterResultWithText, UsabilityOverrideFn } from '../models/index.js';
+import type { SlickGrid } from '../slick.grid.js';
 /**
  * Row Move Manager options:
  *    cssClass:                 A CSS class to be added to the menu item container.

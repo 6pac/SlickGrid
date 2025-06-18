@@ -1,6 +1,6 @@
-import type { Column, DOMMouseOrTouchEvent, GridMenuCommandItemCallbackArgs, GridMenuEventWithElementCallbackArgs, GridMenuItem, GridMenuOption, GridOption, MenuCommandItem, onGridMenuColumnsChangedCallbackArgs } from '../models/index';
-import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_ } from '../slick.core';
-import type { SlickGrid } from '../slick.grid';
+import type { Column, DOMMouseOrTouchEvent, GridMenuCommandItemCallbackArgs, GridMenuEventWithElementCallbackArgs, GridMenuItem, GridMenuOption, GridOption, MenuCommandItem, onGridMenuColumnsChangedCallbackArgs } from '../models/index.js';
+import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_ } from '../slick.core.js';
+import type { SlickGrid } from '../slick.grid.js';
 /**
  * A control to add a Grid Menu (hambuger menu on top-right of the grid)
  *

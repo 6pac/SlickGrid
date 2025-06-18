@@ -1,10 +1,10 @@
 import type { Column, CompositeEditorOption, CssStyleHash, Editor, EditorValidationResult, GridOption } from './index';
 import type { SlickGrid } from '../slick.grid';
 import type { SlickRange, SlickCopyRange } from '../slick.core';
-
 export interface SlickGridArg { grid: SlickGrid; }
 export interface OnActiveCellChangedEventArgs extends SlickGridArg { cell: number; row: number; }
 export interface OnAddNewRowEventArgs extends SlickGridArg { item: any; column: Column; }
+export interface OnAfterSetColumnsEventArgs extends SlickGridArg { newColumns: Column[]; }
 export interface OnAutosizeColumnsEventArgs extends SlickGridArg { columns: Column[]; }
 export interface OnBeforeUpdateColumnsEventArgs extends SlickGridArg { columns: Column[]; }
 export interface OnBeforeAppendCellEventArgs extends SlickGridArg { row: number; cell: number; value: any; dataContext: any; }

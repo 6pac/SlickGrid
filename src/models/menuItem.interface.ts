@@ -1,4 +1,4 @@
-import type { MenuCallbackArgs } from './menuCallbackArgs.interface';
+import type { MenuCallbackArgs } from './menuCallbackArgs.interface.js';
 
 export type MenuType = 'command' | 'option';
 

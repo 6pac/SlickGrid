@@ -23,12 +23,12 @@ describe('Example 4 - Model', () => {
   });
 
   it('should expect first row to include "Task 0" and other specific properties', () => {
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(1)`).should('contain', 'Task 0');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(2)`).should('contain', '5 days');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(3) .percent-complete-bar`).should('exist');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(4)`).should('contain', '01/01/2009');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(5)`).should('contain', '01/05/2009');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(6)`).find('.sgi.sgi-checkbox-intermediate').should('have.length', 1);
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(1)`).should('contain', 'Task 0');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(2)`).should('contain', '5 days');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(3) .percent-complete-bar`).should('exist');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(4)`).should('contain', '01/01/2009');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(5)`).should('contain', '01/05/2009');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(6)`).find('.sgi.sgi-checkbox-intermediate').should('have.length', 1);
   });
 
   it('should display the text "Showing all 50000 rows" without Pagination', () => {
@@ -47,6 +47,14 @@ describe('Example 4 - Model', () => {
           .first()
           .should('contain', expectedRows[index]);
       });
+  });
+
+  it('should navigate to bottom/top of the grid with command execution', () => {
+    cy.get('[data-test="navigate-bottom"]').click();
+    cy.get('[data-row=49999] > .slick-cell.l1.r1').should('contain', 'Task 49999');
+
+    cy.get('[data-test="navigate-top"]').click();
+    cy.get('[data-row=1] > .slick-cell.l1.r1').should('contain', 'Task 1');
   });
 
   it('Should display "Showing page 1 of 1000" text after changing Pagination to 50 items per page', () => {
@@ -128,11 +136,21 @@ describe('Example 4 - Model', () => {
   });
 
   it('should expect first row to include "Task 49950" and other specific properties', () => {
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(1)`).should('contain', 'Task 49950');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(2)`).should('contain', '5 days');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(3) .percent-complete-bar`).should('exist');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(4)`).should('contain', '01/01/2009');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(5)`).should('contain', '01/05/2009');
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(6)`).find('.sgi.sgi-checkbox-intermediate').should('have.length', 1);
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(1)`).should('contain', 'Task 49950');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(2)`).should('contain', '5 days');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(3) .percent-complete-bar`).should('exist');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(4)`).should('contain', '01/01/2009');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(5)`).should('contain', '01/05/2009');
+    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(6)`).find('.sgi.sgi-checkbox-intermediate').should('have.length', 1);
+  });
+
+  it('should scroll to the bottom of the grid and expect last row to contain Task 49999', () => {
+    cy.get('#myGrid')
+      .find('.slick-viewport-top.slick-viewport-left')
+      .scrollTo('bottom')
+      .wait(10);
+
+    cy.get(`#myGrid [data-row="49"] > .slick-cell:nth(0)`).should('have.text', '49999');
+    cy.get(`#myGrid [data-row="49"] > .slick-cell:nth(1)`).should('have.text', 'Task 49999');
   });
 });

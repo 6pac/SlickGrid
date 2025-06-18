@@ -1,7 +1,7 @@
 import { copyFileSync, readFileSync, renameSync, writeFileSync } from 'node:fs';
 import { dirname as pDirname, join as pJoin, resolve as pResolve } from 'node:path';
+import readline from 'node:readline';
 import { fileURLToPath } from 'node:url';
-import readline from 'readline';
 import { rimrafSync } from 'rimraf';
 import semver from 'semver';
 import c from 'tinyrainbow';
@@ -16,7 +16,7 @@ import { gitAdd, gitCommit, gitTag, gitTagPushRemote, gitPushToCurrentBranch, ha
 import { createRelease, createReleaseClient, parseGitRepo } from './github-release.mjs';
 import { publishPackage, syncLockFile } from './npm-utils.mjs';
 
-const PUBLISH_CLEAN_FIELDS = ['devDependencies', 'scripts'];
+const PUBLISH_CLEAN_FIELDS = ['devDependencies', 'scripts', 'workspaces'];
 const TAG_PREFIX = '';
 const VERSION_PREFIX = 'v';
 const RELEASE_COMMIT_MSG = 'chore(release): publish version %s';
@@ -169,6 +169,9 @@ const pkg = readJSONSync(pJoin(projectRootPath, 'package.json'));
           argv.dryRun
         );
       }
+
+      // 13. Git sync/push all changes
+      await gitPushToCurrentBranch('origin', { cwd, dryRun: argv.dryRun });
 
       // END
       console.log(`🏁 Done (in ${Math.floor(process.uptime())}s.)`);

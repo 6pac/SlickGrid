@@ -190,15 +190,15 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
   });
 
   it('should have a frozen grid with 4 containers with 2 columns on the left and 3 rows on the top after click Set/Clear Frozen button', () => {
-    cy.get('#myGrid [style="top: 0px;"]').should('have.length', 1);
-    cy.get('#myGrid2 [style="top: 0px;"]').should('have.length', 1);
+    cy.get('#myGrid div.slick-row[style*="top: 0px"]').should('have.length', 1);
+    cy.get('#myGrid2 div.slick-row[style*="top: 0px"]').should('have.length', 1);
 
     cy.get('#toggleFrozen').click();
 
-    cy.get('#myGrid [style="top: 0px;"]').should('have.length', 2 * 2);
-    cy.get('#myGrid2 [style="top: 0px;"]').should('have.length', 2 * 2);
-    cy.get('#myGrid .grid-canvas-left > [style="top: 0px;"]').children().should('have.length', 2 * 2);
-    cy.get('#myGrid2 .grid-canvas-left > [style="top: 0px;"]').children().should('have.length', 2 * 2);
+    cy.get('#myGrid div.slick-row[style*="top: 0px"]').should('have.length', 2 * 2);
+    cy.get('#myGrid2 div.slick-row[style*="top: 0px"]').should('have.length', 2 * 2);
+    cy.get('#myGrid .grid-canvas-left > [style*="top: 0px"]').children().should('have.length', 2 * 2);
+    cy.get('#myGrid2 .grid-canvas-left > [style*="top: 0px"]').children().should('have.length', 2 * 2);
     cy.get('#myGrid .grid-canvas-top').children().should('have.length', 3 * 2);
     cy.get('#myGrid2 .grid-canvas-top').children().should('have.length', 3 * 2);
   });
@@ -268,8 +268,8 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
 
   it('should have a frozen & grouping by Duration grid after click Set/Clear grouping by Duration button', { scrollBehavior: false }, () => {
     cy.get('#toggleGroup').trigger('click');
-    cy.get('#myGrid [style="top: 0px;"]').should('have.length', 2 * 2);
-    cy.get('#myGrid2 [style="top: 0px;"]').should('have.length', 2 * 2);
+    cy.get('#myGrid div.slick-row[style*="top: 0px;"]').should('have.length', 2 * 2);
+    cy.get('#myGrid2 div.slick-row[style*="top: 0px;"]').should('have.length', 2 * 2);
     cy.get('#myGrid .grid-canvas-top.grid-canvas-left').contains('Duration');
     cy.get('#myGrid2 .grid-canvas-top.grid-canvas-left').contains('Duration');
   });
@@ -282,7 +282,7 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
       cy.get('@viewport').invoke('scrollTop').then(scrollAfter => {
         expect(scrollBefore).to.be.lessThan(scrollAfter);
         cy.dragEnd(selector);
-        cy.get(selector + ' [style="top: 350px;"].slick-group').should('not.be.hidden');;
+        cy.get(selector + ' [style*="top: 350px;"].slick-group').should('not.be.hidden');;
       });
     });
   }
@@ -295,8 +295,8 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
   it('should reset to default grid when click Set/Clear Frozen button and Set/Clear grouping button', () => {
     cy.get('#toggleFrozen').trigger('click');
     cy.get('#toggleGroup').trigger('click');
-    cy.get('#myGrid [style="top: 0px;"]').should('have.length', 1);
-    cy.get('#myGrid2 [style="top: 0px;"]').should('have.length', 1);
+    cy.get('#myGrid div.slick-row[style*="top: 0px;"]').should('have.length', 1);
+    cy.get('#myGrid2 div.slick-row[style*="top: 0px;"]').should('have.length', 1);
   });
 
 });

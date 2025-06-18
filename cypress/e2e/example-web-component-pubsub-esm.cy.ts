@@ -136,5 +136,15 @@ describe('Example - Web Component with PubSub Service instead of SlickEvent (ESM
       expect(win.console.log).to.have.callCount(2);
       expect(win.console.log).to.be.calledWith('Grid Menu onMenuClose:: slick-gridmenu');
     });
+
+    it('should scroll to the bottom of the grid and expect last row to contain Task 49999', () => {
+      cy.get('#myGrid')
+        .find('.slick-viewport-top.slick-viewport-left')
+        .scrollTo('bottom')
+        .wait(10);
+
+      cy.get(`#myGrid [data-row="49999"] > .slick-cell:nth(0)`).should('have.text', '49999');
+      cy.get(`#myGrid [data-row="49999"] > .slick-cell:nth(1)`).should('have.text', 'Task 49999');
+    });
   });
 });

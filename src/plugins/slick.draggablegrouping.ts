@@ -1,10 +1,10 @@
 // @ts-ignore
-import type SortableInstance from 'sortablejs';
+import type { SortableEvent, SortableInstance, SortableOptions } from 'sortablejs';
 
-import type { Column, DOMMouseOrTouchEvent, DraggableGroupingOption, Grouping, GroupingGetterFunction } from '../models/index';
-import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core';
-import type { SlickDataView } from '../slick.dataview';
-import type { SlickGrid } from '../slick.grid';
+import type { Column, DOMMouseOrTouchEvent, DraggableGroupingOption, Grouping, GroupingGetterFunction } from '../models/index.js';
+import { BindingEventService as BindingEventService_, SlickEvent as SlickEvent_, SlickEventHandler as SlickEventHandler_, Utils as Utils_ } from '../slick.core.js';
+import type { SlickDataView } from '../slick.dataview.js';
+import type { SlickGrid } from '../slick.grid.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
@@ -54,6 +54,7 @@ export class SlickDraggableGrouping {
   protected _droppableInstance?: SortableInstance;
   protected _dropzonePlaceholder!: HTMLDivElement;
   protected _groupToggler?: HTMLDivElement;
+  protected _isInitialized = false;
   protected _options: DraggableGroupingOption;
   protected _defaults: DraggableGroupingOption = {
     dropPlaceHolderText: 'Drop a column header here to group by the column',
@@ -91,6 +92,11 @@ export class SlickDraggableGrouping {
     this._gridColumns = this._grid.getColumns();
     this._dataView = this._grid.getData();
     this._dropzoneElm = this._grid.getTopHeaderPanel() || this._grid.getPreHeaderPanel();
+    if (!this._dropzoneElm) {
+      throw new Error(
+        '[Slickgrid] Draggable Grouping requires the pre-header to be created and shown for the plugin to work correctly (use `createPreHeaderPanel` and `showPreHeaderPanel`).'
+      );
+    }
     this._dropzoneElm.classList.add('slick-dropzone');
 
     const dropPlaceHolderText = this._options.dropPlaceHolderText || 'Drop a column header here to group by the column';
@@ -171,7 +177,8 @@ export class SlickDraggableGrouping {
       //   // NOTE: need to disable for now since it also blocks the column reordering
       //   return this.columnsGroupBy.some(c => c.id === target.getAttribute('data-id'));
       // },
-      onStart: () => {
+      onStart: (e: SortableEvent) => {
+        e.item.classList.add('slick-header-column-active');
         dropzoneElm.classList.add('slick-dropzone-hover');
         dropzoneElm.classList.add('slick-dropzone-placeholder-hover');
         const draggablePlaceholderElm = dropzoneElm.querySelector<HTMLDivElement>('.slick-placeholder');
@@ -185,7 +192,8 @@ export class SlickDraggableGrouping {
           groupTogglerElm.style.display = 'none';
         }
       },
-      onEnd: (e: Event & { item: any; clone: HTMLElement; }) => {
+      onEnd: (e: SortableEvent) => {
+        e.item.classList.remove('slick-header-column-active');
         const draggablePlaceholderElm = dropzoneElm.querySelector<HTMLDivElement>('.slick-placeholder');
         dropzoneElm.classList.remove('slick-dropzone-hover');
         draggablePlaceholderElm?.classList.remove('slick-dropzone-placeholder-hover');
@@ -238,10 +246,16 @@ export class SlickDraggableGrouping {
         e.stopPropagation();
         setupColumnResize.call(grid);
       }
-    };
+    } as SortableOptions;
 
     this._sortableLeftInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-left`) as HTMLDivElement, sortableOptions);
     this._sortableRightInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-right`) as HTMLDivElement, sortableOptions);
+
+    // user can optionally provide initial groupBy columns
+    if (this._options.initialGroupBy && !this._isInitialized) {
+      queueMicrotask(() => this.setDroppedGroups(this._options.initialGroupBy!));
+    }
+    this._isInitialized = true;
 
     return {
       sortableLeftInstance: this._sortableLeftInstance,

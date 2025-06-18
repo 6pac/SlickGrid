@@ -1,5 +1,5 @@
-import type { SlickEvent, SlickGrid } from '../index';
-import type { Column } from './index';
+import type { SlickEvent, SlickGrid } from '../index.js';
+import type { Column } from './index.js';
 
 export type ColumnReorderFunction<C extends Column = Column> = (
   grid: SlickGrid<C>,

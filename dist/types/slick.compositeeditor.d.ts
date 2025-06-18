@@ -1,4 +1,4 @@
-import type { Column, CompositeEditorOption } from './models/index';
+import type { Column, CompositeEditorOption } from './models/index.js';
 /**
  * A composite SlickGrid editor factory.
  * Generates an editor that is composed of multiple editors for given columns.

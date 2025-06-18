@@ -1,5 +1,5 @@
-import type { AutoSize, CellMenuOption, CustomTooltipOption, Editor, EditorConstructor, EditorValidator, Formatter, FormatterResultWithHtml, FormatterResultWithText, GroupTotalsFormatter, Grouping, HeaderButtonsOrMenu } from './index';
-import type { SlickGrid } from '../slick.grid';
+import type { AutoSize, CellMenuOption, CustomTooltipOption, Editor, EditorConstructor, EditorValidator, Formatter, FormatterResultWithHtml, FormatterResultWithText, GroupTotalsFormatter, Grouping, HeaderButtonsOrMenu } from './index.js';
+import type { SlickGrid } from '../slick.grid.js';
 type PathsToStringProps<T> = T extends string | number | boolean | Date ? [] : {
     [K in Extract<keyof T, string>]: [K, ...PathsToStringProps<T[K]>];
 }[Extract<keyof T, string>];
@@ -105,6 +105,8 @@ export interface Column<TData = any> {
     rerenderOnResize?: boolean;
     /** Is the column resizable, can we make it wider/thinner? A resize cursor will show on the right side of the column when enabled. */
     resizable?: boolean;
+    /** Row span in cell count or use `*` to span across the entire row */
+    rowspan?: number;
     /** Is the column selectable? Goes with grid option "enableCellNavigation: true". */
     selectable?: boolean;
     /** Is the column sortable? Goes with grid option "enableSorting: true". */

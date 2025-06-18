@@ -31,8 +31,8 @@ describe('Example - Checkbox Row Select', () => {
     });
 
     it('should be able to select first 2 rows and now expect 3 rows selected', () => {
-      cy.get(`.slick-row[style="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(0) input[type=checkbox]`).click();
-      cy.get(`.slick-row[style="top: ${GRID_ROW_HEIGHT * 1}px;"] > .slick-cell:nth(0) input[type=checkbox]`).click();
+      cy.get(`.slick-row[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(0) input[type=checkbox]`).click();
+      cy.get(`.slick-row[style*="top: ${GRID_ROW_HEIGHT * 1}px;"] > .slick-cell:nth(0) input[type=checkbox]`).click();
 
       cy.get('#myGrid')
         .find('.slick-cell-checkboxsel input:checked')
@@ -43,7 +43,7 @@ describe('Example - Checkbox Row Select', () => {
       cy.get('#unselectRow5')
         .click();
 
-      cy.get(`.slick-row[style="top: ${GRID_ROW_HEIGHT * 4}px;"] > .slick-cell:nth(0) input[type=checkbox]`)
+      cy.get(`.slick-row[style*="top: ${GRID_ROW_HEIGHT * 4}px;"] > .slick-cell:nth(0) input[type=checkbox]`)
         .should('not.be.checked');
 
       cy.get('#myGrid')
@@ -93,6 +93,23 @@ describe('Example - Checkbox Row Select', () => {
 
       cy.get('#myGrid [data-id=_checkbox_selector] input[type=checkbox]')
         .should('exist');
+    });
+
+    it('should expect Select All checkbox to still be rendered even after hiding any of the column', () => {
+      cy.get('#myGrid .slick-header-columns .slick-header-column:nth(3)')
+        .trigger('mouseover')
+        .trigger('contextmenu')
+        .invoke('show');
+
+      cy.get('.slick-columnpicker')
+        .find('.slick-columnpicker-list')
+        .children('li:nth-child(5)')
+        .children('label')
+        .should('contain', 'D')
+        .click();
+
+      cy.get('#myGrid [data-id=_checkbox_selector] input[type=checkbox]')
+        .should('be.visible');
     });
   });
 });

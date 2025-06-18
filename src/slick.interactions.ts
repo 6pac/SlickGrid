@@ -1,5 +1,5 @@
-import type { DragItem, DragPosition, ClassDetectElement, DraggableOption, MouseWheelOption, ResizableOption } from './models/index';
-import { Utils as Utils_ } from './slick.core';
+import type { DragItem, DragPosition, ClassDetectElement, DraggableOption, MouseWheelOption, ResizableOption } from './models/index.js';
+import { Utils as Utils_ } from './slick.core.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
@@ -94,7 +94,7 @@ export function Draggable(options: DraggableOption) {
 
         matchClassTag = '';
         if (options.dragFromClassDetectArr) {
-          for (let o: ClassDetectElement, i: number = 0; i < options.dragFromClassDetectArr.length; i++) {
+          for (let o: ClassDetectElement, i = 0; i < options.dragFromClassDetectArr.length; i++) {
             o = options.dragFromClassDetectArr[i];
 
             if ((o.id && element.id === o.id) || (o.cssSelector && element.matches(o.cssSelector))) {

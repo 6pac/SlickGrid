@@ -1,4 +1,4 @@
-import type { Column, Editor, EditorArguments, EditorValidationResult, ElementPosition, GridOption } from './models/index';
+import type { Column, Editor, EditorArguments, EditorValidationResult, ElementPosition, GridOption } from './models/index.js';
 /***
  * Contains basic SlickGrid editors.
  * @module Editors

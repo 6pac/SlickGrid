@@ -1,5 +1,5 @@
-import type { MenuItem } from './menuItem.interface';
-import type { MenuOptionItemCallbackArgs } from './menuOptionItemCallbackArgs.interface';
+import type { MenuItem } from './menuItem.interface.js';
+import type { MenuOptionItemCallbackArgs } from './menuOptionItemCallbackArgs.interface.js';
 
 export interface MenuOptionItem extends MenuItem {
   /** An option returned by the onOptionSelected (or action) event callback handler. */

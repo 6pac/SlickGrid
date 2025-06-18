@@ -1,6 +1,6 @@
-import type { SlickCellRangeSelector } from '../plugins/slick.cellrangeselector';
-import type { UsabilityOverrideFn } from './usabilityOverrideFn.type';
-import type { SlickGrid } from '../slick.grid';
+import type { SlickCellRangeSelector } from '../plugins/slick.cellrangeselector.js';
+import type { UsabilityOverrideFn } from './usabilityOverrideFn.type.js';
+import type { SlickGrid } from '../slick.grid.js';
 
 export interface RowMoveManagerOption {
   /**

@@ -1,8 +1,8 @@
-import { SlickEvent as SlickEvent_, type SlickEventData, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_, Utils as Utils_, CellSelectionMode as CellSelectionMode_ } from '../slick.core';
-import { Draggable as Draggable_ } from '../slick.interactions';
-import { SlickCellRangeDecorator as SlickCellRangeDecorator_ } from './slick.cellrangedecorator';
-import type { CellRangeSelectorOption, DragPosition, DragRange, DragRowMove, GridOption, MouseOffsetViewport, OnScrollEventArgs, SlickPlugin } from '../models/index';
-import type { SlickGrid } from '../slick.grid';
+import { CellSelectionMode as CellSelectionMode_, SlickEvent as SlickEvent_, type SlickEventData, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core.js';
+import { Draggable as Draggable_ } from '../slick.interactions.js';
+import { SlickCellRangeDecorator as SlickCellRangeDecorator_ } from './slick.cellrangedecorator.js';
+import type { CellRangeSelectorOption, DragPosition, DragRange, DragRowMove, GridOption, MouseOffsetViewport, OnScrollEventArgs, SlickPlugin } from '../models/index.js';
+import type { SlickGrid } from '../slick.grid.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
@@ -148,7 +148,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
       }
     }
 
-console.log('CellRangeSelector.handleDragInit() _activeViewport is ' + (this._activeViewport ? 'defined' : 'undefined'));
+    console.log('CellRangeSelector.handleDragInit() _activeViewport is ' + (this._activeViewport ? 'defined' : 'undefined'));
 
     // prevent the grid from cancelling drag'n'drop by default
     e.stopImmediatePropagation();
@@ -158,8 +158,8 @@ console.log('CellRangeSelector.handleDragInit() _activeViewport is ' + (this._ac
   protected handleDragStart(e: SlickEventData, dd: DragRowMove) {
     console.log('CellRangeSelector.handleDragStart() _activeViewport is ' + (this._activeViewport ? 'defined' : 'undefined'));
     if (!this._activeViewport) {
-      var x=1;
-     }
+      // const x = 1;
+    }
 
     const cell = this._grid.getCellFromEvent(e);
     if (cell && this.onBeforeCellRangeSelected.notify(cell).getReturnValue() !== false && this._grid.canCellBeSelected(cell.row, cell.cell)) {
@@ -219,9 +219,9 @@ console.log('CellRangeSelector.handleDragInit() _activeViewport is ' + (this._ac
 
   protected getMouseOffsetViewport(e: MouseEvent | TouchEvent, dd: DragRowMove): MouseOffsetViewport {
     console.log('Drag.getMouseOffsetViewport() _activeViewport is ' + (this._activeViewport ? 'defined' : 'undefined'));
-if (!this._activeViewport) {
- var x=1;
-}
+    if (!this._activeViewport) {
+      // const x = 1;
+    }
 
     const targetEvent: MouseEvent | Touch = (e as TouchEvent)?.touches?.[0] ?? e;
     const viewportLeft = this._activeViewport.scrollLeft;
@@ -385,8 +385,12 @@ if (!this._activeViewport) {
       const range = new SlickRange(dd.range.start.row ?? 0, dd.range.start.cell ?? 0, end.row, end.cell);
       this._decorator.show(range);
       this.onCellRangeSelecting.notify({
+<<<<<<< HEAD
         range, selectionMode: '', 
         allowAutoEdit: false
+=======
+        range,
+>>>>>>> a291091db3326d5d86c0e299e1ef3e188ba99ec0
       });
     }
   }

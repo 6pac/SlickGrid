@@ -29,6 +29,7 @@
       __publicField(this, "_droppableInstance");
       __publicField(this, "_dropzonePlaceholder");
       __publicField(this, "_groupToggler");
+      __publicField(this, "_isInitialized", !1);
       __publicField(this, "_options");
       __publicField(this, "_defaults", {
         dropPlaceHolderText: "Drop a column header here to group by the column",
@@ -48,7 +49,11 @@
      * Initialize plugin.
      */
     init(grid) {
-      this._grid = grid, Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), this._gridUid = this._grid.getUID(), this._gridColumns = this._grid.getColumns(), this._dataView = this._grid.getData(), this._dropzoneElm = this._grid.getTopHeaderPanel() || this._grid.getPreHeaderPanel(), this._dropzoneElm.classList.add("slick-dropzone");
+      if (this._grid = grid, Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), this._gridUid = this._grid.getUID(), this._gridColumns = this._grid.getColumns(), this._dataView = this._grid.getData(), this._dropzoneElm = this._grid.getTopHeaderPanel() || this._grid.getPreHeaderPanel(), !this._dropzoneElm)
+        throw new Error(
+          "[Slickgrid] Draggable Grouping requires the pre-header to be created and shown for the plugin to work correctly (use `createPreHeaderPanel` and `showPreHeaderPanel`)."
+        );
+      this._dropzoneElm.classList.add("slick-dropzone");
       let dropPlaceHolderText = this._options.dropPlaceHolderText || "Drop a column header here to group by the column";
       this._dropzonePlaceholder = document.createElement("div"), this._dropzonePlaceholder.className = "slick-placeholder", this._dropzonePlaceholder.textContent = dropPlaceHolderText, this._groupToggler = document.createElement("div"), this._groupToggler.className = "slick-group-toggle-all expanded", this._groupToggler.style.display = "none", this._dropzoneElm.appendChild(this._dropzonePlaceholder), this._dropzoneElm.appendChild(this._groupToggler), this.setupColumnDropbox(), this._handler.subscribe(this._grid.onHeaderCellRendered, (_e, args) => {
         let column = args.column, node = args.node;
@@ -94,13 +99,14 @@
         //   // NOTE: need to disable for now since it also blocks the column reordering
         //   return this.columnsGroupBy.some(c => c.id === target.getAttribute('data-id'));
         // },
-        onStart: () => {
-          dropzoneElm.classList.add("slick-dropzone-hover"), dropzoneElm.classList.add("slick-dropzone-placeholder-hover");
+        onStart: (e) => {
+          e.item.classList.add("slick-header-column-active"), dropzoneElm.classList.add("slick-dropzone-hover"), dropzoneElm.classList.add("slick-dropzone-placeholder-hover");
           let draggablePlaceholderElm = dropzoneElm.querySelector(".slick-placeholder");
           draggablePlaceholderElm && (draggablePlaceholderElm.style.display = "inline-block"), dropzoneElm.querySelectorAll(".slick-dropped-grouping").forEach((droppedGroupingElm) => droppedGroupingElm.style.display = "none"), groupTogglerElm && (groupTogglerElm.style.display = "none");
         },
         onEnd: (e) => {
           var _a, _b, _c, _d, _e;
+          e.item.classList.remove("slick-header-column-active");
           let draggablePlaceholderElm = dropzoneElm.querySelector(".slick-placeholder");
           dropzoneElm.classList.remove("slick-dropzone-hover"), draggablePlaceholderElm == null || draggablePlaceholderElm.classList.remove("slick-dropzone-placeholder-hover"), this._dropzonePlaceholder && (this._dropzonePlaceholder.style.display = "none"), draggablePlaceholderElm && ((_a = draggablePlaceholderElm.parentElement) == null || _a.classList.remove("slick-dropzone-placeholder-hover"));
           let droppedGroupingElms = dropzoneElm.querySelectorAll(".slick-dropped-grouping");
@@ -118,7 +124,7 @@
           setColumns.call(grid, finalReorderedColumns), trigger.call(grid, grid.onColumnsReordered, { grid, impactedColumns: finalReorderedColumns }), e.stopPropagation(), setupColumnResize.call(grid);
         }
       };
-      return this._sortableLeftInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-left`), sortableOptions), this._sortableRightInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-right`), sortableOptions), {
+      return this._sortableLeftInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-left`), sortableOptions), this._sortableRightInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-right`), sortableOptions), this._options.initialGroupBy && !this._isInitialized && queueMicrotask(() => this.setDroppedGroups(this._options.initialGroupBy)), this._isInitialized = !0, {
         sortableLeftInstance: this._sortableLeftInstance,
         sortableRightInstance: this._sortableRightInstance
       };

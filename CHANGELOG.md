@@ -2,6 +2,59 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.15.3](https://github.com/6pac/SlickGrid/compare/5.15.2...5.15.3) (2025-05-09)
+
+### Bug Fixes
+
+* autoHeight should add preHeader height when enabled, fixes [#1122](https://github.com/6pac/SlickGrid/issues/1122) ([#1123](https://github.com/6pac/SlickGrid/issues/1123)) ([c8f6c27](https://github.com/6pac/SlickGrid/commit/c8f6c27de80eb218dd1d1458cd4c6dc26fdbdcdb))
+* incorrect grid container box size calculation border not showing ([#1124](https://github.com/6pac/SlickGrid/issues/1124)) ([699e337](https://github.com/6pac/SlickGrid/commit/699e3370c9488bc6157e855617857dc0941c4a13))
+
+## [5.15.2](https://github.com/6pac/SlickGrid/compare/5.15.1...5.15.2) (2025-04-05)
+
+### Bug Fixes
+
+* Select All checkbox shouldn't disappear w/column toggle, fix [#1119](https://github.com/6pac/SlickGrid/issues/1119) ([#1120](https://github.com/6pac/SlickGrid/issues/1120)) ([23a9557](https://github.com/6pac/SlickGrid/commit/23a955737df6bf007821ca8d9e45dd0d357ce839))
+* shift + a should not select all cells upwards ([#1118](https://github.com/6pac/SlickGrid/issues/1118)) ([d7ae402](https://github.com/6pac/SlickGrid/commit/d7ae40228415f1210c5ec06fbbaa50234cf1745c))
+
+## [5.15.1](https://github.com/6pac/SlickGrid/compare/5.15.0...5.15.1) (2025-03-19)
+
+### Bug Fixes
+
+* expose `remapAllColumnsRowSpan()` to fix [#1114](https://github.com/6pac/SlickGrid/issues/1114) ([#1115](https://github.com/6pac/SlickGrid/issues/1115)) ([2004591](https://github.com/6pac/SlickGrid/commit/2004591873629c72b26037539c7bfd205333ff4d))
+* opening Header Menu shouldn't add Active Header Cell ([#1102](https://github.com/6pac/SlickGrid/issues/1102)) ([4ad285b](https://github.com/6pac/SlickGrid/commit/4ad285b4d46432ded043a37b46f91f2495db7876))
+
+### Features
+
+* add `initialGroupBy` to Draggable Grouping ([878b6cd](https://github.com/6pac/SlickGrid/commit/878b6cdc39f04340e6a2c930b8e3f7885ee8ba2e))
+* add `onBeforeRemoveCachedRow` SlickGrid event ([#1113](https://github.com/6pac/SlickGrid/issues/1113)) ([68c773d](https://github.com/6pac/SlickGrid/commit/68c773df04c455ee28fce3596e34389ad0c876fc))
+
+# [5.15.0](https://github.com/6pac/SlickGrid/compare/5.14.3...5.15.0) (2025-01-18)
+
+### Bug Fixes
+
+* add "frozen" class to all slick-pane for easier styling ([#1089](https://github.com/6pac/SlickGrid/issues/1089)) ([967c9d8](https://github.com/6pac/SlickGrid/commit/967c9d8caeb05b636343f2e1181285177eb92722))
+* add missing key shortcuts for grid navigation & cell selections ([#1093](https://github.com/6pac/SlickGrid/issues/1093)) ([91e7c8b](https://github.com/6pac/SlickGrid/commit/91e7c8b37949b7b75d01be76f362d27386adfc58))
+* never activate more than 1 cell, clear any previous active CSS class ([#1100](https://github.com/6pac/SlickGrid/issues/1100)) ([7ff7170](https://github.com/6pac/SlickGrid/commit/7ff71701c6171ed90e5d12978ea873841ecb87ce))
+* remove "active" CSS classes before navigating to another cell ([#1095](https://github.com/6pac/SlickGrid/issues/1095)) ([8a8d3f4](https://github.com/6pac/SlickGrid/commit/8a8d3f41b164a2ee5d2d18a1c3feae2316c3850d))
+* shift+mousewheel should scroll horizontally, fixes [#1094](https://github.com/6pac/SlickGrid/issues/1094) ([#1096](https://github.com/6pac/SlickGrid/issues/1096)) ([5003565](https://github.com/6pac/SlickGrid/commit/5003565a12d578b81aa30b04b785b0b33186bff3))
+
+### Features
+
+* add Custom Global Item Data Provider, closes [#262](https://github.com/6pac/SlickGrid/issues/262) ([#1097](https://github.com/6pac/SlickGrid/issues/1097)) ([5be6fa0](https://github.com/6pac/SlickGrid/commit/5be6fa02f9a18a34715650c5829a410e5eb01142))
+* add final rowspan implementation ([#1101](https://github.com/6pac/SlickGrid/issues/1101)) ([2e65fa8](https://github.com/6pac/SlickGrid/commit/2e65fa8da2abcff5e279a0cf52afab6a537ba8d9))
+
+# Change Log
+
+All notable changes to this project will be documented in this file.
+
+See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
+
+## [5.14.3](https://github.com/6pac/SlickGrid/compare/5.14.2...5.14.3) (2024-11-28)
+
+### Bug Fixes
+
+* ensure DOM alterations during initialization are always cleaned up when there are hidden parents and forceFitColumns=true ([#1085](https://github.com/6pac/SlickGrid/issues/1085)) ([c32fe5a](https://github.com/6pac/SlickGrid/commit/c32fe5a0401fbc9e11aa861328eb0163d78f8ad7))
+
 ## [5.14.2](https://github.com/6pac/SlickGrid/compare/5.14.1...5.14.2) (2024-11-16)
 
 ### Bug Fixes
