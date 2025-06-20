@@ -59,7 +59,7 @@
 <script src="../dist/browser/plugins/slick.cellrangedecorator.js"></script>
 <script src="../dist/browser/plugins/slick.cellrangeselector.js"></script>
 <script src="../dist/browser/plugins/slick.cellcopymanager.js"></script>
-<script src="../dist/browser/plugins/slick.cellselectionmodel.js"></script>
+<script src="../dist/browser/plugins/slick.hybridselectionmodel.js"></script>
 
 <script>
   var grid;
@@ -101,9 +101,10 @@
 
     grid = new Slick.Grid("#myGrid", data, columns, options);
 
-    cellSelectionModel = new Slick.CellSelectionModel();
-    grid.setSelectionModel(cellSelectionModel);
+    grid.setSelectionModel(new Slick.HybridSelectionModel({ selectActiveRow: true, rowSelectColumnIdArr: ['selector'] }));
     grid.registerPlugin(new Slick.AutoTooltips());
+
+    grid.onDragReplaceCells.subscribe(grid.defaultCopyDraggedCellRange);
 
     // set keyboard focus on the grid
     grid.getCanvasNode().focus();

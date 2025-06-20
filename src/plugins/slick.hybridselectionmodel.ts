@@ -81,20 +81,11 @@ export class SlickHybridSelectionModel {
     if (Draggable === undefined) {
       throw new Error('Slick.Draggable is undefined, make sure to import "slick.interactions.js"');
     }
-<<<<<<< HEAD
     
     this._grid = grid;
     Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
   
     if (!this._selector && this._options?.dragToSelect) {
-=======
-
-    this._options = Utils.extend(true, {}, this._defaults, this._options);
-    this._grid = grid;
-    Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
-
-    if (!this._selector && this._options.dragToSelect) {
->>>>>>> a291091db3326d5d86c0e299e1ef3e188ba99ec0
       if (!SlickCellRangeDecorator) {
         throw new Error('Slick.CellRangeDecorator is required when option dragToSelect set to true');
       }
@@ -112,7 +103,6 @@ export class SlickHybridSelectionModel {
     this._grid.onClick.subscribe(this.handleClick.bind(this));
     if (this._selector) {
       grid.registerPlugin(this._selector);
-      this._selector.onCellRangeSelecting.subscribe(this.handleCellRangeSelected.bind(this));
       this._selector.onCellRangeSelected.subscribe(this.handleCellRangeSelected.bind(this));
       this._selector.onBeforeCellRangeSelected.subscribe(this.handleBeforeCellRangeSelected.bind(this));
     }
@@ -122,8 +112,7 @@ export class SlickHybridSelectionModel {
     this._grid.onActiveCellChanged.unsubscribe(this.handleActiveCellChange.bind(this));
     this._grid.onKeyDown.unsubscribe(this.handleKeyDown.bind(this));
     this._grid.onClick.unsubscribe(this.handleClick.bind(this));
-    this._selector.onCellRangeSelecting.unsubscribe(this.handleCellRangeSelected.bind(this));
-    this._selector.onCellRangeSelected.unsubscribe(this.handleCellRangeSelected.bind(this));
+     this._selector.onCellRangeSelected.unsubscribe(this.handleCellRangeSelected.bind(this));
     this._selector.onBeforeCellRangeSelected.unsubscribe(this.handleBeforeCellRangeSelected.bind(this));
     this._grid.unregisterPlugin(this._selector);
     this._selector?.destroy();
