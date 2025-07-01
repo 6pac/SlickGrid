@@ -17,6 +17,7 @@ import type {
   SlickRange,
   SlickCopyRange,
   Utils,
+  SelectionUtils,
   ValueFilterMode,
   WidthEvalMode,
 } from './slick.core.js';
@@ -119,6 +120,7 @@ declare global {
     RowSelectionModel: typeof SlickRowSelectionModel,
     State: typeof SlickState,
     Utils: typeof Utils,
+    SelectionUtils: typeof SelectionUtils,
     ValueFilterMode: typeof ValueFilterMode,
     WidthEvalMode: typeof WidthEvalMode,
   };

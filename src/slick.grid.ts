@@ -90,6 +90,7 @@ import {
   SlickEventData as SlickEventData_,
   SlickRange as SlickRange_,
   Utils as Utils_,
+  SelectionUtils as SelectionUtils_,
   ValueFilterMode as ValueFilterMode_,
   WidthEvalMode as WidthEvalMode_,
   DragExtendHandle as DragExtendHandle_,
@@ -113,6 +114,7 @@ const RowSelectionMode = IIFE_ONLY ? Slick.RowSelectionMode : RowSelectionMode_;
 const CellSelectionMode = IIFE_ONLY ? Slick.CellSelectionMode : CellSelectionMode_;
 const ValueFilterMode = IIFE_ONLY ? Slick.ValueFilterMode : ValueFilterMode_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
+const SelectionUtils = IIFE_ONLY ? Slick.SelectionUtils : Utils_;
 const WidthEvalMode = IIFE_ONLY ? Slick.WidthEvalMode : WidthEvalMode_;
 const Draggable = IIFE_ONLY ? Slick.Draggable : Draggable_;
 const MouseWheel = IIFE_ONLY ? Slick.MouseWheel : MouseWheel_;
@@ -3176,153 +3178,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     });
   }
 
-<<<<<<< HEAD
-  /** Get sorted columns **/
-  getSortColumns(): ColumnSort[] {
-    return this.sortColumns;
-  }
-
-  defaultCopyDraggedCellRange(e: SlickEventData_, args: OnDragReplaceCellsEventArgs) {
-      let fromRowOffset = 0;
-      let fromCellOffset = 0;
-      for (var i=0; i < args.copyToRange.rowCount ; i++){
-        let toRow = this.getDataItem(args.copyToRange.fromRow + i);
-        let fromRow = this.getDataItem(args.prevSelectedRange.fromRow + fromRowOffset);
-        fromCellOffset = 0;
-        
-        for (let j = 0; j < args.copyToRange.cellCount; j++) {
-          let toColDef = this.columns[args.copyToRange.fromCell + j];
-          let fromColDef = this.columns[args.prevSelectedRange.fromCell + fromCellOffset];
-
-          if (!toColDef.hidden && !fromColDef.hidden) {
-            let val = fromRow[fromColDef.field as keyof TData];
-            if (this._options.dataItemColumnValueExtractor) {
-              val = this._options.dataItemColumnValueExtractor(fromRow, fromColDef);
-            }
-            toRow[toColDef.field as keyof TData] = val;
-          }
-
-          fromCellOffset++;
-          if (fromCellOffset >= args.copyToRange.cellCount) fromCellOffset = 0;
-        }
-                  
-        fromRowOffset++;
-        if (fromRowOffset >= args.copyToRange.rowCount) fromRowOffset = 0;
-      } 
-  }
-
-   protected handleSelectedRangesChanged(e: SlickEventData_, ranges: SlickRange_[]) {
-    const ne = e.getNativeEvent<CustomEvent>();
-    const selectionMode = ne?.detail?.selectionMode ?? '';
-
-    // drag and replace functionality
-    var prevSelectedRanges = this.selectedRanges.slice(0);
-    this.selectedRanges = ranges;
-
-    if (selectionMode === CellSelectionMode.Replace
-      && prevSelectedRanges && prevSelectedRanges.length === 1
-      && this.selectedRanges && this.selectedRanges.length === 1) {
-      var prevSelectedRange = prevSelectedRanges[0];
-
-      let prevSelectedRange_rowCount = prevSelectedRange.toRow - prevSelectedRange.fromRow + 1;
-      let prevSelectedRange_cellCount = prevSelectedRange.toCell - prevSelectedRange.fromCell + 1;
-
-      var selectedRange = this.selectedRanges[0];
-      let selectedRange_rowCount = selectedRange.toRow - selectedRange.fromRow + 1;
-      let selectedRange_cellCount = selectedRange.toCell - selectedRange.fromCell + 1;
-
-      //   |---0----|---1----|---2----|---3----|---4----|---5----|
-      // 0 |        |        |        |     ^  |        |        | 
-      //   |--------|--------|--------|--------|--------|--------|
-      // 1 |        |        |        |        |        |        | 
-      //   |--------|--------|--------|--------|--------|--------|
-      // 2 |        |        |   1    |   2    |        |        | 
-      //   |--------|--------|--------|--------|--------|--------|
-      // 3 |   <    |        |   4    |   5   x|        |    >   | 
-      //   |--------|--------|--------|--------|--------|--------|
-      // 4 |        |        |        |        |        |        | 
-      //   |--------|--------|--------|--------|--------|--------|
-      // 5 |        |        |        |    v   |        |        | 
-      //   |--------|--------|--------|--------|--------|--------|
-
-      // check range has expanded
-      if (selectedRange_rowCount >= prevSelectedRange_rowCount
-        && selectedRange_cellCount >= prevSelectedRange_cellCount) {
-        let copyUp = selectedRange.fromRow < prevSelectedRange.fromRow;
-        //var copyLeft = selectedRange.fromCell < prevSelectedRange.fromCell;
-
-        let copyToRange = new SlickCopyRange(
-            copyUp ? selectedRange.fromRow : prevSelectedRange.toRow + 1
-          , selectedRange.fromCell // copyLeft ? selectedRange.fromCell : prevSelectedRange.toCell + 1
-          , selectedRange_rowCount - prevSelectedRange_rowCount
-          , selectedRange_cellCount // - prevSelectedRange_cellCount
-        );
-
-        this.trigger(this.onDragReplaceCells, { prevSelectedRange: prevSelectedRange, selectedRange: selectedRange, copyToRange: copyToRange });
-
-        this.invalidate();
-      }
-    }
-
-    const previousSelectedRows = this.selectedRows.slice(0); // shallow copy previously selected rows for later comparison
-
-    this.selectionBottomRow = -1;
-    this.selectionRightCell = -1;
-    this.dragReplaceEl.removeEl();
-
-    this.selectedRows = [];
-    const hash: CssStyleHash = {};
-    for (let i = 0; i < ranges.length; i++) {
-      for (let j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
-        if (!hash[j]) {  // prevent duplicates
-          this.selectedRows.push(j);
-          hash[j] = {};
-        }
-        for (let k = ranges[i].fromCell; k <= ranges[i].toCell; k++) {
-          if (this.canCellBeSelected(j, k)) {
-            hash[j][this.columns[k].id] = this._options.selectedCellCssClass;
-          }
-        }
-      }
-      if (this.selectionBottomRow < ranges[i].toRow) this.selectionBottomRow = ranges[i].toRow;
-      if (this.selectionRightCell < ranges[i].toCell) this.selectionRightCell = ranges[i].toCell;
-    }
-
-    this.setCellCssStyles(this._options.selectedCellCssClass || '', hash);
-
-    if (this.selectionBottomRow >= 0 && this.selectionRightCell >= 0) {
-      var lowerRightCell = this.getCellNode(this.selectionBottomRow, this.selectionRightCell)
-      this.dragReplaceEl.createEl(lowerRightCell);
-    }
-
-    if (this.simpleArraysNotEqual(previousSelectedRows, this.selectedRows)) {
-      const caller = ne?.detail?.caller ?? 'click';
-      // Use Set for faster performance
-      const selectedRowsSet = new Set(this.getSelectedRows());
-      const previousSelectedRowsSet = new Set(previousSelectedRows);
-
-      const newSelectedAdditions = Array.from(selectedRowsSet).filter(i => !previousSelectedRowsSet.has(i));
-      const newSelectedDeletions = Array.from(previousSelectedRowsSet).filter(i => !selectedRowsSet.has(i));
-
-      this.trigger(this.onSelectedRowsChanged, {
-        rows: this.getSelectedRows(),
-        previousSelectedRows,
-        caller,
-        changedSelectedRows: newSelectedAdditions,
-        changedUnselectedRows: newSelectedDeletions
-      }, e);
-    }
-  }
-
-  // compare 2 simple arrays (integers or strings only, do not use to compare object arrays)
-  simpleArraysNotEqual(arr1: any[], arr2: any[]) {
-    return Array.isArray(arr1) && Array.isArray(arr2) && arr2.sort().toString() !== arr1.sort().toString();
-  }
-
-  /** Returns an array of column definitions. */
-=======
   /** Returns the current array of column definitions. */
->>>>>>> a291091db3326d5d86c0e299e1ef3e188ba99ec0
   getColumns() {
     return this.columns;
   }
@@ -4056,68 +3912,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       && prevSelectedRanges && prevSelectedRanges.length === 1
       && this.selectedRanges && this.selectedRanges.length === 1) {
       const prevSelectedRange = prevSelectedRanges[0];
-
-      const prevSelectedRange_rowCount = prevSelectedRange.toRow - prevSelectedRange.fromRow + 1;
-      const prevSelectedRange_cellCount = prevSelectedRange.toCell - prevSelectedRange.fromCell + 1;
-
       const selectedRange = this.selectedRanges[0];
-      const selectedRange_rowCount = selectedRange.toRow - selectedRange.fromRow + 1;
-      const selectedRange_cellCount = selectedRange.toCell - selectedRange.fromCell + 1;
-
-      //   |---0----|---1----|---2----|---3----|---4----|---5----|
-      // 0 |        |        |        |     ^  |        |        |
-      //   |--------|--------|--------|--------|--------|--------|
-      // 1 |        |        |        |        |        |        |
-      //   |--------|--------|--------|--------|--------|--------|
-      // 2 |        |        |   1    |   2    |        |        |
-      //   |--------|--------|--------|--------|--------|--------|
-      // 3 |   <    |        |   4    |   5   x|        |    >   |
-      //   |--------|--------|--------|--------|--------|--------|
-      // 4 |        |        |        |        |        |        |
-      //   |--------|--------|--------|--------|--------|--------|
-      // 5 |        |        |        |    v   |        |        |
-      //   |--------|--------|--------|--------|--------|--------|
 
       // check range has expanded
-      if (selectedRange_rowCount >= prevSelectedRange_rowCount
-        && selectedRange_cellCount >= prevSelectedRange_cellCount) {
-        const copyUp = selectedRange.fromRow < prevSelectedRange.fromRow;
-        //var copyLeft = selectedRange.fromCell < prevSelectedRange.fromCell;
-
-        const copyToRange = {
-          fromRow: copyUp ? selectedRange.fromRow : prevSelectedRange.toRow + 1
-          , rowCount: selectedRange_rowCount - prevSelectedRange_rowCount
-          , fromCell: selectedRange.fromCell // copyLeft ? selectedRange.fromCell : prevSelectedRange.toCell + 1
-          , cellCount: selectedRange_cellCount // - prevSelectedRange_cellCount
-        };
-
-        let fromRowOffset = 0;
-        let fromCellOffset = 0;
-        for (let i = 0; i < copyToRange.rowCount; i++) {
-          const toRow = this.getDataItem(copyToRange.fromRow + i);
-          const fromRow = this.getDataItem(prevSelectedRange.fromRow + fromRowOffset);
-          fromCellOffset = 0;
-
-          for (let j = 0; j < copyToRange.cellCount; j++) {
-            const toColDef = this.columns[copyToRange.fromCell + j];
-            const fromColDef = this.columns[prevSelectedRange.fromCell + fromCellOffset];
-
-            if (!toColDef.hidden && !fromColDef.hidden) {
-              let val = fromRow[fromColDef.field as keyof TData];
-              if (this._options.dataItemColumnValueExtractor) {
-                val = this._options.dataItemColumnValueExtractor(fromRow, fromColDef);
-              }
-              toRow[toColDef.field as keyof TData] = val;
-            }
-
-            fromCellOffset++;
-            if (fromCellOffset >= prevSelectedRange_cellCount) { fromCellOffset = 0; }
-          }
-
-          fromRowOffset++;
-          if (fromRowOffset >= prevSelectedRange_rowCount) { fromRowOffset = 0; }
-        }
-        this.invalidate();
+      if (Slick.SelectionUtils.copyRangeIsLarger(prevSelectedRange, selectedRange)) {      
+          this.trigger(this.onDragReplaceCells, { prevSelectedRange: prevSelectedRange, selectedRange: selectedRange });
+          this.invalidate();
       }
     }
 
@@ -4235,10 +4035,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @returns {boolean} - The result of the event trigger or false if propagation was not stopped.
    */
   protected handleDragStart(e: DragEvent, dd: DragPosition) {
-    const cell = this.getCellFromEvent(e);
+   const cell = this.getCellFromEvent(e);
     if (!cell || !this.cellExists(cell.row, cell.cell)) {
       return false;
     }
+
+    if (this.currentEditor) { this.getEditorLock().commitCurrentEdit(); }
 
     const retval = this.trigger(this.onDragStart, dd, e);
     if (retval.isImmediatePropagationStopped()) {
@@ -4255,8 +4057,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   // Called when a drag operation completes; it triggers the onDragEnd event with the current drag position and event.
   protected handleDragEnd(e: DragEvent, dd: DragPosition) {
-    console.log('SlickGrid.handleDragEnd ' + dd.matchClassTag);
-
     if (dd.matchClassTag === 'dragReplaceHandle') {
       this.dragReplaceEl.removeEl();
     }
@@ -7740,104 +7540,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       Utils.height(div, test);
       const height = Utils.height(div);
 
-<<<<<<< HEAD
-    if (this.currentEditor) { this.getEditorLock().commitCurrentEdit(); }
-
-    const retval = this.trigger(this.onDragStart, dd, e);
-    if (retval.isImmediatePropagationStopped()) {
-      return retval.getReturnValue();
-    }
-
-    return false;
-  }
-
-  protected handleDrag(e: DragEvent, dd: DragPosition) {
-    console.log('SlickGrid.handleDrag ' + dd.matchClassTag);
-
-    return this.trigger(this.onDrag, dd, e).getReturnValue();
-  }
-
-  protected handleDragEnd(e: DragEvent, dd: DragPosition) {
-    console.log('SlickGrid.handleDragEnd ' + dd.matchClassTag);
-
-    if (dd.matchClassTag === 'dragReplaceHandle') {
-      this.dragReplaceEl.removeEl();
-    }
-    this.trigger(this.onDragEnd, dd, e);
-  }
-
-  protected handleKeyDown(e: KeyboardEvent & { originalEvent: Event; }) {
-    const retval = this.trigger(this.onKeyDown, { row: this.activeRow, cell: this.activeCell }, e);
-    let handled: boolean | undefined | void = retval.isImmediatePropagationStopped();
-
-    if (!handled) {
-      if (!e.shiftKey && !e.altKey) {
-        if (this._options.editable && this.currentEditor?.keyCaptureList) {
-          if (this.currentEditor.keyCaptureList.indexOf(e.which) > -1) {
-            return;
-          }
-        }
-        if (e.which === keyCode.HOME) {
-          handled = (e.ctrlKey) ? this.navigateTop() : this.navigateRowStart();
-        } else if (e.which === keyCode.END) {
-          handled = (e.ctrlKey) ? this.navigateBottom() : this.navigateRowEnd();
-        }
-      }
-    }
-    if (!handled) {
-      if (!e.shiftKey && !e.altKey && !e.ctrlKey) {
-        // editor may specify an array of keys to bubble
-        if (this._options.editable && this.currentEditor?.keyCaptureList) {
-          if (this.currentEditor.keyCaptureList.indexOf(e.which) > -1) {
-            return;
-          }
-        }
-        if (e.which === keyCode.ESCAPE) {
-          if (!this.getEditorLock()?.isActive()) {
-            return; // no editing mode to cancel, allow bubbling and default processing (exit without cancelling the event)
-          }
-          this.cancelEditAndSetFocus();
-        } else if (e.which === keyCode.PAGE_DOWN) {
-          this.navigatePageDown();
-          handled = true;
-        } else if (e.which === keyCode.PAGE_UP) {
-          this.navigatePageUp();
-          handled = true;
-        } else if (e.which === keyCode.LEFT) {
-          handled = this.navigateLeft();
-        } else if (e.which === keyCode.RIGHT) {
-          handled = this.navigateRight();
-        } else if (e.which === keyCode.UP) {
-          handled = this.navigateUp();
-        } else if (e.which === keyCode.DOWN) {
-          handled = this.navigateDown();
-        } else if (e.which === keyCode.TAB) {
-          handled = this.navigateNext();
-        } else if (e.which === keyCode.ENTER) {
-          if (this._options.editable) {
-            if (this.currentEditor) {
-              // adding new row
-              if (this.activeRow === this.getDataLength()) {
-                this.navigateDown();
-              } else {
-                this.commitEditAndSetFocus();
-              }
-            } else {
-              if (this.getEditorLock()?.commitCurrentEdit()) {
-                this.makeActiveCellEditable(undefined, undefined, e);
-              }
-            }
-          }
-          handled = true;
-        }
-      } else if (e.which === keyCode.TAB && e.shiftKey && !e.ctrlKey && !e.altKey) {
-        handled = this.navigatePrev();
-=======
       if (test > testUpTo! || height !== test) {
         break;
       } else {
         supportedHeight = test;
->>>>>>> a291091db3326d5d86c0e299e1ef3e188ba99ec0
       }
     }
 

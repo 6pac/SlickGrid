@@ -104,15 +104,13 @@
     grid.setSelectionModel(new Slick.HybridSelectionModel({ selectActiveRow: true, rowSelectColumnIdArr: ['selector'] }));
     grid.registerPlugin(new Slick.AutoTooltips());
 
-    grid.onDragReplaceCells.subscribe(grid.defaultCopyDraggedCellRange);
+    grid.onDragReplaceCells.subscribe(Slick.SelectionUtils.defaultCopyDraggedCellRange);
 
     // set keyboard focus on the grid
     grid.getCanvasNode().focus();
 
     var copyManager = new Slick.CellCopyManager();
-    grid.registerPlugin(copyManager);
-
-    grid.onDragReplaceCells.subscribe(grid.defaultCopyDraggedCellRange);
+    //grid.registerPlugin(copyManager);
  
     copyManager.onPasteCells.subscribe(function (e, args) {
       if (args.from.length !== 1 || args.to.length !== 1) {

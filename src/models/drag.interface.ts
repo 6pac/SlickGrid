@@ -27,6 +27,10 @@ export interface DragRange {
     row?: number;
     cell?: number;
   };
+  rowCount?: number;
+  cellCount?: number;
+  wasDraggedUp?: boolean;
+  wasDraggedLeft?: boolean;
 }
 
 export interface DragRowMove {

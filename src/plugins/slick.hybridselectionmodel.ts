@@ -255,15 +255,9 @@ export class SlickHybridSelectionModel {
       const rowMoveManager = this.getRowMoveManagerPlugin();
       if (rowMoveManager?.isHandlerColumn(data.cell)) { return true; }
     }
-<<<<<<< HEAD
     
     var targetColumn = this._grid.getVisibleColumns()[data.cell];
     return this._options?.rowSelectColumnIdArr.includes('' + targetColumn.id) || false;
-=======
-
-    const targetColumn = this._grid.getVisibleColumns()[data.cell];
-    return this._options?.rowSelectColumnObjectArr.includes(targetColumn) || false;
->>>>>>> a291091db3326d5d86c0e299e1ef3e188ba99ec0
   }
 
   protected handleActiveCellChange(_e: SlickEventData_, args: OnActiveCellChangedEventArgs) {
@@ -499,13 +493,8 @@ export class SlickHybridSelectionModel {
     }
   }
 
-<<<<<<< HEAD
   protected handleCellRangeSelected(_e: SlickEventData_, args: { range: SlickRange_; selectionMode: string; allowAutoEdit?: boolean; }) {
     if (this._activeSelectionIsRow) { 
-=======
-  protected handleCellRangeSelected(_e: SlickEventData_, args: { range: SlickRange_; selectionMode: string; }) {
-    if (this._activeSelectionIsRow) {
->>>>>>> a291091db3326d5d86c0e299e1ef3e188ba99ec0
       if (!this._grid.getOptions().multiSelect || !this._options?.selectActiveRow) {
         return false;
       }
