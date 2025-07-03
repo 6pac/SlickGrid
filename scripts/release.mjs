@@ -3,7 +3,7 @@ import { dirname as pDirname, join as pJoin, resolve as pResolve } from 'node:pa
 import readline from 'node:readline';
 import { fileURLToPath } from 'node:url';
 import { styleText } from 'node:util';
-import { rimrafSync } from 'rimraf';
+import { removeSync } from 'remove-glob';
 import semver from 'semver';
 
 import { runProdBuildWithTypes } from './builds.mjs';
@@ -105,7 +105,7 @@ const argv = parseArgs({
 
     // 2. delete (empty) dist folder
     console.log('Emptying dist folder');
-    rimrafSync('dist');
+    removeSync({ paths: 'dist' });
 
     // 3. update package.json & slick.grid.ts with new version
     await updatePackageVersion(newVersion);
