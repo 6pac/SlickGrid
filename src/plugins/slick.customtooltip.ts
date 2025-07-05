@@ -306,7 +306,7 @@ export class SlickCustomTooltip {
     const titleElm = inputTitleElm || (this._cellNodeElm && ((this._cellNodeElm.hasAttribute('title') && this._cellNodeElm.getAttribute('title')) ? this._cellNodeElm : this._cellNodeElm.querySelector('[title]')));
 
     // flip tooltip text from `title` to `data-slick-tooltip`
-    if (titleElm) {
+    if (titleElm && tooltipText) {
       titleElm.setAttribute('data-slick-tooltip', tooltipText || '');
       if (titleElm.hasAttribute('title')) {
         titleElm.setAttribute('title', '');
