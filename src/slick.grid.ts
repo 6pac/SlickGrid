@@ -3943,7 +3943,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
     const handled = this._handleScroll('mousewheel');
     if (handled) {
-      e.preventDefault();
+      e.stopPropagation();
     }
   }
 
