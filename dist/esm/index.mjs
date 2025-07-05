@@ -3386,7 +3386,7 @@ var SlickEventHandler5 = SlickEventHandler, Utils17 = Utils, SlickCustomTooltip 
   */
   swapAndClearTitleAttribute(inputTitleElm, tooltipText) {
     let titleElm = inputTitleElm || this._cellNodeElm && (this._cellNodeElm.hasAttribute("title") && this._cellNodeElm.getAttribute("title") ? this._cellNodeElm : this._cellNodeElm.querySelector("[title]"));
-    titleElm && (titleElm.setAttribute("data-slick-tooltip", tooltipText || ""), titleElm.hasAttribute("title") && titleElm.setAttribute("title", ""));
+    titleElm && tooltipText && (titleElm.setAttribute("data-slick-tooltip", tooltipText || ""), titleElm.hasAttribute("title") && titleElm.setAttribute("title", ""));
   }
   asyncProcessCallback(asyncResult, cell, value, columnDef, dataContext) {
     this.hideTooltip();
@@ -3587,7 +3587,7 @@ var BindingEventService9 = BindingEventService, SlickEvent12 = SlickEvent, Slick
         setColumns.call(grid, finalReorderedColumns), trigger.call(grid, grid.onColumnsReordered, { grid, impactedColumns: finalReorderedColumns }), e.stopPropagation(), setupColumnResize.call(grid);
       }
     };
-    return this._sortableLeftInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-left`), sortableOptions), this._sortableRightInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-right`), sortableOptions), this._options.initialGroupBy && !this._isInitialized && queueMicrotask(() => this.setDroppedGroups(this._options.initialGroupBy)), this._isInitialized = !0, {
+    return this._sortableLeftInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-left`), sortableOptions), this._sortableRightInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-right`), sortableOptions), this._options.initialGroupBy && !this._isInitialized && setTimeout(() => this.setDroppedGroups(this._options.initialGroupBy)), this._isInitialized = !0, {
       sortableLeftInstance: this._sortableLeftInstance,
       sortableRightInstance: this._sortableRightInstance
     };
@@ -6571,7 +6571,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.15.4");
+    __publicField(this, "slickGridVersion", "5.15.5");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -8451,7 +8451,7 @@ var SlickGrid = class {
    * @param {number} deltaY - The vertical scroll delta.
    */
   handleMouseWheel(e, _delta, deltaX, deltaY) {
-    this.scrollHeight = this._viewportScrollContainerY.scrollHeight, e.shiftKey ? this.scrollLeft = this._viewportScrollContainerX.scrollLeft + deltaX * 10 : (this.scrollTop = Math.max(0, this._viewportScrollContainerY.scrollTop - deltaY * this._options.rowHeight), this.scrollLeft = this._viewportScrollContainerX.scrollLeft + deltaX * 10), this._handleScroll("mousewheel") && e.preventDefault();
+    this.scrollHeight = this._viewportScrollContainerY.scrollHeight, e.shiftKey ? this.scrollLeft = this._viewportScrollContainerX.scrollLeft + deltaX * 10 : (this.scrollTop = Math.max(0, this._viewportScrollContainerY.scrollTop - deltaY * this._options.rowHeight), this.scrollLeft = this._viewportScrollContainerX.scrollLeft + deltaX * 10), this._handleScroll("mousewheel") && e.stopPropagation();
   }
   /**
    * Called when a drag is initiated. It retrieves the cell from the event; if the cell does not exist or is not selectable,
@@ -11163,7 +11163,7 @@ var SlickRemoteModel = class {
       this.onDataLoaded.notify({ from, to });
       return;
     }
-    let url = "http://octopart.com/api/v3/parts/search?apikey=68b25f31&include[]=short_description&show[]=uid&show[]=manufacturer&show[]=mpn&show[]=brand&show[]=octopart_url&show[]=short_description&q=" + this.searchstr + "&start=" + fromPage * this.PAGESIZE + "&limit=" + ((toPage - fromPage) * this.PAGESIZE + this.PAGESIZE);
+    let url = "http://octopart.com/api/v3/parts/search?apikey=[MY_API_KEY]&include[]=short_description&show[]=uid&show[]=manufacturer&show[]=mpn&show[]=brand&show[]=octopart_url&show[]=short_description&q=" + this.searchstr + "&start=" + fromPage * this.PAGESIZE + "&limit=" + ((toPage - fromPage) * this.PAGESIZE + this.PAGESIZE);
     this.sortcol !== null && (url += "&sortby=" + this.sortcol + (this.sortdir > 0 ? "+asc" : "+desc")), this.h_request && window.clearTimeout(this.h_request), this.h_request = window.setTimeout(() => {
       for (let i = fromPage; i <= toPage; i++)
         this.data[i * this.PAGESIZE] = null;
@@ -11294,7 +11294,7 @@ export {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.15.4
+ * SlickGrid v5.15.5
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

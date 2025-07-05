@@ -3,11 +3,23 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.15.5](https://github.com/6pac/SlickGrid/compare/5.15.4...5.15.5) (2025-07-05)
+
+### Bug Fixes
+
+*  remove API key from slick.remotemodel.ts ([ffbe0cf](https://github.com/6pac/SlickGrid/commit/ffbe0cf863792810961e66a7c01aeca79872dd3b))
+* change to stopPropagation to avoid browser scrolling ([#1134](https://github.com/6pac/SlickGrid/issues/1134)) ([82f89f3](https://github.com/6pac/SlickGrid/commit/82f89f387d9c5fef84ad1589899686f3ca231470))
+* only toggle title and data-slick-tooltip if value is defined ([#1135](https://github.com/6pac/SlickGrid/issues/1135)) ([314edd0](https://github.com/6pac/SlickGrid/commit/314edd0d4da81e4bcf0a82f058901982567cf367))
+* use setTimeout instead of queueMicrotask for cross-compatibility ([#1136](https://github.com/6pac/SlickGrid/issues/1136)) ([8e13141](https://github.com/6pac/SlickGrid/commit/8e131417f3addeb9105563fe143b2afc002e189c))
+
+s.
+
 ## [5.15.4](https://github.com/6pac/SlickGrid/compare/5.15.3...5.15.4) (2025-06-01)
 
 ### Bug Fixes
 
 * **core:** small UI regression causing column width to be smaller ([#1126](https://github.com/6pac/SlickGrid/issues/1126)) ([899f2d6](https://github.com/6pac/SlickGrid/commit/899f2d627220ce8c42bf223601cefd970a574597))
+
 * **core:** the `editActiveCell()` first `editor` arg should be optional ([#1128](https://github.com/6pac/SlickGrid/issues/1128)) ([4f34024](https://github.com/6pac/SlickGrid/commit/4f34024caa970e5f7a504a130cbf3f79793feb28))
 
 ## [5.15.3](https://github.com/6pac/SlickGrid/compare/5.15.2...5.15.3) (2025-05-09)

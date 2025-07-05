@@ -125,7 +125,7 @@
     */
     swapAndClearTitleAttribute(inputTitleElm, tooltipText) {
       let titleElm = inputTitleElm || this._cellNodeElm && (this._cellNodeElm.hasAttribute("title") && this._cellNodeElm.getAttribute("title") ? this._cellNodeElm : this._cellNodeElm.querySelector("[title]"));
-      titleElm && (titleElm.setAttribute("data-slick-tooltip", tooltipText || ""), titleElm.hasAttribute("title") && titleElm.setAttribute("title", ""));
+      titleElm && tooltipText && (titleElm.setAttribute("data-slick-tooltip", tooltipText || ""), titleElm.hasAttribute("title") && titleElm.setAttribute("title", ""));
     }
     asyncProcessCallback(asyncResult, cell, value, columnDef, dataContext) {
       this.hideTooltip();

@@ -24,7 +24,7 @@
       this.externalPubSub = externalPubSub;
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.15.4");
+      __publicField(this, "slickGridVersion", "5.15.5");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -1929,7 +1929,7 @@
      * @param {number} deltaY - The vertical scroll delta.
      */
     handleMouseWheel(e, _delta, deltaX, deltaY) {
-      this.scrollHeight = this._viewportScrollContainerY.scrollHeight, e.shiftKey ? this.scrollLeft = this._viewportScrollContainerX.scrollLeft + deltaX * 10 : (this.scrollTop = Math.max(0, this._viewportScrollContainerY.scrollTop - deltaY * this._options.rowHeight), this.scrollLeft = this._viewportScrollContainerX.scrollLeft + deltaX * 10), this._handleScroll("mousewheel") && e.preventDefault();
+      this.scrollHeight = this._viewportScrollContainerY.scrollHeight, e.shiftKey ? this.scrollLeft = this._viewportScrollContainerX.scrollLeft + deltaX * 10 : (this.scrollTop = Math.max(0, this._viewportScrollContainerY.scrollTop - deltaY * this._options.rowHeight), this.scrollLeft = this._viewportScrollContainerX.scrollLeft + deltaX * 10), this._handleScroll("mousewheel") && e.stopPropagation();
     }
     /**
      * Called when a drag is initiated. It retrieves the cell from the event; if the cell does not exist or is not selectable,
@@ -4506,7 +4506,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.15.4
+ * SlickGrid v5.15.5
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
