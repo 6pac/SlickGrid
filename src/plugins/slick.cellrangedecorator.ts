@@ -32,6 +32,10 @@ export class SlickCellRangeDecorator implements SlickPlugin {
       zIndex: '9999',
       border: '2px dashed red'
     },
+    copyToSelectionCss : {
+        "zIndex": "9999",
+        "border": "2px dashed blue"
+    },
     offset: { top: -1, left: -1, height: -2, width: -2 }
   } as CellRangeDecoratorOption;
 
@@ -59,19 +63,23 @@ export class SlickCellRangeDecorator implements SlickPlugin {
     this._elem = null;
   }
 
-  show(range: SlickRange) {
+  show(range: SlickRange, isCopyTo: boolean) {
     if (!this._elem) {
       this._elem = document.createElement('div');
       this._elem.className = this._options.selectionCssClass;
-      Object.keys(this._selectionCss as CSSStyleDeclaration).forEach((cssStyleKey) => {
-        this._elem!.style[cssStyleKey as CSSStyleDeclarationWritable] = this._selectionCss[cssStyleKey as CSSStyleDeclarationWritable];
-      });
       this._elem.style.position = 'absolute';
       const canvasNode = this.grid.getActiveCanvasNode();
       if (canvasNode) {
         canvasNode.appendChild(this._elem);
       }
     }
+
+    const css = isCopyTo && this._options.copyToSelectionCss ? this._options.copyToSelectionCss :this._options.selectionCss;
+    Object.keys(css).forEach((cssStyleKey) => {
+      if (this._elem!.style[cssStyleKey as CSSStyleDeclarationWritable] !== css[cssStyleKey as CSSStyleDeclarationWritable]) {
+        this._elem!.style[cssStyleKey as CSSStyleDeclarationWritable] = css[cssStyleKey as CSSStyleDeclarationWritable];
+      }
+    });
 
     const from = this.grid.getCellNodeBox(range.fromRow, range.fromCell);
     const to = this.grid.getCellNodeBox(range.toRow, range.toCell);

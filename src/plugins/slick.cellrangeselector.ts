@@ -35,6 +35,8 @@ export class SlickCellRangeSelector implements SlickPlugin {
   protected _handler = new SlickEventHandler();
   protected _options: CellRangeSelectorOption;
   protected _selectionMode: string = CellSelectionMode.Select;
+  protected _dragReplaceHandleActive: boolean = false;
+  protected _dragReplaceHandleCell:  { row : number, cell: number } | null = null;
   protected _defaults = {
     autoScroll: true,
     minIntervalToShowNextCell: 30,
@@ -113,7 +115,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
     this._scrollLeft = args.scrollLeft;
   }
 
-  protected handleDragInit(e: SlickEventData) {
+  protected handleDragInit(e: SlickEventData, dd: DragRowMove) {
     // Set the active canvas node because the decorator needs to append its
     // box to the correct canvas
     this._activeCanvas = this._grid.getActiveCanvasNode(e);
@@ -150,13 +152,21 @@ export class SlickCellRangeSelector implements SlickPlugin {
       }
     }
 
+      this._dragReplaceHandleActive = (dd.matchClassTag === 'dragReplaceHandle');
+      if (this._dragReplaceHandleActive) { 
+        this._dragReplaceHandleCell = this._grid.getCellFromEvent(e);
+      } else {
+        this._previousSelectedRange = null;
+      }
+
     // prevent the grid from cancelling drag'n'drop by default
     e.stopImmediatePropagation();
     e.preventDefault();
   }
 
   protected handleDragStart(e: SlickEventData, dd: DragRowMove) {
-    const cell = this._grid.getCellFromEvent(e);
+    let cell = this._grid.getCellFromEvent(e);
+    if (this._dragReplaceHandleActive) cell = this._dragReplaceHandleCell;
     if (cell && this.onBeforeCellRangeSelected.notify(cell).getReturnValue() !== false && this._grid.canCellBeSelected(cell.row, cell.cell)) {
       this._dragging = true;
       e.stopImmediatePropagation();
@@ -180,18 +190,16 @@ export class SlickCellRangeSelector implements SlickPlugin {
     }
 
     let start: { row: number | undefined, cell: number | undefined; } | null;
-    this._selectionMode = CellSelectionMode.Select;
-    if (dd.matchClassTag !== 'dragReplaceHandle') {
+    this._selectionMode = this._dragReplaceHandleActive ? Slick.CellSelectionMode.Replace : Slick.CellSelectionMode.Select;      
+    if (!this._dragReplaceHandleActive) {
       start = this._grid.getCellFromPoint(startX, startY);
-      this._previousSelectedRange = null;
     } else {
       start = this._grid.getActiveCell() || { row: undefined, cell: undefined };
-      this._selectionMode = CellSelectionMode.Replace;
     }
 
     dd.range = { start, end: {} };
     this._currentlySelectedRange = dd.range;
-    return this._decorator.show(new SlickRange(start.row ?? 0, start.cell ?? 0));
+    return this._decorator.show(new SlickRange(start.row ?? 0, start.cell ?? 0), this._dragReplaceHandleActive);
   }
 
   protected handleDrag(evt: SlickEventData, dd: DragRowMove) {
@@ -378,7 +386,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
 
       const range = new Slick.Range(cornerCell.row, cornerCell.cell, end.row, end.cell);
 
-      this._decorator.show(range);
+      this._decorator.show(range, this._dragReplaceHandleActive);
       this.onCellRangeSelecting.notify({
         range, selectionMode: '', 
         allowAutoEdit: false

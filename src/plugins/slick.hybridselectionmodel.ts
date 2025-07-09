@@ -68,7 +68,10 @@ export class SlickHybridSelectionModel {
     this._options = Utils.extend(true, {}, this._defaults, options);
 
     if (options === undefined || options.cellRangeSelector === undefined) {
-      this._selector = new SlickCellRangeSelector({ selectionCss: { border: '2px solid black' } as CSSStyleDeclaration });
+     this._selector = new SlickCellRangeSelector({ 
+        selectionCss: { border: '2px solid black' } as CSSStyleDeclaration,
+        copyToSelectionCss: { border: '2px solid purple' } as CSSStyleDeclaration 
+      });
     } else {
       this._selector = options.cellRangeSelector;
     }
@@ -219,7 +222,7 @@ export class SlickHybridSelectionModel {
       if (rangeHasChanged) {
         // provide extra "caller" argument through SlickEventData event to avoid breaking the previous pubsub event structure
         // that only accepts an array of selected range `SlickRange[]`, the SlickEventData args will be merged and used later by `onSelectedRowsChanged`
-        const eventData = new SlickEventData(new CustomEvent('click', { detail: { caller, selectionMode } }), this._ranges);
+        const eventData = new SlickEventData(new CustomEvent('click', { detail: { caller, selectionMode, addDragHandle: true } }), this._ranges);
         this.onSelectedRangesChanged.notify(this._ranges, eventData);
       }
     }

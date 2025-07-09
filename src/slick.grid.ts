@@ -3903,6 +3903,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected handleSelectedRangesChanged(e: SlickEventData_, ranges: SlickRange_[]) {
     const ne = e.getNativeEvent<CustomEvent>();
     const selectionMode = ne?.detail?.selectionMode ?? '';
+    const addDragHandle = !!ne?.detail?.addDragHandle;
 
     // drag and replace functionality
     const prevSelectedRanges = this.selectedRanges.slice(0);
@@ -3947,7 +3948,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     this.setCellCssStyles(this._options.selectedCellCssClass || '', hash);
 
-    if (this.selectionBottomRow >= 0 && this.selectionRightCell >= 0) {
+    if (this.selectionBottomRow >= 0 && this.selectionRightCell >= 0 && addDragHandle) {
       const lowerRightCell = this.getCellNode(this.selectionBottomRow, this.selectionRightCell)
       this.dragReplaceEl.createEl(lowerRightCell);
     }
@@ -4057,9 +4058,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   // Called when a drag operation completes; it triggers the onDragEnd event with the current drag position and event.
   protected handleDragEnd(e: DragEvent, dd: DragPosition) {
-    if (dd.matchClassTag === 'dragReplaceHandle') {
-      this.dragReplaceEl.removeEl();
-    }
+    //if (dd.matchClassTag === 'dragReplaceHandle') {
+    //  this.dragReplaceEl.removeEl();
+    //}
     this.trigger(this.onDragEnd, dd, e);
   }
 

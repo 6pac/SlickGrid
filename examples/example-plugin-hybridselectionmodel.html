@@ -143,6 +143,67 @@
   <script src="../dist/browser/plugins/slick.hybridselectionmodel.js"></script>
 
   <script>
+    var contextMenuOptions = {
+      // subItemChevronClass: 'sgi sgi-chevron-right',
+
+      // optionally and conditionally define when the the menu is usable,
+      // this should be used with a custom formatter to show/hide/disable the menu
+      menuUsabilityOverride: function (args) {
+        return (args.dataContext.id < 21); // say we want to display the menu only from Task 0 to 20
+      },
+      commandTitle: "Commands",
+      // which column to show the command list? when not defined it will be shown over all columns
+      commandShownOverColumnIds: ["title", "complete", "start", "finish", "effortDriven" /*, "priority"*/],
+      commandItems: [
+        { command: "copy-text", title: "Copy Cell Value" },
+        { command: "delete-row", title: "Delete Row", iconCssClass: "sgi sgi-close red", cssClass: "bold", textCssClass: "red", },
+        { divider: true },
+        {
+          command: "help", title: "Help", iconCssClass: "sgi sgi-help-circle-outline",
+          // you can use the "action" callback and/or subscribe to the "onCallback" event, they both have the same arguments
+          action: function (e, args) {
+            // action callback.. do something
+          },
+          // only show command to "Help" when there's no Effort Driven
+          itemVisibilityOverride: function (args) {
+            return (!args.dataContext.effortDriven);
+          }
+        }
+      ],
+
+      // Options allows you to edit a column from an option chose a list
+      // for example, changing the Priority value
+      // you can also optionally define an array of column ids that you wish to display this option list (when not defined it will show over all columns)
+      optionTitle: "Change Priority",
+      optionShownOverColumnIds: ["id"], // optional, when defined it will only show over the columns (column id) defined in the array
+      optionItems: [
+        {
+          option: 0, title: "none", textCssClass: "italic",
+          // only enable this option when there's no Effort Driven
+          itemUsabilityOverride: function (args) {
+            return (!args.dataContext.effortDriven);
+          },
+          // you can use the "action" callback and/or subscribe to the "onCallback" event, they both have the same arguments
+          action: function (e, args) {
+            // action callback.. do something
+          },
+        },
+        { option: 1, iconCssClass: "sgi sgi-star-outline", title: "Low" },
+        { option: 2, iconCssClass: "sgi sgi-star orange", title: "Medium" },
+        { option: 3, iconCssClass: "sgi sgi-star red", title: "High" },
+        // you can pass divider as a string or an object with a boolean
+        // "divider",
+        { divider: true },
+        {
+          option: 4, title: "Extreme", disabled: true,
+          // only shown when there's no Effort Driven
+          itemVisibilityOverride: function (args) {
+            return (!args.dataContext.effortDriven);
+          }
+        }
+      ]
+    };
+
     var grid;
     var data = [];
     var dataView;
