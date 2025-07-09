@@ -3736,7 +3736,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     if (self.currentEditor) {
       if (self.currentEditor.isValueChanged()) {
-        const validationResults = self.currentEditor.validate();
+        const validationResults = self.currentEditor.validate(
+          undefined, {
+            rowIndex: self.activeRow,
+            cellIndex: self.activeCell
+          }
+        );
 
         if (validationResults.valid) {
           const row = self.activeRow;
@@ -4041,7 +4046,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return false;
     }
 
-    if (this.currentEditor) { this.getEditorLock().commitCurrentEdit(); }
+    if (this.currentEditor) { 
+      var commitSuccess =  this.getEditorLock().commitCurrentEdit(); 
+      if (!commitSuccess) return false;
+    }
 
     const retval = this.trigger(this.onDragStart, dd, e);
     if (retval.isImmediatePropagationStopped()) {

@@ -76,6 +76,126 @@
   };
   var contextMenuPlugin;
   var allColIdArr = [];
+  /*
+   * Depending on the value of Grid option 'editorCellNavOnLRKeys', us
+   * Navigate to the cell on the left if the cursor is at the beginning of the input string
+   * and to the right cell if it's at the end. Otherwise, move the cursor within the text
+   */
+  function handleKeydownLRNav(e) {
+    var cursorPosition = this.selectionStart;
+    var textLength = this.value.length;
+    if ((e.keyCode === Slick.keyCode.LEFT && cursorPosition > 0) ||
+      e.keyCode === Slick.keyCode.RIGHT && cursorPosition < textLength - 1) {
+      e.stopImmediatePropagation();
+    }
+  }
+
+  function handleKeydownLRNoNav(e) {
+    if (e.keyCode === Slick.keyCode.LEFT || e.keyCode === Slick.keyCode.RIGHT) {
+      e.stopImmediatePropagation();
+    }
+  }
+
+  function TestValidator(value, grid, rowIndex, colIndex) {
+    if (value.toString().length > 4) {
+      return {
+        valid: false,
+        msg: "This field has more than 4 chars"
+      };
+    } else {
+      return {
+        valid: true,
+        msg: null
+      };
+    }
+  }
+ 
+  function TextEditor(args) {
+    var input;
+    var defaultValue;
+    var scope = this;
+    var navOnLR;
+    this.args = args;
+
+    this.init = function () {
+      navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
+      input = Slick.Utils.createDomElement('input', { type: 'text', className: 'editor-text' }, args.container);
+      input.addEventListener("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
+      input.focus();
+      input.select();
+
+      // don't show Save/Cancel when it's a Composite Editor and also trigger a onCompositeEditorChange event when input changes
+      if (args.compositeEditorOptions) {
+        input.addEventListener("change", this.onChange);
+      }
+    };
+
+    this.onChange = function() {
+      var activeCell = args.grid.getActiveCell();
+
+      // when valid, we'll also apply the new value to the dataContext item object
+      if (scope.validate().valid) {
+        scope.applyValue(scope.args.item, scope.serializeValue());
+      }
+      scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
+      args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
+    };
+
+    this.destroy = function () {
+      input.removeEventListener("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
+      input.removeEventListener("change", this.onChange)
+      input.remove();
+    };
+
+    this.focus = function () {
+      input.focus();
+    };
+
+    this.getValue = function () {
+      return input.value;
+    };
+
+    this.setValue = function (val) {
+      input.value = val;
+    };
+
+    this.loadValue = function (item) {
+      defaultValue = item[args.column.field] || "";
+      input.value = defaultValue;
+      input.defaultValue = defaultValue;
+      input.select();
+    };
+
+    this.serializeValue = function () {
+      return input.value;
+    };
+
+    this.applyValue = function (item, state) {
+      item[args.column.field] = state;
+      console.log('TextEditor: applyValue col:' + args.column.name + ', val: '+ state);
+    };
+
+    this.isValueChanged = function () {
+      return (!(input.value === "" && defaultValue == null)) && (input.value != defaultValue);
+    };
+
+    this.validate = function (targetElm, options) {
+      if (args.column.validator) {
+        var validationResults = args.column.validator(input.value, args, options.rowIndex, options.cellIndex);
+        if (!validationResults.valid) {
+          return validationResults;
+        }
+      }
+
+      return {
+        valid: true,
+        msg: null,
+        noFocusOnEditorOnValidateFail: null
+      };
+    };
+
+    this.init();
+  }
 
   var columns = [
     {
@@ -93,7 +213,8 @@
             String.fromCharCode("A".charCodeAt(0) + (i % 26)),
       field: i,
       width: 60,
-      editor: Slick.Editors.Text
+      editor: TextEditor,
+      validator: TestValidator
     });
     allColIdArr.push(i);
   }
@@ -158,7 +279,8 @@
       }
     ]
   };
-    
+
+
   document.addEventListener("DOMContentLoaded", function() {
     for (var i = 0; i < 100; i++) {
       var d = (data[i] = {});
