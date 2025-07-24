@@ -99,9 +99,10 @@ export function Draggable(options: DraggableOption) {
         if (result !== false) {
           document.body.addEventListener('mousemove', userMoved);
           document.body.addEventListener('touchmove', userMoved);
-          document.body.addEventListener('mouseup', userReleased);
-          document.body.addEventListener('touchend', userReleased);
-          document.body.addEventListener('touchcancel', userReleased);
+          // register mouseup/... events on the window object so that we can catch them even if the user moves the mouse outside the container element
+          window.addEventListener('mouseup', userReleased);
+          window.addEventListener('touchend', userReleased);
+          window.addEventListener('touchcancel', userReleased);
         }
       }
     }
@@ -128,9 +129,9 @@ export function Draggable(options: DraggableOption) {
   function userReleased(event: MouseEvent | TouchEvent) {
     document.body.removeEventListener('mousemove', userMoved);
     document.body.removeEventListener('touchmove', userMoved);
-    document.body.removeEventListener('mouseup', userReleased);
-    document.body.removeEventListener('touchend', userReleased);
-    document.body.removeEventListener('touchcancel', userReleased);
+    window.removeEventListener('mouseup', userReleased);
+    window.removeEventListener('touchend', userReleased);
+    window.removeEventListener('touchcancel', userReleased);
 
     // trigger a dragEnd event only after dragging started and stopped
     if (dragStarted) {
