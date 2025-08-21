@@ -18,7 +18,7 @@ export interface OnBeforeSetColumnsEventArgs extends SlickGridArg { previousColu
 export interface OnCellChangeEventArgs extends SlickGridArg { row: number; cell: number; item: any; column: Column; }
 export interface OnCellCssStylesChangedEventArgs extends SlickGridArg { key: string; hash: CssStyleHash; }
 export interface OnColumnsDragEventArgs extends SlickGridArg { triggeredByColumn: string; resizeHandle: HTMLDivElement; }
-export interface OnColumnsReorderedEventArgs extends SlickGridArg { impactedColumns: Column[]; }
+export interface OnColumnsReorderedEventArgs extends SlickGridArg { impactedColumns: Column[]; previousColumnOrder: Array<string | number>; }
 export interface OnColumnsResizedEventArgs extends SlickGridArg { triggeredByColumn: string; }
 export interface OnColumnsResizeDblClickEventArgs extends SlickGridArg { triggeredByColumn: string; }
 export interface OnCompositeEditorChangeEventArgs extends SlickGridArg { row?: number; cell?: number; item: any; column: Column; formValues: any; editors: { [columnId: string]: Editor; }; triggeredBy?: 'user' | 'system'; }
