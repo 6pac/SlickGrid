@@ -1,28 +1,34 @@
 <!DOCTYPE HTML>
 <html>
+
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example: Spreadsheet with Excel compatible cut and paste</title>
-  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
-  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
-  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css" />
   <style>
     .cell-effort-driven {
       justify-content: center;
     }
+
     .slick-group-title[level='0'] {
       font-weight: bold;
     }
+
     .slick-group-title[level='1'] {
       text-decoration: underline;
     }
+
     .slick-group-title[level='2'] {
       font-style: italic;
     }
-    .slick-row:not(.slick-group) >.cell-unselectable {
+
+    .slick-row:not(.slick-group)>.cell-unselectable {
       background: #efefef;
     }
+
     .slick-pane.frozen {
       border-right: 1px solid red;
     }
@@ -30,231 +36,252 @@
     .slick-row.frozen:last-child .slick-cell {
       border-bottom: 1px solid red;
     }
+
     .option-item {
       padding: 6px;
     }
   </style>
 </head>
+
 <body>
-<div style="position:relative">
-  <div style="width:600px;">
-    <h3> Using Slick.CellRangeSelector </h3>
-    <div id="myGrid" class="example-grid slick-container" style="width:100%;height:350px;"></div>
-    <br>
-    <h3> Using Slick.RowRangeSelector </h3>
-    <div id="myGrid2" class="example-grid slick-container" style="width:100%;height:350px;"></div>
+  <div style="position:relative">
+    <div style="width:600px;">
+      <h3> Using Slick.CellRangeSelector </h3>
+      <div id="myGrid" class="example-grid slick-container" style="width:100%;height:350px;"></div>
+      <br>
+      <h3> Using Slick.RowRangeSelector </h3>
+      <div id="myGrid2" class="example-grid slick-container" style="width:100%;height:350px;"></div>
+    </div>
+    <br />
+
+    <div class="options-panel">
+      <h2>
+        <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+        Options: (Apply to both grid)
+      </h2>
+      <div class="option-item">
+        <label for='isAutoScroll'>Auto Scroll: (need click Set Options)</label>
+        <input type="checkbox" id="isAutoScroll">
+      </div>
+
+      <div class="option-item">
+        <label for='minIntervalToShowNextCell'>MIN interval to show next cell: </label>
+        <input type='text' id="minIntervalToShowNextCell" style="width:60px;">
+        (ms)
+      </div>
+
+      <div class="option-item">
+        <label for='maxIntervalToShowNextCell'>MAX delay to show next cell (ms): </label>
+        <input type='text' id="maxIntervalToShowNextCell" style="width:60px;">
+        (ms)
+        <div>better to multiple of MIN</div>
+      </div>
+
+
+      <div class="option-item">
+        <label for='accelerateInterval'>Delay when cursor outside 1px (ms): </label>
+        <input type='text' id="accelerateInterval" style="width:60px;">
+        (ms)
+      </div>
+
+      <div class="option-item">
+        <button id='setOptions' onclick="setOptions()">Set Options</button>
+        <button id='setDefaultOption' onclick="setDefaultOption()">Set Default Options</button>
+      </div>
+
+      <hr>
+
+      <div class="option-item">
+        <button id='toggleFrozen' onclick="toggleFrozen()">Set/Clear Frozen</button>
+        <button id='toggleGroup' onclick="toggleGroup()">Set/Clear grouping by Duration</button>
+      </div>
+      <div class="option-item">
+        <label>Grid 1 - Pinned Columns: </label>
+        <input id="frozen-column-count" type="number" data-test="frozen-column-count" value="-1" />
+        <button data-test="set-frozen-columns-btn" onclick="changeFrozenColumnCount()">Set</button>
+        </span>
+      </div>
+
+      <h2>Demonstrates:</h2>
+      <ul>
+        <li>Dragging from 2nd column to make a selection, and the viewport will auto scroll.</li>
+      </ul>
+    </div>
   </div>
-  <br/>
 
-  <div class="options-panel">
-    <h2>
-      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
-      Options: (Apply to both grid)
-    </h2>
-    <div class="option-item">
-      <label for='isAutoScroll'>Auto Scroll: (need click Set Options)</label>
-      <input type="checkbox" id="isAutoScroll">
-    </div>
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
-    <div class="option-item">
-      <label for='minIntervalToShowNextCell'>MIN interval to show next cell: </label>
-      <input type='text' id="minIntervalToShowNextCell" style="width:60px;">
-      (ms)
-    </div>
+  <script src="../dist/browser/slick.core.js"></script>
+  <script src="../dist/browser/slick.interactions.js"></script>
+  <script src="../dist/browser/slick.grid.js"></script>
+  <script src="../dist/browser/plugins/slick.cellrangedecorator.js"></script>
+  <script src="../dist/browser/plugins/slick.cellrangeselector.js"></script>
+  <script src="../dist/browser/plugins/slick.cellselectionmodel.js"></script>
+  <script src="../dist/browser/plugins/slick.rowselectionmodel.js"></script>
+  <script src="../dist/browser/slick.editors.js"></script>
+  <script src="../dist/browser/slick.formatters.js"></script>
+  <script src="../dist/browser/slick.dataview.js"></script>
+  <script src="../dist/browser/slick.groupitemmetadataprovider.js"></script>
 
-    <div class="option-item">
-      <label for='maxIntervalToShowNextCell'>MAX delay to show next cell (ms): </label>
-      <input type='text' id="maxIntervalToShowNextCell" style="width:60px;">
-      (ms)
-      <div>better to multiple of MIN</div>
-    </div>
+  <script>
+    var grid;
+    var grid2;
+    var dataView;
 
+    var options = {
+      editable: true,
+      enableCellNavigation: true,
+      asyncEditorLoading: false,
+      autoEdit: false,
+      frozenRow: -1,
+      enableColumnReorder: false,
+      frozenColumn: -1
+    };
 
-    <div class="option-item">
-      <label for='accelerateInterval'>Delay when cursor outside 1px (ms): </label>
-      <input type='text' id="accelerateInterval" style="width:60px;">
-      (ms)
-    </div>
+    var columns = [
+      { id: "sel", name: "#", field: "num", cssClass: "cell-unselectable", resizable: false, selectable: false, focusable: false, width: 40 },
+      { id: "title", name: "Title", field: "title", minWidth: 50, cssClass: "cell-title", editor: Slick.Editors.Text },
+      {
+        id: "duration", name: "Duration", field: "duration", groupTotalsFormatter: function (totals, columnDef, grid) {
+          var val = totals.sum && totals.sum[columnDef.field];
+          if (val != null) {
+            return "total: " + ((Math.round(parseFloat(val) * 100) / 100));
+          }
+          return "";
+        }
+      },
+      { id: "%", name: "% Complete", field: "percentComplete", width: 95, formatter: Slick.Formatters.PercentCompleteBar },
+      { id: "start", name: "Start", field: "start", minWidth: 60 },
+      { id: "finish", name: "Finish", field: "finish", minWidth: 60 },
+      { id: "cost", name: "Cost", field: "cost" },
+      { id: "effort-driven", name: "Effort Driven", width: 95, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark }
+    ];
 
-    <div class="option-item">
-      <button id='setOptions' onclick="setOptions()">Set Options</button>
-      <button id='setDefaultOption' onclick="setDefaultOption()">Set Default Options</button>
-    </div>
+    for (var i = 0; i < 30; i++) {
+      columns.push({ id: "mock" + i, name: "Mock" + i, field: "mock" + i });
+    }
 
-    <hr>
+    function loadData(groupItemMetadataProvider) {
+      dataView = new Slick.Data.DataView({
+        groupItemMetadataProvider: groupItemMetadataProvider
+      });
+      var someDates = ["01/01/2009", "02/02/2009", "03/03/2009"];
+      var data = [];
+      for (var i = 0; i < 300; i++) {
+        var d = (data[i] = {});
 
-    <div class="option-item">
-      <button id='toggleFrozen' onclick="toggleFrozen()">Set/Clear Frozen</button>
-      <button id='toggleGroup' onclick="toggleGroup()">Set/Clear grouping by Duration</button>
-    </div>
+        d["id"] = "id_" + i;
+        d["num"] = i;
+        d["title"] = "Task " + i;
+        d["duration"] = i % 20;
+        d["percentComplete"] = Math.round(Math.random() * 100);
+        d["start"] = someDates[Math.floor((Math.random() * 2))];
+        d["finish"] = someDates[Math.floor((Math.random() * 2))];
+        d["cost"] = Math.round(Math.random() * 10000) / 100;
+        d["effortDriven"] = (i % 5 == 0);
 
-    <h2>Demonstrates:</h2>
-    <ul>
-      <li>Dragging from 2nd column to make a selection, and the viewport will auto scroll.</li>
-    </ul>
-  </div>
-</div>
-
-<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
-
-<script src="../dist/browser/slick.core.js"></script>
-<script src="../dist/browser/slick.interactions.js"></script>
-<script src="../dist/browser/slick.grid.js"></script>
-<script src="../dist/browser/plugins/slick.cellrangedecorator.js"></script>
-<script src="../dist/browser/plugins/slick.cellrangeselector.js"></script>
-<script src="../dist/browser/plugins/slick.cellselectionmodel.js"></script>
-<script src="../dist/browser/plugins/slick.rowselectionmodel.js"></script>
-<script src="../dist/browser/slick.editors.js"></script>
-<script src="../dist/browser/slick.formatters.js"></script>
-<script src="../dist/browser/slick.dataview.js"></script>
-<script src="../dist/browser/slick.groupitemmetadataprovider.js"></script>
-
-<script>
-  var grid;
-  var grid2;
-  var dataView;
-
-  var options = {
-    editable: true,
-    enableCellNavigation: true,
-    asyncEditorLoading: false,
-    autoEdit: false,
-    frozenRow: -1,
-    enableColumnReorder: false,
-    frozenColumn: -1
-  };
-
-  var columns = [
-    {id: "sel", name: "#", field: "num", cssClass: "cell-unselectable", resizable: false, selectable: false, focusable: false, width: 40 },
-    {id: "title", name: "Title", field: "title", minWidth: 50, cssClass: "cell-title", editor: Slick.Editors.Text},
-    {id: "duration", name: "Duration", field: "duration", groupTotalsFormatter: function(totals, columnDef, grid) {
-      var val = totals.sum && totals.sum[columnDef.field];
-      if (val != null) {
-        return "total: " + ((Math.round(parseFloat(val)*100)/100));
+        for (var j = 0; j < 30; j++) {
+          d["mock" + j] = j
+        }
       }
-      return "";
-    }},
-    {id: "%", name: "% Complete", field: "percentComplete",width:95, formatter: Slick.Formatters.PercentCompleteBar},
-    {id: "start", name: "Start", field: "start", minWidth: 60},
-    {id: "finish", name: "Finish", field: "finish", minWidth: 60},
-    {id: "cost", name: "Cost", field: "cost"},
-    {id: "effort-driven", name: "Effort Driven", width: 95, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark}
-  ];
+      dataView.setItems(data);
+    }
 
-  for (var i = 0; i < 30; i++) {
-    columns.push({id: "mock" + i, name: "Mock" + i, field: "mock" + i});
-  }
-
-  function loadData(groupItemMetadataProvider) {
-    dataView = new Slick.Data.DataView({
-      groupItemMetadataProvider: groupItemMetadataProvider
-    });
-    var someDates = ["01/01/2009", "02/02/2009", "03/03/2009"];
-    var data = [];
-    for (var i = 0; i < 300; i++) {
-      var d = (data[i] = {});
-
-      d["id"] = "id_" + i;
-      d["num"] = i;
-      d["title"] = "Task " + i;
-      d["duration"] = i % 20;
-      d["percentComplete"] = Math.round(Math.random() * 100);
-      d["start"] = someDates[ Math.floor((Math.random()*2)) ];
-      d["finish"] = someDates[ Math.floor((Math.random()*2)) ];
-      d["cost"] = Math.round(Math.random() * 10000) / 100;
-      d["effortDriven"] = (i % 5 == 0);
-
-      for (var j = 0; j < 30; j++) {
-        d["mock" + j] = j
+    /** change dynamically, through slickgrid "setOptions()" the number of pinned columns */
+    function changeFrozenColumnCount() {
+      var columnCount = document.querySelector("#frozen-column-count").value;
+      if (grid.setOptions) {
+        grid.setOptions({
+          frozenColumn: +columnCount,
+        });
       }
     }
-    dataView.setItems(data);
-  }
 
-  document.addEventListener("DOMContentLoaded", function() {
-    var groupItemMetadataProvider = new Slick.Data.GroupItemMetadataProvider();
-    loadData(groupItemMetadataProvider);
-    grid = new Slick.Grid("#myGrid", dataView, columns, options);
-    grid2 = new Slick.Grid("#myGrid2", dataView, columns, options);
-    grid.registerPlugin(groupItemMetadataProvider);
-    grid2.registerPlugin(groupItemMetadataProvider);
-    setDefaultOption();
-    dataView.onRowCountChanged.subscribe(function (e, args) {
-      grid.updateRowCount();
-      grid.render();
-      grid2.updateRowCount();
-      grid2.render();
+    document.addEventListener("DOMContentLoaded", function () {
+      var groupItemMetadataProvider = new Slick.Data.GroupItemMetadataProvider();
+      loadData(groupItemMetadataProvider);
+      grid = new Slick.Grid("#myGrid", dataView, columns, options);
+      grid2 = new Slick.Grid("#myGrid2", dataView, columns, options);
+      grid.registerPlugin(groupItemMetadataProvider);
+      grid2.registerPlugin(groupItemMetadataProvider);
+      setDefaultOption();
+      dataView.onRowCountChanged.subscribe(function (e, args) {
+        grid.updateRowCount();
+        grid.render();
+        grid2.updateRowCount();
+        grid2.render();
+      });
+
+      dataView.onRowsChanged.subscribe(function (e, args) {
+        grid.invalidateRows(args.rows);
+        grid.render();
+        grid2.invalidateRows(args.rows);
+        grid2.render();
+      });
     });
 
-    dataView.onRowsChanged.subscribe(function (e, args) {
-      grid.invalidateRows(args.rows);
-      grid.render();
-      grid2.invalidateRows(args.rows);
-      grid2.render();
-    });
-  });
+    function setDefaultOption() {
+      document.querySelector('#isAutoScroll').checked = true;
+      document.querySelector('#minIntervalToShowNextCell').value = '30';
+      document.querySelector('#maxIntervalToShowNextCell').value = '600';
+      document.querySelector('#accelerateInterval').value = '5';
+      setOptions();
+    }
 
-  function setDefaultOption() {
-    document.querySelector('#isAutoScroll').checked =  true;
-    document.querySelector('#minIntervalToShowNextCell').value = '30';
-    document.querySelector('#maxIntervalToShowNextCell').value = '600';
-    document.querySelector('#accelerateInterval') .value  ='5';
-    setOptions();
-  }
+    function setOptions() {
+      grid.setSelectionModel(new Slick.CellSelectionModel({
+        cellRangeSelector: new Slick.CellRangeSelector({
+          autoScroll: document.querySelector('#isAutoScroll').checked,
+          minIntervalToShowNextCell: Number(document.querySelector('#minIntervalToShowNextCell').value),
+          maxIntervalToShowNextCell: Number(document.querySelector('#maxIntervalToShowNextCell').value),
+          accelerateInterval: Number(document.querySelector('#accelerateInterval').value)
+        })
+      }));
 
-  function setOptions() {
-    grid.setSelectionModel(new Slick.CellSelectionModel({
-      cellRangeSelector: new Slick.CellRangeSelector({
-        autoScroll: document.querySelector('#isAutoScroll').checked,
-        minIntervalToShowNextCell: Number(document.querySelector('#minIntervalToShowNextCell').value),
-        maxIntervalToShowNextCell: Number(document.querySelector('#maxIntervalToShowNextCell').value),
-        accelerateInterval: Number(document.querySelector('#accelerateInterval').value)
-      })
-    }));
+      grid2.setSelectionModel(new Slick.RowSelectionModel({
+        cellRangeSelector: new Slick.CellRangeSelector({
+          selectionCss: {
+            "border": "none"
+          },
+          autoScroll: document.querySelector('#isAutoScroll').checked,
+          minIntervalToShowNextCell: Number(document.querySelector('#minIntervalToShowNextCell').value),
+          maxIntervalToShowNextCell: Number(document.querySelector('#maxIntervalToShowNextCell').value),
+          accelerateInterval: Number(document.querySelector('#accelerateInterval').value)
+        })
+      }));
+    }
 
-    grid2.setSelectionModel(new Slick.RowSelectionModel({
-      cellRangeSelector: new Slick.CellRangeSelector({
-        selectionCss: {
-          "border": "none"
+    function toggleFrozen() {
+      var option = grid.getOptions();
+      var frozenRow = option.frozenRow;
+      var frozenColumn = option.frozenColumn;
+      var newOption = {
+        frozenColumn: frozenColumn == -1 ? 1 : -1,
+        frozenRow: frozenRow == -1 ? 3 : -1
+      };
+      grid.setOptions(newOption);
+      grid2.setOptions(newOption);
+    }
+
+    function toggleGroup() {
+      (dataView.getGrouping() && dataView.getGrouping().length > 0) ? dataView.setGrouping([]) : groupByDuration();
+    }
+
+    function groupByDuration() {
+      dataView.setGrouping({
+        getter: "duration",
+        formatter: function (g) {
+          return "Duration:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
         },
-        autoScroll: document.querySelector('#isAutoScroll').checked,
-        minIntervalToShowNextCell: Number(document.querySelector('#minIntervalToShowNextCell').value),
-        maxIntervalToShowNextCell: Number(document.querySelector('#maxIntervalToShowNextCell').value),
-        accelerateInterval: Number(document.querySelector('#accelerateInterval').value)
-      })
-  }));
-  }
-
-  function toggleFrozen() {
-    var option = grid.getOptions();
-    var frozenRow = option.frozenRow;
-    var frozenColumn = option.frozenColumn;
-    var newOption = {
-      frozenColumn: frozenColumn == -1 ? 1 : -1,
-      frozenRow: frozenRow == -1 ? 3 : -1
-    };
-    grid.setOptions(newOption);
-    grid2.setOptions(newOption);
-  }
-
-  function toggleGroup() {
-    (dataView.getGrouping() && dataView.getGrouping().length > 0) ? dataView.setGrouping([]):groupByDuration();
-  }
-
-  function groupByDuration() {
-    dataView.setGrouping({
-      getter: "duration",
-      formatter: function (g) {
-        return "Duration:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
-      },
-      aggregators: [
-        new Slick.Data.Aggregators.Avg("percentComplete"),
-        new Slick.Data.Aggregators.Sum("cost")
-      ],
-      aggregateCollapsed: false,
-      lazyTotalsCalculation: true
-    });
-  }
-</script>
+        aggregators: [
+          new Slick.Data.Aggregators.Avg("percentComplete"),
+          new Slick.Data.Aggregators.Sum("cost")
+        ],
+        aggregateCollapsed: false,
+        lazyTotalsCalculation: true
+      });
+    }
+  </script>
 </body>
+
 </html>
