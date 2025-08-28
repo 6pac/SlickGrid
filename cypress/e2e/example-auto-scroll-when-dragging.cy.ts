@@ -12,6 +12,15 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
     fullTitles.push('Mock' + i);
   }
 
+  beforeEach(() => {
+    // add a serve mode to avoid adding the GitHub Stars link since that can slowdown Cypress considerably
+    // because it keeps waiting for it to load, we also preserve the cookie for all other tests
+    cy.setCookie('serve-mode', 'cypress');
+
+    // create a console.log spy for later use
+    cy.window().then((win) => cy.spy(win.console, 'log'));
+  });
+
   it('should load Example', () => {
     cy.visit(`${Cypress.config('baseUrl')}/examples/example-auto-scroll-when-dragging.html`);
   });
@@ -299,4 +308,32 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
     cy.get('#myGrid2 div.slick-row[style*="top: 0px;"]').should('have.length', 1);
   });
 
+  describe('Frozen Columns', () => {
+    it('should set 3 frozen columns in first grid', () => {
+      cy.get('[data-test="frozen-column-count"]').clear().type('3');
+      cy.get('[data-test="set-frozen-columns-btn"]').click();
+
+      cy.get('#myGrid .slick-pane-left .slick-header-column').should('have.length', 4);
+      cy.get('#myGrid .slick-pane-right .slick-header-column').should('have.length', 34);
+    });
+
+    it('should try to set frozen columns wider than possible and expect an error and abort of the execution', () => {
+      const stub = cy.stub();
+      cy.on('window:alert', stub);
+      cy.get('[data-test="frozen-column-count"]').clear().type('12');
+      cy.get('[data-test="set-frozen-columns-btn"]')
+        .click()
+        .then(() => {
+          expect(stub.getCall(0)).to.be.calledWith(
+            '[SlickGrid] You are trying to freeze/pin more columns than the grid can support. ' +
+            'Make sure to have less columns pinned (on the left) than the actual visible grid width. ' +
+            'Also, please remember that only the columns on the right are scrollable and the pinned columns are not.'
+          );
+
+          // it should still have previous pinning
+          cy.get('#myGrid .slick-pane-left .slick-header-column').should('have.length', 4);
+          cy.get('#myGrid .slick-pane-right .slick-header-column').should('have.length', 34);
+        });
+    });
+  });
 });
