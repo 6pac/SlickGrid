@@ -11,8 +11,10 @@ import type {
   ElementEventListener,
   Handler,
   InferDOMType,
-  MergeTypes
+  MergeTypes,
+  DragRange
 } from './models/index.js';
+import { SlickGrid } from './slick.grid.js';
 
 export interface BasePubSub {
   publish<ArgType = any>(_eventName: string | any, _data?: ArgType): any;
@@ -328,6 +330,24 @@ export class SlickRange {
   }
 
   /**
+   * Row Count.
+   * @method rowCount
+   * @return {Number}
+   */
+  rowCount() {
+    return this.toRow - this.fromRow + 1;
+  }
+
+  /**
+   * Cell Count.
+   * @method cellCount
+   * @return {Number}
+   */
+  cellCount() {
+     return this.toCell - this.fromCell + 1;
+  }
+
+  /**
    * Returns whether a range contains a given cell.
    * @method contains
    * @param row {Integer}
@@ -354,6 +374,63 @@ export class SlickRange {
   };
 }
 
+/**
+ * A structure containing a range of cells to copy to.
+ * @class SlickCopyRange
+ * @constructor
+ * @param fromRow {Integer} Starting row.
+ * @param fromCell {Integer} Starting cell.
+ * @param rowCount {Integer} Row Count.
+ * @param cellCount {Integer} Cell Count.
+ */
+export class SlickCopyRange {
+  fromRow: number;
+  fromCell: number;
+  rowCount: number;
+  cellCount: number;
+
+  constructor(fromRow: number, fromCell: number, rowCount: number, cellCount: number) {
+    this.fromRow = fromRow;
+    this.fromCell = fromCell;
+    this.rowCount = rowCount;
+    this.cellCount = cellCount;
+  }
+
+}
+
+/**
+ * Create a handle element for Excel style drag-replace
+ * @class DragExtendHandle
+ * @constructor
+ * @param gridUid {String} string UID of parent grid
+ */
+export class SlickDragExtendHandle {
+  id: string;
+  cssClass = 'slick-drag-replace-handle';
+
+  constructor(gridUid: string) {
+    this.id = gridUid + "_drag_replace_handle";
+  }
+
+  getHandleHtml() {
+    return '<div id="' + this.id + '" class="slick-drag-replace-handle"></div>';
+    //console.log('DragReplaceEl.getStringEl');
+  }
+
+  removeEl() {
+    const dragReplaceEl = document.getElementById(this.id);
+    if (dragReplaceEl) { dragReplaceEl.remove(); }
+    //console.log('DragReplaceEl.removeEl');
+  }
+
+  createEl(activeCellNode: any) {
+    const dragReplaceEl = document.createElement("div");
+    dragReplaceEl.classList.add("slick-drag-replace-handle");
+    dragReplaceEl.setAttribute("id", this.id);
+    activeCellNode.appendChild(dragReplaceEl);
+    console.log('DragReplaceEl.createEl');
+  }
+}
 
 /**
  * A base class that all special / non-data rows (like Group and GroupTotals) derive from.
@@ -1086,6 +1163,145 @@ export class Utils {
   }
 }
 
+export class SelectionUtils {
+
+    //   |---0----|---1----|---2----|---3----|---4----|---5----|
+    // 0 |        |        |        |     ^  |        |        | 
+    //   |--------|--------|--------|--------|--------|--------|
+    // 1 |        |        |        |        |        |        | 
+    //   |--------|--------|--------|--------|--------|--------|
+    // 2 |        |        |   1    |   2    |    > h |        | 
+    //   |--------|--------|--------|--------|--------|--------|
+    // 3 |   <    |        |   4    |   5   x|    > h |    >   | 
+    //   |--------|--------|--------|--------|--------|--------|
+    // 4 |        |        |    > v |    > v |    > v |        | 
+    //   |--------|--------|--------|--------|--------|--------|
+    // 5 |        |        |        |    v   |        |        | 
+    //   |--------|--------|--------|--------|--------|--------|
+    //
+    // original range (1,2,4,5) expanded one cell to right and down
+    //  '> h' indicates horizontal target copy area
+    //  '> v' indicates vertical target copy area
+    // note bottom right (corner) cell is considered part of vertical copy area
+
+   public static normaliseDragRange(rawRange: DragRange) {
+      // depending how the range is created (drag up/down) the start row/cell may be
+      // greater or less thatn the end row/cell. Create a guaranteed left/down 
+      // progressive range (ie. start row/cell < end row/cell) 
+
+      let rtn : DragRange = {
+        start : {
+          row: (rawRange.end.row ?? 0) > (rawRange.start.row ?? 0) ? rawRange.start.row : rawRange.end.row,
+          cell: (rawRange.end.cell ?? 0) > (rawRange.start.cell ?? 0) ? rawRange.start.cell : rawRange.end.cell
+        },
+        end : {
+          row: (rawRange.end.row ?? 0) > (rawRange.start.row ?? 0) ? rawRange.end.row : rawRange.start.row,
+          cell: (rawRange.end.cell ?? 0) > (rawRange.start.cell ?? 0) ? rawRange.end.cell : rawRange.start.cell
+        }
+      };
+      rtn.rowCount = (rtn.end.row ?? 0) - (rtn.start.row ?? 0) + 1;
+      rtn.cellCount = (rtn.end.cell ?? 0) - (rtn.start.cell ?? 0) + 1;
+ 
+      rtn.wasDraggedUp = (rawRange.end.row ?? 0) < (rawRange.start.row ?? 0);
+      rtn.wasDraggedLeft = (rawRange.end.row ?? 0) < (rawRange.start.row ?? 0);
+     
+      return rtn;
+    }
+
+    public static copyRangeIsLarger(baseRange: SlickRange, copyToRange : SlickRange) : boolean {
+      return copyToRange.fromRow < baseRange.fromRow
+         || copyToRange.fromCell < baseRange.fromCell
+         || copyToRange.toRow > baseRange.toRow
+         || copyToRange.toCell > baseRange.toCell
+      ;  
+    }
+
+   public static normalRangeOppositeCellFromCopy(normalisedDragRange : DragRange, targetCell : { row: number, cell: number }) : { row: number, cell: number } {
+      let row = targetCell.row < (normalisedDragRange.end.row || 0)
+        ? (normalisedDragRange.end.row || 0)
+        : (normalisedDragRange.start.row || 0)
+      ;
+      let cell = targetCell.cell < (normalisedDragRange.end.cell  || 0)
+        ? (normalisedDragRange.end.cell || 0)
+        : (normalisedDragRange.start.cell || 0)
+      ;
+      return { row: row, cell: cell };
+    } 
+
+    // copy to range above or below - includes corner space target range
+    public static verticalTargetRange(baseRange: SlickRange, copyToRange : SlickRange) {
+      let copyUp = copyToRange.fromRow < baseRange.fromRow;
+      let copyDown = copyToRange.toRow > baseRange.toRow;
+      if (!copyUp && !copyDown) {
+        return null;
+      }
+      let rtn;
+      if (copyUp) {
+        rtn = new Slick.Range(copyToRange.fromRow, copyToRange.fromCell, baseRange.fromRow - 1, copyToRange.toCell);
+      } else {
+        rtn = new Slick.Range(baseRange.toRow + 1, copyToRange.fromCell, copyToRange.toRow, copyToRange.toCell);
+      }
+      return rtn;
+    }
+
+    // copy to range left or right - excludes corner space target range
+    public static horizontalTargetRange(baseRange: SlickRange, copyToRange : SlickRange) {
+      let copyLeft = copyToRange.fromCell < baseRange.fromCell;
+      let copyRight = copyToRange.toCell > baseRange.toCell;
+      if (!copyLeft && !copyRight) {
+        return null;
+      }
+      let rtn;
+      if (copyLeft) {
+        rtn = new Slick.Range(baseRange.fromRow, copyToRange.fromCell, baseRange.toRow, baseRange.fromCell - 1);
+      } else {
+        rtn = new Slick.Range(baseRange.fromRow, baseRange.toCell + 1, baseRange.toRow, copyToRange.toCell);
+      }
+      return rtn;
+    }
+
+ 
+    public static defaultCopyDraggedCellRange(e , args) {
+      let verticalTargetRange = Slick.SelectionUtils.verticalTargetRange(args.prevSelectedRange, args.selectedRange);
+      let horizontalTargetRange = Slick.SelectionUtils.horizontalTargetRange(args.prevSelectedRange, args.selectedRange);
+
+      if (verticalTargetRange) { Slick.SelectionUtils.copyCellsToTargetRange(args.prevSelectedRange, verticalTargetRange, args.grid); }
+      if (horizontalTargetRange) { Slick.SelectionUtils.copyCellsToTargetRange(args.prevSelectedRange, horizontalTargetRange, args.grid); }
+    }  
+
+
+    public static copyCellsToTargetRange(baseRange : SlickRange, targetRange: SlickRange, grid : SlickGrid) {
+      let fromRowOffset = 0, fromCellOffset = 0;
+      let columns = grid.getVisibleColumns();
+      let options = grid.getOptions();
+
+      for (var i=0; i < targetRange.rowCount() ; i++){
+        var toRow = grid.getDataItem(targetRange.fromRow + i);
+        var fromRow = grid.getDataItem(baseRange.fromRow + fromRowOffset);
+        fromCellOffset = 0;
+        
+        for (var j=0; j < targetRange.cellCount(); j++) {
+          var toColDef = columns[targetRange.fromCell + j];
+          var fromColDef = columns[baseRange.fromCell + fromCellOffset];
+          
+          if (!toColDef.hidden && !fromColDef.hidden) {
+            var val = fromRow[fromColDef.field];
+            if (options.dataItemColumnValueExtractor) {
+              val = options.dataItemColumnValueExtractor(fromRow, fromColDef);
+            }
+            toRow[toColDef.field] = val;
+          }
+          
+          fromCellOffset++;
+          if (fromCellOffset >= baseRange.cellCount()) fromCellOffset = 0;
+        }
+        
+        fromRowOffset++;
+        if (fromRowOffset >= baseRange.rowCount()) fromRowOffset = 0;
+      }
+    }
+}
+
 export const SlickGlobalEditorLock = new SlickEditorLock();
 
 // export Slick namespace on both global & window objects
@@ -1094,6 +1310,8 @@ const SlickCore = {
   EventData: SlickEventData,
   EventHandler: SlickEventHandler,
   Range: SlickRange,
+  CopyRange: SlickCopyRange,
+  DragExtendHandle: SlickDragExtendHandle,
   NonDataRow: SlickNonDataItem,
   Group: SlickGroup,
   GroupTotals: SlickGroupTotals,
@@ -1152,6 +1370,11 @@ const SlickCore = {
     LastRow: 'LS1'
   },
 
+  'CellSelectionMode': {
+    Select: "SEL",
+    Replace: "REP"
+  },
+
   'ValueFilterMode': {
     None: 'NONE',
     DeDuplicate: 'DEDP',
@@ -1168,9 +1391,9 @@ const SlickCore = {
 };
 
 export const {
-  EditorLock, Event, EventData, EventHandler, Group, GroupTotals, NonDataRow, Range,
+  EditorLock, Event, EventData, EventHandler, Group, GroupTotals, NonDataRow, Range, CopyRange, DragExtendHandle,
   RegexSanitizer, GlobalEditorLock, keyCode, preClickClassName, GridAutosizeColsMode, ColAutosizeMode,
-  RowSelectionMode, ValueFilterMode, WidthEvalMode
+  RowSelectionMode, CellSelectionMode,ValueFilterMode, WidthEvalMode
 } = SlickCore;
 
 // also add to global object when exist
