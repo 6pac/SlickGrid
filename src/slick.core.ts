@@ -1189,7 +1189,7 @@ export class SelectionUtils {
       // greater or less thatn the end row/cell. Create a guaranteed left/down 
       // progressive range (ie. start row/cell < end row/cell) 
 
-      let rtn : DragRange = {
+      const rtn : DragRange = {
         start : {
           row: (rawRange.end.row ?? 0) > (rawRange.start.row ?? 0) ? rawRange.start.row : rawRange.end.row,
           cell: (rawRange.end.cell ?? 0) > (rawRange.start.cell ?? 0) ? rawRange.start.cell : rawRange.end.cell
@@ -1217,21 +1217,21 @@ export class SelectionUtils {
     }
 
    public static normalRangeOppositeCellFromCopy(normalisedDragRange : DragRange, targetCell : { row: number, cell: number }) : { row: number, cell: number } {
-      let row = targetCell.row < (normalisedDragRange.end.row || 0)
+      const row = targetCell.row < (normalisedDragRange.end.row || 0)
         ? (normalisedDragRange.end.row || 0)
         : (normalisedDragRange.start.row || 0)
       ;
-      let cell = targetCell.cell < (normalisedDragRange.end.cell  || 0)
+      const cell = targetCell.cell < (normalisedDragRange.end.cell  || 0)
         ? (normalisedDragRange.end.cell || 0)
         : (normalisedDragRange.start.cell || 0)
       ;
-      return { row: row, cell: cell };
+      return { row, cell };
     } 
 
     // copy to range above or below - includes corner space target range
     public static verticalTargetRange(baseRange: SlickRange, copyToRange : SlickRange) {
-      let copyUp = copyToRange.fromRow < baseRange.fromRow;
-      let copyDown = copyToRange.toRow > baseRange.toRow;
+      const copyUp = copyToRange.fromRow < baseRange.fromRow;
+      const copyDown = copyToRange.toRow > baseRange.toRow;
       if (!copyUp && !copyDown) {
         return null;
       }
@@ -1246,8 +1246,8 @@ export class SelectionUtils {
 
     // copy to range left or right - excludes corner space target range
     public static horizontalTargetRange(baseRange: SlickRange, copyToRange : SlickRange) {
-      let copyLeft = copyToRange.fromCell < baseRange.fromCell;
-      let copyRight = copyToRange.toCell > baseRange.toCell;
+      const copyLeft = copyToRange.fromCell < baseRange.fromCell;
+      const copyRight = copyToRange.toCell > baseRange.toCell;
       if (!copyLeft && !copyRight) {
         return null;
       }

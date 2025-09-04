@@ -259,7 +259,7 @@ export class SlickHybridSelectionModel {
       if (rowMoveManager?.isHandlerColumn(data.cell)) { return true; }
     }
     
-    let targetColumn = this._grid.getVisibleColumns()[data.cell];
+    const targetColumn = this._grid.getVisibleColumns()[data.cell];
     return this._options?.rowSelectColumnIdArr.includes('' + targetColumn.id) || false;
   }
 
