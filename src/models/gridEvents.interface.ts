@@ -1,6 +1,6 @@
-import type { Column, CompositeEditorOption, CssStyleHash, Editor, EditorValidationResult, GridOption } from './index';
-import type { SlickGrid } from '../slick.grid';
-import type { SlickRange, SlickCopyRange } from '../slick.core';
+import type { Column, CompositeEditorOption, CssStyleHash, Editor, EditorValidationResult, GridOption } from './index.js';
+import type { SlickGrid } from '../slick.grid.js';
+import type { SlickRange, SlickCopyRange } from '../slick.core.js';
 export interface SlickGridArg { grid: SlickGrid; }
 export interface OnActiveCellChangedEventArgs extends SlickGridArg { cell: number; row: number; }
 export interface OnAddNewRowEventArgs extends SlickGridArg { item: any; column: Column; }

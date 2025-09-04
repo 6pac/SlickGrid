@@ -35,7 +35,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
   protected _handler = new SlickEventHandler();
   protected _options: CellRangeSelectorOption;
   protected _selectionMode: string = CellSelectionMode.Select;
-  protected _dragReplaceHandleActive: boolean = false;
+  protected _dragReplaceHandleActive = false;
   protected _dragReplaceHandleCell:  { row : number, cell: number } | null = null;
   protected _defaults = {
     autoScroll: true,
@@ -166,7 +166,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
 
   protected handleDragStart(e: SlickEventData, dd: DragRowMove) {
     let cell = this._grid.getCellFromEvent(e);
-    if (this._dragReplaceHandleActive) cell = this._dragReplaceHandleCell;
+    if (this._dragReplaceHandleActive) { cell = this._dragReplaceHandleCell; }
     if (cell && this.onBeforeCellRangeSelected.notify(cell).getReturnValue() !== false && this._grid.canCellBeSelected(cell.row, cell.cell)) {
       this._dragging = true;
       e.stopImmediatePropagation();
@@ -381,7 +381,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
     if (dd?.range) {
       dd.range.end = end;
 
-      let cornerCell = !this._previousSelectedRange ? dd.range.start : SelectionUtils.normalRangeOppositeCellFromCopy(this._previousSelectedRange, end);
+      const cornerCell = !this._previousSelectedRange ? dd.range.start : SelectionUtils.normalRangeOppositeCellFromCopy(this._previousSelectedRange, end);
       this._currentlySelectedRange = dd.range;
 
       const range = new Slick.Range(cornerCell.row, cornerCell.cell, end.row, end.cell);
@@ -412,7 +412,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
     e.stopImmediatePropagation();
 
     this.stopIntervalTimer();
-    let r = new SlickRange(
+    const r = new SlickRange(
         dd.range.start.row ?? 0,
         dd.range.start.cell ?? 0,
         dd.range.end.row,
