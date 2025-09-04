@@ -14,7 +14,7 @@ import type {
   MergeTypes,
   DragRange
 } from './models/index.js';
-import { SlickGrid } from './slick.grid.js';
+import type { SlickGrid } from './slick.grid.js';
 
 export interface BasePubSub {
   publish<ArgType = any>(_eventName: string | any, _data?: ArgType): any;

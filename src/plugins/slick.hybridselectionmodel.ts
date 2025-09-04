@@ -2,7 +2,7 @@ import { keyCode as keyCode_, SlickEvent as SlickEvent_, SlickEventData as Slick
 import { Draggable as Draggable_ } from '../slick.interactions.js';
 import { SlickCellRangeDecorator as SlickCellRangeDecorator_ } from './slick.cellrangedecorator.js';
 import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector.js';
-import type { Column, CustomDataView, OnActiveCellChangedEventArgs } from '../models/index.js';
+import type { CustomDataView, OnActiveCellChangedEventArgs } from '../models/index.js';
 import type { SlickDataView } from '../slick.dataview.js';
 import type { SlickCrossGridRowMoveManager as SlickCrossGridRowMoveManager_ } from './slick.crossgridrowmovemanager.js';
 import type { SlickRowMoveManager as SlickRowMoveManager_ } from './slick.rowmovemanager.js';
@@ -259,7 +259,7 @@ export class SlickHybridSelectionModel {
       if (rowMoveManager?.isHandlerColumn(data.cell)) { return true; }
     }
     
-    var targetColumn = this._grid.getVisibleColumns()[data.cell];
+    let targetColumn = this._grid.getVisibleColumns()[data.cell];
     return this._options?.rowSelectColumnIdArr.includes('' + targetColumn.id) || false;
   }
 
