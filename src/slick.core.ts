@@ -1262,8 +1262,8 @@ export class SelectionUtils {
 
  
     public static defaultCopyDraggedCellRange(e , args) {
-      let verticalTargetRange = Slick.SelectionUtils.verticalTargetRange(args.prevSelectedRange, args.selectedRange);
-      let horizontalTargetRange = Slick.SelectionUtils.horizontalTargetRange(args.prevSelectedRange, args.selectedRange);
+      const verticalTargetRange = Slick.SelectionUtils.verticalTargetRange(args.prevSelectedRange, args.selectedRange);
+      const horizontalTargetRange = Slick.SelectionUtils.horizontalTargetRange(args.prevSelectedRange, args.selectedRange);
 
       if (verticalTargetRange) { Slick.SelectionUtils.copyCellsToTargetRange(args.prevSelectedRange, verticalTargetRange, args.grid); }
       if (horizontalTargetRange) { Slick.SelectionUtils.copyCellsToTargetRange(args.prevSelectedRange, horizontalTargetRange, args.grid); }
@@ -1272,20 +1272,20 @@ export class SelectionUtils {
 
     public static copyCellsToTargetRange(baseRange : SlickRange, targetRange: SlickRange, grid : SlickGrid) {
       let fromRowOffset = 0, fromCellOffset = 0;
-      let columns = grid.getVisibleColumns();
-      let options = grid.getOptions();
+      const columns = grid.getVisibleColumns();
+      const options = grid.getOptions();
 
-      for (var i=0; i < targetRange.rowCount() ; i++){
-        var toRow = grid.getDataItem(targetRange.fromRow + i);
-        var fromRow = grid.getDataItem(baseRange.fromRow + fromRowOffset);
+      for (let i=0; i < targetRange.rowCount() ; i++) {
+        const toRow = grid.getDataItem(targetRange.fromRow + i);
+        const fromRow = grid.getDataItem(baseRange.fromRow + fromRowOffset);
         fromCellOffset = 0;
         
-        for (var j=0; j < targetRange.cellCount(); j++) {
-          var toColDef = columns[targetRange.fromCell + j];
-          var fromColDef = columns[baseRange.fromCell + fromCellOffset];
+        for (let j=0; j < targetRange.cellCount(); j++) {
+          const toColDef = columns[targetRange.fromCell + j];
+          const fromColDef = columns[baseRange.fromCell + fromCellOffset];
           
           if (!toColDef.hidden && !fromColDef.hidden) {
-            var val = fromRow[fromColDef.field];
+            let val = fromRow[fromColDef.field];
             if (options.dataItemColumnValueExtractor) {
               val = options.dataItemColumnValueExtractor(fromRow, fromColDef);
             }
