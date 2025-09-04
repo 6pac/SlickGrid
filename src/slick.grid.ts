@@ -3925,7 +3925,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       // check range has expanded
       if (SelectionUtils.copyRangeIsLarger(prevSelectedRange, selectedRange)) {      
-          this.trigger(this.onDragReplaceCells, { prevSelectedRange: prevSelectedRange, selectedRange: selectedRange });
+          this.trigger(this.onDragReplaceCells, { prevSelectedRange, selectedRange });
           this.invalidate();
       }
     }
@@ -4046,8 +4046,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     if (this.currentEditor) { 
-      var commitSuccess =  this.getEditorLock().commitCurrentEdit(); 
-      if (!commitSuccess) return false;
+      const commitSuccess =  this.getEditorLock().commitCurrentEdit(); 
+      if (!commitSuccess) { return false; }
     }
 
     const retval = this.trigger(this.onDragStart, dd, e);
