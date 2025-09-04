@@ -94,7 +94,6 @@ import {
   ValueFilterMode as ValueFilterMode_,
   WidthEvalMode as WidthEvalMode_,
   DragExtendHandle as DragExtendHandle_,
-  SlickCopyRange as SlickCopyRange_,
 } from './slick.core.js';
 import { Draggable as Draggable_, MouseWheel as MouseWheel_, Resizable as Resizable_ } from './slick.interactions.js';
 
@@ -108,12 +107,11 @@ const GridAutosizeColsMode = IIFE_ONLY ? Slick.GridAutosizeColsMode : GridAutosi
 const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;
 const preClickClassName = IIFE_ONLY ? Slick.preClickClassName : preClickClassName_;
 const SlickRange = IIFE_ONLY ? Slick.Range : SlickRange_;
-const SlickCopyRange = IIFE_ONLY ? Slick.CopyRange : SlickCopyRange_;
 const RowSelectionMode = IIFE_ONLY ? Slick.RowSelectionMode : RowSelectionMode_;
 const CellSelectionMode = IIFE_ONLY ? Slick.CellSelectionMode : CellSelectionMode_;
 const ValueFilterMode = IIFE_ONLY ? Slick.ValueFilterMode : ValueFilterMode_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
-const SelectionUtils = IIFE_ONLY ? Slick.SelectionUtils : Utils_;
+const SelectionUtils = IIFE_ONLY ? Slick.SelectionUtils : SelectionUtils_;
 const WidthEvalMode = IIFE_ONLY ? Slick.WidthEvalMode : WidthEvalMode_;
 const Draggable = IIFE_ONLY ? Slick.Draggable : Draggable_;
 const MouseWheel = IIFE_ONLY ? Slick.MouseWheel : MouseWheel_;
@@ -3926,7 +3924,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       const selectedRange = this.selectedRanges[0];
 
       // check range has expanded
-      if (Slick.SelectionUtils.copyRangeIsLarger(prevSelectedRange, selectedRange)) {      
+      if (SelectionUtils.copyRangeIsLarger(prevSelectedRange, selectedRange)) {      
           this.trigger(this.onDragReplaceCells, { prevSelectedRange: prevSelectedRange, selectedRange: selectedRange });
           this.invalidate();
       }

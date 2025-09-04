@@ -1293,11 +1293,11 @@ export class SelectionUtils {
           }
           
           fromCellOffset++;
-          if (fromCellOffset >= baseRange.cellCount()) fromCellOffset = 0;
+          if (fromCellOffset >= baseRange.cellCount()) { fromCellOffset = 0; }
         }
         
         fromRowOffset++;
-        if (fromRowOffset >= baseRange.rowCount()) fromRowOffset = 0;
+        if (fromRowOffset >= baseRange.rowCount()) { fromRowOffset = 0; }
       }
     }
 }
