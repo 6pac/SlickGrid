@@ -428,7 +428,7 @@ export class SlickDragExtendHandle {
     dragReplaceEl.classList.add("slick-drag-replace-handle");
     dragReplaceEl.setAttribute("id", this.id);
     activeCellNode.appendChild(dragReplaceEl);
-    console.log('DragReplaceEl.createEl');
+    //console.log('DragReplaceEl.createEl');
   }
 }
 
