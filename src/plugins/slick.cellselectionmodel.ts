@@ -38,7 +38,10 @@ export class SlickCellSelectionModel {
 
   constructor(options?: { selectActiveCell: boolean; cellRangeSelector: SlickCellRangeSelector_; }) {
     if (options === undefined || options.cellRangeSelector === undefined) {
-      this._selector = new SlickCellRangeSelector({ selectionCss: { border: '2px solid black' } as CSSStyleDeclaration });
+      this._selector = new SlickCellRangeSelector({ 
+        selectionCss: { border: '2px solid black' } as CSSStyleDeclaration,
+        copyToSelectionCss: { border: '2px solid purple' } as CSSStyleDeclaration 
+      });
     } else {
       this._selector = options.cellRangeSelector;
     }
@@ -102,7 +105,7 @@ export class SlickCellSelectionModel {
     this._cachedPageRowCount = 0;
   }
 
-  setSelectedRanges(ranges: SlickRange_[], caller = 'SlickCellSelectionModel.setSelectedRanges') {
+  setSelectedRanges(ranges: SlickRange_[], caller = 'SlickCellSelectionModel.setSelectedRanges', selectionMode: string) {
     // simple check for: empty selection didn't change, prevent firing onSelectedRangesChanged
     if ((!this._ranges || this._ranges.length === 0) && (!ranges || ranges.length === 0)) { return; }
 
@@ -113,7 +116,7 @@ export class SlickCellSelectionModel {
     if (rangeHasChanged) {
       // provide extra "caller" argument through SlickEventData event to avoid breaking the previous pubsub event structure
       // that only accepts an array of selected range `SlickRange[]`, the SlickEventData args will be merged and used later by `onSelectedRowsChanged`
-      const eventData = new SlickEventData(new CustomEvent('click', { detail: { caller } }), this._ranges);
+      const eventData = new SlickEventData(new CustomEvent('click', { detail: { caller, selectionMode, addDragHandle: true } }), this._ranges);
       this.onSelectedRangesChanged.notify(this._ranges, eventData);
     }
   }
@@ -123,7 +126,7 @@ export class SlickCellSelectionModel {
   }
 
   refreshSelections() {
-    this.setSelectedRanges(this.getSelectedRanges());
+    this.setSelectedRanges(this.getSelectedRanges(), undefined, '');
   }
 
   protected handleBeforeCellRangeSelected(e: SlickEventData_): boolean | void {
@@ -133,9 +136,9 @@ export class SlickCellSelectionModel {
     }
   }
 
-  protected handleCellRangeSelected(_e: SlickEventData_, args: { range: SlickRange_; }) {
+  protected handleCellRangeSelected(_e: SlickEventData_, args: { range: SlickRange_; selectionMode: string; }) {
     this._grid.setActiveCell(args.range.fromRow, args.range.fromCell, false, false, true);
-    this.setSelectedRanges([args.range]);
+    this.setSelectedRanges([args.range], undefined, args.selectionMode);
   }
 
   protected handleActiveCellChange(_e: SlickEventData_, args: OnActiveCellChangedEventArgs) {
@@ -144,10 +147,10 @@ export class SlickCellSelectionModel {
     const isRowDefined = Utils.isDefined(args.row);
 
     if (this._options?.selectActiveCell && isRowDefined && isCellDefined) {
-      this.setSelectedRanges([new SlickRange(args.row, args.cell)]);
+      this.setSelectedRanges([new SlickRange(args.row, args.cell)], undefined, '');
     } else if (!this._options?.selectActiveCell || (!isRowDefined && !isCellDefined)) {
       // clear the previous selection once the cell changes
-      this.setSelectedRanges([]);
+      this.setSelectedRanges([], undefined, '');
     }
   }
 
@@ -282,7 +285,7 @@ export class SlickCellSelectionModel {
         ranges.push(last);
       }
 
-      this.setSelectedRanges(ranges);
+      this.setSelectedRanges(ranges, undefined, '');
 
       e.preventDefault();
       e.stopPropagation();
