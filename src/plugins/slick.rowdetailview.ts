@@ -598,7 +598,7 @@ export class SlickRowDetailView {
   protected getPaddingItem(parent: any, offset: any) {
     const item: any = {};
 
-    // copy the parent's field value so that padding rows can follow the parent's group and be filtered/sorted with it
+    // copy the parent's columns' field values so that padding rows can follow the parent's group and be filtered/sorted with it
     this._grid.getColumns().forEach(({ field }) => {
         item[field] = parent[field];
     });
