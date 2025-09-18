@@ -598,6 +598,10 @@ export class SlickRowDetailView {
   protected getPaddingItem(parent: any, offset: any) {
     const item: any = {};
 
+    this._grid.getColumns().forEach(({ field }) => {
+        item[field] = parent[field];
+    });
+
     Object.keys(this._dataView).forEach(prop => {
       item[prop] = null;
     });
