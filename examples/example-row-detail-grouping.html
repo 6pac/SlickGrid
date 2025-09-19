@@ -1,0 +1,627 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick.rowdetailview.css" type="text/css" />
+  <style>
+    .detail {
+      padding: 5px
+    }
+
+    .preload {
+      font-size: 18px;
+    }
+
+    input.filter {
+      border: 1px solid #dadada;
+      border-radius: 2px;
+    }
+
+    input.filter::placeholder {
+      opacity: 0.4;
+    }
+
+    .dynamic-cell-detail {
+      box-shadow: inset 0 0 0 1px #b0c1d0;
+      background-color: #f8f8f8;
+    }
+
+    .dynamic-cell-detail> :first-child {
+      vertical-align: middle;
+      line-height: 13px;
+      padding: 10px;
+      margin-left: 20px;
+    }
+
+    /* Style the tab */
+    .tab {
+      overflow: hidden;
+      border: 1px solid #ccc;
+      background-color: #f1f1f1;
+    }
+
+    /* Style the buttons inside the tab */
+    .tab button {
+      background-color: inherit;
+      float: left;
+      border: none;
+      outline: none;
+      cursor: pointer;
+      padding: 14px 16px;
+      transition: 0.3s;
+      font-size: 17px;
+    }
+
+    /* Change background color of buttons on hover */
+    .tab button:hover {
+      background-color: #ddd;
+    }
+
+    /* Create an active/current tablink class */
+    .tab button.active {
+      background-color: #ccc;
+    }
+
+    /* Style the tab content */
+    .tabcontent {
+      display: none;
+      padding: 6px 12px;
+      border: 1px solid #ccc;
+      border-top: none;
+    }
+
+    .options-panel {
+      width: 375px;
+    }
+  </style>
+</head>
+
+<body>
+  <h2 class="title">Example - Row Detail Plugin & Grouping</h2>
+  <div style="position:relative">
+    <td valign="top" width="50%">
+      <div id="myGrid" class="slick-container" style="width:600px;height:500px;"></div>
+    </td>
+    <br />
+
+    <div class="options-panel">
+      <h2>
+        <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+        Demonstrates:
+      </h2>
+      <ul>
+        <li>Row Detail & Grouping</li>
+      </ul>
+      <b>Options:</b>
+      <hr />
+      <div style="padding:6px;">
+        Data Size:
+        <button data-test="add-500-rows-btn">500 rows</button>
+        <button data-test="add-50k-rows-btn">50k rows</button>
+        <button data-test="add-500k-rows-btn">500k rows</button>
+        <hr />
+        <button data-test="clear-grouping-btn">Clear grouping</button>
+        <br />
+        <button data-test="group-duration-sort-value-btn">Group by duration & sort groups by value</button>
+        <br />
+        <button data-test="group-duration-sort-count-btn">Group by duration & sort groups by count</button>
+        <br />
+        <button data-test="group-duration-sort-count-aggregate-collapsed-btn">Group by duration & sort groups by count,
+          aggregate
+          collapsed
+        </button>
+        <br />
+        <br />
+        <button data-test="group-duration-effort-btn">Group by duration then effort-driven</button>
+        <br />
+        <button data-test="group-duration-effort-percent-btn">Group by duration then effort-driven then
+          percent.</button>
+        <br />
+        <br />
+        <button data-test="collapse-all-btn">Collapse all groups</button>
+        <button data-test="expand-all-btn">Expand all groups</button>
+      </div>
+
+      <h2>Options:</h2>
+      <p>
+        <button onclick="detailView.setOptions({ loadOnce: true, useRowClick: detailView.useRowClick })">Load Once
+          ON</button>
+        &nbsp;
+        <button onclick="detailView.setOptions({ loadOnce: false, useRowClick: detailView.useRowClick})">Load Once
+          OFF</button>
+        &nbsp;
+        <button onclick="detailView.collapseAll()" data-test="collapse-all-btn">Collapse All</button>
+      </p>
+      <p>
+        <input type="number" id="panelRowInput" /> <button onclick="setPanelRows()">Set Panel Rows Option</button>
+      </p>
+      <p>
+        <input type="number" id="maxRowInput" /> <button onclick="setMaxRows()">Set Max Panel Rows Option</button>
+      </p>
+      <p>
+        Click anywhere on the row to expand:
+      <p>
+        <button onclick="detailView.setOptions({ loadOnce: detailView.loadOnce, useRowClick: true })">Row Click
+          ON</button>
+        &nbsp;
+        <button onclick="detailView.setOptions({ loadOnce: detailView.loadOnce, useRowClick: false })">Row Click
+          OFF</button>
+      </p>
+      How many rows cab be opened at a time (defaults to multiple):
+      <p>
+        <button onclick="detailView.setOptions({ singleRowExpand: true })">Single Row Expand ON</button>
+        &nbsp;
+        <button onclick="detailView.setOptions({ singleRowExpand: false })">Single Row Expand OFF (multiple)</button>
+      </p>
+      <h2>View Source:</h2>
+      <ul>
+        <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-row-detail-grouping.html"
+            target="_sourcewindow"> View the source for this example on Github</a></li>
+      </ul>
+      </p>
+    </div>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+  <script type="module">
+    import {
+      Aggregators,
+      Editors,
+      Formatters,
+      SlickGlobalEditorLock,
+      SlickCellSelectionModel,
+      SlickColumnPicker,
+      SlickDataView,
+      SlickGrid,
+      SlickGroup,
+      SlickGroupItemMetadataProvider,
+      SlickRowDetailView,
+      SlickRowSelectionModel,
+      Utils,
+    } from '../dist/esm/index.js';
+    var dataView;
+    var detailView;
+    var grid;
+    var data = [];
+    var columnFilters = {};
+    var sortcol = "title";
+    var sortdir = 1;
+
+    var fakeNames = ['John Doe', 'Jane Doe', 'Chuck Norris', 'Bumblebee', 'Jackie Chan', 'Elvis Presley', 'Bob Marley', 'Mohammed Ali', 'Bruce Lee', 'Rocky Balboa'];
+
+    var columns = [
+      { id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 40, resizable: false, selectable: false },
+      { id: "title", name: "Title", field: "title", width: 85, minWidth: 85, cssClass: "cell-title", sortable: true },
+      { id: "duration", name: "Duration", field: "duration", sortable: true, groupTotalsFormatter: sumTotalsFormatter },
+      { id: "%", name: "% Complete", field: "percentComplete", width: 95, resizable: false, formatter: Formatters.PercentCompleteBar, groupTotalsFormatter: avgTotalsFormatter, sortable: true },
+      { id: "start", name: "Start", field: "start", minWidth: 60 },
+      { id: "finish", name: "Finish", field: "finish", minWidth: 60 },
+      { id: "effort-driven", name: "Effort Driven", width: 90, minWidth: 20, maxWidth: 90, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Formatters.Checkmark }
+    ];
+    var options = {
+      editable: false,
+      enableAddRow: false,
+      enableCellNavigation: true,
+      enableColumnReorder: true,
+      explicitInitialization: true,
+    };
+
+    function avgTotalsFormatter(totals, columnDef, grid) {
+      let val = totals.avg && totals.avg[columnDef.field];
+      if (val != null) {
+        return "avg: " + Math.round(val) + "%";
+      }
+      return "";
+    }
+
+    function sumTotalsFormatter(totals, columnDef, grid) {
+      let val = totals.sum && totals.sum[columnDef.field];
+      if (val != null) {
+        return "total: " + ((Math.round(parseFloat(val) * 100) / 100));
+      }
+      return "";
+    }
+
+    function groupByDuration() {
+      grid.setSortColumns([]);
+      dataView.setGrouping({
+        getter: "duration",
+        formatter: function (g) {
+          return "Duration:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
+        },
+        aggregators: [
+          new Aggregators.Avg("percentComplete"),
+          new Aggregators.Sum("cost")
+        ],
+        aggregateCollapsed: false,
+        lazyTotalsCalculation: true
+      });
+      grid.invalidate();
+    }
+
+    function groupByDurationOrderByCount(aggregateCollapsed) {
+      grid.setSortColumns([]);
+      dataView.setGrouping({
+        getter: "duration",
+        formatter: function (g) {
+          return "Duration:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
+        },
+        comparer: function (a, b) {
+          return a.count - b.count;
+        },
+        aggregators: [
+          new Aggregators.Avg("percentComplete"),
+          new Aggregators.Sum("cost")
+        ],
+        aggregateCollapsed: aggregateCollapsed,
+        lazyTotalsCalculation: true
+      });
+      grid.invalidate();
+    }
+
+    function groupByDurationEffortDriven() {
+      grid.setSortColumns([]);
+      dataView.setGrouping([
+        {
+          getter: "duration",
+          formatter: function (g) {
+            return "Duration:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
+          },
+          aggregators: [
+            new Aggregators.Sum("duration"),
+            new Aggregators.Sum("cost")
+          ],
+          aggregateCollapsed: true,
+          lazyTotalsCalculation: true
+        },
+        {
+          getter: "effortDriven",
+          formatter: function (g) {
+            return "Effort-Driven:  " + (g.value ? "True" : "False") + "  <span style='color:green'>(" + g.count + " items)</span>";
+          },
+          aggregators: [
+            new Aggregators.Avg("percentComplete"),
+            new Aggregators.Sum("cost")
+          ],
+          collapsed: true,
+          lazyTotalsCalculation: true
+        }
+      ]);
+      grid.invalidate();
+    }
+
+    function groupByDurationEffortDrivenPercent() {
+      grid.setSortColumns([]);
+      dataView.setGrouping([
+        {
+          getter: "duration",
+          formatter: function (g) {
+            return "Duration:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
+          },
+          aggregators: [
+            new Aggregators.Sum("duration"),
+            new Aggregators.Sum("cost")
+          ],
+          aggregateCollapsed: true,
+          lazyTotalsCalculation: true
+        },
+        {
+          getter: "effortDriven",
+          formatter: function (g) {
+            return "Effort-Driven:  " + (g.value ? "True" : "False") + "  <span style='color:green'>(" + g.count + " items)</span>";
+          },
+          aggregators: [
+            new Aggregators.Sum("duration"),
+            new Aggregators.Sum("cost")
+          ],
+          lazyTotalsCalculation: true
+        },
+        {
+          getter: "percentComplete",
+          formatter: function (g) {
+            return "% Complete:  " + g.value + "  <span style='color:green'>(" + g.count + " items)</span>";
+          },
+          aggregators: [
+            new Aggregators.Avg("percentComplete")
+          ],
+          aggregateCollapsed: true,
+          collapsed: true,
+          lazyTotalsCalculation: true
+        }
+      ]);
+      grid.invalidate();
+    }
+
+    function toggleGrouping(expand) {
+      const groupToggleAllElm = document.querySelector(".slick-group-toggle-all");
+      if (expand) {
+        dataView.expandAllGroups();
+        if (groupToggleAllElm) {
+          groupToggleAllElm.classList.remove('collapsed');
+          groupToggleAllElm.classList.addClass('expanded');
+        }
+      } else {
+        dataView.collapseAllGroups();
+        if (groupToggleAllElm) {
+          groupToggleAllElm.classList.remove('expanded');
+          groupToggleAllElm.classList.addClass('collapsed');
+        }
+      }
+    }
+
+    function DataItem(i) {
+      this.id = i;
+      this.num = i;
+      this.percentComplete = Math.round(Math.random() * 100);
+      this.effortDriven = (i % 5 == 0);
+      this.start = "01/01/2009";
+      this.finish = "01/05/2009";
+      this.title = "Task " + i;
+      this.duration = Math.round(Math.random() * 30);
+    }
+
+    function setMaxRows(amount) {
+      var value = document.querySelector("#maxRowInput").value;
+      var maxRows = parseInt(value);
+      var options = detailView.getOptions();
+
+      if (!isNaN(maxRows)) {
+        options.maxRows = maxRows;
+      }
+      detailView.setOptions(options);
+    }
+
+    function setPanelRows(amount) {
+      var value = document.querySelector("#panelRowInput").value;
+      var panelRows = parseInt(value);
+      var options = detailView.getOptions();
+
+      if (!isNaN(panelRows)) {
+        options.panelRows = panelRows;
+      }
+      detailView.setOptions(options);
+    }
+
+    function hookAssigneeOnClick(itemId) {
+      const assigneeElm = document.querySelector("#who-is-assignee_" + itemId);
+      if (assigneeElm) {
+        assigneeElm.addEventListener("click", assigneHandler.bind(this, itemId));
+      }
+    }
+
+    function assigneHandler(itemId) {
+      alert("Assignee is " + document.querySelector("#assignee_" + itemId).value);
+    }
+
+    function destroyAssigneeOnClick(itemId) {
+      const handler = document.querySelector("#who-is-assignee_" + itemId)
+      if (handler) {
+        handler.removeEventListener("click", assigneHandler.bind(this, itemId));
+      }
+    }
+
+    function loadingTemplate() {
+      return '<div class="preload">Loading...</div>';
+    }
+
+    function loadView(itemDetail) {
+      return [
+        '<div>',
+        '<h4>' + itemDetail.title + '</h4>',
+        '<div class="detail">',
+        '<label>Assignee:</label> <input id="assignee_' + itemDetail.id + '" type="text" value="' + itemDetail.assignee + '"/>',
+        '<span style="float: right">Find out who is the Assignee <button id="who-is-assignee_' + itemDetail.id + '">Click Me</button></span></div>',
+        '<div class="detail"><label>Reporter:</label> <span>' + itemDetail.reporter + '</span></div>',
+        '<div class="detail"><label>Duration:</label> <span>' + itemDetail.duration + '</span></div>',
+        '<div class="detail"><label>% Complete:</label> <span>' + itemDetail.percentComplete + '</span></div>',
+        '<div class="detail"><label>Start:</label> <span>' + itemDetail.start + '</span></div>',
+        '<div class="detail"><label>Finish:</label> <span>' + itemDetail.finish + '</span></div>',
+        '<div class="detail"><label>Effort Driven:</label> <span>' + itemDetail.effortDriven + '</span></div>',
+        '<div class="detail"><label>Effort Driven:</label> <span>' + itemDetail.effortDriven + '</span></div>',
+        '</div>'
+      ].join('');
+    }
+
+    // fill the template with a delay to simulate a server call
+    function simulateServerCall(item) {
+      window.setTimeout(function () {
+        // let's add some property to our item for a better simulation
+        var itemDetail = item;
+        itemDetail.assignee = fakeNames[randomNumber(0, 9)];
+        itemDetail.reporter = fakeNames[randomNumber(0, 9)];
+
+        if (itemDetail.num % 5 == 0) {
+          notifyNonTemplatedView(itemDetail)
+        } else {
+          notifyTemplate(itemDetail)
+        }
+      }, 1000);
+    }
+
+    // notify the onAsyncResponse with the "args.item" (required property)
+    // the plugin will then use itemDetail to populate the detail panel with "postTemplate"
+    function notifyTemplate(itemDetail) {
+      detailView.onAsyncResponse.notify({
+        "item": itemDetail
+      }, undefined, this);
+    }
+
+    // notify the onAsyncResponse with the "args.item" (required property)
+    // the plugin will then use itemDetail to populate the detail panel with "postTemplate"
+    function notifyNonTemplatedView(itemDetail) {
+      var rowIdx = grid.getData().getIdxById(itemDetail.id);
+      var temp =
+        "<div class=\"tab\">" +
+        "<button class=\"tablinks\" onclick=\"openCity(event, 'London'," + rowIdx + ")\">London</button>" +
+        "<button class=\"tablinks\" onclick=\"openCity(event, 'Paris'," + rowIdx + ")\">Paris</button>" +
+        "<button class=\"tablinks\" onclick=\"openCity(event, 'Tokyo'," + rowIdx + ")\">Tokyo</button>" +
+        "</div>" +
+
+        "<div id=\"London\" class=\"tabcontent\">" +
+        "<h3>London</h3>" +
+        "<p>London is the capital city of England.</p>" +
+        "<button onclick=\"detailView.resizeDetailView(data[" + rowIdx + "])\">Resize detail view</button>" +
+        "</div>" +
+
+        "<div id=\"Paris\" class=\"tabcontent\">" +
+        "<h3>Paris</h3>" +
+        "<p>Paris is the capital of France.</p> " +
+        "</div>" +
+
+        "<div id=\"Tokyo\" class=\"tabcontent\">" +
+        "<div>" +
+        "<h4>Direct view inserting without template</h4>" +
+        "<span>This is not using the template</span><br/>" +
+        "<button onclick=\"detailView.resizeDetailView(data[" + rowIdx + "])\">Resize detail view</button>" +
+        "<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>" +
+        "This is to make the loaded area longer" +
+        "<br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/><br/>" +
+        "Done Yay" +
+        "</div>" +
+        "</div>";
+
+      detailView.onAsyncResponse.notify({
+        "item": itemDetail,
+        // detailView Ignores any template and use what's passed through instead
+        "detailView": temp,
+      }, undefined, this);
+    }
+
+    /** Callback to open a city from row detail "Task 5" */
+    function openCity(evt, cityName, rowIdx) {
+      var i, tabcontent, tablinks;
+      tabcontent = document.getElementsByClassName("tabcontent");
+      for (i = 0; i < tabcontent.length; i++) {
+        tabcontent[i].style.display = "none";
+      }
+      tablinks = document.getElementsByClassName("tablinks");
+      for (i = 0; i < tablinks.length; i++) {
+        tablinks[i].className = tablinks[i].className.replace(" active", "");
+      }
+      document.getElementById(cityName).style.display = "block";
+      evt.currentTarget.className += " active";
+
+      /* You can save the detail view here OR on the filter keyup
+       the reason we save the detail view is to keep the entire content of the view
+       before doing certain action like filtering/sorting/reorderingColumn/...
+      */
+      // detailView.saveDetailView(data[rowIdx]);
+    }
+
+    function randomNumber(min, max) {
+      return Math.floor(Math.random() * (max - min + 1) + min);
+    }
+
+    function comparer(a, b) {
+      var x = a[sortcol], y = b[sortcol];
+      return (x == y ? 0 : (x > y ? 1 : -1));
+    }
+
+    document.addEventListener("DOMContentLoaded", function () {
+      // prepare the data
+      for (var i = 0; i < 5000; i++) {
+        data[i] = new DataItem(i);
+      }
+      let groupItemMetadataProvider = new SlickGroupItemMetadataProvider();
+      dataView = new SlickDataView({
+        groupItemMetadataProvider,
+        inlineFilters: true
+      });
+
+      // create the row detail plugin
+      detailView = new SlickRowDetailView({
+        cssClass: "detailView-toggle",
+        preTemplate: loadingTemplate,
+        postTemplate: loadView,
+        process: simulateServerCall,
+        useRowClick: true,
+
+        // how many grid rows do we want to use for the detail panel
+        // also note that the detail view adds an extra 1 row for padding purposes
+        // example, if you choosed 6 panelRows, the display will in fact use 5 rows
+        panelRows: 6,
+      });
+
+      // push the plugin as the first column
+      columns.unshift(detailView.getColumnDefinition());
+
+      grid = new SlickGrid("#myGrid", dataView, columns, options);
+
+      grid.registerPlugin(groupItemMetadataProvider);
+
+      // register the column
+      grid.setSelectionModel(new SlickRowSelectionModel({ selectActiveRow: false }));
+      grid.registerPlugin(detailView);
+
+      detailView.onBeforeRowDetailToggle.subscribe(function (e, args) {
+        // you coud cancel opening certain rows
+        // if (args.item.id === 1) {
+        //   e.preventDefault();
+        //   return false;
+        // }
+        console.log('before toggling row detail', args.item);
+      });
+
+      detailView.onAfterRowDetailToggle.subscribe(function (e, args) {
+        console.log('after toggling row detail', args.item);
+        if (args.item._collapsed) {
+          destroyAssigneeOnClick(args.item.id);
+        } else {
+
+        }
+      });
+
+      detailView.onAsyncEndUpdate.subscribe(function (e, args) {
+        console.log('finished updating the post async template', args);
+        hookAssigneeOnClick(args.item.id);
+      });
+
+      // the following subscribers can be useful to Save/Re-Render a View
+      // when it goes out of viewport or back to viewport range
+      detailView.onRowOutOfViewportRange.subscribe(function (e, args) {
+        destroyAssigneeOnClick(args.item.id);
+      });
+
+      detailView.onRowBackToViewportRange.subscribe(function (e, args) {
+        hookAssigneeOnClick(args.item.id);
+      });
+
+      grid.onSort.subscribe(function (e, args) {
+        sortdir = args.sortAsc ? 1 : -1;
+        sortcol = args.sortCol.field;
+
+        // using native sort with comparer
+        // preferred method but can be very slow in IE with huge datasets
+        dataView.sort(comparer, args.sortAsc);
+      });
+
+      // initialize the model after all the events have been hooked up
+      grid.init();
+      dataView.beginUpdate();
+      dataView.setItems(data, 'num');
+      // dataView.setFilter(filter);
+      groupByDuration();
+      dataView.endUpdate();
+
+      // add onClick listeners to all buttons
+      document.querySelector('[data-test="add-500-rows-btn"]').addEventListener('click', () => loadData(500));
+      document.querySelector('[data-test="add-50k-rows-btn"]').addEventListener('click', () => loadData(50000));
+      document.querySelector('[data-test="add-500k-rows-btn"]').addEventListener('click', () => loadData(500000));
+
+      document.querySelector('[data-test="clear-grouping-btn"]').addEventListener('click', () => dataView.setGrouping([]));
+      document.querySelector('[data-test="group-duration-sort-value-btn"]').addEventListener('click', () => groupByDuration());
+      document.querySelector('[data-test="group-duration-sort-count-btn"]').addEventListener('click', () => groupByDurationOrderByCount(false));
+      document.querySelector('[data-test="group-duration-sort-count-aggregate-collapsed-btn"]').addEventListener('click', () => groupByDurationOrderByCount(true));
+      document.querySelector('[data-test="group-duration-effort-btn"]').addEventListener('click', () => groupByDurationEffortDriven());
+      document.querySelector('[data-test="group-duration-effort-percent-btn"]').addEventListener('click', () => groupByDurationEffortDrivenPercent());
+      document.querySelector('[data-test="collapse-all-btn"]').addEventListener('click', () => toggleGrouping(false));
+      document.querySelector('[data-test="expand-all-btn"]').addEventListener('click', () => toggleGrouping(true));
+    });
+  </script>
+</body>
+
+</html>
