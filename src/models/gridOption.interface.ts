@@ -370,17 +370,31 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   /** Defaults to false, when set to True will sync the column cell resize & apply the column width */
   syncColumnCellResize?: boolean;
 
+  /** When set to true, it will skip the validation check to make sure frozen columns are not wider than the grid visible canvas width */
+  skipFreezeColumnValidation?: boolean;
+
   /**
-   * Defaults to false, should we throw an erro when frozenColumn is wider than the grid viewport width.
-   * When that happens the unfrozen section on the right is in a phantom area that is not viewable neither clickable unless we enable double-scroll on the grid container.
+   * @deprecated @use `invalidColumnFreezeWidthCallback` Defaults to false, should we throw an error when frozenColumn is wider than the grid viewport width.
    */
   throwWhenFrozenNotAllViewable?: boolean;
 
+  /** Message to show when the frozen column is invalid and `invalidColumnFreezeWidthCallbackPicker` is enabled */
+  invalidColumnFreezePickerMessage?: string;
+
   /**
-   * Defaults to true, show a browser alert to advise the user when frozenColumn is wider than the grid viewport width
-   * (same as `throwWhenFrozenNotAllViewable` but uses an alert of throwing)
+   * Defaults to `alert(error)`, which will trigger when the user tries to uncheck too many columns via ColumnPicker/GridMenu.
+   * We need to have 1 or more columns visible on the right side of the frozen column.
    */
-  alertWhenFrozenNotAllViewable?: boolean;
+  invalidColumnFreezePickerCallback?: (error: string) => void;
+
+  /** Message to show when the frozen column width is invalid and `invalidColumnFreezeWidthCallbackWidth` or `throwWhenFrozenNotAllViewable` is enabled */
+  invalidColumnFreezeWidthMessage?: string;
+
+  /**
+   * Defaults to `alert(error)`, which will trigger when the user tries to set a `frozenColumn` that is wider than the visible grid viewport width in the browser.
+   * We can't freeze wider than the viewport because the right canvas will never be visible and since the left canvas is never scrollable this would break the UX.
+   */
+  invalidColumnFreezeWidthCallback?: (error: string) => void;
 
 
   /** What is the top panel height in pixels (only type the number) */
