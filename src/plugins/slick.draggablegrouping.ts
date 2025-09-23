@@ -253,7 +253,7 @@ export class SlickDraggableGrouping {
 
     // user can optionally provide initial groupBy columns
     if (this._options.initialGroupBy && !this._isInitialized) {
-      setTimeout(() => this.setDroppedGroups(this._options.initialGroupBy!));
+      setTimeout(() => this.setDroppedGroups(this._options.initialGroupBy || []), 0);
     }
     this._isInitialized = true;
 
