@@ -1925,6 +1925,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       onEnd: (e: SortableEvent) => {
         e.item.classList.remove('slick-header-column-active');
         clearInterval(columnScrollTimer);
+        const prevScrollLeft = this.scrollLeft;
 
         if (!this.getEditorLock()?.commitCurrentEdit()) {
           return;
@@ -1941,6 +1942,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         e.stopPropagation();
         if (!this.arrayEquals(prevColumnIds, reorderedIds)) {
           this.setColumns(reorderedColumns);
+          // reapply previous scroll position since it might move back to x=0 after calling `setColumns()` (especially when `frozenColumn` is set)
+          this.scrollToX(prevScrollLeft);
           this.trigger(this.onColumnsReordered, { impactedColumns: this.columns, previousColumnOrder: prevColumnIds });
           this.setupColumnResize();
         }
@@ -6564,34 +6567,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.prevScrollLeft = this.scrollLeft;
 
       // adjust scroll position of all div containers when scrolling the grid
-      this._viewportScrollContainerX.scrollLeft = this.scrollLeft;
-      this._headerScrollContainer.scrollLeft = this.scrollLeft;
-      this._topPanelScrollers[0].scrollLeft = this.scrollLeft;
-      if (this._options.createFooterRow) {
-        this._footerRowScrollContainer.scrollLeft = this.scrollLeft;
-      }
-      if (this._options.createPreHeaderPanel) {
-        if (this.hasFrozenColumns()) {
-          this._preHeaderPanelScrollerR.scrollLeft = this.scrollLeft;
-        } else {
-          this._preHeaderPanelScroller.scrollLeft = this.scrollLeft;
-        }
-      }
-      if (this._options.createTopHeaderPanel) {
-        this._topHeaderPanelScroller.scrollLeft = this.scrollLeft;
-      }
-
-      if (this.hasFrozenColumns()) {
-        if (this.hasFrozenRows) {
-          this._viewportTopR.scrollLeft = this.scrollLeft;
-        }
-        this._headerRowScrollerR.scrollLeft = this.scrollLeft; // right header row scrolling with frozen grid
-      } else {
-        if (this.hasFrozenRows) {
-          this._viewportTopL.scrollLeft = this.scrollLeft;
-        }
-        this._headerRowScrollerL.scrollLeft = this.scrollLeft; // left header row scrolling with regular grid
-      }
+      this.scrollToX(this.scrollLeft);
     }
 
     // autoheight suppresses vertical scrolling, but editors can create a div larger than
@@ -7608,6 +7584,41 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   // compare 2 primitive type arrays, do not use to compare object arrays)
   arrayEquals<T extends boolean | string | number>(arr1: Array<T>, arr2: Array<T>): boolean {
     return Array.isArray(arr1) && Array.isArray(arr2) && arr2.toString() === arr1.toString();
+  }
+
+  /**
+   * Scroll to an X coordinate position in the grid
+   * @param {Number} x
+   */
+  scrollToX(x: number): void {
+    this._viewportScrollContainerX.scrollLeft = x;
+    this._headerScrollContainer.scrollLeft = x;
+    this._topPanelScrollers[0].scrollLeft = x;
+    if (this._options.createFooterRow) {
+      this._footerRowScrollContainer.scrollLeft = x;
+    }
+    if (this._options.createPreHeaderPanel) {
+      if (this.hasFrozenColumns()) {
+        this._preHeaderPanelScrollerR.scrollLeft = x;
+      } else {
+        this._preHeaderPanelScroller.scrollLeft = x;
+      }
+    }
+    if (this._options.createTopHeaderPanel) {
+      this._topHeaderPanelScroller.scrollLeft = x;
+    }
+
+    if (this.hasFrozenColumns()) {
+      if (this.hasFrozenRows) {
+        this._viewportTopR.scrollLeft = x;
+      }
+      this._headerRowScrollerR.scrollLeft = x; // right header row scrolling with frozen grid
+    } else {
+      if (this.hasFrozenRows) {
+        this._viewportTopL.scrollLeft = x;
+      }
+      this._headerRowScrollerL.scrollLeft = x; // left header row scrolling with regular grid
+    }
   }
 
   /**
