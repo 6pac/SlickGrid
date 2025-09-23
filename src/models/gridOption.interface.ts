@@ -373,9 +373,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   /** When set to true, it will skip the validation check to make sure frozen columns are not wider than the grid visible canvas width */
   skipFreezeColumnValidation?: boolean;
 
-  /**
-   * @deprecated @use `invalidColumnFreezeWidthCallback` Defaults to false, should we throw an error when frozenColumn is wider than the grid viewport width.
-   */
+  /** @deprecated @use `invalidColumnFreezeWidthCallback` Defaults to false, should we throw an error when frozenColumn is wider than the grid viewport width. */
   throwWhenFrozenNotAllViewable?: boolean;
 
   /** Message to show when the frozen column is invalid and `invalidColumnFreezeWidthCallbackPicker` is enabled */
