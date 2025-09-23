@@ -4653,14 +4653,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
- * Validate that the column freeze is allowed in the browser by making sure that the frozen column is not exceeding the available and visible left canvas width.
- * Note that it will only validate when `invalidColumnFreezeWidthCallback` or `throwWhenFrozenNotAllViewable` grid option is enabled.
- * @param {Number} frozenColumn the column index to freeze at
- * @param {Boolean} [forceAlert] tri-state flag to alert when frozen column is invalid
- *  - if `undefined` it will do the condition check and never alert more than once
- *  - if `true` it will do the condition check and always alert even if it was called before
- *  - if `false` it will do the condition check but always skip the alert
- */
+   * Validate that the column freeze is allowed in the browser by making sure that the frozen column is not exceeding the available and visible left canvas width.
+   * Note that it will only validate when `invalidColumnFreezeWidthCallback` or `throwWhenFrozenNotAllViewable` grid option is enabled.
+   * @param {Number} frozenColumn the column index to freeze at
+   * @param {Boolean} [forceAlert] tri-state flag to alert when frozen column is invalid
+   *  - if `undefined` it will do the condition check and never alert more than once
+   *  - if `true` it will do the condition check and always alert even if it was called before
+   *  - if `false` it will do the condition check but always skip the alert
+   */
   validateColumnFreezeWidth(frozenColumn = -1, forceAlert?: boolean): boolean {
     if (frozenColumn >= 0) {
       let canvasWidthL = 0;
