@@ -273,6 +273,15 @@
     ]
   };
 
+  function copyDraggedCellRange(e, args) {
+      const verticalTargetRange = Slick.SelectionUtils.verticalTargetRange(args.prevSelectedRange, args.selectedRange);
+      const horizontalTargetRange = Slick.SelectionUtils.horizontalTargetRange(args.prevSelectedRange, args.selectedRange);
+      const cornerTargetRange = Slick.SelectionUtils.cornerTargetRange(args.prevSelectedRange, args.selectedRange);
+
+      if (verticalTargetRange) { Slick.SelectionUtils.copyCellsToTargetRange(args.prevSelectedRange, verticalTargetRange, args.grid); }
+      if (horizontalTargetRange) { Slick.SelectionUtils.copyCellsToTargetRange(args.prevSelectedRange, horizontalTargetRange, args.grid); }
+      if (cornerTargetRange) { Slick.SelectionUtils.copyCellsToTargetRange(args.prevSelectedRange, cornerTargetRange, args.grid); }
+  }
 
   document.addEventListener("DOMContentLoaded", function() {
     for (var i = 0; i < 100; i++) {
@@ -288,7 +297,7 @@
     contextMenuPlugin = new Slick.Plugins.ContextMenu(contextMenuOptions);
     grid.registerPlugin(contextMenuPlugin);
 
-    grid.onDragReplaceCells.subscribe(Slick.SelectionUtils.defaultCopyDraggedCellRange);
+    grid.onDragReplaceCells.subscribe(copyDraggedCellRange);
 
     // set keyboard focus on the grid
     grid.getCanvasNode().focus();

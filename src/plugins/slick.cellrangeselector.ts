@@ -343,6 +343,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
   }
 
   protected handleDragTo(e: { pageX: number; pageY: number; }, dd: DragPosition) {
+  //console.log('cellRangeSelector.handleDragTo: ' + JSON.stringify(dd.range));
     const targetEvent: MouseEvent | Touch = (e as unknown as TouchEvent)?.touches?.[0] ?? e;
     const canvasOffset = Utils.offset(this._activeCanvas);
     const end = this._grid.getCellFromPoint(
@@ -384,7 +385,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
       const cornerCell = !this._previousSelectedRange ? dd.range.start : SelectionUtils.normalRangeOppositeCellFromCopy(this._previousSelectedRange, end);
       this._currentlySelectedRange = dd.range;
 
-      const range = new Slick.Range(cornerCell.row, cornerCell.cell, end.row, end.cell);
+      const range = new Slick.Range(cornerCell.row!, cornerCell.cell!, end.row, end.cell);
 
       this._decorator.show(range, this._dragReplaceHandleActive);
       this.onCellRangeSelecting.notify({
@@ -399,6 +400,8 @@ export class SlickCellRangeSelector implements SlickPlugin {
   }
 
   protected handleDragEnd(e: SlickEventData, dd: DragPosition) {
+    //console.log('cellRangeSelector.handleDragEnd: ' + JSON.stringify(dd.range));
+
     this._decorator.hide();
 
     if (!this._dragging || !dd.range) {
@@ -412,9 +415,18 @@ export class SlickCellRangeSelector implements SlickPlugin {
     e.stopImmediatePropagation();
 
     this.stopIntervalTimer();
+
+    const targetEvent: MouseEvent | Touch = (e as unknown as TouchEvent)?.touches?.[0] ?? e;
+    const canvasOffset = Utils.offset(this._activeCanvas);
+    const end = this._grid.getCellFromPoint(
+      targetEvent.pageX - (canvasOffset?.left ?? 0) + this._columnOffset,
+      targetEvent.pageY - (canvasOffset?.top ?? 0) + this._rowOffset
+    );
+    const cornerCell = !this._dragReplaceHandleActive || !this._previousSelectedRange ? dd.range.start : SelectionUtils.normalRangeOppositeCellFromCopy(this._previousSelectedRange, end);
+
     const r = new SlickRange(
-        dd.range.start.row ?? 0,
-        dd.range.start.cell ?? 0,
+        cornerCell.row ?? 0,
+        cornerCell.cell ?? 0,
         dd.range.end.row,
         dd.range.end.cell
       );

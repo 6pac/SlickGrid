@@ -497,6 +497,7 @@ export class SlickHybridSelectionModel {
   }
 
   protected handleCellRangeSelected(_e: SlickEventData_, args: { range: SlickRange_; selectionMode: string; allowAutoEdit?: boolean; }) {
+    //console.log('hybridSelectionModel.handleCellRangeSelected: ' + JSON.stringify(args.range) + '/' + args.selectionMode);
     if (this._activeSelectionIsRow) { 
       if (!this._grid.getOptions().multiSelect || !this._options?.selectActiveRow) {
         return false;

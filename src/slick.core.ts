@@ -1237,9 +1237,9 @@ export class SelectionUtils {
       }
       let rtn;
       if (copyUp) {
-        rtn = new Slick.Range(copyToRange.fromRow, copyToRange.fromCell, baseRange.fromRow - 1, copyToRange.toCell);
+        rtn = new Slick.Range(copyToRange.fromRow, copyToRange.fromCell, baseRange.fromRow - 1, baseRange.toCell);
       } else {
-        rtn = new Slick.Range(baseRange.toRow + 1, copyToRange.fromCell, copyToRange.toRow, copyToRange.toCell);
+        rtn = new Slick.Range(baseRange.toRow + 1, copyToRange.fromCell, copyToRange.toRow, baseRange.toCell);
       }
       return rtn;
     }
@@ -1260,16 +1260,32 @@ export class SelectionUtils {
       return rtn;
     }
 
- 
-    public static defaultCopyDraggedCellRange(e , args) {
-      const verticalTargetRange = Slick.SelectionUtils.verticalTargetRange(args.prevSelectedRange, args.selectedRange);
-      const horizontalTargetRange = Slick.SelectionUtils.horizontalTargetRange(args.prevSelectedRange, args.selectedRange);
-
-      if (verticalTargetRange) { Slick.SelectionUtils.copyCellsToTargetRange(args.prevSelectedRange, verticalTargetRange, args.grid); }
-      if (horizontalTargetRange) { Slick.SelectionUtils.copyCellsToTargetRange(args.prevSelectedRange, horizontalTargetRange, args.grid); }
-    }  
-
-
+    // copy to corner space target range
+    public static cornerTargetRange(baseRange: SlickRange, copyToRange : SlickRange) {
+      const copyUp = copyToRange.fromRow < baseRange.fromRow;
+      const copyDown = copyToRange.toRow > baseRange.toRow;
+      const copyLeft = copyToRange.fromCell < baseRange.fromCell;
+      const copyRight = copyToRange.toCell > baseRange.toCell;
+      if ((!copyLeft && !copyRight) || (!copyUp && !copyDown)) {
+        return null;
+      }
+      let rtn;
+      if (copyLeft) {
+        if (copyUp) {
+          rtn = new Slick.Range(copyToRange.fromRow, copyToRange.fromCell, baseRange.fromRow - 1, baseRange.fromCell - 1);
+        } else {
+          rtn = new Slick.Range(baseRange.toRow + 1, copyToRange.fromCell, copyToRange.toRow, baseRange.fromCell - 1);
+        }
+      } else {
+         if (copyUp) {
+          rtn = new Slick.Range(copyToRange.fromRow, baseRange.toCell + 1, baseRange.fromRow - 1, copyToRange.toCell);
+        } else {
+          rtn = new Slick.Range(baseRange.toRow + 1, baseRange.toCell + 1, copyToRange.toRow, copyToRange.toCell);
+        }
+      }
+      return rtn;
+    }
+     
     public static copyCellsToTargetRange(baseRange : SlickRange, targetRange: SlickRange, grid : SlickGrid) {
       let fromRowOffset = 0, fromCellOffset = 0;
       const columns = grid.getVisibleColumns();
