@@ -418,9 +418,7 @@ export class SlickDragExtendHandle {
   }
 
   removeEl() {
-    const dragReplaceEl = document.getElementById(this.id);
-    if (dragReplaceEl) { dragReplaceEl.remove(); }
-    //console.log('DragReplaceEl.removeEl');
+    document.getElementById(this.id)?.remove();
   }
 
   createEl(activeCellNode: any) {

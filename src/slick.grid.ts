@@ -4045,9 +4045,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return false;
     }
 
-    if (this.currentEditor) { 
-      const commitSuccess =  this.getEditorLock().commitCurrentEdit(); 
-      if (!commitSuccess) { return false; }
+    if (this.currentEditor && !this.getEditorLock().commitCurrentEdit()) {
+      return false;
     }
 
     const retval = this.trigger(this.onDragStart, dd, e);

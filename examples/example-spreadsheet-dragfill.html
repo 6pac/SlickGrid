@@ -123,7 +123,7 @@
     this.init = function () {
       navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
       input = Slick.Utils.createDomElement('input', { type: 'text', className: 'editor-text' }, args.container);
-      input.addEventListener("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
+      input.addEventListener("keydown", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
       input.focus();
       input.select();
 
