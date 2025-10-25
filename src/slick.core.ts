@@ -422,11 +422,13 @@ export class SlickDragExtendHandle {
   }
 
   createEl(activeCellNode: any) {
-    const dragReplaceEl = document.createElement("div");
-    dragReplaceEl.classList.add("slick-drag-replace-handle");
-    dragReplaceEl.setAttribute("id", this.id);
-    activeCellNode.appendChild(dragReplaceEl);
-    //console.log('DragReplaceEl.createEl');
+  if (activeCellNode) {
+      const dragReplaceEl = document.createElement("div");
+      dragReplaceEl.classList.add("slick-drag-replace-handle");
+      dragReplaceEl.setAttribute("id", this.id);
+      activeCellNode.appendChild(dragReplaceEl);
+      //console.log('DragReplaceEl.createEl');
+    }
   }
 }
 
