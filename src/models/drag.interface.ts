@@ -9,6 +9,7 @@ export interface DragItem {
   target: HTMLElement;
   startX: number;
   startY: number;
+  matchClassTag: string;
 }
 
 export interface DragPosition {
