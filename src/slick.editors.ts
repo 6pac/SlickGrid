@@ -572,6 +572,10 @@ export class CheckboxEditor<TData = any, C extends Column<TData> = Column<TData>
     }
   };
 
+  preClick() {
+    this.input.checked = !this.input.checked;
+  }
+
   serializeValue() {
     return this.input.checked;
   };
