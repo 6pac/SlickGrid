@@ -4148,8 +4148,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (!this.getEditorLock()?.isActive() || this.getEditorLock()?.commitCurrentEdit()) {
         this.scrollRowIntoView(cell.row, false);
 
-        const classText = (e as DOMEvent<HTMLDivElement>).target?.className || '';
-        const preClickModeOn = classText.split(' ').includes(preClickClassName);
+        const preClickModeOn = !!(e as DOMEvent<HTMLDivElement>).target?.classList?.contains(preClickClassName);
         const column = this.columns[cell.cell];
         const suppressActiveCellChangedEvent = !!(this._options.editable && column?.editor && this._options.suppressActiveCellChangeOnEdit);
         this.setActiveCellInternal(this.getCellNode(cell.row, cell.cell), null, preClickModeOn, suppressActiveCellChangedEvent, (e as DOMEvent<HTMLDivElement>));
