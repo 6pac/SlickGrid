@@ -9,12 +9,14 @@ export interface DragItem {
   target: HTMLElement;
   startX: number;
   startY: number;
+  matchClassTag: string;
 }
 
 export interface DragPosition {
   startX: number;
   startY: number;
   range: DragRange;
+  matchClassTag: string;
 }
 
 export interface DragRange {
@@ -26,6 +28,10 @@ export interface DragRange {
     row?: number;
     cell?: number;
   };
+  rowCount?: number;
+  cellCount?: number;
+  wasDraggedUp?: boolean;
+  wasDraggedLeft?: boolean;
 }
 
 export interface DragRowMove {
@@ -50,4 +56,5 @@ export interface DragRowMove {
   startX: number;
   startY: number;
   range: DragRange;
+  matchClassTag: string;
 }

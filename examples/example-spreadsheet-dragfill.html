@@ -1,0 +1,379 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <title>SlickGrid spreadsheet with Drag Fill - no formula Editor</title>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.contextmenu.css" type="text/css" />
+  <style>
+    .slick-cell.copied {
+      background: blue;
+      background: rgba(0, 0, 255, 0.2);
+      transition: 0.5s background;
+    }
+    /** override slick-cell to make it look like Excel sheet */
+    .slick-container {
+      --alpine-header-column-height: 20px;
+      --alpine-header-font-weight: 500;
+      --alpine-cell-border-width: 0 1px 1px 0;
+      --alpine-cell-border-color: #d4d4d4;
+    }
+  </style>
+</head>
+<body>
+<h2 class="title">Example - Spreadsheet Drag-Fill</h2>
+<div style="position:relative">
+  <div style="width:600px;">
+    <div id="myGrid" class="slick-container" style="width:100%;height:500px;"></div>
+  </div>
+
+  <div class="options-panel">
+    <h2>Demonstrates:</h2>
+    <ul>
+      <li>Select a range of cells with a mouse</li>
+      <li>Drag from the handle at the bottom right of the selected range to fill the dragged-over area with the values from the selected range</li>
+      <li>Drag-fill can be done in any direction</li>
+      <li>Drag-fill selection border (css) is different to regular selection (uses <code>copyToSelectionCss</code> from CellRangeDecorator rather than the usual <code>selectionCss</code>)</li>
+      <li>By default uses <code>Slick.SelectionUtils.defaultCopyDraggedCellRange</code> to copy dragged cells by subscribing to <code>onDragReplaceCells</code>. 
+        Use this event to customise behaviour. The default function is ideal as a starting example.</li>
+      <li>Also uses hybrid selection model plugin to select a row if the left hand cell (containing row index) is selected, or select a cell otherwise.</li>
+      <li>Uses the context menu plugin to display different context menus for the left hand and all other columns.</li>
+    </ul>
+      <h2>View Source:</h2>
+      <ul>
+      <li>
+        <a href="https://github.com/6pac/SlickGrid/blob/master/examples/example-spreadsheet-dragfill.html" target="_sourcewindow">
+          View the source for this example on Github
+        </a>
+      </li>
+      </ul>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
+
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
+<script src="../dist/browser/plugins/slick.contextmenu.js"></script>
+<script src="../dist/browser/plugins/slick.autotooltips.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangedecorator.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangeselector.js"></script>
+<script src="../dist/browser/plugins/slick.cellcopymanager.js"></script>
+<script src="../dist/browser/plugins/slick.hybridselectionmodel.js"></script>
+
+<script>
+  var grid;
+  var data = [];
+  let cellSelectionModel;
+  var options = {
+    editable: true,
+    enableAddRow: true,
+    enableCellNavigation: true,
+    asyncEditorLoading: false,
+    autoEdit: true
+  };
+  var contextMenuPlugin;
+  var allColIdArr = [];
+  /*
+   * Depending on the value of Grid option 'editorCellNavOnLRKeys', us
+   * Navigate to the cell on the left if the cursor is at the beginning of the input string
+   * and to the right cell if it's at the end. Otherwise, move the cursor within the text
+   */
+  function handleKeydownLRNav(e) {
+    var cursorPosition = this.selectionStart;
+    var textLength = this.value.length;
+    if ((e.keyCode === Slick.keyCode.LEFT && cursorPosition > 0) ||
+      e.keyCode === Slick.keyCode.RIGHT && cursorPosition < textLength - 1) {
+      e.stopImmediatePropagation();
+    }
+  }
+
+  function handleKeydownLRNoNav(e) {
+    if (e.keyCode === Slick.keyCode.LEFT || e.keyCode === Slick.keyCode.RIGHT) {
+      e.stopImmediatePropagation();
+    }
+  }
+
+  function TestValidator(value, grid, rowIndex, colIndex) {
+    if (value.toString().length > 4) {
+      return {
+        valid: false,
+        msg: "This field has more than 4 chars"
+      };
+    } else {
+      return {
+        valid: true,
+        msg: null
+      };
+    }
+  }
+ 
+  function TextEditor(args) {
+    var input;
+    var defaultValue;
+    var scope = this;
+    var navOnLR;
+    this.args = args;
+
+    this.init = function () {
+      navOnLR = args.grid.getOptions().editorCellNavOnLRKeys;
+      input = Slick.Utils.createDomElement('input', { type: 'text', className: 'editor-text' }, args.container);
+      input.addEventListener("keydown", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
+      input.focus();
+      input.select();
+
+      // don't show Save/Cancel when it's a Composite Editor and also trigger a onCompositeEditorChange event when input changes
+      if (args.compositeEditorOptions) {
+        input.addEventListener("change", this.onChange);
+      }
+    };
+
+    this.onChange = function() {
+      var activeCell = args.grid.getActiveCell();
+
+      // when valid, we'll also apply the new value to the dataContext item object
+      if (scope.validate().valid) {
+        scope.applyValue(scope.args.item, scope.serializeValue());
+      }
+      scope.applyValue(scope.args.compositeEditorOptions.formValues, scope.serializeValue());
+      args.grid.onCompositeEditorChange.notify({ row: activeCell.row, cell: activeCell.cell, item: scope.args.item, column: scope.args.column, formValues: scope.args.compositeEditorOptions.formValues });
+    };
+
+    this.destroy = function () {
+      input.removeEventListener("keydown.nav", navOnLR ? handleKeydownLRNav : handleKeydownLRNoNav);
+      input.removeEventListener("change", this.onChange)
+      input.remove();
+    };
+
+    this.focus = function () {
+      input.focus();
+    };
+
+    this.getValue = function () {
+      return input.value;
+    };
+
+    this.setValue = function (val) {
+      input.value = val;
+    };
+
+    this.loadValue = function (item) {
+      defaultValue = item[args.column.field] || "";
+      input.value = defaultValue;
+      input.defaultValue = defaultValue;
+      input.select();
+    };
+
+    this.serializeValue = function () {
+      return input.value;
+    };
+
+    this.applyValue = function (item, state) {
+      item[args.column.field] = state;
+      console.log('TextEditor: applyValue col:' + args.column.name + ', val: '+ state);
+    };
+
+    this.isValueChanged = function () {
+      return (!(input.value === "" && defaultValue == null)) && (input.value != defaultValue);
+    };
+
+    this.validate = function (targetElm, options) {
+      if (args.column.validator) {
+        var validationResults = args.column.validator(input.value, args, options.rowIndex, options.cellIndex);
+        if (!validationResults.valid) {
+          return validationResults;
+        }
+      }
+
+      return {
+        valid: true,
+        msg: null,
+        noFocusOnEditorOnValidateFail: null
+      };
+    };
+
+    this.init();
+  }
+
+  var columns = [
+    {
+      id: "selector",
+      name: "",
+      field: "num",
+      width: 30
+    }
+  ];
+
+  for (var i = 0; i < 100; i++) {
+    columns.push({
+      id: i,
+      name: String.fromCharCode("A".charCodeAt(0) + (i / 26) | 0) +
+            String.fromCharCode("A".charCodeAt(0) + (i % 26)),
+      field: i,
+      width: 60,
+      editor: TextEditor,
+      validator: TestValidator
+    });
+    allColIdArr.push(i);
+  }
+
+  var contextMenuOptions = {
+    // subItemChevronClass: 'sgi sgi-chevron-right',
+
+    commandTitle: "Commands",
+    // which column to show the command list? when not defined it will be shown over all columns
+    commandShownOverColumnIds: allColIdArr,
+    commandItems: [
+      { command: "copy-text", title: "Copy Cell Value" },
+      { command: "delete-row", title: "Delete Row", iconCssClass: "sgi sgi-close red", cssClass: "bold", textCssClass: "red", },
+      { divider: true },
+      {
+        command: "help", title: "Help", iconCssClass: "sgi sgi-help-circle-outline",
+        // you can use the "action" callback and/or subscribe to the "onCallback" event, they both have the same arguments
+        action: function (e, args) {
+          // action callback.. do something
+        },
+        // only show command to "Help" when there's no Effort Driven
+        itemVisibilityOverride: function (args) {
+          return (!args.dataContext.effortDriven);
+        }
+      }
+    ],
+
+    // Options allows you to edit a column from an option chose a list
+    // for example, changing the Priority value
+    // you can also optionally define an array of column ids that you wish to display this option list (when not defined it will show over all columns)
+    optionTitle: "Change Priority",
+    optionShownOverColumnIds: ["selector"], // optional, when defined it will only show over the columns (column id) defined in the array
+    optionItems: [
+      {
+        // you can use the "action" callback and/or subscribe to the "onCallback" event, they both have the same arguments
+        action: function (e, args) {
+          // action callback.. do something
+        },
+      },
+      { option: 1, iconCssClass: "sgi sgi-star-outline", title: "Low" },
+      { option: 2, iconCssClass: "sgi sgi-star orange", title: "Medium" },
+      { option: 3, iconCssClass: "sgi sgi-star red", title: "High" },
+      // you can pass divider as a string or an object with a boolean
+      // "divider",
+      { divider: true },
+      {
+        option: 4, title: "Extreme", disabled: true,
+        // only shown when there's no Effort Driven
+        itemVisibilityOverride: function (args) {
+          return (!args.dataContext.effortDriven);
+        }
+      }
+    ]
+  };
+
+  function copyDraggedCellRange(e, args) {
+      const verticalTargetRange = Slick.SelectionUtils.verticalTargetRange(args.prevSelectedRange, args.selectedRange);
+      const horizontalTargetRange = Slick.SelectionUtils.horizontalTargetRange(args.prevSelectedRange, args.selectedRange);
+      const cornerTargetRange = Slick.SelectionUtils.cornerTargetRange(args.prevSelectedRange, args.selectedRange);
+
+      if (verticalTargetRange) { Slick.SelectionUtils.copyCellsToTargetRange(args.prevSelectedRange, verticalTargetRange, args.grid); }
+      if (horizontalTargetRange) { Slick.SelectionUtils.copyCellsToTargetRange(args.prevSelectedRange, horizontalTargetRange, args.grid); }
+      if (cornerTargetRange) { Slick.SelectionUtils.copyCellsToTargetRange(args.prevSelectedRange, cornerTargetRange, args.grid); }
+  }
+
+  document.addEventListener("DOMContentLoaded", function() {
+    for (var i = 0; i < 100; i++) {
+      var d = (data[i] = {});
+      d["num"] = i;
+    }
+
+    grid = new Slick.Grid("#myGrid", data, columns, options);
+
+    grid.setSelectionModel(new Slick.HybridSelectionModel({ selectActiveRow: true, rowSelectColumnIdArr: ['selector'] }));
+    grid.registerPlugin(new Slick.AutoTooltips());
+
+    contextMenuPlugin = new Slick.Plugins.ContextMenu(contextMenuOptions);
+    grid.registerPlugin(contextMenuPlugin);
+
+    grid.onDragReplaceCells.subscribe(copyDraggedCellRange);
+
+    // set keyboard focus on the grid
+    grid.getCanvasNode().focus();
+
+    var copyManager = new Slick.CellCopyManager();
+    //grid.registerPlugin(copyManager);
+ 
+    copyManager.onPasteCells.subscribe(function (e, args) {
+      if (args.from.length !== 1 || args.to.length !== 1) {
+        throw "This implementation only supports single range copy and paste operations";
+      }
+
+      var from = args.from[0];
+      var to = args.to[0];
+      var val;
+      for (var i = 0; i <= from.toRow - from.fromRow; i++) {
+        for (var j = 0; j <= from.toCell - from.fromCell; j++) {
+          if (i <= to.toRow - to.fromRow && j <= to.toCell - to.fromCell) {
+            val = data[from.fromRow + i][columns[from.fromCell + j].field];
+            data[to.fromRow + i][columns[to.fromCell + j].field] = val;
+            grid.invalidateRow(to.fromRow + i);
+          }
+        }
+      }
+      grid.render();
+    });
+
+    grid.onAddNewRow.subscribe(function (e, args) {
+      var item = args.item;
+      var column = args.column;
+      grid.invalidateRow(data.length);
+      data.push(item);
+      grid.updateRowCount();
+      grid.render();
+    });
+
+    //
+    // -- subscribe to some Context Menu (from any columns) events
+    // --------------------------------------------------------------
+
+    // subscribe to Context Menu
+    contextMenuPlugin.onBeforeMenuShow.subscribe(function (e, args) {
+      // for example, you could select the row it was clicked with
+      // grid.setSelectedRows([args.row]); // select the entire row
+      grid.setActiveCell(args.row, args.cell, false); // select the cell that the click originated
+      console.log("Before the global Context Menu is shown", args);
+    });
+    contextMenuPlugin.onBeforeMenuClose.subscribe(function (e, args) {
+      console.log("Global Context Menu is closing", args);
+    });
+
+    contextMenuPlugin.onAfterMenuShow.subscribe(function (e, args) {
+      // for example, you could select the row it was clicked with
+      // grid.setSelectedRows([args.row]); // select the entire row
+      grid.setActiveCell(args.row, args.cell, false); // select the cell that the click originated
+      console.log("After the Context Menu is shown", args);
+    });
+
+    // subscribe to Context Menu onCommand event (or use the action callback on each command)
+    contextMenuPlugin.onCommand.subscribe(function (e, args) {
+      // e.preventDefault(); // you could do if you wish to keep the menu open
+      executeCommand(e, args);
+    });
+
+    // subscribe to Context Menu onOptionSelected event (or use the action callback on each option)
+    contextMenuPlugin.onOptionSelected.subscribe(function (e, args) {
+      // e.preventDefault(); // you could do if you wish to keep the menu open
+      var dataContext = args && args.dataContext;
+
+      // change Priority
+      if (dataContext && dataContext.hasOwnProperty("priority")) {
+        dataContext.priority = args.item.option;
+        grid.updateRow(args.row);
+      }
+    });    
+  })
+</script>
+</body>
+</html>
