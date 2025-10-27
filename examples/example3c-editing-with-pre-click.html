@@ -1,0 +1,137 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <title>SlickGrid example 3: Editing</title>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
+  <!-- <link rel="stylesheet" href="../dist/styles/css/slick.grid.css" type="text/css"/>
+  <link rel="stylesheet" href="examples.css" type="text/css"/>
+  <link rel="stylesheet" href="examples-unicode-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.pager.css" type="text/css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css"> -->
+  <style>
+    .cell-title {
+      font-weight: bold;
+    }
+
+    .cell-effort-driven {
+      justify-content: center;
+    }
+  </style>
+</head>
+<body>
+<h2 class="title">Example - Editing with checkbox preclick mode</h2>
+<div style="position:relative">
+  <div style="width:600px;">
+    <div id="myGrid" class="slick-container" style="width:100%;height:500px;"></div>
+  </div>
+
+  <div class="options-panel">
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Demonstrates:
+    </h2>
+    <ul>
+      <li>adding basic keyboard navigation and editing</li>
+      <li>custom editors and validators</li>
+      <li>auto-edit settings</li>
+      <li>'preclick' mode that allows editors to react to a click without first having to go into edit mode</li>
+      <li>note for preclick mode to work, auto-edit must be on</li>
+    </ul>
+
+    <h2>Options:</h2>
+    <p>
+      <button data-test="auto-edit-on-btn" onclick="grid.setOptions({autoEdit:true})">Auto-edit ON</button>
+      &nbsp;
+      <button data-test="auto-edit-off-btn" onclick="grid.setOptions({autoEdit:false})">Auto-edit OFF</button>
+    </p>
+    <p>
+      <button data-test="auto-commit-on-btn"  onclick="grid.setOptions({autoCommitEdit:true})">AutoCommitEdit ON</button>
+      &nbsp;
+      <button data-test="auto-commit-off-btn"  onclick="grid.setOptions({autoCommitEdit:false})">AutoCommitEdit OFF</button>
+    </p>
+
+    <h2>View Source:</h2>
+    <ul>
+        <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example3-editing-with-pre-click.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+    </ul>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
+
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangedecorator.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangeselector.js"></script>
+<script src="../dist/browser/plugins/slick.cellselectionmodel.js"></script>
+<script src="../dist/browser/slick.formatters.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
+
+<script>
+  function requiredFieldValidator(value) {
+    if (value == null || value == undefined || !value.length) {
+      return {valid: false, msg: "This is a required field"};
+    } else {
+      return {valid: true, msg: null};
+    }
+  }
+  
+  var checkmarkFormatter = (_row, _cell, value) => '<span class="sgi sgi-checkbox-' + (value ? 'marked' : 'blank') + '-outline slick-edit-preclick"></span>';
+  
+  var grid;
+  var data = [];
+  var columns = [
+    {id: "title", name: "Title", field: "title", width: 80, cssClass: "cell-title", editor: Slick.Editors.Text, validator: requiredFieldValidator},
+    {id: "desc", name: "Description", field: "description", width: 95, editor: Slick.Editors.LongText},
+    {id: "duration", name: "Duration", field: "duration", width: 70, editor: Slick.Editors.Text},
+    {id: "%", name: "% Complete", field: "percentComplete", width: 85, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete},
+    {id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Flatpickr},
+    {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Flatpickr},
+    {id: "effort-driven", name: "Effort Driven", width: 90, minWidth: 20, maxWidth: 90, cssClass: "cell-effort-driven", field: "effortDriven", formatter: checkmarkFormatter, editor: Slick.Editors.Checkbox}
+  ];
+  var options = {
+    editable: true,
+    enableAddRow: true,
+    enableCellNavigation: true,
+    asyncEditorLoading: false,
+    autoEdit: true,
+    autoCommitEdit: false,
+    rowHeight: 28,
+  };
+
+  document.addEventListener("DOMContentLoaded", function() {
+    for (var i = 0; i < 500; i++) {
+      var d = (data[i] = {});
+
+      d["title"] = "Task " + i;
+      d["description"] = "This is a sample task description.\n  It can be multiline";
+      d["duration"] = "5 days";
+      d["percentComplete"] = Math.round(Math.random() * 100);
+      d["start"] = "01/01/2009";
+      d["finish"] = "01/05/2009";
+      d["effortDriven"] = (i % 5 == 0);
+    }
+
+    grid = new Slick.Grid("#myGrid", data, columns, options);
+
+    grid.setSelectionModel(new Slick.CellSelectionModel());
+
+    grid.onAddNewRow.subscribe(function (e, args) {
+      var item = args.item;
+      grid.invalidateRow(data.length);
+      data.push(item);
+      grid.updateRowCount();
+      grid.render();
+    });
+  });
+</script>
+</body>
+</html>
