@@ -68,9 +68,9 @@ export class SlickHybridSelectionModel {
     this._options = Utils.extend(true, {}, this._defaults, options);
 
     if (options === undefined || options.cellRangeSelector === undefined) {
-     this._selector = new SlickCellRangeSelector({ 
+      this._selector = new SlickCellRangeSelector({
         selectionCss: { border: '2px solid black' } as CSSStyleDeclaration,
-        copyToSelectionCss: { border: '2px solid purple' } as CSSStyleDeclaration 
+        copyToSelectionCss: { border: '2px solid purple' } as CSSStyleDeclaration
       });
     } else {
       this._selector = options.cellRangeSelector;
@@ -84,10 +84,10 @@ export class SlickHybridSelectionModel {
     if (Draggable === undefined) {
       throw new Error('Slick.Draggable is undefined, make sure to import "slick.interactions.js"');
     }
-    
+
     this._grid = grid;
     Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this);
-  
+
     if (!this._selector && this._options?.dragToSelect) {
       if (!SlickCellRangeDecorator) {
         throw new Error('Slick.CellRangeDecorator is required when option dragToSelect set to true');
@@ -115,7 +115,7 @@ export class SlickHybridSelectionModel {
     this._grid.onActiveCellChanged.unsubscribe(this.handleActiveCellChange.bind(this));
     this._grid.onKeyDown.unsubscribe(this.handleKeyDown.bind(this));
     this._grid.onClick.unsubscribe(this.handleClick.bind(this));
-     this._selector.onCellRangeSelected.unsubscribe(this.handleCellRangeSelected.bind(this));
+    this._selector.onCellRangeSelected.unsubscribe(this.handleCellRangeSelected.bind(this));
     this._selector.onBeforeCellRangeSelected.unsubscribe(this.handleBeforeCellRangeSelected.bind(this));
     this._grid.unregisterPlugin(this._selector);
     this._selector?.destroy();
@@ -258,7 +258,7 @@ export class SlickHybridSelectionModel {
       const rowMoveManager = this.getRowMoveManagerPlugin();
       if (rowMoveManager?.isHandlerColumn(data.cell)) { return true; }
     }
-    
+
     const targetColumn = this._grid.getVisibleColumns()[data.cell];
     return this._options?.rowSelectColumnIdArr.includes('' + targetColumn.id) || false;
   }
@@ -283,8 +283,18 @@ export class SlickHybridSelectionModel {
     }
   }
 
-  protected isKeyAllowed(key: string) {
-    return ['ArrowLeft', 'ArrowRight', 'ArrowUp', 'ArrowDown', 'PageDown', 'PageUp', 'Home', 'End'].some(k => k === key);
+  protected isKeyAllowed(key: string, isShiftKeyPressed?: boolean): boolean {
+    return [
+      'ArrowLeft',
+      'ArrowRight',
+      'ArrowUp',
+      'ArrowDown',
+      'PageDown',
+      'PageUp',
+      'Home',
+      'End',
+      ...(!isShiftKeyPressed ? ['a', 'A'] : []),
+    ].some((k) => k === key);
   }
 
   protected handleKeyDown(e: SlickEventData_) {
@@ -299,7 +309,7 @@ export class SlickHybridSelectionModel {
         dataLn = this._grid.getDataLength();
       }
 
-      if (active && (e.shiftKey || e.ctrlKey) && !e.altKey && this.isKeyAllowed(e.key as string)) {
+      if (active && (e.shiftKey || e.ctrlKey) && !e.altKey && this.isKeyAllowed(e.key as string, e.shiftKey)) {
         ranges = this.getSelectedRanges().slice();
         if (!ranges.length) {
           ranges.push(new SlickRange(active.row, active.cell));
@@ -314,13 +324,22 @@ export class SlickHybridSelectionModel {
 
         let dRow = last.toRow - last.fromRow;
         let dCell = last.toCell - last.fromCell;
+        let toCell: undefined | number;
+        let toRow = 0;
+
+        // when using Ctrl+{a, A} we will change our position to cell 0,0 and select all grid cells
+        if (e.ctrlKey && e.key?.toLowerCase() === 'a') {
+          this._grid.setActiveCell(0, 0, false, false, true);
+          active.row = 0;
+          active.cell = 0;
+          toCell = colLn - 1;
+          toRow = dataLn - 1;
+        }
 
         // walking direction
         const dirRow = active.row === last.fromRow ? 1 : -1;
         const dirCell = active.cell === last.fromCell ? 1 : -1;
         const isSingleKeyMove = e.key!.startsWith('Arrow');
-        let toCell: undefined | number = undefined;
-        let toRow = 0;
 
         if (isSingleKeyMove && !e.ctrlKey) {
           // single cell move: (Arrow{Up/ArrowDown/ArrowLeft/ArrowRight})
@@ -343,12 +362,16 @@ export class SlickHybridSelectionModel {
             this._prevSelectedRow = active.row;
           }
 
-          if (e.shiftKey && !e.ctrlKey && e.key === 'Home') {
+          if ((!e.ctrlKey && e.shiftKey && e.key === 'Home') || (e.ctrlKey && e.shiftKey && e.key === 'ArrowLeft')) {
             toCell = 0;
             toRow = active.row;
-          } else if (e.shiftKey && !e.ctrlKey && e.key === 'End') {
+          } else if ((!e.ctrlKey && e.shiftKey && e.key === 'End') || (e.ctrlKey && e.shiftKey && e.key === 'ArrowRight')) {
             toCell = colLn - 1;
             toRow = active.row;
+          } else if (e.ctrlKey && e.shiftKey && e.key === 'ArrowUp') {
+            toRow = 0;
+          } else if (e.ctrlKey && e.shiftKey && e.key === 'ArrowDown') {
+            toRow = dataLn - 1;
           } else if (e.ctrlKey && e.shiftKey && e.key === 'Home') {
             toCell = 0;
             toRow = 0;
@@ -404,17 +427,15 @@ export class SlickHybridSelectionModel {
         && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey
         && (e.which === keyCode.UP || e.which === keyCode.DOWN)) {
         let selectedRows = this.getSelectedRows();
-        selectedRows.sort(function (x, y) {
-          return x - y;
-        });
+        selectedRows.sort((x, y) => x - y);
 
         if (!selectedRows.length) {
           selectedRows = [activeRow.row];
         }
 
+        let active: number;
         let top = selectedRows[0];
         let bottom = selectedRows[selectedRows.length - 1];
-        let active: number;
 
         if (e.which === keyCode.DOWN) {
           active = activeRow.row < bottom || top === bottom ? ++bottom : ++top;
@@ -498,7 +519,7 @@ export class SlickHybridSelectionModel {
 
   protected handleCellRangeSelected(_e: SlickEventData_, args: { range: SlickRange_; selectionMode: string; allowAutoEdit?: boolean; }) {
     //console.log('hybridSelectionModel.handleCellRangeSelected: ' + JSON.stringify(args.range) + '/' + args.selectionMode);
-    if (this._activeSelectionIsRow) { 
+    if (this._activeSelectionIsRow) {
       if (!this._grid.getOptions().multiSelect || !this._options?.selectActiveRow) {
         return false;
       }
