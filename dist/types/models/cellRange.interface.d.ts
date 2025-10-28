@@ -2,6 +2,7 @@ import type { SlickCellRangeDecorator } from '../plugins/slick.cellrangedecorato
 export interface CellRangeDecoratorOption {
     selectionCssClass: string;
     selectionCss: CSSStyleDeclaration;
+    copyToSelectionCss: CSSStyleDeclaration;
     offset: {
         top: number;
         left: number;
@@ -22,5 +23,7 @@ export interface CellRangeSelectorOption {
     cellDecorator: SlickCellRangeDecorator;
     /** styling (for example blue background on cell) */
     selectionCss: CSSStyleDeclaration;
+    /** styling for drag-fill rangel marker (optional) */
+    copyToSelectionCss: CSSStyleDeclaration;
 }
 //# sourceMappingURL=cellRange.interface.d.ts.map

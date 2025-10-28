@@ -3,7 +3,8 @@
  * @module Core
  * @namespace Slick
  */
-import type { AnyFunction, EditController, ElementEventListener, Handler, InferDOMType, MergeTypes } from './models/index.js';
+import type { AnyFunction, EditController, ElementEventListener, Handler, InferDOMType, MergeTypes, DragRange } from './models/index.js';
+import type { SlickGrid } from './slick.grid.js';
 export interface BasePubSub {
     publish<ArgType = any>(_eventName: string | any, _data?: ArgType): any;
     subscribe<ArgType = any>(_eventName: string | Function, _callback: (data: ArgType) => void): any;
@@ -154,6 +155,18 @@ export declare class SlickRange {
      */
     isSingleCell(): boolean;
     /**
+     * Row Count.
+     * @method rowCount
+     * @return {Number}
+     */
+    rowCount(): number;
+    /**
+     * Cell Count.
+     * @method cellCount
+     * @return {Number}
+     */
+    cellCount(): number;
+    /**
      * Returns whether a range contains a given cell.
      * @method contains
      * @param row {Integer}
@@ -167,6 +180,36 @@ export declare class SlickRange {
      * @return {String}
      */
     toString(): string;
+}
+/**
+ * A structure containing a range of cells to copy to.
+ * @class SlickCopyRange
+ * @constructor
+ * @param fromRow {Integer} Starting row.
+ * @param fromCell {Integer} Starting cell.
+ * @param rowCount {Integer} Row Count.
+ * @param cellCount {Integer} Cell Count.
+ */
+export declare class SlickCopyRange {
+    fromRow: number;
+    fromCell: number;
+    rowCount: number;
+    cellCount: number;
+    constructor(fromRow: number, fromCell: number, rowCount: number, cellCount: number);
+}
+/**
+ * Create a handle element for Excel style drag-replace
+ * @class DragExtendHandle
+ * @constructor
+ * @param gridUid {String} string UID of parent grid
+ */
+export declare class SlickDragExtendHandle {
+    id: string;
+    cssClass: string;
+    constructor(gridUid: string);
+    getHandleHtml(): string;
+    removeEl(): void;
+    createEl(activeCellNode: any): void;
 }
 /**
  * A base class that all special / non-data rows (like Group and GroupTotals) derive from.
@@ -452,8 +495,23 @@ export declare class Utils {
      */
     static addSlickEventPubSubWhenDefined<T = any>(pubSub?: BasePubSub, scope?: T): void;
 }
+export declare class SelectionUtils {
+    static normaliseDragRange(rawRange: DragRange): DragRange;
+    static copyRangeIsLarger(baseRange: SlickRange, copyToRange: SlickRange): boolean;
+    static normalRangeOppositeCellFromCopy(normalisedDragRange: DragRange, targetCell: {
+        row: number;
+        cell: number;
+    }): {
+        row: number;
+        cell: number;
+    };
+    static verticalTargetRange(baseRange: SlickRange, copyToRange: SlickRange): SlickRange | null;
+    static horizontalTargetRange(baseRange: SlickRange, copyToRange: SlickRange): SlickRange | null;
+    static cornerTargetRange(baseRange: SlickRange, copyToRange: SlickRange): SlickRange | null;
+    static copyCellsToTargetRange(baseRange: SlickRange, targetRange: SlickRange, grid: SlickGrid): void;
+}
 export declare const SlickGlobalEditorLock: SlickEditorLock;
-export declare const EditorLock: typeof SlickEditorLock, Event: typeof SlickEvent, EventData: typeof SlickEventData, EventHandler: typeof SlickEventHandler, Group: typeof SlickGroup, GroupTotals: typeof SlickGroupTotals, NonDataRow: typeof SlickNonDataItem, Range: typeof SlickRange, RegexSanitizer: typeof regexSanitizer, GlobalEditorLock: SlickEditorLock, keyCode: {
+export declare const EditorLock: typeof SlickEditorLock, Event: typeof SlickEvent, EventData: typeof SlickEventData, EventHandler: typeof SlickEventHandler, Group: typeof SlickGroup, GroupTotals: typeof SlickGroupTotals, NonDataRow: typeof SlickNonDataItem, Range: typeof SlickRange, CopyRange: typeof SlickCopyRange, DragExtendHandle: typeof SlickDragExtendHandle, RegexSanitizer: typeof regexSanitizer, GlobalEditorLock: SlickEditorLock, keyCode: {
     SPACE: number;
     BACKSPACE: number;
     DELETE: number;
@@ -488,6 +546,9 @@ export declare const EditorLock: typeof SlickEditorLock, Event: typeof SlickEven
     FirstNRows: string;
     AllRows: string;
     LastRow: string;
+}, CellSelectionMode: {
+    Select: string;
+    Replace: string;
 }, ValueFilterMode: {
     None: string;
     DeDuplicate: string;

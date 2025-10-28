@@ -29,12 +29,13 @@ export declare class SlickCellSelectionModel {
     protected rangesAreEqual(range1: SlickRange_[], range2: SlickRange_[]): boolean;
     /** Provide a way to force a recalculation of page row count (for example on grid resize) */
     resetPageRowCount(): void;
-    setSelectedRanges(ranges: SlickRange_[], caller?: string): void;
+    setSelectedRanges(ranges: SlickRange_[], caller: string | undefined, selectionMode: string): void;
     getSelectedRanges(): SlickRange_[];
     refreshSelections(): void;
     protected handleBeforeCellRangeSelected(e: SlickEventData_): boolean | void;
     protected handleCellRangeSelected(_e: SlickEventData_, args: {
         range: SlickRange_;
+        selectionMode: string;
     }): void;
     protected handleActiveCellChange(_e: SlickEventData_, args: OnActiveCellChangedEventArgs): void;
     protected isKeyAllowed(key: string, isShiftKeyPressed?: boolean): boolean;

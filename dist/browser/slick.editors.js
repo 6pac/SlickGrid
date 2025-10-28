@@ -349,6 +349,9 @@
     loadValue(item) {
       this.defaultValue = !!item[this.args.column.field], this.defaultValue ? this.input.checked = !0 : this.input.checked = !1;
     }
+    preClick() {
+      this.input.checked = !this.input.checked;
+    }
     serializeValue() {
       return this.input.checked;
     }

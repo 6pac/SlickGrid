@@ -256,7 +256,9 @@
     /** Get the Row Detail padding (which are the rows dedicated to the detail panel) */
     getPaddingItem(parent, offset) {
       let item = {};
-      return Object.keys(this._dataView).forEach((prop) => {
+      return this._grid.getColumns().forEach(({ field }) => {
+        item[field] = parent[field];
+      }), Object.keys(this._dataView).forEach((prop) => {
         item[prop] = null;
       }), item[this._dataViewIdProperty] = parent[this._dataViewIdProperty] + "." + offset, item[`${this._keyPrefix}collapsed`] = !0, item[`${this._keyPrefix}isPadding`] = !0, item[`${this._keyPrefix}parent`] = parent, item[`${this._keyPrefix}offset`] = offset, item;
     }

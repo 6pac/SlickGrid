@@ -124,7 +124,7 @@
           setColumns.call(grid, finalReorderedColumns), trigger.call(grid, grid.onColumnsReordered, { grid, impactedColumns: finalReorderedColumns }), e.stopPropagation(), setupColumnResize.call(grid);
         }
       };
-      return this._sortableLeftInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-left`), sortableOptions), this._sortableRightInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-right`), sortableOptions), this._options.initialGroupBy && !this._isInitialized && setTimeout(() => this.setDroppedGroups(this._options.initialGroupBy)), this._isInitialized = !0, {
+      return this._sortableLeftInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-left`), sortableOptions), this._sortableRightInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-right`), sortableOptions), this._options.initialGroupBy && !this._isInitialized && setTimeout(() => this.setDroppedGroups(this._options.initialGroupBy || []), 0), this._isInitialized = !0, {
         sortableLeftInstance: this._sortableLeftInstance,
         sortableRightInstance: this._sortableRightInstance
       };

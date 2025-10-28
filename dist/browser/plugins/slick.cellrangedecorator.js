@@ -15,18 +15,29 @@
       // protected props
       __publicField(this, "_options");
       __publicField(this, "_elem");
+      __publicField(this, "_selectionCss");
       __publicField(this, "_defaults", {
         selectionCssClass: "slick-range-decorator",
         selectionCss: {
           zIndex: "9999",
           border: "2px dashed red"
         },
+        copyToSelectionCss: {
+          zIndex: "9999",
+          border: "2px dashed blue"
+        },
         offset: { top: -1, left: -1, height: -2, width: -2 }
       });
-      this._options = Utils.extend(!0, {}, this._defaults, options);
+      this._options = Utils.extend(!0, {}, this._defaults, options), this._selectionCss = (options == null ? void 0 : options.selectionCss) || {};
     }
     destroy() {
       this.hide();
+    }
+    getSelectionCss() {
+      return this._selectionCss;
+    }
+    setSelectionCss(cssProps) {
+      this._selectionCss = cssProps;
     }
     init() {
     }
@@ -34,15 +45,17 @@
       var _a;
       (_a = this._elem) == null || _a.remove(), this._elem = null;
     }
-    show(range) {
+    show(range, isCopyTo) {
       var _a;
       if (!this._elem) {
-        this._elem = document.createElement("div"), this._elem.className = this._options.selectionCssClass, Object.keys(this._options.selectionCss).forEach((cssStyleKey) => {
-          this._elem.style[cssStyleKey] = this._options.selectionCss[cssStyleKey];
-        }), this._elem.style.position = "absolute";
+        this._elem = document.createElement("div"), this._elem.className = this._options.selectionCssClass, this._elem.style.position = "absolute";
         let canvasNode = this.grid.getActiveCanvasNode();
         canvasNode && canvasNode.appendChild(this._elem);
       }
+      let css = isCopyTo && this._options.copyToSelectionCss ? this._options.copyToSelectionCss : this._options.selectionCss;
+      Object.keys(css).forEach((cssStyleKey) => {
+        this._elem.style[cssStyleKey] !== css[cssStyleKey] && (this._elem.style[cssStyleKey] = css[cssStyleKey]);
+      });
       let from = this.grid.getCellNodeBox(range.fromRow, range.fromCell), to = this.grid.getCellNodeBox(range.toRow, range.toCell);
       return from && to && ((_a = this._options) != null && _a.offset) && (this._elem.style.top = `${from.top + this._options.offset.top}px`, this._elem.style.left = `${from.left + this._options.offset.left}px`, this._elem.style.height = `${to.bottom - from.top + this._options.offset.height}px`, this._elem.style.width = `${to.right - from.left + this._options.offset.width}px`), this._elem;
     }

@@ -104,6 +104,7 @@ export declare class CheckboxEditor<TData = any, C extends Column<TData> = Colum
     destroy(): void;
     focus(): void;
     loadValue(item: any): void;
+    preClick(): void;
     serializeValue(): boolean;
     applyValue(item: any, state: any): void;
     isValueChanged(): boolean;

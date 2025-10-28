@@ -22,7 +22,7 @@ export declare class SlickRowSelectionModel {
     protected getRowsRange(from: number, to: number): number[];
     getSelectedRows(): number[];
     setSelectedRows(rows: number[]): void;
-    setSelectedRanges(ranges: SlickRange_[], caller?: string): void;
+    setSelectedRanges(ranges: SlickRange_[], caller?: string, selectionMode?: string): void;
     getSelectedRanges(): SlickRange_[];
     refreshSelections(): void;
     protected handleActiveCellChange(_e: SlickEventData_, args: OnActiveCellChangedEventArgs): void;
@@ -34,6 +34,7 @@ export declare class SlickRowSelectionModel {
     }): boolean | void;
     protected handleCellRangeSelected(_e: SlickEventData_, args: {
         range: SlickRange_;
+        selectionMode: string;
     }): boolean | void;
 }
 //# sourceMappingURL=slick.rowselectionmodel.d.ts.map

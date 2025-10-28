@@ -12,6 +12,8 @@ import type { DraggableOption, MouseWheelOption, ResizableOption } from './model
  *   https://betterprogramming.pub/perfecting-drag-and-drop-in-pure-vanilla-javascript-a761184b797a
  * available optional options:
  *   - containerElement: container DOM element, defaults to "document"
+ *   - dragFromClassDetectArr: array of tags and query selectors/ids to match on dragstart, used to determine
+ *     drag source element. eg:  [ { tag: 'B', id: 'myElement' }, { tag: 'A', cssSelector: 'div.myClass' } ]
  *   - allowDragFrom: when defined, only allow dragging from an element that matches a specific query selector
  *   - allowDragFromClosest: when defined, only allow dragging from an element or its parent matching a specific .closest() query selector
  *   - onDragInit: drag initialized callback

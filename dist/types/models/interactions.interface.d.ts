@@ -2,6 +2,14 @@ import type { DragPosition } from './drag.interface.js';
 export interface InteractionBase {
     destroy: () => void;
 }
+export interface ClassDetectElement {
+    /** tag to be returned on match */
+    tag: string;
+    /** element id to match */
+    id?: string;
+    /** element cssSelector to match */
+    cssSelector?: string;
+}
 export interface DraggableOption {
     /** container DOM element, defaults to "document" */
     containerElement?: HTMLElement | Document;
@@ -19,6 +27,7 @@ export interface DraggableOption {
     onDrag?: (e: DragEvent, dd: DragPosition) => boolean | void;
     /** drag ended callback */
     onDragEnd?: (e: DragEvent, dd: DragPosition) => boolean | void;
+    dragFromClassDetectArr?: Array<ClassDetectElement>;
 }
 export interface MouseWheelOption {
     /** optional DOM element to attach mousewheel values, if undefined we'll attach it to the "window" object */

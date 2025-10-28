@@ -17,11 +17,14 @@ export declare class SlickCellRangeDecorator implements SlickPlugin {
     pluginName: "CellRangeDecorator";
     protected _options: CellRangeDecoratorOption;
     protected _elem?: HTMLDivElement | null;
+    protected _selectionCss: CSSStyleDeclaration;
     protected _defaults: CellRangeDecoratorOption;
     constructor(grid: SlickGrid, options?: Partial<CellRangeDecoratorOption>);
     destroy(): void;
+    getSelectionCss(): CSSStyleDeclaration;
+    setSelectionCss(cssProps: CSSStyleDeclaration): void;
     init(): void;
     hide(): void;
-    show(range: SlickRange): HTMLDivElement;
+    show(range: SlickRange, isCopyTo?: boolean): HTMLDivElement;
 }
 //# sourceMappingURL=slick.cellrangedecorator.d.ts.map

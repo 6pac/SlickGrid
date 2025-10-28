@@ -5,7 +5,7 @@
   var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value);
 
   // src/plugins/slick.cellrangeselector.ts
-  var SlickEvent = Slick.Event, SlickEventHandler = Slick.EventHandler, SlickRange = Slick.Range, Draggable = Slick.Draggable, SlickCellRangeDecorator = Slick.CellRangeDecorator, Utils = Slick.Utils, SlickCellRangeSelector = class {
+  var SlickEvent = Slick.Event, SlickEventHandler = Slick.EventHandler, SlickRange = Slick.Range, Draggable = Slick.Draggable, SlickCellRangeDecorator = Slick.CellRangeDecorator, Utils = Slick.Utils, SelectionUtils = Slick.SelectionUtils, CellSelectionMode = Slick.CellSelectionMode, SlickCellRangeSelector = class {
     constructor(options) {
       // --
       // public API
@@ -17,6 +17,7 @@
       // protected props
       __publicField(this, "_grid");
       __publicField(this, "_currentlySelectedRange", null);
+      __publicField(this, "_previousSelectedRange", null);
       __publicField(this, "_canvas", null);
       __publicField(this, "_decorator");
       __publicField(this, "_gridOptions");
@@ -24,6 +25,9 @@
       __publicField(this, "_dragging", !1);
       __publicField(this, "_handler", new SlickEventHandler());
       __publicField(this, "_options");
+      __publicField(this, "_selectionMode", CellSelectionMode.Select);
+      __publicField(this, "_dragReplaceHandleActive", !1);
+      __publicField(this, "_dragReplaceHandleCell", null);
       __publicField(this, "_defaults", {
         autoScroll: !0,
         minIntervalToShowNextCell: 30,
@@ -67,10 +71,16 @@
     getCellDecorator() {
       return this._decorator;
     }
+    getSelectionMode() {
+      return this._selectionMode;
+    }
+    setSelectionMode(mode) {
+      this._selectionMode = mode;
+    }
     handleScroll(_e, args) {
       this._scrollTop = args.scrollTop, this._scrollLeft = args.scrollLeft;
     }
-    handleDragInit(e) {
+    handleDragInit(e, dd) {
       this._activeCanvas = this._grid.getActiveCanvasNode(e), this._activeViewport = this._grid.getActiveViewportNode(e);
       let scrollbarDimensions = this._grid.getDisplayedScrollbarDimensions();
       if (this._viewportWidth = this._activeViewport.offsetWidth - scrollbarDimensions.width, this._viewportHeight = this._activeViewport.offsetHeight - scrollbarDimensions.height, this._moveDistanceForOneCell = {
@@ -84,20 +94,20 @@
         let canvasLeftElm = document.querySelector(`.${this._grid.getUID()} .grid-canvas-left`);
         canvasLeftElm && (this._columnOffset = canvasLeftElm.clientWidth || 0);
       }
-      e.stopImmediatePropagation(), e.preventDefault();
+      this._dragReplaceHandleActive = dd.matchClassTag === "dragReplaceHandle", this._dragReplaceHandleActive ? this._dragReplaceHandleCell = this._grid.getCellFromEvent(e) : this._previousSelectedRange = null, e.stopImmediatePropagation(), e.preventDefault();
     }
     handleDragStart(e, dd) {
-      var _a, _b;
+      var _a, _b, _c, _d;
       let cell = this._grid.getCellFromEvent(e);
-      if (cell && this.onBeforeCellRangeSelected.notify(cell).getReturnValue() !== !1 && this._grid.canCellBeSelected(cell.row, cell.cell) && (this._dragging = !0, e.stopImmediatePropagation()), !this._dragging)
+      if (this._dragReplaceHandleActive && (cell = this._dragReplaceHandleCell), cell && this.onBeforeCellRangeSelected.notify(cell).getReturnValue() !== !1 && this._grid.canCellBeSelected(cell.row, cell.cell) && (this._dragging = !0, e.stopImmediatePropagation()), !this._dragging)
         return;
       this._grid.focus();
       let canvasOffset = Utils.offset(this._canvas), startX = dd.startX - ((_a = canvasOffset == null ? void 0 : canvasOffset.left) != null ? _a : 0);
       this._gridOptions.frozenColumn >= 0 && this._isRightCanvas && (startX += this._scrollLeft);
       let startY = dd.startY - ((_b = canvasOffset == null ? void 0 : canvasOffset.top) != null ? _b : 0);
       this._gridOptions.frozenRow >= 0 && this._isBottomCanvas && (startY += this._scrollTop);
-      let start = this._grid.getCellFromPoint(startX, startY);
-      return dd.range = { start, end: {} }, this._currentlySelectedRange = dd.range, this._decorator.show(new SlickRange(start.row, start.cell));
+      let start;
+      return this._selectionMode = this._dragReplaceHandleActive ? Slick.CellSelectionMode.Replace : Slick.CellSelectionMode.Select, this._dragReplaceHandleActive ? start = this._grid.getActiveCell() || { row: void 0, cell: void 0 } : start = this._grid.getCellFromPoint(startX, startY), dd.range = { start, end: {} }, this._currentlySelectedRange = dd.range, this._decorator.show(new SlickRange((_c = start.row) != null ? _c : 0, (_d = start.cell) != null ? _d : 0), this._dragReplaceHandleActive);
     }
     handleDrag(evt, dd) {
       if (!this._dragging && !this._isRowMoveRegistered)
@@ -152,7 +162,7 @@
       this._autoScrollTimerId && (window.clearInterval(this._autoScrollTimerId), this._autoScrollTimerId = void 0);
     }
     handleDragTo(e, dd) {
-      var _a, _b, _c, _d, _e, _f;
+      var _a, _b, _c, _d;
       let targetEvent = (_b = (_a = e == null ? void 0 : e.touches) == null ? void 0 : _a[0]) != null ? _b : e, canvasOffset = Utils.offset(this._activeCanvas), end = this._grid.getCellFromPoint(
         targetEvent.pageX - ((_c = canvasOffset == null ? void 0 : canvasOffset.left) != null ? _c : 0) + this._columnOffset,
         targetEvent.pageY - ((_d = canvasOffset == null ? void 0 : canvasOffset.top) != null ? _d : 0) + this._rowOffset
@@ -167,9 +177,13 @@
         }
         if (this._grid.canCellBeSelected(end.row, end.cell) && dd != null && dd.range) {
           dd.range.end = end;
-          let range = new SlickRange((_e = dd.range.start.row) != null ? _e : 0, (_f = dd.range.start.cell) != null ? _f : 0, end.row, end.cell);
-          this._decorator.show(range), this.onCellRangeSelecting.notify({
-            range
+          let cornerCell = this._previousSelectedRange ? SelectionUtils.normalRangeOppositeCellFromCopy(this._previousSelectedRange, end) : dd.range.start;
+          this._currentlySelectedRange = dd.range;
+          let range = new Slick.Range(cornerCell.row, cornerCell.cell, end.row, end.cell);
+          this._decorator.show(range, this._dragReplaceHandleActive), this.onCellRangeSelecting.notify({
+            range,
+            selectionMode: "",
+            allowAutoEdit: !1
           });
         }
       }
@@ -178,18 +192,28 @@
       return !!(this._grid.getPluginByName("RowMoveManager") || this._grid.getPluginByName("CrossGridRowMoveManager"));
     }
     handleDragEnd(e, dd) {
-      var _a, _b;
-      this._decorator.hide(), this._dragging && (this._dragging = !1, e.stopImmediatePropagation(), this.stopIntervalTimer(), this.onCellRangeSelected.notify({
-        range: new SlickRange(
-          (_a = dd.range.start.row) != null ? _a : 0,
-          (_b = dd.range.start.cell) != null ? _b : 0,
-          dd.range.end.row,
-          dd.range.end.cell
-        )
-      }));
+      var _a, _b, _c, _d, _e, _f;
+      if (this._decorator.hide(), !this._dragging || !dd.range) {
+        this._autoScrollTimerId && this.stopIntervalTimer();
+        return;
+      }
+      this._dragging = !1, e.stopImmediatePropagation(), this.stopIntervalTimer();
+      let targetEvent = (_b = (_a = e == null ? void 0 : e.touches) == null ? void 0 : _a[0]) != null ? _b : e, canvasOffset = Utils.offset(this._activeCanvas), end = this._grid.getCellFromPoint(
+        targetEvent.pageX - ((_c = canvasOffset == null ? void 0 : canvasOffset.left) != null ? _c : 0) + this._columnOffset,
+        targetEvent.pageY - ((_d = canvasOffset == null ? void 0 : canvasOffset.top) != null ? _d : 0) + this._rowOffset
+      ), cornerCell = !this._dragReplaceHandleActive || !this._previousSelectedRange ? dd.range.start : SelectionUtils.normalRangeOppositeCellFromCopy(this._previousSelectedRange, end), r = new SlickRange(
+        (_e = cornerCell.row) != null ? _e : 0,
+        (_f = cornerCell.cell) != null ? _f : 0,
+        dd.range.end.row,
+        dd.range.end.cell
+      );
+      this.onCellRangeSelected.notify({ range: r, selectionMode: this._selectionMode, allowAutoEdit: this._selectionMode === "SEL" && r.isSingleCell() }), this._previousSelectedRange = SelectionUtils.normaliseDragRange(dd.range);
     }
     getCurrentRange() {
       return this._currentlySelectedRange;
+    }
+    getPreviousRange() {
+      return this._previousSelectedRange;
     }
   };
   window.Slick && Utils.extend(Slick, {

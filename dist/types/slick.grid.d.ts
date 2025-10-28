@@ -1,5 +1,5 @@
 import type { SortableInstance } from 'sortablejs';
-import type { AutoSize, CellPosition, CellViewportRange, Column, ColumnMetadata, ColumnSort, CssStyleHash, CustomDataView, DOMEvent, DragPosition, DragRowMove, Editor, EditorConstructor, EditController, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption as BaseGridOption, InteractionBase, ItemMetadata, MenuCommandItemCallbackArgs, MultiColumnSort, OnActivateChangedOptionsEventArgs, OnActiveCellChangedEventArgs, OnAddNewRowEventArgs, OnAfterSetColumnsEventArgs, OnAutosizeColumnsEventArgs, OnBeforeUpdateColumnsEventArgs, OnBeforeAppendCellEventArgs, OnBeforeCellEditorDestroyEventArgs, OnBeforeColumnsResizeEventArgs, OnBeforeEditCellEventArgs, OnBeforeHeaderCellDestroyEventArgs, OnBeforeHeaderRowCellDestroyEventArgs, OnBeforeFooterRowCellDestroyEventArgs, OnBeforeSetColumnsEventArgs, OnCellChangeEventArgs, OnCellCssStylesChangedEventArgs, OnClickEventArgs, OnColumnsDragEventArgs, OnColumnsReorderedEventArgs, OnColumnsResizedEventArgs, OnColumnsResizeDblClickEventArgs, OnCompositeEditorChangeEventArgs, OnDblClickEventArgs, OnFooterContextMenuEventArgs, OnFooterRowCellRenderedEventArgs, OnHeaderCellRenderedEventArgs, OnFooterClickEventArgs, OnHeaderClickEventArgs, OnHeaderContextMenuEventArgs, OnHeaderMouseEventArgs, OnHeaderRowCellRenderedEventArgs, OnKeyDownEventArgs, OnPreHeaderContextMenuEventArgs, OnPreHeaderClickEventArgs, OnRenderedEventArgs, OnSelectedRowsChangedEventArgs, OnSetOptionsEventArgs, OnScrollEventArgs, OnValidationErrorEventArgs, PagingInfo, RowInfo, SelectionModel, SingleColumnSort, SlickPlugin } from './models/index.js';
+import type { AutoSize, CellPosition, CellViewportRange, Column, ColumnMetadata, ColumnSort, CssStyleHash, CustomDataView, DOMEvent, DragPosition, DragRowMove, Editor, EditorConstructor, EditController, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption as BaseGridOption, InteractionBase, ItemMetadata, MenuCommandItemCallbackArgs, MultiColumnSort, OnActivateChangedOptionsEventArgs, OnActiveCellChangedEventArgs, OnAddNewRowEventArgs, OnAfterSetColumnsEventArgs, OnAutosizeColumnsEventArgs, OnBeforeUpdateColumnsEventArgs, OnBeforeAppendCellEventArgs, OnBeforeCellEditorDestroyEventArgs, OnBeforeColumnsResizeEventArgs, OnBeforeEditCellEventArgs, OnBeforeHeaderCellDestroyEventArgs, OnBeforeHeaderRowCellDestroyEventArgs, OnBeforeFooterRowCellDestroyEventArgs, OnBeforeSetColumnsEventArgs, OnCellChangeEventArgs, OnCellCssStylesChangedEventArgs, OnClickEventArgs, OnColumnsDragEventArgs, OnColumnsReorderedEventArgs, OnColumnsResizedEventArgs, OnColumnsResizeDblClickEventArgs, OnCompositeEditorChangeEventArgs, OnDblClickEventArgs, OnFooterContextMenuEventArgs, OnFooterRowCellRenderedEventArgs, OnHeaderCellRenderedEventArgs, OnFooterClickEventArgs, OnHeaderClickEventArgs, OnHeaderContextMenuEventArgs, OnHeaderMouseEventArgs, OnHeaderRowCellRenderedEventArgs, OnKeyDownEventArgs, OnPreHeaderContextMenuEventArgs, OnPreHeaderClickEventArgs, OnRenderedEventArgs, OnSelectedRowsChangedEventArgs, OnSetOptionsEventArgs, OnScrollEventArgs, OnValidationErrorEventArgs, OnDragReplaceCellsEventArgs, PagingInfo, RowInfo, SelectionModel, SingleColumnSort, SlickPlugin } from './models/index.js';
 import { type BasePubSub, BindingEventService as BindingEventService_, type SlickEditorLock, SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_ } from './slick.core.js';
 /**
  * @license
@@ -96,6 +96,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     onViewportChanged: SlickEvent_<{
         grid: SlickGrid;
     }>;
+    onDragReplaceCells: SlickEvent_<OnDragReplaceCellsEventArgs>;
     protected scrollbarDimensions?: {
         height: number;
         width: number;
@@ -123,6 +124,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected initialized: boolean;
     protected _container: HTMLElement;
     protected uid: string;
+    protected dragReplaceEl: any;
     protected _focusSink: HTMLDivElement;
     protected _focusSink2: HTMLDivElement;
     protected _groupHeaders: HTMLDivElement[];
@@ -183,6 +185,9 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected hasFrozenRows: boolean;
     protected frozenRowsHeight: number;
     protected actualFrozenRow: number;
+    protected _prevFrozenColumnIdx: number;
+    /** flag to indicate if invalid frozen alert has been shown already or not? This is to avoid showing it more than once */
+    protected _invalidfrozenAlerted: boolean;
     protected paneTopH: number;
     protected paneBottomH: number;
     protected viewportTopH: number;
@@ -197,6 +202,8 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected activePosY: number;
     protected activeRow: number;
     protected activeCell: number;
+    protected selectionBottomRow: number;
+    protected selectionRightCell: number;
     protected activeCellNode: HTMLDivElement | null;
     protected currentEditor: Editor | null;
     protected serializedEditorValue: any;
@@ -219,6 +226,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected scrollLeft: number;
     protected selectionModel?: SelectionModel;
     protected selectedRows: number[];
+    protected selectedRanges: SlickRange_[];
     protected plugins: SlickPlugin[];
     protected cellCssClasses: CssStyleHash;
     protected columnsById: Record<string, number>;
@@ -391,8 +399,14 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * to null so that they can be garbage collected.
      */
     protected destroyAllElements(): void;
-    /** Returns an object containing all of the Grid options set on the grid. See a list of Grid Options here.  */
+    /** Returns an object containing all of the Grid options set on the grid. See a list of Grid Options here. */
     getOptions(): O;
+    /**
+     * Get the Column ID of the currently frozen column or `null` when not frozen
+     * @returns {String|Number|null} Frozen Column ID
+     */
+    getFrozenColumnId(): string | number | null;
+    protected getFrozenColumnIdx(): number;
     /**
      * Extends grid options with a given hash. If an there is an active edit, the grid will attempt to commit the changes and only continue if the attempt succeeds.
      * @param {Object} options - an object with configuration options.
@@ -1120,6 +1134,35 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * If full–width rows are enabled, extra width is added. Returns the total calculated width.
     */
     getCanvasWidth(): number;
+    /**
+     * Validate that the column freeze is allowed in the browser by making sure that the frozen column is not exceeding the available and visible left canvas width.
+     * Note that it will only validate when `invalidColumnFreezeWidthCallback` or `throwWhenFrozenNotAllViewable` grid option is enabled.
+     * @param {Number} frozenColumn the column index to freeze at
+     * @param {Boolean} [forceAlert] tri-state flag to alert when frozen column is invalid
+     *  - if `undefined` it will do the condition check and never alert more than once
+     *  - if `true` it will do the condition check and always alert even if it was called before
+     *  - if `false` it will do the condition check but always skip the alert
+     */
+    validateColumnFreezeWidth(frozenColumn?: number, forceAlert?: boolean): boolean;
+    /**
+     * From a new set of columns, different than current grid columns, we'll recalculate the `frozenColumn` index position by comparing its column `id`
+     * and recalculating the `frozenColumn` index to find out if it is different from a new set of columns.
+     * @param {Column[]} newColumns - new columns to calculate frozen index from
+     * @param {String|Number} [columnId] - optional column id to calculate from (otherwise it will find the current frozen column id)
+     * @param {Boolean} [applyIndexChange] - whether to apply index changes to the frozen column
+     * @returns {number} - the recalculated frozen column index
+     */
+    calculateFrozenColumnIndexById(newColumns: C[], columnId?: string | number | null, applyIndexChange?: boolean): number;
+    /**
+     * Validate that there is at least 1, or more, column to the right of the frozen column otherwise show an error (we do this check before calling `setColumns()`).
+     * Note that it will only validate when `invalidColumnFreezePickerCallback` grid option is enabled.
+     * @param {Column[]} newColumns the new columns that will later be provided to `setColumns()`
+     * @param {Boolean} [forceAlert] tri-state flag to alert when frozen column is invalid
+     *  - if `undefined` it will do the condition check and never alert more than once
+     *  - if `true` it will do the condition check and always alert even if it was called before
+     *  - if `false` it will do the condition check but always skip the alert
+     */
+    validateSetColumnFreeze(newColumns: C[], forceAlert?: boolean): boolean;
     /**
      * Recalculates the canvas width by calling getCanvasWidth and then adjusts widths of header containers,
      * canvases, panels, and viewports. If widths have changed (or forced), it applies the new column widths
@@ -1862,7 +1905,12 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected clearAllTimers(): void;
     /** Logs a string to the console listing each column’s width (or “H” if hidden) for debugging purposes. */
     protected LogColWidths(): void;
-    simpleArrayEquals(arr1: any[], arr2: any[]): boolean;
+    arrayEquals<T extends boolean | string | number>(arr1: Array<T>, arr2: Array<T>): boolean;
+    /**
+     * Scroll to an X coordinate position in the grid
+     * @param {Number} x
+     */
+    scrollToX(x: number): void;
     /**
      * Converts a value to a string and escapes HTML characters (&, <, >). Returns an empty string if the value is not defined.
      */

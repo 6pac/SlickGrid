@@ -24,7 +24,10 @@
       __publicField(this, "_defaults", {
         selectActiveCell: !0
       });
-      options === void 0 || options.cellRangeSelector === void 0 ? this._selector = new SlickCellRangeSelector({ selectionCss: { border: "2px solid black" } }) : this._selector = options.cellRangeSelector;
+      options === void 0 || options.cellRangeSelector === void 0 ? this._selector = new SlickCellRangeSelector({
+        selectionCss: { border: "2px solid black" },
+        copyToSelectionCss: { border: "2px solid purple" }
+      }) : this._selector = options.cellRangeSelector;
     }
     init(grid) {
       this._options = Utils.extend(!0, {}, this._defaults, this._options), this._grid = grid, grid.hasDataView() && (this._dataView = grid.getData()), this._grid.onActiveCellChanged.subscribe(this.handleActiveCellChange.bind(this)), this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this)), grid.registerPlugin(this._selector), this._selector.onCellRangeSelected.subscribe(this.handleCellRangeSelected.bind(this)), this._selector.onBeforeCellRangeSelected.subscribe(this.handleBeforeCellRangeSelected.bind(this));
@@ -56,12 +59,12 @@
     resetPageRowCount() {
       this._cachedPageRowCount = 0;
     }
-    setSelectedRanges(ranges, caller = "SlickCellSelectionModel.setSelectedRanges") {
+    setSelectedRanges(ranges, caller = "SlickCellSelectionModel.setSelectedRanges", selectionMode) {
       if ((!this._ranges || this._ranges.length === 0) && (!ranges || ranges.length === 0))
         return;
       let rangeHasChanged = !this.rangesAreEqual(this._ranges, ranges);
       if (this._ranges = this.removeInvalidRanges(ranges), rangeHasChanged) {
-        let eventData = new SlickEventData(new CustomEvent("click", { detail: { caller } }), this._ranges);
+        let eventData = new SlickEventData(new CustomEvent("click", { detail: { caller, selectionMode, addDragHandle: !0 } }), this._ranges);
         this.onSelectedRangesChanged.notify(this._ranges, eventData);
       }
     }
@@ -69,20 +72,20 @@
       return this._ranges;
     }
     refreshSelections() {
-      this.setSelectedRanges(this.getSelectedRanges());
+      this.setSelectedRanges(this.getSelectedRanges(), void 0, "");
     }
     handleBeforeCellRangeSelected(e) {
       if (this._grid.getEditorLock().isActive())
         return e.stopPropagation(), !1;
     }
     handleCellRangeSelected(_e, args) {
-      this._grid.setActiveCell(args.range.fromRow, args.range.fromCell, !1, !1, !0), this.setSelectedRanges([args.range]);
+      this._grid.setActiveCell(args.range.fromRow, args.range.fromCell, !1, !1, !0), this.setSelectedRanges([args.range], void 0, args.selectionMode);
     }
     handleActiveCellChange(_e, args) {
       var _a, _b;
       this._prevSelectedRow = void 0;
       let isCellDefined = Utils.isDefined(args.cell), isRowDefined = Utils.isDefined(args.row);
-      (_a = this._options) != null && _a.selectActiveCell && isRowDefined && isCellDefined ? this.setSelectedRanges([new SlickRange(args.row, args.cell)]) : (!((_b = this._options) != null && _b.selectActiveCell) || !isRowDefined && !isCellDefined) && this.setSelectedRanges([]);
+      (_a = this._options) != null && _a.selectActiveCell && isRowDefined && isCellDefined ? this.setSelectedRanges([new SlickRange(args.row, args.cell)], void 0, "") : (!((_b = this._options) != null && _b.selectActiveCell) || !isRowDefined && !isCellDefined) && this.setSelectedRanges([], void 0, "");
     }
     isKeyAllowed(key, isShiftKeyPressed) {
       return [
@@ -113,7 +116,7 @@
           isSingleKeyMove ? (this._grid.scrollRowIntoView(viewRow), this._grid.scrollCellIntoView(viewRow, viewCell)) : (this._grid.scrollRowIntoView(toRow), this._grid.scrollCellIntoView(toRow, viewCell));
         } else
           ranges.push(last);
-        this.setSelectedRanges(ranges), e.preventDefault(), e.stopPropagation(), this._prevKeyDown = e.key;
+        this.setSelectedRanges(ranges, void 0, ""), e.preventDefault(), e.stopPropagation(), this._prevKeyDown = e.key;
       }
     }
   };

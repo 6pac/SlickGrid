@@ -214,6 +214,22 @@ var SlickEventData = class {
     return this.fromRow === this.toRow && this.fromCell === this.toCell;
   }
   /**
+   * Row Count.
+   * @method rowCount
+   * @return {Number}
+   */
+  rowCount() {
+    return this.toRow - this.fromRow + 1;
+  }
+  /**
+   * Cell Count.
+   * @method cellCount
+   * @return {Number}
+   */
+  cellCount() {
+    return this.toCell - this.fromCell + 1;
+  }
+  /**
    * Returns whether a range contains a given cell.
    * @method contains
    * @param row {Integer}
@@ -230,6 +246,32 @@ var SlickEventData = class {
    */
   toString() {
     return this.isSingleCell() ? `(${this.fromRow}:${this.fromCell})` : `(${this.fromRow}:${this.fromCell} - ${this.toRow}:${this.toCell})`;
+  }
+}, SlickCopyRange = class {
+  constructor(fromRow, fromCell, rowCount, cellCount) {
+    __publicField(this, "fromRow");
+    __publicField(this, "fromCell");
+    __publicField(this, "rowCount");
+    __publicField(this, "cellCount");
+    this.fromRow = fromRow, this.fromCell = fromCell, this.rowCount = rowCount, this.cellCount = cellCount;
+  }
+}, SlickDragExtendHandle = class {
+  constructor(gridUid) {
+    __publicField(this, "id");
+    __publicField(this, "cssClass", "slick-drag-replace-handle");
+    this.id = gridUid + "_drag_replace_handle";
+  }
+  getHandleHtml() {
+    return '<div id="' + this.id + '" class="slick-drag-replace-handle"></div>';
+  }
+  removeEl() {
+    document.getElementById(this.id)?.remove();
+  }
+  createEl(activeCellNode) {
+    if (activeCellNode) {
+      let dragReplaceEl = document.createElement("div");
+      dragReplaceEl.classList.add("slick-drag-replace-handle"), dragReplaceEl.setAttribute("id", this.id), activeCellNode.appendChild(dragReplaceEl);
+    }
   }
 }, SlickNonDataItem = class {
   constructor() {
@@ -669,11 +711,92 @@ __publicField(_Utils, "getProto", Object.getPrototypeOf), __publicField(_Utils, 
     return this._storage.get(element).size !== 0 && this._storage.delete(element), ret;
   }
 });
-var Utils = _Utils, SlickGlobalEditorLock = new SlickEditorLock(), SlickCore = {
+var Utils = _Utils, SelectionUtils = class {
+  //   |---0----|---1----|---2----|---3----|---4----|---5----|
+  // 0 |        |        |        |     ^  |        |        | 
+  //   |--------|--------|--------|--------|--------|--------|
+  // 1 |        |        |        |        |        |        | 
+  //   |--------|--------|--------|--------|--------|--------|
+  // 2 |        |        |   1    |   2    |    > h |        | 
+  //   |--------|--------|--------|--------|--------|--------|
+  // 3 |   <    |        |   4    |   5   x|    > h |    >   | 
+  //   |--------|--------|--------|--------|--------|--------|
+  // 4 |        |        |    > v |    > v |    > v |        | 
+  //   |--------|--------|--------|--------|--------|--------|
+  // 5 |        |        |        |    v   |        |        | 
+  //   |--------|--------|--------|--------|--------|--------|
+  //
+  // original range (1,2,4,5) expanded one cell to right and down
+  //  '> h' indicates horizontal target copy area
+  //  '> v' indicates vertical target copy area
+  // note bottom right (corner) cell is considered part of vertical copy area
+  static normaliseDragRange(rawRange) {
+    let rtn = {
+      start: {
+        row: (rawRange.end.row ?? 0) > (rawRange.start.row ?? 0) ? rawRange.start.row : rawRange.end.row,
+        cell: (rawRange.end.cell ?? 0) > (rawRange.start.cell ?? 0) ? rawRange.start.cell : rawRange.end.cell
+      },
+      end: {
+        row: (rawRange.end.row ?? 0) > (rawRange.start.row ?? 0) ? rawRange.end.row : rawRange.start.row,
+        cell: (rawRange.end.cell ?? 0) > (rawRange.start.cell ?? 0) ? rawRange.end.cell : rawRange.start.cell
+      }
+    };
+    return rtn.rowCount = (rtn.end.row ?? 0) - (rtn.start.row ?? 0) + 1, rtn.cellCount = (rtn.end.cell ?? 0) - (rtn.start.cell ?? 0) + 1, rtn.wasDraggedUp = (rawRange.end.row ?? 0) < (rawRange.start.row ?? 0), rtn.wasDraggedLeft = (rawRange.end.row ?? 0) < (rawRange.start.row ?? 0), rtn;
+  }
+  static copyRangeIsLarger(baseRange, copyToRange) {
+    return copyToRange.fromRow < baseRange.fromRow || copyToRange.fromCell < baseRange.fromCell || copyToRange.toRow > baseRange.toRow || copyToRange.toCell > baseRange.toCell;
+  }
+  static normalRangeOppositeCellFromCopy(normalisedDragRange, targetCell) {
+    let row = targetCell.row < (normalisedDragRange.end.row || 0) ? normalisedDragRange.end.row || 0 : normalisedDragRange.start.row || 0, cell = targetCell.cell < (normalisedDragRange.end.cell || 0) ? normalisedDragRange.end.cell || 0 : normalisedDragRange.start.cell || 0;
+    return { row, cell };
+  }
+  // copy to range above or below - includes corner space target range
+  static verticalTargetRange(baseRange, copyToRange) {
+    let copyUp = copyToRange.fromRow < baseRange.fromRow, copyDown = copyToRange.toRow > baseRange.toRow;
+    if (!copyUp && !copyDown)
+      return null;
+    let rtn;
+    return copyUp ? rtn = new Slick.Range(copyToRange.fromRow, copyToRange.fromCell, baseRange.fromRow - 1, baseRange.toCell) : rtn = new Slick.Range(baseRange.toRow + 1, copyToRange.fromCell, copyToRange.toRow, baseRange.toCell), rtn;
+  }
+  // copy to range left or right - excludes corner space target range
+  static horizontalTargetRange(baseRange, copyToRange) {
+    let copyLeft = copyToRange.fromCell < baseRange.fromCell, copyRight = copyToRange.toCell > baseRange.toCell;
+    if (!copyLeft && !copyRight)
+      return null;
+    let rtn;
+    return copyLeft ? rtn = new Slick.Range(baseRange.fromRow, copyToRange.fromCell, baseRange.toRow, baseRange.fromCell - 1) : rtn = new Slick.Range(baseRange.fromRow, baseRange.toCell + 1, baseRange.toRow, copyToRange.toCell), rtn;
+  }
+  // copy to corner space target range
+  static cornerTargetRange(baseRange, copyToRange) {
+    let copyUp = copyToRange.fromRow < baseRange.fromRow, copyDown = copyToRange.toRow > baseRange.toRow, copyLeft = copyToRange.fromCell < baseRange.fromCell, copyRight = copyToRange.toCell > baseRange.toCell;
+    if (!copyLeft && !copyRight || !copyUp && !copyDown)
+      return null;
+    let rtn;
+    return copyLeft ? copyUp ? rtn = new Slick.Range(copyToRange.fromRow, copyToRange.fromCell, baseRange.fromRow - 1, baseRange.fromCell - 1) : rtn = new Slick.Range(baseRange.toRow + 1, copyToRange.fromCell, copyToRange.toRow, baseRange.fromCell - 1) : copyUp ? rtn = new Slick.Range(copyToRange.fromRow, baseRange.toCell + 1, baseRange.fromRow - 1, copyToRange.toCell) : rtn = new Slick.Range(baseRange.toRow + 1, baseRange.toCell + 1, copyToRange.toRow, copyToRange.toCell), rtn;
+  }
+  static copyCellsToTargetRange(baseRange, targetRange, grid) {
+    let fromRowOffset = 0, fromCellOffset = 0, columns = grid.getVisibleColumns(), options = grid.getOptions();
+    for (let i = 0; i < targetRange.rowCount(); i++) {
+      let toRow = grid.getDataItem(targetRange.fromRow + i), fromRow = grid.getDataItem(baseRange.fromRow + fromRowOffset);
+      fromCellOffset = 0;
+      for (let j = 0; j < targetRange.cellCount(); j++) {
+        let toColDef = columns[targetRange.fromCell + j], fromColDef = columns[baseRange.fromCell + fromCellOffset];
+        if (!toColDef.hidden && !fromColDef.hidden) {
+          let val = fromRow[fromColDef.field];
+          options.dataItemColumnValueExtractor && (val = options.dataItemColumnValueExtractor(fromRow, fromColDef)), toRow[toColDef.field] = val;
+        }
+        fromCellOffset++, fromCellOffset >= baseRange.cellCount() && (fromCellOffset = 0);
+      }
+      fromRowOffset++, fromRowOffset >= baseRange.rowCount() && (fromRowOffset = 0);
+    }
+  }
+}, SlickGlobalEditorLock = new SlickEditorLock(), SlickCore = {
   Event: SlickEvent,
   EventData: SlickEventData,
   EventHandler: SlickEventHandler,
   Range: SlickRange,
+  CopyRange: SlickCopyRange,
+  DragExtendHandle: SlickDragExtendHandle,
   NonDataRow: SlickNonDataItem,
   Group: SlickGroup,
   GroupTotals: SlickGroupTotals,
@@ -726,6 +849,10 @@ var Utils = _Utils, SlickGlobalEditorLock = new SlickEditorLock(), SlickCore = {
     AllRows: "ALL",
     LastRow: "LS1"
   },
+  CellSelectionMode: {
+    Select: "SEL",
+    Replace: "REP"
+  },
   ValueFilterMode: {
     None: "NONE",
     DeDuplicate: "DEDP",
@@ -747,6 +874,8 @@ var Utils = _Utils, SlickGlobalEditorLock = new SlickEditorLock(), SlickCore = {
   GroupTotals,
   NonDataRow,
   Range,
+  CopyRange,
+  DragExtendHandle,
   RegexSanitizer,
   GlobalEditorLock,
   keyCode,
@@ -754,6 +883,7 @@ var Utils = _Utils, SlickGlobalEditorLock = new SlickEditorLock(), SlickCore = {
   GridAutosizeColsMode,
   ColAutosizeMode,
   RowSelectionMode,
+  CellSelectionMode,
   ValueFilterMode,
   WidthEvalMode
 } = SlickCore;
@@ -2212,32 +2342,45 @@ var Utils10 = Utils, SlickCellRangeDecorator = class {
     // protected props
     __publicField(this, "_options");
     __publicField(this, "_elem");
+    __publicField(this, "_selectionCss");
     __publicField(this, "_defaults", {
       selectionCssClass: "slick-range-decorator",
       selectionCss: {
         zIndex: "9999",
         border: "2px dashed red"
       },
+      copyToSelectionCss: {
+        zIndex: "9999",
+        border: "2px dashed blue"
+      },
       offset: { top: -1, left: -1, height: -2, width: -2 }
     });
-    this._options = Utils10.extend(!0, {}, this._defaults, options);
+    this._options = Utils10.extend(!0, {}, this._defaults, options), this._selectionCss = options?.selectionCss || {};
   }
   destroy() {
     this.hide();
+  }
+  getSelectionCss() {
+    return this._selectionCss;
+  }
+  setSelectionCss(cssProps) {
+    this._selectionCss = cssProps;
   }
   init() {
   }
   hide() {
     this._elem?.remove(), this._elem = null;
   }
-  show(range) {
+  show(range, isCopyTo) {
     if (!this._elem) {
-      this._elem = document.createElement("div"), this._elem.className = this._options.selectionCssClass, Object.keys(this._options.selectionCss).forEach((cssStyleKey) => {
-        this._elem.style[cssStyleKey] = this._options.selectionCss[cssStyleKey];
-      }), this._elem.style.position = "absolute";
+      this._elem = document.createElement("div"), this._elem.className = this._options.selectionCssClass, this._elem.style.position = "absolute";
       let canvasNode = this.grid.getActiveCanvasNode();
       canvasNode && canvasNode.appendChild(this._elem);
     }
+    let css = isCopyTo && this._options.copyToSelectionCss ? this._options.copyToSelectionCss : this._options.selectionCss;
+    Object.keys(css).forEach((cssStyleKey) => {
+      this._elem.style[cssStyleKey] !== css[cssStyleKey] && (this._elem.style[cssStyleKey] = css[cssStyleKey]);
+    });
     let from = this.grid.getCellNodeBox(range.fromRow, range.fromCell), to = this.grid.getCellNodeBox(range.toRow, range.toCell);
     return from && to && this._options?.offset && (this._elem.style.top = `${from.top + this._options.offset.top}px`, this._elem.style.left = `${from.left + this._options.offset.left}px`, this._elem.style.height = `${to.bottom - from.top + this._options.offset.height}px`, this._elem.style.width = `${to.right - from.left + this._options.offset.width}px`), this._elem;
   }
@@ -2246,7 +2389,7 @@ var Utils10 = Utils, SlickCellRangeDecorator = class {
 // src/slick.interactions.ts
 var Utils11 = Utils;
 function Draggable(options) {
-  let { containerElement } = options, { onDragInit, onDragStart, onDrag, onDragEnd, preventDragFromKeys } = options, element, startX, startY, deltaX, deltaY, dragStarted;
+  let { containerElement } = options, { onDragInit, onDragStart, onDrag, onDragEnd, preventDragFromKeys } = options, element, startX, startY, deltaX, deltaY, dragStarted, matchClassTag;
   containerElement || (containerElement = document.body);
   let originaldd = {
     dragSource: containerElement,
@@ -2273,9 +2416,15 @@ function Draggable(options) {
       element = event2.target;
       let targetEvent = event2?.touches?.[0] ?? event2, { target } = targetEvent;
       if (!options.allowDragFrom || options.allowDragFrom && element.matches(options.allowDragFrom) || options.allowDragFromClosest && element.closest(options.allowDragFromClosest)) {
-        originaldd.dragHandle = element;
+        if (originaldd.dragHandle = element, matchClassTag = "", options.dragFromClassDetectArr) {
+          for (let o, i = 0; i < options.dragFromClassDetectArr.length; i++)
+            if (o = options.dragFromClassDetectArr[i], o.id && element.id === o.id || o.cssSelector && element.matches(o.cssSelector)) {
+              matchClassTag = o.tag;
+              break;
+            }
+        }
         let winScrollPos = Utils11.windowScrollPosition();
-        startX = winScrollPos.left + targetEvent.clientX, startY = winScrollPos.top + targetEvent.clientY, deltaX = targetEvent.clientX - targetEvent.clientX, deltaY = targetEvent.clientY - targetEvent.clientY, originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDragInit, event2, originaldd) !== !1 && (document.body.addEventListener("mousemove", userMoved), document.body.addEventListener("touchmove", userMoved), document.body.addEventListener("mouseup", userReleased), document.body.addEventListener("touchend", userReleased), document.body.addEventListener("touchcancel", userReleased));
+        startX = winScrollPos.left + targetEvent.clientX, startY = winScrollPos.top + targetEvent.clientY, deltaX = targetEvent.clientX - targetEvent.clientX, deltaY = targetEvent.clientY - targetEvent.clientY, originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target, matchClassTag }), executeDragCallbackWhenDefined(onDragInit, event2, originaldd) !== !1 && (document.body.addEventListener("mousemove", userMoved), document.body.addEventListener("touchmove", userMoved), window.addEventListener("mouseup", userReleased), window.addEventListener("touchend", userReleased), window.addEventListener("touchcancel", userReleased));
       }
     }
   }
@@ -2284,11 +2433,11 @@ function Draggable(options) {
       let targetEvent = event2?.touches?.[0] ?? event2;
       deltaX = targetEvent.clientX - startX, deltaY = targetEvent.clientY - startY;
       let { target } = targetEvent;
-      dragStarted || (originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDragStart, event2, originaldd), dragStarted = !0), originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDrag, event2, originaldd);
+      dragStarted || (originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target, matchClassTag }), executeDragCallbackWhenDefined(onDragStart, event2, originaldd), dragStarted = !0), originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target, matchClassTag }), executeDragCallbackWhenDefined(onDrag, event2, originaldd);
     }
   }
   function userReleased(event2) {
-    if (document.body.removeEventListener("mousemove", userMoved), document.body.removeEventListener("touchmove", userMoved), document.body.removeEventListener("mouseup", userReleased), document.body.removeEventListener("touchend", userReleased), document.body.removeEventListener("touchcancel", userReleased), dragStarted) {
+    if (document.body.removeEventListener("mousemove", userMoved), document.body.removeEventListener("touchmove", userMoved), window.removeEventListener("mouseup", userReleased), window.removeEventListener("touchend", userReleased), window.removeEventListener("touchcancel", userReleased), dragStarted) {
       let { target } = event2;
       originaldd = Object.assign(originaldd, { target }), executeDragCallbackWhenDefined(onDragEnd, event2, originaldd), dragStarted = !1;
     }
@@ -2341,7 +2490,7 @@ function Resizable(options) {
 }
 
 // src/plugins/slick.cellrangeselector.ts
-var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange3 = SlickRange, Draggable2 = Draggable, SlickCellRangeDecorator2 = SlickCellRangeDecorator, Utils12 = Utils, SlickCellRangeSelector = class {
+var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange3 = SlickRange, Draggable2 = Draggable, SlickCellRangeDecorator2 = SlickCellRangeDecorator, Utils12 = Utils, SelectionUtils2 = SelectionUtils, CellSelectionMode2 = CellSelectionMode, SlickCellRangeSelector = class {
   constructor(options) {
     // --
     // public API
@@ -2353,6 +2502,7 @@ var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange
     // protected props
     __publicField(this, "_grid");
     __publicField(this, "_currentlySelectedRange", null);
+    __publicField(this, "_previousSelectedRange", null);
     __publicField(this, "_canvas", null);
     __publicField(this, "_decorator");
     __publicField(this, "_gridOptions");
@@ -2360,6 +2510,9 @@ var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange
     __publicField(this, "_dragging", !1);
     __publicField(this, "_handler", new SlickEventHandler2());
     __publicField(this, "_options");
+    __publicField(this, "_selectionMode", CellSelectionMode2.Select);
+    __publicField(this, "_dragReplaceHandleActive", !1);
+    __publicField(this, "_dragReplaceHandleCell", null);
     __publicField(this, "_defaults", {
       autoScroll: !0,
       minIntervalToShowNextCell: 30,
@@ -2402,10 +2555,16 @@ var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange
   getCellDecorator() {
     return this._decorator;
   }
+  getSelectionMode() {
+    return this._selectionMode;
+  }
+  setSelectionMode(mode) {
+    this._selectionMode = mode;
+  }
   handleScroll(_e, args) {
     this._scrollTop = args.scrollTop, this._scrollLeft = args.scrollLeft;
   }
-  handleDragInit(e) {
+  handleDragInit(e, dd) {
     this._activeCanvas = this._grid.getActiveCanvasNode(e), this._activeViewport = this._grid.getActiveViewportNode(e);
     let scrollbarDimensions = this._grid.getDisplayedScrollbarDimensions();
     if (this._viewportWidth = this._activeViewport.offsetWidth - scrollbarDimensions.width, this._viewportHeight = this._activeViewport.offsetHeight - scrollbarDimensions.height, this._moveDistanceForOneCell = {
@@ -2419,19 +2578,19 @@ var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange
       let canvasLeftElm = document.querySelector(`.${this._grid.getUID()} .grid-canvas-left`);
       canvasLeftElm && (this._columnOffset = canvasLeftElm.clientWidth || 0);
     }
-    e.stopImmediatePropagation(), e.preventDefault();
+    this._dragReplaceHandleActive = dd.matchClassTag === "dragReplaceHandle", this._dragReplaceHandleActive ? this._dragReplaceHandleCell = this._grid.getCellFromEvent(e) : this._previousSelectedRange = null, e.stopImmediatePropagation(), e.preventDefault();
   }
   handleDragStart(e, dd) {
     let cell = this._grid.getCellFromEvent(e);
-    if (cell && this.onBeforeCellRangeSelected.notify(cell).getReturnValue() !== !1 && this._grid.canCellBeSelected(cell.row, cell.cell) && (this._dragging = !0, e.stopImmediatePropagation()), !this._dragging)
+    if (this._dragReplaceHandleActive && (cell = this._dragReplaceHandleCell), cell && this.onBeforeCellRangeSelected.notify(cell).getReturnValue() !== !1 && this._grid.canCellBeSelected(cell.row, cell.cell) && (this._dragging = !0, e.stopImmediatePropagation()), !this._dragging)
       return;
     this._grid.focus();
     let canvasOffset = Utils12.offset(this._canvas), startX = dd.startX - (canvasOffset?.left ?? 0);
     this._gridOptions.frozenColumn >= 0 && this._isRightCanvas && (startX += this._scrollLeft);
     let startY = dd.startY - (canvasOffset?.top ?? 0);
     this._gridOptions.frozenRow >= 0 && this._isBottomCanvas && (startY += this._scrollTop);
-    let start = this._grid.getCellFromPoint(startX, startY);
-    return dd.range = { start, end: {} }, this._currentlySelectedRange = dd.range, this._decorator.show(new SlickRange3(start.row, start.cell));
+    let start;
+    return this._selectionMode = this._dragReplaceHandleActive ? Slick.CellSelectionMode.Replace : Slick.CellSelectionMode.Select, this._dragReplaceHandleActive ? start = this._grid.getActiveCell() || { row: void 0, cell: void 0 } : start = this._grid.getCellFromPoint(startX, startY), dd.range = { start, end: {} }, this._currentlySelectedRange = dd.range, this._decorator.show(new SlickRange3(start.row ?? 0, start.cell ?? 0), this._dragReplaceHandleActive);
   }
   handleDrag(evt, dd) {
     if (!this._dragging && !this._isRowMoveRegistered)
@@ -2499,9 +2658,13 @@ var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange
       }
       if (this._grid.canCellBeSelected(end.row, end.cell) && dd?.range) {
         dd.range.end = end;
-        let range = new SlickRange3(dd.range.start.row ?? 0, dd.range.start.cell ?? 0, end.row, end.cell);
-        this._decorator.show(range), this.onCellRangeSelecting.notify({
-          range
+        let cornerCell = this._previousSelectedRange ? SelectionUtils2.normalRangeOppositeCellFromCopy(this._previousSelectedRange, end) : dd.range.start;
+        this._currentlySelectedRange = dd.range;
+        let range = new Slick.Range(cornerCell.row, cornerCell.cell, end.row, end.cell);
+        this._decorator.show(range, this._dragReplaceHandleActive), this.onCellRangeSelecting.notify({
+          range,
+          selectionMode: "",
+          allowAutoEdit: !1
         });
       }
     }
@@ -2510,17 +2673,27 @@ var SlickEvent8 = SlickEvent, SlickEventHandler2 = SlickEventHandler, SlickRange
     return !!(this._grid.getPluginByName("RowMoveManager") || this._grid.getPluginByName("CrossGridRowMoveManager"));
   }
   handleDragEnd(e, dd) {
-    this._decorator.hide(), this._dragging && (this._dragging = !1, e.stopImmediatePropagation(), this.stopIntervalTimer(), this.onCellRangeSelected.notify({
-      range: new SlickRange3(
-        dd.range.start.row ?? 0,
-        dd.range.start.cell ?? 0,
-        dd.range.end.row,
-        dd.range.end.cell
-      )
-    }));
+    if (this._decorator.hide(), !this._dragging || !dd.range) {
+      this._autoScrollTimerId && this.stopIntervalTimer();
+      return;
+    }
+    this._dragging = !1, e.stopImmediatePropagation(), this.stopIntervalTimer();
+    let targetEvent = e?.touches?.[0] ?? e, canvasOffset = Utils12.offset(this._activeCanvas), end = this._grid.getCellFromPoint(
+      targetEvent.pageX - (canvasOffset?.left ?? 0) + this._columnOffset,
+      targetEvent.pageY - (canvasOffset?.top ?? 0) + this._rowOffset
+    ), cornerCell = !this._dragReplaceHandleActive || !this._previousSelectedRange ? dd.range.start : SelectionUtils2.normalRangeOppositeCellFromCopy(this._previousSelectedRange, end), r = new SlickRange3(
+      cornerCell.row ?? 0,
+      cornerCell.cell ?? 0,
+      dd.range.end.row,
+      dd.range.end.cell
+    );
+    this.onCellRangeSelected.notify({ range: r, selectionMode: this._selectionMode, allowAutoEdit: this._selectionMode === "SEL" && r.isSingleCell() }), this._previousSelectedRange = SelectionUtils2.normaliseDragRange(dd.range);
   }
   getCurrentRange() {
     return this._currentlySelectedRange;
+  }
+  getPreviousRange() {
+    return this._previousSelectedRange;
   }
 };
 
@@ -2544,7 +2717,10 @@ var SlickEvent9 = SlickEvent, SlickEventData3 = SlickEventData, SlickRange4 = Sl
     __publicField(this, "_defaults", {
       selectActiveCell: !0
     });
-    options === void 0 || options.cellRangeSelector === void 0 ? this._selector = new SlickCellRangeSelector2({ selectionCss: { border: "2px solid black" } }) : this._selector = options.cellRangeSelector;
+    options === void 0 || options.cellRangeSelector === void 0 ? this._selector = new SlickCellRangeSelector2({
+      selectionCss: { border: "2px solid black" },
+      copyToSelectionCss: { border: "2px solid purple" }
+    }) : this._selector = options.cellRangeSelector;
   }
   init(grid) {
     this._options = Utils13.extend(!0, {}, this._defaults, this._options), this._grid = grid, grid.hasDataView() && (this._dataView = grid.getData()), this._grid.onActiveCellChanged.subscribe(this.handleActiveCellChange.bind(this)), this._grid.onKeyDown.subscribe(this.handleKeyDown.bind(this)), grid.registerPlugin(this._selector), this._selector.onCellRangeSelected.subscribe(this.handleCellRangeSelected.bind(this)), this._selector.onBeforeCellRangeSelected.subscribe(this.handleBeforeCellRangeSelected.bind(this));
@@ -2575,12 +2751,12 @@ var SlickEvent9 = SlickEvent, SlickEventData3 = SlickEventData, SlickRange4 = Sl
   resetPageRowCount() {
     this._cachedPageRowCount = 0;
   }
-  setSelectedRanges(ranges, caller = "SlickCellSelectionModel.setSelectedRanges") {
+  setSelectedRanges(ranges, caller = "SlickCellSelectionModel.setSelectedRanges", selectionMode) {
     if ((!this._ranges || this._ranges.length === 0) && (!ranges || ranges.length === 0))
       return;
     let rangeHasChanged = !this.rangesAreEqual(this._ranges, ranges);
     if (this._ranges = this.removeInvalidRanges(ranges), rangeHasChanged) {
-      let eventData = new SlickEventData3(new CustomEvent("click", { detail: { caller } }), this._ranges);
+      let eventData = new SlickEventData3(new CustomEvent("click", { detail: { caller, selectionMode, addDragHandle: !0 } }), this._ranges);
       this.onSelectedRangesChanged.notify(this._ranges, eventData);
     }
   }
@@ -2588,19 +2764,19 @@ var SlickEvent9 = SlickEvent, SlickEventData3 = SlickEventData, SlickRange4 = Sl
     return this._ranges;
   }
   refreshSelections() {
-    this.setSelectedRanges(this.getSelectedRanges());
+    this.setSelectedRanges(this.getSelectedRanges(), void 0, "");
   }
   handleBeforeCellRangeSelected(e) {
     if (this._grid.getEditorLock().isActive())
       return e.stopPropagation(), !1;
   }
   handleCellRangeSelected(_e, args) {
-    this._grid.setActiveCell(args.range.fromRow, args.range.fromCell, !1, !1, !0), this.setSelectedRanges([args.range]);
+    this._grid.setActiveCell(args.range.fromRow, args.range.fromCell, !1, !1, !0), this.setSelectedRanges([args.range], void 0, args.selectionMode);
   }
   handleActiveCellChange(_e, args) {
     this._prevSelectedRow = void 0;
     let isCellDefined = Utils13.isDefined(args.cell), isRowDefined = Utils13.isDefined(args.row);
-    this._options?.selectActiveCell && isRowDefined && isCellDefined ? this.setSelectedRanges([new SlickRange4(args.row, args.cell)]) : (!this._options?.selectActiveCell || !isRowDefined && !isCellDefined) && this.setSelectedRanges([]);
+    this._options?.selectActiveCell && isRowDefined && isCellDefined ? this.setSelectedRanges([new SlickRange4(args.row, args.cell)], void 0, "") : (!this._options?.selectActiveCell || !isRowDefined && !isCellDefined) && this.setSelectedRanges([], void 0, "");
   }
   isKeyAllowed(key, isShiftKeyPressed) {
     return [
@@ -2630,7 +2806,7 @@ var SlickEvent9 = SlickEvent, SlickEventData3 = SlickEventData, SlickRange4 = Sl
         isSingleKeyMove ? (this._grid.scrollRowIntoView(viewRow), this._grid.scrollCellIntoView(viewRow, viewCell)) : (this._grid.scrollRowIntoView(toRow), this._grid.scrollCellIntoView(toRow, viewCell));
       } else
         ranges.push(last);
-      this.setSelectedRanges(ranges), e.preventDefault(), e.stopPropagation(), this._prevKeyDown = e.key;
+      this.setSelectedRanges(ranges, void 0, ""), e.preventDefault(), e.stopPropagation(), this._prevKeyDown = e.key;
     }
   }
 };
@@ -3587,7 +3763,7 @@ var BindingEventService9 = BindingEventService, SlickEvent12 = SlickEvent, Slick
         setColumns.call(grid, finalReorderedColumns), trigger.call(grid, grid.onColumnsReordered, { grid, impactedColumns: finalReorderedColumns }), e.stopPropagation(), setupColumnResize.call(grid);
       }
     };
-    return this._sortableLeftInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-left`), sortableOptions), this._sortableRightInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-right`), sortableOptions), this._options.initialGroupBy && !this._isInitialized && setTimeout(() => this.setDroppedGroups(this._options.initialGroupBy)), this._isInitialized = !0, {
+    return this._sortableLeftInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-left`), sortableOptions), this._sortableRightInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-right`), sortableOptions), this._options.initialGroupBy && !this._isInitialized && setTimeout(() => this.setDroppedGroups(this._options.initialGroupBy || []), 0), this._isInitialized = !0, {
       sortableLeftInstance: this._sortableLeftInstance,
       sortableRightInstance: this._sortableRightInstance
     };
@@ -4304,7 +4480,9 @@ var SlickEvent16 = SlickEvent, SlickEventHandler8 = SlickEventHandler, Utils22 =
   /** Get the Row Detail padding (which are the rows dedicated to the detail panel) */
   getPaddingItem(parent, offset) {
     let item = {};
-    return Object.keys(this._dataView).forEach((prop) => {
+    return this._grid.getColumns().forEach(({ field }) => {
+      item[field] = parent[field];
+    }), Object.keys(this._dataView).forEach((prop) => {
       item[prop] = null;
     }), item[this._dataViewIdProperty] = parent[this._dataViewIdProperty] + "." + offset, item[`${this._keyPrefix}collapsed`] = !0, item[`${this._keyPrefix}isPadding`] = !0, item[`${this._keyPrefix}parent`] = parent, item[`${this._keyPrefix}offset`] = offset, item;
   }
@@ -4600,11 +4778,11 @@ var Draggable3 = Draggable, keyCode3 = keyCode, SlickCellRangeDecorator3 = Slick
   setSelectedRows(rows) {
     this.setSelectedRanges(this.rowsToRanges(rows), "SlickRowSelectionModel.setSelectedRows");
   }
-  setSelectedRanges(ranges, caller = "SlickRowSelectionModel.setSelectedRanges") {
+  setSelectedRanges(ranges, caller = "SlickRowSelectionModel.setSelectedRanges", selectionMode) {
     if ((!this._ranges || this._ranges.length === 0) && (!ranges || ranges.length === 0))
       return;
     this._ranges = ranges;
-    let eventData = new SlickEventData5(new CustomEvent("click", { detail: { caller } }), this._ranges);
+    let eventData = new SlickEventData5(new CustomEvent("click", { detail: { caller, selectionMode } }), this._ranges);
     this.onSelectedRangesChanged.notify(this._ranges, eventData);
   }
   getSelectedRanges() {
@@ -4620,9 +4798,7 @@ var Draggable3 = Draggable, keyCode3 = keyCode, SlickCellRangeDecorator3 = Slick
     let activeRow = this._grid.getActiveCell();
     if (this._grid.getOptions().multiSelect && activeRow && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey && (e.which === keyCode3.UP || e.which === keyCode3.DOWN)) {
       let selectedRows = this.getSelectedRows();
-      selectedRows.sort(function(x, y) {
-        return x - y;
-      }), selectedRows.length || (selectedRows = [activeRow.row]);
+      selectedRows.sort((x, y) => x - y), selectedRows.length || (selectedRows = [activeRow.row]);
       let top = selectedRows[0], bottom = selectedRows[selectedRows.length - 1], active;
       if (e.which === keyCode3.DOWN ? active = activeRow.row < bottom || top === bottom ? ++bottom : ++top : active = activeRow.row < bottom ? --bottom : --top, active >= 0 && active < this._grid.getDataLength()) {
         this._grid.scrollRowIntoView(active);
@@ -4663,7 +4839,7 @@ var Draggable3 = Draggable, keyCode3 = keyCode, SlickCellRangeDecorator3 = Slick
   handleCellRangeSelected(_e, args) {
     if (!this._grid.getOptions().multiSelect || !this._options.selectActiveRow)
       return !1;
-    this.setSelectedRanges([new SlickRange5(args.range.fromRow, 0, args.range.toRow, this._grid.getColumns().length - 1)]);
+    this.setSelectedRanges([new SlickRange5(args.range.fromRow, 0, args.range.toRow, this._grid.getColumns().length - 1)], void 0, args.selectionMode);
   }
 };
 
@@ -6345,6 +6521,9 @@ var FloatEditor = _FloatEditor, FlatpickrEditor = class {
   loadValue(item) {
     this.defaultValue = !!item[this.args.column.field], this.defaultValue ? this.input.checked = !0 : this.input.checked = !1;
   }
+  preClick() {
+    this.input.checked = !this.input.checked;
+  }
   serializeValue() {
     return this.input.checked;
   }
@@ -6552,7 +6731,7 @@ var Utils29 = Utils, PercentCompleteFormatter = (_row, _cell, value) => !Utils29
 };
 
 // src/slick.grid.ts
-var BindingEventService13 = BindingEventService, ColAutosizeMode2 = ColAutosizeMode, SlickEvent21 = SlickEvent, SlickEventData7 = SlickEventData, GlobalEditorLock2 = GlobalEditorLock, GridAutosizeColsMode2 = GridAutosizeColsMode, keyCode6 = keyCode, preClickClassName2 = preClickClassName, SlickRange6 = SlickRange, RowSelectionMode2 = RowSelectionMode, ValueFilterMode2 = ValueFilterMode, Utils30 = Utils, WidthEvalMode2 = WidthEvalMode, Draggable4 = Draggable, MouseWheel2 = MouseWheel, Resizable2 = Resizable;
+var BindingEventService13 = BindingEventService, ColAutosizeMode2 = ColAutosizeMode, SlickEvent21 = SlickEvent, SlickEventData7 = SlickEventData, GlobalEditorLock2 = GlobalEditorLock, GridAutosizeColsMode2 = GridAutosizeColsMode, keyCode6 = keyCode, preClickClassName2 = preClickClassName, SlickRange6 = SlickRange, RowSelectionMode2 = RowSelectionMode, CellSelectionMode3 = CellSelectionMode, ValueFilterMode2 = ValueFilterMode, Utils30 = Utils, SelectionUtils3 = SelectionUtils, WidthEvalMode2 = WidthEvalMode, Draggable4 = Draggable, MouseWheel2 = MouseWheel, Resizable2 = Resizable, DragExtendHandle2 = DragExtendHandle;
 var SlickGrid = class {
   /**
    * Creates a new instance of the grid.
@@ -6630,6 +6809,7 @@ var SlickGrid = class {
     __publicField(this, "onSort");
     __publicField(this, "onValidationError");
     __publicField(this, "onViewportChanged");
+    __publicField(this, "onDragReplaceCells");
     // ---
     // protected variables
     // shared across all grids on the page
@@ -6641,6 +6821,10 @@ var SlickGrid = class {
     // settings
     __publicField(this, "_options");
     __publicField(this, "_defaults", {
+      invalidColumnFreezePickerCallback: (error) => alert(error),
+      invalidColumnFreezeWidthCallback: (error) => alert(error),
+      invalidColumnFreezeWidthMessage: "[SlickGrid] You are trying to freeze/pin more columns than the grid can support. Make sure to have less columns pinned (on the left) than the actual visible grid width.",
+      invalidColumnFreezePickerMessage: '[SlickGrid] Action not allowed and aborted, you need to have at least one or more column on the right section of the column freeze/pining. You could alternatively "Unfreeze all the columns" before trying again.',
       alwaysShowVerticalScroll: !1,
       alwaysAllowHorizontalScroll: !1,
       explicitInitialization: !1,
@@ -6792,6 +6976,7 @@ var SlickGrid = class {
     __publicField(this, "initialized", !1);
     __publicField(this, "_container");
     __publicField(this, "uid", `slickgrid_${Math.round(1e6 * Math.random())}`);
+    __publicField(this, "dragReplaceEl", new DragExtendHandle2(this.uid));
     __publicField(this, "_focusSink");
     __publicField(this, "_focusSink2");
     __publicField(this, "_groupHeaders", []);
@@ -6842,6 +7027,9 @@ var SlickGrid = class {
     __publicField(this, "hasFrozenRows", !1);
     __publicField(this, "frozenRowsHeight", 0);
     __publicField(this, "actualFrozenRow", -1);
+    __publicField(this, "_prevFrozenColumnIdx", -1);
+    /** flag to indicate if invalid frozen alert has been shown already or not? This is to avoid showing it more than once */
+    __publicField(this, "_invalidfrozenAlerted", !1);
     __publicField(this, "paneTopH", 0);
     __publicField(this, "paneBottomH", 0);
     __publicField(this, "viewportTopH", 0);
@@ -6856,6 +7044,8 @@ var SlickGrid = class {
     __publicField(this, "activePosY");
     __publicField(this, "activeRow");
     __publicField(this, "activeCell");
+    __publicField(this, "selectionBottomRow");
+    __publicField(this, "selectionRightCell");
     __publicField(this, "activeCellNode", null);
     __publicField(this, "currentEditor", null);
     __publicField(this, "serializedEditorValue");
@@ -6876,6 +7066,7 @@ var SlickGrid = class {
     __publicField(this, "scrollLeft", 0);
     __publicField(this, "selectionModel");
     __publicField(this, "selectedRows", []);
+    __publicField(this, "selectedRanges", []);
     __publicField(this, "plugins", []);
     __publicField(this, "cellCssClasses", {});
     __publicField(this, "columnsById", {});
@@ -6950,7 +7141,7 @@ var SlickGrid = class {
     __publicField(this, "_pubSubService");
     if (this._container = typeof this.container == "string" ? document.querySelector(this.container) : this.container, !this._container)
       throw new Error(`SlickGrid requires a valid container, ${this.container} does not exist in the DOM.`);
-    this._pubSubService = externalPubSub, this.onActiveCellChanged = new SlickEvent21("onActiveCellChanged", externalPubSub), this.onActiveCellPositionChanged = new SlickEvent21("onActiveCellPositionChanged", externalPubSub), this.onAddNewRow = new SlickEvent21("onAddNewRow", externalPubSub), this.onAfterSetColumns = new SlickEvent21("onAfterSetColumns", externalPubSub), this.onAutosizeColumns = new SlickEvent21("onAutosizeColumns", externalPubSub), this.onBeforeAppendCell = new SlickEvent21("onBeforeAppendCell", externalPubSub), this.onBeforeCellEditorDestroy = new SlickEvent21("onBeforeCellEditorDestroy", externalPubSub), this.onBeforeColumnsResize = new SlickEvent21("onBeforeColumnsResize", externalPubSub), this.onBeforeDestroy = new SlickEvent21("onBeforeDestroy", externalPubSub), this.onBeforeEditCell = new SlickEvent21("onBeforeEditCell", externalPubSub), this.onBeforeFooterRowCellDestroy = new SlickEvent21("onBeforeFooterRowCellDestroy", externalPubSub), this.onBeforeHeaderCellDestroy = new SlickEvent21("onBeforeHeaderCellDestroy", externalPubSub), this.onBeforeHeaderRowCellDestroy = new SlickEvent21("onBeforeHeaderRowCellDestroy", externalPubSub), this.onBeforeRemoveCachedRow = new SlickEvent21("onRowRemovedFromCache", externalPubSub), this.onBeforeSetColumns = new SlickEvent21("onBeforeSetColumns", externalPubSub), this.onBeforeSort = new SlickEvent21("onBeforeSort", externalPubSub), this.onBeforeUpdateColumns = new SlickEvent21("onBeforeUpdateColumns", externalPubSub), this.onCellChange = new SlickEvent21("onCellChange", externalPubSub), this.onCellCssStylesChanged = new SlickEvent21("onCellCssStylesChanged", externalPubSub), this.onClick = new SlickEvent21("onClick", externalPubSub), this.onColumnsReordered = new SlickEvent21("onColumnsReordered", externalPubSub), this.onColumnsDrag = new SlickEvent21("onColumnsDrag", externalPubSub), this.onColumnsResized = new SlickEvent21("onColumnsResized", externalPubSub), this.onColumnsResizeDblClick = new SlickEvent21("onColumnsResizeDblClick", externalPubSub), this.onCompositeEditorChange = new SlickEvent21("onCompositeEditorChange", externalPubSub), this.onContextMenu = new SlickEvent21("onContextMenu", externalPubSub), this.onDrag = new SlickEvent21("onDrag", externalPubSub), this.onDblClick = new SlickEvent21("onDblClick", externalPubSub), this.onDragInit = new SlickEvent21("onDragInit", externalPubSub), this.onDragStart = new SlickEvent21("onDragStart", externalPubSub), this.onDragEnd = new SlickEvent21("onDragEnd", externalPubSub), this.onFooterClick = new SlickEvent21("onFooterClick", externalPubSub), this.onFooterContextMenu = new SlickEvent21("onFooterContextMenu", externalPubSub), this.onFooterRowCellRendered = new SlickEvent21("onFooterRowCellRendered", externalPubSub), this.onHeaderCellRendered = new SlickEvent21("onHeaderCellRendered", externalPubSub), this.onHeaderClick = new SlickEvent21("onHeaderClick", externalPubSub), this.onHeaderContextMenu = new SlickEvent21("onHeaderContextMenu", externalPubSub), this.onHeaderMouseEnter = new SlickEvent21("onHeaderMouseEnter", externalPubSub), this.onHeaderMouseLeave = new SlickEvent21("onHeaderMouseLeave", externalPubSub), this.onHeaderRowCellRendered = new SlickEvent21("onHeaderRowCellRendered", externalPubSub), this.onHeaderRowMouseEnter = new SlickEvent21("onHeaderRowMouseEnter", externalPubSub), this.onHeaderRowMouseLeave = new SlickEvent21("onHeaderRowMouseLeave", externalPubSub), this.onPreHeaderClick = new SlickEvent21("onPreHeaderClick", externalPubSub), this.onPreHeaderContextMenu = new SlickEvent21("onPreHeaderContextMenu", externalPubSub), this.onKeyDown = new SlickEvent21("onKeyDown", externalPubSub), this.onMouseEnter = new SlickEvent21("onMouseEnter", externalPubSub), this.onMouseLeave = new SlickEvent21("onMouseLeave", externalPubSub), this.onRendered = new SlickEvent21("onRendered", externalPubSub), this.onScroll = new SlickEvent21("onScroll", externalPubSub), this.onSelectedRowsChanged = new SlickEvent21("onSelectedRowsChanged", externalPubSub), this.onSetOptions = new SlickEvent21("onSetOptions", externalPubSub), this.onActivateChangedOptions = new SlickEvent21("onActivateChangedOptions", externalPubSub), this.onSort = new SlickEvent21("onSort", externalPubSub), this.onValidationError = new SlickEvent21("onValidationError", externalPubSub), this.onViewportChanged = new SlickEvent21("onViewportChanged", externalPubSub), this.initialize(options);
+    this._pubSubService = externalPubSub, this.onActiveCellChanged = new SlickEvent21("onActiveCellChanged", externalPubSub), this.onActiveCellPositionChanged = new SlickEvent21("onActiveCellPositionChanged", externalPubSub), this.onAddNewRow = new SlickEvent21("onAddNewRow", externalPubSub), this.onAfterSetColumns = new SlickEvent21("onAfterSetColumns", externalPubSub), this.onAutosizeColumns = new SlickEvent21("onAutosizeColumns", externalPubSub), this.onBeforeAppendCell = new SlickEvent21("onBeforeAppendCell", externalPubSub), this.onBeforeCellEditorDestroy = new SlickEvent21("onBeforeCellEditorDestroy", externalPubSub), this.onBeforeColumnsResize = new SlickEvent21("onBeforeColumnsResize", externalPubSub), this.onBeforeDestroy = new SlickEvent21("onBeforeDestroy", externalPubSub), this.onBeforeEditCell = new SlickEvent21("onBeforeEditCell", externalPubSub), this.onBeforeFooterRowCellDestroy = new SlickEvent21("onBeforeFooterRowCellDestroy", externalPubSub), this.onBeforeHeaderCellDestroy = new SlickEvent21("onBeforeHeaderCellDestroy", externalPubSub), this.onBeforeHeaderRowCellDestroy = new SlickEvent21("onBeforeHeaderRowCellDestroy", externalPubSub), this.onBeforeRemoveCachedRow = new SlickEvent21("onRowRemovedFromCache", externalPubSub), this.onBeforeSetColumns = new SlickEvent21("onBeforeSetColumns", externalPubSub), this.onBeforeSort = new SlickEvent21("onBeforeSort", externalPubSub), this.onBeforeUpdateColumns = new SlickEvent21("onBeforeUpdateColumns", externalPubSub), this.onCellChange = new SlickEvent21("onCellChange", externalPubSub), this.onCellCssStylesChanged = new SlickEvent21("onCellCssStylesChanged", externalPubSub), this.onClick = new SlickEvent21("onClick", externalPubSub), this.onColumnsReordered = new SlickEvent21("onColumnsReordered", externalPubSub), this.onColumnsDrag = new SlickEvent21("onColumnsDrag", externalPubSub), this.onColumnsResized = new SlickEvent21("onColumnsResized", externalPubSub), this.onColumnsResizeDblClick = new SlickEvent21("onColumnsResizeDblClick", externalPubSub), this.onCompositeEditorChange = new SlickEvent21("onCompositeEditorChange", externalPubSub), this.onContextMenu = new SlickEvent21("onContextMenu", externalPubSub), this.onDrag = new SlickEvent21("onDrag", externalPubSub), this.onDblClick = new SlickEvent21("onDblClick", externalPubSub), this.onDragInit = new SlickEvent21("onDragInit", externalPubSub), this.onDragStart = new SlickEvent21("onDragStart", externalPubSub), this.onDragEnd = new SlickEvent21("onDragEnd", externalPubSub), this.onFooterClick = new SlickEvent21("onFooterClick", externalPubSub), this.onFooterContextMenu = new SlickEvent21("onFooterContextMenu", externalPubSub), this.onFooterRowCellRendered = new SlickEvent21("onFooterRowCellRendered", externalPubSub), this.onHeaderCellRendered = new SlickEvent21("onHeaderCellRendered", externalPubSub), this.onHeaderClick = new SlickEvent21("onHeaderClick", externalPubSub), this.onHeaderContextMenu = new SlickEvent21("onHeaderContextMenu", externalPubSub), this.onHeaderMouseEnter = new SlickEvent21("onHeaderMouseEnter", externalPubSub), this.onHeaderMouseLeave = new SlickEvent21("onHeaderMouseLeave", externalPubSub), this.onHeaderRowCellRendered = new SlickEvent21("onHeaderRowCellRendered", externalPubSub), this.onHeaderRowMouseEnter = new SlickEvent21("onHeaderRowMouseEnter", externalPubSub), this.onHeaderRowMouseLeave = new SlickEvent21("onHeaderRowMouseLeave", externalPubSub), this.onPreHeaderClick = new SlickEvent21("onPreHeaderClick", externalPubSub), this.onPreHeaderContextMenu = new SlickEvent21("onPreHeaderContextMenu", externalPubSub), this.onKeyDown = new SlickEvent21("onKeyDown", externalPubSub), this.onMouseEnter = new SlickEvent21("onMouseEnter", externalPubSub), this.onMouseLeave = new SlickEvent21("onMouseLeave", externalPubSub), this.onRendered = new SlickEvent21("onRendered", externalPubSub), this.onScroll = new SlickEvent21("onScroll", externalPubSub), this.onSelectedRowsChanged = new SlickEvent21("onSelectedRowsChanged", externalPubSub), this.onSetOptions = new SlickEvent21("onSetOptions", externalPubSub), this.onActivateChangedOptions = new SlickEvent21("onActivateChangedOptions", externalPubSub), this.onSort = new SlickEvent21("onSort", externalPubSub), this.onValidationError = new SlickEvent21("onValidationError", externalPubSub), this.onViewportChanged = new SlickEvent21("onViewportChanged", externalPubSub), this.onDragReplaceCells = new SlickEvent21("onDragReplaceCells", externalPubSub), this.initialize(options);
   }
   //////////////////////////////////////////////////////////////////////////////////////////////
   // Grid and Dom Initialisation
@@ -6968,7 +7159,7 @@ var SlickGrid = class {
    * @param {Partial<O>} options - Partial grid options to be applied during initialization.
    */
   initialize(options) {
-    if (options?.mixinDefaults ? (this._options || (this._options = options), Utils30.applyDefaults(this._options, this._defaults)) : this._options = Utils30.extend(!0, {}, this._defaults, options), this.scrollThrottle = this.actionThrottle(this.render.bind(this), this._options.scrollRenderThrottling), this.maxSupportedCssHeight = this.maxSupportedCssHeight || this.getMaxSupportedCssHeight(), this.validateAndEnforceOptions(), this._columnDefaults.width = this._options.defaultColumnWidth, this._options.suppressCssChangesOnHiddenInit || this.cacheCssForHiddenInit(), this.updateColumnProps(), this._options.enableColumnReorder && (!Sortable || !Sortable.create))
+    if (options?.mixinDefaults ? (this._options || (this._options = options), Utils30.applyDefaults(this._options, this._defaults)) : this._options = Utils30.extend(!0, {}, this._defaults, options), this.scrollThrottle = this.actionThrottle(this.render.bind(this), this._options.scrollRenderThrottling), this.maxSupportedCssHeight = this.maxSupportedCssHeight || this.getMaxSupportedCssHeight(), this.validateAndEnforceOptions(), this._columnDefaults.width = this._options.defaultColumnWidth, this._prevFrozenColumnIdx = this.getFrozenColumnIdx(), this._options.suppressCssChangesOnHiddenInit || this.cacheCssForHiddenInit(), this.updateColumnProps(), this._options.enableColumnReorder && (!Sortable || !Sortable.create))
       throw new Error("SlickGrid requires Sortable.js module to be loaded");
     this.editController = {
       commitCurrentEdit: this.commitCurrentEdit.bind(this),
@@ -7023,7 +7214,8 @@ var SlickGrid = class {
       this._bindingEventService.bind(element, "keydown", this.handleKeyDown.bind(this)), this._bindingEventService.bind(element, "click", this.handleClick.bind(this)), this._bindingEventService.bind(element, "dblclick", this.handleDblClick.bind(this)), this._bindingEventService.bind(element, "contextmenu", this.handleContextMenu.bind(this)), this._bindingEventService.bind(element, "mouseover", this.handleCellMouseOver.bind(this)), this._bindingEventService.bind(element, "mouseout", this.handleCellMouseOut.bind(this));
     }), Draggable4 && (this.slickDraggableInstance = Draggable4({
       containerElement: this._container,
-      allowDragFrom: "div.slick-cell",
+      allowDragFrom: "div.slick-cell, div." + this.dragReplaceEl.cssClass,
+      dragFromClassDetectArr: [{ tag: "dragReplaceHandle", id: this.dragReplaceEl.id }],
       // the slick cell parent must always contain `.dnd` and/or `.cell-reorder` class to be identified as draggable
       allowDragFromClosest: "div.slick-cell.dnd, div.slick-cell.cell-reorder",
       preventDragFromKeys: this._options.preventDragFromKeys,
@@ -7150,9 +7342,20 @@ var SlickGrid = class {
   destroyAllElements() {
     this._activeCanvasNode = null, this._activeViewportNode = null, this._boundAncestors = null, this._canvas = null, this._canvasTopL = null, this._canvasTopR = null, this._canvasBottomL = null, this._canvasBottomR = null, this._container = null, this._focusSink = null, this._focusSink2 = null, this._groupHeaders = null, this._groupHeadersL = null, this._groupHeadersR = null, this._headerL = null, this._headerR = null, this._headers = null, this._headerRows = null, this._headerRowL = null, this._headerRowR = null, this._headerRowSpacerL = null, this._headerRowSpacerR = null, this._headerRowScrollContainer = null, this._headerRowScroller = null, this._headerRowScrollerL = null, this._headerRowScrollerR = null, this._headerScrollContainer = null, this._headerScroller = null, this._headerScrollerL = null, this._headerScrollerR = null, this._hiddenParents = null, this._footerRow = null, this._footerRowL = null, this._footerRowR = null, this._footerRowSpacerL = null, this._footerRowSpacerR = null, this._footerRowScroller = null, this._footerRowScrollerL = null, this._footerRowScrollerR = null, this._footerRowScrollContainer = null, this._preHeaderPanel = null, this._preHeaderPanelR = null, this._preHeaderPanelScroller = null, this._preHeaderPanelScrollerR = null, this._preHeaderPanelSpacer = null, this._preHeaderPanelSpacerR = null, this._topPanels = null, this._topPanelScrollers = null, this._style = null, this._topPanelScrollerL = null, this._topPanelScrollerR = null, this._topPanelL = null, this._topPanelR = null, this._paneHeaderL = null, this._paneHeaderR = null, this._paneTopL = null, this._paneTopR = null, this._paneBottomL = null, this._paneBottomR = null, this._viewport = null, this._viewportTopL = null, this._viewportTopR = null, this._viewportBottomL = null, this._viewportBottomR = null, this._viewportScrollContainerX = null, this._viewportScrollContainerY = null;
   }
-  /** Returns an object containing all of the Grid options set on the grid. See a list of Grid Options here.  */
+  /** Returns an object containing all of the Grid options set on the grid. See a list of Grid Options here. */
   getOptions() {
     return this._options;
+  }
+  /**
+   * Get the Column ID of the currently frozen column or `null` when not frozen
+   * @returns {String|Number|null} Frozen Column ID
+   */
+  getFrozenColumnId() {
+    let frozenColIndex = this.getFrozenColumnIdx();
+    return frozenColIndex >= 0 && this.columns[frozenColIndex] ? this.columns[frozenColIndex].id : null;
+  }
+  getFrozenColumnIdx() {
+    return this._options.frozenColumn ?? -1;
   }
   /**
    * Extends grid options with a given hash. If an there is an active edit, the grid will attempt to commit the changes and only continue if the attempt succeeds.
@@ -7162,7 +7365,7 @@ var SlickGrid = class {
    * @param {Boolean} [suppressSetOverflow] - do we want to suppress the call to `setOverflow`
    */
   setOptions(newOptions, suppressRender, suppressColumnSet, suppressSetOverflow) {
-    this.prepareForOptionsChange(), this._options.enableAddRow !== newOptions.enableAddRow && this.invalidateRow(this.getDataLength()), newOptions.frozenColumn !== void 0 && newOptions.frozenColumn >= 0 && (this.getViewports().forEach((vp) => vp.scrollLeft = 0), this.handleScroll());
+    this.prepareForOptionsChange(), this._options.enableAddRow !== newOptions.enableAddRow && this.invalidateRow(this.getDataLength()), newOptions.frozenColumn !== void 0 && newOptions.frozenColumn >= 0 && (this._prevFrozenColumnIdx = this.getFrozenColumnIdx(), suppressColumnSet || (this._invalidfrozenAlerted = !1), this.validateColumnFreezeWidth(newOptions.frozenColumn) ? (this.getViewports().forEach((vp) => vp.scrollLeft = 0), this.handleScroll()) : newOptions.frozenColumn = this._prevFrozenColumnIdx < newOptions.frozenColumn ? this._prevFrozenColumnIdx : -1);
     let originalOptions = Utils30.extend(!0, {}, this._options);
     this._options = Utils30.extend(this._options, newOptions), this.trigger(this.onSetOptions, { optionsBefore: originalOptions, optionsAfter: this._options }), this.internal_setOptions(suppressRender, suppressColumnSet, suppressSetOverflow);
   }
@@ -7210,7 +7413,7 @@ var SlickGrid = class {
    * And, if forceFitColumns is True, then autosizeColsMode is set to LegacyForceFit.
    */
   validateAndEnforceOptions() {
-    this._options.autoHeight && (this._options.leaveSpaceForNewRows = !1), this._options.forceFitColumns && (this._options.autosizeColsMode = GridAutosizeColsMode2.LegacyForceFit);
+    this._options.autoHeight && (this._options.leaveSpaceForNewRows = !1), this._options.forceFitColumns && (this._options.autosizeColsMode = GridAutosizeColsMode2.LegacyForceFit), this.validateColumnFreezeWidth(this._options.frozenColumn) || (this._options.frozenColumn = this._prevFrozenColumnIdx < this._options.frozenColumn ? this._prevFrozenColumnIdx : -1);
   }
   /**
    * Unregisters a current selection model and registers a new one. See the definition of SelectionModel for more information.
@@ -7462,7 +7665,7 @@ var SlickGrid = class {
    */
   setupColumnReorder() {
     this.sortableSideLeftInstance?.destroy(), this.sortableSideRightInstance?.destroy();
-    let columnScrollTimer = null, scrollColumnsRight = () => this._viewportScrollContainerX.scrollLeft = this._viewportScrollContainerX.scrollLeft + 10, scrollColumnsLeft = () => this._viewportScrollContainerX.scrollLeft = this._viewportScrollContainerX.scrollLeft - 10, canDragScroll = !1, sortableOptions = {
+    let columnScrollTimer = null, scrollColumnsRight = () => this._viewportScrollContainerX.scrollLeft = this._viewportScrollContainerX.scrollLeft + 10, scrollColumnsLeft = () => this._viewportScrollContainerX.scrollLeft = this._viewportScrollContainerX.scrollLeft - 10, prevColumnIds = [], canDragScroll = !1, sortableOptions = {
       animation: 50,
       direction: "horizontal",
       chosenClass: "slick-header-column-active",
@@ -7476,17 +7679,19 @@ var SlickGrid = class {
       filter: `.${this._options.unorderableColumnCssClass}`,
       onMove: (event2) => !event2.related.classList.contains(this._options.unorderableColumnCssClass),
       onStart: (e) => {
-        e.item.classList.add("slick-header-column-active"), canDragScroll = !this.hasFrozenColumns() || Utils30.offset(e.item).left > Utils30.offset(this._viewportScrollContainerX).left, canDragScroll && e.originalEvent.pageX > this._container.clientWidth ? columnScrollTimer || (columnScrollTimer = window.setInterval(scrollColumnsRight, 100)) : canDragScroll && e.originalEvent.pageX < Utils30.offset(this._viewportScrollContainerX).left ? columnScrollTimer || (columnScrollTimer = window.setInterval(scrollColumnsLeft, 100)) : (window.clearInterval(columnScrollTimer), columnScrollTimer = null);
+        e.item.classList.add("slick-header-column-active"), canDragScroll = !this.hasFrozenColumns() || Utils30.offset(e.item).left > Utils30.offset(this._viewportScrollContainerX).left, canDragScroll && e.originalEvent.pageX > this._container.clientWidth ? columnScrollTimer || (columnScrollTimer = window.setInterval(scrollColumnsRight, 100)) : canDragScroll && e.originalEvent.pageX < Utils30.offset(this._viewportScrollContainerX).left ? columnScrollTimer || (columnScrollTimer = window.setInterval(scrollColumnsLeft, 100)) : (window.clearInterval(columnScrollTimer), columnScrollTimer = null), prevColumnIds = this.columns.map((c) => c.id);
       },
       onEnd: (e) => {
-        if (e.item.classList.remove("slick-header-column-active"), window.clearInterval(columnScrollTimer), columnScrollTimer = null, !this.getEditorLock()?.commitCurrentEdit())
+        e.item.classList.remove("slick-header-column-active"), clearInterval(columnScrollTimer);
+        let prevScrollLeft = this.scrollLeft;
+        if (!this.getEditorLock()?.commitCurrentEdit())
           return;
         let reorderedIds = this.sortableSideLeftInstance?.toArray() ?? [];
         reorderedIds = reorderedIds.concat(this.sortableSideRightInstance?.toArray() ?? []);
         let reorderedColumns = [];
         for (let i = 0; i < reorderedIds.length; i++)
           reorderedColumns.push(this.columns[this.getColumnIndex(reorderedIds[i])]);
-        this.setColumns(reorderedColumns), this.trigger(this.onColumnsReordered, { impactedColumns: this.columns }), e.stopPropagation(), this.setupColumnResize(), this.activeCellNode && this.setFocus();
+        e.stopPropagation(), this.arrayEquals(prevColumnIds, reorderedIds) || (this.setColumns(reorderedColumns), this.scrollToX(prevScrollLeft), this.trigger(this.onColumnsReordered, { impactedColumns: this.columns, previousColumnOrder: prevColumnIds }), this.setupColumnResize()), this.activeCellNode && this.setFocus();
       }
     };
     this.sortableSideLeftInstance = Sortable.create(this._headerL, sortableOptions), this.sortableSideRightInstance = Sortable.create(this._headerR, sortableOptions);
@@ -8305,7 +8510,13 @@ var SlickGrid = class {
     let self = this, item = self.getDataItem(self.activeRow), column = self.columns[self.activeCell];
     if (self.currentEditor) {
       if (self.currentEditor.isValueChanged()) {
-        let validationResults = self.currentEditor.validate();
+        let validationResults = self.currentEditor.validate(
+          void 0,
+          {
+            rowIndex: self.activeRow,
+            cellIndex: self.activeCell
+          }
+        );
         if (validationResults.valid) {
           let row = self.activeRow, cell = self.activeCell, editor = self.currentEditor, serializedValue = self.currentEditor.serializeValue(), prevSerializedValue = self.serializedEditorValue;
           if (self.activeRow < self.getDataLength()) {
@@ -8420,16 +8631,27 @@ var SlickGrid = class {
   * @param {SlickRange_[]} ranges - The list of selected row and cell ranges.
    */
   handleSelectedRangesChanged(e, ranges) {
-    let ne = e.getNativeEvent(), previousSelectedRows = this.selectedRows.slice(0);
-    this.selectedRows = [];
+    let ne = e.getNativeEvent(), selectionMode = ne?.detail?.selectionMode ?? "", addDragHandle = !!ne?.detail?.addDragHandle, prevSelectedRanges = this.selectedRanges.slice(0);
+    if (this.selectedRanges = ranges, selectionMode === CellSelectionMode3.Replace && prevSelectedRanges && prevSelectedRanges.length === 1 && this.selectedRanges && this.selectedRanges.length === 1) {
+      let prevSelectedRange = prevSelectedRanges[0], selectedRange = this.selectedRanges[0];
+      SelectionUtils3.copyRangeIsLarger(prevSelectedRange, selectedRange) && (this.trigger(this.onDragReplaceCells, { prevSelectedRange, selectedRange }), this.invalidate());
+    }
+    let previousSelectedRows = this.selectedRows.slice(0);
+    this.selectionBottomRow = -1, this.selectionRightCell = -1, this.dragReplaceEl.removeEl(), this.selectedRows = [];
     let hash = {};
-    for (let i = 0; i < ranges.length; i++)
+    for (let i = 0; i < ranges.length; i++) {
       for (let j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
         hash[j] || (this.selectedRows.push(j), hash[j] = {});
         for (let k = ranges[i].fromCell; k <= ranges[i].toCell; k++)
           this.canCellBeSelected(j, k) && (hash[j][this.columns[k].id] = this._options.selectedCellCssClass);
       }
-    if (this.setCellCssStyles(this._options.selectedCellCssClass || "", hash), this.simpleArrayEquals(previousSelectedRows, this.selectedRows)) {
+      this.selectionBottomRow < ranges[i].toRow && (this.selectionBottomRow = ranges[i].toRow), this.selectionRightCell < ranges[i].toCell && (this.selectionRightCell = ranges[i].toCell);
+    }
+    if (this.setCellCssStyles(this._options.selectedCellCssClass || "", hash), this.selectionBottomRow >= 0 && this.selectionRightCell >= 0 && addDragHandle) {
+      let lowerRightCell = this.getCellNode(this.selectionBottomRow, this.selectionRightCell);
+      this.dragReplaceEl.createEl(lowerRightCell);
+    }
+    if (!this.arrayEquals(previousSelectedRows.sort(), this.selectedRows.sort())) {
       let caller = ne?.detail?.caller ?? "click", selectedRowsSet = new Set(this.getSelectedRows()), previousSelectedRowsSet = new Set(previousSelectedRows), newSelectedAdditions = Array.from(selectedRowsSet).filter((i) => !previousSelectedRowsSet.has(i)), newSelectedDeletions = Array.from(previousSelectedRowsSet).filter((i) => !selectedRowsSet.has(i));
       this.trigger(this.onSelectedRowsChanged, {
         rows: this.getSelectedRows(),
@@ -8480,7 +8702,7 @@ var SlickGrid = class {
    */
   handleDragStart(e, dd) {
     let cell = this.getCellFromEvent(e);
-    if (!cell || !this.cellExists(cell.row, cell.cell))
+    if (!cell || !this.cellExists(cell.row, cell.cell) || this.currentEditor && !this.getEditorLock().commitCurrentEdit())
       return !1;
     let retval = this.trigger(this.onDragStart, dd, e);
     return retval.isImmediatePropagationStopped() ? retval.getReturnValue() : !1;
@@ -8542,7 +8764,7 @@ var SlickGrid = class {
     let cell = this.getCellFromEvent(e);
     if (!(!cell || this.currentEditor !== null && this.activeRow === cell.row && this.activeCell === cell.cell) && (evt = this.trigger(this.onClick, { row: cell.row, cell: cell.cell }, evt || e), !evt.isImmediatePropagationStopped() && this.canCellBeActive(cell.row, cell.cell) && (!this.getEditorLock()?.isActive() || this.getEditorLock()?.commitCurrentEdit()))) {
       this.scrollRowIntoView(cell.row, !1);
-      let preClickModeOn = e.target?.className === preClickClassName2, column = this.columns[cell.cell], suppressActiveCellChangedEvent = !!(this._options.editable && column?.editor && this._options.suppressActiveCellChangeOnEdit);
+      let preClickModeOn = !!e.target?.classList?.contains(preClickClassName2), column = this.columns[cell.cell], suppressActiveCellChangedEvent = !!(this._options.editable && column?.editor && this._options.suppressActiveCellChangeOnEdit);
       this.setActiveCellInternal(this.getCellNode(cell.row, cell.cell), null, preClickModeOn, suppressActiveCellChangedEvent, e);
     }
   }
@@ -8803,6 +9025,66 @@ var SlickGrid = class {
     return totalRowWidth;
   }
   /**
+   * Validate that the column freeze is allowed in the browser by making sure that the frozen column is not exceeding the available and visible left canvas width.
+   * Note that it will only validate when `invalidColumnFreezeWidthCallback` or `throwWhenFrozenNotAllViewable` grid option is enabled.
+   * @param {Number} frozenColumn the column index to freeze at
+   * @param {Boolean} [forceAlert] tri-state flag to alert when frozen column is invalid
+   *  - if `undefined` it will do the condition check and never alert more than once
+   *  - if `true` it will do the condition check and always alert even if it was called before
+   *  - if `false` it will do the condition check but always skip the alert
+   */
+  validateColumnFreezeWidth(frozenColumn = -1, forceAlert) {
+    if (frozenColumn >= 0) {
+      let canvasWidthL = 0;
+      this.columns.forEach((col, i) => {
+        if (!col.hidden && i <= frozenColumn) {
+          let { minWidth = 0, maxWidth = 0, width = this._options.defaultColumnWidth } = col, fwidth = width < minWidth ? minWidth : width;
+          maxWidth > 0 && fwidth > maxWidth && (fwidth = maxWidth), canvasWidthL += fwidth;
+        }
+      });
+      let cWidth = Utils30.width(this._container) || 0;
+      if (cWidth > 0 && canvasWidthL > cWidth && !this._options.skipFreezeColumnValidation) {
+        if ((forceAlert !== !1 && !this._invalidfrozenAlerted || forceAlert === !0) && (this._options.invalidColumnFreezeWidthCallback || this._options.throwWhenFrozenNotAllViewable)) {
+          if (this._options.throwWhenFrozenNotAllViewable)
+            throw new Error(this._options.invalidColumnFreezeWidthMessage);
+          this._options.invalidColumnFreezeWidthCallback?.(this._options.invalidColumnFreezeWidthMessage), this._invalidfrozenAlerted = !0;
+        }
+        return !1;
+      }
+    }
+    return !0;
+  }
+  /**
+   * From a new set of columns, different than current grid columns, we'll recalculate the `frozenColumn` index position by comparing its column `id`
+   * and recalculating the `frozenColumn` index to find out if it is different from a new set of columns.
+   * @param {Column[]} newColumns - new columns to calculate frozen index from
+   * @param {String|Number} [columnId] - optional column id to calculate from (otherwise it will find the current frozen column id)
+   * @param {Boolean} [applyIndexChange] - whether to apply index changes to the frozen column
+   * @returns {number} - the recalculated frozen column index
+   */
+  calculateFrozenColumnIndexById(newColumns, columnId, applyIndexChange = !1) {
+    let frozenColumnIdx = this.getFrozenColumnIdx();
+    if (columnId ?? (columnId = frozenColumnIdx >= 0 ? this.columns[frozenColumnIdx]?.id : void 0), columnId !== void 0) {
+      let newFrozenColumnIdx = newColumns.findIndex((col) => col.id === columnId);
+      if (newFrozenColumnIdx >= 0 && newFrozenColumnIdx !== frozenColumnIdx)
+        return applyIndexChange && this.setOptions({ frozenColumn: newFrozenColumnIdx }), newFrozenColumnIdx;
+    }
+    return frozenColumnIdx;
+  }
+  /**
+   * Validate that there is at least 1, or more, column to the right of the frozen column otherwise show an error (we do this check before calling `setColumns()`).
+   * Note that it will only validate when `invalidColumnFreezePickerCallback` grid option is enabled.
+   * @param {Column[]} newColumns the new columns that will later be provided to `setColumns()`
+   * @param {Boolean} [forceAlert] tri-state flag to alert when frozen column is invalid
+   *  - if `undefined` it will do the condition check and never alert more than once
+   *  - if `true` it will do the condition check and always alert even if it was called before
+   *  - if `false` it will do the condition check but always skip the alert
+   */
+  validateSetColumnFreeze(newColumns, forceAlert) {
+    let frozenColumnIdx = this.calculateFrozenColumnIndexById(newColumns);
+    return frozenColumnIdx >= 0 && frozenColumnIdx > newColumns.length - 2 && !this._options.skipFreezeColumnValidation ? ((forceAlert !== !1 && !this._invalidfrozenAlerted || forceAlert === !0) && (this._options.invalidColumnFreezePickerCallback?.(this._options.invalidColumnFreezePickerMessage), this._invalidfrozenAlerted = !0), !1) : !0;
+  }
+  /**
    * Recalculates the canvas width by calling getCanvasWidth and then adjusts widths of header containers,
    * canvases, panels, and viewports. If widths have changed (or forced), it applies the new column widths
    * by calling applyColumnWidths.
@@ -8813,15 +9095,7 @@ var SlickGrid = class {
     let oldCanvasWidth = this.canvasWidth, oldCanvasWidthL = this.canvasWidthL, oldCanvasWidthR = this.canvasWidthR;
     this.canvasWidth = this.getCanvasWidth(), this._options.createTopHeaderPanel && Utils30.width(this._topHeaderPanel, this._options.topHeaderPanelWidth ?? this.canvasWidth);
     let widthChanged = this.canvasWidth !== oldCanvasWidth || this.canvasWidthL !== oldCanvasWidthL || this.canvasWidthR !== oldCanvasWidthR;
-    if (widthChanged || this.hasFrozenColumns() || this.hasFrozenRows)
-      if (Utils30.width(this._canvasTopL, this.canvasWidthL), this.getHeadersWidth(), Utils30.width(this._headerL, this.headersWidthL), Utils30.width(this._headerR, this.headersWidthR), this.hasFrozenColumns()) {
-        let cWidth = Utils30.width(this._container) || 0;
-        if (cWidth > 0 && this.canvasWidthL > cWidth && this._options.throwWhenFrozenNotAllViewable)
-          throw new Error("[SlickGrid] Frozen columns cannot be wider than the actual grid container width. Make sure to have less columns freezed or make your grid container wider");
-        Utils30.width(this._canvasTopR, this.canvasWidthR), Utils30.width(this._paneHeaderL, this.canvasWidthL), Utils30.setStyleSize(this._paneHeaderR, "left", this.canvasWidthL), Utils30.setStyleSize(this._paneHeaderR, "width", this.viewportW - this.canvasWidthL), Utils30.width(this._paneTopL, this.canvasWidthL), Utils30.setStyleSize(this._paneTopR, "left", this.canvasWidthL), Utils30.width(this._paneTopR, this.viewportW - this.canvasWidthL), Utils30.width(this._headerRowScrollerL, this.canvasWidthL), Utils30.width(this._headerRowScrollerR, this.viewportW - this.canvasWidthL), Utils30.width(this._headerRowL, this.canvasWidthL), Utils30.width(this._headerRowR, this.canvasWidthR), this._options.createFooterRow && (Utils30.width(this._footerRowScrollerL, this.canvasWidthL), Utils30.width(this._footerRowScrollerR, this.viewportW - this.canvasWidthL), Utils30.width(this._footerRowL, this.canvasWidthL), Utils30.width(this._footerRowR, this.canvasWidthR)), this._options.createPreHeaderPanel && Utils30.width(this._preHeaderPanel, this._options.preHeaderPanelWidth ?? this.canvasWidth), Utils30.width(this._viewportTopL, this.canvasWidthL), Utils30.width(this._viewportTopR, this.viewportW - this.canvasWidthL), this.hasFrozenRows && (Utils30.width(this._paneBottomL, this.canvasWidthL), Utils30.setStyleSize(this._paneBottomR, "left", this.canvasWidthL), Utils30.width(this._viewportBottomL, this.canvasWidthL), Utils30.width(this._viewportBottomR, this.viewportW - this.canvasWidthL), Utils30.width(this._canvasBottomL, this.canvasWidthL), Utils30.width(this._canvasBottomR, this.canvasWidthR));
-      } else
-        Utils30.width(this._paneHeaderL, "100%"), Utils30.width(this._paneTopL, "100%"), Utils30.width(this._headerRowScrollerL, "100%"), Utils30.width(this._headerRowL, this.canvasWidth), this._options.createFooterRow && (Utils30.width(this._footerRowScrollerL, "100%"), Utils30.width(this._footerRowL, this.canvasWidth)), this._options.createPreHeaderPanel && Utils30.width(this._preHeaderPanel, this._options.preHeaderPanelWidth ?? this.canvasWidth), Utils30.width(this._viewportTopL, "100%"), this.hasFrozenRows && (Utils30.width(this._viewportBottomL, "100%"), Utils30.width(this._canvasBottomL, this.canvasWidthL));
-    this.viewportHasHScroll = this.canvasWidth >= this.viewportW - (this.scrollbarDimensions?.width ?? 0), Utils30.width(this._headerRowSpacerL, this.canvasWidth + (this.viewportHasVScroll ? this.scrollbarDimensions?.width ?? 0 : 0)), Utils30.width(this._headerRowSpacerR, this.canvasWidth + (this.viewportHasVScroll ? this.scrollbarDimensions?.width ?? 0 : 0)), this._options.createFooterRow && (Utils30.width(this._footerRowSpacerL, this.canvasWidth + (this.viewportHasVScroll ? this.scrollbarDimensions?.width ?? 0 : 0)), Utils30.width(this._footerRowSpacerR, this.canvasWidth + (this.viewportHasVScroll ? this.scrollbarDimensions?.width ?? 0 : 0))), (widthChanged || forceColumnWidthsUpdate) && this.applyColumnWidths();
+    (widthChanged || this.hasFrozenColumns() || this.hasFrozenRows) && (Utils30.width(this._canvasTopL, this.canvasWidthL), this.getHeadersWidth(), Utils30.width(this._headerL, this.headersWidthL), Utils30.width(this._headerR, this.headersWidthR), this.hasFrozenColumns() ? (Utils30.width(this._canvasTopR, this.canvasWidthR), Utils30.width(this._paneHeaderL, this.canvasWidthL), Utils30.setStyleSize(this._paneHeaderR, "left", this.canvasWidthL), Utils30.setStyleSize(this._paneHeaderR, "width", this.viewportW - this.canvasWidthL), Utils30.width(this._paneTopL, this.canvasWidthL), Utils30.setStyleSize(this._paneTopR, "left", this.canvasWidthL), Utils30.width(this._paneTopR, this.viewportW - this.canvasWidthL), Utils30.width(this._headerRowScrollerL, this.canvasWidthL), Utils30.width(this._headerRowScrollerR, this.viewportW - this.canvasWidthL), Utils30.width(this._headerRowL, this.canvasWidthL), Utils30.width(this._headerRowR, this.canvasWidthR), this._options.createFooterRow && (Utils30.width(this._footerRowScrollerL, this.canvasWidthL), Utils30.width(this._footerRowScrollerR, this.viewportW - this.canvasWidthL), Utils30.width(this._footerRowL, this.canvasWidthL), Utils30.width(this._footerRowR, this.canvasWidthR)), this._options.createPreHeaderPanel && Utils30.width(this._preHeaderPanel, this._options.preHeaderPanelWidth ?? this.canvasWidth), Utils30.width(this._viewportTopL, this.canvasWidthL), Utils30.width(this._viewportTopR, this.viewportW - this.canvasWidthL), this.hasFrozenRows && (Utils30.width(this._paneBottomL, this.canvasWidthL), Utils30.setStyleSize(this._paneBottomR, "left", this.canvasWidthL), Utils30.width(this._viewportBottomL, this.canvasWidthL), Utils30.width(this._viewportBottomR, this.viewportW - this.canvasWidthL), Utils30.width(this._canvasBottomL, this.canvasWidthL), Utils30.width(this._canvasBottomR, this.canvasWidthR))) : (Utils30.width(this._paneHeaderL, "100%"), Utils30.width(this._paneTopL, "100%"), Utils30.width(this._headerRowScrollerL, "100%"), Utils30.width(this._headerRowL, this.canvasWidth), this._options.createFooterRow && (Utils30.width(this._footerRowScrollerL, "100%"), Utils30.width(this._footerRowL, this.canvasWidth)), this._options.createPreHeaderPanel && Utils30.width(this._preHeaderPanel, this._options.preHeaderPanelWidth ?? this.canvasWidth), Utils30.width(this._viewportTopL, "100%"), this.hasFrozenRows && (Utils30.width(this._viewportBottomL, "100%"), Utils30.width(this._canvasBottomL, this.canvasWidthL)))), this.viewportHasHScroll = this.canvasWidth >= this.viewportW - (this.scrollbarDimensions?.width ?? 0), Utils30.width(this._headerRowSpacerL, this.canvasWidth + (this.viewportHasVScroll ? this.scrollbarDimensions?.width ?? 0 : 0)), Utils30.width(this._headerRowSpacerR, this.canvasWidth + (this.viewportHasVScroll ? this.scrollbarDimensions?.width ?? 0 : 0)), this._options.createFooterRow && (Utils30.width(this._footerRowSpacerL, this.canvasWidth + (this.viewportHasVScroll ? this.scrollbarDimensions?.width ?? 0 : 0)), Utils30.width(this._footerRowSpacerR, this.canvasWidth + (this.viewportHasVScroll ? this.scrollbarDimensions?.width ?? 0 : 0))), (widthChanged || forceColumnWidthsUpdate) && this.applyColumnWidths();
   }
   /** @alias `getPreHeaderPanelLeft` */
   getPreHeaderPanel() {
@@ -9132,7 +9406,7 @@ var SlickGrid = class {
       m.cellAttrs.hasOwnProperty(key) && cellDiv.setAttribute(key, m.cellAttrs[key]);
     }), item) {
       let cellResult = Object.prototype.toString.call(formatterResult) !== "[object Object]" ? formatterResult : formatterResult.html || formatterResult.text;
-      this.applyHtmlCode(cellDiv, cellResult);
+      this.applyHtmlCode(cellDiv, cellResult), row === this.selectionBottomRow && cell === this.selectionRightCell && this._options.showCellSelection && this.dragReplaceEl.createEl(cellDiv);
     }
     divRow.appendChild(cellDiv), formatterResult.insertElementAfterTarget && Utils30.insertAfterElement(cellDiv, formatterResult.insertElementAfterTarget), this.rowsCache[row].cellRenderQueue.push(cell), this.rowsCache[row].cellColSpans[cell] = colspan;
   }
@@ -9670,7 +9944,7 @@ var SlickGrid = class {
     let maxScrollDistanceY = this._viewportScrollContainerY.scrollHeight - this._viewportScrollContainerY.clientHeight, maxScrollDistanceX = this._viewportScrollContainerY.scrollWidth - this._viewportScrollContainerY.clientWidth;
     maxScrollDistanceY = Math.max(0, maxScrollDistanceY), maxScrollDistanceX = Math.max(0, maxScrollDistanceX), this.scrollTop > maxScrollDistanceY && (this.scrollTop = maxScrollDistanceY, this.scrollHeight = maxScrollDistanceY), this.scrollLeft > maxScrollDistanceX && (this.scrollLeft = maxScrollDistanceX);
     let vScrollDist = Math.abs(this.scrollTop - this.prevScrollTop), hScrollDist = Math.abs(this.scrollLeft - this.prevScrollLeft);
-    if (hScrollDist && (this.prevScrollLeft = this.scrollLeft, this._viewportScrollContainerX.scrollLeft = this.scrollLeft, this._headerScrollContainer.scrollLeft = this.scrollLeft, this._topPanelScrollers[0].scrollLeft = this.scrollLeft, this._options.createFooterRow && (this._footerRowScrollContainer.scrollLeft = this.scrollLeft), this._options.createPreHeaderPanel && (this.hasFrozenColumns() ? this._preHeaderPanelScrollerR.scrollLeft = this.scrollLeft : this._preHeaderPanelScroller.scrollLeft = this.scrollLeft), this._options.createTopHeaderPanel && (this._topHeaderPanelScroller.scrollLeft = this.scrollLeft), this.hasFrozenColumns() ? (this.hasFrozenRows && (this._viewportTopR.scrollLeft = this.scrollLeft), this._headerRowScrollerR.scrollLeft = this.scrollLeft) : (this.hasFrozenRows && (this._viewportTopL.scrollLeft = this.scrollLeft), this._headerRowScrollerL.scrollLeft = this.scrollLeft)), vScrollDist && !this._options.autoHeight)
+    if (hScrollDist && (this.prevScrollLeft = this.scrollLeft, this.scrollToX(this.scrollLeft)), vScrollDist && !this._options.autoHeight)
       if (this.vScrollDir = this.prevScrollTop < this.scrollTop ? 1 : -1, this.prevScrollTop = this.scrollTop, eventType === "mousewheel" && (this._viewportScrollContainerY.scrollTop = this.scrollTop), this.hasFrozenColumns() && (this.hasFrozenRows && !this._options.frozenBottom ? this._viewportBottomL.scrollTop = this.scrollTop : this._viewportTopL.scrollTop = this.scrollTop), vScrollDist < this.viewportH)
         this.scrollTo(this.scrollTop + this.offset);
       else {
@@ -10293,9 +10567,16 @@ var SlickGrid = class {
       s += " " + (this.columns[i].hidden ? "H" : this.columns[i].width);
     console.log(s);
   }
-  // compare 2 simple arrays (integers or strings only, do not use to compare object arrays)
-  simpleArrayEquals(arr1, arr2) {
-    return Array.isArray(arr1) && Array.isArray(arr2) && arr2.sort().toString() !== arr1.sort().toString();
+  // compare 2 primitive type arrays, do not use to compare object arrays)
+  arrayEquals(arr1, arr2) {
+    return Array.isArray(arr1) && Array.isArray(arr2) && arr2.toString() === arr1.toString();
+  }
+  /**
+   * Scroll to an X coordinate position in the grid
+   * @param {Number} x
+   */
+  scrollToX(x) {
+    this._viewportScrollContainerX.scrollLeft = x, this._headerScrollContainer.scrollLeft = x, this._topPanelScrollers[0].scrollLeft = x, this._options.createFooterRow && (this._footerRowScrollContainer.scrollLeft = x), this._options.createPreHeaderPanel && (this.hasFrozenColumns() ? this._preHeaderPanelScrollerR.scrollLeft = x : this._preHeaderPanelScroller.scrollLeft = x), this._options.createTopHeaderPanel && (this._topHeaderPanelScroller.scrollLeft = x), this.hasFrozenColumns() ? (this.hasFrozenRows && (this._viewportTopR.scrollLeft = x), this._headerRowScrollerR.scrollLeft = x) : (this.hasFrozenRows && (this._viewportTopL.scrollLeft = x), this._headerRowScrollerL.scrollLeft = x);
   }
   /**
    * Converts a value to a string and escapes HTML characters (&, <, >). Returns an empty string if the value is not defined.
@@ -11204,11 +11485,14 @@ export {
   Aggregators,
   AvgAggregator,
   BindingEventService,
+  CellSelectionMode,
   CheckboxEditor,
   CheckboxFormatter,
   CheckmarkFormatter,
   ColAutosizeMode,
+  CopyRange,
   CountAggregator,
+  DragExtendHandle,
   Draggable,
   EditorLock,
   Editors,
@@ -11236,6 +11520,7 @@ export {
   RegexSanitizer,
   Resizable,
   RowSelectionMode,
+  SelectionUtils,
   SlickAutoTooltips,
   SlickCellCopyManager,
   SlickCellExternalCopyManager,
@@ -11248,9 +11533,11 @@ export {
   SlickColumnPicker,
   SlickCompositeEditor,
   SlickContextMenu,
+  SlickCopyRange,
   SlickCrossGridRowMoveManager,
   SlickCustomTooltip,
   SlickDataView,
+  SlickDragExtendHandle,
   SlickDraggableGrouping,
   SlickEditorLock,
   SlickEvent,

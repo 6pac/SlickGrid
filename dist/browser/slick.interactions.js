@@ -3,7 +3,7 @@
   // src/slick.interactions.ts
   var Utils = Slick.Utils;
   function Draggable(options) {
-    let { containerElement } = options, { onDragInit, onDragStart, onDrag, onDragEnd, preventDragFromKeys } = options, element, startX, startY, deltaX, deltaY, dragStarted;
+    let { containerElement } = options, { onDragInit, onDragStart, onDrag, onDragEnd, preventDragFromKeys } = options, element, startX, startY, deltaX, deltaY, dragStarted, matchClassTag;
     containerElement || (containerElement = document.body);
     let originaldd = {
       dragSource: containerElement,
@@ -31,9 +31,15 @@
         element = event.target;
         let targetEvent = (_b = (_a = event == null ? void 0 : event.touches) == null ? void 0 : _a[0]) != null ? _b : event, { target } = targetEvent;
         if (!options.allowDragFrom || options.allowDragFrom && element.matches(options.allowDragFrom) || options.allowDragFromClosest && element.closest(options.allowDragFromClosest)) {
-          originaldd.dragHandle = element;
+          if (originaldd.dragHandle = element, matchClassTag = "", options.dragFromClassDetectArr) {
+            for (let o, i = 0; i < options.dragFromClassDetectArr.length; i++)
+              if (o = options.dragFromClassDetectArr[i], o.id && element.id === o.id || o.cssSelector && element.matches(o.cssSelector)) {
+                matchClassTag = o.tag;
+                break;
+              }
+          }
           let winScrollPos = Utils.windowScrollPosition();
-          startX = winScrollPos.left + targetEvent.clientX, startY = winScrollPos.top + targetEvent.clientY, deltaX = targetEvent.clientX - targetEvent.clientX, deltaY = targetEvent.clientY - targetEvent.clientY, originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDragInit, event, originaldd) !== !1 && (document.body.addEventListener("mousemove", userMoved), document.body.addEventListener("touchmove", userMoved), document.body.addEventListener("mouseup", userReleased), document.body.addEventListener("touchend", userReleased), document.body.addEventListener("touchcancel", userReleased));
+          startX = winScrollPos.left + targetEvent.clientX, startY = winScrollPos.top + targetEvent.clientY, deltaX = targetEvent.clientX - targetEvent.clientX, deltaY = targetEvent.clientY - targetEvent.clientY, originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target, matchClassTag }), executeDragCallbackWhenDefined(onDragInit, event, originaldd) !== !1 && (document.body.addEventListener("mousemove", userMoved), document.body.addEventListener("touchmove", userMoved), window.addEventListener("mouseup", userReleased), window.addEventListener("touchend", userReleased), window.addEventListener("touchcancel", userReleased));
         }
       }
     }
@@ -43,11 +49,11 @@
         let targetEvent = (_b = (_a = event == null ? void 0 : event.touches) == null ? void 0 : _a[0]) != null ? _b : event;
         deltaX = targetEvent.clientX - startX, deltaY = targetEvent.clientY - startY;
         let { target } = targetEvent;
-        dragStarted || (originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDragStart, event, originaldd), dragStarted = !0), originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target }), executeDragCallbackWhenDefined(onDrag, event, originaldd);
+        dragStarted || (originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target, matchClassTag }), executeDragCallbackWhenDefined(onDragStart, event, originaldd), dragStarted = !0), originaldd = Object.assign(originaldd, { deltaX, deltaY, startX, startY, target, matchClassTag }), executeDragCallbackWhenDefined(onDrag, event, originaldd);
       }
     }
     function userReleased(event) {
-      if (document.body.removeEventListener("mousemove", userMoved), document.body.removeEventListener("touchmove", userMoved), document.body.removeEventListener("mouseup", userReleased), document.body.removeEventListener("touchend", userReleased), document.body.removeEventListener("touchcancel", userReleased), dragStarted) {
+      if (document.body.removeEventListener("mousemove", userMoved), document.body.removeEventListener("touchmove", userMoved), window.removeEventListener("mouseup", userReleased), window.removeEventListener("touchend", userReleased), window.removeEventListener("touchcancel", userReleased), dragStarted) {
         let { target } = event;
         originaldd = Object.assign(originaldd, { target }), executeDragCallbackWhenDefined(onDragEnd, event, originaldd), dragStarted = !1;
       }

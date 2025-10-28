@@ -1,5 +1,6 @@
 import type { Column, CompositeEditorOption, CssStyleHash, Editor, EditorValidationResult, GridOption } from './index.js';
 import type { SlickGrid } from '../slick.grid.js';
+import type { SlickRange, SlickCopyRange } from '../slick.core.js';
 export interface SlickGridArg {
     grid: SlickGrid;
 }
@@ -72,6 +73,7 @@ export interface OnColumnsDragEventArgs extends SlickGridArg {
 }
 export interface OnColumnsReorderedEventArgs extends SlickGridArg {
     impactedColumns: Column[];
+    previousColumnOrder: Array<string | number>;
 }
 export interface OnColumnsResizedEventArgs extends SlickGridArg {
     triggeredByColumn: string;
@@ -186,5 +188,10 @@ export interface OnDragEventArgs extends SlickGridArg {
     rows: number[];
     startX: number;
     startY: number;
+}
+export interface OnDragReplaceCellsEventArgs extends SlickGridArg {
+    prevSelectedRange: SlickRange;
+    selectedRange: SlickRange;
+    copyToRange: SlickCopyRange;
 }
 //# sourceMappingURL=gridEvents.interface.d.ts.map
