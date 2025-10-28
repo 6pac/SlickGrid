@@ -1237,9 +1237,9 @@ export class SelectionUtils {
       }
       let rtn;
       if (copyUp) {
-        rtn = new Slick.Range(copyToRange.fromRow, copyToRange.fromCell, baseRange.fromRow - 1, baseRange.toCell);
+        rtn = new Range(copyToRange.fromRow, copyToRange.fromCell, baseRange.fromRow - 1, baseRange.toCell);
       } else {
-        rtn = new Slick.Range(baseRange.toRow + 1, copyToRange.fromCell, copyToRange.toRow, baseRange.toCell);
+        rtn = new Range(baseRange.toRow + 1, copyToRange.fromCell, copyToRange.toRow, baseRange.toCell);
       }
       return rtn;
     }
@@ -1253,9 +1253,9 @@ export class SelectionUtils {
       }
       let rtn;
       if (copyLeft) {
-        rtn = new Slick.Range(baseRange.fromRow, copyToRange.fromCell, baseRange.toRow, baseRange.fromCell - 1);
+        rtn = new Range(baseRange.fromRow, copyToRange.fromCell, baseRange.toRow, baseRange.fromCell - 1);
       } else {
-        rtn = new Slick.Range(baseRange.fromRow, baseRange.toCell + 1, baseRange.toRow, copyToRange.toCell);
+        rtn = new Range(baseRange.fromRow, baseRange.toCell + 1, baseRange.toRow, copyToRange.toCell);
       }
       return rtn;
     }
@@ -1272,15 +1272,15 @@ export class SelectionUtils {
       let rtn;
       if (copyLeft) {
         if (copyUp) {
-          rtn = new Slick.Range(copyToRange.fromRow, copyToRange.fromCell, baseRange.fromRow - 1, baseRange.fromCell - 1);
+          rtn = new Range(copyToRange.fromRow, copyToRange.fromCell, baseRange.fromRow - 1, baseRange.fromCell - 1);
         } else {
-          rtn = new Slick.Range(baseRange.toRow + 1, copyToRange.fromCell, copyToRange.toRow, baseRange.fromCell - 1);
+          rtn = new Range(baseRange.toRow + 1, copyToRange.fromCell, copyToRange.toRow, baseRange.fromCell - 1);
         }
       } else {
          if (copyUp) {
-          rtn = new Slick.Range(copyToRange.fromRow, baseRange.toCell + 1, baseRange.fromRow - 1, copyToRange.toCell);
+          rtn = new Range(copyToRange.fromRow, baseRange.toCell + 1, baseRange.fromRow - 1, copyToRange.toCell);
         } else {
-          rtn = new Slick.Range(baseRange.toRow + 1, baseRange.toCell + 1, copyToRange.toRow, copyToRange.toCell);
+          rtn = new Range(baseRange.toRow + 1, baseRange.toCell + 1, copyToRange.toRow, copyToRange.toCell);
         }
       }
       return rtn;

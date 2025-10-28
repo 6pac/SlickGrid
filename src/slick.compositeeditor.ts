@@ -48,13 +48,13 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
 
   let firstInvalidEditor: Editor | null = null;
 
-  options = Slick.Utils.extend({}, defaultOptions, options);
+  options = Utils.extend({}, defaultOptions, options);
 
   function getContainerBox(i: number) {
     const c = containers[i];
-    const offset = Slick.Utils.offset(c);
-    const w = Slick.Utils.width(c);
-    const h = Slick.Utils.height(c);
+    const offset = Utils.offset(c);
+    const w = Utils.width(c);
+    const h = Utils.height(c);
 
     return {
       top: (offset?.top ?? 0),
@@ -79,7 +79,7 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
       while (idx < columns.length) {
         if (columns[idx].editor) {
           const column = columns[idx];
-          newArgs = Slick.Utils.extend(false, {}, args);
+          newArgs = Utils.extend(false, {}, args);
           newArgs.container = containers[idx];
           newArgs.column = column;
           newArgs.position = getContainerBox(idx);
@@ -174,7 +174,7 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
           let editorElm = document.querySelector(`[data-editorid=${columnDef.id}]`);
           const validationMsgPrefix = options?.validationMsgPrefix || '';
 
-          if (!targetElm || Slick.Utils.contains(editorElm as HTMLElement, targetElm)) {
+          if (!targetElm || Utils.contains(editorElm as HTMLElement, targetElm)) {
             validationResults = editors[idx].validate();
 
             if (!validationResults.valid) {
