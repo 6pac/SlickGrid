@@ -62,34 +62,37 @@ const argv = parseArgs({
   console.log(`🚀 Let's create a new release for "${repo.owner}/${repo.name}" (currently at ${pkg.version})\n`);
 
   // 1. choose bump type
-  const bumpTypes = [
-    { bump: 'patch', desc: ' - Bug Fixes' },
-    { bump: 'minor', desc: ' - Features & Fixes' },
-    { bump: 'major', desc: ' - Breaking Change' },
-    { bump: 'preminor.alpha', desc: '' },
-    { bump: 'preminor.beta', desc: '' },
-    { bump: 'premajor.alpha', desc: '' },
-    { bump: 'premajor.beta', desc: '' },
-  ];
-  const versionIncrements = [];
-  for (const bumpType of bumpTypes) {
-    versionIncrements.push({
-      key: bumpType.bump,
-      name: `${bumpType.bump} (${styleText(['bold', 'magenta'], bumpVersion(bumpType.bump, false))}) ${bumpType.desc}`,
-      value: bumpType.bump
-    });
-  }
-  versionIncrements.push(
-    { key: 'o', name: 'Other, please specify...', value: 'other' },
-    { key: 'q', name: 'QUIT', value: 'quit' }
-  );
+  let whichBumpType = argv.semver || '';
+  if (!whichBumpType) {
+    const bumpTypes = [
+      { bump: 'patch', desc: ' - Bug Fixes' },
+      { bump: 'minor', desc: ' - Features & Fixes' },
+      { bump: 'major', desc: ' - Breaking Change' },
+      { bump: 'preminor.alpha', desc: '' },
+      { bump: 'preminor.beta', desc: '' },
+      { bump: 'premajor.alpha', desc: '' },
+      { bump: 'premajor.beta', desc: '' },
+    ];
+    const versionIncrements = [];
+    for (const bumpType of bumpTypes) {
+      versionIncrements.push({
+        key: bumpType.bump,
+        name: `${bumpType.bump} (${styleText(['bold', 'magenta'], bumpVersion(bumpType.bump, false))}) ${bumpType.desc}`,
+        value: bumpType.bump
+      });
+    }
+    versionIncrements.push(
+      { key: 'o', name: 'Other, please specify...', value: 'other' },
+      { key: 'q', name: 'QUIT', value: 'quit' }
+    );
 
-  const defaultIdx = versionIncrements.length - 1;
-  const whichBumpType = argv.semver || await promptConfirmation(
-    `${styleText('bgMagenta', dryRunPrefix)} Select increment to apply (next version)`,
-    versionIncrements,
-    defaultIdx
-  );
+    const defaultIdx = versionIncrements.length - 1;
+    whichBumpType = argv.semver || await promptConfirmation(
+      `${styleText('bgMagenta', dryRunPrefix)} Select increment to apply (next version)`,
+      versionIncrements,
+      defaultIdx
+    );
+  }
 
   if (whichBumpType !== 'quit') {
     let newVersion = '';
