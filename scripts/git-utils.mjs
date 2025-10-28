@@ -65,6 +65,18 @@ export async function gitPushToCurrentBranch(remote = 'origin', { cwd, dryRun })
 }
 
 /**
+ * @param {String} tag - tag name
+ * @param {String} [remote=origin]
+ * @param {{ cwd: String, dryRun: Boolean}} options
+ * @returns {Promise<any>}
+ */
+export async function gitPushUpstreamBranch(remote = 'origin', { cwd, dryRun }) {
+  const branchName = await gitCurrentBranchName({ cwd });
+  const execArgs = ['push', '--set-upstream', remote, branchName];
+  return execAsyncPiped('git', execArgs, { cwd }, dryRun);
+}
+
+/**
  * Check if there's anything uncommited
  * @param {{ cwd: String, dryRun: Boolean; skipChecks: Boolean; }} options
  */

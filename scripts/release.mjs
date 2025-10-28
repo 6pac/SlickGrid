@@ -56,7 +56,6 @@ const argv = parseArgs({
   if (argv.dryRun) {
     console.info(`-- ${styleText('bgMagenta', 'DRY-RUN')} mode --`);
   }
-  console.log('argv', argv);
   await hasUncommittedChanges(argv);
   const repo = await parseGitRepo();
 
@@ -181,7 +180,7 @@ const argv = parseArgs({
       }
 
       // 13. Git sync/push all changes
-      await gitPushToCurrentBranch('origin', { cwd, dryRun: argv.dryRun });
+      await gitPushUpstreamBranch('origin', { cwd, dryRun: argv.dryRun });
 
       // END
       console.log(`🏁 Done (in ${Math.floor(process.uptime())}s.)`);
