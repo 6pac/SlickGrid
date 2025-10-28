@@ -31,6 +31,8 @@ const argv = parseArgs({
   dryRun: { type: 'boolean' },
   skipChecks: { type: 'boolean' },
   open: { type: 'boolean' },
+  semver: { type: 'string' },
+  yes: { type: 'boolean' },
 });
 
 /**
@@ -83,7 +85,7 @@ const argv = parseArgs({
   );
 
   const defaultIdx = versionIncrements.length - 1;
-  const whichBumpType = await promptConfirmation(
+  const whichBumpType = argv.semver || await promptConfirmation(
     `${styleText('bgMagenta', dryRunPrefix)} Select increment to apply (next version)`,
     versionIncrements,
     defaultIdx
@@ -127,7 +129,7 @@ const argv = parseArgs({
     await gitAdd(null, { cwd, dryRun: argv.dryRun });
 
     // show git changes to user so he can confirm the changes are ok
-    const shouldCommitChanges = await promptConfirmation(`${styleText('bgMagenta', dryRunPrefix)} Ready to tag version "${newTag}" and push commits to remote? Choose No to cancel.`);
+    const shouldCommitChanges = argv.yes || await promptConfirmation(`${styleText('bgMagenta', dryRunPrefix)} Ready to tag version "${newTag}" and push commits to remote? Choose No to cancel.`);
     if (shouldCommitChanges) {
       // 8. create git tag of new release
       await gitTag(newTag, { cwd, dryRun: argv.dryRun });
@@ -140,7 +142,7 @@ const argv = parseArgs({
       await gitPushToCurrentBranch('origin', { cwd, dryRun: argv.dryRun });
 
       // 11. NPM publish
-      if (await promptConfirmation(`${styleText('bgMagenta', dryRunPrefix)} Are you ready to publish "${newTag}" to npm?`)) {
+      if (argv.yes || await promptConfirmation(`${styleText('bgMagenta', dryRunPrefix)} Are you ready to publish "${newTag}" to npm?`)) {
         // create a copy of "package.json" to "package.json.backup" and remove (devDependencies, scripts) from "package.json"
         await cleanPublishPackage();
 
@@ -152,7 +154,7 @@ const argv = parseArgs({
           publishTagName = 'beta';
         }
 
-        const otp = await promptOtp(dryRunPrefix);
+        const otp = argv.yes ? '' : await promptOtp(dryRunPrefix);
         await publishPackage(publishTagName, { cwd, otp, dryRun: argv.dryRun, stream: true });
 
         // rename backup to original filename "package.json"

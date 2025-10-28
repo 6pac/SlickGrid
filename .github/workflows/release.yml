@@ -1,0 +1,87 @@
+name: 🏷️ Release to NPM
+
+on:
+  workflow_dispatch:
+    inputs:
+      dryrun:
+        type: boolean
+        description: Dry-Run
+      semver:
+        default: 'patch'
+        type: choice
+        required: true
+        options:
+          - patch
+          - minor
+          - major
+          - preminor.alpha
+          - preminor.beta
+          - premajor.alpha
+          - premajor.beta
+
+permissions:
+  contents: write
+  id-token: write
+
+jobs:
+  deploy-npm-latest:
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Retrieve current Date Time in EST
+        shell: bash
+        run: echo "START_TIME=$(TZ=":America/New_York" date -R|sed 's/.....$//')" >> $GITHUB_ENV
+
+      - name: Current datetime - ${{ env.START_TIME }}
+        run: echo ${{ env.START_TIME }}
+
+      - name: Clone repository
+        uses: actions/checkout@v5
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - if: ${{ github.event.pull_request.merged != true && contains('["6pac", "ghiscoding"]', github.actor) != true }}
+        name: Exit early when current actor is not allowed to push new release
+        run: |
+          echo "Error: Your GitHub username (${{ github.actor }}) is not on the allowed list of admins for this workflow"
+          exit 1
+
+      - name: Set NodeJS
+        uses: actions/setup-node@v6
+        with:
+          registry-url: 'https://registry.npmjs.org/'
+          node-version: 24
+
+      - name: Get npm cache directory path
+        id: npm-cache-dir-path
+        run: echo "dir=$(npm config get cache)" >> $GITHUB_OUTPUT
+
+      - uses: actions/cache@v4
+        id: npm-cache
+        with:
+          path: ${{ steps.npm-cache-dir-path.outputs.dir }}
+          key: ${{ runner.os }}-npm-${{ hashFiles('**/package-lock.json') }}
+          restore-keys: |
+            ${{ runner.os }}-npm-
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: 🧪 Dry-Run - GitHub Release
+        if: ${{ inputs.dryrun == true }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          npm run release --semver=${{ inputs.semver }} --yes --dry-run
+
+      - name: GitHub Release 🏷️ / NPM Publish 📦
+        if: ${{ inputs.dryrun != true }}
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+          npm run release --semver=${{ inputs.semver }} --yes
