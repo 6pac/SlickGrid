@@ -174,9 +174,7 @@ export class SlickRowSelectionModel {
       && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey
       && (e.which === keyCode.UP || e.which === keyCode.DOWN)) {
       let selectedRows = this.getSelectedRows();
-      selectedRows.sort(function (x, y) {
-        return x - y;
-      });
+      selectedRows.sort((x, y) => x - y);
 
       if (!selectedRows.length) {
         selectedRows = [activeRow.row];
