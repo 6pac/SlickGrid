@@ -3,6 +3,22 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.17.0](https://github.com/6pac/SlickGrid/compare/5.15.5...5.17.0) (2025-10-28)
+
+### Features
+
+* Drag-Fill capability and Hybrid SelectionModel plugin ([#1143](https://github.com/6pac/SlickGrid/issues/1143)) ([0bd9277](https://github.com/6pac/SlickGrid/commit/0bd9277cbe4ee809614f451f46406cb1134da646))
+
+### Bug Fixes
+
+* auto-scroll outside the viewport should stop Row Move dragging ([#1138](https://github.com/6pac/SlickGrid/issues/1138)) ([1296a40](https://github.com/6pac/SlickGrid/commit/1296a40e3152601fea7c8646e01a169281246fd5))
+* Bug Fix Pre-edit Click mode (PreClick) and create example ([#1150](https://github.com/6pac/SlickGrid/issues/1150)) ([a8415a0](https://github.com/6pac/SlickGrid/commit/a8415a0d99bfa02730ef1b508141c06868b7160b))
+* column freeze + reorder same order could cause columns misalignment ([#1141](https://github.com/6pac/SlickGrid/issues/1141)) ([9d523f5](https://github.com/6pac/SlickGrid/commit/9d523f5bf04bbf1eddb24bf0fbb135c24aa55619))
+* column header reorder should keep scroll position even frozen grid ([#1148](https://github.com/6pac/SlickGrid/issues/1148)) ([3177551](https://github.com/6pac/SlickGrid/commit/317755158167a2f1ee06f7bdce5eaaaac732ce09))
+* show an alert to user when trying to freeze wider than viewport ([#1142](https://github.com/6pac/SlickGrid/issues/1142)) ([9e85fa6](https://github.com/6pac/SlickGrid/commit/9e85fa6ae6c65c053e7a1c0834539cb3a535c2ef))
+* small fix in Row Detail plugin to make it work with Grouping ([#1145](https://github.com/6pac/SlickGrid/issues/1145)) ([f24ac05](https://github.com/6pac/SlickGrid/commit/f24ac05bbb1b5f6944cda8fd86d97272c14c7d6b))
+* validate allowed frozen column & alert when invalid ([#1147](https://github.com/6pac/SlickGrid/issues/1147)) ([e39304a](https://github.com/6pac/SlickGrid/commit/e39304af49266ea11c98ad1e9750c2c061b23255))
+
 ## [5.15.5](https://github.com/6pac/SlickGrid/compare/5.15.4...5.15.5) (2025-07-05)
 
 ### Bug Fixes
