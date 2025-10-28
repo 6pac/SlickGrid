@@ -7,8 +7,8 @@ on:
         type: boolean
         description: Dry-Run
       semver:
-        default: 'patch'
         type: choice
+        description: Select the semver version bump
         required: true
         options:
           - patch
