@@ -56,6 +56,7 @@ const argv = parseArgs({
   if (argv.dryRun) {
     console.info(`-- ${styleText('bgMagenta', 'DRY-RUN')} mode --`);
   }
+  console.log('argv', argv);
   await hasUncommittedChanges(argv);
   const repo = await parseGitRepo();
 
