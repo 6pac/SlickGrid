@@ -11,6 +11,7 @@ on:
         description: Select the semver version bump
         required: true
         options:
+          - '' # empty option to force user to choose
           - patch
           - minor
           - major
