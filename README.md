@@ -14,7 +14,7 @@ Check out the NEW SlickGrid Website! http://slickgrid.net/
 
 This is the acknowledged and most active fork of SlickGrid.
 
-It aims to be a viable alternative master repo, building on the legacy of the [mleibman/SlickGrid](https://github.com/mleibman/SlickGrid) master branch, keeping dependencies up to date and applying, safe core patches and enhancements to keep the project up to date.
+It aims to be a viable alternative master repo, building on the legacy of the [mleibman/SlickGrid](https://github.com/mleibman/SlickGrid) original project, keeping dependencies up to date and applying, safe core patches and enhancements to keep the project up to date.
 
 We extended the project from the original SlickGrid foundation while also including the following changes:
 - added a few more Plugins: RowDetail, CellMenu, ContextMenu, GridMenu, CustomTooltip, GridState
@@ -22,7 +22,7 @@ We extended the project from the original SlickGrid foundation while also includ
 - removed jQueryUI requirement in [v3](https://github.com/6pac/SlickGrid/wiki/Major-version-3.0----Removal-of-jQueryUI-requirement-(replaced-by-SortableJS)) (replaced it with [SortableJS](https://sortablejs.github.io/Sortable/))
 - removed jQuery requirement in [v4](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement)
 - modernized the project in [v5](https://github.com/6pac/SlickGrid/wiki/Major-version-5.0-%E2%80%90-ES6-ESM-and-TypeScript-Support) by migrating to TypeScript (we kept IIFE and added ES6/ESM build targets) and we also gave SlickGrid a fresh and more modern look via a new Alpine Theme (CSS/SASS)
-- the project now only has 1 required small dependency which is [SortableJS](https://sortablejs.github.io/Sortable/)
+- the project now only has 1 small dependency requirement which is [SortableJS](https://sortablejs.github.io/Sortable/)
 
 ### Vite Demo
 You can also see a [ViteJS](https://vite.dev/) demo in the [./vite-demo](https://github.com/6pac/SlickGrid/tree/master/vite-demo) folder (also available via the Stackblitz link below). This Vite demo was created mostly to test the project ESM build and the SASS imports as well.
@@ -33,7 +33,7 @@ You can try out the live Vite demo (mentioned just above) via the Stackblitz but
 
 [![Open in StackBlitz](https://developer.stackblitz.com/img/open_in_stackblitz.svg)](https://stackblitz.com/github/6pac/SlickGrid/tree/master/vite-demo)
 
-> Note: the Stackblitz demo is only including a couple of examples, note however that there are a lot more examples available in the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** Wiki page
+> _Note: the Stackblitz demo is only including a couple of examples, note however that there are a lot more examples available in the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** Wiki page_
 
 ### Examples
 Check out the **[Examples](https://github.com/6pac/SlickGrid/wiki/Examples)** Wiki for a full list of examples demonstrating new features and use cases, such as dynamic grid creation and editors with third party controls.
@@ -47,16 +47,16 @@ Below is one of the available examples available in Stackblitz (which is mention
 ![Realtime Trading Demo](https://github.com/user-attachments/assets/a098b242-88e5-418d-a40b-3a8e44e93ca4)
 
 ### Installation
-There are multiple ways to use and install SlickGrid, you can use it as a standalone `<script>` (IIFE) or install it through NPM and then `import` or `require` SlickGrid (`import` is preferred for tree shaking).
+There are multiple ways to use and install SlickGrid, you can use it as a standalone `<script>` (IIFE) or install it through NPM and then `import` or `require` SlickGrid (ESM `import` is preferred for tree shaking).
 
 ```sh
 # Alpine style from CDN
-<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slickgrid@5.15.0/dist/styles/css/slick-alpine-theme.min.css">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/slickgrid@5.17.0/dist/styles/css/slick-alpine-theme.min.css">
 
 # standalone scripts (IIFE) from CDN
-<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.15.0/dist/browser/slick.core.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.15.0/dist/browser/slick.interactions.min.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.15.0/dist/browser/slick.grid.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.17.0/dist/browser/slick.core.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.17.0/dist/browser/slick.interactions.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/slickgrid@5.17.0/dist/browser/slick.grid.min.js"></script>
 <script>
   const grid = new Slick.Grid("#myGrid", dataView, columns, options);
 </script>
@@ -94,10 +94,10 @@ Once the Cypress UI is open, you can then click on "Run all Specs" to execute al
 | --------- | --------------- | ----------- |
 | 3.x       | [Announcing v3.0](https://github.com/6pac/SlickGrid/wiki/Major-version-3.0----Removal-of-jQueryUI-requirement-(replaced-by-SortableJS)) | dropping [jQueryUI](https://jqueryui.com/) requirement and replaced it with [SortableJS](https://sortablejs.github.io/Sortable/) which is a lot more modern and touch friendly |
 | 4.x       | [Announcing v4.0](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement) | dropping [jQuery](https://jquery.com/) requirement, SlickGrid is now using browser native code |
-| 5.x       | [Announcing v5.0](https://github.com/6pac/SlickGrid/wiki/Major-version-5.0-%E2%80%90-ES6-ESM-and-TypeScript-Support) | project modernization, we added TypeScript with ES6, ESM builds and also a new Alpine Theme |
+| 5.x       | [Announcing v5.0](https://github.com/6pac/SlickGrid/wiki/Major-version-5.0-%E2%80%90-ES6-ESM-and-TypeScript-Support) | project modernization, we added ES6/ESM builds by migrating to TypeScript and also a new Alpine Theme |
 
 ## CSP Compliance
-The library is now, for the big part, CSP (Content Security Policy) compliant since `v5.5.0`, however there are some exceptions to be aware of. When using any html strings as template (for example with Custom Formatter returning an html string), you will not be fully compliant unless you return `TrustedHTML`. You can achieve this by using the `sanitizer` method in combo with [DOMPurify](https://github.com/cure53/DOMPurify) to return [`TrustedHTML`](https://developer.mozilla.org/en-US/docs/Web/API/TrustedHTML). For more info, please take a look at the [CSP Compliance](https://github.com/6pac/SlickGrid/wiki/CSP-Compliance) Wiki.
+The library is now, for the big part, CSP (Content Security Policy) compliant since `v5.5.0`, however there are some exceptions to be aware of; when using any html strings as template (for example with Custom Formatter returning an html string), you will not be fully compliant unless you return `TrustedHTML`. You can achieve it by using the `sanitizer` method in combo with [DOMPurify](https://github.com/cure53/DOMPurify) to return [`TrustedHTML`](https://developer.mozilla.org/en-US/docs/Web/API/TrustedHTML). For more info, please take a look at the [CSP Compliance](https://github.com/6pac/SlickGrid/wiki/CSP-Compliance) Wiki.
 
 ### Quick Little Fun Survey ✨
 We are conducting a small little poll just for fun, it is a single question survey about our latest releases. Thanks for taking the time to participate.
