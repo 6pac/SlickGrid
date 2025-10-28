@@ -4,13 +4,13 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
-  <title>SlickGrid example: Cell Menu & Context Menu</title>
-  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css"/>
+  <title>SlickGrid example: Context Menu Plugin & Hybrid Selection Mode</title>
+  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css" />
   <link rel="stylesheet" href="../dist/styles/css/slick.cellmenu.css" type="text/css" />
   <link rel="stylesheet" href="../dist/styles/css/slick.contextmenu.css" type="text/css" />
-  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
-  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
-  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css" />
   <style>
     .bold {
       font-weight: bold;
@@ -58,10 +58,12 @@
       padding: 0 6px;
       cursor: pointer;
     }
+
     .cell-menu-dropdown.disabled {
       border: 1px solid #c6c6c6;
       color: #dddddd;
     }
+
     .cell-menu-dropdown:hover:not(.disabled) {
       background-color: #9e9e9e;
       color: white;
@@ -77,6 +79,7 @@
     .slick-context-menu {
       border: 1px solid #718BB7;
     }
+
     .slick-cell-menu.slick-submenu,
     .slick-context-menu.slick-submenu {
       background-color: #fbfbfb;
@@ -88,7 +91,7 @@
 </head>
 
 <body>
-  <h2 class="title">Example - Context Menu Plugin</h2>
+  <h2 class="title">Example - Context Menu Plugin & Hybrid Selection Mode</h2>
   <table width="100%">
     <tr>
       <td valign="top" width="50%" style="padding-left: 0px">
@@ -97,14 +100,17 @@
       <td valign="top" style="display: block">
         <h2>
           Demonstrates:
-          <span style="margin-left: 15px; font-size: 12px">Slick.Plugins.HybridSelectionModel / Slick.Plugins.CellMenu</span>
+          <span style="margin-left: 15px; font-size: 12px">Slick.Plugins.HybridSelectionModel /
+            Slick.Plugins.CellMenu</span>
         </h2>
         <ul>
           <li><strong>Slick.Plugins.HybridSelectionModel</strong></li>
           <li>This selectionmodel is a combination of the row and column selectionmodels.</li>
           <li>for a given row, the selectionmodel that applies is selected by the following in priority order:</li>
-          <li> 1) if options.rowSelectOverride is defined, call rowSelectOverride(rowData, plugin, grid), return value is true to use rowSelectionModel</li>
-          <li> 2) if the RowMovweManager plugin is used, and rowMoveManager.isHandlerColumn is true, select RowSelectionModel</li>
+          <li> 1) if options.rowSelectOverride is defined, call rowSelectOverride(rowData, plugin, grid), return value
+            is true to use rowSelectionModel</li>
+          <li> 2) if the RowMovweManager plugin is used, and rowMoveManager.isHandlerColumn is true, select
+            RowSelectionModel</li>
           <li> 3) if the column name is in options.rowSelectColumnIdArr[] then apply rowSelectionModel</li>
           <p></p>
           <li><strong>Slick.Plugins.ContextMenu - Context Menu (global from any columns right+click)</strong></li>
@@ -129,8 +135,8 @@
   <script src="sortable-cdn-fallback.js"></script>
 
   <script src="../dist/browser/slick.core.js"></script>
-<script src="../dist/browser/slick.interactions.js"></script>
-<script src="../dist/browser/slick.grid.js"></script>
+  <script src="../dist/browser/slick.interactions.js"></script>
+  <script src="../dist/browser/slick.grid.js"></script>
   <script src="../dist/browser/slick.formatters.js"></script>
   <script src="../dist/browser/slick.dataview.js"></script>
   <script src="../dist/browser/slick.editors.js"></script>
@@ -319,7 +325,7 @@
       rowHeight: 30
     };
 
-    document.addEventListener("DOMContentLoaded", function() {
+    document.addEventListener("DOMContentLoaded", function () {
       dataView = new Slick.Data.DataView();
       grid = new Slick.Grid("#myGrid", dataView, columns, gridOptions);
       grid.setSelectionModel(new Slick.HybridSelectionModel({ selectActiveRow: true, rowSelectColumnIdArr: ['id'] }));
