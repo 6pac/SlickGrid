@@ -75,7 +75,7 @@ jobs:
         run: |
           git config --global user.name "${{ github.actor }}"
           git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-          npm run release --semver=${{ inputs.semver }} --yes --dry-run
+          npm run release:ci -- --semver ${{ inputs.semver }} --create-release github --yes --dry-run
 
       - name: GitHub Release 🏷️ / NPM Publish 📦
         if: ${{ inputs.dryrun != true }}
@@ -84,4 +84,4 @@ jobs:
         run: |
           git config --global user.name "${{ github.actor }}"
           git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-          npm run release --semver=${{ inputs.semver }} --yes
+          npm run release:ci -- --semver ${{ inputs.semver }} --create-release github --yes
