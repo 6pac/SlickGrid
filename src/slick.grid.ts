@@ -149,7 +149,7 @@ interface RowCaching {
 export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O extends BaseGridOption<C> = BaseGridOption<C>> {
   //////////////////////////////////////////////////////////////////////////////////////////////
   // Public API
-  slickGridVersion = '5.15.5';
+  slickGridVersion = '5.17.0';
 
   /** optional grid state clientId */
   cid = '';
@@ -3782,9 +3782,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (self.currentEditor.isValueChanged()) {
         const validationResults = self.currentEditor.validate(
           undefined, {
-            rowIndex: self.activeRow,
-            cellIndex: self.activeCell
-          }
+          rowIndex: self.activeRow,
+          cellIndex: self.activeCell
+        }
         );
 
         if (validationResults.valid) {
@@ -3965,9 +3965,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       const selectedRange = this.selectedRanges[0];
 
       // check range has expanded
-      if (SelectionUtils.copyRangeIsLarger(prevSelectedRange, selectedRange)) {      
-          this.trigger(this.onDragReplaceCells, { prevSelectedRange, selectedRange });
-          this.invalidate();
+      if (SelectionUtils.copyRangeIsLarger(prevSelectedRange, selectedRange)) {
+        this.trigger(this.onDragReplaceCells, { prevSelectedRange, selectedRange });
+        this.invalidate();
       }
     }
 

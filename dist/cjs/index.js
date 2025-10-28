@@ -6859,7 +6859,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.15.5");
+    __publicField(this, "slickGridVersion", "5.17.0");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
