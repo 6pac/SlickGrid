@@ -41,6 +41,7 @@ import type { SlickCellRangeSelector } from './plugins/slick.cellrangeselector.j
 import type { SlickCellSelectionModel } from './plugins/slick.cellselectionmodel.js';
 import type { SlickCrossGridRowMoveManager } from './plugins/slick.crossgridrowmovemanager.js';
 import type { SlickDraggableGrouping } from './plugins/slick.draggablegrouping.js';
+import type { SlickHybridSelectionModel } from './plugins/slick.hybridselectionmodel.js';
 import type { SlickRowSelectionModel } from './plugins/slick.rowselectionmodel.js';
 import type { SlickResizer } from './plugins/slick.resizer.js';
 import type { SlickRowMoveManager } from './plugins/slick.rowmovemanager.js';
@@ -117,6 +118,7 @@ declare global {
     RowMoveManager: typeof SlickRowMoveManager,
     RowSelectionMode: typeof RowSelectionMode,
     CellSelectionMode: typeof CellSelectionMode,
+    HybridSelectionModel: typeof SlickHybridSelectionModel,
     RowSelectionModel: typeof SlickRowSelectionModel,
     State: typeof SlickState,
     Utils: typeof Utils,
