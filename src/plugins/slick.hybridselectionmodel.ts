@@ -271,7 +271,7 @@ export class SlickHybridSelectionModel {
 
     if (this._activeSelectionIsRow) {
       if (this._options?.selectActiveRow && args.row !== null) {
-        this.setSelectedRanges([new Slick.Range(args.row, 0, args.row, this._grid.getColumns().length - 1)], undefined, '');
+        this.setSelectedRanges([new SlickRange(args.row, 0, args.row, this._grid.getColumns().length - 1)], undefined, '');
       }
     } else {
       if (this._options?.selectActiveCell && isRowDefined && isCellDefined) {

@@ -190,7 +190,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
     }
 
     let start: { row: number | undefined, cell: number | undefined; } | null;
-    this._selectionMode = this._dragReplaceHandleActive ? Slick.CellSelectionMode.Replace : Slick.CellSelectionMode.Select;      
+    this._selectionMode = this._dragReplaceHandleActive ? CellSelectionMode.Replace : CellSelectionMode.Select;
     if (!this._dragReplaceHandleActive) {
       start = this._grid.getCellFromPoint(startX, startY);
     } else {
@@ -385,7 +385,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
       const cornerCell = !this._previousSelectedRange ? dd.range.start : SelectionUtils.normalRangeOppositeCellFromCopy(this._previousSelectedRange, end);
       this._currentlySelectedRange = dd.range;
 
-      const range = new Slick.Range(cornerCell.row!, cornerCell.cell!, end.row, end.cell);
+      const range = new SlickRange(cornerCell.row!, cornerCell.cell!, end.row, end.cell);
 
       this._decorator.show(range, this._dragReplaceHandleActive);
       this.onCellRangeSelecting.notify({

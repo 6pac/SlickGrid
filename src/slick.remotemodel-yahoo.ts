@@ -1,8 +1,13 @@
+import { SlickEvent as SlickEvent_} from './slick.core.js';
+
 /***
  * A sample AJAX data store implementation.
  * Right now, it's hooked up to load Hackernews stories, but can
  * easily be extended to support any JSONP-compatible backend that accepts paging parameters.
  */
+
+const SlickEvent = IIFE_ONLY ? Slick.Event : SlickEvent_;
+
 export class SlickRemoteModelYahoo {
   // protected
   protected PAGESIZE = 10;
@@ -11,8 +16,8 @@ export class SlickRemoteModelYahoo {
   protected req: any = null; // ajax request
 
   // events
-  protected onDataLoading = new Slick.Event('onDataLoading');
-  protected onDataLoaded = new Slick.Event('onDataLoaded');
+  protected onDataLoading = new SlickEvent('onDataLoading');
+  protected onDataLoaded = new SlickEvent('onDataLoaded');
 
   constructor() {
     if (!(window.$ || window.jQuery) || !window.$.jsonp) {
