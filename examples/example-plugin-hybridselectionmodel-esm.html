@@ -112,7 +112,7 @@
             is true to use rowSelectionModel</li>
           <li> 2) if the RowMovweManager plugin is used, and rowMoveManager.isHandlerColumn is true, select
             RowSelectionModel</li>
-          <li> 3) if the column name is in options.rowSelectColumnIdArr[] then apply rowSelectionModel</li>
+          <li> 3) if the column name is in options.rowSelectColumnIds[] then apply rowSelectionModel</li>
           <p></p>
           <li><strong>SlickContextMenu - Context Menu (global from any columns right+click)</strong></li>
           <li>This plugin subscribes internally to the "onContextMenu" event</li>
@@ -332,7 +332,7 @@
     document.addEventListener("DOMContentLoaded", function () {
       dataView = new SlickDataView();
       grid = new SlickGrid("#myGrid", dataView, columns, gridOptions);
-      grid.setSelectionModel(new SlickHybridSelectionModel({ selectActiveRow: true, rowSelectColumnIdArr: ['id'] }));
+      grid.setSelectionModel(new SlickHybridSelectionModel({ selectActiveRow: true, rowSelectColumnIds: ['id'] }));
       contextMenuPlugin = new SlickContextMenu(contextMenuOptions);
       let columnpicker = new SlickColumnPicker(columns, grid, gridOptions);
       let gridMenuControl = new SlickGridMenu(columns, grid, gridOptions);
