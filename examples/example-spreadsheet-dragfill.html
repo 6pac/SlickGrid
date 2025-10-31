@@ -41,8 +41,7 @@
         <li>Drag-fill can be done in any direction</li>
         <li>Drag-fill selection border (css) is different to regular selection (uses <code>copyToSelectionCss</code>
           from CellRangeDecorator rather than the usual <code>selectionCss</code>)</li>
-        <li>By default uses <code>Slick.SelectionUtils.defaultCopyDraggedCellRange</code> to copy dragged cells by
-          subscribing to <code>onDragReplaceCells</code>.
+        <li>Customize drag-fill code logic to copy dragged cells by subscribing to <code>onDragReplaceCells</code>.
           Use this event to customise behaviour. The default function is ideal as a starting example.</li>
         <li>Also uses hybrid selection model plugin to select a row if the left hand cell (containing row index) is
           selected, or select a cell otherwise.</li>
