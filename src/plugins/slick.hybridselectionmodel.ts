@@ -254,6 +254,8 @@ export class SlickHybridSelectionModel {
       return this._options?.rowSelectOverride(data, this, this._grid);
     }
 
+    if (!Utils.isDefined(data.cell)) { return false; }
+
     if (this._options?.handleRowMoveManagerColumn) {
       const rowMoveManager = this.getRowMoveManagerPlugin();
       if (rowMoveManager?.isHandlerColumn(data.cell)) { return true; }
@@ -270,7 +272,7 @@ export class SlickHybridSelectionModel {
     this._activeSelectionIsRow = this.rowSelectionModelIsActive(args);
 
     if (this._activeSelectionIsRow) {
-      if (this._options?.selectActiveRow && args.row !== null) {
+      if (this._options?.selectActiveRow && isRowDefined) {
         this.setSelectedRanges([new SlickRange(args.row, 0, args.row, this._grid.getColumns().length - 1)], undefined, '');
       }
     } else {
