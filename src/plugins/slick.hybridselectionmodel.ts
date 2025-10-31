@@ -27,7 +27,7 @@ export interface HybridSelectionModelOption {
   dragToSelect: boolean;
   autoScrollWhenDrag: boolean;
   handleRowMoveManagerColumn: boolean;  // Row Selection on RowMoveManage column
-  rowSelectColumnIdArr: string[];        // Row Selection on these columns
+  rowSelectColumnIds: string[];        // Row Selection on these columns
   rowSelectOverride: RowSelectOverride | undefined;          // function to toggle Row Selection Models
 }
 
@@ -58,7 +58,7 @@ export class SlickHybridSelectionModel {
     dragToSelect: false,
     autoScrollWhenDrag: true,
     handleRowMoveManagerColumn: true, // Row Selection on RowMoveManage column
-    rowSelectColumnIdArr: [],         // Row Selection on these columns
+    rowSelectColumnIds: [],         // Row Selection on these columns
     rowSelectOverride: undefined,     // function to toggle Row Selection Models
     cellRangeSelector: undefined
 
@@ -260,7 +260,7 @@ export class SlickHybridSelectionModel {
     }
 
     const targetColumn = this._grid.getVisibleColumns()[data.cell];
-    return this._options?.rowSelectColumnIdArr.includes('' + targetColumn.id) || false;
+    return this._options?.rowSelectColumnIds.includes('' + targetColumn.id) || false;
   }
 
   protected handleActiveCellChange(_e: SlickEventData_, args: OnActiveCellChangedEventArgs) {
