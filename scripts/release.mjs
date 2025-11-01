@@ -10,7 +10,7 @@ import { runProdBuildWithTypes } from './builds.mjs';
 import { updateChangelog } from './changelog.mjs';
 import { execAsyncPiped } from './child-process.mjs';
 import { readJSONSync, writeJsonSync } from './fs-utils.mjs';
-import { gitAdd, gitCommit, gitTag, gitTagPushRemote, gitPushToCurrentBranch, hasUncommittedChanges } from './git-utils.mjs';
+import { gitAdd, gitCommit, gitTag, gitTagPushRemote, gitPushToCurrentBranch, gitPushUpstreamBranch, hasUncommittedChanges } from './git-utils.mjs';
 import { createRelease, createReleaseClient, parseGitRepo } from './github-release.mjs';
 import { publishPackage, syncLockFile } from './npm-utils.mjs';
 import { parseArgs } from './parse-args.mjs';
