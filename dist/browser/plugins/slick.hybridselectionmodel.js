@@ -32,7 +32,7 @@
         autoScrollWhenDrag: !0,
         handleRowMoveManagerColumn: !0,
         // Row Selection on RowMoveManage column
-        rowSelectColumnIdArr: [],
+        rowSelectColumnIds: [],
         // Row Selection on these columns
         rowSelectOverride: void 0,
         // function to toggle Row Selection Models
@@ -146,19 +146,21 @@
       var _a, _b, _c, _d;
       if ((_a = this._options) != null && _a.rowSelectOverride)
         return (_b = this._options) == null ? void 0 : _b.rowSelectOverride(data, this, this._grid);
+      if (!Utils.isDefined(data.cell))
+        return !1;
       if ((_c = this._options) != null && _c.handleRowMoveManagerColumn) {
         let rowMoveManager = this.getRowMoveManagerPlugin();
         if (rowMoveManager != null && rowMoveManager.isHandlerColumn(data.cell))
           return !0;
       }
       let targetColumn = this._grid.getVisibleColumns()[data.cell];
-      return ((_d = this._options) == null ? void 0 : _d.rowSelectColumnIdArr.includes("" + targetColumn.id)) || !1;
+      return ((_d = this._options) == null ? void 0 : _d.rowSelectColumnIds.includes("" + targetColumn.id)) || !1;
     }
     handleActiveCellChange(_e, args) {
       var _a, _b, _c;
       this._prevSelectedRow = void 0;
       let isCellDefined = Utils.isDefined(args.cell), isRowDefined = Utils.isDefined(args.row);
-      this._activeSelectionIsRow = this.rowSelectionModelIsActive(args), this._activeSelectionIsRow ? (_a = this._options) != null && _a.selectActiveRow && args.row !== null && this.setSelectedRanges([new Slick.Range(args.row, 0, args.row, this._grid.getColumns().length - 1)], void 0, "") : (_b = this._options) != null && _b.selectActiveCell && isRowDefined && isCellDefined ? this.setSelectedRanges([new SlickRange(args.row, args.cell)], void 0, "") : (!((_c = this._options) != null && _c.selectActiveCell) || !isRowDefined && !isCellDefined) && this.setSelectedRanges([], void 0, "");
+      this._activeSelectionIsRow = this.rowSelectionModelIsActive(args), this._activeSelectionIsRow ? (_a = this._options) != null && _a.selectActiveRow && isRowDefined && this.setSelectedRanges([new SlickRange(args.row, 0, args.row, this._grid.getColumns().length - 1)], void 0, "") : (_b = this._options) != null && _b.selectActiveCell && isRowDefined && isCellDefined ? this.setSelectedRanges([new SlickRange(args.row, args.cell)], void 0, "") : (!((_c = this._options) != null && _c.selectActiveCell) || !isRowDefined && !isCellDefined) && this.setSelectedRanges([], void 0, "");
     }
     isKeyAllowed(key, isShiftKeyPressed) {
       return [

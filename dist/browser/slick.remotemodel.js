@@ -5,7 +5,7 @@
   var __publicField = (obj, key, value) => __defNormalProp(obj, typeof key != "symbol" ? key + "" : key, value);
 
   // src/slick.remotemodel.ts
-  var SlickRemoteModel = class {
+  var SlickEvent = Slick.Event, SlickRemoteModel = class {
     constructor() {
       // private
       __publicField(this, "PAGESIZE", 50);
@@ -17,8 +17,8 @@
       __publicField(this, "req", null);
       // ajax request
       // events
-      __publicField(this, "onDataLoading", new Slick.Event("onDataLoading"));
-      __publicField(this, "onDataLoaded", new Slick.Event("onDataLoaded"));
+      __publicField(this, "onDataLoading", new SlickEvent("onDataLoading"));
+      __publicField(this, "onDataLoaded", new SlickEvent("onDataLoaded"));
       if (!(window.$ || window.jQuery) || !window.$.jsonp)
         throw new Error("SlickRemoteModel requires both jQuery and jQuery jsonp library to be loaded.");
       this.init();

@@ -227,7 +227,7 @@
             Utils.createDomElement("input", { type: "checkbox", id: `header-filter-selector${this._selectAll_UID}` })
           ), spanElm.appendChild(
             Utils.createDomElement("label", { htmlFor: `header-filter-selector${this._selectAll_UID}` })
-          ), args.node.appendChild(spanElm), this._headerRowNode = args.node, this._bindingEventService.bind(spanElm, "click", (e) => this.handleHeaderClick(e, args));
+          ), args.node.appendChild(spanElm), this._headerRowNode = args.node, this._bindingEventService.bind(spanElm, "click", ((e) => this.handleHeaderClick(e, args)));
         }
       });
     }

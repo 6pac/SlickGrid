@@ -142,9 +142,9 @@
           let eventGroup = isSubMenu ? "sub-menu" : "parent-menu";
           this._bindingEventService.bind(liElm, "click", this.handleMenuItemClick.bind(this, item, level), void 0, eventGroup);
         }
-        if (((_c = this._gridMenuOptions) == null ? void 0 : _c.subMenuOpenByEvent) === "mouseover" && this._bindingEventService.bind(liElm, "mouseover", (e) => {
+        if (((_c = this._gridMenuOptions) == null ? void 0 : _c.subMenuOpenByEvent) === "mouseover" && this._bindingEventService.bind(liElm, "mouseover", ((e) => {
           item.commandItems || item.customItems ? this.repositionSubMenu(item, level, e) : isSubMenu || this.destroySubMenus();
-        }), item.commandItems || item.customItems) {
+        })), item.commandItems || item.customItems) {
           let chevronElm = document.createElement("span");
           chevronElm.className = "sub-item-chevron", (_d = this._gridMenuOptions) != null && _d.subItemChevronClass ? chevronElm.classList.add(...Utils.classNameToList(this._gridMenuOptions.subItemChevronClass)) : chevronElm.textContent = "\u2B9E", liElm.classList.add("slick-submenu-item"), liElm.appendChild(chevronElm);
           continue;

@@ -3,6 +3,14 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.17.1](https://github.com/6pac/SlickGrid/compare/5.17.0...5.17.1) (2025-11-01)
+
+### Bug Fixes
+
+* column cannot be resized when not orderable ([#1155](https://github.com/6pac/SlickGrid/issues/1155)) ([65d42f7](https://github.com/6pac/SlickGrid/commit/65d42f75337f02c466737b5c8c3a30e5c59bca44))
+* hybrid selection model to handle case when the selectedCell is none ([#1158](https://github.com/6pac/SlickGrid/issues/1158)) ([213e61a](https://github.com/6pac/SlickGrid/commit/213e61a2e65e05f403c4a5c6bea2ab64da5b1680))
+* new Hybrid Selection Model not working as ESM ([#1156](https://github.com/6pac/SlickGrid/issues/1156)) ([89a5756](https://github.com/6pac/SlickGrid/commit/89a57567587840994984e792b7c0ac9484e30d55))
+
 # [5.17.0](https://github.com/6pac/SlickGrid/compare/5.15.5...5.17.0) (2025-10-28)
 
 ### Features

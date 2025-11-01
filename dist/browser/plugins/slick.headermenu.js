@@ -76,9 +76,9 @@
           let icon = document.createElement("span");
           icon.classList.add(...Utils.classNameToList(this._options.buttonCssClass)), elm.appendChild(icon);
         }
-        this._options.buttonImage && (elm.style.backgroundImage = `url(${this._options.buttonImage})`), this._options.tooltip && (elm.title = this._options.tooltip), this._bindingEventService.bind(elm, "click", (e) => {
+        this._options.buttonImage && (elm.style.backgroundImage = `url(${this._options.buttonImage})`), this._options.tooltip && (elm.title = this._options.tooltip), this._bindingEventService.bind(elm, "click", ((e) => {
           this.destroyAllMenus(), this.createParentMenu(e, menu, args.column);
-        }), args.node.appendChild(elm);
+        })), args.node.appendChild(elm);
       }
     }
     handleBeforeHeaderCellDestroy(_e, args) {
@@ -136,9 +136,9 @@
           let eventGroup = isSubMenu ? "sub-menu" : "parent-menu";
           this._bindingEventService.bind(menuItemElm, "click", this.handleMenuItemClick.bind(this, item2, columnDef, level), void 0, eventGroup);
         }
-        if (this._options.subMenuOpenByEvent === "mouseover" && this._bindingEventService.bind(menuItemElm, "mouseover", (e) => {
+        if (this._options.subMenuOpenByEvent === "mouseover" && this._bindingEventService.bind(menuItemElm, "mouseover", ((e) => {
           item2.commandItems || item2.items ? this.repositionSubMenu(item2, columnDef, level, e) : isSubMenu || this.destroySubMenus();
-        }), item2.commandItems || item2.items) {
+        })), item2.commandItems || item2.items) {
           let chevronElm = document.createElement("div");
           chevronElm.className = "sub-item-chevron", this._options.subItemChevronClass ? chevronElm.classList.add(...Utils.classNameToList(this._options.subItemChevronClass)) : chevronElm.textContent = "\u2B9E", menuItemElm.classList.add("slick-submenu-item"), menuItemElm.appendChild(chevronElm);
         }

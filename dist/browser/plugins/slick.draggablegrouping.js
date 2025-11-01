@@ -168,10 +168,10 @@
               }
           this._columnsGroupBy = newGroupingOrder, this.updateGroupBy("sort-group");
         }
-      }), this.addDragOverDropzoneListeners(), this._groupToggler && this._bindingEventService.bind(this._groupToggler, "click", (event) => {
+      }), this.addDragOverDropzoneListeners(), this._groupToggler && this._bindingEventService.bind(this._groupToggler, "click", ((event) => {
         let target = event.target;
         this.toggleGroupToggler(target, target == null ? void 0 : target.classList.contains("expanded"));
-      });
+      }));
     }
     handleGroupByDrop(containerElm, headerColumnElm) {
       var _a, _b;

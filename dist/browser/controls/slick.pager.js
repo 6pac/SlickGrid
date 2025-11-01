@@ -88,7 +88,7 @@
       pagerSettingsElm.className = "slick-pager-settings-expanded", pagerSettingsElm.textContent = "Show: ";
       for (let o = 0; o < this._options.pagingOptions.length; o++) {
         let p = this._options.pagingOptions[o], anchorElm = document.createElement("a");
-        anchorElm.textContent = p.name, anchorElm.ariaLabel = p.ariaLabel, anchorElm.dataset.val = String(p.data), pagerSettingsElm.appendChild(anchorElm), this._bindingEventService.bind(anchorElm, "click", (e) => {
+        anchorElm.textContent = p.name, anchorElm.ariaLabel = p.ariaLabel, anchorElm.dataset.val = String(p.data), pagerSettingsElm.appendChild(anchorElm), this._bindingEventService.bind(anchorElm, "click", ((e) => {
           let pagesize = e.target.dataset.val;
           if (pagesize !== void 0)
             if (Number(pagesize) === -1) {
@@ -96,7 +96,7 @@
               this.setPageSize(vp.bottom - vp.top);
             } else
               this.setPageSize(parseInt(pagesize));
-        });
+        }));
       }
       pagerSettingsElm.style.display = this._options.showPageSizes ? "block" : "none", settingsElm.appendChild(pagerSettingsElm);
       let displayPaginationContainer = document.createElement("span"), displayIconElm = document.createElement("span");

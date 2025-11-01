@@ -24,7 +24,7 @@
       this.externalPubSub = externalPubSub;
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.17.0");
+      __publicField(this, "slickGridVersion", "5.17.1");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -951,6 +951,8 @@
         ghostClass: "slick-sortable-placeholder",
         draggable: ".slick-header-column",
         dragoverBubble: !1,
+        preventOnFilter: !1,
+        // allow column to be resized even when they are not orderable
         revertClone: !0,
         scroll: !this.hasFrozenColumns(),
         // enable auto-scroll
@@ -4612,7 +4614,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.15.5
+ * SlickGrid v5.17.1
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

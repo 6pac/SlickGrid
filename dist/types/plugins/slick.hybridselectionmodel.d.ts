@@ -13,7 +13,7 @@ export interface HybridSelectionModelOption {
     dragToSelect: boolean;
     autoScrollWhenDrag: boolean;
     handleRowMoveManagerColumn: boolean;
-    rowSelectColumnIdArr: string[];
+    rowSelectColumnIds: string[];
     rowSelectOverride: RowSelectOverride | undefined;
 }
 export declare class SlickHybridSelectionModel {

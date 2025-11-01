@@ -814,7 +814,7 @@ var Slick = (() => {
       if (!copyUp && !copyDown)
         return null;
       let rtn;
-      return copyUp ? rtn = new Slick.Range(copyToRange.fromRow, copyToRange.fromCell, baseRange.fromRow - 1, baseRange.toCell) : rtn = new Slick.Range(baseRange.toRow + 1, copyToRange.fromCell, copyToRange.toRow, baseRange.toCell), rtn;
+      return copyUp ? rtn = new Range(copyToRange.fromRow, copyToRange.fromCell, baseRange.fromRow - 1, baseRange.toCell) : rtn = new Range(baseRange.toRow + 1, copyToRange.fromCell, copyToRange.toRow, baseRange.toCell), rtn;
     }
     // copy to range left or right - excludes corner space target range
     static horizontalTargetRange(baseRange, copyToRange) {
@@ -822,7 +822,7 @@ var Slick = (() => {
       if (!copyLeft && !copyRight)
         return null;
       let rtn;
-      return copyLeft ? rtn = new Slick.Range(baseRange.fromRow, copyToRange.fromCell, baseRange.toRow, baseRange.fromCell - 1) : rtn = new Slick.Range(baseRange.fromRow, baseRange.toCell + 1, baseRange.toRow, copyToRange.toCell), rtn;
+      return copyLeft ? rtn = new Range(baseRange.fromRow, copyToRange.fromCell, baseRange.toRow, baseRange.fromCell - 1) : rtn = new Range(baseRange.fromRow, baseRange.toCell + 1, baseRange.toRow, copyToRange.toCell), rtn;
     }
     // copy to corner space target range
     static cornerTargetRange(baseRange, copyToRange) {
@@ -830,7 +830,7 @@ var Slick = (() => {
       if (!copyLeft && !copyRight || !copyUp && !copyDown)
         return null;
       let rtn;
-      return copyLeft ? copyUp ? rtn = new Slick.Range(copyToRange.fromRow, copyToRange.fromCell, baseRange.fromRow - 1, baseRange.fromCell - 1) : rtn = new Slick.Range(baseRange.toRow + 1, copyToRange.fromCell, copyToRange.toRow, baseRange.fromCell - 1) : copyUp ? rtn = new Slick.Range(copyToRange.fromRow, baseRange.toCell + 1, baseRange.fromRow - 1, copyToRange.toCell) : rtn = new Slick.Range(baseRange.toRow + 1, baseRange.toCell + 1, copyToRange.toRow, copyToRange.toCell), rtn;
+      return copyLeft ? copyUp ? rtn = new Range(copyToRange.fromRow, copyToRange.fromCell, baseRange.fromRow - 1, baseRange.fromCell - 1) : rtn = new Range(baseRange.toRow + 1, copyToRange.fromCell, copyToRange.toRow, baseRange.fromCell - 1) : copyUp ? rtn = new Range(copyToRange.fromRow, baseRange.toCell + 1, baseRange.fromRow - 1, copyToRange.toCell) : rtn = new Range(baseRange.toRow + 1, baseRange.toCell + 1, copyToRange.toRow, copyToRange.toCell), rtn;
     }
     static copyCellsToTargetRange(baseRange, targetRange, grid) {
       let fromRowOffset = 0, fromCellOffset = 0, columns = grid.getVisibleColumns(), options = grid.getOptions();

@@ -1,9 +1,5 @@
 import type { ColumnSort } from './models/index.js';
-/***
- * A sample AJAX data store implementation.
- * Right now, it's hooked up to load search results from Octopart, but can
- * easily be extended to support any JSONP-compatible backend that accepts paging parameters.
- */
+import { SlickEvent as SlickEvent_ } from './slick.core.js';
 export declare class SlickRemoteModel {
     protected PAGESIZE: number;
     protected data: any;
@@ -12,8 +8,8 @@ export declare class SlickRemoteModel {
     protected sortdir: number;
     protected h_request?: number;
     protected req: any;
-    onDataLoading: import("./slick.core.js").SlickEvent<any>;
-    onDataLoaded: import("./slick.core.js").SlickEvent<any>;
+    onDataLoading: SlickEvent_<any>;
+    onDataLoaded: SlickEvent_<any>;
     constructor();
     init(): void;
     isDataLoaded(from: number, to: number): boolean;

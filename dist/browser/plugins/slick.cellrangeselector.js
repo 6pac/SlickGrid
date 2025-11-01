@@ -107,7 +107,7 @@
       let startY = dd.startY - ((_b = canvasOffset == null ? void 0 : canvasOffset.top) != null ? _b : 0);
       this._gridOptions.frozenRow >= 0 && this._isBottomCanvas && (startY += this._scrollTop);
       let start;
-      return this._selectionMode = this._dragReplaceHandleActive ? Slick.CellSelectionMode.Replace : Slick.CellSelectionMode.Select, this._dragReplaceHandleActive ? start = this._grid.getActiveCell() || { row: void 0, cell: void 0 } : start = this._grid.getCellFromPoint(startX, startY), dd.range = { start, end: {} }, this._currentlySelectedRange = dd.range, this._decorator.show(new SlickRange((_c = start.row) != null ? _c : 0, (_d = start.cell) != null ? _d : 0), this._dragReplaceHandleActive);
+      return this._selectionMode = this._dragReplaceHandleActive ? CellSelectionMode.Replace : CellSelectionMode.Select, this._dragReplaceHandleActive ? start = this._grid.getActiveCell() || { row: void 0, cell: void 0 } : start = this._grid.getCellFromPoint(startX, startY), dd.range = { start, end: {} }, this._currentlySelectedRange = dd.range, this._decorator.show(new SlickRange((_c = start.row) != null ? _c : 0, (_d = start.cell) != null ? _d : 0), this._dragReplaceHandleActive);
     }
     handleDrag(evt, dd) {
       if (!this._dragging && !this._isRowMoveRegistered)
@@ -179,7 +179,7 @@
           dd.range.end = end;
           let cornerCell = this._previousSelectedRange ? SelectionUtils.normalRangeOppositeCellFromCopy(this._previousSelectedRange, end) : dd.range.start;
           this._currentlySelectedRange = dd.range;
-          let range = new Slick.Range(cornerCell.row, cornerCell.cell, end.row, end.cell);
+          let range = new SlickRange(cornerCell.row, cornerCell.cell, end.row, end.cell);
           this._decorator.show(range, this._dragReplaceHandleActive), this.onCellRangeSelecting.notify({
             range,
             selectionMode: "",
