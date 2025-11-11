@@ -11,7 +11,7 @@ import { SlickCellRangeDecorator as SlickCellRangeDecorator_ } from './slick.cel
 import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector.js';
 import type { SlickCrossGridRowMoveManager as SlickCrossGridRowMoveManager_ } from './slick.crossgridrowmovemanager.js';
 import type { SlickRowMoveManager as SlickRowMoveManager_ } from './slick.rowmovemanager.js';
-import type { OnActiveCellChangedEventArgs, RowSelectionModelOption } from '../models/index.js';
+import type { OnActiveCellChangedEventArgs, RowSelectionModelOption, SelectionModel } from '../models/index.js';
 import type { SlickGrid } from '../slick.grid.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -25,7 +25,7 @@ const SlickEventHandler = IIFE_ONLY ? Slick.EventHandler : SlickEventHandler_;
 const SlickRange = IIFE_ONLY ? Slick.Range : SlickRange_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
-export class SlickRowSelectionModel {
+export class SlickRowSelectionModel implements SelectionModel {
   // --
   // public API
   pluginName = 'RowSelectionModel' as const;

@@ -1,6 +1,6 @@
 import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_, Utils as Utils_ } from '../slick.core.js';
 import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector.js';
-import type { CustomDataView, OnActiveCellChangedEventArgs } from '../models/index.js';
+import type { CustomDataView, OnActiveCellChangedEventArgs, SelectionModel } from '../models/index.js';
 import type { SlickDataView } from '../slick.dataview.js';
 import type { SlickGrid } from '../slick.grid.js';
 
@@ -16,7 +16,7 @@ export interface CellSelectionModelOption {
   cellRangeSelector?: SlickCellRangeSelector_;
 }
 
-export class SlickCellSelectionModel {
+export class SlickCellSelectionModel implements SelectionModel {
   // --
   // public API
   pluginName = 'CellSelectionModel' as const;
@@ -38,9 +38,9 @@ export class SlickCellSelectionModel {
 
   constructor(options?: { selectActiveCell: boolean; cellRangeSelector: SlickCellRangeSelector_; }) {
     if (options === undefined || options.cellRangeSelector === undefined) {
-      this._selector = new SlickCellRangeSelector({ 
+      this._selector = new SlickCellRangeSelector({
         selectionCss: { border: '2px solid black' } as CSSStyleDeclaration,
-        copyToSelectionCss: { border: '2px solid purple' } as CSSStyleDeclaration 
+        copyToSelectionCss: { border: '2px solid purple' } as CSSStyleDeclaration
       });
     } else {
       this._selector = options.cellRangeSelector;
@@ -105,7 +105,7 @@ export class SlickCellSelectionModel {
     this._cachedPageRowCount = 0;
   }
 
-  setSelectedRanges(ranges: SlickRange_[], caller = 'SlickCellSelectionModel.setSelectedRanges', selectionMode: string) {
+  setSelectedRanges(ranges: SlickRange_[], caller = 'SlickCellSelectionModel.setSelectedRanges', selectionMode = '') {
     // simple check for: empty selection didn't change, prevent firing onSelectedRangesChanged
     if ((!this._ranges || this._ranges.length === 0) && (!ranges || ranges.length === 0)) { return; }
 
