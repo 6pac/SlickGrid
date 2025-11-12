@@ -23,4 +23,6 @@ npm run cypress     # open Cypress UI tool
 ```
 
 5. If you completed step 2 and 3, then the final step would be to proceed with your Pull Request
-   - **NOTE** even though the `dist/` folder is included in Git for portability, you could choose (we actually strongly recommend) that you ignore/disregard these files from being included in your Pull Request.
+
+> [!NOTE]
+> Please make sure to avoid including the `dist/` folder in your Git commit in your Pull Request (PR). It would also work with these files, but it's just adding noise PR review and these files are only being used by all the Examples. So it is why it's better to please exclude these files. Thank you!
