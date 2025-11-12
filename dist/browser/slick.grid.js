@@ -467,7 +467,7 @@
     finishInitialization() {
       this.initialized || (this.initialized = !0, this.getViewportWidth(), this.getViewportHeight(), this.measureCellPaddingAndBorder(), this.disableSelection(this._headers), this._options.enableTextSelectionOnCells || this._viewport.forEach((view) => {
         this._bindingEventService.bind(view, "selectstart", (event) => {
-          event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement;
+          event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement || event.preventDefault();
         });
       }), this.setFrozenOptions(), this.setPaneFrozenClasses(), this.setPaneVisibility(), this.setScroller(), this.setOverflow(), this.updateColumnCaches(), this.createColumnHeaders(), this.createColumnFooter(), this.setupColumnSort(), this.createCssRules(), this.resizeCanvas(), this.bindAncestorScrollEvents(), this._bindingEventService.bind(this._container, "resize", this.resizeCanvas.bind(this)), this._viewport.forEach((view) => {
         this._bindingEventService.bind(view, "scroll", this.handleScroll.bind(this));
