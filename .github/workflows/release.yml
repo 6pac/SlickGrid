@@ -69,6 +69,11 @@ jobs:
       - name: Install dependencies
         run: npm ci
 
+      - name: Current Branch name
+        run: |
+         echo ${{ GITHUB_REF##*/ }}
+         echo ${{ github.head_ref || github.ref_name }}
+
       - name: 🧪 Dry-Run - GitHub Release
         if: ${{ inputs.dryrun == true }}
         env:
@@ -76,7 +81,7 @@ jobs:
         run: |
           git config --global user.name "${{ github.actor }}"
           git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-          npm run release:ci -- --semver ${{ inputs.semver }} --branch ${{ github.ref }} --create-release github --yes --dry-run
+          npm run release:ci -- --semver ${{ inputs.semver }} --branch ${GITHUB_REF##*/} --create-release github --yes --dry-run
 
       - name: GitHub Release 🏷️ / NPM Publish 📦
         if: ${{ inputs.dryrun != true }}
@@ -85,7 +90,7 @@ jobs:
         run: |
           git config --global user.name "${{ github.actor }}"
           git config --global user.email "${{ github.actor }}@users.noreply.github.com"
-          npm run release:ci -- --semver ${{ inputs.semver }} --branch ${{ github.ref }} --create-release github --yes
+          npm run release:ci -- --semver ${{ inputs.semver }} --branch ${GITHUB_REF##*/} --create-release github --yes
 
       - name: Verbose Git Push Diagnostics
         env:
