@@ -71,9 +71,36 @@ export async function gitPushToCurrentBranch(remote = 'origin', { cwd, dryRun })
  * @returns {Promise<any>}
  */
 export async function gitPushUpstreamBranch(remote = 'origin', { cwd, dryRun }) {
-  const branchName = await gitCurrentBranchName({ cwd });
-  const execArgs = ['push', '--set-upstream', remote, branchName];
-  return execAsyncPiped('git', execArgs, { cwd }, dryRun);
+  try {
+    // Minimal, focused logging
+    console.log(`🔍 Preparing to push to remote: ${remote}`);
+
+    const branchName = (await execAsyncPiped('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd }, dryRun)).stdout.trim();
+    console.log(`📦 Current Branch: ${branchName}`);
+
+    // Push with multiple strategies
+    const pushStrategies = [
+      ['push', '-u', remote, branchName],
+      ['push', '--set-upstream', remote, branchName],
+      ['push', remote, branchName]
+    ];
+
+    for (const strategy of pushStrategies) {
+      try {
+        console.log(`🛫 Attempting push: git ${strategy.join(' ')}`);
+        const result = await execAsyncPiped('git', strategy, { cwd }, dryRun);
+        console.log('✅ Push Successful');
+        return result;
+      } catch (strategyError) {
+        console.warn(`❌ Push failed with strategy ${strategy.join(' ')}`, strategyError.message);
+      }
+    }
+
+    throw new Error('All push strategies failed');
+  } catch (error) {
+    console.error('🚨 Upstream Push Error:', error.message);
+    throw error;
+  }
 }
 
 /**
