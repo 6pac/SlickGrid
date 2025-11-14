@@ -40,6 +40,11 @@ function createLogPrefixer(opts = {}) {
  * @param {Boolean} [cmdDryRun]
  */
 export function execAsyncPiped(command, execArgs, execOpts, cmdDryRun) {
+  if (cmdDryRun) {
+    console.log(`[DRY RUN] Would execute: ${command} ${execArgs.join(' ')}`);
+    return Promise.resolve({ stdout: '', stderr: '' });
+  }
+
   const options = {
     nodeOptions: {
       ...execOpts,
@@ -48,7 +53,7 @@ export function execAsyncPiped(command, execArgs, execOpts, cmdDryRun) {
   };
   const spawned = spawnProcess(command, execArgs, options, cmdDryRun);
 
-  return cmdDryRun ? Promise.resolve() : wrapError(spawned);
+  return cmdDryRun ? Promise.resolve({ stdout: '', stderr: '' }) : wrapError(spawned);
 }
 
 /**

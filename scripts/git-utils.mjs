@@ -72,13 +72,33 @@ export async function gitPushToCurrentBranch(remote = 'origin', { cwd, dryRun })
  */
 export async function gitPushUpstreamBranch(remote = 'origin', { cwd, dryRun }) {
   try {
-    // Minimal, focused logging
-    console.log(`🔍 Preparing to push to remote: ${remote}`);
+    // Get branch name with a fallback method
+    let branchName;
+    try {
+      // First, try using the standard method
+      const branchResult = await execAsyncPiped('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd }, dryRun);
+      branchName = branchResult ? (branchResult.stdout || '').trim() : '';
+    } catch (_branchError) {
+      // Fallback method
+      console.warn('Failed to get branch name via rev-parse, trying alternative method');
+      const fallbackResult = await execAsyncPiped('git', ['branch', '--show-current'], { cwd }, dryRun);
+      branchName = fallbackResult ? (fallbackResult.stdout || '').trim() : '';
+    }
 
-    const branchName = (await execAsyncPiped('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd }, dryRun)).stdout.trim();
-    console.log(`📦 Current Branch: ${branchName}`);
+    // Ensure we have a branch name
+    if (!branchName) {
+      throw new Error('Could not determine current branch name');
+    }
 
-    // Push with multiple strategies
+    console.log(`🚀 Preparing to push branch: ${branchName} to remote: ${remote}`);
+
+    // If in dry run mode, just log the intended action
+    if (dryRun) {
+      console.log(`[DRY RUN] Would push ${branchName} to ${remote}`);
+      return;
+    }
+
+    // Push strategies
     const pushStrategies = [
       ['push', '-u', remote, branchName],
       ['push', '--set-upstream', remote, branchName],
@@ -92,7 +112,8 @@ export async function gitPushUpstreamBranch(remote = 'origin', { cwd, dryRun }) 
         console.log('✅ Push Successful');
         return result;
       } catch (strategyError) {
-        console.warn(`❌ Push failed with strategy ${strategy.join(' ')}`, strategyError.message);
+        console.warn(`❌ Push failed with strategy ${strategy.join(' ')}`,
+          strategyError.message || 'Unknown error');
       }
     }
 
