@@ -71,8 +71,8 @@ jobs:
 
       - name: Current Branch name
         run: |
-         echo ${{ GITHUB_REF##*/ }}
-         echo ${{ github.head_ref || github.ref_name }}
+         echo ${{ github.head_ref }}
+         echoo ${{ github.ref_name }}
 
       - name: 🧪 Dry-Run - GitHub Release
         if: ${{ inputs.dryrun == true }}
