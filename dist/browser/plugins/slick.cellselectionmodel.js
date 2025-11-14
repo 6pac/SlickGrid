@@ -59,7 +59,7 @@
     resetPageRowCount() {
       this._cachedPageRowCount = 0;
     }
-    setSelectedRanges(ranges, caller = "SlickCellSelectionModel.setSelectedRanges", selectionMode) {
+    setSelectedRanges(ranges, caller = "SlickCellSelectionModel.setSelectedRanges", selectionMode = "") {
       if ((!this._ranges || this._ranges.length === 0) && (!ranges || ranges.length === 0))
         return;
       let rangeHasChanged = !this.rangesAreEqual(this._ranges, ranges);

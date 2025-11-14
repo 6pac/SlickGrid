@@ -1,13 +1,13 @@
 import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_ } from '../slick.core.js';
 import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector.js';
-import type { CustomDataView, OnActiveCellChangedEventArgs } from '../models/index.js';
+import type { CustomDataView, OnActiveCellChangedEventArgs, SelectionModel } from '../models/index.js';
 import type { SlickDataView } from '../slick.dataview.js';
 import type { SlickGrid } from '../slick.grid.js';
 export interface CellSelectionModelOption {
     selectActiveCell: boolean;
     cellRangeSelector?: SlickCellRangeSelector_;
 }
-export declare class SlickCellSelectionModel {
+export declare class SlickCellSelectionModel implements SelectionModel {
     pluginName: "CellSelectionModel";
     onSelectedRangesChanged: SlickEvent_<SlickRange_[]>;
     protected _cachedPageRowCount: number;
@@ -29,7 +29,7 @@ export declare class SlickCellSelectionModel {
     protected rangesAreEqual(range1: SlickRange_[], range2: SlickRange_[]): boolean;
     /** Provide a way to force a recalculation of page row count (for example on grid resize) */
     resetPageRowCount(): void;
-    setSelectedRanges(ranges: SlickRange_[], caller: string | undefined, selectionMode: string): void;
+    setSelectedRanges(ranges: SlickRange_[], caller?: string, selectionMode?: string): void;
     getSelectedRanges(): SlickRange_[];
     refreshSelections(): void;
     protected handleBeforeCellRangeSelected(e: SlickEventData_): boolean | void;

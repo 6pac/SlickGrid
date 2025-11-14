@@ -3,6 +3,16 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.17.2](https://github.com/6pac/SlickGrid/compare/5.17.1...5.17.2) (2025-11-14)
+
+### Bug Fixes
+
+* text selection in grid cells ([#1159](https://github.com/6pac/SlickGrid/issues/1159)) ([a2398aa](https://github.com/6pac/SlickGrid/commit/a2398aaa29578db6140d55c2dcda7d9d118d1df0))
+
+### Features
+
+* add new Cell/Row override to Hybrid Selection Model ([#1160](https://github.com/6pac/SlickGrid/issues/1160)) ([5c4111c](https://github.com/6pac/SlickGrid/commit/5c4111c5e6801e596224f2ff60094aaad0fed11a))
+
 ## [5.17.1](https://github.com/6pac/SlickGrid/compare/5.17.0...5.17.1) (2025-11-01)
 
 ### Bug Fixes

@@ -1,26 +1,16 @@
-import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_ } from '../slick.core.js';
+import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_ } from '../slick.core.js';
 import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector.js';
-import type { CustomDataView, OnActiveCellChangedEventArgs } from '../models/index.js';
+import type { CustomDataView, HybridSelectionModelOption, OnActiveCellChangedEventArgs, SelectionModel } from '../models/index.js';
 import type { SlickDataView } from '../slick.dataview.js';
 import type { SlickCrossGridRowMoveManager as SlickCrossGridRowMoveManager_ } from './slick.crossgridrowmovemanager.js';
 import type { SlickRowMoveManager as SlickRowMoveManager_ } from './slick.rowmovemanager.js';
 import type { SlickGrid } from '../slick.grid.js';
-export declare type RowSelectOverride = (data: OnActiveCellChangedEventArgs, selectionModel: SlickHybridSelectionModel, grid: SlickGrid) => boolean;
-export interface HybridSelectionModelOption {
-    selectActiveCell: boolean;
-    selectActiveRow: boolean;
-    cellRangeSelector?: SlickCellRangeSelector_;
-    dragToSelect: boolean;
-    autoScrollWhenDrag: boolean;
-    handleRowMoveManagerColumn: boolean;
-    rowSelectColumnIds: string[];
-    rowSelectOverride: RowSelectOverride | undefined;
-}
-export declare class SlickHybridSelectionModel {
+export declare class SlickHybridSelectionModel implements SelectionModel {
     pluginName: "HybridSelectionModel";
     onSelectedRangesChanged: SlickEvent_<SlickRange_[]>;
     protected _cachedPageRowCount: number;
     protected _dataView?: CustomDataView | SlickDataView;
+    protected _eventHandler: SlickEventHandler_;
     protected _grid: SlickGrid;
     protected _prevSelectedRow?: number;
     protected _prevKeyDown: string;
@@ -38,13 +28,14 @@ export declare class SlickHybridSelectionModel {
     protected rangesToRows(ranges: SlickRange_[]): number[];
     protected rowsToRanges(rows: number[]): SlickRange_[];
     protected getRowsRange(from: number, to: number): number[];
+    getCellRangeSelector(): SlickCellRangeSelector_ | undefined;
+    getSelectedRanges(): SlickRange_[];
     getSelectedRows(): number[];
     setSelectedRows(rows: number[]): void;
     /** Provide a way to force a recalculation of page row count (for example on grid resize) */
     resetPageRowCount(): void;
-    setSelectedRanges(ranges: SlickRange_[], caller: string | undefined, selectionMode: string): void;
+    setSelectedRanges(ranges: SlickRange_[], caller?: string, selectionMode?: string): void;
     currentSelectionModeIsRow(): boolean;
-    getSelectedRanges(): SlickRange_[];
     refreshSelections(): void;
     getRowMoveManagerPlugin(): SlickRowMoveManager_ | SlickCrossGridRowMoveManager_ | undefined;
     rowSelectionModelIsActive(data: OnActiveCellChangedEventArgs): boolean;
@@ -60,6 +51,7 @@ export declare class SlickHybridSelectionModel {
         range: SlickRange_;
         selectionMode: string;
         allowAutoEdit?: boolean;
+        caller: 'onCellRangeSelecting' | 'onCellRangeSelected';
     }): boolean;
 }
 //# sourceMappingURL=slick.hybridselectionmodel.d.ts.map

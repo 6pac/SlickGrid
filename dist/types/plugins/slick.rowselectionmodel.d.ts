@@ -1,8 +1,8 @@
 import { SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickEventHandler as SlickEventHandler_, SlickRange as SlickRange_ } from '../slick.core.js';
 import { SlickCellRangeSelector as SlickCellRangeSelector_ } from './slick.cellrangeselector.js';
-import type { OnActiveCellChangedEventArgs, RowSelectionModelOption } from '../models/index.js';
+import type { OnActiveCellChangedEventArgs, RowSelectionModelOption, SelectionModel } from '../models/index.js';
 import type { SlickGrid } from '../slick.grid.js';
-export declare class SlickRowSelectionModel {
+export declare class SlickRowSelectionModel implements SelectionModel {
     pluginName: "RowSelectionModel";
     onSelectedRangesChanged: SlickEvent_<SlickRange_[]>;
     protected _grid: SlickGrid;

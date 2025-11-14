@@ -4,6 +4,6 @@ export type SelectionModel = SlickPlugin & {
     refreshSelections: () => void;
     onSelectedRangesChanged: SlickEvent<SlickRange[]>;
     getSelectedRanges: () => SlickRange[];
-    setSelectedRanges: (ranges: SlickRange[], caller?: string) => void;
+    setSelectedRanges: (ranges: SlickRange[], caller?: string, selectionMode?: string) => void;
 };
 //# sourceMappingURL=selectionModel.type.d.ts.map
