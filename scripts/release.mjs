@@ -27,6 +27,7 @@ const projectRootPath = pJoin(__dirname, '../');
 const pkg = readJSONSync(pJoin(projectRootPath, 'package.json'));
 
 const argv = parseArgs({
+  branch: { type: 'string' },
   createRelease: { type: 'string' },
   dryRun: { type: 'boolean' },
   skipChecks: { type: 'boolean' },
@@ -180,7 +181,7 @@ const argv = parseArgs({
       }
 
       // 13. Git sync/push all changes
-      await gitPushUpstreamBranch('origin', { cwd, dryRun: argv.dryRun });
+      await gitPushUpstreamBranch('origin', { cwd, dryRun: argv.dryRun, branch: argv.branch });
 
       // END
       console.log(`🏁 Done (in ${Math.floor(process.uptime())}s.)`);

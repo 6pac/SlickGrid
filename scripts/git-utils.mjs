@@ -70,26 +70,9 @@ export async function gitPushToCurrentBranch(remote = 'origin', { cwd, dryRun })
  * @param {{ cwd: String, dryRun: Boolean}} options
  * @returns {Promise<any>}
  */
-export async function gitPushUpstreamBranch(remote = 'origin', { cwd, dryRun }) {
+export async function gitPushUpstreamBranch(remote = 'origin', { cwd, branch, dryRun }) {
   try {
-    // Get branch name with a fallback method
-    let branchName;
-    try {
-      // First, try using the standard method
-      const branchResult = await execAsyncPiped('git', ['rev-parse', '--abbrev-ref', 'HEAD'], { cwd }, dryRun);
-      branchName = branchResult ? (branchResult.stdout || '').trim() : '';
-    } catch (_branchError) {
-      // Fallback method
-      console.warn('Failed to get branch name via rev-parse, trying alternative method');
-      const fallbackResult = await execAsyncPiped('git', ['branch', '--show-current'], { cwd }, dryRun);
-      branchName = fallbackResult ? (fallbackResult.stdout || '').trim() : '';
-    }
-
-    // Ensure we have a branch name
-    if (!branchName) {
-      throw new Error('Could not determine current branch name');
-    }
-
+    const branchName = branch || 'master';
     console.log(`🚀 Preparing to push branch: ${branchName} to remote: ${remote}`);
 
     // If in dry run mode, just log the intended action
