@@ -116,3 +116,14 @@ jobs:
           # Attempt push with verbose output
           echo "🛫 Attempting Push:"
           GIT_CURL_VERBOSE=1 GIT_TRACE=1 git push -u origin HEAD:master --verbose
+
+      - name: Real Last Resource Git Push
+        env:
+          # Use the GitHub token for authentication
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+        run: |
+          # Configure git user
+          git config --global user.name "${{ github.actor }}"
+          git config --global user.email "${{ github.actor }}@users.noreply.github.com"
+
+          git push -u origin HEAD:master
