@@ -141,4 +141,38 @@ describe('Example3 Editing', () => {
     cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 3}px;"] > .slick-cell:nth(1)`).should('contain', 'This is a sample');
     cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 4}px;"] > .slick-cell:nth(1)`).should('contain', 'This is a sample');
   });
+
+  it('should click on "Auto-Edit by keyboard ON" button', () => {
+    cy.get('[data-test="auto-edit-off-btn"]').click();
+    cy.get('[data-test="auto-edit-key-on-btn"]').click();
+  });
+
+  it('should be able to edit "Duration" when "autoEditByKeypress" is enabled and by clicking once on second row and expect next row to become editable', () => {
+    cy.get('[data-row="2"] .slick-cell.l2.r2').should('contain', '5 days');
+    cy.get('[data-row="2"] .slick-cell.l2.r2').click();
+    cy.get('[data-row="2"] .slick-cell.l2.r2.active.editable').should('have.length', 0);
+
+    cy.get('[data-row="2"] .slick-cell.l2.r2').type('123');
+    cy.get('[data-row="2"] .slick-cell.l2.r2.active.editable').should('have.length', 1);
+    cy.get('[data-row="2"] .slick-cell.l2.r2').type('{enter}');
+    cy.get('[data-row="2"] .slick-cell.l2.r2.active.editable').should('have.length', 0);
+
+    cy.get('[data-row="2"] .slick-cell.l2.r2').should('contain', '123 days');
+  });
+
+  it('should click on "Auto-Edit by keyboard OFF" button', () => {
+    cy.get('[data-test="auto-edit-off-btn"]').click();
+    cy.get('[data-test="auto-edit-key-off-btn"]').click();
+  });
+
+  it('should NOT be able to edit "Duration" when "autoEditByKeypress" is disabled', () => {
+    cy.get('[data-row="3"] .slick-cell.l2.r2').should('contain', '5 days');
+    cy.get('[data-row="3"] .slick-cell.l2.r2').click();
+    cy.get('[data-row="3"] .slick-cell.l2.r2.active.editable').should('have.length', 0);
+
+    cy.get('[data-row="3"] .slick-cell.l2.r2').type('123');
+    cy.get('[data-row="3"] .slick-cell.l2.r2.active.editable').should('have.length', 0);
+
+    cy.get('[data-row="3"] .slick-cell.l2.r2').should('contain', '5 days');
+  });
 });

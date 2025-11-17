@@ -43,9 +43,18 @@
 
     <h2>Options:</h2>
     <p>
+      <code>autoEdit</code> to start editing by a single cell click
+      <br/>
       <button data-test="auto-edit-on-btn" onclick="grid.setOptions({autoEdit:true})">Auto-edit ON</button>
       &nbsp;
       <button data-test="auto-edit-off-btn" onclick="grid.setOptions({autoEdit:false})">Auto-edit OFF</button>
+    </p>
+    <p>
+      <code>autoEditByKeypress</code> to start editing by typing a character on an active cell
+      <br/>
+      <button data-test="auto-edit-key-on-btn" onclick="grid.setOptions({autoEditByKeypress:true})">Auto-edit by keyboard ON</button>
+      &nbsp;
+      <button data-test="auto-edit-key-off-btn" onclick="grid.setOptions({autoEditByKeypress:false})">Auto-edit by keyboard OFF</button>
     </p>
     <p>
       <button data-test="auto-commit-on-btn"  onclick="grid.setOptions({autoCommitEdit:true})">AutoCommitEdit ON</button>
@@ -87,7 +96,7 @@
   var columns = [
     {id: "title", name: "Title", field: "title", width: 80, cssClass: "cell-title", editor: Slick.Editors.Text, validator: requiredFieldValidator},
     {id: "desc", name: "Description", field: "description", width: 95, editor: Slick.Editors.LongText},
-    {id: "duration", name: "Duration", field: "duration", width: 70, editor: Slick.Editors.Text},
+    {id: "duration", name: "Duration", field: "duration", width: 70, editor: Slick.Editors.Text, formatter: (row, cell, val) => `${val} days`},
     {id: "%", name: "% Complete", field: "percentComplete", width: 85, resizable: false, formatter: Slick.Formatters.PercentCompleteBar, editor: Slick.Editors.PercentComplete},
     {id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Flatpickr},
     {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Flatpickr},
@@ -109,7 +118,7 @@
 
       d["title"] = "Task " + i;
       d["description"] = "This is a sample task description.\n  It can be multiline";
-      d["duration"] = "5 days";
+      d["duration"] = 5;
       d["percentComplete"] = Math.round(Math.random() * 100);
       d["start"] = "01/01/2009";
       d["finish"] = "01/05/2009";
