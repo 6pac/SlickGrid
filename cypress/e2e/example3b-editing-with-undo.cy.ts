@@ -147,7 +147,7 @@ describe('Example3 Editing', () => {
     cy.get('[data-test="auto-edit-key-on-btn"]').click();
   });
 
-  it('should be able to edit "Duration" when "autoEditByKey" is enabled and by clicking once on second row and expect next row to become editable', () => {
+  it('should be able to edit "Duration" when "autoEditByKeypress" is enabled and by clicking once on second row and expect next row to become editable', () => {
     cy.get('[data-row="2"] .slick-cell.l2.r2').should('contain', '5 days');
     cy.get('[data-row="2"] .slick-cell.l2.r2').click();
     cy.get('[data-row="2"] .slick-cell.l2.r2.active.editable').should('have.length', 0);
@@ -165,7 +165,7 @@ describe('Example3 Editing', () => {
     cy.get('[data-test="auto-edit-key-off-btn"]').click();
   });
 
-  it('should NOT be able to edit "Duration" when "autoEditByKey" is disabled', () => {
+  it('should NOT be able to edit "Duration" when "autoEditByKeypress" is disabled', () => {
     cy.get('[data-row="3"] .slick-cell.l2.r2').should('contain', '5 days');
     cy.get('[data-row="3"] .slick-cell.l2.r2').click();
     cy.get('[data-row="3"] .slick-cell.l2.r2.active.editable').should('have.length', 0);

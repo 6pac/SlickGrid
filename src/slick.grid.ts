@@ -4196,7 +4196,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     const cell = this.getActiveCell();
     const isChar = /^[\p{L}\p{N}\p{P}\p{S}\s]$/u.test(e.key); // make sure it's a character being typed
-    if (!handled && this._options.autoEditByKey && cell && isChar && this.isCellEditable(cell.row, cell.cell) && !this.currentEditor) {
+    if (!handled && this._options.autoEditByKeypress && cell && isChar && this.isCellEditable(cell.row, cell.cell) && !this.currentEditor) {
       this.makeActiveCellEditable(undefined, false, e);
     }
 

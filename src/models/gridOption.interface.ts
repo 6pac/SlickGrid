@@ -71,7 +71,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   autoEdit?: boolean;
 
   /** Defaults to false, when enabled will automatically open the inlined editor as soon as user starts typing in an active cell (can be combined with "enableCellNavigation: true"). */
-  autoEditByKey?: boolean;
+  autoEditByKeypress?: boolean;
 
   /**
    * Defaults to true, when enabled it will automatically open the editor when clicking on cell that has a defined editor.
