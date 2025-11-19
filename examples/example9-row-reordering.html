@@ -53,6 +53,9 @@
     .bold {
       font-weight: bold;
     }
+    .move-cursor {
+      cursor: move;
+    }
   </style>
 </head>
 <body>
@@ -110,8 +113,7 @@ var columns = [
     behavior: "selectAndMove",
     selectable: false,
     resizable: false,
-    cssClass: "cell-reorder dnd",
-    formatter: () => `<span class="sgi sgi-drag"></span>`
+    formatter: () => `<span class="sgi sgi-drag move-cursor"></span>`
   },
   {
     id: "name",
