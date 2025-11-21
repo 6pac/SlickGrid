@@ -73,7 +73,7 @@ export async function gitPushToCurrentBranch(remote = 'origin', { cwd, dryRun })
 export async function gitPushUpstreamBranch(remote = 'origin', { cwd, branch, dryRun }) {
   try {
     const branchName = branch || 'master';
-    console.log(`🚀 Preparing to push branch: ${branchName} to remote: ${remote}`);
+    console.log(`Preparing to push branch "${branchName}" to remote "${remote}"`);
 
     // If in dry run mode, just log the intended action
     if (dryRun) {
@@ -90,10 +90,8 @@ export async function gitPushUpstreamBranch(remote = 'origin', { cwd, branch, dr
 
     for (const strategy of pushStrategies) {
       try {
-        console.log(`🛫 Attempting push: git ${strategy.join(' ')}`);
-        const result = await execAsyncPiped('git', strategy, { cwd }, dryRun);
-        console.log('✅ Push Successful');
-        return result;
+        console.log(`$ git ${strategy.join(' ')}`);
+        return await execAsyncPiped('git', strategy, { cwd }, dryRun);
       } catch (strategyError) {
         console.warn(`❌ Push failed with strategy ${strategy.join(' ')}`,
           strategyError.message || 'Unknown error');

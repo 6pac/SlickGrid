@@ -184,7 +184,7 @@ const argv = parseArgs({
       await gitPushUpstreamBranch('origin', { cwd, dryRun: argv.dryRun, branch: argv.branch });
 
       // END
-      console.log(`🏁 Done (in ${Math.floor(process.uptime())}s.)`);
+      console.log(`🎉 Done (in ${Math.floor(process.uptime())}s.)`);
     }
   }
   process.exit();
