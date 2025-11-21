@@ -15,7 +15,7 @@
   },
   "devDependencies": {
     "@fnando/sparkline": "^0.3.10",
-    "sass": "^1.89.2",
-    "vite": "^7.0.2"
+    "sass": "^1.94.2",
+    "vite": "^7.2.4"
   }
 }
