@@ -47,7 +47,7 @@ export class SlickHybridSelectionModel implements SelectionModel {
   protected _selector: SlickCellRangeSelector_;
   protected _isRowMoveManagerHandler: any;
   protected _activeSelectionIsRow = false;
-  protected _options?: HybridSelectionModelOption;
+  protected _options: HybridSelectionModelOption;
   protected _defaults: HybridSelectionModelOption = {
     selectActiveCell: true,
     selectActiveRow: true,
@@ -124,6 +124,10 @@ export class SlickHybridSelectionModel implements SelectionModel {
       this._grid?.unregisterPlugin(this._selector);
     }
     this._selector?.destroy();
+  }
+
+  getOptions(): HybridSelectionModelOption {
+    return this._options;
   }
 
   // Region: CellSelectionModel Members

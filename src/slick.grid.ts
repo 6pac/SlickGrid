@@ -979,7 +979,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (Draggable) {
         this.slickDraggableInstance = Draggable({
           containerElement: this._container,
-          allowDragFrom: `div.slick-cell, div.slick-cell *, div.${ this.dragReplaceEl.cssClass }`,
+          allowDragFrom: `div.slick-cell, div.slick-cell *, div.${this.dragReplaceEl.cssClass}`,
           dragFromClassDetectArr: [{ tag: 'dragReplaceHandle', id: this.dragReplaceEl.id }],
           // the slick cell parent must always contain `.dnd` and/or `.cell-reorder` class to be identified as draggable
           allowDragFromClosest: 'div.slick-cell.dnd, div.slick-cell.cell-reorder',
@@ -3953,7 +3953,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected handleSelectedRangesChanged(e: SlickEventData_, ranges: SlickRange_[]) {
     const ne = e.getNativeEvent<CustomEvent>();
     const selectionMode = ne?.detail?.selectionMode ?? '';
-    const addDragHandle = !!ne?.detail?.addDragHandle;
+    let addDragHandle = !!ne?.detail?.addDragHandle;
+    const selectionType = this.getSelectionModel()?.getOptions()?.selectionType;
+    addDragHandle = selectionType === 'cell' || selectionType === 'mixed';
 
     // drag and replace functionality
     const prevSelectedRanges = this.selectedRanges.slice(0);
@@ -5457,7 +5459,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.applyHtmlCode(cellDiv, cellResult as string | HTMLElement);
 
       // add drag-to-replace handle
-      if (row === this.selectionBottomRow && cell === this.selectionRightCell && this._options.showCellSelection) {
+      const selectionType = this.getSelectionModel()?.getOptions()?.selectionType;
+      const addDragHandle = selectionType === 'cell' || selectionType === 'mixed';
+      if (row === this.selectionBottomRow && cell === this.selectionRightCell && this._options.showCellSelection && addDragHandle) {
         this.dragReplaceEl.createEl(cellDiv);
       }
     }

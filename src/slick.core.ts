@@ -344,7 +344,7 @@ export class SlickRange {
    * @return {Number}
    */
   cellCount() {
-     return this.toCell - this.fromCell + 1;
+    return this.toCell - this.fromCell + 1;
   }
 
   /**
@@ -409,12 +409,7 @@ export class SlickDragExtendHandle {
   cssClass = 'slick-drag-replace-handle';
 
   constructor(gridUid: string) {
-    this.id = gridUid + "_drag_replace_handle";
-  }
-
-  getHandleHtml() {
-    return '<div id="' + this.id + '" class="slick-drag-replace-handle"></div>';
-    //console.log('DragReplaceEl.getStringEl');
+    this.id = `${gridUid}_drag_replace_handle`;
   }
 
   removeEl() {
@@ -422,12 +417,11 @@ export class SlickDragExtendHandle {
   }
 
   createEl(activeCellNode: any) {
-  if (activeCellNode) {
+    if (activeCellNode) {
       const dragReplaceEl = document.createElement("div");
       dragReplaceEl.classList.add("slick-drag-replace-handle");
-      dragReplaceEl.setAttribute("id", this.id);
+      dragReplaceEl.id = this.id;
       activeCellNode.appendChild(dragReplaceEl);
-      //console.log('DragReplaceEl.createEl');
     }
   }
 }
@@ -1165,157 +1159,157 @@ export class Utils {
 
 export class SelectionUtils {
 
-    //   |---0----|---1----|---2----|---3----|---4----|---5----|
-    // 0 |        |        |        |     ^  |        |        | 
-    //   |--------|--------|--------|--------|--------|--------|
-    // 1 |        |        |        |        |        |        | 
-    //   |--------|--------|--------|--------|--------|--------|
-    // 2 |        |        |   1    |   2    |    > h |        | 
-    //   |--------|--------|--------|--------|--------|--------|
-    // 3 |   <    |        |   4    |   5   x|    > h |    >   | 
-    //   |--------|--------|--------|--------|--------|--------|
-    // 4 |        |        |    > v |    > v |    > v |        | 
-    //   |--------|--------|--------|--------|--------|--------|
-    // 5 |        |        |        |    v   |        |        | 
-    //   |--------|--------|--------|--------|--------|--------|
-    //
-    // original range (1,2,4,5) expanded one cell to right and down
-    //  '> h' indicates horizontal target copy area
-    //  '> v' indicates vertical target copy area
-    // note bottom right (corner) cell is considered part of vertical copy area
+  //   |---0----|---1----|---2----|---3----|---4----|---5----|
+  // 0 |        |        |        |     ^  |        |        |
+  //   |--------|--------|--------|--------|--------|--------|
+  // 1 |        |        |        |        |        |        |
+  //   |--------|--------|--------|--------|--------|--------|
+  // 2 |        |        |   1    |   2    |    > h |        |
+  //   |--------|--------|--------|--------|--------|--------|
+  // 3 |   <    |        |   4    |   5   x|    > h |    >   |
+  //   |--------|--------|--------|--------|--------|--------|
+  // 4 |        |        |    > v |    > v |    > v |        |
+  //   |--------|--------|--------|--------|--------|--------|
+  // 5 |        |        |        |    v   |        |        |
+  //   |--------|--------|--------|--------|--------|--------|
+  //
+  // original range (1,2,4,5) expanded one cell to right and down
+  //  '> h' indicates horizontal target copy area
+  //  '> v' indicates vertical target copy area
+  // note bottom right (corner) cell is considered part of vertical copy area
 
-   public static normaliseDragRange(rawRange: DragRange) {
-      // depending how the range is created (drag up/down) the start row/cell may be
-      // greater or less thatn the end row/cell. Create a guaranteed left/down 
-      // progressive range (ie. start row/cell < end row/cell) 
+  public static normaliseDragRange(rawRange: DragRange) {
+    // depending how the range is created (drag up/down) the start row/cell may be
+    // greater or less thatn the end row/cell. Create a guaranteed left/down
+    // progressive range (ie. start row/cell < end row/cell)
 
-      const rtn : DragRange = {
-        start : {
-          row: (rawRange.end.row ?? 0) > (rawRange.start.row ?? 0) ? rawRange.start.row : rawRange.end.row,
-          cell: (rawRange.end.cell ?? 0) > (rawRange.start.cell ?? 0) ? rawRange.start.cell : rawRange.end.cell
-        },
-        end : {
-          row: (rawRange.end.row ?? 0) > (rawRange.start.row ?? 0) ? rawRange.end.row : rawRange.start.row,
-          cell: (rawRange.end.cell ?? 0) > (rawRange.start.cell ?? 0) ? rawRange.end.cell : rawRange.start.cell
-        }
-      };
-      rtn.rowCount = (rtn.end.row ?? 0) - (rtn.start.row ?? 0) + 1;
-      rtn.cellCount = (rtn.end.cell ?? 0) - (rtn.start.cell ?? 0) + 1;
- 
-      rtn.wasDraggedUp = (rawRange.end.row ?? 0) < (rawRange.start.row ?? 0);
-      rtn.wasDraggedLeft = (rawRange.end.row ?? 0) < (rawRange.start.row ?? 0);
-     
-      return rtn;
-    }
-
-    public static copyRangeIsLarger(baseRange: SlickRange, copyToRange : SlickRange) : boolean {
-      return copyToRange.fromRow < baseRange.fromRow
-         || copyToRange.fromCell < baseRange.fromCell
-         || copyToRange.toRow > baseRange.toRow
-         || copyToRange.toCell > baseRange.toCell
-      ;  
-    }
-
-   public static normalRangeOppositeCellFromCopy(normalisedDragRange : DragRange, targetCell : { row: number, cell: number }) : { row: number, cell: number } {
-      const row = targetCell.row < (normalisedDragRange.end.row || 0)
-        ? (normalisedDragRange.end.row || 0)
-        : (normalisedDragRange.start.row || 0)
-      ;
-      const cell = targetCell.cell < (normalisedDragRange.end.cell  || 0)
-        ? (normalisedDragRange.end.cell || 0)
-        : (normalisedDragRange.start.cell || 0)
-      ;
-      return { row, cell };
-    } 
-
-    // copy to range above or below - includes corner space target range
-    public static verticalTargetRange(baseRange: SlickRange, copyToRange : SlickRange) {
-      const copyUp = copyToRange.fromRow < baseRange.fromRow;
-      const copyDown = copyToRange.toRow > baseRange.toRow;
-      if (!copyUp && !copyDown) {
-        return null;
+    const rtn: DragRange = {
+      start: {
+        row: (rawRange.end.row ?? 0) > (rawRange.start.row ?? 0) ? rawRange.start.row : rawRange.end.row,
+        cell: (rawRange.end.cell ?? 0) > (rawRange.start.cell ?? 0) ? rawRange.start.cell : rawRange.end.cell
+      },
+      end: {
+        row: (rawRange.end.row ?? 0) > (rawRange.start.row ?? 0) ? rawRange.end.row : rawRange.start.row,
+        cell: (rawRange.end.cell ?? 0) > (rawRange.start.cell ?? 0) ? rawRange.end.cell : rawRange.start.cell
       }
-      let rtn;
+    };
+    rtn.rowCount = (rtn.end.row ?? 0) - (rtn.start.row ?? 0) + 1;
+    rtn.cellCount = (rtn.end.cell ?? 0) - (rtn.start.cell ?? 0) + 1;
+
+    rtn.wasDraggedUp = (rawRange.end.row ?? 0) < (rawRange.start.row ?? 0);
+    rtn.wasDraggedLeft = (rawRange.end.row ?? 0) < (rawRange.start.row ?? 0);
+
+    return rtn;
+  }
+
+  public static copyRangeIsLarger(baseRange: SlickRange, copyToRange: SlickRange): boolean {
+    return copyToRange.fromRow < baseRange.fromRow
+      || copyToRange.fromCell < baseRange.fromCell
+      || copyToRange.toRow > baseRange.toRow
+      || copyToRange.toCell > baseRange.toCell
+      ;
+  }
+
+  public static normalRangeOppositeCellFromCopy(normalisedDragRange: DragRange, targetCell: { row: number, cell: number }): { row: number, cell: number } {
+    const row = targetCell.row < (normalisedDragRange.end.row || 0)
+      ? (normalisedDragRange.end.row || 0)
+      : (normalisedDragRange.start.row || 0)
+      ;
+    const cell = targetCell.cell < (normalisedDragRange.end.cell || 0)
+      ? (normalisedDragRange.end.cell || 0)
+      : (normalisedDragRange.start.cell || 0)
+      ;
+    return { row, cell };
+  }
+
+  // copy to range above or below - includes corner space target range
+  public static verticalTargetRange(baseRange: SlickRange, copyToRange: SlickRange) {
+    const copyUp = copyToRange.fromRow < baseRange.fromRow;
+    const copyDown = copyToRange.toRow > baseRange.toRow;
+    if (!copyUp && !copyDown) {
+      return null;
+    }
+    let rtn;
+    if (copyUp) {
+      rtn = new Range(copyToRange.fromRow, copyToRange.fromCell, baseRange.fromRow - 1, baseRange.toCell);
+    } else {
+      rtn = new Range(baseRange.toRow + 1, copyToRange.fromCell, copyToRange.toRow, baseRange.toCell);
+    }
+    return rtn;
+  }
+
+  // copy to range left or right - excludes corner space target range
+  public static horizontalTargetRange(baseRange: SlickRange, copyToRange: SlickRange) {
+    const copyLeft = copyToRange.fromCell < baseRange.fromCell;
+    const copyRight = copyToRange.toCell > baseRange.toCell;
+    if (!copyLeft && !copyRight) {
+      return null;
+    }
+    let rtn;
+    if (copyLeft) {
+      rtn = new Range(baseRange.fromRow, copyToRange.fromCell, baseRange.toRow, baseRange.fromCell - 1);
+    } else {
+      rtn = new Range(baseRange.fromRow, baseRange.toCell + 1, baseRange.toRow, copyToRange.toCell);
+    }
+    return rtn;
+  }
+
+  // copy to corner space target range
+  public static cornerTargetRange(baseRange: SlickRange, copyToRange: SlickRange) {
+    const copyUp = copyToRange.fromRow < baseRange.fromRow;
+    const copyDown = copyToRange.toRow > baseRange.toRow;
+    const copyLeft = copyToRange.fromCell < baseRange.fromCell;
+    const copyRight = copyToRange.toCell > baseRange.toCell;
+    if ((!copyLeft && !copyRight) || (!copyUp && !copyDown)) {
+      return null;
+    }
+    let rtn;
+    if (copyLeft) {
       if (copyUp) {
-        rtn = new Range(copyToRange.fromRow, copyToRange.fromCell, baseRange.fromRow - 1, baseRange.toCell);
+        rtn = new Range(copyToRange.fromRow, copyToRange.fromCell, baseRange.fromRow - 1, baseRange.fromCell - 1);
       } else {
-        rtn = new Range(baseRange.toRow + 1, copyToRange.fromCell, copyToRange.toRow, baseRange.toCell);
+        rtn = new Range(baseRange.toRow + 1, copyToRange.fromCell, copyToRange.toRow, baseRange.fromCell - 1);
       }
-      return rtn;
-    }
-
-    // copy to range left or right - excludes corner space target range
-    public static horizontalTargetRange(baseRange: SlickRange, copyToRange : SlickRange) {
-      const copyLeft = copyToRange.fromCell < baseRange.fromCell;
-      const copyRight = copyToRange.toCell > baseRange.toCell;
-      if (!copyLeft && !copyRight) {
-        return null;
-      }
-      let rtn;
-      if (copyLeft) {
-        rtn = new Range(baseRange.fromRow, copyToRange.fromCell, baseRange.toRow, baseRange.fromCell - 1);
+    } else {
+      if (copyUp) {
+        rtn = new Range(copyToRange.fromRow, baseRange.toCell + 1, baseRange.fromRow - 1, copyToRange.toCell);
       } else {
-        rtn = new Range(baseRange.fromRow, baseRange.toCell + 1, baseRange.toRow, copyToRange.toCell);
+        rtn = new Range(baseRange.toRow + 1, baseRange.toCell + 1, copyToRange.toRow, copyToRange.toCell);
       }
-      return rtn;
     }
+    return rtn;
+  }
 
-    // copy to corner space target range
-    public static cornerTargetRange(baseRange: SlickRange, copyToRange : SlickRange) {
-      const copyUp = copyToRange.fromRow < baseRange.fromRow;
-      const copyDown = copyToRange.toRow > baseRange.toRow;
-      const copyLeft = copyToRange.fromCell < baseRange.fromCell;
-      const copyRight = copyToRange.toCell > baseRange.toCell;
-      if ((!copyLeft && !copyRight) || (!copyUp && !copyDown)) {
-        return null;
-      }
-      let rtn;
-      if (copyLeft) {
-        if (copyUp) {
-          rtn = new Range(copyToRange.fromRow, copyToRange.fromCell, baseRange.fromRow - 1, baseRange.fromCell - 1);
-        } else {
-          rtn = new Range(baseRange.toRow + 1, copyToRange.fromCell, copyToRange.toRow, baseRange.fromCell - 1);
-        }
-      } else {
-         if (copyUp) {
-          rtn = new Range(copyToRange.fromRow, baseRange.toCell + 1, baseRange.fromRow - 1, copyToRange.toCell);
-        } else {
-          rtn = new Range(baseRange.toRow + 1, baseRange.toCell + 1, copyToRange.toRow, copyToRange.toCell);
-        }
-      }
-      return rtn;
-    }
-     
-    public static copyCellsToTargetRange(baseRange : SlickRange, targetRange: SlickRange, grid : SlickGrid) {
-      let fromRowOffset = 0, fromCellOffset = 0;
-      const columns = grid.getVisibleColumns();
-      const options = grid.getOptions();
+  public static copyCellsToTargetRange(baseRange: SlickRange, targetRange: SlickRange, grid: SlickGrid) {
+    let fromRowOffset = 0, fromCellOffset = 0;
+    const columns = grid.getVisibleColumns();
+    const options = grid.getOptions();
 
-      for (let i=0; i < targetRange.rowCount() ; i++) {
-        const toRow = grid.getDataItem(targetRange.fromRow + i);
-        const fromRow = grid.getDataItem(baseRange.fromRow + fromRowOffset);
-        fromCellOffset = 0;
-        
-        for (let j=0; j < targetRange.cellCount(); j++) {
-          const toColDef = columns[targetRange.fromCell + j];
-          const fromColDef = columns[baseRange.fromCell + fromCellOffset];
-          
-          if (!toColDef.hidden && !fromColDef.hidden) {
-            let val = fromRow[fromColDef.field];
-            if (options.dataItemColumnValueExtractor) {
-              val = options.dataItemColumnValueExtractor(fromRow, fromColDef);
-            }
-            toRow[toColDef.field] = val;
+    for (let i = 0; i < targetRange.rowCount(); i++) {
+      const toRow = grid.getDataItem(targetRange.fromRow + i);
+      const fromRow = grid.getDataItem(baseRange.fromRow + fromRowOffset);
+      fromCellOffset = 0;
+
+      for (let j = 0; j < targetRange.cellCount(); j++) {
+        const toColDef = columns[targetRange.fromCell + j];
+        const fromColDef = columns[baseRange.fromCell + fromCellOffset];
+
+        if (!toColDef.hidden && !fromColDef.hidden) {
+          let val = fromRow[fromColDef.field];
+          if (options.dataItemColumnValueExtractor) {
+            val = options.dataItemColumnValueExtractor(fromRow, fromColDef);
           }
-          
-          fromCellOffset++;
-          if (fromCellOffset >= baseRange.cellCount()) { fromCellOffset = 0; }
+          toRow[toColDef.field] = val;
         }
-        
-        fromRowOffset++;
-        if (fromRowOffset >= baseRange.rowCount()) { fromRowOffset = 0; }
+
+        fromCellOffset++;
+        if (fromCellOffset >= baseRange.cellCount()) { fromCellOffset = 0; }
       }
+
+      fromRowOffset++;
+      if (fromRowOffset >= baseRange.rowCount()) { fromRowOffset = 0; }
     }
+  }
 }
 
 export const SlickGlobalEditorLock = new SlickEditorLock();
@@ -1409,7 +1403,7 @@ const SlickCore = {
 export const {
   EditorLock, Event, EventData, EventHandler, Group, GroupTotals, NonDataRow, Range, CopyRange, DragExtendHandle,
   RegexSanitizer, GlobalEditorLock, keyCode, preClickClassName, GridAutosizeColsMode, ColAutosizeMode,
-  RowSelectionMode, CellSelectionMode,ValueFilterMode, WidthEvalMode
+  RowSelectionMode, CellSelectionMode, ValueFilterMode, WidthEvalMode
 } = SlickCore;
 
 // also add to global object when exist
