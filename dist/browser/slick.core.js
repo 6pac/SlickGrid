@@ -313,10 +313,7 @@ var Slick = (() => {
     constructor(gridUid) {
       __publicField(this, "id");
       __publicField(this, "cssClass", "slick-drag-replace-handle");
-      this.id = gridUid + "_drag_replace_handle";
-    }
-    getHandleHtml() {
-      return '<div id="' + this.id + '" class="slick-drag-replace-handle"></div>';
+      this.id = `${gridUid}_drag_replace_handle`;
     }
     removeEl() {
       var _a;
@@ -325,7 +322,7 @@ var Slick = (() => {
     createEl(activeCellNode) {
       if (activeCellNode) {
         let dragReplaceEl = document.createElement("div");
-        dragReplaceEl.classList.add("slick-drag-replace-handle"), dragReplaceEl.setAttribute("id", this.id), activeCellNode.appendChild(dragReplaceEl);
+        dragReplaceEl.classList.add("slick-drag-replace-handle"), dragReplaceEl.id = this.id, activeCellNode.appendChild(dragReplaceEl);
       }
     }
   }, SlickNonDataItem = class {
@@ -770,17 +767,17 @@ var Slick = (() => {
   });
   var Utils = _Utils, SelectionUtils = class {
     //   |---0----|---1----|---2----|---3----|---4----|---5----|
-    // 0 |        |        |        |     ^  |        |        | 
+    // 0 |        |        |        |     ^  |        |        |
     //   |--------|--------|--------|--------|--------|--------|
-    // 1 |        |        |        |        |        |        | 
+    // 1 |        |        |        |        |        |        |
     //   |--------|--------|--------|--------|--------|--------|
-    // 2 |        |        |   1    |   2    |    > h |        | 
+    // 2 |        |        |   1    |   2    |    > h |        |
     //   |--------|--------|--------|--------|--------|--------|
-    // 3 |   <    |        |   4    |   5   x|    > h |    >   | 
+    // 3 |   <    |        |   4    |   5   x|    > h |    >   |
     //   |--------|--------|--------|--------|--------|--------|
-    // 4 |        |        |    > v |    > v |    > v |        | 
+    // 4 |        |        |    > v |    > v |    > v |        |
     //   |--------|--------|--------|--------|--------|--------|
-    // 5 |        |        |        |    v   |        |        | 
+    // 5 |        |        |        |    v   |        |        |
     //   |--------|--------|--------|--------|--------|--------|
     //
     // original range (1,2,4,5) expanded one cell to right and down

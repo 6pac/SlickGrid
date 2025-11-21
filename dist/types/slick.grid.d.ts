@@ -10,7 +10,7 @@ import { type BasePubSub, BindingEventService as BindingEventService_, type Slic
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.17.2
+ * SlickGrid v5.18.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -811,6 +811,8 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * @param {Event | SlickEvent_} [e] - The event that triggered the cell activation (if applicable).
      */
     protected setActiveCellInternal(newCell: HTMLDivElement | null, opt_editMode?: boolean | null, preClickModeOn?: boolean | null, suppressActiveCellChangedEvent?: boolean, e?: Event | SlickEvent_): void;
+    /** Check if cell is editable and check if grid is also editable */
+    protected isCellEditable(row: number, cell: number): boolean;
     /**
      * Checks whether data for the row is loaded, whether the cell is in an “Add New” row
      * (and the column disallows insert triggering), and whether an editor exists and the cell is not hidden.

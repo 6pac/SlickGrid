@@ -36,6 +36,9 @@
       var _a;
       this._grid.onActiveCellChanged.unsubscribe(this.handleActiveCellChange.bind(this)), this._grid.onKeyDown.unsubscribe(this.handleKeyDown.bind(this)), this._selector.onCellRangeSelected.unsubscribe(this.handleCellRangeSelected.bind(this)), this._selector.onBeforeCellRangeSelected.unsubscribe(this.handleBeforeCellRangeSelected.bind(this)), this._grid.unregisterPlugin(this._selector), (_a = this._selector) == null || _a.destroy();
     }
+    getOptions() {
+      return this._options;
+    }
     removeInvalidRanges(ranges) {
       let result = [];
       for (let i = 0; i < ranges.length; i++) {

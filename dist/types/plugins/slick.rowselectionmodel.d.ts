@@ -16,6 +16,7 @@ export declare class SlickRowSelectionModel implements SelectionModel {
     constructor(options?: Partial<RowSelectionModelOption>);
     init(grid: SlickGrid): void;
     destroy(): void;
+    getOptions(): RowSelectionModelOption;
     protected wrapHandler(handler: (...args: any) => void): (...args: any) => void;
     protected rangesToRows(ranges: SlickRange_[]): number[];
     protected rowsToRanges(rows: number[]): SlickRange_[];

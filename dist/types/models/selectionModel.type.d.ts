@@ -3,6 +3,7 @@ import type { SlickPlugin } from './index.js';
 export type SelectionModel = SlickPlugin & {
     refreshSelections: () => void;
     onSelectedRangesChanged: SlickEvent<SlickRange[]>;
+    getOptions: () => any;
     getSelectedRanges: () => SlickRange[];
     setSelectedRanges: (ranges: SlickRange[], caller?: string, selectionMode?: string) => void;
 };

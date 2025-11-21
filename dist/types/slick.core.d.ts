@@ -207,7 +207,6 @@ export declare class SlickDragExtendHandle {
     id: string;
     cssClass: string;
     constructor(gridUid: string);
-    getHandleHtml(): string;
     removeEl(): void;
     createEl(activeCellNode: any): void;
 }

@@ -369,10 +369,7 @@ var SlickEventData = class {
   constructor(gridUid) {
     __publicField(this, "id");
     __publicField(this, "cssClass", "slick-drag-replace-handle");
-    this.id = gridUid + "_drag_replace_handle";
-  }
-  getHandleHtml() {
-    return '<div id="' + this.id + '" class="slick-drag-replace-handle"></div>';
+    this.id = `${gridUid}_drag_replace_handle`;
   }
   removeEl() {
     document.getElementById(this.id)?.remove();
@@ -380,7 +377,7 @@ var SlickEventData = class {
   createEl(activeCellNode) {
     if (activeCellNode) {
       let dragReplaceEl = document.createElement("div");
-      dragReplaceEl.classList.add("slick-drag-replace-handle"), dragReplaceEl.setAttribute("id", this.id), activeCellNode.appendChild(dragReplaceEl);
+      dragReplaceEl.classList.add("slick-drag-replace-handle"), dragReplaceEl.id = this.id, activeCellNode.appendChild(dragReplaceEl);
     }
   }
 }, SlickNonDataItem = class {
@@ -823,17 +820,17 @@ __publicField(_Utils, "getProto", Object.getPrototypeOf), __publicField(_Utils, 
 });
 var Utils = _Utils, SelectionUtils = class {
   //   |---0----|---1----|---2----|---3----|---4----|---5----|
-  // 0 |        |        |        |     ^  |        |        | 
+  // 0 |        |        |        |     ^  |        |        |
   //   |--------|--------|--------|--------|--------|--------|
-  // 1 |        |        |        |        |        |        | 
+  // 1 |        |        |        |        |        |        |
   //   |--------|--------|--------|--------|--------|--------|
-  // 2 |        |        |   1    |   2    |    > h |        | 
+  // 2 |        |        |   1    |   2    |    > h |        |
   //   |--------|--------|--------|--------|--------|--------|
-  // 3 |   <    |        |   4    |   5   x|    > h |    >   | 
+  // 3 |   <    |        |   4    |   5   x|    > h |    >   |
   //   |--------|--------|--------|--------|--------|--------|
-  // 4 |        |        |    > v |    > v |    > v |        | 
+  // 4 |        |        |    > v |    > v |    > v |        |
   //   |--------|--------|--------|--------|--------|--------|
-  // 5 |        |        |        |    v   |        |        | 
+  // 5 |        |        |        |    v   |        |        |
   //   |--------|--------|--------|--------|--------|--------|
   //
   // original range (1,2,4,5) expanded one cell to right and down
@@ -2838,6 +2835,9 @@ var SlickEvent9 = SlickEvent, SlickEventData3 = SlickEventData, SlickRange4 = Sl
   destroy() {
     this._grid.onActiveCellChanged.unsubscribe(this.handleActiveCellChange.bind(this)), this._grid.onKeyDown.unsubscribe(this.handleKeyDown.bind(this)), this._selector.onCellRangeSelected.unsubscribe(this.handleCellRangeSelected.bind(this)), this._selector.onBeforeCellRangeSelected.unsubscribe(this.handleBeforeCellRangeSelected.bind(this)), this._grid.unregisterPlugin(this._selector), this._selector?.destroy();
   }
+  getOptions() {
+    return this._options;
+  }
   removeInvalidRanges(ranges) {
     let result = [];
     for (let i = 0; i < ranges.length; i++) {
@@ -4285,6 +4285,9 @@ var Draggable3 = Draggable, keyCode3 = keyCode, SlickEvent15 = SlickEvent, Slick
   destroy() {
     this._eventHandler.unsubscribeAll(), this._selector && this._grid?.unregisterPlugin(this._selector), this._selector?.destroy();
   }
+  getOptions() {
+    return this._options;
+  }
   // Region: CellSelectionModel Members
   // -----------------------------------------------------------------------------
   removeInvalidRanges(ranges) {
@@ -5110,6 +5113,9 @@ var Draggable4 = Draggable, keyCode4 = keyCode, SlickCellRangeDecorator4 = Slick
   }
   destroy() {
     this._eventHandler.unsubscribeAll(), this._selector && (this._selector.onCellRangeSelecting.unsubscribe(this.handleCellRangeSelected.bind(this)), this._selector.onCellRangeSelected.unsubscribe(this.handleCellRangeSelected.bind(this)), this._selector.onBeforeCellRangeSelected.unsubscribe(this.handleBeforeCellRangeSelected.bind(this)), this._grid.unregisterPlugin(this._selector), this._selector.destroy && this._selector.destroy());
+  }
+  getOptions() {
+    return this._options;
   }
   wrapHandler(handler) {
     return (...args) => {
@@ -7114,7 +7120,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.17.2");
+    __publicField(this, "slickGridVersion", "5.18.0");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -7578,7 +7584,7 @@ var SlickGrid = class {
       this._bindingEventService.bind(element, "keydown", this.handleKeyDown.bind(this)), this._bindingEventService.bind(element, "click", this.handleClick.bind(this)), this._bindingEventService.bind(element, "dblclick", this.handleDblClick.bind(this)), this._bindingEventService.bind(element, "contextmenu", this.handleContextMenu.bind(this)), this._bindingEventService.bind(element, "mouseover", this.handleCellMouseOver.bind(this)), this._bindingEventService.bind(element, "mouseout", this.handleCellMouseOut.bind(this));
     }), Draggable5 && (this.slickDraggableInstance = Draggable5({
       containerElement: this._container,
-      allowDragFrom: "div.slick-cell, div." + this.dragReplaceEl.cssClass,
+      allowDragFrom: `div.slick-cell, div.slick-cell *, div.${this.dragReplaceEl.cssClass}`,
       dragFromClassDetectArr: [{ tag: "dragReplaceHandle", id: this.dragReplaceEl.id }],
       // the slick cell parent must always contain `.dnd` and/or `.cell-reorder` class to be identified as draggable
       allowDragFromClosest: "div.slick-cell.dnd, div.slick-cell.cell-reorder",
@@ -8758,12 +8764,16 @@ var SlickGrid = class {
       let activeCellOffset = Utils32.offset(this.activeCellNode), rowOffset = Math.floor(Utils32.offset(Utils32.parents(this.activeCellNode, ".grid-canvas")[0]).top), isBottom = Utils32.parents(this.activeCellNode, ".grid-canvas-bottom").length;
       this.hasFrozenRows && isBottom && (rowOffset -= this._options.frozenBottom ? Utils32.height(this._canvasTopL) : this.frozenRowsHeight);
       let cell = this.getCellFromPoint(activeCellOffset.left, Math.ceil(activeCellOffset.top) - rowOffset);
-      this.activeRow = cell.row, this.activePosY = cell.row, this.activeCell = this.activePosX = this.getCellFromNode(this.activeCellNode), !Utils32.isDefined(opt_editMode) && this._options.autoEditNewRow && (opt_editMode = this.activeRow === this.getDataLength() || this._options.autoEdit), this._options.showCellSelection && (document.querySelectorAll(".slick-cell.active").forEach((node) => node.classList.remove("active")), this.activeCellNode.classList.add("active"), this.rowsCache[this.activeRow]?.rowNode?.forEach((node) => node.classList.add("active"))), this._options.editable && opt_editMode && this.isCellPotentiallyEditable(this.activeRow, this.activeCell) && (this._options.asyncEditorLoading ? (window.clearTimeout(this.h_editorLoader), this.h_editorLoader = window.setTimeout(() => {
+      this.activeRow = cell.row, this.activePosY = cell.row, this.activeCell = this.activePosX = this.getCellFromNode(this.activeCellNode), !Utils32.isDefined(opt_editMode) && this._options.autoEditNewRow && (opt_editMode = this.activeRow === this.getDataLength() || this._options.autoEdit), this._options.showCellSelection && (document.querySelectorAll(".slick-cell.active").forEach((node) => node.classList.remove("active")), this.activeCellNode.classList.add("active"), this.rowsCache[this.activeRow]?.rowNode?.forEach((node) => node.classList.add("active"))), opt_editMode && this.isCellEditable(this.activeRow, this.activeCell) && (this._options.asyncEditorLoading ? (window.clearTimeout(this.h_editorLoader), this.h_editorLoader = window.setTimeout(() => {
         this.makeActiveCellEditable(void 0, preClickModeOn, e);
       }, this._options.asyncEditorLoadDelay)) : this.makeActiveCellEditable(void 0, preClickModeOn, e));
     } else
       this.activeRow = this.activeCell = null;
     suppressActiveCellChangedEvent || this.trigger(this.onActiveCellChanged, this.getActiveCell());
+  }
+  /** Check if cell is editable and check if grid is also editable */
+  isCellEditable(row, cell) {
+    return !!(this._options.editable && this.isCellPotentiallyEditable(row, cell));
   }
   /**
    * Checks whether data for the row is loaded, whether the cell is in an “Add New” row
@@ -8997,7 +9007,9 @@ var SlickGrid = class {
   * @param {SlickRange_[]} ranges - The list of selected row and cell ranges.
    */
   handleSelectedRangesChanged(e, ranges) {
-    let ne = e.getNativeEvent(), selectionMode = ne?.detail?.selectionMode ?? "", addDragHandle = !!ne?.detail?.addDragHandle, prevSelectedRanges = this.selectedRanges.slice(0);
+    let ne = e.getNativeEvent(), selectionMode = ne?.detail?.selectionMode ?? "", addDragHandle = !!ne?.detail?.addDragHandle, selectionType = this.getSelectionModel()?.getOptions()?.selectionType;
+    addDragHandle = selectionType === "cell" || selectionType === "mixed";
+    let prevSelectedRanges = this.selectedRanges.slice(0);
     if (this.selectedRanges = ranges, selectionMode === CellSelectionMode3.Replace && prevSelectedRanges && prevSelectedRanges.length === 1 && this.selectedRanges && this.selectedRanges.length === 1) {
       let prevSelectedRange = prevSelectedRanges[0], selectedRange = this.selectedRanges[0];
       SelectionUtils3.copyRangeIsLarger(prevSelectedRange, selectedRange) && (this.trigger(this.onDragReplaceCells, { prevSelectedRange, selectedRange }), this.invalidate());
@@ -9106,7 +9118,8 @@ var SlickGrid = class {
           this.cancelEditAndSetFocus();
         } else e.which === keyCode7.PAGE_DOWN ? (this.navigatePageDown(), handled = !0) : e.which === keyCode7.PAGE_UP ? (this.navigatePageUp(), handled = !0) : e.which === keyCode7.LEFT ? handled = this.navigateLeft() : e.which === keyCode7.RIGHT ? handled = this.navigateRight() : e.which === keyCode7.UP ? handled = this.navigateUp() : e.which === keyCode7.DOWN ? handled = this.navigateDown() : e.which === keyCode7.TAB ? handled = this.navigateNext() : e.which === keyCode7.ENTER && (this._options.editable && (this.currentEditor ? this.activeRow === this.getDataLength() ? this.navigateDown() : this.commitEditAndSetFocus() : this.getEditorLock()?.commitCurrentEdit() && this.makeActiveCellEditable(void 0, void 0, e)), handled = !0);
       } else e.which === keyCode7.TAB && e.shiftKey && !e.ctrlKey && !e.altKey && (handled = this.navigatePrev());
-    if (handled) {
+    let cell = this.getActiveCell(), isChar = /^[\p{L}\p{N}\p{P}\p{S}\s]$/u.test(e.key);
+    if (!handled && this._options.autoEditByKeypress && cell && isChar && this.isCellEditable(cell.row, cell.cell) && !this.currentEditor && this.makeActiveCellEditable(void 0, !1, e), handled) {
       e.stopPropagation(), e.preventDefault();
       try {
         e.originalEvent.keyCode = 0;
@@ -9772,7 +9785,9 @@ var SlickGrid = class {
       m.cellAttrs.hasOwnProperty(key) && cellDiv.setAttribute(key, m.cellAttrs[key]);
     }), item) {
       let cellResult = Object.prototype.toString.call(formatterResult) !== "[object Object]" ? formatterResult : formatterResult.html || formatterResult.text;
-      this.applyHtmlCode(cellDiv, cellResult), row === this.selectionBottomRow && cell === this.selectionRightCell && this._options.showCellSelection && this.dragReplaceEl.createEl(cellDiv);
+      this.applyHtmlCode(cellDiv, cellResult);
+      let selectionType = this.getSelectionModel()?.getOptions()?.selectionType, addDragHandle = selectionType === "cell" || selectionType === "mixed";
+      row === this.selectionBottomRow && cell === this.selectionRightCell && this._options.showCellSelection && addDragHandle && this.dragReplaceEl.createEl(cellDiv);
     }
     divRow.appendChild(cellDiv), formatterResult.insertElementAfterTarget && Utils32.insertAfterElement(cellDiv, formatterResult.insertElementAfterTarget), this.rowsCache[row].cellRenderQueue.push(cell), this.rowsCache[row].cellColSpans[cell] = colspan;
   }
@@ -11856,7 +11871,7 @@ var SlickEvent24 = SlickEvent, SlickRemoteModel = class {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.17.2
+ * SlickGrid v5.18.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

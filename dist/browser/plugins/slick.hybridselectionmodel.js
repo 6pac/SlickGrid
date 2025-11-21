@@ -65,6 +65,9 @@
       var _a, _b;
       this._eventHandler.unsubscribeAll(), this._selector && ((_a = this._grid) == null || _a.unregisterPlugin(this._selector)), (_b = this._selector) == null || _b.destroy();
     }
+    getOptions() {
+      return this._options;
+    }
     // Region: CellSelectionModel Members
     // -----------------------------------------------------------------------------
     removeInvalidRanges(ranges) {

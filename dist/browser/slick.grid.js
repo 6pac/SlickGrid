@@ -24,7 +24,7 @@
       this.externalPubSub = externalPubSub;
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.17.2");
+      __publicField(this, "slickGridVersion", "5.18.0");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -488,7 +488,7 @@
         this._bindingEventService.bind(element, "keydown", this.handleKeyDown.bind(this)), this._bindingEventService.bind(element, "click", this.handleClick.bind(this)), this._bindingEventService.bind(element, "dblclick", this.handleDblClick.bind(this)), this._bindingEventService.bind(element, "contextmenu", this.handleContextMenu.bind(this)), this._bindingEventService.bind(element, "mouseover", this.handleCellMouseOver.bind(this)), this._bindingEventService.bind(element, "mouseout", this.handleCellMouseOut.bind(this));
       }), Draggable && (this.slickDraggableInstance = Draggable({
         containerElement: this._container,
-        allowDragFrom: "div.slick-cell, div." + this.dragReplaceEl.cssClass,
+        allowDragFrom: `div.slick-cell, div.slick-cell *, div.${this.dragReplaceEl.cssClass}`,
         dragFromClassDetectArr: [{ tag: "dragReplaceHandle", id: this.dragReplaceEl.id }],
         // the slick cell parent must always contain `.dnd` and/or `.cell-reorder` class to be identified as draggable
         allowDragFromClosest: "div.slick-cell.dnd, div.slick-cell.cell-reorder",
@@ -1687,12 +1687,16 @@
         let activeCellOffset = Utils.offset(this.activeCellNode), rowOffset = Math.floor(Utils.offset(Utils.parents(this.activeCellNode, ".grid-canvas")[0]).top), isBottom = Utils.parents(this.activeCellNode, ".grid-canvas-bottom").length;
         this.hasFrozenRows && isBottom && (rowOffset -= this._options.frozenBottom ? Utils.height(this._canvasTopL) : this.frozenRowsHeight);
         let cell = this.getCellFromPoint(activeCellOffset.left, Math.ceil(activeCellOffset.top) - rowOffset);
-        this.activeRow = cell.row, this.activePosY = cell.row, this.activeCell = this.activePosX = this.getCellFromNode(this.activeCellNode), !Utils.isDefined(opt_editMode) && this._options.autoEditNewRow && (opt_editMode = this.activeRow === this.getDataLength() || this._options.autoEdit), this._options.showCellSelection && (document.querySelectorAll(".slick-cell.active").forEach((node) => node.classList.remove("active")), this.activeCellNode.classList.add("active"), (_b = (_a = this.rowsCache[this.activeRow]) == null ? void 0 : _a.rowNode) == null || _b.forEach((node) => node.classList.add("active"))), this._options.editable && opt_editMode && this.isCellPotentiallyEditable(this.activeRow, this.activeCell) && (this._options.asyncEditorLoading ? (window.clearTimeout(this.h_editorLoader), this.h_editorLoader = window.setTimeout(() => {
+        this.activeRow = cell.row, this.activePosY = cell.row, this.activeCell = this.activePosX = this.getCellFromNode(this.activeCellNode), !Utils.isDefined(opt_editMode) && this._options.autoEditNewRow && (opt_editMode = this.activeRow === this.getDataLength() || this._options.autoEdit), this._options.showCellSelection && (document.querySelectorAll(".slick-cell.active").forEach((node) => node.classList.remove("active")), this.activeCellNode.classList.add("active"), (_b = (_a = this.rowsCache[this.activeRow]) == null ? void 0 : _a.rowNode) == null || _b.forEach((node) => node.classList.add("active"))), opt_editMode && this.isCellEditable(this.activeRow, this.activeCell) && (this._options.asyncEditorLoading ? (window.clearTimeout(this.h_editorLoader), this.h_editorLoader = window.setTimeout(() => {
           this.makeActiveCellEditable(void 0, preClickModeOn, e);
         }, this._options.asyncEditorLoadDelay)) : this.makeActiveCellEditable(void 0, preClickModeOn, e));
       } else
         this.activeRow = this.activeCell = null;
       suppressActiveCellChangedEvent || this.trigger(this.onActiveCellChanged, this.getActiveCell());
+    }
+    /** Check if cell is editable and check if grid is also editable */
+    isCellEditable(row, cell) {
+      return !!(this._options.editable && this.isCellPotentiallyEditable(row, cell));
     }
     /**
      * Checks whether data for the row is loaded, whether the cell is in an “Add New” row
@@ -1932,8 +1936,10 @@
     * @param {SlickRange_[]} ranges - The list of selected row and cell ranges.
      */
     handleSelectedRangesChanged(e, ranges) {
-      var _a, _b, _c, _d, _e;
-      let ne = e.getNativeEvent(), selectionMode = (_b = (_a = ne == null ? void 0 : ne.detail) == null ? void 0 : _a.selectionMode) != null ? _b : "", addDragHandle = !!((_c = ne == null ? void 0 : ne.detail) != null && _c.addDragHandle), prevSelectedRanges = this.selectedRanges.slice(0);
+      var _a, _b, _c, _d, _e, _f, _g;
+      let ne = e.getNativeEvent(), selectionMode = (_b = (_a = ne == null ? void 0 : ne.detail) == null ? void 0 : _a.selectionMode) != null ? _b : "", addDragHandle = !!((_c = ne == null ? void 0 : ne.detail) != null && _c.addDragHandle), selectionType = (_e = (_d = this.getSelectionModel()) == null ? void 0 : _d.getOptions()) == null ? void 0 : _e.selectionType;
+      addDragHandle = selectionType === "cell" || selectionType === "mixed";
+      let prevSelectedRanges = this.selectedRanges.slice(0);
       if (this.selectedRanges = ranges, selectionMode === CellSelectionMode.Replace && prevSelectedRanges && prevSelectedRanges.length === 1 && this.selectedRanges && this.selectedRanges.length === 1) {
         let prevSelectedRange = prevSelectedRanges[0], selectedRange = this.selectedRanges[0];
         SelectionUtils.copyRangeIsLarger(prevSelectedRange, selectedRange) && (this.trigger(this.onDragReplaceCells, { prevSelectedRange, selectedRange }), this.invalidate());
@@ -1954,7 +1960,7 @@
         this.dragReplaceEl.createEl(lowerRightCell);
       }
       if (!this.arrayEquals(previousSelectedRows.sort(), this.selectedRows.sort())) {
-        let caller = (_e = (_d = ne == null ? void 0 : ne.detail) == null ? void 0 : _d.caller) != null ? _e : "click", selectedRowsSet = new Set(this.getSelectedRows()), previousSelectedRowsSet = new Set(previousSelectedRows), newSelectedAdditions = Array.from(selectedRowsSet).filter((i) => !previousSelectedRowsSet.has(i)), newSelectedDeletions = Array.from(previousSelectedRowsSet).filter((i) => !selectedRowsSet.has(i));
+        let caller = (_g = (_f = ne == null ? void 0 : ne.detail) == null ? void 0 : _f.caller) != null ? _g : "click", selectedRowsSet = new Set(this.getSelectedRows()), previousSelectedRowsSet = new Set(previousSelectedRows), newSelectedAdditions = Array.from(selectedRowsSet).filter((i) => !previousSelectedRowsSet.has(i)), newSelectedDeletions = Array.from(previousSelectedRowsSet).filter((i) => !selectedRowsSet.has(i));
         this.trigger(this.onSelectedRowsChanged, {
           rows: this.getSelectedRows(),
           previousSelectedRows,
@@ -2043,7 +2049,8 @@
             this.cancelEditAndSetFocus();
           } else e.which === keyCode.PAGE_DOWN ? (this.navigatePageDown(), handled = !0) : e.which === keyCode.PAGE_UP ? (this.navigatePageUp(), handled = !0) : e.which === keyCode.LEFT ? handled = this.navigateLeft() : e.which === keyCode.RIGHT ? handled = this.navigateRight() : e.which === keyCode.UP ? handled = this.navigateUp() : e.which === keyCode.DOWN ? handled = this.navigateDown() : e.which === keyCode.TAB ? handled = this.navigateNext() : e.which === keyCode.ENTER && (this._options.editable && (this.currentEditor ? this.activeRow === this.getDataLength() ? this.navigateDown() : this.commitEditAndSetFocus() : (_d = this.getEditorLock()) != null && _d.commitCurrentEdit() && this.makeActiveCellEditable(void 0, void 0, e)), handled = !0);
         } else e.which === keyCode.TAB && e.shiftKey && !e.ctrlKey && !e.altKey && (handled = this.navigatePrev());
-      if (handled) {
+      let cell = this.getActiveCell(), isChar = /^[\p{L}\p{N}\p{P}\p{S}\s]$/u.test(e.key);
+      if (!handled && this._options.autoEditByKeypress && cell && isChar && this.isCellEditable(cell.row, cell.cell) && !this.currentEditor && this.makeActiveCellEditable(void 0, !1, e), handled) {
         e.stopPropagation(), e.preventDefault();
         try {
           e.originalEvent.keyCode = 0;
@@ -2698,10 +2705,11 @@
      * @param {TData} item - The data item corresponding to the row.
      */
     appendCellHtml(divRow, row, cell, colspan, rowspan, columnMetadata, item) {
+      var _a, _b;
       let m = this.columns[cell], cellCss = `slick-cell l${cell} r${Math.min(this.columns.length - 1, cell + colspan - 1)}` + (m.cssClass ? ` ${m.cssClass}` : "") + (rowspan > 1 ? " rowspan" : "") + (columnMetadata != null && columnMetadata.cssClass ? ` ${columnMetadata.cssClass}` : "");
       this.hasFrozenColumns() && cell <= this._options.frozenColumn && (cellCss += " frozen"), row === this.activeRow && cell === this.activeCell && this._options.showCellSelection && (cellCss += " active"), Object.keys(this.cellCssClasses).forEach((key) => {
-        var _a;
-        (_a = this.cellCssClasses[key][row]) != null && _a[m.id] && (cellCss += ` ${this.cellCssClasses[key][row][m.id]}`);
+        var _a2;
+        (_a2 = this.cellCssClasses[key][row]) != null && _a2[m.id] && (cellCss += ` ${this.cellCssClasses[key][row][m.id]}`);
       });
       let value = null, formatterResult = "";
       item && (value = this.getDataItemValueForColumn(item, m), formatterResult = this.getFormatter(row, m)(row, cell, value, m, item, this), formatterResult == null && (formatterResult = ""));
@@ -2718,7 +2726,9 @@
         m.cellAttrs.hasOwnProperty(key) && cellDiv.setAttribute(key, m.cellAttrs[key]);
       }), item) {
         let cellResult = Object.prototype.toString.call(formatterResult) !== "[object Object]" ? formatterResult : formatterResult.html || formatterResult.text;
-        this.applyHtmlCode(cellDiv, cellResult), row === this.selectionBottomRow && cell === this.selectionRightCell && this._options.showCellSelection && this.dragReplaceEl.createEl(cellDiv);
+        this.applyHtmlCode(cellDiv, cellResult);
+        let selectionType = (_b = (_a = this.getSelectionModel()) == null ? void 0 : _a.getOptions()) == null ? void 0 : _b.selectionType, addDragHandle = selectionType === "cell" || selectionType === "mixed";
+        row === this.selectionBottomRow && cell === this.selectionRightCell && this._options.showCellSelection && addDragHandle && this.dragReplaceEl.createEl(cellDiv);
       }
       divRow.appendChild(cellDiv), formatterResult.insertElementAfterTarget && Utils.insertAfterElement(cellDiv, formatterResult.insertElementAfterTarget), this.rowsCache[row].cellRenderQueue.push(cell), this.rowsCache[row].cellColSpans[cell] = colspan;
     }
@@ -4614,7 +4624,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.17.2
+ * SlickGrid v5.18.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

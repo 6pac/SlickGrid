@@ -45,6 +45,9 @@
     destroy() {
       this._eventHandler.unsubscribeAll(), this._selector && (this._selector.onCellRangeSelecting.unsubscribe(this.handleCellRangeSelected.bind(this)), this._selector.onCellRangeSelected.unsubscribe(this.handleCellRangeSelected.bind(this)), this._selector.onBeforeCellRangeSelected.unsubscribe(this.handleBeforeCellRangeSelected.bind(this)), this._grid.unregisterPlugin(this._selector), this._selector.destroy && this._selector.destroy());
     }
+    getOptions() {
+      return this._options;
+    }
     wrapHandler(handler) {
       return (...args) => {
         this._inHandler || (this._inHandler = !0, handler.apply(this, args), this._inHandler = !1);

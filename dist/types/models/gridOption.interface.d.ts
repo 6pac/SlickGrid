@@ -43,6 +43,8 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
     autoCommitEdit?: boolean;
     /** Defaults to false, when enabled it will automatically open the inlined editor as soon as there is a focus on the cell (can be combined with "enableCellNavigation: true"). */
     autoEdit?: boolean;
+    /** Defaults to false, when enabled will automatically open the inlined editor as soon as user starts typing in an active cell (can be combined with "enableCellNavigation: true"). */
+    autoEditByKeypress?: boolean;
     /**
      * Defaults to true, when enabled it will automatically open the editor when clicking on cell that has a defined editor.
      * When using CellExternalCopyManager, this option could be useful to avoid opening the cell editor automatically on empty new row and we wish to paste our cell selection range.

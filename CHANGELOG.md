@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.18.0](https://github.com/6pac/SlickGrid/compare/5.17.2...5.18.0) (2025-11-21)
+
+### Bug Fixes
+
+* only show Cell Selection drag handle w/using mixed/cell selection ([#1164](https://github.com/6pac/SlickGrid/issues/1164)) ([aa63977](https://github.com/6pac/SlickGrid/commit/aa63977180f8cd32b810f277c4cbac7be1b13701))
+* unable to drag row when the cell formatter renders html elements ([#1163](https://github.com/6pac/SlickGrid/issues/1163)) ([8dd7fdf](https://github.com/6pac/SlickGrid/commit/8dd7fdf4f5c4230c93a5bfd60c8c65c3bf44b7f5))
+
+### Features
+
+* add new `autoEditByKeypress` to open editor by typing a char ([#1162](https://github.com/6pac/SlickGrid/issues/1162)) ([ff812c7](https://github.com/6pac/SlickGrid/commit/ff812c733c380727ae2ed793cb7d4086ccdf99de))
+
 ## [5.17.2](https://github.com/6pac/SlickGrid/compare/5.17.1...5.17.2) (2025-11-14)
 
 ### Bug Fixes

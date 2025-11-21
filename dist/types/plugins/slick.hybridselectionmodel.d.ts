@@ -18,11 +18,12 @@ export declare class SlickHybridSelectionModel implements SelectionModel {
     protected _selector: SlickCellRangeSelector_;
     protected _isRowMoveManagerHandler: any;
     protected _activeSelectionIsRow: boolean;
-    protected _options?: HybridSelectionModelOption;
+    protected _options: HybridSelectionModelOption;
     protected _defaults: HybridSelectionModelOption;
     constructor(options?: HybridSelectionModelOption);
     init(grid: SlickGrid): void;
     destroy(): void;
+    getOptions(): HybridSelectionModelOption;
     protected removeInvalidRanges(ranges: SlickRange_[]): SlickRange_[];
     protected rangesAreEqual(range1: SlickRange_[], range2: SlickRange_[]): boolean;
     protected rangesToRows(ranges: SlickRange_[]): number[];
