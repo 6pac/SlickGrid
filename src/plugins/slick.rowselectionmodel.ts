@@ -94,6 +94,10 @@ export class SlickRowSelectionModel implements SelectionModel {
     }
   }
 
+  getOptions(): RowSelectionModelOption {
+    return this._options;
+  }
+
   protected wrapHandler(handler: (...args: any) => void) {
     return (...args: any) => {
       if (!this._inHandler) {

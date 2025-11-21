@@ -69,6 +69,10 @@ export class SlickCellSelectionModel implements SelectionModel {
     this._selector?.destroy();
   }
 
+  getOptions(): CellSelectionModelOption | undefined {
+    return this._options;
+  }
+
   protected removeInvalidRanges(ranges: SlickRange_[]) {
     const result: SlickRange_[] = [];
 
