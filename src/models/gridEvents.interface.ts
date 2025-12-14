@@ -6,7 +6,7 @@ export interface OnActiveCellChangedEventArgs extends SlickGridArg { cell: numbe
 export interface OnAddNewRowEventArgs extends SlickGridArg { item: any; column: Column; }
 export interface OnAfterSetColumnsEventArgs extends SlickGridArg { newColumns: Column[]; }
 export interface OnAutosizeColumnsEventArgs extends SlickGridArg { columns: Column[]; }
-export interface OnBeforeUpdateColumnsEventArgs extends SlickGridArg { columns: Column[]; }
+export interface OnColumnsEventArgs extends SlickGridArg { columns: Column[]; }
 export interface OnBeforeAppendCellEventArgs extends SlickGridArg { row: number; cell: number; value: any; dataContext: any; }
 export interface OnBeforeCellEditorDestroyEventArgs extends SlickGridArg { editor: Editor; }
 export interface OnBeforeColumnsResizeEventArgs extends SlickGridArg { triggeredByColumn: string; }
