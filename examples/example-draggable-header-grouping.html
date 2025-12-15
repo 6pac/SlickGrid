@@ -547,6 +547,9 @@ document.addEventListener("DOMContentLoaded", function() {
   grid.onColumnsReordered.subscribe(function (e, args) {
     CreateAddlHeaderRow();
   });
+  grid.onAfterUpdateColumns.subscribe(function (e, args) {
+    CreateAddlHeaderRow();
+  });
 
   CreateAddlHeaderRow();
 });

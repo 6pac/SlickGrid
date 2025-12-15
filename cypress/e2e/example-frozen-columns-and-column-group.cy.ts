@@ -150,4 +150,32 @@ describe('Example - Row Grouping Titles', () => {
     cy.get(`#myGrid [data-row="49999"] > .slick-cell:nth(0)`)
       .should('have.text', 'Task 49999');
   });
+
+  it('should open Column Picker then hide "Finish" column and still expect all headers shown', () => {
+    const preHeaderTitles = ['Common Factor', 'Period', 'Analysis'];
+    const headerTitles = ['Title', 'Duration', 'Start', '% Complete', 'Effort Driven'];
+
+    cy.get('.slick-header:not(.slick-preheader-panel).slick-header-right .slick-header-columns')
+      .find('.slick-header-column:nth(2)')
+      .trigger('mouseover')
+      .trigger('contextmenu')
+      .invoke('show');
+
+    cy.get('.slick-columnpicker')
+      .find('.slick-columnpicker-list')
+      .children('li:visible:nth-child(5)')
+      .children('label')
+      .should('contain', 'Period - Finish')
+      .click();
+
+    cy.get('.slick-columnpicker button.close').click();
+
+    cy.get('.slick-preheader-panel .slick-header-columns')
+      .children()
+      .each(($child, index) => expect($child.text()).to.eq(preHeaderTitles[index]));
+
+    cy.get('.slick-header:not(.slick-preheader-panel) .slick-header-columns')
+      .children()
+      .each(($child, index) => expect($child.text()).to.eq(headerTitles[index]));
+  });
 });

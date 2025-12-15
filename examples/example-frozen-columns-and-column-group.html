@@ -208,6 +208,9 @@
     grid.onColumnsReordered.subscribe(function (e, args) {
       CreateAddlHeaderRow();
     });
+    grid.onAfterUpdateColumns.subscribe(function (e, args) {
+      CreateAddlHeaderRow();
+    });
 
     // subscribe to Grid Menu event(s)
     gridMenuControl.onCommand.subscribe(function(e, args) {

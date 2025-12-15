@@ -161,6 +161,9 @@
     grid2.onColumnsReordered.subscribe(function (e, args) {
       CreateAddlHeaderRow();
     });
+    grid2.onAfterUpdateColumns.subscribe(function (e, args) {
+      CreateAddlHeaderRow();
+    });
 
     CreateAddlHeaderRow();
   </script>
