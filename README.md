@@ -25,12 +25,12 @@ We extended the project from the original SlickGrid foundation while also includ
 - the project now only has 1 small dependency requirement which is [SortableJS](https://sortablejs.github.io/Sortable/)
 
 ### Common Questions & Answers
-- **[Q]** Do I need TypeScript to use version 5.x?
-  - **[A]** Not at all, you can use regular JavaScript if you wish by using the [dist/browser](https://github.com/6pac/SlickGrid/tree/master/dist/browser) folder, ESM folder or from CDN shown below
-- **[Q]** Can I use it with _"xyz"_ framework?
-  - **[A]** Sure we provide an ES6/ESM build which should work with most frameworks... but for more specific frameworks (Angular, React and Vue) you may want to take a look at [Slickgrid-Universal](https://github.com/ghiscoding/slickgrid-universal) which has official wrappers for all these frameworks.
-- **[Q]** Do I still need jQuery?
-  - **[A]** Not anymore, it's totally optional since v4.0 (you can still use jQuery if you wish, but it's now optional)
+- Do I need TypeScript to use version 5.x?
+  - Not at all, you can use regular JavaScript if you wish by using the [dist/browser](https://github.com/6pac/SlickGrid/tree/master/dist/browser) folder, ESM folder or from CDN shown below
+- Can I use it with _"xyz"_ framework?
+  - Sure we provide an ES6/ESM build which should work with most frameworks... but for more specific frameworks (Angular, React and Vue) you may want to take a look at [Slickgrid-Universal](https://github.com/ghiscoding/slickgrid-universal) which has official wrappers for all these frameworks.
+- Do I still need jQuery?
+  - Not anymore, it's totally optional since v4.0 (you can still use jQuery if you wish, but it's now optional)
 
 ### Vite Demo
 You can also see a [ViteJS](https://vite.dev/) demo in the [./vite-demo](https://github.com/6pac/SlickGrid/tree/master/vite-demo) folder (also available via the Stackblitz link below). This Vite demo was created mostly to test the project ESM build and the SASS imports as well.
