@@ -26,9 +26,9 @@ We extended the project from the original SlickGrid foundation while also includ
 
 ### Common Questions & Answers
 - Do I need TypeScript to use version 5.x?
-  - Not at all, you can use regular JavaScript if you wish by using the [dist/browser](https://github.com/6pac/SlickGrid/tree/master/dist/browser) folder, ESM folder or from CDN shown below
+  - Not at all, you can use regular JavaScript if you wish by using the [dist/browser](https://github.com/6pac/SlickGrid/tree/master/dist/browser) folder, ESM folder or from CDN. The Stackblitz and installation examples shown below are mostly written with JavaScript.
 - Can I use it with _"xyz"_ framework?
-  - Sure we provide an ES6/ESM build which should work with most frameworks... but for more specific frameworks (Angular, React and Vue) you may want to take a look at [Slickgrid-Universal](https://github.com/ghiscoding/slickgrid-universal) which has official wrappers for all these frameworks.
+  - Sure we provide an ES6/ESM build which should work with most frameworks... but for more specific frameworks (Angular, React and Vue) you may want to take a look at [Slickgrid-Universal](https://github.com/ghiscoding/slickgrid-universal) which has official wrappers for all these frameworks and more.
 - Do I still need jQuery?
   - Not anymore, it's totally optional since v4.0 (you can still use jQuery if you wish, but it's now optional)
 
@@ -105,7 +105,7 @@ Once the Cypress UI is open, you can then click on "Run all Specs" to execute al
 | 5.x       | [Announcing v5.0](https://github.com/6pac/SlickGrid/wiki/Major-version-5.0-%E2%80%90-ES6-ESM-and-TypeScript-Support) | project modernization, we added ES6/ESM builds by migrating to TypeScript and also a new Alpine Theme |
 
 ## CSP Compliance
-The library is now, for the big part, CSP (Content Security Policy) compliant since `v5.5.0`, however there are some exceptions to be aware of; when using any html strings as template (for example with Custom Formatter returning an html string), you will not be fully compliant unless you return `TrustedHTML`. You can achieve it by using the `sanitizer` method in combo with [DOMPurify](https://github.com/cure53/DOMPurify) to return [`TrustedHTML`](https://developer.mozilla.org/en-US/docs/Web/API/TrustedHTML). For more info, please take a look at the [CSP Compliance](https://github.com/6pac/SlickGrid/wiki/CSP-Compliance) Wiki.
+The library is now, for the big part, CSP (Content Security Policy) compliant since `v5.5.0`, however there are some exceptions to be aware of; when using any html strings as template (for example with Custom Formatter returning an html string), you will not be fully compliant unless you return `TrustedHTML`. You can achieve it by using the `sanitizer` grid option callback in combo with [DOMPurify](https://github.com/cure53/DOMPurify) to return [`TrustedHTML`](https://developer.mozilla.org/en-US/docs/Web/API/TrustedHTML). For more info, please take a look at the [CSP Compliance](https://github.com/6pac/SlickGrid/wiki/CSP-Compliance) Wiki.
 
 ### Quick Little Fun Survey ✨
 We are conducting a small little poll just for fun, it is a single question survey about our latest releases. Thanks for taking the time to participate.
