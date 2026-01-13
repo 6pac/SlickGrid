@@ -3,6 +3,16 @@ import type { OnActiveCellChangedEventArgs, SelectionModel, SlickGrid } from '..
 
 export declare type RowSelectOverride = (data: OnActiveCellChangedEventArgs, selectionModel: SelectionModel, grid: SlickGrid) => boolean;
 
+export type SelectionType =
+  /** multiple cell selection */
+  | 'cell'
+  /** multiple row selection */
+  | 'row'
+  /** single row selection through row click */
+  | 'row-click'
+  /** mixed cell/row selection */
+  | 'mixed';
+
 export interface HybridSelectionModelOption {
   /** defaults to True, do we want to select the active cell? */
   selectActiveCell: boolean;
@@ -29,7 +39,7 @@ export interface HybridSelectionModelOption {
   rowSelectOverride: RowSelectOverride | undefined;
 
   /** Defaults to 'mixed', use a specifc selection type */
-  selectionType: 'cell' | 'row' | 'mixed';
+  selectionType: SelectionType;
 }
 
 export interface RowSelectionModelOption {

@@ -1,0 +1,275 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <title>SlickGrid example: Spreadsheet with Excel compatible cut and paste</title>
+  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.gridmenu.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <style>
+    .customer-detail {
+      color: darkcyan;
+    }
+  </style>
+</head>
+<body>
+  <div style="position:relative">
+
+  <h3 class="title">Master Grid</h3>
+    <div style="width:600px;">
+      <div id="myGrid1" class="slick-container" style="width:100%;height:250px;"></div>
+    </div>
+    <br/>
+
+  <h3 class="title">
+    Detail Grid - <span id="selectedName" class="customer-detail"></span>
+  </h3>
+  <div style="width:600px;">
+    <div id="myGrid2" class="slick-container" style="width:100%;height:300px;" class="example-grid"></div>
+  </div>
+
+  <div class="options-panel">
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Master/Detail Grids
+    </h2>
+    <h2>Demonstrates:</h2>
+    <p>
+      Master/Detail grid scenario enables you to visualize details of a master record in a separate detail grid.
+      Simply click a row from the master grid to populate the detail grid with corresponding information.
+    </p>
+
+    <h2>View Source:</h2>
+    <ul>
+      <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-master-detail-esm.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+    </ul>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
+
+<script type="module">
+import {
+  Formatters,
+  SlickColumnPicker,
+  SlickGrid,
+  SlickGridMenu,
+  SlickHybridSelectionModel,
+  Utils,
+} from '../dist/esm/index.js';
+  let grid1;
+  let grid2;
+  let data1 = [];
+  let data2 = [];
+  let selectedName;
+
+  let columns1 = [
+    { id: 'name', name: 'Customer Name', field: 'name', sortable: true, width: 140, filterable: true },
+    { id: 'company', name: 'Company Name', field: 'company', width: 190, sortable: true },
+    { id: 'address', name: 'Address', field: 'address', sortable: true, width: 160 },
+    { id: 'country', name: 'Country', field: 'country', sortable: true, width: 100 },
+  ];
+
+  let gridOptions1 = {
+    rowHeight: 33,
+    enableCellNavigation: false,
+    columnPicker: {
+      columnTitle: "Columns",
+    },
+    gridMenu: {
+      iconCssClass: "sgi sgi-menu sgi-17px",
+      columnTitle: "Columns",
+    },
+  };
+
+  let columns2 = [
+    { id: 'orderId', field: 'orderId', name: 'Order ID', sortable: true, width: 80 },
+    { id: 'freight', field: 'freight', name: 'Freight', sortable: true, width: 80, type: 'number', formatter: Formatters.dollar },
+    { id: 'name', field: 'name', name: 'Ship Company', sortable: true, width: 120 },
+    { id: 'city', field: 'city', name: 'Ship City', sortable: true, width: 90 },
+    { id: 'country', field: 'country', name: 'Ship Country', sortable: true, width: 90 },
+    { id: 'address', field: 'address', name: 'Ship Address', sortable: true, width: 120 },
+  ];
+
+  let gridOptions2 = {
+    rowHeight: 38,
+    enableCellNavigation: true,
+    datasetIdPropertyName: 'orderId',
+    columnPicker: {
+      columnTitle: "Columns",
+    },
+    gridMenu: {
+      iconCssClass: "sgi sgi-menu sgi-17px",
+      columnTitle: "Columns",
+    },
+  };
+
+  function mockMasterData() {
+    // mock a dataset
+    const masterData = [
+      {
+        id: 0,
+        name: 'Jerome Aufderhar',
+        company: 'Morissette Inc',
+        address: '1808 Koss Road',
+        country: 'Switzerland',
+      },
+      {
+        id: 1,
+        name: 'Angeline Gislason',
+        company: 'Moen, Dooley and Champlin',
+        address: '6093 Mante Shoals',
+        country: 'Denmark',
+      },
+      {
+        id: 2,
+        name: 'Dean Gibson',
+        company: 'Champlin - Schoen & Co',
+        address: '601 Beach Road',
+        country: 'United Kingdom',
+      },
+      {
+        id: 3,
+        name: 'Sherwood Collins',
+        company: 'Watsica, Smitham and Willms',
+        address: '213 Whitney Land',
+        country: 'Australia',
+      },
+      {
+        id: 4,
+        name: 'Colleen Gutmann',
+        company: 'Ledner, Schiller and Leuschke',
+        address: '19263 Church Close',
+        country: 'Germany',
+      },
+    ];
+
+    return masterData;
+  }
+
+  function mockDetailData(c) {
+    // mock order data
+    let orderData = [];
+    if (c.id === 0) {
+      orderData = [
+        { orderId: 10355, freight: 41.95, name: c.company, city: 'Zurich', country: c.country, address: '31152 Elfrieda Rapid' },
+        { orderId: 10383, freight: 32.39, name: c.company, city: 'Winterthur', country: c.country, address: '3436 Durgan Spur' },
+        { orderId: 10452, freight: 28.98, name: c.company, city: 'Zurich', country: c.country, address: '655 Joseph Cape' },
+        { orderId: 10662, freight: 21.35, name: c.company, city: 'Genève', country: c.country, address: '51019 Airport Road' },
+      ];
+    } else if (c.id === 1) {
+      orderData = [
+        { orderId: 10278, freight: 37.62, name: c.company, city: 'Copenhagen', country: c.country, address: '436 Hills Spring' },
+        {
+          orderId: 10280,
+          freight: 50.95,
+          name: c.company,
+          city: 'Copenhagen',
+          country: c.country,
+          address: '8730 Nikki Highway',
+        },
+        { orderId: 10384, freight: 13.39, name: c.company, city: 'Aalborg', country: c.country, address: '5277 Kings Highway' },
+        { orderId: 10444, freight: 58.8, name: c.company, city: 'Odense', country: c.country, address: '413 Hilpert Union' },
+        {
+          orderId: 10445,
+          freight: 23.33,
+          name: c.company,
+          city: 'Aarhus',
+          country: c.country,
+          address: '85836 Osinski Mountains',
+        },
+      ];
+    } else if (c.id === 2) {
+      orderData = [
+        { orderId: 10265, freight: 55.75, name: c.company, city: 'London', country: c.country, address: '28077 Paolo Shoal' },
+        { orderId: 10297, freight: 88.92, name: c.company, city: 'Cambridge', country: c.country, address: '309 Nolan Islands' },
+        { orderId: 10449, freight: 79.1, name: c.company, city: 'Manchester', country: c.country, address: '992 Jeromy Inlet' },
+      ];
+    } else if (c.id === 3) {
+      orderData = [
+        { orderId: 10254, freight: 94.22, name: c.company, city: 'Perth', country: c.country, address: '261 Kaia Parks' },
+        { orderId: 10370, freight: 90.52, name: c.company, city: 'Sydney', country: c.country, address: '62373 Mina Bridge' },
+        { orderId: 10519, freight: 77.95, name: c.company, city: 'Gold Coast', country: c.country, address: '863 Alysson Rest' },
+        { orderId: 10731, freight: 94.89, name: c.company, city: 'Brisbane', country: c.country, address: '2322 Pines Drive' },
+        { orderId: 10746, freight: 51.44, name: c.company, city: 'Melbourne', country: c.country, address: '9764 Oak Street' },
+      ];
+    } else if (c.id === 4) {
+      orderData = [
+        { orderId: 10258, freight: 47.04, name: c.company, city: 'Hamburg', country: c.country, address: '4600 Kirlin Oval' },
+        { orderId: 10263, freight: 62.95, name: c.company, city: 'Berlin', country: c.country, address: '592 Parkway Drive' },
+        { orderId: 10368, freight: 59.47, name: c.company, city: 'Munich', country: c.country, address: '785 Memorial Blvd.' },
+        { orderId: 10382, freight: 65.19, name: c.company, city: 'Frankfurt', country: c.country, address: '9839 Warren' },
+      ];
+    }
+
+    return orderData;
+  }
+
+  document.addEventListener("DOMContentLoaded", () => {
+    data1 = mockMasterData();
+    grid1 = new SlickGrid("#myGrid1", data1, columns1, gridOptions1);
+    const selectionModel = new SlickHybridSelectionModel({
+      selectionType: 'row-click',
+      selectActiveRow: false
+    });
+    grid1.setSelectionModel(selectionModel);
+    grid1.init();
+    grid1.setSelectedRows([0]);
+    new SlickColumnPicker(columns1, grid1, gridOptions1);
+    new SlickGridMenu(columns1, grid1, gridOptions1);
+
+    grid1.onClick.subscribe((e, args) => {
+      const item = grid1.getDataItem(args.row);
+      if (item) {
+        grid1.setSelectedRows([args.row]);
+        data2 = mockDetailData(item);
+        grid2.setData(data2);
+        grid2.render();
+        document.querySelector('#selectedName').textContent = `${item.name} - ${item.company}`;
+      }
+    });
+
+    grid1.onSort.subscribe((e, args) => {
+      let sortdir = args.sortAsc ? 1 : -1;
+      let sortcol = args.sortCol.field;
+      data1.sort((dataRow1, dataRow2) => {
+        let value1 = dataRow1[sortcol], value2 = dataRow2[sortcol];
+        let result = (value1 == value2 ? 0 : (value1 > value2 ? 1 : -1)) * sortdir;
+        if (result != 0) {
+          return result;
+        }
+      });
+      grid1.invalidate();
+      grid1.render();
+    });
+
+    data2 = mockDetailData(data1[0]);
+    let item = data1[0];
+    document.querySelector('#selectedName').textContent = `${item.name} - ${item.company}`;
+    grid2 = new SlickGrid("#myGrid2", data2, columns2, gridOptions2);
+    grid2.init();
+    new SlickColumnPicker(columns2, grid2, gridOptions2);
+    new SlickGridMenu(columns2, grid2, gridOptions2);
+
+        grid2.onSort.subscribe((e, args) => {
+      let sortdir = args.sortAsc ? 1 : -1;
+      let sortcol = args.sortCol.field;
+      data2.sort((dataRow1, dataRow2) => {
+        let value1 = dataRow1[sortcol], value2 = dataRow2[sortcol];
+        let result = (value1 == value2 ? 0 : (value1 > value2 ? 1 : -1)) * sortdir;
+        if (result != 0) {
+          return result;
+        }
+      });
+      grid2.invalidate();
+      grid2.render();
+    });
+  })
+</script>
+</body>
+</html>
