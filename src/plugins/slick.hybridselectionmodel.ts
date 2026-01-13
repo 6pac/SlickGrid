@@ -282,7 +282,7 @@ export class SlickHybridSelectionModel implements SelectionModel {
 
     const targetColumn = this._grid.getVisibleColumns()[data.cell];
     if (targetColumn) {
-      return this._options?.rowSelectColumnIds.includes('' + targetColumn.id) || false;
+      return this._options?.rowSelectColumnIds?.includes('' + targetColumn.id) || false;
     }
     return false;
   }
