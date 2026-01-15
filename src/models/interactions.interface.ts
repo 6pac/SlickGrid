@@ -5,7 +5,7 @@ import type { DragPosition } from './drag.interface.js';
 
 export interface InteractionBase {
   destroy: () => void;
-  stop?: () => void;
+  pause?: () => void;
 }
 export interface ClassDetectElement {
   /** tag to be returned on match */
