@@ -1,25 +1,34 @@
 import type { SlickCellRangeSelector } from '../plugins/slick.cellrangeselector.js';
 import type { OnActiveCellChangedEventArgs, SelectionModel, SlickGrid } from '../index.js';
 export declare type RowSelectOverride = (data: OnActiveCellChangedEventArgs, selectionModel: SelectionModel, grid: SlickGrid) => boolean;
+export type SelectionType = 
+/** multiple cell selection */
+'cell'
+/** multiple row selection */
+ | 'row'
+/** single row selection through row click */
+ | 'row-click'
+/** mixed cell/row selection */
+ | 'mixed';
 export interface HybridSelectionModelOption {
     /** defaults to True, do we want to select the active cell? */
-    selectActiveCell: boolean;
+    selectActiveCell?: boolean;
     /** defaults to True, do we want to select the active row? */
-    selectActiveRow: boolean;
+    selectActiveRow?: boolean;
     /** cell range selector */
     cellRangeSelector?: SlickCellRangeSelector;
     /** Defaults to False, should we select when dragging? */
-    dragToSelect: boolean;
+    dragToSelect?: boolean;
     /** Defaults to True, should we auto-scroll when dragging a row */
-    autoScrollWhenDrag: boolean;
+    autoScrollWhenDrag?: boolean;
     /** Row Selection on RowMoveManage column */
-    handleRowMoveManagerColumn: boolean;
+    handleRowMoveManagerColumn?: boolean;
     /** Row Selection on these columns */
-    rowSelectColumnIds: string[];
+    rowSelectColumnIds?: string[];
     /** function to toggle Row Selection Models */
-    rowSelectOverride: RowSelectOverride | undefined;
+    rowSelectOverride?: RowSelectOverride | undefined;
     /** Defaults to 'mixed', use a specifc selection type */
-    selectionType: 'cell' | 'row' | 'mixed';
+    selectionType?: SelectionType;
 }
 export interface RowSelectionModelOption {
     /** Defaults to True, should we auto-scroll when dragging a row */

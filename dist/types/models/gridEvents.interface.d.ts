@@ -18,7 +18,7 @@ export interface OnAfterSetColumnsEventArgs extends SlickGridArg {
 export interface OnAutosizeColumnsEventArgs extends SlickGridArg {
     columns: Column[];
 }
-export interface OnBeforeUpdateColumnsEventArgs extends SlickGridArg {
+export interface OnColumnsEventArgs extends SlickGridArg {
     columns: Column[];
 }
 export interface OnBeforeAppendCellEventArgs extends SlickGridArg {

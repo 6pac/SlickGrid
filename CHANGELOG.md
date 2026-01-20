@@ -3,6 +3,18 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.18.1](https://github.com/6pac/SlickGrid/compare/5.18.0...5.18.1) (2026-01-20)
+
+### Bug Fixes
+
+* double-clicking a checkmark icon should keep current cell selection ([#1172](https://github.com/6pac/SlickGrid/issues/1172)) ([138d298](https://github.com/6pac/SlickGrid/commit/138d298dcf2a50706058c6b589d001b28692dd68))
+* HeaderMenu/ColumnPicker hiding column need re-render Header Groups ([#1167](https://github.com/6pac/SlickGrid/issues/1167)) ([8412011](https://github.com/6pac/SlickGrid/commit/841201111186170caf21124f7532e18e551729ad))
+* HybridSelectionModelOption should all be optional ([#1173](https://github.com/6pac/SlickGrid/issues/1173)) ([5889639](https://github.com/6pac/SlickGrid/commit/5889639dadcb21fc6483f05db4754b21e98354e9))
+
+### Features
+
+* Master/Detail grids, allow single row click w/o checkbox column ([43e31fa](https://github.com/6pac/SlickGrid/commit/43e31fa319991f01bafe22256e677e393e7a4e65))
+
 # [5.18.0](https://github.com/6pac/SlickGrid/compare/5.17.2...5.18.0) (2025-11-21)
 
 ### Bug Fixes

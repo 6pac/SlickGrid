@@ -1,5 +1,5 @@
 import type { SortableInstance } from 'sortablejs';
-import type { AutoSize, CellPosition, CellViewportRange, Column, ColumnMetadata, ColumnSort, CssStyleHash, CustomDataView, DOMEvent, DragPosition, DragRowMove, Editor, EditorConstructor, EditController, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption as BaseGridOption, InteractionBase, ItemMetadata, MenuCommandItemCallbackArgs, MultiColumnSort, OnActivateChangedOptionsEventArgs, OnActiveCellChangedEventArgs, OnAddNewRowEventArgs, OnAfterSetColumnsEventArgs, OnAutosizeColumnsEventArgs, OnBeforeUpdateColumnsEventArgs, OnBeforeAppendCellEventArgs, OnBeforeCellEditorDestroyEventArgs, OnBeforeColumnsResizeEventArgs, OnBeforeEditCellEventArgs, OnBeforeHeaderCellDestroyEventArgs, OnBeforeHeaderRowCellDestroyEventArgs, OnBeforeFooterRowCellDestroyEventArgs, OnBeforeSetColumnsEventArgs, OnCellChangeEventArgs, OnCellCssStylesChangedEventArgs, OnClickEventArgs, OnColumnsDragEventArgs, OnColumnsReorderedEventArgs, OnColumnsResizedEventArgs, OnColumnsResizeDblClickEventArgs, OnCompositeEditorChangeEventArgs, OnDblClickEventArgs, OnFooterContextMenuEventArgs, OnFooterRowCellRenderedEventArgs, OnHeaderCellRenderedEventArgs, OnFooterClickEventArgs, OnHeaderClickEventArgs, OnHeaderContextMenuEventArgs, OnHeaderMouseEventArgs, OnHeaderRowCellRenderedEventArgs, OnKeyDownEventArgs, OnPreHeaderContextMenuEventArgs, OnPreHeaderClickEventArgs, OnRenderedEventArgs, OnSelectedRowsChangedEventArgs, OnSetOptionsEventArgs, OnScrollEventArgs, OnValidationErrorEventArgs, OnDragReplaceCellsEventArgs, PagingInfo, RowInfo, SelectionModel, SingleColumnSort, SlickPlugin } from './models/index.js';
+import type { AutoSize, CellPosition, CellViewportRange, Column, ColumnMetadata, ColumnSort, CssStyleHash, CustomDataView, DOMEvent, DragPosition, DragRowMove, Editor, EditorConstructor, EditController, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption as BaseGridOption, InteractionBase, ItemMetadata, MenuCommandItemCallbackArgs, MultiColumnSort, OnActivateChangedOptionsEventArgs, OnActiveCellChangedEventArgs, OnAddNewRowEventArgs, OnAfterSetColumnsEventArgs, OnAutosizeColumnsEventArgs, OnColumnsEventArgs, OnBeforeAppendCellEventArgs, OnBeforeCellEditorDestroyEventArgs, OnBeforeColumnsResizeEventArgs, OnBeforeEditCellEventArgs, OnBeforeHeaderCellDestroyEventArgs, OnBeforeHeaderRowCellDestroyEventArgs, OnBeforeFooterRowCellDestroyEventArgs, OnBeforeSetColumnsEventArgs, OnCellChangeEventArgs, OnCellCssStylesChangedEventArgs, OnClickEventArgs, OnColumnsDragEventArgs, OnColumnsReorderedEventArgs, OnColumnsResizedEventArgs, OnColumnsResizeDblClickEventArgs, OnCompositeEditorChangeEventArgs, OnDblClickEventArgs, OnFooterContextMenuEventArgs, OnFooterRowCellRenderedEventArgs, OnHeaderCellRenderedEventArgs, OnFooterClickEventArgs, OnHeaderClickEventArgs, OnHeaderContextMenuEventArgs, OnHeaderMouseEventArgs, OnHeaderRowCellRenderedEventArgs, OnKeyDownEventArgs, OnPreHeaderContextMenuEventArgs, OnPreHeaderClickEventArgs, OnRenderedEventArgs, OnSelectedRowsChangedEventArgs, OnSetOptionsEventArgs, OnScrollEventArgs, OnValidationErrorEventArgs, OnDragReplaceCellsEventArgs, PagingInfo, RowInfo, SelectionModel, SingleColumnSort, SlickPlugin } from './models/index.js';
 import { type BasePubSub, BindingEventService as BindingEventService_, type SlickEditorLock, SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_ } from './slick.core.js';
 /**
  * @license
@@ -10,7 +10,7 @@ import { type BasePubSub, BindingEventService as BindingEventService_, type Slic
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.18.0
+ * SlickGrid v5.18.1
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -55,7 +55,8 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     }>;
     onBeforeSetColumns: SlickEvent_<OnBeforeSetColumnsEventArgs>;
     onBeforeSort: SlickEvent_<SingleColumnSort | MultiColumnSort>;
-    onBeforeUpdateColumns: SlickEvent_<OnBeforeUpdateColumnsEventArgs>;
+    onBeforeUpdateColumns: SlickEvent_<OnColumnsEventArgs>;
+    onAfterUpdateColumns: SlickEvent_<OnColumnsEventArgs>;
     onCellChange: SlickEvent_<OnCellChangeEventArgs>;
     onCellCssStylesChanged: SlickEvent_<OnCellCssStylesChangedEventArgs>;
     onClick: SlickEvent_<OnClickEventArgs>;

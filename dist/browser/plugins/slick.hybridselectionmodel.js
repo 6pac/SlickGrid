@@ -151,7 +151,7 @@
       return this._grid.getPluginByName("RowMoveManager") || this._grid.getPluginByName("CrossGridRowMoveManager");
     }
     rowSelectionModelIsActive(data) {
-      var _a, _b, _c, _d, _e, _f;
+      var _a, _b, _c, _d, _e, _f, _g;
       if (((_a = this._options) == null ? void 0 : _a.selectionType) === "cell")
         return !1;
       if (((_b = this._options) == null ? void 0 : _b.selectionType) === "row")
@@ -166,7 +166,7 @@
           return !0;
       }
       let targetColumn = this._grid.getVisibleColumns()[data.cell];
-      return targetColumn && ((_f = this._options) == null ? void 0 : _f.rowSelectColumnIds.includes("" + targetColumn.id)) || !1;
+      return targetColumn && ((_g = (_f = this._options) == null ? void 0 : _f.rowSelectColumnIds) == null ? void 0 : _g.includes("" + targetColumn.id)) || !1;
     }
     handleActiveCellChange(_e, args) {
       var _a, _b, _c;
