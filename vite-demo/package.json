@@ -10,12 +10,12 @@
   },
   "dependencies": {
     "flatpickr": "^4.6.13",
-    "slickgrid": "^5.17.2",
+    "slickgrid": "^5.18.1",
     "sortablejs": "^1.15.6"
   },
   "devDependencies": {
     "@fnando/sparkline": "^0.3.10",
-    "sass": "^1.94.2",
-    "vite": "^7.2.4"
+    "sass": "^1.97.3",
+    "vite": "^7.3.1"
   }
 }
