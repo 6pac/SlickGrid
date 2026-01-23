@@ -19,11 +19,11 @@
   <div style="position:relative">
 
   <h3 class="title">Master Grid</h3>
-    <div style="width:600px;">
-      <div id="myGrid1" class="slick-container" style="width:100%;height:250px;"></div>
-    </div>
-    <br/>
+  <div style="width:600px;">
+    <div id="myGrid1" class="slick-container" style="width:100%;height:250px;"></div>
+  </div>
 
+  <br/>
   <h3 class="title">
     Detail Grid - <span id="selectedName" class="customer-detail"></span>
   </h3>
@@ -54,14 +54,15 @@
 <script src="sortable-cdn-fallback.js"></script>
 
 <script type="module">
-import {
-  Formatters,
-  SlickColumnPicker,
-  SlickGrid,
-  SlickGridMenu,
-  SlickHybridSelectionModel,
-  Utils,
-} from '../dist/esm/index.js';
+  import {
+    Formatters,
+    SlickColumnPicker,
+    SlickGrid,
+    SlickGridMenu,
+    SlickHybridSelectionModel,
+    Utils,
+  } from '../dist/esm/index.js';
+
   let grid1;
   let grid2;
   let data1 = [];
@@ -255,7 +256,7 @@ import {
     new SlickColumnPicker(columns2, grid2, gridOptions2);
     new SlickGridMenu(columns2, grid2, gridOptions2);
 
-        grid2.onSort.subscribe((e, args) => {
+    grid2.onSort.subscribe((e, args) => {
       let sortdir = args.sortAsc ? 1 : -1;
       let sortcol = args.sortCol.field;
       data2.sort((dataRow1, dataRow2) => {
@@ -268,7 +269,7 @@ import {
       grid2.invalidate();
       grid2.render();
     });
-  })
+  });
 </script>
 </body>
 </html>
