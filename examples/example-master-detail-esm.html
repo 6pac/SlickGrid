@@ -214,8 +214,7 @@ import {
     data1 = mockMasterData();
     grid1 = new SlickGrid("#myGrid1", data1, columns1, gridOptions1);
     const selectionModel = new SlickHybridSelectionModel({
-      selectionType: 'row-click',
-      selectActiveRow: false
+      selectionType: 'row',
     });
     grid1.setSelectionModel(selectionModel);
     grid1.init();

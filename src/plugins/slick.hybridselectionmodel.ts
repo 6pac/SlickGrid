@@ -44,7 +44,7 @@ export class SlickHybridSelectionModel implements SelectionModel {
   protected _prevSelectedRow?: number;
   protected _prevKeyDown = '';
   protected _ranges: SlickRange_[] = [];
-  protected _selector: SlickCellRangeSelector_;
+  protected _selector?: SlickCellRangeSelector_;
   protected _isRowMoveManagerHandler: any;
   protected _activeSelectionIsRow = false;
   protected _options: HybridSelectionModelOption;
@@ -62,15 +62,6 @@ export class SlickHybridSelectionModel implements SelectionModel {
 
   constructor(options?: HybridSelectionModelOption) {
     this._options = Utils.extend(true, {}, this._defaults, options);
-
-    if (options === undefined || options.cellRangeSelector === undefined) {
-      this._selector = new SlickCellRangeSelector({
-        selectionCss: { border: '2px solid black' } as CSSStyleDeclaration,
-        copyToSelectionCss: { border: '2px solid purple' } as CSSStyleDeclaration
-      });
-    } else {
-      this._selector = options.cellRangeSelector;
-    }
   }
 
   // Region: Setup
@@ -90,14 +81,22 @@ export class SlickHybridSelectionModel implements SelectionModel {
       this._activeSelectionIsRow = true;
     }
 
-    if (!this._selector && this._options?.dragToSelect) {
+    if (!this._selector && (!this._activeSelectionIsRow || (this._activeSelectionIsRow && this._options.dragToSelect))) {
       if (!SlickCellRangeDecorator) {
         throw new Error('Slick.CellRangeDecorator is required when option dragToSelect set to true');
       }
-      this._selector = new SlickCellRangeSelector({
-        selectionCss: { border: 'none' } as CSSStyleDeclaration,
-        autoScroll: this._options?.autoScrollWhenDrag
-      });
+      this._selector = new SlickCellRangeSelector(
+        this._options?.dragToSelect
+          ? {
+            selectionCss: { border: 'none' } as CSSStyleDeclaration,
+            autoScroll: this._options?.autoScrollWhenDrag,
+          }
+          : {
+            selectionCss: { border: '2px solid gray' } as CSSStyleDeclaration,
+            copyToSelectionCss: { border: '2px solid purple' } as CSSStyleDeclaration,
+          }
+      );
+      this._options.cellRangeSelector = this._selector;
     }
 
     if (grid.hasDataView()) {
@@ -473,7 +472,7 @@ export class SlickHybridSelectionModel implements SelectionModel {
         if (active >= 0 && active < this._grid.getDataLength()) {
           this._grid.scrollRowIntoView(active);
           const tempRanges = this.rowsToRanges(this.getRowsRange(top, bottom));
-          this.setSelectedRanges(tempRanges, undefined, '');
+          this.setSelectedRanges(tempRanges);
         }
 
         e.preventDefault();
@@ -519,7 +518,7 @@ export class SlickHybridSelectionModel implements SelectionModel {
     }
 
     const tempRanges = this.rowsToRanges(selection);
-    this.setSelectedRanges(tempRanges, undefined, '');
+    this.setSelectedRanges(tempRanges);
     e.stopImmediatePropagation();
 
     return true;
