@@ -15,7 +15,7 @@ export declare class SlickHybridSelectionModel implements SelectionModel {
     protected _prevSelectedRow?: number;
     protected _prevKeyDown: string;
     protected _ranges: SlickRange_[];
-    protected _selector: SlickCellRangeSelector_;
+    protected _selector?: SlickCellRangeSelector_;
     protected _isRowMoveManagerHandler: any;
     protected _activeSelectionIsRow: boolean;
     protected _options: HybridSelectionModelOption;

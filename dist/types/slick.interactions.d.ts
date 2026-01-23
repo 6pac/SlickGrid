@@ -26,7 +26,6 @@ import type { DraggableOption, MouseWheelOption, ResizableOption } from './model
  */
 export declare function Draggable(options: DraggableOption): {
     destroy: () => void;
-    pause: () => void;
 };
 /**
  * MouseWheel Class, add mousewheel listeners and calculate delta values and return them in the callback function.

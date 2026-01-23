@@ -3,7 +3,7 @@
   // src/slick.interactions.ts
   var Utils = Slick.Utils;
   function Draggable(options) {
-    let isPaused = !1, { containerElement } = options, { onDragInit, onDragStart, onDrag, onDragEnd, preventDragFromKeys } = options, element, startX, startY, deltaX, deltaY, dragStarted, matchClassTag;
+    let { containerElement } = options, { onDragInit, onDragStart, onDrag, onDragEnd, preventDragFromKeys } = options, element, startX, startY, deltaX, deltaY, dragStarted, matchClassTag;
     containerElement || (containerElement = document.body);
     let originaldd = {
       dragSource: containerElement,
@@ -20,7 +20,7 @@
       containerElement && (containerElement.removeEventListener("mousedown", userPressed), containerElement.removeEventListener("touchstart", userPressed));
     }
     function preventDrag(event) {
-      let eventPrevented = isPaused;
+      let eventPrevented = !1;
       return preventDragFromKeys && preventDragFromKeys.forEach((key) => {
         event[key] && (eventPrevented = !0);
       }), eventPrevented;
@@ -58,10 +58,7 @@
         originaldd = Object.assign(originaldd, { target }), executeDragCallbackWhenDefined(onDragEnd, event, originaldd), dragStarted = !1;
       }
     }
-    function pause() {
-      isPaused = !0;
-    }
-    return init(), { destroy, pause };
+    return init(), { destroy };
   }
   function MouseWheel(options) {
     let { element, onMouseWheel } = options;

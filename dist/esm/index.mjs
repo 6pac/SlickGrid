@@ -1403,7 +1403,7 @@ var BindingEventService4 = BindingEventService, SlickEvent4 = SlickEvent, Utils4
           allColumns: this.columns,
           visibleColumns: this.getVisibleColumns()
         };
-        this.onCommand.notify(callbackArgs, e, this), typeof item.action == "function" && item.action.call(this, e, callbackArgs), !!!this._gridMenuOptions?.leaveOpen && !e.defaultPrevented && this.hideMenu(e), e.preventDefault(), e.stopPropagation();
+        this.onCommand.notify(callbackArgs, e, this), typeof item.action == "function" && item.action.call(this, e, callbackArgs), !this._gridMenuOptions?.leaveOpen && !e.defaultPrevented && this.hideMenu(e), e.preventDefault(), e.stopPropagation();
       } else item.commandItems || item.customItems ? this.repositionSubMenu(item, level, e) : this.destroySubMenus();
     }
   }
@@ -2386,7 +2386,7 @@ var Utils10 = Utils, SlickCellRangeDecorator = class {
 // src/slick.interactions.ts
 var Utils11 = Utils;
 function Draggable(options) {
-  let isPaused = !1, { containerElement } = options, { onDragInit, onDragStart, onDrag, onDragEnd, preventDragFromKeys } = options, element, startX, startY, deltaX, deltaY, dragStarted, matchClassTag;
+  let { containerElement } = options, { onDragInit, onDragStart, onDrag, onDragEnd, preventDragFromKeys } = options, element, startX, startY, deltaX, deltaY, dragStarted, matchClassTag;
   containerElement || (containerElement = document.body);
   let originaldd = {
     dragSource: containerElement,
@@ -2403,7 +2403,7 @@ function Draggable(options) {
     containerElement && (containerElement.removeEventListener("mousedown", userPressed), containerElement.removeEventListener("touchstart", userPressed));
   }
   function preventDrag(event2) {
-    let eventPrevented = isPaused;
+    let eventPrevented = !1;
     return preventDragFromKeys && preventDragFromKeys.forEach((key) => {
       event2[key] && (eventPrevented = !0);
     }), eventPrevented;
@@ -2439,10 +2439,7 @@ function Draggable(options) {
       originaldd = Object.assign(originaldd, { target }), executeDragCallbackWhenDefined(onDragEnd, event2, originaldd), dragStarted = !1;
     }
   }
-  function pause() {
-    isPaused = !0;
-  }
-  return init(), { destroy, pause };
+  return init(), { destroy };
 }
 function MouseWheel(options) {
   let { element, onMouseWheel } = options;
@@ -4155,23 +4152,25 @@ var Draggable3 = Draggable, keyCode3 = keyCode, SlickEvent15 = SlickEvent, Slick
       cellRangeSelector: void 0,
       selectionType: "mixed"
     });
-    this._options = Utils21.extend(!0, {}, this._defaults, options), options === void 0 || options.cellRangeSelector === void 0 ? this._selector = new SlickCellRangeSelector3({
-      selectionCss: { border: "2px solid black" },
-      copyToSelectionCss: { border: "2px solid purple" }
-    }) : this._selector = options.cellRangeSelector;
+    this._options = Utils21.extend(!0, {}, this._defaults, options);
   }
   // Region: Setup
   // -----------------------------------------------------------------------------
   init(grid) {
     if (Draggable3 === void 0)
       throw new Error('Slick.Draggable is undefined, make sure to import "slick.interactions.js"');
-    if (this._grid = grid, Utils21.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), this._options?.selectionType === "cell" ? this._activeSelectionIsRow = !1 : this._options?.selectionType === "row" && (this._activeSelectionIsRow = !0), !this._selector && this._options?.dragToSelect) {
+    if (this._grid = grid, Utils21.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), this._options?.selectionType === "cell" ? this._activeSelectionIsRow = !1 : this._options?.selectionType === "row" && (this._activeSelectionIsRow = !0), !this._selector && (!this._activeSelectionIsRow || this._activeSelectionIsRow && this._options.dragToSelect)) {
       if (!SlickCellRangeDecorator3)
         throw new Error("Slick.CellRangeDecorator is required when option dragToSelect set to true");
-      this._selector = new SlickCellRangeSelector3({
-        selectionCss: { border: "none" },
-        autoScroll: this._options?.autoScrollWhenDrag
-      });
+      this._selector = new SlickCellRangeSelector3(
+        this._options?.dragToSelect ? {
+          selectionCss: { border: "none" },
+          autoScroll: this._options?.autoScrollWhenDrag
+        } : {
+          selectionCss: { border: "2px solid gray" },
+          copyToSelectionCss: { border: "2px solid purple" }
+        }
+      ), this._options.cellRangeSelector = this._selector;
     }
     grid.hasDataView() && (this._dataView = grid.getData()), this._eventHandler.subscribe(this._grid.onActiveCellChanged, this.handleActiveCellChange.bind(this)).subscribe(this._grid.onClick, this.handleClick.bind(this)).subscribe(this._grid.onKeyDown, this.handleKeyDown.bind(this)), this._selector && (grid.registerPlugin(this._selector), this._eventHandler.subscribe(this._selector.onCellRangeSelecting, (e, args) => this.handleCellRangeSelected(e, { ...args, caller: "onCellRangeSelecting" })).subscribe(this._selector.onCellRangeSelected, (e, args) => this.handleCellRangeSelected(e, { ...args, caller: "onCellRangeSelected" })), this._selector.onBeforeCellRangeSelected.subscribe(this.handleBeforeCellRangeSelected.bind(this)));
   }
@@ -4305,7 +4304,7 @@ var Draggable3 = Draggable, keyCode3 = keyCode, SlickEvent15 = SlickEvent, Slick
         if (e.which === keyCode3.DOWN ? active = activeRow.row < bottom || top === bottom ? ++bottom : ++top : active = activeRow.row < bottom ? --bottom : --top, active >= 0 && active < this._grid.getDataLength()) {
           this._grid.scrollRowIntoView(active);
           let tempRanges = this.rowsToRanges(this.getRowsRange(top, bottom));
-          this.setSelectedRanges(tempRanges, void 0, "");
+          this.setSelectedRanges(tempRanges);
         }
         e.preventDefault(), e.stopPropagation();
       }
@@ -4347,7 +4346,7 @@ var Draggable3 = Draggable, keyCode3 = keyCode, SlickEvent15 = SlickEvent, Slick
       selection.push(last), this._grid.setActiveCell(cell.row, cell.cell);
     }
     let tempRanges = this.rowsToRanges(selection);
-    return this.setSelectedRanges(tempRanges, void 0, ""), e.stopImmediatePropagation(), !0;
+    return this.setSelectedRanges(tempRanges), e.stopImmediatePropagation(), !0;
   }
   handleBeforeCellRangeSelected(e, cell) {
     if (this._activeSelectionIsRow) {
@@ -7013,7 +7012,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.18.1");
+    __publicField(this, "slickGridVersion", "5.18.2");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -7455,43 +7454,39 @@ var SlickGrid = class {
    * It also starts up any asynchronous post–render processing if enabled.
    */
   finishInitialization() {
-    if (!this.initialized) {
-      this.initialized = !0, this.getViewportWidth(), this.getViewportHeight(), this.measureCellPaddingAndBorder(), this.disableSelection(this._headers), this._options.enableTextSelectionOnCells || this._viewport.forEach((view) => {
-        this._bindingEventService.bind(view, "selectstart", (event2) => {
-          event2.target instanceof HTMLInputElement || event2.target instanceof HTMLTextAreaElement || event2.preventDefault();
-        });
-      }), this.setFrozenOptions(), this.setPaneFrozenClasses(), this.setPaneVisibility(), this.setScroller(), this.setOverflow(), this.updateColumnCaches(), this.createColumnHeaders(), this.createColumnFooter(), this.setupColumnSort(), this.createCssRules(), this.resizeCanvas(), this.bindAncestorScrollEvents(), this._bindingEventService.bind(this._container, "resize", this.resizeCanvas.bind(this)), this._viewport.forEach((view) => {
-        this._bindingEventService.bind(view, "scroll", this.handleScroll.bind(this));
-      }), this._options.enableMouseWheelScrollHandler && this._viewport.forEach((view) => {
-        this.slickMouseWheelInstances.push(MouseWheel2({
-          element: view,
-          onMouseWheel: this.handleMouseWheel.bind(this)
-        }));
-      }), this._headerScroller.forEach((el) => {
-        this._bindingEventService.bind(el, "contextmenu", this.handleHeaderContextMenu.bind(this)), this._bindingEventService.bind(el, "click", this.handleHeaderClick.bind(this));
-      }), this._headerRowScroller.forEach((scroller) => {
-        this._bindingEventService.bind(scroller, "scroll", this.handleHeaderRowScroll.bind(this));
-      }), this._options.createFooterRow && (this._footerRow.forEach((footer) => {
-        this._bindingEventService.bind(footer, "contextmenu", this.handleFooterContextMenu.bind(this)), this._bindingEventService.bind(footer, "click", this.handleFooterClick.bind(this));
-      }), this._footerRowScroller.forEach((scroller) => {
-        this._bindingEventService.bind(scroller, "scroll", this.handleFooterRowScroll.bind(this));
-      })), this._options.createTopHeaderPanel && this._bindingEventService.bind(this._topHeaderPanelScroller, "scroll", this.handleTopHeaderPanelScroll.bind(this)), this._options.createPreHeaderPanel && (this._bindingEventService.bind(this._preHeaderPanelScroller, "scroll", this.handlePreHeaderPanelScroll.bind(this)), this._bindingEventService.bind(this._preHeaderPanelScroller, "contextmenu", this.handlePreHeaderContextMenu.bind(this)), this._bindingEventService.bind(this._preHeaderPanelScrollerR, "contextmenu", this.handlePreHeaderContextMenu.bind(this)), this._bindingEventService.bind(this._preHeaderPanelScroller, "click", this.handlePreHeaderClick.bind(this)), this._bindingEventService.bind(this._preHeaderPanelScrollerR, "click", this.handlePreHeaderClick.bind(this))), this._bindingEventService.bind(this._focusSink, "keydown", this.handleKeyDown.bind(this)), this._bindingEventService.bind(this._focusSink2, "keydown", this.handleKeyDown.bind(this)), this._canvas.forEach((element) => {
-        this._bindingEventService.bind(element, "keydown", this.handleKeyDown.bind(this)), this._bindingEventService.bind(element, "click", this.handleClick.bind(this)), this._bindingEventService.bind(element, "dblclick", this.handleDblClick.bind(this)), this._bindingEventService.bind(element, "contextmenu", this.handleContextMenu.bind(this)), this._bindingEventService.bind(element, "mouseover", this.handleCellMouseOver.bind(this)), this._bindingEventService.bind(element, "mouseout", this.handleCellMouseOut.bind(this));
+    this.initialized || (this.initialized = !0, this.getViewportWidth(), this.getViewportHeight(), this.measureCellPaddingAndBorder(), this.disableSelection(this._headers), this._options.enableTextSelectionOnCells || this._viewport.forEach((view) => {
+      this._bindingEventService.bind(view, "selectstart", (event2) => {
+        event2.target instanceof HTMLInputElement || event2.target instanceof HTMLTextAreaElement || event2.preventDefault();
       });
-      let isDraggable = this.selectionModel?.getOptions()?.selectionType !== "row-click";
-      Draggable5 && isDraggable && (this.slickDraggableInstance = Draggable5({
-        containerElement: this._container,
-        allowDragFrom: `div.slick-cell, div.slick-cell *, div.${this.dragReplaceEl.cssClass}`,
-        dragFromClassDetectArr: [{ tag: "dragReplaceHandle", id: this.dragReplaceEl.id }],
-        // the slick cell parent must always contain `.dnd` and/or `.cell-reorder` class to be identified as draggable
-        allowDragFromClosest: "div.slick-cell.dnd, div.slick-cell.cell-reorder",
-        preventDragFromKeys: this._options.preventDragFromKeys,
-        onDragInit: this.handleDragInit.bind(this),
-        onDragStart: this.handleDragStart.bind(this),
-        onDrag: this.handleDrag.bind(this),
-        onDragEnd: this.handleDragEnd.bind(this)
-      })), this._options.suppressCssChangesOnHiddenInit || this.restoreCssFromHiddenInit();
-    }
+    }), this.setFrozenOptions(), this.setPaneFrozenClasses(), this.setPaneVisibility(), this.setScroller(), this.setOverflow(), this.updateColumnCaches(), this.createColumnHeaders(), this.createColumnFooter(), this.setupColumnSort(), this.createCssRules(), this.resizeCanvas(), this.bindAncestorScrollEvents(), this._bindingEventService.bind(this._container, "resize", this.resizeCanvas.bind(this)), this._viewport.forEach((view) => {
+      this._bindingEventService.bind(view, "scroll", this.handleScroll.bind(this));
+    }), this._options.enableMouseWheelScrollHandler && this._viewport.forEach((view) => {
+      this.slickMouseWheelInstances.push(MouseWheel2({
+        element: view,
+        onMouseWheel: this.handleMouseWheel.bind(this)
+      }));
+    }), this._headerScroller.forEach((el) => {
+      this._bindingEventService.bind(el, "contextmenu", this.handleHeaderContextMenu.bind(this)), this._bindingEventService.bind(el, "click", this.handleHeaderClick.bind(this));
+    }), this._headerRowScroller.forEach((scroller) => {
+      this._bindingEventService.bind(scroller, "scroll", this.handleHeaderRowScroll.bind(this));
+    }), this._options.createFooterRow && (this._footerRow.forEach((footer) => {
+      this._bindingEventService.bind(footer, "contextmenu", this.handleFooterContextMenu.bind(this)), this._bindingEventService.bind(footer, "click", this.handleFooterClick.bind(this));
+    }), this._footerRowScroller.forEach((scroller) => {
+      this._bindingEventService.bind(scroller, "scroll", this.handleFooterRowScroll.bind(this));
+    })), this._options.createTopHeaderPanel && this._bindingEventService.bind(this._topHeaderPanelScroller, "scroll", this.handleTopHeaderPanelScroll.bind(this)), this._options.createPreHeaderPanel && (this._bindingEventService.bind(this._preHeaderPanelScroller, "scroll", this.handlePreHeaderPanelScroll.bind(this)), this._bindingEventService.bind(this._preHeaderPanelScroller, "contextmenu", this.handlePreHeaderContextMenu.bind(this)), this._bindingEventService.bind(this._preHeaderPanelScrollerR, "contextmenu", this.handlePreHeaderContextMenu.bind(this)), this._bindingEventService.bind(this._preHeaderPanelScroller, "click", this.handlePreHeaderClick.bind(this)), this._bindingEventService.bind(this._preHeaderPanelScrollerR, "click", this.handlePreHeaderClick.bind(this))), this._bindingEventService.bind(this._focusSink, "keydown", this.handleKeyDown.bind(this)), this._bindingEventService.bind(this._focusSink2, "keydown", this.handleKeyDown.bind(this)), this._canvas.forEach((element) => {
+      this._bindingEventService.bind(element, "keydown", this.handleKeyDown.bind(this)), this._bindingEventService.bind(element, "click", this.handleClick.bind(this)), this._bindingEventService.bind(element, "dblclick", this.handleDblClick.bind(this)), this._bindingEventService.bind(element, "contextmenu", this.handleContextMenu.bind(this)), this._bindingEventService.bind(element, "mouseover", this.handleCellMouseOver.bind(this)), this._bindingEventService.bind(element, "mouseout", this.handleCellMouseOut.bind(this));
+    }), Draggable5 && (this.slickDraggableInstance = Draggable5({
+      containerElement: this._container,
+      allowDragFrom: `div.slick-cell, div.slick-cell *, div.${this.dragReplaceEl.cssClass}`,
+      dragFromClassDetectArr: [{ tag: "dragReplaceHandle", id: this.dragReplaceEl.id }],
+      // the slick cell parent must always contain `.dnd` and/or `.cell-reorder` class to be identified as draggable
+      allowDragFromClosest: "div.slick-cell.dnd, div.slick-cell.cell-reorder",
+      preventDragFromKeys: this._options.preventDragFromKeys,
+      onDragInit: this.handleDragInit.bind(this),
+      onDragStart: this.handleDragStart.bind(this),
+      onDrag: this.handleDrag.bind(this),
+      onDragEnd: this.handleDragEnd.bind(this)
+    })), this._options.suppressCssChangesOnHiddenInit || this.restoreCssFromHiddenInit());
   }
   /**
    * Finds all container ancestors/parents (including the grid container itself) that are hidden (i.e. have display:none)
@@ -7688,7 +7683,7 @@ var SlickGrid = class {
    * @param {Object} selectionModel A SelectionModel.
    */
   setSelectionModel(model) {
-    this.selectionModel && (this.selectionModel.onSelectedRangesChanged.unsubscribe(this.handleSelectedRangesChanged.bind(this)), this.selectionModel?.destroy()), this.selectionModel = model, this.selectionModel && (this.selectionModel.init(this), this.selectionModel.onSelectedRangesChanged.subscribe(this.handleSelectedRangesChanged.bind(this)), this.selectionModel.getOptions()?.selectionType === "row-click" && this.slickDraggableInstance?.pause && this.slickDraggableInstance.pause());
+    this.selectionModel && (this.selectionModel.onSelectedRangesChanged.unsubscribe(this.handleSelectedRangesChanged.bind(this)), this.selectionModel.destroy?.()), this.selectionModel = model, this.selectionModel && (this.selectionModel.init(this), this.selectionModel.onSelectedRangesChanged.subscribe(this.handleSelectedRangesChanged.bind(this)));
   }
   /** Returns the current SelectionModel. See here for more information about SelectionModels. */
   getSelectionModel() {
@@ -11861,7 +11856,7 @@ export {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.18.1
+ * SlickGrid v5.18.2
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

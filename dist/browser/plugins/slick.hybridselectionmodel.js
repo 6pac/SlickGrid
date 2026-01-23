@@ -40,10 +40,7 @@
         cellRangeSelector: void 0,
         selectionType: "mixed"
       });
-      this._options = Utils.extend(!0, {}, this._defaults, options), options === void 0 || options.cellRangeSelector === void 0 ? this._selector = new SlickCellRangeSelector({
-        selectionCss: { border: "2px solid black" },
-        copyToSelectionCss: { border: "2px solid purple" }
-      }) : this._selector = options.cellRangeSelector;
+      this._options = Utils.extend(!0, {}, this._defaults, options);
     }
     // Region: Setup
     // -----------------------------------------------------------------------------
@@ -51,13 +48,18 @@
       var _a, _b, _c, _d;
       if (Draggable === void 0)
         throw new Error('Slick.Draggable is undefined, make sure to import "slick.interactions.js"');
-      if (this._grid = grid, Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), ((_a = this._options) == null ? void 0 : _a.selectionType) === "cell" ? this._activeSelectionIsRow = !1 : ((_b = this._options) == null ? void 0 : _b.selectionType) === "row" && (this._activeSelectionIsRow = !0), !this._selector && ((_c = this._options) != null && _c.dragToSelect)) {
+      if (this._grid = grid, Utils.addSlickEventPubSubWhenDefined(grid.getPubSubService(), this), ((_a = this._options) == null ? void 0 : _a.selectionType) === "cell" ? this._activeSelectionIsRow = !1 : ((_b = this._options) == null ? void 0 : _b.selectionType) === "row" && (this._activeSelectionIsRow = !0), !this._selector && (!this._activeSelectionIsRow || this._activeSelectionIsRow && this._options.dragToSelect)) {
         if (!SlickCellRangeDecorator)
           throw new Error("Slick.CellRangeDecorator is required when option dragToSelect set to true");
-        this._selector = new SlickCellRangeSelector({
-          selectionCss: { border: "none" },
-          autoScroll: (_d = this._options) == null ? void 0 : _d.autoScrollWhenDrag
-        });
+        this._selector = new SlickCellRangeSelector(
+          (_c = this._options) != null && _c.dragToSelect ? {
+            selectionCss: { border: "none" },
+            autoScroll: (_d = this._options) == null ? void 0 : _d.autoScrollWhenDrag
+          } : {
+            selectionCss: { border: "2px solid gray" },
+            copyToSelectionCss: { border: "2px solid purple" }
+          }
+        ), this._options.cellRangeSelector = this._selector;
       }
       grid.hasDataView() && (this._dataView = grid.getData()), this._eventHandler.subscribe(this._grid.onActiveCellChanged, this.handleActiveCellChange.bind(this)).subscribe(this._grid.onClick, this.handleClick.bind(this)).subscribe(this._grid.onKeyDown, this.handleKeyDown.bind(this)), this._selector && (grid.registerPlugin(this._selector), this._eventHandler.subscribe(this._selector.onCellRangeSelecting, (e, args) => this.handleCellRangeSelected(e, { ...args, caller: "onCellRangeSelecting" })).subscribe(this._selector.onCellRangeSelected, (e, args) => this.handleCellRangeSelected(e, { ...args, caller: "onCellRangeSelected" })), this._selector.onBeforeCellRangeSelected.subscribe(this.handleBeforeCellRangeSelected.bind(this)));
     }
@@ -198,7 +200,7 @@
           if (e.which === keyCode.DOWN ? active = activeRow.row < bottom || top === bottom ? ++bottom : ++top : active = activeRow.row < bottom ? --bottom : --top, active >= 0 && active < this._grid.getDataLength()) {
             this._grid.scrollRowIntoView(active);
             let tempRanges = this.rowsToRanges(this.getRowsRange(top, bottom));
-            this.setSelectedRanges(tempRanges, void 0, "");
+            this.setSelectedRanges(tempRanges);
           }
           e.preventDefault(), e.stopPropagation();
         }
@@ -240,7 +242,7 @@
         selection.push(last), this._grid.setActiveCell(cell.row, cell.cell);
       }
       let tempRanges = this.rowsToRanges(selection);
-      return this.setSelectedRanges(tempRanges, void 0, ""), e.stopImmediatePropagation(), !0;
+      return this.setSelectedRanges(tempRanges), e.stopImmediatePropagation(), !0;
     }
     handleBeforeCellRangeSelected(e, cell) {
       if (this._activeSelectionIsRow) {

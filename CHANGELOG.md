@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.18.2](https://github.com/6pac/SlickGrid/compare/5.18.1...5.18.2) (2026-01-23)
+
+### Bug Fixes
+
+* only assign CellRangeSelector when Hybrid has `dragToSelect` set ([#1174](https://github.com/6pac/SlickGrid/issues/1174)) ([e8f6197](https://github.com/6pac/SlickGrid/commit/e8f61974787147f16c624307108976973244b2d3))
+
 ## [5.18.1](https://github.com/6pac/SlickGrid/compare/5.18.0...5.18.1) (2026-01-20)
 
 ### Bug Fixes

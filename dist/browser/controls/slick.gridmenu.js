@@ -228,7 +228,7 @@
             allColumns: this.columns,
             visibleColumns: this.getVisibleColumns()
           };
-          this.onCommand.notify(callbackArgs, e, this), typeof item.action == "function" && item.action.call(this, e, callbackArgs), !!!((_a = this._gridMenuOptions) != null && _a.leaveOpen) && !e.defaultPrevented && this.hideMenu(e), e.preventDefault(), e.stopPropagation();
+          this.onCommand.notify(callbackArgs, e, this), typeof item.action == "function" && item.action.call(this, e, callbackArgs), !((_a = this._gridMenuOptions) != null && _a.leaveOpen) && !e.defaultPrevented && this.hideMenu(e), e.preventDefault(), e.stopPropagation();
         } else item.commandItems || item.customItems ? this.repositionSubMenu(item, level, e) : this.destroySubMenus();
       }
     }
