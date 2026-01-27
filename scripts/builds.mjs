@@ -168,7 +168,8 @@ export function runBuild(options) {
 /** Copy all SASS input files to the dist output folder */
 function copySassFiles() {
   copyfiles(
-    ['src/styles/*.scss', 'dist/styles/sass'], // 1st in array is source, last is target
+    'src/styles/*.scss',
+    'dist/styles/sass',
     { flat: true, stat: true },
     () => console.log(`[${styleText('magenta', 'SASS')}] SASS files copied`)
   );
