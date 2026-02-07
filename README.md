@@ -10,11 +10,10 @@
 
 ## This is the 6pac SlickGrid repo
 
-Check out the NEW SlickGrid Website! http://slickgrid.net/
+This is the main 'base' SlickGrid repository.
+For specific frameworks (Angular, React and Vue) see [Slickgrid-Universal](https://github.com/ghiscoding/slickgrid-universal) which has official wrappers for all these frameworks and more.
 
-This is the acknowledged and most active fork of SlickGrid.
-
-It aims to be a viable alternative master repo, building on the legacy of the [mleibman/SlickGrid](https://github.com/mleibman/SlickGrid) original project, keeping dependencies up to date and applying, safe core patches and enhancements to keep the project up to date.
+This repo builds on the legacy of the [mleibman/SlickGrid](https://github.com/mleibman/SlickGrid) original project, which stopped being updated in 2014.
 
 We extended the project from the original SlickGrid foundation while also including the following changes:
 - added a few more Plugins: RowDetail, CellMenu, ContextMenu, GridMenu, CustomTooltip, GridState
