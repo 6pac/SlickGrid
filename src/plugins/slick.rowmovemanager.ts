@@ -92,13 +92,9 @@ export class SlickRowMoveManager {
   }
 
   protected handleDragStart(e: SlickEventData_, dd: DragRowMove): boolean | void {
-    const cell = this._grid.getCellFromEvent(e) || { cell: -1, row: -1 };
-    const currentRow = cell?.row;
-    const dataContext = this._grid.getDataItem(currentRow);
+    const cell = this._grid.getCellFromEvent(e);
 
-    if (!this.checkUsabilityOverride(currentRow, dataContext, this._grid)) {
-      return;
-    }
+    if (!Utils.isDefined(cell)) { return; }
 
     if (this._options.cancelEditOnDrag && this._grid.getEditorLock().isActive()) {
       this._grid.getEditorLock().cancelCurrentEdit();
