@@ -96,6 +96,10 @@ export class SlickRowMoveManager {
 
     if (!Utils.isDefined(cell)) { return; }
 
+    if (!this.checkUsabilityOverride(cell.row, this._grid.getDataItem(cell.row), this._grid)) {
+      return;
+    }
+
     if (this._options.cancelEditOnDrag && this._grid.getEditorLock().isActive()) {
       this._grid.getEditorLock().cancelCurrentEdit();
     }
