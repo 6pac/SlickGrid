@@ -111,9 +111,10 @@ var columns = [
     name: "",
     width: 40,
     behavior: "selectAndMove",
+    cssClass: "cell-reorder dnd",
     selectable: false,
     resizable: false,
-    formatter: () => `<span class="sgi sgi-drag move-cursor"></span>`
+    formatter: () => `<span class="sgi sgi-drag"></span>`
   },
   {
     id: "name",
@@ -128,7 +129,7 @@ var columns = [
     id: "complete",
     name: "Complete",
     width: 60,
-    cssClass: "cell-effort-driven",
+    cssClass: "cell-effort-driven dnd",
     field: "complete",
     cannotTriggerInsert: true,
     formatter: Slick.Formatters.Checkmark,
