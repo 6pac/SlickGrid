@@ -4879,8 +4879,8 @@ var SlickEvent18 = SlickEvent, SlickEventHandler10 = SlickEventHandler, Utils24 
     e.stopImmediatePropagation();
   }
   handleDragStart(e, dd) {
-    let cell = this._grid.getCellFromEvent(e) || { cell: -1, row: -1 }, currentRow = cell?.row, dataContext = this._grid.getDataItem(currentRow);
-    if (!this.checkUsabilityOverride(currentRow, dataContext, this._grid))
+    let cell = this._grid.getCellFromEvent(e);
+    if (!Utils24.isDefined(cell) || !this.checkUsabilityOverride(cell.row, this._grid.getDataItem(cell.row), this._grid))
       return;
     if (this._options.cancelEditOnDrag && this._grid.getEditorLock().isActive() && this._grid.getEditorLock().cancelCurrentEdit(), this._grid.getEditorLock().isActive() || !this.isHandlerColumn(cell.cell))
       return !1;
@@ -7012,7 +7012,7 @@ var SlickGrid = class {
     this.externalPubSub = externalPubSub;
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.18.2");
+    __publicField(this, "slickGridVersion", "5.18.3");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -7477,7 +7477,7 @@ var SlickGrid = class {
       this._bindingEventService.bind(element, "keydown", this.handleKeyDown.bind(this)), this._bindingEventService.bind(element, "click", this.handleClick.bind(this)), this._bindingEventService.bind(element, "dblclick", this.handleDblClick.bind(this)), this._bindingEventService.bind(element, "contextmenu", this.handleContextMenu.bind(this)), this._bindingEventService.bind(element, "mouseover", this.handleCellMouseOver.bind(this)), this._bindingEventService.bind(element, "mouseout", this.handleCellMouseOut.bind(this));
     }), Draggable5 && (this.slickDraggableInstance = Draggable5({
       containerElement: this._container,
-      allowDragFrom: `div.slick-cell, div.slick-cell *, div.${this.dragReplaceEl.cssClass}`,
+      allowDragFrom: `div.slick-cell, div.${this.dragReplaceEl.cssClass}`,
       dragFromClassDetectArr: [{ tag: "dragReplaceHandle", id: this.dragReplaceEl.id }],
       // the slick cell parent must always contain `.dnd` and/or `.cell-reorder` class to be identified as draggable
       allowDragFromClosest: "div.slick-cell.dnd, div.slick-cell.cell-reorder",
@@ -11856,7 +11856,7 @@ export {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.18.2
+ * SlickGrid v5.18.3
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

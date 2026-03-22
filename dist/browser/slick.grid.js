@@ -24,7 +24,7 @@
       this.externalPubSub = externalPubSub;
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.18.2");
+      __publicField(this, "slickGridVersion", "5.18.3");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -489,7 +489,7 @@
         this._bindingEventService.bind(element, "keydown", this.handleKeyDown.bind(this)), this._bindingEventService.bind(element, "click", this.handleClick.bind(this)), this._bindingEventService.bind(element, "dblclick", this.handleDblClick.bind(this)), this._bindingEventService.bind(element, "contextmenu", this.handleContextMenu.bind(this)), this._bindingEventService.bind(element, "mouseover", this.handleCellMouseOver.bind(this)), this._bindingEventService.bind(element, "mouseout", this.handleCellMouseOut.bind(this));
       }), Draggable && (this.slickDraggableInstance = Draggable({
         containerElement: this._container,
-        allowDragFrom: `div.slick-cell, div.slick-cell *, div.${this.dragReplaceEl.cssClass}`,
+        allowDragFrom: `div.slick-cell, div.${this.dragReplaceEl.cssClass}`,
         dragFromClassDetectArr: [{ tag: "dragReplaceHandle", id: this.dragReplaceEl.id }],
         // the slick cell parent must always contain `.dnd` and/or `.cell-reorder` class to be identified as draggable
         allowDragFromClosest: "div.slick-cell.dnd, div.slick-cell.cell-reorder",
@@ -4626,7 +4626,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.18.2
+ * SlickGrid v5.18.3
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

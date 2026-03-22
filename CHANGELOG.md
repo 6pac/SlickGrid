@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.18.3](https://github.com/6pac/SlickGrid/compare/5.18.2...5.18.3) (2026-03-22)
+
+### Bug Fixes
+
+* exception raised when dragging from an editor inside a draggable row ([#1181](https://github.com/6pac/SlickGrid/issues/1181)) ([ab16763](https://github.com/6pac/SlickGrid/commit/ab1676303eb39c417688c4cad5edd96530293529)), closes [#1158](https://github.com/6pac/SlickGrid/issues/1158) [#1163](https://github.com/6pac/SlickGrid/issues/1163)
+
 ## [5.18.2](https://github.com/6pac/SlickGrid/compare/5.18.1...5.18.2) (2026-01-23)
 
 ### Bug Fixes

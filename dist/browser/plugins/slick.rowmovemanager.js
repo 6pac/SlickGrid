@@ -51,8 +51,8 @@
     }
     handleDragStart(e, dd) {
       var _a;
-      let cell = this._grid.getCellFromEvent(e) || { cell: -1, row: -1 }, currentRow = cell == null ? void 0 : cell.row, dataContext = this._grid.getDataItem(currentRow);
-      if (!this.checkUsabilityOverride(currentRow, dataContext, this._grid))
+      let cell = this._grid.getCellFromEvent(e);
+      if (!Utils.isDefined(cell) || !this.checkUsabilityOverride(cell.row, this._grid.getDataItem(cell.row), this._grid))
         return;
       if (this._options.cancelEditOnDrag && this._grid.getEditorLock().isActive() && this._grid.getEditorLock().cancelCurrentEdit(), this._grid.getEditorLock().isActive() || !this.isHandlerColumn(cell.cell))
         return !1;
