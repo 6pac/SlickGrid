@@ -1027,20 +1027,20 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * This ensures that after initial measurements the DOM elements revert
    * to their original style settings.
    */
-  restoreCssFromHiddenInit() {
+  restoreCssFromHiddenInit<P extends Partial<CSSStyleDeclarationWritable>>(): void {
     // finish handle display:none on container or container parents
     // - put values back the way they were
     let i = 0;
     if (this._hiddenParents) {
-      this._hiddenParents.forEach(el => {
+      this._hiddenParents.forEach((el) => {
         const old = this.oldProps[i++];
-        Object.keys(this.cssShow).forEach(name => {
+        Object.keys(this.cssShow).forEach((name) => {
           if (this.cssShow) {
-            el.style[name as CSSStyleDeclarationWritable] = (old as any)[name];
+            (el.style as unknown as P)[name as keyof P] = (old as any)[name];
           }
         });
       });
-      this._hiddenParents = [];
+      this._hiddenParents.length = 0;
     }
   }
 

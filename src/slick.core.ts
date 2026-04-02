@@ -1037,15 +1037,28 @@ export class Utils {
     Utils.setStyleSize(el, 'height', value);
   }
 
-  public static setStyleSize(el: HTMLElement, style: string, val?: number | string | Function) {
+  public static setStyleSize<P extends CSSStyleDeclarationWritable>(
+    el: HTMLElement,
+    style: keyof P,
+    val?: number | string | Function
+  ): void {
     if (typeof val === 'function') {
-      val = val();
-    } else if (typeof val === 'string') {
-      el.style[style as CSSStyleDeclarationWritable] = val;
-    } else {
-      el.style[style as CSSStyleDeclarationWritable] = val + 'px';
+      val = val() as number | string;
     }
+    Utils.setStyles(el, { [style]: typeof val === 'string' ? val : `${val}px` } as P);
   }
+
+  public static setStyles<T extends HTMLElement, P extends Partial<CSSStyleDeclarationWritable>>(element: T, styles: P): void {
+  Object.keys(styles).forEach((key) => {
+    const camelStyleKey = key as keyof P;
+    const value = styles[camelStyleKey];
+
+    // Ensure value is valid and assignable to the style property
+    if (value !== undefined && value !== null) {
+      (element.style as unknown as P)[camelStyleKey] = value;
+    }
+  });
+}
 
   public static contains(parent: HTMLElement, child: HTMLElement) {
     if (!parent || !child) {
