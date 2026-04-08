@@ -1,5 +1,5 @@
 import { faker } from 'https://cdn.jsdelivr.net/npm/@faker-js/faker@8.0.2/+esm';
-import sparkline from '@fnando/sparkline';
+import { sparkline } from '@fnando/sparkline';
 import {
   Aggregators,
   SlickRowSelectionModel,
