@@ -2923,11 +2923,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     let width = 0;
     // if (columnDef && (!columnDef.resizable || columnDef._autoCalcWidth === true)) { return; }
     const headerColElId = this.getUID() + columnDef.id;
-    let headerColEl = document.getElementById(headerColElId) as HTMLElement;
+    const domRootOrDocument = (this._options?.shadowRoot ?? document) as Document | ShadowRoot;
+    let headerColEl = (domRootOrDocument as Document).getElementById
+      ? (domRootOrDocument as Document).getElementById(headerColElId) as HTMLDivElement
+      : domRootOrDocument.querySelector<HTMLDivElement>(`[id="${headerColElId}"]`);
     const dummyHeaderColElId = `${headerColElId}_`;
-    const clone = headerColEl.cloneNode(true) as HTMLElement;
     if (headerColEl) {
       // headers have been created, use clone technique
+      const clone = headerColEl.cloneNode(true) as HTMLElement;
       clone.id = dummyHeaderColElId;
       clone.style.cssText = 'position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;';
       headerColEl.parentNode!.insertBefore(clone, headerColEl);
@@ -2939,7 +2942,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       headerColEl = Utils.createDomElement('div', { id: dummyHeaderColElId, className: 'ui-state-default slick-state-default slick-header-column' }, header);
       const colNameElm = Utils.createDomElement('span', { className: 'slick-column-name' }, headerColEl);
       this.applyHtmlCode(colNameElm, columnDef.name!);
-      clone.style.cssText = 'position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;';
+      headerColEl.style.cssText = 'position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;';
       if (columnDef.headerCssClass) {
         headerColEl.classList.add(...Utils.classNameToList(columnDef.headerCssClass));
       }
