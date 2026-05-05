@@ -7031,6 +7031,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {Boolean} doPaging - scroll when pagination is enabled
    */
   scrollRowIntoView(row: number, doPaging?: boolean) {
+    // When grouping is enabled, convert data row index to display row index
+    const dataView = this.getData() as any;
+    if (dataView?.getGrouping && dataView.getGrouping().length > 0) {
+      row = dataView.getDisplayRowIndex(row);
+    }
+
     if (!this.hasFrozenRows ||
       (!this._options.frozenBottom && row > this.actualFrozenRow - 1) ||
       (this._options.frozenBottom && row < this.actualFrozenRow - 1)) {
@@ -7064,6 +7070,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {Number} row - grid row number
    */
   scrollRowToTop(row: number) {
+    // When grouping is enabled, convert data row index to display row index
+    const dataView = this.getData() as any;
+    if (dataView?.getGrouping && dataView.getGrouping().length > 0) {
+      row = dataView.getDisplayRowIndex(row);
+    }
     this.scrollTo(row * this._options.rowHeight!);
     this.render();
   }

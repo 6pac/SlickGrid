@@ -530,6 +530,66 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     return ids;
   }
 
+  /** Get the display row index for a data item index, accounting for group headers */
+  getDisplayRowIndex(dataRowIndex: number): number {
+    if (!this.groupingInfos.length || dataRowIndex < 0 || dataRowIndex >= this.items.length) {
+      return dataRowIndex;
+    }
+
+    // If no groups, display index equals data index
+    if (!this.groups.length) {
+      return dataRowIndex;
+    }
+
+    let displayIndex = 0;
+    const targetItem = this.items[dataRowIndex];
+
+    // Traverse the flattened group structure to find the display index
+    const findItemInGroups = (groups: SlickGroup_[], level: number): boolean => {
+      const gi = this.groupingInfos[level];
+
+      for (let i = 0; i < groups.length; i++) {
+        const g = groups[i];
+
+        // Count the group header
+        displayIndex++;
+
+        if (!g.collapsed) {
+          if (g.groups && g.groups.length > 0) {
+            // Recursively search in subgroups
+            if (findItemInGroups(g.groups, level + 1)) {
+              return true;
+            }
+          } else {
+            // Search in the group's data rows
+            for (let j = 0; j < g.rows.length; j++) {
+              if (g.rows[j] === targetItem) {
+                // Found the item, add the offset within the group
+                displayIndex += j;
+                return true;
+              }
+            }
+            // Add the count of data rows in this group
+            displayIndex += g.rows.length;
+          }
+
+          // Add totals row if present
+          if (g.totals && gi.displayTotalsRow && (!g.collapsed || gi.aggregateCollapsed)) {
+            displayIndex++;
+          }
+        }
+      }
+
+      return false;
+    };
+
+    if (findItemInGroups(this.groups, 0)) {
+      return displayIndex - 1; // -1 because we increment before checking
+    }
+
+    return dataRowIndex; // Fallback
+  }
+
   /**
    * Performs the update operations of a single item by id without
    * triggering any events or refresh operations.
