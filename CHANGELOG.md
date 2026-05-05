@@ -5,6 +5,10 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [5.18.4](https://github.com/6pac/SlickGrid/compare/5.18.3...5.18.4) (2026-05-05)
 
+### Bug Fixes
+
+crash shadow root with FCV in autosize mode ([#1197](https://github.com/6pac/SlickGrid/issues/1197)) [fff47a5](fff47a519757661d6afb58890f1119a110fe79c7), closes [#1196](https://github.com/6pac/SlickGrid/issues/1196)
+
 ## [5.18.3](https://github.com/6pac/SlickGrid/compare/5.18.2...5.18.3) (2026-03-22)
 
 ### Bug Fixes
