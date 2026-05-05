@@ -7,7 +7,7 @@
   // src/slick.editors.ts
   var keyCode = Slick.keyCode, Utils = Slick.Utils, TextEditor = class {
     constructor(args) {
-      this.args = args;
+      __publicField(this, "args", args);
       __publicField(this, "input");
       __publicField(this, "defaultValue");
       __publicField(this, "navOnLR");
@@ -67,7 +67,7 @@
     }
   }, IntegerEditor = class {
     constructor(args) {
-      this.args = args;
+      __publicField(this, "args", args);
       __publicField(this, "input");
       __publicField(this, "defaultValue");
       __publicField(this, "navOnLR");
@@ -126,7 +126,7 @@
     }
   }, _FloatEditor = class _FloatEditor {
     constructor(args) {
-      this.args = args;
+      __publicField(this, "args", args);
       __publicField(this, "input");
       __publicField(this, "defaultValue");
       __publicField(this, "navOnLR");
@@ -198,7 +198,7 @@
   __publicField(_FloatEditor, "AllowEmptyValue", !1);
   var FloatEditor = _FloatEditor, FlatpickrEditor = class {
     constructor(args) {
-      this.args = args;
+      __publicField(this, "args", args);
       __publicField(this, "input");
       __publicField(this, "defaultValue");
       __publicField(this, "flatpickrInstance");
@@ -272,7 +272,7 @@
     }
   }, YesNoSelectEditor = class {
     constructor(args) {
-      this.args = args;
+      __publicField(this, "args", args);
       __publicField(this, "select");
       __publicField(this, "defaultValue");
       this.init();
@@ -319,7 +319,7 @@
     }
   }, CheckboxEditor = class {
     constructor(args) {
-      this.args = args;
+      __publicField(this, "args", args);
       __publicField(this, "input");
       __publicField(this, "defaultValue");
       this.init();
@@ -369,7 +369,7 @@
     }
   }, PercentCompleteEditor = class {
     constructor(args) {
-      this.args = args;
+      __publicField(this, "args", args);
       __publicField(this, "input");
       __publicField(this, "defaultValue");
       __publicField(this, "picker");
@@ -441,7 +441,7 @@
     }
   }, LongTextEditor = class {
     constructor(args) {
-      this.args = args;
+      __publicField(this, "args", args);
       __publicField(this, "input");
       __publicField(this, "wrapper");
       __publicField(this, "defaultValue");

@@ -57,8 +57,8 @@ var Slick = (() => {
   });
   var SlickEventData = class {
     constructor(event, args) {
-      this.event = event;
-      this.args = args;
+      __publicField(this, "event", event);
+      __publicField(this, "args", args);
       __publicField(this, "_isPropagationStopped", !1);
       __publicField(this, "_isImmediatePropagationStopped", !1);
       __publicField(this, "_isDefaultPrevented", !1);
@@ -167,8 +167,8 @@ var Slick = (() => {
      * @param {BasePubSub} [pubSubService] - event name that could be used for dispatching CustomEvent (when enabled)
      */
     constructor(eventName, pubSub) {
-      this.eventName = eventName;
-      this.pubSub = pubSub;
+      __publicField(this, "eventName", eventName);
+      __publicField(this, "pubSub", pubSub);
       __publicField(this, "_handlers", []);
       __publicField(this, "_pubSubService");
       this._pubSubService = pubSub;

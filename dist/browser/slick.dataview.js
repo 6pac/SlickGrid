@@ -7,7 +7,7 @@
   // src/slick.dataview.ts
   var SlickEvent = Slick.Event, SlickEventData = Slick.EventData, SlickGroup = Slick.Group, SlickGroupTotals = Slick.GroupTotals, Utils = Slick.Utils, _a, _b, SlickGroupItemMetadataProvider = (_b = (_a = Slick.Data) == null ? void 0 : _a.GroupItemMetadataProvider) != null ? _b : {}, SlickDataView = class {
     constructor(options, externalPubSub) {
-      this.externalPubSub = externalPubSub;
+      __publicField(this, "externalPubSub", externalPubSub);
       __publicField(this, "defaults", {
         globalItemMetadataProvider: null,
         groupItemMetadataProvider: null,

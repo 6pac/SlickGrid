@@ -18,13 +18,13 @@
      * @param {Object} [externalPubSub] - optional External PubSub Service to use by SlickEvent
      **/
     constructor(container, data, columns, options, externalPubSub) {
-      this.container = container;
-      this.data = data;
-      this.columns = columns;
-      this.externalPubSub = externalPubSub;
+      __publicField(this, "container", container);
+      __publicField(this, "data", data);
+      __publicField(this, "columns", columns);
+      __publicField(this, "externalPubSub", externalPubSub);
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.18.3");
+      __publicField(this, "slickGridVersion", "5.18.4");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -1332,14 +1332,16 @@
      * @returns {number} - The computed width of the column header in pixels.
      */
     getColHeaderWidth(columnDef) {
-      let width = 0, headerColElId = this.getUID() + columnDef.id, headerColEl = document.getElementById(headerColElId), dummyHeaderColElId = `${headerColElId}_`, clone = headerColEl.cloneNode(!0);
-      if (headerColEl)
+      var _a, _b;
+      let width = 0, headerColElId = this.getUID() + columnDef.id, domRootOrDocument = (_b = (_a = this._options) == null ? void 0 : _a.shadowRoot) != null ? _b : document, headerColEl = domRootOrDocument.getElementById ? domRootOrDocument.getElementById(headerColElId) : domRootOrDocument.querySelector(`[id="${headerColElId}"]`), dummyHeaderColElId = `${headerColElId}_`;
+      if (headerColEl) {
+        let clone = headerColEl.cloneNode(!0);
         clone.id = dummyHeaderColElId, clone.style.cssText = "position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;", headerColEl.parentNode.insertBefore(clone, headerColEl), width = clone.offsetWidth, clone.parentNode.removeChild(clone);
-      else {
+      } else {
         let header = this.getHeader(columnDef);
         headerColEl = Utils.createDomElement("div", { id: dummyHeaderColElId, className: "ui-state-default slick-state-default slick-header-column" }, header);
         let colNameElm = Utils.createDomElement("span", { className: "slick-column-name" }, headerColEl);
-        this.applyHtmlCode(colNameElm, columnDef.name), clone.style.cssText = "position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;", columnDef.headerCssClass && headerColEl.classList.add(...Utils.classNameToList(columnDef.headerCssClass)), width = headerColEl.offsetWidth, header.removeChild(headerColEl);
+        this.applyHtmlCode(colNameElm, columnDef.name), headerColEl.style.cssText = "position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;", columnDef.headerCssClass && headerColEl.classList.add(...Utils.classNameToList(columnDef.headerCssClass)), width = headerColEl.offsetWidth, header.removeChild(headerColEl);
       }
       return width;
     }
@@ -4626,7 +4628,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.18.3
+ * SlickGrid v5.18.4
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

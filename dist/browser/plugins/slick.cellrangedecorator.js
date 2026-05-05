@@ -7,7 +7,7 @@
   // src/plugins/slick.cellrangedecorator.ts
   var Utils = Slick.Utils, SlickCellRangeDecorator = class {
     constructor(grid, options) {
-      this.grid = grid;
+      __publicField(this, "grid", grid);
       // --
       // public API
       __publicField(this, "pluginName", "CellRangeDecorator");

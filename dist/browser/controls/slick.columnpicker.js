@@ -7,8 +7,8 @@
   // src/controls/slick.columnpicker.ts
   var BindingEventService = Slick.BindingEventService, SlickEvent = Slick.Event, Utils = Slick.Utils, SlickColumnPicker = class {
     constructor(columns, grid, gridOptions) {
-      this.columns = columns;
-      this.grid = grid;
+      __publicField(this, "columns", columns);
+      __publicField(this, "grid", grid);
       // --
       // public API
       __publicField(this, "onColumnsChanged", new SlickEvent("onColumnsChanged"));

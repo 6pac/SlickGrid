@@ -7,7 +7,7 @@
   // src/plugins/slick.customtooltip.ts
   var SlickEventHandler = Slick.EventHandler, Utils = Slick.Utils, SlickCustomTooltip = class {
     constructor(tooltipOptions) {
-      this.tooltipOptions = tooltipOptions;
+      __publicField(this, "tooltipOptions", tooltipOptions);
       // --
       // public API
       __publicField(this, "pluginName", "CustomTooltip");

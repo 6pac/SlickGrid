@@ -115,8 +115,8 @@ module.exports = __toCommonJS(index_exports);
 // src/slick.core.ts
 var SlickEventData = class {
   constructor(event2, args) {
-    this.event = event2;
-    this.args = args;
+    __publicField(this, "event", event2);
+    __publicField(this, "args", args);
     __publicField(this, "_isPropagationStopped", !1);
     __publicField(this, "_isImmediatePropagationStopped", !1);
     __publicField(this, "_isDefaultPrevented", !1);
@@ -224,8 +224,8 @@ var SlickEventData = class {
    * @param {BasePubSub} [pubSubService] - event name that could be used for dispatching CustomEvent (when enabled)
    */
   constructor(eventName, pubSub) {
-    this.eventName = eventName;
-    this.pubSub = pubSub;
+    __publicField(this, "eventName", eventName);
+    __publicField(this, "pubSub", pubSub);
     __publicField(this, "_handlers", []);
     __publicField(this, "_pubSubService");
     this._pubSubService = pubSub;
@@ -998,8 +998,8 @@ var Utils = _Utils, SelectionUtils = class {
 // src/controls/slick.columnmenu.ts
 var BindingEventService2 = BindingEventService, SlickEvent2 = Event, Utils2 = Utils, SlickColumnMenu = class {
   constructor(columns, grid, options) {
-    this.columns = columns;
-    this.grid = grid;
+    __publicField(this, "columns", columns);
+    __publicField(this, "grid", grid);
     // --
     // public API
     __publicField(this, "onColumnsChanged", new SlickEvent2("onColumnsChanged"));
@@ -1147,8 +1147,8 @@ var BindingEventService2 = BindingEventService, SlickEvent2 = Event, Utils2 = Ut
 // src/controls/slick.columnpicker.ts
 var BindingEventService3 = BindingEventService, SlickEvent3 = Event, Utils3 = Utils, SlickColumnPicker = class {
   constructor(columns, grid, gridOptions) {
-    this.columns = columns;
-    this.grid = grid;
+    __publicField(this, "columns", columns);
+    __publicField(this, "grid", grid);
     // --
     // public API
     __publicField(this, "onColumnsChanged", new SlickEvent3("onColumnsChanged"));
@@ -1302,8 +1302,8 @@ var BindingEventService3 = BindingEventService, SlickEvent3 = Event, Utils3 = Ut
 // src/controls/slick.gridmenu.ts
 var BindingEventService4 = BindingEventService, SlickEvent4 = SlickEvent, Utils4 = Utils, SlickGridMenu = class {
   constructor(columns, grid, gridOptions) {
-    this.columns = columns;
-    this.grid = grid;
+    __publicField(this, "columns", columns);
+    __publicField(this, "grid", grid);
     // --
     // public API
     __publicField(this, "onAfterMenuShow", new SlickEvent4("onAfterMenuShow"));
@@ -1621,8 +1621,8 @@ var BindingEventService4 = BindingEventService, SlickEvent4 = SlickEvent, Utils4
 // src/controls/slick.pager.ts
 var BindingEventService5 = BindingEventService, SlickGlobalEditorLock2 = SlickGlobalEditorLock, Utils5 = Utils, SlickGridPager = class {
   constructor(dataView, grid, selectorOrElm, options) {
-    this.dataView = dataView;
-    this.grid = grid;
+    __publicField(this, "dataView", dataView);
+    __publicField(this, "grid", grid);
     // --
     // public API
     // --
@@ -2441,7 +2441,7 @@ var BindingEventService6 = BindingEventService, SlickEvent7 = SlickEvent, SlickE
 // src/plugins/slick.cellrangedecorator.ts
 var Utils10 = Utils, SlickCellRangeDecorator = class {
   constructor(grid, options) {
-    this.grid = grid;
+    __publicField(this, "grid", grid);
     // --
     // public API
     __publicField(this, "pluginName", "CellRangeDecorator");
@@ -3558,7 +3558,7 @@ var SlickEvent11 = SlickEvent, SlickEventHandler4 = SlickEventHandler, Utils16 =
 // src/plugins/slick.customtooltip.ts
 var SlickEventHandler5 = SlickEventHandler, Utils17 = Utils, SlickCustomTooltip = class {
   constructor(tooltipOptions) {
-    this.tooltipOptions = tooltipOptions;
+    __publicField(this, "tooltipOptions", tooltipOptions);
     // --
     // public API
     __publicField(this, "pluginName", "CustomTooltip");
@@ -5597,7 +5597,7 @@ var keyCode5 = keyCode, SlickGroup2 = SlickGroup, Utils28 = Utils, SlickGroupIte
 // src/slick.dataview.ts
 var SlickEvent21 = SlickEvent, SlickEventData7 = SlickEventData, SlickGroup3 = SlickGroup, SlickGroupTotals2 = SlickGroupTotals, Utils29 = Utils, SlickGroupItemMetadataProvider2 = SlickGroupItemMetadataProvider, SlickDataView = class {
   constructor(options, externalPubSub) {
-    this.externalPubSub = externalPubSub;
+    __publicField(this, "externalPubSub", externalPubSub);
     __publicField(this, "defaults", {
       globalItemMetadataProvider: null,
       groupItemMetadataProvider: null,
@@ -6562,7 +6562,7 @@ var SlickEvent21 = SlickEvent, SlickEventData7 = SlickEventData, SlickGroup3 = S
 // src/slick.editors.ts
 var keyCode6 = keyCode, Utils30 = Utils, TextEditor = class {
   constructor(args) {
-    this.args = args;
+    __publicField(this, "args", args);
     __publicField(this, "input");
     __publicField(this, "defaultValue");
     __publicField(this, "navOnLR");
@@ -6620,7 +6620,7 @@ var keyCode6 = keyCode, Utils30 = Utils, TextEditor = class {
   }
 }, IntegerEditor = class {
   constructor(args) {
-    this.args = args;
+    __publicField(this, "args", args);
     __publicField(this, "input");
     __publicField(this, "defaultValue");
     __publicField(this, "navOnLR");
@@ -6677,7 +6677,7 @@ var keyCode6 = keyCode, Utils30 = Utils, TextEditor = class {
   }
 }, _FloatEditor = class _FloatEditor {
   constructor(args) {
-    this.args = args;
+    __publicField(this, "args", args);
     __publicField(this, "input");
     __publicField(this, "defaultValue");
     __publicField(this, "navOnLR");
@@ -6747,7 +6747,7 @@ __publicField(_FloatEditor, "DefaultDecimalPlaces"), /** Should we allow empty v
 __publicField(_FloatEditor, "AllowEmptyValue", !1);
 var FloatEditor = _FloatEditor, FlatpickrEditor = class {
   constructor(args) {
-    this.args = args;
+    __publicField(this, "args", args);
     __publicField(this, "input");
     __publicField(this, "defaultValue");
     __publicField(this, "flatpickrInstance");
@@ -6818,7 +6818,7 @@ var FloatEditor = _FloatEditor, FlatpickrEditor = class {
   }
 }, YesNoSelectEditor = class {
   constructor(args) {
-    this.args = args;
+    __publicField(this, "args", args);
     __publicField(this, "select");
     __publicField(this, "defaultValue");
     this.init();
@@ -6864,7 +6864,7 @@ var FloatEditor = _FloatEditor, FlatpickrEditor = class {
   }
 }, CheckboxEditor = class {
   constructor(args) {
-    this.args = args;
+    __publicField(this, "args", args);
     __publicField(this, "input");
     __publicField(this, "defaultValue");
     this.init();
@@ -6913,7 +6913,7 @@ var FloatEditor = _FloatEditor, FlatpickrEditor = class {
   }
 }, PercentCompleteEditor = class {
   constructor(args) {
-    this.args = args;
+    __publicField(this, "args", args);
     __publicField(this, "input");
     __publicField(this, "defaultValue");
     __publicField(this, "picker");
@@ -6980,7 +6980,7 @@ var FloatEditor = _FloatEditor, FlatpickrEditor = class {
   }
 }, LongTextEditor = class {
   constructor(args) {
-    this.args = args;
+    __publicField(this, "args", args);
     __publicField(this, "input");
     __publicField(this, "wrapper");
     __publicField(this, "defaultValue");
@@ -7116,13 +7116,13 @@ var SlickGrid = class {
    * @param {Object} [externalPubSub] - optional External PubSub Service to use by SlickEvent
    **/
   constructor(container, data, columns, options, externalPubSub) {
-    this.container = container;
-    this.data = data;
-    this.columns = columns;
-    this.externalPubSub = externalPubSub;
+    __publicField(this, "container", container);
+    __publicField(this, "data", data);
+    __publicField(this, "columns", columns);
+    __publicField(this, "externalPubSub", externalPubSub);
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.18.3");
+    __publicField(this, "slickGridVersion", "5.18.4");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -8417,14 +8417,15 @@ var SlickGrid = class {
    * @returns {number} - The computed width of the column header in pixels.
    */
   getColHeaderWidth(columnDef) {
-    let width = 0, headerColElId = this.getUID() + columnDef.id, headerColEl = document.getElementById(headerColElId), dummyHeaderColElId = `${headerColElId}_`, clone = headerColEl.cloneNode(!0);
-    if (headerColEl)
+    let width = 0, headerColElId = this.getUID() + columnDef.id, domRootOrDocument = this._options?.shadowRoot ?? document, headerColEl = domRootOrDocument.getElementById ? domRootOrDocument.getElementById(headerColElId) : domRootOrDocument.querySelector(`[id="${headerColElId}"]`), dummyHeaderColElId = `${headerColElId}_`;
+    if (headerColEl) {
+      let clone = headerColEl.cloneNode(!0);
       clone.id = dummyHeaderColElId, clone.style.cssText = "position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;", headerColEl.parentNode.insertBefore(clone, headerColEl), width = clone.offsetWidth, clone.parentNode.removeChild(clone);
-    else {
+    } else {
       let header = this.getHeader(columnDef);
       headerColEl = Utils32.createDomElement("div", { id: dummyHeaderColElId, className: "ui-state-default slick-state-default slick-header-column" }, header);
       let colNameElm = Utils32.createDomElement("span", { className: "slick-column-name" }, headerColEl);
-      this.applyHtmlCode(colNameElm, columnDef.name), clone.style.cssText = "position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;", columnDef.headerCssClass && headerColEl.classList.add(...Utils32.classNameToList(columnDef.headerCssClass)), width = headerColEl.offsetWidth, header.removeChild(headerColEl);
+      this.applyHtmlCode(colNameElm, columnDef.name), headerColEl.style.cssText = "position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;", columnDef.headerCssClass && headerColEl.classList.add(...Utils32.classNameToList(columnDef.headerCssClass)), width = headerColEl.offsetWidth, header.removeChild(headerColEl);
     }
     return width;
   }
@@ -11874,7 +11875,7 @@ var SlickEvent24 = SlickEvent, SlickRemoteModel = class {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.18.3
+ * SlickGrid v5.18.4
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

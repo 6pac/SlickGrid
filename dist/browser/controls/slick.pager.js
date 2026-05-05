@@ -7,8 +7,8 @@
   // src/controls/slick.pager.ts
   var BindingEventService = Slick.BindingEventService, SlickGlobalEditorLock = Slick.GlobalEditorLock, Utils = Slick.Utils, SlickGridPager = class {
     constructor(dataView, grid, selectorOrElm, options) {
-      this.dataView = dataView;
-      this.grid = grid;
+      __publicField(this, "dataView", dataView);
+      __publicField(this, "grid", grid);
       // --
       // public API
       // --

@@ -7,8 +7,8 @@
   // src/controls/slick.columnmenu.ts
   var BindingEventService = Slick.BindingEventService, SlickEvent = Slick.Event, Utils = Slick.Utils, SlickColumnMenu = class {
     constructor(columns, grid, options) {
-      this.columns = columns;
-      this.grid = grid;
+      __publicField(this, "columns", columns);
+      __publicField(this, "grid", grid);
       // --
       // public API
       __publicField(this, "onColumnsChanged", new SlickEvent("onColumnsChanged"));
