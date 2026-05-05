@@ -1,6 +1,7 @@
 import { type SlickEventData, SlickGroup as SlickGroup_, keyCode as keyCode_, Utils as Utils_ } from './slick.core.js';
 import type { Column, GroupItemMetadataProviderOption, GroupingFormatterItem, ItemMetadata, SlickPlugin } from './models/index.js';
 import type { SlickGrid } from './slick.grid.js';
+import type { DataIdType } from './slick.dataview.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const keyCode = IIFE_ONLY ? Slick.keyCode : keyCode_;
@@ -125,13 +126,18 @@ export class SlickGroupItemMetadataProvider implements SlickPlugin {
       item.selectChecked = !item.selectChecked;
       target.classList.remove((item.selectChecked ? 'unchecked' : 'checked'));
       target.classList.add((item.selectChecked ? 'checked' : 'unchecked'));
-      // get rowIndexes array
-      const rowIndexes = this.dataView.mapItemsToRows(item.rows);
+      // get item IDs for the group
+      const groupIds = item.rows.map((row: any) => row[this.dataView.getIdProperty()]);
+      const currentSelectedIds = this.dataView.getAllSelectedIds() || [];
+      let newSelectedIds: DataIdType[];
       if (item.selectChecked) {
-        this._options.checkboxSelectPlugin.selectRows(rowIndexes);
+        // select all items in the group
+        newSelectedIds = [...new Set([...currentSelectedIds, ...groupIds])];
       } else {
-        this._options.checkboxSelectPlugin.deSelectRows(rowIndexes);
+        // deselect all items in the group
+        newSelectedIds = currentSelectedIds.filter((id: DataIdType) => !groupIds.includes(id));
       }
+      this.dataView.setSelectedRowIds(newSelectedIds);
     }
   }
 
