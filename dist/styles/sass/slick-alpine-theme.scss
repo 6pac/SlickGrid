@@ -44,6 +44,8 @@
 
 .slick-viewport {
   background-color: var(--alpine-bg-color, v.$alpine-bg-color);
+  -webkit-overflow-scrolling: touch;
+  touch-action: manipulation;
 
   .grid-canvas {
     position: relative;
