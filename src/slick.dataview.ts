@@ -1,6 +1,7 @@
 import type {
   Aggregator,
   AnyFunction,
+  Column,
   CssStyleHash,
   CustomDataView,
   DataViewHints,
@@ -901,6 +902,27 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     return this.groups;
   }
 
+  /** Helper method to get grouping value, using grid's dataItemColumnValueExtractor if available */
+  protected getGroupingValue(item: TData, groupingInfo: any): any {
+    if (groupingInfo.getterIsAFn) {
+      return (groupingInfo.getter as GroupGetterFn)(item);
+    }
+
+    const fieldName = groupingInfo.getter as string;
+
+    // Try to use grid's dataItemColumnValueExtractor if available
+    if (this._grid && typeof (this._grid as any)._options?.dataItemColumnValueExtractor === 'function') {
+      const gridColumns = (this._grid as any).getColumns?.();
+      const column = gridColumns?.find((col: Column) => col.field === fieldName);
+      if (column) {
+        return (this._grid as any)._options.dataItemColumnValueExtractor(item, column);
+      }
+    }
+
+    // Fallback to direct field access
+    return item[fieldName as keyof TData];
+  }
+
   protected extractGroups(rows: any[], parentGroup?: SlickGroup_) {
     let group: SlickGroup_;
     let val: any;
@@ -925,7 +947,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
 
     for (let i = 0, l = rows.length; i < l; i++) {
       r = rows[i];
-      val = gi.getterIsAFn ? (gi.getter as GroupGetterFn)(r) : r[gi.getter as keyof TData];
+      val = this.getGroupingValue(r, gi);
       group = groupsByVal[val];
       if (!group) {
         group = new SlickGroup();
