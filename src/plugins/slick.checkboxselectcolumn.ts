@@ -262,13 +262,20 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
       return;
     }
 
-    if (this._selectedRowsLookup[row]) {
-      const newSelectedRows = this._grid.getSelectedRows().filter((n) => n !== row);
-      this._grid.setSelectedRows(newSelectedRows, 'click.toggle');
+    if (this._grid.getOptions().multiSelect) {
+      if (this._selectedRowsLookup[row]) {
+        const newSelectedRows = this._grid.getSelectedRows().filter((n) => n !== row);
+        this._grid.setSelectedRows(newSelectedRows, 'click.toggle');
+      } else {
+        this._grid.setSelectedRows(this._grid.getSelectedRows().concat(row), 'click.toggle');
+      }
     } else {
-      this._grid.setSelectedRows(this._grid.getSelectedRows().concat(row), 'click.toggle');
+      if (this._selectedRowsLookup[row]) {
+        this._grid.setSelectedRows([], 'click.toggle');
+      } else {
+        this._grid.setSelectedRows([row], 'click.toggle');
+      }
     }
-    this._grid.setActiveCell(row, this.getCheckboxColumnCellIndex());
   }
 
   selectRows(rowArray: number[]) {
