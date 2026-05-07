@@ -276,6 +276,7 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
         this._grid.setSelectedRows([row], 'click.toggle');
       }
     }
+    this._grid.setActiveCell(row, this.getCheckboxColumnCellIndex());
   }
 
   selectRows(rowArray: number[]) {
