@@ -2092,12 +2092,17 @@ var SlickEvent6 = SlickEvent, SlickRange2 = SlickRange, Utils8 = Utils, CLEAR_CO
         this.markCopySelection([bRange]), grid.getSelectionModel()?.setSelectedRanges([bRange]), this.onPasteCells.notify({ ranges: [bRange] });
       },
       undo: () => {
-        for (let y = 0; y < clipCommand.destH; y++)
+        for (let y = 0; y < clipCommand.destH; y++) {
+          let xOffset = 0;
           for (let x = 0; x < clipCommand.destW; x++) {
-            let desty = activeRow + y, destx = activeCell + x;
+            let desty = activeRow + y, destx = activeCell + x, column = columns[destx];
+            if (column.hidden) {
+              xOffset++;
+              continue;
+            }
             if (desty < clipCommand.maxDestY && destx < clipCommand.maxDestX) {
               let dt = grid.getDataItem(desty);
-              oneCellToMultiple ? clipCommand.setDataItemValueForColumn(dt, columns[destx], clipCommand.oldValues[0][0]) : clipCommand.setDataItemValueForColumn(dt, columns[destx], clipCommand.oldValues[y][x]), grid.updateCell(desty, destx), grid.onCellChange.notify({
+              clipCommand.setDataItemValueForColumn(dt, column, clipCommand.oldValues[y][x - xOffset]), grid.updateCell(desty, destx), grid.onCellChange.notify({
                 row: desty,
                 cell: destx,
                 item: dt,
@@ -2106,6 +2111,7 @@ var SlickEvent6 = SlickEvent, SlickRange2 = SlickRange, Utils8 = Utils, CLEAR_CO
               });
             }
           }
+        }
         let bRange = new SlickRange2(
           activeRow,
           activeCell,
@@ -3042,11 +3048,14 @@ var BindingEventService7 = BindingEventService, SlickEventHandler3 = SlickEventH
   toggleRowSelection(row) {
     let dataContext = this._grid.getDataItem(row);
     if (this.checkSelectableOverride(row, dataContext, this._grid)) {
-      if (this._selectedRowsLookup[row]) {
-        let newSelectedRows = this._grid.getSelectedRows().filter((n) => n !== row);
-        this._grid.setSelectedRows(newSelectedRows, "click.toggle");
-      } else
-        this._grid.setSelectedRows(this._grid.getSelectedRows().concat(row), "click.toggle");
+      if (this._grid.getOptions().multiSelect)
+        if (this._selectedRowsLookup[row]) {
+          let newSelectedRows = this._grid.getSelectedRows().filter((n) => n !== row);
+          this._grid.setSelectedRows(newSelectedRows, "click.toggle");
+        } else
+          this._grid.setSelectedRows(this._grid.getSelectedRows().concat(row), "click.toggle");
+      else
+        this._selectedRowsLookup[row] ? this._grid.setSelectedRows([], "click.toggle") : this._grid.setSelectedRows([row], "click.toggle");
       this._grid.setActiveCell(row, this.getCheckboxColumnCellIndex());
     }
   }
@@ -4406,13 +4415,13 @@ var Draggable3 = Draggable, keyCode3 = keyCode, SlickEvent15 = SlickEvent, Slick
   }
   handleKeyDown(e) {
     if (this._activeSelectionIsRow) {
-      let activeRow = this._grid.getActiveCell();
-      if (this._grid.getOptions().multiSelect && activeRow && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey && (e.which === keyCode3.UP || e.which === keyCode3.DOWN)) {
+      let activeRow = this._grid.getActiveCell(), isMultiSelect = this._grid.getOptions().multiSelect !== !1;
+      if (activeRow && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
         let selectedRows = this.getSelectedRows();
         selectedRows.sort((x, y) => x - y), selectedRows.length || (selectedRows = [activeRow.row]);
         let active, top = selectedRows[0], bottom = selectedRows[selectedRows.length - 1];
         if (e.which === keyCode3.DOWN ? active = activeRow.row < bottom || top === bottom ? ++bottom : ++top : active = activeRow.row < bottom ? --bottom : --top, active >= 0 && active < this._grid.getDataLength()) {
-          this._grid.scrollRowIntoView(active);
+          this._grid.scrollRowIntoView(active), isMultiSelect || (top = active, bottom = active);
           let tempRanges = this.rowsToRanges(this.getRowsRange(top, bottom));
           this.setSelectedRanges(tempRanges);
         }
@@ -5167,12 +5176,12 @@ var Draggable4 = Draggable, keyCode4 = keyCode, SlickCellRangeDecorator4 = Slick
   }
   handleKeyDown(e) {
     let activeRow = this._grid.getActiveCell();
-    if (this._grid.getOptions().multiSelect && activeRow && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey && (e.which === keyCode4.UP || e.which === keyCode4.DOWN)) {
+    if (activeRow && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey && (e.which === keyCode4.UP || e.which === keyCode4.DOWN)) {
       let selectedRows = this.getSelectedRows();
       selectedRows.sort((x, y) => x - y), selectedRows.length || (selectedRows = [activeRow.row]);
       let top = selectedRows[0], bottom = selectedRows[selectedRows.length - 1], active;
       if (e.which === keyCode4.DOWN ? active = activeRow.row < bottom || top === bottom ? ++bottom : ++top : active = activeRow.row < bottom ? --bottom : --top, active >= 0 && active < this._grid.getDataLength()) {
-        this._grid.scrollRowIntoView(active);
+        this._grid.scrollRowIntoView(active), this._grid.getOptions().multiSelect || (top = active, bottom = active);
         let tempRanges = this.rowsToRanges(this.getRowsRange(top, bottom));
         this.setSelectedRanges(tempRanges);
       }
@@ -5545,8 +5554,8 @@ var keyCode5 = keyCode, SlickGroup2 = SlickGroup, Utils28 = Utils, SlickGroupIte
     let target = e.target, item = this._grid.getDataItem(args.row);
     if (item && item instanceof SlickGroup2 && target.classList.contains(this._options.toggleCssClass || "") && (this.handleDataViewExpandOrCollapse(item), e.stopImmediatePropagation(), e.preventDefault()), item && item instanceof SlickGroup2 && target.classList.contains(this._options.checkboxSelectCssClass || "")) {
       item.selectChecked = !item.selectChecked, target.classList.remove(item.selectChecked ? "unchecked" : "checked"), target.classList.add(item.selectChecked ? "checked" : "unchecked");
-      let rowIndexes = this.dataView.mapItemsToRows(item.rows);
-      item.selectChecked ? this._options.checkboxSelectPlugin.selectRows(rowIndexes) : this._options.checkboxSelectPlugin.deSelectRows(rowIndexes);
+      let groupIds = item.rows.map((row) => row[this.dataView.getIdProperty()]), currentSelectedIds = this.dataView.getAllSelectedIds() || [], newSelectedIds;
+      item.selectChecked ? newSelectedIds = [.../* @__PURE__ */ new Set([...currentSelectedIds, ...groupIds])] : newSelectedIds = currentSelectedIds.filter((id) => !groupIds.includes(id)), this.dataView.setSelectedRowIds(newSelectedIds);
     }
   }
   // TODO:  add -/+ handling
@@ -5988,7 +5997,7 @@ var SlickEvent21 = SlickEvent, SlickEventData7 = SlickEventData, SlickGroup3 = S
             throw new Error("[SlickGrid DataView] Invalid id");
           this.idxById.delete(id), indexesToDelete.push(idx);
         }
-        indexesToDelete.sort();
+        indexesToDelete.sort((a, b) => a - b);
         for (let i = indexesToDelete.length - 1; i >= 0; --i)
           this.items.splice(indexesToDelete[i], 1);
         this.updateIdxById(indexesToDelete[0]), this.refresh();
@@ -6086,12 +6095,24 @@ var SlickEvent21 = SlickEvent, SlickEventData7 = SlickEventData, SlickGroup3 = S
   getGroups() {
     return this.groups;
   }
+  /** Helper method to get grouping value, using grid's dataItemColumnValueExtractor if available */
+  getGroupingValue(item, groupingInfo) {
+    if (groupingInfo.getterIsAFn)
+      return groupingInfo.getter(item);
+    let fieldName = groupingInfo.getter;
+    if (this._grid && typeof this._grid._options?.dataItemColumnValueExtractor == "function") {
+      let column = this._grid.getColumns?.()?.find((col) => col.field === fieldName);
+      if (column)
+        return this._grid._options.dataItemColumnValueExtractor(item, column);
+    }
+    return item[fieldName];
+  }
   extractGroups(rows, parentGroup) {
     let group, val, groups = [], groupsByVal = {}, r, level = parentGroup ? parentGroup.level + 1 : 0, gi = this.groupingInfos[level];
     for (let i = 0, l = gi.predefinedValues?.length ?? 0; i < l; i++)
       val = gi.predefinedValues?.[i], group = groupsByVal[val], group || (group = new SlickGroup3(), group.value = val, group.level = level, group.groupingKey = (parentGroup ? parentGroup.groupingKey + this.groupingDelimiter : "") + val, groups[groups.length] = group, groupsByVal[val] = group);
     for (let i = 0, l = rows.length; i < l; i++)
-      r = rows[i], val = gi.getterIsAFn ? gi.getter(r) : r[gi.getter], group = groupsByVal[val], group || (group = new SlickGroup3(), group.value = val, group.level = level, group.groupingKey = (parentGroup ? parentGroup.groupingKey + this.groupingDelimiter : "") + val, groups[groups.length] = group, groupsByVal[val] = group), group.rows[group.count++] = r;
+      r = rows[i], val = this.getGroupingValue(r, gi), group = groupsByVal[val], group || (group = new SlickGroup3(), group.value = val, group.level = level, group.groupingKey = (parentGroup ? parentGroup.groupingKey + this.groupingDelimiter : "") + val, groups[groups.length] = group, groupsByVal[val] = group), group.rows[group.count++] = r;
     if (level < this.groupingInfos.length - 1)
       for (let i = 0; i < groups.length; i++)
         group = groups[i], group.groups = this.extractGroups(group.rows, group);
@@ -7122,7 +7143,7 @@ var SlickGrid = class {
     __publicField(this, "externalPubSub", externalPubSub);
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.18.4");
+    __publicField(this, "slickGridVersion", "5.18.5");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -11875,7 +11896,7 @@ var SlickEvent24 = SlickEvent, SlickRemoteModel = class {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.18.4
+ * SlickGrid v5.18.5
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

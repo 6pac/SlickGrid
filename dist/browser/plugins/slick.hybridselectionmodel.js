@@ -192,13 +192,13 @@
     handleKeyDown(e) {
       var _a, _b;
       if (this._activeSelectionIsRow) {
-        let activeRow = this._grid.getActiveCell();
-        if (this._grid.getOptions().multiSelect && activeRow && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey && (e.which === keyCode.UP || e.which === keyCode.DOWN)) {
+        let activeRow = this._grid.getActiveCell(), isMultiSelect = this._grid.getOptions().multiSelect !== !1;
+        if (activeRow && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey && (e.key === "ArrowUp" || e.key === "ArrowDown")) {
           let selectedRows = this.getSelectedRows();
           selectedRows.sort((x, y) => x - y), selectedRows.length || (selectedRows = [activeRow.row]);
           let active, top = selectedRows[0], bottom = selectedRows[selectedRows.length - 1];
           if (e.which === keyCode.DOWN ? active = activeRow.row < bottom || top === bottom ? ++bottom : ++top : active = activeRow.row < bottom ? --bottom : --top, active >= 0 && active < this._grid.getDataLength()) {
-            this._grid.scrollRowIntoView(active);
+            this._grid.scrollRowIntoView(active), isMultiSelect || (top = active, bottom = active);
             let tempRanges = this.rowsToRanges(this.getRowsRange(top, bottom));
             this.setSelectedRanges(tempRanges);
           }

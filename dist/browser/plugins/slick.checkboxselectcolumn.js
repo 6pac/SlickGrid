@@ -129,11 +129,14 @@
     toggleRowSelection(row) {
       let dataContext = this._grid.getDataItem(row);
       if (this.checkSelectableOverride(row, dataContext, this._grid)) {
-        if (this._selectedRowsLookup[row]) {
-          let newSelectedRows = this._grid.getSelectedRows().filter((n) => n !== row);
-          this._grid.setSelectedRows(newSelectedRows, "click.toggle");
-        } else
-          this._grid.setSelectedRows(this._grid.getSelectedRows().concat(row), "click.toggle");
+        if (this._grid.getOptions().multiSelect)
+          if (this._selectedRowsLookup[row]) {
+            let newSelectedRows = this._grid.getSelectedRows().filter((n) => n !== row);
+            this._grid.setSelectedRows(newSelectedRows, "click.toggle");
+          } else
+            this._grid.setSelectedRows(this._grid.getSelectedRows().concat(row), "click.toggle");
+        else
+          this._selectedRowsLookup[row] ? this._grid.setSelectedRows([], "click.toggle") : this._grid.setSelectedRows([row], "click.toggle");
         this._grid.setActiveCell(row, this.getCheckboxColumnCellIndex());
       }
     }

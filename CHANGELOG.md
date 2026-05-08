@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.18.5](https://github.com/6pac/SlickGrid/compare/5.18.4...5.18.5) (2026-05-08)
+
+### Bug Fixes
+
+* enable momentum scrolling on iOS to prevent scroll interruption at horizontal boundaries ([#1198](https://github.com/6pac/SlickGrid/issues/1198)) ([99e330e](https://github.com/6pac/SlickGrid/commit/99e330e3d68cbefaf292306c56d4ffb9ac7211d2))
+* Group totals formatter missing column context ([#1202](https://github.com/6pac/SlickGrid/issues/1202)) ([cf2dbe6](https://github.com/6pac/SlickGrid/commit/cf2dbe6a425c1730e0cda6dfcd0245fa03dfbe33))
+* respect multiSelect option in checkbox selection ([#1203](https://github.com/6pac/SlickGrid/issues/1203)) ([1227b71](https://github.com/6pac/SlickGrid/commit/1227b71172fb81ec88251736ffb7eadfca6bec25))
+* restore individual cell values on undo for multi-cell paste ([#1199](https://github.com/6pac/SlickGrid/issues/1199)) ([9aa520c](https://github.com/6pac/SlickGrid/commit/9aa520cb57c1ae461514a413ad128b2382275ed2))
+* use dataItemColumnValueExtractor for grouping with nested objects ([#1200](https://github.com/6pac/SlickGrid/issues/1200)) ([a0d1d01](https://github.com/6pac/SlickGrid/commit/a0d1d01846860cc29b4bdbfa47ed836a34991e6e))
+* use numeric sort in deleteItems to prevent data loss, fixes [#1178](https://github.com/6pac/SlickGrid/issues/1178) ([#1204](https://github.com/6pac/SlickGrid/issues/1204)) ([43066f4](https://github.com/6pac/SlickGrid/commit/43066f4526fed57107b31042f120aa6d44118665))
+
 ## [5.18.4](https://github.com/6pac/SlickGrid/compare/5.18.3...5.18.4) (2026-05-05)
 
 ### Bug Fixes

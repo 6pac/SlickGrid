@@ -96,12 +96,12 @@
     }
     handleKeyDown(e) {
       let activeRow = this._grid.getActiveCell();
-      if (this._grid.getOptions().multiSelect && activeRow && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey && (e.which === keyCode.UP || e.which === keyCode.DOWN)) {
+      if (activeRow && e.shiftKey && !e.ctrlKey && !e.altKey && !e.metaKey && (e.which === keyCode.UP || e.which === keyCode.DOWN)) {
         let selectedRows = this.getSelectedRows();
         selectedRows.sort((x, y) => x - y), selectedRows.length || (selectedRows = [activeRow.row]);
         let top = selectedRows[0], bottom = selectedRows[selectedRows.length - 1], active;
         if (e.which === keyCode.DOWN ? active = activeRow.row < bottom || top === bottom ? ++bottom : ++top : active = activeRow.row < bottom ? --bottom : --top, active >= 0 && active < this._grid.getDataLength()) {
-          this._grid.scrollRowIntoView(active);
+          this._grid.scrollRowIntoView(active), this._grid.getOptions().multiSelect || (top = active, bottom = active);
           let tempRanges = this.rowsToRanges(this.getRowsRange(top, bottom));
           this.setSelectedRanges(tempRanges);
         }

@@ -176,12 +176,17 @@
         },
         undo: () => {
           var _a2;
-          for (let y = 0; y < clipCommand.destH; y++)
+          for (let y = 0; y < clipCommand.destH; y++) {
+            let xOffset = 0;
             for (let x = 0; x < clipCommand.destW; x++) {
-              let desty = activeRow + y, destx = activeCell + x;
+              let desty = activeRow + y, destx = activeCell + x, column = columns[destx];
+              if (column.hidden) {
+                xOffset++;
+                continue;
+              }
               if (desty < clipCommand.maxDestY && destx < clipCommand.maxDestX) {
                 let dt = grid.getDataItem(desty);
-                oneCellToMultiple ? clipCommand.setDataItemValueForColumn(dt, columns[destx], clipCommand.oldValues[0][0]) : clipCommand.setDataItemValueForColumn(dt, columns[destx], clipCommand.oldValues[y][x]), grid.updateCell(desty, destx), grid.onCellChange.notify({
+                clipCommand.setDataItemValueForColumn(dt, column, clipCommand.oldValues[y][x - xOffset]), grid.updateCell(desty, destx), grid.onCellChange.notify({
                   row: desty,
                   cell: destx,
                   item: dt,
@@ -190,6 +195,7 @@
                 });
               }
             }
+          }
           let bRange = new SlickRange(
             activeRow,
             activeCell,

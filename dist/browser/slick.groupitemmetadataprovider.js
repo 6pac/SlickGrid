@@ -67,8 +67,8 @@
       let target = e.target, item = this._grid.getDataItem(args.row);
       if (item && item instanceof SlickGroup && target.classList.contains(this._options.toggleCssClass || "") && (this.handleDataViewExpandOrCollapse(item), e.stopImmediatePropagation(), e.preventDefault()), item && item instanceof SlickGroup && target.classList.contains(this._options.checkboxSelectCssClass || "")) {
         item.selectChecked = !item.selectChecked, target.classList.remove(item.selectChecked ? "unchecked" : "checked"), target.classList.add(item.selectChecked ? "checked" : "unchecked");
-        let rowIndexes = this.dataView.mapItemsToRows(item.rows);
-        item.selectChecked ? this._options.checkboxSelectPlugin.selectRows(rowIndexes) : this._options.checkboxSelectPlugin.deSelectRows(rowIndexes);
+        let groupIds = item.rows.map((row) => row[this.dataView.getIdProperty()]), currentSelectedIds = this.dataView.getAllSelectedIds() || [], newSelectedIds;
+        item.selectChecked ? newSelectedIds = [.../* @__PURE__ */ new Set([...currentSelectedIds, ...groupIds])] : newSelectedIds = currentSelectedIds.filter((id) => !groupIds.includes(id)), this.dataView.setSelectedRowIds(newSelectedIds);
       }
     }
     // TODO:  add -/+ handling

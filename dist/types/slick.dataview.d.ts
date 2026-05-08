@@ -251,6 +251,8 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
      */
     expandGroup(...args: any): void;
     getGroups(): SlickGroup_[];
+    /** Helper method to get grouping value, using grid's dataItemColumnValueExtractor if available */
+    protected getGroupingValue(item: TData, groupingInfo: any): any;
     protected extractGroups(rows: any[], parentGroup?: SlickGroup_): SlickGroup_[];
     /** claculate Group Totals */
     protected calculateTotals(totals: SlickGroupTotals_): void;

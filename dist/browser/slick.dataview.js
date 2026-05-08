@@ -404,7 +404,7 @@
               throw new Error("[SlickGrid DataView] Invalid id");
             this.idxById.delete(id), indexesToDelete.push(idx);
           }
-          indexesToDelete.sort();
+          indexesToDelete.sort((a, b) => a - b);
           for (let i = indexesToDelete.length - 1; i >= 0; --i)
             this.items.splice(indexesToDelete[i], 1);
           this.updateIdxById(indexesToDelete[0]), this.refresh();
@@ -504,13 +504,26 @@
     getGroups() {
       return this.groups;
     }
+    /** Helper method to get grouping value, using grid's dataItemColumnValueExtractor if available */
+    getGroupingValue(item, groupingInfo) {
+      var _a2, _b2, _c;
+      if (groupingInfo.getterIsAFn)
+        return groupingInfo.getter(item);
+      let fieldName = groupingInfo.getter;
+      if (this._grid && typeof ((_a2 = this._grid._options) == null ? void 0 : _a2.dataItemColumnValueExtractor) == "function") {
+        let gridColumns = (_c = (_b2 = this._grid).getColumns) == null ? void 0 : _c.call(_b2), column = gridColumns == null ? void 0 : gridColumns.find((col) => col.field === fieldName);
+        if (column)
+          return this._grid._options.dataItemColumnValueExtractor(item, column);
+      }
+      return item[fieldName];
+    }
     extractGroups(rows, parentGroup) {
       var _a2, _b2, _c;
       let group, val, groups = [], groupsByVal = {}, r, level = parentGroup ? parentGroup.level + 1 : 0, gi = this.groupingInfos[level];
       for (let i = 0, l = (_b2 = (_a2 = gi.predefinedValues) == null ? void 0 : _a2.length) != null ? _b2 : 0; i < l; i++)
         val = (_c = gi.predefinedValues) == null ? void 0 : _c[i], group = groupsByVal[val], group || (group = new SlickGroup(), group.value = val, group.level = level, group.groupingKey = (parentGroup ? parentGroup.groupingKey + this.groupingDelimiter : "") + val, groups[groups.length] = group, groupsByVal[val] = group);
       for (let i = 0, l = rows.length; i < l; i++)
-        r = rows[i], val = gi.getterIsAFn ? gi.getter(r) : r[gi.getter], group = groupsByVal[val], group || (group = new SlickGroup(), group.value = val, group.level = level, group.groupingKey = (parentGroup ? parentGroup.groupingKey + this.groupingDelimiter : "") + val, groups[groups.length] = group, groupsByVal[val] = group), group.rows[group.count++] = r;
+        r = rows[i], val = this.getGroupingValue(r, gi), group = groupsByVal[val], group || (group = new SlickGroup(), group.value = val, group.level = level, group.groupingKey = (parentGroup ? parentGroup.groupingKey + this.groupingDelimiter : "") + val, groups[groups.length] = group, groupsByVal[val] = group), group.rows[group.count++] = r;
       if (level < this.groupingInfos.length - 1)
         for (let i = 0; i < groups.length; i++)
           group = groups[i], group.groups = this.extractGroups(group.rows, group);

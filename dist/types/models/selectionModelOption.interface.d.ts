@@ -11,7 +11,7 @@ export type SelectionType =
 export interface HybridSelectionModelOption {
     /** defaults to True, do we want to select the active cell? */
     selectActiveCell?: boolean;
-    /** defaults to True, do we want to select the active row? */
+    /** defaults to True, should the currently-active row be automatically selected during navigation? */
     selectActiveRow?: boolean;
     /** cell range selector */
     cellRangeSelector?: SlickCellRangeSelector;
@@ -35,7 +35,7 @@ export interface RowSelectionModelOption {
     dragToSelect?: boolean;
     /** cell range selector */
     cellRangeSelector?: SlickCellRangeSelector;
-    /** defaults to True, do we want to select the active row? */
+    /** defaults to True, should the currently-active row be automatically selected during navigation? */
     selectActiveRow?: boolean;
 }
 //# sourceMappingURL=selectionModelOption.interface.d.ts.map
