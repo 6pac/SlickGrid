@@ -698,7 +698,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       }
 
       // Remove from back to front
-      indexesToDelete.sort();
+      indexesToDelete.sort((a, b) => a - b);
       for (let i = indexesToDelete.length - 1; i >= 0; --i) {
         this.items.splice(indexesToDelete[i], 1);
       }
