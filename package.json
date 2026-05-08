@@ -94,6 +94,9 @@
     "typescript": "^5.9.3",
     "typescript-eslint": "^8.59.2"
   },
+  "overrides": {
+    "follow-redirects": "^1.16.0"
+  },
   "workspaces": [
     "vite-demo",
     "src"
