@@ -2570,11 +2570,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
               unallocatedColWidth -= (c.autoSize?.widthPx || 0);
               unallocatedViewportWidth -= colWidth;
             }
-          } else {
-            colWidth = (c.autoSize?.widthPx || 0);
-            if (colWidth < (c.minWidth || 0)) {
-              colWidth = c.minWidth || 0;
-            }
           }
           if (c.rerenderOnResize && c.width !== colWidth) {
             reRender = true;
