@@ -2490,6 +2490,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     let strColsMinWidth = 0;
     let totalMinWidth = 0;
     let totalLockedColWidth = 0;
+    let totalContentWidth = 0;
     for (i = 0; i < this.columns.length; i++) {
       c = this.columns[i];
       this.getColAutosizeWidth(c, i, gridCanvas, isInit || false, i);
@@ -2501,6 +2502,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       totalWidth += (c.autoSize?.widthPx || 0);
       totalWidthLessSTR += (c.autoSize?.sizeToRemaining ? 0 : c.autoSize?.widthPx || 0);
       strColsMinWidth += (c.autoSize?.sizeToRemaining ? c.minWidth || 0 : 0);
+      totalContentWidth += (c.autoSize?.widthPx || 0);
     }
     const strColTotalGuideWidth = totalWidth - totalWidthLessSTR;
 
@@ -2543,7 +2545,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           c.width = colWidth;
         }
       } else if ((this._options.viewportSwitchToScrollModeWidthPercent && totalWidthLessSTR + strColsMinWidth > viewportWidth * this._options.viewportSwitchToScrollModeWidthPercent / 100)
-        || (totalMinWidth > viewportWidth)) {
+        || (totalMinWidth > viewportWidth) || (totalContentWidth > viewportWidth)) {
         // if the total columns width is wider than the viewport by switchToScrollModeWidthPercent, switch to IgnoreViewport mode
         autosizeMode = GridAutosizeColsMode.IgnoreViewport;
       } else {
