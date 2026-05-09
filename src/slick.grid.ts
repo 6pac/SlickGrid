@@ -2493,8 +2493,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     for (i = 0; i < this.columns.length; i++) {
       c = this.columns[i];
       this.getColAutosizeWidth(c, i, gridCanvas, isInit || false, i);
-      totalLockedColWidth += (c.autoSize?.autosizeMode === ColAutosizeMode.Locked ? (c.width || 0) : (this.treatAsLocked(c.autoSize) ? c.autoSize?.widthPx || 0 : 0));
-      totalMinWidth += (c.autoSize?.autosizeMode === ColAutosizeMode.Locked ? (c.width || 0) : (this.treatAsLocked(c.autoSize) ? c.autoSize?.widthPx || 0 : c.minWidth || 0));
+      const isLocked = c.autoSize?.autosizeMode === ColAutosizeMode.Locked;
+      const isTreatedAsLocked = autosizeMode !== GridAutosizeColsMode.FitColsToViewport && this.treatAsLocked(c.autoSize);
+
+      totalLockedColWidth += (isLocked ? (c.width || 0) : (isTreatedAsLocked ? c.autoSize?.widthPx || 0 : 0));
+      totalMinWidth += (isLocked ? (c.width || 0) : (isTreatedAsLocked ? c.autoSize?.widthPx || 0 : c.minWidth || 0));
       totalWidth += (c.autoSize?.widthPx || 0);
       totalWidthLessSTR += (c.autoSize?.sizeToRemaining ? 0 : c.autoSize?.widthPx || 0);
       strColsMinWidth += (c.autoSize?.sizeToRemaining ? c.minWidth || 0 : 0);
@@ -2553,7 +2556,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           if (!c || c.hidden) { continue; }
 
           colWidth = c.width || 0;
-          if (c.autoSize?.autosizeMode !== ColAutosizeMode.Locked && !this.treatAsLocked(c.autoSize)) {
+          if (c.autoSize?.autosizeMode !== ColAutosizeMode.Locked) {
             if (c.autoSize?.sizeToRemaining) {
               colWidth = c.minWidth || 0;
             } else {
@@ -2567,8 +2570,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
               unallocatedColWidth -= (c.autoSize?.widthPx || 0);
               unallocatedViewportWidth -= colWidth;
             }
-          }
-          if (this.treatAsLocked(c.autoSize)) {
+          } else {
             colWidth = (c.autoSize?.widthPx || 0);
             if (colWidth < (c.minWidth || 0)) {
               colWidth = c.minWidth || 0;
