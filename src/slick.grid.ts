@@ -2497,7 +2497,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       const isTreatedAsLocked = autosizeMode !== GridAutosizeColsMode.FitColsToViewport && this.treatAsLocked(c.autoSize);
 
       totalLockedColWidth += (isLocked ? (c.width || 0) : (isTreatedAsLocked ? c.autoSize?.widthPx || 0 : 0));
-      totalMinWidth += (isLocked ? (c.width || 0) : (isTreatedAsLocked ? c.autoSize?.widthPx || 0 : Math.max(c.minWidth || 0, c.autoSize?.widthPx || 0)));
+      totalMinWidth += (isLocked ? (c.width || 0) : (isTreatedAsLocked ? c.autoSize?.widthPx || 0 : c.minWidth || 0));
       totalWidth += (c.autoSize?.widthPx || 0);
       totalWidthLessSTR += (c.autoSize?.sizeToRemaining ? 0 : c.autoSize?.widthPx || 0);
       strColsMinWidth += (c.autoSize?.sizeToRemaining ? c.minWidth || 0 : 0);
