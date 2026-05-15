@@ -323,7 +323,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     sanitizer: undefined,  // sanitize function, built in basic sanitizer is: Slick.RegexSanitizer(dirtyHtml)
     logSanitizedHtml: false, // log to console when sanitised - recommend true for testing of dev and production
     mixinDefaults: true,
-    shadowRoot: undefined
+    shadowRoot: undefined,
+    colAutosizeTreatAsLockedBelowWidth: 100
   };
 
   protected _columnDefaults = {
@@ -2419,7 +2420,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   /**
    * Returns true if the column should be treated as locked (i.e. not resized) based on autosize settings.
    * The decision is based on whether header text is not ignored, sizeToRemaining is false,
-   * content size equals header width, and the current width is less than 100 pixels.
+   * content size equals header width, and the current width is less than a pixel threshold (default 100px).
    *
    * @param {AutoSize} [autoSize={}] - The autosize configuration for the column.
    * @returns {boolean} - Returns `true` if the column should be treated as locked, otherwise `false`.
@@ -2429,7 +2430,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return !autoSize.ignoreHeaderText
       && !autoSize.sizeToRemaining
       && (autoSize.contentSizePx === autoSize.headerWidthPx)
-      && ((autoSize.widthPx ?? 0) < 100);
+      && ((autoSize.widthPx ?? 0) < (this._options.colAutosizeTreatAsLockedBelowWidth ?? 100));
   }
 
   /** Proportionately resizes all columns to fill available horizontal space.
