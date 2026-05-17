@@ -5,6 +5,10 @@ See [Conventional Commits](https://conventionalcommits.org) for commit guideline
 
 ## [5.18.6](https://github.com/6pac/SlickGrid/compare/5.18.5...5.18.6) (2026-05-17)
 
+### Bug Fixes
+
+expose width threshold for treat as locked, fixes ([#1209](https://github.com/6pac/SlickGrid/issues/1209)) ([75f2237](https://github.com/6pac/SlickGrid/pull/1210/commits/75f2237de2eacf11181319e89445a0429a1cc5a6))
+
 ## [5.18.5](https://github.com/6pac/SlickGrid/compare/5.18.4...5.18.5) (2026-05-08)
 
 ### Bug Fixes
