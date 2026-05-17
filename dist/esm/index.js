@@ -7033,7 +7033,7 @@ var SlickGrid = class {
     __publicField(this, "externalPubSub", externalPubSub);
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.18.5");
+    __publicField(this, "slickGridVersion", "5.18.6");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -7203,7 +7203,8 @@ var SlickGrid = class {
       logSanitizedHtml: !1,
       // log to console when sanitised - recommend true for testing of dev and production
       mixinDefaults: !0,
-      shadowRoot: void 0
+      shadowRoot: void 0,
+      colAutosizeTreatAsLockedBelowWidth: 100
     });
     __publicField(this, "_columnDefaults", {
       name: "",
@@ -8135,13 +8136,13 @@ var SlickGrid = class {
   /**
    * Returns true if the column should be treated as locked (i.e. not resized) based on autosize settings.
    * The decision is based on whether header text is not ignored, sizeToRemaining is false,
-   * content size equals header width, and the current width is less than 100 pixels.
+   * content size equals header width, and the current width is less than a pixel threshold (default 100px).
    *
    * @param {AutoSize} [autoSize={}] - The autosize configuration for the column.
    * @returns {boolean} - Returns `true` if the column should be treated as locked, otherwise `false`.
    */
   treatAsLocked(autoSize = {}) {
-    return !autoSize.ignoreHeaderText && !autoSize.sizeToRemaining && autoSize.contentSizePx === autoSize.headerWidthPx && (autoSize.widthPx ?? 0) < 100;
+    return !autoSize.ignoreHeaderText && !autoSize.sizeToRemaining && autoSize.contentSizePx === autoSize.headerWidthPx && (autoSize.widthPx ?? 0) < (this._options.colAutosizeTreatAsLockedBelowWidth ?? 100);
   }
   /** Proportionately resizes all columns to fill available horizontal space.
    * This does not take the cell contents into consideration.
@@ -11878,7 +11879,7 @@ export {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.18.5
+ * SlickGrid v5.18.6
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

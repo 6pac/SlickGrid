@@ -62,6 +62,11 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
     cellFlashingCssClass?: string;
     /** Cell menu options (Action menu) */
     cellMenu?: CellMenuOption;
+    /**
+     * Defaults to 100px, maximum column width (px) below which a column may be treated as locked (not resized) during auto-sizing.
+     * Note that additional conditions must also be met: header text is not ignored, sizeToRemaining is false, and content size equals header width.
+     */
+    colAutosizeTreatAsLockedBelowWidth?: number;
     /** Column Picker Plugin options (columnTitle, forceFitTitle, syncResizeTitle) */
     columnPicker?: ColumnPickerOption;
     /** Context menu options (mouse right+click) */

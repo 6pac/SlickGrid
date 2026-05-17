@@ -3,6 +3,8 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.18.6](https://github.com/6pac/SlickGrid/compare/5.18.5...5.18.6) (2026-05-17)
+
 ## [5.18.5](https://github.com/6pac/SlickGrid/compare/5.18.4...5.18.5) (2026-05-08)
 
 ### Bug Fixes

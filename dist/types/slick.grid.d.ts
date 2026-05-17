@@ -10,7 +10,7 @@ import { type BasePubSub, BindingEventService as BindingEventService_, type Slic
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.18.5
+ * SlickGrid v5.18.6
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -557,7 +557,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     /**
      * Returns true if the column should be treated as locked (i.e. not resized) based on autosize settings.
      * The decision is based on whether header text is not ignored, sizeToRemaining is false,
-     * content size equals header width, and the current width is less than 100 pixels.
+     * content size equals header width, and the current width is less than a pixel threshold (default 100px).
      *
      * @param {AutoSize} [autoSize={}] - The autosize configuration for the column.
      * @returns {boolean} - Returns `true` if the column should be treated as locked, otherwise `false`.
