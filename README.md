@@ -23,6 +23,25 @@ We extended the project from the original SlickGrid foundation while also includ
 - modernized the project in [v5](https://github.com/6pac/SlickGrid/wiki/Major-version-5.0-%E2%80%90-ES6-ESM-and-TypeScript-Support) by migrating to TypeScript (we kept IIFE and added ES6/ESM build targets) and we also gave SlickGrid a fresh and more modern look via a new Alpine Theme (CSS/SASS)
 - the project now only has 1 small dependency requirement which is [SortableJS](https://sortablejs.github.io/Sortable/)
 
+### Dependency
+
+[SortableJS](https://sortablejs.github.io/Sortable/) is the only hard dependency and you have to assign it yourself.
+
+##### Standalone `<script>`
+
+```js
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+```
+
+##### CJS or ESM
+
+For CJS and ESM, you have to assign the import to the global `window` (or `global` for Node) object
+
+```ts
+import Sortable from 'sortablejs';
+(window as any).Sortable = Sortable;
+```
+
 ### Common Questions & Answers
 - Do I need TypeScript to use version 5.x?
   - Not at all, you can use regular JavaScript if you wish by using the [dist/browser](https://github.com/6pac/SlickGrid/tree/master/dist/browser) folder, ESM folder or from CDN. The Stackblitz and installation examples shown below are mostly written with JavaScript.
