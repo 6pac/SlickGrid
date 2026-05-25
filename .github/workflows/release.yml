@@ -8,7 +8,7 @@ on:
         description: Dry-Run
       semver:
         type: choice
-        description: Select the semver version bump
+        description: Select the semver version bump (fix → patch, feat → minor, breaking change → major)
         required: true
         options:
           - '' # empty option to force user to choose
