@@ -87,7 +87,7 @@ export async function bundleByFormat(format) {
   const esbuildExt = format === 'mjs' ? 'mjs' : 'js';
 
   return runBuild({
-    entryPoints: ['src/index.js'],
+    entryPoints: ['./src/index.js'],
     format: esbuildFormat,
     target: 'es2020',
     treeShaking: true,
