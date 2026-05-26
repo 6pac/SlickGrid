@@ -78,7 +78,7 @@ export class SlickCellRangeDecorator implements SlickPlugin {
     const css = isCopyTo && this._options.copyToSelectionCss ? this._options.copyToSelectionCss : this._options.selectionCss;
 
     // Apply styles to the element
-    Utils_.setStyles(this._elem, css);
+    Utils.setStyles(this._elem, css);
 
     // Get the boxes for the selected cells
     const from = this.grid.getCellNodeBox(range.fromRow, range.fromCell);
