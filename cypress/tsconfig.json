@@ -1,6 +1,6 @@
 {
   "compilerOptions": {
-    "target": "es5",
+    "target": "es2020",
     "allowSyntheticDefaultImports": true,
     "esModuleInterop": true,
     "lib": ["es5", "dom"],

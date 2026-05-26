@@ -1,4 +1,4 @@
-import type { CSSStyleDeclarationWritable, CellRangeDecoratorOption, SlickPlugin } from '../models/index.js';
+import type { CellRangeDecoratorOption, SlickPlugin } from '../models/index.js';
 import { Utils as Utils_, type SlickRange } from '../slick.core.js';
 import type { SlickGrid } from '../slick.grid.js';
 
@@ -74,16 +74,17 @@ export class SlickCellRangeDecorator implements SlickPlugin {
       }
     }
 
-    const css = isCopyTo && this._options.copyToSelectionCss ? this._options.copyToSelectionCss :this._options.selectionCss;
-    Object.keys(css).forEach((cssStyleKey) => {
-      if (this._elem!.style[cssStyleKey as CSSStyleDeclarationWritable] !== css[cssStyleKey as CSSStyleDeclarationWritable]) {
-        this._elem!.style[cssStyleKey as CSSStyleDeclarationWritable] = css[cssStyleKey as CSSStyleDeclarationWritable];
-      }
-    });
+    // Determine which CSS style to use
+    const css = isCopyTo && this._options.copyToSelectionCss ? this._options.copyToSelectionCss : this._options.selectionCss;
 
+    // Apply styles to the element
+    Utils.setStyles(this._elem, css);
+
+    // Get the boxes for the selected cells
     const from = this.grid.getCellNodeBox(range.fromRow, range.fromCell);
     const to = this.grid.getCellNodeBox(range.toRow, range.toCell);
 
+    // Update position and dimensions if both nodes are valid
     if (from && to && this._options?.offset) {
       this._elem.style.top = `${from.top + this._options.offset.top}px`;
       this._elem.style.left = `${from.left + this._options.offset.left}px`;
