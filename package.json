@@ -92,7 +92,7 @@
     "semver": "^7.8.1",
     "tinyexec": "^1.2.2",
     "tinyglobby": "^0.2.16",
-    "typescript": "^5.9.3",
+    "typescript": "^6.0.3",
     "typescript-eslint": "^8.60.0"
   },
   "overrides": {
