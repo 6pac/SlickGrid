@@ -45,7 +45,7 @@ export default [
       globals: {
         ...globals.es2021,
         ...globals.node,
-        ...globals.browser,        // add all browser globals (includes getComputedStyle)
+        ...globals.browser,
         flatpickr: 'readonly',
         moment: 'readonly',
         Slick: 'readonly',
@@ -68,10 +68,7 @@ export default [
       '@typescript-eslint/ban-ts-comment': 'off',
       '@typescript-eslint/consistent-type-exports': 'error',
       '@typescript-eslint/consistent-type-imports': 'error',
-      '@typescript-eslint/no-empty-object-type': [
-        'error',
-        { allowInterfaces: 'with-single-extends' }, // maybe we should turn this on in a new PR
-      ],
+      '@typescript-eslint/no-empty-object-type': 'error',
       '@typescript-eslint/no-empty-function': 'off',
       '@typescript-eslint/no-unsafe-function-type': 'off',
       '@typescript-eslint/no-explicit-any': 'off',
