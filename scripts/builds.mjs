@@ -87,7 +87,7 @@ export async function bundleByFormat(format) {
   const esbuildExt = format === 'mjs' ? 'mjs' : 'js';
 
   return runBuild({
-    entryPoints: ['./src/index.js'],
+    entryPoints: ['./src/index.ts'],
     format: esbuildFormat,
     target: 'es2020',
     treeShaking: true,
@@ -155,8 +155,12 @@ export function runBuild(options) {
 
     // merge any optional esbuild options
     ...options,
-  }).catch(() => {
-    // don't do anything when an error occured, this is to avoid watch mode to crash on errors
+  }).catch((err) => {
+    // in production builds, fail immediately on errors so CI catches them
+    if (argv.prod) {
+      throw err;
+    }
+    // in watch mode, don't crash on errors to allow recovery
     // console.error('esbuild error: ', err);
   });
 }
