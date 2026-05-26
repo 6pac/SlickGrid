@@ -9,6 +9,7 @@ import type {
   ColumnMetadata,
   ColumnSort,
   CssStyleHash,
+  CSSStyleDeclarationWritable,
   CustomDataView,
   DOMEvent,
   DragPosition,
@@ -73,7 +74,6 @@ import type {
   SingleColumnSort,
   SlickGridModel,
   SlickPlugin,
-  CSSStyleDeclarationWritable,
 } from './models/index.js';
 import {
   type BasePubSub,
