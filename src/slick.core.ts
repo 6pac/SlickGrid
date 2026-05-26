@@ -6,7 +6,6 @@
 
 import type {
   AnyFunction,
-  CSSStyleDeclarationWritable,
   EditController,
   ElementEventListener,
   Handler,
@@ -812,7 +811,6 @@ export class Utils {
       target = {};
     }
     if (i === length) {
-      // eslint-disable-next-line @typescript-eslint/no-this-alias
       target = this;
       i--;
     }
@@ -1041,9 +1039,9 @@ export class Utils {
     if (typeof val === 'function') {
       val = val();
     } else if (typeof val === 'string') {
-      el.style[style as CSSStyleDeclarationWritable] = val;
+      el.style[style as any] = val;
     } else {
-      el.style[style as CSSStyleDeclarationWritable] = val + 'px';
+      el.style[style as any] = val + 'px';
     }
   }
 
