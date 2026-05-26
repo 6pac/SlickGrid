@@ -1,4 +1,3 @@
-
 export type CSSStyleDeclarationReadonly =
   | 'length'
   | 'parentRule'
