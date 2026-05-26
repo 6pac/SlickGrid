@@ -71,8 +71,8 @@
     "browser-sync": "^3.0.4",
     "conventional-changelog": "^7.2.0",
     "conventional-changelog-angular": "^8.3.1",
-    "cssnano": "^8.0.0",
-    "cypress": "^15.14.2",
+    "cssnano": "^8.0.1",
+    "cypress": "^15.15.0",
     "cypress-real-events": "^1.15.0",
     "dotenv": "^17.4.2",
     "esbuild": "^0.28.0",
@@ -84,15 +84,15 @@
     "http-server": "^14.1.1",
     "native-copyfiles": "^2.0.1",
     "new-github-release-url": "^2.0.0",
-    "postcss": "^8.5.14",
+    "postcss": "^8.5.15",
     "postcss-cli": "^11.0.1",
     "remove-glob": "^1.2.0",
-    "sass": "^1.99.0",
-    "semver": "^7.7.4",
-    "tinyexec": "^1.1.2",
+    "sass": "^1.100.0",
+    "semver": "^7.8.1",
+    "tinyexec": "^1.2.2",
     "tinyglobby": "^0.2.16",
     "typescript": "^5.9.3",
-    "typescript-eslint": "^8.59.2"
+    "typescript-eslint": "^8.60.0"
   },
   "overrides": {
     "follow-redirects": "^1.16.0"
