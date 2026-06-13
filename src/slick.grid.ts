@@ -2769,7 +2769,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (autoSize.valueFilterMode === ValueFilterMode.GetGreatestAndSub) {
       // get greatest abs value in data
       let maxVal;
-      let maxAbsVal = 0;
+      let maxAbsVal = -1;
       for (i = rowInfo.startIndex; i <= rowInfo.endIndex; i++) {
         tempVal = rowInfo.getRowVal(i);
         if (Math.abs(tempVal) > maxAbsVal) {
