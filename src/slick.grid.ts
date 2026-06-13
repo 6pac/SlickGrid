@@ -2735,6 +2735,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const rowInfo = {} as RowInfo;
     rowInfo.colIndex = colIndex;
     rowInfo.rowCount = this.getDataLength();
+
+    if (rowInfo.rowCount === 0) {
+      return autoSize.headerWidthPx;
+    }
+
     rowInfo.startIndex = 0;
     rowInfo.endIndex = rowInfo.rowCount - 1;
     rowInfo.valueArr = null;
