@@ -2735,6 +2735,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const rowInfo = {} as RowInfo;
     rowInfo.colIndex = colIndex;
     rowInfo.rowCount = this.getDataLength();
+
+    if (rowInfo.rowCount === 0) {
+      return autoSize.headerWidthPx;
+    }
+
     rowInfo.startIndex = 0;
     rowInfo.endIndex = rowInfo.rowCount - 1;
     rowInfo.valueArr = null;
@@ -2769,7 +2774,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (autoSize.valueFilterMode === ValueFilterMode.GetGreatestAndSub) {
       // get greatest abs value in data
       let maxVal;
-      let maxAbsVal = 0;
+      let maxAbsVal = -1;
       for (i = rowInfo.startIndex; i <= rowInfo.endIndex; i++) {
         tempVal = rowInfo.getRowVal(i);
         if (Math.abs(tempVal) > maxAbsVal) {
