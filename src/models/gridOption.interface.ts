@@ -25,6 +25,7 @@ export interface CustomDataView<T = any> {
   getItem: (index: number) => T;
   getItemMetadata(row: number, cell?: boolean | number): ItemMetadata | null;
   getLength: () => number;
+  getCellValue?: (index: number, field: string) => T[keyof T];
 }
 
 export interface CssStyleHash {
