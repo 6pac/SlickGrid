@@ -59,5 +59,24 @@ describe('Example - Excel-compatible spreadsheet and Cell Selection', { retries:
       cy.get('@active_cell').type('{ctrl}{end}');
       cy.get('#myGrid [data-row=99] > .slick-cell.l26.r26.active').should('have.length', 1);
     });
+
+    it('should ignore pasted cells outside grid column bounds when clipboard data exceeds available grid columns', () => {
+      cy.get('#myGrid .slick-viewport-top.slick-viewport-left').scrollTo(200, 0).wait(10);
+      cy.get('#myGrid [data-row=0] .slick-cell.l22.r22').click();
+
+      cy.window().then((win: any) => {
+        const plugin = win.grid.getPluginByName('CellExternalCopyManager');
+        expect(plugin).to.exist;
+
+        const ta = win.document.createElement('textarea');
+        ta.value = 'p1\tp2\tp3\tp4\tp5\tp6\tp7\tp8\tp9\tp10';
+        win.document.body.appendChild(ta);
+
+        expect(() => plugin._decodeTabularData(win.grid, ta)).not.to.throw();
+      });
+
+      cy.get('#myGrid [data-row=0] .slick-cell.l22.r22').should('have.text', 'p1');
+      cy.get('#myGrid [data-row=0] .slick-cell.l26.r26').should('have.text', 'p5');
+    });
   });
 });

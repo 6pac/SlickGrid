@@ -268,6 +268,10 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
             const destx = activeCell + x;
             const column = columns[destx];
 
+            if (!column) {
+              break;
+            }
+
             // paste on hidden column will be skipped, but we need to paste 1 cell further on X axis
             // we'll increase our X and increase the offset`
             if (column.hidden) {
@@ -316,6 +320,10 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
             const desty = activeRow + y;
             const destx = activeCell + x;
             const column = columns[destx];
+
+            if (!column) {
+              break;
+            }
 
             if (column.hidden) {
               xOffset++;
