@@ -42,7 +42,7 @@ jobs:
           fetch-depth: 0
           token: ${{ secrets.GITHUB_TOKEN }}
 
-      - if: ${{ github.event.pull_request.merged != true && contains('["6pac", "ghiscoding"]', github.actor) != true }}
+      - if: ${{ !contains(fromJSON('["6pac", "ghiscoding"]'), github.actor) }}
         name: Exit early when current actor is not allowed to push new release
         run: |
           echo "Error: Your GitHub username (${{ github.actor }}) is not on the allowed list of admins for this workflow"
