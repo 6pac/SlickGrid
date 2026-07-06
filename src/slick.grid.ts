@@ -2743,7 +2743,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     rowInfo.startIndex = 0;
     rowInfo.endIndex = rowInfo.rowCount - 1;
     rowInfo.valueArr = null;
-    rowInfo.getRowVal = (j: number) => this.getDataItem(j)[columnDef.field as keyof TData];
+    rowInfo.getRowVal = (j: number) => this.getCellValue(j, columnDef.field as string);
 
     const rowSelectionMode = (isInit ? autoSize.rowSelectionModeOnInit : undefined) || autoSize.rowSelectionMode;
 
@@ -3407,6 +3407,29 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     } else {
       return (this.data as TData[])[i] as TData;
     }
+  }
+
+  /**
+   * Returns the value of a single field for a given row index.
+   *
+   * When the databinding source is a `CustomDataView` that implements the optional
+   * `getCellValue(index, field)` accessor, that method is used directly. This allows
+   * column-oriented (or otherwise non row-materializing) data sources to return a
+   * single cell value without first having to build a full row object via `getItem()`,
+   * which can be expensive when called repeatedly (e.g. during column content auto-sizing).
+   *
+   * Falls back to `getDataItem(i)[field]` for plain arrays or data sources that don't
+   * implement `getCellValue`.
+   *
+   * @param {Number} i Item row index.
+   * @param {String} field Column field name.
+   */
+  getCellValue(i: number, field: string): TData[keyof TData] {
+    const customDataView = this.data as CustomDataView<TData>;
+    if (customDataView.getCellValue) {
+      return customDataView.getCellValue(i, field) as TData[keyof TData];
+    }
+    return this.getDataItem(i)[field as keyof TData];
   }
 
   /**  Are we using a DataView? */
