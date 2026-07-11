@@ -170,6 +170,25 @@ interface CanvasWidthsGeometry {
   preHeaderPanelWidth?: number | string;
 }
 
+/** Geometry inputs for ViewportMgr.applyPaneHeights — computed by the grid, distributed by the manager. */
+interface PaneHeightsGeometry {
+  viewportH: number;
+  frozenRowsHeight: number;
+  scrollbarHeight: number;
+  topPanelH: number;
+  headerRowH: number;
+  footerRowH: number;
+  /** lazily computed to avoid an unconditional style recalc; only read on the autoHeight+frozen path */
+  getContainerVBoxDelta: () => number;
+  autoHeight?: boolean;
+  showPreHeaderPanel?: boolean;
+  preHeaderPanelHeight?: number;
+  showTopHeaderPanel?: boolean;
+  topHeaderPanelHeight?: number;
+  showHeaderRow?: boolean;
+  headerRowHeight?: number;
+}
+
 /** Options consumed by ViewportMgr when constructing the pane/viewport/canvas DOM. */
 interface ViewportMgrBuildOptions {
   createPreHeaderPanel?: boolean;
@@ -192,6 +211,9 @@ interface ViewportMgrBuildOptions {
  * selection, geometry distribution and scroll synchronization in here.
  */
 class ViewportMgr {
+  /** the grid container, captured by buildPanes */
+  protected container!: HTMLElement;
+
   // panes
   paneHeaderL!: HTMLDivElement;
   paneHeaderR!: HTMLDivElement;
@@ -262,6 +284,8 @@ class ViewportMgr {
    * inline construction in SlickGrid.initialize().
    */
   buildPanes(container: HTMLElement, o: ViewportMgrBuildOptions) {
+    this.container = container;
+
     // Containers used for scrolling frozen columns and rows
     this.paneHeaderL = Utils.createDomElement('div', { className: 'slick-pane slick-pane-header slick-pane-left', tabIndex: 0 }, container);
     this.paneHeaderR = Utils.createDomElement('div', { className: 'slick-pane slick-pane-header slick-pane-right', tabIndex: 0 }, container);
@@ -574,6 +598,115 @@ class ViewportMgr {
       Utils.width(this.footerRowSpacerL, g.canvasWidth + (g.viewportHasVScroll ? g.scrollbarWidth : 0));
       Utils.width(this.footerRowSpacerR, g.canvasWidth + (g.viewportHasVScroll ? g.scrollbarWidth : 0));
     }
+  }
+
+  /**
+   * Computes the pane/viewport heights from the freeze configuration and distributes them
+   * onto the pane, viewport and canvas elements. Transcribed from the historical middle
+   * section of SlickGrid.resizeCanvas(); returns the computed heights for the grid to keep.
+   */
+  applyPaneHeights(g: PaneHeightsGeometry): { paneTopH: number; paneBottomH: number; viewportTopH: number; viewportBottomH: number; } {
+    let paneTopH = 0;
+    let paneBottomH = 0;
+    let viewportTopH = 0;
+    const viewportBottomH = 0;
+
+    // Account for Frozen Rows
+    if (this.freeze.hasFrozenRows) {
+      if (this.freeze.frozenBottom) {
+        paneTopH = g.viewportH - g.frozenRowsHeight - g.scrollbarHeight;
+        paneBottomH = g.frozenRowsHeight + g.scrollbarHeight;
+      } else {
+        paneTopH = g.frozenRowsHeight;
+        paneBottomH = g.viewportH - g.frozenRowsHeight;
+      }
+    } else {
+      paneTopH = g.viewportH;
+    }
+
+    // The top pane includes the top panel and the header row
+    paneTopH += g.topPanelH + g.headerRowH + g.footerRowH;
+
+    if (this.hasFrozenColumns() && g.autoHeight) {
+      paneTopH += g.scrollbarHeight;
+    }
+
+    // The top viewport does not contain the top panel or header row
+    viewportTopH = paneTopH - g.topPanelH - g.headerRowH - g.footerRowH;
+
+    if (g.autoHeight) {
+      if (this.hasFrozenColumns()) {
+        let fullHeight = paneTopH + this.headerScrollerL.offsetHeight;
+        fullHeight += g.getContainerVBoxDelta();
+        if (g.showPreHeaderPanel) {
+          fullHeight += g.preHeaderPanelHeight!;
+        }
+        Utils.height(this.container, fullHeight);
+      }
+
+      this.paneTopL.style.position = 'relative';
+    }
+
+    let topHeightOffset = Utils.height(this.paneHeaderL);
+    if (topHeightOffset) {
+      topHeightOffset += (g.showTopHeaderPanel ? g.topHeaderPanelHeight! : 0);
+    } else {
+      topHeightOffset = (g.showHeaderRow ? g.headerRowHeight! : 0) + (g.showPreHeaderPanel ? g.preHeaderPanelHeight! : 0);
+    }
+    Utils.setStyleSize(this.paneTopL, 'top', topHeightOffset || topHeightOffset);
+    Utils.height(this.paneTopL, paneTopH);
+
+    const paneBottomTop = this.paneTopL.offsetTop + paneTopH;
+
+    if (!g.autoHeight) {
+      Utils.height(this.viewportTopL, viewportTopH);
+    }
+
+    if (this.hasFrozenColumns()) {
+      let topHeightOffset = Utils.height(this.paneHeaderL);
+      if (topHeightOffset) {
+        topHeightOffset += (g.showTopHeaderPanel ? g.topHeaderPanelHeight! : 0);
+      }
+      Utils.setStyleSize(this.paneTopR, 'top', topHeightOffset as number);
+      Utils.height(this.paneTopR, paneTopH);
+      Utils.height(this.viewportTopR, viewportTopH);
+
+      if (this.freeze.hasFrozenRows) {
+        Utils.setStyleSize(this.paneBottomL, 'top', paneBottomTop);
+        Utils.height(this.paneBottomL, paneBottomH);
+        Utils.setStyleSize(this.paneBottomR, 'top', paneBottomTop);
+        Utils.height(this.paneBottomR, paneBottomH);
+        Utils.height(this.viewportBottomR, paneBottomH);
+      }
+    } else {
+      if (this.freeze.hasFrozenRows) {
+        Utils.width(this.paneBottomL, '100%');
+        Utils.height(this.paneBottomL, paneBottomH);
+        Utils.setStyleSize(this.paneBottomL, 'top', paneBottomTop);
+      }
+    }
+
+    if (this.freeze.hasFrozenRows) {
+      Utils.height(this.viewportBottomL, paneBottomH);
+
+      if (this.freeze.frozenBottom) {
+        Utils.height(this.canvasBottomL, g.frozenRowsHeight);
+
+        if (this.hasFrozenColumns()) {
+          Utils.height(this.canvasBottomR, g.frozenRowsHeight);
+        }
+      } else {
+        Utils.height(this.canvasTopL, g.frozenRowsHeight);
+
+        if (this.hasFrozenColumns()) {
+          Utils.height(this.canvasTopR, g.frozenRowsHeight);
+        }
+      }
+    } else {
+      Utils.height(this.viewportTopR, viewportTopH);
+    }
+
+    return { paneTopH, paneBottomH, viewportTopH, viewportBottomH };
   }
 
   selectScrollContainers(): { x: HTMLDivElement; y: HTMLDivElement; header: HTMLDivElement; headerRow: HTMLDivElement; footerRow: HTMLDivElement; } {
@@ -6160,108 +6293,32 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   resizeCanvas() {
     if (!this.initialized) { return; }
-    this.paneTopH = 0;
-    this.paneBottomH = 0;
-    this.viewportTopH = 0;
-    this.viewportBottomH = 0;
 
     this.getViewportWidth();
     this.getViewportHeight();
 
-    // Account for Frozen Rows
-    if (this.hasFrozenRows) {
-      if (this._options.frozenBottom) {
-        this.paneTopH = this.viewportH - this.frozenRowsHeight - (this.scrollbarDimensions?.height ?? 0);
-        this.paneBottomH = this.frozenRowsHeight + (this.scrollbarDimensions?.height ?? 0);
-      } else {
-        this.paneTopH = this.frozenRowsHeight;
-        this.paneBottomH = this.viewportH - this.frozenRowsHeight;
-      }
-    } else {
-      this.paneTopH = this.viewportH;
-    }
-
-    // The top pane includes the top panel and the header row
-    this.paneTopH += this.topPanelH + this.headerRowH + this.footerRowH;
-
-    if (this.hasFrozenColumns() && this._options.autoHeight) {
-      this.paneTopH += (this.scrollbarDimensions?.height ?? 0);
-    }
-
-    // The top viewport does not contain the top panel or header row
-    this.viewportTopH = this.paneTopH - this.topPanelH - this.headerRowH - this.footerRowH;
-
-    if (this._options.autoHeight) {
-      if (this.hasFrozenColumns()) {
-        let fullHeight = this.paneTopH + this._headerScrollerL.offsetHeight;
-        fullHeight += this.getVBoxDelta(this._container);
-        if (this._options.showPreHeaderPanel) {
-          fullHeight += this._options.preHeaderPanelHeight!;
-        }
-        Utils.height(this._container, fullHeight);
-      }
-
-      this._paneTopL.style.position = 'relative';
-    }
-
-    let topHeightOffset = Utils.height(this._paneHeaderL);
-    if (topHeightOffset) {
-      topHeightOffset += (this._options.showTopHeaderPanel ? this._options.topHeaderPanelHeight! : 0);
-    } else {
-      topHeightOffset = (this._options.showHeaderRow ? this._options.headerRowHeight! : 0) + (this._options.showPreHeaderPanel ? this._options.preHeaderPanelHeight! : 0);
-    }
-    Utils.setStyleSize(this._paneTopL, 'top', topHeightOffset || topHeightOffset);
-    Utils.height(this._paneTopL, this.paneTopH);
-
-    const paneBottomTop = this._paneTopL.offsetTop + this.paneTopH;
-
-    if (!this._options.autoHeight) {
-      Utils.height(this._viewportTopL, this.viewportTopH);
-    }
-
-    if (this.hasFrozenColumns()) {
-      let topHeightOffset = Utils.height(this._paneHeaderL);
-      if (topHeightOffset) {
-        topHeightOffset += (this._options.showTopHeaderPanel ? this._options.topHeaderPanelHeight! : 0);
-      }
-      Utils.setStyleSize(this._paneTopR, 'top', topHeightOffset as number);
-      Utils.height(this._paneTopR, this.paneTopH);
-      Utils.height(this._viewportTopR, this.viewportTopH);
-
-      if (this.hasFrozenRows) {
-        Utils.setStyleSize(this._paneBottomL, 'top', paneBottomTop);
-        Utils.height(this._paneBottomL, this.paneBottomH);
-        Utils.setStyleSize(this._paneBottomR, 'top', paneBottomTop);
-        Utils.height(this._paneBottomR, this.paneBottomH);
-        Utils.height(this._viewportBottomR, this.paneBottomH);
-      }
-    } else {
-      if (this.hasFrozenRows) {
-        Utils.width(this._paneBottomL, '100%');
-        Utils.height(this._paneBottomL, this.paneBottomH);
-        Utils.setStyleSize(this._paneBottomL, 'top', paneBottomTop);
-      }
-    }
-
-    if (this.hasFrozenRows) {
-      Utils.height(this._viewportBottomL, this.paneBottomH);
-
-      if (this._options.frozenBottom) {
-        Utils.height(this._canvasBottomL, this.frozenRowsHeight);
-
-        if (this.hasFrozenColumns()) {
-          Utils.height(this._canvasBottomR, this.frozenRowsHeight);
-        }
-      } else {
-        Utils.height(this._canvasTopL, this.frozenRowsHeight);
-
-        if (this.hasFrozenColumns()) {
-          Utils.height(this._canvasTopR, this.frozenRowsHeight);
-        }
-      }
-    } else {
-      Utils.height(this._viewportTopR, this.viewportTopH);
-    }
+    // compute and distribute the pane/viewport/canvas heights, keeping the results
+    // on the grid for the rest of the layout pipeline
+    const heights = this._viewportMgr.applyPaneHeights({
+      viewportH: this.viewportH,
+      frozenRowsHeight: this.frozenRowsHeight,
+      scrollbarHeight: this.scrollbarDimensions?.height ?? 0,
+      topPanelH: this.topPanelH,
+      headerRowH: this.headerRowH,
+      footerRowH: this.footerRowH,
+      getContainerVBoxDelta: () => this.getVBoxDelta(this._container),
+      autoHeight: this._options.autoHeight,
+      showPreHeaderPanel: this._options.showPreHeaderPanel,
+      preHeaderPanelHeight: this._options.preHeaderPanelHeight,
+      showTopHeaderPanel: this._options.showTopHeaderPanel,
+      topHeaderPanelHeight: this._options.topHeaderPanelHeight,
+      showHeaderRow: this._options.showHeaderRow,
+      headerRowHeight: this._options.headerRowHeight,
+    });
+    this.paneTopH = heights.paneTopH;
+    this.paneBottomH = heights.paneBottomH;
+    this.viewportTopH = heights.viewportTopH;
+    this.viewportBottomH = heights.viewportBottomH;
 
     if (!this.scrollbarDimensions || !this.scrollbarDimensions.width) {
       this.scrollbarDimensions = this.measureScrollbar();
