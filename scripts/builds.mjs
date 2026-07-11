@@ -171,9 +171,9 @@ export function runBuild(options) {
 
 /** Copy all SASS input files to the dist output folder */
 function copySassFiles() {
+  // native-copyfiles expects the source glob(s) and the output directory together in a single array
   copyfiles(
-    'src/styles/*.scss',
-    'dist/styles/sass',
+    ['src/styles/*.scss', 'dist/styles/sass'],
     { flat: true, stat: true },
     () => console.log(`[${styleText('magenta', 'SASS')}] SASS files copied`)
   );
