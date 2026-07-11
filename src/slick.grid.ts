@@ -446,6 +446,73 @@ class ViewportMgr {
     return (isBottomSide ? 2 : 0) + (isRightSide ? 1 : 0);
   }
 
+  /**
+   * Get frozen (pinned) row offset
+   *
+   * Returns the vertical pixel offset to apply for frozen rows.
+   * Depending on whether frozen rows are pinned at the bottom or top and based on grid height,
+   * it returns either a fixed frozen rows height or a calculated offset.
+   *
+   * @param {Number} row - grid row number
+   */
+  frozenRowOffset(row: number, g: { h: number; viewportTopH: number; frozenRowsHeight: number; rowHeight: number; }): number {
+    // let offset = ( hasFrozenRows ) ? ( this._options.frozenBottom ) ? ( row >= actualFrozenRow ) ? ( h < viewportTopH ) ? ( actualFrozenRow * this._options.rowHeight ) : h : 0 : ( row >= actualFrozenRow ) ? frozenRowsHeight : 0 : 0; // WTF?
+    let offset = 0;
+    if (this.freeze.hasFrozenRows) {
+      if (this.freeze.frozenBottom) {
+        if (row >= this.freeze.actualFrozenRow) {
+          if (g.h < g.viewportTopH) {
+            offset = (this.freeze.actualFrozenRow * g.rowHeight);
+          } else {
+            offset = g.h;
+          }
+        } else {
+          offset = 0;
+        }
+      }
+      else {
+        if (row >= this.freeze.actualFrozenRow) {
+          offset = g.frozenRowsHeight;
+        } else {
+          offset = 0;
+        }
+      }
+    } else {
+      offset = 0;
+    }
+
+    return offset;
+  }
+
+  /**
+   * Whether the row lives in a frozen band and must therefore be kept out of row
+   * virtualization cleanup (historical cleanupRows predicate).
+   */
+  isRowInFrozenBand(row: number): boolean {
+    return this.freeze.hasFrozenRows
+      && ((this.freeze.frozenBottom && row >= this.freeze.actualFrozenRow) // Frozen bottom rows
+        || (!this.freeze.frozenBottom && row <= this.freeze.actualFrozenRow) // Frozen top rows
+      );
+  }
+
+  /**
+   * Whether cell-level cleanup must skip the row entirely (historical cleanUpCells
+   * predicate). NOTE: transcribed verbatim — the second disjunct is NOT guarded by
+   * !frozenBottom, so for frozenBottom grids every row is exempt; that quirk is
+   * long-standing upstream behaviour and is deliberately preserved.
+   */
+  isRowCellCleanupExempt(row: number): boolean {
+    return this.freeze.hasFrozenRows
+      && ((this.freeze.frozenBottom && row > this.freeze.actualFrozenRow) // Frozen bottom rows
+        || (row <= this.freeze.actualFrozenRow)                     // Frozen top rows
+      );
+  }
+
+  /** Whether the column index falls inside the left frozen band. */
+  isColumnInFrozenBand(colIdx: number): boolean {
+    return colIdx <= this.freeze.frozenColumnIdx;
+  }
+
   /** add/remove frozen class to left headers/footer when defined */
   applyPaneFrozenClasses(): void {
     const classAction = this.hasFrozenColumns() ? 'add' : 'remove';
@@ -6072,11 +6139,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         let i = +rowId;
         let removeFrozenRow = true;
 
-        if (this.hasFrozenRows
-          && ((this._options.frozenBottom && (i as unknown as number) >= this.actualFrozenRow) // Frozen bottom rows
-            || (!this._options.frozenBottom && (i as unknown as number) <= this.actualFrozenRow) // Frozen top rows
-          )
-        ) {
+        if (this._viewportMgr.isRowInFrozenBand(i)) {
           removeFrozenRow = false;
         }
 
@@ -6632,11 +6695,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   protected cleanUpCells(range: CellViewportRange, row: number) {
     // Ignore frozen rows
-    if (this.hasFrozenRows
-      && ((this._options.frozenBottom && row > this.actualFrozenRow) // Frozen bottom rows
-        || (row <= this.actualFrozenRow)                     // Frozen top rows
-      )
-    ) {
+    if (this._viewportMgr.isRowCellCleanupExempt(row)) {
       return;
     }
 
@@ -6655,7 +6714,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       const i = +cellNodeIdx;
 
       // Ignore frozen columns
-      if (i <= this._options.frozenColumn!) {
+      if (this._viewportMgr.isColumnInFrozenBand(i)) {
         return;
       }
 
@@ -6972,32 +7031,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {Number} row - grid row number
    */
   getFrozenRowOffset(row: number) {
-    // let offset = ( hasFrozenRows ) ? ( this._options.frozenBottom ) ? ( row >= actualFrozenRow ) ? ( h < viewportTopH ) ? ( actualFrozenRow * this._options.rowHeight ) : h : 0 : ( row >= actualFrozenRow ) ? frozenRowsHeight : 0 : 0; // WTF?
-    let offset = 0;
-    if (this.hasFrozenRows) {
-      if (this._options.frozenBottom) {
-        if (row >= this.actualFrozenRow) {
-          if (this.h < this.viewportTopH) {
-            offset = (this.actualFrozenRow * this._options.rowHeight!);
-          } else {
-            offset = this.h;
-          }
-        } else {
-          offset = 0;
-        }
-      }
-      else {
-        if (row >= this.actualFrozenRow) {
-          offset = this.frozenRowsHeight;
-        } else {
-          offset = 0;
-        }
-      }
-    } else {
-      offset = 0;
-    }
-
-    return offset;
+    return this._viewportMgr.frozenRowOffset(row, {
+      h: this.h,
+      viewportTopH: this.viewportTopH,
+      frozenRowsHeight: this.frozenRowsHeight,
+      rowHeight: this._options.rowHeight!,
+    });
   }
 
   ////////////////////////////////////////////////////////
