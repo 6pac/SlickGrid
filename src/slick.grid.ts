@@ -1833,6 +1833,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * to null so that they can be garbage collected.
    */
   protected destroyAllElements() {
+    // drop the ViewportMgr first — it holds references to every pane/viewport/canvas
+    // element and the container, which would otherwise keep the detached DOM alive
+    this._viewportMgr = null as any;
     this._activeCanvasNode = null as any;
     this._activeViewportNode = null as any;
     this._boundAncestors = null as any;
