@@ -709,6 +709,84 @@ class ViewportMgr {
     return { paneTopH, paneBottomH, viewportTopH, viewportBottomH };
   }
 
+  /** the current scroll-owner/follower set, refreshed by selectScrollContainers() */
+  protected scrollContainers!: { x: HTMLDivElement; y: HTMLDivElement; header: HTMLDivElement; headerRow: HTMLDivElement; footerRow: HTMLDivElement; };
+
+  /**
+   * Attaches one rendered row (left fragment + right fragment when columns are frozen)
+   * to the canvases owned by the row's band, returning the rowNode array for the grid's
+   * rowsCache (or null if the expected fragments are missing).
+   *
+   * NOTE: the band threshold here is `rowIdx >= actualFrozenRow` — deliberately WITHOUT
+   * the `+ (frozenBottom ? 0 : 1)` adjustment used by paneCellIndex(); the historical
+   * render-side and cell-lookup-side splits differ by one row in the non-frozenBottom
+   * case, and that asymmetry is preserved verbatim.
+   */
+  attachRow(rowIdx: number, left: HTMLElement | null, right: HTMLElement | null): HTMLElement[] | null {
+    if ((this.freeze.hasFrozenRows) && (rowIdx >= this.freeze.actualFrozenRow)) {
+      if (this.hasFrozenColumns()) {
+        if (left && right) {
+          this.canvasBottomL.appendChild(left);
+          this.canvasBottomR.appendChild(right);
+          return [left, right];
+        }
+      } else if (left) {
+        this.canvasBottomL.appendChild(left);
+        return [left];
+      }
+    } else if (this.hasFrozenColumns()) {
+      if (left && right) {
+        this.canvasTopL.appendChild(left);
+        this.canvasTopR.appendChild(right);
+        return [left, right];
+      }
+    } else if (left) {
+      this.canvasTopL.appendChild(left);
+      return [left];
+    }
+    return null;
+  }
+
+  /** Applies an X scroll position to the scroll-owner viewport and every horizontal follower. */
+  syncHorizontalScroll(x: number, o: { createFooterRow?: boolean; createPreHeaderPanel?: boolean; }) {
+    this.scrollContainers.x.scrollLeft = x;
+    this.scrollContainers.header.scrollLeft = x;
+    this.topPanelScrollers[0].scrollLeft = x;
+    if (o.createFooterRow) {
+      this.scrollContainers.footerRow.scrollLeft = x;
+    }
+    if (o.createPreHeaderPanel) {
+      if (this.hasFrozenColumns()) {
+        this.preHeaderPanelScrollerR.scrollLeft = x;
+      } else {
+        this.preHeaderPanelScroller.scrollLeft = x;
+      }
+    }
+
+    if (this.hasFrozenColumns()) {
+      if (this.freeze.hasFrozenRows) {
+        this.viewportTopR.scrollLeft = x;
+      }
+      this.headerRowScrollerR.scrollLeft = x; // right header row scrolling with frozen grid
+    } else {
+      if (this.freeze.hasFrozenRows) {
+        this.viewportTopL.scrollLeft = x;
+      }
+      this.headerRowScrollerL.scrollLeft = x; // left header row scrolling with regular grid
+    }
+  }
+
+  /** Mirrors the Y scroll position onto the frozen-left viewport that follows the scroll owner. */
+  syncVerticalFollowers(scrollTop: number) {
+    if (this.hasFrozenColumns()) {
+      if (this.freeze.hasFrozenRows && !this.freeze.frozenBottom) {
+        this.viewportBottomL.scrollTop = scrollTop;
+      } else {
+        this.viewportTopL.scrollTop = scrollTop;
+      }
+    }
+  }
+
   selectScrollContainers(): { x: HTMLDivElement; y: HTMLDivElement; header: HTMLDivElement; headerRow: HTMLDivElement; footerRow: HTMLDivElement; } {
     let x: HTMLDivElement;
     let y: HTMLDivElement;
@@ -748,7 +826,8 @@ class ViewportMgr {
       }
     }
 
-    return { x, y, header, headerRow, footerRow };
+    this.scrollContainers = { x, y, header, headerRow, footerRow };
+    return this.scrollContainers;
   }
 }
 
@@ -6786,29 +6865,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       divArrayR.forEach(elm => xRight.appendChild(elm as HTMLElement));
 
       for (let i = 0, ii = rows.length; i < ii; i++) {
-        if ((this.hasFrozenRows) && (rows[i] >= this.actualFrozenRow)) {
-          if (this.hasFrozenColumns()) {
-            if (this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild) {
-              this.rowsCache[rows[i]].rowNode = [x.firstChild as HTMLElement, xRight.firstChild as HTMLElement];
-              this._canvasBottomL.appendChild(x.firstChild as ChildNode);
-              this._canvasBottomR.appendChild(xRight.firstChild as ChildNode);
-            }
-          } else {
-            if (this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild) {
-              this.rowsCache[rows[i]].rowNode = [x.firstChild as HTMLElement];
-              this._canvasBottomL.appendChild(x.firstChild as ChildNode);
-            }
-          }
-        } else if (this.hasFrozenColumns()) {
-          if (this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild) {
-            this.rowsCache[rows[i]].rowNode = [x.firstChild as HTMLElement, xRight.firstChild as HTMLElement];
-            this._canvasTopL.appendChild(x.firstChild as ChildNode);
-            this._canvasTopR.appendChild(xRight.firstChild as ChildNode);
-          }
-        } else {
-          if (this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild) {
-            this.rowsCache[rows[i]].rowNode = [x.firstChild as HTMLElement];
-            this._canvasTopL.appendChild(x.firstChild as ChildNode);
+        if (this.rowsCache?.hasOwnProperty(rows[i])) {
+          const attached = this._viewportMgr.attachRow(rows[i], x.firstChild as HTMLElement | null, xRight.firstChild as HTMLElement | null);
+          if (attached) {
+            this.rowsCache[rows[i]].rowNode = attached;
           }
         }
       }
@@ -7144,13 +7204,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         this._viewportScrollContainerY.scrollTop = this.scrollTop;
       }
 
-      if (this.hasFrozenColumns()) {
-        if (this.hasFrozenRows && !this._options.frozenBottom) {
-          this._viewportBottomL.scrollTop = this.scrollTop;
-        } else {
-          this._viewportTopL.scrollTop = this.scrollTop;
-        }
-      }
+      this._viewportMgr.syncVerticalFollowers(this.scrollTop);
 
       // switch virtual pages if needed
       if (vScrollDist < this.viewportH) {
@@ -8157,33 +8211,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {Number} x
    */
   scrollToX(x: number): void {
-    this._viewportScrollContainerX.scrollLeft = x;
-    this._headerScrollContainer.scrollLeft = x;
-    this._topPanelScrollers[0].scrollLeft = x;
-    if (this._options.createFooterRow) {
-      this._footerRowScrollContainer.scrollLeft = x;
-    }
-    if (this._options.createPreHeaderPanel) {
-      if (this.hasFrozenColumns()) {
-        this._preHeaderPanelScrollerR.scrollLeft = x;
-      } else {
-        this._preHeaderPanelScroller.scrollLeft = x;
-      }
-    }
+    this._viewportMgr.syncHorizontalScroll(x, this._options);
+
     if (this._options.createTopHeaderPanel) {
       this._topHeaderPanelScroller.scrollLeft = x;
-    }
-
-    if (this.hasFrozenColumns()) {
-      if (this.hasFrozenRows) {
-        this._viewportTopR.scrollLeft = x;
-      }
-      this._headerRowScrollerR.scrollLeft = x; // right header row scrolling with frozen grid
-    } else {
-      if (this.hasFrozenRows) {
-        this._viewportTopL.scrollLeft = x;
-      }
-      this._headerRowScrollerL.scrollLeft = x; // left header row scrolling with regular grid
     }
   }
 
