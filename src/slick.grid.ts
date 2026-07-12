@@ -154,6 +154,8 @@ interface ViewportFreezeState {
   frozenBottom: boolean;
   /** the frozenRow option value — number of rows in the frozen row band (0/-1 when none) */
   frozenRowCount?: number;
+  /** the frozenRightColumn option value — number of columns frozen at the right edge (0 when none) */
+  frozenRightColCount?: number;
 }
 
 /**
@@ -598,7 +600,7 @@ class ViewportMgr {
     const rowCount = f.hasFrozenRows ? Math.max(0, f.frozenRowCount ?? 0) : 0;
     this.bands = {
       frozenLeftCols: f.frozenColumnIdx + 1,
-      frozenRightCols: 0, // right-frozen columns arrive with the 3×3 band model
+      frozenRightCols: Math.max(0, f.frozenRightColCount ?? 0), // band DOM arrives with M13's later stages
       frozenTopRows: f.frozenBottom ? 0 : rowCount,
       frozenBottomRows: f.frozenBottom ? rowCount : 0,
     };
@@ -1272,6 +1274,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     frozenBottom: false,
     frozenColumn: -1,
     frozenRow: -1,
+    frozenRightColumn: 0,
     frozenRightViewportMinWidth: 100,
     lazyPanes: false,
     throwWhenFrozenNotAllViewable: false,
@@ -3361,6 +3364,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       ? parseInt(this._options.frozenColumn as unknown as string, 10)
       : -1;
 
+    // normalize the right-frozen column COUNT: non-negative integer, and the left and
+    // right bands must leave at least one scrollable column between them
+    const maxRightCols = Math.max(0, this.columns.length - (this._options.frozenColumn! + 1) - 1);
+    this._options.frozenRightColumn = (this._options.frozenRightColumn! > 0)
+      ? Math.min(parseInt(this._options.frozenRightColumn as unknown as string, 10), maxRightCols)
+      : 0;
+
     if (this._options.frozenRow! > -1) {
       this.hasFrozenRows = true;
       this.frozenRowsHeight = (this._options.frozenRow!) * this._options.rowHeight!;
@@ -3379,6 +3389,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       actualFrozenRow: this.actualFrozenRow,
       frozenBottom: !!this._options.frozenBottom,
       frozenRowCount: this._options.frozenRow!,
+      frozenRightColCount: this._options.frozenRightColumn!,
     });
 
     // materialize the secondary panes if freezing was just enabled on a lazyPanes grid
