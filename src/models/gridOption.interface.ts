@@ -251,6 +251,14 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
    */
   frozenRightViewportMinWidth?: number;
 
+  /**
+   * Defaults to false. When enabled AND the grid is created without frozen rows/columns, only the
+   * single top-left pane/viewport/canvas is built instead of the historical 6-pane/4-viewport/4-canvas
+   * structure; the extra panes materialize on the fly if freezing is later enabled via setOptions().
+   * Opt-in because it changes the DOM for consumers that style/query the unused right/bottom panes.
+   */
+  lazyPanes?: boolean;
+
   /** Defaults to false, which leads to have row(s) taking full width */
   fullWidthRows?: boolean;
 
