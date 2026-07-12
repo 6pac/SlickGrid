@@ -177,8 +177,10 @@ interface CanvasWidthsGeometry {
   canvasWidth: number;
   canvasWidthL: number;
   canvasWidthR: number;
+  canvasWidthRF: number;
   headersWidthL: number;
   headersWidthR: number;
+  headersWidthRF: number;
   viewportW: number;
   viewportHasVScroll: boolean;
   scrollbarWidth: number;
@@ -917,6 +919,17 @@ class ViewportMgr {
       this.viewportBottomR.style.overflowY = o.alwaysShowVerticalScroll ? 'scroll' : ((this.hasFrozenColumns()) ? (hasFrozenRows ? 'auto' : 'auto') : (hasFrozenRows ? 'auto' : 'auto'));
     }
 
+    // right-frozen viewports never own a scrollbar: X is fixed, Y follows the
+    // scroll owner programmatically (same rationale as the frozen-left viewport)
+    if (this.viewportTopRF) {
+      this.viewportTopRF.style.overflowX = 'hidden';
+      this.viewportTopRF.style.overflowY = 'hidden';
+    }
+    if (this.viewportBottomRF) {
+      this.viewportBottomRF.style.overflowX = 'hidden';
+      this.viewportBottomRF.style.overflowY = 'hidden';
+    }
+
     if (o.viewportClass) {
       const viewportClassList = Utils.classNameToList(o.viewportClass);
       // this.viewport only ever contains the elements that were actually built
@@ -938,7 +951,12 @@ class ViewportMgr {
    * of SlickGrid.updateCanvasWidth(); the width computations stay in the grid.
    */
   applyCanvasWidths(g: CanvasWidthsGeometry) {
-    if (g.widthChanged || this.hasFrozenColumns() || this.freeze.hasFrozenRows) {
+    // width reserved by the right-frozen band (0 while the band is off or not built);
+    // the scrollable middle band shrinks by this amount
+    const rfActive = this.bands.frozenRightCols > 0 && !!this.paneHeaderRF;
+    const rfW = rfActive ? g.canvasWidthRF : 0;
+
+    if (g.widthChanged || this.hasFrozenColumns() || this.freeze.hasFrozenRows || rfActive) {
       Utils.width(this.canvasTopL, g.canvasWidthL);
 
       Utils.width(this.headerL, g.headersWidthL);
@@ -951,21 +969,21 @@ class ViewportMgr {
 
         Utils.width(this.paneHeaderL, g.canvasWidthL);
         Utils.setStyleSize(this.paneHeaderR, 'left', g.canvasWidthL);
-        Utils.setStyleSize(this.paneHeaderR, 'width', g.viewportW - g.canvasWidthL);
+        Utils.setStyleSize(this.paneHeaderR, 'width', g.viewportW - g.canvasWidthL - rfW);
 
         Utils.width(this.paneTopL, g.canvasWidthL);
         Utils.setStyleSize(this.paneTopR, 'left', g.canvasWidthL);
-        Utils.width(this.paneTopR, g.viewportW - g.canvasWidthL);
+        Utils.width(this.paneTopR, g.viewportW - g.canvasWidthL - rfW);
 
         Utils.width(this.headerRowScrollerL, g.canvasWidthL);
-        Utils.width(this.headerRowScrollerR, g.viewportW - g.canvasWidthL);
+        Utils.width(this.headerRowScrollerR, g.viewportW - g.canvasWidthL - rfW);
 
         Utils.width(this.headerRowL, g.canvasWidthL);
         Utils.width(this.headerRowR, g.canvasWidthR);
 
         if (g.createFooterRow) {
           Utils.width(this.footerRowScrollerL, g.canvasWidthL);
-          Utils.width(this.footerRowScrollerR, g.viewportW - g.canvasWidthL);
+          Utils.width(this.footerRowScrollerR, g.viewportW - g.canvasWidthL - rfW);
 
           Utils.width(this.footerRowL, g.canvasWidthL);
           Utils.width(this.footerRowR, g.canvasWidthR);
@@ -974,17 +992,40 @@ class ViewportMgr {
           Utils.width(this.preHeaderPanel, g.preHeaderPanelWidth ?? g.canvasWidth);
         }
         Utils.width(this.viewportTopL, g.canvasWidthL);
-        Utils.width(this.viewportTopR, g.viewportW - g.canvasWidthL);
+        Utils.width(this.viewportTopR, g.viewportW - g.canvasWidthL - rfW);
 
         if (this.freeze.hasFrozenRows) {
           Utils.width(this.paneBottomL, g.canvasWidthL);
           Utils.setStyleSize(this.paneBottomR, 'left', g.canvasWidthL);
 
           Utils.width(this.viewportBottomL, g.canvasWidthL);
-          Utils.width(this.viewportBottomR, g.viewportW - g.canvasWidthL);
+          Utils.width(this.viewportBottomR, g.viewportW - g.canvasWidthL - rfW);
 
           Utils.width(this.canvasBottomL, g.canvasWidthL);
           Utils.width(this.canvasBottomR, g.canvasWidthR);
+        }
+      } else if (rfActive) {
+        // no left freeze, but a right-frozen band: the left pane IS the scrollable
+        // middle band — pixel widths instead of the historical '100%'
+        const middleW = g.viewportW - rfW;
+        Utils.width(this.paneHeaderL, middleW);
+        Utils.width(this.paneTopL, middleW);
+        Utils.width(this.headerRowScrollerL, middleW);
+        Utils.width(this.headerRowL, g.canvasWidth);
+
+        if (g.createFooterRow) {
+          Utils.width(this.footerRowScrollerL, middleW);
+          Utils.width(this.footerRowL, g.canvasWidth);
+        }
+
+        if (g.createPreHeaderPanel) {
+          Utils.width(this.preHeaderPanel, g.preHeaderPanelWidth ?? g.canvasWidth);
+        }
+        Utils.width(this.viewportTopL, middleW);
+
+        if (this.freeze.hasFrozenRows) {
+          Utils.width(this.viewportBottomL, middleW);
+          Utils.width(this.canvasBottomL, g.canvasWidthL);
         }
       } else {
         Utils.width(this.paneHeaderL, '100%');
@@ -1005,6 +1046,33 @@ class ViewportMgr {
         if (this.freeze.hasFrozenRows) {
           Utils.width(this.viewportBottomL, '100%');
           Utils.width(this.canvasBottomL, g.canvasWidthL);
+        }
+      }
+
+      // right-frozen band: fixed-width panes pinned to the right edge
+      if (rfActive) {
+        const rfLeft = g.viewportW - rfW;
+        Utils.setStyleSize(this.paneHeaderRF, 'left', rfLeft);
+        Utils.width(this.paneHeaderRF, rfW);
+        Utils.width(this.headerRF, g.headersWidthRF);
+
+        Utils.setStyleSize(this.paneTopRF, 'left', rfLeft);
+        Utils.width(this.paneTopRF, rfW);
+        Utils.width(this.headerRowScrollerRF, rfW);
+        Utils.width(this.headerRowRF, g.canvasWidthRF);
+        Utils.width(this.viewportTopRF, rfW);
+        Utils.width(this.canvasTopRF, g.canvasWidthRF);
+
+        if (g.createFooterRow) {
+          Utils.width(this.footerRowScrollerRF, rfW);
+          Utils.width(this.footerRowRF, g.canvasWidthRF);
+        }
+
+        if (this.freeze.hasFrozenRows) {
+          Utils.setStyleSize(this.paneBottomRF, 'left', rfLeft);
+          Utils.width(this.paneBottomRF, rfW);
+          Utils.width(this.viewportBottomRF, rfW);
+          Utils.width(this.canvasBottomRF, g.canvasWidthRF);
         }
       }
     }
@@ -1130,6 +1198,30 @@ class ViewportMgr {
       }
     }
 
+    // right-frozen band: mirror the classic right-pane vertical geometry
+    if (this.bands.frozenRightCols > 0 && this.paneHeaderRF) {
+      let topHeightOffsetRF = Utils.height(this.paneHeaderL);
+      if (topHeightOffsetRF) {
+        topHeightOffsetRF += (g.showTopHeaderPanel ? g.topHeaderPanelHeight! : 0);
+      }
+      Utils.setStyleSize(this.paneTopRF, 'top', topHeightOffsetRF as number);
+      Utils.height(this.paneTopRF, paneTopH);
+      Utils.height(this.viewportTopRF, viewportTopH);
+
+      if (this.freeze.hasFrozenRows) {
+        const paneBottomTopRF = this.paneTopL.offsetTop + paneTopH;
+        Utils.setStyleSize(this.paneBottomRF, 'top', paneBottomTopRF);
+        Utils.height(this.paneBottomRF, paneBottomH);
+        Utils.height(this.viewportBottomRF, paneBottomH);
+
+        if (this.freeze.frozenBottom) {
+          Utils.height(this.canvasBottomRF, g.frozenRowsHeight);
+        } else {
+          Utils.height(this.canvasTopRF, g.frozenRowsHeight);
+        }
+      }
+    }
+
     return { paneTopH, paneBottomH, viewportTopH, viewportBottomH };
   }
 
@@ -1200,13 +1292,22 @@ class ViewportMgr {
     }
   }
 
-  /** Mirrors the Y scroll position onto the frozen-left viewport that follows the scroll owner. */
+  /** Mirrors the Y scroll position onto the frozen-band viewports that follow the scroll owner. */
   syncVerticalFollowers(scrollTop: number) {
     if (this.hasFrozenColumns()) {
       if (this.freeze.hasFrozenRows && !this.freeze.frozenBottom) {
         this.viewportBottomL.scrollTop = scrollTop;
       } else {
         this.viewportTopL.scrollTop = scrollTop;
+      }
+    }
+
+    // the right-frozen band's scrollable-body viewport follows Y the same way
+    if (this.bands.frozenRightCols > 0 && this.viewportTopRF) {
+      if (this.freeze.hasFrozenRows && !this.freeze.frozenBottom) {
+        this.viewportBottomRF.scrollTop = scrollTop;
+      } else {
+        this.viewportTopRF.scrollTop = scrollTop;
       }
     }
   }
@@ -1528,9 +1629,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected canvasWidth = 0;
   protected canvasWidthL = 0;
   protected canvasWidthR = 0;
+  protected canvasWidthRF = 0;
   protected headersWidth = 0;
   protected headersWidthL = 0;
   protected headersWidthR = 0;
+  protected headersWidthRF = 0;
   protected viewportHasHScroll = false;
   protected viewportHasVScroll = false;
   protected headerColumnWidthDiff = 0;
@@ -3483,6 +3586,27 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * computes the frozenRowsHeight (based on rowHeight), and determines the actual frozen row index
    * depending on whether frozenBottom is enabled.
    */
+  /**
+   * Index (into this.columns) of the first column belonging to the right-frozen band —
+   * the last `frozenRightColumn` VISIBLE columns. Returns columns.length when the band
+   * is off, so `i >= result` is always false in that case.
+   */
+  protected getFrozenRightStartIdx(): number {
+    if (!(this._options.frozenRightColumn! > 0)) {
+      return this.columns.length;
+    }
+    let count = 0;
+    for (let i = this.columns.length - 1; i >= 0; i--) {
+      if (this.columns[i] && !this.columns[i].hidden) {
+        count++;
+        if (count === this._options.frozenRightColumn) {
+          return i;
+        }
+      }
+    }
+    return 0;
+  }
+
   protected setFrozenOptions() {
     this._options.frozenColumn = (this._options.frozenColumn! >= 0 && this._options.frozenColumn! < this.columns.length)
       ? parseInt(this._options.frozenColumn as unknown as string, 10)
@@ -5846,8 +5970,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * Returns the computed overall header width in pixels.
   */
   getHeadersWidth() {
-    this.headersWidth = this.headersWidthL = this.headersWidthR = 0;
+    this.headersWidth = this.headersWidthL = this.headersWidthR = this.headersWidthRF = 0;
     const includeScrollbar = !this._options.autoHeight;
+    const rfStartIdx = this.getFrozenRightStartIdx();
 
     let i = 0;
     const ii = this.columns.length;
@@ -5856,7 +5981,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       const width = this.columns[i].width;
 
-      if (this._viewportMgr.isColumnRightOfFreeze(i)) {
+      if (i >= rfStartIdx) {
+        // right-frozen headers are fixed-width (no horizontal scrolling): plain sum
+        this.headersWidthRF += width || 0;
+      } else if (this._viewportMgr.isColumnRightOfFreeze(i)) {
         this.headersWidthR += width || 0;
       } else {
         this.headersWidthL += width || 0;
@@ -5895,18 +6023,21 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const availableWidth = this.getViewportInnerWidth();
     let i = this.columns.length;
 
-    this.canvasWidthL = this.canvasWidthR = 0;
+    this.canvasWidthL = this.canvasWidthR = this.canvasWidthRF = 0;
+    const rfStartIdx = this.getFrozenRightStartIdx();
 
     while (i--) {
       if (!this.columns[i] || this.columns[i].hidden) { continue; }
 
-      if (this._viewportMgr.isColumnRightOfFreeze(i)) {
+      if (i >= rfStartIdx) {
+        this.canvasWidthRF += this.columns[i].width || 0;
+      } else if (this._viewportMgr.isColumnRightOfFreeze(i)) {
         this.canvasWidthR += this.columns[i].width || 0;
       } else {
         this.canvasWidthL += this.columns[i].width || 0;
       }
     }
-    let totalRowWidth = this.canvasWidthL + this.canvasWidthR;
+    let totalRowWidth = this.canvasWidthL + this.canvasWidthR + this.canvasWidthRF;
     if (this._options.fullWidthRows) {
       const extraWidth = Math.max(totalRowWidth, availableWidth) - totalRowWidth;
       if (extraWidth > 0) {
@@ -6016,13 +6147,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const oldCanvasWidth = this.canvasWidth;
     const oldCanvasWidthL = this.canvasWidthL;
     const oldCanvasWidthR = this.canvasWidthR;
+    const oldCanvasWidthRF = this.canvasWidthRF;
     this.canvasWidth = this.getCanvasWidth();
 
     if (this._options.createTopHeaderPanel) {
       Utils.width(this._topHeaderPanel, this._options.topHeaderPanelWidth ?? this.canvasWidth);
     }
 
-    const widthChanged = this.canvasWidth !== oldCanvasWidth || this.canvasWidthL !== oldCanvasWidthL || this.canvasWidthR !== oldCanvasWidthR;
+    const widthChanged = this.canvasWidth !== oldCanvasWidth || this.canvasWidthL !== oldCanvasWidthL || this.canvasWidthR !== oldCanvasWidthR || this.canvasWidthRF !== oldCanvasWidthRF;
 
     // recompute the header width split only when the pane widths will be redistributed
     // (preserves the historical conditional side effect on headersWidthL/R)
@@ -6035,8 +6167,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       canvasWidth: this.canvasWidth,
       canvasWidthL: this.canvasWidthL,
       canvasWidthR: this.canvasWidthR,
+      canvasWidthRF: this.canvasWidthRF,
       headersWidthL: this.headersWidthL,
       headersWidthR: this.headersWidthR,
+      headersWidthRF: this.headersWidthRF,
       viewportW: this.viewportW,
       viewportHasVScroll: this.viewportHasVScroll,
       scrollbarWidth: this.scrollbarDimensions?.width ?? 0,
@@ -7020,10 +7154,16 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         if (this._viewportMgr.hasFrozenColumns()) {
           Utils.height(this._canvasBottomR, this.h);
         }
+        if (this._options.frozenRightColumn! > 0 && this._viewportMgr.canvasBottomRF) {
+          Utils.height(this._viewportMgr.canvasBottomRF, this.h);
+        }
       } else {
         Utils.height(this._canvasTopL, this.h);
         if (this._canvasTopR) {
           Utils.height(this._canvasTopR, this.h);
+        }
+        if (this._options.frozenRightColumn! > 0 && this._viewportMgr.canvasTopRF) {
+          Utils.height(this._viewportMgr.canvasTopRF, this.h);
         }
       }
 
@@ -7585,6 +7725,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       if (this._viewportMgr.hasFrozenRows()) {
         this._viewportBottomL.scrollTop = this._viewportBottomR.scrollTop = newScrollTop;
+      }
+
+      // right-frozen viewports follow programmatic Y scrolling too
+      if (this._options.frozenRightColumn! > 0 && this._viewportMgr.viewportTopRF) {
+        this._viewportMgr.viewportTopRF.scrollTop = newScrollTop;
+        if (this._viewportMgr.hasFrozenRows()) {
+          this._viewportMgr.viewportBottomRF.scrollTop = newScrollTop;
+        }
       }
 
       if (this._viewportScrollContainerY) {
