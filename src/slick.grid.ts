@@ -542,37 +542,47 @@ class ViewportMgr {
     return this.isColumnRightOfFreeze(colIdx) ? right : left;
   }
 
+  /** Utils.show that tolerates panes not built under lazyPanes. */
+  protected showIf(el?: HTMLElement) {
+    if (el) { Utils.show(el); }
+  }
+
+  /** Utils.hide that tolerates panes not built under lazyPanes. */
+  protected hideIf(el?: HTMLElement) {
+    if (el) { Utils.hide(el); }
+  }
+
   /** add/remove frozen class to left headers/footer when defined */
   applyPaneFrozenClasses(): void {
     const classAction = this.hasFrozenColumns() ? 'add' : 'remove';
     for (const elm of [this.paneHeaderL, this.paneTopL, this.paneBottomL]) {
-      elm.classList[classAction]('frozen');
+      elm?.classList[classAction]('frozen');
     }
   }
 
   /** Shows/hides the right and bottom panes according to the freeze configuration. */
   applyPaneVisibility() {
     if (this.hasFrozenColumns()) {
-      Utils.show(this.paneHeaderR);
-      Utils.show(this.paneTopR);
+      this.showIf(this.paneHeaderR);
+      this.showIf(this.paneTopR);
 
       if (this.freeze.hasFrozenRows) {
-        Utils.show(this.paneBottomL);
-        Utils.show(this.paneBottomR);
+        this.showIf(this.paneBottomL);
+        this.showIf(this.paneBottomR);
       } else {
-        Utils.hide(this.paneBottomR);
-        Utils.hide(this.paneBottomL);
+        this.hideIf(this.paneBottomR);
+        this.hideIf(this.paneBottomL);
       }
     } else {
-      Utils.hide(this.paneHeaderR);
-      Utils.hide(this.paneTopR);
-      Utils.hide(this.paneBottomR);
+      this.hideIf(this.paneHeaderR);
+      this.hideIf(this.paneTopR);
+      this.hideIf(this.paneBottomR);
 
       if (this.freeze.hasFrozenRows) {
-        Utils.show(this.paneBottomL);
+        this.showIf(this.paneBottomL);
       } else {
-        Utils.hide(this.paneBottomR);
-        Utils.hide(this.paneBottomL);
+        this.hideIf(this.paneBottomR);
+        this.hideIf(this.paneBottomL);
       }
     }
   }
@@ -588,21 +598,27 @@ class ViewportMgr {
     this.viewportTopL.style.overflowX = (this.hasFrozenColumns()) ? (hasFrozenRows && !o.alwaysAllowHorizontalScroll ? 'hidden' : 'scroll') : (hasFrozenRows && !o.alwaysAllowHorizontalScroll ? 'hidden' : 'auto');
     this.viewportTopL.style.overflowY = (!this.hasFrozenColumns() && o.alwaysShowVerticalScroll) ? 'scroll' : ((this.hasFrozenColumns()) ? (hasFrozenRows ? 'hidden' : 'hidden') : (hasFrozenRows ? 'scroll' : 'auto'));
 
-    this.viewportTopR.style.overflowX = (this.hasFrozenColumns()) ? (hasFrozenRows && !o.alwaysAllowHorizontalScroll ? 'hidden' : 'scroll') : (hasFrozenRows && !o.alwaysAllowHorizontalScroll ? 'hidden' : 'auto');
-    this.viewportTopR.style.overflowY = o.alwaysShowVerticalScroll ? 'scroll' : ((this.hasFrozenColumns()) ? (hasFrozenRows ? 'scroll' : 'auto') : (hasFrozenRows ? 'scroll' : 'auto'));
+    if (this.viewportTopR) {
+      this.viewportTopR.style.overflowX = (this.hasFrozenColumns()) ? (hasFrozenRows && !o.alwaysAllowHorizontalScroll ? 'hidden' : 'scroll') : (hasFrozenRows && !o.alwaysAllowHorizontalScroll ? 'hidden' : 'auto');
+      this.viewportTopR.style.overflowY = o.alwaysShowVerticalScroll ? 'scroll' : ((this.hasFrozenColumns()) ? (hasFrozenRows ? 'scroll' : 'auto') : (hasFrozenRows ? 'scroll' : 'auto'));
+    }
 
-    this.viewportBottomL.style.overflowX = (this.hasFrozenColumns()) ? (hasFrozenRows && !o.alwaysAllowHorizontalScroll ? 'scroll' : 'auto') : (hasFrozenRows && !o.alwaysAllowHorizontalScroll ? 'auto' : 'auto');
-    this.viewportBottomL.style.overflowY = (!this.hasFrozenColumns() && o.alwaysShowVerticalScroll) ? 'scroll' : ((this.hasFrozenColumns()) ? (hasFrozenRows ? 'hidden' : 'hidden') : (hasFrozenRows ? 'scroll' : 'auto'));
+    if (this.viewportBottomL) {
+      this.viewportBottomL.style.overflowX = (this.hasFrozenColumns()) ? (hasFrozenRows && !o.alwaysAllowHorizontalScroll ? 'scroll' : 'auto') : (hasFrozenRows && !o.alwaysAllowHorizontalScroll ? 'auto' : 'auto');
+      this.viewportBottomL.style.overflowY = (!this.hasFrozenColumns() && o.alwaysShowVerticalScroll) ? 'scroll' : ((this.hasFrozenColumns()) ? (hasFrozenRows ? 'hidden' : 'hidden') : (hasFrozenRows ? 'scroll' : 'auto'));
+    }
 
-    this.viewportBottomR.style.overflowX = (this.hasFrozenColumns()) ? (hasFrozenRows && !o.alwaysAllowHorizontalScroll ? 'scroll' : 'auto') : (hasFrozenRows && !o.alwaysAllowHorizontalScroll ? 'auto' : 'auto');
-    this.viewportBottomR.style.overflowY = o.alwaysShowVerticalScroll ? 'scroll' : ((this.hasFrozenColumns()) ? (hasFrozenRows ? 'auto' : 'auto') : (hasFrozenRows ? 'auto' : 'auto'));
+    if (this.viewportBottomR) {
+      this.viewportBottomR.style.overflowX = (this.hasFrozenColumns()) ? (hasFrozenRows && !o.alwaysAllowHorizontalScroll ? 'scroll' : 'auto') : (hasFrozenRows && !o.alwaysAllowHorizontalScroll ? 'auto' : 'auto');
+      this.viewportBottomR.style.overflowY = o.alwaysShowVerticalScroll ? 'scroll' : ((this.hasFrozenColumns()) ? (hasFrozenRows ? 'auto' : 'auto') : (hasFrozenRows ? 'auto' : 'auto'));
+    }
 
     if (o.viewportClass) {
       const viewportClassList = Utils.classNameToList(o.viewportClass);
-      this.viewportTopL.classList.add(...viewportClassList);
-      this.viewportTopR.classList.add(...viewportClassList);
-      this.viewportBottomL.classList.add(...viewportClassList);
-      this.viewportBottomR.classList.add(...viewportClassList);
+      // this.viewport only ever contains the elements that were actually built
+      this.viewport.forEach((view) => {
+        view.classList.add(...viewportClassList);
+      });
     }
   }
 
@@ -622,7 +638,9 @@ class ViewportMgr {
       Utils.width(this.canvasTopL, g.canvasWidthL);
 
       Utils.width(this.headerL, g.headersWidthL);
-      Utils.width(this.headerR, g.headersWidthR);
+      if (this.headerR) {
+        Utils.width(this.headerR, g.headersWidthR);
+      }
 
       if (this.hasFrozenColumns()) {
         Utils.width(this.canvasTopR, g.canvasWidthR);
@@ -688,11 +706,15 @@ class ViewportMgr {
     }
 
     Utils.width(this.headerRowSpacerL, g.canvasWidth + (g.viewportHasVScroll ? g.scrollbarWidth : 0));
-    Utils.width(this.headerRowSpacerR, g.canvasWidth + (g.viewportHasVScroll ? g.scrollbarWidth : 0));
+    if (this.headerRowSpacerR) {
+      Utils.width(this.headerRowSpacerR, g.canvasWidth + (g.viewportHasVScroll ? g.scrollbarWidth : 0));
+    }
 
     if (g.createFooterRow) {
       Utils.width(this.footerRowSpacerL, g.canvasWidth + (g.viewportHasVScroll ? g.scrollbarWidth : 0));
-      Utils.width(this.footerRowSpacerR, g.canvasWidth + (g.viewportHasVScroll ? g.scrollbarWidth : 0));
+      if (this.footerRowSpacerR) {
+        Utils.width(this.footerRowSpacerR, g.canvasWidth + (g.viewportHasVScroll ? g.scrollbarWidth : 0));
+      }
     }
   }
 
@@ -799,7 +821,9 @@ class ViewportMgr {
         }
       }
     } else {
-      Utils.height(this.viewportTopR, viewportTopH);
+      if (this.viewportTopR) {
+        Utils.height(this.viewportTopR, viewportTopH);
+      }
     }
 
     return { paneTopH, paneBottomH, viewportTopH, viewportBottomH };
@@ -1071,6 +1095,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     frozenColumn: -1,
     frozenRow: -1,
     frozenRightViewportMinWidth: 100,
+    lazyPanes: false,
     throwWhenFrozenNotAllViewable: false,
     fullWidthRows: false,
     multiColumnSort: false,
@@ -1573,7 +1598,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     });
 
     Utils.width(this._headerRowSpacerL, canvasWithScrollbarWidth);
-    Utils.width(this._headerRowSpacerR, canvasWithScrollbarWidth);
+    if (this._headerRowSpacerR) {
+      Utils.width(this._headerRowSpacerR, canvasWithScrollbarWidth);
+    }
 
     // footer Row
     if (this._options.createFooterRow) {
@@ -2465,7 +2492,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     });
 
     Utils.emptyElement(this._headerL);
-    Utils.emptyElement(this._headerR);
+    if (this._headerR) {
+      Utils.emptyElement(this._headerR);
+    }
 
     this.getHeadersWidth();
 
@@ -2487,7 +2516,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     });
 
     Utils.emptyElement(this._headerRowL);
-    Utils.emptyElement(this._headerRowR);
+    if (this._headerRowR) {
+      Utils.emptyElement(this._headerRowR);
+    }
 
     if (this._options.createFooterRow) {
       const footerRowLColumnElements = this._footerRowL.querySelectorAll('.slick-footerrow-column');
@@ -6566,7 +6597,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         }
       } else {
         Utils.height(this._canvasTopL, this.h);
-        Utils.height(this._canvasTopR, this.h);
+        if (this._canvasTopR) {
+          Utils.height(this._canvasTopR, this.h);
+        }
       }
 
       this.scrollTop = this._viewportScrollContainerY.scrollTop;
