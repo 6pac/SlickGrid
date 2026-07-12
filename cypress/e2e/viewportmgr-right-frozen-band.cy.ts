@@ -55,6 +55,35 @@ describe('right-frozen band DOM - frozenRightColumn at init (example-frozen-righ
     cy.get('#myGrid .slick-pane-bottom.slick-pane-right-frozen').should('not.be.visible');
   });
 
+  it('should size the band and pin it to the right edge (M13c geometry)', () => {
+    cy.get('#myGrid .slick-pane-top.slick-pane-right-frozen').then(($pane) => {
+      const pane = $pane[0] as HTMLElement;
+      const container = pane.parentElement as HTMLElement;
+      expect(pane.offsetWidth, 'RF pane has real width').to.be.greaterThan(0);
+      expect(pane.offsetLeft + pane.offsetWidth, 'RF pane pinned at the right edge')
+        .to.be.closeTo(container.clientWidth, 3);
+    });
+
+    // the scrollable middle band shrinks by the RF band width
+    cy.get('#myGrid .slick-pane-top.slick-pane-left').then(($mid) => {
+      cy.get('#myGrid .slick-pane-top.slick-pane-right-frozen').then(($rf) => {
+        const mid = $mid[0] as HTMLElement;
+        const rf = $rf[0] as HTMLElement;
+        const container = mid.parentElement as HTMLElement;
+        expect(mid.offsetWidth + rf.offsetWidth, 'middle + RF widths fill the container')
+          .to.be.closeTo(container.clientWidth, 3);
+      });
+    });
+
+    // RF viewport and canvas carry the band width
+    cy.get('#myGrid .slick-viewport-top.slick-viewport-right-frozen').then(($vp) => {
+      expect(($vp[0] as HTMLElement).offsetWidth).to.be.greaterThan(0);
+    });
+    cy.get('#myGrid .grid-canvas-top.grid-canvas-right-frozen').then(($c) => {
+      expect(($c[0] as HTMLElement).offsetWidth).to.be.greaterThan(0);
+    });
+  });
+
   it('should still render all cells in the classic canvases at this stage (routing lands in a later milestone)', () => {
     cy.get('#myGrid .grid-canvas-top.grid-canvas-left .slick-row').should('have.length.greaterThan', 0);
     cy.get('#myGrid .grid-canvas-top.grid-canvas-right-frozen .slick-row').should('have.length', 0);
