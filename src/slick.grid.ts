@@ -7665,8 +7665,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Dynamically doubles a test height on a temporary element until the element no longer accepts the height
-   * (or exceeds a browser-specific maximum). Returns the highest supported CSS height in pixels.
+   * Dynamically doubles a test height on a temporary element until the element no longer accepts the height,
+   * a child positioned at the bottom of the element no longer lands where it was asked,
+   * or a browser-specific maximum is exceeded. Returns the highest supported CSS height in pixels.
    *
    * @returns {number} The highest supported CSS height in pixels.
    */
@@ -7675,14 +7676,19 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     // FF reports the height back but still renders blank after ~6M px
     // let testUpTo = navigator.userAgent.toLowerCase().match(/firefox/) ? 6000000 : 1000000000;
     const testUpTo = navigator.userAgent.toLowerCase().match(/firefox/) ? this._options.ffMaxSupportedCssHeight : this._options.maxSupportedCssHeight;
-    const div = Utils.createDomElement('div', { style: { display: 'hidden' } }, document.body);
+    const div = Utils.createDomElement('div', { style: { display: 'hidden', position: 'relative' } }, document.body);
+    // grid rows are absolutely positioned inside the canvas, and browsers clamp positioned layout at a
+    // much lower limit than the maximum element height (e.g. Blink saturates positioned offsets at
+    // 2^24 px while a plain height read-back survives to ~32M px), so a positioned child is probed too
+    const marker = Utils.createDomElement('div', { style: { position: 'absolute', height: '1px' } }, div);
 
     while (true) {
       const test = supportedHeight * 2;
       Utils.height(div, test);
       const height = Utils.height(div);
+      marker.style.top = `${test - 1}px`;
 
-      if (test > testUpTo! || height !== test) {
+      if (test > testUpTo! || height !== test || marker.offsetTop !== test - 1) {
         break;
       } else {
         supportedHeight = test;
