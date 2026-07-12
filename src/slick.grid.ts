@@ -199,6 +199,9 @@ interface ViewportMgrBuildOptions {
   showTopPanel?: boolean;
   showHeaderRow?: boolean;
   viewportClass?: string;
+  lazyPanes?: boolean;
+  frozenColumn?: number;
+  frozenRow?: number;
 }
 
 /**
@@ -213,6 +216,12 @@ interface ViewportMgrBuildOptions {
 class ViewportMgr {
   /** the grid container, captured by buildPanes */
   protected container!: HTMLElement;
+
+  /**
+   * True when the grid opted into lazyPanes AND no rows/columns were frozen at build
+   * time — only the top-left pane set exists until freezing is enabled.
+   */
+  protected lazy = false;
 
   // panes
   paneHeaderL!: HTMLDivElement;
@@ -285,14 +294,22 @@ class ViewportMgr {
    */
   buildPanes(container: HTMLElement, o: ViewportMgrBuildOptions) {
     this.container = container;
+    this.lazy = !!o.lazyPanes && !(((o.frozenColumn ?? -1) > -1) || ((o.frozenRow ?? -1) > -1));
 
-    // Containers used for scrolling frozen columns and rows
+    // Containers used for scrolling frozen columns and rows.
+    // Under lazyPanes with nothing frozen, only the top-left pane set is built;
+    // the creation ORDER of the conditional elements must stay canonical so both
+    // modes produce the same sibling sequence for whatever exists.
     this.paneHeaderL = Utils.createDomElement('div', { className: 'slick-pane slick-pane-header slick-pane-left', tabIndex: 0 }, container);
-    this.paneHeaderR = Utils.createDomElement('div', { className: 'slick-pane slick-pane-header slick-pane-right', tabIndex: 0 }, container);
+    if (!this.lazy) {
+      this.paneHeaderR = Utils.createDomElement('div', { className: 'slick-pane slick-pane-header slick-pane-right', tabIndex: 0 }, container);
+    }
     this.paneTopL = Utils.createDomElement('div', { className: 'slick-pane slick-pane-top slick-pane-left', tabIndex: 0 }, container);
-    this.paneTopR = Utils.createDomElement('div', { className: 'slick-pane slick-pane-top slick-pane-right', tabIndex: 0 }, container);
-    this.paneBottomL = Utils.createDomElement('div', { className: 'slick-pane slick-pane-bottom slick-pane-left', tabIndex: 0 }, container);
-    this.paneBottomR = Utils.createDomElement('div', { className: 'slick-pane slick-pane-bottom slick-pane-right', tabIndex: 0 }, container);
+    if (!this.lazy) {
+      this.paneTopR = Utils.createDomElement('div', { className: 'slick-pane slick-pane-top slick-pane-right', tabIndex: 0 }, container);
+      this.paneBottomL = Utils.createDomElement('div', { className: 'slick-pane slick-pane-bottom slick-pane-left', tabIndex: 0 }, container);
+      this.paneBottomR = Utils.createDomElement('div', { className: 'slick-pane slick-pane-bottom slick-pane-right', tabIndex: 0 }, container);
+    }
 
     if (o.createPreHeaderPanel) {
       this.preHeaderPanelScroller = Utils.createDomElement('div', { className: 'slick-preheader-panel ui-state-default slick-state-default', style: { overflow: 'hidden', position: 'relative' } }, this.paneHeaderL);
@@ -300,55 +317,73 @@ class ViewportMgr {
       this.preHeaderPanel = Utils.createDomElement('div', null, this.preHeaderPanelScroller);
       this.preHeaderPanelSpacer = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, this.preHeaderPanelScroller);
 
-      this.preHeaderPanelScrollerR = Utils.createDomElement('div', { className: 'slick-preheader-panel ui-state-default slick-state-default', style: { overflow: 'hidden', position: 'relative' } }, this.paneHeaderR);
-      this.preHeaderPanelR = Utils.createDomElement('div', null, this.preHeaderPanelScrollerR);
-      this.preHeaderPanelSpacerR = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, this.preHeaderPanelScrollerR);
+      if (!this.lazy) {
+        this.preHeaderPanelScrollerR = Utils.createDomElement('div', { className: 'slick-preheader-panel ui-state-default slick-state-default', style: { overflow: 'hidden', position: 'relative' } }, this.paneHeaderR);
+        this.preHeaderPanelR = Utils.createDomElement('div', null, this.preHeaderPanelScrollerR);
+        this.preHeaderPanelSpacerR = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, this.preHeaderPanelScrollerR);
+      }
 
       if (!o.showPreHeaderPanel) {
         Utils.hide(this.preHeaderPanelScroller);
-        Utils.hide(this.preHeaderPanelScrollerR);
+        this.hideIf(this.preHeaderPanelScrollerR);
       }
     }
 
     // Append the header scroller containers
     this.headerScrollerL = Utils.createDomElement('div', { className: 'slick-header ui-state-default slick-state-default slick-header-left' }, this.paneHeaderL);
-    this.headerScrollerR = Utils.createDomElement('div', { className: 'slick-header ui-state-default slick-state-default slick-header-right' }, this.paneHeaderR);
+    if (!this.lazy) {
+      this.headerScrollerR = Utils.createDomElement('div', { className: 'slick-header ui-state-default slick-state-default slick-header-right' }, this.paneHeaderR);
+    }
 
     // Cache the header scroller containers
     this.headerScroller.push(this.headerScrollerL);
-    this.headerScroller.push(this.headerScrollerR);
+    if (!this.lazy) {
+      this.headerScroller.push(this.headerScrollerR);
+    }
 
     // Append the columnn containers to the headers
     this.headerL = Utils.createDomElement('div', { className: 'slick-header-columns slick-header-columns-left', role: 'row', style: { left: '-1000px' } }, this.headerScrollerL);
-    this.headerR = Utils.createDomElement('div', { className: 'slick-header-columns slick-header-columns-right', role: 'row', style: { left: '-1000px' } }, this.headerScrollerR);
+    if (!this.lazy) {
+      this.headerR = Utils.createDomElement('div', { className: 'slick-header-columns slick-header-columns-right', role: 'row', style: { left: '-1000px' } }, this.headerScrollerR);
+    }
 
     // Cache the header columns
-    this.headers = [this.headerL, this.headerR];
+    this.headers = this.lazy ? [this.headerL] : [this.headerL, this.headerR];
 
     this.headerRowScrollerL = Utils.createDomElement('div', { className: 'slick-headerrow ui-state-default slick-state-default' }, this.paneTopL);
-    this.headerRowScrollerR = Utils.createDomElement('div', { className: 'slick-headerrow ui-state-default slick-state-default' }, this.paneTopR);
+    if (!this.lazy) {
+      this.headerRowScrollerR = Utils.createDomElement('div', { className: 'slick-headerrow ui-state-default slick-state-default' }, this.paneTopR);
+    }
 
-    this.headerRowScroller = [this.headerRowScrollerL, this.headerRowScrollerR];
+    this.headerRowScroller = this.lazy ? [this.headerRowScrollerL] : [this.headerRowScrollerL, this.headerRowScrollerR];
 
     this.headerRowSpacerL = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, this.headerRowScrollerL);
-    this.headerRowSpacerR = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, this.headerRowScrollerR);
+    if (!this.lazy) {
+      this.headerRowSpacerR = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, this.headerRowScrollerR);
+    }
 
     this.headerRowL = Utils.createDomElement('div', { className: 'slick-headerrow-columns slick-headerrow-columns-left' }, this.headerRowScrollerL);
-    this.headerRowR = Utils.createDomElement('div', { className: 'slick-headerrow-columns slick-headerrow-columns-right' }, this.headerRowScrollerR);
+    if (!this.lazy) {
+      this.headerRowR = Utils.createDomElement('div', { className: 'slick-headerrow-columns slick-headerrow-columns-right' }, this.headerRowScrollerR);
+    }
 
-    this.headerRows = [this.headerRowL, this.headerRowR];
+    this.headerRows = this.lazy ? [this.headerRowL] : [this.headerRowL, this.headerRowR];
 
     // Append the top panel scroller
     this.topPanelScrollerL = Utils.createDomElement('div', { className: 'slick-top-panel-scroller ui-state-default slick-state-default' }, this.paneTopL);
-    this.topPanelScrollerR = Utils.createDomElement('div', { className: 'slick-top-panel-scroller ui-state-default slick-state-default' }, this.paneTopR);
+    if (!this.lazy) {
+      this.topPanelScrollerR = Utils.createDomElement('div', { className: 'slick-top-panel-scroller ui-state-default slick-state-default' }, this.paneTopR);
+    }
 
-    this.topPanelScrollers = [this.topPanelScrollerL, this.topPanelScrollerR];
+    this.topPanelScrollers = this.lazy ? [this.topPanelScrollerL] : [this.topPanelScrollerL, this.topPanelScrollerR];
 
     // Append the top panel
     this.topPanelL = Utils.createDomElement('div', { className: 'slick-top-panel', style: { width: '10000px' } }, this.topPanelScrollerL);
-    this.topPanelR = Utils.createDomElement('div', { className: 'slick-top-panel', style: { width: '10000px' } }, this.topPanelScrollerR);
+    if (!this.lazy) {
+      this.topPanelR = Utils.createDomElement('div', { className: 'slick-top-panel', style: { width: '10000px' } }, this.topPanelScrollerR);
+    }
 
-    this.topPanels = [this.topPanelL, this.topPanelR];
+    this.topPanels = this.lazy ? [this.topPanelL] : [this.topPanelL, this.topPanelR];
 
     if (!o.showColumnHeader) {
       this.headerScroller.forEach((el) => {
@@ -370,12 +405,16 @@ class ViewportMgr {
 
     // Append the viewport containers
     this.viewportTopL = Utils.createDomElement('div', { className: 'slick-viewport slick-viewport-top slick-viewport-left', tabIndex: 0 }, this.paneTopL);
-    this.viewportTopR = Utils.createDomElement('div', { className: 'slick-viewport slick-viewport-top slick-viewport-right', tabIndex: 0 }, this.paneTopR);
-    this.viewportBottomL = Utils.createDomElement('div', { className: 'slick-viewport slick-viewport-bottom slick-viewport-left', tabIndex: 0 }, this.paneBottomL);
-    this.viewportBottomR = Utils.createDomElement('div', { className: 'slick-viewport slick-viewport-bottom slick-viewport-right', tabIndex: 0 }, this.paneBottomR);
+    if (!this.lazy) {
+      this.viewportTopR = Utils.createDomElement('div', { className: 'slick-viewport slick-viewport-top slick-viewport-right', tabIndex: 0 }, this.paneTopR);
+      this.viewportBottomL = Utils.createDomElement('div', { className: 'slick-viewport slick-viewport-bottom slick-viewport-left', tabIndex: 0 }, this.paneBottomL);
+      this.viewportBottomR = Utils.createDomElement('div', { className: 'slick-viewport slick-viewport-bottom slick-viewport-right', tabIndex: 0 }, this.paneBottomR);
+    }
 
     // Cache the viewports
-    this.viewport = [this.viewportTopL, this.viewportTopR, this.viewportBottomL, this.viewportBottomR];
+    this.viewport = this.lazy
+      ? [this.viewportTopL]
+      : [this.viewportTopL, this.viewportTopR, this.viewportBottomL, this.viewportBottomR];
     if (o.viewportClass) {
       this.viewport.forEach((view) => {
         view.classList.add(...Utils.classNameToList((o.viewportClass)));
@@ -384,12 +423,16 @@ class ViewportMgr {
 
     // Append the canvas containers
     this.canvasTopL = Utils.createDomElement('div', { className: 'grid-canvas grid-canvas-top grid-canvas-left', tabIndex: 0 }, this.viewportTopL);
-    this.canvasTopR = Utils.createDomElement('div', { className: 'grid-canvas grid-canvas-top grid-canvas-right', tabIndex: 0 }, this.viewportTopR);
-    this.canvasBottomL = Utils.createDomElement('div', { className: 'grid-canvas grid-canvas-bottom grid-canvas-left', tabIndex: 0 }, this.viewportBottomL);
-    this.canvasBottomR = Utils.createDomElement('div', { className: 'grid-canvas grid-canvas-bottom grid-canvas-right', tabIndex: 0 }, this.viewportBottomR);
+    if (!this.lazy) {
+      this.canvasTopR = Utils.createDomElement('div', { className: 'grid-canvas grid-canvas-top grid-canvas-right', tabIndex: 0 }, this.viewportTopR);
+      this.canvasBottomL = Utils.createDomElement('div', { className: 'grid-canvas grid-canvas-bottom grid-canvas-left', tabIndex: 0 }, this.viewportBottomL);
+      this.canvasBottomR = Utils.createDomElement('div', { className: 'grid-canvas grid-canvas-bottom grid-canvas-right', tabIndex: 0 }, this.viewportBottomR);
+    }
 
     // Cache the canvases
-    this.canvas = [this.canvasTopL, this.canvasTopR, this.canvasBottomL, this.canvasBottomR];
+    this.canvas = this.lazy
+      ? [this.canvasTopL]
+      : [this.canvasTopL, this.canvasTopR, this.canvasBottomL, this.canvasBottomR];
   }
 
   /**
@@ -398,20 +441,26 @@ class ViewportMgr {
    * scroller creation order and spacer widths.
    */
   buildFooterRows(o: ViewportMgrBuildOptions, canvasWithScrollbarWidth: number) {
-    this.footerRowScrollerR = Utils.createDomElement('div', { className: 'slick-footerrow ui-state-default slick-state-default' }, this.paneTopR);
+    if (!this.lazy) {
+      this.footerRowScrollerR = Utils.createDomElement('div', { className: 'slick-footerrow ui-state-default slick-state-default' }, this.paneTopR);
+    }
     this.footerRowScrollerL = Utils.createDomElement('div', { className: 'slick-footerrow ui-state-default slick-state-default' }, this.paneTopL);
 
-    this.footerRowScroller = [this.footerRowScrollerL, this.footerRowScrollerR];
+    this.footerRowScroller = this.lazy ? [this.footerRowScrollerL] : [this.footerRowScrollerL, this.footerRowScrollerR];
 
     this.footerRowSpacerL = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, this.footerRowScrollerL);
     Utils.width(this.footerRowSpacerL, canvasWithScrollbarWidth);
-    this.footerRowSpacerR = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, this.footerRowScrollerR);
-    Utils.width(this.footerRowSpacerR, canvasWithScrollbarWidth);
+    if (!this.lazy) {
+      this.footerRowSpacerR = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, this.footerRowScrollerR);
+      Utils.width(this.footerRowSpacerR, canvasWithScrollbarWidth);
+    }
 
     this.footerRowL = Utils.createDomElement('div', { className: 'slick-footerrow-columns slick-footerrow-columns-left' }, this.footerRowScrollerL);
-    this.footerRowR = Utils.createDomElement('div', { className: 'slick-footerrow-columns slick-footerrow-columns-right' }, this.footerRowScrollerR);
+    if (!this.lazy) {
+      this.footerRowR = Utils.createDomElement('div', { className: 'slick-footerrow-columns slick-footerrow-columns-right' }, this.footerRowScrollerR);
+    }
 
-    this.footerRow = [this.footerRowL, this.footerRowR];
+    this.footerRow = this.lazy ? [this.footerRowL] : [this.footerRowL, this.footerRowR];
 
     if (!o.showFooterRow) {
       this.footerRowScroller.forEach((scroller) => {
@@ -2742,9 +2791,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @returns {HTMLElement[]} - An array of header column elements.
    */
   protected getHeaderChildren() {
-    const a = Array.from(this._headers[0].children);
-    const b = Array.from(this._headers[1].children);
-    return a.concat(b) as HTMLElement[];
+    // _headers only contains the header containers that were actually built
+    // (a single left container under lazyPanes)
+    return this._headers.flatMap((headerEl) => Array.from(headerEl.children)) as HTMLElement[];
   }
 
   /**
