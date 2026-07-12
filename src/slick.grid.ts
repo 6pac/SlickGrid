@@ -469,6 +469,104 @@ class ViewportMgr {
     }
   }
 
+  /**
+   * Builds the right/bottom panes, chrome, viewports and canvases that a lazyPanes
+   * grid skipped at init, inserting each pane at its canonical sibling position and
+   * pushing the new elements into the shared caches IN PLACE (the grid's array
+   * aliases keep working). Idempotent: returns false when the grid is not lazy
+   * (already fully built or built non-lazy).
+   */
+  materializeSecondaryPanes(o: ViewportMgrBuildOptions): boolean {
+    if (!this.lazy) {
+      return false;
+    }
+    this.lazy = false;
+
+    const container = this.container;
+
+    // panes, at their canonical sibling positions
+    this.paneHeaderR = Utils.createDomElement('div', { className: 'slick-pane slick-pane-header slick-pane-right', tabIndex: 0 });
+    container.insertBefore(this.paneHeaderR, this.paneTopL);
+    this.paneTopR = Utils.createDomElement('div', { className: 'slick-pane slick-pane-top slick-pane-right', tabIndex: 0 });
+    container.insertBefore(this.paneTopR, this.paneTopL.nextSibling);
+    this.paneBottomL = Utils.createDomElement('div', { className: 'slick-pane slick-pane-bottom slick-pane-left', tabIndex: 0 });
+    container.insertBefore(this.paneBottomL, this.paneTopR.nextSibling);
+    this.paneBottomR = Utils.createDomElement('div', { className: 'slick-pane slick-pane-bottom slick-pane-right', tabIndex: 0 });
+    container.insertBefore(this.paneBottomR, this.paneBottomL.nextSibling);
+
+    if (o.createPreHeaderPanel) {
+      this.preHeaderPanelScrollerR = Utils.createDomElement('div', { className: 'slick-preheader-panel ui-state-default slick-state-default', style: { overflow: 'hidden', position: 'relative' } }, this.paneHeaderR);
+      this.preHeaderPanelR = Utils.createDomElement('div', null, this.preHeaderPanelScrollerR);
+      this.preHeaderPanelSpacerR = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, this.preHeaderPanelScrollerR);
+
+      if (!o.showPreHeaderPanel) {
+        Utils.hide(this.preHeaderPanelScrollerR);
+      }
+    }
+
+    // header scroller + header columns
+    this.headerScrollerR = Utils.createDomElement('div', { className: 'slick-header ui-state-default slick-state-default slick-header-right' }, this.paneHeaderR);
+    this.headerScroller.push(this.headerScrollerR);
+    this.headerR = Utils.createDomElement('div', { className: 'slick-header-columns slick-header-columns-right', role: 'row', style: { left: '-1000px' } }, this.headerScrollerR);
+    this.headers.push(this.headerR);
+
+    // header row
+    this.headerRowScrollerR = Utils.createDomElement('div', { className: 'slick-headerrow ui-state-default slick-state-default' }, this.paneTopR);
+    this.headerRowScroller.push(this.headerRowScrollerR);
+    this.headerRowSpacerR = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, this.headerRowScrollerR);
+    this.headerRowR = Utils.createDomElement('div', { className: 'slick-headerrow-columns slick-headerrow-columns-right' }, this.headerRowScrollerR);
+    this.headerRows.push(this.headerRowR);
+
+    // top panel
+    this.topPanelScrollerR = Utils.createDomElement('div', { className: 'slick-top-panel-scroller ui-state-default slick-state-default' }, this.paneTopR);
+    this.topPanelScrollers.push(this.topPanelScrollerR);
+    this.topPanelR = Utils.createDomElement('div', { className: 'slick-top-panel', style: { width: '10000px' } }, this.topPanelScrollerR);
+    this.topPanels.push(this.topPanelR);
+
+    if (!o.showColumnHeader) {
+      Utils.hide(this.headerScrollerR);
+    }
+    if (!o.showTopPanel) {
+      Utils.hide(this.topPanelScrollerR);
+    }
+    if (!o.showHeaderRow) {
+      Utils.hide(this.headerRowScrollerR);
+    }
+
+    // viewports (pushed in canonical [TopL, TopR, BottomL, BottomR] order)
+    this.viewportTopR = Utils.createDomElement('div', { className: 'slick-viewport slick-viewport-top slick-viewport-right', tabIndex: 0 }, this.paneTopR);
+    this.viewportBottomL = Utils.createDomElement('div', { className: 'slick-viewport slick-viewport-bottom slick-viewport-left', tabIndex: 0 }, this.paneBottomL);
+    this.viewportBottomR = Utils.createDomElement('div', { className: 'slick-viewport slick-viewport-bottom slick-viewport-right', tabIndex: 0 }, this.paneBottomR);
+    this.viewport.push(this.viewportTopR, this.viewportBottomL, this.viewportBottomR);
+    if (o.viewportClass) {
+      const viewportClassList = Utils.classNameToList(o.viewportClass);
+      this.viewportTopR.classList.add(...viewportClassList);
+      this.viewportBottomL.classList.add(...viewportClassList);
+      this.viewportBottomR.classList.add(...viewportClassList);
+    }
+
+    // canvases
+    this.canvasTopR = Utils.createDomElement('div', { className: 'grid-canvas grid-canvas-top grid-canvas-right', tabIndex: 0 }, this.viewportTopR);
+    this.canvasBottomL = Utils.createDomElement('div', { className: 'grid-canvas grid-canvas-bottom grid-canvas-left', tabIndex: 0 }, this.viewportBottomL);
+    this.canvasBottomR = Utils.createDomElement('div', { className: 'grid-canvas grid-canvas-bottom grid-canvas-right', tabIndex: 0 }, this.viewportBottomR);
+    this.canvas.push(this.canvasTopR, this.canvasBottomL, this.canvasBottomR);
+
+    // footer row (right side; the left one was built at init when createFooterRow)
+    if (o.createFooterRow) {
+      this.footerRowScrollerR = Utils.createDomElement('div', { className: 'slick-footerrow ui-state-default slick-state-default' }, this.paneTopR);
+      this.footerRowScroller.push(this.footerRowScrollerR);
+      this.footerRowSpacerR = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, this.footerRowScrollerR);
+      this.footerRowR = Utils.createDomElement('div', { className: 'slick-footerrow-columns slick-footerrow-columns-right' }, this.footerRowScrollerR);
+      this.footerRow.push(this.footerRowR);
+
+      if (!o.showFooterRow) {
+        Utils.hide(this.footerRowScrollerR);
+      }
+    }
+
+    return true;
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////
   // Freeze state and pane selection (Phase 2 of the encapsulation refactor)
   //////////////////////////////////////////////////////////////////////////////////////////////
@@ -1573,7 +1671,64 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     // existing logic operates unchanged.
     this._viewportMgr = new ViewportMgr();
     this._viewportMgr.buildPanes(this._container, this._options);
+    this.syncViewportMgrAliases();
 
+    // Default the active viewport to the top left
+    this._activeViewportNode = this._viewportTopL;
+
+    this.scrollbarDimensions = this.scrollbarDimensions || this.measureScrollbar();
+    const canvasWithScrollbarWidth = this.getCanvasWidth() + this.scrollbarDimensions.width;
+
+    // Default the active canvas to the top left
+    this._activeCanvasNode = this._canvasTopL;
+
+    // top-header
+    if (this._topHeaderPanelSpacer) {
+      Utils.width(this._topHeaderPanelSpacer, canvasWithScrollbarWidth);
+    }
+
+    // pre-header
+    if (this._preHeaderPanelSpacer) {
+      Utils.width(this._preHeaderPanelSpacer, canvasWithScrollbarWidth);
+    }
+
+    this._headers.forEach((el) => {
+      Utils.width(el, this.getHeadersWidth());
+    });
+
+    Utils.width(this._headerRowSpacerL, canvasWithScrollbarWidth);
+    if (this._headerRowSpacerR) {
+      Utils.width(this._headerRowSpacerR, canvasWithScrollbarWidth);
+    }
+
+    // footer Row
+    if (this._options.createFooterRow) {
+      this._viewportMgr.buildFooterRows(this._options, canvasWithScrollbarWidth);
+      this.syncViewportMgrAliases();
+    }
+
+    this._focusSink2 = this._focusSink.cloneNode(true) as HTMLDivElement;
+    this._container.appendChild(this._focusSink2);
+
+    if (!this._options.explicitInitialization) {
+      this.finishInitialization();
+    }
+  }
+
+  /**
+   * Completes grid initialisation by calculating viewport dimensions, measuring cell padding and border differences,
+   * disabling text selection (except on editable inputs), setting frozen options and pane visibility,
+   * updating column caches, creating column headers and footers, setting up column sorting,
+   * creating CSS rules, binding ancestor scroll events, and binding various event handlers
+   * (e.g. for scrolling, mouse, keyboard, drag-and-drop).
+   * It also starts up any asynchronous post–render processing if enabled.
+   */
+  /**
+   * Copies every pane/viewport/canvas/chrome element reference from the ViewportMgr
+   * onto the grid's historical field names. Called after buildPanes, buildFooterRows
+   * and materializeSecondaryPanes; idempotent.
+   */
+  protected syncViewportMgrAliases() {
     this._paneHeaderL = this._viewportMgr.paneHeaderL;
     this._paneHeaderR = this._viewportMgr.paneHeaderR;
     this._paneTopL = this._viewportMgr.paneTopL;
@@ -1623,38 +1778,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this._canvasBottomR = this._viewportMgr.canvasBottomR;
     this._canvas = this._viewportMgr.canvas;
 
-    // Default the active viewport to the top left
-    this._activeViewportNode = this._viewportTopL;
-
-    this.scrollbarDimensions = this.scrollbarDimensions || this.measureScrollbar();
-    const canvasWithScrollbarWidth = this.getCanvasWidth() + this.scrollbarDimensions.width;
-
-    // Default the active canvas to the top left
-    this._activeCanvasNode = this._canvasTopL;
-
-    // top-header
-    if (this._topHeaderPanelSpacer) {
-      Utils.width(this._topHeaderPanelSpacer, canvasWithScrollbarWidth);
-    }
-
-    // pre-header
-    if (this._preHeaderPanelSpacer) {
-      Utils.width(this._preHeaderPanelSpacer, canvasWithScrollbarWidth);
-    }
-
-    this._headers.forEach((el) => {
-      Utils.width(el, this.getHeadersWidth());
-    });
-
-    Utils.width(this._headerRowSpacerL, canvasWithScrollbarWidth);
-    if (this._headerRowSpacerR) {
-      Utils.width(this._headerRowSpacerR, canvasWithScrollbarWidth);
-    }
-
-    // footer Row
     if (this._options.createFooterRow) {
-      this._viewportMgr.buildFooterRows(this._options, canvasWithScrollbarWidth);
-
       this._footerRowScrollerL = this._viewportMgr.footerRowScrollerL;
       this._footerRowScrollerR = this._viewportMgr.footerRowScrollerR;
       this._footerRowScroller = this._viewportMgr.footerRowScroller;
@@ -1664,23 +1788,116 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this._footerRowR = this._viewportMgr.footerRowR;
       this._footerRow = this._viewportMgr.footerRow;
     }
-
-    this._focusSink2 = this._focusSink.cloneNode(true) as HTMLDivElement;
-    this._container.appendChild(this._focusSink2);
-
-    if (!this._options.explicitInitialization) {
-      this.finishInitialization();
-    }
   }
 
   /**
-   * Completes grid initialisation by calculating viewport dimensions, measuring cell padding and border differences,
-   * disabling text selection (except on editable inputs), setting frozen options and pane visibility,
-   * updating column caches, creating column headers and footers, setting up column sorting,
-   * creating CSS rules, binding ancestor scroll events, and binding various event handlers
-   * (e.g. for scrolling, mouse, keyboard, drag-and-drop).
-   * It also starts up any asynchronous post–render processing if enabled.
+   * Binds the per-element event handlers for pane-level elements. Used by
+   * finishInitialization for the initial element set and by materializeLazyPanes
+   * for elements created later — pass ONLY the elements to wire up (the binding
+   * service does not dedupe).
    */
+  protected bindPaneEvents(els: {
+    viewports?: HTMLDivElement[];
+    canvases?: HTMLDivElement[];
+    headerScrollers?: HTMLDivElement[];
+    headerRowScrollers?: HTMLDivElement[];
+    footerRows?: HTMLDivElement[];
+    footerRowScrollers?: HTMLDivElement[];
+  }) {
+    if (!this._options.enableTextSelectionOnCells) {
+      // disable text selection in grid cells except in input and textarea elements
+      els.viewports?.forEach((view) => {
+        this._bindingEventService.bind(view, 'selectstart', (event) => {
+          if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
+            return;
+          }
+          event.preventDefault();
+        });
+      });
+    }
+
+    els.viewports?.forEach((view) => {
+      this._bindingEventService.bind(view, 'scroll', this.handleScroll.bind(this));
+    });
+
+    if (this._options.enableMouseWheelScrollHandler) {
+      els.viewports?.forEach((view) => {
+        this.slickMouseWheelInstances.push(MouseWheel({
+          element: view,
+          onMouseWheel: this.handleMouseWheel.bind(this)
+        }));
+      });
+    }
+
+    els.headerScrollers?.forEach((el) => {
+      this._bindingEventService.bind(el, 'contextmenu', this.handleHeaderContextMenu.bind(this) as EventListener);
+      this._bindingEventService.bind(el, 'click', this.handleHeaderClick.bind(this) as EventListener);
+    });
+
+    els.headerRowScrollers?.forEach((scroller) => {
+      this._bindingEventService.bind(scroller, 'scroll', this.handleHeaderRowScroll.bind(this) as EventListener);
+    });
+
+    if (this._options.createFooterRow) {
+      els.footerRows?.forEach((footer) => {
+        this._bindingEventService.bind(footer, 'contextmenu', this.handleFooterContextMenu.bind(this) as EventListener);
+        this._bindingEventService.bind(footer, 'click', this.handleFooterClick.bind(this) as EventListener);
+      });
+
+      els.footerRowScrollers?.forEach((scroller) => {
+        this._bindingEventService.bind(scroller, 'scroll', this.handleFooterRowScroll.bind(this) as EventListener);
+      });
+    }
+
+    els.canvases?.forEach((element) => {
+      this._bindingEventService.bind(element, 'keydown', this.handleKeyDown.bind(this) as EventListener);
+      this._bindingEventService.bind(element, 'click', this.handleClick.bind(this) as EventListener);
+      this._bindingEventService.bind(element, 'dblclick', this.handleDblClick.bind(this) as EventListener);
+      this._bindingEventService.bind(element, 'contextmenu', this.handleContextMenu.bind(this) as EventListener);
+      this._bindingEventService.bind(element, 'mouseover', this.handleCellMouseOver.bind(this) as EventListener);
+      this._bindingEventService.bind(element, 'mouseout', this.handleCellMouseOut.bind(this) as EventListener);
+    });
+  }
+
+  /**
+   * Materializes the right/bottom panes on a lazyPanes grid the moment freezing is
+   * enabled (invoked from setFrozenOptions, i.e. before setScroller/setColumns run in
+   * the internal_setOptions pipeline). Re-aliases the element fields, wires up events
+   * for the NEW elements only, and re-anchors the ancestor scroll bindings. No-op on
+   * non-lazy grids.
+   */
+  protected materializeLazyPanes() {
+    if (!this._viewportMgr.materializeSecondaryPanes(this._options)) {
+      return;
+    }
+    this.syncViewportMgrAliases();
+
+    if (this.initialized) {
+      this.disableSelection([this._headerR]);
+
+      this.bindPaneEvents({
+        viewports: [this._viewportTopR, this._viewportBottomL, this._viewportBottomR],
+        canvases: [this._canvasTopR, this._canvasBottomL, this._canvasBottomR],
+        headerScrollers: [this._headerScrollerR],
+        headerRowScrollers: [this._headerRowScrollerR],
+        footerRows: this._options.createFooterRow ? [this._footerRowR] : [],
+        footerRowScrollers: this._options.createFooterRow ? [this._footerRowScrollerR] : [],
+      });
+
+      if (this._options.createPreHeaderPanel) {
+        this._bindingEventService.bind(this._preHeaderPanelScrollerR, 'contextmenu', this.handlePreHeaderContextMenu.bind(this) as EventListener);
+        this._bindingEventService.bind(this._preHeaderPanelScrollerR, 'click', this.handlePreHeaderClick.bind(this) as EventListener);
+      }
+
+      // sort clicks for the new right header container
+      this.setupColumnSort([this._headerR]);
+
+      // the ancestor-scroll anchor canvas may have changed band
+      this.unbindAncestorScrollEvents();
+      this.bindAncestorScrollEvents();
+    }
+  }
+
   protected finishInitialization() {
     if (!this.initialized) {
       this.initialized = true;
@@ -1693,18 +1910,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.measureCellPaddingAndBorder();
 
       this.disableSelection(this._headers); // disable all text selection in header (including input and textarea)
-
-      if (!this._options.enableTextSelectionOnCells) {
-        // disable text selection in grid cells except in input and textarea elements
-        this._viewport.forEach((view) => {
-          this._bindingEventService.bind(view, 'selectstart', (event) => {
-            if (event.target instanceof HTMLInputElement || event.target instanceof HTMLTextAreaElement) {
-              return;
-            }
-            event.preventDefault();
-          });
-        });
-      }
 
       this.setFrozenOptions();
       this.setPaneFrozenClasses();
@@ -1721,38 +1926,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.bindAncestorScrollEvents();
 
       this._bindingEventService.bind(this._container, 'resize', this.resizeCanvas.bind(this));
-      this._viewport.forEach((view) => {
-        this._bindingEventService.bind(view, 'scroll', this.handleScroll.bind(this));
+
+      this.bindPaneEvents({
+        viewports: this._viewport,
+        canvases: this._canvas,
+        headerScrollers: this._headerScroller,
+        headerRowScrollers: this._headerRowScroller,
+        footerRows: this._footerRow,
+        footerRowScrollers: this._footerRowScroller,
       });
-
-      if (this._options.enableMouseWheelScrollHandler) {
-        this._viewport.forEach((view) => {
-          this.slickMouseWheelInstances.push(MouseWheel({
-            element: view,
-            onMouseWheel: this.handleMouseWheel.bind(this)
-          }));
-        });
-      }
-
-      this._headerScroller.forEach((el) => {
-        this._bindingEventService.bind(el, 'contextmenu', this.handleHeaderContextMenu.bind(this) as EventListener);
-        this._bindingEventService.bind(el, 'click', this.handleHeaderClick.bind(this) as EventListener);
-      });
-
-      this._headerRowScroller.forEach((scroller) => {
-        this._bindingEventService.bind(scroller, 'scroll', this.handleHeaderRowScroll.bind(this) as EventListener);
-      });
-
-      if (this._options.createFooterRow) {
-        this._footerRow.forEach((footer) => {
-          this._bindingEventService.bind(footer, 'contextmenu', this.handleFooterContextMenu.bind(this) as EventListener);
-          this._bindingEventService.bind(footer, 'click', this.handleFooterClick.bind(this) as EventListener);
-        });
-
-        this._footerRowScroller.forEach((scroller) => {
-          this._bindingEventService.bind(scroller, 'scroll', this.handleFooterRowScroll.bind(this) as EventListener);
-        });
-      }
 
       if (this._options.createTopHeaderPanel) {
         this._bindingEventService.bind(this._topHeaderPanelScroller, 'scroll', this.handleTopHeaderPanelScroll.bind(this) as EventListener);
@@ -1768,15 +1950,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       this._bindingEventService.bind(this._focusSink, 'keydown', this.handleKeyDown.bind(this) as EventListener);
       this._bindingEventService.bind(this._focusSink2, 'keydown', this.handleKeyDown.bind(this) as EventListener);
-
-      this._canvas.forEach((element) => {
-        this._bindingEventService.bind(element, 'keydown', this.handleKeyDown.bind(this) as EventListener);
-        this._bindingEventService.bind(element, 'click', this.handleClick.bind(this) as EventListener);
-        this._bindingEventService.bind(element, 'dblclick', this.handleDblClick.bind(this) as EventListener);
-        this._bindingEventService.bind(element, 'contextmenu', this.handleContextMenu.bind(this) as EventListener);
-        this._bindingEventService.bind(element, 'mouseover', this.handleCellMouseOver.bind(this) as EventListener);
-        this._bindingEventService.bind(element, 'mouseout', this.handleCellMouseOut.bind(this) as EventListener);
-      });
 
       if (Draggable) {
         this.slickDraggableInstance = Draggable({
@@ -2421,8 +2594,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    *      --> triggers onBeforeSort
    *      --> and if not cancelled, updates the sort columns and triggers onSort.
    */
-  protected setupColumnSort() {
-    this._headers.forEach((header) => {
+  protected setupColumnSort(headers: HTMLDivElement[] = this._headers) {
+    headers.forEach((header) => {
       this._bindingEventService.bind(header, 'click', (e: any) => {
         if (this.columnResizeDragging) {
           return;
@@ -3175,6 +3348,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       actualFrozenRow: this.actualFrozenRow,
       frozenBottom: !!this._options.frozenBottom,
     });
+
+    // materialize the secondary panes if freezing was just enabled on a lazyPanes grid
+    // (runs before setScroller/setColumns in the internal_setOptions pipeline)
+    if (this._options.frozenColumn! > -1 || this.hasFrozenRows) {
+      this.materializeLazyPanes();
+    }
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////
