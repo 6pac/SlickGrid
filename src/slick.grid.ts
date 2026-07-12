@@ -152,6 +152,21 @@ interface ViewportFreezeState {
   hasFrozenRows: boolean;
   actualFrozenRow: number;
   frozenBottom: boolean;
+  /** the frozenRow option value — number of rows in the frozen row band (0/-1 when none) */
+  frozenRowCount?: number;
+}
+
+/**
+ * Band-count view of the freeze configuration (Phase 4 groundwork for the 3×3 band
+ * model): a zero count means the band does not exist. Derived by updateFreezeState
+ * from the legacy freeze snapshot; frozenRightCols stays 0 until right-frozen
+ * columns land.
+ */
+interface FreezeBandCounts {
+  frozenLeftCols: number;
+  frozenRightCols: number;
+  frozenTopRows: number;
+  frozenBottomRows: number;
 }
 
 /** Geometry inputs for ViewportMgr.applyCanvasWidths — computed by the grid, distributed by the manager. */
@@ -572,15 +587,31 @@ class ViewportMgr {
   //////////////////////////////////////////////////////////////////////////////////////////////
 
   protected freeze: ViewportFreezeState = { frozenColumnIdx: -1, hasFrozenRows: false, actualFrozenRow: -1, frozenBottom: false };
+  protected bands: FreezeBandCounts = { frozenLeftCols: 0, frozenRightCols: 0, frozenTopRows: 0, frozenBottomRows: 0 };
 
   /** Receives the grid's freeze configuration; called by SlickGrid.setFrozenOptions(). */
   updateFreezeState(f: ViewportFreezeState) {
     this.freeze = { ...f };
+
+    // derive the band-count view (Phase 4 groundwork); the legacy fields above stay
+    // authoritative for the existing 2×2 code paths
+    const rowCount = f.hasFrozenRows ? Math.max(0, f.frozenRowCount ?? 0) : 0;
+    this.bands = {
+      frozenLeftCols: f.frozenColumnIdx + 1,
+      frozenRightCols: 0, // right-frozen columns arrive with the 3×3 band model
+      frozenTopRows: f.frozenBottom ? 0 : rowCount,
+      frozenBottomRows: f.frozenBottom ? rowCount : 0,
+    };
+  }
+
+  /** Band-count view of the freeze configuration (zero count = band does not exist). */
+  bandCounts(): FreezeBandCounts {
+    return this.bands;
   }
 
   /** Returns a boolean indicating whether the grid is configured with frozen columns. */
   hasFrozenColumns() {
-    return this.freeze.frozenColumnIdx > -1;
+    return this.bands.frozenLeftCols > 0;
   }
 
   /** Returns a boolean indicating whether the grid is configured with frozen rows. */
@@ -3347,6 +3378,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       hasFrozenRows: this.hasFrozenRows,
       actualFrozenRow: this.actualFrozenRow,
       frozenBottom: !!this._options.frozenBottom,
+      frozenRowCount: this._options.frozenRow!,
     });
 
     // materialize the secondary panes if freezing was just enabled on a lazyPanes grid
