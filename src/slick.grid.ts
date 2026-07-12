@@ -294,6 +294,25 @@ class ViewportMgr {
   canvasBottomR!: HTMLDivElement;
   canvas: HTMLDivElement[] = [];
 
+  // right-frozen band (Phase 4 — exists only while frozenRightColumn > 0 has been applied)
+  paneHeaderRF!: HTMLDivElement;
+  paneTopRF!: HTMLDivElement;
+  paneBottomRF!: HTMLDivElement;
+  headerScrollerRF!: HTMLDivElement;
+  headerRF!: HTMLDivElement;
+  headerRowScrollerRF!: HTMLDivElement;
+  headerRowSpacerRF!: HTMLDivElement;
+  headerRowRF!: HTMLDivElement;
+  topPanelScrollerRF!: HTMLDivElement;
+  topPanelRF!: HTMLDivElement;
+  viewportTopRF!: HTMLDivElement;
+  viewportBottomRF!: HTMLDivElement;
+  canvasTopRF!: HTMLDivElement;
+  canvasBottomRF!: HTMLDivElement;
+  footerRowScrollerRF!: HTMLDivElement;
+  footerRowSpacerRF!: HTMLDivElement;
+  footerRowRF!: HTMLDivElement;
+
   // footer rows (only when createFooterRow)
   footerRowScrollerL!: HTMLDivElement;
   footerRowScrollerR!: HTMLDivElement;
@@ -584,6 +603,95 @@ class ViewportMgr {
     return true;
   }
 
+  /**
+   * Builds the right-frozen column band (Phase 4): three panes with NEW
+   * `*-right-frozen` css classes, appended AFTER the six classic panes so classic
+   * sibling positions are untouched, plus header/header-row/top-panel chrome,
+   * viewports and canvases. Shared element arrays are extended at the END so the
+   * classic indexes 0–3 (and [L, R] pairs) stay valid for every existing consumer.
+   * Idempotent: returns false when the band already exists.
+   *
+   * The historical "right" elements keep their class names and become the scrollable
+   * MIDDLE band while this band is active.
+   */
+  materializeRightFrozenBand(o: ViewportMgrBuildOptions): boolean {
+    if (this.paneHeaderRF) {
+      return false;
+    }
+
+    const container = this.container;
+
+    // panes — appended after the classic six (still before the trailing focus sink,
+    // which the grid appends after all panes)
+    this.paneHeaderRF = Utils.createDomElement('div', { className: 'slick-pane slick-pane-header slick-pane-right-frozen', tabIndex: 0 });
+    this.paneTopRF = Utils.createDomElement('div', { className: 'slick-pane slick-pane-top slick-pane-right-frozen', tabIndex: 0 });
+    this.paneBottomRF = Utils.createDomElement('div', { className: 'slick-pane slick-pane-bottom slick-pane-right-frozen', tabIndex: 0 });
+    // insert as a block after the last classic pane (paneBottomR when it exists,
+    // else the lazy grid's paneTopL)
+    const lastClassicPane = this.paneBottomR ?? this.paneTopL;
+    container.insertBefore(this.paneHeaderRF, lastClassicPane.nextSibling);
+    container.insertBefore(this.paneTopRF, this.paneHeaderRF.nextSibling);
+    container.insertBefore(this.paneBottomRF, this.paneTopRF.nextSibling);
+
+    // header chrome
+    this.headerScrollerRF = Utils.createDomElement('div', { className: 'slick-header ui-state-default slick-state-default slick-header-right-frozen' }, this.paneHeaderRF);
+    this.headerScroller.push(this.headerScrollerRF);
+    this.headerRF = Utils.createDomElement('div', { className: 'slick-header-columns slick-header-columns-right-frozen', role: 'row', style: { left: '-1000px' } }, this.headerScrollerRF);
+    this.headers.push(this.headerRF);
+
+    // header row
+    this.headerRowScrollerRF = Utils.createDomElement('div', { className: 'slick-headerrow ui-state-default slick-state-default' }, this.paneTopRF);
+    this.headerRowScroller.push(this.headerRowScrollerRF);
+    this.headerRowSpacerRF = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, this.headerRowScrollerRF);
+    this.headerRowRF = Utils.createDomElement('div', { className: 'slick-headerrow-columns slick-headerrow-columns-right-frozen' }, this.headerRowScrollerRF);
+    this.headerRows.push(this.headerRowRF);
+
+    // top panel
+    this.topPanelScrollerRF = Utils.createDomElement('div', { className: 'slick-top-panel-scroller ui-state-default slick-state-default' }, this.paneTopRF);
+    this.topPanelScrollers.push(this.topPanelScrollerRF);
+    this.topPanelRF = Utils.createDomElement('div', { className: 'slick-top-panel', style: { width: '10000px' } }, this.topPanelScrollerRF);
+    this.topPanels.push(this.topPanelRF);
+
+    if (!o.showColumnHeader) {
+      Utils.hide(this.headerScrollerRF);
+    }
+    if (!o.showTopPanel) {
+      Utils.hide(this.topPanelScrollerRF);
+    }
+    if (!o.showHeaderRow) {
+      Utils.hide(this.headerRowScrollerRF);
+    }
+
+    // viewports and canvases (array order extended at the END: classic 0–3 preserved)
+    this.viewportTopRF = Utils.createDomElement('div', { className: 'slick-viewport slick-viewport-top slick-viewport-right-frozen', tabIndex: 0 }, this.paneTopRF);
+    this.viewportBottomRF = Utils.createDomElement('div', { className: 'slick-viewport slick-viewport-bottom slick-viewport-right-frozen', tabIndex: 0 }, this.paneBottomRF);
+    this.viewport.push(this.viewportTopRF, this.viewportBottomRF);
+    if (o.viewportClass) {
+      const viewportClassList = Utils.classNameToList(o.viewportClass);
+      this.viewportTopRF.classList.add(...viewportClassList);
+      this.viewportBottomRF.classList.add(...viewportClassList);
+    }
+
+    this.canvasTopRF = Utils.createDomElement('div', { className: 'grid-canvas grid-canvas-top grid-canvas-right-frozen', tabIndex: 0 }, this.viewportTopRF);
+    this.canvasBottomRF = Utils.createDomElement('div', { className: 'grid-canvas grid-canvas-bottom grid-canvas-right-frozen', tabIndex: 0 }, this.viewportBottomRF);
+    this.canvas.push(this.canvasTopRF, this.canvasBottomRF);
+
+    // footer row
+    if (o.createFooterRow) {
+      this.footerRowScrollerRF = Utils.createDomElement('div', { className: 'slick-footerrow ui-state-default slick-state-default' }, this.paneTopRF);
+      this.footerRowScroller.push(this.footerRowScrollerRF);
+      this.footerRowSpacerRF = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, this.footerRowScrollerRF);
+      this.footerRowRF = Utils.createDomElement('div', { className: 'slick-footerrow-columns slick-footerrow-columns-right-frozen' }, this.footerRowScrollerRF);
+      this.footerRow.push(this.footerRowRF);
+
+      if (!o.showFooterRow) {
+        Utils.hide(this.footerRowScrollerRF);
+      }
+    }
+
+    return true;
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////
   // Freeze state and pane selection (Phase 2 of the encapsulation refactor)
   //////////////////////////////////////////////////////////////////////////////////////////////
@@ -764,6 +872,22 @@ class ViewportMgr {
         this.hideIf(this.paneBottomR);
         this.hideIf(this.paneBottomL);
       }
+    }
+
+    // right-frozen band (exists only after materialization; kept hidden — like the
+    // classic panes — when the right freeze is turned off again)
+    if (this.bands.frozenRightCols > 0) {
+      this.showIf(this.paneHeaderRF);
+      this.showIf(this.paneTopRF);
+      if (this.freeze.hasFrozenRows) {
+        this.showIf(this.paneBottomRF);
+      } else {
+        this.hideIf(this.paneBottomRF);
+      }
+    } else {
+      this.hideIf(this.paneHeaderRF);
+      this.hideIf(this.paneTopRF);
+      this.hideIf(this.paneBottomRF);
     }
   }
 
@@ -3396,6 +3520,36 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     // (runs before setScroller/setColumns in the internal_setOptions pipeline)
     if (this._options.frozenColumn! > -1 || this.hasFrozenRows) {
       this.materializeLazyPanes();
+    }
+
+    // materialize the right-frozen band the first time a right freeze is applied
+    if (this._options.frozenRightColumn! > 0) {
+      this.materializeRightFrozenPanes();
+    }
+  }
+
+  /**
+   * Builds the right-frozen band on first use (init-time via finishInitialization's
+   * setFrozenOptions call — before the event-binding loops — or at runtime via
+   * setOptions) and wires events for the new elements when the grid is already live.
+   */
+  protected materializeRightFrozenPanes() {
+    if (!this._viewportMgr.materializeRightFrozenBand(this._options)) {
+      return;
+    }
+
+    if (this.initialized) {
+      const vm = this._viewportMgr;
+      this.disableSelection([vm.headerRF]);
+      this.bindPaneEvents({
+        viewports: [vm.viewportTopRF, vm.viewportBottomRF],
+        canvases: [vm.canvasTopRF, vm.canvasBottomRF],
+        headerScrollers: [vm.headerScrollerRF],
+        headerRowScrollers: [vm.headerRowScrollerRF],
+        footerRows: this._options.createFooterRow ? [vm.footerRowRF] : [],
+        footerRowScrollers: this._options.createFooterRow ? [vm.footerRowScrollerRF] : [],
+      });
+      this.setupColumnSort([vm.headerRF]);
     }
   }
 
