@@ -245,6 +245,14 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   frozenRow?: number;
 
   /**
+   * Defaults to 0. Number of columns to freeze (pin) at the RIGHT edge of the grid.
+   * Note this is a COUNT from the right, not a column index like `frozenColumn` —
+   * counts stay correct when columns are reordered or hidden.
+   * (Phase 4 of the ViewportMgr refactor; no effect until the right-frozen band lands.)
+   */
+  frozenRightColumn?: number;
+
+  /**
    * Defaults to 100, what is the minimum width to keep for the section on the right of a frozen grid?
    * This basically fixes an issue that if the user expand any column on the left of the frozen (pinning) section
    * and make it bigger than the viewport width, then the grid becomes unusable because the right section goes into a void/hidden area.
