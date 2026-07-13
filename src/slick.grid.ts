@@ -156,6 +156,8 @@ interface ViewportFreezeState {
   frozenRowCount?: number;
   /** the frozenRightColumn option value — number of columns frozen at the right edge (0 when none) */
   frozenRightColCount?: number;
+  /** index of the first right-frozen column (columns.length when the band is off) */
+  frozenRightStartIdx?: number;
 }
 
 /**
@@ -741,11 +743,16 @@ class ViewportMgr {
   }
 
   /**
-   * Index of the pane owning cell (colIdx, rowIdx) in the 4-slot
-   * [TopL, TopR, BottomL, BottomR] element arrays.
+   * Index of the pane owning cell (colIdx, rowIdx) in the element arrays:
+   * classic slots [TopL, TopR, BottomL, BottomR], right-frozen slots [TopRF, BottomRF]
+   * appended at 4/5 (materializeRightFrozenPanes canonicalizes the classic set first,
+   * so these positions hold under lazyPanes too).
    */
   paneCellIndex(colIdx: number, rowIdx: number): number {
     const isBottomSide = this.freeze.hasFrozenRows && rowIdx >= this.freeze.actualFrozenRow + (this.freeze.frozenBottom ? 0 : 1);
+    if (this.isColumnInRightFrozenBand(colIdx)) {
+      return 4 + (isBottomSide ? 1 : 0);
+    }
     const isRightSide = this.hasFrozenColumns() && colIdx > this.freeze.frozenColumnIdx;
     return (isBottomSide ? 2 : 0) + (isRightSide ? 1 : 0);
   }
@@ -830,6 +837,44 @@ class ViewportMgr {
   /** Pick the left or right element of an [L, R] pair for the given column. */
   sideForColumn<T>(colIdx: number, left: T, right: T): T {
     return this.isColumnRightOfFreeze(colIdx) ? right : left;
+  }
+
+  /** Whether the right-frozen band is active AND its DOM has been materialized. */
+  hasRightFrozenBand(): boolean {
+    return this.bands.frozenRightCols > 0 && !!this.paneHeaderRF;
+  }
+
+  /** Whether the column index falls inside the right-frozen band. */
+  isColumnInRightFrozenBand(colIdx: number): boolean {
+    return this.bands.frozenRightCols > 0 && colIdx >= (this.freeze.frozenRightStartIdx ?? Number.MAX_SAFE_INTEGER);
+  }
+
+  /** Three-way band pick: left band, scrollable middle, or right-frozen element. */
+  bandElementForColumn<T>(colIdx: number, left: T, right: T, rightFrozen: T): T {
+    if (this.isColumnInRightFrozenBand(colIdx)) {
+      return rightFrozen;
+    }
+    return this.sideForColumn(colIdx, left, right);
+  }
+
+  /** Column index local to its band container (right-frozen children index from the band start). */
+  bandLocalColumnIdx(colIdx: number): number {
+    if (this.isColumnInRightFrozenBand(colIdx)) {
+      return colIdx - this.freeze.frozenRightStartIdx!;
+    }
+    return this.sideLocalColumnIdx(colIdx);
+  }
+
+  /**
+   * Index of the column's node inside rowsCache[].rowNode: 0 for the left fragment
+   * (which is the scrollable fragment when no columns are left-frozen), 1 for the
+   * middle fragment under a left freeze, and last for the right-frozen fragment.
+   */
+  rowNodeIdxForColumn(colIdx: number): number {
+    if (this.isColumnInRightFrozenBand(colIdx)) {
+      return this.hasFrozenColumns() ? 2 : 1;
+    }
+    return this.isColumnRightOfFreeze(colIdx) ? 1 : 0;
   }
 
   /** Utils.show that tolerates panes not built under lazyPanes. */
@@ -1238,29 +1283,39 @@ class ViewportMgr {
    * render-side and cell-lookup-side splits differ by one row in the non-frozenBottom
    * case, and that asymmetry is preserved verbatim.
    */
-  attachRow(rowIdx: number, left: HTMLElement | null, right: HTMLElement | null): HTMLElement[] | null {
-    if ((this.freeze.hasFrozenRows) && (rowIdx >= this.freeze.actualFrozenRow)) {
+  attachRow(rowIdx: number, left: HTMLElement | null, right: HTMLElement | null, rightFrozen?: HTMLElement | null): HTMLElement[] | null {
+    let attached: HTMLElement[] | null = null;
+    const isBottomBand = (this.freeze.hasFrozenRows) && (rowIdx >= this.freeze.actualFrozenRow);
+
+    if (isBottomBand) {
       if (this.hasFrozenColumns()) {
         if (left && right) {
           this.canvasBottomL.appendChild(left);
           this.canvasBottomR.appendChild(right);
-          return [left, right];
+          attached = [left, right];
         }
       } else if (left) {
         this.canvasBottomL.appendChild(left);
-        return [left];
+        attached = [left];
       }
     } else if (this.hasFrozenColumns()) {
       if (left && right) {
         this.canvasTopL.appendChild(left);
         this.canvasTopR.appendChild(right);
-        return [left, right];
+        attached = [left, right];
       }
     } else if (left) {
       this.canvasTopL.appendChild(left);
-      return [left];
+      attached = [left];
     }
-    return null;
+
+    // right-frozen fragment always sits LAST in the rowNode array
+    if (attached && this.bands.frozenRightCols > 0 && this.canvasTopRF && rightFrozen) {
+      (isBottomBand ? this.canvasBottomRF : this.canvasTopRF).appendChild(rightFrozen);
+      attached.push(rightFrozen);
+    }
+
+    return attached;
   }
 
   /** Applies an X scroll position to the scroll-owner viewport and every horizontal follower. */
@@ -2758,7 +2813,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return this._viewportMgr.hasFrozenColumns() ? this._headers : this._headerL;
     }
     const idx = this.getColumnIndex(columnDef.id);
-    return this._viewportMgr.sideForColumn(idx, this._headerL, this._headerR);
+    return this._viewportMgr.bandElementForColumn(idx, this._headerL, this._headerR, this._viewportMgr.headerRF);
   }
 
   /**
@@ -2767,8 +2822,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   getHeaderColumn(columnIdOrIdx: number | string) {
     const idx = (typeof columnIdOrIdx === 'number' ? columnIdOrIdx : this.getColumnIndex(columnIdOrIdx));
-    const targetHeader = this._viewportMgr.sideForColumn(idx, this._headerL, this._headerR);
-    const targetIndex = this._viewportMgr.sideLocalColumnIdx(idx);
+    const targetHeader = this._viewportMgr.bandElementForColumn(idx, this._headerL, this._headerR, this._viewportMgr.headerRF);
+    const targetIndex = this._viewportMgr.bandLocalColumnIdx(idx);
 
     return targetHeader.children[targetIndex] as HTMLDivElement;
   }
@@ -2789,9 +2844,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   getHeaderRowColumn(columnIdOrIdx: number | string) {
     const idx = (typeof columnIdOrIdx === 'number' ? columnIdOrIdx : this.getColumnIndex(columnIdOrIdx));
-    const headerRowTarget = this._viewportMgr.sideForColumn(idx, this._headerRowL, this._headerRowR);
+    const headerRowTarget = this._viewportMgr.bandElementForColumn(idx, this._headerRowL, this._headerRowR, this._viewportMgr.headerRowRF);
 
-    return headerRowTarget.children[this._viewportMgr.sideLocalColumnIdx(idx)] as HTMLDivElement;
+    return headerRowTarget.children[this._viewportMgr.bandLocalColumnIdx(idx)] as HTMLDivElement;
   }
 
   /**
@@ -2800,9 +2855,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   getFooterRowColumn(columnIdOrIdx: number | string) {
     const idx = (typeof columnIdOrIdx === 'number' ? columnIdOrIdx : this.getColumnIndex(columnIdOrIdx));
-    const footerRowTarget = this._viewportMgr.sideForColumn(idx, this._footerRowL, this._footerRowR);
+    const footerRowTarget = this._viewportMgr.bandElementForColumn(idx, this._footerRowL, this._footerRowR, this._viewportMgr.footerRowRF);
 
-    return footerRowTarget.children[this._viewportMgr.sideLocalColumnIdx(idx)] as HTMLDivElement;
+    return footerRowTarget.children[this._viewportMgr.bandLocalColumnIdx(idx)] as HTMLDivElement;
   }
 
   /**
@@ -2831,7 +2886,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         const m = this.columns[i];
         if (!m || m.hidden) { continue; }
 
-        const footerRowCell = Utils.createDomElement('div', { className: `ui-state-default slick-state-default slick-footerrow-column l${i} r${i}` }, this._viewportMgr.sideForColumn(i, this._footerRowL, this._footerRowR));
+        const footerRowCell = Utils.createDomElement('div', { className: `ui-state-default slick-state-default slick-footerrow-column l${i} r${i}` }, this._viewportMgr.bandElementForColumn(i, this._footerRowL, this._footerRowR, this._viewportMgr.footerRowRF));
         const className = this._viewportMgr.isColumnInFrozenBand(i) ? 'frozen' : null;
         if (className) {
           footerRowCell.classList.add(className);
@@ -2978,11 +3033,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (this._headerR) {
       Utils.emptyElement(this._headerR);
     }
+    if (this._viewportMgr.headerRF) {
+      Utils.emptyElement(this._viewportMgr.headerRF);
+    }
 
     this.getHeadersWidth();
 
     Utils.width(this._headerL, this.headersWidthL);
     Utils.width(this._headerR, this.headersWidthR);
+    Utils.width(this._viewportMgr.headerRF, this.headersWidthRF);
 
     this._headerRows.forEach((row) => {
       const columnElements = row.querySelectorAll('.slick-headerrow-column');
@@ -3001,6 +3060,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     Utils.emptyElement(this._headerRowL);
     if (this._headerRowR) {
       Utils.emptyElement(this._headerRowR);
+    }
+    if (this._viewportMgr.headerRowRF) {
+      Utils.emptyElement(this._viewportMgr.headerRowRF);
     }
 
     if (this._options.createFooterRow) {
@@ -3031,14 +3093,29 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         });
         Utils.emptyElement(this._footerRowR);
       }
+
+      if (this._viewportMgr.footerRowRF) {
+        const footerRowRFColumnElements = this._viewportMgr.footerRowRF.querySelectorAll('.slick-footerrow-column');
+        footerRowRFColumnElements.forEach((column) => {
+          const columnDef = Utils.storage.get(column, 'column');
+          if (columnDef) {
+            this.trigger(this.onBeforeFooterRowCellDestroy, {
+              node: this,
+              column: columnDef,
+              grid: this
+            });
+          }
+        });
+        Utils.emptyElement(this._viewportMgr.footerRowRF);
+      }
     }
 
     for (let i = 0; i < this.columns.length; i++) {
       const m: C = this.columns[i];
       if (m.hidden) { continue; }
 
-      const headerTarget = this._viewportMgr.sideForColumn(i, this._headerL, this._headerR);
-      const headerRowTarget = this._viewportMgr.sideForColumn(i, this._headerRowL, this._headerRowR);
+      const headerTarget = this._viewportMgr.bandElementForColumn(i, this._headerL, this._headerR, this._viewportMgr.headerRF);
+      const headerRowTarget = this._viewportMgr.bandElementForColumn(i, this._headerRowL, this._headerRowR, this._viewportMgr.headerRowRF);
 
       const header = Utils.createDomElement('div', { id: `${this.uid + m.id}`, dataset: { id: String(m.id) }, role: 'columnheader', className: 'ui-state-default slick-state-default slick-header-column' }, headerTarget);
       if (m.toolTip) {
@@ -3112,7 +3189,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         });
       }
       if (this._options.createFooterRow && this._options.showFooterRow) {
-        const footerRowTarget = this._viewportMgr.sideForColumn(i, this._footerRow[0], this._footerRow[1]);
+        const footerRowTarget = this._viewportMgr.bandElementForColumn(i, this._footerRow[0], this._footerRow[1], this._viewportMgr.footerRowRF);
         const footerRowCell = Utils.createDomElement('div', { className: `ui-state-default slick-state-default slick-footerrow-column l${i} r${i}` }, footerRowTarget);
         Utils.storage.put(footerRowCell, 'column', m);
 
@@ -3638,6 +3715,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       frozenBottom: !!this._options.frozenBottom,
       frozenRowCount: this._options.frozenRow!,
       frozenRightColCount: this._options.frozenRightColumn!,
+      frozenRightStartIdx: this.getFrozenRightStartIdx(),
     });
 
     // materialize the secondary panes if freezing was just enabled on a lazyPanes grid
@@ -3658,6 +3736,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * setOptions) and wires events for the new elements when the grid is already live.
    */
   protected materializeRightFrozenPanes() {
+    // canonicalize the classic pane set first so the RF viewports/canvases land at
+    // array indexes 4/5 (paneCellIndex depends on it) — no-op on non-lazy grids
+    this.materializeLazyPanes();
+
     if (!this._viewportMgr.materializeRightFrozenBand(this._options)) {
       return;
     }
@@ -4406,13 +4488,20 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     let x = 0;
     let w = 0;
     let rule: any;
+    const rfStartIdx = this.getFrozenRightStartIdx();
     for (let i = 0; i < this.columns.length; i++) {
+      // the right-frozen band starts a new viewport: reset the running left offset
+      if (i === rfStartIdx) {
+        x = 0;
+      }
       if (!this.columns[i]?.hidden) {
         w = this.columns[i].width || 0;
 
         rule = this.getColumnCssRules(i);
         rule.left.style.left = `${x}px`;
-        rule.right.style.right = (((this._options.frozenColumn !== -1 && i > this._options.frozenColumn!) ? this.canvasWidthR : this.canvasWidthL) - x - w) + 'px';
+        rule.right.style.right = ((i >= rfStartIdx
+          ? this.canvasWidthRF
+          : ((this._options.frozenColumn !== -1 && i > this._options.frozenColumn!) ? this.canvasWidthR : this.canvasWidthL)) - x - w) + 'px';
 
         // If this column is frozen, reset the css left value since the
         // column starts in a new viewport.
@@ -6502,7 +6591,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {CellViewportRange} range - The visible viewport range for rendering cells.
    * @param {number} dataLength - The total data length to determine if the row is loading.
    */
-  protected appendRowHtml(divArrayL: HTMLElement[], divArrayR: HTMLElement[], row: number, range: CellViewportRange, dataLength: number) {
+  protected appendRowHtml(divArrayL: HTMLElement[], divArrayR: HTMLElement[], divArrayRF: HTMLElement[], row: number, range: CellViewportRange, dataLength: number) {
     const d = this.getDataItem(row);
     const dataLoading = row < dataLength && !d;
     let rowCss = 'slick-row' +
@@ -6534,12 +6623,17 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     let rowDivR: HTMLElement | undefined;
+    let rowDivRF: HTMLElement | undefined;
     divArrayL.push(rowDiv);
     if (this._viewportMgr.hasFrozenColumns()) {
       // it has to be a deep copy otherwise we will have issues with pass by reference in js since
       // attempting to add the same element to 2 different arrays will just move 1 item to the other array
       rowDivR = rowDiv.cloneNode(true) as HTMLElement;
       divArrayR.push(rowDivR);
+    }
+    if (this._viewportMgr.hasRightFrozenBand()) {
+      rowDivRF = rowDiv.cloneNode(true) as HTMLElement;
+      divArrayRF.push(rowDivRF);
     }
 
     const columnCount = this.columns.length;
@@ -6589,11 +6683,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
         // All columns to the right are outside the range, so no need to render them
         if (isRenderCell) {
-          const targetedRowDiv = this._viewportMgr.sideForColumn(i, rowDiv, rowDivR!);
+          const targetedRowDiv = this._viewportMgr.bandElementForColumn(i, rowDiv, rowDivR!, rowDivRF!);
           this.appendCellHtml(targetedRowDiv, row, i, ncolspan, rowspan, columnData, d);
         }
       } else if (m.alwaysRenderColumn || this._viewportMgr.isColumnInFrozenBand(i)) {
         this.appendCellHtml(rowDiv, row, i, ncolspan, rowspan, columnData, d);
+      } else if (this._viewportMgr.isColumnInRightFrozenBand(i)) {
+        // right-frozen cells are always horizontally visible, like the left-frozen band
+        this.appendCellHtml(rowDivRF!, row, i, ncolspan, rowspan, columnData, d);
       }
 
       if (ncolspan > 1) {
@@ -6628,7 +6725,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       + (rowspan > 1 ? ' rowspan' : '')
       + (columnMetadata?.cssClass ? ` ${columnMetadata.cssClass}` : '');
 
-    if (this._viewportMgr.isColumnInFrozenBand(cell)) {
+    if (this._viewportMgr.isColumnInFrozenBand(cell) || this._viewportMgr.isColumnInRightFrozenBand(cell)) {
       cellCss += ' frozen';
     }
 
@@ -7278,8 +7375,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (cacheEntry?.cellRenderQueue.length && cacheEntry.rowNode?.length) {
       const rowNode = cacheEntry.rowNode as HTMLElement[];
       let children = Array.from(rowNode[0].children) as HTMLElement[];
-      if (rowNode.length > 1) {
-        children = children.concat(Array.from(rowNode[1].children) as HTMLElement[]);
+      // concat every additional fragment's children (middle band and, when active,
+      // the right-frozen band — fragments are ordered by ascending column index)
+      for (let n = 1; n < rowNode.length; n++) {
+        children = children.concat(Array.from(rowNode[n].children) as HTMLElement[]);
       }
 
       let i = children.length - 1;
@@ -7317,8 +7416,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       // This is a string, so it needs to be cast back to a number.
       const i = +cellNodeIdx;
 
-      // Ignore frozen columns
-      if (this._viewportMgr.isColumnInFrozenBand(i)) {
+      // Ignore frozen columns (left and right bands are always horizontally visible)
+      if (this._viewportMgr.isColumnInFrozenBand(i) || this._viewportMgr.isColumnInRightFrozenBand(i)) {
         return;
       }
 
@@ -7458,11 +7557,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         if (!node) {
           continue;
         }
-        if (this._viewportMgr.isColumnRightOfFreeze(columnIdx)) {
-          cacheEntry.rowNode![1].appendChild(node);
-        } else {
-          cacheEntry.rowNode![0].appendChild(node);
-        }
+        cacheEntry.rowNode![this._viewportMgr.rowNodeIdxForColumn(columnIdx)].appendChild(node);
         cacheEntry.cellNodesByColumnIdx![columnIdx] = node;
       }
     }
@@ -7479,6 +7574,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected renderRows(range: { top: number; bottom: number; leftPx: number; rightPx: number; }) {
     const divArrayL: HTMLElement[] = [];
     const divArrayR: HTMLElement[] = [];
+    const divArrayRF: HTMLElement[] = [];
     const rows: number[] = [];
     let needToReselectCell = false;
     const dataLength = this.getDataLength();
@@ -7504,7 +7600,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         }
       }
 
-      this.appendRowHtml(divArrayL, divArrayR, i, range, dataLength);
+      this.appendRowHtml(divArrayL, divArrayR, divArrayRF, i, range, dataLength);
       mustRenderRows.add(i);
       if (this.activeCellNode && this.activeRow === i) {
         needToReselectCell = true;
@@ -7519,20 +7615,22 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         this.removeRowFromCache(r); // remove any previous element to avoid duplicates in DOM
         rows.push(r);
         this.rowsCache[r] = this.createEmptyCachingRow();
-        this.appendRowHtml(divArrayL, divArrayR, r, range, dataLength);
+        this.appendRowHtml(divArrayL, divArrayR, divArrayRF, r, range, dataLength);
       });
     }
 
     if (rows.length) {
       const x = document.createElement('div');
       const xRight = document.createElement('div');
+      const xRF = document.createElement('div');
 
       divArrayL.forEach(elm => x.appendChild(elm as HTMLElement));
       divArrayR.forEach(elm => xRight.appendChild(elm as HTMLElement));
+      divArrayRF.forEach(elm => xRF.appendChild(elm as HTMLElement));
 
       for (let i = 0, ii = rows.length; i < ii; i++) {
         if (this.rowsCache?.hasOwnProperty(rows[i])) {
-          const attached = this._viewportMgr.attachRow(rows[i], x.firstChild as HTMLElement | null, xRight.firstChild as HTMLElement | null);
+          const attached = this._viewportMgr.attachRow(rows[i], x.firstChild as HTMLElement | null, xRight.firstChild as HTMLElement | null, xRF.firstChild as HTMLElement | null);
           if (attached) {
             this.rowsCache[rows[i]].rowNode = attached;
           }
@@ -9046,6 +9144,16 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       if (this._options.frozenColumn === i) {
         x1 = 0;
+      }
+    }
+
+    // the right-frozen band starts a new viewport: rebase to band-local coordinates
+    const rfStartIdx = this.getFrozenRightStartIdx();
+    if (cell >= rfStartIdx) {
+      x1 = 0;
+      for (let i = rfStartIdx; i < cell; i++) {
+        if (!this.columns[i] || this.columns[i].hidden) { continue; }
+        x1 += (this.columns[i].width || 0);
       }
     }
     const x2 = x1 + (this.columns[cell]?.width || 0);
