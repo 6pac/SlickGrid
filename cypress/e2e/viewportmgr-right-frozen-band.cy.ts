@@ -84,11 +84,34 @@ describe('right-frozen band DOM - frozenRightColumn at init (example-frozen-righ
     });
   });
 
-  it('should still render all cells in the classic canvases at this stage (routing lands in a later milestone)', () => {
+  it('should route the last two header columns into the right-frozen header (M13d routing)', () => {
+    cy.get('#myGrid .slick-header-columns-left .slick-header-column').should('have.length', 4);
+    cy.get('#myGrid .slick-header-columns-right-frozen .slick-header-column').should('have.length', 2);
+    cy.get('#myGrid .slick-header-columns-right-frozen .slick-header-column').first().should('contain', 'Finish');
+  });
+
+  it('should render row fragments in the right-frozen canvas with band-local cell positions', () => {
     cy.get('#myGrid .grid-canvas-top.grid-canvas-left .slick-row').should('have.length.greaterThan', 0);
-    cy.get('#myGrid .grid-canvas-top.grid-canvas-right-frozen .slick-row').should('have.length', 0);
-    cy.get('#myGrid .slick-header-columns-right-frozen .slick-header-column').should('have.length', 0);
-    cy.get('#myGrid .grid-canvas .slick-row .slick-cell').first().should('contain', 'Task 0');
+    cy.get('#myGrid .grid-canvas-top.grid-canvas-right-frozen .slick-row').should('have.length.greaterThan', 0);
+
+    // each RF row fragment carries exactly the two right-frozen cells
+    cy.get('#myGrid .grid-canvas-top.grid-canvas-right-frozen .slick-row').first().find('.slick-cell')
+      .should('have.length', 2);
+    cy.get('#myGrid .grid-canvas-top.grid-canvas-right-frozen .slick-row').first().find('.slick-cell').first()
+      .should('contain', '01/05/2009')
+      .and('have.class', 'frozen');
+
+    // middle rows carry the remaining four cells, starting with Task 0
+    cy.get('#myGrid .grid-canvas-top.grid-canvas-left .slick-row').first().find('.slick-cell')
+      .should('have.length', 4);
+    cy.get('#myGrid .grid-canvas-top.grid-canvas-left .slick-cell').first().should('contain', 'Task 0');
+
+    // band-local coordinates: the first RF cell sits at the band origin, not at its
+    // global column offset
+    cy.get('#myGrid .grid-canvas-top.grid-canvas-right-frozen .slick-row').first().find('.slick-cell').first()
+      .then(($cell) => {
+        expect(($cell[0] as HTMLElement).offsetLeft, 'RF cell rebased to band-local x').to.equal(0);
+      });
   });
 });
 
@@ -105,9 +128,14 @@ describe('right-frozen band DOM - runtime materialization on a classic grid', ()
     cy.get('#myGrid .slick-viewport').should('have.length', 6);
     cy.get('#myGrid .grid-canvas').should('have.length', 6);
     cy.get('#myGrid .slick-pane-header.slick-pane-right-frozen').should('be.visible');
+
+    // routing follows the runtime toggle: 5 middle headers + 1 right-frozen header
+    cy.get('#myGrid .slick-header-columns-left .slick-header-column').should('have.length', 5);
+    cy.get('#myGrid .slick-header-columns-right-frozen .slick-header-column').should('have.length', 1);
+    cy.get('#myGrid .grid-canvas-top.grid-canvas-right-frozen .slick-row').should('have.length.greaterThan', 0);
   });
 
-  it('should hide the band again when the right freeze is turned off, keeping it in the DOM', () => {
+  it('should hide the band again when the right freeze is turned off, restoring classic routing', () => {
     cy.window().then((win: any) => {
       win.grid.setOptions({ frozenRightColumn: 0 });
     });
@@ -115,6 +143,9 @@ describe('right-frozen band DOM - runtime materialization on a classic grid', ()
     cy.get('#myGrid > .slick-pane').should('have.length', 9);
     cy.get('#myGrid .slick-pane-header.slick-pane-right-frozen').should('not.be.visible');
     cy.get('#myGrid .slick-pane-top.slick-pane-right-frozen').should('not.be.visible');
+    cy.get('#myGrid .slick-header-columns-left .slick-header-column').should('have.length', 6);
+    cy.get('#myGrid .slick-header-columns-right-frozen .slick-header-column').should('have.length', 0);
+    cy.get('#myGrid .grid-canvas-top.grid-canvas-right-frozen .slick-row').should('have.length', 0);
     cy.get('#myGrid .grid-canvas-top.grid-canvas-left .slick-row').should('have.length.greaterThan', 0);
   });
 });
