@@ -245,6 +245,15 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   frozenRow?: number;
 
   /**
+   * Defaults to 0. Number of ROWS to freeze (pin) at the BOTTOM of the grid, usable
+   * TOGETHER with `frozenRow` (which then always means rows frozen at the top).
+   * A COUNT, like `frozenRightColumn`. When set (> 0) the legacy `frozenBottom` flag
+   * is ignored — that flag only selects the position of the single `frozenRow` band.
+   * (Phase 4 of the ViewportMgr refactor; no effect until the bottom-frozen band lands.)
+   */
+  frozenBottomRow?: number;
+
+  /**
    * Defaults to 0. Number of columns to freeze (pin) at the RIGHT edge of the grid.
    * Note this is a COUNT from the right, not a column index like `frozenColumn` —
    * counts stay correct when columns are reordered or hidden.
