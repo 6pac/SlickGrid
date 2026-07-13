@@ -11,3 +11,4 @@ export * from './slick.groupitemmetadataprovider.js';
 export * from './slick.interactions.js';
 export * from './slick.remotemodel-yahoo.js';
 export * from './slick.remotemodel.js';
+export * from './slick.rowpositionindex.js';

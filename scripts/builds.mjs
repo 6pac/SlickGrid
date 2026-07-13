@@ -104,7 +104,8 @@ export async function buildAllIifeFiles() {
   // loop through all js/ts files and build them one at a time in iife
   for (const file of allFiles) {
     // skip "index.js", "src/models/*.ts" or any *.d.ts files which are useless for iife
-    if (/index.[j|t]s/i.test(file) || /src[\\/]models[\\/].*\.ts/i.test(file) || /.*\.d.ts/i.test(file)) {
+    // (the index check is anchored to the basename so that e.g. "slick.rowpositionindex.ts" is not skipped)
+    if (/(^|[\\/])index\.[jt]s$/i.test(file) || /src[\\/]models[\\/].*\.ts/i.test(file) || /.*\.d.ts/i.test(file)) {
       continue;
     }
     buildIifeFile(file, false);

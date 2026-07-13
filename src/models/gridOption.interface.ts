@@ -315,6 +315,16 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   rowHeight?: number;
 
   /**
+   * Supplying this callback enables variable row height mode: rows may have differing heights.
+   * Returns the height in pixels of a given row, or `undefined` to use the default `rowHeight`.
+   * Heights are cached in a prefix-sum index that is rebuilt whenever the row count changes, rows
+   * are invalidated, or `grid.invalidateRowHeights()` is called; the callback is called once per
+   * row per rebuild, so it must be fast (a simple lookup or calculation - no DOM access).
+   * When heights change without a row count change, call `grid.invalidateRowHeights()`.
+   */
+  rowHeightProvider?: (row: number, item: any) => number | undefined;
+
+  /**
    * Defaults to "highlight-animate", a CSS class name used to simulate row highlight with an optional duration (e.g. after insert).
    * Note: make sure that the duration is always lower than the duration defined in the CSS/SASS variable `$alpine-row-highlight-fade-animation`.
    * Also note that the highlight is temporary and will also disappear as soon as the user starts scrolling or a `render()` is being called
