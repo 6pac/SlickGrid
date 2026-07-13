@@ -246,6 +246,17 @@ class ViewportMgr {
    */
   protected lazy = false;
 
+  /**
+   * Array positions of dynamically materialized viewports/canvases (the viewport and
+   * canvas arrays always extend in lockstep, so one slot serves both). Recorded at
+   * materialization time instead of hardcoding, so band order never matters.
+   */
+  protected rfTopSlot = -1;
+  protected rfBottomSlot = -1;
+  protected bfSlotL = -1;
+  protected bfSlotR = -1;
+  protected bfSlotRF = -1;
+
   // panes
   paneHeaderL!: HTMLDivElement;
   paneHeaderR!: HTMLDivElement;
@@ -318,6 +329,17 @@ class ViewportMgr {
   footerRowScrollerRF!: HTMLDivElement;
   footerRowSpacerRF!: HTMLDivElement;
   footerRowRF!: HTMLDivElement;
+
+  // bottom-frozen row band (Phase 4 — exists only in simultaneous top+bottom mode)
+  paneBottomFrozenL!: HTMLDivElement;
+  paneBottomFrozenR!: HTMLDivElement;
+  paneBottomFrozenRF!: HTMLDivElement;
+  viewportBottomFrozenL!: HTMLDivElement;
+  viewportBottomFrozenR!: HTMLDivElement;
+  viewportBottomFrozenRF!: HTMLDivElement;
+  canvasBottomFrozenL!: HTMLDivElement;
+  canvasBottomFrozenR!: HTMLDivElement;
+  canvasBottomFrozenRF!: HTMLDivElement;
 
   // footer rows (only when createFooterRow)
   footerRowScrollerL!: HTMLDivElement;
@@ -681,6 +703,8 @@ class ViewportMgr {
     this.canvasTopRF = Utils.createDomElement('div', { className: 'grid-canvas grid-canvas-top grid-canvas-right-frozen', tabIndex: 0 }, this.viewportTopRF);
     this.canvasBottomRF = Utils.createDomElement('div', { className: 'grid-canvas grid-canvas-bottom grid-canvas-right-frozen', tabIndex: 0 }, this.viewportBottomRF);
     this.canvas.push(this.canvasTopRF, this.canvasBottomRF);
+    this.rfTopSlot = this.canvas.indexOf(this.canvasTopRF);
+    this.rfBottomSlot = this.canvas.indexOf(this.canvasBottomRF);
 
     // footer row
     if (o.createFooterRow) {
@@ -695,7 +719,75 @@ class ViewportMgr {
       }
     }
 
+    // if the bottom-frozen band already exists, add the shared corner pane
+    this.ensureBottomFrozenRightVariant(o);
+
     return true;
+  }
+
+  /**
+   * Builds the bottom-frozen row band (Phase 4, simultaneous top+bottom mode): one
+   * pane+viewport+canvas per active column band, appended after all existing panes
+   * with `*-bottom-frozen` css classes. Element arrays extend at the END and the
+   * slots are recorded (bfSlotL/R/RF). Idempotent: returns false when the band
+   * already exists. The right-frozen column variant is built only when that band's
+   * DOM exists at call time; materializeRightFrozenBand adds it later otherwise.
+   */
+  materializeBottomFrozenBand(o: ViewportMgrBuildOptions): boolean {
+    if (this.paneBottomFrozenL) {
+      // band exists — but the RF column variant may have arrived after us
+      this.ensureBottomFrozenRightVariant(o);
+      return false;
+    }
+
+    const container = this.container;
+    const lastPane = this.paneBottomRF ?? this.paneBottomR ?? this.paneTopL;
+
+    this.paneBottomFrozenL = Utils.createDomElement('div', { className: 'slick-pane slick-pane-bottom-frozen slick-pane-left', tabIndex: 0 });
+    container.insertBefore(this.paneBottomFrozenL, lastPane.nextSibling);
+    this.paneBottomFrozenR = Utils.createDomElement('div', { className: 'slick-pane slick-pane-bottom-frozen slick-pane-right', tabIndex: 0 });
+    container.insertBefore(this.paneBottomFrozenR, this.paneBottomFrozenL.nextSibling);
+
+    this.viewportBottomFrozenL = Utils.createDomElement('div', { className: 'slick-viewport slick-viewport-bottom-frozen slick-viewport-left', tabIndex: 0 }, this.paneBottomFrozenL);
+    this.viewportBottomFrozenR = Utils.createDomElement('div', { className: 'slick-viewport slick-viewport-bottom-frozen slick-viewport-right', tabIndex: 0 }, this.paneBottomFrozenR);
+    this.canvasBottomFrozenL = Utils.createDomElement('div', { className: 'grid-canvas grid-canvas-bottom-frozen grid-canvas-left', tabIndex: 0 }, this.viewportBottomFrozenL);
+    this.canvasBottomFrozenR = Utils.createDomElement('div', { className: 'grid-canvas grid-canvas-bottom-frozen grid-canvas-right', tabIndex: 0 }, this.viewportBottomFrozenR);
+
+    if (o.viewportClass) {
+      const viewportClassList = Utils.classNameToList(o.viewportClass);
+      this.viewportBottomFrozenL.classList.add(...viewportClassList);
+      this.viewportBottomFrozenR.classList.add(...viewportClassList);
+    }
+
+    this.viewport.push(this.viewportBottomFrozenL, this.viewportBottomFrozenR);
+    this.canvas.push(this.canvasBottomFrozenL, this.canvasBottomFrozenR);
+    this.bfSlotL = this.canvas.indexOf(this.canvasBottomFrozenL);
+    this.bfSlotR = this.canvas.indexOf(this.canvasBottomFrozenR);
+
+    this.ensureBottomFrozenRightVariant(o);
+    return true;
+  }
+
+  /** Adds the bottom-frozen × right-frozen corner pane when both bands exist. */
+  protected ensureBottomFrozenRightVariant(o: ViewportMgrBuildOptions) {
+    if (!this.paneBottomFrozenL || !this.paneHeaderRF || this.paneBottomFrozenRF) {
+      return;
+    }
+    this.paneBottomFrozenRF = Utils.createDomElement('div', { className: 'slick-pane slick-pane-bottom-frozen slick-pane-right-frozen', tabIndex: 0 });
+    this.container.insertBefore(this.paneBottomFrozenRF, this.paneBottomFrozenR.nextSibling);
+    this.viewportBottomFrozenRF = Utils.createDomElement('div', { className: 'slick-viewport slick-viewport-bottom-frozen slick-viewport-right-frozen', tabIndex: 0 }, this.paneBottomFrozenRF);
+    this.canvasBottomFrozenRF = Utils.createDomElement('div', { className: 'grid-canvas grid-canvas-bottom-frozen grid-canvas-right-frozen', tabIndex: 0 }, this.viewportBottomFrozenRF);
+    if (o.viewportClass) {
+      this.viewportBottomFrozenRF.classList.add(...Utils.classNameToList(o.viewportClass));
+    }
+    this.viewport.push(this.viewportBottomFrozenRF);
+    this.canvas.push(this.canvasBottomFrozenRF);
+    this.bfSlotRF = this.canvas.indexOf(this.canvasBottomFrozenRF);
+  }
+
+  /** Whether the simultaneous top+bottom row mode is active AND its DOM exists. */
+  hasBottomFrozenBand(): boolean {
+    return this.bands.frozenTopRows > 0 && this.bands.frozenBottomRows > 0 && !!this.paneBottomFrozenL;
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////
@@ -756,7 +848,7 @@ class ViewportMgr {
   paneCellIndex(colIdx: number, rowIdx: number): number {
     const isBottomSide = this.freeze.hasFrozenRows && rowIdx >= this.freeze.actualFrozenRow + (this.freeze.frozenBottom ? 0 : 1);
     if (this.isColumnInRightFrozenBand(colIdx)) {
-      return 4 + (isBottomSide ? 1 : 0);
+      return isBottomSide ? this.rfBottomSlot : this.rfTopSlot;
     }
     const isRightSide = this.hasFrozenColumns() && colIdx > this.freeze.frozenColumnIdx;
     return (isBottomSide ? 2 : 0) + (isRightSide ? 1 : 0);
@@ -940,6 +1032,26 @@ class ViewportMgr {
       this.hideIf(this.paneHeaderRF);
       this.hideIf(this.paneTopRF);
       this.hideIf(this.paneBottomRF);
+    }
+
+    // bottom-frozen row band (simultaneous top+bottom mode only); column-band
+    // visibility mirrors the classic bottom panes
+    if (this.bands.frozenTopRows > 0 && this.bands.frozenBottomRows > 0) {
+      this.showIf(this.paneBottomFrozenL);
+      if (this.hasFrozenColumns()) {
+        this.showIf(this.paneBottomFrozenR);
+      } else {
+        this.hideIf(this.paneBottomFrozenR);
+      }
+      if (this.bands.frozenRightCols > 0) {
+        this.showIf(this.paneBottomFrozenRF);
+      } else {
+        this.hideIf(this.paneBottomFrozenRF);
+      }
+    } else {
+      this.hideIf(this.paneBottomFrozenL);
+      this.hideIf(this.paneBottomFrozenR);
+      this.hideIf(this.paneBottomFrozenRF);
     }
   }
 
@@ -1657,6 +1769,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected _focusSink!: HTMLDivElement;
   protected _focusSink2!: HTMLDivElement;
   protected _viewportMgr!: ViewportMgr;
+  /**
+   * True once finishInitialization has run its array-wide bindPaneEvents pass.
+   * Band materializers bind their new elements only AFTER this point; during the
+   * init window (initialized is already true but the pass hasn't run) the arrays
+   * still cover everything, so binding in the materializer would double-register.
+   */
+  protected _paneEventsBound = false;
   protected _groupHeaders: HTMLDivElement[] = [];
   protected _headerScroller: HTMLDivElement[] = [];
   protected _headers: HTMLDivElement[] = [];
@@ -2195,7 +2314,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
     this.syncViewportMgrAliases();
 
-    if (this.initialized) {
+    if (this._paneEventsBound) {
       this.disableSelection([this._headerR]);
 
       this.bindPaneEvents({
@@ -2258,6 +2377,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         footerRows: this._footerRow,
         footerRowScrollers: this._footerRowScroller,
       });
+      this._paneEventsBound = true;
 
       if (this._options.createTopHeaderPanel) {
         this._bindingEventService.bind(this._topHeaderPanelScroller, 'scroll', this.handleTopHeaderPanelScroll.bind(this) as EventListener);
@@ -3744,6 +3864,41 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (this._options.frozenRightColumn! > 0) {
       this.materializeRightFrozenPanes();
     }
+
+    // materialize the bottom-frozen row band the first time simultaneous
+    // top+bottom freezing is applied
+    if (this._options.frozenRow! > -1 && this._options.frozenBottomRow! > 0) {
+      this.materializeBottomFrozenPanes();
+    }
+  }
+
+  /**
+   * Builds the bottom-frozen row band on first use (simultaneous top+bottom mode)
+   * and wires events for the new elements when the grid is already live.
+   */
+  protected materializeBottomFrozenPanes() {
+    // canonicalize the classic pane set first (no-op on non-lazy grids)
+    this.materializeLazyPanes();
+
+    const vm = this._viewportMgr;
+    const hadCorner = !!vm.canvasBottomFrozenRF;
+    if (!vm.materializeBottomFrozenBand(this._options)) {
+      // idempotent call may still have added the RF corner variant late
+      if (!hadCorner && vm.canvasBottomFrozenRF && this._paneEventsBound) {
+        this.bindPaneEvents({ viewports: [vm.viewportBottomFrozenRF], canvases: [vm.canvasBottomFrozenRF] });
+      }
+      return;
+    }
+
+    if (this._paneEventsBound) {
+      const viewports = [vm.viewportBottomFrozenL, vm.viewportBottomFrozenR];
+      const canvases = [vm.canvasBottomFrozenL, vm.canvasBottomFrozenR];
+      if (vm.canvasBottomFrozenRF) {
+        viewports.push(vm.viewportBottomFrozenRF);
+        canvases.push(vm.canvasBottomFrozenRF);
+      }
+      this.bindPaneEvents({ viewports, canvases });
+    }
   }
 
   /**
@@ -3752,20 +3907,28 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * setOptions) and wires events for the new elements when the grid is already live.
    */
   protected materializeRightFrozenPanes() {
-    // canonicalize the classic pane set first so the RF viewports/canvases land at
-    // array indexes 4/5 (paneCellIndex depends on it) — no-op on non-lazy grids
+    // canonicalize the classic pane set first (paneCellIndex's classic slots 0-3
+    // depend on it) — no-op on non-lazy grids
     this.materializeLazyPanes();
 
+    const hadCorner = !!this._viewportMgr.canvasBottomFrozenRF;
     if (!this._viewportMgr.materializeRightFrozenBand(this._options)) {
       return;
     }
 
-    if (this.initialized) {
+    if (this._paneEventsBound) {
       const vm = this._viewportMgr;
       this.disableSelection([vm.headerRF]);
+      const viewports = [vm.viewportTopRF, vm.viewportBottomRF];
+      const canvases = [vm.canvasTopRF, vm.canvasBottomRF];
+      if (!hadCorner && vm.canvasBottomFrozenRF) {
+        // the shared bottom-frozen × right-frozen corner arrived with this band
+        viewports.push(vm.viewportBottomFrozenRF);
+        canvases.push(vm.canvasBottomFrozenRF);
+      }
       this.bindPaneEvents({
-        viewports: [vm.viewportTopRF, vm.viewportBottomRF],
-        canvases: [vm.canvasTopRF, vm.canvasBottomRF],
+        viewports,
+        canvases,
         headerScrollers: [vm.headerScrollerRF],
         headerRowScrollers: [vm.headerRowScrollerRF],
         footerRows: this._options.createFooterRow ? [vm.footerRowRF] : [],
