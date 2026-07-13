@@ -158,6 +158,8 @@ interface ViewportFreezeState {
   frozenRightColCount?: number;
   /** index of the first right-frozen column (columns.length when the band is off) */
   frozenRightStartIdx?: number;
+  /** the frozenBottomRow option value — rows frozen at the bottom ALONGSIDE top rows (0 when none) */
+  frozenBottomRowCount?: number;
 }
 
 /**
@@ -710,11 +712,14 @@ class ViewportMgr {
     // derive the band-count view (Phase 4 groundwork); the legacy fields above stay
     // authoritative for the existing 2×2 code paths
     const rowCount = f.hasFrozenRows ? Math.max(0, f.frozenRowCount ?? 0) : 0;
+    const bottomRowCount = Math.max(0, f.frozenBottomRowCount ?? 0);
     this.bands = {
       frozenLeftCols: f.frozenColumnIdx + 1,
-      frozenRightCols: Math.max(0, f.frozenRightColCount ?? 0), // band DOM arrives with M13's later stages
-      frozenTopRows: f.frozenBottom ? 0 : rowCount,
-      frozenBottomRows: f.frozenBottom ? rowCount : 0,
+      frozenRightCols: Math.max(0, f.frozenRightColCount ?? 0),
+      // with an explicit bottom count, frozenRow always means TOP rows and the legacy
+      // frozenBottom flag is ignored (it only positions the single-band case)
+      frozenTopRows: bottomRowCount > 0 ? rowCount : (f.frozenBottom ? 0 : rowCount),
+      frozenBottomRows: bottomRowCount > 0 ? bottomRowCount : (f.frozenBottom ? rowCount : 0),
     };
   }
 
@@ -1553,6 +1558,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     enableTextSelectionOnCells: false,
     dataItemColumnValueExtractor: null,
     frozenBottom: false,
+    frozenBottomRow: 0,
     frozenColumn: -1,
     frozenRow: -1,
     frozenRightColumn: 0,
@@ -3697,6 +3703,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       ? Math.min(parseInt(this._options.frozenRightColumn as unknown as string, 10), maxRightCols)
       : 0;
 
+    // normalize the bottom-frozen row COUNT: non-negative integer, and the top and
+    // bottom bands must leave at least one scrollable body row between them
+    const topRowCount = (this._options.frozenRow! > -1 && !this._options.frozenBottom) ? this._options.frozenRow! : 0;
+    const maxBottomRows = Math.max(0, this.getDataLength() - topRowCount - 1);
+    this._options.frozenBottomRow = (this._options.frozenBottomRow! > 0)
+      ? Math.min(parseInt(this._options.frozenBottomRow as unknown as string, 10), maxBottomRows)
+      : 0;
+
     if (this._options.frozenRow! > -1) {
       this.hasFrozenRows = true;
       this.frozenRowsHeight = (this._options.frozenRow!) * this._options.rowHeight!;
@@ -3717,6 +3731,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       frozenRowCount: this._options.frozenRow!,
       frozenRightColCount: this._options.frozenRightColumn!,
       frozenRightStartIdx: this.getFrozenRightStartIdx(),
+      frozenBottomRowCount: this._options.frozenBottomRow!,
     });
 
     // materialize the secondary panes if freezing was just enabled on a lazyPanes grid
