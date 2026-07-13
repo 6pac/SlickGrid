@@ -115,6 +115,33 @@ describe('right-frozen band DOM - frozenRightColumn at init (example-frozen-righ
   });
 });
 
+describe('right-frozen band - keyboard navigation across the band boundary (M13e)', () => {
+  it('should cross middle→right-frozen and back with arrow keys, without horizontal scrolling', () => {
+    // fresh load to reset scroll/active state
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-frozen-right-columns.html`);
+
+    // activate the last middle-band cell (Start) on the first row
+    cy.get('#myGrid .grid-canvas-top.grid-canvas-left .slick-row').first().find('.slick-cell').last().click();
+    cy.get('#myGrid .slick-cell.active').should('have.length', 1);
+
+    // ArrowRight crosses into the first right-frozen column (Finish) — this also
+    // exercises the RF canvas's keydown wiring and pane-index cell lookup
+    cy.get('#myGrid .slick-cell.active').type('{rightarrow}');
+    cy.get('#myGrid .grid-canvas-top.grid-canvas-right-frozen .slick-cell.active')
+      .should('have.length', 1)
+      .and('contain', '01/05/2009');
+
+    // entering the band must not horizontally scroll the middle viewport
+    cy.get('#myGrid .slick-viewport-top.slick-viewport-left').then(($vp) => {
+      expect(($vp[0] as HTMLElement).scrollLeft, 'middle band did not scroll').to.equal(0);
+    });
+
+    // ArrowLeft returns to the middle band
+    cy.get('#myGrid .slick-cell.active').type('{leftarrow}');
+    cy.get('#myGrid .grid-canvas-top.grid-canvas-left .slick-cell.active').should('have.length', 1);
+  });
+});
+
 describe('right-frozen band DOM - runtime materialization on a classic grid', () => {
   it('should load the plain example and materialize the band via setOptions', () => {
     cy.visit(`${Cypress.config('baseUrl')}/examples/example1-simple.html`);
