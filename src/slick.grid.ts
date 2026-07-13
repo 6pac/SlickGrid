@@ -197,6 +197,8 @@ interface CanvasWidthsGeometry {
 interface PaneHeightsGeometry {
   viewportH: number;
   frozenRowsHeight: number;
+  /** height of the bottom-frozen row band (simultaneous top+bottom mode; 0 otherwise) */
+  frozenBottomRowsHeight?: number;
   scrollbarHeight: number;
   topPanelH: number;
   headerRowH: number;
@@ -1081,6 +1083,21 @@ class ViewportMgr {
       this.viewportBottomR.style.overflowY = o.alwaysShowVerticalScroll ? 'scroll' : ((this.hasFrozenColumns()) ? (hasFrozenRows ? 'auto' : 'auto') : (hasFrozenRows ? 'auto' : 'auto'));
     }
 
+    // bottom-frozen viewports never own a scrollbar: Y is fixed, X follows the
+    // scroll owner programmatically
+    if (this.viewportBottomFrozenL) {
+      this.viewportBottomFrozenL.style.overflowX = 'hidden';
+      this.viewportBottomFrozenL.style.overflowY = 'hidden';
+    }
+    if (this.viewportBottomFrozenR) {
+      this.viewportBottomFrozenR.style.overflowX = 'hidden';
+      this.viewportBottomFrozenR.style.overflowY = 'hidden';
+    }
+    if (this.viewportBottomFrozenRF) {
+      this.viewportBottomFrozenRF.style.overflowX = 'hidden';
+      this.viewportBottomFrozenRF.style.overflowY = 'hidden';
+    }
+
     // right-frozen viewports never own a scrollbar: X is fixed, Y follows the
     // scroll owner programmatically (same rationale as the frozen-left viewport)
     if (this.viewportTopRF) {
@@ -1211,6 +1228,35 @@ class ViewportMgr {
         }
       }
 
+      // bottom-frozen row band (simultaneous mode): column widths mirror the classic
+      // bottom panes
+      if (this.hasBottomFrozenBand()) {
+        if (this.hasFrozenColumns()) {
+          Utils.width(this.paneBottomFrozenL, g.canvasWidthL);
+          Utils.width(this.canvasBottomFrozenL, g.canvasWidthL);
+          Utils.setStyleSize(this.paneBottomFrozenR, 'left', g.canvasWidthL);
+          Utils.width(this.paneBottomFrozenR, g.viewportW - g.canvasWidthL - rfW);
+          Utils.width(this.viewportBottomFrozenR, g.viewportW - g.canvasWidthL - rfW);
+          Utils.width(this.canvasBottomFrozenR, g.canvasWidthR);
+          Utils.width(this.viewportBottomFrozenL, g.canvasWidthL);
+        } else if (rfActive) {
+          Utils.width(this.paneBottomFrozenL, g.viewportW - rfW);
+          Utils.width(this.viewportBottomFrozenL, g.viewportW - rfW);
+          Utils.width(this.canvasBottomFrozenL, g.canvasWidthL);
+        } else {
+          Utils.width(this.paneBottomFrozenL, '100%');
+          Utils.width(this.viewportBottomFrozenL, '100%');
+          Utils.width(this.canvasBottomFrozenL, g.canvasWidthL);
+        }
+
+        if (this.paneBottomFrozenRF && rfActive) {
+          Utils.setStyleSize(this.paneBottomFrozenRF, 'left', g.viewportW - rfW);
+          Utils.width(this.paneBottomFrozenRF, rfW);
+          Utils.width(this.viewportBottomFrozenRF, rfW);
+          Utils.width(this.canvasBottomFrozenRF, g.canvasWidthRF);
+        }
+      }
+
       // right-frozen band: fixed-width panes pinned to the right edge
       if (rfActive) {
         const rfLeft = g.viewportW - rfW;
@@ -1264,6 +1310,7 @@ class ViewportMgr {
     const viewportBottomH = 0;
 
     // Account for Frozen Rows
+    const simultaneousBands = this.bands.frozenTopRows > 0 && this.bands.frozenBottomRows > 0 && !!this.paneBottomFrozenL;
     if (this.freeze.hasFrozenRows) {
       if (this.freeze.frozenBottom) {
         paneTopH = g.viewportH - g.frozenRowsHeight - g.scrollbarHeight;
@@ -1271,6 +1318,10 @@ class ViewportMgr {
       } else {
         paneTopH = g.frozenRowsHeight;
         paneBottomH = g.viewportH - g.frozenRowsHeight;
+        if (simultaneousBands) {
+          // the scrollable body shrinks by the bottom-frozen band height
+          paneBottomH -= g.frozenBottomRowsHeight ?? 0;
+        }
       }
     } else {
       paneTopH = g.viewportH;
@@ -1357,6 +1408,31 @@ class ViewportMgr {
     } else {
       if (this.viewportTopR) {
         Utils.height(this.viewportTopR, viewportTopH);
+      }
+    }
+
+    // bottom-frozen row band (simultaneous mode): pinned below the shrunk body pane
+    if (simultaneousBands) {
+      const bfH = g.frozenBottomRowsHeight ?? 0;
+      const bfTop = this.paneTopL.offsetTop + paneTopH + paneBottomH;
+
+      Utils.setStyleSize(this.paneBottomFrozenL, 'top', bfTop);
+      Utils.height(this.paneBottomFrozenL, bfH);
+      Utils.height(this.viewportBottomFrozenL, bfH);
+      Utils.height(this.canvasBottomFrozenL, bfH);
+
+      if (this.hasFrozenColumns()) {
+        Utils.setStyleSize(this.paneBottomFrozenR, 'top', bfTop);
+        Utils.height(this.paneBottomFrozenR, bfH);
+        Utils.height(this.viewportBottomFrozenR, bfH);
+        Utils.height(this.canvasBottomFrozenR, bfH);
+      }
+
+      if (this.paneBottomFrozenRF) {
+        Utils.setStyleSize(this.paneBottomFrozenRF, 'top', bfTop);
+        Utils.height(this.paneBottomFrozenRF, bfH);
+        Utils.height(this.viewportBottomFrozenRF, bfH);
+        Utils.height(this.canvasBottomFrozenRF, bfH);
       }
     }
 
@@ -1462,6 +1538,12 @@ class ViewportMgr {
         this.viewportTopL.scrollLeft = x;
       }
       this.headerRowScrollerL.scrollLeft = x; // left header row scrolling with regular grid
+    }
+
+    // the bottom-frozen band's scrollable-column viewport follows X like the
+    // frozen-top viewports do
+    if (this.hasBottomFrozenBand()) {
+      (this.hasFrozenColumns() ? this.viewportBottomFrozenR : this.viewportBottomFrozenL).scrollLeft = x;
     }
   }
 
@@ -7322,6 +7404,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const heights = this._viewportMgr.applyPaneHeights({
       viewportH: this.viewportH,
       frozenRowsHeight: this.frozenRowsHeight,
+      frozenBottomRowsHeight: (this._options.frozenBottomRow ?? 0) * this._options.rowHeight!,
       scrollbarHeight: this.scrollbarDimensions?.height ?? 0,
       topPanelH: this.topPanelH,
       headerRowH: this.headerRowH,
