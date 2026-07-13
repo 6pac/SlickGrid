@@ -1310,8 +1310,9 @@ class ViewportMgr {
     }
 
     // right-frozen fragment always sits LAST in the rowNode array
-    if (attached && this.bands.frozenRightCols > 0 && this.canvasTopRF && rightFrozen) {
-      (isBottomBand ? this.canvasBottomRF : this.canvasTopRF).appendChild(rightFrozen);
+    const rfTargetCanvas = isBottomBand ? this.canvasBottomRF : this.canvasTopRF;
+    if (attached && this.bands.frozenRightCols > 0 && rfTargetCanvas && rightFrozen) {
+      rfTargetCanvas.appendChild(rightFrozen);
       attached.push(rightFrozen);
     }
 
@@ -6246,8 +6247,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const widthChanged = this.canvasWidth !== oldCanvasWidth || this.canvasWidthL !== oldCanvasWidthL || this.canvasWidthR !== oldCanvasWidthR || this.canvasWidthRF !== oldCanvasWidthRF;
 
     // recompute the header width split only when the pane widths will be redistributed
-    // (preserves the historical conditional side effect on headersWidthL/R)
-    if (widthChanged || this._viewportMgr.hasFrozenColumns() || this._viewportMgr.hasFrozenRows()) {
+    // (preserves the historical conditional side effect on headersWidthL/R; the RF term
+    // keeps this guard symmetric with applyCanvasWidths' rfActive distribution guard)
+    if (widthChanged || this._viewportMgr.hasFrozenColumns() || this._viewportMgr.hasFrozenRows() || this._viewportMgr.hasRightFrozenBand()) {
       this.getHeadersWidth();
     }
 
@@ -6591,7 +6593,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {CellViewportRange} range - The visible viewport range for rendering cells.
    * @param {number} dataLength - The total data length to determine if the row is loading.
    */
-  protected appendRowHtml(divArrayL: HTMLElement[], divArrayR: HTMLElement[], divArrayRF: HTMLElement[], row: number, range: CellViewportRange, dataLength: number) {
+  protected appendRowHtml(divArrayL: HTMLElement[], divArrayR: HTMLElement[], row: number, range: CellViewportRange, dataLength: number, divArrayRF: HTMLElement[] = []) {
     const d = this.getDataItem(row);
     const dataLoading = row < dataLength && !d;
     let rowCss = 'slick-row' +
@@ -6683,14 +6685,16 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
         // All columns to the right are outside the range, so no need to render them
         if (isRenderCell) {
-          const targetedRowDiv = this._viewportMgr.bandElementForColumn(i, rowDiv, rowDivR!, rowDivRF!);
+          // fall back to the row's own fragment if the RF fragment was not cloned
+          // (band count set but DOM not yet materialized — transition safety)
+          const targetedRowDiv = this._viewportMgr.bandElementForColumn(i, rowDiv, rowDivR!, rowDivRF ?? rowDiv);
           this.appendCellHtml(targetedRowDiv, row, i, ncolspan, rowspan, columnData, d);
         }
       } else if (m.alwaysRenderColumn || this._viewportMgr.isColumnInFrozenBand(i)) {
         this.appendCellHtml(rowDiv, row, i, ncolspan, rowspan, columnData, d);
-      } else if (this._viewportMgr.isColumnInRightFrozenBand(i)) {
+      } else if (rowDivRF && this._viewportMgr.isColumnInRightFrozenBand(i)) {
         // right-frozen cells are always horizontally visible, like the left-frozen band
-        this.appendCellHtml(rowDivRF!, row, i, ncolspan, rowspan, columnData, d);
+        this.appendCellHtml(rowDivRF, row, i, ncolspan, rowspan, columnData, d);
       }
 
       if (ncolspan > 1) {
@@ -7600,7 +7604,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         }
       }
 
-      this.appendRowHtml(divArrayL, divArrayR, divArrayRF, i, range, dataLength);
+      this.appendRowHtml(divArrayL, divArrayR, i, range, dataLength, divArrayRF);
       mustRenderRows.add(i);
       if (this.activeCellNode && this.activeRow === i) {
         needToReselectCell = true;
@@ -7615,7 +7619,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         this.removeRowFromCache(r); // remove any previous element to avoid duplicates in DOM
         rows.push(r);
         this.rowsCache[r] = this.createEmptyCachingRow();
-        this.appendRowHtml(divArrayL, divArrayR, divArrayRF, r, range, dataLength);
+        this.appendRowHtml(divArrayL, divArrayR, r, range, dataLength, divArrayRF);
       });
     }
 
