@@ -160,6 +160,8 @@ interface ViewportFreezeState {
   frozenRightStartIdx?: number;
   /** the frozenBottomRow option value — rows frozen at the bottom ALONGSIDE top rows (0 when none) */
   frozenBottomRowCount?: number;
+  /** first row of the bottom-frozen band = dataLength − frozenBottomRow (MAX_SAFE_INTEGER when off) */
+  bottomFrozenSplitRow?: number;
 }
 
 /**
@@ -792,6 +794,20 @@ class ViewportMgr {
     return this.bands.frozenTopRows > 0 && this.bands.frozenBottomRows > 0 && !!this.paneBottomFrozenL;
   }
 
+  /**
+   * Whether the row belongs to the bottom-frozen band. BOUNDED on both sides so the
+   * add-new row (index === dataLength) can never be captured by the band. The same
+   * test is used on both the render and lookup sides — the new band deliberately
+   * avoids the historical one-row threshold asymmetry of the legacy single band.
+   */
+  isRowInBottomFrozenBand(row: number): boolean {
+    if (!this.hasBottomFrozenBand()) {
+      return false;
+    }
+    const split = this.freeze.bottomFrozenSplitRow ?? Number.MAX_SAFE_INTEGER;
+    return row >= split && row < split + this.bands.frozenBottomRows;
+  }
+
   //////////////////////////////////////////////////////////////////////////////////////////////
   // Freeze state and pane selection (Phase 2 of the encapsulation refactor)
   //////////////////////////////////////////////////////////////////////////////////////////////
@@ -848,6 +864,13 @@ class ViewportMgr {
    * so these positions hold under lazyPanes too).
    */
   paneCellIndex(colIdx: number, rowIdx: number): number {
+    if (this.isRowInBottomFrozenBand(rowIdx)) {
+      if (this.isColumnInRightFrozenBand(colIdx)) {
+        return this.bfSlotRF;
+      }
+      const isRightSideBF = this.hasFrozenColumns() && colIdx > this.freeze.frozenColumnIdx;
+      return isRightSideBF ? this.bfSlotR : this.bfSlotL;
+    }
     const isBottomSide = this.freeze.hasFrozenRows && rowIdx >= this.freeze.actualFrozenRow + (this.freeze.frozenBottom ? 0 : 1);
     if (this.isColumnInRightFrozenBand(colIdx)) {
       return isBottomSide ? this.rfBottomSlot : this.rfTopSlot;
@@ -866,6 +889,11 @@ class ViewportMgr {
    * @param {Number} row - grid row number
    */
   frozenRowOffset(row: number, g: { h: number; viewportTopH: number; frozenRowsHeight: number; rowHeight: number; }): number {
+    // bottom-frozen band (simultaneous mode): rebase to band-local coordinates
+    if (this.isRowInBottomFrozenBand(row)) {
+      return this.freeze.bottomFrozenSplitRow! * g.rowHeight;
+    }
+
     // let offset = ( hasFrozenRows ) ? ( this._options.frozenBottom ) ? ( row >= actualFrozenRow ) ? ( h < viewportTopH ) ? ( actualFrozenRow * this._options.rowHeight ) : h : 0 : ( row >= actualFrozenRow ) ? frozenRowsHeight : 0 : 0; // WTF?
     let offset = 0;
     if (this.freeze.hasFrozenRows) {
@@ -899,6 +927,9 @@ class ViewportMgr {
    * virtualization cleanup (historical cleanupRows predicate).
    */
   isRowInFrozenBand(row: number): boolean {
+    if (this.isRowInBottomFrozenBand(row)) {
+      return true;
+    }
     return this.freeze.hasFrozenRows
       && ((this.freeze.frozenBottom && row >= this.freeze.actualFrozenRow) // Frozen bottom rows
         || (!this.freeze.frozenBottom && row <= this.freeze.actualFrozenRow) // Frozen top rows
@@ -912,6 +943,9 @@ class ViewportMgr {
    * long-standing upstream behaviour and is deliberately preserved.
    */
   isRowCellCleanupExempt(row: number): boolean {
+    if (this.isRowInBottomFrozenBand(row)) {
+      return true;
+    }
     return this.freeze.hasFrozenRows
       && ((this.freeze.frozenBottom && row > this.freeze.actualFrozenRow) // Frozen bottom rows
         || (row <= this.freeze.actualFrozenRow)                     // Frozen top rows
@@ -1478,9 +1512,21 @@ class ViewportMgr {
    */
   attachRow(rowIdx: number, left: HTMLElement | null, right: HTMLElement | null, rightFrozen?: HTMLElement | null): HTMLElement[] | null {
     let attached: HTMLElement[] | null = null;
-    const isBottomBand = (this.freeze.hasFrozenRows) && (rowIdx >= this.freeze.actualFrozenRow);
+    const isBFBand = this.isRowInBottomFrozenBand(rowIdx);
+    const isBottomBand = !isBFBand && (this.freeze.hasFrozenRows) && (rowIdx >= this.freeze.actualFrozenRow);
 
-    if (isBottomBand) {
+    if (isBFBand) {
+      if (this.hasFrozenColumns()) {
+        if (left && right) {
+          this.canvasBottomFrozenL.appendChild(left);
+          this.canvasBottomFrozenR.appendChild(right);
+          attached = [left, right];
+        }
+      } else if (left) {
+        this.canvasBottomFrozenL.appendChild(left);
+        attached = [left];
+      }
+    } else if (isBottomBand) {
       if (this.hasFrozenColumns()) {
         if (left && right) {
           this.canvasBottomL.appendChild(left);
@@ -1503,7 +1549,7 @@ class ViewportMgr {
     }
 
     // right-frozen fragment always sits LAST in the rowNode array
-    const rfTargetCanvas = isBottomBand ? this.canvasBottomRF : this.canvasTopRF;
+    const rfTargetCanvas = isBFBand ? this.canvasBottomFrozenRF : (isBottomBand ? this.canvasBottomRF : this.canvasTopRF);
     if (attached && this.bands.frozenRightCols > 0 && rfTargetCanvas && rightFrozen) {
       rfTargetCanvas.appendChild(rightFrozen);
       attached.push(rightFrozen);
@@ -3934,6 +3980,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       frozenRightColCount: this._options.frozenRightColumn!,
       frozenRightStartIdx: this.getFrozenRightStartIdx(),
       frozenBottomRowCount: this._options.frozenBottomRow!,
+      bottomFrozenSplitRow: (this._options.frozenRow! > -1 && this._options.frozenBottomRow! > 0)
+        ? this.getDataLength() - this._options.frozenBottomRow!
+        : Number.MAX_SAFE_INTEGER,
     });
 
     // materialize the secondary panes if freezing was just enabled on a lazyPanes grid
@@ -6183,8 +6232,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       let rowOffset = 0;
       const c = Utils.offset(Utils.parents(cellNode, '.grid-canvas')[0] as HTMLElement);
       const isBottom = Utils.parents(cellNode, '.grid-canvas-bottom').length;
+      const isBottomFrozen = Utils.parents(cellNode, '.grid-canvas-bottom-frozen').length;
 
-      if (isBottom) {
+      if (isBottomFrozen) {
+        // bottom-frozen band: canvas origin is the band's first row
+        rowOffset = (this.getDataLength() - this._options.frozenBottomRow!) * this._options.rowHeight!;
+      } else if (isBottom) {
         rowOffset = (this._options.frozenBottom) ? Utils.height(this._canvasTopL) as number : this.frozenRowsHeight;
       }
 
@@ -6857,7 +6910,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const d = this.getDataItem(row);
     const dataLoading = row < dataLength && !d;
     let rowCss = 'slick-row' +
-      (this._viewportMgr.hasFrozenRows() && row <= this._options.frozenRow! ? ' frozen' : '') +
+      ((this._viewportMgr.hasFrozenRows() && row <= this._options.frozenRow!) || this._viewportMgr.isRowInBottomFrozenBand(row) ? ' frozen' : '') +
       (dataLoading ? ' loading' : '') +
       (row === this.activeRow && this._options.showCellSelection ? ' active' : '') +
       (row % 2 === 1 ? ' odd' : ' even');
@@ -7459,6 +7512,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     if (this._viewportMgr.hasFrozenRows()) {
       numberOfRows = this.getDataLength() - this._options.frozenRow!;
+      if (this._viewportMgr.hasBottomFrozenBand()) {
+        // the bottom-frozen band's rows are not part of the scrollable body
+        numberOfRows -= this._options.frozenBottomRow!;
+      }
     } else {
       numberOfRows = dataLengthIncludingAddNew + (this._options.leaveSpaceForNewRows ? this.numVisibleRows - 1 : 0);
     }
@@ -7960,6 +8017,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         }
         this.cleanUpAndRenderCells(renderedFrozenRows);
       }
+      if (this._viewportMgr.hasBottomFrozenBand()) {
+        const renderedBottomFrozenRows = Utils.extend(true, {}, rendered);
+        renderedBottomFrozenRows.top = this.getDataLength() - this._options.frozenBottomRow!;
+        renderedBottomFrozenRows.bottom = this.getDataLength() - 1;
+        this.cleanUpAndRenderCells(renderedBottomFrozenRows);
+      }
       this.cleanUpAndRenderCells(rendered);
     }
 
@@ -7977,6 +8040,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           top: 0, bottom: this._options.frozenRow! - 1, leftPx: rendered.leftPx, rightPx: rendered.rightPx
         });
       }
+    }
+
+    // Render the bottom-frozen band (simultaneous top+bottom mode)
+    if (this._viewportMgr.hasBottomFrozenBand()) {
+      this.renderRows({
+        top: this.getDataLength() - this._options.frozenBottomRow!, bottom: this.getDataLength() - 1, leftPx: rendered.leftPx, rightPx: rendered.rightPx
+      });
     }
 
     this.postProcessFromRow = visible.top;
@@ -8492,6 +8562,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {Boolean} doPaging - scroll when pagination is enabled
    */
   scrollRowIntoView(row: number, doPaging?: boolean) {
+    // bottom-frozen rows are always vertically visible — never scroll for them
+    if (this._viewportMgr.isRowInBottomFrozenBand(row)) {
+      return;
+    }
+
     if (!this._viewportMgr.hasFrozenRows() ||
       (!this._options.frozenBottom && row > this.actualFrozenRow - 1) ||
       (this._options.frozenBottom && row < this.actualFrozenRow - 1)) {

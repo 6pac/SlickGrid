@@ -49,12 +49,34 @@ describe('bottom-frozen band DOM - frozenRow + frozenBottomRow at init (example-
     });
   });
 
-  it('should keep classic top-frozen rendering at this stage (geometry and routing land later)', () => {
-    // classic top-frozen layout: 3 frozen rows in the top-left canvas, body in bottom-left
+  it('should route rows into all three row bands (M14d routing)', () => {
+    // top band: 3 frozen rows; body: scrollable middle; bottom band: last 2 rows
     cy.get('#myGrid .grid-canvas-top.grid-canvas-left .slick-row').should('have.length', 3);
-    cy.get('#myGrid .grid-canvas-bottom.grid-canvas-left .slick-row').should('have.length.greaterThan', 0);
-    cy.get('#myGrid .grid-canvas-bottom-frozen .slick-row').should('have.length', 0);
     cy.get('#myGrid .grid-canvas-top.grid-canvas-left .slick-cell').first().should('contain', 'Task 0');
+    cy.get('#myGrid .grid-canvas-bottom.grid-canvas-left .slick-row').should('have.length.greaterThan', 0);
+
+    cy.get('#myGrid .grid-canvas-bottom-frozen.grid-canvas-left .slick-row').should('have.length', 2);
+    cy.get('#myGrid .grid-canvas-bottom-frozen.grid-canvas-left .slick-row').first()
+      .should('have.class', 'frozen')
+      .find('.slick-cell').first().should('contain', 'Task 498');
+    cy.get('#myGrid .grid-canvas-bottom-frozen.grid-canvas-left .slick-row').last()
+      .find('.slick-cell').first().should('contain', 'Task 499');
+
+    // band-local coordinates: the first bottom-frozen row sits at the band origin
+    cy.get('#myGrid .grid-canvas-bottom-frozen.grid-canvas-left .slick-row').first().then(($row) => {
+      expect(($row[0] as HTMLElement).offsetTop, 'first band row rebased to y=0').to.equal(0);
+    });
+  });
+
+  it('should activate a bottom-frozen cell on click without scrolling the body', () => {
+    cy.get('#myGrid .slick-viewport-bottom.slick-viewport-left').then(($vp) => {
+      const before = ($vp[0] as HTMLElement).scrollTop;
+      cy.get('#myGrid .grid-canvas-bottom-frozen.grid-canvas-left .slick-cell').first().click();
+      cy.get('#myGrid .grid-canvas-bottom-frozen.grid-canvas-left .slick-cell.active').should('have.length', 1);
+      cy.get('#myGrid .slick-viewport-bottom.slick-viewport-left').then(($vp2) => {
+        expect(($vp2[0] as HTMLElement).scrollTop, 'body did not scroll').to.equal(before);
+      });
+    });
   });
 });
 
@@ -70,15 +92,20 @@ describe('bottom-frozen band DOM - runtime materialization on a classic grid', (
     cy.get('#myGrid > .slick-pane').should('have.length', 8);
     cy.get('#myGrid .slick-viewport').should('have.length', 6);
     cy.get('#myGrid .grid-canvas').should('have.length', 6);
+
+    // routing follows the runtime toggle
+    cy.get('#myGrid .grid-canvas-bottom-frozen.grid-canvas-left .slick-row').should('have.length', 2);
+    cy.get('#myGrid .grid-canvas-bottom-frozen.grid-canvas-left .slick-cell').first().should('contain', 'Task 498');
   });
 
-  it('should keep the band in the DOM but hidden when simultaneous mode is turned off', () => {
+  it('should keep the band in the DOM but hidden when simultaneous mode is turned off, restoring classic routing', () => {
     cy.window().then((win: any) => {
       win.grid.setOptions({ frozenBottomRow: 0 });
     });
 
     cy.get('#myGrid > .slick-pane').should('have.length', 8);
     cy.get('#myGrid .slick-pane-bottom-frozen.slick-pane-left').should('not.be.visible');
+    cy.get('#myGrid .grid-canvas-bottom-frozen.grid-canvas-left .slick-row').should('have.length', 0);
     cy.get('#myGrid .grid-canvas-top.grid-canvas-left .slick-row').should('have.length.greaterThan', 0);
   });
 });
