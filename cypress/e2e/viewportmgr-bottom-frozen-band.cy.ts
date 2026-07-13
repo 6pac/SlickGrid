@@ -31,6 +31,24 @@ describe('bottom-frozen band DOM - frozenRow + frozenBottomRow at init (example-
     cy.get('#myGrid .slick-viewport-bottom-frozen.slick-viewport-left > .grid-canvas.grid-canvas-bottom-frozen.grid-canvas-left').should('have.length', 1);
   });
 
+  it('should size and pin the band below the shrunk body pane (M14c geometry)', () => {
+    // example options: frozenRow: 3, frozenBottomRow: 2, default rowHeight 25
+    cy.get('#myGrid .slick-pane-bottom-frozen.slick-pane-left').then(($bf) => {
+      const bf = $bf[0] as HTMLElement;
+      expect(bf.offsetHeight, 'band height = frozenBottomRow * rowHeight').to.equal(2 * 25);
+
+      cy.get('#myGrid .slick-pane-bottom.slick-pane-left').then(($body) => {
+        const body = $body[0] as HTMLElement;
+        expect(bf.offsetTop, 'band sits directly below the body pane')
+          .to.be.closeTo(body.offsetTop + body.offsetHeight, 2);
+      });
+    });
+
+    cy.get('#myGrid .slick-viewport-bottom-frozen.slick-viewport-left').then(($vp) => {
+      expect(($vp[0] as HTMLElement).offsetHeight).to.equal(2 * 25);
+    });
+  });
+
   it('should keep classic top-frozen rendering at this stage (geometry and routing land later)', () => {
     // classic top-frozen layout: 3 frozen rows in the top-left canvas, body in bottom-left
     cy.get('#myGrid .grid-canvas-top.grid-canvas-left .slick-row').should('have.length', 3);
