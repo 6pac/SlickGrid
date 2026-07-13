@@ -8019,6 +8019,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return;
     }
 
+    // right-frozen cells are always horizontally visible — never scroll for them
+    if (this._viewportMgr.isColumnInRightFrozenBand(cell)) {
+      return;
+    }
+
     const colspan = this.getColspan(row, cell);
     this.internalScrollColumnIntoView(this.columnPosLeft[cell], this.columnPosRight[cell + (colspan > 1 ? colspan - 1 : 0)]);
   }
