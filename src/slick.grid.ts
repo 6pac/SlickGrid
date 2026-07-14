@@ -2938,6 +2938,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {boolean} [suppressSetOverflow] - If `true`, prevents updating the viewport overflow setting.
    */
   protected internal_setOptions(suppressRender?: boolean, suppressColumnSet?: boolean, suppressSetOverflow?: boolean): void {
+    // borrow the autosizeColumns cache/restore wrap so layout measurements stay
+    // correct when options change (incl. band materialization) while the container
+    // or an ancestor is hidden — a no-op for visible grids (M16; matches the wrap
+    // initialize() has always used)
+    if (!this._options.suppressCssChangesOnHiddenInit) {
+      this.cacheCssForHiddenInit();
+    }
+
     if (this._options.showColumnHeader !== undefined) {
       this.setColumnHeaderVisibility(this._options.showColumnHeader);
     }
@@ -2974,6 +2982,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       });
     } else if (this._options.enableMouseWheelScrollHandler === false) {
       this.destroyAllInstances(this.slickMouseWheelInstances); // remove scroll handler when option is disable
+    }
+
+    if (!this._options.suppressCssChangesOnHiddenInit) {
+      this.restoreCssFromHiddenInit();
     }
   }
 
