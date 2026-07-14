@@ -2479,9 +2479,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       // calculate the diff so we can set consistent sizes
       this.measureCellPaddingAndBorder();
 
-      this.disableSelection(this._headers); // disable all text selection in header (including input and textarea)
-
       this.setFrozenOptions();
+
+      // disable all text selection in header (including input and textarea);
+      // AFTER setFrozenOptions so headers materialized during the init window
+      // (right-frozen / lazy bands) are included in the shared array
+      this.disableSelection(this._headers);
+
       this.setPaneFrozenClasses();
       this.setPaneVisibility();
       this.setScroller();
@@ -3953,11 +3957,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     // normalize the bottom-frozen row COUNT: non-negative integer, and the top and
     // bottom bands must leave at least one scrollable body row between them
-    const topRowCount = (this._options.frozenRow! > -1 && !this._options.frozenBottom) ? this._options.frozenRow! : 0;
-    const maxBottomRows = Math.max(0, this.getDataLength() - topRowCount - 1);
-    this._options.frozenBottomRow = (this._options.frozenBottomRow! > 0)
-      ? Math.min(parseInt(this._options.frozenBottomRow as unknown as string, 10), maxBottomRows)
-      : 0;
+    // (getDataLength() only consulted when the option is actually in use)
+    if (this._options.frozenBottomRow! > 0) {
+      const topRowCount = (this._options.frozenRow! > -1 && !this._options.frozenBottom) ? this._options.frozenRow! : 0;
+      const maxBottomRows = Math.max(0, this.getDataLength() - topRowCount - 1);
+      this._options.frozenBottomRow = Math.min(parseInt(this._options.frozenBottomRow as unknown as string, 10), maxBottomRows);
+    } else {
+      this._options.frozenBottomRow = 0;
+    }
 
     if (this._options.frozenRow! > -1) {
       this.hasFrozenRows = true;
@@ -6232,7 +6239,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       let rowOffset = 0;
       const c = Utils.offset(Utils.parents(cellNode, '.grid-canvas')[0] as HTMLElement);
       const isBottom = Utils.parents(cellNode, '.grid-canvas-bottom').length;
-      const isBottomFrozen = Utils.parents(cellNode, '.grid-canvas-bottom-frozen').length;
+      const isBottomFrozen = this._viewportMgr.hasBottomFrozenBand() && Utils.parents(cellNode, '.grid-canvas-bottom-frozen').length;
 
       if (isBottomFrozen) {
         // bottom-frozen band: canvas origin is the band's first row
