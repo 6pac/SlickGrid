@@ -2846,6 +2846,22 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
+   * Public band view of the freeze configuration (Phase 4 band API for plugins):
+   * counts per band, zero meaning the band does not exist. Returns a copy.
+   */
+  getFrozenBandCounts(): { frozenLeftCols: number; frozenRightCols: number; frozenTopRows: number; frozenBottomRows: number; } {
+    return { ...this._viewportMgr.bandCounts() };
+  }
+
+  /**
+   * Index (into getColumns()) of the first right-frozen column, or the column count
+   * when no right freeze is active — so `idx >= result` is a safe membership test.
+   */
+  getFrozenRightStartIndex(): number {
+    return this.getFrozenRightStartIdx();
+  }
+
+  /**
    * Extends grid options with a given hash. If an there is an active edit, the grid will attempt to commit the changes and only continue if the attempt succeeds.
    * @param {Object} options - an object with configuration options.
    * @param {Boolean} [suppressRender] - do we want to supress the grid re-rendering? (defaults to false)
