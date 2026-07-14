@@ -52,6 +52,12 @@ export class SlickCellRangeSelector implements SlickPlugin {
   protected _columnOffset = 0;
   protected _isRightCanvas = false;
   protected _isBottomCanvas = false;
+  protected _isRightFrozenCanvas = false;
+  protected _isBottomFrozenCanvas = false;
+  /** band view of the grid's freeze configuration, refreshed on each drag init */
+  protected _bands = { frozenLeftCols: 0, frozenRightCols: 0, frozenTopRows: 0, frozenBottomRows: 0 };
+  /** raw activity flag — deliberately includes the degenerate frozenRow: 0 configuration */
+  protected _legacyRowFreezeActive = false;
 
   // autoScroll related constiables
   protected _activeViewport!: HTMLElement;
@@ -133,23 +139,51 @@ export class SlickCellRangeSelector implements SlickPlugin {
 
     this._rowOffset = 0;
     this._columnOffset = 0;
-    this._isBottomCanvas = this._activeCanvas.classList.contains('grid-canvas-bottom');
 
-    if (this._gridOptions.frozenRow! > -1 && this._isBottomCanvas) {
-      const canvasSelector = `.${this._grid.getUID()} .grid-canvas-${this._gridOptions.frozenBottom ? 'bottom' : 'top'}`;
+    // band view of the freeze configuration (Phase 4 band API); the raw frozenRow
+    // activity flag is kept solely to preserve the degenerate frozenRow: 0 semantics
+    this._bands = this._grid.getFrozenBandCounts();
+    this._legacyRowFreezeActive = this._gridOptions.frozenRow! > -1;
+
+    this._isBottomCanvas = this._activeCanvas.classList.contains('grid-canvas-bottom');
+    this._isBottomFrozenCanvas = this._activeCanvas.classList.contains('grid-canvas-bottom-frozen');
+    this._isRightCanvas = this._activeCanvas.classList.contains('grid-canvas-right');
+    this._isRightFrozenCanvas = this._activeCanvas.classList.contains('grid-canvas-right-frozen');
+
+    if (this._legacyRowFreezeActive && this._isBottomCanvas) {
+      // measure the canvas above the drag canvas; the single frozen band sits at the
+      // bottom only in legacy frozenBottom mode (band counts already encode that the
+      // flag is inert when frozenBottomRow is in use)
+      const legacyBottomMode = this._bands.frozenBottomRows > 0 && this._bands.frozenTopRows === 0;
+      const canvasSelector = `.${this._grid.getUID()} .grid-canvas-${legacyBottomMode ? 'bottom' : 'top'}`;
       const canvasElm = document.querySelector(canvasSelector);
       if (canvasElm) {
         this._rowOffset = canvasElm.clientHeight || 0;
       }
     }
 
-    this._isRightCanvas = this._activeCanvas.classList.contains('grid-canvas-right');
+    if (this._isBottomFrozenCanvas) {
+      // bottom-frozen band canvas: origin is the band's first row
+      this._rowOffset = (this._grid.getDataLength() - this._bands.frozenBottomRows) * (this._gridOptions.rowHeight ?? 25);
+    }
 
-    if (this._gridOptions.frozenColumn! > -1 && this._isRightCanvas) {
+    if (this._bands.frozenLeftCols > 0 && this._isRightCanvas) {
       const canvasLeftElm = document.querySelector(`.${this._grid.getUID()} .grid-canvas-left`);
       if (canvasLeftElm) {
         this._columnOffset = canvasLeftElm.clientWidth || 0;
       }
+    }
+
+    if (this._isRightFrozenCanvas) {
+      // right-frozen band canvas: offset by every canvas to its left (left band, when
+      // present, plus the scrollable middle band)
+      const canvasLeftElm = document.querySelector(`.${this._grid.getUID()} .grid-canvas-top.grid-canvas-left`);
+      let offset = canvasLeftElm?.clientWidth || 0;
+      if (this._bands.frozenLeftCols > 0) {
+        const canvasMiddleElm = document.querySelector(`.${this._grid.getUID()} .grid-canvas-top.grid-canvas-right`);
+        offset += canvasMiddleElm?.clientWidth || 0;
+      }
+      this._columnOffset = offset;
     }
 
       this._dragReplaceHandleActive = (dd.matchClassTag === 'dragReplaceHandle');
@@ -180,12 +214,12 @@ export class SlickCellRangeSelector implements SlickPlugin {
     const canvasOffset = Utils.offset(this._canvas);
 
     let startX = dd.startX - (canvasOffset?.left ?? 0);
-    if (this._gridOptions.frozenColumn! >= 0 && this._isRightCanvas) {
+    if (this._bands.frozenLeftCols > 0 && this._isRightCanvas) {
       startX += this._scrollLeft;
     }
 
     let startY = dd.startY - (canvasOffset?.top ?? 0);
-    if (this._gridOptions.frozenRow! >= 0 && this._isBottomCanvas) {
+    if (this._legacyRowFreezeActive && this._isBottomCanvas) {
       startY += this._scrollTop;
     }
 
@@ -351,14 +385,34 @@ export class SlickCellRangeSelector implements SlickPlugin {
       targetEvent.pageY - (canvasOffset?.top ?? 0) + this._rowOffset
     );
 
-    // ... frozen column(s),
-    if (this._gridOptions.frozenColumn! >= 0 && (!this._isRightCanvas && (end.cell > this._gridOptions.frozenColumn!)) || (this._isRightCanvas && (end.cell <= this._gridOptions.frozenColumn!))) {
+    // ... frozen column(s): the range may not cross the left-freeze boundary
+    // (end.cell > frozenColumn ⇔ end.cell >= frozenLeftCols — same algebra as before)
+    if (this._bands.frozenLeftCols > 0 && (!this._isRightCanvas && (end.cell >= this._bands.frozenLeftCols)) || (this._isRightCanvas && (end.cell < this._bands.frozenLeftCols))) {
       return;
     }
 
-    // ... or frozen row(s)
+    // ... nor the right-freeze boundary
+    if (this._bands.frozenRightCols > 0) {
+      const endInRightFrozen = end.cell >= this._grid.getFrozenRightStartIndex();
+      if (this._isRightFrozenCanvas !== endInRightFrozen) {
+        return;
+      }
+    }
+
+    // ... or frozen row(s) — raw frozenRow deliberately preserved here so the
+    // degenerate frozenRow: 0 clamp behaves exactly as it always has; in
+    // simultaneous mode frozenRow is the TOP band count, so this clamp guards the
+    // top boundary unchanged
     if (this._gridOptions.frozenRow! >= 0 && (!this._isBottomCanvas && (end.row >= this._gridOptions.frozenRow!)) || (this._isBottomCanvas && (end.row < this._gridOptions.frozenRow!))) {
       return;
+    }
+
+    // ... nor the bottom-frozen band boundary (simultaneous mode)
+    if (this._bands.frozenTopRows > 0 && this._bands.frozenBottomRows > 0) {
+      const endInBottomFrozen = end.row >= this._grid.getDataLength() - this._bands.frozenBottomRows;
+      if (this._isBottomFrozenCanvas !== endInBottomFrozen) {
+        return;
+      }
     }
 
     // scrolling the viewport to display the target `end` cell if it is not fully displayed
