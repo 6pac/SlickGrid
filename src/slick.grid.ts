@@ -2408,8 +2408,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   protected computeFrozenRowsHeight(dataLength: number) {
     return this._options.frozenBottom
-      ? this.getRowsHeight(dataLength) - this.getRowsHeight(this.actualFrozenRow)
-      : this.getRowsHeight(this._options.frozenRow!);
+      ? this.getRowPosition(dataLength) - this.getRowPosition(this.actualFrozenRow)
+      : this.getRowPosition(this._options.frozenRow!);
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////
@@ -5309,9 +5309,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /**
    * Returns the virtual top pixel position of a row within the full grid content,
-   * i.e. without the virtual-scrolling page offset applied.
+   * i.e. without the virtual-scrolling page offset applied. Since a row's top position equals
+   * the combined height of all rows before it, this also serves as "the combined pixel height
+   * of the first N rows" when called with a row count.
    *
-   * @param {number} row - The row index.
+   * @param {number} row - The row index (or a row count when summing row heights).
    * @returns {number} The virtual pixel position of the top of the row.
    */
   protected getRowPosition(row: number) {
@@ -5319,19 +5321,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return this.rowPositionIndex.top(row);
     }
     return this._options.rowHeight! * row;
-  }
-
-  /**
-   * Returns the combined pixel height of a number of rows (counted from the first row).
-   *
-   * @param {number} count - The number of rows.
-   * @returns {number} The combined height in pixels.
-   */
-  protected getRowsHeight(count: number) {
-    if (this.isVariableRowHeight() && this.rowPositionIndex) {
-      return this.rowPositionIndex.top(count);
-    }
-    return this._options.rowHeight! * count;
   }
 
   /**
@@ -5893,7 +5882,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       fullHeight += (this._options.showFooterRow) ? this._options.footerRowHeight! + this.getVBoxDelta(this._footerRowScroller[0]) : 0;
       fullHeight += (this.getCanvasWidth() > this.viewportW) ? (this.scrollbarDimensions?.height ?? 0) : 0;
 
-      this.viewportH = this.getRowsHeight(this.getDataLengthIncludingAddNew())
+      this.viewportH = this.getRowPosition(this.getDataLengthIncludingAddNew())
         + ((this._options.frozenColumn === -1) ? fullHeight : 0);
     } else {
       const style = getComputedStyle(this._container);
@@ -6138,8 +6127,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     // the remainder after subtracting the frozen rows height (in fixed mode any `numberOfRows` rows
     // have the same combined height, so the simple multiplication covers all layouts)
     const scrollableRowsHeight = (this.isVariableRowHeight() && this.hasFrozenRows && !this._options.frozenBottom)
-      ? this.getRowsHeight(dataLength) - this.frozenRowsHeight
-      : this.getRowsHeight(numberOfRows);
+      ? this.getRowPosition(dataLength) - this.frozenRowsHeight
+      : this.getRowPosition(numberOfRows);
 
     const tempViewportH = Utils.height(this._viewportScrollContainerY) as number;
     const oldViewportHasVScroll = this.viewportHasVScroll;
@@ -6697,7 +6686,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (this._options.frozenBottom) {
         if (row >= this.actualFrozenRow) {
           if (this.h < this.viewportTopH) {
-            offset = this.getRowsHeight(this.actualFrozenRow);
+            offset = this.getRowPosition(this.actualFrozenRow);
           } else {
             offset = this.h;
           }
