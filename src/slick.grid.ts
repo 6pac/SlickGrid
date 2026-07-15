@@ -376,6 +376,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   protected rowPositionIndex?: RowPositionIndex_;  // prefix-sum index of row top positions (variable row height mode only)
   protected rowHeightsDirty = true;                // set when row heights may have changed; the index is rebuilt on the next updateRowCount()
+  protected frozenRowHeightsChanged = false;       // set when an index rebuild changed the frozen rows height; consumed at the end of updateRowCount()
 
   protected page = 0;       // current page
   protected offset = 0;     // current page offset
@@ -6078,7 +6079,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       );
       this.rowHeightsDirty = false;
       if (this.hasFrozenRows) {
+        const prevFrozenRowsHeight = this.frozenRowsHeight;
         this.frozenRowsHeight = this.computeFrozenRowsHeight(this.getDataLength());
+        // pane splits and frozen canvas sizes derive from this value, so a change requires a canvas resize
+        this.frozenRowHeightsChanged = this.frozenRowsHeight !== prevFrozenRowsHeight;
       }
     }
   }
@@ -6206,6 +6210,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     if (this.h !== oldH && this._options.autoHeight) {
+      this.resizeCanvas();
+    }
+
+    if (this.frozenRowHeightsChanged) {
+      this.frozenRowHeightsChanged = false;
+      // re-apply the pane splits and frozen canvas sizes that were computed from the previous
+      // frozen rows height (same self-limiting recursion pattern as the autoHeight resize above:
+      // the nested updateRowCount recomputes an unchanged value, so it cannot re-trigger)
       this.resizeCanvas();
     }
 
