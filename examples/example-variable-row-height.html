@@ -118,7 +118,8 @@
     document.querySelectorAll('#myGrid .slick-row').forEach(function (node) {
       var row = parseInt(node.dataset.row, 10);
       var domTop = parseFloat(node.style.top);
-      var domH = parseFloat(node.style.height);
+      // default-height rows are sized by the stylesheet rule (no inline height), so measure the box
+      var domH = node.getBoundingClientRect().height;
       if (row in tops) {
         if (Math.abs(domTop - (tops[row] - scrollOffset)) > 0.5 || Math.abs(domH - rowHeightOf(row)) > 0.5) {
           rowsOk = false;

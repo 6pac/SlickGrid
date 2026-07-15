@@ -113,6 +113,42 @@ export class RowPositionIndex {
 
     let lo = 0;
     let hi = this.rowCount - 1;
+
+    // interpolation probe (borrowed from the GerHobbelt SlickGrid fork): guess assuming rows are
+    // close to the default height - exact for uniform grids, and for mostly-uniform grids a second
+    // probe a permille of the row count away usually brackets the target, skipping ~10 halvings
+    let probe = Math.min(hi, Math.max(0, Math.floor(y / this.defaultRowHeight)));
+    const skew = 1 + ((this.rowCount * 0.001) | 0);
+    if (this.rowPos[probe] <= y) {
+      if (y < this.rowPos[probe + 1]) {
+        this.hint = probe;
+        return probe;
+      }
+      lo = probe + 1;
+      probe = Math.min(hi, lo + skew);
+      if (this.rowPos[probe] <= y) {
+        if (y < this.rowPos[probe + 1]) {
+          this.hint = probe;
+          return probe;
+        }
+        lo = probe + 1;
+      } else {
+        hi = probe - 1;
+      }
+    } else {
+      hi = probe - 1;
+      probe = Math.max(0, hi - skew);
+      if (this.rowPos[probe] <= y) {
+        if (y < this.rowPos[probe + 1]) {
+          this.hint = probe;
+          return probe;
+        }
+        lo = probe + 1;
+      } else {
+        hi = probe - 1;
+      }
+    }
+
     while (lo < hi) {
       const mid = (lo + hi + 1) >>> 1;
       if (this.rowPos[mid] <= y) {

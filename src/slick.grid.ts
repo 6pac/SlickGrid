@@ -5070,8 +5070,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       `.${this.uid} .slick-footerrow-columns { height: ${this._options.footerRowHeight}px; }`,
     ];
     if (this.isVariableRowHeight()) {
-      // row heights are set inline per row (see appendRowHtml) and cells simply track their row height
+      // cells simply track their row height; rows keep the default stylesheet height below and
+      // only rows with a non-default height get an inline height (see appendRowHtml)
       rules.push(`.${this.uid} .slick-cell { height: calc(100% - ${this.cellHeightDiff}px); }`);
+      rules.push(`.${this.uid} .slick-row { height: ${this._options.rowHeight}px; }`);
     } else {
       rules.push(`.${this.uid} .slick-cell { height: ${rowHeight}px; }`);
       rules.push(`.${this.uid} .slick-row { height: ${this._options.rowHeight}px; }`);
@@ -5419,8 +5421,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       rowDiv.style.top = `${topOffset}px`; // default to `top: {offset}px`
     }
     if (this.isVariableRowHeight()) {
-      // in variable row height mode there is no stylesheet rule sizing the rows, each row is sized inline
-      rowDiv.style.height = `${this.getRowHeight(row)}px`;
+      // rows keep the default stylesheet height unless this particular row's height differs
+      const rowHeight = this.getRowHeight(row);
+      if (rowHeight !== this._options.rowHeight) {
+        rowDiv.style.height = `${rowHeight}px`;
+      }
     }
 
     let rowDivR: HTMLElement | undefined;
@@ -6076,10 +6081,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
     if (this.rowHeightsDirty || this.rowPositionIndex.count !== rowCount) {
       const provider = this._options.rowHeightProvider!;
+      // height resolution chain: provider -> ItemMetadata.height -> default rowHeight (in rebuild)
       this.rowPositionIndex.rebuild(
         rowCount,
         this._options.rowHeight!,
-        (row: number) => provider(row, this.getDataItem(row))
+        (row: number) => provider(row, this.getDataItem(row)) ?? this.getItemMetadaWhenExists(row)?.height
       );
       this.rowHeightsDirty = false;
       if (this.hasFrozenRows) {

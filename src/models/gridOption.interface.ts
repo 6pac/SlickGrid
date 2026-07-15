@@ -316,7 +316,9 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
 
   /**
    * Supplying this callback enables variable row height mode: rows may have differing heights.
-   * Returns the height in pixels of a given row, or `undefined` to use the default `rowHeight`.
+   * Returns the height in pixels of a given row, or `undefined` to fall back to
+   * `ItemMetadata.height` (when the data provider supplies `getItemMetadata`) and finally to the
+   * default `rowHeight`.
    * Heights are cached in a prefix-sum index that is rebuilt whenever the row count changes, rows
    * are invalidated, or `grid.invalidateRowHeights()` is called; the callback is called once per
    * row per rebuild, so it must be fast (a simple lookup or calculation - no DOM access).
