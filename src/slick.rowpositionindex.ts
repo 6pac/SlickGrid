@@ -11,9 +11,10 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  * preceding rows) and `rowPos[rowCount]` holds the total height of all indexed rows, which makes
  * row-to-position lookups an O(1) array read and position-to-row lookups an O(log n) binary search.
  *
- * Rows outside the indexed range extrapolate linearly using the default row height so that the
- * index mirrors the fixed-row-height arithmetic it replaces (which happily multiplies out-of-range
- * row indexes); callers are expected to clamp results exactly as they do in fixed mode.
+ * Row indexes are expected to be 0 or greater (guaranteed by the grid core; user-provided indexes
+ * are validated in the public grid methods). Rows at or beyond the indexed range extrapolate
+ * linearly using the default row height, mirroring the fixed-row-height arithmetic it replaces
+ * (needed for the Add-New row and `leaveSpaceForNewRows` padding).
  */
 export class RowPositionIndex {
   protected rowPos = new Float64Array(1);
@@ -62,13 +63,10 @@ export class RowPositionIndex {
   /**
    * Returns the virtual top pixel position of a row.
    *
-   * @param {number} row - The row index; indexes beyond the indexed range extrapolate using the default row height.
+   * @param {number} row - The row index (>= 0); indexes beyond the indexed range extrapolate using the default row height.
    * @returns {number} The virtual pixel position of the top of the row.
    */
   top(row: number): number {
-    if (row <= 0) {
-      return row * this.defaultRowHeight;
-    }
     if (row >= this.rowCount) {
       return this.rowPos[this.rowCount] + (row - this.rowCount) * this.defaultRowHeight;
     }
@@ -78,11 +76,11 @@ export class RowPositionIndex {
   /**
    * Returns the height of a row.
    *
-   * @param {number} row - The row index; indexes outside the indexed range return the default row height.
+   * @param {number} row - The row index (>= 0); indexes beyond the indexed range return the default row height.
    * @returns {number} The row height in pixels.
    */
   height(row: number): number {
-    if (row < 0 || row >= this.rowCount) {
+    if (row >= this.rowCount) {
       return this.defaultRowHeight;
     }
     return this.rowPos[row + 1] - this.rowPos[row];
@@ -90,16 +88,13 @@ export class RowPositionIndex {
 
   /**
    * Returns the index of the row containing a virtual vertical pixel position.
-   * Positions outside the indexed range extrapolate using the default row height, mirroring the
-   * fixed-row-height arithmetic (results may be negative or beyond the last row - callers clamp).
+   * Positions below zero return row 0; positions beyond the indexed range extrapolate using the
+   * default row height (results may be beyond the last row - callers clamp, as in fixed mode).
    *
    * @param {number} y - The virtual vertical position in pixels.
    * @returns {number} The row index at that position.
    */
   rowAt(y: number): number {
-    if (y < 0) {
-      return Math.floor(y / this.defaultRowHeight);
-    }
     const total = this.rowPos[this.rowCount];
     if (y >= total) {
       return this.rowCount + Math.floor((y - total) / this.defaultRowHeight);
@@ -107,7 +102,7 @@ export class RowPositionIndex {
 
     // check the last result first: consecutive queries during scrolling usually target the same neighborhood
     const h = this.hint;
-    if (h >= 0 && h < this.rowCount && this.rowPos[h] <= y && y < this.rowPos[h + 1]) {
+    if (h < this.rowCount && this.rowPos[h] <= y && y < this.rowPos[h + 1]) {
       return h;
     }
 
