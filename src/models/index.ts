@@ -74,3 +74,4 @@ export type * from './slickGridModel.interface.js';
 export type * from './slickPlugin.interface.js';
 export * from './sortDirectionNumber.enum.js';
 export type * from './usabilityOverrideFn.type.js';
+export type * from './viewportMgr.interface.js';
