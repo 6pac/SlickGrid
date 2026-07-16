@@ -49,6 +49,14 @@ describe('right-frozen band DOM - frozenRightColumn at init (example-frozen-righ
     cy.get('#myGrid .slick-pane-top.slick-pane-right-frozen > .slick-top-panel-scroller').should('have.length', 1);
   });
 
+  it('should stamp right-frozen band markers, with the middle band as main (M18a)', () => {
+    cy.get('#myGrid .slick-pane-top.slick-pane-right-frozen')
+      .should('have.attr', 'data-colband', 'right-frozen')
+      .and('have.attr', 'data-rowband', 'body');
+    cy.get('#myGrid .slick-pane-top.slick-pane-left').should('have.attr', 'data-colband', 'main');
+    cy.get('#myGrid .grid-canvas[data-colband="right-frozen"]').should('have.length', 1);
+  });
+
   it('should show the right-frozen header and top panes, and hide its bottom pane (no frozen rows)', () => {
     cy.get('#myGrid .slick-pane-header.slick-pane-right-frozen').should('be.visible');
     cy.get('#myGrid .slick-pane-top.slick-pane-right-frozen').should('exist');

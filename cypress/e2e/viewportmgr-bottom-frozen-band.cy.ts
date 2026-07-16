@@ -49,6 +49,15 @@ describe('bottom-frozen band DOM - frozenRow + frozenBottomRow at init (example-
     });
   });
 
+  it('should stamp three-row-band markers in simultaneous mode (M18a)', () => {
+    cy.get('#myGrid .slick-pane-top.slick-pane-left').should('have.attr', 'data-rowband', 'top-frozen');
+    cy.get('#myGrid .slick-pane-bottom.slick-pane-left').should('have.attr', 'data-rowband', 'body');
+    cy.get('#myGrid .slick-pane-bottom-frozen.slick-pane-left')
+      .should('have.attr', 'data-rowband', 'bottom-frozen')
+      .and('have.attr', 'data-colband', 'main');
+    cy.get('#myGrid .grid-canvas[data-rowband="bottom-frozen"]').should('have.length', 1);
+  });
+
   it('should route rows into all three row bands (M14d routing)', () => {
     // top band: 3 frozen rows; body: scrollable middle; bottom band: last 2 rows
     cy.get('#myGrid .grid-canvas-top.grid-canvas-left .slick-row').should('have.length', 3);

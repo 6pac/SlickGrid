@@ -2129,7 +2129,63 @@ export class ViewportMgr {
   }
 
   /** Shows/hides the right and bottom panes according to the freeze configuration. */
+  /**
+   * Stamps band-truth markers (see BAND-LABELLING.md): every pane/viewport/canvas
+   * that currently participates in the layout carries `data-colband` and
+   * `data-rowband` attributes stating its CURRENT role (the historical positional
+   * css classes are a fixed legacy skin and do not change); inactive elements carry
+   * no markers, so `[data-colband="main"]` etc. uniquely select live elements.
+   * Refreshed on every freeze application, alongside applyPaneVisibility.
+   */
+  protected applyBandMarkers() {
+    const leftActive = this.bands.frozenLeftCols > 0;
+    const rfActive = this.bands.frozenRightCols > 0 && !!this.paneHeaderRF;
+    const hasRows = this.freeze.hasFrozenRows;
+    const bfSimultaneous = this.hasBottomFrozenBand();
+    const legacyBottomMode = hasRows && this.bands.frozenBottomRows > 0 && this.bands.frozenTopRows === 0;
+
+    // current role of the historical sides/rows
+    const lCol = leftActive ? 'left' : 'main';
+    const topRow = this.bands.frozenTopRows > 0 ? 'top-frozen' : 'body';
+    const bottomRow = legacyBottomMode ? 'bottom-frozen' : 'body';
+
+    const mark = (el: HTMLElement | undefined, colband: string, rowband: string, active: boolean) => {
+      if (!el) { return; }
+      if (active) {
+        el.setAttribute('data-colband', colband);
+        el.setAttribute('data-rowband', rowband);
+      } else {
+        el.removeAttribute('data-colband');
+        el.removeAttribute('data-rowband');
+      }
+    };
+    const markSet = (els: Array<HTMLElement | undefined>, colband: string, rowband: string, active: boolean) => {
+      els.forEach((el) => mark(el, colband, rowband, active));
+    };
+
+    // header row band
+    mark(this.paneHeaderL, lCol, 'header', true);
+    mark(this.paneHeaderR, 'main', 'header', leftActive);
+    mark(this.paneHeaderRF, 'right-frozen', 'header', rfActive);
+
+    // classic top row
+    markSet([this.paneTopL, this.viewportTopL, this.canvasTopL], lCol, topRow, true);
+    markSet([this.paneTopR, this.viewportTopR, this.canvasTopR], 'main', topRow, leftActive);
+    markSet([this.paneTopRF, this.viewportTopRF, this.canvasTopRF], 'right-frozen', topRow, rfActive);
+
+    // classic bottom row (participates only while rows are frozen)
+    markSet([this.paneBottomL, this.viewportBottomL, this.canvasBottomL], lCol, bottomRow, hasRows);
+    markSet([this.paneBottomR, this.viewportBottomR, this.canvasBottomR], 'main', bottomRow, hasRows && leftActive);
+    markSet([this.paneBottomRF, this.viewportBottomRF, this.canvasBottomRF], 'right-frozen', bottomRow, hasRows && rfActive);
+
+    // bottom-frozen band (simultaneous top+bottom mode only)
+    markSet([this.paneBottomFrozenL, this.viewportBottomFrozenL, this.canvasBottomFrozenL], lCol, 'bottom-frozen', bfSimultaneous);
+    markSet([this.paneBottomFrozenR, this.viewportBottomFrozenR, this.canvasBottomFrozenR], 'main', 'bottom-frozen', bfSimultaneous && leftActive);
+    markSet([this.paneBottomFrozenRF, this.viewportBottomFrozenRF, this.canvasBottomFrozenRF], 'right-frozen', 'bottom-frozen', bfSimultaneous && rfActive);
+  }
+
   applyPaneVisibility() {
+    this.applyBandMarkers();
     if (this.hasFrozenColumns()) {
       this.showIf(this.paneHeaderR);
       this.showIf(this.paneTopR);
