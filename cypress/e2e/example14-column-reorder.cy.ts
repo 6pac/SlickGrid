@@ -132,12 +132,10 @@ describe('Example 14 - Column Header Reorder (characterization)', { retries: 1 }
     expectReorderCallCount(2);
   });
 
-  // Characterizes the CORRECT behavior, which the current SortableJS implementation does NOT have:
-  // today a hidden column is silently dropped from the grid after any reorder, because hidden columns
-  // get no header element rendered and the SortableJS toArray() read-back therefore omits them.
-  // The native reorder engine (PR 2 of the SortableJS removal) fixes this with column-map reconciliation.
-  // Enable this test when that engine lands.
-  it.skip('should keep hidden columns in the column set when reordering', () => {
+  // The old SortableJS implementation silently dropped hidden columns from the grid after any reorder,
+  // because hidden columns get no header element rendered and the toArray() read-back omitted them.
+  // The native reorder engine fixes this with column-map reconciliation.
+  it('should keep hidden columns in the column set when reordering', () => {
     cy.window().then((win: any) => {
       const cols = win.grid.getColumns();
       cols[2].hidden = true; // hide "CPU1"
