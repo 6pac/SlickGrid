@@ -273,3 +273,13 @@ classes should alter those!
   outline: 0;
   width: 100%;
 }
+
+/* fallback ghost shown while dragging a column header via the mouse/touch fallback
+   (Firefox on Linux, touch screens), where the native HTML5 drag image is unavailable */
+.slick-header-column-drag-ghost {
+  position: fixed;
+  margin: 0;
+  pointer-events: none;
+  z-index: 9999;
+  transform: translate(-8px, -8px);
+}
