@@ -145,17 +145,25 @@ export class SlickCellRangeSelector implements SlickPlugin {
     this._bands = this._grid.getFrozenBandCounts();
     this._legacyRowFreezeActive = this._gridOptions.frozenRow! > -1;
 
+    // pane-IDENTITY flags: deliberately positional-class based, NOT band markers.
+    // The offset/clamp math below needs to know WHICH pane hosts the drag, and the
+    // markers state band role instead: in legacy frozenBottom mode the classic bottom
+    // canvas carries data-rowband="bottom-frozen" (same value as a bf-band canvas),
+    // and in the degenerate frozenRow: 0 configuration both classic canvases are
+    // rowband "body" — either would conflate panes these flags must distinguish.
     this._isBottomCanvas = this._activeCanvas.classList.contains('grid-canvas-bottom');
     this._isBottomFrozenCanvas = this._activeCanvas.classList.contains('grid-canvas-bottom-frozen');
     this._isRightCanvas = this._activeCanvas.classList.contains('grid-canvas-right');
     this._isRightFrozenCanvas = this._activeCanvas.classList.contains('grid-canvas-right-frozen');
 
     if (this._legacyRowFreezeActive && this._isBottomCanvas) {
-      // measure the canvas above the drag canvas; the single frozen band sits at the
-      // bottom only in legacy frozenBottom mode (band counts already encode that the
-      // flag is inert when frozenBottomRow is in use)
+      // measure the frozen classic-band canvas via its band-truth marker
+      // (BAND-LABELLING.md): bottom-frozen in legacy frozenBottom mode, top-frozen
+      // otherwise. In the degenerate frozenRow: 0 configuration no canvas carries a
+      // frozen rowband and the offset stays 0 — the same result the positional query
+      // produced by measuring the 0-height frozen canvas.
       const legacyBottomMode = this._bands.frozenBottomRows > 0 && this._bands.frozenTopRows === 0;
-      const canvasSelector = `.${this._grid.getUID()} .grid-canvas-${legacyBottomMode ? 'bottom' : 'top'}`;
+      const canvasSelector = `.${this._grid.getUID()} .grid-canvas[data-rowband="${legacyBottomMode ? 'bottom-frozen' : 'top-frozen'}"]`;
       const canvasElm = document.querySelector(canvasSelector);
       if (canvasElm) {
         this._rowOffset = canvasElm.clientHeight || 0;
@@ -168,22 +176,20 @@ export class SlickCellRangeSelector implements SlickPlugin {
     }
 
     if (this._bands.frozenLeftCols > 0 && this._isRightCanvas) {
-      const canvasLeftElm = document.querySelector(`.${this._grid.getUID()} .grid-canvas-left`);
+      const canvasLeftElm = document.querySelector(`.${this._grid.getUID()} .grid-canvas[data-colband="left"]`);
       if (canvasLeftElm) {
         this._columnOffset = canvasLeftElm.clientWidth || 0;
       }
     }
 
     if (this._isRightFrozenCanvas) {
-      // right-frozen band canvas: offset by every canvas to its left (left band, when
-      // present, plus the scrollable middle band)
-      const canvasLeftElm = document.querySelector(`.${this._grid.getUID()} .grid-canvas-top.grid-canvas-left`);
-      let offset = canvasLeftElm?.clientWidth || 0;
-      if (this._bands.frozenLeftCols > 0) {
-        const canvasMiddleElm = document.querySelector(`.${this._grid.getUID()} .grid-canvas-top.grid-canvas-right`);
-        offset += canvasMiddleElm?.clientWidth || 0;
-      }
-      this._columnOffset = offset;
+      // right-frozen band canvas: offset by every band to its left. The band-truth
+      // markers make this mode-independent: 'left' is absent without a left freeze
+      // (contributing 0) and 'main' is the scrollable band whichever pane hosts it —
+      // the same totals the positional left/right class queries produced per mode.
+      const canvasLeftElm = document.querySelector(`.${this._grid.getUID()} .grid-canvas[data-colband="left"]`);
+      const canvasMainElm = document.querySelector(`.${this._grid.getUID()} .grid-canvas[data-colband="main"]`);
+      this._columnOffset = (canvasLeftElm?.clientWidth || 0) + (canvasMainElm?.clientWidth || 0);
     }
 
       this._dragReplaceHandleActive = (dd.matchClassTag === 'dragReplaceHandle');
