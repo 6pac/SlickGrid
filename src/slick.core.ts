@@ -1996,121 +1996,51 @@ export class ViewportMgr {
   }
 
   /** Shows/hides the right and bottom panes according to the freeze configuration. */
-  /**
-   * Stamps band-truth markers (see BAND-LABELLING.md): every pane/viewport/canvas
-   * that currently participates in the layout carries `data-colband` and
-   * `data-rowband` attributes stating its CURRENT role (the historical positional
-   * css classes are a fixed legacy skin and do not change); inactive elements carry
-   * no markers, so `[data-colband="main"]` etc. uniquely select live elements.
-   * Refreshed on every freeze application, alongside applyPaneVisibility.
-   */
-  protected applyBandMarkers() {
-    const leftActive = this.bands.frozenLeftCols > 0;
-    const rfActive = this.bands.frozenRightCols > 0 && !!this.paneHeaderRF;
-    const hasRows = this.freeze.hasFrozenRows;
-    const bfSimultaneous = this.hasBottomFrozenBand();
-    const legacyBottomMode = hasRows && this.bands.frozenBottomRows > 0 && this.bands.frozenTopRows === 0;
-
-    // current role of the historical sides/rows
-    const lCol = leftActive ? 'left' : 'main';
-    const topRow = this.bands.frozenTopRows > 0 ? 'top-frozen' : 'body';
-    const bottomRow = legacyBottomMode ? 'bottom-frozen' : 'body';
-
-    const mark = (el: HTMLElement | undefined, colband: string, rowband: string, active: boolean) => {
-      if (!el) { return; }
-      if (active) {
-        el.setAttribute('data-colband', colband);
-        el.setAttribute('data-rowband', rowband);
-      } else {
-        el.removeAttribute('data-colband');
-        el.removeAttribute('data-rowband');
-      }
-    };
-    const markSet = (els: Array<HTMLElement | undefined>, colband: string, rowband: string, active: boolean) => {
-      els.forEach((el) => mark(el, colband, rowband, active));
-    };
-
-    // header row band
-    mark(this.paneHeaderL, lCol, 'header', true);
-    mark(this.paneHeaderR, 'main', 'header', leftActive);
-    mark(this.paneHeaderRF, 'right-frozen', 'header', rfActive);
-
-    // classic top row
-    markSet([this.paneTopL, this.viewportTopL, this.canvasTopL], lCol, topRow, true);
-    markSet([this.paneTopR, this.viewportTopR, this.canvasTopR], 'main', topRow, leftActive);
-    markSet([this.paneTopRF, this.viewportTopRF, this.canvasTopRF], 'right-frozen', topRow, rfActive);
-
-    // classic bottom row (participates only while rows are frozen)
-    markSet([this.paneBottomL, this.viewportBottomL, this.canvasBottomL], lCol, bottomRow, hasRows);
-    markSet([this.paneBottomR, this.viewportBottomR, this.canvasBottomR], 'main', bottomRow, hasRows && leftActive);
-    markSet([this.paneBottomRF, this.viewportBottomRF, this.canvasBottomRF], 'right-frozen', bottomRow, hasRows && rfActive);
-
-    // bottom-frozen band (simultaneous top+bottom mode only)
-    markSet([this.paneBottomFrozenL, this.viewportBottomFrozenL, this.canvasBottomFrozenL], lCol, 'bottom-frozen', bfSimultaneous);
-    markSet([this.paneBottomFrozenR, this.viewportBottomFrozenR, this.canvasBottomFrozenR], 'main', 'bottom-frozen', bfSimultaneous && leftActive);
-    markSet([this.paneBottomFrozenRF, this.viewportBottomFrozenRF, this.canvasBottomFrozenRF], 'right-frozen', 'bottom-frozen', bfSimultaneous && rfActive);
-  }
+  
 
   applyPaneVisibility() {
-    this.applyBandMarkers();
-    if (this.hasFrozenColumns()) {
-      this.showIf(this.paneHeaderR);
-      this.showIf(this.paneTopR);
+    const leftActive = this.hasFrozenColumns();
+    const rfActive = this.bands.frozenRightCols > 0 && !!this.paneAt('header', 'rf');
+    const hasRows = this.freeze.hasFrozenRows;
+    const bf = this.hasBottomFrozenBand();
+    const legacyBottom = hasRows && this.bands.frozenBottomRows > 0 && this.bands.frozenTopRows === 0;
 
-      if (this.freeze.hasFrozenRows) {
-        this.showIf(this.paneBottomL);
-        this.showIf(this.paneBottomR);
-      } else {
-        this.hideIf(this.paneBottomR);
-        this.hideIf(this.paneBottomL);
-      }
-    } else {
-      this.hideIf(this.paneHeaderR);
-      this.hideIf(this.paneTopR);
-      this.hideIf(this.paneBottomR);
+    for (const row of ['header', 'top', 'bottom', 'bf'] as PaneRowKey[]) {
+      for (const col of ['l', 'r', 'rf'] as PaneColKey[]) {
+        const set = this.paneAt(row, col);
+        if (!set) { continue; }
 
-      if (this.freeze.hasFrozenRows) {
-        this.showIf(this.paneBottomL);
-      } else {
-        this.hideIf(this.paneBottomR);
-        this.hideIf(this.paneBottomL);
-      }
-    }
+        const colActive = col === 'l' ? true : (col === 'r' ? leftActive : rfActive);
+        const rowActive = (row === 'header' || row === 'top') ? true : (row === 'bottom' ? hasRows : bf);
+        const active = colActive && rowActive;
 
-    // right-frozen band (exists only after materialization; kept hidden — like the
-    // classic panes — when the right freeze is turned off again)
-    if (this.bands.frozenRightCols > 0) {
-      this.showIf(this.paneHeaderRF);
-      this.showIf(this.paneTopRF);
-      if (this.freeze.hasFrozenRows) {
-        this.showIf(this.paneBottomRF);
-      } else {
-        this.hideIf(this.paneBottomRF);
-      }
-    } else {
-      this.hideIf(this.paneHeaderRF);
-      this.hideIf(this.paneTopRF);
-      this.hideIf(this.paneBottomRF);
-    }
+        // visibility — the left header/top panes were historically never toggled
+        if (!(col === 'l' && (row === 'header' || row === 'top'))) {
+          if (active) {
+            this.showIf(set.pane);
+          } else {
+            this.hideIf(set.pane);
+          }
+        }
 
-    // bottom-frozen row band (simultaneous top+bottom mode only); column-band
-    // visibility mirrors the classic bottom panes
-    if (this.bands.frozenTopRows > 0 && this.bands.frozenBottomRows > 0) {
-      this.showIf(this.paneBottomFrozenL);
-      if (this.hasFrozenColumns()) {
-        this.showIf(this.paneBottomFrozenR);
-      } else {
-        this.hideIf(this.paneBottomFrozenR);
+        // band-truth markers (BAND-LABELLING.md): stamped on active pane/viewport/
+        // canvas with the CURRENT role; removed from inactive elements
+        const colband = col === 'l' ? (leftActive ? 'left' : 'main') : (col === 'r' ? 'main' : 'right-frozen');
+        const rowband = row === 'header' ? 'header'
+          : row === 'top' ? (this.bands.frozenTopRows > 0 ? 'top-frozen' : 'body')
+          : row === 'bottom' ? (legacyBottom ? 'bottom-frozen' : 'body')
+          : 'bottom-frozen';
+        for (const el of [set.pane, set.viewport, set.canvas]) {
+          if (!el) { continue; }
+          if (active) {
+            el.setAttribute('data-colband', colband);
+            el.setAttribute('data-rowband', rowband);
+          } else {
+            el.removeAttribute('data-colband');
+            el.removeAttribute('data-rowband');
+          }
+        }
       }
-      if (this.bands.frozenRightCols > 0) {
-        this.showIf(this.paneBottomFrozenRF);
-      } else {
-        this.hideIf(this.paneBottomFrozenRF);
-      }
-    } else {
-      this.hideIf(this.paneBottomFrozenL);
-      this.hideIf(this.paneBottomFrozenR);
-      this.hideIf(this.paneBottomFrozenRF);
     }
   }
 
@@ -2302,8 +2232,11 @@ export class ViewportMgr {
     let viewportTopH = 0;
     const viewportBottomH = 0;
 
+    const leftActive = this.hasFrozenColumns();
+    const rfActive = this.bands.frozenRightCols > 0 && !!this.paneAt('header', 'rf');
+    const simultaneousBands = this.bands.frozenTopRows > 0 && this.bands.frozenBottomRows > 0 && !!this.paneAt('bf', 'l');
+
     // Account for Frozen Rows
-    const simultaneousBands = this.bands.frozenTopRows > 0 && this.bands.frozenBottomRows > 0 && !!this.paneBottomFrozenL;
     if (this.freeze.hasFrozenRows) {
       if (this.freeze.frozenBottom) {
         paneTopH = g.viewportH - g.frozenRowsHeight - g.scrollbarHeight;
@@ -2323,7 +2256,7 @@ export class ViewportMgr {
     // The top pane includes the top panel and the header row
     paneTopH += g.topPanelH + g.headerRowH + g.footerRowH;
 
-    if (this.hasFrozenColumns() && g.autoHeight) {
+    if (leftActive && g.autoHeight) {
       paneTopH += g.scrollbarHeight;
     }
 
@@ -2331,7 +2264,7 @@ export class ViewportMgr {
     viewportTopH = paneTopH - g.topPanelH - g.headerRowH - g.footerRowH;
 
     if (g.autoHeight) {
-      if (this.hasFrozenColumns()) {
+      if (leftActive) {
         let fullHeight = paneTopH + this.headerScrollerL.offsetHeight;
         fullHeight += g.getContainerVBoxDelta();
         if (g.showPreHeaderPanel) {
@@ -2343,6 +2276,9 @@ export class ViewportMgr {
       this.paneTopL.style.position = 'relative';
     }
 
+    // place the left top pane first (offset WITH the historical fallback), then read
+    // the shared bottom offset from it, then place the secondary columns (offset
+    // recomputed WITHOUT the fallback — historical asymmetry preserved)
     let topHeightOffset = Utils.height(this.paneHeaderL);
     if (topHeightOffset) {
       topHeightOffset += (g.showTopHeaderPanel ? g.topHeaderPanelHeight! : 0);
@@ -2358,44 +2294,45 @@ export class ViewportMgr {
       Utils.height(this.viewportTopL, viewportTopH);
     }
 
-    if (this.hasFrozenColumns()) {
-      let topHeightOffset = Utils.height(this.paneHeaderL);
-      if (topHeightOffset) {
-        topHeightOffset += (g.showTopHeaderPanel ? g.topHeaderPanelHeight! : 0);
+    const secondaryCols: PaneColKey[] = [];
+    if (leftActive) { secondaryCols.push('r'); }
+    if (rfActive) { secondaryCols.push('rf'); }
+    for (const col of secondaryCols) {
+      const top = this.paneAt('top', col);
+      if (!top) { continue; }
+      let offset = Utils.height(this.paneHeaderL);
+      if (offset) {
+        offset += (g.showTopHeaderPanel ? g.topHeaderPanelHeight! : 0);
       }
-      Utils.setStyleSize(this.paneTopR, 'top', topHeightOffset as number);
-      Utils.height(this.paneTopR, paneTopH);
-      Utils.height(this.viewportTopR, viewportTopH);
-
-      if (this.freeze.hasFrozenRows) {
-        Utils.setStyleSize(this.paneBottomL, 'top', paneBottomTop);
-        Utils.height(this.paneBottomL, paneBottomH);
-        Utils.setStyleSize(this.paneBottomR, 'top', paneBottomTop);
-        Utils.height(this.paneBottomR, paneBottomH);
-        Utils.height(this.viewportBottomR, paneBottomH);
-      }
-    } else {
-      if (this.freeze.hasFrozenRows) {
-        Utils.width(this.paneBottomL, '100%');
-        Utils.height(this.paneBottomL, paneBottomH);
-        Utils.setStyleSize(this.paneBottomL, 'top', paneBottomTop);
-      }
+      Utils.setStyleSize(top.pane, 'top', offset as number);
+      Utils.height(top.pane, paneTopH);
+      Utils.height(top.viewport as HTMLElement, viewportTopH);
     }
 
     if (this.freeze.hasFrozenRows) {
+      // classic bottom panes per column; historical quirk: in the plain layout the
+      // left bottom pane also gets width '100%' here
+      const bottomCols: PaneColKey[] = ['l', ...secondaryCols];
+      for (const col of bottomCols) {
+        const bottom = this.paneAt('bottom', col);
+        if (!bottom) { continue; }
+        if (col === 'l' && !leftActive) {
+          Utils.width(bottom.pane, '100%');
+        }
+        Utils.setStyleSize(bottom.pane, 'top', paneBottomTop);
+        Utils.height(bottom.pane, paneBottomH);
+        if (col !== 'l') {
+          Utils.height(bottom.viewport as HTMLElement, paneBottomH);
+        }
+      }
       Utils.height(this.viewportBottomL, paneBottomH);
 
-      if (this.freeze.frozenBottom) {
-        Utils.height(this.canvasBottomL, g.frozenRowsHeight);
-
-        if (this.hasFrozenColumns()) {
-          Utils.height(this.canvasBottomR, g.frozenRowsHeight);
-        }
-      } else {
-        Utils.height(this.canvasTopL, g.frozenRowsHeight);
-
-        if (this.hasFrozenColumns()) {
-          Utils.height(this.canvasTopR, g.frozenRowsHeight);
+      // the frozen row band's canvases carry the band height
+      const frozenRow: PaneRowKey = this.freeze.frozenBottom ? 'bottom' : 'top';
+      for (const col of ['l', ...secondaryCols] as PaneColKey[]) {
+        const set = this.paneAt(frozenRow, col);
+        if (set?.canvas) {
+          Utils.height(set.canvas, g.frozenRowsHeight);
         }
       }
     } else {
@@ -2408,48 +2345,13 @@ export class ViewportMgr {
     if (simultaneousBands) {
       const bfH = g.frozenBottomRowsHeight ?? 0;
       const bfTop = this.paneTopL.offsetTop + paneTopH + paneBottomH;
-
-      Utils.setStyleSize(this.paneBottomFrozenL, 'top', bfTop);
-      Utils.height(this.paneBottomFrozenL, bfH);
-      Utils.height(this.viewportBottomFrozenL, bfH);
-      Utils.height(this.canvasBottomFrozenL, bfH);
-
-      if (this.hasFrozenColumns()) {
-        Utils.setStyleSize(this.paneBottomFrozenR, 'top', bfTop);
-        Utils.height(this.paneBottomFrozenR, bfH);
-        Utils.height(this.viewportBottomFrozenR, bfH);
-        Utils.height(this.canvasBottomFrozenR, bfH);
-      }
-
-      if (this.paneBottomFrozenRF) {
-        Utils.setStyleSize(this.paneBottomFrozenRF, 'top', bfTop);
-        Utils.height(this.paneBottomFrozenRF, bfH);
-        Utils.height(this.viewportBottomFrozenRF, bfH);
-        Utils.height(this.canvasBottomFrozenRF, bfH);
-      }
-    }
-
-    // right-frozen band: mirror the classic right-pane vertical geometry
-    if (this.bands.frozenRightCols > 0 && this.paneHeaderRF) {
-      let topHeightOffsetRF = Utils.height(this.paneHeaderL);
-      if (topHeightOffsetRF) {
-        topHeightOffsetRF += (g.showTopHeaderPanel ? g.topHeaderPanelHeight! : 0);
-      }
-      Utils.setStyleSize(this.paneTopRF, 'top', topHeightOffsetRF as number);
-      Utils.height(this.paneTopRF, paneTopH);
-      Utils.height(this.viewportTopRF, viewportTopH);
-
-      if (this.freeze.hasFrozenRows) {
-        const paneBottomTopRF = this.paneTopL.offsetTop + paneTopH;
-        Utils.setStyleSize(this.paneBottomRF, 'top', paneBottomTopRF);
-        Utils.height(this.paneBottomRF, paneBottomH);
-        Utils.height(this.viewportBottomRF, paneBottomH);
-
-        if (this.freeze.frozenBottom) {
-          Utils.height(this.canvasBottomRF, g.frozenRowsHeight);
-        } else {
-          Utils.height(this.canvasTopRF, g.frozenRowsHeight);
-        }
+      for (const col of ['l', 'r', 'rf'] as PaneColKey[]) {
+        const bf = this.paneAt('bf', col);
+        if (!bf || (col === 'r' && !leftActive)) { continue; }
+        Utils.setStyleSize(bf.pane, 'top', bfTop);
+        Utils.height(bf.pane, bfH);
+        Utils.height(bf.viewport as HTMLElement, bfH);
+        Utils.height(bf.canvas as HTMLElement, bfH);
       }
     }
 
@@ -2554,21 +2456,16 @@ export class ViewportMgr {
 
   /** Mirrors the Y scroll position onto the frozen-band viewports that follow the scroll owner. */
   syncVerticalFollowers(scrollTop: number) {
+    // the frozen-left and right-frozen bands' scrollable-body viewports follow Y
+    const followerViewport = (col: PaneColKey) =>
+      (this.freeze.hasFrozenRows && !this.freeze.frozenBottom ? this.paneAt('bottom', col) : this.paneAt('top', col))?.viewport;
     if (this.hasFrozenColumns()) {
-      if (this.freeze.hasFrozenRows && !this.freeze.frozenBottom) {
-        this.viewportBottomL.scrollTop = scrollTop;
-      } else {
-        this.viewportTopL.scrollTop = scrollTop;
-      }
+      const v = followerViewport('l');
+      if (v) { v.scrollTop = scrollTop; }
     }
-
-    // the right-frozen band's scrollable-body viewport follows Y the same way
-    if (this.bands.frozenRightCols > 0 && this.viewportTopRF) {
-      if (this.freeze.hasFrozenRows && !this.freeze.frozenBottom) {
-        this.viewportBottomRF.scrollTop = scrollTop;
-      } else {
-        this.viewportTopRF.scrollTop = scrollTop;
-      }
+    if (this.bands.frozenRightCols > 0) {
+      const v = followerViewport('rf');
+      if (v) { v.scrollTop = scrollTop; }
     }
   }
 
