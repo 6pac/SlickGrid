@@ -11,6 +11,7 @@ import type {
   Formatter,
   GridMenuOption,
   ItemMetadata,
+  SlickGridModel,
 } from './index.js';
 import type { SlickEditorLock } from '../slick.core.js';
 
@@ -316,7 +317,8 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
 
   /**
    * Supplying this callback enables variable row height mode: rows may have differing heights.
-   * Returns the height in pixels of a given row, or `undefined` to fall back to
+   * Receives the grid instance (giving access to any grid state), the row index, and the row's
+   * data item. Returns the height in pixels of that row, or `undefined` to fall back to
    * `ItemMetadata.height` (when the data provider supplies `getItemMetadata`) and finally to the
    * default `rowHeight`.
    * Heights are cached in a prefix-sum index that is rebuilt whenever the row count changes, rows
@@ -324,7 +326,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
    * row per rebuild, so it must be fast (a simple lookup or calculation - no DOM access).
    * When heights change without a row count change, call `grid.invalidateRowHeights()`.
    */
-  rowHeightProvider?: (row: number, item: any) => number | undefined;
+  rowHeightProvider?: (grid: SlickGridModel, row: number, item: any) => number | undefined;
 
   /**
    * Defaults to "highlight-animate", a CSS class name used to simulate row highlight with an optional duration (e.g. after insert).

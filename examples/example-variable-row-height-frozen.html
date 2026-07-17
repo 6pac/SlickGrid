@@ -79,7 +79,7 @@
 
   gridA = new Slick.Grid('#gridA', data, columns, {
     rowHeight: 25,
-    rowHeightProvider: function (row) { return rowHeightA(row); },
+    rowHeightProvider: function (grid, row) { return rowHeightA(row); },
     frozenColumn: 1,
     enableCellNavigation: true,
     enableColumnReorder: false
@@ -87,7 +87,7 @@
 
   gridB = new Slick.Grid('#gridB', data, columns.map(function (c) { return Object.assign({}, c); }), {
     rowHeight: 25,
-    rowHeightProvider: function (row) { return rowHeightB(row); },
+    rowHeightProvider: function (grid, row) { return rowHeightB(row); },
     frozenColumn: 1,
     frozenRow: FROZEN_ROWS_B,
     enableCellNavigation: true,

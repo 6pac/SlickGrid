@@ -6075,7 +6075,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.rowPositionIndex.rebuild(
         rowCount,
         this._options.rowHeight!,
-        (row: number) => provider(row, this.getDataItem(row)) ?? this.getItemMetadaWhenExists(row)?.height
+        (row: number) => provider(this as unknown as SlickGridModel, row, this.getDataItem(row)) ?? this.getItemMetadaWhenExists(row)?.height
       );
       this.rowHeightsDirty = false;
       if (this.hasFrozenRows) {
