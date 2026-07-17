@@ -96,7 +96,7 @@ import {
   DragExtendHandle as DragExtendHandle_,
 } from './slick.core.js';
 import { Draggable as Draggable_, MouseWheel as MouseWheel_, Resizable as Resizable_ } from './slick.interactions.js';
-import { RowPositionIndex as RowPositionIndex_ } from './slick.rowpositionindex.js';
+import { RowPositionIndexer as RowPositionIndexer_ } from './slick.rowpositionindex.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
@@ -117,7 +117,7 @@ const WidthEvalMode = IIFE_ONLY ? Slick.WidthEvalMode : WidthEvalMode_;
 const Draggable = IIFE_ONLY ? Slick.Draggable : Draggable_;
 const MouseWheel = IIFE_ONLY ? Slick.MouseWheel : MouseWheel_;
 const Resizable = IIFE_ONLY ? Slick.Resizable : Resizable_;
-const RowPositionIndex = IIFE_ONLY ? Slick.RowPositionIndex : RowPositionIndex_;
+const RowPositionIndexer = IIFE_ONLY ? Slick.RowPositionIndexer : RowPositionIndexer_;
 const DragExtendHandle = IIFE_ONLY ? Slick.DragExtendHandle : DragExtendHandle_;
 
 /**
@@ -374,7 +374,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected n!: number;    // number of pages
   protected cj!: number;   // "jumpiness" coefficient
 
-  protected rowPositionIndex?: RowPositionIndex_;  // prefix-sum index of row top positions (variable row height mode only)
+  protected rowPositionIndex?: RowPositionIndexer_;  // prefix-sum index of row top positions (variable row height mode only)
   protected rowHeightsDirty = true;                // set when row heights may have changed; the index is rebuilt on the next updateRowCount()
   protected frozenRowHeightsChanged = false;       // set when an index rebuild changed the frozen rows height; consumed at the end of updateRowCount()
 
@@ -6056,17 +6056,17 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    *
    * @param {number} rowCount - The number of rows to index (including the Add-New row when enabled).
    */
-  protected ensureRowPositionIndex(rowCount: number) {
+  protected ensureRowPositionIndexer(rowCount: number) {
     if (!this.isVariableRowHeight()) {
       this.rowPositionIndex = undefined;
       return;
     }
     if (!this.rowPositionIndex) {
-      if (typeof RowPositionIndex !== 'function') {
+      if (typeof RowPositionIndexer !== 'function') {
         // can only happen with the iife (browser script tags) build
         throw new Error('[SlickGrid] the "rowHeightProvider" grid option requires slick.rowpositionindex.js to be loaded before slick.grid.js');
       }
-      this.rowPositionIndex = new RowPositionIndex();
+      this.rowPositionIndex = new RowPositionIndexer();
       this.rowHeightsDirty = true;
     }
     if (this.rowHeightsDirty || this.rowPositionIndex.count !== rowCount) {
@@ -6125,7 +6125,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     // (re)build the row position index (variable row height mode) before any height computations
-    this.ensureRowPositionIndex(dataLengthIncludingAddNew);
+    this.ensureRowPositionIndexer(dataLengthIncludingAddNew);
 
     // pixel height of the rows contained in the scrolling canvas; for frozen-top grids with variable
     // row heights the scrolling rows are the ones after the frozen rows, so their combined height is

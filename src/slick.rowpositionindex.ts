@@ -4,7 +4,7 @@ import { Utils as Utils_ } from './slick.core.js';
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
 /**
- * RowPositionIndex - a prefix-sum index of row top positions, used by SlickGrid when variable
+ * RowPositionIndexer - a prefix-sum index of row top positions, used by SlickGrid when variable
  * row height mode is enabled (i.e. when a `rowHeightProvider` grid option is supplied).
  *
  * `rowPos[i]` holds the virtual top pixel position of row `i` (i.e. the summed heights of all
@@ -16,7 +16,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  * linearly using the default row height, mirroring the fixed-row-height arithmetic it replaces
  * (needed for the Add-New row and `leaveSpaceForNewRows` padding).
  */
-export class RowPositionIndex {
+export class RowPositionIndexer {
   protected rowPos = new Float64Array(1);
   protected rowCount = 0;
   protected defaultRowHeight = 25;
@@ -115,6 +115,6 @@ export class RowPositionIndex {
 // extend Slick namespace on window object when building as iife
 if (IIFE_ONLY && window.Slick) {
   Utils.extend(Slick, {
-    RowPositionIndex,
+    RowPositionIndexer,
   });
 }
