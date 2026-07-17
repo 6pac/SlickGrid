@@ -50,7 +50,7 @@ import type { SlickState } from './plugins/slick.state.js';
 import type { SlickGroupItemMetadataProvider } from './slick.groupitemmetadataprovider.js';
 import type { SlickRemoteModel } from './slick.remotemodel.js';
 import type { SlickRemoteModelYahoo } from './slick.remotemodel-yahoo.js';
-import type { Draggable, MouseWheel, Resizable, setupColumnReorderDrag } from './slick.interactions.js';
+import type { Draggable, MouseWheel, Resizable, setupColumnReorderDrag, setupDropzonePillDrag } from './slick.interactions.js';
 import type { Aggregators } from './slick.dataview.js';
 import type { Editors } from './slick.editors.js';
 import type { Formatters } from './slick.formatters.js';
@@ -116,6 +116,7 @@ declare global {
     DragExtendHandle: typeof SlickDragExtendHandle,
     Resizable: typeof Resizable,
     setupColumnReorderDrag: typeof setupColumnReorderDrag,
+    setupDropzonePillDrag: typeof setupDropzonePillDrag,
     RowMoveManager: typeof SlickRowMoveManager,
     RowSelectionMode: typeof RowSelectionMode,
     CellSelectionMode: typeof CellSelectionMode,

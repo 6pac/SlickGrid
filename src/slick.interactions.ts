@@ -1,4 +1,4 @@
-import type { ColumnReorderDragOption, DragItem, DragPosition, ClassDetectElement, DraggableOption, MouseWheelOption, ResizableOption } from './models/index.js';
+import type { ColumnReorderDragOption, DragItem, DragPosition, ClassDetectElement, DraggableOption, DropzonePillDragOption, MouseWheelOption, ResizableOption } from './models/index.js';
 import { Utils as Utils_ } from './slick.core.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
@@ -840,6 +840,221 @@ export function setupColumnReorderDrag(options: ColumnReorderDragOption) {
   return { destroy };
 }
 
+/**
+ * Sets up drag-and-drop for reordering group pills inside a dropzone (used by SlickDraggableGrouping),
+ * plus accepting column-header drops that create new group pills.
+ * Ported from the Slickgrid-Universal implementation of the same feature.
+ *
+ * All Firefox+Linux detection and mouse-based fallback are handled internally;
+ * callers do not need to know about the browser quirk. Touch screens (which never
+ * fire HTML5 drag events) use the same pointer-based fallback.
+ *
+ * @param {Object} options
+ * @returns - setupDropzonePillDrag instance which includes destroy method
+ * @class setupDropzonePillDrag
+ */
+export function setupDropzonePillDrag(options: DropzonePillDragOption) {
+  const { dropzoneElm } = options;
+  const itemSelector = options.itemSelector ?? '.slick-dropped-grouping';
+  const draggingCssClass = options.draggingCssClass ?? '';
+  const DRAG_THRESHOLD = 5; // pixels before we consider it a drag, not a click
+
+  const userAgent = (typeof window !== 'undefined' ? window.navigator : navigator)?.userAgent ?? '';
+  const isFfLinux = /firefox/i.test(userAgent) && /linux/i.test(userAgent);
+
+  let draggedPill: HTMLElement | null = null;
+  let fallbackActive = false;
+  let dragStartX: number | null = null;
+  let dragStartY: number | null = null;
+
+  // ── Native pill drag ──────────────────────────────────────────────────────
+
+  const onDragStart = (e: DragEvent) => {
+    const pill = (e.target as HTMLElement).closest<HTMLElement>(itemSelector);
+    if (pill) {
+      draggedPill = pill;
+      if (e.dataTransfer) {
+        e.dataTransfer.effectAllowed = 'move';
+        if (typeof e.dataTransfer.setData === 'function') {
+          e.dataTransfer.setData('text/plain', pill.dataset.id ?? '');
+        }
+        // Explicit drag image avoids Firefox+Linux ghost rendering issues
+        if (typeof e.dataTransfer.setDragImage === 'function') {
+          const rect = pill.getBoundingClientRect();
+          e.dataTransfer.setDragImage(pill, e.clientX - rect.left, e.clientY - rect.top);
+        }
+      }
+    }
+  };
+
+  const onDragOver = (e: DragEvent) => {
+    e.preventDefault();
+    const target = (e.target as HTMLElement).closest<HTMLElement>(itemSelector);
+    if (draggedPill && target && target !== draggedPill) {
+      const rect = target.getBoundingClientRect();
+      dropzoneElm.insertBefore(draggedPill, e.clientX < rect.left + rect.width / 2 ? target : target.nextSibling);
+    }
+  };
+
+  const onDragEnd = () => {
+    if (draggedPill) {
+      const currentPill = draggedPill;
+      if (draggingCssClass) {
+        currentPill.classList.remove(draggingCssClass);
+      }
+      draggedPill = null;
+      fallbackActive = false;
+      options.onPillDragEnd?.(currentPill);
+    }
+  };
+
+  // ── Column-header drop visual feedback & acceptance ───────────────────────
+
+  const onDragEnter = (e: DragEvent) => {
+    if (!draggedPill) {
+      options.onColumnDragEnter?.(e);
+    }
+    e.preventDefault();
+  };
+
+  const onDragLeave = (e: DragEvent) => {
+    if (!draggedPill) {
+      options.onColumnDragLeave?.(e);
+    }
+  };
+
+  const onDrop = (e: DragEvent) => {
+    e.preventDefault();
+    if (!draggedPill) {
+      const columnDataId = e.dataTransfer?.getData('text/plain');
+      if (columnDataId) {
+        options.onColumnDrop?.(columnDataId, e);
+      }
+    }
+  };
+
+  // Firefox/Linux native drag is broken; touch screens never fire HTML5 drag events.
+  // Both cases share onPointerDown/Move/Up - coordinates come from getPointerPos().
+
+  const onPointerDown = (e: MouseEvent | TouchEvent) => {
+    const pill = (e.target as HTMLElement).closest<HTMLElement>(itemSelector);
+    if (pill) {
+      // Track start position for drag threshold
+      dragStartX = getPointerPos(e).clientX;
+      dragStartY = getPointerPos(e).clientY;
+      draggedPill = pill;
+      // Add visual feedback immediately for pills (no menu conflict)
+      if (draggingCssClass) {
+        pill.classList.add(draggingCssClass);
+      }
+      // Disable text selection during drag
+      document.body.style.userSelect = 'none';
+      if ('touches' in e) {
+        document.addEventListener('touchmove', onPointerMove as EventListener, { passive: false });
+        document.addEventListener('touchend', onPointerUp as EventListener);
+        document.addEventListener('touchcancel', onPointerUp as EventListener);
+      } else {
+        document.addEventListener('mousemove', onPointerMove as EventListener);
+        document.addEventListener('mouseup', onPointerUp as EventListener);
+      }
+    }
+  };
+
+  const onPointerMove = (e: MouseEvent | TouchEvent) => {
+    if (draggedPill && dragStartX !== null && dragStartY !== null) {
+      const { clientX, clientY } = getPointerPos(e);
+
+      // Check if we've exceeded the drag threshold
+      if (!fallbackActive) {
+        const deltaX = Math.abs(clientX - dragStartX);
+        const deltaY = Math.abs(clientY - dragStartY);
+        if (deltaX < DRAG_THRESHOLD && deltaY < DRAG_THRESHOLD) {
+          // Haven't moved far enough yet - don't commit to drag
+          return;
+        }
+        // Threshold exceeded - now commit to drag by preventing default
+        e.preventDefault();
+        fallbackActive = true;
+      }
+
+      // Now handle the actual drag movement
+      if (fallbackActive) {
+        e.preventDefault();
+        const target = (document.elementFromPoint(clientX, clientY) as HTMLElement | null)?.closest<HTMLElement>(itemSelector);
+        if (target && target !== draggedPill && dropzoneElm.contains(target)) {
+          const rect = target.getBoundingClientRect();
+          const insertBefore = clientX < rect.left + rect.width / 2;
+          const insertTarget = insertBefore ? target : target.nextSibling;
+          if (draggedPill.parentElement === dropzoneElm && insertTarget !== draggedPill) {
+            dropzoneElm.insertBefore(draggedPill, insertTarget);
+          }
+        }
+      }
+    }
+  };
+
+  const cleanupPointerListeners = () => {
+    document.removeEventListener('mousemove', onPointerMove as EventListener);
+    document.removeEventListener('mouseup', onPointerUp as EventListener);
+    document.removeEventListener('touchmove', onPointerMove as EventListener);
+    document.removeEventListener('touchend', onPointerUp as EventListener);
+    document.removeEventListener('touchcancel', onPointerUp as EventListener);
+  };
+
+  const onPointerUp = () => {
+    cleanupPointerListeners();
+    const currentPill = draggedPill;
+    if (currentPill && draggingCssClass) {
+      currentPill.classList.remove(draggingCssClass);
+    }
+    draggedPill = null;
+    dragStartX = null;
+    dragStartY = null;
+    fallbackActive = false;
+    // Re-enable text selection after drag completes
+    document.body.style.userSelect = '';
+    if (currentPill) {
+      options.onPillDragEnd?.(currentPill);
+    }
+  };
+
+  // ── Register listeners ────────────────────────────────────────────────────
+
+  dropzoneElm.addEventListener('dragstart', onDragStart as EventListener);
+  dropzoneElm.addEventListener('dragover', onDragOver as EventListener);
+  dropzoneElm.addEventListener('dragend', onDragEnd);
+  dropzoneElm.addEventListener('dragenter', onDragEnter as EventListener);
+  dropzoneElm.addEventListener('dragleave', onDragLeave as EventListener);
+  dropzoneElm.addEventListener('drop', onDrop as EventListener);
+
+  if (isFfLinux) {
+    dropzoneElm.addEventListener('mousedown', onPointerDown as EventListener);
+  }
+  // Touch support for pill reordering (all platforms)
+  dropzoneElm.addEventListener('touchstart', onPointerDown as EventListener, { passive: false });
+
+  function destroy() {
+    dropzoneElm.removeEventListener('dragstart', onDragStart as EventListener);
+    dropzoneElm.removeEventListener('dragover', onDragOver as EventListener);
+    dropzoneElm.removeEventListener('dragend', onDragEnd);
+    dropzoneElm.removeEventListener('dragenter', onDragEnter as EventListener);
+    dropzoneElm.removeEventListener('dragleave', onDragLeave as EventListener);
+    dropzoneElm.removeEventListener('drop', onDrop as EventListener);
+    dropzoneElm.removeEventListener('touchstart', onPointerDown as EventListener);
+    if (isFfLinux) {
+      dropzoneElm.removeEventListener('mousedown', onPointerDown as EventListener);
+    }
+    cleanupPointerListeners();
+    draggedPill = null;
+    dragStartX = null;
+    dragStartY = null;
+    fallbackActive = false;
+  }
+
+  // public API
+  return { destroy };
+}
+
 // extend Slick namespace on window object when building as iife
 if (IIFE_ONLY && window.Slick) {
   Utils.extend(Slick, {
@@ -847,5 +1062,6 @@ if (IIFE_ONLY && window.Slick) {
     MouseWheel,
     Resizable,
     setupColumnReorderDrag,
+    setupDropzonePillDrag,
   });
 }
