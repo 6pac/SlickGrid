@@ -60,9 +60,6 @@
     "postsass:build": "postcss dist/styles/css/**/* --dir dist/styles/css --base dist/styles/css --no-map --use cssnano --use autoprefixer --style=compressed",
     "sass:copy": "copyfiles src/styles/*.scss dist/styles/sass --flat --stat"
   },
-  "dependencies": {
-    "sortablejs": "^1.15.7"
-  },
   "devDependencies": {
     "@4tw/cypress-drag-drop": "^2.3.1",
     "@octokit/rest": "^22.0.1",

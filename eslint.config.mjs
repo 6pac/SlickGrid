@@ -45,7 +45,6 @@ export default tseslint.config(
         ...globals.node,
         flatpickr: true,
         Slick: true,
-        Sortable: true,
         IIFE_ONLY: true
       },
       parser: tseslint.parser,
