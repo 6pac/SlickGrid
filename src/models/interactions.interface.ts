@@ -100,6 +100,30 @@ export interface ColumnReorderDragOption {
   onDrop?: (draggedEl: HTMLElement, event: DragEvent | MouseEvent | TouchEvent, draggedColumnId?: string) => void;
 }
 
+/** Dropzone pill drag (used by SlickDraggableGrouping to reorder group pills and accept column-header drops) */
+export interface DropzonePillDragOption {
+  /** The dropzone container element */
+  dropzoneElm: HTMLElement;
+
+  /** CSS selector for draggable pill elements inside the dropzone (default: `.slick-dropped-grouping`) */
+  itemSelector?: string;
+
+  /** CSS class added to a pill while it is being dragged via the mouse/touch fallback */
+  draggingCssClass?: string;
+
+  /** Called when a pill reorder drag-and-drop is complete */
+  onPillDragEnd?: (pill: HTMLElement) => void;
+
+  /** Called when an external drag (e.g. column header) enters the dropzone */
+  onColumnDragEnter?: (e: DragEvent) => void;
+
+  /** Called when an external drag leaves the dropzone */
+  onColumnDragLeave?: (e: DragEvent) => void;
+
+  /** Called when a column header is natively dropped onto the dropzone */
+  onColumnDrop?: (columnDataId: string, e: DragEvent) => void;
+}
+
 export interface MouseWheelOption {
   /** optional DOM element to attach mousewheel values, if undefined we'll attach it to the "window" object */
   element: HTMLElement | Document;
