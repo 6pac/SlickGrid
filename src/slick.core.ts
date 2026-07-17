@@ -2187,170 +2187,106 @@ export class ViewportMgr {
    * of SlickGrid.updateCanvasWidth(); the width computations stay in the grid.
    */
   applyCanvasWidths(g: CanvasWidthsGeometry) {
-    // width reserved by the right-frozen band (0 while the band is off or not built);
-    // the scrollable middle band shrinks by this amount
-    const rfActive = this.bands.frozenRightCols > 0 && !!this.paneHeaderRF;
+    const leftActive = this.hasFrozenColumns();
+    const rfActive = this.bands.frozenRightCols > 0 && !!this.paneAt('header', 'rf');
     const rfW = rfActive ? g.canvasWidthRF : 0;
 
-    if (g.widthChanged || this.hasFrozenColumns() || this.freeze.hasFrozenRows || rfActive) {
-      Utils.width(this.canvasTopL, g.canvasWidthL);
-
+    if (g.widthChanged || leftActive || this.freeze.hasFrozenRows || rfActive) {
+      // header element widths are written whenever the element exists (historical:
+      // a plain grid writes headerR's width too — it computes to 0)
       Utils.width(this.headerL, g.headersWidthL);
       if (this.headerR) {
         Utils.width(this.headerR, g.headersWidthR);
       }
-
-      if (this.hasFrozenColumns()) {
-        Utils.width(this.canvasTopR, g.canvasWidthR);
-
-        Utils.width(this.paneHeaderL, g.canvasWidthL);
-        Utils.setStyleSize(this.paneHeaderR, 'left', g.canvasWidthL);
-        Utils.setStyleSize(this.paneHeaderR, 'width', g.viewportW - g.canvasWidthL - rfW);
-
-        Utils.width(this.paneTopL, g.canvasWidthL);
-        Utils.setStyleSize(this.paneTopR, 'left', g.canvasWidthL);
-        Utils.width(this.paneTopR, g.viewportW - g.canvasWidthL - rfW);
-
-        Utils.width(this.headerRowScrollerL, g.canvasWidthL);
-        Utils.width(this.headerRowScrollerR, g.viewportW - g.canvasWidthL - rfW);
-
-        Utils.width(this.headerRowL, g.canvasWidthL);
-        Utils.width(this.headerRowR, g.canvasWidthR);
-
-        if (g.createFooterRow) {
-          Utils.width(this.footerRowScrollerL, g.canvasWidthL);
-          Utils.width(this.footerRowScrollerR, g.viewportW - g.canvasWidthL - rfW);
-
-          Utils.width(this.footerRowL, g.canvasWidthL);
-          Utils.width(this.footerRowR, g.canvasWidthR);
-        }
-        if (g.createPreHeaderPanel) {
-          Utils.width(this.preHeaderPanel, g.preHeaderPanelWidth ?? g.canvasWidth);
-        }
-        Utils.width(this.viewportTopL, g.canvasWidthL);
-        Utils.width(this.viewportTopR, g.viewportW - g.canvasWidthL - rfW);
-
-        if (this.freeze.hasFrozenRows) {
-          Utils.width(this.paneBottomL, g.canvasWidthL);
-          Utils.setStyleSize(this.paneBottomR, 'left', g.canvasWidthL);
-
-          Utils.width(this.viewportBottomL, g.canvasWidthL);
-          Utils.width(this.viewportBottomR, g.viewportW - g.canvasWidthL - rfW);
-
-          Utils.width(this.canvasBottomL, g.canvasWidthL);
-          Utils.width(this.canvasBottomR, g.canvasWidthR);
-        }
-      } else if (rfActive) {
-        // no left freeze, but a right-frozen band: the left pane IS the scrollable
-        // middle band — pixel widths instead of the historical '100%'
-        const middleW = g.viewportW - rfW;
-        Utils.width(this.paneHeaderL, middleW);
-        Utils.width(this.paneTopL, middleW);
-        Utils.width(this.headerRowScrollerL, middleW);
-        Utils.width(this.headerRowL, g.canvasWidth);
-
-        if (g.createFooterRow) {
-          Utils.width(this.footerRowScrollerL, middleW);
-          Utils.width(this.footerRowL, g.canvasWidth);
-        }
-
-        if (g.createPreHeaderPanel) {
-          Utils.width(this.preHeaderPanel, g.preHeaderPanelWidth ?? g.canvasWidth);
-        }
-        Utils.width(this.viewportTopL, middleW);
-
-        if (this.freeze.hasFrozenRows) {
-          Utils.width(this.viewportBottomL, middleW);
-          Utils.width(this.canvasBottomL, g.canvasWidthL);
-        }
-      } else {
-        Utils.width(this.paneHeaderL, '100%');
-        Utils.width(this.paneTopL, '100%');
-        Utils.width(this.headerRowScrollerL, '100%');
-        Utils.width(this.headerRowL, g.canvasWidth);
-
-        if (g.createFooterRow) {
-          Utils.width(this.footerRowScrollerL, '100%');
-          Utils.width(this.footerRowL, g.canvasWidth);
-        }
-
-        if (g.createPreHeaderPanel) {
-          Utils.width(this.preHeaderPanel, g.preHeaderPanelWidth ?? g.canvasWidth);
-        }
-        Utils.width(this.viewportTopL, '100%');
-
-        if (this.freeze.hasFrozenRows) {
-          Utils.width(this.viewportBottomL, '100%');
-          Utils.width(this.canvasBottomL, g.canvasWidthL);
-        }
-      }
-
-      // bottom-frozen row band (simultaneous mode): column widths mirror the classic
-      // bottom panes
-      if (this.hasBottomFrozenBand()) {
-        if (this.hasFrozenColumns()) {
-          Utils.width(this.paneBottomFrozenL, g.canvasWidthL);
-          Utils.width(this.canvasBottomFrozenL, g.canvasWidthL);
-          Utils.setStyleSize(this.paneBottomFrozenR, 'left', g.canvasWidthL);
-          Utils.width(this.paneBottomFrozenR, g.viewportW - g.canvasWidthL - rfW);
-          Utils.width(this.viewportBottomFrozenR, g.viewportW - g.canvasWidthL - rfW);
-          Utils.width(this.canvasBottomFrozenR, g.canvasWidthR);
-          Utils.width(this.viewportBottomFrozenL, g.canvasWidthL);
-        } else if (rfActive) {
-          Utils.width(this.paneBottomFrozenL, g.viewportW - rfW);
-          Utils.width(this.viewportBottomFrozenL, g.viewportW - rfW);
-          Utils.width(this.canvasBottomFrozenL, g.canvasWidthL);
-        } else {
-          Utils.width(this.paneBottomFrozenL, '100%');
-          Utils.width(this.viewportBottomFrozenL, '100%');
-          Utils.width(this.canvasBottomFrozenL, g.canvasWidthL);
-        }
-
-        if (this.paneBottomFrozenRF && rfActive) {
-          Utils.setStyleSize(this.paneBottomFrozenRF, 'left', g.viewportW - rfW);
-          Utils.width(this.paneBottomFrozenRF, rfW);
-          Utils.width(this.viewportBottomFrozenRF, rfW);
-          Utils.width(this.canvasBottomFrozenRF, g.canvasWidthRF);
-        }
-      }
-
-      // right-frozen band: fixed-width panes pinned to the right edge
-      if (rfActive) {
-        const rfLeft = g.viewportW - rfW;
-        Utils.setStyleSize(this.paneHeaderRF, 'left', rfLeft);
-        Utils.width(this.paneHeaderRF, rfW);
+      if (rfActive && this.headerRF) {
         Utils.width(this.headerRF, g.headersWidthRF);
+      }
 
-        Utils.setStyleSize(this.paneTopRF, 'left', rfLeft);
-        Utils.width(this.paneTopRF, rfW);
-        Utils.width(this.headerRowScrollerRF, rfW);
-        Utils.width(this.headerRowRF, g.canvasWidthRF);
-        Utils.width(this.viewportTopRF, rfW);
-        Utils.width(this.canvasTopRF, g.canvasWidthRF);
+      // one geometry record per ACTIVE structural column; paneW may be the
+      // historical '100%' in the plain single-band layout.
+      // canvasW = the band's own column-width sum; chromeW = header-row/footer-row
+      // content width (historically the FULL row width for the main band when no
+      // left freeze is active).
+      const cols: Array<[PaneColKey, { paneLeft?: number; paneW: number | string; canvasW: number; chromeW: number; }]> = [];
+      cols.push(['l', leftActive
+        ? { paneW: g.canvasWidthL, canvasW: g.canvasWidthL, chromeW: g.canvasWidthL }
+        : { paneW: rfActive ? g.viewportW - rfW : '100%', canvasW: g.canvasWidthL, chromeW: g.canvasWidth }]);
+      if (leftActive) {
+        cols.push(['r', { paneLeft: g.canvasWidthL, paneW: g.viewportW - g.canvasWidthL - rfW, canvasW: g.canvasWidthR, chromeW: g.canvasWidthR }]);
+      }
+      if (rfActive) {
+        cols.push(['rf', { paneLeft: g.viewportW - rfW, paneW: rfW, canvasW: g.canvasWidthRF, chromeW: g.canvasWidthRF }]);
+      }
 
-        if (g.createFooterRow) {
-          Utils.width(this.footerRowScrollerRF, rfW);
-          Utils.width(this.footerRowRF, g.canvasWidthRF);
+      for (const [col, w] of cols) {
+        const placePane = (el: HTMLElement | undefined, sizeWidth = true) => {
+          if (!el) { return; }
+          if (w.paneLeft !== undefined) {
+            Utils.setStyleSize(el, 'left', w.paneLeft);
+          }
+          if (sizeWidth) {
+            Utils.width(el, w.paneW);
+          }
+        };
+        const header = this.paneAt('header', col);
+        const top = this.paneAt('top', col);
+        const bottom = this.paneAt('bottom', col);
+        const bf = this.paneAt('bf', col);
+
+        placePane(header?.pane);
+
+        if (top) {
+          placePane(top.pane);
+          if (top.headerRowScroller) {
+            Utils.width(top.headerRowScroller, w.paneW);
+            Utils.width(top.headerRow as HTMLElement, w.chromeW);
+          }
+          if (g.createFooterRow && top.footerRowScroller) {
+            Utils.width(top.footerRowScroller, w.paneW);
+            Utils.width(top.footerRow as HTMLElement, w.chromeW);
+          }
+          if (top.viewport) {
+            Utils.width(top.viewport, w.paneW);
+            Utils.width(top.canvas as HTMLElement, w.canvasW);
+          }
         }
 
-        if (this.freeze.hasFrozenRows) {
-          Utils.setStyleSize(this.paneBottomRF, 'left', rfLeft);
-          Utils.width(this.paneBottomRF, rfW);
-          Utils.width(this.viewportBottomRF, rfW);
-          Utils.width(this.canvasBottomRF, g.canvasWidthRF);
+        // classic bottom row participates while rows are frozen. Historical quirks
+        // preserved: its left pane is width-sized only under a left freeze, and its
+        // middle pane receives 'left' but no width.
+        if (this.freeze.hasFrozenRows && bottom) {
+          placePane(bottom.pane, col === 'l' ? leftActive : col === 'rf');
+          if (bottom.viewport) {
+            Utils.width(bottom.viewport, w.paneW);
+            Utils.width(bottom.canvas as HTMLElement, w.canvasW);
+          }
         }
+
+        // the bottom-frozen band (simultaneous mode) sizes left AND width everywhere
+        if (this.hasBottomFrozenBand() && bf) {
+          placePane(bf.pane);
+          if (bf.viewport) {
+            Utils.width(bf.viewport, w.paneW);
+            Utils.width(bf.canvas as HTMLElement, w.canvasW);
+          }
+        }
+      }
+
+      if (g.createPreHeaderPanel && this.preHeaderPanel) {
+        Utils.width(this.preHeaderPanel, g.preHeaderPanelWidth ?? g.canvasWidth);
       }
     }
 
-    Utils.width(this.headerRowSpacerL, g.canvasWidth + (g.viewportHasVScroll ? g.scrollbarWidth : 0));
+    // spacers: historically only the classic left/right pair, never the RF one
+    const spacerW = g.canvasWidth + (g.viewportHasVScroll ? g.scrollbarWidth : 0);
+    Utils.width(this.headerRowSpacerL, spacerW);
     if (this.headerRowSpacerR) {
-      Utils.width(this.headerRowSpacerR, g.canvasWidth + (g.viewportHasVScroll ? g.scrollbarWidth : 0));
+      Utils.width(this.headerRowSpacerR, spacerW);
     }
-
     if (g.createFooterRow) {
-      Utils.width(this.footerRowSpacerL, g.canvasWidth + (g.viewportHasVScroll ? g.scrollbarWidth : 0));
+      Utils.width(this.footerRowSpacerL, spacerW);
       if (this.footerRowSpacerR) {
-        Utils.width(this.footerRowSpacerR, g.canvasWidth + (g.viewportHasVScroll ? g.scrollbarWidth : 0));
+        Utils.width(this.footerRowSpacerR, spacerW);
       }
     }
   }
