@@ -1,0 +1,181 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>SlickGrid example: Variable row height with frozen columns/rows</title>
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <style>
+    #stats { margin: 6px 0; font-size: 13px; color: #444; }
+    h3 { margin: 14px 0 4px 0; }
+  </style>
+</head>
+<body>
+<h2>Variable row height + frozen panes (<code>rowHeightProvider</code> + <code>frozenColumn</code>/<code>frozenRow</code>)</h2>
+<div style="position:relative">
+  <div style="width:700px;">
+    <div id="stats"></div>
+    <h3>Grid A — two frozen columns</h3>
+    <div id="gridA" style="width:100%;height:320px;"></div>
+    <h3>Grid B — two frozen columns + three frozen rows</h3>
+    <div id="gridB" style="width:100%;height:320px;"></div>
+  </div>
+
+  <div class="options-panel">
+    <h2>About</h2>
+    <p>
+      Both grids use a <code>rowHeightProvider</code> (every 13th row 70px, every 5th row 32px,
+      else 25px). Grid A freezes the first two columns; Grid B freezes the first two columns
+      <em>and</em> the first three rows. Row nodes are cloned per column pane, so the checks assert
+      that left/right panes agree on every row's top and height, and that the frozen row pane is
+      exactly as tall as the rows it holds.
+    </p>
+    <h2>Controls</h2>
+    <button onclick="runChecks()">Run frozen geometry self-checks</button>
+    <button onclick="growRowA()">A: grow row 2 by 10px (invalidateRowHeights)</button>
+    <button onclick="growFrozenRowB()">B: grow frozen row 0 by 10px (invalidateRowHeights)</button>
+    <button onclick="gridA.scrollRowIntoView(300); gridB.scrollRowIntoView(300);">Scroll both to row 300</button>
+    <div id="checkResults" style="white-space:pre; font-family:monospace; font-size:12px; margin-top:8px;"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
+
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<!-- slick.rowpositionindex.js is required when using rowHeightProvider and must be loaded before slick.grid.js -->
+<script src="../dist/browser/slick.rowpositionindex.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+
+<script>
+  var gridA, gridB;
+  var ROWS = 500;
+  var FROZEN_ROWS_B = 3;
+  var growthA = 0;   // added to row 2 of grid A
+  var growthB = 0;   // added to frozen row 0 of grid B
+
+  function baseHeight(row) {
+    return (row % 13 === 0) ? 70 : (row % 5 === 0) ? 32 : 25;
+  }
+  function rowHeightA(row) { return baseHeight(row) + (row === 2 ? growthA : 0); }
+  function rowHeightB(row) { return baseHeight(row) + (row === 0 ? growthB : 0); }
+
+  var columns = [
+    { id: 'idx', name: '#', field: 'idx', width: 60 },
+    { id: 'title', name: 'Title', field: 'title', width: 130 },
+    { id: 'c1', name: 'C1', field: 'c1', width: 110 },
+    { id: 'c2', name: 'C2', field: 'c2', width: 110 },
+    { id: 'c3', name: 'C3', field: 'c3', width: 110 },
+    { id: 'c4', name: 'C4', field: 'c4', width: 110 }
+  ];
+
+  var data = [];
+  for (var i = 0; i < ROWS; i++) {
+    data[i] = { idx: i, title: 'Task ' + i, c1: 'a' + i, c2: 'b' + i, c3: 'c' + i, c4: 'd' + i };
+  }
+
+  gridA = new Slick.Grid('#gridA', data, columns, {
+    rowHeight: 25,
+    rowHeightProvider: function (row) { return rowHeightA(row); },
+    frozenColumn: 1,
+    enableCellNavigation: true,
+    enableColumnReorder: false
+  });
+
+  gridB = new Slick.Grid('#gridB', data, columns.map(function (c) { return Object.assign({}, c); }), {
+    rowHeight: 25,
+    rowHeightProvider: function (row) { return rowHeightB(row); },
+    frozenColumn: 1,
+    frozenRow: FROZEN_ROWS_B,
+    enableCellNavigation: true,
+    enableColumnReorder: false
+  });
+
+  document.getElementById('stats').textContent =
+    ROWS + ' rows each, heights 25/32/70px; A: frozenColumn 1; B: frozenColumn 1 + frozenRow ' + FROZEN_ROWS_B;
+
+  function growRowA() {
+    growthA += 10;
+    gridA.invalidateRowHeights();
+  }
+  function growFrozenRowB() {
+    growthB += 10;
+    gridB.invalidateRowHeights();
+  }
+
+  function sumHeights(heightFn, from, to) {  // [from, to)
+    var t = 0;
+    for (var r = from; r < to; r++) { t += heightFn(r); }
+    return t;
+  }
+
+  // Self-checks: left/right panes agree per row; frozen row pane height = sum of frozen rows;
+  // scrolling canvases = remaining content height.
+  function runChecks() {
+    var out = [];
+    var pass = true;
+
+    function check(label, ok, detail) {
+      out.push((ok ? 'PASS ' : 'FAIL ') + label + (detail ? '  [' + detail + ']' : ''));
+      if (!ok) { pass = false; }
+    }
+
+    // rows rendered in a canvas: data-row -> {top, height}
+    function rowMap(canvas) {
+      var m = {};
+      canvas.querySelectorAll('.slick-row').forEach(function (node) {
+        m[node.dataset.row] = {
+          top: parseFloat(node.style.top),
+          h: node.getBoundingClientRect().height
+        };
+      });
+      return m;
+    }
+
+    // left/right pane agreement + height truth for every rendered row
+    function checkPanePair(label, leftCanvas, rightCanvas, heightFn) {
+      var left = rowMap(leftCanvas);
+      var right = rowMap(rightCanvas);
+      var ok = true, bad = '';
+      Object.keys(left).forEach(function (r) {
+        var l = left[r], rt = right[r];
+        if (!rt) { ok = false; if (!bad) { bad = 'row ' + r + ' missing on right'; } return; }
+        if (Math.abs(l.top - rt.top) > 0.5 || Math.abs(l.h - rt.h) > 0.5 || Math.abs(l.h - heightFn(parseInt(r, 10))) > 0.5) {
+          ok = false;
+          if (!bad) { bad = 'row ' + r + ' L(top ' + l.top + ', h ' + l.h + ') R(top ' + rt.top + ', h ' + rt.h + ') expected h ' + heightFn(parseInt(r, 10)); }
+        }
+      });
+      check(label, ok && Object.keys(left).length > 0, bad || (Object.keys(left).length + ' rows compared'));
+    }
+
+    // --- Grid A: frozen columns only (one pane row: top-left vs top-right canvases)
+    var aCanvases = document.querySelectorAll('#gridA .grid-canvas');
+    checkPanePair('A: left/right panes agree on row tops & heights', aCanvases[0], aCanvases[1], rowHeightA);
+    var aTotal = sumHeights(rowHeightA, 0, ROWS);
+    check('A: scrolling canvas height = total of provider heights',
+      Math.abs(parseFloat(getComputedStyle(aCanvases[0]).height) - aTotal) < 1,
+      'canvas=' + getComputedStyle(aCanvases[0]).height + ' expected=' + aTotal);
+
+    // --- Grid B: frozen columns + frozen rows (four canvases: TL, TR frozen; BL, BR scrolling)
+    var bCanvases = document.querySelectorAll('#gridB .grid-canvas');
+    var frozenH = sumHeights(rowHeightB, 0, FROZEN_ROWS_B);
+    check('B: frozen pane height = sum of frozen row heights',
+      Math.abs(parseFloat(getComputedStyle(bCanvases[0]).height) - frozenH) < 1,
+      'canvas=' + getComputedStyle(bCanvases[0]).height + ' expected=' + frozenH);
+    checkPanePair('B: frozen pane left/right agree', bCanvases[0], bCanvases[1], rowHeightB);
+    checkPanePair('B: scrolling pane left/right agree', bCanvases[2], bCanvases[3], rowHeightB);
+    var bScrollH = sumHeights(rowHeightB, 0, ROWS) - frozenH;
+    check('B: scrolling canvas height = total minus frozen rows',
+      Math.abs(parseFloat(getComputedStyle(bCanvases[2]).height) - bScrollH) < 1,
+      'canvas=' + getComputedStyle(bCanvases[2]).height + ' expected=' + bScrollH);
+
+    out.push(pass ? '\nALL CHECKS PASSED' : '\nCHECKS FAILED');
+    document.getElementById('checkResults').textContent = out.join('\n');
+    return pass;
+  }
+</script>
+</body>
+</html>
