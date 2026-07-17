@@ -46,6 +46,61 @@ export interface DraggableOption {
   dragFromClassDetectArr?: Array<ClassDetectElement>
 }
 
+export interface ColumnReorderDragOption {
+  /** CSS class applied to dragged header columns while drag is active */
+  dragActiveClass?: string;
+
+  /** CSS selector used to find draggable header items (default: `.slick-header-column`) */
+  draggableSelector?: string;
+
+  /**
+   * Header containers whose child header columns can be reordered, in display order
+   * (one `.slick-header-columns` element, or one per docking band); a column only moves within its own container
+   */
+  headers: HTMLElement[];
+
+  /** Grid container - used for the right-edge auto-scroll boundary */
+  container: HTMLElement;
+
+  /** Scrollable viewport - used for the left-edge boundary and actual scrolling */
+  viewportScrollContainerX: HTMLElement;
+
+  /** Returns false when dragging this header column must not auto-scroll the viewport, e.g. a pinned column (default: every column auto-scrolls) */
+  canAutoScroll?: (draggedEl: HTMLElement) => boolean;
+
+  /** CSS class that marks a column as non-reorderable */
+  unorderableColumnCssClass?: string;
+
+  /** Dropzone selector used to detect external drop targets, e.g. draggable grouping (default: `.slick-dropzone`) */
+  dropzoneSelector?: string;
+
+  /** CSS class toggled while hovering an external dropzone (default: `slick-dropzone-hover`) */
+  dropzoneHoverClass?: string;
+
+  /**
+   * Generic filter to ignore drag starts from interactive descendants.
+   * - `string`: CSS selector used with `closest()`
+   * - `function`: return `true` to cancel drag start for this target
+   */
+  dragStartFilter?: string | ((target: HTMLElement | null, event: DragEvent | MouseEvent | TouchEvent) => boolean);
+
+  /**
+   * Called right after dragstart, before any DOM changes.
+   * Use this to snapshot column state that your onDragEnd callback needs.
+   */
+  onDragStart?: (draggedEl: HTMLElement) => void;
+
+  /**
+   * Called when drag ends with the new reorderable-column ID order read from the DOM (all header containers, in order)
+   * and the same IDs in their order when the drag started; `reconcileColumnOrder()` maps them onto the column list.
+   * Responsible for applying the reorder (setColumns, trigger event, etc.).
+   */
+  onDragEnd: (reorderedIds: string[], originalIds: string[]) => void;
+
+  /** Called when the drag is dropped onto an external dropzone such as draggable grouping. */
+  onDrop?: (draggedEl: HTMLElement, event: DragEvent | MouseEvent | TouchEvent, draggedColumnId?: string) => void;
+}
+
 export interface MouseWheelOption {
   /** optional DOM element to attach mousewheel values, if undefined we'll attach it to the "window" object */
   element: HTMLElement | Document;
