@@ -1,5 +1,3 @@
-import type { Sortable } from 'sortablejs';
-
 import type {
   BindingEventService,
   ColAutosizeMode,
@@ -63,7 +61,6 @@ declare global {
   var IIFE_ONLY: boolean;
   var flatpickr: any;
   var moment: any;
-  var Sortable: typeof Sortable;
   var Slick: {
     AutoTooltips: typeof SlickAutoTooltips,
     BindingEventService: typeof BindingEventService,

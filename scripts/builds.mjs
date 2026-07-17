@@ -150,7 +150,6 @@ export function runBuild(options) {
       target: 'es2018',
       sourcemap: true,
       logLevel: 'error',
-      // packages: 'external', // check SortableJS
     },
 
     // merge any optional esbuild options
