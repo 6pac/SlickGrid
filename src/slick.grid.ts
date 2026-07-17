@@ -6093,9 +6093,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * count; the row position index is then rebuilt with the new heights.
    */
   invalidateRowHeights() {
-    if (!this.isVariableRowHeight()) { return; }
-    this.rowHeightsDirty = true;
-    this.invalidate();
+    if (this.isVariableRowHeight()) {
+      this.rowHeightsDirty = true;
+      this.invalidate();
+    }
   }
 
   /** Update the dataset row count */
