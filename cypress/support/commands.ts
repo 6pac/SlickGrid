@@ -25,6 +25,7 @@
 // Cypress.Commands.overwrite("visit", (originalFn, url, options) => { ... })
 import '@4tw/cypress-drag-drop';
 import 'cypress-real-events';
+import './drag'; // overwrites the `drag` command from "@4tw/cypress-drag-drop" with our HTML5 DnD event sequence
 import { convertPosition } from './common';
 
 declare global {
