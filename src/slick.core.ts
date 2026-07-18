@@ -1704,8 +1704,10 @@ export class ViewportMgr {
    */
   materializeRightFrozenBand(o: ViewportMgrBuildOptions): boolean {
     if (this.paneAt('header', 'rf')) {
-      // band exists — but the bottom-frozen corner may have arrived after us
-      this.ensureBottomFrozenRightVariant(o);
+      // band already exists: no corner work here (pre-matrix behavior). The BF×RF
+      // corner is always created by whichever band materializes SECOND, on its
+      // success path — and the grid-side caller binds no pane events on this early
+      // return, so creating the corner here would leave it event-less.
       return false;
     }
 

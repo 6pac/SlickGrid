@@ -159,12 +159,15 @@ export class SlickCellRangeSelector implements SlickPlugin {
     if (this._legacyRowFreezeActive && this._isBottomCanvas) {
       // measure the frozen classic-band canvas via its band-truth marker
       // (BAND-LABELLING.md): bottom-frozen in legacy frozenBottom mode, top-frozen
-      // otherwise. In the degenerate frozenRow: 0 configuration no canvas carries a
-      // frozen rowband and the offset stays 0 — the same result the positional query
-      // produced by measuring the 0-height frozen canvas.
+      // otherwise. Positional fallback: in the degenerate frozenRow: 0 variants no
+      // canvas carries a frozen rowband (and in a suppressColumnSet transition
+      // window markers can be stale), so the historical positional query reproduces
+      // the pre-marker offsets exactly — including the frozenBottom body-height
+      // quirk of the frozenRow: 0 + frozenBottom: true combination.
       const legacyBottomMode = this._bands.frozenBottomRows > 0 && this._bands.frozenTopRows === 0;
       const canvasSelector = `.${this._grid.getUID()} .grid-canvas[data-rowband="${legacyBottomMode ? 'bottom-frozen' : 'top-frozen'}"]`;
-      const canvasElm = document.querySelector(canvasSelector);
+      const canvasElm = document.querySelector(canvasSelector)
+        ?? document.querySelector(`.${this._grid.getUID()} .grid-canvas-${legacyBottomMode ? 'bottom' : 'top'}`);
       if (canvasElm) {
         this._rowOffset = canvasElm.clientHeight || 0;
       }
