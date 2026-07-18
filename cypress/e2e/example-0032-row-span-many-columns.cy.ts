@@ -27,7 +27,7 @@ describe('Example - colspan & rowspan spanning many columns', { retries: 0 }, ()
       expect(parseInt(`${$el.outerHeight()}`, 10)).to.eq(GRID_ROW_HEIGHT * 3)
     );
 
-    cy.get('.slick-header-columns').children('.slick-header-column:nth(0)').contains('Title').drag('.slick-header-column:nth(1)');
+    cy.get('.slick-header-columns').children('.slick-header-column:nth(0)').contains('Title').drag('.slick-header-column:nth(1)', { force: true });
     cy.get('.slick-header-column:nth(0)').contains('Revenue Growth');
     cy.get('.slick-header-column:nth(1)').contains('Title');
 
@@ -52,7 +52,7 @@ describe('Example - colspan & rowspan spanning many columns', { retries: 0 }, ()
     cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell.l1.r1.rowspan`).should(($el) =>
       expect(parseInt(`${$el.outerHeight()}`, 10)).to.eq(GRID_ROW_HEIGHT * 3)
     );
-    cy.get('.slick-header-columns').children('.slick-header-column:nth(0)').contains('Revenue Growth').drag('.slick-header-column:nth(1)');
+    cy.get('.slick-header-columns').children('.slick-header-column:nth(0)').contains('Revenue Growth').drag('.slick-header-column:nth(1)', { force: true });
     cy.get('.slick-header-column:nth(0)').contains('Title');
     cy.get('.slick-header-column:nth(1)').contains('Revenue Growth');
 
