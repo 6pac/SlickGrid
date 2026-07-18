@@ -1370,6 +1370,120 @@ const PANE_COL_CSS: Record<PaneColKey, string> = { l: 'left', r: 'right', rf: 'r
 /** css suffix of each structural row. */
 const PANE_ROW_CSS: Record<PaneRowKey, string> = { header: 'header', top: 'top', bottom: 'bottom', bf: 'bottom-frozen' };
 
+/**
+ * One element-role across the column bands (l | r | rf) — the ViewportMgr facade's
+ * jQuery-like element collections (FACADE-FEASIBILITY.md, stage M19). Iteration
+ * touches only MATERIALIZED bands, so per-band existence gating disappears from
+ * call sites. When a set is identity-critical (headers and the header/footer/panel
+ * chrome the grid exposes), `elements` IS the live shared array the grid contract
+ * depends on; derived sets (spacers, pre-headers, pick() views) rebuild a fresh
+ * snapshot per access — cold paths only.
+ *
+ * (An ElementGroup-extends-Array design — the shared arrays themselves becoming
+ * the collections — was considered and rejected: the wrapper reads the same
+ * without Symbol.species/toolchain edge risk.)
+ */
+export class BandSet {
+  constructor(
+    protected readonly mgr: ViewportMgr,
+    protected readonly row: PaneRowKey,
+    protected readonly part: keyof PaneSet,
+    protected readonly live?: HTMLDivElement[],
+    protected readonly cols: PaneColKey[] = ['l', 'r', 'rf'],
+  ) {}
+
+  /** the live shared array for identity-critical sets; a fresh snapshot otherwise */
+  get elements(): HTMLDivElement[] {
+    if (this.live) { return this.live; }
+    const out: HTMLDivElement[] = [];
+    this.forEach((el) => { out.push(el); });
+    return out;
+  }
+
+  get length(): number { return this.elements.length; }
+
+  /** the canonical measurement element (the first materialized band — historically L) */
+  first(): HTMLDivElement { return this.elements[0]; }
+
+  at(col: PaneColKey): HTMLDivElement | undefined {
+    return this.mgr.paneAt(this.row, col)?.[this.part] as HTMLDivElement | undefined;
+  }
+
+  /** a filtered view — keeps historical band asymmetries explicit and grep-able */
+  pick(...cols: PaneColKey[]): BandSet {
+    return new BandSet(this.mgr, this.row, this.part, undefined, cols);
+  }
+
+  forEach(fn: (el: HTMLDivElement, col: PaneColKey, i: number) => void): void {
+    let i = 0;
+    for (const col of this.cols) {
+      const el = this.at(col);
+      if (el) { fn(el, col, i++); }
+    }
+  }
+
+  empty(): void {
+    this.forEach((el) => Utils.emptyElement(el));
+  }
+
+  /** one width for every materialized band, or a per-band map (absent keys skip) */
+  width(w: number | Partial<Record<PaneColKey, number>>): void {
+    this.forEach((el, col) => {
+      const value = typeof w === 'number' ? w : w[col];
+      if (value !== undefined) {
+        Utils.width(el, value);
+      }
+    });
+  }
+
+  setStyle(styles: Partial<CSSStyleDeclaration>): void {
+    this.forEach((el) => { Object.assign(el.style, styles); });
+  }
+
+  query(selector: string): HTMLElement[] {
+    const out: HTMLElement[] = [];
+    this.forEach((el) => { out.push(...Array.from(el.querySelectorAll<HTMLElement>(selector))); });
+    return out;
+  }
+}
+
+/** 2D analogue of BandSet for the pane/viewport/canvas cells of the pane matrix. */
+export class CellSet {
+  constructor(
+    protected readonly mgr: ViewportMgr,
+    protected readonly part: 'pane' | 'viewport' | 'canvas',
+    protected readonly live?: HTMLDivElement[],
+  ) {}
+
+  /** the live shared array (canonical order) for viewports/canvases; derived for panes */
+  get elements(): HTMLDivElement[] {
+    if (this.live) { return this.live; }
+    const out: HTMLDivElement[] = [];
+    for (const row of ['header', 'top', 'bottom', 'bf'] as PaneRowKey[]) {
+      for (const col of ['l', 'r', 'rf'] as PaneColKey[]) {
+        const el = this.at(row, col);
+        if (el) { out.push(el); }
+      }
+    }
+    return out;
+  }
+
+  at(row: PaneRowKey, col: PaneColKey): HTMLDivElement | undefined {
+    return this.mgr.paneAt(row, col)?.[this.part] as HTMLDivElement | undefined;
+  }
+
+  /** the top-left cell — the measurement/default-active canonical (historical `[0]`) */
+  first(): HTMLDivElement { return this.elements[0]; }
+
+  forEach(fn: (el: HTMLDivElement, i: number) => void): void {
+    this.elements.forEach((el, i) => fn(el, i));
+  }
+
+  setStyle(styles: Partial<CSSStyleDeclaration>): void {
+    this.forEach((el) => { Object.assign(el.style, styles); });
+  }
+}
+
 export class ViewportMgr {
   // named-element compat getters over the pane matrix (M18b): same runtime
   // semantics as the historical definite-assignment fields (undefined until built)
@@ -1582,11 +1696,11 @@ export class ViewportMgr {
 
     const colOrder: PaneColKey[] = ['l', 'r', 'rf'];
     fill(this.headerScroller, colOrder.map((c) => cell('header', c)?.headerScroller));
-    fill(this.headers, colOrder.map((c) => cell('header', c)?.header));
+    fill(this.headersArr, colOrder.map((c) => cell('header', c)?.header));
     fill(this.headerRowScroller, colOrder.map((c) => cell('top', c)?.headerRowScroller));
-    fill(this.headerRows, colOrder.map((c) => cell('top', c)?.headerRow));
-    fill(this.topPanelScrollers, colOrder.map((c) => cell('top', c)?.topPanelScroller));
-    fill(this.topPanels, colOrder.map((c) => cell('top', c)?.topPanel));
+    fill(this.headerRowsArr, colOrder.map((c) => cell('top', c)?.headerRow));
+    fill(this.topPanelScrollersArr, colOrder.map((c) => cell('top', c)?.topPanelScroller));
+    fill(this.topPanelsArr, colOrder.map((c) => cell('top', c)?.topPanel));
     fill(this.footerRowScroller, colOrder.map((c) => cell('top', c)?.footerRowScroller));
     fill(this.footerRow, colOrder.map((c) => cell('top', c)?.footerRow));
 
@@ -1598,21 +1712,57 @@ export class ViewportMgr {
     this.bfSlotRF = this.canvas.indexOf(cell('bf', 'rf')?.canvas as HTMLDivElement);
   }
 
+  // --- facade collections (M19a): one cached instance per set, wrapping the live
+  // --- shared arrays (identity contract) or deriving from the matrix (cold sets)
+  protected readonly facadeSets: Record<string, BandSet | CellSet> = {};
+  protected bandSetFor(key: string, row: PaneRowKey, part: keyof PaneSet, live?: HTMLDivElement[]): BandSet {
+    return (this.facadeSets[key] ??= new BandSet(this, row, part, live)) as BandSet;
+  }
+  protected cellSetFor(part: 'pane' | 'viewport' | 'canvas', live?: HTMLDivElement[]): CellSet {
+    return (this.facadeSets[part] ??= new CellSet(this, part, live)) as CellSet;
+  }
+
+  get headers(): BandSet { return this.bandSetFor('headers', 'header', 'header', this.headersArr); }
+  get headerScrollers(): BandSet { return this.bandSetFor('headerScrollers', 'header', 'headerScroller', this.headerScroller); }
+  get headerRows(): BandSet { return this.bandSetFor('headerRows', 'top', 'headerRow', this.headerRowsArr); }
+  get headerRowScrollers(): BandSet { return this.bandSetFor('headerRowScrollers', 'top', 'headerRowScroller', this.headerRowScroller); }
+  get headerRowSpacers(): BandSet { return this.bandSetFor('headerRowSpacers', 'top', 'headerRowSpacer'); }
+  get footerRows(): BandSet { return this.bandSetFor('footerRows', 'top', 'footerRow', this.footerRow); }
+  get footerRowScrollers(): BandSet { return this.bandSetFor('footerRowScrollers', 'top', 'footerRowScroller', this.footerRowScroller); }
+  get footerRowSpacers(): BandSet { return this.bandSetFor('footerRowSpacers', 'top', 'footerRowSpacer'); }
+  get topPanels(): BandSet { return this.bandSetFor('topPanels', 'top', 'topPanel', this.topPanelsArr); }
+  get topPanelScrollers(): BandSet { return this.bandSetFor('topPanelScrollers', 'top', 'topPanelScroller', this.topPanelScrollersArr); }
+  get preHeaderPanels(): BandSet { return this.bandSetFor('preHeaderPanels', 'header', 'preHeader'); }
+  get preHeaderScrollers(): BandSet { return this.bandSetFor('preHeaderScrollers', 'header', 'preHeaderScroller'); }
+  get preHeaderSpacers(): BandSet { return this.bandSetFor('preHeaderSpacers', 'header', 'preHeaderSpacer'); }
+  get viewports(): CellSet { return this.cellSetFor('viewport', this.viewport); }
+  get canvases(): CellSet { return this.cellSetFor('canvas', this.canvas); }
+  get panes(): CellSet { return this.cellSetFor('pane'); }
+
+  // --- scroll-container facade (M19a): LIVE selection per access, so the owners can
+  // --- never be stale (replaces the grid's setScroller()-time alias snapshots; the
+  // --- selection itself is a handful of field reads)
+  get scrollContainerX(): HTMLDivElement { return this.selectScrollContainers().x; }
+  get scrollContainerY(): HTMLDivElement { return this.selectScrollContainers().y; }
+  get headerScrollContainer(): HTMLDivElement { return this.selectScrollContainers().header; }
+  get headerRowScrollContainer(): HTMLDivElement { return this.selectScrollContainers().headerRow; }
+  get footerRowScrollContainer(): HTMLDivElement { return this.selectScrollContainers().footerRow; }
+
   // panes
 
   // pre-header panels (only when createPreHeaderPanel)
 
   // header scrollers and header column containers
   headerScroller: HTMLDivElement[] = [];
-  headers: HTMLDivElement[] = [];
+  protected headersArr: HTMLDivElement[] = [];
 
   // header rows
   headerRowScroller: HTMLDivElement[] = [];
-  headerRows: HTMLDivElement[] = [];
+  protected headerRowsArr: HTMLDivElement[] = [];
 
   // top panels
-  topPanelScrollers: HTMLDivElement[] = [];
-  topPanels: HTMLDivElement[] = [];
+  protected topPanelScrollersArr: HTMLDivElement[] = [];
+  protected topPanelsArr: HTMLDivElement[] = [];
 
   // viewports and canvases
   viewport: HTMLDivElement[] = [];
@@ -2425,7 +2575,7 @@ export class ViewportMgr {
   syncHorizontalScroll(x: number, o: { createFooterRow?: boolean; createPreHeaderPanel?: boolean; }) {
     this.scrollContainers.x.scrollLeft = x;
     this.scrollContainers.header.scrollLeft = x;
-    this.topPanelScrollers[0].scrollLeft = x;
+    this.topPanelScrollersArr[0].scrollLeft = x;
     if (o.createFooterRow) {
       this.scrollContainers.footerRow.scrollLeft = x;
     }
