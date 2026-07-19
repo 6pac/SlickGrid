@@ -5055,19 +5055,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     } else {
       rowDiv.style.top = `${topOffset}px`; // default to `top: {offset}px`
     }
-
-    let rowDivR: HTMLElement | undefined;
-    let rowDivRF: HTMLElement | undefined;
-    divArrayL.push(rowDiv);
-    if (this._viewportMgr.hasFrozenColumns()) {
-      // it has to be a deep copy otherwise we will have issues with pass by reference in js since
-      // attempting to add the same element to 2 different arrays will just move 1 item to the other array
-      rowDivR = rowDiv.cloneNode(true) as HTMLElement;
-      divArrayR.push(rowDivR);
+    // clone-per-band lives in the vm (M19e); the divArray plumbing stays here —
+    // the holding-div drain in renderRows depends on its exact push pattern
+    const frags = this._viewportMgr.createRowFragments(rowDiv);
+    divArrayL.push(frags.l);
+    if (frags.r) {
+      divArrayR.push(frags.r);
     }
-    if (this._viewportMgr.hasRightFrozenBand()) {
-      rowDivRF = rowDiv.cloneNode(true) as HTMLElement;
-      divArrayRF.push(rowDivRF);
+    if (frags.rf) {
+      divArrayRF.push(frags.rf);
     }
 
     const columnCount = this.columns.length;
@@ -5117,16 +5113,16 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
         // All columns to the right are outside the range, so no need to render them
         if (isRenderCell) {
-          // fall back to the row's own fragment if the RF fragment was not cloned
-          // (band count set but DOM not yet materialized — transition safety)
-          const targetedRowDiv = this._viewportMgr.bandElementForColumn(i, rowDiv, rowDivR!, rowDivRF ?? rowDiv);
-          this.appendCellHtml(targetedRowDiv, row, i, ncolspan, rowspan, columnData, d);
+          const target = this._viewportMgr.fragmentForColumn(frags, i, { alwaysRenderColumn: !!m.alwaysRenderColumn, branch: 'viewport' });
+          this.appendCellHtml(target!, row, i, ncolspan, rowspan, columnData, d);
         }
-      } else if (m.alwaysRenderColumn || this._viewportMgr.isColumnInFrozenBand(i)) {
-        this.appendCellHtml(rowDiv, row, i, ncolspan, rowspan, columnData, d);
-      } else if (rowDivRF && this._viewportMgr.isColumnInRightFrozenBand(i)) {
-        // right-frozen cells are always horizontally visible, like the left-frozen band
-        this.appendCellHtml(rowDivRF, row, i, ncolspan, rowspan, columnData, d);
+      } else {
+        // off-viewport: alwaysRender/left-frozen cells render into l, right-frozen
+        // into rf — the two rule sets stay keyed by the OUTER branch (historical)
+        const target = this._viewportMgr.fragmentForColumn(frags, i, { alwaysRenderColumn: !!m.alwaysRenderColumn, branch: 'offViewport' });
+        if (target) {
+          this.appendCellHtml(target, row, i, ncolspan, rowspan, columnData, d);
+        }
       }
 
       if (ncolspan > 1) {
@@ -5814,13 +5810,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected ensureCellNodesInRowsCache(row: number) {
     const cacheEntry = this.rowsCache[row];
     if (cacheEntry?.cellRenderQueue.length && cacheEntry.rowNode?.length) {
-      const rowNode = cacheEntry.rowNode as HTMLElement[];
-      let children = Array.from(rowNode[0].children) as HTMLElement[];
-      // concat every additional fragment's children (middle band and, when active,
-      // the right-frozen band — fragments are ordered by ascending column index)
-      for (let n = 1; n < rowNode.length; n++) {
-        children = children.concat(Array.from(rowNode[n].children) as HTMLElement[]);
-      }
+      const children = this._viewportMgr.collectRowCellNodes(cacheEntry.rowNode as HTMLElement[]);
 
       let i = children.length - 1;
       while (cacheEntry.cellRenderQueue.length) {
@@ -6093,6 +6083,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     for (const row in this.rowsCache) {
       if (this.rowsCache) {
         const rowNumber = row ? parseInt(row, 10) : 0;
+        // ONLY fragment [0] is repositioned — inherited upstream behavior (the
+        // other band fragments follow via their canvases), preserved deliberately
         const rowNode = this.rowsCache[rowNumber].rowNode![0];
         if (this._options.rowTopOffsetRenderType === 'transform') {
           rowNode.style.transform = `translateY(${this.getRowTop(rowNumber)}px)`;

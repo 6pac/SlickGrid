@@ -2405,6 +2405,62 @@ export class ViewportMgr {
     return { l, r };
   }
 
+  /**
+   * Deep-clones a row div once per additional ACTIVE column band (M19e): the
+   * clone-not-share requirement lives here — the same element cannot be appended
+   * to two canvases. `r` exists iff columns are frozen; `rf` iff the right-frozen
+   * band's DOM exists (band count set but DOM not yet materialized → no rf clone,
+   * the transition-safety state fragmentForColumn falls back on).
+   */
+  createRowFragments(rowDiv: HTMLElement): { l: HTMLElement; r?: HTMLElement; rf?: HTMLElement; } {
+    const frags: { l: HTMLElement; r?: HTMLElement; rf?: HTMLElement; } = { l: rowDiv };
+    if (this.hasFrozenColumns()) {
+      // it has to be a deep copy otherwise we will have issues with pass by
+      // reference in js since attempting to add the same element to 2 different
+      // arrays will just move 1 item to the other array
+      frags.r = rowDiv.cloneNode(true) as HTMLElement;
+    }
+    if (this.hasRightFrozenBand()) {
+      frags.rf = rowDiv.cloneNode(true) as HTMLElement;
+    }
+    return frags;
+  }
+
+  /**
+   * appendRowHtml's cell-routing rules (M19e), keyed by the caller's exact control
+   * branch — the two rule sets are NOT a unified predicate:
+   * - 'viewport': three-way band pick with the RF→L fallback when the rf fragment
+   *   was not cloned (transition safety);
+   * - 'offViewport': alwaysRenderColumn or left-frozen cells render into l,
+   *   right-frozen cells into rf (when cloned), anything else does not render.
+   */
+  fragmentForColumn(frags: { l: HTMLElement; r?: HTMLElement; rf?: HTMLElement; }, colIdx: number, opts: { alwaysRenderColumn: boolean; branch: 'viewport' | 'offViewport'; }): HTMLElement | null {
+    if (opts.branch === 'viewport') {
+      return this.bandElementForColumn(colIdx, frags.l, frags.r as HTMLElement, frags.rf ?? frags.l);
+    }
+    if (opts.alwaysRenderColumn || this.isColumnInFrozenBand(colIdx)) {
+      return frags.l;
+    }
+    if (frags.rf && this.isColumnInRightFrozenBand(colIdx)) {
+      // right-frozen cells are always horizontally visible, like the left-frozen band
+      return frags.rf;
+    }
+    return null;
+  }
+
+  /**
+   * Flattened cell nodes of a row's band fragments in ascending column order
+   * (M19e) — the fragment-order-equals-column-order invariant the tail-drained
+   * cellRenderQueue depends on.
+   */
+  collectRowCellNodes(rowNode: HTMLElement[]): HTMLElement[] {
+    let children = Array.from(rowNode[0].children) as HTMLElement[];
+    for (let n = 1; n < rowNode.length; n++) {
+      children = children.concat(Array.from(rowNode[n].children) as HTMLElement[]);
+    }
+    return children;
+  }
+
   /** The live resize-drag DOM writes under a left freeze (M19d): the left header
    * keeps its historical +1000 slack and the middle header pane is re-anchored. */
   setLiveResizeLeftWidth(newCanvasWidthL: number): void {
