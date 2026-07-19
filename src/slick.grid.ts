@@ -4552,47 +4552,20 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * Returns the computed overall header width in pixels.
   */
   getHeadersWidth() {
-    this.headersWidth = this.headersWidthL = this.headersWidthR = this.headersWidthRF = 0;
-    const includeScrollbar = !this._options.autoHeight;
-    const rfStartIdx = this.getFrozenRightStartIdx();
-
-    let i = 0;
-    const ii = this.columns.length;
-    for (i = 0; i < ii; i++) {
-      if (!this.columns[i] || this.columns[i].hidden) { continue; }
-
-      const width = this.columns[i].width;
-
-      if (i >= rfStartIdx) {
-        // right-frozen headers are fixed-width (no horizontal scrolling): plain sum
-        this.headersWidthRF += width || 0;
-      } else if (this._viewportMgr.isColumnRightOfFreeze(i)) {
-        this.headersWidthR += width || 0;
-      } else {
-        this.headersWidthL += width || 0;
-      }
-    }
-
-    if (includeScrollbar) {
-      if (this._viewportMgr.isColumnRightOfFreeze(i)) {
-        this.headersWidthR += this.scrollbarDimensions?.width ?? 0;
-      } else {
-        this.headersWidthL += this.scrollbarDimensions?.width ?? 0;
-      }
-    }
-
-    if (this._viewportMgr.hasFrozenColumns()) {
-      this.headersWidthL = this.headersWidthL + 1000;
-
-      this.headersWidthR = Math.max(this.headersWidthR, this.viewportW) + this.headersWidthL;
-      this.headersWidthR += this.scrollbarDimensions?.width ?? 0;
-    } else {
-      this.headersWidthL += this.scrollbarDimensions?.width ?? 0;
-      this.headersWidthL = Math.max(this.headersWidthL, this.viewportW) + 1000;
-    }
-
-    this.headersWidth = this.headersWidthL + this.headersWidthR;
-    return Math.max(this.headersWidth, this.viewportW) + 1000;
+    // arithmetic lives in the vm (M19d, golden-guarded); the grid keeps the
+    // headersWidth* fields as synced mirrors — subclass compatibility (they are
+    // protected and visible to wrappers like slickgrid-universal)
+    const w = this._viewportMgr.computeHeaderWidths(this.columns, {
+      includeScrollbar: !this._options.autoHeight,
+      scrollbarWidth: this.scrollbarDimensions?.width ?? 0,
+      viewportW: this.viewportW,
+      rfStartIdx: this.getFrozenRightStartIdx(),
+    });
+    this.headersWidthL = w.l;
+    this.headersWidthR = w.r;
+    this.headersWidthRF = w.rf;
+    this.headersWidth = w.sum;
+    return w.padded;
   }
 
   /** Get the grid canvas width
@@ -4602,36 +4575,16 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * If full–width rows are enabled, extra width is added. Returns the total calculated width.
   */
   getCanvasWidth(): number {
-    const availableWidth = this.getViewportInnerWidth();
-    let i = this.columns.length;
-
-    this.canvasWidthL = this.canvasWidthR = this.canvasWidthRF = 0;
-    const rfStartIdx = this.getFrozenRightStartIdx();
-
-    while (i--) {
-      if (!this.columns[i] || this.columns[i].hidden) { continue; }
-
-      if (i >= rfStartIdx) {
-        this.canvasWidthRF += this.columns[i].width || 0;
-      } else if (this._viewportMgr.isColumnRightOfFreeze(i)) {
-        this.canvasWidthR += this.columns[i].width || 0;
-      } else {
-        this.canvasWidthL += this.columns[i].width || 0;
-      }
-    }
-    let totalRowWidth = this.canvasWidthL + this.canvasWidthR + this.canvasWidthRF;
-    if (this._options.fullWidthRows) {
-      const extraWidth = Math.max(totalRowWidth, availableWidth) - totalRowWidth;
-      if (extraWidth > 0) {
-        totalRowWidth += extraWidth;
-        if (this._viewportMgr.hasFrozenColumns()) {
-          this.canvasWidthR += extraWidth;
-        } else {
-          this.canvasWidthL += extraWidth;
-        }
-      }
-    }
-    return totalRowWidth;
+    // arithmetic lives in the vm (M19d, golden-guarded); canvasWidth* mirrors kept
+    const w = this._viewportMgr.computeCanvasWidths(this.columns, {
+      availableWidth: this.getViewportInnerWidth(),
+      fullWidthRows: !!this._options.fullWidthRows,
+      rfStartIdx: this.getFrozenRightStartIdx(),
+    });
+    this.canvasWidthL = w.l;
+    this.canvasWidthR = w.r;
+    this.canvasWidthRF = w.rf;
+    return w.total;
   }
 
   /**

@@ -2328,6 +2328,100 @@ export class ViewportMgr {
   }
 
   /**
+   * The per-band header width arithmetic (M19d), moved VERBATIM from the grid's
+   * getHeadersWidth and guarded by viewportmgr-width-golden.cy.ts. Quirks preserved:
+   * the +1000 slack on the left/single band, CUMULATIVE r (includes the post-slack
+   * l) under a left freeze, the RF band as a plain sum (no slack, no scrollbar),
+   * and the out-of-range isColumnRightOfFreeze(columns.length) scrollbar-attribution
+   * probe after the loop. g.rfStartIdx stays a GRID-derived fresh input — these
+   * call sites historically re-derive it per call rather than reading the snapshot.
+   */
+  computeHeaderWidths(columns: Array<{ width?: number; hidden?: boolean; } | undefined>, g: { includeScrollbar: boolean; scrollbarWidth: number; viewportW: number; rfStartIdx: number; }): { l: number; r: number; rf: number; sum: number; padded: number; } {
+    let l = 0;
+    let r = 0;
+    let rf = 0;
+
+    let i = 0;
+    const ii = columns.length;
+    for (i = 0; i < ii; i++) {
+      if (!columns[i] || columns[i]!.hidden) { continue; }
+
+      const width = columns[i]!.width;
+
+      if (i >= g.rfStartIdx) {
+        // right-frozen headers are fixed-width (no horizontal scrolling): plain sum
+        rf += width || 0;
+      } else if (this.isColumnRightOfFreeze(i)) {
+        r += width || 0;
+      } else {
+        l += width || 0;
+      }
+    }
+
+    if (g.includeScrollbar) {
+      // historical out-of-range probe: i === columns.length here, so this reads the
+      // raw predicate deliberately (a band oracle is undefined past the last column)
+      if (this.isColumnRightOfFreeze(i)) {
+        r += g.scrollbarWidth;
+      } else {
+        l += g.scrollbarWidth;
+      }
+    }
+
+    if (this.hasFrozenColumns()) {
+      l = l + 1000;
+
+      r = Math.max(r, g.viewportW) + l;
+      r += g.scrollbarWidth;
+    } else {
+      l += g.scrollbarWidth;
+      l = Math.max(l, g.viewportW) + 1000;
+    }
+
+    const sum = l + r;
+    return { l, r, rf, sum, padded: Math.max(sum, g.viewportW) + 1000 };
+  }
+
+  /**
+   * The per-band canvas width arithmetic (M19d), moved VERBATIM from the grid's
+   * getCanvasWidth (reverse iteration and all): plain per-band sums, with the
+   * fullWidthRows extra width going to the scrollable band (r under a left freeze,
+   * l otherwise). g.rfStartIdx is the grid's fresh derivation, as above.
+   */
+  computeCanvasWidths(columns: Array<{ width?: number; hidden?: boolean; } | undefined>, g: { availableWidth: number; fullWidthRows: boolean; rfStartIdx: number; }): { l: number; r: number; rf: number; total: number; } {
+    let l = 0;
+    let r = 0;
+    let rf = 0;
+    let i = columns.length;
+
+    while (i--) {
+      if (!columns[i] || columns[i]!.hidden) { continue; }
+
+      if (i >= g.rfStartIdx) {
+        rf += columns[i]!.width || 0;
+      } else if (this.isColumnRightOfFreeze(i)) {
+        r += columns[i]!.width || 0;
+      } else {
+        l += columns[i]!.width || 0;
+      }
+    }
+
+    let total = l + r + rf;
+    if (g.fullWidthRows) {
+      const extraWidth = Math.max(total, g.availableWidth) - total;
+      if (extraWidth > 0) {
+        total += extraWidth;
+        if (this.hasFrozenColumns()) {
+          r += extraWidth;
+        } else {
+          l += extraWidth;
+        }
+      }
+    }
+    return { l, r, rf, total };
+  }
+
+  /**
    * Index of the column's node inside rowsCache[].rowNode: 0 for the left fragment
    * (which is the scrollable fragment when no columns are left-frozen), 1 for the
    * middle fragment under a left freeze, and last for the right-frozen fragment.
