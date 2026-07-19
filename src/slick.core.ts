@@ -1534,8 +1534,14 @@ export class CellSet {
 }
 
 export class ViewportMgr {
-  // named-element compat getters over the pane matrix (M18b): same runtime
-  // semantics as the historical definite-assignment fields (undefined until built)
+  // named-element getters over the pane matrix (M18b): same runtime semantics as
+  // the historical definite-assignment fields (undefined until built). Introduced
+  // as compat scaffolding, RETAINED by decision at M19f: after the facade
+  // conversion they remain the manager's own named-element vocabulary — used by
+  // the geometry appliers, materializer manifests and the grid's residual
+  // chrome/geometry sites, where `vm.paneHeaderL` reads better than a
+  // paneAt()/at() chain with a non-null assertion. Read-only accessors; the
+  // matrix cell is the single source of truth.
   get paneHeaderL(): HTMLDivElement { return this.paneAt('header', 'l')?.pane as HTMLDivElement; }
   get paneHeaderR(): HTMLDivElement { return this.paneAt('header', 'r')?.pane as HTMLDivElement; }
   get paneHeaderRF(): HTMLDivElement { return this.paneAt('header', 'rf')?.pane as HTMLDivElement; }
