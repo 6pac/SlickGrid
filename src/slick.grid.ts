@@ -69,6 +69,7 @@ import type {
   OnValidationErrorEventArgs,
   OnDragReplaceCellsEventArgs,
   PagingInfo,
+  PaneElementSets,
   RowInfo,
   SelectionModel,
   SingleColumnSort,
@@ -725,14 +726,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * for elements created later — pass ONLY the elements to wire up (the binding
    * service does not dedupe).
    */
-  protected bindPaneEvents(els: {
-    viewports?: HTMLDivElement[];
-    canvases?: HTMLDivElement[];
-    headerScrollers?: HTMLDivElement[];
-    headerRowScrollers?: HTMLDivElement[];
-    footerRows?: HTMLDivElement[];
-    footerRowScrollers?: HTMLDivElement[];
-  }) {
+  protected bindPaneEvents(els: PaneElementSets) {
     if (!this._options.enableTextSelectionOnCells) {
       // disable text selection in grid cells except in input and textarea elements
       els.viewports?.forEach((view) => {
@@ -795,31 +789,34 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * for the NEW elements only, and re-anchors the ancestor scroll bindings. No-op on
    * non-lazy grids.
    */
-  protected materializeLazyPanes() {
-    if (!this._viewportMgr.materializeSecondaryPanes(this._options)) {
+  /**
+   * Wires events, selection-disable and sort clicks for elements a materializer
+   * just created (M19c: the manifest lists exactly the NEW elements — the binding
+   * service does not dedupe). Historical per-wrapper order preserved:
+   * disableSelection → bindPaneEvents → pre-header binds → setupColumnSort →
+   * ancestor-scroll re-anchor (classic materialization only).
+   */
+  protected bindMaterialized(added: PaneElementSets) {
+    if (!this._paneEventsBound) {
       return;
     }
 
-    if (this._paneEventsBound) {
-      this.disableSelection([this._viewportMgr.headerR]);
+    if (added.headers?.length) {
+      this.disableSelection(added.headers);
+    }
 
-      this.bindPaneEvents({
-        viewports: [this._viewportMgr.viewportTopR, this._viewportMgr.viewportBottomL, this._viewportMgr.viewportBottomR],
-        canvases: [this._viewportMgr.canvasTopR, this._viewportMgr.canvasBottomL, this._viewportMgr.canvasBottomR],
-        headerScrollers: [this._viewportMgr.headerScrollerR],
-        headerRowScrollers: [this._viewportMgr.headerRowScrollerR],
-        footerRows: this._options.createFooterRow ? [this._viewportMgr.footerRowR] : [],
-        footerRowScrollers: this._options.createFooterRow ? [this._viewportMgr.footerRowScrollerR] : [],
-      });
+    this.bindPaneEvents(added);
 
-      if (this._options.createPreHeaderPanel) {
-        this._bindingEventService.bind(this._viewportMgr.preHeaderPanelScrollerR, 'contextmenu', this.handlePreHeaderContextMenu.bind(this) as EventListener);
-        this._bindingEventService.bind(this._viewportMgr.preHeaderPanelScrollerR, 'click', this.handlePreHeaderClick.bind(this) as EventListener);
-      }
+    added.preHeaderScrollers?.forEach((el) => {
+      this._bindingEventService.bind(el, 'contextmenu', this.handlePreHeaderContextMenu.bind(this) as EventListener);
+      this._bindingEventService.bind(el, 'click', this.handlePreHeaderClick.bind(this) as EventListener);
+    });
 
-      // sort clicks for the new right header container
-      this.setupColumnSort([this._viewportMgr.headerR]);
+    if (added.headers?.length) {
+      this.setupColumnSort(added.headers);
+    }
 
+    if (added.bodyCanvasChanged) {
       // the ancestor-scroll anchor canvas may have changed band
       this.unbindAncestorScrollEvents();
       this.bindAncestorScrollEvents();
@@ -858,14 +855,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       this._bindingEventService.bind(this._container, 'resize', this.resizeCanvas.bind(this));
 
-      this.bindPaneEvents({
-        viewports: this._viewportMgr.viewports.elements,
-        canvases: this._viewportMgr.canvases.elements,
-        headerScrollers: this._viewportMgr.headerScrollers.elements,
-        headerRowScrollers: this._viewportMgr.headerRowScrollers.elements,
-        footerRows: this._viewportMgr.footerRows.elements,
-        footerRowScrollers: this._viewportMgr.footerRowScrollers.elements,
-      });
+      this.bindPaneEvents(this._viewportMgr.allPaneElements());
       this._paneEventsBound = true;
 
       if (this._options.createTopHeaderPanel) {
@@ -2269,87 +2259,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         : Number.MAX_SAFE_INTEGER,
     });
 
-    // materialize the secondary panes if freezing was just enabled on a lazyPanes grid
-    // (runs before setScroller/setColumns in the internal_setOptions pipeline)
-    if (this._options.frozenColumn! > -1 || this.hasFrozenRows) {
-      this.materializeLazyPanes();
-    }
-
-    // materialize the right-frozen band the first time a right freeze is applied
-    if (this._options.frozenRightColumn! > 0) {
-      this.materializeRightFrozenPanes();
-    }
-
-    // materialize the bottom-frozen row band the first time simultaneous
-    // top+bottom freezing is applied
-    if (this._options.frozenRow! > -1 && this._options.frozenBottomRow! > 0) {
-      this.materializeBottomFrozenPanes();
-    }
-  }
-
-  /**
-   * Builds the bottom-frozen row band on first use (simultaneous top+bottom mode)
-   * and wires events for the new elements when the grid is already live.
-   */
-  protected materializeBottomFrozenPanes() {
-    // canonicalize the classic pane set first (no-op on non-lazy grids)
-    this.materializeLazyPanes();
-
-    const vm = this._viewportMgr;
-    const hadCorner = !!vm.canvasBottomFrozenRF;
-    if (!vm.materializeBottomFrozenBand(this._options)) {
-      // idempotent call may still have added the RF corner variant late
-      if (!hadCorner && vm.canvasBottomFrozenRF && this._paneEventsBound) {
-        this.bindPaneEvents({ viewports: [vm.viewportBottomFrozenRF], canvases: [vm.canvasBottomFrozenRF] });
-      }
-      return;
-    }
-
-    if (this._paneEventsBound) {
-      const viewports = [vm.viewportBottomFrozenL, vm.viewportBottomFrozenR];
-      const canvases = [vm.canvasBottomFrozenL, vm.canvasBottomFrozenR];
-      if (vm.canvasBottomFrozenRF) {
-        viewports.push(vm.viewportBottomFrozenRF);
-        canvases.push(vm.canvasBottomFrozenRF);
-      }
-      this.bindPaneEvents({ viewports, canvases });
-    }
-  }
-
-  /**
-   * Builds the right-frozen band on first use (init-time via finishInitialization's
-   * setFrozenOptions call — before the event-binding loops — or at runtime via
-   * setOptions) and wires events for the new elements when the grid is already live.
-   */
-  protected materializeRightFrozenPanes() {
-    // canonicalize the classic pane set first (paneCellIndex's classic slots 0-3
-    // depend on it) — no-op on non-lazy grids
-    this.materializeLazyPanes();
-
-    const hadCorner = !!this._viewportMgr.canvasBottomFrozenRF;
-    if (!this._viewportMgr.materializeRightFrozenBand(this._options)) {
-      return;
-    }
-
-    if (this._paneEventsBound) {
-      const vm = this._viewportMgr;
-      this.disableSelection([vm.headerRF]);
-      const viewports = [vm.viewportTopRF, vm.viewportBottomRF];
-      const canvases = [vm.canvasTopRF, vm.canvasBottomRF];
-      if (!hadCorner && vm.canvasBottomFrozenRF) {
-        // the shared bottom-frozen × right-frozen corner arrived with this band
-        viewports.push(vm.viewportBottomFrozenRF);
-        canvases.push(vm.canvasBottomFrozenRF);
-      }
-      this.bindPaneEvents({
-        viewports,
-        canvases,
-        headerScrollers: [vm.headerScrollerRF],
-        headerRowScrollers: [vm.headerRowScrollerRF],
-        footerRows: this._options.createFooterRow ? [vm.footerRowRF] : [],
-        footerRowScrollers: this._options.createFooterRow ? [vm.footerRowScrollerRF] : [],
-      });
-      this.setupColumnSort([vm.headerRF]);
+    // materialize whatever bands the new freeze state requires (classic → RF → BF
+    // inside the vm; runs before setColumns in the internal_setOptions pipeline)
+    // and wire events for exactly the elements that were created
+    const added = this._viewportMgr.ensureBandsMaterialized(this._options);
+    if (added) {
+      this.bindMaterialized(added);
     }
   }
 

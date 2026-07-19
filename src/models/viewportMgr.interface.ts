@@ -71,6 +71,26 @@ export interface PaneHeightsGeometry {
   headerRowHeight?: number;
 }
 
+/**
+ * Element manifest shared by pane event binding and band materialization (M19c).
+ * A materializer returns exactly the elements it CREATED (the binding service does
+ * not dedupe, so double-reporting means double-bound handlers); allPaneElements()
+ * returns the full current set for the init bind / destroy unbind passes.
+ */
+export interface PaneElementSets {
+  viewports?: HTMLDivElement[];
+  canvases?: HTMLDivElement[];
+  headers?: HTMLDivElement[];
+  headerScrollers?: HTMLDivElement[];
+  headerRowScrollers?: HTMLDivElement[];
+  footerRows?: HTMLDivElement[];
+  footerRowScrollers?: HTMLDivElement[];
+  preHeaderScrollers?: HTMLDivElement[];
+  /** true when the ancestor-scroll anchor canvas may have moved band (classic
+   * materialization only — RF/BF arrival never re-anchors, historically) */
+  bodyCanvasChanged?: boolean;
+}
+
 /** Options consumed by ViewportMgr when constructing the pane/viewport/canvas DOM. */
 export interface ViewportMgrBuildOptions {
   createPreHeaderPanel?: boolean;

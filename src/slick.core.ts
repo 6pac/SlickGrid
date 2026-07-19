@@ -16,6 +16,7 @@ import type {
   CanvasWidthsGeometry,
   FreezeBandCounts,
   PaneHeightsGeometry,
+  PaneElementSets,
   ViewportFreezeState,
   ViewportMgrBuildOptions,
 } from './models/index.js';
@@ -1865,12 +1866,13 @@ export class ViewportMgr {
    * Builds the right/bottom panes, chrome, viewports and canvases that a lazyPanes
    * grid skipped at init, inserting each pane at its canonical sibling position and
    * pushing the new elements into the shared caches IN PLACE (the grid's array
-   * aliases keep working). Idempotent: returns false when the grid is not lazy
-   * (already fully built or built non-lazy).
+   * aliases keep working). Idempotent: returns null when the grid is not lazy
+   * (already fully built or built non-lazy); otherwise a manifest of exactly the
+   * NEW elements, for the grid's event wiring (M19c).
    */
-  materializeSecondaryPanes(o: ViewportMgrBuildOptions): boolean {
+  materializeSecondaryPanes(o: ViewportMgrBuildOptions): PaneElementSets | null {
     if (!this.lazy) {
-      return false;
+      return null;
     }
     this.lazy = false;
 
@@ -1886,7 +1888,19 @@ export class ViewportMgr {
       this.buildFooterRowFor('r', o);
     }
     this.syncElementArrays();
-    return true;
+    return {
+      // historical wiring order preserved: topR before the bottom pair
+      viewports: [this.viewportTopR, this.viewportBottomL, this.viewportBottomR],
+      canvases: [this.canvasTopR, this.canvasBottomL, this.canvasBottomR],
+      headers: [this.headerR],
+      headerScrollers: [this.headerScrollerR],
+      headerRowScrollers: [this.headerRowScrollerR],
+      footerRows: o.createFooterRow ? [this.footerRowR] : [],
+      footerRowScrollers: o.createFooterRow ? [this.footerRowScrollerR] : [],
+      preHeaderScrollers: o.createPreHeaderPanel ? [this.preHeaderPanelScrollerR] : [],
+      // classic materialization can move the ancestor-scroll anchor canvas
+      bodyCanvasChanged: true,
+    };
   }
 
   /**
@@ -1898,15 +1912,17 @@ export class ViewportMgr {
    * Idempotent: returns false when the band already exists.
    *
    * The historical "right" elements keep their class names and become the scrollable
-   * MIDDLE band while this band is active.
+   * MIDDLE band while this band is active. Returns a manifest of exactly the NEW
+   * elements (incl. the BF×RF corner when it arrived with this band), or null when
+   * the band already exists.
    */
-  materializeRightFrozenBand(o: ViewportMgrBuildOptions): boolean {
+  materializeRightFrozenBand(o: ViewportMgrBuildOptions): PaneElementSets | null {
     if (this.paneAt('header', 'rf')) {
       // band already exists: no corner work here (pre-matrix behavior). The BF×RF
       // corner is always created by whichever band materializes SECOND, on its
-      // success path — and the grid-side caller binds no pane events on this early
-      // return, so creating the corner here would leave it event-less.
-      return false;
+      // success path — and no pane events are wired on this early return, so
+      // creating the corner here would leave it event-less.
+      return null;
     }
 
     // appended as a block after the last classic pane
@@ -1918,10 +1934,25 @@ export class ViewportMgr {
       this.buildFooterRowFor('rf', o);
     }
 
-    // if the bottom-frozen band already exists, add the shared corner pane
-    this.ensureBottomFrozenRightVariant(o);
+    // if the bottom-frozen band already exists, add the shared corner pane; the
+    // CREATOR reports it — the exactly-once manifest rule
+    const corner = this.ensureBottomFrozenRightVariant(o);
     this.syncElementArrays();
-    return true;
+    const viewports = [this.viewportTopRF, this.viewportBottomRF];
+    const canvases = [this.canvasTopRF, this.canvasBottomRF];
+    if (corner) {
+      viewports.push(corner.viewport as HTMLDivElement);
+      canvases.push(corner.canvas as HTMLDivElement);
+    }
+    return {
+      viewports,
+      canvases,
+      headers: [this.headerRF],
+      headerScrollers: [this.headerScrollerRF],
+      headerRowScrollers: [this.headerRowScrollerRF],
+      footerRows: o.createFooterRow ? [this.footerRowRF] : [],
+      footerRowScrollers: o.createFooterRow ? [this.footerRowScrollerRF] : [],
+    };
   }
 
   /**
@@ -1929,31 +1960,98 @@ export class ViewportMgr {
    * pane+viewport+canvas per active column band, appended after all existing panes
    * with `*-bottom-frozen` css classes. Element arrays extend at the END and the
    * slots are recorded (bfSlotL/R/RF). Idempotent: returns false when the band
-   * already exists. The right-frozen column variant is built only when that band's
-   * DOM exists at call time; materializeRightFrozenBand adds it later otherwise.
+   * already exists (a corner-only manifest when the idempotent recall added the
+   * late RF corner variant). The right-frozen column variant is built only when
+   * that band's DOM exists at call time; materializeRightFrozenBand adds it later
+   * otherwise.
    */
-  materializeBottomFrozenBand(o: ViewportMgrBuildOptions): boolean {
+  materializeBottomFrozenBand(o: ViewportMgrBuildOptions): PaneElementSets | null {
     if (this.paneAt('bf', 'l')) {
-      // idempotent call may still need to add the RF corner variant late
-      this.ensureBottomFrozenRightVariant(o);
-      return false;
+      // idempotent call may still need to add the RF corner variant late — the
+      // creator reports it, exactly once
+      const lateCorner = this.ensureBottomFrozenRightVariant(o);
+      return lateCorner
+        ? { viewports: [lateCorner.viewport as HTMLDivElement], canvases: [lateCorner.canvas as HTMLDivElement] }
+        : null;
     }
 
     const lastPane = (this.paneAt('bottom', 'rf') ?? this.paneAt('bottom', 'r') ?? this.paneAt('top', 'l'))!.pane;
     const l = this.buildPaneSet('bf', 'l', o, lastPane);
     this.buildPaneSet('bf', 'r', o, l.pane);
-    this.ensureBottomFrozenRightVariant(o);
+    const corner = this.ensureBottomFrozenRightVariant(o);
     this.syncElementArrays();
-    return true;
+    const viewports = [this.viewportBottomFrozenL, this.viewportBottomFrozenR];
+    const canvases = [this.canvasBottomFrozenL, this.canvasBottomFrozenR];
+    if (corner) {
+      viewports.push(corner.viewport as HTMLDivElement);
+      canvases.push(corner.canvas as HTMLDivElement);
+    }
+    return { viewports, canvases };
   }
 
-  /** Adds the bottom-frozen × right-frozen corner pane when both bands exist. */
-  protected ensureBottomFrozenRightVariant(o: ViewportMgrBuildOptions) {
+  /** Adds the bottom-frozen × right-frozen corner pane when both bands exist,
+   * returning the created PaneSet (null when nothing was created) so the CALLING
+   * materializer — and only it — reports the corner in its manifest. */
+  protected ensureBottomFrozenRightVariant(o: ViewportMgrBuildOptions): PaneSet | null {
     if (!this.paneAt('bf', 'l') || !this.paneAt('header', 'rf') || this.paneAt('bf', 'rf')) {
-      return;
+      return null;
     }
-    this.buildPaneSet('bf', 'rf', o, this.paneAt('bf', 'r')!.pane);
+    const created = this.buildPaneSet('bf', 'rf', o, this.paneAt('bf', 'r')!.pane);
     this.syncElementArrays();
+    return created;
+  }
+
+  /**
+   * The full current element manifest — the init-time array-wide bind pass and the
+   * destroy-time unbind pass iterate the SAME shape, so they can never diverge.
+   */
+  allPaneElements(): PaneElementSets {
+    return {
+      viewports: this.viewport,
+      canvases: this.canvas,
+      headerScrollers: this.headerScroller,
+      headerRowScrollers: this.headerRowScroller,
+      footerRows: this.footerRow,
+      footerRowScrollers: this.footerRowScroller,
+    };
+  }
+
+  /**
+   * One entry for every runtime freeze change (M19c): materializes whatever bands
+   * the CURRENT freeze snapshot requires, in the load-bearing order classic → RF →
+   * BF (paneCellIndex's classic slots 0–3 depend on classic canonicalization
+   * happening first — the historical wrappers forced it before either band), and
+   * merges the per-band manifests of newly created elements into one.
+   */
+  ensureBandsMaterialized(o: ViewportMgrBuildOptions): PaneElementSets | null {
+    const classicGate = this.freeze.frozenColumnIdx > -1 || this.freeze.hasFrozenRows;
+    const rfGate = (this.freeze.frozenRightColCount ?? 0) > 0;
+    const bfGate = (this.freeze.frozenRowCount ?? -1) > -1 && (this.freeze.frozenBottomRowCount ?? 0) > 0;
+
+    let merged: PaneElementSets | null = null;
+    const merge = (m: PaneElementSets | null) => {
+      if (!m) { return; }
+      merged ??= {};
+      for (const key of ['viewports', 'canvases', 'headers', 'headerScrollers', 'headerRowScrollers', 'footerRows', 'footerRowScrollers', 'preHeaderScrollers'] as const) {
+        if (m[key]?.length) {
+          (merged[key] ??= []).push(...m[key]!);
+        }
+      }
+      if (m.bodyCanvasChanged) {
+        merged.bodyCanvasChanged = true;
+      }
+    };
+
+    if (classicGate || rfGate || bfGate) {
+      merge(this.materializeSecondaryPanes(o));
+    }
+    if (rfGate) {
+      merge(this.materializeRightFrozenBand(o));
+    }
+    if (bfGate) {
+      merge(this.materializeBottomFrozenBand(o));
+    }
+    return merged;
   }
 
   /** Whether the simultaneous top+bottom row mode is active AND its DOM exists. */
