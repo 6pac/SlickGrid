@@ -1859,7 +1859,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     let j: number;
-    let k: number;
     let c: C;
     let pageX: number;
     let minPageX: number;
@@ -2001,16 +2000,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
                 }
               }
 
-              for (k = 0; k <= i; k++) {
-                c = vc[k];
-                if (!c || c.hidden) { continue; }
-
-                if (this._viewportMgr.isColumnRightOfFreeze(k)) {
-                  newCanvasWidthR += c.width || 0;
-                } else {
-                  newCanvasWidthL += c.width || 0;
-                }
-              }
+              ({ l: newCanvasWidthL, r: newCanvasWidthR } = this._viewportMgr.accumulateBandWidths(vc, i));
 
               if (this._options.forceFitColumns) {
                 x = -d;
@@ -2093,16 +2083,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
                 }
               }
 
-              for (k = 0; k <= i; k++) {
-                c = vc[k];
-                if (!c || c.hidden) { continue; }
-
-                if (this._viewportMgr.isColumnRightOfFreeze(k)) {
-                  newCanvasWidthR += c.width || 0;
-                } else {
-                  newCanvasWidthL += c.width || 0;
-                }
-              }
+              ({ l: newCanvasWidthL, r: newCanvasWidthR } = this._viewportMgr.accumulateBandWidths(vc, i));
 
               if (this._options.forceFitColumns) {
                 x = -d;
@@ -2142,8 +2123,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
             }
 
             if (this._viewportMgr.hasFrozenColumns() && newCanvasWidthL !== this.canvasWidthL) {
-              Utils.width(this._viewportMgr.headerL, newCanvasWidthL + 1000);
-              Utils.setStyleSize(this._viewportMgr.paneHeaderR, 'left', newCanvasWidthL);
+              this._viewportMgr.setLiveResizeLeftWidth(newCanvasWidthL);
             }
 
             this.applyColumnHeaderWidths();
@@ -2993,10 +2973,17 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     let x = 0;
     let w = 0;
     let rule: any;
-    const rfStartIdx = this.getFrozenRightStartIdx();
+    const geometry = {
+      canvasWidthL: this.canvasWidthL,
+      canvasWidthR: this.canvasWidthR,
+      canvasWidthRF: this.canvasWidthRF,
+      frozenColumnIdx: this._options.frozenColumn!,
+      rfStartIdx: this.getFrozenRightStartIdx(),
+    };
     for (let i = 0; i < this.columns.length; i++) {
-      // the right-frozen band starts a new viewport: reset the running left offset
-      if (i === rfStartIdx) {
+      const band = this._viewportMgr.columnBandGeometry(i, geometry);
+      if (band.resetXBefore) {
+        // the right-frozen band starts a new viewport: reset the running left offset
         x = 0;
       }
       if (!this.columns[i]?.hidden) {
@@ -3004,17 +2991,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
         rule = this.getColumnCssRules(i);
         rule.left.style.left = `${x}px`;
-        rule.right.style.right = ((i >= rfStartIdx
-          ? this.canvasWidthRF
-          : ((this._options.frozenColumn !== -1 && i > this._options.frozenColumn!) ? this.canvasWidthR : this.canvasWidthL)) - x - w) + 'px';
+        rule.right.style.right = (band.bandWidth - x - w) + 'px';
 
-        // If this column is frozen, reset the css left value since the
-        // column starts in a new viewport.
-        if (this._options.frozenColumn !== i) {
+        // the frozen column itself does not accumulate — it starts a new viewport
+        if (band.accumulate) {
           x += this.columns[i].width!;
         }
       }
-      if (this._options.frozenColumn === i) {
+      if (band.resetXAfter) {
+        // left freeze resets AFTER the frozen column
         x = 0;
       }
     }
@@ -3117,6 +3102,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.columnPosLeft[i] = x;
       this.columnPosRight[i] = x + (this.columns[i].width || 0);
 
+      // deliberately ONLY the left-freeze reset here — RF columns continue this
+      // coordinate space (preserved asymmetry vs applyColumnWidths' band oracle)
       if (this._options.frozenColumn === i) {
         x = 0;
       } else {

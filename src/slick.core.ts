@@ -2383,6 +2383,58 @@ export class ViewportMgr {
   }
 
   /**
+   * setupColumnResize's clean accumulation pass (M19d): bucket visible-column
+   * widths into left vs scrollable, up to AND INCLUDING upToIdx. RF columns fall
+   * into the r bucket exactly as historically (no rf accumulator — the resize
+   * logic never consumed one). The four bucketing passes interleaved with
+   * forceFit width mutation stay inline in the grid: they are a different shape,
+   * not repeats of this one.
+   */
+  accumulateBandWidths(columns: Array<{ width?: number; hidden?: boolean; } | undefined>, upToIdx: number): { l: number; r: number; } {
+    let l = 0;
+    let r = 0;
+    for (let k = 0; k <= upToIdx; k++) {
+      const c = columns[k];
+      if (!c || c.hidden) { continue; }
+      if (this.isColumnRightOfFreeze(k)) {
+        r += c.width || 0;
+      } else {
+        l += c.width || 0;
+      }
+    }
+    return { l, r };
+  }
+
+  /** The live resize-drag DOM writes under a left freeze (M19d): the left header
+   * keeps its historical +1000 slack and the middle header pane is re-anchored. */
+  setLiveResizeLeftWidth(newCanvasWidthL: number): void {
+    Utils.width(this.headerL, newCanvasWidthL + 1000);
+    Utils.setStyleSize(this.paneHeaderR, 'left', newCanvasWidthL);
+  }
+
+  /**
+   * applyColumnWidths' per-column band oracle (M19d): the three-way band width
+   * pick plus BOTH historical x-reset conventions — the RF band resets the
+   * running offset BEFORE its first column (it starts a new viewport) and the
+   * left freeze resets AFTER the frozen column, which itself does not
+   * accumulate. frozenColumnIdx/rfStartIdx stay grid-fresh inputs (the call site
+   * historically reads live options and re-derives rfStartIdx per call).
+   * updateColumnCaches deliberately uses ONLY the left-freeze reset — RF columns
+   * continue its coordinate space; that asymmetry stays inline there.
+   */
+  columnBandGeometry(colIdx: number, g: { canvasWidthL: number; canvasWidthR: number; canvasWidthRF: number; frozenColumnIdx: number; rfStartIdx: number; }): { bandWidth: number; resetXBefore: boolean; accumulate: boolean; resetXAfter: boolean; } {
+    const bandWidth = colIdx >= g.rfStartIdx
+      ? g.canvasWidthRF
+      : ((g.frozenColumnIdx !== -1 && colIdx > g.frozenColumnIdx) ? g.canvasWidthR : g.canvasWidthL);
+    return {
+      bandWidth,
+      resetXBefore: colIdx === g.rfStartIdx,
+      accumulate: g.frozenColumnIdx !== colIdx,
+      resetXAfter: g.frozenColumnIdx === colIdx,
+    };
+  }
+
+  /**
    * The per-band canvas width arithmetic (M19d), moved VERBATIM from the grid's
    * getCanvasWidth (reverse iteration and all): plain per-band sums, with the
    * fullWidthRows extra width going to the scrollable band (r under a left freeze,
