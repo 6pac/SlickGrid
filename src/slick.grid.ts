@@ -3511,12 +3511,17 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (Utils.isDefined(this.activeCellNode)) {
       const activeCellOffset = Utils.offset(this.activeCellNode);
       let rowOffset = Math.floor(Utils.offset(Utils.parents(this.activeCellNode, '.grid-canvas')[0] as HTMLElement)!.top);
-      const isBottom = Utils.parents(this.activeCellNode, '.grid-canvas-bottom').length;
 
-      if (this._viewportMgr.hasFrozenRows() && isBottom) {
-        rowOffset -= (this._options.frozenBottom)
-          ? Utils.height(this._viewportMgr.canvasTopL) as number
-          : this.frozenRowsHeight;
+      if (this._viewportMgr.hasFrozenRows()) {
+        // bfAware: false — setActiveCellInternal historically never distinguished the
+        // bottom-frozen band (its canvases carry no 'grid-canvas-bottom' token)
+        rowOffset -= this._viewportMgr.canvasNodeRowOffset(this.activeCellNode, {
+          dataLength: this.getDataLength(),
+          frozenBottomRowCount: this._options.frozenBottomRow!,
+          rowHeight: this._options.rowHeight!,
+          frozenRowsHeight: this.frozenRowsHeight,
+          frozenBottom: !!this._options.frozenBottom,
+        });
       }
 
       const cell = this.getCellFromPoint(activeCellOffset!.left, Math.ceil(activeCellOffset!.top) - rowOffset);
@@ -4491,17 +4496,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     let row = this.getRowFromNode(cellNode.parentNode as HTMLElement);
 
     if (this._viewportMgr.hasFrozenRows()) {
-      let rowOffset = 0;
       const c = Utils.offset(Utils.parents(cellNode, '.grid-canvas')[0] as HTMLElement);
-      const isBottom = Utils.parents(cellNode, '.grid-canvas-bottom').length;
-      const isBottomFrozen = this._viewportMgr.hasBottomFrozenBand() && Utils.parents(cellNode, '.grid-canvas-bottom-frozen').length;
-
-      if (isBottomFrozen) {
-        // bottom-frozen band: canvas origin is the band's first row
-        rowOffset = (this.getDataLength() - this._options.frozenBottomRow!) * this._options.rowHeight!;
-      } else if (isBottom) {
-        rowOffset = (this._options.frozenBottom) ? Utils.height(this._viewportMgr.canvasTopL) as number : this.frozenRowsHeight;
-      }
+      const rowOffset = this._viewportMgr.canvasNodeRowOffset(cellNode, {
+        dataLength: this.getDataLength(),
+        frozenBottomRowCount: this._options.frozenBottomRow!,
+        rowHeight: this._options.rowHeight!,
+        frozenRowsHeight: this.frozenRowsHeight,
+        frozenBottom: !!this._options.frozenBottom,
+      }, { bfAware: true });
 
       row = this.getCellFromPoint(targetEvent.clientX - c!.left, targetEvent.clientY - c!.top + rowOffset + document.documentElement.scrollTop).row;
     }
@@ -6808,20 +6810,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {Boolean} doPaging - scroll when pagination is enabled
    */
   scrollRowIntoView(row: number, doPaging?: boolean) {
-    // bottom-frozen rows are always vertically visible — never scroll for them
-    if (this._viewportMgr.isRowInBottomFrozenBand(row)) {
-      return;
-    }
-
-    if (!this._viewportMgr.hasFrozenRows() ||
-      (!this._options.frozenBottom && row > this.actualFrozenRow - 1) ||
-      (this._options.frozenBottom && row < this.actualFrozenRow - 1)) {
+    // bottom-frozen rows never scroll; frozen-band rows are skipped with the exact
+    // historical actualFrozenRow - 1 boundaries (both inside the vm predicate)
+    if (this._viewportMgr.shouldScrollRowIntoView(row)) {
 
       const viewportScrollH = Utils.height(this._viewportMgr.scrollContainerY) as number;
 
-      // if frozen row on top
-      // subtract number of frozen row
-      const rowNumber = (this._viewportMgr.hasFrozenRows() && !this._options.frozenBottom ? row - this._options.frozenRow! : row);
+      // frozen-top rebase: subtract the frozen row count
+      const rowNumber = this._viewportMgr.scrollableRowIndex(row);
 
       const rowAtTop = rowNumber * this._options.rowHeight!;
       const rowAtBottom = (rowNumber + 1) * this._options.rowHeight!

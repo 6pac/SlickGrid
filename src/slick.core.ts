@@ -2191,6 +2191,45 @@ export class ViewportMgr {
   }
 
   /**
+   * Vertical data offset of the row-band canvas containing `node` (M19), for
+   * translating page coordinates into canvas-local rows. Two historical variants:
+   * - bfAware (getCellFromEvent): the bottom-frozen band rebases to its first row;
+   * - NOT bfAware (setActiveCellInternal): the bf band is deliberately not
+   *   distinguished — bf canvases carry no 'grid-canvas-bottom' class token, so the
+   *   bottom test is false and the offset is 0 for them (historical behavior kept
+   *   as an explicit flag, not silently unified).
+   * The classic bottom offset keeps its asymmetric source: frozenBottom measures the
+   * LIVE top-left canvas height, top-freeze uses the caller's cached frozenRowsHeight.
+   * Callers keep their own hasFrozenRows() gating (their surrounding logic differs).
+   */
+  canvasNodeRowOffset(node: Element, g: { dataLength: number; frozenBottomRowCount: number; rowHeight: number; frozenRowsHeight: number; frozenBottom: boolean; }, opts?: { bfAware?: boolean; }): number {
+    if (opts?.bfAware && this.hasBottomFrozenBand() && Utils.parents(node, '.grid-canvas-bottom-frozen').length) {
+      // bottom-frozen band: canvas origin is the band's first row
+      return (g.dataLength - g.frozenBottomRowCount) * g.rowHeight;
+    }
+    if (Utils.parents(node, '.grid-canvas-bottom').length) {
+      return g.frozenBottom ? Utils.height(this.canvasTopL) as number : g.frozenRowsHeight;
+    }
+    return 0;
+  }
+
+  /** scrollRowIntoView's guard: bottom-frozen rows never scroll; frozen-band rows are
+   * skipped with the exact historical `actualFrozenRow - 1` boundaries. */
+  shouldScrollRowIntoView(row: number): boolean {
+    if (this.isRowInBottomFrozenBand(row)) {
+      return false;
+    }
+    return !this.freeze.hasFrozenRows
+      || (!this.freeze.frozenBottom && row > this.freeze.actualFrozenRow - 1)
+      || (this.freeze.frozenBottom && row < this.freeze.actualFrozenRow - 1);
+  }
+
+  /** frozen-top row-index rebase for vertical scroll arithmetic. */
+  scrollableRowIndex(row: number): number {
+    return this.freeze.hasFrozenRows && !this.freeze.frozenBottom ? row - (this.freeze.frozenRowCount ?? 0) : row;
+  }
+
+  /**
    * Index of the column's node inside rowsCache[].rowNode: 0 for the left fragment
    * (which is the scrollable fragment when no columns are left-frozen), 1 for the
    * middle fragment under a left freeze, and last for the right-frozen fragment.
