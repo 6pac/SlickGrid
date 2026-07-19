@@ -83,6 +83,7 @@ import {
   GridAutosizeColsMode as GridAutosizeColsMode_,
   keyCode as keyCode_,
   preClickClassName as preClickClassName_,
+  RowPositionIndexer as RowPositionIndexer_,
   RowSelectionMode as RowSelectionMode_,
   CellSelectionMode as CellSelectionMode_,
   type SlickEditorLock,
@@ -96,7 +97,6 @@ import {
   DragExtendHandle as DragExtendHandle_,
 } from './slick.core.js';
 import { Draggable as Draggable_, MouseWheel as MouseWheel_, Resizable as Resizable_ } from './slick.interactions.js';
-import { RowPositionIndexer as RowPositionIndexer_ } from './slick.rowpositionindex.js';
 
 // for (iife) load Slick methods from global Slick object, or use imports for (esm)
 const BindingEventService = IIFE_ONLY ? Slick.BindingEventService : BindingEventService_;
@@ -6062,10 +6062,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return;
     }
     if (!this.rowPositionIndex) {
-      if (typeof RowPositionIndexer !== 'function') {
-        // can only happen with the iife (browser script tags) build
-        throw new Error('[SlickGrid] the "rowHeightProvider" grid option requires slick.rowpositionindex.js to be loaded before slick.grid.js');
-      }
       this.rowPositionIndex = new RowPositionIndexer();
       this.rowHeightsDirty = true;
     }
