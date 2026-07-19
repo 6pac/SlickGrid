@@ -1445,6 +1445,54 @@ export class BandSet {
     this.forEach((el) => { out.push(...Array.from(el.querySelectorAll<HTMLElement>(selector))); });
     return out;
   }
+
+  // --- band-spanning column-cell conventions (M19b): the CONTINUOUS visible-column
+  // --- index threaded across the containers in band order l, r, rf ---
+
+  /** all column cells across the bands, in visible-column order */
+  cells(): HTMLElement[] {
+    const out: HTMLElement[] = [];
+    this.forEach((el) => { out.push(...(Array.from(el.children) as HTMLElement[])); });
+    return out;
+  }
+
+  /** the cell at a continuous visible-column index (historical cross-band walk) */
+  cellAt(visibleIdx: number): HTMLElement | undefined {
+    let remaining = visibleIdx;
+    let found: HTMLElement | undefined;
+    this.forEach((el) => {
+      if (found === undefined) {
+        if (remaining < el.children.length) {
+          found = el.children[remaining] as HTMLElement;
+        } else {
+          remaining -= el.children.length;
+        }
+      }
+    });
+    return found;
+  }
+
+  forEachCell(fn: (cell: HTMLElement, visibleIdx: number) => void): void {
+    let i = 0;
+    this.forEach((el) => {
+      for (let c = 0; c < el.children.length; c++, i++) {
+        fn(el.children[c] as HTMLElement, i);
+      }
+    });
+  }
+
+  /** the band container owning a data-column index — the historical three-way
+   * bandElementForColumn pick with the elements supplied internally */
+  containerForColumn(colIdx: number): HTMLDivElement {
+    return this.mgr.bandElementForColumn(colIdx, this.at('l') as HTMLDivElement, this.at('r') as HTMLDivElement, this.at('rf') as HTMLDivElement);
+  }
+
+  /** container pick + band-local child index in one call (the getHeaderColumn /
+   * getHeaderRowColumn / getFooterRowColumn collapse). Deliberately NOT
+   * optional-chained: the historical code throws when the container is missing. */
+  columnCell(colIdx: number): HTMLDivElement {
+    return this.containerForColumn(colIdx).children[this.mgr.bandLocalColumnIdx(colIdx)] as HTMLDivElement;
+  }
 }
 
 /** 2D analogue of BandSet for the pane/viewport/canvas cells of the pane matrix. */
@@ -2115,6 +2163,31 @@ export class ViewportMgr {
       return colIdx - this.freeze.frozenRightStartIdx!;
     }
     return this.sideLocalColumnIdx(colIdx);
+  }
+
+  // --- per-semantic band predicates (M19b). Doctrine (FACADE-FEASIBILITY.md §5):
+  // --- one predicate per HISTORICAL semantic, transcribed from its call sites —
+  // --- never unified, because the boundary comparisons deliberately differ. ---
+
+  /** left OR right frozen membership — the appendCellHtml 'frozen' CELL class and the
+   * cleanUpCells exemption semantic. Header cells keep isColumnInFrozenBand alone
+   * (left-band-only) — a different historical semantic, not an oversight. */
+  isColumnInAnyFrozenBand(colIdx: number): boolean {
+    return this.isColumnInFrozenBand(colIdx) || this.isColumnInRightFrozenBand(colIdx);
+  }
+
+  /** scrollCellIntoView's early-out pair, preserving the historical INCLUSIVE
+   * `cell <= frozenColumn` comparison — the boundary column itself never scrolls. */
+  isColumnAlwaysHorizontallyVisible(colIdx: number): boolean {
+    return colIdx <= this.freeze.frozenColumnIdx || this.isColumnInRightFrozenBand(colIdx);
+  }
+
+  /** appendRowHtml's row 'frozen' css semantic: the INCLUSIVE top test (the row equal
+   * to the frozenRow count is classed although it renders in the scrollable canvas —
+   * pinned by viewportmgr-band-routing.cy.ts) OR bottom-frozen band membership.
+   * Distinct from isRowInFrozenBand (cleanup) and the render split (attachRow). */
+  isRowFrozenClassed(row: number): boolean {
+    return (this.freeze.hasFrozenRows && row <= (this.freeze.frozenRowCount ?? -1)) || this.isRowInBottomFrozenBand(row);
   }
 
   /**
