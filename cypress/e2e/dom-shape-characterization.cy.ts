@@ -107,6 +107,20 @@ describe('DOM shape characterization - non-frozen grid (example1-simple)', () =>
   it('should render all rows into the top-left canvas only', () => {
     assertRowRouting({ topL: true, topR: false, bottomL: false, bottomR: false });
   });
+
+  it('should stamp band-truth markers: left elements are the live main/body band, right panes unmarked (M18a)', () => {
+    cy.get('#myGrid .slick-pane-top.slick-pane-left')
+      .should('have.attr', 'data-colband', 'main')
+      .and('have.attr', 'data-rowband', 'body');
+    cy.get('#myGrid .grid-canvas-top.grid-canvas-left')
+      .should('have.attr', 'data-colband', 'main')
+      .and('have.attr', 'data-rowband', 'body');
+    cy.get('#myGrid .slick-pane-header.slick-pane-left').should('have.attr', 'data-rowband', 'header');
+    cy.get('#myGrid .slick-pane-header.slick-pane-right').should('not.have.attr', 'data-colband');
+    cy.get('#myGrid .slick-pane-bottom.slick-pane-left').should('not.have.attr', 'data-rowband');
+    // the live body canvas is uniquely selectable without mode logic
+    cy.get('#myGrid .grid-canvas[data-colband="main"][data-rowband="body"]').should('have.length', 1);
+  });
 });
 
 describe('DOM shape characterization - frozen columns only (example-frozen-columns)', () => {
@@ -160,5 +174,19 @@ describe('DOM shape characterization - frozen columns and rows (example-frozen-c
 
   it('should render rows into all four canvases', () => {
     assertRowRouting({ topL: true, topR: true, bottomL: true, bottomR: true });
+  });
+
+  it('should stamp band-truth markers per role in the frozen-both configuration (M18a)', () => {
+    cy.get('#myGrid .slick-pane-top.slick-pane-left')
+      .should('have.attr', 'data-colband', 'left')
+      .and('have.attr', 'data-rowband', 'top-frozen');
+    cy.get('#myGrid .slick-pane-top.slick-pane-right')
+      .should('have.attr', 'data-colband', 'main')
+      .and('have.attr', 'data-rowband', 'top-frozen');
+    cy.get('#myGrid .slick-pane-bottom.slick-pane-right')
+      .should('have.attr', 'data-colband', 'main')
+      .and('have.attr', 'data-rowband', 'body');
+    // exactly one live main/body canvas, mode-independently
+    cy.get('#myGrid .grid-canvas[data-colband="main"][data-rowband="body"]').should('have.length', 1);
   });
 });

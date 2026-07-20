@@ -20,6 +20,7 @@ import type {
   SelectionUtils,
   ValueFilterMode,
   WidthEvalMode,
+  ViewportMgr as SlickViewportMgr,
 } from './slick.core.js';
 import type { SlickDataView } from './slick.dataview.js';
 import type { SlickGrid } from './slick.grid.js';
@@ -114,6 +115,7 @@ declare global {
     Range: typeof SlickRange,
     CopyRange: typeof SlickCopyRange,
     DragExtendHandle: typeof SlickDragExtendHandle,
+    ViewportMgr: typeof SlickViewportMgr,
     Resizable: typeof Resizable,
     RowMoveManager: typeof SlickRowMoveManager,
     RowSelectionMode: typeof RowSelectionMode,

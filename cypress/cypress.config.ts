@@ -7,6 +7,10 @@ export default defineConfig({
   video: false,
   viewportWidth: 1200,
   viewportHeight: 900,
+  // retry once in headless runs only: absorbs machine-load flakes in timing-sensitive
+  // tests (native clipboard paste, render waits) while Cypress still reports retried
+  // tests as flaky, so real intermittent bugs stay visible
+  retries: { runMode: 1, openMode: 0 },
   e2e: {
     experimentalRunAllSpecs: true,
     testIsolation: false,

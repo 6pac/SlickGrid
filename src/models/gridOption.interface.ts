@@ -245,11 +245,36 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   frozenRow?: number;
 
   /**
+   * Defaults to 0. Number of ROWS to freeze (pin) at the BOTTOM of the grid, usable
+   * TOGETHER with `frozenRow` (which then always means rows frozen at the top).
+   * A COUNT, like `frozenRightColumn`. When set (> 0) the legacy `frozenBottom` flag
+   * is ignored — that flag only selects the position of the single `frozenRow` band.
+   * (Phase 4 of the ViewportMgr refactor; no effect until the bottom-frozen band lands.)
+   */
+  frozenBottomRow?: number;
+
+  /**
+   * Defaults to 0. Number of columns to freeze (pin) at the RIGHT edge of the grid.
+   * Note this is a COUNT from the right, not a column index like `frozenColumn` —
+   * counts stay correct when columns are reordered or hidden.
+   * (Phase 4 of the ViewportMgr refactor; no effect until the right-frozen band lands.)
+   */
+  frozenRightColumn?: number;
+
+  /**
    * Defaults to 100, what is the minimum width to keep for the section on the right of a frozen grid?
    * This basically fixes an issue that if the user expand any column on the left of the frozen (pinning) section
    * and make it bigger than the viewport width, then the grid becomes unusable because the right section goes into a void/hidden area.
    */
   frozenRightViewportMinWidth?: number;
+
+  /**
+   * Defaults to false. When enabled AND the grid is created without frozen rows/columns, only the
+   * single top-left pane/viewport/canvas is built instead of the historical 6-pane/4-viewport/4-canvas
+   * structure; the extra panes materialize on the fly if freezing is later enabled via setOptions().
+   * Opt-in because it changes the DOM for consumers that style/query the unused right/bottom panes.
+   */
+  lazyPanes?: boolean;
 
   /** Defaults to false, which leads to have row(s) taking full width */
   fullWidthRows?: boolean;
