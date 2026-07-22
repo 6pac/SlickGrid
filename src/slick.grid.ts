@@ -374,7 +374,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected n!: number;    // number of pages
   protected cj!: number;   // "jumpiness" coefficient
 
-  protected rowPositionIndex?: RowPositionIndexer_;  // prefix-sum index of row top positions (variable row height mode only)
+  protected rowPositionIndexer?: RowPositionIndexer_;  // prefix-sum index of row top positions (variable row height mode only)
   protected rowHeightsDirty = true;                // set when row heights may have changed; the index is rebuilt on the next updateRowCount()
   protected frozenRowHeightsChanged = false;       // set when an index rebuild changed the frozen rows height; consumed at the end of updateRowCount()
 
@@ -5302,8 +5302,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @returns {number} The row height in pixels.
    */
   getRowHeight(row?: number) {
-    if (row !== undefined && this.isVariableRowHeight() && this.rowPositionIndex) {
-      return this.rowPositionIndex.height(row);
+    if (row !== undefined && this.isVariableRowHeight() && this.rowPositionIndexer) {
+      return this.rowPositionIndexer.height(row);
     }
     return this._options.rowHeight!;
   }
@@ -5318,8 +5318,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @returns {number} The virtual pixel position of the top of the row.
    */
   protected getRowPosition(row: number) {
-    if (this.isVariableRowHeight() && this.rowPositionIndex) {
-      return this.rowPositionIndex.top(row);
+    if (this.isVariableRowHeight() && this.rowPositionIndexer) {
+      return this.rowPositionIndexer.top(row);
     }
     return this._options.rowHeight! * row;
   }
@@ -5332,8 +5332,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @returns {number} The calculated row index.
    */
   protected getRowIndexFromPosition(y: number) {
-    if (this.isVariableRowHeight() && this.rowPositionIndex) {
-      return this.rowPositionIndex.rowAt(y);
+    if (this.isVariableRowHeight() && this.rowPositionIndexer) {
+      return this.rowPositionIndexer.rowAt(y);
     }
     return Math.floor(y / this._options.rowHeight!);
   }
@@ -6058,17 +6058,17 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   protected ensureRowPositionIndexer(rowCount: number) {
     if (!this.isVariableRowHeight()) {
-      this.rowPositionIndex = undefined;
+      this.rowPositionIndexer = undefined;
       return;
     }
-    if (!this.rowPositionIndex) {
-      this.rowPositionIndex = new RowPositionIndexer();
+    if (!this.rowPositionIndexer) {
+      this.rowPositionIndexer = new RowPositionIndexer();
       this.rowHeightsDirty = true;
     }
-    if (this.rowHeightsDirty || this.rowPositionIndex.count !== rowCount) {
+    if (this.rowHeightsDirty || this.rowPositionIndexer.count !== rowCount) {
       const provider = this._options.rowHeightProvider!;
       // height resolution chain: provider -> ItemMetadata.height -> default rowHeight (in rebuild)
-      this.rowPositionIndex.rebuild(
+      this.rowPositionIndexer.rebuild(
         rowCount,
         this._options.rowHeight!,
         (row: number) => provider(this as unknown as SlickGridModel, row, this.getDataItem(row)) ?? this.getItemMetadaWhenExists(row)?.height
