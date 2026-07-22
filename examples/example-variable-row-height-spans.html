@@ -1,0 +1,187 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>SlickGrid example: Variable row height with cell spans</title>
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <style>
+    .span-cell { background: #e8f0fe; font-weight: bold; }
+    #stats { margin: 6px 0; font-size: 13px; color: #444; }
+  </style>
+</head>
+<body>
+<h2>Variable row height + cell spans (<code>rowHeightProvider</code> + <code>enableCellRowSpan</code>)</h2>
+<div style="position:relative">
+  <div style="width:760px;">
+    <div id="stats"></div>
+    <div id="myGrid" style="width:100%;height:500px;"></div>
+  </div>
+
+  <div class="options-panel">
+    <h2>About</h2>
+    <p>
+      Combines <code>rowHeightProvider</code> (every 5th row 32px, every 13th row 70px, else 25px)
+      with <code>enableCellRowSpan</code>. Spanned cells stretch across rows of differing heights:
+      a span's pixel height is the sum of the heights of the rows it covers.
+    </p>
+    <h2>Controls</h2>
+    <button onclick="runChecks()">Run span geometry self-checks</button>
+    <button onclick="growCoveredRow()">Grow covered row 14 by 10px (invalidateRowHeights)</button>
+    <button onclick="grid.scrollRowToTop(299)">Scroll far span (row 299) to top</button>
+    <div id="checkResults" style="white-space:pre; font-family:monospace; font-size:12px; margin-top:8px;"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
+
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+
+<script>
+  var grid;
+  var ROWS = 500;
+  var extraGrowth = 0;   // added to row 14 (covered by the row-13 span) by the "grow" button
+
+  function rowHeightOf(row) {
+    var h = (row % 13 === 0) ? 70 : (row % 5 === 0) ? 32 : 25;
+    if (row === 14) { h += extraGrowth; }
+    return h;
+  }
+
+  // span heads: row -> { cell -> {rowspan, colspan} }; mirrored by the geometry self-checks below
+  var SPANS = {
+    5:   { 0: { rowspan: 2 } },                               // 32 + 25
+    13:  { 1: { rowspan: 3, colspan: 2 } },                   // 70 + 25(+growth) + 32, two columns wide
+    26:  { 0: { colspan: '*' } },                             // full-width single 70px row (26 % 13 === 0)
+    40:  { 2: { rowspan: 4 } },                               // 32 + 25 + 25 + 25
+    299: { 0: { rowspan: 3 } }                                // 70 + 32 + 25, far from the initial viewport
+  };
+
+  var columns = [
+    { id: 'idx', name: '#', field: 'idx', width: 70 },
+    { id: 'title', name: 'Title', field: 'title', width: 200 },
+    { id: 'h', name: 'Height', field: 'h', width: 90 },
+    { id: 'c', name: 'C', field: 'c', width: 140 },
+    { id: 'd', name: 'D', field: 'd', width: 140 }
+  ];
+
+  var options = {
+    rowHeight: 25,
+    rowHeightProvider: function (grid, row /*, item */) { return rowHeightOf(row); },
+    enableCellRowSpan: true,
+    enableCellNavigation: true,
+    enableColumnReorder: false
+  };
+
+  var data = [];
+  for (var i = 0; i < ROWS; i++) {
+    data[i] = {
+      idx: i,
+      title: SPANS[i] ? ('Span head at ' + i) : ('Task ' + i),
+      h: rowHeightOf(i) + 'px',
+      c: 'c' + i,
+      d: 'd' + i
+    };
+  }
+  data.getItemMetadata = function (row) {
+    if (!SPANS[row]) { return null; }
+    var cols = {};
+    Object.keys(SPANS[row]).forEach(function (cell) {
+      var s = SPANS[row][cell];
+      cols[cell] = { rowspan: s.rowspan || 1, colspan: s.colspan || 1, cssClass: 'span-cell' };
+    });
+    return { columns: cols };
+  };
+
+  grid = new Slick.Grid('#myGrid', data, columns, options);
+  document.getElementById('stats').textContent =
+    ROWS + ' rows, heights 25/32/70px, ' + Object.keys(SPANS).length + ' span heads (rowspan and/or colspan)';
+
+  function growCoveredRow() {
+    extraGrowth += 10;
+    data[14].h = rowHeightOf(14) + 'px';
+    grid.invalidateRowHeights();
+  }
+
+  // Self-checks: spanned cells must be exactly as tall as the sum of the rows they cover,
+  // covered cells must not render, and row tops must still match the provider prefix sums.
+  function runChecks() {
+    var out = [];
+    var pass = true;
+
+    function check(label, ok, detail) {
+      out.push((ok ? 'PASS ' : 'FAIL ') + label + (detail ? '  [' + detail + ']' : ''));
+      if (!ok) { pass = false; }
+    }
+
+    // 1. each span head: height equals the sum of covered row heights; covered cells absent
+    Object.keys(SPANS).forEach(function (rowKey) {
+      var head = parseInt(rowKey, 10);
+      grid.scrollRowIntoView(head);
+      Object.keys(SPANS[head]).forEach(function (cellKey) {
+        var cell = parseInt(cellKey, 10);
+        var s = SPANS[head][cellKey];
+        var rowspan = s.rowspan || 1;
+        var node = grid.getCellNode(head, cell);
+        if (!node) {
+          check('span head (' + head + ',' + cell + ') rendered', false);
+          return;
+        }
+        var expected = 0;
+        for (var r = head; r < head + rowspan; r++) { expected += rowHeightOf(r); }
+        var got = node.getBoundingClientRect().height;
+        check('span (' + head + ',' + cell + ') height = covered rows sum', Math.abs(got - expected) <= 1,
+          'got ' + got + ' expected ' + expected);
+
+        for (var cr = head + 1; cr < head + rowspan; cr++) {
+          check('covered cell (' + cr + ',' + cell + ') not rendered', !grid.getCellNode(cr, cell));
+        }
+        if (s.colspan === '*') {
+          check('colspan * spans to last column (' + head + ',' + cell + ')',
+            node.className.indexOf('r' + (columns.length - 1)) >= 0, node.className);
+        }
+      });
+    });
+
+    // 2. rendered row tops match provider prefix sums (spans must not disturb row geometry)
+    grid.scrollRowIntoView(0);
+    var vp = grid.getViewport();
+    var expectedTop = 0;
+    var tops = {};
+    for (var r2 = 0; r2 <= Math.min(vp.bottom + 2, ROWS - 1); r2++) {
+      tops[r2] = expectedTop;
+      expectedTop += rowHeightOf(r2);
+    }
+    var rowsOk = true, firstBad = '';
+    document.querySelectorAll('#myGrid .slick-row').forEach(function (node) {
+      var row = parseInt(node.dataset.row, 10);
+      if (row in tops) {
+        var domTop = parseFloat(node.style.top);
+        var domH = node.getBoundingClientRect().height;
+        if (Math.abs(domTop - tops[row]) > 0.5 || Math.abs(domH - rowHeightOf(row)) > 0.5) {
+          rowsOk = false;
+          if (!firstBad) { firstBad = 'row ' + row + ' top=' + domTop + ' expected=' + tops[row]; }
+        }
+      }
+    });
+    check('rendered row positions & heights match provider prefix sums', rowsOk, firstBad);
+
+    // 3. total canvas height equals the sum of all provider heights
+    var total = 0;
+    for (var t = 0; t < ROWS; t++) { total += rowHeightOf(t); }
+    var canvasH = parseFloat(getComputedStyle(document.querySelector('#myGrid .grid-canvas')).height);
+    check('canvas height equals total of provider heights', Math.abs(canvasH - total) < 1,
+      'canvas=' + canvasH + ' expected=' + total);
+
+    out.push(pass ? '\nALL CHECKS PASSED' : '\nCHECKS FAILED');
+    document.getElementById('checkResults').textContent = out.join('\n');
+    return pass;
+  }
+</script>
+</body>
+</html>

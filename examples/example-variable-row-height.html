@@ -1,0 +1,159 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>SlickGrid example: Variable row height</title>
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <style>
+    .tall-cell-content { white-space: normal; line-height: 1.35; }
+    #stats { margin: 6px 0; font-size: 13px; color: #444; }
+  </style>
+</head>
+<body>
+<h2>Variable row height (<code>rowHeightProvider</code>)</h2>
+<div style="position:relative">
+  <div style="width:700px;">
+    <div id="stats"></div>
+    <div id="myGrid" style="width:100%;height:500px;"></div>
+  </div>
+
+  <div class="options-panel">
+    <h2>About</h2>
+    <p>
+      This example supplies an <code>options.rowHeightProvider</code> callback, which implicitly
+      enables variable row height mode: every 5th row is 32px, every 13th row is 70px,
+      all others use the default <code>rowHeight</code> of 25px.
+    </p>
+    <h2>Controls</h2>
+    <button onclick="scrollToRow()">Scroll row 5,000 to top</button>
+    <button onclick="growRow()">Grow row 2 by 10px (invalidateRowHeights)</button>
+    <button onclick="runChecks()">Run geometry self-checks</button>
+    <div id="checkResults" style="white-space:pre; font-family:monospace; font-size:12px; margin-top:8px;"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
+
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+
+<script>
+  var grid;
+  var ROWS = 10000;
+  var extraGrowth = 0;   // added to row 2 by the "grow" button
+
+  function rowHeightOf(row) {
+    var h = (row % 13 === 0) ? 70 : (row % 5 === 0) ? 32 : 25;
+    if (row === 2) { h += extraGrowth; }
+    return h;
+  }
+
+  var columns = [
+    { id: 'idx', name: '#', field: 'idx', width: 70 },
+    { id: 'title', name: 'Title', field: 'title', width: 240 },
+    { id: 'h', name: 'Height', field: 'h', width: 80 },
+    { id: 'desc', name: 'Description', field: 'desc', width: 280, cssClass: 'tall-cell-content' }
+  ];
+
+  var options = {
+    rowHeight: 25,
+    rowHeightProvider: function (grid, row /*, item */) {
+      return rowHeightOf(row);
+    },
+    enableCellNavigation: true,
+    enableColumnReorder: false
+  };
+
+  var data = [];
+  for (var i = 0; i < ROWS; i++) {
+    data[i] = {
+      idx: i,
+      title: 'Task ' + i,
+      h: rowHeightOf(i) + 'px',
+      desc: (i % 13 === 0)
+        ? 'A 70px row with room for a longer description that can wrap onto several lines inside the cell.'
+        : (i % 5 === 0) ? 'A 32px row.' : 'Standard row.'
+    };
+  }
+
+  grid = new Slick.Grid('#myGrid', data, columns, options);
+  document.getElementById('stats').textContent =
+    ROWS.toLocaleString() + ' rows, mixed heights 25/32/70px';
+
+  function scrollToRow() {
+    grid.scrollRowToTop(5000);
+  }
+
+  function growRow() {
+    extraGrowth += 10;
+    data[2].h = rowHeightOf(2) + 'px';
+    grid.invalidateRowHeights();
+  }
+
+  // Geometry self-checks: compare rendered DOM row positions/heights against the provider truth.
+  function runChecks() {
+    var out = [];
+    var pass = true;
+
+    function check(label, ok, detail) {
+      out.push((ok ? 'PASS ' : 'FAIL ') + label + (detail ? '  [' + detail + ']' : ''));
+      if (!ok) { pass = false; }
+    }
+
+    // 1. every rendered row's DOM top/height matches the prefix-sum of provider heights
+    var vp = grid.getViewport();
+    var expectedTop = 0;
+    var tops = {};
+    for (var r = 0; r <= Math.min(vp.bottom + 2, ROWS - 1); r++) {
+      tops[r] = expectedTop;
+      expectedTop += rowHeightOf(r);
+    }
+    var scrollOffset = 0; // single page for this dataset size unless > maxSupportedCssHeight
+    var rowsOk = true, firstBad = '';
+    document.querySelectorAll('#myGrid .slick-row').forEach(function (node) {
+      var row = parseInt(node.dataset.row, 10);
+      var domTop = parseFloat(node.style.top);
+      // default-height rows are sized by the stylesheet rule (no inline height), so measure the box
+      var domH = node.getBoundingClientRect().height;
+      if (row in tops) {
+        if (Math.abs(domTop - (tops[row] - scrollOffset)) > 0.5 || Math.abs(domH - rowHeightOf(row)) > 0.5) {
+          rowsOk = false;
+          if (!firstBad) { firstBad = 'row ' + row + ' top=' + domTop + ' expected=' + tops[row] + ' h=' + domH; }
+        }
+      }
+    });
+    check('rendered row positions & heights match provider prefix sums', rowsOk, firstBad);
+
+    // 2. getCellFromPoint round-trips with the rendered geometry for a sample of rows
+    var rtOk = true, rtBad = '';
+    for (var s = vp.top; s <= Math.min(vp.top + 10, ROWS - 1); s++) {
+      var box = grid.getCellNodeBox(s, 0);
+      if (!box) { continue; }
+      var probe = grid.getCellFromPoint(box.left + 2, (box.top + box.bottom) / 2);
+      if (probe.row !== s) {
+        rtOk = false;
+        if (!rtBad) { rtBad = 'probe row ' + s + ' -> ' + probe.row; }
+      }
+    }
+    check('getCellFromPoint round-trips with getCellNodeBox', rtOk, rtBad);
+
+    // 3. total canvas height equals the sum of all provider heights
+    var total = 0;
+    for (var t = 0; t < ROWS; t++) { total += rowHeightOf(t); }
+    var canvas = document.querySelector('#myGrid .grid-canvas');
+    var canvasH = parseFloat(getComputedStyle(canvas).height);
+    check('canvas height equals total of provider heights', Math.abs(canvasH - total) < 1,
+      'canvas=' + canvasH + ' expected=' + total);
+
+    out.push(pass ? '\nALL CHECKS PASSED' : '\nCHECKS FAILED');
+    document.getElementById('checkResults').textContent = out.join('\n');
+    return pass;
+  }
+</script>
+</body>
+</html>
