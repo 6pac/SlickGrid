@@ -46,8 +46,12 @@ describe('Example - Variable Row Height with Cell Spans', { retries: 1 }, () => 
     cy.get('#checkResults').should('contain', 'ALL CHECKS PASSED');
   });
 
-  it('should keep span geometry consistent at a far scroll position', () => {
+  it('should scroll a far span head to the top with consistent geometry', () => {
     cy.contains('button', 'Scroll far span').click();
+    // scrollRowToTop lands row 299 as the first visible row (not merely into view at the bottom)
+    cy.window().then(win => {
+      expect((win as any).grid.getViewport().top).to.eq(299);
+    });
     cy.get('#myGrid .slick-row[data-row=299] > .slick-cell.l0')
       .invoke('outerHeight')
       .should('be.closeTo', spanSum(299, 3), 1);

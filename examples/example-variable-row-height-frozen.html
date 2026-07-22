@@ -36,7 +36,7 @@
     <button onclick="runChecks()">Run frozen geometry self-checks</button>
     <button onclick="growRowA()">A: grow row 2 by 10px (invalidateRowHeights)</button>
     <button onclick="growFrozenRowB()">B: grow frozen row 0 by 10px (invalidateRowHeights)</button>
-    <button onclick="gridA.scrollRowIntoView(300); gridB.scrollRowIntoView(300);">Scroll both to row 300</button>
+    <button onclick="gridA.scrollRowToTop(300); gridB.scrollRowToTop(300);">Scroll both to row 300 (top)</button>
     <div id="checkResults" style="white-space:pre; font-family:monospace; font-size:12px; margin-top:8px;"></div>
   </div>
 </div>

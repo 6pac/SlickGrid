@@ -28,7 +28,7 @@
       all others use the default <code>rowHeight</code> of 25px.
     </p>
     <h2>Controls</h2>
-    <button onclick="scrollToRow()">Scroll row 5,000 into view</button>
+    <button onclick="scrollToRow()">Scroll row 5,000 to top</button>
     <button onclick="growRow()">Grow row 2 by 10px (invalidateRowHeights)</button>
     <button onclick="runChecks()">Run geometry self-checks</button>
     <div id="checkResults" style="white-space:pre; font-family:monospace; font-size:12px; margin-top:8px;"></div>
@@ -86,7 +86,7 @@
     ROWS.toLocaleString() + ' rows, mixed heights 25/32/70px';
 
   function scrollToRow() {
-    grid.scrollRowIntoView(5000);
+    grid.scrollRowToTop(5000);
   }
 
   function growRow() {

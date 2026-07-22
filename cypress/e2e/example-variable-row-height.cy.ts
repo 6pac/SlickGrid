@@ -25,8 +25,12 @@ describe('Example - Variable Row Height', { retries: 1 }, () => {
     cy.get('#checkResults').should('contain', 'ALL CHECKS PASSED');
   });
 
-  it('should scroll row 5,000 into view with consistent geometry', () => {
+  it('should scroll row 5,000 to the top with consistent geometry', () => {
     cy.contains('button', 'Scroll row 5,000').click();
+    // scrollRowToTop lands row 5,000 as the first visible row
+    cy.window().then(win => {
+      expect((win as any).grid.getViewport().top).to.eq(5000);
+    });
     cy.get('#myGrid .slick-row[data-row=5000]').should('exist');
     cy.contains('button', 'Run geometry self-checks').click();
     cy.get('#checkResults').should('contain', 'ALL CHECKS PASSED');
