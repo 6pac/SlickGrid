@@ -236,12 +236,26 @@
     });
   }
 
+  // deterministic pseudo-random generator (mulberry32) so the grid data is identical on every
+  // load. The E2E tests assert exact column-filter and pagination outcomes (e.g. filtering "5"
+  // shows a single page); with Math.random() the match count varied run-to-run and those
+  // assertions flaked. A fixed seed keeps the data realistic-looking but reproducible.
+  function makeSeededRandom(seed) {
+    return function () {
+      seed |= 0; seed = (seed + 0x6D2B79F5) | 0;
+      var t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
   document.addEventListener("DOMContentLoaded", function() {
+    var seededRandom = makeSeededRandom(12345);
     for (var i = 0; i < 150; i++) {
       var d = (data[i] = {});
       d["id"] = i + idOffset;
       for (var j = 0; j < columns.length; j++) {
-        d[j] = Math.round(Math.random() * 10);
+        d[j] = Math.round(seededRandom() * 10);
       }
     }
 
