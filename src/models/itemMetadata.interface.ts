@@ -20,9 +20,10 @@ export interface ItemMetadata {
   focusable?: boolean;
 
   /**
-   * Row height in pixels, only used in variable row height mode (i.e. when a `rowHeightProvider`
-   * grid option is configured). Applied when the provider returns `undefined` for the row; when
-   * this is also undefined the default `rowHeight` grid option is used.
+   * Row height in pixels, read by the *default* `rowHeightProvider` when the
+   * `enableVariableRowHeight` grid option is on; when undefined the default `rowHeight` grid
+   * option is used. Note: supplying a custom `rowHeightProvider` replaces the default provider,
+   * in which case this property is no longer consulted.
    */
   height?: number;
 

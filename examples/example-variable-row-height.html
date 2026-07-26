@@ -17,15 +17,20 @@
 <div style="position:relative">
   <div style="width:700px;">
     <div id="stats"></div>
-    <div id="myGrid" style="width:100%;height:500px;"></div>
+    <div id="myGrid" style="width:100%;height:440px;"></div>
+    <h3 style="margin:14px 0 4px 0">Metadata-driven heights (default provider, no <code>rowHeightProvider</code> configured)</h3>
+    <div id="mdGrid" style="width:100%;height:200px;"></div>
   </div>
 
   <div class="options-panel">
     <h2>About</h2>
     <p>
-      This example supplies an <code>options.rowHeightProvider</code> callback, which implicitly
-      enables variable row height mode: every 5th row is 32px, every 13th row is 70px,
-      all others use the default <code>rowHeight</code> of 25px.
+      Variable row height is switched on with <code>options.enableVariableRowHeight</code>; the
+      heights come from the single <code>options.rowHeightProvider</code> source. The main grid
+      supplies its own provider (every 5th row 32px, every 13th row 70px, else the default
+      <code>rowHeight</code> of 25px). The second grid configures <em>no</em> provider: the
+      built-in default provider reads <code>ItemMetadata.height</code> from
+      <code>getItemMetadata(row)</code>, so metadata-driven heights work with just the switch.
     </p>
     <h2>Controls</h2>
     <button onclick="scrollToRow()">Scroll row 5,000 to top</button>
@@ -62,6 +67,7 @@
 
   var options = {
     rowHeight: 25,
+    enableVariableRowHeight: true,
     rowHeightProvider: function (grid, row /*, item */) {
       return rowHeightOf(row);
     },
@@ -84,6 +90,24 @@
   grid = new Slick.Grid('#myGrid', data, columns, options);
   document.getElementById('stats').textContent =
     ROWS.toLocaleString() + ' rows, mixed heights 25/32/70px';
+
+  // --- second grid: heights supplied purely via ItemMetadata.height (no rowHeightProvider);
+  // the built-in default provider picks them up when enableVariableRowHeight is on
+  var MD_ROWS = 60;
+  function mdHeightOf(row) { return (row % 4 === 0) ? 60 : 25; }
+  var mdData = [];
+  for (var m = 0; m < MD_ROWS; m++) {
+    mdData[m] = { idx: m, title: 'Meta task ' + m, h: mdHeightOf(m) + 'px', desc: (m % 4 === 0) ? 'metadata height: 60' : 'no metadata' };
+  }
+  mdData.getItemMetadata = function (row) {
+    return (row % 4 === 0) ? { height: 60 } : null;
+  };
+  var mdGrid = new Slick.Grid('#mdGrid', mdData, columns.map(function (c) { return Object.assign({}, c); }), {
+    rowHeight: 25,
+    enableVariableRowHeight: true,
+    enableCellNavigation: true,
+    enableColumnReorder: false
+  });
 
   function scrollToRow() {
     grid.scrollRowToTop(5000);
@@ -149,6 +173,29 @@
     var canvasH = parseFloat(getComputedStyle(canvas).height);
     check('canvas height equals total of provider heights', Math.abs(canvasH - total) < 1,
       'canvas=' + canvasH + ' expected=' + total);
+
+    // 4. metadata grid: rendered rows follow ItemMetadata.height via the default provider
+    var mdExpectedTop = 0;
+    var mdTops = {};
+    for (var mr = 0; mr < MD_ROWS; mr++) {
+      mdTops[mr] = mdExpectedTop;
+      mdExpectedTop += mdHeightOf(mr);
+    }
+    var mdOk = true, mdBad = '', mdCount = 0;
+    document.querySelectorAll('#mdGrid .slick-row').forEach(function (node) {
+      mdCount++;
+      var row = parseInt(node.dataset.row, 10);
+      var domTop = parseFloat(node.style.top);
+      var domH = node.getBoundingClientRect().height;
+      if (Math.abs(domTop - mdTops[row]) > 0.5 || Math.abs(domH - mdHeightOf(row)) > 0.5) {
+        mdOk = false;
+        if (!mdBad) { mdBad = 'row ' + row + ' top=' + domTop + ' expected=' + mdTops[row] + ' h=' + domH; }
+      }
+    });
+    check('metadata grid rows follow ItemMetadata.height (default provider)', mdOk && mdCount > 0, mdBad || (mdCount + ' rows'));
+    var mdCanvasH = parseFloat(getComputedStyle(document.querySelector('#mdGrid .grid-canvas')).height);
+    check('metadata grid canvas height equals total of metadata heights', Math.abs(mdCanvasH - mdExpectedTop) < 1,
+      'canvas=' + mdCanvasH + ' expected=' + mdExpectedTop);
 
     out.push(pass ? '\nALL CHECKS PASSED' : '\nCHECKS FAILED');
     document.getElementById('checkResults').textContent = out.join('\n');

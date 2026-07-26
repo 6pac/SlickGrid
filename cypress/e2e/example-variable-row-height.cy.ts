@@ -55,4 +55,14 @@ describe('Example - Variable Row Height', { retries: 1 }, () => {
     cy.contains('button', 'Run geometry self-checks').click();
     cy.get('#checkResults').should('contain', 'ALL CHECKS PASSED');
   });
+
+  it('should size the metadata grid rows via ItemMetadata.height through the default provider', () => {
+    // #mdGrid configures NO rowHeightProvider - only enableVariableRowHeight + getItemMetadata
+    // (every 4th row has { height: 60 }, others no metadata -> default 25px)
+    cy.get('#mdGrid .slick-row[data-row=0]').should('have.css', 'height', '60px');
+    cy.get('#mdGrid .slick-row[data-row=1]').should('have.css', 'height', '25px');
+    cy.get('#mdGrid .slick-row[data-row=4]')
+      .should('have.css', 'top', '135px')      // 60 + 25 + 25 + 25
+      .and('have.css', 'height', '60px');
+  });
 });

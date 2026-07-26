@@ -238,6 +238,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       'You could alternatively "Unfreeze all the columns" before trying again.',
     alwaysShowVerticalScroll: false,
     alwaysAllowHorizontalScroll: false,
+    enableVariableRowHeight: false,
+    // the default provider reads each row's height from the item metadata; only called when `enableVariableRowHeight` is on
+    rowHeightProvider: (grid: SlickGridModel, row: number) => grid.getItemMetadaWhenExists(row)?.height,
     explicitInitialization: false,
     rowHeight: 25,
     defaultColumnWidth: 80,
@@ -1336,7 +1339,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.trigger(this.onSetOptions, { optionsBefore: originalOptions, optionsAfter: this._options });
 
     // any option affecting row heights requires a rebuild of the row position index
-    if (newOptions.rowHeight !== undefined || newOptions.rowHeightProvider !== undefined) {
+    if (newOptions.rowHeight !== undefined || newOptions.rowHeightProvider !== undefined || newOptions.enableVariableRowHeight !== undefined) {
       this.rowHeightsDirty = true;
     }
 
@@ -5070,7 +5073,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       `.${this.uid} .slick-headerrow-columns { height: ${this._options.headerRowHeight}px; }`,
       `.${this.uid} .slick-footerrow-columns { height: ${this._options.footerRowHeight}px; }`,
     ];
-    if (this.isVariableRowHeight()) {
+    if (this._options.enableVariableRowHeight) {
       // cells simply track their row height; rows keep the default stylesheet height below and
       // only rows with a non-default height get an inline height (see appendRowHtml)
       rules.push(`.${this.uid} .slick-cell { height: calc(100% - ${this.cellHeightDiff}px); }`);
@@ -5283,26 +5286,16 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Whether the grid is in variable row height mode, which is enabled implicitly by supplying
-   * the `rowHeightProvider` grid option.
-   *
-   * @returns {boolean} True when a `rowHeightProvider` is configured.
-   */
-  protected isVariableRowHeight() {
-    return typeof this._options.rowHeightProvider === 'function';
-  }
-
-  /**
    * Retrieves the height of a row.
-   * In variable row height mode (i.e. when a `rowHeightProvider` is configured) and with a row
-   * index provided, returns that row's individual height; otherwise returns the default row
-   * height defined in the grid options.
+   * In variable row height mode (`enableVariableRowHeight`) and with a row index provided,
+   * returns that row's individual height; otherwise returns the default row height defined
+   * in the grid options.
    *
    * @param {number} [row] - The row index. When omitted the default row height is returned.
    * @returns {number} The row height in pixels.
    */
   getRowHeight(row?: number) {
-    if (row !== undefined && this.isVariableRowHeight() && this.rowPositionIndexer) {
+    if (row !== undefined && this._options.enableVariableRowHeight && this.rowPositionIndexer) {
       return this.rowPositionIndexer.height(row);
     }
     return this._options.rowHeight!;
@@ -5318,7 +5311,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @returns {number} The virtual pixel position of the top of the row.
    */
   protected getRowPosition(row: number) {
-    if (this.isVariableRowHeight() && this.rowPositionIndexer) {
+    if (this._options.enableVariableRowHeight && this.rowPositionIndexer) {
       return this.rowPositionIndexer.top(row);
     }
     return this._options.rowHeight! * row;
@@ -5332,7 +5325,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @returns {number} The calculated row index.
    */
   protected getRowIndexFromPosition(y: number) {
-    if (this.isVariableRowHeight() && this.rowPositionIndexer) {
+    if (this._options.enableVariableRowHeight && this.rowPositionIndexer) {
       return this.rowPositionIndexer.rowAt(y);
     }
     return Math.floor(y / this._options.rowHeight!);
@@ -5410,7 +5403,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     } else {
       rowDiv.style.top = `${topOffset}px`; // default to `top: {offset}px`
     }
-    if (this.isVariableRowHeight()) {
+    if (this._options.enableVariableRowHeight) {
       // rows keep the default stylesheet height unless this particular row's height differs
       const rowHeight = this.getRowHeight(row);
       if (rowHeight !== this._options.rowHeight) {
@@ -6057,7 +6050,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {number} rowCount - The number of rows to index (including the Add-New row when enabled).
    */
   protected ensureRowPositionIndexer(rowCount: number) {
-    if (!this.isVariableRowHeight()) {
+    if (!this._options.enableVariableRowHeight) {
       this.rowPositionIndexer = undefined;
       return;
     }
@@ -6066,12 +6059,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.rowHeightsDirty = true;
     }
     if (this.rowHeightsDirty || this.rowPositionIndexer.count !== rowCount) {
-      const provider = this._options.rowHeightProvider!;
-      // height resolution chain: provider -> ItemMetadata.height -> default rowHeight (in rebuild)
+      const provider = this._options.rowHeightProvider;
+      // the provider is the single source of row heights (its default implementation reads
+      // ItemMetadata.height); rows for which it returns undefined use the default rowHeight
       this.rowPositionIndexer.rebuild(
         rowCount,
         this._options.rowHeight!,
-        (row: number) => provider(this as unknown as SlickGridModel, row, this.getDataItem(row)) ?? this.getItemMetadaWhenExists(row)?.height
+        typeof provider === 'function'
+          ? (row: number) => provider(this as unknown as SlickGridModel, row, this.getDataItem(row))
+          : () => undefined
       );
       this.rowHeightsDirty = false;
       if (this.hasFrozenRows) {
@@ -6085,11 +6081,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /**
    * Invalidate all row heights (variable row height mode) and fully re-render the grid.
-   * Call this after the values driving `rowHeightProvider` have changed without a change in row
-   * count; the row position index is then rebuilt with the new heights.
+   * Call this after the values driving `rowHeightProvider` (or, with the default provider, the
+   * item metadata heights) have changed without a change in row count; the row position index
+   * is then rebuilt with the new heights.
    */
   invalidateRowHeights() {
-    if (this.isVariableRowHeight()) {
+    if (this._options.enableVariableRowHeight) {
       this.rowHeightsDirty = true;
       this.invalidate();
     }
@@ -6127,7 +6124,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     // row heights the scrolling rows are the ones after the frozen rows, so their combined height is
     // the remainder after subtracting the frozen rows height (in fixed mode any `numberOfRows` rows
     // have the same combined height, so the simple multiplication covers all layouts)
-    const scrollableRowsHeight = (this.isVariableRowHeight() && this.hasFrozenRows && !this._options.frozenBottom)
+    const scrollableRowsHeight = (this._options.enableVariableRowHeight && this.hasFrozenRows && !this._options.frozenBottom)
       ? this.getRowPosition(dataLength) - this.frozenRowsHeight
       : this.getRowPosition(numberOfRows);
 
