@@ -11,6 +11,7 @@ import type {
   Formatter,
   GridMenuOption,
   ItemMetadata,
+  SlickGridModel,
 } from './index.js';
 import type { SlickEditorLock } from '../slick.core.js';
 
@@ -184,6 +185,16 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   enableCellRowSpan?: boolean;
 
   /**
+   * Defaults to false. When enabled, rows may have differing heights: each row's height comes
+   * from the `rowHeightProvider` grid option (whose default implementation reads
+   * `ItemMetadata.height` from the data provider), falling back to the default `rowHeight`
+   * whenever the provider returns `undefined`.
+   * When disabled (the default), every row uses `rowHeight`, the grid keeps its fixed-height
+   * fast path and `rowHeightProvider` is never called.
+   */
+  enableVariableRowHeight?: boolean;
+
+  /**
    * Defaults to true, this option can be a boolean or a Column Reorder function.
    * When provided as a boolean, it will permits the user to move an entire column from a position to another.
    * We could also provide a Column Reorder function, there's mostly only 1 use for this which is the SlickDraggableGrouping plugin.
@@ -313,6 +324,22 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
 
   /** Grid row height in pixels (only type the number). Row of cell values. */
   rowHeight?: number;
+
+  /**
+   * The single source of row heights, only called when `enableVariableRowHeight` is on.
+   * Receives the grid instance (giving access to any grid state), the row index, and the row's
+   * data item. Returns the height in pixels of that row, or `undefined` to use the default
+   * `rowHeight`.
+   * The default implementation reads `ItemMetadata.height` from the data provider's
+   * `getItemMetadata(row)`, so metadata-driven heights work without configuring this option.
+   * Supplying your own function fully replaces the default - item metadata is then no longer
+   * consulted (no per-row fallback between the two sources).
+   * Heights are cached in a prefix-sum index that is rebuilt whenever the row count changes, rows
+   * are invalidated, or `grid.invalidateRowHeights()` is called; the callback is called once per
+   * row per rebuild, so it must be fast (a simple lookup or calculation - no DOM access).
+   * When heights change without a row count change, call `grid.invalidateRowHeights()`.
+   */
+  rowHeightProvider?: (grid: SlickGridModel, row: number, item: any) => number | undefined;
 
   /**
    * Defaults to "highlight-animate", a CSS class name used to simulate row highlight with an optional duration (e.g. after insert).
