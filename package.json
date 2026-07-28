@@ -98,7 +98,6 @@
   "overrides": {
     "brace-expansion": "^5.0.8",
     "follow-redirects": "^1.16.0",
-    "immutable": "^5.1.9",
     "qs": "^6.15.3"
   },
   "workspaces": [
