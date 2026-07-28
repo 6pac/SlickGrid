@@ -1848,7 +1848,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         header.classList.add(this._options.unorderableColumnCssClass!);
       }
       const colNameElm = Utils.createDomElement('span', { className: 'slick-column-name' }, header);
-      this.applyHtmlCode(colNameElm, m.name as string);
+      this.applyHtmlCode(colNameElm, m.name);
 
       Utils.width(header, m.width! - this.headerColumnWidthDiff);
 
@@ -2974,7 +2974,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       const header = this.getHeader(columnDef) as HTMLElement;
       headerColEl = Utils.createDomElement('div', { id: dummyHeaderColElId, className: 'ui-state-default slick-state-default slick-header-column' }, header);
       const colNameElm = Utils.createDomElement('span', { className: 'slick-column-name' }, headerColEl);
-      this.applyHtmlCode(colNameElm, columnDef.name!);
+      this.applyHtmlCode(colNameElm, columnDef.name);
       headerColEl.style.cssText = 'position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;';
       if (columnDef.headerCssClass) {
         headerColEl.classList.add(...Utils.classNameToList(columnDef.headerCssClass));
@@ -4607,7 +4607,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    *   `emptyTarget`, defaults to true, will empty the target.
    *   `skipEmptyReassignment`, defaults to true, when enabled it will not try to reapply an empty value when the target is already empty
    */
-  applyHtmlCode(target: HTMLElement, val: string | HTMLElement | DocumentFragment, options?: { emptyTarget?: boolean; skipEmptyReassignment?: boolean; }) {
+  applyHtmlCode(target: HTMLElement, val: boolean | string | HTMLElement | DocumentFragment = '', options?: { emptyTarget?: boolean; skipEmptyReassignment?: boolean; }) {
     if (target) {
       if (val instanceof HTMLElement || val instanceof DocumentFragment) {
         // first empty target and then append new HTML element
@@ -4623,11 +4623,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           return;
         }
 
-        let sanitizedText = val;
-        if (typeof sanitizedText === 'number' || typeof sanitizedText === 'boolean') {
-          target.textContent = sanitizedText;
+        if (typeof val === 'number' || typeof val === 'boolean') {
+          target.textContent = String(val);
         } else {
-          sanitizedText = this.sanitizeHtmlString(val as string);
+          const sanitizedText = this.sanitizeHtmlString(val as string);
 
           // apply HTML when enableHtmlRendering is enabled but make sure we do have a value (without a value, it will simply use `textContent` to clear text content)
           if (this._options.enableHtmlRendering && sanitizedText) {
