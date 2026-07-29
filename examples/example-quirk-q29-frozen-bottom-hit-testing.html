@@ -1,0 +1,108 @@
+<!doctype html>
+<!--
+  TEMPORARY repro page for the frozen-bottom hit-testing bug (triage Q29).
+  DO NOT MERGE — drives the repro cypress test; delete at merge. Permanent test:
+  cypress/e2e/quirk-frozen-bottom-hit-testing.cy.ts.
+
+  Bug: getCellFromEvent()/setActiveCellInternal() computed the bottom-canvas row
+  offset from a LIVE measurement of the top canvas (Utils.height(_canvasTopL)) in
+  frozenBottom mode, while the render path places bottom-canvas rows using
+  getFrozenRowOffset(). The two diverge whenever the dataset is shorter than the
+  viewport: updateRowCount floors the body canvas height at the viewport height
+  (th = max(scrollableRowsHeight, viewportH - scrollbar)), so the live measurement
+  reads ~viewport height while rows were placed with the ~content-height offset.
+  Clicking the frozen bottom row then resolves to a wrong row ~10 rows off.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SlickGrid quirk repro: frozen-bottom hit testing (Q29)</title>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+</head>
+<body>
+<h2>Q29 — frozen-bottom hit testing (TEMPORARY repro, do not merge)</h2>
+<div style="width:700px;">
+  <p><code>frozenRow: 1, frozenBottom: true</code>, 8 rows in a 500px container
+     (dataset shorter than the viewport). The self-check synthesizes a click on the
+     frozen bottom row's cell and asserts <code>getCellFromEvent</code> resolves the
+     correct row; a top-freeze control grid guards against regressions.</p>
+  <h3>Grid A — frozenBottom (bug target)</h3>
+  <div id="gridA" style="width:100%;height:500px;"></div>
+  <h3>Grid B — top freeze (control)</h3>
+  <div id="gridB" style="width:100%;height:500px;"></div>
+  <button onclick="runChecks()">Run hit-testing self-checks</button>
+  <div id="checkResults" style="white-space:pre; font-family:monospace; font-size:12px; margin-top:8px;"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
+
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+
+<script>
+  var ROWS = 8;
+  var columns = [
+    { id: 'id', name: '#', field: 'id', width: 80 },
+    { id: 'a', name: 'A', field: 'a', width: 200 },
+    { id: 'b', name: 'B', field: 'b', width: 200 }
+  ];
+  function makeData() {
+    var d = [];
+    for (var i = 0; i < ROWS; i++) { d.push({ id: i, a: 'a' + i, b: 'b' + i }); }
+    return d;
+  }
+  var base = { enableCellNavigation: true, enableColumnReorder: false, rowHeight: 25 };
+
+  // Grid A: 1 frozen BOTTOM row -> actualFrozenRow = 7; row 7 renders in the bottom canvas
+  var gridA = new Slick.Grid('#gridA', makeData(), columns.map(function (c) { return Object.assign({}, c); }),
+    Object.assign({ frozenRow: 1, frozenBottom: true }, base));
+  // Grid B (control): 1 frozen TOP row -> rows 1..7 render in the bottom canvas
+  var gridB = new Slick.Grid('#gridB', makeData(), columns.map(function (c) { return Object.assign({}, c); }),
+    Object.assign({ frozenRow: 1 }, base));
+  window.gridA = gridA; window.gridB = gridB;
+
+  // synthesize the event getCellFromEvent expects, aimed at the center of a cell
+  function hitTest(grid, container, row, cell) {
+    var cellEl = document.querySelector(container + ' .slick-row[data-row="' + row + '"] .slick-cell.l' + cell);
+    if (!cellEl) { return { error: 'cell node not found for row ' + row }; }
+    var r = cellEl.getBoundingClientRect();
+    var evt = { target: cellEl, clientX: r.left + r.width / 2, clientY: r.top + r.height / 2 };
+    var res = grid.getCellFromEvent(evt);
+    return { got: res, rect: { top: Math.round(r.top), left: Math.round(r.left) } };
+  }
+
+  window.runChecks = function runChecks() {
+    var out = [], pass = true;
+    function check(label, ok, detail) {
+      out.push((ok ? 'PASS ' : 'FAIL ') + label + (detail ? '  [' + detail + ']' : ''));
+      if (!ok) { pass = false; }
+    }
+
+    // A: the frozen bottom row (index 7, bottom canvas) must hit-test to row 7
+    var a = hitTest(gridA, '#gridA', 7, 1);
+    check('A(frozenBottom): click on frozen bottom row resolves to its own row',
+      !a.error && !!a.got && a.got.row === 7,
+      a.error || ('got row ' + (a.got && a.got.row) + ' expected 7'));
+
+    // A: a body row (top canvas) must also resolve correctly (sanity)
+    var a2 = hitTest(gridA, '#gridA', 3, 1);
+    check('A(frozenBottom): click on body row resolves correctly',
+      !a2.error && !!a2.got && a2.got.row === 3,
+      a2.error || ('got row ' + (a2.got && a2.got.row) + ' expected 3'));
+
+    // B (control): bottom-canvas row under a TOP freeze must resolve correctly
+    var b = hitTest(gridB, '#gridB', 4, 1);
+    check('B(top freeze, control): click on scrollable row resolves correctly',
+      !b.error && !!b.got && b.got.row === 4,
+      b.error || ('got row ' + (b.got && b.got.row) + ' expected 4'));
+
+    out.push(pass ? '\nALL CHECKS PASSED' : '\nCHECKS FAILED');
+    document.getElementById('checkResults').textContent = out.join('\n');
+    return pass;
+  };
+</script>
+</body>
+</html>
