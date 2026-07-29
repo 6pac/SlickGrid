@@ -6325,10 +6325,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {number} row - The row index to clean up.
    */
   protected cleanUpCells(range: CellViewportRange, row: number) {
-    // Ignore frozen rows
+    // Ignore frozen rows (mirror the guard used by cleanupRows: the top-band
+    // disjunct must be qualified with !frozenBottom, otherwise in frozenBottom
+    // mode the two disjuncts cover every row and NO row is ever cell-cleaned)
     if (this.hasFrozenRows
-      && ((this._options.frozenBottom && row > this.actualFrozenRow) // Frozen bottom rows
-        || (row <= this.actualFrozenRow)                     // Frozen top rows
+      && ((this._options.frozenBottom && row >= this.actualFrozenRow) // Frozen bottom rows
+        || (!this._options.frozenBottom && row <= this.actualFrozenRow) // Frozen top rows
       )
     ) {
       return;
