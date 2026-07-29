@@ -1,0 +1,74 @@
+<!doctype html>
+<!--
+  TEMPORARY repro page for the clipboard paste-delay race (triage Q30).
+  DO NOT MERGE — drives the repro cypress test; delete at merge. Permanent test:
+  cypress/e2e/quirk-clipboard-paste-event-driven.cy.ts.
+
+  Bug: CellExternalCopyManager pasted by focusing a decoy textarea and reading it
+  back after a FIXED setTimeout (default 100ms). Under machine load the timeout
+  could fire before the browser delivered the paste — silently losing/garbling it
+  (the mechanism behind long-standing CI flake). The fix decodes on the decoy's
+  'input' event (fires when the pasted value is populated), keeping the timeout
+  only as a fallback.
+
+  This page makes the mechanism deterministic: clipboardPasteDelay is set to
+  6000ms. With the event-driven fix a paste completes ~immediately; on the buggy
+  build nothing happens until the 6s fallback — so a short assertion window
+  separates the two builds reliably.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SlickGrid quirk repro: clipboard paste delay (Q30)</title>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+</head>
+<body>
+<h2>Q30 — event-driven clipboard paste (TEMPORARY repro, do not merge)</h2>
+<div style="width:700px;">
+  <p><code>clipboardPasteDelay: 6000</code>. Copy a cell (Ctrl+C), move, paste
+     (Ctrl+V): with the event-driven decode the value lands immediately; on the
+     buggy build nothing happens for 6 seconds.</p>
+  <div id="myGrid" style="width:100%;height:300px;"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
+
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangedecorator.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangeselector.js"></script>
+<script src="../dist/browser/plugins/slick.cellselectionmodel.js"></script>
+<script src="../dist/browser/plugins/slick.cellexternalcopymanager.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
+
+<script>
+  var columns = [
+    { id: 'id', name: '#', field: 'id', width: 60 },
+    { id: 'a', name: 'A', field: 'a', width: 120, editor: Slick.Editors.Text },
+    { id: 'b', name: 'B', field: 'b', width: 120, editor: Slick.Editors.Text },
+    { id: 'c', name: 'C', field: 'c', width: 120, editor: Slick.Editors.Text }
+  ];
+  var data = [];
+  for (var i = 0; i < 30; i++) {
+    data.push({ id: i, a: 'A' + i, b: 'B' + i, c: 'C' + i });
+  }
+  var grid = new Slick.Grid('#myGrid', data, columns, {
+    enableCellNavigation: true,
+    enableColumnReorder: false,
+    editable: true,
+    autoEdit: false,
+    rowHeight: 25
+  });
+  grid.setSelectionModel(new Slick.CellSelectionModel());
+  grid.registerPlugin(new Slick.CellExternalCopyManager({
+    includeHeaderWhenCopying: false,
+    clipboardPasteDelay: 6000    // makes the fixed-delay path 6s; the event-driven fix ignores it
+  }));
+  window.grid = grid;
+  window.getData = function () { return data; };
+</script>
+</body>
+</html>

@@ -474,11 +474,25 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
       )) {    // CTRL+V or Shift+INS
         const focusEl = document.activeElement as HTMLElement;
         const ta = this._createTextBox('');
-        window.setTimeout(() => {
+
+        // decode as soon as the browser delivers the paste into the decoy textarea
+        // (its 'input' event fires once the value is populated) instead of only
+        // after a fixed delay: under machine load the delay could elapse BEFORE the
+        // paste was delivered, silently losing or truncating the paste. The timeout
+        // remains as a fallback for any path where no input event arrives; the
+        // once-guard matters because _decodeTabularData removes the textarea.
+        let fallbackTimer: number | undefined;
+        let decoded = false;
+        const decode = () => {
+          if (decoded) { return; }
+          decoded = true;
+          window.clearTimeout(fallbackTimer);
           this._decodeTabularData(this._grid, ta);
           // restore focus when possible
           focusEl?.focus();
-        }, this._options?.clipboardPasteDelay ?? CLIPBOARD_PASTE_DELAY);
+        };
+        ta.addEventListener('input', decode, { once: true });
+        fallbackTimer = window.setTimeout(decode, this._options?.clipboardPasteDelay ?? CLIPBOARD_PASTE_DELAY);
         return false;
       }
     }
