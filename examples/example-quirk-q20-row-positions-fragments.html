@@ -1,0 +1,147 @@
+<!doctype html>
+<!--
+  TEMPORARY repro page for the updateRowPositions fragment bug (triage Q20).
+  DO NOT MERGE — drives the repro cypress test; delete at merge. Permanent test:
+  cypress/e2e/quirk-row-positions-fragments.cy.ts.
+
+  Bug: updateRowPositions() (run when the virtual-scroll paging offset changes)
+  repositioned only rowNode[0] — the LEFT-pane fragment. With frozen columns a row
+  has one fragment per column pane, so after a paging-offset jump the right-pane
+  fragment kept its stale top: the two halves of the same row drift vertically
+  apart across the freeze line.
+
+  The page forces paging with a small maxSupportedCssHeight, steps scrollTo across
+  page boundaries, and asserts every rendered row's left/right fragments agree on top.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SlickGrid quirk repro: updateRowPositions fragments (Q20)</title>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+</head>
+<body>
+<h2>Q20 — updateRowPositions repositions all fragments (TEMPORARY repro, do not merge)</h2>
+<div style="width:700px;">
+  <p><code>frozenColumn: 0</code>, 100,000 rows (virtual height &gt; the 1M css cap, so
+     virtual-scroll paging engages). The self-check steps <code>scrollTo</code> finely
+     across page boundaries and asserts left/right fragments of every rendered row
+     agree on top.</p>
+  <div id="myGrid" style="width:100%;height:300px;"></div>
+  <button onclick="runChecks()">Run fragment-alignment self-checks</button>
+  <div id="checkResults" style="white-space:pre; font-family:monospace; font-size:12px; margin-top:8px;"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
+
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+
+<script>
+  // needs th = ROWS * rowHeight > 1,000,000 (the getMaxSupportedCssHeight probe's
+  // starting value — smaller option caps floor there) so virtual-scroll paging engages
+  var ROWS = 100000;
+  var columns = [
+    { id: 'id', name: '#', field: 'id', width: 80 },
+    { id: 'a', name: 'A', field: 'a', width: 150 },
+    { id: 'b', name: 'B', field: 'b', width: 150 },
+    { id: 'c', name: 'C', field: 'c', width: 150 }
+  ];
+  var data = [];
+  for (var i = 0; i < ROWS; i++) { data.push({ id: i, a: 'a' + i, b: 'b' + i, c: 'c' + i }); }
+
+  var grid = new Slick.Grid('#myGrid', data, columns, {
+    enableCellNavigation: true,
+    enableColumnReorder: false,
+    frozenColumn: 0,
+    rowHeight: 25,
+    maxSupportedCssHeight: 50000,
+    ffMaxSupportedCssHeight: 50000
+  });
+  window.grid = grid;
+
+  // top of a row element regardless of rowTopOffsetRenderType (top vs transform)
+  function topOf(el) {
+    if (el.style.top) { return parseFloat(el.style.top); }
+    var m = /translateY\(([-0-9.]+)px\)/.exec(el.style.transform || '');
+    return m ? parseFloat(m[1]) : NaN;
+  }
+
+  // compare left/right fragment tops for every rendered data-row; return worst pair
+  function fragmentDivergence() {
+    var canvases = document.querySelectorAll('#myGrid .grid-canvas');
+    var left = canvases[0], right = canvases[1];
+    var worst = { diff: 0, row: null, l: 0, r: 0, compared: 0 };
+    left.querySelectorAll('.slick-row').forEach(function (lRow) {
+      var r = lRow.dataset.row;
+      var rRow = right.querySelector('.slick-row[data-row="' + r + '"]');
+      if (!rRow) { return; }
+      var lt = topOf(lRow), rt = topOf(rRow);
+      worst.compared++;
+      var d = Math.abs(lt - rt);
+      if (d > worst.diff) { worst = { diff: d, row: r, l: lt, r: rt, compared: worst.compared }; }
+    });
+    return worst;
+  }
+
+  window.runChecks = function runChecks() {
+    var out = [], pass = true;
+    function check(label, ok, detail) {
+      out.push((ok ? 'PASS ' : 'FAIL ') + label + (detail ? '  [' + detail + ']' : ''));
+      if (!ok) { pass = false; }
+    }
+
+    // paging must be engaged for updateRowPositions to run at all
+    var g = grid;
+    check('virtual-scroll paging is engaged (n > 1)', g.n > 1, 'n=' + g.n + ' h=' + g.h + ' th=' + g.th);
+
+    // walk finely ACROSS each page boundary: an offset change with overlapping
+    // rendered ranges is exactly the state updateRowPositions must handle
+    var worstEver = { diff: 0, row: null, l: 0, r: 0 };
+    var comparedTotal = 0;
+    var boundaries = Math.min(3, g.n - 1);
+    for (var k = 1; k <= boundaries; k++) {
+      var yStart = Math.ceil(k * g.ph) - 600;
+      grid.scrollTo(yStart);
+      grid.render();
+      for (var s = 1; s <= 8; s++) {
+        grid.scrollTo(yStart + s * 150);   // fine steps so ranges overlap while offset flips
+        grid.render();
+        var w = fragmentDivergence();
+        comparedTotal += w.compared;
+        if (w.diff > worstEver.diff) { worstEver = w; }
+      }
+    }
+    check('rows were compared across panes at the page boundaries', comparedTotal > 0, 'compared=' + comparedTotal);
+    check('left/right fragments of every row agree on top after paging jumps (no drift)',
+      worstEver.diff < 0.5,
+      worstEver.row === null ? 'no divergence' : ('row ' + worstEver.row + ' L=' + worstEver.l + ' R=' + worstEver.r + ' diff=' + worstEver.diff));
+
+    out.push(pass ? '\nALL CHECKS PASSED' : '\nCHECKS FAILED');
+    document.getElementById('checkResults').textContent = out.join('\n');
+    return pass;
+  };
+
+  // diagnostics: expose paging internals (protected, so via any-cast semantics)
+  window.diag = function () {
+    var g = grid;
+    return JSON.stringify({
+      page: g.page, offset: g.offset, n: g.n, h: g.h, ph: g.ph, cj: g.cj, th: g.th,
+      maxCss: g.maxSupportedCssHeight,
+      rendered: document.querySelectorAll('#myGrid .grid-canvas')[0].querySelectorAll('.slick-row').length
+    });
+  };
+  if (/[?&]autorun=1/.test(location.search)) {
+    window.addEventListener('load', function () {
+      setTimeout(function () {
+        var before = window.diag();
+        runChecks();
+        document.title = 'DIAG ' + before + ' AFTER ' + window.diag();
+      }, 300);
+    });
+  }
+</script>
+</body>
+</html>
