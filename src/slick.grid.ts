@@ -1561,7 +1561,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /** Get the Footer DOM element */
   getFooterRow() {
-    return this.hasFrozenColumns() ? this._footerRow : this._footerRow[0];
+    // return undefined consistently when there is no footer, instead of throwing on
+    // the non-frozen `_footerRow[0]` path while the frozen path returns undefined
+    return this.hasFrozenColumns() ? this._footerRow : this._footerRow?.[0];
   }
 
   /**
@@ -1802,36 +1804,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     Utils.emptyElement(this._headerRowL);
     Utils.emptyElement(this._headerRowR);
-
-    if (this._options.createFooterRow) {
-      const footerRowLColumnElements = this._footerRowL.querySelectorAll('.slick-footerrow-column');
-      footerRowLColumnElements.forEach((column) => {
-        const columnDef = Utils.storage.get(column, 'column');
-        if (columnDef) {
-          this.trigger(this.onBeforeFooterRowCellDestroy, {
-            node: this,
-            column: columnDef,
-            grid: this
-          });
-        }
-      });
-      Utils.emptyElement(this._footerRowL);
-
-      if (this.hasFrozenColumns()) {
-        const footerRowRColumnElements = this._footerRowR.querySelectorAll('.slick-footerrow-column');
-        footerRowRColumnElements.forEach((column) => {
-          const columnDef = Utils.storage.get(column, 'column');
-          if (columnDef) {
-            this.trigger(this.onBeforeFooterRowCellDestroy, {
-              node: this,
-              column: columnDef,
-              grid: this
-            });
-          }
-        });
-        Utils.emptyElement(this._footerRowR);
-      }
-    }
+    // NOTE: footer-row destroy/create is handled entirely by createColumnFooter(),
+    // which is always called immediately after createColumnHeaders(). The duplicate
+    // footer blocks that used to live here fired onFooterRowCellRendered twice per
+    // column and emptied the right footer only under hasFrozenColumns() (leaving
+    // stale right-footer cells after un-freezing).
 
     for (let i = 0; i < this.columns.length; i++) {
       const m: C = this.columns[i];
@@ -1911,17 +1888,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           grid: this
         });
       }
-      if (this._options.createFooterRow && this._options.showFooterRow) {
-        const footerRowTarget = this.hasFrozenColumns() ? ((i <= this._options.frozenColumn!) ? this._footerRow[0] : this._footerRow[1]) : this._footerRow[0];
-        const footerRowCell = Utils.createDomElement('div', { className: `ui-state-default slick-state-default slick-footerrow-column l${i} r${i}` }, footerRowTarget);
-        Utils.storage.put(footerRowCell, 'column', m);
-
-        this.trigger(this.onFooterRowCellRendered, {
-          node: footerRowCell,
-          column: m,
-          grid: this
-        });
-      }
+      // footer-row cells are created by createColumnFooter() (called right after), not here
     }
 
     this.setSortColumns(this.sortColumns);
@@ -5865,14 +5832,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (!this._options.autoHeight || this._options.frozenColumn !== -1) {
       this.topPanelH = (this._options.showTopPanel) ? this._options.topPanelHeight! + this.getVBoxDelta(this._topPanelScrollers[0]) : 0;
       this.headerRowH = (this._options.showHeaderRow) ? this._options.headerRowHeight! + this.getVBoxDelta(this._headerRowScroller[0]) : 0;
-      this.footerRowH = (this._options.showFooterRow) ? this._options.footerRowHeight! + this.getVBoxDelta(this._footerRowScroller[0]) : 0;
+      this.footerRowH = (this._options.createFooterRow && this._options.showFooterRow) ? this._options.footerRowHeight! + this.getVBoxDelta(this._footerRowScroller[0]) : 0;
     }
 
     if (this._options.autoHeight) {
       let fullHeight = this._paneHeaderL.offsetHeight;
       fullHeight += (this._options.showPreHeaderPanel) ? this._options.preHeaderPanelHeight! + this.getVBoxDelta(this._preHeaderPanelScroller) : 0;
       fullHeight += (this._options.showHeaderRow) ? this._options.headerRowHeight! + this.getVBoxDelta(this._headerRowScroller[0]) : 0;
-      fullHeight += (this._options.showFooterRow) ? this._options.footerRowHeight! + this.getVBoxDelta(this._footerRowScroller[0]) : 0;
+      fullHeight += (this._options.createFooterRow && this._options.showFooterRow) ? this._options.footerRowHeight! + this.getVBoxDelta(this._footerRowScroller[0]) : 0;
       fullHeight += (this.getCanvasWidth() > this.viewportW) ? (this.scrollbarDimensions?.height ?? 0) : 0;
 
       this.viewportH = this.getRowPosition(this.getDataLengthIncludingAddNew())
