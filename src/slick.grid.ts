@@ -4724,11 +4724,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     if (includeScrollbar) {
-      // attribute the scrollbar width to the scrollable band: R when columns are
-      // frozen, else the single L band. (This previously re-tested the loop variable
-      // AFTER the loop — i === columns.length, an out-of-range probe — which only
-      // happened to be equivalent because setFrozenOptions clamps frozenColumn to
-      // be < columns.length; hasFrozenColumns() states the intent directly.)
+      // attribute the scrollbar width to the active scrollable band: the right band
+      // when frozen columns are enabled, otherwise the left band.
       if (this.hasFrozenColumns()) {
         this.headersWidthR += this.scrollbarDimensions?.width ?? 0;
       } else {
