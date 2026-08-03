@@ -1804,11 +1804,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     Utils.emptyElement(this._headerRowL);
     Utils.emptyElement(this._headerRowR);
-    // NOTE: footer-row destroy/create is handled entirely by createColumnFooter(),
-    // which is always called immediately after createColumnHeaders(). The duplicate
-    // footer blocks that used to live here fired onFooterRowCellRendered twice per
-    // column and emptied the right footer only under hasFrozenColumns() (leaving
-    // stale right-footer cells after un-freezing).
+    
+    // Footer cells are created and destroyed by createColumnFooter(), which runs
+    // immediately after createColumnHeaders(). Keep this block focused on header
+    // rendering so footer lifecycle stays single-owned and consistent.
 
     for (let i = 0; i < this.columns.length; i++) {
       const m: C = this.columns[i];
