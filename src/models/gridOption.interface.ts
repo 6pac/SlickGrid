@@ -231,7 +231,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   /** Firefox max supported CSS height */
   ffMaxSupportedCssHeight?: number;
 
-  /** Defaults to 25, which is the grid footer row panel height */
+  /** Defaults to 25, which is the grid footer row panel height (only accepts an integer) */
   footerRowHeight?: number;
 
   /** Do we want to force fit columns in the grid at all time? */
@@ -268,7 +268,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   /** Grid Menu options (aka hamburger menu) */
   gridMenu?: GridMenuOption;
 
-  /** Header row height in pixels (only type the number). Header row is where the filters are. */
+  /** Header row height in pixels (only accepts an integer). Header row is where the filters are. */
   headerRowHeight?: number;
 
   /** Do we leave space for new rows in the DOM visible buffer */
@@ -283,7 +283,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
    */
   maxPartialRowSpanRemap?: number;
 
-  /** Max supported CSS height */
+  /** Max supported CSS height (only accepts an integer) */
   maxSupportedCssHeight?: number;
 
   /** What is the minimum row buffer to use? */
@@ -304,13 +304,13 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   /** Defaults to true, which will display numbers indicating column sort precedence are displayed in the columns when multiple columns selected */
   numberedMultiColumnSort?: boolean;
 
-  /** Extra pre-header panel height (on top of column header) */
+  /** Extra pre-header panel height (on top of column header, only accepts an integer) */
   preHeaderPanelHeight?: number;
 
   /** Defaults to "auto", extra pre-header panel (on top of column header) width, it could be a number (pixels) or a string ("100%" or "auto") */
   preHeaderPanelWidth?: number | string;
 
-  /** Extra top-header panel height (on top of column header & pre-header) */
+  /** Extra top-header panel height (on top of column header & pre-header, only accepts an integer) */
   topHeaderPanelHeight?: number;
 
   /** Defaults to "auto", extra top-header panel (on top of column header & pre-header) width, it could be a number (pixels) or a string ("100%" or "auto") */
@@ -322,14 +322,13 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   /** Defaults to `['ctrlKey', 'metaKey']`, list of keys that when pressed will prevent Draggable events from triggering (e.g. prevent onDrag when Ctrl key is pressed while dragging) */
   preventDragFromKeys?: Array<'altKey' | 'ctrlKey' | 'metaKey' | 'shiftKey'>;
 
-  /** Grid row height in pixels (only type the number). Row of cell values. */
+  /** Grid row height in pixels (only accepts an integer). Cell value row height. */
   rowHeight?: number;
 
   /**
    * The single source of row heights, only called when `enableVariableRowHeight` is on.
    * Receives the grid instance (giving access to any grid state), the row index, and the row's
-   * data item. Returns the height in pixels of that row, or `undefined` to use the default
-   * `rowHeight`.
+   * data item. Returns the height (integer) in pixels of that row, or `undefined` to use the default `rowHeight`.
    * The default implementation reads `ItemMetadata.height` from the data provider's
    * `getItemMetadata(row)`, so metadata-driven heights work without configuring this option.
    * Supplying your own function fully replaces the default - item metadata is then no longer
@@ -432,7 +431,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   invalidColumnFreezeWidthCallback?: (error: string) => void;
 
 
-  /** What is the top panel height in pixels (only type the number) */
+  /** What is the top panel height in pixels (only accepts an integer) */
   topPanelHeight?: number;
 
   /** Defaults to false, when set to True will lead to multiple columns sorting without the need to hold or do shift-click to execute a multiple sort. */
