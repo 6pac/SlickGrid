@@ -1,30 +1,91 @@
 <!DOCTYPE HTML>
 <html>
 <head>
+  <meta charset="utf-8">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>Footer Row with Totals</title>
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
-  .totals {
-    font-weight: bold;
-    color: gray;
-    font-style: italic;
-  }
-  /** override slick-cell to make it look like Excel sheet */
-  .slick-container {
+    /** override slick-cell to make it look like an Excel sheet */
+    .slick-container {
       --alpine-header-column-height: 20px;
       --alpine-header-font-weight: 500;
       --alpine-cell-border-width: 0 1px 1px 0;
       --alpine-cell-border-color: #d4d4d4;
     }
+
+    /* the footer cells are built by the onFooterRowCellRendered handler below */
+    .slick-footerrow-column {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 6px;
+      box-sizing: border-box;
+    }
+    .footer-label {
+      font-size: 10px;
+      text-transform: uppercase;
+      letter-spacing: 0.5px;
+      color: #8a8a8a;
+    }
+    .footer-value {
+      font-weight: bold;
+      color: #2b6cb0;
+      font-variant-numeric: tabular-nums;
+    }
+    .slick-footerrow-column.frozen .footer-value {
+      color: #276749;
+    }
+
+    .demo-controls { margin: 8px 0; }
+    .demo-controls button, .demo-controls select { margin: 0 4px 4px 0; }
+    #footerStatus {
+      font-family: monospace;
+      font-size: 12px;
+      white-space: pre-line;
+      background: #f7f7f7;
+      border: 1px solid #e0e0e0;
+      border-radius: 3px;
+      padding: 6px 8px;
+      margin-top: 6px;
+    }
+    .ok { color: #276749; }
+    .bad { color: #c53030; font-weight: bold; }
+    h3 { margin: 18px 0 4px 0; }
+    .note { font-size: 12px; color: #555; margin: 2px 0 6px 0; }
   </style>
 </head>
 <body>
-<h2 class="title">Example - Footer Totals</h2>
+<h2 class="title">Example - Footer Row and Totals</h2>
 <div style="position:relative">
-  <div style="width:600px;">
+  <div style="width:700px;">
     <div id="myGrid" class="slick-container" style="width:100%;height:320px;"></div>
+
+    <div class="demo-controls">
+      <label for="aggregate">Aggregate:</label>
+      <select id="aggregate">
+        <option value="sum">Sum</option>
+        <option value="avg">Average</option>
+        <option value="min">Min</option>
+        <option value="max">Max</option>
+      </select>
+      <button id="toggleFooter">Hide footer row</button>
+      <button id="toggleFrozen">Freeze first 2 columns</button>
+      <button id="reapplyColumns">Re-apply columns</button>
+      <button id="addColumn">Add column</button>
+      <button id="removeColumn">Remove last column</button>
+    </div>
+    <div id="footerStatus"></div>
+
+    <h3>Grid without a footer row</h3>
+    <p class="note">
+      Built with <code>showFooterRow: true</code> but <em>without</em> <code>createFooterRow</code>. The footer
+      elements are never created, so the grid must still construct normally and
+      <code>getFooterRow()</code> must return <code>undefined</code> rather than throwing.
+    </p>
+    <div id="noFooterGrid" class="slick-container" style="width:100%;height:120px;"></div>
+    <div id="noFooterStatus" style="font-family:monospace;font-size:12px;margin-top:6px;"></div>
   </div>
 
   <div class="options-panel">
@@ -33,8 +94,22 @@
       Demonstrates:
     </h2>
     <ul>
-      <li>Display a totals row at the end of the grid.</li>
-      <li>This example uses basic JSON data. It can easily be modified to accommodate a DataView. </li>
+      <li>Displaying a totals row at the end of the grid (<code>createFooterRow</code>,
+        <code>showFooterRow</code>, <code>footerRowHeight</code>).</li>
+      <li>Building footer cell content from the <code>onFooterRowCellRendered</code> event, and
+        releasing it again on <code>onBeforeFooterRowCellDestroy</code>.</li>
+      <li>Writing live values into a footer cell found with <code>getFooterRowColumn(columnId)</code> —
+        totals follow cell edits, column reorder and column changes.</li>
+      <li>Showing and hiding the footer at runtime with <code>setFooterRowVisibility()</code>.</li>
+      <li>Frozen columns: the footer is split into a left and a right pane, and
+        <code>getFooterRow()</code> returns both. Freeze and unfreeze to watch the panes
+        re-fill and scroll in step with the grid canvas.</li>
+      <li>The status box reports how many times the footer cell events fired for the last
+        rebuild — one render per visible column is correct.</li>
+      <li>A second grid shows the footer-less contract: <code>showFooterRow</code> without
+        <code>createFooterRow</code> constructs normally and <code>getFooterRow()</code> returns
+        <code>undefined</code>.</li>
+      <li>This example uses basic JSON data. It can easily be modified to accommodate a DataView.</li>
     </ul>
   </div>
     <h2>View Source:</h2>
@@ -44,6 +119,7 @@
 </div>
 
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
 
 <script src="../dist/browser/slick.core.js"></script>
 <script src="../dist/browser/slick.interactions.js"></script>
@@ -52,66 +128,268 @@
 
 <script>
   var grid;
+  var noFooterGrid;
   var data = [];
+  var nextColumnIndex = 10;
+  var currentAggregate = 'sum';
+
   var options = {
     enableCellNavigation: true,
     headerRowHeight: 30,
     editable: true,
     createFooterRow: true,
     showFooterRow: true,
-    footerRowHeight: 28
+    footerRowHeight: 30
   };
 
   var columns = [];
   for (var i = 0; i < 10; i++) {
-    columns.push({
-      id: i,
-      name: String.fromCharCode("A".charCodeAt(0) + i),
-      field: i,
-      width: 58,
+    columns.push(makeColumn(i));
+  }
+
+  function makeColumn(index) {
+    return {
+      id: 'c' + index,
+      name: String.fromCharCode('A'.charCodeAt(0) + (index % 26)),
+      field: 'c' + index,
+      width: 80,
       editor: Slick.Editors.Integer
+    };
+  }
+
+  // ---------------------------------------------------------------- aggregates
+
+  var AGGREGATES = {
+    sum: function (values) { return values.reduce(function (a, b) { return a + b; }, 0); },
+    avg: function (values) { return values.length ? Math.round(AGGREGATES.sum(values) / values.length * 10) / 10 : 0; },
+    min: function (values) { return values.length ? Math.min.apply(null, values) : 0; },
+    max: function (values) { return values.length ? Math.max.apply(null, values) : 0; }
+  };
+
+  function columnValues(column) {
+    var values = [];
+    for (var i = 0; i < data.length; i++) {
+      var value = parseFloat(data[i][column.field]);
+      if (!isNaN(value)) {
+        values.push(value);
+      }
+    }
+    return values;
+  }
+
+  // ------------------------------------------------- footer cell lifecycle
+
+  // counts the footer cell events fired by the most recent rebuild, so the status box can
+  // show that each visible column is rendered exactly once
+  var footerEvents = { rendered: 0, destroyed: 0 };
+
+  // build the structure of a footer cell - called once per visible column whenever the
+  // grid (re)creates the footer row: at init, on setColumns(), on reorder, on freeze/unfreeze
+  function buildFooterCell(node, column) {
+    footerEvents.rendered++;
+
+    var label = document.createElement('span');
+    label.className = 'footer-label';
+    label.textContent = currentAggregate;
+
+    var value = document.createElement('span');
+    value.className = 'footer-value';
+    value.textContent = formatAggregate(column);
+
+    node.appendChild(label);
+    node.appendChild(value);
+  }
+
+  function formatAggregate(column) {
+    return String(AGGREGATES[currentAggregate](columnValues(column)));
+  }
+
+  // write the current aggregate into an already rendered footer cell. getFooterRowColumn()
+  // resolves the column id to the correct pane, so this keeps working with frozen columns.
+  function updateTotal(column) {
+    var cellElm = grid.getFooterRowColumn(column.id);
+    var valueElm = cellElm && cellElm.querySelector('.footer-value');
+    if (valueElm) {
+      valueElm.textContent = formatAggregate(column);
+    }
+  }
+
+  function updateAllTotals() {
+    grid.getColumns().forEach(function (column) {
+      if (!column.hidden) {
+        updateTotal(column);
+      }
     });
   }
 
-  function UpdateAllTotals(grid) {
-    var columnIdx = grid.getColumns().length;
-    while (columnIdx--) {
-      UpdateTotal(columnIdx, grid);
-    }
+  function updateAllLabels() {
+    grid.getColumns().forEach(function (column) {
+      if (column.hidden) { return; }
+      var cellElm = grid.getFooterRowColumn(column.id);
+      var labelElm = cellElm && cellElm.querySelector('.footer-label');
+      if (labelElm) {
+        labelElm.textContent = currentAggregate;
+      }
+    });
   }
 
-  function UpdateTotal(cell, grid) {
-    var columnId = grid.getColumns()[cell].id;
+  // ------------------------------------------------------------- status box
 
-    var total = 0;
-    var i = data.length;
-    while (i--) {
-      total += (parseInt(data[i][columnId], 10) || 0);
-    }
-    var columnElement = grid.getFooterRowColumn(columnId);
-    columnElement.textContent = `Sum: ${total}`;
+  // run an action that rebuilds the footer, then report what the footer events did.
+  // the counters are reset by the onBeforeUpdateColumns subscription, which fires
+  // immediately before the grid recreates the footer cells.
+  function reportFooterRebuild(actionLabel, action) {
+    action();
+    refreshStatus(actionLabel);
   }
 
-  document.addEventListener("DOMContentLoaded", function() {
+  function countCells(selector) {
+    var pane = document.querySelector('#myGrid ' + selector);
+    return pane ? pane.querySelectorAll('.slick-footerrow-column').length : 0;
+  }
+
+  function refreshStatus(actionLabel) {
+    var visibleColumns = grid.getColumns().filter(function (c) { return !c.hidden; }).length;
+    var isSplit = Array.isArray(grid.getFooterRow());
+
+    // both footer panes exist in the DOM whether or not columns are frozen, so count them
+    // directly - after unfreezing, the right pane must be emptied rather than left stale
+    var left = countCells('.slick-footerrow-columns-left');
+    var right = countCells('.slick-footerrow-columns-right');
+    var totalCells = left + right;
+
+    var lines = [];
+    lines.push('last action        : ' + actionLabel);
+    lines.push('getFooterRow()     : ' + (isSplit
+      ? '[left, right] - frozenColumn ' + grid.getOptions().frozenColumn
+      : 'single element - not frozen'));
+    lines.push('footer cells       : left ' + left + ' + right ' + right + ' = ' + totalCells
+      + ' for ' + visibleColumns + ' visible column(s) ' + mark(totalCells === visibleColumns));
+
+    if (footerEvents.rendered || footerEvents.destroyed) {
+      lines.push('onFooterRowCellRendered      : fired ' + footerEvents.rendered + '× '
+        + mark(footerEvents.rendered === visibleColumns));
+      lines.push('onBeforeFooterRowCellDestroy : fired ' + footerEvents.destroyed + '×');
+    }
+
+    document.getElementById('footerStatus').innerHTML = lines.join('\n');
+  }
+
+  function mark(isOk) {
+    return isOk ? '<span class="ok">&#x2713;</span>' : '<span class="bad">&#x2717;</span>';
+  }
+
+  // ------------------------------------------------------------------ setup
+
+  document.addEventListener('DOMContentLoaded', function () {
     for (var i = 0; i < 20; i++) {
-      var d = (data[i] = {});
-      d["id"] = i;
+      var d = (data[i] = { id: i });
       for (var j = 0; j < columns.length; j++) {
-        d[j] = Math.round(Math.random() * 10);
+        d[columns[j].field] = Math.round(Math.random() * 100);
       }
     }
 
-    grid = new Slick.Grid("#myGrid", data, columns, options);
-    UpdateAllTotals(grid);
+    grid = new Slick.Grid('#myGrid', data, columns, options);
 
-    grid.onCellChange.subscribe(function(e, args) {
-      UpdateTotal(args.cell, args.grid);
+    // fires immediately before the grid recreates the footer cells, so it is the natural
+    // place to start counting a rebuild
+    grid.onBeforeUpdateColumns.subscribe(function () {
+      footerEvents.rendered = 0;
+      footerEvents.destroyed = 0;
     });
 
-    grid.onColumnsReordered.subscribe(function(e, args) {
-      UpdateAllTotals(args.grid);
+    grid.onFooterRowCellRendered.subscribe(function (e, args) {
+      buildFooterCell(args.node, args.column);
     });
-  })
+
+    // the counterpart of onFooterRowCellRendered - fired just before a footer cell is
+    // discarded, which is where anything attached to the cell should be released
+    grid.onBeforeFooterRowCellDestroy.subscribe(function () {
+      footerEvents.destroyed++;
+    });
+
+    grid.onCellChange.subscribe(function (e, args) {
+      updateTotal(args.grid.getColumns()[args.cell]);
+    });
+
+    // a reorder runs setColumns() internally, so the footer has already been rebuilt by
+    // the time this fires and the counters still hold that rebuild
+    grid.onColumnsReordered.subscribe(function () {
+      refreshStatus('onColumnsReordered');
+    });
+
+    // the footer cells were created during construction, before the subscriptions above
+    // existed, so rebuild them once to fill them in
+    reportFooterRebuild('initial render', function () {
+      grid.setColumns(grid.getColumns());
+    });
+
+    // ---- controls
+
+    document.getElementById('aggregate').addEventListener('change', function (e) {
+      currentAggregate = e.target.value;
+      updateAllLabels();
+      updateAllTotals();
+      refreshStatus('aggregate = ' + currentAggregate);
+    });
+
+    document.getElementById('toggleFooter').addEventListener('click', function (e) {
+      var willShow = !grid.getOptions().showFooterRow;
+      grid.setFooterRowVisibility(willShow);
+      e.target.textContent = willShow ? 'Hide footer row' : 'Show footer row';
+      refreshStatus('setFooterRowVisibility(' + willShow + ')');
+    });
+
+    document.getElementById('toggleFrozen').addEventListener('click', function (e) {
+      var frozen = grid.getOptions().frozenColumn >= 0;
+      var newFrozen = frozen ? -1 : 1;
+      e.target.textContent = frozen ? 'Freeze first 2 columns' : 'Unfreeze columns';
+      reportFooterRebuild('setOptions({ frozenColumn: ' + newFrozen + ' })', function () {
+        grid.setOptions({ frozenColumn: newFrozen });
+      });
+    });
+
+    document.getElementById('reapplyColumns').addEventListener('click', function () {
+      reportFooterRebuild('setColumns(getColumns())', function () {
+        grid.setColumns(grid.getColumns());
+      });
+    });
+
+    document.getElementById('addColumn').addEventListener('click', function () {
+      var column = makeColumn(nextColumnIndex++);
+      for (var i = 0; i < data.length; i++) {
+        data[i][column.field] = Math.round(Math.random() * 100);
+      }
+      reportFooterRebuild('setColumns() - added ' + column.id, function () {
+        grid.setColumns(grid.getColumns().concat([column]));
+        grid.invalidate();
+      });
+    });
+
+    document.getElementById('removeColumn').addEventListener('click', function () {
+      var remaining = grid.getColumns().slice(0, -1);
+      if (!remaining.length) { return; }
+      reportFooterRebuild('setColumns() - removed last column', function () {
+        grid.setColumns(remaining);
+      });
+    });
+
+    // ---- second grid: showFooterRow without createFooterRow
+
+    var noFooterStatus = document.getElementById('noFooterStatus');
+    try {
+      noFooterGrid = new Slick.Grid('#noFooterGrid', data.slice(0, 5), columns.slice(0, 4), {
+        enableCellNavigation: true,
+        enableColumnReorder: false,
+        showFooterRow: true   // deliberately without createFooterRow
+      });
+      noFooterStatus.innerHTML = 'constructed without error ' + mark(true)
+        + ' &nbsp;|&nbsp; getFooterRow() returns: <b>' + String(noFooterGrid.getFooterRow()) + '</b> '
+        + mark(noFooterGrid.getFooterRow() === undefined);
+    } catch (error) {
+      noFooterStatus.innerHTML = 'construction failed ' + mark(false) + ' &nbsp;' + error;
+    }
+  });
 </script>
 </body>
 </html>
