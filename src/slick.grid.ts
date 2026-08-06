@@ -6817,7 +6817,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     if (this.prevScrollTop !== newScrollTop) {
       this.vScrollDir = (this.prevScrollTop + oldOffset < newScrollTop + this.offset) ? 1 : -1;
-      this.lastRenderedScrollTop = (this.scrollTop = this.prevScrollTop = newScrollTop);
+      this.scrollTop = this.prevScrollTop = newScrollTop;
 
       if (this.hasFrozenColumns()) {
         this._viewportTopL.scrollTop = newScrollTop;
