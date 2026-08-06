@@ -6642,10 +6642,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
         if (this._options.frozenBottom) {
           renderedFrozenRows.top = this.actualFrozenRow;
-          renderedFrozenRows.bottom = this.getDataLength();
+          renderedFrozenRows.bottom = this.getDataLength() - 1;
         } else {
           renderedFrozenRows.top = 0;
-          renderedFrozenRows.bottom = this._options.frozenRow;
+          renderedFrozenRows.bottom = this._options.frozenRow! - 1;
         }
         this.cleanUpAndRenderCells(renderedFrozenRows);
       }
