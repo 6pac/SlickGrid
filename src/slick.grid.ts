@@ -1561,8 +1561,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /** Get the Footer DOM element */
   getFooterRow() {
-    // return undefined consistently when there is no footer, instead of throwing on
-    // the non-frozen `_footerRow[0]` path while the frozen path returns undefined
     return this.hasFrozenColumns() ? this._footerRow : this._footerRow?.[0];
   }
 
@@ -1804,10 +1802,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     Utils.emptyElement(this._headerRowL);
     Utils.emptyElement(this._headerRowR);
-    
-    // Footer cells are created and destroyed by createColumnFooter(), which runs
-    // immediately after createColumnHeaders(). Keep this block focused on header
-    // rendering so footer lifecycle stays single-owned and consistent.
 
     for (let i = 0; i < this.columns.length; i++) {
       const m: C = this.columns[i];
@@ -1887,7 +1881,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           grid: this
         });
       }
-      // footer-row cells are created by createColumnFooter() (called right after), not here
     }
 
     this.setSortColumns(this.sortColumns);
