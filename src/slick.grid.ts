@@ -4711,9 +4711,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.headersWidth = this.headersWidthL = this.headersWidthR = 0;
     const includeScrollbar = !this._options.autoHeight;
 
-    let i = 0;
-    const ii = this.columns.length;
-    for (i = 0; i < ii; i++) {
+    for (let i = 0, ii = this.columns.length; i < ii; i++) {
       if (!this.columns[i] || this.columns[i].hidden) { continue; }
 
       const width = this.columns[i].width;
@@ -4726,7 +4724,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     if (includeScrollbar) {
-      if ((this._options.frozenColumn!) > -1 && (i > this._options.frozenColumn!)) {
+      // attribute the scrollbar width to the active scrollable band: the right band
+      // when frozen columns are enabled, otherwise the left band.
+      if (this.hasFrozenColumns()) {
         this.headersWidthR += this.scrollbarDimensions?.width ?? 0;
       } else {
         this.headersWidthL += this.scrollbarDimensions?.width ?? 0;
