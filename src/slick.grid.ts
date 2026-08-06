@@ -3592,10 +3592,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       const isBottom = Utils.parents(this.activeCellNode, '.grid-canvas-bottom').length;
 
       if (this.hasFrozenRows && isBottom) {
-        // use the same offset the render path uses to place bottom-canvas rows
-        // (getFrozenRowOffset), not a live measurement of the top canvas — the two
-        // diverge in frozenBottom mode (e.g. small datasets) and hit-testing then
-        // resolves the wrong row
         rowOffset -= this.getFrozenRowOffset(this.actualFrozenRow);
       }
 
@@ -4576,7 +4572,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       const isBottom = Utils.parents(cellNode, '.grid-canvas-bottom').length;
 
       if (isBottom) {
-        // same render-path offset as above: getFrozenRowOffset, not a live top-canvas measurement
         rowOffset = this.getFrozenRowOffset(this.actualFrozenRow);
       }
 
