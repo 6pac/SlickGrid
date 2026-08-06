@@ -6816,9 +6816,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     if (this.prevScrollTop !== newScrollTop) {
       this.vScrollDir = (this.prevScrollTop + oldOffset < newScrollTop + this.offset) ? 1 : -1;
-      // note: `lastRenderedScrollTop` must NOT be updated here, it is only ever set by `render()`.
-      // moving the scroll position is not rendering it, and claiming otherwise makes the caller
-      // (`_handleScroll()`) see a zero scroll delta and skip the render that this move requires.
       this.scrollTop = this.prevScrollTop = newScrollTop;
 
       if (this.hasFrozenColumns()) {
