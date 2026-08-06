@@ -6606,9 +6606,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         const rowNumber = row ? parseInt(row, 10) : 0;
         // same formula appendRowHtml uses to place rows initially
         const top = this.getRowTop(rowNumber) - this.getFrozenRowOffset(rowNumber);
-        // reposition EVERY fragment of the row: with frozen columns a row has one
-        // fragment per column pane, and repositioning only rowNode[0] left the
-        // right-pane fragment at its stale top after a paging-offset jump
         this.rowsCache[rowNumber].rowNode!.forEach((rowNode) => {
           if (this._options.rowTopOffsetRenderType === 'transform') {
             rowNode.style.transform = `translateY(${top}px)`;
