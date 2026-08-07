@@ -1,0 +1,71 @@
+<!doctype html>
+<!--
+  TEMPORARY repro page for enabling createFooterRow at runtime.
+  DO NOT MERGE — human review only; deleted before merge. The permanent
+  regression test is cypress/e2e/quirk-runtime-footer-enable.cy.ts, which is
+  fully self-hosting and does NOT depend on this page.
+
+  Pre-fix: clicking "Enable footer" throws a TypeError (footer DOM was only
+  built at init) and the readout shows the error. Fixed: the footer appears,
+  populated per column, and the show/hide button toggles it.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SlickGrid quirk repro: runtime footer enable (temporary, do not merge)</title>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <style> #myGrid { width: 700px; height: 300px; } </style>
+</head>
+<body>
+<h2>Runtime <code>createFooterRow</code> enable (TEMPORARY repro, do not merge)</h2>
+<div style="width:700px;">
+  <div id="myGrid"></div>
+  <button onclick="enableFooter()">Enable footer (setOptions createFooterRow: true)</button>
+  <button onclick="toggleShow()">Toggle footer visibility (setFooterRowVisibility)</button>
+  <div id="readout" style="white-space:pre; font-family:monospace; font-size:12px; margin-top:8px;"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
+
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script>
+  var columns = [
+    { id: 'id', name: '#', field: 'id', width: 80 },
+    { id: 'a', name: 'A', field: 'a', width: 200 },
+    { id: 'b', name: 'B', field: 'b', width: 200 }
+  ];
+  var data = [];
+  for (var i = 0; i < 20; i++) { data.push({ id: i, a: 'a' + i, b: 'b' + i }); }
+  var grid = new Slick.Grid('#myGrid', data, columns, {
+    enableCellNavigation: true,
+    enableColumnReorder: false,
+    rowHeight: 25
+  });
+  grid.onFooterRowCellRendered.subscribe(function (e, args) {
+    args.node.textContent = 'Σ ' + args.column.id;
+  });
+  var shown = true;
+
+  function enableFooter() {
+    try {
+      grid.setOptions({ createFooterRow: true, showFooterRow: true });
+      shown = true;
+      document.getElementById('readout').textContent =
+        'Footer enabled. Cells: ' + document.querySelectorAll('#myGrid .slick-footerrow-column').length +
+        ' (fixed build). Pre-fix build: a TypeError is thrown instead.';
+    } catch (e) {
+      document.getElementById('readout').textContent = 'THREW (pre-fix bug): ' + e.message;
+    }
+  }
+  function toggleShow() {
+    shown = !shown;
+    grid.setFooterRowVisibility(shown);
+    document.getElementById('readout').textContent = 'showFooterRow -> ' + shown;
+  }
+</script>
+</body>
+</html>
