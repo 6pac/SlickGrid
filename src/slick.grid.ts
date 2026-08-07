@@ -5427,10 +5427,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           this.appendCellHtml(targetedRowDiv, row, i, ncolspan, rowspan, columnData, d);
         }
       } else if (m.alwaysRenderColumn || (this.hasFrozenColumns() && i <= this._options.frozenColumn!)) {
-        // route by column band like the in-viewport branch above: an off-viewport
-        // alwaysRenderColumn cell RIGHT of the freeze must render into the right
-        // fragment — appending it to rowDiv put it in the clipped left canvas and
-        // mapped its cellNodesByColumnIdx entry to the wrong pane
         const targetedRowDiv = (this.hasFrozenColumns() && (i > this._options.frozenColumn!) ? rowDivR! : rowDiv);
         this.appendCellHtml(targetedRowDiv, row, i, ncolspan, rowspan, columnData, d);
       }
