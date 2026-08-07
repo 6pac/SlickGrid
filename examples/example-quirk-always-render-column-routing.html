@@ -1,0 +1,89 @@
+<!doctype html>
+<!--
+  TEMPORARY repro page for the off-viewport alwaysRenderColumn band-routing bug.
+  DO NOT MERGE — this page is for human review only and is deleted before merge.
+  The permanent regression test is
+  cypress/e2e/quirk-always-render-column-routing.cy.ts, which is fully
+  self-hosting and does NOT depend on this page.
+
+  Bug (pre-fix): appendRowHtml's off-viewport branch appended alwaysRenderColumn
+  cells to the LEFT row fragment unconditionally. With frozen columns, an
+  alwaysRenderColumn column RIGHT of the freeze that scrolls off the left edge
+  therefore rendered into the clipped LEFT canvas — mispositioned/invisible, and
+  its cell-node mapping pointed at the wrong pane.
+
+  On this page: column 0 is frozen; "Sticky" (column 5, highlighted) is
+  alwaysRenderColumn in the scrollable band. Click "Scroll far right" then
+  "Report" — a pre-fix build reports the Sticky cell inside .grid-canvas-left;
+  a fixed build reports .grid-canvas-right.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SlickGrid quirk repro: alwaysRenderColumn routing (temporary, do not merge)</title>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <style>
+    #myGrid { width: 700px; height: 300px; }
+    .sticky-col { background: #fff3c4; }
+  </style>
+</head>
+<body>
+<h2>Off-viewport <code>alwaysRenderColumn</code> band routing (TEMPORARY repro, do not merge)</h2>
+<div style="width:700px;">
+  <div id="myGrid"></div>
+  <button onclick="stepOne()">1. Scroll far right (settles range)</button>
+  <button onclick="stepTwo()">2. Then scroll down to fresh row 80</button>
+  <button onclick="report()">3. Report Sticky cell canvas</button>
+  <div id="readout" style="white-space:pre; font-family:monospace; font-size:12px; margin-top:8px;"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
+
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script>
+  var COLS = 30, ROWS = 100, ARC = 5;
+  var columns = [];
+  for (var c = 0; c < COLS; c++) {
+    columns.push({
+      id: 'c' + c,
+      name: c === ARC ? 'Sticky' : 'Col ' + c,
+      field: 'c' + c,
+      width: 100,
+      alwaysRenderColumn: c === ARC,
+      cssClass: c === ARC ? 'sticky-col' : undefined
+    });
+  }
+  var data = [];
+  for (var r = 0; r < ROWS; r++) {
+    var row = {};
+    for (var k = 0; k < COLS; k++) { row['c' + k] = 'r' + r + 'c' + k; }
+    data.push(row);
+  }
+  var grid = new Slick.Grid('#myGrid', data, columns, {
+    enableCellNavigation: true,
+    enableColumnReorder: false,
+    frozenColumn: 0,
+    rowHeight: 25
+  });
+
+  // the repro needs TWO steps: horizontal scroll must SETTLE (async handler)
+  // before a fresh row renders, else the row renders while scrollLeft is 0 and
+  // the cell routes in-viewport (and cleanUpCells never removes ARC cells)
+  function stepOne() { grid.scrollCellIntoView(0, 29); }
+  function stepTwo() { grid.scrollCellIntoView(80, 29); grid.render(); }
+
+  function report() {
+    var node = grid.getCellNode(80, ARC);
+    var canvas = node && node.closest('.grid-canvas');
+    document.getElementById('readout').textContent = !node
+      ? 'Sticky cell (row 80) is NOT rendered'
+      : 'Sticky cell (row 80) lives in: ' + (canvas ? canvas.className : '(no canvas)') + '\n'
+        + 'Fixed build: grid-canvas-right (its own band). Pre-fix build after scrolling right: grid-canvas-left (wrong, clipped).';
+  }
+</script>
+</body>
+</html>
