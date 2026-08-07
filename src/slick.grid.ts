@@ -2350,7 +2350,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       ? parseInt(this._options.frozenColumn as unknown as string, 10)
       : -1;
 
-    if (this._options.frozenRow! > -1) {
+    // frozenRow is a COUNT: zero frozen rows means no freeze. (Previously the
+    // > -1 gate let frozenRow: 0 activate the full split-pane machinery around an
+    // empty frozen band — visible empty pane strip, all rows routed to the bottom
+    // canvas in top mode, and with frozenBottom the body measured by bottom-mode
+    // offset math. Nothing meaningful is lost: zero pinned rows IS no freeze.)
+    if (this._options.frozenRow! > 0) {
       this.hasFrozenRows = true;
       const dataLength = this.getDataLength();
       this.actualFrozenRow = (this._options.frozenBottom)
