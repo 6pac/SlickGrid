@@ -30,6 +30,6 @@
       "./node_modules/@types"
     ]
   },
-  "exclude": ["cypress", "node_modules", "**/*.spec.ts"],
+  "exclude": ["cypress", "dist", "node_modules", "**/*.spec.ts"],
   "include": ["**/*.ts", "index.d.ts", "**/*.d.ts"]
 }
