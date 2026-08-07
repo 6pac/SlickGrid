@@ -5427,7 +5427,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           this.appendCellHtml(targetedRowDiv, row, i, ncolspan, rowspan, columnData, d);
         }
       } else if (m.alwaysRenderColumn || (this.hasFrozenColumns() && i <= this._options.frozenColumn!)) {
-        this.appendCellHtml(rowDiv, row, i, ncolspan, rowspan, columnData, d);
+        const targetedRowDiv = (this.hasFrozenColumns() && (i > this._options.frozenColumn!) ? rowDivR! : rowDiv);
+        this.appendCellHtml(targetedRowDiv, row, i, ncolspan, rowspan, columnData, d);
       }
 
       if (ncolspan > 1) {
