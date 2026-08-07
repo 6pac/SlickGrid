@@ -5,8 +5,11 @@ export interface ExcelCopyBufferOption<T = any> {
   /** defaults to 2000(ms), delay in ms to wait before clearing the selection after a paste action */
   clearCopySelectionDelay?: number;
 
-  /** defaults to 100(ms), delay in ms to wait before executing focus/paste */
-  clipboardPasteDelay?: number;
+  /** option to replace the default clipboard write (`navigator.clipboard.writeText`) with a custom function, e.g. for non-secure contexts where the Clipboard API is unavailable */
+  clipboardWriteOverride?: (text: string) => void | Promise<void>;
+
+  /** option to replace the default clipboard read (`navigator.clipboard.readText`) with a custom function, e.g. for non-secure contexts where the Clipboard API is unavailable */
+  clipboardReadOverride?: () => string | Promise<string>;
 
   /** defaults to "copied", sets the css className used for copied cells. */
   copiedCellStyle?: string;
@@ -25,9 +28,6 @@ export interface ExcelCopyBufferOption<T = any> {
 
   /** set to true and the plugin will take the name property from each column (which is usually what appears in your header) and put that as the first row of the text that's copied to the clipboard */
   includeHeaderWhenCopying?: boolean;
-
-  /** option to specify a custom DOM element which to will be added the hidden textbox. It's useful if the grid is inside a modal dialog. */
-  bodyElement?: HTMLElement;
 
   /** optional handler to run when copy action initializes */
   onCopyInit?: () => void;

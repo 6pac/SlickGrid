@@ -68,11 +68,7 @@ describe('Example - Excel-compatible spreadsheet and Cell Selection', { retries:
         const plugin = win.grid.getPluginByName('CellExternalCopyManager');
         expect(plugin).to.exist;
 
-        const ta = win.document.createElement('textarea');
-        ta.value = 'p1\tp2\tp3\tp4\tp5\tp6\tp7\tp8\tp9\tp10';
-        win.document.body.appendChild(ta);
-
-        expect(() => plugin._decodeTabularData(win.grid, ta)).not.to.throw();
+        expect(() => plugin._decodeTabularData(win.grid, 'p1\tp2\tp3\tp4\tp5\tp6\tp7\tp8\tp9\tp10')).not.to.throw();
       });
 
       cy.get('#myGrid [data-row=0] .slick-cell.l22.r22').should('have.text', 'p1');
