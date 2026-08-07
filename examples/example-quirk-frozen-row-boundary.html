@@ -1,0 +1,84 @@
+<!doctype html>
+<!--
+  TEMPORARY repro page for the frozen-row boundary drift.
+  DO NOT MERGE — human review only; deleted before merge. The permanent
+  regression test is cypress/e2e/quirk-frozen-row-boundary.cy.ts, which is fully
+  self-hosting and does NOT depend on this page.
+
+  Pre-fix, the boundary was compared differently at six sites. Visible here:
+  - Grid A (3 frozen TOP rows): row 3 (first SCROLLABLE row) carries the
+    .frozen class, and "Check pane lookup" reports getCanvasNode disagreeing
+    with where row 3's DOM actually lives.
+  - Grid B (3 frozen BOTTOM rows): the pinned rows 997-999 carry NO .frozen
+    class (rows 0-3 do instead), and "Scroll to last scrollable row" refuses
+    to scroll.
+  On a fixed build every readout reports agreement.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SlickGrid quirk repro: frozen-row boundary (temporary, do not merge)</title>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <style>
+    .g { width: 700px; height: 260px; } h3 { margin: 12px 0 4px 0; }
+    .slick-row.frozen { background: #fde2e2; }
+  </style>
+</head>
+<body>
+<h2>Frozen-row boundary drift (TEMPORARY repro, do not merge)</h2>
+<p style="max-width:700px;">Rows carrying the <code>.frozen</code> class are tinted red.
+Fixed build: exactly the pinned rows are tinted in both grids.</p>
+<div style="width:700px;">
+  <h3>Grid A — 3 frozen TOP rows</h3>
+  <div id="gridA" class="g"></div>
+  <h3>Grid B — 3 frozen BOTTOM rows (1000 rows)</h3>
+  <div id="gridB" class="g"></div>
+  <button onclick="checkPane()">Check pane lookup for first scrollable row (A)</button>
+  <button onclick="scrollLast()">Scroll to last scrollable row (B)</button>
+  <div id="readout" style="white-space:pre; font-family:monospace; font-size:12px; margin-top:8px;"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
+
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script>
+  var ROWS = 1000, FR = 3;
+  var columns = [
+    { id: 'id', name: '#', field: 'id', width: 80 },
+    { id: 'a', name: 'A', field: 'a', width: 200 },
+    { id: 'b', name: 'B', field: 'b', width: 200 }
+  ];
+  function makeData() {
+    var d = [];
+    for (var i = 0; i < ROWS; i++) { d.push({ id: i, a: 'a' + i, b: 'b' + i }); }
+    return d;
+  }
+  var base = { enableCellNavigation: true, enableColumnReorder: false, rowHeight: 25 };
+  function cols() { return columns.map(function (c) { return Object.assign({}, c); }); }
+
+  var gridA = new Slick.Grid('#gridA', makeData(), cols(), Object.assign({ frozenRow: FR }, base));
+  var gridB = new Slick.Grid('#gridB', makeData(), cols(), Object.assign({ frozenRow: FR, frozenBottom: true }, base));
+
+  function checkPane() {
+    var api = gridA.getCanvasNode(0, FR);
+    var dom = document.querySelector('#gridA .slick-row[data-row="' + FR + '"]');
+    var domCanvas = dom && dom.closest('.grid-canvas');
+    document.getElementById('readout').textContent =
+      'getCanvasNode(0, ' + FR + ') -> ' + (api ? api.className : 'null') + '\n' +
+      'row ' + FR + ' DOM lives in -> ' + (domCanvas ? domCanvas.className : 'not rendered') + '\n' +
+      (api === domCanvas ? 'AGREE (fixed)' : 'DISAGREE (pre-fix bug: overlays/menus target the wrong pane)');
+  }
+  function scrollLast() {
+    gridB.scrollRowIntoView(996);
+    var t = gridB.getViewport().top;
+    document.getElementById('readout').textContent =
+      'scrollRowIntoView(996) -> viewport.top = ' + t + '\n' +
+      (t > 0 ? 'SCROLLED (fixed)' : 'DID NOT SCROLL (pre-fix bug: last scrollable row unreachable)');
+  }
+</script>
+</body>
+</html>
