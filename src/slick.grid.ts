@@ -754,8 +754,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this._headerScroller.push(this._headerScrollerR);
 
     // Append the columnn containers to the headers
-    this._headerL = Utils.createDomElement('div', { className: 'slick-header-columns slick-header-columns-left', role: 'row', style: { [this.hideSide]: '-1000px' } }, this._headerScrollerL);
-    this._headerR = Utils.createDomElement('div', { className: 'slick-header-columns slick-header-columns-right', role: 'row', style: { [this.hideSide]: '-1000px' } }, this._headerScrollerR);
+    this._headerL = Utils.createDomElement('div', { className: 'slick-header-columns slick-header-columns-left', role: 'row', style: { [this.dirSide]: '-1000px' } }, this._headerScrollerL);
+    this._headerR = Utils.createDomElement('div', { className: 'slick-header-columns slick-header-columns-right', role: 'row', style: { [this.dirSide]: '-1000px' } }, this._headerScrollerR);
 
     // Cache the header columns
     this._headers = [this._headerL, this._headerR];
@@ -5039,8 +5039,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     const rowHeight = (this._options.rowHeight! - this.cellHeightDiff);
     const rules = [
-      `.${this.uid} .slick-group-header-column { ${this.hideSide}: 1000px; }`,
-      `.${this.uid} .slick-header-column { ${this.hideSide}: 1000px; }`,
+      `.${this.uid} .slick-group-header-column { ${this.dirSide}: 1000px; }`,
+      `.${this.uid} .slick-header-column { ${this.dirSide}: 1000px; }`,
       `.${this.uid} .slick-top-panel { height: ${this._options.topPanelHeight}px; }`,
       `.${this.uid} .slick-preheader-panel { height: ${this._options.preHeaderPanelHeight}px; }`,
       `.${this.uid} .slick-topheader-panel { height: ${this._options.topHeaderPanelHeight}px; }`,
@@ -8304,7 +8304,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * 
    * @returns 'right' when RTL is enabled, otherwise 'left'
    */
-  protected get hideSide() {
+  protected get dirSide() {
     return this._options.rtl ? 'right' : 'left';
   }
 
