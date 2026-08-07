@@ -329,7 +329,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     logSanitizedHtml: false, // log to console when sanitised - recommend true for testing of dev and production
     mixinDefaults: true,
     shadowRoot: undefined,
-    colAutosizeTreatAsLockedBelowWidth: 100
+    colAutosizeTreatAsLockedBelowWidth: 100,
+    rtl: false
   };
 
   protected _columnDefaults = {
@@ -753,8 +754,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this._headerScroller.push(this._headerScrollerR);
 
     // Append the columnn containers to the headers
-    this._headerL = Utils.createDomElement('div', { className: 'slick-header-columns slick-header-columns-left', role: 'row', style: { left: '-1000px' } }, this._headerScrollerL);
-    this._headerR = Utils.createDomElement('div', { className: 'slick-header-columns slick-header-columns-right', role: 'row', style: { left: '-1000px' } }, this._headerScrollerR);
+    this._headerL = Utils.createDomElement('div', { className: 'slick-header-columns slick-header-columns-left', role: 'row', style: { [this.dirSide]: '-1000px' } }, this._headerScrollerL);
+    this._headerR = Utils.createDomElement('div', { className: 'slick-header-columns slick-header-columns-right', role: 'row', style: { [this.dirSide]: '-1000px' } }, this._headerScrollerR);
 
     // Cache the header columns
     this._headers = [this._headerL, this._headerR];
@@ -2127,14 +2128,25 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
             if (stretchLeewayOnLeft === null) {
               stretchLeewayOnLeft = 100000;
             }
-            maxPageX = pageX + Math.min(shrinkLeewayOnRight, stretchLeewayOnLeft);
-            minPageX = pageX - Math.min(shrinkLeewayOnLeft, stretchLeewayOnRight);
+
+            if (this._options.rtl) {
+              maxPageX = pageX + Math.min(shrinkLeewayOnLeft, stretchLeewayOnRight);
+              minPageX = pageX - Math.min(shrinkLeewayOnRight, stretchLeewayOnLeft);
+            } else {
+              maxPageX = pageX + Math.min(shrinkLeewayOnRight, stretchLeewayOnLeft);
+              minPageX = pageX - Math.min(shrinkLeewayOnLeft, stretchLeewayOnRight);
+            }
           },
           onResize: (e, resizeElms) => {
             const targetEvent = (e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e;
             this.columnResizeDragging = true;
             let actualMinWidth;
-            const d = Math.min(maxPageX, Math.max(minPageX, (targetEvent as MouseEvent).pageX)) - pageX;
+            let d = Math.min(maxPageX, Math.max(minPageX, (targetEvent as MouseEvent).pageX)) - pageX;
+
+            if (this._options.rtl) {
+              d = -d;
+            }
+
             let x;
             let newCanvasWidthL = 0;
             let newCanvasWidthR = 0;
@@ -3109,8 +3121,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         w = this.columns[i].width || 0;
 
         rule = this.getColumnCssRules(i);
-        rule.left.style.left = `${x}px`;
-        rule.right.style.right = (((this._options.frozenColumn !== -1 && i > this._options.frozenColumn!) ? this.canvasWidthR : this.canvasWidthL) - x - w) + 'px';
+
+        if (this._options.rtl) {
+          rule.left.style.right = `${x}px`;
+          rule.right.style.left = (((this._options.frozenColumn !== -1 && i > this._options.frozenColumn!) ? this.canvasWidthR : this.canvasWidthL) - x - w) + 'px';
+        } else {
+          rule.left.style.left = `${x}px`;
+          rule.right.style.right = (((this._options.frozenColumn !== -1 && i > this._options.frozenColumn!) ? this.canvasWidthR : this.canvasWidthL) - x - w) + 'px';
+        }
 
         // If this column is frozen, reset the css left value since the
         // column starts in a new viewport.
@@ -5021,8 +5039,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     const rowHeight = (this._options.rowHeight! - this.cellHeightDiff);
     const rules = [
-      `.${this.uid} .slick-group-header-column { left: 1000px; }`,
-      `.${this.uid} .slick-header-column { left: 1000px; }`,
+      `.${this.uid} .slick-group-header-column { ${this.dirSide}: 1000px; }`,
+      `.${this.uid} .slick-header-column { ${this.dirSide}: 1000px; }`,
       `.${this.uid} .slick-top-panel { height: ${this._options.topPanelHeight}px; }`,
       `.${this.uid} .slick-preheader-panel { height: ${this._options.preHeaderPanelHeight}px; }`,
       `.${this.uid} .slick-topheader-panel { height: ${this._options.topHeaderPanelHeight}px; }`,
@@ -8276,6 +8294,18 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.logMessageCount++;
     }
     return cleanHtml;
+  }
+
+  /**
+   * Returns the CSS property used to hide header columns off-screen by applying a large offset (e.g., `1000px`).
+   *
+   * In LTR mode (`rtl: false`), columns are positioned with a negative `left` value to hide them off-screen. 
+   * In RTL mode (`rtl: true`), the same effect is achieved by using a positive `right` value, since the scroll direction is mirrored.
+   * 
+   * @returns 'right' when RTL is enabled, otherwise 'left'
+   */
+  protected get dirSide() {
+    return this._options.rtl ? 'right' : 'left';
   }
 
   ///////////////////////////////////////////////////////////////
