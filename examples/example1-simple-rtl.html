@@ -31,7 +31,7 @@
         </div>
         <ul>
           <li>basic grid with minimal configuration</li>
-          <li>RTL (right-to-left) support with Persian (Farsi) sample data</li>
+          <li>RTL (right-to-left) support enabled</li>
         </ul>
         <h2>View Source:</h2>
         <ul>
@@ -54,12 +54,12 @@
   <script>
     var grid;
     var columns = [
-      { id: "title", name: "عنوان", field: "title" },
-      { id: "duration", name: "مدت زمان", field: "duration" },
-      { id: "%", name: "درصد تکمیل", field: "percentComplete", width: 90 },
-      { id: "start", name: "شروع", field: "start" },
-      { id: "finish", name: "پایان", field: "finish" },
-      { id: "effort-driven", name: "تلاش‌محور", field: "effortDriven", width: 90 }
+      { id: "title", name: "Title", field: "title" },
+      { id: "duration", name: "Duration", field: "duration" },
+      { id: "%", name: "% Complete", field: "percentComplete", width: 90 },
+      { id: "start", name: "Start", field: "start" },
+      { id: "finish", name: "Finish", field: "finish" },
+      { id: "effort-driven", name: "Effort Driven", field: "effortDriven", width: 90 }
     ];
 
     var options = {
@@ -71,15 +71,14 @@
     var data = [];
     for (var i = 0; i < 500; i++) {
       data[i] = {
-        title: "وظیفه " + (i + 1),
-        duration: "۵ روز",
+        title: "Task " + i,
+        duration: "5 days",
         percentComplete: Math.round(Math.random() * 100),
-        start: "۱۴۰۵/۰۵/۱۱",
-        finish: "۱۴۰۵/۰۵/۱۶",
-        effortDriven: (i % 5 == 0) ? "بله" : "خیر"
+        start: "01/01/2009",
+        finish: "01/05/2009",
+        effortDriven: (i % 5 == 0)
       };
     }
-
     grid = new Slick.Grid("#myGrid", data, columns, options);
 
   </script>
