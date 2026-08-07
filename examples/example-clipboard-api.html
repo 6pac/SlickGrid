@@ -1,0 +1,124 @@
+<!doctype html>
+<!--
+  TEMPORARY demo page for the Clipboard-API rework of CellExternalCopyManager.
+  DO NOT MERGE — human review only; deleted before merge. The permanent test is
+  cypress/e2e/clipboard-api.cy.ts (fully self-hosting, does NOT depend on this
+  page); the realPress end-to-end path is covered by
+  cypress/e2e/example-excel-compatible-spreadsheet.cy.ts.
+
+  Serve over http://localhost (secure context) — the Clipboard API is undefined
+  on plain http:// hosts and file://.
+
+  Suggested manual checks:
+  1. Grid 1: click a cell, shift+click another to select a range, Ctrl+C, then
+     paste into Notepad/Excel — tab/CRLF text arrives, no hidden textarea is
+     created (inspect the DOM), and the copied cells flash the "copied" style.
+  2. Copy a block of cells in Excel/Sheets, click a Grid 1 cell, Ctrl+V — the
+     block lands starting at that cell (first paste may show a browser
+     clipboard-read permission prompt).
+  3. Escape after a copy cancels the highlight.
+  4. Grid 2 never touches the real clipboard: Ctrl+C fills the "app-managed
+     clipboard" box via clipboardWriteOverride; edit that box, Ctrl+V in Grid 2
+     pastes it back via clipboardReadOverride.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SlickGrid demo: Clipboard API copy manager (temporary, do not merge)</title>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <style>
+    #grid1, #grid2 { width: 700px; height: 260px; }
+    .copied { background: #b3d1ff !important; }
+    #eventLog { white-space: pre; font-family: monospace; font-size: 12px; height: 120px; overflow: auto; border: 1px solid #ccc; padding: 4px; width: 700px; }
+    #fakeClipboard { width: 700px; height: 60px; font-family: monospace; }
+  </style>
+</head>
+<body>
+<h2>CellExternalCopyManager on the async Clipboard API (TEMPORARY demo, do not merge)</h2>
+
+<h3>Grid 1 — real clipboard (navigator.clipboard.writeText / readText)</h3>
+<div id="grid1"></div>
+
+<h3>Grid 2 — clipboardWriteOverride / clipboardReadOverride (app-managed clipboard)</h3>
+<div id="grid2"></div>
+<p>App-managed clipboard (filled by Ctrl+C in Grid 2, read by Ctrl+V in Grid 2 — editable):</p>
+<textarea id="fakeClipboard" spellcheck="false"></textarea>
+
+<h3>Event log</h3>
+<div id="eventLog"></div>
+
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangedecorator.js"></script>
+<script src="../dist/browser/plugins/slick.cellrangeselector.js"></script>
+<script src="../dist/browser/plugins/slick.cellselectionmodel.js"></script>
+<script src="../dist/browser/plugins/slick.cellexternalcopymanager.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
+<script>
+  function log(msg) {
+    var el = document.getElementById('eventLog');
+    el.textContent += msg + '\n';
+    el.scrollTop = el.scrollHeight;
+  }
+
+  function makeColumns(withEditors) {
+    var cols = [{ id: 'id', name: '#', field: 'id', width: 60 }];
+    ['a', 'b', 'c', 'd'].forEach(function (f) {
+      cols.push({ id: f, name: f.toUpperCase(), field: f, width: 130, editor: withEditors ? Slick.Editors.Text : undefined });
+    });
+    return cols;
+  }
+  function makeData(prefix, count) {
+    var d = [];
+    for (var i = 0; i < count; i++) {
+      d.push({ id: i, a: prefix + 'A' + i, b: prefix + 'B' + i, c: prefix + 'C' + i, d: prefix + 'D' + i });
+    }
+    return d;
+  }
+  var gridOptions = {
+    enableCellNavigation: true,
+    enableColumnReorder: false,
+    editable: true,
+    autoEdit: false,
+    rowHeight: 25
+  };
+
+  var grid1 = new Slick.Grid('#grid1', makeData('', 50), makeColumns(true), gridOptions);
+  grid1.setSelectionModel(new Slick.CellSelectionModel());
+  var mgr1 = new Slick.CellExternalCopyManager({
+    includeHeaderWhenCopying: false,
+    onCopySuccess: function (rowCount) { log('grid1: copied ' + rowCount + ' row(s) to the system clipboard'); }
+  });
+  grid1.registerPlugin(mgr1);
+  mgr1.onPasteCells.subscribe(function (e, args) {
+    var r = args.ranges[0];
+    log('grid1: pasted into rows ' + r.fromRow + '-' + r.toRow + ', cells ' + r.fromCell + '-' + r.toCell);
+  });
+  mgr1.onCopyCancelled.subscribe(function () { log('grid1: copy cancelled (Escape)'); });
+
+  var fakeClipboard = document.getElementById('fakeClipboard');
+  var grid2 = new Slick.Grid('#grid2', makeData('x', 20), makeColumns(true), gridOptions);
+  grid2.setSelectionModel(new Slick.CellSelectionModel());
+  var mgr2 = new Slick.CellExternalCopyManager({
+    includeHeaderWhenCopying: false,
+    clipboardWriteOverride: function (text) {
+      fakeClipboard.value = text;
+      log('grid2: clipboardWriteOverride received ' + text.length + ' chars (system clipboard untouched)');
+    },
+    clipboardReadOverride: function () {
+      log('grid2: clipboardReadOverride supplying the app-managed clipboard');
+      return fakeClipboard.value;
+    }
+  });
+  grid2.registerPlugin(mgr2);
+  mgr2.onPasteCells.subscribe(function (e, args) {
+    var r = args.ranges[0];
+    log('grid2: pasted into rows ' + r.fromRow + '-' + r.toRow + ', cells ' + r.fromCell + '-' + r.toCell);
+  });
+
+  log('Ready. Secure context: ' + window.isSecureContext + ' — navigator.clipboard ' + (navigator.clipboard ? 'available' : 'UNAVAILABLE (serve via localhost!)'));
+</script>
+</body>
+</html>
