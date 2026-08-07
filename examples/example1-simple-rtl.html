@@ -1,0 +1,88 @@
+<!DOCTYPE HTML>
+<html dir="rtl">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <title>SlickGrid example 1: Basic grid (RTL)</title>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css" />
+  <style>
+    .slick-resizable-handle {
+      right: auto !important;
+      left: 0 !important;
+    }
+  </style>
+</head>
+
+<body>
+  <h2 class="title">Example 1 Simple Grid (RTL) - ESM</h2>
+  <table width="100%">
+    <tr>
+      <td valign="top" width="50%">
+        <div id="myGrid" class="slick-container" style="width:600px;height:500px;"></div>
+      </td>
+      <td valign="top">
+        <div>
+          <h2>
+            <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+            Demonstrates:
+          </h2>
+        </div>
+        <ul>
+          <li>basic grid with minimal configuration</li>
+          <li>RTL (right-to-left) support with Persian (Farsi) sample data</li>
+        </ul>
+        <h2>View Source:</h2>
+        <ul>
+          <li><a href="https://github.com/6pac/SlickGrid/blob/master/examples/example1-simple-rtl.html"
+              target="_sourcewindow"> View the source for this example on Github</a>
+          </li>
+        </ul>
+      </td>
+    </tr>
+  </table>
+
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+  <script src="sortable-cdn-fallback.js"></script>
+
+  <script src="../dist/browser/slick.core.js"></script>
+  <script src="../dist/browser/slick.interactions.js"></script>
+  <script src="../dist/browser/slick.grid.js"></script>
+
+  <script>
+    var grid;
+    var columns = [
+      { id: "title", name: "عنوان", field: "title" },
+      { id: "duration", name: "مدت زمان", field: "duration" },
+      { id: "%", name: "درصد تکمیل", field: "percentComplete", width: 90 },
+      { id: "start", name: "شروع", field: "start" },
+      { id: "finish", name: "پایان", field: "finish" },
+      { id: "effort-driven", name: "تلاش‌محور", field: "effortDriven", width: 90 }
+    ];
+
+    var options = {
+      enableCellNavigation: true,
+      enableColumnReorder: false,
+      rtl: true
+    };
+
+    var data = [];
+    for (var i = 0; i < 500; i++) {
+      data[i] = {
+        title: "وظیفه " + (i + 1),
+        duration: "۵ روز",
+        percentComplete: Math.round(Math.random() * 100),
+        start: "۱۴۰۵/۰۵/۱۱",
+        finish: "۱۴۰۵/۰۵/۱۶",
+        effortDriven: (i % 5 == 0) ? "بله" : "خیر"
+      };
+    }
+
+    grid = new Slick.Grid("#myGrid", data, columns, options);
+
+  </script>
+</body>
+
+</html>
