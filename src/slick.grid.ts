@@ -1392,6 +1392,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.validateAndEnforceOptions();
     this.setFrozenOptions();
 
+    if (this._options.createFooterRow && !this._footerRow) {
+      this.materializeFooterRow();
+    } else if (!this._options.createFooterRow && this._footerRow) {
+      this._footerRowScroller.forEach((scroller) => Utils.hide(scroller));
+    }
+
     // when user changed frozen row option, we need to force a recalculation of each viewport heights
     if (this._options.frozenBottom !== undefined) {
       this.enforceFrozenRowHeightRecalc = true;
@@ -1422,6 +1428,48 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       });
     } else if (this._options.enableMouseWheelScrollHandler === false) {
       this.destroyAllInstances(this.slickMouseWheelInstances); // remove scroll handler when option is disable
+    }
+  }
+
+  /**
+   * Builds the footer-row DOM when `createFooterRow` is enabled after initialization,
+   * mirroring the construction the init path performs, and binds the footer events
+   * on an already-initialized grid. Runtime disable hides the footer rather than
+   * destroying it (symmetric with `showFooterRow`).
+   */
+  protected materializeFooterRow(): void {
+    const canvasWithScrollbarWidth = this.getCanvasWidth() + (this.scrollbarDimensions?.width ?? 0);
+
+    this._footerRowScrollerR = Utils.createDomElement('div', { className: 'slick-footerrow ui-state-default slick-state-default' }, this._paneTopR);
+    this._footerRowScrollerL = Utils.createDomElement('div', { className: 'slick-footerrow ui-state-default slick-state-default' }, this._paneTopL);
+
+    this._footerRowScroller = [this._footerRowScrollerL, this._footerRowScrollerR];
+
+    this._footerRowSpacerL = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, this._footerRowScrollerL);
+    Utils.width(this._footerRowSpacerL, canvasWithScrollbarWidth);
+    this._footerRowSpacerR = Utils.createDomElement('div', { style: { display: 'block', height: '1px', position: 'absolute', top: '0px', left: '0px' } }, this._footerRowScrollerR);
+    Utils.width(this._footerRowSpacerR, canvasWithScrollbarWidth);
+
+    this._footerRowL = Utils.createDomElement('div', { className: 'slick-footerrow-columns slick-footerrow-columns-left' }, this._footerRowScrollerL);
+    this._footerRowR = Utils.createDomElement('div', { className: 'slick-footerrow-columns slick-footerrow-columns-right' }, this._footerRowScrollerR);
+
+    this._footerRow = [this._footerRowL, this._footerRowR];
+
+    if (!this._options.showFooterRow) {
+      this._footerRowScroller.forEach((scroller) => {
+        Utils.hide(scroller);
+      });
+    }
+
+    if (this.initialized) {
+      this._footerRow.forEach((footer) => {
+        this._bindingEventService.bind(footer, 'contextmenu', this.handleFooterContextMenu.bind(this) as EventListener);
+        this._bindingEventService.bind(footer, 'click', this.handleFooterClick.bind(this) as EventListener);
+      });
+
+      this._footerRowScroller.forEach((scroller) => {
+        this._bindingEventService.bind(scroller, 'scroll', this.handleFooterRowScroll.bind(this) as EventListener);
+      });
     }
   }
 
