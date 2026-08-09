@@ -1,0 +1,79 @@
+<!doctype html>
+<!--
+  TEMPORARY repro page for the frozenRow: 0 degenerate configuration.
+  DO NOT MERGE — this page is for human review only and is deleted before merge.
+  The permanent regression test is cypress/e2e/quirk-frozen-row-zero.cy.ts, which
+  is fully self-hosting and does NOT depend on this page.
+
+  Bug (pre-fix): frozenRow is a COUNT, but setFrozenOptions gated on > -1, so
+  frozenRow: 0 activated the full frozen-row machinery around an EMPTY band.
+  On a pre-fix build this page shows: grid A rendering every row in the BOTTOM
+  canvas below a visible empty band strip, and grid B (frozenBottom variant)
+  showing an empty bottom pane strip below the body. On a fixed build both grids
+  are indistinguishable from the unfrozen control grid C.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SlickGrid quirk repro: frozenRow 0 (temporary, do not merge)</title>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <style> .g { width: 700px; height: 200px; } h3 { margin: 12px 0 4px 0; } </style>
+</head>
+<body>
+<h2>frozenRow: 0 — degenerate empty frozen band (TEMPORARY repro, do not merge)</h2>
+<div style="width:700px;">
+  <h3>Grid A — <code>frozenRow: 0</code></h3>
+  <div id="gridA" class="g"></div>
+  <h3>Grid B — <code>frozenRow: 0, frozenBottom: true</code></h3>
+  <div id="gridB" class="g"></div>
+  <h3>Grid C — control (no freeze options)</h3>
+  <div id="gridC" class="g"></div>
+  <button onclick="report()">Report row placement</button>
+  <div id="readout" style="white-space:pre; font-family:monospace; font-size:12px; margin-top:8px;"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
+
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script>
+  var columns = [
+    { id: 'id', name: '#', field: 'id', width: 80 },
+    { id: 'a', name: 'A', field: 'a', width: 200 },
+    { id: 'b', name: 'B', field: 'b', width: 200 }
+  ];
+  function makeData() {
+    var d = [];
+    for (var i = 0; i < 12; i++) { d.push({ id: i, a: 'a' + i, b: 'b' + i }); }
+    return d;
+  }
+  var base = { enableCellNavigation: true, enableColumnReorder: false, rowHeight: 25 };
+  function cols() { return columns.map(function (c) { return Object.assign({}, c); }); }
+
+  var gridA = new Slick.Grid('#gridA', makeData(), cols(), Object.assign({ frozenRow: 0 }, base));
+  var gridB = new Slick.Grid('#gridB', makeData(), cols(), Object.assign({ frozenRow: 0, frozenBottom: true }, base));
+  var gridC = new Slick.Grid('#gridC', makeData(), cols(), Object.assign({}, base));
+
+  function report() {
+    function line(name, sel) {
+      var top = document.querySelectorAll(sel + ' .grid-canvas-top .slick-row').length;
+      var bottom = document.querySelectorAll(sel + ' .grid-canvas-bottom .slick-row').length;
+      var pane = document.querySelector(sel + ' .slick-pane-bottom');
+      var paneVisible = !!pane && pane.offsetParent !== null && pane.offsetHeight > 0;
+      return name + ': rows in top canvas=' + top + ', bottom canvas=' + bottom + ', bottom pane visible=' + paneVisible;
+    }
+    document.getElementById('readout').textContent = [
+      line('A (frozenRow 0)        ', '#gridA'),
+      line('B (frozenRow 0, bottom)', '#gridB'),
+      line('C (control)            ', '#gridC'),
+      '',
+      'Fixed build: A and B match C. Pre-fix build: A has all rows in the bottom canvas;',
+      'A and B show a visible bottom pane.'
+    ].join('\n');
+  }
+</script>
+</body>
+</html>

@@ -2350,7 +2350,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       ? parseInt(this._options.frozenColumn as unknown as string, 10)
       : -1;
 
-    if (this._options.frozenRow! > -1) {
+    if (this._options.frozenRow! > 0) {
       this.hasFrozenRows = true;
       const dataLength = this.getDataLength();
       this.actualFrozenRow = (this._options.frozenBottom)
