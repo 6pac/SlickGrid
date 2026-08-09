@@ -107,8 +107,8 @@ Cypress.Commands.overwrite('drag', (_originalFn: any, subject: any, target: any,
 // @ts-ignore
 Cypress.Commands.add('dragStart', { prevSubject: true }, (subject, { cellWidth = 80, cellHeight = 25 } = {}) => {
   return cy.wrap(subject).click({ force: true })
-    .trigger('mousedown', { which: 1 })
-    .trigger('mousemove', cellWidth / 3, cellHeight / 3);
+    .trigger('mousedown', { which: 1, force: true })
+    .trigger('mousemove', cellWidth / 3, cellHeight / 3, { force: true });
 });
 
 // use a different command name than "drag" so that it doesn't conflict with the "@4tw/cypress-drag-drop" lib
@@ -143,6 +143,7 @@ Cypress.Commands.add('dragOutside', (viewport = 'topLeft', ms = 0, px = 0, { par
 });
 
 Cypress.Commands.add('dragEnd', { prevSubject: 'optional' }, (subject, gridSelector = 'div[class^="slickgrid_"]') => {
+  cy.get('body').trigger('mouseup', { force: true });
   cy.get(gridSelector).trigger('mouseup', { force: true });
   return;
 });
