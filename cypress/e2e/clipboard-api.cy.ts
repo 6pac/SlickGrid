@@ -11,9 +11,11 @@
  * The spec is SELF-HOSTING (harness served via cy.intercept; no example page)
  * and stubs navigator.clipboard for determinism — the same pattern
  * slickgrid-universal uses in its unit tests. The stub also captures the exact
- * serialized text, which real-clipboard tests cannot assert. The end-to-end
- * path through the REAL clipboard (realPress Ctrl+C / Ctrl+V in Electron) is
- * covered by example-excel-compatible-spreadsheet.cy.ts.
+ * serialized text, which real-clipboard tests cannot assert. The full realPress
+ * Ctrl+C / Ctrl+V keystroke path is covered by
+ * example-excel-compatible-spreadsheet.cy.ts with the same transport stub —
+ * headless CI runners deny real clipboard access (focus/permission), so the
+ * real-hardware path is a manual check.
  *
  * Grid A pastes through column editors (editor.applyValue); grid B has no
  * editors, covering the raw field-assignment path plus both override hooks.
