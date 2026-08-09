@@ -6,6 +6,20 @@ describe('Example - Excel-compatible spreadsheet and Cell Selection', { retries:
   });
 
   it('should click on cell B2, copy value, ArrowDown, paste value, ArrowRight, and expect to be in column C', () => {
+    // stub the Clipboard API transport: headless CI runners deny real clipboard
+    // access (focus/permission), so realPress drives the full keystroke path
+    // while the transport stays deterministic
+    cy.window().then((win: any) => {
+      const store = { text: '' };
+      Object.defineProperty(win.navigator, 'clipboard', {
+        configurable: true,
+        value: {
+          writeText: (t: string) => { store.text = t; return Promise.resolve(); },
+          readText: () => Promise.resolve(store.text),
+        },
+      });
+    });
+
     cy.getCell(2, 2, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
       .as('cell_B2')
       .click();
