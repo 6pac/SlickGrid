@@ -114,6 +114,11 @@ const ValueFilterMode = IIFE_ONLY ? Slick.ValueFilterMode : ValueFilterMode_;
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 const SelectionUtils = IIFE_ONLY ? Slick.SelectionUtils : SelectionUtils_;
 const WidthEvalMode = IIFE_ONLY ? Slick.WidthEvalMode : WidthEvalMode_;
+
+// slack added beyond the summed column widths so the header band always exceeds the
+// body scroll range (header width is the header/body scroll-sync floor) and column
+// drag-reorder has room past the last column
+const HEADER_WIDTH_SLACK = 1000;
 const Draggable = IIFE_ONLY ? Slick.Draggable : Draggable_;
 const MouseWheel = IIFE_ONLY ? Slick.MouseWheel : MouseWheel_;
 const Resizable = IIFE_ONLY ? Slick.Resizable : Resizable_;
@@ -4741,17 +4746,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     if (this.hasFrozenColumns()) {
-      this.headersWidthL = this.headersWidthL + 1000;
+      this.headersWidthL = this.headersWidthL + HEADER_WIDTH_SLACK;
 
       this.headersWidthR = Math.max(this.headersWidthR, this.viewportW) + this.headersWidthL;
-      this.headersWidthR += this.scrollbarDimensions?.width ?? 0;
     } else {
-      this.headersWidthL += this.scrollbarDimensions?.width ?? 0;
-      this.headersWidthL = Math.max(this.headersWidthL, this.viewportW) + 1000;
+      this.headersWidthL = Math.max(this.headersWidthL, this.viewportW) + HEADER_WIDTH_SLACK;
     }
 
     this.headersWidth = this.headersWidthL + this.headersWidthR;
-    return Math.max(this.headersWidth, this.viewportW) + 1000;
+    return Math.max(this.headersWidth, this.viewportW) + HEADER_WIDTH_SLACK;
   }
 
   /** Get the grid canvas width
