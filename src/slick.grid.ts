@@ -2753,8 +2753,17 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     if (autoSize.colValueArray) {
-      // if an array of values are specified, just pass them in instead of data
-      maxColWidth = this.getColWidth(columnDef, gridCanvas, autoSize.colValueArray as any);
+      // if an array of values are specified, measure them instead of the data. `getColWidth()` walks
+      // `startIndex`..`endIndex`, so the values have to be wrapped in a RowInfo - handing it the bare
+      // array leaves those bounds undefined and the measuring loop never runs.
+      const valueArrRowInfo = {
+        colIndex,
+        rowCount: autoSize.colValueArray.length,
+        startIndex: 0,
+        endIndex: autoSize.colValueArray.length - 1,
+        valueArr: autoSize.colValueArray,
+      } as RowInfo;
+      maxColWidth = this.getColWidth(columnDef, gridCanvas, valueArrRowInfo);
       return Math.max(autoSize.headerWidthPx, maxColWidth);
     }
 
