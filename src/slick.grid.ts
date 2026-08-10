@@ -4748,7 +4748,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (this.hasFrozenColumns()) {
       this.headersWidthL = this.headersWidthL + HEADER_WIDTH_SLACK;
 
-      this.headersWidthR = Math.max(this.headersWidthR, this.viewportW) + this.headersWidthL;
+      this.headersWidthR = Math.max(this.headersWidthR, this.viewportW) + HEADER_WIDTH_SLACK;
     } else {
       this.headersWidthL = Math.max(this.headersWidthL, this.viewportW) + HEADER_WIDTH_SLACK;
     }
