@@ -2,18 +2,13 @@
 <html dir="rtl">
 
 <head>
-  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
   <title>SlickGrid example 1: Basic grid (RTL)</title>
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css" />
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css" />
-  <style>
-    .slick-resizable-handle {
-      right: auto !important;
-      left: 0 !important;
-    }
-  </style>
-</head>
+  </head>
 
 <body>
   <h2 class="title">Example 1 Simple Grid (RTL) - ESM</h2>
@@ -43,7 +38,6 @@
     </tr>
   </table>
 
-
   <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
   <script src="sortable-cdn-fallback.js"></script>
 
@@ -54,12 +48,18 @@
   <script>
     var grid;
     var columns = [
-      { id: "title", name: "Title", field: "title" },
-      { id: "duration", name: "Duration", field: "duration" },
+      { id: "title", name: "Title", field: "title", width: 90 },
+      { id: "duration", name: "Duration", field: "duration", with: 80 },
       { id: "%", name: "% Complete", field: "percentComplete", width: 90 },
-      { id: "start", name: "Start", field: "start" },
-      { id: "finish", name: "Finish", field: "finish" },
-      { id: "effort-driven", name: "Effort Driven", field: "effortDriven", width: 90 }
+      { id: "start", name: "Start", field: "start", width: 80 },
+      { id: "finish", name: "Finish", field: "finish", width: 80 },
+      { id: "effort-driven", name: "Effort Driven", field: "effortDriven", width: 100 },
+      { id: "priority", name: "Priority", field: "priority", width: 80 },
+      { id: "status", name: "Status", field: "status" },
+      { id: "assignee", name: "Assignee", field: "assignee" },
+      { id: "department", name: "Department", field: "department", width: 100 },
+      { id: "project", name: "Project", field: "project" },
+      { id: "completed", name: "Completed", field: "completed" }
     ];
 
     var options = {
@@ -69,18 +69,34 @@
     };
 
     var data = [];
+    var statuses = ['Not Started', 'In Progress', 'Review', 'Completed', 'On Hold'];
+    var priorities = ['Low', 'Medium', 'High', 'Critical'];
+    var assignees = ['Alice', 'Bob', 'Carol', 'Dave', 'Eve', 'Frank', 'Grace'];
+    var departments = ['Engineering', 'Marketing', 'Sales', 'Design', 'Support', 'Finance'];
+    var projects = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta'];
+
     for (var i = 0; i < 500; i++) {
+      var startDate = new Date(2025, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1);
+      var finishDate = new Date(startDate);
+      finishDate.setDate(finishDate.getDate() + Math.floor(Math.random() * 14) + 3);
+
       data[i] = {
-        title: "Task " + i,
-        duration: "5 days",
+        title: "Task " + (i + 1),
+        duration: (Math.floor(Math.random() * 10) + 2) + " days",
         percentComplete: Math.round(Math.random() * 100),
-        start: "01/01/2009",
-        finish: "01/05/2009",
-        effortDriven: (i % 5 == 0)
+        start: startDate.toLocaleDateString('en-US'),
+        finish: finishDate.toLocaleDateString('en-US'),
+        effortDriven: (i % 5 == 0),
+        priority: priorities[Math.floor(Math.random() * priorities.length)],
+        status: statuses[Math.floor(Math.random() * statuses.length)],
+        assignee: assignees[Math.floor(Math.random() * assignees.length)],
+        department: departments[Math.floor(Math.random() * departments.length)],
+        project: projects[Math.floor(Math.random() * projects.length)],
+        completed: (i % 3 == 0) ? 'Yes' : 'No'
       };
     }
-    grid = new Slick.Grid("#myGrid", data, columns, options);
 
+    grid = new Slick.Grid("#myGrid", data, columns, options);
   </script>
 </body>
 

@@ -866,3 +866,9 @@ button.slick-btn {
   bottom: 0;
   right: 0;
 }
+
+/* RTL (Right-to-Left) Support  */
+.slick-rtl .slick-resizable-handle {
+  right: auto;
+  left: 0;
+}

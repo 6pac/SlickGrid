@@ -868,6 +868,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (!this._options.explicitInitialization) {
       this.finishInitialization();
     }
+
+    this.applyRTL(this._options.rtl ?? false);
   }
 
   /**
@@ -6263,11 +6265,22 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     viewportTop ??= this.scrollTop;
     viewportLeft ??= this.scrollLeft;
 
+    let leftPx = viewportLeft;
+    let rightPx = viewportLeft + this.viewportW;
+
+    if (this._options.rtl) {
+      // In RTL, scrollLeft represents the offset from the RIGHT edge.
+      // The viewport's left edge is: maxScroll (far left) - scrollLeft (offset from right)
+      const maxScroll = this.canvasWidth - this.viewportW;
+      leftPx = maxScroll - viewportLeft - this.viewportW;
+      rightPx = maxScroll - viewportLeft;
+    }
+
     return {
       top: this.getRowFromPosition(viewportTop),
       bottom: this.getRowFromPosition(viewportTop + this.viewportH) + 1,
-      leftPx: viewportLeft,
-      rightPx: viewportLeft + this.viewportW
+      leftPx,
+      rightPx
     };
   }
 
@@ -8347,6 +8360,27 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   protected get dirSide() {
     return this._options.rtl ? 'right' : 'left';
+  }
+
+  /**
+   * Applies or removes RTL (Right-to-Left) support on the grid container.
+   * 
+   * When enabled, this method:
+   * - Adds the `slick-rtl` CSS class for styling
+   * - Sets the `dir="rtl"` attribute for proper text direction
+   * When disabled, it removes both the class and attribute.
+   * This makes the grid self-contained, allowing RTL to work regardless of the page's direction setting.
+   * 
+   * @param enabled - Whether RTL should be enabled
+   */
+  private applyRTL(enabled: boolean): void {
+    if (enabled) {
+      this._container.classList.add('slick-rtl');
+      this._container.setAttribute('dir', 'rtl');
+    } else {
+      this._container.classList.remove('slick-rtl');
+      this._container.removeAttribute('dir');
+    }
   }
 
   ///////////////////////////////////////////////////////////////
