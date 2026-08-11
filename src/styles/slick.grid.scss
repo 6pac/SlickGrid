@@ -273,3 +273,9 @@ classes should alter those!
   outline: 0;
   width: 100%;
 }
+
+/* RTL (Right-to-Left) Support  */
+.slick-rtl .slick-resizable-handle {
+  right: auto;
+  left: -5px;
+}

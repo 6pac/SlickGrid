@@ -1,0 +1,103 @@
+<!DOCTYPE HTML>
+<html dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <title>SlickGrid example 1: Basic grid (RTL)</title>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css" />
+  </head>
+
+<body>
+  <h2 class="title">Example 1 Simple Grid (RTL) - ESM</h2>
+  <table width="100%">
+    <tr>
+      <td valign="top" width="50%">
+        <div id="myGrid" class="slick-container" style="width:600px;height:500px;"></div>
+      </td>
+      <td valign="top">
+        <div>
+          <h2>
+            <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+            Demonstrates:
+          </h2>
+        </div>
+        <ul>
+          <li>basic grid with minimal configuration</li>
+          <li>RTL (right-to-left) support enabled</li>
+        </ul>
+        <h2>View Source:</h2>
+        <ul>
+          <li><a href="https://github.com/6pac/SlickGrid/blob/master/examples/example1-simple-rtl.html"
+              target="_sourcewindow"> View the source for this example on Github</a>
+          </li>
+        </ul>
+      </td>
+    </tr>
+  </table>
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+  <script src="sortable-cdn-fallback.js"></script>
+
+  <script src="../dist/browser/slick.core.js"></script>
+  <script src="../dist/browser/slick.interactions.js"></script>
+  <script src="../dist/browser/slick.grid.js"></script>
+
+  <script>
+    var grid;
+    var columns = [
+      { id: "title", name: "Title", field: "title", width: 90 },
+      { id: "duration", name: "Duration", field: "duration", with: 80 },
+      { id: "%", name: "% Complete", field: "percentComplete", width: 90 },
+      { id: "start", name: "Start", field: "start", width: 80 },
+      { id: "finish", name: "Finish", field: "finish", width: 80 },
+      { id: "effort-driven", name: "Effort Driven", field: "effortDriven", width: 100 },
+      { id: "priority", name: "Priority", field: "priority", width: 80 },
+      { id: "status", name: "Status", field: "status" },
+      { id: "assignee", name: "Assignee", field: "assignee" },
+      { id: "department", name: "Department", field: "department", width: 100 },
+      { id: "project", name: "Project", field: "project" },
+      { id: "completed", name: "Completed", field: "completed" }
+    ];
+
+    var options = {
+      enableCellNavigation: true,
+      enableColumnReorder: false,
+      rtl: true
+    };
+
+    var data = [];
+    var statuses = ['Not Started', 'In Progress', 'Review', 'Completed', 'On Hold'];
+    var priorities = ['Low', 'Medium', 'High', 'Critical'];
+    var assignees = ['Alice', 'Bob', 'Carol', 'Dave', 'Eve', 'Frank', 'Grace'];
+    var departments = ['Engineering', 'Marketing', 'Sales', 'Design', 'Support', 'Finance'];
+    var projects = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon', 'Zeta'];
+
+    for (var i = 0; i < 500; i++) {
+      var startDate = new Date(2025, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1);
+      var finishDate = new Date(startDate);
+      finishDate.setDate(finishDate.getDate() + Math.floor(Math.random() * 14) + 3);
+
+      data[i] = {
+        title: "Task " + (i + 1),
+        duration: (Math.floor(Math.random() * 10) + 2) + " days",
+        percentComplete: Math.round(Math.random() * 100),
+        start: startDate.toLocaleDateString('en-US'),
+        finish: finishDate.toLocaleDateString('en-US'),
+        effortDriven: (i % 5 == 0),
+        priority: priorities[Math.floor(Math.random() * priorities.length)],
+        status: statuses[Math.floor(Math.random() * statuses.length)],
+        assignee: assignees[Math.floor(Math.random() * assignees.length)],
+        department: departments[Math.floor(Math.random() * departments.length)],
+        project: projects[Math.floor(Math.random() * projects.length)],
+        completed: (i % 3 == 0) ? 'Yes' : 'No'
+      };
+    }
+
+    grid = new Slick.Grid("#myGrid", data, columns, options);
+  </script>
+</body>
+
+</html>
