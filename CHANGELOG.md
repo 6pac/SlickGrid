@@ -3,6 +3,38 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.19.0](https://github.com/6pac/SlickGrid/compare/5.18.6...5.19.0) (2026-08-11)
+
+### Bug Fixes
+
+* 'getColContentSize' for single row with 0 as value ([#1222](https://github.com/6pac/SlickGrid/issues/1222)) ([dc17328](https://github.com/6pac/SlickGrid/commit/dc173281d051bade5f5db47cf72825c7da824d3e))
+* align frozen-band cell-cleanup ranges with the (inclusive) render ranges ([#1259](https://github.com/6pac/SlickGrid/issues/1259)) ([b878c6b](https://github.com/6pac/SlickGrid/commit/b878c6b9780c555c59ea52248142f91b70a3a5f5))
+* autosize never measured autoSize.colValueArray ([#934](https://github.com/6pac/SlickGrid/issues/934)) ([#1273](https://github.com/6pac/SlickGrid/issues/1273)) ([10e2e0a](https://github.com/6pac/SlickGrid/commit/10e2e0aca0e69a220c1fb402860fea1ccb64b888))
+* canonicalize the frozen-row boundary across all comparison sites ([#1268](https://github.com/6pac/SlickGrid/issues/1268)) ([bd2b6b6](https://github.com/6pac/SlickGrid/commit/bd2b6b6292ce4d69412ed0bcd10db200448418a4))
+* CellExternalCopyManager shouldn't throw when out of bound ([#1226](https://github.com/6pac/SlickGrid/issues/1226)) ([0f09f11](https://github.com/6pac/SlickGrid/commit/0f09f11714bc2fd9d96db4e1cfa24b1974640435))
+* **core:** compute scrollTo page before deriving the paging offset ([#1231](https://github.com/6pac/SlickGrid/issues/1231)) ([1a7fcc5](https://github.com/6pac/SlickGrid/commit/1a7fcc5fb205eab3580e7291a3fa38c105cffa4f))
+* **core:** probe positioned-child limit in getMaxSupportedCssHeight ([#1232](https://github.com/6pac/SlickGrid/issues/1232)) ([dddaed4](https://github.com/6pac/SlickGrid/commit/dddaed4e12e0baeabb1d833411d16d02bfdb4523))
+* **core:** small type casting fix to value passed to `applyHtmlCode()` ([#1248](https://github.com/6pac/SlickGrid/issues/1248)) ([0b41d59](https://github.com/6pac/SlickGrid/commit/0b41d5923b1da61c3e5442b528807257f3328270))
+* decode clipboard paste on delivery instead of a fixed delay ([#1261](https://github.com/6pac/SlickGrid/issues/1261)) ([20fc9a8](https://github.com/6pac/SlickGrid/commit/20fc9a8b02d438c352745130f5a0210d0c4abcec))
+* **examples:** deterministic seeded data in checkbox-header-row example ([#1246](https://github.com/6pac/SlickGrid/issues/1246)) ([f015e96](https://github.com/6pac/SlickGrid/commit/f015e96bdd535b87cc660d6c08c62aee11aaf64e))
+* footer-row lifecycle - construction crash, inconsistent getFooterRow, double onFooterRowCellRendered ([#1256](https://github.com/6pac/SlickGrid/issues/1256)) ([2dc065c](https://github.com/6pac/SlickGrid/commit/2dc065cd5a4adbdbe1c00b0d34f3473e5aea0c16))
+* fractional grid height leaves the bottom rows unrendered ([#1262](https://github.com/6pac/SlickGrid/issues/1262)) ([#1263](https://github.com/6pac/SlickGrid/issues/1263)) ([a9c261c](https://github.com/6pac/SlickGrid/commit/a9c261c1535392de390894f22a0da9231745d351))
+* frozen-bottom grids never clean up off-screen row cells ([#1255](https://github.com/6pac/SlickGrid/issues/1255)) ([214dcf1](https://github.com/6pac/SlickGrid/commit/214dcf1a50f9498b2f9b07a5c7b0cb0900ace4b9))
+* frozen-bottom hit testing resolves the wrong row when data is shorter than the viewport ([#1258](https://github.com/6pac/SlickGrid/issues/1258)) ([6d39e14](https://github.com/6pac/SlickGrid/commit/6d39e14bae3ba79928692f8e54d6174fcde0a0e2))
+* route off-viewport alwaysRenderColumn cells to their own column band ([#1267](https://github.com/6pac/SlickGrid/issues/1267)) ([306e972](https://github.com/6pac/SlickGrid/commit/306e9721d5fca7af6197e59fef52e898808611cc))
+* treat frozenRow: 0 as no freeze (input clamp) ([#1266](https://github.com/6pac/SlickGrid/issues/1266)) ([d61fc56](https://github.com/6pac/SlickGrid/commit/d61fc56436721e387c302683f48d7cd3153f8a97))
+* updateRowPositions leaves right-pane row fragments at stale positions ([#1257](https://github.com/6pac/SlickGrid/issues/1257)) ([f254ac8](https://github.com/6pac/SlickGrid/commit/f254ac81499e12b382ba0dc27f936d31c67e6bd1))
+
+### Features
+
+* add core RTL support for headers and column resizing ([#1271](https://github.com/6pac/SlickGrid/issues/1271)) ([7b2e337](https://github.com/6pac/SlickGrid/commit/7b2e337138de14578ec9db6f1e81a6512f433478))
+* build the footer row lazily when createFooterRow is enabled at runtime ([#1269](https://github.com/6pac/SlickGrid/issues/1269)) ([a73d083](https://github.com/6pac/SlickGrid/commit/a73d083235b43dc0514f6e0744cf29c55824ca42))
+* **core:** add variable row height support via rowHeightProvider ([#1235](https://github.com/6pac/SlickGrid/issues/1235)) ([c49ab66](https://github.com/6pac/SlickGrid/commit/c49ab662a54d65e07834842ee4c0257d77aaa39b))
+
+### Performance Improvements
+
+* Enhance performance content size calculation, fixes [#1223](https://github.com/6pac/SlickGrid/issues/1223) ([#1224](https://github.com/6pac/SlickGrid/issues/1224)) ([9de774b](https://github.com/6pac/SlickGrid/commit/9de774b01630a3cfa2966c1aefd9cff111e95af4)), closes [#2](https://github.com/6pac/SlickGrid/issues/2)
+
 ## [5.18.6](https://github.com/6pac/SlickGrid/compare/5.18.5...5.18.6) (2026-05-17)
 
 ### Bug Fixes

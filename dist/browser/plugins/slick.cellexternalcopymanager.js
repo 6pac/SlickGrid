@@ -150,6 +150,8 @@
             let xOffset = 0;
             for (let x = 0; x < clipCommand.destW; x++) {
               let desty = activeRow + y, destx = activeCell + x, column = columns[destx];
+              if (!column)
+                break;
               if (column.hidden) {
                 clipCommand.destW++, xOffset++;
                 continue;
@@ -180,6 +182,8 @@
             let xOffset = 0;
             for (let x = 0; x < clipCommand.destW; x++) {
               let desty = activeRow + y, destx = activeCell + x, column = columns[destx];
+              if (!column)
+                break;
               if (column.hidden) {
                 xOffset++;
                 continue;
@@ -251,10 +255,10 @@
           }
         }
         if (!this._options.readOnlyMode && (e.which === this.keyCodes.V && (e.ctrlKey || e.metaKey) && !e.shiftKey || e.which === this.keyCodes.INSERT && e.shiftKey && !e.ctrlKey)) {
-          let focusEl = document.activeElement, ta = this._createTextBox("");
-          return window.setTimeout(() => {
-            this._decodeTabularData(this._grid, ta), focusEl == null || focusEl.focus();
-          }, (_f = (_e = this._options) == null ? void 0 : _e.clipboardPasteDelay) != null ? _f : CLIPBOARD_PASTE_DELAY), !1;
+          let focusEl = document.activeElement, ta = this._createTextBox(""), fallbackTimer, decoded = !1, decode = () => {
+            decoded || (decoded = !0, window.clearTimeout(fallbackTimer), this._decodeTabularData(this._grid, ta), focusEl == null || focusEl.focus());
+          };
+          return ta.addEventListener("input", decode, { once: !0 }), fallbackTimer = window.setTimeout(decode, (_f = (_e = this._options) == null ? void 0 : _e.clipboardPasteDelay) != null ? _f : CLIPBOARD_PASTE_DELAY), !1;
         }
       }
     }

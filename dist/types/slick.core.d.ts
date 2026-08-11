@@ -3,7 +3,7 @@
  * @module Core
  * @namespace Slick
  */
-import type { AnyFunction, EditController, ElementEventListener, Handler, InferDOMType, MergeTypes, DragRange } from './models/index.js';
+import type { AnyFunction, CSSStyleDeclarationWritable, DragRange, EditController, ElementEventListener, Handler, InferDOMType, MergeTypes } from './models/index.js';
 import type { SlickGrid } from './slick.grid.js';
 export interface BasePubSub {
     publish<ArgType = any>(_eventName: string | any, _data?: ArgType): any;
@@ -475,7 +475,8 @@ export declare class Utils {
     };
     static width(el: HTMLElement, value?: number | string): number | void;
     static height(el: HTMLElement, value?: number | string): number | void;
-    static setStyleSize(el: HTMLElement, style: string, val?: number | string | Function): void;
+    static setStyleSize<P extends CSSStyleDeclarationWritable>(el: HTMLElement, style: keyof P, val?: number | string | Function): void;
+    static setStyles<T extends HTMLElement, P extends Partial<CSSStyleDeclarationWritable>>(element: T, styles: P): void;
     static contains(parent: HTMLElement, child: HTMLElement): boolean;
     static isHidden(el: HTMLElement): boolean;
     static parents(el: HTMLElement | ParentNode, selector?: string): (HTMLElement | ParentNode)[];
@@ -508,6 +509,59 @@ export declare class SelectionUtils {
     static horizontalTargetRange(baseRange: SlickRange, copyToRange: SlickRange): SlickRange | null;
     static cornerTargetRange(baseRange: SlickRange, copyToRange: SlickRange): SlickRange | null;
     static copyCellsToTargetRange(baseRange: SlickRange, targetRange: SlickRange, grid: SlickGrid): void;
+}
+/**
+ * RowPositionIndexer - a prefix-sum index of row top positions, used by SlickGrid when variable
+ * row height mode is enabled (i.e. when a `rowHeightProvider` grid option is supplied).
+ *
+ * `rowPos[i]` holds the virtual top pixel position of row `i` (i.e. the summed heights of all
+ * preceding rows) and `rowPos[rowCount]` holds the total height of all indexed rows, which makes
+ * row-to-position lookups an O(1) array read and position-to-row lookups an O(log n) binary search.
+ *
+ * Row indexes are expected to be 0 or greater (guaranteed by the grid core; user-provided indexes
+ * are validated in the public grid methods). Rows at or beyond the indexed range extrapolate
+ * linearly using the default row height, mirroring the fixed-row-height arithmetic it replaces
+ * (needed for the Add-New row and `leaveSpaceForNewRows` padding).
+ */
+export declare class RowPositionIndexer {
+    protected rowPos: Float64Array<ArrayBuffer>;
+    protected rowCount: number;
+    protected defaultRowHeight: number;
+    protected hint: number;
+    /** Number of rows currently indexed. */
+    get count(): number;
+    /**
+     * Rebuilds the index by querying the height of every row. O(n) - the provided callback is
+     * called once per row and must therefore be fast (a simple lookup, no DOM access).
+     *
+     * @param {number} rowCount - The number of rows to index.
+     * @param {number} defaultRowHeight - The height used when the callback returns `undefined` and for extrapolating beyond the indexed range.
+     * @param {(row: number) => number | undefined} getRowHeight - Returns the height of a row in pixels, or `undefined` to use the default.
+     */
+    rebuild(rowCount: number, defaultRowHeight: number, getRowHeight: (row: number) => number | undefined): void;
+    /**
+     * Returns the virtual top pixel position of a row.
+     *
+     * @param {number} row - The row index (>= 0); indexes beyond the indexed range extrapolate using the default row height.
+     * @returns {number} The virtual pixel position of the top of the row.
+     */
+    top(row: number): number;
+    /**
+     * Returns the height of a row.
+     *
+     * @param {number} row - The row index (>= 0); indexes beyond the indexed range return the default row height.
+     * @returns {number} The row height in pixels.
+     */
+    height(row: number): number;
+    /**
+     * Returns the index of the row containing a virtual vertical pixel position.
+     * Positions below zero return row 0; positions beyond the indexed range extrapolate using the
+     * default row height (results may be beyond the last row - callers clamp, as in fixed mode).
+     *
+     * @param {number} y - The virtual vertical position in pixels.
+     * @returns {number} The row index at that position.
+     */
+    rowAt(y: number): number;
 }
 export declare const SlickGlobalEditorLock: SlickEditorLock;
 export declare const EditorLock: typeof SlickEditorLock, Event: typeof SlickEvent, EventData: typeof SlickEventData, EventHandler: typeof SlickEventHandler, Group: typeof SlickGroup, GroupTotals: typeof SlickGroupTotals, NonDataRow: typeof SlickNonDataItem, Range: typeof SlickRange, CopyRange: typeof SlickCopyRange, DragExtendHandle: typeof SlickDragExtendHandle, RegexSanitizer: typeof regexSanitizer, GlobalEditorLock: SlickEditorLock, keyCode: {

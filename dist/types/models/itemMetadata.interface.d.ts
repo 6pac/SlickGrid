@@ -12,6 +12,13 @@ export interface ItemMetadata {
     editor?: Editor | null;
     /** Whether or not any cells in the row can be set as "active". */
     focusable?: boolean;
+    /**
+     * Row height in pixels, read by the *default* `rowHeightProvider` when the
+     * `enableVariableRowHeight` grid option is on; when undefined the default `rowHeight` grid
+     * option is used. Note: supplying a custom `rowHeightProvider` replaces the default provider,
+     * in which case this property is no longer consulted.
+     */
+    height?: number;
     /** A custom group formatter. */
     formatter?: GroupTotalsFormatter | Formatter;
     /** Whether or not a row or any cells in it can be selected. */

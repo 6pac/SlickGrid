@@ -1,6 +1,6 @@
 import type { SortableInstance } from 'sortablejs';
-import type { AutoSize, CellPosition, CellViewportRange, Column, ColumnMetadata, ColumnSort, CssStyleHash, CustomDataView, DOMEvent, DragPosition, DragRowMove, Editor, EditorConstructor, EditController, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption as BaseGridOption, InteractionBase, ItemMetadata, MenuCommandItemCallbackArgs, MultiColumnSort, OnActivateChangedOptionsEventArgs, OnActiveCellChangedEventArgs, OnAddNewRowEventArgs, OnAfterSetColumnsEventArgs, OnAutosizeColumnsEventArgs, OnColumnsEventArgs, OnBeforeAppendCellEventArgs, OnBeforeCellEditorDestroyEventArgs, OnBeforeColumnsResizeEventArgs, OnBeforeEditCellEventArgs, OnBeforeHeaderCellDestroyEventArgs, OnBeforeHeaderRowCellDestroyEventArgs, OnBeforeFooterRowCellDestroyEventArgs, OnBeforeSetColumnsEventArgs, OnCellChangeEventArgs, OnCellCssStylesChangedEventArgs, OnClickEventArgs, OnColumnsDragEventArgs, OnColumnsReorderedEventArgs, OnColumnsResizedEventArgs, OnColumnsResizeDblClickEventArgs, OnCompositeEditorChangeEventArgs, OnDblClickEventArgs, OnFooterContextMenuEventArgs, OnFooterRowCellRenderedEventArgs, OnHeaderCellRenderedEventArgs, OnFooterClickEventArgs, OnHeaderClickEventArgs, OnHeaderContextMenuEventArgs, OnHeaderMouseEventArgs, OnHeaderRowCellRenderedEventArgs, OnKeyDownEventArgs, OnPreHeaderContextMenuEventArgs, OnPreHeaderClickEventArgs, OnRenderedEventArgs, OnSelectedRowsChangedEventArgs, OnSetOptionsEventArgs, OnScrollEventArgs, OnValidationErrorEventArgs, OnDragReplaceCellsEventArgs, PagingInfo, RowInfo, SelectionModel, SingleColumnSort, SlickPlugin } from './models/index.js';
-import { type BasePubSub, BindingEventService as BindingEventService_, type SlickEditorLock, SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_ } from './slick.core.js';
+import type { AutoSize, CellPosition, CellViewportRange, Column, ColumnMetadata, ColumnSort, CssStyleHash, CSSStyleDeclarationWritable, CustomDataView, DOMEvent, DragPosition, DragRowMove, Editor, EditorConstructor, EditController, Formatter, FormatterResultWithHtml, FormatterResultWithText, GridOption as BaseGridOption, InteractionBase, ItemMetadata, MenuCommandItemCallbackArgs, MultiColumnSort, OnActivateChangedOptionsEventArgs, OnActiveCellChangedEventArgs, OnAddNewRowEventArgs, OnAfterSetColumnsEventArgs, OnAutosizeColumnsEventArgs, OnColumnsEventArgs, OnBeforeAppendCellEventArgs, OnBeforeCellEditorDestroyEventArgs, OnBeforeColumnsResizeEventArgs, OnBeforeEditCellEventArgs, OnBeforeHeaderCellDestroyEventArgs, OnBeforeHeaderRowCellDestroyEventArgs, OnBeforeFooterRowCellDestroyEventArgs, OnBeforeSetColumnsEventArgs, OnCellChangeEventArgs, OnCellCssStylesChangedEventArgs, OnClickEventArgs, OnColumnsDragEventArgs, OnColumnsReorderedEventArgs, OnColumnsResizedEventArgs, OnColumnsResizeDblClickEventArgs, OnCompositeEditorChangeEventArgs, OnDblClickEventArgs, OnFooterContextMenuEventArgs, OnFooterRowCellRenderedEventArgs, OnHeaderCellRenderedEventArgs, OnFooterClickEventArgs, OnHeaderClickEventArgs, OnHeaderContextMenuEventArgs, OnHeaderMouseEventArgs, OnHeaderRowCellRenderedEventArgs, OnKeyDownEventArgs, OnPreHeaderContextMenuEventArgs, OnPreHeaderClickEventArgs, OnRenderedEventArgs, OnSelectedRowsChangedEventArgs, OnSetOptionsEventArgs, OnScrollEventArgs, OnValidationErrorEventArgs, OnDragReplaceCellsEventArgs, PagingInfo, RowInfo, SelectionModel, SingleColumnSort, SlickPlugin } from './models/index.js';
+import { type BasePubSub, BindingEventService as BindingEventService_, RowPositionIndexer as RowPositionIndexer_, type SlickEditorLock, SlickEvent as SlickEvent_, SlickEventData as SlickEventData_, SlickRange as SlickRange_ } from './slick.core.js';
 /**
  * @license
  * (c) 2009-present Michael Leibman
@@ -10,7 +10,7 @@ import { type BasePubSub, BindingEventService as BindingEventService_, type Slic
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.18.6
+ * SlickGrid v5.19.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -118,6 +118,9 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected ph: number;
     protected n: number;
     protected cj: number;
+    protected rowPositionIndexer?: RowPositionIndexer_;
+    protected rowHeightsDirty: boolean;
+    protected frozenRowHeightsChanged: boolean;
     protected page: number;
     protected offset: number;
     protected vScrollDir: number;
@@ -355,7 +358,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * This ensures that after initial measurements the DOM elements revert
      * to their original style settings.
      */
-    restoreCssFromHiddenInit(): void;
+    restoreCssFromHiddenInit<P extends Partial<CSSStyleDeclarationWritable>>(): void;
     /**
      * Registers an external plugin to the grid’s internal plugin list.
      * Once added, it immediately initialises the plugin by calling its init()
@@ -442,6 +445,15 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      */
     protected internal_setOptions(suppressRender?: boolean, suppressColumnSet?: boolean, suppressSetOverflow?: boolean): void;
     /**
+     * Builds the footer-row DOM (scrollers, spacers and footer-row containers) in both
+     * panes — the single construction path shared by init and by a runtime
+     * `setOptions({ createFooterRow: true })` enable. On an already-initialized grid it
+     * also binds the footer events (during init they are bound in `finishInitialization`).
+     * Runtime disable hides the footer rather than destroying it (symmetric with
+     * `showFooterRow`).
+     */
+    protected materializeFooterRow(): void;
+    /**
      *
      * Ensures consistency in option setting, by thastIF autoHeight IS enabled, leaveSpaceForNewRows is set to FALSE.
      * And, if forceFitColumns is True, then autosizeColsMode is set to LegacyForceFit.
@@ -457,6 +469,10 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     /** add/remove frozen class to left headers/footer when defined */
     protected setPaneFrozenClasses(): void;
     protected hasFrozenColumns(): boolean;
+    /** Whether the row renders in the bottom canvas (the render split: rows >= actualFrozenRow). */
+    protected isBottomBandRow(row: number): boolean;
+    /** Whether the row index is one of the frozen (pinned) rows. */
+    protected isFrozenRowIdx(row: number): boolean;
     /**
      * Updates an existing column definition and a corresponding header DOM element with the new title and tooltip.
      * @param {Number|String} columnId Column id.
@@ -547,6 +563,14 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * depending on whether frozenBottom is enabled.
      */
     protected setFrozenOptions(): void;
+    /**
+     * Computes the combined pixel height of the frozen rows: the first `frozenRow` rows, or the
+     * last `frozenRow` rows (i.e. from `actualFrozenRow` onward) when `frozenBottom` is enabled.
+     *
+     * @param {number} dataLength - The current dataset length.
+     * @returns {number} The combined frozen rows height in pixels.
+     */
+    protected computeFrozenRowsHeight(dataLength: number): number;
     /**
      * Proportionally resize a specific column by its name, index or Id
      *
@@ -755,6 +779,22 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * @param {Number} index Item row index.
      */
     getDataItem(i: number): TData;
+    /**
+     * Returns the value of a single field for a given row index.
+     *
+     * When the databinding source is a `CustomDataView` that implements the optional
+     * `getCellValue(index, field)` accessor, that method is used directly. This allows
+     * column-oriented (or otherwise non row-materializing) data sources to return a
+     * single cell value without first having to build a full row object via `getItem()`,
+     * which can be expensive when called repeatedly (e.g. during column content auto-sizing).
+     *
+     * Falls back to `getDataItem(i)[field]` for plain arrays or data sources that don't
+     * implement `getCellValue`.
+     *
+     * @param {Number} i Item row index.
+     * @param {String} field Column field name.
+     */
+    getCellValue(i: number, field: string): TData[keyof TData];
     /**  Are we using a DataView? */
     hasDataView(): boolean;
     /**
@@ -1093,7 +1133,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      *   `emptyTarget`, defaults to true, will empty the target.
      *   `skipEmptyReassignment`, defaults to true, when enabled it will not try to reapply an empty value when the target is already empty
      */
-    applyHtmlCode(target: HTMLElement, val: string | HTMLElement | DocumentFragment, options?: {
+    applyHtmlCode(target: HTMLElement, val?: boolean | string | HTMLElement | DocumentFragment, options?: {
         emptyTarget?: boolean;
         skipEmptyReassignment?: boolean;
     }): void;
@@ -1283,10 +1323,32 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     setTopHeaderPanelVisibility(visible?: boolean): void;
     /**
      * Retrieves the height of a row.
+     * In variable row height mode (`enableVariableRowHeight`) and with a row index provided,
+     * returns that row's individual height; otherwise returns the default row height defined
+     * in the grid options.
      *
-     * @returns {number} The row height defined in the grid options.
+     * @param {number} [row] - The row index. When omitted the default row height is returned.
+     * @returns {number} The row height in pixels.
      */
-    protected getRowHeight(): number;
+    getRowHeight(row?: number): number;
+    /**
+     * Returns the virtual top pixel position of a row within the full grid content,
+     * i.e. without the virtual-scrolling page offset applied. Since a row's top position equals
+     * the combined height of all rows before it, this also serves as "the combined pixel height
+     * of the first N rows" when called with a row count.
+     *
+     * @param {number} row - The row index (or a row count when summing row heights).
+     * @returns {number} The virtual pixel position of the top of the row.
+     */
+    protected getRowPosition(row: number): number;
+    /**
+     * Computes the row index at a virtual vertical pixel position within the full grid content,
+     * i.e. without the virtual-scrolling page offset applied.
+     *
+     * @param {number} y - The virtual vertical position in pixels.
+     * @returns {number} The calculated row index.
+     */
+    protected getRowIndexFromPosition(y: number): number;
     /**
      * Returns the top pixel position for a given row, based on the row height and current vertical offset.
      *
@@ -1410,6 +1472,22 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * Finally, it updates the row count, handles scrolling, and forces a re–render.
      */
     resizeCanvas(): void;
+    /**
+     * (re)Builds the row position index used in variable row height mode when needed, i.e. when it is
+     * marked dirty (see invalidateRowHeights) or when the indexed row count no longer matches the
+     * dataset length. Since the frozen rows height depends on individual row heights, it is refreshed
+     * after every rebuild. Does nothing (and drops the index) when variable row height is disabled.
+     *
+     * @param {number} rowCount - The number of rows to index (including the Add-New row when enabled).
+     */
+    protected ensureRowPositionIndexer(rowCount: number): void;
+    /**
+     * Invalidate all row heights (variable row height mode) and fully re-render the grid.
+     * Call this after the values driving `rowHeightProvider` (or, with the default provider, the
+     * item metadata heights) have changed without a change in row count; the row position index
+     * is then rebuilt with the new heights.
+     */
+    invalidateRowHeights(): void;
     /** Update the dataset row count */
     updateRowCount(): void;
     /** @alias `getVisibleRange` */
@@ -1865,8 +1943,9 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
         height: number;
     };
     /**
-     * Dynamically doubles a test height on a temporary element until the element no longer accepts the height
-     * (or exceeds a browser-specific maximum). Returns the highest supported CSS height in pixels.
+     * Dynamically doubles a test height on a temporary element until the element no longer accepts the height,
+     * a child positioned at the bottom of the element no longer lands where it was asked,
+     * or a browser-specific maximum is exceeded. Returns the highest supported CSS height in pixels.
      *
      * @returns {number} The highest supported CSS height in pixels.
      */
@@ -2043,6 +2122,27 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected setTextSelection(selection: Range): void;
     /** html sanitizer to avoid scripting attack */
     sanitizeHtmlString(dirtyHtml: string, suppressLogging?: boolean): string;
+    /**
+     * Returns the CSS property used to hide header columns off-screen by applying a large offset (e.g., `1000px`).
+     *
+     * In LTR mode (`rtl: false`), columns are positioned with a negative `left` value to hide them off-screen.
+     * In RTL mode (`rtl: true`), the same effect is achieved by using a positive `right` value, since the scroll direction is mirrored.
+     *
+     * @returns 'right' when RTL is enabled, otherwise 'left'
+     */
+    protected get dirSide(): "right" | "left";
+    /**
+     * Applies or removes RTL (Right-to-Left) support on the grid container.
+     *
+     * When enabled, this method:
+     * - Adds the `slick-rtl` CSS class for styling
+     * - Sets the `dir="rtl"` attribute for proper text direction
+     * When disabled, it removes both the class and attribute.
+     * This makes the grid self-contained, allowing RTL to work regardless of the page's direction setting.
+     *
+     * @param enabled - Whether RTL should be enabled
+     */
+    private applyRTL;
     /**
      * Retrieves the rowspan value for a specific cell in a row.
      *

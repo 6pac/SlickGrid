@@ -53,9 +53,7 @@
         canvasNode && canvasNode.appendChild(this._elem);
       }
       let css = isCopyTo && this._options.copyToSelectionCss ? this._options.copyToSelectionCss : this._options.selectionCss;
-      Object.keys(css).forEach((cssStyleKey) => {
-        this._elem.style[cssStyleKey] !== css[cssStyleKey] && (this._elem.style[cssStyleKey] = css[cssStyleKey]);
-      });
+      Utils.setStyles(this._elem, css);
       let from = this.grid.getCellNodeBox(range.fromRow, range.fromCell), to = this.grid.getCellNodeBox(range.toRow, range.toCell);
       return from && to && ((_a = this._options) != null && _a.offset) && (this._elem.style.top = `${from.top + this._options.offset.top}px`, this._elem.style.left = `${from.left + this._options.offset.left}px`, this._elem.style.height = `${to.bottom - from.top + this._options.offset.height}px`, this._elem.style.width = `${to.right - from.left + this._options.offset.width}px`), this._elem;
     }

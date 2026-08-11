@@ -36,6 +36,7 @@ var Slick = (() => {
     NonDataRow: () => NonDataRow,
     Range: () => Range,
     RegexSanitizer: () => RegexSanitizer,
+    RowPositionIndexer: () => RowPositionIndexer,
     RowSelectionMode: () => RowSelectionMode,
     SelectionUtils: () => SelectionUtils,
     SlickCopyRange: () => SlickCopyRange,
@@ -692,7 +693,13 @@ var Slick = (() => {
       }
     }
     static setStyleSize(el, style, val) {
-      typeof val == "function" ? val = val() : typeof val == "string" ? el.style[style] = val : el.style[style] = val + "px";
+      typeof val == "function" && (val = val()), _Utils.setStyles(el, { [style]: typeof val == "string" ? val : `${val}px` });
+    }
+    static setStyles(element, styles) {
+      Object.keys(styles).forEach((key) => {
+        let camelStyleKey = key, value = styles[camelStyleKey];
+        value != null && (element.style[camelStyleKey] = value);
+      });
     }
     static contains(parent, child) {
       return !parent || !child ? !1 : !_Utils.parents(child).every((p) => parent !== p);
@@ -844,6 +851,74 @@ var Slick = (() => {
         }
         fromRowOffset++, fromRowOffset >= baseRange.rowCount() && (fromRowOffset = 0);
       }
+    }
+  }, RowPositionIndexer = class {
+    constructor() {
+      __publicField(this, "rowPos", new Float64Array(1));
+      __publicField(this, "rowCount", 0);
+      __publicField(this, "defaultRowHeight", 25);
+      __publicField(this, "hint", 0);
+    }
+    // last binary search result; consecutive queries usually hit the same or an adjacent row
+    /** Number of rows currently indexed. */
+    get count() {
+      return this.rowCount;
+    }
+    /**
+     * Rebuilds the index by querying the height of every row. O(n) - the provided callback is
+     * called once per row and must therefore be fast (a simple lookup, no DOM access).
+     *
+     * @param {number} rowCount - The number of rows to index.
+     * @param {number} defaultRowHeight - The height used when the callback returns `undefined` and for extrapolating beyond the indexed range.
+     * @param {(row: number) => number | undefined} getRowHeight - Returns the height of a row in pixels, or `undefined` to use the default.
+     */
+    rebuild(rowCount, defaultRowHeight, getRowHeight) {
+      var _a;
+      this.rowCount = rowCount, this.defaultRowHeight = defaultRowHeight, this.hint = 0, this.rowPos.length < rowCount + 1 && (this.rowPos = new Float64Array(rowCount + 1));
+      let pos = this.rowPos, acc = 0;
+      for (let i = 0; i < rowCount; i++)
+        pos[i] = acc, acc += (_a = getRowHeight(i)) != null ? _a : defaultRowHeight;
+      pos[rowCount] = acc;
+    }
+    /**
+     * Returns the virtual top pixel position of a row.
+     *
+     * @param {number} row - The row index (>= 0); indexes beyond the indexed range extrapolate using the default row height.
+     * @returns {number} The virtual pixel position of the top of the row.
+     */
+    top(row) {
+      return row >= this.rowCount ? this.rowPos[this.rowCount] + (row - this.rowCount) * this.defaultRowHeight : this.rowPos[row];
+    }
+    /**
+     * Returns the height of a row.
+     *
+     * @param {number} row - The row index (>= 0); indexes beyond the indexed range return the default row height.
+     * @returns {number} The row height in pixels.
+     */
+    height(row) {
+      return row >= this.rowCount ? this.defaultRowHeight : this.rowPos[row + 1] - this.rowPos[row];
+    }
+    /**
+     * Returns the index of the row containing a virtual vertical pixel position.
+     * Positions below zero return row 0; positions beyond the indexed range extrapolate using the
+     * default row height (results may be beyond the last row - callers clamp, as in fixed mode).
+     *
+     * @param {number} y - The virtual vertical position in pixels.
+     * @returns {number} The row index at that position.
+     */
+    rowAt(y) {
+      let total = this.rowPos[this.rowCount];
+      if (y >= total)
+        return this.rowCount + Math.floor((y - total) / this.defaultRowHeight);
+      let h = this.hint;
+      if (h < this.rowCount && this.rowPos[h] <= y && y < this.rowPos[h + 1])
+        return h;
+      let lo = 0, hi = this.rowCount - 1;
+      for (; lo < hi; ) {
+        let mid = lo + hi + 1 >>> 1;
+        this.rowPos[mid] <= y ? lo = mid : hi = mid - 1;
+      }
+      return this.hint = lo, lo;
     }
   }, SlickGlobalEditorLock = new SlickEditorLock(), SlickCore = {
     Event: SlickEvent,

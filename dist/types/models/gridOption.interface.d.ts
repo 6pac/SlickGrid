@@ -1,4 +1,4 @@
-import type { Column as BaseColumn, CellMenuOption, ColumnPickerOption, ColumnReorderFunction, ContextMenuOption, CustomTooltipOption, EditCommand, EditorConstructor, ExcelCopyBufferOption, Formatter, GridMenuOption, ItemMetadata } from './index.js';
+import type { Column as BaseColumn, CellMenuOption, ColumnPickerOption, ColumnReorderFunction, ContextMenuOption, CustomTooltipOption, EditCommand, EditorConstructor, ExcelCopyBufferOption, Formatter, GridMenuOption, ItemMetadata, SlickGridModel } from './index.js';
 import type { SlickEditorLock } from '../slick.core.js';
 export interface CellViewportRange {
     bottom: number;
@@ -10,6 +10,7 @@ export interface CustomDataView<T = any> {
     getItem: (index: number) => T;
     getItemMetadata(row: number, cell?: boolean | number): ItemMetadata | null;
     getLength: () => number;
+    getCellValue?: (index: number, field: string) => T[keyof T];
 }
 export interface CssStyleHash {
     [prop: number | string]: {
@@ -128,6 +129,15 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
      */
     enableCellRowSpan?: boolean;
     /**
+     * Defaults to false. When enabled, rows may have differing heights: each row's height comes
+     * from the `rowHeightProvider` grid option (whose default implementation reads
+     * `ItemMetadata.height` from the data provider), falling back to the default `rowHeight`
+     * whenever the provider returns `undefined`.
+     * When disabled (the default), every row uses `rowHeight`, the grid keeps its fixed-height
+     * fast path and `rowHeightProvider` is never called.
+     */
+    enableVariableRowHeight?: boolean;
+    /**
      * Defaults to true, this option can be a boolean or a Column Reorder function.
      * When provided as a boolean, it will permits the user to move an entire column from a position to another.
      * We could also provide a Column Reorder function, there's mostly only 1 use for this which is the SlickDraggableGrouping plugin.
@@ -156,7 +166,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
     explicitInitialization?: boolean;
     /** Firefox max supported CSS height */
     ffMaxSupportedCssHeight?: number;
-    /** Defaults to 25, which is the grid footer row panel height */
+    /** Defaults to 25, which is the grid footer row panel height (only accepts an integer) */
     footerRowHeight?: number;
     /** Do we want to force fit columns in the grid at all time? */
     forceFitColumns?: boolean;
@@ -185,7 +195,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
     fullWidthRows?: boolean;
     /** Grid Menu options (aka hamburger menu) */
     gridMenu?: GridMenuOption;
-    /** Header row height in pixels (only type the number). Header row is where the filters are. */
+    /** Header row height in pixels (only accepts an integer). Header row is where the filters are. */
     headerRowHeight?: number;
     /** Do we leave space for new rows in the DOM visible buffer */
     leaveSpaceForNewRows?: boolean;
@@ -196,7 +206,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
      * Anything else will be considered to require a full rowspan remap when necessary
      */
     maxPartialRowSpanRemap?: number;
-    /** Max supported CSS height */
+    /** Max supported CSS height (only accepts an integer) */
     maxSupportedCssHeight?: number;
     /** What is the minimum row buffer to use? */
     minRowBuffer?: number;
@@ -210,11 +220,11 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
     multiSelect?: boolean;
     /** Defaults to true, which will display numbers indicating column sort precedence are displayed in the columns when multiple columns selected */
     numberedMultiColumnSort?: boolean;
-    /** Extra pre-header panel height (on top of column header) */
+    /** Extra pre-header panel height (on top of column header, only accepts an integer) */
     preHeaderPanelHeight?: number;
     /** Defaults to "auto", extra pre-header panel (on top of column header) width, it could be a number (pixels) or a string ("100%" or "auto") */
     preHeaderPanelWidth?: number | string;
-    /** Extra top-header panel height (on top of column header & pre-header) */
+    /** Extra top-header panel height (on top of column header & pre-header, only accepts an integer) */
     topHeaderPanelHeight?: number;
     /** Defaults to "auto", extra top-header panel (on top of column header & pre-header) width, it could be a number (pixels) or a string ("100%" or "auto") */
     topHeaderPanelWidth?: number | string;
@@ -222,8 +232,22 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
     preserveCopiedSelectionOnPaste?: boolean;
     /** Defaults to `['ctrlKey', 'metaKey']`, list of keys that when pressed will prevent Draggable events from triggering (e.g. prevent onDrag when Ctrl key is pressed while dragging) */
     preventDragFromKeys?: Array<'altKey' | 'ctrlKey' | 'metaKey' | 'shiftKey'>;
-    /** Grid row height in pixels (only type the number). Row of cell values. */
+    /** Grid row height in pixels (only accepts an integer). Cell value row height. */
     rowHeight?: number;
+    /**
+     * The single source of row heights, only called when `enableVariableRowHeight` is on.
+     * Receives the grid instance (giving access to any grid state), the row index, and the row's
+     * data item. Returns the height (integer) in pixels of that row, or `undefined` to use the default `rowHeight`.
+     * The default implementation reads `ItemMetadata.height` from the data provider's
+     * `getItemMetadata(row)`, so metadata-driven heights work without configuring this option.
+     * Supplying your own function fully replaces the default - item metadata is then no longer
+     * consulted (no per-row fallback between the two sources).
+     * Heights are cached in a prefix-sum index that is rebuilt whenever the row count changes, rows
+     * are invalidated, or `grid.invalidateRowHeights()` is called; the callback is called once per
+     * row per rebuild, so it must be fast (a simple lookup or calculation - no DOM access).
+     * When heights change without a row count change, call `grid.invalidateRowHeights()`.
+     */
+    rowHeightProvider?: (grid: SlickGridModel, row: number, item: any) => number | undefined;
     /**
      * Defaults to "highlight-animate", a CSS class name used to simulate row highlight with an optional duration (e.g. after insert).
      * Note: make sure that the duration is always lower than the duration defined in the CSS/SASS variable `$alpine-row-highlight-fade-animation`.
@@ -232,6 +256,8 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
     rowHighlightCssClass?: string;
     /** Defaults to 400, duration to show the row highlight (e.g. after CRUD executions) */
     rowHighlightDuration?: number;
+    /** Defaults to false, sets the grid direction to RTL (Right-to-Left) for proper rendering of RTL languages */
+    rtl?: boolean;
     /**
      * Defaults to "top", what CSS style to we want to use to render each row top offset (we can use "top" or "transform").
      * For example, with a default `rowHeight: 22`, the 2nd row will have a `top` offset of 44px and by default have a CSS style of `top: 44px`.
@@ -290,7 +316,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
      * We can't freeze wider than the viewport because the right canvas will never be visible and since the left canvas is never scrollable this would break the UX.
      */
     invalidColumnFreezeWidthCallback?: (error: string) => void;
-    /** What is the top panel height in pixels (only type the number) */
+    /** What is the top panel height in pixels (only accepts an integer) */
     topPanelHeight?: number;
     /** Defaults to false, when set to True will lead to multiple columns sorting without the need to hold or do shift-click to execute a multiple sort. */
     tristateMultiColumnSort?: boolean;
