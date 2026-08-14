@@ -153,7 +153,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
     }
 
       this._dragReplaceHandleActive = (dd.matchClassTag === 'dragReplaceHandle');
-      if (this._dragReplaceHandleActive) { 
+      if (this._dragReplaceHandleActive) {
         this._dragReplaceHandleCell = this._grid.getCellFromEvent(e);
       } else {
         this._previousSelectedRange = null;
@@ -389,7 +389,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
 
       this._decorator.show(range, this._dragReplaceHandleActive);
       this.onCellRangeSelecting.notify({
-        range, selectionMode: '', 
+        range, selectionMode: '',
         allowAutoEdit: false
       });
     }
@@ -432,7 +432,11 @@ export class SlickCellRangeSelector implements SlickPlugin {
       );
 
     this.onCellRangeSelected.notify({ range: r, selectionMode: this._selectionMode, allowAutoEdit: (this._selectionMode === "SEL" && r.isSingleCell()) });
-    this._previousSelectedRange = SelectionUtils.normaliseDragRange(dd.range);
+    // keep the resulting range (not the raw drag range) so that a next drag-extend anchors on the real selection
+    this._previousSelectedRange = SelectionUtils.normaliseDragRange({
+      start: { row: r.fromRow, cell: r.fromCell },
+      end: { row: r.toRow, cell: r.toCell },
+    });
   }
 
   getCurrentRange() {
@@ -441,7 +445,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
 
   getPreviousRange() {
     return this._previousSelectedRange;
-  } 
+  }
 }
 
 // extend Slick namespace on window object when building as iife
