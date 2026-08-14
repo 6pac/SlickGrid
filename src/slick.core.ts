@@ -1222,16 +1222,23 @@ export class SelectionUtils {
       ;
   }
 
-  public static normalRangeOppositeCellFromCopy(normalisedDragRange: DragRange, targetCell: { row: number, cell: number }): { row: number, cell: number } {
-    const row = targetCell.row < (normalisedDragRange.end.row || 0)
-      ? (normalisedDragRange.end.row || 0)
-      : (normalisedDragRange.start.row || 0)
-      ;
-    const cell = targetCell.cell < (normalisedDragRange.end.cell || 0)
-      ? (normalisedDragRange.end.cell || 0)
-      : (normalisedDragRange.start.cell || 0)
-      ;
-    return { row, cell };
+  /**
+   * Returns the anchor (opposite) cell to use while dragging the drag-extend handle.
+   * Anchoring on the range start lets the drag shrink the range (Excel behavior), while dragging
+   * past the start anchors on the range end so that it expands in the opposite direction instead.
+   */
+  public static normalRangeOppositeCellFromCopy(
+    normalisedDragRange: DragRange,
+    targetCell: { row: number; cell: number }
+  ): { row: number; cell: number } {
+    return {
+      row: targetCell.row < (normalisedDragRange.start.row || 0)
+        ? normalisedDragRange.end.row || 0
+        : normalisedDragRange.start.row || 0,
+      cell: targetCell.cell < (normalisedDragRange.start.cell || 0)
+        ? normalisedDragRange.end.cell || 0
+        : normalisedDragRange.start.cell || 0,
+    };
   }
 
   // copy to range above or below - includes corner space target range
