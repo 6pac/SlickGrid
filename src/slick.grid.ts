@@ -6436,6 +6436,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     let colspan: number | string;
     let columnData: ColumnMetadata | null;
     const columnCount = this.columns.length;
+    const hasAlwaysRenderColumn = this.columns.some(column => column?.alwaysRenderColumn);
+    const hasHiddenColumn = this.columns.some(column => column?.hidden);
+    let firstColumnIndex = 0;
+
+    // columnPosRight is monotonic only when there are no frozen or hidden columns,
+    // so use a lower-bound lookup to skip columns entirely left of the render range.
+    if (!this.hasFrozenColumns() && !hasAlwaysRenderColumn && !hasHiddenColumn) {
+      firstColumnIndex = this.getFirstColumnIndexAtOrAfter(range.leftPx);
+    }
 
     for (let row = range.top as number, btm = range.bottom as number; row <= btm; row++) {
       cacheEntry = this.rowsCache[row];
@@ -6453,13 +6462,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       // Render missing cells.
       cellsAdded = 0;
 
-      let metadata = this.getItemMetadaWhenExists(row);
-      metadata = metadata?.columns as ItemMetadata;
+      const metadata = this.getItemMetadaWhenExists(row);
+      const metadataCol = metadata?.columns;
 
       const d = this.getDataItem(row);
+      const startColumnIndex = metadataCol ? 0 : firstColumnIndex;
 
-      // TODO: shorten this loop (index? heuristics? binary search?)
-      for (let i = 0, ii = columnCount; i < ii; i++) {
+      for (let i = startColumnIndex, ii = columnCount; i < ii; i++) {
         if (!this.columns[i] || this.columns[i].hidden) { continue; }
 
         // Cells to the right are outside the range.
@@ -6475,8 +6484,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
         colspan = 1;
         columnData = null;
-        if (metadata) {
-          columnData = metadata[this.columns[i].id as keyof ItemMetadata] || (metadata as any)[i];
+        if (metadataCol) {
+          columnData = metadataCol[this.columns[i].id as keyof ItemMetadata] || (metadataCol as any)[i];
           colspan = columnData?.colspan ?? 1;
           if (colspan === '*') {
             colspan = ii - i;
@@ -7223,6 +7232,20 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         }
       }
     }
+  }
+
+  protected getFirstColumnIndexAtOrAfter(leftPx: number): number {
+    let low = 0;
+    let high = this.columnPosRight.length;
+    while (low < high) {
+      const mid = low + Math.floor((high - low) / 2);
+      if (this.columnPosRight[mid] <= leftPx) {
+        low = mid + 1;
+      } else {
+        high = mid;
+      }
+    }
+    return low;
   }
 
   /**
