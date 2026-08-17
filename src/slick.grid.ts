@@ -4119,7 +4119,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   /**
    * Processes a mouse wheel event by adjusting the vertical scroll (scrollTop) based on deltaY (scaled by rowHeight)
    * and horizontal scroll (scrollLeft) based on deltaX. It then calls the internal scroll handler with the “mousewheel”
-   * type and, if any scrolling occurred, prevents the default action.
+   * type and, if any scrolling occurred, stops propagation. For frozen columns it also prevents the
+   * browser's default scrolling so the scrolling pane does not move ahead of the mirrored frozen pane.
    *
    * @param {MouseEvent} e - The mouse event.
    * @param {number} _delta - Unused delta value.
@@ -4137,6 +4138,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const handled = this._handleScroll('mousewheel');
     if (handled) {
       e.stopPropagation();
+      // Frozen columns use a second viewport whose vertical position is mirrored
+      // from the scrolling pane. Letting the browser also process this wheel event
+      // advances the source pane a second time, briefly putting it ahead of the
+      // frozen viewport until its subsequent scroll event is handled.
+      if (this.hasFrozenColumns()) {
+        e.preventDefault();
+      }
     }
   }
 
