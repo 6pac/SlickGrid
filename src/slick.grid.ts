@@ -422,7 +422,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected _viewport!: HTMLDivElement[];
   protected _canvas!: HTMLDivElement[];
   protected _style?: HTMLStyleElement;
-  protected _boundAncestors: HTMLElement[] = [];
   protected stylesheet?: { cssRules: Array<{ selectorText: string; }>; rules: Array<{ selectorText: string; }>; } | null;
   protected columnCssRulesL?: Array<{ selectorText: string; }>;
   protected columnCssRulesR?: Array<{ selectorText: string; }>;
@@ -489,6 +488,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   protected plugins: SlickPlugin[] = [];
   protected cellCssClasses: CssStyleHash = {};
+  protected cellCssClassesByCell: CssStyleHash = {};
 
   protected columnsById: Record<string, number> = {};
   protected sortColumns: ColumnSort[] = [];
@@ -1102,7 +1102,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.sortableSideRightInstance?.destroy();
     }
 
-    this.unbindAncestorScrollEvents();
     this._bindingEventService.unbindByEventName(this._container, 'resize');
     this.removeCssRules();
 
@@ -1206,7 +1205,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected destroyAllElements() {
     this._activeCanvasNode = null as any;
     this._activeViewportNode = null as any;
-    this._boundAncestors = null as any;
     this._canvas = null as any;
     this._canvasTopL = null as any;
     this._canvasTopR = null as any;
@@ -5544,12 +5542,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       cellCss += ' active';
     }
 
-    // TODO: merge them together in the setter
-    Object.keys(this.cellCssClasses).forEach(key => {
-      if (this.cellCssClasses[key][row]?.[m.id]) {
-        cellCss += ` ${this.cellCssClasses[key][row][m.id]}`;
-      }
-    });
+    const cellCssClasses = this.cellCssClassesByCell[row]?.[m.id];
+    if (cellCssClasses) {
+      cellCss += ` ${cellCssClasses}`;
+    }
 
     let value: any = null;
     let formatterResult: FormatterResultWithHtml | FormatterResultWithText | HTMLElement | DocumentFragment | string = '';
@@ -6766,32 +6762,22 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   // Scrolling and Virtualisation
   /////////////////////////////////////////////////////
 
-  // TODO:  this is static.  need to handle page mutation.
   /**
-   * Traverses up from a specific canvas element and binds a scroll event handler
-   * (to update active cell positions) on each ancestor element that is scrollable.
-   * Also stores these ancestors for later unbinding.
+   * Binds a capture-phase document listener so active-cell positions continue to
+   * update when the grid is moved beneath a different scrollable ancestor.
    */
   protected bindAncestorScrollEvents() {
-    let elem: HTMLElement | null = (this.hasFrozenRows && !this._options.frozenBottom) ? this._canvasBottomL : this._canvasTopL;
-    while ((elem = elem!.parentNode as HTMLElement) !== document.body && elem) {
-      // bind to scroll containers only
-      if (elem === this._viewportTopL || elem.scrollWidth !== elem.clientWidth || elem.scrollHeight !== elem.clientHeight) {
-        this._boundAncestors.push(elem);
-        this._bindingEventService.bind(elem, 'scroll', this.handleActiveCellPositionChange.bind(this));
-      }
-    }
-  }
-
-  /**
-   * Iterates through the stored ancestor elements (in _boundAncestors)
-   * and unbinds any scroll events previously attached, then clears the stored array.
-   */
-  protected unbindAncestorScrollEvents() {
-    this._boundAncestors.forEach((ancestor) => {
-      this._bindingEventService.unbindByEventName(ancestor, 'scroll');
-    });
-    this._boundAncestors = [];
+    this._bindingEventService.bind(
+      document,
+      'scroll',
+      (event: Event) => {
+        const target = event.target;
+        if (this._viewport.includes(target as HTMLDivElement) || (target instanceof Node && target.contains(this._container))) {
+          this.handleActiveCellPositionChange();
+        }
+      },
+      true
+    );
   }
 
   /**
@@ -7719,6 +7705,24 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
   }
 
+  /** Merges the keyed CSS overlays once on update, rather than for every rendered cell. */
+  protected updateCellCssClassesByCell() {
+    this.cellCssClassesByCell = {};
+
+    Object.values(this.cellCssClasses).forEach(hash => {
+      Object.entries(hash).forEach(([row, cellClasses]) => {
+        const mergedRowClasses = (this.cellCssClassesByCell[row] ??= {});
+        Object.entries(cellClasses).forEach(([columnId, cssClasses]) => {
+          if (cssClasses) {
+            mergedRowClasses[columnId] = mergedRowClasses[columnId]
+              ? `${mergedRowClasses[columnId]} ${cssClasses}`
+              : cssClasses;
+          }
+        });
+      });
+    });
+  }
+
   /**
    * Adds an "overlay" of CSS classes to cell DOM elements. SlickGrid can have many such overlays associated with different keys and they are frequently used by plugins. For example, SlickGrid uses this method internally to decorate selected cells with selectedCellCssClass (see options).
    * @param {String} key A unique key you can use in calls to setCellCssStyles and removeCellCssStyles. If a hash with that key has already been set, an exception will be thrown.
@@ -7735,6 +7739,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     this.cellCssClasses[key] = hash;
+    this.updateCellCssClassesByCell();
     this.updateCellCssStylesOnRenderedRows(hash, null);
     this.trigger(this.onCellCssStylesChanged, { key, hash, grid: this });
   }
@@ -7750,6 +7755,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     this.updateCellCssStylesOnRenderedRows(null, this.cellCssClasses[key]);
     delete this.cellCssClasses[key];
+    this.updateCellCssClassesByCell();
     this.trigger(this.onCellCssStylesChanged, { key, hash: null, grid: this });
   }
 
@@ -7765,6 +7771,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const prevHash = this.cellCssClasses[key];
 
     this.cellCssClasses[key] = hash;
+    this.updateCellCssClassesByCell();
     this.updateCellCssStylesOnRenderedRows(hash, prevHash);
     this.trigger(this.onCellCssStylesChanged, { key, hash, grid: this });
   }
