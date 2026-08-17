@@ -670,7 +670,7 @@ export class BindingEventService {
   }
 
   /** Bind an event listener to any element */
-  bind(element: Element | Window, eventName: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions, groupName = '') {
+  bind(element: Element | Window | Document, eventName: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions, groupName = '') {
     if (element) {
       element.addEventListener(eventName, listener, options);
       this._boundedEvents.push({ element, eventName, listener, groupName });
@@ -678,13 +678,13 @@ export class BindingEventService {
   }
 
   /** Unbind all will remove every every event handlers that were bounded earlier */
-  unbind(element: Element | Window, eventName: string, listener: EventListenerOrEventListenerObject) {
+  unbind(element: Element | Window | Document, eventName: string, listener: EventListenerOrEventListenerObject) {
     if (element?.removeEventListener) {
       element.removeEventListener(eventName, listener);
     }
   }
 
-  unbindByEventName(element: Element | Window, eventName: string) {
+  unbindByEventName(element: Element | Window | Document, eventName: string) {
     const boundedEvent = this._boundedEvents.find(e => e.element === element && e.eventName === eventName);
     if (boundedEvent) {
       this.unbind(boundedEvent.element, boundedEvent.eventName, boundedEvent.listener);
