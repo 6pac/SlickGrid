@@ -609,20 +609,18 @@
 }
 
 .slick-header-auto-height {
-  --alpine-header-align-items: center;
-
   .slick-header-columns,
   .slick-header-columns-left,
   .slick-header-columns-right {
-    height: var(--slick-auto-header-height);
+    height: var(--slick-auto-header-height, v.$alpine-auto-header-height);
     white-space: normal;
     overflow: visible;
   }
 
   .slick-header-column {
     height: calc(
-      var(--slick-auto-header-height) -
-      var(--slick-auto-header-height-extra, 0px)
+      var(--slick-auto-header-height, v.$alpine-auto-header-height) -
+      var(--alpine-auto-header-height-extra, v.$alpine-auto-header-height-extra)
     );
   }
 
