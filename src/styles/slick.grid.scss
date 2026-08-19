@@ -274,6 +274,29 @@ classes should alter those!
   width: 100%;
 }
 
+.slick-header-auto-height {
+  .slick-header-columns,
+  .slick-header-columns-left,
+  .slick-header-columns-right {
+    height: var(--slick-auto-header-height);
+    white-space: normal;
+    overflow: visible;
+  }
+
+  .slick-header-column {
+    height: calc(
+      var(--slick-auto-header-height) - 
+      var(--slick-auto-header-height-extra, 0px)
+    );
+  }
+  
+  .slick-column-name {
+    white-space: pre-wrap;
+    overflow: visible;
+    text-overflow: clip;
+  }
+}
+
 /* RTL (Right-to-Left) Support  */
 .slick-rtl .slick-resizable-handle {
   right: auto;
