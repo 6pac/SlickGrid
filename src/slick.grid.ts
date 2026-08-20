@@ -1986,7 +1986,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     if (!enabled) {
       this._clearAutoHeaderHeightStyles(headers);
-      return;
     }
   }
 
