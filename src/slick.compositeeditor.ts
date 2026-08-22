@@ -5,6 +5,26 @@ import { Utils as Utils_ } from './slick.core.js';
 const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
 
 /**
+ * Create a prototype-free dynamic map while retaining the historical
+ * `map.hasOwnProperty(key)` compatibility used by some composite-editor consumers.
+ */
+function createSafeDynamicMap<T extends Record<string, any>>(initialValues?: T): T {
+  const target = Object.create(null) as Record<string, any>;
+  Object.keys(initialValues ?? {}).forEach((key) => {
+    target[key] = initialValues![key];
+  });
+
+  return new Proxy(target, {
+    get(map, property, receiver) {
+      if (property === 'hasOwnProperty' && !Object.prototype.hasOwnProperty.call(map, property)) {
+        return Object.prototype.hasOwnProperty.bind(map);
+      }
+      return Reflect.get(map, property, receiver);
+    }
+  }) as T;
+}
+
+/**
  * A composite SlickGrid editor factory.
  * Generates an editor that is composed of multiple editors for given columns.
  * Individual editors are provided given containers instead of the original cell.
@@ -40,7 +60,7 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
     hide: null,
     position: null,
     destroy: null,
-    formValues: Object.create(null),
+    formValues: createSafeDynamicMap(),
     editors: Object.create(null)
   };
 
@@ -49,6 +69,7 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
   let firstInvalidEditor: Editor | null = null;
 
   options = Utils.extend({}, defaultOptions, options);
+  options.formValues = createSafeDynamicMap(options.formValues);
 
   function getContainerBox(i: number) {
     const c = containers[i];
@@ -85,7 +106,7 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
           newArgs.commitChanges = noop;
           newArgs.cancelChanges = noop;
           newArgs.compositeEditorOptions = options;
-          newArgs.formValues = Object.create(null);
+          newArgs.formValues = createSafeDynamicMap();
 
           const currentEditor = new (column.editor as any)(newArgs) as Editor & { args: EditorArguments };
           options.editors[column.id] = currentEditor; // add every Editor instance refs
