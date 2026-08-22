@@ -1145,7 +1145,7 @@ export class Utils {
   public static applyDefaults(targetObj: any, srcObj: any) {
     if (typeof srcObj === 'object') {
       Object.keys(srcObj).forEach(key => {
-        if (srcObj.hasOwnProperty(key) && !targetObj.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(srcObj, key) && !Object.prototype.hasOwnProperty.call(targetObj, key)) {
           targetObj[key] = srcObj[key];
         }
       });

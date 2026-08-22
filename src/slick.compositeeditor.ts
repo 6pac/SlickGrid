@@ -40,8 +40,8 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
     hide: null,
     position: null,
     destroy: null,
-    formValues: {},
-    editors: {}
+    formValues: Object.create(null),
+    editors: Object.create(null)
   };
 
   const noop = function () { };
@@ -85,7 +85,7 @@ export function SlickCompositeEditor(columns: Column[], containers: Array<HTMLDi
           newArgs.commitChanges = noop;
           newArgs.cancelChanges = noop;
           newArgs.compositeEditorOptions = options;
-          newArgs.formValues = {};
+          newArgs.formValues = Object.create(null);
 
           const currentEditor = new (column.editor as any)(newArgs) as Editor & { args: EditorArguments };
           options.editors[column.id] = currentEditor; // add every Editor instance refs

@@ -502,10 +502,10 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
     this.clearCopySelection();
 
     const columns = this._grid.getColumns();
-    const hash: CssStyleHash = {};
+    const hash: CssStyleHash = Object.create(null);
     for (let i = 0; i < ranges.length; i++) {
       for (let j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
-        hash[j] = {};
+        hash[j] = Object.create(null);
         for (let k = ranges[i].fromCell; k <= ranges[i].toCell && k < columns.length; k++) {
           hash[j][columns[k].id] = this._copiedCellStyle;
         }

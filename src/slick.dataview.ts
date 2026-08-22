@@ -451,7 +451,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
         gi.compiledAccumulators[idx] = this.compileAccumulatorLoopCSPSafe(gi.aggregators[idx]);
       }
 
-      this.toggledGroupsByLevel[i] = {};
+      this.toggledGroupsByLevel[i] = Object.create(null);
     }
 
     this.refresh();
@@ -469,10 +469,11 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
 
   protected ensureRowsByIdCache() {
     if (!this.rowsById) {
-      this.rowsById = {};
+      const rowsById: { [id: DataIdType]: number } = Object.create(null);
       for (let i = 0, l = this.rows.length; i < l; i++) {
-        this.rowsById[this.rows[i][this.idProperty as keyof TData] as DataIdType] = i;
+        rowsById[this.rows[i][this.idProperty as keyof TData] as DataIdType] = i;
       }
+      this.rowsById = rowsById;
     }
   }
 
@@ -573,9 +574,9 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     // Also update the rows? no need since the `refresh()`, further down, blows away the `rows[]` cache and recalculates it via `recalc()`!
 
     if (!this.updated) {
-      this.updated = {};
+      this.updated = Object.create(null);
     }
-    this.updated[id] = true;
+    this.updated![id] = true;
   }
 
   /**
@@ -808,7 +809,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   protected expandCollapseAllGroups(level?: number, collapse?: boolean) {
     if (!Utils.isDefined(level)) {
       for (let i = 0; i < this.groupingInfos.length; i++) {
-        this.toggledGroupsByLevel[i] = {};
+        this.toggledGroupsByLevel[i] = Object.create(null);
         this.groupingInfos[i].collapsed = collapse;
 
         if (collapse === true) {
@@ -818,7 +819,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
         }
       }
     } else {
-      this.toggledGroupsByLevel[level] = {};
+      this.toggledGroupsByLevel[level] = Object.create(null);
       this.groupingInfos[level].collapsed = collapse;
 
       if (collapse === true) {
@@ -927,7 +928,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     let group: SlickGroup_;
     let val: any;
     const groups: SlickGroup_[] = [];
-    const groupsByVal: any = {};
+    const groupsByVal: Record<string, SlickGroup_> = Object.create(null);
     let r;
     const level = parentGroup ? parentGroup.level + 1 : 0;
     const gi = this.groupingInfos[level];
@@ -1610,7 +1611,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     let inHandler: boolean;
 
     const storeCellCssStyles = (hash: CssStyleHash) => {
-      hashById = {};
+      hashById = Object.create(null);
       if (typeof hash === 'object') {
         Object.keys(hash).forEach(row => {
           if (hash) {
@@ -1629,7 +1630,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       if (typeof hashById === 'object') {
         inHandler = true;
         this.ensureRowsByIdCache();
-        const newHash: CssStyleHash = {};
+        const newHash: CssStyleHash = Object.create(null);
         Object.keys(hashById).forEach(id => {
           const row = this.rowsById?.[id];
           if (Utils.isDefined(row)) {
@@ -1680,7 +1681,7 @@ export class AvgAggregator<T = any> implements Aggregator {
   }
 
   accumulate(item: T) {
-    const val: any = (item?.hasOwnProperty(this._field)) ? item[this._field as keyof T] : null;
+    const val: any = (item && Object.prototype.hasOwnProperty.call(item, this._field)) ? item[this._field as keyof T] : null;
     if (val !== null && val !== '' && !isNaN(val)) {
       this._nonNullCount++;
       this._sum += parseFloat(val);
@@ -1689,7 +1690,7 @@ export class AvgAggregator<T = any> implements Aggregator {
 
   storeResult(groupTotals: SlickGroupTotals_ & { avg: Record<number | string, number>; }) {
     if (!groupTotals || groupTotals[this._type] === undefined) {
-      (groupTotals as any)[this._type] = {};
+      (groupTotals as any)[this._type] = Object.create(null);
     }
     if (this._nonNullCount !== 0) {
       groupTotals[this._type][this._field] = this._sum / this._nonNullCount;
@@ -1719,7 +1720,7 @@ export class MinAggregator<T = any> implements Aggregator {
   }
 
   accumulate(item: T) {
-    const val: any = (item?.hasOwnProperty(this._field)) ? item[this._field as keyof T] : null;
+    const val: any = (item && Object.prototype.hasOwnProperty.call(item, this._field)) ? item[this._field as keyof T] : null;
     if (val !== null && val !== '' && !isNaN(val)) {
       if (this._min === null || val < this._min) {
         this._min = parseFloat(val);
@@ -1729,7 +1730,7 @@ export class MinAggregator<T = any> implements Aggregator {
 
   storeResult(groupTotals: SlickGroupTotals_ & { min: Record<number | string, number | null>; }) {
     if (!groupTotals || groupTotals[this._type] === undefined) {
-      groupTotals[this._type] = {};
+      groupTotals[this._type] = Object.create(null);
     }
     groupTotals[this._type][this._field] = this._min;
   }
@@ -1757,7 +1758,7 @@ export class MaxAggregator<T = any> implements Aggregator {
   }
 
   accumulate(item: T) {
-    const val: any = (item?.hasOwnProperty(this._field)) ? item[this._field as keyof T] : null;
+    const val: any = (item && Object.prototype.hasOwnProperty.call(item, this._field)) ? item[this._field as keyof T] : null;
     if (val !== null && val !== '' && !isNaN(val)) {
       if (this._max === null || val > this._max) {
         this._max = parseFloat(val);
@@ -1767,7 +1768,7 @@ export class MaxAggregator<T = any> implements Aggregator {
 
   storeResult(groupTotals: SlickGroupTotals_ & { max: Record<number | string, number | null>; }) {
     if (!groupTotals || groupTotals[this._type] === undefined) {
-      groupTotals[this._type] = {};
+      groupTotals[this._type] = Object.create(null);
     }
     groupTotals[this._type][this._field] = this._max;
   }
@@ -1795,7 +1796,7 @@ export class SumAggregator<T = any> implements Aggregator {
   }
 
   accumulate(item: T) {
-    const val: any = (item?.hasOwnProperty(this._field)) ? item[this._field as keyof T] : null;
+    const val: any = (item && Object.prototype.hasOwnProperty.call(item, this._field)) ? item[this._field as keyof T] : null;
     if (val !== null && val !== '' && !isNaN(val)) {
       this._sum += parseFloat(val);
     }
@@ -1803,7 +1804,7 @@ export class SumAggregator<T = any> implements Aggregator {
 
   storeResult(groupTotals: SlickGroupTotals_ & { sum: Record<number | string, number>; }) {
     if (!groupTotals || groupTotals[this._type] === undefined) {
-      groupTotals[this._type] = {};
+      groupTotals[this._type] = Object.create(null);
     }
     groupTotals[this._type][this._field] = this._sum;
   }
@@ -1830,7 +1831,7 @@ export class CountAggregator implements Aggregator {
 
   storeResult(groupTotals: SlickGroupTotals_ & { count: Record<number | string, number>; }) {
     if (!groupTotals || groupTotals[this._type] === undefined) {
-      groupTotals[this._type] = {};
+      groupTotals[this._type] = Object.create(null);
     }
     groupTotals[this._type][this._field] = groupTotals.group.rows.length;
   }

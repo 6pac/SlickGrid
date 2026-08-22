@@ -597,22 +597,25 @@ export class SlickRowDetailView {
   /** Get the Row Detail padding (which are the rows dedicated to the detail panel) */
   protected getPaddingItem(parent: any, offset: any) {
     const item: any = {};
+    const setItemProperty = (property: string, value: any) => {
+      Object.defineProperty(item, property, { configurable: true, enumerable: true, writable: true, value });
+    };
 
     // copy the parent's columns' field values so that padding rows can follow the parent's group and be filtered/sorted with it
     this._grid.getColumns().forEach(({ field }) => {
-        item[field] = parent[field];
+        setItemProperty(field, parent[field]);
     });
 
     Object.keys(this._dataView).forEach(prop => {
-      item[prop] = null;
+      setItemProperty(prop, null);
     });
-    item[this._dataViewIdProperty] = parent[this._dataViewIdProperty] + '.' + offset;
+    setItemProperty(this._dataViewIdProperty, parent[this._dataViewIdProperty] + '.' + offset);
 
     // additional hidden padding metadata fields
-    item[`${this._keyPrefix}collapsed`] = true;
-    item[`${this._keyPrefix}isPadding`] = true;
-    item[`${this._keyPrefix}parent`] = parent;
-    item[`${this._keyPrefix}offset`] = offset;
+    setItemProperty(`${this._keyPrefix}collapsed`, true);
+    setItemProperty(`${this._keyPrefix}isPadding`, true);
+    setItemProperty(`${this._keyPrefix}parent`, parent);
+    setItemProperty(`${this._keyPrefix}offset`, offset);
 
     return item;
   };
@@ -812,4 +815,3 @@ if (IIFE_ONLY && window.Slick) {
     }
   });
 }
-

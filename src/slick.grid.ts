@@ -487,10 +487,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected selectedRanges: SlickRange_[] = [];
 
   protected plugins: SlickPlugin[] = [];
-  protected cellCssClasses: CssStyleHash = {};
-  protected cellCssClassesByCell: CssStyleHash = {};
+  protected cellCssClasses: CssStyleHash = Object.create(null);
+  protected cellCssClassesByCell: CssStyleHash = Object.create(null);
 
-  protected columnsById: Record<string, number> = {};
+  protected columnsById: Record<string, number> = Object.create(null);
   protected sortColumns: ColumnSort[] = [];
   protected columnPosLeft: number[] = [];
   protected columnPosRight: number[] = [];
@@ -1888,9 +1888,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         this._bindingEventService.bind(header, 'mouseleave', this.handleHeaderMouseHoverOff.bind(this) as EventListener);
       }
 
-      if (m.hasOwnProperty('headerCellAttrs') && m.headerCellAttrs instanceof Object) {
+      if (Object.prototype.hasOwnProperty.call(m, 'headerCellAttrs') && m.headerCellAttrs instanceof Object) {
         Object.keys(m.headerCellAttrs).forEach(key => {
-          if (m.headerCellAttrs.hasOwnProperty(key)) {
+          if (Object.prototype.hasOwnProperty.call(m.headerCellAttrs, key)) {
             header.setAttribute(key, m.headerCellAttrs[key]);
           }
         });
@@ -3327,7 +3327,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * the width if it is less than minWidth or greater than maxWidth.
    */
   protected updateColumnProps() {
-    this.columnsById = {};
+    this.columnsById = Object.create(null);
     for (let i = 0; i < this.columns.length; i++) {
       let m: C = this.columns[i];
       if (m.width) {
@@ -4072,12 +4072,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.dragReplaceEl.removeEl();
 
     this.selectedRows = [];
-    const hash: CssStyleHash = {};
+    const hash: CssStyleHash = Object.create(null);
     for (let i = 0; i < ranges.length; i++) {
       for (let j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
         if (!hash[j]) {  // prevent duplicates
           this.selectedRows.push(j);
-          hash[j] = {};
+          hash[j] = Object.create(null);
         }
         for (let k = ranges[i].fromCell; k <= ranges[i].toCell; k++) {
           if (this.canCellBeSelected(j, k)) {
@@ -5591,9 +5591,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       cellDiv.style.height = `${cellHeight || 0}px`;
     }
 
-    if (m.hasOwnProperty('cellAttrs') && m.cellAttrs instanceof Object) {
+    if (Object.prototype.hasOwnProperty.call(m, 'cellAttrs') && m.cellAttrs instanceof Object) {
       Object.keys(m.cellAttrs).forEach(key => {
-        if (m.cellAttrs.hasOwnProperty(key)) {
+        if (Object.prototype.hasOwnProperty.call(m.cellAttrs, key)) {
           cellDiv.setAttribute(key, m.cellAttrs[key]);
         }
       });
@@ -5853,7 +5853,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const d = this.getDataItem(row);
 
     Object.keys(cacheEntry.cellNodesByColumnIdx).forEach(colIdx => {
-      if (!cacheEntry.cellNodesByColumnIdx.hasOwnProperty(colIdx)) {
+      if (!Object.prototype.hasOwnProperty.call(cacheEntry.cellNodesByColumnIdx, colIdx)) {
         return;
       }
 
@@ -6378,7 +6378,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const cellsToRemove: number[] = [];
     Object.keys(cacheEntry.cellNodesByColumnIdx).forEach(cellNodeIdx => {
       // I really hate it when people mess with Array.prototype.
-      if (!cacheEntry.cellNodesByColumnIdx.hasOwnProperty(cellNodeIdx)) {
+      if (!Object.prototype.hasOwnProperty.call(cacheEntry.cellNodesByColumnIdx, cellNodeIdx)) {
         return;
       }
 
@@ -6610,25 +6610,25 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       for (let i = 0, ii = rows.length; i < ii; i++) {
         if (this.isBottomBandRow(rows[i])) {
           if (this.hasFrozenColumns()) {
-            if (this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild) {
+            if (Object.prototype.hasOwnProperty.call(this.rowsCache ?? {}, rows[i]) && x.firstChild && xRight.firstChild) {
               this.rowsCache[rows[i]].rowNode = [x.firstChild as HTMLElement, xRight.firstChild as HTMLElement];
               this._canvasBottomL.appendChild(x.firstChild as ChildNode);
               this._canvasBottomR.appendChild(xRight.firstChild as ChildNode);
             }
           } else {
-            if (this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild) {
+            if (Object.prototype.hasOwnProperty.call(this.rowsCache ?? {}, rows[i]) && x.firstChild) {
               this.rowsCache[rows[i]].rowNode = [x.firstChild as HTMLElement];
               this._canvasBottomL.appendChild(x.firstChild as ChildNode);
             }
           }
         } else if (this.hasFrozenColumns()) {
-          if (this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild && xRight.firstChild) {
+          if (Object.prototype.hasOwnProperty.call(this.rowsCache ?? {}, rows[i]) && x.firstChild && xRight.firstChild) {
             this.rowsCache[rows[i]].rowNode = [x.firstChild as HTMLElement, xRight.firstChild as HTMLElement];
             this._canvasTopL.appendChild(x.firstChild as ChildNode);
             this._canvasTopR.appendChild(xRight.firstChild as ChildNode);
           }
         } else {
-          if (this.rowsCache?.hasOwnProperty(rows[i]) && x.firstChild) {
+          if (Object.prototype.hasOwnProperty.call(this.rowsCache ?? {}, rows[i]) && x.firstChild) {
             this.rowsCache[rows[i]].rowNode = [x.firstChild as HTMLElement];
             this._canvasTopL.appendChild(x.firstChild as ChildNode);
           }
@@ -7512,7 +7512,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     // store and detach node for later async cleanup
     if (typeof postProcessedRow === 'object') {
       Object.keys(postProcessedRow).forEach(columnIdx => {
-        if (postProcessedRow.hasOwnProperty(columnIdx)) {
+      if (Object.prototype.hasOwnProperty.call(postProcessedRow, columnIdx)) {
           this.postProcessedCleanupQueue.push({
             actionType: 'C',
             groupId: this.postProcessgroupId,
@@ -7619,7 +7619,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     // change status of columns to be re-rendered
     if (typeof this.postProcessedRows[row] === 'object') {
       Object.keys(this.postProcessedRows[row]).forEach(columnIdx => {
-        if (this.postProcessedRows[row].hasOwnProperty(columnIdx)) {
+      if (Object.prototype.hasOwnProperty.call(this.postProcessedRows[row], columnIdx)) {
           this.postProcessedRows[row][columnIdx] = 'C';
         }
       });
@@ -7654,7 +7654,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       this.ensureCellNodesInRowsCache(row);
       Object.keys(cacheEntry.cellNodesByColumnIdx).forEach(colIdx => {
-        if (cacheEntry.cellNodesByColumnIdx.hasOwnProperty(colIdx)) {
+      if (Object.prototype.hasOwnProperty.call(cacheEntry.cellNodesByColumnIdx, colIdx)) {
           const columnIdx = +colIdx;
           const m = this.columns[columnIdx];
           const processedStatus = this.postProcessedRows[row][columnIdx]; // C=cleanup and re-render, R=rendered
@@ -7752,11 +7752,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /** Merges the keyed CSS overlays once on update, rather than for every rendered cell. */
   protected updateCellCssClassesByCell() {
-    this.cellCssClassesByCell = {};
+    this.cellCssClassesByCell = Object.create(null);
 
     Object.values(this.cellCssClasses).forEach(hash => {
       Object.entries(hash).forEach(([row, cellClasses]) => {
-        const mergedRowClasses = (this.cellCssClassesByCell[row] ??= {});
+        const mergedRowClasses = (this.cellCssClassesByCell[row] ??= Object.create(null));
         Object.entries(cellClasses).forEach(([columnId, cssClasses]) => {
           if (cssClasses) {
             mergedRowClasses[columnId] = mergedRowClasses[columnId]
