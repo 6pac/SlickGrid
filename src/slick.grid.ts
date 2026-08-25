@@ -4032,6 +4032,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     (e as any)?.target.classList.remove('ui-state-hover', 'slick-state-hover');
   }
 
+  protected getDragHandleVisibility(): boolean | 'hover' {
+    return this.getSelectionModel()?.getOptions()?.showDragHandle ?? true;
+  }
+
   /**
    * Called when the grid’s selection model reports a change. It builds a new selection
    * (and CSS hash for selected cells) from the provided ranges, applies the new cell CSS styles,
@@ -4046,6 +4050,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const selectionMode = ne?.detail?.selectionMode ?? '';
     let addDragHandle = !!ne?.detail?.addDragHandle;
     const selectionType = this.getSelectionModel()?.getOptions()?.selectionType;
+    const showDragHandle = this.getDragHandleVisibility();
     addDragHandle = selectionType === 'cell' || selectionType === 'mixed';
 
     // drag and replace functionality
@@ -4091,9 +4096,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     this.setCellCssStyles(this._options.selectedCellCssClass || '', hash);
 
-    if (this.selectionBottomRow >= 0 && this.selectionRightCell >= 0 && addDragHandle) {
+    if (this.selectionBottomRow >= 0 && this.selectionRightCell >= 0 && addDragHandle && showDragHandle !== false) {
       const lowerRightCell = this.getCellNode(this.selectionBottomRow, this.selectionRightCell)
-      this.dragReplaceEl.createEl(lowerRightCell);
+      this.dragReplaceEl.createEl(lowerRightCell, showDragHandle);
     }
 
     // check if the selected rows have changed (index order isn't important, so we'll sort them both before comparing them)
@@ -5606,9 +5611,16 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       // add drag-to-replace handle
       const selectionType = this.getSelectionModel()?.getOptions()?.selectionType;
+      const showDragHandle = this.getDragHandleVisibility();
       const addDragHandle = selectionType === 'cell' || selectionType === 'mixed';
-      if (row === this.selectionBottomRow && cell === this.selectionRightCell && this._options.showCellSelection && addDragHandle) {
-        this.dragReplaceEl.createEl(cellDiv);
+      if (
+        row === this.selectionBottomRow &&
+        cell === this.selectionRightCell &&
+        this._options.showCellSelection &&
+        addDragHandle &&
+        showDragHandle !== false
+      ) {
+        this.dragReplaceEl.createEl(cellDiv, showDragHandle);
       }
     }
     divRow.appendChild(cellDiv);
