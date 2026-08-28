@@ -158,30 +158,38 @@ describe('Example - Frozen Columns - Column Header Reorder (characterization)', 
       const finishHeader = getRightHeader(win, 'Finish');
       expect(finishHeader).to.exist;
       const rect = finishHeader.getBoundingClientRect();
-      const gridRect = (win.document.querySelector('#myGrid') as HTMLElement).getBoundingClientRect();
       const startX = rect.left + rect.width / 2;
       const sy = rect.top + rect.height / 2;
-      const dragX = gridRect.right + 100;
       const dataTransfer = new DataTransfer();
 
       pressPointer(finishHeader, startX, sy);
       finishHeader.dispatchEvent(createDragLikeEvent('dragstart', startX, sy, dataTransfer));
-      win.document.dispatchEvent(createDragLikeEvent('drag', startX, sy, dataTransfer));
-      win.document.dispatchEvent(createDragLikeEvent('drag', dragX, sy, dataTransfer));
     });
 
-    cy.wait(250);
+    // SortableJS dispatches its start callback on the next macrotask. Yield so the
+    // grid can bind its document-level auto-scroll listeners before moving outside.
+    cy.wait(50);
     cy.window().then((win: any) => {
       const finishHeader = getRightHeader(win, 'Finish');
       const rect = finishHeader.getBoundingClientRect();
       const gridRect = (win.document.querySelector('#myGrid') as HTMLElement).getBoundingClientRect();
-      const safeX = rect.left + rect.width / 2;
       const sy = rect.top + rect.height / 2;
       const dragX = gridRect.right + 100;
-      win.document.dispatchEvent(createDragLikeEvent('drag', dragX, sy, new DataTransfer()));
-      win.document.dispatchEvent(createDragLikeEvent('drag', safeX, sy, new DataTransfer()));
+      const dataTransfer = new DataTransfer();
+      win.document.dispatchEvent(createDragLikeEvent('drag', dragX, sy, dataTransfer));
+      win.document.dispatchEvent(createDragLikeEvent('mousemove', dragX, sy, dataTransfer));
     });
     cy.wait(250);
+
+    cy.window().then((win: any) => {
+      const finishHeader = getRightHeader(win, 'Finish');
+      const rect = finishHeader.getBoundingClientRect();
+      const sy = rect.top + rect.height / 2;
+      const safeX = rect.left + rect.width / 2;
+      const dataTransfer = new DataTransfer();
+      win.document.dispatchEvent(createDragLikeEvent('drag', safeX, sy, dataTransfer));
+      win.document.dispatchEvent(createDragLikeEvent('mousemove', safeX, sy, dataTransfer));
+    });
 
     cy.get(RIGHT_VIEWPORT).then(($v) => {
       expect($v[0].scrollLeft).to.be.greaterThan(10);
