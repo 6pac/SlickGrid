@@ -147,46 +147,65 @@ describe('Example - Frozen Columns - Column Header Reorder (characterization)', 
     cy.get(RIGHT_VIEWPORT).scrollTo(0, 0, { ensureScrollable: false });
   });
 
-  it('should auto-scroll the right viewport when a header drag starts beyond the right edge of the grid', () => {
+  it('should auto-scroll the right viewport when a header drag moves past the right edge of the grid', () => {
     cy.get(RIGHT_VIEWPORT).scrollTo(0, 0, { ensureScrollable: false });
     cy.wait(50);
     cy.get(RIGHT_VIEWPORT).should(($v) => expect($v[0].scrollLeft).to.eq(0));
 
-    // start a drag on "Finish" with the pointer already past the grid's right edge, then also fire a
-    // document-level `drag` event at those coordinates (that is what a real browser does continuously
-    // during a native drag, and what the future native reorder engine listens to for auto-scrolling)
+    // Start the drag inside the viewport first, then move past the grid's right edge via document-level
+    // drag events. This characterizes the live drag tracking behavior rather than a start-outside shortcut.
     cy.window().then((win: any) => {
       const finishHeader = getRightHeader(win, 'Finish');
       expect(finishHeader).to.exist;
       const rect = finishHeader.getBoundingClientRect();
+      const startX = rect.left + rect.width / 2;
       const sy = rect.top + rect.height / 2;
-      const dragX = (win.document.querySelector('#myGrid') as HTMLElement).clientWidth + 100;
       const dataTransfer = new DataTransfer();
 
-      pressPointer(finishHeader, rect.left + rect.width / 2, sy);
-      finishHeader.dispatchEvent(createDragLikeEvent('dragstart', dragX, sy, dataTransfer));
-      win.document.dispatchEvent(createDragLikeEvent('drag', dragX, sy, dataTransfer));
+      pressPointer(finishHeader, startX, sy);
+      finishHeader.dispatchEvent(createDragLikeEvent('dragstart', startX, sy, dataTransfer));
     });
 
-    cy.wait(250);
+    // SortableJS dispatches its start callback on the next macrotask. Yield so the
+    // grid can bind its document-level auto-scroll listeners before moving outside.
+    cy.wait(50);
     cy.window().then((win: any) => {
       const finishHeader = getRightHeader(win, 'Finish');
-      const sy = finishHeader.getBoundingClientRect().top;
-      const dragX = (win.document.querySelector('#myGrid') as HTMLElement).clientWidth + 100;
-      win.document.dispatchEvent(createDragLikeEvent('drag', dragX, sy, new DataTransfer()));
+      const rect = finishHeader.getBoundingClientRect();
+      const gridRect = (win.document.querySelector('#myGrid') as HTMLElement).getBoundingClientRect();
+      const sy = rect.top + rect.height / 2;
+      const dragX = gridRect.right + 100;
+      const dataTransfer = new DataTransfer();
+      win.document.dispatchEvent(createDragLikeEvent('drag', dragX, sy, dataTransfer));
+      win.document.dispatchEvent(createDragLikeEvent('mousemove', dragX, sy, dataTransfer));
     });
     cy.wait(250);
 
-    cy.get(RIGHT_VIEWPORT).should(($v) => expect($v[0].scrollLeft).to.be.greaterThan(10));
-
-    // end the drag on the source itself: no reorder, and the auto-scroll must stop
     cy.window().then((win: any) => {
       const finishHeader = getRightHeader(win, 'Finish');
       const rect = finishHeader.getBoundingClientRect();
       const sy = rect.top + rect.height / 2;
-      const dragX = (win.document.querySelector('#myGrid') as HTMLElement).clientWidth + 100;
-      finishHeader.dispatchEvent(createDragLikeEvent('dragend', dragX, sy, new DataTransfer()));
-      releasePointer(finishHeader, dragX, sy);
+      const safeX = rect.left + rect.width / 2;
+      const dataTransfer = new DataTransfer();
+      win.document.dispatchEvent(createDragLikeEvent('drag', safeX, sy, dataTransfer));
+      win.document.dispatchEvent(createDragLikeEvent('mousemove', safeX, sy, dataTransfer));
+    });
+
+    cy.get(RIGHT_VIEWPORT).then(($v) => {
+      expect($v[0].scrollLeft).to.be.greaterThan(10);
+      const scrollLeftAfterSafeZone = $v[0].scrollLeft;
+      cy.wait(250);
+      cy.get(RIGHT_VIEWPORT).should(($v2) => expect($v2[0].scrollLeft).to.eq(scrollLeftAfterSafeZone));
+    });
+
+    // end the drag on the source itself: no reorder, and the auto-scroll must remain stopped
+    cy.window().then((win: any) => {
+      const finishHeader = getRightHeader(win, 'Finish');
+      const rect = finishHeader.getBoundingClientRect();
+      const sy = rect.top + rect.height / 2;
+      const safeX = rect.left + rect.width / 2;
+      finishHeader.dispatchEvent(createDragLikeEvent('dragend', safeX, sy, new DataTransfer()));
+      releasePointer(finishHeader, safeX, sy);
     });
 
     cy.get(RIGHT_VIEWPORT).then(($v) => {
