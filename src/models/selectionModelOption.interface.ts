@@ -24,6 +24,12 @@ export interface HybridSelectionModelOption {
   /** Defaults to False, should we select when dragging? */
   dragToSelect?: boolean;
 
+  /**
+   * Defaults to True, controls the visibility of the Excel-style cell selection drag handle.
+   * Set to `false` to disable the handle, or to `'hover'` to show it only while hovering the selected cell.
+   */
+  showDragHandle?: boolean | 'hover';
+
   /** Defaults to True, should we auto-scroll when dragging a row */
   autoScrollWhenDrag?: boolean;
 

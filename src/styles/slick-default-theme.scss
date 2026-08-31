@@ -168,6 +168,21 @@ classes should alter those!
   right: 0;
 }
 
+.slick-drag-replace-handle-hover {
+  opacity: 0;
+}
+
+.slick-cell:hover > .slick-drag-replace-handle-hover,
+.slick-drag-replace-handle-hover:hover {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .slick-drag-replace-handle-hover {
+    opacity: 1;
+  }
+}
+
 @-moz-keyframes slickgrid-invalid-hilite {
   from { box-shadow: 0 0 6px red; }
   to { box-shadow: none; }

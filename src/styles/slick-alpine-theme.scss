@@ -867,6 +867,21 @@ button.slick-btn {
   right: 0;
 }
 
+.slick-drag-replace-handle-hover {
+  opacity: 0;
+}
+
+.slick-cell:hover > .slick-drag-replace-handle-hover,
+.slick-drag-replace-handle-hover:hover {
+  opacity: 1;
+}
+
+@media (hover: none) {
+  .slick-drag-replace-handle-hover {
+    opacity: 1;
+  }
+}
+
 /* RTL (Right-to-Left) Support  */
 .slick-rtl .slick-resizable-handle {
   right: auto;
