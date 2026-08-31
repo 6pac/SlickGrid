@@ -50,7 +50,7 @@ document.addEventListener("DOMContentLoaded", function () {
     };
   }
 
-  dataView = new Slick.Data.DataView({ inlineFilters: true, useCSPSafeFilter: true });
+  dataView = new Slick.Data.DataView({ inlineFilters: true });
   dataView.getItemMetadata = function (row) {
     if (row % 2 === 1) {
       return {
