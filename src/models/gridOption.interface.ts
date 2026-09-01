@@ -171,6 +171,9 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   /** Defaults to false, which will automatically resize the column headers whenever the grid size changes */
   enableAutoSizeColumns?: boolean;
 
+  /** Defaults to true, automatically scrolls the viewport while resizing a column beyond its visible edge. */
+  autoScrollOnColumnResize?: boolean;
+
   /** Defaults to false, which will let user click on cell and navigate with arrow keys. */
   enableCellNavigation?: boolean;
 

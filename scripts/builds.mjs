@@ -108,7 +108,7 @@ export async function buildAllIifeFiles() {
     if (/(^|[\\/])index\.[jt]s$/i.test(file) || /src[\\/]models[\\/].*\.ts/i.test(file) || /.*\.d.ts/i.test(file)) {
       continue;
     }
-    buildIifeFile(file, false);
+    await buildIifeFile(file, false);
   }
   const endTime = new Date().getTime();
   console.log(`[${styleText('yellow', 'esbuild ⚡')}] Built ${allFiles.length} files to "iife" format in ${endTime - startTime}ms`);

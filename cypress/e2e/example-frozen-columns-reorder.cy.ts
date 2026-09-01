@@ -1,4 +1,4 @@
-import { createDragLikeEvent, pressPointer, releasePointer } from '../support/drag';
+import { createDragLikeEvent, createMouseLikeEvent, pressPointer, releasePointer } from '../support/drag';
 
 // Characterization tests for header column reordering on a frozen-columns grid (currently SortableJS).
 // These specs pin down the observable behavior that must survive the SortableJS removal refactor:
@@ -11,6 +11,20 @@ describe('Example - Frozen Columns - Column Header Reorder (characterization)', 
   const initialLeftTitles = ['#', 'Title', 'Duration'];
   const initialRightTitles = ['% Complete', 'Start', 'Finish', 'Effort Driven', 'Title1', 'Title2', 'Title3', 'Title4'];
   const initialIds = ['sel', 'title', 'duration', '%', 'start', 'finish', 'effort-driven', 'title1', 'title2', 'title3', 'title4'];
+  let originalResizeWidth: number | undefined;
+
+  afterEach(function () {
+    if (this.currentTest?.title.includes('pace resize auto-scroll') && originalResizeWidth !== undefined) {
+      cy.window().then((win: any) => {
+        win.document.body.dispatchEvent(createMouseLikeEvent(win, 'mouseup', 0, 0, 0));
+        const grid = win.grid;
+        const columns = grid.getColumns();
+        columns[1].width = originalResizeWidth;
+        grid.setColumns(columns);
+        grid.scrollToX(0);
+      });
+    }
+  });
 
   const expectHeaderTitles = (containerSelector: string, titles: string[]) => {
     cy.get(containerSelector)
@@ -144,11 +158,62 @@ describe('Example - Frozen Columns - Column Header Reorder (characterization)', 
     });
     expectHeaderTitles(RIGHT_HEADERS, initialRightTitles);
     expectReorderCallCount(6);
-    cy.get(RIGHT_VIEWPORT).scrollTo(0, 0, { ensureScrollable: false });
+    cy.window().then((win: any) => win.grid.scrollToX(0));
+  });
+
+  it('should clamp and pace resize auto-scroll for a column in the non-frozen section', () => {
+    let widthAtViewportEdge = 0;
+    const headerSelector = `${RIGHT_HEADERS} .slick-header-column:nth-child(2)`; // Start
+
+    cy.window().then((win: any) => {
+      const header = win.document.querySelector(headerSelector) as HTMLElement;
+      const handle = header.querySelector('.slick-resizable-handle') as HTMLElement;
+      const viewport = win.document.querySelector(RIGHT_VIEWPORT) as HTMLElement;
+      const handleRect = handle.getBoundingClientRect();
+      const startX = handleRect.left + handleRect.width / 2;
+      const viewportRight = viewport.getBoundingClientRect().right;
+      const targetX = Math.max(viewportRight + 500, startX + 500);
+      const initialWidth = header.getBoundingClientRect().width;
+      originalResizeWidth = win.grid.getColumns()[1].width;
+
+      handle.dispatchEvent(createMouseLikeEvent(win, 'mousedown', startX, handleRect.top + handleRect.height / 2));
+      win.document.body.dispatchEvent(createMouseLikeEvent(win, 'mousemove', targetX, handleRect.top + handleRect.height / 2));
+
+      widthAtViewportEdge = header.getBoundingClientRect().width;
+      expect(widthAtViewportEdge).to.be.at.most(initialWidth + viewportRight - startX + 5);
+    });
+
+    cy.wait(50);
+    cy.window().then((win: any) => {
+      const widthAfterFirstInterval = (win.document.querySelector(headerSelector) as HTMLElement).getBoundingClientRect().width;
+      // A 50ms sample can include one or two 30ms callbacks. The second callback also
+      // includes the viewport-scroll offset correction from the fork implementation.
+      expect(widthAfterFirstInterval).to.be.within(widthAtViewportEdge + 9, widthAtViewportEdge + 25);
+    });
+
+    cy.wait(300);
+    cy.get(RIGHT_VIEWPORT).should(($viewport) => {
+      expect($viewport[0].scrollLeft).to.be.greaterThan(0);
+    });
+
+    cy.window().then((win: any) => {
+      win.document.body.dispatchEvent(createMouseLikeEvent(win, 'mouseup', 0, 0, 0));
+    });
+    const widthAfterMouseUp = { value: 0 };
+    cy.get(headerSelector).then(($header) => {
+      widthAfterMouseUp.value = $header.outerWidth() as number;
+    });
+    cy.wait(80);
+    cy.window().then((win: any) => {
+      const widthAfterStop = (win.document.querySelector(headerSelector) as HTMLElement).getBoundingClientRect().width;
+      expect(widthAfterStop).to.be.closeTo(widthAfterMouseUp.value, 1);
+    });
+
+    cy.window().then((win: any) => win.grid.scrollToX(0));
   });
 
   it('should auto-scroll the right viewport when a header drag moves past the right edge of the grid', () => {
-    cy.get(RIGHT_VIEWPORT).scrollTo(0, 0, { ensureScrollable: false });
+    cy.window().then((win: any) => win.grid.scrollToX(0));
     cy.wait(50);
     cy.get(RIGHT_VIEWPORT).should(($v) => expect($v[0].scrollLeft).to.eq(0));
 
@@ -177,18 +242,19 @@ describe('Example - Frozen Columns - Column Header Reorder (characterization)', 
       const dragX = gridRect.right + 100;
       const dataTransfer = new DataTransfer();
       win.document.dispatchEvent(createDragLikeEvent('drag', dragX, sy, dataTransfer));
-      win.document.dispatchEvent(createDragLikeEvent('mousemove', dragX, sy, dataTransfer));
+      win.document.dispatchEvent(createMouseLikeEvent(win, 'mousemove', dragX, sy));
     });
     cy.wait(250);
 
     cy.window().then((win: any) => {
       const finishHeader = getRightHeader(win, 'Finish');
       const rect = finishHeader.getBoundingClientRect();
+      const viewportRect = (win.document.querySelector(RIGHT_VIEWPORT) as HTMLElement).getBoundingClientRect();
       const sy = rect.top + rect.height / 2;
-      const safeX = rect.left + rect.width / 2;
+      const safeX = viewportRect.left + viewportRect.width / 2;
       const dataTransfer = new DataTransfer();
       win.document.dispatchEvent(createDragLikeEvent('drag', safeX, sy, dataTransfer));
-      win.document.dispatchEvent(createDragLikeEvent('mousemove', safeX, sy, dataTransfer));
+      win.document.dispatchEvent(createMouseLikeEvent(win, 'mousemove', safeX, sy));
     });
 
     cy.get(RIGHT_VIEWPORT).then(($v) => {
@@ -218,6 +284,6 @@ describe('Example - Frozen Columns - Column Header Reorder (characterization)', 
     expectColumnIds(initialIds);
     expectReorderCallCount(6);
 
-    cy.get(RIGHT_VIEWPORT).scrollTo(0, 0, { ensureScrollable: false });
+    cy.window().then((win: any) => win.grid.scrollToX(0));
   });
 });

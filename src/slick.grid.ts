@@ -119,6 +119,9 @@ const WidthEvalMode = IIFE_ONLY ? Slick.WidthEvalMode : WidthEvalMode_;
 // body scroll range (header width is the header/body scroll-sync floor) and column
 // drag-reorder has room past the last column
 const HEADER_WIDTH_SLACK = 1000;
+const COLUMN_AUTOSCROLL_DISTANCE_PX = 10;
+const COLUMN_AUTOSCROLL_INTERVAL_MS = 30;
+const RESIZE_AUTOSCROLL_BROWSER_EDGE_PX = 1;
 const Draggable = IIFE_ONLY ? Slick.Draggable : Draggable_;
 const MouseWheel = IIFE_ONLY ? Slick.MouseWheel : MouseWheel_;
 const Resizable = IIFE_ONLY ? Slick.Resizable : Resizable_;
@@ -335,6 +338,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     mixinDefaults: true,
     shadowRoot: undefined,
     colAutosizeTreatAsLockedBelowWidth: 100,
+    autoScrollOnColumnResize: true,
     rtl: false
   };
 
@@ -372,6 +376,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   };
 
   protected _columnResizeTimer?: number;
+  protected _columnResizeAutoScrollTimer?: number;
   protected _executionBlockTimer?: number;
   protected _flashCellTimer?: number;
   protected _highlightRowTimer?: number;
@@ -1998,8 +2003,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
         if (direction) {
           columnScrollTimer = window.setInterval(() => {
-            this._viewportScrollContainerX.scrollLeft += direction * 10;
-          }, 30);
+            this._viewportScrollContainerX.scrollLeft += direction * COLUMN_AUTOSCROLL_DISTANCE_PX;
+          }, COLUMN_AUTOSCROLL_INTERVAL_MS);
         }
       }
     };
@@ -2112,7 +2117,71 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     let firstResizable: number | undefined;
     let lastResizable = -1;
     let frozenLeftColMaxWidth = 0;
+    let resizeAutoScrollDeltaX = 0;
+    let autoScrollClientX: number | undefined;
+    let autoScrollOffsetX = 0;
 
+    const stopColumnResizeAutoScroll = () => {
+      if (this._columnResizeAutoScrollTimer) {
+        window.clearInterval(this._columnResizeAutoScrollTimer);
+        this._columnResizeAutoScrollTimer = undefined;
+      }
+      autoScrollOffsetX = 0;
+    };
+
+    const scheduleColumnResizeAutoScroll = (resizeCallback: (targetPageX: number) => void) => {
+      if (this._columnResizeAutoScrollTimer) {
+        return;
+      }
+      this._columnResizeAutoScrollTimer = window.setInterval(() => {
+        const viewportOffset = Utils.offset(this._viewportScrollContainerX)!;
+        const targetPageX = autoScrollOffsetX > 0
+          ? viewportOffset.left + this._viewportScrollContainerX.clientWidth + COLUMN_AUTOSCROLL_DISTANCE_PX
+          : viewportOffset.left - COLUMN_AUTOSCROLL_DISTANCE_PX;
+        resizeCallback(targetPageX + resizeAutoScrollDeltaX);
+      }, COLUMN_AUTOSCROLL_INTERVAL_MS);
+    };
+
+    const updateColumnResizeAutoScroll = (
+      clientX: number | undefined,
+      targetPageX: number,
+      resizeCallback: (targetPageX: number) => void
+    ): number => {
+      // Auto-scroll is intentionally disabled for RTL until its scroll coordinate model is supported.
+      if (this._options.rtl || !this._options.autoScrollOnColumnResize) {
+        stopColumnResizeAutoScroll();
+        return targetPageX;
+      }
+
+      autoScrollClientX = typeof clientX === 'number' ? clientX : autoScrollClientX;
+      const left = Utils.offset(this._viewportScrollContainerX)!.left;
+      const viewportWidth = this._viewportScrollContainerX.clientWidth;
+      const right = left + viewportWidth;
+      const browserW = window.innerWidth || document.documentElement.clientWidth || 0;
+
+      if (targetPageX <= left) {
+        autoScrollOffsetX = targetPageX - left;
+      } else if (targetPageX >= right) {
+        autoScrollOffsetX = targetPageX - right;
+      } else if (typeof autoScrollClientX === 'number' && browserW > 0) {
+        autoScrollOffsetX = autoScrollClientX <= RESIZE_AUTOSCROLL_BROWSER_EDGE_PX
+          ? -1
+          : autoScrollClientX >= browserW - RESIZE_AUTOSCROLL_BROWSER_EDGE_PX
+            ? 1
+            : 0;
+      } else {
+        autoScrollOffsetX = 0;
+      }
+
+      if (autoScrollOffsetX) {
+        scheduleColumnResizeAutoScroll(resizeCallback);
+        return autoScrollOffsetX > 0 && viewportWidth ? Math.min(right, targetPageX) : targetPageX;
+      }
+      stopColumnResizeAutoScroll();
+      return targetPageX;
+    };
+
+    stopColumnResizeAutoScroll();
     const children: HTMLElement[] = this.getHeaderChildren();
     const vc = this.getVisibleColumns();
     for (let i = 0; i < children.length; i++) {
@@ -2148,6 +2217,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       const resizeableHandle = Utils.createDomElement('div', { className: 'slick-resizable-handle', role: 'separator', ariaOrientation: 'horizontal' }, colElm);
       this._bindingEventService.bind(resizeableHandle, 'dblclick', this.handleResizeableDoubleClick.bind(this) as EventListener);
+      let applyColumnResize: ((targetPageX: number, resizeElms: { resizeableElement: HTMLElement; resizeableHandleElement: HTMLElement }) => void) | undefined;
 
       this.slickResizableInstances.push(
         Resizable({
@@ -2224,148 +2294,40 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
               maxPageX = pageX + Math.min(shrinkLeewayOnRight, stretchLeewayOnLeft);
               minPageX = pageX - Math.min(shrinkLeewayOnLeft, stretchLeewayOnRight);
             }
+            resizeAutoScrollDeltaX = 0;
+            autoScrollClientX = (targetEvent as MouseEvent).clientX;
+            stopColumnResizeAutoScroll();
           },
           onResize: (e, resizeElms) => {
             const targetEvent = (e as TouchEvent).touches ? (e as TouchEvent).changedTouches[0] : e;
-            this.columnResizeDragging = true;
-            let actualMinWidth;
-            let d = Math.min(maxPageX, Math.max(minPageX, (targetEvent as MouseEvent).pageX)) - pageX;
-
-            if (this._options.rtl) {
-              d = -d;
+            let targetPageX = (targetEvent as MouseEvent).pageX;
+            if (!(this.hasFrozenColumns() && i <= this._options.frozenColumn!)) {
+              targetPageX = updateColumnResizeAutoScroll(
+                (targetEvent as MouseEvent).clientX,
+                targetPageX,
+                (resizePageX) => applyColumnResize?.(resizePageX, resizeElms)
+              );
             }
+            applyColumnResize = (resizePageX, resizeElements) => {
+              this.columnResizeDragging = true;
+              let actualMinWidth;
+              let d = Math.min(maxPageX, Math.max(minPageX, resizePageX)) - pageX;
 
-            let x;
-            let newCanvasWidthL = 0;
-            let newCanvasWidthR = 0;
-            const viewportWidth = this.getViewportInnerWidth();
-
-            if (d < 0) { // shrink column
-              x = d;
-
-              for (j = i; j >= 0; j--) {
-                c = vc[j];
-                if (c?.resizable && !c.hidden) {
-                  actualMinWidth = Math.max(c.minWidth || 0, this.absoluteColumnMinWidth);
-                  if (x && (c.previousWidth || 0) + x < actualMinWidth) {
-                    x += (c.previousWidth || 0) - actualMinWidth;
-                    c.width = actualMinWidth;
-                  } else {
-                    c.width = (c.previousWidth || 0) + x;
-                    x = 0;
-                  }
-                }
+              if (this._options.rtl) {
+                d = -d;
               }
 
-              for (k = 0; k <= i; k++) {
-                c = vc[k];
-                if (!c || c.hidden) { continue; }
+              let x;
+              let newCanvasWidthL = 0;
+              let newCanvasWidthR = 0;
+              const viewportWidth = this.getViewportInnerWidth();
 
-                if (this.hasFrozenColumns() && (k > this._options.frozenColumn!)) {
-                  newCanvasWidthR += c.width || 0;
-                } else {
-                  newCanvasWidthL += c.width || 0;
-                }
-              }
+              if (d < 0) { // shrink column
+                x = d;
 
-              if (this._options.forceFitColumns) {
-                x = -d;
-                for (j = i + 1; j < vc.length; j++) {
+                for (j = i; j >= 0; j--) {
                   c = vc[j];
-                  if (!c || c.hidden) { continue; }
-                  if (c.resizable) {
-                    if (x && c.maxWidth && (c.maxWidth - (c.previousWidth || 0) < x)) {
-                      x -= c.maxWidth - (c.previousWidth || 0);
-                      c.width = c.maxWidth;
-                    } else {
-                      c.width = (c.previousWidth || 0) + x;
-                      x = 0;
-                    }
-
-                    if (this.hasFrozenColumns() && (j > this._options.frozenColumn!)) {
-                      newCanvasWidthR += c.width || 0;
-                    } else {
-                      newCanvasWidthL += c.width || 0;
-                    }
-                  }
-                }
-              } else {
-                for (j = i + 1; j < vc.length; j++) {
-                  c = vc[j];
-                  if (!c || c.hidden) { continue; }
-
-                  if (this.hasFrozenColumns() && (j > this._options.frozenColumn!)) {
-                    newCanvasWidthR += c.width || 0;
-                  } else {
-                    newCanvasWidthL += c.width || 0;
-                  }
-                }
-              }
-
-              if (this._options.forceFitColumns) {
-                x = -d;
-                for (j = i + 1; j < vc.length; j++) {
-                  c = vc[j];
-                  if (!c || c.hidden) { continue; }
-                  if (c.resizable) {
-                    if (x && c.maxWidth && (c.maxWidth - (c.previousWidth || 0) < x)) {
-                      x -= c.maxWidth - (c.previousWidth || 0);
-                      c.width = c.maxWidth;
-                    } else {
-                      c.width = (c.previousWidth || 0) + x;
-                      x = 0;
-                    }
-                  }
-                }
-              }
-            } else { // stretch column
-              x = d;
-
-              newCanvasWidthL = 0;
-              newCanvasWidthR = 0;
-
-              for (j = i; j >= 0; j--) {
-                c = vc[j];
-                if (!c || c.hidden) { continue; }
-                if (c.resizable) {
-                  if (x && c.maxWidth && (c.maxWidth - (c.previousWidth || 0) < x)) {
-                    x -= c.maxWidth - (c.previousWidth || 0);
-                    c.width = c.maxWidth;
-                  } else {
-                    const newWidth = (c.previousWidth || 0) + x;
-                    const resizedCanvasWidthL = this.canvasWidthL + x;
-
-                    if (this.hasFrozenColumns() && (j <= this._options.frozenColumn!)) {
-                      // if we're on the left frozen side, we need to make sure that our left section width never goes over the total viewport width
-                      if (newWidth > frozenLeftColMaxWidth && resizedCanvasWidthL < (viewportWidth - this._options.frozenRightViewportMinWidth!)) {
-                        frozenLeftColMaxWidth = newWidth; // keep max column width ref, if we go over the limit this number will stop increasing
-                      }
-                      c.width = ((resizedCanvasWidthL + this._options.frozenRightViewportMinWidth!) > viewportWidth) ? frozenLeftColMaxWidth : newWidth;
-                    } else {
-                      c.width = newWidth;
-                    }
-                    x = 0;
-                  }
-                }
-              }
-
-              for (k = 0; k <= i; k++) {
-                c = vc[k];
-                if (!c || c.hidden) { continue; }
-
-                if (this.hasFrozenColumns() && (k > this._options.frozenColumn!)) {
-                  newCanvasWidthR += c.width || 0;
-                } else {
-                  newCanvasWidthL += c.width || 0;
-                }
-              }
-
-              if (this._options.forceFitColumns) {
-                x = -d;
-                for (j = i + 1; j < vc.length; j++) {
-                  c = vc[j];
-                  if (!c || c.hidden) { continue; }
-                  if (c.resizable) {
+                  if (c?.resizable && !c.hidden) {
                     actualMinWidth = Math.max(c.minWidth || 0, this.absoluteColumnMinWidth);
                     if (x && (c.previousWidth || 0) + x < actualMinWidth) {
                       x += (c.previousWidth || 0) - actualMinWidth;
@@ -2374,6 +2336,45 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
                       c.width = (c.previousWidth || 0) + x;
                       x = 0;
                     }
+                  }
+                }
+
+                for (k = 0; k <= i; k++) {
+                  c = vc[k];
+                  if (!c || c.hidden) { continue; }
+
+                  if (this.hasFrozenColumns() && (k > this._options.frozenColumn!)) {
+                    newCanvasWidthR += c.width || 0;
+                  } else {
+                    newCanvasWidthL += c.width || 0;
+                  }
+                }
+
+                if (this._options.forceFitColumns) {
+                  x = -d;
+                  for (j = i + 1; j < vc.length; j++) {
+                    c = vc[j];
+                    if (!c || c.hidden) { continue; }
+                    if (c.resizable) {
+                      if (x && c.maxWidth && (c.maxWidth - (c.previousWidth || 0) < x)) {
+                        x -= c.maxWidth - (c.previousWidth || 0);
+                        c.width = c.maxWidth;
+                      } else {
+                        c.width = (c.previousWidth || 0) + x;
+                        x = 0;
+                      }
+
+                      if (this.hasFrozenColumns() && (j > this._options.frozenColumn!)) {
+                        newCanvasWidthR += c.width || 0;
+                      } else {
+                        newCanvasWidthL += c.width || 0;
+                      }
+                    }
+                  }
+                } else {
+                  for (j = i + 1; j < vc.length; j++) {
+                    c = vc[j];
+                    if (!c || c.hidden) { continue; }
 
                     if (this.hasFrozenColumns() && (j > this._options.frozenColumn!)) {
                       newCanvasWidthR += c.width || 0;
@@ -2382,36 +2383,142 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
                     }
                   }
                 }
-              } else {
-                for (j = i + 1; j < vc.length; j++) {
+
+                if (this._options.forceFitColumns) {
+                  x = -d;
+                  for (j = i + 1; j < vc.length; j++) {
+                    c = vc[j];
+                    if (!c || c.hidden) { continue; }
+                    if (c.resizable) {
+                      if (x && c.maxWidth && (c.maxWidth - (c.previousWidth || 0) < x)) {
+                        x -= c.maxWidth - (c.previousWidth || 0);
+                        c.width = c.maxWidth;
+                      } else {
+                        c.width = (c.previousWidth || 0) + x;
+                        x = 0;
+                      }
+                    }
+                  }
+                }
+              } else { // stretch column
+                x = d;
+
+                newCanvasWidthL = 0;
+                newCanvasWidthR = 0;
+
+                for (j = i; j >= 0; j--) {
                   c = vc[j];
                   if (!c || c.hidden) { continue; }
+                  if (c.resizable) {
+                    if (x && c.maxWidth && (c.maxWidth - (c.previousWidth || 0) < x)) {
+                      x -= c.maxWidth - (c.previousWidth || 0);
+                      c.width = c.maxWidth;
+                    } else {
+                      const newWidth = (c.previousWidth || 0) + x;
+                      const resizedCanvasWidthL = this.canvasWidthL + x;
 
-                  if (this.hasFrozenColumns() && (j > this._options.frozenColumn!)) {
-                    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                      if (this.hasFrozenColumns() && (j <= this._options.frozenColumn!)) {
+                        // if we're on the left frozen side, we need to make sure that our left section width never goes over the total viewport width
+                        if (newWidth > frozenLeftColMaxWidth && resizedCanvasWidthL < (viewportWidth - this._options.frozenRightViewportMinWidth!)) {
+                          frozenLeftColMaxWidth = newWidth; // keep max column width ref, if we go over the limit this number will stop increasing
+                        }
+                        c.width = ((resizedCanvasWidthL + this._options.frozenRightViewportMinWidth!) > viewportWidth) ? frozenLeftColMaxWidth : newWidth;
+                      } else {
+                        c.width = newWidth;
+                      }
+                      x = 0;
+                    }
+                  }
+                }
+
+                for (k = 0; k <= i; k++) {
+                  c = vc[k];
+                  if (!c || c.hidden) { continue; }
+
+                  if (this.hasFrozenColumns() && (k > this._options.frozenColumn!)) {
                     newCanvasWidthR += c.width || 0;
                   } else {
                     newCanvasWidthL += c.width || 0;
                   }
                 }
+
+                if (this._options.forceFitColumns) {
+                  x = -d;
+                  for (j = i + 1; j < vc.length; j++) {
+                    c = vc[j];
+                    if (!c || c.hidden) { continue; }
+                    if (c.resizable) {
+                      actualMinWidth = Math.max(c.minWidth || 0, this.absoluteColumnMinWidth);
+                      if (x && (c.previousWidth || 0) + x < actualMinWidth) {
+                        x += (c.previousWidth || 0) - actualMinWidth;
+                        c.width = actualMinWidth;
+                      } else {
+                        c.width = (c.previousWidth || 0) + x;
+                        x = 0;
+                      }
+
+                      if (this.hasFrozenColumns() && (j > this._options.frozenColumn!)) {
+                        newCanvasWidthR += c.width || 0;
+                      } else {
+                        newCanvasWidthL += c.width || 0;
+                      }
+                    }
+                  }
+                } else {
+                  for (j = i + 1; j < vc.length; j++) {
+                    c = vc[j];
+                    if (!c || c.hidden) { continue; }
+
+                    if (this.hasFrozenColumns() && (j > this._options.frozenColumn!)) {
+                      // eslint-disable-next-line @typescript-eslint/no-unused-vars
+                      newCanvasWidthR += c.width || 0;
+                    } else {
+                      newCanvasWidthL += c.width || 0;
+                    }
+                  }
+                }
               }
-            }
 
-            if (this.hasFrozenColumns() && newCanvasWidthL !== this.canvasWidthL) {
-              Utils.width(this._headerL, newCanvasWidthL + 1000);
-              Utils.setStyleSize(this._paneHeaderR, 'left', newCanvasWidthL);
-            }
+              if (this.hasFrozenColumns() && newCanvasWidthL !== this.canvasWidthL) {
+                Utils.width(this._headerL, newCanvasWidthL + 1000);
+                Utils.setStyleSize(this._paneHeaderR, 'left', newCanvasWidthL);
+              }
 
-            this.applyColumnHeaderWidths();
-            if (this._options.syncColumnCellResize) {
-              this.applyColumnWidths();
-            }
-            this.trigger(this.onColumnsDrag, {
-              triggeredByColumn: resizeElms.resizeableElement,
-              resizeHandle: resizeElms.resizeableHandleElement
-            });
+              this.applyColumnHeaderWidths();
+              if (this._options.syncColumnCellResize) {
+                this.applyColumnWidths();
+              }
+              this.updateCanvasWidth();
+
+              if (
+                this._options.autoScrollOnColumnResize &&
+                !this._options.rtl &&
+                !this._options.forceFitColumns &&
+                !(this.hasFrozenColumns() && i <= this._options.frozenColumn!)
+              ) {
+                const columnRight = this.columnPosRight[i];
+                const previousScrollLeft = this._viewportScrollContainerX.scrollLeft;
+                const viewportWidth = this._viewportScrollContainerX.clientWidth;
+                const isLastVisibleColumn = i === vc.length - 1;
+
+                if (isLastVisibleColumn) {
+                  const maxScrollLeft = Math.max(0, this._viewportScrollContainerX.scrollWidth - viewportWidth);
+                  this.scrollToX(maxScrollLeft);
+                } else if (columnRight > previousScrollLeft + viewportWidth) {
+                  this.scrollToX(columnRight - viewportWidth);
+                }
+                resizeAutoScrollDeltaX += this._viewportScrollContainerX.scrollLeft - previousScrollLeft;
+              }
+              this.trigger(this.onColumnsDrag, {
+                triggeredByColumn: resizeElements.resizeableElement,
+                resizeHandle: resizeElements.resizeableHandleElement
+              });
+            };
+            applyColumnResize(targetPageX + resizeAutoScrollDeltaX, resizeElms);
           },
           onResizeEnd: (_e, resizeElms) => {
+            stopColumnResizeAutoScroll();
+            resizeAutoScrollDeltaX = 0;
             resizeElms.resizeableElement.classList.remove('slick-header-column-active');
 
             const triggeredByColumn = resizeElms.resizeableElement.id.replace(this.uid, '');
@@ -8124,6 +8231,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   /** Clear all highlight timers that might have been left opened */
   protected clearAllTimers() {
     window.clearTimeout(this._columnResizeTimer);
+    if (this._columnResizeAutoScrollTimer) {
+      window.clearInterval(this._columnResizeAutoScrollTimer);
+      this._columnResizeAutoScrollTimer = undefined;
+    }
     window.clearTimeout(this._executionBlockTimer);
     window.clearTimeout(this._flashCellTimer);
     window.clearTimeout(this._highlightRowTimer);

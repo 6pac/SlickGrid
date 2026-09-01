@@ -1,3 +1,5 @@
+import { createMouseLikeEvent } from '../support/drag';
+
 describe('Example - colspan & rowspan spanning many columns', { retries: 0 }, () => {
   const GRID_ROW_HEIGHT = 25;
   const fullTitles = [
@@ -6,6 +8,20 @@ describe('Example - colspan & rowspan spanning many columns', { retries: 0 }, ()
     'Revenue Growth', 'Pricing Policy', 'Policy Index', 'Expense Control', 'Excess Cash', 'Net Trade Cycle', 'Cost of Capital',
     'Revenue Growth', 'Pricing Policy', 'Policy Index', 'Expense Control', 'Excess Cash', 'Net Trade Cycle', 'Cost of Capital'
   ];
+  let originalResizeWidth: number | undefined;
+
+  afterEach(function () {
+    if (this.currentTest?.title.includes('off-screen resize') && originalResizeWidth !== undefined) {
+      cy.window().then((win: any) => {
+        win.document.body.dispatchEvent(createMouseLikeEvent(win, 'mouseup', 0, 0, 0));
+        const grid = win.eval('grid');
+        const columns = grid.getColumns();
+        columns[0].width = originalResizeWidth;
+        grid.setColumns(columns);
+        grid.scrollToX(0);
+      });
+    }
+  });
 
   it('should display Example title', () => {
     cy.visit(`${Cypress.config('baseUrl')}/examples/example-0032-row-span-many-columns.html`);
@@ -18,6 +34,56 @@ describe('Example - colspan & rowspan spanning many columns', { retries: 0 }, ()
       .find('.slick-header-columns')
       .children()
       .each(($child, index) => expect($child.text()).to.eq(fullTitles[index]));
+  });
+
+  it('should clamp an off-screen resize to the viewport and continue widening at 10px per 30ms', () => {
+    let widthAtViewportEdge = 0;
+    const headerSelector = '#myGrid .slick-header-columns .slick-header-column:first-child';
+
+    cy.window().then((win) => {
+      const header = win.document.querySelector(headerSelector) as HTMLElement;
+      const handle = header.querySelector('.slick-resizable-handle') as HTMLElement;
+      const viewport = win.document.querySelector('#myGrid .slick-viewport-top.slick-viewport-left') as HTMLElement;
+      const handleRect = handle.getBoundingClientRect();
+      const startX = handleRect.left + handleRect.width / 2;
+      const viewportRight = viewport.getBoundingClientRect().right;
+      const targetX = Math.max(viewportRight + 500, startX + 500);
+      const initialWidth = header.getBoundingClientRect().width;
+      originalResizeWidth = win.eval('grid').getColumns()[0].width;
+
+      handle.dispatchEvent(createMouseLikeEvent(win, 'mousedown', startX, handleRect.top + handleRect.height / 2));
+      win.document.body.dispatchEvent(createMouseLikeEvent(win, 'mousemove', targetX, handleRect.top + handleRect.height / 2));
+
+      widthAtViewportEdge = header.getBoundingClientRect().width;
+      expect(widthAtViewportEdge).to.be.at.most(initialWidth + viewportRight - startX + 5);
+    });
+
+    cy.wait(50);
+    cy.window().then((win) => {
+      const widthAfterFirstInterval = (win.document.querySelector(headerSelector) as HTMLElement).getBoundingClientRect().width;
+      // A 50ms sample can include one or two 30ms callbacks. The second callback also
+      // includes the viewport-scroll offset correction from the fork implementation.
+      expect(widthAfterFirstInterval).to.be.within(widthAtViewportEdge + 9, widthAtViewportEdge + 25);
+    });
+
+    cy.wait(300);
+    cy.get('#myGrid .slick-viewport-top.slick-viewport-left').should(($viewport) => {
+      expect($viewport[0].scrollLeft).to.be.greaterThan(0);
+    });
+
+    cy.window().then((win) => {
+      win.document.body.dispatchEvent(createMouseLikeEvent(win, 'mouseup', 0, 0, 0));
+    });
+    const widthAfterMouseUp = { value: 0 };
+    cy.get(headerSelector).then(($header) => {
+      widthAfterMouseUp.value = $header.outerWidth() as number;
+    });
+    cy.wait(80);
+    cy.window().then((win) => {
+      const widthAfterStop = (win.document.querySelector(headerSelector) as HTMLElement).getBoundingClientRect().width;
+      expect(widthAfterStop).to.be.closeTo(widthAfterMouseUp.value, 1);
+    });
+
   });
 
   it('should drag Title column to swap with 2nd column "Revenue Growth" in the grid and expect rowspan to stay at same position with Task 0 to spread instead', () => {
