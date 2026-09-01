@@ -158,7 +158,7 @@ describe('Example - Frozen Columns - Column Header Reorder (characterization)', 
     });
     expectHeaderTitles(RIGHT_HEADERS, initialRightTitles);
     expectReorderCallCount(6);
-    cy.get(RIGHT_VIEWPORT).scrollTo(0, 0, { ensureScrollable: false });
+    cy.window().then((win: any) => win.grid.scrollToX(0));
   });
 
   it('should clamp and pace resize auto-scroll for a column in the non-frozen section', () => {
@@ -209,11 +209,11 @@ describe('Example - Frozen Columns - Column Header Reorder (characterization)', 
       expect(widthAfterStop).to.be.closeTo(widthAfterMouseUp.value, 1);
     });
 
-    cy.get(RIGHT_VIEWPORT).scrollTo(0, 0, { ensureScrollable: false });
+    cy.window().then((win: any) => win.grid.scrollToX(0));
   });
 
   it('should auto-scroll the right viewport when a header drag moves past the right edge of the grid', () => {
-    cy.get(RIGHT_VIEWPORT).scrollTo(0, 0, { ensureScrollable: false });
+    cy.window().then((win: any) => win.grid.scrollToX(0));
     cy.wait(50);
     cy.get(RIGHT_VIEWPORT).should(($v) => expect($v[0].scrollLeft).to.eq(0));
 
@@ -242,18 +242,19 @@ describe('Example - Frozen Columns - Column Header Reorder (characterization)', 
       const dragX = gridRect.right + 100;
       const dataTransfer = new DataTransfer();
       win.document.dispatchEvent(createDragLikeEvent('drag', dragX, sy, dataTransfer));
-      win.document.dispatchEvent(createDragLikeEvent('mousemove', dragX, sy, dataTransfer));
+      win.document.dispatchEvent(createMouseLikeEvent(win, 'mousemove', dragX, sy));
     });
     cy.wait(250);
 
     cy.window().then((win: any) => {
       const finishHeader = getRightHeader(win, 'Finish');
       const rect = finishHeader.getBoundingClientRect();
+      const viewportRect = (win.document.querySelector(RIGHT_VIEWPORT) as HTMLElement).getBoundingClientRect();
       const sy = rect.top + rect.height / 2;
-      const safeX = rect.left + rect.width / 2;
+      const safeX = viewportRect.left + viewportRect.width / 2;
       const dataTransfer = new DataTransfer();
       win.document.dispatchEvent(createDragLikeEvent('drag', safeX, sy, dataTransfer));
-      win.document.dispatchEvent(createDragLikeEvent('mousemove', safeX, sy, dataTransfer));
+      win.document.dispatchEvent(createMouseLikeEvent(win, 'mousemove', safeX, sy));
     });
 
     cy.get(RIGHT_VIEWPORT).then(($v) => {
@@ -283,6 +284,6 @@ describe('Example - Frozen Columns - Column Header Reorder (characterization)', 
     expectColumnIds(initialIds);
     expectReorderCallCount(6);
 
-    cy.get(RIGHT_VIEWPORT).scrollTo(0, 0, { ensureScrollable: false });
+    cy.window().then((win: any) => win.grid.scrollToX(0));
   });
 });
