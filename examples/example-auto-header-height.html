@@ -5,13 +5,17 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
-  <title>Auto Header Height</title>
+  <title>Auto Header Height - Layout</title>
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css" />
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css" />
 
   <style>
     .slick-pane.frozen {
-      border-right: 1.5px dotted darkblue !important;
+      border-right: 1.5px dotted darkred !important;
+    }
+
+    .slick-pane-top {
+      border-bottom: 1.5px dotted darkred !important;
     }
 
     .cell-selection {
@@ -30,7 +34,7 @@
 </head>
 
 <body>
-  <h2 class="title">Example - Auto Header Height</h2>
+  <h2 class="title">Example - Auto Header Height (Layout)</h2>
   <div style="position:relative">
     <table width="100%">
       <tr>
@@ -46,28 +50,35 @@
           <hr />
 
           <label for="autoHeaderHeight" style="width:160px;float:left;padding-left:40px;">
-            Enable Auto Header Height:
+            Auto Header Height:
           </label>
-          <input type=checkbox id="autoHeaderHeight" style="width:60px;" checked=checked>
+          <input type="checkbox" id="autoHeaderHeight" style="width:60px;" checked>
           <button id="setAutoHeaderHeight">Set</button>
           <br /><br />
 
           <label for="frozenColumn" style="width:160px;float:left;padding-left:40px;">
             Frozen Column:
           </label>
-          <input type=text id="frozenColumn" style="width:60px;" value="-1">
+          <input type="text" id="frozenColumn" style="width:60px;" value="2">
           <button id="setFrozenColumn">Set</button>
           <br />
 
+          <label for="frozenRow" style="width:160px;float:left;padding-left:40px;">
+            Frozen Row:
+          </label>
+          <input type="text" id="frozenRow" style="width:60px;" value="5">
+          <button id="setFrozenRow">Set</button>
+
           <h2> Demonstrates: </h2>
           <ul>
-            <li>auto-sizing header height to fit multi-line column titles</li>
-            <li>no clipping of header content when titles wrap to multiple lines</li>
-            <li>opt-in feature with <code>autoHeaderHeight</code> grid option (disabled by default)</li>
-            <li>works with both single-line and multi-line headers</li>
-            <li>dynamic recalculation on column resize</li>
-            <li>frozen column support with equalized left/right header heights</li>
-            <li>minimal configuration (just set <code>autoHeaderHeight:true</code>)</li>
+            <li>automatic header height calculation</li>
+            <li>enabling and disabling <code>autoHeaderHeight</code></li>
+            <li>frozen column support</li>
+            <li>frozen row support</li>
+            <li>combined frozen column and frozen row layouts</li>
+            <li>equal left/right header heights</li>
+            <li>header recalculation after column resizing</li>
+            <li>grid remaining within its container</li>
           </ul>
           <h2>View Source:</h2>
           <ul>
@@ -90,10 +101,6 @@
   <script src="../dist/browser/slick.formatters.js"></script>
 
   <script>
-    document.addEventListener("DOMContentLoaded", function () {
-      document.querySelector('#frozenColumn').value = options.frozenColumn;
-    });
-
     var grid;
     var columns = [
       { id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 30, cannotTriggerInsert: true, resizable: false, unselectable: true },
@@ -103,21 +110,19 @@
       { id: "start", name: "Start", field: "start", width: 80 },
       { id: "finish", name: "Finish", field: "finish", width: 80 },
       { id: "effort-driven", name: "Effort Driven", field: "effortDriven", width: 100, minWidth: 60 },
-      { id: "priority", name: "Priority", field: "priority", width: 80 },
-      { id: "status", name: "Status", field: "status" },
-      { id: "completed", name: "Completed", field: "completed" }
+      { id: "status", name: "Status", field: "status" }
     ];
 
     var options = {
       enableCellNavigation: true,
       enableColumnReorder: false,
       autoHeaderHeight: true,
-      frozenColumn: -1
+      frozenColumn: 2,
+      frozenRow: 5
     };
 
     var data = [];
     var statuses = ['Not Started', 'In Progress', 'Review', 'Completed', 'On Hold'];
-    var priorities = ['Low', 'Medium', 'High', 'Critical'];
 
     for (var i = 0; i < 1000; i++) {
       var startDate = new Date(2025, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1);
@@ -132,9 +137,7 @@
         start: startDate.toLocaleDateString('en-US'),
         finish: finishDate.toLocaleDateString('en-US'),
         effortDriven: (i % 5 == 0),
-        priority: priorities[Math.floor(Math.random() * priorities.length)],
-        status: statuses[Math.floor(Math.random() * statuses.length)],
-        completed: (i % 3 == 0) ? 'Yes' : 'No'
+        status: statuses[Math.floor(Math.random() * statuses.length)]
       };
     }
 
@@ -153,6 +156,16 @@
       }
 
       grid.setOptions({ 'frozenColumn': val });
+    });
+
+    document.querySelector('#setFrozenRow').addEventListener('click', function () {
+      var val = -1;
+
+      if (document.querySelector('#frozenRow').value != '') {
+        val = parseInt(document.querySelector('#frozenRow').value);
+      }
+
+      grid.setOptions({ 'frozenRow': val });
     });
   </script>
 </body>

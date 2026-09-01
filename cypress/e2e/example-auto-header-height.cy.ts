@@ -51,11 +51,13 @@ describe('SlickGrid Auto Header Height', () => {
         });
     });
 
-    describe('Frozen Columns Support', () => {
-        it('should equalize left and right header pane heights when frozen columns exist', () => {
-            // Set frozen column to 3
-            cy.get('#frozenColumn').clear().type('3');
+    describe('Frozen Columns & Rows Support', () => {
+        it('should equalize left and right header pane heights when frozen columns & rows exist', () => {
+            cy.get('#frozenColumn').clear().type('2');
             cy.get('#setFrozenColumn').click();
+
+            cy.get('#frozenRow').clear().type('5');
+            cy.get('#setFrozenRow').click();
 
             cy.get('.slick-header-left .slick-header-columns').then(($left) => {
                 cy.get('.slick-header-right .slick-header-columns').should(($right) => {
@@ -68,9 +70,28 @@ describe('SlickGrid Auto Header Height', () => {
             });
         });
 
-        it('should not overflow container when frozen columns are active', () => {
-            cy.get('#frozenColumn').clear().type('3');
+        it('should maintain correct header and container dimensions with frozen rows & columns', () => {
+            cy.get('#frozenColumn').clear().type('2');
             cy.get('#setFrozenColumn').click();
+
+            cy.get('#frozenRow').clear().type('5');
+            cy.get('#setFrozenRow').click();
+
+            cy.get('.slick-header-columns').should(($header) => {
+                expect($header[0].offsetHeight).to.be.greaterThan(0);
+            });
+
+            cy.get('#myGrid').should(($grid) => {
+                expect($grid[0].scrollHeight).to.be.lte($grid[0].clientHeight + 1);
+            });
+        });
+
+        it('should not overflow container when frozen columns & rows are active', () => {
+            cy.get('#frozenColumn').clear().type('2');
+            cy.get('#setFrozenColumn').click();
+
+            cy.get('#frozenRow').clear().type('5');
+            cy.get('#setFrozenRow').click();
 
             cy.get('#myGrid').should(($grid) => {
                 const containerHeight = $grid[0].clientHeight;
@@ -80,9 +101,12 @@ describe('SlickGrid Auto Header Height', () => {
             });
         });
 
-        it('should maintain equal header heights after column resize with frozen columns', () => {
-            cy.get('#frozenColumn').clear().type('3');
+        it('should maintain equal header heights after column resize with frozen columns & rows', () => {
+            cy.get('#frozenColumn').clear().type('2');
             cy.get('#setFrozenColumn').click();
+
+            cy.get('#frozenRow').clear().type('5');
+            cy.get('#setFrozenRow').click();
 
             cy.get('.slick-header-right .slick-header-columns')
                 .should('exist');
@@ -176,17 +200,16 @@ describe('SlickGrid Auto Header Height', () => {
         });
 
         it('should maintain grid functionality with autoHeaderHeight enabled', () => {
-            // Click on a cell should work
-            cy.get('.slick-row:first-child .slick-cell:first-child').click();
+            const cellSelector = '.slick-row:first-child .slick-cell:first-child';
 
-            // Cell should be selected (has 'active' class)
-            cy.get('.slick-row:first-child .slick-cell:first-child').should('have.class', 'active');
+            // Frozen panes can result in multiple matching cells.
+            cy.get(cellSelector).first().click().should('have.class', 'active');
 
-            // Scroll should still work
-            cy.get('.slick-viewport').first().scrollTo('bottom');
-            cy.get('.slick-viewport').should(($el) => {
-                const scrollTop = $el[0].scrollTop;
-                expect(scrollTop).to.be.greaterThan(0);
+            // Scroll should still work.
+            cy.get('.slick-viewport-bottom').eq(1).scrollTo('bottom');
+
+            cy.get('.slick-viewport-bottom').eq(1).should(($el) => {
+                expect($el[0].scrollTop).to.be.greaterThan(0);
             });
         });
     });

@@ -278,15 +278,17 @@ classes should alter those!
   .slick-header-columns,
   .slick-header-columns-left,
   .slick-header-columns-right {
-    height: var(--slick-auto-header-height, auto);
+    height: var(--slick-auto-header-height);
     white-space: normal;
     overflow: visible;
   }
 
   .slick-header-column {
-    height: calc(var(--slick-auto-header-height, auto) - 8px);
+    height: auto;
+    height: calc(var(--slick-auto-header-height) - 8px);
+    overflow: visible;
   }
-  
+
   .slick-column-name {
     white-space: pre-wrap;
     overflow: visible;

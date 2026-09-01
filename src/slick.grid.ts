@@ -2000,6 +2000,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const headers = [this._headerScrollerL, this._headerScrollerR]
       .filter((header): header is HTMLDivElement => !!header);
 
+    const currentHeight = parseFloat(
+      this._headerScrollerL.style.getPropertyValue('--slick-auto-header-height') || '0'
+    );
+
     // Remove previously calculated values so CSS can determine the natural height.
     this._clearAutoHeaderHeightStyles(headers);
 
@@ -2011,8 +2015,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     this._setAutoHeaderHeightStyles(maxHeight, headers);
 
-    // Recalculate viewport and pane dimensions from the current header height.
-    this.resizeCanvas();
+    // Only resize if the height actually changed
+    if (Math.abs(maxHeight - currentHeight) > 0.5) {
+      this.resizeCanvas();
+    }
   }
 
   /**
@@ -3335,6 +3341,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   reRenderColumns(reRender?: boolean) {
     this.applyColumnHeaderWidths();
     this.updateCanvasWidth(true);
+
+    if (this._options.autoHeaderHeight) {
+      this.recalculateHeaderHeight();
+    }
 
     this.trigger(this.onAutosizeColumns, { columns: this.columns });
 

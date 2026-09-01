@@ -1,0 +1,242 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <title>Auto Header Height - Autosize Modes</title>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css" />
+
+  <style>
+    .controls-panel { width: 280px; padding: 10px 15px; vertical-align: top; }
+    .control-row { margin-bottom: 8px; }
+    .control-row label { display: inline-block; min-width: 140px; }
+    .control-row select { min-width: 110px; }
+  </style>
+</head>
+
+<body>
+  <h2 class="title">Example - Auto Header Height &amp; Column Autosizing</h2>
+  <div style="position:relative">
+    <table width="100%">
+      <tr>
+        <td valign="top">
+          <div id="myGrid" class="slick-container" style="width:700px;height:450px;">
+          </div>
+        </td>
+
+        <td class="options-panel controls-panel" style="left: 900px;">
+          <h2>Options</h2>
+          <hr />
+
+          <div class="control-row">
+            <label for="autoHeaderHeight">
+              Auto Header Height:
+            </label>
+            <input type="checkbox" id="autoHeaderHeight" checked>
+          </div>
+
+          <div class="control-row">
+            <label for="autosizeMode">Autosize Mode:</label>
+            <select id="autosizeMode">
+              <option value="NOA">None</option>
+              <option value="LOF">LegacyOff</option>
+              <option value="LFF">LegacyForceFit</option>
+              <option value="IGV" selected>IgnoreViewport</option>
+              <option value="FCV">FitColsToViewport</option>
+              <option value="FVC">FitViewportToCols</option>
+            </select>
+          </div>
+
+          <div class="control-row">
+            <label for="ignoreHeaderText">Ignore Header Text:</label>
+            <input type="checkbox" id="ignoreHeaderText" checked>
+          </div>
+
+          <div class="control-row">
+            <label for="gridWidth" class="label">Grid Width:</label>
+            <input type="range" id="gridWidth" min="550" max="850" value="700" step="50" style="width: 65px;">
+            <span id="gridWidthValue">700px</span>
+          </div>
+          <p>
+            Change the grid width to test container resizing.
+            <code>LegacyForceFit</code> automatically responds through the existing
+            SlickGrid resize pipeline. Other autosize modes can be recalculated with
+            <strong>Apply</strong>.
+          </p>
+
+          <button id="applyOptions">Apply</button>
+          <button id="resetOptions">Reset</button>
+
+          <h2>Demonstrates</h2>
+          <ul>
+            <li>Header text participating in autosizing</li>
+            <li><code>ignoreHeaderText</code></li>
+            <li>All column autosizing algorithms</li>
+            <li>Header height recalculation after column width changes</li>
+            <li>Automatic header height for multi-line headers</li>
+            <li>HTML and DOM header content</li>
+            <li>Naturally wrapping long headers</li>
+            <li>Header wrapping when the grid width changes</li>
+            <li>Existing container resize behavior with <code>LegacyForceFit</code></li>
+          </ul>
+
+          <h2>View Source</h2>
+          <ul>
+            <li>
+              <a href="https://github.com/6pac/SlickGrid/blob/master/examples/example-auto-header-height-autosize.html"
+                target="_sourcewindow"> View the source on Github </a>
+            </li>
+          </ul>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+  <script src="sortable-cdn-fallback.js"></script>
+  <script src="../dist/browser/slick.core.js"></script>
+  <script src="../dist/browser/slick.interactions.js"></script>
+  <script src="../dist/browser/slick.grid.js"></script>
+  <script src="../dist/browser/slick.formatters.js"></script>
+
+  <script>
+    document.addEventListener("DOMContentLoaded", function () {
+
+      var grid;
+
+      var domHeader = document.createElement('p');
+      domHeader.style.margin = '0';
+      domHeader.innerHTML = 'Project<br><strong style="color:red;">Information</strong>';
+
+      var columns = [
+        { id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 30, cannotTriggerInsert: true, resizable: false, unselectable: true },
+        { id: 'html', name: 'Customer<br><strong style="color:red;">Information</strong>', field: 'customer', minWidth: 85 },
+        { id: 'ignore', name: 'Header Text Should Be Ignored', field: 'value', minWidth: 110, autoSize: { ignoreHeaderText: true } },
+        { id: 'dom', name: domHeader, field: 'project', minWidth: 85 },
+        { id: 'long', name: 'Long Header With Several Words', field: 'description', width: 130, minWidth: 70 },
+      ];
+
+      var initialColumnWidths = columns.map(function (column) { return column.width; });
+      updateIgnoreHeaderTextState();
+
+      var data = [];
+      for (var i = 0; i < 999; i++) {
+        data.push({
+          num: (i + 1),
+          customer: 'Customer ' + (i + 1),
+          value: 'Value with information ' + (i + 1),
+          project: 'Project ' + (i + 1),
+          description: 'Description ' + (i + 1) + ' with useful information'
+        });
+      }
+
+      var initialOptions = {
+        enableCellNavigation: true,
+        enableColumnReorder: false,
+        autoHeaderHeight: true,
+        autosizeColsMode: Slick.GridAutosizeColsMode.IgnoreViewport
+      };
+
+      grid = new Slick.Grid('#myGrid', data, columns, initialOptions);
+      grid.autosizeColumns();
+
+      // Apply
+      document.querySelector('#applyOptions').addEventListener('click', function () {
+
+        var autoHeaderHeight = document.querySelector('#autoHeaderHeight').checked;
+        var autosizeMode = document.querySelector('#autosizeMode').value;
+        var ignoreHeaderText = document.querySelector('#ignoreHeaderText').checked;
+
+
+        columns.forEach(function (column, index) {
+          if (autosizeMode !== Slick.GridAutosizeColsMode.LegacyForceFit) {
+            column.width = initialColumnWidths[index];
+          }
+
+          column.autoSize = { ignoreHeaderText: ignoreHeaderText };
+        });
+
+        grid.setOptions({
+          autoHeaderHeight: autoHeaderHeight,
+          autosizeColsMode: autosizeMode
+        });
+
+        grid.setColumns(columns);
+        grid.autosizeColumns();
+
+        setTimeout(function () {
+          var gridElement = document.querySelector('#myGrid');
+          var newWidth = parseInt(gridElement.style.width) || gridElement.clientWidth;
+
+          document.querySelector('#gridWidthValue').textContent = newWidth + 'px';
+          document.querySelector('#gridWidth').value = newWidth;
+        }, 50);
+
+      });
+
+      // Reset
+      document.querySelector('#resetOptions').addEventListener('click', function () {
+
+        columns.forEach(function (column, index) {
+          column.width = initialColumnWidths[index];
+          column.autoSize = { ignoreHeaderText: true };
+        });
+
+        var defaultWidth = 700;
+        document.querySelector('#gridWidthValue').textContent = defaultWidth + 'px';
+        document.querySelector('#myGrid').style.width = defaultWidth + 'px';
+        document.querySelector('#gridWidth').value = defaultWidth;
+
+        // Set default controls
+        document.querySelector('#autoHeaderHeight').checked = initialOptions.autoHeaderHeight;
+        document.querySelector('#autosizeMode').value = initialOptions.autosizeColsMode;
+        document.querySelector('#ignoreHeaderText').checked = true;
+        updateIgnoreHeaderTextState();
+
+        grid.setOptions({
+          autoHeaderHeight: initialOptions.autoHeaderHeight,
+          autosizeColsMode: initialOptions.autosizeColsMode
+        });
+
+        grid.setColumns(columns);
+        grid.autosizeColumns();
+      });
+
+      document.querySelector('#gridWidth').addEventListener('input', function () {
+        var width = parseInt(this.value);
+
+        document.querySelector('#gridWidthValue').textContent = width + 'px';
+        var gridElement = document.querySelector('#myGrid');
+        gridElement.style.width = width + 'px';
+
+        var autosizeMode = document.querySelector('#autosizeMode').value;
+
+        // LegacyForceFit automatically responds to the container resize through SlickGrid's existing resizeCanvas() pipeline.
+        if (autosizeMode === Slick.GridAutosizeColsMode.LegacyForceFit) {
+          gridElement.dispatchEvent(new Event('resize'));
+        }
+      });
+
+      function updateIgnoreHeaderTextState() {
+        var autosizeMode = document.querySelector('#autosizeMode').value;
+        var ignoreHeaderText = document.querySelector('#ignoreHeaderText');
+
+        var supported =
+          autosizeMode !== Slick.GridAutosizeColsMode.None &&
+          autosizeMode !== Slick.GridAutosizeColsMode.LegacyOff &&
+          autosizeMode !== Slick.GridAutosizeColsMode.LegacyForceFit;
+
+        ignoreHeaderText.disabled = !supported;
+      }
+
+      document.querySelector('#autosizeMode').addEventListener('change', function () {
+        updateIgnoreHeaderTextState();
+      });
+    });
+  </script>
+</body>
+
+</html>

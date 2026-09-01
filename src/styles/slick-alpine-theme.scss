@@ -612,16 +612,18 @@
   .slick-header-columns,
   .slick-header-columns-left,
   .slick-header-columns-right {
-    height: var(--slick-auto-header-height, v.$alpine-auto-header-height);
+    height: var(--slick-auto-header-height);
     white-space: normal;
     overflow: visible;
   }
 
   .slick-header-column {
+    height: auto;
     height: calc(
-      var(--slick-auto-header-height, v.$alpine-auto-header-height) -
+      var(--slick-auto-header-height) -
       var(--alpine-auto-header-height-extra, v.$alpine-auto-header-height-extra)
     );
+    overflow: visible;
   }
 
   .slick-column-name {
