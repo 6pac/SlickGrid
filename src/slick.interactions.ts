@@ -84,6 +84,13 @@ export function Draggable(options: DraggableOption) {
   }
 
   function userPressed(event: MouseEvent | TouchEvent | KeyboardEvent) {
+    // Dragging is a primary-button action; allow secondary clicks to continue
+    // to context-menu handling without starting a drag.
+    // Keep synthetic mousedown CustomEvents compatible (they have no `button`).
+    if (event.type === 'mousedown' && 'button' in event && (event as MouseEvent).button !== 0) {
+      return;
+    }
+
     if (!preventDrag(event)) {
       element = event.target as HTMLElement;
       const targetEvent: MouseEvent | Touch = (event as TouchEvent)?.touches?.[0] ?? event;
