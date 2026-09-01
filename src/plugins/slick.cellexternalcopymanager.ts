@@ -400,40 +400,49 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
           this.onCopyCells.notify({ ranges });
 
           const columns = this._grid.getColumns();
+          const fromRow = Math.min(...ranges.map((range) => range.fromRow));
+          const fromCell = Math.min(...ranges.map((range) => range.fromCell));
+          const toRow = Math.max(...ranges.map((range) => range.toRow));
+          const toCell = Math.max(...ranges.map((range) => range.toCell));
           let clipText = '';
 
-          for (let rg = 0; rg < ranges.length; rg++) {
-            const range = ranges[rg];
-            const clipTextRows: string[] = [];
-            for (let i = range.fromRow; i < range.toRow + 1; i++) {
-              const clipTextCells: string[] = [];
-              const dt = this._grid.getDataItem(i);
-
-              if (clipTextRows.length === 0 && this._options.includeHeaderWhenCopying) {
-                const clipTextHeaders: string[] = [];
-                for (let j = range.fromCell; j < range.toCell + 1; j++) {
-                  const colName: string = columns[j].name instanceof HTMLElement
-                    ? (columns[j].name as HTMLElement).innerHTML
-                    : columns[j].name as string;
-                  if (colName.length > 0 && !columns[j].hidden) {
-                    clipTextHeaders.push(this.getHeaderValueForColumn(columns[j]) || '');
-                  }
-                }
-                clipTextRows.push(clipTextHeaders.join('\t'));
-              }
-
-              for (let j = range.fromCell; j < range.toCell + 1; j++) {
-                const colName: string = columns[j].name instanceof HTMLElement
-                  ? (columns[j].name as HTMLElement).innerHTML
-                  : columns[j].name as string;
-                if (colName.length > 0 && !columns[j].hidden) {
-                  clipTextCells.push(this.getDataItemValueForColumn(dt, columns[j], e));
+          const clipTextRows: string[] = [];
+          if (this._options.includeHeaderWhenCopying) {
+            const clipTextHeaders: string[] = [];
+            for (let j = fromCell; j <= toCell; j++) {
+              const column = columns[j];
+              const isSelectedColumn = ranges.some((range) => j >= range.fromCell && j <= range.toCell);
+              if (column) {
+                const colName: string = column.name instanceof HTMLElement
+                  ? (column.name as HTMLElement).innerHTML
+                  : column.name as string;
+                if (colName.length > 0 && !column.hidden) {
+                  clipTextHeaders.push(isSelectedColumn ? this.getHeaderValueForColumn(column) || '' : '');
                 }
               }
-              clipTextRows.push(clipTextCells.join('\t'));
             }
-            clipText += clipTextRows.join('\r\n') + '\r\n';
+            clipTextRows.push(clipTextHeaders.join('\t'));
           }
+
+          for (let i = fromRow; i <= toRow; i++) {
+            const clipTextCells: string[] = [];
+            const dt = this._grid.getDataItem(i);
+            for (let j = fromCell; j <= toCell; j++) {
+              const column = columns[j];
+              if (column) {
+                const colName: string = column.name instanceof HTMLElement
+                  ? (column.name as HTMLElement).innerHTML
+                  : column.name as string;
+                if (colName.length > 0 && !column.hidden) {
+                  clipTextCells.push(
+                    ranges.some((range) => range.contains(i, j)) ? this.getDataItemValueForColumn(dt, column, e) : ''
+                  );
+                }
+              }
+            }
+            clipTextRows.push(clipTextCells.join('\t'));
+          }
+          clipText += clipTextRows.join('\r\n') + '\r\n';
 
           if ((window as any).clipboardData) {
             (window as any).clipboardData.setData('Text', clipText);

@@ -60,7 +60,7 @@ describe('Example - Excel-compatible spreadsheet and Cell Selection', { retries:
       cy.get('#myGrid [data-row=99] > .slick-cell.l26.r26.active').should('have.length', 1);
     });
 
-    it('should ignore pasted cells outside grid column bounds when clipboard data exceeds available grid columns', () => {
+  it('should ignore pasted cells outside grid column bounds when clipboard data exceeds available grid columns', () => {
       cy.get('#myGrid .slick-viewport-top.slick-viewport-left').scrollTo(200, 0).wait(10);
       cy.get('#myGrid [data-row=0] .slick-cell.l22.r22').click();
 
@@ -76,7 +76,32 @@ describe('Example - Excel-compatible spreadsheet and Cell Selection', { retries:
       });
 
       cy.get('#myGrid [data-row=0] .slick-cell.l22.r22').should('have.text', 'p1');
-      cy.get('#myGrid [data-row=0] .slick-cell.l26.r26').should('have.text', 'p5');
+    cy.get('#myGrid [data-row=0] .slick-cell.l26.r26').should('have.text', 'p5');
+  });
+
+  it('should preserve gaps when copying multiple non-contiguous ranges', () => {
+    cy.window().then((win: any) => {
+      const previousClipboardData = win.clipboardData;
+      let copiedText = '';
+      Object.defineProperty(win, 'clipboardData', {
+        configurable: true,
+        value: {
+          setData: (_format: string, text: string) => { copiedText = text; }
+        }
+      });
+
+    const selectionModel = win.grid.getSelectionModel();
+    selectionModel.setSelectedRanges([
+      new win.Slick.Range(1, 1, 1, 2),
+      new win.Slick.Range(2, 3, 2, 3)
+    ]);
+      const copyEvent = new win.KeyboardEvent('keydown', { key: 'c', code: 'KeyC', ctrlKey: true, bubbles: true });
+      Object.defineProperty(copyEvent, 'which', { value: 67 });
+      win.grid.getCanvasNode().dispatchEvent(copyEvent);
+
+    expect(copiedText).to.eq('1\t2\t\r\n\t\t4\r\n');
+      Object.defineProperty(win, 'clipboardData', { configurable: true, value: previousClipboardData });
     });
   });
+});
 });

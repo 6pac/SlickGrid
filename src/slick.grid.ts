@@ -977,25 +977,36 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         this._bindingEventService.bind(element, 'mouseout', this.handleCellMouseOut.bind(this) as EventListener);
       });
 
-      if (Draggable) {
-        this.slickDraggableInstance = Draggable({
-          containerElement: this._container,
-          allowDragFrom: `div.slick-cell, div.${this.dragReplaceEl.cssClass}`,
-          dragFromClassDetectArr: [{ tag: 'dragReplaceHandle', id: this.dragReplaceEl.id }],
-          // the slick cell parent must always contain `.dnd` and/or `.cell-reorder` class to be identified as draggable
-          allowDragFromClosest: 'div.slick-cell.dnd, div.slick-cell.cell-reorder',
-          preventDragFromKeys: this._options.preventDragFromKeys,
-          onDragInit: this.handleDragInit.bind(this),
-          onDragStart: this.handleDragStart.bind(this),
-          onDrag: this.handleDrag.bind(this),
-          onDragEnd: this.handleDragEnd.bind(this)
-        });
-      }
+      this.createDraggable();
 
       if (!this._options.suppressCssChangesOnHiddenInit) {
         this.restoreCssFromHiddenInit();
       }
     }
+  }
+
+  /** Create or recreate the cell drag interaction using the current selection model options. */
+  protected createDraggable() {
+    if (!Draggable) {
+      return;
+    }
+
+    this.slickDraggableInstance?.destroy();
+    const preventDragFromKeys = this.getSelectionModel()?.getOptions()?.enableMultiSelection === true
+      ? this._options.preventDragFromKeys?.filter((key) => key !== 'ctrlKey' && key !== 'metaKey')
+      : this._options.preventDragFromKeys;
+    this.slickDraggableInstance = Draggable({
+      containerElement: this._container,
+      allowDragFrom: `div.slick-cell, div.${this.dragReplaceEl.cssClass}`,
+      dragFromClassDetectArr: [{ tag: 'dragReplaceHandle', id: this.dragReplaceEl.id }],
+      // the slick cell parent must always contain `.dnd` and/or `.cell-reorder` class to be identified as draggable
+      allowDragFromClosest: 'div.slick-cell.dnd, div.slick-cell.cell-reorder',
+      preventDragFromKeys,
+      onDragInit: this.handleDragInit.bind(this),
+      onDragStart: this.handleDragStart.bind(this),
+      onDrag: this.handleDrag.bind(this),
+      onDragEnd: this.handleDragEnd.bind(this)
+    });
   }
 
   /**
@@ -1494,6 +1505,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (this.selectionModel) {
       this.selectionModel.init(this as unknown as SlickGridModel);
       this.selectionModel.onSelectedRangesChanged.subscribe(this.handleSelectedRangesChanged.bind(this));
+    }
+
+    // The grid normally finishes initialization from its constructor, before
+    // applications assign a selection model. Recreate the draggable interaction
+    // so modifier-drag selection options are applied to the initialized grid.
+    if (this.initialized) {
+      this.createDraggable();
     }
   }
 
@@ -4081,16 +4099,34 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const prevSelectedRanges = this.selectedRanges.slice(0);
     this.selectedRanges = ranges;
 
-    if (selectionMode === CellSelectionMode.Replace
-      && prevSelectedRanges && prevSelectedRanges.length === 1
-      && this.selectedRanges && this.selectedRanges.length === 1) {
-      const prevSelectedRange = prevSelectedRanges[0];
-      const selectedRange = this.selectedRanges[0];
+    if (selectionMode === CellSelectionMode.Replace && prevSelectedRanges.length === this.selectedRanges.length && prevSelectedRanges.length > 0) {
+      let changedRangeIndex = -1;
+      for (let i = 0; i < this.selectedRanges.length; i++) {
+        const previousRange = prevSelectedRanges[i];
+        const selectedRange = this.selectedRanges[i];
+        if (
+          previousRange.fromRow !== selectedRange.fromRow ||
+          previousRange.fromCell !== selectedRange.fromCell ||
+          previousRange.toRow !== selectedRange.toRow ||
+          previousRange.toCell !== selectedRange.toCell
+        ) {
+          if (changedRangeIndex !== -1) {
+            changedRangeIndex = -1;
+            break;
+          }
+          changedRangeIndex = i;
+        }
+      }
 
-      // check range has expanded
-      if (SelectionUtils.copyRangeIsLarger(prevSelectedRange, selectedRange)) {
-        this.trigger(this.onDragReplaceCells, { prevSelectedRange, selectedRange });
-        this.invalidate();
+      if (changedRangeIndex !== -1) {
+        const prevSelectedRange = prevSelectedRanges[changedRangeIndex];
+        const selectedRange = this.selectedRanges[changedRangeIndex];
+
+        // check range has expanded
+        if (SelectionUtils.copyRangeIsLarger(prevSelectedRange, selectedRange)) {
+          this.trigger(this.onDragReplaceCells, { prevSelectedRange, selectedRange });
+          this.invalidate();
+        }
       }
     }
 
@@ -4114,8 +4150,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           }
         }
       }
-      if (this.selectionBottomRow < ranges[i].toRow) { this.selectionBottomRow = ranges[i].toRow; }
-      if (this.selectionRightCell < ranges[i].toCell) { this.selectionRightCell = ranges[i].toCell; }
+    }
+
+    const activeRange = ranges[ranges.length - 1];
+    if (activeRange) {
+      this.selectionBottomRow = activeRange.toRow;
+      this.selectionRightCell = activeRange.toCell;
     }
 
     this.setCellCssStyles(this._options.selectedCellCssClass || '', hash);

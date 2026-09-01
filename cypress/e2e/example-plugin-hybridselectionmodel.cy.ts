@@ -79,4 +79,74 @@ describe('Example - Context Menu Plugin & Hybrid Selection Mode', () => {
     cy.get('#myGrid .slick-row[data-row="6"] .slick-cell.l0.r0').click({ shiftKey: true }).should('have.class', 'selected');
     cy.get('#myGrid .slick-cell.selected').should('have.length', 7 * 3);
   });
+
+  it('should add and toggle non-contiguous cell ranges with Ctrl-click', () => {
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-plugin-hybridselectionmodel.html`);
+    cy.get('#myGrid .slick-row[data-row="1"] .slick-cell.l1.r1').click();
+    cy.get('#myGrid .slick-row[data-row="3"] .slick-cell.l1.r1').click({ ctrlKey: true });
+
+    cy.get('#myGrid .slick-row[data-row="1"] .slick-cell.l1.r1').should('have.class', 'selected');
+    cy.get('#myGrid .slick-row[data-row="3"] .slick-cell.l1.r1').should('have.class', 'selected');
+    cy.get('#myGrid .slick-row[data-row="2"] .slick-cell.l1.r1').should('not.have.class', 'selected');
+    cy.get('#myGrid .slick-cell.selected').should('have.length', 2);
+
+    cy.get('#myGrid .slick-row[data-row="1"] .slick-cell.l1.r1').click({ ctrlKey: true });
+    cy.get('#myGrid .slick-row[data-row="1"] .slick-cell.l1.r1').should('not.have.class', 'selected');
+    cy.get('#myGrid .slick-row[data-row="3"] .slick-cell.l1.r1').should('have.class', 'selected');
+    cy.get('#myGrid .slick-cell.selected').should('have.length', 1);
+  });
+
+  it('should split a rectangular cell range when Ctrl-clicking an interior cell', () => {
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-plugin-hybridselectionmodel.html`);
+    cy.get('#myGrid .slick-row[data-row="1"] .slick-cell.l1.r1').click();
+    cy.get('#myGrid .slick-row[data-row="1"] .slick-cell.l1.r1')
+      .find('.slick-drag-replace-handle')
+      .trigger('mousedown', { which: 1, force: true });
+    cy.get('#myGrid .slick-row[data-row="3"] .slick-cell.l3.r3')
+      .trigger('mousemove', 'bottomRight')
+      .trigger('mouseup', 'bottomRight', { which: 1, force: true });
+    cy.get('#myGrid .slick-cell.selected').should('have.length', 9);
+
+    cy.get('#myGrid .slick-row[data-row="2"] .slick-cell.l2.r2').click({ ctrlKey: true });
+    cy.get('#myGrid .slick-row[data-row="2"] .slick-cell.l2.r2').should('not.have.class', 'selected');
+    cy.get('#myGrid .slick-cell.selected').should('have.length', 8);
+    cy.window().then((win: any) => {
+      expect(win.grid.getSelectionModel().getSelectedRanges()).to.have.length(4);
+    });
+  });
+
+  it('should add a row range with Ctrl-drag without accumulating live preview ranges', () => {
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-plugin-hybridselectionmodel.html`);
+    cy.get('#myGrid .slick-row[data-row="1"] .slick-cell.l0.r0').click();
+    cy.get('#myGrid .slick-row[data-row="3"] .slick-cell.l0.r0').as('secondRowCell');
+    cy.get('@secondRowCell').trigger('mousedown', { which: 1, ctrlKey: true, force: true });
+    cy.get('@secondRowCell').trigger('mousemove', 30, 10, { ctrlKey: true, force: true });
+    cy.get('@secondRowCell').trigger('mousemove', 30, 52, { ctrlKey: true, force: true });
+
+    cy.window().then((win: any) => {
+      const ranges = win.grid.getSelectionModel().getSelectedRanges();
+      expect(ranges).to.have.length(2);
+      expect(ranges[0]).to.include({ fromRow: 1, toRow: 1 });
+      expect(ranges[1]).to.include({ fromRow: 3, toRow: 4 });
+    });
+
+    cy.dragEnd('#myGrid');
+
+    cy.get('#myGrid .slick-row[data-row="1"] .slick-cell.selected').should('have.length', 7);
+    cy.get('#myGrid .slick-row[data-row="2"] .slick-cell.selected').should('have.length', 0);
+    cy.get('#myGrid .slick-row[data-row="3"] .slick-cell.selected').should('have.length', 7);
+    cy.get('#myGrid .slick-row[data-row="4"] .slick-cell.selected').should('have.length', 7);
+    cy.get('#myGrid .slick-cell.selected').should('have.length', 7 * 3);
+  });
+
+  it('should synchronize the selected cell when selectActiveRow is disabled in cell mode', () => {
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-plugin-hybridselectionmodel.html`);
+    cy.window().then((win: any) => {
+      const selectionModel = win.grid.getSelectionModel();
+      selectionModel.setOptions({ selectionType: 'cell', selectActiveRow: false, selectActiveCell: true });
+      win.grid.setActiveCell(5, 1, false, false);
+      expect(selectionModel.getSelectedRanges()).to.have.length(1);
+      expect(selectionModel.getSelectedRanges()[0]).to.include({ fromRow: 5, fromCell: 1, toRow: 5, toCell: 1 });
+    });
+  });
 });
