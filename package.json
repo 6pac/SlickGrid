@@ -73,7 +73,7 @@
     "conventional-changelog": "^7.2.1",
     "conventional-changelog-angular": "^8.3.1",
     "cssnano": "^9.0.2",
-    "cypress": "^16.0.0",
+    "cypress": "^15.21.1",
     "cypress-real-events": "^1.15.0",
     "dotenv": "^17.4.2",
     "esbuild": "^0.28.2",
