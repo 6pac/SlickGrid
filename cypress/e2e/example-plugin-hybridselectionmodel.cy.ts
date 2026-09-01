@@ -32,6 +32,21 @@ describe('Example - Context Menu Plugin & Hybrid Selection Mode', () => {
     cy.get('#myGrid .slick-cell.selected').should('have.length', 4);
   });
 
+  it('should preserve cell selection when dragging with the secondary mouse button', () => {
+    cy.get('#myGrid .slick-cell.selected').should('have.length', 4);
+
+    cy.get('#myGrid .slick-row[data-row="1"] .slick-cell.l1.r1').trigger('mousedown', {
+      button: 2,
+      which: 3,
+      force: true,
+    });
+    cy.get('#myGrid .slick-row[data-row="3"] .slick-cell.l3.r3')
+      .trigger('mousemove', 'bottomRight')
+      .trigger('mouseup', 'bottomRight', { button: 2, which: 3, force: true });
+
+    cy.get('#myGrid .slick-cell.selected').should('have.length', 4);
+  });
+
   it('should be able to expand the cell selections further to the right', () => {
     cy.get('#myGrid .slick-cell.selected').should('have.length', 4);
     cy.get('#myGrid .slick-row[data-row="2"] .slick-cell.l2.r2')
