@@ -130,6 +130,19 @@ describe('Example - Context Menu Plugin & Hybrid Selection Mode', () => {
     });
   });
 
+  it('should select a rectangular cell range when Shift-clicking another cell', () => {
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-plugin-hybridselectionmodel.html`);
+    cy.get('#myGrid .slick-row[data-row="1"] .slick-cell.l2.r2').click();
+    cy.get('#myGrid .slick-row[data-row="3"] .slick-cell.l4.r4').click({ shiftKey: true });
+
+    cy.get('#myGrid .slick-cell.selected').should('have.length', 9);
+    cy.window().then((win: any) => {
+      const ranges = win.grid.getSelectionModel().getSelectedRanges();
+      expect(ranges).to.have.length(1);
+      expect(ranges[0]).to.include({ fromRow: 1, fromCell: 2, toRow: 3, toCell: 4 });
+    });
+  });
+
   it('should add a row range with Ctrl-drag without accumulating live preview ranges', () => {
     cy.visit(`${Cypress.config('baseUrl')}/examples/example-plugin-hybridselectionmodel.html`);
     cy.get('#myGrid .slick-row[data-row="1"] .slick-cell.l0.r0').click();
