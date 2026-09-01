@@ -2010,7 +2010,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const maxHeight = Math.max(...headers.map(header => header.getBoundingClientRect().height));
 
     if (maxHeight > 0) {
-      this.setAutoHeaderHeightStyles(maxHeight, headers);
+      this._setAutoHeaderHeightStyles(maxHeight, headers);
 
       // A viewport resize is only necessary when the calculated height actually changed.
       if (Math.abs(maxHeight - currentHeight) > 0.5) {
