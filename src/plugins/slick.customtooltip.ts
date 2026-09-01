@@ -206,7 +206,7 @@ export class SlickCustomTooltip {
             return;
           }
 
-          const value = item.hasOwnProperty(columnDef.field) ? item[columnDef.field] : null;
+          const value = Object.prototype.hasOwnProperty.call(item, columnDef.field) ? item[columnDef.field] : null;
 
           if (this._cellTooltipOptions.useRegularTooltip || !this._cellTooltipOptions.formatter) {
             this.renderRegularTooltip(columnDef.formatter, cell, value, columnDef, item);

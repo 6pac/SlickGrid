@@ -209,7 +209,7 @@ export class SlickGridMenu {
 
   protected createGridMenu() {
     const gridMenuWidth = (this._gridMenuOptions?.menuWidth) || this._defaults.menuWidth;
-    if (this._gridOptions && this._gridOptions.hasOwnProperty('frozenColumn') && this._gridOptions.frozenColumn! >= 0) {
+    if (this._gridOptions && Object.prototype.hasOwnProperty.call(this._gridOptions, 'frozenColumn') && this._gridOptions.frozenColumn! >= 0) {
       this._headerElm = document.querySelector(`.${this._gridUid} .slick-header-right`);
     } else {
       this._headerElm = document.querySelector(`.${this._gridUid} .slick-header-left`);
