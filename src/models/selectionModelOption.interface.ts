@@ -24,6 +24,9 @@ export interface HybridSelectionModelOption {
   /** Defaults to False, should we select when dragging? */
   dragToSelect?: boolean;
 
+  /** Defaults to False, should Ctrl/Cmd interactions add or toggle multiple cell or row selection ranges? */
+  enableMultiSelection?: boolean;
+
   /**
    * Defaults to True, controls the visibility of the Excel-style cell selection drag handle.
    * Set to `false` to disable the handle, or to `'hover'` to show it only while hovering the selected cell.

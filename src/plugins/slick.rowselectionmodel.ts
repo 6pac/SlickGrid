@@ -98,6 +98,10 @@ export class SlickRowSelectionModel implements SelectionModel {
     return this._options;
   }
 
+  setOptions(options: Partial<RowSelectionModelOption>) {
+    this._options = Utils.extend(true, {}, this._options, options);
+  }
+
   protected wrapHandler(handler: (...args: any) => void) {
     return (...args: any) => {
       if (!this._inHandler) {
@@ -278,4 +282,3 @@ if (IIFE_ONLY && window.Slick) {
     }
   });
 }
-

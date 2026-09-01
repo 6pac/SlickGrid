@@ -19,8 +19,8 @@ export class SlickCellRangeSelector implements SlickPlugin {
   // public API
   pluginName = 'CellRangeSelector' as const;
   onBeforeCellRangeSelected = new SlickEvent<{ row: number; cell: number; }>('onBeforeCellRangeSelected');
-  onCellRangeSelected = new SlickEvent<{ range: SlickRange_; selectionMode: string; allowAutoEdit: boolean; }>('onCellRangeSelected');
-  onCellRangeSelecting = new SlickEvent<{ range: SlickRange_; selectionMode: string; allowAutoEdit: boolean; }>('onCellRangeSelecting');
+  onCellRangeSelected = new SlickEvent<{ range: SlickRange_; selectionMode: string; allowAutoEdit: boolean; addToSelection?: boolean; }>('onCellRangeSelected');
+  onCellRangeSelecting = new SlickEvent<{ range: SlickRange_; selectionMode: string; allowAutoEdit: boolean; addToSelection?: boolean; }>('onCellRangeSelecting');
 
   // --
   // protected props
@@ -36,6 +36,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
   protected _options: CellRangeSelectorOption;
   protected _selectionMode: string = CellSelectionMode.Select;
   protected _dragReplaceHandleActive = false;
+  protected _addToSelection = false;
   protected _dragReplaceHandleCell:  { row : number, cell: number } | null = null;
   protected _defaults = {
     autoScroll: true,
@@ -152,8 +153,12 @@ export class SlickCellRangeSelector implements SlickPlugin {
       }
     }
 
-      this._dragReplaceHandleActive = (dd.matchClassTag === 'dragReplaceHandle');
-      if (this._dragReplaceHandleActive) {
+    this._dragReplaceHandleActive = (dd.matchClassTag === 'dragReplaceHandle');
+    this._addToSelection =
+      !this._dragReplaceHandleActive &&
+      this._grid.getSelectionModel()?.getOptions()?.enableMultiSelection === true &&
+      (!!e.ctrlKey || !!e.metaKey);
+    if (this._dragReplaceHandleActive) {
         this._dragReplaceHandleCell = this._grid.getCellFromEvent(e);
       } else {
         this._previousSelectedRange = null;
@@ -165,6 +170,12 @@ export class SlickCellRangeSelector implements SlickPlugin {
   }
 
   protected handleDragStart(e: SlickEventData, dd: DragRowMove) {
+    // Keep detecting the modifier during the drag as well as during mousedown.
+    // This is important for browsers and synthetic pointer events that do not
+    // preserve modifier flags on the initial event.
+    if (!this._dragReplaceHandleActive && this._grid.getSelectionModel()?.getOptions()?.enableMultiSelection === true) {
+      this._addToSelection ||= !!e.ctrlKey || !!e.metaKey;
+    }
     let cell = this._grid.getCellFromEvent(e);
     if (this._dragReplaceHandleActive) { cell = this._dragReplaceHandleCell; }
     if (cell && this.onBeforeCellRangeSelected.notify(cell).getReturnValue() !== false && this._grid.canCellBeSelected(cell.row, cell.cell)) {
@@ -211,6 +222,9 @@ export class SlickCellRangeSelector implements SlickPlugin {
     }
 
     const e = evt.getNativeEvent<MouseEvent>();
+    if (!this._dragReplaceHandleActive && this._grid.getSelectionModel()?.getOptions()?.enableMultiSelection === true) {
+      this._addToSelection ||= !!e?.ctrlKey || !!e?.metaKey;
+    }
     if (this._options.autoScroll) {
       this._draggingMouseOffset = this.getMouseOffsetViewport(e, dd);
       if (this._draggingMouseOffset.isOutsideViewport) {
@@ -389,8 +403,10 @@ export class SlickCellRangeSelector implements SlickPlugin {
 
       this._decorator.show(range, this._dragReplaceHandleActive);
       this.onCellRangeSelecting.notify({
-        range, selectionMode: '',
-        allowAutoEdit: false
+        range,
+        selectionMode: '',
+        allowAutoEdit: false,
+        ...(this._addToSelection ? { addToSelection: true } : {})
       });
     }
   }
@@ -431,7 +447,13 @@ export class SlickCellRangeSelector implements SlickPlugin {
         dd.range.end.cell
       );
 
-    this.onCellRangeSelected.notify({ range: r, selectionMode: this._selectionMode, allowAutoEdit: (this._selectionMode === "SEL" && r.isSingleCell()) });
+    this.onCellRangeSelected.notify({
+      range: r,
+      selectionMode: this._selectionMode,
+      allowAutoEdit: (this._selectionMode === "SEL" && r.isSingleCell()),
+      ...(this._addToSelection ? { addToSelection: true } : {})
+    });
+    this._addToSelection = false;
     // keep the resulting range (not the raw drag range) so that a next drag-extend anchors on the real selection
     this._previousSelectedRange = SelectionUtils.normaliseDragRange({
       start: { row: r.fromRow, cell: r.fromCell },
