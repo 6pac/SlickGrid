@@ -1,0 +1,173 @@
+<!DOCTYPE HTML>
+<html>
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <title>Auto Header Height - Layout</title>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css" />
+
+  <style>
+    .slick-pane.frozen {
+      border-right: 1.5px dotted darkred !important;
+    }
+
+    .slick-pane-top {
+      border-bottom: 1.5px dotted darkred !important;
+    }
+
+    .cell-selection {
+      border-right-color: silver;
+      border-right-style: solid;
+      background: #f5f5f5;
+      color: gray;
+      text-align: right;
+      font-size: 10px;
+    }
+
+    .slick-row.selected .cell-selection {
+      background-color: transparent;
+    }
+  </style>
+</head>
+
+<body>
+  <h2 class="title">Example - Auto Header Height (Layout)</h2>
+  <div style="position:relative">
+    <table width="100%">
+      <tr>
+        <td valign="top" width="50%">
+          <div id="myGrid" class="slick-container" style="width:600px;height:450px;"></div>
+        </td>
+
+        <td class="options-panel" valign="center" style="padding:6px;">
+          <h2>
+            <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+            Search:
+          </h2>
+          <hr />
+
+          <label for="autoHeaderHeight" style="width:160px;float:left;padding-left:40px;">
+            Auto Header Height:
+          </label>
+          <input type="checkbox" id="autoHeaderHeight" style="width:60px;" checked>
+          <button id="setAutoHeaderHeight">Set</button>
+          <br /><br />
+
+          <label for="frozenColumn" style="width:160px;float:left;padding-left:40px;">
+            Frozen Column:
+          </label>
+          <input type="text" id="frozenColumn" style="width:60px;" value="2">
+          <button id="setFrozenColumn">Set</button>
+          <br />
+
+          <label for="frozenRow" style="width:160px;float:left;padding-left:40px;">
+            Frozen Row:
+          </label>
+          <input type="text" id="frozenRow" style="width:60px;" value="5">
+          <button id="setFrozenRow">Set</button>
+
+          <h2> Demonstrates: </h2>
+          <ul>
+            <li>automatic header height calculation</li>
+            <li>enabling and disabling <code>autoHeaderHeight</code></li>
+            <li>frozen column support</li>
+            <li>frozen row support</li>
+            <li>combined frozen column and frozen row layouts</li>
+            <li>equal left/right header heights</li>
+            <li>header recalculation after column resizing</li>
+            <li>grid remaining within its container</li>
+          </ul>
+          <h2>View Source:</h2>
+          <ul>
+            <li>
+              <a href="https://github.com/6pac/SlickGrid/blob/master/examples/example-auto-header-height.html"
+                target="_sourcewindow"> View the source for this example on Github</a>
+            </li>
+          </ul>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+  <script src="sortable-cdn-fallback.js"></script>
+
+  <script src="../dist/browser/slick.core.js"></script>
+  <script src="../dist/browser/slick.interactions.js"></script>
+  <script src="../dist/browser/slick.grid.js"></script>
+  <script src="../dist/browser/slick.formatters.js"></script>
+
+  <script>
+    var grid;
+    var columns = [
+      { id: "sel", name: "#", field: "num", behavior: "select", cssClass: "cell-selection", width: 30, cannotTriggerInsert: true, resizable: false, unselectable: true },
+      { id: "title", name: "Title", field: "title", width: 70 },
+      { id: "duration", name: "Duration Days", field: "duration", width: 80, minWidth: 70 },
+      { id: "%", name: "% Complete", field: "percentComplete", width: 90, formatter: Slick.Formatters.PercentComplete },
+      { id: "start", name: "Start", field: "start", width: 80 },
+      { id: "finish", name: "Finish", field: "finish", width: 80 },
+      { id: "effort-driven", name: "Effort Driven", field: "effortDriven", width: 100, minWidth: 60 },
+      { id: "status", name: "Status", field: "status" }
+    ];
+
+    var options = {
+      enableCellNavigation: true,
+      enableColumnReorder: false,
+      autoHeaderHeight: true,
+      frozenColumn: 2,
+      frozenRow: 5
+    };
+
+    var data = [];
+    var statuses = ['Not Started', 'In Progress', 'Review', 'Completed', 'On Hold'];
+
+    for (var i = 0; i < 1000; i++) {
+      var startDate = new Date(2025, Math.floor(Math.random() * 12), Math.floor(Math.random() * 28) + 1);
+      var finishDate = new Date(startDate);
+      finishDate.setDate(finishDate.getDate() + Math.floor(Math.random() * 14) + 3);
+
+      data[i] = {
+        num: i,
+        title: "Task " + (i + 1),
+        duration: (Math.floor(Math.random() * 10) + 2) + " days",
+        percentComplete: Math.round(Math.random() * 100),
+        start: startDate.toLocaleDateString('en-US'),
+        finish: finishDate.toLocaleDateString('en-US'),
+        effortDriven: (i % 5 == 0),
+        status: statuses[Math.floor(Math.random() * statuses.length)]
+      };
+    }
+
+    grid = new Slick.Grid("#myGrid", data, columns, options);
+
+    document.querySelector('#setAutoHeaderHeight').addEventListener('click', function () {
+      var val = document.querySelector('#autoHeaderHeight').checked;
+      grid.setOptions({ 'autoHeaderHeight': val });
+    });
+
+    document.querySelector('#setFrozenColumn').addEventListener('click', function () {
+      var val = -1;
+
+      if (document.querySelector('#frozenColumn').value != '') {
+        val = parseInt(document.querySelector('#frozenColumn').value);
+      }
+
+      grid.setOptions({ 'frozenColumn': val });
+    });
+
+    document.querySelector('#setFrozenRow').addEventListener('click', function () {
+      var val = -1;
+
+      if (document.querySelector('#frozenRow').value != '') {
+        val = parseInt(document.querySelector('#frozenRow').value);
+      }
+
+      grid.setOptions({ 'frozenRow': val });
+    });
+  </script>
+</body>
+
+</html>

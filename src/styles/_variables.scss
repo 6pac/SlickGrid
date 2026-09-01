@@ -61,6 +61,7 @@ $alpine-headerrow-input-height:                   25px !default;
 $alpine-sort-indicator-color:                     #3490dc !default;
 $alpine-sort-indicator-margin:                    5px 0 0 3px !default;
 $alpine-sort-numbered-font-size:                  10px !default;
+$alpine-auto-header-height-extra:                 8px !default;
 
 // the following 2 vars must equal 100% (or 0%) at all time (or height of 0 to never show)
 $alpine-header-resizable-handle-height:           50% !default;
