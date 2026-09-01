@@ -190,13 +190,11 @@ export class SlickHybridSelectionModel implements SelectionModel {
   }
 
   protected getRowsRange(from: number, to: number) {
-    let i;
     const rows: number[] = [];
-    for (i = from; i <= to; i++) {
-      rows.push(i);
-    }
-    for (i = to; i < from; i++) {
-      rows.push(i);
+    const start = from <= to ? from : to;
+    const end = from <= to ? to : from - 1;
+    for (let row = start; row <= end; row++) {
+      rows.push(row);
     }
     return rows;
   }
@@ -235,19 +233,21 @@ export class SlickHybridSelectionModel implements SelectionModel {
     if (this._activeSelectionIsRow) {
       this._ranges = ranges;
 
-      // provide extra "caller" argument through SlickEventData event to avoid breaking the previous pubsub event structure
-      // that only accepts an array of selected range `SlickRange[]`, the SlickEventData args will be merged and used later by `onSelectedRowsChanged`
-      const eventData = new SlickEventData(new CustomEvent('click', { detail: { caller, selectionMode } }), this._ranges);
-      this.onSelectedRangesChanged.notify(this._ranges, eventData);
+      this.notifySelectedRangesChanged(caller, selectionMode);
     } else {
       this._ranges = this.removeInvalidRanges(ranges);
       if (rangeHasChanged) {
-        // provide extra "caller" argument through SlickEventData event to avoid breaking the previous pubsub event structure
-        // that only accepts an array of selected range `SlickRange[]`, the SlickEventData args will be merged and used later by `onSelectedRowsChanged`
-        const eventData = new SlickEventData(new CustomEvent('click', { detail: { caller, selectionMode, addDragHandle: true } }), this._ranges);
-        this.onSelectedRangesChanged.notify(this._ranges, eventData);
+        this.notifySelectedRangesChanged(caller, selectionMode, true);
       }
     }
+  }
+
+  protected notifySelectedRangesChanged(caller: string, selectionMode: string, addDragHandle = false): void {
+    // provide extra "caller" argument through SlickEventData event to avoid breaking the previous pubsub event structure
+    // that only accepts an array of selected range `SlickRange[]`, the SlickEventData args will be merged and used later by `onSelectedRowsChanged`
+    const detail = { caller, selectionMode, ...(addDragHandle ? { addDragHandle: true } : {}) };
+    const eventData = new SlickEventData(new CustomEvent('click', { detail }), this._ranges);
+    this.onSelectedRangesChanged.notify(this._ranges, eventData);
   }
 
   currentSelectionModeIsRow() {
@@ -493,62 +493,88 @@ export class SlickHybridSelectionModel implements SelectionModel {
   }
 
   protected handleClick(e: SlickEventData_): boolean | void {
-    if (!this._activeSelectionIsRow) {
-      if (!this._options.enableMultiSelection || (!e.ctrlKey && !e.metaKey)) {
-        return;
+    if (this._activeSelectionIsRow) {
+      const cell = this._grid.getCellFromEvent(e);
+      if (!cell || !this._grid.canCellBeActive(cell.row, cell.cell)) {
+        return false;
       }
 
+      if (!this._grid.getOptions().multiSelect || (
+        !e.ctrlKey && !e.shiftKey && !e.metaKey)) {
+        return false;
+      }
+
+      let selection = this.rangesToRows(this._ranges);
+      const idx = selection.indexOf(cell.row);
+      let shouldSetActiveCell = false;
+
+      if (idx === -1 && (e.ctrlKey || e.metaKey)) {
+        selection.push(cell.row);
+        shouldSetActiveCell = true;
+      } else if (idx !== -1 && (e.ctrlKey || e.metaKey)) {
+        selection = selection.filter((o) => o !== cell.row);
+        shouldSetActiveCell = true;
+      } else if (selection.length && e.shiftKey) {
+        const last = selection.pop() as number;
+        const from = Math.min(cell.row, last);
+        const to = Math.max(cell.row, last);
+        selection = [];
+        for (let i = from; i <= to; i++) {
+          if (i !== last) {
+            selection.push(i);
+          }
+        }
+        selection.push(last);
+        shouldSetActiveCell = true;
+      }
+
+      if (shouldSetActiveCell) {
+        this._grid.setActiveCell(cell.row, cell.cell);
+      }
+      const tempRanges = this.rowsToRanges(selection);
+      this.handleClickSelection(e, tempRanges);
+
+      return true;
+    } else if (e.shiftKey) {
+      const cell = this._grid.getCellFromEvent(e);
+      const activeCell = this._grid.getActiveCell();
+      if (!cell || !activeCell || !this._grid.canCellBeActive(cell.row, cell.cell)) {
+        return false;
+      }
+
+      this.handleCellClickSelection(e, cell, [new SlickRange(activeCell.row, activeCell.cell, cell.row, cell.cell)], true);
+
+      return true;
+    } else if (this._options.enableMultiSelection && (e.ctrlKey || e.metaKey)) {
       const cell = this._grid.getCellFromEvent(e);
       if (!cell || !this._grid.canCellBeSelected(cell.row, cell.cell)) {
         return false;
       }
 
       const ranges = this.toggleCellSelectionRange(this.getSelectedRanges().slice(), new SlickRange(cell.row, cell.cell));
-      this._grid.setActiveCell(cell.row, cell.cell, false, false, true);
-      this.setSelectedRanges(ranges);
-      e.stopImmediatePropagation();
+      this.handleCellClickSelection(e, cell, ranges);
 
       return true;
     }
+  }
 
-    const cell = this._grid.getCellFromEvent(e);
-    if (!cell || !this._grid.canCellBeActive(cell.row, cell.cell)) {
-      return false;
+  protected handleCellClickSelection(
+    e: SlickEventData_,
+    cell: { row: number; cell: number },
+    ranges: SlickRange_[],
+    setActiveCellAfterSelection = false
+  ): void {
+    const setActiveCell = () => this._grid.setActiveCell(cell.row, cell.cell, false, false, true);
+    if (!setActiveCellAfterSelection) {
+      setActiveCell();
     }
+    this.handleClickSelection(e, ranges, setActiveCellAfterSelection ? setActiveCell : undefined);
+  }
 
-    if (!this._grid.getOptions().multiSelect || (
-      !e.ctrlKey && !e.shiftKey && !e.metaKey)) {
-      return false;
-    }
-
-    let selection = this.rangesToRows(this._ranges);
-    const idx = selection.indexOf(cell.row);
-
-    if (idx === -1 && (e.ctrlKey || e.metaKey)) {
-      selection.push(cell.row);
-      this._grid.setActiveCell(cell.row, cell.cell);
-    } else if (idx !== -1 && (e.ctrlKey || e.metaKey)) {
-      selection = selection.filter((o) => o !== cell.row);
-      this._grid.setActiveCell(cell.row, cell.cell);
-    } else if (selection.length && e.shiftKey) {
-      const last = selection.pop() as number;
-      const from = Math.min(cell.row, last);
-      const to = Math.max(cell.row, last);
-      selection = [];
-      for (let i = from; i <= to; i++) {
-        if (i !== last) {
-          selection.push(i);
-        }
-      }
-      selection.push(last);
-      this._grid.setActiveCell(cell.row, cell.cell);
-    }
-
-    const tempRanges = this.rowsToRanges(selection);
-    this.setSelectedRanges(tempRanges);
+  protected handleClickSelection(e: SlickEventData_, ranges: SlickRange_[], afterSelection?: () => void): void {
+    this.setSelectedRanges(ranges);
+    afterSelection?.();
     e.stopImmediatePropagation();
-
-    return true;
   }
 
   protected toggleCellSelectionRange(ranges: SlickRange_[], range: SlickRange_): SlickRange_[] {
