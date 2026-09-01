@@ -1,3 +1,5 @@
+import { createMouseLikeEvent } from '../support/drag';
+
 describe('Example 0070 - Grid State using Local Storage', () => {
   const originalTitles = ['A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 
@@ -53,13 +55,18 @@ describe('Example 0070 - Grid State using Local Storage', () => {
       .children('.slick-header-column:nth(1)')
       .should('contain', 'C');
 
-    cy.get('.slick-resizable-handle:nth(1)')
-      .trigger('mousedown', { which: 1, force: true })
-      .trigger('mousemove', 'bottomRight');
+    cy.window().then((win) => {
+      const header = win.document.querySelector('.slick-header-columns .slick-header-column:nth-child(2)') as HTMLElement;
+      const handle = header.querySelector('.slick-resizable-handle') as HTMLElement;
+      const handleRect = handle.getBoundingClientRect();
+      const startX = handleRect.left + handleRect.width / 2;
+      const y = handleRect.top + handleRect.height / 2;
 
-    cy.get('.slick-header-column:nth(2)')
-      .trigger('mousemove', 'bottomRight')
-      .trigger('mouseup', 'bottomRight', { which: 1, force: true });
+      handle.dispatchEvent(createMouseLikeEvent(win, 'mousedown', startX, y));
+      const targetX = startX + 88;
+      win.document.body.dispatchEvent(createMouseLikeEvent(win, 'mousemove', targetX, y));
+      win.document.body.dispatchEvent(createMouseLikeEvent(win, 'mouseup', targetX, y, 0));
+    });
 
     cy.get('.slick-header-column:nth(1)')
       .should(($el) => {

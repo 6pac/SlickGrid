@@ -32,6 +32,15 @@ export function createDragLikeEvent(eventName: string, x: number, y: number, dat
   return evt;
 }
 
+/** Create a mouse event with explicit page/client coordinates for resize interactions. */
+export function createMouseLikeEvent(win: Window, eventName: string, x: number, y: number, buttons = 1): MouseEvent {
+  const event = win.document.createEvent('MouseEvent');
+  event.initMouseEvent(eventName, true, true, win, 0, x, y, x, y, false, false, false, false, buttons, null);
+  Object.defineProperty(event, 'pageX', { configurable: true, value: x });
+  Object.defineProperty(event, 'pageY', { configurable: true, value: y });
+  return event;
+}
+
 /** Dispatch the pointer/mouse press that precedes a native HTML5 drag (SortableJS only arms itself from pointerdown/mousedown) */
 export function pressPointer(el: HTMLElement, x: number, y: number): void {
   const init = { bubbles: true, cancelable: true, button: 0, buttons: 1, clientX: x, clientY: y };

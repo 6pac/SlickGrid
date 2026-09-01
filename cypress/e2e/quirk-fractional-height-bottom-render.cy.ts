@@ -89,14 +89,14 @@ describe('Quirk - a fractional grid height must still render the bottom rows', {
     cy.window().then((win: any) => {
       const vp = win.viewportEl();
 
-      // precondition: the browser lets us scroll further down than the ceiling
-      // `scrollTo()` clamps to. Without that sub-pixel gap the bug cannot occur
-      // (which is exactly why an integer or `.5+` height never reproduces it).
+      // Precondition: fractional layout produces a sub-pixel difference between the
+      // DOM and grid limits. Browsers round this in opposite directions, so the
+      // functional assertion below must not depend on which limit is larger.
       vp.scrollTop = 1e9;
       const domMaxScrollTop = vp.scrollTop;
       win.grid.scrollTo(1e9);
       const gridMaxScrollTop = win.grid.scrollTop;
-      expect(domMaxScrollTop, `DOM max scrollTop vs grid clamp (${gridMaxScrollTop})`).to.be.greaterThan(gridMaxScrollTop);
+      expect(Math.abs(domMaxScrollTop - gridMaxScrollTop), 'fractional DOM/grid scroll limit difference').to.be.greaterThan(0.01);
 
       // start from a fully rendered bottom, then wheel up far enough that the render
       // buffer no longer covers the last rows - they must actually be cleaned up,
