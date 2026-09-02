@@ -80,7 +80,7 @@
           if (this._cellNodeElm = this._grid.getCellNode(cell.row, cell.cell), this._cellTooltipOptions = Utils.extend(!0, {}, this._options, columnDef.customTooltip), item && columnDef) {
             if (args = args || {}, args.cell = cell.cell, args.row = cell.row, args.columnDef = columnDef, args.dataContext = item, args.grid = this._grid, args.type = "cell", columnDef != null && columnDef.disableTooltip || !this.runOverrideFunctionWhenExists(this._cellTooltipOptions.usabilityOverride, args))
               return;
-            let value = item.hasOwnProperty(columnDef.field) ? item[columnDef.field] : null;
+            let value = Object.prototype.hasOwnProperty.call(item, columnDef.field) ? item[columnDef.field] : null;
             if (this._cellTooltipOptions.useRegularTooltip || !this._cellTooltipOptions.formatter)
               this.renderRegularTooltip(columnDef.formatter, cell, value, columnDef, item);
             else if (typeof this._cellTooltipOptions.formatter == "function" && this.renderTooltipFormatter(this._cellTooltipOptions.formatter, cell, value, columnDef, item), typeof this._cellTooltipOptions.asyncProcess == "function") {

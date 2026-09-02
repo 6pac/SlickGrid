@@ -222,26 +222,28 @@
       if (!this._grid.getEditorLock().isActive() || this._grid.getOptions().autoEdit) {
         if (e.which === this.keyCodes.ESC && this._copiedRanges && (e.preventDefault(), this.clearCopySelection(), this.onCopyCancelled.notify({ ranges: this._copiedRanges }), this._copiedRanges = null), (e.which === this.keyCodes.C || e.which === this.keyCodes.INSERT) && (e.ctrlKey || e.metaKey) && !e.shiftKey && (typeof this._onCopyInit == "function" && this._onCopyInit.call(this), ranges = (_b = (_a = this._grid.getSelectionModel()) == null ? void 0 : _a.getSelectedRanges()) != null ? _b : [], ranges.length !== 0)) {
           this._copiedRanges = ranges, this.markCopySelection(ranges), this.onCopyCells.notify({ ranges });
-          let columns = this._grid.getColumns(), clipText = "";
-          for (let rg = 0; rg < ranges.length; rg++) {
-            let range = ranges[rg], clipTextRows = [];
-            for (let i = range.fromRow; i < range.toRow + 1; i++) {
-              let clipTextCells = [], dt = this._grid.getDataItem(i);
-              if (clipTextRows.length === 0 && this._options.includeHeaderWhenCopying) {
-                let clipTextHeaders = [];
-                for (let j = range.fromCell; j < range.toCell + 1; j++)
-                  (columns[j].name instanceof HTMLElement ? columns[j].name.innerHTML : columns[j].name).length > 0 && !columns[j].hidden && clipTextHeaders.push(this.getHeaderValueForColumn(columns[j]) || "");
-                clipTextRows.push(clipTextHeaders.join("	"));
-              }
-              for (let j = range.fromCell; j < range.toCell + 1; j++)
-                (columns[j].name instanceof HTMLElement ? columns[j].name.innerHTML : columns[j].name).length > 0 && !columns[j].hidden && clipTextCells.push(this.getDataItemValueForColumn(dt, columns[j], e));
-              clipTextRows.push(clipTextCells.join("	"));
+          let columns = this._grid.getColumns(), fromRow = Math.min(...ranges.map((range) => range.fromRow)), fromCell = Math.min(...ranges.map((range) => range.fromCell)), toRow = Math.max(...ranges.map((range) => range.toRow)), toCell = Math.max(...ranges.map((range) => range.toCell)), clipText = "", clipTextRows = [];
+          if (this._options.includeHeaderWhenCopying) {
+            let clipTextHeaders = [];
+            for (let j = fromCell; j <= toCell; j++) {
+              let column = columns[j], isSelectedColumn = ranges.some((range) => j >= range.fromCell && j <= range.toCell);
+              column && (column.name instanceof HTMLElement ? column.name.innerHTML : column.name).length > 0 && !column.hidden && clipTextHeaders.push(isSelectedColumn && this.getHeaderValueForColumn(column) || "");
             }
-            clipText += clipTextRows.join(`\r
-`) + `\r
-`;
+            clipTextRows.push(clipTextHeaders.join("	"));
           }
-          if (window.clipboardData)
+          for (let i = fromRow; i <= toRow; i++) {
+            let clipTextCells = [], dt = this._grid.getDataItem(i);
+            for (let j = fromCell; j <= toCell; j++) {
+              let column = columns[j];
+              column && (column.name instanceof HTMLElement ? column.name.innerHTML : column.name).length > 0 && !column.hidden && clipTextCells.push(
+                ranges.some((range) => range.contains(i, j)) ? this.getDataItemValueForColumn(dt, column, e) : ""
+              );
+            }
+            clipTextRows.push(clipTextCells.join("	"));
+          }
+          if (clipText += clipTextRows.join(`\r
+`) + `\r
+`, window.clipboardData)
             return window.clipboardData.setData("Text", clipText), !0;
           {
             let focusEl = document.activeElement, ta = this._createTextBox(clipText);
@@ -265,10 +267,10 @@
     markCopySelection(ranges) {
       var _a;
       this.clearCopySelection();
-      let columns = this._grid.getColumns(), hash = {};
+      let columns = this._grid.getColumns(), hash = /* @__PURE__ */ Object.create(null);
       for (let i = 0; i < ranges.length; i++)
         for (let j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
-          hash[j] = {};
+          hash[j] = /* @__PURE__ */ Object.create(null);
           for (let k = ranges[i].fromCell; k <= ranges[i].toCell && k < columns.length; k++)
             hash[j][columns[k].id] = this._copiedCellStyle;
         }

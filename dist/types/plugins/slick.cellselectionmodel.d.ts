@@ -26,6 +26,7 @@ export declare class SlickCellSelectionModel implements SelectionModel {
     init(grid: SlickGrid): void;
     destroy(): void;
     getOptions(): CellSelectionModelOption | undefined;
+    setOptions(options: Partial<CellSelectionModelOption>): void;
     protected removeInvalidRanges(ranges: SlickRange_[]): SlickRange_[];
     protected rangesAreEqual(range1: SlickRange_[], range2: SlickRange_[]): boolean;
     /** Provide a way to force a recalculation of page row count (for example on grid resize) */

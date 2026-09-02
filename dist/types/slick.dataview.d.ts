@@ -6,16 +6,21 @@ export interface DataViewOption {
     globalItemMetadataProvider: ItemMetadataProvider | null;
     /** Optionally provide a GroupItemMetadataProvider in order to use Grouping/DraggableGrouping features */
     groupItemMetadataProvider: SlickGroupItemMetadataProvider_ | null;
-    /** defaults to false, are we using inline filters? */
+    /**
+     * @deprecated Filtering is always CSP-safe and this option is now ignored.
+     * Remove both `inlineFilters` and `useCSPSafeFilter` in the next major release.
+     */
     inlineFilters: boolean;
     /**
-     * defaults to false, option to use CSP Safe approach,
-     * Note: it is an opt-in option because it is slightly slower (perf impact) when compared to the non-CSP safe approach.
+     * @deprecated Filtering is always CSP-safe and this option is now ignored.
+     * Remove it in the next major release together with `inlineFilters`.
      */
     useCSPSafeFilter: boolean;
 }
 export type FilterFn<T> = (item: T, args: any) => boolean;
+/** @deprecated Filtering is always CSP-safe. Remove this alias in the next major release. */
 export type FilterCspFn<T> = (item: T[], args: any) => T[];
+/** @deprecated Filtering is always CSP-safe. Remove this alias in the next major release. */
 export type FilterWithCspCachingFn<T> = (item: T[], args: any, filterCache: any[]) => T[];
 export type DataIdType = number | string;
 export type SlickDataItem = SlickNonDataItem | SlickGroup_ | SlickGroupTotals_ | any;
@@ -36,7 +41,6 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
         [id: DataIdType]: number;
     } | undefined;
     protected filter: FilterFn<TData> | null;
-    protected filterCSPSafe: FilterFn<TData> | null;
     protected updated: ({
         [id: DataIdType]: boolean;
     }) | null;
@@ -50,10 +54,6 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     protected prevRefreshHints: DataViewHints;
     protected filterArgs: any;
     protected filteredItems: TData[];
-    protected compiledFilter?: FilterFn<TData> | null;
-    protected compiledFilterCSPSafe?: FilterCspFn<TData> | null;
-    protected compiledFilterWithCaching?: FilterFn<TData> | null;
-    protected compiledFilterWithCachingCSPSafe?: FilterWithCspCachingFn<TData> | null;
     protected filterCache: any[];
     protected _grid?: SlickGridModel;
     protected groupingInfoDefaults: Grouping;
@@ -261,19 +261,7 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     protected flattenGroupedRows(groups: SlickGroup_[], level?: number): any[];
     protected compileAccumulatorLoopCSPSafe(aggregator: Aggregator): (items: any[]) => void;
     protected compileFilterCSPSafe(items: TData[], args: any): TData[];
-    protected compileFilter(stopRunningIfCSPSafeIsActive?: boolean): FilterFn<TData> | null;
-    protected compileFilterWithCaching(stopRunningIfCSPSafeIsActive?: boolean): any;
     protected compileFilterWithCachingCSPSafe(items: TData[], args: any, filterCache: any[]): TData[];
-    /**
-     * In ES5 we could set the function name on the fly but in ES6 this is forbidden and we need to set it through differently
-     * We can use Object.defineProperty and set it the property to writable, see MDN for reference
-     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty
-     * @param {*} fn
-     * @param {string} fnName
-     */
-    protected setFunctionName(fn: any, fnName: string): void;
-    protected uncompiledFilter(items: TData[], args: any): any[];
-    protected uncompiledFilterWithCaching(items: TData[], args: any, cache: any): any[];
     protected getFilteredAndPagedItems(items: TData[]): {
         totalRows: number;
         rows: TData[];

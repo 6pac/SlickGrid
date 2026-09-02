@@ -48,6 +48,9 @@
     getOptions() {
       return this._options;
     }
+    setOptions(options) {
+      this._options = Utils.extend(!0, {}, this._options, options);
+    }
     wrapHandler(handler) {
       return (...args) => {
         this._inHandler || (this._inHandler = !0, handler.apply(this, args), this._inHandler = !1);

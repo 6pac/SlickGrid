@@ -314,16 +314,17 @@ var Slick = (() => {
     constructor(gridUid) {
       __publicField(this, "id");
       __publicField(this, "cssClass", "slick-drag-replace-handle");
+      __publicField(this, "hoverCssClass", "slick-drag-replace-handle-hover");
       this.id = `${gridUid}_drag_replace_handle`;
     }
     removeEl() {
       var _a;
       (_a = document.getElementById(this.id)) == null || _a.remove();
     }
-    createEl(activeCellNode) {
+    createEl(activeCellNode, showDragHandle = !0) {
       if (activeCellNode) {
         let dragReplaceEl = document.createElement("div");
-        dragReplaceEl.classList.add("slick-drag-replace-handle"), dragReplaceEl.id = this.id, activeCellNode.appendChild(dragReplaceEl);
+        dragReplaceEl.classList.add("slick-drag-replace-handle"), showDragHandle === "hover" && dragReplaceEl.classList.add(this.hoverCssClass), dragReplaceEl.id = this.id, activeCellNode.appendChild(dragReplaceEl);
       }
     }
   }, SlickNonDataItem = class {
@@ -738,7 +739,7 @@ var Slick = (() => {
     }
     static applyDefaults(targetObj, srcObj) {
       typeof srcObj == "object" && Object.keys(srcObj).forEach((key) => {
-        srcObj.hasOwnProperty(key) && !targetObj.hasOwnProperty(key) && (targetObj[key] = srcObj[key]);
+        Object.prototype.hasOwnProperty.call(srcObj, key) && !Object.prototype.hasOwnProperty.call(targetObj, key) && (targetObj[key] = srcObj[key]);
       });
     }
     /**
@@ -808,9 +809,16 @@ var Slick = (() => {
     static copyRangeIsLarger(baseRange, copyToRange) {
       return copyToRange.fromRow < baseRange.fromRow || copyToRange.fromCell < baseRange.fromCell || copyToRange.toRow > baseRange.toRow || copyToRange.toCell > baseRange.toCell;
     }
+    /**
+     * Returns the anchor (opposite) cell to use while dragging the drag-extend handle.
+     * Anchoring on the range start lets the drag shrink the range (Excel behavior), while dragging
+     * past the start anchors on the range end so that it expands in the opposite direction instead.
+     */
     static normalRangeOppositeCellFromCopy(normalisedDragRange, targetCell) {
-      let row = targetCell.row < (normalisedDragRange.end.row || 0) ? normalisedDragRange.end.row || 0 : normalisedDragRange.start.row || 0, cell = targetCell.cell < (normalisedDragRange.end.cell || 0) ? normalisedDragRange.end.cell || 0 : normalisedDragRange.start.cell || 0;
-      return { row, cell };
+      return {
+        row: targetCell.row < (normalisedDragRange.start.row || 0) ? normalisedDragRange.end.row || 0 : normalisedDragRange.start.row || 0,
+        cell: targetCell.cell < (normalisedDragRange.start.cell || 0) ? normalisedDragRange.end.cell || 0 : normalisedDragRange.start.cell || 0
+      };
     }
     // copy to range above or below - includes corner space target range
     static verticalTargetRange(baseRange, copyToRange) {

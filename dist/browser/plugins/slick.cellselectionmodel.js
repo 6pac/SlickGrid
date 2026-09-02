@@ -39,6 +39,10 @@
     getOptions() {
       return this._options;
     }
+    setOptions(options) {
+      var _a;
+      this._options = Utils.extend(!0, {}, (_a = this._options) != null ? _a : this._defaults, options);
+    }
     removeInvalidRanges(ranges) {
       let result = [];
       for (let i = 0; i < ranges.length; i++) {

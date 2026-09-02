@@ -18,12 +18,14 @@ export declare class SlickHybridSelectionModel implements SelectionModel {
     protected _selector?: SlickCellRangeSelector_;
     protected _isRowMoveManagerHandler: any;
     protected _activeSelectionIsRow: boolean;
+    protected _multiSelectionBaseRanges?: SlickRange_[];
     protected _options: HybridSelectionModelOption;
     protected _defaults: HybridSelectionModelOption;
     constructor(options?: HybridSelectionModelOption);
     init(grid: SlickGrid): void;
     destroy(): void;
     getOptions(): HybridSelectionModelOption;
+    setOptions(options: Partial<HybridSelectionModelOption>): void;
     protected removeInvalidRanges(ranges: SlickRange_[]): SlickRange_[];
     protected rangesAreEqual(range1: SlickRange_[], range2: SlickRange_[]): boolean;
     protected rangesToRows(ranges: SlickRange_[]): number[];
@@ -36,6 +38,7 @@ export declare class SlickHybridSelectionModel implements SelectionModel {
     /** Provide a way to force a recalculation of page row count (for example on grid resize) */
     resetPageRowCount(): void;
     setSelectedRanges(ranges: SlickRange_[], caller?: string, selectionMode?: string): void;
+    protected notifySelectedRangesChanged(caller: string, selectionMode: string, addDragHandle?: boolean): void;
     currentSelectionModeIsRow(): boolean;
     refreshSelections(): void;
     getRowMoveManagerPlugin(): SlickRowMoveManager_ | SlickCrossGridRowMoveManager_ | undefined;
@@ -44,6 +47,12 @@ export declare class SlickHybridSelectionModel implements SelectionModel {
     protected isKeyAllowed(key: string, isShiftKeyPressed?: boolean): boolean;
     protected handleKeyDown(e: SlickEventData_): void;
     protected handleClick(e: SlickEventData_): boolean | void;
+    protected handleCellClickSelection(e: SlickEventData_, cell: {
+        row: number;
+        cell: number;
+    }, ranges: SlickRange_[], setActiveCellAfterSelection?: boolean): void;
+    protected handleClickSelection(e: SlickEventData_, ranges: SlickRange_[], afterSelection?: () => void): void;
+    protected toggleCellSelectionRange(ranges: SlickRange_[], range: SlickRange_): SlickRange_[];
     protected handleBeforeCellRangeSelected(e: SlickEventData_, cell: {
         row: number;
         cell: number;
@@ -52,6 +61,7 @@ export declare class SlickHybridSelectionModel implements SelectionModel {
         range: SlickRange_;
         selectionMode: string;
         allowAutoEdit?: boolean;
+        addToSelection?: boolean;
         caller: 'onCellRangeSelecting' | 'onCellRangeSelected';
     }): boolean;
 }

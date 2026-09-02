@@ -137,7 +137,7 @@ const DragExtendHandle = IIFE_ONLY ? Slick.DragExtendHandle : DragExtendHandle_;
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.19.0
+ * SlickGrid v5.20.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -159,7 +159,7 @@ interface RowCaching {
 export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O extends BaseGridOption<C> = BaseGridOption<C>> {
   //////////////////////////////////////////////////////////////////////////////////////////////
   // Public API
-  slickGridVersion = '5.19.0';
+  slickGridVersion = '5.20.0';
 
   /** optional grid state clientId */
   cid = '';

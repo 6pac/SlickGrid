@@ -30,10 +30,10 @@
       this._grid.getEditorLock().isActive() || (e.which === keyCode.ESCAPE && this._copiedRanges && (e.preventDefault(), this.clearCopySelection(), this.onCopyCancelled.notify({ ranges: this._copiedRanges }), this._copiedRanges = null), e.which === 67 && (e.ctrlKey || e.metaKey) && (ranges = (_b = (_a = this._grid.getSelectionModel()) == null ? void 0 : _a.getSelectedRanges()) != null ? _b : [], ranges.length !== 0 && (e.preventDefault(), this._copiedRanges = ranges, this.markCopySelection(ranges), this.onCopyCells.notify({ ranges }))), e.which === 86 && (e.ctrlKey || e.metaKey) && this._copiedRanges && (e.preventDefault(), ranges = (_c = this._grid.getSelectionModel()) == null ? void 0 : _c.getSelectedRanges(), this.onPasteCells.notify({ from: this._copiedRanges, to: ranges }), this._grid.getOptions().preserveCopiedSelectionOnPaste || (this.clearCopySelection(), this._copiedRanges = null)));
     }
     markCopySelection(ranges) {
-      let columns = this._grid.getColumns(), hash = {};
+      let columns = this._grid.getColumns(), hash = /* @__PURE__ */ Object.create(null);
       for (let i = 0; i < ranges.length; i++)
         for (let j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
-          hash[j] = {};
+          hash[j] = /* @__PURE__ */ Object.create(null);
           for (let k = ranges[i].fromCell; k <= ranges[i].toCell; k++)
             hash[j][columns[k].id] = "copied";
         }

@@ -2,6 +2,16 @@
 (() => {
   // src/slick.compositeeditor.ts
   var Utils = Slick.Utils;
+  function createSafeDynamicMap(initialValues) {
+    let target = /* @__PURE__ */ Object.create(null);
+    return Object.keys(initialValues != null ? initialValues : {}).forEach((key) => {
+      target[key] = initialValues[key];
+    }), new Proxy(target, {
+      get(map, property, receiver) {
+        return property === "hasOwnProperty" && !Object.prototype.hasOwnProperty.call(map, property) ? Object.prototype.hasOwnProperty.bind(map) : Reflect.get(map, property, receiver);
+      }
+    });
+  }
   function SlickCompositeEditor(columns, containers, options) {
     let defaultOptions = {
       modalType: "edit",
@@ -12,11 +22,11 @@
       hide: null,
       position: null,
       destroy: null,
-      formValues: {},
-      editors: {}
+      formValues: createSafeDynamicMap(),
+      editors: /* @__PURE__ */ Object.create(null)
     }, noop = function() {
     }, firstInvalidEditor = null;
-    options = Utils.extend({}, defaultOptions, options);
+    options = Utils.extend({}, defaultOptions, options), options.formValues = createSafeDynamicMap(options.formValues);
     function getContainerBox(i) {
       var _a, _b, _c, _d;
       let c = containers[i], offset = Utils.offset(c), w = Utils.width(c), h = Utils.height(c);
@@ -37,7 +47,7 @@
         for (; idx < columns.length; ) {
           if (columns[idx].editor) {
             let column = columns[idx];
-            newArgs = Utils.extend(!1, {}, args), newArgs.container = containers[idx], newArgs.column = column, newArgs.position = getContainerBox(idx), newArgs.commitChanges = noop, newArgs.cancelChanges = noop, newArgs.compositeEditorOptions = options, newArgs.formValues = {};
+            newArgs = Utils.extend(!1, {}, args), newArgs.container = containers[idx], newArgs.column = column, newArgs.position = getContainerBox(idx), newArgs.commitChanges = noop, newArgs.cancelChanges = noop, newArgs.compositeEditorOptions = options, newArgs.formValues = createSafeDynamicMap();
             let currentEditor = new column.editor(newArgs);
             options.editors[column.id] = currentEditor, editors.push(currentEditor);
           }

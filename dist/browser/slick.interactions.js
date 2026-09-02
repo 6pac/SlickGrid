@@ -27,7 +27,7 @@
     }
     function userPressed(event) {
       var _a, _b;
-      if (!preventDrag(event)) {
+      if (!(event.type === "mousedown" && "button" in event && event.button !== 0) && !preventDrag(event)) {
         element = event.target;
         let targetEvent = (_b = (_a = event == null ? void 0 : event.touches) == null ? void 0 : _a[0]) != null ? _b : event, { target } = targetEvent;
         if (!options.allowDragFrom || options.allowDragFrom && element.matches(options.allowDragFrom) || options.allowDragFromClosest && element.closest(options.allowDragFromClosest)) {

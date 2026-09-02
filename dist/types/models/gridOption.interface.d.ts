@@ -118,6 +118,8 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
     enableAutoTooltip?: boolean;
     /** Defaults to false, which will automatically resize the column headers whenever the grid size changes */
     enableAutoSizeColumns?: boolean;
+    /** Defaults to true, automatically scrolls the viewport while resizing a column beyond its visible edge. */
+    autoScrollOnColumnResize?: boolean;
     /** Defaults to false, which will let user click on cell and navigate with arrow keys. */
     enableCellNavigation?: boolean;
     /** Defaults to false, editor cell navigation left/right keys */
@@ -256,6 +258,8 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
     rowHighlightCssClass?: string;
     /** Defaults to 400, duration to show the row highlight (e.g. after CRUD executions) */
     rowHighlightDuration?: number;
+    /** Defaults to false, when enabled the header row will automatically resize its height to fit multi-line column titles */
+    autoHeaderHeight?: boolean;
     /** Defaults to false, sets the grid direction to RTL (Right-to-Left) for proper rendering of RTL languages */
     rtl?: boolean;
     /**

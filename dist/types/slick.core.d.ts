@@ -206,9 +206,10 @@ export declare class SlickCopyRange {
 export declare class SlickDragExtendHandle {
     id: string;
     cssClass: string;
+    hoverCssClass: string;
     constructor(gridUid: string);
     removeEl(): void;
-    createEl(activeCellNode: any): void;
+    createEl(activeCellNode: any, showDragHandle?: boolean | 'hover'): void;
 }
 /**
  * A base class that all special / non-data rows (like Group and GroupTotals) derive from.
@@ -383,10 +384,10 @@ export declare class BindingEventService {
     getBoundedEvents(): ElementEventListener[];
     destroy(): void;
     /** Bind an event listener to any element */
-    bind(element: Element | Window, eventName: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions, groupName?: string): void;
+    bind(element: Element | Window | Document, eventName: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions, groupName?: string): void;
     /** Unbind all will remove every every event handlers that were bounded earlier */
-    unbind(element: Element | Window, eventName: string, listener: EventListenerOrEventListenerObject): void;
-    unbindByEventName(element: Element | Window, eventName: string): void;
+    unbind(element: Element | Window | Document, eventName: string, listener: EventListenerOrEventListenerObject): void;
+    unbindByEventName(element: Element | Window | Document, eventName: string): void;
     /**
      * Unbind all event listeners that were bounded, optionally provide a group name to unbind all listeners assigned to that specific group only.
      */
@@ -498,6 +499,11 @@ export declare class Utils {
 export declare class SelectionUtils {
     static normaliseDragRange(rawRange: DragRange): DragRange;
     static copyRangeIsLarger(baseRange: SlickRange, copyToRange: SlickRange): boolean;
+    /**
+     * Returns the anchor (opposite) cell to use while dragging the drag-extend handle.
+     * Anchoring on the range start lets the drag shrink the range (Excel behavior), while dragging
+     * past the start anchors on the range end so that it expands in the opposite direction instead.
+     */
     static normalRangeOppositeCellFromCopy(normalisedDragRange: DragRange, targetCell: {
         row: number;
         cell: number;

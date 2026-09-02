@@ -12,11 +12,13 @@ export declare class SlickCellRangeSelector implements SlickPlugin {
         range: SlickRange_;
         selectionMode: string;
         allowAutoEdit: boolean;
+        addToSelection?: boolean;
     }>;
     onCellRangeSelecting: SlickEvent_<{
         range: SlickRange_;
         selectionMode: string;
         allowAutoEdit: boolean;
+        addToSelection?: boolean;
     }>;
     protected _grid: SlickGrid;
     protected _currentlySelectedRange: DragRange | null;
@@ -30,6 +32,7 @@ export declare class SlickCellRangeSelector implements SlickPlugin {
     protected _options: CellRangeSelectorOption;
     protected _selectionMode: string;
     protected _dragReplaceHandleActive: boolean;
+    protected _addToSelection: boolean;
     protected _dragReplaceHandleCell: {
         row: number;
         cell: number;

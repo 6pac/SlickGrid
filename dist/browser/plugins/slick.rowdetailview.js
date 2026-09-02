@@ -255,12 +255,14 @@
     //////////////////////////////////////////////////////////////
     /** Get the Row Detail padding (which are the rows dedicated to the detail panel) */
     getPaddingItem(parent, offset) {
-      let item = {};
+      let item = {}, setItemProperty = (property, value) => {
+        Object.defineProperty(item, property, { configurable: !0, enumerable: !0, writable: !0, value });
+      };
       return this._grid.getColumns().forEach(({ field }) => {
-        item[field] = parent[field];
+        setItemProperty(field, parent[field]);
       }), Object.keys(this._dataView).forEach((prop) => {
-        item[prop] = null;
-      }), item[this._dataViewIdProperty] = parent[this._dataViewIdProperty] + "." + offset, item[`${this._keyPrefix}collapsed`] = !0, item[`${this._keyPrefix}isPadding`] = !0, item[`${this._keyPrefix}parent`] = parent, item[`${this._keyPrefix}offset`] = offset, item;
+        setItemProperty(prop, null);
+      }), setItemProperty(this._dataViewIdProperty, parent[this._dataViewIdProperty] + "." + offset), setItemProperty(`${this._keyPrefix}collapsed`, !0), setItemProperty(`${this._keyPrefix}isPadding`, !0), setItemProperty(`${this._keyPrefix}parent`, parent), setItemProperty(`${this._keyPrefix}offset`, offset), item;
     }
     /** Create the detail ctr node. this belongs to the dev & can be custom-styled as per */
     applyTemplateNewLineHeight(item) {

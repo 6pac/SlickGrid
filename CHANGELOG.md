@@ -3,6 +3,31 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+# [5.20.0](https://github.com/6pac/SlickGrid/compare/5.19.0...5.20.0) (2026-09-02)
+
+### Bug Fixes
+
+* **common:** handle dynamic scroll ancestors and cell CSS overlays ([#1279](https://github.com/6pac/SlickGrid/issues/1279)) ([4dade5c](https://github.com/6pac/SlickGrid/commit/4dade5c3f630238981770d7bacc3aa298f25486d))
+* **common:** make SlickDataView filtering CSP-safe by default ([#1285](https://github.com/6pac/SlickGrid/issues/1285)) ([d04b252](https://github.com/6pac/SlickGrid/commit/d04b252cbc9b076ae27d2deb0b41406fcddf4ff5))
+* **interactions:** ignore secondary-button cell range drags ([#1288](https://github.com/6pac/SlickGrid/issues/1288)) ([9a87c18](https://github.com/6pac/SlickGrid/commit/9a87c18314563560183f2b14838c5b625e0965e9))
+* **security:** harden dynamic object maps against prototype pollution ([#1283](https://github.com/6pac/SlickGrid/issues/1283)) ([1a04cdb](https://github.com/6pac/SlickGrid/commit/1a04cdbdf7f9f0d704f79c394fec7317fabe76af))
+* **selection:** allow drag handle to shrink cell selection ([#1277](https://github.com/6pac/SlickGrid/issues/1277)) ([439b6cf](https://github.com/6pac/SlickGrid/commit/439b6cf8d4213f91c23ce3d0b78e2474dc415000))
+* **selection:** support Shift-click cell range selection ([#1290](https://github.com/6pac/SlickGrid/issues/1290)) ([c41a062](https://github.com/6pac/SlickGrid/commit/c41a0626aeb41299ef92a91217d9ab155f89f41e))
+* **slickgrid:** prevent native wheel drift with frozen columns ([#1281](https://github.com/6pac/SlickGrid/issues/1281)) ([b99f79d](https://github.com/6pac/SlickGrid/commit/b99f79d7343341846b4de67084babb87406322f3))
+
+### Features
+
+* add autoHeaderHeight option for multi-line column headers ([#1282](https://github.com/6pac/SlickGrid/issues/1282)) ([e1a2d06](https://github.com/6pac/SlickGrid/commit/e1a2d067041277f5046aa395fe5da3112c397fc5))
+* add configurable cell selection drag handle visibility ([#1284](https://github.com/6pac/SlickGrid/issues/1284)) ([4559db9](https://github.com/6pac/SlickGrid/commit/4559db93c5356839ac6e057cde02c59e767b2a18))
+* **grid:** add auto-scroll while resizing columns ([#1289](https://github.com/6pac/SlickGrid/issues/1289)) ([171de39](https://github.com/6pac/SlickGrid/commit/171de3989fec8bc7732beea4fa1dccba14f524d0))
+* **grid:** improve column reorder auto-scroll ([#1286](https://github.com/6pac/SlickGrid/issues/1286)) ([a595cfb](https://github.com/6pac/SlickGrid/commit/a595cfb8422690a96bb6e8fd02e37928b8c3fb78))
+* **selection:** support multi-range selection with drag previews ([#1287](https://github.com/6pac/SlickGrid/issues/1287)) ([9ef0df8](https://github.com/6pac/SlickGrid/commit/9ef0df8e7570dfa95e100e92dd98eafb1d33f8fc))
+
+### Performance Improvements
+
+* **common:** skip off-screen columns during cell rendering ([#1280](https://github.com/6pac/SlickGrid/issues/1280)) ([168ec0f](https://github.com/6pac/SlickGrid/commit/168ec0f20195f9ce17fa90db72aefbe6e446ea77))
+* **slickgrid:** stabilize paged scrolling edges and clarify paging path ([#1278](https://github.com/6pac/SlickGrid/issues/1278)) ([3b73414](https://github.com/6pac/SlickGrid/commit/3b73414bb768c8323252fad2d398405e92e16d74))
+
 # [5.19.0](https://github.com/6pac/SlickGrid/compare/5.18.6...5.19.0) (2026-08-11)
 
 ### Bug Fixes

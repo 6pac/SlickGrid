@@ -10,7 +10,7 @@ import { type BasePubSub, BindingEventService as BindingEventService_, RowPositi
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.19.0
+ * SlickGrid v5.20.0
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -110,6 +110,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected _columnDefaults: Partial<C>;
     protected _columnAutosizeDefaults: AutoSize;
     protected _columnResizeTimer?: number;
+    protected _columnResizeAutoScrollTimer?: number;
     protected _executionBlockTimer?: number;
     protected _flashCellTimer?: number;
     protected _highlightRowTimer?: number;
@@ -156,7 +157,6 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected _viewport: HTMLDivElement[];
     protected _canvas: HTMLDivElement[];
     protected _style?: HTMLStyleElement;
-    protected _boundAncestors: HTMLElement[];
     protected stylesheet?: {
         cssRules: Array<{
             selectorText: string;
@@ -233,6 +233,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     protected selectedRanges: SlickRange_[];
     protected plugins: SlickPlugin[];
     protected cellCssClasses: CssStyleHash;
+    protected cellCssClassesByCell: CssStyleHash;
     protected columnsById: Record<string, number>;
     protected sortColumns: ColumnSort[];
     protected columnPosLeft: number[];
@@ -344,6 +345,8 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * It also starts up any asynchronous post–render processing if enabled.
      */
     protected finishInitialization(): void;
+    /** Create or recreate the cell drag interaction using the current selection model options. */
+    protected createDraggable(): void;
     /**
      * Finds all container ancestors/parents (including the grid container itself) that are hidden (i.e. have display:none)
      * and temporarily applies visible CSS properties (absolute positioning, hidden visibility, block display)
@@ -525,6 +528,22 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * and sort indicator elements. Also triggers before–destroy and rendered events as needed.
      */
     protected createColumnHeaders(): void;
+    /**
+     * Enables or disables automatic header height handling.
+     */
+    protected handleAutoHeaderHeightChange(): void;
+    /**
+     * Measures natural header heights and applies one common height to all header panes.
+     */
+    protected recalculateHeaderHeight(): void;
+    /**
+     * Clears calculated automatic header height styles.
+     */
+    private _clearAutoHeaderHeightStyles;
+    /**
+     * Applies the calculated automatic header height styles.
+     */
+    private _setAutoHeaderHeightStyles;
     /**
      * Destroys any existing sortable instances and creates new ones on the left and right header
      * containers using the Sortable library. Configures options including animation,
@@ -956,6 +975,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * @param {Event | SlickEventData_} e - The mouse event.
      */
     protected handleHeaderMouseHoverOff(e: Event | SlickEventData_): void;
+    protected getDragHandleVisibility(): boolean | 'hover';
     /**
      * Called when the grid’s selection model reports a change. It builds a new selection
      * (and CSS hash for selected cells) from the provided ranges, applies the new cell CSS styles,
@@ -969,7 +989,8 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
     /**
      * Processes a mouse wheel event by adjusting the vertical scroll (scrollTop) based on deltaY (scaled by rowHeight)
      * and horizontal scroll (scrollLeft) based on deltaX. It then calls the internal scroll handler with the “mousewheel”
-     * type and, if any scrolling occurred, prevents the default action.
+     * type and, if any scrolling occurred, stops propagation. For frozen columns it also prevents the
+     * browser's default scrolling so the scrolling pane does not move ahead of the mirrored frozen pane.
      *
      * @param {MouseEvent} e - The mouse event.
      * @param {number} _delta - Unused delta value.
@@ -1596,21 +1617,26 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      */
     getFrozenRowOffset(row: number): number;
     /**
-     * Traverses up from a specific canvas element and binds a scroll event handler
-     * (to update active cell positions) on each ancestor element that is scrollable.
-     * Also stores these ancestors for later unbinding.
+     * Binds a capture-phase document listener so active-cell positions continue to
+     * update when the grid is moved beneath a different scrollable ancestor.
      */
     protected bindAncestorScrollEvents(): void;
-    /**
-     * Iterates through the stored ancestor elements (in _boundAncestors)
-     * and unbinds any scroll events previously attached, then clears the stored array.
-     */
-    protected unbindAncestorScrollEvents(): void;
     /**
      * Chooses which viewport container(s) will serve as the scroll container for horizontal and vertical scrolling.
      * The selection depends on whether the grid has frozen columns and/or frozen rows and whether frozenBottom is set.
      */
     protected setScroller(): void;
+    /**
+     * Map a virtual page index to its render offset in scroll-container space.
+     * First and last pages are pinned to container edges; interior pages are spread
+     * evenly between them to avoid browser edge clamping/jank near boundaries.
+     */
+    protected getPageOffset(page: number): number;
+    /**
+     * Infer page index from large-scale scroll movement in container space.
+     * This mirrors page pinning logic used by getPageOffset().
+     */
+    protected getPageFromLargeScrollDelta(scrollTop: number): number;
     /**
      * Scroll to a Y position in the grid (clamped to valid bounds)
      *
@@ -1750,6 +1776,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * @param {number} rowspan - The number of rows the cell spans.
      */
     protected remapRowSpanMetadata(row: number, cell: number, colspan: number, rowspan: number): void;
+    protected getFirstColumnIndexAtOrAfter(leftPx: number): number;
     /**
      * Creates an empty row caching object to store metadata about rendered row elements.
      * Used to optimize cell rendering and access within the grid.
@@ -1877,6 +1904,8 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * @param {CssStyleHash | null} [removedHash] - A hash of CSS styles to be removed.
      */
     protected updateCellCssStylesOnRenderedRows(addedHash?: CssStyleHash | null, removedHash?: CssStyleHash | null): void;
+    /** Merges the keyed CSS overlays once on update, rather than for every rendered cell. */
+    protected updateCellCssClassesByCell(): void;
     /**
      * Adds an "overlay" of CSS classes to cell DOM elements. SlickGrid can have many such overlays associated with different keys and they are frequently used by plugins. For example, SlickGrid uses this method internally to decorate selected cells with selectedCellCssClass (see options).
      * @param {String} key A unique key you can use in calls to setCellCssStyles and removeCellCssStyles. If a hash with that key has already been set, an exception will be thrown.

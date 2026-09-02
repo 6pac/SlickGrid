@@ -63,7 +63,7 @@
     createGridMenu() {
       var _a, _b, _c, _d, _e, _f;
       let gridMenuWidth = ((_a = this._gridMenuOptions) == null ? void 0 : _a.menuWidth) || this._defaults.menuWidth;
-      if (this._gridOptions && this._gridOptions.hasOwnProperty("frozenColumn") && this._gridOptions.frozenColumn >= 0 ? this._headerElm = document.querySelector(`.${this._gridUid} .slick-header-right`) : this._headerElm = document.querySelector(`.${this._gridUid} .slick-header-left`), this._headerElm.style.width = `calc(100% - ${gridMenuWidth}px)`, (Utils.isDefined((_b = this._gridMenuOptions) == null ? void 0 : _b.resizeOnShowHeaderRow) ? this._gridMenuOptions.resizeOnShowHeaderRow : this._defaults.resizeOnShowHeaderRow) && this._gridOptions.showHeaderRow) {
+      if (this._gridOptions && Object.prototype.hasOwnProperty.call(this._gridOptions, "frozenColumn") && this._gridOptions.frozenColumn >= 0 ? this._headerElm = document.querySelector(`.${this._gridUid} .slick-header-right`) : this._headerElm = document.querySelector(`.${this._gridUid} .slick-header-left`), this._headerElm.style.width = `calc(100% - ${gridMenuWidth}px)`, (Utils.isDefined((_b = this._gridMenuOptions) == null ? void 0 : _b.resizeOnShowHeaderRow) ? this._gridMenuOptions.resizeOnShowHeaderRow : this._defaults.resizeOnShowHeaderRow) && this._gridOptions.showHeaderRow) {
         let headerRow = document.querySelector(`.${this._gridUid}.slick-headerrow`);
         headerRow && (headerRow.style.width = `calc(100% - ${gridMenuWidth}px)`);
       }

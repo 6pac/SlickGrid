@@ -27,8 +27,6 @@
       // rows by id; lazy-calculated
       __publicField(this, "filter", null);
       // filter function
-      __publicField(this, "filterCSPSafe", null);
-      // filter function
       __publicField(this, "updated", null);
       // updated item ids
       __publicField(this, "suspend", !1);
@@ -45,10 +43,6 @@
       __publicField(this, "prevRefreshHints", {});
       __publicField(this, "filterArgs");
       __publicField(this, "filteredItems", []);
-      __publicField(this, "compiledFilter");
-      __publicField(this, "compiledFilterCSPSafe");
-      __publicField(this, "compiledFilterWithCaching");
-      __publicField(this, "compiledFilterWithCachingCSPSafe");
       __publicField(this, "filterCache", []);
       __publicField(this, "_grid");
       // grid object will be defined only after using "syncGridSelection()" method"
@@ -104,7 +98,7 @@
       this.isBulkSuspend = !1, this.suspend = !1, wasBulkSuspend && (this.processBulkDelete(), this.ensureIdUniqueness()), this.refresh();
     }
     destroy() {
-      this.items = [], this.idxById = null, this.rowsById = null, this.filter = null, this.filterCSPSafe = null, this.updated = null, this.sortComparer = null, this.filterCache = [], this.filteredItems = [], this.compiledFilter = null, this.compiledFilterCSPSafe = null, this.compiledFilterWithCaching = null, this.compiledFilterWithCachingCSPSafe = null, this._grid && this._grid.onSelectedRowsChanged && this._grid.onCellCssStylesChanged && (this._grid.onSelectedRowsChanged.unsubscribe(), this._grid.onCellCssStylesChanged.unsubscribe()), this.onRowsOrCountChanged && this.onRowsOrCountChanged.unsubscribe();
+      this.items = [], this.idxById = null, this.rowsById = null, this.filter = null, this.updated = null, this.sortComparer = null, this.filterCache = [], this.filteredItems = [], this._grid && this._grid.onSelectedRowsChanged && this._grid.onCellCssStylesChanged && (this._grid.onSelectedRowsChanged.unsubscribe(), this._grid.onCellCssStylesChanged.unsubscribe()), this.onRowsOrCountChanged && this.onRowsOrCountChanged.unsubscribe();
     }
     /** provide some refresh hints as to what to rows needs refresh */
     setRefreshHints(hints) {
@@ -208,14 +202,14 @@
     }
     /** Get current Filter used by the DataView */
     getFilter() {
-      return this._options.useCSPSafeFilter ? this.filterCSPSafe : this.filter;
+      return this.filter;
     }
     /**
      * Set a Filter that will be used by the DataView
      * @param {Function} fn - filter callback function
      */
     setFilter(filterFn) {
-      this.filterCSPSafe = filterFn, this.filter = filterFn, this._options.inlineFilters && (this.compiledFilterCSPSafe = this.compileFilterCSPSafe, this.compiledFilterWithCachingCSPSafe = this.compileFilterWithCachingCSPSafe, this.compiledFilter = this.compileFilter(this._options.useCSPSafeFilter), this.compiledFilterWithCaching = this.compileFilterWithCaching(this._options.useCSPSafeFilter)), this.refresh();
+      this.filter = filterFn, this.refresh();
     }
     /** Get current Grouping info */
     getGrouping() {
@@ -230,7 +224,7 @@
         let idx = gi.aggregators.length;
         for (; idx--; )
           gi.compiledAccumulators[idx] = this.compileAccumulatorLoopCSPSafe(gi.aggregators[idx]);
-        this.toggledGroupsByLevel[i] = {};
+        this.toggledGroupsByLevel[i] = /* @__PURE__ */ Object.create(null);
       }
       this.refresh();
     }
@@ -245,9 +239,10 @@
     }
     ensureRowsByIdCache() {
       if (!this.rowsById) {
-        this.rowsById = {};
+        let rowsById = /* @__PURE__ */ Object.create(null);
         for (let i = 0, l = this.rows.length; i < l; i++)
-          this.rowsById[this.rows[i][this.idProperty]] = i;
+          rowsById[this.rows[i][this.idProperty]] = i;
+        this.rowsById = rowsById;
       }
     }
     /** Get row number in the grid by its item object */
@@ -315,7 +310,7 @@
             throw new Error("[SlickGrid DataView] Cannot update item to associate with a non-unique id");
           this.idxById.set(newId, this.idxById.get(id)), this.idxById.delete(id), (_a2 = this.updated) != null && _a2[id] && delete this.updated[id], id = newId;
         }
-        this.items[this.idxById.get(id)] = item, this.updated || (this.updated = {}), this.updated[id] = !0;
+        this.items[this.idxById.get(id)] = item, this.updated || (this.updated = /* @__PURE__ */ Object.create(null)), this.updated[id] = !0;
       }
     }
     /**
@@ -460,10 +455,10 @@
     }
     expandCollapseAllGroups(level, collapse) {
       if (Utils.isDefined(level))
-        this.toggledGroupsByLevel[level] = {}, this.groupingInfos[level].collapsed = collapse, collapse === !0 ? this.onGroupCollapsed.notify({ level, groupingKey: null }) : this.onGroupExpanded.notify({ level, groupingKey: null });
+        this.toggledGroupsByLevel[level] = /* @__PURE__ */ Object.create(null), this.groupingInfos[level].collapsed = collapse, collapse === !0 ? this.onGroupCollapsed.notify({ level, groupingKey: null }) : this.onGroupExpanded.notify({ level, groupingKey: null });
       else
         for (let i = 0; i < this.groupingInfos.length; i++)
-          this.toggledGroupsByLevel[i] = {}, this.groupingInfos[i].collapsed = collapse, collapse === !0 ? this.onGroupCollapsed.notify({ level: i, groupingKey: null }) : this.onGroupExpanded.notify({ level: i, groupingKey: null });
+          this.toggledGroupsByLevel[i] = /* @__PURE__ */ Object.create(null), this.groupingInfos[i].collapsed = collapse, collapse === !0 ? this.onGroupCollapsed.notify({ level: i, groupingKey: null }) : this.onGroupExpanded.notify({ level: i, groupingKey: null });
       this.refresh();
     }
     /**
@@ -519,7 +514,7 @@
     }
     extractGroups(rows, parentGroup) {
       var _a2, _b2, _c;
-      let group, val, groups = [], groupsByVal = {}, r, level = parentGroup ? parentGroup.level + 1 : 0, gi = this.groupingInfos[level];
+      let group, val, groups = [], groupsByVal = /* @__PURE__ */ Object.create(null), r, level = parentGroup ? parentGroup.level + 1 : 0, gi = this.groupingInfos[level];
       for (let i = 0, l = (_b2 = (_a2 = gi.predefinedValues) == null ? void 0 : _a2.length) != null ? _b2 : 0; i < l; i++)
         val = (_c = gi.predefinedValues) == null ? void 0 : _c[i], group = groupsByVal[val], group || (group = new SlickGroup(), group.value = val, group.level = level, group.groupingKey = (parentGroup ? parentGroup.groupingKey + this.groupingDelimiter : "") + val, groups[groups.length] = group, groupsByVal[val] = group);
       for (let i = 0, l = rows.length; i < l; i++)
@@ -568,113 +563,35 @@
     }
     compileAccumulatorLoopCSPSafe(aggregator) {
       return aggregator.accumulate ? function(items) {
-        let result;
         for (let i = 0; i < items.length; i++) {
           let item = items[i];
-          result = aggregator.accumulate.call(aggregator, item);
+          aggregator.accumulate.call(aggregator, item);
         }
-        return result;
       } : function() {
       };
     }
     compileFilterCSPSafe(items, args) {
-      if (typeof this.filterCSPSafe != "function")
+      if (typeof this.filter != "function")
         return [];
       let _retval = [], _il = items.length;
-      for (let _i = 0; _i < _il; _i++)
-        this.filterCSPSafe(items[_i], args) && _retval.push(items[_i]);
+      for (let _i = 0; _i < _il; _i++) {
+        let item = items[_i];
+        this.filter(item, args) && _retval.push(item);
+      }
       return _retval;
     }
-    compileFilter(stopRunningIfCSPSafeIsActive = !1) {
-      if (stopRunningIfCSPSafeIsActive)
-        return null;
-      let filterInfo = Utils.getFunctionDetails(this.filter), filterPath1 = "{ continue _coreloop; }$1", filterPath2 = "{ _retval[_idx++] = $item$; continue _coreloop; }$1", filterBody = filterInfo.body.replace(/return false\s*([;}]|\}|$)/gi, filterPath1).replace(/return!1([;}]|\}|$)/gi, filterPath1).replace(/return true\s*([;}]|\}|$)/gi, filterPath2).replace(/return!0([;}]|\}|$)/gi, filterPath2).replace(
-        /return ([^;}]+?)\s*([;}]|$)/gi,
-        "{ if ($1) { _retval[_idx++] = $item$; }; continue _coreloop; }$2"
-      ), tpl = [
-        // 'function(_items, _args) { ',
-        "var _retval = [], _idx = 0; ",
-        "var $item$, $args$ = _args; ",
-        "_coreloop: ",
-        "for (var _i = 0, _il = _items.length; _i < _il; _i++) { ",
-        "$item$ = _items[_i]; ",
-        "$filter$; ",
-        "} ",
-        "return _retval; "
-        // '}'
-      ].join("");
-      tpl = tpl.replace(/\$filter\$/gi, filterBody), tpl = tpl.replace(/\$item\$/gi, filterInfo.params[0]), tpl = tpl.replace(/\$args\$/gi, filterInfo.params[1]);
-      let fn = new Function("_items,_args", tpl), fnName = "compiledFilter";
-      return fn.displayName = fnName, fn.name = this.setFunctionName(fn, fnName), fn;
-    }
-    compileFilterWithCaching(stopRunningIfCSPSafeIsActive = !1) {
-      if (stopRunningIfCSPSafeIsActive)
-        return null;
-      let filterInfo = Utils.getFunctionDetails(this.filter), filterPath1 = "{ continue _coreloop; }$1", filterPath2 = "{ _cache[_i] = true;_retval[_idx++] = $item$; continue _coreloop; }$1", filterBody = filterInfo.body.replace(/return false\s*([;}]|\}|$)/gi, filterPath1).replace(/return!1([;}]|\}|$)/gi, filterPath1).replace(/return true\s*([;}]|\}|$)/gi, filterPath2).replace(/return!0([;}]|\}|$)/gi, filterPath2).replace(
-        /return ([^;}]+?)\s*([;}]|$)/gi,
-        "{ if ((_cache[_i] = $1)) { _retval[_idx++] = $item$; }; continue _coreloop; }$2"
-      ), tpl = [
-        // 'function(_items, _args, _cache) { ',
-        "var _retval = [], _idx = 0; ",
-        "var $item$, $args$ = _args; ",
-        "_coreloop: ",
-        "for (var _i = 0, _il = _items.length; _i < _il; _i++) { ",
-        "$item$ = _items[_i]; ",
-        "if (_cache[_i]) { ",
-        "_retval[_idx++] = $item$; ",
-        "continue _coreloop; ",
-        "} ",
-        "$filter$; ",
-        "} ",
-        "return _retval; "
-        // '}'
-      ].join("");
-      tpl = tpl.replace(/\$filter\$/gi, filterBody), tpl = tpl.replace(/\$item\$/gi, filterInfo.params[0]), tpl = tpl.replace(/\$args\$/gi, filterInfo.params[1]);
-      let fn = new Function("_items,_args,_cache", tpl), fnName = "compiledFilterWithCaching";
-      return fn.displayName = fnName, fn.name = this.setFunctionName(fn, fnName), fn;
-    }
     compileFilterWithCachingCSPSafe(items, args, filterCache) {
-      if (typeof this.filterCSPSafe != "function")
+      if (typeof this.filter != "function")
         return [];
       let retval = [], il = items.length;
-      for (let _i = 0; _i < il; _i++)
-        (filterCache[_i] || this.filterCSPSafe(items[_i], args)) && retval.push(items[_i]);
-      return retval;
-    }
-    /**
-     * In ES5 we could set the function name on the fly but in ES6 this is forbidden and we need to set it through differently
-     * We can use Object.defineProperty and set it the property to writable, see MDN for reference
-     * https://developer.mozilla.org/en-US/docs/Web/JavaScript/Reference/Global_Objects/Object/defineProperty
-     * @param {*} fn
-     * @param {string} fnName
-     */
-    setFunctionName(fn, fnName) {
-      try {
-        Object.defineProperty(fn, "name", { writable: !0, value: fnName });
-      } catch (err) {
-        fn.name = fnName;
+      for (let _i = 0; _i < il; _i++) {
+        let item = items[_i];
+        filterCache[_i] ? retval.push(item) : this.filter(item, args) && (filterCache[_i] = !0, retval.push(item));
       }
-    }
-    uncompiledFilter(items, args) {
-      var _a2;
-      let retval = [], idx = 0;
-      for (let i = 0, ii = items.length; i < ii; i++)
-        (_a2 = this.filter) != null && _a2.call(this, items[i], args) && (retval[idx++] = items[i]);
-      return retval;
-    }
-    uncompiledFilterWithCaching(items, args, cache) {
-      var _a2;
-      let retval = [], idx = 0, item;
-      for (let i = 0, ii = items.length; i < ii; i++)
-        item = items[i], cache[i] ? retval[idx++] = item : (_a2 = this.filter) != null && _a2.call(this, item, args) && (retval[idx++] = item, cache[i] = !0);
       return retval;
     }
     getFilteredAndPagedItems(items) {
-      if (this._options.useCSPSafeFilter ? this.filterCSPSafe : this.filter) {
-        let batchFilter, batchFilterWithCaching;
-        this._options.useCSPSafeFilter ? (batchFilter = this._options.inlineFilters ? this.compiledFilterCSPSafe : this.uncompiledFilter, batchFilterWithCaching = this._options.inlineFilters ? this.compiledFilterWithCachingCSPSafe : this.uncompiledFilterWithCaching) : (batchFilter = this._options.inlineFilters ? this.compiledFilter : this.uncompiledFilter, batchFilterWithCaching = this._options.inlineFilters ? this.compiledFilterWithCaching : this.uncompiledFilterWithCaching), this.refreshHints.isFilterNarrowing ? this.filteredItems = batchFilter.call(this, this.filteredItems, this.filterArgs) : this.refreshHints.isFilterExpanding ? this.filteredItems = batchFilterWithCaching.call(this, items, this.filterArgs, this.filterCache) : this.refreshHints.isFilterUnchanged || (this.filteredItems = batchFilter.call(this, items, this.filterArgs));
-      } else
-        this.filteredItems = this.pagesize ? items : items.concat();
+      this.filter ? this.refreshHints.isFilterNarrowing ? this.filteredItems = this.compileFilterCSPSafe(this.filteredItems, this.filterArgs) : this.refreshHints.isFilterExpanding ? this.filteredItems = this.compileFilterWithCachingCSPSafe(items, this.filterArgs, this.filterCache) : this.refreshHints.isFilterUnchanged || (this.filteredItems = this.compileFilterCSPSafe(items, this.filterArgs)) : this.filteredItems = this.pagesize ? items : items.concat();
       let paged;
       return this.pagesize ? (this.filteredItems.length <= this.pagenum * this.pagesize && (this.filteredItems.length === 0 ? this.pagenum = 0 : this.pagenum = Math.floor((this.filteredItems.length - 1) / this.pagesize)), paged = this.filteredItems.slice(this.pagesize * this.pagenum, this.pagesize * this.pagenum + this.pagesize)) : paged = this.filteredItems, { totalRows: this.filteredItems.length, rows: paged };
     }
@@ -858,7 +775,7 @@
     }
     syncGridCellCssStyles(grid, key) {
       let hashById, inHandler, storeCellCssStyles = (hash) => {
-        hashById = {}, typeof hash == "object" && Object.keys(hash).forEach((row) => {
+        hashById = /* @__PURE__ */ Object.create(null), typeof hash == "object" && Object.keys(hash).forEach((row) => {
           if (hash) {
             let id = this.rows[row][this.idProperty];
             hashById[id] = hash[row];
@@ -869,7 +786,7 @@
       let update = () => {
         if (typeof hashById == "object") {
           inHandler = !0, this.ensureRowsByIdCache();
-          let newHash = {};
+          let newHash = /* @__PURE__ */ Object.create(null);
           Object.keys(hashById).forEach((id) => {
             var _a2;
             let row = (_a2 = this.rowsById) == null ? void 0 : _a2[id];
@@ -899,11 +816,11 @@
       this._nonNullCount = 0, this._sum = 0;
     }
     accumulate(item) {
-      let val = item != null && item.hasOwnProperty(this._field) ? item[this._field] : null;
+      let val = item && Object.prototype.hasOwnProperty.call(item, this._field) ? item[this._field] : null;
       val !== null && val !== "" && !isNaN(val) && (this._nonNullCount++, this._sum += parseFloat(val));
     }
     storeResult(groupTotals) {
-      (!groupTotals || groupTotals[this._type] === void 0) && (groupTotals[this._type] = {}), this._nonNullCount !== 0 && (groupTotals[this._type][this._field] = this._sum / this._nonNullCount);
+      (!groupTotals || groupTotals[this._type] === void 0) && (groupTotals[this._type] = /* @__PURE__ */ Object.create(null)), this._nonNullCount !== 0 && (groupTotals[this._type][this._field] = this._sum / this._nonNullCount);
     }
   }, MinAggregator = class {
     constructor(field) {
@@ -922,11 +839,11 @@
       this._min = null;
     }
     accumulate(item) {
-      let val = item != null && item.hasOwnProperty(this._field) ? item[this._field] : null;
+      let val = item && Object.prototype.hasOwnProperty.call(item, this._field) ? item[this._field] : null;
       val !== null && val !== "" && !isNaN(val) && (this._min === null || val < this._min) && (this._min = parseFloat(val));
     }
     storeResult(groupTotals) {
-      (!groupTotals || groupTotals[this._type] === void 0) && (groupTotals[this._type] = {}), groupTotals[this._type][this._field] = this._min;
+      (!groupTotals || groupTotals[this._type] === void 0) && (groupTotals[this._type] = /* @__PURE__ */ Object.create(null)), groupTotals[this._type][this._field] = this._min;
     }
   }, MaxAggregator = class {
     constructor(field) {
@@ -945,11 +862,11 @@
       this._max = null;
     }
     accumulate(item) {
-      let val = item != null && item.hasOwnProperty(this._field) ? item[this._field] : null;
+      let val = item && Object.prototype.hasOwnProperty.call(item, this._field) ? item[this._field] : null;
       val !== null && val !== "" && !isNaN(val) && (this._max === null || val > this._max) && (this._max = parseFloat(val));
     }
     storeResult(groupTotals) {
-      (!groupTotals || groupTotals[this._type] === void 0) && (groupTotals[this._type] = {}), groupTotals[this._type][this._field] = this._max;
+      (!groupTotals || groupTotals[this._type] === void 0) && (groupTotals[this._type] = /* @__PURE__ */ Object.create(null)), groupTotals[this._type][this._field] = this._max;
     }
   }, SumAggregator = class {
     constructor(field) {
@@ -968,11 +885,11 @@
       this._sum = 0;
     }
     accumulate(item) {
-      let val = item != null && item.hasOwnProperty(this._field) ? item[this._field] : null;
+      let val = item && Object.prototype.hasOwnProperty.call(item, this._field) ? item[this._field] : null;
       val !== null && val !== "" && !isNaN(val) && (this._sum += parseFloat(val));
     }
     storeResult(groupTotals) {
-      (!groupTotals || groupTotals[this._type] === void 0) && (groupTotals[this._type] = {}), groupTotals[this._type][this._field] = this._sum;
+      (!groupTotals || groupTotals[this._type] === void 0) && (groupTotals[this._type] = /* @__PURE__ */ Object.create(null)), groupTotals[this._type][this._field] = this._sum;
     }
   }, CountAggregator = class {
     constructor(field) {
@@ -989,7 +906,7 @@
     init() {
     }
     storeResult(groupTotals) {
-      (!groupTotals || groupTotals[this._type] === void 0) && (groupTotals[this._type] = {}), groupTotals[this._type][this._field] = groupTotals.group.rows.length;
+      (!groupTotals || groupTotals[this._type] === void 0) && (groupTotals[this._type] = /* @__PURE__ */ Object.create(null)), groupTotals[this._type][this._field] = groupTotals.group.rows.length;
     }
   }, Aggregators = {
     Avg: AvgAggregator,
