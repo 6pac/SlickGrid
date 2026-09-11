@@ -333,7 +333,7 @@ export class SlickCheckboxSelectColumn<T = any> implements SlickPlugin {
             ids.push(dataviewRowItem[this._dataView.getIdPropertyName() as keyof T] as number | string);
           }
         }
-        this._dataView.setSelectedIds(ids, { isRowBeingAdded: isAllSelected });
+        this._dataView.setSelectedIds(ids, { isRowBeingAdded: isAllSelected, shouldTriggerEvent: false, applyRowSelectionToGrid: false });
       }
       this._grid.setSelectedRows(rows, caller);
       e.stopPropagation();
@@ -460,4 +460,3 @@ if (IIFE_ONLY && window.Slick) {
     }
   });
 }
-
