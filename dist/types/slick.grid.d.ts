@@ -10,7 +10,7 @@ import { type BasePubSub, BindingEventService as BindingEventService_, RowPositi
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.20.0
+ * SlickGrid v5.20.1
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
@@ -1936,6 +1936,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * @param {String} key A string.
      */
     getCellCssStyles(key: string): CssStyleHash;
+    protected isCellSelected(row: number, cell: number): boolean;
     /**
      * Flashes the cell twice by toggling the CSS class 4 times.
      * @param {Number} row A row index.
@@ -2215,7 +2216,7 @@ export declare class SlickGrid<TData = any, C extends Column<TData> = Column<TDa
      * @param {number[]} rows - The row indices.
      * @returns {SlickRange_[]} An array of ranges covering the specified rows.
      */
-    protected rowsToRanges(rows: number[]): SlickRange_[];
+    protected rowsToRanges(rows: number[], compactRows?: boolean): SlickRange_[];
     /**
      * From any row/cell indexes that might have colspan/rowspan, find its starting indexes
      * For example, if we start at 0,0 and we have colspan/rowspan of 4 for both and our indexes is row:2,cell:3

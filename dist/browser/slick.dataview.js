@@ -65,6 +65,7 @@
       __publicField(this, "toggledGroupsByLevel", []);
       __publicField(this, "groupingDelimiter", ":|:");
       __publicField(this, "selectedRowIds", []);
+      __publicField(this, "pendingSelectedFilteredIds");
       __publicField(this, "preSelectedRowIdsChangeFn");
       __publicField(this, "pagesize", 0);
       __publicField(this, "pagenum", 0);
@@ -659,7 +660,18 @@
       let inHandler;
       this.selectedRowIds = this.mapRowsToIds(grid.getSelectedRows());
       let setSelectedRowIds = (rowIds) => {
-        rowIds === !1 ? this.selectedRowIds = [] : this.selectedRowIds.sort().join(",") !== rowIds.sort().join(",") && (this.selectedRowIds = rowIds);
+        if (rowIds === !1)
+          this.selectedRowIds = [];
+        else {
+          let sortedRowIds = rowIds.every((id, index) => index === 0 || `${rowIds[index - 1]}` <= `${id}`) ? rowIds : rowIds.slice().sort(), sortedSelectedRowIds = this.selectedRowIds.every(
+            (id, index) => index === 0 || `${this.selectedRowIds[index - 1]}` <= `${id}`
+          ) ? this.selectedRowIds : this.selectedRowIds.slice().sort(), selectedRowIdsChanged = this.selectedRowIds.length !== sortedRowIds.length;
+          if (!selectedRowIdsChanged) {
+            let selectedRowIdsSet = new Set(this.selectedRowIds);
+            selectedRowIdsChanged = sortedRowIds.some((id) => !selectedRowIdsSet.has(id));
+          }
+          selectedRowIdsChanged ? this.selectedRowIds = sortedRowIds : sortedSelectedRowIds !== this.selectedRowIds && (this.selectedRowIds = sortedSelectedRowIds);
+        }
       }, update = () => {
         if ((this.selectedRowIds || []).length > 0 && !inHandler) {
           inHandler = !0;
@@ -688,9 +700,11 @@
             added: !0,
             dataView: this
           };
-          this.preSelectedRowIdsChangeFn(selectedRowsChangedArgs), this.onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
+          this.preSelectedRowIdsChangeFn(selectedRowsChangedArgs);
+          let isBulkSelection = args.caller === "click.selectAll" || args.caller === "click.unselectAll", pendingSelectedFilteredIds = this.pendingSelectedFilteredIds, filteredIds = isBulkSelection && (pendingSelectedFilteredIds == null ? void 0 : pendingSelectedFilteredIds.selectedRowIds) === this.selectedRowIds ? pendingSelectedFilteredIds.ids : this.getAllSelectedFilteredIds();
+          this.pendingSelectedFilteredIds = void 0, this.onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
             selectedRowIds: this.selectedRowIds,
-            filteredIds: this.getAllSelectedFilteredIds()
+            filteredIds
           }), new SlickEventData(), this);
         }
       }), this.preSelectedRowIdsChangeFn = (args) => {
@@ -748,7 +762,7 @@
         added: isRowBeingAdded,
         dataView: this
       };
-      (_a2 = this.preSelectedRowIdsChangeFn) == null || _a2.call(this, selectedRowsChangedArgs), shouldTriggerEvent !== !1 && this.onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
+      (_a2 = this.preSelectedRowIdsChangeFn) == null || _a2.call(this, selectedRowsChangedArgs), shouldTriggerEvent === !1 && applyRowSelectionToGrid === !1 && (this.pendingSelectedFilteredIds = { ids: isRowBeingAdded ? selectedIds.slice() : [], selectedRowIds: this.selectedRowIds }), shouldTriggerEvent !== !1 && this.onSelectedRowIdsChanged.notify(Object.assign(selectedRowsChangedArgs, {
         selectedRowIds: this.selectedRowIds,
         filteredIds: this.getAllSelectedFilteredIds()
       }), new SlickEventData(), this), applyRowSelectionToGrid !== !1 && this._grid && this._grid.setSelectedRows(selectedRows);

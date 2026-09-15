@@ -24,7 +24,7 @@
       __publicField(this, "externalPubSub", externalPubSub);
       //////////////////////////////////////////////////////////////////////////////////////////////
       // Public API
-      __publicField(this, "slickGridVersion", "5.20.0");
+      __publicField(this, "slickGridVersion", "5.20.1");
       /** optional grid state clientId */
       __publicField(this, "cid", "");
       // Events
@@ -2037,7 +2037,7 @@
       var _a;
       if (!this.selectionModel)
         throw new Error("SlickGrid Selection model is not set");
-      this && this.getEditorLock && !((_a = this.getEditorLock()) != null && _a.isActive()) && this.selectionModel.setSelectedRanges(this.rowsToRanges(rows), caller || "SlickGrid.setSelectedRows");
+      this && this.getEditorLock && !((_a = this.getEditorLock()) != null && _a.isActive()) && this.selectionModel.setSelectedRanges(this.rowsToRanges(rows, caller === "click.selectAll"), caller || "SlickGrid.setSelectedRows");
     }
     ///////////////////////////////////////////////////////////////////////////
     // Event Handling and Interactivity
@@ -2097,8 +2097,8 @@
     * @param {SlickRange_[]} ranges - The list of selected row and cell ranges.
      */
     handleSelectedRangesChanged(e, ranges) {
-      var _a, _b, _c, _d, _e, _f, _g;
-      let ne = e.getNativeEvent(), selectionMode = (_b = (_a = ne == null ? void 0 : ne.detail) == null ? void 0 : _a.selectionMode) != null ? _b : "", addDragHandle = !!((_c = ne == null ? void 0 : ne.detail) != null && _c.addDragHandle), selectionType = (_e = (_d = this.getSelectionModel()) == null ? void 0 : _d.getOptions()) == null ? void 0 : _e.selectionType, showDragHandle = this.getDragHandleVisibility();
+      var _a, _b, _c, _d, _e, _f, _g, _h;
+      let ne = e.getNativeEvent(), selectionMode = (_b = (_a = ne == null ? void 0 : ne.detail) == null ? void 0 : _a.selectionMode) != null ? _b : "", caller = (_d = (_c = ne == null ? void 0 : ne.detail) == null ? void 0 : _c.caller) != null ? _d : "click", isBulkSelection = caller === "click.selectAll" || caller === "click.unselectAll", addDragHandle = !!((_e = ne == null ? void 0 : ne.detail) != null && _e.addDragHandle), selectedCellCssClass = this._options.selectedCellCssClass || "", selectionType = (_g = (_f = this.getSelectionModel()) == null ? void 0 : _f.getOptions()) == null ? void 0 : _g.selectionType, showDragHandle = this.getDragHandleVisibility();
       addDragHandle = selectionType === "cell" || selectionType === "mixed";
       let prevSelectedRanges = this.selectedRanges.slice(0);
       if (this.selectedRanges = ranges, selectionMode === CellSelectionMode.Replace && prevSelectedRanges.length === this.selectedRanges.length && prevSelectedRanges.length > 0) {
@@ -2120,22 +2120,30 @@
       }
       let previousSelectedRows = this.selectedRows.slice(0);
       this.selectionBottomRow = -1, this.selectionRightCell = -1, this.dragReplaceEl.removeEl(), this.selectedRows = [];
-      let hash = /* @__PURE__ */ Object.create(null);
-      for (let i = 0; i < ranges.length; i++)
+      let hash = /* @__PURE__ */ Object.create(null), selectedRowsSet = ranges.length > 1 ? /* @__PURE__ */ new Set() : void 0, rangesAreOrdered = !0;
+      for (let i = 0; i < ranges.length; i++) {
+        i > 0 && ranges[i - 1].toRow >= ranges[i].fromRow && (rangesAreOrdered = !1);
         for (let j = ranges[i].fromRow; j <= ranges[i].toRow; j++) {
-          hash[j] || (this.selectedRows.push(j), hash[j] = /* @__PURE__ */ Object.create(null));
+          (!selectedRowsSet || !selectedRowsSet.has(j)) && (selectedRowsSet == null || selectedRowsSet.add(j), this.selectedRows.push(j));
+          let rowHash = this.rowsCache[j] ? (_h = hash[j]) != null ? _h : hash[j] = /* @__PURE__ */ Object.create(null) : void 0;
           for (let k = ranges[i].fromCell; k <= ranges[i].toCell; k++)
-            this.canCellBeSelected(j, k) && (hash[j][this.columns[k].id] = this._options.selectedCellCssClass);
+            rowHash && this.canCellBeSelected(j, k) && (rowHash[this.columns[k].id] = selectedCellCssClass);
         }
+      }
       let activeRange = ranges[ranges.length - 1];
-      if (activeRange && (this.selectionBottomRow = activeRange.toRow, this.selectionRightCell = activeRange.toCell), this.setCellCssStyles(this._options.selectedCellCssClass || "", hash), this.selectionBottomRow >= 0 && this.selectionRightCell >= 0 && addDragHandle && showDragHandle !== !1) {
+      if (activeRange && (this.selectionBottomRow = activeRange.toRow, this.selectionRightCell = activeRange.toCell), (!isBulkSelection || !rangesAreOrdered) && this.selectedRows.sort(), this.setCellCssStyles(selectedCellCssClass, hash), this.selectionBottomRow >= 0 && this.selectionRightCell >= 0 && addDragHandle && showDragHandle !== !1) {
         let lowerRightCell = this.getCellNode(this.selectionBottomRow, this.selectionRightCell);
         this.dragReplaceEl.createEl(lowerRightCell, showDragHandle);
       }
-      if (!this.arrayEquals(previousSelectedRows.sort(), this.selectedRows.sort())) {
-        let caller = (_g = (_f = ne == null ? void 0 : ne.detail) == null ? void 0 : _f.caller) != null ? _g : "click", selectedRowsSet = new Set(this.getSelectedRows()), previousSelectedRowsSet = new Set(previousSelectedRows), newSelectedAdditions = Array.from(selectedRowsSet).filter((i) => !previousSelectedRowsSet.has(i)), newSelectedDeletions = Array.from(previousSelectedRowsSet).filter((i) => !selectedRowsSet.has(i));
+      let selectedRowsChanged = previousSelectedRows.length !== this.selectedRows.length;
+      if (!selectedRowsChanged) {
+        let previousSelectedRowsSet = new Set(previousSelectedRows);
+        selectedRowsChanged = this.selectedRows.some((row) => !previousSelectedRowsSet.has(row));
+      }
+      if (selectedRowsChanged) {
+        let selectedRows = this.getSelectedRows(), selectedRowsSet2 = selectedRows.length ? new Set(selectedRows) : void 0, previousSelectedRowsSet = previousSelectedRows.length ? new Set(previousSelectedRows) : void 0, newSelectedAdditions = previousSelectedRowsSet ? selectedRows.filter((i) => !previousSelectedRowsSet.has(i)) : selectedRows, newSelectedDeletions = selectedRowsSet2 ? previousSelectedRows.filter((i) => !selectedRowsSet2.has(i)) : previousSelectedRows;
         this.trigger(this.onSelectedRowsChanged, {
-          rows: this.getSelectedRows(),
+          rows: selectedRows,
           previousSelectedRows,
           caller,
           changedSelectedRows: newSelectedAdditions,
@@ -2919,7 +2927,7 @@
       let m = this.columns[cell], cellCss = `slick-cell l${cell} r${Math.min(this.columns.length - 1, cell + colspan - 1)}` + (m.cssClass ? ` ${m.cssClass}` : "") + (rowspan > 1 ? " rowspan" : "") + (columnMetadata != null && columnMetadata.cssClass ? ` ${columnMetadata.cssClass}` : "");
       this.hasFrozenColumns() && cell <= this._options.frozenColumn && (cellCss += " frozen"), row === this.activeRow && cell === this.activeCell && this._options.showCellSelection && (cellCss += " active");
       let cellCssClasses = (_a = this.cellCssClassesByCell[row]) == null ? void 0 : _a[m.id];
-      cellCssClasses && (cellCss += ` ${cellCssClasses}`);
+      cellCssClasses && (cellCss += ` ${cellCssClasses}`), this.isCellSelected(row, cell) && !(cellCssClasses != null && cellCssClasses.includes(this._options.selectedCellCssClass || "")) && (cellCss += ` ${this._options.selectedCellCssClass}`);
       let value = null, formatterResult = "";
       item && (value = this.getDataItemValueForColumn(item, m), formatterResult = this.getFormatter(row, m)(row, cell, value, m, item, this), formatterResult == null && (formatterResult = ""));
       let appendCellResult = this.trigger(this.onBeforeAppendCell, { row, cell, value, dataContext: item }).getReturnValue(), addlCssClasses = typeof appendCellResult == "string" ? appendCellResult : "";
@@ -3989,9 +3997,9 @@
       let node, addedRowHash, removedRowHash;
       typeof this.rowsCache == "object" && Object.keys(this.rowsCache).forEach((row) => {
         this.rowsCache && (removedRowHash = removedHash == null ? void 0 : removedHash[row], addedRowHash = addedHash == null ? void 0 : addedHash[row], removedRowHash && Object.keys(removedRowHash).forEach((columnId) => {
-          (!addedRowHash || removedRowHash[columnId] !== addedRowHash[columnId]) && (node = this.getCellNode(+row, this.getColumnIndex(columnId)), node && node.classList.remove(removedRowHash[columnId]));
+          (!addedRowHash || removedRowHash[columnId] !== addedRowHash[columnId]) && (node = this.getCellNode(+row, this.getColumnIndex(columnId)), node && node.classList.remove(...Utils.classNameToList(removedRowHash[columnId])));
         }), addedRowHash && Object.keys(addedRowHash).forEach((columnId) => {
-          (!removedRowHash || removedRowHash[columnId] !== addedRowHash[columnId]) && (node = this.getCellNode(+row, this.getColumnIndex(columnId)), node && node.classList.add(addedRowHash[columnId]));
+          (!removedRowHash || removedRowHash[columnId] !== addedRowHash[columnId]) && (node = this.getCellNode(+row, this.getColumnIndex(columnId)), node && node.classList.add(...Utils.classNameToList(addedRowHash[columnId])));
         }));
       });
     }
@@ -4047,6 +4055,9 @@
      */
     getCellCssStyles(key) {
       return this.cellCssClasses[key];
+    }
+    isCellSelected(row, cell) {
+      return !!this._options.selectedCellCssClass && this.selectedRanges.some((range) => range.contains(row, cell)) && this.canCellBeSelected(row, cell);
     }
     /**
      * Flashes the cell twice by toggling the CSS class 4 times.
@@ -4523,11 +4534,18 @@
      * @param {number[]} rows - The row indices.
      * @returns {SlickRange_[]} An array of ranges covering the specified rows.
      */
-    rowsToRanges(rows) {
-      let ranges = [], lastCell = this.columns.length - 1;
-      for (let i = 0; i < rows.length; i++)
-        ranges.push(new SlickRange(rows[i], 0, rows[i], lastCell));
-      return ranges;
+    rowsToRanges(rows, compactRows = !1) {
+      let lastCell = this.columns.length - 1, ranges = [];
+      if (!compactRows)
+        return rows.forEach((row) => ranges.push(new SlickRange(row, 0, row, lastCell))), ranges;
+      let rangeStart = rows[0], previousRow = rangeStart;
+      for (let i = 1; i < rows.length; i++) {
+        let row = rows[i];
+        if (row <= previousRow)
+          return rows.map((row2) => new SlickRange(row2, 0, row2, lastCell));
+        row !== previousRow + 1 && (ranges.push(new SlickRange(rangeStart, 0, previousRow, lastCell)), rangeStart = row), previousRow = row;
+      }
+      return rangeStart !== void 0 && ranges.push(new SlickRange(rangeStart, 0, previousRow, lastCell)), ranges;
     }
     /**
      * From any row/cell indexes that might have colspan/rowspan, find its starting indexes
@@ -4936,7 +4954,7 @@
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.20.0
+ * SlickGrid v5.20.1
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.

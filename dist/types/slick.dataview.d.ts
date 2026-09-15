@@ -67,6 +67,10 @@ export declare class SlickDataView<TData extends SlickDataItem = any> implements
     protected toggledGroupsByLevel: any[];
     protected groupingDelimiter: string;
     protected selectedRowIds: DataIdType[];
+    protected pendingSelectedFilteredIds?: {
+        ids: DataIdType[];
+        selectedRowIds: DataIdType[];
+    };
     protected preSelectedRowIdsChangeFn?: (args?: any) => void;
     protected pagesize: number;
     protected pagenum: number;

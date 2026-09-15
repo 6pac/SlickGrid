@@ -172,7 +172,7 @@
             let dataviewRowItem = filteredItems[j];
             this.checkSelectableOverride(j, dataviewRowItem, this._grid) && ids.push(dataviewRowItem[this._dataView.getIdPropertyName()]);
           }
-          this._dataView.setSelectedIds(ids, { isRowBeingAdded: isAllSelected });
+          this._dataView.setSelectedIds(ids, { isRowBeingAdded: isAllSelected, shouldTriggerEvent: !1, applyRowSelectionToGrid: !1 });
         }
         this._grid.setSelectedRows(rows, caller), e.stopPropagation(), e.stopImmediatePropagation();
       }

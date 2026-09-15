@@ -3,6 +3,17 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.20.1](https://github.com/6pac/SlickGrid/compare/5.20.0...5.20.1) (2026-09-15)
+
+### Bug Fixes
+
+* **grid:** support multiple CSS classes in cell style updates ([#1298](https://github.com/6pac/SlickGrid/issues/1298)) ([f96dad3](https://github.com/6pac/SlickGrid/commit/f96dad3e03e41c85b2fe3bb6ee2d59d337bdc0c2))
+* support RTL column reordering ([#1294](https://github.com/6pac/SlickGrid/issues/1294)) ([a4dea00](https://github.com/6pac/SlickGrid/commit/a4dea00cc27b8cf1b83e848c7a3f36360294898f))
+
+### Performance Improvements
+
+* **common:** improve Select All row selections toggling on large dataset by 9x faster ([#1295](https://github.com/6pac/SlickGrid/issues/1295)) ([4b62a6b](https://github.com/6pac/SlickGrid/commit/4b62a6b26fd10e63e34234aa6643986dd6110161))
+
 # [5.20.0](https://github.com/6pac/SlickGrid/compare/5.19.0...5.20.0) (2026-09-02)
 
 ### Bug Fixes
