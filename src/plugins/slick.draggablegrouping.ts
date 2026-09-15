@@ -312,7 +312,7 @@ export class SlickDraggableGrouping {
           this.handleGroupByDrop(dropzoneElm, (Sortable.utils).clone(evt.item));
         }
         evt.clone.style.opacity = '.5';
-        el.parentNode?.removeChild(el);
+        el.remove();
       },
       onUpdate: () => {
         const sortArray = this._droppableInstance?.toArray() ?? [];

@@ -186,7 +186,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
     let j = 0;
     const clippedRange: any[] = [];
 
-    this._bodyElement.removeChild(ta);
+    ta.remove();
     for (let i = 0; i < clipRows.length; i++) {
       if (clipRows[i] !== '') {
         clippedRange[j++] = clipRows[i].split('\t');
@@ -238,6 +238,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
       this._options.newRowCreator(newRowsNeeded);
     }
 
+    let lastDestX = activeCell;
     const clipCommand: ExternalCopyClipCommand = {
       isClipboardCommand: true,
       clippedRange,
@@ -257,6 +258,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
       w: 0,
       execute: () => {
         clipCommand.h = 0;
+        lastDestX = activeCell;
         for (let y = 0; y < clipCommand.destH; y++) {
           clipCommand.oldValues[y] = [];
           clipCommand.w = 0;
@@ -280,6 +282,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
               continue;
             }
             clipCommand.w++;
+            lastDestX = destx;
 
             if (desty < clipCommand.maxDestY && destx < clipCommand.maxDestX) {
               const dt = grid.getDataItem(desty);
@@ -302,12 +305,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
           }
         }
 
-        const bRange = new SlickRange(
-          activeRow,
-          activeCell,
-          activeRow + clipCommand.h - 1,
-          activeCell + clipCommand.w - 1
-        );
+        const bRange = new SlickRange(activeRow, activeCell, activeRow + clipCommand.h - 1, lastDestX);
 
         this.markCopySelection([bRange]);
         grid.getSelectionModel()?.setSelectedRanges([bRange]);
@@ -346,12 +344,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
           }
         }
 
-        const bRange = new SlickRange(
-          activeRow,
-          activeCell,
-          activeRow + clipCommand.h - 1,
-          activeCell + clipCommand.w - 1
-        );
+        const bRange = new SlickRange(activeRow, activeCell, activeRow + clipCommand.h - 1, lastDestX);
 
         this.markCopySelection([bRange]);
         grid.getSelectionModel()?.setSelectedRanges([bRange]);
@@ -454,7 +447,7 @@ export class SlickCellExternalCopyManager implements SlickPlugin {
             ta.focus();
 
             window.setTimeout(() => {
-              this._bodyElement.removeChild(ta);
+              ta.remove();
               // restore focus when possible
               focusEl
                 ? focusEl.focus()

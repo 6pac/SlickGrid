@@ -46,7 +46,7 @@
       <br/>
       <h2>View Source:</h2>
       <ul>
-          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-frozen-columns-and-column-group.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-frozen-columns-and-column-group-hidden-col.html" target="_sourcewindow"> View the source for this example on Github</a></li>
       </ul>
   </div>
 </div>
@@ -220,14 +220,14 @@
 
   document.querySelector('#chkHideColumn1').addEventListener("change", function(e) {
     let hideCol = document.querySelector('#chkHideColumn1').checked || false;
-    columns[2].hidden = hideCol;
+    grid.updateColumnById('duration', { hidden: hideCol });
     grid.updateColumns();
     CreateAddlHeaderRow();
  });
 
   document.querySelector('#chkHideColumn2').addEventListener("change", function(e) {
     let hideCol = document.querySelector('#chkHideColumn2').checked || false;
-    columns[4].hidden = hideCol;
+    grid.updateColumnById('finish', { hidden: hideCol });
     grid.updateColumns();
     CreateAddlHeaderRow();
   });

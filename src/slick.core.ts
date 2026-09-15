@@ -905,7 +905,7 @@ export class Utils {
 
   public static emptyElement<T extends Element = Element>(element?: T | null): T | undefined | null {
     while (element?.firstChild) {
-      element.removeChild(element.firstChild);
+      element.firstChild.remove();
     }
     return element;
   }

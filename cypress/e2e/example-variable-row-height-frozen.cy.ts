@@ -47,7 +47,7 @@ describe('Example - Variable Row Height with Frozen Columns/Rows', { retries: 1 
   it('should scroll both panes to a far row (top) keeping pane agreement', () => {
     cy.contains('button', 'Scroll both to row 300').click();
     // scrollRowToTop lands row 300 as the first visible row in both grids' scrolling panes
-    cy.window().then(win => {
+    cy.window().should(win => {
       expect((win as any).gridA.getViewport().top).to.eq(300);
       expect((win as any).gridB.getViewport().top).to.eq(300);
     });
