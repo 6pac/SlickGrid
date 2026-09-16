@@ -356,6 +356,11 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   /** Defaults to false, when enabled the header row will automatically resize its height to fit multi-line column titles */
   autoHeaderHeight?: boolean;
 
+  /**
+   * Defaults to false. When a cell colspan crosses hidden columns, increase the span so it covers the same number of visible columns.
+   */
+  spreadHiddenColspan?: boolean;
+
   /** Defaults to false, sets the grid direction to RTL (Right-to-Left) for proper rendering of RTL languages */
   rtl?: boolean;
 

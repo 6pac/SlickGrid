@@ -24,7 +24,7 @@ export interface SlickStateOption {
 }
 
 export interface CurrentState {
-  columns: Array<{ id: string | number; width: number | undefined; }>;
+  columns: Array<{ id: string | number; width: number | undefined; hidden?: boolean; }>;
   sortcols: ColumnSort[];
   userData: any;
   viewport: { top: number; bottom: number; leftPx: number; rightPx: number; };
@@ -152,25 +152,31 @@ export class SlickState implements SlickPlugin {
               this._grid.scrollRowIntoView(state.viewport.top, true);
             }
             if (state.columns) {
-              const defaultColumns = this._options.defaultColumns;
-              if (defaultColumns) {
-                const defaultColumnsLookup: Record<number | string, Column> = {};
-                defaultColumns.forEach((colDef) => defaultColumnsLookup[colDef.id] = colDef);
+              const baseColumns = this._options.defaultColumns || this._grid.getColumns();
+              const baseColumnsLookup: Record<number | string, Column> = {};
+              baseColumns.forEach((colDef) => baseColumnsLookup[colDef.id] = colDef);
+              const savedColumnIds = new Set((state.columns || []).map((columnDef) => columnDef.id));
+              const cols: Column[] = [];
 
-                const cols: Array<{ id: string | number; width: number | undefined; }> = [];
-                (state.columns || []).forEach((columnDef) => {
-                  if (defaultColumnsLookup[columnDef.id]) {
-                    cols.push(Utils.extend(true, {}, defaultColumnsLookup[columnDef.id], {
-                      width: columnDef.width,
-                      headerCssClass: (columnDef as Column).headerCssClass
-                    }));
-                  }
-                });
+              (state.columns || []).forEach((columnDef) => {
+                const baseColumn = baseColumnsLookup[columnDef.id];
+                if (baseColumn) {
+                  cols.push(Utils.extend(true, {}, baseColumn, {
+                    width: columnDef.width,
+                    hidden: columnDef.hidden,
+                    headerCssClass: (columnDef as Column).headerCssClass
+                  }));
+                }
+              });
 
-                state.columns = cols;
-              }
-
-              this._grid.setColumns(state.columns as Column[]);
+              // Older state snapshots stored only visible columns. Keep omitted columns in the grid,
+              // marking them hidden so restoring state cannot permanently remove their definitions.
+              baseColumns.forEach((column) => {
+                if (!savedColumnIds.has(column.id)) {
+                  cols.push(Utils.extend(true, {}, column, { hidden: true }));
+                }
+              });
+              this._grid.setColumns(cols);
             }
             this.setUserDataFromState(state.userData);
           }
@@ -235,7 +241,8 @@ export class SlickState implements SlickPlugin {
   getColumns() {
     return this._grid.getColumns().map((col) => ({
       id: col.id,
-      width: col.width
+      width: col.width,
+      hidden: col.hidden
     }));
   }
 
@@ -257,4 +264,3 @@ if (IIFE_ONLY && window.Slick) {
     }
   });
 }
-

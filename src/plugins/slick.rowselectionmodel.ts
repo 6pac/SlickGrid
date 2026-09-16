@@ -124,7 +124,8 @@ export class SlickRowSelectionModel implements SelectionModel {
 
   protected rowsToRanges(rows: number[]) {
     const ranges: SlickRange_[] = [];
-    const lastCell = this._grid.getColumns().length - 1;
+    const visibleColumns = this._grid.getVisibleColumns();
+    const lastCell = visibleColumns.length ? this._grid.getColumnIndex(visibleColumns[visibleColumns.length - 1].id) : -1;
     rows.forEach(row => ranges.push(new SlickRange(row, 0, row, lastCell)));
     return ranges;
   }
@@ -172,7 +173,9 @@ export class SlickRowSelectionModel implements SelectionModel {
 
   protected handleActiveCellChange(_e: SlickEventData_, args: OnActiveCellChangedEventArgs) {
     if (this._options.selectActiveRow && Utils.isDefined(args.row)) {
-      this.setSelectedRanges([new SlickRange(args.row, 0, args.row, this._grid.getColumns().length - 1)]);
+      const visibleColumns = this._grid.getVisibleColumns();
+      const lastCell = visibleColumns.length ? this._grid.getColumnIndex(visibleColumns[visibleColumns.length - 1].id) : -1;
+      this.setSelectedRanges([new SlickRange(args.row, 0, args.row, lastCell)]);
     }
   }
 
