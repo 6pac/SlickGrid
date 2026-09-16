@@ -229,31 +229,10 @@
       return ("0000" + (Math.floor(Math.random() * maxVal) + 1)).slice(-numDigits)
     }
 
-    // Copy text to clipboard, on IE it's easy to copy a text, we can just call the clipboard
-    // but on other browsers this is insecure and we need to use the following trick to copy a cell,
-    // by creating a temp div and change the text value, we can then call the execCommand to copy which only works with dom element
+    // Copy text to clipboard using the asynchronous Clipboard API (requires a secure context: https or localhost)
     function copyCellValue(textToCopy) {
-      try {
-        if (window.clipboardData) {
-          window.clipboardData.setData("Text", textToCopy);
-        } else {
-          var range = document.createRange();
-          var tmpElem = document.createElement('div');
-          tmpElem.style.position = 'absolute';
-          tmpElem.style.left = '-1000px';
-          tmpElem.style.top = '-1000px';
-          tmpElem.textContent = textToCopy;
-          document.body.appendChild(tmpElem);
-          range.selectNodeContents(tmpElem.get(0));
-          var selection = window.getSelection();
-          selection.removeAllRanges();
-          selection.addRange(range);
-          var success = document.execCommand("copy", false, null);
-          if (success) {
-            tmpElem.remove();
-          }
-        }
-      } catch (e) { }
+      navigator.clipboard.writeText(textToCopy)
+        .catch(function (err) { console.error("Unable to write to clipboard. Error: " + err); });
     }
 
     function loadData(count) {
