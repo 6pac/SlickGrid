@@ -6,6 +6,20 @@ describe('Example - Excel-compatible spreadsheet and Cell Selection', { retries:
   });
 
   it('should click on cell B2, copy value, ArrowDown, paste value, ArrowRight, and expect to be in column C', () => {
+    // stub the Clipboard API transport: headless CI runners deny real clipboard
+    // access (focus/permission), so realPress drives the full keystroke path
+    // while the transport stays deterministic
+    cy.window().then((win: any) => {
+      const store = { text: '' };
+      Object.defineProperty(win.navigator, 'clipboard', {
+        configurable: true,
+        value: {
+          writeText: (t: string) => { store.text = t; return Promise.resolve(); },
+          readText: () => Promise.resolve(store.text),
+        },
+      });
+    });
+
     cy.getCell(2, 2, '', { parentSelector: '#myGrid', rowHeight: cellHeight })
       .as('cell_B2')
       .click();
@@ -68,11 +82,7 @@ describe('Example - Excel-compatible spreadsheet and Cell Selection', { retries:
         const plugin = win.grid.getPluginByName('CellExternalCopyManager');
         expect(plugin).to.exist;
 
-        const ta = win.document.createElement('textarea');
-        ta.value = 'p1\tp2\tp3\tp4\tp5\tp6\tp7\tp8\tp9\tp10';
-        win.document.body.appendChild(ta);
-
-        expect(() => plugin._decodeTabularData(win.grid, ta)).not.to.throw();
+        expect(() => plugin._decodeTabularData(win.grid, 'p1\tp2\tp3\tp4\tp5\tp6\tp7\tp8\tp9\tp10')).not.to.throw();
       });
 
       cy.get('#myGrid [data-row=0] .slick-cell.l22.r22').should('have.text', 'p1');
@@ -80,28 +90,29 @@ describe('Example - Excel-compatible spreadsheet and Cell Selection', { retries:
   });
 
   it('should preserve gaps when copying multiple non-contiguous ranges', () => {
+    const store = { text: '' };
+
     cy.window().then((win: any) => {
-      const previousClipboardData = win.clipboardData;
-      let copiedText = '';
-      Object.defineProperty(win, 'clipboardData', {
+      Object.defineProperty(win.navigator, 'clipboard', {
         configurable: true,
         value: {
-          setData: (_format: string, text: string) => { copiedText = text; }
-        }
+          writeText: (t: string) => { store.text = t; return Promise.resolve(); },
+          readText: () => Promise.resolve(store.text),
+        },
       });
 
-    const selectionModel = win.grid.getSelectionModel();
-    selectionModel.setSelectedRanges([
-      new win.Slick.Range(1, 1, 1, 2),
-      new win.Slick.Range(2, 3, 2, 3)
-    ]);
+      const selectionModel = win.grid.getSelectionModel();
+      selectionModel.setSelectedRanges([
+        new win.Slick.Range(1, 1, 1, 2),
+        new win.Slick.Range(2, 3, 2, 3)
+      ]);
       const copyEvent = new win.KeyboardEvent('keydown', { key: 'c', code: 'KeyC', ctrlKey: true, bubbles: true });
       Object.defineProperty(copyEvent, 'which', { value: 67 });
       win.grid.getCanvasNode().dispatchEvent(copyEvent);
-
-    expect(copiedText).to.eq('1\t2\t\r\n\t\t4\r\n');
-      Object.defineProperty(win, 'clipboardData', { configurable: true, value: previousClipboardData });
     });
+
+    // the copy handler awaits the clipboard write, so retry until the stub has the text
+    cy.wrap(store).its('text').should('eq', '1\t2\t\r\n\t\t4\r\n');
   });
 });
 });
