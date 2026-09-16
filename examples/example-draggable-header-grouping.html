@@ -164,7 +164,7 @@
 
     for (var i = 0; i < columns.length; i++) {
       m = columns[i];
-      if (m) {
+      if (m && !m.hidden) {
         if (lastColumnGroup === m.columnGroup && i > 0) {
           widthTotal += m.width || 0;
           headerElm.style.width = `${widthTotal - headerColumnWidthDiff}px`;

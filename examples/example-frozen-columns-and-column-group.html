@@ -86,7 +86,7 @@
 
       for (let i = start; i < end; i++) {
         m = columns[i];
-        if (m) {
+        if (m && !m.hidden) {
           if (lastColumnGroup === m.columnGroup && i>start) {
             widthTotal += m.width;
             header.style.width = `${widthTotal - headerColumnWidthDiff}px`;

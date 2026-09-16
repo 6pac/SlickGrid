@@ -1,6 +1,5 @@
 describe('Example - Column Span & Header Grouping', { retries: 1 }, () => {
-  const GRID_ROW_HEIGHT = 25;
-  const fullTitles = ['Title', 'Duration', '% Complete', 'Start', 'Finish', 'Effort Driven'];
+  const fullTitles = ['Title', 'Duration', 'Start', 'Finish', '% Complete', 'Effort Driven'];
   for (let i = 0; i < 30; i++) {
     fullTitles.push(`Mock${i}`);
   }
@@ -19,31 +18,48 @@ describe('Example - Column Span & Header Grouping', { retries: 1 }, () => {
   });
 
   it('should expect 1st row to be 1 column spanned to the entire width', () => {
-    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(0)`).should('contain', 'Task 0');
-    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell.l0.r5`).should('exist');
-    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(1)`).should('not.exist');
+    cy.get('[data-row=0] > .slick-cell:nth(0)').should('contain', 'Task 0');
+    cy.get('[data-row=0] > .slick-cell.l0.r5').should('exist');
+    cy.get('[data-row=0] > .slick-cell:nth(1)').should('not.exist');
   });
 
   it('should expect 2nd row to be 4 columns and not be spanned', () => {
-    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 1}px;"] > .slick-cell:nth(0)`).should('contain', 'Task 1');
-    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 1}px;"] > .slick-cell.l0.r0`).should('exist');
-    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 1}px;"] > .slick-cell:nth(1)`).should('contain', '5 days');
-    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 1}px;"] > .slick-cell:nth(1).l1.r3`).should('exist');
-    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 1}px;"] > .slick-cell:nth(2)`).should('contain', '01/05/2009');
-    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 1}px;"] > .slick-cell:nth(3)`).contains(/(true|false)/);
+    cy.get('[data-row=1] > .slick-cell:nth(0)').should('contain', 'Task 1');
+    cy.get('[data-row=1] > .slick-cell.l0.r0').should('exist');
+    cy.get('[data-row=1] > .slick-cell:nth(1)').should('contain', '5 days');
+    cy.get('[data-row=1] > .slick-cell:nth(1).l1.r3').should('exist');
+    cy.get('[data-row=1] > .slick-cell:nth(2)').contains(/\d+$/);
+    cy.get('[data-row=1] > .slick-cell:nth(3)').contains(/(true|false)/);
   });
 
   it('should expect 3rd row to be 1 column spanned to the entire width', () => {
-    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 2}px;"] > .slick-cell:nth(0)`).should('contain', 'Task 2');
-    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 2}px;"] > .slick-cell.l0.r5`).should('exist');
-    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 2}px;"] > .slick-cell:nth(1)`).should('not.exist');
+    cy.get('[data-row=2] > .slick-cell:nth(0)').should('contain', 'Task 2');
+    cy.get('[data-row=2] > .slick-cell.l0.r5').should('exist');
+    cy.get('[data-row=2] > .slick-cell:nth(1)').should('not.exist');
   });
 
-  it('should expect 4th row to be 4 columns and not be spanned', () => {
-    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 3}px;"] > .slick-cell:nth(0)`).should('contain', 'Task 3');
-    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 3}px;"] > .slick-cell:nth(1)`).should('contain', '5 days');
-    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 3}px;"] > .slick-cell:nth(2)`).should('contain', '01/05/2009');
-    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 3}px;"] > .slick-cell:nth(3)`).contains(/(true|false)/);
+  it('should expect 4th row to contain the Duration colspan followed by the analysis columns', () => {
+    cy.get('[data-row=3] > .slick-cell:nth(0)').should('contain', 'Task 3');
+    cy.get('[data-row=3] > .slick-cell:nth(1)').should('contain', '5 days');
+    cy.get('[data-row=3] > .slick-cell:nth(2)').contains(/\d+$/);
+    cy.get('[data-row=3] > .slick-cell:nth(3)').contains(/(true|false)/);
+  });
+
+  it('should hide Finish while keeping it in getColumns and preserve the original colspan indexes', () => {
+    cy.get('[data-test="hide-finish-column"]').click();
+    cy.get('#myGrid .slick-header-column').should('have.length', 5);
+    cy.get('[data-row=1] > .slick-cell.l1.r3').should('contain', '5 days');
+    cy.get('[data-row=1] > .slick-cell.l4.r4').contains(/\d+$/);
+    cy.get('[data-row=1] > .slick-cell.l5.r5').contains(/(true|false)/);
+    cy.get('[data-test="hide-finish-column"]').click();
+  });
+
+  it('should spread Duration colspan across hidden columns when enabled', () => {
+    cy.get('[data-test="hide-finish-column"]').click();
+    cy.get('[data-test="spread-colspan-button"]').click();
+    cy.get('[data-row=1] > .slick-cell.l1.r4').should('contain', '5 days');
+    cy.get('[data-test="spread-colspan-button"]').click();
+    cy.get('[data-test="hide-finish-column"]').click();
   });
 
   describe('Basic Key Navigations', () => {

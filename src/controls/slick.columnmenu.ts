@@ -227,25 +227,7 @@ export class SlickColumnMenu {
   }
 
   updateColumnOrder() {
-    // Because columns can be reordered, we have to update the `columns`
-    // to reflect the new order, however we can't just take `grid.getColumns()`,
-    // as it does not include columns currently hidden by the picker.
-    // We create a new `columns` structure by leaving currently-hidden
-    // columns in their original ordinal position and interleaving the results
-    // of the current column sort.
-    const current = this.grid.getColumns().slice(0);
-    const ordered = new Array(this.columns.length);
-    for (let i = 0; i < ordered.length; i++) {
-      if (this.grid.getColumnIndex(this.columns[i].id) === undefined) {
-        // If the column doesn't return a value from getColumnIndex,
-        // it is hidden. Leave it in this position.
-        ordered[i] = this.columns[i];
-      } else {
-        // Otherwise, grab the next visible column.
-        ordered[i] = current.shift();
-      }
-    }
-    this.columns = ordered;
+    this.columns = this.grid.getColumns().slice(0);
   }
 
   /** Update the Titles of each sections (command, customTitle, ...) */
@@ -257,10 +239,9 @@ export class SlickColumnMenu {
     if (e.target.dataset.option === 'autoresize') {
       // when calling setOptions, it will resize with ALL Columns (even the hidden ones)
       // we can avoid this problem by keeping a reference to the visibleColumns before setOptions and then setColumns after
-      const previousVisibleColumns = this.getVisibleColumns();
       const isChecked = e.target.checked;
       this.grid.setOptions({ forceFitColumns: isChecked });
-      this.grid.setColumns(previousVisibleColumns);
+      this.grid.updateColumns();
       return;
     }
 
@@ -276,21 +257,15 @@ export class SlickColumnMenu {
     if (e.target.type === 'checkbox') {
       const isChecked = e.target.checked;
       const columnId = e.target.dataset.columnid || '';
-      const visibleColumns: Column[] = [];
-      this._columnCheckboxes.forEach((columnCheckbox, idx) => {
-        if (this.columns[idx].hidden !== undefined) { this.columns[idx].hidden = !columnCheckbox.checked; }
-        if (columnCheckbox.checked) {
-          visibleColumns.push(this.columns[idx]);
-        }
-      });
-
-      if (!visibleColumns.length) {
+      const visibleColumns = this.getVisibleColumns();
+      if (!isChecked && visibleColumns.length <= 1) {
         e.target.checked = true;
         return;
       }
 
-      this.grid.setColumns(visibleColumns);
-      this.onColumnsChanged.notify({ columnId, showing: isChecked, allColumns: this.columns, columns: this.columns, visibleColumns, grid: this.grid });
+      this.grid.updateColumnById(columnId, { hidden: !isChecked });
+      this.grid.updateColumns();
+      this.onColumnsChanged.notify({ columnId, showing: isChecked, allColumns: this.grid.getColumns(), columns: this.grid.getVisibleColumns(), visibleColumns: this.grid.getVisibleColumns(), grid: this.grid });
     }
   }
 
@@ -301,21 +276,10 @@ export class SlickColumnMenu {
 
   setColumnVisibility(idxOrId: number | string, show: boolean) {
     const idx = typeof idxOrId === 'number' ? idxOrId : this.getColumnIndexbyId(idxOrId);
-    let visibleColumns: Column[] = this.getVisibleColumns();
     const col = this.columns[idx];
-    if (show) {
-      col.hidden = false;
-      visibleColumns.splice(idx, 0, col);
-    } else {
-      const newVisibleColumns: Column[] = [];
-      for (let i = 0; i < visibleColumns.length; i++) {
-        if (visibleColumns[i].id !== col.id) { newVisibleColumns.push(visibleColumns[i]); }
-      }
-      visibleColumns = newVisibleColumns;
-    }
-
-    this.grid.setColumns(visibleColumns);
-    this.onColumnsChanged.notify({ columnId: col.id, showing: show, allColumns: this.columns, columns: this.columns, visibleColumns, grid: this.grid });
+    this.grid.updateColumnById(col.id, { hidden: !show });
+    this.grid.updateColumns();
+    this.onColumnsChanged.notify({ columnId: col.id, showing: show, allColumns: this.grid.getColumns(), columns: this.grid.getVisibleColumns(), visibleColumns: this.grid.getVisibleColumns(), grid: this.grid });
   }
 
   getAllColumns() {
@@ -338,7 +302,7 @@ export class SlickColumnMenu {
 
   /** visible columns, we can simply get them directly from the grid */
   getVisibleColumns() {
-    return this.grid.getColumns();
+    return this.grid.getVisibleColumns();
   }
 }
 

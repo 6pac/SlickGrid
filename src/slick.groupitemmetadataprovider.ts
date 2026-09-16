@@ -177,6 +177,7 @@ export class SlickGroupItemMetadataProvider implements SlickPlugin {
       focusable: this._options.groupFocusable,
       cssClasses: `${this._options.groupCssClass} slick-group-level-${groupLevel}`,
       formatter: (this._options.includeHeaderTotals && this._options.totalsFormatter) || undefined,
+      isGroup: true,
       columns: {
         0: {
           colspan: this._options.includeHeaderTotals ? '1' : '*',
@@ -194,7 +195,8 @@ export class SlickGroupItemMetadataProvider implements SlickPlugin {
       focusable: this._options.totalsFocusable,
       cssClasses: `${this._options.totalsCssClass} slick-group-level-${groupLevel}`,
       formatter: this._options.totalsFormatter,
-      editor: null
+      editor: null,
+      isGroup: true
     };
   }
 }

@@ -94,7 +94,9 @@
 
     // Create 2nd Grid with its own ColumnPicker/GridMenu
     var data02 = CreateData();
-    var columns02 = columns.slice(0);
+    var columns02 = columns.map(function(column) {
+      return Slick.Utils.extend(true, {}, column);
+    });
     var options02 = Slick.Utils.extend({}, options);
     grid02 = new Slick.Grid("#myGrid02", data02, columns02, options02);
     new Slick.Controls.ColumnPicker(columns02, grid02, options02);

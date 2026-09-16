@@ -245,29 +245,12 @@
     // if column index(es) aren't changing then "invalidateRows()" or "invalidate()" might be sufficient
     // however, when column index(es) changed then you will have to call "remapAllColumnsRowSpan()" to clear & reevaluate the rowspan cache
     function toggleEmployeeIdVisibility() {
-      const newMetadata = {};
       showEmployeeId = !showEmployeeId;
-
-      // direction to calculate new column indexes (-1 or +1 on the column index)
-      // e.g. metadata = `{0:{columns:{1:{rowspan: 2}}}}` if we hide then new result is `{0:{columns:{0:{rowspan: 2}}}}`
-      const dir = showEmployeeId ? 1 : -1;
-      for (let row of Object.keys(metadata)) {
-        newMetadata[row] = { columns: {} };
-        for (let col of Object.keys(metadata[row].columns)) {
-          newMetadata[row].columns[Number(col) + dir] = metadata[row].columns[col];
-        }
-      }
-
-      // update column definitions
-      if (showEmployeeId) {
-        columns.unshift({ id: "employeeID", name: "Employee ID", field: "employeeID", width: 100 });
-      } else {
-        columns.splice(0, 1);
-      }
-      grid.setColumns(columns);
-
-      // update & remap rowspans
-      metadata = newMetadata;
+      // Keep the complete column list and switch visibility with the hidden property.
+      // This is the breaking-change behavior introduced by the column visibility migration.
+      grid.setOptions({ frozenColumn: showEmployeeId ? 0 : -1 });
+      grid.updateColumnById("employeeID", { hidden: !showEmployeeId });
+      grid.updateColumns();
       grid.remapAllColumnsRowSpan();
       grid.invalidate();
     }

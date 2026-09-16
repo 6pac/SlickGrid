@@ -102,7 +102,7 @@ describe('Example - Row Grouping Titles', () => {
   });
 
   it('should be able to call column picker from the pre-header', () => {
-    const fullPreTitlesWithoutId = ['Common Factor', 'Period', 'Period', 'Analysis'];
+    const fullPreTitlesWithoutId = ['Common Factor', 'Period', 'Analysis'];
     const fullTitlesWithoutId = ['Title', 'Duration', 'Start', 'Finish', '% Complete', 'Effort Driven'];
     const fullTitlesWithGroup = ['#', 'Common Factor - Title', 'Common Factor - Duration', 'Period - Start', 'Period - Finish', 'Analysis - % Complete', 'Analysis - Effort Driven'];
 
