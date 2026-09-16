@@ -90,28 +90,29 @@ describe('Example - Excel-compatible spreadsheet and Cell Selection', { retries:
   });
 
   it('should preserve gaps when copying multiple non-contiguous ranges', () => {
+    const store = { text: '' };
+
     cy.window().then((win: any) => {
-      const previousClipboardData = win.clipboardData;
-      let copiedText = '';
-      Object.defineProperty(win, 'clipboardData', {
+      Object.defineProperty(win.navigator, 'clipboard', {
         configurable: true,
         value: {
-          setData: (_format: string, text: string) => { copiedText = text; }
-        }
+          writeText: (t: string) => { store.text = t; return Promise.resolve(); },
+          readText: () => Promise.resolve(store.text),
+        },
       });
 
-    const selectionModel = win.grid.getSelectionModel();
-    selectionModel.setSelectedRanges([
-      new win.Slick.Range(1, 1, 1, 2),
-      new win.Slick.Range(2, 3, 2, 3)
-    ]);
+      const selectionModel = win.grid.getSelectionModel();
+      selectionModel.setSelectedRanges([
+        new win.Slick.Range(1, 1, 1, 2),
+        new win.Slick.Range(2, 3, 2, 3)
+      ]);
       const copyEvent = new win.KeyboardEvent('keydown', { key: 'c', code: 'KeyC', ctrlKey: true, bubbles: true });
       Object.defineProperty(copyEvent, 'which', { value: 67 });
       win.grid.getCanvasNode().dispatchEvent(copyEvent);
-
-    expect(copiedText).to.eq('1\t2\t\r\n\t\t4\r\n');
-      Object.defineProperty(win, 'clipboardData', { configurable: true, value: previousClipboardData });
     });
+
+    // the copy handler awaits the clipboard write, so retry until the stub has the text
+    cy.wrap(store).its('text').should('eq', '1\t2\t\r\n\t\t4\r\n');
   });
 });
 });
