@@ -677,21 +677,26 @@ export class BindingEventService {
   bind(element: Element | Window | Document, eventName: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions, groupName = '') {
     if (element) {
       element.addEventListener(eventName, listener, options);
-      this._boundedEvents.push({ element, eventName, listener, groupName });
+      this._boundedEvents.push({ element, eventName, listener, options, groupName });
     }
   }
 
   /** Unbind all will remove every every event handlers that were bounded earlier */
-  unbind(element: Element | Window | Document, eventName: string, listener: EventListenerOrEventListenerObject) {
+  unbind(
+    element: Element | Window | Document,
+    eventName: string,
+    listener: EventListenerOrEventListenerObject,
+    options?: boolean | EventListenerOptions
+  ) {
     if (element?.removeEventListener) {
-      element.removeEventListener(eventName, listener);
+      element.removeEventListener(eventName, listener, options);
     }
   }
 
   unbindByEventName(element: Element | Window | Document, eventName: string) {
     const boundedEvent = this._boundedEvents.find(e => e.element === element && e.eventName === eventName);
     if (boundedEvent) {
-      this.unbind(boundedEvent.element, boundedEvent.eventName, boundedEvent.listener);
+      this.unbind(boundedEvent.element, boundedEvent.eventName, boundedEvent.listener, boundedEvent.options);
     }
   }
 
@@ -707,8 +712,8 @@ export class BindingEventService {
       for (let i = this._boundedEvents.length - 1; i >= 0; --i) {
         const boundedEvent = this._boundedEvents[i];
         if (groupNames.some(g => g === boundedEvent.groupName)) {
-          const { element, eventName, listener } = boundedEvent;
-          this.unbind(element, eventName, listener);
+          const { element, eventName, listener, options } = boundedEvent;
+          this.unbind(element, eventName, listener, options);
           this._boundedEvents.splice(i, 1);
         }
       }
@@ -716,8 +721,8 @@ export class BindingEventService {
       // unbind everything
       while (this._boundedEvents.length > 0) {
         const boundedEvent = this._boundedEvents.pop() as ElementEventListener;
-        const { element, eventName, listener } = boundedEvent;
-        this.unbind(element, eventName, listener);
+        const { element, eventName, listener, options } = boundedEvent;
+        this.unbind(element, eventName, listener, options);
       }
     }
   }
