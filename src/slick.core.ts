@@ -676,8 +676,9 @@ export class BindingEventService {
   /** Bind an event listener to any element */
   bind(element: Element | Window | Document, eventName: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions, groupName = '') {
     if (element) {
-      element.addEventListener(eventName, listener, options);
-      this._boundedEvents.push({ element, eventName, listener, options, groupName });
+      const eventOptions = typeof options === 'boolean' ? { capture: options } : options;
+      element.addEventListener(eventName, listener, eventOptions);
+      this._boundedEvents.push({ element, eventName, listener, options: eventOptions, groupName });
     }
   }
 
