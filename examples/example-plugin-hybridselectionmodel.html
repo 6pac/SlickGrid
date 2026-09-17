@@ -301,6 +301,9 @@
       enableTextSelectionOnCells: true,
       asyncEditorLoading: false,
       autoEdit: true,
+      // Let the grid configure its drag interaction for modifier-based
+      // multi-selection before HybridSelectionModel is attached below.
+      selectionOptions: { enableMultiSelection: true },
       rowHeight: 30
     };
 

@@ -9,19 +9,25 @@
   <link rel="stylesheet" href="../dist/styles/css/slick.gridmenu.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
   <style>
-    .slick-preheader-panel.ui-state-default  {
+    .slick-preheader-panel.slick-state-default  {
       width: 100%;
       overflow: hidden;
       border-left: 0px !important;
       border-bottom: 0px !important;
     }
-    .slick-preheader-panel .slick-header-columns {
+    .slick-preheader-panel.slick-state-default.slick-header {
+      border-bottom: 0px !important;
+    }
+
+    .slick-preheader-panel .slick-header-columns,
+    .slick-preheader-panel .slick-header-column {
+      background-color: inherit;
       border-bottom: 0px !important;
     }
   </style>
 </head>
 <body>
-<h2 class="title">Example - Frozen Grid with Header Grouping</h2>
+<h2 class="title">Example - Pinned Grid with Header Grouping</h2>
 <div style="position:relative">
   <div style="width:600px;">
     <div id="myGrid" style="width:100%;height:500px;"></div>
@@ -33,11 +39,11 @@
       Demonstrates:
     </h2>
     <ul>
-      <li>Frozen columns with extra header row grouping columns into categories</li>
+      <li>Pinned columns with an extra header row grouping columns into categories</li>
     </ul>
     <div style="margin-bottom:10px">
-      <button onclick="setFrozenColumns(-1)">Remove Frozen Columns</button>
-      <button onclick="setFrozenColumns(2)">Set 3 Frozen Columns</button>
+      <button onclick="setPinnedColumns(-1)">Remove Pinned Columns</button>
+      <button onclick="setPinnedColumns(2)">Set 3 Pinned Columns</button>
     </div>
       <br/>
       <input id="chkHideColumn1" type="checkbox"/> Hide Duration Column
@@ -46,7 +52,7 @@
       <br/>
       <h2>View Source:</h2>
       <ul>
-          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-frozen-columns-and-column-group-hidden-col.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+          <li><A href="https://github.com/6pac/SlickGrid/blob/master/examples/example-pinning-columns-and-column-group-hidden-col.html" target="_sourcewindow"> View the source for this example on Github</a></li>
       </ul>
   </div>
 </div>
@@ -62,27 +68,17 @@
 
 <script>
   function CreateAddlHeaderRow() {
-    // when it's a frozen grid, we need to render both side (left/right)
-    if (options.frozenColumn >=0) {
-      // Add column groups to left panel
-      let preHeaderPanelElm = grid.getPreHeaderPanelLeft();
-      renderHeaderGroups(preHeaderPanelElm, 0, options.frozenColumn + 1, columns.length);
-
-      // Add column groups to right panel
-      preHeaderPanelElm = grid.getPreHeaderPanelRight();
-      renderHeaderGroups(preHeaderPanelElm, options.frozenColumn + 1, columns.length);
-    } else {
-      // when it's a regular grid (without frozen rows), after clearning frozen columns, we re-render everything on the left
-      let preHeaderPanelElm = grid.getPreHeaderPanelLeft();
-      renderHeaderGroups(preHeaderPanelElm, 0, columns.length);
-    }
+    // Pinning uses one shared pre-header panel, so render the complete group row once.
+    const preHeaderPanelElm = grid.getPreHeaderPanel();
+    renderHeaderGroups(preHeaderPanelElm, 0, grid.getColumns().length);
 
     function renderHeaderGroups(preHeaderPanel, start, end) {
       preHeaderPanel.innerHTML = '';
       preHeaderPanel.classList.add("slick-header-columns");
-      preHeaderPanel.style.left = '-1000px';
+      preHeaderPanel.style.left = '0px';
       preHeaderPanel.style.width = `${grid.getHeadersWidth()}px`;
       preHeaderPanel.parentElement.classList.add("slick-header");
+      preHeaderPanel.style.backgroundColor = getComputedStyle(grid.getHeaderColumn(0)).backgroundColor || '#ececec';
 
       let headerColumnWidthDiff = grid.getHeaderColumnWidthDiff();
       let m, header, lastColumnGroup = '', widthTotal = 0;
@@ -96,22 +92,79 @@
           if (lastColumnGroup === m.columnGroup && i>start) {
             widthTotal += m.width;
             header.style.width = `${widthTotal - headerColumnWidthDiff}px`;
+            header.dataset.groupEnd = String(i);
           } else {
               widthTotal = m.width;
               header = document.createElement('div');
               header.className = 'ui-state-default slick-header-column';
               header.innerHTML = `<span class="slick-column-name">${(m.columnGroup || '')}</span>`;
               header.style.width = `${m.width - headerColumnWidthDiff}px`;
+              header.dataset.groupStart = String(i);
+              header.dataset.groupEnd = String(i);
               preHeaderPanel.appendChild(header);
           }
           lastColumnGroup = m.columnGroup;
         }
       }
     }
+
+    syncPinnedGroupHeaders();
   }
 
-  function setFrozenColumns(frozenCols) {
-    grid.setOptions({ frozenColumn: frozenCols });
+  let groupHeaderScrollLeft = 0;
+
+  function syncPinnedGroupHeaders(scrollLeft) {
+    if (scrollLeft !== undefined) {
+      groupHeaderScrollLeft = scrollLeft;
+    }
+
+    const preHeaderPanelElm = grid.getPreHeaderPanel();
+    const leftBoundary = grid.getOptions().pinning?.columns?.left;
+    const pinnedColumnBoundary = typeof leftBoundary === 'number' ? leftBoundary : -1;
+    let pinnedLeftWidth = 0;
+
+    if (pinnedColumnBoundary >= 0) {
+      for (let i = 0; i <= pinnedColumnBoundary; i++) {
+        const column = grid.getColumns()[i];
+        if (!column?.hidden) {
+          pinnedLeftWidth += grid.getHeaderColumn(i)?.offsetWidth || 0;
+        }
+      }
+    }
+
+    let pinnedMask = preHeaderPanelElm.querySelector('.slick-preheader-pinned-left-mask');
+    if (pinnedLeftWidth > 0) {
+      if (!pinnedMask) {
+        pinnedMask = document.createElement('div');
+        pinnedMask.className = 'slick-preheader-pinned-left-mask';
+        pinnedMask.style.position = 'absolute';
+        pinnedMask.style.left = '0';
+        pinnedMask.style.top = '0';
+        pinnedMask.style.bottom = '0';
+        pinnedMask.style.zIndex = '1';
+        pinnedMask.style.pointerEvents = 'none';
+        preHeaderPanelElm.appendChild(pinnedMask);
+      }
+      pinnedMask.style.width = `${pinnedLeftWidth}px`;
+      // The pre-header panel can be transparent in the base/default theme.
+      // Use the rendered header background so scrolling group titles remain
+      // behind the pinned group area.
+      pinnedMask.style.backgroundColor = getComputedStyle(grid.getHeaderColumn(0)).backgroundColor || '#ececec';
+      pinnedMask.style.transform = `translateX(${groupHeaderScrollLeft}px)`;
+    } else {
+      pinnedMask?.remove();
+    }
+
+    preHeaderPanelElm.querySelectorAll('[data-group-start]').forEach((groupHeader) => {
+      const groupEnd = Number(groupHeader.dataset.groupEnd);
+      const isPinnedLeft = pinnedColumnBoundary >= 0 && groupEnd <= pinnedColumnBoundary;
+      groupHeader.style.zIndex = isPinnedLeft ? '2' : '';
+      groupHeader.style.transform = isPinnedLeft ? `translateX(${groupHeaderScrollLeft}px)` : '';
+    });
+  }
+
+  function setPinnedColumns(pinBoundary) {
+    grid.setOptions({ pinning: { columns: { left: pinBoundary >= 0 ? pinBoundary : [] } } });
     options = grid.getOptions();
     CreateAddlHeaderRow();
   }
@@ -136,7 +189,7 @@
     showPreHeaderPanel: true,
     preHeaderPanelHeight: 23,
     explicitInitialization: true,
-    frozenColumn: 2,
+    pinning: { columns: { left: 2 } },
 
     // if you wish to include the columnGroup as part of the pickers, you can do so with following code
     columnPicker: {
@@ -151,9 +204,9 @@
       customItems: [
         {
           iconImage: "sgi sgi-close",
-          title: "Clear Frozen Columns",
+          title: "Clear Pinned Columns",
           disabled: false,
-          command: "clear-frozen-columns",
+          command: "clear-pinned-columns",
           cssClass: 'bold',     // container css class
           textCssClass: 'red'   // just the text css class
         }
@@ -201,6 +254,14 @@
 
     grid.init();
 
+    grid.onColumnsDrag.subscribe(function (e, args) {
+      CreateAddlHeaderRow();
+    });
+
+    grid.onScroll.subscribe(function (e, args) {
+      syncPinnedGroupHeaders(args.scrollLeft);
+    });
+
     grid.onColumnsResized.subscribe(function (e, args) {
       CreateAddlHeaderRow();
     });
@@ -213,8 +274,8 @@
 
     // subscribe to Grid Menu event(s)
     gridMenuControl.onCommand.subscribe(function(e, args) {
-      if(args.command === "clear-frozen-columns") {
-        setFrozenColumns(-1);
+      if(args.command === "clear-pinned-columns") {
+        setPinnedColumns(-1);
       }
     });
 

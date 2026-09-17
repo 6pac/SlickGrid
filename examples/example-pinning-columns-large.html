@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
-  <title>SlickGrid example: Frozen Columns</title>
+  <title>SlickGrid example: Pinned Columns</title>
   <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css" media="screen" charset="utf-8"/>
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
@@ -31,7 +31,7 @@
       background-color: transparent; /* show default selected row background */
     }
 
-    .slick-pane.frozen {
+    .slick-column-pinned-left-edge {
       border-right: 1.5px dotted darkblue !important;
     }
     .options-panel {
@@ -40,7 +40,7 @@
   </style>
 </head>
 <body>
-<h2 class="title">Example - Frozen Columns with Large Dataset</h2>
+<h2 class="title">Example - Pinned Columns with Large Dataset</h2>
 <div style="position:relative">
 <div style="width:2048px;">
   <div class="grid-header" style="width:100%">
@@ -67,9 +67,9 @@
     <label style="width:200px;float:left">And title including:</label>
     <input type=text id="txtSearch" style="width:100px;">
     <br/><br/>
-    <label style="width:200px;float:left">Frozen Column:</label>
-    <input type=text id="frozenColumn" style="width:60px;" value="-1">
-    <button id="setFrozenColumn">Set</button>
+    <label style="width:200px;float:left">Pinned Column Boundary:</label>
+    <input type=text id="pinnedColumn" style="width:60px;" value="-1">
+    <button id="setPinnedColumn">Set</button>
     <br/><br/>
     <button id="btnSelectRows">Select first 10 rows</button>
 
@@ -119,7 +119,7 @@
 
 <script>
 document.addEventListener("DOMContentLoaded", function() {
-  document.querySelector('#frozenColumn').value = options.frozenColumn;
+  document.querySelector('#pinnedColumn').value = options.pinning.columns.left;
 });
 
 var dataView;
@@ -353,7 +353,8 @@ var columns = [
 ];
 
 var options = {
-  editable: true, enableAddRow: true, enableCellNavigation: true, asyncEditorLoading: true, forceFitColumns: false, autoEdit: false, topPanelHeight: 25, frozenColumn: 2
+  editable: true, enableAddRow: true, enableCellNavigation: true, asyncEditorLoading: true, forceFitColumns: false, autoEdit: false, topPanelHeight: 25,
+  pinning: { columns: { left: 2 } }
 };
 
 var sortcol = "title";
@@ -785,14 +786,14 @@ document.addEventListener("DOMContentLoaded", function() {
   dataView.setFilter(myFilter);
   dataView.endUpdate();
 
-  document.querySelector('#setFrozenColumn').addEventListener('click', function () {
+  document.querySelector('#setPinnedColumn').addEventListener('click', function () {
     var val = -1;
 
-    if (document.querySelector('#frozenColumn').value != '') {
-      val = parseInt(document.querySelector('#frozenColumn').value);
+    if (document.querySelector('#pinnedColumn').value != '') {
+      val = parseInt(document.querySelector('#pinnedColumn').value);
     }
 
-    grid.setOptions({ 'frozenColumn': val });
+    grid.setOptions({ pinning: { columns: { left: val >= 0 ? val : [] } } });
   });
 })
 

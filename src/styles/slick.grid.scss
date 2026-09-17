@@ -5,6 +5,8 @@ No built-in (selected, editable, highlight, flashing, invalid, loading, :focus) 
 classes should alter those!
 */
 
+@use './slick-docking';
+
 .slick-header.ui-state-default, .slick-headerrow.ui-state-default, .slick-footerrow.ui-state-default, .slick-top-panel-scroller.ui-state-default, .slick-group-header.ui-state-default {
   width: 100%;
   overflow: auto;
@@ -43,6 +45,26 @@ classes should alter those!
   border-top: 0px !important;
   border-bottom: 0px !important;
   float: left;
+  z-index: 1;
+}
+
+// The grid emits `slick-state-default` on current header elements. Keep the
+// shared geometry for that class as well, while leaving display/flex layout to
+// the docking rules above so split header regions remain aligned.
+.slick-header-column.slick-state-default, .slick-group-header-column.slick-state-default {
+  position: relative;
+  box-sizing: content-box !important;
+  overflow: hidden;
+  -o-text-overflow: ellipsis;
+  text-overflow: ellipsis;
+  height: 16px;
+  line-height: 16px;
+  margin: 0;
+  padding: 4px;
+  border-right: 1px solid silver;
+  border-left: 0 !important;
+  border-top: 0 !important;
+  border-bottom: 0 !important;
   z-index: 1;
 }
 
@@ -163,6 +185,7 @@ classes should alter those!
   white-space: nowrap;
   cursor: default;
 }
+
 .slick-cell, .slick-headerrow-column{
   border-bottom-color: silver;
 }

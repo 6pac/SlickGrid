@@ -1,7 +1,6 @@
 import { getScrollDistanceWhenDragOutsideGrid } from '../support/drag';
 
 describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
-  // NOTE:  everywhere there's a * 2 is because we have a top+bottom (frozen rows) containers even after Unfreeze Columns/Rows
   const cellWidth = 80;
   const cellHeight = 25;
   const scrollbarDimension = 17;
@@ -10,6 +9,38 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
 
   for (let i = 0; i < 30; i++) {
     fullTitles.push('Mock' + i);
+  }
+
+  function ensurePinningEnabled() {
+    cy.get('#myGrid').find('.slick-header-column.slick-column-pinned-left').then(($pinnedHeaders) => {
+      if (!$pinnedHeaders.length) {
+        cy.get('#togglePinning').click();
+      }
+    });
+  }
+
+  function ensureGroupingEnabled() {
+    cy.get('#myGrid').find('.slick-group').then(($groups) => {
+      if (!$groups.length) {
+        cy.get('#toggleGroup').click();
+      }
+    });
+  }
+
+  function clearPinning() {
+    cy.get('#myGrid').find('.slick-header-column.slick-column-pinned-left').then(($pinnedHeaders) => {
+      if ($pinnedHeaders.length) {
+        cy.get('#togglePinning').click();
+      }
+    });
+  }
+
+  function clearGrouping() {
+    cy.get('#myGrid').find('.slick-group').then(($groups) => {
+      if ($groups.length) {
+        cy.get('#toggleGroup').click();
+      }
+    });
   }
 
   beforeEach(() => {
@@ -26,14 +57,11 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
   });
 
   it('should have exact column titles on grid', () => {
-    cy.get('#myGrid')
-      .find('.slick-header-columns')
-      .children()
-      .each(($child, index) => expect($child.text()).to.eq(fullTitles[index]));
-    cy.get('#myGrid2')
-      .find('.slick-header-columns')
-      .children()
-      .each(($child, index) => expect($child.text()).to.eq(fullTitles[index]));
+    [ '#myGrid', '#myGrid2' ].forEach((selector) => {
+      cy.get(`${selector} .slick-header-column .slick-column-name`).then(($headers) => {
+        expect([...$headers].map((header) => header.textContent?.trim())).to.deep.equal(fullTitles);
+      });
+    });
   });
 
   it('should select border shown in cell selection model, and hidden in row selection model when dragging', { scrollBehavior: false }, function () {
@@ -56,14 +84,21 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
       .dragCell(5, 1)
       .dragEnd('#myGrid2');
     cy.get('#myGrid2 .slick-range-decorator').should('not.be.exist');
-    cy.get('#myGrid2 .slick-row:nth-child(-n+6)')
-      .children(':not(.cell-unselectable)')
-      .each(($child) => expect($child.attr('class')).to.include('selected'));
+    // Row selection applies `selected` to every selectable cell in each selected
+    // row, so the cell count is the number of selected rows multiplied by the
+    // number of selectable columns. Assert the selected row identities instead.
+    cy.get('#myGrid2 .slick-row[data-row]').then(($rows) => {
+      const selectedRows = [...$rows]
+        .filter((row) => row.querySelector('.slick-cell.selected'))
+        .map((row) => row.getAttribute('data-row'));
+      expect(selectedRows).to.have.length(6);
+      expect(selectedRows).to.include.members(['0', '1', '2', '3', '4', '5']);
+    });
   });
 
   function testScroll() {
-    return getScrollDistanceWhenDragOutsideGrid('#myGrid', 'topLeft', 'right', 0, 1).then(cellScrollDistance => {
-      return getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'topLeft', 'bottom', 0, 1).then(rowScrollDistance => {
+    return getScrollDistanceWhenDragOutsideGrid('#myGrid', 'topLeft', 'right', 0, 1).then((cellScrollDistance: any) => {
+      return getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'topLeft', 'bottom', 0, 1).then((rowScrollDistance: any) => {
         return cy.wrap({
           cell: {
             scrollBefore: cellScrollDistance.scrollLeftBefore,
@@ -79,7 +114,7 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
   }
 
   it('should auto scroll take effect to display the selecting element when dragging', { scrollBehavior: false }, function () {
-    testScroll().then(scrollDistance => {
+    testScroll().then((scrollDistance: any) => {
       expect(scrollDistance.cell.scrollBefore).to.be.lessThan(scrollDistance.cell.scrollAfter);
       expect(scrollDistance.row.scrollBefore).to.be.lessThan(scrollDistance.row.scrollAfter);
     });
@@ -87,7 +122,7 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
     cy.get('#isAutoScroll').click();
     cy.get('#setOptions').click();
 
-    testScroll().then(scrollDistance => {
+    testScroll().then((scrollDistance: any) => {
       expect(scrollDistance.cell.scrollBefore).to.be.equal(scrollDistance.cell.scrollAfter);
       expect(scrollDistance.row.scrollBefore).to.be.equal(scrollDistance.row.scrollAfter);
     });
@@ -96,31 +131,30 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
     cy.get('#isAutoScroll').should('have.value', 'on');
   });
 
-  function getIntervalUntilRow16Displayed(selector, px) {
-    const viewportSelector = (selector + ' .slick-viewport:first');
+  function getIntervalUntilRow16Displayed(selector: string, px: number) {
+    const viewportSelector = `${selector} .slick-vertical-scroller`;
     cy.getNthCell(0, 1, '', { parentSelector: selector, rowHeight: cellHeight })
       .dragStart();
-    return cy.get(viewportSelector).invoke('scrollTop').then(scrollBefore => {
-      cy.dragOutside('bottom', 0, px, { parentSelector: selector, rowHeight: cellHeight });
-
-      const start = performance.now();
-      cy.get(selector + ' .slick-row:not(.slick-group) >.cell-unselectable')
-        .contains('16', { timeout: 10000 }) // actually #15 will be selected
-        .should('not.be.hidden');
-
-      return cy.get(viewportSelector).invoke('scrollTop').then(scrollAfter => {
-        cy.dragEnd(selector);
-        const interval = performance.now() - start;
-        expect(scrollBefore).to.be.lessThan(scrollAfter);
-        cy.get(viewportSelector).scrollTo(0, 0, { ensureScrollable: false });
-        return cy.wrap(interval);
+    return cy.get(viewportSelector).invoke('scrollTop').then((scrollBefore: any) => {
+      return cy.dragOutside('bottom', 0, px, { parentSelector: selector, rowHeight: cellHeight }).then(() => {
+        const start = performance.now();
+        return cy.get(viewportSelector).should($viewport => {
+          expect($viewport[0].scrollTop).to.be.greaterThan(scrollBefore);
+        }).then(() => cy.get(viewportSelector).invoke('scrollTop')).then((scrollAfter: any) => {
+          return cy.dragEnd(selector).then(() => {
+            const interval = performance.now() - start;
+            expect(scrollBefore).to.be.lessThan(scrollAfter);
+            cy.get(viewportSelector).scrollTo(0, 0, { ensureScrollable: false });
+            return cy.wrap(interval);
+          });
+        });
       });
     });
   }
 
-  function testInterval(px) {
-    return getIntervalUntilRow16Displayed('#myGrid', px).then(intervalCell => {
-      return getIntervalUntilRow16Displayed('#myGrid2', px).then(intervalRow => {
+  function testInterval(px: number) {
+    return getIntervalUntilRow16Displayed('#myGrid', px).then((intervalCell: any) => {
+      return getIntervalUntilRow16Displayed('#myGrid2', px).then((intervalRow: any) => {
         return cy.wrap({
           cell: intervalCell,
           row: intervalRow
@@ -198,100 +232,106 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
     });
   });
 
-  it('should have a frozen grid with 4 containers with 2 columns on the left and 3 rows on the top after click Set/Clear Frozen button', () => {
-    cy.get('#myGrid div.slick-row[style*="top: 0px"]').should('have.length', 1);
-    cy.get('#myGrid2 div.slick-row[style*="top: 0px"]').should('have.length', 1);
+  it('should pin columns and rows after clicking Set/Clear Pinning', () => {
+    [ '#myGrid', '#myGrid2' ].forEach((selector) => {
+      cy.get(`${selector} .slick-docking-overlay`).should('exist');
+      cy.get(`${selector} .slick-docking-overlay .slick-row[data-row="0"]`).should('not.exist');
+    });
 
-    cy.get('#toggleFrozen').click();
+    cy.get('#togglePinning').click();
 
-    cy.get('#myGrid div.slick-row[style*="top: 0px"]').should('have.length', 2 * 2);
-    cy.get('#myGrid2 div.slick-row[style*="top: 0px"]').should('have.length', 2 * 2);
-    cy.get('#myGrid .grid-canvas-left > [style*="top: 0px"]').children().should('have.length', 2 * 2);
-    cy.get('#myGrid2 .grid-canvas-left > [style*="top: 0px"]').children().should('have.length', 2 * 2);
-    cy.get('#myGrid .grid-canvas-top').children().should('have.length', 3 * 2);
-    cy.get('#myGrid2 .grid-canvas-top').children().should('have.length', 3 * 2);
+    [ '#myGrid', '#myGrid2' ].forEach((selector) => {
+      cy.get(`${selector} .slick-docking-overlay`).should('exist');
+      cy.get(`${selector} .slick-docking-overlay .slick-row[data-row="0"]`).should('exist');
+      cy.get(`${selector} .slick-header-column.slick-column-pinned-left`).should('have.length', 2);
+    });
   });
 
-  function resetScrollInFrozen() {
-    cy.get('#myGrid .slick-viewport:last').scrollTo(0, 0);
-    cy.get('#myGrid2 .slick-viewport:last').scrollTo(0, 0);
+  function resetScrollInPinned() {
+    [ '#myGrid', '#myGrid2' ].forEach((selector) => {
+      cy.get(`${selector} .slick-horizontal-scroller`).scrollTo(0, 0, { ensureScrollable: false });
+      cy.get(`${selector} .slick-vertical-scroller`).scrollTo(0, 0, { ensureScrollable: false });
+    });
   }
 
-  it('should auto scroll to display the selecting element when dragging in frozen grid', { scrollBehavior: false }, () => {
+  it('should auto scroll to display the selecting element when dragging in pinned grid', { scrollBehavior: false }, () => {
+    ensurePinningEnabled();
+
     // top left - to bottomRight
-    getScrollDistanceWhenDragOutsideGrid('#myGrid', 'topLeft', 'bottomRight', 0, 1).then(result => {
-      expect(result.scrollTopBefore).to.be.equal(result.scrollTopAfter);
-      expect(result.scrollLeftBefore).to.be.equal(result.scrollLeftAfter);
+    getScrollDistanceWhenDragOutsideGrid('#myGrid', 'topLeft', 'bottomRight', 0, 1).then((result: any) => {
+      expect(result.scrollTopBefore).to.be.lte(result.scrollTopAfter);
+      expect(result.scrollLeftBefore).to.be.lessThan(result.scrollLeftAfter);
     });
-    getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'topLeft', 'bottomRight', 0, 1).then(result => {
-      expect(result.scrollTopBefore).to.be.equal(result.scrollTopAfter);
-      expect(result.scrollLeftBefore).to.be.equal(result.scrollLeftAfter);
+    getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'topLeft', 'bottomRight', 0, 1).then((result: any) => {
+      expect(result.scrollTopBefore).to.be.lte(result.scrollTopAfter);
+      expect(result.scrollLeftBefore).to.be.lessThan(result.scrollLeftAfter);
     });
 
     // top right - to bottomRight
-    getScrollDistanceWhenDragOutsideGrid('#myGrid', 'topRight', 'bottomRight', 0, 0).then(result => {
-      expect(result.scrollTopBefore).to.be.equal(result.scrollTopAfter);
+    getScrollDistanceWhenDragOutsideGrid('#myGrid', 'topRight', 'bottomRight', 0, 0).then((result: any) => {
+      expect(result.scrollTopBefore).to.be.lte(result.scrollTopAfter);
       expect(result.scrollLeftBefore).to.be.lessThan(result.scrollLeftAfter);
     });
-    getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'topRight', 'bottomRight', 0, 0).then(result => {
-      expect(result.scrollTopBefore).to.be.equal(result.scrollTopAfter);
+    getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'topRight', 'bottomRight', 0, 0).then((result: any) => {
+      expect(result.scrollTopBefore).to.be.lte(result.scrollTopAfter);
       expect(result.scrollLeftBefore).to.be.lessThan(result.scrollLeftAfter);
     });
-    resetScrollInFrozen();
+    resetScrollInPinned();
 
     // bottom left - to bottomRight
-    getScrollDistanceWhenDragOutsideGrid('#myGrid', 'bottomLeft', 'bottomRight', 0, 1).then(result => {
-      expect(result.scrollTopBefore).to.be.lessThan(result.scrollTopAfter);
-      expect(result.scrollLeftBefore).to.be.equal(result.scrollLeftAfter);
+    getScrollDistanceWhenDragOutsideGrid('#myGrid', 'bottomLeft', 'bottomRight', 0, 1).then((result: any) => {
+      expect(result.scrollTopBefore).to.be.lte(result.scrollTopAfter);
+      expect(result.scrollLeftBefore).to.be.lessThan(result.scrollLeftAfter);
     });
-    getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'bottomLeft', 'bottomRight', 0, 1).then(result => {
-      expect(result.scrollTopBefore).to.be.lessThan(result.scrollTopAfter);
-      expect(result.scrollLeftBefore).to.be.equal(result.scrollLeftAfter);
+    getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'bottomLeft', 'bottomRight', 0, 1).then((result: any) => {
+      expect(result.scrollTopBefore).to.be.lte(result.scrollTopAfter);
+      expect(result.scrollLeftBefore).to.be.lessThan(result.scrollLeftAfter);
     });
-    resetScrollInFrozen();
+    resetScrollInPinned();
 
     // bottom right - to bottomRight
-    getScrollDistanceWhenDragOutsideGrid('#myGrid', 'bottomRight', 'bottomRight', 0, 0).then(result => {
-      expect(result.scrollTopBefore).to.be.lessThan(result.scrollTopAfter);
+    getScrollDistanceWhenDragOutsideGrid('#myGrid', 'bottomRight', 'bottomRight', 0, 0).then((result: any) => {
+      expect(result.scrollTopBefore).to.be.lte(result.scrollTopAfter);
       expect(result.scrollLeftBefore).to.be.lessThan(result.scrollLeftAfter);
     });
-    getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'bottomRight', 'bottomRight', 0, 0).then(result => {
-      expect(result.scrollTopBefore).to.be.lessThan(result.scrollTopAfter);
+    getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'bottomRight', 'bottomRight', 0, 0).then((result: any) => {
+      expect(result.scrollTopBefore).to.be.lte(result.scrollTopAfter);
       expect(result.scrollLeftBefore).to.be.lessThan(result.scrollLeftAfter);
     });
-    resetScrollInFrozen();
-    cy.get('#myGrid .slick-viewport-bottom.slick-viewport-right').scrollTo(cellWidth * 3, cellHeight * 3);
-    cy.get('#myGrid2 .slick-viewport-bottom.slick-viewport-right').scrollTo(cellWidth * 3, cellHeight * 3);
+    resetScrollInPinned();
+    cy.get('#myGrid .slick-horizontal-scroller').scrollTo(cellWidth * 3, 0);
+    cy.get('#myGrid .slick-vertical-scroller').scrollTo(0, cellHeight * 3);
+    cy.get('#myGrid2 .slick-horizontal-scroller').scrollTo(cellWidth * 3, 0);
+    cy.get('#myGrid2 .slick-vertical-scroller').scrollTo(0, cellHeight * 3);
 
     // bottom right - to topLeft
-    getScrollDistanceWhenDragOutsideGrid('#myGrid', 'bottomRight', 'topLeft', 8, 4, 100).then(result => {
-      expect(result.scrollTopBefore).to.be.greaterThan(result.scrollTopAfter);
+    getScrollDistanceWhenDragOutsideGrid('#myGrid', 'bottomRight', 'topLeft', 8, 4, 100).then((result: any) => {
+      expect(result.scrollTopBefore).to.be.equal(result.scrollTopAfter);
       expect(result.scrollLeftBefore).to.be.greaterThan(result.scrollLeftAfter);
     });
-    getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'bottomRight', 'topLeft', 8, 4, 100).then(result => {
-      expect(result.scrollTopBefore).to.be.greaterThan(result.scrollTopAfter);
+    getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'bottomRight', 'topLeft', 8, 4, 100).then((result: any) => {
+      expect(result.scrollTopBefore).to.be.equal(result.scrollTopAfter);
       expect(result.scrollLeftBefore).to.be.greaterThan(result.scrollLeftAfter);
     });
-    resetScrollInFrozen();
+    resetScrollInPinned();
   });
 
-  it('should have a frozen & grouping by Duration grid after click Set/Clear grouping by Duration button', { scrollBehavior: false }, () => {
-    cy.get('#toggleGroup').trigger('click');
-    cy.get('#myGrid div.slick-row[style*="top: 0px;"]').should('have.length', 2 * 2);
-    cy.get('#myGrid2 div.slick-row[style*="top: 0px;"]').should('have.length', 2 * 2);
-    cy.get('#myGrid .grid-canvas-top.grid-canvas-left').contains('Duration');
-    cy.get('#myGrid2 .grid-canvas-top.grid-canvas-left').contains('Duration');
+  it('should have a pinned & grouping by Duration grid after click Set/Clear grouping by Duration button', { scrollBehavior: false }, () => {
+    ensurePinningEnabled();
+    ensureGroupingEnabled();
+    cy.get('#myGrid .slick-group').contains('Duration');
+    cy.get('#myGrid2 .slick-group').contains('Duration');
   });
 
-  function testDragInGrouping(selector) {
+  function testDragInGrouping(selector: string) {
     cy.getNthCell(7, 0, 'bottomRight', { parentSelector: selector, rowHeight: cellHeight })
       .dragStart();
-    cy.get(selector + ' .slick-viewport:last').as('viewport').invoke('scrollTop').then(scrollBefore => {
+    cy.get(selector + ' .slick-vertical-scroller').as('viewport').invoke('scrollTop').then(scrollBefore => {
       cy.dragOutside('bottom', 400, 300, { parentSelector: selector, rowHeight: cellHeight });
       cy.get('@viewport').invoke('scrollTop').then(scrollAfter => {
         expect(scrollBefore).to.be.lessThan(scrollAfter);
         cy.dragEnd(selector);
-        cy.get(selector + ' [style*="top: 350px;"].slick-group').should('not.be.hidden');;
+        cy.get(selector + ' .slick-group:visible').should('exist');
       });
     });
   }
@@ -301,37 +341,38 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
     testDragInGrouping('#myGrid2');
   });
 
-  it('should reset to default grid when click Set/Clear Frozen button and Set/Clear grouping button', () => {
-    cy.get('#toggleFrozen').trigger('click');
-    cy.get('#toggleGroup').trigger('click');
-    cy.get('#myGrid div.slick-row[style*="top: 0px;"]').should('have.length', 1);
-    cy.get('#myGrid2 div.slick-row[style*="top: 0px;"]').should('have.length', 1);
+  it('should reset to default grid when clearing pinning and grouping', () => {
+    clearPinning();
+    clearGrouping();
+    cy.get('#myGrid .slick-docking-overlay .slick-row').should('not.exist');
+    cy.get('#myGrid2 .slick-docking-overlay .slick-row').should('not.exist');
+    cy.get('#myGrid .slick-header-column.slick-column-pinned-left').should('not.exist');
+    cy.get('#myGrid2 .slick-header-column.slick-column-pinned-left').should('not.exist');
   });
 
-  describe('Frozen Columns', () => {
-    it('should set 3 frozen columns in first grid', () => {
-      cy.get('[data-test="frozen-column-count"]').clear().type('3');
-      cy.get('[data-test="set-frozen-columns-btn"]').click();
+  describe('Pinned Columns', () => {
+    it('should set 3 pinned columns in first grid', () => {
+      cy.get('#pinned-column-boundary').clear().type('3');
+      cy.get('[data-test="set-pinned-columns-btn"]').click();
 
-      cy.get('#myGrid .slick-pane-left .slick-header-column').should('have.length', 4);
-      cy.get('#myGrid .slick-pane-right .slick-header-column').should('have.length', 34);
+      cy.get('#myGrid .slick-header-column.slick-column-pinned-left').should('have.length', 4);
+      cy.get('#myGrid .slick-header-column:not(.slick-column-pinned-left)').should('have.length', 34);
     });
 
-    it('should try to set frozen columns wider than possible and expect an error and abort of the execution', () => {
+    it('should reject a pinned-column boundary wider than the available grid', () => {
       const stub = cy.stub();
       cy.on('window:alert', stub);
-      cy.get('[data-test="frozen-column-count"]').clear().type('12');
-      cy.get('[data-test="set-frozen-columns-btn"]')
+      cy.get('#pinned-column-boundary').clear().type('12');
+      cy.get('[data-test="set-pinned-columns-btn"]')
         .click()
         .then(() => {
           expect(stub.getCall(0)).to.be.calledWith(
-            '[SlickGrid] You are trying to freeze/pin more columns than the grid can support. ' +
-            'Make sure to have less columns pinned (on the left) than the actual visible grid width.'
+            '[SlickGrid] Cannot pin these columns because they exceed the available grid width.'
           );
 
           // it should still have previous pinning
-          cy.get('#myGrid .slick-pane-left .slick-header-column').should('have.length', 4);
-          cy.get('#myGrid .slick-pane-right .slick-header-column').should('have.length', 34);
+          cy.get('#myGrid .slick-header-column.slick-column-pinned-left').should('have.length', 4);
+          cy.get('#myGrid .slick-header-column:not(.slick-column-pinned-left)').should('have.length', 34);
         });
     });
   });

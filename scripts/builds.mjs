@@ -157,6 +157,8 @@ export function runBuild(options) {
     // merge any optional esbuild options
     ...options,
   }).catch((err) => {
+    const details = err?.errors?.map((error) => error.text || error).join('\n') || err?.message || err;
+    console.error(`[esbuild] Build failed${details ? `:\n${details}` : ''}`);
     // in production builds, fail immediately on errors so CI catches them
     if (argv.prod) {
       throw err;

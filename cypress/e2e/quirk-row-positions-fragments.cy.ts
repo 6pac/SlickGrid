@@ -1,18 +1,16 @@
 /**
  * Regression test for the updateRowPositions fragment bug.
  *
- * updateRowPositions() — which runs whenever the virtual-scroll paging offset
- * changes — repositioned only rowNode[0], the LEFT-pane fragment. With frozen
- * columns a row has one fragment per column pane, so after a paging-offset jump
- * the right-pane fragment kept its stale top and the two halves of the same row
- * drifted vertically apart across the freeze line. (It also used bare getRowTop()
- * where the render path uses getRowTop() - getFrozenRowOffset(); the fix reuses
- * the render-time formula for all fragments.)
+ * updateRowPositions() runs whenever the virtual-scroll paging offset changes.
+ * The current single-viewport renderer keeps pinned and center cells in regions
+ * under one row element, so the regression is checked by comparing every
+ * rendered docked row with the grid's current rendered row position.
  *
  * The spec is SELF-HOSTING: the repro harness is served from this file via
  * cy.intercept (no page is added to examples/). It forces paging (100k rows —
  * virtual height above the ~1M css cap), walks scrollTo finely across page
- * boundaries, and asserts every rendered row's left/right fragments agree on top.
+ * boundaries, and asserts every rendered row stays aligned with its pinned
+ * regions.
  * Verified to FAIL pre-fix (drift = one paging offset unit) and PASS post-fix.
  */
 
@@ -46,7 +44,7 @@ const harnessHtml = `<!doctype html>
   var grid = new Slick.Grid('#myGrid', data, columns, {
     enableCellNavigation: true,
     enableColumnReorder: false,
-    frozenColumn: 0,
+    pinning: { columns: { left: 0 } },
     rowHeight: 25,
     // a small option cap makes the getMaxSupportedCssHeight probe exit at its
     // 1,000,000px starting value, so with th = 2.5M the grid pages (n = 250)
@@ -62,19 +60,21 @@ const harnessHtml = `<!doctype html>
     return m ? parseFloat(m[1]) : NaN;
   }
 
-  // compare left/right fragment tops for every rendered data-row; return worst pair
+  // Compare every rendered docked row with the position calculated by the
+  // current single-viewport renderer; return the worst mismatch.
   function fragmentDivergence() {
-    var canvases = document.querySelectorAll('#myGrid .grid-canvas');
-    var left = canvases[0], right = canvases[1];
-    var worst = { diff: 0, row: null, l: 0, r: 0, compared: 0 };
-    left.querySelectorAll('.slick-row').forEach(function (lRow) {
-      var r = lRow.dataset.row;
-      var rRow = right.querySelector('.slick-row[data-row="' + r + '"]');
-      if (!rRow) { return; }
-      var lt = topOf(lRow), rt = topOf(rRow);
+    var canvas = document.querySelector('#myGrid .grid-canvas');
+    var worst = { diff: 0, row: null, actual: 0, expected: 0, compared: 0 };
+    if (!canvas) { return worst; }
+    canvas.querySelectorAll('.slick-row-docked').forEach(function (row) {
+      var rowIndex = Number(row.dataset.row);
+      var regions = row.querySelectorAll(':scope > .slick-pinned-left-cells, :scope > .slick-scrolling-cells');
+      if (regions.length < 2) { return; }
+      var actual = topOf(row);
+      var expected = grid.getRowTop(rowIndex);
       worst.compared++;
-      var d = Math.abs(lt - rt);
-      if (d > worst.diff) { worst = { diff: d, row: r, l: lt, r: rt, compared: worst.compared }; }
+      var d = Math.abs(actual - expected);
+      if (d > worst.diff) { worst = { diff: d, row: rowIndex, actual: actual, expected: expected, compared: worst.compared }; }
     });
     return worst;
   }
@@ -91,7 +91,7 @@ const harnessHtml = `<!doctype html>
 
     // walk finely ACROSS each page boundary: an offset change with overlapping
     // rendered ranges is exactly the state updateRowPositions must handle
-    var worstEver = { diff: 0, row: null, l: 0, r: 0 };
+    var worstEver = { diff: 0, row: null, actual: 0, expected: 0 };
     var comparedTotal = 0;
     var boundaries = Math.min(3, g.n - 1);
     for (var k = 1; k <= boundaries; k++) {
@@ -106,10 +106,10 @@ const harnessHtml = `<!doctype html>
         if (w.diff > worstEver.diff) { worstEver = w; }
       }
     }
-    check('rows were compared across panes at the page boundaries', comparedTotal > 0, 'compared=' + comparedTotal);
-    check('left/right fragments of every row agree on top after paging jumps (no drift)',
+    check('rows with pinned regions were compared at the page boundaries', comparedTotal > 0, 'compared=' + comparedTotal);
+    check('docked rows keep the calculated top after paging jumps (no drift)',
       worstEver.diff < 0.5,
-      worstEver.row === null ? 'no divergence' : ('row ' + worstEver.row + ' L=' + worstEver.l + ' R=' + worstEver.r + ' diff=' + worstEver.diff));
+      worstEver.row === null ? 'no divergence' : ('row ' + worstEver.row + ' actual=' + worstEver.actual + ' expected=' + worstEver.expected + ' diff=' + worstEver.diff));
 
     out.push(pass ? '\\nALL CHECKS PASSED' : '\\nCHECKS FAILED');
     document.getElementById('checkResults').textContent = out.join('\\n');

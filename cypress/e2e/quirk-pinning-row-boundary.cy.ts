@@ -1,21 +1,18 @@
 /**
- * Regression test for frozen-row boundary canonicalization.
+ * Regression test for pinned-row boundary canonicalization.
  *
  * The row-band boundary was compared differently at six sites, and they
  * contradicted each other and the render split (rows >= actualFrozenRow go to the
  * bottom canvas):
- * - appendRowHtml classed rows 'frozen' via `row <= frozenRow` (a COUNT compare):
- *   wrong rows classed in bottom mode, off-by-one in top mode;
- * - cleanupRows/cleanUpCells exempted `<= actualFrozenRow`, sparing the first
- *   SCROLLABLE row from eviction/cleanup in top mode;
- * - getCanvasNode/getViewportNode classified with `>= actualFrozenRow + 1` in top
- *   mode, returning the TOP pane for a row whose DOM lives in the BOTTOM canvas;
- * - scrollRowIntoView used `actualFrozenRow - 1` boundaries, refusing to scroll
- *   the LAST scrollable row in bottom mode.
+ * - row rendering and cache cleanup must agree on which rows are permanently
+ *   pinned and therefore must remain in the docking overlay/cache;
+ * - canvas lookup must still resolve the first scrollable row in the single
+ *   viewport;
+ * - scrollRowIntoView must allow the last center row to be revealed when rows
+ *   are pinned to the bottom edge.
  *
  * All sites now route through two predicates that match the render split:
- * isBottomBandRow (>= actualFrozenRow) and isFrozenRowIdx (frozenBottom ?
- * >= actualFrozenRow : < actualFrozenRow).
+ * isBottomBandRow and isPinnedRowIdx now derive from the unified pinning state.
  *
  * The spec is SELF-HOSTING (harness served via cy.intercept; no example page).
  * Each check pins one drifted site. Verified to FAIL pre-fix on every drifted
@@ -52,15 +49,15 @@ const harnessHtml = `<!doctype html>
   var base = { enableCellNavigation: true, enableColumnReorder: false, rowHeight: 25 };
   function cols() { return columns.map(function (c) { return Object.assign({}, c); }); }
 
-  // Grid A: 3 frozen TOP rows -> actualFrozenRow = 3; first scrollable row = 3
-  var gridA = new Slick.Grid('#gridA', makeData(), cols(), Object.assign({ frozenRow: FR }, base));
-  // Grid B: 3 frozen BOTTOM rows -> actualFrozenRow = 997; last scrollable row = 996
-  var gridB = new Slick.Grid('#gridB', makeData(), cols(), Object.assign({ frozenRow: FR, frozenBottom: true }, base));
+  // Grid A: 3 permanently pinned TOP rows; first scrollable row = 3
+  var gridA = new Slick.Grid('#gridA', makeData(), cols(), Object.assign({ pinning: { rows: { top: [0, 1, 2] } } }, base));
+  // Grid B: 3 permanently pinned BOTTOM rows; last scrollable row = 996
+  var gridB = new Slick.Grid('#gridB', makeData(), cols(), Object.assign({ pinning: { rows: { bottom: [997, 998, 999] } } }, base));
   window.gridA = gridA; window.gridB = gridB;
 
-  function frozenClassedRows(container) {
+  function pinnedRows(container, className) {
     var out = [];
-    document.querySelectorAll(container + ' .slick-row.frozen').forEach(function (r) { out.push(parseInt(r.dataset.row, 10)); });
+    document.querySelectorAll(container + ' .slick-row.' + className).forEach(function (r) { out.push(parseInt(r.dataset.row, 10)); });
     out.sort(function (a, b) { return a - b; });
     return out;
   }
@@ -73,11 +70,11 @@ const harnessHtml = `<!doctype html>
     }
     function eq(a, b) { return JSON.stringify(a) === JSON.stringify(b); }
 
-    // 1. 'frozen' css class = exactly the configured pinned rows, both modes
-    var aClassed = frozenClassedRows('#gridA');
-    check('A(top): frozen class on exactly rows 0..' + (FR - 1), eq(aClassed, [0, 1, 2]), 'classed=' + JSON.stringify(aClassed));
-    var bClassed = frozenClassedRows('#gridB');
-    check('B(bottom): frozen class on exactly rows 997..999', eq(bClassed, [997, 998, 999]), 'classed=' + JSON.stringify(bClassed));
+    // 1. Current docking classes identify exactly the configured pinned rows.
+    var aClassed = pinnedRows('#gridA', 'slick-row-pinned-top');
+    check('A(top): pinned class on exactly rows 0..' + (FR - 1), eq(aClassed, [0, 1, 2]), 'classed=' + JSON.stringify(aClassed));
+    var bClassed = pinnedRows('#gridB', 'slick-row-pinned-bottom');
+    check('B(bottom): pinned class on exactly rows 997..999', eq(bClassed, [997, 998, 999]), 'classed=' + JSON.stringify(bClassed));
 
     // 2. getCanvasNode pane agreement: the canvas returned for the first
     //    scrollable row must be the canvas that CONTAINS that row's DOM

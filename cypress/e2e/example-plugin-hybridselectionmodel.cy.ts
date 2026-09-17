@@ -147,9 +147,40 @@ describe('Example - Context Menu Plugin & Hybrid Selection Mode', () => {
     cy.visit(`${Cypress.config('baseUrl')}/examples/example-plugin-hybridselectionmodel.html`);
     cy.get('#myGrid .slick-row[data-row="1"] .slick-cell.l0.r0').click();
     cy.get('#myGrid .slick-row[data-row="3"] .slick-cell.l0.r0').as('secondRowCell');
-    cy.get('@secondRowCell').trigger('mousedown', { which: 1, ctrlKey: true, force: true });
-    cy.get('@secondRowCell').trigger('mousemove', 30, 10, { ctrlKey: true, force: true });
-    cy.get('@secondRowCell').trigger('mousemove', 30, 52, { ctrlKey: true, force: true });
+    // Use native events with explicit viewport coordinates. Cypress trigger()
+    // can leave clientX/clientY at zero for this sequence, which lets the
+    // event reach Draggable but prevents CellRangeSelector from resolving its
+    // start/end cells. The Ctrl modifier is present for the entire drag so
+    // HybridSelectionModel appends the new row range to the existing one.
+    cy.get('@secondRowCell').then(($startCell) => {
+      const startCell = $startCell[0] as HTMLElement;
+      const startRect = startCell.getBoundingClientRect();
+      const startX = startRect.left + startRect.width / 2;
+      const startY = startRect.top + startRect.height / 2;
+      const endX = startX;
+      const endY = startY + startRect.height;
+
+      startCell.dispatchEvent(new MouseEvent('mousedown', {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+        buttons: 1,
+        clientX: startX,
+        clientY: startY,
+        ctrlKey: true,
+      }));
+      // Keep the event target on the materialized start cell. The grid uses
+      // the pointer coordinates for the endpoint, so row 4 need not already
+      // have its own virtualized DOM node.
+      startCell.dispatchEvent(new MouseEvent('mousemove', {
+        bubbles: true,
+        cancelable: true,
+        buttons: 1,
+        clientX: endX,
+        clientY: endY,
+        ctrlKey: true,
+      }));
+    });
 
     cy.window().then((win: any) => {
       const ranges = win.grid.getSelectionModel().getSelectedRanges();

@@ -4,6 +4,9 @@ import type {
   ColumnPickerOption,
   ColumnReorderFunction,
   ContextMenuOption,
+  DockingOption,
+  PinningOption,
+  StickyRows,
   CustomTooltipOption,
   EditCommand,
   EditorConstructor,
@@ -27,6 +30,8 @@ export interface CustomDataView<T = any> {
   getItemMetadata(row: number, cell?: boolean | number): ItemMetadata | null;
   getLength: () => number;
   getCellValue?: (index: number, field: string) => T[keyof T];
+  setFormattedDataCachePlanner?: (planner: any, forceRefresh?: boolean) => void;
+  getCellDisplayValue?: (...args: any[]) => any;
 }
 
 export interface CssStyleHash {
@@ -34,6 +39,9 @@ export interface CssStyleHash {
 }
 
 export interface GridOption<C extends BaseColumn = BaseColumn> {
+  allowDragFromClosest?: string;
+  /** Shared pixel budgets and overflow behavior for pinned and sticky rows/columns. */
+  docking?: DockingOption;
   /** CSS class name used on newly added row */
   addNewRowCssClass?: string;
 
@@ -140,6 +148,18 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
 
   /** Do we have paging enabled? */
   doPaging?: boolean;
+
+  enableGridMenu?: boolean;
+  enableRowDetailView?: boolean;
+  enableFormattedDataCache?: boolean;
+  enableExcelCopyBuffer?: boolean;
+  silenceWarnings?: boolean;
+  selectionOptions?: any;
+  datasetIdPropertyName?: string;
+  rowDetailView?: any;
+  columnResizingDelay?: number;
+  autoScrollResizeLeftDelay?: number;
+  autoScrollResizeRightDelay?: number;
 
   /** Defaults to false, when enabled will give the possibility to edit cell values with inline editors. */
   editable?: boolean;
@@ -248,6 +268,9 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
 
   /** Formatter classes factory */
   formatterFactory?: { getFormatter: (col: C) => Formatter; } | null;
+
+  /** Unified permanent pinning for columns and rows. */
+  pinning?: PinningOption;
 
   /** Defaults to false, do we want to freeze (pin) the bottom portion instead of the top */
   frozenBottom?: boolean;
@@ -422,6 +445,17 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
 
   /** When set to true, it will skip the validation check to make sure frozen columns are not wider than the grid visible canvas width */
   skipFreezeColumnValidation?: boolean;
+
+  /** Stable row ids or indexes that dock after ordinary scrolling clips them. */
+  stickyRows?: StickyRows;
+
+  /** Skip validation that pinned columns leave a usable center region. */
+  skipPinningValidation?: boolean;
+  invalidColumnPinningPickerMessage?: string;
+  invalidColumnPinningSequenceMessage?: string;
+  invalidColumnPinningPickerCallback?: (error: string) => void;
+  invalidColumnPinningWidthMessage?: string;
+  invalidColumnPinningWidthCallback?: (error: string) => void;
 
   /** @deprecated @use `invalidColumnFreezeWidthCallback` Defaults to false, should we throw an error when frozenColumn is wider than the grid viewport width. */
   throwWhenFrozenNotAllViewable?: boolean;

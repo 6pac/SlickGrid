@@ -45,7 +45,7 @@
       (i.e: Filtering/Sorting/Paging/... will <b>not</b> change/update the spanning in the grid by itself)
     </div>
     <div>
-      <b>NOTE 3</b>: column/row freezing (pinning) are <b>not supported</b>, or at least not recommended unless you know exactly what you're doing!
+      <b>NOTE 3</b>: column/row pinning with row spans is <b>not supported</b>, or at least not recommended unless you know exactly what you're doing!
       Any freezing column/row that could intersect because of a colspan/rowspan <b>will cause problems</b>.
     </div>
 
@@ -228,7 +228,7 @@
 			enableCellNavigation: true,
 			enableColumnReorder: false,
       enableCellRowSpan: true, // required flag for rowspan
-      frozenColumn: 0,
+      pinning: { columns: { left: 0 } },
       rowHeight: 30,
       rowTopOffsetRenderType: 'top' // rowspan doesn't render well with 'transform', default is 'top'
 		};
@@ -248,7 +248,7 @@
       showEmployeeId = !showEmployeeId;
       // Keep the complete column list and switch visibility with the hidden property.
       // This is the breaking-change behavior introduced by the column visibility migration.
-      grid.setOptions({ frozenColumn: showEmployeeId ? 0 : -1 });
+      grid.setOptions({ pinning: { columns: { left: showEmployeeId ? 0 : [] } } });
       grid.updateColumnById("employeeID", { hidden: !showEmployeeId });
       grid.updateColumns();
       grid.remapAllColumnsRowSpan();
