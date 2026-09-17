@@ -12,32 +12,32 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
   }
 
   function ensurePinningEnabled() {
-    cy.get('#myGrid').find('.slick-header-column.slick-column-pinned-left').then(($pinnedHeaders) => {
-      if (!$pinnedHeaders.length) {
+    cy.get('#myGrid').then(($grid) => {
+      if (!$grid.find('.slick-header-column.slick-column-pinned-left').length) {
         cy.get('#togglePinning').click();
       }
     });
   }
 
   function ensureGroupingEnabled() {
-    cy.get('#myGrid').find('.slick-group').then(($groups) => {
-      if (!$groups.length) {
+    cy.get('#myGrid').then(($grid) => {
+      if (!$grid.find('.slick-group').length) {
         cy.get('#toggleGroup').click();
       }
     });
   }
 
   function clearPinning() {
-    cy.get('#myGrid').find('.slick-header-column.slick-column-pinned-left').then(($pinnedHeaders) => {
-      if ($pinnedHeaders.length) {
+    cy.get('#myGrid').then(($grid) => {
+      if ($grid.find('.slick-header-column.slick-column-pinned-left').length) {
         cy.get('#togglePinning').click();
       }
     });
   }
 
   function clearGrouping() {
-    cy.get('#myGrid').find('.slick-group').then(($groups) => {
-      if ($groups.length) {
+    cy.get('#myGrid').then(($grid) => {
+      if ($grid.find('.slick-group').length) {
         cy.get('#toggleGroup').click();
       }
     });
@@ -267,12 +267,15 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
       expect(result.scrollLeftBefore).to.be.lessThan(result.scrollLeftAfter);
     });
 
+    // The unified docking canvas has no separate top-right pane. Start from
+    // Duration (the first selectable center column), not column 0, which is
+    // the non-selectable pinned row-number cell.
     // top right - to bottomRight
-    getScrollDistanceWhenDragOutsideGrid('#myGrid', 'topRight', 'bottomRight', 0, 0).then((result: any) => {
+    getScrollDistanceWhenDragOutsideGrid('#myGrid', 'topRight', 'bottomRight', 0, 2).then((result: any) => {
       expect(result.scrollTopBefore).to.be.lte(result.scrollTopAfter);
       expect(result.scrollLeftBefore).to.be.lessThan(result.scrollLeftAfter);
     });
-    getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'topRight', 'bottomRight', 0, 0).then((result: any) => {
+    getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'topRight', 'bottomRight', 0, 2).then((result: any) => {
       expect(result.scrollTopBefore).to.be.lte(result.scrollTopAfter);
       expect(result.scrollLeftBefore).to.be.lessThan(result.scrollLeftAfter);
     });
@@ -290,11 +293,11 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
     resetScrollInPinned();
 
     // bottom right - to bottomRight
-    getScrollDistanceWhenDragOutsideGrid('#myGrid', 'bottomRight', 'bottomRight', 0, 0).then((result: any) => {
+    getScrollDistanceWhenDragOutsideGrid('#myGrid', 'bottomRight', 'bottomRight', 0, 2).then((result: any) => {
       expect(result.scrollTopBefore).to.be.lte(result.scrollTopAfter);
       expect(result.scrollLeftBefore).to.be.lessThan(result.scrollLeftAfter);
     });
-    getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'bottomRight', 'bottomRight', 0, 0).then((result: any) => {
+    getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'bottomRight', 'bottomRight', 0, 2).then((result: any) => {
       expect(result.scrollTopBefore).to.be.lte(result.scrollTopAfter);
       expect(result.scrollLeftBefore).to.be.lessThan(result.scrollLeftAfter);
     });
@@ -324,14 +327,19 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
   });
 
   function testDragInGrouping(selector: string) {
-    cy.getNthCell(7, 0, 'bottomRight', { parentSelector: selector, rowHeight: cellHeight })
+    // In the old bottom-right pane, nth column 0 resolved past the frozen
+    // control column. The unified canvas exposes that non-selectable control
+    // column as index 0, so use Duration (index 2) in a data row instead.
+    cy.getNthCell(7, 2, 'bottomRight', { parentSelector: selector, rowHeight: cellHeight })
       .dragStart();
-    cy.get(selector + ' .slick-vertical-scroller').as('viewport').invoke('scrollTop').then(scrollBefore => {
-      cy.dragOutside('bottom', 400, 300, { parentSelector: selector, rowHeight: cellHeight });
-      cy.get('@viewport').invoke('scrollTop').then(scrollAfter => {
-        expect(scrollBefore).to.be.lessThan(scrollAfter);
-        cy.dragEnd(selector);
-        cy.get(selector + ' .slick-group:visible').should('exist');
+    return cy.get(selector + ' .slick-vertical-scroller').as('viewport').invoke('scrollTop').then(scrollBefore => {
+      return cy.dragOutside('bottom', 400, 300, { parentSelector: selector, rowHeight: cellHeight }).then(() => {
+        return cy.get('@viewport').invoke('scrollTop').then(scrollAfter => {
+          expect(scrollBefore).to.be.lessThan(scrollAfter);
+          return cy.dragEnd(selector).then(() => {
+            cy.get(selector + ' .slick-group:visible').should('exist');
+          });
+        });
       });
     });
   }

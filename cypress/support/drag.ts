@@ -73,7 +73,11 @@ Cypress.Commands.overwrite('drag', (_originalFn: any, subject: any, target: any,
 
     return targetChain.then(($target: JQuery<HTMLElement>) => {
       const rawTarget = ($target?.[0] ?? $target) as HTMLElement | undefined;
-      const targetElement = rawTarget?.closest?.(DRAGGABLE_ITEM_SELECTOR) as HTMLElement | undefined;
+      // Headers and grouping pills resolve to their draggable owner, but a
+      // grouping dropzone is deliberately droppable-only. Keep the raw target
+      // when it has no draggable ancestor so cross-list header drops reach
+      // Sortable's dropzone instance.
+      const targetElement = rawTarget?.closest<HTMLElement>(DRAGGABLE_ITEM_SELECTOR) ?? rawTarget;
       if (!source || !targetElement) {
         return cy.wrap($source, { log: false });
       }

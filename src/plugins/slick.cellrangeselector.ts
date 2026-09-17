@@ -116,9 +116,14 @@ export class SlickCellRangeSelector implements SlickPlugin {
     this._activeCanvas = this._grid.getActiveCanvasNode(e);
     this._activeViewport = this._grid.getActiveViewportNode(e);
 
-    const scrollbarDimensions = this._grid.getDisplayedScrollbarDimensions();
-    this._viewportWidth = this._activeViewport.offsetWidth - scrollbarDimensions.width;
-    this._viewportHeight = this._activeViewport.offsetHeight - scrollbarDimensions.height;
+    // client dimensions describe the actual space available to cells. They
+    // already exclude native scrollbars and, with the docking layout, reflect
+    // the height reserved for its separate horizontal scroll owner. Subtracting
+    // getDisplayedScrollbarDimensions() from offsetHeight double-counted that
+    // external scrollbar, causing vertical drag auto-scroll to target a row
+    // that the grid still considered visible.
+    this._viewportWidth = this._activeViewport.clientWidth;
+    this._viewportHeight = this._activeViewport.clientHeight;
 
     this._moveDistanceForOneCell = {
       x: this._grid.getAbsoluteColumnMinWidth() / 2,
