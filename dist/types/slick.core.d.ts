@@ -386,7 +386,7 @@ export declare class BindingEventService {
     /** Bind an event listener to any element */
     bind(element: Element | Window | Document, eventName: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions, groupName?: string): void;
     /** Unbind all will remove every every event handlers that were bounded earlier */
-    unbind(element: Element | Window | Document, eventName: string, listener: EventListenerOrEventListenerObject): void;
+    unbind(element: Element | Window | Document, eventName: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions): void;
     unbindByEventName(element: Element | Window | Document, eventName: string): void;
     /**
      * Unbind all event listeners that were bounded, optionally provide a group name to unbind all listeners assigned to that specific group only.

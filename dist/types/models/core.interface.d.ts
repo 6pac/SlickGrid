@@ -4,6 +4,7 @@ export interface ElementEventListener {
     element: Element | Window | Document;
     eventName: string;
     listener: EventListenerOrEventListenerObject;
+    options?: AddEventListenerOptions;
     groupName?: string;
 }
 export interface EditController {

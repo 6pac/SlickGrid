@@ -560,15 +560,18 @@ var BindingEventService = class {
   }
   /** Bind an event listener to any element */
   bind(element, eventName, listener, options, groupName = "") {
-    element && (element.addEventListener(eventName, listener, options), this._boundedEvents.push({ element, eventName, listener, groupName }));
+    if (element) {
+      let eventOptions = typeof options == "boolean" ? { capture: options } : options;
+      element.addEventListener(eventName, listener, eventOptions), this._boundedEvents.push({ element, eventName, listener, options: eventOptions, groupName });
+    }
   }
   /** Unbind all will remove every every event handlers that were bounded earlier */
-  unbind(element, eventName, listener) {
-    element?.removeEventListener && element.removeEventListener(eventName, listener);
+  unbind(element, eventName, listener, options) {
+    element?.removeEventListener && element.removeEventListener(eventName, listener, options);
   }
   unbindByEventName(element, eventName) {
     let boundedEvent = this._boundedEvents.find((e) => e.element === element && e.eventName === eventName);
-    boundedEvent && this.unbind(boundedEvent.element, boundedEvent.eventName, boundedEvent.listener);
+    boundedEvent && this.unbind(boundedEvent.element, boundedEvent.eventName, boundedEvent.listener, boundedEvent.options);
   }
   /**
    * Unbind all event listeners that were bounded, optionally provide a group name to unbind all listeners assigned to that specific group only.
@@ -579,14 +582,14 @@ var BindingEventService = class {
       for (let i = this._boundedEvents.length - 1; i >= 0; --i) {
         let boundedEvent = this._boundedEvents[i];
         if (groupNames.some((g) => g === boundedEvent.groupName)) {
-          let { element, eventName, listener } = boundedEvent;
-          this.unbind(element, eventName, listener), this._boundedEvents.splice(i, 1);
+          let { element, eventName, listener, options } = boundedEvent;
+          this.unbind(element, eventName, listener, options), this._boundedEvents.splice(i, 1);
         }
       }
     } else
       for (; this._boundedEvents.length > 0; ) {
-        let boundedEvent = this._boundedEvents.pop(), { element, eventName, listener } = boundedEvent;
-        this.unbind(element, eventName, listener);
+        let boundedEvent = this._boundedEvents.pop(), { element, eventName, listener, options } = boundedEvent;
+        this.unbind(element, eventName, listener, options);
       }
   }
 }, _Utils = class _Utils {
@@ -7235,7 +7238,7 @@ var SlickGrid = class {
     __publicField(this, "externalPubSub", externalPubSub);
     //////////////////////////////////////////////////////////////////////////////////////////////
     // Public API
-    __publicField(this, "slickGridVersion", "5.20.1");
+    __publicField(this, "slickGridVersion", "5.20.2");
     /** optional grid state clientId */
     __publicField(this, "cid", "");
     // Events
@@ -12304,7 +12307,7 @@ var SlickEvent24 = SlickEvent, SlickRemoteModel = class {
  * Distributed under MIT license.
  * All rights reserved.
  *
- * SlickGrid v5.20.1
+ * SlickGrid v5.20.2
  *
  * NOTES:
  *     Cell/row DOM manipulations are done directly bypassing JS DOM manipulation methods.
