@@ -1,0 +1,283 @@
+{
+  "grid:opt-auto": { "notes": "Undocumented legacy flag with no defined effect in the current grid. Do not rely on it." },
+  "grid:opt-columnPickerTitle": { "notes": "Deprecated. Set the title through the `columnPicker` option object instead: `columnPicker: { columnTitle: '…' }`." },
+  "grid:opt-forceFitTitle": { "notes": "Deprecated. Use `columnPicker: { forceFitTitle: '…' }` instead." },
+  "grid:opt-syncResizeTitle": { "notes": "Deprecated. Use `columnPicker: { syncResizeTitle: '…' }` instead." },
+  "grid:opt-throwWhenFrozenNotAllViewable": { "notes": "Deprecated. Handle a frozen column wider than the viewport with `invalidColumnFreezeWidthCallback` / `invalidColumnFreezeWidthMessage` instead." },
+  "dataview:dvopt-inlineFilters": { "notes": "Deprecated and ignored in v6. DataView filtering is compiled safely for you; there is no inline-filter mode to choose." },
+  "dataview:dvopt-useCSPSafeFilter": { "notes": "Deprecated and ignored in v6. DataView filtering is always CSP-safe, so this flag has no effect." },
+  "grid:opt-editable": {
+    "example": "const grid = new SlickGrid('#grid', data, columns, {\n  editable: true,\n  autoEdit: false,\n});\n// give each editable column an `editor`\ncolumns[0].editor = Editors.Text;"
+  },
+  "grid:m-setColumns": {
+    "notes": "Replaces every column and rebuilds the headers. To keep the user's current widths, copy them from getColumns() before you replace.",
+    "example": "const widths = Object.fromEntries(grid.getColumns().map((c) => [c.id, c.width]));\nfor (const c of nextColumns) c.width = widths[c.id] ?? c.width;\ngrid.setColumns(nextColumns);"
+  },
+  "grid:m-registerPlugin": {
+    "notes": "You can also attach a plugin by constructing it with the grid. registerPlugin is the explicit form and pairs with unregisterPlugin.",
+    "example": "import { SlickCellMenu } from 'slickgrid';\ngrid.registerPlugin(new SlickCellMenu({ /* options */ }));"
+  },
+  "grid:evt-onSort": {
+    "example": "grid.onSort.subscribe((e, args) => {\n  const cols = args.sortCols ?? [{ sortCol: args.sortCol, sortAsc: args.sortAsc }];\n  dataView.sort((a, b) => {\n    for (const { sortCol, sortAsc } of cols) {\n      const dir = sortAsc ? 1 : -1;\n      const x = a[sortCol.field], y = b[sortCol.field];\n      if (x !== y) return (x > y ? 1 : -1) * dir;\n    }\n    return 0;\n  });\n});",
+    "notes": "Fires when the user clicks a sortable column header and the sort is applied, after `onBeforeSort` is not cancelled."
+  },
+  "grid:m-getViewport": {
+    "notes": "Returns the currently visible range as { top, bottom, leftPx, rightPx } — top/bottom are row indexes, leftPx/rightPx are horizontal pixel bounds. Pass a scroll position to compute the range at that position instead of now. This is the visible range only; getRenderedRange() adds the row buffer.",
+    "example": "const vp = grid.getViewport();\nloadRowsFromServer(vp.top, vp.bottom);"
+  },
+  "grid:m-focus": {
+    "notes": "Moves keyboard focus back to the grid's active cell so navigation and shortcuts work. Call it after you change the active cell in code, or after focus went elsewhere (for example a closed dialog).",
+    "example": "grid.setActiveCell(0, 0);\ngrid.focus();"
+  },
+  "grid:m-getPreHeaderPanel": {
+    "notes": "Returns the pre-header panel element — the strip above the column headers, created when the createPreHeaderPanel option is on. Use it for grouped or spanned column headers.",
+    "example": "const panel = grid.getPreHeaderPanel();\npanel.textContent = 'Q1 2026';"
+  },
+  "grid:m-arrayEquals": {
+    "notes": "Utility that returns true when two arrays are the same length and shallow-equal by index (each element strictly equal). Handy for cheap change detection.",
+    "example": "if (!grid.arrayEquals(prevIds, nextIds)) {\n  grid.setSelectedRows(nextRows);\n}"
+  },
+  "dataview:m-fastSort": {
+    "notes": "Sorts items by a single field using a faster string-based comparison. field is a property name or a function that returns the sort string. Use sort() with a comparer for custom or multi-field ordering; fastSort trades flexibility for speed.",
+    "example": "dataView.fastSort('lastName', true);"
+  },
+  "dataview:m-refresh": {
+    "notes": "Re-applies the current filter, sort, paging and grouping, then fires the change events for whatever changed. Call it after you mutate items outside the DataView's own add/update methods. Inside a beginUpdate()/endUpdate() batch it is deferred to endUpdate().",
+    "example": "items[0].active = false;\ndataView.refresh();"
+  },
+  "dataview:m-endUpdate": {
+    "notes": "Ends a batch started with beginUpdate() and runs a single refresh(), so many changes cause one re-render. Always pair it with beginUpdate().",
+    "example": "dataView.beginUpdate();\nfor (const row of incoming) dataView.updateItem(row.id, row);\ndataView.endUpdate();"
+  },
+  "dataview:m-collapseAllGroups": {
+    "notes": "Collapses all groups. Pass a zero-based level to collapse only that grouping level; omit it for every level. Requires grouping set with setGrouping plus a SlickGroupItemMetadataProvider.",
+    "example": "dataView.collapseAllGroups();      // every level\ndataView.collapseAllGroups(0);     // top level only"
+  },
+  "dataview:m-expandAllGroups": {
+    "notes": "Expands all groups. Pass a zero-based level to expand only that level; omit it for every level.",
+    "example": "dataView.expandAllGroups();"
+  },
+  "dataview:m-getGroups": {
+    "notes": "Returns the current top-level Group objects. Each has value, count, rows, nested groups, and totals when aggregators are set. Empty array when no grouping is active.",
+    "example": "for (const g of dataView.getGroups()) {\n  console.log(g.value, g.count);\n}"
+  },
+  "dataview:m-collapseGroup": {
+    "notes": "Collapses one group. Pass the group's groupingKey, or for a nested group pass one key per level from the top down. Requires grouping via setGrouping.",
+    "example": "dataView.collapseGroup('Australia');\n// nested: dataView.collapseGroup('Australia', 'Australia:NT');"
+  },
+  "dataview:m-expandGroup": {
+    "notes": "Expands one group. Same argument form as collapseGroup — a single groupingKey, or one key per level for nested groups.",
+    "example": "dataView.expandGroup('Australia');"
+  },
+  "dataview:m-expandCollapseGroup": {
+    "notes": "Low-level toggle used by expandGroup/collapseGroup. Sets the collapsed state of the group at groupingKey on grouping level; pass collapse true to collapse, false to expand.",
+    "example": "dataView.expandCollapseGroup(0, 'Australia', true); // collapse"
+  },
+  "dataview:m-destroy": {
+    "notes": "Releases the DataView: clears items and internal indexes and unsubscribes its events. Call it when you tear down the grid to avoid leaks.",
+    "example": "dataView.destroy();"
+  },
+  "dataview:m-getItemMetadata": {
+    "notes": "Returns the metadata SlickGrid applies to a row — CSS classes, per-column overrides, and for group/total rows the special formatter and colspan. This is how grouped rows render. Returns null when the row has no metadata.",
+    "example": "const meta = dataView.getItemMetadata(0);"
+  },
+  "dataview:m-syncGridCellCssStyles": {
+    "notes": "Keeps a set of cell CSS styles (added with grid.setCellCssStyles under key) attached to the right items as they move, sort or filter. Call it once after you add the styles; the DataView re-applies them on every change.",
+    "example": "grid.setCellCssStyles('flagged', hash);\ndataView.syncGridCellCssStyles(grid, 'flagged');"
+  },
+  "grid:evt-onActiveCellChanged": {
+    "notes": "Fires from `setActiveCellInternal()` after the active cell moves to a new cell or clears, unless the caller suppresses it. The event carries the new active cell, which can be null."
+  },
+  "grid:evt-onActiveCellPositionChanged": {
+    "notes": "Fires from `handleActiveCellPositionChange()` when the active cell's on-screen position changes, such as after a scroll or resize. The grid then repositions any open editor."
+  },
+  "grid:evt-onAddNewRow": {
+    "notes": "Fires when the user commits an edit on the extra add-new row below the data. The event carries the new item and its column so a handler can add it to the data."
+  },
+  "grid:evt-onAfterSetColumns": {
+    "notes": "Fires from `setColumns()` after the new columns are applied and the headers and rows are rebuilt."
+  },
+  "grid:evt-onAutosizeColumns": {
+    "notes": "Fires from `reRenderColumns()` after the grid reapplies the column header widths."
+  },
+  "grid:evt-onBeforeAppendCell": {
+    "notes": "Fires as the grid builds each cell during rendering, before it adds the cell to its row. If a handler returns a string, the grid adds it as extra CSS classes on the cell."
+  },
+  "grid:evt-onBeforeCellEditorDestroy": {
+    "notes": "Fires from `makeActiveCellNormal()` just before the grid destroys the current cell editor, while that editor still exists."
+  },
+  "grid:evt-onBeforeColumnsResize": {
+    "notes": "Fires when the user releases a column resize handle, before the grid finalizes the widths and re-renders. If a handler returns true, the grid reapplies the header widths at once."
+  },
+  "grid:evt-onBeforeDestroy": {
+    "notes": "Fires from `destroy()` after the grid cancels the current edit and unbinds events, but before it unregisters plugins and empties the container."
+  },
+  "grid:evt-onBeforeEditCell": {
+    "notes": "Fires from `makeActiveCellEditable()` before the grid puts the active cell into edit mode. Cancelable: returning false stops the cell from entering edit mode."
+  },
+  "grid:evt-onBeforeFooterRowCellDestroy": {
+    "notes": "Fires from `createColumnFooter()` for each existing footer-row cell, before the grid clears and rebuilds the footer row."
+  },
+  "grid:evt-onBeforeHeaderCellDestroy": {
+    "notes": "Fires for each existing header cell before the grid clears it, from `createColumnHeaders()` when the headers rebuild and from `updateColumnHeader()` when one header's content changes."
+  },
+  "grid:evt-onBeforeHeaderRowCellDestroy": {
+    "notes": "Fires from `createColumnHeaders()` for each existing header-row cell, before the grid clears and rebuilds the header row."
+  },
+  "grid:evt-onBeforeRemoveCachedRow": {
+    "notes": "Fires from `removeRowFromCache()` before the grid removes a rendered row's nodes from the DOM."
+  },
+  "grid:evt-onBeforeSetColumns": {
+    "notes": "Fires from `setColumns()` before the new column definitions replace the current ones. The event carries both the previous and the new columns."
+  },
+  "grid:evt-onBeforeSort": {
+    "notes": "Fires when the user clicks a sortable column header, before the grid applies the new sort. Cancelable: returning false stops the sort and prevents `onSort`."
+  },
+  "grid:evt-onBeforeUpdateColumns": {
+    "notes": "Fires from `updateColumns()` before the grid reapplies column properties without changing the column list."
+  },
+  "grid:evt-onAfterUpdateColumns": {
+    "notes": "Fires from `updateColumns()` after the grid reapplies column properties, headers, and CSS without changing the column list."
+  },
+  "grid:evt-onCellChange": {
+    "notes": "Fires after a cell edit executes or undoes and the grid updates the row. The event's command field is `execute` or `undo`."
+  },
+  "grid:evt-onCellCssStylesChanged": {
+    "notes": "Fires from `addCellCssStyles()`, `removeCellCssStyles()`, and `setCellCssStyles()` after a keyed set of cell CSS classes is added, removed, or changed. On removal the event's hash is null."
+  },
+  "grid:evt-onClick": {
+    "notes": "Fires when the user clicks a cell, before the grid activates it. Cancelable: a handler that stops immediate propagation prevents the cell from becoming active."
+  },
+  "grid:evt-onColumnsReordered": {
+    "notes": "Fires from the header drag handler after the user reorders columns and `setColumns()` applies the new order."
+  },
+  "grid:evt-onColumnsDrag": {
+    "notes": "Fires repeatedly while the user drags a column resize handle, as the grid adjusts the width during the drag."
+  },
+  "grid:evt-onColumnsResized": {
+    "notes": "Fires from the resize handler after the user finishes dragging a column resize handle and the grid commits the new widths and re-renders."
+  },
+  "grid:evt-onColumnsResizeDblClick": {
+    "notes": "Fires when the user double-clicks a column resize handle. The event carries the affected column id."
+  },
+  "grid:evt-onCompositeEditorChange": {
+    "notes": "Fires from a built-in editor when the user changes its input while the editor runs inside a composite editor. The grid applies the new value to the composite form values before the event fires."
+  },
+  "grid:evt-onContextMenu": {
+    "notes": "Fires when the user opens the context menu on a cell that is not being edited."
+  },
+  "grid:evt-onDrag": {
+    "notes": "Fires repeatedly while the user drags across the grid canvas, during a drag that started on the grid."
+  },
+  "grid:evt-onDblClick": {
+    "notes": "Fires when the user double-clicks a cell, before the grid starts editing. If a handler calls preventDefault, the grid does not enter edit mode."
+  },
+  "grid:evt-onDragInit": {
+    "notes": "Fires when a drag starts on an existing, selectable cell. Unless a handler stops immediate propagation to claim the drag, the grid cancels it."
+  },
+  "grid:evt-onDragStart": {
+    "notes": "Fires when a drag begins on a valid cell, after any active edit is committed. Unless a handler stops immediate propagation to claim the drag, the grid cancels it."
+  },
+  "grid:evt-onDragEnd": {
+    "notes": "Fires when a drag operation completes."
+  },
+  "grid:evt-onFooterClick": {
+    "notes": "Fires when the user clicks a footer-row cell."
+  },
+  "grid:evt-onFooterContextMenu": {
+    "notes": "Fires when the user right-clicks a footer-row cell."
+  },
+  "grid:evt-onFooterRowCellRendered": {
+    "notes": "Fires after a footer-row cell is built, when the `createFooterRow` option is enabled."
+  },
+  "grid:evt-onHeaderCellRendered": {
+    "notes": "Fires after a column header cell is built or refreshed, both when all headers are created and when `updateColumnHeader()` updates one."
+  },
+  "grid:evt-onHeaderClick": {
+    "notes": "Fires when the user clicks a column header, unless a column resize is in progress."
+  },
+  "grid:evt-onHeaderContextMenu": {
+    "notes": "Fires when the user right-clicks a column header."
+  },
+  "grid:evt-onHeaderMouseEnter": {
+    "notes": "Fires when the pointer enters a column header cell."
+  },
+  "grid:evt-onHeaderMouseLeave": {
+    "notes": "Fires when the pointer leaves a column header cell."
+  },
+  "grid:evt-onHeaderRowCellRendered": {
+    "notes": "Fires after a header-row cell is built, when the `showHeaderRow` panel is enabled."
+  },
+  "grid:evt-onHeaderRowMouseEnter": {
+    "notes": "Fires when the pointer enters a header-row cell."
+  },
+  "grid:evt-onHeaderRowMouseLeave": {
+    "notes": "Fires when the pointer leaves a header-row cell."
+  },
+  "grid:evt-onPreHeaderContextMenu": {
+    "notes": "Fires when the user right-clicks the pre-header panel."
+  },
+  "grid:evt-onPreHeaderClick": {
+    "notes": "Fires when the user clicks the pre-header panel, unless a column resize is in progress."
+  },
+  "grid:evt-onKeyDown": {
+    "notes": "Fires when a key is pressed while the grid has an active cell, before the grid's own navigation and edit keys. A handler that stops immediate propagation prevents the built-in key handling."
+  },
+  "grid:evt-onMouseEnter": {
+    "notes": "Fires when the pointer moves onto a cell."
+  },
+  "grid:evt-onMouseLeave": {
+    "notes": "Fires when the pointer moves off a cell."
+  },
+  "grid:evt-onRendered": {
+    "notes": "Fires from `render()` after the visible rows are rendered; the args give the first and last rendered row."
+  },
+  "grid:evt-onScroll": {
+    "notes": "Fires when the grid viewport scrolls; the args' `triggeredBy` names the scroll source (mousewheel, scroll, or system)."
+  },
+  "grid:evt-onSelectedRowsChanged": {
+    "notes": "Fires when the selection model changes which rows are selected. The args include the caller and the added and removed rows."
+  },
+  "grid:evt-onSetOptions": {
+    "notes": "Fires from `setOptions()` after the new options are merged and before the grid recalibrates; the args carry the options before and after."
+  },
+  "grid:evt-onActivateChangedOptions": {
+    "notes": "Fires from `activateChangedOptions()` when options mutated in place are activated, before the grid recalibrates."
+  },
+  "grid:evt-onValidationError": {
+    "notes": "Fires when a cell editor's changed value fails validation on commit. The edit is not applied and focus stays in the editor."
+  },
+  "grid:evt-onViewportChanged": {
+    "notes": "Fires when scrolling changes the visible row range, from `scrollTo()` and the internal scroll handler."
+  },
+  "grid:evt-onDragReplaceCells": {
+    "notes": "Fires when a replace-mode cell selection grows as the user drags the replace handle; the args give the previous and new range."
+  },
+  "dataview:evt-onSetItemsCalled": {
+    "notes": "Fires from `setItems()` after the DataView receives a new set of items; args give the id property name and item count."
+  },
+  "dataview:evt-onBeforePagingInfoChanged": {
+    "notes": "Fires before the paging info changes, from `setPagingOptions()` and during `refresh()`. Return false to cancel the change."
+  },
+  "dataview:evt-onPagingInfoChanged": {
+    "notes": "Fires after the paging info (page size or page number) changes, following onBeforePagingInfoChanged."
+  },
+  "dataview:evt-onGroupExpanded": {
+    "notes": "Fires when a group is expanded, from `expandGroup()` or `expandAllGroups()`; a null groupingKey means every group at that level."
+  },
+  "dataview:evt-onGroupCollapsed": {
+    "notes": "Fires when a group is collapsed, from `collapseGroup()` or `collapseAllGroups()`; a null groupingKey means every group at that level."
+  },
+  "dataview:evt-onRowCountChanged": {
+    "notes": "Fires from `refresh()` when the number of output rows changes, for example after filtering, paging or adding items; args give the previous and current counts."
+  },
+  "dataview:evt-onRowsChanged": {
+    "notes": "Fires from `refresh()` when the set of visible rows changes; `rows` lists the affected row indexes."
+  },
+  "dataview:evt-onRowsOrCountChanged": {
+    "notes": "Fires from `refresh()` after onRowsChanged and/or onRowCountChanged. Subscribe to this single event to react to either kind of change with one handler."
+  },
+  "dataview:evt-onSelectedRowIdsChanged": {
+    "notes": "Fires when the tracked selected item ids change, from `setSelectedIds()` and while `syncGridSelection()` keeps the grid selection in sync as rows are filtered or sorted."
+  }
+}
