@@ -3,6 +3,12 @@
 All notable changes to this project will be documented in this file.
 See [Conventional Commits](https://conventionalcommits.org) for commit guidelines.
 
+## [5.20.2](https://github.com/6pac/SlickGrid/compare/5.20.1...5.20.2) (2026-09-17)
+
+### Bug Fixes
+
+* **core:** remove capture scroll listeners on grid destroy ([#1303](https://github.com/6pac/SlickGrid/issues/1303)) ([11d3a7c](https://github.com/6pac/SlickGrid/commit/11d3a7c80431d0c680c2d90df4575a375769838b))
+
 ## [5.20.1](https://github.com/6pac/SlickGrid/compare/5.20.0...5.20.1) (2026-09-15)
 
 ### Bug Fixes
