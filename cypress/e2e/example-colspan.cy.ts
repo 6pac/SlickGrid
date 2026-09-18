@@ -156,6 +156,19 @@ describe('Example - Column Span & Header Grouping', { retries: 1 }, () => {
       cy.get(fragmentSelector).should('have.length', 1);
     });
 
+    it('should apply and clear the selection class on the colspan fragment together with its host', () => {
+      cy.reload();
+      applyPinning();
+
+      cy.get(fragmentSelector).click({ force: true });
+      cy.get(hostSelector).should('have.class', 'selected');
+      cy.get(fragmentSelector).should('have.class', 'selected');
+
+      cy.get('[data-row=3] > .slick-scrolling-cells > .slick-cell.l4').click({ force: true });
+      cy.get(hostSelector).should('not.have.class', 'selected');
+      cy.get(fragmentSelector).should('not.have.class', 'selected');
+    });
+
     it('should keep the active colspan background continuous after resizing Start', () => {
       cy.reload();
       applyPinning();

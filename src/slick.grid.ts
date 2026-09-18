@@ -7906,9 +7906,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           if (removedRowHash) {
             Object.keys(removedRowHash).forEach((columnId) => {
               if (!addedRowHash || removedRowHash![columnId] !== addedRowHash[columnId]) {
-                node = this.getCellNode(+row, this.getColumnIndex(columnId));
+                const cell = this.getColumnIndex(columnId);
+                node = this.getCellNode(+row, cell);
                 if (node) {
-                  node.classList.remove(...Utils.classNameToList(removedRowHash[columnId]));
+                  const classes = Utils.classNameToList(removedRowHash[columnId]);
+                  node.classList.remove(...classes);
+                  this.rowsCache[+row]?.cellSpanFragments?.[cell]?.forEach((fragment) => fragment.classList.remove(...classes));
                 }
               }
             });
@@ -7917,9 +7920,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           if (addedRowHash) {
             Object.keys(addedRowHash).forEach((columnId) => {
               if (!removedRowHash || removedRowHash[columnId] !== addedRowHash[columnId]) {
-                node = this.getCellNode(+row, this.getColumnIndex(columnId));
+                const cell = this.getColumnIndex(columnId);
+                node = this.getCellNode(+row, cell);
                 if (node) {
-                  node.classList.add(...Utils.classNameToList(addedRowHash[columnId]));
+                  const classes = Utils.classNameToList(addedRowHash[columnId]);
+                  node.classList.add(...classes);
+                  this.rowsCache[+row]?.cellSpanFragments?.[cell]?.forEach((fragment) => fragment.classList.add(...classes));
                 }
               }
             });
