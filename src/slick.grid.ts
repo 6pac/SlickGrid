@@ -147,7 +147,62 @@ const isDefinedNumber = (value: unknown): value is number => typeof value === 'n
 const isPrimitiveOrHTML = (value: unknown): value is string | number | boolean | HTMLElement | DocumentFragment =>
   value === null || value === undefined || ['string', 'number', 'boolean'].includes(typeof value) || value instanceof HTMLElement || value instanceof DocumentFragment;
 const queueMicrotaskPolyfill = (callback: () => void) => typeof queueMicrotask === 'function' ? queueMicrotask(callback) : setTimeout(callback, 0);
-const destroyAllElementProps = (_target: object) => undefined;
+const destroyAllElementProps = (target: object): void => {
+  const elementProperties = [
+    '_activeCanvasNode',
+    '_activeViewportNode',
+    '_canvas',
+    '_canvasNode',
+    '_container',
+    '_contentRoot',
+    '_dockingHorizontalScroller',
+    '_dockingHorizontalSpacer',
+    '_dockingOverlay',
+    '_focusSink',
+    '_focusSink2',
+    '_footerRow',
+    '_footerRowL',
+    '_footerRowScroller',
+    '_footerRowScrollerL',
+    '_footerRowScrollContainer',
+    '_footerRowSpacerL',
+    '_headerL',
+    '_headerRoot',
+    '_headerRowL',
+    '_headerRowScroller',
+    '_headerRowScrollerL',
+    '_headerRowScrollContainer',
+    '_headerRowSpacerL',
+    '_headerScroller',
+    '_headerScrollerL',
+    '_headerScrollContainer',
+    '_headers',
+    '_headerRows',
+    '_hiddenParents',
+    '_preHeaderPanel',
+    '_preHeaderPanelR',
+    '_preHeaderPanelScroller',
+    '_preHeaderPanelSpacer',
+    '_style',
+    '_topHeaderPanel',
+    '_topHeaderPanelScroller',
+    '_topHeaderPanelSpacer',
+    '_topPanelL',
+    '_topPanelScrollers',
+    '_topPanels',
+    '_viewport',
+    '_viewportNode',
+    '_viewportScrollContainerX',
+    '_viewportScrollContainerY',
+    'dockingFooterRowRegions',
+    'dockingHeaderRegions',
+    'dockingHeaderRowRegions',
+  ];
+  const objectTarget = target as Record<string, unknown>;
+  elementProperties.forEach((property) => {
+    objectTarget[property] = null;
+  });
+};
 const copyCellToClipboard = (_args: unknown) => undefined;
 const applyHtmlToElement = (target: HTMLElement, value: unknown, options?: any) => {
   if (value instanceof HTMLElement || value instanceof DocumentFragment) {
@@ -859,7 +914,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (this._options.createTopHeaderPanel) {
       this._topHeaderPanelScroller = Utils.createDomElement(
         'div',
-        { className: 'slick-topheader-panel slick-state-default', style: { overflow: 'hidden', position: 'relative' } },
+        { className: 'slick-topheader-panel slick-state-default ui-state-default', style: { overflow: 'hidden', position: 'relative' } },
         this._container
       );
       this._topHeaderPanelScroller.appendChild(document.createElement('div'));
@@ -883,7 +938,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       const headerContainer = Utils.createDomElement('div', { className: 'slick-preheader-container' }, this._headerRoot);
       this._preHeaderPanelScroller = Utils.createDomElement(
         'div',
-        { className: 'slick-preheader-panel slick-state-default', style: { overflow: 'hidden', position: 'relative' } },
+        { className: 'slick-preheader-panel slick-state-default ui-state-default', style: { overflow: 'hidden', position: 'relative' } },
         headerContainer
       );
       this._preHeaderPanelScroller.appendChild(document.createElement('div'));
@@ -905,7 +960,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const headerContainerL = Utils.createDomElement('div', { className: 'slick-header-container' }, this._headerRoot);
     this._headerScrollerL = Utils.createDomElement(
       'div',
-      { className: 'slick-header slick-state-default slick-header-left', role: 'rowgroup' },
+      { className: 'slick-header slick-state-default ui-state-default slick-header-left', role: 'rowgroup' },
       headerContainerL
     );
 
@@ -924,7 +979,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     this._headerRowScrollerL = Utils.createDomElement(
       'div',
-      { className: 'slick-headerrow slick-state-default', role: 'rowgroup' },
+      { className: 'slick-headerrow slick-state-default ui-state-default', role: 'rowgroup' },
       this._contentRoot
     );
 
@@ -945,7 +1000,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this._headerRows = [this._headerRowL];
 
     // Append the top panel scroller
-    this._topPanelScrollerL = Utils.createDomElement('div', { className: 'slick-top-panel-scroller slick-state-default' }, this._contentRoot);
+    this._topPanelScrollerL = Utils.createDomElement('div', { className: 'slick-top-panel-scroller slick-state-default ui-state-default' }, this._contentRoot);
 
     this._topPanelScrollers = [this._topPanelScrollerL];
 
@@ -1143,29 +1198,36 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.bindDockingOverlayEvents();
       this._bindingEventService.bind(this._container, 'keydown', this.handleContainerKeyDown.bind(this) as EventListener);
 
-      if (Draggable) {
-        const preventDragFromKeys =
-          this._options.selectionOptions?.enableMultiSelection !== undefined
-            ? this._options.preventDragFromKeys?.filter((key) => key !== 'ctrlKey' && key !== 'metaKey')
-            : this._options.preventDragFromKeys;
-        this.slickDraggableInstance = Draggable({
-          containerElement: this._container,
-          allowDragFrom: `div.slick-cell, div.${this.dragReplaceEl.cssClass}`,
-          dragFromClassDetectArr: [{ tag: 'dragReplaceHandle', id: this.dragReplaceEl.id }],
-          // the slick cell parent must always contain `.dnd` and/or `.cell-reorder` class to be identified as draggable
-          allowDragFromClosest: this._options.allowDragFromClosest,
-          preventDragFromKeys,
-          onDragInit: this.handleDragInit.bind(this),
-          onDragStart: this.handleDragStart.bind(this),
-          onDrag: this.handleDrag.bind(this),
-          onDragEnd: this.handleDragEnd.bind(this),
-        });
-      }
+      this.createDraggable();
 
       if (!this._options.suppressCssChangesOnHiddenInit) {
         this.restoreCssFromHiddenInit();
       }
     }
+  }
+
+  /** Create the cell drag interaction using the active selection model's modifier-key policy. */
+  protected createDraggable(): void {
+    if (!Draggable) {
+      return;
+    }
+    const modelAllowsMultiSelection = this.getSelectionModel()?.getOptions()?.enableMultiSelection;
+    const allowsMultiSelection = modelAllowsMultiSelection ?? this._options.selectionOptions?.enableMultiSelection;
+    const preventDragFromKeys = allowsMultiSelection
+      ? this._options.preventDragFromKeys?.filter((key) => key !== 'ctrlKey' && key !== 'metaKey')
+      : this._options.preventDragFromKeys;
+    this.slickDraggableInstance = Draggable({
+      containerElement: this._container,
+      allowDragFrom: `div.slick-cell, div.${this.dragReplaceEl.cssClass}`,
+      dragFromClassDetectArr: [{ tag: 'dragReplaceHandle', id: this.dragReplaceEl.id }],
+      // the slick cell parent must always contain `.dnd` and/or `.cell-reorder` class to be identified as draggable
+      allowDragFromClosest: this._options.allowDragFromClosest,
+      preventDragFromKeys,
+      onDragInit: this.handleDragInit.bind(this),
+      onDragStart: this.handleDragStart.bind(this),
+      onDrag: this.handleDrag.bind(this),
+      onDragEnd: this.handleDragEnd.bind(this),
+    });
   }
 
   /**
@@ -1504,7 +1566,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected materializeFooterRow(): void {
     const canvasWithScrollbarWidth = this.getCanvasWidth() + (this.scrollbarDimensions?.width || 0);
 
-    this._footerRowScrollerL = Utils.createDomElement('div', { className: 'slick-footerrow slick-state-default' }, this._contentRoot);
+    this._footerRowScrollerL = Utils.createDomElement('div', { className: 'slick-footerrow slick-state-default ui-state-default' }, this._contentRoot);
     this._footerRowScroller = [this._footerRowScrollerL];
 
     this._footerRowSpacerL = Utils.createDomElement(
@@ -1570,6 +1632,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {Object} selectionModel A SelectionModel.
    */
   setSelectionModel(model: SelectionModel): void {
+    const recreateDraggable = this.initialized && !!this.slickDraggableInstance;
+    if (recreateDraggable) {
+      this.slickDraggableInstance = this.destroyAllInstances(this.slickDraggableInstance) as null;
+    }
     if (this.selectionModel) {
       this.selectionModel.onSelectedRangesChanged.unsubscribe(this.handleSelectedRangesChanged.bind(this));
       this.selectionModel.destroy?.();
@@ -1579,6 +1645,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (this.selectionModel) {
       this.selectionModel.init(this as unknown as SlickGrid);
       this.selectionModel.onSelectedRangesChanged.subscribe(this.handleSelectedRangesChanged.bind(this));
+    }
+    if (recreateDraggable) {
+      this.createDraggable();
     }
   }
 
@@ -1740,7 +1809,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         const band = this.getColumnDockingBand(i);
         const footerRowCell = Utils.createDomElement(
           'div',
-          { className: `slick-state-default slick-footerrow-column l${i} r${i}` },
+          { className: `slick-state-default ui-state-default slick-footerrow-column l${i} r${i}` },
           this.getDockingChromeRegion('footerRow', band)
         );
         const className = band !== 'center' ? 'pinned' : null;
@@ -1950,7 +2019,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           id: `${this.uid + m.id}`,
           dataset: { id: String(m.id) },
           role: 'columnheader',
-          className: 'slick-state-default slick-header-column',
+          className: 'slick-state-default ui-state-default slick-header-column',
           tabIndex: 0,
           ariaColIndex: `${i + 1}`,
         },
@@ -2029,7 +2098,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (this._options.showHeaderRow) {
         const headerRowCell = Utils.createDomElement(
           'div',
-          { className: `slick-state-default slick-headerrow-column l${i} r${i}`, role: 'gridcell', ariaColIndex: `${i + 1}` },
+          { className: `slick-state-default ui-state-default slick-headerrow-column l${i} r${i}`, role: 'gridcell', ariaColIndex: `${i + 1}` },
           headerRowTarget
         );
         const pinnedClasses = band !== 'center' ? 'pinned' : null;
@@ -5919,6 +5988,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /** Invalidate all grid rows */
   invalidateAllRows(): void {
+    this.dockingRowIndexByReference.clear();
     // invalidated row content may resize the rows, so conservatively mark dirty for rebuild
     this.rowHeightsDirty = true;
     if (this.currentEditor) {
@@ -5947,6 +6017,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return;
     }
 
+    // A count-preserving sort/filter can move rows without calling
+    // updateRowCount(), so cached id-to-index docking references must be
+    // invalidated along with the affected rows.
+    this.dockingRowIndexByReference.clear();
     let row;
     this.vScrollDir = 0;
     this.rowHeightsDirty = true;
@@ -8223,7 +8297,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     let el = Utils.createDomElement(
       'div',
-      { className: 'slick-state-default slick-header-column', style: { visibility: 'hidden' }, textContent: '-' },
+      { className: 'slick-state-default ui-state-default slick-header-column', style: { visibility: 'hidden' }, textContent: '-' },
       header
     );
     let style = getComputedStyle(el);
@@ -10567,7 +10641,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   /** Returns the stable identity used to track a rendered data row. */
   protected getRowIdentity(row: number): number | string {
     const item = this.getDataItem(row);
-    const idProperty = this._options.datasetIdPropertyName || 'id';
+    const idProperty = this.getDataViewIdProperty();
     if (item && typeof item === 'object') {
       const id = (item as Record<string, unknown>)[idProperty];
       if (typeof id === 'number' || typeof id === 'string') {
@@ -10592,7 +10666,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.dockingRowIndexByReference.set(reference, dataViewRow);
       return dataViewRow;
     }
-    const idProperty = this._options.datasetIdPropertyName || 'id';
+    const idProperty = this.getDataViewIdProperty();
     if (Array.isArray(this.data)) {
       const index = this.data.findIndex(
         (item) => item && typeof item === 'object' && (item as Record<string, unknown>)[idProperty] === reference
@@ -10603,6 +10677,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return index >= 0 ? index : undefined;
     }
     return undefined;
+  }
+
+  /** Returns the active DataView id property, falling back to the grid option and then `id`. */
+  protected getDataViewIdProperty(): string {
+    const dataView = this.data as CustomDataView<TData> & { getIdPropertyName?: () => string };
+    return dataView.getIdPropertyName?.() || this._options.datasetIdPropertyName || 'id';
   }
 
   /** Recomputes top, center, and bottom row docking for the current scroll position. */

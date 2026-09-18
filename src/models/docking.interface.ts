@@ -13,14 +13,14 @@ export type ColumnPinningReferences = number | Array<number | string>;
 export interface PinnedColumns {
   /**
    * Column indexes or ids to pin to the left edge.
-   * A number is an inclusive zero-based boundary (`2` pins indexes `0`, `1`, and `2`).
+   * A number is an inclusive zero-based boundary among visible columns (`2` pins the first three visible columns).
    * An array accepts zero-based indexes and/or stable column ids for non-contiguous pinning.
    */
   left?: ColumnPinningReferences;
 
   /**
    * Column indexes or ids to pin to the right edge.
-   * A number is a count from the trailing edge (`1` pins the last column position; `0` pins none).
+   * A number is a count from the trailing edge of visible columns (`1` pins the last visible column; `0` pins none).
    * An array accepts zero-based indexes and/or stable column ids for non-contiguous pinning.
    */
   right?: ColumnPinningReferences;
@@ -126,4 +126,3 @@ export interface RowDockingLayout {
   top: DockedRow[];
   topHeight: number;
 }
-
