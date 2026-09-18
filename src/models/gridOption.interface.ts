@@ -30,8 +30,6 @@ export interface CustomDataView<T = any> {
   getItemMetadata(row: number, cell?: boolean | number): ItemMetadata | null;
   getLength: () => number;
   getCellValue?: (index: number, field: string) => T[keyof T];
-  setFormattedDataCachePlanner?: (planner: any, forceRefresh?: boolean) => void;
-  getCellDisplayValue?: (...args: any[]) => any;
 }
 
 export interface CssStyleHash {
@@ -39,6 +37,7 @@ export interface CssStyleHash {
 }
 
 export interface GridOption<C extends BaseColumn = BaseColumn> {
+  /** Defaults to `div.slick-cell.dnd, div.slick-cell.cell-reorder`, CSS selector of the closest cell ancestor that allows a row drag to start. */
   allowDragFromClosest?: string;
   /** Shared pixel budgets and overflow behavior for pinned and sticky rows/columns. */
   docking?: DockingOption;
@@ -149,13 +148,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   /** Do we have paging enabled? */
   doPaging?: boolean;
 
-  enableGridMenu?: boolean;
-  enableRowDetailView?: boolean;
-  enableFormattedDataCache?: boolean;
-  silenceWarnings?: boolean;
-  selectionOptions?: any;
-  datasetIdPropertyName?: string;
-  rowDetailView?: any;
+  /** Defaults to 300 (ms), debounce delay applied to column resizing before the grid re-renders. */
   columnResizingDelay?: number;
 
   /** Defaults to false, when enabled will give the possibility to edit cell values with inline editors. */

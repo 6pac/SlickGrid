@@ -137,9 +137,6 @@ const DockingController = IIFE_ONLY ? Slick.DockingController : DockingControlle
 
 const DEFAULT_DOCKING_SCROLLBAR_HEIGHT = 15;
 
-type FormattedDataCachePlanner = any;
-type TrustedHTML = string;
-
 const isDefinedNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
 const isPrimitiveOrHTML = (value: unknown): value is string | number | boolean | HTMLElement | DocumentFragment =>
   value === null || value === undefined || ['string', 'number', 'boolean'].includes(typeof value) || value instanceof HTMLElement || value instanceof DocumentFragment;
@@ -168,9 +165,6 @@ const applyHtmlToElement = (target: HTMLElement, value: unknown, options?: any) 
     }
   }
 };
-const runOptionalHtmlSanitizer = <T>(value: unknown, sanitizer?: (value: string) => string): T =>
-  (sanitizer ? sanitizer(String(value ?? '')) : value) as T;
-
 /**
  * @license
  * (c) 2009-present Michael Leibman
@@ -308,44 +302,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected canvas_context: CanvasRenderingContext2D | null = null;
   protected _isResizingColumn = false;
   protected _columnResizeAutoScrollTimer?: ReturnType<typeof setInterval>;
-  protected _lastColumnGridMenuCompensation = 2; // when Grid Menu is enabled, we need to compensate the last column width by 2px to give room for the column resize handle between the last column and the grid menu button
 
   // settings
   protected _options!: O;
-  protected formattedDataCachePlanner: FormattedDataCachePlanner = (column: any, gridOptions: any) => {
-    const optionCandidates = [gridOptions.excelExportOptions, gridOptions.textExportOptions, gridOptions.pdfExportOptions];
-    const hasExportCustomFormatter = typeof column.exportCustomFormatter === 'function';
-    const hasColumnExportWithFormatter = !!column.exportWithFormatter;
-    let shouldCacheExport = hasColumnExportWithFormatter || hasExportCustomFormatter;
-    let useCellFormatterForExport = hasColumnExportWithFormatter;
-    let sanitizeDataExport = !!column.sanitizeDataExport;
-
-    for (const exportOptions of optionCandidates) {
-      if (!exportOptions) {
-        continue;
-      }
-      const hasExportWithFormatter = column.exportWithFormatter !== undefined ? !!column.exportWithFormatter : !!exportOptions.exportWithFormatter;
-      if (!hasExportWithFormatter && !hasExportCustomFormatter) {
-        continue;
-      }
-      shouldCacheExport = true;
-      useCellFormatterForExport = useCellFormatterForExport || hasExportWithFormatter;
-      sanitizeDataExport = sanitizeDataExport || !!column.sanitizeDataExport || !!exportOptions.sanitizeDataExport;
-    }
-
-    if (!shouldCacheExport) {
-      return undefined;
-    }
-    return {
-      shouldCacheExport,
-      useCellFormatterForExport,
-      sanitizeDataExport,
-      exportOptions: {
-        exportWithFormatter: useCellFormatterForExport,
-        sanitizeDataExport,
-      },
-    };
-  };
+  protected logMessageCount = 0;
+  protected logMessageMaxCount = 30;
   protected _defaults: BaseGridOption = {
     invalidColumnPinningPickerCallback: (error) => alert(error),
     invalidColumnPinningWidthCallback: (error) => alert(error),
@@ -773,7 +734,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.onDragReplaceCells = new SlickEvent<OnDragReplaceCellsEventArgs>('onDragReplaceCells', externalPubSub);
 
     this.initialize(options);
-    this.syncDataViewFormattedCachePlanner();
   }
 
   //////////////////////////////////////////////////////////////////////////////////////////////
@@ -782,14 +742,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /** Initializes the grid. */
   init(): void {
-    // prettier-ignore
-    const isZoomLevelUnsupported = this._options.enableVariableRowHeight || this._options.enableCellRowSpan || this._options.enableRowDetailView;
-    if (!this._options.silenceWarnings && document.body.style.zoom && document.body.style.zoom !== '100%' && isZoomLevelUnsupported) {
-      console.warn(
-        '[Slickgrid] Zoom level other than 100% can cause subpar rendering in some configurations. ' +
-          'SlickGrid relies on row positioning calculations that can drift with browser zoom.'
-      );
-    }
     this.finishInitialization();
   }
 
@@ -1159,9 +1111,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (!Draggable) {
       return;
     }
-    const modelAllowsMultiSelection = this.getSelectionModel()?.getOptions()?.enableMultiSelection;
-    const allowsMultiSelection = modelAllowsMultiSelection ?? this._options.selectionOptions?.enableMultiSelection;
-    const preventDragFromKeys = allowsMultiSelection
+    const preventDragFromKeys = this.getSelectionModel()?.getOptions()?.enableMultiSelection === true
       ? this._options.preventDragFromKeys?.filter((key) => key !== 'ctrlKey' && key !== 'metaKey')
       : this._options.preventDragFromKeys;
     this.slickDraggableInstance = Draggable({
@@ -1420,9 +1370,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       };
     }
     this.triggerEvent(this.onSetOptions, { optionsBefore: originalOptions, optionsAfter: this._options });
-    if (this.shouldRefreshFormattedCachePlanner(newOptions)) {
-      this.syncDataViewFormattedCachePlanner(true);
-    }
 
     // any option affecting row heights requires a rebuild of the row position index
     if (
@@ -1448,7 +1395,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.prepareForOptionsChange();
     this.invalidateRow(this.getDataLength());
     this.triggerEvent(this.onActivateChangedOptions, { options: this._options });
-    this.syncDataViewFormattedCachePlanner(true);
     this.internal_setOptions(suppressRender, suppressColumnSet, suppressSetOverflow);
   }
 
@@ -1588,17 +1534,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected validateAndEnforceOptions(): void {
     if (this._options.autoHeight) {
       this._options.leaveSpaceForNewRows = false;
-    }
-
-    // @deprecated v11: remove this Row Detail fallback when inline rendering is removed.
-    // The legacy inline Row Detail renderer relies on absolute top-based row positioning;
-    // an omitted renderMode automatically uses overlay rendering with transform-based row positioning.
-    if (
-      this._options.rowTopOffsetRenderType === 'transform' &&
-      this._options.enableRowDetailView &&
-      this._options.rowDetailView?.renderMode === 'inline'
-    ) {
-      this._options.rowTopOffsetRenderType = 'top';
     }
 
     if (this._options.pinning?.columns) {
@@ -2013,15 +1948,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       const colNameElm = Utils.createDomElement('span', { className: 'slick-column-name' }, header);
       applyHtmlToElement(colNameElm, m.name, this._options);
 
-      let colWidth = m.width! - this.headerColumnWidthDiff;
-      if (this._options.enableGridMenu && i === ln - 1) {
-        // account for 2px border on last column to give room for the column resize handle between the last column and the grid menu button
-        // scrollbar could be hidden or collapsed (e.g. Firefox) but we still have to compensate for the Grid Menu button width
-        colWidth -= this._lastColumnGridMenuCompensation;
-        if (!this.scrollbarDimensions?.width) {
-          colWidth -= this._options.gridMenu?.menuWidth ?? 18;
-        }
-      }
+      const colWidth = m.width! - this.headerColumnWidthDiff;
       Utils.width(header, colWidth);
 
       let classname = m.headerCssClass || null;
@@ -3520,20 +3447,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         : (this._headers.flatMap((header) => Array.from(header.children)) as HTMLElement[]);
       headers.forEach((h, columnIndex) => {
         const col = vc[columnIndex] || {};
-        let width = (col.width || 0) - this.headerColumnWidthDiff;
-        if (this._options.enableGridMenu && columnIndex === vc.length - 1) {
-          // Only apply compensation if columns are at least as wide as the canvas (i.e., horizontal scroll is needed).
-          // This avoids a gap at the end of the last column when columns are smaller than the grid.
-          const totalColumnsWidth = vc.reduce((sum, col) => sum + (col.width || 0), 0);
-          const canvasWidth = this.getViewportInnerWidth();
-          if (totalColumnsWidth >= canvasWidth) {
-            // Compensate for the resize handle and grid menu button (including hidden/collapsed scrollbars)
-            width -= this._lastColumnGridMenuCompensation;
-            if (!this.scrollbarDimensions?.width) {
-              width -= this._options.gridMenu?.menuWidth ?? 18;
-            }
-          }
-        }
+        const width = (col.width || 0) - this.headerColumnWidthDiff;
         if (Utils.width(h) !== width) {
           Utils.width(h, width);
         }
@@ -3830,7 +3744,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   setData(newData: CustomDataView<TData> | TData[], scrollToTop?: boolean): void {
     this.data = newData;
-    this.syncDataViewFormattedCachePlanner();
     this.invalidateAllRows();
     this.updateRowCount();
     if (scrollToTop) {
@@ -3918,27 +3831,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     // look up by id, then index
     const columnOverrides = rowMetadata?.columns && (rowMetadata.columns[column.id] || rowMetadata.columns[this.getColumnIndex(column.id)]);
 
-    const formatter = (columnOverrides?.formatter ||
+    return (columnOverrides?.formatter ||
       rowMetadata?.formatter ||
       column.formatter ||
       this._options.formatterFactory?.getFormatter(column) ||
       this._options.defaultFormatter) as Formatter;
-
-    // Metadata formatters are row-specific and are not cached, so they must bypass the cache wrapper.
-    const canUseDisplayCache =
-      this._options.enableFormattedDataCache && !rowMetadata?.formatter && !columnOverrides?.formatter && this.hasDataView();
-    const dataView = canUseDisplayCache ? this.getData<CustomDataView>() : undefined;
-
-    let resolvedFormatter = formatter;
-    if (typeof dataView?.getCellDisplayValue === 'function') {
-      resolvedFormatter = (rowIdx, cell, value, columnDef, dataContext, grid) => {
-        const cached = (dataView.getCellDisplayValue as any)(rowIdx, String(columnDef.id), dataContext as any);
-        const resolvedValue = cached !== undefined ? (cached as any) : formatter(rowIdx, cell, value, columnDef, dataContext, grid);
-        return resolvedValue;
-      };
-    }
-
-    return resolvedFormatter;
   }
 
   /**
@@ -3954,21 +3851,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const rowMetadata = this.getItemMetadaWhenExists(row);
     const columnMetadata = rowMetadata?.columns;
 
-    if (columnMetadata?.[column.id]?.editorClass !== undefined) {
-      return columnMetadata[column.id].editorClass;
-    }
     if (columnMetadata?.[column.id]?.editor !== undefined) {
       return columnMetadata[column.id].editor;
     }
-    if (columnMetadata?.[cell]?.editorClass !== undefined) {
-      return columnMetadata[cell].editorClass;
-    }
     if (columnMetadata?.[cell]?.editor !== undefined) {
       return columnMetadata[cell].editor;
-    }
-
-    if (column.editorClass !== undefined) {
-      return column.editorClass;
     }
     if (column.editor !== undefined) {
       return column.editor;
@@ -4272,7 +4159,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         column: columnDef,
         columnMetaData,
         item: item || {},
-        isCompositeEditor: false,
         event: e as Event,
         commitChanges: this.commitEditAndSetFocus.bind(this),
         cancelChanges: this.cancelEditAndSetFocus.bind(this),
@@ -4475,7 +4361,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /** Returns whether the drag handle should be displayed for the supplied column. */
   protected getDragHandleVisibility(): boolean | 'hover' {
-    return this._options.selectionOptions?.showDragHandle ?? this.getSelectionModel()?.getOptions()?.showDragHandle ?? true;
+    return this.getSelectionModel()?.getOptions()?.showDragHandle ?? true;
   }
 
   /**
@@ -4747,7 +4633,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         const column = this.columns[cell.cell];
         const suppressActiveCellChangedEvent = !!(
           this._options.editable &&
-          (column?.editorClass || column?.editor) &&
+          column?.editor &&
           this._options.suppressActiveCellChangeOnEdit
         );
         this.setActiveCellInternal(
@@ -8691,8 +8577,21 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /** html sanitizer to avoid scripting attack */
-  sanitizeHtmlString<T extends string | TrustedHTML>(dirtyHtml: unknown): T {
-    return runOptionalHtmlSanitizer<T>(dirtyHtml, this._options?.sanitizer);
+  sanitizeHtmlString(dirtyHtml: string, suppressLogging?: boolean): string {
+    if (!this._options.sanitizer || typeof dirtyHtml !== 'string') {
+      return dirtyHtml;
+    }
+
+    const cleanHtml = this._options.sanitizer(dirtyHtml);
+
+    if (!suppressLogging && this._options.logSanitizedHtml && this.logMessageCount <= this.logMessageMaxCount && cleanHtml !== dirtyHtml) {
+      console.log(`sanitizer altered html: ${dirtyHtml} --> ${cleanHtml}`);
+      if (this.logMessageCount === this.logMessageMaxCount) {
+        console.log(`sanitizer: silencing messages after first ${this.logMessageMaxCount}`);
+      }
+      this.logMessageCount++;
+    }
+    return cleanHtml;
   }
 
   /**
@@ -9494,7 +9393,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       const column = this.columns[cell];
       const suppressActiveCellChangedEvent = !!(
         this._options.editable &&
-        (column?.editorClass || column?.editor) &&
+        column?.editor &&
         this._options.suppressActiveCellChangeOnEdit
       );
       this.setActiveCellInternal(
@@ -9767,16 +9666,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
             parseFloat(elementStyle.paddingRight) +
             parseFloat(elementStyle.borderLeftWidth) +
             parseFloat(elementStyle.borderRightWidth);
-          // The last header makes room for the Grid Menu when a vertical
-          // scrollbar has no measurable gutter (notably Firefox overlay
-          // scrollbars). Its filter/footer cell still needs to cover the full
-          // right-pinned body column; otherwise the preceding filter shows
-          // through in that menu-width slice.
-          const gridMenuWidth =
-            isRightDockedChrome && index === this.columns.length - 1 && this._options.enableGridMenu && !this.scrollbarDimensions?.width
-              ? (this._options.gridMenu?.menuWidth ?? 18)
-              : 0;
-          const targetOuterWidth = headerOuterWidth ? headerOuterWidth + gridMenuWidth : column.width || 0;
+          const targetOuterWidth = headerOuterWidth || column.width || 0;
           // Preserve the normal theme border-box geometry at a pinned edge.
           // The pinning cue itself is an inset shadow and therefore does not
           // contribute to this measured width.
@@ -10742,10 +10632,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return undefined;
   }
 
-  /** Returns the active DataView id property, falling back to the grid option and then `id`. */
+  /** Returns the active DataView id property, falling back to `id`. */
   protected getDataViewIdProperty(): string {
     const dataView = this.data as CustomDataView<TData> & { getIdPropertyName?: () => string };
-    return dataView.getIdPropertyName?.() || this._options.datasetIdPropertyName || 'id';
+    return dataView.getIdPropertyName?.() || 'id';
   }
 
   /** Recomputes top, center, and bottom row docking for the current scroll position. */
@@ -10882,28 +10772,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   /** Returns an array of every data object, unless you're using DataView in which case it returns a DataView object. */
   getData<U extends CustomDataView<TData> | U[] = CustomDataView<TData>>(): U {
     return this.data as U;
-  }
-
-  /** Determines whether the current data view supports formatted-cache planning. */
-  protected shouldRefreshFormattedCachePlanner(newOptions: Partial<O>): boolean {
-    return (
-      'enableFormattedDataCache' in newOptions ||
-      'excelExportOptions' in newOptions ||
-      'textExportOptions' in newOptions ||
-      'pdfExportOptions' in newOptions
-    );
-  }
-
-  /** Synchronizes the data view's formatted-cache planner with the grid options. */
-  protected syncDataViewFormattedCachePlanner(forceRefresh = false): void {
-    if (!this.hasDataView() || !this._options.enableFormattedDataCache) {
-      return;
-    }
-
-    const dataView = this.getData<CustomDataView<TData>>();
-    if (typeof dataView.setFormattedDataCachePlanner === 'function') {
-      dataView.setFormattedDataCachePlanner(this.formattedDataCachePlanner, forceRefresh);
-    }
   }
 
   /**
