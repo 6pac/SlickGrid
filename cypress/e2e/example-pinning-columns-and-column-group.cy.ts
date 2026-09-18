@@ -82,7 +82,8 @@ describe('Example - Pinned Columns & Column Group', { retries: 1 }, () => {
     cy.get('[data-test="remove-pinned-btn"]').click();
     assertHeaderBand('left', []);
     assertHeaderBand('center', ['sel', 'title', 'duration', 'start', 'finish', '%', 'effort-driven']);
-    cy.get(`${grid} .slick-docking-horizontal-scroller`).should('have.length', 1);
+    cy.get(`${grid} .slick-docking-horizontal-scroller`).should('not.exist');
+    cy.get(`${grid}`).should('not.have.class', 'slick-docking-horizontal-scroll-proxy');
 
     cy.get('[data-test="set-pinned-btn"]').click();
     assertHeaderBand('left', ['sel', 'title', 'duration']);

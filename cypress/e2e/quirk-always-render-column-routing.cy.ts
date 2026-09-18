@@ -16,7 +16,7 @@
  * asserts the cell node remains in the scrolling region.
  */
 
-const ARC_COL = 5; // the alwaysRenderColumn column index (right of the freeze)
+const ARC_COL = 5; // the alwaysRenderColumn column index (right of the pinned band)
 
 const harnessHtml = `<!doctype html>
 <html lang="en">
@@ -71,8 +71,8 @@ const harnessHtml = `<!doctype html>
     }
 
     // control: the pinned-left column (index 0) of the same fresh row stays LEFT
-    var frozenNode = grid.getCellNode(80, 0);
-    var pinnedRegion = frozenNode && frozenNode.closest('.slick-pinned-left-cells');
+    var pinnedNode = grid.getCellNode(80, 0);
+    var pinnedRegion = pinnedNode && pinnedNode.closest('.slick-pinned-left-cells');
     check('control: pinned-left column cell stays in the pinned-left region',
       !!pinnedRegion,
       'region=' + (pinnedRegion ? pinnedRegion.className : 'none'));

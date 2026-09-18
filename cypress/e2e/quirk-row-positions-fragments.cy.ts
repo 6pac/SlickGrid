@@ -120,7 +120,7 @@ const harnessHtml = `<!doctype html>
 </html>`;
 
 describe('Quirk - updateRowPositions must reposition every row fragment', { retries: 1 }, () => {
-  it('should load the self-hosted paged frozen-column repro harness', () => {
+  it('should load the self-hosted paged pinned-column repro harness', () => {
     cy.intercept('GET', '/quirk-row-positions-fragments-harness.html', {
       headers: { 'content-type': 'text/html' },
       body: harnessHtml,

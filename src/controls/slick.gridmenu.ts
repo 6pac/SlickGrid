@@ -176,17 +176,6 @@ export class SlickGridMenu {
     this._gridMenuOptions = Utils.extend({}, this._defaults, gridOptions.gridMenu);
     this._bindingEventService = new BindingEventService();
 
-    // when a grid optionally changes from a regular grid to a frozen grid, we need to destroy & recreate the grid menu
-    // we do this change because the Grid Menu is on the left container for a regular grid, it is however on the right container for a frozen grid
-    grid.onSetOptions.subscribe((_e, args) => {
-      if (args && args.optionsBefore && args.optionsAfter) {
-        const switchedFromRegularToFrozen = args.optionsBefore.frozenColumn! >= 0 && args.optionsAfter.frozenColumn === -1;
-        const switchedFromFrozenToRegular = args.optionsBefore.frozenColumn === -1 && args.optionsAfter.frozenColumn! >= 0;
-        if (switchedFromRegularToFrozen || switchedFromFrozenToRegular) {
-          this.recreateGridMenu();
-        }
-      }
-    });
     this.init(this.grid);
   }
 
@@ -209,11 +198,8 @@ export class SlickGridMenu {
 
   protected createGridMenu() {
     const gridMenuWidth = (this._gridMenuOptions?.menuWidth) || this._defaults.menuWidth;
-    if (this._gridOptions && Object.prototype.hasOwnProperty.call(this._gridOptions, 'frozenColumn') && this._gridOptions.frozenColumn! >= 0) {
-      this._headerElm = document.querySelector(`.${this._gridUid} .slick-header-right`);
-    } else {
-      this._headerElm = document.querySelector(`.${this._gridUid} .slick-header-left`);
-    }
+    // The current docking layout always keeps the grid menu in the left header region.
+    this._headerElm = document.querySelector(`.${this._gridUid} .slick-header-left`);
     this._headerElm!.style.width = `calc(100% - ${gridMenuWidth}px)`;
 
     // if header row is enabled, we need to resize its width also
@@ -374,7 +360,7 @@ export class SlickGridMenu {
       gridMenuElm.style.display = 'none';
     }
     if (this._headerElm) {
-      // put back original width (fixes width and frozen+gridMenu on left header)
+      // put back original width (fixes width and pinning+gridMenu on left header)
       this._headerElm.style.width = '100%';
     }
     this._buttonElm?.remove();
@@ -525,7 +511,7 @@ export class SlickGridMenu {
     this._listElm.role = 'menu';
   }
 
-  /** Delete and then Recreate the Grid Menu (for example when we switch from regular to a frozen grid) */
+  /** Delete and then recreate the Grid Menu. */
   recreateGridMenu() {
     this.deleteMenu();
     this.init(this.grid);

@@ -25,13 +25,13 @@ const harnessHtml = `<!doctype html>
   <title>Harness: headers width scroll sync</title>
   <link rel="stylesheet" href="/dist/styles/css/slick-alpine-theme.css"/>
   <style>
-    #gridPlain, #gridFrozen { width: 600px; height: 300px; }
+    #gridPlain, #gridPinned { width: 600px; height: 300px; }
     #gridAuto { width: 600px; }
   </style>
 </head>
 <body>
 <div id="gridPlain"></div>
-<div id="gridFrozen"></div>
+<div id="gridPinned"></div>
 <div id="gridAuto"></div>
 <div id="checkResults" style="white-space:pre; font-family:monospace;"></div>
 <script src="/dist/browser/slick.core.js"></script>
@@ -57,7 +57,7 @@ const harnessHtml = `<!doctype html>
   }
 
   var gridPlain = new Slick.Grid('#gridPlain', makeData(30), cloneColumns(), baseOptions);
-  var gridFrozen = new Slick.Grid('#gridFrozen', makeData(30), cloneColumns(),
+  var gridPinned = new Slick.Grid('#gridPinned', makeData(30), cloneColumns(),
     Object.assign({}, baseOptions, { pinning: { columns: { left: 1 } } }));
   var gridAuto = new Slick.Grid('#gridAuto', makeData(8), cloneColumns(),
     Object.assign({}, baseOptions, { autoHeight: true }));
@@ -136,7 +136,7 @@ const harnessHtml = `<!doctype html>
 
     return checkGrid('plain', '#gridPlain', '.slick-header-left', '.slick-viewport')
       .then(function () {
-        return checkGrid('pinned', '#gridFrozen', '.slick-header-left', '.slick-viewport');
+        return checkGrid('pinned', '#gridPinned', '.slick-header-left', '.slick-viewport');
       })
       .then(function () {
         return checkGrid('autoHeight', '#gridAuto', '.slick-header-left', '.slick-viewport');

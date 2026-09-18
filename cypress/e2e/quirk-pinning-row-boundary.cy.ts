@@ -2,8 +2,7 @@
  * Regression test for pinned-row boundary canonicalization.
  *
  * The row-band boundary was compared differently at six sites, and they
- * contradicted each other and the render split (rows >= actualFrozenRow go to the
- * bottom canvas):
+ * contradicted each other and the render split:
  * - row rendering and cache cleanup must agree on which rows are permanently
  *   pinned and therefore must remain in the docking overlay/cache;
  * - canvas lookup must still resolve the first scrollable row in the single
@@ -23,7 +22,7 @@ const harnessHtml = `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Harness: frozen-row boundary</title>
+  <title>Harness: pinned-row boundary</title>
   <link rel="stylesheet" href="/dist/styles/css/slick-alpine-theme.css"/>
   <style> .g { width: 700px; height: 300px; } </style>
 </head>
@@ -91,12 +90,12 @@ const harnessHtml = `<!doctype html>
     check('B(bottom): scrollRowIntoView(996) scrolls (viewport.top > 0)', vpTop > 0, 'viewport.top=' + vpTop);
 
     // 4. A(top): the first scrollable row must be EVICTABLE - scroll far away and
-    //    confirm row FR leaves the row cache (frozen rows 0..2 stay)
+    //    confirm row FR leaves the row cache (pinned rows 0..2 stay)
     gridA.scrollRowIntoView(600);
     gridA.render();
     var cache = gridA.getRowCache();
     check('A(top): first scrollable row ' + FR + ' evicted after far scroll', !cache[FR], 'cached=' + !!cache[FR]);
-    check('A(top): frozen row 0 stays cached after far scroll', !!cache[0], 'cached=' + !!cache[0]);
+    check('A(top): pinned row 0 stays cached after far scroll', !!cache[0], 'cached=' + !!cache[0]);
 
     out.push(pass ? '\\nALL CHECKS PASSED' : '\\nCHECKS FAILED');
     document.getElementById('checkResults').textContent = out.join('\\n');
@@ -106,13 +105,13 @@ const harnessHtml = `<!doctype html>
 </body>
 </html>`;
 
-describe('Quirk - frozen-row boundary must be consistent across all comparison sites', { retries: 1 }, () => {
+describe('Quirk - pinned-row boundary must be consistent across all comparison sites', { retries: 1 }, () => {
   it('should agree on the boundary across css classing, pane lookup, scrolling and cache eviction', () => {
-    cy.intercept('GET', '/quirk-frozen-row-boundary-harness.html', {
+    cy.intercept('GET', '/quirk-pinning-row-boundary-harness.html', {
       headers: { 'content-type': 'text/html' },
       body: harnessHtml,
     });
-    cy.visit(`${Cypress.config('baseUrl')}/quirk-frozen-row-boundary-harness.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/quirk-pinning-row-boundary-harness.html`);
     cy.window().its('gridA').should('exist');
     cy.window().its('gridB').should('exist');
 

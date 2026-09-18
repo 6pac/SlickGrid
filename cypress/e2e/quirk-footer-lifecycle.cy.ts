@@ -5,13 +5,13 @@
  *     getViewportHeight()'s footer term was gated on showFooterRow alone and
  *     dereferenced the undefined `_footerRowScroller[0]` (the header-row and
  *     top-header terms three lines away already use the create && show idiom).
- * 2 — `getFooterRow()` without a footer threw a TypeError on the non-frozen
- *     `_footerRow[0]` path while the frozen path returned undefined — the same
+ * 2 — `getFooterRow()` without a footer threw a TypeError on the unpinned
+ *     `_footerRow[0]` path while the pinned path returned undefined — the same
  *     misuse failed two different ways. It now returns undefined consistently.
  * 3 — createColumnHeaders() duplicated the footer destroy/create work that
  *     createColumnFooter() (always called right after) already does, so
  *     onFooterRowCellRendered fired TWICE per column on every setColumns, and
- *     the duplicate's right-side gating (hasFrozenColumns instead of existence)
+ *     the duplicate's right-side gating (pinning instead of existence)
  *     left stale right-footer cells after un-freezing.
  *
  * The spec is SELF-HOSTING: the three-grid repro harness is served from this file

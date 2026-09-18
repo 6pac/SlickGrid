@@ -1,27 +1,16 @@
 /**
- * Regression test for the frozen-bottom hit-testing bug.
+ * Regression test for bottom-pinned row hit testing.
  *
- * getCellFromEvent()/setActiveCellInternal() computed the bottom-canvas row offset
- * from a LIVE measurement of the top canvas (`Utils.height(_canvasTopL)`) in
- * frozenBottom mode, while the render path places bottom-canvas rows using
- * getFrozenRowOffset(). The two diverge whenever the dataset is shorter than the
- * viewport, because updateRowCount floors the body canvas height at the viewport
- * height — so clicking the frozen bottom row resolved to a row ~viewport/rowHeight
- * rows away. Both call sites now use getFrozenRowOffset(actualFrozenRow), the same
- * offset the render path used to place the row.
- *
- * The spec is SELF-HOSTING: the two-grid repro harness (frozen-bottom target +
- * top-freeze control) is served from this file via cy.intercept (no page is added
- * to examples/). It synthesizes clicks at real cell rects and asserts
- * getCellFromEvent resolves the correct rows. Verified to FAIL pre-fix and PASS
- * post-fix.
+ * Pinned rows live in the docking overlay, so hit testing and active-cell
+ * tracking must use the rendered row's logical data attribute rather than infer
+ * an index from the center canvas's natural offset.
  */
 
 const harnessHtml = `<!doctype html>
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>Harness: frozen-bottom hit testing</title>
+  <title>Harness: bottom-pinned hit testing</title>
   <link rel="stylesheet" href="/dist/styles/css/slick-alpine-theme.css"/>
   <style> .g { width: 700px; height: 500px; } </style>
 </head>
@@ -47,10 +36,10 @@ const harnessHtml = `<!doctype html>
   var base = { enableCellNavigation: true, enableColumnReorder: false, rowHeight: 25 };
   function cols() { return columns.map(function (c) { return Object.assign({}, c); }); }
 
-  // Grid A: 1 frozen BOTTOM row -> actualFrozenRow = 7; row 7 renders in the bottom canvas
-  var gridA = new Slick.Grid('#gridA', makeData(), cols(), Object.assign({ frozenRow: 1, frozenBottom: true }, base));
-  // Grid B (control): 1 frozen TOP row -> rows 1..7 render in the bottom canvas
-  var gridB = new Slick.Grid('#gridB', makeData(), cols(), Object.assign({ frozenRow: 1 }, base));
+  // Grid A: row 7 is permanently pinned to the bottom overlay.
+  var gridA = new Slick.Grid('#gridA', makeData(), cols(), Object.assign({ pinning: { rows: { bottom: [7] } } }, base));
+  // Grid B (control): row 0 is permanently pinned to the top overlay.
+  var gridB = new Slick.Grid('#gridB', makeData(), cols(), Object.assign({ pinning: { rows: { top: [0] } } }, base));
   window.gridA = gridA; window.gridB = gridB;
 
   // synthesize the event getCellFromEvent expects, aimed at the center of a cell
@@ -70,17 +59,17 @@ const harnessHtml = `<!doctype html>
     }
 
     var a = hitTest(gridA, '#gridA', 7, 1);
-    check('frozenBottom: click on frozen bottom row resolves to its own row',
+    check('bottom pinning: click on pinned bottom row resolves to its own row',
       !a.error && !!a.got && a.got.row === 7,
       a.error || ('got row ' + (a.got && a.got.row) + ' expected 7'));
 
     var a2 = hitTest(gridA, '#gridA', 3, 1);
-    check('frozenBottom: click on body row resolves correctly',
+    check('bottom pinning: click on body row resolves correctly',
       !a2.error && !!a2.got && a2.got.row === 3,
       a2.error || ('got row ' + (a2.got && a2.got.row) + ' expected 3'));
 
     var b = hitTest(gridB, '#gridB', 4, 1);
-    check('top freeze (control): click on scrollable row resolves correctly',
+    check('top pinning (control): click on scrollable row resolves correctly',
       !b.error && !!b.got && b.got.row === 4,
       b.error || ('got row ' + (b.got && b.got.row) + ' expected 4'));
 
@@ -92,18 +81,18 @@ const harnessHtml = `<!doctype html>
 </body>
 </html>`;
 
-describe('Quirk - frozen-bottom hit testing must use the render offset', { retries: 1 }, () => {
+describe('Quirk - pinned-row hit testing uses the rendered row', { retries: 1 }, () => {
   it('should load the self-hosted two-grid repro harness', () => {
-    cy.intercept('GET', '/quirk-frozen-bottom-hit-testing-harness.html', {
+    cy.intercept('GET', '/quirk-pinning-bottom-hit-testing-harness.html', {
       headers: { 'content-type': 'text/html' },
       body: harnessHtml,
     });
-    cy.visit(`${Cypress.config('baseUrl')}/quirk-frozen-bottom-hit-testing-harness.html`);
+    cy.visit(`${Cypress.config('baseUrl')}/quirk-pinning-bottom-hit-testing-harness.html`);
     cy.window().its('gridA').should('exist');
     cy.window().its('gridB').should('exist');
   });
 
-  it('should resolve clicked rows correctly in frozen-bottom and top-freeze grids', () => {
+  it('should resolve clicked rows correctly in bottom- and top-pinned grids', () => {
     cy.window().then((win: any) => {
       const ok = win.runChecks();
       const detail = win.document.getElementById('checkResults').textContent;

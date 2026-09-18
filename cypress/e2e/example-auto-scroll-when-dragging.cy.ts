@@ -327,7 +327,7 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
   });
 
   function testDragInGrouping(selector: string) {
-    // In the old bottom-right pane, nth column 0 resolved past the frozen
+    // In the old bottom-right layout, nth column 0 resolved past the pinned
     // control column. The unified canvas exposes that non-selectable control
     // column as index 0, so use Duration (index 2) in a data row instead.
     cy.getNthCell(7, 2, 'bottomRight', { parentSelector: selector, rowHeight: cellHeight })
