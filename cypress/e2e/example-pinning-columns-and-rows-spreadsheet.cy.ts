@@ -51,19 +51,33 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
     cy.get(`${grid} .slick-header-column`).then(($headers) => {
       const leftHeaderIds = new Set(
         Array.from($headers)
-          .filter(
-            (header) => header.classList.contains('slick-column-pinned-left') || !!header.closest('.slick-header-columns-left')
-          )
+          .filter((header) => header.classList.contains('slick-column-pinned-left'))
           .map((header) => header.getAttribute('data-id'))
           .filter((id): id is string => !!id)
       );
-      // The spreadsheet demo currently exposes five left-pinned header IDs in
-      // the rendered bundle: the selector column plus the first four sheet columns.
-      expect(leftHeaderIds.size).to.eq(5);
+      // `left: 3` is an inclusive visible-column boundary. The selector plus
+      // the first three sheet columns are pinned; the numeric column id `3`
+      // must not be treated as another matching reference.
+      expect(leftHeaderIds.size).to.eq(4);
     });
     cy.get(`${grid} .slick-docking-overlay .slick-row[data-row="0"]`).should('have.length', 1);
     cy.get(`${grid} .slick-docking-overlay .slick-row[data-row="6"]`).should('have.length', 1);
     cy.get(`${grid} .grid-canvas .slick-row[data-row="7"]`).should('have.length', 1);
+  });
+
+  it('resolves numeric pinning boundaries against visible columns', () => {
+    cy.window().then((win: any) => {
+      // Hide sheet column B (raw index 2), then keep the same inclusive
+      // boundary. The first four visible columns should remain pinned.
+      win.grid.updateColumnById(1, { hidden: true }, true);
+      win.grid.setOptions({ pinning: { columns: { left: 3 } } });
+    });
+
+    cy.get(`${grid} .slick-header-column.slick-column-pinned-left`).then(($headers) => {
+      expect(
+        new Set(Array.from($headers).map((header) => header.getAttribute('data-id')))
+      ).to.deep.equal(new Set(['selector', '0', '2', '3']));
+    });
   });
 
   it('selects a range across the top-pinned and scrolling rows', () => {

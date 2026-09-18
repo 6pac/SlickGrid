@@ -294,7 +294,6 @@ function setPinnedColumns(pinBoundary) {
   grid.setOptions({ pinning: { columns: { left: pinBoundary >= 0 ? pinBoundary : [] } } });
   options = grid.getOptions();
   document.querySelector('#pinnedLeftColumns').value = pinBoundary >= 0 ? pinBoundary : '';
-  console.log('hey')
 }
 
 function toggleGrouping(expand) {

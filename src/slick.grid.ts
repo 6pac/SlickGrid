@@ -4559,6 +4559,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {number} deltaY - The vertical scroll delta.
    */
   protected handleMouseWheel(e: MouseEvent, _delta: number, deltaX: number, deltaY: number): void {
+    const hasDocking = this.hasConfiguredDocking();
     this.scrollHeight = this._viewportScrollContainerY.scrollHeight;
     const wheelEvent = e as WheelEvent;
     const lineSize = Math.max(40, this._options.rowHeight!);
@@ -4576,8 +4577,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const handled = this._handleScroll('mousewheel');
     if (handled) {
       e.stopPropagation();
-      // The handler owns the wheel event after translating it into grid scroll coordinates.
-      e.preventDefault();
+      // Ordinary grids retain the browser's native wheel delta behaviour. A
+      // docking grid must prevent the native event from moving a second scroll
+      // owner after this handler synchronizes its bands.
+      if (hasDocking) {
+        e.preventDefault();
+      }
     }
   }
 
@@ -8482,7 +8487,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-  * Computes the absolute position of an element relative to the document,
+   * Computes the absolute position of an element relative to the document,
   * taking into account offsets, scrolling, and visibility within scrollable containers.
   *
   * @param {HTMLElement} elem - The element to compute the absolute position for.
@@ -8511,19 +8516,23 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return box; // assume element is visible when we can't determine it's position & size
     }
 
-    // then calculation position relative to the grid container (assume container exists and is the grid root)
+    // Keep the public coordinates document-relative. Editors and custom cell
+    // components commonly append their elements to document.body, so returning
+    // coordinates relative to the grid container shifts them when the grid is
+    // nested below the page origin.
     const gridRect = this._container?.getBoundingClientRect() || { top: 0, left: 0, bottom: 0, right: 0 };
-    box.top = rect.top - gridRect.top;
-    box.left = rect.left - gridRect.left;
-    box.bottom = rect.bottom - gridRect.top;
-    box.right = rect.right - gridRect.left;
+    const windowScroll = Utils.windowScrollPosition();
+    box.top = rect.top + windowScroll.top;
+    box.left = rect.left + windowScroll.left;
+    box.bottom = rect.bottom + windowScroll.top;
+    box.right = rect.right + windowScroll.left;
 
     // Check if the element is visible within the grid viewport
     if (
-      box.bottom < 0 ||
-      box.top > (this._container?.clientHeight ?? window.innerHeight) ||
-      box.right < 0 ||
-      box.left > (this._container?.clientWidth ?? window.innerWidth)
+      rect.bottom < gridRect.top ||
+      rect.top > gridRect.top + (this._container?.clientHeight ?? window.innerHeight) ||
+      rect.right < gridRect.left ||
+      rect.left > gridRect.left + (this._container?.clientWidth ?? window.innerWidth)
     ) {
       box.visible = false;
     }
@@ -9926,8 +9935,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected hasConfiguredColumnDocking(): boolean {
     const configuredColumns = this._options.pinning?.columns;
     return !!(
-      this.normalizeColumnPinningReferences(configuredColumns?.left, 'left', this.columns.length).length ||
-      this.normalizeColumnPinningReferences(configuredColumns?.right, 'right', this.columns.length).length ||
+      this.normalizeColumnPinningReferences(configuredColumns?.left, 'left', this.columns).length ||
+      this.normalizeColumnPinningReferences(configuredColumns?.right, 'right', this.columns).length ||
       this.columns.some((column) => !!column && (column.pinned || column.sticky))
     );
   }
@@ -10084,8 +10093,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const configuredColumns = this._options.pinning?.columns;
 
     if (configuredColumns !== undefined) {
-      const leftRefs = new Set(this.normalizeColumnPinningReferences(configuredColumns.left, 'left', columns.length));
-      const rightRefs = new Set(this.normalizeColumnPinningReferences(configuredColumns.right, 'right', columns.length));
+      const leftIndexes = new Set(this.normalizeColumnPinningReferences(configuredColumns.left, 'left', columns));
+      const rightIndexes = new Set(this.normalizeColumnPinningReferences(configuredColumns.right, 'right', columns));
 
       columns.forEach((column, index) => {
         if (!column) {
@@ -10096,8 +10105,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         }
 
 
-        const isLeftPinned = leftRefs.has(index) || leftRefs.has(column.id);
-        const isRightPinned = rightRefs.has(index) || rightRefs.has(column.id);
+        const isLeftPinned = leftIndexes.has(index);
+        const isRightPinned = rightIndexes.has(index);
         column.pinned = isLeftPinned ? 'left' : isRightPinned ? 'right' : null;
       });
       return;
@@ -10118,17 +10127,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const pinnedIndexes = new Map<number, DockingSide>();
     const columns = configuredColumns ?? this._options.pinning?.columns;
     if (columns !== undefined) {
-      const left = this.normalizeColumnPinningReferences(columns.left, 'left', this.columns.length);
-      const right = this.normalizeColumnPinningReferences(columns.right, 'right', this.columns.length);
-      left.forEach((reference) => {
-        const index = typeof reference === 'number' ? reference : this.getColumnIndex(reference);
-        if (isDefinedNumber(index) && !this.columns[index]?.hidden) {
+      const leftIndexes = this.normalizeColumnPinningReferences(columns.left, 'left', this.columns);
+      const rightIndexes = this.normalizeColumnPinningReferences(columns.right, 'right', this.columns);
+      leftIndexes.forEach((index) => {
+        if (!this.columns[index]?.hidden) {
           pinnedIndexes.set(index, 'left');
         }
       });
-      right.forEach((reference) => {
-        const index = typeof reference === 'number' ? reference : this.getColumnIndex(reference);
-        if (isDefinedNumber(index) && !this.columns[index]?.hidden && !pinnedIndexes.has(index)) {
+      rightIndexes.forEach((index) => {
+        if (!this.columns[index]?.hidden && !pinnedIndexes.has(index)) {
           pinnedIndexes.set(index, 'right');
         }
       });
@@ -10264,23 +10271,49 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     });
   }
 
-  /** Normalize a numeric edge shorthand to the explicit indexes consumed by the docking resolver. */
+  /**
+   * Resolve column pinning references to raw column indexes.
+   *
+   * Numeric references are always indexes, never column ids. This matters for
+   * grids whose ids are numeric because an edge shorthand such as `left: 3`
+   * must not also pin the column whose id happens to be `3`. Numeric edge
+   * shorthands are resolved against visible columns so hidden columns do not
+   * consume part of the requested boundary/count.
+   */
   protected normalizeColumnPinningReferences(
     references: ColumnPinningReferences | undefined,
     side: DockingSide,
-    columnCount: number
-  ): Array<number | string> {
+    columns: C[]
+  ): number[] {
     if (Array.isArray(references)) {
-      return [...references];
+      return references.flatMap((reference) => {
+        if (typeof reference === 'number') {
+          return Number.isInteger(reference) && reference >= 0 && reference < columns.length ? [reference] : [];
+        }
+        const index = columns.findIndex((column) => column && String(column.id) === reference);
+        return index >= 0 ? [index] : [];
+      });
     }
-    if (typeof references !== 'number' || !Number.isInteger(references) || references < 0 || columnCount === 0) {
+    if (typeof references !== 'number' || !Number.isInteger(references) || references < 0) {
+      return [];
+    }
+
+    const visibleIndexes = columns.reduce<number[]>((indexes, column, index) => {
+      if (column && !column.hidden) {
+        indexes.push(index);
+      }
+      return indexes;
+    }, []);
+    if (!visibleIndexes.length) {
       return [];
     }
 
     const requestedCount = side === 'left' ? references + 1 : references;
-    const count = Math.min(requestedCount, columnCount);
-    const firstIndex = side === 'left' ? 0 : columnCount - count;
-    return Array.from({ length: count }, (_value, index) => firstIndex + index);
+    const count = Math.min(requestedCount, visibleIndexes.length);
+    if (count === 0) {
+      return [];
+    }
+    return side === 'left' ? visibleIndexes.slice(0, count) : visibleIndexes.slice(-count);
   }
 
   /** Rebuild the virtual-rendering coordinates from the already-resolved docking layout. */
@@ -10673,17 +10706,16 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     // Keep the unified option authoritative when callers change a column
     // interactively (for example through the Header Menu).
     if (this._options.pinning?.columns !== undefined) {
-      const removeReference = (reference: number | string) => reference !== column.id && reference !== columnIndex;
-      const left = this.normalizeColumnPinningReferences(this._options.pinning.columns.left, 'left', this.columns.length).filter(
-        removeReference
+      const left = this.normalizeColumnPinningReferences(this._options.pinning.columns.left, 'left', this.columns).filter(
+        (index) => index !== columnIndex
       );
-      const right = this.normalizeColumnPinningReferences(this._options.pinning.columns.right, 'right', this.columns.length).filter(
-        removeReference
+      const right = this.normalizeColumnPinningReferences(this._options.pinning.columns.right, 'right', this.columns).filter(
+        (index) => index !== columnIndex
       );
       if (pinned === 'left') {
-        left.push(column.id);
+        left.push(columnIndex);
       } else if (pinned === 'right') {
-        right.push(column.id);
+        right.push(columnIndex);
       }
       this._options.pinning.columns = { left, right };
     }
