@@ -807,12 +807,13 @@ export class SlickGridMenu {
       const parentOffset = Utils.offset(parentElm);
       menuOffsetLeft = parentOffset?.left ?? 0;
       menuOffsetTop = parentOffset?.top ?? 0;
+      const gridPos = this.grid.getGridPosition();
       let subMenuPosCalc = menuOffsetLeft + Number(menuWidth); // calculate coordinate at caller element far right
       if (isSubMenu) {
         subMenuPosCalc += parentElm.clientWidth;
       }
-      const viewportRight = (window.pageXOffset || document.documentElement.scrollLeft || 0) + (window.innerWidth || document.documentElement.clientWidth);
-      const dropSide = subMenuPosCalc > viewportRight ? 'left' : 'right';
+      const browserWidth = document.documentElement.clientWidth;
+      const dropSide = (subMenuPosCalc >= gridPos.width || subMenuPosCalc >= browserWidth) ? 'left' : 'right';
       if (dropSide === 'left') {
         menuElm.classList.remove('dropright');
         menuElm.classList.add('dropleft');

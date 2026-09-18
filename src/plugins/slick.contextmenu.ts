@@ -785,12 +785,13 @@ export class SlickContextMenu implements SlickPlugin {
       // if there isn't enough space on the right, it will automatically align the drop menu to the left
       // to simulate an align left, we actually need to know the width of the drop menu
       if (this._contextMenuProperties.autoAlignSide) {
+        const gridPos = this._grid.getGridPosition();
         let subMenuPosCalc = menuOffsetLeft + Number(menuWidth); // calculate coordinate at caller element far right
         if (isSubMenu) {
           subMenuPosCalc += parentElm.clientWidth;
         }
-        const viewportRight = (window.pageXOffset || document.documentElement.scrollLeft || 0) + (window.innerWidth || document.documentElement.clientWidth);
-        const dropSide = subMenuPosCalc > viewportRight ? 'left' : 'right';
+        const browserWidth = document.documentElement.clientWidth;
+        const dropSide = (subMenuPosCalc >= gridPos.width || subMenuPosCalc >= browserWidth) ? 'left' : 'right';
         if (dropSide === 'left') {
           menuElm.classList.remove('dropright');
           menuElm.classList.add('dropleft');

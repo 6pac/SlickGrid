@@ -255,10 +255,10 @@
       var pinning = option.pinning || {};
       var hasPinnedRows = pinning.rows && pinning.rows.top && pinning.rows.top.length > 0;
       var hasPinnedColumns = grid.getPinnedColumns('left').length > 0;
-      var newOption = {
+      var newOption = hasPinnedRows || hasPinnedColumns ? { pinning: undefined } : {
         pinning: {
-          columns: { left: hasPinnedColumns ? [] : 1 },
-          rows: { top: hasPinnedRows ? [] : [0, 1, 2] }
+          columns: { left: 1 },
+          rows: { top: [0, 1, 2] }
         }
       };
       grid.setOptions(newOption);

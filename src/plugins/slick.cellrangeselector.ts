@@ -116,14 +116,14 @@ export class SlickCellRangeSelector implements SlickPlugin {
     this._activeCanvas = this._grid.getActiveCanvasNode(e);
     this._activeViewport = this._grid.getActiveViewportNode(e);
 
-    // client dimensions describe the actual space available to cells. They
-    // already exclude native scrollbars and, with the docking layout, reflect
-    // the height reserved for its separate horizontal scroll owner. Subtracting
-    // getDisplayedScrollbarDimensions() from offsetHeight double-counted that
-    // external scrollbar, causing vertical drag auto-scroll to target a row
-    // that the grid still considered visible.
-    this._viewportWidth = this._activeViewport.clientWidth;
-    this._viewportHeight = this._activeViewport.clientHeight;
+    const scrollbarDimensions = this._grid.getDisplayedScrollbarDimensions();
+    const dockingScroller = this._activeViewport.closest<HTMLElement>('[class*="slickgrid_"]')?.querySelector('.slick-docking-horizontal-scroller');
+    // Native scrolling reserves scrollbar space inside the viewport, while the
+    // docking proxy owns its horizontal scrollbar outside the viewport. Use the
+    // legacy dimensions for ordinary grids and the client dimensions only when
+    // that external docking scroller is actually present.
+    this._viewportWidth = dockingScroller ? this._activeViewport.clientWidth : this._activeViewport.offsetWidth - scrollbarDimensions.width;
+    this._viewportHeight = dockingScroller ? this._activeViewport.clientHeight : this._activeViewport.offsetHeight - scrollbarDimensions.height;
 
     this._moveDistanceForOneCell = {
       x: this._grid.getAbsoluteColumnMinWidth() / 2,
@@ -174,7 +174,7 @@ export class SlickCellRangeSelector implements SlickPlugin {
     let start: { row: number | undefined, cell: number | undefined; } | null;
     this._selectionMode = this._dragReplaceHandleActive ? CellSelectionMode.Replace : CellSelectionMode.Select;
     if (!this._dragReplaceHandleActive) {
-      start = this._grid.getCellFromPoint(startX, startY);
+      start = this._grid.getCellFromEvent(e) || this._grid.getCellFromPoint(startX, startY);
     } else {
       start = this._grid.getActiveCell() || { row: undefined, cell: undefined };
     }
@@ -329,11 +329,35 @@ export class SlickCellRangeSelector implements SlickPlugin {
     }
   }
 
+  /**
+   * Use the event target only when its pointer coordinates still overlap that
+   * cell. Some auto-scroll integrations keep the original cell as `target`
+   * while moving the pointer coordinates into a later virtualized row.
+   */
+  protected getCellFromPointerTarget(targetEvent: MouseEvent | Touch | { pageX: number; pageY: number }): { row: number; cell: number } | null {
+    const target = (targetEvent as Event & { target?: EventTarget | null }).target;
+    const cellNode = target instanceof HTMLElement ? target.closest('.slick-cell') : null;
+    if (!cellNode) {
+      return null;
+    }
+
+    const clientX = 'clientX' in targetEvent ? targetEvent.clientX : undefined;
+    const clientY = 'clientY' in targetEvent ? targetEvent.clientY : undefined;
+    if (typeof clientX === 'number' && typeof clientY === 'number') {
+      const rect = cellNode.getBoundingClientRect();
+      if (clientX < rect.left - 1 || clientX > rect.right + 1 || clientY < rect.top - 1 || clientY > rect.bottom + 1) {
+        return null;
+      }
+    }
+    return this._grid.getCellFromEvent(targetEvent as unknown as Event);
+  }
+
   protected handleDragTo(e: { pageX: number; pageY: number; }, dd: DragPosition) {
   //console.log('cellRangeSelector.handleDragTo: ' + JSON.stringify(dd.range));
     const targetEvent: MouseEvent | Touch = (e as unknown as TouchEvent)?.touches?.[0] ?? e;
     const canvasOffset = Utils.offset(this._activeCanvas);
-    const end = this._grid.getCellFromPoint(targetEvent.pageX - (canvasOffset?.left ?? 0), targetEvent.pageY - (canvasOffset?.top ?? 0));
+    const end = this.getCellFromPointerTarget(targetEvent)
+      || this._grid.getCellFromPoint(targetEvent.pageX - (canvasOffset?.left ?? 0), targetEvent.pageY - (canvasOffset?.top ?? 0));
 
     // scrolling the viewport to display the target `end` cell if it is not fully displayed
     if (this._options.autoScroll && this._draggingMouseOffset) {
@@ -393,7 +417,8 @@ export class SlickCellRangeSelector implements SlickPlugin {
 
     const targetEvent: MouseEvent | Touch = (e as unknown as TouchEvent)?.touches?.[0] ?? e;
     const canvasOffset = Utils.offset(this._activeCanvas);
-    const end = this._grid.getCellFromPoint(targetEvent.pageX - (canvasOffset?.left ?? 0), targetEvent.pageY - (canvasOffset?.top ?? 0));
+    const end = this.getCellFromPointerTarget(targetEvent)
+      || this._grid.getCellFromPoint(targetEvent.pageX - (canvasOffset?.left ?? 0), targetEvent.pageY - (canvasOffset?.top ?? 0));
     const cornerCell = !this._dragReplaceHandleActive || !this._previousSelectedRange ? dd.range.start : SelectionUtils.normalRangeOppositeCellFromCopy(this._previousSelectedRange, end);
 
     const r = new SlickRange(

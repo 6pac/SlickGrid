@@ -3779,7 +3779,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   setColumns(newColumns: C[], waitNextCycle = false): void {
     this.applyColumnPinningOptions(newColumns);
     this.triggerEvent(this.onBeforeSetColumns, { previousColumns: this.columns, newColumns, grid: this });
-    if (!this.validateColumnPinning(undefined, true, newColumns)) {
+    const shouldValidateProspectivePinning = this.hasConfiguredColumnDocking() || newColumns.some((column) => !!column?.pinned || !!column?.sticky);
+    if (!this.validateColumnPinning(undefined, true, shouldValidateProspectivePinning ? newColumns : undefined)) {
       return; // exit early if pinning is invalid
     }
     this.dockingController.reset();
@@ -8481,12 +8482,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   getCellFromPoint(x: number, y: number): { row: number; cell: number } {
     // Docked cells are positioned by the rendered three-band layout rather
-    // than by their natural column/row offsets. When a real cell is under the
-    // pointer, use the DOM hit target so pinned left/right columns and
-    // top/bottom rows resolve to their logical indexes. Keep the coordinate
-    // calculation below as a fallback for empty areas and auto-scroll points.
+    // than by their natural column/row offsets. Only use DOM hit testing for
+    // configured docking; ordinary grids must retain the original coordinate
+    // calculation used by drag-fill and other pointer interactions.
     const canvas = this._activeCanvasNode || this._canvasNode;
-    if (canvas && typeof document.elementFromPoint === 'function') {
+    if (this.hasConfiguredDocking() && canvas && typeof document.elementFromPoint === 'function') {
       const canvasRect = canvas.getBoundingClientRect();
       const target = document.elementFromPoint(canvasRect.left + x, canvasRect.top + y);
       const cellNode = target?.closest('.slick-cell') as HTMLElement | null;
@@ -10808,7 +10808,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     for (const entry of [...this.rowDockingLayout.top, ...this.rowDockingLayout.center, ...this.rowDockingLayout.bottom]) {
       this.dockingByRow.set(entry.index, entry);
     }
-    const hasConfiguredRowDocking = this.hasConfiguredRowDocking();
+    // An explicitly supplied, but currently empty, row-pinning option still
+    // owns the overlay lifecycle. It must not activate the full docking layout
+    // until there are actual pinned/sticky rows, otherwise ordinary auto-scroll
+    // geometry is changed merely by opting into the pinning UI.
+    const hasRowDockingOption = this._options.pinning?.rows !== undefined;
+    const hasConfiguredRowDocking = this.hasConfiguredRowDocking() || hasRowDockingOption;
     if (hasConfiguredRowDocking) {
       this.ensureDockingOverlay();
     }
