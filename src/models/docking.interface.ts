@@ -14,23 +14,23 @@ export interface PinnedColumns {
   /**
    * Column indexes or ids to pin to the left edge.
    * A number is an inclusive zero-based boundary among visible columns (`2` pins the first three visible columns).
-   * An array accepts zero-based indexes and/or stable column ids for non-contiguous pinning.
+   * An array accepts zero-based indexes (numbers) and/or column ids (strings) for non-contiguous pinning.
    */
   left?: ColumnPinningReferences;
 
   /**
    * Column indexes or ids to pin to the right edge.
    * A number is a count from the trailing edge of visible columns (`1` pins the last visible column; `0` pins none).
-   * An array accepts zero-based indexes and/or stable column ids for non-contiguous pinning.
+   * An array accepts zero-based indexes (numbers) and/or column ids (strings) for non-contiguous pinning.
    */
   right?: ColumnPinningReferences;
 }
 
 export interface PinnedRows {
-  /** Row indexes or stable row ids to pin permanently to the top edge. */
+  /** Rows to pin permanently to the top edge: numbers are row indexes, strings are dataset ids. */
   top?: Array<number | string>;
 
-  /** Row indexes or stable row ids to pin permanently to the bottom edge. */
+  /** Rows to pin permanently to the bottom edge: numbers are row indexes, strings are dataset ids. */
   bottom?: Array<number | string>;
 }
 
@@ -44,13 +44,13 @@ export interface PinningOption {
 }
 
 export interface StickyRows {
-  /** Row indexes or stable row ids that dock to the top after scrolling past them. */
+  /** Rows (indexes as numbers, dataset ids as strings) that dock to the top after scrolling past them. */
   top?: Array<number | string>;
 
-  /** Row indexes or stable row ids that dock to the bottom after scrolling back above them. */
+  /** Rows (indexes as numbers, dataset ids as strings) that dock to the bottom after scrolling back above them. */
   bottom?: Array<number | string>;
 
-  /** Row indexes or stable row ids that dock to the nearest edge when normal scrolling would clip them. */
+  /** Rows (indexes as numbers, dataset ids as strings) that dock to the nearest edge when normal scrolling would clip them. */
   both?: Array<number | string>;
 }
 
