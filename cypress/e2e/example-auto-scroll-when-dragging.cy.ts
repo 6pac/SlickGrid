@@ -234,8 +234,7 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
 
   it('should pin columns and rows after clicking Set/Clear Pinning', () => {
     [ '#myGrid', '#myGrid2' ].forEach((selector) => {
-      cy.get(`${selector} .slick-docking-overlay`).should('exist');
-      cy.get(`${selector} .slick-docking-overlay .slick-row[data-row="0"]`).should('not.exist');
+      cy.get(`${selector} .slick-docking-overlay`).should('not.exist');
     });
 
     cy.get('#togglePinning').click();

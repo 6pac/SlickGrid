@@ -10808,12 +10808,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     for (const entry of [...this.rowDockingLayout.top, ...this.rowDockingLayout.center, ...this.rowDockingLayout.bottom]) {
       this.dockingByRow.set(entry.index, entry);
     }
-    // An explicitly supplied, but currently empty, row-pinning option still
-    // owns the overlay lifecycle. It must not activate the full docking layout
-    // until there are actual pinned/sticky rows, otherwise ordinary auto-scroll
-    // geometry is changed merely by opting into the pinning UI.
-    const hasRowDockingOption = this._options.pinning?.rows !== undefined;
-    const hasConfiguredRowDocking = this.hasConfiguredRowDocking() || hasRowDockingOption;
+    const hasConfiguredRowDocking = this.hasConfiguredRowDocking();
     if (hasConfiguredRowDocking) {
       this.ensureDockingOverlay();
     }
