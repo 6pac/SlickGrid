@@ -3535,6 +3535,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         }
       }
     }
+
+    this.updateRenderedColspanFragmentGeometry();
   }
 
   /**
@@ -10983,12 +10985,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     deferToRow: boolean
   ): void {
     host.classList.add('slick-cell-colspan-crossing-docking');
-    const spanWidth = segments.reduce(
-      (width, segment) => width + (this.columnPosRight[segment.end] ?? 0) - (this.columnPosLeft[segment.start] ?? 0),
-      0
-    );
-    host.style.width = `${spanWidth}px`;
-    host.style[this._options.rtl ? 'left' : 'right'] = 'auto';
     (this.rowsCache[row].rowNode?.[0] || host.closest('.slick-row'))?.classList.add('slick-row-colspan-crossing-docking');
     const fragments = segments.slice(1).map((segment, index, allFragments) => {
       const fragment = host.cloneNode(false) as HTMLElement;
@@ -11009,6 +11005,39 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       fragment.removeAttribute('aria-colspan');
       fragment.removeAttribute('aria-rowspan');
       fragment.removeAttribute('tabindex');
+      return fragment;
+    });
+
+    this.rowsCache[row].cellSpanFragments[cell] = fragments;
+    this.rowsCache[row].cellSpanSegments[cell] = segments;
+    this.updateColspanFragmentGeometry(host, segments, fragments);
+    fragments.forEach((fragment, index) => {
+      if (deferToRow) {
+        host.parentElement?.insertBefore(fragment, host);
+      } else {
+        this.getRowDockingRegion(host.closest('.slick-row') as HTMLElement, segments[index + 1].start).appendChild(fragment);
+      }
+    });
+  }
+
+  /** Recalculates the inline geometry of an already-rendered cross-band colspan. */
+  protected updateColspanFragmentGeometry(
+    host: HTMLElement,
+    segments: Array<{ start: number; end: number; band: ColumnDockingBand }>,
+    fragments: HTMLElement[]
+  ): void {
+    const spanWidth = segments.reduce(
+      (width, segment) => width + (this.columnPosRight[segment.end] ?? 0) - (this.columnPosLeft[segment.start] ?? 0),
+      0
+    );
+    host.style.width = `${spanWidth}px`;
+    host.style[this._options.rtl ? 'left' : 'right'] = 'auto';
+
+    fragments.forEach((fragment, index) => {
+      const segment = segments[index + 1];
+      if (!segment) {
+        return;
+      }
 
       const bandWidth =
         segment.band === 'left'
@@ -11025,17 +11054,28 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         fragment.style.left = `${left}px`;
         fragment.style.right = `${Math.max(0, bandWidth - right)}px`;
       }
-      return fragment;
     });
+  }
 
-    this.rowsCache[row].cellSpanFragments[cell] = fragments;
-    this.rowsCache[row].cellSpanSegments[cell] = segments;
-    fragments.forEach((fragment, index) => {
-      if (deferToRow) {
-        host.parentElement?.insertBefore(fragment, host);
-      } else {
-        this.getRowDockingRegion(host.closest('.slick-row') as HTMLElement, segments[index + 1].start).appendChild(fragment);
-      }
+  /** Refreshes geometry for all rendered colspans after column widths change. */
+  protected updateRenderedColspanFragmentGeometry(): void {
+    Object.values(this.rowsCache).forEach((cacheEntry) => {
+      Object.entries(cacheEntry.cellSpanFragments).forEach(([cellIndex, fragments]) => {
+        const cell = Number(cellIndex);
+        const segments = cacheEntry.cellSpanSegments[cell];
+        if (!segments?.length || !fragments.length) {
+          return;
+        }
+
+        const host =
+          cacheEntry.cellNodesByColumnIdx[cell] ||
+          Array.from(cacheEntry.rowNode?.[0]?.querySelectorAll<HTMLElement>('.slick-cell') || []).find(
+            (node) => node.classList.contains(`l${cell}`) && !node.classList.contains('slick-cell-colspan-part')
+          );
+        if (host) {
+          this.updateColspanFragmentGeometry(host, segments, fragments);
+        }
+      });
     });
   }
 

@@ -85,6 +85,47 @@
   box-sizing: content-box;
 }
 
+// A cross-band colspan is represented by one content-bearing host and one
+// empty visual fragment for each following docking band. Keep the host and
+// fragments visible across the region boundaries while preserving clipping
+// for ordinary cells.
+.slick-row-docked.slick-row-colspan-crossing-docking
+  > :is(.slick-pinned-left-cells, .slick-scrolling-cells, .slick-pinned-right-cells) {
+  overflow: visible;
+
+  > .slick-cell-colspan-crossing-docking:not(.slick-cell-colspan-part) {
+    z-index: 21;
+  }
+}
+
+// Draw one continuous active-cell outline over all visual pieces of a span.
+// Removing the shared edges prevents doubled borders at docking boundaries.
+.slick-row-docked
+  > :is(.slick-pinned-left-cells, .slick-scrolling-cells, .slick-pinned-right-cells)
+  > .slick-cell-colspan-crossing-docking.active {
+  box-shadow: none;
+
+  &::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    box-sizing: border-box;
+    border: 1px solid var(--slick-cell-active-border-color, #5da6e3);
+    pointer-events: none;
+    z-index: 1;
+  }
+
+  &.slick-cell-colspan-part:not(.slick-cell-colspan-end)::after {
+    border-inline-end: 0;
+  }
+}
+
+.slick-row-docked
+  > :is(.slick-pinned-left-cells, .slick-scrolling-cells, .slick-pinned-right-cells)
+  > .slick-cell-colspan-part.active::after {
+  border-inline-start: 0;
+}
+
 .slick-row-docked > .slick-pinned-left-cells {
   grid-column: 1;
   position: sticky;

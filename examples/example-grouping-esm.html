@@ -79,6 +79,10 @@
       <br/>
       <button data-test="collapse-all-btn">Collapse all groups</button>
       <button data-test="expand-all-btn">Expand all groups</button>
+      <hr/>
+      <button data-test="remove-pinned-btn">Remove Pinned Columns</button>
+      <input type="number" step="1" id="pinnedLeftColumns" style="width:45px;" value="" title="Inclusive zero-based left boundary">
+      <button id="setPinning">Apply</button>
     </div>
     <hr/>
     <h2>Demonstrates:</h2>
@@ -286,6 +290,13 @@ function groupByDurationEffortDrivenPercent() {
   grid.invalidate();
 }
 
+function setPinnedColumns(pinBoundary) {
+  grid.setOptions({ pinning: { columns: { left: pinBoundary >= 0 ? pinBoundary : [] } } });
+  options = grid.getOptions();
+  document.querySelector('#pinnedLeftColumns').value = pinBoundary >= 0 ? pinBoundary : '';
+  console.log('hey')
+}
+
 function toggleGrouping(expand) {
   const groupToggleAllElm = document.querySelector(".slick-group-toggle-all");
   if(expand) {
@@ -422,6 +433,19 @@ document.addEventListener("DOMContentLoaded", function() {
   document.querySelector('[data-test="group-duration-effort-percent-btn"]').addEventListener('click', () => groupByDurationEffortDrivenPercent());
   document.querySelector('[data-test="collapse-all-btn"]').addEventListener('click', () => toggleGrouping(false));
   document.querySelector('[data-test="expand-all-btn"]').addEventListener('click', () => toggleGrouping(true));
+  document.querySelector('[data-test="remove-pinned-btn"]').addEventListener('click', () => setPinnedColumns(-1));
+});
+
+document.querySelector('#setPinning').addEventListener('click', () => {
+  var leftColumnBoundary = parseInt(document.querySelector('#pinnedLeftColumns').value);
+
+  grid.setOptions({
+    pinning: {
+      columns: {
+        left: Number.isFinite(leftColumnBoundary) && leftColumnBoundary >= 0 ? leftColumnBoundary : [],
+      }
+    }
+  });
 });
 </script>
 </body>
