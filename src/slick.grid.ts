@@ -144,62 +144,6 @@ const isDefinedNumber = (value: unknown): value is number => typeof value === 'n
 const isPrimitiveOrHTML = (value: unknown): value is string | number | boolean | HTMLElement | DocumentFragment =>
   value === null || value === undefined || ['string', 'number', 'boolean'].includes(typeof value) || value instanceof HTMLElement || value instanceof DocumentFragment;
 const queueMicrotaskPolyfill = (callback: () => void) => typeof queueMicrotask === 'function' ? queueMicrotask(callback) : setTimeout(callback, 0);
-const destroyAllElementProps = (target: object): void => {
-  const elementProperties = [
-    '_activeCanvasNode',
-    '_activeViewportNode',
-    '_canvas',
-    '_canvasNode',
-    '_container',
-    '_contentRoot',
-    '_dockingHorizontalScroller',
-    '_dockingHorizontalSpacer',
-    '_dockingOverlay',
-    '_focusSink',
-    '_focusSink2',
-    '_footerRow',
-    '_footerRowL',
-    '_footerRowScroller',
-    '_footerRowScrollerL',
-    '_footerRowScrollContainer',
-    '_footerRowSpacerL',
-    '_headerL',
-    '_headerRoot',
-    '_headerRowL',
-    '_headerRowScroller',
-    '_headerRowScrollerL',
-    '_headerRowScrollContainer',
-    '_headerRowSpacerL',
-    '_headerScroller',
-    '_headerScrollerL',
-    '_headerScrollContainer',
-    '_headers',
-    '_headerRows',
-    '_hiddenParents',
-    '_preHeaderPanel',
-    '_preHeaderPanelR',
-    '_preHeaderPanelScroller',
-    '_preHeaderPanelSpacer',
-    '_style',
-    '_topHeaderPanel',
-    '_topHeaderPanelScroller',
-    '_topHeaderPanelSpacer',
-    '_topPanelL',
-    '_topPanelScrollers',
-    '_topPanels',
-    '_viewport',
-    '_viewportNode',
-    '_viewportScrollContainerX',
-    '_viewportScrollContainerY',
-    'dockingFooterRowRegions',
-    'dockingHeaderRegions',
-    'dockingHeaderRowRegions',
-  ];
-  const objectTarget = target as Record<string, unknown>;
-  elementProperties.forEach((property) => {
-    objectTarget[property] = null;
-  });
-};
 const applyHtmlToElement = (target: HTMLElement, value: unknown, options?: any) => {
   if (value instanceof HTMLElement || value instanceof DocumentFragment) {
     target.replaceChildren(value);
@@ -1334,8 +1278,32 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.removeCssRules();
 
     if (shouldDestroyAllElements) {
-      destroyAllElementProps(this);
+      this.destroyElementReferences();
     }
+  }
+
+  /**
+   * Drops every DOM reference the instance still holds so a retained grid object cannot keep the
+   * detached tree alive. Fields are selected by content (an element, a non-empty array of elements,
+   * or a plain record of elements), so new element fields are covered without a name list.
+   */
+  protected destroyElementReferences(): void {
+    const isElement = (value: unknown): boolean => value instanceof Element;
+    const holdsElements = (value: unknown): boolean =>
+      isElement(value) ||
+      (Array.isArray(value) && value.length > 0 && value.every(isElement)) ||
+      (!!value &&
+        typeof value === 'object' &&
+        Object.getPrototypeOf(value) === Object.prototype &&
+        Object.values(value as object).length > 0 &&
+        Object.values(value as object).every(isElement));
+    const self = this as unknown as Record<string, unknown>;
+    for (const key of Object.keys(self)) {
+      if (holdsElements(self[key])) {
+        self[key] = null;
+      }
+    }
+    this.dockingChromeByColumn.clear();
   }
 
   /**
