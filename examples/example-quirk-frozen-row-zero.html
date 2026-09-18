@@ -1,33 +1,29 @@
 <!doctype html>
 <!--
-  TEMPORARY repro page for the frozenRow: 0 degenerate configuration.
+  TEMPORARY repro page for an empty row-pinning configuration.
   DO NOT MERGE — this page is for human review only and is deleted before merge.
-  The permanent regression test is cypress/e2e/quirk-frozen-row-zero.cy.ts, which
-  is fully self-hosting and does NOT depend on this page.
+  The permanent regression test is maintained separately, is fully self-hosting,
+  and does NOT depend on this page.
 
-  Bug (pre-fix): frozenRow is a COUNT, but setFrozenOptions gated on > -1, so
-  frozenRow: 0 activated the full frozen-row machinery around an EMPTY band.
-  On a pre-fix build this page shows: grid A rendering every row in the BOTTOM
-  canvas below a visible empty band strip, and grid B (frozenBottom variant)
-  showing an empty bottom pane strip below the body. On a fixed build both grids
-  are indistinguishable from the unfrozen control grid C.
+  This page verifies that empty top and bottom row arrays do not create an empty
+  docking band. Grid A and B should be indistinguishable from control grid C.
 -->
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <title>SlickGrid quirk repro: frozenRow 0 (temporary, do not merge)</title>
+  <title>SlickGrid quirk repro: empty row pinning (temporary, do not merge)</title>
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <style> .g { width: 700px; height: 200px; } h3 { margin: 12px 0 4px 0; } </style>
 </head>
 <body>
-<h2>frozenRow: 0 — degenerate empty frozen band (TEMPORARY repro, do not merge)</h2>
+<h2>Empty row pinning — no docking band (TEMPORARY repro, do not merge)</h2>
 <div style="width:700px;">
-  <h3>Grid A — <code>frozenRow: 0</code></h3>
+  <h3>Grid A — <code>pinning.rows.top: []</code></h3>
   <div id="gridA" class="g"></div>
-  <h3>Grid B — <code>frozenRow: 0, frozenBottom: true</code></h3>
+  <h3>Grid B — <code>pinning.rows.bottom: []</code></h3>
   <div id="gridB" class="g"></div>
-  <h3>Grid C — control (no freeze options)</h3>
+  <h3>Grid C — control (no pinning options)</h3>
   <div id="gridC" class="g"></div>
   <button onclick="report()">Report row placement</button>
   <div id="readout" style="white-space:pre; font-family:monospace; font-size:12px; margin-top:8px;"></div>
@@ -53,25 +49,22 @@
   var base = { enableCellNavigation: true, enableColumnReorder: false, rowHeight: 25 };
   function cols() { return columns.map(function (c) { return Object.assign({}, c); }); }
 
-  var gridA = new Slick.Grid('#gridA', makeData(), cols(), Object.assign({ frozenRow: 0 }, base));
-  var gridB = new Slick.Grid('#gridB', makeData(), cols(), Object.assign({ frozenRow: 0, frozenBottom: true }, base));
+  var gridA = new Slick.Grid('#gridA', makeData(), cols(), Object.assign({ pinning: { rows: { top: [], bottom: [] } } }, base));
+  var gridB = new Slick.Grid('#gridB', makeData(), cols(), Object.assign({ pinning: { rows: { bottom: [] } } }, base));
   var gridC = new Slick.Grid('#gridC', makeData(), cols(), Object.assign({}, base));
 
   function report() {
     function line(name, sel) {
-      var top = document.querySelectorAll(sel + ' .grid-canvas-top .slick-row').length;
-      var bottom = document.querySelectorAll(sel + ' .grid-canvas-bottom .slick-row').length;
-      var pane = document.querySelector(sel + ' .slick-pane-bottom');
-      var paneVisible = !!pane && pane.offsetParent !== null && pane.offsetHeight > 0;
-      return name + ': rows in top canvas=' + top + ', bottom canvas=' + bottom + ', bottom pane visible=' + paneVisible;
+      var rows = document.querySelectorAll(sel + ' .grid-canvas .slick-row').length;
+      var dockingRows = document.querySelectorAll(sel + ' .slick-docking-overlay .slick-row').length;
+      return name + ': viewport rows=' + rows + ', docking rows=' + dockingRows;
     }
     document.getElementById('readout').textContent = [
-      line('A (frozenRow 0)        ', '#gridA'),
-      line('B (frozenRow 0, bottom)', '#gridB'),
+      line('A (empty top array)    ', '#gridA'),
+      line('B (empty bottom array) ', '#gridB'),
       line('C (control)            ', '#gridC'),
       '',
-      'Fixed build: A and B match C. Pre-fix build: A has all rows in the bottom canvas;',
-      'A and B show a visible bottom pane.'
+      'Expected: A and B match C, with zero docking rows.'
     ].join('\n');
   }
 </script>

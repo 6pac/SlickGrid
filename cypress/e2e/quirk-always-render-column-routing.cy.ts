@@ -2,22 +2,21 @@
  * Regression test for off-viewport alwaysRenderColumn band routing.
  *
  * appendRowHtml has two cell-routing branches. The in-viewport branch routes by
- * column band (left fragment vs right fragment under a left freeze). The
+ * column band (pinned-left region vs scrolling region). The
  * OFF-VIEWPORT branch — taken when a column has scrolled out past the LEFT edge —
- * appended alwaysRenderColumn cells to the left fragment unconditionally. So an
- * alwaysRenderColumn column sitting RIGHT of the freeze rendered its off-viewport
- * cells into the clipped LEFT canvas: mispositioned/invisible, and its
+ * appended alwaysRenderColumn cells to the pinned-left region unconditionally.
+ * So an alwaysRenderColumn column sitting RIGHT of the pin rendered its
+ * off-viewport cells into the clipped left region: mispositioned/invisible, and its
  * cellNodesByColumnIdx entry mapped to a node in the wrong pane (editors, plugins
  * and getCellNode all consume that mapping).
  *
  * The spec is SELF-HOSTING: the harness is served from this file via cy.intercept
- * (no page is added to examples/). It freezes column 0, marks a middle scrollable
+ * (no page is added to examples/). It pins column 0, marks a middle scrollable
  * column alwaysRenderColumn, scrolls it off the left edge via the grid API, and
- * asserts the cell node lives in the RIGHT canvas. Verified to FAIL pre-fix
- * (node parented in .grid-canvas-left) and PASS with the fix.
+ * asserts the cell node remains in the scrolling region.
  */
 
-const ARC_COL = 5; // the alwaysRenderColumn column index (right of the freeze)
+const ARC_COL = 5; // the alwaysRenderColumn column index (right of the pinned band)
 
 const harnessHtml = `<!doctype html>
 <html lang="en">
@@ -48,7 +47,7 @@ const harnessHtml = `<!doctype html>
   var grid = new Slick.Grid('#myGrid', data, columns, {
     enableCellNavigation: true,
     enableColumnReorder: false,
-    frozenColumn: 0,          // column 0 frozen-left; ARC (index ${ARC_COL}) is in the RIGHT band
+    pinning: { columns: { left: 0 } }, // column 0 pinned-left; ARC stays in the scrolling band
     rowHeight: 25
   });
   window.grid = grid;
@@ -66,18 +65,17 @@ const harnessHtml = `<!doctype html>
     var node = grid.getCellNode(80, ARC);
     check('alwaysRenderColumn cell renders on a freshly-scrolled-in row', !!node, node ? 'present' : 'missing');
     if (node) {
-      var canvas = node.closest('.grid-canvas');
-      var inRight = !!canvas && canvas.classList.contains('grid-canvas-right');
-      check('off-viewport alwaysRenderColumn cell lives in the RIGHT canvas (its own band)',
-        inRight, 'canvas=' + (canvas ? canvas.className : 'none'));
+      var scrollingRegion = node.closest('.slick-scrolling-cells');
+      check('off-viewport alwaysRenderColumn cell lives in the scrolling region (its own band)',
+        !!scrollingRegion, 'region=' + (scrollingRegion ? scrollingRegion.className : 'none'));
     }
 
-    // control: the frozen-left column (index 0) of the same fresh row stays LEFT
-    var frozenNode = grid.getCellNode(80, 0);
-    var frozenCanvas = frozenNode && frozenNode.closest('.grid-canvas');
-    check('control: frozen-left column cell stays in the LEFT canvas',
-      !!frozenCanvas && frozenCanvas.classList.contains('grid-canvas-left'),
-      'canvas=' + (frozenCanvas ? frozenCanvas.className : 'none'));
+    // control: the pinned-left column (index 0) of the same fresh row stays LEFT
+    var pinnedNode = grid.getCellNode(80, 0);
+    var pinnedRegion = pinnedNode && pinnedNode.closest('.slick-pinned-left-cells');
+    check('control: pinned-left column cell stays in the pinned-left region',
+      !!pinnedRegion,
+      'region=' + (pinnedRegion ? pinnedRegion.className : 'none'));
 
     out.push(pass ? '\\nALL CHECKS PASSED' : '\\nCHECKS FAILED');
     document.getElementById('checkResults').textContent = out.join('\\n');
@@ -88,7 +86,7 @@ const harnessHtml = `<!doctype html>
 </html>`;
 
 describe('Quirk - off-viewport alwaysRenderColumn cells must render in their own column band', { retries: 1 }, () => {
-  it('should keep the always-rendered right-band cell in the right canvas when scrolled off-left', () => {
+  it('should keep the always-rendered scrolling-band cell in its region when scrolled off-left', () => {
     cy.intercept('GET', '/quirk-always-render-column-harness.html', {
       headers: { 'content-type': 'text/html' },
       body: harnessHtml,

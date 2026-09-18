@@ -1,4 +1,4 @@
-describe('Example - Variable Row Height with Frozen Columns/Rows', { retries: 1 }, () => {
+describe('Example - Variable Row Height with Pinned Columns/Rows', { retries: 1 }, () => {
   // must mirror the example page: every 13th row 70px, every 5th row 32px, else 25px
   const hOf = (r: number) => (r % 13 === 0) ? 70 : (r % 5 === 0) ? 32 : 25;
   const sum = (from: number, to: number) => {  // [from, to)
@@ -8,50 +8,61 @@ describe('Example - Variable Row Height with Frozen Columns/Rows', { retries: 1 
   };
 
   it('should display Example title', () => {
-    cy.visit(`${Cypress.config('baseUrl')}/examples/example-variable-row-height-frozen.html`);
-    cy.get('h2').contains('Variable row height + frozen panes');
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-variable-row-height-pinning.html`);
+    cy.get('h2').contains('Variable row height + pinning');
   });
 
-  it('should pass the in-page frozen geometry self-checks', () => {
-    cy.contains('button', 'Run frozen geometry self-checks').click();
+  it('should pass the in-page pinning geometry self-checks', () => {
+    cy.contains('button', 'Run pinning geometry self-checks').click();
     cy.get('#checkResults').should('contain', 'ALL CHECKS PASSED');
   });
 
-  it('should size grid B frozen pane to the sum of its frozen row heights', () => {
-    // rows 0..2 = 70 + 25 + 25 = 120
-    cy.get('#gridB .grid-canvas').first().invoke('css', 'height').then(h => {
-      expect(parseFloat(`${h}`)).to.be.closeTo(sum(0, 3), 1);
+  it('should use one shared canvas while preserving the configured pinning', () => {
+    cy.get('#gridA .grid-canvas').should('have.length', 1);
+    cy.get('#gridB .grid-canvas').should('have.length', 1);
+    cy.window().then(win => {
+      const { gridA, gridB } = win as any;
+      expect(gridA.getPinnedColumns('left')).to.have.length(2);
+      expect(gridB.getPinnedColumns('left')).to.have.length(2);
+      expect(gridB.getOptions().pinning.rows.top).to.have.length(3);
     });
   });
 
-  it('should reflow both column panes when a grid A row grows (invalidateRowHeights)', () => {
+  it('should reflow Grid A when a row grows (invalidateRowHeights)', () => {
     cy.contains('button', 'A: grow row 2').click();
-    // row 3 shifts down by the 10px added to row 2, in BOTH column panes
-    cy.get('#gridA .grid-canvas').eq(0).find('.slick-row[data-row=3]')
+    // Grid A uses one canvas; row 3 shifts by the 10px added to row 2.
+    cy.get('#gridA .grid-canvas').find('.slick-row[data-row=3]')
       .should('have.css', 'top', `${sum(0, 3) + 10}px`);
-    cy.get('#gridA .grid-canvas').eq(1).find('.slick-row[data-row=3]')
-      .should('have.css', 'top', `${sum(0, 3) + 10}px`);
-    cy.contains('button', 'Run frozen geometry self-checks').click();
+    cy.contains('button', 'Run pinning geometry self-checks').click();
     cy.get('#checkResults').should('contain', 'ALL CHECKS PASSED');
   });
 
-  it('should resize grid B frozen pane when a frozen row grows (invalidateRowHeights)', () => {
-    cy.contains('button', 'B: grow frozen row 0').click();
-    cy.get('#gridB .grid-canvas').first().invoke('css', 'height').then(h => {
-      expect(parseFloat(`${h}`)).to.be.closeTo(sum(0, 3) + 10, 1);
-    });
-    cy.contains('button', 'Run frozen geometry self-checks').click();
+  it('should resize Grid B when a pinned row grows (invalidateRowHeights)', () => {
+    cy.contains('button', 'B: grow pinned row 0').click();
+    cy.get('#gridB .slick-docking-overlay .slick-row[data-row=0]')
+      .invoke('outerHeight')
+      .should('be.closeTo', hOf(0) + 10, 1);
+    cy.contains('button', 'Run pinning geometry self-checks').click();
     cy.get('#checkResults').should('contain', 'ALL CHECKS PASSED');
   });
 
-  it('should scroll both panes to a far row (top) keeping pane agreement', () => {
+  it('should scroll both shared viewports to a far row while accounting for pinned rows', () => {
     cy.contains('button', 'Scroll both to row 300').click();
-    // scrollRowToTop lands row 300 as the first visible row in both grids' scrolling panes
-    cy.window().should(win => {
-      expect((win as any).gridA.getViewport().top).to.eq(300);
-      expect((win as any).gridB.getViewport().top).to.eq(300);
+    cy.window().then(win => {
+      const { gridA, gridB } = win as any;
+      const pinnedTopHeight = gridB.getOptions().pinning.rows.top.reduce(
+        (height: number, row: number) => height + gridB.getRowHeight(row),
+        0
+      );
+
+      cy.get('#gridA .slick-vertical-scroller').should($viewport => {
+        expect($viewport[0].scrollTop).to.be.closeTo(gridA.getRowTop(300), 2);
+      });
+      cy.get('#gridB .slick-vertical-scroller').should($viewport => {
+        expect($viewport[0].scrollTop).to.be.closeTo(gridB.getRowTop(300) - pinnedTopHeight, 2);
+      });
     });
-    cy.contains('button', 'Run frozen geometry self-checks').click();
+    cy.contains('button', 'Run pinning geometry self-checks').click();
     cy.get('#checkResults').should('contain', 'ALL CHECKS PASSED');
   });
 });

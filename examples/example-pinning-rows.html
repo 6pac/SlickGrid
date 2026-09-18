@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
-  <title>SlickGrid example: Frozen Rows</title>
+  <title>SlickGrid example: Pinned Rows</title>
   <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css" media="screen" charset="utf-8"/>
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
@@ -32,9 +32,9 @@
   </style>
 </head>
 <body>
-<h2 class="title">Example - Frozen Rows</h2>
+<h2 class="title">Example - Pinned Rows</h2>
 <div style="position:relative">
-<div id="gridContainer" style="width:600px;">
+<div id="gridContainer" style="width:900px;">
   <div class="grid-header" style="width:100%">
     <label>SlickGrid</label>
     <span style="float:right" class="ui-icon ui-icon-search" title="Toggle search panel"
@@ -44,7 +44,7 @@
   <div id="pager" style="width:100%;height:20px;"></div>
 </div>
 
-<div class="options-panel">
+<div class="options-panel" style="left:1200px; width:420px;">
   <h2>
     <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
     Search:
@@ -59,13 +59,12 @@
     <label style="width:200px;float:left">And title including:</label>
     <input type=text id="txtSearch" style="width:100px;">
     <br/><br/>
-    <label style="width:200px;float:left">Frozen Row:</label>
-    <input type=text id="frozenRow" style="width:60px;" value="5">
-    <button id="setFrozenRow">Set</button>
+    <label style="width:200px;float:left">Pinned Rows (top/bottom):</label>
+    <input type=text id="pinnedTopRows" style="width:45px;" value="2" title="Number of rows pinned at the top">
+    <input type=text id="pinnedBottomRows" style="width:45px;" value="1" title="Number of rows pinned at the bottom">
+    <button id="setRowPinning">Apply</button>
     <br>
-    <label style="width:200px;float:left">Frozen Bottom Rows:</label>
-    <input type=checkbox id="frozenBottomRows" style="width:58px;" checked=checked>
-    <button id="setFrozenBottomRows">Set</button>
+    <small>Rows stay pinned at the top or bottom while scrolling.</small>
     <br/><br/>
     <button id="btnSelectRows">Select first 10 rows</button>
 
@@ -114,10 +113,6 @@
 <script src="../dist/browser/controls/slick.columnpicker.js"></script>
 
 <script>
-document.addEventListener("DOMContentLoaded", function() {
-  document.querySelector('#frozenRow').value = options.frozenRow;
-});
-
 var dataView;
 var grid;
 var data = [];
@@ -145,8 +140,9 @@ var options = {
   forceFitColumns: false,
   autoEdit: false,
   topPanelHeight: 25,
-  frozenRow: 5,
-  frozenBottom: true,
+  pinning: {
+    rows: { top: [], bottom: [] }
+  },
   rowTopOffsetRenderType: 'transform' // defaults: 'top'
 };
 
@@ -179,6 +175,16 @@ function percentCompleteSort(a, b) {
 function comparer(a, b) {
   var x = a[sortcol], y = b[sortcol];
   return (x == y ? 0 : (x > y ? 1 : -1));
+}
+
+function getPinnedRowRefs(count, bottom) {
+  var rowCount = dataView ? dataView.getLength() : data.length;
+  var start = bottom ? Math.max(0, rowCount - count) : 0;
+  var refs = [];
+  for (var row = 0; row < count && start + row < rowCount; row++) {
+    refs.push(start + row);
+  }
+  return refs;
 }
 
 function addItem(newItem, columnDef) {
@@ -221,6 +227,11 @@ document.addEventListener("DOMContentLoaded", function() {
     d["title4"] = i;
   }
 
+  options.pinning.rows.top = getPinnedRowRefs(2, false);
+  options.pinning.rows.bottom = getPinnedRowRefs(1, true);
+  document.querySelector('#pinnedTopRows').value = options.pinning.rows.top.length;
+  document.querySelector('#pinnedBottomRows').value = options.pinning.rows.bottom.length;
+
   dataView = new Slick.Data.DataView();
   grid = new Slick.Grid("#myGrid", dataView, columns, options);
   grid.setSelectionModel(new Slick.RowSelectionModel());
@@ -229,14 +240,14 @@ document.addEventListener("DOMContentLoaded", function() {
   var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
 
   // move the filter panel defined in a hidden div into an inline secondary grid header row
-  var secondaryRowElm = grid.getTopPanels();
+  var secondaryRowElm = grid.getTopPanel();
 
   const filterLeftPanelElm = document.querySelector("#inlineFilterPanelL");
   const filterRightPanelElm = document.querySelector("#inlineFilterPanelR");
   filterLeftPanelElm.style.display = 'block';
   filterRightPanelElm.style.display = 'block';
-  secondaryRowElm[0].appendChild(filterLeftPanelElm);
-  secondaryRowElm[1].appendChild(filterRightPanelElm);
+  secondaryRowElm.appendChild(filterLeftPanelElm);
+  secondaryRowElm.appendChild(filterRightPanelElm);
 
   grid.onCellChange.subscribe(function (e, args) {
     dataView.updateItem(args.item.id, args.item);
@@ -308,9 +319,15 @@ document.addEventListener("DOMContentLoaded", function() {
   });
 
   dataView.onPagingInfoChanged.subscribe(function (e, pagingInfo) {
+    // This example explicitly disables the Add-New row. Do not let the
+    // show-all paging state re-enable it and leave an extra blank row below
+    // the pinned bottom rows.
+    var options = grid.getOptions();
+    if (options.enableAddRow === false)
+      return;
+
     var isLastPage = pagingInfo.pageSize * (pagingInfo.pageNum + 1) - 1 >= pagingInfo.totalRows;
     var enableAddRow = isLastPage || pagingInfo.pageSize == 0;
-    var options = grid.getOptions();
 
     if (options.enableAddRow != enableAddRow)
       grid.setOptions({enableAddRow: enableAddRow});
@@ -376,20 +393,18 @@ document.addEventListener("DOMContentLoaded", function() {
   dataView.setFilter(myFilter);
   dataView.endUpdate();
 
-  document.querySelector('#setFrozenRow').addEventListener('click', function () {
-    var val = -1;
+  document.querySelector('#setRowPinning').addEventListener('click', function () {
+    var topRowCount = Math.max(0, parseInt(document.querySelector('#pinnedTopRows').value) || 0);
+    var bottomRowCount = Math.max(0, parseInt(document.querySelector('#pinnedBottomRows').value) || 0);
 
-    if (document.querySelector('#frozenRow').value != '') {
-      val = parseInt(document.querySelector('#frozenRow').value);
-    }
-
-    grid.setOptions({ 'frozenRow': val });
-  });
-
-  document.querySelector('#setFrozenBottomRows').addEventListener('click', function () {
-    var val = document.querySelector('#frozenBottomRows').checked;
-
-    grid.setOptions({ 'frozenBottom': val });
+    grid.setOptions({
+      pinning: {
+        rows: {
+          top: getPinnedRowRefs(topRowCount, false),
+          bottom: getPinnedRowRefs(bottomRowCount, true)
+        }
+      }
+    });
   });
 });
 </script>

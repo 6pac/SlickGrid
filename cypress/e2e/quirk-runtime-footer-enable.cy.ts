@@ -67,8 +67,8 @@ const harnessHtml = `<!doctype html>
 
     if (enableError === null) {
       var scrollers = document.querySelectorAll('#myGrid .slick-footerrow');
-      check('footer scrollers exist and are visible',
-        scrollers.length === 2 && isVisible(scrollers[0]),
+      check('footer scroller exists and is visible',
+        scrollers.length === 1 && isVisible(scrollers[0]),
         'count=' + scrollers.length + ' visible=' + (scrollers.length ? isVisible(scrollers[0]) : '-'));
 
       var cells = document.querySelectorAll('#myGrid .slick-footerrow-column');

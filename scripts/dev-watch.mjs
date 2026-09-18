@@ -17,6 +17,10 @@ const argv = parseArgs({
   open: { type: 'boolean' },
 });
 
+const browserSyncHost = process.env.BROWSERSYNC_HOST || '127.0.0.1';
+const browserSyncPort = Number.parseInt(process.env.BROWSERSYNC_PORT || '8080', 10);
+const watchedFilePattern = /\.(?:js|ts|html|css|scss)$/i;
+
 /**
  * Dev script that will watch for files changed and run esbuild/sass for the file(s) that changed.
  * We use @parcel/watcher to watch source files and then run esbuild or SASS CLIs to build our supported formats (.js, .ts, .html, .css, .scss).
@@ -35,37 +39,38 @@ const argv = parseArgs({
    * Note: the watcher often send duplicate events, however the use of Set of file changes & the use of a setTimeout delay gets rid of this problem.
    */
   async function init() {
-    subscription = subscribe(process.cwd(), (err, events) => {
+    subscription = await subscribe(process.cwd(), (err, events) => {
       if (err) return onError(err);
 
       for (const event of events) {
-        const absoluteFilePath = relative(process.cwd(), event.path);
-        onFileChanged(absoluteFilePath);
+        const changedFilePath = relative(process.cwd(), event.path).replaceAll('\\', '/');
+        if (watchedFilePattern.test(changedFilePath)) {
+          onFileChanged(changedFilePath, event.type);
+        }
       }
     }, {
       ignore: [
         '**/.git/**',
         '**/dist/**',
         '**/cypress/**',
-        '**/node_modules/**',
-        '!**/*.{ts,js,html,css,scss}' // which file extensions to watch
+        '**/node_modules/**'
       ]
     });
 
     // also watch for any Signal termination to cleanly exit the watch command
     process.once('SIGINT', () => destroy());
     process.once('SIGTERM', () => destroy());
-    process.stdin.on('end', () => destroy());
-    process.stdin.on('exit', () => process.stdin.destroy());
-
     // run full prod build `/dist` and full SASS build
     if (!argv.serve) {
       await executeFullBuild();
-      buildAllSassFiles(); // start SASS build but no need to await it
+      await buildAllSassFiles();
     }
+    // The initial build above already built every IIFE file. Do not rebuild
+    // the entire IIFE set on the first subsequent source change.
+    initialBuild = false;
 
     // start browser-sync server
-    startBrowserSync();
+    await startBrowserSync();
   }
 
   /**
@@ -75,21 +80,35 @@ const argv = parseArgs({
   async function startBrowserSync() {
     bsync = browserSync.create();
 
-    bsync.init({
-      server: './',
-      port: 8080,
-      watchTask: true,
-      online: false,
-      open: argv.open,
-      startPath: 'examples/index.html',
-      snippetOptions: {
-        rule: {
-          match: /<\/head>/i,
-          fn: (snippet, match) => snippet.replace('id=', `nonce="browser-sync" id=`) + match
+    await new Promise((resolve, reject) => {
+      bsync.init({
+        server: './',
+        host: browserSyncHost,
+        port: browserSyncPort,
+        ui: false,
+        // File watching and rebuilds are handled by @parcel/watcher below.
+        // BrowserSync only serves the examples and receives explicit reloads.
+        watch: false,
+        online: false,
+        open: argv.open,
+        startPath: 'examples/index.html',
+        snippetOptions: {
+          rule: {
+            match: /<\/head>/i,
+            fn: (snippet, match) => snippet.replace('id=', `nonce="browser-sync" id=`) + match
+          }
         }
-      },
-    }, () => {
-      console.log('Use Ctrl+C to Quit');
+      }, (err) => {
+        if (err) {
+          const startupError = new Error(`BrowserSync could not start at http://${browserSyncHost}:${browserSyncPort}: ${err.message}`);
+          onError(startupError);
+          reject(startupError);
+          return;
+        }
+        console.log(`BrowserSync serving at http://${browserSyncHost}:${browserSyncPort}`);
+        console.log('Use Ctrl+C to Quit');
+        resolve();
+      });
     });
   }
 
@@ -103,13 +122,15 @@ const argv = parseArgs({
    * We add a setTimeout delay to throttle the callbacks to avoid calling the build too often.
    * @param {String} filepath - file path that changed
    */
-  function onFileChanged(filepath) {
+  function onFileChanged(filepath, eventType = 'update') {
     if (timer) {
       clearTimeout(timer);
     }
     changedFiles.add(filepath);
+    console.log(`[Watch] ${eventType}: ${filepath}`);
     timer = setTimeout(() => {
-      executeCommandCallback(Array.from(changedFiles).pop());
+      timer = 0;
+      void executeCommandCallback(Array.from(changedFiles).pop());
     }, 150);
   }
 
@@ -121,52 +142,53 @@ const argv = parseArgs({
     return false;
   }
 
-  function executeCommandCallback(filepath = '') {
-    return new Promise(async (resolve) => {
-      if (!processing) {
-        processing = true;
-        changedFiles.delete(filepath);
+  async function executeCommandCallback(filepath = '') {
+    if (processing) {
+      return;
+    }
 
-        if (filepath.endsWith('.js') || filepath.endsWith('.ts')) {
-          // 1. ESM requires is always a full build because it ends up being bundled into a single "index.js" file
-          await executeCjsEsmBuilds();
+    processing = true;
+    changedFiles.delete(filepath);
+    console.log(`[Watch] Rebuilding: ${filepath}`);
 
-          // 2. for iife format, we can rebuild each separate file (unless it's the initial build, if so execute a full rebuild)
-          await (initialBuild
-            ? buildAllIifeFiles()
-            : buildIifeFile(filepath)
-          );
-        } else if (filepath.endsWith('.css') || filepath.endsWith('.scss')) {
-          // CSS/SCSS files
-          if (filepath.endsWith('.scss')) {
-            await buildSassFile(filepath);
-          }
-        }
-        // ELSE, reaching outside of the conditions above (i.e.: .html)
-        // will simply perform the common action, of reloading all connected browsers
+    try {
+      if (filepath.endsWith('.js') || filepath.endsWith('.ts')) {
+        // 1. ESM requires a full build because it ends up bundled into a single "index.js" file.
+        await executeCjsEsmBuilds();
 
-        // in every case, we want to reload the web page
-        bsync.reload('*.html');
-        processing = false;
-        if (initialBuild) {
-          initialBuild = false;
-        }
-
-        // we might still have other packages that have changes though, so re-execute the command callback process if any were found
-        if (hasQueuedChanges()) {
-          executeCommandCallback(Array.from(changedFiles).pop());
-        }
+        // 2. IIFE files are built separately, so rebuild only the changed file.
+        await (initialBuild ? buildAllIifeFiles() : buildIifeFile(filepath));
+      } else if (filepath.endsWith('.scss')) {
+        await buildSassFile(filepath);
       }
-      resolve(true);
-    });
+
+    } catch (err) {
+      onError(err);
+    } finally {
+      // Always request a full browser reload after a change, including when a
+      // TypeScript rebuild reports an error. Passing a file pattern here would
+      // emit a file-change event rather than guarantee a page reload.
+      bsync?.reload();
+      console.log(`[Watch] Browser reload requested: ${filepath}`);
+      processing = false;
+      initialBuild = false;
+
+      // Process the latest queued change after the current build completes.
+      if (hasQueuedChanges()) {
+        void executeCommandCallback(Array.from(changedFiles).pop());
+      }
+    }
   }
 
   async function destroy() {
     console.log('Exiting the dev file watch...');
-    bsync.exit();
-    (await subscription).unsubscribe();
+    bsync?.exit();
+    await subscription?.unsubscribe();
   }
 
   // start dev watch process
-  init();
+  init().catch((err) => {
+    onError(err);
+    void destroy();
+  });
 })();

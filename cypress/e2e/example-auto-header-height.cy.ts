@@ -1,4 +1,14 @@
 describe('SlickGrid Auto Header Height', () => {
+    const headerSelector = '#myGrid .slick-header-left';
+    const durationResizeHandleSelector = `${headerSelector} .slick-header-column[data-id="duration"] .slick-resizable-handle`;
+
+    const applyPinning = () => {
+        cy.get('#pinnedColumn').clear().type('2');
+        cy.get('#setPinnedColumn').click();
+        cy.get('#pinnedRow').clear().type('5');
+        cy.get('#setPinnedRow').click();
+    };
+
     beforeEach(() => {
         cy.visit(`${Cypress.config('baseUrl')}/examples/example-auto-header-height.html`);
         cy.get('#myGrid .slick-viewport', { timeout: 1000 }).should('be.visible');
@@ -6,7 +16,7 @@ describe('SlickGrid Auto Header Height', () => {
 
     describe('Basic Functionality', () => {
         it('should auto-size the header when autoHeaderHeight is enabled by default', () => {
-            cy.get('#myGrid .slick-header-columns')
+            cy.get(headerSelector)
                 .should(($el) => {
                     expect($el[0].offsetHeight).to.be.greaterThan(35);
                 });
@@ -16,7 +26,7 @@ describe('SlickGrid Auto Header Height', () => {
             cy.get('#autoHeaderHeight').uncheck();
             cy.get('#setAutoHeaderHeight').click();
 
-            cy.get('.slick-header-columns').should(($el) => {
+            cy.get(headerSelector).should(($el) => {
                 const height = $el[0].offsetHeight;
                 expect(height).to.be.within(28, 34);
             });
@@ -36,7 +46,7 @@ describe('SlickGrid Auto Header Height', () => {
             cy.get('#autoHeaderHeight').uncheck();
             cy.get('#setAutoHeaderHeight').click();
 
-            cy.get('.slick-header-columns').should(($el) => {
+            cy.get(headerSelector).should(($el) => {
                 expect($el[0].offsetHeight).to.be.within(28, 34);
             });
 
@@ -44,107 +54,90 @@ describe('SlickGrid Auto Header Height', () => {
             cy.get('#setAutoHeaderHeight').click();
 
             // Verify header expanded again
-            cy.get('.slick-header-columns').should(($el) => {
+            cy.get(headerSelector).should(($el) => {
                 const height = $el[0].offsetHeight;
                 expect(height).to.be.greaterThan(35);
             });
         });
     });
 
-    describe('Frozen Columns & Rows Support', () => {
-        it('should equalize left and right header pane heights when frozen columns & rows exist', () => {
-            cy.get('#frozenColumn').clear().type('2');
-            cy.get('#setFrozenColumn').click();
+    describe('Pinned Columns & Rows Support', () => {
+        it('should keep all header columns at the same height when pinning is active', () => {
+            applyPinning();
 
-            cy.get('#frozenRow').clear().type('5');
-            cy.get('#setFrozenRow').click();
-
-            cy.get('.slick-header-left .slick-header-columns').then(($left) => {
-                cy.get('.slick-header-right .slick-header-columns').should(($right) => {
-                    const leftHeight = $left[0].offsetHeight;
-                    const rightHeight = $right[0].offsetHeight;
-
-                    // Heights should be equal (within 1px tolerance)
-                    expect(Math.abs(leftHeight - rightHeight)).to.be.lessThan(2);
-                });
+            cy.get(`${headerSelector} .slick-header-column`).should(($headers) => {
+                const heights = [...$headers].map((header) => header.getBoundingClientRect().height);
+                expect(Math.max(...heights) - Math.min(...heights)).to.be.lessThan(2);
             });
         });
 
-        it('should maintain correct header and container dimensions with frozen rows & columns', () => {
-            cy.get('#frozenColumn').clear().type('2');
-            cy.get('#setFrozenColumn').click();
+        it('should maintain correct header and container dimensions with pinned rows and columns', () => {
+            applyPinning();
 
-            cy.get('#frozenRow').clear().type('5');
-            cy.get('#setFrozenRow').click();
-
-            cy.get('.slick-header-columns').should(($header) => {
+            cy.get(headerSelector).should(($header) => {
                 expect($header[0].offsetHeight).to.be.greaterThan(0);
             });
-
-            cy.get('#myGrid').should(($grid) => {
-                expect($grid[0].scrollHeight).to.be.lte($grid[0].clientHeight + 1);
-            });
+            cy.get('#myGrid .slick-docking-overlay').should('exist');
+            cy.get('#myGrid .slick-docking-horizontal-scroller').should('exist');
         });
 
-        it('should not overflow container when frozen columns & rows are active', () => {
-            cy.get('#frozenColumn').clear().type('2');
-            cy.get('#setFrozenColumn').click();
+        it('should align the pinned overlay with the viewport and clip its overflow', () => {
+            applyPinning();
 
-            cy.get('#frozenRow').clear().type('5');
-            cy.get('#setFrozenRow').click();
-
-            cy.get('#myGrid').should(($grid) => {
-                const containerHeight = $grid[0].clientHeight;
-                const gridScrollHeight = $grid[0].scrollHeight;
-
-                expect(gridScrollHeight).to.be.lte(containerHeight + 1);
-            });
-        });
-
-        it('should maintain equal header heights after column resize with frozen columns & rows', () => {
-            cy.get('#frozenColumn').clear().type('2');
-            cy.get('#setFrozenColumn').click();
-
-            cy.get('#frozenRow').clear().type('5');
-            cy.get('#setFrozenRow').click();
-
-            cy.get('.slick-header-right .slick-header-columns')
-                .should('exist');
-
-            cy.get('.slick-resizable-handle').first().trigger('mousedown', { which: 1 });
-            cy.get('.slick-resizable-handle').first().trigger('mousemove', { clientX: 150, clientY: 0 });
-            cy.get('.slick-resizable-handle').first().trigger('mouseup', { force: true });
-
-            // Check that heights are still equal
-            cy.get('.slick-header-left .slick-header-columns').then(($left) => {
-                cy.get('.slick-header-right .slick-header-columns').should(($right) => {
-                    const leftHeight = $left[0].offsetHeight;
-                    const rightHeight = $right[0].offsetHeight;
-                    expect(Math.abs(leftHeight - rightHeight)).to.be.lessThan(2);
+            cy.get('#myGrid .slick-viewport').then(($viewport) => {
+                const viewportRect = $viewport[0].getBoundingClientRect();
+                cy.get('#myGrid .slick-docking-overlay').should(($overlay) => {
+                    const overlay = $overlay[0] as HTMLElement;
+                    const overlayRect = overlay.getBoundingClientRect();
+                    expect(overlayRect.left).to.be.closeTo(viewportRect.left, 1);
+                    expect(overlayRect.top).to.be.closeTo(viewportRect.top, 1);
+                    expect(overlayRect.height).to.be.closeTo(viewportRect.height, 1);
+                    // The overlay intentionally spans the full canvas, so its raw width may be
+                    // larger than the viewport. clip-path is the visible overflow boundary.
+                    expect(overlayRect.width).to.be.at.least(viewportRect.width);
+                    expect(overlay.style.clipPath).to.contain('inset(');
                 });
             });
+        });
+
+        it('should maintain equal header heights after column resize with pinned columns and rows', () => {
+            applyPinning();
+
+            cy.get(durationResizeHandleSelector).then(($handle) => {
+                const rect = $handle[0].getBoundingClientRect();
+                const pageX = rect.left + window.scrollX;
+                const pageY = rect.top + window.scrollY;
+                cy.wrap($handle)
+                    .trigger('mousedown', { which: 1, force: true, pageX, pageY })
+                    .trigger('mousemove', { which: 1, force: true, pageX: pageX + 30, pageY })
+                    .trigger('mouseup', { force: true });
+            });
+
+            cy.get(`${headerSelector} .slick-header-column`).should(($headers) => {
+                const heights = [...$headers].map((header) => header.getBoundingClientRect().height);
+                expect(Math.max(...heights) - Math.min(...heights)).to.be.lessThan(2);
+                });
         });
     });
 
     describe('Re-measure Triggers', () => {
         it('should recalculate header height on column resize end', () => {
             let initialHeight = 0;
-            cy.get('.slick-header-columns').should(($el) => {
+            cy.get(headerSelector).should(($el) => {
                 initialHeight = $el[0].offsetHeight;
             }).then(() => {
-                // "Duration Days" column is at index 2, its handle is at index 1 (since column 0 has no handle)
-                cy.get('.slick-resizable-handle:nth(1)').then(($handle) => {
+                cy.get(durationResizeHandleSelector).then(($handle) => {
                     const rect = $handle[0].getBoundingClientRect();
                     const pageX = rect.left + window.scrollX;
                     const pageY = rect.top + window.scrollY;
 
-                    cy.get('.slick-resizable-handle:nth(1)')
+                    cy.wrap($handle)
                         .trigger('mousedown', { which: 1, force: true, pageX, pageY })
                         .trigger('mousemove', { which: 1, force: true, pageX: pageX - 30, pageY })
                         .trigger('mouseup', { force: true });
                 });
 
-                cy.get('.slick-header-columns').should(($el) => {
+                cy.get(headerSelector).should(($el) => {
                     const newHeight = $el[0].offsetHeight;
                     // The "Duration Days" column only has 2 words, so shrinking it doesn't force a 3rd line
                     // The height should remain the same as the initial 2-line layout
@@ -155,22 +148,21 @@ describe('SlickGrid Auto Header Height', () => {
 
         it('should recalculate header height when expanding a multi-line column to single line', () => {
             let initialHeight = 0;
-            cy.get('.slick-header-columns').should(($el) => {
+            cy.get(headerSelector).should(($el) => {
                 initialHeight = $el[0].offsetHeight;
             }).then(() => {
-                // "Duration Days" column is at index 2, its handle is at index 1 (since column 0 has no handle)
-                cy.get('.slick-resizable-handle:nth(1)').then(($handle) => {
+                cy.get(durationResizeHandleSelector).then(($handle) => {
                     const rect = $handle[0].getBoundingClientRect();
                     const pageX = rect.left + window.scrollX;
                     const pageY = rect.top + window.scrollY;
 
-                    cy.get('.slick-resizable-handle:nth(1)')
+                    cy.wrap($handle)
                         .trigger('mousedown', { which: 1, force: true, pageX, pageY })
                         .trigger('mousemove', { which: 1, force: true, pageX: pageX + 100, pageY })
                         .trigger('mouseup', { force: true });
                 });
 
-                cy.get('.slick-header-columns').should(($el) => {
+                cy.get(headerSelector).should(($el) => {
                     const newHeight = $el[0].offsetHeight;
                     // Expanding the column should reduce from 2 lines to 1 line
                     expect(newHeight).to.be.lessThan(initialHeight);
@@ -202,13 +194,12 @@ describe('SlickGrid Auto Header Height', () => {
         it('should maintain grid functionality with autoHeaderHeight enabled', () => {
             const cellSelector = '.slick-row:first-child .slick-cell:first-child';
 
-            // Frozen panes can result in multiple matching cells.
             cy.get(cellSelector).first().click().should('have.class', 'active');
 
             // Scroll should still work.
-            cy.get('.slick-viewport-bottom').eq(1).scrollTo('bottom');
+            cy.get('#myGrid .slick-viewport').scrollTo('bottom');
 
-            cy.get('.slick-viewport-bottom').eq(1).should(($el) => {
+            cy.get('#myGrid .slick-viewport').should(($el) => {
                 expect($el[0].scrollTop).to.be.greaterThan(0);
             });
         });

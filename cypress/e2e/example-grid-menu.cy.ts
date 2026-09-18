@@ -114,7 +114,6 @@ describe('Example - Grid Menu', () => {
       .click({ force: true });
 
     cy.get('#myGrid')
-      .find('.slick-pane-left')
       .find('.slick-headerrow')
       .should('be.hidden');
   });
@@ -125,7 +124,6 @@ describe('Example - Grid Menu', () => {
       .click({ force: true });
 
     cy.get('#myGrid')
-      .find('.slick-pane-left')
       .find('.slick-headerrow')
       .should('be.visible');
   });
@@ -137,7 +135,6 @@ describe('Example - Grid Menu', () => {
       .click({ force: true });
 
     cy.get('#myGrid')
-      .find('.slick-pane-left')
       .find('.slick-top-panel-scroller')
       .should('be.visible');
   });
@@ -148,7 +145,6 @@ describe('Example - Grid Menu', () => {
       .click({ force: true });
 
     cy.get('#myGrid')
-      .find('.slick-pane-left')
       .find('.slick-top-panel-scroller')
       .should('be.hidden');
   });
@@ -227,7 +223,6 @@ describe('Example - Grid Menu', () => {
       .should('exist');
 
     cy.get('#myGrid')
-      .find('.slick-pane-left')
       .find('.slick-headerrow')
       .should('not.be.hidden');
 
@@ -255,7 +250,6 @@ describe('Example - Grid Menu', () => {
       .click({ force: true });
 
     cy.get('#myGrid')
-      .find('.slick-pane-left')
       .find('.slick-headerrow')
       .should('be.hidden');
   });

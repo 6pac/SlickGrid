@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
-  <title>SlickGrid Example: Spreadsheet with Frozen Rows and Columns</title>
+  <title>SlickGrid Example: Spreadsheet with Pinned Rows and Columns</title>
   <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
@@ -23,7 +23,7 @@
   </style>
 </head>
 <body>
-<h2 class="title">Example - Frozen Columns & Row Spreadsheet</h2>
+<h2 class="title">Example - Pinned Columns & Row Spreadsheet</h2>
 <div style="position:relative">
   <div style="width:600px;">
     <div id="myGrid" class="slick-container" style="width:100%;height:500px;"></div>
@@ -75,7 +75,11 @@
     enableAddRow: true,
     enableCellNavigation: true,
     asyncEditorLoading: false,
-    autoEdit: false, frozenColumn: 3, frozenRow: 7
+    autoEdit: false,
+    pinning: {
+      columns: { left: 3 },
+      rows: { top: [0, 1, 2, 3, 4, 5, 6] }
+    }
   };
 
   var columns = [

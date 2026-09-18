@@ -3,12 +3,12 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
-  <title>SlickGrid example: Frozen Columns</title>
-  <link rel="stylesheet" href="../dist/styles/css/slick.grid.css" type="text/css" media="screen" charset="utf-8"/>
-  <link rel="stylesheet" href="../dist/styles/css/slick.pager.css" type="text/css" media="screen" charset="utf-8"/>
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/themes/smoothness/jquery-ui.min.css" />
-  <link rel="stylesheet" href="examples.css" type="text/css" media="screen" charset="utf-8"/>
+  <title>SlickGrid example: Pinned Columns</title>
   <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css" media="screen" charset="utf-8"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/flatpickr/dist/flatpickr.min.css">
   <style>
     .cell-title {
       font-weight: bold;
@@ -30,87 +30,79 @@
     .slick-row.selected .cell-selection {
       background-color: transparent; /* show default selected row background */
     }
+
+    .slick-column-pinned-left-edge {
+      border-right: 1.5px dotted darkblue !important;
+    }
   </style>
 </head>
 <body>
-<h2 class="title">Example - Frozen Columns inside jQuery Tabs</h2>
-<div id="tabs">
-  <ul>
-    <li><a href="#tabs-1">Tab 1</a></li>
-    <li><a href="#tabs-2">Tab 2</a></li>
-    <li><a href="#tabs-3">Tab 3</a></li>
-  </ul>
-  <div id="tabs-1">
-    <div style="width:600px;">
-      <div class="grid-header" style="width:100%">
-        <label>SlickGrid</label>
-        <span style="float:right" class="ui-icon ui-icon-search" title="Toggle search panel"
-              onclick="toggleFilterRow()"></span>
-      </div>
-      <div id="myGrid" class="slick-container" style="width:100%;height:350px;"></div>
-      <div id="pager" style="width:100%;height:20px;"></div>
-    </div>
-    <div class="options-panel">
-      <h2>
-        <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
-        Search:
-      </h2>
-      <div style="padding:6px;">
-        <label style="width:200px;float:left">Show tasks with % at least: </label>
-
-        <div style="padding:2px;">
-          <div style="width:100px;display:inline-block;" id="pcSlider"></div>
-        </div>
-        <br/>
-        <label style="width:200px;float:left">And title including:</label>
-        <input type=text id="txtSearch" style="width:100px;">
-        <br/><br/>
-        <label style="width:200px;float:left">Frozen Column:</label>
-        <input type=text id="frozenColumn" style="width:60px;" value=-1>
-        <button id="setFrozenColumn">Set</button>
-        <br/><br/>
-        <button id="btnSelectRows">Select first 10 rows</button>
-
-        <br/>
-
-        <h2>Demonstrates:</h2>
-        <ul>
-          <li>a filtered Model (DataView) as a data source instead of a simple array</li>
-          <li>grid reacting to model events (onRowCountChanged, onRowsChanged)</li>
-          <li>
-            <b>FAST</b> DataView recalculation and <b>real-time</b> grid updating in response to data changes.<br/>
-            The grid holds <b>50'000</b> rows, yet you are able to sort, filter, scroll, navigate and edit as if it had
-            50 rows.
-          </li>
-          <li>adding new rows, bidirectional sorting</li>
-          <li>column options: cannotTriggerInsert</li>
-          <li>events: onCellChange, onAddNewRow, onKeyDown, onSelectedRowsChanged, onSort</li>
-          <li><font color=red>NOTE:</font> all filters are immediately applied to new/edited rows</li>
-          <li>Handling row selection against model changes.</li>
-          <li>Paging.</li>
-          <li>inline filter panel</li>
-        </ul>
-      </div>
-    </div>
+<h2 class="title">Example 4 - Pinned Columns</h2>
+<div style="position:relative">
+<div style="width:600px;">
+  <div class="grid-header" style="width:100%">
+    <label>SlickGrid</label>
+    <span style="float:right;margin:0px 4px auto 6px;background:transparent;cursor:pointer;" class="slick-icon-search" title="Toggle search panel"
+          onclick="toggleFilterRow()"></span>
   </div>
-  <div id="tabs-2">
-  </div>
-  <div id="tabs-3">
+  <div id="myGrid" class="slick-container" style="width:100%;height:350px;"></div>
+  <div id="pager" style="width:100%;height:20px;"></div>
+</div>
+
+<div class="options-panel">
+  <h2>
+    <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+    Search:
+  </h2>
+  <div style="padding:6px;">
+    <label style="width:200px;float:left">Show tasks with % at least: </label>
+
+    <div style="padding:2px;">
+      <input style="width:100px;display:inline-block;" id="pcSlider" type="range" min="1" max="100" value="1">
+    </div>
+    <br/>
+    <label style="width:200px;float:left">And title including:</label>
+    <input type=text id="txtSearch" style="width:100px;">
+    <br/><br/>
+    <label style="width:200px;float:left">Pinned Column Boundary:</label>
+    <input type=text id="pinnedColumn" style="width:60px;" value="-1">
+    <button id="setPinnedColumn">Set</button>
+    <br/><br/>
+    <button id="btnSelectRows">Select first 10 rows</button>
+    <button onclick="highlightSecondRow()">Highlight 2nd Row (750ms)</button>
+
+    <br/>
+
+    <h2>Demonstrates:</h2>
+    <ul>
+      <li>a filtered Model (DataView) as a data source instead of a simple array</li>
+      <li>grid reacting to model events (onRowCountChanged, onRowsChanged)</li>
+      <li>
+        <b>FAST</b> DataView recalculation and <b>real-time</b> grid updating in response to data changes.<br/>
+        The grid holds <b>50'000</b> rows, yet you are able to sort, filter, scroll, navigate and edit as if it had 50
+        rows.
+      </li>
+      <li>adding new rows, bidirectional sorting</li>
+      <li>column options: cannotTriggerInsert</li>
+      <li>events: onCellChange, onAddNewRow, onKeyDown, onSelectedRowsChanged, onSort</li>
+      <li><font color=red>NOTE:</font> all filters are immediately applied to new/edited rows</li>
+      <li>Handling row selection against model changes.</li>
+      <li>Paging.</li>
+      <li>inline filter panel</li>
+    </ul>
   </div>
 </div>
-<div style="position:relative"></div>
 
-<div id="inlineFilterPanelL" style="display:none;background:#dddddd;padding:3px;color:black;">
+<div id="inlineFilterPanelL" style="display:none;background:#dddddd;color:black;">
   Show tasks with title including <input type="text" id="txtSearch2">
 </div>
 
-<div id="inlineFilterPanelR" style="display:none;background:#dddddd;padding:6px;color:black;">
+<div id="inlineFilterPanelR" style="display:none;background:#dddddd;color:black;">
   and % at least &nbsp;
-  <div style="width:100px;display:inline-block;" id="pcSlider2"></div>
+  <input style="width:100px;display:inline-block;" id="pcSlider2" type="range" min="1" max="100" value="1">
 </div>
 
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.7.0/jquery.min.js"></script>
-<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.13.2/jquery-ui.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
 
 <script src="../dist/browser/slick.core.js"></script>
@@ -124,8 +116,8 @@
 <script src="../dist/browser/controls/slick.columnpicker.js"></script>
 
 <script>
-$(function () {
-  $('#frozenColumn').val(options.frozenColumn);
+document.addEventListener("DOMContentLoaded", function() {
+  document.querySelector('#pinnedColumn').value = options.pinning.columns.left;
 });
 
 var dataView;
@@ -142,9 +134,9 @@ var columns = [
   ,
   {id: "%", name: "% Complete", field: "percentComplete", width: 95, resizable: false, formatter: Slick.Formatters.PercentComplete, editor: Slick.Editors.PercentComplete, sortable: true}
   ,
-  {id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Date, sortable: true}
+  {id: "start", name: "Start", field: "start", minWidth: 60, editor: Slick.Editors.Flatpickr, sortable: true}
   ,
-  {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Date, sortable: true}
+  {id: "finish", name: "Finish", field: "finish", minWidth: 60, editor: Slick.Editors.Flatpickr, sortable: true}
   ,
   {id: "effort-driven", name: "Effort Driven", width: 90, minWidth: 20, maxWidth: 90, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.YesNo, editor: Slick.Editors.YesNoSelect, cannotTriggerInsert: true, sortable: true}
   ,
@@ -158,7 +150,8 @@ var columns = [
 ];
 
 var options = {
-  editable: true, enableAddRow: true, enableCellNavigation: true, asyncEditorLoading: true, forceFitColumns: false, autoEdit: false, topPanelHeight: 25, frozenColumn: 2, frozenRow: 2
+  editable: true, enableAddRow: true, enableCellNavigation: true, asyncEditorLoading: true, forceFitColumns: false, autoEdit: false, topPanelHeight: 25,
+  pinning: { columns: { left: 2 } }
 };
 
 var sortcol = "title";
@@ -194,26 +187,30 @@ function comparer(a, b) {
 
 function addItem(newItem, columnDef) {
   var item = {"num": data.length, "id": "new_" + (Math.round(Math.random() * 10000)), "title": "New task", "duration": "1 day", "percentComplete": 0, "start": "01/01/2009", "finish": "01/01/2009", "effortDriven": false};
-  $.extend(item, newItem);
+  Slick.Utils.extend(item, newItem);
   dataView.addItem(item);
 }
 
+function highlightSecondRow() {
+  grid.highlightRow(1, 750);
+}
 
 function toggleFilterRow() {
   grid.setTopPanelVisibility(!grid.getOptions().showTopPanel);
 }
 
-
-$(".grid-header .ui-icon")
-  .addClass("ui-state-default ui-corner-all")
-  .mouseover(function (e) {
-    $(e.target).addClass("ui-state-hover")
-  })
-  .mouseout(function (e) {
-    $(e.target).removeClass("ui-state-hover")
+const gridHeaderElm = document.querySelector(".grid-header .ui-icon");
+if (gridHeaderElm) {
+  gridHeaderElm.classList.add("ui-state-default", "ui-corner-all");
+  gridHeaderElm.addEventListener('mouseover', function (e) {
+    e.target.classList.add("ui-state-hover");
   });
+  gridHeaderElm.addEventListener('mouseout', function (e) {
+    e.target.classList.remove("ui-state-hover");
+  });
+}
 
-$(function () {
+document.addEventListener("DOMContentLoaded", function() {
   // prepare the data
   for (var i = 0; i < 50000; i++) {
     var d = (data[i] = {});
@@ -237,20 +234,18 @@ $(function () {
   grid = new Slick.Grid("#myGrid", dataView, columns, options);
   grid.setSelectionModel(new Slick.RowSelectionModel());
 
-  var pager = new Slick.Controls.Pager(dataView, grid, $("#pager"));
+  var pager = new Slick.Controls.Pager(dataView, grid, "#pager");
   var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
 
 
   // move the filter panel defined in a hidden div into an inline secondary grid header row
-  var $secondaryRow = grid.getTopPanel();
-
-  $("#inlineFilterPanelL")
-    .appendTo($secondaryRow[0])
-    .show();
-
-  $("#inlineFilterPanelR")
-    .appendTo($secondaryRow[1])
-    .show();
+  var secondaryRows = grid.getTopPanels();
+  const filterLeftPanel = document.querySelector("#inlineFilterPanelL");
+  const filterRightPanel = document.querySelector("#inlineFilterPanelR");
+  filterLeftPanel.style.display = 'block';
+  filterRightPanel.style.display = 'block';
+  secondaryRows[0].appendChild(filterLeftPanel);
+  secondaryRows[1].appendChild(filterRightPanel);
 
   grid.onCellChange.subscribe(function (e, args) {
     dataView.updateItem(args.item.id, args.item);
@@ -258,7 +253,7 @@ $(function () {
 
   grid.onAddNewRow.subscribe(function (e, args) {
     var item = {"num": data.length, "id": "new_" + (Math.round(Math.random() * 10000)), "title": "New task", "duration": "1 day", "percentComplete": 0, "start": "01/01/2009", "finish": "01/01/2009", "effortDriven": false};
-    $.extend(item, args.item);
+    Slick.Utils.extend(item, args.item);
     dataView.addItem(item);
   });
 
@@ -346,33 +341,42 @@ $(function () {
   var h_runfilters = null;
 
   // wire up the slider to apply the filter to the model
-  $("#pcSlider,#pcSlider2").slider({
-    "range": "min",
-    "slide": function (event, ui) {
-      Slick.GlobalEditorLock.cancelCurrentEdit();
+  var slider = document.getElementById("pcSlider");
+  var slider2 = document.getElementById("pcSlider2");
+  var sliderCallback = function() {
+    Slick.GlobalEditorLock.cancelCurrentEdit();
 
-      if (percentCompleteThreshold != ui.value) {
-        window.clearTimeout(h_runfilters);
-        h_runfilters = window.setTimeout(() => dataView.refresh(), 10);
-        percentCompleteThreshold = ui.value;
-      }
+    if (percentCompleteThreshold != this.value) {
+      window.clearTimeout(h_runfilters);
+      h_runfilters = window.setTimeout(() => dataView.refresh(), 10);
+      percentCompleteThreshold = this.value;
     }
-  });
+  }
 
+  slider.oninput = sliderCallback;
+  slider2.oninput = sliderCallback;
 
   // wire up the search textbox to apply the filter to the model
-  $("#txtSearch,#txtSearch2").keyup(function (e) {
+  document.querySelectorAll("#txtSearch,#txtSearch2").forEach(elm => elm.addEventListener('keyup', (e) => {
     Slick.GlobalEditorLock.cancelCurrentEdit();
 
     // clear on Esc
-    if (e.which == 27)
-      this.value = "";
+    if (e.which == 27) e.target.value = '';
 
-    searchString = this.value;
+    searchString = (e.target.value || '').trim();
+    updateFilter();
     dataView.refresh();
-  });
+  }));
 
-  $("#btnSelectRows").click(function () {
+  function updateFilter() {
+    dataView.setFilterArgs({
+      percentCompleteThreshold: percentCompleteThreshold,
+      searchString: searchString
+    });
+    dataView.refresh();
+  }
+
+  document.querySelector('#btnSelectRows').addEventListener('click', function () {
     if (!Slick.GlobalEditorLock.commitCurrentEdit()) {
       return;
     }
@@ -388,29 +392,29 @@ $(function () {
     grid.setSelectedRows(rows);
   });
 
-
   // initialize the model after all the events have been hooked up
   dataView.beginUpdate();
   dataView.setItems(data);
   dataView.setFilter(myFilter);
   dataView.endUpdate();
 
-  $("#gridContainer").resizable();
-
-  $('#setFrozenColumn').click(function () {
+  document.querySelector('#setPinnedColumn').addEventListener('click', function () {
     var val = -1;
 
-    if ($('#frozenColumn').val() != '') {
-      val = parseInt($('#frozenColumn').val());
+    if (document.querySelector('#pinnedColumn').value != '') {
+      val = parseInt(document.querySelector('#pinnedColumn').value);
     }
 
-    grid.setOptions({ 'frozenColumn': val });
+    grid.setOptions({
+      pinning: {
+        columns: {
+          left: val >= 0 ? val : []
+        }
+      }
+    });
   });
 })
 
-$(function () {
-  $("#tabs").tabs();
-});
 </script>
 
 </body>
