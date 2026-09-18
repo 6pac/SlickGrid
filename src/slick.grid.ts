@@ -1698,18 +1698,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   protected createColumnFooter(): void {
     if (this._options.createFooterRow) {
-      this._footerRow.forEach((footer) => {
-        const columnElements = footer.querySelectorAll('.slick-footerrow-column');
-        columnElements.forEach((column) => {
-          const columnDef = Utils.storage.get(column, 'column');
-          this.triggerEvent(this.onBeforeFooterRowCellDestroy, {
-            node: column,
-            column: columnDef,
-            grid: this,
-          });
-        });
-      });
-
+      // The region set/reset helpers announce every existing footer cell
+      // (onBeforeFooterRowCellDestroy) before emptying the root.
       if (this.usesDockingChromeRegions()) {
         this.dockingFooterRowRegions = this.createDockingChromeRegionSet(this._footerRowL, 'slick-footerrow-columns');
       } else {
@@ -1878,20 +1868,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   protected createColumnHeaders(): void {
     this._bindingEventService.unbindAll('colheaders');
-    this._headers.forEach((header) => {
-      const columnElements = header.querySelectorAll('.slick-header-column');
-      columnElements.forEach((column) => {
-        const columnDef = Utils.storage.get(column, 'column');
-        if (columnDef) {
-          this.triggerEvent(this.onBeforeHeaderCellDestroy, {
-            node: column,
-            column: columnDef,
-            grid: this,
-          });
-        }
-      });
-    });
 
+    // The region set/reset helpers announce every existing header and header-row cell
+    // (onBeforeHeaderCellDestroy / onBeforeHeaderRowCellDestroy) before emptying the roots.
     if (this.hasConfiguredColumnDocking()) {
       this.dockingHeaderRegions = this.createDockingChromeRegionSet(this._headerL, 'slick-header-columns');
       this.dockingHeaderRowRegions = this.createDockingChromeRegionSet(this._headerRowL, 'slick-headerrow-columns');
@@ -1904,20 +1883,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.getHeadersWidth();
 
     Utils.width(this._headerL, this.getDockingChromeRootWidth());
-
-    this._headerRows.forEach((row) => {
-      const columnElements = row.querySelectorAll('.slick-headerrow-column');
-      columnElements.forEach((column) => {
-        const columnDef = Utils.storage.get(column, 'column');
-        if (columnDef) {
-          this.triggerEvent(this.onBeforeHeaderRowCellDestroy, {
-            node: this,
-            column: columnDef,
-            grid: this,
-          });
-        }
-      });
-    });
 
     for (let i = 0, ln = this.columns.length; i < ln; i++) {
       const m: C = this.columns[i];
@@ -10058,6 +10023,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     className: 'slick-header-columns' | 'slick-headerrow-columns' | 'slick-footerrow-columns',
     side: 'left' | 'right'
   ): void {
+    this.notifyChromeCellsDestroy(root, className);
     Utils.emptyElement(root);
     root.classList.remove('slick-docking-chrome', `${className}-root`, `${className}-center`, `${className}-right`, `${className}-left`);
     root.classList.add(`${className}-${side}`);
@@ -10065,10 +10031,41 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /** Creates the left, center, and right descendants used by a docking chrome root. */
+  /**
+   * Fires the matching `onBefore*CellDestroy` event for every chrome cell still present in a
+   * header, header-row or footer root. Called by the region helpers right before they empty
+   * the root, so the events fire on the initial build, on lazy docking activation and on
+   * deactivation alike.
+   */
+  protected notifyChromeCellsDestroy(
+    root: HTMLDivElement,
+    className: 'slick-header-columns' | 'slick-headerrow-columns' | 'slick-footerrow-columns'
+  ): void {
+    const cellSelector =
+      className === 'slick-header-columns'
+        ? '.slick-header-column'
+        : className === 'slick-headerrow-columns'
+          ? '.slick-headerrow-column'
+          : '.slick-footerrow-column';
+    const destroyEvent =
+      className === 'slick-header-columns'
+        ? this.onBeforeHeaderCellDestroy
+        : className === 'slick-headerrow-columns'
+          ? this.onBeforeHeaderRowCellDestroy
+          : this.onBeforeFooterRowCellDestroy;
+    root.querySelectorAll<HTMLElement>(cellSelector).forEach((cell) => {
+      const columnDef = Utils.storage.get(cell, 'column');
+      if (columnDef) {
+        this.triggerEvent(destroyEvent, { node: cell, column: columnDef, grid: this });
+      }
+    });
+  }
+
   protected createDockingChromeRegionSet(
     root: HTMLDivElement,
     className: 'slick-header-columns' | 'slick-headerrow-columns' | 'slick-footerrow-columns'
   ): Record<ColumnDockingBand, HTMLDivElement> {
+    this.notifyChromeCellsDestroy(root, className);
     Utils.emptyElement(root);
     // Keep bands as direct root children so the legacy chrome selector contract remains usable.
     root.classList.remove(className, `${className}-left`, `${className}-right`);
