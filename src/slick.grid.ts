@@ -10281,7 +10281,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (!column || !this.pinningColumnsState.has(column.id)) {
         return;
       }
-      column.pinned = this.pinningColumnsState.get(column.id) ?? null;
+      const originalPinned = this.pinningColumnsState.get(column.id) ?? null;
+      // Multiple grids may intentionally share the same column definitions.
+      // If an earlier grid already removed the declarative pin, do not restore
+      // this grid's stale snapshot and re-pin the shared column on clear.
+      column.pinned = column.pinned === null && originalPinned !== null ? null : originalPinned;
       this.pinningColumnsState.delete(column.id);
     });
   }
