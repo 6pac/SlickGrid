@@ -6506,10 +6506,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {number} row - The row index to clean up.
    */
   protected cleanUpCells(range: CellViewportRange, row: number): void {
-    if (this.isPinnedRowIdx(row)) {
-      return;
-    }
-
     const cacheEntry = this.rowsCache[row];
 
     // Remove cells outside the range.
@@ -6593,7 +6589,19 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       firstColumnIndex = this.getFirstColumnIndexAtOrAfter(range.leftPx);
     }
 
+    // Docked rows are rendered outside the vertical range, but their centre cells are
+    // virtualized against the same horizontal range as every other row.
+    const rowsToProcess: number[] = [];
     for (let row = range.top as number, btm = range.bottom as number; row <= btm; row++) {
+      rowsToProcess.push(row);
+    }
+    for (const entry of [...this.rowDockingLayout.top, ...this.rowDockingLayout.bottom]) {
+      if (entry.index < (range.top as number) || entry.index > (range.bottom as number)) {
+        rowsToProcess.push(entry.index);
+      }
+    }
+
+    for (const row of rowsToProcess) {
       cacheEntry = this.rowsCache[row];
       if (cacheEntry) {
         // cellRenderQueue populated in renderRows() needs to be cleared first
