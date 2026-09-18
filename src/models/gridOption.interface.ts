@@ -152,14 +152,11 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   enableGridMenu?: boolean;
   enableRowDetailView?: boolean;
   enableFormattedDataCache?: boolean;
-  enableExcelCopyBuffer?: boolean;
   silenceWarnings?: boolean;
   selectionOptions?: any;
   datasetIdPropertyName?: string;
   rowDetailView?: any;
   columnResizingDelay?: number;
-  autoScrollResizeLeftDelay?: number;
-  autoScrollResizeRightDelay?: number;
 
   /** Defaults to false, when enabled will give the possibility to edit cell values with inline editors. */
   editable?: boolean;

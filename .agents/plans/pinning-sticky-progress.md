@@ -2,6 +2,12 @@
 
 Last updated: 2026-09-15 (Firefox/Linux overlay-scrollbar findings and visual fixes, profiler-guided scroll-offset optimization, minCenterRowCount resize fix, and user-confirmed green Vanilla/framework Cypress CI)
 
+> Repository status: this file is a historical implementation log adapted from another
+> SlickGrid repository. Its framework-specific coverage counts, migration claims, and
+> examples do not describe this flat repository. The current API and verification status are
+> documented in `docs/pinning-sticky.md`; use the local `src/` and `cypress/e2e/` trees as the
+> source of truth.
+
 ## Repository adaptation note
 
 This progress record was copied from the multi-package fork and retains its historical framework
@@ -67,7 +73,8 @@ left pinning, while `pinning.columns.right` accepts a count from the trailing
 edge. Either side also accepts arrays of stable column ids/indexes for
 non-contiguous pinning. An inclusive v11-and-lower boundary is written as
 `pinning.columns.left: 2`; users do not need to expand it into an index array.
-Legacy option names are documented only in the v11 migration guide.
+The removed legacy `frozen*` option names are not part of this major version. Use the nested
+`pinning` option instead.
 There is no separate `pinnedColumn` or `pinnedRows` grid option; those temporary
 aliases were removed after the canonical shape was wired through core and state.
 The implementation does not target compatibility with the old pane-based UX.
@@ -764,7 +771,7 @@ context only.
 
 Core implementation:
 
-- `src/docking.controller.ts` — shared docking resolver.
+- `src/slick.core.ts` — shared docking resolver.
 - `src/slick.grid.ts` — single live viewport, stable header/body regions,
   per-row pin/sticky routing, scrolling, row caching, runtime API, validation, and hit-testing fixes.
 - `src/slick.grid.ts` — grouped/pre-header titles and header coordinates.

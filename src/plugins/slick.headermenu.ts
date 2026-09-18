@@ -519,7 +519,6 @@ export class SlickHeaderMenu implements SlickPlugin {
       : buttonElm as HTMLElement;
 
     const btnOffset = Utils.offset(buttonElm);
-    const gridPos = this._grid.getGridPosition();
     const menuWidth = menuElm.offsetWidth;
     const menuOffset = Utils.offset(this._menuElm!);
     const parentOffset = Utils.offset(parentElm);
@@ -532,12 +531,9 @@ export class SlickHeaderMenu implements SlickPlugin {
     // if there isn't enough space on the right, it will automatically align the drop menu to the left
     // to simulate an align left, we actually need to know the width of the drop menu
     if (isSubMenu && parentElm) {
-      let subMenuPosCalc = menuOffsetLeft + Number(menuWidth); // calculate coordinate at caller element far right
-      if (isSubMenu) {
-        subMenuPosCalc += parentElm.clientWidth;
-      }
-      const browserWidth = document.documentElement.clientWidth;
-      const dropSide = (subMenuPosCalc >= gridPos.width || subMenuPosCalc >= browserWidth) ? 'left' : 'right';
+      const viewportRight = (window.pageXOffset || document.documentElement.scrollLeft || 0) + document.documentElement.clientWidth;
+      const subMenuRight = menuOffsetLeft + parentElm.clientWidth + Number(menuWidth);
+      const dropSide = subMenuRight > viewportRight ? 'left' : 'right';
       if (dropSide === 'left') {
         menuElm.classList.remove('dropright');
         menuElm.classList.add('dropleft');
@@ -550,7 +546,8 @@ export class SlickHeaderMenu implements SlickPlugin {
         }
       }
     } else {
-      if (menuOffsetLeft + menuElm.offsetWidth >= gridPos.width) {
+      const viewportRight = (window.pageXOffset || document.documentElement.scrollLeft || 0) + document.documentElement.clientWidth;
+      if (menuOffsetLeft + menuElm.offsetWidth >= viewportRight) {
         menuOffsetLeft = menuOffsetLeft + buttonElm.clientWidth - menuElm.clientWidth + (this._options.autoAlignOffset || 0);
       }
       menuOffsetLeft -= menuOffset?.left ?? 0;

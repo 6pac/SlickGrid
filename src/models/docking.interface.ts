@@ -76,7 +76,7 @@ export interface DockingOption {
   /** How sticky candidates are reduced when their pixel budget is exhausted. Defaults to `conveyor`. */
   overflowStrategy?: DockingOverflowStrategy;
 
-  /** Pixel hysteresis used before changing a sticky item's docked state. Defaults to 2. */
+  /** Pixel activation buffer used when resolving sticky columns. Defaults to 2; this is not temporal stateful hysteresis. */
   stickyHysteresis?: number;
 }
 

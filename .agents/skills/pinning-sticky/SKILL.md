@@ -46,7 +46,7 @@ or framework-specific demo packages belong to the source fork and are not local 
 When changing this feature:
 
 1. Check the local interfaces and implementation first:
-   `src/models/`, `src/slick.grid.ts`, `src/docking.controller.ts`, and
+   `src/models/`, `src/slick.grid.ts`, `src/slick.core.ts`, and
    `src/styles/_slick-docking.scss`.
 2. Check the local documentation entry points, `docs/README.md` and `docs/TOC.md`. The
    fork-specific `docs/grid-functionalities/*` and `docs/migrations/*` pages are not present in

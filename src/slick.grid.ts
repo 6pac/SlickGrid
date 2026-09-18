@@ -136,9 +136,6 @@ const DragExtendHandle = IIFE_ONLY ? Slick.DragExtendHandle : DragExtendHandle_;
 const DockingController = IIFE_ONLY ? Slick.DockingController : DockingController_;
 
 const DEFAULT_DOCKING_SCROLLBAR_HEIGHT = 15;
-const DEFAULT_DOCKING_OVERLAY_SCROLLBAR_WIDTH = 8;
-const RESIZE_AUTOSCROLL_BROWSER_EDGE_LEFT_DELAY_MS = 300;
-const RESIZE_AUTOSCROLL_BROWSER_EDGE_RIGHT_DELAY_MS = 1200;
 
 type FormattedDataCachePlanner = any;
 type TrustedHTML = string;
@@ -203,7 +200,6 @@ const destroyAllElementProps = (target: object): void => {
     objectTarget[property] = null;
   });
 };
-const copyCellToClipboard = (_args: unknown) => undefined;
 const applyHtmlToElement = (target: HTMLElement, value: unknown, options?: any) => {
   if (value instanceof HTMLElement || value instanceof DocumentFragment) {
     target.replaceChildren(value);
@@ -438,8 +434,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     forceFitColumns: false,
     autoHeaderHeight: false,
     autoScrollOnColumnResize: true,
-    autoScrollResizeLeftDelay: RESIZE_AUTOSCROLL_BROWSER_EDGE_LEFT_DELAY_MS,
-    autoScrollResizeRightDelay: RESIZE_AUTOSCROLL_BROWSER_EDGE_RIGHT_DELAY_MS,
     enableAsyncPostRender: false,
     asyncPostRenderDelay: 50,
     enableAsyncPostRenderCleanup: false,
@@ -736,6 +730,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected dockingRowRegionsActive = false;
   protected slickDraggableInstance: InteractionBase | null = null;
   protected slickMouseWheelInstances: Array<InteractionBase> = [];
+  protected dockingOverlayMouseWheelBound = false;
   protected slickResizableInstances: Array<InteractionBase> = [];
   protected sortableSideLeftInstance?: ReturnType<typeof Sortable.create>;
   protected sortableSideCenterInstance?: ReturnType<typeof Sortable.create>;
@@ -873,6 +868,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     } else {
       this._options = Utils.extend<O>(true, {}, this._defaults, options);
     }
+    // `applyDefaults` only fills top-level properties. Keep nested option groups
+    // complete when callers retain and mutate their options object through
+    // `mixinDefaults`.
+    this._options.docking = Utils.extend(true, {}, this._defaults.docking, this._options.docking);
     this.scrollThrottle = this.actionThrottle(this.render.bind(this), this._options.scrollRenderThrottling as number);
     this.maxSupportedCssHeight = this.maxSupportedCssHeight || this.getMaxSupportedCssHeight();
     this.validateAndEnforceOptions();
@@ -10161,6 +10160,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this._dockingOverlay ??= Utils.createDomElement('div', { className: 'slick-docking-overlay', role: 'presentation' }, this._contentRoot);
     if (this.initialized) {
       this.bindDockingOverlayEvents();
+      if (this._options.enableMouseWheelScrollHandler && !this.dockingOverlayMouseWheelBound) {
+        this.slickMouseWheelInstances.push(
+          MouseWheel({
+            element: this._dockingOverlay,
+            onMouseWheel: this.handleMouseWheel.bind(this),
+          })
+        );
+        this.dockingOverlayMouseWheelBound = true;
+      }
     }
     return this._dockingOverlay;
   }
@@ -10812,6 +10820,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this._bindingEventService.unbindAll('docking-overlay');
       this._dockingOverlay.remove();
       this._dockingOverlay = undefined;
+      this.dockingOverlayMouseWheelBound = false;
     }
     return this.rowDockingLayout.revision !== previousRevision;
   }
@@ -11074,8 +11083,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
     const viewportWidth = this._viewportNode.clientWidth;
     const overlayWidth = Math.max(this.canvasWidth, this.dockingLayout.contentWidth, viewportWidth);
-    const overlayScrollbarWidth = this.viewportHasVScroll && !this.scrollbarDimensions?.width ? DEFAULT_DOCKING_OVERLAY_SCROLLBAR_WIDTH : 0;
-    const rightInset = overlayWidth - scrollLeft - viewportWidth + overlayScrollbarWidth;
+    // Overlay-scrollbar platforms do not reserve a vertical gutter in
+    // clientWidth. Adding a guessed inset here clips the rightmost pinned-row
+    // cells and can paint a duplicate sliver beside the grid border.
+    const rightInset = overlayWidth - scrollLeft - viewportWidth;
     this._dockingOverlay.style.clipPath = `inset(0 ${rightInset}px 0 ${scrollLeft}px)`;
   }
 
@@ -11604,37 +11615,25 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       }
     }
 
-    if (!handled) {
-      if (this._options.enableCellNavigation && e.ctrlKey && e.key.toLowerCase() === 'c' && !this._options.enableExcelCopyBuffer) {
-        // Ctrl+C (copy cell to clipboard, unless Excel Copy Buffer is enabled)
-        copyCellToClipboard({
-          grid: this as unknown as SlickGrid,
-          cell: this.activeCell,
-          row: this.activeRow,
-          column: this.columns[this.activeCell],
-          dataContext: this.getDataItem(this.activeRow),
-        });
-      } else if (!e.shiftKey && !e.altKey) {
-        // editor may specify an array of keys to bubble
-        if (this._options.editable && this.currentEditor?.keyCaptureList) {
-          if (this.currentEditor.keyCaptureList.indexOf(e.which) > -1) {
-            return;
-          }
+    if (!handled && !e.shiftKey && !e.altKey) {
+      // editor may specify an array of keys to bubble
+      if (this._options.editable && this.currentEditor?.keyCaptureList) {
+        if (this.currentEditor.keyCaptureList.indexOf(e.which) > -1) {
+          return;
         }
-        if (e.ctrlKey && e.key === 'Home') {
-          this.navigateTopStart();
-        } else if (e.ctrlKey && e.key === 'End') {
-          this.navigateBottomEnd();
-        } else if (e.ctrlKey && e.key === 'ArrowUp') {
-          this.navigateTop();
-        } else if (e.ctrlKey && e.key === 'ArrowDown') {
-          this.navigateBottom();
-        } else if ((e.ctrlKey && e.key === 'ArrowLeft') || (!e.ctrlKey && e.key === 'Home')) {
-          this.navigateRowStart();
-        } else if ((e.ctrlKey && e.key === 'ArrowRight') || (!e.ctrlKey && e.key === 'End')) {
-          this.navigateRowEnd();
-
-        }
+      }
+      if (e.ctrlKey && e.key === 'Home') {
+        this.navigateTopStart();
+      } else if (e.ctrlKey && e.key === 'End') {
+        this.navigateBottomEnd();
+      } else if (e.ctrlKey && e.key === 'ArrowUp') {
+        this.navigateTop();
+      } else if (e.ctrlKey && e.key === 'ArrowDown') {
+        this.navigateBottom();
+      } else if ((e.ctrlKey && e.key === 'ArrowLeft') || (!e.ctrlKey && e.key === 'Home')) {
+        this.navigateRowStart();
+      } else if ((e.ctrlKey && e.key === 'ArrowRight') || (!e.ctrlKey && e.key === 'End')) {
+        this.navigateRowEnd();
       }
     }
 
