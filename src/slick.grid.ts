@@ -6342,10 +6342,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       // (re)build the row position index (variable row height mode) before any height computations
       this.ensureRowPositionIndexer(dataLengthIncludingAddNew);
 
-      // Bottom-pinned rows are removed from the scrolling canvas. Their
-      // overlay copy still occupies the bottom band, but their natural slots
-      // must not leave a gap (especially when an add-new row follows them).
-      const scrollableRowsHeight = Math.max(0, this.getRowPosition(numberOfRows) - this.getBottomPinnedRowsHeight());
+      // Bottom-pinned rows keep their slot in the canvas height. Rows after a bottom pin
+      // are rendered one pinned height higher (getRenderedRowTop), so the pinned slot collapses
+      // to the end of the canvas, where the bottom band covers it at maximum scroll and every
+      // scrolling row (including the add-new row) stays reachable above the band.
+      const scrollableRowsHeight = this.getRowPosition(numberOfRows);
 
       const tempViewportH = Utils.height(this._viewportScrollContainerY) as number;
       const oldViewportHasVScroll = this.viewportHasVScroll;
@@ -10876,11 +10877,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   /** Height occupied by permanent top-pinned rows. */
   protected getTopPinnedRowsHeight(): number {
     return this.rowDockingLayout.top.filter((entry) => !entry.sticky).reduce((height, entry) => height + entry.height, 0);
-  }
-
-  /** Height removed from the scrolling canvas by permanent bottom-pinned rows. */
-  protected getBottomPinnedRowsHeight(): number {
-    return this.rowDockingLayout.bottom.filter((entry) => !entry.sticky).reduce((height, entry) => height + entry.height, 0);
   }
 
   /** Returns the rendered top position of a row after accounting for pinned rows. */
