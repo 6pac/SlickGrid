@@ -77,6 +77,8 @@ import type {
   ColumnDockingBand,
   ColumnDockingLayout,
   ColumnPinningReferences,
+  DockedColumn,
+
   DockedRow,
   DockingSide,
   PinnedColumns,
@@ -8335,22 +8337,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param y A y coordinate.
    */
   getCellFromPoint(x: number, y: number): { row: number; cell: number } {
-    // Docked cells are positioned by the rendered three-band layout rather
-    // than by their natural column/row offsets. Only use DOM hit testing for
-    // configured docking; ordinary grids must retain the original coordinate
-    // calculation used by drag-fill and other pointer interactions.
-    const canvas = this._activeCanvasNode || this._canvasNode;
-    if (this.hasConfiguredDocking() && canvas && typeof document.elementFromPoint === 'function') {
-      const canvasRect = canvas.getBoundingClientRect();
-      const target = document.elementFromPoint(canvasRect.left + x, canvasRect.top + y);
-      const cellNode = target?.closest('.slick-cell') as HTMLElement | null;
-      const rowNode = cellNode?.closest('.slick-row') as HTMLElement | null;
-      const rowFromDom = rowNode?.dataset.row;
-      if (cellNode && rowFromDom !== undefined) {
-        const row = Number(rowFromDom);
-        if (Number.isInteger(row)) {
-          return { row, cell: this.getCellFromNode(cellNode) };
-        }
+    if (this.usesDockingRowRegions() && !this._options.rtl) {
+      const docked = this.getCellFromDockedPoint(x, y);
+      if (docked) {
+        return docked;
       }
     }
 
@@ -8372,6 +8362,103 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     return { row, cell };
+  }
+
+  /**
+   * Resolves a canvas-relative point through the rendered docking layout: pinned/sticky rows in the
+   * overlay bands, non-contiguous pins that shift the scrolling rows, and left/right column bands
+   * that sit at the viewport edges regardless of scroll position. Returns null when the point does
+   * not fall on a rendered band or column so the caller can use the natural layout.
+   */
+  protected getCellFromDockedPoint(x: number, y: number): { row: number; cell: number } | null {
+    const scrollTop = this._viewportScrollContainerY?.scrollTop ?? this.scrollTop;
+    const viewportHeight = this._viewportScrollContainerY?.clientHeight || this.viewportH;
+    const viewportY = y - scrollTop;
+    const { top, bottom, topHeight, bottomHeight } = this.rowDockingLayout;
+    const bandRow = (entries: DockedRow[], start: number): number | undefined =>
+      entries.find((entry) => viewportY >= start + entry.offset && viewportY < start + entry.offset + entry.height)?.index;
+
+    let row: number | undefined;
+    if (viewportY < topHeight) {
+      row = bandRow(top, 0);
+    } else {
+      const bottomStart = Math.max(topHeight, viewportHeight - bottomHeight);
+      if (viewportY >= bottomStart) {
+        row = bandRow(bottom, bottomStart);
+      }
+    }
+    if (row === undefined) {
+      row = this.getRenderedRowFromPosition(y);
+    }
+
+    const scrollLeft = Math.max(0, this.scrollLeft);
+    const viewportWidth = this.getViewportInnerWidth() || this._viewportScrollContainerX?.clientWidth || this.viewportW;
+    const viewportX = x - scrollLeft;
+    const { left, center, right, leftBaseWidth, leftWidth, rightWidth } = this.dockingLayout;
+    const bandCell = (entries: DockedColumn[], start: number, position: number): number | undefined =>
+      entries.find((entry) => position >= start + entry.offset && position < start + entry.offset + entry.width)?.index;
+
+    let cell: number | undefined;
+    if (viewportX < leftWidth) {
+      cell = bandCell(left, 0, viewportX);
+    } else if (viewportX >= viewportWidth - rightWidth) {
+      cell = bandCell(right, viewportWidth - rightWidth, viewportX);
+    }
+    if (cell === undefined) {
+      cell = bandCell(center, 0, x - leftBaseWidth);
+    }
+    return cell === undefined ? null : { row, cell };
+  }
+
+  /**
+   * Inverse of getRenderedRowTop() for the scrolling rows: starts from the natural row for a canvas
+   * y and walks over in-flow rows until the rendered span contains y. Permanently pinned rows are
+   * out of the flow, so the walk is bounded by their count.
+   */
+  protected getRenderedRowFromPosition(y: number): number {
+    const lastRow = this.getDataLengthIncludingAddNew() - 1;
+    if (lastRow < 0) {
+      return 0;
+    }
+    const outOfFlow = (row: number): boolean => {
+      const docking = this.dockingByRow.get(row);
+      return !!docking && !docking.sticky && docking.band !== 'center';
+    };
+    const step = (row: number, direction: 1 | -1): number => {
+      let next = row + direction;
+      while (next >= 0 && next <= lastRow && outOfFlow(next)) {
+        next += direction;
+      }
+      return next;
+    };
+
+    let row = Math.min(lastRow, Math.max(0, this.getRowFromPosition(y)));
+    if (outOfFlow(row)) {
+      const next = step(row, 1);
+      row = next <= lastRow ? next : step(row, -1);
+      if (row < 0 || row > lastRow) {
+        return Math.min(lastRow, Math.max(0, row));
+      }
+    }
+    let guard = this.rowDockingLayout.top.length + this.rowDockingLayout.bottom.length + 2;
+    while (guard-- > 0) {
+      if (y < this.getRenderedRowTop(row)) {
+        const previous = step(row, -1);
+        if (previous < 0) {
+          break;
+        }
+        row = previous;
+      } else if (y >= this.getRenderedRowTop(row) + this.getRowHeight(row)) {
+        const next = step(row, 1);
+        if (next > lastRow) {
+          break;
+        }
+        row = next;
+      } else {
+        break;
+      }
+    }
+    return row;
   }
 
   /** Get a Plugin (addon) by its name */

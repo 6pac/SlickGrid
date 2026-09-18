@@ -308,11 +308,11 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
 
     // bottom right - to topLeft
     getScrollDistanceWhenDragOutsideGrid('#myGrid', 'bottomRight', 'topLeft', 8, 4, 100).then((result: any) => {
-      expect(result.scrollTopBefore).to.be.equal(result.scrollTopAfter);
+      expect(result.scrollTopBefore).to.be.greaterThan(result.scrollTopAfter);
       expect(result.scrollLeftBefore).to.be.greaterThan(result.scrollLeftAfter);
     });
     getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'bottomRight', 'topLeft', 8, 4, 100).then((result: any) => {
-      expect(result.scrollTopBefore).to.be.equal(result.scrollTopAfter);
+      expect(result.scrollTopBefore).to.be.greaterThan(result.scrollTopAfter);
       expect(result.scrollLeftBefore).to.be.greaterThan(result.scrollLeftAfter);
     });
     resetScrollInPinned();
