@@ -2172,8 +2172,23 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
         // Keep each docking band in its logical slots; flattening moves center columns into pinned slots.
         if (this.usesDockingChromeRegions()) {
-          (['left', 'center', 'right'] as const).forEach((band, bandIndex) => {
-            this.dockingLayout[band].forEach(({ index }, reorderedIndex) => {
+          // Slots follow the DOM band each header lives in. On the sticky transform path an active
+          // sticky column is docked visually but its header remains in the centre region, so the
+          // resolved layout bands cannot be used directly.
+          const transformPath = this.usesStickyColumnTransformPath();
+          const inDomBand = (entry: DockedColumn): boolean => !(transformPath && entry.sticky);
+          const leftSlots = this.dockingLayout.left.filter(inDomBand).map((entry) => entry.index);
+          const rightSlots = this.dockingLayout.right.filter(inDomBand).map((entry) => entry.index);
+          const pinnedSlots = new Set([...leftSlots, ...rightSlots]);
+          const centerSlots = this.columns
+            .map((column, index) => (column && !column.hidden && !pinnedSlots.has(index) ? index : -1))
+            .filter((index) => index >= 0);
+          const slotsByBand = [leftSlots, centerSlots, rightSlots];
+          if (slotsByBand.some((slots, bandIndex) => slots.length !== reorderedColumnsByBand[bandIndex].length)) {
+            return;
+          }
+          slotsByBand.forEach((slots, bandIndex) => {
+            slots.forEach((index, reorderedIndex) => {
               finalColumns[index] = reorderedColumnsByBand[bandIndex][reorderedIndex];
             });
           });
