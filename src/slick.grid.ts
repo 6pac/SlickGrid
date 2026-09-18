@@ -7020,7 +7020,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {HTMLElement} element - The element whose scroll position needs to be synced.
    */
   protected handleElementScroll(element: HTMLElement): void {
-    if (this.forwardDockingHorizontalScroll(element)) {
+    if (this.hasDockingHorizontalScroller()) {
+      // The proxy owns horizontal scrolling. A native offset on a chrome container is forwarded as a
+      // delta; the reset-to-zero echo that follows must not be mirrored as an absolute position.
+      this.forwardDockingHorizontalScroll(element);
       return;
     }
     const scrollLeft = element.scrollLeft;
@@ -11239,8 +11242,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return false;
     }
 
+    // The viewport and chrome containers are kept at scrollLeft 0 with their content translated by
+    // the proxy position, so a native scroll on one of them (a browser focus reveal, an integration
+    // scrolling `.slick-viewport`) is a delta from the current position, not an absolute offset.
     this.clearDockingNativeHorizontalScrollOffsets();
-    this._viewportScrollContainerX.scrollLeft = scrollLeft;
+    this._viewportScrollContainerX.scrollLeft += scrollLeft;
     return true;
   }
 
