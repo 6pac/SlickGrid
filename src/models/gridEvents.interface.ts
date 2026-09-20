@@ -30,6 +30,7 @@ export interface OnHeaderCellRenderedEventArgs extends SlickGridArg { node: HTML
 export interface OnFooterClickEventArgs extends SlickGridArg { column: Column; }
 export interface OnHeaderClickEventArgs extends SlickGridArg { column: Column; }
 export interface OnHeaderContextMenuEventArgs extends SlickGridArg { column: Column; }
+export interface OnHeaderKeyDownEventArgs extends SlickGridArg { event: KeyboardEvent; column: Column; }
 export interface OnHeaderMouseEventArgs extends SlickGridArg { column: Column; }
 export interface OnHeaderRowCellRenderedEventArgs extends SlickGridArg { node: HTMLDivElement; column: Column; }
 export interface OnPreHeaderClickEventArgs extends SlickGridArg { node: HTMLElement; }

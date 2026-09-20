@@ -58,6 +58,7 @@ import type {
   OnFooterClickEventArgs,
   OnHeaderClickEventArgs,
   OnHeaderContextMenuEventArgs,
+  OnHeaderKeyDownEventArgs,
   OnHeaderMouseEventArgs,
   OnHeaderRowCellRenderedEventArgs,
   OnKeyDownEventArgs,
@@ -146,30 +147,6 @@ const isDefinedNumber = (value: unknown): value is number => typeof value === 'n
 const isPrimitiveOrHTML = (value: unknown): value is string | number | boolean | HTMLElement | DocumentFragment =>
   value === null || value === undefined || ['string', 'number', 'boolean'].includes(typeof value) || value instanceof HTMLElement || value instanceof DocumentFragment;
 const queueMicrotaskPolyfill = (callback: () => void) => typeof queueMicrotask === 'function' ? queueMicrotask(callback) : setTimeout(callback, 0);
-const applyHtmlToElement = (target: HTMLElement, value: unknown, options?: any) => {
-  if (value instanceof HTMLElement || value instanceof DocumentFragment) {
-    target.replaceChildren(value);
-  } else {
-    // Numbers and booleans are values, not HTML. Keep them on the textContent
-    // path just like applyHtmlCode did before the rendering helper was split
-    // out; this also avoids needlessly invoking a sanitizer for primitives.
-    if (typeof value === 'number' || typeof value === 'boolean') {
-      target.textContent = String(value);
-      return;
-    }
-
-    const html = value === null || value === undefined ? '' : String(value);
-    // The sanitizer must run before the assignment and its result must be
-    // assigned directly. String() after sanitization would unwrap TrustedHTML
-    // and CSP would reject the innerHTML assignment.
-    const sanitizedHtml = options?.sanitizer ? options.sanitizer(html) : html;
-    if (options?.enableHtmlRendering !== false && sanitizedHtml) {
-      target.innerHTML = sanitizedHtml as unknown as string;
-    } else {
-      target.textContent = sanitizedHtml as unknown as string;
-    }
-  }
-};
 /**
  * @license
  * (c) 2009-present Michael Leibman
@@ -276,7 +253,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   onHeaderMouseLeave: SlickEvent_<OnHeaderMouseEventArgs>;
   onHeaderMouseOver: SlickEvent_<OnHeaderMouseEventArgs>;
   onHeaderMouseOut: SlickEvent_<OnHeaderMouseEventArgs>;
-  onHeaderKeyDown: SlickEvent_<OnKeyDownEventArgs>;
+  onHeaderKeyDown: SlickEvent_<OnHeaderKeyDownEventArgs>;
   onHeaderRowCellRendered: SlickEvent_<OnHeaderRowCellRenderedEventArgs>;
   onHeaderRowMouseEnter: SlickEvent_<OnHeaderMouseEventArgs>;
   onHeaderRowMouseLeave: SlickEvent_<OnHeaderMouseEventArgs>;
@@ -721,7 +698,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.onHeaderMouseOut = new SlickEvent<OnHeaderMouseEventArgs>('onHeaderMouseOut', externalPubSub);
     this.onHeaderRowMouseOver = new SlickEvent<OnHeaderMouseEventArgs>('onHeaderRowMouseOver', externalPubSub);
     this.onHeaderRowMouseOut = new SlickEvent<OnHeaderMouseEventArgs>('onHeaderRowMouseOut', externalPubSub);
-    this.onHeaderKeyDown = new SlickEvent<OnKeyDownEventArgs>('onHeaderKeyDown', externalPubSub);
+    this.onHeaderKeyDown = new SlickEvent<OnHeaderKeyDownEventArgs>('onHeaderKeyDown', externalPubSub);
     this.onHeaderRowCellRendered = new SlickEvent<OnHeaderRowCellRenderedEventArgs>('onHeaderRowCellRendered', externalPubSub);
     this.onHeaderRowMouseEnter = new SlickEvent<OnHeaderMouseEventArgs>('onHeaderRowMouseEnter', externalPubSub);
     this.onHeaderRowMouseLeave = new SlickEvent<OnHeaderMouseEventArgs>('onHeaderRowMouseLeave', externalPubSub);
@@ -1205,7 +1182,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.getEditorLock()?.cancelCurrentEdit();
     this.clearInternalDomCaches();
 
-    this.triggerEvent(this.onBeforeDestroy, {});
+    this.trigger(this.onBeforeDestroy, {});
     this._bindingEventService.unbindAll();
     (this._pubSubService as any)?.unsubscribeAll?.();
 
@@ -1377,7 +1354,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           : {}),
       };
     }
-    this.triggerEvent(this.onSetOptions, { optionsBefore: originalOptions, optionsAfter: this._options });
+    this.trigger(this.onSetOptions, { optionsBefore: originalOptions, optionsAfter: this._options });
 
     // any option affecting row heights requires a rebuild of the row position index
     if (
@@ -1402,7 +1379,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   activateChangedOptions(suppressRender?: boolean, suppressColumnSet?: boolean, suppressSetOverflow?: boolean): void {
     this.prepareForOptionsChange();
     this.invalidateRow(this.getDataLength());
-    this.triggerEvent(this.onActivateChangedOptions, { options: this._options });
+    this.trigger(this.onActivateChangedOptions, { options: this._options });
     this.internal_setOptions(suppressRender, suppressColumnSet, suppressSetOverflow);
   }
 
@@ -1539,7 +1516,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * Ensures consistency in option setting, by thastIF autoHeight IS enabled, leaveSpaceForNewRows is set to FALSE.
    * And, if forceFitColumns is True, then autosizeColsMode is set to LegacyForceFit.
    */
-  protected validateAndEnforceOptions(): void {
+  validateAndEnforceOptions(): void {
     if (this._options.autoHeight) {
       this._options.leaveSpaceForNewRows = false;
     }
@@ -1601,7 +1578,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           this.columns[idx].toolTip = toolTip;
         }
 
-        this.triggerEvent(this.onBeforeHeaderCellDestroy, {
+        this.trigger(this.onBeforeHeaderCellDestroy, {
           node: header,
           column: columnDef,
           grid: this,
@@ -1609,10 +1586,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
         header.setAttribute('title', toolTip || '');
         if (title !== undefined) {
-          applyHtmlToElement(header.children[0] as HTMLElement, title, this._options);
+          this.applyHtmlCode(header.children[0] as HTMLElement, title);
         }
 
-        this.triggerEvent(this.onHeaderCellRendered, {
+        this.trigger(this.onHeaderCellRendered, {
           node: header,
           column: columnDef,
           grid: this,
@@ -1731,7 +1708,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
         Utils.storage.put(footerRowCell, 'column', m);
 
-        this.triggerEvent(this.onFooterRowCellRendered, {
+        this.trigger(this.onFooterRowCellRendered, {
           node: footerRowCell,
           column: m,
           grid: this,
@@ -1836,9 +1813,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
             };
           }
 
-          if (this.triggerEvent(this.onBeforeSort, onSortArgs, e).getReturnValue() !== false) {
+          if (this.trigger(this.onBeforeSort, onSortArgs, e).getReturnValue() !== false) {
             this.setSortColumns(this.sortColumns);
-            this.triggerEvent(this.onSort, onSortArgs, e);
+            this.trigger(this.onSort, onSortArgs, e);
           }
         }
       };
@@ -1848,7 +1825,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         header,
         'keydown',
         ((e: KeyboardEvent & { target: HTMLElement }) => {
-          this.triggerEvent(this.onHeaderKeyDown, { event: e, column: Utils.storage.get(e.target, 'column'), grid: this });
+          this.trigger(this.onHeaderKeyDown, { event: e, column: Utils.storage.get(e.target, 'column'), grid: this });
           if (e.key === 'Enter' || e.key === ' ') {
             sortCallback(e);
           }
@@ -1919,7 +1896,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         header.classList.add(this._options.unorderableColumnCssClass!);
       }
       const colNameElm = Utils.createDomElement('span', { className: 'slick-column-name' }, header);
-      applyHtmlToElement(colNameElm, m.name, this._options);
+      this.applyHtmlCode(colNameElm, m.name);
 
       const colWidth = m.width! - this.headerColumnWidthDiff;
       Utils.width(header, colWidth);
@@ -1968,7 +1945,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         }
       }
 
-      this.triggerEvent(this.onHeaderCellRendered, {
+      this.trigger(this.onHeaderCellRendered, {
         node: header,
         column: m,
         grid: this,
@@ -2002,7 +1979,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
         Utils.storage.put(headerRowCell, 'column', m);
 
-        this.triggerEvent(this.onHeaderRowCellRendered, {
+        this.trigger(this.onHeaderRowCellRendered, {
           node: headerRowCell,
           column: m,
           grid: this,
@@ -2023,7 +2000,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           this.columns,
           this.getColumnIndex,
           this.uid,
-          this.triggerEvent
+          this.trigger
         );
       } else {
         this.setupColumnReorder();
@@ -2214,7 +2191,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           this.setColumns(finalColumns);
           // reapply previous scroll position since it might move back to x=0 after calling `setColumns()`
           this.scrollToX(prevScrollLeft);
-          this.triggerEvent(this.onColumnsReordered, { impactedColumns: this.columns, previousColumnOrder: prevColumnIds });
+          this.trigger(this.onColumnsReordered, { impactedColumns: this.columns, previousColumnOrder: prevColumnIds });
           this.setupColumnResize();
         }
         if (this.activeCellNode) {
@@ -2254,7 +2231,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   protected handleResizeableDoubleClick(evt: MouseEvent & { target: HTMLDivElement }): void {
     const triggeredByColumn = evt.target.parentElement!.id.replace(this.uid, '');
-    this.triggerEvent(this.onColumnsResizeDblClick, { triggeredByColumn });
+    this.trigger(this.onColumnsResizeDblClick, { triggeredByColumn });
   }
 
   /**
@@ -2568,7 +2545,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           resizeAutoScrollDeltaX += this._viewportScrollContainerX.scrollLeft - previousScrollLeft;
         }
 
-        this.triggerEvent(this.onColumnsDrag, {
+        this.trigger(this.onColumnsDrag, {
           triggeredByColumn: resizeElms.resizeableElement,
           resizeHandle: resizeElms.resizeableHandleElement,
         });
@@ -2658,7 +2635,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
             resizeElms.resizeableElement.classList.remove('slick-header-column-active');
 
             const triggeredByColumn = resizeElms.resizeableElement.id.replace(this.uid, '');
-            if (this.triggerEvent(this.onBeforeColumnsResize, { triggeredByColumn }).getReturnValue() === true) {
+            if (this.trigger(this.onBeforeColumnsResize, { triggeredByColumn }).getReturnValue() === true) {
               this.applyColumnHeaderWidths();
             }
             let newWidth;
@@ -2679,7 +2656,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
               this.render();
             }
             this.scrollToX(this._viewportScrollContainerX.scrollLeft);
-            this.triggerEvent(this.onColumnsResized, { triggeredByColumn });
+            this.trigger(this.onColumnsResized, { triggeredByColumn });
             clearTimeout(this._columnResizeTimer);
             this._columnResizeTimer = setTimeout(() => (this.columnResizeDragging = false), this._options.columnResizingDelay);
           },
@@ -3369,7 +3346,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.recalculateHeaderHeight();
     }
 
-    this.triggerEvent(this.onAutosizeColumns, { columns: this.columns });
+    this.trigger(this.onAutosizeColumns, { columns: this.columns });
 
     if (reRender) {
       this.invalidateAllRows();
@@ -3646,28 +3623,35 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {Column[]} newColumns An array of column definitions.
    * @param {boolean} [waitNextCycle=false] - should we wait for a microtask cycle before updating column headers
    */
-  setColumns(newColumns: C[], waitNextCycle = false): void {
-    this.applyColumnPinningOptions(newColumns);
-    this.triggerEvent(this.onBeforeSetColumns, { previousColumns: this.columns, newColumns, grid: this });
+  setColumns(newColumns: C[], waitNextCycle = false): boolean {
+    // Validate the prospective pinning on a copy so a rejected request leaves the caller's column
+    // definitions untouched and fires no events.
     const shouldValidateProspectivePinning = this.hasConfiguredColumnDocking() || newColumns.some((column) => !!column?.pinned || !!column?.sticky);
-    if (!this.validateColumnPinning(undefined, true, shouldValidateProspectivePinning ? newColumns : undefined)) {
-      return; // exit early if pinning is invalid
+    if (shouldValidateProspectivePinning) {
+      const prospectiveColumns = newColumns.map((column) => (column ? { ...column } : column));
+      this.applyColumnPinningOptions(prospectiveColumns);
+      if (!this.validateColumnPinning(undefined, true, prospectiveColumns)) {
+        return false;
+      }
     }
+    this.applyColumnPinningOptions(newColumns);
+    this.trigger(this.onBeforeSetColumns, { previousColumns: this.columns, newColumns, grid: this });
     this.dockingController.reset();
     this.columns = newColumns;
     this._container.setAttribute('aria-colcount', this.columns.length.toString());
     const updateCols = () => {
       this.updateColumns();
-      this.triggerEvent(this.onAfterSetColumns, { newColumns, grid: this });
+      this.trigger(this.onAfterSetColumns, { newColumns, grid: this });
     };
     waitNextCycle ? queueMicrotaskPolyfill(() => updateCols()) : updateCols();
+    return true;
   }
 
   /** Update columns for when a hidden property has changed but the column list itself has not changed. */
   updateColumns(): void {
-    this.triggerEvent(this.onBeforeUpdateColumns, { columns: this.columns, grid: this });
+    this.trigger(this.onBeforeUpdateColumns, { columns: this.columns, grid: this });
     this.updateColumnsInternal();
-    this.triggerEvent(this.onAfterUpdateColumns, { columns: this.columns, grid: this });
+    this.trigger(this.onAfterUpdateColumns, { columns: this.columns, grid: this });
   }
 
   /**
@@ -3988,7 +3972,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     // this optimisation causes trouble - MLeibman #329
     // if (activeCellChanged) {
     if (!suppressActiveCellChangedEvent) {
-      this.triggerEvent<OnActiveCellChangedEventArgs | null>(
+      this.trigger<OnActiveCellChangedEventArgs | null>(
         this.onActiveCellChanged,
         this.getActiveCell() as OnActiveCellChangedEventArgs
       );
@@ -4044,7 +4028,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   */
   protected makeActiveCellNormal(refocusActiveCell = false): void {
     if (this.currentEditor) {
-      this.triggerEvent(this.onBeforeCellEditorDestroy, { editor: this.currentEditor });
+      this.trigger(this.onBeforeCellEditorDestroy, { editor: this.currentEditor });
       this.currentEditor.destroy();
       this.currentEditor = null;
 
@@ -4110,7 +4094,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const item = this.getDataItem(this.activeRow);
 
     if (
-      this.triggerEvent(this.onBeforeEditCell, {
+      this.trigger(this.onBeforeEditCell, {
         row: this.activeRow,
         cell: this.activeCell,
         item,
@@ -4230,12 +4214,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
               execute: () => {
                 editor.applyValue(item, serializedValue);
                 self.updateRow(row);
-                self.triggerEvent(self.onCellChange, { command: 'execute', row, cell, item, column });
+                self.trigger(self.onCellChange, { command: 'execute', row, cell, item, column });
               },
               undo: () => {
                 editor.applyValue(item, prevSerializedValue);
                 self.updateRow(row);
-                self.triggerEvent(self.onCellChange, { command: 'undo', row, cell, item, column });
+                self.trigger(self.onCellChange, { command: 'undo', row, cell, item, column });
               },
             };
 
@@ -4251,7 +4235,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
             const newItem = {};
             self.currentEditor.applyValue(newItem, self.currentEditor.serializeValue());
             self.makeActiveCellNormal(true);
-            self.triggerEvent(self.onAddNewRow, { item: newItem, column });
+            self.trigger(self.onAddNewRow, { item: newItem, column });
           }
 
           // check whether the lock has been re-acquired by event handlers
@@ -4264,7 +4248,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
             self.activeCellNode.classList.add('invalid');
           }
 
-          self.triggerEvent(self.onValidationError, {
+          self.trigger(self.onValidationError, {
             editor: self.currentEditor,
             cellNode: self.activeCellNode,
             validationResults,
@@ -4324,7 +4308,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {MouseEvent & { target: HTMLElement }} e - The mouse event.
    */
   protected handleCellMouseOut(e: MouseEvent & { target: HTMLElement }): void {
-    this.triggerEvent(this.onMouseLeave, {}, e);
+    this.trigger(this.onMouseLeave, {}, e);
   }
 
   /**
@@ -4402,7 +4386,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
         // check range has expanded
         if (SelectionUtils.copyRangeIsLarger(prevSelectedRange, selectedRange)) {
-          this.triggerEvent(this.onDragReplaceCells, { prevSelectedRange, selectedRange });
+          this.trigger(this.onDragReplaceCells, { prevSelectedRange, selectedRange });
           this.invalidate();
         }
       }
@@ -4464,7 +4448,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       const newSelectedAdditions = previousSelectedRowsSet ? selectedRows.filter((i) => !previousSelectedRowsSet.has(i)) : selectedRows;
       const newSelectedDeletions = selectedRowsSet ? previousSelectedRows.filter((i) => !selectedRowsSet.has(i)) : previousSelectedRows;
 
-      this.triggerEvent(
+      this.trigger(
         this.onSelectedRowsChanged,
         {
           rows: selectedRows,
@@ -4532,7 +4516,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return false;
     }
 
-    const retval = this.triggerEvent(this.onDragInit, dd, e);
+    const retval = this.trigger(this.onDragInit, dd, e);
     if (retval.isImmediatePropagationStopped()) {
       return retval.getReturnValue();
     }
@@ -4561,7 +4545,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return false;
     }
 
-    const retval = this.triggerEvent(this.onDragStart, dd, e);
+    const retval = this.trigger(this.onDragStart, dd, e);
     if (retval.isImmediatePropagationStopped()) {
       return retval.getReturnValue();
     }
@@ -4571,12 +4555,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /** Publishes the grid drag event for an in-progress drag operation. */
   protected handleDrag(e: DragEvent, dd: DragPosition): void {
-    return this.triggerEvent(this.onDrag, dd, e).getReturnValue();
+    return this.trigger(this.onDrag, dd, e).getReturnValue();
   }
 
   /** Publishes the grid drag-end event after a drag operation completes. */
   protected handleDragEnd(e: DragEvent, dd: DragPosition): void {
-    this.triggerEvent(this.onDragEnd, dd, e);
+    this.trigger(this.onDragEnd, dd, e);
   }
 
   /**
@@ -4606,7 +4590,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return;
     }
 
-    evt = this.triggerEvent(this.onClick, { row: cell.row, cell: cell.cell }, evt || e);
+    evt = this.trigger(this.onClick, { row: cell.row, cell: cell.cell }, evt || e);
     if ((evt as SlickEventData_).isImmediatePropagationStopped() || e.defaultPrevented) {
       return;
     }
@@ -4648,7 +4632,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     // get the cell position or return {-1,-1} when opening from the grid but but not over a grid cell (e.g. empty dataset)
     const cell = this.getCellFromEvent(e) ?? { cell: -1, row: -1 };
-    this.triggerEvent(this.onContextMenu, { row: cell.row, cell: cell.cell }, e);
+    this.trigger(this.onContextMenu, { row: cell.row, cell: cell.cell }, e);
   }
 
   /**
@@ -4662,7 +4646,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return;
     }
 
-    this.triggerEvent(this.onDblClick, { row: cell.row, cell: cell.cell }, e);
+    this.trigger(this.onDblClick, { row: cell.row, cell: cell.cell }, e);
     if (e.defaultPrevented) {
       return;
     }
@@ -4679,7 +4663,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected handleHeaderMouseEnter(e: MouseEvent & { target: HTMLElement }): void {
     const column = Utils.storage.get(e.target.closest('.slick-header-column'), 'column');
     if (column) {
-      this.triggerEvent(this.onHeaderMouseEnter, { column, grid: this }, e);
+      this.trigger(this.onHeaderMouseEnter, { column, grid: this }, e);
     }
   }
 
@@ -4690,7 +4674,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected handleHeaderMouseLeave(e: MouseEvent & { target: HTMLElement }): void {
     const column = Utils.storage.get(e.target.closest('.slick-header-column'), 'column');
     if (column) {
-      this.triggerEvent(this.onHeaderMouseLeave, { column, grid: this }, e);
+      this.trigger(this.onHeaderMouseLeave, { column, grid: this }, e);
     }
   }
 
@@ -4700,7 +4684,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected handleHeaderRowMouseEnter(e: MouseEvent & { target: HTMLElement }): void {
     const column = Utils.storage.get(e.target.closest('.slick-headerrow-column'), 'column');
     if (column) {
-      this.triggerEvent(this.onHeaderRowMouseEnter, { column, grid: this }, e);
+      this.trigger(this.onHeaderRowMouseEnter, { column, grid: this }, e);
     }
   }
 
@@ -4710,7 +4694,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected handleHeaderRowMouseLeave(e: MouseEvent & { target: HTMLElement }): void {
     const column = Utils.storage.get(e.target.closest('.slick-headerrow-column'), 'column');
     if (column) {
-      this.triggerEvent(this.onHeaderRowMouseLeave, { column, grid: this }, e);
+      this.trigger(this.onHeaderRowMouseLeave, { column, grid: this }, e);
     }
   }
 
@@ -4721,7 +4705,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected handleHeaderContextMenu(e: MouseEvent & { target: HTMLElement }): void {
     const header = e.target.closest('.slick-header-column');
     const column = header && Utils.storage.get(header, 'column');
-    this.triggerEvent(this.onHeaderContextMenu, { column }, e);
+    this.trigger(this.onHeaderContextMenu, { column }, e);
   }
 
   /**
@@ -4732,7 +4716,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       const header = e.target.closest('.slick-header-column');
       const column = header && Utils.storage.get(header, 'column');
       if (column) {
-        this.triggerEvent(this.onHeaderClick, { column }, e);
+        this.trigger(this.onHeaderClick, { column }, e);
       }
     }
   }
@@ -4741,7 +4725,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * Triggers the onPreHeaderContextMenu event with the event target (typically the pre–header panel).
    */
   protected handlePreHeaderContextMenu(e: MouseEvent & { target: HTMLElement }): void {
-    this.triggerEvent(this.onPreHeaderContextMenu, { node: e.target }, e);
+    this.trigger(this.onPreHeaderContextMenu, { node: e.target }, e);
   }
 
   /**
@@ -4749,7 +4733,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   protected handlePreHeaderClick(e: MouseEvent & { target: HTMLElement }): void {
     if (!this.columnResizeDragging) {
-      this.triggerEvent(this.onPreHeaderClick, { node: e.target }, e);
+      this.trigger(this.onPreHeaderClick, { node: e.target }, e);
     }
   }
 
@@ -4759,7 +4743,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected handleFooterContextMenu(e: MouseEvent & { target: HTMLElement }): void {
     const footer = e.target.closest('.slick-footerrow-column');
     const column = footer && Utils.storage.get(footer, 'column');
-    this.triggerEvent(this.onFooterContextMenu, { column }, e);
+    this.trigger(this.onFooterContextMenu, { column }, e);
   }
 
   /**
@@ -4768,7 +4752,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected handleFooterClick(e: MouseEvent & { target: HTMLElement }): void {
     const footer = e.target.closest('.slick-footerrow-column');
     const column = footer && Utils.storage.get(footer, 'column');
-    this.triggerEvent(this.onFooterClick, { column }, e);
+    this.trigger(this.onFooterClick, { column }, e);
   }
 
   /**
@@ -4778,7 +4762,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (!e.target?.closest('.slick-cell')) {
       return;
     }
-    this.triggerEvent(this.onMouseEnter, {}, e);
+    this.trigger(this.onMouseEnter, {}, e);
   }
 
   /**
@@ -4787,7 +4771,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   protected handleActiveCellPositionChange(): void {
     if (this.activeCellNode) {
-      this.triggerEvent(this.onActiveCellPositionChanged, {});
+      this.trigger(this.onActiveCellPositionChanged, {});
 
       if (this.currentEditor) {
         const cellBox = this.getActiveCellPosition();
@@ -4885,11 +4869,36 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   *   `emptyTarget`, defaults to true, will empty the target.
   *   `skipEmptyReassignment`, defaults to true, when enabled it will not try to reapply an empty value when the target is already empty
   */
-  applyHtmlCode(target: HTMLElement, value: boolean | string | HTMLElement | DocumentFragment | null | undefined, skipEmptyReassignment = false): void {
-    if (skipEmptyReassignment && !Utils.isDefined(value) && !target.innerHTML) {
-      return;
+  applyHtmlCode(
+    target: HTMLElement,
+    val: boolean | string | HTMLElement | DocumentFragment | null | undefined = '',
+    options?: { emptyTarget?: boolean; skipEmptyReassignment?: boolean }
+  ): void {
+    if (target) {
+      if (val instanceof HTMLElement || val instanceof DocumentFragment) {
+        // first empty target and then append new HTML element
+        if (options?.emptyTarget !== false) {
+          Utils.emptyElement(target);
+        }
+        target.appendChild(val);
+      } else {
+        // when it's already empty and we try to reassign empty, it's probably ok to skip the assignment
+        if (options?.skipEmptyReassignment !== false && !Utils.isDefined(val) && !target.innerHTML) {
+          return;
+        }
+        if (typeof val === 'number' || typeof val === 'boolean') {
+          target.textContent = String(val);
+        } else {
+          const sanitizedText = this.sanitizeHtmlString(val as string);
+          // apply HTML when enableHtmlRendering is enabled but make sure we do have a value (without a value, it will simply use `textContent` to clear text content)
+          if (this._options.enableHtmlRendering && sanitizedText) {
+            target.innerHTML = sanitizedText;
+          } else {
+            target.textContent = sanitizedText;
+          }
+        }
+      }
     }
-    applyHtmlToElement(target, value, this._options);
   }
 
   /** Get Grid Canvas Node DOM Element */
@@ -5328,14 +5337,24 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected togglePanelVisibility(
     option: 'showTopPanel' | 'showHeaderRow' | 'showColumnHeader' | 'showFooterRow' | 'showPreHeaderPanel' | 'showTopHeaderPanel',
     container: HTMLElement | HTMLElement[],
-    visible?: boolean
+    visible?: boolean,
+    animate?: boolean
   ): void {
+    const animated = animate !== false;
+
     if (this._options[option] !== visible) {
       this._options[option] = visible as boolean;
       if (visible) {
+        if (animated) {
+          Utils.slideDown(container, this.resizeCanvas.bind(this));
+          return;
+        }
         Utils.show(container);
-
       } else {
+        if (animated) {
+          Utils.slideUp(container, this.resizeCanvas.bind(this));
+          return;
+        }
         Utils.hide(container);
       }
       this.resizeCanvas();
@@ -5346,48 +5365,48 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * Set the Top Panel Visibility
    * @param {Boolean} [visible] - optionally set if top panel is visible or not
    */
-  setTopPanelVisibility(visible?: boolean): void {
-    this.togglePanelVisibility('showTopPanel', this._topPanelScrollers, visible);
+  setTopPanelVisibility(visible?: boolean, animate?: boolean): void {
+    this.togglePanelVisibility('showTopPanel', this._topPanelScrollers, visible, animate);
   }
 
   /**
    * Set the Header Row Visibility
    * @param {Boolean} [visible] - optionally set if header row panel is visible or not
    */
-  setHeaderRowVisibility(visible?: boolean): void {
-    this.togglePanelVisibility('showHeaderRow', this._headerRowScroller, visible);
+  setHeaderRowVisibility(visible?: boolean, animate?: boolean): void {
+    this.togglePanelVisibility('showHeaderRow', this._headerRowScroller, visible, animate);
   }
 
   /**
    * Set the Column Header Visibility
    * @param {Boolean} [visible] - optionally set if column header is visible or not
    */
-  setColumnHeaderVisibility(visible?: boolean): void {
-    this.togglePanelVisibility('showColumnHeader', this._headerScroller, visible);
+  setColumnHeaderVisibility(visible?: boolean, animate?: boolean): void {
+    this.togglePanelVisibility('showColumnHeader', this._headerScroller, visible, animate);
   }
 
   /**
    * Set the Footer Visibility
    * @param {Boolean} [visible] - optionally set if footer row panel is visible or not
    */
-  setFooterRowVisibility(visible?: boolean): void {
-    this.togglePanelVisibility('showFooterRow', this._footerRowScroller, visible);
+  setFooterRowVisibility(visible?: boolean, animate?: boolean): void {
+    this.togglePanelVisibility('showFooterRow', this._footerRowScroller, visible, animate);
   }
 
   /**
    * Set the Pre-Header Visibility
    * @param {Boolean} [visible] - optionally set if pre-header panel is visible or not
    */
-  setPreHeaderPanelVisibility(visible?: boolean): void {
-    this.togglePanelVisibility('showPreHeaderPanel', this._preHeaderPanelScroller, visible);
+  setPreHeaderPanelVisibility(visible?: boolean, animate?: boolean): void {
+    this.togglePanelVisibility('showPreHeaderPanel', this._preHeaderPanelScroller, visible, animate);
   }
 
   /**
    * Set the Top-Header Visibility
    * @param {Boolean} [visible] - optionally set if top-header panel is visible or not
    */
-  setTopHeaderPanelVisibility(visible?: boolean): void {
-    this.togglePanelVisibility('showTopHeaderPanel', this._topHeaderPanelScroller, visible);
+  setTopHeaderPanelVisibility(visible?: boolean, animate?: boolean): void {
+    this.togglePanelVisibility('showTopHeaderPanel', this._topHeaderPanelScroller, visible, animate);
   }
 
   // Rendering / Scrolling
@@ -5709,7 +5728,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     // get addl css class names from object type formatter return and from string type return of onBeforeAppendCell
     // we will only use the event result as CSS classes when it is a string type (undefined event always return a true boolean which is not a valid css class)
-    const evt = this.triggerEvent(this.onBeforeAppendCell, { row, cell, value, dataContext: item });
+    const evt = this.trigger(this.onBeforeAppendCell, { row, cell, value, dataContext: item });
     const appendCellResult = evt.getReturnValue();
     let addlCssClasses = typeof appendCellResult === 'string' ? appendCellResult : '';
     if ((formatterResult as FormatterResultObject)?.addClasses) {
@@ -5762,7 +5781,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       const cellResult = isPrimitiveOrHTML(formatterResult)
         ? formatterResult
         : (formatterResult as FormatterResultWithHtml).html || (formatterResult as FormatterResultWithText).text;
-      applyHtmlToElement(cellDiv, cellResult as string | HTMLElement, this._options);
+      this.applyHtmlCode(cellDiv, cellResult as string | HTMLElement);
 
       // add drag-to-replace handle
       const selectionType = this.getSelectionModel()?.getOptions()?.selectionType;
@@ -5972,7 +5991,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected removeRowFromCache(row: number): void {
     const cacheEntry = this.rowsCache[row];
     if (cacheEntry?.rowNode) {
-      this.triggerEvent(this.onBeforeRemoveCachedRow, { row });
+      this.trigger(this.onBeforeRemoveCachedRow, { row });
       if (this._options.enableAsyncPostRenderCleanup && this.postProcessedRows[row]) {
         this.queuePostProcessedRowForCleanup(cacheEntry, this.postProcessedRows[row], row);
       } else {
@@ -6871,7 +6890,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       this.lastRenderedScrollTop = this.scrollTop;
       this.lastRenderedScrollLeft = this.scrollLeft;
-      this.triggerEvent(this.onRendered, { startRow: visible.top, endRow: visible.bottom, grid: this });
+      this.trigger(this.onRendered, { startRow: visible.top, endRow: visible.bottom, grid: this });
     }
   }
 
@@ -7005,7 +7024,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         this._viewportNode.scrollTop = committedScrollTop;
       }
 
-      this.triggerEvent(this.onViewportChanged, {});
+      this.trigger(this.onViewportChanged, {});
     }
 
     // Apply row positions only after both the page offset and the physical
@@ -7184,7 +7203,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (dx > horizontalRenderThreshold || dy > 20) {
         if (this._isResizingColumn && hScrollDist && !vScrollDist) {
           this.lastRenderedScrollLeft = this.scrollLeft;
-          this.triggerEvent(this.onViewportChanged, {});
+          this.trigger(this.onViewportChanged, {});
           return true;
         }
 
@@ -7202,11 +7221,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           this.scrollThrottle.enqueue();
         }
 
-        this.triggerEvent(this.onViewportChanged, {});
+        this.trigger(this.onViewportChanged, {});
       }
     }
 
-    this.triggerEvent(this.onScroll, {
+    this.trigger(this.onScroll, {
       triggeredBy: eventType,
       scrollHeight: this.scrollHeight,
       scrollLeft: this.scrollLeft,
@@ -7748,13 +7767,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       formatterResult = '';
     }
     if (isPrimitiveOrHTML(formatterResult)) {
-      applyHtmlToElement(cellNode, formatterResult as string | HTMLElement, this._options);
+      this.applyHtmlCode(cellNode, formatterResult as string | HTMLElement);
       return;
     }
 
     const formatterVal: HTMLElement | DocumentFragment | string =
       (formatterResult as FormatterResultWithHtml).html || (formatterResult as FormatterResultWithText).text;
-    applyHtmlToElement(cellNode, formatterVal, this._options);
+    this.applyHtmlCode(cellNode, formatterVal);
 
     if ((formatterResult as FormatterResultObject).removeClasses && !suppressRemove) {
       cellNode.classList.remove(...Utils.classNameToList((formatterResult as FormatterResultObject).removeClasses));
@@ -7974,7 +7993,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.cellCssClasses[key] = hash;
     this.updateCellCssClassesByCell();
     this.updateCellCssStylesOnRenderedRows(hash, null);
-    this.triggerEvent(this.onCellCssStylesChanged, { key, hash, grid: this });
+    this.trigger(this.onCellCssStylesChanged, { key, hash, grid: this });
   }
 
   /**
@@ -7986,7 +8005,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.updateCellCssStylesOnRenderedRows(null, this.cellCssClasses[key]);
       delete this.cellCssClasses[key];
       this.updateCellCssClassesByCell();
-      this.triggerEvent(this.onCellCssStylesChanged, { key, hash: null, grid: this });
+      this.trigger(this.onCellCssStylesChanged, { key, hash: null, grid: this });
     }
   }
 
@@ -8003,7 +8022,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.cellCssClasses[key] = hash;
     this.updateCellCssClassesByCell();
     this.updateCellCssStylesOnRenderedRows(hash, prevHash);
-    this.triggerEvent(this.onCellCssStylesChanged, { key, hash, grid: this });
+    this.trigger(this.onCellCssStylesChanged, { key, hash, grid: this });
   }
 
   /**
@@ -10096,7 +10115,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     root.querySelectorAll<HTMLElement>(cellSelector).forEach((cell) => {
       const columnDef = Utils.storage.get(cell, 'column');
       if (columnDef) {
-        this.triggerEvent(destroyEvent, { node: cell, column: columnDef, grid: this });
+        this.trigger(destroyEvent, { node: cell, column: columnDef, grid: this });
       }
     });
   }
@@ -10212,7 +10231,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   // General
 
   /** Triggers a SlickGrid event and returns its event-data wrapper. */
-  triggerEvent<ArgType = any>(evt: SlickEvent_, args?: ArgType, e?: Event | SlickEventData_): SlickEventData_<any> {
+  protected trigger<ArgType = any>(evt: SlickEvent_, args?: ArgType, e?: Event | SlickEventData_): SlickEventData_<any> {
     const sed: SlickEventData_ = (e || new SlickEventData(e, args)) as SlickEventData_;
     const eventArgs = (args || {}) as ArgType & { grid: SlickGrid<TData, C, O> };
     eventArgs.grid = this;
@@ -10347,7 +10366,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const scrollbarWidth = this.viewportHasVScroll ? this.scrollbarDimensions?.width || 0 : 0;
     const outerGridWidth = Utils.width(this._container) || 0;
     const availablePinningWidth = Math.max(viewportWidth + scrollbarWidth, outerGridWidth);
-    if (viewportWidth > 0 && widths.left + widths.right >= availablePinningWidth) {
+    if (viewportWidth > 0 && widths.left + widths.right > availablePinningWidth) {
       if ((forceAlert || !this._invalidPinningAlerted) && this._options.invalidColumnPinningWidthCallback) {
         this._options.invalidColumnPinningWidthCallback(this._options.invalidColumnPinningWidthMessage!);
         this._invalidPinningAlerted = true;
@@ -11571,7 +11590,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /** Handles keyboard navigation and publishes the grid key-down event. */
   protected handleGridKeyDown(e: KeyboardEvent & { originalEvent: Event; target: HTMLElement }): void {
-    const retval = this.triggerEvent(this.onKeyDown, { row: this.activeRow, cell: this.activeCell }, e);
+    const retval = this.trigger(this.onKeyDown, { row: this.activeRow, cell: this.activeCell }, e);
     let handled: boolean | undefined | void = retval.isImmediatePropagationStopped();
 
     const isGridFocusSinkTarget = e.target === this._focusSink || e.target === this._focusSink2;
@@ -11696,7 +11715,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected handleHeaderMouseOver(e: MouseEvent & { target: HTMLElement }): void {
     const column = Utils.storage.get(e.target.closest('.slick-header-column'), 'column');
     if (column) {
-      this.triggerEvent(this.onHeaderMouseOver, { column, grid: this }, e);
+      this.trigger(this.onHeaderMouseOver, { column, grid: this }, e);
     }
   }
 
@@ -11704,7 +11723,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected handleHeaderMouseOut(e: MouseEvent & { target: HTMLElement }): void {
     const column = Utils.storage.get(e.target.closest('.slick-header-column'), 'column');
     if (column) {
-      this.triggerEvent(this.onHeaderMouseOut, { column, grid: this }, e);
+      this.trigger(this.onHeaderMouseOut, { column, grid: this }, e);
     }
   }
 
@@ -11712,7 +11731,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected handleHeaderRowMouseOver(e: MouseEvent & { target: HTMLElement }): void {
     const column = Utils.storage.get(e.target.closest('.slick-headerrow-column'), 'column');
     if (column) {
-      this.triggerEvent(this.onHeaderRowMouseOver, { column, grid: this }, e);
+      this.trigger(this.onHeaderRowMouseOver, { column, grid: this }, e);
     }
   }
 
@@ -11720,7 +11739,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected handleHeaderRowMouseOut(e: MouseEvent & { target: HTMLElement }): void {
     const column = Utils.storage.get(e.target.closest('.slick-headerrow-column'), 'column');
     if (column) {
-      this.triggerEvent(this.onHeaderRowMouseOut, { column, grid: this }, e);
+      this.trigger(this.onHeaderRowMouseOut, { column, grid: this }, e);
     }
   }
 
