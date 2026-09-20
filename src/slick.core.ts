@@ -22,6 +22,7 @@ import type {
   MergeTypes,
   PinnedRows,
   RowDockingLayout,
+  RowReference,
   StickyRows,
 } from './models/index.js';
 import type { SlickGrid } from './slick.grid.js';
@@ -1461,7 +1462,7 @@ const DEFAULT_DOCKING_OPTIONS: Required<DockingOption> = {
   maxRowViewportHeightPercent: 60,
   minCenterRowCount: 3,
   overflowStrategy: 'conveyor',
-  stickyHysteresis: 2,
+  stickyActivationBuffer: 2,
 };
 
 /**
@@ -1524,7 +1525,7 @@ export class DockingController<C extends Column = Column> {
     const centerViewportWidth = Math.max(0, viewportWidth - leftWidth - rightWidth);
     const visibleStart = scrollLeft;
     const visibleEnd = scrollLeft + centerViewportWidth;
-    const hysteresis = this.options.stickyHysteresis;
+    const hysteresis = this.options.stickyActivationBuffer;
 
     center.forEach((entry) => {
       const sticky = columns[entry.index].sticky;
@@ -1642,13 +1643,15 @@ export class DockingController<C extends Column = Column> {
     permanentRows?: PinnedRows,
     stickyRows?: StickyRows
   ): RowDockingLayout {
-    const topIds = new Set(permanentRows?.top || []);
-    const bottomIds = new Set(permanentRows?.bottom || []);
-    const stickyTopIds = new Set(stickyRows?.top || []);
-    const stickyBottomIds = new Set(stickyRows?.bottom || []);
-    const stickyBothIds = new Set(stickyRows?.both || []);
-    const matchesRowReference = (references: Set<number | string>, row: DockingRow): boolean =>
-      references.has(row.index) || (typeof row.id === 'string' && references.has(row.id));
+    // The grid resolves every reference (index, id or { id }) to a row index before calling this.
+    const indexSet = (references?: RowReference[]): Set<number> =>
+      new Set((references || []).filter((reference): reference is number => typeof reference === 'number'));
+    const topIds = indexSet(permanentRows?.top);
+    const bottomIds = indexSet(permanentRows?.bottom);
+    const stickyTopIds = indexSet(stickyRows?.top);
+    const stickyBottomIds = indexSet(stickyRows?.bottom);
+    const stickyBothIds = indexSet(stickyRows?.both);
+    const matchesRowReference = (references: Set<number>, row: DockingRow): boolean => references.has(row.index);
     const top: DockedRow[] = [];
     const center: DockedRow[] = [];
     const bottom: DockedRow[] = [];
@@ -1731,14 +1734,20 @@ export class DockingController<C extends Column = Column> {
       (row) => row.height,
       'bottom'
     );
+    // Mirror the top band: sticky rows sit inside (nearest the centre), permanent rows at the edge.
+    let stickyBottomOffset = 0;
     selectedStickyBottom.forEach((row) => {
-      row.offset = bottomHeight;
-      bottomHeight += row.height;
+      row.offset = stickyBottomOffset;
+      stickyBottomOffset += row.height;
     });
+    bottom.forEach((row) => {
+      row.offset += stickyBottomOffset;
+    });
+    bottomHeight += stickyBottomOffset;
     const stickyIndexes = new Set([...selectedStickyTop, ...selectedStickyBottom].map((row) => row.index));
     const visibleCenter = center.filter((row) => !stickyIndexes.has(row.index));
     top.push(...selectedStickyTop);
-    bottom.push(...selectedStickyBottom);
+    bottom.unshift(...selectedStickyBottom);
     const signature = `${top.map((row) => row.id).join(',')}|${bottom.map((row) => row.id).join(',')}`;
     if (signature !== this.lastRowSignature) {
       this.lastRowSignature = signature;

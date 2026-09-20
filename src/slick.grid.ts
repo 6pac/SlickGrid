@@ -82,6 +82,9 @@ import type {
   DockedRow,
   DockingSide,
   PinnedColumns,
+  PinnedRows,
+  RowReference,
+  StickyRows,
   RowDockingLayout,
   ElementPosition,
 } from './models/index.js';
@@ -383,7 +386,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       maxRowViewportHeightPercent: 60,
       minCenterRowCount: 3,
       overflowStrategy: 'conveyor',
-      stickyHysteresis: 2,
+      stickyActivationBuffer: 2,
     },
     fullWidthRows: false,
     multiColumnSort: false,
@@ -566,6 +569,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected rowDockingLayout: RowDockingLayout = EMPTY_ROW_DOCKING_LAYOUT;
   protected dockingByRow: Map<number, DockedRow> = new Map<number, DockedRow>();
   protected dockingRowIndexByReference: Map<number | string, number> = new Map<number | string, number>();
+  /** Set when row references were invalidated; the next render re-resolves the row docking layout. */
+  protected rowDockingStale = false;
   protected dockingChromeByColumn: Map<number, HTMLElement[]> = new Map<number, HTMLElement[]>();
   protected sortColumns: ColumnSort[] = [];
   protected columnPosLeft: number[] = [];
@@ -1296,7 +1301,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   setOptions(newOptions: Partial<O>, suppressRender?: boolean, suppressColumnSet?: boolean, suppressSetOverflow?: boolean): void {
     this.prepareForOptionsChange();
-    const removePinning = Object.prototype.hasOwnProperty.call(newOptions, 'pinning') && newOptions.pinning === undefined;
+    const removePinning = Object.prototype.hasOwnProperty.call(newOptions, 'pinning') && (newOptions.pinning === undefined || newOptions.pinning === null);
 
     // Validate the prospective declarative column state before deep-merging it
     // into the live options. A rejected request leaves the current pinning in
@@ -1333,13 +1338,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     // leaves stale row references when a list is shortened (for example
     // changing 4 pinned rows back to 3). Replace both lists atomically.
     if (newOptions.stickyRows !== undefined) {
+      const incomingStickyRows = newOptions.stickyRows ?? {};
       this._options.stickyRows = {
-        top: newOptions.stickyRows.top ? [...newOptions.stickyRows.top] : [],
-        bottom: newOptions.stickyRows.bottom ? [...newOptions.stickyRows.bottom] : [],
-        both: newOptions.stickyRows.both ? [...newOptions.stickyRows.both] : [],
+        top: incomingStickyRows.top ? [...incomingStickyRows.top] : [],
+        bottom: incomingStickyRows.bottom ? [...incomingStickyRows.bottom] : [],
+        both: incomingStickyRows.both ? [...incomingStickyRows.both] : [],
       };
     }
-    if (newOptions.pinning !== undefined) {
+    if (newOptions.pinning !== undefined && newOptions.pinning !== null) {
       const incomingPinning = newOptions.pinning;
       const currentPinning = this._options.pinning ?? {};
       const cloneColumnReferences = (references: ColumnPinningReferences | undefined): ColumnPinningReferences =>
@@ -5844,6 +5850,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   /** Invalidate all grid rows */
   invalidateAllRows(): void {
     this.dockingRowIndexByReference.clear();
+    this.rowDockingStale = true;
     // invalidated row content may resize the rows, so conservatively mark dirty for rebuild
     this.rowHeightsDirty = true;
     if (this.currentEditor) {
@@ -5876,6 +5883,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     // updateRowCount(), so cached id-to-index docking references must be
     // invalidated along with the affected rows.
     this.dockingRowIndexByReference.clear();
+    this.rowDockingStale = true;
     let row;
     this.vScrollDir = 0;
     this.rowHeightsDirty = true;
@@ -6832,6 +6840,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   render(): void {
     if (this.initialized) {
       this.scrollThrottle.dequeue();
+      if (this.rowDockingStale) {
+        // A sort or filter can move referenced rows without changing the row count; re-resolve
+        // ids to indexes and re-dock before the rows are rendered.
+        this.rowDockingStale = false;
+        this.refreshRowDockingLayout(this.scrollTop, true);
+      }
 
       const visible = this.getVisibleRange();
       const rendered = this.getRenderedRange();
@@ -10722,31 +10736,40 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /** Resolves a row identity to its current data index for docking calculations. */
-  protected resolveDockingRowIndex(reference: number | string): number | undefined {
-    if (this.dockingRowIndexByReference.has(reference)) {
-      return this.dockingRowIndexByReference.get(reference);
+  protected resolveDockingRowIndex(reference: RowReference): number | undefined {
+    const isIdReference = typeof reference === 'object' && reference !== null;
+    const cacheKey = isIdReference ? `id:${reference.id}` : reference;
+    if (this.dockingRowIndexByReference.has(cacheKey)) {
+      return this.dockingRowIndexByReference.get(cacheKey);
     }
-    if (typeof reference === 'number' && Number.isInteger(reference) && reference >= 0 && reference < this.getDataLength()) {
-      this.dockingRowIndexByReference.set(reference, reference);
-      return reference;
+    if (!isIdReference && typeof reference === 'number') {
+      if (Number.isInteger(reference) && reference >= 0 && reference < this.getDataLength()) {
+        this.dockingRowIndexByReference.set(cacheKey, reference);
+        return reference;
+      }
+      return undefined;
     }
+    const id = isIdReference ? reference.id : reference;
     const getRowById = (this.data as CustomDataView<TData> & { getRowById?: (id: number | string) => number | undefined }).getRowById;
-    const dataViewRow = getRowById?.call(this.data, reference);
+    const dataViewRow = getRowById?.call(this.data, id);
     if (dataViewRow !== undefined) {
-      this.dockingRowIndexByReference.set(reference, dataViewRow);
+      this.dockingRowIndexByReference.set(cacheKey, dataViewRow);
       return dataViewRow;
     }
     const idProperty = this.getDataViewIdProperty();
     if (Array.isArray(this.data)) {
-      const index = this.data.findIndex(
-        (item) => item && typeof item === 'object' && (item as Record<string, unknown>)[idProperty] === reference
-      );
+      const index = this.data.findIndex((item) => item && typeof item === 'object' && (item as Record<string, unknown>)[idProperty] === id);
       if (index >= 0) {
-        this.dockingRowIndexByReference.set(reference, index);
+        this.dockingRowIndexByReference.set(cacheKey, index);
       }
       return index >= 0 ? index : undefined;
     }
     return undefined;
+  }
+
+  /** Resolves a list of row references to the row indexes the docking controller works with. */
+  protected resolveDockingRowIndexes(references?: RowReference[]): number[] {
+    return (references || []).map((reference) => this.resolveDockingRowIndex(reference)).filter(isDefinedNumber);
   }
 
   /** Returns the active DataView id property, falling back to `id`. */
@@ -10760,14 +10783,17 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (rebuildReferences) {
       this.dockingRowIndexByReference.clear();
     }
-    const references = [
-      ...(this._options.pinning?.rows?.top || []),
-      ...(this._options.pinning?.rows?.bottom || []),
-      ...(this._options.stickyRows?.top || []),
-      ...(this._options.stickyRows?.bottom || []),
-      ...(this._options.stickyRows?.both || []),
-    ];
-    const rows = Array.from(new Set(references.map((reference) => this.resolveDockingRowIndex(reference)).filter(isDefinedNumber))).map(
+    const permanentRows: PinnedRows = {
+      top: this.resolveDockingRowIndexes(this._options.pinning?.rows?.top),
+      bottom: this.resolveDockingRowIndexes(this._options.pinning?.rows?.bottom),
+    };
+    const stickyRows: StickyRows = {
+      top: this.resolveDockingRowIndexes(this._options.stickyRows?.top),
+      bottom: this.resolveDockingRowIndexes(this._options.stickyRows?.bottom),
+      both: this.resolveDockingRowIndexes(this._options.stickyRows?.both),
+    };
+    const references = [...permanentRows.top!, ...permanentRows.bottom!, ...stickyRows.top!, ...stickyRows.bottom!, ...stickyRows.both!] as number[];
+    const rows = Array.from(new Set(references)).map(
       (index) => ({
         height: this.getRowHeight(index),
         id: this.getRowIdentity(index),
@@ -10780,8 +10806,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       rows,
       scrollTop + this.offset,
       this._viewportScrollContainerY?.clientHeight || this.viewportH,
-      this._options.pinning?.rows,
-      this._options.stickyRows
+      permanentRows,
+      stickyRows
     );
     this.dockingByRow.clear();
     for (const entry of [...this.rowDockingLayout.top, ...this.rowDockingLayout.center, ...this.rowDockingLayout.bottom]) {
@@ -11000,8 +11026,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (!minCenterRowCount || (!this.rowDockingLayout.top.length && !this.rowDockingLayout.bottom.length)) {
       return;
     }
+    const permanentHeight = (entries: DockedRow[]): number =>
+      entries.filter((entry) => !entry.sticky).reduce((height, entry) => height + entry.height, 0);
     const requiredCenterHeight =
-      this.rowDockingLayout.topHeight + this.rowDockingLayout.bottomHeight + minCenterRowCount * this.getEstimatedRowHeight();
+      permanentHeight(this.rowDockingLayout.top) + permanentHeight(this.rowDockingLayout.bottom) + minCenterRowCount * this.getEstimatedRowHeight();
     const shortfall = requiredCenterHeight - this.viewportH;
     if (shortfall > 0) {
       this._container.style.minHeight = `${this._container.getBoundingClientRect().height + shortfall}px`;

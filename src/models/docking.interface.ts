@@ -26,12 +26,18 @@ export interface PinnedColumns {
   right?: ColumnPinningReferences;
 }
 
-export interface PinnedRows {
-  /** Rows to pin permanently to the top edge: numbers are row indexes, strings are dataset ids. */
-  top?: Array<number | string>;
+/**
+ * A row reference: a number is a row index, a string is a dataset id, and `{ id }` is a dataset
+ * id of either type (the form to use when dataset ids are numeric).
+ */
+export type RowReference = number | string | { id: number | string };
 
-  /** Rows to pin permanently to the bottom edge: numbers are row indexes, strings are dataset ids. */
-  bottom?: Array<number | string>;
+export interface PinnedRows {
+  /** Rows to pin permanently to the top edge. */
+  top?: RowReference[];
+
+  /** Rows to pin permanently to the bottom edge. */
+  bottom?: RowReference[];
 }
 
 /** Permanent pinning for both grid axes. */
@@ -44,14 +50,14 @@ export interface PinningOption {
 }
 
 export interface StickyRows {
-  /** Rows (indexes as numbers, dataset ids as strings) that dock to the top after scrolling past them. */
-  top?: Array<number | string>;
+  /** Rows that dock to the top after scrolling past them. */
+  top?: RowReference[];
 
-  /** Rows (indexes as numbers, dataset ids as strings) that dock to the bottom after scrolling back above them. */
-  bottom?: Array<number | string>;
+  /** Rows that dock to the bottom after scrolling back above them. */
+  bottom?: RowReference[];
 
-  /** Rows (indexes as numbers, dataset ids as strings) that dock to the nearest edge when normal scrolling would clip them. */
-  both?: Array<number | string>;
+  /** Rows that dock to the nearest edge when normal scrolling would clip them. */
+  both?: RowReference[];
 }
 
 export interface DockingOption {
@@ -76,8 +82,8 @@ export interface DockingOption {
   /** How sticky candidates are reduced when their pixel budget is exhausted. Defaults to `conveyor`. */
   overflowStrategy?: DockingOverflowStrategy;
 
-  /** Pixel activation buffer used when resolving sticky columns. Defaults to 2; this is not temporal stateful hysteresis. */
-  stickyHysteresis?: number;
+  /** Pixel activation buffer used when resolving sticky columns (rows dock at the exact boundary). Defaults to 2. */
+  stickyActivationBuffer?: number;
 }
 
 export type ColumnDockingBand = 'left' | 'center' | 'right';
