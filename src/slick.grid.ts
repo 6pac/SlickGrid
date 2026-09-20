@@ -1315,38 +1315,36 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (newOptions.stickyRows !== undefined) {
       const incomingStickyRows = newOptions.stickyRows ?? {};
       this._options.stickyRows = {
-        top: incomingStickyRows.top ? [...incomingStickyRows.top] : [],
-        bottom: incomingStickyRows.bottom ? [...incomingStickyRows.bottom] : [],
-        both: incomingStickyRows.both ? [...incomingStickyRows.both] : [],
+        top: Utils.replaceList(incomingStickyRows.top),
+        bottom: Utils.replaceList(incomingStickyRows.bottom),
+        both: Utils.replaceList(incomingStickyRows.both),
       };
     }
     if (newOptions.pinning !== undefined && newOptions.pinning !== null) {
       const incomingPinning = newOptions.pinning;
       const currentPinning = this._options.pinning ?? {};
-      const cloneColumnReferences = (references: ColumnPinningReferences | undefined): ColumnPinningReferences =>
-        typeof references === 'number' ? references : references ? [...references] : [];
+      const replaceColumnReferences = (
+        incoming: ColumnPinningReferences | undefined,
+        current: ColumnPinningReferences | undefined
+      ): ColumnPinningReferences => {
+        const references = incoming !== undefined ? incoming : current;
+        return typeof references === 'number' ? references : Utils.replaceList(references);
+      };
       this._options.pinning = {
         ...currentPinning,
-        ...(incomingPinning?.columns !== undefined
+        ...(incomingPinning.columns !== undefined
           ? {
               columns: {
-                left:
-                  incomingPinning.columns.left !== undefined
-                    ? cloneColumnReferences(incomingPinning.columns.left)
-                    : cloneColumnReferences(currentPinning.columns?.left),
-                right:
-                  incomingPinning.columns.right !== undefined
-                    ? cloneColumnReferences(incomingPinning.columns.right)
-                    : cloneColumnReferences(currentPinning.columns?.right),
+                left: replaceColumnReferences(incomingPinning.columns.left, currentPinning.columns?.left),
+                right: replaceColumnReferences(incomingPinning.columns.right, currentPinning.columns?.right),
               },
             }
           : {}),
-        ...(incomingPinning?.rows !== undefined
+        ...(incomingPinning.rows !== undefined
           ? {
               rows: {
-                top: incomingPinning.rows.top !== undefined ? [...incomingPinning.rows.top] : [...(currentPinning.rows?.top ?? [])],
-                bottom:
-                  incomingPinning.rows.bottom !== undefined ? [...incomingPinning.rows.bottom] : [...(currentPinning.rows?.bottom ?? [])],
+                top: Utils.replaceList(incomingPinning.rows.top, currentPinning.rows?.top),
+                bottom: Utils.replaceList(incomingPinning.rows.bottom, currentPinning.rows?.bottom),
               },
             }
           : {}),

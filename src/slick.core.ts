@@ -953,6 +953,11 @@ export class Utils {
     return <T>value !== undefined && <T>value !== null && <T>value !== '';
   }
 
+  /** Returns a copy of `incoming` when it is given, otherwise a copy of `current` (or an empty list). */
+  public static replaceList<T>(incoming: T[] | undefined, current?: T[]): T[] {
+    return incoming !== undefined ? [...incoming] : [...(current ?? [])];
+  }
+
   public static getElementProp(elm: HTMLElement & { getComputedStyle?: () => CSSStyleDeclaration }, property: string) {
     if (elm?.getComputedStyle) {
       return window.getComputedStyle(elm, null).getPropertyValue(property);
