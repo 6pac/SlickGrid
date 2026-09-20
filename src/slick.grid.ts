@@ -787,12 +787,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this._container.style.position = 'relative';
     }
 
-    const focusSinkParent = this._container.parentElement ?? this._container.ownerDocument?.body ?? this._container;
-
     this._focusSink = Utils.createDomElement(
       'div',
-      { tabIndex: -1, style: { position: 'fixed', width: '0px', height: '0px', top: '0px', left: '0px', outline: '0px' } },
-      focusSinkParent
+      { tabIndex: 0, style: { position: 'fixed', width: '0px', height: '0px', top: '0px', left: '0px', outline: '0px' } },
+      this._container
     );
 
     if (this._options.createTopHeaderPanel) {
@@ -959,7 +957,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     this._focusSink2 = this._focusSink.cloneNode(true) as HTMLDivElement;
-    focusSinkParent.appendChild(this._focusSink2);
+    this._container.appendChild(this._focusSink2);
 
     if (!this._options.explicitInitialization) {
       this.finishInitialization();
@@ -1026,9 +1024,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (this._dockingHorizontalScroller) {
         this._bindingEventService.bind(this._dockingHorizontalScroller, 'scroll', this.handleScroll.bind(this), {}, 'docking-horizontal-scroll');
       }
-      this._bindingEventService.bind(this._viewport, 'focus', () => {
-        this._options.enableCellNavigation && this.focusGridCell();
-      });
 
       if (this._options.enableMouseWheelScrollHandler) {
         this._viewport.forEach((view) => {
@@ -1066,10 +1061,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         this._bindingEventService.bind(this._preHeaderPanelScroller, 'click', this.handlePreHeaderClick.bind(this) as EventListener);
       }
 
-      this._bindingEventService.bind(this._focusSink, 'keydown', this.handleGridKeyDown.bind(this) as EventListener);
-      this._bindingEventService.bind(this._focusSink2, 'keydown', this.handleGridKeyDown.bind(this) as EventListener);
+      this._bindingEventService.bind(this._focusSink, 'keydown', this.handleKeyDown.bind(this) as EventListener);
+      this._bindingEventService.bind(this._focusSink2, 'keydown', this.handleKeyDown.bind(this) as EventListener);
 
-      this._bindingEventService.bind(this._canvas, 'keydown', this.handleGridKeyDown.bind(this) as EventListener);
+      this._bindingEventService.bind(this._canvas, 'keydown', this.handleKeyDown.bind(this) as EventListener);
       this._bindingEventService.bind(this._canvas, 'click', this.handleClick.bind(this) as EventListener);
       this._bindingEventService.bind(this._canvas, 'dblclick', this.handleDblClick.bind(this) as EventListener);
       this._bindingEventService.bind(this._canvas, 'contextmenu', this.handleContextMenu.bind(this) as EventListener);
@@ -1080,7 +1075,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       // Bind the same cell interactions when a permanent or active sticky row
       // caused that overlay to be materialized.
       this.bindDockingOverlayEvents();
-      this._bindingEventService.bind(this._container, 'keydown', this.handleContainerKeyDown.bind(this) as EventListener);
 
       this.createDraggable();
 
@@ -3872,14 +3866,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /** @alias `setFocus` */
-  focus(mode: 'cell' | 'header' | 'internal' = 'cell'): void {
-    if (mode === 'header') {
-      this.focusHeaderMenuOrColumn(0);
-      return;
-    } else if (mode === 'cell') {
-      this.focusGridCell();
-      return;
-    }
+  focus(): void {
     this.setFocus();
   }
 
@@ -4591,7 +4578,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     evt = this.trigger(this.onClick, { row: cell.row, cell: cell.cell }, evt || e);
-    if ((evt as SlickEventData_).isImmediatePropagationStopped() || e.defaultPrevented) {
+    if ((evt as SlickEventData_).isImmediatePropagationStopped()) {
       return;
     }
 
@@ -10190,7 +10177,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return;
     }
     const events: Array<[string, EventListener]> = [
-      ['keydown', this.handleGridKeyDown.bind(this) as EventListener],
+      ['keydown', this.handleKeyDown.bind(this) as EventListener],
       ['click', this.handleClick.bind(this) as EventListener],
       ['dblclick', this.handleDblClick.bind(this) as EventListener],
       ['contextmenu', this.handleContextMenu.bind(this) as EventListener],
@@ -11476,146 +11463,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     Object.entries(this.cellCssClasses).forEach(([k, v]) => predicate(k, v) && this.removeCellCssStyles(k));
   }
 
-  /**
-   * Programmatically focus a header column by index (default: first visible column).
-   * @param index - Column index to focus (defaults to 0)
-   */
-  focusHeaderColumn(index = 0): void {
-    this.getHeaderColumn(index)?.focus();
-  }
-
-  /**
-   * Programmatically focus a header menu (when found) or fallback to header column if menu is not found or not visible.
-   * @param index - Column index to focus (defaults to 0)
-   */
-  focusHeaderMenuOrColumn(index = 0): void {
-    const [headerMenuElm] = this.getVisibleElements(this.getHeaderColumn(index), '.slick-header-menu-button[tabIndex="0"]');
-    if (headerMenuElm) {
-      headerMenuElm.focus();
-    } else {
-      this.focusHeaderColumn(index);
-    }
-  }
-
-  /**
-   * Focus on first header row filter element it finds, unless focusOnLast is set to true in which case it will start backward and focus on the last one.
-   * If header row filter isn't shown, it will focus on the first grid cell (or grid menu/header menu if focusOnLast is true) instead.
-   * @param focusOnLast
-   * @returns true when a header row filter element was found and focused otherwise false
-   */
-  focusHeaderRowFilter(focusOnLast = false): boolean {
-    const headerRow = this.getHeaderRow();
-    if (this._options.showHeaderRow && headerRow) {
-      const headerRows = headerRow instanceof HTMLElement ? [headerRow] : [...headerRow];
-      const allFilterElms = headerRows.flatMap((row) =>
-        Array.from(row.querySelectorAll<HTMLElement>('.slick-headerrow-column *[tabIndex="0"]'))
-      );
-      const filterLn = allFilterElms.length;
-      let closestVisibleFilter: HTMLElement | null = null;
-      if (filterLn > 0) {
-        const start = focusOnLast ? filterLn - 1 : 0;
-        const end = focusOnLast ? -1 : filterLn;
-        const step = focusOnLast ? -1 : 1;
-        for (let i = start; i !== end; i += step) {
-          const elm = allFilterElms[i];
-          if (elm && elm.offsetParent !== null) {
-            closestVisibleFilter = elm;
-            break;
-          }
-        }
-      }
-      if (closestVisibleFilter) {
-        (closestVisibleFilter as HTMLElement).focus();
-        return true;
-      }
-    }
-
-    // when header row isn't visible or shown, fallback to focusing on grid cell or grid menu/header menu if focusOnLast is true
-    !focusOnLast ? this.focusGridCell() : this.focusGridMenu();
-    return false;
-  }
-
-  /** focus on the active cell when it exists, otherwise focus on first cell */
-  focusGridCell(): void {
-    this.setFocus();
-    if (!this.getActiveCell()) {
-      this.setActiveCell(0, 0);
-    }
-  }
-
-  /** focus on grid menu button when enabled or fallback to last header menu or column */
-  focusGridMenu(): void {
-    const gridMenuBtn = this._container?.querySelector<HTMLElement>('.slick-grid-menu-button[tabIndex="0"]');
-    if (gridMenuBtn) {
-      gridMenuBtn.focus();
-    } else {
-      this.focusHeaderMenuOrColumn(this.getVisibleColumns().length - 1);
-    }
-  }
-
   // Interactivity
 
-  /** focus element and stop event bubbling (for keyboard events) */
-  protected focusElementWithoutBubbling(e: KeyboardEvent, target: Element | null): void {
-    if (target) {
-      (target as HTMLElement).focus();
-      this.stopFullBubbling(e);
-    }
-  }
-
-  /** get only visible elemnts from a container and a query selector, e.g. elements with `display: none` will be excluded. */
-  protected getVisibleElements(container: HTMLElement, selector: string): HTMLElement[] {
-    return Array.from(container.querySelectorAll<HTMLElement>(selector)).filter((el) => el.offsetParent !== null);
-  }
-
-  /** Handles keyboard navigation originating from the grid container and header controls. */
-  protected handleContainerKeyDown(e: KeyboardEvent & { originalEvent: Event }): void {
-    if (e.target instanceof HTMLElement && e.key === 'Tab' && !e.ctrlKey && !e.altKey) {
-      const isInHeaderRow = e.target.closest('.slick-headerrow-columns');
-      const headerSelector = `.slick-${isInHeaderRow ? 'headerrow-column' : 'header-columns'} *[tabIndex="0"]`;
-      const allFilterElms = this.getVisibleElements(this._container, headerSelector);
-      const ancestorHeaderRow = e.target instanceof HTMLElement ? e.target.closest(headerSelector) : null;
-
-      if (allFilterElms.length > 0) {
-        const targetFilterElm = e.shiftKey ? allFilterElms[0] : allFilterElms[allFilterElms.length - 1];
-
-        if (targetFilterElm === ancestorHeaderRow && isInHeaderRow) {
-          // focus grid menu when Shift+Tab OR focus on first cell when using Tab
-          this.stopFullBubbling(e);
-          e.shiftKey ? this.focusGridMenu() : this.focusGridCell();
-        }
-      }
-    }
-  }
-
   /** Handles keyboard navigation and publishes the grid key-down event. */
-  protected handleGridKeyDown(e: KeyboardEvent & { originalEvent: Event; target: HTMLElement }): void {
+  protected handleKeyDown(e: KeyboardEvent & { originalEvent: Event; target: HTMLElement }): void {
     const retval = this.trigger(this.onKeyDown, { row: this.activeRow, cell: this.activeCell }, e);
     let handled: boolean | undefined | void = retval.isImmediatePropagationStopped();
-
-    const isGridFocusSinkTarget = e.target === this._focusSink || e.target === this._focusSink2;
-    const isPlainTab = e.key === 'Tab' && !e.ctrlKey && !e.altKey;
-    const isActiveCellZeroZero = this.activeRow === 0 && this.activeCell === 0;
-    const hasGridCellFocus = this.getActiveCell() !== null;
-
-    // Focus sinks are keyboard sentinels around the grid.
-    // Intercept only known sink Tab/Shift+Tab edge cases and route focus to header entry points.
-
-    // Otherwise, intentionally fall through to regular keyboard navigation below.
-    if (!handled && isGridFocusSinkTarget && isPlainTab) {
-      if (e.target === this._focusSink && !e.shiftKey && !hasGridCellFocus) {
-        this.focusHeaderMenuOrColumn(0);
-        handled = true;
-      } else if (e.target === this._focusSink2 && e.shiftKey && isActiveCellZeroZero) {
-        this.stopFullBubbling(e);
-        if (this._options.showHeaderRow && this.getHeaderRow()) {
-          this.focusHeaderRowFilter(true);
-        } else {
-          this.focusGridMenu();
-        }
-        handled = true;
-      }
-    }
 
     if (!handled && !e.shiftKey && !e.altKey) {
       // editor may specify an array of keys to bubble
@@ -11640,14 +11493,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     if (!handled) {
-      // if Shift+Tab is pressed from the first cell, move focus to the Grid Menu button if present, otherwise last column header menu
       if (e.key === 'Tab' && e.shiftKey && !e.ctrlKey && !e.altKey) {
-        if (this.activeRow === 0 && this.activeCell === 0) {
-          this.focusHeaderRowFilter(true);
-          handled = true;
-        } else {
-          handled = this.navigatePrev();
-        }
+        handled = this.navigatePrev();
       }
 
       if (!e.shiftKey && !e.altKey && !e.ctrlKey && !handled) {
@@ -11691,10 +11538,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         } else if (e.key === 'F2' && this._options.editable && !this.currentEditor) {
           this.makeActiveCellEditable(undefined, undefined, e);
           handled = true;
-        } else if (e.key === 'F6') {
-          // F6 focuses header row (accessibility pattern)
-          this.focusHeaderColumn();
-          handled = true;
         }
       }
     }
@@ -11707,7 +11550,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     if (handled) {
       // the event has been handled so don't let parent element (bubbling/propagation) or browser (default) handle it
-      this.stopFullBubbling(e);
+      e.stopPropagation();
+      e.preventDefault();
     }
   }
 
@@ -11740,14 +11584,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const column = Utils.storage.get(e.target.closest('.slick-headerrow-column'), 'column');
     if (column) {
       this.trigger(this.onHeaderRowMouseOut, { column, grid: this }, e);
-    }
-  }
-
-  /** Prevents default handling and stops propagation for a grid interaction event. */
-  protected stopFullBubbling(e: KeyboardEvent | MouseEvent | TouchEvent): void {
-    if (e) {
-      e.preventDefault();
-      e.stopPropagation();
     }
   }
 
