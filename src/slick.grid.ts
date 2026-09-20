@@ -800,7 +800,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (this._options.createTopHeaderPanel) {
       this._topHeaderPanelScroller = Utils.createDomElement(
         'div',
-        { className: 'slick-topheader-panel slick-state-default ui-state-default', style: { overflow: 'hidden', position: 'relative' } },
+        { className: 'slick-topheader-panel ui-state-default slick-state-default', style: { overflow: 'hidden', position: 'relative' } },
         this._container
       );
       this._topHeaderPanelScroller.appendChild(document.createElement('div'));
@@ -824,7 +824,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       const headerContainer = Utils.createDomElement('div', { className: 'slick-preheader-container' }, this._headerRoot);
       this._preHeaderPanelScroller = Utils.createDomElement(
         'div',
-        { className: 'slick-preheader-panel slick-state-default ui-state-default', style: { overflow: 'hidden', position: 'relative' } },
+        { className: 'slick-preheader-panel ui-state-default slick-state-default', style: { overflow: 'hidden', position: 'relative' } },
         headerContainer
       );
       this._preHeaderPanelScroller.appendChild(document.createElement('div'));
@@ -846,7 +846,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const headerContainerL = Utils.createDomElement('div', { className: 'slick-header-container' }, this._headerRoot);
     this._headerScrollerL = Utils.createDomElement(
       'div',
-      { className: 'slick-header slick-state-default ui-state-default slick-header-left', role: 'rowgroup' },
+      { className: 'slick-header ui-state-default slick-state-default slick-header-left', role: 'rowgroup' },
       headerContainerL
     );
 
@@ -865,7 +865,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     this._headerRowScrollerL = Utils.createDomElement(
       'div',
-      { className: 'slick-headerrow slick-state-default ui-state-default', role: 'rowgroup' },
+      { className: 'slick-headerrow ui-state-default slick-state-default', role: 'rowgroup' },
       this._contentRoot
     );
 
@@ -886,7 +886,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this._headerRows = [this._headerRowL];
 
     // Append the top panel scroller
-    this._topPanelScrollerL = Utils.createDomElement('div', { className: 'slick-top-panel-scroller slick-state-default ui-state-default' }, this._contentRoot);
+    this._topPanelScrollerL = Utils.createDomElement('div', { className: 'slick-top-panel-scroller ui-state-default slick-state-default' }, this._contentRoot);
 
     this._topPanelScrollers = [this._topPanelScrollerL];
 
@@ -1472,7 +1472,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected materializeFooterRow(): void {
     const canvasWithScrollbarWidth = this.getCanvasWidth() + (this.scrollbarDimensions?.width || 0);
 
-    this._footerRowScrollerL = Utils.createDomElement('div', { className: 'slick-footerrow slick-state-default ui-state-default' }, this._contentRoot);
+    this._footerRowScrollerL = Utils.createDomElement('div', { className: 'slick-footerrow ui-state-default slick-state-default' }, this._contentRoot);
     this._footerRowScroller = [this._footerRowScrollerL];
 
     this._footerRowSpacerL = Utils.createDomElement(
@@ -1565,7 +1565,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       }
 
       const columnDef = this.columns[idx];
-      const header: HTMLElement | undefined = this.getColumnHeaderByIndex(idx);
+      const header: HTMLElement | undefined = this.getColumnByIndex(idx);
       if (header) {
         if (title !== undefined) {
           this.columns[idx].name = title;
@@ -1694,7 +1694,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         const band = this.getColumnDockingBand(i);
         const footerRowCell = Utils.createDomElement(
           'div',
-          { className: `slick-state-default ui-state-default slick-footerrow-column l${i} r${i}` },
+          { className: `ui-state-default slick-state-default slick-footerrow-column l${i} r${i}` },
           this.getDockingChromeRegion('footerRow', band)
         );
         const className = band !== 'center' ? 'pinned' : null;
@@ -1879,7 +1879,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           id: `${this.uid + m.id}`,
           dataset: { id: String(m.id) },
           role: 'columnheader',
-          className: 'slick-state-default ui-state-default slick-header-column',
+          className: 'ui-state-default slick-state-default slick-header-column',
           tabIndex: 0,
           ariaColIndex: `${i + 1}`,
         },
@@ -1950,7 +1950,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (this._options.showHeaderRow) {
         const headerRowCell = Utils.createDomElement(
           'div',
-          { className: `slick-state-default ui-state-default slick-headerrow-column l${i} r${i}`, role: 'gridcell', ariaColIndex: `${i + 1}` },
+          { className: `ui-state-default slick-state-default slick-headerrow-column l${i} r${i}`, role: 'gridcell', ariaColIndex: `${i + 1}` },
           headerRowTarget
         );
         const pinnedClasses = band !== 'center' ? 'pinned' : null;
@@ -3535,7 +3535,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       const columnIndex = this.getVisibleColumnIndex(col.columnId);
       if (Utils.isDefined(columnIndex)) {
-        const column = this.getColumnHeaderByIndex(columnIndex);
+        const column = this.getColumnByIndex(columnIndex);
         if (column) {
           column.classList.add('slick-header-column-sorted');
           let indicator = column.querySelector('.slick-sort-indicator');
@@ -5303,15 +5303,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return this._topPanels[0];
   }
 
-  /**
-   * Get the top panels used by the grid.
-   *
-   * The single-viewport renderer has one shared top panel, so it returns that
-   * element in both compatibility positions to preserve integrations that
-   * append content to `getTopPanels()[1]`.
-   */
+  /** Get the top panels used by the grid (the single-viewport renderer has one). */
   getTopPanels(): HTMLDivElement[] {
-    return this._topPanels.length > 1 ? this._topPanels : [this._topPanels[0], this._topPanels[0]];
+    return this._topPanels;
   }
 
   /**
@@ -8202,7 +8196,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     let el = Utils.createDomElement(
       'div',
-      { className: 'slick-state-default ui-state-default slick-header-column', style: { visibility: 'hidden' }, textContent: '-' },
+      { className: 'ui-state-default slick-state-default slick-header-column', style: { visibility: 'hidden' }, textContent: '-' },
       header
     );
     let style = getComputedStyle(el);
@@ -10273,24 +10267,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Get column header by index
-   * @param {Number} idx - column index
-   * @returns - column header HTML element
-   */
-  getColumnHeaderByIndex(idx: number): HTMLElement | undefined {
-    return this.getColumnByIndex(idx);
-  }
-
-  /**
-   * Get column by index
-   * @param {Number} idx - column index
-   * @returns - column object
-   */
-  getColumnByIdx(idx: number): C | null {
-    return this.columns[idx];
-  }
-
-  /**
    * Applies the unified permanent column pinning option. Column references may
    * be numeric edge shorthands, ids, or zero-based indexes; left pinning wins
    * if a reference appears in both lists.
@@ -11518,17 +11494,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     };
 
     this.stickyColumnLayoutFrame = this.scheduleAnimationFrame(update);
-  }
-
-  /**
-   * Removes an "overlay" of CSS classes from cell DOM elements matching predicated entries.
-   * Useful when you have multiple keys and want to remove them based on a certain criteria.
-   * @param {Function} predicate A callback function that receives the key and hash as arguments and should return true if the entry should be removed.
-   * @example
-   * grid.removeCellCssStylesBatch((key, hash) => key.startsWith('unsaved-changes') && hash[0].includes('highlight'));
-   */
-  removeCellCssStylesBatch(predicate: (key: string, hash: CssStyleHash) => boolean): void {
-    Object.entries(this.cellCssClasses).forEach(([k, v]) => predicate(k, v) && this.removeCellCssStyles(k));
   }
 
   // Interactivity

@@ -642,7 +642,7 @@ document.addEventListener("DOMContentLoaded", function() {
   filterLeftPanelElm.style.display = 'block';
   filterRightPanelElm.style.display = 'block';
   secondaryRowElms[0].appendChild(filterLeftPanelElm);
-  secondaryRowElms[1].appendChild(filterRightPanelElm);
+  secondaryRowElms[0].appendChild(filterRightPanelElm);
 
   grid.onCellChange.subscribe(function (e, args) {
     dataView.updateItem(args.item.id, args.item);

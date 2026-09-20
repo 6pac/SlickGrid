@@ -245,7 +245,7 @@ document.addEventListener("DOMContentLoaded", function() {
   filterLeftPanel.style.display = 'block';
   filterRightPanel.style.display = 'block';
   secondaryRows[0].appendChild(filterLeftPanel);
-  secondaryRows[1].appendChild(filterRightPanel);
+  secondaryRows[0].appendChild(filterRightPanel);
 
   grid.onCellChange.subscribe(function (e, args) {
     dataView.updateItem(args.item.id, args.item);

@@ -12,9 +12,10 @@ classes should alter those!
   border-bottom: 1px solid silver;
 }
 
-// The grid now emits `slick-state-default` instead of the legacy jQuery UI
-// `ui-state-default` class. Keep both selectors so the default theme applies
-// its intended header box height after docking splits the header into regions.
+// Header elements carry both `ui-state-default` and `slick-state-default`.
+// Match the `.slick-state-default` specificity of the docking rules so the
+// default theme keeps its header box height after docking splits the header
+// into regions.
 .slick-header-column,
 .slick-header-column.slick-state-default {
   background-color: #ececec;

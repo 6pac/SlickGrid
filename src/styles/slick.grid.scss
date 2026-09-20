@@ -48,9 +48,9 @@ classes should alter those!
   z-index: 1;
 }
 
-// The grid emits `slick-state-default` on current header elements. Keep the
-// shared geometry for that class as well, while leaving display/flex layout to
-// the docking rules above so split header regions remain aligned.
+// Header elements also carry `slick-state-default`, which the docking rules
+// key on. Keep the shared geometry for that class as well, while leaving the
+// display/flex layout to the docking rules so split header regions remain aligned.
 .slick-header-column.slick-state-default, .slick-group-header-column.slick-state-default {
   position: relative;
   box-sizing: content-box !important;
