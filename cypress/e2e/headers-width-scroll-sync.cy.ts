@@ -118,6 +118,16 @@ const harnessHtml = `<!doctype html>
           Math.abs(bodyScrollLeft - bodyMaxScrollLeft) <= 1,
           'scrollLeft=' + bodyScrollLeft + ' max=' + bodyMaxScrollLeft);
 
+        // The header content is translated by -scrollLeft (the header scroller itself stays at 0).
+        var TRANSFORM_PREFIX = 'translate3d(';
+        var translated = Array.prototype.find.call(headerScroller.querySelectorAll('*'), function (el) {
+          return el.style.transform.indexOf(TRANSFORM_PREFIX) === 0;
+        });
+        var headerShift = translated ? parseFloat(translated.style.transform.slice(TRANSFORM_PREFIX.length)) : NaN;
+        check(name + ': header content is shifted by the scroll owner position at full right scroll',
+          Math.abs(headerShift + bodyScrollLeft) <= 1 && headerScroller.scrollLeft === 0,
+          'headerShift=' + headerShift + ' headerScrollLeft=' + headerScroller.scrollLeft + ' body=' + bodyScrollLeft);
+
         var lastHeader = container.querySelectorAll('.slick-header-column');
         lastHeader = lastHeader[lastHeader.length - 1];
         var lastCell = viewport.querySelector('.slick-row .slick-cell.l14.r14');

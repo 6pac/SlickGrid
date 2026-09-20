@@ -138,9 +138,10 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
     return cy.get(viewportSelector).invoke('scrollTop').then((scrollBefore: any) => {
       return cy.dragOutside('bottom', 0, px, { parentSelector: selector, rowHeight: cellHeight }).then(() => {
         const start = performance.now();
-        return cy.get(viewportSelector).should($viewport => {
-          expect($viewport[0].scrollTop).to.be.greaterThan(scrollBefore);
-        }).then(() => cy.get(viewportSelector).invoke('scrollTop')).then((scrollAfter: any) => {
+        cy.get(selector + ' .slick-row:not(.slick-group) .cell-unselectable')
+          .contains('16', { timeout: 10000 }) // actually #15 will be selected
+          .should('not.be.hidden');
+        return cy.get(viewportSelector).invoke('scrollTop').then((scrollAfter: any) => {
           return cy.dragEnd(selector).then(() => {
             const interval = performance.now() - start;
             expect(scrollBefore).to.be.lessThan(scrollAfter);
@@ -258,11 +259,11 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
 
     // top left - to bottomRight
     getScrollDistanceWhenDragOutsideGrid('#myGrid', 'topLeft', 'bottomRight', 0, 1).then((result: any) => {
-      expect(result.scrollTopBefore).to.be.lte(result.scrollTopAfter);
+      expect(result.scrollTopBefore).to.be.lessThan(result.scrollTopAfter);
       expect(result.scrollLeftBefore).to.be.lessThan(result.scrollLeftAfter);
     });
     getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'topLeft', 'bottomRight', 0, 1).then((result: any) => {
-      expect(result.scrollTopBefore).to.be.lte(result.scrollTopAfter);
+      expect(result.scrollTopBefore).to.be.lessThan(result.scrollTopAfter);
       expect(result.scrollLeftBefore).to.be.lessThan(result.scrollLeftAfter);
     });
 
@@ -271,33 +272,33 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
     // the non-selectable pinned row-number cell.
     // top right - to bottomRight
     getScrollDistanceWhenDragOutsideGrid('#myGrid', 'topRight', 'bottomRight', 0, 2).then((result: any) => {
-      expect(result.scrollTopBefore).to.be.lte(result.scrollTopAfter);
+      expect(result.scrollTopBefore).to.be.lessThan(result.scrollTopAfter);
       expect(result.scrollLeftBefore).to.be.lessThan(result.scrollLeftAfter);
     });
     getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'topRight', 'bottomRight', 0, 2).then((result: any) => {
-      expect(result.scrollTopBefore).to.be.lte(result.scrollTopAfter);
+      expect(result.scrollTopBefore).to.be.lessThan(result.scrollTopAfter);
       expect(result.scrollLeftBefore).to.be.lessThan(result.scrollLeftAfter);
     });
     resetScrollInPinned();
 
     // bottom left - to bottomRight
     getScrollDistanceWhenDragOutsideGrid('#myGrid', 'bottomLeft', 'bottomRight', 0, 1).then((result: any) => {
-      expect(result.scrollTopBefore).to.be.lte(result.scrollTopAfter);
+      expect(result.scrollTopBefore).to.be.lessThan(result.scrollTopAfter);
       expect(result.scrollLeftBefore).to.be.lessThan(result.scrollLeftAfter);
     });
     getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'bottomLeft', 'bottomRight', 0, 1).then((result: any) => {
-      expect(result.scrollTopBefore).to.be.lte(result.scrollTopAfter);
+      expect(result.scrollTopBefore).to.be.lessThan(result.scrollTopAfter);
       expect(result.scrollLeftBefore).to.be.lessThan(result.scrollLeftAfter);
     });
     resetScrollInPinned();
 
     // bottom right - to bottomRight
     getScrollDistanceWhenDragOutsideGrid('#myGrid', 'bottomRight', 'bottomRight', 0, 2).then((result: any) => {
-      expect(result.scrollTopBefore).to.be.lte(result.scrollTopAfter);
+      expect(result.scrollTopBefore).to.be.lessThan(result.scrollTopAfter);
       expect(result.scrollLeftBefore).to.be.lessThan(result.scrollLeftAfter);
     });
     getScrollDistanceWhenDragOutsideGrid('#myGrid2', 'bottomRight', 'bottomRight', 0, 2).then((result: any) => {
-      expect(result.scrollTopBefore).to.be.lte(result.scrollTopAfter);
+      expect(result.scrollTopBefore).to.be.lessThan(result.scrollTopAfter);
       expect(result.scrollLeftBefore).to.be.lessThan(result.scrollLeftAfter);
     });
     resetScrollInPinned();

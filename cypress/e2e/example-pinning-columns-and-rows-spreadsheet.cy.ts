@@ -81,7 +81,7 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
   });
 
   it('selects a range across the top-pinned and scrolling rows', () => {
-    getCell(5, 2).as('cell_B5').click({ force: true });
+    getCell(5, 2).as('cell_B5').click();
     cy.get('@cell_B5').type('{shift}{uparrow}{downarrow}{downarrow}{downarrow}{downarrow}', { release: false, force: true });
 
     cy.get(`${grid} .slick-cell.l2.r2.selected`).should('have.length', 4);
@@ -89,7 +89,7 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
   });
 
   it('selects a range from a top-pinned row through the scrolling rows', () => {
-    getCell(5, 5).as('cell_E5').click({ force: true });
+    getCell(5, 5).as('cell_E5').click();
     cy.get('@cell_E5').type('{shift}{rightarrow}{pagedown}{pagedown}', { release: false, force: true });
 
     cy.get('#selectionRange').should('have.text', '{"fromRow":5,"fromCell":5,"toCell":6,"toRow":41}');
@@ -97,6 +97,8 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
 
   it('selects from a scrolled cell to the start of the sheet', () => {
     scrollRowIntoView(40);
+    // getCell() picks the topmost node, but the stale duplicate described there can still be
+    // over it when the click lands, so skip the actionability check.
     getCell(40, 6).as('cell_G40').click({ force: true });
     cy.get('@cell_G40').type('{shift}{ctrl}{home}', { release: false, force: true });
 
@@ -113,7 +115,7 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
 
   it('selects the complete sheet with Ctrl+A from a scrolled row', () => {
     scrollRowIntoView(95);
-    getCell(95, 95).as('cell_CS95').click({ force: true });
+    getCell(95, 95).as('cell_CS95').click();
     cy.get('@cell_CS95').type('{ctrl}{A}', { release: false, force: true });
 
     cy.get('#selectionRange').should('have.text', '{"fromRow":0,"fromCell":0,"toCell":100,"toRow":99}');

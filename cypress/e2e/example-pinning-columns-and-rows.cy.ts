@@ -46,7 +46,13 @@ describe('Example - Pinned Columns & Rows', { retries: 1 }, () => {
     [0, 1, 49999].forEach((row) => assertPinnedRow(row));
     cy.get(`${grid} .grid-canvas .slick-row[data-row="2"]`).should('have.length', 1);
 
-    assertPinnedRow(0);
+    // one cell value per band, in the overlay and in the scrolling canvas
+    cy.get(`${grid} .slick-docking-overlay .slick-row[data-row="0"] > .slick-pinned-left-cells .slick-cell.l1`).should('contain', 'Task 0');
+    cy.get(`${grid} .slick-docking-overlay .slick-row[data-row="0"] > .slick-scrolling-cells .slick-cell.l4`).should('contain', '01/01/2009');
+    cy.get(`${grid} .slick-docking-overlay .slick-row[data-row="49999"] > .slick-pinned-right-cells .slick-cell.l10`).should('contain', '49999');
+    cy.get(`${grid} .grid-canvas .slick-row[data-row="2"] > .slick-pinned-left-cells .slick-cell.l1`).should('contain', 'Task 2');
+    cy.get(`${grid} .grid-canvas .slick-row[data-row="2"] > .slick-scrolling-cells .slick-cell.l5`).should('contain', '01/05/2009');
+    cy.get(`${grid} .grid-canvas .slick-row[data-row="2"] > .slick-pinned-right-cells .slick-cell.l10`).should('contain', '2');
   });
 
   it('keeps all four pinning sides after horizontal scrolling', () => {

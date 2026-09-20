@@ -1,3 +1,5 @@
+import { createDragLikeEvent, createMouseLikeEvent, pressPointer, releasePointer } from '../support/drag';
+
 // Characterization tests for column reordering on the persistent docking layout.
 describe('Example - Pinning Columns - Column Header Reorder', { retries: 1 }, () => {
   const grid = '#myGrid';
@@ -101,5 +103,67 @@ describe('Example - Pinning Columns - Column Header Reorder', { retries: 1 }, ()
     expectHeaderTitles(centerHeaders, ['% Complete', 'Start', 'Finish', 'Effort Driven', 'Title1', 'Title3', 'Title2', 'Title4']);
     cy.get(horizontalScroller).should(($scroller) => expect($scroller[0].scrollLeft).to.be.closeTo(300, 2));
     expectReorderCallCount(1);
+  });
+
+  it('auto-scrolls the center band when a header drag moves past the right edge of the grid', () => {
+    const getCenterHeader = (win: any, title: string): HTMLElement => {
+      const headers = Array.from(win.document.querySelectorAll(`${centerHeaders} .slick-header-column`)) as HTMLElement[];
+      return headers.find((element) => (element.textContent ?? '').includes(title)) as HTMLElement;
+    };
+    cy.get(horizontalScroller).should(($scroller) => expect($scroller[0].scrollLeft).to.eq(0));
+
+    // start the drag inside the grid, then move past its right edge through document-level drag events
+    cy.window().then((win: any) => {
+      const finishHeader = getCenterHeader(win, 'Finish');
+      expect(finishHeader).to.exist;
+      const rect = finishHeader.getBoundingClientRect();
+      const startX = rect.left + rect.width / 2;
+      const startY = rect.top + rect.height / 2;
+      pressPointer(finishHeader, startX, startY);
+      finishHeader.dispatchEvent(createDragLikeEvent('dragstart', startX, startY, new DataTransfer()));
+    });
+
+    // SortableJS dispatches its start callback on the next macrotask; yield so the grid can bind
+    // its document-level auto-scroll listeners before the pointer moves outside
+    cy.wait(50);
+    cy.window().then((win: any) => {
+      const finishHeader = getCenterHeader(win, 'Finish');
+      const rect = finishHeader.getBoundingClientRect();
+      const gridRect = (win.document.querySelector(grid) as HTMLElement).getBoundingClientRect();
+      const dragY = rect.top + rect.height / 2;
+      const dragX = gridRect.right + 100;
+      win.document.dispatchEvent(createDragLikeEvent('drag', dragX, dragY, new DataTransfer()));
+      win.document.dispatchEvent(createMouseLikeEvent(win, 'mousemove', dragX, dragY));
+    });
+    cy.wait(250);
+
+    // back inside the grid the auto-scroll stops and the position holds
+    cy.window().then((win: any) => {
+      const finishHeader = getCenterHeader(win, 'Finish');
+      const rect = finishHeader.getBoundingClientRect();
+      const scrollerRect = (win.document.querySelector(horizontalScroller) as HTMLElement).getBoundingClientRect();
+      const dragY = rect.top + rect.height / 2;
+      const safeX = scrollerRect.left + scrollerRect.width / 2;
+      win.document.dispatchEvent(createDragLikeEvent('drag', safeX, dragY, new DataTransfer()));
+      win.document.dispatchEvent(createMouseLikeEvent(win, 'mousemove', safeX, dragY));
+    });
+    cy.get(horizontalScroller).then(($scroller) => {
+      expect($scroller[0].scrollLeft).to.be.greaterThan(10);
+      const scrollLeftAfterSafeZone = $scroller[0].scrollLeft;
+      cy.wait(250);
+      cy.get(horizontalScroller).should(($again) => expect($again[0].scrollLeft).to.eq(scrollLeftAfterSafeZone));
+    });
+
+    // ending the drag on the source itself reorders nothing and leaves the auto-scroll stopped
+    cy.window().then((win: any) => {
+      const finishHeader = getCenterHeader(win, 'Finish');
+      const rect = finishHeader.getBoundingClientRect();
+      const dropY = rect.top + rect.height / 2;
+      const safeX = rect.left + rect.width / 2;
+      finishHeader.dispatchEvent(createDragLikeEvent('dragend', safeX, dropY, new DataTransfer()));
+      releasePointer(finishHeader, safeX, dropY);
+    });
+    expectHeaderTitles(centerHeaders, initialCenterTitles);
+    expectReorderCallCount(0);
   });
 });

@@ -102,10 +102,10 @@ describe('Example - Sticky Financial Report', { retries: 1 }, () => {
       .then(($handle) => {
         const header = $handle.closest('.slick-header-column')[0] as HTMLElement;
         const initialWidth = header.getBoundingClientRect().width;
-        cy.wrap($handle).trigger('mousedown', { which: 1, pageX: 100, clientX: 100, force: true });
-        cy.get('body').trigger('mousemove', { which: 1, pageX: 125, clientX: 125, force: true });
-        cy.get('body').trigger('mousemove', { which: 1, pageX: 150, clientX: 150, force: true });
-        cy.get('body').trigger('mouseup', { which: 1, pageX: 150, clientX: 150, force: true });
+        cy.wrap($handle).trigger('mousedown', { which: 1, pageX: 100, clientX: 100 });
+        cy.get('body').trigger('mousemove', { which: 1, pageX: 125, clientX: 125 });
+        cy.get('body').trigger('mousemove', { which: 1, pageX: 150, clientX: 150 });
+        cy.get('body').trigger('mouseup', { which: 1, pageX: 150, clientX: 150 });
         cy.get(`${grid} .slick-header-column[data-id="q2"]`).should(($updatedHeader) => {
           expect($updatedHeader[0].getBoundingClientRect().width).to.be.greaterThan(initialWidth);
         });
@@ -121,10 +121,10 @@ describe('Example - Sticky Financial Report', { retries: 1 }, () => {
       .then(($handle) => {
         const header = $handle.closest('.slick-header-column')[0] as HTMLElement;
         const initialWidth = header.getBoundingClientRect().width;
-        cy.wrap($handle).trigger('mousedown', { which: 1, pageX: 100, clientX: 100, force: true });
-        cy.get('body').trigger('mousemove', { which: 1, pageX: 125, clientX: 125, force: true });
-        cy.get('body').trigger('mousemove', { which: 1, pageX: 150, clientX: 150, force: true });
-        cy.get('body').trigger('mouseup', { which: 1, pageX: 150, clientX: 150, force: true });
+        cy.wrap($handle).trigger('mousedown', { which: 1, pageX: 100, clientX: 100 });
+        cy.get('body').trigger('mousemove', { which: 1, pageX: 125, clientX: 125 });
+        cy.get('body').trigger('mousemove', { which: 1, pageX: 150, clientX: 150 });
+        cy.get('body').trigger('mouseup', { which: 1, pageX: 150, clientX: 150 });
         cy.get(`${grid} .slick-header-column[data-id="account"]`).should(($updatedHeader) => {
           expect($updatedHeader[0].getBoundingClientRect().width).to.be.greaterThan(initialWidth);
         });
@@ -136,6 +136,8 @@ describe('Example - Sticky Financial Report', { retries: 1 }, () => {
     cy.get(`${grid} .slick-header-column[data-id="q2"]`)
       .should('have.class', 'slick-column-sticky')
       .and('have.class', 'slick-column-pinned-right');
+    // A right-docked sticky column covers the natural cell beneath it, so the click that
+    // sets the active cell has to bypass the actionability check.
     cy.get(cell(0, 7)).should('exist').click({ force: true });
     cy.get(scrollOwner).invoke('prop', 'scrollLeft').then((beforeScroll) => {
       cy.get(cell(0, 7)).type('{rightarrow}', { force: true });

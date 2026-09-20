@@ -79,6 +79,20 @@ describe('SlickGrid Auto Header Height', () => {
             });
             cy.get('#myGrid .slick-docking-overlay').should('exist');
             cy.get('#myGrid .slick-docking-horizontal-scroller').should('exist');
+            cy.get('#myGrid').should(($grid) => {
+                expect($grid[0].scrollHeight).to.be.lte($grid[0].clientHeight + 1);
+            });
+        });
+
+        it('should not overflow container when pinned columns & rows are active', () => {
+            applyPinning();
+
+            cy.get(headerSelector).should(($header) => {
+                expect($header[0].offsetHeight).to.be.greaterThan(0);
+            });
+            cy.get('#myGrid').should(($grid) => {
+                expect($grid[0].scrollHeight).to.be.lte($grid[0].clientHeight + 1);
+            });
         });
 
         it('should align the pinned overlay with the viewport and clip its overflow', () => {
@@ -108,9 +122,9 @@ describe('SlickGrid Auto Header Height', () => {
                 const pageX = rect.left + window.scrollX;
                 const pageY = rect.top + window.scrollY;
                 cy.wrap($handle)
-                    .trigger('mousedown', { which: 1, force: true, pageX, pageY })
-                    .trigger('mousemove', { which: 1, force: true, pageX: pageX + 30, pageY })
-                    .trigger('mouseup', { force: true });
+                    .trigger('mousedown', { which: 1, pageX, pageY })
+                    .trigger('mousemove', { which: 1, pageX: pageX + 30, pageY })
+                    .trigger('mouseup');
             });
 
             cy.get(`${headerSelector} .slick-header-column`).should(($headers) => {

@@ -48,7 +48,6 @@ declare global {
       ): Chainable<JQuery<HTMLElement>>;
       restoreLocalStorage(): Chainable<void>;
       saveLocalStorage(): Chainable<void>;
-      getTransformValue(cssTransformMatrix: string, absoluteValue: boolean, transformType?: 'rotate' | 'scale'): Chainable<number>;
     }
   }
 }
@@ -56,32 +55,14 @@ declare global {
 // convert position like 'topLeft' to the object { x: 'left|right', y: 'top|bottom' }
 Cypress.Commands.add('convertPosition', (viewport = 'topLeft') => cy.wrap(convertPosition(viewport)));
 
-Cypress.Commands.add('getCell', (row, col, viewport = 'topLeft', { parentSelector = '', rowHeight = 25 } = {}) => {
-  const position = convertPosition(viewport);
-  const isSingleViewport = cy.$$(parentSelector).find('.grid-canvas').length === 1;
-  const canvasSelector = isSingleViewport
-    ? '.grid-canvas'
-    : `${position.x ? `.grid-canvas-${position.x}` : ''}${position.y ? `.grid-canvas-${position.y}` : ''}`;
-
-  return cy.get(
-    isSingleViewport
-      ? `${parentSelector} .slick-row[data-row="${row}"] .slick-cell.l${col}.r${col}`
-      : `${parentSelector} ${canvasSelector} [style="transform: translateY(${row * rowHeight}px);"] > .slick-cell.l${col}.r${col}`
-  );
+// The grid renders a single viewport, so the legacy `viewport` argument is kept only for call-site compatibility.
+Cypress.Commands.add('getCell', (row, col, _viewport = 'topLeft', { parentSelector = '' } = {}) => {
+  return cy.get(`${parentSelector} .slick-row[data-row="${row}"] .slick-cell.l${col}.r${col}`);
 });
 
-Cypress.Commands.add('getNthCell', (row, nthCol, viewport = 'topLeft', { parentSelector = '', rowHeight = 25 } = {}) => {
-  const position = convertPosition(viewport);
-  const isSingleViewport = cy.$$(parentSelector).find('.grid-canvas').length === 1;
-  const canvasSelector = isSingleViewport
-    ? '.grid-canvas'
-    : `${position.x ? `.grid-canvas-${position.x}` : ''}${position.y ? `.grid-canvas-${position.y}` : ''}`;
-
-  return cy.get(
-    isSingleViewport
-      ? `${parentSelector} .slick-row[data-row="${row}"] .slick-cell.l${nthCol}.r${nthCol}`
-      : `${parentSelector} ${canvasSelector} [style="transform: translateY(${row * rowHeight}px);"] > .slick-cell:nth(${nthCol})`
-  );
+// `nthCol` is the column index (the cell's `.lN.rN` classes), not a DOM child position.
+Cypress.Commands.add('getNthCell', (row, nthCol, _viewport = 'topLeft', { parentSelector = '' } = {}) => {
+  return cy.get(`${parentSelector} .slick-row[data-row="${row}"] .slick-cell.l${nthCol}.r${nthCol}`);
 });
 
 const LOCAL_STORAGE_MEMORY: Record<string, string | null> = {};
@@ -100,35 +81,3 @@ Cypress.Commands.add('restoreLocalStorage', () => {
     }
   });
 });
-
-Cypress.Commands.add(
-  'getTransformValue',
-  (
-    cssTransformMatrix: string,
-    absoluteValue: boolean,
-    transformType: 'rotate' | 'scale' = 'rotate' // Default to 'rotate'
-  ): Cypress.Chainable<number> => {
-    if (!cssTransformMatrix || cssTransformMatrix === 'none') {
-      throw new Error('Transform matrix is undefined or none');
-    }
-
-    const cssTransformMatrixIndexes = cssTransformMatrix.split('(')[1].split(')')[0].split(',');
-
-    if (transformType === 'rotate') {
-      const cssTransformScale = Math.sqrt(
-        +cssTransformMatrixIndexes[0] * +cssTransformMatrixIndexes[0] + +cssTransformMatrixIndexes[1] * +cssTransformMatrixIndexes[1]
-      );
-
-      const cssTransformSin = +cssTransformMatrixIndexes[1] / cssTransformScale;
-      const cssTransformAngle = Math.round(Math.asin(cssTransformSin) * (180 / Math.PI));
-
-      return cy.wrap(absoluteValue ? Math.abs(cssTransformAngle) : cssTransformAngle);
-    } else if (transformType === 'scale') {
-      // Assuming scale is based on the first value in the matrix.
-      const scaleValue = +cssTransformMatrixIndexes[0]; // First value typically represents scaling in x direction.
-      return cy.wrap(scaleValue); // Directly return the scale value.
-    }
-
-    throw new Error('Unsupported transform type');
-  }
-);

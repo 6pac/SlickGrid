@@ -160,11 +160,13 @@ describe('Example - Column Span & Header Grouping', { retries: 1 }, () => {
       cy.reload();
       applyPinning();
 
+      // The fragment is an aria-hidden presentational continuation rendered behind its host
+      // cell, so it is deliberately not actionable on its own.
       cy.get(fragmentSelector).click({ force: true });
       cy.get(hostSelector).should('have.class', 'selected');
       cy.get(fragmentSelector).should('have.class', 'selected');
 
-      cy.get('[data-row=3] > .slick-scrolling-cells > .slick-cell.l4').click({ force: true });
+      cy.get('[data-row=3] > .slick-scrolling-cells > .slick-cell.l4').click();
       cy.get(hostSelector).should('not.have.class', 'selected');
       cy.get(fragmentSelector).should('not.have.class', 'selected');
     });
@@ -173,6 +175,8 @@ describe('Example - Column Span & Header Grouping', { retries: 1 }, () => {
       cy.reload();
       applyPinning();
 
+      // The fragment is an aria-hidden presentational continuation rendered behind its host
+      // cell, so it is deliberately not actionable on its own.
       cy.get(fragmentSelector).click({ force: true });
       cy.get(hostSelector).should('have.class', 'active');
       cy.get(fragmentSelector).should('have.class', 'active').then(($fragment) => {
