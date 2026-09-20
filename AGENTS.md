@@ -2,10 +2,9 @@
 
 ## Generated files
 
-- Never create, edit, or otherwise modify anything under `dist/`.
-- The `dist/` folder contains dynamically generated build artifacts and must be
-  left untouched, including when running builds or verification commands.
-- When generated output is needed for validation, write it to a temporary
-  location outside the repository, such as `/tmp`, or use a source-only check.
-- Preserve any existing user changes under `dist/`; do not reset, clean, or
-  overwrite them.
+- Everything under `dist/` is build output. Never write or hand-edit those files:
+  produce them by running the project build (`npm run build:prod`) instead.
+- `dist/` is refreshed on release commits, so keep it out of feature and fix
+  commits even after a local build has rewritten it.
+- The build output itself is disposable. It is regenerated from `src/` at any
+  time, so there is nothing in `dist/` worth preserving across a rebuild.

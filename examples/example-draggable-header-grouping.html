@@ -485,7 +485,7 @@ function clearPinning() {
   grid.setOptions({
     pinning: {
       columns: { left: [], right: [] },
-      rows: { left: [], right: [] },
+      rows: { top: [], bottom: [] },
     }
   });
   CreateAddlHeaderRow();
@@ -495,7 +495,7 @@ function pinColumns(pinCount) {
   grid.setOptions({
     pinning: {
       columns: { left: Array.from({ length: pinCount }, (_value, index) => index), right: [] },
-      rows: { left: [], right: [] },
+      rows: { top: [], bottom: [] },
     }
   });
   CreateAddlHeaderRow();

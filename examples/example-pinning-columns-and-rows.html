@@ -324,6 +324,26 @@ function addItem(newItem, columnDef) {
   dataView.addItem(item);
 }
 
+// Rows are pinned by index, so a filter that shortens the data would leave the bottom
+// references pointing past the end of the set and the band would silently disappear.
+// Recompute both edges whenever the row count changes.
+function refreshPinnedRows() {
+  var pinnedRows = (grid.getOptions().pinning || {}).rows || {};
+  var topCount = (pinnedRows.top || []).length;
+  var bottomCount = (pinnedRows.bottom || []).length;
+  if (!topCount && !bottomCount) {
+    return;
+  }
+  var nextTop = getPinnedRowRefs(topCount, false);
+  var nextBottom = getPinnedRowRefs(bottomCount, true);
+  if (String(nextTop) === String(pinnedRows.top || []) && String(nextBottom) === String(pinnedRows.bottom || [])) {
+    return;
+  }
+  // Keep the columns as they are: re-running setColumns() here would rebuild the
+  // header-row filter inputs while someone is still typing in one.
+  grid.setOptions({ pinning: { rows: { top: nextTop, bottom: nextBottom } } }, false, true);
+}
+
 function getPinnedRowRefs(count, bottom) {
   var rowCount = dataView ? dataView.getLength() : data.length;
   var start = bottom ? Math.max(0, rowCount - count) : 0;
@@ -430,6 +450,7 @@ document.addEventListener("DOMContentLoaded", function() {
   // wire up model events to drive the grid
   dataView.onRowCountChanged.subscribe(function (e, args) {
     grid.updateRowCount();
+    refreshPinnedRows();
     grid.render();
   });
 

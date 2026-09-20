@@ -80,6 +80,17 @@ describe('Example - Pinned Columns & Rows', { retries: 1 }, () => {
     cy.get(`${grid} .grid-canvas .slick-row[data-row="1"]`).should('have.length', 1);
   });
 
+  it('moves the pinned rows with the data when a filter shortens it', () => {
+    // 111 titles contain 'Task 123': Task 123, Task 1230-1239 and Task 12300-12399.
+    cy.get(`${grid} .slick-headerrow-column input[data-columnid="title"]`).type('Task 123');
+
+    cy.get(`${grid} .slick-docking-overlay .slick-row.slick-row-pinned-top`).should('have.length', 2);
+    cy.get(`${grid} .slick-docking-overlay .slick-row.slick-row-pinned-bottom`).should('have.length', 1);
+    // the bottom band follows the shortened data instead of pointing past its end
+    cy.get(`${grid} .slick-docking-overlay .slick-row.slick-row-pinned-bottom .slick-cell.l1`).should('contain', 'Task 12399');
+    cy.get(`${grid} .slick-docking-overlay .slick-row.slick-row-pinned-top .slick-cell.l1`).first().should('contain', 'Task 123');
+  });
+
   it('selects the first ten rows across all docking regions', () => {
     cy.get('#btnSelectRows').click();
     cy.get(`${grid} .slick-cell.selected`).should('have.length', 10 * 11);
