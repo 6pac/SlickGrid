@@ -42,9 +42,17 @@ const options = {
 
 ### Rows
 
-- `pinning.rows.top` / `pinning.rows.bottom` — arrays of row references. A numeric reference is a
-  **row index**; a string reference is a dataset id resolved through the DataView (its
-  `idProperty`, `id` by default). Numeric dataset ids cannot be used as references. Rows may be
+- `pinning.rows.top` / `pinning.rows.bottom` — arrays of row references, in one of three forms:
+
+  | Reference | Meaning |
+  |---|---|
+  | `5` | row **index** 5 |
+  | `'order-5'` | the row whose dataset id is `'order-5'` |
+  | `{ id: 5 }` | the row whose dataset id is `5` |
+
+  The object form exists so that a grid with numeric dataset ids can still pin by id: a bare
+  number is always an index. Id references follow their row when the data is sorted or filtered;
+  index references address whatever row currently occupies that position. Rows may be
   non-contiguous (`top: [0, 2, 4]`); the unpinned rows are laid out contiguously so no gaps
   appear.
 - Pinned rows keep their place in the dataset and in the scroll height. Their slot collapses
@@ -52,8 +60,16 @@ const options = {
 - Permanent rows are always rendered in full; there is no budget for them (see
   `docking.minCenterRowCount` below).
 - Rows are changed at runtime with `grid.setOptions({ pinning: { rows: { top: [...] } } })`. The
-  `top`/`bottom` arrays are replaced, not merged. `setOptions({ pinning: undefined })` removes
-  pinning entirely and returns the grid to the plain layout.
+  `top`/`bottom` arrays are replaced, not merged. `setOptions({ pinning: undefined })` and
+  `setOptions({ pinning: null })` both remove pinning entirely and return the grid to the plain
+  layout.
+- Index references do not survive a change in row count. A grid that pins "the last row" while
+  filtering has to recompute the reference when the count changes, as
+  `examples/example-pinning-columns-and-rows.html` does; otherwise the reference points past the
+  end of the filtered set and the band disappears.
+- In each band the permanent rows sit at the outer edge and active sticky rows stack inside them:
+  a sticky row docked at the bottom sits **above** a permanently pinned bottom row, mirroring the
+  top band, and carries `slick-row-pinned-bottom-edge`.
 
 ## Sticky docking
 
@@ -85,7 +101,7 @@ const options = {
 | `maxColumnViewportWidthPercent` | 60 | Maximum share of the viewport width the left and right bands (permanent + sticky) may occupy. |
 | `maxRowViewportHeightPercent` | 60 | Maximum share of the viewport height that *sticky* rows may occupy after permanent rows are deducted. |
 | `overflowStrategy` | `'conveyor'` | When the budget is exhausted: `conveyor` keeps the most recently activated candidates, `clamp` keeps the earliest ones. A candidate larger than the remaining budget stays in normal flow. |
-| `stickyHysteresis` | 2 | Activation buffer in pixels for sticky columns (not stateful hysteresis; rows use the exact boundary). |
+| `stickyActivationBuffer` | 2 | Activation buffer in pixels for sticky columns. Rows use the exact boundary. |
 | `minCenterRowCount` | 3 | When permanent top/bottom rows would leave less than this many centre rows visible, the container grows (`min-height`) instead of shrinking the centre to nothing. `0` disables. |
 
 ## Rendering notes
@@ -129,12 +145,30 @@ rendered layout (bands, overlay rows, non-contiguous shifts), including rows tha
 | Column reorder across the frozen boundary | Not possible; pin/unpin explicitly |
 | Grid State plugin `frozenColumn` | Not persisted; store `pinning` from `grid.getOptions()` |
 
+`setColumns()` now returns a boolean. It validates the prospective pinning on a copy first, so a
+rejected set leaves the caller's column definitions untouched and fires no `onBeforeSetColumns`;
+it returns `false` in that case and `true` once the columns are applied.
+
+`onHeaderKeyDown` is typed `OnHeaderKeyDownEventArgs` and publishes `{ event, column, grid }`.
+
+The following grid methods were removed because nothing called them: `getColumnByIdx()` (use
+`getColumns()[idx]`), `getColumnHeaderByIndex()` (use `getColumnByIndex()`) and
+`removeCellCssStylesBatch()` (iterate `removeCellCssStyles()`). `getTopPanels()` returns the one
+top panel this layout has rather than the same element twice.
+
 Header, header-row, footer and cell events keep their argument shapes. `getGridPosition()` and
-`getActiveCellPosition()` still return document-relative positions.
+`getActiveCellPosition()` still return document-relative positions. `applyHtmlCode()`,
+`trigger()`, `validateAndEnforceOptions()` and the `set*Visibility(visible, animate)` signatures
+are unchanged from v5.
 
 ## Known limitations
 
-- Sticky columns are not exercised by the RTL browser tests.
+- **RTL and docking do not work together.** A right-to-left grid still creates the docking
+  scrollbar but takes the non-proxy geometry path, and the two disagree: a right-pinned column
+  is placed outside the visible area (measured at roughly -859px against a 598px viewport) and an
+  activated sticky column goes with it. `getCellFromPoint()` deliberately skips the docked
+  hit-test path for RTL, so coordinates over a docked band resolve against the natural layout.
+  Use pinning and sticky columns in LTR grids only until the docking geometry is mirrored.
 - Sticky group headers (a header spanning several columns that itself stays visible) are not
   supported.
 - There is no built-in Header Menu or Grid Menu command for pinning; an application adds its own

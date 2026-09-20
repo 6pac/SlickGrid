@@ -90,7 +90,8 @@ table. Key rules:
 - Sticky columns in RTL are not covered by browser tests.
 - Sticky group headers (a grouped header that stays visible as a unit) are not supported.
 - Focus sinks live outside the grid container (`tabIndex -1`); keyboard routing (Shift+Tab into
-  header-row filters, F6 to the header) comes from the fork and targets header/grid menu buttons
+  header-row filters, F6 to the header) came from the fork and was removed during the audit; the
+  base focus sinks and `navigatePrev()` handle Tab and Shift+Tab again
   with `tabIndex="0"` that the plugins here do not produce.
 - Fast vertical-scroll blanking is a separate virtual-rendering task.
 - Per-scroll work on row-docking grids (`syncDockedRowContainers` on every vertical scroll,

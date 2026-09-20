@@ -23,8 +23,12 @@ packages belong to the slickgrid-universal fork and do not exist here.
 - Column references: a number is an inclusive left boundary or a right count over the visible
   columns; an array holds column indexes (numbers) and/or column ids (strings) and may be
   non-contiguous, for example `columns.left: ['account', 'status']`.
-- Row references: a number is always a row index; a string is a dataset id resolved through the
-  DataView's id property. Non-contiguous rows are valid, for example `rows.top: [0, 2, 4]`.
+- Row references take three forms: a number is always a row index, a string is a dataset id, and
+  `{ id: <value> }` is a dataset id of any type, which is how a grid with numeric ids pins by id.
+  Id references follow their row through a sort or filter; index references do not, so a caller
+  pinning a positional row such as the last one must recompute it when the row count changes.
+  Non-contiguous rows are valid, for example `rows.top: [0, 2, 4]`.
+- `setOptions({ pinning: null })` and `setOptions({ pinning: undefined })` both clear pinning.
 - `Column.pinned` is the per-column permanent-pin form and is kept in sync with the option.
   There is no `Column.pinnable`; menus are application code built on `setColumnPinning()`.
 - Reordering stays within a band; pinning and unpinning are explicit through configuration, the
@@ -41,6 +45,12 @@ packages belong to the slickgrid-universal fork and do not exist here.
   `docking.overflowStrategy` control this behavior.
 - Permanent pinned rows keep their slot in the dataset height; rows after a pin are rendered so
   the pinned slot collapses under the band, and the last scrolling row stays reachable.
+- Both bands nest the same way: permanent rows sit at the outer edge and active sticky rows stack
+  inside them, so a sticky bottom row sits above a permanently pinned bottom row.
+- `docking.stickyActivationBuffer` (default 2px) is the column activation buffer; rows dock on the
+  exact boundary.
+- Pinning and sticky docking are LTR-only today: an RTL grid mixes the docking scrollbar with the
+  non-proxy geometry and places docked columns outside the viewport.
 
 ## Maintenance verification
 
