@@ -1308,10 +1308,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (removePinning) {
       delete (this._options as Partial<O>).pinning;
     }
-    // Sticky and permanent row lists represent the complete docking state for each edge.
-    // The generic deep merge helper merges non-empty arrays by index, which
-    // leaves stale row references when a list is shortened (for example
-    // changing 4 pinned rows back to 3). Replace both lists atomically.
+    // Row lists are complete per edge: replace them instead of deep-merging by index,
+    // which would leave stale entries when a list shrinks.
     if (newOptions.stickyRows !== undefined) {
       const incomingStickyRows = newOptions.stickyRows ?? {};
       this._options.stickyRows = {
@@ -3656,10 +3654,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   protected updateColumnsInternal(): void {
     this.updateColumnProps();
-    // Column visibility changes (for example from the Column Picker) call
-    // updateColumns() directly rather than setColumns(). Re-apply the
-    // declarative pinning option here as well so rebuilding the headers cannot
-    // silently drop the pinned flags from the column definitions.
+    // updateColumns() is also reached directly (for example from the Column Picker);
+    // re-apply the declarative pinning so rebuilding the headers keeps the pinned flags.
     this.applyColumnPinningOptions(this.columns);
     this.updateColumnCaches();
 
@@ -5050,11 +5046,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const oldCanvasWidthL = this.canvasWidthL;
     const oldCanvasWidthR = this.canvasWidthR;
     this.canvasWidth = this.getCanvasWidth();
-    // A right-docked region is positioned at the visible edge, not immediately
-    // after the last center column. Keep the one real canvas at least as wide
-    // as the body viewport so an enlarged grid does not leave a blank area
-    // between the center cells and the right pin. The natural column width is
-    // still retained by dockingLayout for scroll/chrome coordinates.
+    // Keep the canvas at least viewport-wide so a right band at the visible edge leaves no
+    // gap after the last centre column; dockingLayout keeps the natural width.
     if (this.hasDockedColumns()) {
       this.canvasWidth = Math.max(this.canvasWidth, this.getDockingRenderedWidth());
       this.canvasWidthL = this.canvasWidth;
@@ -6173,10 +6166,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       // Resolve the row bands before checking the minimum center budget. The budget
       // depends on the current pinned-row heights and must not use a stale layout.
       this.enforceMinCenterRowBudget();
-      // The docking POC's one horizontal scrollbar is an absolutely positioned
-      // sibling of the body viewport. Unlike a native viewport scrollbar it
-      // does not reduce `clientHeight` on its own, so reserve its measured
-      // height before calculating virtual rows and the body viewport.
+      // The docking scrollbar is a sibling of the viewport and does not reduce its
+      // clientHeight, so reserve its height before sizing the virtual rows.
       const dockingViewportWidth = this._viewportNode?.clientWidth || this.viewportW;
       const dockingContentWidth = this.dockingLayout.contentWidth || this.canvasWidth;
       const hasDockingHorizontalOverflow = dockingContentWidth > dockingViewportWidth;
@@ -6230,12 +6221,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.updateDockingOverlayDimensions();
       this.updateDockingHorizontalScrollerDimensions();
 
-      // The proxy scrollbar is created and sized during this resize pass. A
-      // first docking resolution can therefore run before its final client
-      // width is available (especially on initial load or after a route
-      // transition). Resolve once more against the actual scroll owner so
-      // two-sided sticky columns start on the correct nearest edge instead of
-      // requiring a scroll-away-and-back interaction to settle.
+      // The proxy scrollbar is sized in this pass, so resolve once more against its final
+      // width; otherwise two-sided sticky columns can start on the wrong edge.
       this.scrollLeft = this._viewportScrollContainerX?.scrollLeft ?? this.scrollLeft;
       dockingChanged = this.refreshDockingLayout(this.scrollLeft) || dockingChanged;
 
@@ -6332,10 +6319,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       // (re)build the row position index (variable row height mode) before any height computations
       this.ensureRowPositionIndexer(dataLengthIncludingAddNew);
 
-      // Bottom-pinned rows keep their slot in the canvas height. Rows after a bottom pin
-      // are rendered one pinned height higher (getRenderedRowTop), so the pinned slot collapses
-      // to the end of the canvas, where the bottom band covers it at maximum scroll and every
-      // scrolling row (including the add-new row) stays reachable above the band.
+      // Bottom-pinned rows keep their canvas slot; rows after a bottom pin render one pinned
+      // height higher, so every scrolling row stays reachable above the band.
       const scrollableRowsHeight = this.getRowPosition(numberOfRows);
 
       const tempViewportH = Utils.height(this._viewportScrollContainerY) as number;
@@ -6990,10 +6975,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.cleanupRows(range);
     }
 
-    // The browser can clamp the physical scroll owner when the docking layout
-    // uses a separate horizontal scrollbar. Always read the committed value
-    // back; retaining the requested value leaves the virtual rows one position
-    // ahead of the DOM and exposes a blank row at the bottom of the grid.
+    // Read the committed scroll position back: the browser may clamp it, and a stale
+    // requested value leaves the virtual rows one position ahead of the DOM.
     if (this._viewportScrollContainerY) {
       this._viewportScrollContainerY.scrollTop = newScrollTop;
     }
@@ -7010,10 +6993,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.trigger(this.onViewportChanged, {});
     }
 
-    // Apply row positions only after both the page offset and the physical
-    // scroll position have been committed. Updating rows between those two
-    // assignments briefly mixes coordinate spaces and makes docked rows flash
-    // by a few pixels at virtual-page boundaries.
+    // Position rows only after both the page offset and the physical scroll position
+    // are committed, otherwise docked rows flash at virtual-page boundaries.
     if (this.offset !== oldOffset) {
       this.updateRowPositions();
     }
@@ -7121,10 +7102,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (this.scrollLeft > maxScrollDistanceX) {
       this.scrollLeft = maxScrollDistanceX;
     }
-    // A horizontal-wheel mouse (or a fast tilt-wheel burst) can push scrollTop
-    // below zero. In RTL browsers, however, a negative scrollLeft is the native
-    // coordinate used to move away from the right edge, so it must remain
-    // negative and be consumed by getVisibleRange()/scrollToX().
+    // A horizontal wheel can push scrollTop below zero. A negative scrollLeft is the
+    // native RTL coordinate and is kept.
     if (this.scrollTop < 0) {
       this.scrollTop = 0;
     }
@@ -7232,10 +7211,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     const docking = this.dockingByColumn.get(cell);
     const isPermanentPinnedColumn = docking && docking.band !== 'center' && !docking.sticky;
-    // Permanent pins are already visible; sticky columns must reveal their
-    // natural position before keyboard navigation activates them, regardless
-    // of which edge currently owns the sticky column. Center columns retain
-    // the existing scroll-into-view behavior.
+    // Sticky columns must reveal their natural position before keyboard navigation
+    // activates them; permanent pins are already visible.
     if (!isPermanentPinnedColumn && (docking?.sticky || docking?.band === 'center')) {
       const colspan = this.getColspan(row, cell);
       const lastCell = cell + (colspan > 1 ? colspan - 1 : 0);
@@ -7483,11 +7460,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   scrollRowIntoView(row: number, doPaging?: boolean): void {
     const dockingBand = this.dockingByRow.get(row)?.band;
     if (!this.isPinnedRowIdx(row) && (dockingBand === undefined || dockingBand === 'center')) {
-      // Use the scroll owner's inner height, rather than its rendered box.
-      // clientHeight excludes a horizontal scrollbar, which is not usable
-      // row space. Measuring the outer box let a target row hidden behind the
-      // scrollbar be treated as visible, so CellRangeSelector could never
-      // advance a vertical auto-scroll drag.
+      // Use the scroll owner's inner height: clientHeight excludes a horizontal
+      // scrollbar, which is not usable row space.
       const viewportScrollH = Math.max(
         0,
         this._viewportScrollContainerY.clientHeight - this.rowDockingLayout.topHeight - this.rowDockingLayout.bottomHeight
@@ -8264,10 +8238,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.applyDockingProxyScrollOffsets(x);
     }
 
-    // In the single-viewport layout the body is moved by the native scroll
-    // compositor. Keep header/filter/footer content in that same coordinate
-    // system with compositor transforms instead of assigning scrollLeft on
-    // several independent containers (which paints one or more frames late).
+    // Move header/filter/footer content with compositor transforms so it stays in the
+    // body's coordinate system within the same frame.
     this._headerL.style.transform = translateX;
     this._headerRowL.style.transform = translateX;
     if (this._footerRowL) {
@@ -8593,10 +8565,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return box; // assume element is visible when we can't determine it's position & size
     }
 
-    // Keep the public coordinates document-relative. Editors and custom cell
-    // components commonly append their elements to document.body, so returning
-    // coordinates relative to the grid container shifts them when the grid is
-    // nested below the page origin.
+    // Keep the coordinates document-relative: editors and custom cell components
+    // commonly append their elements to document.body.
     const gridRect = this._container?.getBoundingClientRect() || { top: 0, left: 0, bottom: 0, right: 0 };
     const windowScroll = Utils.windowScrollPosition();
     box.top = rect.top + windowScroll.top;
@@ -9617,10 +9587,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       const scrollLeft = `${this.scrollLeft}px`;
       cacheEntry.cellRegions.left.style.setProperty('--slick-docking-scroll-left', scrollLeft);
       cacheEntry.cellRegions.right.style.setProperty('--slick-docking-scroll-left', scrollLeft);
-      // The proxy stylesheet applies the same compensation with an !important
-      // transform. Keep this path to custom-property writes only; measuring
-      // offsetWidth and then writing overridden inline transforms forced a
-      // layout for every cached row on each horizontal scroll.
+      // The proxy stylesheet applies the compensation; keep this path to custom-property
+      // writes so horizontal scrolling does not force a layout per cached row.
       if (cacheEntry.cellRegions.left.style.transform) {
         cacheEntry.cellRegions.left.style.removeProperty('transform');
       }
@@ -9647,10 +9615,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const hasRightDocking = this.dockingLayout.right.length > 0;
     Object.values(this.rowsCache).forEach((cacheEntry) => {
       const row = cacheEntry.rowNode?.[0];
-      // Ordinary rows with only leading pinned columns use CSS sticky and do
-      // not need a per-scroll style write. Keep the small overlay rows and
-      // right-docked regions synchronized, since those are outside (or at the
-      // far edge of) the native scrolling coordinate system.
+      // Rows with only leading pinned columns use CSS sticky; only overlay rows and
+      // right-docked regions need a per-scroll write.
       if (row && (row.parentElement === this._dockingOverlay || hasRightDocking)) {
         this.applyDockingScrollOffsetToRow(row, cacheEntry);
       }
@@ -9723,10 +9689,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
     this.syncDockingChromeRegions();
     this.dockingChromeByColumn.clear();
-    // Chrome is clipped by the header scroller, not by the horizontal-scroll
-    // proxy. The proxy can briefly retain an older width during a browser
-    // resize, which placed right-pinned titles at that stale edge (for example
-    // `1537px` for a 1637px proxy) instead of the visible header edge.
+    // Chrome is clipped by the header scroller, not by the proxy, whose width can be
+    // stale during a browser resize.
     const viewportWidth = this.getViewportInnerWidth() || this._headerScrollerL?.clientWidth || this._viewportScrollContainerX?.clientWidth || this.viewportW;
     const columnIndexOf = (element: HTMLElement) => /(?:^|\s)l(\d+)(?:\s|$)/.exec(element.className)?.[1] ?? '';
     const headersById = this.indexChromeElements(this._headerL, '.slick-header-column', (element) => element.dataset.id ?? '');
@@ -9791,13 +9755,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       elements.forEach((element) => {
         const isHeader = element === header;
         if (!isHeader) {
-          // Header-row and footer cells do not receive the header element's
-          // inline width. Once a cell is taken out of the normal left/right
-          // constraint layout, give it an explicit content-box width so its
-          // rendered outer width matches the corresponding header column.
-          // A pinned edge keeps the normal theme border-box geometry; the
-          // pinning cue itself is an inset shadow and does not contribute to
-          // the measured width.
+          // Header-row and footer cells get an explicit content-box width so their outer width
+          // matches the header column; a pinned edge keeps the theme's border-box geometry.
           const targetOuterWidth = headerOuterWidth || column.width || 0;
           const isPinnedEdge =
             element.classList.contains('slick-column-pinned-left-edge') || element.classList.contains('slick-column-pinned-right-edge');
@@ -9888,23 +9847,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       : this.dockingLayout.contentWidth - this.dockingLayout.rightWidth + docking.offset;
     const dockedOffset = this.scrollLeft + viewportWidth - this.dockingLayout.rightWidth + docking.offset;
 
-    // All right-docked chrome uses the visible viewport coordinate directly.
-    // Its parent layer is translated by -scrollLeft, so placing it at
-    // `scrollLeft + viewportWidth - rightBandWidth` keeps it at the right
-    // edge regardless of whether the natural content is narrower or wider
-    // than the viewport. This also keeps every column in a multi-column
-    // right band in the correct order.
+    // Right-docked chrome is placed at the visible viewport coordinate; its parent layer
+    // is translated by -scrollLeft, so it stays at the right edge in band order.
     element.style.position = isRightDockedChrome ? 'absolute' : isHeader ? 'relative' : 'absolute';
     element.style.left =
       isHeader && !isRightDockedChrome ? '' : `${isRightDockedChrome ? this.getRightDockedChromeLeft(element, docking) : naturalOffset}px`;
     element.style.right = 'auto';
     element.style.order = docking.sticky ? '0' : '1';
-    // The container receives the current `-scrollLeft` transform once per
-    // frame. Keep the chrome's natural-to-docked delta separately so CSS
-    // can add the current scroll position without using a stale inline
-    // transform. This is essential for sticky Q1/Q2/etc.: a permanent
-    // left column needs no delta, while a later sticky column needs its
-    // natural offset subtracted to sit beside the existing sticky band.
+    // The container is translated by -scrollLeft once per frame; the natural-to-docked
+    // delta is kept separately so CSS can add the current scroll position.
     element.style.setProperty('--slick-docking-chrome-offset', `${isRightDockedChrome ? 0 : dockedOffset - naturalOffset - this.scrollLeft}px`);
     element.style.transform = isRightDockedChrome ? 'translateX(0px)' : `translateX(${dockedOffset - naturalOffset}px)`;
   }
@@ -9984,10 +9935,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     const scrollerRect = chromeScroller.getBoundingClientRect();
-    // Header/header-row/footer chrome has no native vertical scrollbar, while
-    // the body does. Right pins must stop at the body's visible edge, not the
-    // wider chrome scroller edge, otherwise they drift right by the scrollbar
-    // width (for example 1551.11px instead of 1536px).
+    // Chrome has no vertical scrollbar but the body does: right pins stop at the body's
+    // visible edge, not the wider chrome edge.
     const dockingViewportWidth = this.getViewportInnerWidth() || this._viewportNode?.clientWidth || chromeScroller.clientWidth;
     // The chrome container itself is translated by -scrollLeft. Add it back
     // before converting the target screen coordinate to the local `left`.
@@ -10022,10 +9971,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this._topPanels = [this._topPanelL];
     this._viewport = [this._viewportNode];
     this._canvas = [this._canvasNode];
-    // Keep the original viewport as the horizontal scroll owner for ordinary
-    // grids. The dedicated scrollbar is only required once pinning/sticky
-    // docking is configured; creating it for every grid breaks integrations
-    // that scroll `.slick-viewport` directly.
+    // Ordinary grids keep the viewport as the horizontal scroll owner; the dedicated
+    // scrollbar exists only once pinning/sticky docking is configured.
     if (this.hasConfiguredDocking()) {
       this.createDockingChromeRegions();
       this._container.classList.add('slick-docking-horizontal-scroll-proxy');
@@ -10070,7 +10017,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.setOverflow();
   }
 
-  /** The pinning POC owns horizontal scroll through one dedicated scrollbar. */
+  /** Docking owns horizontal scroll through one dedicated scrollbar. */
   protected hasDockingHorizontalScroller(): boolean {
     return !!this._dockingHorizontalScroller;
   }
@@ -10458,13 +10405,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Resolve column pinning references to raw column indexes.
-   *
-   * Numeric references are always indexes, never column ids. This matters for
-   * grids whose ids are numeric because an edge shorthand such as `left: 3`
-   * must not also pin the column whose id happens to be `3`. Numeric edge
-   * shorthands are resolved against visible columns so hidden columns do not
-   * consume part of the requested boundary/count.
+   * Resolve column pinning references to raw column indexes. Numeric references are
+   * indexes, never ids, and edge shorthands count visible columns only.
    */
   protected normalizeColumnPinningReferences(
     references: ColumnPinningReferences | undefined,
@@ -10565,13 +10507,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Move already-rendered cells to their new docking region after a sticky
-   * column crosses an edge. Keeping their formatter output and editor state in
-   * place is considerably cheaper than invalidating every visible row.
-   *
-   * A layout that has just gained its first docked band has rows without the
-   * three region wrappers. Let the normal render path rebuild those rare rows
-   * rather than trying to retrofit their DOM structure here.
+   * Move already-rendered cells to their new docking region after a sticky column crosses
+   * an edge; this keeps formatter output and editor state in place. Rows that predate the
+   * first docked band have no region wrappers and are left to the normal render path.
    */
   protected updateRenderedCellDocking(): boolean {
     // Likewise, removing the final band needs the normal renderer to remove
@@ -10718,10 +10656,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const nextLayout = this.dockingController.resolveColumns(
       this.columns,
       scrollLeft,
-      // Sticky thresholds must use the body viewport's visible width. The
-      // outer grid width includes the vertical scrollbar gutter, which made
-      // right stickies wait until scrolling roughly one scrollbar-width past
-      // the actual edge.
+      // Sticky thresholds use the body viewport's visible width, which excludes the
+      // vertical scrollbar gutter.
       this.getViewportInnerWidth() || this.viewportW || Utils.width(this._container) || 0,
       this._options.rtl ? 'right' : 'left'
     );
@@ -11010,10 +10946,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       top = rowDocking.offset;
     } else if (rowDocking?.band === 'bottom') {
       const viewportHeight = this._dockingOverlay?.clientHeight || this._viewportScrollContainerY?.clientHeight || this.viewportH;
-      // Anchor the bottom band directly to the bottom of the viewport. The minimum center
-      // row budget is enforced by enforceMinCenterRowBudget(), which can grow the container
-      // when the pinned bands would otherwise leave too little room; it must not create a
-      // blank row-sized gap in an otherwise usable viewport.
+      // Anchor the bottom band to the bottom of the viewport; enforceMinCenterRowBudget()
+      // grows the container when the bands would leave too little room.
       const bottomStart = Math.max(this.rowDockingLayout.topHeight, viewportHeight - this.rowDockingLayout.bottomHeight);
       top = bottomStart + rowDocking.offset;
     }
@@ -11039,18 +10973,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     // preference remains available for normal rows and row-detail rendering.
     const useTransform = isTransform && !hasRowSpan;
 
-    // Mark every RowSpan host row, regardless of whether its vertical
-    // coordinate uses `top` or `transform`. Docked rows need this marker so
-    // their region wrappers can let the spanning cell extend over following
-    // rows and remain hit-testable.
+    // Mark every rowspan host row so docked region wrappers let the spanning cell
+    // extend over following rows and stay hit-testable.
     rowNode.classList.toggle('slick-rowspan', hasRowSpan);
     if (useTransform) {
       rowNode.style.top = '';
-      // Keep the established 2D transform syntax for row positioning. It still
-      // uses the compositor-friendly CSS transform path, while preserving the
-      // DOM contract used by integrations (and avoiding a needless change to
-      // selectors that inspect `translateY(...)`). The 3D form remains used by
-      // the horizontal docking conveyor where it is needed for scroll offsets.
+      // Keep the 2D translateY() syntax for row positioning: integrations inspect it.
       rowNode.style.transform = `translateY(${Math.round(top)}px)`;
     } else {
       rowNode.style.top = `${Math.round(top)}px`;
@@ -11059,11 +10987,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * When permanent top/bottom pinned rows leave less than `docking.minCenterRowCount` rows of
-   * room for the scrollable center band, grow the container via `min-height` so both the pinned
-   * rows and the minimum center row budget stay visible. Unlike the earlier overlap fix (which
-   * only pushed the bottom band down and let it clip), this asks the page/ancestor layout for
-   * more room instead of shrinking the visible center band to nothing.
+   * When permanent top/bottom pinned rows leave less than `docking.minCenterRowCount` rows for
+   * the scrollable centre band, grow the container via `min-height` so both stay visible.
    */
   protected enforceMinCenterRowBudget(): void {
     if (this._options.autoHeight) {
@@ -11366,14 +11291,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Queue a render for the next paint in the single-viewport POC.
-   *
-   * Native body scrolling is compositor-driven, while rendering missing center
-   * cells is main-thread work. Running that work synchronously from the scroll
-   * handler can prevent the already-updated header transform from painting in
-   * the same frame, especially during fast trackpad/wheel scrolling. Sticky
-   * layout resolution is also queued on animation frames, so both operations
-   * resolve in the same paint cycle.
+   * Queue a render for the next paint. Rendering missing centre cells synchronously from the
+   * scroll handler can delay the already-updated header transform by a frame; sticky layout
+   * resolution is queued the same way so both resolve in one paint cycle.
    */
   protected enqueueSingleViewportRender(): void {
     if (this.singleViewportRenderTimer !== undefined) {
@@ -11469,16 +11389,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.applyColumnWidths();
       this.applyDockingToColumnChrome();
 
-      // A sticky transition normally only moves a few columns between the
-      // center and an edge. Re-home the already-rendered cell nodes instead of
-      // discarding/reformatting every visible row. Fall back to the normal
-      // rebuild only when docking has just introduced row regions that do not
-      // exist in the current DOM yet.
+      // A sticky transition moves a few columns between bands: re-home the rendered
+      // cell nodes instead of re-rendering every visible row.
       if (this.updateRenderedCellDocking()) {
-        // Region widths and the right-edge compensation change with the
-        // active sticky band. Update only the existing row wrappers; the
-        // normal deferred virtual-cell pass will fill any missing center cell
-        // without forcing another full render in this animation frame.
+        // Region widths and the right-edge compensation change with the active sticky
+        // band; the deferred virtual-cell pass fills any missing centre cell.
         this.applyDockingDimensionsToRows();
         this.enqueueSingleViewportRender();
         return;
