@@ -22,6 +22,33 @@ const browserSyncPort = Number.parseInt(process.env.BROWSERSYNC_PORT || '8080', 
 const watchedFilePattern = /\.(?:js|ts|html|css|scss)$/i;
 
 /**
+ * BrowserSync injects its own client script, which a page serving a strict CSP would
+ * reject. Rather than making the CSP example carry dev-server tokens it would never
+ * ship with, grant them here, only on the pages that declare a policy and only while
+ * this dev server is the one serving them.
+ */
+const browserSyncTrustedTypesPolicy = `<script nonce="browser-sync">
+  if (window.trustedTypes && trustedTypes.createPolicy) {
+    trustedTypes.createPolicy('browser-sync', {
+      createScriptURL: (url) => {
+        const parsedUrl = new URL(url, document.baseURI);
+        if (parsedUrl.origin !== window.location.origin || !parsedUrl.pathname.startsWith('/browser-sync/')) {
+          throw new TypeError('Only same-origin BrowserSync script URLs are allowed');
+        }
+        return parsedUrl.href;
+      }
+    });
+  }
+</script>`;
+
+const cspRewriteRule = {
+  match: /<meta http-equiv="Content-Security-Policy"[\s\S]*?">/,
+  fn: (_req, _res, match) =>
+    match.replace("script-src 'self'", "script-src 'self' 'nonce-browser-sync'").replace('trusted-types dompurify', 'trusted-types dompurify browser-sync') +
+    browserSyncTrustedTypesPolicy,
+};
+
+/**
  * Dev script that will watch for files changed and run esbuild/sass for the file(s) that changed.
  * We use @parcel/watcher to watch source files and then run esbuild or SASS CLIs to build our supported formats (.js, .ts, .html, .css, .scss).
  */
@@ -83,6 +110,7 @@ const watchedFilePattern = /\.(?:js|ts|html|css|scss)$/i;
     await new Promise((resolve, reject) => {
       bsync.init({
         server: './',
+        rewriteRules: [cspRewriteRule],
         host: browserSyncHost,
         port: browserSyncPort,
         ui: false,

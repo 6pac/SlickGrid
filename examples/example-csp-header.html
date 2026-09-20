@@ -7,11 +7,10 @@
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
-    script-src 'self' https://cdn.jsdelivr.net 'nonce-browser-sync';
+    script-src 'self' https://cdn.jsdelivr.net;
     style-src 'self' 'nonce-random-string'; require-trusted-types-for 'script';
-    trusted-types dompurify browser-sync
+    trusted-types dompurify
   ">
-  <script src="./example-csp-policy.js"></script>
 </head>
 <body>
 <h2 class="title">Example - CSP Header</h2>
@@ -32,9 +31,9 @@
           <code>
             <pre>
               default-src 'self';
-              script-src 'self' https://cdn.jsdelivr.net 'nonce-browser-sync';
+              script-src 'self' https://cdn.jsdelivr.net;
               style-src 'self' 'nonce-random-string'; require-trusted-types-for 'script';
-              trusted-types dompurify browser-sync;
+              trusted-types dompurify;
             </pre>
           </code>
         </li>
