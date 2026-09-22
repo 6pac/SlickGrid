@@ -5730,9 +5730,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       tabIndex: -1,
       ariaColIndex: `${cell + 1}`,
     });
-    if (isFullWidthGroup && this.hasDockingHorizontalScroller()) {
-      cellDiv.style.setProperty('--slick-docking-scroll-left', `${this.scrollLeft}px`);
-    }
     if (usesStickyTransform) {
       this.applyStickyColumnTransform(cellDiv, cell, 'cell');
     }
@@ -9596,9 +9593,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return;
     }
     if (this.hasDockingHorizontalScroller()) {
-      const scrollLeft = `${this.scrollLeft}px`;
-      cacheEntry.cellRegions.left.style.setProperty('--slick-docking-scroll-left', scrollLeft);
-      cacheEntry.cellRegions.right.style.setProperty('--slick-docking-scroll-left', scrollLeft);
+      // The offset itself is inherited from the container; see syncDockingScrollOffsetVariable().
       // The proxy stylesheet applies the compensation; keep this path to custom-property
       // writes so horizontal scrolling does not force a layout per cached row.
       if (cacheEntry.cellRegions.left.style.transform) {
@@ -9636,12 +9631,21 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.applyDockingChromeScrollOffsets();
   }
 
+  /**
+   * Publish the horizontal scroll offset that the proxy-mode transforms consume.
+   *
+   * Every docked row region, sticky cell and pinned chrome element used to receive the same
+   * value on every scroll event. Custom properties inherit, so one write on the container
+   * reaches all of them.
+   */
+  protected syncDockingScrollOffsetVariable(scrollLeft: number = this.scrollLeft): void {
+    this._container.style.setProperty('--slick-docking-scroll-left', `${scrollLeft}px`);
+  }
+
   /** Update only elements whose proxy-mode transforms consume the horizontal scroll offset. */
   protected applyDockingProxyScrollOffsets(scrollLeft: number): void {
     const value = `${scrollLeft}px`;
-    const stickyIndexes = [...this.dockingLayout.left, ...this.dockingLayout.right]
-      .filter((docking) => docking.sticky)
-      .map((docking) => docking.index);
+    this.syncDockingScrollOffsetVariable(scrollLeft);
 
     Object.values(this.rowsCache).forEach((cacheEntry) => {
       const row = cacheEntry.rowNode?.[0];
@@ -9649,18 +9653,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         return;
       }
       this.applyDockingScrollOffsetToRow(row, cacheEntry);
-      stickyIndexes.forEach((index) => cacheEntry.cellNodesByColumnIdx[index]?.style.setProperty('--slick-docking-scroll-left', value));
       if (row.classList.contains('slick-row-full-width-group')) {
         const fullWidthGroupCell =
           cacheEntry.cellNodesByColumnIdx.find((cell) => cell?.classList.contains('slick-cell-full-width-group')) ||
           (row.querySelector(':scope > .slick-cell-full-width-group') as HTMLElement | null);
-        fullWidthGroupCell?.style.setProperty('--slick-docking-scroll-left', value);
         fullWidthGroupCell?.style.setProperty('transform', `translate3d(${value}, 0, 0)`);
       }
     });
 
     for (const docking of [...this.dockingLayout.left, ...this.dockingLayout.right]) {
-      this.dockingChromeByColumn.get(docking.index)?.forEach((element) => element.style.setProperty('--slick-docking-scroll-left', value));
       // The header roots are translated by -scrollLeft together with the
       // canvas. Permanent pinned chrome must receive the matching positive
       // compositor offset or it will scroll away with the center columns.
@@ -9831,8 +9832,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       element.style.transform = '';
       return;
     }
-
-    element.style.setProperty('--slick-docking-scroll-left', `${this.scrollLeft}px`);
 
     // The display-contents left wrapper already supplies the grouped edge
     // offset; only cancel the translated root layer here.
@@ -10629,7 +10628,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       docking.band === 'left'
         ? docking.offset - this.dockingLayout.leftBaseWidth - docking.naturalOffset
         : docking.offset - this.dockingLayout.rightWidth - this.dockingLayout.leftBaseWidth - docking.naturalOffset;
-    element.style.setProperty('--slick-docking-scroll-left', `${this.scrollLeft}px`);
     element.style.setProperty('--slick-sticky-column-offset', `${offset}px`);
   }
 
@@ -11092,6 +11090,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this._dockingHorizontalScroller.style.height = hasHorizontalOverflow ? `${scrollbarHeight}px` : '0px';
     this._dockingHorizontalSpacer.style.width = `${Math.max(contentWidth, viewportWidth)}px`;
     this._container.style.setProperty('--slick-docking-viewport-width', `${this._viewportNode.clientWidth}px`);
+    this.syncDockingScrollOffsetVariable();
     this._container.style.setProperty(
       '--slick-docking-right-offset',
       `${this._dockingHorizontalScroller.clientWidth - this.dockingLayout.contentWidth}px`
