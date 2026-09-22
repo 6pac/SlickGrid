@@ -74,7 +74,10 @@
       preHeaderPanel.style.left = '0px';
       preHeaderPanel.style.width = `${grid.getHeadersWidth()}px`;
       preHeaderPanel.parentElement.classList.add("slick-header");
-      preHeaderPanel.style.backgroundColor = getComputedStyle(grid.getHeaderColumn(0)).backgroundColor || '#ececec';
+      // The header can be absent while the columns are rebuilt, for example when the column
+      // picker hides one, so fall back rather than measuring nothing.
+      const firstHeader = grid.getHeaderColumn(0);
+      preHeaderPanel.style.backgroundColor = (firstHeader && getComputedStyle(firstHeader).backgroundColor) || '#ececec';
 
       let headerColumnWidthDiff = grid.getHeaderColumnWidthDiff();
       let m, header, lastColumnGroup = '', widthTotal = 0;
@@ -143,7 +146,10 @@
       // The pre-header panel can be transparent in the base/default theme.
       // Use the rendered header background so scrolling group titles remain
       // behind the pinned group area.
-      pinnedMask.style.backgroundColor = getComputedStyle(grid.getHeaderColumn(0)).backgroundColor || '#ececec';
+      // The header is briefly absent while the columns are being rebuilt, for example when
+      // the column picker hides one, so fall back rather than measuring nothing.
+      const firstHeaderElm = grid.getHeaderColumn(0);
+      pinnedMask.style.backgroundColor = (firstHeaderElm && getComputedStyle(firstHeaderElm).backgroundColor) || '#ececec';
       pinnedMask.style.transform = `translateX(${groupHeaderScrollLeft}px)`;
     } else {
       pinnedMask?.remove();
