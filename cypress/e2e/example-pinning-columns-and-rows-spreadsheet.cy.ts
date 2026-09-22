@@ -14,28 +14,34 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
     return `${grid} [data-row="${row}"] .slick-cell.l${column}.r${column}`;
   }
 
-  function getCell(row: number, column: number) {
-    // Docked and virtualized rendering can briefly leave two matching cell
-    // nodes during a row scroll. Choose the node that is actually topmost at
-    // its center instead of relying on DOM order.
-    return cy
-      .window()
-      .then((win: any) => win.grid.scrollCellIntoView(row, column))
-      .then(() => cy.get(cell(row, column)).filter(':visible'))
-      .then(($cells) => {
-        const target =
-          Array.from($cells).find((candidate) => {
-            const rect = candidate.getBoundingClientRect();
-            const elementAtCenter = candidate.ownerDocument.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
-            return elementAtCenter === candidate || candidate.contains(elementAtCenter);
-          }) || $cells[$cells.length - 1];
+  /**
+   * Scrolls a cell into view and waits for the grid to stop re-rendering it.
+   *
+   * A programmatic scroll renders on the next frame, so a test that scrolls and then
+   * immediately resolves an element can capture a node the very next render replaces.
+   * Retrying until the resolved node is still the topmost one at its own centre is what
+   * makes the following click reliable, rather than forcing past the actionability check.
+   */
+  function settledCell(row: number, column: number) {
+    cy.window().then((win: any) => win.grid.scrollCellIntoView(row, column));
+    cy.get(cell(row, column)).should(($cells) => {
+      expect($cells, 'exactly one node for the cell').to.have.length(1);
+      const element = $cells[0];
+      const rect = element.getBoundingClientRect();
+      const topmost = element.ownerDocument.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+      expect(element === topmost || element.contains(topmost), 'the cell is the topmost element at its centre').to.eq(true);
+    });
+    return cy.get(cell(row, column));
+  }
 
-        return cy.wrap(target);
-      });
+  function getCell(row: number, column: number) {
+    return settledCell(row, column);
   }
 
   function scrollRowIntoView(row: number): void {
-    cy.window().then((win: any) => win.grid.scrollRowIntoView(row));
+    // Seat the row at the top rather than flush against an edge: a cell on the exact
+    // boundary makes the test runner scroll again to reveal it, which re-renders the row.
+    cy.window().then((win: any) => win.grid.scrollRowToTop(row));
   }
 
   it('renders the spreadsheet with one viewport and the configured top/left docking bands', () => {
@@ -82,7 +88,7 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
 
   it('selects a range across the top-pinned and scrolling rows', () => {
     getCell(5, 2).as('cell_B5').click();
-    cy.get('@cell_B5').type('{shift}{uparrow}{downarrow}{downarrow}{downarrow}{downarrow}', { release: false, force: true });
+    cy.get('@cell_B5').type('{shift}{uparrow}{downarrow}{downarrow}{downarrow}{downarrow}', { release: false, scrollBehavior: false });
 
     cy.get(`${grid} .slick-cell.l2.r2.selected`).should('have.length', 4);
     cy.get('#selectionRange').should('have.text', '{"fromRow":5,"fromCell":2,"toCell":2,"toRow":8}');
@@ -90,25 +96,25 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
 
   it('selects a range from a top-pinned row through the scrolling rows', () => {
     getCell(5, 5).as('cell_E5').click();
-    cy.get('@cell_E5').type('{shift}{rightarrow}{pagedown}{pagedown}', { release: false, force: true });
+    cy.get('@cell_E5').type('{shift}{rightarrow}{pagedown}{pagedown}', { release: false, scrollBehavior: false });
 
     cy.get('#selectionRange').should('have.text', '{"fromRow":5,"fromCell":5,"toCell":6,"toRow":41}');
   });
 
   it('selects from a scrolled cell to the start of the sheet', () => {
     scrollRowIntoView(40);
-    // getCell() picks the topmost node, but the stale duplicate described there can still be
-    // over it when the click lands, so skip the actionability check.
-    getCell(40, 6).as('cell_G40').click({ force: true });
-    cy.get('@cell_G40').type('{shift}{ctrl}{home}', { release: false, force: true });
+    // The cell is already in view; letting the runner scroll again would re-render the row
+    // underneath the element it just resolved.
+    settledCell(40, 6).click({ scrollBehavior: false });
+    cy.get(cell(40, 6)).type('{shift}{ctrl}{home}', { release: false, scrollBehavior: false });
 
     cy.get('#selectionRange').should('have.text', '{"fromRow":0,"fromCell":0,"toCell":6,"toRow":40}');
   });
 
   it('selects from a scrolled cell to the end of the sheet', () => {
     scrollRowIntoView(40);
-    getCell(40, 5).as('cell_F40').click({ force: true });
-    cy.get('@cell_F40').type('{shift}{ctrl}{end}', { release: false, force: true });
+    settledCell(40, 5).click({ scrollBehavior: false });
+    cy.get(cell(40, 5)).type('{shift}{ctrl}{end}', { release: false, scrollBehavior: false });
 
     cy.get('#selectionRange').should('have.text', '{"fromRow":40,"fromCell":5,"toCell":100,"toRow":99}');
   });
@@ -116,7 +122,7 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
   it('selects the complete sheet with Ctrl+A from a scrolled row', () => {
     scrollRowIntoView(95);
     getCell(95, 95).as('cell_CS95').click();
-    cy.get('@cell_CS95').type('{ctrl}{A}', { release: false, force: true });
+    cy.get('@cell_CS95').type('{ctrl}{A}', { release: false, scrollBehavior: false });
 
     cy.get('#selectionRange').should('have.text', '{"fromRow":0,"fromCell":0,"toCell":100,"toRow":99}');
   });

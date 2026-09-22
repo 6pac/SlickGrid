@@ -203,7 +203,7 @@ describe('Example - Column Span & Header Grouping', { retries: 1 }, () => {
 
       // The fragment is an aria-hidden presentational continuation rendered behind its host
       // cell, so it is deliberately not actionable on its own.
-      cy.get(fragmentSelector).click({ force: true });
+      cy.get(fragmentSelector).click({ scrollBehavior: false });
       cy.get(hostSelector).should('have.class', 'selected');
       cy.get(fragmentSelector).should('have.class', 'selected');
 
@@ -218,7 +218,7 @@ describe('Example - Column Span & Header Grouping', { retries: 1 }, () => {
 
       // The fragment is an aria-hidden presentational continuation rendered behind its host
       // cell, so it is deliberately not actionable on its own.
-      cy.get(fragmentSelector).click({ force: true });
+      cy.get(fragmentSelector).click({ scrollBehavior: false });
       cy.get(hostSelector).should('have.class', 'active');
       cy.get(fragmentSelector).should('have.class', 'active').then(($fragment) => {
         const fragment = $fragment[0];
