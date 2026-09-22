@@ -5097,7 +5097,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       }
     }
 
-    this.viewportHasHScroll = this.canvasWidth >= this.viewportW - (this.scrollbarDimensions?.width || 0);
+    // Use the same test the docking scrollbar makes for itself, so the grid cannot reserve
+    // room for a horizontal scrollbar that the proxy has decided not to show. Content that
+    // exactly fills the viewport does not overflow it.
+    this.viewportHasHScroll = this.hasDockingHorizontalScroller()
+      ? (this.dockingLayout.contentWidth || this.canvasWidth) > this._viewportNode.clientWidth
+      : this.canvasWidth > this.getViewportInnerWidth();
 
     Utils.width(this._headerRowSpacerL, this.canvasWidth + (this.viewportHasVScroll ? this.scrollbarDimensions?.width || 0 : 0));
 
@@ -7240,11 +7245,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const usesDynamicDockingBounds = this.hasDockedColumns();
     const leftDockedWidth = usesDynamicDockingBounds ? this.dockingLayout.leftWidth : this.dockingLayout.leftBaseWidth;
     const rightDockedWidth = usesDynamicDockingBounds ? this.dockingLayout.rightWidth : this.dockingLayout.rightBaseWidth;
-    const viewportWidth = Utils.width(this._viewportScrollContainerX) as number;
-    const availableWidth = Math.max(
-      0,
-      viewportWidth - leftDockedWidth - rightDockedWidth - (this.viewportHasVScroll ? this.scrollbarDimensions?.width || 0 : 0)
-    );
+    // clientWidth already excludes a vertical scrollbar, in both the proxy and the native
+    // scroll-owner modes. Measuring the border box and subtracting the scrollbar separately
+    // took it off twice in proxy mode, where the proxy is sized to the inner width.
+    const viewportWidth = this._viewportScrollContainerX.clientWidth;
+    const availableWidth = Math.max(0, viewportWidth - leftDockedWidth - rightDockedWidth);
     const visibleStart = this.scrollLeft + leftDockedWidth;
     const scrollRight = this.scrollLeft + leftDockedWidth + availableWidth;
 
@@ -9945,11 +9950,16 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     // Chrome has no vertical scrollbar but the body does: right pins stop at the body's
     // visible edge, not the wider chrome edge.
     const dockingViewportWidth = this.getViewportInnerWidth() || this._viewportNode?.clientWidth || chromeScroller.clientWidth;
+    // getBoundingClientRect() reports screen pixels, which a CSS scale on any ancestor
+    // multiplies, while every other term here is a layout pixel. Convert the one measured
+    // distance back to layout pixels; the factor is 1 for an unscaled grid.
+    const scale = chromeScroller.offsetWidth ? scrollerRect.width / chromeScroller.offsetWidth : 1;
     // The chrome container itself is translated by -scrollLeft. Add it back
-    // before converting the target screen coordinate to the local `left`.
-    const untransformedContainerLeft = chromeContainer.getBoundingClientRect().left + this.scrollLeft;
-    const visibleRightStart = scrollerRect.left + dockingViewportWidth - this.dockingLayout.rightWidth + docking.offset;
-    return visibleRightStart - untransformedContainerLeft;
+    // before converting the target position to the container's local `left`.
+    const containerLeftInScroller =
+      (chromeContainer.getBoundingClientRect().left - scrollerRect.left) / (scale || 1) + this.scrollLeft;
+    const visibleRightStart = dockingViewportWidth - this.dockingLayout.rightWidth + docking.offset;
+    return visibleRightStart - containerLeftInScroller;
   }
 
   /** Removes the temporary styles used while measuring automatic header height. */
@@ -10340,7 +10350,23 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return true;
   }
 
-  /** Reject only non-sequential pinning that would visually split a rendered colspan. */
+  /**
+   * Every row index whose metadata may declare a colspan. Falls back to the rendered rows
+   * when the dataset does not expose a length, so a custom data provider is never asked for
+   * rows it has not been told about.
+   */
+  protected rowMetadataIndexes(): number[] {
+    if (!('getItemMetadata' in this.data)) {
+      return [];
+    }
+    const length = this.getDataLength();
+    if (!isDefinedNumber(length) || length <= 0) {
+      return Object.keys(this.rowsCache).map(Number);
+    }
+    return Array.from({ length }, (_value, row) => row);
+  }
+
+  /** Reject only non-sequential pinning that would visually split a colspan. */
   protected validateColspanPinningSequence(
     pinnedIndexes: Map<number, DockingSide>,
     forceAlert = false,
@@ -10362,8 +10388,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return true;
     }
 
-    const hasCrossBandColspan = Object.keys(this.rowsCache).some((rowId) => {
-      const metadata = this.getItemMetadaWhenExists(Number(rowId));
+    // Only a non-sequential request gets this far, which is rare and user-initiated, so the
+    // scan covers every row rather than just the rendered ones: a colspan that a pinning
+    // would split is a problem whether or not it happens to be on screen right now. The
+    // search stops at the first one it finds.
+    const hasCrossBandColspan = this.rowMetadataIndexes().some((row) => {
+      const metadata = this.getItemMetadaWhenExists(row);
       if (!metadata?.columns || metadata.isGroup) {
         return false;
       }
