@@ -49,8 +49,11 @@ packages belong to the slickgrid-universal fork and do not exist here.
   inside them, so a sticky bottom row sits above a permanently pinned bottom row.
 - `docking.stickyActivationBuffer` (default 2px) is the column activation buffer; rows dock on the
   exact boundary.
-- Pinning and sticky docking are LTR-only today: an RTL grid mixes the docking scrollbar with the
-  non-proxy geometry and places docked columns outside the viewport.
+- Pinning and sticky docking work in both reading directions. The band names follow the reading
+  order, not the screen: `left` is the leading band and renders at the right edge of an RTL grid,
+  `right` is the trailing band. `sticky: true` docks at the leading band either way, so the same
+  options describe both directions. Distances inside the docking code are measured along the
+  inline axis; `getInlineDirection()` converts them to physical pixels where a style needs one.
 
 ## Maintenance verification
 

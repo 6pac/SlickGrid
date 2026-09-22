@@ -289,7 +289,11 @@
 
   :is(.slick-cell-sticky-right, .slick-column-sticky-right) {
     transform: translate3d(
-      calc(var(--slick-docking-scroll-left, 0px) + var(--slick-docking-viewport-width, 100%) + var(--slick-sticky-column-offset, 0px)),
+      calc(
+        var(--slick-docking-scroll-left, 0px) +
+          (var(--slick-docking-viewport-width, 100%) * var(--slick-docking-direction, 1)) +
+          var(--slick-sticky-column-offset, 0px)
+      ),
       0,
       0
     ) !important;

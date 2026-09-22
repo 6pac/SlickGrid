@@ -131,6 +131,27 @@ const options = {
 `grid.getCellFromPoint(x, y)` takes canvas-relative coordinates and resolves them through the
 rendered layout (bands, overlay rows, non-contiguous shifts), including rows that are not rendered.
 
+## Right-to-left grids
+
+Pinning and sticky docking work in a `rtl: true` grid. The bands are named for the reading
+order rather than for the screen, so the same configuration describes both directions:
+
+| Option | Left to right | Right to left |
+|---|---|---|
+| `columns.left` | pinned at the left edge | pinned at the **right** edge |
+| `columns.right` | pinned at the right edge | pinned at the **left** edge |
+| `sticky: true` | docks at the left edge | docks at the **right** edge |
+| `sticky: 'left'` / `'right'` | that edge | the same band, mirrored |
+
+In other words `left` is the leading band and `right` the trailing one; a grid does not need
+different options for the two directions. The `slick-column-pinned-left` and
+`slick-cell-pinned-left` classes follow the same rule, so a stylesheet that targets them keeps
+working when the direction changes.
+
+`getCellFromPoint(x, y)` takes x from the grid's top-left corner in both directions, which means
+that in a right-to-left grid it counts back from the last column. A point over a docked band
+resolves to the column drawn there, not to the column the natural layout would put underneath it.
+
 ## Migrating from frozen panes (v5)
 
 | v5 | Now |
@@ -165,12 +186,6 @@ are unchanged from v5.
 
 ## Known limitations
 
-- **RTL and docking do not work together.** A right-to-left grid still creates the docking
-  scrollbar but takes the non-proxy geometry path, and the two disagree: a right-pinned column
-  is placed outside the visible area (measured at roughly -859px against a 598px viewport) and an
-  activated sticky column goes with it. `getCellFromPoint()` deliberately skips the docked
-  hit-test path for RTL, so coordinates over a docked band resolve against the natural layout.
-  Use pinning and sticky columns in LTR grids only until the docking geometry is mirrored.
 - Sticky group headers (a header spanning several columns that itself stays visible) are not
   supported.
 - There is no built-in Header Menu or Grid Menu command for pinning; an application adds its own
