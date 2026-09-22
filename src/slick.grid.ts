@@ -9742,16 +9742,28 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     // Pass 2 (reads only): measure after every class change and before any geometry write,
     // so the pass forces at most one layout instead of one per column.
+    // A cell's padding and borders come from its classes, not from its column, so cells that
+    // look alike share one measurement. Without this the pass called getComputedStyle() twice
+    // per column, which dominated its cost on a wide grid.
+    const horizontalBoxByClassName = new Map<string, number>();
+    const horizontalBoxOf = (element: HTMLElement) => {
+      const key = element.className;
+      let box = horizontalBoxByClassName.get(key);
+      if (box === undefined) {
+        const style = getComputedStyle(element);
+        box =
+          parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
+        horizontalBoxByClassName.set(key, box);
+      }
+      return box;
+    };
+
     const measurements = entries.map(({ header, elements, isLeftEdge }) => {
       const headerOuterWidth = header?.getBoundingClientRect().width || 0;
       const horizontalBoxes = new Map<HTMLElement, number>();
       elements.forEach((element) => {
         if (element !== header) {
-          const style = getComputedStyle(element);
-          horizontalBoxes.set(
-            element,
-            parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth)
-          );
+          horizontalBoxes.set(element, horizontalBoxOf(element));
         }
       });
       let separatorWidth = 0;
