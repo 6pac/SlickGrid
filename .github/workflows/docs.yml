@@ -12,11 +12,12 @@
 name: Docs
 on:
   push:
+    branches:
+      - master
+      - next-v6
     paths:
-      - 'src/**'
       - 'docs/**'
       - 'vitepress/**'
-      - '.github/workflows/docs.yml'
   workflow_dispatch:
 
 permissions:
