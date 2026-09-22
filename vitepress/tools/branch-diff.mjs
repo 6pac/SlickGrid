@@ -14,10 +14,10 @@ import { fileURLToPath } from 'node:url';
 import { tmpdir } from 'node:os';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const SITE = dirname(HERE);
-const DOCS_ROOT = dirname(SITE);
-// When the site lives in the repo at <repo>/docs, DOCS_ROOT is the repo root.
-const REPO = process.env.SLICKGRID_REPO || (existsSync(join(DOCS_ROOT, 'src')) ? DOCS_ROOT : 'G:/Dropbox/Work/SlickGrid/SlickGrid-6pac');
+const VITEPRESS_ROOT = dirname(HERE);
+const REPO_ROOT = dirname(VITEPRESS_ROOT);
+const DOCS_ROOT = join(REPO_ROOT, 'docs');
+const REPO = process.env.SLICKGRID_REPO || (existsSync(join(REPO_ROOT, 'src')) ? REPO_ROOT : 'G:/Dropbox/Work/SlickGrid/SlickGrid-6pac');
 const SCRATCH = process.env.SCRATCH || join(tmpdir(), 'slickgrid-branch-scratch');
 
 const BRANCHES = [
@@ -73,7 +73,7 @@ function diffList(masterArr, branchArr, fields) {
   return { added, removed, changed };
 }
 
-const master = JSON.parse(readFileSync(join(SITE, 'data', 'api.json'), 'utf8'));
+const master = JSON.parse(readFileSync(join(DOCS_ROOT, 'data', 'api.json'), 'utf8'));
 const AREAS = [
   ['Grid options', 'gridOptions', ['type', 'default']],
   ['Column properties', 'columns', ['type']],

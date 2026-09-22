@@ -1,7 +1,7 @@
 {
   "meta": {
-    "generatedAt": "2026-09-16T13:58:24.675Z",
-    "repo": "G:/Dropbox/Work/SlickGrid/SlickGrid-6pac",
+    "generatedAt": "2026-09-22T03:46:59.584Z",
+    "repo": "/home/ghislainb/sourcecode/SlickGrid",
     "counts": {
       "gridOptions": 118,
       "gridOptionsWithDoc": 113,
@@ -88,7 +88,7 @@
       "name": "autoCommitEdit",
       "type": "boolean",
       "optional": true,
-      "description": "Defaults to false, when enabled will try to commit the current edit without focusing on the next row.\r\nIf a custom editor is implemented and the grid cannot auto commit, you must use this option to implement it yourself",
+      "description": "Defaults to false, when enabled will try to commit the current edit without focusing on the next row.\nIf a custom editor is implemented and the grid cannot auto commit, you must use this option to implement it yourself",
       "default": false
     },
     {
@@ -108,7 +108,7 @@
       "name": "autoEditNewRow",
       "type": "boolean",
       "optional": true,
-      "description": "Defaults to true, when enabled it will automatically open the editor when clicking on cell that has a defined editor.\r\nWhen using CellExternalCopyManager, this option could be useful to avoid opening the cell editor automatically on empty new row and we wish to paste our cell selection range.",
+      "description": "Defaults to true, when enabled it will automatically open the editor when clicking on cell that has a defined editor.\nWhen using CellExternalCopyManager, this option could be useful to avoid opening the cell editor automatically on empty new row and we wish to paste our cell selection range.",
       "default": true
     },
     {
@@ -155,7 +155,7 @@
       "name": "colAutosizeTreatAsLockedBelowWidth",
       "type": "number",
       "optional": true,
-      "description": "Defaults to 100px, maximum column width (px) below which a column may be treated as locked (not resized) during auto-sizing.\r\nNote that additional conditions must also be met: header text is not ignored, sizeToRemaining is false, and content size equals header width.",
+      "description": "Defaults to 100px, maximum column width (px) below which a column may be treated as locked (not resized) during auto-sizing.\nNote that additional conditions must also be met: header text is not ignored, sizeToRemaining is false, and content size equals header width.",
       "default": 100
     },
     {
@@ -195,7 +195,7 @@
       "name": "customTooltip",
       "type": "CustomTooltipOption",
       "optional": true,
-      "description": "Custom Tooltip Options, the tooltip could be defined in any of the Column Definition or in the Grid Options,\r\nit will first try to find it in the Column that the user is hovering over or else (when not found) go and try to find it in the Grid Options"
+      "description": "Custom Tooltip Options, the tooltip could be defined in any of the Column Definition or in the Grid Options,\nit will first try to find it in the Column that the user is hovering over or else (when not found) go and try to find it in the Grid Options"
     },
     {
       "name": "dataItemColumnValueExtractor",
@@ -323,21 +323,21 @@
       "name": "enableCellRowSpan",
       "type": "boolean",
       "optional": true,
-      "description": "Do we want to enable cell rowspan?\r\nNote: this is an opt-in option because of the multiple row/column/cells looping that it has to do\r\n(which is at least an O^n3 but only for visible range)",
+      "description": "Do we want to enable cell rowspan?\nNote: this is an opt-in option because of the multiple row/column/cells looping that it has to do\n(which is at least an O^n3 but only for visible range)",
       "default": false
     },
     {
       "name": "enableVariableRowHeight",
       "type": "boolean",
       "optional": true,
-      "description": "Defaults to false. When enabled, rows may have differing heights: each row's height comes\r\nfrom the `rowHeightProvider` grid option (whose default implementation reads\r\n`ItemMetadata.height` from the data provider), falling back to the default `rowHeight`\r\nwhenever the provider returns `undefined`.\r\nWhen disabled (the default), every row uses `rowHeight`, the grid keeps its fixed-height\r\nfast path and `rowHeightProvider` is never called.",
+      "description": "Defaults to false. When enabled, rows may have differing heights: each row's height comes\nfrom the `rowHeightProvider` grid option (whose default implementation reads\n`ItemMetadata.height` from the data provider), falling back to the default `rowHeight`\nwhenever the provider returns `undefined`.\nWhen disabled (the default), every row uses `rowHeight`, the grid keeps its fixed-height\nfast path and `rowHeightProvider` is never called.",
       "default": false
     },
     {
       "name": "enableColumnReorder",
       "type": "boolean | ColumnReorderFunction<C>",
       "optional": true,
-      "description": "Defaults to true, this option can be a boolean or a Column Reorder function.\r\nWhen provided as a boolean, it will permits the user to move an entire column from a position to another.\r\nWe could also provide a Column Reorder function, there's mostly only 1 use for this which is the SlickDraggableGrouping plugin.",
+      "description": "Defaults to true, this option can be a boolean or a Column Reorder function.\nWhen provided as a boolean, it will permits the user to move an entire column from a position to another.\nWe could also provide a Column Reorder function, there's mostly only 1 use for this which is the SlickDraggableGrouping plugin.",
       "default": true
     },
     {
@@ -351,14 +351,14 @@
       "name": "enableHtmlRendering",
       "type": "boolean",
       "optional": true,
-      "description": "Defaults to true, do we want to allow passing HTML string to cell/row rendering by using `innerHTML`.\r\nWhen this is enabled and input is a string, it will use `innerHTML = 'some html'` to render the input, however when disable it will use `textContent = 'some html'`.\r\nNote: for strict CSP, you would want to disable this option and convert all your custom Formatters to return an HTMLElement instead of a string",
+      "description": "Defaults to true, do we want to allow passing HTML string to cell/row rendering by using `innerHTML`.\nWhen this is enabled and input is a string, it will use `innerHTML = 'some html'` to render the input, however when disable it will use `textContent = 'some html'`.\nNote: for strict CSP, you would want to disable this option and convert all your custom Formatters to return an HTMLElement instead of a string",
       "default": true
     },
     {
       "name": "enableMouseWheelScrollHandler",
       "type": "boolean",
       "optional": true,
-      "description": "Do we want to always enable the mousewheel scroll handler?\r\nIn other words, do we want the mouse scrolling would work from anywhere.\r\nTypically we should only enable it when using a Frozen/Pinned grid and if it does detect it to be a frozen grid,\r\nthen it will automatically enable the scroll handler if this flag was originally set to undefined (which it is by default unless the user specifically disabled it).",
+      "description": "Do we want to always enable the mousewheel scroll handler?\nIn other words, do we want the mouse scrolling would work from anywhere.\nTypically we should only enable it when using a Frozen/Pinned grid and if it does detect it to be a frozen grid,\nthen it will automatically enable the scroll handler if this flag was originally set to undefined (which it is by default unless the user specifically disabled it).",
       "default": true
     },
     {
@@ -406,7 +406,7 @@
       "name": "forceSyncScrolling",
       "type": "boolean",
       "optional": true,
-      "description": "Defaults to false, force synchronous scrolling without throttling the UI render when scrolling.\r\nNote: it might be risky to disable this option on large dataset, use at your own risk",
+      "description": "Defaults to false, force synchronous scrolling without throttling the UI render when scrolling.\nNote: it might be risky to disable this option on large dataset, use at your own risk",
       "default": false
     },
     {
@@ -441,7 +441,7 @@
       "name": "frozenRightViewportMinWidth",
       "type": "number",
       "optional": true,
-      "description": "Defaults to 100, what is the minimum width to keep for the section on the right of a frozen grid?\r\nThis basically fixes an issue that if the user expand any column on the left of the frozen (pinning) section\r\nand make it bigger than the viewport width, then the grid becomes unusable because the right section goes into a void/hidden area.",
+      "description": "Defaults to 100, what is the minimum width to keep for the section on the right of a frozen grid?\nThis basically fixes an issue that if the user expand any column on the left of the frozen (pinning) section\nand make it bigger than the viewport width, then the grid becomes unusable because the right section goes into a void/hidden area.",
       "default": 100
     },
     {
@@ -482,7 +482,7 @@
       "name": "maxPartialRowSpanRemap",
       "type": "number",
       "optional": true,
-      "description": "Defaults to 5000, max number of rows that we'll consider doing a partial rowspan remapping.\r\nAnything else will be considered to require a full rowspan remap when necessary",
+      "description": "Defaults to 5000, max number of rows that we'll consider doing a partial rowspan remapping.\nAnything else will be considered to require a full rowspan remap when necessary",
       "default": 5000
     },
     {
@@ -586,14 +586,14 @@
       "name": "rowHeightProvider",
       "type": "(grid: SlickGridModel, row: number, item: any) => number | undefined",
       "optional": true,
-      "description": "The single source of row heights, only called when `enableVariableRowHeight` is on.\r\nReceives the grid instance (giving access to any grid state), the row index, and the row's\r\ndata item. Returns the height (integer) in pixels of that row, or `undefined` to use the default `rowHeight`.\r\nThe default implementation reads `ItemMetadata.height` from the data provider's\r\n`getItemMetadata(row)`, so metadata-driven heights work without configuring this option.\r\nSupplying your own function fully replaces the default - item metadata is then no longer\r\nconsulted (no per-row fallback between the two sources).\r\nHeights are cached in a prefix-sum index that is rebuilt whenever the row count changes, rows\r\nare invalidated, or `grid.invalidateRowHeights()` is called; the callback is called once per\r\nrow per rebuild, so it must be fast (a simple lookup or calculation - no DOM access).\r\nWhen heights change without a row count change, call `grid.invalidateRowHeights()`.",
+      "description": "The single source of row heights, only called when `enableVariableRowHeight` is on.\nReceives the grid instance (giving access to any grid state), the row index, and the row's\ndata item. Returns the height (integer) in pixels of that row, or `undefined` to use the default `rowHeight`.\nThe default implementation reads `ItemMetadata.height` from the data provider's\n`getItemMetadata(row)`, so metadata-driven heights work without configuring this option.\nSupplying your own function fully replaces the default - item metadata is then no longer\nconsulted (no per-row fallback between the two sources).\nHeights are cached in a prefix-sum index that is rebuilt whenever the row count changes, rows\nare invalidated, or `grid.invalidateRowHeights()` is called; the callback is called once per\nrow per rebuild, so it must be fast (a simple lookup or calculation - no DOM access).\nWhen heights change without a row count change, call `grid.invalidateRowHeights()`.",
       "default": "(grid: SlickGridModel, row: number) => grid.getItemMetadaWhenExists(row)?.height"
     },
     {
       "name": "rowHighlightCssClass",
       "type": "string",
       "optional": true,
-      "description": "Defaults to \"highlight-animate\", a CSS class name used to simulate row highlight with an optional duration (e.g. after insert).\r\nNote: make sure that the duration is always lower than the duration defined in the CSS/SASS variable `$alpine-row-highlight-fade-animation`.\r\nAlso note that the highlight is temporary and will also disappear as soon as the user starts scrolling or a `render()` is being called",
+      "description": "Defaults to \"highlight-animate\", a CSS class name used to simulate row highlight with an optional duration (e.g. after insert).\nNote: make sure that the duration is always lower than the duration defined in the CSS/SASS variable `$alpine-row-highlight-fade-animation`.\nAlso note that the highlight is temporary and will also disappear as soon as the user starts scrolling or a `render()` is being called",
       "default": "highlight-animate"
     },
     {
@@ -621,7 +621,7 @@
       "name": "rowTopOffsetRenderType",
       "type": "'top' | 'transform'",
       "optional": true,
-      "description": "Defaults to \"top\", what CSS style to we want to use to render each row top offset (we can use \"top\" or \"transform\").\r\nFor example, with a default `rowHeight: 22`, the 2nd row will have a `top` offset of 44px and by default have a CSS style of `top: 44px`.\r\nNOTE: for perf reasons, the \"transform\" might become the default in our future major version.",
+      "description": "Defaults to \"top\", what CSS style to we want to use to render each row top offset (we can use \"top\" or \"transform\").\nFor example, with a default `rowHeight: 22`, the 2nd row will have a `top` offset of 44px and by default have a CSS style of `top: 44px`.\nNOTE: for perf reasons, the \"transform\" might become the default in our future major version.",
       "default": "top"
     },
     {
@@ -712,7 +712,7 @@
       "name": "suppressActiveCellChangeOnEdit",
       "type": "boolean",
       "optional": true,
-      "description": "Defaults to false, which leads to suppress the cell from becoming active when cell as an editor and is clicked.\r\nThis flag was originally enabled to work properly with (Row Selections & Inline Editors) features but it caused problem when also used with CellExternalCopyManager,\r\nhowever this flag shouldn't be need anymore when editing & using all 3 features and the flag's default is now disabled (false) but user can still change it if needed.",
+      "description": "Defaults to false, which leads to suppress the cell from becoming active when cell as an editor and is clicked.\nThis flag was originally enabled to work properly with (Row Selections & Inline Editors) features but it caused problem when also used with CellExternalCopyManager,\nhowever this flag shouldn't be need anymore when editing & using all 3 features and the flag's default is now disabled (false) but user can still change it if needed.",
       "default": false
     },
     {
@@ -747,13 +747,13 @@
       "type": "string",
       "optional": true,
       "description": "Message to show when the frozen column is invalid and `invalidColumnFreezeWidthCallbackPicker` is enabled",
-      "default": "'[SlickGrid] Action not allowed and aborted, you need to have at least one or more column on the right section of the column freeze/pining. ' +\r\n      'You could alternatively \"Unfreeze all the columns\" before trying again.'"
+      "default": "'[SlickGrid] Action not allowed and aborted, you need to have at least one or more column on the right section of the column freeze/pining. ' +\n      'You could alternatively \"Unfreeze all the columns\" before trying again.'"
     },
     {
       "name": "invalidColumnFreezePickerCallback",
       "type": "(error: string) => void",
       "optional": true,
-      "description": "Defaults to `alert(error)`, which will trigger when the user tries to uncheck too many columns via ColumnPicker/GridMenu.\r\nWe need to have 1 or more columns visible on the right side of the frozen column.",
+      "description": "Defaults to `alert(error)`, which will trigger when the user tries to uncheck too many columns via ColumnPicker/GridMenu.\nWe need to have 1 or more columns visible on the right side of the frozen column.",
       "default": "(error) => alert(error)"
     },
     {
@@ -761,13 +761,13 @@
       "type": "string",
       "optional": true,
       "description": "Message to show when the frozen column width is invalid and `invalidColumnFreezeWidthCallbackWidth` or `throwWhenFrozenNotAllViewable` is enabled",
-      "default": "'[SlickGrid] You are trying to freeze/pin more columns than the grid can support. ' +\r\n      'Make sure to have less columns pinned (on the left) than the actual visible grid width.'"
+      "default": "'[SlickGrid] You are trying to freeze/pin more columns than the grid can support. ' +\n      'Make sure to have less columns pinned (on the left) than the actual visible grid width.'"
     },
     {
       "name": "invalidColumnFreezeWidthCallback",
       "type": "(error: string) => void",
       "optional": true,
-      "description": "Defaults to `alert(error)`, which will trigger when the user tries to set a `frozenColumn` that is wider than the visible grid viewport width in the browser.\r\nWe can't freeze wider than the viewport because the right canvas will never be visible and since the left canvas is never scrollable this would break the UX.",
+      "description": "Defaults to `alert(error)`, which will trigger when the user tries to set a `frozenColumn` that is wider than the visible grid viewport width in the browser.\nWe can't freeze wider than the viewport because the right canvas will never be visible and since the left canvas is never scrollable this would break the UX.",
       "default": "(error) => alert(error)"
     },
     {
@@ -3046,7 +3046,7 @@
       "signature": "cacheCssForHiddenInit()",
       "params": [],
       "returns": "",
-      "description": "Finds all container ancestors/parents (including the grid container itself) that are hidden (i.e. have display:none)\r\nand temporarily applies visible CSS properties (absolute positioning, hidden visibility, block display)\r\nso that dimensions can be measured correctly.\r\nIt stores the original CSS properties in an internal array for later restoration.\r\n\r\nRelated to issue: https://github.com/6pac/SlickGrid/issues/568"
+      "description": "Finds all container ancestors/parents (including the grid container itself) that are hidden (i.e. have display:none)\nand temporarily applies visible CSS properties (absolute positioning, hidden visibility, block display)\nso that dimensions can be measured correctly.\nIt stores the original CSS properties in an internal array for later restoration.\n\nRelated to issue: https://github.com/6pac/SlickGrid/issues/568"
     },
     {
       "name": "restoreCssFromHiddenInit",
@@ -3054,7 +3054,7 @@
       "signature": "restoreCssFromHiddenInit(): void",
       "params": [],
       "returns": "void",
-      "description": "Restores the original CSS properties for the container and its hidden\r\nancestors that were modified by cacheCssForHiddenInit.\r\nThis ensures that after initial measurements the DOM elements revert\r\nto their original style settings."
+      "description": "Restores the original CSS properties for the container and its hidden\nancestors that were modified by cacheCssForHiddenInit.\nThis ensures that after initial measurements the DOM elements revert\nto their original style settings."
     },
     {
       "name": "registerPlugin",
@@ -3069,7 +3069,7 @@
         }
       ],
       "returns": "",
-      "description": "Registers an external plugin to the grid’s internal plugin list.\r\nOnce added, it immediately initialises the plugin by calling its init()\r\nmethod with the grid instance."
+      "description": "Registers an external plugin to the grid’s internal plugin list.\nOnce added, it immediately initialises the plugin by calling its init()\nmethod with the grid instance."
     },
     {
       "name": "unregisterPlugin",
@@ -3084,7 +3084,7 @@
         }
       ],
       "returns": "",
-      "description": "Unregister (destroy) an external Plugin.\r\nSearches for the specified plugin in the grid’s plugin list.\r\nWhen found, it calls the plugin’s destroy() method and removes the plugin from the list,\r\nthereby unregistering it from the grid."
+      "description": "Unregister (destroy) an external Plugin.\nSearches for the specified plugin in the grid’s plugin list.\nWhen found, it calls the plugin’s destroy() method and removes the plugin from the list,\nthereby unregistering it from the grid."
     },
     {
       "name": "destroy",
@@ -3099,7 +3099,7 @@
         }
       ],
       "returns": "",
-      "description": "Destroy (dispose) of SlickGrid\r\n\r\nUnbinds all event handlers, cancels any active cell edits, triggers the onBeforeDestroy event,\r\nunregisters and destroys plugins, destroys sortable and other interaction instances,\r\nunbinds ancestor scroll events, removes CSS rules, unbinds events from all key DOM elements\r\n(canvas, viewports, header, footer, etc.), empties the grid container, removes the grid’s uid class,\r\nand clears all timers. Optionally, if shouldDestroyAllElements is true,\r\ncalls destroyAllElements to nullify all DOM references."
+      "description": "Destroy (dispose) of SlickGrid\n\nUnbinds all event handlers, cancels any active cell edits, triggers the onBeforeDestroy event,\nunregisters and destroys plugins, destroys sortable and other interaction instances,\nunbinds ancestor scroll events, removes CSS rules, unbinds events from all key DOM elements\n(canvas, viewports, header, footer, etc.), empties the grid container, removes the grid’s uid class,\nand clears all timers. Optionally, if shouldDestroyAllElements is true,\ncalls destroyAllElements to nullify all DOM references."
     },
     {
       "name": "getOptions",
@@ -3175,7 +3175,7 @@
         }
       ],
       "returns": "void",
-      "description": "If option.mixinDefaults is true then external code maintains a reference to the options object. In this case there is no need\r\nto call setOptions() - changes can be made directly to the object. However setOptions() also performs some recalibration of the\r\ngrid in reaction to changed options. activateChangedOptions call the same recalibration routines as setOptions() would have."
+      "description": "If option.mixinDefaults is true then external code maintains a reference to the options object. In this case there is no need\nto call setOptions() - changes can be made directly to the object. However setOptions() also performs some recalibration of the\ngrid in reaction to changed options. activateChangedOptions call the same recalibration routines as setOptions() would have."
     },
     {
       "name": "validateAndEnforceOptions",
@@ -3183,7 +3183,7 @@
       "signature": "validateAndEnforceOptions(): void",
       "params": [],
       "returns": "void",
-      "description": "Ensures consistency in option setting, by thastIF autoHeight IS enabled, leaveSpaceForNewRows is set to FALSE.\r\nAnd, if forceFitColumns is True, then autosizeColsMode is set to LegacyForceFit."
+      "description": "Ensures consistency in option setting, by thastIF autoHeight IS enabled, leaveSpaceForNewRows is set to FALSE.\nAnd, if forceFitColumns is True, then autosizeColsMode is set to LegacyForceFit."
     },
     {
       "name": "setSelectionModel",
@@ -3330,7 +3330,7 @@
         }
       ],
       "returns": "",
-      "description": "Proportionally resize a specific column by its name, index or Id\r\n\r\nResizes based on its content, but determines the column definition from the provided identifier or index.\r\nThen, obtains a grid canvas and calls getColAutosizeWidth to compute and update the column’s width."
+      "description": "Proportionally resize a specific column by its name, index or Id\n\nResizes based on its content, but determines the column definition from the provided identifier or index.\nThen, obtains a grid canvas and calls getColAutosizeWidth to compute and update the column’s width."
     },
     {
       "name": "autosizeColumns",
@@ -3351,7 +3351,7 @@
         }
       ],
       "returns": "",
-      "description": "Proportionately resizes all columns to fill available horizontal space.\r\nThis does not take the cell contents into consideration.\r\n\r\nIt does this by temporarily caching CSS for hidden containers, calling the internal autosizing logic\r\n(internalAutosizeColumns) with the autosize mode and initialisation flag,\r\nthen restores the original CSS."
+      "description": "Proportionately resizes all columns to fill available horizontal space.\nThis does not take the cell contents into consideration.\n\nIt does this by temporarily caching CSS for hidden containers, calling the internal autosizing logic\n(internalAutosizeColumns) with the autosize mode and initialisation flag,\nthen restores the original CSS."
     },
     {
       "name": "reRenderColumns",
@@ -3410,7 +3410,7 @@
         }
       ],
       "returns": "",
-      "description": "A convenience method that creates a sort configuration for one column (with the given sort direction)\r\nand calls setSortColumns with it. Accepts a columnId string and an ascending boolean.\r\nApplies a sort glyph in either ascending or descending form to the header of the column.\r\nNote that this does not actually sort the column. It only adds the sort glyph to the header."
+      "description": "A convenience method that creates a sort configuration for one column (with the given sort direction)\nand calls setSortColumns with it. Accepts a columnId string and an ascending boolean.\nApplies a sort glyph in either ascending or descending form to the header of the column.\nNote that this does not actually sort the column. It only adds the sort glyph to the header."
     },
     {
       "name": "getColumnByIndex",
@@ -3425,7 +3425,7 @@
         }
       ],
       "returns": "",
-      "description": "Get column by index - iterates over header containers and returns the header column\r\nelement corresponding to the given index."
+      "description": "Get column by index - iterates over header containers and returns the header column\nelement corresponding to the given index."
     },
     {
       "name": "setSortColumns",
@@ -3440,7 +3440,7 @@
         }
       ],
       "returns": "",
-      "description": "Accepts an array of objects in the form [ { columnId: [string], sortAsc: [boolean] }, ... ] to\r\ndefine the grid's sort order. When called, this will apply a sort glyph in either ascending\r\nor descending form to the header of each column specified in the array.\r\nNote that this does not actually sort the column. It only adds the sort glyph to the header."
+      "description": "Accepts an array of objects in the form [ { columnId: [string], sortAsc: [boolean] }, ... ] to\ndefine the grid's sort order. When called, this will apply a sort glyph in either ascending\nor descending form to the header of each column specified in the array.\nNote that this does not actually sort the column. It only adds the sort glyph to the header."
     },
     {
       "name": "getColumns",
@@ -3471,7 +3471,7 @@
         }
       ],
       "returns": "",
-      "description": "Sets grid columns. Column headers will be recreated and all rendered rows will be removed.\r\nTo rerender the grid (if necessary), call render()."
+      "description": "Sets grid columns. Column headers will be recreated and all rendered rows will be removed.\nTo rerender the grid (if necessary), call render()."
     },
     {
       "name": "updateColumns",
@@ -3568,7 +3568,7 @@
         }
       ],
       "returns": "TData[keyof TData]",
-      "description": "Returns the value of a single field for a given row index.\r\n\r\nWhen the databinding source is a `CustomDataView` that implements the optional\r\n`getCellValue(index, field)` accessor, that method is used directly. This allows\r\ncolumn-oriented (or otherwise non row-materializing) data sources to return a\r\nsingle cell value without first having to build a full row object via `getItem()`,\r\nwhich can be expensive when called repeatedly (e.g. during column content auto-sizing).\r\n\r\nFalls back to `getDataItem(i)[field]` for plain arrays or data sources that don't\r\nimplement `getCellValue`."
+      "description": "Returns the value of a single field for a given row index.\n\nWhen the databinding source is a `CustomDataView` that implements the optional\n`getCellValue(index, field)` accessor, that method is used directly. This allows\ncolumn-oriented (or otherwise non row-materializing) data sources to return a\nsingle cell value without first having to build a full row object via `getItem()`,\nwhich can be expensive when called repeatedly (e.g. during column content auto-sizing).\n\nFalls back to `getDataItem(i)[field]` for plain arrays or data sources that don't\nimplement `getCellValue`."
     },
     {
       "name": "hasDataView",
@@ -3642,7 +3642,7 @@
         }
       ],
       "returns": "",
-      "description": "A public method that starts editing on the active cell by calling\r\nmakeActiveCellEditable with the provided editor, pre–click flag, and event."
+      "description": "A public method that starts editing on the active cell by calling\nmakeActiveCellEditable with the provided editor, pre–click flag, and event."
     },
     {
       "name": "getSelectedRows",
@@ -3709,11 +3709,11 @@
           "name": "options",
           "type": "{ emptyTarget?: boolean; skipEmptyReassignment?: boolean; }",
           "optional": true,
-          "description": "-\r\n`emptyTarget`, defaults to true, will empty the target.\r\n`skipEmptyReassignment`, defaults to true, when enabled it will not try to reapply an empty value when the target is already empty"
+          "description": "-\n`emptyTarget`, defaults to true, will empty the target.\n`skipEmptyReassignment`, defaults to true, when enabled it will not try to reapply an empty value when the target is already empty"
         }
       ],
       "returns": "",
-      "description": "Apply HTML code by 3 different ways depending on what is provided as input and what options are enabled.\r\n1. value is an HTMLElement or DocumentFragment, then first empty the target and simply append the HTML to the target element.\r\n2. value is string and `enableHtmlRendering` is enabled, then use `target.innerHTML = value;`\r\n3. value is string and `enableHtmlRendering` is disabled, then use `target.textContent = value;`"
+      "description": "Apply HTML code by 3 different ways depending on what is provided as input and what options are enabled.\n1. value is an HTMLElement or DocumentFragment, then first empty the target and simply append the HTML to the target element.\n2. value is string and `enableHtmlRendering` is enabled, then use `target.innerHTML = value;`\n3. value is string and `enableHtmlRendering` is disabled, then use `target.textContent = value;`"
     },
     {
       "name": "getCanvasNode",
@@ -3801,7 +3801,7 @@
         }
       ],
       "returns": "",
-      "description": "Calls setActiveViewportNode (using the provided event) to set the active viewport,\r\nthen returns the active viewport DOM element."
+      "description": "Calls setActiveViewportNode (using the provided event) to set the active viewport,\nthen returns the active viewport DOM element."
     },
     {
       "name": "setActiveViewportNode",
@@ -3824,7 +3824,7 @@
       "signature": "getHeadersWidth()",
       "params": [],
       "returns": "",
-      "description": "Get the headers width in pixel\r\n\r\nIterates over all columns to accumulate the widths for the left and right header sections,\r\nadds scrollbar width if needed, and adjusts for frozen columns.\r\nReturns the computed overall header width in pixels."
+      "description": "Get the headers width in pixel\n\nIterates over all columns to accumulate the widths for the left and right header sections,\nadds scrollbar width if needed, and adjusts for frozen columns.\nReturns the computed overall header width in pixels."
     },
     {
       "name": "getCanvasWidth",
@@ -3832,7 +3832,7 @@
       "signature": "getCanvasWidth(): number",
       "params": [],
       "returns": "number",
-      "description": "Get the grid canvas width\r\n\r\nComputes the available width (considering vertical scrollbar if present),\r\nthen iterates over the columns (left vs. right based on frozen columns) to sum their widths.\r\nIf full–width rows are enabled, extra width is added. Returns the total calculated width."
+      "description": "Get the grid canvas width\n\nComputes the available width (considering vertical scrollbar if present),\nthen iterates over the columns (left vs. right based on frozen columns) to sum their widths.\nIf full–width rows are enabled, extra width is added. Returns the total calculated width."
     },
     {
       "name": "validateColumnFreezeWidth",
@@ -3849,11 +3849,11 @@
           "name": "forceAlert",
           "type": "boolean",
           "optional": true,
-          "description": "tri-state flag to alert when frozen column is invalid\r\n- if `undefined` it will do the condition check and never alert more than once\r\n- if `true` it will do the condition check and always alert even if it was called before\r\n- if `false` it will do the condition check but always skip the alert"
+          "description": "tri-state flag to alert when frozen column is invalid\n- if `undefined` it will do the condition check and never alert more than once\n- if `true` it will do the condition check and always alert even if it was called before\n- if `false` it will do the condition check but always skip the alert"
         }
       ],
       "returns": "boolean",
-      "description": "Validate that the column freeze is allowed in the browser by making sure that the frozen column is not exceeding the available and visible left canvas width.\r\nNote that it will only validate when `invalidColumnFreezeWidthCallback` or `throwWhenFrozenNotAllViewable` grid option is enabled."
+      "description": "Validate that the column freeze is allowed in the browser by making sure that the frozen column is not exceeding the available and visible left canvas width.\nNote that it will only validate when `invalidColumnFreezeWidthCallback` or `throwWhenFrozenNotAllViewable` grid option is enabled."
     },
     {
       "name": "calculateFrozenColumnIndexById",
@@ -3880,7 +3880,7 @@
         }
       ],
       "returns": "number",
-      "description": "From a new set of columns, different than current grid columns, we'll recalculate the `frozenColumn` index position by comparing its column `id`\r\nand recalculating the `frozenColumn` index to find out if it is different from a new set of columns."
+      "description": "From a new set of columns, different than current grid columns, we'll recalculate the `frozenColumn` index position by comparing its column `id`\nand recalculating the `frozenColumn` index to find out if it is different from a new set of columns."
     },
     {
       "name": "validateSetColumnFreeze",
@@ -3897,11 +3897,11 @@
           "name": "forceAlert",
           "type": "boolean",
           "optional": true,
-          "description": "tri-state flag to alert when frozen column is invalid\r\n- if `undefined` it will do the condition check and never alert more than once\r\n- if `true` it will do the condition check and always alert even if it was called before\r\n- if `false` it will do the condition check but always skip the alert"
+          "description": "tri-state flag to alert when frozen column is invalid\n- if `undefined` it will do the condition check and never alert more than once\n- if `true` it will do the condition check and always alert even if it was called before\n- if `false` it will do the condition check but always skip the alert"
         }
       ],
       "returns": "boolean",
-      "description": "Validate that there is at least 1, or more, column to the right of the frozen column otherwise show an error (we do this check before calling `setColumns()`).\r\nNote that it will only validate when `invalidColumnFreezePickerCallback` grid option is enabled."
+      "description": "Validate that there is at least 1, or more, column to the right of the frozen column otherwise show an error (we do this check before calling `setColumns()`).\nNote that it will only validate when `invalidColumnFreezePickerCallback` grid option is enabled."
     },
     {
       "name": "getPreHeaderPanel",
@@ -4084,7 +4084,7 @@
         }
       ],
       "returns": "",
-      "description": "Retrieves the height of a row.\r\nIn variable row height mode (`enableVariableRowHeight`) and with a row index provided,\r\nreturns that row's individual height; otherwise returns the default row height defined\r\nin the grid options."
+      "description": "Retrieves the height of a row.\nIn variable row height mode (`enableVariableRowHeight`) and with a row index provided,\nreturns that row's individual height; otherwise returns the default row height defined\nin the grid options."
     },
     {
       "name": "invalidate",
@@ -4174,7 +4174,7 @@
       "signature": "getViewportRowCount()",
       "params": [],
       "returns": "",
-      "description": "Get the number of rows displayed in the viewport\r\nNote that the row count is an approximation because it is a calculated value using this formula (viewport / rowHeight = rowCount),\r\nthe viewport must also be displayed for this calculation to work."
+      "description": "Get the number of rows displayed in the viewport\nNote that the row count is an approximation because it is a calculated value using this formula (viewport / rowHeight = rowCount),\nthe viewport must also be displayed for this calculation to work."
     },
     {
       "name": "getViewportHeight",
@@ -4182,7 +4182,7 @@
       "signature": "getViewportHeight()",
       "params": [],
       "returns": "",
-      "description": "Calculates the vertical height available for displaying grid rows. In auto–height mode it sums panel heights\r\n(header, footer, top panel) plus the total row height; otherwise, it subtracts header, footer, pre–header,\r\ntop–header heights and container paddings from the container’s computed height. It also computes and stores\r\nthe number of visible rows."
+      "description": "Calculates the vertical height available for displaying grid rows. In auto–height mode it sums panel heights\n(header, footer, top panel) plus the total row height; otherwise, it subtracts header, footer, pre–header,\ntop–header heights and container paddings from the container’s computed height. It also computes and stores\nthe number of visible rows."
     },
     {
       "name": "getViewportWidth",
@@ -4190,7 +4190,7 @@
       "signature": "getViewportWidth()",
       "params": [],
       "returns": "",
-      "description": "Returns the width of the grid’s viewport by measuring the inner width of the grid container (using a utility function).\r\nIt falls back to a devMode–specified width if necessary."
+      "description": "Returns the width of the grid’s viewport by measuring the inner width of the grid container (using a utility function).\nIt falls back to a devMode–specified width if necessary."
     },
     {
       "name": "resizeCanvas",
@@ -4198,7 +4198,7 @@
       "signature": "resizeCanvas()",
       "params": [],
       "returns": "",
-      "description": "Execute a Resize of the Grid Canvas.\r\n\r\nRecalculates the grid’s canvas, pane, and viewport dimensions based on the current container size,\r\nfrozen rows/columns settings, and auto–height configuration. It then applies these dimensions to various DOM elements\r\n(panes, viewports, canvases) and updates the scrollbar dimensions.\r\nFinally, it updates the row count, handles scrolling, and forces a re–render."
+      "description": "Execute a Resize of the Grid Canvas.\n\nRecalculates the grid’s canvas, pane, and viewport dimensions based on the current container size,\nfrozen rows/columns settings, and auto–height configuration. It then applies these dimensions to various DOM elements\n(panes, viewports, canvases) and updates the scrollbar dimensions.\nFinally, it updates the row count, handles scrolling, and forces a re–render."
     },
     {
       "name": "invalidateRowHeights",
@@ -4206,7 +4206,7 @@
       "signature": "invalidateRowHeights()",
       "params": [],
       "returns": "",
-      "description": "Invalidate all row heights (variable row height mode) and fully re-render the grid.\r\nCall this after the values driving `rowHeightProvider` (or, with the default provider, the\r\nitem metadata heights) have changed without a change in row count; the row position index\r\nis then rebuilt with the new heights."
+      "description": "Invalidate all row heights (variable row height mode) and fully re-render the grid.\nCall this after the values driving `rowHeightProvider` (or, with the default provider, the\nitem metadata heights) have changed without a change in row count; the row position index\nis then rebuilt with the new heights."
     },
     {
       "name": "updateRowCount",
@@ -4256,7 +4256,7 @@
         }
       ],
       "returns": "",
-      "description": "Returns an object with the top and bottom row indices that are visible in the viewport, as well\r\nas the left and right pixel boundaries.\r\nIt uses the current (or provided) scroll positions and viewport dimensions."
+      "description": "Returns an object with the top and bottom row indices that are visible in the viewport, as well\nas the left and right pixel boundaries.\nIt uses the current (or provided) scroll positions and viewport dimensions."
     },
     {
       "name": "getRenderedRange",
@@ -4277,7 +4277,7 @@
         }
       ],
       "returns": "",
-      "description": "Computes the range of rows (and horizontal pixel boundaries) that should be rendered,\r\nincluding an additional buffer (based on row height and a minimum buffer) determined by\r\nthe current vertical scroll direction.\r\nThis range is used to decide which rows and cells to render."
+      "description": "Computes the range of rows (and horizontal pixel boundaries) that should be rendered,\nincluding an additional buffer (based on row height and a minimum buffer) determined by\nthe current vertical scroll direction.\nThis range is used to decide which rows and cells to render."
     },
     {
       "name": "getRowCache",
@@ -4285,7 +4285,7 @@
       "signature": "getRowCache(): Record<number, RowCaching>",
       "params": [],
       "returns": "Record<number, RowCaching>",
-      "description": "Returns the rows cache that are currently rendered in the DOM,\r\nthe cache includes certain properties like the row div element, cell rendered queue and the row colspan when defined."
+      "description": "Returns the rows cache that are currently rendered in the DOM,\nthe cache includes certain properties like the row div element, cell rendered queue and the row colspan when defined."
     },
     {
       "name": "render",
@@ -4293,7 +4293,7 @@
       "signature": "render()",
       "params": [],
       "returns": "",
-      "description": "(re)Render the grid\r\n\r\nMain rendering method that first dequeues any pending scroll throttling, then obtains the visible and rendered ranges.\r\nIt removes rows no longer visible, calls cleanUpAndRenderCells and renderRows to render missing cells and new rows,\r\nand, if frozen rows are present, renders them separately. It then sets post–processing boundaries, starts post–processing,\r\nupdates scroll positions, and triggers the onRendered event."
+      "description": "(re)Render the grid\n\nMain rendering method that first dequeues any pending scroll throttling, then obtains the visible and rendered ranges.\nIt removes rows no longer visible, calls cleanUpAndRenderCells and renderRows to render missing cells and new rows,\nand, if frozen rows are present, renders them separately. It then sets post–processing boundaries, starts post–processing,\nupdates scroll positions, and triggers the onRendered event."
     },
     {
       "name": "getFrozenRowOffset",
@@ -4308,7 +4308,7 @@
         }
       ],
       "returns": "",
-      "description": "Get frozen (pinned) row offset\r\n\r\nReturns the vertical pixel offset to apply for frozen rows.\r\nDepending on whether frozen rows are pinned at the bottom or top and based on grid height,\r\nit returns either a fixed frozen rows height or a calculated offset."
+      "description": "Get frozen (pinned) row offset\n\nReturns the vertical pixel offset to apply for frozen rows.\nDepending on whether frozen rows are pinned at the bottom or top and based on grid height,\nit returns either a fixed frozen rows height or a calculated offset."
     },
     {
       "name": "scrollTo",
@@ -4323,7 +4323,7 @@
         }
       ],
       "returns": "",
-      "description": "Scroll to a Y position in the grid (clamped to valid bounds)\r\n\r\nUpdates internal offsets, recalculates the visible range, cleans up rows outside the viewport,\r\nupdates row positions, and triggers the onViewportChanged event."
+      "description": "Scroll to a Y position in the grid (clamped to valid bounds)\n\nUpdates internal offsets, recalculates the visible range, cleans up rows outside the viewport,\nupdates row positions, and triggers the onViewportChanged event."
     },
     {
       "name": "scrollCellIntoView",
@@ -4350,7 +4350,7 @@
         }
       ],
       "returns": "",
-      "description": "Scroll to a specific cell and make it into the view\r\n\r\nFirst calls scrollRowIntoView for the row. If the cell is not in a frozen column,\r\ncalculates the cell’s colspan and then calls internalScrollColumnIntoView with the\r\ncell’s left and right boundaries."
+      "description": "Scroll to a specific cell and make it into the view\n\nFirst calls scrollRowIntoView for the row. If the cell is not in a frozen column,\ncalculates the cell’s colspan and then calls internalScrollColumnIntoView with the\ncell’s left and right boundaries."
     },
     {
       "name": "scrollColumnIntoView",
@@ -4410,7 +4410,7 @@
         }
       ],
       "returns": "number | null",
-      "description": "from a row number, verify if the rowspan is intersecting and return it when found,\r\notherwise return `null` when nothing is found or when the rowspan feature is disabled."
+      "description": "from a row number, verify if the rowspan is intersecting and return it when found,\notherwise return `null` when nothing is found or when the rowspan feature is disabled."
     },
     {
       "name": "getParentRowSpanByCell",
@@ -4437,7 +4437,7 @@
         }
       ],
       "returns": "{ start: number; end: number; range: string; } | null",
-      "description": "Returns the parent rowspan details when child cell are spanned from a rowspan or `null` when it's not spanned.\r\nBy default it will exclude the parent cell that holds the rowspan, and return `null`, that initiated the rowspan unless the 3rd argument is disabled.\r\nThe exclusion is helpful to find out when we're dealing with a child cell of a rowspan"
+      "description": "Returns the parent rowspan details when child cell are spanned from a rowspan or `null` when it's not spanned.\nBy default it will exclude the parent cell that holds the rowspan, and return `null`, that initiated the rowspan unless the 3rd argument is disabled.\nThe exclusion is helpful to find out when we're dealing with a child cell of a rowspan"
     },
     {
       "name": "remapAllColumnsRowSpan",
@@ -4445,7 +4445,7 @@
       "signature": "remapAllColumnsRowSpan()",
       "params": [],
       "returns": "",
-      "description": "Remap all the rowspan metadata by looping through all dataset rows and keep a cache of rowspan by column indexes\r\nFor example:\r\n 1- if 2nd row of the 1st column has a metadata.rowspan of 3 then the cache will be: `{ 0: '1:4' }`\r\n 2- if 2nd row if the 1st column has a metadata.rowspan of 3 AND a colspan of 2 then the cache will be: `{ 0: '1:4', 1: '1:4' }`"
+      "description": "Remap all the rowspan metadata by looping through all dataset rows and keep a cache of rowspan by column indexes\nFor example:\n 1- if 2nd row of the 1st column has a metadata.rowspan of 3 then the cache will be: `{ 0: '1:4' }`\n 2- if 2nd row if the 1st column has a metadata.rowspan of 3 AND a colspan of 2 then the cache will be: `{ 0: '1:4', 1: '1:4' }`"
     },
     {
       "name": "scrollRowIntoView",
@@ -4528,7 +4528,7 @@
         }
       ],
       "returns": "",
-      "description": "Navigates to a specified row, ensuring it is visible and selecting an active cell if applicable.\r\nAdjusts the scroll position and updates the active cell based on cell navigation rules."
+      "description": "Navigates to a specified row, ensuring it is visible and selecting an active cell if applicable.\nAdjusts the scroll position and updates the active cell based on cell navigation rules."
     },
     {
       "name": "applyFormatResultToCellNode",
@@ -4555,7 +4555,7 @@
         }
       ],
       "returns": "",
-      "description": "Apply a Formatter Result to a Cell DOM Node\r\n\r\nIf the formatter result is not an object, it is applied directly as HTML/text;\r\notherwise, it extracts the content (from a property such as “html” or “text”) and applies it.\r\nAdditionally, it conditionally removes or adds CSS classes and sets a tooltip on the cell."
+      "description": "Apply a Formatter Result to a Cell DOM Node\n\nIf the formatter result is not an object, it is applied directly as HTML/text;\notherwise, it extracts the content (from a property such as “html” or “text”) and applies it.\nAdditionally, it conditionally removes or adds CSS classes and sets a tooltip on the cell."
     },
     {
       "name": "addCellCssStyles",
@@ -4612,7 +4612,7 @@
         }
       ],
       "returns": "",
-      "description": "Sets CSS classes to specific grid cells by calling removeCellCssStyles(key) followed by addCellCssStyles(key, hash). key is name for this set of styles so you can reference it later - to modify it or remove it, for example. hash is a per-row-index, per-column-name nested hash of CSS classes to apply.\r\nSuppose you have a grid with columns:\r\n[\"login\", \"name\", \"birthday\", \"age\", \"likes_icecream\", \"favorite_cake\"]\r\n...and you'd like to highlight the \"birthday\" and \"age\" columns for people whose birthday is today, in this case, rows at index 0 and 9. (The first and tenth row in the grid)."
+      "description": "Sets CSS classes to specific grid cells by calling removeCellCssStyles(key) followed by addCellCssStyles(key, hash). key is name for this set of styles so you can reference it later - to modify it or remove it, for example. hash is a per-row-index, per-column-name nested hash of CSS classes to apply.\nSuppose you have a grid with columns:\n[\"login\", \"name\", \"birthday\", \"age\", \"likes_icecream\", \"favorite_cake\"]\n...and you'd like to highlight the \"birthday\" and \"age\" columns for people whose birthday is today, in this case, rows at index 0 and 9. (The first and tenth row in the grid)."
     },
     {
       "name": "getCellCssStyles",
@@ -4780,7 +4780,7 @@
         }
       ],
       "returns": "",
-      "description": "Returns row and cell indexes by providing x,y coordinates.\r\nCoordinates are relative to the top left corner of the grid beginning with the first row (not including the column headers)."
+      "description": "Returns row and cell indexes by providing x,y coordinates.\nCoordinates are relative to the top left corner of the grid beginning with the first row (not including the column headers)."
     },
     {
       "name": "getPluginByName",
@@ -4927,7 +4927,7 @@
         }
       ],
       "returns": "",
-      "description": "From any row/cell indexes that might have colspan/rowspan, find its starting indexes\r\nFor example, if we start at 0,0 and we have colspan/rowspan of 4 for both and our indexes is row:2,cell:3\r\nthen our starting row/cell is 0,0. If a cell has no spanning at all then row/cell output is same as input"
+      "description": "From any row/cell indexes that might have colspan/rowspan, find its starting indexes\nFor example, if we start at 0,0 and we have colspan/rowspan of 4 for both and our indexes is row:2,cell:3\nthen our starting row/cell is 0,0. If a cell has no spanning at all then row/cell output is same as input"
     },
     {
       "name": "navigateRight",
@@ -5169,7 +5169,7 @@
         }
       ],
       "returns": "",
-      "description": "Accepts a row integer and a cell integer, scrolling the view to the row where row is its row index, and cell is its cell index. Optionally accepts a forceEdit boolean which, if true, will attempt to initiate the edit dialogue for the field in the specified cell.\r\nUnlike setActiveCell, this scrolls the row into the viewport and sets the keyboard focus."
+      "description": "Accepts a row integer and a cell integer, scrolling the view to the row where row is its row index, and cell is its cell index. Optionally accepts a forceEdit boolean which, if true, will attempt to initiate the edit dialogue for the field in the specified cell.\nUnlike setActiveCell, this scrolls the row into the viewport and sets the keyboard focus."
     }
   ],
   "dataViewOptions": [
@@ -5190,14 +5190,14 @@
       "type": "boolean",
       "optional": false,
       "description": "",
-      "deprecated": "Filtering is always CSP-safe and this option is now ignored.\r\nRemove both `inlineFilters` and `useCSPSafeFilter` in the next major release."
+      "deprecated": "Filtering is always CSP-safe and this option is now ignored.\nRemove both `inlineFilters` and `useCSPSafeFilter` in the next major release."
     },
     {
       "name": "useCSPSafeFilter",
       "type": "boolean",
       "optional": false,
       "description": "",
-      "deprecated": "Filtering is always CSP-safe and this option is now ignored.\r\nRemove it in the next major release together with `inlineFilters`."
+      "deprecated": "Filtering is always CSP-safe and this option is now ignored.\nRemove it in the next major release together with `inlineFilters`."
     }
   ],
   "dataViewEvents": [
@@ -5501,7 +5501,7 @@
         }
       ],
       "returns": "",
-      "description": "Begins a bached update of the items in the data view.\r\nincluding deletes and the related events are postponed to the endUpdate call.\r\nAs certain operations are postponed during this update, some methods might not\r\ndeliver fully consistent information."
+      "description": "Begins a bached update of the items in the data view.\nincluding deletes and the related events are postponed to the endUpdate call.\nAs certain operations are postponed during this update, some methods might not\ndeliver fully consistent information."
     },
     {
       "name": "endUpdate",
@@ -5658,7 +5658,7 @@
       ],
       "returns": "",
       "description": "",
-      "deprecated": ", to be more removed in next major since IE is no longer supported and this is no longer useful.\r\nProvides a workaround for the extremely slow sorting in IE.\r\nDoes a [lexicographic] sort on a give column by temporarily overriding Object.prototype.toString\r\nto return the value of that field and then doing a native Array.sort()."
+      "deprecated": ", to be more removed in next major since IE is no longer supported and this is no longer useful.\nProvides a workaround for the extremely slow sorting in IE.\nDoes a [lexicographic] sort on a give column by temporarily overriding Object.prototype.toString\nto return the value of that field and then doing a native Array.sort()."
     },
     {
       "name": "reSort",
@@ -5869,7 +5869,7 @@
         }
       ],
       "returns": "",
-      "description": "Performs the update operations of a single item by id without\r\ntriggering any events or refresh operations."
+      "description": "Performs the update operations of a single item by id without\ntriggering any events or refresh operations."
     },
     {
       "name": "updateItem",
@@ -6215,17 +6215,17 @@
           "name": "preserveHidden",
           "type": "boolean",
           "optional": false,
-          "description": "- Whether to keep selected items that go out of the\r\nview due to them getting filtered out."
+          "description": "- Whether to keep selected items that go out of the\nview due to them getting filtered out."
         },
         {
           "name": "preserveHiddenOnSelectionChange",
           "type": "boolean",
           "optional": true,
-          "description": "- Whether to keep selected items\r\nthat are currently out of the view (see preserveHidden) as selected when selection\r\nchanges."
+          "description": "- Whether to keep selected items\nthat are currently out of the view (see preserveHidden) as selected when selection\nchanges."
         }
       ],
       "returns": "",
-      "description": "Wires the grid and the DataView together to keep row selection tied to item ids.\r\nThis is useful since, without it, the grid only knows about rows, so if the items\r\nmove around, the same rows stay selected instead of the selection moving along\r\nwith the items.\r\n\r\nNOTE:  This doesn't work with cell selection model."
+      "description": "Wires the grid and the DataView together to keep row selection tied to item ids.\nThis is useful since, without it, the grid only knows about rows, so if the items\nmove around, the same rows stay selected instead of the selection moving along\nwith the items.\n\nNOTE:  This doesn't work with cell selection model."
     },
     {
       "name": "getAllSelectedIds",
@@ -6233,7 +6233,7 @@
       "signature": "getAllSelectedIds()",
       "params": [],
       "returns": "",
-      "description": "Get all selected IDs\r\nNote: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true."
+      "description": "Get all selected IDs\nNote: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true."
     },
     {
       "name": "getAllSelectedFilteredIds",
@@ -6241,7 +6241,7 @@
       "signature": "getAllSelectedFilteredIds()",
       "params": [],
       "returns": "",
-      "description": "Get all selected filtered IDs (similar to \"getAllSelectedIds\" but only return filtered data)\r\nNote: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true."
+      "description": "Get all selected filtered IDs (similar to \"getAllSelectedIds\" but only return filtered data)\nNote: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true."
     },
     {
       "name": "setSelectedIds",
@@ -6258,11 +6258,11 @@
           "name": "options",
           "type": "Partial<{ isRowBeingAdded: boolean; shouldTriggerEvent: boolean; applyRowSelectionToGrid: boolean; }>",
           "optional": true,
-          "description": "- `isRowBeingAdded`: defaults to true, are the new selected IDs being added (or removed) as new row selections\r\n - `shouldTriggerEvent`: defaults to true, should we trigger `onSelectedRowIdsChanged` event\r\n - `applyRowSelectionToGrid`: defaults to true, should we apply the row selections to the grid in the UI"
+          "description": "- `isRowBeingAdded`: defaults to true, are the new selected IDs being added (or removed) as new row selections\n - `shouldTriggerEvent`: defaults to true, should we trigger `onSelectedRowIdsChanged` event\n - `applyRowSelectionToGrid`: defaults to true, should we apply the row selections to the grid in the UI"
         }
       ],
       "returns": "",
-      "description": "Set current row selected IDs array (regardless of Pagination)\r\nNOTE: This will NOT change the selection in the grid, if you need to do that then you still need to call\r\n\"grid.setSelectedRows(rows)\""
+      "description": "Set current row selected IDs array (regardless of Pagination)\nNOTE: This will NOT change the selection in the grid, if you need to do that then you still need to call\n\"grid.setSelectedRows(rows)\""
     },
     {
       "name": "getAllSelectedItems",
@@ -6270,7 +6270,7 @@
       "signature": "getAllSelectedItems()",
       "params": [],
       "returns": "",
-      "description": "Get all selected dataContext items\r\nNote: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true."
+      "description": "Get all selected dataContext items\nNote: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true."
     },
     {
       "name": "getAllSelectedFilteredItems",
@@ -6278,7 +6278,7 @@
       "signature": "getAllSelectedFilteredItems()",
       "params": [],
       "returns": "",
-      "description": "Get all selected filtered dataContext items (similar to \"getAllSelectedItems\" but only return filtered data)\r\nNote: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true."
+      "description": "Get all selected filtered dataContext items (similar to \"getAllSelectedItems\" but only return filtered data)\nNote: when using Pagination it will also include hidden selections assuming `preserveHiddenOnSelectionChange` is set to true."
     },
     {
       "name": "syncGridCellCssStyles",
@@ -7262,7 +7262,7 @@
       "classes": [
         {
           "name": "SlickEventData",
-          "description": "An event object for passing data to event handlers and letting them control propagation.\r\n<p>This is pretty much identical to how W3C and jQuery implement events.</p>",
+          "description": "An event object for passing data to event handlers and letting them control propagation.\n<p>This is pretty much identical to how W3C and jQuery implement events.</p>",
           "methods": [
             {
               "name": "stopPropagation",
@@ -7371,7 +7371,7 @@
                 }
               ],
               "returns": "",
-              "description": "Adds an event handler to be called when the event is fired.\r\n<p>Event handler will receive two arguments - an <code>EventData</code> and the <code>data</code>\r\nobject the event was fired with.<p>"
+              "description": "Adds an event handler to be called when the event is fired.\n<p>Event handler will receive two arguments - an <code>EventData</code> and the <code>data</code>\nobject the event was fired with.<p>"
             },
             {
               "name": "unsubscribe",
@@ -7409,7 +7409,7 @@
                   "name": "scope",
                   "type": "any",
                   "optional": true,
-                  "description": "- The scope (\"this\") within which the handler will be executed.\r\nIf not specified, the scope will be set to the <code>Event</code> instance."
+                  "description": "- The scope (\"this\") within which the handler will be executed.\nIf not specified, the scope will be set to the <code>Event</code> instance."
                 }
               ],
               "returns": "",
@@ -7630,13 +7630,13 @@
         },
         {
           "name": "SlickGroupTotals",
-          "description": "Information about group totals.\r\nAn instance of GroupTotals will be created for each totals row and passed to the aggregators\r\nso that they can store arbitrary data in it.  That data can later be accessed by group totals\r\nformatters during the display.",
+          "description": "Information about group totals.\nAn instance of GroupTotals will be created for each totals row and passed to the aggregators\nso that they can store arbitrary data in it.  That data can later be accessed by group totals\nformatters during the display.",
           "methods": [],
           "events": []
         },
         {
           "name": "SlickEditorLock",
-          "description": "A locking helper to track the active edit controller and ensure that only a single controller\r\ncan be active at a time.  This prevents a whole class of state and validation synchronization\r\nissues.  An edit controller (such as SlickGrid) can query if an active edit is in progress\r\nand attempt a commit or cancel before proceeding.",
+          "description": "A locking helper to track the active edit controller and ensure that only a single controller\ncan be active at a time.  This prevents a whole class of state and validation synchronization\nissues.  An edit controller (such as SlickGrid) can query if an active edit is in progress\nand attempt a commit or cancel before proceeding.",
           "methods": [
             {
               "name": "isActive",
@@ -7651,7 +7651,7 @@
                 }
               ],
               "returns": "boolean",
-              "description": "Returns true if a specified edit controller is active (has the edit lock).\r\nIf the parameter is not specified, returns true if any edit controller is active."
+              "description": "Returns true if a specified edit controller is active (has the edit lock).\nIf the parameter is not specified, returns true if any edit controller is active."
             },
             {
               "name": "activate",
@@ -7666,7 +7666,7 @@
                 }
               ],
               "returns": "",
-              "description": "Sets the specified edit controller as the active edit controller (acquire edit lock).\r\nIf another edit controller is already active, and exception will be throw new Error(."
+              "description": "Sets the specified edit controller as the active edit controller (acquire edit lock).\nIf another edit controller is already active, and exception will be throw new Error(."
             },
             {
               "name": "deactivate",
@@ -7681,7 +7681,7 @@
                 }
               ],
               "returns": "",
-              "description": "Unsets the specified edit controller as the active edit controller (release edit lock).\r\nIf the specified edit controller is not the active one, an exception will be throw new Error(."
+              "description": "Unsets the specified edit controller as the active edit controller (release edit lock).\nIf the specified edit controller is not the active one, an exception will be throw new Error(."
             },
             {
               "name": "commitCurrentEdit",
@@ -7689,7 +7689,7 @@
               "signature": "commitCurrentEdit(): boolean",
               "params": [],
               "returns": "boolean",
-              "description": "Attempts to commit the current edit by calling \"commitCurrentEdit\" method on the active edit\r\ncontroller and returns whether the commit attempt was successful (commit may fail due to validation\r\nerrors, etc.).  Edit controller's \"commitCurrentEdit\" must return true if the commit has succeeded\r\nand false otherwise.  If no edit controller is active, returns true."
+              "description": "Attempts to commit the current edit by calling \"commitCurrentEdit\" method on the active edit\ncontroller and returns whether the commit attempt was successful (commit may fail due to validation\nerrors, etc.).  Edit controller's \"commitCurrentEdit\" must return true if the commit has succeeded\nand false otherwise.  If no edit controller is active, returns true."
             },
             {
               "name": "cancelCurrentEdit",
@@ -7697,14 +7697,14 @@
               "signature": "cancelCurrentEdit(): boolean",
               "params": [],
               "returns": "boolean",
-              "description": "Attempts to cancel the current edit by calling \"cancelCurrentEdit\" method on the active edit\r\ncontroller and returns whether the edit was successfully cancelled.  If no edit controller is\r\nactive, returns true."
+              "description": "Attempts to cancel the current edit by calling \"cancelCurrentEdit\" method on the active edit\ncontroller and returns whether the edit was successfully cancelled.  If no edit controller is\nactive, returns true."
             }
           ],
           "events": []
         },
         {
           "name": "BindingEventService",
-          "description": "A simple binding event service to keep track of all JavaScript events with callback listeners,\r\nit allows us to unbind event(s) and their listener(s) by calling a simple unbind method call.\r\nUnbinding is a necessary step to make sure that all event listeners are removed to avoid memory leaks when destroing the grid",
+          "description": "A simple binding event service to keep track of all JavaScript events with callback listeners,\nit allows us to unbind event(s) and their listener(s) by calling a simple unbind method call.\nUnbinding is a necessary step to make sure that all event listeners are removed to avoid memory leaks when destroing the grid",
           "methods": [
             {
               "name": "getBoundedEvents",
@@ -7764,7 +7764,7 @@
             {
               "name": "unbind",
               "group": "",
-              "signature": "unbind(element: Element | Window | Document, eventName: string, listener: EventListenerOrEventListenerObject)",
+              "signature": "unbind(element: Element | Window | Document, eventName: string, listener: EventListenerOrEventListenerObject, options?: boolean | EventListenerOptions)",
               "params": [
                 {
                   "name": "element",
@@ -7782,6 +7782,12 @@
                   "name": "listener",
                   "type": "EventListenerOrEventListenerObject",
                   "optional": false,
+                  "description": ""
+                },
+                {
+                  "name": "options",
+                  "type": "boolean | EventListenerOptions",
+                  "optional": true,
                   "description": ""
                 }
               ],
@@ -7916,7 +7922,7 @@
                 }
               ],
               "returns": "HTMLElementTagNameMap[T]",
-              "description": "Create a DOM Element with any optional attributes or properties.\r\nIt will only accept valid DOM element properties that `createElement` would accept.\r\nFor example: `createDomElement('div', { className: 'my-css-class' })`,\r\nfor style or dataset you need to use nested object `{ style: { display: 'none' }}\r\nThe last argument is to optionally append the created element to a parent container element."
+              "description": "Create a DOM Element with any optional attributes or properties.\nIt will only accept valid DOM element properties that `createElement` would accept.\nFor example: `createDomElement('div', { className: 'my-css-class' })`,\nfor style or dataset you need to use nested object `{ style: { display: 'none' }}\nThe last argument is to optionally append the created element to a parent container element."
             },
             {
               "name": "getHtmlStringOutput",
@@ -7937,7 +7943,7 @@
                 }
               ],
               "returns": "string",
-              "description": "From any input provided, return the HTML string (when a string is provided, it will be returned \"as is\" but when it's a number it will be converted to string)\r\nWhen detecting HTMLElement/DocumentFragment, we can also specify which HTML type to retrieve innerHTML or outerHTML.\r\nWe can get the HTML by looping through all fragment `childNodes`"
+              "description": "From any input provided, return the HTML string (when a string is provided, it will be returned \"as is\" but when it's a number it will be converted to string)\nWhen detecting HTMLElement/DocumentFragment, we can also specify which HTML type to retrieve innerHTML or outerHTML.\nWe can get the HTML by looping through all fragment `childNodes`"
             },
             {
               "name": "emptyElement",
@@ -7967,7 +7973,7 @@
                 }
               ],
               "returns": "string[]",
-              "description": "Accepts string containing the class or space-separated list of classes, and\r\nreturns list of individual classes.\r\nMethod properly takes into account extra whitespaces in the `className`\r\ne.g.: \" class1    class2   \" => will result in `['class1', 'class2']`."
+              "description": "Accepts string containing the class or space-separated list of classes, and\nreturns list of individual classes.\nMethod properly takes into account extra whitespaces in the `className`\ne.g.: \" class1    class2   \" => will result in `['class1', 'class2']`."
             },
             {
               "name": "innerSize",
@@ -8045,7 +8051,7 @@
                 }
               ],
               "returns": "",
-              "description": "Get the function details (param & body) of a function.\r\nIt supports regular function and also ES6 arrow functions"
+              "description": "Get the function details (param & body) of a function.\nIt supports regular function and also ES6 arrow functions"
             },
             {
               "name": "insertAfterElement",
@@ -8421,7 +8427,7 @@
                 }
               ],
               "returns": "",
-              "description": "User could optionally add PubSub Service to SlickEvent\r\nWhen it is defined then a SlickEvent `notify()` call will also dispatch it by using the PubSub publish() method"
+              "description": "User could optionally add PubSub Service to SlickEvent\nWhen it is defined then a SlickEvent `notify()` call will also dispatch it by using the PubSub publish() method"
             }
           ],
           "events": []
@@ -8485,7 +8491,7 @@
                 }
               ],
               "returns": "{ row: number; cell: number }",
-              "description": "Returns the anchor (opposite) cell to use while dragging the drag-extend handle.\r\nAnchoring on the range start lets the drag shrink the range (Excel behavior), while dragging\r\npast the start anchors on the range end so that it expands in the opposite direction instead."
+              "description": "Returns the anchor (opposite) cell to use while dragging the drag-extend handle.\nAnchoring on the range start lets the drag shrink the range (Excel behavior), while dragging\npast the start anchors on the range end so that it expands in the opposite direction instead."
             },
             {
               "name": "verticalTargetRange",
@@ -8582,7 +8588,7 @@
         },
         {
           "name": "RowPositionIndexer",
-          "description": "RowPositionIndexer - a prefix-sum index of row top positions, used by SlickGrid when variable\r\nrow height mode is enabled (i.e. when a `rowHeightProvider` grid option is supplied).\r\n\r\n`rowPos[i]` holds the virtual top pixel position of row `i` (i.e. the summed heights of all\r\npreceding rows) and `rowPos[rowCount]` holds the total height of all indexed rows, which makes\r\nrow-to-position lookups an O(1) array read and position-to-row lookups an O(log n) binary search.\r\n\r\nRow indexes are expected to be 0 or greater (guaranteed by the grid core; user-provided indexes\r\nare validated in the public grid methods). Rows at or beyond the indexed range extrapolate\r\nlinearly using the default row height, mirroring the fixed-row-height arithmetic it replaces\r\n(needed for the Add-New row and `leaveSpaceForNewRows` padding).",
+          "description": "RowPositionIndexer - a prefix-sum index of row top positions, used by SlickGrid when variable\nrow height mode is enabled (i.e. when a `rowHeightProvider` grid option is supplied).\n\n`rowPos[i]` holds the virtual top pixel position of row `i` (i.e. the summed heights of all\npreceding rows) and `rowPos[rowCount]` holds the total height of all indexed rows, which makes\nrow-to-position lookups an O(1) array read and position-to-row lookups an O(log n) binary search.\n\nRow indexes are expected to be 0 or greater (guaranteed by the grid core; user-provided indexes\nare validated in the public grid methods). Rows at or beyond the indexed range extrapolate\nlinearly using the default row height, mirroring the fixed-row-height arithmetic it replaces\n(needed for the Add-New row and `leaveSpaceForNewRows` padding).",
           "methods": [
             {
               "name": "rebuild",
@@ -8609,7 +8615,7 @@
                 }
               ],
               "returns": "void",
-              "description": "Rebuilds the index by querying the height of every row. O(n) - the provided callback is\r\ncalled once per row and must therefore be fast (a simple lookup, no DOM access)."
+              "description": "Rebuilds the index by querying the height of every row. O(n) - the provided callback is\ncalled once per row and must therefore be fast (a simple lookup, no DOM access)."
             },
             {
               "name": "top",
@@ -8654,7 +8660,7 @@
                 }
               ],
               "returns": "number",
-              "description": "Returns the index of the row containing a virtual vertical pixel position.\r\nPositions below zero return row 0; positions beyond the indexed range extrapolate using the\r\ndefault row height (results may be beyond the last row - callers clamp, as in fixed mode)."
+              "description": "Returns the index of the row containing a virtual vertical pixel position.\nPositions below zero return row 0; positions beyond the indexed range extrapolate using the\ndefault row height (results may be beyond the last row - callers clamp, as in fixed mode)."
             }
           ],
           "events": []
@@ -9130,7 +9136,7 @@
         "classes": [
           {
             "name": "SlickGridMenu",
-            "description": "A control to add a Grid Menu (hambuger menu on top-right of the grid)\r\n\r\nUSAGE:\r\n\r\nAdd the slick.gridmenu.(js|css) files and register it with the grid.\r\n\r\nTo specify a menu in a column header, extend the column definition like so:\r\nlet gridMenuControl = new Slick.Controls.GridMenu(columns, grid, options);\r\n\r\nAvailable grid options, by defining a gridMenu object:\r\n\r\n let options = {\r\n   enableCellNavigation: true,\r\n   gridMenu: {\r\n     commandTitle: \"Command List\",                // default to empty string\r\n     columnTitle: \"Columns\",                     // default to empty string\r\n     iconImage: \"some-image.png\",                // this is the Grid Menu icon (hamburger icon)\r\n     iconCssClass: \"fa fa-bars\",                 // you can provide iconImage OR iconCssClass\r\n     leaveOpen: false,                           // do we want to leave the Grid Menu open after a command execution? (false by default)\r\n     menuWidth: 18,                              // width (icon) that will be use to resize the column header container (18 by default)\r\n     contentMinWidth: 0,\t\t\t\t\t\t\t            // defaults to 0 (auto), minimum width of grid menu content (command, column list)\r\n     marginBottom: 15,                           // defaults to 15, margin to use at the bottom of the grid when using max-height (default)\r\n     resizeOnShowHeaderRow: false,               // false by default\r\n     showButton: true,                           // true by default - it allows the user to control if the\r\n                                                         // default gridMenu button (located on the top right corner by default CSS)\r\n                                                         // should be created or omitted\r\n     useClickToRepositionMenu: true,             // true by default\r\n\r\n     // the last 2 checkboxes titles\r\n     hideForceFitButton: false,                  // show/hide checkbox near the end \"Force Fit Columns\"\r\n     hideSyncResizeButton: false,                // show/hide checkbox near the end \"Synchronous Resize\"\r\n     forceFitTitle: \"Force fit columns\",         // default to \"Force fit columns\"\r\n     syncResizeTitle: \"Synchronous resize\",      // default to \"Synchronous resize\"\r\n\r\n     commandItems: [\r\n       {\r\n         // command menu item options\r\n       },\r\n       {\r\n         // command menu item options\r\n       }\r\n     ]\r\n   }\r\n };\r\n\r\n\r\nAvailable menu options:\r\n   hideForceFitButton:         Hide the \"Force fit columns\" button (defaults to false)\r\n   hideSyncResizeButton:       Hide the \"Synchronous resize\" button (defaults to false)\r\n   forceFitTitle:              Text of the title \"Force fit columns\"\r\n   contentMinWidth:\t\t\t\t\t\tminimum width of grid menu content (command, column list), defaults to 0 (auto)\r\n   height:                     Height of the Grid Menu content, when provided it will be used instead of the max-height (defaults to undefined)\r\n   menuWidth:                  Grid menu button width (defaults to 18)\r\n   resizeOnShowHeaderRow:      Do we want to resize on the show header row event\r\n   syncResizeTitle:            Text of the title \"Synchronous resize\"\r\n   useClickToRepositionMenu:   Use the Click offset to reposition the Grid Menu (defaults to true), when set to False it will use the icon offset to reposition the grid menu\r\n   menuUsabilityOverride:      Callback method that user can override the default behavior of enabling/disabling the menu from being usable (must be combined with a custom formatter)\r\n   marginBottom:               Margin to use at the bottom of the grid menu, only in effect when height is undefined (defaults to 15)\r\n   subItemChevronClass:        CSS class that can be added on the right side of a sub-item parent (typically a chevron-right icon)\r\n   subMenuOpenByEvent:         defaults to \"mouseover\", what event type shoud we use to open sub-menu(s), 2 options are available: \"mouseover\" or \"click\"\r\n\r\nAvailable command menu item options:\r\n   action:                     Optionally define a callback function that gets executed when item is chosen (and/or use the onCommand event)\r\n   title:                      Menu item text.\r\n   divider:                    Whether the current item is a divider, not an actual command.\r\n   disabled:                   Whether the item/command is disabled.\r\n   hidden:                     Whether the item/command is hidden.\r\n   tooltip:                    Item tooltip.\r\n   command:                    A command identifier to be passed to the onCommand event handlers.\r\n   cssClass:                   A CSS class to be added to the menu item container.\r\n   iconCssClass:               A CSS class to be added to the menu item icon.\r\n   iconImage:                  A url to the icon image.\r\n   textCssClass:               A CSS class to be added to the menu item text.\r\n   subMenuTitle:               Optional sub-menu title that will shows up when sub-menu commmands/options list is opened\r\n   subMenuTitleCssClass:       Optional sub-menu title CSS class to use with `subMenuTitle`\r\n   itemVisibilityOverride:     Callback method that user can override the default behavior of showing/hiding an item from the list\r\n   itemUsabilityOverride:      Callback method that user can override the default behavior of enabling/disabling an item from the list\r\n\r\n\r\nThe plugin exposes the following events:\r\n\r\n   onAfterMenuShow:   Fired after the menu is shown.  You can customize the menu or dismiss it by returning false.\r\n     * ONLY works with a JS event (as per slick.core code), so we cannot notify when it's a button event (when grid menu is attached to an external button, not the hamburger menu)\r\n       Event args:\r\n           grid:     Reference to the grid.\r\n           column:   Column definition.\r\n           menu:     Menu options.  Note that you can change the menu items here.\r\n\r\n   onBeforeMenuShow:   Fired before the menu is shown.  You can customize the menu or dismiss it by returning false.\r\n     * ONLY works with a JS event (as per slick.core code), so we cannot notify when it's a button event (when grid menu is attached to an external button, not the hamburger menu)\r\n       Event args:\r\n           grid:     Reference to the grid.\r\n           column:   Column definition.\r\n           menu:     Menu options.  Note that you can change the menu items here.\r\n\r\n   onMenuClose:      Fired when the menu is closing.\r\n       Event args:\r\n           grid:     Reference to the grid.\r\n           column:   Column definition.\r\n           menu:     Menu options.  Note that you can change the menu items here.\r\n\r\n   onCommand:    Fired on menu item click for buttons with 'command' specified.\r\n       Event args:\r\n           grid:     Reference to the grid.\r\n           column:   Column definition.\r\n           command:  Button command identified.\r\n           button:   Button options.  Note that you can change the button options in your\r\n                     event handler, and the column header will be automatically updated to\r\n                     reflect them.  This is useful if you want to implement something like a\r\n                     toggle button.",
+            "description": "A control to add a Grid Menu (hambuger menu on top-right of the grid)\n\nUSAGE:\n\nAdd the slick.gridmenu.(js|css) files and register it with the grid.\n\nTo specify a menu in a column header, extend the column definition like so:\nlet gridMenuControl = new Slick.Controls.GridMenu(columns, grid, options);\n\nAvailable grid options, by defining a gridMenu object:\n\n let options = {\n   enableCellNavigation: true,\n   gridMenu: {\n     commandTitle: \"Command List\",                // default to empty string\n     columnTitle: \"Columns\",                     // default to empty string\n     iconImage: \"some-image.png\",                // this is the Grid Menu icon (hamburger icon)\n     iconCssClass: \"fa fa-bars\",                 // you can provide iconImage OR iconCssClass\n     leaveOpen: false,                           // do we want to leave the Grid Menu open after a command execution? (false by default)\n     menuWidth: 18,                              // width (icon) that will be use to resize the column header container (18 by default)\n     contentMinWidth: 0,\t\t\t\t\t\t\t            // defaults to 0 (auto), minimum width of grid menu content (command, column list)\n     marginBottom: 15,                           // defaults to 15, margin to use at the bottom of the grid when using max-height (default)\n     resizeOnShowHeaderRow: false,               // false by default\n     showButton: true,                           // true by default - it allows the user to control if the\n                                                         // default gridMenu button (located on the top right corner by default CSS)\n                                                         // should be created or omitted\n     useClickToRepositionMenu: true,             // true by default\n\n     // the last 2 checkboxes titles\n     hideForceFitButton: false,                  // show/hide checkbox near the end \"Force Fit Columns\"\n     hideSyncResizeButton: false,                // show/hide checkbox near the end \"Synchronous Resize\"\n     forceFitTitle: \"Force fit columns\",         // default to \"Force fit columns\"\n     syncResizeTitle: \"Synchronous resize\",      // default to \"Synchronous resize\"\n\n     commandItems: [\n       {\n         // command menu item options\n       },\n       {\n         // command menu item options\n       }\n     ]\n   }\n };\n\n\nAvailable menu options:\n   hideForceFitButton:         Hide the \"Force fit columns\" button (defaults to false)\n   hideSyncResizeButton:       Hide the \"Synchronous resize\" button (defaults to false)\n   forceFitTitle:              Text of the title \"Force fit columns\"\n   contentMinWidth:\t\t\t\t\t\tminimum width of grid menu content (command, column list), defaults to 0 (auto)\n   height:                     Height of the Grid Menu content, when provided it will be used instead of the max-height (defaults to undefined)\n   menuWidth:                  Grid menu button width (defaults to 18)\n   resizeOnShowHeaderRow:      Do we want to resize on the show header row event\n   syncResizeTitle:            Text of the title \"Synchronous resize\"\n   useClickToRepositionMenu:   Use the Click offset to reposition the Grid Menu (defaults to true), when set to False it will use the icon offset to reposition the grid menu\n   menuUsabilityOverride:      Callback method that user can override the default behavior of enabling/disabling the menu from being usable (must be combined with a custom formatter)\n   marginBottom:               Margin to use at the bottom of the grid menu, only in effect when height is undefined (defaults to 15)\n   subItemChevronClass:        CSS class that can be added on the right side of a sub-item parent (typically a chevron-right icon)\n   subMenuOpenByEvent:         defaults to \"mouseover\", what event type shoud we use to open sub-menu(s), 2 options are available: \"mouseover\" or \"click\"\n\nAvailable command menu item options:\n   action:                     Optionally define a callback function that gets executed when item is chosen (and/or use the onCommand event)\n   title:                      Menu item text.\n   divider:                    Whether the current item is a divider, not an actual command.\n   disabled:                   Whether the item/command is disabled.\n   hidden:                     Whether the item/command is hidden.\n   tooltip:                    Item tooltip.\n   command:                    A command identifier to be passed to the onCommand event handlers.\n   cssClass:                   A CSS class to be added to the menu item container.\n   iconCssClass:               A CSS class to be added to the menu item icon.\n   iconImage:                  A url to the icon image.\n   textCssClass:               A CSS class to be added to the menu item text.\n   subMenuTitle:               Optional sub-menu title that will shows up when sub-menu commmands/options list is opened\n   subMenuTitleCssClass:       Optional sub-menu title CSS class to use with `subMenuTitle`\n   itemVisibilityOverride:     Callback method that user can override the default behavior of showing/hiding an item from the list\n   itemUsabilityOverride:      Callback method that user can override the default behavior of enabling/disabling an item from the list\n\n\nThe plugin exposes the following events:\n\n   onAfterMenuShow:   Fired after the menu is shown.  You can customize the menu or dismiss it by returning false.\n     * ONLY works with a JS event (as per slick.core code), so we cannot notify when it's a button event (when grid menu is attached to an external button, not the hamburger menu)\n       Event args:\n           grid:     Reference to the grid.\n           column:   Column definition.\n           menu:     Menu options.  Note that you can change the menu items here.\n\n   onBeforeMenuShow:   Fired before the menu is shown.  You can customize the menu or dismiss it by returning false.\n     * ONLY works with a JS event (as per slick.core code), so we cannot notify when it's a button event (when grid menu is attached to an external button, not the hamburger menu)\n       Event args:\n           grid:     Reference to the grid.\n           column:   Column definition.\n           menu:     Menu options.  Note that you can change the menu items here.\n\n   onMenuClose:      Fired when the menu is closing.\n       Event args:\n           grid:     Reference to the grid.\n           column:   Column definition.\n           menu:     Menu options.  Note that you can change the menu items here.\n\n   onCommand:    Fired on menu item click for buttons with 'command' specified.\n       Event args:\n           grid:     Reference to the grid.\n           column:   Column definition.\n           command:  Button command identified.\n           button:   Button options.  Note that you can change the button options in your\n                     event handler, and the column header will be automatically updated to\n                     reflect them.  This is useful if you want to implement something like a\n                     toggle button.",
             "methods": [
               {
                 "name": "init",
@@ -9645,7 +9651,7 @@
         "classes": [
           {
             "name": "SlickCellExternalCopyManager",
-            "description": "This manager enables users to copy/paste data from/to an external Spreadsheet application\r\n  such as MS-Excel® or OpenOffice-Spreadsheet.\r\n\r\n  Since it is not possible to access directly the clipboard in javascript, the plugin uses\r\n  a trick to do it's job. After detecting the keystroke, we dynamically create a textarea\r\n  where the browser copies/pastes the serialized data.\r\n\r\n  options:\r\n    copiedCellStyle : sets the css className used for copied cells. default : \"copied\"\r\n    copiedCellStyleLayerKey : sets the layer key for setting css values of copied cells. default : \"copy-manager\"\r\n    dataItemColumnValueExtractor : option to specify a custom column value extractor function\r\n    dataItemColumnValueSetter : option to specify a custom column value setter function\r\n    clipboardCommandHandler : option to specify a custom handler for paste actions\r\n    includeHeaderWhenCopying : set to true and the plugin will take the name property from each column (which is usually what appears in your header) and put that as the first row of the text that's copied to the clipboard\r\n    bodyElement: option to specify a custom DOM element which to will be added the hidden textbox. It's useful if the grid is inside a modal dialog.\r\n    onCopyInit: optional handler to run when copy action initializes\r\n    onCopySuccess: optional handler to run when copy action is complete\r\n    newRowCreator: function to add rows to table if paste overflows bottom of table, if this function is not provided new rows will be ignored.\r\n    readOnlyMode: suppresses paste\r\n    headerColumnValueExtractor : option to specify a custom column header value extractor function",
+            "description": "This manager enables users to copy/paste data from/to an external Spreadsheet application\n  such as MS-Excel® or OpenOffice-Spreadsheet.\n\n  Since it is not possible to access directly the clipboard in javascript, the plugin uses\n  a trick to do it's job. After detecting the keystroke, we dynamically create a textarea\n  where the browser copies/pastes the serialized data.\n\n  options:\n    copiedCellStyle : sets the css className used for copied cells. default : \"copied\"\n    copiedCellStyleLayerKey : sets the layer key for setting css values of copied cells. default : \"copy-manager\"\n    dataItemColumnValueExtractor : option to specify a custom column value extractor function\n    dataItemColumnValueSetter : option to specify a custom column value setter function\n    clipboardCommandHandler : option to specify a custom handler for paste actions\n    includeHeaderWhenCopying : set to true and the plugin will take the name property from each column (which is usually what appears in your header) and put that as the first row of the text that's copied to the clipboard\n    bodyElement: option to specify a custom DOM element which to will be added the hidden textbox. It's useful if the grid is inside a modal dialog.\n    onCopyInit: optional handler to run when copy action initializes\n    onCopySuccess: optional handler to run when copy action is complete\n    newRowCreator: function to add rows to table if paste overflows bottom of table, if this function is not provided new rows will be ignored.\n    readOnlyMode: suppresses paste\n    headerColumnValueExtractor : option to specify a custom column header value extractor function",
             "methods": [
               {
                 "name": "init",
@@ -10035,7 +10041,7 @@
         "classes": [
           {
             "name": "SlickCellRangeDecorator",
-            "description": "Displays an overlay on top of a given cell range.\r\n\r\nTODO:\r\nCurrently, it blocks mouse events to DOM nodes behind it.\r\nUse FF and WebKit-specific \"pointer-events\" CSS style, or some kind of event forwarding.\r\nCould also construct the borders separately using 4 individual DIVs.",
+            "description": "Displays an overlay on top of a given cell range.\n\nTODO:\nCurrently, it blocks mouse events to DOM nodes behind it.\nUse FF and WebKit-specific \"pointer-events\" CSS style, or some kind of event forwarding.\nCould also construct the borders separately using 4 individual DIVs.",
             "methods": [
               {
                 "name": "destroy",
@@ -10516,7 +10522,7 @@
                   }
                 ],
                 "returns": "",
-                "description": "use a DocumentFragment to return a fragment including an <input> then a <label> as siblings,\r\nthe label is using `for` to link it to the input `id`"
+                "description": "use a DocumentFragment to return a fragment including an <input> then a <label> as siblings,\nthe label is using `for` to link it to the input `id`"
               },
               {
                 "name": "getColumnDefinition",
@@ -10539,7 +10545,7 @@
                   }
                 ],
                 "returns": "",
-                "description": "Method that user can pass to override the default behavior or making every row a selectable row.\r\nIn order word, user can choose which rows to be selectable or not by providing his own logic."
+                "description": "Method that user can pass to override the default behavior or making every row a selectable row.\nIn order word, user can choose which rows to be selectable or not by providing his own logic."
               }
             ],
             "events": []
@@ -10997,7 +11003,7 @@
                 "signature": "hideTooltip()",
                 "params": [],
                 "returns": "",
-                "description": "hide (remove) tooltip from the DOM,\r\nwhen using async process, it will also cancel any opened Promise/Observable that might still be opened/pending."
+                "description": "hide (remove) tooltip from the DOM,\nwhen using async process, it will also cancel any opened Promise/Observable that might still be opened/pending."
               },
               {
                 "name": "setOptions",
@@ -11753,7 +11759,7 @@
         "classes": [
           {
             "name": "SlickRowDetailView",
-            "description": "A plugin to add row detail panel\r\nOriginal StackOverflow question & article making this possible (thanks to violet313)\r\nhttps://stackoverflow.com/questions/10535164/can-slickgrids-row-height-be-dynamically-altered#29399927\r\nhttp://violet313.org/slickgrids/#intro\r\n\r\nUSAGE:\r\nAdd the slick.rowDetailView.(js|css) files and register the plugin with the grid.\r\n\r\nAVAILABLE ROW DETAIL OPTIONS:\r\n   cssClass:               A CSS class to be added to the row detail\r\n   expandedClass:          Extra classes to be added to the expanded Toggle\r\n   expandableOverride:     callback method that user can override the default behavior of making every row an expandable row (the logic to show or not the expandable icon).\r\n   collapsedClass:         Extra classes to be added to the collapse Toggle\r\n   loadOnce:               Defaults to false, when set to True it will load the data once and then reuse it.\r\n   preTemplate:            Template that will be used before the async process (typically used to show a spinner/loading)\r\n   postTemplate:           Template that will be loaded once the async function finishes\r\n   process:                Async server function call\r\n   panelRows:              Row count to use for the template panel\r\n   singleRowExpand:        Defaults to false, limit expanded row to 1 at a time.\r\n   useRowClick:            Boolean flag, when True will open the row detail on a row click (from any column), default to False\r\n   keyPrefix:              Defaults to '_', prefix used for all the plugin metadata added to the item object (meta e.g.: padding, collapsed, parent)\r\n   collapseAllOnSort:      Defaults to true, which will collapse all row detail views when user calls a sort. Unless user implements a sort to deal with padding\r\n   saveDetailViewOnScroll: Defaults to true, which will save the row detail view in a cache when it detects that it will become out of the viewport buffer\r\n   useSimpleViewportCalc:  Defaults to false, which will use simplified calculation of out or back of viewport visibility\r\n\r\nAVAILABLE PUBLIC METHODS:\r\n   init:                 initiliaze the plugin\r\n   expandableOverride:   callback method that user can override the default behavior of making every row an expandable row (the logic to show or not the expandable icon).\r\n   destroy:              destroy the plugin and it's events\r\n   collapseAll:          collapse all opened row detail panel\r\n   collapseDetailView:   collapse a row by passing the item object (row detail)\r\n   expandDetailView:     expand a row by passing the item object (row detail)\r\n   getColumnDefinition:  get the column definitions\r\n   getExpandedRows:      get all the expanded rows\r\n   getFilterItem:        takes in the item we are filtering and if it is an expanded row returns it's parents row to filter on\r\n   getOptions:           get current plugin options\r\n   resizeDetailView:     resize a row detail view, it will auto-calculate the number of rows it needs\r\n   saveDetailView:       save a row detail view content by passing the row object\r\n   setOptions:           set or change some of the plugin options\r\n\r\nTHE PLUGIN EXPOSES THE FOLLOWING SLICK EVENTS:\r\n   onAsyncResponse:  This event must be used with the \"notify\" by the end user once the Asynchronous Server call returns the item detail\r\n     Event args:\r\n       item:         Item detail returned from the async server call\r\n       detailView:   An explicit view to use instead of template (Optional)\r\n\r\n   onAsyncEndUpdate: Fired when the async response finished\r\n     Event args:\r\n       grid:         Reference to the grid.\r\n       item:         Item data context\r\n\r\n   onBeforeRowDetailToggle: Fired before the row detail gets toggled\r\n     Event args:\r\n       grid:         Reference to the grid.\r\n       item:         Item data context\r\n\r\n   onAfterRowDetailToggle: Fired after the row detail gets toggled\r\n     Event args:\r\n       grid:         Reference to the grid.\r\n       item:         Item data context\r\n       expandedRows: Array of the Expanded Rows\r\n\r\n   onRowOutOfViewportRange: Fired after a row becomes out of viewport range (user can't see the row anymore)\r\n     Event args:\r\n       grid:         Reference to the grid.\r\n       item:         Item data context\r\n       rowId:        Id of the Row object (datacontext) in the Grid\r\n       rowIndex:     Index of the Row in the Grid\r\n       expandedRows: Array of the Expanded Rows\r\n       rowIdsOutOfViewport: Array of the Out of viewport Range Rows\r\n\r\n   onRowBackToViewportRange: Fired after a row is back to viewport range (user can visually see the row detail)\r\n     Event args:\r\n       grid:         Reference to the grid.\r\n       item:         Item data context\r\n       rowId:        Id of the Row object (datacontext) in the Grid\r\n       rowIndex:     Index of the Row in the Grid\r\n       expandedRows: Array of the Expanded Rows\r\n       rowIdsOutOfViewport: Array of the Out of viewport Range Rows",
+            "description": "A plugin to add row detail panel\nOriginal StackOverflow question & article making this possible (thanks to violet313)\nhttps://stackoverflow.com/questions/10535164/can-slickgrids-row-height-be-dynamically-altered#29399927\nhttp://violet313.org/slickgrids/#intro\n\nUSAGE:\nAdd the slick.rowDetailView.(js|css) files and register the plugin with the grid.\n\nAVAILABLE ROW DETAIL OPTIONS:\n   cssClass:               A CSS class to be added to the row detail\n   expandedClass:          Extra classes to be added to the expanded Toggle\n   expandableOverride:     callback method that user can override the default behavior of making every row an expandable row (the logic to show or not the expandable icon).\n   collapsedClass:         Extra classes to be added to the collapse Toggle\n   loadOnce:               Defaults to false, when set to True it will load the data once and then reuse it.\n   preTemplate:            Template that will be used before the async process (typically used to show a spinner/loading)\n   postTemplate:           Template that will be loaded once the async function finishes\n   process:                Async server function call\n   panelRows:              Row count to use for the template panel\n   singleRowExpand:        Defaults to false, limit expanded row to 1 at a time.\n   useRowClick:            Boolean flag, when True will open the row detail on a row click (from any column), default to False\n   keyPrefix:              Defaults to '_', prefix used for all the plugin metadata added to the item object (meta e.g.: padding, collapsed, parent)\n   collapseAllOnSort:      Defaults to true, which will collapse all row detail views when user calls a sort. Unless user implements a sort to deal with padding\n   saveDetailViewOnScroll: Defaults to true, which will save the row detail view in a cache when it detects that it will become out of the viewport buffer\n   useSimpleViewportCalc:  Defaults to false, which will use simplified calculation of out or back of viewport visibility\n\nAVAILABLE PUBLIC METHODS:\n   init:                 initiliaze the plugin\n   expandableOverride:   callback method that user can override the default behavior of making every row an expandable row (the logic to show or not the expandable icon).\n   destroy:              destroy the plugin and it's events\n   collapseAll:          collapse all opened row detail panel\n   collapseDetailView:   collapse a row by passing the item object (row detail)\n   expandDetailView:     expand a row by passing the item object (row detail)\n   getColumnDefinition:  get the column definitions\n   getExpandedRows:      get all the expanded rows\n   getFilterItem:        takes in the item we are filtering and if it is an expanded row returns it's parents row to filter on\n   getOptions:           get current plugin options\n   resizeDetailView:     resize a row detail view, it will auto-calculate the number of rows it needs\n   saveDetailView:       save a row detail view content by passing the row object\n   setOptions:           set or change some of the plugin options\n\nTHE PLUGIN EXPOSES THE FOLLOWING SLICK EVENTS:\n   onAsyncResponse:  This event must be used with the \"notify\" by the end user once the Asynchronous Server call returns the item detail\n     Event args:\n       item:         Item detail returned from the async server call\n       detailView:   An explicit view to use instead of template (Optional)\n\n   onAsyncEndUpdate: Fired when the async response finished\n     Event args:\n       grid:         Reference to the grid.\n       item:         Item data context\n\n   onBeforeRowDetailToggle: Fired before the row detail gets toggled\n     Event args:\n       grid:         Reference to the grid.\n       item:         Item data context\n\n   onAfterRowDetailToggle: Fired after the row detail gets toggled\n     Event args:\n       grid:         Reference to the grid.\n       item:         Item data context\n       expandedRows: Array of the Expanded Rows\n\n   onRowOutOfViewportRange: Fired after a row becomes out of viewport range (user can't see the row anymore)\n     Event args:\n       grid:         Reference to the grid.\n       item:         Item data context\n       rowId:        Id of the Row object (datacontext) in the Grid\n       rowIndex:     Index of the Row in the Grid\n       expandedRows: Array of the Expanded Rows\n       rowIdsOutOfViewport: Array of the Out of viewport Range Rows\n\n   onRowBackToViewportRange: Fired after a row is back to viewport range (user can visually see the row detail)\n     Event args:\n       grid:         Reference to the grid.\n       item:         Item data context\n       rowId:        Id of the Row object (datacontext) in the Grid\n       rowIndex:     Index of the Row in the Grid\n       expandedRows: Array of the Expanded Rows\n       rowIdsOutOfViewport: Array of the Out of viewport Range Rows",
             "methods": [
               {
                 "name": "init",
@@ -11919,7 +11925,7 @@
                   }
                 ],
                 "returns": "",
-                "description": "Method that user can pass to override the default behavior or making every row an expandable row.\r\nIn order word, user can choose which rows to be an available row detail (or not) by providing his own logic."
+                "description": "Method that user can pass to override the default behavior or making every row an expandable row.\nIn order word, user can choose which rows to be an available row detail (or not) by providing his own logic."
               }
             ],
             "events": [
@@ -12113,7 +12119,7 @@
         "classes": [
           {
             "name": "SlickRowMoveManager",
-            "description": "Row Move Manager options:\r\n   containerCssClass:        A CSS class to be added to the cell container.\r\n   cssClass:                 A CSS class to be added to the div of the cell formatter.\r\n   columnId:                 Column definition id (defaults to \"_move\")\r\n   cancelEditOnDrag:         Do we want to cancel any Editing while dragging a row (defaults to false)\r\n   disableRowSelection:      Do we want to disable the row selection? (defaults to false)\r\n   hideRowMoveShadow:        Do we want to hide the row move shadow clone? (defaults to true)\r\n   rowMoveShadowMarginTop:   When row move shadow is shown, optional margin-top (defaults to 0)\r\n   rowMoveShadowMarginLeft:  When row move shadow is shown, optional margin-left (defaults to 0)\r\n   rowMoveShadowOpacity:     When row move shadow is shown, what is its opacity? (defaults to 0.95)\r\n   rowMoveShadowScale:       When row move shadow is shown, what is its size scale? (default to 0.75)\r\n   singleRowMove:            Do we want a single row move? Setting this to false means that it's a multple row move (defaults to false)\r\n   width:                    Width of the column\r\n   usabilityOverride:        Callback method that user can override the default behavior of the row being moveable or not",
+            "description": "Row Move Manager options:\n   containerCssClass:        A CSS class to be added to the cell container.\n   cssClass:                 A CSS class to be added to the div of the cell formatter.\n   columnId:                 Column definition id (defaults to \"_move\")\n   cancelEditOnDrag:         Do we want to cancel any Editing while dragging a row (defaults to false)\n   disableRowSelection:      Do we want to disable the row selection? (defaults to false)\n   hideRowMoveShadow:        Do we want to hide the row move shadow clone? (defaults to true)\n   rowMoveShadowMarginTop:   When row move shadow is shown, optional margin-top (defaults to 0)\n   rowMoveShadowMarginLeft:  When row move shadow is shown, optional margin-left (defaults to 0)\n   rowMoveShadowOpacity:     When row move shadow is shown, what is its opacity? (defaults to 0.95)\n   rowMoveShadowScale:       When row move shadow is shown, what is its size scale? (default to 0.75)\n   singleRowMove:            Do we want a single row move? Setting this to false means that it's a multple row move (defaults to false)\n   width:                    Width of the column\n   usabilityOverride:        Callback method that user can override the default behavior of the row being moveable or not",
             "methods": [
               {
                 "name": "init",
@@ -12174,7 +12180,7 @@
                   }
                 ],
                 "returns": "",
-                "description": "Method that user can pass to override the default behavior or making every row moveable.\r\nIn order word, user can choose which rows to be an available as moveable (or not) by providing his own logic show/hide icon and usability."
+                "description": "Method that user can pass to override the default behavior or making every row moveable.\nIn order word, user can choose which rows to be an available as moveable (or not) by providing his own logic show/hide icon and usability."
               },
               {
                 "name": "isHandlerColumn",

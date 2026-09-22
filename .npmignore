@@ -18,6 +18,8 @@ CONTRIBUTING.md
 nuget*
 cypress.json
 cypress/*
+docs
+vitepress
 vite-demo/*
 lib
 node_modules

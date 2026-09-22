@@ -1,8 +1,8 @@
 <script setup>
 import { ref, computed, onMounted, onBeforeUnmount, nextTick, watch } from 'vue';
 import { withBase } from 'vitepress';
-import api from '../../data/api.json';
-import overlays from '../../data/overlays.json';
+import api from '../../../docs/data/api.json';
+import overlays from '../../../docs/data/overlays.json';
 
 const ov = (id) => overlays[`${props.area}:${id}`] ?? overlays[id];
 
