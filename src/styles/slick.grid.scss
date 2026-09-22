@@ -287,7 +287,10 @@ classes should alter those!
 }
 
 .slick-header-auto-height {
+  // The left/right band wrappers are display: contents inside a docking chrome root, so the
+  // measured height has to reach the root itself as well.
   .slick-header-columns,
+  .slick-header-columns-root,
   .slick-header-columns-left,
   .slick-header-columns-right {
     height: var(--slick-auto-header-height);

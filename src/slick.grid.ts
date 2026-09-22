@@ -11319,7 +11319,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /** Refreshes geometry for all rendered colspans after column widths change. */
   protected updateRenderedColspanFragmentGeometry(): void {
-    Object.values(this.rowsCache).forEach((cacheEntry) => {
+    Object.entries(this.rowsCache).forEach(([rowId, cacheEntry]) => {
+      if (!Object.keys(cacheEntry.cellSpanFragments).length) {
+        return;
+      }
+      // Drain the row's render queue first, so the cell map is populated and the host can be
+      // read from it rather than searched for in the row's DOM.
+      this.ensureCellNodesInRowsCache(Number(rowId));
       Object.entries(cacheEntry.cellSpanFragments).forEach(([cellIndex, fragments]) => {
         const cell = Number(cellIndex);
         const segments = cacheEntry.cellSpanSegments[cell];
@@ -11327,11 +11333,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           return;
         }
 
-        const host =
-          cacheEntry.cellNodesByColumnIdx[cell] ||
-          Array.from(cacheEntry.rowNode?.[0]?.querySelectorAll<HTMLElement>('.slick-cell') || []).find(
-            (node) => node.classList.contains(`l${cell}`) && !node.classList.contains('slick-cell-colspan-part')
-          );
+        const host = cacheEntry.cellNodesByColumnIdx[cell];
         if (host) {
           this.updateColspanFragmentGeometry(host, segments, fragments);
         }
