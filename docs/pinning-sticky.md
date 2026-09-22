@@ -107,9 +107,11 @@ const options = {
 ## Rendering notes
 
 - Colspans that cross a band boundary keep one logical host cell (formatters, selection,
-  navigation) and render an empty visual fragment in each further band. The host paints across the
-  boundary; while the centre band scrolls, the host stays with its own band, so centre cells that
-  scroll under it are covered. Full-width group rows are rendered as one viewport-wide cell.
+  navigation) and render a continuation in each further band. Every piece is clipped to its own
+  band, and each continuation carries a presentational copy of the host's content, offset by what
+  the earlier bands already showed, so the content reads as one cell while nothing is painted over
+  the band beside it. The copy is `aria-hidden`; assistive technology and the API see only the
+  host. Full-width group rows are rendered as one viewport-wide cell.
 - Row spans are supported; a spanning cell that starts in a pinned row stays in the overlay.
 - Pinned separators are painted with inset shadows, not layout borders, so header and body widths
   stay aligned across themes. The active theme can override the `--slick-pinned-*` custom

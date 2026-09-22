@@ -85,17 +85,22 @@
   box-sizing: content-box;
 }
 
-// A cross-band colspan is represented by one content-bearing host and one
-// empty visual fragment for each following docking band. Keep the host and
-// fragments visible across the region boundaries while preserving clipping
-// for ordinary cells.
-.slick-row-docked.slick-row-colspan-crossing-docking
-  > :is(.slick-pinned-left-cells, .slick-scrolling-cells, .slick-pinned-right-cells) {
-  overflow: visible;
+// A cross-band colspan is one content-bearing host plus a continuation for each
+// following docking band. Each piece is clipped to its own band and shows the slice
+// of the content that belongs there, so a span never paints over the band beside it.
+.slick-row-colspan-crossing-docking .slick-cell-colspan-crossing-docking {
+  overflow: hidden;
+  // The text continues in the next band, so each piece is cut rather than elided;
+  // the copy inside the last continuation is what shows the ellipsis.
+  text-overflow: clip;
+}
 
-  > .slick-cell-colspan-crossing-docking:not(.slick-cell-colspan-part) {
-    z-index: 21;
-  }
+.slick-cell-colspan-part-content {
+  display: block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+  pointer-events: none;
 }
 
 // Draw one continuous active-cell outline over all visual pieces of a span.

@@ -142,18 +142,59 @@ describe('Example - Column Span & Header Grouping', { retries: 1 }, () => {
       cy.get('#setPinning').click();
     };
 
-    it('should render a colspan continuation across a pinned-column boundary', () => {
+    it('should clip a colspan host to its own band and continue it in the next one', () => {
       cy.reload();
       applyPinning();
 
+      // The host stops at the pinned edge instead of painting across the scrolling band.
       cy.get(hostSelector)
         .should('exist')
         .then(($host) => {
           const host = $host[0].getBoundingClientRect();
           const leftRegion = $host[0].parentElement!.getBoundingClientRect();
-          expect(host.right).to.be.greaterThan(leftRegion.right);
+          expect(host.right, 'host is clipped to the pinned band').to.be.at.most(leftRegion.right + 1);
         });
+
       cy.get(fragmentSelector).should('have.length', 1);
+
+      // The continuation picks up exactly where the host stops, and carries a copy of the
+      // content shifted by what the host already showed, so the text reads as one cell.
+      cy.get(hostSelector).then(($host) => {
+        const host = $host[0].getBoundingClientRect();
+        cy.get(fragmentSelector).then(($fragment) => {
+          const fragment = $fragment[0].getBoundingClientRect();
+          expect(fragment.left, 'continuation starts at the host edge').to.be.closeTo(host.right, 1.5);
+
+          const content = $fragment[0].querySelector('.slick-cell-colspan-part-content') as HTMLElement;
+          expect(content, 'continuation carries a copy of the content').to.exist;
+          expect(content.textContent).to.eq($host[0].textContent);
+          // The copy starts where the host's own text starts, so the glyphs line up
+          // across the boundary rather than restarting.
+          const hostTextLeft = host.left + parseFloat(getComputedStyle($host[0]).paddingLeft);
+          expect(content.getBoundingClientRect().left, 'the copy is aligned with the host text').to.be.closeTo(
+            hostTextLeft,
+            1.5
+          );
+        });
+      });
+    });
+
+    it('should not cover the scrolling columns with a colspan host', () => {
+      cy.reload();
+      applyPinning();
+
+      cy.get('#myGrid .slick-docking-horizontal-scroller').scrollTo(260, 0, { ensureScrollable: false });
+
+      // Every cell of the scrolling band stays hit-testable: nothing from the pinned band
+      // is painted on top of it.
+      cy.get('[data-row=0] > .slick-scrolling-cells > .slick-cell')
+        .filter(':visible')
+        .last()
+        .then(($cell) => {
+          const rect = $cell[0].getBoundingClientRect();
+          const topmost = $cell[0].ownerDocument.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+          expect($cell[0].contains(topmost) || topmost === $cell[0], 'scrolling cell is on top').to.eq(true);
+        });
     });
 
     it('should apply and clear the selection class on the colspan fragment together with its host', () => {

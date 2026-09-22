@@ -11157,6 +11157,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       const fragment = host.cloneNode(false) as HTMLElement;
       fragment.style.width = '';
       fragment.classList.add('slick-cell-colspan-part');
+      fragment.appendChild(this.createColspanContinuationContent(host));
       fragment.classList.toggle('slick-cell-colspan-end', index === allFragments.length - 1);
       fragment.classList.remove('slick-cell-pinned-left', 'slick-cell-pinned-right', 'slick-cell-sticky');
       if (segment.band !== 'center') {
@@ -11187,24 +11188,68 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     });
   }
 
+  /**
+   * Builds the offsettable copy of a span host's content that a continuation renders.
+   * The copy is presentational: the host keeps the accessible role, the value and the
+   * event wiring, so the clone is marked hidden from assistive technology.
+   */
+  protected createColspanContinuationContent(host: HTMLElement): HTMLElement {
+    const content = document.createElement('div');
+    content.className = 'slick-cell-colspan-part-content';
+    content.setAttribute('aria-hidden', 'true');
+    Array.from(host.childNodes).forEach((node) => content.appendChild(node.cloneNode(true)));
+    return content;
+  }
+
+  /** Re-copies a span host's content into its continuations after the cell is re-rendered. */
+  protected refreshColspanContinuations(row: number, cell: number): void {
+    const cacheEntry = this.rowsCache[row];
+    const fragments = cacheEntry?.cellSpanFragments?.[cell];
+    const host = cacheEntry?.cellNodesByColumnIdx?.[cell];
+    if (!fragments?.length || !host) {
+      return;
+    }
+    fragments.forEach((fragment) => {
+      fragment.querySelector(':scope > .slick-cell-colspan-part-content')?.remove();
+      fragment.appendChild(this.createColspanContinuationContent(host));
+    });
+    const segments = cacheEntry.cellSpanSegments?.[cell];
+    if (segments?.length) {
+      this.updateColspanFragmentGeometry(host, segments, fragments);
+    }
+  }
+
   /** Recalculates the inline geometry of an already-rendered cross-band colspan. */
   protected updateColspanFragmentGeometry(
     host: HTMLElement,
     segments: Array<{ start: number; end: number; band: ColumnDockingBand }>,
     fragments: HTMLElement[]
   ): void {
-    const spanWidth = segments.reduce(
-      (width, segment) => width + (this.columnPosRight[segment.end] ?? 0) - (this.columnPosLeft[segment.start] ?? 0),
-      0
-    );
-    host.style.width = `${spanWidth}px`;
+    const widthOf = (segment: { start: number; end: number }) =>
+      (this.columnPosRight[segment.end] ?? 0) - (this.columnPosLeft[segment.start] ?? 0);
+    const spanWidth = segments.reduce((width, segment) => width + widthOf(segment), 0);
+
+    // The host renders only the part of the span that belongs to its own band. The
+    // remainder is drawn by the continuations, so the span no longer has to paint over
+    // the band next to it to stay readable.
+    host.style.width = `${widthOf(segments[0])}px`;
     host.style[this._options.rtl ? 'left' : 'right'] = 'auto';
 
+    let consumedWidth = widthOf(segments[0]);
     fragments.forEach((fragment, index) => {
       const segment = segments[index + 1];
       if (!segment) {
         return;
       }
+
+      // Shift the copied content left by everything the earlier bands already showed,
+      // so the text reads continuously across the boundary instead of restarting.
+      const content = fragment.querySelector<HTMLElement>(':scope > .slick-cell-colspan-part-content');
+      if (content) {
+        content.style.width = `${spanWidth}px`;
+        content.style.marginInlineStart = `-${consumedWidth}px`;
+      }
+      consumedWidth += widthOf(segment);
 
       const bandWidth =
         segment.band === 'left'
