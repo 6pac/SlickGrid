@@ -105,6 +105,60 @@ describe('Example - Pinning Columns - Column Header Reorder', { retries: 1 }, ()
     expectReorderCallCount(1);
   });
 
+  it('follows a centre column that is resized past the right edge of the grid', () => {
+    const headerSelector = `${centerHeaders} .slick-header-column:nth-child(2)`; // Start
+    let originalWidth = 0;
+
+    cy.window().then((win: any) => {
+      const doc = win.document;
+      const header = doc.querySelector(headerSelector) as HTMLElement;
+      const handle = header.querySelector('.slick-resizable-handle') as HTMLElement;
+      const scroller = doc.querySelector(horizontalScroller) as HTMLElement;
+      const rect = handle.getBoundingClientRect();
+      originalWidth = win.grid.getColumns().find((column: any) => column.id === 'start').width;
+
+      // Drag well past the right edge: the width is clamped there and the auto-scroll
+      // interval keeps widening the column from that point.
+      handle.dispatchEvent(createMouseLikeEvent(win, 'mousedown', rect.left + rect.width / 2, rect.top + rect.height / 2));
+      doc.body.dispatchEvent(
+        createMouseLikeEvent(win, 'mousemove', scroller.getBoundingClientRect().right + 800, rect.top + rect.height / 2)
+      );
+    });
+
+    cy.wait(400);
+
+    // The grid scrolls to follow the column, so its trailing edge stays at the viewport
+    // edge instead of running off screen.
+    cy.get(horizontalScroller).should(($scroller) => expect($scroller[0].scrollLeft).to.be.greaterThan(0));
+    cy.window().then((win: any) => {
+      const header = win.document.querySelector(headerSelector) as HTMLElement;
+      const scroller = win.document.querySelector(horizontalScroller) as HTMLElement;
+      expect(header.getBoundingClientRect().width, 'the column kept growing').to.be.greaterThan(200);
+      expect(header.getBoundingClientRect().right, 'the resize edge stays in view').to.be.closeTo(
+        scroller.getBoundingClientRect().right,
+        3
+      );
+    });
+
+    // Releasing the pointer stops the auto-scroll.
+    cy.window().then((win: any) => {
+      win.document.body.dispatchEvent(createMouseLikeEvent(win, 'mouseup', 0, 0, 0));
+    });
+    cy.get(horizontalScroller).then(($scroller) => {
+      const settled = $scroller[0].scrollLeft;
+      cy.wait(200);
+      cy.get(horizontalScroller).should(($again) => expect($again[0].scrollLeft).to.eq(settled));
+    });
+
+    // restore the column so the following specs see the original layout
+    cy.window().then((win: any) => {
+      const columns = win.grid.getColumns();
+      columns.find((column: any) => column.id === 'start').width = originalWidth;
+      win.grid.setColumns(columns);
+      win.grid.scrollToX(0);
+    });
+  });
+
   it('auto-scrolls the center band when a header drag moves past the right edge of the grid', () => {
     const getCenterHeader = (win: any, title: string): HTMLElement => {
       const headers = Array.from(win.document.querySelectorAll(`${centerHeaders} .slick-header-column`)) as HTMLElement[];

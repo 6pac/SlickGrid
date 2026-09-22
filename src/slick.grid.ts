@@ -2526,7 +2526,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         ) {
           const columnRight = this.columnPosRight[i];
           const previousScrollLeft = this._viewportScrollContainerX.scrollLeft;
-          const viewportWidth = this._viewportScrollContainerX.clientWidth;
+          // A centre column's coordinates are relative to the centre band, so the width it has
+          // to outgrow is the band's visible width, not the whole scroll owner's. Comparing
+          // against the latter left the pinned bands' width as dead room, in which the column
+          // could grow past the edge without the grid ever following it.
+          const viewportWidth = Math.max(
+            0,
+            this._viewportScrollContainerX.clientWidth - this.dockingLayout.leftWidth - this.dockingLayout.rightWidth
+          );
           const isLastVisibleColumn = i === vc.length - 1;
           if (isLastVisibleColumn) {
             this._isResizingColumn = true;
