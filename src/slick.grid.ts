@@ -11207,6 +11207,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       fragment.classList.add('slick-cell-colspan-part');
       fragment.appendChild(this.createColspanContinuationContent(host));
       fragment.classList.toggle('slick-cell-colspan-end', index === allFragments.length - 1);
+      // A piece shares its right edge with the piece drawn to its right: the following one
+      // when the grid reads left to right, the preceding one when it reads right to left.
+      fragment.classList.toggle('slick-cell-colspan-shared-edge', this._options.rtl || index < allFragments.length - 1);
       fragment.classList.remove('slick-cell-pinned-left', 'slick-cell-pinned-right', 'slick-cell-sticky');
       if (segment.band !== 'center') {
         fragment.classList.add(`slick-cell-pinned-${segment.band}`);
@@ -11224,6 +11227,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return fragment;
     });
 
+    host.classList.toggle('slick-cell-colspan-shared-edge', !this._options.rtl);
     this.rowsCache[row].cellSpanFragments[cell] = fragments;
     this.rowsCache[row].cellSpanSegments[cell] = segments;
     this.updateColspanFragmentGeometry(host, segments, fragments);

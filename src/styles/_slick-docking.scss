@@ -103,6 +103,15 @@
   pointer-events: none;
 }
 
+// A theme draws its column separator on the cell's right edge in both reading directions,
+// so the piece whose right edge is shared with another piece of the same span hides it and
+// the span reads as one cell. The colour goes rather than the width, which would move the
+// pieces apart; the cell's own background paints under it. The row carries the selector so
+// it outranks the theme's own `.slick-cell` shorthand, which is emitted after this file.
+.slick-row-colspan-crossing-docking .slick-cell-colspan-shared-edge {
+  border-right-color: transparent;
+}
+
 // Draw one continuous active-cell outline over all visual pieces of a span.
 // Removing the shared edges prevents doubled borders at docking boundaries.
 .slick-row-docked
@@ -120,7 +129,7 @@
     z-index: 1;
   }
 
-  &.slick-cell-colspan-part:not(.slick-cell-colspan-end)::after {
+  &:not(.slick-cell-colspan-end)::after {
     border-inline-end: 0;
   }
 }
