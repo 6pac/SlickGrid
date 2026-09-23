@@ -5550,7 +5550,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         rowDiv
       );
       this.rowsCache[row].cellRegions = { center: rowRegionCenter, left: rowRegionLeft, right: rowRegionRight };
-      this.applyDockingScrollOffsetToRow(rowDiv, this.rowsCache[row]);
     }
     if (this.usesDockingRowRegions() || this._options.enableVariableRowHeight) {
       // Docked rows have their own grid regions and pinned-row box model. Keep
@@ -7135,7 +7134,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       // adjust scroll position of all div containers when scrolling the grid
       this.scrollToX(this.scrollLeft);
-      this.applyDockingScrollOffsets();
     }
 
     // autoheight suppresses vertical scrolling, but editors can create a div larger than
@@ -9583,52 +9581,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         right.style.width = `${rightWidth}px`;
         right.classList.toggle('slick-pinned-right-cells-active', rightWidth > 0);
       }
-      this.applyDockingScrollOffsetToRow(row, cacheEntry);
     });
-  }
-
-  /** Synchronizes a rendered row's cell-region offsets with the active horizontal scroll mode. */
-  protected applyDockingScrollOffsetToRow(row: HTMLElement, cacheEntry: RowCaching): void {
-    if (!row.classList.contains('slick-row-docked') || !cacheEntry.cellRegions) {
-      return;
-    }
-    if (this.hasDockingHorizontalScroller()) {
-      // The offset itself is inherited from the container; see syncDockingScrollOffsetVariable().
-      // The proxy stylesheet applies the compensation; keep this path to custom-property
-      // writes so horizontal scrolling does not force a layout per cached row.
-      if (cacheEntry.cellRegions.left.style.transform) {
-        cacheEntry.cellRegions.left.style.removeProperty('transform');
-      }
-      if (cacheEntry.cellRegions.right.style.transform) {
-        cacheEntry.cellRegions.right.style.removeProperty('transform');
-      }
-      return;
-    }
-    const viewportWidth = this.getViewportInnerWidth() || this._viewportScrollContainerX?.clientWidth || this.viewportW;
-    const isOverlayRow = row.parentElement === this._dockingOverlay;
-    row.style.left = isOverlayRow ? `${-this.scrollLeft}px` : '';
-    // Regular rows stay in the native scrolling canvas, so the left region can
-    // use CSS sticky positioning without a per-scroll transform. Overlay rows
-    // are outside that scroll container and still need the compensating shift.
-    cacheEntry.cellRegions.left.style.transform = isOverlayRow ? `translateX(${this.scrollLeft}px)` : '';
-    cacheEntry.cellRegions.right.style.transform = `translateX(${this.scrollLeft + viewportWidth - this.dockingLayout.contentWidth}px)`;
-  }
-
-  /** Updates row and column-chrome offsets when horizontal scrolling is handled natively. */
-  protected applyDockingScrollOffsets(): void {
-    if (this.hasDockingHorizontalScroller()) {
-      return;
-    }
-    const hasRightDocking = this.dockingLayout.right.length > 0;
-    Object.values(this.rowsCache).forEach((cacheEntry) => {
-      const row = cacheEntry.rowNode?.[0];
-      // Rows with only leading pinned columns use CSS sticky; only overlay rows and
-      // right-docked regions need a per-scroll write.
-      if (row && (row.parentElement === this._dockingOverlay || hasRightDocking)) {
-        this.applyDockingScrollOffsetToRow(row, cacheEntry);
-      }
-    });
-    this.applyDockingChromeScrollOffsets();
   }
 
   /**
@@ -9652,7 +9605,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (!row?.classList.contains('slick-row-docked') || !cacheEntry.cellRegions) {
         return;
       }
-      this.applyDockingScrollOffsetToRow(row, cacheEntry);
       if (row.classList.contains('slick-row-full-width-group')) {
         const fullWidthGroupCell =
           cacheEntry.cellNodesByColumnIdx.find((cell) => cell?.classList.contains('slick-cell-full-width-group')) ||
@@ -9670,28 +9622,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           element.style.transform = `translateX(${scrollLeft}px)`;
         });
       }
-    }
-  }
-
-  /** Updates pinned and sticky header, header-row, and footer chrome offsets. */
-  protected applyDockingChromeScrollOffsets(): void {
-    if (this.hasDockingHorizontalScroller()) {
-      return;
-    }
-    const viewportWidth = this._viewportScrollContainerX?.clientWidth || this.viewportW;
-    for (const docking of [...this.dockingLayout.left, ...this.dockingLayout.right]) {
-      const naturalOffset = docking.sticky
-        ? this.dockingLayout.leftBaseWidth + docking.naturalOffset
-        : docking.band === 'left'
-          ? docking.offset
-          : this.dockingLayout.contentWidth - this.dockingLayout.rightWidth + docking.offset;
-      const dockedOffset =
-        docking.band === 'left'
-          ? this.scrollLeft + docking.offset
-          : this.scrollLeft + viewportWidth - this.dockingLayout.rightWidth + docking.offset;
-      this.dockingChromeByColumn
-        .get(docking.index)
-        ?.forEach((element) => (element.style.transform = `translateX(${dockedOffset - naturalOffset}px)`));
     }
   }
 
@@ -10864,7 +10794,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       }
       cacheEntry.dockingSyncSignature = signature;
       this.applyRowTopOffset(rowNode, row);
-      this.applyDockingScrollOffsetToRow(rowNode, cacheEntry);
     });
   }
 
