@@ -131,6 +131,8 @@ const SelectionUtils = IIFE_ONLY ? Slick.SelectionUtils : SelectionUtils_;
 
 const COLUMN_AUTOSCROLL_DISTANCE_PX = 10;
 const COLUMN_AUTOSCROLL_INTERVAL_MS = 30;
+const DEFAULT_DOCKING_SCROLLBAR_HEIGHT = 15;
+const DEFAULT_DOCKING_OVERLAY_SCROLLBAR_WIDTH = 8;
 const RESIZE_AUTOSCROLL_BROWSER_EDGE_PX = 1;
 const Draggable = IIFE_ONLY ? Slick.Draggable : Draggable_;
 const MouseWheel = IIFE_ONLY ? Slick.MouseWheel : MouseWheel_;
@@ -140,8 +142,6 @@ const DragExtendHandle = IIFE_ONLY ? Slick.DragExtendHandle : DragExtendHandle_;
 
 
 const DockingController = IIFE_ONLY ? Slick.DockingController : DockingController_;
-
-const DEFAULT_DOCKING_SCROLLBAR_HEIGHT = 15;
 
 const isDefinedNumber = (value: unknown): value is number => typeof value === 'number' && Number.isFinite(value);
 const isPrimitiveOrHTML = (value: unknown): value is string | number | boolean | HTMLElement | DocumentFragment =>
@@ -11009,10 +11009,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
     const viewportWidth = this._viewportNode.clientWidth;
     const overlayWidth = Math.max(this.canvasWidth, this.dockingLayout.contentWidth, viewportWidth);
-    // Overlay-scrollbar platforms do not reserve a vertical gutter in
-    // clientWidth. Adding a guessed inset here clips the rightmost pinned-row
-    // cells and can paint a duplicate sliver beside the grid border.
-    const rightInset = overlayWidth - scrollLeft - viewportWidth;
+    const hasFirefoxOverlayScrollbar =
+      this.viewportHasVScroll &&
+      !this.scrollbarDimensions?.width &&
+      /firefox/i.test(navigator.userAgent) &&
+      /linux/i.test(navigator.userAgent);
+    const scrollbarInset = hasFirefoxOverlayScrollbar ? DEFAULT_DOCKING_OVERLAY_SCROLLBAR_WIDTH : 0;
+    const rightInset = overlayWidth - scrollLeft - viewportWidth + scrollbarInset;
     this._dockingOverlay.style.clipPath = `inset(0 ${rightInset}px 0 ${scrollLeft}px)`;
   }
 
