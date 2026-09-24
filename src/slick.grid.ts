@@ -602,6 +602,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected _dockingOverlay?: HTMLDivElement;
   protected _dockingHorizontalScroller?: HTMLDivElement;
   protected _dockingHorizontalSpacer?: HTMLDivElement;
+  /** Whether the proxy track is currently taking layout height beside the viewport. */
+  protected dockingHorizontalScrollbarReserved = false;
+  /** Guards the viewport resize that a change in that reservation triggers. */
+  protected resizingForDockingScrollbar = false;
   /** Persistent semantic left/center/right wrappers for the single header roots. */
   protected dockingHeaderRegions?: Record<ColumnDockingBand, HTMLDivElement>;
   protected dockingHeaderRowRegions?: Record<ColumnDockingBand, HTMLDivElement>;
@@ -5110,8 +5114,22 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       Utils.width(this._footerRowSpacerL, this.canvasWidth + (this.viewportHasVScroll ? this.scrollbarDimensions?.width || 0 : 0));
     }
 
+    const reservedTrackBefore = this.dockingHorizontalScrollbarReserved;
     this.updateDockingHorizontalScrollerDimensions();
     this.updateDockingOverlayDimensions();
+
+    // The proxy track sits beside the viewport rather than inside it, so the viewport has to
+    // give up its height when the track appears and take it back when it goes. Only
+    // resizeCanvas() recomputes that, and a column-resize drag never reaches it, which left
+    // the track painted over the last row for the rest of the session.
+    if (this.dockingHorizontalScrollbarReserved !== reservedTrackBefore && !this.resizingForDockingScrollbar) {
+      this.resizingForDockingScrollbar = true;
+      try {
+        this.resizeCanvas();
+      } finally {
+        this.resizingForDockingScrollbar = false;
+      }
+    }
 
     if (widthChanged || forceColumnWidthsUpdate) {
       this.applyColumnWidths();
@@ -11007,6 +11025,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const viewportWidth = this._viewportNode.clientWidth;
     const contentWidth = this.dockingLayout.contentWidth || this.canvasWidth;
     const hasHorizontalOverflow = contentWidth > viewportWidth;
+    this.dockingHorizontalScrollbarReserved = hasHorizontalOverflow && scrollbarHeight > 0;
     this._dockingHorizontalScroller.style.width = `${viewportWidth}px`;
     this._dockingHorizontalScroller.style.height = hasHorizontalOverflow ? `${scrollbarHeight}px` : '0px';
     this._dockingHorizontalSpacer.style.width = `${Math.max(contentWidth, viewportWidth)}px`;
