@@ -43,6 +43,7 @@
           <li>a right-to-left grid with permanently pinned columns at both edges</li>
           <li>a sticky column that docks at whichever edge it reaches</li>
           <li>pinned rows at the top and bottom of the same grid</li>
+          <li>a colspan crossing the pinned boundary, drawn as one cell in both directions</li>
           <li>changing the pinning at runtime</li>
         </ul>
         <h2>View Source:</h2>
@@ -118,6 +119,16 @@
         effortDriven: (i % 5 === 0) ? 'Yes' : 'No'
       };
     }
+
+    // A span that starts in the leading pinned band and continues into the scrolling one.
+    // The leading band is the right edge here, so the span is drawn as a host at the right
+    // and a continuation to its left, and the two must read as a single cell.
+    data.getItemMetadata = function (row) {
+      if (row % 7 === 2) {
+        return { columns: { 0: { colspan: 3 } } };
+      }
+      return null;
+    };
 
     grid = new Slick.Grid("#myGrid", data, columns, options);
 

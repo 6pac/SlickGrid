@@ -145,6 +145,52 @@ describe('Example - Pinned and Sticky Columns (RTL)', { retries: 1 }, () => {
     });
   });
 
+  it('draws a colspan crossing the pinned boundary as one cell', () => {
+    // Row 2 carries a colspan of 3 starting at the first column, which is pinned, so the
+    // span is split into a host and one continuation on either side of the boundary.
+    const host = `${grid} .slick-row[data-row="2"] > .slick-pinned-left-cells > .slick-cell-colspan-crossing-docking:not(.slick-cell-colspan-part)`;
+    const part = `${grid} .slick-row[data-row="2"] > .slick-scrolling-cells > .slick-cell-colspan-part`;
+
+    cy.get(host).should('have.length', 1);
+    cy.get(part).should('have.length', 1);
+
+    // The leading band is the right edge, so the continuation is drawn to the LEFT of the
+    // host and the two meet exactly.
+    cy.get(host).then(($host) => {
+      const hostRect = $host[0].getBoundingClientRect();
+      cy.get(part).then(($part) => {
+        const partRect = $part[0].getBoundingClientRect();
+        expect(partRect.right, 'the continuation meets the host at the pinned edge').to.be.closeTo(hostRect.left, 1.5);
+        expect(partRect.left, 'and extends further into the scrolling band').to.be.lessThan(hostRect.left);
+      });
+    });
+
+    // The shared edge is the continuation's in a right-to-left grid, because a cell's
+    // separator is drawn on its right in both directions.
+    cy.get(host).should('not.have.class', 'slick-cell-colspan-shared-edge');
+    cy.get(part).should('have.class', 'slick-cell-colspan-shared-edge');
+
+    // The continuation carries a copy of the host's content, so the text reads as one cell.
+    cy.get(host).then(($host) => {
+      cy.get(part).find('.slick-cell-colspan-part-content').should(($content) => {
+        expect($content[0].textContent).to.eq($host[0].textContent);
+      });
+    });
+
+    // Clicking either half reports the same single cell.
+    cy.window().then((win: any) => {
+      win.__clicks = [];
+      win.grid.onClick.subscribe((_e: any, args: any) => win.__clicks.push({ row: args.row, cell: args.cell }));
+    });
+    cy.get(part).click({ scrollBehavior: false });
+    cy.get(host).click({ scrollBehavior: false });
+    cy.window().should((win: any) => {
+      expect(win.__clicks).to.have.length(2);
+      expect(win.__clicks[0]).to.deep.eq({ row: 2, cell: 0 });
+      expect(win.__clicks[1]).to.deep.eq({ row: 2, cell: 0 });
+    });
+  });
+
   it('removes and restores the pinning at runtime', () => {
     cy.get('#clearPinning').click();
     cy.get(`${grid} .slick-header-column.slick-column-pinned-left`).should('not.exist');

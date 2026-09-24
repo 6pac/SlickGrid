@@ -1307,6 +1307,17 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.invalidateRow(this.getDataLength());
     }
 
+    // The reading direction is applied once, during initialisation: applyRTL() sets the
+    // container's class and dir attribute, and the docking geometry reads the option on
+    // every measurement. Accepting a later change would leave the option and the rendered
+    // direction disagreeing, so the change is dropped rather than half-applied.
+    if (newOptions.rtl !== undefined && !!newOptions.rtl !== !!this._options.rtl) {
+      console.warn('[SlickGrid] the "rtl" option is only applied when the grid is created; the change was ignored.');
+      const optionsWithoutRtl = { ...newOptions };
+      delete optionsWithoutRtl.rtl;
+      newOptions = optionsWithoutRtl as Partial<O>;
+    }
+
     const originalOptions = Utils.extend(true, {}, this._options);
     this._options = Utils.extend(true, this._options, newOptions);
     if (removePinning) {
