@@ -1568,34 +1568,28 @@ export class DockingController<C extends Column = Column> {
       }
     }
 
-    // A two-sided candidate can only occupy one band.
-    const activeLeftByIndex = new Map(activeLeft.map((entry) => [entry.index, entry]));
-    const activeRightByIndex = new Map(activeRight.map((entry) => [entry.index, entry]));
-    for (const [index, leftEntry] of activeLeftByIndex) {
-      const rightEntry = activeRightByIndex.get(index);
+    // A two-sided candidate can only occupy one band: it goes to whichever edge it is
+    // nearer, and to the left band on a tie. Both lists keep their original order.
+    const remainingRight = new Map(activeRight.map((entry) => [entry.index, entry]));
+    const contestedLeft = activeLeft.filter((leftEntry) => {
+      const rightEntry = remainingRight.get(leftEntry.index);
       if (!rightEntry) {
-        continue;
+        return true;
       }
       const leftDistance = Math.abs(leftEntry.naturalOffset - visibleStart);
       const rightDistance = Math.abs(visibleEnd - (rightEntry.naturalOffset + rightEntry.width));
-      if (leftDistance <= rightDistance) {
-        activeRight.splice(
-          activeRight.findIndex((entry) => entry.index === index),
-          1
-        );
-      } else {
-        activeLeft.splice(
-          activeLeft.findIndex((entry) => entry.index === index),
-          1
-        );
+      if (leftDistance > rightDistance) {
+        return false;
       }
-    }
+      remainingRight.delete(leftEntry.index);
+      return true;
+    });
 
     const maxDockedWidth = (viewportWidth * this.options.maxColumnViewportWidthPercent) / 100;
     const availableStickyWidth = Math.max(0, maxDockedWidth - leftWidth - rightWidth);
-    const selectedLeft = this.applyBudget(activeLeft, availableStickyWidth, (item) => item.width, 'left');
+    const selectedLeft = this.applyBudget(contestedLeft, availableStickyWidth, (item) => item.width, 'left');
     const selectedLeftWidth = selectedLeft.reduce((total, item) => total + item.width, 0);
-    const selectedRight = this.applyBudget(activeRight, availableStickyWidth - selectedLeftWidth, (item) => item.width, 'right');
+    const selectedRight = this.applyBudget([...remainingRight.values()], availableStickyWidth - selectedLeftWidth, (item) => item.width, 'right');
 
     selectedLeft.forEach((entry) => {
       entry.offset = leftWidth;
