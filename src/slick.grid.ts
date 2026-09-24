@@ -9597,21 +9597,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /** Update only elements whose proxy-mode transforms consume the horizontal scroll offset. */
   protected applyDockingProxyScrollOffsets(scrollLeft: number): void {
-    const value = `${scrollLeft}px`;
+    // A full-width group cell takes the same compensation from the stylesheet, which reads
+    // the custom property published above; it is always a direct child of its row, so the
+    // rule reaches every one of them.
     this.syncDockingScrollOffsetVariable(scrollLeft);
-
-    Object.values(this.rowsCache).forEach((cacheEntry) => {
-      const row = cacheEntry.rowNode?.[0];
-      if (!row?.classList.contains('slick-row-docked') || !cacheEntry.cellRegions) {
-        return;
-      }
-      if (row.classList.contains('slick-row-full-width-group')) {
-        const fullWidthGroupCell =
-          cacheEntry.cellNodesByColumnIdx.find((cell) => cell?.classList.contains('slick-cell-full-width-group')) ||
-          (row.querySelector(':scope > .slick-cell-full-width-group') as HTMLElement | null);
-        fullWidthGroupCell?.style.setProperty('transform', `translate3d(${value}, 0, 0)`);
-      }
-    });
 
     for (const docking of [...this.dockingLayout.left, ...this.dockingLayout.right]) {
       // The header roots are translated by -scrollLeft together with the
@@ -10404,16 +10393,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return [];
     }
 
-    const visibleIndexes = columns.reduce<number[]>((indexes, column, index) => {
-      if (column && !column.hidden) {
-        indexes.push(index);
-      }
-      return indexes;
-    }, []);
-    if (!visibleIndexes.length) {
-      return [];
-    }
-
+    const visibleIndexes = this.getVisibleColumnIndexes(columns);
     const requestedCount = side === 'left' ? references + 1 : references;
     const count = Math.min(requestedCount, visibleIndexes.length);
     if (count === 0) {

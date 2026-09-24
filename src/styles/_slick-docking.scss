@@ -199,23 +199,10 @@
   box-sizing: border-box;
 }
 
+// The band edge and the sticky edge draw the same separator, one on the last cell of a
+// pinned band and one on a docked sticky cell.
 .slick-row-docked > .slick-pinned-left-cells.slick-pinned-left-cells-active > .slick-cell:last-child:not(.slick-cell-colspan-crossing-docking)::after,
-.slick-row-docked > .slick-pinned-right-cells.slick-pinned-right-cells-active > .slick-cell:first-child:not(.slick-cell-colspan-crossing-docking)::after {
-  content: '';
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-  z-index: 1;
-}
-
-.slick-row-docked > .slick-pinned-left-cells.slick-pinned-left-cells-active > .slick-cell:last-child:not(.slick-cell-colspan-crossing-docking)::after {
-  box-shadow: var(--slick-pinned-border-box-shadow-left, inset -1px 0 0 var(--slick-pinned-border-color, #a5a5a5));
-}
-
-.slick-row-docked > .slick-pinned-right-cells.slick-pinned-right-cells-active > .slick-cell:first-child:not(.slick-cell-colspan-crossing-docking)::after {
-  box-shadow: var(--slick-pinned-border-box-shadow-right, inset 1px 0 0 var(--slick-pinned-border-color, #a5a5a5));
-}
-
+.slick-row-docked > .slick-pinned-right-cells.slick-pinned-right-cells-active > .slick-cell:first-child:not(.slick-cell-colspan-crossing-docking)::after,
 .slick-cell-sticky-left-edge::after,
 .slick-cell-sticky-right-edge::after {
   content: '';
@@ -225,10 +212,12 @@
   z-index: 1;
 }
 
+.slick-row-docked > .slick-pinned-left-cells.slick-pinned-left-cells-active > .slick-cell:last-child:not(.slick-cell-colspan-crossing-docking)::after,
 .slick-cell-sticky-left-edge::after {
   box-shadow: var(--slick-pinned-border-box-shadow-left, inset -1px 0 0 var(--slick-pinned-border-color, #a5a5a5));
 }
 
+.slick-row-docked > .slick-pinned-right-cells.slick-pinned-right-cells-active > .slick-cell:first-child:not(.slick-cell-colspan-crossing-docking)::after,
 .slick-cell-sticky-right-edge::after {
   box-shadow: var(--slick-pinned-border-box-shadow-right, inset 1px 0 0 var(--slick-pinned-border-color, #a5a5a5));
 }
