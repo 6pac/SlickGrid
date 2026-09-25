@@ -9801,32 +9801,20 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     usesStickyTransform: boolean,
     separatorWidth: number
   ): void {
-    if (usesStickyTransform) {
+    // A sticky column and a centre column both sit at their offset within the scrolling
+    // band; a sticky one is then moved by its transform. Sticky and unpinned centre columns
+    // on the transform path keep their natural offset, the rest the compacted one.
+    if (usesStickyTransform || !docking || band === 'center') {
+      const natural = usesStickyTransform || (this.usesStickyColumnTransformPath() && !this.columns[index]?.pinned);
+      const start = this.dockingLayout.leftBaseWidth + ((natural ? docking?.naturalOffset : docking?.offset) || 0);
       element.style.removeProperty('--slick-docking-chrome-offset');
-      element.style.position = isHeader ? '' : 'absolute';
-      const stickyStart = this.dockingLayout.leftBaseWidth + (docking?.naturalOffset || 0);
-      this.setInlinePosition(
-        element,
-        isHeader ? '' : stickyStart,
-        isHeader ? '' : this.dockingLayout.contentWidth - stickyStart - (docking?.width || 0)
-      );
+      element.style.position = usesStickyTransform && !isHeader ? 'absolute' : '';
+      this.setInlinePosition(element, isHeader ? '' : start, isHeader ? '' : this.dockingLayout.contentWidth - start - (docking?.width || 0));
       element.style.order = '0';
       element.style.transform = '';
-      this.applyStickyColumnTransform(element, index, 'column');
-      return;
-    }
-    if (!docking || band === 'center') {
-      const centerOffset = this.usesStickyColumnTransformPath() && !this.columns[index]?.pinned ? docking?.naturalOffset || 0 : docking?.offset || 0;
-      element.style.removeProperty('--slick-docking-chrome-offset');
-      element.style.position = '';
-      const centerStart = this.dockingLayout.leftBaseWidth + centerOffset;
-      this.setInlinePosition(
-        element,
-        isHeader ? '' : centerStart,
-        isHeader ? '' : this.dockingLayout.contentWidth - centerStart - (docking?.width || 0)
-      );
-      element.style.order = '0';
-      element.style.transform = '';
+      if (usesStickyTransform) {
+        this.applyStickyColumnTransform(element, index, 'column');
+      }
       return;
     }
 
