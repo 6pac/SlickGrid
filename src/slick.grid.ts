@@ -10704,7 +10704,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /** The single-viewport renderer exposes all three row regions. */
   protected usesDockingRowRegions(): boolean {
-    return this.dockingRowRegionsActive;
+    // Docking can be configured before it is applied (setOptions() with suppressColumnSet
+    // leaves the scroll owner to setColumns()), and a docked row that nothing positions is
+    // worse than a plain one, so rows only take regions once the owner exists.
+    return this.dockingRowRegionsActive && !!this._dockingHorizontalScroller;
   }
 
   /** Returns the stable identity used to track a rendered data row. */

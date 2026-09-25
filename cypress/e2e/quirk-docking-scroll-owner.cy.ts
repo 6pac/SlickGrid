@@ -64,10 +64,15 @@ describe('Quirk - docked elements never exist without the proxy scroll owner', (
       const viewport = win.document.querySelector('#myGrid .slick-viewport') as HTMLElement;
       viewport.scrollLeft = 250;
       viewport.dispatchEvent(new win.Event('scroll'));
+      // A vertical scroll renders rows that were never rendered before, which is what
+      // would build docked rows if the layout were applied without its scroll owner.
+      viewport.scrollTop = 3000;
+      viewport.dispatchEvent(new win.Event('scroll'));
     });
     cy.window().should((win: any) => {
       expect(win.grid.hasConfiguredDocking(), 'pinning is configured').to.eq(true);
       expect(win.grid.hasDockingHorizontalScroller(), 'but no scroll owner was created').to.eq(false);
+      expect(win.document.querySelectorAll('#myGrid .grid-canvas .slick-row').length, 'new rows were rendered').to.be.greaterThan(0);
       expectNothingDockedWithoutTheScroller(win, 'scrolled while half-configured');
     });
 
