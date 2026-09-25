@@ -15,15 +15,15 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const SITE = dirname(HERE);
+const DOCS_ROOT = join(dirname(dirname(HERE)), 'docs');
 const strict = process.argv.includes('--strict');
 const updateBaseline = process.argv.includes('--update-baseline');
 
 execFileSync(process.execPath, [join(HERE, 'extract-api.mjs')], { stdio: 'inherit' });
-const api = JSON.parse(readFileSync(join(SITE, 'data', 'api.json'), 'utf8'));
+const api = JSON.parse(readFileSync(join(DOCS_ROOT, 'data', 'api.json'), 'utf8'));
 
 let overlays = {};
-try { overlays = JSON.parse(readFileSync(join(SITE, 'data', 'overlays.json'), 'utf8')); } catch { /* noop */ }
+try { overlays = JSON.parse(readFileSync(join(DOCS_ROOT, 'data', 'overlays.json'), 'utf8')); } catch { /* noop */ }
 const OV_KEY = {
   gridOption: (n) => `grid:opt-${n}`,
   gridMethod: (n) => `grid:m-${n}`,
