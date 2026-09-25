@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <meta http-equiv="Content-Security-Policy" content="
     default-src 'self';
-    script-src 'self' https://cdn.jsdelivr.net 'nonce-browser-sync';
+    script-src 'self' https://cdn.jsdelivr.net;
     style-src 'self' 'nonce-random-string'; require-trusted-types-for 'script';
     trusted-types dompurify
   ">
@@ -31,7 +31,7 @@
           <code>
             <pre>
               default-src 'self';
-              script-src 'self' https://cdn.jsdelivr.net 'nonce-browser-sync';
+              script-src 'self' https://cdn.jsdelivr.net;
               style-src 'self' 'nonce-random-string'; require-trusted-types-for 'script';
               trusted-types dompurify;
             </pre>
@@ -62,7 +62,6 @@
 <script src="../dist/browser/controls/slick.pager.js"></script>
 <script src="../dist/browser/controls/slick.columnpicker.js"></script>
 
-<!-- <script src="./example-csp-policy.js"></script> -->
 <script src="./example-csp-header.js"></script>
 </body>
 </html>

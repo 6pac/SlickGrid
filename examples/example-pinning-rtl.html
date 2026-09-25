@@ -1,0 +1,153 @@
+<!DOCTYPE HTML>
+<html dir="rtl">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <title>SlickGrid example: Pinned and sticky columns (RTL)</title>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css" />
+  <style>
+    .rtl-controls { margin: 8px 0; }
+    .rtl-controls input { width: 40px; }
+    .sticky-candidate { font-weight: bold; }
+    .slick-column-pinned-left-edge,
+    .slick-column-pinned-right-edge {
+      border-color: darkblue !important;
+    }
+  </style>
+</head>
+
+<body>
+  <h2 class="title">Example - Pinned and Sticky Columns (RTL)</h2>
+  <table width="100%">
+    <tr>
+      <td valign="top" width="50%">
+        <div class="rtl-controls">
+          <label>Pinned at the start (right) edge: <input type="text" id="pinnedStartColumns" value="2"></label>
+          <label>Pinned at the end (left) edge: <input type="text" id="pinnedEndColumns" value="1"></label>
+          <button id="setPinning">Apply</button>
+          <button id="clearPinning">Remove pinning</button>
+        </div>
+        <div id="myGrid" class="slick-container" style="width:900px;height:400px;"></div>
+      </td>
+      <td valign="top">
+        <div>
+          <h2>
+            <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+            Demonstrates:
+          </h2>
+        </div>
+        <ul>
+          <li>a right-to-left grid with permanently pinned columns at both edges</li>
+          <li>a sticky column that docks at whichever edge it reaches</li>
+          <li>pinned rows at the top and bottom of the same grid</li>
+          <li>a colspan crossing the pinned boundary, drawn as one cell in both directions</li>
+          <li>changing the pinning at runtime</li>
+        </ul>
+        <h2>View Source:</h2>
+        <ul>
+          <li><a href="https://github.com/6pac/SlickGrid/blob/master/examples/example-pinning-rtl.html"
+              target="_sourcewindow"> View the source for this example on Github</a>
+          </li>
+        </ul>
+      </td>
+    </tr>
+  </table>
+
+  <script src="../dist/browser/slick.core.js"></script>
+  <script src="../dist/browser/slick.interactions.js"></script>
+  <script src="../dist/browser/slick.grid.js"></script>
+
+  <script>
+    var grid;
+    var columns = [
+      { id: "title", name: "Title", field: "title", width: 110 },
+      { id: "duration", name: "Duration", field: "duration", width: 90 },
+      { id: "start", name: "Start", field: "start", width: 100 },
+      { id: "finish", name: "Finish", field: "finish", width: 100 },
+      // A sticky column docks at whichever edge it reaches while scrolling.
+      { id: "priority", name: "Priority", field: "priority", width: 100, sticky: true, cssClass: "sticky-candidate" },
+      { id: "%", name: "% Complete", field: "percentComplete", width: 110 },
+      { id: "assignee", name: "Assignee", field: "assignee", width: 100 },
+      { id: "department", name: "Department", field: "department", width: 110 },
+      { id: "project", name: "Project", field: "project", width: 100 },
+      { id: "reviewer", name: "Reviewer", field: "reviewer", width: 100 },
+      { id: "region", name: "Region", field: "region", width: 100 },
+      { id: "stage", name: "Stage", field: "stage", width: 100 },
+      { id: "budget", name: "Budget", field: "budget", width: 100 },
+      { id: "spent", name: "Spent", field: "spent", width: 100 },
+      { id: "notes", name: "Notes", field: "notes", width: 140 },
+      { id: "effort-driven", name: "Effort Driven", field: "effortDriven", width: 110 }
+    ];
+
+    var options = {
+      enableCellNavigation: true,
+      enableColumnReorder: false,
+      rowHeight: 28,
+      rtl: true,
+      pinning: {
+        columns: { left: 1, right: 1 },
+        rows: { top: [0], bottom: [] }
+      }
+    };
+
+    var data = [];
+    var priorities = ['Low', 'Medium', 'High', 'Critical'];
+    var assignees = ['Alice', 'Bob', 'Carol', 'Dave', 'Erin', 'Frank', 'Grace'];
+    var departments = ['Engineering', 'Marketing', 'Sales', 'Design', 'Support'];
+    var projects = ['Alpha', 'Beta', 'Gamma', 'Delta', 'Epsilon'];
+
+    for (var i = 0; i < 300; i++) {
+      data[i] = {
+        title: "Task " + i,
+        duration: ((i % 10) + 2) + " days",
+        start: "0" + ((i % 9) + 1) + "/01/2009",
+        finish: "0" + ((i % 5) + 1) + "/05/2009",
+        priority: priorities[i % priorities.length],
+        percentComplete: ((i * 7) % 100) + "%",
+        assignee: assignees[i % assignees.length],
+        department: departments[i % departments.length],
+        project: projects[i % projects.length],
+        reviewer: assignees[(i + 3) % assignees.length],
+        region: ['North', 'South', 'East', 'West'][i % 4],
+        stage: ['Design', 'Build', 'Test', 'Ship'][i % 4],
+        budget: ((i % 9) + 1) * 1000,
+        spent: ((i % 7) + 1) * 800,
+        notes: 'Note for task ' + i,
+        effortDriven: (i % 5 === 0) ? 'Yes' : 'No'
+      };
+    }
+
+    // A span that starts in the leading pinned band and continues into the scrolling one.
+    // The leading band is the right edge here, so the span is drawn as a host at the right
+    // and a continuation to its left, and the two must read as a single cell.
+    data.getItemMetadata = function (row) {
+      if (row % 7 === 2) {
+        return { columns: { 0: { colspan: 3 } } };
+      }
+      return null;
+    };
+
+    grid = new Slick.Grid("#myGrid", data, columns, options);
+
+    document.querySelector('#setPinning').addEventListener('click', function () {
+      var startCount = Math.max(0, parseInt(document.querySelector('#pinnedStartColumns').value, 10) || 0);
+      var endCount = Math.max(0, parseInt(document.querySelector('#pinnedEndColumns').value, 10) || 0);
+      // `left` is an inclusive boundary, `right` a count, in both reading directions.
+      grid.setOptions({
+        pinning: {
+          columns: { left: startCount > 0 ? startCount - 1 : [], right: endCount },
+          rows: { top: [0], bottom: [] }
+        }
+      });
+    });
+
+    document.querySelector('#clearPinning').addEventListener('click', function () {
+      grid.setOptions({ pinning: null });
+    });
+  </script>
+</body>
+
+</html>

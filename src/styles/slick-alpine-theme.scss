@@ -14,6 +14,7 @@
 
 @use './mixins' as m;
 @use './variables' as v;
+@use './slick-docking';
 
 @keyframes fade {
   0%, 100% { background: none }
@@ -276,7 +277,8 @@
   display: inline-block;
 }
 
-.slick-header-column {
+.slick-header-column,
+.slick-header-column.slick-state-default {
   height: var(--alpine-header-column-height, v.$alpine-header-column-height); // header with 2 rows, just double the height
   line-height: var(--alpine-header-column-line-height, v.$alpine-header-column-line-height);
   position: relative;
@@ -596,20 +598,11 @@
   }
 }
 
-.slick-pane {
-  box-sizing: border-box;
-  position: absolute;
-  outline: 0;
-  overflow: hidden;
-  width: 100%;
-}
-
-.slick-pane-header {
-  display: block;
-}
-
 .slick-header-auto-height {
+  // The left/right band wrappers are display: contents inside a docking chrome root, so the
+  // measured height has to reach the root itself as well.
   .slick-header-columns,
+  .slick-header-columns-root,
   .slick-header-columns-left,
   .slick-header-columns-right {
     height: var(--slick-auto-header-height);

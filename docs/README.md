@@ -17,3 +17,5 @@ Some highlights:
 * Grouping, filtering, custom aggregators, and more!
 * Advanced detached & multi-field editors with undo/redo support.
 * "GlobalEditorLock" to manage concurrent edits in cases where multiple Views on a page can edit the same data.
+
+Pinning and sticky docking configuration is documented in [Pinning and sticky docking](pinning-sticky.md).

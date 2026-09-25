@@ -1,0 +1,290 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>SlickGrid: Sticky Financial Report</title>
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css" />
+  <style>
+    .financial-report-grid {
+      height: 510px;
+      max-width: 1200px;
+      width: 100%;
+    }
+
+    .financial-report-grid .slick-cell.financial-account-column,
+    .financial-report-grid .slick-header-column.financial-account-header {
+      background-color: #e4edf7 !important;
+      font-weight: 600;
+    }
+
+    .financial-report-grid .slick-cell.financial-month-column,
+    .financial-report-grid .slick-cell.financial-sticky-candidate {
+      text-align: right;
+    }
+
+    .financial-report-grid .slick-cell.financial-sticky-candidate,
+    .financial-report-grid .slick-header-column.financial-sticky-candidate-header {
+      background-color: #e4edf7 !important;
+      font-weight: 600;
+    }
+
+    /* Active sticky columns retain the same report blue as their natural cells. */
+    .financial-report-grid .slick-cell.slick-cell-sticky,
+    .financial-report-grid .slick-header-column.slick-column-sticky {
+      background-color: #e4edf7 !important;
+    }
+
+    .financial-report-grid .slick-row.financial-summary-row .slick-cell {
+      background-color: #245486 !important;
+      border-color: #3d6994;
+      color: #fff !important;
+      font-weight: 700;
+    }
+
+    .financial-report-grid .slick-row.financial-summary-profit .slick-cell {
+      background-color: #173e68 !important;
+    }
+
+    .financial-report-grid .slick-row.financial-summary-row .financial-summary-label::before {
+      color: #f7a73f;
+      content: '↗';
+      display: inline-block;
+      margin-right: 6px;
+    }
+
+    .financial-report-legend {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 14px;
+      margin-top: 10px;
+      max-width: 1000px;
+      font-size: 0.85rem;
+    }
+
+    .financial-report-legend span {
+      align-items: center;
+      display: inline-flex;
+      gap: 5px;
+    }
+
+    .financial-report-legend-swatch {
+      border: 1px solid #c8d5e2;
+      display: inline-block;
+      height: 13px;
+      width: 13px;
+    }
+
+    .financial-report-legend-account,
+    .financial-report-legend-sticky {
+      background-color: #e4edf7;
+    }
+
+    .financial-report-legend-total {
+      background-color: #245486;
+    }
+
+    .financial-report-legend-intersection {
+      background-color: #173e68;
+    }
+
+    .financial-report-controls {
+      margin: 8px 0;
+      max-width: 1000px;
+    }
+  </style>
+</head>
+<body>
+  <h2 class="title">Example - Sticky Financial Report</h2>
+
+  <div class="financial-report-controls">
+    <button class="btn" type="button" data-test="toggle-subtitle" onclick="toggleSubTitle()">Toggle details</button>
+  </div>
+
+  <p id="exampleDetails" class="example-details" style="max-width:1000px;">
+    Account, Q1–Q4, and YTD use two-sided sticky columns. Total Revenue, Total Expenses,
+    and Net Profit use two-sided sticky rows and dock to the nearest vertical edge after they
+    have been seen.
+  </p>
+
+  <div id="myGrid" class="slick-container financial-report-grid"></div>
+
+  <div class="financial-report-legend">
+    <span><i class="financial-report-legend-swatch financial-report-legend-account"></i> left sticky column</span>
+    <span><i class="financial-report-legend-swatch financial-report-legend-total"></i> bottom sticky row</span>
+    <span><i class="financial-report-legend-swatch financial-report-legend-intersection"></i> sticky intersection</span>
+    <span><i class="financial-report-legend-swatch financial-report-legend-sticky"></i> sticky quarter</span>
+  </div>
+
+  <script src="../dist/browser/slick.core.js"></script>
+  <script src="../dist/browser/slick.interactions.js"></script>
+  <script src="../dist/browser/slick.grid.js"></script>
+  <script src="../dist/browser/slick.dataview.js"></script>
+  <script>
+    var MONTH_FIELDS = ['jan', 'feb', 'mar', 'apr', 'may', 'jun', 'jul', 'aug', 'sep', 'oct', 'nov', 'dec'];
+    var PERIOD_FIELDS = MONTH_FIELDS.concat(['q1', 'q2', 'q3', 'q4', 'ytd']);
+    var numberFormat = new Intl.NumberFormat('en-US');
+    var grid;
+    var dataView;
+    var columns;
+    var data;
+
+    function numberFormatter(_row, _cell, value) {
+      return numberFormat.format(Number(value));
+    }
+
+    function summaryAccountFormatter(_row, _cell, value, _column, item) {
+      return item && item.summaryKind
+        ? '<span class="financial-summary-label">' + value + '</span>'
+        : value;
+    }
+
+    function createPeriodColumn(id, name, sticky) {
+      var column = {
+        id: id,
+        name: name,
+        field: id,
+        cssClass: sticky ? 'financial-sticky-candidate' : 'financial-month-column',
+        headerCssClass: sticky ? 'financial-sticky-candidate-header' : '',
+        minWidth: 88,
+        resizable: true,
+        sortable: false,
+        width: 96,
+        formatter: numberFormatter
+      };
+      if (sticky) {
+        column.sticky = 'both';
+      }
+      return column;
+    }
+
+    function createRowFromMonths(id, account, months) {
+      var q1 = months.jan + months.feb + months.mar;
+      var q2 = months.apr + months.may + months.jun;
+      var q3 = months.jul + months.aug + months.sep;
+      var q4 = months.oct + months.nov + months.dec;
+      return Object.assign({ id: id, account: account }, months, { q1: q1, q2: q2, q3: q3, q4: q4, ytd: q1 + q2 + q3 + q4 });
+    }
+
+    function createFinancialRow(id, account, base, seed) {
+      var months = {};
+      MONTH_FIELDS.forEach(function (month, monthIndex) {
+        var seasonalFactor = 0.8 + ((seed * 19 + monthIndex * 13) % 43) / 100;
+        months[month] = Math.round(base * seasonalFactor);
+      });
+      return createRowFromMonths(id, account, months);
+    }
+
+    function createSummaryRow(id, account, source, factor, summaryKind, subtractExpenses) {
+      var months = {};
+      MONTH_FIELDS.forEach(function (month) {
+        var total = subtractExpenses
+          ? source[0][month] - source[1][month]
+          : source.reduce(function (sum, row) { return sum + row[month]; }, 0) * factor;
+        months[month] = Math.round(total);
+      });
+      var row = createRowFromMonths(id, account, months);
+      row.summaryKind = summaryKind;
+      return row;
+    }
+
+    function createData() {
+      var accounts = [
+        'Product A sales', 'Product B sales', 'Product C sales', 'License revenue',
+        'Service revenue', 'Support contracts', 'Training income', 'Consulting',
+        'Hosting fees', 'Hardware resale', 'Royalties', 'Interest income',
+        'Partner rebates', 'Marketplace sales', 'Data subscriptions', 'Maintenance renewals',
+        'Professional services', 'Implementation fees', 'Usage overages', 'Other operating income'
+      ];
+      var detailRows = accounts.map(function (account, index) {
+        return createFinancialRow('account-' + index, account, 3800 + index * 1275, index);
+      });
+      var totalRevenue = createSummaryRow('total-revenue', 'Total Revenue', detailRows, 1, 'revenue', false);
+      var totalExpenses = createSummaryRow('total-expenses', 'Total Expenses', detailRows, 0.69, 'expenses', false);
+      var netProfit = createSummaryRow('net-profit', 'Net Profit', [totalRevenue, totalExpenses], 1, 'profit', true);
+      var followOnDefinitions = [
+        ['capex-memo', 'Capex (memo)', 5200], ['headcount-cost', 'Headcount cost', 2850],
+        ['rnd-memo', 'R&D (memo)', 1900], ['grants-memo', 'Grants (memo)', 1500],
+        ['fx-gain-loss', 'FX gain/loss', 4700], ['provisions', 'Provisions', 5600]
+      ];
+      var followOnRows = followOnDefinitions.map(function (definition, index) {
+        return createFinancialRow(definition[0], definition[1], definition[2], accounts.length + index);
+      });
+      return detailRows.concat([totalRevenue, totalExpenses, netProfit], followOnRows);
+    }
+
+    function createColumns() {
+      var result = [{
+        id: 'account', name: 'Account', field: 'account', cssClass: 'financial-account-column',
+        headerCssClass: 'financial-account-header', minWidth: 160, sticky: 'both',
+        resizable: true, sortable: false, width: 190, formatter: summaryAccountFormatter
+      }];
+      result.push(createPeriodColumn('jan', 'Jan', false));
+      result.push(createPeriodColumn('feb', 'Feb', false));
+      result.push(createPeriodColumn('mar', 'Mar', false));
+      result.push(createPeriodColumn('q1', 'Q1', true));
+      result.push(createPeriodColumn('apr', 'Apr', false));
+      result.push(createPeriodColumn('may', 'May', false));
+      result.push(createPeriodColumn('jun', 'Jun', false));
+      result.push(createPeriodColumn('q2', 'Q2', true));
+      result.push(createPeriodColumn('jul', 'Jul', false));
+      result.push(createPeriodColumn('aug', 'Aug', false));
+      result.push(createPeriodColumn('sep', 'Sep', false));
+      result.push(createPeriodColumn('q3', 'Q3', true));
+      result.push(createPeriodColumn('oct', 'Oct', false));
+      result.push(createPeriodColumn('nov', 'Nov', false));
+      result.push(createPeriodColumn('dec', 'Dec', false));
+      result.push(createPeriodColumn('q4', 'Q4', true));
+      var ytd = createPeriodColumn('ytd', 'YTD', true);
+      ytd.cssClass = 'financial-ytd-column financial-sticky-candidate';
+      ytd.headerCssClass = 'financial-ytd-header financial-sticky-candidate-header';
+      result.push(ytd);
+      return result;
+    }
+
+    function toggleSubTitle() {
+      var details = document.getElementById('exampleDetails');
+      details.style.display = details.style.display === 'none' ? 'block' : 'none';
+      grid.resizeCanvas();
+    }
+
+    columns = createColumns();
+    data = createData();
+    dataView = new Slick.Data.DataView({
+      globalItemMetadataProvider: {
+        getRowMetadata: function (item) {
+          return item && item.summaryKind
+            ? { cssClasses: 'financial-summary-row financial-summary-' + item.summaryKind }
+            : null;
+        }
+      }
+    });
+
+    var options = {
+      enableCellNavigation: true,
+      enableColumnReorder: false,
+      enableTextSelectionOnCells: true,
+      gridHeight: 510,
+      rowHeight: 32,
+      docking: { maxColumnViewportWidthPercent: 60, maxRowViewportHeightPercent: 45 },
+      stickyRows: { both: ['total-revenue', 'total-expenses', 'net-profit'] }
+    };
+
+    grid = new Slick.Grid('#myGrid', dataView, columns, options);
+    window.grid = grid;
+
+    dataView.onRowCountChanged.subscribe(function () {
+      grid.updateRowCount();
+      grid.render();
+    });
+    dataView.onRowsChanged.subscribe(function (_e, args) {
+      grid.invalidateRows(args.rows);
+      grid.render();
+    });
+
+    dataView.setItems(data);
+  </script>
+</body>
+</html>

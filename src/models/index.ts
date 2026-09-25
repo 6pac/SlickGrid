@@ -13,6 +13,7 @@ export type * from './compositeEditorOption.interface.js';
 export type * from './contextMenuOption.interface.js';
 export type * from './core.interface.js';
 export type * from './cssDeclaration.interface.js';
+export type * from './docking.interface.js';
 export type * from './customTooltipOption.interface.js';
 export type * from './dataViewEvents.interface.js';
 export type * from './dataViewHints.interface.js';

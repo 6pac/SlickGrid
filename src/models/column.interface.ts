@@ -13,6 +13,7 @@ import type {
   HeaderButtonsOrMenu
 } from './index.js';
 import type { SlickGrid } from '../slick.grid.js';
+import type { DockingSide } from './docking.interface.js';
 
 type PathsToStringProps<T> = T extends string | number | boolean | Date ? [] : {
   [K in Extract<keyof T, string>]: [K, ...PathsToStringProps<T[K]>]
@@ -134,6 +135,9 @@ export interface Column<TData = any> {
   /** is the column hidden? */
   hidden?: boolean;
 
+  /** Permanently dock this column at the left or right edge of the grid viewport. */
+  pinned?: DockingSide | null;
+
   /** ID of the column, each column definition ID must be unique or else SlickGrid will throw an error. */
   id: number | string;
 
@@ -175,6 +179,9 @@ export interface Column<TData = any> {
 
   /** Is the column sortable? Goes with grid option "enableSorting: true". */
   sortable?: boolean;
+
+  /** Dock this column only after normal scrolling would clip it. */
+  sticky?: DockingSide | 'both' | boolean;
 
   /** Custom Tooltip that can ben shown to the column */
   toolTip?: string;

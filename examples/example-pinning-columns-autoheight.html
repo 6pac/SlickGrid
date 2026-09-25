@@ -1,0 +1,231 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+  <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <title>SlickGrid example 11: No vertical scrolling (autoHeight)</title>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css" />
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css" />
+  <style>
+    html,
+    body {
+      margin: 0;
+      padding: 0;
+      overflow: auto;
+    }
+
+    body {
+      font: 11px Helvetica, Arial, sans-serif;
+    }
+
+    #container,
+    #container2 {
+      margin: 10px;
+      border: solid 1px gray;
+      width: 480px;
+      background: white;
+    }
+
+    #description {
+      position: fixed;
+      top: 30px;
+      right: 30px;
+      width: 25em;
+    }
+
+    .slick-preheader-panel.slick-state-default.slick-header {
+      border-bottom: 0 !important;
+    }
+
+    .slick-preheader-panel .slick-header-columns,
+    .slick-preheader-panel .slick-header-column {
+      background-color: inherit;
+      border-bottom: 0 !important;
+    }
+  </style>
+</head>
+
+<body>
+  <h2 class="title">Example - Pinned Columns with Auto-Height</h2>
+  <div id="container" class="slick-container"></div>
+
+  <h2 class="title">Pinned Columns with Auto-Height and Header Grouping</h2>
+  <div id="container2" class="slick-container"></div>
+  <div id="description">
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Demonstrates:
+    </h2>
+    <ul>
+      <li>autoHeight:true grid option</li>
+    </ul>
+  </div>
+
+  <script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+
+  <script src="../dist/browser/slick.core.js"></script>
+  <script src="../dist/browser/slick.interactions.js"></script>
+  <script src="../dist/browser/slick.grid.js"></script>
+
+  <script>
+    function CreateAddlHeaderRow() {
+      // Pinning uses one shared pre-header panel, so render the complete group row once.
+      const preHeaderPanelElm = grid2.getPreHeaderPanel();
+      renderHeaderGroups(preHeaderPanelElm, 0, grid2.getColumns().length);
+
+      function renderHeaderGroups(preHeaderPanel, start, end) {
+        preHeaderPanel.innerHTML = '';
+        preHeaderPanel.classList.add("slick-header-columns");
+        preHeaderPanel.style.left = '0px';
+        preHeaderPanel.style.width = `${grid2.getHeadersWidth()}px`;
+        preHeaderPanel.parentElement.classList.add("slick-header");
+
+        let headerColumnWidthDiff = grid2.getHeaderColumnWidthDiff();
+        let m, header, lastColumnGroup = '', widthTotal = 0;
+        const columns = grid2.getColumns();
+
+        for (let i = start; i < end; i++) {
+          m = columns[i];
+          if (m) {
+            if (lastColumnGroup === m.columnGroup && i > start) {
+              widthTotal += m.width;
+              header.style.width = `${widthTotal - headerColumnWidthDiff}px`;
+              header.dataset.groupEnd = String(i);
+            } else {
+              widthTotal = m.width;
+              header = document.createElement('div');
+              header.className = 'ui-state-default slick-header-column';
+              header.innerHTML = `<span class="slick-column-name">${(m.columnGroup || '')}</span>`;
+              header.style.width = `${m.width - headerColumnWidthDiff}px`;
+              header.dataset.groupStart = String(i);
+              header.dataset.groupEnd = String(i);
+              preHeaderPanel.appendChild(header);
+            }
+            lastColumnGroup = m.columnGroup;
+          }
+        }
+      }
+
+      syncPinnedGroupHeaders();
+    }
+
+    let groupHeaderScrollLeft = 0;
+
+    function syncPinnedGroupHeaders(scrollLeft) {
+      if (scrollLeft !== undefined) {
+        groupHeaderScrollLeft = scrollLeft;
+      }
+
+      const preHeaderPanelElm = grid2.getPreHeaderPanel();
+      const leftBoundary = grid2.getOptions().pinning?.columns?.left;
+      const pinnedColumnBoundary = typeof leftBoundary === 'number' ? leftBoundary : -1;
+      let pinnedLeftWidth = 0;
+
+      if (pinnedColumnBoundary >= 0) {
+        for (let i = 0; i <= pinnedColumnBoundary; i++) {
+          const column = grid2.getColumns()[i];
+          if (!column?.hidden) {
+            pinnedLeftWidth += grid2.getHeaderColumn(i)?.offsetWidth || 0;
+          }
+        }
+      }
+
+      let pinnedMask = preHeaderPanelElm.querySelector('.slick-preheader-pinned-left-mask');
+      if (pinnedLeftWidth > 0) {
+        if (!pinnedMask) {
+          pinnedMask = document.createElement('div');
+          pinnedMask.className = 'slick-preheader-pinned-left-mask';
+          pinnedMask.style.position = 'absolute';
+          pinnedMask.style.left = '0';
+          pinnedMask.style.top = '0';
+          pinnedMask.style.bottom = '0';
+          pinnedMask.style.zIndex = '1';
+          pinnedMask.style.pointerEvents = 'none';
+          preHeaderPanelElm.appendChild(pinnedMask);
+        }
+        pinnedMask.style.width = `${pinnedLeftWidth}px`;
+        pinnedMask.style.backgroundColor = 'inherit';
+        pinnedMask.style.transform = `translateX(${groupHeaderScrollLeft}px)`;
+      } else {
+        pinnedMask?.remove();
+      }
+
+      preHeaderPanelElm.querySelectorAll('[data-group-start]').forEach((groupHeader) => {
+        const groupEnd = Number(groupHeader.dataset.groupEnd);
+        const isPinnedLeft = pinnedColumnBoundary >= 0 && groupEnd <= pinnedColumnBoundary;
+        groupHeader.style.zIndex = isPinnedLeft ? '2' : '';
+        groupHeader.style.transform = isPinnedLeft ? `translateX(${groupHeaderScrollLeft}px)` : '';
+      });
+    }
+
+    let grid;
+    let grid2;
+    let data = [];
+    let columns1 = [
+      { id: "title", name: "Title", field: "title", width: 100 },
+      { id: "duration", name: "Duration", field: "duration" },
+      { id: "%", name: "% Complete", field: "percentComplete" },
+      { id: "start", name: "Start", field: "start" },
+      { id: "finish", name: "Finish", field: "finish" },
+      { id: "effort-driven", name: "Effort Driven", field: "effortDriven" }
+    ];
+    let columns2 = [
+      { id: "title", name: "Title", field: "title", width: 110, minWidth: 110, cssClass: "cell-title", columnGroup: "Common Factor" },
+      { id: "duration", name: "Duration", field: "duration", columnGroup: "Common Factor" },
+      { id: "start", name: "Start", field: "start", minWidth: 60, columnGroup: "Period" },
+      { id: "finish", name: "Finish", field: "finish", minWidth: 60, columnGroup: "Period" },
+      { id: "%", defaultSortAsc: false, name: "% Complete", field: "percentComplete", width: 95, resizable: false, columnGroup: "Analysis" },
+      { id: "effort-driven", name: "Effort Driven", width: 90, minWidth: 20, maxWidth: 90, field: "effortDriven", columnGroup: "Analysis" }
+    ];
+
+    let options1 = {
+      editable: false,
+      enableAddRow: false,
+      enableCellNavigation: false,
+      autoHeight: true,
+      pinning: { columns: { left: 2 } }
+    };
+    let options2 = {
+      ...options1,
+      createPreHeaderPanel: true,
+      showPreHeaderPanel: true,
+    };
+
+    for (var i = 10; i-- > 0;) {
+      data[i] = {
+        title: "Task " + i,
+        duration: "5 days",
+        percentComplete: Math.round(Math.random() * 100),
+        start: "01/01/2009",
+        finish: "01/05/2009",
+        effortDriven: (i % 5 == 0)
+      };
+    }
+
+    grid = new Slick.Grid("#container", data, columns1, options1);
+    grid2 = new Slick.Grid("#container2", data, columns2, options2);
+    grid2.onColumnsDrag.subscribe(function (e, args) {
+      CreateAddlHeaderRow();
+    });
+    grid2.onScroll.subscribe(function (e, args) {
+      syncPinnedGroupHeaders(args.scrollLeft);
+    });
+    grid2.onColumnsResized.subscribe(function (e, args) {
+      CreateAddlHeaderRow();
+    });
+
+    grid2.onColumnsReordered.subscribe(function (e, args) {
+      CreateAddlHeaderRow();
+    });
+    grid2.onAfterUpdateColumns.subscribe(function (e, args) {
+      CreateAddlHeaderRow();
+    });
+
+    CreateAddlHeaderRow();
+  </script>
+</body>
+
+</html>

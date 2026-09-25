@@ -1,5 +1,9 @@
+import { createMouseLikeEvent } from '../support/drag';
+
 describe('Example - Column Span & Header Grouping', { retries: 1 }, () => {
+  const fullPreTitles = ['Common Factor', 'Period', 'Analysis'];
   const fullTitles = ['Title', 'Duration', 'Start', 'Finish', '% Complete', 'Effort Driven'];
+
   for (let i = 0; i < 30; i++) {
     fullTitles.push(`Mock${i}`);
   }
@@ -10,9 +14,12 @@ describe('Example - Column Span & Header Grouping', { retries: 1 }, () => {
     cy.get('h2 + ul > li').first().contains('column span');
   });
 
-  it('should have exact column titles', () => {
-    cy.get('#myGrid')
-      .find('.slick-header-columns')
+  it('should have exact Column Pre-Header & Column Header Titles in the grid', () => {
+    cy.get('.slick-header-columns:nth(0)')
+      .children('.slick-header-column')
+      .each(($child, index) => expect($child.text()).to.eq(fullPreTitles[index]));
+
+    cy.get('.slick-header-columns:nth(1)')
       .children()
       .each(($child, index) => expect($child.text()).to.eq(fullTitles[index]));
   });
@@ -47,7 +54,7 @@ describe('Example - Column Span & Header Grouping', { retries: 1 }, () => {
 
   it('should hide Finish while keeping it in getColumns and preserve the original colspan indexes', () => {
     cy.get('[data-test="hide-finish-column"]').click();
-    cy.get('#myGrid .slick-header-column').should('have.length', 5);
+    cy.get('#myGrid .slick-header-columns-left > .slick-header-column').should('have.length', 5);
     cy.get('[data-row=1] > .slick-cell.l1.r3').should('contain', '5 days');
     cy.get('[data-row=1] > .slick-cell.l4.r4').contains(/\d+$/);
     cy.get('[data-row=1] > .slick-cell.l5.r5').contains(/(true|false)/);
@@ -63,20 +70,33 @@ describe('Example - Column Span & Header Grouping', { retries: 1 }, () => {
   });
 
   describe('Basic Key Navigations', () => {
-    it('should start at Task 1 on Duration colspan 5 days and type "PageDown" key once and be on Task 20 with full colspan', () => {
+    const colspanCellSelector = (row: number) => row % 2 === 0 ? '.slick-cell.l0.r5' : '.slick-cell.l1.r3';
+
+    const getPageRow = (pageCount: number) => cy.window().then((win) => {
+      const grid = (win as any).grid;
+      return 1 + pageCount * grid.numVisibleRows;
+    });
+
+    it('should move one computed page down from Task 1 and preserve the target row colspan', () => {
       cy.get('[data-row=1] > .slick-cell.l1.r3').as('active_cell').click();
       cy.get('@active_cell').type('{pagedown}');
-      cy.get('[data-row=20] > .slick-cell.l0.r5.active').should('have.length', 1);
+      getPageRow(1).then((expectedRow) => {
+        cy.get(`[data-row=${expectedRow}] > ${colspanCellSelector(expectedRow)}.active`).should('have.length', 1);
+      });
     });
 
-    it('should start at Task 1 on Duration colspan 5 days and type "PageDown" key 2x times and be on Task 39 with colspan of 3', () => {
+    it('should move two computed pages down from Task 1 and preserve the target row colspan', () => {
       cy.get('[data-row=1] > .slick-cell.l1.r3').as('active_cell').click();
       cy.get('@active_cell').type('{pagedown}{pagedown}');
-      cy.get('[data-row=39] > .slick-cell.l1.r3.active').should('have.length', 1);
+      getPageRow(2).then((expectedRow) => {
+        cy.get(`[data-row=${expectedRow}] > ${colspanCellSelector(expectedRow)}.active`).should('have.length', 1);
+      });
     });
 
-    it('should start at Task 39 on Duration colspan 5 days and type "PageUp" key 2x times and be on Task 1 with full colspan', () => {
-      cy.get('[data-row=39] > .slick-cell.l1.r3').as('active_cell').click();
+    it('should move two computed pages up and return to Task 1', () => {
+      getPageRow(2).then((startRow) => {
+        cy.get(`[data-row=${startRow}] > ${colspanCellSelector(startRow)}`).as('active_cell').click();
+      });
       cy.get('@active_cell').type('{pageup}{pageup}');
       cy.get('[data-row=1] > .slick-cell.l1.r3.active').should('have.length', 1);
     });
@@ -109,6 +129,186 @@ describe('Example - Column Span & Header Grouping', { retries: 1 }, () => {
       cy.get('[data-row=1] > .slick-cell.l1.r3').as('active_cell').click();
       cy.get('@active_cell').type('{downarrow}{downarrow}{uparrow}{uparrow}');
       cy.get('[data-row=1] > .slick-cell.l1.r3.active').should('have.length', 1);
+    });
+  });
+
+  describe('Pinned colspan rendering', () => {
+    const hostSelector =
+      '[data-row=1] > .slick-pinned-left-cells > .slick-cell-colspan-crossing-docking:not(.slick-cell-colspan-part)';
+    const fragmentSelector = '[data-row=1] > .slick-scrolling-cells > .slick-cell-colspan-part';
+
+    const applyPinning = () => {
+      cy.get('#pinnedLeftColumns').clear().type('1');
+      cy.get('#setPinning').click();
+    };
+
+    it('should clip a colspan host to its own band and continue it in the next one', () => {
+      cy.reload();
+      applyPinning();
+
+      // The host stops at the pinned edge instead of painting across the scrolling band.
+      cy.get(hostSelector)
+        .should('exist')
+        .then(($host) => {
+          const host = $host[0].getBoundingClientRect();
+          const leftRegion = $host[0].parentElement!.getBoundingClientRect();
+          expect(host.right, 'host is clipped to the pinned band').to.be.at.most(leftRegion.right + 1);
+        });
+
+      cy.get(fragmentSelector).should('have.length', 1);
+
+      // The continuation picks up exactly where the host stops, and carries a copy of the
+      // content shifted by what the host already showed, so the text reads as one cell.
+      cy.get(hostSelector).then(($host) => {
+        const host = $host[0].getBoundingClientRect();
+        cy.get(fragmentSelector).then(($fragment) => {
+          const fragment = $fragment[0].getBoundingClientRect();
+          expect(fragment.left, 'continuation starts at the host edge').to.be.closeTo(host.right, 1.5);
+
+          const content = $fragment[0].querySelector('.slick-cell-colspan-part-content') as HTMLElement;
+          expect(content, 'continuation carries a copy of the content').to.exist;
+          expect(content.textContent).to.eq($host[0].textContent);
+          // The copy starts where the host's own text starts, so the glyphs line up
+          // across the boundary rather than restarting.
+          const hostTextLeft = host.left + parseFloat(getComputedStyle($host[0]).paddingLeft);
+          expect(content.getBoundingClientRect().left, 'the copy is aligned with the host text').to.be.closeTo(
+            hostTextLeft,
+            1.5
+          );
+        });
+      });
+    });
+
+    it('should not cover the scrolling columns with a colspan host', () => {
+      cy.reload();
+      applyPinning();
+
+      cy.get('#myGrid .slick-docking-horizontal-scroller').scrollTo(260, 0, { ensureScrollable: false });
+
+      // Every cell of the scrolling band stays hit-testable: nothing from the pinned band
+      // is painted on top of it.
+      cy.get('[data-row=0] > .slick-scrolling-cells > .slick-cell')
+        .filter(':visible')
+        .last()
+        .then(($cell) => {
+          const rect = $cell[0].getBoundingClientRect();
+          const topmost = $cell[0].ownerDocument.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height / 2);
+          expect($cell[0].contains(topmost) || topmost === $cell[0], 'scrolling cell is on top').to.eq(true);
+        });
+    });
+
+    it('should apply and clear the selection class on the colspan fragment together with its host', () => {
+      cy.reload();
+      applyPinning();
+
+      // The fragment is an aria-hidden presentational continuation rendered behind its host
+      // cell, so it is deliberately not actionable on its own.
+      cy.get(fragmentSelector).click({ scrollBehavior: false });
+      cy.get(hostSelector).should('have.class', 'selected');
+      cy.get(fragmentSelector).should('have.class', 'selected');
+
+      cy.get('[data-row=3] > .slick-scrolling-cells > .slick-cell.l4').click();
+      cy.get(hostSelector).should('not.have.class', 'selected');
+      cy.get(fragmentSelector).should('not.have.class', 'selected');
+    });
+
+    it('should keep the active colspan background continuous after resizing Start', () => {
+      cy.reload();
+      applyPinning();
+
+      // The fragment is an aria-hidden presentational continuation rendered behind its host
+      // cell, so it is deliberately not actionable on its own.
+      cy.get(fragmentSelector).click({ scrollBehavior: false });
+      cy.get(hostSelector).should('have.class', 'active');
+      cy.get(fragmentSelector).should('have.class', 'active').then(($fragment) => {
+        const fragment = $fragment[0];
+        const initialWidth = fragment.getBoundingClientRect().width;
+        const fragmentActiveStyle = getComputedStyle(fragment, '::after');
+        expect(getComputedStyle(fragment).boxShadow).to.eq('none');
+        expect(fragmentActiveStyle.borderLeftStyle).to.eq('none');
+        expect(fragmentActiveStyle.borderRightStyle).to.eq('solid');
+
+        cy.get(hostSelector).should(($host) => {
+          const hostActiveStyle = getComputedStyle($host[0], '::after');
+          expect(getComputedStyle($host[0]).boxShadow).to.eq('none');
+          expect(hostActiveStyle.borderLeftStyle).to.eq('solid');
+          // The edge the host shares with its continuation is not drawn, so the outline
+          // reads as one cell rather than two boxes meeting at the pinned boundary.
+          expect(hostActiveStyle.borderRightStyle).to.eq('none');
+        });
+
+        cy.window().then((win) => {
+          const grid = (win as any).grid;
+          const header = grid.getHeaderColumn('start') as HTMLElement;
+          const handle = header.querySelector('.slick-resizable-handle') as HTMLElement;
+          const handleRect = handle.getBoundingClientRect();
+          const startX = handleRect.left + handleRect.width / 2;
+          const y = handleRect.top + handleRect.height / 2;
+          const targetX = startX + 150;
+
+          handle.dispatchEvent(createMouseLikeEvent(win, 'mousedown', startX, y));
+          win.document.body.dispatchEvent(createMouseLikeEvent(win, 'mousemove', targetX, y));
+          win.document.body.dispatchEvent(createMouseLikeEvent(win, 'mouseup', targetX, y, 0));
+        });
+
+        cy.get(hostSelector).should('have.class', 'active');
+        cy.get(fragmentSelector)
+          .should('have.class', 'active')
+          .should(($resizedFragment) => {
+            expect($resizedFragment[0].getBoundingClientRect().width).to.be.greaterThan(initialWidth + 100);
+          });
+      });
+    });
+
+    it('should not draw a column separator where the span crosses the pinned boundary', () => {
+      cy.reload();
+      applyPinning();
+
+      // This example uses the alpine theme, which draws no cell separator at all, so add
+      // the stock one back to see what a themed grid would show at the boundary.
+      cy.document().then((doc) => {
+        const style = doc.createElement('style');
+        style.textContent = '.slick-cell { border-right: 1px dotted silver; }';
+        doc.head.appendChild(style);
+      });
+
+      cy.get(hostSelector).should(($host) => {
+        const host = getComputedStyle($host[0]);
+        expect(host.borderRightWidth, 'the separator keeps its width, so nothing moves').to.eq('1px');
+        expect(host.borderRightColor, 'the shared edge is not painted').to.eq('rgba(0, 0, 0, 0)');
+      });
+
+      // The far end of the span and an ordinary cell both keep the separator.
+      cy.get(fragmentSelector).should(($fragment) => {
+        expect(getComputedStyle($fragment[0]).borderRightColor).to.eq('rgb(192, 192, 192)');
+      });
+      cy.get('[data-row=1] > .slick-scrolling-cells > .slick-cell.l4').should(($cell) => {
+        expect(getComputedStyle($cell[0]).borderRightColor).to.eq('rgb(192, 192, 192)');
+      });
+    });
+
+    it('should report one cell for a click anywhere on a span that crosses the boundary', () => {
+      cy.reload();
+      applyPinning();
+
+      cy.window().then((win: any) => {
+        const clicks: Array<{ row: number; cell: number }> = [];
+        win.grid.onClick.subscribe((_e: any, args: any) => clicks.push({ row: args.row, cell: args.cell }));
+        win.__spanClicks = clicks;
+      });
+
+      // Both halves of the span belong to the same cell, whichever side is clicked.
+      cy.get(fragmentSelector).click({ scrollBehavior: false });
+      cy.get(hostSelector).click({ scrollBehavior: false });
+
+      cy.window().should((win: any) => {
+        expect(win.__spanClicks).to.have.length(2);
+        expect(win.__spanClicks[0]).to.deep.eq({ row: 1, cell: 1 });
+        expect(win.__spanClicks[1]).to.deep.eq({ row: 1, cell: 1 });
+      });
+      cy.window().should((win: any) => {
+        expect(win.grid.getActiveCell()).to.include({ row: 1, cell: 1 });
+      });
     });
   });
 });

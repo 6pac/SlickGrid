@@ -1,0 +1,567 @@
+<!DOCTYPE HTML>
+<html>
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <title>SlickGrid example: Pinned Columns and Rows</title>
+  <link rel="stylesheet" href="../dist/styles/css/slick.columnpicker.css" type="text/css" media="screen" charset="utf-8"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <style>
+    .cell-title {
+      font-weight: bold;
+    }
+
+    .cell-effort-driven {
+      justify-content: center;
+    }
+
+    .cell-selection {
+      border-right-color: silver;
+      border-right-style: solid;
+      background: #f5f5f5;
+      color: gray;
+      text-align: right;
+      font-size: 10px;
+    }
+
+    .slick-row.selected .cell-selection {
+      background-color: transparent; /* show default selected row background */
+    }
+
+    .slick-headerrow-column {
+      background: #f1f1f1;
+      text-overflow: clip;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+
+    .slick-headerrow-column input {
+      margin: 0;
+      padding: 0;
+      width: 100%;
+      height: 24px;
+      -moz-box-sizing: border-box;
+      box-sizing: border-box;
+    }
+
+    .slick-column-pinned-left-edge {
+      border-right: 1px solid #999;
+    }
+
+    .slick-row-pinned-top:last-child .slick-cell {
+      border-bottom: 1px solid #999;
+    }
+    .sgi-search:hover {
+      cursor: pointer;
+      color: darkcyan;
+    }
+  </style>
+</head>
+<body>
+<h2 class="title">Example - Pinned Columns & Rows</h2>
+<div style="position:relative">
+  <div style="width:800px;">
+    <div class="grid-header" style="width:100%">
+      <label>SlickGrid</label>
+      <span style="float:right" class="sgi sgi-search" title="Toggle search panel"
+            onclick="toggleFilterRow()"></span>
+    </div>
+    <div id="myGrid" class="slick-container" style="width:100%;height:350px;"></div>
+    <div id="pager" style="width:100%;height:20px;"></div>
+  </div>
+
+  <div class="options-panel" style="left:900px; width:420px;">
+    <h2>
+      <a href="/examples/index.html" style="text-decoration: none; font-size: 22px">&#x2302;</a>
+      Search:
+    </h2>
+    <hr/>
+    <div style="padding:6px;">
+      <label style="width:200px;float:left">Pinned Rows (top/bottom):</label>
+      <input type=text id="pinnedTopRows" style="width:45px;" value="2" title="Number of rows pinned at the top">
+      <input type=text id="pinnedBottomRows" style="width:45px;" value="1" title="Number of rows pinned at the bottom">
+      <br>
+      <label style="width:200px;float:left">Pinned Columns (left/right):</label>
+      <input type=text id="pinnedLeftColumns" style="width:45px;" value="2" title="Inclusive zero-based left boundary">
+      <input type=text id="pinnedRightColumns" style="width:45px;" value="1" title="Number of columns pinned at the right">
+      <button id="setPinning">Apply</button>
+      <br>
+      <small>Rows stay pinned at the top/bottom; columns stay pinned at the left/right.</small>
+      <br/><br/>
+      <button id="btnSelectRows">Select first 10 rows</button>
+
+      <br/>
+
+      <h2>Demonstrates:</h2>
+      <ul>
+        <li>a filtered Model (DataView) as a data source instead of a simple array</li>
+        <li>grid reacting to model events (onRowCountChanged, onRowsChanged)</li>
+        <li>
+          <b>FAST</b> DataView recalculation and <b>real-time</b> grid updating in response to data changes.<br/>
+          The grid holds <b>50'000</b> rows, yet you are able to sort, filter, scroll, navigate and edit as if it had 50
+          rows.
+        </li>
+        <li>adding new rows, bidirectional sorting</li>
+        <li>column options: cannotTriggerInsert</li>
+        <li>events: onCellChange, onAddNewRow, onKeyDown, onSelectedRowsChanged, onSort</li>
+        <li><font color=red>NOTE:</font> all filters are immediately applied to new/edited rows</li>
+        <li>Handling row selection against model changes.</li>
+        <li>Paging.</li>
+        <li>inline filter panel</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<div id="inlineFilterPanelL" style="display:none;background:#f6f6f6;padding:3px;color:black;">
+  Show tasks with title including <input type="text" id="txtSearch2">
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
+<script src="../dist/browser/slick.formatters.js"></script>
+<script src="../dist/browser/plugins/slick.rowselectionmodel.js"></script>
+<script src="../dist/browser/slick.dataview.js"></script>
+<script src="../dist/browser/controls/slick.pager.js"></script>
+<script src="../dist/browser/controls/slick.columnpicker.js"></script>
+
+<script>
+var dataView;
+var grid;
+var data = [];
+
+var columns = [
+  {
+    id: "sel",
+    name: "#",
+    field: "num",
+    behavior: "select",
+    cssClass: "cell-selection",
+    width: 40,
+    cannotTriggerInsert: true,
+    resizable: false,
+    unselectable: true
+  },
+  {
+    id: "title",
+    name: "Title",
+    field: "title",
+    cssClass: "cell-title",
+    editor: Slick.Editors.Text,
+    validator: requiredFieldValidator,
+    sortable: true
+  },
+  {
+    id: "duration",
+    name: "Duration",
+    field: "duration",
+    editor: Slick.Editors.Text,
+    sortable: true
+  },
+  {
+    id: "%",
+    name: "% Complete",
+    field: "percentComplete",
+    resizable: false,
+    width: 80,
+    formatter: Slick.Formatters.PercentComplete,
+    editor: Slick.Editors.PercentComplete,
+    sortable: true
+  },
+  {
+    id: "start",
+    name: "Start",
+    field: "start",
+    editor: Slick.Editors.Date,
+    sortable: true
+  },
+  {
+    id: "finish",
+    name: "Finish",
+    field: "finish",
+    editor: Slick.Editors.Date,
+    sortable: true
+  },
+  {
+    id: "effort-driven",
+    name: "Effort Driven",
+    cssClass: "cell-effort-driven",
+    field: "effortDriven",
+    formatter: Slick.Formatters.Checkmark,
+    editor: Slick.Editors.Checkbox,
+    cannotTriggerInsert: true,
+    sortable: true
+  },
+  {
+    id: "title1",
+    name: "Title1",
+    field: "title1",
+    cssClass: "cell-title",
+    editor: Slick.Editors.Text,
+    validator: requiredFieldValidator,
+    sortable: true
+  },
+  {
+    id: "title2",
+    name: "Title2",
+    field: "title2",
+    cssClass: "cell-title",
+    editor: Slick.Editors.Text,
+    validator: requiredFieldValidator,
+    sortable: true
+  },
+  {
+    id: "title3",
+    name: "Title3",
+    field: "title3",
+    cssClass: "cell-title",
+    editor: Slick.Editors.Text,
+    validator: requiredFieldValidator,
+    sortable: true
+  },
+  {
+    id: "title4",
+    name: "Title4",
+    field: "title4",
+    cssClass: "cell-title",
+    editor: Slick.Editors.Text,
+    validator: requiredFieldValidator,
+    sortable: true
+  }
+];
+
+var columnFilters = {};
+
+var options = {
+  editable: true,
+  // This example demonstrates permanent row/column pinning. Keep the add-new
+  // row disabled so it cannot appear as an empty row below the bottom pin.
+  enableAddRow: false,
+  enableCellNavigation: true,
+  asyncEditorLoading: true,
+  forceFitColumns: false,
+  autoEdit: false,
+  headerRowHeight: 35,
+  topPanelHeight: 25,
+  pinning: {
+    columns: { left: 2, right: 1 },
+    rows: { top: [0, 1], bottom: [49999] }
+  },
+  showHeaderRow: true,
+  syncColumnCellResize: false
+};
+
+var sortcol = "title";
+var sortdir = 1;
+var searchString = "";
+
+function requiredFieldValidator(value) {
+  if (value == null || value == undefined || !value.length) return {
+    valid: false,
+    msg: "This is a required field"
+  };
+  else
+    return {
+      valid: true,
+      msg: null
+    };
+}
+
+function updateHeaderRow() {
+  for (var i = 0; i < columns.length; i++) {
+    if (columns[i].id !== "selector") {
+      var header = grid.getHeaderRowColumn(columns[i].id);
+      header.innerHTML = '';
+
+      const filterInput = document.createElement('input');
+      filterInput.dataset.columnid = columns[i].id;
+      filterInput.value = columnFilters[columns[i].id] || '';
+      header.appendChild(filterInput);
+    }
+  }
+}
+
+function myFilter(item) {
+  for (var columnId in columnFilters) {
+    if (columnId !== undefined && columnFilters[columnId] !== "") {
+      var c = grid.getColumns()[grid.getColumnIndex(columnId)];
+      if (!item[c.field].includes(columnFilters[columnId])) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+function percentCompleteSort(a, b) {
+  return a["percentComplete"] - b["percentComplete"];
+}
+
+function comparer(a, b) {
+  var x = a[sortcol],
+    y = b[sortcol];
+  return (x == y ? 0 : (x > y ? 1 : -1));
+}
+
+function addItem(newItem, columnDef) {
+  var item = {
+    "num": data.length,
+    "id": "new_" + (Math.round(Math.random() * 10000)),
+    "title": "New task",
+    "duration": "1 day",
+    "percentComplete": 0,
+    "start": "01/01/2009",
+    "finish": "01/01/2009",
+    "effortDriven": false
+  };
+  Slick.Utils.extend(item, newItem);
+  dataView.addItem(item);
+}
+
+// Rows are pinned by index, so a filter that shortens the data would leave the bottom
+// references pointing past the end of the set and the band would silently disappear.
+// Recompute both edges whenever the row count changes.
+function refreshPinnedRows() {
+  var pinnedRows = (grid.getOptions().pinning || {}).rows || {};
+  var topCount = (pinnedRows.top || []).length;
+  var bottomCount = (pinnedRows.bottom || []).length;
+  if (!topCount && !bottomCount) {
+    return;
+  }
+  var nextTop = getPinnedRowRefs(topCount, false);
+  var nextBottom = getPinnedRowRefs(bottomCount, true);
+  if (String(nextTop) === String(pinnedRows.top || []) && String(nextBottom) === String(pinnedRows.bottom || [])) {
+    return;
+  }
+  // Keep the columns as they are: re-running setColumns() here would rebuild the
+  // header-row filter inputs while someone is still typing in one.
+  grid.setOptions({ pinning: { rows: { top: nextTop, bottom: nextBottom } } }, false, true);
+}
+
+function getPinnedRowRefs(count, bottom) {
+  var rowCount = dataView ? dataView.getLength() : data.length;
+  var start = bottom ? Math.max(0, rowCount - count) : 0;
+  var refs = [];
+  for (var row = 0; row < count && start + row < rowCount; row++) {
+    refs.push(start + row);
+  }
+  return refs;
+}
+
+
+function toggleFilterRow() {
+  grid.setTopPanelVisibility(!grid.getOptions().showTopPanel);
+}
+
+document.addEventListener("DOMContentLoaded", function() {
+  // prepare the data
+  for (var i = 0; i < 50000; i++) {
+    var d = (data[i] = {});
+
+    d["id"] = "id_" + i;
+    d["num"] = i;
+    d["title"] = "Task " + i;
+    d["duration"] = "5 days";
+    d["percentComplete"] = Math.round(Math.random() * 100);
+    d["start"] = "01/01/2009";
+    d["finish"] = "01/05/2009";
+    d["effortDriven"] = (i % 5 == 0);
+    d["title1"] = i;
+    d["title2"] = i;
+    d["title3"] = i;
+    d["title4"] = i;
+  }
+
+  dataView = new Slick.Data.DataView();
+  grid = new Slick.Grid("#myGrid", dataView, columns, options);
+  grid.setSelectionModel(new Slick.RowSelectionModel());
+
+  var pager = new Slick.Controls.Pager(dataView, grid, "#pager");
+  var columnpicker = new Slick.Controls.ColumnPicker(columns, grid, options);
+
+    // move the filter panel defined in a hidden div into an inline secondary grid header row
+    var topPanel = grid.getTopPanel();
+
+    const topPanelLeftElm = document.querySelector("#inlineFilterPanelL");
+    topPanel.appendChild(topPanelLeftElm);
+    topPanelLeftElm.style.display = 'block';
+
+  grid.onCellChange.subscribe(function (e, args) {
+    dataView.updateItem(args.item.id, args.item);
+  });
+
+  grid.onAddNewRow.subscribe(function (e, args) {
+    var item = {
+      "num": data.length,
+      "id": "new_" + (Math.round(Math.random() * 10000)),
+      "title": "New task",
+      "duration": "1 day",
+      "percentComplete": 0,
+      "start": "01/01/2009",
+      "finish": "01/01/2009",
+      "effortDriven": false
+    };
+    Slick.Utils.extend(item, args.item);
+    dataView.addItem(item);
+  });
+
+  grid.onKeyDown.subscribe(function (e) {
+    // select all rows on ctrl-a
+    if (e.which != 65 || !e.ctrlKey) return false;
+
+    var rows = [];
+
+    for (var i = 0; i < dataView.getLength(); i++) {
+      rows.push(i);
+    }
+
+    grid.setSelectedRows(rows);
+    e.preventDefault();
+  });
+
+  grid.onMouseEnter.subscribe(function (e) {
+    var cell = this.getCellFromEvent(e);
+    if (cell) {
+      this.setSelectedRows([cell.row]);
+    }
+    e.preventDefault();
+  });
+
+  grid.onMouseLeave.subscribe(function (e) {
+    this.setSelectedRows([]);
+    e.preventDefault();
+  });
+
+  grid.onSort.subscribe(function (e, args) {
+    sortdir = args.sortAsc ? 1 : -1;
+    sortcol = args.sortCol.field;
+
+    // using native sort with comparer
+    // preferred method but can be very slow in IE with huge datasets
+    dataView.sort(comparer, args.sortAsc);
+  });
+
+  // wire up model events to drive the grid
+  dataView.onRowCountChanged.subscribe(function (e, args) {
+    grid.updateRowCount();
+    refreshPinnedRows();
+    grid.render();
+  });
+
+  dataView.onRowsChanged.subscribe(function (e, args) {
+    grid.invalidateRows(args.rows);
+    grid.render();
+  });
+
+  dataView.onPagingInfoChanged.subscribe(function (e, pagingInfo) {
+    // Do not let the show-all paging state re-enable the add-new row and leave
+    // an extra blank row below the pinned bottom rows.
+    var options = grid.getOptions();
+    if (options.enableAddRow === false)
+      return;
+
+    var isLastPage = pagingInfo.pageSize * (pagingInfo.pageNum + 1) - 1 >= pagingInfo.totalRows;
+    var enableAddRow = isLastPage || pagingInfo.pageSize == 0;
+
+    if (options.enableAddRow != enableAddRow) grid.setOptions({
+      enableAddRow: enableAddRow
+    });
+  });
+
+  function filterInputHandler(e) {
+    const inputFilter = e.target;
+    const columnId = inputFilter.dataset.columnid;
+    if (columnId != null) {
+      columnFilters[columnId] = (inputFilter.value || '').trim();
+      dataView.refresh();
+    }
+  };
+
+  const headerRow = grid.getHeaderRow();
+  const headerRowElms = Array.isArray(headerRow) ? headerRow : [headerRow];
+  headerRowElms.forEach(headerRowElm => headerRowElm.addEventListener('change', filterInputHandler));
+  headerRowElms.forEach(headerRowElm => headerRowElm.addEventListener('keyup', filterInputHandler));
+
+  grid.onColumnsReordered.subscribe(function (e, args) {
+    updateHeaderRow();
+  });
+
+  grid.onColumnsResized.subscribe(function (e, args) {
+    updateHeaderRow();
+  });
+
+  // wire up the search textbox to apply the filter to the model
+  document.querySelectorAll("#txtSearch,#txtSearch2").forEach(elm => elm.addEventListener('keyup', (e) => {
+    Slick.GlobalEditorLock.cancelCurrentEdit();
+
+    // clear on Esc
+    if (e.which == 27) e.target.value = '';
+
+    columnFilters['title'] = (e.target.value || '').trim();
+    updateFilter();
+    dataView.refresh();
+  }));
+
+  function updateFilter() {
+    dataView.setFilterArgs({
+      percentCompleteThreshold: percentCompleteThreshold,
+      searchString: searchString
+    });
+    dataView.refresh();
+  }
+
+  document.querySelector("#btnSelectRows").addEventListener('click', function () {
+    if (!Slick.GlobalEditorLock.commitCurrentEdit()) {
+      return;
+    }
+    var rows = [];
+
+    for (var i = 0; i < 10 && i < dataView.getLength(); i++) {
+      rows.push(i);
+    }
+    grid.setSelectedRows(rows);
+  });
+
+  // initialize the model after all the events have been hooked up
+  dataView.beginUpdate();
+  dataView.setItems(data);
+  dataView.setFilter(myFilter);
+  dataView.endUpdate();
+
+  // if you don't want the items that are not visible (due to being filtered out
+  // or being on a different page) to stay selected, pass 'false' to the second arg
+  dataView.syncGridSelection(grid, true);
+
+  updateHeaderRow();
+
+  document.querySelector('#setPinning').addEventListener('click', () => {
+    var topRowCount = Math.max(0, parseInt(document.querySelector('#pinnedTopRows').value) || 0);
+    var bottomRowCount = Math.max(0, parseInt(document.querySelector('#pinnedBottomRows').value) || 0);
+    var leftColumnBoundary = parseInt(document.querySelector('#pinnedLeftColumns').value);
+    var rightColumnCount = Math.max(0, parseInt(document.querySelector('#pinnedRightColumns').value) || 0);
+
+    grid.setOptions({
+      pinning: {
+        columns: {
+          left: Number.isFinite(leftColumnBoundary) && leftColumnBoundary >= 0 ? leftColumnBoundary : [],
+          right: rightColumnCount > 0 ? rightColumnCount : []
+        },
+        rows: {
+          top: getPinnedRowRefs(topRowCount, false),
+          bottom: getPinnedRowRefs(bottomRowCount, true)
+        }
+      }
+    });
+    updateHeaderRow();
+  });
+});
+</script>
+
+</body>
+</html>
