@@ -223,8 +223,10 @@
 }
 
 .slick-docking-overlay {
-  position: absolute;
-  overflow: hidden;
+  position: sticky;
+  top: 0;
+  height: 0;
+  overflow: visible;
   z-index: 5;
   pointer-events: none;
 }

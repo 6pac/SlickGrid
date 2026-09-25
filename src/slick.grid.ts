@@ -132,7 +132,6 @@ const SelectionUtils = IIFE_ONLY ? Slick.SelectionUtils : SelectionUtils_;
 const COLUMN_AUTOSCROLL_DISTANCE_PX = 10;
 const COLUMN_AUTOSCROLL_INTERVAL_MS = 30;
 const DEFAULT_DOCKING_SCROLLBAR_HEIGHT = 15;
-const DEFAULT_DOCKING_OVERLAY_SCROLLBAR_WIDTH = 8;
 const RESIZE_AUTOSCROLL_BROWSER_EDGE_PX = 1;
 const Draggable = IIFE_ONLY ? Slick.Draggable : Draggable_;
 const MouseWheel = IIFE_ONLY ? Slick.MouseWheel : MouseWheel_;
@@ -8270,7 +8269,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (this._dockingOverlay) {
         this._dockingOverlay.style.transform = translateX;
       }
-      this.updateDockingOverlayClip(x);
       this.applyDockingProxyScrollOffsets(x);
     }
 
@@ -10156,7 +10154,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /** Create the row overlay once for a configured row-docking grid. */
   protected ensureDockingOverlay(): HTMLDivElement {
-    this._dockingOverlay ??= Utils.createDomElement('div', { className: 'slick-docking-overlay', role: 'presentation' }, this._contentRoot);
+    if (!this._dockingOverlay) {
+      this._dockingOverlay = Utils.createDomElement('div', { className: 'slick-docking-overlay', role: 'presentation' });
+      this._viewportNode.insertBefore(this._dockingOverlay, this._canvasNode);
+    }
     if (this.initialized) {
       this.bindDockingOverlayEvents();
       if (this._options.enableMouseWheelScrollHandler && !this.dockingOverlayMouseWheelBound) {
@@ -10832,7 +10833,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return;
     }
     const layout = this.rowDockingLayout;
-    const signature = `${layout.revision}:${layout.topHeight}:${layout.bottomHeight}:${this.scrollLeft}:${this._dockingOverlay.clientHeight}`;
+    const signature = `${layout.revision}:${layout.topHeight}:${layout.bottomHeight}:${this.scrollLeft}:${this._viewportNode.clientHeight}`;
     Object.entries(this.rowsCache).forEach(([rowId, cacheEntry]) => {
       const row = Number(rowId);
       const rowNode = cacheEntry.rowNode?.[0];
@@ -10975,7 +10976,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (rowDocking?.band === 'top') {
       top = rowDocking.offset;
     } else if (rowDocking?.band === 'bottom') {
-      const viewportHeight = this._dockingOverlay?.clientHeight || this._viewportScrollContainerY?.clientHeight || this.viewportH;
+      const viewportHeight = this._viewportScrollContainerY?.clientHeight || this.viewportH;
       // Anchor the bottom band to the bottom of the viewport; enforceMinCenterRowBudget()
       // grows the container when the bands would leave too little room.
       const bottomStart = Math.max(this.rowDockingLayout.topHeight, viewportHeight - this.rowDockingLayout.bottomHeight);
@@ -11040,55 +11041,24 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-   * Size the non-scrolling docked-row layer to the full canvas width.
-   *
-   * The layer itself receives the horizontal `-scrollLeft` transform used by
-   * the dedicated scrollbar, so a viewport-width clipping box would expose a
-   * blank strip at the trailing edge. Its viewport is the clipping boundary.
+   * Size the sticky docked-row layer to the full canvas width without taking
+   * layout height. The viewport clips its horizontal overflow and paints its
+   * native scrollbar above the layer.
    */
   protected updateDockingOverlayDimensions(): void {
     if (!this._dockingOverlay || !this._viewportNode) {
       return;
     }
-    this._dockingOverlay.style.top = `${this._viewportNode.offsetTop}px`;
-    // Anchor the layer on the inline start, so it overhangs the viewport in the same direction
-    // the canvas does. An explicit `left` would pin it to the wrong edge of a right-to-left grid.
-    const offsetParent = this._dockingOverlay.offsetParent as HTMLElement | null;
-    if (this._options.rtl && offsetParent) {
-      this._dockingOverlay.style.left = 'auto';
-      this._dockingOverlay.style.right = `${offsetParent.clientWidth - this._viewportNode.offsetLeft - this._viewportNode.offsetWidth}px`;
-    } else {
-      this._dockingOverlay.style.right = 'auto';
-      this._dockingOverlay.style.left = `${this._viewportNode.offsetLeft}px`;
-    }
+    this._dockingOverlay.style.top = '0px';
+    this._dockingOverlay.style.insetInlineStart = '0px';
+    this._dockingOverlay.style.insetInlineEnd = 'auto';
+    this._dockingOverlay.style.left = '';
+    this._dockingOverlay.style.right = '';
     const overlayWidth = Math.max(this.canvasWidth, this.dockingLayout.contentWidth, this._viewportNode.clientWidth);
     this._dockingOverlay.style.width = `${overlayWidth}px`;
-    this._dockingOverlay.style.height = `${this._viewportNode.clientHeight}px`;
-    this.updateDockingOverlayClip();
-  }
-
-  /** Clip the translated row overlay without invalidating every grid descendant through an inherited CSS variable. */
-  protected updateDockingOverlayClip(scrollLeft: number = this.scrollLeft): void {
-    if (!this._dockingOverlay || !this._viewportNode) {
-      return;
-    }
-    const viewportWidth = this._viewportNode.clientWidth;
-    const overlayWidth = Math.max(this.canvasWidth, this.dockingLayout.contentWidth, viewportWidth);
-    const hasFirefoxOverlayScrollbar =
-      this.viewportHasVScroll &&
-      !this.scrollbarDimensions?.width &&
-      /firefox/i.test(navigator.userAgent) &&
-      /linux/i.test(navigator.userAgent);
-    const scrollbarInset = hasFirefoxOverlayScrollbar ? DEFAULT_DOCKING_OVERLAY_SCROLLBAR_WIDTH : 0;
-    // The visible window starts at the scrolled distance from the leading edge, which is the
-    // right edge of a right-to-left grid, so the two insets swap with the reading direction.
-    // The vertical scrollbar sits at the inline end either way, so its strip comes off the
-    // trailing inset: the right edge reading left to right, the left edge reading right to left.
-    const leadingInset = Math.max(0, scrollLeft * this.getInlineDirection());
-    const trailingInset = overlayWidth - leadingInset - viewportWidth + scrollbarInset;
-    this._dockingOverlay.style.clipPath = this._options.rtl
-      ? `inset(0 ${leadingInset}px 0 ${trailingInset}px)`
-      : `inset(0 ${trailingInset}px 0 ${leadingInset}px)`;
+    // The sticky overlay stays at the viewport top without adding layout height.
+    // As a descendant of the scrollport, the native scrollbar paints above it.
+    this._dockingOverlay.style.height = '0px';
   }
 
   /** Keep the single horizontal scrollbar aligned with the vertical body viewport. */
