@@ -95,21 +95,30 @@ describe('SlickGrid Auto Header Height', () => {
             });
         });
 
-        it('should align the pinned overlay with the viewport and clip its overflow', () => {
+        it('should keep the pinned overlay inside the viewport, which clips its overflow', () => {
             applyPinning();
 
             cy.get('#myGrid .slick-viewport').then(($viewport) => {
-                const viewportRect = $viewport[0].getBoundingClientRect();
+                const viewport = $viewport[0] as HTMLElement;
+                const viewportRect = viewport.getBoundingClientRect();
                 cy.get('#myGrid .slick-docking-overlay').should(($overlay) => {
                     const overlay = $overlay[0] as HTMLElement;
                     const overlayRect = overlay.getBoundingClientRect();
+                    // The overlay is a sticky layer inside the scrollport, so the native
+                    // scrollbar paints above the pinned rows and spans the pinned sections.
+                    expect(overlay.parentElement, 'the overlay lives inside the viewport').to.eq(viewport);
+                    expect(getComputedStyle(overlay).position).to.eq('sticky');
                     expect(overlayRect.left).to.be.closeTo(viewportRect.left, 1);
                     expect(overlayRect.top).to.be.closeTo(viewportRect.top, 1);
-                    expect(overlayRect.height).to.be.closeTo(viewportRect.height, 1);
-                    // The overlay intentionally spans the full canvas, so its raw width may be
-                    // larger than the viewport. clip-path is the visible overflow boundary.
-                    expect(overlayRect.width).to.be.at.least(viewportRect.width);
-                    expect(overlay.style.clipPath).to.contain('inset(');
+                    // It takes no layout height of its own, and the viewport, not a clip-path,
+                    // is the visible overflow boundary.
+                    expect(overlayRect.height, 'the overlay adds no layout height').to.eq(0);
+                    expect(overlay.style.clipPath, 'no clip-path is needed').to.eq('');
+                    expect(getComputedStyle(viewport).overflowX, 'the viewport clips the overflow').to.eq('hidden');
+                });
+                // The pinned rows themselves start at the top of the viewport.
+                cy.get('#myGrid .slick-docking-overlay .slick-row').first().should(($row) => {
+                    expect($row[0].getBoundingClientRect().top).to.be.closeTo(viewportRect.top, 1);
                 });
             });
         });

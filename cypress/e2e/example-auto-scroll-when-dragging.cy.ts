@@ -337,7 +337,18 @@ describe('Example - Auto scroll when dragging', { retries: 1 }, () => {
         return cy.get('@viewport').invoke('scrollTop').then(scrollAfter => {
           expect(scrollBefore).to.be.lessThan(scrollAfter);
           return cy.dragEnd(selector).then(() => {
-            cy.get(selector + ' .slick-group:visible').should('exist');
+            // Cypress's visibility check reports rows in the zero-height sticky overlay as hidden
+            // even while they are drawn, so compare each group row's box with the viewport's.
+            cy.get('@viewport').then(($viewport) => {
+              const viewport = $viewport[0].getBoundingClientRect();
+              cy.get(selector + ' .slick-group').should(($groups) => {
+                const drawn = $groups.toArray().some((group) => {
+                  const rect = group.getBoundingClientRect();
+                  return rect.height > 0 && rect.bottom > viewport.top && rect.top < viewport.bottom;
+                });
+                expect(drawn, 'a group row is drawn inside the viewport').to.eq(true);
+              });
+            });
           });
         });
       });
