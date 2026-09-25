@@ -10522,70 +10522,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       : (this.columnPosRight[index] ?? 0);
   }
 
-  /**
-   * Move already-rendered cells to their new docking region after a sticky column crosses
-   * an edge; this keeps formatter output and editor state in place. Rows that predate the
-   * first docked band have no region wrappers and are left to the normal render path.
-   */
-  protected updateRenderedCellDocking(): boolean {
-    // Likewise, removing the final band needs the normal renderer to remove
-    // the no-longer-needed region wrappers.
-    if (!this.usesDockingRowRegions()) {
-      return false;
-    }
-
-    for (const cacheEntry of Object.values(this.rowsCache)) {
-      const rowNode = cacheEntry.rowNode?.[0];
-      if (rowNode && !rowNode.classList.contains('slick-row-docked')) {
-        return false;
-      }
-      if (Object.keys(cacheEntry.cellSpanFragments || {}).length) {
-        return false;
-      }
-    }
-
-    for (const cacheEntry of Object.values(this.rowsCache)) {
-      const rowNode = cacheEntry.rowNode?.[0];
-      if (!rowNode) {
-        continue;
-      }
-
-      this.ensureCellNodesInRowsCache(+rowNode.dataset.row!);
-      Object.keys(cacheEntry.cellNodesByColumnIdx).forEach((columnIndex) => {
-        if (!cacheEntry.cellNodesByColumnIdx.hasOwnProperty(columnIndex)) {
-          return;
-        }
-        const index = +columnIndex;
-        const cellNode = cacheEntry.cellNodesByColumnIdx[index];
-        const docking = this.dockingByColumn.get(index);
-        const band = docking?.band || 'center';
-        const isFullWidthGroup = rowNode.classList.contains('slick-row-full-width-group');
-        const usesStickyTransform = !isFullWidthGroup && this.usesStickyColumnTransformPath() && !!this.columns[index]?.sticky;
-
-        cellNode.classList.toggle('slick-cell-full-width-group', isFullWidthGroup);
-        cellNode.classList.toggle('slick-cell-pinned-left', !usesStickyTransform && !isFullWidthGroup && band === 'left');
-        cellNode.classList.toggle('slick-cell-pinned-right', !usesStickyTransform && !isFullWidthGroup && band === 'right');
-        if (usesStickyTransform) {
-          this.applyStickyColumnTransform(cellNode, index, 'cell');
-        } else {
-          this.clearStickyColumnTransform(cellNode, 'cell');
-          cellNode.classList.toggle('slick-cell-sticky', !isFullWidthGroup && band !== 'center' && !!docking?.sticky);
-        }
-
-        const region = this.getRowDockingRegion(rowNode, index, cacheEntry.cellRegions);
-        if (cellNode.parentElement !== region) {
-          region.appendChild(cellNode);
-        }
-      });
-
-      Object.values(cacheEntry.cellRegions || {}).forEach((region) => {
-        const cells = Array.from(region.children) as HTMLElement[];
-        cells.sort((a, b) => this.getCellFromNode(a) - this.getCellFromNode(b)).forEach((cell) => region.appendChild(cell));
-      });
-    }
-    return true;
-  }
-
   /** Apply one active sticky candidate without changing its DOM parent or box geometry. */
   protected applyStickyColumnTransform(element: HTMLElement, columnIndex: number, type: 'cell' | 'column'): void {
     const docking = this.dockingByColumn.get(columnIndex);
@@ -11438,48 +11374,21 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     const update = () => {
       this.stickyColumnLayoutFrame = undefined;
-      if (!this.initialized) {
+      // Without the proxy scroll owner, sticky columns are configured but not yet applied:
+      // setColumns() creates the owner and lays the docking out. Resolving the layout here
+      // would switch row regions on and render docked rows that nothing positions.
+      if (!this.initialized || !this.usesStickyColumnTransformPath()) {
+        return;
+      }
+      if (!this.refreshDockingLayout(this.scrollLeft, true)) {
         return;
       }
 
-      const dockingChanged = this.refreshDockingLayout(this.scrollLeft, true);
-      if (!dockingChanged) {
-        return;
-      }
-
-      if (this.usesStickyColumnTransformPath()) {
-        // Sticky candidates keep their natural center-band geometry. Crossing
-        // an edge therefore changes only compositor classes/variables; column
-        // CSS rules, chrome sizing, and every row's grid tracks remain stable.
-        this.updateStickyColumnTransforms();
-        this.enqueueSingleViewportRender();
-        return;
-      }
-
-      // The layout was just resolved above; only its virtual-cell coordinate
-      // cache needs rebuilding. Calling updateColumnCaches() here would run a
-      // second sticky resolver pass in the same animation frame.
-      this.updateColumnPositionCaches();
-      this.applyColumnWidths();
-      this.applyDockingToColumnChrome();
-
-      // A sticky transition moves a few columns between bands: re-home the rendered
-      // cell nodes instead of re-rendering every visible row.
-      if (this.updateRenderedCellDocking()) {
-        // Region widths and the right-edge compensation change with the active sticky
-        // band; the deferred virtual-cell pass fills any missing centre cell.
-        this.applyDockingDimensionsToRows();
-        this.enqueueSingleViewportRender();
-        return;
-      }
-
-      // A transition from no docked columns to a docked layout has no row
-      // regions to reuse. Keep the conservative full render for that uncommon
-      // structural change.
-      this.invalidateAllRows();
-      this.cancelSingleViewportRender();
-      this.lastRenderedScrollLeft = Number.NaN;
-      this.render();
+      // Sticky candidates keep their natural center-band geometry. Crossing
+      // an edge therefore changes only compositor classes/variables; column
+      // CSS rules, chrome sizing, and every row's grid tracks remain stable.
+      this.updateStickyColumnTransforms();
+      this.enqueueSingleViewportRender();
     };
 
     this.stickyColumnLayoutFrame = this.scheduleAnimationFrame(update);

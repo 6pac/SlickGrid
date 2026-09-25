@@ -83,4 +83,33 @@ describe('Quirk - docked elements never exist without the proxy scroll owner', (
       expect(win.document.querySelectorAll('.slick-row-docked').length, 'and rows dock').to.be.greaterThan(0);
     });
   });
+
+  it('keeps holding when a sticky column crosses the edge before setColumns() has run', () => {
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example1-simple.html`);
+    cy.get('#myGrid .slick-header-column').should('exist');
+
+    // Wide enough to scroll horizontally, with no docking, so the viewport owns the scroll.
+    cy.window().then((win: any) => {
+      const columns = win.grid.getColumns();
+      columns.forEach((column: any) => (column.width = 260));
+      win.grid.setColumns(columns);
+      // Marked sticky on the live definitions, without the column reset that applies it.
+      win.grid.getColumns()[1].sticky = true;
+      const viewport = win.document.querySelector('#myGrid .slick-viewport') as HTMLElement;
+      viewport.scrollLeft = 520;
+      viewport.dispatchEvent(new win.Event('scroll'));
+    });
+    // The sticky layout is resolved on the next animation frame; give it one.
+    cy.wait(100);
+    cy.window().should((win: any) => {
+      expect(win.grid.hasDockingHorizontalScroller(), 'no scroll owner yet').to.eq(false);
+      expectNothingDockedWithoutTheScroller(win, 'sticky column crossed the edge before setColumns');
+    });
+
+    cy.window().then((win: any) => win.grid.setColumns(win.grid.getColumns()));
+    cy.window().should((win: any) => {
+      expect(win.grid.hasDockingHorizontalScroller(), 'setColumns creates the scroll owner').to.eq(true);
+      expect(win.document.querySelectorAll('.slick-row-docked').length, 'and rows dock').to.be.greaterThan(0);
+    });
+  });
 });
