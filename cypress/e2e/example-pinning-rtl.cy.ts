@@ -85,6 +85,22 @@ describe('Example - Pinned and Sticky Columns (RTL)', { retries: 1 }, () => {
     });
   });
 
+  it('paints a docked sticky cell opaque on every row, hiding the cells beneath it', () => {
+    scrollToEnd();
+    cy.get(`${grid} .slick-header-column[data-id="priority"]`).should('have.class', 'slick-column-sticky');
+
+    // The theme stripes only odd rows, so an even row has no colour of its own for the sticky
+    // cell to inherit; that is where the cells scrolling beneath it showed through. This is not
+    // specific to right-to-left grids, which is simply where no example colour masked it.
+    [3, 4].forEach((row) => {
+      cy.get(`${grid} .grid-canvas .slick-row[data-row="${row}"] .slick-cell-sticky`).should(($cell) => {
+        const background = getComputedStyle($cell[0]).backgroundColor;
+        expect(background, `row ${row} sticky cell background`).not.to.eq('rgba(0, 0, 0, 0)');
+        expect(background, `row ${row} sticky cell background`).not.to.eq('transparent');
+      });
+    });
+  });
+
   it('keeps a pinned row aligned with the scrolling rows after scrolling', () => {
     scrollToEnd();
 

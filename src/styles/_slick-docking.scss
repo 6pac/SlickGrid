@@ -52,7 +52,10 @@
   grid-template-columns: auto minmax(0, 1fr) auto;
   width: 100%;
   box-sizing: border-box;
-  background: inherit;
+  // A docked sticky cell floats over the cells scrolling beneath it and takes its background
+  // from the row, so the row needs an opaque base. Striping, hover, highlighting and row
+  // classes all set the row's own background and still override this default.
+  background-color: var(--alpine-bg-color, var(--slick-canvas-bg-color, #fff));
 }
 
 .slick-row-docked > .slick-pinned-left-cells,
