@@ -43,6 +43,19 @@ describe('Example - Sticky Financial Report', { retries: 1 }, () => {
     });
   });
 
+  it('covers the body scrollbar strip in transformed header chrome while scrolling', () => {
+    cy.get(scrollOwner).scrollTo('right');
+
+    cy.get(`${grid} :is(.slick-header, .slick-headerrow, .slick-footerrow, .slick-preheader-panel, .slick-topheader-panel)`).each(($chrome) => {
+      const style = getComputedStyle($chrome[0], '::after');
+      expect(style.zIndex, `${$chrome[0].className} cover z-index`).to.equal('30');
+      expect(style.pointerEvents, `${$chrome[0].className} cover pointer events`).to.equal('none');
+      expect(style.width, `${$chrome[0].className} cover width`).to.equal(
+        getComputedStyle($chrome[0]).getPropertyValue('--slick-docking-vertical-scrollbar-width').trim() || '0px'
+      );
+    });
+  });
+
   it('keeps center cells visible when sticky columns occupy the trailing edge', () => {
     cy.get(scrollOwner).scrollTo(167, 0, { ensureScrollable: false });
 

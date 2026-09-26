@@ -10995,6 +10995,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
     const scrollbarHeight = this.getDockingScrollbarHeight();
     const viewportWidth = this._viewportNode.clientWidth;
+    const verticalScrollbarWidth = Math.max(0, this._viewportNode.offsetWidth - viewportWidth);
     const contentWidth = this.dockingLayout.contentWidth || this.canvasWidth;
     const hasHorizontalOverflow = contentWidth > viewportWidth;
     this.dockingHorizontalScrollbarReserved = hasHorizontalOverflow && scrollbarHeight > 0;
@@ -11002,6 +11003,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this._dockingHorizontalScroller.style.height = hasHorizontalOverflow ? `${scrollbarHeight}px` : '0px';
     this._dockingHorizontalSpacer.style.width = `${Math.max(contentWidth, viewportWidth)}px`;
     this._container.style.setProperty('--slick-docking-viewport-width', `${this._viewportNode.clientWidth}px`);
+    this._container.style.setProperty('--slick-docking-vertical-scrollbar-width', `${verticalScrollbarWidth}px`);
     this.syncDockingScrollOffsetVariable();
     // The trailing band sits at the right edge reading left to right and at the left edge
     // reading right to left, so the distance that moves it there changes sign with the

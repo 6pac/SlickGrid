@@ -254,11 +254,20 @@
   will-change: transform;
 }
 
-// In proxy-scroll mode the canvas, overlay, and chrome roots are translated
-// by the horizontal scrollbar. Pinned elements receive the matching positive
-// offset through this inherited custom property so they remain at their
-// docking edge while the center content scrolls normally.
 .slick-docking-horizontal-scroll-proxy {
+  // Header chrome spans the outer grid width while the body owns the scrollbar.
+  :is(.slick-header, .slick-headerrow, .slick-footerrow, .slick-preheader-panel, .slick-topheader-panel) {
+    &::after {
+      content: '';
+      position: absolute;
+      inset-block: 0;
+      inset-inline-end: 0;
+      width: var(--slick-docking-vertical-scrollbar-width, 0px);
+      background: inherit;
+      z-index: 30;
+      pointer-events: none;
+    }
+  }
   .slick-header-columns,
   .slick-header-columns-root,
   .slick-headerrow-columns,

@@ -128,6 +128,11 @@ const options = {
 | `.slick-docking-overlay` | The layer that holds pinned and active sticky rows. Created only when row docking is configured. |
 | `.slick-row-pinned-top / -bottom`, `.slick-row-sticky`, `.slick-column-pinned-left / -right`, `.slick-column-sticky` | State classes on rows and header cells. |
 
+When docking is configured, the header, header-row, footer-row, and optional top-header panels
+reserve the body viewport's vertical-scrollbar strip with an opaque, pointer-transparent cover.
+This prevents a horizontally transformed header fragment from painting into the top area above
+the scrollbar in Chromium-based browsers.
+
 `grid.getCellFromPoint(x, y)` takes canvas-relative coordinates and resolves them through the
 rendered layout (bands, overlay rows, non-contiguous shifts), including rows that are not rendered.
 
