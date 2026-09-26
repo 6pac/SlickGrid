@@ -2527,11 +2527,15 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         }
 
         this.applyColumnHeaderWidths();
-        if (this._options.syncColumnCellResize) {
+        const usesStickyTransformPath = this.usesStickyColumnTransformPath();
+        if (this._options.syncColumnCellResize || usesStickyTransformPath) {
           this.applyColumnWidths();
         }
 
         this.updateCanvasWidth();
+        if (usesStickyTransformPath) {
+          this.updateStickyColumnTransforms();
+        }
         if (
           this._options.autoScrollOnColumnResize &&
           !this._options.rtl &&
