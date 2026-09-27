@@ -16,8 +16,15 @@ on:
       - master
       - next-v6
     paths:
+      - '.github/workflows/docs.yml'
       - 'docs/**'
       - 'vitepress/**'
+      - 'examples/**'
+      - 'src/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig*.json'
   workflow_dispatch:
 
 permissions:
@@ -49,6 +56,17 @@ jobs:
         env:
           DOCS_BASE: /SlickGrid/
         run: npm run docs:build
+      - name: Install SlickGrid dependencies
+        working-directory: .
+        run: npm ci
+      - name: Build SlickGrid distribution for examples
+        working-directory: .
+        run: npm run build:prod
+      - name: Add examples and distribution to the Pages site
+        working-directory: .
+        run: |
+          cp -a examples vitepress/.vitepress/dist/
+          cp -a dist vitepress/.vitepress/dist/
       - uses: actions/upload-pages-artifact@v5
         with:
           path: vitepress/.vitepress/dist
