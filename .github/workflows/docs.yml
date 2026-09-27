@@ -1,11 +1,10 @@
 # SlickGrid documentation — build & deploy to GitHub Pages.
 #
-# PREPARED, NOT WIRED. When the docs site is relocated into the repo at <repo>/docs,
-# copy this file to <repo>/.github/workflows/docs.yml. It:
+# It:
 #   1. regenerates the API reference from src/ (npm run api),
 #   2. runs the drift gate (fails on NEW undocumented public API),
 #   3. builds the VitePress site with the correct base path,
-#   4. publishes it to GitHub Pages.
+#   4. publishes it to GitHub Pages from the release branches.
 #
 # Set the base path to match the Pages URL. For a project site served at
 # https://6pac.github.io/SlickGrid/ the base is /SlickGrid/.
@@ -13,11 +12,12 @@
 name: Docs
 on:
   push:
-    branches: [master, next-v6]
+    branches:
+      - master
+      - next-v6
     paths:
-      - 'src/**'
       - 'docs/**'
-      - '.github/workflows/docs.yml'
+      - 'vitepress/**'
   workflow_dispatch:
 
 permissions:
@@ -26,7 +26,7 @@ permissions:
   id-token: write
 
 concurrency:
-  group: pages
+  group: docs-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:
@@ -34,12 +34,12 @@ jobs:
     runs-on: ubuntu-latest
     defaults:
       run:
-        working-directory: docs
+        working-directory: vitepress
     steps:
-      - uses: actions/checkout@v4
-      - uses: actions/setup-node@v4
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
         with:
-          node-version: 20
+          node-version: 24
       - run: npm ci
       - name: Regenerate API reference from source
         run: npm run api
@@ -49,12 +49,13 @@ jobs:
         env:
           DOCS_BASE: /SlickGrid/
         run: npm run docs:build
-      - uses: actions/upload-pages-artifact@v3
+      - uses: actions/upload-pages-artifact@v5
         with:
-          path: docs/.vitepress/dist
+          path: vitepress/.vitepress/dist
 
   deploy:
     needs: build
+    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/next-v6'
     runs-on: ubuntu-latest
     environment:
       name: github-pages

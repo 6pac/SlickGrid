@@ -11,8 +11,8 @@ import { join, dirname } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const SITE = dirname(HERE);
-const api = JSON.parse(readFileSync(join(SITE, 'data', 'api.json'), 'utf8'));
+const DOCS_ROOT = join(dirname(dirname(HERE)), 'docs');
+const api = JSON.parse(readFileSync(join(DOCS_ROOT, 'data', 'api.json'), 'utf8'));
 
 function methodGroupSecIds(methods) {
   const order = []; const seen = new Set();
@@ -52,13 +52,13 @@ function walk(dir) {
 function pageExists(routePath) {
   let rel = routePath.replace(/^\//, '');
   if (rel === '' || rel.endsWith('/')) rel += 'index';
-  return existsSync(join(SITE, rel + '.md'));
+  return existsSync(join(DOCS_ROOT, rel + '.md'));
 }
 
 const problems = [];
 let checked = 0;
 const linkRe = /\]\((\/[^)\s]*)\)/g;
-for (const file of walk(SITE)) {
+for (const file of walk(DOCS_ROOT)) {
   const text = readFileSync(file, 'utf8');
   let m;
   while ((m = linkRe.exec(text))) {
@@ -74,8 +74,8 @@ for (const file of walk(SITE)) {
   }
 }
 
-const rel = (f) => f.replace(SITE + '\\', '').replace(SITE + '/', '').replace(/\\/g, '/');
-console.log(`Checked ${checked} internal links across ${walk(SITE).length} pages.`);
+const rel = (f) => f.replace(DOCS_ROOT + '\\', '').replace(DOCS_ROOT + '/', '').replace(/\\/g, '/');
+console.log(`Checked ${checked} internal links across ${walk(DOCS_ROOT).length} pages.`);
 if (!problems.length) console.log('All internal links OK.');
 else {
   console.log(`${problems.length} link problem(s):`);

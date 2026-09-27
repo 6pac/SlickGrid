@@ -14,13 +14,15 @@ import { dirname, join } from 'node:path';
 import { fileURLToPath } from 'node:url';
 
 const HERE = dirname(fileURLToPath(import.meta.url));
-const SITE_ROOT = dirname(HERE);
+const VITEPRESS_ROOT = dirname(HERE);
+const REPO_ROOT = dirname(VITEPRESS_ROOT);
+const DOCS_ROOT = join(REPO_ROOT, 'docs');
 
 const REPO =
   process.argv[2] ||
   process.env.SLICKGRID_REPO ||
-  // When the site lives inside the repo at <repo>/docs, the source is at ../src.
-  (existsSync(join(SITE_ROOT, '..', 'src')) ? join(SITE_ROOT, '..') : 'G:/Dropbox/Work/SlickGrid/SlickGrid-6pac');
+  // The VitePress project is in <repo>/vitepress and authored pages are in <repo>/docs.
+  (existsSync(join(REPO_ROOT, 'src')) ? REPO_ROOT : 'G:/Dropbox/Work/SlickGrid/SlickGrid-6pac');
 
 const SRC = join(REPO, 'src');
 
@@ -392,7 +394,7 @@ const api = {
   modules,
 };
 
-const outFile = process.env.API_OUT || join(SITE_ROOT, 'data', 'api.json');
+const outFile = process.env.API_OUT || join(DOCS_ROOT, 'data', 'api.json');
 mkdirSync(dirname(outFile), { recursive: true });
 writeFileSync(outFile, JSON.stringify(api, null, 2), 'utf8');
 

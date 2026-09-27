@@ -1,7 +1,7 @@
 <script setup>
 import { ref, computed } from 'vue';
 import { withBase } from 'vitepress';
-import api from '../../data/api.json';
+import api from '../../../docs/data/api.json';
 
 const items = [];
 const push = (name, group, href) => { if (name) items.push({ name: String(name), group, href }); };

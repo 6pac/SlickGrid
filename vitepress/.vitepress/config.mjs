@@ -1,17 +1,25 @@
 import { defineConfig } from 'vitepress';
+import { fileURLToPath } from 'node:url';
 
 // Base is '/' for local dev. For GitHub Pages under 6pac/SlickGrid this becomes
-// '/SlickGrid/' at build time (set via DOCS_BASE env when we wire deployment).
+// '/SlickGrid/' at build time (set via DOCS_BASE in the docs workflow).
 const base = process.env.DOCS_BASE || '/';
+const vuePath = fileURLToPath(new URL('../node_modules/vue', import.meta.url));
 
 export default defineConfig({
   base,
+  srcDir: '../docs',
   lang: 'en-US',
   title: 'SlickGrid',
   description: 'A lightning fast JavaScript data grid — official documentation.',
   cleanUrls: true,
   lastUpdated: true,
-  srcExclude: ['README.md', '_legacy/**', 'ci/**'],
+  vite: {
+    // The Markdown source lives outside the VitePress project root, so make
+    // Vue resolvable from the standalone vitepress/ dependency directory.
+    resolve: { alias: { vue: vuePath } },
+  },
+  srcExclude: ['README.md', '_legacy/**'],
   themeConfig: {
     search: { provider: 'local' },
     nav: [
