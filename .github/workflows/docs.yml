@@ -4,7 +4,7 @@
 #   1. regenerates the API reference from src/ (npm run api),
 #   2. runs the drift gate (fails on NEW undocumented public API),
 #   3. builds the VitePress site with the correct base path,
-#   4. publishes it to GitHub Pages from the release branches.
+#   4. publishes it to GitHub Pages from master (other branches only build).
 #
 # Set the base path to match the Pages URL. For a project site served at
 # https://6pac.github.io/SlickGrid/ the base is /SlickGrid/.
@@ -32,9 +32,10 @@ permissions:
   pages: write
   id-token: write
 
+# one shared group: all branches deploy to the same single Pages site
 concurrency:
-  group: docs-${{ github.ref }}
-  cancel-in-progress: true
+  group: pages
+  cancel-in-progress: false
 
 jobs:
   build:
@@ -74,7 +75,7 @@ jobs:
 
   deploy:
     needs: build
-    if: github.ref == 'refs/heads/master' || github.ref == 'refs/heads/next-v6'
+    if: github.ref == 'refs/heads/master'
     runs-on: ubuntu-latest
     environment:
       name: github-pages
