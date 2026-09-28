@@ -15,23 +15,32 @@ export const BUILD_FORMATS = ['cjs', 'esm', 'mjs'];
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRootPath = path.join(__dirname, '../');
+let distFolder = 'dist';
 
 const argv = parseArgs({
   minify: { type: 'boolean' },
   prod: { type: 'boolean' },
+  docs: { type: 'boolean' },
 });
 
-// when --prod is provided, we'll do a full build of all JS/TS files and also all SASS files
-if (argv.prod) {
-  runProdBuildWithTypes();
+// --prod builds the npm distribution; --docs builds example assets into the Pages output.
+if (argv.docs) {
+  distFolder = 'vitepress/.vitepress/dist/dist';
 }
 
-/** Run a full Production build and also build TS Types */
+if (argv.prod || argv.docs) {
+  await runProdBuildWithTypes();
+}
+
+/** Build production assets and include TypeScript declarations for npm builds. */
 export async function runProdBuildWithTypes() {
   await executeFullBuild();
   await buildAllSassFiles();
   copySassFiles();
-  await spawnStreaming('npm', ['run', 'build:types'], { cwd: projectRootPath });
+  // Declaration files are not needed by the static examples site.
+  if (!argv.docs) {
+    await spawnStreaming('npm', ['run', 'build:types'], { cwd: projectRootPath });
+  }
 }
 
 /**
@@ -92,7 +101,7 @@ export async function bundleByFormat(format) {
     target: 'es2020',
     treeShaking: true,
     define: { IIFE_ONLY: 'false' },
-    outfile: `dist/${esbuildFormat}/index.${esbuildExt}`,
+    outfile: `${distFolder}/${esbuildFormat}/index.${esbuildExt}`,
   });
 }
 
@@ -124,7 +133,7 @@ export async function buildIifeFile(file, displayLog = true) {
     format: 'iife',
     globalName,
     define: { IIFE_ONLY: 'true' },
-    outfile: `dist/browser/${file.replace('src', '').replace(/.[j|t]s/, '')}.js`,
+    outfile: `${distFolder}/browser/${file.replace('src', '').replace(/.[j|t]s/, '')}.js`,
     plugins: [
       removeImportsPlugin,
     ],
@@ -158,7 +167,7 @@ export function runBuild(options) {
     ...options,
   }).catch((err) => {
     // in production builds, fail immediately on errors so CI catches them
-    if (argv.prod) {
+    if (argv.prod || argv.docs) {
       throw err;
     }
     // in watch mode, don't crash on errors to allow recovery
@@ -174,7 +183,7 @@ export function runBuild(options) {
 function copySassFiles() {
   copyfiles(
     'src/styles/*.scss',
-    'dist/styles/sass',
+    `${distFolder}/styles/sass`,
     { flat: true, stat: true },
     () => console.log(`[${styleText('magenta', 'SASS')}] SASS files copied`)
   );
@@ -183,9 +192,20 @@ function copySassFiles() {
 /** build all SASS (.scss) files, from "src/styles", to CSS (.css) */
 export async function buildAllSassFiles() {
   try {
-    await spawnStreaming('npm', ['run', 'sass:build'], { cwd: projectRootPath });
-    console.log(`[${styleText('magenta', 'SASS')}] Full SASS build completed`);
+    if (argv.docs) {
+      const sassOutput = distFolder + '/styles/css';
+      const sassCli = path.join(projectRootPath, 'node_modules/.bin/sass');
+      const postcssCli = path.join(projectRootPath, 'node_modules/.bin/postcss');
+      await spawnStreaming(sassCli, ['src/styles:' + sassOutput, '--style=compressed', '--quiet-deps', '--no-source-map'], { cwd: projectRootPath });
+      await spawnStreaming(postcssCli, [sassOutput + '/**/*', '--dir', sassOutput, '--base', sassOutput, '--no-map', '--use', 'cssnano', '--use', 'autoprefixer', '--style=compressed'], { cwd: projectRootPath });
+    } else {
+      await spawnStreaming('npm', ['run', 'sass:build'], { cwd: projectRootPath });
+    }
+    console.log('[' + styleText('magenta', 'SASS') + '] Full SASS build completed');
   } catch (err) {
+    if (argv.prod || argv.docs) {
+      throw err;
+    }
     // don't do anything when an error occured, this is to avoid watch mode to crash on errors
     // console.error('SASS error: ', JSON.stringify(err));
   }
@@ -211,14 +231,13 @@ export async function buildSassFile(sassFile) {
     await buildAllSassFiles();
   } else {
     const srcDir = 'src';
-    const distDir = 'dist';
     const basePath = path.join(process.cwd(), `/${srcDir}/styles`);
     const absoluteFilePath = path.relative(basePath, sassFile);
     const posixPath = absoluteFilePath.replaceAll('\\', '/');
 
     try {
       outputFileSync(
-        `${distDir ? distDir + '/' : ''}styles/css/${filename}.css`,
+        `${distFolder ? distFolder + '/' : ''}styles/css/${filename}.css`,
         sassCompile(`${srcDir ? srcDir + '/' : ''}styles/${posixPath}`, { style: 'compressed', quietDeps: true, noSourceMap: true }).css
       );
     } catch (err) {

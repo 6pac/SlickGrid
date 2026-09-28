@@ -195,6 +195,18 @@ export class SlickCellSelectionModel implements SelectionModel {
       // keyboard can work with last range only
       last = ranges.pop() as SlickRange_;
 
+      // Ctrl+{a, A} selects every cell in the grid without moving the current active cell/position
+      if (e.ctrlKey && e.key?.toLowerCase() === 'a') {
+        const fullRange = new SlickRange(0, 0, dataLn - 1, colLn - 1);
+        if (this.removeInvalidRanges([fullRange]).length) {
+          this.setSelectedRanges([fullRange], undefined, '');
+        }
+        e.preventDefault();
+        e.stopPropagation();
+        this._prevKeyDown = e.key as string;
+        return;
+      }
+
       // can't handle selection out of active cell
       if (!last.contains(active.row, active.cell)) {
         last = new SlickRange(active.row, active.cell);
@@ -204,15 +216,6 @@ export class SlickCellSelectionModel implements SelectionModel {
       let dCell = last.toCell - last.fromCell;
       let toCell: undefined | number;
       let toRow = 0;
-
-      // when using Ctrl+{a, A} we will change our position to cell 0,0 and select all grid cells
-      if (e.ctrlKey && e.key?.toLowerCase() === 'a') {
-        this._grid.setActiveCell(0, 0, false, false, true);
-        active.row = 0;
-        active.cell = 0;
-        toCell = colLn - 1;
-        toRow = dataLn - 1;
-      }
 
       // walking direction
       const dirRow = active.row === last.fromRow ? 1 : -1;
