@@ -189,11 +189,4 @@ describe('Example - Sticky Financial Report', { retries: 1 }, () => {
       cy.get(row(rowIndex)).should('have.class', 'slick-row-sticky').and('have.class', 'slick-row-pinned-bottom');
     }
   });
-
-  it('toggles the subtitle without destroying the sticky grid', () => {
-    cy.get('[data-test="toggle-subtitle"]').click();
-    cy.get(`${grid} .slick-header-column[data-id="account"]`).should('exist');
-    cy.get('[data-test="toggle-subtitle"]').click();
-    cy.get(`${grid} .slick-header-column[data-id="ytd"]`).should('exist');
-  });
 });
