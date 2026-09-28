@@ -217,12 +217,12 @@
 
 .slick-row-docked > .slick-pinned-left-cells.slick-pinned-left-cells-active > .slick-cell:last-child:not(.slick-cell-colspan-crossing-docking)::after,
 .slick-cell-sticky-left-edge::after {
-  box-shadow: var(--slick-pinned-border-box-shadow-left, inset -1px 0 0 var(--slick-pinned-border-color, #a5a5a5));
+  box-shadow: var(--slick-pinned-border-box-shadow-left, inset calc(-1px * var(--slick-docking-direction, 1)) 0 0 var(--slick-pinned-border-color, #a5a5a5));
 }
 
 .slick-row-docked > .slick-pinned-right-cells.slick-pinned-right-cells-active > .slick-cell:first-child:not(.slick-cell-colspan-crossing-docking)::after,
 .slick-cell-sticky-right-edge::after {
-  box-shadow: var(--slick-pinned-border-box-shadow-right, inset 1px 0 0 var(--slick-pinned-border-color, #a5a5a5));
+  box-shadow: var(--slick-pinned-border-box-shadow-right, inset calc(1px * var(--slick-docking-direction, 1)) 0 0 var(--slick-pinned-border-color, #a5a5a5));
 }
 
 .slick-docking-overlay {
@@ -379,10 +379,10 @@
   background: var(--alpine-header-bg-color, var(--slick-header-background-color, #ececec));
 }
 
-.slick-column-pinned-left-edge {
-  box-shadow: var(--slick-pinned-border-box-shadow-left, inset -1px 0 0 var(--slick-pinned-border-color, #a5a5a5)) !important;
+:is(.slick-column-pinned-left-edge, .slick-column-sticky-left-edge) {
+  box-shadow: var(--slick-pinned-border-box-shadow-left, inset calc(-1px * var(--slick-docking-direction, 1)) 0 0 var(--slick-pinned-border-color, #a5a5a5)) !important;
 }
 
-.slick-column-pinned-right-edge {
-  box-shadow: var(--slick-pinned-border-box-shadow-right, inset 1px 0 0 var(--slick-pinned-border-color, #a5a5a5)) !important;
+:is(.slick-column-pinned-right-edge, .slick-column-sticky-right-edge) {
+  box-shadow: var(--slick-pinned-border-box-shadow-right, inset calc(1px * var(--slick-docking-direction, 1)) 0 0 var(--slick-pinned-border-color, #a5a5a5)) !important;
 }

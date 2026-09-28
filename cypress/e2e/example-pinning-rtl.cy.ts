@@ -101,6 +101,45 @@ describe('Example - Pinned and Sticky Columns (RTL)', { retries: 1 }, () => {
     });
   });
 
+  it('draws every band separator on the side that faces the scrolling columns', () => {
+    // A separator is an inset shadow: a negative offset draws it on the right edge and a
+    // positive one on the left. The leading band is at the right edge here, so its separator
+    // belongs on its left, facing the scrolling columns, and the trailing band's on its right.
+    const expectFacingCentre = (separators: string[]) =>
+      cy.window().then((win: any) => {
+        const doc = win.document;
+        const viewport = doc.querySelector(`${grid} .slick-viewport`).getBoundingClientRect();
+        const middle = viewport.left + viewport.width / 2;
+        const misplaced: string[] = [];
+        separators.forEach((separator) => {
+          const [selector, pseudo] = separator.split('::');
+          const elements = Array.from(doc.querySelectorAll(`${grid} ${selector}`)) as HTMLElement[];
+          expect(elements.length, `${selector} is rendered`).to.be.greaterThan(0);
+          elements.forEach((element) => {
+            const offset = /\)\s*(-?[\d.]+)px/.exec(getComputedStyle(element, pseudo && `::${pseudo}`).boxShadow);
+            const rect = element.getBoundingClientRect();
+            const facesLeft = rect.left + rect.width / 2 > middle;
+            if (!offset || Number(offset[1]) > 0 !== facesLeft) {
+              misplaced.push(`${separator} ${element.getAttribute('data-id') || element.className.split(' ').slice(0, 2).join('.')}`);
+            }
+          });
+        });
+        expect(Array.from(new Set(misplaced)), 'separators missing or on the outer side of their cell').to.deep.eq([]);
+      });
+
+    expectFacingCentre([
+      '.slick-column-pinned-left-edge',
+      '.slick-column-pinned-right-edge',
+      '.slick-pinned-left-cells-active > .slick-cell:last-child:not(.slick-cell-colspan-crossing-docking)::after',
+      '.slick-pinned-right-cells-active > .slick-cell:first-child:not(.slick-cell-colspan-crossing-docking)::after',
+    ]);
+
+    // Once the sticky column docks, it carries the leading band's edge, in the header as well.
+    scrollToEnd();
+    cy.get(`${grid} .slick-header-column[data-id="priority"]`).should('have.class', 'slick-column-sticky');
+    expectFacingCentre(['.slick-column-sticky-left-edge', '.slick-cell-sticky-left-edge::after']);
+  });
+
   it('keeps a pinned row aligned with the scrolling rows after scrolling', () => {
     scrollToEnd();
 

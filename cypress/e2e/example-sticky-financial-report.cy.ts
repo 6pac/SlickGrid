@@ -28,6 +28,15 @@ describe('Example - Sticky Financial Report', { retries: 1 }, () => {
     }
     cy.get(`${row(0)} .slick-cell.financial-sticky-candidate`).should('have.length.at.least', 5);
     cy.get(`${row(0)} .slick-cell.financial-account-column`).should('exist');
+
+    // The quarters beyond the viewport dock at the right edge, and the innermost of them draws
+    // the separator in the header as well as in the body.
+    cy.get(`${grid} .slick-header-column.slick-column-sticky-right-edge`).should(($header) => {
+      expect(getComputedStyle($header[0]).boxShadow).not.to.equal('none');
+    });
+    cy.get(`${row(0)} .slick-cell-sticky-right-edge`).should(($cell) => {
+      expect(getComputedStyle($cell[0], '::after').boxShadow).not.to.equal('none');
+    });
   });
 
   it('keeps the quarter and YTD headers sticky at the far right', () => {
