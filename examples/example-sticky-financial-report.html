@@ -94,28 +94,39 @@
       margin: 8px 0;
       max-width: 1000px;
     }
+    .options-panel {
+		  left: 1250px;
+	  }
   </style>
 </head>
 <body>
   <h2 class="title">Example - Sticky Financial Report</h2>
+  <div style="position:relative">
+    <div class="options-panel">
+      <h2>About</h2>
+      <p>
+        Account, Q1–Q4, and YTD use two-sided sticky columns. Total Revenue, Total Expenses,
+      and Net Profit use two-sided sticky rows and dock to the nearest vertical edge after they
+      have been seen.
+      </p>
+      <h2>View Source:</h2>
+      <ul>
+        <li>
+          <a href="https://github.com/6pac/SlickGrid/blob/master/examples/example-sticky-financial-report.html" target="_sourcewindow">
+            View the source for this example on Github
+          </a>
+        </li>
+      </ul>
+    </div>
 
-  <div class="financial-report-controls">
-    <button class="btn" type="button" data-test="toggle-subtitle" onclick="toggleSubTitle()">Toggle details</button>
-  </div>
+    <div id="myGrid" class="slick-container financial-report-grid"></div>
 
-  <p id="exampleDetails" class="example-details" style="max-width:1000px;">
-    Account, Q1–Q4, and YTD use two-sided sticky columns. Total Revenue, Total Expenses,
-    and Net Profit use two-sided sticky rows and dock to the nearest vertical edge after they
-    have been seen.
-  </p>
-
-  <div id="myGrid" class="slick-container financial-report-grid"></div>
-
-  <div class="financial-report-legend">
-    <span><i class="financial-report-legend-swatch financial-report-legend-account"></i> left sticky column</span>
-    <span><i class="financial-report-legend-swatch financial-report-legend-total"></i> bottom sticky row</span>
-    <span><i class="financial-report-legend-swatch financial-report-legend-intersection"></i> sticky intersection</span>
-    <span><i class="financial-report-legend-swatch financial-report-legend-sticky"></i> sticky quarter</span>
+    <div class="financial-report-legend">
+      <span><i class="financial-report-legend-swatch financial-report-legend-account"></i> left sticky column</span>
+      <span><i class="financial-report-legend-swatch financial-report-legend-total"></i> bottom sticky row</span>
+      <span><i class="financial-report-legend-swatch financial-report-legend-intersection"></i> sticky intersection</span>
+      <span><i class="financial-report-legend-swatch financial-report-legend-sticky"></i> sticky quarter</span>
+    </div>
   </div>
 
   <script src="../dist/browser/slick.core.js"></script>
@@ -242,12 +253,6 @@
       ytd.headerCssClass = 'financial-ytd-header financial-sticky-candidate-header';
       result.push(ytd);
       return result;
-    }
-
-    function toggleSubTitle() {
-      var details = document.getElementById('exampleDetails');
-      details.style.display = details.style.display === 'none' ? 'block' : 'none';
-      grid.resizeCanvas();
     }
 
     columns = createColumns();
