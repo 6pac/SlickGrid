@@ -59,14 +59,15 @@ jobs:
       - name: Install SlickGrid dependencies
         working-directory: .
         run: npm ci
-      - name: Build SlickGrid distribution for examples
+      - name: Lint SlickGrid sources
         working-directory: .
-        run: npm run build:prod
-      - name: Add examples and distribution to the Pages site
+        run: npm run lint
+      - name: build SlickGrid assets into the VitePress site
         working-directory: .
-        run: |
-          cp -a examples vitepress/.vitepress/dist/
-          cp -a dist vitepress/.vitepress/dist/
+        run: node scripts/builds.mjs --docs
+      - name: add Examples folder to the VitePress site
+        working-directory: .
+        run: cp -a examples vitepress/.vitepress/dist/
       - uses: actions/upload-pages-artifact@v5
         with:
           path: vitepress/.vitepress/dist
