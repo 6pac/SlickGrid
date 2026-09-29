@@ -5715,7 +5715,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       cellCss += ' slick-cell-full-width-group';
     }
     const docking = this.dockingByColumn.get(cell);
-    const usesStickyTransform = !isFullWidthGroup && this.usesStickyColumnTransformPath() && !!m.sticky;
+    const usesStickyTransform = !isFullWidthGroup && this.isStickyTransformColumn(cell);
     if (!usesStickyTransform && !isFullWidthGroup && docking && docking.band !== 'center') {
       cellCss += ` slick-cell-pinned-${docking.band}`;
       if (docking?.sticky) {
@@ -9687,13 +9687,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     // sticky column marks its own edge further in.
     const leftEdgeIndex = this.dockingLayout.left.filter((entry) => !entry.sticky).pop()?.index;
     const rightEdgeIndex = this.dockingLayout.right.find((entry) => !entry.sticky)?.index;
-    const usesStickyPath = this.usesStickyColumnTransformPath();
 
     // Pass 1 (writes only): docking classes, the chrome cache and margin resets.
     const entries = this.columns.map((column, index) => {
       const docking = this.dockingByColumn.get(index);
       const band: ColumnDockingBand = docking?.band || 'center';
-      const usesStickyTransform = usesStickyPath && !!column.sticky;
+      const usesStickyTransform = this.isStickyTransformColumn(index);
       const header = headersById.get(String(column.id));
       const elements = [header, headerRowByIndex.get(String(index)), footerRowByIndex.get(String(index))].filter(Boolean) as HTMLElement[];
       const isLeftEdge = !usesStickyTransform && band === 'left' && index === leftEdgeIndex;
@@ -9811,7 +9810,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     // band; a sticky one is then moved by its transform. Sticky and unpinned centre columns
     // on the transform path keep their natural offset, the rest the compacted one.
     if (usesStickyTransform || !docking || band === 'center') {
-      const natural = usesStickyTransform || (this.usesStickyColumnTransformPath() && !this.columns[index]?.pinned);
+      const natural = this.usesStickyColumnTransformPath() && !this.columns[index]?.pinned;
       const start = this.dockingLayout.leftBaseWidth + ((natural ? docking?.naturalOffset : docking?.offset) || 0);
       element.style.removeProperty('--slick-docking-chrome-offset');
       element.style.position = usesStickyTransform && !isHeader ? 'absolute' : '';
@@ -9874,8 +9873,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         if (columnIndex < 0 || columnIndex >= this.columns.length) {
           return;
         }
-        const targetBand =
-          this.usesStickyColumnTransformPath() && this.columns[columnIndex]?.sticky ? 'center' : this.getColumnDockingBand(columnIndex);
+        const targetBand = this.isStickyTransformColumn(columnIndex) ? 'center' : this.getColumnDockingBand(columnIndex);
         const targetRegion = regions[targetBand];
         if (element.parentElement !== targetRegion) {
           targetRegion.appendChild(element);
@@ -10568,7 +10566,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   /** Update only sticky candidates; all permanent-band and natural column geometry stays unchanged. */
   protected updateStickyColumnTransforms(): void {
     const stickyIndexes = this.columns.reduce<number[]>((indexes, column, index) => {
-      if (!column.hidden && column.sticky) {
+      if (!column.hidden && this.isStickyTransformColumn(index)) {
         indexes.push(index);
       }
       return indexes;
@@ -11058,7 +11056,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return rowNode;
     }
     const docking = this.dockingByColumn.get(columnIdx);
-    const band = this.usesStickyColumnTransformPath() && this.columns[columnIdx]?.sticky ? 'center' : docking?.band || 'center';
+    const band = this.isStickyTransformColumn(columnIdx) ? 'center' : docking?.band || 'center';
     if (regions) {
       return regions[band];
     }
@@ -11339,7 +11337,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /** Whether the current column definitions contain scroll-activated sticky candidates. */
   protected hasStickyColumns(): boolean {
-    return this.columns.some((column) => !column.hidden && !!column.sticky);
+    return this.columns.some((column, index) => !column.hidden && this.isStickyTransformColumn(index));
   }
 
   /**
@@ -11351,6 +11349,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   protected usesStickyColumnTransformPath(): boolean {
     return !!this._dockingHorizontalScroller;
+  }
+
+  /** A column takes the sticky transform path only while it is not permanently pinned. */
+  protected isStickyTransformColumn(columnIndex: number): boolean {
+    const column = this.columns[columnIndex];
+    return this.usesStickyColumnTransformPath() && !!column?.sticky && !column.pinned;
   }
 
   /** +1 when the inline axis runs left to right, -1 when it runs right to left. */

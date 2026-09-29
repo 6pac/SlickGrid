@@ -93,7 +93,8 @@ const options = {
 
 - `Column.sticky`: `'left'` or `'right'` docks at that physical edge once scrolling would clip the
   column; `'both'` docks at the nearer edge; `true` means the leading edge (`left` in LTR, `right`
-  in RTL). `grid.setColumnStickiness(columnId, value)` changes it at runtime.
+  in RTL). `grid.setColumnStickiness(columnId, value)` changes it at runtime. A permanently pinned
+  column ignores its `sticky` flag: it can never be clipped, so it stays a plain pin.
 - `stickyRows.top` docks a row when its natural position crosses the top edge, `bottom` when it
   crosses the bottom edge, `both` at the nearer edge. References follow the same index/id rule as
   pinned rows.

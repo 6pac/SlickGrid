@@ -180,7 +180,7 @@ export interface Column<TData = any> {
   /** Is the column sortable? Goes with grid option "enableSorting: true". */
   sortable?: boolean;
 
-  /** Dock this column only after normal scrolling would clip it. */
+  /** Dock this column only after normal scrolling would clip it. Ignored while the column is permanently pinned. */
   sticky?: DockingSide | 'both' | boolean;
 
   /** Custom Tooltip that can ben shown to the column */
