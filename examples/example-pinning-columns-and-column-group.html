@@ -269,7 +269,9 @@
     });
 
     grid.onScroll.subscribe(function (e, args) {
-      syncPinnedGroupHeaders(args.scrollLeft);
+      if (args.scrollLeft !== groupHeaderScrollLeft) {
+        syncPinnedGroupHeaders(args.scrollLeft);
+      }
     });
 
     grid.onColumnsResized.subscribe(function (e, args) {

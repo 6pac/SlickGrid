@@ -495,9 +495,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   /** flag to indicate if an invalid pinning alert has been shown already or not */
   protected _invalidPinningAlerted = false;
   protected paneTopH = 0;
-  protected paneBottomH = 0;
   protected viewportTopH = 0;
-  protected viewportBottomH = 0;
   protected topPanelH = 0;
   protected headerRowH = 0;
   protected footerRowH = 0;
@@ -6191,9 +6189,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   resizeCanvas(): void {
     if (this.initialized) {
       this.paneTopH = 0;
-      this.paneBottomH = 0;
       this.viewportTopH = 0;
-      this.viewportBottomH = 0;
 
       // Clear a previously applied minimum-height override before measuring, so the grid can
       // shrink back down once the container is comfortably large again.
@@ -8273,7 +8269,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (this._dockingOverlay) {
         this._dockingOverlay.style.transform = translateX;
       }
-      this.applyDockingProxyScrollOffsets(x);
+      this.syncDockingScrollOffsetVariable(x);
     }
 
     // Move header/filter/footer content with compositor transforms so it stays in the
@@ -9653,25 +9649,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this._container.style.setProperty('--slick-docking-scroll-left', `${scrollLeft}px`);
   }
 
-  /** Update only elements whose proxy-mode transforms consume the horizontal scroll offset. */
-  protected applyDockingProxyScrollOffsets(scrollLeft: number): void {
-    // A full-width group cell takes the same compensation from the stylesheet, which reads
-    // the custom property published above; it is always a direct child of its row, so the
-    // rule reaches every one of them.
-    this.syncDockingScrollOffsetVariable(scrollLeft);
-
-    for (const docking of [...this.dockingLayout.left, ...this.dockingLayout.right]) {
-      // The header roots are translated by -scrollLeft together with the
-      // canvas. Permanent pinned chrome must receive the matching positive
-      // compositor offset or it will scroll away with the center columns.
-      if (!docking.sticky) {
-        this.dockingChromeByColumn.get(docking.index)?.forEach((element) => {
-          element.style.transform = `translateX(${scrollLeft}px)`;
-        });
-      }
-    }
-  }
-
   /** Applies docking classes, widths, and transforms to the rendered column chrome. */
   protected applyDockingToColumnChrome(): void {
     if (!this.usesDockingChromeRegions()) {
@@ -9717,20 +9694,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     // Pass 2 (reads only): measure after every class change and before any geometry write,
     // so the pass forces at most one layout instead of one per column.
-    // A cell's padding and borders come from its classes, not from its column, so cells that
-    // look alike share one measurement. Without this the pass called getComputedStyle() twice
-    // per column, which dominated its cost on a wide grid.
-    const horizontalBoxByClassName = new Map<string, number>();
     const horizontalBoxOf = (element: HTMLElement) => {
-      const key = element.className;
-      let box = horizontalBoxByClassName.get(key);
-      if (box === undefined) {
-        const style = getComputedStyle(element);
-        box =
-          parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
-        horizontalBoxByClassName.set(key, box);
-      }
-      return box;
+      const style = getComputedStyle(element);
+      return parseFloat(style.paddingLeft) + parseFloat(style.paddingRight) + parseFloat(style.borderLeftWidth) + parseFloat(style.borderRightWidth);
     };
 
     const measurements = entries.map(({ header, elements, isLeftEdge }) => {
@@ -10485,10 +10451,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (!this.columns[i] || !this.columns[i].hidden) {
         continue;
       }
-      let previousVisible = i - 1;
-      while (previousVisible >= 0 && this.columns[previousVisible]?.hidden) {
-        previousVisible--;
-      }
+      const previousVisible = i - 1;
       let nextVisible = i + 1;
       while (nextVisible < ii && this.columns[nextVisible]?.hidden) {
         nextVisible++;
@@ -10499,8 +10462,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       const band = previousBand ?? nextBand ?? 'center';
       const boundary =
         previousBand === band ? this.columnPosRight[previousVisible] : nextBand === band ? this.columnPosLeft[nextVisible] : 0;
-      this.columnPosLeft[i] = boundary ?? 0;
-      this.columnPosRight[i] = boundary ?? 0;
+      for (; i < nextVisible; i++) {
+        this.columnPosLeft[i] = boundary ?? 0;
+        this.columnPosRight[i] = boundary ?? 0;
+      }
     }
   }
 
@@ -11130,11 +11095,12 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this.rowsCache[row].cellSpanFragments[cell] = fragments;
     this.rowsCache[row].cellSpanSegments[cell] = segments;
     this.updateColspanFragmentGeometry(host, segments, fragments);
+    const regions = this.rowsCache[row].cellRegions;
     fragments.forEach((fragment, index) => {
       if (deferToRow) {
         host.parentElement?.insertBefore(fragment, host);
       } else {
-        this.getRowDockingRegion(host.closest('.slick-row') as HTMLElement, segments[index + 1].start).appendChild(fragment);
+        this.getRowDockingRegion(host.closest('.slick-row') as HTMLElement, segments[index + 1].start, regions).appendChild(fragment);
       }
     });
   }
