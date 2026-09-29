@@ -9683,8 +9683,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const headersById = this.indexChromeElements(this._headerL, '.slick-header-column', (element) => element.dataset.id ?? '');
     const headerRowByIndex = this.indexChromeElements(this._headerRowL, '.slick-headerrow-column', columnIndexOf);
     const footerRowByIndex = this.indexChromeElements(this._footerRowL, '.slick-footerrow-column', columnIndexOf);
-    const leftEdgeIndex = this.dockingLayout.left[this.dockingLayout.left.length - 1]?.index;
-    const rightEdgeIndex = this.dockingLayout.right[0]?.index;
+    // A band's pinned edge is its last permanently pinned column, as in the body; a docked
+    // sticky column marks its own edge further in.
+    const leftEdgeIndex = this.dockingLayout.left.filter((entry) => !entry.sticky).pop()?.index;
+    const rightEdgeIndex = this.dockingLayout.right.find((entry) => !entry.sticky)?.index;
     const usesStickyPath = this.usesStickyColumnTransformPath();
 
     // Pass 1 (writes only): docking classes, the chrome cache and margin resets.
@@ -10589,18 +10591,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     stickyIndexes.forEach((index) =>
       this.dockingChromeByColumn.get(index)?.forEach((element) => this.applyStickyColumnTransform(element, index, 'column'))
     );
-
-    const leftEdgeIndex = this.dockingLayout.left[this.dockingLayout.left.length - 1]?.index;
-    const rightEdgeIndex = this.dockingLayout.right[0]?.index;
-    this.columns.forEach((column, index) => {
-      if (!column.pinned) {
-        return;
-      }
-      this.dockingChromeByColumn.get(index)?.forEach((element) => {
-        element.classList.toggle('slick-column-pinned-left-edge', column.pinned === 'left' && index === leftEdgeIndex);
-        element.classList.toggle('slick-column-pinned-right-edge', column.pinned === 'right' && index === rightEdgeIndex);
-      });
-    });
   }
 
   /** Recomputes the resolved left and right column docking layout. */

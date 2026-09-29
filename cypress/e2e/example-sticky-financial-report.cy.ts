@@ -39,15 +39,24 @@ describe('Example - Sticky Financial Report', { retries: 1 }, () => {
     });
   });
 
-  it('keeps the quarter and YTD headers sticky at the far right', () => {
+  it('releases Q3, Q4 and YTD at the far right, where they are in view, and docks Q2 as the left edge', () => {
     cy.get(scrollOwner).scrollTo('right');
 
+    // All three are docked at the right edge before the scroll, so these checks pass only once
+    // the grid has processed it.
     for (const [columnId, columnIndex] of [['q3', 12], ['q4', 16], ['ytd', 17]] as const) {
-      cy.get(`${grid} .slick-header-column[data-id="${columnId}"]`).should('have.class', 'slick-column-sticky');
-      cy.get(cell(0, columnIndex)).should('have.class', 'slick-cell-sticky');
+      cy.get(`${grid} .slick-header-column[data-id="${columnId}"]`).should('not.have.class', 'slick-column-sticky');
+      cy.get(cell(0, columnIndex)).should('not.have.class', 'slick-cell-sticky');
     }
 
-    cy.get(`${row(0)} .slick-cell-sticky-right-edge`).should(($cell) => {
+    // The account, Q1 and Q2 have scrolled out on the left and dock there; Q2 is the innermost,
+    // so it draws the separator, in the header as well as in the body.
+    cy.get(`${grid} .slick-header-column[data-id="q2"]`).should(($header) => {
+      expect($header[0].classList.contains('slick-column-sticky-left-edge'), 'Q2 header is the edge of the left band').to.equal(true);
+      expect(getComputedStyle($header[0]).boxShadow).not.to.equal('none');
+    });
+    cy.get(cell(0, 8)).should(($cell) => {
+      expect($cell[0].classList.contains('slick-cell-sticky-left-edge'), 'Q2 cell is the edge of the left band').to.equal(true);
       expect(getComputedStyle($cell[0], '::after').boxShadow).not.to.equal('none');
     });
   });

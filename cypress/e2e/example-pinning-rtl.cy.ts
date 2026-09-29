@@ -134,10 +134,42 @@ describe('Example - Pinned and Sticky Columns (RTL)', { retries: 1 }, () => {
       '.slick-pinned-right-cells-active > .slick-cell:first-child:not(.slick-cell-colspan-crossing-docking)::after',
     ]);
 
-    // Once the sticky column docks, it carries the leading band's edge, in the header as well.
+    // Once the sticky column docks, it draws its own separator further in, in the header as well
+    // as in the body, and the pinned pair keeps its separator.
     scrollToEnd();
     cy.get(`${grid} .slick-header-column[data-id="priority"]`).should('have.class', 'slick-column-sticky');
-    expectFacingCentre(['.slick-column-sticky-left-edge', '.slick-cell-sticky-left-edge::after']);
+    expectFacingCentre(['.slick-column-pinned-left-edge', '.slick-column-sticky-left-edge', '.slick-cell-sticky-left-edge::after']);
+  });
+
+  it('draws the same separators in the header as in the body', () => {
+    // Where each separator line is drawn: an inset shadow with a positive offset is a line on
+    // the element's left edge, and one with a negative offset a line on its right edge.
+    const separatorLines = (elements: HTMLElement[], pseudo?: string) =>
+      elements
+        .map((element) => {
+          const offset = Number(/\)\s*(-?[\d.]+)px/.exec(getComputedStyle(element, pseudo).boxShadow)?.[1] || 0);
+          const rect = element.getBoundingClientRect();
+          return offset > 0 ? rect.left : offset < 0 ? rect.right : undefined;
+        })
+        .filter((x): x is number => x !== undefined)
+        .sort((a, b) => a - b);
+
+    const expectHeaderMatchesBody = (state: string) =>
+      cy.window().then((win: any) => {
+        const doc = win.document;
+        const header = separatorLines(Array.from(doc.querySelectorAll(`${grid} .slick-header-column`)));
+        const body = separatorLines(Array.from(doc.querySelectorAll(`${grid} .grid-canvas .slick-row[data-row="1"] .slick-cell`)), '::after');
+        expect(body.length, `${state}: the body draws separators`).to.be.greaterThan(0);
+        expect(header.length, `${state}: the header draws as many separators as the body`).to.eq(body.length);
+        header.forEach((x, i) => expect(x, `${state}: header separator ${i + 1} lines up with the body`).to.be.closeTo(body[i], 2));
+      });
+
+    expectHeaderMatchesBody('before scrolling');
+
+    // The sticky column docks inside the pinned pair: the body shows both edges, so the header must too.
+    scrollToEnd();
+    cy.get(`${grid} .slick-header-column[data-id="priority"]`).should('have.class', 'slick-column-sticky');
+    expectHeaderMatchesBody('with the sticky column docked');
   });
 
   it('keeps a pinned row aligned with the scrolling rows after scrolling', () => {
