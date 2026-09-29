@@ -1,4 +1,12 @@
+---
+title: Pinning and sticky docking
+---
+
 # Pinning and sticky docking
+
+::: tip v6
+Version 6 replaces frozen panes with pinning and sticky docking (PR #1302). If you used `frozenColumn`, `frozenRow` or `frozenBottom`, see [Migrating from frozen panes (v5)](#migrating-from-frozen-panes-v5) below.
+:::
 
 SlickGrid renders one scrollable viewport with one canvas. Columns and rows can be *pinned*
 (always docked at an edge) or *sticky* (docked only while normal scrolling would move them out
@@ -30,9 +38,9 @@ const options = {
 - `Column.pinned: 'left' | 'right' | null` is the per-column form and is kept in sync with the
   option; `grid.setColumnPinning(columnId, side)` changes one column at runtime and
   `grid.getPinnedColumns(side?)` reads the current state.
-- Pinning is validated: a request that pins every visible column, or whose bands would consume
-  more than `docking.maxColumnViewportWidthPercent` of the viewport, is rejected and the previous
-  state is kept. `invalidColumnPinningPickerCallback` / `invalidColumnPinningWidthCallback`
+- Pinning is validated: a request that pins every visible column, or whose pinned columns
+  together are wider than the grid, is rejected and the previous state is kept.
+  `invalidColumnPinningPickerCallback` / `invalidColumnPinningWidthCallback`
   (default `alert`) receive the message (`invalidColumnPinning*Message`), and
   `skipPinningValidation: true` disables the check. Hiding a column through the Column Picker or
   Grid Menu runs the same validation. A colspan that would be split so that its pieces are no
@@ -98,7 +106,7 @@ const options = {
 
 | Option | Default | Meaning |
 |---|---|---|
-| `maxColumnViewportWidthPercent` | 60 | Maximum share of the viewport width the left and right bands (permanent + sticky) may occupy. |
+| `maxColumnViewportWidthPercent` | 60 | Maximum share of the viewport width the left and right bands may occupy. Permanent pins count against it but always stay pinned; a sticky column docks only while it still fits. |
 | `maxRowViewportHeightPercent` | 60 | Maximum share of the viewport height that *sticky* rows may occupy after permanent rows are deducted. |
 | `overflowStrategy` | `'conveyor'` | When the budget is exhausted: `conveyor` keeps the most recently activated candidates, `clamp` keeps the earliest ones. A candidate larger than the remaining budget stays in normal flow. |
 | `stickyActivationBuffer` | 2 | Activation buffer in pixels for sticky columns. Rows use the exact boundary. |
@@ -177,12 +185,9 @@ resolves to the column drawn there, not to the column the natural layout would p
 rejected set leaves the caller's column definitions untouched and fires no `onBeforeSetColumns`;
 it returns `false` in that case and `true` once the columns are applied.
 
-`onHeaderKeyDown` is typed `OnHeaderKeyDownEventArgs` and publishes `{ event, column, grid }`.
+The new `onHeaderKeyDown` event is typed `OnHeaderKeyDownEventArgs` and publishes `{ event, column, grid }`.
 
-The following grid methods were removed because nothing called them: `getColumnByIdx()` (use
-`getColumns()[idx]`), `getColumnHeaderByIndex()` (use `getColumnByIndex()`) and
-`removeCellCssStylesBatch()` (iterate `removeCellCssStyles()`). `getTopPanels()` returns the one
-top panel this layout has rather than the same element twice.
+`getTopPanels()` returns the one top panel this layout has; v5 returned a left and a right panel.
 
 Header, header-row, footer and cell events keep their argument shapes. `getGridPosition()` and
 `getActiveCellPosition()` still return document-relative positions. `applyHtmlCode()`,
@@ -198,8 +203,29 @@ are unchanged from v5.
 
 ## Examples
 
-`examples/example-pinning-columns.html`, `example-pinning-columns-and-rows.html`,
-`example-pinning-rows.html`, `example-pinning-columns-and-column-group.html`,
-`example-pinning-columns-and-rows-spreadsheet.html`, `example-variable-row-height-pinning.html`
-and `example-sticky-financial-report.html`. Browser coverage lives in `cypress/e2e/*pinning*`,
-`*sticky*`, `quirk-pinning-*` and `example-colspan.cy.ts`.
+In the repository's `examples/` folder:
+
+- Columns: `example-pinning-columns.html`, `example-pinning-columns-large.html`,
+  `example-pinning-columns-autoheight.html`, `example-pinning-columns-tabs.html`
+- Columns and rows: `example-pinning-columns-and-rows.html`,
+  `example-pinning-columns-and-rows-spreadsheet.html`, `example-pinning-rows.html`,
+  `example-pinning-row-reordering.html`
+- Column groups: `example-pinning-columns-and-column-group.html`,
+  `example-pinning-columns-and-column-group-hidden-col.html`
+- Sticky docking: `example-sticky-financial-report.html`
+- Right to left: `example-pinning-rtl.html`
+- Variable row height: `example-variable-row-height-pinning.html`
+
+Browser coverage lives in `cypress/e2e/*pinning*`, `*sticky*`, `quirk-pinning-*`,
+`quirk-docking-*` and `example-colspan.cy.ts`.
+
+## See also
+
+- [Migrating to v6](/in-depth/migration-v6)
+- Reference: [`pinning`](/reference/grid#opt-pinning), [`stickyRows`](/reference/grid#opt-stickyRows),
+  [`docking`](/reference/grid#opt-docking), [`skipPinningValidation`](/reference/grid#opt-skipPinningValidation),
+  the column properties [`pinned`](/reference/column#col-pinned) and [`sticky`](/reference/column#col-sticky),
+  and the methods [`setColumnPinning()`](/reference/grid#m-setColumnPinning),
+  [`setColumnStickiness()`](/reference/grid#m-setColumnStickiness),
+  [`getPinnedColumns()`](/reference/grid#m-getPinnedColumns) and
+  [`validateColumnPinning()`](/reference/grid#m-validateColumnPinning).

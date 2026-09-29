@@ -57,7 +57,7 @@ export default defineConfig({
             { text: 'Selection models', link: '/in-depth/selection' },
             { text: 'Cell editors', link: '/in-depth/custom-editors' },
             { text: 'Formatters', link: '/in-depth/formatters' },
-            { text: 'Frozen rows & columns', link: '/in-depth/frozen' },
+            { text: 'Pinning & sticky docking', link: '/in-depth/pinning-sticky' },
             { text: 'Menus & header UI', link: '/in-depth/menus' },
             { text: 'Theming', link: '/in-depth/theming' },
             { text: 'Plugins', link: '/in-depth/plugins' },

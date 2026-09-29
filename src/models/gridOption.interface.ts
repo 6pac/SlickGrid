@@ -422,10 +422,15 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
 
   /** Skip validation that pinned columns leave a usable center region. */
   skipPinningValidation?: boolean;
+  /** Message passed to `invalidColumnPinningPickerCallback` when a pinning request would leave no visible center column. */
   invalidColumnPinningPickerMessage?: string;
+  /** Message passed to `invalidColumnPinningPickerCallback` when a pinning request that is not sequential from an edge would split a colspan. */
   invalidColumnPinningSequenceMessage?: string;
+  /** Defaults to `alert()`, called with the picker or sequence message when the grid rejects a pinning request. */
   invalidColumnPinningPickerCallback?: (error: string) => void;
+  /** Message passed to `invalidColumnPinningWidthCallback` when the pinned columns together are wider than the grid. */
   invalidColumnPinningWidthMessage?: string;
+  /** Defaults to `alert()`, called with the width message when the grid rejects a pinning request. */
   invalidColumnPinningWidthCallback?: (error: string) => void;
 
   /** What is the top panel height in pixels (only accepts an integer) */
