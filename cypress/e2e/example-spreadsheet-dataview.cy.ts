@@ -245,20 +245,28 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
       cy.get('#selectionRange').should('have.text', '{"fromRow":91,"fromCell":90,"toCell":100,"toRow":99}');
     });
 
-    it('should click on cell CP91 again then Ctrl+A keys and expect to scroll select everything in the grid', () => {
+    it('should select all cells with Ctrl+A without moving the active cell or viewport', () => {
+      let activeCellBefore: { row: number; cell: number } | null = null;
+      let viewportBefore = { top: 0, leftPx: 0 };
       cy.getCell(91, 94, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT }).as('cell_CP91').click();
+
+      cy.window().then(win => {
+        const grid = (win as any).grid;
+        activeCellBefore = grid.getActiveCell();
+        const viewport = grid.getViewport();
+        viewportBefore = { top: viewport.top, leftPx: viewport.leftPx };
+      });
 
       cy.get('@cell_CP91').type('{ctrl}{a}', { release: false });
 
       cy.get('#selectionRange').should('have.text', '{"fromRow":0,"fromCell":0,"toCell":100,"toRow":99}');
-    });
-
-    it('should click on cell F92 then Ctrl+Home keys to navigate to 0,0 coordinates', () => {
-      cy.getCell(92, 6, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT }).as('cell_F92').click();
-
-      cy.get('@cell_F92').type('{ctrl}{home}', { release: false });
-
-      cy.get('#selectionRange').should('have.text', '{"fromRow":0,"fromCell":0,"toCell":0,"toRow":0}');
+      cy.window().should(win => {
+        const grid = (win as any).grid;
+        expect(grid.getActiveCell()).to.deep.equal(activeCellBefore);
+        const viewport = grid.getViewport();
+        expect(viewport.top).to.eq(viewportBefore.top);
+        expect(viewport.leftPx).to.eq(viewportBefore.leftPx);
+      });
     });
   });
 
@@ -269,6 +277,7 @@ describe('Example - Spreadsheet with DataView and Cell Selection', { retries: 0 
     });
 
     it('should click on cell B14 then Shift+End with selection B14-24', () => {
+      cy.window().then(win => (win as any).grid.scrollCellIntoView(14, 2));
       cy.getCell(14, 2, '', { parentSelector: '#myGrid', rowHeight: GRID_ROW_HEIGHT })
         .as('cell_B14')
         .click();

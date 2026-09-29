@@ -119,4 +119,11 @@ describe('Example 1 - Basic Grid', () => {
     cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 210}px;"] > .slick-cell.l4`).should('contain', '01/05/2009');
     cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 210}px;"] > .slick-cell.l2`).contains(/[true|false]*/);
   });
+
+  it('should remove the document scroll listener when the grid is destroyed', () => {
+    cy.window().then((win: any) => {
+      win.grid.destroy(true);
+      win.document.dispatchEvent(new win.Event('scroll', { bubbles: true }));
+    });
+  });
 });

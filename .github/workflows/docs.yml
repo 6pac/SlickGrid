@@ -1,0 +1,85 @@
+# SlickGrid documentation — build & deploy to GitHub Pages.
+#
+# It:
+#   1. regenerates the API reference from src/ (npm run api),
+#   2. runs the drift gate (fails on NEW undocumented public API),
+#   3. builds the VitePress site with the correct base path,
+#   4. publishes it to GitHub Pages from master (other branches only build).
+#
+# Set the base path to match the Pages URL. For a project site served at
+# https://6pac.github.io/SlickGrid/ the base is /SlickGrid/.
+
+name: Docs
+on:
+  push:
+    branches:
+      - master
+      - next-v6
+    paths:
+      - '.github/workflows/docs.yml'
+      - 'docs/**'
+      - 'vitepress/**'
+      - 'examples/**'
+      - 'src/**'
+      - 'scripts/**'
+      - 'package.json'
+      - 'package-lock.json'
+      - 'tsconfig*.json'
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write
+
+# one shared group: all branches deploy to the same single Pages site
+concurrency:
+  group: pages
+  cancel-in-progress: false
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: vitepress
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm ci
+      - name: Regenerate API reference from source
+        run: npm run api
+      - name: Drift gate (fail on new undocumented public API)
+        run: npm run drift -- --strict
+      - name: Build site
+        env:
+          DOCS_BASE: /SlickGrid/
+        run: npm run docs:build
+      - name: Install SlickGrid dependencies
+        working-directory: .
+        run: npm ci
+      - name: Lint SlickGrid sources
+        working-directory: .
+        run: npm run lint
+      - name: build SlickGrid assets into the VitePress site
+        working-directory: .
+        run: node scripts/builds.mjs --docs
+      - name: add Examples folder to the VitePress site
+        working-directory: .
+        run: cp -a examples vitepress/.vitepress/dist/
+      - uses: actions/upload-pages-artifact@v5
+        with:
+          path: vitepress/.vitepress/dist
+
+  deploy:
+    needs: build
+    if: github.ref == 'refs/heads/master'
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - id: deployment
+        uses: actions/deploy-pages@v4

@@ -11,6 +11,10 @@
 .vs*
 .eslintcache
 node_modules/*
+vitepress/.vitepress/dist/
+vitepress/.vitepress/cache/
+vitepress/.vitepress/.temp/
+vitepress/.vitepress/*.timestamp-*.mjs
 src/models/*.js
 src/plugins/*.js
 src/controls/*.js
