@@ -36,10 +36,11 @@ const options = {
   entry is never matched against a numeric column id. Arrays may be non-contiguous
   (`left: ['account', 'status']`).
 - `Column.pinned: 'left' | 'right' | null` is the per-column form and is kept in sync with the
-  option; `grid.setColumnPinning(columnId, side)` changes one column at runtime and
+  option; `grid.setColumnPinning(columnId, side)` changes one column at runtime, records every
+  pinned column by id so the pins follow their columns through a reorder, and
   `grid.getPinnedColumns(side?)` reads the current state.
 - Pinning is validated: a request that pins every visible column, or whose pinned columns
-  together are wider than the grid, is rejected and the previous state is kept.
+  together would leave the centre band no width, is rejected and the previous state is kept.
   `invalidColumnPinningPickerCallback` / `invalidColumnPinningWidthCallback`
   (default `alert`) receive the message (`invalidColumnPinning*Message`), and
   `skipPinningValidation: true` disables the check. Hiding a column through the Column Picker or

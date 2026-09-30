@@ -3646,7 +3646,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const shouldValidateProspectivePinning = this.hasConfiguredColumnDocking() || newColumns.some((column) => !!column?.pinned || !!column?.sticky);
     if (shouldValidateProspectivePinning) {
       const prospectiveColumns = newColumns.map((column) => (column ? { ...column } : column));
-      this.applyColumnPinningOptions(prospectiveColumns);
       if (!this.validateColumnPinning(undefined, true, prospectiveColumns)) {
         return false;
       }
@@ -6903,6 +6902,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * update when the grid is moved beneath a different scrollable ancestor.
    */
   protected bindAncestorScrollEvents(): void {
+    if (!this.initialized || !this._viewport || !this._container) {
+      return;
+    }
     this._bindingEventService.bind(
       document,
       'scroll',
@@ -7143,8 +7145,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (this.scrollTop < 0) {
       this.scrollTop = 0;
     }
-    if (this.scrollLeft < 0 && !this._options.rtl) {
-      this.scrollLeft = 0;
+    if (this._options.rtl) {
+      this.scrollLeft = Math.max(-maxScrollDistanceX, Math.min(0, this.scrollLeft));
+    } else {
+      this.scrollLeft = Math.max(0, Math.min(maxScrollDistanceX, this.scrollLeft));
     }
 
     const vScrollDist = Math.abs(this.scrollTop - this.prevScrollTop);
@@ -9848,7 +9852,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       Object.values(regions).forEach((region) => {
         const elements = Array.from(region.children).filter((element) => element.matches(selector)) as HTMLElement[];
-        elements.sort((a, b) => getColumnIndex(a) - getColumnIndex(b)).forEach((element) => region.appendChild(element));
+        const sortedElements = [...elements].sort((a, b) => getColumnIndex(a) - getColumnIndex(b));
+        if (elements.some((element, index) => element !== sortedElements[index])) {
+          sortedElements.forEach((element) => region.appendChild(element));
+        }
       });
     };
 
@@ -10306,7 +10313,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const scrollbarWidth = this.viewportHasVScroll ? this.scrollbarDimensions?.width || 0 : 0;
     const outerGridWidth = Utils.width(this._container) || 0;
     const availablePinningWidth = Math.max(viewportWidth + scrollbarWidth, outerGridWidth);
-    if (viewportWidth > 0 && widths.left + widths.right > availablePinningWidth) {
+    if (viewportWidth > 0 && widths.left + widths.right >= availablePinningWidth) {
       return this.rejectPinning(this._options.invalidColumnPinningWidthCallback, this._options.invalidColumnPinningWidthMessage, forceAlert);
     }
     return true;
@@ -10713,7 +10720,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /** Keep permanent/active docked rows outside the native scrolling canvas. */
   protected syncDockedRowContainers(): void {
-    if (!this._dockingOverlay || !this._canvasNode) {
+    if (!this._dockingOverlay || !this._canvasNode || !this._viewportNode) {
       return;
     }
     const layout = this.rowDockingLayout;
@@ -10766,18 +10773,19 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     column.pinned = pinned;
 
     // Keep the unified option authoritative when callers change a column
-    // interactively (for example through the Header Menu).
+    // interactively (for example through the Header Menu). The references are stored as
+    // ids, so the pins follow their columns through a reorder.
     if (this._options.pinning?.columns !== undefined) {
-      const left = this.normalizeColumnPinningReferences(this._options.pinning.columns.left, 'left', this.columns).filter(
-        (index) => index !== columnIndex
-      );
-      const right = this.normalizeColumnPinningReferences(this._options.pinning.columns.right, 'right', this.columns).filter(
-        (index) => index !== columnIndex
-      );
+      const idsOf = (references: PinnedColumns['left'], side: DockingSide) =>
+        this.normalizeColumnPinningReferences(references, side, this.columns)
+          .filter((index) => index !== columnIndex)
+          .map((index) => String(this.columns[index].id));
+      const left = idsOf(this._options.pinning.columns.left, 'left');
+      const right = idsOf(this._options.pinning.columns.right, 'right');
       if (pinned === 'left') {
-        left.push(columnIndex);
+        left.push(String(column.id));
       } else if (pinned === 'right') {
-        right.push(columnIndex);
+        right.push(String(column.id));
       }
       this._options.pinning.columns = { left, right };
     }
@@ -10955,8 +10963,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const verticalScrollbarWidth = Math.max(0, this._viewportNode.offsetWidth - viewportWidth);
     const contentWidth = this.dockingLayout.contentWidth || this.canvasWidth;
     const hasHorizontalOverflow = contentWidth > viewportWidth;
-    this.dockingHorizontalScrollbarReserved = hasHorizontalOverflow && scrollbarHeight > 0;
     this._dockingHorizontalScroller.style.width = `${viewportWidth}px`;
+    this.dockingHorizontalScrollbarReserved = hasHorizontalOverflow && scrollbarHeight > 0;
     this._dockingHorizontalScroller.style.height = hasHorizontalOverflow ? `${scrollbarHeight}px` : '0px';
     this._dockingHorizontalSpacer.style.width = `${Math.max(contentWidth, viewportWidth)}px`;
     this._container.style.setProperty('--slick-docking-viewport-width', `${this._viewportNode.clientWidth}px`);
