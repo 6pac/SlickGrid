@@ -6,5 +6,6 @@ export interface RowInfo {
   startIndex: number;
   endIndex: number;
   valueArr: any[] | null;
+  rowIndexArr?: number[];
   getRowVal: (i: any) => any;
 }
