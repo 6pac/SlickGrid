@@ -119,17 +119,20 @@ const harnessHtml = `<!doctype html>
       var g4 = makeGrid('g4', 700, makeColumns(20, 100), { showHeaderRow: true, headerRowHeight: 30, createFooterRow: true, showFooterRow: true,
         pinning: { columns: { left: 0, right: 2 } } });
       var host = document.getElementById('g4');
-      check('right-pinned chrome starts at the edge', edgeGap(host, '.slick-header-column.slick-column-pinned-right') === 0, String(edgeGap(host, '.slick-header-column.slick-column-pinned-right')));
+      // The viewport box includes its vertical scrollbar, so the band's edge is measured against
+      // the body cells, which sit at the visible edge in every browser.
+      var vp = host.querySelector('.slick-viewport');
+      var scrollbar = vp.offsetWidth - vp.clientWidth;
+      var bodyGap = edgeGap(host, '.slick-row[data-row="2"] .slick-pinned-right-cells');
+      check('the right band starts at the viewport edge, inside the scrollbar', bodyGap !== null && bodyGap >= -1 && bodyGap <= scrollbar + 1, bodyGap + ' vs scrollbar ' + scrollbar);
       host.style.width = '520px';
       g4.resizeCanvas();
-      var gaps = {
-        header: edgeGap(host, '.slick-header-column.slick-column-pinned-right'),
-        filter: edgeGap(host, '.slick-headerrow-column.slick-column-pinned-right'),
-        footer: edgeGap(host, '.slick-footerrow-column.slick-column-pinned-right'),
-        body: edgeGap(host, '.slick-row[data-row="2"] .slick-pinned-right-cells .slick-cell')
-      };
-      Object.keys(gaps).forEach(function (part) {
-        check('after a narrower container the right-pinned ' + part + ' cells sit at the new edge', gaps[part] !== null && Math.abs(gaps[part]) < 1, String(gaps[part]));
+      bodyGap = edgeGap(host, '.slick-row[data-row="2"] .slick-pinned-right-cells');
+      check('after a narrower container the right band follows the viewport edge', bodyGap !== null && bodyGap >= -1 && bodyGap <= scrollbar + 1, bodyGap + ' vs scrollbar ' + scrollbar);
+      var parts = { header: '.slick-header-column.slick-column-pinned-right', filter: '.slick-headerrow-column.slick-column-pinned-right', footer: '.slick-footerrow-column.slick-column-pinned-right' };
+      Object.keys(parts).forEach(function (part) {
+        var gap = edgeGap(host, parts[part]);
+        check('after a narrower container the right-pinned ' + part + ' cells sit where the body cells sit', gap !== null && Math.abs(gap - bodyGap) < 1, gap + ' vs body ' + bodyGap);
       });
       g4.destroy();
     }
@@ -137,16 +140,19 @@ const harnessHtml = `<!doctype html>
     if (name === 'rtlOnLtrPage') {
       var g5 = makeGrid('g5', 700, makeColumns(20, 100), { rtl: true, showHeaderRow: true, headerRowHeight: 30, pinning: { columns: { left: 0, right: 2 } } });
       var rtlHost = document.getElementById('g5');
-      var vr = rtlHost.querySelector('.slick-viewport').getBoundingClientRect();
+      var rtlVp = rtlHost.querySelector('.slick-viewport');
+      var rtlScrollbar = rtlVp.offsetWidth - rtlVp.clientWidth;
+      var vr = rtlVp.getBoundingClientRect();
       var leftGap = function (selector) {
         var els = rtlHost.querySelectorAll(selector), gap = Infinity;
         for (var i = 0; i < els.length; i++) { gap = Math.min(gap, els[i].getBoundingClientRect().left - vr.left); }
         return els.length ? Math.round(gap * 100) / 100 : null;
       };
       check('the container carries its own direction', getComputedStyle(rtlHost).direction === 'rtl' && document.documentElement.dir !== 'rtl');
-      check('trailing-band headers sit at the physical left edge', Math.abs(leftGap('.slick-header-column.slick-column-pinned-right')) < 1, String(leftGap('.slick-header-column.slick-column-pinned-right')));
-      check('trailing-band filter cells sit at the physical left edge', Math.abs(leftGap('.slick-headerrow-column.slick-column-pinned-right')) < 1, String(leftGap('.slick-headerrow-column.slick-column-pinned-right')));
-      check('trailing-band body cells sit at the physical left edge', Math.abs(leftGap('.slick-row[data-row="2"] .slick-pinned-right-cells')) < 1, String(leftGap('.slick-row[data-row="2"] .slick-pinned-right-cells')));
+      var bodyLeft = leftGap('.slick-row[data-row="2"] .slick-pinned-right-cells');
+      check('the trailing band starts at the physical left edge, inside the scrollbar', bodyLeft !== null && bodyLeft >= -1 && bodyLeft <= rtlScrollbar + 1, bodyLeft + ' vs scrollbar ' + rtlScrollbar);
+      check('trailing-band headers sit where the body cells sit', Math.abs(leftGap('.slick-header-column.slick-column-pinned-right') - bodyLeft) < 1, leftGap('.slick-header-column.slick-column-pinned-right') + ' vs body ' + bodyLeft);
+      check('trailing-band filter cells sit where the body cells sit', Math.abs(leftGap('.slick-headerrow-column.slick-column-pinned-right') - bodyLeft) < 1, leftGap('.slick-headerrow-column.slick-column-pinned-right') + ' vs body ' + bodyLeft);
       g5.destroy();
     }
 
