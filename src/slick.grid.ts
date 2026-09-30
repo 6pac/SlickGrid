@@ -964,11 +964,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this._focusSink2 = this._focusSink.cloneNode(true) as HTMLDivElement;
     this._container.appendChild(this._focusSink2);
 
+    this.applyRTL(this._options.rtl ?? false);
     if (!this._options.explicitInitialization) {
       this.finishInitialization();
     }
-
-    this.applyRTL(this._options.rtl ?? false);
   }
 
   /**
@@ -6275,13 +6274,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (dockingChanged) {
         this.updateColumnCaches();
         this.applyColumnWidths();
-        this.applyDockingToColumnChrome();
         this.invalidateAllRows();
       }
 
       // Keep compositor transforms in sync even when the numeric scroll offset
       // itself did not change during resize.
       this.scrollToX(this.scrollLeft);
+      this.applyDockingToColumnChrome();
 
       this.updateRowCount();
       this.handleScroll();

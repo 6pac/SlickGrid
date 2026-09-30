@@ -148,8 +148,10 @@ rendered layout (bands, overlay rows, non-contiguous shifts), including rows tha
 
 ## Right-to-left grids
 
-Pinning and sticky docking work in a `rtl: true` grid. The bands are named for the reading
-order rather than for the screen, so the same configuration describes both directions:
+Pinning and sticky docking work in a `rtl: true` grid; the grid applies `dir="rtl"` to its own
+container before it lays anything out, so the page around it can stay left to right. The bands
+are named for the reading order rather than for the screen, so the same configuration describes
+both directions:
 
 | Option | Left to right | Right to left |
 |---|---|---|

@@ -7,6 +7,10 @@
  *   later restores a column's own `pinned` flag.
  * - `setColumnPinning()` records the column's id, so the pin follows the column through a
  *   reorder and can be removed afterwards.
+ * - `resizeCanvas()` places right-pinned header, filter and footer cells at the new edge after
+ *   the container changed width without any docking change.
+ * - A grid created with `rtl: true` on a left-to-right page applies its own direction before its
+ *   headers are built, so the trailing band is placed at the physical left edge.
  */
 
 const harnessHtml = `<!doctype html>
@@ -111,6 +115,41 @@ const harnessHtml = `<!doctype html>
       g3.destroy();
     }
 
+    if (name === 'resize') {
+      var g4 = makeGrid('g4', 700, makeColumns(20, 100), { showHeaderRow: true, headerRowHeight: 30, createFooterRow: true, showFooterRow: true,
+        pinning: { columns: { left: 0, right: 2 } } });
+      var host = document.getElementById('g4');
+      check('right-pinned chrome starts at the edge', edgeGap(host, '.slick-header-column.slick-column-pinned-right') === 0, String(edgeGap(host, '.slick-header-column.slick-column-pinned-right')));
+      host.style.width = '520px';
+      g4.resizeCanvas();
+      var gaps = {
+        header: edgeGap(host, '.slick-header-column.slick-column-pinned-right'),
+        filter: edgeGap(host, '.slick-headerrow-column.slick-column-pinned-right'),
+        footer: edgeGap(host, '.slick-footerrow-column.slick-column-pinned-right'),
+        body: edgeGap(host, '.slick-row[data-row="2"] .slick-pinned-right-cells .slick-cell')
+      };
+      Object.keys(gaps).forEach(function (part) {
+        check('after a narrower container the right-pinned ' + part + ' cells sit at the new edge', gaps[part] !== null && Math.abs(gaps[part]) < 1, String(gaps[part]));
+      });
+      g4.destroy();
+    }
+
+    if (name === 'rtlOnLtrPage') {
+      var g5 = makeGrid('g5', 700, makeColumns(20, 100), { rtl: true, showHeaderRow: true, headerRowHeight: 30, pinning: { columns: { left: 0, right: 2 } } });
+      var rtlHost = document.getElementById('g5');
+      var vr = rtlHost.querySelector('.slick-viewport').getBoundingClientRect();
+      var leftGap = function (selector) {
+        var els = rtlHost.querySelectorAll(selector), gap = Infinity;
+        for (var i = 0; i < els.length; i++) { gap = Math.min(gap, els[i].getBoundingClientRect().left - vr.left); }
+        return els.length ? Math.round(gap * 100) / 100 : null;
+      };
+      check('the container carries its own direction', getComputedStyle(rtlHost).direction === 'rtl' && document.documentElement.dir !== 'rtl');
+      check('trailing-band headers sit at the physical left edge', Math.abs(leftGap('.slick-header-column.slick-column-pinned-right')) < 1, String(leftGap('.slick-header-column.slick-column-pinned-right')));
+      check('trailing-band filter cells sit at the physical left edge', Math.abs(leftGap('.slick-headerrow-column.slick-column-pinned-right')) < 1, String(leftGap('.slick-headerrow-column.slick-column-pinned-right')));
+      check('trailing-band body cells sit at the physical left edge', Math.abs(leftGap('.slick-row[data-row="2"] .slick-pinned-right-cells')) < 1, String(leftGap('.slick-row[data-row="2"] .slick-pinned-right-cells')));
+      g5.destroy();
+    }
+
     out.push(pass ? '\\nALL CHECKS PASSED' : '\\nCHECKS FAILED');
     document.getElementById('checkResults').textContent = out.join('\\n');
     return pass;
@@ -135,4 +174,6 @@ describe('Quirk - pinning option contracts', { retries: 1 }, () => {
   it('rejects pins that leave the centre band no width', () => run('centreWidth'));
   it('leaves the saved pinning state untouched when setColumns() is rejected', () => run('rejectedSetColumns'));
   it('keeps an interactive pin on its column through a reorder and can remove it', () => run('pinFollowsColumn'));
+  it('places right-pinned chrome at the new edge after the container is resized', () => run('resize'));
+  it('lays out an rtl grid on a left-to-right page from its own direction', () => run('rtlOnLtrPage'));
 });
