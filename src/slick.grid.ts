@@ -5156,7 +5156,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       }
     }
 
-    if (widthChanged || forceColumnWidthsUpdate || this.hasDockedColumns()) {
+    // Row-count updates pass false; resizing docked columns still needs a refresh
+    // even when the rendered canvas width stays unchanged.
+    if (widthChanged || forceColumnWidthsUpdate || (forceColumnWidthsUpdate !== false && this.hasDockedColumns())) {
       this.applyColumnWidths();
       this.applyDockingToColumnChrome();
       this.applyDockingDimensionsToRows();
