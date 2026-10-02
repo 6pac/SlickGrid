@@ -3445,7 +3445,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    */
   protected applyColumnWidths(): void {
     let rule: any;
-    const centerWidth = this.hasDockedColumns() ? this.getDockingRenderedWidths().center : this.dockingLayout.centerWidth;
+    const renderedWidths = this.getDockingRenderedWidths();
+    const centerWidth = this.hasDockedColumns() ? renderedWidths.center : this.dockingLayout.centerWidth;
     for (let i = 0; i < this.columns.length; i++) {
       if (this.columns[i]) {
         const w = this.columns[i].hidden ? 0 : this.columns[i].width || 0;
@@ -3457,8 +3458,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           useNaturalCenterPosition || docked?.band === 'center'
             ? centerWidth
             : docked?.band === 'left'
-              ? this.dockingLayout.leftWidth
-              : this.dockingLayout.rightWidth;
+              ? renderedWidths.left
+              : renderedWidths.right;
 
         rule = this.getColumnCssRules(i);
         if (this._options.rtl) {
@@ -5141,7 +5142,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       }
     }
 
-    if (widthChanged || forceColumnWidthsUpdate) {
+    if (widthChanged || forceColumnWidthsUpdate || this.hasDockedColumns()) {
       this.applyColumnWidths();
       this.applyDockingToColumnChrome();
       this.applyDockingDimensionsToRows();
@@ -9657,6 +9658,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (!this.usesDockingChromeRegions()) {
       return;
     }
+    this.clearDockingNativeHorizontalScrollOffsets();
     this.syncDockingChromeRegions();
     this.dockingChromeByColumn.clear();
     const columnIndexOf = (element: HTMLElement) => /(?:^|\s)l(\d+)(?:\s|$)/.exec(element.className)?.[1] ?? '';
@@ -11175,12 +11177,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       }
       consumedWidth += widthOf(segment);
 
-      const bandWidth =
-        segment.band === 'left'
-          ? this.dockingLayout.leftWidth
-          : segment.band === 'right'
-            ? this.dockingLayout.rightWidth
-            : this.getDockingRenderedWidths().center;
+      const bandWidth = this.getDockingRenderedWidths()[segment.band];
       const left = this.columnPosLeft[segment.start] ?? 0;
       const right = this.columnPosRight[segment.end] ?? left;
       if (this._options.rtl) {
