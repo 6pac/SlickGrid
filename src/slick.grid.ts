@@ -546,7 +546,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   > = new Map();
   protected rowDockingLayout: RowDockingLayout = EMPTY_ROW_DOCKING_LAYOUT;
   protected dockingByRow: Map<number, DockedRow> = new Map<number, DockedRow>();
-  protected dockingRowIndexByReference: Map<number | string, number> = new Map<number | string, number>();
+  protected dockingRowIndexByReference: Map<number | string, number | undefined> = new Map();
   /** Set when row references were invalidated; the next render re-resolves the row docking layout. */
   protected rowDockingStale = false;
   protected dockingChromeByColumn: Map<number, HTMLElement[]> = new Map<number, HTMLElement[]>();
@@ -10664,11 +10664,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const idProperty = this.getDataViewIdProperty();
     if (Array.isArray(this.data)) {
       const index = this.data.findIndex((item) => item && typeof item === 'object' && (item as Record<string, unknown>)[idProperty] === id);
-      if (index >= 0) {
-        this.dockingRowIndexByReference.set(cacheKey, index);
-      }
-      return index >= 0 ? index : undefined;
+      const row = index >= 0 ? index : undefined;
+      this.dockingRowIndexByReference.set(cacheKey, row);
+      return row;
     }
+    this.dockingRowIndexByReference.set(cacheKey, undefined);
     return undefined;
   }
 
