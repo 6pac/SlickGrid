@@ -147,18 +147,17 @@
   grid-column: 1;
   position: sticky;
   inset-inline-start: 0;
-  z-index: 20;
 }
 
 .slick-row-docked > .slick-scrolling-cells { grid-column: 2; }
 .slick-row-docked > .slick-pinned-right-cells {
   grid-column: 3;
   justify-self: end;
-  z-index: 20;
 }
 
 .slick-row-docked > .slick-pinned-left-cells,
 .slick-row-docked > .slick-pinned-right-cells {
+  z-index: 20;
   background-color: var(--alpine-bg-color, #fff);
 }
 
@@ -329,10 +328,6 @@
   :is(.slick-header-column, .slick-headerrow-column, .slick-footerrow-column).slick-column-pinned-left:not(.slick-column-sticky),
   :is(.slick-header-column, .slick-headerrow-column, .slick-footerrow-column).slick-column-pinned-right:not(.slick-column-sticky) {
     transform: translate3d(calc(var(--slick-docking-scroll-left, 0px) + var(--slick-docking-chrome-offset, 0px)), 0, 0) !important;
-  }
-
-  :is(.slick-header-column, .slick-headerrow-column, .slick-footerrow-column).slick-docking-chrome-right {
-    transform: translate3d(var(--slick-docking-scroll-left, 0), 0, 0) !important;
   }
 }
 
