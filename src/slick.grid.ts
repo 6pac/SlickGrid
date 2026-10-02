@@ -2704,8 +2704,20 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (!colDef) {
       return;
     }
+    if (!this.canvas_context) {
+      this.canvas = document.createElement('canvas');
+      if (this.canvas?.getContext) { this.canvas_context = this.canvas.getContext('2d'); }
+    }
     const gridCanvas = this.getCanvasNode(0, 0) as HTMLElement;
     this.getColAutosizeWidth(colDef, colIndex, gridCanvas, isInit || false, colIndex);
+
+    const colWidth = colDef.autoSize?.widthPx;
+    if (colWidth === undefined) {
+      return;
+    }
+    const reRender = !!colDef.rerenderOnResize && colDef.width !== colWidth;
+    colDef.width = colWidth;
+    this.reRenderColumns(reRender);
   }
 
   /**
@@ -2922,7 +2934,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       // default to column colDataTypeOf (can be used if initially there are no data rows)
       let colDataTypeOf = autoSize.colDataTypeOf;
       let colDataItem: any;
-      if (dl > 0) {
+      if (dl > 0 && !colDataTypeOf) {
         const tempRow = this.getDataItem(0);
         if (tempRow) {
           colDataItem = tempRow[columnDef.field as keyof TData];
@@ -3054,32 +3066,28 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     // now use valueFilterMode to further filter selected rows
     if (autoSize.valueFilterMode === ValueFilterMode.DeDuplicate) {
-      const rowsDict: any = {};
+      const rowsDict: Record<string, number> = Object.create(null);
       for (i = rowInfo.startIndex; i <= rowInfo.endIndex; i++) {
-        rowsDict[rowInfo.getRowVal(i)] = true;
-      }
-      if (Object.keys) {
-        rowInfo.valueArr = Object.keys(rowsDict);
-      } else {
-        rowInfo.valueArr = [];
-        for (const v in rowsDict) {
-          if (rowsDict) {
-            rowInfo.valueArr.push(v);
-          }
+        tempVal = rowInfo.getRowVal(i);
+        if (rowsDict[tempVal] === undefined) {
+          rowsDict[tempVal] = i;
         }
       }
+      rowInfo.valueArr = Object.keys(rowsDict);
+      rowInfo.rowIndexArr = rowInfo.valueArr.map((v) => rowsDict[v]);
       rowInfo.startIndex = 0;
-      rowInfo.endIndex = rowInfo.length - 1;
+      rowInfo.endIndex = rowInfo.valueArr.length - 1;
     }
 
     if (autoSize.valueFilterMode === ValueFilterMode.GetGreatestAndSub) {
       // get greatest abs value in data
       let maxVal;
       let maxAbsVal = -1;
+      let maxIndex = rowInfo.startIndex;
       for (i = rowInfo.startIndex; i <= rowInfo.endIndex; i++) {
         tempVal = rowInfo.getRowVal(i);
         if (Math.abs(tempVal) > maxAbsVal) {
-          maxVal = tempVal; maxAbsVal = Math.abs(tempVal);
+          maxVal = tempVal; maxAbsVal = Math.abs(tempVal); maxIndex = i;
         }
       }
       // now substitute a '9' for all characters (to get widest width) and convert back to a number
@@ -3088,14 +3096,16 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       maxVal = +maxVal;
 
       rowInfo.valueArr = [maxVal];
+      rowInfo.rowIndexArr = [maxIndex];
       rowInfo.startIndex = rowInfo.endIndex = 0;
     }
 
     if (autoSize.valueFilterMode === ValueFilterMode.GetLongestTextAndSub) {
       // get greatest abs value in data
+      let maxIndex = rowInfo.startIndex;
       for (i = rowInfo.startIndex; i <= rowInfo.endIndex; i++) {
         tempVal = rowInfo.getRowVal(i);
-        if ((tempVal || '').length > maxLen) { maxLen = tempVal.length; }
+        if ((tempVal || '').length > maxLen) { maxLen = tempVal.length; maxIndex = i; }
       }
       // now substitute a 'm' for all characters
       tempVal = Array(maxLen + 1).join('m');
@@ -3103,12 +3113,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       rowInfo.maxLen = maxLen;
       rowInfo.valueArr = [tempVal];
+      rowInfo.rowIndexArr = [maxIndex];
       rowInfo.startIndex = rowInfo.endIndex = 0;
     }
 
     if (autoSize.valueFilterMode === ValueFilterMode.GetLongestText) {
       // get greatest abs value in data
-      maxLen = 0; let maxIndex = 0;
+      maxLen = 0; let maxIndex = rowInfo.startIndex;
       for (i = rowInfo.startIndex; i <= rowInfo.endIndex; i++) {
         tempVal = rowInfo.getRowVal(i);
         if ((tempVal || '').length > maxLen) { maxLen = tempVal.length; maxIndex = i; }
@@ -3117,6 +3128,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       tempVal = rowInfo.getRowVal(maxIndex);
       rowInfo.maxLen = maxLen;
       rowInfo.valueArr = [tempVal];
+      rowInfo.rowIndexArr = [maxIndex];
       rowInfo.startIndex = rowInfo.endIndex = 0;
     }
 
@@ -3153,6 +3165,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     let maxText = '';
     let formatterResult: string | FormatterResultWithHtml | FormatterResultWithText | HTMLElement | DocumentFragment;
     let val: any;
+    let row: number;
 
     // get mode - if text only display, use canvas otherwise html element
     let useCanvas = (columnDef.autoSize!.widthEvalMode === WidthEvalMode.TextOnly);
@@ -3171,13 +3184,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       for (i = rowInfo.startIndex; i <= rowInfo.endIndex; i++) {
         // row is either an array or values or a single value
         val = (rowInfo.valueArr ? rowInfo.valueArr[i] : rowInfo.getRowVal(i));
-
+        row = (rowInfo.rowIndexArr ? rowInfo.rowIndexArr[i] : i);
         if (columnDef.formatterOverride) {
           // use formatterOverride as first preference
-          formatterResult = (columnDef.formatterOverride as FormatterOverrideCallback)(i, rowInfo.colIndex, val, columnDef, this.getDataItem(i), this as unknown as SlickGridModel);
+          formatterResult = (columnDef.formatterOverride as FormatterOverrideCallback)(row, rowInfo.colIndex, val, columnDef, this.getDataItem(row), this as unknown as SlickGridModel);
         } else if (columnDef.formatter) {
           // otherwise, use formatter
-          formatterResult = columnDef.formatter(i, rowInfo.colIndex, val, columnDef, this.getDataItem(i), this as unknown as SlickGridModel);
+          formatterResult = columnDef.formatter(row, rowInfo.colIndex, val, columnDef, this.getDataItem(row), this as unknown as SlickGridModel);
         } else {
           // otherwise, use plain text
           formatterResult = '' + val;
@@ -3198,12 +3211,13 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     for (i = rowInfo.startIndex; i <= rowInfo.endIndex; i++) {
       val = (rowInfo.valueArr ? rowInfo.valueArr[i] : rowInfo.getRowVal(i));
+      row = (rowInfo.rowIndexArr ? rowInfo.rowIndexArr[i] : i);
       if (columnDef.formatterOverride) {
         // use formatterOverride as first preference
-        formatterResult = (columnDef.formatterOverride as FormatterOverrideCallback)(i, rowInfo.colIndex, val, columnDef, this.getDataItem(i), this as unknown as SlickGridModel);
+        formatterResult = (columnDef.formatterOverride as FormatterOverrideCallback)(row, rowInfo.colIndex, val, columnDef, this.getDataItem(row), this as unknown as SlickGridModel);
       } else if (columnDef.formatter) {
         // otherwise, use formatter
-        formatterResult = columnDef.formatter(i, rowInfo.colIndex, val, columnDef, this.getDataItem(i), this as unknown as SlickGridModel);
+        formatterResult = columnDef.formatter(row, rowInfo.colIndex, val, columnDef, this.getDataItem(row), this as unknown as SlickGridModel);
       } else {
         // otherwise, use plain text
         formatterResult = '' + val;
