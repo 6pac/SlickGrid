@@ -3,7 +3,6 @@
   "grid:opt-columnPickerTitle": { "notes": "Deprecated. Set the title through the `columnPicker` option object instead: `columnPicker: { columnTitle: '…' }`." },
   "grid:opt-forceFitTitle": { "notes": "Deprecated. Use `columnPicker: { forceFitTitle: '…' }` instead." },
   "grid:opt-syncResizeTitle": { "notes": "Deprecated. Use `columnPicker: { syncResizeTitle: '…' }` instead." },
-  "grid:opt-throwWhenFrozenNotAllViewable": { "notes": "Deprecated. Handle a frozen column wider than the viewport with `invalidColumnFreezeWidthCallback` / `invalidColumnFreezeWidthMessage` instead." },
   "dataview:dvopt-inlineFilters": { "notes": "Deprecated and ignored in v6. DataView filtering is compiled safely for you; there is no inline-filter mode to choose." },
   "dataview:dvopt-useCSPSafeFilter": { "notes": "Deprecated and ignored in v6. DataView filtering is always CSP-safe, so this flag has no effect." },
   "grid:opt-editable": {
@@ -205,6 +204,15 @@
   "grid:evt-onHeaderMouseLeave": {
     "notes": "Fires when the pointer leaves a column header cell."
   },
+  "grid:evt-onHeaderMouseOver": {
+    "notes": "Fires on the native `mouseover` of a column header cell. Unlike `onHeaderMouseEnter`, it fires again each time the pointer moves onto an element inside the cell."
+  },
+  "grid:evt-onHeaderMouseOut": {
+    "notes": "Fires on the native `mouseout` of a column header cell. Unlike `onHeaderMouseLeave`, it also fires when the pointer moves onto an element inside the cell."
+  },
+  "grid:evt-onHeaderKeyDown": {
+    "notes": "Fires when a key is pressed while focus is in the column header row, before Enter or Space sorts a sortable column. `args.event` is the keyboard event; `args.column` is set when the focused element is a header cell."
+  },
   "grid:evt-onHeaderRowCellRendered": {
     "notes": "Fires after a header-row cell is built, when the `showHeaderRow` panel is enabled."
   },
@@ -213,6 +221,12 @@
   },
   "grid:evt-onHeaderRowMouseLeave": {
     "notes": "Fires when the pointer leaves a header-row cell."
+  },
+  "grid:evt-onHeaderRowMouseOver": {
+    "notes": "Fires on the native `mouseover` of a header-row cell. Unlike `onHeaderRowMouseEnter`, it fires again each time the pointer moves onto an element inside the cell, such as a filter input."
+  },
+  "grid:evt-onHeaderRowMouseOut": {
+    "notes": "Fires on the native `mouseout` of a header-row cell. Unlike `onHeaderRowMouseLeave`, it also fires when the pointer moves onto an element inside the cell."
   },
   "grid:evt-onPreHeaderContextMenu": {
     "notes": "Fires when the user right-clicks the pre-header panel."

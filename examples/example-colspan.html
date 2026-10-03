@@ -10,7 +10,7 @@
 <table width="100%">
   <tr>
     <td valign="top" width="50%">
-      <div id="myGrid" style="width:600px;height:500px;"></div>
+      <div id="myGrid" style="width:650px;height:500px;"></div>
     </td>
     <td valign="top">
       <h2>
@@ -23,6 +23,10 @@
       <div style="margin-bottom: 10px">
         <button class="btn" data-test="hide-finish-column" onclick="toggleFinishColumn()">Hide/Show Finish Column</button>
         <button class="btn" data-test="spread-colspan-button" onclick="toggleSpreadHiddenColspan()">Toggle Spreading of ColSpan with Hidden Columns</button>
+        <hr/>
+        <button data-test="remove-pinned-btn" onclick="setPinnedColumns(-1)">Remove Pinned Columns</button>
+        <input type="number" step="1" id="pinnedLeftColumns" style="width:45px;" value="" title="Inclusive zero-based left boundary">
+        <button id="setPinning">Apply</button>
       </div>
         <h2>View Source:</h2>
         <ul>
@@ -45,10 +49,10 @@
 <script>
   var grid;
   var columns = [
-    {id: "title", name: "Title", field: "title", columnGroup: "Common Factor"},
-    {id: "duration", name: "Duration", field: "duration", columnGroup: "Common Factor"},
-    {id: "start", name: "Start", field: "start", columnGroup: "Period"},
-    {id: "finish", name: "Finish", field: "finish", columnGroup: "Period"},
+    {id: "title", name: "Title", field: "title", columnGroup: "Common Factor", width: 90},
+    {id: "duration", name: "Duration", field: "duration", columnGroup: "Common Factor", width: 100},
+    {id: "start", name: "Start", field: "start", columnGroup: "Period", width: 100},
+    {id: "finish", name: "Finish", field: "finish", columnGroup: "Period", width: 100},
     {id: "%", name: "% Complete", field: "percentComplete", selectable: false, width: 100, columnGroup: "Analysis"},
     {id: "effort-driven", name: "Effort Driven", field: "effortDriven", width: 100, columnGroup: "Analysis"}
   ];
@@ -56,7 +60,10 @@
   var options = {
     enableCellNavigation: true,
     enableColumnReorder: false,
-    spreadHiddenColspan: false
+    spreadHiddenColspan: false,
+    createPreHeaderPanel: true,
+    showPreHeaderPanel: true,
+    preHeaderPanelHeight: 30,
   };
   var isSpreadHiddenColspan = false;
 
@@ -65,7 +72,7 @@
     for (var i = 0; i < 500; i++) {
       data[i] = {
         title: "Task " + i,
-        duration: "5 days",
+        duration: "5 days with some long text to test column span",
         percentComplete: Math.round(Math.random() * 100),
         start: "01/01/2009",
         finish: "01/05/2009",
@@ -96,7 +103,142 @@
     grid = new Slick.Grid("#myGrid", data, columns, options);
 
     grid.setSelectionModel(new Slick.CellSelectionModel());
+
+    // onColumnsResized fires when the drag ends. Use onColumnsDrag as well so
+    // the group headers follow the live column width while dragging.
+    grid.onColumnsDrag.subscribe(function (e, args) {
+      CreateAddlHeaderRow();
+    });
+
+    grid.onScroll.subscribe(function (e, args) {
+      syncPinnedGroupHeaders(args.scrollLeft);
+    });
+
+    grid.onColumnsResized.subscribe(function (e, args) {
+      CreateAddlHeaderRow();
+    });
+
+    grid.onColumnsReordered.subscribe(function (e, args) {
+      CreateAddlHeaderRow();
+    });
+    grid.onAfterUpdateColumns.subscribe(function (e, args) {
+      CreateAddlHeaderRow();
+    });
+
+    CreateAddlHeaderRow();
   });
+
+  document.querySelector('#setPinning').addEventListener('click', () => {
+    var leftColumnBoundary = parseInt(document.querySelector('#pinnedLeftColumns').value);
+
+    grid.setOptions({
+      pinning: {
+        columns: {
+          left: Number.isFinite(leftColumnBoundary) && leftColumnBoundary >= 0 ? leftColumnBoundary : [],
+        }
+      }
+    });
+    CreateAddlHeaderRow();
+  });
+
+    function CreateAddlHeaderRow() {
+    // Pinning uses one shared pre-header panel, so render the complete group row once.
+    const preHeaderPanelElm = grid.getPreHeaderPanel();
+    renderHeaderGroups(preHeaderPanelElm, 0, grid.getColumns().length);
+
+    function renderHeaderGroups(preHeaderPanel, start, end) {
+      preHeaderPanel.innerHTML = '';
+      preHeaderPanel.classList.add("slick-header-columns");
+      preHeaderPanel.style.left = '0px';
+      preHeaderPanel.style.width = `${grid.getHeadersWidth()}px`;
+      preHeaderPanel.parentElement.classList.add("slick-header");
+      preHeaderPanel.style.backgroundColor = getComputedStyle(grid.getHeaderColumn(0)).backgroundColor || '#ececec';
+
+      let headerColumnWidthDiff = grid.getHeaderColumnWidthDiff();
+      let m, header, lastColumnGroup = '', widthTotal = 0;
+      const columns = grid.getColumns();
+
+      for (let i = start; i < end; i++) {
+        m = columns[i];
+        if (m && !m.hidden) {
+          if (lastColumnGroup === m.columnGroup && i>start) {
+            widthTotal += m.width;
+            header.style.width = `${widthTotal - headerColumnWidthDiff}px`;
+            header.dataset.groupEnd = String(i);
+          } else {
+              widthTotal = m.width;
+              header = document.createElement('div');
+              header.className = 'ui-state-default slick-header-column';
+              header.innerHTML = `<span class="slick-column-name">${(m.columnGroup || '')}</span>`;
+              header.style.width = `${m.width - headerColumnWidthDiff}px`;
+              header.dataset.groupStart = String(i);
+              header.dataset.groupEnd = String(i);
+              preHeaderPanel.appendChild(header);
+          }
+          lastColumnGroup = m.columnGroup;
+        }
+      }
+    }
+
+    syncPinnedGroupHeaders();
+  }
+
+    function syncPinnedGroupHeaders(scrollLeft) {
+    if (scrollLeft !== undefined) {
+      groupHeaderScrollLeft = scrollLeft;
+    }
+
+    const preHeaderPanelElm = grid.getPreHeaderPanel();
+    const leftBoundary = grid.getOptions().pinning?.columns?.left;
+    const pinnedColumnBoundary = typeof leftBoundary === 'number' ? leftBoundary : -1;
+    let pinnedLeftWidth = 0;
+
+    if (pinnedColumnBoundary >= 0) {
+      for (let i = 0; i <= pinnedColumnBoundary; i++) {
+        const column = grid.getColumns()[i];
+        if (!column?.hidden) {
+          pinnedLeftWidth += grid.getHeaderColumn(i)?.offsetWidth || 0;
+        }
+      }
+    }
+
+    let pinnedMask = preHeaderPanelElm.querySelector('.slick-preheader-pinned-left-mask');
+    if (pinnedLeftWidth > 0) {
+      if (!pinnedMask) {
+        pinnedMask = document.createElement('div');
+        pinnedMask.className = 'slick-preheader-pinned-left-mask';
+        pinnedMask.style.position = 'absolute';
+        pinnedMask.style.left = '0';
+        pinnedMask.style.top = '0';
+        pinnedMask.style.bottom = '0';
+        pinnedMask.style.zIndex = '1';
+        pinnedMask.style.pointerEvents = 'none';
+        preHeaderPanelElm.appendChild(pinnedMask);
+      }
+      pinnedMask.style.width = `${pinnedLeftWidth}px`;
+      // The pre-header panel can be transparent in the base/default theme.
+      // Use the rendered header background so scrolling group titles remain
+      // behind the pinned group area.
+      pinnedMask.style.backgroundColor = getComputedStyle(grid.getHeaderColumn(0)).backgroundColor || '#ececec';
+      pinnedMask.style.transform = `translateX(${groupHeaderScrollLeft}px)`;
+    } else {
+      pinnedMask?.remove();
+    }
+
+    preHeaderPanelElm.querySelectorAll('[data-group-start]').forEach((groupHeader) => {
+      const groupEnd = Number(groupHeader.dataset.groupEnd);
+      const isPinnedLeft = pinnedColumnBoundary >= 0 && groupEnd <= pinnedColumnBoundary;
+      groupHeader.style.zIndex = isPinnedLeft ? '2' : '';
+      groupHeader.style.transform = isPinnedLeft ? `translateX(${groupHeaderScrollLeft}px)` : '';
+    });
+  }
+
+  function setPinnedColumns(pinBoundary) {
+    grid.setOptions({ pinning: { columns: { left: pinBoundary >= 0 ? pinBoundary : [] } } });
+    options = grid.getOptions();
+    document.querySelector('#pinnedLeftColumns').value = pinBoundary >= 0 ? pinBoundary : '';
+    CreateAddlHeaderRow();
+  }
 
   function toggleFinishColumn() {
     var finishColumn = grid.getColumnById("finish");

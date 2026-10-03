@@ -548,6 +548,12 @@ document.addEventListener("DOMContentLoaded", function() {
       $("#c00_ListGrid_grid_container").height("650px");
 
       grid = new Slick.Grid("#myGrid", pivotInfo.PivotedData, columns, options);
+      grid.onColumnsDrag.subscribe(function (e, args) {
+          CreateAddlHeaderRow(grid);
+      });
+      grid.onColumnsResized.subscribe(function (e, args) {
+          CreateAddlHeaderRow(grid);
+      });
       CreateAddlHeaderRow(grid);
   } 
 })

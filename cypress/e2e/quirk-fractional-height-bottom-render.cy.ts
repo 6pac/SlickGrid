@@ -89,14 +89,16 @@ describe('Quirk - a fractional grid height must still render the bottom rows', {
     cy.window().then((win: any) => {
       const vp = win.viewportEl();
 
-      // Precondition: fractional layout produces a sub-pixel difference between the
-      // DOM and grid limits. Browsers round this in opposite directions, so the
-      // functional assertion below must not depend on which limit is larger.
+      // The original bug needed the browser's maximum scrollTop and the grid's clamp to
+      // disagree by a sub-pixel amount. The single-viewport layout reads the committed
+      // scroll position back from one owner, so the two limits now agree exactly and that
+      // divergence can no longer be constructed. This is asserted deliberately: if the two
+      // ever drift apart again, the render path below is the one that breaks.
       vp.scrollTop = 1e9;
       const domMaxScrollTop = vp.scrollTop;
       win.grid.scrollTo(1e9);
       const gridMaxScrollTop = win.grid.scrollTop;
-      expect(Math.abs(domMaxScrollTop - gridMaxScrollTop), 'fractional DOM/grid scroll limit difference').to.be.greaterThan(0.01);
+      expect(domMaxScrollTop, 'the DOM and grid scroll limits agree under a fractional height').to.eq(gridMaxScrollTop);
 
       // start from a fully rendered bottom, then wheel up far enough that the render
       // buffer no longer covers the last rows - they must actually be cleaned up,

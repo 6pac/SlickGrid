@@ -116,6 +116,13 @@
       <button class="btn-alpine-theme" data-test="theme-alpine-btn" onclick="toggleTheme('alpine')">Alpine Theme</button>
       <button class="btn-classic-theme" data-test="theme-classic-btn" onclick="toggleTheme('classic')">Classic Theme</button>
       <br/>
+      <hr/>
+      <button data-test="pin-columns-btn" onclick="clearPinning()">
+        Clear Pinning
+      </button>
+      <button data-test="pin-columns-btn" onclick="pinColumns(2)">
+        Pin first 2 columns
+      </button>
     </div>
     <hr/>
     <h2>Demonstrates:</h2>
@@ -154,36 +161,92 @@
     const preHeaderPanelElm = grid.getPreHeaderPanel();
     preHeaderPanelElm.textContent = '';
     preHeaderPanelElm.className = "slick-header-columns";
-    preHeaderPanelElm.style.left = '-1000px';
+    preHeaderPanelElm.style.left = '0px';
     preHeaderPanelElm.style.width = `${grid.getHeadersWidth()}px`;
     preHeaderPanelElm.parentElement?.classList.add("slick-header");
 
     const headerColumnWidthDiff = grid.getHeaderColumnWidthDiff();
-    let m, headerElm, lastColumnGroup = '', widthTotal = 0;
     const columns = grid.getColumns();
+    const { left: pinnedLeft, right: pinnedRight } = getPinnedColumnIndexes(columns);
+    let m, headerElm, lastColumnGroup = '', lastBand = '', widthTotal = 0;
 
     for (var i = 0; i < columns.length; i++) {
       m = columns[i];
       if (m && !m.hidden) {
-        if (lastColumnGroup === m.columnGroup && i > 0) {
+        const band = pinnedLeft.has(i) ? 'left' : pinnedRight.has(i) ? 'right' : 'center';
+        const continuesGroup = lastColumnGroup === m.columnGroup && i > 0;
+        if (continuesGroup && lastBand === band) {
           widthTotal += m.width || 0;
           headerElm.style.width = `${widthTotal - headerColumnWidthDiff}px`;
+          headerElm.dataset.groupEnd = String(i);
         } else {
-            widthTotal = m.width || 0;
-            headerElm = document.createElement('div');
-            headerElm.className = 'ui-state-default slick-header-column';
-            headerElm.style.width = `${(m.width || 0) - headerColumnWidthDiff}px`;
-            headerElm.dataset.group = m.columnGroup || '';
+          widthTotal = m.width || 0;
+          headerElm = document.createElement('div');
+          headerElm.className = 'ui-state-default slick-header-column';
+          headerElm.style.width = `${widthTotal - headerColumnWidthDiff}px`;
+          headerElm.dataset.group = m.columnGroup || '';
+          headerElm.dataset.groupStart = String(i);
+          headerElm.dataset.groupEnd = String(i);
+          headerElm.dataset.pinningBand = band;
 
-            const spanElm = document.createElement('span');
-            spanElm.className = 'slick-column-name';
-            spanElm.textContent = m.columnGroup || '';
-            headerElm.appendChild(spanElm);
-            preHeaderPanelElm.appendChild(headerElm);
+          const spanElm = document.createElement('span');
+          spanElm.className = 'slick-column-name';
+          // A group that crosses a pin boundary is split into independent
+          // segments. Repeat its label in each segment so both the pinned and
+          // scrolling portions clearly retain their group identity.
+          spanElm.textContent = m.columnGroup || '';
+          headerElm.appendChild(spanElm);
+          preHeaderPanelElm.appendChild(headerElm);
         }
         lastColumnGroup = m.columnGroup;
+        lastBand = band;
       }
     }
+
+    syncPinnedGroupHeaders();
+  }
+
+  let groupHeaderScrollLeft = 0;
+
+  function getPinnedColumnIndexes(columns) {
+    const pinnedLeft = new Set();
+    const pinnedRight = new Set();
+    const pinning = grid.getOptions().pinning?.columns || {};
+
+    const addReferences = (references, target, side) => {
+      const values = Array.isArray(references)
+        ? references
+        : typeof references === 'number'
+          ? Array.from({ length: side === 'left' ? references + 1 : references }, (_value, index) =>
+              side === 'left' ? index : columns.length - references + index
+            )
+          : [];
+      values.forEach((reference) => {
+        const index = typeof reference === 'number' ? reference : columns.findIndex((column) => column?.id === reference);
+        if (index >= 0 && index < columns.length) {
+          target.add(index);
+        }
+      });
+    };
+
+    addReferences(pinning.left, pinnedLeft, 'left');
+    addReferences(pinning.right, pinnedRight, 'right');
+    return { left: pinnedLeft, right: pinnedRight };
+  }
+
+  function syncPinnedGroupHeaders(scrollLeft) {
+    if (scrollLeft !== undefined) {
+      groupHeaderScrollLeft = scrollLeft;
+    }
+
+    const preHeaderPanelElm = grid.getPreHeaderPanel();
+    preHeaderPanelElm.querySelectorAll('[data-pinning-band]').forEach((groupHeader) => {
+      const element = groupHeader;
+      const band = element.dataset.pinningBand;
+      const isPinnedLeft = band === 'left';
+      element.style.zIndex = isPinnedLeft ? '2' : '';
+      element.style.transform = isPinnedLeft ? `translateX(${groupHeaderScrollLeft}px)` : '';
+    });
   }
 
 var dataView;
@@ -418,6 +481,26 @@ function toggleGrouping(expand) {
   }
 }
 
+function clearPinning() {
+  grid.setOptions({
+    pinning: {
+      columns: { left: [], right: [] },
+      rows: { top: [], bottom: [] },
+    }
+  });
+  CreateAddlHeaderRow();
+}
+
+function pinColumns(pinCount) {
+  grid.setOptions({
+    pinning: {
+      columns: { left: Array.from({ length: pinCount }, (_value, index) => index), right: [] },
+      rows: { top: [], bottom: [] },
+    }
+  });
+  CreateAddlHeaderRow();
+}
+
 function loadData(count) {
   var someDates = ["01/01/2009", "02/02/2009", "03/03/2009"];
   data = [];
@@ -541,6 +624,12 @@ document.addEventListener("DOMContentLoaded", function() {
   loadData(50);
   dataView.endUpdate();
 
+  grid.onColumnsDrag.subscribe(function (e, args) {
+    CreateAddlHeaderRow();
+  });
+  grid.onScroll.subscribe(function (e, args) {
+    syncPinnedGroupHeaders(args.scrollLeft);
+  });
   grid.onColumnsResized.subscribe(function (e, args) {
     CreateAddlHeaderRow();
   });

@@ -4,12 +4,13 @@
  *
  *   1. the header band's scroll range covers the body viewport's scroll range
  *      (header width acts as the scroll-range floor), and
- *   2. after scrolling the body fully right, the header scroller lands on the
- *      same scrollLeft (no clamping), and
+ *   2. after scrolling fully right, the active horizontal scroll owner reaches
+ *      its maximum (no clamping), and
  *   3. the last column's header stays pixel-aligned with its body cells there.
  *
- * Pinned across the three width regimes: plain grid, frozen columns (the right
- * band scrolls), and autoHeight (no vertical scrollbar, so no gutter term).
+ * Pinned across the three width regimes: plain grid, pinned columns (the
+ * center band scrolls through the docking scroller), and autoHeight (no
+ * vertical scrollbar, so no gutter term).
  * This spec is expected to pass BEFORE and AFTER any getHeadersWidth change —
  * it exists so refactors of the width formula (e.g. the removal of the
  * historical duplicate scrollbar addition) cannot silently break scroll sync.
@@ -24,13 +25,13 @@ const harnessHtml = `<!doctype html>
   <title>Harness: headers width scroll sync</title>
   <link rel="stylesheet" href="/dist/styles/css/slick-alpine-theme.css"/>
   <style>
-    #gridPlain, #gridFrozen { width: 600px; height: 300px; }
+    #gridPlain, #gridPinned { width: 600px; height: 300px; }
     #gridAuto { width: 600px; }
   </style>
 </head>
 <body>
 <div id="gridPlain"></div>
-<div id="gridFrozen"></div>
+<div id="gridPinned"></div>
 <div id="gridAuto"></div>
 <div id="checkResults" style="white-space:pre; font-family:monospace;"></div>
 <script src="/dist/browser/slick.core.js"></script>
@@ -51,11 +52,14 @@ const harnessHtml = `<!doctype html>
     return d;
   }
   var baseOptions = { enableCellNavigation: true, enableColumnReorder: false, rowHeight: 25 };
+  function cloneColumns() {
+    return columns.map(function (column) { return Object.assign({}, column); });
+  }
 
-  var gridPlain = new Slick.Grid('#gridPlain', makeData(30), columns, baseOptions);
-  var gridFrozen = new Slick.Grid('#gridFrozen', makeData(30), columns,
-    Object.assign({}, baseOptions, { frozenColumn: 1 }));
-  var gridAuto = new Slick.Grid('#gridAuto', makeData(8), columns,
+  var gridPlain = new Slick.Grid('#gridPlain', makeData(30), cloneColumns(), baseOptions);
+  var gridPinned = new Slick.Grid('#gridPinned', makeData(30), cloneColumns(),
+    Object.assign({}, baseOptions, { pinning: { columns: { left: 1 } } }));
+  var gridAuto = new Slick.Grid('#gridAuto', makeData(8), cloneColumns(),
     Object.assign({}, baseOptions, { autoHeight: true }));
   window.grid = gridPlain;
 
@@ -76,25 +80,62 @@ const harnessHtml = `<!doctype html>
 
     function checkGrid(name, containerSel, headerScrollerSel, viewportSel) {
       var container = document.querySelector(containerSel);
+      if (!container) {
+        check(name + ': grid container exists', false, containerSel + ' not found');
+        return Promise.resolve();
+      }
       var headerScroller = container.querySelector(headerScrollerSel);
-      var headersDiv = headerScroller.querySelector('.slick-header-columns');
+      // Docked grids keep the measurable width on the root; the nested
+      // left/center/right regions use display: contents and report width 0.
+      var headersDiv = container.querySelector('.slick-header-columns-root') || container.querySelector('.slick-header-columns');
       var viewport = container.querySelector(viewportSel);
+      var dockingScroller = container.querySelector('.slick-docking-horizontal-scroller');
+      var scrollOwner = dockingScroller || viewport;
+
+      if (!headerScroller || !headersDiv || !viewport || !scrollOwner) {
+        check(name + ': current single-viewport header/body elements exist', false,
+          'header=' + !!headerScroller + ' columns=' + !!headersDiv + ' viewport=' + !!viewport + ' scrollOwner=' + !!scrollOwner);
+        return Promise.resolve();
+      }
 
       var headerRange = headersDiv.getBoundingClientRect().width - headerScroller.clientWidth;
+      // The proxy-scrolled header root does not include the vertical scrollbar
+      // strip in its width, while the body viewport's scroll range does. Add
+      // that strip back when comparing the two ranges.
+      if (dockingScroller) {
+        headerRange += Math.max(0, headerScroller.clientWidth - viewport.clientWidth);
+      }
       var bodyRange = viewport.scrollWidth - viewport.clientWidth;
       check(name + ': header scroll range covers body scroll range',
         headerRange >= bodyRange,
         'headerRange=' + Math.round(headerRange) + ' bodyRange=' + Math.round(bodyRange));
 
-      viewport.scrollLeft = 1000000;
+      scrollOwner.scrollLeft = 1000000;
       return settle().then(function () {
-        check(name + ': header scroller reaches the body scrollLeft at full right scroll',
-          headerScroller.scrollLeft === viewport.scrollLeft,
-          'header=' + headerScroller.scrollLeft + ' body=' + viewport.scrollLeft);
+        var bodyScrollLeft = scrollOwner.scrollLeft;
+        var bodyMaxScrollLeft = scrollOwner.scrollWidth - scrollOwner.clientWidth;
+        check(name + ': horizontal scroll owner reaches the full right edge',
+          Math.abs(bodyScrollLeft - bodyMaxScrollLeft) <= 1,
+          'scrollLeft=' + bodyScrollLeft + ' max=' + bodyMaxScrollLeft);
 
-        var lastHeader = headerScroller.querySelectorAll('.slick-header-column');
+        // The header content is translated by -scrollLeft (the header scroller itself stays at 0).
+        var TRANSFORM_PREFIX = 'translate3d(';
+        var translated = Array.prototype.find.call(headerScroller.querySelectorAll('*'), function (el) {
+          return el.style.transform.indexOf(TRANSFORM_PREFIX) === 0;
+        });
+        var headerShift = translated ? parseFloat(translated.style.transform.slice(TRANSFORM_PREFIX.length)) : NaN;
+        check(name + ': header content is shifted by the scroll owner position at full right scroll',
+          Math.abs(headerShift + bodyScrollLeft) <= 1 && headerScroller.scrollLeft === 0,
+          'headerShift=' + headerShift + ' headerScrollLeft=' + headerScroller.scrollLeft + ' body=' + bodyScrollLeft);
+
+        var lastHeader = container.querySelectorAll('.slick-header-column');
         lastHeader = lastHeader[lastHeader.length - 1];
         var lastCell = viewport.querySelector('.slick-row .slick-cell.l14.r14');
+        if (!lastHeader || !lastCell) {
+          check(name + ': last header and body cell exist', false,
+            'header=' + !!lastHeader + ' cell=' + !!lastCell);
+          return;
+        }
         var dh = lastHeader.getBoundingClientRect().left;
         var dc = lastCell.getBoundingClientRect().left;
         check(name + ': last column header aligns with its body cells at full right scroll',
@@ -103,12 +144,12 @@ const harnessHtml = `<!doctype html>
       });
     }
 
-    return checkGrid('plain', '#gridPlain', '.slick-header-left', '.slick-viewport-top.slick-viewport-left')
+    return checkGrid('plain', '#gridPlain', '.slick-header-left', '.slick-viewport')
       .then(function () {
-        return checkGrid('frozen', '#gridFrozen', '.slick-header-right', '.slick-viewport-top.slick-viewport-right');
+        return checkGrid('pinned', '#gridPinned', '.slick-header-left', '.slick-viewport');
       })
       .then(function () {
-        return checkGrid('autoHeight', '#gridAuto', '.slick-header-left', '.slick-viewport-top.slick-viewport-left');
+        return checkGrid('autoHeight', '#gridAuto', '.slick-header-left', '.slick-viewport');
       })
       .then(function () {
         out.push(pass ? '\\nALL CHECKS PASSED' : '\\nCHECKS FAILED');
@@ -121,7 +162,7 @@ const harnessHtml = `<!doctype html>
 </html>`;
 
 describe('getHeadersWidth - header/body horizontal scroll sync pin', { retries: 1 }, () => {
-  it('should keep header scroll range, sync and alignment across plain, frozen and autoHeight grids', () => {
+  it('should keep header scroll range and alignment across plain, pinned and autoHeight grids', () => {
     cy.intercept('GET', '/headers-width-scroll-sync-harness.html', {
       headers: { 'content-type': 'text/html' },
       body: harnessHtml,

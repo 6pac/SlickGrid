@@ -53,7 +53,7 @@
     let preHeaderPanelElm = grid.getPreHeaderPanel();
     preHeaderPanelElm.innerHTML = '';
     preHeaderPanelElm.className = "slick-header-columns";
-    preHeaderPanelElm.style.left = '-1000px';
+    preHeaderPanelElm.style.left = '0px';
     preHeaderPanelElm.style.width = `${grid.getHeadersWidth()}px`;
     preHeaderPanelElm.parentElement.classList.add("slick-header");
 
@@ -133,6 +133,10 @@
   });
 
   grid.init();
+
+  grid.onColumnsDrag.subscribe(function (e, args) {
+    CreateAddlHeaderRow();
+  });
 
   grid.onColumnsResized.subscribe(function (e, args) {
     CreateAddlHeaderRow();

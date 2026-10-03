@@ -24,6 +24,7 @@ import type {
 } from './slick.core.js';
 import type { SlickDataView } from './slick.dataview.js';
 import type { SlickGrid } from './slick.grid.js';
+import type { DockingController } from './slick.core.js';
 import type { SlickCompositeEditor } from './slick.compositeeditor.js';
 import type { SlickColumnMenu } from './controls/slick.columnmenu.js';
 import type { SlickColumnPicker } from './controls/slick.columnpicker.js';
@@ -98,6 +99,7 @@ declare global {
     Formatters: typeof Formatters,
     GlobalEditorLock: typeof SlickGlobalEditorLock,
     Grid: typeof SlickGrid,
+    DockingController: typeof DockingController,
     GridAutosizeColsMode: typeof GridAutosizeColsMode,
     Group: typeof SlickGroup,
     GroupTotals: typeof SlickGroupTotals,

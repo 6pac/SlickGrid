@@ -131,34 +131,31 @@ describe('Example - RTL (Right-to-Left) Support', () => {
         });
 
         it('should update visible range when scrolling in RTL', () => {
-            let initialFirstColumn = '';
-            cy.get('.slick-header-column:visible')
-                .first()
-                .invoke('text')
-                .then((text) => {
-                    initialFirstColumn = text;
-                });
+            let initialLeftPx = 0;
+            cy.window().then((win) => {
+                const grid = (win as any).grid;
+                initialLeftPx = grid.getVisibleRange().leftPx;
+            });
 
             cy.get('.slick-viewport')
                 .then(($viewport) => {
                     const viewport = $viewport[0];
                     viewport.scrollLeft = -300;
-                    cy.wait(150);
                 });
 
-            cy.get('.slick-header-column:visible')
-                .first()
-                .invoke('text')
-                .should((newText) => {
-                    expect(newText).not.to.equal(initialFirstColumn);
+            cy.wait(150).then(() => {
+                cy.window().then((win) => {
+                    const grid = (win as any).grid;
+                    expect(grid.getVisibleRange().leftPx).not.to.equal(initialLeftPx);
                 });
+            });
         });
 
         it('should calculate correct visible range in RTL mode', () => {
             cy.window().then((win) => {
                 const grid = (win as any).grid;
                 if (grid && grid.getVisibleRange) {
-                    const viewport = grid._viewport;
+                    const viewport = grid._viewport[0];
                     const originalScrollLeft = viewport.scrollLeft;
                     viewport.scrollLeft = -200;
                     const range = grid.getVisibleRange();
@@ -207,20 +204,30 @@ describe('Example - RTL (Right-to-Left) Support', () => {
         });
 
         it('should scroll to the end and display last columns', () => {
+            let initialLeftPx = 0;
+            cy.window().then((win) => {
+                const grid = (win as any).grid;
+                initialLeftPx = grid.getVisibleRange().leftPx;
+            });
+
             cy.get('.slick-viewport')
                 .then(($viewport) => {
                     const viewport = $viewport[0];
                     const maxScroll = viewport.scrollWidth - viewport.clientWidth;
                     viewport.scrollLeft = -maxScroll;
-                    cy.wait(300);
                 });
 
-            cy.get('.slick-header-column:visible')
-                .first()
-                .invoke('text')
-                .then((text) => {
-                    expect(text).not.to.equal('Title');
+            cy.wait(300).then(() => {
+                cy.get('.slick-viewport').should(($viewport) => {
+                    const viewport = $viewport[0];
+                    const maxScroll = viewport.scrollWidth - viewport.clientWidth;
+                    expect(viewport.scrollLeft).to.be.closeTo(-maxScroll, 1);
                 });
+                cy.window().then((win) => {
+                    const grid = (win as any).grid;
+                    expect(grid.getVisibleRange().leftPx).to.be.greaterThan(initialLeftPx);
+                });
+            });
         });
     });
 });

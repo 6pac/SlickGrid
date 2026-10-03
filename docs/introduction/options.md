@@ -35,4 +35,4 @@ grid.setOptions({ editable: false });
 
 ## Where to find the rest
 
-SlickGrid has 118 options. The [Reference](/reference/grid) lists every one with its type and default value. Use the **A–Z** toggle or search to find an option by name.
+SlickGrid has 120 options. The [Reference](/reference/grid) lists every one with its type and default value. Use the **A–Z** toggle or search to find an option by name.

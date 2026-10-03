@@ -37,9 +37,9 @@ Read the current columns with `getColumns`.
 
 ## Version 6 note
 
-Version 6 changes how hidden columns work. The grid keeps all columns and uses the `hidden` property to show or hide them. See [Frozen & column changes in v6](/in-depth/frozen).
+Version 6 changes how hidden columns work. The grid keeps all columns and uses the `hidden` property to show or hide them. See [Migrating to v6](/in-depth/migration-v6#columns-the-hidden-property).
 
 ## See also
 
-- Reference: [every column property](/reference/column) (50 in total).
+- Reference: [every column property](/reference/column) (52 in total).
 - [Common options](/introduction/options)
