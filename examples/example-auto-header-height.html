@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css" />
 
   <style>
-    .slick-pane.frozen {
+    .slick-column-pinned-left-edge {
       border-right: 1.5px dotted darkred !important;
     }
 
@@ -56,26 +56,26 @@
           <button id="setAutoHeaderHeight">Set</button>
           <br /><br />
 
-          <label for="frozenColumn" style="width:160px;float:left;padding-left:40px;">
-            Frozen Column:
+          <label for="pinnedColumn" style="width:160px;float:left;padding-left:40px;">
+            Pinned Column Boundary:
           </label>
-          <input type="text" id="frozenColumn" style="width:60px;" value="2">
-          <button id="setFrozenColumn">Set</button>
+          <input type="text" id="pinnedColumn" style="width:60px;" value="2">
+          <button id="setPinnedColumn">Set</button>
           <br />
 
-          <label for="frozenRow" style="width:160px;float:left;padding-left:40px;">
-            Frozen Row:
+          <label for="pinnedRow" style="width:160px;float:left;padding-left:40px;">
+            Pinned Top Rows:
           </label>
-          <input type="text" id="frozenRow" style="width:60px;" value="5">
-          <button id="setFrozenRow">Set</button>
+          <input type="text" id="pinnedRow" style="width:60px;" value="5">
+          <button id="setPinnedRow">Set</button>
 
           <h2> Demonstrates: </h2>
           <ul>
             <li>automatic header height calculation</li>
             <li>enabling and disabling <code>autoHeaderHeight</code></li>
-            <li>frozen column support</li>
-            <li>frozen row support</li>
-            <li>combined frozen column and frozen row layouts</li>
+            <li>pinned column support</li>
+            <li>pinned row support</li>
+            <li>combined pinned column and pinned row layouts</li>
             <li>equal left/right header heights</li>
             <li>header recalculation after column resizing</li>
             <li>grid remaining within its container</li>
@@ -117,8 +117,10 @@
       enableCellNavigation: true,
       enableColumnReorder: false,
       autoHeaderHeight: true,
-      frozenColumn: 2,
-      frozenRow: 5
+      pinning: {
+        columns: { left: 2 },
+        rows: { top: [0, 1, 2, 3, 4] }
+      }
     };
 
     var data = [];
@@ -148,24 +150,28 @@
       grid.setOptions({ 'autoHeaderHeight': val });
     });
 
-    document.querySelector('#setFrozenColumn').addEventListener('click', function () {
+    document.querySelector('#setPinnedColumn').addEventListener('click', function () {
       var val = -1;
 
-      if (document.querySelector('#frozenColumn').value != '') {
-        val = parseInt(document.querySelector('#frozenColumn').value);
+      if (document.querySelector('#pinnedColumn').value != '') {
+        val = parseInt(document.querySelector('#pinnedColumn').value);
       }
 
-      grid.setOptions({ 'frozenColumn': val });
+      grid.setOptions({ pinning: { columns: { left: val >= 0 ? val : [] } } });
     });
 
-    document.querySelector('#setFrozenRow').addEventListener('click', function () {
+    document.querySelector('#setPinnedRow').addEventListener('click', function () {
       var val = -1;
 
-      if (document.querySelector('#frozenRow').value != '') {
-        val = parseInt(document.querySelector('#frozenRow').value);
+      if (document.querySelector('#pinnedRow').value != '') {
+        val = parseInt(document.querySelector('#pinnedRow').value);
       }
 
-      grid.setOptions({ 'frozenRow': val });
+      var topRows = [];
+      for (var row = 0; row < val; row++) {
+        topRows.push(row);
+      }
+      grid.setOptions({ pinning: { rows: { top: topRows } } });
     });
   </script>
 </body>

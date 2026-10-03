@@ -29,11 +29,11 @@
       background: #efefef;
     }
 
-    .slick-pane.frozen {
+    .slick-column-pinned-left-edge {
       border-right: 1px solid red;
     }
 
-    .slick-row.frozen:last-child .slick-cell {
+    .slick-row-pinned-top:last-child .slick-cell {
       border-bottom: 1px solid red;
     }
 
@@ -92,13 +92,13 @@
       <hr>
 
       <div class="option-item">
-        <button id='toggleFrozen' onclick="toggleFrozen()">Set/Clear Frozen</button>
+        <button id='togglePinning' onclick="togglePinning()">Set/Clear Pinning</button>
         <button id='toggleGroup' onclick="toggleGroup()">Set/Clear grouping by Duration</button>
       </div>
       <div class="option-item">
         <label>Grid 1 - Pinned Columns: </label>
-        <input id="frozen-column-count" type="number" data-test="frozen-column-count" value="-1" />
-        <button data-test="set-frozen-columns-btn" onclick="changeFrozenColumnCount()">Set</button>
+        <input id="pinned-column-boundary" type="number" data-test="pinned-column-boundary" value="-1" />
+        <button data-test="set-pinned-columns-btn" onclick="changePinnedColumnBoundary()">Set</button>
         </span>
       </div>
 
@@ -133,9 +133,7 @@
       enableCellNavigation: true,
       asyncEditorLoading: false,
       autoEdit: false,
-      frozenRow: -1,
-      enableColumnReorder: false,
-      frozenColumn: -1
+      enableColumnReorder: false
     };
 
     var columns = [
@@ -188,11 +186,11 @@
     }
 
     /** change dynamically, through slickgrid "setOptions()" the number of pinned columns */
-    function changeFrozenColumnCount() {
-      var columnCount = document.querySelector("#frozen-column-count").value;
+    function changePinnedColumnBoundary() {
+      var columnBoundary = document.querySelector("#pinned-column-boundary").value;
       if (grid.setOptions) {
         grid.setOptions({
-          frozenColumn: +columnCount,
+          pinning: { columns: { left: +columnBoundary >= 0 ? +columnBoundary : [] } }
         });
       }
     }
@@ -251,13 +249,16 @@
       }));
     }
 
-    function toggleFrozen() {
+    function togglePinning() {
       var option = grid.getOptions();
-      var frozenRow = option.frozenRow;
-      var frozenColumn = option.frozenColumn;
-      var newOption = {
-        frozenColumn: frozenColumn == -1 ? 1 : -1,
-        frozenRow: frozenRow == -1 ? 3 : -1
+      var pinning = option.pinning || {};
+      var hasPinnedRows = pinning.rows && pinning.rows.top && pinning.rows.top.length > 0;
+      var hasPinnedColumns = grid.getPinnedColumns('left').length > 0;
+      var newOption = hasPinnedRows || hasPinnedColumns ? { pinning: undefined } : {
+        pinning: {
+          columns: { left: 1 },
+          rows: { top: [0, 1, 2] }
+        }
       };
       grid.setOptions(newOption);
       grid2.setOptions(newOption);

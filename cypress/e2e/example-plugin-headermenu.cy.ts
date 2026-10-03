@@ -172,13 +172,13 @@ describe('Example - Header Menu', () => {
       .should('exist');
   });
 
-  it('should open Freeze/Pinning sub-menu with 2 options expect it to be aligned to left then trigger alert when command is clicked', () => {
-    const subCommands = ['Freeze Columns', 'Unfreeze all Columns'];
+  it('should open Pinning sub-menu with 2 options expect it to be aligned to left then trigger alert when command is clicked', () => {
+    const subCommands = ['Pin Columns', 'Unpin all Columns'];
     const stub = cy.stub();
     cy.on('window:alert', stub);
 
     cy.get('.slick-header-menuitem.slick-header-menuitem')
-      .contains('Freeze/Pinning')
+      .contains('Pinning')
       .should('exist')
       .click();
 
@@ -189,13 +189,13 @@ describe('Example - Header Menu', () => {
 
     cy.get('.slick-header-menu.slick-menu-level-1')
       .find('.slick-header-menuitem')
-      .contains('Freeze Columns')
+      .contains('Pin Columns')
       .click()
-      .then(() => expect(stub.getCall(0)).to.be.calledWith('Command: freeze-columns'));
+      .then(() => expect(stub.getCall(0)).to.be.calledWith('Command: pin-columns'));
   });
 
-  it('should open Freeze/Pinning sub-menu and expect 2 options, then open Feedback->ContactUs sub-menus and expect previous Freeze menu to no longer exists', () => {
-    const subCommands1 = ['Freeze Columns', 'Unfreeze all Columns'];
+  it('should open Pinning sub-menu and expect 2 options, then open Feedback->ContactUs sub-menus and expect previous Pinning menu to no longer exists', () => {
+    const subCommands1 = ['Pin Columns', 'Unpin all Columns'];
     const subCommands2 = ['Column is great', 'Column is not useful', '', 'Contact Us'];
     const subCommands2_1 = ['Email us', 'Chat with us', 'Book an appointment'];
 
@@ -211,7 +211,7 @@ describe('Example - Header Menu', () => {
 
     cy.get('.slick-header-menu.slick-menu-level-0')
       .find('.slick-header-menuitem.slick-header-menuitem')
-      .contains('Freeze/Pinning')
+      .contains('Pinning')
       .should('exist')
       .click();
 

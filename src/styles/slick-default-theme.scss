@@ -5,14 +5,26 @@ No built-in (selected, editable, highlight, flashing, invalid, loading, :focus) 
 classes should alter those!
 */
 
+@use './slick-docking';
+
 .slick-header-columns {
   background-color: #ececec;
   border-bottom: 1px solid silver;
 }
 
-.slick-header-column {
+// Header elements carry both `ui-state-default` and `slick-state-default`.
+// Match the `.slick-state-default` specificity of the docking rules so the
+// default theme keeps its header box height after docking splits the header
+// into regions.
+.slick-header-column,
+.slick-header-column.slick-state-default {
   background-color: #ececec;
   border-right: 1px solid silver;
+  box-sizing: content-box !important;
+  height: 16px;
+  line-height: 16px;
+  margin: 0;
+  padding: 4px;
 }
 
 .slick-header-column:hover, .slick-header-column-active {

@@ -14,7 +14,7 @@ Topic-by-topic guides. Each teaches one capability in full, then links into the 
 - [Selection models](/in-depth/selection)
 - [Cell editors](/in-depth/custom-editors)
 - [Formatters](/in-depth/formatters)
-- [Frozen rows & columns](/in-depth/frozen)
+- [Pinning & sticky docking](/in-depth/pinning-sticky)
 - [Menus & header UI](/in-depth/menus)
 
 ## Platform

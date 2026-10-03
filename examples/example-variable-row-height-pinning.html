@@ -1,0 +1,182 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <title>SlickGrid example: Variable row height with pinned columns/rows</title>
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <style>
+    #stats { margin: 6px 0; font-size: 13px; color: #444; }
+    h3 { margin: 14px 0 4px 0; }
+  </style>
+</head>
+<body>
+<h2>Variable row height + pinning (<code>rowHeightProvider</code> + <code>pinning</code>)</h2>
+<div style="position:relative">
+  <div style="width:700px;">
+    <div id="stats"></div>
+    <h3>Grid A — two pinned columns</h3>
+    <div id="gridA" style="width:100%;height:320px;"></div>
+    <h3>Grid B — two pinned columns + three pinned rows</h3>
+    <div id="gridB" style="width:100%;height:320px;"></div>
+  </div>
+
+  <div class="options-panel">
+    <h2>About</h2>
+    <p>
+      Both grids use a <code>rowHeightProvider</code> (every 13th row 70px, every 5th row 32px,
+      else 25px). Grid A pins the first two columns; Grid B pins the first two columns
+      <em>and</em> the first three rows. The checks assert that the single viewport keeps
+      the provider heights and that both grids expose the expected pinning configuration.
+    </p>
+    <h2>Controls</h2>
+    <button onclick="runChecks()">Run pinning geometry self-checks</button>
+    <button onclick="growRowA()">A: grow row 2 by 10px (invalidateRowHeights)</button>
+    <button onclick="growPinnedRowB()">B: grow pinned row 0 by 10px (invalidateRowHeights)</button>
+    <button onclick="gridA.scrollRowToTop(300); gridB.scrollRowToTop(300);">Scroll both to row 300</button>
+    <div id="checkResults" style="white-space:pre; font-family:monospace; font-size:12px; margin-top:8px;"></div>
+  </div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
+
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+
+<script>
+  var gridA, gridB;
+  var ROWS = 500;
+  var PINNED_ROWS_B = 3;
+  var growthA = 0;   // added to row 2 of grid A
+  var growthB = 0;   // added to pinned row 0 of grid B
+
+  function baseHeight(row) {
+    return (row % 13 === 0) ? 70 : (row % 5 === 0) ? 32 : 25;
+  }
+  function rowHeightA(row) { return baseHeight(row) + (row === 2 ? growthA : 0); }
+  function rowHeightB(row) { return baseHeight(row) + (row === 0 ? growthB : 0); }
+
+  var columns = [
+    { id: 'idx', name: '#', field: 'idx', width: 60 },
+    { id: 'title', name: 'Title', field: 'title', width: 130 },
+    { id: 'c1', name: 'C1', field: 'c1', width: 110 },
+    { id: 'c2', name: 'C2', field: 'c2', width: 110 },
+    { id: 'c3', name: 'C3', field: 'c3', width: 110 },
+    { id: 'c4', name: 'C4', field: 'c4', width: 110 }
+  ];
+
+  var data = [];
+  for (var i = 0; i < ROWS; i++) {
+    data[i] = { idx: i, title: 'Task ' + i, c1: 'a' + i, c2: 'b' + i, c3: 'c' + i, c4: 'd' + i };
+  }
+
+  gridA = new Slick.Grid('#gridA', data, columns, {
+    rowHeight: 25,
+    enableVariableRowHeight: true,
+    rowHeightProvider: function (grid, row) { return rowHeightA(row); },
+    pinning: { columns: { left: 1 } },
+    enableCellNavigation: true,
+    enableColumnReorder: false
+  });
+
+  gridB = new Slick.Grid('#gridB', data, columns.map(function (c) { return Object.assign({}, c); }), {
+    rowHeight: 25,
+    enableVariableRowHeight: true,
+    rowHeightProvider: function (grid, row) { return rowHeightB(row); },
+    pinning: { columns: { left: 1 }, rows: { top: [0, 1, 2] } },
+    enableCellNavigation: true,
+    enableColumnReorder: false
+  });
+
+  document.getElementById('stats').textContent =
+    ROWS + ' rows each, heights 25/32/70px; A: pinning.columns.left 1; B: pinning.columns.left 1 + pinning.rows.top ' + PINNED_ROWS_B;
+
+  function growRowA() {
+    growthA += 10;
+    gridA.invalidateRowHeights();
+  }
+  function growPinnedRowB() {
+    growthB += 10;
+    gridB.invalidateRowHeights();
+  }
+
+  function sumHeights(heightFn, from, to) {  // [from, to)
+    var t = 0;
+    for (var r = from; r < to; r++) { t += heightFn(r); }
+    return t;
+  }
+
+  // Self-checks for the single-viewport pinning implementation.
+  function runChecks() {
+    var out = [];
+    var pass = true;
+
+    function check(label, ok, detail) {
+      out.push((ok ? 'PASS ' : 'FAIL ') + label + (detail ? '  [' + detail + ']' : ''));
+      if (!ok) { pass = false; }
+    }
+
+    // rows rendered in a canvas: data-row -> {top, height}
+    function rowMap(canvas) {
+      var m = {};
+      canvas.querySelectorAll('.slick-row').forEach(function (node) {
+        m[node.dataset.row] = {
+          top: parseFloat(node.style.top),
+          h: node.getBoundingClientRect().height
+        };
+      });
+      return m;
+    }
+
+    function checkCanvasRows(label, canvas, heightFn) {
+      if (!canvas) {
+        check(label, false, 'canvas missing');
+        return;
+      }
+      var rows = rowMap(canvas);
+      var ok = true, bad = '';
+      Object.keys(rows).forEach(function (r) {
+        var row = rows[r];
+        if (Math.abs(row.h - heightFn(parseInt(r, 10))) > 0.5) {
+          ok = false;
+          if (!bad) { bad = 'row ' + r + ' h ' + row.h + ' expected h ' + heightFn(parseInt(r, 10)); }
+        }
+      });
+      check(label, ok && Object.keys(rows).length > 0, bad || (Object.keys(rows).length + ' rows checked'));
+    }
+
+    // --- Grid A: pinned columns with one shared canvas
+    var aCanvas = document.querySelector('#gridA .grid-canvas');
+    check('A: shared grid canvas exists', !!aCanvas);
+    check('A: two columns are pinned', gridA.getPinnedColumns('left').length === 2,
+      'pinned=' + gridA.getPinnedColumns('left').length);
+    checkCanvasRows('A: rendered rows match provider heights', aCanvas, rowHeightA);
+    var aTotal = sumHeights(rowHeightA, 0, ROWS);
+    check('A: canvas height = total of provider heights', aCanvas &&
+      Math.abs(parseFloat(getComputedStyle(aCanvas).height) - aTotal) < 1,
+      'canvas=' + (aCanvas ? getComputedStyle(aCanvas).height : 'missing') + ' expected=' + aTotal);
+
+    // --- Grid B: pinned columns and rows share the same viewport canvas
+    var bCanvas = document.querySelector('#gridB .grid-canvas');
+    check('B: shared grid canvas exists', !!bCanvas);
+    check('B: two columns are pinned', gridB.getPinnedColumns('left').length === 2,
+      'pinned=' + gridB.getPinnedColumns('left').length);
+    check('B: three rows are pinned', gridB.getOptions().pinning.rows.top.length === PINNED_ROWS_B,
+      'pinned=' + gridB.getOptions().pinning.rows.top.length);
+    checkCanvasRows('B: rendered rows match provider heights', bCanvas, rowHeightB);
+    var bTotal = sumHeights(rowHeightB, 0, ROWS);
+    check('B: canvas height = total of provider heights', bCanvas &&
+      Math.abs(parseFloat(getComputedStyle(bCanvas).height) - bTotal) < 1,
+      'canvas=' + (bCanvas ? getComputedStyle(bCanvas).height : 'missing') + ' expected=' + bTotal);
+
+    out.push(pass ? '\nALL CHECKS PASSED' : '\nCHECKS FAILED');
+    document.getElementById('checkResults').textContent = out.join('\n');
+    return pass;
+  }
+</script>
+</body>
+</html>

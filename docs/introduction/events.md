@@ -41,4 +41,4 @@ grid.onClick.unsubscribe(handler);
 
 ## Where to find the rest
 
-The grid has 57 events. The [Reference](/reference/grid) lists every event and the shape of its `args`.
+The grid has 62 events. The [Reference](/reference/grid) lists every event and the shape of its `args`.

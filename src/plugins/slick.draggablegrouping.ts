@@ -66,6 +66,7 @@ export class SlickDraggableGrouping {
   protected _bindingEventService = new BindingEventService();
   protected _handler = new SlickEventHandler();
   protected _sortableLeftInstance?: SortableInstance;
+  protected _sortableCenterInstance?: SortableInstance;
   protected _sortableRightInstance?: SortableInstance;
   protected _columnsGroupBy: Column[] = [];
 
@@ -155,7 +156,7 @@ export class SlickDraggableGrouping {
    * @param uid - grid UID
    * @param trigger - callback to execute when triggering a column grouping
    */
-  getSetupColumnReorder(grid: SlickGrid, headers: any, _headerColumnWidthDiff: any, setColumns: (columns: Column[]) => void, setupColumnResize: () => void, _columns: Column[], getColumnIndex: (columnId: string) => number, _uid: string, trigger: (slickEvent: SlickEvent_, data?: any) => void) {
+  getSetupColumnReorder(grid: SlickGrid, _headers: any, _headerColumnWidthDiff: any, setColumns: (columns: Column[]) => void, setupColumnResize: () => void, _columns: Column[], getColumnIndex: (columnId: string) => number, _uid: string, trigger: (slickEvent: SlickEvent_, data?: any) => void) {
     this.destroySortableInstances();
     const dropzoneElm = grid.getTopHeaderPanel() || grid.getPreHeaderPanel();
     const groupTogglerElm = dropzoneElm.querySelector<HTMLDivElement>('.slick-group-toggle-all');
@@ -221,20 +222,9 @@ export class SlickDraggableGrouping {
           return;
         }
 
-        const reorderedIds = this._sortableLeftInstance?.toArray() ?? [];
-
-        // when frozen columns are used, headers has more than one entry and we need the ids from all of them.
-        // though there is only really a left and right header, this will work even if that should change.
-        if (headers.length > 1) {
-          const ids = this._sortableRightInstance?.toArray() ?? [];
-
-          // Note: the loop below could be simplified with:
-          // reorderedIds.push.apply(reorderedIds,ids);
-          // However, the loop is more in keeping with way-backward compatibility
-          for (const id of ids) {
-            reorderedIds.push(id);
-          }
-        }
+        const reorderedIds = [this._sortableLeftInstance, this._sortableCenterInstance, this._sortableRightInstance].flatMap(
+          (instance) => instance?.toArray() ?? []
+        );
 
         const finalReorderedColumns: Column[] = [];
         const reorderedColumns = grid.getColumns();
@@ -248,8 +238,14 @@ export class SlickDraggableGrouping {
       }
     } as SortableOptions;
 
-    this._sortableLeftInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-left`) as HTMLDivElement, sortableOptions);
-    this._sortableRightInstance = Sortable.create(document.querySelector(`.${grid.getUID()} .slick-header-columns.slick-header-columns-right`) as HTMLDivElement, sortableOptions);
+    const headerRoot = `.${grid.getUID()} .slick-header-columns`;
+    const createSortable = (band: 'left' | 'center' | 'right') => {
+      const header = document.querySelector<HTMLDivElement>(`${headerRoot}.slick-header-columns-${band}`);
+      return header ? Sortable.create(header, sortableOptions) : undefined;
+    };
+    this._sortableLeftInstance = createSortable('left');
+    this._sortableCenterInstance = createSortable('center');
+    this._sortableRightInstance = createSortable('right');
 
     // user can optionally provide initial groupBy columns
     if (this._options.initialGroupBy && !this._isInitialized) {
@@ -259,6 +255,7 @@ export class SlickDraggableGrouping {
 
     return {
       sortableLeftInstance: this._sortableLeftInstance,
+      sortableCenterInstance: this._sortableCenterInstance,
       sortableRightInstance: this._sortableRightInstance
     };
   }
@@ -278,12 +275,12 @@ export class SlickDraggableGrouping {
   }
 
   protected destroySortableInstances() {
-    if (this._sortableLeftInstance?.el) {
-      this._sortableLeftInstance?.destroy();
+    for (const instance of [this._sortableLeftInstance, this._sortableCenterInstance, this._sortableRightInstance]) {
+      if (instance?.el) {
+        instance.destroy();
+      }
     }
-    if (this._sortableRightInstance?.el) {
-      this._sortableRightInstance?.destroy();
-    }
+    this._sortableLeftInstance = this._sortableCenterInstance = this._sortableRightInstance = undefined;
   }
 
   protected addDragOverDropzoneListeners() {

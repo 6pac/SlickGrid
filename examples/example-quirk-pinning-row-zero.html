@@ -1,0 +1,72 @@
+<!doctype html>
+<!--
+  TEMPORARY repro page for an empty row-pinning configuration.
+  DO NOT MERGE — this page is for human review only and is deleted before merge.
+  The permanent regression test is maintained separately, is fully self-hosting,
+  and does NOT depend on this page.
+
+  This page verifies that empty top and bottom row arrays do not create an empty
+  docking band. Grid A and B should be indistinguishable from control grid C.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SlickGrid quirk repro: empty row pinning (temporary, do not merge)</title>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <style> .g { width: 700px; height: 200px; } h3 { margin: 12px 0 4px 0; } </style>
+</head>
+<body>
+<h2>Empty row pinning — no docking band (TEMPORARY repro, do not merge)</h2>
+<div style="width:700px;">
+  <h3>Grid A — <code>pinning.rows.top: []</code></h3>
+  <div id="gridA" class="g"></div>
+  <h3>Grid B — <code>pinning.rows.bottom: []</code></h3>
+  <div id="gridB" class="g"></div>
+  <h3>Grid C — control (no pinning options)</h3>
+  <div id="gridC" class="g"></div>
+  <button onclick="report()">Report row placement</button>
+  <div id="readout" style="white-space:pre; font-family:monospace; font-size:12px; margin-top:8px;"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
+
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script>
+  var columns = [
+    { id: 'id', name: '#', field: 'id', width: 80 },
+    { id: 'a', name: 'A', field: 'a', width: 200 },
+    { id: 'b', name: 'B', field: 'b', width: 200 }
+  ];
+  function makeData() {
+    var d = [];
+    for (var i = 0; i < 12; i++) { d.push({ id: i, a: 'a' + i, b: 'b' + i }); }
+    return d;
+  }
+  var base = { enableCellNavigation: true, enableColumnReorder: false, rowHeight: 25 };
+  function cols() { return columns.map(function (c) { return Object.assign({}, c); }); }
+
+  var gridA = new Slick.Grid('#gridA', makeData(), cols(), Object.assign({ pinning: { rows: { top: [], bottom: [] } } }, base));
+  var gridB = new Slick.Grid('#gridB', makeData(), cols(), Object.assign({ pinning: { rows: { bottom: [] } } }, base));
+  var gridC = new Slick.Grid('#gridC', makeData(), cols(), Object.assign({}, base));
+
+  function report() {
+    function line(name, sel) {
+      var rows = document.querySelectorAll(sel + ' .grid-canvas .slick-row').length;
+      var dockingRows = document.querySelectorAll(sel + ' .slick-docking-overlay .slick-row').length;
+      return name + ': viewport rows=' + rows + ', docking rows=' + dockingRows;
+    }
+    document.getElementById('readout').textContent = [
+      line('A (empty top array)    ', '#gridA'),
+      line('B (empty bottom array) ', '#gridB'),
+      line('C (control)            ', '#gridC'),
+      '',
+      'Expected: A and B match C, with zero docking rows.'
+    ].join('\n');
+  }
+</script>
+</body>
+</html>

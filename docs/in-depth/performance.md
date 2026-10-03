@@ -13,7 +13,7 @@ SlickGrid stays fast because it never puts the whole dataset in the DOM. It rend
 The grid renders a window, not the whole dataset.
 
 - Only the rows inside the viewport are in the DOM. Rows above and below are not.
-- Rendering is virtual **horizontally** too. Cells to the left and right of the visible columns are not rendered. Frozen rows and frozen columns are always rendered.
+- Rendering is virtual **horizontally** too. Cells to the left and right of the visible columns are not rendered. Pinned rows and pinned columns are always rendered.
 - As you scroll, the grid removes rows that leave the window and builds rows that enter it.
 
 The result: DOM size stays roughly constant no matter how many rows the data has. A 100-row grid and a 1,000,000-row grid hold about the same number of row elements. Memory and layout cost track the viewport size, not the data size.
@@ -219,7 +219,7 @@ On each scroll the grid chooses how to render:
 
 Two related options rarely need changing:
 
-- [`enableMouseWheelScrollHandler`](/reference/grid#opt-enableMouseWheelScrollHandler) (default `true`) attaches the grid's own wheel handler. Frozen grids need it, so keep it on.
+- [`enableMouseWheelScrollHandler`](/reference/grid#opt-enableMouseWheelScrollHandler) (default `true`) attaches the grid's own wheel handler. Grids with pinned or sticky columns need it: their horizontal scrollbar is below the body, and the handler is what scrolls them sideways when you use a wheel or trackpad over the cells. Keep it on.
 - [`emulatePagingWhenScrolling`](/reference/grid#opt-emulatePagingWhenScrolling) (default `true`) changes how keyboard and programmatic navigation land a far-away target row: it pages so the row appears at the top of the viewport. It is a navigation behaviour, not a render-cost knob.
 
 ### 7. Measure what renders

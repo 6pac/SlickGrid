@@ -19,7 +19,7 @@ features:
     details: Build your first grid and learn the everyday options, columns, events and DataView basics.
     link: /introduction/
   - title: In-depth
-    details: Topic-by-topic coverage of every capability — data, editing, selection, grouping, frozen panes, theming and more.
+    details: Topic-by-topic coverage of every capability — data, editing, selection, grouping, pinned and sticky columns, theming and more.
     link: /in-depth/
   - title: Reference
     details: Every option, property, event and method — generated from the TypeScript source, browsable by section or A–Z.

@@ -215,7 +215,7 @@ dv.onDestroyed.subscribe(() => console.log('DataView destroyed'));
 - **No SortableJS global.** Old SlickGrid required you to assign
   `window.Sortable = Sortable`. v6 removes the SortableJS dependency, so delete that code;
   no global assignment or extra install is needed. See
-  [Frozen rows & columns](/in-depth/frozen) for the related reordering notes.
+  [Pinning & sticky docking](/in-depth/pinning-sticky) for how reordering works with pinned columns.
 - **Use `import type` for interfaces.** `Column`, `GridOption`, and the other interfaces
   are type-only exports. Import them with `import type` so bundlers with
   `verbatimModuleSyntax` do not try to emit a runtime import.

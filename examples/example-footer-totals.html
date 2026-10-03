@@ -34,7 +34,7 @@
       color: #2b6cb0;
       font-variant-numeric: tabular-nums;
     }
-    .slick-footerrow-column.frozen .footer-value {
+    .slick-footerrow-column.pinned .footer-value {
       color: #276749;
     }
 
@@ -71,7 +71,7 @@
         <option value="max">Max</option>
       </select>
       <button id="toggleFooter">Hide footer row</button>
-      <button id="toggleFrozen">Freeze first 2 columns</button>
+      <button id="togglePinning">Pin first 2 columns</button>
       <button id="reapplyColumns">Re-apply columns</button>
       <button id="addColumn">Add column</button>
       <button id="removeColumn">Remove last column</button>
@@ -101,9 +101,9 @@
       <li>Writing live values into a footer cell found with <code>getFooterRowColumn(columnId)</code> —
         totals follow cell edits, column reorder and column changes.</li>
       <li>Showing and hiding the footer at runtime with <code>setFooterRowVisibility()</code>.</li>
-      <li>Frozen columns: the footer is split into a left and a right pane, and
-        <code>getFooterRow()</code> returns both. Freeze and unfreeze to watch the panes
-        re-fill and scroll in step with the grid canvas.</li>
+      <li>Pinned columns: the footer follows the grid's pinned column boundary, and
+        <code>getFooterRowColumn()</code> continues to resolve each total cell after pinning
+        changes and column updates.</li>
       <li>The status box reports how many times the footer cell events fired for the last
         rebuild — one render per visible column is correct.</li>
       <li>A second grid shows the footer-less contract: <code>showFooterRow</code> without
@@ -184,7 +184,7 @@
   var footerEvents = { rendered: 0, destroyed: 0 };
 
   // build the structure of a footer cell - called once per visible column whenever the
-  // grid (re)creates the footer row: at init, on setColumns(), on reorder, on freeze/unfreeze
+  // grid (re)creates the footer row: at init, on setColumns(), on reorder, and on pinning changes
   function buildFooterCell(node, column) {
     footerEvents.rendered++;
 
@@ -205,7 +205,7 @@
   }
 
   // write the current aggregate into an already rendered footer cell. getFooterRowColumn()
-  // resolves the column id to the correct pane, so this keeps working with frozen columns.
+  // resolves the column id to the correct pinned/center region, so this keeps working with pinning.
   function updateTotal(column) {
     var cellElm = grid.getFooterRowColumn(column.id);
     var valueElm = cellElm && cellElm.querySelector('.footer-value');
@@ -250,20 +250,12 @@
 
   function refreshStatus(actionLabel) {
     var visibleColumns = grid.getColumns().filter(function (c) { return !c.hidden; }).length;
-    var isSplit = Array.isArray(grid.getFooterRow());
-
-    // both footer panes exist in the DOM whether or not columns are frozen, so count them
-    // directly - after unfreezing, the right pane must be emptied rather than left stale
-    var left = countCells('.slick-footerrow-columns-left');
-    var right = countCells('.slick-footerrow-columns-right');
-    var totalCells = left + right;
+    var totalCells = document.querySelectorAll('#myGrid .slick-footerrow-column').length;
 
     var lines = [];
     lines.push('last action        : ' + actionLabel);
-    lines.push('getFooterRow()     : ' + (isSplit
-      ? '[left, right] - frozenColumn ' + grid.getOptions().frozenColumn
-      : 'single element - not frozen'));
-    lines.push('footer cells       : left ' + left + ' + right ' + right + ' = ' + totalCells
+    lines.push('getFooterRow()     : single viewport footer');
+    lines.push('footer cells       : ' + totalCells
       + ' for ' + visibleColumns + ' visible column(s) ' + mark(totalCells === visibleColumns));
 
     if (footerEvents.rendered || footerEvents.destroyed) {
@@ -340,12 +332,12 @@
       refreshStatus('setFooterRowVisibility(' + willShow + ')');
     });
 
-    document.getElementById('toggleFrozen').addEventListener('click', function (e) {
-      var frozen = grid.getOptions().frozenColumn >= 0;
-      var newFrozen = frozen ? -1 : 1;
-      e.target.textContent = frozen ? 'Freeze first 2 columns' : 'Unfreeze columns';
-      reportFooterRebuild('setOptions({ frozenColumn: ' + newFrozen + ' })', function () {
-        grid.setOptions({ frozenColumn: newFrozen });
+    document.getElementById('togglePinning').addEventListener('click', function (e) {
+      var pinned = grid.getPinnedColumns('left').length > 0;
+      var newBoundary = pinned ? [] : 1;
+      e.target.textContent = pinned ? 'Pin first 2 columns' : 'Unpin columns';
+      reportFooterRebuild('setOptions({ pinning: { columns: { left: ' + (pinned ? '[]' : '1') + ' } } })', function () {
+        grid.setOptions({ pinning: { columns: { left: newBoundary } } });
       });
     });
 

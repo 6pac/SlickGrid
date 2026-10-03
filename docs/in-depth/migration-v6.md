@@ -4,7 +4,7 @@ title: Migrating to v6
 
 # Migrating to v6
 
-Version 6 is a major release. It removes the last third-party dependency, reworks frozen rows and columns, and changes how columns are hidden. This page lists the breaking changes and how to update.
+Version 6 is a major release. It removes the last third-party dependency, replaces frozen rows and columns with pinning and sticky docking, and changes how columns are hidden. This page lists the breaking changes and how to update.
 
 ::: tip
 This page describes the upcoming v6 release. Some items come from feature branches that merge at release. The copy/paste change is still a draft and may change.
@@ -22,11 +22,19 @@ What to change:
 
 The package now has no runtime dependency. Install is just the grid and a theme.
 
-## Frozen rows and columns: the 3×3 band model
+## Frozen panes become pinning and sticky docking
 
-Version 6 reworks frozen panes. You can now freeze columns on the **right** as well as the left, and freeze rows at the **top and bottom at the same time**. The grid is organised as a 3×3 band of viewports.
+Version 6 removes frozen panes. The grid has one scrollable viewport, and the `pinning` option docks columns and rows at its edges. You can now pin columns on the **right** as well as the left, pin rows at the **top and bottom at the same time**, and make columns and rows **sticky**, so that they dock at an edge only while scrolling would hide them.
 
-See [Frozen rows & columns](/in-depth/frozen) for the full guide and the option list.
+What to change:
+
+- Replace `frozenColumn: N` with `pinning: { columns: { left: N } }`. The boundary is the same, but it now counts visible columns only.
+- Replace `frozenRow: N` with `pinning: { rows: { top: [0, …, N-1] } }`. With `frozenBottom: true`, list the last rows in `pinning.rows.bottom` instead.
+- Rename `skipFreezeColumnValidation` to `skipPinningValidation`, and the `invalidColumnFreeze*` options to `invalidColumnPinning*`. `throwWhenFrozenNotAllViewable` has no replacement.
+- Replace `getFrozenColumnId()` with `getPinnedColumns()`, and `validateColumnFreeze()` with `validateColumnPinning()`.
+- Update your CSS selectors. The `.slick-pane-*` classes and the `-right` and `-bottom` viewport, canvas and header classes are gone.
+
+See [Pinning and sticky docking](/in-depth/pinning-sticky) for the full guide and the complete migration table.
 
 ## Columns: the `hidden` property
 
@@ -52,17 +60,22 @@ Version 6 plans to move external copy and paste to the browser's async Clipboard
 
 These are the public additions and renames from the v6 feature branches. New members appear in the [Reference](/reference/) once the release is integrated and the reference is regenerated.
 
-### Frozen columns (PR #1238)
+### Pinning and sticky docking (PR #1302)
 
-- New options: `frozenRightColumn`, `frozenBottomRow`, `lazyPanes`.
-- New methods: `getFrozenBandCounts()`, `getFrozenRightStartIndex()`.
-- See [Frozen rows & columns](/in-depth/frozen).
+- New options: `pinning`, `stickyRows`, `docking`, `skipPinningValidation`, `invalidColumnPinningPickerMessage`, `invalidColumnPinningSequenceMessage`, `invalidColumnPinningPickerCallback`, `invalidColumnPinningWidthMessage`, `invalidColumnPinningWidthCallback`, `allowDragFromClosest`, `columnResizingDelay`.
+- New column properties: `pinned`, `sticky`.
+- New methods: `getPinnedColumns()`, `setColumnPinning()`, `setColumnStickiness()`, `validateColumnPinning()`.
+- New events: `onHeaderMouseOver`, `onHeaderMouseOut`, `onHeaderRowMouseOver`, `onHeaderRowMouseOut`, `onHeaderKeyDown`.
+- Removed options: `frozenColumn`, `frozenRow`, `frozenBottom`, `frozenRightViewportMinWidth`, `skipFreezeColumnValidation`, `throwWhenFrozenNotAllViewable`, and the four `invalidColumnFreeze*` options.
+- Removed methods: `getFrozenColumnId()`, `getFrozenRowOffset()`, `validateColumnFreeze()`, `validateColumnFreezeWidth()`.
+- Changed: `setColumns()` returns a boolean. It returns `false`, and changes nothing, when it rejects the pinning of the new columns.
+- See [Pinning and sticky docking](/in-depth/pinning-sticky).
 
 ### Column `hidden` (PR #1299)
 
 - New option: `spreadHiddenColspan`.
-- New methods: `getColumnById()`, `getVisibleColumnIndex()`, `updateColumnById()`, `getRowTop()`, `validateColumnFreeze()`.
-- Renamed: `calculateFrozenColumnIndexById()` and `validateSetColumnFreeze()` are replaced by `validateColumnFreeze()`.
+- New methods: `getColumnById()`, `getVisibleColumnIndex()`, `updateColumnById()`, `getRowTop()`.
+- Removed: `calculateFrozenColumnIndexById()` and `validateSetColumnFreeze()`. Pinning is validated by `validateColumnPinning()` (PR #1302).
 
 ### SortableJS removal (PRs #1242–#1244)
 
@@ -75,5 +88,5 @@ These are the public additions and renames from the v6 feature branches. New mem
 
 ## See also
 
-- [Frozen rows & columns](/in-depth/frozen)
+- [Pinning and sticky docking](/in-depth/pinning-sticky)
 - [Plugins](/in-depth/plugins) · [Reference](/reference/)

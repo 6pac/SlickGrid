@@ -1,0 +1,77 @@
+<!doctype html>
+<!--
+  TEMPORARY repro page for the pinned-row boundary behavior.
+  DO NOT MERGE — human review only; deleted before merge. The permanent
+  Regression coverage is maintained separately, is fully self-hosting, and does
+  NOT depend on this page.
+
+  The page highlights the explicit top and bottom row references exposed by the
+  pinning API and verifies that the first scrollable row remains reachable.
+-->
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <title>SlickGrid quirk repro: pinned-row boundary (temporary, do not merge)</title>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <style>
+    .g { width: 700px; height: 260px; } h3 { margin: 12px 0 4px 0; }
+    .slick-row-pinned-top, .slick-row-pinned-bottom { background: #fde2e2; }
+  </style>
+</head>
+<body>
+<h2>Pinned-row boundary behavior (TEMPORARY repro, do not merge)</h2>
+<p style="max-width:700px;">Rows carrying a pinned-row class are tinted red.
+Exactly the configured top or bottom rows should be tinted in each grid.</p>
+<div style="width:700px;">
+  <h3>Grid A — 3 pinned TOP rows</h3>
+  <div id="gridA" class="g"></div>
+  <h3>Grid B — 3 pinned BOTTOM rows (1000 rows)</h3>
+  <div id="gridB" class="g"></div>
+  <button onclick="checkPinning()">Check pinning for first scrollable row (A)</button>
+  <button onclick="scrollLast()">Scroll to last scrollable row (B)</button>
+  <div id="readout" style="white-space:pre; font-family:monospace; font-size:12px; margin-top:8px;"></div>
+</div>
+
+<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
+<script src="sortable-cdn-fallback.js"></script>
+
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script>
+  var ROWS = 1000, PINNED_COUNT = 3;
+  var columns = [
+    { id: 'id', name: '#', field: 'id', width: 80 },
+    { id: 'a', name: 'A', field: 'a', width: 200 },
+    { id: 'b', name: 'B', field: 'b', width: 200 }
+  ];
+  function makeData() {
+    var d = [];
+    for (var i = 0; i < ROWS; i++) { d.push({ id: i, a: 'a' + i, b: 'b' + i }); }
+    return d;
+  }
+  var base = { enableCellNavigation: true, enableColumnReorder: false, rowHeight: 25 };
+  function cols() { return columns.map(function (c) { return Object.assign({}, c); }); }
+
+  var gridA = new Slick.Grid('#gridA', makeData(), cols(), Object.assign({ pinning: { rows: { top: [0, 1, 2] } } }, base));
+  var gridB = new Slick.Grid('#gridB', makeData(), cols(), Object.assign({ pinning: { rows: { bottom: [997, 998, 999] } } }, base));
+
+  function checkPinning() {
+    var dom = document.querySelector('#gridA .slick-row[data-row="' + PINNED_COUNT + '"]');
+    var topPinned = document.querySelectorAll('#gridA .slick-row-pinned-top').length;
+    document.getElementById('readout').textContent =
+      'top pinned rows rendered -> ' + topPinned + '\n' +
+      'first scrollable row (' + PINNED_COUNT + ') -> ' + (dom ? 'rendered' : 'not rendered') + '\n' +
+      (topPinned === PINNED_COUNT && !!dom ? 'AGREE' : 'CHECK FAILED');
+  }
+  function scrollLast() {
+    gridB.scrollRowIntoView(996);
+    var t = gridB.getViewport().top;
+    document.getElementById('readout').textContent =
+      'scrollRowIntoView(996) -> viewport.top = ' + t + '\n' +
+      (t > 0 ? 'SCROLLED (fixed)' : 'DID NOT SCROLL (pre-fix bug: last scrollable row unreachable)');
+  }
+</script>
+</body>
+</html>

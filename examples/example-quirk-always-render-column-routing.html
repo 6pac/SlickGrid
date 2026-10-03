@@ -7,12 +7,12 @@
   self-hosting and does NOT depend on this page.
 
   Bug (pre-fix): appendRowHtml's off-viewport branch appended alwaysRenderColumn
-  cells to the LEFT row fragment unconditionally. With frozen columns, an
-  alwaysRenderColumn column RIGHT of the freeze that scrolls off the left edge
+  cells to the LEFT row fragment unconditionally. With pinned columns, an
+  alwaysRenderColumn column RIGHT of the pinning boundary that scrolls off the left edge
   therefore rendered into the clipped LEFT canvas — mispositioned/invisible, and
   its cell-node mapping pointed at the wrong pane.
 
-  On this page: column 0 is frozen; "Sticky" (column 5, highlighted) is
+  On this page: column 0 is pinned; "Sticky" (column 5, highlighted) is
   alwaysRenderColumn in the scrollable band. Click "Scroll far right" then
   "Report" — a pre-fix build reports the Sticky cell inside .grid-canvas-left;
   a fixed build reports .grid-canvas-right.
@@ -66,7 +66,7 @@
   var grid = new Slick.Grid('#myGrid', data, columns, {
     enableCellNavigation: true,
     enableColumnReorder: false,
-    frozenColumn: 0,
+    pinning: { columns: { left: 0 } },
     rowHeight: 25
   });
 
