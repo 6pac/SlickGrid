@@ -48,13 +48,13 @@ ul {
   margin: auto auto auto 6px;
 }
 
-.grid-header .ui-icon {
+.grid-header .slick-icon {
   margin: 4px 4px auto 6px;
   background-color: transparent;
   border-color: transparent;
 }
 
-.grid-header .ui-icon.ui-state-hover {
+.grid-header .slick-icon.slick-state-hover {
   background-color: white;
 }
 

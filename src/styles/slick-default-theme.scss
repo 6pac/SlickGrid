@@ -12,7 +12,7 @@ classes should alter those!
   border-bottom: 1px solid silver;
 }
 
-// Header elements carry both `ui-state-default` and `slick-state-default`.
+// Header elements carry both `slick-state-default` and `slick-state-default`.
 // Match the `.slick-state-default` specificity of the docking rules so the
 // default theme keeps its header box height after docking splits the header
 // into regions.
@@ -46,7 +46,7 @@ classes should alter those!
   border: 1px solid #d3d3d3;
 }
 
-.slick-row.ui-state-active {
+.slick-row.slick-state-active {
   background: #F5F7D7;
 }
 
@@ -154,7 +154,7 @@ classes should alter those!
   background: #fafafa;
 }
 
-.slick-row.ui-state-active {
+.slick-row.slick-state-active {
   background: #F5F7D7;
 }
 

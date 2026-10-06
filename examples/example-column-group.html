@@ -7,7 +7,7 @@
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
   <style>
-    .slick-preheader-panel.ui-state-default  {
+    .slick-preheader-panel.slick-state-default  {
       width: 100%;
       overflow: hidden;
       border-left: 0px !important;
@@ -68,7 +68,7 @@
         } else {
             widthTotal = m.width;
             headerElm = document.createElement('div');
-            headerElm.className = 'ui-state-default slick-header-column';
+            headerElm.className = 'slick-state-default slick-header-column';
             headerElm.style.width = `${(m.width || 0) - headerColumnWidthDiff}px`;
             headerElm.dataset.group = m.columnGroup || '';
 
