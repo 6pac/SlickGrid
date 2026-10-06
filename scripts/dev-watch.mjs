@@ -7,7 +7,7 @@ import {
   buildIifeFile,
   buildSassFile,
   buildAllIifeFiles,
-  executeCjsEsmBuilds,
+  executeEsmBuild,
   executeFullBuild
 } from './builds.mjs';
 import { parseArgs } from './parse-args.mjs';
@@ -182,7 +182,7 @@ const cspRewriteRule = {
     try {
       if (filepath.endsWith('.js') || filepath.endsWith('.ts')) {
         // 1. ESM requires a full build because it ends up bundled into a single "index.js" file.
-        await executeCjsEsmBuilds();
+        await executeEsmBuild();
 
         // 2. IIFE files are built separately, so rebuild only the changed file.
         await (initialBuild ? buildAllIifeFiles() : buildIifeFile(filepath));

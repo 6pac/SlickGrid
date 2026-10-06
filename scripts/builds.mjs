@@ -11,7 +11,7 @@ import { removeImportsPlugin } from './esbuild-plugins.mjs';
 import { outputFileSync } from './fs-utils.mjs';
 import { parseArgs } from './parse-args.mjs';
 
-export const BUILD_FORMATS = ['cjs', 'esm', 'mjs'];
+export const BUILD_FORMATS = ['esm', 'mjs'];
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 const projectRootPath = path.join(__dirname, '../');
@@ -65,10 +65,10 @@ function getAllJSFiles() {
   return allFiles;
 }
 
-/** Execute full build of all format types (iife, cjs & esm) */
+/** Execute full build of all format types (iife, esm) */
 export async function executeFullBuild() {
-  // first CJS/ESM bundle as single file
-  await executeCjsEsmBuilds();
+  // first ESM bundle as single file
+  await executeEsmBuild();
 
   // build iife in a separate process since all files are built separately instead of a single bundle
   return await buildAllIifeFiles();
@@ -77,7 +77,7 @@ export async function executeFullBuild() {
 /**
  * Loop through all slick files and build them as separate iife files using esbuild
  */
-export async function executeCjsEsmBuilds() {
+export async function executeEsmBuild() {
   // build all other formats to a single bundled file
   for (const format of BUILD_FORMATS) {
     const startTime = new Date().getTime();
@@ -88,8 +88,8 @@ export async function executeCjsEsmBuilds() {
 }
 
 /**
- * Bundle with esbuild to either CJS or ESM format
- * @param {"cjs" | "esm"} format - build format type
+ * Bundle with esbuild to either ESM format
+ * @param {"esm"} format - build format type
  */
 export async function bundleByFormat(format) {
   const esbuildFormat = format === 'mjs' ? 'esm' : format;
