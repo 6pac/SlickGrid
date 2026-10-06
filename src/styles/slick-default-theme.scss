@@ -12,6 +12,12 @@ classes should alter those!
   border-bottom: 1px solid silver;
 }
 
+.slick-header {
+  // The docking scrollbar cover inherits this background to hide the strip
+  // above the vertical scrollbar, including where no header column is present.
+  background-color: #ececec;
+}
+
 // Header elements carry both `slick-state-default` and `slick-state-default`.
 // Match the `.slick-state-default` specificity of the docking rules so the
 // default theme keeps its header box height after docking splits the header
