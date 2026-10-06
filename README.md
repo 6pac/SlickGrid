@@ -21,26 +21,7 @@ We extended the project from the original SlickGrid foundation while also includ
 - removed jQueryUI requirement in [v3](https://github.com/6pac/SlickGrid/wiki/Major-version-3.0----Removal-of-jQueryUI-requirement-(replaced-by-SortableJS)) (replaced it with [SortableJS](https://sortablejs.github.io/Sortable/))
 - removed jQuery requirement in [v4](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement)
 - modernized the project in [v5](https://github.com/6pac/SlickGrid/wiki/Major-version-5.0-%E2%80%90-ES6-ESM-and-TypeScript-Support) by migrating to TypeScript (we kept IIFE and added ES6/ESM build targets) and we also gave SlickGrid a fresh and more modern look via a new Alpine Theme (CSS/SASS)
-- the project now only has 1 small dependency requirement which is [SortableJS](https://sortablejs.github.io/Sortable/)
-
-### Dependency
-
-[SortableJS](https://sortablejs.github.io/Sortable/) is the only hard dependency and you have to assign it yourself.
-
-##### Standalone `<script>`
-
-```js
-<script src="https://cdn.jsdelivr.net/npm/sortablejs/Sortable.min.js"></script>
-```
-
-##### CJS or ESM
-
-For CJS and ESM, you have to assign the import to the global `window` (or `global` for Node) object
-
-```ts
-import Sortable from 'sortablejs';
-(window as any).Sortable = Sortable;
-```
+- the project now has **zero runtime dependencies** (the previous [SortableJS](https://sortablejs.github.io/Sortable/) requirement was replaced by a built-in native HTML5 drag & drop implementation for column reordering and draggable grouping)
 
 ### Common Questions & Answers
 - Do I need TypeScript to use version 5.x?

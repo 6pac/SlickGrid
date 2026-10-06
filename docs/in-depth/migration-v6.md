@@ -80,6 +80,7 @@ These are the public additions and renames from the v6 feature branches. New mem
 ### SortableJS removal (PRs #1242–#1244)
 
 - The `sortablejs` dependency is removed. Column reorder and draggable grouping use native drag and drop. No public grid option or method changes.
+- Changed: `SlickDraggableGrouping.getSetupColumnReorder()` returns `{ columnReorderDragInstance }` (an object with a `destroy()` method) instead of the SortableJS instances `{ sortableLeftInstance, sortableCenterInstance, sortableRightInstance }`.
 
 ### Clipboard (PR #1270, draft)
 

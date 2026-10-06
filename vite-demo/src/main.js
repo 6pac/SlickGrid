@@ -1,14 +1,10 @@
 import 'flatpickr';
 import 'flatpickr/dist/flatpickr.css';
-import Sortable from 'sortablejs';
 
 import { ExampleTrading } from './example-trading.js';
 import { Example4 } from './example4.js';
 import { ExampleGrouping } from './example-grouping.js';
 import './style.scss';
-
-// assign SortableJS to the Window object
-window.Sortable = Sortable;
 
 // create simple router & container to change displayed example
 document.querySelector('#app').innerHTML =

@@ -18,7 +18,6 @@ const harnessHtml = `<!doctype html>
 </head>
 <body>
 <div id="myGrid"></div>
-<script src="/node_modules/sortablejs/Sortable.min.js"></script>
 <script src="/dist/browser/slick.core.js"></script>
 <script src="/dist/browser/slick.interactions.js"></script>
 <script src="/dist/browser/slick.grid.js"></script>
