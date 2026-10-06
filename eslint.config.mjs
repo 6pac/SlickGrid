@@ -49,7 +49,6 @@ export default [
         flatpickr: 'readonly',
         moment: 'readonly',
         Slick: 'readonly',
-        Sortable: 'readonly',
         IIFE_ONLY: 'readonly'
       }
     },
