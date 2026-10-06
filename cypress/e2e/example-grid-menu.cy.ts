@@ -1,5 +1,3 @@
-import '@4tw/cypress-drag-drop';
-
 describe('Example - Grid Menu', () => {
   const fullTitles = ['', 'A', 'B', 'C', 'D', 'E', 'F', 'G', 'H', 'I', 'J'];
 

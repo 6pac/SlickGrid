@@ -222,4 +222,25 @@ describe('Example - Draggable Grouping', { retries: 0 }, () => {
         .should('not.exist');
     });
   });
+
+  describe('Column Reorder', () => {
+    it('should keep a hidden column in the grid when reordering the column headers', () => {
+      cy.visit(`${Cypress.config('baseUrl')}/examples/example-draggable-grouping.html`);
+      cy.window().then((win: any) => {
+        const columns = win.grid.getColumns();
+        columns.find((column: any) => column.id === 'duration').hidden = true;
+        win.grid.setColumns(columns);
+      });
+
+      cy.contains('#myGrid .slick-header-column', 'Finish').then(($target) => {
+        cy.contains('#myGrid .slick-header-column', 'Start').drag($target);
+      });
+
+      cy.window().then((win: any) => {
+        const columns = win.grid.getColumns();
+        expect(columns.map((column: any) => column.id)).to.deep.equal(['sel', 'title', 'duration', 'finish', 'start', 'cost', 'effortDriven']);
+        expect(columns[2].hidden).to.eq(true);
+      });
+    });
+  });
 });
