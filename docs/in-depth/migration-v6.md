@@ -77,6 +77,16 @@ These are the public additions and renames from the v6 feature branches. New mem
 - New methods: `getColumnById()`, `getVisibleColumnIndex()`, `updateColumnById()`, `getRowTop()`.
 - Removed: `calculateFrozenColumnIndexById()` and `validateSetColumnFreeze()`. Pinning is validated by `validateColumnPinning()` (PR #1302).
 
+##### jQueryUI CSS classes leftovers (PR #1313)
+
+Since we dropped jQueryUI back in v4, there is no need to keep references to `.ui-...` CSS classes. All DOM elements with `.ui-...` CSS classes already had `.slick-...` classes for a while already, so in this version we are just cleaning up the few remaining traces of jQueryUI CSS classes like `.ui-state-default` and other similar classes in the core lib, they were all removed in this release. If you were querying any of them in CSS for styling purposes, you can simply rename them to `.slick-state-*`
+
+```diff
+- .ui-state-default, .ui-state-hover {
++ .slick-state-default, .slick-state-hover {
+}
+```
+
 ### SortableJS removal (PRs #1242–#1244)
 
 - The `sortablejs` dependency is removed. Column reorder and draggable grouping use native drag and drop. No public grid option or method changes.

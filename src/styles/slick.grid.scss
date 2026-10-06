@@ -7,14 +7,14 @@ classes should alter those!
 
 @use './slick-docking';
 
-.slick-header.ui-state-default, .slick-headerrow.ui-state-default, .slick-footerrow.ui-state-default, .slick-top-panel-scroller.ui-state-default, .slick-group-header.ui-state-default {
+.slick-header.slick-state-default, .slick-headerrow.slick-state-default, .slick-footerrow.slick-state-default, .slick-top-panel-scroller.slick-state-default, .slick-group-header.slick-state-default {
   width: 100%;
   overflow: auto;
   position: relative;
   border-left: 0px !important;
 }
 
-.slick-header.ui-state-default {
+.slick-header.slick-state-default {
   overflow: inherit;
   border-top: 1px solid #d3d3d3;
 }
@@ -29,7 +29,7 @@ classes should alter those!
   overflow: hidden;
 }
 
-.slick-header-column.ui-state-default, .slick-group-header-column.ui-state-default {
+.slick-header-column.slick-state-default, .slick-group-header-column.slick-state-default {
   position: relative;
   display: inline-block;
   box-sizing: content-box !important; /* this here only for Firefox! */
@@ -68,7 +68,7 @@ classes should alter those!
   z-index: 1;
 }
 
-.slick-footerrow-column.ui-state-default {
+.slick-footerrow-column.slick-state-default {
   -o-text-overflow: ellipsis;
   text-overflow: ellipsis;
   margin: 0;
@@ -82,7 +82,7 @@ classes should alter those!
   vertical-align: middle;
 }
 
-.slick-headerrow-column.ui-state-default, .slick-footerrow-column.ui-state-default {
+.slick-headerrow-column.slick-state-default, .slick-footerrow-column.slick-state-default {
   padding: 4px;
 }
 
@@ -164,7 +164,7 @@ classes should alter those!
   outline: 0;
 }
 
-.slick-row.ui-widget-content, .slick-row.ui-state-active {
+.slick-row.slick-widget-content, .slick-row.slick-state-active {
   position: absolute;
   border: 0px;
   width: 100%;

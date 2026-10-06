@@ -804,7 +804,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (this._options.createTopHeaderPanel) {
       this._topHeaderPanelScroller = Utils.createDomElement(
         'div',
-        { className: 'slick-topheader-panel ui-state-default slick-state-default', style: { overflow: 'hidden', position: 'relative' } },
+        { className: 'slick-topheader-panel slick-state-default', style: { overflow: 'hidden', position: 'relative' } },
         this._container
       );
       this._topHeaderPanelScroller.appendChild(document.createElement('div'));
@@ -828,7 +828,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       const headerContainer = Utils.createDomElement('div', { className: 'slick-preheader-container' }, this._headerRoot);
       this._preHeaderPanelScroller = Utils.createDomElement(
         'div',
-        { className: 'slick-preheader-panel ui-state-default slick-state-default', style: { overflow: 'hidden', position: 'relative' } },
+        { className: 'slick-preheader-panel slick-state-default', style: { overflow: 'hidden', position: 'relative' } },
         headerContainer
       );
       this._preHeaderPanelScroller.appendChild(document.createElement('div'));
@@ -850,7 +850,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const headerContainerL = Utils.createDomElement('div', { className: 'slick-header-container' }, this._headerRoot);
     this._headerScrollerL = Utils.createDomElement(
       'div',
-      { className: 'slick-header ui-state-default slick-state-default slick-header-left', role: 'rowgroup' },
+      { className: 'slick-header slick-state-default slick-header-left', role: 'rowgroup' },
       headerContainerL
     );
 
@@ -869,7 +869,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     this._headerRowScrollerL = Utils.createDomElement(
       'div',
-      { className: 'slick-headerrow ui-state-default slick-state-default', role: 'rowgroup' },
+      { className: 'slick-headerrow slick-state-default', role: 'rowgroup' },
       this._contentRoot
     );
 
@@ -890,7 +890,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     this._headerRows = [this._headerRowL];
 
     // Append the top panel scroller
-    this._topPanelScrollerL = Utils.createDomElement('div', { className: 'slick-top-panel-scroller ui-state-default slick-state-default' }, this._contentRoot);
+    this._topPanelScrollerL = Utils.createDomElement('div', { className: 'slick-top-panel-scroller slick-state-default' }, this._contentRoot);
 
     this._topPanelScrollers = [this._topPanelScrollerL];
 
@@ -1477,7 +1477,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected materializeFooterRow(): void {
     const canvasWithScrollbarWidth = this.getCanvasWidth() + (this.scrollbarDimensions?.width || 0);
 
-    this._footerRowScrollerL = Utils.createDomElement('div', { className: 'slick-footerrow ui-state-default slick-state-default' }, this._contentRoot);
+    this._footerRowScrollerL = Utils.createDomElement('div', { className: 'slick-footerrow slick-state-default' }, this._contentRoot);
     this._footerRowScroller = [this._footerRowScrollerL];
 
     this._footerRowSpacerL = Utils.createDomElement(
@@ -1699,7 +1699,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         const band = this.getColumnDockingBand(i);
         const footerRowCell = Utils.createDomElement(
           'div',
-          { className: `ui-state-default slick-state-default slick-footerrow-column l${i} r${i}` },
+          { className: `slick-state-default slick-footerrow-column l${i} r${i}` },
           this.getDockingChromeRegion('footerRow', band)
         );
         const className = band !== 'center' ? 'pinned' : null;
@@ -1884,7 +1884,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
           id: `${this.uid + m.id}`,
           dataset: { id: String(m.id) },
           role: 'columnheader',
-          className: 'ui-state-default slick-state-default slick-header-column',
+          className: 'slick-state-default slick-header-column',
           tabIndex: 0,
           ariaColIndex: `${i + 1}`,
         },
@@ -1955,7 +1955,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       if (this._options.showHeaderRow) {
         const headerRowCell = Utils.createDomElement(
           'div',
-          { className: `ui-state-default slick-state-default slick-headerrow-column l${i} r${i}`, role: 'gridcell', ariaColIndex: `${i + 1}` },
+          { className: `slick-state-default slick-headerrow-column l${i} r${i}`, role: 'gridcell', ariaColIndex: `${i + 1}` },
           headerRowTarget
         );
         const pinnedClasses = band !== 'center' ? 'pinned' : null;
@@ -3044,7 +3044,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @returns {number} - The computed optimal column width in pixels.
    */
   protected getColWidth(columnDef: C, gridCanvas: HTMLElement, rowInfo: RowInfo) {
-    const rowEl = Utils.createDomElement('div', { className: 'slick-row ui-widget-content' }, gridCanvas);
+    const rowEl = Utils.createDomElement('div', { className: 'slick-row slick-widget-content' }, gridCanvas);
     const cellEl = Utils.createDomElement('div', { className: 'slick-cell' }, rowEl);
 
     cellEl.style.position = 'absolute';
@@ -3154,7 +3154,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     } else {
       // headers have not yet been created, create a new node
       const header = this.getHeader(columnDef) as HTMLElement;
-      headerColEl = Utils.createDomElement('div', { id: dummyHeaderColElId, className: 'ui-state-default slick-state-default slick-header-column' }, header);
+      headerColEl = Utils.createDomElement('div', { id: dummyHeaderColElId, className: 'slick-state-default slick-header-column' }, header);
       const colNameElm = Utils.createDomElement('span', { className: 'slick-column-name' }, headerColEl);
       this.applyHtmlCode(colNameElm, columnDef.name);
       headerColEl.style.cssText = 'position: absolute; visibility: hidden;right: auto;text-overflow: initial;white-space: nowrap;';
@@ -5441,7 +5441,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     const rowDiv = Utils.createDomElement('div', {
-      className: `ui-widget-content ${rowCss}`,
+      className: `slick-widget-content ${rowCss}`,
       role: 'row',
       ariaRowIndex: `${row + 1}`,
       dataset: { row: `${row}` },
@@ -8118,7 +8118,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     let el = Utils.createDomElement(
       'div',
-      { className: 'ui-state-default slick-state-default slick-header-column', style: { visibility: 'hidden' }, textContent: '-' },
+      { className: 'slick-state-default slick-header-column', style: { visibility: 'hidden' }, textContent: '-' },
       header
     );
     let style = getComputedStyle(el);

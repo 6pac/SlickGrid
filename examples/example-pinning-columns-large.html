@@ -399,14 +399,14 @@ function toggleFilterRow() {
 }
 
 
-const gridHeaderElm = document.querySelector(".grid-header .ui-icon");
+const gridHeaderElm = document.querySelector(".grid-header .slick-icon");
 if (gridHeaderElm) {
-  gridHeaderElm.classList.add("ui-state-default", "ui-corner-all");
+  gridHeaderElm.classList.add("slick-state-default", "slick-corner-all");
   gridHeaderElm.addEventListener('mouseover', function (e) {
-    e.target.classList.add("ui-state-hover");
+    e.target.classList.add("slick-state-hover");
   });
   gridHeaderElm.addEventListener('mouseout', function (e) {
-    e.target.classList.remove("ui-state-hover");
+    e.target.classList.remove("slick-state-hover");
   });
 }
 
