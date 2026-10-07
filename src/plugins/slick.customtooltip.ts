@@ -138,6 +138,8 @@ export class SlickCustomTooltip {
     this._options = Utils.extend(true, {}, this._defaults, this._gridOptions.customTooltip, this.tooltipOptions);
     this._eventHandler
       .subscribe(grid.onMouseEnter, this.handleOnMouseEnter.bind(this))
+      .subscribe(grid.onHeaderMouseEnter, (e, args) => this.handleOnHeaderMouseEnterByType(e, args, 'slick-header-column'))
+      .subscribe(grid.onHeaderRowMouseEnter, (e, args) => this.handleOnHeaderMouseEnterByType(e, args, 'slick-headerrow-column'))
       .subscribe(grid.onHeaderMouseOver, (e, args) => this.handleOnHeaderMouseEnterByType(e, args, 'slick-header-column'))
       .subscribe(grid.onHeaderRowMouseOver, (e, args) => this.handleOnHeaderMouseEnterByType(e, args, 'slick-headerrow-column'))
       .subscribe(grid.onMouseLeave, () => this.handleOnMouseLeave())
@@ -231,6 +233,10 @@ export class SlickCustomTooltip {
 
   /** depending on the selector type, execute the necessary handler code */
   protected handleOnHeaderMouseEnterByType(e: SlickEventData, args: any, selector: CellType) {
+    const headerNode = (e.target as HTMLElement | null)?.closest(`.${selector}`);
+    if (this._tooltipElm && headerNode && this._cellNodeElm === headerNode) {
+      return;
+    }
     this._isGridTooltip = true;
     this._cellType = selector;
     this._mouseTarget = this.findTooltipElement(e.target as HTMLElement | null);
@@ -386,16 +392,17 @@ export class SlickCustomTooltip {
     const cellElm = this._cellTooltipOptions.useRegularTooltipFromCellTextOnly || !this._mouseTarget
       ? this._cellNodeElm
       : this._mouseTarget;
+    const overflowElm = this._cellNodeElm;
     let tooltipText = columnDef.toolTip || '';
     let tmpTitleElm;
 
     if (!tooltipText) {
-      if (this._cellType === 'slick-cell' && cellElm && (cellElm.clientWidth < cellElm.scrollWidth) && !this._cellTooltipOptions.useRegularTooltipFromFormatterOnly) {
-        tooltipText = (cellElm.textContent || '').trim() || '';
+      if (this._cellType === 'slick-cell' && overflowElm && (overflowElm.clientWidth < overflowElm.scrollWidth) && !this._cellTooltipOptions.useRegularTooltipFromFormatterOnly) {
+        tooltipText = (overflowElm.textContent || '').trim() || '';
         if (this._cellTooltipOptions.tooltipTextMaxLength && (tooltipText.length > this._cellTooltipOptions.tooltipTextMaxLength)) {
           tooltipText = tooltipText.substring(0, this._cellTooltipOptions.tooltipTextMaxLength - 3) + '...';
         }
-        tmpTitleElm = cellElm;
+        tmpTitleElm = overflowElm;
       } else {
         if (this._cellTooltipOptions.useRegularTooltipFromFormatterOnly) {
           tmpTitleElm = tmpDiv.querySelector('[title], [data-slick-tooltip]');
