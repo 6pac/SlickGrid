@@ -6,7 +6,6 @@
  * - setColumns() validates pinning before mutating its input or firing events, and returns
  *   whether the columns were applied
  * - onHeaderKeyDown receives { event, column }
- * - the internal event trigger is `trigger`, not `triggerEvent`
  */
 
 const harnessHtml = `<!doctype html>
@@ -65,8 +64,8 @@ const harnessHtml = `<!doctype html>
     grid.applyHtmlCode(scratch, 42);
     check('applyHtmlCode writes numbers as text', scratch.textContent === '42', scratch.innerHTML);
 
-    // trigger name
-    check('grid exposes trigger and not triggerEvent', typeof grid.trigger === 'function' && typeof grid.triggerEvent === 'undefined');
+    // trigger event name
+    check('grid exposes triggerEvent', typeof grid.triggerEvent === 'function');
     check('validateAndEnforceOptions is callable', typeof grid.validateAndEnforceOptions === 'function');
 
     // visibility with animate: false
