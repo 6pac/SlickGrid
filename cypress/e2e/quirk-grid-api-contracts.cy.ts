@@ -65,7 +65,7 @@ const harnessHtml = `<!doctype html>
     check('applyHtmlCode writes numbers as text', scratch.textContent === '42', scratch.innerHTML);
 
     // trigger event name
-    check('grid exposes triggerEvent', typeof grid.triggerEvent === 'function';
+    check('grid exposes triggerEvent', typeof grid.triggerEvent === 'function');
     check('validateAndEnforceOptions is callable', typeof grid.validateAndEnforceOptions === 'function');
 
     // visibility with animate: false
