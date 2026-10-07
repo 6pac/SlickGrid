@@ -99,9 +99,6 @@ export interface Column<TData = any> {
   /** Default to false, which leads to exclude the column title from the Grid Menu. */
   excludeFromGridMenu?: boolean;
 
-  /** Defaults to false, which leads to exclude the field from the query (typically a backend service query) */
-  excludeFromQuery?: boolean;
-
   /** Defaults to false, which leads to exclude the column from getting a header menu. For example, the checkbox row selection should not have a header menu. */
   excludeFromHeaderMenu?: boolean;
 

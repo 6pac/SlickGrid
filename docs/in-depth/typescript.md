@@ -15,7 +15,7 @@ and extend the library. It assumes a bundler such as Vite, webpack, or esbuild.
 - **Runtime classes use the `Slick` prefix.** `SlickGrid`, `SlickDataView`,
   `SlickRowSelectionModel`, and so on. A few value exports do not: the `Editors`,
   `Formatters`, `Aggregators`, and `Utils` helpers, and enums and enum-like constants (for example
-  `FieldType` and `SortDirectionNumber`).
+  `SortDirectionNumber`).
 - **You type the grid with your row model.** Pass an interface as a generic, for example
   `new SlickGrid<User>(...)`. Reads such as `getDataItem` then return `User`, and column
   `field` names are checked against `User`.
