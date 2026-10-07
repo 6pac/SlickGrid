@@ -82,6 +82,26 @@ These are the public additions and renames from the v6 feature branches. New mem
 - The `sortablejs` dependency is removed. Column reorder and draggable grouping use native drag and drop. No public grid option or method changes.
 - Changed: `SlickDraggableGrouping.getSetupColumnReorder()` returns `{ columnReorderDragInstance }` (an object with a `destroy()` method) instead of the SortableJS instances `{ sortableLeftInstance, sortableCenterInstance, sortableRightInstance }`.
 
+### Custom tooltips (PR #1316)
+
+- Removed the `hideArrow` option from `CustomTooltipOption`; custom tooltips no longer render an arrow.
+- New options include `bodyClassName`, `repositionByMouseOverTarget`, `useRegularTooltipFromCellTextOnly`, `persistOnHover`, `autoHideDelay`, `observeAllTooltips`, and `observeTooltipContainer`.
+- The custom tooltip plugin can now show tooltips on elements outside the grid. Enable `observeAllTooltips` to observe `title` and `data-slick-tooltip` attributes. Observation defaults to the document body; set `observeTooltipContainer` to limit it to selected containers.
+
+```ts
+import { SlickCustomTooltip, SlickGrid } from 'slickgrid';
+
+const grid = new SlickGrid('#myGrid', data, columns, {
+  customTooltip: {
+    observeAllTooltips: true,
+    observeTooltipContainer: '.toolbar, #dialog', // optional; defaults to body
+  },
+});
+grid.registerPlugin(new SlickCustomTooltip());
+```
+
+See [Custom tooltips](/in-depth/custom-tooltips) for usage and all available options.
+
 ### Clipboard (PR #1270, draft)
 
 - The change is inside the `SlickCellExternalCopyManager` plugin (async Clipboard API). No grid option or method changes.

@@ -32,8 +32,8 @@ export interface CustomTooltipOption<T = any> {
   /** Formatter to execute when custom tooltip is over a heade row column (e.g. filter) */
   headerRowFormatter?: Formatter;
 
-  /** defaults to False, should we hide the tooltip pointer arrow? */
-  hideArrow?: boolean;
+  /** defaults to "tooltip-body" class name */
+  bodyClassName?: string;
 
   /** defaults to "slick-custom-tooltip" */
   className?: string;
@@ -68,8 +68,14 @@ export interface CustomTooltipOption<T = any> {
    */
   position?: 'auto' | 'top' | 'bottom' | 'left-align' | 'right-align' | 'center';
 
+  /** should we reposition the tooltip by the mouse target on mouseover */
+  repositionByMouseOverTarget?: boolean;
+
   /** defaults to False, when set to True it will skip custom tooltip formatter and instead will parse through the regular cell formatter and try to find a `title` to show regular tooltip */
   useRegularTooltip?: boolean;
+
+  /** defaults to False, when set to True it will skip custom tooltip formatter and ONLY use the cell value as tooltip */
+  useRegularTooltipFromCellTextOnly?: boolean;
 
   /**
    * defaults to False, optionally force to retrieve the `title` from the Formatter result instead of the cell itself.
@@ -93,6 +99,27 @@ export interface CustomTooltipOption<T = any> {
   /** defaults to `normal`, optionally change the style `white-space` when displaying tooltip with formatter (tooltip or regular formatter) */
   whiteSpace?: string;
 
+  /** defaults to true, keep the tooltip visible while the pointer moves from its trigger onto the tooltip */
+  persistOnHover?: boolean;
+
+  /** defaults to 3000 milliseconds, maximum time the tooltip remains visible when persistOnHover is false */
+  autoHideDelay?: number;
+
+  /**
+   * defaults to false, when enabled it will observe ALL elements with `title` or `data-slick-tooltip` attributes (not just grid elements).
+   * This is useful for showing custom tooltips on elements outside the grid (e.g., menu items, buttons, etc.)
+   * while still using the SlickCustomTooltip plugin to manage the tooltip display and styling.
+   */
+  observeAllTooltips?: boolean;
+
+  /**
+   * defaults to 'body', CSS selector of the container element to observe when `observeAllTooltips` is enabled.
+   * When defined, it will target only that specific container (e.g., use `'.tooltip-container'` to observe only elements within that container).
+   * You can also observe multiple containers by providing a comma separate string (e.g. `'.container1, container2'`)
+   * NOTE: this option only works in combo with `observeAllTooltips` which must be enabled.
+   */
+  observeTooltipContainer?: string;
+
   // --
   // callback functions
   // -------------------
@@ -101,5 +128,12 @@ export interface CustomTooltipOption<T = any> {
   // Methods
 
   /** Callback method that user can override the default behavior of showing the tooltip. If it returns False, then the tooltip won't show */
-  usabilityOverride?: (args: { cell: number; row: number; column: Column; dataContext: any; type: 'cell' | 'header' | 'header-row'; grid: SlickGrid; }) => boolean;
+  usabilityOverride?: (args: {
+    cell: number;
+    row: number;
+    column: Column;
+    dataContext: any;
+    type: 'cell' | 'header' | 'header-row';
+    grid: SlickGrid;
+  }) => boolean;
 }
