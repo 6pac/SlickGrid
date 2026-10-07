@@ -962,12 +962,6 @@
       "description": "Default to false, which leads to exclude the column title from the Grid Menu."
     },
     {
-      "name": "excludeFromQuery",
-      "type": "boolean",
-      "optional": true,
-      "description": "Defaults to false, which leads to exclude the field from the query (typically a backend service query)"
-    },
-    {
       "name": "excludeFromHeaderMenu",
       "type": "boolean",
       "optional": true,
