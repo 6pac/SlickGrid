@@ -38,9 +38,6 @@ export interface CustomTooltipOption<T = any> {
   /** defaults to "slick-custom-tooltip" */
   className?: string;
 
-  /** defaults to false, hide the tooltip arrow */
-  hideArrow?: boolean;
-
   /**
    * Formatter to execute for displaying the data that will show in the tooltip
    * NOTE: when using `asyncProcess`, this formatter will be executed first and prior to the actual async process,

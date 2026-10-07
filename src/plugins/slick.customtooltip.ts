@@ -48,7 +48,6 @@ const TOOLTIP_SELECTOR = '[title], [data-slick-tooltip]';
  *   asyncParamsPropName:                 defaults to "__params", optionally change the property name that will be used to merge the data returned by the async method into the `dataContext` object
  *   asyncProcess:                        Async Post method returning a Promise, it must return an object with 1 or more properties. internally the data that will automatically be merged into the `dataContext` object under the `__params` property so that you can use it in your `asyncPostFormatter` formatter.
  *   asyncPostFormatter:                  Formatter to execute once the async process is completed, to displayed the actual text result (used when dealing with an Async API to get data to display later in the tooltip)
- *   hideArrow:                           defaults to False, should we hide the tooltip pointer arrow?
  *   className:                           defaults to "slick-custom-tooltip"
  *   formatter:                           Formatter to execute for displaying the data that will show in the tooltip. NOTE: when using `asyncProcess`, this formatter will be executed first and prior to the actual async process.
  *   headerFormatter:                     Formatter to execute when custom tooltip is over a header column
@@ -113,7 +112,6 @@ export class SlickCustomTooltip {
     offsetLeft: 0,
     offsetRight: 0,
     offsetTopBottom: 4,
-    hideArrow: false,
     tooltipTextMaxLength: 700,
     regularTooltipWhiteSpace: 'pre-line',
     whiteSpace: 'normal',
@@ -539,34 +537,21 @@ export class SlickCustomTooltip {
       let newPositionTop = (cellPosition?.top || 0) - this._tooltipElm.offsetHeight - (this._cellTooltipOptions.offsetTopBottom ?? 0);
       let newPositionLeft = (cellPosition?.left || 0) - (this._cellTooltipOptions.offsetRight ?? 0);
 
-      // user could explicitely use a "left-align" arrow position, (when user knows his column is completely on the right in the grid)
+      // user could explicitly use a "left-align" position when the column is completely on the right in the grid
       // or when using "auto" and we detect not enough available space then we'll position to the "left" of the cell
       const position = this._cellTooltipOptions.position || 'auto';
+      let horizontalPosition: 'left' | 'right' | 'center' = 'left';
       if (position === 'center') {
         newPositionLeft += (cellContainerWidth / 2) - (calculatedTooltipWidth / 2) + (this._cellTooltipOptions.offsetRight || 0);
-        this._tooltipElm.classList.remove('arrow-left-align');
-        this._tooltipElm.classList.remove('arrow-right-align');
-        this._tooltipElm.classList.add('arrow-center-align');
-
+        horizontalPosition = 'center';
       } else if (position === 'right-align' || ((position === 'auto' || position !== 'left-align') && (newPositionLeft + calculatedTooltipWidth) > calculatedBodyWidth)) {
         newPositionLeft -= (calculatedTooltipWidth - cellContainerWidth - (this._cellTooltipOptions.offsetLeft || 0));
-        this._tooltipElm.classList.remove('arrow-center-align');
-        this._tooltipElm.classList.remove('arrow-left-align');
-        this._tooltipElm.classList.add('arrow-right-align');
-      } else {
-        this._tooltipElm.classList.remove('arrow-center-align');
-        this._tooltipElm.classList.remove('arrow-right-align');
-        this._tooltipElm.classList.add('arrow-left-align');
+        horizontalPosition = 'right';
       }
 
       // do the same calculation/reposition with top/bottom (default is top of the cell or in other word starting from the cell going down)
       if (position === 'bottom' || (position === 'auto' && calculatedTooltipHeight > Utils.calculateAvailableSpace(this._cellNodeElm).top)) {
         newPositionTop = (cellPosition?.top || 0) + (this._gridOptions.rowHeight || 0) + (this._cellTooltipOptions.offsetTopBottom || 0);
-        this._tooltipElm.classList.remove('arrow-down');
-        this._tooltipElm.classList.add('arrow-up');
-      } else {
-        this._tooltipElm.classList.add('arrow-down');
-        this._tooltipElm.classList.remove('arrow-up');
       }
 
       if (this._hasMultipleTooltips || this._cellTooltipOptions.repositionByMouseOverTarget) {
@@ -574,9 +559,9 @@ export class SlickCustomTooltip {
         const targetOffset = mouseTarget?.getBoundingClientRect();
         if (targetOffset) {
           const targetLeft = targetOffset.left + window.pageXOffset;
-          if (position === 'center' || this._tooltipElm.classList.contains('arrow-left-align')) {
+          if (horizontalPosition === 'center' || horizontalPosition === 'left') {
             newPositionLeft = targetLeft - 3;
-          } else if (this._tooltipElm.classList.contains('arrow-right-align')) {
+          } else {
             newPositionLeft = targetLeft - calculatedTooltipWidth + (mouseTarget?.offsetWidth ?? 0) + 3;
           }
         }
@@ -672,11 +657,6 @@ export class SlickCustomTooltip {
 
       // reposition the tooltip on top of the cell that triggered the mouse over event
       this.reposition(cell);
-
-      // user could optionally hide the tooltip arrow (we can simply update the CSS variables, that's the only way we have to update CSS pseudo)
-      if (!this._cellTooltipOptions.hideArrow) {
-        this._tooltipElm.classList.add('tooltip-arrow');
-      }
 
       // also clear any "title" attribute to avoid showing a 2nd browser tooltip
       this.swapAndClearTitleAttribute(inputTitleElm, (outputText instanceof HTMLElement ? outputText.textContent : outputText) || '');

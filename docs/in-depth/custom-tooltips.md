@@ -133,7 +133,7 @@ Elements inside a cell can have their own `title` or `data-slick-tooltip` attrib
 
 By default, the tooltip closes when the pointer leaves its trigger. Set `persistOnHover: false` to let the pointer move onto the tooltip; `autoHideDelay` (3000 ms by default) then sets its maximum display time.
 
-Other display options include `className`, `bodyClassName`, `hideArrow`, `maxWidth`, `maxHeight`, `whiteSpace`, and `regularTooltipWhiteSpace`.
+Other display options include `className`, `bodyClassName`, `maxWidth`, `maxHeight`, `whiteSpace`, and `regularTooltipWhiteSpace`.
 
 ## Tooltips outside the grid
 
