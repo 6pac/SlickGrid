@@ -593,7 +593,7 @@
       "name": "rowHighlightCssClass",
       "type": "string",
       "optional": true,
-      "description": "Defaults to \"highlight-animate\", a CSS class name used to simulate row highlight with an optional duration (e.g. after insert).\nNote: make sure that the duration is always lower than the duration defined in the CSS/SASS variable `$alpine-row-highlight-fade-animation`.\nAlso note that the highlight is temporary and will also disappear as soon as the user starts scrolling or a `render()` is being called",
+      "description": "Defaults to \"highlight-animate\", a CSS class name used to simulate row highlight with an optional duration (e.g. after insert).\nNote: make sure that the duration is always lower than the duration defined in the CSS/SASS variable `$slick-row-highlight-fade-animation`.\nAlso note that the highlight is temporary and will also disappear as soon as the user starts scrolling or a `render()` is being called",
       "default": "highlight-animate"
     },
     {
