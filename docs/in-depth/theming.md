@@ -40,10 +40,10 @@ The class is optional but recommended. Without it, some Alpine styling — the o
 
 Every colour, size, and spacing value in the Alpine theme is a variable, and you can set it two ways:
 
-- A **CSS custom property** (`--alpine-…`) at runtime, in your own stylesheet. No build step. This is the common route.
-- A **SASS variable** (`$alpine-…`) at build time, before you compile the theme. Use this for deeper changes or to swap the built-in icon glyphs.
+- A **CSS custom property** (`--slick-…`) at runtime, in your own stylesheet. No build step. This is the common route.
+- A **SASS variable** (`$slick-…`) at build time, before you compile the theme. Use this for deeper changes or to swap the built-in icon glyphs.
 
-The two share one naming scheme: the SASS name with `$` becomes the CSS name with `--`. So `$alpine-font-size` is `--alpine-font-size`. In the compiled CSS each value reads `var(--alpine-font-size, 13px)` — the CSS variable first, the SASS-compiled value as the fallback. **If you set both, the CSS variable wins**, because the SASS value is only the fallback.
+The two share one naming scheme: the SASS name with `$` becomes the CSS name with `--`. So `$slick-font-size` is `--slick-font-size`. In the compiled CSS each value reads `var(--slick-font-size, 13px)` — the CSS variable first, the SASS-compiled value as the fallback. **If you set both, the CSS variable wins**, because the SASS value is only the fallback.
 
 ## Walkthrough
 
@@ -85,18 +85,18 @@ For the original look, load `slick.grid.css`. Add `slick-default-theme.css` afte
 
 ### 3. Customise with CSS variables (no build)
 
-Set any `--alpine-…` variable in your own stylesheet. Define it on `:root` to change every grid on the page, or on `.slick-container` to change one grid. The variables must be defined where the grid can read them, so declare them **after** the theme import.
+Set any `--slick-…` variable in your own stylesheet. Define it on `:root` to change every grid on the page, or on `.slick-container` to change one grid. The variables must be defined where the grid can read them, so declare them **after** the theme import.
 
 ```css
 /* one grid only */
 .slick-container {
-  --alpine-font-size: 14px;
-  --alpine-font-color: #1a1a1a;
-  --alpine-header-bg-color: #eef2f7;
-  --alpine-border-color: #cbd5e1;
-  --alpine-odd-row-color: #f6f8fa;
-  --alpine-row-mouse-hover-color: #e2edff;
-  --alpine-cell-selected-bg-color: #cfe3ff;
+  --slick-font-size: 14px;
+  --slick-font-color: #1a1a1a;
+  --slick-header-bg-color: #eef2f7;
+  --slick-border-color: #cbd5e1;
+  --slick-odd-row-color: #f6f8fa;
+  --slick-row-mouse-hover-color: #e2edff;
+  --slick-cell-selected-bg-color: #cfe3ff;
 }
 ```
 
@@ -104,29 +104,29 @@ These are the variables you reach for most often:
 
 | Variable | Controls | Default |
 | --- | --- | --- |
-| `--alpine-font-family` | Grid font | system UI stack |
-| `--alpine-font-size` | Grid font size | `13px` |
-| `--alpine-font-color` | Cell text colour | `#181d1f` |
-| `--alpine-grid-bgcolor` | Grid container background | `#fff` |
-| `--alpine-bg-color` | Viewport (scroll area) background | `#ffffff` |
-| `--alpine-border-color` | Grid and header borders | `#dae1e7` |
-| `--alpine-border-radius` | Grid corner radius | `0` |
-| `--alpine-odd-row-color` | Odd (zebra) row background | `#fbfbfb` |
-| `--alpine-row-mouse-hover-color` | Row hover background | `#e8f4fe` |
-| `--alpine-cell-selected-bg-color` | Selected cell/row background | derived blue |
-| `--alpine-cell-selected-color` | Selected cell text colour | `#181d1f` |
-| `--alpine-cell-padding` | Cell padding | `2px 4px` |
-| `--alpine-cell-border-color` | Cell border colour | `#dae1e7` |
-| `--alpine-header-bg-color` | Column header background | `#f8f8f8` |
-| `--alpine-header-color` | Column header text colour | `#181d1f` |
-| `--alpine-header-font-weight` | Column header weight | `bold` |
-| `--alpine-header-column-line-height` | Header row height | `23px` |
-| `--alpine-headerrow-bg-color` | Filter row background | `#f8fafc` |
-| `--alpine-sort-indicator-color` | Sort arrow colour | `#3490dc` |
-| `--alpine-menu-bg-color` | Menu/picker background | `#fbfbfb` |
-| `--alpine-pager-bg-color` | Pager background | `#f8f8f8` |
+| `--slick-font-family` | Grid font | system UI stack |
+| `--slick-font-size` | Grid font size | `13px` |
+| `--slick-font-color` | Cell text colour | `#181d1f` |
+| `--slick-grid-bgcolor` | Grid container background | `#fff` |
+| `--slick-bg-color` | Viewport (scroll area) background | `#ffffff` |
+| `--slick-border-color` | Grid and header borders | `#dae1e7` |
+| `--slick-border-radius` | Grid corner radius | `0` |
+| `--slick-odd-row-color` | Odd (zebra) row background | `#fbfbfb` |
+| `--slick-row-mouse-hover-color` | Row hover background | `#e8f4fe` |
+| `--slick-cell-selected-bg-color` | Selected cell/row background | derived blue |
+| `--slick-cell-selected-color` | Selected cell text colour | `#181d1f` |
+| `--slick-cell-padding` | Cell padding | `2px 4px` |
+| `--slick-cell-border-color` | Cell border colour | `#dae1e7` |
+| `--slick-header-bg-color` | Column header background | `#f8f8f8` |
+| `--slick-header-color` | Column header text colour | `#181d1f` |
+| `--slick-header-font-weight` | Column header weight | `bold` |
+| `--slick-header-column-line-height` | Header row height | `23px` |
+| `--slick-headerrow-bg-color` | Filter row background | `#f8fafc` |
+| `--slick-sort-indicator-color` | Sort arrow colour | `#3490dc` |
+| `--slick-menu-bg-color` | Menu/picker background | `#fbfbfb` |
+| `--slick-pager-bg-color` | Pager background | `#f8f8f8` |
 
-This is a subset. The full list is in [`_variables.scss`](https://github.com/6pac/SlickGrid/blob/master/src/styles/_variables.scss); every `$alpine-…` there has a matching `--alpine-…` custom property.
+This is a subset. The full list is in [`_variables.scss`](https://github.com/6pac/SlickGrid/blob/master/src/styles/_variables.scss); every `$slick-…` there has a matching `--slick-…` custom property.
 
 ### 4. Build from SASS and override variables
 
@@ -137,16 +137,16 @@ With modern Dart Sass, load the theme with the module system and configure the v
 ```scss
 // my-theme.scss
 @use 'slickgrid/dist/styles/sass/slick-alpine-theme' with (
-  $alpine-font-size: 14px,
-  $alpine-header-bg-color: #eef2f7,
-  $alpine-border-color: #cbd5e1,
-  $alpine-odd-row-color: #f6f8fa,
+  $slick-font-size: 14px,
+  $slick-header-bg-color: #eef2f7,
+  $slick-border-color: #cbd5e1,
+  $slick-odd-row-color: #f6f8fa,
 );
 ```
 
 Every variable is declared with `!default`, so your `with (…)` values replace them before the theme compiles. Compile `my-theme.scss` and load the result instead of the pre-built `slick-alpine-theme.css`.
 
-> The older pattern — set each `$alpine-…` variable, then `@import` the theme — still works, but `@import` is deprecated in Dart Sass. Prefer `@use … with (…)`.
+> The older pattern — set each `$slick-…` variable, then `@import` the theme — still works, but `@import` is deprecated in Dart Sass. Prefer `@use … with (…)`.
 
 Reach for SASS only when you need it. For colour and spacing tweaks, the CSS variables in step 3 need no build step and are easier to change.
 
@@ -190,7 +190,7 @@ new SlickDraggableGrouping({
 
 Set it on the icon's own class (or a more specific rule), not on `:root` — the theme defines the variable on `.sgi-search`, so a `:root` value does not win.
 
-The theme's own icons — the group expand/collapse toggles and the percent-complete editor pencil — come from SASS **path** variables such as `$alpine-group-expanded-icon-svg-path`. To change those, override the SASS variable and rebuild the theme (step 4).
+The theme's own icons — the group expand/collapse toggles and the percent-complete editor pencil — come from SASS **path** variables such as `$slick-group-expanded-icon-svg-path`. To change those, override the SASS variable and rebuild the theme (step 4).
 
 ### 6. Add per-plugin CSS
 
@@ -215,7 +215,7 @@ import 'slickgrid/dist/styles/css/slick.columnpicker.css';
 import 'slickgrid/dist/styles/css/slick.pager.css';
 ```
 
-The menu-style plugins read the same Alpine variables where it makes sense — `--alpine-menu-bg-color`, `--alpine-menu-border`, `--alpine-menu-color` — so your theme colours flow into them.
+The menu-style plugins read the same Alpine variables where it makes sense — `--slick-menu-bg-color`, `--slick-menu-border`, `--slick-menu-color` — so your theme colours flow into them.
 
 ## Dark mode & custom themes
 
@@ -223,21 +223,21 @@ SlickGrid v6 does not ship a dark theme. You build one by overriding the CSS var
 
 ```css
 .slick-container.dark {
-  --alpine-grid-bgcolor: #1e1e1e;
-  --alpine-bg-color: #1e1e1e;
-  --alpine-font-color: #e4e4e4;
-  --alpine-border-color: #3a3a3a;
-  --alpine-cell-border-color: #3a3a3a;
-  --alpine-odd-row-color: #242424;
-  --alpine-row-mouse-hover-color: #333a40;
-  --alpine-cell-selected-bg-color: #2f4257;
-  --alpine-cell-selected-color: #ffffff;
-  --alpine-header-bg-color: #2a2a2a;
-  --alpine-header-color: #e4e4e4;
-  --alpine-headerrow-bg-color: #262626;
-  --alpine-menu-bg-color: #2a2a2a;
-  --alpine-menu-color: #e4e4e4;
-  --alpine-pager-bg-color: #2a2a2a;
+  --slick-grid-bgcolor: #1e1e1e;
+  --slick-bg-color: #1e1e1e;
+  --slick-font-color: #e4e4e4;
+  --slick-border-color: #3a3a3a;
+  --slick-cell-border-color: #3a3a3a;
+  --slick-odd-row-color: #242424;
+  --slick-row-mouse-hover-color: #333a40;
+  --slick-cell-selected-bg-color: #2f4257;
+  --slick-cell-selected-color: #ffffff;
+  --slick-header-bg-color: #2a2a2a;
+  --slick-header-color: #e4e4e4;
+  --slick-headerrow-bg-color: #262626;
+  --slick-menu-bg-color: #2a2a2a;
+  --slick-menu-color: #e4e4e4;
+  --slick-pager-bg-color: #2a2a2a;
 }
 ```
 
@@ -245,7 +245,7 @@ Add the `dark` class to the grid element to switch it on. You could instead key 
 
 Two details help with dark mode:
 
-- **Icons follow the text colour.** Because `sgi` icons use `currentColor`, they turn light automatically when you set a light `--alpine-font-color`. No per-icon work is needed.
+- **Icons follow the text colour.** Because `sgi` icons use `currentColor`, they turn light automatically when you set a light `--slick-font-color`. No per-icon work is needed.
 - **A few values are hardcoded.** The text editor's input background and the selected-editable cell background are white in the theme, and a selected cell's link text is white. For a polished dark theme, add a rule or two for these:
 
 ```css
@@ -263,8 +263,8 @@ For a theme you reuse across projects, compile a SASS build (step 4) with your p
 - **Add `slick-container` to the grid element.** The Alpine outer border and background style `.slick-container`; without the class they may not show.
 - **Load one theme.** Do not import `slick-alpine-theme.css` and the classic files together. The Alpine theme already includes the layout that the classic `slick.grid.css` provides.
 - **`slick-default-theme.css` is colours only.** It needs `slick.grid.css` under it; on its own it lays out nothing.
-- **CSS variables beat SASS variables.** In the compiled theme the CSS custom property is first and the SASS value is the fallback. A `--alpine-…` rule always overrides a `$alpine-…` build value.
-- **Keep the cell box model uniform.** Cells depend on consistent padding, margin, and border to stay aligned. Change padding through `--alpine-cell-padding`, not through a custom class that adds its own padding, margin, or border to `.slick-cell` — an ad-hoc value on one cell breaks column alignment. Use column [`cssClass`](/reference/column#col-cssClass) for colour and font, not for box-model size.
+- **CSS variables beat SASS variables.** In the compiled theme the CSS custom property is first and the SASS value is the fallback. A `--slick-…` rule always overrides a `$slick-…` build value.
+- **Keep the cell box model uniform.** Cells depend on consistent padding, margin, and border to stay aligned. Change padding through `--slick-cell-padding`, not through a custom class that adds its own padding, margin, or border to `.slick-cell` — an ad-hoc value on one cell breaks column alignment. Use column [`cssClass`](/reference/column#col-cssClass) for colour and font, not for box-model size.
 - **Icons need both classes.** Use `class="sgi sgi-search"`, not `class="sgi-search"` alone. The base `sgi` class carries the mask and sizing.
 - **Override an icon glyph on its own class.** Set `--sgi-…-icon-svg` on the icon selector (or higher specificity), not on `:root`.
 - **Row and header height are options, not CSS.** Set row height with the grid [`rowHeight`](/reference/grid#opt-rowHeight) option and the filter row with [`headerRowHeight`](/reference/grid#opt-headerRowHeight); the grid measures these in JavaScript, so a CSS `height` alone does not move the rows.

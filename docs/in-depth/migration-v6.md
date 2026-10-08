@@ -86,6 +86,21 @@ These are the public additions and renames from the v6 feature branches. New mem
 
 - The change is inside the `SlickCellExternalCopyManager` plugin (async Clipboard API). No grid option or method changes.
 
+### Alpine Theme (PR #1317)
+
+- SASS/CSS variables previously used `$alpine-...` (SASS) or `--alpine-...` (CSS) but everything else in SlickGrid stylesheets already use `.slick-...` as CSS classes. So in v6 we are aligning everything and making all variables and classes start with the `slick-` prefix, for example:
+
+```diff
+# SASS
+- $alpine-odd-row-color: #fbfbfb;
++ $slick-odd-row-color: #fbfbfb;
+
+# CSS
+body {
+- --alpine-odd-row-color: #fbfbfb;
++ --slick-odd-row-color: #fbfbfb;
+}
+```
 
 ## See also
 
