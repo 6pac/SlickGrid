@@ -37,8 +37,7 @@ const harnessHtml = `<!doctype html>
     enableCellNavigation: true,
     enableColumnReorder: false,
     showHeaderRow: false,
-    invalidColumnPinningPickerCallback: function (msg) { window.pickerMessages.push(msg); },
-    invalidColumnPinningWidthCallback: function (msg) { window.pickerMessages.push(msg); }
+    errorCallback: function (msg) { window.pickerMessages.push(msg); }
   });
 
   window.runChecks = function runChecks() {
@@ -86,7 +85,7 @@ const harnessHtml = `<!doctype html>
     check('rejected setColumns fires no onBeforeSetColumns', beforeEvents === 0, String(beforeEvents));
     check('rejected setColumns leaves the input untouched', allPinned.every(function (c) { return c.pinned === 'left'; }));
     check('rejected setColumns keeps the current columns', grid.getColumns().map(function (c) { return c.id; }).join(',') === previousIds);
-    check('the pinning callback was invoked', window.pickerMessages.length > 0, String(window.pickerMessages.length));
+    check('the shared error callback was invoked', window.pickerMessages.length > 0, String(window.pickerMessages.length));
     var valid = columns.map(function (c) { return Object.assign({}, c); });
     result = grid.setColumns(valid);
     check('setColumns returns true for a valid column set', result === true && beforeEvents === 1, String(result) + ' events=' + beforeEvents);
