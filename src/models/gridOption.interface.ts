@@ -342,7 +342,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
 
   /**
    * Defaults to "highlight-animate", a CSS class name used to simulate row highlight with an optional duration (e.g. after insert).
-   * Note: make sure that the duration is always lower than the duration defined in the CSS/SASS variable `$alpine-row-highlight-fade-animation`.
+   * Note: make sure that the duration is always lower than the duration defined in the CSS/SASS variable `$slick-row-highlight-fade-animation`.
    * Also note that the highlight is temporary and will also disappear as soon as the user starts scrolling or a `render()` is being called
    */
   rowHighlightCssClass?: string;

@@ -41,8 +41,8 @@
   position: relative;
   // Keep header content on one line so plugin-added elements such as the
   // draggable-grouping icon stay beside the column title. The theme may
-  // override this through --alpine-header-display.
-  display: var(--alpine-header-display, inline-flex);
+  // override this through --slick-header-display.
+  display: var(--slick-header-display, inline-flex);
   flex: 0 0 auto;
   float: none;
 }
@@ -55,7 +55,7 @@
   // A docked sticky cell floats over the cells scrolling beneath it and takes its background
   // from the row, so the row needs an opaque base. Striping, hover, highlighting and row
   // classes all set the row's own background and still override this default.
-  background-color: var(--alpine-bg-color, var(--slick-canvas-bg-color, #fff));
+  background-color: var(--slick-bg-color, var(--slick-canvas-bg-color, #fff));
 }
 
 .slick-row-docked > .slick-pinned-left-cells,
@@ -158,12 +158,12 @@
 .slick-row-docked > .slick-pinned-left-cells,
 .slick-row-docked > .slick-pinned-right-cells {
   z-index: 20;
-  background-color: var(--alpine-bg-color, #fff);
+  background-color: var(--slick-bg-color, #fff);
 }
 
 .slick-row-docked.odd > .slick-pinned-left-cells,
 .slick-row-docked.odd > .slick-pinned-right-cells {
-  background-color: var(--alpine-odd-row-color, #fbfbfb);
+  background-color: var(--slick-odd-row-color, #fbfbfb);
 }
 
 // Keep pinned row regions synchronized with the row hover state. The regions
@@ -180,7 +180,7 @@
 .slick-row.slick-row-pinned-top,
 .slick-row.slick-row-pinned-bottom {
   z-index: 5;
-  background: var(--alpine-bg-color, var(--slick-canvas-bg-color, #fff));
+  background: var(--slick-bg-color, var(--slick-canvas-bg-color, #fff));
   box-sizing: border-box;
 }
 
@@ -346,7 +346,7 @@
 
 .slick-column-pinned-left,
 .slick-column-pinned-right {
-  background-color: var(--alpine-header-bg-color, #f8f8f8);
+  background-color: var(--slick-header-bg-color, #f8f8f8);
 }
 
 // Filter/header-row cells are also part of the pinned chrome. Keep them above
@@ -371,7 +371,7 @@
 // headers must remain opaque so scrolling titles cannot show through them.
 .slick-header-column.slick-column-pinned-left.slick-state-hover,
 .slick-header-column.slick-column-pinned-right.slick-state-hover {
-  background: var(--alpine-header-bg-color, var(--slick-header-background-color, #ececec));
+  background: var(--slick-header-bg-color, var(--slick-header-background-color, #ececec));
 }
 
 :is(.slick-column-pinned-left-edge, .slick-column-sticky-left-edge) {

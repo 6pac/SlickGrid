@@ -2,13 +2,13 @@
  * DO NOT USE
  * This CSS is meant for SlickGrid demo website ONLY, do not use, there is no need to import it.
  */
-$alpine-font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif !default;
+$slick-font-family: -apple-system,BlinkMacSystemFont,"Segoe UI",Roboto,Oxygen-Sans,Ubuntu,Cantarell,"Helvetica Neue",sans-serif !default;
 
 body {
   background: #fff;
   padding: 0;
   margin: 8px;
-  font-family: var(--alpine-font-family, $alpine-font-family);
+  font-family: var(--slick-font-family, $slick-font-family);
   font-size: 13px;
 }
 
@@ -49,7 +49,7 @@ ul {
   left: 700px;
 
   button, input, textarea {
-    font-family: var(--alpine-font-family, $alpine-font-family);
+    font-family: var(--slick-font-family, $slick-font-family);
     font-size: 12px;
   }
 }
