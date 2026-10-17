@@ -20,7 +20,7 @@ src/plugins/*.js
 src/controls/*.js
 src/models/*.js
 src/*.js
-dist/browser/models/*
+dist/
 SlickgridRelease*
 nuget*
 testresult.xml
