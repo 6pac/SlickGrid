@@ -30,7 +30,8 @@ What to change:
 
 - Replace `frozenColumn: N` with `pinning: { columns: { left: N } }`. The boundary is the same, but it now counts visible columns only.
 - Replace `frozenRow: N` with `pinning: { rows: { top: [0, …, N-1] } }`. With `frozenBottom: true`, list the last rows in `pinning.rows.bottom` instead.
-- Rename `skipFreezeColumnValidation` to `skipPinningValidation`, and the `invalidColumnFreeze*` options to `invalidColumnPinning*`. `throwWhenFrozenNotAllViewable` has no replacement.
+- Rename `skipFreezeColumnValidation` to `skipPinningValidation`, and the `invalidColumnFreeze*Message` options to `invalidColumnPinning*Message`. `throwWhenFrozenNotAllViewable` has no replacement.
+- Replace `invalidColumnFreezePickerCallback` and `invalidColumnFreezeWidthCallback` with the shared `errorCallback`. Keep the picker and width messages configurable with `invalidColumnPinningPickerMessage` and `invalidColumnPinningWidthMessage`.
 - Replace `getFrozenColumnId()` with `getPinnedColumns()`, and `validateColumnFreeze()` with `validateColumnPinning()`.
 - Update your CSS selectors. The `.slick-pane-*` classes and the `-right` and `-bottom` viewport, canvas and header classes are gone.
 
@@ -62,7 +63,7 @@ These are the public additions and renames from the v6 feature branches. New mem
 
 ### Pinning and sticky docking (PR #1302)
 
-- New options: `pinning`, `stickyRows`, `docking`, `skipPinningValidation`, `invalidColumnPinningPickerMessage`, `invalidColumnPinningSequenceMessage`, `invalidColumnPinningPickerCallback`, `invalidColumnPinningWidthMessage`, `invalidColumnPinningWidthCallback`, `allowDragFromClosest`, `columnResizingDelay`.
+- New options: `pinning`, `stickyRows`, `docking`, `skipPinningValidation`, `errorCallback`, `invalidColumnPinningPickerMessage`, `invalidColumnPinningSequenceMessage`, `invalidColumnPinningWidthMessage`, `allowDragFromClosest`, `columnResizingDelay`.
 - New column properties: `pinned`, `sticky`.
 - New methods: `getPinnedColumns()`, `setColumnPinning()`, `setColumnStickiness()`, `validateColumnPinning()`.
 - New events: `onHeaderMouseOver`, `onHeaderMouseOut`, `onHeaderRowMouseOver`, `onHeaderRowMouseOut`, `onHeaderKeyDown`.
@@ -70,6 +71,16 @@ These are the public additions and renames from the v6 feature branches. New mem
 - Removed methods: `getFrozenColumnId()`, `getFrozenRowOffset()`, `validateColumnFreeze()`, `validateColumnFreezeWidth()`.
 - Changed: `setColumns()` returns a boolean. It returns `false`, and changes nothing, when it rejects the pinning of the new columns.
 - See [Pinning and sticky docking](/in-depth/pinning-sticky).
+
+For simplification, the previous frozen error callbacks were merged into a single grid option `errorCallback` for all error messages. The specific messages remain configurable through the new pinning error messages (`invalidColumnPinningWidthMessage`, `invalidColumnPinningPickerMessage`, and `invalidColumnPinningSequenceMessage`):
+
+```diff
+const gridOptions: GridOption = {
+- invalidColumnFreezePickerCallback: (msg) => alert(msg),
+- invalidColumnFreezeWidthCallback: (msg) => alert(msg),
++ errorCallback: (msg) => alert(msg),
+};
+```
 
 ### Column `hidden` (PR #1299)
 
