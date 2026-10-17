@@ -41,8 +41,8 @@ const options = {
   `grid.getPinnedColumns(side?)` reads the current state.
 - Pinning is validated: a request that pins every visible column, or whose pinned columns
   together would leave the centre band no width, is rejected and the previous state is kept.
-  `invalidColumnPinningPickerCallback` / `invalidColumnPinningWidthCallback`
-  (default `alert`) receive the message (`invalidColumnPinning*Message`), and
+  the shared `errorCallback` (default `alert`) receives the configured message
+  (`invalidColumnPinning*Message`), and
   `skipPinningValidation: true` disables the check. Hiding a column through the Column Picker or
   Grid Menu runs the same validation. A colspan that would be split so that its pieces are no
   longer in left → centre → right order is rejected with `invalidColumnPinningSequenceMessage`.
@@ -178,7 +178,7 @@ resolves to the column drawn there, not to the column the natural layout would p
 | `frozenRow: N, frozenBottom: true` | `pinning: { rows: { bottom: [len-N, …, len-1] } }` |
 | `frozenRightViewportMinWidth` | removed; use `docking.maxColumnViewportWidthPercent` |
 | `skipFreezeColumnValidation` | `skipPinningValidation` |
-| `invalidColumnFreezePickerMessage/Callback`, `invalidColumnFreezeWidthMessage/Callback`, `throwWhenFrozenNotAllViewable` | `invalidColumnPinningPickerMessage/Callback`, `invalidColumnPinningWidthMessage/Callback` (no throwing variant) |
+| `invalidColumnFreezePickerMessage/Callback`, `invalidColumnFreezeWidthMessage/Callback`, `throwWhenFrozenNotAllViewable` | `invalidColumnPinningPickerMessage`, `invalidColumnPinningWidthMessage`, and the shared `errorCallback` (no throwing variant) |
 | `grid.getFrozenColumnId()`, `grid.getFrozenRowOffset()`, `grid.validateColumnFreeze()`, `grid.validateColumnFreezeWidth()` | `grid.getPinnedColumns()`, `grid.validateColumnPinning()`; row offsets are internal |
 | `getCanvases()`, `getViewports()`, `getHeaderRow()`, `getFooterRow()` returning left/right pairs | One element each; the array-returning forms still return one entry |
 | `.slick-pane-*`, `.slick-viewport-right`, `.slick-viewport-bottom`, `.grid-canvas-right`, `.grid-canvas-bottom`, `.slick-header-right`, `.slick-headerrow-right`, `.slick-footerrow-right` | Removed. Use the selectors in the table above. `slick-viewport-top slick-viewport-left` and `grid-canvas-top grid-canvas-left` remain on the single viewport/canvas. |

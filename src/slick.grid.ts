@@ -298,8 +298,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected logMessageCount = 0;
   protected logMessageMaxCount = 30;
   protected _defaults: BaseGridOption = {
-    invalidColumnPinningPickerCallback: (error) => alert(error),
-    invalidColumnPinningWidthCallback: (error) => alert(error),
+    errorCallback: (error) => alert(error),
     invalidColumnPinningWidthMessage: '[SlickGrid] Cannot pin these columns because they exceed the available grid width.',
     invalidColumnPinningPickerMessage: '[SlickGrid] Cannot complete pinning because at least one visible center column is required.',
     invalidColumnPinningSequenceMessage:
@@ -10180,9 +10179,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * Reject a pinning request, telling the host once. The alert repeats only when the caller
    * forces it, so a validation that runs on every render does not alert on every render.
    */
-  protected rejectPinning(callback: ((error: string) => void) | undefined, message: string | undefined, forceAlert: boolean): false {
-    if ((forceAlert || !this._invalidPinningAlerted) && callback) {
-      callback(message!);
+  protected rejectPinning(message: string | undefined, forceAlert: boolean): false {
+    const errorCallback = this._options.errorCallback;
+    if ((forceAlert || !this._invalidPinningAlerted) && errorCallback) {
+      errorCallback(message!);
       this._invalidPinningAlerted = true;
     }
     return false;
@@ -10200,7 +10200,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
     const visibleIndexes = this.getVisibleColumnIndexes(columns);
     if (visibleIndexes.length && visibleIndexes.every((index) => pinnedIndexes.has(index))) {
-      return this.rejectPinning(this._options.invalidColumnPinningPickerCallback, this._options.invalidColumnPinningPickerMessage, forceAlert);
+      return this.rejectPinning(this._options.invalidColumnPinningPickerMessage, forceAlert);
     }
 
     const widths = { left: 0, right: 0 };
@@ -10224,7 +10224,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     const outerGridWidth = Utils.width(this._container) || 0;
     const availablePinningWidth = Math.max(viewportWidth + scrollbarWidth, outerGridWidth);
     if (viewportWidth > 0 && widths.left + widths.right >= availablePinningWidth) {
-      return this.rejectPinning(this._options.invalidColumnPinningWidthCallback, this._options.invalidColumnPinningWidthMessage, forceAlert);
+      return this.rejectPinning(this._options.invalidColumnPinningWidthMessage, forceAlert);
     }
     return true;
   }
@@ -10304,7 +10304,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       return true;
     }
 
-    return this.rejectPinning(this._options.invalidColumnPinningPickerCallback, this._options.invalidColumnPinningSequenceMessage, forceAlert);
+    return this.rejectPinning(this._options.invalidColumnPinningSequenceMessage, forceAlert);
   }
 
   /** Merge a partial pinning update before validating it. */

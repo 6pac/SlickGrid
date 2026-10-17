@@ -51,7 +51,7 @@ const harnessHtml = `<!doctype html>
     host.style.cssText = 'width:' + width + 'px;height:220px;position:relative;';
     document.getElementById('hosts').appendChild(host);
     var base = { enableCellNavigation: true, enableColumnReorder: false, rowHeight: 25,
-      invalidColumnPinningWidthCallback: function () {}, invalidColumnPinningPickerCallback: function () {} };
+      errorCallback: function () {} };
     return new Slick.Grid(host, makeData(columns, 30), columns, Object.assign(base, options));
   }
   function pinnedIds(grid, side) {
@@ -76,12 +76,12 @@ const harnessHtml = `<!doctype html>
     if (name === 'centreWidth') {
       var rejections = [];
       var full = makeGrid('g1', 600, makeColumns(6, 100, function (i) { return i === 0 ? { width: 300, pinned: 'left' } : i === 5 ? { width: 300 } : null; }),
-        { invalidColumnPinningWidthCallback: function () { rejections.push('width'); } });
+        { errorCallback: function () { rejections.push('width'); } });
       full.setColumnPinning('c5', 'right');
       check('pins that leave the centre band no width are rejected', rejections.length === 1, rejections.join(',') || 'accepted');
       check('the rejected column stays unpinned', pinnedIds(full, 'right') === '', pinnedIds(full, 'right'));
       var narrow = makeGrid('g1b', 600, makeColumns(6, 100, function (i) { return i === 0 ? { width: 300, pinned: 'left' } : i === 5 ? { width: 299 } : null; }),
-        { invalidColumnPinningWidthCallback: function () { rejections.push('narrow'); } });
+        { errorCallback: function () { rejections.push('narrow'); } });
       narrow.setColumnPinning('c5', 'right');
       check('a 1px centre band is still accepted', pinnedIds(narrow, 'right') === 'c5' && rejections.indexOf('narrow') < 0, rejections.join(','));
       full.destroy();
