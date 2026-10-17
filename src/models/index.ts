@@ -27,7 +27,6 @@ export type * from './editorValidationResult.interface.js';
 export type * from './editorValidator.interface.js';
 export type * from './excelCopyBufferOption.interface.js';
 export type * from './externalCopyClipCommand.interface.js';
-export * from './fieldType.enum.js';
 export type * from './formatter.interface.js';
 export type * from './formatterResultObject.interface.js';
 export type * from './function.type.js';
