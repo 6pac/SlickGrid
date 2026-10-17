@@ -71,26 +71,6 @@
       color: #ffffff;
       border: 2px solid #252525;
     }
-    .l3.slick-custom-tooltip.tooltip-arrow.arrow-down::after,
-    .l3.slick-custom-tooltip.tooltip-arrow.arrow-up::after {
-      border-width: 10px; /* arrow size */
-    }
-    .l3.slick-custom-tooltip.tooltip-arrow.arrow-down::after {
-      border-top-color: #252525; /* arrow down color */
-    }
-    .l3.slick-custom-tooltip.tooltip-arrow.arrow-up::after {
-      top: -20px; /* arrow size * 2 */
-      border-bottom-color: #252525; /* arrow up color */
-    }
-    .l3.slick-custom-tooltip.tooltip-arrow.arrow-left-align::after {
-      margin-left: 15px;
-    }
-    .l3.slick-custom-tooltip.tooltip-arrow.arrow-right-align::after {
-      margin-left: calc(100% - 20px - 15px); /* 20px is (arrow size * 2), 15px is your extra side margin */
-    }
-    .l5.slick-custom-tooltip.arrow-left-align::after {
-      margin-left: 5%;
-    }
   </style>
 </head>
 
@@ -118,11 +98,6 @@
       </ul>
 
       <h2>Options:</h2>
-      <button onclick="customTooltipPlugin.setOptions({hideArrow:true})">Hide Tooltip Arrow ON</button>
-      &nbsp;
-      <button onclick="customTooltipPlugin.setOptions({hideArrow:false})">Hide Tooltip Arrow OFF</button>
-      <br/>
-      <br/>
       <button onclick="disableTooltip(true)">Disable Tooltip ON</button>
       &nbsp;
       <button onclick="disableTooltip(false)">Disable Tooltip OFF</button>
@@ -281,7 +256,6 @@
         usabilityOverride: function (args) {
          return !isTooltipDisabled && args.cell !== 0; // don't show on first column (row selection column)
         }
-        // hideArrow: true, // defaults to False
       },
     };
 
