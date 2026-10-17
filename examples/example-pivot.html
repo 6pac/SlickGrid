@@ -41,7 +41,7 @@
      .SW { color: white; background-color: #3D2250 !important; }
      .YW { color: white; background-color: #B68321 !important; }
      .BS { color: white; background-color: #CECECE !important; }
-     
+
      body {
        background-color: #66efff30
      }
@@ -73,7 +73,7 @@
 <script src="https://cdn.jsdelivr.net/npm/flatpickr"></script>
 
 <script src="https://code.jquery.com/jquery-3.7.1.js" integrity="sha256-eKhayi8LEQwp4NKxN+CfCh+3qOVUtJn3QNZ0TciWLP4=" crossorigin="anonymous"></script>
-            
+
 <script src="../dist/browser/slick.core.js"></script>
 <script src="../dist/browser/slick.interactions.js"></script>
 <script src="../dist/browser/slick.grid.js"></script>
@@ -213,7 +213,7 @@
                 header.width(widthTotal - headerColumnWidthDiff);
             } else {
                 widthTotal = m.width;
-                header = $("<div class='ui-state-default slick-header-column' />")
+                header = $("<div class='slick-state-default slick-header-column' />")
                     .html("<span class='slick-column-name'>" + (m.columnGroup || '') + "</span>")
                     .width(m.width - headerColumnWidthDiff)
                     .addClass(m.headerCssClass || "")
@@ -264,7 +264,7 @@
 
     function PercentFormatter(rowIndex, cell, value, columnDef, dataRow, grid) {
         var tag = dataRow.ProgrammingTag_FK_Str;
-         
+
         var rtnVal;
         if (value == null || value === undefined) {
             rtnVal = '';
@@ -528,7 +528,7 @@ var columns = [
     { "id": "ProgrammingTag_FK_Str", "name": "Tag", "field": "ProgrammingTag_FK_Str", "width": 52, "minWidth": 12, "sortable": true },
     { "id": "TagDurationMin", "name": "Dur Min", "field": "TagDurationMin", "width": 71, "minWidth": 12, "sortable": true }
 ];
-            
+
 var options = {
   createPreHeaderPanel: true,
   showPreHeaderPanel: true,
@@ -553,7 +553,7 @@ document.addEventListener("DOMContentLoaded", function() {
           CreateAddlHeaderRow(grid);
       });
       CreateAddlHeaderRow(grid);
-  } 
+  }
 })
 </script>
 </body>
