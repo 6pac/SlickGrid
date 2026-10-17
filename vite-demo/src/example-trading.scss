@@ -23,8 +23,8 @@
 }
 /* change to flex-end for RTL support */
 .slick-container {
-  --alpine-header-justify-content: flex-start;
-  --alpine-cell-justify-content: flex-start;
+  --slick-header-justify-content: flex-start;
+  --slick-cell-justify-content: flex-start;
 }
 .changed-gain {
   background-color: #eafae8 !important;
