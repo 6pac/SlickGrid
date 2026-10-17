@@ -1,4 +1,4 @@
-/** add ui-grid icons */
+/** add slick-grid icons */
 .sgi-lightbulb,
 .sgi-search {
   cursor: pointer;
@@ -13,7 +13,7 @@
   font-size: 12px;
 }
 
-/** add ui-grid icons */
+/** add slick-grid icons */
 .sgi-state-disabled {
   opacity: 0.5;
 }
