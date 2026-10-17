@@ -157,7 +157,7 @@ These plugins add menus and clickable controls. See [Menus](/in-depth/menus) for
 | Plugin | `pluginName` | What it does |
 | --- | --- | --- |
 | [`SlickAutoTooltips`](/reference/plugins) | `AutoTooltips` | Add a native `title` tooltip to a cell (or header) when its text is too wide to fit. |
-| [`SlickCustomTooltip`](/reference/plugins) | `CustomTooltip` | Show a rich tooltip on hover, built from a formatter set in the column or grid `customTooltip` option. Supports async content. |
+| [`SlickCustomTooltip`](/in-depth/custom-tooltips) | `CustomTooltip` | Show a rich tooltip on hover, built from a formatter set in the column or grid `customTooltip` option. Supports async content. |
 
 ### Copy and paste
 
