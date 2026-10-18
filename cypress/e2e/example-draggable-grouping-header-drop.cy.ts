@@ -29,7 +29,7 @@ describe('Example - Draggable Grouping - drop a header into the dropzone (charac
     cy.contains('#myGrid .slick-header-column', 'Duration').should('exist');
 
     // and the grid data is actually grouped by Duration
-    cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 0}px;"] > .slick-cell:nth(0) .slick-group-title`).should('contain', 'Duration:');
+    cy.get(`[style*="transform: translateY(${GRID_ROW_HEIGHT * 0}px);"] > .slick-cell:nth(0) .slick-group-title`).should('contain', 'Duration:');
   });
 
   it('should clear the grouping again and expect the pill to be removed', () => {

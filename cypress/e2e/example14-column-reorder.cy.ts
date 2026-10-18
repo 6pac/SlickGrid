@@ -48,7 +48,7 @@ describe('Example 14 - Column Header Reorder (characterization)', { retries: 1 }
     expectColumnIds(['server', 'cpu1', 'cpu2', 'cpu0', 'cpu3']);
 
     // the data cells are re-rendered under the new column order
-    cy.get('#myGrid .grid-canvas [style*="top: 0px;"] > .slick-cell.l0.r0').should('contain', 'Server 0');
+    cy.get('#myGrid .grid-canvas [style*="transform: translateY(0px);"] > .slick-cell.l0.r0').should('contain', 'Server 0');
 
     expectReorderCallCount(1);
     cy.window().then((win: any) => {
