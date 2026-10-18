@@ -53,6 +53,33 @@ This makes show/hide reversible and keeps each column's settings while it is hid
 
 Version 6 plans to move external copy and paste to the browser's async Clipboard API, in place of the old hidden-textarea approach. This is still a draft and may change before release. Watch the [CellExternalCopyManager](/reference/plugins) entry for the final shape.
 
+## Removed deprecated code
+
+### Row positioning: `rowTopOffsetRenderType`
+
+Version 6 removes the `rowTopOffsetRenderType` grid option. Remove it from your configuration, whether its value was `'top'` or `'transform'`. Row Detail and RowSpan no longer require an explicit `'top'` setting.
+
+```diff
+const gridOptions: GridOption = {
+- rowTopOffsetRenderType: 'top',
+  rowHeight: 25,
+  // ... other grid options
+};
+```
+
+Ordinary grid rows now use `transform: translateY(25px)` instead of `top: 25px` for scrolling performance. RowSpan host rows and the rows they cover retain internal `top` positioning so spanning cells and pinned columns stack correctly. The grid chooses the positioning automatically; no configuration is required.
+
+The `SlickRowDetailView` plugin now renders detail panels in a canvas overlay. Its options are still passed to the plugin constructor, and there is no `renderMode` option to configure in this project. Panels follow their parent row's rendered position, including adjustments for pinned rows.
+
+If your custom CSS or tests locate a detail panel through its former cell sibling, update the selector to use the overlay:
+
+```diff
+- .slick-cell + .dynamic-cell-detail
++ .slick-row-detail-overlay .dynamic-cell-detail
+```
+
+The `.dynamic-cell-detail`, `.detail-container`, and item-specific detail classes remain available. If your tests inspect row positions, expect transforms on ordinary rows and `top` positioning on rows involved in a RowSpan.
+
 ## Already gone before v6
 
 - **jQuery** and **jQuery UI** were removed in earlier major versions. If you still load them for the grid, you can stop.

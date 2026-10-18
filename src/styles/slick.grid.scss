@@ -233,6 +233,15 @@ classes should alter those!
   outline: none;
 }
 
+// Keep RowSpan hosts and covered rows above neighboring transformed rows.
+.slick-row.slick-rowspan {
+  z-index: var(--slick-rowspan-z-index, 10);
+}
+
+.slick-row.active.slick-rowspan {
+  padding: 0;
+}
+
 .slick-reorder-proxy {
   display: inline-block;
   background: blue;

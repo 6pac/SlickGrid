@@ -128,10 +128,10 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
         .click();
 
       cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":4,"toCell":4,"toRow":10}');
-      cy.get(`[style="top: ${GRID_ROW_HEIGHT * 10}px;"] > .slick-cell.l4.r4.selected`).should('have.length', 1);
+      cy.get(`[style="transform: translateY(${GRID_ROW_HEIGHT * 10}px);"] > .slick-cell.l4.r4.selected`).should('have.length', 1);
 
       cy.get('@cell_D10').type('{downarrow}');
-      cy.get(`[style="top: ${GRID_ROW_HEIGHT * 11}px;"] > .slick-cell.l4.r4.selected`).should('have.length', 1);
+      cy.get(`[style="transform: translateY(${GRID_ROW_HEIGHT * 11}px);"] > .slick-cell.l4.r4.selected`).should('have.length', 1);
       cy.get('#selectionRange').should('have.text', '{"fromRow":11,"fromCell":4,"toCell":4,"toRow":11}');
     });
 
@@ -141,10 +141,10 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
         .click();
 
       cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":4,"toCell":4,"toRow":10}');
-      cy.get(`[style="top: ${GRID_ROW_HEIGHT * 10}px;"] > .slick-cell.l4.r4.selected`).should('have.length', 1);
+      cy.get(`[style="transform: translateY(${GRID_ROW_HEIGHT * 10}px);"] > .slick-cell.l4.r4.selected`).should('have.length', 1);
 
       cy.get('@cell_D10').type('{leftarrow}');
-      cy.get(`[style="top: ${GRID_ROW_HEIGHT * 10}px;"] > .slick-cell.l3.r3.selected`).should('have.length', 1);
+      cy.get(`[style="transform: translateY(${GRID_ROW_HEIGHT * 10}px);"] > .slick-cell.l3.r3.selected`).should('have.length', 1);
       cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":3,"toCell":3,"toRow":10}');
     });
 
@@ -154,10 +154,10 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
         .click();
 
       cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":4,"toCell":4,"toRow":10}');
-      cy.get(`[style="top: ${GRID_ROW_HEIGHT * 10}px;"] > .slick-cell.l4.r4.selected`).should('have.length', 1);
+      cy.get(`[style="transform: translateY(${GRID_ROW_HEIGHT * 10}px);"] > .slick-cell.l4.r4.selected`).should('have.length', 1);
 
       cy.get('@cell_D10').type('{rightarrow}');
-      cy.get(`[style="top: ${GRID_ROW_HEIGHT * 10}px;"] > .slick-cell.l5.r5.selected`).should('have.length', 1);
+      cy.get(`[style="transform: translateY(${GRID_ROW_HEIGHT * 10}px);"] > .slick-cell.l5.r5.selected`).should('have.length', 1);
       cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":5,"toCell":5,"toRow":10}');
     });
 
@@ -167,10 +167,10 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
         .click();
 
       cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":4,"toCell":4,"toRow":10}');
-      cy.get(`[style="top: ${GRID_ROW_HEIGHT * 10}px;"] > .slick-cell.l4.r4.selected`).should('have.length', 1);
+      cy.get(`[style="transform: translateY(${GRID_ROW_HEIGHT * 10}px);"] > .slick-cell.l4.r4.selected`).should('have.length', 1);
 
       cy.get('@cell_D10').type('{end}');
-      cy.get(`[style="top: ${GRID_ROW_HEIGHT * 10}px;"] > .slick-cell.l100.r100.selected`).should('have.length', 1);
+      cy.get(`[style="transform: translateY(${GRID_ROW_HEIGHT * 10}px);"] > .slick-cell.l100.r100.selected`).should('have.length', 1);
       cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":100,"toCell":100,"toRow":10}');
     });
 
@@ -180,10 +180,10 @@ describe('Example - Spreadsheet and Cell Selection', { retries: 0 }, () => {
         .click();
 
       cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":4,"toCell":4,"toRow":10}');
-      cy.get(`[style="top: ${GRID_ROW_HEIGHT * 10}px;"] > .slick-cell.l4.r4.selected`).should('have.length', 1);
+      cy.get(`[style="transform: translateY(${GRID_ROW_HEIGHT * 10}px);"] > .slick-cell.l4.r4.selected`).should('have.length', 1);
 
       cy.get('@cell_D10').type('{home}');
-      cy.get(`[style="top: ${GRID_ROW_HEIGHT * 10}px;"] > .slick-cell.l0.r0.selected`).should('have.length', 1);
+      cy.get(`[style="transform: translateY(${GRID_ROW_HEIGHT * 10}px);"] > .slick-cell.l0.r0.selected`).should('have.length', 1);
       cy.get('#selectionRange').should('have.text', '{"fromRow":10,"fromCell":0,"toCell":0,"toRow":10}');
     });
   });

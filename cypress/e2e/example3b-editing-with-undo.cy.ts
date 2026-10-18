@@ -49,7 +49,7 @@ describe('Example3 Editing', () => {
       .contains('Save')
       .click();
 
-    cy.get(`[style="top: ${GRID_ROW_HEIGHT * 1}px;"] > .slick-cell:nth(1)`).should('contain', 'Second Row!');
+    cy.get(`[style="transform: translateY(${GRID_ROW_HEIGHT * 1}px);"] > .slick-cell:nth(1)`).should('contain', 'Second Row!');
     cy.get('.slick-large-editor-text').should('have.length', 1);
 
     cy.get('.slick-large-editor-text textarea')

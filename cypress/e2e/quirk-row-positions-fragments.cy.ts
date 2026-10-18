@@ -53,7 +53,7 @@ const harnessHtml = `<!doctype html>
   });
   window.grid = grid;
 
-  // top of a row element regardless of rowTopOffsetRenderType (top vs transform)
+  // top of a row element regardless of the row positioning style
   function topOf(el) {
     if (el.style.top) { return parseFloat(el.style.top); }
     var m = /translateY\\(([-0-9.]+)px\\)/.exec(el.style.transform || '');

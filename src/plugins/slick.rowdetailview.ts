@@ -33,6 +33,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  *
  * USAGE:
  * Add the slick.rowDetailView.(js|css) files and register the plugin with the grid.
+ * Expanded detail panels render in a canvas overlay so cells and rows do not clip their content.
  *
  * AVAILABLE ROW DETAIL OPTIONS:
  *    cssClass:               A CSS class to be added to the row detail
@@ -151,6 +152,9 @@ export class SlickRowDetailView {
   protected _keyPrefix = this._defaults.keyPrefix;
   protected _gridRowBuffer = 0;
   protected _rowIdsOutOfViewport: Array<number | string> = [];
+  protected _overlayHost?: HTMLDivElement;
+  protected _overlayPanels = new Map<number | string, HTMLDivElement>();
+  protected _overlayContents = new Map<number | string, unknown>();
 
   /** Constructor of the Row Detail View Plugin which accepts optional options */
   constructor(options: RowDetailViewOption) {
@@ -184,7 +188,8 @@ export class SlickRowDetailView {
 
     this._eventHandler
       .subscribe(this._grid.onClick, this.handleClick.bind(this))
-      .subscribe(this._grid.onScroll, this.handleScroll.bind(this));
+      .subscribe(this._grid.onScroll, this.handleScroll.bind(this))
+      .subscribe(this._grid.onRendered, this.renderOverlayPanels.bind(this));
 
     // Sort will, by default, Collapse all of the open items (unless user implements his own onSort which deals with open row and padding)
     if (this._options.collapseAllOnSort) {
@@ -226,6 +231,10 @@ export class SlickRowDetailView {
   /** destroy the plugin and it's events */
   destroy() {
     this._eventHandler.unsubscribeAll();
+    this._overlayHost?.remove();
+    this._overlayHost = undefined;
+    this._overlayPanels.clear();
+    this._overlayContents.clear();
     this.onAsyncResponse.unsubscribe();
     this.onAsyncEndUpdate.unsubscribe();
     this.onAfterRowDetailToggle.unsubscribe();
@@ -302,6 +311,7 @@ export class SlickRowDetailView {
     } else {
       this.calculateOutOfRangeViews();
     }
+    this.renderOverlayPanels();
   }
 
   /** Calculate when expanded rows become out of view range */
@@ -485,6 +495,7 @@ export class SlickRowDetailView {
     }
 
     item[`${this._keyPrefix}collapsed`] = true;
+    this.removeOverlayPanel(item[this._dataViewIdProperty]);
     for (let idx = 1; idx <= item[`${this._keyPrefix}sizePadding`]; idx++) {
       this._dataView.deleteItem(item[this._dataViewIdProperty] + '.' + idx);
     }
@@ -543,7 +554,14 @@ export class SlickRowDetailView {
     if (view) {
       const html = view.innerHTML;
       if (html !== undefined) {
-        item[`${this._keyPrefix}detailContent`] = html;
+        const itemId = item[this._dataViewIdProperty];
+        const currentItem = this._dataView.getItemById(itemId) || item;
+        currentItem[`${this._keyPrefix}detailContent`] = html;
+        // This snapshot already represents the mounted DOM. Remember it without
+        // making the next render replace live inputs or their event listeners.
+        if (this._overlayPanels.has(itemId)) {
+          this._overlayContents.set(itemId, html);
+        }
       }
     }
   }
@@ -569,6 +587,9 @@ export class SlickRowDetailView {
       }
 
       itemDetail[`${this._keyPrefix}detailViewLoaded`] = true;
+      this._expandedRows = this._expandedRows.map((item) =>
+        item[this._dataViewIdProperty] === itemDetail[this._dataViewIdProperty] ? itemDetail : item
+      );
       this._dataView.updateItem(itemDetail[this._dataViewIdProperty], itemDetail);
 
       // trigger an event once the post template is finished loading
@@ -683,41 +704,128 @@ export class SlickRowDetailView {
         return Utils.createDomElement('div', { className: collapsedClasses });
       }
       else {
-        const rowHeight = this._gridOptions.rowHeight;
-        let outterHeight = dataContext[`${this._keyPrefix}sizePadding`] * this._gridOptions.rowHeight!;
-
         if (this._options.maxRows !== undefined && dataContext[`${this._keyPrefix}sizePadding`] > this._options.maxRows) {
-          outterHeight = this._options.maxRows * rowHeight!;
           dataContext[`${this._keyPrefix}sizePadding`] = this._options.maxRows;
         }
 
-        // sneaky extra </div> inserted here-----------------v
         let expandedClasses = this._options.cssClass + ' collapse ';
         if (this._options.expandedClass) {
           expandedClasses += this._options.expandedClass;
         }
 
-        // create the Row Detail div container that will be inserted AFTER the `.slick-cell`
-        const cellDetailContainerElm = Utils.createDomElement('div', {
-          className: `dynamic-cell-detail cellDetailView_${dataContext[this._dataViewIdProperty]}`,
-          style: { height: `${outterHeight}px`, top: `${rowHeight}px` }
-        });
-        const innerContainerElm = Utils.createDomElement('div', { className: `detail-container detailViewContainer_${dataContext[this._dataViewIdProperty]}` });
-        const innerDetailViewElm = Utils.createDomElement('div', { className: `innerDetailView_${dataContext[this._dataViewIdProperty]}` });
-        innerDetailViewElm.innerHTML = this._grid.sanitizeHtmlString(dataContext[`${this._keyPrefix}detailContent`]);
-
-        innerContainerElm.appendChild(innerDetailViewElm);
-        cellDetailContainerElm.appendChild(innerContainerElm);
-
-        const result: FormatterResultWithHtml = {
+        return {
           html: Utils.createDomElement('div', { className: expandedClasses }),
-          insertElementAfterTarget: cellDetailContainerElm,
         };
-
-        return result;
       }
     }
     return '';
+  }
+
+  /** Mount expanded detail panels in a sibling layer above the scrolling rows. */
+  protected renderOverlayPanels(): void {
+    const canvas = this._grid?.getCanvases()?.[0];
+    if (!canvas) {
+      return;
+    }
+    if (this._overlayHost && this._overlayHost.parentElement !== canvas) {
+      this._overlayHost.remove();
+      this._overlayHost = undefined;
+      this._overlayPanels.clear();
+      this._overlayContents.clear();
+    }
+    if (!this._overlayHost) {
+      this._overlayHost = Utils.createDomElement('div', { className: 'slick-row-detail-overlay' });
+      canvas.appendChild(this._overlayHost);
+    }
+
+    const renderedRange = this._grid.getRenderedRange();
+    const expandedIds = new Set<number | string>();
+    for (let index = 0; index < this._expandedRows.length; index++) {
+      const itemId = this._expandedRows[index][this._dataViewIdProperty];
+      const item = this._dataView.getItemById(itemId);
+      const row = this._dataView.getRowById(itemId);
+      const rowNode = row === undefined ? undefined : this._grid.getRowCache()[row]?.rowNode?.[0];
+      const isDocked = rowNode?.classList.contains('slick-row-pinned-top') || rowNode?.classList.contains('slick-row-pinned-bottom');
+      if (
+        !item || item[`${this._keyPrefix}collapsed`] || row === undefined ||
+        (!isDocked && (row < renderedRange.top || row > renderedRange.bottom))
+      ) {
+        this.removeOverlayPanel(itemId);
+        continue;
+      }
+      this._expandedRows[index] = item;
+      expandedIds.add(itemId);
+      const detailContent = item[`${this._keyPrefix}detailContent`];
+      let panel = this._overlayPanels.get(itemId);
+      if (!panel) {
+        panel = this.createDetailViewElement(item, row);
+        this._overlayPanels.set(itemId, panel);
+        this._overlayContents.set(itemId, detailContent);
+      }
+      if (this._overlayContents.get(itemId) !== detailContent) {
+        const contentNode = panel.firstElementChild?.firstElementChild as HTMLElement | null;
+        if (contentNode) {
+          this.renderDetailContent(contentNode, item);
+        }
+        this._overlayContents.set(itemId, detailContent);
+      }
+      if (panel.parentElement !== this._overlayHost) {
+        this._overlayHost.appendChild(panel);
+      }
+      this.updateOverlayPanelPosition(panel, item, row);
+    }
+    for (const itemId of this._overlayPanels.keys()) {
+      if (!expandedIds.has(itemId)) {
+        this.removeOverlayPanel(itemId);
+      }
+    }
+  }
+
+  /** Create a detail panel without deciding where it is mounted. */
+  protected createDetailViewElement(item: any, row: number): HTMLDivElement {
+    let height = (item[`${this._keyPrefix}sizePadding`] || 0) * this._grid.getRowHeight(row);
+    if (this._options.maxRows !== undefined && item[`${this._keyPrefix}sizePadding`] > this._options.maxRows) {
+      height = this._options.maxRows * this._grid.getRowHeight(row);
+      item[`${this._keyPrefix}sizePadding`] = this._options.maxRows;
+    }
+    const id = item[this._dataViewIdProperty];
+    const panel = Utils.createDomElement('div', {
+      className: `dynamic-cell-detail cellDetailView_${id}`,
+      style: { height: `${height}px`, pointerEvents: 'auto' },
+    });
+    const container = Utils.createDomElement('div', { className: `detail-container detailViewContainer_${id}` });
+    const content = Utils.createDomElement('div', { className: `innerDetailView_${id}` });
+    this.renderDetailContent(content, item);
+    container.appendChild(content);
+    panel.appendChild(container);
+    this.updateOverlayPanelPosition(panel, item, row);
+    return panel;
+  }
+
+  /** Update a mounted detail panel after scrolling or resizing. */
+  protected updateOverlayPanelPosition(panel: HTMLDivElement, item: any, row: number): void {
+    const column = this._grid.getColumnIndex(this._options.columnId || this._defaults.columnId!) ?? 0;
+    // Cell geometry includes collapsed pinned slots and the scroll adjustment
+    // for docked rows, in the same coordinates as the scrolling canvas.
+    const rowTop = this._grid.getCellNodeBox(row, column)?.top ?? this._grid.getRowTop(row);
+    panel.style.top = `${rowTop + this._grid.getRowHeight(row)}px`;
+    panel.style.height = `${(item[`${this._keyPrefix}sizePadding`] || 0) * this._grid.getRowHeight(row)}px`;
+  }
+
+  /** Render HTML or a supplied Element inside the detail panel. */
+  protected renderDetailContent(container: HTMLElement, item: any): void {
+    const content = item[`${this._keyPrefix}detailContent`];
+    if (content instanceof HTMLElement) {
+      container.replaceChildren(content);
+    } else {
+      container.innerHTML = this._grid.sanitizeHtmlString(content || '');
+    }
+  }
+
+  protected removeOverlayPanel(itemId: number | string): void {
+    this._overlayPanels.get(itemId)?.remove();
+    this._overlayPanels.delete(itemId);
+    this._overlayContents.delete(itemId);
   }
 
   /** Resize the Row Detail View */
@@ -754,9 +862,7 @@ export class SlickRowDetailView {
     item[`${this._keyPrefix}sizePadding`] = Math.ceil(((rowCount * 2) * lineHeight) / rowHeight!);
     item[`${this._keyPrefix}height`] = itemHeight;
 
-    let outterHeight = (item[`${this._keyPrefix}sizePadding`] * rowHeight!);
     if (this._options.maxRows !== undefined && item[`${this._keyPrefix}sizePadding`] > this._options.maxRows) {
-      outterHeight = this._options.maxRows * rowHeight!;
       item[`${this._keyPrefix}sizePadding`] = this._options.maxRows;
     }
 
@@ -766,9 +872,10 @@ export class SlickRowDetailView {
       this._grid.getOptions().minRowBuffer = item[`${this._keyPrefix}sizePadding`] + 3;
     }
 
-    mainContainer.setAttribute('style', 'min-height: ' + item[`${this._keyPrefix}height`] + 'px');
-    if (cellItem) {
-      cellItem.setAttribute('style', 'height: ' + outterHeight + 'px; top:' + rowHeight + 'px');
+    mainContainer.style.minHeight = `${item[`${this._keyPrefix}height`]}px`;
+    const row = this._dataView.getRowById(item[this._dataViewIdProperty]);
+    if (row !== undefined) {
+      this.updateOverlayPanelPosition(cellItem, item, row);
     }
 
     const idxParent = this._dataView.getIdxById(item[this._dataViewIdProperty]) ?? 0;

@@ -389,7 +389,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     editorCellNavOnLRKeys: false,
     enableMouseWheelScrollHandler: true,
     doPaging: true,
-    rowTopOffsetRenderType: 'top',
     rtl: false,
     scrollRenderThrottling: 10,
     suppressCssChangesOnHiddenInit: false,
@@ -6742,8 +6741,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
   /**
    * Iterates over each row in the rowsCache and updates the top position of the row’s DOM element
-   * using the getRowTop calculation. Depending on the grid option, it either uses CSS transform
-   * or sets the top property directly.
+   * using transforms for ordinary rows and top positioning across RowSpan intersections.
    */
   protected updateRowPositions(dockedOnly = false): void {
     if (this.rowsCache && typeof this.rowsCache === 'object') {
@@ -10751,8 +10749,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * horizontal render range and therefore not be present in the row DOM yet, so
    * the row metadata is inspected as well; otherwise the row can keep a
    * translateY stacking context and a later-rendered span cell will paint
-   * underneath hovered or odd rows. Only the host row needs this treatment (not
-   * rows covered by a span), so only a rowspan that starts on this row counts.
+   * underneath hovered or odd rows. Covered rows are handled separately by
+   * applyRowTopOffset so the full span shares one stacking context.
    */
   protected isRowSpanHost(rowNode: HTMLElement, row: number): boolean {
     if (!this._options.enableCellRowSpan) {
@@ -10771,7 +10769,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     );
   }
 
-  /** Keep RowSpan host rows top-positioned so their cells escape transformed sibling stacking contexts. */
+  /** Keep RowSpan hosts and covered rows in one stacking context. */
   protected applyRowTopOffset(rowNode: HTMLElement, row: number): void {
     const rowDocking = this.dockingByRow.get(row);
     let top = this.getRenderedRowTop(row);
@@ -10795,20 +10793,17 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       rowDocking?.band === 'bottom' && this.rowDockingLayout.bottom[0]?.index === row
     );
     rowNode.classList.toggle('slick-row-sticky', !!rowDocking?.sticky);
-    const isTransform = this._options.rowTopOffsetRenderType === 'transform';
     const cacheEntry = this.rowsCache[row];
     const hasRowSpan = cacheEntry?.rowSpanHost ?? this.isRowSpanHost(rowNode, row);
     if (cacheEntry) {
       cacheEntry.rowSpanHost = hasRowSpan;
     }
-    // Docked rows live in the non-scrolling overlay, so their vertical
-    // coordinate is constant for the duration of a scroll. The transform
-    // preference remains available for normal rows and row-detail rendering.
-    const useTransform = isTransform && !hasRowSpan;
+    // A transformed covered row traps its pinned regions below the spanning cell.
+    // Keep the host and each covered row in the same canvas stacking context.
+    const intersectsRowSpan = hasRowSpan || (!!this._options.enableCellRowSpan && this.getRowSpanIntersect(row) !== null);
+    const useTransform = !intersectsRowSpan;
 
-    // Mark every rowspan host row so docked region wrappers let the spanning cell
-    // extend over following rows and stay hit-testable.
-    rowNode.classList.toggle('slick-rowspan', hasRowSpan);
+    rowNode.classList.toggle('slick-rowspan', intersectsRowSpan);
     if (useTransform) {
       rowNode.style.top = '';
       // Keep the 2D translateY() syntax for row positioning: integrations inspect it.
