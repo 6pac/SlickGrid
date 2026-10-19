@@ -123,8 +123,9 @@ const options = {
   the band beside it. The copy is `aria-hidden`; assistive technology and the API see only the
   host. Full-width group rows are rendered as one viewport-wide cell.
 - Row spans are supported; a spanning cell that starts in a pinned row stays in the overlay.
-- Row Detail panels use a separate canvas overlay. They follow the rendered parent row's
-  position, including shifts from pinned rows, and remain mounted while the parent is docked.
+- Row Detail panels use a separate canvas overlay. They sit over the padding rows reserved
+  below the parent, including shifts from pinned rows; a pinned parent's panel stays with its
+  padding rows in the scrolling area rather than under the pinned band.
 - Pinned separators are painted with inset shadows, not layout borders, so header and body widths
   stay aligned across themes. The active theme can override the `--slick-pinned-*` custom
   properties read by `_slick-docking.scss`.

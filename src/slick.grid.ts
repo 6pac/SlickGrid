@@ -179,6 +179,8 @@ interface RowCaching {
   dockingSyncSignature?: string;
   /** Whether the row hosts a rowspan (from rendered cells or metadata). */
   rowSpanHost?: boolean;
+  /** Whether the row hosts or is covered by a rowspan; such rows are `top`-positioned. */
+  rowSpanIntersect?: boolean;
   cellColSpans: Array<number | '*'>;
   cellNodesByColumnIdx: HTMLElement[];
   cellRenderQueue: any[];
@@ -10749,8 +10751,8 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * horizontal render range and therefore not be present in the row DOM yet, so
    * the row metadata is inspected as well; otherwise the row can keep a
    * translateY stacking context and a later-rendered span cell will paint
-   * underneath hovered or odd rows. Covered rows are handled separately by
-   * applyRowTopOffset so the full span shares one stacking context.
+   * underneath hovered or odd rows. Covered rows are detected separately in
+   * applyRowTopOffset so the whole span stays out of any transform stacking context.
    */
   protected isRowSpanHost(rowNode: HTMLElement, row: number): boolean {
     if (!this._options.enableCellRowSpan) {
@@ -10769,7 +10771,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     );
   }
 
-  /** Keep RowSpan hosts and covered rows in one stacking context. */
+  /** Position a row, keeping RowSpan hosts and covered rows `top`-positioned (no transform stacking context). */
   protected applyRowTopOffset(rowNode: HTMLElement, row: number): void {
     const rowDocking = this.dockingByRow.get(row);
     let top = this.getRenderedRowTop(row);
@@ -10795,12 +10797,17 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     rowNode.classList.toggle('slick-row-sticky', !!rowDocking?.sticky);
     const cacheEntry = this.rowsCache[row];
     const hasRowSpan = cacheEntry?.rowSpanHost ?? this.isRowSpanHost(rowNode, row);
+    // A transformed row is a stacking context: it would trap the pinned regions of a
+    // covered row below the spanning cell, and a transformed host would trap the span
+    // itself. Keep the host and every covered row `top`-positioned with `z-index: auto`
+    // so the spanning cell paints above the rows around it in any render order. The
+    // intersect scan walks every rowspan range, so it is cached with the row like the host flag.
+    const intersectsRowSpan =
+      cacheEntry?.rowSpanIntersect ?? (hasRowSpan || (!!this._options.enableCellRowSpan && this.getRowSpanIntersect(row) !== null));
     if (cacheEntry) {
       cacheEntry.rowSpanHost = hasRowSpan;
+      cacheEntry.rowSpanIntersect = intersectsRowSpan;
     }
-    // A transformed covered row traps its pinned regions below the spanning cell.
-    // Keep the host and each covered row in the same canvas stacking context.
-    const intersectsRowSpan = hasRowSpan || (!!this._options.enableCellRowSpan && this.getRowSpanIntersect(row) !== null);
     const useTransform = !intersectsRowSpan;
 
     rowNode.classList.toggle('slick-rowspan', intersectsRowSpan);
@@ -10900,9 +10907,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   /** Returns the cell elements belonging to a row, including its docking regions. */
   protected getRowCellChildren(rowNode: HTMLElement): HTMLElement[] {
     const children = Array.from(rowNode.children) as HTMLElement[];
-    // Row detail formatters can insert a non-cell sibling after the detail-toggle cell.
+    // A formatter result's `insertElementAfterTarget` puts a non-cell sibling after its cell.
     // Only actual cells belong in cellNodesByColumnIdx; otherwise cache rebuilding tries
-    // to parse a column index from classes such as `dynamic-cell-detail`.
+    // to parse a column index from the sibling's classes.
     const cellChildren = (nodes: HTMLElement[]) =>
       nodes.filter((node) => node.classList.contains('slick-cell') && !node.classList.contains('slick-cell-colspan-part'));
     if (!rowNode.classList.contains('slick-row-docked')) {

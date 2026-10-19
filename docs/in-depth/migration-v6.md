@@ -69,7 +69,7 @@ const gridOptions: GridOption = {
 
 Ordinary grid rows now use `transform: translateY(25px)` instead of `top: 25px` for scrolling performance. RowSpan host rows and the rows they cover retain internal `top` positioning so spanning cells and pinned columns stack correctly. The grid chooses the positioning automatically; no configuration is required.
 
-The `SlickRowDetailView` plugin now renders detail panels in a canvas overlay. Its options are still passed to the plugin constructor, and there is no `renderMode` option to configure in this project. Panels follow their parent row's rendered position, including adjustments for pinned rows.
+The `SlickRowDetailView` plugin now renders detail panels in a canvas overlay. Its options are still passed to the plugin constructor, and there is no `renderMode` option to configure in this project. Each panel sits over the padding rows reserved below its parent (including shifts from pinned rows) and stays within the visible viewport width while scrolling horizontally.
 
 If your custom CSS or tests locate a detail panel through its former cell sibling, update the selector to use the overlay:
 
