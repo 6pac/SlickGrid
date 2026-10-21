@@ -15,7 +15,7 @@ describe('Example - Variable Row Height', { retries: 1 }, () => {
   it('should render the first rows at prefix-sum positions with per-row inline heights', () => {
     for (const r of [0, 1, 2, 5, 13, 15]) {
       cy.get(`#myGrid .slick-row[data-row=${r}]`)
-        .should('have.css', 'top', `${topOf(r)}px`)
+        .should(($row) => expect(($row[0] as HTMLElement).style.transform).to.equal(`translateY(${topOf(r)}px)`))
         .and('have.css', 'height', `${hOf(r)}px`);
     }
   });
@@ -51,7 +51,8 @@ describe('Example - Variable Row Height', { retries: 1 }, () => {
     cy.window().then(win => (win as any).grid.scrollRowToTop(0));
     cy.contains('button', 'Grow row 2').click();
     cy.get('#myGrid .slick-row[data-row=2]').should('have.css', 'height', `${hOf(2) + 10}px`);
-    cy.get('#myGrid .slick-row[data-row=3]').should('have.css', 'top', `${topOf(3) + 10}px`);
+    cy.get('#myGrid .slick-row[data-row=3]')
+      .should(($row) => expect(($row[0] as HTMLElement).style.transform).to.equal(`translateY(${topOf(3) + 10}px)`));
     cy.contains('button', 'Run geometry self-checks').click();
     cy.get('#checkResults').should('contain', 'ALL CHECKS PASSED');
   });
@@ -62,7 +63,7 @@ describe('Example - Variable Row Height', { retries: 1 }, () => {
     cy.get('#mdGrid .slick-row[data-row=0]').should('have.css', 'height', '60px');
     cy.get('#mdGrid .slick-row[data-row=1]').should('have.css', 'height', '25px');
     cy.get('#mdGrid .slick-row[data-row=4]')
-      .should('have.css', 'top', '135px')      // 60 + 25 + 25 + 25
+      .should(($row) => expect(($row[0] as HTMLElement).style.transform).to.equal('translateY(135px)')) // 60 + 25 + 25 + 25
       .and('have.css', 'height', '60px');
   });
 });

@@ -20,7 +20,7 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
       .click()
       .wait(50);
 
-    cy.get('.slick-cell + .dynamic-cell-detail .detailViewContainer_1')
+    cy.get('.slick-row-detail-overlay .dynamic-cell-detail .detailViewContainer_1')
       .find('h4')
       .should('contain', 'Task 1');
 
@@ -32,11 +32,11 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
   });
 
   it('should open the 2nd Row Detail of the 4th row and expect to find some details', () => {
-    cy.get(`.slick-row[style*="top: ${GRID_ROW_HEIGHT * 10}px;"] .slick-cell:nth(1)`)
+    cy.get(`.slick-row[style*="transform: translateY(${GRID_ROW_HEIGHT * 10}px);"] .slick-cell:nth(1)`)
       .click()
       .wait(50);
 
-    cy.get('.slick-cell + .dynamic-cell-detail .detailViewContainer_3')
+    cy.get('.slick-row-detail-overlay .dynamic-cell-detail .detailViewContainer_3')
       .find('h4')
       .should('contain', 'Task 3');
 
@@ -54,13 +54,13 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
   });
 
   it('should open the Task 3 Row Detail and still expect same detail', () => {
-    cy.get(`.slick-row[style*="top: ${GRID_ROW_HEIGHT * 3}px;"] .slick-cell:nth(1)`)
+    cy.get(`.slick-row[style*="transform: translateY(${GRID_ROW_HEIGHT * 3}px);"] .slick-cell:nth(1)`)
       .click()
       .wait(50);
 
     cy.get('.dynamic-cell-detail').should('have.length', 1);
 
-    cy.get('.slick-cell + .dynamic-cell-detail .innerDetailView_3')
+    cy.get('.slick-row-detail-overlay .dynamic-cell-detail .innerDetailView_3')
       .find('h4')
       .should('contain', 'Task 3');
 

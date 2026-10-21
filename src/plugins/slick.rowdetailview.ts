@@ -14,6 +14,7 @@ import type {
   OnRowDetailAsyncEndUpdateArgs,
   OnRowDetailAsyncResponseArgs,
   OnRowOutOfViewportRangeArgs,
+  OnScrollEventArgs,
   RowDetailViewOption,
   UsabilityOverrideFn
 } from '../models/index.js';
@@ -33,6 +34,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  *
  * USAGE:
  * Add the slick.rowDetailView.(js|css) files and register the plugin with the grid.
+ * Expanded detail panels render in a canvas overlay so cells and rows do not clip their content.
  *
  * AVAILABLE ROW DETAIL OPTIONS:
  *    cssClass:               A CSS class to be added to the row detail
@@ -151,6 +153,10 @@ export class SlickRowDetailView {
   protected _keyPrefix = this._defaults.keyPrefix;
   protected _gridRowBuffer = 0;
   protected _rowIdsOutOfViewport: Array<number | string> = [];
+  protected _overlayHost?: HTMLDivElement;
+  protected _overlayPanels = new Map<number | string, HTMLDivElement>();
+  protected _overlayContents = new Map<number | string, unknown>();
+  protected _lastScrollLeft?: number;
 
   /** Constructor of the Row Detail View Plugin which accepts optional options */
   constructor(options: RowDetailViewOption) {
@@ -184,7 +190,8 @@ export class SlickRowDetailView {
 
     this._eventHandler
       .subscribe(this._grid.onClick, this.handleClick.bind(this))
-      .subscribe(this._grid.onScroll, this.handleScroll.bind(this));
+      .subscribe(this._grid.onScroll, this.handleScroll.bind(this))
+      .subscribe(this._grid.onRendered, this.renderOverlayPanels.bind(this));
 
     // Sort will, by default, Collapse all of the open items (unless user implements his own onSort which deals with open row and padding)
     if (this._options.collapseAllOnSort) {
@@ -226,6 +233,10 @@ export class SlickRowDetailView {
   /** destroy the plugin and it's events */
   destroy() {
     this._eventHandler.unsubscribeAll();
+    this._overlayHost?.remove();
+    this._overlayHost = undefined;
+    this._overlayPanels.clear();
+    this._overlayContents.clear();
     this.onAsyncResponse.unsubscribe();
     this.onAsyncEndUpdate.unsubscribe();
     this.onAfterRowDetailToggle.unsubscribe();
@@ -296,11 +307,17 @@ export class SlickRowDetailView {
   }
 
   /** If we scroll save detail views that go out of cache range */
-  protected handleScroll() {
+  protected handleScroll(_e: SlickEventData, args: OnScrollEventArgs) {
     if (this._options.useSimpleViewportCalc) {
       this.calculateOutOfRangeViewsSimplerVersion();
     } else {
       this.calculateOutOfRangeViews();
+    }
+    // Panels sit over their padding rows, so a vertical scroll is handled by the render
+    // that follows it; only a horizontal scroll moves the viewport-anchored panels.
+    if (args?.scrollLeft !== this._lastScrollLeft) {
+      this._lastScrollLeft = args?.scrollLeft;
+      this.renderOverlayPanels();
     }
   }
 
@@ -485,6 +502,7 @@ export class SlickRowDetailView {
     }
 
     item[`${this._keyPrefix}collapsed`] = true;
+    this.removeOverlayPanel(item[this._dataViewIdProperty]);
     for (let idx = 1; idx <= item[`${this._keyPrefix}sizePadding`]; idx++) {
       this._dataView.deleteItem(item[this._dataViewIdProperty] + '.' + idx);
     }
@@ -543,7 +561,14 @@ export class SlickRowDetailView {
     if (view) {
       const html = view.innerHTML;
       if (html !== undefined) {
-        item[`${this._keyPrefix}detailContent`] = html;
+        const itemId = item[this._dataViewIdProperty];
+        const currentItem = this._dataView.getItemById(itemId) || item;
+        currentItem[`${this._keyPrefix}detailContent`] = html;
+        // This snapshot already represents the mounted DOM. Remember it without
+        // making the next render replace live inputs or their event listeners.
+        if (this._overlayPanels.has(itemId)) {
+          this._overlayContents.set(itemId, html);
+        }
       }
     }
   }
@@ -569,6 +594,9 @@ export class SlickRowDetailView {
       }
 
       itemDetail[`${this._keyPrefix}detailViewLoaded`] = true;
+      this._expandedRows = this._expandedRows.map((item) =>
+        item[this._dataViewIdProperty] === itemDetail[this._dataViewIdProperty] ? itemDetail : item
+      );
       this._dataView.updateItem(itemDetail[this._dataViewIdProperty], itemDetail);
 
       // trigger an event once the post template is finished loading
@@ -628,12 +656,17 @@ export class SlickRowDetailView {
     // calculate padding requirements based on detail-content..
     // ie. worst-case: create an invisible dom node now & find it's height.
     const lineHeight = 13; // we know cuz we wrote the custom css init ;)
-    item[`${this._keyPrefix}sizePadding`] = Math.ceil(((rowCount * 2) * lineHeight) / this._gridOptions.rowHeight!);
+    item[`${this._keyPrefix}sizePadding`] = this.limitPaddingRows(Math.ceil(((rowCount * 2) * lineHeight) / this._gridOptions.rowHeight!));
     item[`${this._keyPrefix}height`] = (item[`${this._keyPrefix}sizePadding`] * this._gridOptions.rowHeight!);
     const idxParent = this._dataView.getIdxById(item[this._dataViewIdProperty]) ?? 0;
     for (let idx = 1; idx <= item[`${this._keyPrefix}sizePadding`]; idx++) {
       this._dataView.insertItem(idxParent + idx, this.getPaddingItem(item, idx));
     }
+  }
+
+  /** Cap the padding row count at `maxRows` before the padding items are inserted, so collapsing removes every one of them. */
+  protected limitPaddingRows(sizePadding: number): number {
+    return this._options.maxRows !== undefined && sizePadding > this._options.maxRows ? this._options.maxRows : sizePadding;
   }
 
   /** Get the Column Definition of the first column dedicated to toggling the Row Detail View */
@@ -683,41 +716,136 @@ export class SlickRowDetailView {
         return Utils.createDomElement('div', { className: collapsedClasses });
       }
       else {
-        const rowHeight = this._gridOptions.rowHeight;
-        let outterHeight = dataContext[`${this._keyPrefix}sizePadding`] * this._gridOptions.rowHeight!;
-
-        if (this._options.maxRows !== undefined && dataContext[`${this._keyPrefix}sizePadding`] > this._options.maxRows) {
-          outterHeight = this._options.maxRows * rowHeight!;
-          dataContext[`${this._keyPrefix}sizePadding`] = this._options.maxRows;
-        }
-
-        // sneaky extra </div> inserted here-----------------v
         let expandedClasses = this._options.cssClass + ' collapse ';
         if (this._options.expandedClass) {
           expandedClasses += this._options.expandedClass;
         }
 
-        // create the Row Detail div container that will be inserted AFTER the `.slick-cell`
-        const cellDetailContainerElm = Utils.createDomElement('div', {
-          className: `dynamic-cell-detail cellDetailView_${dataContext[this._dataViewIdProperty]}`,
-          style: { height: `${outterHeight}px`, top: `${rowHeight}px` }
-        });
-        const innerContainerElm = Utils.createDomElement('div', { className: `detail-container detailViewContainer_${dataContext[this._dataViewIdProperty]}` });
-        const innerDetailViewElm = Utils.createDomElement('div', { className: `innerDetailView_${dataContext[this._dataViewIdProperty]}` });
-        innerDetailViewElm.innerHTML = this._grid.sanitizeHtmlString(dataContext[`${this._keyPrefix}detailContent`]);
-
-        innerContainerElm.appendChild(innerDetailViewElm);
-        cellDetailContainerElm.appendChild(innerContainerElm);
-
-        const result: FormatterResultWithHtml = {
+        return {
           html: Utils.createDomElement('div', { className: expandedClasses }),
-          insertElementAfterTarget: cellDetailContainerElm,
         };
-
-        return result;
       }
     }
     return '';
+  }
+
+  /** Mount expanded detail panels in a sibling layer above the scrolling rows. */
+  protected renderOverlayPanels(): void {
+    const canvas = this._grid?.getCanvases()?.[0];
+    if (!canvas) {
+      return;
+    }
+    if (this._overlayHost && this._overlayHost.parentElement !== canvas) {
+      this._overlayHost.remove();
+      this._overlayHost = undefined;
+      this._overlayPanels.clear();
+      this._overlayContents.clear();
+    }
+    if (!this._overlayHost) {
+      this._overlayHost = Utils.createDomElement('div', { className: 'slick-row-detail-overlay' });
+      canvas.appendChild(this._overlayHost);
+    }
+
+    const renderedRange = this._grid.getRenderedRange();
+    const expandedIds = new Set<number | string>();
+    for (let index = 0; index < this._expandedRows.length; index++) {
+      const itemId = this._expandedRows[index][this._dataViewIdProperty];
+      const item = this._dataView.getItemById(itemId);
+      const row = this._dataView.getRowById(itemId);
+      // The panel occupies the padding rows below the parent (a docked parent can be far
+      // from them), so it stays mounted while any of those rows is in the rendered range.
+      const sizePadding = item?.[`${this._keyPrefix}sizePadding`] || 0;
+      if (
+        !item || item[`${this._keyPrefix}collapsed`] || row === undefined ||
+        row + sizePadding < renderedRange.top || row + 1 > renderedRange.bottom
+      ) {
+        this.removeOverlayPanel(itemId);
+        continue;
+      }
+      this._expandedRows[index] = item;
+      expandedIds.add(itemId);
+      const detailContent = item[`${this._keyPrefix}detailContent`];
+      let panel = this._overlayPanels.get(itemId);
+      if (!panel) {
+        panel = this.createDetailViewElement(item);
+        this._overlayPanels.set(itemId, panel);
+        this._overlayContents.set(itemId, detailContent);
+      }
+      if (this._overlayContents.get(itemId) !== detailContent) {
+        const contentNode = panel.firstElementChild?.firstElementChild as HTMLElement | null;
+        if (contentNode) {
+          this.renderDetailContent(contentNode, item);
+        }
+        this._overlayContents.set(itemId, detailContent);
+      }
+      if (panel.parentElement !== this._overlayHost) {
+        this._overlayHost.appendChild(panel);
+      }
+      this.updateOverlayPanelPosition(panel, item, row);
+    }
+    for (const itemId of this._overlayPanels.keys()) {
+      if (!expandedIds.has(itemId)) {
+        this.removeOverlayPanel(itemId);
+      }
+    }
+  }
+
+  /** Create a detail panel; `updateOverlayPanelPosition` places and sizes it once mounted. */
+  protected createDetailViewElement(item: any): HTMLDivElement {
+    const id = item[this._dataViewIdProperty];
+    const panel = Utils.createDomElement('div', {
+      className: `dynamic-cell-detail cellDetailView_${id}`,
+      style: { pointerEvents: 'auto' },
+    });
+    const container = Utils.createDomElement('div', { className: `detail-container detailViewContainer_${id}` });
+    const content = Utils.createDomElement('div', { className: `innerDetailView_${id}` });
+    this.renderDetailContent(content, item);
+    container.appendChild(content);
+    panel.appendChild(container);
+    return panel;
+  }
+
+  /** Place a mounted panel over its padding rows and keep it within the visible viewport width. */
+  protected updateOverlayPanelPosition(panel: HTMLDivElement, item: any, row: number): void {
+    const sizePadding = item[`${this._keyPrefix}sizePadding`] || 0;
+    const column = this._grid.getColumnIndex(this._options.columnId || this._defaults.columnId!) ?? 0;
+    // Cell geometry is in canvas coordinates and includes the shifts introduced by pinned
+    // rows. The panel starts at the first padding row rather than under the parent: a
+    // docked parent sits in the pinned band while its padding rows stay in the scrolling area.
+    const firstPaddingRow = row + 1;
+    const top = this._grid.getCellNodeBox(firstPaddingRow, column)?.top ?? this._grid.getRowTop(firstPaddingRow);
+    let height = 0;
+    for (let paddingRow = firstPaddingRow; paddingRow <= row + sizePadding; paddingRow++) {
+      height += this._grid.getRowHeight(paddingRow); // padding rows keep their own heights in variable row height mode
+    }
+    panel.style.top = `${top}px`;
+    panel.style.height = `${height}px`;
+
+    // Anchor the panel to the visible part of the canvas so a horizontal scroll neither
+    // pushes it out of view nor slides it underneath the pinned columns.
+    const viewport = this._grid.getViewportNode();
+    const canvas = this._grid.getCanvases()?.[0];
+    if (viewport && canvas) {
+      const visibleLeft = viewport.getBoundingClientRect().left - canvas.getBoundingClientRect().left;
+      panel.style.left = `${Math.max(0, visibleLeft)}px`;
+      panel.style.width = `${Math.min(viewport.clientWidth, canvas.clientWidth)}px`;
+    }
+  }
+
+  /** Render HTML or a supplied Element inside the detail panel. */
+  protected renderDetailContent(container: HTMLElement, item: any): void {
+    const content = item[`${this._keyPrefix}detailContent`];
+    if (content instanceof HTMLElement) {
+      container.replaceChildren(content);
+    } else {
+      container.innerHTML = this._grid.sanitizeHtmlString(content || '');
+    }
+  }
+
+  protected removeOverlayPanel(itemId: number | string): void {
+    this._overlayPanels.get(itemId)?.remove();
+    this._overlayPanels.delete(itemId);
+    this._overlayContents.delete(itemId);
   }
 
   /** Resize the Row Detail View */
@@ -751,14 +879,8 @@ export class SlickRowDetailView {
     // Now work out how many rows
     const rowCount = Math.ceil(itemHeight / rowHeight!);
 
-    item[`${this._keyPrefix}sizePadding`] = Math.ceil(((rowCount * 2) * lineHeight) / rowHeight!);
+    item[`${this._keyPrefix}sizePadding`] = this.limitPaddingRows(Math.ceil(((rowCount * 2) * lineHeight) / rowHeight!));
     item[`${this._keyPrefix}height`] = itemHeight;
-
-    let outterHeight = (item[`${this._keyPrefix}sizePadding`] * rowHeight!);
-    if (this._options.maxRows !== undefined && item[`${this._keyPrefix}sizePadding`] > this._options.maxRows) {
-      outterHeight = this._options.maxRows * rowHeight!;
-      item[`${this._keyPrefix}sizePadding`] = this._options.maxRows;
-    }
 
     // If the padding is now more than the original minRowBuff we need to increase it
     if (this._grid.getOptions().minRowBuffer! < item[`${this._keyPrefix}sizePadding`]) {
@@ -766,14 +888,17 @@ export class SlickRowDetailView {
       this._grid.getOptions().minRowBuffer = item[`${this._keyPrefix}sizePadding`] + 3;
     }
 
-    mainContainer.setAttribute('style', 'min-height: ' + item[`${this._keyPrefix}height`] + 'px');
-    if (cellItem) {
-      cellItem.setAttribute('style', 'height: ' + outterHeight + 'px; top:' + rowHeight + 'px');
-    }
+    mainContainer.style.minHeight = `${item[`${this._keyPrefix}height`]}px`;
 
     const idxParent = this._dataView.getIdxById(item[this._dataViewIdProperty]) ?? 0;
     for (let idx = 1; idx <= item[`${this._keyPrefix}sizePadding`]; idx++) {
       this._dataView.insertItem(idxParent + idx, this.getPaddingItem(item, idx));
+    }
+
+    // size the panel over the new padding rows (the inserts above re-render on their own unless batched)
+    const row = this._dataView.getRowById(item[this._dataViewIdProperty]);
+    if (row !== undefined) {
+      this.updateOverlayPanelPosition(cellItem, item, row);
     }
 
     // Lastly save the updated state

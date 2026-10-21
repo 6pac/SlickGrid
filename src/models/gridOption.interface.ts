@@ -361,13 +361,6 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   /** Defaults to false, sets the grid direction to RTL (Right-to-Left) for proper rendering of RTL languages */
   rtl?: boolean;
 
-  /**
-   * Defaults to "top", what CSS style to we want to use to render each row top offset (we can use "top" or "transform").
-   * For example, with a default `rowHeight: 22`, the 2nd row will have a `top` offset of 44px and by default have a CSS style of `top: 44px`.
-   * NOTE: for perf reasons, the "transform" might become the default in our future major version.
-   */
-  rowTopOffsetRenderType?: 'top' | 'transform';
-
   /** Optional sanitizer function to use for sanitizing data to avoid XSS attacks */
   sanitizer?: (dirtyHtml: string) => string;
 

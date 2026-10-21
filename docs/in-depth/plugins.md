@@ -174,6 +174,12 @@ Register these with `registerPlugin`. They are documented briefly here; the [Plu
 | --- | --- | --- |
 | [`SlickRowDetailView`](/reference/plugins) | `RowDetailView` | Expand a row to show a detail panel below it. Register the plugin and add its `getColumnDefinition()` (the expand/collapse toggle) to your columns. |
 
+Pass Row Detail options such as `panelRows`, `preTemplate`, `postTemplate`, and `process` to the `SlickRowDetailView` constructor. The plugin uses a `SlickDataView` and inserts padding items to reserve space below each expanded row. Load `slick.rowdetailview.css` alongside your grid stylesheet.
+
+In v6, detail panels render in a `.slick-row-detail-overlay` layer inside the grid canvas. Each panel sits over the padding rows reserved below its parent, including shifts introduced by pinned rows, and is sized from those rows' heights; when the parent itself is pinned, the panel stays with its padding rows in the scrolling area rather than under the pinned band. Panels are kept within the visible viewport width when the grid scrolls horizontally. Saving a mounted detail preserves its live DOM, including input values and event listeners. Panels whose padding rows leave the rendered range are removed and recreated; use `saveDetailViewOnScroll` to save their HTML content before they leave the range.
+
+For custom styles or tests, target `.slick-row-detail-overlay .dynamic-cell-detail`. Panels are no longer siblings of `.slick-cell`. Row positioning is automatic: remove `rowTopOffsetRenderType` from your grid options. This project's plugin has no `renderMode` option. See [Migrating to v6](/in-depth/migration-v6#row-positioning-rowtopoffsetrendertype) for the configuration and selector changes.
+
 ### Row move
 
 Both add a drag-handle column. Add each plugin's `getColumnDefinition()` to your columns and register the plugin.

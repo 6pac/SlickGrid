@@ -32,7 +32,7 @@ describe('Example - Variable Row Height with Pinned Columns/Rows', { retries: 1 
     cy.contains('button', 'A: grow row 2').click();
     // Grid A uses one canvas; row 3 shifts by the 10px added to row 2.
     cy.get('#gridA .grid-canvas').find('.slick-row[data-row=3]')
-      .should('have.css', 'top', `${sum(0, 3) + 10}px`);
+      .should(($row) => expect(($row[0] as HTMLElement).style.transform).to.equal(`translateY(${sum(0, 3) + 10}px)`));
     cy.contains('button', 'Run pinning geometry self-checks').click();
     cy.get('#checkResults').should('contain', 'ALL CHECKS PASSED');
   });
