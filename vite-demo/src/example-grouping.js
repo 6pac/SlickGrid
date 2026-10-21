@@ -73,7 +73,6 @@ export class ExampleGrouping {
       },
       rowHeight: 28,
       // forceSyncScrolling: true,
-      rowTopOffsetRenderType: 'transform', // defaults: 'top'
     };
 
     // instantiate SlickGrid and SlickDataView

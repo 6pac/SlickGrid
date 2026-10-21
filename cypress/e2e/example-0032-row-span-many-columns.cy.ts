@@ -227,8 +227,8 @@ describe('Example - colspan & rowspan spanning many columns', { retries: 0 }, ()
       cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 5}px;"] > .slick-cell.l3.r3`).should('not.exist');
       cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 5}px;"] > .slick-cell.l3.r3`).should('not.exist');
 
-      cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 6}px;"] > .slick-cell.l4.r4`).should('exist');
-      cy.get(`[style*="top: ${GRID_ROW_HEIGHT * 6}px;"] > .slick-cell.l4.r4`).should('exist');
+      cy.get(`[style*="transform: translateY(${GRID_ROW_HEIGHT * 6}px);"] > .slick-cell.l4.r4`).should('exist');
+      cy.get(`[style*="transform: translateY(${GRID_ROW_HEIGHT * 6}px);"] > .slick-cell.l4.r4`).should('exist');
     });
 
     it('should scroll back to left and expect Task 8 to have 2 different spans (Revenue Grow: rowspan=80, Policy Index: rowspan=2000,colspan=2)', () => {

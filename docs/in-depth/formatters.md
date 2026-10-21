@@ -53,7 +53,7 @@ Return a result object when you also want to change the cell's classes or its to
 | `addClasses` | CSS classes to add to the cell's `div` (space-separated). |
 | `removeClasses` | CSS classes to remove from the cell's `div`. |
 | `toolTip` | Sets the cell `div`'s `title` attribute. |
-| `insertElementAfterTarget` | Inserts an element after the cell. Advanced; used by row detail. |
+| `insertElementAfterTarget` | Inserts an element after the cell for advanced formatter layouts. |
 
 The two variants differ only in how you give the content:
 

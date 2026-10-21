@@ -30,6 +30,12 @@
     overflow:           auto;
 }
 
+.slick-row-detail-overlay {
+  position: absolute;
+  inset: 0;
+  pointer-events: none;
+}
+
 .dynamic-cell-detail > :first-child {
     vertical-align:     middle;
     line-height:        13px;

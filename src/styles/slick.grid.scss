@@ -233,6 +233,13 @@ classes should alter those!
   outline: none;
 }
 
+// Rows involved in a RowSpan (`.slick-row.slick-rowspan`, the host and the rows it covers)
+// are `top`-positioned and must keep `z-index: auto`: without a stacking context of their
+// own, the host's spanning cell (a `.slick-cell` at z-index 1) paints above the transformed
+// rows around it and above the covered rows' backgrounds in any render order. A z-index on
+// the row would make each host and covered row its own stacking context, and a covered row
+// rendered after its host would then paint over the lower part of the span.
+
 .slick-reorder-proxy {
   display: inline-block;
   background: blue;
