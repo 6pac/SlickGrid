@@ -5512,7 +5512,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     for (let i = 0, ii = columnCount; i < ii; i++) {
       isRenderCell = true;
       m = this.columns[i];
-      if (m && (!m.hidden || metadata?.isGroup)) {
+      if (m && (!m.hidden || this.isGroupMetadataCell(metadata, m, i))) {
         colspan = 1;
         rowspan = 1;
         columnData = null;
@@ -5574,6 +5574,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     }
 
     this.applyRowTopOffset(rowDiv, row);
+  }
+
+  /** Hidden columns are only rendered for group cells explicitly defined by column metadata (e.g. a group title). */
+  protected isGroupMetadataCell(metadata: ItemMetadata | null | undefined, column: C, index: number): boolean {
+    return !!metadata?.isGroup && !!(metadata.columns?.[column.id] || metadata.columns?.[index]);
   }
 
   /**
@@ -6576,7 +6581,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
         const startColumnIndex = metadataCol || metadata?.isGroup ? 0 : firstColumnIndex;
 
         for (let i = startColumnIndex, ii = columnCount; i < ii; i++) {
-          if (this.columns[i] && (!this.columns[i].hidden || metadata?.isGroup)) {
+          if (this.columns[i] && (!this.columns[i].hidden || this.isGroupMetadataCell(metadata, this.columns[i], i))) {
             // Cells to the right are outside the range.
             if (this.getColumnDockingBand(i) === 'center' && this.columnPosLeft[i] > range.rightPx) {
               if (!this.hasDockedColumns()) {
