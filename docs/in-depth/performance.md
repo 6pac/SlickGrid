@@ -213,9 +213,9 @@ Always pair a heavy `asyncPostRender` with a cleanup callback. Without it, widge
 On each scroll the grid chooses how to render:
 
 - A **small** move — less than one viewport in each direction — renders immediately. It is cheap, because most cached rows are reused.
-- A **large** jump — a viewport or more, such as dragging the scrollbar thumb — needs a full viewport rebuild. The grid throttles these to at most once per [`scrollRenderThrottling`](/reference/grid#opt-scrollRenderThrottling) ms (default `10`). This caps the work during a fast drag.
+- A **large** jump — a viewport or more, such as dragging the scrollbar thumb — needs a full viewport rebuild. These render synchronously by default (`scrollRenderThrottling: 0`) so a trailing timer does not leave the new viewport empty. A positive [`scrollRenderThrottling`](/reference/grid#opt-scrollRenderThrottling) value opts back into timer throttling.
 
-[`forceSyncScrolling`](/reference/grid#opt-forceSyncScrolling) (default `false`) removes the throttle and renders on every scroll event. It can look smoother on small datasets, but on large ones every scroll event forces a full viewport rebuild and can stutter. The source warns against enabling it on large data. Leave it off unless you have measured a gain.
+[`forceSyncScrolling`](/reference/grid#opt-forceSyncScrolling) (default `false`) bypasses a positive throttle for vertical scrolling; it is unnecessary with the default `0`. Horizontal scrolling still uses its animation-frame scheduler. Expensive formatters and layout can still delay painting, so profile those costs when scrolling remains slow.
 
 Two related options rarely need changing:
 

@@ -174,3 +174,18 @@ body {
 
 - [Pinning and sticky docking](/in-depth/pinning-sticky)
 - [Plugins](/in-depth/plugins) · [Reference](/reference/)
+
+## Scroll rendering performance
+
+Large vertical scroll jumps now render synchronously by default (`scrollRenderThrottling: 0`). Set a positive delay, such as `10`, to retain timer throttling. Horizontal rendering keeps its existing animation-frame scheduler.
+
+The per-cell `onBeforeAppendCell` event and `OnBeforeAppendCellEventArgs` type were removed. Return classes from a formatter instead:
+
+```ts
+const formatter = (_row, _cell, value) => ({
+  text: String(value),
+  addClasses: value > 50 ? 'high-value' : '',
+});
+```
+
+Plain strings without `<` or `&` now use `textContent` directly and bypass the sanitizer. Markup and entity-containing strings retain the existing sanitization/rendering path. A sanitizer should not be used as a general plain-text transformation hook.

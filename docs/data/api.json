@@ -1,26 +1,40 @@
 {
   "meta": {
-    "generatedAt": "2026-09-22T03:46:59.584Z",
+    "generatedAt": "2026-10-23T16:36:49.664Z",
     "repo": "/home/ghislainb/sourcecode/SlickGrid",
     "counts": {
       "gridOptions": 118,
-      "gridOptionsWithDoc": 113,
-      "gridOptionsWithDefault": 100,
-      "columns": 50,
-      "gridEvents": 57,
-      "gridMethods": 150,
+      "gridOptionsWithDoc": 114,
+      "gridOptionsWithDefault": 93,
+      "columns": 51,
+      "gridEvents": 61,
+      "gridMethods": 154,
       "dataViewOptions": 4,
       "dataViewEvents": 9,
       "dataViewMethods": 57,
       "plugins": 20,
       "controls": 4,
-      "coreClasses": 14,
+      "coreClasses": 15,
       "editors": 8,
       "formatters": 5,
       "enums": 3
     }
   },
   "gridOptions": [
+    {
+      "name": "allowDragFromClosest",
+      "type": "string",
+      "optional": true,
+      "description": "Defaults to `div.slick-cell.dnd, div.slick-cell.cell-reorder`, CSS selector of the closest cell ancestor that allows a row drag to start.",
+      "default": "div.slick-cell.dnd, div.slick-cell.cell-reorder"
+    },
+    {
+      "name": "docking",
+      "type": "DockingOption",
+      "optional": true,
+      "description": "Shared pixel budgets and overflow behavior for pinned and sticky rows/columns.",
+      "default": "{\n      maxColumnViewportWidthPercent: 60,\n      maxRowViewportHeightPercent: 60,\n      minCenterRowCount: 3,\n      overflowStrategy: 'conveyor',\n      stickyActivationBuffer: 2,\n    }"
+    },
     {
       "name": "addNewRowCssClass",
       "type": "string",
@@ -74,8 +88,7 @@
       "name": "auto",
       "type": "boolean",
       "optional": true,
-      "description": "",
-      "default": false
+      "description": ""
     },
     {
       "name": "nonce",
@@ -232,6 +245,13 @@
       "default": true
     },
     {
+      "name": "columnResizingDelay",
+      "type": "number",
+      "optional": true,
+      "description": "Defaults to 300 (ms), debounce delay applied to column resizing before the grid re-renders.",
+      "default": 300
+    },
+    {
       "name": "editable",
       "type": "boolean",
       "optional": true,
@@ -358,7 +378,7 @@
       "name": "enableMouseWheelScrollHandler",
       "type": "boolean",
       "optional": true,
-      "description": "Do we want to always enable the mousewheel scroll handler?\nIn other words, do we want the mouse scrolling would work from anywhere.\nTypically we should only enable it when using a Frozen/Pinned grid and if it does detect it to be a frozen grid,\nthen it will automatically enable the scroll handler if this flag was originally set to undefined (which it is by default unless the user specifically disabled it).",
+      "description": "Do we want to always enable the mousewheel scroll handler?\nIn other words, do we want the mouse scrolling would work from anywhere.\nTypically we should only enable it when using a pinned grid and if it detects pinning,\nthen it will automatically enable the scroll handler if this flag was originally set to undefined (which it is by default unless the user specifically disabled it).",
       "default": true
     },
     {
@@ -406,7 +426,7 @@
       "name": "forceSyncScrolling",
       "type": "boolean",
       "optional": true,
-      "description": "Defaults to false, force synchronous scrolling without throttling the UI render when scrolling.\nNote: it might be risky to disable this option on large dataset, use at your own risk",
+      "description": "Defaults to false, force synchronous scrolling without throttling the UI render when scrolling.\nOnly relevant for vertical rendering when scrollRenderThrottling is greater than 0; the default 0 already renders synchronously.",
       "default": false
     },
     {
@@ -417,32 +437,10 @@
       "default": null
     },
     {
-      "name": "frozenBottom",
-      "type": "boolean",
+      "name": "pinning",
+      "type": "PinningOption",
       "optional": true,
-      "description": "Defaults to false, do we want to freeze (pin) the bottom portion instead of the top",
-      "default": false
-    },
-    {
-      "name": "frozenColumn",
-      "type": "number",
-      "optional": true,
-      "description": "Number of column index(es) to freeze (pin) in the grid",
-      "default": -1
-    },
-    {
-      "name": "frozenRow",
-      "type": "number",
-      "optional": true,
-      "description": "Number of row index(es) to freeze (pin) in the grid",
-      "default": -1
-    },
-    {
-      "name": "frozenRightViewportMinWidth",
-      "type": "number",
-      "optional": true,
-      "description": "Defaults to 100, what is the minimum width to keep for the section on the right of a frozen grid?\nThis basically fixes an issue that if the user expand any column on the left of the frozen (pinning) section\nand make it bigger than the viewport width, then the grid becomes unusable because the right section goes into a void/hidden area.",
-      "default": 100
+      "description": "Unified permanent pinning for columns and rows."
     },
     {
       "name": "fullWidthRows",
@@ -475,8 +473,7 @@
       "name": "logSanitizedHtml",
       "type": "boolean",
       "optional": true,
-      "description": "Should we log the sanitized html?",
-      "default": false
+      "description": "Should we log the sanitized html?"
     },
     {
       "name": "maxPartialRowSpanRemap",
@@ -510,7 +507,7 @@
       "type": "boolean",
       "optional": true,
       "description": "Use a mixin function when applying defaults to passed in option and columns objects, rather than creating a new object, so as not to break references",
-      "default": true
+      "default": false
     },
     {
       "name": "multiColumnSort",
@@ -587,7 +584,7 @@
       "type": "(grid: SlickGridModel, row: number, item: any) => number | undefined",
       "optional": true,
       "description": "The single source of row heights, only called when `enableVariableRowHeight` is on.\nReceives the grid instance (giving access to any grid state), the row index, and the row's\ndata item. Returns the height (integer) in pixels of that row, or `undefined` to use the default `rowHeight`.\nThe default implementation reads `ItemMetadata.height` from the data provider's\n`getItemMetadata(row)`, so metadata-driven heights work without configuring this option.\nSupplying your own function fully replaces the default - item metadata is then no longer\nconsulted (no per-row fallback between the two sources).\nHeights are cached in a prefix-sum index that is rebuilt whenever the row count changes, rows\nare invalidated, or `grid.invalidateRowHeights()` is called; the callback is called once per\nrow per rebuild, so it must be fast (a simple lookup or calculation - no DOM access).\nWhen heights change without a row count change, call `grid.invalidateRowHeights()`.",
-      "default": "(grid: SlickGridModel, row: number) => grid.getItemMetadaWhenExists(row)?.height"
+      "default": "(grid, row) => grid.getItemMetadaWhenExists(row)?.height"
     },
     {
       "name": "rowHighlightCssClass",
@@ -611,6 +608,12 @@
       "default": false
     },
     {
+      "name": "spreadHiddenColspan",
+      "type": "boolean",
+      "optional": true,
+      "description": "Defaults to false. When a cell colspan crosses hidden columns, increase the span so it covers the same number of visible columns."
+    },
+    {
       "name": "rtl",
       "type": "boolean",
       "optional": true,
@@ -628,8 +631,8 @@
       "name": "scrollRenderThrottling",
       "type": "number",
       "optional": true,
-      "description": "Defaults to 10(ms), render throttling when using virtual scroll on large dataset",
-      "default": 10
+      "description": "Defaults to 0: large vertical scroll jumps render synchronously. A positive value opts into timer throttling (previous default: 10 ms).",
+      "default": 0
     },
     {
       "name": "selectedCellCssClass",
@@ -722,46 +725,45 @@
       "description": "Defaults to false, when set to True will sync the column cell resize & apply the column width"
     },
     {
-      "name": "skipFreezeColumnValidation",
-      "type": "boolean",
+      "name": "stickyRows",
+      "type": "StickyRows",
       "optional": true,
-      "description": "When set to true, it will skip the validation check to make sure frozen columns are not wider than the grid visible canvas width"
+      "description": "Stable row ids or indexes that dock after ordinary scrolling clips them."
     },
     {
-      "name": "throwWhenFrozenNotAllViewable",
+      "name": "skipPinningValidation",
       "type": "boolean",
       "optional": true,
-      "description": "",
-      "deprecated": "",
+      "description": "Skip validation that pinned columns leave a usable center region.",
       "default": false
     },
     {
-      "name": "invalidColumnFreezePickerMessage",
-      "type": "string",
-      "optional": true,
-      "description": "Message to show when the frozen column is invalid and `invalidColumnFreezeWidthCallbackPicker` is enabled",
-      "default": "'[SlickGrid] Action not allowed and aborted, you need to have at least one or more column on the right section of the column freeze/pining. ' +\n      'You could alternatively \"Unfreeze all the columns\" before trying again.'"
-    },
-    {
-      "name": "invalidColumnFreezePickerCallback",
+      "name": "errorCallback",
       "type": "(error: string) => void",
       "optional": true,
-      "description": "Defaults to `alert(error)`, which will trigger when the user tries to uncheck too many columns via ColumnPicker/GridMenu.\nWe need to have 1 or more columns visible on the right side of the frozen column.",
+      "description": "Defaults to `alert()`, called with an error message when the grid rejects an operation.",
       "default": "(error) => alert(error)"
     },
     {
-      "name": "invalidColumnFreezeWidthMessage",
+      "name": "invalidColumnPinningPickerMessage",
       "type": "string",
       "optional": true,
-      "description": "Message to show when the frozen column width is invalid and `invalidColumnFreezeWidthCallbackWidth` or `throwWhenFrozenNotAllViewable` is enabled",
-      "default": "'[SlickGrid] You are trying to freeze/pin more columns than the grid can support. ' +\n      'Make sure to have less columns pinned (on the left) than the actual visible grid width.'"
+      "description": "Message passed to `errorCallback` when a pinning request would leave no visible center column.",
+      "default": "[SlickGrid] Cannot complete pinning because at least one visible center column is required."
     },
     {
-      "name": "invalidColumnFreezeWidthCallback",
-      "type": "(error: string) => void",
+      "name": "invalidColumnPinningSequenceMessage",
+      "type": "string",
       "optional": true,
-      "description": "Defaults to `alert(error)`, which will trigger when the user tries to set a `frozenColumn` that is wider than the visible grid viewport width in the browser.\nWe can't freeze wider than the viewport because the right canvas will never be visible and since the left canvas is never scrollable this would break the UX.",
-      "default": "(error) => alert(error)"
+      "description": "Message passed to `errorCallback` when a pinning request that is not sequential from an edge would split a colspan.",
+      "default": "[SlickGrid] Cannot change pinning because it would split a colspan. Pin columns sequentially from the left or right edge."
+    },
+    {
+      "name": "invalidColumnPinningWidthMessage",
+      "type": "string",
+      "optional": true,
+      "description": "Message passed to `errorCallback` when the pinned columns together are wider than the grid.",
+      "default": "[SlickGrid] Cannot pin these columns because they exceed the available grid width."
     },
     {
       "name": "topPanelHeight",
@@ -788,22 +790,19 @@
       "name": "viewportSwitchToScrollModeWidthPercent",
       "type": "number",
       "optional": true,
-      "description": "Viewport switch to scroll model with percentage",
-      "default": "undefined"
+      "description": "Viewport switch to scroll model with percentage"
     },
     {
       "name": "viewportMinWidthPx",
       "type": "number",
       "optional": true,
-      "description": "Viewport min width in pixel",
-      "default": "undefined"
+      "description": "Viewport min width in pixel"
     },
     {
       "name": "viewportMaxWidthPx",
       "type": "number",
       "optional": true,
-      "description": "Viewport max width in pixel",
-      "default": "undefined"
+      "description": "Viewport max width in pixel"
     },
     {
       "name": "columnPickerTitle",
@@ -1015,6 +1014,12 @@
       "description": "is the column hidden?"
     },
     {
+      "name": "pinned",
+      "type": "DockingSide | null",
+      "optional": true,
+      "description": "Permanently dock this column at the left or right edge of the grid viewport."
+    },
+    {
       "name": "id",
       "type": "number | string",
       "optional": false,
@@ -1093,6 +1098,12 @@
       "description": "Is the column sortable? Goes with grid option \"enableSorting: true\"."
     },
     {
+      "name": "sticky",
+      "type": "DockingSide | 'both' | boolean",
+      "optional": true,
+      "description": "Dock this column only after normal scrolling would clip it. Ignored while the column is permanently pinned."
+    },
+    {
       "name": "toolTip",
       "type": "string",
       "optional": true,
@@ -1151,13 +1162,33 @@
     },
     {
       "name": "onActiveCellPositionChanged",
-      "payload": "{ grid: SlickGrid; }",
+      "payload": "{ grid: SlickGrid }",
       "args": {
-        "typeName": "{ grid: SlickGrid; }",
+        "typeName": "{ grid: SlickGrid }",
         "fields": [
           {
             "name": "grid",
             "type": "SlickGrid",
+            "optional": false
+          }
+        ]
+      },
+      "description": ""
+    },
+    {
+      "name": "onActivateChangedOptions",
+      "payload": "OnActivateChangedOptionsEventArgs",
+      "args": {
+        "typeName": "OnActivateChangedOptionsEventArgs",
+        "fields": [
+          {
+            "name": "grid",
+            "type": "SlickGrid",
+            "optional": false
+          },
+          {
+            "name": "options",
+            "type": "GridOption",
             "optional": false
           }
         ]
@@ -1230,41 +1261,6 @@
       "description": ""
     },
     {
-      "name": "onBeforeAppendCell",
-      "payload": "OnBeforeAppendCellEventArgs",
-      "args": {
-        "typeName": "OnBeforeAppendCellEventArgs",
-        "fields": [
-          {
-            "name": "grid",
-            "type": "SlickGrid",
-            "optional": false
-          },
-          {
-            "name": "row",
-            "type": "number",
-            "optional": false
-          },
-          {
-            "name": "cell",
-            "type": "number",
-            "optional": false
-          },
-          {
-            "name": "value",
-            "type": "any",
-            "optional": false
-          },
-          {
-            "name": "dataContext",
-            "type": "any",
-            "optional": false
-          }
-        ]
-      },
-      "description": ""
-    },
-    {
       "name": "onBeforeCellEditorDestroy",
       "payload": "OnBeforeCellEditorDestroyEventArgs",
       "args": {
@@ -1306,9 +1302,9 @@
     },
     {
       "name": "onBeforeDestroy",
-      "payload": "{ grid: SlickGrid; }",
+      "payload": "{ grid: SlickGrid }",
       "args": {
-        "typeName": "{ grid: SlickGrid; }",
+        "typeName": "{ grid: SlickGrid }",
         "fields": [
           {
             "name": "grid",
@@ -1869,6 +1865,31 @@
       "description": ""
     },
     {
+      "name": "onDblClick",
+      "payload": "OnDblClickEventArgs",
+      "args": {
+        "typeName": "OnDblClickEventArgs",
+        "fields": [
+          {
+            "name": "grid",
+            "type": "SlickGrid",
+            "optional": false
+          },
+          {
+            "name": "row",
+            "type": "number",
+            "optional": false
+          },
+          {
+            "name": "cell",
+            "type": "number",
+            "optional": false
+          }
+        ]
+      },
+      "description": ""
+    },
+    {
       "name": "onDrag",
       "payload": "DragRowMove",
       "args": {
@@ -1982,31 +2003,6 @@
           {
             "name": "matchClassTag",
             "type": "string",
-            "optional": false
-          }
-        ]
-      },
-      "description": ""
-    },
-    {
-      "name": "onDblClick",
-      "payload": "OnDblClickEventArgs",
-      "args": {
-        "typeName": "OnDblClickEventArgs",
-        "fields": [
-          {
-            "name": "grid",
-            "type": "SlickGrid",
-            "optional": false
-          },
-          {
-            "name": "row",
-            "type": "number",
-            "optional": false
-          },
-          {
-            "name": "cell",
-            "type": "number",
             "optional": false
           }
         ]
@@ -2544,6 +2540,71 @@
       "description": ""
     },
     {
+      "name": "onHeaderMouseOver",
+      "payload": "OnHeaderMouseEventArgs",
+      "args": {
+        "typeName": "OnHeaderMouseEventArgs",
+        "fields": [
+          {
+            "name": "grid",
+            "type": "SlickGrid",
+            "optional": false
+          },
+          {
+            "name": "column",
+            "type": "Column",
+            "optional": false
+          }
+        ]
+      },
+      "description": ""
+    },
+    {
+      "name": "onHeaderMouseOut",
+      "payload": "OnHeaderMouseEventArgs",
+      "args": {
+        "typeName": "OnHeaderMouseEventArgs",
+        "fields": [
+          {
+            "name": "grid",
+            "type": "SlickGrid",
+            "optional": false
+          },
+          {
+            "name": "column",
+            "type": "Column",
+            "optional": false
+          }
+        ]
+      },
+      "description": ""
+    },
+    {
+      "name": "onHeaderKeyDown",
+      "payload": "OnHeaderKeyDownEventArgs",
+      "args": {
+        "typeName": "OnHeaderKeyDownEventArgs",
+        "fields": [
+          {
+            "name": "grid",
+            "type": "SlickGrid",
+            "optional": false
+          },
+          {
+            "name": "event",
+            "type": "KeyboardEvent",
+            "optional": false
+          },
+          {
+            "name": "column",
+            "type": "Column",
+            "optional": false
+          }
+        ]
+      },
+      "description": ""
+    },
+    {
       "name": "onHeaderRowCellRendered",
       "payload": "OnHeaderRowCellRenderedEventArgs",
       "args": {
@@ -2609,10 +2670,10 @@
       "description": ""
     },
     {
-      "name": "onPreHeaderContextMenu",
-      "payload": "OnPreHeaderContextMenuEventArgs",
+      "name": "onHeaderRowMouseOver",
+      "payload": "OnHeaderMouseEventArgs",
       "args": {
-        "typeName": "OnPreHeaderContextMenuEventArgs",
+        "typeName": "OnHeaderMouseEventArgs",
         "fields": [
           {
             "name": "grid",
@@ -2620,8 +2681,8 @@
             "optional": false
           },
           {
-            "name": "node",
-            "type": "HTMLElement",
+            "name": "column",
+            "type": "Column",
             "optional": false
           }
         ]
@@ -2629,10 +2690,10 @@
       "description": ""
     },
     {
-      "name": "onPreHeaderClick",
-      "payload": "OnPreHeaderClickEventArgs",
+      "name": "onHeaderRowMouseOut",
+      "payload": "OnHeaderMouseEventArgs",
       "args": {
-        "typeName": "OnPreHeaderClickEventArgs",
+        "typeName": "OnHeaderMouseEventArgs",
         "fields": [
           {
             "name": "grid",
@@ -2640,8 +2701,8 @@
             "optional": false
           },
           {
-            "name": "node",
-            "type": "HTMLElement",
+            "name": "column",
+            "type": "Column",
             "optional": false
           }
         ]
@@ -2707,6 +2768,46 @@
           {
             "name": "column",
             "type": "Column",
+            "optional": false
+          }
+        ]
+      },
+      "description": ""
+    },
+    {
+      "name": "onPreHeaderClick",
+      "payload": "OnPreHeaderClickEventArgs",
+      "args": {
+        "typeName": "OnPreHeaderClickEventArgs",
+        "fields": [
+          {
+            "name": "grid",
+            "type": "SlickGrid",
+            "optional": false
+          },
+          {
+            "name": "node",
+            "type": "HTMLElement",
+            "optional": false
+          }
+        ]
+      },
+      "description": ""
+    },
+    {
+      "name": "onPreHeaderContextMenu",
+      "payload": "OnPreHeaderContextMenuEventArgs",
+      "args": {
+        "typeName": "OnPreHeaderContextMenuEventArgs",
+        "fields": [
+          {
+            "name": "grid",
+            "type": "SlickGrid",
+            "optional": false
+          },
+          {
+            "name": "node",
+            "type": "HTMLElement",
             "optional": false
           }
         ]
@@ -2839,26 +2940,6 @@
       "description": ""
     },
     {
-      "name": "onActivateChangedOptions",
-      "payload": "OnActivateChangedOptionsEventArgs",
-      "args": {
-        "typeName": "OnActivateChangedOptionsEventArgs",
-        "fields": [
-          {
-            "name": "grid",
-            "type": "SlickGrid",
-            "optional": false
-          },
-          {
-            "name": "options",
-            "type": "GridOption",
-            "optional": false
-          }
-        ]
-      },
-      "description": ""
-    },
-    {
       "name": "onSort",
       "payload": "SingleColumnSort | MultiColumnSort",
       "args": {
@@ -2974,9 +3055,9 @@
     },
     {
       "name": "onViewportChanged",
-      "payload": "{ grid: SlickGrid; }",
+      "payload": "{ grid: SlickGrid }",
       "args": {
-        "typeName": "{ grid: SlickGrid; }",
+        "typeName": "{ grid: SlickGrid }",
         "fields": [
           {
             "name": "grid",
@@ -3022,31 +3103,23 @@
     {
       "name": "init",
       "group": "Grid and Dom Initialisation",
-      "signature": "init()",
+      "signature": "init(): void",
       "params": [],
-      "returns": "",
+      "returns": "void",
       "description": "Initializes the grid."
     },
     {
       "name": "cacheCssForHiddenInit",
       "group": "Grid and Dom Initialisation",
-      "signature": "cacheCssForHiddenInit()",
-      "params": [],
-      "returns": "",
-      "description": "Finds all container ancestors/parents (including the grid container itself) that are hidden (i.e. have display:none)\nand temporarily applies visible CSS properties (absolute positioning, hidden visibility, block display)\nso that dimensions can be measured correctly.\nIt stores the original CSS properties in an internal array for later restoration.\n\nRelated to issue: https://github.com/6pac/SlickGrid/issues/568"
-    },
-    {
-      "name": "restoreCssFromHiddenInit",
-      "group": "Grid and Dom Initialisation",
-      "signature": "restoreCssFromHiddenInit(): void",
+      "signature": "cacheCssForHiddenInit(): void",
       "params": [],
       "returns": "void",
-      "description": "Restores the original CSS properties for the container and its hidden\nancestors that were modified by cacheCssForHiddenInit.\nThis ensures that after initial measurements the DOM elements revert\nto their original style settings."
+      "description": "Finds all container ancestors/parents (including the grid container itself) that are hidden (i.e. have display:none)\nand temporarily applies visible CSS properties (absolute positioning, hidden visibility, block display)\nso that dimensions can be measured correctly.\nIt stores the original CSS properties in an internal array for later restoration.\n\nRelated to issue: https://github.com/6pac/SlickGrid/issues/568"
     },
     {
       "name": "registerPlugin",
       "group": "Grid and Dom Initialisation",
-      "signature": "registerPlugin(plugin: T)",
+      "signature": "registerPlugin(plugin: T): void",
       "params": [
         {
           "name": "plugin",
@@ -3055,13 +3128,13 @@
           "description": "- The plugin instance to be registered."
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Registers an external plugin to the grid’s internal plugin list.\nOnce added, it immediately initialises the plugin by calling its init()\nmethod with the grid instance."
     },
     {
       "name": "unregisterPlugin",
       "group": "Grid and Dom Initialisation",
-      "signature": "unregisterPlugin(plugin: SlickPlugin)",
+      "signature": "unregisterPlugin(plugin: SlickPlugin): void",
       "params": [
         {
           "name": "plugin",
@@ -3070,13 +3143,13 @@
           "description": "- The plugin instance to be registered."
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Unregister (destroy) an external Plugin.\nSearches for the specified plugin in the grid’s plugin list.\nWhen found, it calls the plugin’s destroy() method and removes the plugin from the list,\nthereby unregistering it from the grid."
     },
     {
       "name": "destroy",
       "group": "Grid and Dom Initialisation",
-      "signature": "destroy(shouldDestroyAllElements?: boolean)",
+      "signature": "destroy(shouldDestroyAllElements?: boolean): void",
       "params": [
         {
           "name": "shouldDestroyAllElements",
@@ -3085,8 +3158,8 @@
           "description": "- do we want to destroy (nullify) all DOM elements as well? This help in avoiding mem leaks"
         }
       ],
-      "returns": "",
-      "description": "Destroy (dispose) of SlickGrid\n\nUnbinds all event handlers, cancels any active cell edits, triggers the onBeforeDestroy event,\nunregisters and destroys plugins, destroys sortable and other interaction instances,\nunbinds ancestor scroll events, removes CSS rules, unbinds events from all key DOM elements\n(canvas, viewports, header, footer, etc.), empties the grid container, removes the grid’s uid class,\nand clears all timers. Optionally, if shouldDestroyAllElements is true,\ncalls destroyAllElements to nullify all DOM references."
+      "returns": "void",
+      "description": "Destroy (dispose) of SlickGrid\n\nUnbinds all event handlers, cancels any active cell edits, triggers the onBeforeDestroy event,\nunregisters and destroys plugins, destroys column reorder and other interaction instances,\nunbinds ancestor scroll events, removes CSS rules, unbinds events from all key DOM elements\n(canvas, viewports, header, footer, etc.), empties the grid container, removes the grid’s uid class,\nand clears all timers. Optionally, if shouldDestroyAllElements is true,\ncalls destroyAllElements to nullify all DOM references."
     },
     {
       "name": "getOptions",
@@ -3095,14 +3168,6 @@
       "params": [],
       "returns": "O",
       "description": "Returns an object containing all of the Grid options set on the grid. See a list of Grid Options here."
-    },
-    {
-      "name": "getFrozenColumnId",
-      "group": "Grid and Dom Initialisation",
-      "signature": "getFrozenColumnId(): string | number | null",
-      "params": [],
-      "returns": "string | number | null",
-      "description": "Get the Column ID of the currently frozen column or `null` when not frozen"
     },
     {
       "name": "setOptions",
@@ -3175,7 +3240,7 @@
     {
       "name": "setSelectionModel",
       "group": "Grid and Dom Initialisation",
-      "signature": "setSelectionModel(model: SelectionModel)",
+      "signature": "setSelectionModel(model: SelectionModel): void",
       "params": [
         {
           "name": "model",
@@ -3184,21 +3249,21 @@
           "description": ""
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Unregisters a current selection model and registers a new one. See the definition of SelectionModel for more information."
     },
     {
       "name": "getSelectionModel",
       "group": "Grid and Dom Initialisation",
-      "signature": "getSelectionModel()",
+      "signature": "getSelectionModel(): T | undefined",
       "params": [],
-      "returns": "",
+      "returns": "T | undefined",
       "description": "Returns the current SelectionModel. See here for more information about SelectionModels."
     },
     {
       "name": "updateColumnHeader",
-      "group": "Column Management, Headers and Footers",
-      "signature": "updateColumnHeader(columnId: number | string, title?: string | HTMLElement | DocumentFragment, toolTip?: string)",
+      "group": "Grid and Dom Initialisation",
+      "signature": "updateColumnHeader(columnId: number | string, title?: string | HTMLElement | DocumentFragment, toolTip?: string): HTMLElement | void",
       "params": [
         {
           "name": "columnId",
@@ -3219,28 +3284,28 @@
           "description": "New column tooltip."
         }
       ],
-      "returns": "",
+      "returns": "HTMLElement | void",
       "description": "Updates an existing column definition and a corresponding header DOM element with the new title and tooltip."
     },
     {
       "name": "getHeader",
-      "group": "Column Management, Headers and Footers",
-      "signature": "getHeader(columnDef: C)",
+      "group": "Grid and Dom Initialisation",
+      "signature": "getHeader(columnDef?: C): HTMLDivElement | HTMLDivElement[]",
       "params": [
         {
           "name": "columnDef",
           "type": "C",
-          "optional": false,
+          "optional": true,
           "description": "- column definition"
         }
       ],
-      "returns": "",
+      "returns": "HTMLDivElement | HTMLDivElement[]",
       "description": "Get the Header DOM element"
     },
     {
       "name": "getHeaderColumn",
-      "group": "Column Management, Headers and Footers",
-      "signature": "getHeaderColumn(columnIdOrIdx: number | string)",
+      "group": "Grid and Dom Initialisation",
+      "signature": "getHeaderColumn(columnIdOrIdx: number | string): HTMLDivElement",
       "params": [
         {
           "name": "columnIdOrIdx",
@@ -3249,29 +3314,29 @@
           "description": "- column Id or index"
         }
       ],
-      "returns": "",
+      "returns": "HTMLDivElement",
       "description": "Get a specific Header Column DOM element by its column Id or index"
     },
     {
       "name": "getHeaderRow",
-      "group": "Column Management, Headers and Footers",
-      "signature": "getHeaderRow()",
+      "group": "Grid and Dom Initialisation",
+      "signature": "getHeaderRow(): HTMLDivElement | HTMLDivElement[]",
       "params": [],
-      "returns": "",
+      "returns": "HTMLDivElement | HTMLDivElement[]",
       "description": "Get the Header Row DOM element"
     },
     {
       "name": "getFooterRow",
-      "group": "Column Management, Headers and Footers",
-      "signature": "getFooterRow()",
+      "group": "Grid and Dom Initialisation",
+      "signature": "getFooterRow(): HTMLDivElement | HTMLDivElement[]",
       "params": [],
-      "returns": "",
+      "returns": "HTMLDivElement | HTMLDivElement[]",
       "description": "Get the Footer DOM element"
     },
     {
       "name": "getHeaderRowColumn",
-      "group": "Column Management, Headers and Footers",
-      "signature": "getHeaderRowColumn(columnIdOrIdx: number | string)",
+      "group": "Grid and Dom Initialisation",
+      "signature": "getHeaderRowColumn(columnIdOrIdx: number | string): HTMLDivElement",
       "params": [
         {
           "name": "columnIdOrIdx",
@@ -3280,13 +3345,13 @@
           "description": "- column Id or index"
         }
       ],
-      "returns": "",
+      "returns": "HTMLDivElement",
       "description": "Get Header Row Column DOM element by its column Id or index"
     },
     {
       "name": "getFooterRowColumn",
-      "group": "Column Management, Headers and Footers",
-      "signature": "getFooterRowColumn(columnIdOrIdx: number | string)",
+      "group": "Grid and Dom Initialisation",
+      "signature": "getFooterRowColumn(columnIdOrIdx: number | string): HTMLDivElement",
       "params": [
         {
           "name": "columnIdOrIdx",
@@ -3295,7 +3360,7 @@
           "description": "- column Id or index"
         }
       ],
-      "returns": "",
+      "returns": "HTMLDivElement",
       "description": "Get the Footer Row Column DOM element by its column Id or index"
     },
     {
@@ -3358,10 +3423,67 @@
     {
       "name": "getVisibleColumns",
       "group": "Column Management - Autosizing",
-      "signature": "getVisibleColumns()",
+      "signature": "getVisibleColumns(): C[]",
       "params": [],
-      "returns": "",
+      "returns": "C[]",
       "description": "Returns an array of column definitions filtered to exclude any that are marked as hidden."
+    },
+    {
+      "name": "getVisibleColumnIndex",
+      "group": "Column Management - Autosizing",
+      "signature": "getVisibleColumnIndex(id: number | string): number",
+      "params": [
+        {
+          "name": "id",
+          "type": "number | string",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": "number",
+      "description": "Returns the index of a visible column by its id."
+    },
+    {
+      "name": "getColumnById",
+      "group": "Column Management - Autosizing",
+      "signature": "getColumnById(id: number | string): C | null",
+      "params": [
+        {
+          "name": "id",
+          "type": "number | string",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": "C | null",
+      "description": "Returns the column object by its id."
+    },
+    {
+      "name": "updateColumnById",
+      "group": "Column Management - Autosizing",
+      "signature": "updateColumnById(columnId: number | string, props: Partial<C>, forceColumnUpdate?): void",
+      "params": [
+        {
+          "name": "columnId",
+          "type": "number | string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "props",
+          "type": "Partial<C>",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "forceColumnUpdate",
+          "type": "",
+          "optional": true,
+          "description": ""
+        }
+      ],
+      "returns": "void",
+      "description": "Updates column properties by id and optionally refreshes the grid columns."
     },
     {
       "name": "getColumnIndex",
@@ -3381,7 +3503,7 @@
     {
       "name": "setSortColumn",
       "group": "Column Management - Autosizing",
-      "signature": "setSortColumn(columnId: number | string, ascending: boolean)",
+      "signature": "setSortColumn(columnId: number | string, ascending: boolean): void",
       "params": [
         {
           "name": "columnId",
@@ -3396,28 +3518,28 @@
           "description": ""
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "A convenience method that creates a sort configuration for one column (with the given sort direction)\nand calls setSortColumns with it. Accepts a columnId string and an ascending boolean.\nApplies a sort glyph in either ascending or descending form to the header of the column.\nNote that this does not actually sort the column. It only adds the sort glyph to the header."
     },
     {
       "name": "getColumnByIndex",
       "group": "Column Management - Autosizing",
-      "signature": "getColumnByIndex(id: number)",
+      "signature": "getColumnByIndex(idx: number): HTMLElement | undefined",
       "params": [
         {
-          "name": "id",
+          "name": "idx",
           "type": "number",
           "optional": false,
-          "description": "- column index"
+          "description": ""
         }
       ],
-      "returns": "",
+      "returns": "HTMLElement | undefined",
       "description": "Get column by index - iterates over header containers and returns the header column\nelement corresponding to the given index."
     },
     {
       "name": "setSortColumns",
       "group": "Column Management - Autosizing",
-      "signature": "setSortColumns(cols: ColumnSort[])",
+      "signature": "setSortColumns(cols: ColumnSort[]): void",
       "params": [
         {
           "name": "cols",
@@ -3426,15 +3548,15 @@
           "description": "- column sort"
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Accepts an array of objects in the form [ { columnId: [string], sortAsc: [boolean] }, ... ] to\ndefine the grid's sort order. When called, this will apply a sort glyph in either ascending\nor descending form to the header of each column specified in the array.\nNote that this does not actually sort the column. It only adds the sort glyph to the header."
     },
     {
       "name": "getColumns",
       "group": "Column Management - Autosizing",
-      "signature": "getColumns()",
+      "signature": "getColumns(): C[]",
       "params": [],
-      "returns": "",
+      "returns": "C[]",
       "description": "Returns the current array of column definitions."
     },
     {
@@ -3448,29 +3570,35 @@
     {
       "name": "setColumns",
       "group": "Column Management - Autosizing",
-      "signature": "setColumns(columnDefinitions: C[])",
+      "signature": "setColumns(newColumns: C[], waitNextCycle?): boolean",
       "params": [
         {
-          "name": "columnDefinitions",
+          "name": "newColumns",
           "type": "C[]",
           "optional": false,
           "description": "An array of column definitions."
+        },
+        {
+          "name": "waitNextCycle",
+          "type": "",
+          "optional": true,
+          "description": "- should we wait for a microtask cycle before updating column headers"
         }
       ],
-      "returns": "",
-      "description": "Sets grid columns. Column headers will be recreated and all rendered rows will be removed.\nTo rerender the grid (if necessary), call render()."
+      "returns": "boolean",
+      "description": "Sets grid columns. Column headers will be recreated and all rendered rows will be removed. To rerender the grid (if necessary), call render()."
     },
     {
       "name": "updateColumns",
       "group": "Column Management - Autosizing",
-      "signature": "updateColumns()",
+      "signature": "updateColumns(): void",
       "params": [],
-      "returns": "",
+      "returns": "void",
       "description": "Update columns for when a hidden property has changed but the column list itself has not changed."
     },
     {
       "name": "getEditorLock",
-      "group": "Data Management and Editing",
+      "group": "Column Management - Autosizing",
       "signature": "getEditorLock()",
       "params": [],
       "returns": "",
@@ -3478,16 +3606,16 @@
     },
     {
       "name": "getEditController",
-      "group": "Data Management and Editing",
-      "signature": "getEditController()",
+      "group": "Column Management - Autosizing",
+      "signature": "getEditController(): EditController | undefined",
       "params": [],
-      "returns": "",
+      "returns": "EditController | undefined",
       "description": "Get Editor Controller"
     },
     {
       "name": "setData",
-      "group": "Data Management and Editing",
-      "signature": "setData(newData: CustomDataView<TData> | TData[], scrollToTop?: boolean)",
+      "group": "Column Management - Autosizing",
+      "signature": "setData(newData: CustomDataView<TData> | TData[], scrollToTop?: boolean): void",
       "params": [
         {
           "name": "newData",
@@ -3502,28 +3630,20 @@
           "description": "If true, the grid will reset the vertical scroll position to the top of the grid."
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Sets a new source for databinding and removes all rendered rows. Note that this doesn't render the new rows - you can follow it with a call to render() to do that."
     },
     {
-      "name": "getData",
-      "group": "Data Management and Editing",
-      "signature": "getData(): U",
-      "params": [],
-      "returns": "U",
-      "description": "Returns an array of every data object, unless you're using DataView in which case it returns a DataView object."
-    },
-    {
       "name": "getDataLength",
-      "group": "Data Management and Editing",
-      "signature": "getDataLength()",
+      "group": "Column Management - Autosizing",
+      "signature": "getDataLength(): number",
       "params": [],
-      "returns": "",
+      "returns": "number",
       "description": "Returns the size of the databinding source."
     },
     {
       "name": "getDataItem",
-      "group": "Data Management and Editing",
+      "group": "Column Management - Autosizing",
       "signature": "getDataItem(i: number): TData",
       "params": [
         {
@@ -3538,7 +3658,7 @@
     },
     {
       "name": "getCellValue",
-      "group": "Data Management and Editing",
+      "group": "Column Management - Autosizing",
       "signature": "getCellValue(i: number, field: string): TData[keyof TData]",
       "params": [
         {
@@ -3559,15 +3679,15 @@
     },
     {
       "name": "hasDataView",
-      "group": "Data Management and Editing",
-      "signature": "hasDataView()",
+      "group": "Column Management - Autosizing",
+      "signature": "hasDataView(): boolean",
       "params": [],
-      "returns": "",
+      "returns": "boolean",
       "description": "Are we using a DataView?"
     },
     {
       "name": "getItemMetadaWhenExists",
-      "group": "Data Management and Editing",
+      "group": "Column Management - Autosizing",
       "signature": "getItemMetadaWhenExists(row: number): ItemMetadata | null",
       "params": [
         {
@@ -3582,36 +3702,36 @@
     },
     {
       "name": "resetActiveCell",
-      "group": "Data Management and Editing - Cell Switchers",
-      "signature": "resetActiveCell()",
+      "group": "Column Management - Autosizing",
+      "signature": "resetActiveCell(): void",
       "params": [],
-      "returns": "",
+      "returns": "void",
       "description": "Resets active cell by making cell normal and other internal reset."
     },
     {
       "name": "unsetActiveCell",
-      "group": "Data Management and Editing - Cell Switchers",
-      "signature": "unsetActiveCell()",
+      "group": "Column Management - Autosizing",
+      "signature": "unsetActiveCell(): void",
       "params": [],
-      "returns": "",
+      "returns": "void",
       "description": "Clear active cell by making cell normal & removing \"active\" CSS class."
     },
     {
       "name": "focus",
-      "group": "Data Management and Editing - Cell Switchers",
-      "signature": "focus()",
+      "group": "Column Management - Autosizing",
+      "signature": "focus(): void",
       "params": [],
-      "returns": "",
+      "returns": "void",
       "description": ""
     },
     {
       "name": "editActiveCell",
-      "group": "Data Management and Editing - Cell Switchers",
-      "signature": "editActiveCell(editor?: EditorConstructor, preClickModeOn?: boolean | null, e?: Event)",
+      "group": "Column Management - Autosizing",
+      "signature": "editActiveCell(editor?: Editor | EditorConstructor, preClickModeOn?: boolean | null, e?: Event): void",
       "params": [
         {
           "name": "editor",
-          "type": "EditorConstructor",
+          "type": "Editor | EditorConstructor",
           "optional": true,
           "description": ""
         },
@@ -3628,21 +3748,21 @@
           "description": ""
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "A public method that starts editing on the active cell by calling\nmakeActiveCellEditable with the provided editor, pre–click flag, and event."
     },
     {
       "name": "getSelectedRows",
-      "group": "Data Management and Editing - Cell Switchers",
-      "signature": "getSelectedRows()",
+      "group": "Column Management - Autosizing",
+      "signature": "getSelectedRows(): number[]",
       "params": [],
-      "returns": "",
+      "returns": "number[]",
       "description": "Returns an array of row indices corresponding to the currently selected rows."
     },
     {
       "name": "setSelectedRows",
-      "group": "Data Management and Editing - Cell Switchers",
-      "signature": "setSelectedRows(rows: number[], caller?: string)",
+      "group": "Column Management - Autosizing",
+      "signature": "setSelectedRows(rows: number[], caller?: string): void",
       "params": [
         {
           "name": "rows",
@@ -3657,13 +3777,13 @@
           "description": "- an optional string to identify who called the method"
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Accepts an array of row indices and applies the current selectedCellCssClass to the cells in the row, respecting whether cells have been flagged as selectable."
     },
     {
       "name": "getCellFromEvent",
-      "group": "Event Handling and Interactivity",
-      "signature": "getCellFromEvent(evt: Event | SlickEventData_)",
+      "group": "Column Management - Autosizing",
+      "signature": "getCellFromEvent(evt: Event | SlickEventData_): { row: number; cell: number } | null",
       "params": [
         {
           "name": "evt",
@@ -3672,13 +3792,13 @@
           "description": ""
         }
       ],
-      "returns": "",
+      "returns": "{ row: number; cell: number } | null",
       "description": "Returns a hash containing row and cell indexes from a standard W3C event."
     },
     {
       "name": "applyHtmlCode",
-      "group": "Rendering and Layout Management",
-      "signature": "applyHtmlCode(target: HTMLElement, val?: boolean | string | HTMLElement | DocumentFragment, options?: { emptyTarget?: boolean; skipEmptyReassignment?: boolean; })",
+      "group": "Column Management - Autosizing",
+      "signature": "applyHtmlCode(target: HTMLElement, val?: boolean | string | HTMLElement | DocumentFragment | null | undefined, options?: { emptyTarget?: boolean; skipEmptyReassignment?: boolean }): void",
       "params": [
         {
           "name": "target",
@@ -3688,45 +3808,45 @@
         },
         {
           "name": "val",
-          "type": "boolean | string | HTMLElement | DocumentFragment",
+          "type": "boolean | string | HTMLElement | DocumentFragment | null | undefined",
           "optional": true,
           "description": "- input value can be either a string or an HTMLElement"
         },
         {
           "name": "options",
-          "type": "{ emptyTarget?: boolean; skipEmptyReassignment?: boolean; }",
+          "type": "{ emptyTarget?: boolean; skipEmptyReassignment?: boolean }",
           "optional": true,
           "description": "-\n`emptyTarget`, defaults to true, will empty the target.\n`skipEmptyReassignment`, defaults to true, when enabled it will not try to reapply an empty value when the target is already empty"
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Apply HTML code by 3 different ways depending on what is provided as input and what options are enabled.\n1. value is an HTMLElement or DocumentFragment, then first empty the target and simply append the HTML to the target element.\n2. value is string and `enableHtmlRendering` is enabled, then use `target.innerHTML = value;`\n3. value is string and `enableHtmlRendering` is disabled, then use `target.textContent = value;`"
     },
     {
       "name": "getCanvasNode",
-      "group": "Rendering and Layout Management",
-      "signature": "getCanvasNode(columnIdOrIdx?: number | string, rowIndex?: number)",
+      "group": "Column Management - Autosizing",
+      "signature": "getCanvasNode(_columnIdOrIdx?: number | string, _rowIndex?: number): HTMLDivElement",
       "params": [
         {
-          "name": "columnIdOrIdx",
+          "name": "_columnIdOrIdx",
           "type": "number | string",
           "optional": true,
           "description": ""
         },
         {
-          "name": "rowIndex",
+          "name": "_rowIndex",
           "type": "number",
           "optional": true,
           "description": ""
         }
       ],
-      "returns": "",
+      "returns": "HTMLDivElement",
       "description": "Get Grid Canvas Node DOM Element"
     },
     {
       "name": "getActiveCanvasNode",
-      "group": "Rendering and Layout Management",
-      "signature": "getActiveCanvasNode(e?: Event | SlickEventData_)",
+      "group": "Column Management - Autosizing",
+      "signature": "getActiveCanvasNode(e?: Event | SlickEventData_): HTMLDivElement",
       "params": [
         {
           "name": "e",
@@ -3735,50 +3855,50 @@
           "description": ""
         }
       ],
-      "returns": "",
+      "returns": "HTMLDivElement",
       "description": "Get the canvas DOM element"
     },
     {
       "name": "getCanvases",
-      "group": "Rendering and Layout Management",
-      "signature": "getCanvases()",
+      "group": "Column Management - Autosizing",
+      "signature": "getCanvases(): HTMLDivElement[]",
       "params": [],
-      "returns": "",
+      "returns": "HTMLDivElement[]",
       "description": "Get the canvas DOM element"
     },
     {
       "name": "getViewportNode",
-      "group": "Rendering and Layout Management",
-      "signature": "getViewportNode(columnIdOrIdx?: number | string, rowIndex?: number)",
+      "group": "Column Management - Autosizing",
+      "signature": "getViewportNode(_columnIdOrIdx?: number | string, _rowIndex?: number): HTMLElement | undefined",
       "params": [
         {
-          "name": "columnIdOrIdx",
+          "name": "_columnIdOrIdx",
           "type": "number | string",
           "optional": true,
           "description": ""
         },
         {
-          "name": "rowIndex",
+          "name": "_rowIndex",
           "type": "number",
           "optional": true,
           "description": ""
         }
       ],
-      "returns": "",
+      "returns": "HTMLElement | undefined",
       "description": "Get the Viewport DOM node element"
     },
     {
       "name": "getViewports",
-      "group": "Rendering and Layout Management",
-      "signature": "getViewports()",
+      "group": "Column Management - Autosizing",
+      "signature": "getViewports(): HTMLDivElement[]",
       "params": [],
-      "returns": "",
+      "returns": "HTMLDivElement[]",
       "description": "Get all the Viewport node elements"
     },
     {
       "name": "getActiveViewportNode",
-      "group": "Rendering and Layout Management",
-      "signature": "getActiveViewportNode(e: Event | SlickEventData_)",
+      "group": "Column Management - Autosizing",
+      "signature": "getActiveViewportNode(e: Event | SlickEventData_): HTMLDivElement",
       "params": [
         {
           "name": "e",
@@ -3787,13 +3907,13 @@
           "description": ""
         }
       ],
-      "returns": "",
+      "returns": "HTMLDivElement",
       "description": "Calls setActiveViewportNode (using the provided event) to set the active viewport,\nthen returns the active viewport DOM element."
     },
     {
       "name": "setActiveViewportNode",
-      "group": "Rendering and Layout Management",
-      "signature": "setActiveViewportNode(e: Event | SlickEventData_)",
+      "group": "Column Management - Autosizing",
+      "signature": "setActiveViewportNode(e: Event | SlickEventData_): HTMLDivElement",
       "params": [
         {
           "name": "e",
@@ -3802,146 +3922,77 @@
           "description": ""
         }
       ],
-      "returns": "",
+      "returns": "HTMLDivElement",
       "description": "Sets an active viewport node"
     },
     {
       "name": "getHeadersWidth",
-      "group": "Rendering and Layout Management",
-      "signature": "getHeadersWidth()",
+      "group": "Column Management - Autosizing",
+      "signature": "getHeadersWidth(): number",
       "params": [],
-      "returns": "",
-      "description": "Get the headers width in pixel\n\nIterates over all columns to accumulate the widths for the left and right header sections,\nadds scrollbar width if needed, and adjusts for frozen columns.\nReturns the computed overall header width in pixels."
+      "returns": "number",
+      "description": "Get the headers width in pixel\n\nIterates over all columns to accumulate the widths for the left and right docking sections,\nadds scrollbar width if needed, and adjusts for docked columns.\nReturns the computed overall header width in pixels."
     },
     {
       "name": "getCanvasWidth",
-      "group": "Rendering and Layout Management",
+      "group": "Column Management - Autosizing",
       "signature": "getCanvasWidth(): number",
       "params": [],
       "returns": "number",
-      "description": "Get the grid canvas width\n\nComputes the available width (considering vertical scrollbar if present),\nthen iterates over the columns (left vs. right based on frozen columns) to sum their widths.\nIf full–width rows are enabled, extra width is added. Returns the total calculated width."
-    },
-    {
-      "name": "validateColumnFreezeWidth",
-      "group": "Rendering and Layout Management",
-      "signature": "validateColumnFreezeWidth(frozenColumn?, forceAlert?: boolean): boolean",
-      "params": [
-        {
-          "name": "frozenColumn",
-          "type": "",
-          "optional": true,
-          "description": "the column index to freeze at"
-        },
-        {
-          "name": "forceAlert",
-          "type": "boolean",
-          "optional": true,
-          "description": "tri-state flag to alert when frozen column is invalid\n- if `undefined` it will do the condition check and never alert more than once\n- if `true` it will do the condition check and always alert even if it was called before\n- if `false` it will do the condition check but always skip the alert"
-        }
-      ],
-      "returns": "boolean",
-      "description": "Validate that the column freeze is allowed in the browser by making sure that the frozen column is not exceeding the available and visible left canvas width.\nNote that it will only validate when `invalidColumnFreezeWidthCallback` or `throwWhenFrozenNotAllViewable` grid option is enabled."
-    },
-    {
-      "name": "calculateFrozenColumnIndexById",
-      "group": "Rendering and Layout Management",
-      "signature": "calculateFrozenColumnIndexById(newColumns: C[], columnId?: string | number | null, applyIndexChange?): number",
-      "params": [
-        {
-          "name": "newColumns",
-          "type": "C[]",
-          "optional": false,
-          "description": "- new columns to calculate frozen index from"
-        },
-        {
-          "name": "columnId",
-          "type": "string | number | null",
-          "optional": true,
-          "description": "- optional column id to calculate from (otherwise it will find the current frozen column id)"
-        },
-        {
-          "name": "applyIndexChange",
-          "type": "",
-          "optional": true,
-          "description": "- whether to apply index changes to the frozen column"
-        }
-      ],
-      "returns": "number",
-      "description": "From a new set of columns, different than current grid columns, we'll recalculate the `frozenColumn` index position by comparing its column `id`\nand recalculating the `frozenColumn` index to find out if it is different from a new set of columns."
-    },
-    {
-      "name": "validateSetColumnFreeze",
-      "group": "Rendering and Layout Management",
-      "signature": "validateSetColumnFreeze(newColumns: C[], forceAlert?: boolean): boolean",
-      "params": [
-        {
-          "name": "newColumns",
-          "type": "C[]",
-          "optional": false,
-          "description": "the new columns that will later be provided to `setColumns()`"
-        },
-        {
-          "name": "forceAlert",
-          "type": "boolean",
-          "optional": true,
-          "description": "tri-state flag to alert when frozen column is invalid\n- if `undefined` it will do the condition check and never alert more than once\n- if `true` it will do the condition check and always alert even if it was called before\n- if `false` it will do the condition check but always skip the alert"
-        }
-      ],
-      "returns": "boolean",
-      "description": "Validate that there is at least 1, or more, column to the right of the frozen column otherwise show an error (we do this check before calling `setColumns()`).\nNote that it will only validate when `invalidColumnFreezePickerCallback` grid option is enabled."
+      "description": "Get the grid canvas width\n\nComputes the available width (considering vertical scrollbar if present),\nthen iterates over the columns (left, center, and right docking bands) to sum their widths.\nIf full–width rows are enabled, extra width is added. Returns the total calculated width."
     },
     {
       "name": "getPreHeaderPanel",
-      "group": "Rendering and Layout Management",
-      "signature": "getPreHeaderPanel()",
+      "group": "Column Management - Autosizing",
+      "signature": "getPreHeaderPanel(): HTMLDivElement",
       "params": [],
-      "returns": "",
+      "returns": "HTMLDivElement",
       "description": ""
     },
     {
       "name": "getPreHeaderPanelLeft",
-      "group": "Rendering and Layout Management",
-      "signature": "getPreHeaderPanelLeft()",
+      "group": "Column Management - Autosizing",
+      "signature": "getPreHeaderPanelLeft(): HTMLDivElement",
       "params": [],
-      "returns": "",
+      "returns": "HTMLDivElement",
       "description": "Get the Pre-Header Panel Left DOM node element"
     },
     {
       "name": "getPreHeaderPanelRight",
-      "group": "Rendering and Layout Management",
-      "signature": "getPreHeaderPanelRight()",
+      "group": "Column Management - Autosizing",
+      "signature": "getPreHeaderPanelRight(): HTMLDivElement",
       "params": [],
-      "returns": "",
+      "returns": "HTMLDivElement",
       "description": "Get the Pre-Header Panel Right DOM node element"
     },
     {
       "name": "getTopHeaderPanel",
-      "group": "Rendering and Layout Management",
-      "signature": "getTopHeaderPanel()",
+      "group": "Column Management - Autosizing",
+      "signature": "getTopHeaderPanel(): HTMLDivElement",
       "params": [],
-      "returns": "",
+      "returns": "HTMLDivElement",
       "description": "Get the Top-Header Panel DOM node element"
     },
     {
       "name": "getTopPanel",
-      "group": "Rendering and Layout Management",
-      "signature": "getTopPanel()",
+      "group": "Column Management - Autosizing",
+      "signature": "getTopPanel(): HTMLDivElement",
       "params": [],
-      "returns": "",
+      "returns": "HTMLDivElement",
       "description": "Get Top Panel DOM element"
     },
     {
       "name": "getTopPanels",
-      "group": "Rendering and Layout Management",
-      "signature": "getTopPanels()",
+      "group": "Column Management - Autosizing",
+      "signature": "getTopPanels(): HTMLDivElement[]",
       "params": [],
-      "returns": "",
-      "description": "Get Top Panels (left/right) DOM element"
+      "returns": "HTMLDivElement[]",
+      "description": "Get the top panels used by the grid (the single-viewport renderer has one)."
     },
     {
       "name": "setTopPanelVisibility",
-      "group": "Rendering and Layout Management",
-      "signature": "setTopPanelVisibility(visible?: boolean, animate?: boolean)",
+      "group": "Column Management - Autosizing",
+      "signature": "setTopPanelVisibility(visible?: boolean, animate?: boolean): void",
       "params": [
         {
           "name": "visible",
@@ -3953,16 +4004,16 @@
           "name": "animate",
           "type": "boolean",
           "optional": true,
-          "description": "- optionally enable an animation while toggling the panel"
+          "description": ""
         }
       ],
-      "returns": "",
-      "description": "Set the Top Panel Visibility and optionally enable/disable animation (enabled by default)"
+      "returns": "void",
+      "description": "Set the Top Panel Visibility"
     },
     {
       "name": "setHeaderRowVisibility",
-      "group": "Rendering and Layout Management",
-      "signature": "setHeaderRowVisibility(visible?: boolean, animate?: boolean)",
+      "group": "Column Management - Autosizing",
+      "signature": "setHeaderRowVisibility(visible?: boolean, animate?: boolean): void",
       "params": [
         {
           "name": "visible",
@@ -3974,16 +4025,16 @@
           "name": "animate",
           "type": "boolean",
           "optional": true,
-          "description": "- optionally enable an animation while toggling the panel"
+          "description": ""
         }
       ],
-      "returns": "",
-      "description": "Set the Header Row Visibility and optionally enable/disable animation (enabled by default)"
+      "returns": "void",
+      "description": "Set the Header Row Visibility"
     },
     {
       "name": "setColumnHeaderVisibility",
-      "group": "Rendering and Layout Management",
-      "signature": "setColumnHeaderVisibility(visible?: boolean, animate?: boolean)",
+      "group": "Column Management - Autosizing",
+      "signature": "setColumnHeaderVisibility(visible?: boolean, animate?: boolean): void",
       "params": [
         {
           "name": "visible",
@@ -3995,16 +4046,16 @@
           "name": "animate",
           "type": "boolean",
           "optional": true,
-          "description": "- optionally enable an animation while toggling the panel"
+          "description": ""
         }
       ],
-      "returns": "",
-      "description": "Set the Column Header Visibility and optionally enable/disable animation (enabled by default)"
+      "returns": "void",
+      "description": "Set the Column Header Visibility"
     },
     {
       "name": "setFooterRowVisibility",
-      "group": "Rendering and Layout Management",
-      "signature": "setFooterRowVisibility(visible?: boolean, animate?: boolean)",
+      "group": "Column Management - Autosizing",
+      "signature": "setFooterRowVisibility(visible?: boolean, animate?: boolean): void",
       "params": [
         {
           "name": "visible",
@@ -4016,16 +4067,16 @@
           "name": "animate",
           "type": "boolean",
           "optional": true,
-          "description": "- optionally enable an animation while toggling the panel"
+          "description": ""
         }
       ],
-      "returns": "",
-      "description": "Set the Footer Visibility and optionally enable/disable animation (enabled by default)"
+      "returns": "void",
+      "description": "Set the Footer Visibility"
     },
     {
       "name": "setPreHeaderPanelVisibility",
-      "group": "Rendering and Layout Management",
-      "signature": "setPreHeaderPanelVisibility(visible?: boolean, animate?: boolean)",
+      "group": "Column Management - Autosizing",
+      "signature": "setPreHeaderPanelVisibility(visible?: boolean, animate?: boolean): void",
       "params": [
         {
           "name": "visible",
@@ -4037,31 +4088,37 @@
           "name": "animate",
           "type": "boolean",
           "optional": true,
-          "description": "- optionally enable an animation while toggling the panel"
+          "description": ""
         }
       ],
-      "returns": "",
-      "description": "Set the Pre-Header Visibility and optionally enable/disable animation (enabled by default)"
+      "returns": "void",
+      "description": "Set the Pre-Header Visibility"
     },
     {
       "name": "setTopHeaderPanelVisibility",
-      "group": "Rendering and Layout Management",
-      "signature": "setTopHeaderPanelVisibility(visible?: boolean)",
+      "group": "Column Management - Autosizing",
+      "signature": "setTopHeaderPanelVisibility(visible?: boolean, animate?: boolean): void",
       "params": [
         {
           "name": "visible",
           "type": "boolean",
           "optional": true,
           "description": "- optionally set if top-header panel is visible or not"
+        },
+        {
+          "name": "animate",
+          "type": "boolean",
+          "optional": true,
+          "description": ""
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Set the Top-Header Visibility"
     },
     {
       "name": "getRowHeight",
-      "group": "Rendering and Layout Management",
-      "signature": "getRowHeight(row?: number)",
+      "group": "Column Management - Autosizing",
+      "signature": "getRowHeight(row?: number): number",
       "params": [
         {
           "name": "row",
@@ -4070,44 +4127,13 @@
           "description": "- The row index. When omitted the default row height is returned."
         }
       ],
-      "returns": "",
-      "description": "Retrieves the height of a row.\nIn variable row height mode (`enableVariableRowHeight`) and with a row index provided,\nreturns that row's individual height; otherwise returns the default row height defined\nin the grid options."
+      "returns": "number",
+      "description": "Retrieves the height of a row.\nIn variable row height mode (i.e. when `enableVariableRowHeight` is true) and with a row\nindex provided, returns that row's individual height; otherwise returns the default row\nheight defined in the grid options."
     },
     {
-      "name": "invalidate",
-      "group": "Rendering and Layout Management",
-      "signature": "invalidate()",
-      "params": [],
-      "returns": "",
-      "description": "Invalidate all grid rows and re-render the visible grid rows"
-    },
-    {
-      "name": "invalidateAllRows",
-      "group": "Rendering and Layout Management",
-      "signature": "invalidateAllRows()",
-      "params": [],
-      "returns": "",
-      "description": "Invalidate all grid rows"
-    },
-    {
-      "name": "invalidateRows",
-      "group": "Rendering and Layout Management",
-      "signature": "invalidateRows(rows: number[])",
-      "params": [
-        {
-          "name": "rows",
-          "type": "number[]",
-          "optional": false,
-          "description": ""
-        }
-      ],
-      "returns": "",
-      "description": "Invalidate a specific set of row numbers"
-    },
-    {
-      "name": "invalidateRow",
-      "group": "Rendering and Layout Management",
-      "signature": "invalidateRow(row: number)",
+      "name": "getRowTop",
+      "group": "Column Management - Autosizing",
+      "signature": "getRowTop(row: number): number",
       "params": [
         {
           "name": "row",
@@ -4116,13 +4142,59 @@
           "description": ""
         }
       ],
-      "returns": "",
+      "returns": "number",
+      "description": "Get the rendered top offset of a row, including virtual-scroll page positioning."
+    },
+    {
+      "name": "invalidate",
+      "group": "Column Management - Autosizing",
+      "signature": "invalidate(): void",
+      "params": [],
+      "returns": "void",
+      "description": "Invalidate all grid rows and re-render the visible grid rows"
+    },
+    {
+      "name": "invalidateAllRows",
+      "group": "Column Management - Autosizing",
+      "signature": "invalidateAllRows(): void",
+      "params": [],
+      "returns": "void",
+      "description": "Invalidate all grid rows"
+    },
+    {
+      "name": "invalidateRows",
+      "group": "Column Management - Autosizing",
+      "signature": "invalidateRows(rows: number[]): void",
+      "params": [
+        {
+          "name": "rows",
+          "type": "number[]",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": "void",
+      "description": "Invalidate a specific set of row numbers"
+    },
+    {
+      "name": "invalidateRow",
+      "group": "Column Management - Autosizing",
+      "signature": "invalidateRow(row: number): void",
+      "params": [
+        {
+          "name": "row",
+          "type": "number",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": "void",
       "description": "Invalidate a specific row number"
     },
     {
       "name": "updateCell",
-      "group": "Rendering and Layout Management",
-      "signature": "updateCell(row: number, cell: number)",
+      "group": "Column Management - Autosizing",
+      "signature": "updateCell(row: number, cell: number): void",
       "params": [
         {
           "name": "row",
@@ -4137,13 +4209,13 @@
           "description": "- grid cell column number"
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Update a specific cell by its row and column index"
     },
     {
       "name": "updateRow",
-      "group": "Rendering and Layout Management",
-      "signature": "updateRow(row: number)",
+      "group": "Column Management - Autosizing",
+      "signature": "updateRow(row: number): void",
       "params": [
         {
           "name": "row",
@@ -4152,61 +4224,61 @@
           "description": "- grid row number"
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Update a specific row by its row index"
     },
     {
       "name": "getViewportRowCount",
-      "group": "Rendering and Layout Management",
-      "signature": "getViewportRowCount()",
+      "group": "Column Management - Autosizing",
+      "signature": "getViewportRowCount(): number",
       "params": [],
-      "returns": "",
+      "returns": "number",
       "description": "Get the number of rows displayed in the viewport\nNote that the row count is an approximation because it is a calculated value using this formula (viewport / rowHeight = rowCount),\nthe viewport must also be displayed for this calculation to work."
     },
     {
       "name": "getViewportHeight",
-      "group": "Rendering and Layout Management",
-      "signature": "getViewportHeight()",
+      "group": "Column Management - Autosizing",
+      "signature": "getViewportHeight(): number",
       "params": [],
-      "returns": "",
+      "returns": "number",
       "description": "Calculates the vertical height available for displaying grid rows. In auto–height mode it sums panel heights\n(header, footer, top panel) plus the total row height; otherwise, it subtracts header, footer, pre–header,\ntop–header heights and container paddings from the container’s computed height. It also computes and stores\nthe number of visible rows."
     },
     {
       "name": "getViewportWidth",
-      "group": "Rendering and Layout Management",
-      "signature": "getViewportWidth()",
+      "group": "Column Management - Autosizing",
+      "signature": "getViewportWidth(): number",
       "params": [],
-      "returns": "",
+      "returns": "number",
       "description": "Returns the width of the grid’s viewport by measuring the inner width of the grid container (using a utility function).\nIt falls back to a devMode–specified width if necessary."
     },
     {
       "name": "resizeCanvas",
-      "group": "Rendering and Layout Management",
-      "signature": "resizeCanvas()",
+      "group": "Column Management - Autosizing",
+      "signature": "resizeCanvas(): void",
       "params": [],
-      "returns": "",
-      "description": "Execute a Resize of the Grid Canvas.\n\nRecalculates the grid’s canvas, pane, and viewport dimensions based on the current container size,\nfrozen rows/columns settings, and auto–height configuration. It then applies these dimensions to various DOM elements\n(panes, viewports, canvases) and updates the scrollbar dimensions.\nFinally, it updates the row count, handles scrolling, and forces a re–render."
+      "returns": "void",
+      "description": "Execute a Resize of the Grid Canvas.\n\nRecalculates the grid’s canvas, pane, and viewport dimensions based on the current container size,\ndocking rows/columns settings, and auto–height configuration. It then applies these dimensions to the viewport,\ndocking scroller, and canvas elements and updates the scrollbar dimensions.\nFinally, it updates the row count, handles scrolling, and forces a re–render."
     },
     {
       "name": "invalidateRowHeights",
-      "group": "Rendering and Layout Management",
-      "signature": "invalidateRowHeights()",
+      "group": "Column Management - Autosizing",
+      "signature": "invalidateRowHeights(): void",
       "params": [],
-      "returns": "",
+      "returns": "void",
       "description": "Invalidate all row heights (variable row height mode) and fully re-render the grid.\nCall this after the values driving `rowHeightProvider` (or, with the default provider, the\nitem metadata heights) have changed without a change in row count; the row position index\nis then rebuilt with the new heights."
     },
     {
       "name": "updateRowCount",
-      "group": "Rendering and Layout Management",
-      "signature": "updateRowCount()",
+      "group": "Column Management - Autosizing",
+      "signature": "updateRowCount(): void",
       "params": [],
-      "returns": "",
+      "returns": "void",
       "description": "Update the dataset row count"
     },
     {
       "name": "getViewport",
-      "group": "Rendering and Layout Management",
-      "signature": "getViewport(viewportTop?: number, viewportLeft?: number)",
+      "group": "Column Management - Autosizing",
+      "signature": "getViewport(viewportTop?: number, viewportLeft?: number): CellViewportRange",
       "params": [
         {
           "name": "viewportTop",
@@ -4221,13 +4293,13 @@
           "description": ""
         }
       ],
-      "returns": "",
+      "returns": "CellViewportRange",
       "description": ""
     },
     {
       "name": "getVisibleRange",
-      "group": "Rendering and Layout Management",
-      "signature": "getVisibleRange(viewportTop?: number, viewportLeft?: number)",
+      "group": "Column Management - Autosizing",
+      "signature": "getVisibleRange(viewportTop?: number, viewportLeft?: number): CellViewportRange",
       "params": [
         {
           "name": "viewportTop",
@@ -4242,13 +4314,13 @@
           "description": "- The left scroll position."
         }
       ],
-      "returns": "",
+      "returns": "CellViewportRange",
       "description": "Returns an object with the top and bottom row indices that are visible in the viewport, as well\nas the left and right pixel boundaries.\nIt uses the current (or provided) scroll positions and viewport dimensions."
     },
     {
       "name": "getRenderedRange",
-      "group": "Rendering and Layout Management",
-      "signature": "getRenderedRange(viewportTop?: number, viewportLeft?: number)",
+      "group": "Column Management - Autosizing",
+      "signature": "getRenderedRange(viewportTop?: number, viewportLeft?: number): CellViewportRange",
       "params": [
         {
           "name": "viewportTop",
@@ -4263,12 +4335,12 @@
           "description": "- The left scroll position."
         }
       ],
-      "returns": "",
+      "returns": "CellViewportRange",
       "description": "Computes the range of rows (and horizontal pixel boundaries) that should be rendered,\nincluding an additional buffer (based on row height and a minimum buffer) determined by\nthe current vertical scroll direction.\nThis range is used to decide which rows and cells to render."
     },
     {
       "name": "getRowCache",
-      "group": "Rendering and Layout Management",
+      "group": "Column Management - Autosizing",
       "signature": "getRowCache(): Record<number, RowCaching>",
       "params": [],
       "returns": "Record<number, RowCaching>",
@@ -4276,31 +4348,16 @@
     },
     {
       "name": "render",
-      "group": "Rendering and Layout Management",
-      "signature": "render()",
+      "group": "Column Management - Autosizing",
+      "signature": "render(): void",
       "params": [],
-      "returns": "",
-      "description": "(re)Render the grid\n\nMain rendering method that first dequeues any pending scroll throttling, then obtains the visible and rendered ranges.\nIt removes rows no longer visible, calls cleanUpAndRenderCells and renderRows to render missing cells and new rows,\nand, if frozen rows are present, renders them separately. It then sets post–processing boundaries, starts post–processing,\nupdates scroll positions, and triggers the onRendered event."
-    },
-    {
-      "name": "getFrozenRowOffset",
-      "group": "Rendering and Layout Management",
-      "signature": "getFrozenRowOffset(row: number)",
-      "params": [
-        {
-          "name": "row",
-          "type": "number",
-          "optional": false,
-          "description": "- grid row number"
-        }
-      ],
-      "returns": "",
-      "description": "Get frozen (pinned) row offset\n\nReturns the vertical pixel offset to apply for frozen rows.\nDepending on whether frozen rows are pinned at the bottom or top and based on grid height,\nit returns either a fixed frozen rows height or a calculated offset."
+      "returns": "void",
+      "description": "(re)Render the grid\n\nMain rendering method that first dequeues any pending scroll throttling, then obtains the visible and rendered ranges.\nIt removes rows no longer visible, calls cleanUpAndRenderCells and renderRows to render missing cells and new rows,\nand, if pinned rows are present, renders their docking regions. It then sets post–processing boundaries, starts post–processing,\nupdates scroll positions, and triggers the onRendered event."
     },
     {
       "name": "scrollTo",
-      "group": "Scrolling and Virtualisation",
-      "signature": "scrollTo(y: number)",
+      "group": "Column Management - Autosizing",
+      "signature": "scrollTo(y: number): void",
       "params": [
         {
           "name": "y",
@@ -4309,13 +4366,13 @@
           "description": ""
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Scroll to a Y position in the grid (clamped to valid bounds)\n\nUpdates internal offsets, recalculates the visible range, cleans up rows outside the viewport,\nupdates row positions, and triggers the onViewportChanged event."
     },
     {
       "name": "scrollCellIntoView",
-      "group": "Scrolling and Virtualisation",
-      "signature": "scrollCellIntoView(row: number, cell: number, doPaging?: boolean)",
+      "group": "Column Management - Autosizing",
+      "signature": "scrollCellIntoView(row: number, cell: number, doPaging?: boolean): void",
       "params": [
         {
           "name": "row",
@@ -4336,13 +4393,13 @@
           "description": ""
         }
       ],
-      "returns": "",
-      "description": "Scroll to a specific cell and make it into the view\n\nFirst calls scrollRowIntoView for the row. If the cell is not in a frozen column,\ncalculates the cell’s colspan and then calls internalScrollColumnIntoView with the\ncell’s left and right boundaries."
+      "returns": "void",
+      "description": "Scroll to a specific cell and make it into the view\n\nFirst calls scrollRowIntoView for the row. If the cell is not docked,\ncalculates the cell’s colspan and then calls internalScrollColumnIntoView with the\ncell’s left and right boundaries."
     },
     {
       "name": "scrollColumnIntoView",
-      "group": "Scrolling and Virtualisation",
-      "signature": "scrollColumnIntoView(cell: number)",
+      "group": "Column Management - Autosizing",
+      "signature": "scrollColumnIntoView(cell: number): void",
       "params": [
         {
           "name": "cell",
@@ -4351,13 +4408,13 @@
           "description": "- cell column number"
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Scroll to a specific column and show it into the viewport"
     },
     {
       "name": "updatePagingStatusFromView",
-      "group": "Scrolling and Virtualisation",
-      "signature": "updatePagingStatusFromView(pagingInfo: Pick<PagingInfo, 'pageSize' | 'pageNum' | 'totalPages'>)",
+      "group": "Column Management - Autosizing",
+      "signature": "updatePagingStatusFromView(pagingInfo: Pick<PagingInfo, 'pageSize' | 'pageNum' | 'totalPages'>): void",
       "params": [
         {
           "name": "pagingInfo",
@@ -4366,12 +4423,12 @@
           "description": ""
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Update paging information status from the View"
     },
     {
       "name": "getRowSpanColumnIntersects",
-      "group": "Scrolling and Virtualisation",
+      "group": "Column Management - Autosizing",
       "signature": "getRowSpanColumnIntersects(row: number): number[]",
       "params": [
         {
@@ -4386,7 +4443,7 @@
     },
     {
       "name": "getRowSpanIntersect",
-      "group": "Scrolling and Virtualisation",
+      "group": "Column Management - Autosizing",
       "signature": "getRowSpanIntersect(row: number): number | null",
       "params": [
         {
@@ -4401,8 +4458,8 @@
     },
     {
       "name": "getParentRowSpanByCell",
-      "group": "Scrolling and Virtualisation",
-      "signature": "getParentRowSpanByCell(row: number, cell: number, excludeParentRow?): { start: number; end: number; range: string; } | null",
+      "group": "Column Management - Autosizing",
+      "signature": "getParentRowSpanByCell(row: number, cell: number, excludeParentRow?): { start: number; end: number; range: string } | null",
       "params": [
         {
           "name": "row",
@@ -4423,21 +4480,21 @@
           "description": "- should we exclude the parent who initiated the rowspan in the search (defaults to true)?"
         }
       ],
-      "returns": "{ start: number; end: number; range: string; } | null",
+      "returns": "{ start: number; end: number; range: string } | null",
       "description": "Returns the parent rowspan details when child cell are spanned from a rowspan or `null` when it's not spanned.\nBy default it will exclude the parent cell that holds the rowspan, and return `null`, that initiated the rowspan unless the 3rd argument is disabled.\nThe exclusion is helpful to find out when we're dealing with a child cell of a rowspan"
     },
     {
       "name": "remapAllColumnsRowSpan",
-      "group": "Scrolling and Virtualisation",
-      "signature": "remapAllColumnsRowSpan()",
+      "group": "Column Management - Autosizing",
+      "signature": "remapAllColumnsRowSpan(): void",
       "params": [],
-      "returns": "",
+      "returns": "void",
       "description": "Remap all the rowspan metadata by looping through all dataset rows and keep a cache of rowspan by column indexes\nFor example:\n 1- if 2nd row of the 1st column has a metadata.rowspan of 3 then the cache will be: `{ 0: '1:4' }`\n 2- if 2nd row if the 1st column has a metadata.rowspan of 3 AND a colspan of 2 then the cache will be: `{ 0: '1:4', 1: '1:4' }`"
     },
     {
       "name": "scrollRowIntoView",
-      "group": "Scrolling and Virtualisation",
-      "signature": "scrollRowIntoView(row: number, doPaging?: boolean)",
+      "group": "Column Management - Autosizing",
+      "signature": "scrollRowIntoView(row: number, doPaging?: boolean): void",
       "params": [
         {
           "name": "row",
@@ -4452,13 +4509,13 @@
           "description": "- scroll when pagination is enabled"
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Scroll to a specific row and make it into the view"
     },
     {
       "name": "scrollRowToTop",
-      "group": "Scrolling and Virtualisation",
-      "signature": "scrollRowToTop(row: number)",
+      "group": "Column Management - Autosizing",
+      "signature": "scrollRowToTop(row: number): void",
       "params": [
         {
           "name": "row",
@@ -4467,45 +4524,45 @@
           "description": "- grid row number"
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Scroll to the top row and make it into the view"
     },
     {
       "name": "navigatePageDown",
-      "group": "Scrolling and Virtualisation",
-      "signature": "navigatePageDown()",
+      "group": "Column Management - Autosizing",
+      "signature": "navigatePageDown(): void",
       "params": [],
-      "returns": "",
+      "returns": "void",
       "description": "Navigate (scroll) by a page down"
     },
     {
       "name": "navigatePageUp",
-      "group": "Scrolling and Virtualisation",
-      "signature": "navigatePageUp()",
+      "group": "Column Management - Autosizing",
+      "signature": "navigatePageUp(): void",
       "params": [],
-      "returns": "",
+      "returns": "void",
       "description": "Navigate (scroll) by a page up"
     },
     {
       "name": "navigateTop",
-      "group": "Scrolling and Virtualisation",
-      "signature": "navigateTop()",
+      "group": "Column Management - Autosizing",
+      "signature": "navigateTop(): void",
       "params": [],
-      "returns": "",
+      "returns": "void",
       "description": "Navigate to the top of the grid"
     },
     {
       "name": "navigateBottom",
-      "group": "Scrolling and Virtualisation",
-      "signature": "navigateBottom()",
+      "group": "Column Management - Autosizing",
+      "signature": "navigateBottom(): void",
       "params": [],
-      "returns": "",
+      "returns": "void",
       "description": "Navigate to the bottom of the grid"
     },
     {
       "name": "navigateToRow",
-      "group": "Scrolling and Virtualisation",
-      "signature": "navigateToRow(row: number)",
+      "group": "Column Management - Autosizing",
+      "signature": "navigateToRow(row: number): boolean",
       "params": [
         {
           "name": "row",
@@ -4514,13 +4571,13 @@
           "description": "- The row index to navigate to."
         }
       ],
-      "returns": "",
+      "returns": "boolean",
       "description": "Navigates to a specified row, ensuring it is visible and selecting an active cell if applicable.\nAdjusts the scroll position and updates the active cell based on cell navigation rules."
     },
     {
       "name": "applyFormatResultToCellNode",
-      "group": "Cell and Row Post-Processing and CSS Styling",
-      "signature": "applyFormatResultToCellNode(formatterResult: FormatterResultWithHtml | FormatterResultWithText | string | HTMLElement | DocumentFragment, cellNode: HTMLDivElement, suppressRemove?: boolean)",
+      "group": "Column Management - Autosizing",
+      "signature": "applyFormatResultToCellNode(formatterResult: FormatterResultWithHtml | FormatterResultWithText | string | HTMLElement | DocumentFragment, cellNode: HTMLElement, suppressRemove?: boolean): void",
       "params": [
         {
           "name": "formatterResult",
@@ -4530,7 +4587,7 @@
         },
         {
           "name": "cellNode",
-          "type": "HTMLDivElement",
+          "type": "HTMLElement",
           "optional": false,
           "description": ""
         },
@@ -4541,13 +4598,13 @@
           "description": ""
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Apply a Formatter Result to a Cell DOM Node\n\nIf the formatter result is not an object, it is applied directly as HTML/text;\notherwise, it extracts the content (from a property such as “html” or “text”) and applies it.\nAdditionally, it conditionally removes or adds CSS classes and sets a tooltip on the cell."
     },
     {
       "name": "addCellCssStyles",
-      "group": "Cell and Row Post-Processing and CSS Styling",
-      "signature": "addCellCssStyles(key: string, hash: CssStyleHash)",
+      "group": "Column Management - Autosizing",
+      "signature": "addCellCssStyles(key: string, hash: CssStyleHash): void",
       "params": [
         {
           "name": "key",
@@ -4562,13 +4619,13 @@
           "description": "A hash of additional cell CSS classes keyed by row number and then by column id. Multiple CSS classes can be specified and separated by space."
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Adds an \"overlay\" of CSS classes to cell DOM elements. SlickGrid can have many such overlays associated with different keys and they are frequently used by plugins. For example, SlickGrid uses this method internally to decorate selected cells with selectedCellCssClass (see options)."
     },
     {
       "name": "removeCellCssStyles",
-      "group": "Cell and Row Post-Processing and CSS Styling",
-      "signature": "removeCellCssStyles(key: string)",
+      "group": "Column Management - Autosizing",
+      "signature": "removeCellCssStyles(key: string): void",
       "params": [
         {
           "name": "key",
@@ -4577,13 +4634,13 @@
           "description": "A string key."
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Removes an \"overlay\" of CSS classes from cell DOM elements. See setCellCssStyles for more."
     },
     {
       "name": "setCellCssStyles",
-      "group": "Cell and Row Post-Processing and CSS Styling",
-      "signature": "setCellCssStyles(key: string, hash: CssStyleHash)",
+      "group": "Column Management - Autosizing",
+      "signature": "setCellCssStyles(key: string, hash: CssStyleHash): void",
       "params": [
         {
           "name": "key",
@@ -4598,12 +4655,12 @@
           "description": "A hash of additional cell CSS classes keyed by row number and then by column id. Multiple CSS classes can be specified and separated by space."
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Sets CSS classes to specific grid cells by calling removeCellCssStyles(key) followed by addCellCssStyles(key, hash). key is name for this set of styles so you can reference it later - to modify it or remove it, for example. hash is a per-row-index, per-column-name nested hash of CSS classes to apply.\nSuppose you have a grid with columns:\n[\"login\", \"name\", \"birthday\", \"age\", \"likes_icecream\", \"favorite_cake\"]\n...and you'd like to highlight the \"birthday\" and \"age\" columns for people whose birthday is today, in this case, rows at index 0 and 9. (The first and tenth row in the grid)."
     },
     {
       "name": "getCellCssStyles",
-      "group": "Cell and Row Post-Processing and CSS Styling",
+      "group": "Column Management - Autosizing",
       "signature": "getCellCssStyles(key: string): CssStyleHash",
       "params": [
         {
@@ -4618,8 +4675,8 @@
     },
     {
       "name": "flashCell",
-      "group": "Cell and Row Post-Processing and CSS Styling",
-      "signature": "flashCell(row: number, cell: number, speed?)",
+      "group": "Column Management - Autosizing",
+      "signature": "flashCell(row: number, cell: number, speed?): void",
       "params": [
         {
           "name": "row",
@@ -4640,13 +4697,13 @@
           "description": "(optional) - The milliseconds delay between the toggling calls. Defaults to 250 ms."
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Flashes the cell twice by toggling the CSS class 4 times."
     },
     {
       "name": "highlightRow",
-      "group": "Cell and Row Post-Processing and CSS Styling",
-      "signature": "highlightRow(row: number, duration?: number)",
+      "group": "Column Management - Autosizing",
+      "signature": "highlightRow(row: number, duration?: number): void",
       "params": [
         {
           "name": "row",
@@ -4661,44 +4718,44 @@
           "description": "- duration (ms), defaults to 400ms"
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Highlight a row for a certain duration (ms) of time."
     },
     {
       "name": "getUID",
-      "group": "Shared Utilities and Accessors",
-      "signature": "getUID()",
+      "group": "Column Management - Autosizing",
+      "signature": "getUID(): string",
       "params": [],
-      "returns": "",
+      "returns": "string",
       "description": "Get grid unique identifier"
     },
     {
       "name": "getHeaderColumnWidthDiff",
-      "group": "Shared Utilities and Accessors",
-      "signature": "getHeaderColumnWidthDiff()",
+      "group": "Column Management - Autosizing",
+      "signature": "getHeaderColumnWidthDiff(): number",
       "params": [],
-      "returns": "",
+      "returns": "number",
       "description": "Get Header Column Width Difference in pixel"
     },
     {
       "name": "getScrollbarDimensions",
-      "group": "Shared Utilities and Accessors",
-      "signature": "getScrollbarDimensions()",
+      "group": "Column Management - Autosizing",
+      "signature": "getScrollbarDimensions(): { height: number; width: number } | undefined",
       "params": [],
-      "returns": "",
+      "returns": "{ height: number; width: number } | undefined",
       "description": "Get scrollbar dimensions"
     },
     {
       "name": "getDisplayedScrollbarDimensions",
-      "group": "Shared Utilities and Accessors",
-      "signature": "getDisplayedScrollbarDimensions()",
+      "group": "Column Management - Autosizing",
+      "signature": "getDisplayedScrollbarDimensions(): { width: number; height: number }",
       "params": [],
-      "returns": "",
+      "returns": "{ width: number; height: number }",
       "description": "Returns an object with width and height of scrollbars currently displayed in the viewport (zero if not visible)."
     },
     {
       "name": "getAbsoluteColumnMinWidth",
-      "group": "Shared Utilities and Accessors",
+      "group": "Column Management - Autosizing",
       "signature": "getAbsoluteColumnMinWidth(): number",
       "params": [],
       "returns": "number",
@@ -4706,7 +4763,7 @@
     },
     {
       "name": "arrayEquals",
-      "group": "Shared Utilities and Accessors",
+      "group": "Column Management - Autosizing",
       "signature": "arrayEquals(arr1: Array<T>, arr2: Array<T>): boolean",
       "params": [
         {
@@ -4723,11 +4780,11 @@
         }
       ],
       "returns": "boolean",
-      "description": ""
+      "description": "Compares two arrays by length and strict element equality."
     },
     {
       "name": "scrollToX",
-      "group": "Shared Utilities and Accessors",
+      "group": "Column Management - Autosizing",
       "signature": "scrollToX(x: number): void",
       "params": [
         {
@@ -4742,7 +4799,7 @@
     },
     {
       "name": "getPubSubService",
-      "group": "Shared Utilities and Accessors",
+      "group": "Column Management - Autosizing",
       "signature": "getPubSubService(): BasePubSub | undefined",
       "params": [],
       "returns": "BasePubSub | undefined",
@@ -4750,8 +4807,8 @@
     },
     {
       "name": "getCellFromPoint",
-      "group": "Shared Utilities and Accessors",
-      "signature": "getCellFromPoint(x: number, y: number)",
+      "group": "Column Management - Autosizing",
+      "signature": "getCellFromPoint(x: number, y: number): { row: number; cell: number }",
       "params": [
         {
           "name": "x",
@@ -4766,13 +4823,13 @@
           "description": "A y coordinate."
         }
       ],
-      "returns": "",
-      "description": "Returns row and cell indexes by providing x,y coordinates.\nCoordinates are relative to the top left corner of the grid beginning with the first row (not including the column headers)."
+      "returns": "{ row: number; cell: number }",
+      "description": "Returns row and cell indexes by providing x,y coordinates.\nCoordinates are relative to the top left corner of the grid beginning with the first row (not\nincluding the column headers). In a right-to-left grid the first column sits at the right, so\nan x measured from the left corner counts back from the last column."
     },
     {
       "name": "getPluginByName",
-      "group": "Shared Utilities and Accessors",
-      "signature": "getPluginByName(name: string)",
+      "group": "Column Management - Autosizing",
+      "signature": "getPluginByName(name: string): P | undefined",
       "params": [
         {
           "name": "name",
@@ -4781,21 +4838,21 @@
           "description": ""
         }
       ],
-      "returns": "",
+      "returns": "P | undefined",
       "description": "Get a Plugin (addon) by its name"
     },
     {
       "name": "getContainerNode",
-      "group": "Shared Utilities and Accessors",
-      "signature": "getContainerNode()",
+      "group": "Column Management - Autosizing",
+      "signature": "getContainerNode(): HTMLElement",
       "params": [],
-      "returns": "",
+      "returns": "HTMLElement",
       "description": "Get Grid Canvas Node DOM Element"
     },
     {
       "name": "getCellHeight",
-      "group": "Shared Utilities and Accessors",
-      "signature": "getCellHeight(row: number, rowspan: number)",
+      "group": "Column Management - Autosizing",
+      "signature": "getCellHeight(row: number, rowspan: number): number",
       "params": [
         {
           "name": "row",
@@ -4810,13 +4867,13 @@
           "description": "- The number of rows the cell spans."
         }
       ],
-      "returns": "",
+      "returns": "number",
       "description": "Computes the height of a cell, taking into account row span if applicable."
     },
     {
       "name": "getCellNodeBox",
-      "group": "Shared Utilities and Accessors",
-      "signature": "getCellNodeBox(row: number, cell: number)",
+      "group": "Column Management - Autosizing",
+      "signature": "getCellNodeBox(row: number, cell: number): { top: number; left: number; bottom: number; right: number } | null",
       "params": [
         {
           "name": "row",
@@ -4831,53 +4888,53 @@
           "description": "- A column number."
         }
       ],
-      "returns": "",
+      "returns": "{ top: number; left: number; bottom: number; right: number } | null",
       "description": "Returns an object representing information about a cell's position. All coordinates are absolute and take into consideration the visibility and scrolling position of all ancestors."
     },
     {
       "name": "getActiveCellPosition",
-      "group": "Shared Utilities and Accessors",
-      "signature": "getActiveCellPosition()",
+      "group": "Column Management - Autosizing",
+      "signature": "getActiveCellPosition(): ElementPosition",
       "params": [],
-      "returns": "",
+      "returns": "ElementPosition",
       "description": "Returns an object representing information about the active cell's position. All coordinates are absolute and take into consideration the visibility and scrolling position of all ancestors."
     },
     {
       "name": "getGridPosition",
-      "group": "Shared Utilities and Accessors",
-      "signature": "getGridPosition()",
+      "group": "Column Management - Autosizing",
+      "signature": "getGridPosition(): ElementPosition",
       "params": [],
-      "returns": "",
+      "returns": "ElementPosition",
       "description": "Get the Grid Position"
     },
     {
       "name": "getCellEditor",
-      "group": "Shared Utilities and Accessors",
-      "signature": "getCellEditor()",
+      "group": "Column Management - Autosizing",
+      "signature": "getCellEditor(): Editor | null",
       "params": [],
-      "returns": "",
+      "returns": "Editor | null",
       "description": "Returns the active cell editor. If there is no actively edited cell, null is returned."
     },
     {
       "name": "getActiveCell",
-      "group": "Shared Utilities and Accessors",
-      "signature": "getActiveCell()",
+      "group": "Column Management - Autosizing",
+      "signature": "getActiveCell(): { row: number; cell: number } | null",
       "params": [],
-      "returns": "",
+      "returns": "{ row: number; cell: number } | null",
       "description": "Returns an object representing the coordinates of the currently active cell:"
     },
     {
       "name": "getActiveCellNode",
-      "group": "Shared Utilities and Accessors",
-      "signature": "getActiveCellNode()",
+      "group": "Column Management - Autosizing",
+      "signature": "getActiveCellNode(): HTMLDivElement | null",
       "params": [],
-      "returns": "",
+      "returns": "HTMLDivElement | null",
       "description": "Returns the DOM element containing the currently active cell. If no cell is active, null is returned."
     },
     {
       "name": "sanitizeHtmlString",
-      "group": "Shared Utilities and Accessors",
-      "signature": "sanitizeHtmlString(dirtyHtml: string, suppressLogging?: boolean)",
+      "group": "Column Management - Autosizing",
+      "signature": "sanitizeHtmlString(dirtyHtml: string, suppressLogging?: boolean): string",
       "params": [
         {
           "name": "dirtyHtml",
@@ -4892,13 +4949,13 @@
           "description": ""
         }
       ],
-      "returns": "",
+      "returns": "string",
       "description": "html sanitizer to avoid scripting attack"
     },
     {
       "name": "findSpanStartingCell",
-      "group": "Navigation Helpers",
-      "signature": "findSpanStartingCell(row: number, cell: number)",
+      "group": "Column Management - Autosizing",
+      "signature": "findSpanStartingCell(row: number, cell: number): {\n    cell: number;\n    row: number;\n  }",
       "params": [
         {
           "name": "row",
@@ -4913,76 +4970,76 @@
           "description": "- The column index."
         }
       ],
-      "returns": "",
+      "returns": "{\n    cell: number;\n    row: number;\n  }",
       "description": "From any row/cell indexes that might have colspan/rowspan, find its starting indexes\nFor example, if we start at 0,0 and we have colspan/rowspan of 4 for both and our indexes is row:2,cell:3\nthen our starting row/cell is 0,0. If a cell has no spanning at all then row/cell output is same as input"
     },
     {
       "name": "navigateRight",
-      "group": "Navigation Helpers",
-      "signature": "navigateRight()",
+      "group": "Column Management - Autosizing",
+      "signature": "navigateRight(): boolean | undefined",
       "params": [],
-      "returns": "",
+      "returns": "boolean | undefined",
       "description": "Switches the active cell one cell right skipping unselectable cells. Unline navigateNext, navigateRight stops at the last cell of the row. Returns a boolean saying whether it was able to complete or not."
     },
     {
       "name": "navigateLeft",
-      "group": "Navigation Helpers",
-      "signature": "navigateLeft()",
+      "group": "Column Management - Autosizing",
+      "signature": "navigateLeft(): boolean | undefined",
       "params": [],
-      "returns": "",
+      "returns": "boolean | undefined",
       "description": "Switches the active cell one cell left skipping unselectable cells. Unline navigatePrev, navigateLeft stops at the first cell of the row. Returns a boolean saying whether it was able to complete or not."
     },
     {
       "name": "navigateDown",
-      "group": "Navigation Helpers",
-      "signature": "navigateDown()",
+      "group": "Column Management - Autosizing",
+      "signature": "navigateDown(): boolean | undefined",
       "params": [],
-      "returns": "",
+      "returns": "boolean | undefined",
       "description": "Switches the active cell one row down skipping unselectable cells. Returns a boolean saying whether it was able to complete or not."
     },
     {
       "name": "navigateUp",
-      "group": "Navigation Helpers",
-      "signature": "navigateUp()",
+      "group": "Column Management - Autosizing",
+      "signature": "navigateUp(): boolean | undefined",
       "params": [],
-      "returns": "",
+      "returns": "boolean | undefined",
       "description": "Switches the active cell one row up skipping unselectable cells. Returns a boolean saying whether it was able to complete or not."
     },
     {
       "name": "navigateNext",
-      "group": "Navigation Helpers",
-      "signature": "navigateNext()",
+      "group": "Column Management - Autosizing",
+      "signature": "navigateNext(): boolean | undefined",
       "params": [],
-      "returns": "",
+      "returns": "boolean | undefined",
       "description": "Tabs over active cell to the next selectable cell. Returns a boolean saying whether it was able to complete or not."
     },
     {
       "name": "navigatePrev",
-      "group": "Navigation Helpers",
-      "signature": "navigatePrev()",
+      "group": "Column Management - Autosizing",
+      "signature": "navigatePrev(): boolean | undefined",
       "params": [],
-      "returns": "",
+      "returns": "boolean | undefined",
       "description": "Tabs over active cell to the previous selectable cell. Returns a boolean saying whether it was able to complete or not."
     },
     {
       "name": "navigateRowStart",
-      "group": "Navigation Helpers",
-      "signature": "navigateRowStart()",
+      "group": "Column Management - Autosizing",
+      "signature": "navigateRowStart(): boolean | undefined",
       "params": [],
-      "returns": "",
+      "returns": "boolean | undefined",
       "description": "Navigate to the start row in the grid"
     },
     {
       "name": "navigateRowEnd",
-      "group": "Navigation Helpers",
-      "signature": "navigateRowEnd()",
+      "group": "Column Management - Autosizing",
+      "signature": "navigateRowEnd(): boolean | undefined",
       "params": [],
-      "returns": "",
+      "returns": "boolean | undefined",
       "description": "Navigate to the end row in the grid"
     },
     {
       "name": "navigateTopStart",
-      "group": "Navigation Helpers",
+      "group": "Column Management - Autosizing",
       "signature": "navigateTopStart(): boolean | undefined",
       "params": [],
       "returns": "boolean | undefined",
@@ -4990,7 +5047,7 @@
     },
     {
       "name": "navigateBottomEnd",
-      "group": "Navigation Helpers",
+      "group": "Column Management - Autosizing",
       "signature": "navigateBottomEnd(): boolean | undefined",
       "params": [],
       "returns": "boolean | undefined",
@@ -4998,7 +5055,7 @@
     },
     {
       "name": "getCellNode",
-      "group": "Navigation Helpers",
+      "group": "Column Management - Autosizing",
       "signature": "getCellNode(row: number, cell: number): HTMLDivElement | null",
       "params": [
         {
@@ -5019,8 +5076,8 @@
     },
     {
       "name": "setActiveCell",
-      "group": "Navigation Helpers",
-      "signature": "setActiveCell(row: number, cell: number, opt_editMode?: boolean, preClickModeOn?: boolean, suppressActiveCellChangedEvent?: boolean)",
+      "group": "Column Management - Autosizing",
+      "signature": "setActiveCell(row: number, cell: number, opt_editMode?: boolean, preClickModeOn?: boolean, suppressActiveCellChangedEvent?: boolean): void",
       "params": [
         {
           "name": "row",
@@ -5053,13 +5110,13 @@
           "description": "Are we suppressing Active Cell Changed Event (defaults to false)"
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Sets an active cell."
     },
     {
       "name": "setActiveRow",
-      "group": "Navigation Helpers",
-      "signature": "setActiveRow(row: number, cell?: number, suppressScrollIntoView?: boolean)",
+      "group": "Column Management - Autosizing",
+      "signature": "setActiveRow(row: number, cell?: number, suppressScrollIntoView?: boolean): void",
       "params": [
         {
           "name": "row",
@@ -5080,13 +5137,13 @@
           "description": "- optionally suppress the ScrollIntoView that happens by default (defaults to false)"
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Sets an active cell."
     },
     {
       "name": "canCellBeActive",
-      "group": "Navigation Helpers",
-      "signature": "canCellBeActive(row: number, cell: number)",
+      "group": "Column Management - Autosizing",
+      "signature": "canCellBeActive(row: number, cell: number): boolean",
       "params": [
         {
           "name": "row",
@@ -5101,13 +5158,13 @@
           "description": ""
         }
       ],
-      "returns": "",
+      "returns": "boolean",
       "description": "Returns true if you can click on a given cell and make it the active focus."
     },
     {
       "name": "canCellBeSelected",
-      "group": "Navigation Helpers",
-      "signature": "canCellBeSelected(row: number, cell: number)",
+      "group": "Column Management - Autosizing",
+      "signature": "canCellBeSelected(row: number, cell: number): boolean",
       "params": [
         {
           "name": "row",
@@ -5122,13 +5179,13 @@
           "description": ""
         }
       ],
-      "returns": "",
+      "returns": "boolean",
       "description": "Returns true if selecting the row causes this particular cell to have the selectedCellCssClass applied to it. A cell can be selected if it exists and if it isn't on an empty / \"Add New\" row and if it is not marked as \"unselectable\" in the column definition."
     },
     {
       "name": "gotoCell",
-      "group": "Navigation Helpers",
-      "signature": "gotoCell(row: number, cell: number, forceEdit?: boolean, e?: Event | SlickEvent_)",
+      "group": "Column Management - Autosizing",
+      "signature": "gotoCell(row: number, cell: number, forceEdit?: boolean, e?: Event | SlickEvent_): void",
       "params": [
         {
           "name": "row",
@@ -5155,8 +5212,135 @@
           "description": ""
         }
       ],
-      "returns": "",
+      "returns": "void",
       "description": "Accepts a row integer and a cell integer, scrolling the view to the row where row is its row index, and cell is its cell index. Optionally accepts a forceEdit boolean which, if true, will attempt to initiate the edit dialogue for the field in the specified cell.\nUnlike setActiveCell, this scrolls the row into the viewport and sets the keyboard focus."
+    },
+    {
+      "name": "restoreCssFromHiddenInit",
+      "group": "Column Management - Autosizing",
+      "signature": "restoreCssFromHiddenInit(): void",
+      "params": [],
+      "returns": "void",
+      "description": "Restores the original CSS properties for the container and its hidden\nancestors that were modified by cacheCssForHiddenInit.\nThis ensures that after initial measurements the DOM elements revert\nto their original style settings."
+    },
+    {
+      "name": "validateColumnPinning",
+      "group": "Column Management - Autosizing",
+      "signature": "validateColumnPinning(columnId?: number | string, forceAlert?, columns?: C[]): boolean",
+      "params": [
+        {
+          "name": "columnId",
+          "type": "number | string",
+          "optional": true,
+          "description": "column id"
+        },
+        {
+          "name": "forceAlert",
+          "type": "",
+          "optional": true,
+          "description": "tri-state flag to alert when pinning is invalid"
+        },
+        {
+          "name": "columns",
+          "type": "C[]",
+          "optional": true,
+          "description": ""
+        }
+      ],
+      "returns": "boolean",
+      "description": "Validate that a pinning change leaves at least one visible center column."
+    },
+    {
+      "name": "triggerEvent",
+      "group": "Column Management - Autosizing",
+      "signature": "triggerEvent(evt: SlickEvent_, args?: ArgType, e?: Event | SlickEventData_): SlickEventData_<any>",
+      "params": [
+        {
+          "name": "evt",
+          "type": "SlickEvent_",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "args",
+          "type": "ArgType",
+          "optional": true,
+          "description": ""
+        },
+        {
+          "name": "e",
+          "type": "Event | SlickEventData_",
+          "optional": true,
+          "description": ""
+        }
+      ],
+      "returns": "SlickEventData_<any>",
+      "description": "Triggers a SlickGrid event and returns its event-data wrapper."
+    },
+    {
+      "name": "getPinnedColumns",
+      "group": "Column Management - Autosizing",
+      "signature": "getPinnedColumns(side?: DockingSide): C[]",
+      "params": [
+        {
+          "name": "side",
+          "type": "DockingSide",
+          "optional": true,
+          "description": ""
+        }
+      ],
+      "returns": "C[]",
+      "description": "Return visible columns currently docked at an edge, including active sticky columns."
+    },
+    {
+      "name": "setColumnPinning",
+      "group": "Column Management - Autosizing",
+      "signature": "setColumnPinning(columnId: number | string, pinned: DockingSide | null): void",
+      "params": [
+        {
+          "name": "columnId",
+          "type": "number | string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "pinned",
+          "type": "DockingSide | null",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": "void",
+      "description": "Permanently pin/unpin a column and rebuild the three-region row layout."
+    },
+    {
+      "name": "setColumnStickiness",
+      "group": "Column Management - Autosizing",
+      "signature": "setColumnStickiness(columnId: number | string, sticky: DockingSide | 'both' | boolean): void",
+      "params": [
+        {
+          "name": "columnId",
+          "type": "number | string",
+          "optional": false,
+          "description": ""
+        },
+        {
+          "name": "sticky",
+          "type": "DockingSide | 'both' | boolean",
+          "optional": false,
+          "description": ""
+        }
+      ],
+      "returns": "void",
+      "description": "Make a center column sticky at one or both edges, or disable its sticky policy."
+    },
+    {
+      "name": "getData",
+      "group": "Column Management - Autosizing",
+      "signature": "getData(): U",
+      "params": [],
+      "returns": "U",
+      "description": "Returns an array of every data object, unless you're using DataView in which case it returns a DataView object."
     }
   ],
   "dataViewOptions": [
@@ -7712,11 +7896,11 @@
             {
               "name": "bind",
               "group": "",
-              "signature": "bind(element: Element | Window | Document, eventName: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions, groupName?)",
+              "signature": "bind(element: Element | Window | Document | Array<Element>, eventName: string, listener: EventListenerOrEventListenerObject, options?: boolean | AddEventListenerOptions, groupName?)",
               "params": [
                 {
                   "name": "element",
-                  "type": "Element | Window | Document",
+                  "type": "Element | Window | Document | Array<Element>",
                   "optional": false,
                   "description": ""
                 },
@@ -7997,6 +8181,27 @@
               ],
               "returns": "value is T",
               "description": ""
+            },
+            {
+              "name": "replaceList",
+              "group": "",
+              "signature": "replaceList(incoming: T[] | undefined, current?: T[]): T[]",
+              "params": [
+                {
+                  "name": "incoming",
+                  "type": "T[] | undefined",
+                  "optional": false,
+                  "description": ""
+                },
+                {
+                  "name": "current",
+                  "type": "T[]",
+                  "optional": true,
+                  "description": ""
+                }
+              ],
+              "returns": "T[]",
+              "description": "Returns a copy of `incoming` when it is given, otherwise a copy of `current` (or an empty list)."
             },
             {
               "name": "getElementProp",
@@ -8651,6 +8856,108 @@
             }
           ],
           "events": []
+        },
+        {
+          "name": "DockingController",
+          "description": "Resolves permanent pinning and scroll-activated stickiness into the same three-band model.\nIt is deliberately DOM-free so the virtual renderer only has to react when band membership changes.\n\nKeeping this controller in the core module makes it available to separately\nbuilt IIFE files as `Slick.DockingController` when `slick.core.js` loads.",
+          "methods": [
+            {
+              "name": "setOptions",
+              "group": "",
+              "signature": "setOptions(options?: DockingOption): void",
+              "params": [
+                {
+                  "name": "options",
+                  "type": "DockingOption",
+                  "optional": true,
+                  "description": ""
+                }
+              ],
+              "returns": "void",
+              "description": ""
+            },
+            {
+              "name": "reset",
+              "group": "",
+              "signature": "reset(): void",
+              "params": [],
+              "returns": "void",
+              "description": ""
+            },
+            {
+              "name": "resolveColumns",
+              "group": "",
+              "signature": "resolveColumns(columns: C[], scrollLeft: number, viewportWidth: number, leadingSide?: DockingSide): ColumnDockingLayout",
+              "params": [
+                {
+                  "name": "columns",
+                  "type": "C[]",
+                  "optional": false,
+                  "description": ""
+                },
+                {
+                  "name": "scrollLeft",
+                  "type": "number",
+                  "optional": false,
+                  "description": ""
+                },
+                {
+                  "name": "viewportWidth",
+                  "type": "number",
+                  "optional": false,
+                  "description": ""
+                },
+                {
+                  "name": "leadingSide",
+                  "type": "DockingSide",
+                  "optional": true,
+                  "description": ""
+                }
+              ],
+              "returns": "ColumnDockingLayout",
+              "description": ""
+            },
+            {
+              "name": "resolveRows",
+              "group": "",
+              "signature": "resolveRows(rows: DockingRow[], scrollTop: number, viewportHeight: number, permanentRows?: PinnedRows, stickyRows?: StickyRows): RowDockingLayout",
+              "params": [
+                {
+                  "name": "rows",
+                  "type": "DockingRow[]",
+                  "optional": false,
+                  "description": ""
+                },
+                {
+                  "name": "scrollTop",
+                  "type": "number",
+                  "optional": false,
+                  "description": ""
+                },
+                {
+                  "name": "viewportHeight",
+                  "type": "number",
+                  "optional": false,
+                  "description": ""
+                },
+                {
+                  "name": "permanentRows",
+                  "type": "PinnedRows",
+                  "optional": true,
+                  "description": ""
+                },
+                {
+                  "name": "stickyRows",
+                  "type": "StickyRows",
+                  "optional": true,
+                  "description": ""
+                }
+              ],
+              "returns": "RowDockingLayout",
+              "description": ""
+            }
+          ],
+          "events": []
         }
       ]
     },
@@ -8942,7 +9249,7 @@
         "classes": [
           {
             "name": "SlickColumnPicker",
-            "description": "A control to add a Column Picker (right+click on any column header to reveal the column picker)\nNOTE: this is the old 'complex' column pciker that hides columns by removing them from the grid\n       for a more modern version that uses the column.hidden property and is a lot simpler, use slick.columnmenu.js\n\nUSAGE:\n\nAdd the slick.columnpicker.(js|css) files and register it with the grid.\n\nAvailable options, by defining a columnPicker object:\n\n let options = {\n   enableCellNavigation: true,\n   columnPicker: {\n     columnTitle: \"Columns\",                 // default to empty string\n\n     // the last 2 checkboxes titles\n     hideForceFitButton: false,              // show/hide checkbox near the end \"Force Fit Columns\" (default:false)\n     hideSyncResizeButton: false,            // show/hide checkbox near the end \"Synchronous Resize\" (default:false)\n     forceFitTitle: \"Force fit columns\",     // default to \"Force fit columns\"\n     headerColumnValueExtractor: \"Extract the column label\" // default to column.name\n     syncResizeTitle: \"Synchronous resize\",  // default to \"Synchronous resize\"\n   }\n };",
+            "description": "A control to add a Column Picker (right+click on any column header to reveal the column picker)\nNOTE: columns remain in the grid and visibility is controlled through the column.hidden property.\n\nUSAGE:\n\nAdd the slick.columnpicker.(js|css) files and register it with the grid.\n\nAvailable options, by defining a columnPicker object:\n\n let options = {\n   enableCellNavigation: true,\n   columnPicker: {\n     columnTitle: \"Columns\",                 // default to empty string\n\n     // the last 2 checkboxes titles\n     hideForceFitButton: false,              // show/hide checkbox near the end \"Force Fit Columns\" (default:false)\n     hideSyncResizeButton: false,            // show/hide checkbox near the end \"Synchronous Resize\" (default:false)\n     forceFitTitle: \"Force fit columns\",     // default to \"Force fit columns\"\n     headerColumnValueExtractor: \"Extract the column label\" // default to column.name\n     syncResizeTitle: \"Synchronous resize\",  // default to \"Synchronous resize\"\n   }\n };",
             "methods": [
               {
                 "name": "init",
@@ -9206,7 +9513,7 @@
                 "signature": "recreateGridMenu()",
                 "params": [],
                 "returns": "",
-                "description": "Delete and then Recreate the Grid Menu (for example when we switch from regular to a frozen grid)"
+                "description": "Delete and then recreate the Grid Menu."
               },
               {
                 "name": "showGridMenu",
@@ -9638,7 +9945,7 @@
         "classes": [
           {
             "name": "SlickCellExternalCopyManager",
-            "description": "This manager enables users to copy/paste data from/to an external Spreadsheet application\n  such as MS-Excel® or OpenOffice-Spreadsheet.\n\n  Since it is not possible to access directly the clipboard in javascript, the plugin uses\n  a trick to do it's job. After detecting the keystroke, we dynamically create a textarea\n  where the browser copies/pastes the serialized data.\n\n  options:\n    copiedCellStyle : sets the css className used for copied cells. default : \"copied\"\n    copiedCellStyleLayerKey : sets the layer key for setting css values of copied cells. default : \"copy-manager\"\n    dataItemColumnValueExtractor : option to specify a custom column value extractor function\n    dataItemColumnValueSetter : option to specify a custom column value setter function\n    clipboardCommandHandler : option to specify a custom handler for paste actions\n    includeHeaderWhenCopying : set to true and the plugin will take the name property from each column (which is usually what appears in your header) and put that as the first row of the text that's copied to the clipboard\n    bodyElement: option to specify a custom DOM element which to will be added the hidden textbox. It's useful if the grid is inside a modal dialog.\n    onCopyInit: optional handler to run when copy action initializes\n    onCopySuccess: optional handler to run when copy action is complete\n    newRowCreator: function to add rows to table if paste overflows bottom of table, if this function is not provided new rows will be ignored.\n    readOnlyMode: suppresses paste\n    headerColumnValueExtractor : option to specify a custom column header value extractor function",
+            "description": "This manager enables users to copy/paste data from/to an external Spreadsheet application\n  such as MS-Excel® or OpenOffice-Spreadsheet.\n\n  The clipboard transport is the asynchronous Clipboard API (navigator.clipboard),\n  which requires a secure context (https or localhost) and, for paste, the browser's\n  clipboard-read permission. The clipboardWriteOverride/clipboardReadOverride options\n  replace the transport for environments where the Clipboard API is unavailable or the\n  host application manages the clipboard itself.\n\n  options:\n    copiedCellStyle : sets the css className used for copied cells. default : \"copied\"\n    copiedCellStyleLayerKey : sets the layer key for setting css values of copied cells. default : \"copy-manager\"\n    dataItemColumnValueExtractor : option to specify a custom column value extractor function\n    dataItemColumnValueSetter : option to specify a custom column value setter function\n    clipboardCommandHandler : option to specify a custom handler for paste actions\n    includeHeaderWhenCopying : set to true and the plugin will take the name property from each column (which is usually what appears in your header) and put that as the first row of the text that's copied to the clipboard\n    clipboardWriteOverride: option to replace the default clipboard write (navigator.clipboard.writeText) with a custom function\n    clipboardReadOverride: option to replace the default clipboard read (navigator.clipboard.readText) with a custom function\n    onCopyInit: optional handler to run when copy action initializes\n    onCopySuccess: optional handler to run when copy action is complete\n    newRowCreator: function to add rows to table if paste overflows bottom of table, if this function is not provided new rows will be ignored.\n    readOnlyMode: suppresses paste\n    headerColumnValueExtractor : option to specify a custom column header value extractor function",
             "methods": [
               {
                 "name": "init",
@@ -11038,7 +11345,7 @@
               {
                 "name": "getSetupColumnReorder",
                 "group": "",
-                "signature": "getSetupColumnReorder(grid: SlickGrid, headers: any, _headerColumnWidthDiff: any, setColumns: (columns: Column[]) => void, setupColumnResize: () => void, _columns: Column[], getColumnIndex: (columnId: string) => number, _uid: string, trigger: (slickEvent: SlickEvent_, data?: any) => void)",
+                "signature": "getSetupColumnReorder(grid: SlickGrid, _headers: any, _headerColumnWidthDiff: any, setColumns: (columns: Column[]) => void, setupColumnResize: () => void, _columns: Column[], _getColumnIndex: (columnId: string) => number, _uid: string, trigger: (slickEvent: SlickEvent_, data?: any) => void)",
                 "params": [
                   {
                     "name": "grid",
@@ -11047,10 +11354,10 @@
                     "description": "- slick grid object"
                   },
                   {
-                    "name": "headers",
+                    "name": "_headers",
                     "type": "any",
                     "optional": false,
-                    "description": "- slick grid column header elements"
+                    "description": ""
                   },
                   {
                     "name": "_headerColumnWidthDiff",
@@ -11077,10 +11384,10 @@
                     "description": ""
                   },
                   {
-                    "name": "getColumnIndex",
+                    "name": "_getColumnIndex",
                     "type": "(columnId: string) => number",
                     "optional": false,
-                    "description": "- callback to find index of a column"
+                    "description": ""
                   },
                   {
                     "name": "_uid",
@@ -12557,7 +12864,7 @@
             "properties": [
               {
                 "name": "columns",
-                "type": "Array<{ id: string | number; width: number | undefined; }>",
+                "type": "Array<{ id: string | number; width: number | undefined; hidden?: boolean; }>",
                 "optional": false,
                 "description": ""
               },
