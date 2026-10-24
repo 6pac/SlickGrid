@@ -1363,6 +1363,14 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       this.rowHeightsDirty = true;
     }
 
+    // The scroll throttle captured its period when it was built, so rebuild it when the period
+    // changes; otherwise a later opt-in would route large jumps through a timer with the old delay.
+    if (newOptions.scrollRenderThrottling !== undefined && newOptions.scrollRenderThrottling !== originalOptions.scrollRenderThrottling) {
+      this.scrollThrottle.dequeue();
+      clearTimeout(this._executionBlockTimer);
+      this.scrollThrottle = this.actionThrottle(this.render.bind(this), this._options.scrollRenderThrottling as number);
+    }
+
     this.internal_setOptions(suppressRender, suppressColumnSet, suppressSetOverflow);
   }
 
@@ -4770,10 +4778,11 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   }
 
   /**
-  * Apply HTML code by 3 different ways depending on what is provided as input and what options are enabled.
+  * Apply HTML code by 4 different ways depending on what is provided as input and what options are enabled.
   * 1. value is an HTMLElement or DocumentFragment, then first empty the target and simply append the HTML to the target element.
-  * 2. value is string and `enableHtmlRendering` is enabled, then use `target.innerHTML = value;`
-  * 3. value is string and `enableHtmlRendering` is disabled, then use `target.textContent = value;`
+  * 2. value is a number, a boolean or a plain string without `<` or `&`, then use `target.textContent = value;` without sanitizing or parsing HTML.
+  * 3. value is any other string and `enableHtmlRendering` is enabled, then use `target.innerHTML = sanitizedValue;`
+  * 4. value is any other string and `enableHtmlRendering` is disabled, then use `target.textContent = sanitizedValue;`
   * @param {HTMLElement} target  - target element to apply to
   * @param {string | HTMLElement | DocumentFragment} val - input value can be either a string or an HTMLElement
   * @param {{ emptyTarget?: boolean; skipEmptyReassignment?: boolean; }} [options]  -

@@ -3820,7 +3820,7 @@
         }
       ],
       "returns": "void",
-      "description": "Apply HTML code by 3 different ways depending on what is provided as input and what options are enabled.\n1. value is an HTMLElement or DocumentFragment, then first empty the target and simply append the HTML to the target element.\n2. value is string and `enableHtmlRendering` is enabled, then use `target.innerHTML = value;`\n3. value is string and `enableHtmlRendering` is disabled, then use `target.textContent = value;`"
+      "description": "Apply HTML code by 4 different ways depending on what is provided as input and what options are enabled.\n1. value is an HTMLElement or DocumentFragment, then first empty the target and simply append the HTML to the target element.\n2. value is a number, a boolean or a plain string without `<` or `&`, then use `target.textContent = value;` without sanitizing or parsing HTML.\n3. value is any other string and `enableHtmlRendering` is enabled, then use `target.innerHTML = sanitizedValue;`\n4. value is any other string and `enableHtmlRendering` is disabled, then use `target.textContent = sanitizedValue;`"
     },
     {
       "name": "getCanvasNode",

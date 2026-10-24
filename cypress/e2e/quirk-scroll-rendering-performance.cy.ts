@@ -89,6 +89,26 @@ describe('PR 2852 - synchronous scrolling and cell rendering fast paths', () => 
       expect(win.geometryErrors()).to.deep.eq([]);
     });
   });
+  it('rebuilds the throttle when scrollRenderThrottling changes through setOptions', () => {
+    cy.window().then((win: any) => {
+      win.grid.setOptions({ scrollRenderThrottling: 10 });
+      win.renders = 0;
+    });
+    cy.clock(0, ['setTimeout', 'clearTimeout']);
+    cy.window().then((win: any) => {
+      win.jump(2000);
+      win.jump(12000);
+      expect(win.renders).to.eq(1);
+    });
+    // the queued jump must wait for the new 10 ms period, not the 0 ms period the grid was built with
+    cy.tick(5);
+    cy.window().then((win: any) => expect(win.renders).to.eq(1));
+    cy.tick(5);
+    cy.window().then((win: any) => {
+      expect(win.renders).to.eq(2);
+      expect(win.geometryErrors()).to.deep.eq([]);
+    });
+  });
   it('skips sanitizing plain text but preserves entity parsing and HTML sanitization', () => {
     cy.window().then((win: any) => {
       const sanitizer = cy.stub().callsFake((value: string) => value === '<b>unsafe</b>' ? '<em>safe</em>' : value);
