@@ -99,9 +99,6 @@
   "grid:evt-onAutosizeColumns": {
     "notes": "Fires from `reRenderColumns()` after the grid reapplies the column header widths."
   },
-  "grid:evt-onBeforeAppendCell": {
-    "notes": "Fires as the grid builds each cell during rendering, before it adds the cell to its row. If a handler returns a string, the grid adds it as extra CSS classes on the cell."
-  },
   "grid:evt-onBeforeCellEditorDestroy": {
     "notes": "Fires from `makeActiveCellNormal()` just before the grid destroys the current cell editor, while that editor still exists."
   },

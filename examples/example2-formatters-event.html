@@ -3,7 +3,7 @@
 <head>
   <meta http-equiv="Content-Type" content="text/html; charset=iso-8859-1">
   <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
-  <title>SlickGrid example 2a: Formatters with onBeforeAppendCell event</title>
+  <title>SlickGrid example 2a: Formatters with cell classes</title>
   <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
   <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
@@ -28,7 +28,7 @@
   </style>
 </head>
 <body>
-<h2 class="title">Example - Formatters with Events</h2>
+<h2 class="title">Example - Formatters with cell classes</h2>
 <table width="100%">
   <tr>
     <td valign="top" width="50%">
@@ -42,7 +42,7 @@
       <ul>
         <li>width, minWidth, maxWidth, resizable, cssClass column attributes</li>
         <li>custom column formatters</li>
-        <li>use of onBeforeAppendCell to format cell classes (deprecated in preference of the extended formatter)</li>
+        <li>a formatter returning an object with <code>addClasses</code> to colour a cell from its value (this replaces the removed <code>onBeforeAppendCell</code> event)</li>
       </ul>
         <h2>View Source:</h2>
         <ul>
@@ -61,11 +61,24 @@
 <script>
   var grid;
   var data = [];
+
+  // A formatter may return an object instead of a string: "text" (or "html") is the cell content and
+  // "addClasses" lists extra CSS classes for that cell. Keeping value-based styling in the formatter means
+  // it is re-evaluated whenever the cell renders, including updateCell() and invalidated rows, which the
+  // former onBeforeAppendCell event could not do.
+  function statusFormatter(row, cell, value) {
+    if (value == null || value === "") {
+      return "";
+    }
+    var statusClass = value < 33 ? "red" : (value < 66 ? "orange" : "green");
+    return { text: String(value), addClasses: statusClass };
+  }
+
   var columns = [
     {id: "title", name: "Title", field: "title", width: 120, cssClass: "cell-title"},
     {id: "duration", name: "Duration", field: "duration"},
     {id: "%", name: "% Complete", field: "percentComplete", width: 95, resizable: false, formatter: Slick.Formatters.PercentCompleteBar},
-    {id: "status", name: "Status", field: "percentComplete", width: 50, resizable: false},
+    {id: "status", name: "Status", field: "percentComplete", width: 50, resizable: false, formatter: statusFormatter},
     {id: "start", name: "Start", field: "start", minWidth: 60},
     {id: "finish", name: "Finish", field: "finish", minWidth: 60},
     {id: "effort-driven", name: "Effort Driven", sortable: false, width: 90, minWidth: 20, maxWidth: 90, cssClass: "cell-effort-driven", field: "effortDriven", formatter: Slick.Formatters.Checkmark}
@@ -74,8 +87,7 @@
   var options = {
     editable: false,
     enableAddRow: false,
-    enableCellNavigation: true,
-    explicitInitialization: true
+    enableCellNavigation: true
   };
 
   document.addEventListener("DOMContentLoaded", function() {
@@ -91,29 +103,6 @@
     }
 
     grid = new Slick.Grid("#myGrid", data, columns, options);
-
-    // The onBeforeAppendCell event returns text corresponding to the css class to add to the cell.
-    // It is called when first rendering the cell or when redrawing invalidated rows, so it can't respond to cell updates like a formatter.
-    // It was intended to be a general formatting tool rather then being tied to a particular column, for example to allow validation formatting
-    // of cells. The idea was that formatting should remain in place until a subsequent validation.
-    // Note that onBeforeAppendCell requires explicitInitialization: true so that the event can be wired up before the first render.
-
-    grid.onBeforeAppendCell.subscribe(function (e, args) {
-      if (grid.getColumns()[args.cell].id !== 'status') return null;
-
-      if (args.value == null || args.value === "") {
-        return null;
-      } else if (args.value < 33) {
-        return "red";
-      } else if (args.value < 66) {
-        return "orange";
-      } else {
-        return "green";
-      }
-      return null;
-    });
-
-    grid.init();
   });
 </script>
 </body>
