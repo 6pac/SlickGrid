@@ -33,7 +33,7 @@ export interface ItemMetadata {
   /** Whether or not a row or any cells in it can be selected. */
   selectable?: boolean;
 
-  /** Whether this metadata represents a group/totals row that should render across hidden columns. */
+  /** Whether this metadata represents a group/totals row. Hidden cells render only when explicitly defined in column metadata. */
   isGroup?: boolean;
 
   /** column-level metadata */
