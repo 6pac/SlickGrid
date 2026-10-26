@@ -213,9 +213,9 @@ Always pair a heavy `asyncPostRender` with a cleanup callback. Without it, widge
 On each scroll the grid chooses how to render:
 
 - A **small** move — less than one viewport in each direction — renders immediately. It is cheap, because most cached rows are reused.
-- A **large** jump — a viewport or more, such as dragging the scrollbar thumb — needs a full viewport rebuild. The grid throttles these to at most once per [`scrollRenderThrottling`](/reference/grid#opt-scrollRenderThrottling) ms (default `10`). This caps the work during a fast drag.
+- A **large** jump — a viewport or more, such as dragging the scrollbar thumb — needs a full viewport rebuild. These render synchronously by default (`scrollRenderThrottling: 0`) so a trailing timer does not leave the new viewport empty. A positive [`scrollRenderThrottling`](/reference/grid#opt-scrollRenderThrottling) value opts back into timer throttling.
 
-[`forceSyncScrolling`](/reference/grid#opt-forceSyncScrolling) (default `false`) removes the throttle and renders on every scroll event. It can look smoother on small datasets, but on large ones every scroll event forces a full viewport rebuild and can stutter. The source warns against enabling it on large data. Leave it off unless you have measured a gain.
+[`forceSyncScrolling`](/reference/grid#opt-forceSyncScrolling) (default `false`) bypasses a positive throttle for vertical scrolling; it is unnecessary with the default `0`. Horizontal scrolling still uses its animation-frame scheduler. Expensive formatters and layout can still delay painting, so profile those costs when scrolling remains slow.
 
 Two related options rarely need changing:
 
@@ -247,7 +247,7 @@ Virtual rendering handles hundreds of thousands of rows without special care. Tw
 - Batch data changes with `beginUpdate` / `endUpdate`, and bulk mode for big inserts and deletes (step 3).
 - Prefer targeted `invalidateRows` over `invalidate` (step 1).
 - Keep `minRowBuffer` small. A large buffer multiplies the DOM on every render.
-- Avoid `forceSyncScrolling`.
+- Leave [`scrollRenderThrottling`](/reference/grid#opt-scrollRenderThrottling) at its default `0`. A positive value defers large jumps behind a timer, which shows briefly blank rows; reach for it only after profiling shows the synchronous renders themselves are the cost.
 - Keep row height uniform where you can. Variable row height adds a row-position index that is rebuilt when heights change.
 - If you do not need one continuous scroll, page the data with [`setPagingOptions`](/reference/dataview#m-setPagingOptions). Paging bounds the row count per page.
 - For remote or huge back-ends, write a custom provider backed by a page cache. The grid asks only for the rows in view. See [Providing data to the grid](/in-depth/providing-data).
@@ -260,7 +260,7 @@ Virtual rendering handles hundreds of thousands of rows without special care. Tw
 - **Un-batched DataView writes re-render each time.** Wrap many changes in `beginUpdate` / `endUpdate`.
 - **Heavy formatters block scrolling.** A formatter runs synchronously for every rendered cell. Put charts and widgets in `asyncPostRender`.
 - **Async post-render without cleanup leaks.** Pair `asyncPostRender` with `asyncPostRenderCleanup` and enable `enableAsyncPostRenderCleanup`.
-- **`forceSyncScrolling` on large data can stutter.** It forces a full viewport rebuild on every scroll event. Leave it off unless measured.
+- **Large jumps render synchronously.** With the default `scrollRenderThrottling: 0`, dragging the scrollbar rebuilds the viewport on every scroll event, so heavy formatters show up directly as scroll jank. Make them cheap first (see above); a positive throttle only trades the jank for momentarily blank rows.
 - **`maxRowBuffer` does nothing.** Only `minRowBuffer` changes the buffer.
 - **The scrollbar jumps with millions of rows.** That is the browser height cap and virtual paging, not a bug.
 
