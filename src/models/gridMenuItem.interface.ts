@@ -2,9 +2,6 @@ import type { GridMenuCallbackArgs, GridMenuCommandItemCallbackArgs, MenuCommand
 import type { SlickEventData } from '../slick.core.js';
 
 export interface GridMenuItem extends MenuCommandItem<GridMenuCommandItemCallbackArgs, GridMenuCallbackArgs> {
-  /** @deprecated use `commandItems` instead. Array of Command Items (title, command, disabled, ...) */
-  customItems?: Array<GridMenuItem | 'divider'>;
-
   // --
   // action/override callbacks
 

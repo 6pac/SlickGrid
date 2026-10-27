@@ -55,6 +55,16 @@ Version 6 plans to move external copy and paste to the browser's async Clipboard
 
 ## Removed deprecated code
 
+Version 6 removes the deprecated APIs listed below. Replace their uses before upgrading.
+
+### Menu and column picker options
+
+- Use `gridMenu.commandItems` and `gridMenu.commandTitle` in place of `customItems` and `customTitle`. Nested menu entries also use `commandItems`.
+- Use `header.menu.commandItems` for header menu entries, including nested entries; the old `items` property is removed.
+- Put picker labels under `columnPicker`: `columnTitle`, `forceFitTitle`, and `syncResizeTitle`. The corresponding top-level grid options are removed.
+- Remove `gridMenu.resizeOnShowHeaderRow`; flexbox handles header sizing.
+- Rename `setColumnVisibiliy()` to `setColumnVisibility()` on the Column Menu and Column Picker.
+
 ### Row positioning: `rowTopOffsetRenderType`
 
 Version 6 removes the `rowTopOffsetRenderType` grid option. Remove it from your configuration, whether its value was `'top'` or `'transform'`. Row Detail and RowSpan no longer require an explicit `'top'` setting.
@@ -86,7 +96,7 @@ _The following changes should be transparent to most users; they are listed here
 
 Grid Menu now uses CSS flexbox instead of `calc(100% - 18px)` to position its button beside the column headers or pre-header. This improves alignment and gives the last column's resize handle room when the vertical scrollbar gutter is at least as wide as the menu slot; with overlay scrollbars (macOS) or no vertical scrollbar the slot still covers the trailing `menuWidth + 2` pixels of the last column at full horizontal scroll, as the previous layout did.
 
-The default `gridMenu.menuWidth` is now `12` pixels, plus 2 pixels of spacing, and acts as a minimum: an icon class wider than that widens the slot instead of being clipped. The `resizeOnShowHeaderRow` option is deprecated and ignored because the menu no longer changes filter-row widths. Review custom CSS that positions `.slick-gridmenu-button` or overrides header widths.
+The default `gridMenu.menuWidth` is now `12` pixels, plus 2 pixels of spacing, and acts as a minimum: an icon class wider than that widens the slot instead of being clipped. The removed `resizeOnShowHeaderRow` option no longer affects filter-row widths. Review custom CSS that positions `.slick-gridmenu-button` or overrides header widths.
 
 ## Already gone before v6
 
