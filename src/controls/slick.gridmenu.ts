@@ -37,7 +37,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  *      iconImage: "some-image.png",                // this is the Grid Menu icon (hamburger icon)
  *      iconCssClass: "fa fa-bars",                 // you can provide iconImage OR iconCssClass
  *      leaveOpen: false,                           // do we want to leave the Grid Menu open after a command execution? (false by default)
- *      menuWidth: 12,                              // icon container width, plus 2px spacing (12 by default)
+ *      menuWidth: 12,                              // minimum icon container width, plus 2px spacing (12 by default), a wider icon class widens it
  *      contentMinWidth: 0,							            // defaults to 0 (auto), minimum width of grid menu content (command, column list)
  *      marginBottom: 15,                           // defaults to 15, margin to use at the bottom of the grid when using max-height (default)
  *      showButton: true,                           // true by default - it allows the user to control if the
@@ -69,7 +69,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  *    forceFitTitle:              Text of the title "Force fit columns"
  *    contentMinWidth:						minimum width of grid menu content (command, column list), defaults to 0 (auto)
  *    height:                     Height of the Grid Menu content, when provided it will be used instead of the max-height (defaults to undefined)
- *    menuWidth:                  Grid menu icon container width (defaults to 12)
+ *    menuWidth:                  Minimum Grid menu icon container width (defaults to 12), a wider icon class widens the container to fit
  *    resizeOnShowHeaderRow:      Deprecated; header sizing is handled by flexbox
  *    syncResizeTitle:            Text of the title "Synchronous resize"
  *    useClickToRepositionMenu:   Use the Click offset to reposition the Grid Menu (defaults to true), when set to False it will use the icon offset to reposition the grid menu
@@ -196,17 +196,23 @@ export class SlickGridMenu {
   }
 
   protected createGridMenu() {
-    const gridMenuWidth = this._gridMenuOptions?.menuWidth ?? this._defaults.menuWidth!;
+    const gridMenuWidth = this._gridMenuOptions?.menuWidth || this._defaults.menuWidth!;
+    const slotWidth = gridMenuWidth + 2; // 1px of spacing on each side of the icon
     const gridContainer = this.grid.getContainerNode();
-    this._headerElm = gridContainer.querySelector<HTMLDivElement>(
-      this._gridMenuOptions?.iconButtonContainer === 'preheader' ? '.slick-preheader-panel' : '.slick-header-left'
-    );
+    const wantsPreHeader = this._gridMenuOptions?.iconButtonContainer === 'preheader';
+    this._headerElm = wantsPreHeader ? gridContainer.querySelector<HTMLDivElement>('.slick-preheader-panel') : null;
+    if (wantsPreHeader && !this._headerElm) {
+      console.warn('[SlickGrid] Grid Menu "iconButtonContainer: \'preheader\'" requires "createPreHeaderPanel: true"; the button is placed beside the column header instead.');
+    }
+    if (!this._headerElm) {
+      this._headerElm = gridContainer.querySelector<HTMLDivElement>('.slick-header-left');
+    }
 
     const showButton = this._gridMenuOptions?.showButton ?? this._defaults.showButton;
     if (showButton && this._headerElm?.parentElement) {
       this._buttonContainerElm = Utils.createDomElement('div', {
         className: 'slick-gridmenu-container',
-        style: { width: `${gridMenuWidth + 2}px` },
+        style: { width: `${slotWidth}px` },
       }, this._headerElm.parentElement);
       this._buttonElm = document.createElement('button');
       this._buttonElm.className = 'slick-gridmenu-button';
@@ -222,6 +228,16 @@ export class SlickGridMenu {
       }
 
       this._buttonContainerElm.appendChild(this._buttonElm);
+
+      // An icon class can render wider than the configured slot (the bundled `.sgi` icons are 17-18px wide),
+      // in which case the slot's `overflow: hidden` would clip it: widen the slot to the icon instead.
+      // An image icon needs no measuring, it is scaled down to the slot by the stylesheet.
+      if (this._gridMenuOptions?.iconCssClass) {
+        const iconWidth = Math.ceil(Math.max(this._buttonElm.scrollWidth, this._buttonElm.getBoundingClientRect().width));
+        if (iconWidth > slotWidth) {
+          this._buttonContainerElm.style.width = `${iconWidth + 2}px`;
+        }
+      }
 
       // add on click handler for the Grid Menu itself
       this._bindingEventService.bind(this._buttonElm, 'click', this.showGridMenu.bind(this) as EventListener);

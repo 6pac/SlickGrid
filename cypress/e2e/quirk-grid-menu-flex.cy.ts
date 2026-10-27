@@ -1,6 +1,12 @@
 const harness = `<!doctype html>
 <link rel="stylesheet" href="/dist/styles/css/slick-alpine-theme.css">
 <link rel="stylesheet" href="/dist/styles/css/slick.gridmenu.css">
+<style>
+  /* Classic 16px scrollbars on every platform: the trailing-column checks below need a scrollbar gutter at least as wide as the menu slot. */
+  ::-webkit-scrollbar { width: 16px; height: 16px; }
+  .wide-icon { display: inline-block; width: 20px; height: 20px; background: #000; }
+  .glyph-icon::before { content: 'WWW'; font-size: 20px; line-height: 1; white-space: nowrap; }
+</style>
 <div id="grid" style="width:600px;height:250px"></div>
 <script src="/dist/browser/slick.core.js"></script>
 <script src="/dist/browser/slick.interactions.js"></script>
@@ -62,6 +68,10 @@ describe('Grid Menu flex layout', () => {
       const grid = new win.Slick.Grid('#grid', Array.from({ length: 30 }, (_, id) => ({ id })), columns, {
         pinning: { columns: { right: 1 } },
       });
+      // The header is `slot` px narrower than the viewport, so the trailing column's handle is only reachable
+      // when the vertical scrollbar gutter is at least that wide; the harness forces classic 16px scrollbars
+      // (overlay scrollbars, e.g. on macOS, are 0px wide and the slot then covers the handle, see menus.md).
+      expect(grid.getScrollbarDimensions().width, 'scrollbar gutter at least as wide as the slot').to.be.at.least(14);
       const control = new win.Slick.Controls.GridMenu(columns, grid, grid.getOptions());
       const handle = grid.getHeaderColumn('c7').querySelector('.slick-resizable-handle');
       const rect = handle.getBoundingClientRect();
@@ -111,6 +121,60 @@ describe('Grid Menu flex layout', () => {
       });
     });
   }
+
+  it('widens the slot to an icon class wider than menuWidth instead of clipping it', () => {
+    cy.window().then((win: any) => {
+      const columns = [{ id: 'a', name: 'A', field: 'a', width: 100 }];
+      const check = (iconCssClass: string, expectedMinSlot: number) => {
+        const grid = new win.Slick.Grid('#grid', [], columns, { gridMenu: { iconCssClass } });
+        const control = new win.Slick.Controls.GridMenu(columns, grid, grid.getOptions());
+        const root = grid.getContainerNode();
+        const slot = root.querySelector('.slick-gridmenu-container');
+        const button = root.querySelector('.slick-gridmenu-button');
+        const slotRect = slot.getBoundingClientRect();
+        const buttonRect = button.getBoundingClientRect();
+        expect(slotRect.width, `${iconCssClass}: slot grows to the icon`).to.be.at.least(expectedMinSlot);
+        expect(buttonRect.left, `${iconCssClass}: icon starts inside the slot`).to.be.at.least(slotRect.left);
+        expect(buttonRect.right, `${iconCssClass}: icon ends inside the slot`).to.be.at.most(slotRect.right);
+        expect(button.scrollWidth, `${iconCssClass}: no horizontal overflow left to clip`).to.be.at.most(slot.clientWidth);
+        control.destroy();
+        grid.destroy();
+      };
+      check('wide-icon', 22); // a class that sizes the button itself, like the bundled `.sgi` icons
+      check('glyph-icon', 15); // a glyph that overflows a full-width button
+    });
+  });
+
+  it('keeps the default slot for menuWidth: 0 and centres an icon narrower than the slot', () => {
+    cy.window().then((win: any) => {
+      const columns = [{ id: 'a', name: 'A', field: 'a', width: 100 }];
+      const grid = new win.Slick.Grid('#grid', [], columns, { gridMenu: { menuWidth: 0, iconCssClass: 'wide-icon' } });
+      const control = new win.Slick.Controls.GridMenu(columns, grid, grid.getOptions());
+      const root = grid.getContainerNode();
+      const slotRect = root.querySelector('.slick-gridmenu-container').getBoundingClientRect();
+      const buttonRect = root.querySelector('.slick-gridmenu-button').getBoundingClientRect();
+      expect(slotRect.width, 'menuWidth: 0 falls back to the default and then grows to the icon').to.eq(22);
+      expect(buttonRect.left - slotRect.left, 'icon is centred in the slot').to.be.closeTo(slotRect.right - buttonRect.right, 1);
+      control.destroy();
+      grid.destroy();
+    });
+  });
+
+  it('falls back to the column header when the pre-header placement has no pre-header panel', () => {
+    cy.window().then((win: any) => {
+      const columns = [{ id: 'a', name: 'A', field: 'a', width: 100 }];
+      const warn = cy.stub(win.console, 'warn');
+      const grid = new win.Slick.Grid('#grid', [], columns, { gridMenu: { iconButtonContainer: 'preheader' } });
+      const control = new win.Slick.Controls.GridMenu(columns, grid, grid.getOptions());
+      const root = grid.getContainerNode();
+      const slot = root.querySelector('.slick-gridmenu-container');
+      expect(slot.parentElement).to.eq(root.querySelector('.slick-header').parentElement);
+      expect(slot.querySelector('.slick-gridmenu-button')).to.not.eq(null);
+      expect(warn).to.have.been.calledWithMatch(/createPreHeaderPanel/);
+      control.destroy();
+      grid.destroy();
+    });
+  });
 
   it('reserves no header space when the button is hidden', () => {
     cy.window().then((win: any) => {

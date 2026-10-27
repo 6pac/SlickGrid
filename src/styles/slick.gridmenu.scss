@@ -20,15 +20,15 @@
 .slick-gridmenu-container {
   flex: 0 0 auto;
   position: relative;
-  display: flex;
-  justify-content: center;
   overflow: hidden;
 }
 
 .slick-gridmenu-button {
   // Let the header determine the slot height, including when the header is hidden.
   position: absolute;
-  inset-inline-end: 0;
+  // Centre an icon class that sizes the button itself (e.g. `.sgi { width: 1em }`); a full-width button is unaffected.
+  inset-inline: 0;
+  margin-inline: auto;
   width: 100%;
   min-width: 0;
   cursor: pointer;

@@ -84,9 +84,9 @@ The `.dynamic-cell-detail`, `.detail-container`, and item-specific detail classe
 
 _The following changes should be transparent to most users; they are listed here in case of side effects with custom styling._
 
-Grid Menu now uses CSS flexbox instead of `calc(100% - 18px)` to position its button beside the column headers or pre-header. This improves alignment and keeps the last column's resize handle accessible.
+Grid Menu now uses CSS flexbox instead of `calc(100% - 18px)` to position its button beside the column headers or pre-header. This improves alignment and gives the last column's resize handle room when the vertical scrollbar gutter is at least as wide as the menu slot; with overlay scrollbars (macOS) or no vertical scrollbar the slot still covers the trailing `menuWidth + 2` pixels of the last column at full horizontal scroll, as the previous layout did.
 
-The default `gridMenu.menuWidth` is now `12` pixels, plus 2 pixels of spacing. The `resizeOnShowHeaderRow` option is deprecated and ignored because the menu no longer changes filter-row widths. Review custom CSS that positions `.slick-gridmenu-button` or overrides header widths.
+The default `gridMenu.menuWidth` is now `12` pixels, plus 2 pixels of spacing, and acts as a minimum: an icon class wider than that widens the slot instead of being clipped. The `resizeOnShowHeaderRow` option is deprecated and ignored because the menu no longer changes filter-row widths. Review custom CSS that positions `.slick-gridmenu-button` or overrides header widths.
 
 ## Already gone before v6
 

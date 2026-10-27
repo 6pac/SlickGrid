@@ -67,7 +67,7 @@ export interface GridMenuOption {
   /** Maximum width that the grid menu can have, it could be a number (250) or text ("none") */
   maxWidth?: number | string;
 
-  /** Defaults to 12 pixels (only the number), which is the width in pixels of the Grid Menu icon container */
+  /** Defaults to 12 pixels (only the number), the minimum width in pixels of the Grid Menu icon container (plus 2px of spacing); an icon class wider than that widens the container to fit */
   menuWidth?: number;
 
   /** @deprecated Header sizing is handled by flexbox. This option is ignored. */
