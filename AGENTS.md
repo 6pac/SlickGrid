@@ -1,5 +1,12 @@
 # Repository Agent Instructions
 
+## Pull requests
+
+- Use `.github/pull_request_template.md` when preparing pull request titles and
+  descriptions, including drafts provided to the user.
+- Present the PR title and description in separate Markdown code blocks so each
+  can be copied independently.
+
 ## Generated files
 
 - Everything under `dist/` is build output. Never write or hand-edit those files:
