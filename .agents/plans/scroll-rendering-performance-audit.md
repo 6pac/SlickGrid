@@ -24,7 +24,7 @@ RTL-range or additional frame-scheduling changes are included. Positive throttle
 values retain the timer path; the default `0` bypasses that path for vertical renders.
 The migration guide documents the event removal and the sanitizer semantics.
 
-- `npm run build:prod`: passed, including lint and declaration generation.
+- `npm run build`: passed, including lint and declaration generation.
 - API extraction and `npm run drift --prefix vitepress`: passed; no newly undocumented symbols.
 - Targeted Cypress checks: 138 passed across 10 specs, including five new regressions.
 - Full Cypress run: 89 specs, 779 passed, one failed, one pending. The failure was
@@ -61,16 +61,16 @@ proportional reduction in rendering time or prove that it causes the reported bl
 Source references are to `src/slick.grid.ts` as of the audit date; the throttle rows describe
 the behaviour before the port.
 
-| Area | Finding |
-| --- | --- |
-| Throttle initialization, line 762 | The constructor binds `render()` and captures the configured throttle period. `setOptions()` did not rebuild this throttle (it does since the port). Use fresh grids for comparisons. |
-| `actionThrottle()`, line 4711 | Leading execution is immediate; blocked calls queue a trailing execution. The timer starts **before** rendering. The cycle is not necessarily render time plus the configured delay. |
-| `_handleScroll()`, line 7034 | Once rendering thresholds are crossed, smaller vertical movements render synchronously. Large vertical jumps used the throttle unless `forceSyncScrolling` was enabled. Distances for this decision are measured from the last rendered position. |
-| Horizontal scrolling, line 11175 | Horizontal movement uses a separate animation-frame render queue. Changing `scrollRenderThrottling` does not remove this scheduling. The horizontal branch precedes the synchronous-scrolling branch. |
-| `handleMouseWheel()`, line 4389 | Ordinary grids update their position in the wheel handler and also allow the browser's default wheel movement. This can cause a second render. Docking grids prevent the default movement. |
-| `getFormatter()`, line 3720 | Row metadata is still retrieved when resolving each cell's formatter. |
-| Cell CSS classes, line 5635 | Classes are already indexed through `cellCssClassesByCell[row]?.[column.id]`; the other fork's per-cell `Object.keys()` criticism does not apply here. |
-| `renderRows()`, line 6677 | Cached rows are retained when they remain in range. Scrolling does not unconditionally rebuild every row. |
+| Area                              | Finding                                                                                                                                                                                                                                           |
+| --------------------------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| Throttle initialization, line 762 | The constructor binds `render()` and captures the configured throttle period. `setOptions()` did not rebuild this throttle (it does since the port). Use fresh grids for comparisons.                                                             |
+| `actionThrottle()`, line 4711     | Leading execution is immediate; blocked calls queue a trailing execution. The timer starts **before** rendering. The cycle is not necessarily render time plus the configured delay.                                                              |
+| `_handleScroll()`, line 7034      | Once rendering thresholds are crossed, smaller vertical movements render synchronously. Large vertical jumps used the throttle unless `forceSyncScrolling` was enabled. Distances for this decision are measured from the last rendered position. |
+| Horizontal scrolling, line 11175  | Horizontal movement uses a separate animation-frame render queue. Changing `scrollRenderThrottling` does not remove this scheduling. The horizontal branch precedes the synchronous-scrolling branch.                                             |
+| `handleMouseWheel()`, line 4389   | Ordinary grids update their position in the wheel handler and also allow the browser's default wheel movement. This can cause a second render. Docking grids prevent the default movement.                                                        |
+| `getFormatter()`, line 3720       | Row metadata is still retrieved when resolving each cell's formatter.                                                                                                                                                                             |
+| Cell CSS classes, line 5635       | Classes are already indexed through `cellCssClassesByCell[row]?.[column.id]`; the other fork's per-cell `Object.keys()` criticism does not apply here.                                                                                            |
+| `renderRows()`, line 6677         | Cached rows are retained when they remain in range. Scrolling does not unconditionally rebuild every row.                                                                                                                                         |
 
 Before the port, a throttle of `0` only shortened the leading/trailing timer; since the port
 it bypasses the timer entirely for vertical renders. `forceSyncScrolling` remains a separate
@@ -113,14 +113,14 @@ also include rendering and browser scheduling.
 
 All modes rendered 180 times and ended with 51 cached rows / 1071 cells.
 
-| Rows | Mode | Render median (ms) | Render p95 (ms) | Samples with missing rows / total |
-| --- | --- | ---: | ---: | ---: |
-| 50K | Throttle 10 | 6.6 | 10.0 | 64 / 193 |
-| 50K | Throttle 0 | 7.2 | 10.2 | 0 / 196 |
-| 50K | Force synchronous | 7.4 | 10.8 | 0 / 191 |
-| 500K | Throttle 10 | 7.2 | 10.4 | 69 / 192 |
-| 500K | Throttle 0 | 7.5 | 10.6 | 0 / 200 |
-| 500K | Force synchronous | 9.4 | 11.6 | 0 / 196 |
+| Rows | Mode              | Render median (ms) | Render p95 (ms) | Samples with missing rows / total |
+| ---- | ----------------- | -----------------: | --------------: | --------------------------------: |
+| 50K  | Throttle 10       |                6.6 |            10.0 |                          64 / 193 |
+| 50K  | Throttle 0        |                7.2 |            10.2 |                           0 / 196 |
+| 50K  | Force synchronous |                7.4 |            10.8 |                           0 / 191 |
+| 500K | Throttle 10       |                7.2 |            10.4 |                          69 / 192 |
+| 500K | Throttle 0        |                7.5 |            10.6 |                           0 / 200 |
+| 500K | Force synchronous |                9.4 |            11.6 |                           0 / 196 |
 
 Interpretation: scheduling contributed to missing visible rows in this workload.
 The results do not support dismissing scheduling as irrelevant, or attributing
@@ -138,14 +138,14 @@ input and 900 px otherwise, awaiting dispatch and then an additional 8 ms delay.
 Sampling continued for 200 ms after input stopped. Protocol dispatch can pace
 input, so this is not equivalent to a guaranteed 125 Hz physical wheel stream.
 
-| Example | Mode | Render calls | Render median (ms) | Render p95 (ms) | Samples with missing rows / total |
-| --- | --- | ---: | ---: | ---: | ---: |
-| Grouping 500K | Throttle 10 | 180 | 3.3 | 6.7 | 0 / 282 |
-| Grouping 500K | Throttle 0 | 180 | 2.9 | 5.9 | 0 / 282 |
-| Grouping 500K | Force synchronous | 180 | 3.0 | 5.8 | 0 / 282 |
-| Model 50K | Throttle 10 | 180 | 2.3 | 5.6 | 0 / 280 |
-| Model 50K | Throttle 0 | 180 | 2.6 | 6.4 | 0 / 281 |
-| Model 50K | Force synchronous | 180 | 2.3 | 6.5 | 0 / 280 |
+| Example       | Mode              | Render calls | Render median (ms) | Render p95 (ms) | Samples with missing rows / total |
+| ------------- | ----------------- | -----------: | -----------------: | --------------: | --------------------------------: |
+| Grouping 500K | Throttle 10       |          180 |                3.3 |             6.7 |                           0 / 282 |
+| Grouping 500K | Throttle 0        |          180 |                2.9 |             5.9 |                           0 / 282 |
+| Grouping 500K | Force synchronous |          180 |                3.0 |             5.8 |                           0 / 282 |
+| Model 50K     | Throttle 10       |          180 |                2.3 |             5.6 |                           0 / 280 |
+| Model 50K     | Throttle 0        |          180 |                2.6 |             6.4 |                           0 / 281 |
+| Model 50K     | Force synchronous |          180 |                2.3 |             6.5 |                           0 / 280 |
 
 All runs recorded zero DataView refresh calls during the measured scrolling.
 The largest measured synchronous render was 16.8 ms. These tests provide no
@@ -157,12 +157,12 @@ For the same ordinary-grid examples, a temporary prototype override made
 `handleMouseWheel()` a no-op, leaving movement to the browser and rendering to
 native scroll events. This was a diagnostic experiment, **not a production fix**.
 
-| Example | Throttle | Render calls | Render median (ms) | Render p95 (ms) | Samples with missing rows / total |
-| --- | ---: | ---: | ---: | ---: | ---: |
-| Grouping 500K | 10 | 90 | 4.5 | 8.1 | 0 / 275 |
-| Grouping 500K | 0 | 90 | 4.4 | 9.2 | 0 / 263 |
-| Model 50K | 10 | 90 | 4.4 | 7.7 | 0 / 267 |
-| Model 50K | 0 | 90 | 4.4 | 6.0 | 0 / 263 |
+| Example       | Throttle | Render calls | Render median (ms) | Render p95 (ms) | Samples with missing rows / total |
+| ------------- | -------: | -----------: | -----------------: | --------------: | --------------------------------: |
+| Grouping 500K |       10 |           90 |                4.5 |             8.1 |                           0 / 275 |
+| Grouping 500K |        0 |           90 |                4.4 |             9.2 |                           0 / 263 |
+| Model 50K     |       10 |           90 |                4.4 |             7.7 |                           0 / 267 |
+| Model 50K     |        0 |           90 |                4.4 |             6.0 |                           0 / 263 |
 
 Scroll-handler calls dropped from 270 to 90. Final scroll position changed from
 101,520 px to 99,000 px for the same input sequence, consistent with removing the

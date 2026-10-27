@@ -2,11 +2,10 @@ import type {
   Column,
   GridMenuCallbackArgs,
   GridMenuCommandItemCallbackArgs,
-  GridMenuItem,
   GridOption,
   MenuCallbackArgs,
   MenuCommandItem,
-} from './index.js';
+} from "./index.js";
 
 export interface GridMenuOption {
   /** Defaults to "Commands" which is the title that shows up over the custom commands list */
@@ -14,13 +13,10 @@ export interface GridMenuOption {
 
   /** Array of command items (title,
    * command, disabled, ...) */
-  commandItems?: Array<MenuCommandItem<GridMenuCommandItemCallbackArgs, GridMenuCallbackArgs> | 'divider'>;
-
-  /** @deprecated use `commandTitle` instead. Defaults to "Commands" which is the title that shows up over the custom commands list */
-  customTitle?: string;
-
-  /** @deprecated use `commandItems` instead. Array of command items (title, command, disabled, ...) */
-  customItems?: Array<GridMenuItem | 'divider'>;
+  commandItems?: Array<
+    | MenuCommandItem<GridMenuCommandItemCallbackArgs, GridMenuCallbackArgs>
+    | "divider"
+  >;
 
   /** Defaults to 0 (auto), minimum width of grid menu content (command, column list) */
   contentMinWidth?: number;
@@ -44,7 +40,7 @@ export interface GridMenuOption {
   hideSyncResizeButton?: boolean;
 
   /** Defaults to "header", where should we display the grid menu button? Should it be inside the "preheader" (when exists) or always inside the column "header" (default). */
-  iconButtonContainer?: 'preheader' | 'header';
+  iconButtonContainer?: "preheader" | "header";
 
   /**  Grid Menu icon (hamburger icon) */
   iconImage?: string;
@@ -70,9 +66,6 @@ export interface GridMenuOption {
   /** Defaults to 12 pixels (only the number), the minimum width in pixels of the Grid Menu icon container (plus 2px of spacing); an icon class wider than that widens the container to fit */
   menuWidth?: number;
 
-  /** @deprecated Header sizing is handled by flexbox. This option is ignored. */
-  resizeOnShowHeaderRow?: boolean;
-
   /** Defaults to true, allows the user to control if the default gridMenu button (located on the top right corner by default CSS) should be created or omitted */
   showButton?: boolean;
 
@@ -80,7 +73,7 @@ export interface GridMenuOption {
   subItemChevronClass?: string;
 
   /** Defaults to "mouseover", what event type shoud we use to open sub-menu(s), 2 options are available: "mouseover" or "click" */
-  subMenuOpenByEvent?: 'mouseover' | 'click';
+  subMenuOpenByEvent?: "mouseover" | "click";
 
   /** Defaults to "Synchronous resize" which is 1 of the last 2 checkbox title shown at the end of the picker list */
   syncResizeTitle?: string;
@@ -98,7 +91,10 @@ export interface GridMenuOption {
   // action/override callbacks
 
   /** Callback method to override the column name output used by the ColumnPicker/GridMenu. */
-  headerColumnValueExtractor?: (column: Column, gridOptions?: GridOption) => string | HTMLElement | DocumentFragment;
+  headerColumnValueExtractor?: (
+    column: Column,
+    gridOptions?: GridOption,
+  ) => string | HTMLElement | DocumentFragment;
 
   /** Callback method that user can override the default behavior of enabling/disabling an item from the list. */
   menuUsabilityOverride?: (args: MenuCallbackArgs<any>) => boolean;

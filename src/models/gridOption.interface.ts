@@ -442,15 +442,4 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   /** Viewport max width in pixel */
   viewportMaxWidthPx?: number;
 
-  // --
-  // deprecated options
-
-  /** @deprecated @use `columnPicker: { columnTitle: '...' }` in your column definitions. */
-  columnPickerTitle?: string;
-
-  /** @deprecated @use `columnPicker: { forceFitTitle: '...' }` in your column definitions. */
-  forceFitTitle?: string;
-
-  /** @deprecated @use `columnPicker: { syncResizeTitle: '...' }`  in your column definitions. */
-  syncResizeTitle?: string;
 }

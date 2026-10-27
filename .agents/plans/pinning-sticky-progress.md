@@ -51,7 +51,7 @@ table. Key rules:
 
 ## Verification
 
-- `npm run build:prod` (type-check, lint, bundles, CSS, types) must pass.
+- `npm run build` (type-check, lint, bundles, CSS, types) must pass.
 - Browser coverage (Cypress): `example-pinning-*`, `example-sticky-financial-report`,
   `example-colspan` (pinned colspans), `example-variable-row-height-*`, `example-auto-scroll-when-dragging`
   (pinned drag auto-scroll), `example11-autoheight`, and the self-hosted `quirk-pinning-*` /
@@ -102,5 +102,5 @@ table. Key rules:
 1. Read `docs/pinning-sticky.md`, then the relevant `src/` code and the specs listed above.
 2. Preserve the invariants: one native horizontal and one native vertical scroll owner, one row
    node with three regions, one shared `DockingController`, no legacy compatibility branches.
-3. Add a self-hosted `quirk-*` spec for any regression fixed; run `npm run build:prod` and the
+3. Add a self-hosted `quirk-*` spec for any regression fixed; run `npm run build` and the
    affected Cypress specs before committing.
