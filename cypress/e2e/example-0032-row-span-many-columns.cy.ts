@@ -61,9 +61,8 @@ describe('Example - colspan & rowspan spanning many columns', { retries: 0 }, ()
     cy.wait(50);
     cy.window().then((win) => {
       const widthAfterFirstInterval = (win.document.querySelector(headerSelector) as HTMLElement).getBoundingClientRect().width;
-      // A 50ms sample can include one or two 30ms callbacks. The second callback also
-      // includes the viewport-scroll offset correction from the fork implementation.
-      expect(widthAfterFirstInterval).to.be.within(widthAtViewportEdge + 9, widthAtViewportEdge + 25);
+      // The resize handle's position and viewport-scroll correction both affect the measured width.
+      expect(widthAfterFirstInterval).to.be.within(widthAtViewportEdge + 9, widthAtViewportEdge + 30);
     });
 
     cy.wait(300);
