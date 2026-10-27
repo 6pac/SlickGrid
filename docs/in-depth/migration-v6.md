@@ -96,7 +96,7 @@ The default `gridMenu.menuWidth` is now `12` pixels, plus 2 pixels of spacing, a
 
 These are the public additions and renames from the v6 feature branches. New members appear in the [Reference](/reference/) once the release is integrated and the reference is regenerated.
 
-### Pinning and sticky docking (PR #1302)
+### Pinning and sticky docking (PR [#1302](https://github.com/6pac/SlickGrid/pull/1302))
 
 - New options: `pinning`, `stickyRows`, `docking`, `skipPinningValidation`, `errorCallback`, `invalidColumnPinningPickerMessage`, `invalidColumnPinningSequenceMessage`, `invalidColumnPinningWidthMessage`, `allowDragFromClosest`, `columnResizingDelay`.
 - New column properties: `pinned`, `sticky`.
@@ -117,13 +117,13 @@ const gridOptions: GridOption = {
 };
 ```
 
-### Column `hidden` (PR #1299)
+### Column `hidden` (PR [#1299](https://github.com/6pac/SlickGrid/pull/1299))
 
 - New option: `spreadHiddenColspan`.
 - New methods: `getColumnById()`, `getVisibleColumnIndex()`, `updateColumnById()`, `getRowTop()`.
-- Removed: `calculateFrozenColumnIndexById()` and `validateSetColumnFreeze()`. Pinning is validated by `validateColumnPinning()` (PR #1302).
+- Removed: `calculateFrozenColumnIndexById()` and `validateSetColumnFreeze()`. Pinning is validated by `validateColumnPinning()` (PR [#1302](https://github.com/6pac/SlickGrid/pull/1302)).
 
-##### jQueryUI CSS classes leftovers (PR #1313)
+##### jQueryUI CSS classes leftovers (PR [#1313](https://github.com/6pac/SlickGrid/pull/1313))
 
 Since we dropped jQueryUI back in v4, there is no need to keep references to `.ui-...` CSS classes. All DOM elements with `.ui-...` CSS classes already had `.slick-...` classes for a while already, so in this version we are just cleaning up the few remaining traces of jQueryUI CSS classes like `.ui-state-default` and other similar classes in the core lib, they were all removed in this release. If you were querying any of them in CSS for styling purposes, you can simply rename them to `.slick-state-*`
 
@@ -133,24 +133,24 @@ Since we dropped jQueryUI back in v4, there is no need to keep references to `.u
 }
 ```
 
-### SortableJS removal (PRs #1242–#1244)
+### SortableJS removal (PRs [#1242](https://github.com/6pac/SlickGrid/pull/1242) – [#1244](https://github.com/6pac/SlickGrid/pull/1244))
 
 - The `sortablejs` dependency is removed. Column reorder and draggable grouping use native drag and drop. No public grid option or method changes.
 - Changed: `SlickDraggableGrouping.getSetupColumnReorder()` returns `{ columnReorderDragInstance }` (an object with a `destroy()` method) instead of the SortableJS instances `{ sortableLeftInstance, sortableCenterInstance, sortableRightInstance }`.
 
-### Custom tooltips (PR #1316)
+### Custom tooltips (PR [#1316](https://github.com/6pac/SlickGrid/pull/1316))
 
 - Removed the `hideArrow` option from `CustomTooltipOption`; custom tooltips no longer render an arrow.
 - New options include `bodyClassName`, `repositionByMouseOverTarget`, `useRegularTooltipFromCellTextOnly`, `persistOnHover`, `autoHideDelay`, `observeAllTooltips`, and `observeTooltipContainer`.
 - The custom tooltip plugin can now show tooltips on elements outside the grid. Enable `observeAllTooltips` to observe `title` and `data-slick-tooltip` attributes. Observation defaults to the document body; set `observeTooltipContainer` to limit it to selected containers.
 
 ```ts
-import { SlickCustomTooltip, SlickGrid } from 'slickgrid';
+import { SlickCustomTooltip, SlickGrid } from "slickgrid";
 
-const grid = new SlickGrid('#myGrid', data, columns, {
+const grid = new SlickGrid("#myGrid", data, columns, {
   customTooltip: {
     observeAllTooltips: true,
-    observeTooltipContainer: '.toolbar, #dialog', // optional; defaults to body
+    observeTooltipContainer: ".toolbar, #dialog", // optional; defaults to body
   },
 });
 grid.registerPlugin(new SlickCustomTooltip());
@@ -158,11 +158,11 @@ grid.registerPlugin(new SlickCustomTooltip());
 
 See [Custom tooltips](/in-depth/custom-tooltips) for usage and all available options.
 
-### Clipboard (PR #1270, draft)
+### Clipboard (PR [#1270](https://github.com/6pac/SlickGrid/pull/1270))
 
 - The change is inside the `SlickCellExternalCopyManager` plugin (async Clipboard API). No grid option or method changes.
 
-### Alpine Theme (PR #1317)
+### Alpine Theme (PR [#1317](https://github.com/6pac/SlickGrid/pull/1317))
 
 - SASS/CSS variables previously used `$alpine-...` (SASS) or `--alpine-...` (CSS) but everything else in SlickGrid stylesheets already use `.slick-...` as CSS classes. So in v6 we are aligning everything and making all variables and classes start with the `slick-` prefix, for example:
 
@@ -192,7 +192,7 @@ The per-cell `onBeforeAppendCell` event and `OnBeforeAppendCellEventArgs` type w
 ```ts
 const formatter = (_row, _cell, value) => ({
   text: String(value),
-  addClasses: value > 50 ? 'high-value' : '',
+  addClasses: value > 50 ? "high-value" : "",
 });
 ```
 
