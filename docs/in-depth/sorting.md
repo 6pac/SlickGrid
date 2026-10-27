@@ -255,7 +255,7 @@ dataView.reSort(); // re-applies the previous comparer and direction
 - **Handle the cleared sort.** With tri-state, `sortCol` can be `null` and `sortCols` can be empty. Decide what "no sort" means for your data.
 - **Comparers must be a total order.** Return a negative number, `0`, or a positive number. Return `0` for equal values; add a tiebreak (such as the id) if you need a deterministic order.
 - **Sorting mutates your array.** `dataView.sort` and `Array.prototype.sort` reorder the items in place. Copy first if you need the original order.
-- **`fastSort` is deprecated.** [`fastSort`](/reference/dataview#m-fastSort) was an old IE workaround. Use [`sort`](/reference/dataview#m-sort).
+- The IE-specific `fastSort` workaround was removed in v6. Use [`sort`](/reference/dataview#m-sort) with a comparator.
 - **Number badges need two columns.** `numberedMultiColumnSort` shows precedence numbers only while more than one column is sorted.
 
 ## See also

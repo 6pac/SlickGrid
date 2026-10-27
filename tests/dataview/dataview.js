@@ -235,6 +235,19 @@ test("sort is stable", function() {
 });
 
 
+test("reSort reapplies the last comparer and direction", function() {
+    var dv = new Slick.Data.DataView();
+    var items = [{id:0,val:0},{id:1,val:1},{id:2,val:2}];
+    dv.setItems(items);
+    dv.reSort();
+    same(dv.getItems().map(function(item) { return item.id; }), [0, 1, 2], "reSort is harmless before sorting");
+    dv.sort(function(a, b) { return a.val - b.val; }, false);
+    dv.updateItem(0, {id:0,val:5});
+    dv.reSort();
+    same(dv.getItems().map(function(item) { return item.id; }), [0, 2, 1], "descending order is restored");
+    assertConsistency(dv);
+});
+
 module("filtering");
 
 test("applied immediately", function() {

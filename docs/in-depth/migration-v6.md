@@ -55,6 +55,20 @@ Version 6 plans to move external copy and paste to the browser's async Clipboard
 
 ## Removed deprecated code
 
+### DataView `fastSort()`
+
+The IE-specific `fastSort(field, ascending)` method has been removed. Use `sort(comparer, ascending)` instead. For example, to sort a string field:
+
+```ts
+dataView.sort((a, b) => a.name < b.name ? -1 : a.name > b.name ? 1 : 0, true);
+```
+
+Choose a comparator that matches your data and desired ordering. `reSort()` continues to reapply the comparator and direction passed to `sort()`.
+
+### Legacy browser fallbacks
+
+IE-specific stylesheet and global-event fallbacks have been removed. The Resizer plugin's `resizeGrid()` now always returns a Promise; its fallback for browsers without Promise support has been removed.
+
 ### Row positioning: `rowTopOffsetRenderType`
 
 Version 6 removes the `rowTopOffsetRenderType` grid option. Remove it from your configuration, whether its value was `'top'` or `'transform'`. Row Detail and RowSpan no longer require an explicit `'top'` setting.

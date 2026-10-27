@@ -594,7 +594,6 @@
         sortcol = args.sortCol.field;
 
         // using native sort with comparer
-        // preferred method but can be very slow in IE with huge datasets
         dataView.sort(comparer, args.sortAsc);
       });
 
