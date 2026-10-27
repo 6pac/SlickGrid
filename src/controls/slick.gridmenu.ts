@@ -37,10 +37,9 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  *      iconImage: "some-image.png",                // this is the Grid Menu icon (hamburger icon)
  *      iconCssClass: "fa fa-bars",                 // you can provide iconImage OR iconCssClass
  *      leaveOpen: false,                           // do we want to leave the Grid Menu open after a command execution? (false by default)
- *      menuWidth: 18,                              // width (icon) that will be use to resize the column header container (18 by default)
+ *      menuWidth: 12,                              // icon container width, plus 2px spacing (12 by default)
  *      contentMinWidth: 0,							            // defaults to 0 (auto), minimum width of grid menu content (command, column list)
  *      marginBottom: 15,                           // defaults to 15, margin to use at the bottom of the grid when using max-height (default)
- *      resizeOnShowHeaderRow: false,               // false by default
  *      showButton: true,                           // true by default - it allows the user to control if the
  *                                                          // default gridMenu button (located on the top right corner by default CSS)
  *                                                          // should be created or omitted
@@ -70,8 +69,8 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  *    forceFitTitle:              Text of the title "Force fit columns"
  *    contentMinWidth:						minimum width of grid menu content (command, column list), defaults to 0 (auto)
  *    height:                     Height of the Grid Menu content, when provided it will be used instead of the max-height (defaults to undefined)
- *    menuWidth:                  Grid menu button width (defaults to 18)
- *    resizeOnShowHeaderRow:      Do we want to resize on the show header row event
+ *    menuWidth:                  Grid menu icon container width (defaults to 12)
+ *    resizeOnShowHeaderRow:      Deprecated; header sizing is handled by flexbox
  *    syncResizeTitle:            Text of the title "Synchronous resize"
  *    useClickToRepositionMenu:   Use the Click offset to reposition the Grid Menu (defaults to true), when set to False it will use the icon offset to reposition the grid menu
  *    menuUsabilityOverride:      Callback method that user can override the default behavior of enabling/disabling the menu from being usable (must be combined with a custom formatter)
@@ -150,6 +149,7 @@ export class SlickGridMenu {
   protected _commandTitleElm!: HTMLElement;
   protected _commandListElm!: HTMLDivElement;
   protected _headerElm: HTMLDivElement | null = null;
+  protected _buttonContainerElm?: HTMLDivElement;
   protected _listElm!: HTMLElement;
   protected _buttonElm!: HTMLElement;
   protected _menuElm!: HTMLElement;
@@ -161,9 +161,8 @@ export class SlickGridMenu {
     hideSyncResizeButton: false,
     forceFitTitle: 'Force fit columns',
     marginBottom: 15,
-    menuWidth: 18,
+    menuWidth: 12,
     contentMinWidth: 0,
-    resizeOnShowHeaderRow: false,
     subMenuOpenByEvent: 'mouseover',
     syncResizeTitle: 'Synchronous resize',
     useClickToRepositionMenu: true,
@@ -197,24 +196,21 @@ export class SlickGridMenu {
   }
 
   protected createGridMenu() {
-    const gridMenuWidth = (this._gridMenuOptions?.menuWidth) || this._defaults.menuWidth;
-    // The current docking layout always keeps the grid menu in the left header region.
-    this._headerElm = document.querySelector(`.${this._gridUid} .slick-header-left`);
-    this._headerElm!.style.width = `calc(100% - ${gridMenuWidth}px)`;
+    const gridMenuWidth = this._gridMenuOptions?.menuWidth ?? this._defaults.menuWidth!;
+    const gridContainer = this.grid.getContainerNode();
+    this._headerElm = gridContainer.querySelector<HTMLDivElement>(
+      this._gridMenuOptions?.iconButtonContainer === 'preheader' ? '.slick-preheader-panel' : '.slick-header-left'
+    );
 
-    // if header row is enabled, we need to resize its width also
-    const enableResizeHeaderRow = (Utils.isDefined(this._gridMenuOptions?.resizeOnShowHeaderRow)) ? this._gridMenuOptions!.resizeOnShowHeaderRow : this._defaults.resizeOnShowHeaderRow;
-    if (enableResizeHeaderRow && this._gridOptions.showHeaderRow) {
-      const headerRow = document.querySelector<HTMLDivElement>(`.${this._gridUid}.slick-headerrow`);
-      if (headerRow) {
-        headerRow.style.width = `calc(100% - ${gridMenuWidth}px)`;
-      }
-    }
-
-    const showButton = (this._gridMenuOptions?.showButton !== undefined) ? this._gridMenuOptions.showButton : this._defaults.showButton;
-    if (showButton) {
+    const showButton = this._gridMenuOptions?.showButton ?? this._defaults.showButton;
+    if (showButton && this._headerElm?.parentElement) {
+      this._buttonContainerElm = Utils.createDomElement('div', {
+        className: 'slick-gridmenu-container',
+        style: { width: `${gridMenuWidth + 2}px` },
+      }, this._headerElm.parentElement);
       this._buttonElm = document.createElement('button');
       this._buttonElm.className = 'slick-gridmenu-button';
+      (this._buttonElm as HTMLButtonElement).type = 'button';
       this._buttonElm.ariaLabel = 'Grid Menu';
 
       if (this._gridMenuOptions?.iconCssClass) {
@@ -225,9 +221,7 @@ export class SlickGridMenu {
         this._buttonElm.appendChild(iconImageElm);
       }
 
-      // add the grid menu button in the preheader (when exists) or always in the column header (default)
-      const buttonContainerTarget = this._gridMenuOptions?.iconButtonContainer === 'preheader' ? 'firstChild' : 'lastChild';
-      this._headerElm!.parentElement!.insertBefore(this._buttonElm, this._headerElm!.parentElement![buttonContainerTarget]);
+      this._buttonContainerElm.appendChild(this._buttonElm);
 
       // add on click handler for the Grid Menu itself
       this._bindingEventService.bind(this._buttonElm, 'click', this.showGridMenu.bind(this) as EventListener);
@@ -359,10 +353,8 @@ export class SlickGridMenu {
     if (gridMenuElm) {
       gridMenuElm.style.display = 'none';
     }
-    if (this._headerElm) {
-      // put back original width (fixes width and pinning+gridMenu on left header)
-      this._headerElm.style.width = '100%';
-    }
+    this._buttonContainerElm?.remove();
+    this._buttonContainerElm = undefined;
     this._buttonElm?.remove();
     this._menuElm?.remove();
   }

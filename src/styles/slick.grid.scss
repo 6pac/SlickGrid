@@ -148,11 +148,21 @@ classes should alter those!
   font-size: 0.1px;
   display: block;
   cursor: col-resize;
-  width: 9px;
-  right: -5px;
+  width: 6px;
+  right: 0;
   top: 0;
   height: 100%;
-  z-index: 2;
+  z-index: 4;
+
+  &:hover {
+    box-sizing: border-box;
+    border: 2px solid #7c7c7c;
+    border-radius: 8px;
+    width: 4px;
+    height: 80%;
+    top: 10%;
+    opacity: 0.4;
+  }
 }
 
 .slick-sortable-placeholder {
@@ -321,7 +331,7 @@ classes should alter those!
 /* RTL (Right-to-Left) Support  */
 .slick-rtl .slick-resizable-handle {
   right: auto;
-  left: -5px;
+  left: 0;
 }
 
 /* fallback ghost shown while dragging a column header via the mouse/touch fallback

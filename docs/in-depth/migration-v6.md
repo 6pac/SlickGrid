@@ -80,6 +80,14 @@ If your custom CSS or tests locate a detail panel through its former cell siblin
 
 The `.dynamic-cell-detail`, `.detail-container`, and item-specific detail classes remain available. If your tests inspect row positions, expect transforms on ordinary rows and `top` positioning on rows involved in a RowSpan.
 
+## Grid Menu layout
+
+_The following changes should be transparent to most users; they are listed here in case of side effects with custom styling._
+
+Grid Menu now uses CSS flexbox instead of `calc(100% - 18px)` to position its button beside the column headers or pre-header. This improves alignment and keeps the last column's resize handle accessible.
+
+The default `gridMenu.menuWidth` is now `12` pixels, plus 2 pixels of spacing. The `resizeOnShowHeaderRow` option is deprecated and ignored because the menu no longer changes filter-row widths. Review custom CSS that positions `.slick-gridmenu-button` or overrides header widths.
+
 ## Already gone before v6
 
 - **jQuery** and **jQuery UI** were removed in earlier major versions. If you still load them for the grid, you can stop.

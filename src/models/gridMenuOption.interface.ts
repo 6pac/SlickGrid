@@ -67,10 +67,10 @@ export interface GridMenuOption {
   /** Maximum width that the grid menu can have, it could be a number (250) or text ("none") */
   maxWidth?: number | string;
 
-  /** Defaults to 16 pixels (only the number), which is the width in pixels of the Grid Menu icon container */
+  /** Defaults to 12 pixels (only the number), which is the width in pixels of the Grid Menu icon container */
   menuWidth?: number;
 
-  /** Defaults to False, which will resize the Header Row and remove the width of the Grid Menu icon from it's total width. */
+  /** @deprecated Header sizing is handled by flexbox. This option is ignored. */
   resizeOnShowHeaderRow?: boolean;
 
   /** Defaults to true, allows the user to control if the default gridMenu button (located on the top right corner by default CSS) should be created or omitted */

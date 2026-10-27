@@ -127,6 +127,8 @@ Notes:
 - Exclude a column from the column list with [`column.excludeFromGridMenu: true`](/reference/column#col-excludeFromGridMenu).
 - Nest `commandItems` inside a command to make a sub-menu.
 
+The Grid Menu button occupies a fixed flex slot beside the column header. `gridMenu.menuWidth` defaults to `12` pixels, plus 2 pixels of spacing. Set `iconButtonContainer: 'preheader'` to place the button beside the pre-header instead (requires `createPreHeaderPanel: true` and `showPreHeaderPanel: true`). `showButton: false` reserves no space. The legacy `resizeOnShowHeaderRow` option is ignored; filter-row widths are no longer changed by the menu.
+
 ## Header Menu
 
 The Header Menu adds a small caret drop-down to a column header. It is per-column, so each column can offer different commands (sort, hide, pin, and so on). Use it for actions that target one column.
