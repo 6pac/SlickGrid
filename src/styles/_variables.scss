@@ -66,6 +66,11 @@ $slick-auto-header-height-extra:                 8px !default;
 // the following 2 vars must equal 100% (or 0%) at all time (or height of 0 to never show)
 $slick-header-resizable-handle-height:           50% !default;
 $slick-header-resizable-handle-top:              25% !default;
+// pill drawn inside the handle while it is hovered
+$slick-header-resizable-handle-hover-width:          4px !default;
+$slick-header-resizable-handle-hover-border:         2px solid #7c7c7c !default;
+$slick-header-resizable-handle-hover-border-radius:  8px !default;
+$slick-header-resizable-handle-hover-opacity:        0.4 !default;
 
 // Buttons used by some Editors
 $slick-button-radius:                            2px !default;

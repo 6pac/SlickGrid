@@ -246,14 +246,23 @@
   z-index: 4;
   box-shadow: var(--slick-header-resizable-handle-box-shadow, v.$slick-header-resizable-handle-box-shadow);
 
-  &:hover {
+  // The hover pill is a pseudo-element so the handle's own hit box never changes while it is hovered
+  // (a rule that shrinks the hovered element drops the hover as soon as the cursor is on the shrunk part).
+  &::after {
+    content: '';
+    position: absolute;
+    left: 1px;
+    top: 0;
+    bottom: 0;
+    width: var(--slick-header-resizable-handle-hover-width, v.$slick-header-resizable-handle-hover-width);
     box-sizing: border-box;
-    border: 2px solid #7c7c7c;
-    border-radius: 8px;
-    width: 4px;
-    height: 80%;
-    top: 10%;
-    opacity: 0.4;
+    border: var(--slick-header-resizable-handle-hover-border, v.$slick-header-resizable-handle-hover-border);
+    border-radius: var(--slick-header-resizable-handle-hover-border-radius, v.$slick-header-resizable-handle-hover-border-radius);
+    opacity: 0;
+  }
+
+  &:hover::after {
+    opacity: var(--slick-header-resizable-handle-hover-opacity, v.$slick-header-resizable-handle-hover-opacity);
   }
 }
 
