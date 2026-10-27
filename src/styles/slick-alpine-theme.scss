@@ -241,9 +241,20 @@
 
   height: var(--slick-header-resizable-handle-height, v.$slick-header-resizable-handle-height);
   top: var(--slick-header-resizable-handle-top, v.$slick-header-resizable-handle-top);
-  width: 2px;
+  width: 6px;
   border: 0;
+  z-index: 4;
   box-shadow: var(--slick-header-resizable-handle-box-shadow, v.$slick-header-resizable-handle-box-shadow);
+
+  &:hover {
+    box-sizing: border-box;
+    border: 2px solid #7c7c7c;
+    border-radius: 8px;
+    width: 4px;
+    height: 80%;
+    top: 10%;
+    opacity: 0.4;
+  }
 }
 
 .slick-reorder-proxy,

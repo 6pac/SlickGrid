@@ -10,6 +10,17 @@
   display: block;
 }
 
+.slick-header-container,
+.slick-preheader-container {
+  display: flex;
+
+  > .slick-header,
+  > .slick-preheader-panel {
+    flex: 1 1 auto;
+    min-width: 0;
+  }
+}
+
 .slick-header-columns,
 .slick-header-columns-root,
 .slick-headerrow-columns,

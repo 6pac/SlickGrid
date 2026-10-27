@@ -17,17 +17,31 @@
   }
 }
 
+.slick-gridmenu-container {
+  flex: 0 0 auto;
+  position: relative;
+  display: flex;
+  justify-content: center;
+  overflow: hidden;
+}
+
 .slick-gridmenu-button {
+  // Let the header determine the slot height, including when the header is hidden.
   position: absolute;
+  inset-inline-end: 0;
+  width: 100%;
+  min-width: 0;
   cursor: pointer;
-  right: 0;
-  padding: 0 2px;
+  padding: 4px 0;
   background-color: transparent;
-  cursor: pointer;
   border: 0;
   margin-top: 5px;
-  width: 16px;
-  z-index: 9;
+  z-index: 2;
+
+  img {
+    display: block;
+    max-width: 100%;
+  }
 }
 
 .slick-gridmenu > .close {
