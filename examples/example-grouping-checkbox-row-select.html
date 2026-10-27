@@ -292,7 +292,6 @@ document.addEventListener("DOMContentLoaded", function() {
   var groupItemMetadataProvider = new Slick.Data.GroupItemMetadataProvider({ checkboxSelect: true, checkboxSelectPlugin: checkboxSelector });
   dataView = new Slick.Data.DataView({
     groupItemMetadataProvider: groupItemMetadataProvider,
-    inlineFilters: true
   });
   grid = new Slick.Grid("#myGrid", dataView, columns, options);
 

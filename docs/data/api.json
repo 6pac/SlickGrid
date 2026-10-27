@@ -1,6 +1,6 @@
 {
   "meta": {
-    "generatedAt": "2026-10-23T16:36:49.664Z",
+    "generatedAt": "2026-10-27T23:30:27.187Z",
     "repo": "/home/ghislainb/sourcecode/SlickGrid",
     "counts": {
       "gridOptions": 118,
@@ -9,7 +9,7 @@
       "columns": 51,
       "gridEvents": 61,
       "gridMethods": 154,
-      "dataViewOptions": 4,
+      "dataViewOptions": 2,
       "dataViewEvents": 9,
       "dataViewMethods": 57,
       "plugins": 20,
@@ -5355,20 +5355,6 @@
       "type": "SlickGroupItemMetadataProvider_ | null",
       "optional": false,
       "description": "Optionally provide a GroupItemMetadataProvider in order to use Grouping/DraggableGrouping features"
-    },
-    {
-      "name": "inlineFilters",
-      "type": "boolean",
-      "optional": false,
-      "description": "",
-      "deprecated": "Filtering is always CSP-safe and this option is now ignored.\nRemove both `inlineFilters` and `useCSPSafeFilter` in the next major release."
-    },
-    {
-      "name": "useCSPSafeFilter",
-      "type": "boolean",
-      "optional": false,
-      "description": "",
-      "deprecated": "Filtering is always CSP-safe and this option is now ignored.\nRemove it in the next major release together with `inlineFilters`."
     }
   ],
   "dataViewEvents": [

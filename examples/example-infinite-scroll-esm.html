@@ -139,7 +139,7 @@
     // prepare the data
     data = loadData(0, FETCH_SIZE);
 
-    dataView = new SlickDataView({ inlineFilters: true });
+    dataView = new SlickDataView();
     grid = new SlickGrid("#myGrid", dataView, columns, gridOptions);
 
     // wire up model events to drive the grid

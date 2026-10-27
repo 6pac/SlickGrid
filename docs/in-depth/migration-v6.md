@@ -55,6 +55,18 @@ Version 6 plans to move external copy and paste to the browser's async Clipboard
 
 ## Removed deprecated code
 
+### DataView filtering
+
+DataView filtering and aggregation are CSP-safe without runtime code generation. Remove `inlineFilters` and `useCSPSafeFilter` from DataView options; neither needs a replacement. The unused `FilterCspFn` and `FilterWithCspCachingFn` type aliases are also removed. Use `FilterFn<T>` for the predicate passed to `setFilter()`.
+
+Subclasses of `SlickDataView` must update references to these protected methods:
+
+| Previous method | Replacement |
+| --- | --- |
+| `compileFilterCSPSafe()` | `filterItems()` |
+| `compileFilterWithCachingCSPSafe()` | `filterItemsWithCaching()` |
+| `compileAccumulatorLoopCSPSafe()` | `compileAccumulatorLoop()` |
+
 ### Row positioning: `rowTopOffsetRenderType`
 
 Version 6 removes the `rowTopOffsetRenderType` grid option. Remove it from your configuration, whether its value was `'top'` or `'transform'`. Row Detail and RowSpan no longer require an explicit `'top'` setting.

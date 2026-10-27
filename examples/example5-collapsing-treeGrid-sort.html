@@ -677,7 +677,7 @@ itemMap = groupBy(data, 'parentId');
 data = initTree(data);
 
 // initialize the model
-dataView = new Slick.Data.DataView({ inlineFilters: true });
+dataView = new Slick.Data.DataView();
 dataView.beginUpdate();
 dataView.setItems(data);
 dataView.setFilter(myFilter);

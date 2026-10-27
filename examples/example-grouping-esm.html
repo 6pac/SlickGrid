@@ -342,7 +342,6 @@ document.addEventListener("DOMContentLoaded", function() {
   let groupItemMetadataProvider = new SlickGroupItemMetadataProvider();
   dataView = new SlickDataView({
     groupItemMetadataProvider,
-    inlineFilters: true
   });
   grid = new SlickGrid("#myGrid", dataView, columns, options);
 

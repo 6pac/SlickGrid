@@ -168,7 +168,7 @@ search.addEventListener('input', () => {
 ::: tip CSP-safe by default
 In v6 all filtering is CSP-safe. The DataView calls your filter function directly and never builds code with `new Function`. It works unchanged under a strict Content-Security-Policy.
 
-The old options [`inlineFilters`](/reference/dataview#dvopt-inlineFilters) and [`useCSPSafeFilter`](/reference/dataview#dvopt-useCSPSafeFilter) are deprecated and ignored. Do not set them.
+No filter strategy options are needed.
 :::
 
 ### 6. Page

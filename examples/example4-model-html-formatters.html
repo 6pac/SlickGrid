@@ -316,7 +316,7 @@ document.addEventListener("DOMContentLoaded", () => {
     d["effortDriven"] = (i % 5 == 0);
   }
 
-  dataView = new SlickDataView({ inlineFilters: true, useCSPSafeFilter: true });
+  dataView = new SlickDataView();
   grid = new SlickGrid("#myGrid", dataView, columns, options);
   grid.setSelectionModel(new SlickRowSelectionModel());
 

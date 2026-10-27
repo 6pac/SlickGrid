@@ -268,7 +268,7 @@ document.addEventListener("DOMContentLoaded", () => {
   }
 
   // instantiate SlickGrid and SlickDataView
-  dataView = new SlickDataView({ inlineFilters: true });
+  dataView = new SlickDataView();
   grid = new SlickGrid("#myGrid", dataView, columns, options);
   grid.setSelectionModel(new SlickRowSelectionModel());
 
@@ -411,7 +411,7 @@ document.addEventListener("DOMContentLoaded", () => {
     percentCompleteThreshold,
     searchString
   });
-  // `inlineFilters` can be a regular function or an ES6 arrow function like below
+  // Filters can be regular functions or ES6 arrow functions like below
   // dataView.setFilter((item, args) => item['percentComplete'] > args.percentCompleteThreshold);
   dataView.setFilter((item, args) => {
     if (item['percentComplete'] < args.percentCompleteThreshold) {
