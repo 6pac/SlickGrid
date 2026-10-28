@@ -49,9 +49,7 @@ What to change:
 
 This makes show/hide reversible and keeps each column's settings while it is hidden.
 
-## Copy and paste: the async Clipboard API
-
-#### (PRs [#1242](https://github.com/6pac/SlickGrid/pull/1242), [#1243](https://github.com/6pac/SlickGrid/pull/1243), [#1244](https://github.com/6pac/SlickGrid/pull/1244))
+## Copy and paste: the async Clipboard API (PRs [#1242](https://github.com/6pac/SlickGrid/pull/1242), [#1243](https://github.com/6pac/SlickGrid/pull/1243), [#1244](https://github.com/6pac/SlickGrid/pull/1244))
 
 External copy and paste now use the browser's asynchronous Clipboard API (`navigator.clipboard`) instead of the old hidden-textarea approach. The change is implemented in `SlickCellExternalCopyManager`; no grid options or methods changed. The API requires a secure context (HTTPS or localhost), and paste requires clipboard-read permission. Use `clipboardWriteOverride` and `clipboardReadOverride` when the Clipboard API is unavailable or the host application manages the clipboard. See the [CellExternalCopyManager reference](/reference/plugins) for details.
 
@@ -82,7 +80,7 @@ If your custom CSS or tests locate a detail panel through its former cell siblin
 
 The `.dynamic-cell-detail`, `.detail-container`, and item-specific detail classes remain available. If your tests inspect row positions, expect transforms on ordinary rows and `top` positioning on rows involved in a RowSpan.
 
-## Grid Menu layout
+## Grid Menu layout (PR [#1323](https://github.com/6pac/SlickGrid/pull/1323))
 
 _The following changes should be transparent to most users; they are listed here in case of side effects with custom styling._
 
@@ -185,7 +183,7 @@ body {
 - [Pinning and sticky docking](/in-depth/pinning-sticky)
 - [Plugins](/in-depth/plugins) · [Reference](/reference/)
 
-## Scroll rendering performance
+## Scroll rendering performance (PR [#1320](https://github.com/6pac/SlickGrid/pull/1320))
 
 Large vertical scroll jumps now render synchronously by default (`scrollRenderThrottling: 0`). Set a positive delay, such as `10`, to retain timer throttling. Horizontal rendering keeps its existing animation-frame scheduler.
 
