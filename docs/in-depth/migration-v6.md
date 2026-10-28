@@ -7,7 +7,7 @@ title: Migrating to v6
 Version 6 is a major release. It removes the last third-party dependency, replaces frozen rows and columns with pinning and sticky docking, and changes how columns are hidden. This page lists the breaking changes and how to update.
 
 ::: tip
-This page describes the upcoming v6 release. Some items come from feature branches that merge at release. The copy/paste change is still a draft and may change.
+This page describes the upcoming v6 release. Some items come from feature branches that merge at release.
 :::
 
 ## SortableJS is gone
@@ -49,9 +49,11 @@ What to change:
 
 This makes show/hide reversible and keeps each column's settings while it is hidden.
 
-## Copy and paste: the async Clipboard API (draft)
+## Copy and paste: the async Clipboard API
 
-Version 6 plans to move external copy and paste to the browser's async Clipboard API, in place of the old hidden-textarea approach. This is still a draft and may change before release. Watch the [CellExternalCopyManager](/reference/plugins) entry for the final shape.
+#### (PRs [#1242](https://github.com/6pac/SlickGrid/pull/1242), [#1243](https://github.com/6pac/SlickGrid/pull/1243), [#1244](https://github.com/6pac/SlickGrid/pull/1244))
+
+External copy and paste now use the browser's asynchronous Clipboard API (`navigator.clipboard`) instead of the old hidden-textarea approach. The change is implemented in `SlickCellExternalCopyManager`; no grid options or methods changed. The API requires a secure context (HTTPS or localhost), and paste requires clipboard-read permission. Use `clipboardWriteOverride` and `clipboardReadOverride` when the Clipboard API is unavailable or the host application manages the clipboard. See the [CellExternalCopyManager reference](/reference/plugins) for details.
 
 ## Removed deprecated code
 
