@@ -1,7 +1,7 @@
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 [![TypeScript](https://img.shields.io/badge/%3C%2F%3E-TypeScript-%230074c1.svg)](http://www.typescriptlang.org/)
 [![NPM downloads](https://img.shields.io/npm/dm/slickgrid.svg)](https://npmjs.org/package/slickgrid)
-[![npm bundle size](https://img.shields.io/bundlephobia/minzip/slickgrid?color=5dade2&label=gzip)](https://bundlephobia.com/result?p=slickgrid)
+[![npm bundle size](https://deno.bundlejs.com/badge?q=slickgrid)]([https://bundlejs.com/?q=excel-builder-vanilla](https://bundlejs.com/?q=slickgrid))
 [![jsdelivr hits/month](https://data.jsdelivr.com/v1/package/npm/slickgrid/badge)](https://www.jsdelivr.com/package/npm/slickgrid)
 
 [![Cypress.io](https://img.shields.io/badge/tested%20with-Cypress-04C38E.svg)](https://www.cypress.io/)
@@ -21,15 +21,18 @@ We extended the project from the original SlickGrid foundation while also includ
 - removed jQueryUI requirement in [v3](https://github.com/6pac/SlickGrid/wiki/Major-version-3.0----Removal-of-jQueryUI-requirement-(replaced-by-SortableJS)) (replaced it with [SortableJS](https://sortablejs.github.io/Sortable/))
 - removed jQuery requirement in [v4](https://github.com/6pac/SlickGrid/wiki/Major-version-4.0---Removal-of-jQuery-requirement)
 - modernized the project in [v5](https://github.com/6pac/SlickGrid/wiki/Major-version-5.0-%E2%80%90-ES6-ESM-and-TypeScript-Support) by migrating to TypeScript (we kept IIFE and added ES6/ESM build targets) and we also gave SlickGrid a fresh and more modern look via a new Alpine Theme (CSS/SASS)
-- the project now has **zero runtime dependencies** (the previous [SortableJS](https://sortablejs.github.io/Sortable/) requirement was replaced by a built-in native HTML5 drag & drop implementation for column reordering and draggable grouping)
+- rewrite Pinning feature and add a new Sticky columns/rows in [v6](https://6pac.github.io/SlickGrid/in-depth/migration-v6) and make it a **zero dependencies** project (the previous `SortableJS` requirement was replaced by a built-in native HTML5 drag & drop implementation for column reordering and draggable grouping)
 
 ### Common Questions & Answers
-- Do I need TypeScript to use version 5.x?
+- Do I need TypeScript to use version >=5.x?
   - Not at all, you can use regular JavaScript if you wish by using the [dist/browser](https://github.com/6pac/SlickGrid/tree/master/dist/browser) folder, ESM folder or from CDN. The Stackblitz and installation examples shown below are mostly written with JavaScript.
 - Can I use it with _"xyz"_ framework?
   - Sure we provide an ES6/ESM build which should work with most frameworks... but for more specific frameworks (Angular, React and Vue) you may want to take a look at [Slickgrid-Universal](https://github.com/ghiscoding/slickgrid-universal) which has official wrappers for all these frameworks and more.
 - Do I still need jQuery?
-  - Not anymore, it's totally optional since v4.0 (you can still use jQuery if you wish, but it's now optional)
+  - Not anymore, it's totally optional since v4.0 (you can still use jQuery if you wish, but it's totally optional)
+
+### Documentation 📖
+📘 Visit our new [Documentation](https://6pac.github.io/SlickGrid/) website to get started
 
 ### Vite Demo
 You can also see a [ViteJS](https://vite.dev/) demo in the [./vite-demo](https://github.com/6pac/SlickGrid/tree/master/vite-demo) folder (also available via the Stackblitz link below). This Vite demo was created mostly to test the project ESM build and the SASS imports as well.
@@ -68,7 +71,7 @@ There are multiple ways to use and install SlickGrid, you can use it as a standa
   const grid = new Slick.Grid("#myGrid", dataView, columns, options);
 </script>
 ---
-# or install from NPM as CJS/ESM
+# or install from NPM as ESM
 npm install slickgrid
 
 <script type="module">
@@ -85,7 +88,7 @@ For more CDN links, like controls and plugins, just headover to [jsDevlivr - Sli
 See [Contributing Guide](https://github.com/6pac/SlickGrid/blob/master/CONTRIBUTING.md)
 
 ### E2E Tests with Cypress
-A lot of our Examples now have [Cypress](https://www.cypress.io/) E2E (end to end) tests in the browser. You can see [here](https://github.com/6pac/SlickGrid/tree/master/cypress/e2e) the complete list of Examples that now have E2E tests. The biggest advantage is that these tests are executed in the [GitHub Actions](https://github.com/features/actions) Workflow (CI) for every Pull Request which makes sure the project is stable with every new commit. We currently have tests for over 40 examples with a total of over 500 tests.
+A lot of our Examples now have [Cypress](https://www.cypress.io/) E2E (end to end) tests in the browser. You can see [here](https://github.com/6pac/SlickGrid/tree/master/cypress/e2e) the complete list of Examples that now have E2E tests. The biggest advantage is that these tests are executed in the [GitHub Actions](https://github.com/features/actions) Workflow (CI) for every Pull Request which makes sure the project is stable with every new commit. We currently have tests for +50 examples with a total of ~800 tests.
 
 We welcome any new contributions and if you wish to add or run all the Cypress E2E tests, all you need to do is to clone the repo and run the following commands
 ```bash
