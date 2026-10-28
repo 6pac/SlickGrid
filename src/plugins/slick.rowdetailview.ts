@@ -153,7 +153,6 @@ export class SlickRowDetailView {
   protected _keyPrefix = this._defaults.keyPrefix;
   protected _gridRowBuffer = 0;
   protected _rowIdsOutOfViewport: Array<number | string> = [];
-  protected _overlayHost?: HTMLDivElement;
   protected _overlayPanels = new Map<number | string, HTMLDivElement>();
   protected _overlayContents = new Map<number | string, unknown>();
   protected _lastScrollLeft?: number;
@@ -233,8 +232,7 @@ export class SlickRowDetailView {
   /** destroy the plugin and it's events */
   destroy() {
     this._eventHandler.unsubscribeAll();
-    this._overlayHost?.remove();
-    this._overlayHost = undefined;
+    this._overlayPanels.forEach((panel) => panel.remove());
     this._overlayPanels.clear();
     this._overlayContents.clear();
     this.onAsyncResponse.unsubscribe();
@@ -441,7 +439,7 @@ export class SlickRowDetailView {
 
     window.setTimeout(() => {
       // make sure View Row DOM Element really exist before notifying that it's a row that is visible again
-      if (document.querySelector(`.${this._gridUid} .cellDetailView_${item[this._dataViewIdProperty]}`)) {
+      if (document.querySelector(`.${this._gridUid} .row-detail-${item[this._dataViewIdProperty]}`)) {
         this.onRowBackToViewportRange.notify({
           grid: this._grid,
           item,
@@ -557,7 +555,7 @@ export class SlickRowDetailView {
 
   /** Saves the current state of the detail view */
   saveDetailView(item: any) {
-    const view = document.querySelector(`.${this._gridUid} .innerDetailView_${item[this._dataViewIdProperty]}`);
+    const view = document.querySelector(`.${this._gridUid} .row-detail-${item[this._dataViewIdProperty]}`);
     if (view) {
       const html = view.innerHTML;
       if (html !== undefined) {
@@ -735,17 +733,6 @@ export class SlickRowDetailView {
     if (!canvas) {
       return;
     }
-    if (this._overlayHost && this._overlayHost.parentElement !== canvas) {
-      this._overlayHost.remove();
-      this._overlayHost = undefined;
-      this._overlayPanels.clear();
-      this._overlayContents.clear();
-    }
-    if (!this._overlayHost) {
-      this._overlayHost = Utils.createDomElement('div', { className: 'slick-row-detail-overlay' });
-      canvas.appendChild(this._overlayHost);
-    }
-
     const renderedRange = this._grid.getRenderedRange();
     const expandedIds = new Set<number | string>();
     for (let index = 0; index < this._expandedRows.length; index++) {
@@ -772,14 +759,11 @@ export class SlickRowDetailView {
         this._overlayContents.set(itemId, detailContent);
       }
       if (this._overlayContents.get(itemId) !== detailContent) {
-        const contentNode = panel.firstElementChild?.firstElementChild as HTMLElement | null;
-        if (contentNode) {
-          this.renderDetailContent(contentNode, item);
-        }
+        this.renderDetailContent(panel, item);
         this._overlayContents.set(itemId, detailContent);
       }
-      if (panel.parentElement !== this._overlayHost) {
-        this._overlayHost.appendChild(panel);
+      if (panel.parentElement !== canvas) {
+        canvas.appendChild(panel);
       }
       this.updateOverlayPanelPosition(panel, item, row);
     }
@@ -794,14 +778,10 @@ export class SlickRowDetailView {
   protected createDetailViewElement(item: any): HTMLDivElement {
     const id = item[this._dataViewIdProperty];
     const panel = Utils.createDomElement('div', {
-      className: `dynamic-cell-detail cellDetailView_${id}`,
+      className: `slick-row-detail-container row-detail-${id}`,
       style: { pointerEvents: 'auto' },
     });
-    const container = Utils.createDomElement('div', { className: `detail-container detailViewContainer_${id}` });
-    const content = Utils.createDomElement('div', { className: `innerDetailView_${id}` });
-    this.renderDetailContent(content, item);
-    container.appendChild(content);
-    panel.appendChild(container);
+    this.renderDetailContent(panel, item);
     return panel;
   }
 
@@ -855,11 +835,8 @@ export class SlickRowDetailView {
     }
 
     // Grad each of the DOM elements
-    const mainContainer = document.querySelector<HTMLDivElement>(`.${this._gridUid} .detailViewContainer_${item[this._dataViewIdProperty]}`);
-    const cellItem = document.querySelector<HTMLDivElement>(`.${this._gridUid} .cellDetailView_${item[this._dataViewIdProperty]}`);
-    const inner = document.querySelector<HTMLDivElement>(`.${this._gridUid} .innerDetailView_${item[this._dataViewIdProperty]}`);
-
-    if (!mainContainer || !cellItem || !inner) {
+    const cellItem = document.querySelector<HTMLDivElement>(`.${this._gridUid} .row-detail-${item[this._dataViewIdProperty]}`);
+    if (!cellItem) {
       return;
     }
 
@@ -870,11 +847,10 @@ export class SlickRowDetailView {
     const rowHeight = this._gridOptions.rowHeight; // height of a row
     const lineHeight = 13; // we know cuz we wrote the custom css innit ;)
 
-    // remove the height so we can calculate the height
-    mainContainer.style.minHeight = '';
-
-    // Get the scroll height for the main container so we know the actual size of the view
-    const itemHeight = mainContainer.scrollHeight;
+    // Measure the content independently of the panel's current height so it can also shrink.
+    const scrollTop = cellItem.scrollTop;
+    cellItem.style.height = 'auto';
+    const itemHeight = cellItem.scrollHeight;
 
     // Now work out how many rows
     const rowCount = Math.ceil(itemHeight / rowHeight!);
@@ -888,8 +864,6 @@ export class SlickRowDetailView {
       this._grid.getOptions().minRowBuffer = item[`${this._keyPrefix}sizePadding`] + 3;
     }
 
-    mainContainer.style.minHeight = `${item[`${this._keyPrefix}height`]}px`;
-
     const idxParent = this._dataView.getIdxById(item[this._dataViewIdProperty]) ?? 0;
     for (let idx = 1; idx <= item[`${this._keyPrefix}sizePadding`]; idx++) {
       this._dataView.insertItem(idxParent + idx, this.getPaddingItem(item, idx));
@@ -900,6 +874,7 @@ export class SlickRowDetailView {
     if (row !== undefined) {
       this.updateOverlayPanelPosition(cellItem, item, row);
     }
+    cellItem.scrollTop = scrollTop;
 
     // Lastly save the updated state
     this.saveDetailView(item);
