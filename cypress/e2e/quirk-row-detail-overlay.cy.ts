@@ -34,11 +34,17 @@ const visitHarness = (gridOptions?: string, extraColumns?: string) => {
     headers: { 'content-type': 'text/html' }, body: overlayHarness(gridOptions, extraColumns),
   });
   cy.visit('/row-detail-overlay-harness.html');
-  cy.get('.cellDetailView_1 .detail-input').should('exist');
+  cy.get('.slick-row-detail-container.row-detail-1 .detail-input').should('exist');
+  cy.get('.slick-row-detail-container.row-detail-1').should(($panel) => {
+    expect($panel).to.have.attr('class', 'slick-row-detail-container row-detail-1');
+    expect($panel.parent()).to.have.class('grid-canvas');
+    expect($panel.children()).to.have.length(2);
+    expect($panel.find('.detail-container, .innerDetailView_1')).to.have.length(0);
+  });
 };
 
 const rowRect = (win: any, id: number | string) => win.grid.getRowCache()[win.dataView.getRowById(id)].rowNode[0].getBoundingClientRect();
-const panelRect = (win: any, id: number | string) => win.document.querySelector(`.cellDetailView_${id}`).getBoundingClientRect();
+const panelRect = (win: any, id: number | string) => win.document.querySelector(`.row-detail-${id}`).getBoundingClientRect();
 
 describe('Row Detail overlay lifecycle', () => {
   it('renders an async response supplied as a replacement DataView item', () => {
@@ -47,13 +53,13 @@ describe('Row Detail overlay lifecycle', () => {
       const replacement = { ...win.dataView.getItemById(1), name: 'Loaded' };
       win.detail.onAsyncResponse.notify({ item: replacement, detailView: '<h4>Loaded detail</h4>' });
     });
-    cy.get('.cellDetailView_1 h4').should('have.text', 'Loaded detail');
+    cy.get('.row-detail-1 h4').should('have.text', 'Loaded detail');
     cy.window().then((win: any) => {
       expect(win.detail.getExpandedRows()[0]).to.equal(win.dataView.getItemById(1));
       win.detail.collapseAll();
       expect(win.dataView.getLength()).to.equal(30);
     });
-    cy.get('.dynamic-cell-detail').should('not.exist');
+    cy.get('.slick-row-detail-container').should('not.exist');
   });
 
   it('preserves input state and event listeners when saving a mounted detail', () => {
@@ -91,7 +97,7 @@ describe('Row Detail overlay lifecycle', () => {
       // the panel leaves with its padding rows instead of staying under the band over other rows
       win.grid.scrollTo(400);
       win.grid.render();
-      expect(win.document.querySelector('.cellDetailView_1')).to.equal(null);
+      expect(win.document.querySelector('.row-detail-1')).to.equal(null);
       win.grid.scrollTo(0);
       win.grid.render();
       expect(Math.abs(panelRect(win, 1).top - rowRect(win, '1.1').top)).to.be.lessThan(1);

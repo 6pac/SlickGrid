@@ -69,16 +69,16 @@ const gridOptions: GridOption = {
 
 Ordinary grid rows now use `transform: translateY(25px)` instead of `top: 25px` for scrolling performance. RowSpan host rows and the rows they cover retain internal `top` positioning so spanning cells and pinned columns stack correctly. The grid chooses the positioning automatically; no configuration is required.
 
-The `SlickRowDetailView` plugin now renders detail panels in a canvas overlay. Its options are still passed to the plugin constructor, and there is no `renderMode` option to configure in this project. Each panel sits over the padding rows reserved below its parent (including shifts from pinned rows) and stays within the visible viewport width while scrolling horizontally.
+The `SlickRowDetailView` plugin renders one `.slick-row-detail-container.row-detail-{id}` panel directly in the grid canvas. Its options are still passed to the plugin constructor, and there is no `renderMode` option to configure in this project. Each panel sits over the padding rows reserved below its parent (including shifts from pinned rows) and stays within the visible viewport width while scrolling horizontally. The panel itself is the content mount point; the previous `.dynamic-cell-detail`, `.detail-container`, `.innerDetailView_{id}`, `.detailViewContainer_{id}`, and `.cellDetailView_{id}` containers/classes have been removed.
 
-If your custom CSS or tests locate a detail panel through its former cell sibling, update the selector to use the overlay:
+Update custom CSS and tests to use the new panel selector:
 
 ```diff
-- .slick-cell + .dynamic-cell-detail
-+ .slick-row-detail-overlay .dynamic-cell-detail
+- .dynamic-cell-detail .innerDetailView_{id}
++ .slick-row-detail-container.row-detail-{id}
 ```
 
-The `.dynamic-cell-detail`, `.detail-container`, and item-specific detail classes remain available. If your tests inspect row positions, expect transforms on ordinary rows and `top` positioning on rows involved in a RowSpan.
+If your tests inspect row positions, expect transforms on ordinary rows and `top` positioning on rows involved in a RowSpan.
 
 ## Grid Menu layout (PR [#1323](https://github.com/6pac/SlickGrid/pull/1323))
 

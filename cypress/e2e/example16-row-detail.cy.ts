@@ -20,7 +20,7 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
       .click()
       .wait(50);
 
-    cy.get('.slick-row-detail-overlay .dynamic-cell-detail .detailViewContainer_1')
+        cy.get('.slick-row-detail-container.row-detail-1')
       .find('h4')
       .should('contain', 'Task 1');
 
@@ -36,7 +36,7 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
       .click()
       .wait(50);
 
-    cy.get('.slick-row-detail-overlay .dynamic-cell-detail .detailViewContainer_3')
+        cy.get('.slick-row-detail-container.row-detail-3')
       .find('h4')
       .should('contain', 'Task 3');
 
@@ -48,9 +48,9 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
   });
 
   it('should be able to collapse all row details', () => {
-    cy.get('.dynamic-cell-detail').should('have.length', 2);
+    cy.get('.slick-row-detail-container').should('have.length', 2);
     cy.get('[data-test="collapse-all-btn"]').click();
-    cy.get('.dynamic-cell-detail').should('have.length', 0);
+    cy.get('.slick-row-detail-container').should('have.length', 0);
   });
 
   it('should open the Task 3 Row Detail and still expect same detail', () => {
@@ -58,9 +58,9 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
       .click()
       .wait(50);
 
-    cy.get('.dynamic-cell-detail').should('have.length', 1);
+    cy.get('.slick-row-detail-container').should('have.length', 1);
 
-    cy.get('.slick-row-detail-overlay .dynamic-cell-detail .innerDetailView_3')
+        cy.get('.slick-row-detail-container.row-detail-3')
       .find('h4')
       .should('contain', 'Task 3');
 
