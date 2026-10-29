@@ -1833,7 +1833,7 @@ const SlickCore = {
     IgnoreViewport: 'IGV',
     FitColsToViewport: 'FCV',
     FitViewportToCols: 'FVC'
-  },
+  } as const,
 
   'ColAutosizeMode': {
     Locked: 'LCK',
@@ -1841,14 +1841,14 @@ const SlickCore = {
     Content: 'CON',
     ContentExpandOnly: 'CXO',
     ContentIntelligent: 'CTI'
-  },
+  } as const,
 
   'RowSelectionMode': {
     FirstRow: 'FS1',
     FirstNRows: 'FSN',
     AllRows: 'ALL',
     LastRow: 'LS1'
-  },
+  } as const,
 
   'CellSelectionMode': {
     Select: "SEL",
@@ -1861,13 +1861,13 @@ const SlickCore = {
     GetGreatestAndSub: 'GR8T',
     GetLongestTextAndSub: 'LNSB',
     GetLongestText: 'LNSC'
-  },
+  } as const,
 
   WidthEvalMode: {
     Auto: 'AUTO',
     TextOnly: 'CANV',
     HTML: 'HTML'
-  }
+  } as const
 };
 
 export const {
