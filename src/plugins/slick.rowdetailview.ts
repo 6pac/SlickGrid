@@ -34,7 +34,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  *
  * USAGE:
  * Add the slick.rowDetailView.(js|css) files and register the plugin with the grid.
- * Expanded detail panels render in a canvas overlay so cells and rows do not clip their content.
+ * Expanded detail panels are absolutely positioned in the grid canvas so cells and rows do not clip their content.
  *
  * AVAILABLE ROW DETAIL OPTIONS:
  *    cssClass:               A CSS class to be added to the row detail
@@ -777,10 +777,7 @@ export class SlickRowDetailView {
   /** Create a detail panel; `updateOverlayPanelPosition` places and sizes it once mounted. */
   protected createDetailViewElement(item: any): HTMLDivElement {
     const id = item[this._dataViewIdProperty];
-    const panel = Utils.createDomElement('div', {
-      className: `slick-row-detail-container row-detail-${id}`,
-      style: { pointerEvents: 'auto' },
-    });
+    const panel = Utils.createDomElement('div', { className: `slick-row-detail-container row-detail-${id}` });
     this.renderDetailContent(panel, item);
     return panel;
   }

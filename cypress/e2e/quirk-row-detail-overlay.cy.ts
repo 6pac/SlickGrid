@@ -14,7 +14,7 @@ const overlayHarness = (gridOptions = 'pinning: { rows: { bottom: [{ id: 0 }] } 
   var dataView = new Slick.Data.DataView();
   var detail = new Slick.Plugins.RowDetailView({
     panelRows: 3,
-    preTemplate: function() { return '<input class="detail-input"><button class="detail-button">Click</button>'; },
+    preTemplate: function() { return '<input class="detail-input"><button class="detail-button">Click</button><div class="detail-note">Note</div>'; },
     process: function() { return Promise.resolve(); }
   });
   var grid = new Slick.Grid('#grid', dataView, [
@@ -38,7 +38,7 @@ const visitHarness = (gridOptions?: string, extraColumns?: string) => {
   cy.get('.slick-row-detail-container.row-detail-1').should(($panel) => {
     expect($panel).to.have.attr('class', 'slick-row-detail-container row-detail-1');
     expect($panel.parent()).to.have.class('grid-canvas');
-    expect($panel.children()).to.have.length(2);
+    expect($panel.children()).to.have.length(3);
     expect($panel.find('.detail-container, .innerDetailView_1')).to.have.length(0);
   });
 };
@@ -101,6 +101,18 @@ describe('Row Detail overlay lifecycle', () => {
       win.grid.scrollTo(0);
       win.grid.render();
       expect(Math.abs(panelRect(win, 1).top - rowRect(win, '1.1').top)).to.be.lessThan(1);
+    });
+  });
+
+  it('applies the panel line-height to every top-level element of the template', () => {
+    visitHarness();
+    cy.window().then((win: any) => {
+      const panel = win.document.querySelector('.row-detail-1');
+      expect(win.getComputedStyle(panel).lineHeight, 'panel line-height').to.equal('13px');
+      // the former content wrapper carried the 13px line-height, so every top-level element inherited it;
+      // a rule on the first child only would leave the later ones (and the panel itself) at "normal"
+      expect(win.getComputedStyle(panel.querySelector('.detail-note')).lineHeight, 'last top-level element').to.equal('13px');
+      expect(win.getComputedStyle(panel.querySelector('.detail-input')).verticalAlign, 'no vertical-align forced on a leading form control').to.equal('baseline');
     });
   });
 
