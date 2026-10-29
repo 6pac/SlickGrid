@@ -92,8 +92,8 @@ export class SlickColumnPicker {
     this._menuElm.appendChild(buttonElm);
 
     // user could pass a title on top of the columns list
-    if (this._gridOptions.columnPickerTitle || (this._gridOptions.columnPicker?.columnTitle)) {
-      const columnTitle = this._gridOptions.columnPickerTitle || this._gridOptions.columnPicker?.columnTitle;
+    if (this._gridOptions.columnPicker?.columnTitle) {
+      const columnTitle = this._gridOptions.columnPicker.columnTitle;
       this._columnTitleElm = document.createElement('div');
       this._columnTitleElm.className = 'slick-gridmenu-custom';
       this._columnTitleElm.textContent = columnTitle || '';
@@ -174,7 +174,7 @@ export class SlickColumnPicker {
     }
 
     if (!(this._gridOptions.columnPicker?.hideForceFitButton)) {
-      const forceFitTitle = this._gridOptions.columnPicker?.forceFitTitle || this._gridOptions.forceFitTitle;
+      const forceFitTitle = this._gridOptions.columnPicker?.forceFitTitle || this._defaults.forceFitTitle;
 
       const liElm = document.createElement('li');
       liElm.ariaLabel = forceFitTitle || '';
@@ -197,7 +197,7 @@ export class SlickColumnPicker {
     }
 
     if (!(this._gridOptions.columnPicker?.hideSyncResizeButton)) {
-      const syncResizeTitle = (this._gridOptions.columnPicker?.syncResizeTitle) || this._gridOptions.syncResizeTitle;
+      const syncResizeTitle = this._gridOptions.columnPicker?.syncResizeTitle || this._defaults.syncResizeTitle;
 
       const liElm = document.createElement('li');
       liElm.ariaLabel = syncResizeTitle || '';
@@ -247,7 +247,7 @@ export class SlickColumnPicker {
     this.columns = this.grid.getColumns().slice(0);
   }
 
-  /** Update the Titles of each sections (command, customTitle, ...) */
+  /** Update the titles of the menu sections. */
   updateAllTitles(pickerOptions: { columnTitle: string; }) {
     this.grid.applyHtmlCode(this._columnTitleElm, pickerOptions.columnTitle);
   }
@@ -284,11 +284,6 @@ export class SlickColumnPicker {
       this.grid.updateColumns();
       this.onColumnsChanged.notify({ columnId, showing: isChecked, allColumns: this.grid.getColumns(), columns: visibleColumns, visibleColumns: this.getVisibleColumns(), grid: this.grid });
     }
-  }
-
-  /** @deprecated because of a typo @use `setColumnVisibility()` instead */
-  setColumnVisibiliy(idxOrId: number | string, show: boolean) {
-    this.setColumnVisibility(idxOrId, show);
   }
 
   setColumnVisibility(idxOrId: number | string, show: boolean) {

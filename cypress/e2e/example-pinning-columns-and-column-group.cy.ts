@@ -140,4 +140,26 @@ describe('Example - Pinned Columns & Column Group', { retries: 1 }, () => {
     cy.get(`${grid} .grid-canvas [data-row="49999"]`).should('contain', 'Task 49999');
     cy.get(`${grid} .slick-viewport`).should('have.length', 1);
   });
+
+  it('lists the "Clear Pinned Columns" command in the Grid Menu and clears the pinned columns with it', () => {
+    cy.get(`${grid} .slick-gridmenu-button`).click();
+    cy.get('.slick-gridmenu .title').first().should('have.text', 'Commands');
+    cy.get('.slick-gridmenu .slick-gridmenu-item').contains('Clear Pinned Columns').closest('.slick-gridmenu-item').find('.sgi-close').should('exist');
+    cy.get('.slick-gridmenu .slick-gridmenu-item').contains('Clear Pinned Columns').click();
+    assertHeaderBand('left', []);
+    assertHeaderBand('center', ['sel', 'title', 'duration', 'start', 'finish', '%', 'effort-driven']);
+    cy.get(`${grid} .slick-docking-horizontal-scroller`).should('not.exist');
+  });
+});
+
+describe('Example - Pinned Columns & Column Group with a hidden column', { retries: 1 }, () => {
+  it('lists the "Clear Pinned Columns" command in the pre-header Grid Menu and clears the pinned columns with it', () => {
+    cy.visit(`${Cypress.config('baseUrl')}/examples/example-pinning-columns-and-column-group-hidden-col.html`);
+    cy.get('#myGrid .slick-docking-horizontal-scroller').should('have.length', 1);
+    cy.get('#myGrid .slick-preheader-panel').parent().find('.slick-gridmenu-button').click();
+    cy.get('.slick-gridmenu .title').first().should('have.text', 'Commands');
+    cy.get('.slick-gridmenu .slick-gridmenu-item').contains('Clear Pinned Columns').closest('.slick-gridmenu-item').find('.sgi-close').should('exist');
+    cy.get('.slick-gridmenu .slick-gridmenu-item').contains('Clear Pinned Columns').click();
+    cy.get('#myGrid .slick-docking-horizontal-scroller').should('not.exist');
+  });
 });

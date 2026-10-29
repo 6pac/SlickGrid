@@ -7,7 +7,7 @@ title: Migrating to v6
 Version 6 is a major release. It removes the last third-party dependency, replaces frozen rows and columns with pinning and sticky docking, and changes how columns are hidden. This page lists the breaking changes and how to update.
 
 ::: tip
-This page describes the upcoming v6 release. Some items come from feature branches that merge at release. The copy/paste change is still a draft and may change.
+This page describes the upcoming v6 release. Some items come from feature branches that merge at release.
 :::
 
 ## SortableJS is gone
@@ -49,9 +49,9 @@ What to change:
 
 This makes show/hide reversible and keeps each column's settings while it is hidden.
 
-## Copy and paste: the async Clipboard API (draft)
+## Copy and paste: the async Clipboard API (PRs [#1242](https://github.com/6pac/SlickGrid/pull/1242), [#1243](https://github.com/6pac/SlickGrid/pull/1243), [#1244](https://github.com/6pac/SlickGrid/pull/1244))
 
-Version 6 plans to move external copy and paste to the browser's async Clipboard API, in place of the old hidden-textarea approach. This is still a draft and may change before release. Watch the [CellExternalCopyManager](/reference/plugins) entry for the final shape.
+External copy and paste now use the browser's asynchronous Clipboard API (`navigator.clipboard`) instead of the old hidden-textarea approach. The change is implemented in `SlickCellExternalCopyManager`; no grid options or methods changed. The API requires a secure context (HTTPS or localhost), and paste requires clipboard-read permission. Use `clipboardWriteOverride` and `clipboardReadOverride` when the Clipboard API is unavailable or the host application manages the clipboard. See the [CellExternalCopyManager reference](/reference/plugins) for details.
 
 ## Removed deprecated code
 
@@ -66,6 +66,17 @@ Subclasses of `SlickDataView` must update references to these protected methods:
 | `compileFilterCSPSafe()` | `filterItems()` |
 | `compileFilterWithCachingCSPSafe()` | `filterItemsWithCaching()` |
 | `compileAccumulatorLoopCSPSafe()` | `compileAccumulatorLoop()` |
+
+### Menu and column picker options
+
+Version 6 removes the deprecated APIs listed below. Replace their uses before upgrading.
+
+- Use `gridMenu.commandItems` and `gridMenu.commandTitle` in place of `customItems` and `customTitle`. Nested menu entries also use `commandItems`.
+- Use `header.menu.commandItems` for header menu entries, including nested entries; the old `items` property is removed.
+- Header Menu `itemVisibilityOverride` and `itemUsabilityOverride` callbacks receive the menu's command list directly in `args.menu`, as `HeaderMenuCommandItemCallbackArgs` declares; the runtime previously passed `{ items }`, so change `args.menu.items` to `args.menu`.
+- Put picker labels under `columnPicker`: `columnTitle`, `forceFitTitle`, and `syncResizeTitle`. The corresponding top-level grid options are removed.
+- Remove `gridMenu.resizeOnShowHeaderRow`; flexbox handles header sizing.
+- Rename `setColumnVisibiliy()` to `setColumnVisibility()` on the Column Menu and Column Picker.
 
 ### Row positioning: `rowTopOffsetRenderType`
 
@@ -92,13 +103,13 @@ If your custom CSS or tests locate a detail panel through its former cell siblin
 
 The `.dynamic-cell-detail`, `.detail-container`, and item-specific detail classes remain available. If your tests inspect row positions, expect transforms on ordinary rows and `top` positioning on rows involved in a RowSpan.
 
-## Grid Menu layout
+## Grid Menu layout (PR [#1323](https://github.com/6pac/SlickGrid/pull/1323))
 
 _The following changes should be transparent to most users; they are listed here in case of side effects with custom styling._
 
 Grid Menu now uses CSS flexbox instead of `calc(100% - 18px)` to position its button beside the column headers or pre-header. This improves alignment and gives the last column's resize handle room when the vertical scrollbar gutter is at least as wide as the menu slot; with overlay scrollbars (macOS) or no vertical scrollbar the slot still covers the trailing `menuWidth + 2` pixels of the last column at full horizontal scroll, as the previous layout did.
 
-The default `gridMenu.menuWidth` is now `12` pixels, plus 2 pixels of spacing, and acts as a minimum: an icon class wider than that widens the slot instead of being clipped. The `resizeOnShowHeaderRow` option is deprecated and ignored because the menu no longer changes filter-row widths. Review custom CSS that positions `.slick-gridmenu-button` or overrides header widths.
+The default `gridMenu.menuWidth` is now `12` pixels, plus 2 pixels of spacing, and acts as a minimum: an icon class wider than that widens the slot instead of being clipped. The removed `resizeOnShowHeaderRow` option no longer affects filter-row widths. Review custom CSS that positions `.slick-gridmenu-button` or overrides header widths.
 
 ## Already gone before v6
 
@@ -108,7 +119,7 @@ The default `gridMenu.menuWidth` is now `12` pixels, plus 2 pixels of spacing, a
 
 These are the public additions and renames from the v6 feature branches. New members appear in the [Reference](/reference/) once the release is integrated and the reference is regenerated.
 
-### Pinning and sticky docking (PR #1302)
+### Pinning and sticky docking (PR [#1302](https://github.com/6pac/SlickGrid/pull/1302))
 
 - New options: `pinning`, `stickyRows`, `docking`, `skipPinningValidation`, `errorCallback`, `invalidColumnPinningPickerMessage`, `invalidColumnPinningSequenceMessage`, `invalidColumnPinningWidthMessage`, `allowDragFromClosest`, `columnResizingDelay`.
 - New column properties: `pinned`, `sticky`.
@@ -129,13 +140,13 @@ const gridOptions: GridOption = {
 };
 ```
 
-### Column `hidden` (PR #1299)
+### Column `hidden` (PR [#1299](https://github.com/6pac/SlickGrid/pull/1299))
 
 - New option: `spreadHiddenColspan`.
 - New methods: `getColumnById()`, `getVisibleColumnIndex()`, `updateColumnById()`, `getRowTop()`.
-- Removed: `calculateFrozenColumnIndexById()` and `validateSetColumnFreeze()`. Pinning is validated by `validateColumnPinning()` (PR #1302).
+- Removed: `calculateFrozenColumnIndexById()` and `validateSetColumnFreeze()`. Pinning is validated by `validateColumnPinning()` (PR [#1302](https://github.com/6pac/SlickGrid/pull/1302)).
 
-##### jQueryUI CSS classes leftovers (PR #1313)
+##### jQueryUI CSS classes leftovers (PR [#1313](https://github.com/6pac/SlickGrid/pull/1313))
 
 Since we dropped jQueryUI back in v4, there is no need to keep references to `.ui-...` CSS classes. All DOM elements with `.ui-...` CSS classes already had `.slick-...` classes for a while already, so in this version we are just cleaning up the few remaining traces of jQueryUI CSS classes like `.ui-state-default` and other similar classes in the core lib, they were all removed in this release. If you were querying any of them in CSS for styling purposes, you can simply rename them to `.slick-state-*`
 
@@ -145,24 +156,24 @@ Since we dropped jQueryUI back in v4, there is no need to keep references to `.u
 }
 ```
 
-### SortableJS removal (PRs #1242–#1244)
+### SortableJS removal (PRs [#1242](https://github.com/6pac/SlickGrid/pull/1242) – [#1244](https://github.com/6pac/SlickGrid/pull/1244))
 
 - The `sortablejs` dependency is removed. Column reorder and draggable grouping use native drag and drop. No public grid option or method changes.
 - Changed: `SlickDraggableGrouping.getSetupColumnReorder()` returns `{ columnReorderDragInstance }` (an object with a `destroy()` method) instead of the SortableJS instances `{ sortableLeftInstance, sortableCenterInstance, sortableRightInstance }`.
 
-### Custom tooltips (PR #1316)
+### Custom tooltips (PR [#1316](https://github.com/6pac/SlickGrid/pull/1316))
 
 - Removed the `hideArrow` option from `CustomTooltipOption`; custom tooltips no longer render an arrow.
 - New options include `bodyClassName`, `repositionByMouseOverTarget`, `useRegularTooltipFromCellTextOnly`, `persistOnHover`, `autoHideDelay`, `observeAllTooltips`, and `observeTooltipContainer`.
 - The custom tooltip plugin can now show tooltips on elements outside the grid. Enable `observeAllTooltips` to observe `title` and `data-slick-tooltip` attributes. Observation defaults to the document body; set `observeTooltipContainer` to limit it to selected containers.
 
 ```ts
-import { SlickCustomTooltip, SlickGrid } from 'slickgrid';
+import { SlickCustomTooltip, SlickGrid } from "slickgrid";
 
-const grid = new SlickGrid('#myGrid', data, columns, {
+const grid = new SlickGrid("#myGrid", data, columns, {
   customTooltip: {
     observeAllTooltips: true,
-    observeTooltipContainer: '.toolbar, #dialog', // optional; defaults to body
+    observeTooltipContainer: ".toolbar, #dialog", // optional; defaults to body
   },
 });
 grid.registerPlugin(new SlickCustomTooltip());
@@ -170,11 +181,11 @@ grid.registerPlugin(new SlickCustomTooltip());
 
 See [Custom tooltips](/in-depth/custom-tooltips) for usage and all available options.
 
-### Clipboard (PR #1270, draft)
+### Clipboard (PR [#1270](https://github.com/6pac/SlickGrid/pull/1270))
 
 - The change is inside the `SlickCellExternalCopyManager` plugin (async Clipboard API). No grid option or method changes.
 
-### Alpine Theme (PR #1317)
+### Alpine Theme (PR [#1317](https://github.com/6pac/SlickGrid/pull/1317))
 
 - SASS/CSS variables previously used `$alpine-...` (SASS) or `--alpine-...` (CSS) but everything else in SlickGrid stylesheets already use `.slick-...` as CSS classes. So in v6 we are aligning everything and making all variables and classes start with the `slick-` prefix, for example:
 
@@ -190,12 +201,19 @@ body {
 }
 ```
 
+### Column autosizing (PR #1328)
+
+- Content autosizing samples the first 200 rows by default, in every column mode (`autoSize.rowSelectionCount` was 100).
+- `ContentIntelligent` number and string columns used to read every row. They now read the rows chosen by the column's own `rowSelectionMode` / `rowSelectionCount`, so the first 200 by default. Set `autoSize.rowSelectionMode: RowSelectionMode.AllRows` on a column to read every row again.
+- TypeScript: the autosize settings are typed as unions of their constants instead of `string`. This covers `autosizeColsMode`, the `autosizeColumns()` argument, and `autoSize.autosizeMode`, `rowSelectionMode`, `rowSelectionModeOnInit`, `valueFilterMode` and `widthEvalMode`. Misspelt values become compile errors. Code that uses the constants (`GridAutosizeColsMode.FitColsToViewport`, `ColAutosizeMode.Locked`, ...) or their literal values needs no change. A value held in a `string` variable, for example one read from configuration or metadata, needs a type assertion such as `value as ColAutosizeModeValue`. The new `*Value` types are exported for this.
+- `autoSize.rowSelectionModeOnInit` was typed `boolean` but holds a `RowSelectionMode` value; it is now typed as one.
+
 ## See also
 
 - [Pinning and sticky docking](/in-depth/pinning-sticky)
 - [Plugins](/in-depth/plugins) · [Reference](/reference/)
 
-## Scroll rendering performance
+## Scroll rendering performance (PR [#1320](https://github.com/6pac/SlickGrid/pull/1320))
 
 Large vertical scroll jumps now render synchronously by default (`scrollRenderThrottling: 0`). Set a positive delay, such as `10`, to retain timer throttling. Horizontal rendering keeps its existing animation-frame scheduler.
 
@@ -204,7 +222,7 @@ The per-cell `onBeforeAppendCell` event and `OnBeforeAppendCellEventArgs` type w
 ```ts
 const formatter = (_row, _cell, value) => ({
   text: String(value),
-  addClasses: value > 50 ? 'high-value' : '',
+  addClasses: value > 50 ? "high-value" : "",
 });
 ```
 

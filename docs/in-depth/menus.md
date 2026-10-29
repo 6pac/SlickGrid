@@ -120,14 +120,14 @@ gridMenu.onCommand.subscribe((_e, args) => {
 
 Notes:
 
-- Command items use the shared shape above. Put them in `commandItems`. (`customItems` and `customTitle` are the deprecated names for `commandItems` and `commandTitle`.)
+- Command items use the shared shape above. Put them in `commandItems` and set their heading with `commandTitle`.
 - `onCommand` args include `command`, `item`, `grid`, `allColumns`, and `visibleColumns`.
 - The button icon is `iconCssClass` (a CSS class) or `iconImage` (an image URL). Hide the built-in button with `showButton: false` and open the menu from your own element.
 - Other events: `onBeforeMenuShow`, `onAfterMenuShow`, `onMenuClose`, and `onColumnsChanged`. Returning `false` from a "before" handler cancels the open.
 - Exclude a column from the column list with [`column.excludeFromGridMenu: true`](/reference/column#col-excludeFromGridMenu).
 - Nest `commandItems` inside a command to make a sub-menu.
 
-The Grid Menu button occupies a fixed flex slot beside the column header. `gridMenu.menuWidth` (default `12`) is the slot's minimum width, plus 2 pixels of spacing: an icon class wider than that widens the slot to fit (the bundled `sgi-17px` icons get a 19px slot), while an `iconImage` is scaled down to the slot. Set `iconButtonContainer: 'preheader'` to place the button beside the pre-header instead (requires `createPreHeaderPanel: true` and `showPreHeaderPanel: true`; without a pre-header panel the button falls back to the column header and a warning is logged). `showButton: false` reserves no space. The legacy `resizeOnShowHeaderRow` option is ignored; filter-row widths are no longer changed by the menu.
+The Grid Menu button occupies a fixed flex slot beside the column header. `gridMenu.menuWidth` (default `12`) is the slot's minimum width, plus 2 pixels of spacing: an icon class wider than that widens the slot to fit (the bundled `sgi-17px` icons get a 19px slot), while an `iconImage` is scaled down to the slot. Set `iconButtonContainer: 'preheader'` to place the button beside the pre-header instead (requires `createPreHeaderPanel: true` and `showPreHeaderPanel: true`; without a pre-header panel the button falls back to the column header and a warning is logged). `showButton: false` reserves no space. Filter-row widths are not changed by the menu.
 
 Because the slot takes its width from the header row while the body keeps the full viewport width, the trailing `menuWidth + 2` pixels of the last column — including its resize handle — sit under the button when the grid is scrolled fully to the end and the vertical scrollbar is narrower than the slot (overlay scrollbars on macOS, or no vertical scrollbar at all). With a classic scrollbar gutter at least as wide as the slot the handle stays reachable.
 
@@ -168,7 +168,7 @@ headerMenu.onCommand.subscribe((_e, args) => {
 
 Notes:
 
-- Items go in `header.menu.commandItems`. (`header.menu.items` is the deprecated name.)
+- Items go in `header.menu.commandItems`.
 - `onCommand` args are `grid`, `column`, `command`, and `item`. The `column` tells you which header was used.
 - Plugin options (`HeaderMenuOption`) include `buttonCssClass`, `buttonImage`, `minWidth`, `autoAlign`, `subMenuOpenByEvent`, and `menuUsabilityOverride`.
 - Events: `onBeforeMenuShow`, `onAfterMenuShow`, `onCommand`.

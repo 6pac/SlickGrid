@@ -5,18 +5,21 @@ We'd love for you to contribute and to make this project even better than it is 
 Before accepting any Pull Request, we would like to remind you to follow the following steps:
 
 1. Install all dependencies
+
 ```sh
 npm install
 ```
 
 2. Run a full build
+
 ```sh
-npm run build:prod
+npm run build
 ```
 
 3. Fix any Linting or TypeScript issues (if any) returned by the build process
 
 4. Run all Cypress E2E tests
+
 ```bash
 npm run dev         # run a local development server on port 8080 in watch mode (or `npm run serve` without watch)
 npm run cypress     # open Cypress UI tool

@@ -98,7 +98,7 @@ autoSize: {
   formatterOverride: undefined,
   rowSelectionMode: RowSelectionMode.FirstNRows,
   rowSelectionModeOnInit: undefined,
-  rowSelectionCount: 100,
+  rowSelectionCount: 200,
   valueFilterMode: ValueFilterMode.None,
   widthEvalMode: WidthEvalMode.Auto,
   sizeToRemaining: undefined,
@@ -165,8 +165,10 @@ The per-column strategy, set on `column.autoSize.autosizeMode`.
 `ContentIntelligent` sets these per detected type:
 
 - **boolean** → measures the two values `[true, false]`.
-- **number** → `valueFilterMode = GetGreatestAndSub`, `rowSelectionMode = AllRows`.
-- **string** → `valueFilterMode = GetLongestText`, `rowSelectionMode = AllRows`, `allowAddlPercent = 5`.
+- **number** → `valueFilterMode = GetGreatestAndSub`.
+- **string** → `valueFilterMode = GetLongestText`, `allowAddlPercent = 5`.
+
+Number and string columns read the rows chosen by the column's own `rowSelectionMode` and `rowSelectionCount`: by default, the first 200. Set `rowSelectionMode: RowSelectionMode.AllRows` on a column to read every row instead. That is the most accurate choice, but it is slower on large datasets.
 - **date** / **moment** → measures a single wide reference date.
 
 You can mix modes freely. Set explicit strategies on the columns you care about and leave the rest on `ContentIntelligent`.
@@ -178,7 +180,7 @@ Which rows to sample when measuring a column.
 | Value | Behaviour |
 | --- | --- |
 | `FirstRow` | The first row only. Good when data is invariant or sorted descending. |
-| `FirstNRows` | *Default.* The first `rowSelectionCount` rows (default 100). |
+| `FirstNRows` | *Default.* The first `rowSelectionCount` rows (default 200). |
 | `AllRows` | Every row. Most accurate, slowest. |
 | `LastRow` | The last row only. Good when data is sorted ascending. |
 

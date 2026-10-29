@@ -42,7 +42,7 @@ const Utils = IIFE_ONLY ? Slick.Utils : Utils_;
  *       // This is the relevant part
  *       header: {
  *          menu: {
- *              items: [
+ *              commandItems: [
  *                {
  *                  // menu item options
  *                },
@@ -226,10 +226,6 @@ export class SlickHeaderMenu implements SlickPlugin {
     const column = args.column;
     const menu = column?.header?.menu as HeaderMenuItems;
 
-    if (menu?.items) {
-      console.warn('[SlickGrid] Header Menu "items" property was deprecated in favor of "commandItems" to align with all other Menu plugins.');
-    }
-
     if (menu) {
       // run the override function (when defined), if the result is false it won't go further
       if (!this.runOverrideFunctionWhenExists<typeof args>(this._options.menuUsabilityOverride, args)) {
@@ -303,7 +299,7 @@ export class SlickHeaderMenu implements SlickPlugin {
     }
 
     // create 1st parent menu container & reposition it
-    this._menuElm = this.createMenu((menu.commandItems || menu.items) as Array<HeaderMenuCommandItem | 'divider'>, columnDef);
+    this._menuElm = this.createMenu(menu.commandItems || [], columnDef);
     const containerNode = this._grid.getContainerNode();
     if (containerNode) {
       containerNode.appendChild(this._menuElm);
@@ -360,7 +356,7 @@ export class SlickHeaderMenu implements SlickPlugin {
     const callbackArgs = {
       grid: this._grid,
       column: columnDef,
-      menu: { items: commandItems }
+      menu: commandItems
     } as unknown as HeaderMenuCommandItemCallbackArgs;
 
     // when creating sub-menu add its sub-menu title when exists
@@ -443,7 +439,7 @@ export class SlickHeaderMenu implements SlickPlugin {
       // optionally open sub-menu(s) by mouseover
       if (this._options.subMenuOpenByEvent === 'mouseover') {
         this._bindingEventService.bind(menuItemElm, 'mouseover', ((e: DOMMouseOrTouchEvent<HTMLDivElement>) => {
-          if ((item as HeaderMenuCommandItem).commandItems || (item as HeaderMenuCommandItem).items) {
+          if ((item as HeaderMenuCommandItem).commandItems) {
             this.repositionSubMenu(item as HeaderMenuCommandItem, columnDef, level, e);
           } else if (!isSubMenu) {
             this.destroySubMenus();
@@ -452,7 +448,7 @@ export class SlickHeaderMenu implements SlickPlugin {
       }
 
       // the option/command item could be a sub-menu if it has another list of commands/options
-      if ((item as HeaderMenuCommandItem).commandItems || (item as HeaderMenuCommandItem).items) {
+      if ((item as HeaderMenuCommandItem).commandItems) {
         const chevronElm = document.createElement('div');
         chevronElm.className = 'sub-item-chevron';
         if (this._options.subItemChevronClass) {
@@ -473,7 +469,7 @@ export class SlickHeaderMenu implements SlickPlugin {
     if (item !== 'divider' && !item.disabled && !item.divider) {
       const command = (item as HeaderMenuCommandItem).command || '';
 
-      if (Utils.isDefined(command) && !item.commandItems && !(item as HeaderMenuCommandItem).items) {
+      if (Utils.isDefined(command) && !item.commandItems) {
         const callbackArgs = {
           grid: this._grid,
           column: columnDef,
@@ -491,7 +487,7 @@ export class SlickHeaderMenu implements SlickPlugin {
         if (!e.defaultPrevented) {
           this.hideMenu();
         }
-      } else if (item.commandItems || (item as HeaderMenuCommandItem).items) {
+      } else if (item.commandItems) {
         this.repositionSubMenu(item as HeaderMenuCommandItem, columnDef, level, e);
       } else {
         this.destroySubMenus();
@@ -506,7 +502,7 @@ export class SlickHeaderMenu implements SlickPlugin {
     }
 
     // creating sub-menu, we'll also pass level & the item object since we might have "subMenuTitle" to show
-    const subMenuElm = this.createMenu(item.commandItems || item.items || [], columnDef, level + 1, item);
+    const subMenuElm = this.createMenu(item.commandItems || [], columnDef, level + 1, item);
     document.body.appendChild(subMenuElm);
     this.repositionMenu(e, subMenuElm);
   }

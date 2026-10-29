@@ -2,7 +2,6 @@ import type {
   Column,
   GridMenuCallbackArgs,
   GridMenuCommandItemCallbackArgs,
-  GridMenuItem,
   GridOption,
   MenuCallbackArgs,
   MenuCommandItem,
@@ -15,12 +14,6 @@ export interface GridMenuOption {
   /** Array of command items (title,
    * command, disabled, ...) */
   commandItems?: Array<MenuCommandItem<GridMenuCommandItemCallbackArgs, GridMenuCallbackArgs> | 'divider'>;
-
-  /** @deprecated use `commandTitle` instead. Defaults to "Commands" which is the title that shows up over the custom commands list */
-  customTitle?: string;
-
-  /** @deprecated use `commandItems` instead. Array of command items (title, command, disabled, ...) */
-  customItems?: Array<GridMenuItem | 'divider'>;
 
   /** Defaults to 0 (auto), minimum width of grid menu content (command, column list) */
   contentMinWidth?: number;
@@ -69,9 +62,6 @@ export interface GridMenuOption {
 
   /** Defaults to 12 pixels (only the number), the minimum width in pixels of the Grid Menu icon container (plus 2px of spacing); an icon class wider than that widens the container to fit */
   menuWidth?: number;
-
-  /** @deprecated Header sizing is handled by flexbox. This option is ignored. */
-  resizeOnShowHeaderRow?: boolean;
 
   /** Defaults to true, allows the user to control if the default gridMenu button (located on the top right corner by default CSS) should be created or omitted */
   showButton?: boolean;
