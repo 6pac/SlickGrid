@@ -8,7 +8,7 @@ on:
       - next
   pull_request:
     branches:
-      - "**"
+      - '**'
 env:
   CI: true
 
