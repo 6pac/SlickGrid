@@ -14,7 +14,7 @@ export interface HeaderMenuCommandItemCallbackArgs {
   /** Slick Grid object */
   grid: SlickGrid;
 
-  /** html DOM element of the menu */
+  /** Command items of the menu being populated. `onBeforeMenuShow` and `onAfterMenuShow` receive the column's `header.menu` object instead. */
   menu: Array<HeaderMenuCommandItem | 'divider'>;
 }
 

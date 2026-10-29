@@ -61,6 +61,7 @@ Version 6 removes the deprecated APIs listed below. Replace their uses before up
 
 - Use `gridMenu.commandItems` and `gridMenu.commandTitle` in place of `customItems` and `customTitle`. Nested menu entries also use `commandItems`.
 - Use `header.menu.commandItems` for header menu entries, including nested entries; the old `items` property is removed.
+- Header Menu `itemVisibilityOverride` and `itemUsabilityOverride` callbacks receive the menu's command list directly in `args.menu`, as `HeaderMenuCommandItemCallbackArgs` declares; the runtime previously passed `{ items }`, so change `args.menu.items` to `args.menu`.
 - Put picker labels under `columnPicker`: `columnTitle`, `forceFitTitle`, and `syncResizeTitle`. The corresponding top-level grid options are removed.
 - Remove `gridMenu.resizeOnShowHeaderRow`; flexbox handles header sizing.
 - Rename `setColumnVisibiliy()` to `setColumnVisibility()` on the Column Menu and Column Picker.
