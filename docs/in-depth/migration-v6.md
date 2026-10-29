@@ -189,6 +189,13 @@ body {
 }
 ```
 
+### Column autosizing (PR #1328)
+
+- Content autosizing samples the first 200 rows by default, in every column mode (`autoSize.rowSelectionCount` was 100).
+- `ContentIntelligent` number and string columns used to read every row. They now read the rows chosen by the column's own `rowSelectionMode` / `rowSelectionCount`, so the first 200 by default. Set `autoSize.rowSelectionMode: RowSelectionMode.AllRows` on a column to read every row again.
+- TypeScript: the autosize settings are typed as unions of their constants instead of `string`. This covers `autosizeColsMode`, the `autosizeColumns()` argument, and `autoSize.autosizeMode`, `rowSelectionMode`, `rowSelectionModeOnInit`, `valueFilterMode` and `widthEvalMode`. Misspelt values become compile errors. Code that uses the constants (`GridAutosizeColsMode.FitColsToViewport`, `ColAutosizeMode.Locked`, ...) or their literal values needs no change. A value held in a `string` variable, for example one read from configuration or metadata, needs a type assertion such as `value as ColAutosizeModeValue`. The new `*Value` types are exported for this.
+- `autoSize.rowSelectionModeOnInit` was typed `boolean` but holds a `RowSelectionMode` value; it is now typed as one.
+
 ## See also
 
 - [Pinning and sticky docking](/in-depth/pinning-sticky)
