@@ -423,7 +423,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     autosizeMode: ColAutosizeMode.ContentIntelligent,
     rowSelectionModeOnInit: undefined,
     rowSelectionMode: RowSelectionMode.FirstNRows,
-    rowSelectionCount: 100,
+    rowSelectionCount: 200,
     valueFilterMode: ValueFilterMode.None,
     widthEvalMode: WidthEvalMode.Auto,
     sizeToRemaining: undefined,
@@ -2852,11 +2852,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       }
       if (colDataTypeOf === 'number') {
         autoSize.valueFilterMode = ValueFilterMode.GetGreatestAndSub;
-        autoSize.rowSelectionMode = RowSelectionMode.AllRows;
       }
       if (colDataTypeOf === 'string') {
         autoSize.valueFilterMode = ValueFilterMode.GetLongestText;
-        autoSize.rowSelectionMode = RowSelectionMode.AllRows;
         autoSize.allowAddlPercent = 5;
       }
       if (colDataTypeOf === 'date') {
