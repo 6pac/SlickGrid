@@ -1,14 +1,17 @@
 import 'flatpickr';
 import 'flatpickr/dist/flatpickr.css';
+import Sortable from 'sortablejs'; // TODO: remove after v6 is released
 
 import { ExampleTrading } from './example-trading.js';
 import { Example4 } from './example4.js';
 import { ExampleGrouping } from './example-grouping.js';
 import './style.scss';
 
+// assign SortableJS to the Window object
+window.Sortable = Sortable;
+
 // create simple router & container to change displayed example
-document.querySelector('#app').innerHTML =
-  `<div id="router">
+document.querySelector('#app').innerHTML = `<div id="router">
     <div class="router-link" id="trading">1. Realtime Trading</div>
     <div class="router-link" id="example4">2. Editing with DataView</div>
     <div class="router-link" id="example-grouping">3. Example Grouping</div>
@@ -25,9 +28,25 @@ document.querySelector('#app').innerHTML =
 let currentExample;
 currentExample = loadExample('trading', new ExampleTrading());
 
-document.querySelector('#trading').addEventListener('click', () => currentExample = loadExample('trading', new ExampleTrading()));
-document.querySelector('#example4').addEventListener('click', () => currentExample = loadExample('example4', new Example4()));
-document.querySelector('#example-grouping').addEventListener('click', () => currentExample = loadExample('example-grouping', new ExampleGrouping()));
+document
+  .querySelector('#trading')
+  .addEventListener(
+    'click',
+    () => (currentExample = loadExample('trading', new ExampleTrading())),
+  );
+document
+  .querySelector('#example4')
+  .addEventListener(
+    'click',
+    () => (currentExample = loadExample('example4', new Example4())),
+  );
+document
+  .querySelector('#example-grouping')
+  .addEventListener(
+    'click',
+    () =>
+      (currentExample = loadExample('example-grouping', new ExampleGrouping())),
+  );
 
 /** load a new example in the DOM and initialize it but destroy any previous example if any */
 function loadExample(exampleId, exampleInstance) {
@@ -40,7 +59,9 @@ function loadExample(exampleId, exampleInstance) {
 
 /** if a previous example was loaded, destroy it before loading the new one */
 function destroyPreviousExample() {
-  document.querySelectorAll('.router-link').forEach(route => route.classList.remove('active'));
+  document
+    .querySelectorAll('.router-link')
+    .forEach((route) => route.classList.remove('active'));
   if (currentExample?.destroy) {
     currentExample.destroy();
   }
