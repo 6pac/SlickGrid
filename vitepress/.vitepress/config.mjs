@@ -53,6 +53,7 @@ export default defineConfig({
             { text: 'Sorting', link: '/in-depth/sorting' },
             { text: 'Filtering & paging', link: '/in-depth/filtering-paging' },
             { text: 'Grouping & aggregators', link: '/in-depth/grouping' },
+            { text: 'Pivot tables', link: '/in-depth/pivot' },
             { text: 'Auto column sizing', link: '/in-depth/auto-column-sizing' },
             { text: 'Selection models', link: '/in-depth/selection' },
             { text: 'Cell editors', link: '/in-depth/custom-editors' },

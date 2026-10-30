@@ -1,0 +1,402 @@
+<!DOCTYPE HTML>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <link rel="shortcut icon" type="image/ico" href="favicon.ico" />
+  <title>SlickGrid example: Pivot table with PivotTable Fields</title>
+  <link rel="stylesheet" href="../dist/styles/css/slick-icons.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/example-demo.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick-alpine-theme.css" type="text/css"/>
+  <link rel="stylesheet" href="../dist/styles/css/slick.pivot.css" type="text/css"/>
+  <style>
+    .pivot-example {
+      width: 1000px;
+    }
+
+    .pivot-toolbar {
+      display: flex;
+      flex-wrap: wrap;
+      align-items: center;
+      gap: 6px 14px;
+      margin-bottom: 8px;
+      font-size: 12px;
+    }
+
+    .pivot-toolbar label {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+    }
+
+    .pivot-toolbar select,
+    .pivot-toolbar button {
+      font-size: 12px;
+    }
+
+    .pivot-layout {
+      display: flex;
+      gap: 8px;
+      height: 600px;
+    }
+
+    .pivot-layout #myGrid {
+      flex: 1 1 auto;
+      min-width: 0;
+      height: 100%;
+    }
+
+    .pivot-layout #pivotPanel {
+      flex: 0 0 300px;
+      height: 100%;
+    }
+
+    .pivot-status {
+      margin-top: 6px;
+      font-size: 12px;
+      color: #5b6670;
+    }
+
+    #drillDialog {
+      width: 820px;
+      max-width: calc(100vw - 32px);
+      padding: 12px;
+      border: 1px solid #c9d2db;
+      border-radius: 8px;
+    }
+
+    #drillDialog::backdrop {
+      background: rgba(20, 30, 40, 0.35);
+    }
+
+    .drill-header {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      margin-bottom: 8px;
+      font-weight: 600;
+    }
+
+    #drillGrid {
+      width: 100%;
+      height: 320px;
+    }
+  </style>
+</head>
+<body>
+<div class="pivot-example">
+  <div class="options-panel" style="left:1020px; top:8px;">
+    <div style="padding:6px;">
+      <h2>Demonstrates:</h2>
+      <ul>
+        <li>an Excel style <b>PivotTable Fields</b> pane (<code>SlickPivotPanel</code>): check fields, drag them between the Filters, Columns, Rows and Values areas, reorder them, or drag them out to remove them</li>
+        <li>the <code>▾</code> pill menus (also opened with Enter): move, filter, sort and the <b>Value Field Settings</b> (summarize by, show values as, number format)</li>
+        <li>keyboard: Alt+↑/↓ moves a pill, Alt+←/→ moves it to another area, Delete removes it</li>
+        <li>compact, outline and tabular layouts, subtotals, grand totals, expand/collapse of row and column groups</li>
+        <li>sorting by label (row label header) or by value (value column header)</li>
+        <li>double-click a cell to drill down to its source rows</li>
+        <li>"Defer layout update", saving the layout, and an asynchronous (simulated server) provider</li>
+      </ul>
+      <p>The "Excel sample" dataset is the one from <a href="https://github.com/6pac/SlickGrid/issues/1020" target="_blank" rel="noopener">issue #1020</a>; its pivot gives 3, 7 and 10 as in Excel.</p>
+      <h2>View Source:</h2>
+      <ul>
+        <li><a href="https://github.com/6pac/SlickGrid/blob/master/examples/example-pivot-panel.html" target="_sourcewindow"> View the source for this example on Github</a></li>
+      </ul>
+    </div>
+  </div>
+
+  <div class="pivot-toolbar">
+    <label>Dataset
+      <select id="datasetSelect" data-test="dataset-select">
+        <option value="sales">Sales (5,000 rows)</option>
+        <option value="sales50k">Sales (50,000 rows)</option>
+        <option value="excel">Excel sample (issue #1020)</option>
+      </select>
+    </label>
+    <label>Layout
+      <select id="layoutSelect" data-test="layout-select">
+        <option value="compact">Compact</option>
+        <option value="outline">Outline</option>
+        <option value="tabular">Tabular</option>
+      </select>
+    </label>
+    <label>Subtotals
+      <select id="subtotalsSelect" data-test="subtotals-select">
+        <option value="top">At top</option>
+        <option value="bottom">At bottom</option>
+        <option value="none">None</option>
+      </select>
+    </label>
+    <label><input type="checkbox" id="grandTotalRows" data-test="grand-total-rows" checked> Grand total row</label>
+    <label><input type="checkbox" id="grandTotalColumns" data-test="grand-total-columns" checked> Grand total column</label>
+    <button class="btn" data-test="expand-all-btn" onclick="pivot.expandAllRows(); pivot.expandAllColumns()">Expand all</button>
+    <button class="btn" data-test="collapse-all-btn" onclick="pivot.collapseAllRows()">Collapse rows</button>
+    <label><input type="checkbox" id="serverProvider" data-test="server-provider"> Simulated server</label>
+    <button class="btn" data-test="save-layout-btn" onclick="saveLayout()">Save layout</button>
+    <button class="btn" data-test="restore-layout-btn" onclick="restoreLayout()">Restore layout</button>
+  </div>
+
+  <div class="pivot-layout">
+    <div id="myGrid" class="slick-container"></div>
+    <div id="pivotPanel"></div>
+  </div>
+  <div class="pivot-status" data-test="pivot-status"></div>
+</div>
+
+<dialog id="drillDialog" aria-labelledby="drillTitle">
+  <div class="drill-header">
+    <span id="drillTitle" data-test="drill-title"></span>
+    <button class="btn" data-test="drill-close-btn" onclick="document.querySelector('#drillDialog').close()">Close</button>
+  </div>
+  <div id="drillGrid" class="slick-container"></div>
+</dialog>
+
+<script src="../dist/browser/slick.core.js"></script>
+<script src="../dist/browser/slick.interactions.js"></script>
+<script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.pivotengine.js"></script>
+<script src="../dist/browser/plugins/slick.pivot.js"></script>
+<script src="../dist/browser/controls/slick.pivotpanel.js"></script>
+
+<script>
+  // --
+  // datasets
+  // -----------------
+
+  /** Small deterministic random number generator, so the example (and its tests) always show the same numbers */
+  function createRandom(seed) {
+    return function () {
+      seed |= 0;
+      seed = (seed + 0x6D2B79F5) | 0;
+      let t = Math.imul(seed ^ (seed >>> 15), 1 | seed);
+      t = (t + Math.imul(t ^ (t >>> 7), 61 | t)) ^ t;
+      return ((t ^ (t >>> 14)) >>> 0) / 4294967296;
+    };
+  }
+
+  const REGIONS = {
+    North: ['Canada', 'Norway', 'Sweden'],
+    South: ['Argentina', 'Australia', 'Brazil'],
+    East: ['China', 'India', 'Japan'],
+    West: ['France', 'Spain', 'United States'],
+  };
+  const CATEGORIES = {
+    Bakery: [['Croissants', 10], ['Sourdough', 8]],
+    Beverages: [['Coffee', 18], ['Green Tea', 12], ['Sparkling Water', 4]],
+    Dairy: [['Brie', 22], ['Butter', 9], ['Greek Yogurt', 6]],
+    Produce: [['Avocados', 7], ['Blueberries', 11], ['Tomatoes', 5]],
+    Seafood: [['Salmon', 26], ['Shrimp', 19]],
+  };
+  const SALESPEOPLE = ['Avery Chen', 'Jordan Patel', 'Morgan Diaz', 'Riley Okafor', 'Sam Novak', 'Taylor Kim'];
+  const CHANNELS = ['Online', 'Retail', 'Wholesale'];
+  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
+  const round2 = (value) => Math.round(value * 100) / 100;
+
+  function createSalesData(count) {
+    const random = createRandom(1020);
+    const pick = (list) => list[Math.floor(random() * list.length)];
+    const rows = [];
+    let orderId = 10000;
+    let linesLeft = 0;
+    let order;
+    for (let i = 0; i < count; i++) {
+      if (!linesLeft) {
+        const region = pick(Object.keys(REGIONS));
+        order = {
+          OrderId: ++orderId,
+          OrderDate: new Date(2023, 0, 1 + Math.floor(random() * 1095)),
+          Region: region,
+          Country: pick(REGIONS[region]),
+          Salesperson: pick(SALESPEOPLE),
+          Channel: pick(CHANNELS),
+        };
+        linesLeft = 1 + Math.floor(random() * 4);
+      }
+      linesLeft--;
+      const category = pick(Object.keys(CATEGORIES));
+      const [product, price] = pick(CATEGORIES[category]);
+      rows.push({
+        id: i,
+        ...order,
+        Category: category,
+        Product: product,
+        Units: 1 + Math.floor(random() * (order.Channel === 'Wholesale' ? 120 : 24)),
+        UnitPrice: round2(price * (0.9 + random() * 0.2)),
+        Discount: pick([0, 0, 0, 0.05, 0.1, 0.15]),
+      });
+    }
+    return rows;
+  }
+
+  const currency = { style: 'currency', currency: 'USD', maximumFractionDigits: 0, locale: 'en-US' };
+  const salesFields = [
+    { id: 'Region', group: 'Customer' },
+    { id: 'Country', group: 'Customer' },
+    { id: 'Channel', group: 'Customer' },
+    { id: 'Salesperson', group: 'Customer' },
+    { id: 'Category', group: 'Product' },
+    { id: 'Product', group: 'Product' },
+    { id: 'OrderId', label: 'Order Id', type: 'string', group: 'Order' },
+    { id: 'OrderDate', label: 'Order Date', type: 'date', group: 'Order' },
+    { id: 'Year', type: 'number', group: 'Order', getter: (row) => row.OrderDate.getFullYear(), allowedAreas: ['rows', 'columns', 'filters'] },
+    { id: 'Quarter', group: 'Order', getter: (row) => `Q${Math.floor(row.OrderDate.getMonth() / 3) + 1}`, predefinedValues: ['Q1', 'Q2', 'Q3', 'Q4'] },
+    { id: 'Month', type: 'number', group: 'Order', getter: (row) => row.OrderDate.getMonth() + 1, itemFormatter: (month) => MONTHS[month - 1], allowedAreas: ['rows', 'columns', 'filters'] },
+    { id: 'Units', type: 'number', group: 'Measures' },
+    { id: 'UnitPrice', label: 'Unit Price', type: 'number', group: 'Measures' },
+    { id: 'Discount', type: 'number', group: 'Measures' },
+    { id: 'Amount', type: 'number', group: 'Measures', getter: (row) => round2(row.Units * row.UnitPrice * (1 - row.Discount)) },
+  ];
+  const salesSpec = {
+    rows: ['Region', 'Country'],
+    columns: ['Year'],
+    values: [{ field: 'Amount', aggregator: 'sum', numberFormat: currency }],
+    filters: [{ field: 'Channel' }],
+  };
+
+  // the data shown in the Excel screenshot of issue #1020
+  const excelRows = [
+    { MyCol1: 1, MyCol2: 'Apples', MyCol3: 43, MyCol4: 'Hot' },
+    { MyCol1: 2, MyCol2: 'Apples', MyCol3: 43, MyCol4: 'Cold' },
+    { MyCol1: 3, MyCol2: 'Bananas', MyCol3: 23, MyCol4: 'Hot' },
+    { MyCol1: 4, MyCol2: 'Bananas', MyCol3: 56, MyCol4: 'Cold' },
+  ];
+  const excelFields = [{ id: 'MyCol1', type: 'number' }, { id: 'MyCol2' }, { id: 'MyCol3', type: 'number' }, { id: 'MyCol4' }];
+  const excelSpec = { rows: ['MyCol1'], columns: ['MyCol2'], values: [{ field: 'MyCol1', aggregator: 'sum' }] };
+
+  const datasets = {
+    sales: () => ({ fields: salesFields, source: createSalesData(5000), spec: salesSpec }),
+    sales50k: () => ({ fields: salesFields, source: createSalesData(50000), spec: salesSpec }),
+    excel: () => ({ fields: excelFields, source: excelRows, spec: excelSpec }),
+  };
+
+  // --
+  // pivot, grid & panel
+  // -----------------
+
+  const initial = datasets.sales();
+  let currentRows = initial.source;
+
+  const pivot = new Slick.Pivot({ ...initial, columnDefaults: { width: 105 }, numberFormat: { locale: 'en-US' } });
+  const grid = new Slick.Grid('#myGrid', pivot.rowModel, pivot.getColumns(), Slick.Pivot.getGridOptions({
+    enableCellNavigation: true,
+    preHeaderPanelHeight: 25,
+  }));
+  pivot.onPivotChanged.subscribe((_e, { result }) => {
+    document.querySelector('[data-test="pivot-status"]').textContent =
+      `${result.filteredRowCount.toLocaleString('en-US')} of ${result.sourceRowCount.toLocaleString('en-US')} source rows · ` +
+      `${grid.getDataLength()} rows × ${grid.getColumns().length} columns · computed in ${Math.round(result.duration ?? 0)} ms`;
+  });
+  grid.registerPlugin(pivot);
+  const panel = new Slick.Controls.PivotPanel(pivot, '#pivotPanel');
+  Object.assign(window, { grid, pivot, panel });
+
+  pivot.onSpecChanged.subscribe((_e, { spec }) => syncToolbar(spec));
+
+  function syncToolbar(spec) {
+    document.querySelector('#layoutSelect').value = spec.layout;
+    document.querySelector('#subtotalsSelect').value = spec.subtotals;
+    document.querySelector('#grandTotalRows').checked = spec.grandTotals.rows !== false;
+    document.querySelector('#grandTotalColumns').checked = spec.grandTotals.columns !== false;
+  }
+  syncToolbar(pivot.getSpec());
+
+  document.querySelector('#datasetSelect').addEventListener('change', (e) => {
+    const dataset = datasets[e.target.value]();
+    currentRows = dataset.source;
+    pivot.load(dataset);
+  });
+  document.querySelector('#layoutSelect').addEventListener('change', (e) => pivot.updateSpec({ layout: e.target.value }));
+  document.querySelector('#subtotalsSelect').addEventListener('change', (e) => pivot.updateSpec({ subtotals: e.target.value }));
+  document.querySelector('#grandTotalRows').addEventListener('change', (e) => pivot.updateSpec({ grandTotals: { ...pivot.getSpec().grandTotals, rows: e.target.checked } }));
+  document.querySelector('#grandTotalColumns').addEventListener('change', (e) => pivot.updateSpec({ grandTotals: { ...pivot.getSpec().grandTotals, columns: e.target.checked } }));
+
+  // --
+  // simulated server: the request is serializable (it could be turned into SQL GROUP BY ... GROUPING SETS);
+  // here a pivot engine stands in for the server, after a short delay
+  // -----------------
+
+  const wait = (ms, signal) => new Promise((resolve, reject) => {
+    const timer = setTimeout(resolve, ms);
+    signal?.addEventListener('abort', () => {
+      clearTimeout(timer);
+      reject(new DOMException('Aborted', 'AbortError'));
+    });
+  });
+  const serverEngine = () => new Slick.PivotEngine({ fields: pivot.getFields() });
+  const serverProvider = {
+    async execute(request, { signal }) {
+      await wait(400, signal);
+      return serverEngine().execute(currentRows, request.spec);
+    },
+    async getItems(fieldId, { search, signal }) {
+      await wait(150, signal);
+      return serverEngine().getFieldItems(currentRows, fieldId, { search });
+    },
+    async getSourceRows(request, rowKey, columnKey) {
+      await wait(150);
+      return serverEngine().getSourceRows(currentRows, request.spec, rowKey, columnKey);
+    },
+  };
+  document.querySelector('#serverProvider').addEventListener('change', (e) => pivot.setOptions({ provider: e.target.checked ? serverProvider : undefined }));
+
+  // --
+  // save & restore the layout (the spec is plain JSON)
+  // -----------------
+
+  function saveLayout() {
+    try {
+      localStorage.setItem('slickgrid-pivot-example-layout', JSON.stringify(pivot.getSpec()));
+    } catch (error) {
+      console.warn('The layout could not be saved', error);
+    }
+  }
+
+  function restoreLayout() {
+    try {
+      const saved = localStorage.getItem('slickgrid-pivot-example-layout');
+      if (saved) {
+        pivot.setSpec(JSON.parse(saved));
+      }
+    } catch (error) {
+      console.warn('The layout could not be restored', error);
+    }
+  }
+
+  // --
+  // drill-down
+  // -----------------
+
+  let drillGrid;
+  const drillColumns = [
+    { id: 'OrderId', name: 'Order', field: 'OrderId', width: 70 },
+    { id: 'OrderDate', name: 'Date', field: 'OrderDate', width: 95, formatter: (_r, _c, value) => (value instanceof Date ? value.toLocaleDateString() : value ?? '') },
+    { id: 'Region', name: 'Region', field: 'Region', width: 70 },
+    { id: 'Country', name: 'Country', field: 'Country', width: 110 },
+    { id: 'Channel', name: 'Channel', field: 'Channel', width: 80 },
+    { id: 'Product', name: 'Product', field: 'Product', width: 120 },
+    { id: 'Units', name: 'Units', field: 'Units', width: 60, cssClass: 'cell-right' },
+    { id: 'Amount', name: 'Amount', field: 'Amount', width: 90 },
+  ];
+  pivot.onPivotCellDrillDown.subscribe((_e, args) => {
+    const dialog = document.querySelector('#drillDialog');
+    const describe = (path) => Object.keys(path).map((field) => pivot.getEngine().formatItem(field, path[field])).join(' › ');
+    const where = [describe(args.rowPath), describe(args.columnPath)].filter(Boolean).join(' / ') || 'Grand Total';
+    document.querySelector('#drillTitle').textContent = `${args.rows.length.toLocaleString()} source rows — ${where}`;
+    const amountField = pivot.getEngine().getField('Amount');
+    const rows = args.rows.slice(0, 1000).map((row, index) => ({ ...row, id: index, Amount: amountField ? pivot.getEngine().getFieldValue('Amount', row) : undefined }));
+    const columns = pivot.getEngine().getField('OrderId')
+      ? drillColumns
+      : pivot.getFields().map((field) => ({ id: field.id, name: field.label ?? field.id, field: field.field ?? field.id, width: 100 }));
+    dialog.showModal();
+    if (!drillGrid) {
+      drillGrid = new Slick.Grid('#drillGrid', rows, columns, { enableCellNavigation: true });
+    } else {
+      drillGrid.setColumns(columns);
+      drillGrid.setData(rows, true);
+      drillGrid.render();
+    }
+    drillGrid.resizeCanvas();
+  });
+</script>
+</body>
+</html>
