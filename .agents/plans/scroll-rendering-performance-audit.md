@@ -24,7 +24,7 @@ RTL-range or additional frame-scheduling changes are included. Positive throttle
 values retain the timer path; the default `0` bypasses that path for vertical renders.
 The migration guide documents the event removal and the sanitizer semantics.
 
-- `npm run build:prod`: passed, including lint and declaration generation.
+- `npm run build`: passed, including lint and declaration generation.
 - API extraction and `npm run drift --prefix vitepress`: passed; no newly undocumented symbols.
 - Targeted Cypress checks: 138 passed across 10 specs, including five new regressions.
 - Full Cypress run: 89 specs, 779 passed, one failed, one pending. The failure was

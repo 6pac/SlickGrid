@@ -20,7 +20,7 @@
   transform: rotate(2700deg);
 }
 
-.dynamic-cell-detail {
+.slick-row-detail-container {
     z-index:            10000;
     position:           absolute;
     background-color:   #dae5e8;
@@ -28,20 +28,5 @@
     padding:            0;
     width:              100%;
     overflow:           auto;
-}
-
-.slick-row-detail-overlay {
-  position: absolute;
-  inset: 0;
-  pointer-events: none;
-}
-
-.dynamic-cell-detail > :first-child {
-    vertical-align:     middle;
     line-height:        13px;
-}
-
-.dynamic-cell-detail > .detail-container {
-    overflow: auto;
-    display: block !important;
 }

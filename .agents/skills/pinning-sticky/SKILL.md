@@ -72,7 +72,7 @@ When changing this feature:
    an implementation detail; do not extend its public surface without an explicit API decision.
 5. Keep fast vertical-scroll blanking as a separate virtual-rendering task; do not conflate it
    with sticky-row activation or docking-layout refresh.
-6. Verify with `npm run build:prod` and the Cypress suite; CI runs on Linux, so re-check
+6. Verify with `npm run build` and the Cypress suite; CI runs on Linux, so re-check
    geometry-sensitive specs (menus, alignment) on Windows font metrics when they change.
 
 ## Source documentation

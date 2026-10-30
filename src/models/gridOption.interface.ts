@@ -12,6 +12,7 @@ import type {
   EditorConstructor,
   ExcelCopyBufferOption,
   Formatter,
+  GridAutosizeColsModeValue,
   GridMenuOption,
   ItemMetadata,
   SlickGridModel,
@@ -92,7 +93,7 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   autoHeight?: boolean;
 
   /** defaults to LegacyOff, Grid Autosize Columns Mode used when calling "autosizeColumns()" method */
-  autosizeColsMode?: string;
+  autosizeColsMode?: GridAutosizeColsModeValue;
 
   /** defaults to 4, autosize column padding in pixel */
   autosizeColPaddingPx?: number;
@@ -442,15 +443,4 @@ export interface GridOption<C extends BaseColumn = BaseColumn> {
   /** Viewport max width in pixel */
   viewportMaxWidthPx?: number;
 
-  // --
-  // deprecated options
-
-  /** @deprecated @use `columnPicker: { columnTitle: '...' }` in your column definitions. */
-  columnPickerTitle?: string;
-
-  /** @deprecated @use `columnPicker: { forceFitTitle: '...' }` in your column definitions. */
-  forceFitTitle?: string;
-
-  /** @deprecated @use `columnPicker: { syncResizeTitle: '...' }`  in your column definitions. */
-  syncResizeTitle?: string;
 }

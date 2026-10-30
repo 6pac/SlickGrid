@@ -19,7 +19,7 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
             .click()
             .wait(250);
 
-        cy.get('.slick-row-detail-overlay .dynamic-cell-detail .innerDetailView_3')
+        cy.get('.slick-row-detail-container.row-detail-3')
             .find('h2')
             .should('contain', 'Task 3');
 
@@ -151,7 +151,7 @@ describe('Example - Row Detail/Row Move/Checkbox Selector Plugins', () => {
             .click()
             .wait(250);
 
-        cy.get('.slick-row-detail-overlay .dynamic-cell-detail .innerDetailView_3')
+        cy.get('.slick-row-detail-container.row-detail-3')
             .find('h2')
             .should('contain', 'Task 3');
 

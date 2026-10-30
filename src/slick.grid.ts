@@ -1,5 +1,6 @@
 import type {
   AutoSize,
+  GridAutosizeColsModeValue,
   CellPosition,
   CellViewportRange,
   Column,
@@ -423,7 +424,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     autosizeMode: ColAutosizeMode.ContentIntelligent,
     rowSelectionModeOnInit: undefined,
     rowSelectionMode: RowSelectionMode.FirstNRows,
-    rowSelectionCount: 100,
+    rowSelectionCount: 200,
     valueFilterMode: ValueFilterMode.None,
     widthEvalMode: WidthEvalMode.Auto,
     sizeToRemaining: undefined,
@@ -2641,7 +2642,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * (internalAutosizeColumns) with the autosize mode and initialisation flag,
    * then restores the original CSS.
    */
-  autosizeColumns(autosizeMode?: string, isInit?: boolean) {
+  autosizeColumns(autosizeMode?: GridAutosizeColsModeValue, isInit?: boolean) {
     const checkHiddenParents = !(this._hiddenParents?.length);
     if (checkHiddenParents) {
       this.cacheCssForHiddenInit();
@@ -2662,7 +2663,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
    * @param {string} [autosizeMode] - The autosize mode. If undefined, defaults to `autosizeColsMode` from options.
    * @param {boolean} [isInit] - If `true`, applies initial settings for autosizing.
    */
-  protected internalAutosizeColumns(autosizeMode?: string, isInit?: boolean) {
+  protected internalAutosizeColumns(autosizeMode?: GridAutosizeColsModeValue, isInit?: boolean) {
     // LogColWidths();
     autosizeMode = autosizeMode || this._options.autosizeColsMode;
     if (autosizeMode === GridAutosizeColsMode.LegacyForceFit || autosizeMode === GridAutosizeColsMode.LegacyOff) {
@@ -2852,11 +2853,9 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       }
       if (colDataTypeOf === 'number') {
         autoSize.valueFilterMode = ValueFilterMode.GetGreatestAndSub;
-        autoSize.rowSelectionMode = RowSelectionMode.AllRows;
       }
       if (colDataTypeOf === 'string') {
         autoSize.valueFilterMode = ValueFilterMode.GetLongestText;
-        autoSize.rowSelectionMode = RowSelectionMode.AllRows;
         autoSize.allowAddlPercent = 5;
       }
       if (colDataTypeOf === 'date') {

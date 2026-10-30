@@ -87,8 +87,8 @@ export class SlickColumnMenu {
     this._menuElm.appendChild(buttonElm);
 
     // user could pass a title on top of the columns list
-    if (this._options.columnPickerTitle || (this._options.columnPicker?.columnTitle)) {
-      const columnTitle = this._options.columnPickerTitle || this._options.columnPicker?.columnTitle;
+    if (this._options.columnPicker?.columnTitle) {
+      const columnTitle = this._options.columnPicker.columnTitle;
       this._columnTitleElm = document.createElement('div');
       this._columnTitleElm.className = 'slick-gridmenu-custom';
       this._columnTitleElm.textContent = columnTitle || '';
@@ -168,7 +168,7 @@ export class SlickColumnMenu {
     }
 
     if (!this._options.columnPicker?.hideForceFitButton) {
-      const forceFitTitle = this._options.columnPicker?.forceFitTitle || this._options.forceFitTitle;
+      const forceFitTitle = this._options.columnPicker?.forceFitTitle || this._defaults.forceFitTitle;
 
       const liElm = document.createElement('li');
       liElm.ariaLabel = forceFitTitle || '';
@@ -191,7 +191,7 @@ export class SlickColumnMenu {
     }
 
     if (!this._options.columnPicker?.hideSyncResizeButton) {
-      const syncResizeTitle = this._options.columnPicker?.syncResizeTitle || this._options.syncResizeTitle;
+      const syncResizeTitle = this._options.columnPicker?.syncResizeTitle || this._defaults.syncResizeTitle;
 
       const liElm = document.createElement('li');
       liElm.ariaLabel = syncResizeTitle || '';
@@ -230,7 +230,7 @@ export class SlickColumnMenu {
     this.columns = this.grid.getColumns().slice(0);
   }
 
-  /** Update the Titles of each sections (command, customTitle, ...) */
+  /** Update the titles of the menu sections. */
   updateAllTitles(pickerOptions: { columnTitle: string; }) {
     this.grid.applyHtmlCode(this._columnTitleElm, pickerOptions.columnTitle);
   }
@@ -267,11 +267,6 @@ export class SlickColumnMenu {
       this.grid.updateColumns();
       this.onColumnsChanged.notify({ columnId, showing: isChecked, allColumns: this.grid.getColumns(), columns: this.grid.getVisibleColumns(), visibleColumns: this.grid.getVisibleColumns(), grid: this.grid });
     }
-  }
-
-  /** @deprecated because of a typo @use `setColumnVisibility()` instead */
-  setColumnVisibiliy(idxOrId: number | string, show: boolean) {
-    this.setColumnVisibility(idxOrId, show);
   }
 
   setColumnVisibility(idxOrId: number | string, show: boolean) {

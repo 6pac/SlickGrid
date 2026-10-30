@@ -10,6 +10,10 @@
  * 4. `ContentIntelligent` re-derived the data type from row 0 even when `autoSize.colDataTypeOf` was set,
  *    so a user-supplied type was only honoured on an empty grid.
  *
+ * It also pins the row sampling: `ContentIntelligent` number and string columns read the rows chosen by
+ * the column's own `rowSelectionMode` / `rowSelectionCount` (by default the first 200), and no longer
+ * overwrite them with `AllRows`.
+ *
  * The spec is SELF-HOSTING: the harness page is served from this file via cy.intercept (nothing is
  * added to examples/). Header names are deliberately short so a failed measurement cannot hide behind
  * `headerWidthPx`. Each test FAILS on the unfixed code and PASSES with the fix.
@@ -96,6 +100,33 @@ const harnessHtml = `<!doctype html>
     });
     return result;
   };
+
+  window.autosizeLargeDataset = function (readAllRows) {
+    var big = [];
+    for (var j = 0; j < 500; j++) {
+      big.push({
+        id: j,
+        late: j === 300 ? 'a long value that only appears far down the dataset' : 'short',
+        size: j === 300 ? 123456789 : j
+      });
+    }
+    var autoSize = readAllRows ? { rowSelectionMode: Slick.RowSelectionMode.AllRows } : undefined;
+    window.grid.setData(big, true);
+    window.grid.setColumns([
+      { id: 'late', name: 'L', field: 'late', width: 40, autoSize: autoSize && Object.assign({}, autoSize) },
+      { id: 'size', name: 'S', field: 'size', width: 40, autoSize: autoSize && Object.assign({}, autoSize) }
+    ]);
+    window.grid.autosizeColumns();
+    var result = {};
+    window.grid.getColumns().forEach(function (c) {
+      result[c.id] = {
+        contentSizePx: Math.round(c.autoSize.contentSizePx),
+        rowSelectionMode: c.autoSize.rowSelectionMode,
+        rowSelectionCount: c.autoSize.rowSelectionCount
+      };
+    });
+    return result;
+  };
 </script>
 </body>
 </html>`;
@@ -146,6 +177,30 @@ describe('Quirk - autosize measurement', { retries: 1 }, () => {
       const amount = win.autosizeAllColumns().amount;
       // row 0 holds an empty string, so guessing from row 0 picks the string strategy (GetLongestText)
       expect(amount.valueFilterMode, 'number strategy from the supplied type').to.eq(win.Slick.ValueFilterMode.GetGreatestAndSub);
+    });
+  });
+
+  it('ContentIntelligent should read the first 200 rows by default', () => {
+    visitHarness();
+    cy.window().then((win: any) => {
+      const r = win.autosizeLargeDataset(false);
+      expect(r.late.rowSelectionMode, 'string column keeps the default first-N mode').to.eq(win.Slick.RowSelectionMode.FirstNRows);
+      expect(r.late.rowSelectionCount, 'default row count').to.eq(200);
+      expect(r.size.rowSelectionMode, 'number column keeps the default first-N mode').to.eq(win.Slick.RowSelectionMode.FirstNRows);
+      // the only long values sit at row 300, outside the first 200 rows
+      expect(r.late.contentSizePx, 'the long string beyond row 200 is not measured').to.be.lessThan(100);
+      expect(r.size.contentSizePx, 'the large number beyond row 200 is not measured').to.be.lessThan(60);
+    });
+  });
+
+  it("ContentIntelligent should honour a column's rowSelectionMode of AllRows", () => {
+    visitHarness();
+    cy.window().then((win: any) => {
+      const r = win.autosizeLargeDataset(true);
+      expect(r.late.rowSelectionMode, 'string column keeps AllRows').to.eq(win.Slick.RowSelectionMode.AllRows);
+      expect(r.size.rowSelectionMode, 'number column keeps AllRows').to.eq(win.Slick.RowSelectionMode.AllRows);
+      expect(r.late.contentSizePx, 'the long string at row 300 is measured').to.be.greaterThan(200);
+      expect(r.size.contentSizePx, 'the nine-digit number at row 300 is measured').to.be.greaterThan(60);
     });
   });
 });
