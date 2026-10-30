@@ -1,10 +1,5 @@
 {
   "grid:opt-auto": { "notes": "Undocumented legacy flag with no defined effect in the current grid. Do not rely on it." },
-  "grid:opt-columnPickerTitle": { "notes": "Deprecated. Set the title through the `columnPicker` option object instead: `columnPicker: { columnTitle: '…' }`." },
-  "grid:opt-forceFitTitle": { "notes": "Deprecated. Use `columnPicker: { forceFitTitle: '…' }` instead." },
-  "grid:opt-syncResizeTitle": { "notes": "Deprecated. Use `columnPicker: { syncResizeTitle: '…' }` instead." },
-  "dataview:dvopt-inlineFilters": { "notes": "Deprecated and ignored in v6. DataView filtering is compiled safely for you; there is no inline-filter mode to choose." },
-  "dataview:dvopt-useCSPSafeFilter": { "notes": "Deprecated and ignored in v6. DataView filtering is always CSP-safe, so this flag has no effect." },
   "grid:opt-editable": {
     "example": "const grid = new SlickGrid('#grid', data, columns, {\n  editable: true,\n  autoEdit: false,\n});\n// give each editable column an `editor`\ncolumns[0].editor = Editors.Text;"
   },

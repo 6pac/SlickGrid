@@ -55,6 +55,8 @@ External copy and paste now use the browser's asynchronous Clipboard API (`navig
 
 ## Removed deprecated code
 
+Version 6 removes the deprecated APIs listed below. Replace their uses before upgrading.
+
 ### DataView filtering
 
 DataView filtering and aggregation are CSP-safe without runtime code generation. Remove `inlineFilters` and `useCSPSafeFilter` from DataView options; neither needs a replacement. The unused `FilterCspFn` and `FilterWithCspCachingFn` type aliases are also removed. Use `FilterFn<T>` for the predicate passed to `setFilter()`.
@@ -68,8 +70,6 @@ Subclasses of `SlickDataView` must update references to these protected methods:
 | `compileAccumulatorLoopCSPSafe()` | `compileAccumulatorLoop()` |
 
 ### Menu and column picker options
-
-Version 6 removes the deprecated APIs listed below. Replace their uses before upgrading.
 
 - Use `gridMenu.commandItems` and `gridMenu.commandTitle` in place of `customItems` and `customTitle`. Nested menu entries also use `commandItems`.
 - Use `header.menu.commandItems` for header menu entries, including nested entries; the old `items` property is removed.
