@@ -237,35 +237,22 @@ export class SlickResizer {
    * @param {number} [delay] to wait before resizing, defaults to 0 (in milliseconds)
    * @param {object} [newSizes] can optionally be passed (height: number, width: number)
    * @param {object} [event] that triggered the resize, defaults to null
-   * @return If the browser supports it, we can return a Promise that would resolve with the new dimensions
+   * @return A Promise that resolves with the new dimensions.
    */
-  resizeGrid(delay?: number, newSizes?: GridSize, event?: Event | null): Promise<GridSize | undefined> | void {
+  resizeGrid(delay?: number, newSizes?: GridSize, event?: Event | null): Promise<GridSize | undefined> {
     // because of the javascript async nature, we might want to delay the resize a little bit
     const resizeDelay = delay || 0;
 
-    // return a Promise when supported by the browser
-    if (typeof Promise === 'function') {
-      return new Promise((resolve) => {
-        if (resizeDelay > 0) {
-          window.clearTimeout(this._timer);
-          this._timer = window.setTimeout(() => {
-            resolve(this.resizeGridCallback(newSizes, event));
-          }, resizeDelay);
-        } else {
-          resolve(this.resizeGridCallback(newSizes, event));
-        }
-      });
-    } else {
-      // OR no return when Promise isn't supported
+    return new Promise((resolve) => {
       if (resizeDelay > 0) {
         window.clearTimeout(this._timer);
         this._timer = window.setTimeout(() => {
-          this.resizeGridCallback(newSizes, event);
+          resolve(this.resizeGridCallback(newSizes, event));
         }, resizeDelay);
       } else {
-        this.resizeGridCallback(newSizes, event);
+        resolve(this.resizeGridCallback(newSizes, event));
       }
-    }
+    });
   }
 
   protected resizeGridCallback(newSizes?: GridSize, event?: Event | null) {

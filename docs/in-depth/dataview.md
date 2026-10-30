@@ -140,7 +140,6 @@ For multi-column sorting, set the grid option [`multiColumnSort`](/reference/gri
 
 - `sort` reorders the underlying items array. Keep a copy first if you need the original order.
 - [`reSort`](/reference/dataview#m-reSort) re-applies the last sort after the data changes.
-- [`fastSort`](/reference/dataview#m-fastSort) is deprecated. Use `sort`.
 
 ### 5. Filter
 

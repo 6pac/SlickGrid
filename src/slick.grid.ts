@@ -476,7 +476,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   protected _viewport!: HTMLDivElement[];
   protected _canvas!: HTMLDivElement[];
   protected _style?: HTMLStyleElement;
-  protected stylesheet?: { cssRules: Array<{ selectorText: string }>; rules: Array<{ selectorText: string }> } | null;
+  protected stylesheet?: { cssRules: Array<{ selectorText: string }> } | null;
   protected columnCssRulesL?: Array<{ selectorText: string }>;
   protected columnCssRulesR?: Array<{ selectorText: string }>;
   protected viewportH = 0;
@@ -3940,7 +3940,6 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
   * It then removes “editable” and “invalid” CSS classes from the active cell, re–applies the formatter
   * to restore the cell’s original content, invalidates any post–processing results,
   * and deactivates the editor lock. Optionally, it can also re–focus the grid.
-  * In IE, it clears any text selection to ensure focus is properly reset.
   *
   * @param {Boolean} [refocusActiveCell]
   */
@@ -4494,7 +4493,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     if (!this.currentEditor) {
       // if this click resulted in some cell child node getting focus,
       // don't steal it back - keyboard events will still bubble up
-      // IE9+ seems to default DIVs to tabIndex=0 instead of -1, so check for cell clicks directly.
+      // A cell can itself receive focus, so check for cell clicks directly.
       // prettier-ignore
       if ((e as DOMEvent<HTMLDivElement>).target !== document.activeElement || (e as DOMEvent<HTMLDivElement>).target.classList.contains('slick-cell')) {
         const selection = this.getTextSelection(); // store text-selection and restore it after
@@ -5178,11 +5177,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       }
     }
 
-    if ((this._style as any).styleSheet) {
-      (this._style as any).styleSheet.cssText = rules.join(' '); // IE
-    } else {
-      this._style.appendChild(document.createTextNode(rules.join(' ')));
-    }
+    this._style.appendChild(document.createTextNode(rules.join(' ')));
   }
 
   /**
@@ -5205,7 +5200,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
 
       for (i = 0; i < sheets.length; i++) {
         const sheet = sheets[i];
-        if ((sheet.ownerNode || sheet.owningElement) === this._style) {
+        if (sheet.ownerNode === this._style) {
           this.stylesheet = sheet;
           break;
         }
@@ -5219,7 +5214,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
       // find and cache column CSS rules
       this.columnCssRulesL = [];
       this.columnCssRulesR = [];
-      const cssRules = this.stylesheet.cssRules || this.stylesheet.rules;
+      const cssRules = this.stylesheet.cssRules;
       let matches;
       let columnIdx;
       for (i = 0; i < cssRules.length; i++) {
@@ -8592,8 +8587,7 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     return this.activeCellNode;
   }
 
-  // This get/set methods are used for keeping text-selection. These don't consider IE because they don't loose text-selection.
-  // Fix for firefox selection. See https://github.com/mleibman/SlickGrid/pull/746/files
+  // Preserve text selection when focus moves to the grid's focus sink.
   /** Returns the current browser text selection, when one is available. */
   protected getTextSelection(): Range | null {
     let textSelection: Range | null = null;

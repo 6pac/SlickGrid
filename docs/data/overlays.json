@@ -31,10 +31,6 @@
     "notes": "Utility that returns true when two arrays are the same length and shallow-equal by index (each element strictly equal). Handy for cheap change detection.",
     "example": "if (!grid.arrayEquals(prevIds, nextIds)) {\n  grid.setSelectedRows(nextRows);\n}"
   },
-  "dataview:m-fastSort": {
-    "notes": "Sorts items by a single field using a faster string-based comparison. field is a property name or a function that returns the sort string. Use sort() with a comparer for custom or multi-field ordering; fastSort trades flexibility for speed.",
-    "example": "dataView.fastSort('lastName', true);"
-  },
   "dataview:m-refresh": {
     "notes": "Re-applies the current filter, sort, paging and grouping, then fires the change events for whatever changed. Call it after you mutate items outside the DataView's own add/update methods. Inside a beginUpdate()/endUpdate() batch it is deferred to endUpdate().",
     "example": "items[0].active = false;\ndataView.refresh();"

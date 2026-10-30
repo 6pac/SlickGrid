@@ -11,7 +11,7 @@
       "gridMethods": 154,
       "dataViewOptions": 2,
       "dataViewEvents": 9,
-      "dataViewMethods": 57,
+      "dataViewMethods": 56,
       "plugins": 20,
       "controls": 4,
       "coreClasses": 15,
@@ -5773,28 +5773,6 @@
       ],
       "returns": "",
       "description": "Sort Method to use by the DataView"
-    },
-    {
-      "name": "fastSort",
-      "group": "",
-      "signature": "fastSort(field: string | (() => string), ascending?: boolean)",
-      "params": [
-        {
-          "name": "field",
-          "type": "string | (() => string)",
-          "optional": false,
-          "description": ""
-        },
-        {
-          "name": "ascending",
-          "type": "boolean",
-          "optional": true,
-          "description": ""
-        }
-      ],
-      "returns": "",
-      "description": "",
-      "deprecated": ", to be more removed in next major since IE is no longer supported and this is no longer useful.\nProvides a workaround for the extremely slow sorting in IE.\nDoes a [lexicographic] sort on a give column by temporarily overriding Object.prototype.toString\nto return the value of that field and then doing a native Array.sort()."
     },
     {
       "name": "reSort",
@@ -11903,7 +11881,7 @@
               {
                 "name": "resizeGrid",
                 "group": "",
-                "signature": "resizeGrid(delay?: number, newSizes?: GridSize, event?: Event | null): Promise<GridSize | undefined> | void",
+                "signature": "resizeGrid(delay?: number, newSizes?: GridSize, event?: Event | null): Promise<GridSize | undefined>",
                 "params": [
                   {
                     "name": "delay",
@@ -11924,7 +11902,7 @@
                     "description": "that triggered the resize, defaults to null"
                   }
                 ],
-                "returns": "Promise<GridSize | undefined> | void",
+                "returns": "Promise<GridSize | undefined>",
                 "description": "Resize the datagrid to fit the browser height & width."
               }
             ],

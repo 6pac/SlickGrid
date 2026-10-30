@@ -93,7 +93,6 @@ export class ExampleGrouping {
       sortcol = args.sortCol.field;
 
       // using native sort with comparer
-      // preferred method but can be very slow in IE with huge datasets
       this.dataView.sort(comparer, args.sortAsc);
     });
 

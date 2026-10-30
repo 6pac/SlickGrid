@@ -196,34 +196,33 @@ export function MouseWheel(options: MouseWheelOption) {
 
   // copy over the same event handler code used in jquery.mousewheel
   function wheelHandler(event: WheelEvent & { axis: number; wheelDelta: number; wheelDeltaX: number; wheelDeltaY: number; HORIZONTAL_AXIS: number; }) {
-    const orgEvent = event || window.event;
     let delta = 0;
     let deltaX = 0;
     let deltaY = 0;
 
     // Old school scrollwheel delta
-    if (orgEvent.wheelDelta) {
-      delta = orgEvent.wheelDelta / 120;
+    if (event.wheelDelta) {
+      delta = event.wheelDelta / 120;
     }
-    if (orgEvent.detail) {
-      delta = -orgEvent.detail / 3;
+    if (event.detail) {
+      delta = -event.detail / 3;
     }
 
     // New school multidimensional scroll (touchpads) deltas
     deltaY = delta;
 
     // Gecko
-    if (orgEvent.axis !== undefined && orgEvent.axis === orgEvent.HORIZONTAL_AXIS) {
+    if (event.axis !== undefined && event.axis === event.HORIZONTAL_AXIS) {
       deltaY = 0;
       deltaX = -1 * delta;
     }
 
     // WebKit
-    if (orgEvent.wheelDeltaY !== undefined) {
-      deltaY = orgEvent.wheelDeltaY / 120;
+    if (event.wheelDeltaY !== undefined) {
+      deltaY = event.wheelDeltaY / 120;
     }
-    if (orgEvent.wheelDeltaX !== undefined) {
-      deltaX = -1 * orgEvent.wheelDeltaX / 120;
+    if (event.wheelDeltaX !== undefined) {
+      deltaX = -1 * event.wheelDeltaX / 120;
     }
 
     if (typeof onMouseWheel === 'function') {
