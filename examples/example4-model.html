@@ -201,7 +201,7 @@ document.addEventListener("DOMContentLoaded", function() {
   }
 
   // instantiate SlickGrid and SlickDataView
-  dataView = new Slick.Data.DataView({ inlineFilters: true });
+  dataView = new Slick.Data.DataView();
   grid = new Slick.Grid("#myGrid", dataView, columns, options);
   grid.setSelectionModel(new Slick.RowSelectionModel());
 

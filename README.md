@@ -77,7 +77,7 @@ npm install slickgrid
 <script type="module">
   import 'slickgrid/dist/styles/css/slick-alpine-theme.css';
   import { SlickGrid, SlickDataView } from 'slickgrid';
-  const dataView = new SlickDataView({ inlineFilters: true });
+  const dataView = new SlickDataView();
   const grid = new SlickGrid("#myGrid", dataView, columns, options);
 </script>
 ```

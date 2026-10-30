@@ -81,7 +81,7 @@ export class Example4 {
     this.data = this.getData(50000);
 
     // instantiate SlickGrid and SlickDataView
-    this.dataView = new SlickDataView({ inlineFilters: true });
+    this.dataView = new SlickDataView();
     this.grid = new SlickGrid("#myGrid", this.dataView, this.columns, this.options);
     this.grid.setSelectionModel(new SlickRowSelectionModel());
 
@@ -210,7 +210,7 @@ export class Example4 {
       percentCompleteThreshold: this.percentCompleteThreshold,
       searchString: this.searchString
     });
-    // `inlineFilters` can be a regular function or an ES6 arrow function like below
+    // Filters can be regular functions or ES6 arrow functions like below
     // this.dataView.setFilter((item, args) => item['percentComplete'] > args.percentCompleteThreshold);
     this.dataView.setFilter((item, args) => {
       if (item['percentComplete'] < args.percentCompleteThreshold) {

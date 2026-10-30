@@ -43,24 +43,8 @@ export interface DataViewOption {
 
   /** Optionally provide a GroupItemMetadataProvider in order to use Grouping/DraggableGrouping features */
   groupItemMetadataProvider: SlickGroupItemMetadataProvider_ | null;
-
-  /**
-   * @deprecated Filtering is always CSP-safe and this option is now ignored.
-   * Remove both `inlineFilters` and `useCSPSafeFilter` in the next major release.
-   */
-  inlineFilters: boolean;
-
-  /**
-   * @deprecated Filtering is always CSP-safe and this option is now ignored.
-   * Remove it in the next major release together with `inlineFilters`.
-   */
-  useCSPSafeFilter: boolean;
 }
 export type FilterFn<T> = (item: T, args: any) => boolean;
-/** @deprecated Filtering is always CSP-safe. Remove this alias in the next major release. */
-export type FilterCspFn<T> = (item: T[], args: any) => T[];
-/** @deprecated Filtering is always CSP-safe. Remove this alias in the next major release. */
-export type FilterWithCspCachingFn<T> = (item: T[], args: any, filterCache: any[]) => T[];
 export type DataIdType = number | string;
 export type SlickDataItem = SlickNonDataItem | SlickGroup_ | SlickGroupTotals_ | any;
 export type GroupGetterFn = (val: any) => string | number;
@@ -74,8 +58,6 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   protected defaults: DataViewOption = {
     globalItemMetadataProvider: null,
     groupItemMetadataProvider: null,
-    inlineFilters: false,
-    useCSPSafeFilter: false,
   };
 
   // private
@@ -436,7 +418,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
       gi.compiledAccumulators = [];
       let idx = gi.aggregators.length;
       while (idx--) {
-        gi.compiledAccumulators[idx] = this.compileAccumulatorLoopCSPSafe(gi.aggregators[idx]);
+        gi.compiledAccumulators[idx] = this.compileAccumulatorLoop(gi.aggregators[idx]);
       }
 
       this.toggledGroupsByLevel[i] = Object.create(null);
@@ -1060,7 +1042,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     return groupedRows;
   }
 
-  protected compileAccumulatorLoopCSPSafe(aggregator: Aggregator) {
+  protected compileAccumulatorLoop(aggregator: Aggregator) {
     if (aggregator.accumulate) {
       return function (items: any[]) {
         for (let i = 0; i < items.length; i++) {
@@ -1073,7 +1055,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     }
   }
 
-  protected compileFilterCSPSafe(items: TData[], args: any): TData[] {
+  protected filterItems(items: TData[], args: any): TData[] {
     if (typeof this.filter !== 'function') {
       return [];
     }
@@ -1090,7 +1072,7 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
     return _retval;
   }
 
-  protected compileFilterWithCachingCSPSafe(items: TData[], args: any, filterCache: any[]): TData[] {
+  protected filterItemsWithCaching(items: TData[], args: any, filterCache: any[]): TData[] {
     if (typeof this.filter !== 'function') {
       return [];
     }
@@ -1114,11 +1096,11 @@ export class SlickDataView<TData extends SlickDataItem = any> implements CustomD
   protected getFilteredAndPagedItems(items: TData[]) {
     if (this.filter) {
       if (this.refreshHints.isFilterNarrowing) {
-        this.filteredItems = this.compileFilterCSPSafe(this.filteredItems, this.filterArgs);
+        this.filteredItems = this.filterItems(this.filteredItems, this.filterArgs);
       } else if (this.refreshHints.isFilterExpanding) {
-        this.filteredItems = this.compileFilterWithCachingCSPSafe(items, this.filterArgs, this.filterCache);
+        this.filteredItems = this.filterItemsWithCaching(items, this.filterArgs, this.filterCache);
       } else if (!this.refreshHints.isFilterUnchanged) {
-        this.filteredItems = this.compileFilterCSPSafe(items, this.filterArgs);
+        this.filteredItems = this.filterItems(items, this.filterArgs);
       }
     } else {
       // special case:  if not filtering and not paging, the resulting

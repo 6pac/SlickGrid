@@ -77,7 +77,7 @@ export class ExampleGrouping {
 
     // instantiate SlickGrid and SlickDataView
     let groupItemMetadataProvider = new SlickGroupItemMetadataProvider();
-    this.dataView = new SlickDataView({ inlineFilters: true, groupItemMetadataProvider });
+    this.dataView = new SlickDataView({ groupItemMetadataProvider });
     this.grid = new SlickGrid("#myGrid", this.dataView, this.columns, this.options);
 
     // instantiate a few Controls

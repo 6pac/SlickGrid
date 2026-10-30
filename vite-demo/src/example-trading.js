@@ -148,7 +148,6 @@ export class ExampleTrading {
     const groupItemMetadataProvider = new SlickGroupItemMetadataProvider();
     this.dataView = new SlickDataView({
       groupItemMetadataProvider,
-      inlineFilters: true
     });
     this.grid = new SlickGrid("#myGrid", this.dataView, this.columns, this.options);
     this.grid.registerPlugin(groupItemMetadataProvider);

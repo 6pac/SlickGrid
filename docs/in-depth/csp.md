@@ -183,7 +183,7 @@ const dataView = new SlickDataView();
 dataView.setFilter((item) => item.active === true);
 ```
 
-The old [`useCSPSafeFilter`](/reference/dataview#dvopt-useCSPSafeFilter) and `inlineFilters` options are **deprecated and ignored**. They switched between filter strategies in earlier versions. You no longer need them. Remove them from your DataView setup; a later major release will delete them. The related `FilterCspFn` and `FilterWithCspCachingFn` type aliases are deprecated for the same reason.
+No DataView filter strategy option is needed. See the [v6 migration guide](/in-depth/migration-v6#dataview-filtering) for removed options and types.
 
 ## Common pitfalls
 
@@ -191,14 +191,13 @@ The old [`useCSPSafeFilter`](/reference/dataview#dvopt-useCSPSafeFilter) and `in
 - **A mismatched nonce.** The `nonce` option must equal the nonce in the `style-src` directive. If they differ, the browser blocks the sizing stylesheet and columns size wrongly. A wrong nonce fails silently apart from the layout.
 - **Plugins that still use `innerHTML`.** Turning off `enableHtmlRendering` covers the core cell and header path, but some plugins (for example Row Detail) still assign a sanitized string to `innerHTML`. If you enable such a plugin under Trusted Types, keep a `sanitizer` that returns `TrustedHTML`. This is why Strategy A is the safer default.
 - **Data inside an HTML string.** Even with a sanitizer, building strings like `` `<a>${value}</a>` `` risks breaking on quotes and relies on the sanitizer for safety. Prefer native elements and set data through `textContent` and properties.
-- **Leftover filter options.** Passing `useCSPSafeFilter: true` does nothing in v6. Do not rely on it to change behaviour.
 - **Header names as HTML.** A column `name` that contains markup also passes through `applyHtmlCode`. The same rules apply: it needs the sanitizer, or set `name` to a plain string, or assign an `HTMLElement`.
 
 ## See also
 
 - Grid options: [`sanitizer`](/reference/grid#opt-sanitizer) · [`enableHtmlRendering`](/reference/grid#opt-enableHtmlRendering) · [`nonce`](/reference/grid#opt-nonce) · [`logSanitizedHtml`](/reference/grid#opt-logSanitizedHtml)
 - Grid methods: [`sanitizeHtmlString`](/reference/grid#m-sanitizeHtmlString) · [`applyHtmlCode`](/reference/grid#m-applyHtmlCode)
-- DataView: [`setFilter`](/reference/dataview#m-setFilter) · [`useCSPSafeFilter`](/reference/dataview#dvopt-useCSPSafeFilter) (deprecated)
+- DataView: [`setFilter`](/reference/dataview#m-setFilter)
 - Column: [`formatter`](/reference/column#col-formatter)
 - Reference pages: [Formatters](/reference/formatters)
 - Related chapters: [Formatters](/in-depth/formatters) · [Filtering & paging](/in-depth/filtering-paging)

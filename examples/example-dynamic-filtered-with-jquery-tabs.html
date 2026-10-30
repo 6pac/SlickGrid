@@ -243,7 +243,7 @@
 	var pagerId = pagerElementName + gridIndex;
 
 	// create grid and associated components
-    var dataView = new Slick.Data.DataView({ inlineFilters: true });
+    var dataView = new Slick.Data.DataView();
 	var columns = CreateColumns();
  	var options = CreateOptions();
     var grid = new Slick.Grid("#" + gridId, dataView, columns, options);

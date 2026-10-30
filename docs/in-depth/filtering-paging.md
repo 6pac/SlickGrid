@@ -37,7 +37,7 @@ Paging is an API on the DataView: [`setPagingOptions`](/reference/dataview#m-set
 ::: tip Filtering is always CSP-safe
 In v6 the DataView calls your filter function directly. It never compiles code with `new Function`. Filtering works under a strict Content-Security-Policy with no change.
 
-The old options [`inlineFilters`](/reference/dataview#dvopt-inlineFilters) and [`useCSPSafeFilter`](/reference/dataview#dvopt-useCSPSafeFilter) are **deprecated and ignored**. Do not set them. See [CSP & sanitization](/in-depth/csp).
+No filter strategy options are needed. See [CSP & sanitization](/in-depth/csp).
 :::
 
 ## Walkthrough

@@ -396,7 +396,7 @@ document.addEventListener("DOMContentLoaded", () => {
 
   // instantiate SlickGrid and SlickDataView
   const ps = new EventPubSubService(myCompElm);
-  dataView = new SlickDataView({ inlineFilters: true }, ps);
+  dataView = new SlickDataView({}, ps);
   grid = new SlickGrid(gridContainerElm, dataView, columns, options, ps);
   grid.setSelectionModel(new SlickRowSelectionModel());
 

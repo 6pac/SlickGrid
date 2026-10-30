@@ -378,8 +378,33 @@ test("all then none", function() {
     assertConsistency(dv);
 });
 
-test("inlining replaces absolute returns", function() {
-    var dv = new Slick.Data.DataView({ inlineFilters: true });
+test("filter closures work when narrowing and expanding", function() {
+    var dv = new Slick.Data.DataView();
+    var offset = 1;
+    dv.setItems([{id:0,val:0},{id:1,val:1},{id:2,val:2},{id:3,val:3}]);
+    dv.setFilterArgs({minimum: 2});
+    dv.setFilter(function(item, args) { return item.val + offset >= args.minimum; });
+    same(dv.getFilteredItems().map(function(item) { return item.id; }), [1, 2, 3]);
+
+    dv.setFilterArgs({minimum: 4});
+    dv.setRefreshHints({isFilterNarrowing: true});
+    dv.refresh();
+    same(dv.getFilteredItems().map(function(item) { return item.id; }), [3]);
+
+    dv.setFilterArgs({minimum: 3});
+    dv.setRefreshHints({isFilterExpanding: true});
+    dv.refresh();
+    same(dv.getFilteredItems().map(function(item) { return item.id; }), [2, 3]);
+
+    dv.setFilterArgs({minimum: 2});
+    dv.setRefreshHints({isFilterExpanding: true});
+    dv.refresh();
+    same(dv.getFilteredItems().map(function(item) { return item.id; }), [1, 2, 3]);
+    assertConsistency(dv);
+});
+
+test("filter supports multiple boolean returns", function() {
+    var dv = new Slick.Data.DataView();
     dv.setItems([{id:0,val:0},{id:1,val:1},{id:2,val:2}]);
     dv.setFilter(function(o) {
         if (o.val === 1) { return true; }
@@ -395,8 +420,8 @@ test("inlining replaces absolute returns", function() {
     assertConsistency(dv);
 });
 
-test("inlining replaces evaluated returns", function() {
-    var dv = new Slick.Data.DataView({ inlineFilters: true });
+test("filter supports evaluated returns", function() {
+    var dv = new Slick.Data.DataView();
     dv.setItems([{id:0,val:0},{id:1,val:1},{id:2,val:2}]);
     dv.setFilter(function(o) {
         if (o.val === 0) { return o.id === 2; }
@@ -410,6 +435,19 @@ test("inlining replaces evaluated returns", function() {
     same(dv.getItems().length, 3, "original data is still there");
     same(dv.getLength(), 1, "rows are filtered");
     assertConsistency(dv);
+});
+
+test("grouping runs the accumulator for filtered rows", function() {
+    var dv = new Slick.Data.DataView({groupItemMetadataProvider: {}});
+    var aggregator = {
+        init: function() { this.total = 0; },
+        accumulate: function(item) { this.total += item.val; },
+        storeResult: function(totals) { totals.sum = this.total; }
+    };
+    dv.setItems([{id:0,group:"a",val:1},{id:1,group:"a",val:2},{id:2,group:"b",val:4}]);
+    dv.setFilter(function(item) { return item.val > 1; });
+    dv.setGrouping({getter: "group", aggregators: [aggregator]});
+    same(dv.getGroups().map(function(group) { return [group.value, group.totals.sum]; }), [["a", 2], ["b", 4]]);
 });
 
 module("updateItem");
