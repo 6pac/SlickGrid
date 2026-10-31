@@ -514,7 +514,7 @@ export class SlickGroup extends SlickNonDataItem {
    * @property rows
    * @type {Array}
    */
-  rows: number[] = [];
+  rows: any[] = [];
 
   /**
    * Sub-groups that are part of the group.
