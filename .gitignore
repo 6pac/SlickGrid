@@ -37,3 +37,4 @@ tsconfig.tsbuildinfo
 # test and coverage
 coverage/
 .nyc_output/
+.vitest/

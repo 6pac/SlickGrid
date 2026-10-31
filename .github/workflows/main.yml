@@ -95,8 +95,9 @@ jobs:
       - name: Run Unit Tests
         run: npm run test
 
-      - name: Upload test coverage to Codecov
-        uses: codecov/codecov-action@v7
-        with:
-          token: ${{ secrets.CODECOV_TOKEN }}
-          slug: 6pac/SlickGrid
+      # requires Codecov setup in GitHub, will do later
+      # - name: Upload test coverage to Codecov
+      #   uses: codecov/codecov-action@v7
+      #   with:
+      #     token: ${{ secrets.CODECOV_TOKEN }}
+      #     slug: 6pac/SlickGrid

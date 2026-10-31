@@ -163,6 +163,10 @@ export class SlickCustomTooltip {
     this._bindingEventService.unbindAll();
   }
 
+  getOptions() {
+    return this._options;
+  }
+
   protected handleGlobalMouseOver(event: MouseEvent) {
     const target = event.target as HTMLElement | null;
     if (!target || target.closest('.slick-cell, .slick-header-column, .slick-headerrow-column')) {

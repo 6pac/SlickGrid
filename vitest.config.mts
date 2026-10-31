@@ -15,7 +15,17 @@ export default defineConfig({
       interopDefault: false,
     },
     coverage: {
-      exclude: [...configDefaults.exclude, '**/interfaces.ts', '**/scripts/**', '*.mjs'],
+      include: ['src/**/*.ts'],
+      exclude: [
+        ...configDefaults.exclude,
+        '**/*.d.ts',
+        '**/*.interface.ts',
+        '**/interfaces.ts',
+        'src/models/**',
+        '**/index.ts',
+        '**/scripts/**',
+        '*.mjs',
+      ],
     },
     watch: false,
   },
