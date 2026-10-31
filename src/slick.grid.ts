@@ -6366,15 +6366,10 @@ export class SlickGrid<TData = any, C extends Column<TData> = Column<TData>, O e
     viewportTop ??= this.scrollTop;
     viewportLeft ??= this.scrollLeft;
 
-    let leftPx = viewportLeft;
-    let rightPx = viewportLeft + Math.max(0, this.viewportW - this.dockingLayout.leftBaseWidth - this.dockingLayout.rightBaseWidth);
-
-    if (this._options.rtl) {
-      // In RTL mode, scrollLeft is the offset from the right edge.
-      const maxScroll = this.canvasWidth - this.viewportW;
-      leftPx = maxScroll - viewportLeft - this.viewportW;
-      rightPx = maxScroll - viewportLeft;
-    }
+    // In RTL mode the columns are laid out from the right edge and scrollLeft is the native negative
+    // offset from that edge, so the distance scrolled is its absolute value in both directions.
+    const leftPx = this._options.rtl ? Math.abs(viewportLeft) : viewportLeft;
+    const rightPx = leftPx + Math.max(0, this.viewportW - this.dockingLayout.leftBaseWidth - this.dockingLayout.rightBaseWidth);
 
     return {
       top: this.getRowFromPosition(viewportTop),
