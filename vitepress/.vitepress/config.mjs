@@ -12,6 +12,7 @@ export default defineConfig({
   lang: 'en-US',
   title: 'SlickGrid',
   description: 'A lightning fast JavaScript data grid — official documentation.',
+  head: [['link', { rel: 'icon', type: 'image/x-icon', href: `${base}favicon.ico` }]],
   cleanUrls: true,
   lastUpdated: true,
   vite: {
@@ -26,7 +27,7 @@ export default defineConfig({
       { text: 'Introduction', link: '/introduction/' },
       { text: 'In-depth', link: '/in-depth/' },
       { text: 'Reference', link: '/reference/' },
-      { text: 'Examples', link: 'https://github.com/6pac/SlickGrid/wiki/Examples' },
+      { text: 'Examples', link: '/examples' },
     ],
     sidebar: {
       '/introduction/': [
