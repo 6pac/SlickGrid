@@ -90,12 +90,15 @@
       <h2>Demonstrates:</h2>
       <ul>
         <li>an Excel style <b>PivotTable Fields</b> pane (<code>SlickPivotPanel</code>): check fields, drag them between the Filters, Columns, Rows and Values areas, reorder them, or drag them out to remove them</li>
-        <li>the <code>▾</code> pill menus (also opened with Enter): move, filter, sort and the <b>Value Field Settings</b> (summarize by, show values as, number format)</li>
+        <li>the <code>▾</code> pill menus (also opened with Enter): move, filter, sort, <b>Summarize Values By</b> (Sum, Count, Average…) and the <b>Value Field Settings</b> (every aggregator, show values as, number format)</li>
         <li>keyboard: Alt+↑/↓ moves a pill, Alt+←/→ moves it to another area, Delete removes it</li>
         <li>compact, outline and tabular layouts, subtotals, grand totals, expand/collapse of row and column groups</li>
         <li>sorting by label (row label header) or by value (value column header)</li>
         <li>double-click a cell to drill down to its source rows</li>
         <li>"Defer layout update", saving the layout, and an asynchronous (simulated server) provider</li>
+        <li>automatic date hierarchy: checking <b>Order Date</b> groups it by years, quarters and months, like Excel; each level is also listed below the date field</li>
+        <li>write-back: with "Edit values", type a new total into a <b>Sum of Units</b> cell (subtotals and grand totals too) and it is spread over the source rows behind it, keeping their proportions; Undo restores them</li>
+        <li>pinned or sticky grand totals (the column group headers follow docked columns), and a right-to-left grid</li>
       </ul>
       <p>The "Excel sample" dataset is the one from <a href="https://github.com/6pac/SlickGrid/issues/1020" target="_blank" rel="noopener">issue #1020</a>; its pivot gives 3, 7 and 10 as in Excel.</p>
       <h2>View Source:</h2>
@@ -135,6 +138,25 @@
     <button class="btn" data-test="save-layout-btn" onclick="saveLayout()">Save layout</button>
     <button class="btn" data-test="restore-layout-btn" onclick="restoreLayout()">Restore layout</button>
   </div>
+  <div class="pivot-toolbar">
+    <label>Grand total row
+      <select id="grandTotalRowDocking" data-test="grand-total-row-docking">
+        <option value="sticky">Sticky</option>
+        <option value="pinned">Pinned</option>
+        <option value="none">Scrolls</option>
+      </select>
+    </label>
+    <label>Grand total columns
+      <select id="grandTotalColumnDocking" data-test="grand-total-column-docking">
+        <option value="none">Scroll</option>
+        <option value="sticky">Sticky</option>
+        <option value="pinned">Pinned</option>
+      </select>
+    </label>
+    <label><input type="checkbox" id="writeBack" data-test="write-back"> Edit values (write-back)</label>
+    <button class="btn" id="undoBtn" data-test="undo-btn" disabled onclick="undoWriteBack()">Undo</button>
+    <label><input type="checkbox" id="rtl" data-test="rtl"> Right to left</label>
+  </div>
 
   <div class="pivot-layout">
     <div id="myGrid" class="slick-container"></div>
@@ -154,6 +176,7 @@
 <script src="../dist/browser/slick.core.js"></script>
 <script src="../dist/browser/slick.interactions.js"></script>
 <script src="../dist/browser/slick.grid.js"></script>
+<script src="../dist/browser/slick.editors.js"></script>
 <script src="../dist/browser/slick.pivotengine.js"></script>
 <script src="../dist/browser/plugins/slick.pivot.js"></script>
 <script src="../dist/browser/controls/slick.pivotpanel.js"></script>
@@ -189,7 +212,6 @@
   };
   const SALESPEOPLE = ['Avery Chen', 'Jordan Patel', 'Morgan Diaz', 'Riley Okafor', 'Sam Novak', 'Taylor Kim'];
   const CHANNELS = ['Online', 'Retail', 'Wholesale'];
-  const MONTHS = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sep', 'Oct', 'Nov', 'Dec'];
   const round2 = (value) => Math.round(value * 100) / 100;
 
   function createSalesData(count) {
@@ -237,10 +259,8 @@
     { id: 'Category', group: 'Product' },
     { id: 'Product', group: 'Product' },
     { id: 'OrderId', label: 'Order Id', type: 'string', group: 'Order' },
+    // a date field gets an automatic hierarchy: OrderDate.year, OrderDate.quarter, OrderDate.month and OrderDate.day
     { id: 'OrderDate', label: 'Order Date', type: 'date', group: 'Order' },
-    { id: 'Year', type: 'number', group: 'Order', getter: (row) => row.OrderDate.getFullYear(), allowedAreas: ['rows', 'columns', 'filters'] },
-    { id: 'Quarter', group: 'Order', getter: (row) => `Q${Math.floor(row.OrderDate.getMonth() / 3) + 1}`, predefinedValues: ['Q1', 'Q2', 'Q3', 'Q4'] },
-    { id: 'Month', type: 'number', group: 'Order', getter: (row) => row.OrderDate.getMonth() + 1, itemFormatter: (month) => MONTHS[month - 1], allowedAreas: ['rows', 'columns', 'filters'] },
     { id: 'Units', type: 'number', group: 'Measures' },
     { id: 'UnitPrice', label: 'Unit Price', type: 'number', group: 'Measures' },
     { id: 'Discount', type: 'number', group: 'Measures' },
@@ -248,7 +268,7 @@
   ];
   const salesSpec = {
     rows: ['Region', 'Country'],
-    columns: ['Year'],
+    columns: ['OrderDate.year'],
     values: [{ field: 'Amount', aggregator: 'sum', numberFormat: currency }],
     filters: [{ field: 'Channel' }],
   };
@@ -275,22 +295,55 @@
 
   const initial = datasets.sales();
   let currentRows = initial.source;
+  let pivot;
+  let grid;
+  let panel;
+  const undoStack = [];
 
-  const pivot = new Slick.Pivot({ ...initial, columnDefaults: { width: 105 }, numberFormat: { locale: 'en-US' } });
-  const grid = new Slick.Grid('#myGrid', pivot.rowModel, pivot.getColumns(), Slick.Pivot.getGridOptions({
-    enableCellNavigation: true,
-    preHeaderPanelHeight: 25,
-  }));
-  pivot.onPivotChanged.subscribe((_e, { result }) => {
-    document.querySelector('[data-test="pivot-status"]').textContent =
-      `${result.filteredRowCount.toLocaleString('en-US')} of ${result.sourceRowCount.toLocaleString('en-US')} source rows · ` +
-      `${grid.getDataLength()} rows × ${grid.getColumns().length} columns · computed in ${Math.round(result.duration ?? 0)} ms`;
-  });
-  grid.registerPlugin(pivot);
-  const panel = new Slick.Controls.PivotPanel(pivot, '#pivotPanel');
-  Object.assign(window, { grid, pivot, panel });
+  /**
+   * Create the pivot, its grid and the field list. The reading direction of a grid is set when it is
+   * created, so switching to right to left creates them again with the current fields, rows, spec and options.
+   */
+  function createPivot(config, options = {}, rtl = false) {
+    panel?.destroy();
+    grid?.destroy();
+    pivot = new Slick.Pivot({ ...config, ...options, columnDefaults: { width: 105 }, numberFormat: { locale: 'en-US' }, locale: 'en-US' });
+    grid = new Slick.Grid('#myGrid', pivot.rowModel, pivot.getColumns(), Slick.Pivot.getGridOptions({
+      enableCellNavigation: true,
+      preHeaderPanelHeight: 25,
+      editable: true,
+      autoEdit: false,
+      rtl,
+    }));
+    pivot.onPivotChanged.subscribe((_e, { result }) => {
+      document.querySelector('[data-test="pivot-status"]').textContent =
+        `${result.filteredRowCount.toLocaleString('en-US')} of ${result.sourceRowCount.toLocaleString('en-US')} source rows · ` +
+        `${grid.getDataLength()} rows × ${grid.getColumns().length} columns · computed in ${Math.round(result.duration ?? 0)} ms`;
+    });
+    grid.registerPlugin(pivot);
+    // the field list follows the reading direction of the page it is in
+    document.querySelector('#pivotPanel').dir = rtl ? 'rtl' : 'ltr';
+    panel = new Slick.Controls.PivotPanel(pivot, '#pivotPanel');
+    pivot.onSpecChanged.subscribe((_e, { spec }) => syncToolbar(spec));
+    pivot.onPivotCellDrillDown.subscribe(showDrillDown);
+    pivot.onWriteBack.subscribe((_e, { changes }) => {
+      undoStack.push(changes);
+      document.querySelector('#undoBtn').disabled = false;
+    });
+    Object.assign(window, { grid, pivot, panel });
+    syncToolbar(pivot.getSpec());
+  }
 
-  pivot.onSpecChanged.subscribe((_e, { spec }) => syncToolbar(spec));
+  function getPivotOptions() {
+    const rowDocking = document.querySelector('#grandTotalRowDocking').value;
+    const columnDocking = document.querySelector('#grandTotalColumnDocking').value;
+    return {
+      pinGrandTotalRow: rowDocking === 'sticky' ? 'sticky' : rowDocking === 'pinned',
+      pinGrandTotalColumns: columnDocking === 'sticky' ? 'sticky' : columnDocking === 'pinned',
+      enableWriteBack: document.querySelector('#writeBack').checked,
+      provider: document.querySelector('#serverProvider').checked ? serverProvider : undefined,
+    };
+  }
 
   function syncToolbar(spec) {
     document.querySelector('#layoutSelect').value = spec.layout;
@@ -298,7 +351,6 @@
     document.querySelector('#grandTotalRows').checked = spec.grandTotals.rows !== false;
     document.querySelector('#grandTotalColumns').checked = spec.grandTotals.columns !== false;
   }
-  syncToolbar(pivot.getSpec());
 
   document.querySelector('#datasetSelect').addEventListener('change', (e) => {
     const dataset = datasets[e.target.value]();
@@ -309,6 +361,32 @@
   document.querySelector('#subtotalsSelect').addEventListener('change', (e) => pivot.updateSpec({ subtotals: e.target.value }));
   document.querySelector('#grandTotalRows').addEventListener('change', (e) => pivot.updateSpec({ grandTotals: { ...pivot.getSpec().grandTotals, rows: e.target.checked } }));
   document.querySelector('#grandTotalColumns').addEventListener('change', (e) => pivot.updateSpec({ grandTotals: { ...pivot.getSpec().grandTotals, columns: e.target.checked } }));
+  document.querySelector('#grandTotalRowDocking').addEventListener('change', () => pivot.setOptions({ pinGrandTotalRow: getPivotOptions().pinGrandTotalRow }));
+  document.querySelector('#grandTotalColumnDocking').addEventListener('change', () => pivot.setOptions({ pinGrandTotalColumns: getPivotOptions().pinGrandTotalColumns }));
+  document.querySelector('#rtl').addEventListener('change', (e) => {
+    createPivot({ fields: pivot.getFields(), source: currentRows, spec: pivot.getSpec() }, getPivotOptions(), e.target.checked);
+  });
+
+  // --
+  // write-back: Amount is computed (a getter without a setter), so it is read-only; Units is a plain
+  // property, whose sum can be typed into and spread over the source rows (in whole units)
+  // -----------------
+
+  document.querySelector('#writeBack').addEventListener('change', (e) => {
+    const spec = pivot.getSpec();
+    if (e.target.checked && !spec.values.some((value) => value.field === 'Units') && pivot.getEngine().getField('Units')) {
+      pivot.updateSpec({ values: [...spec.values, { field: 'Units', aggregator: 'sum', writeBack: { precision: 0 } }] });
+    }
+    pivot.setOptions({ enableWriteBack: e.target.checked });
+  });
+
+  function undoWriteBack() {
+    const changes = undoStack.pop();
+    if (changes) {
+      pivot.applyChanges(changes, true);
+    }
+    document.querySelector('#undoBtn').disabled = !undoStack.length;
+  }
 
   // --
   // simulated server: the request is serializable (it could be turned into SQL GROUP BY ... GROUPING SETS);
@@ -322,7 +400,7 @@
       reject(new DOMException('Aborted', 'AbortError'));
     });
   });
-  const serverEngine = () => new Slick.PivotEngine({ fields: pivot.getFields() });
+  const serverEngine = () => new Slick.PivotEngine({ fields: pivot.getFields(), locale: 'en-US' });
   const serverProvider = {
     async execute(request, { signal }) {
       await wait(400, signal);
@@ -336,8 +414,15 @@
       await wait(150);
       return serverEngine().getSourceRows(currentRows, request.spec, rowKey, columnKey);
     },
+    async writeBack(request, edit) {
+      await wait(150);
+      const engine = serverEngine();
+      engine.applyChanges(engine.allocate(currentRows, request.spec, edit, edit.newValue, edit));
+    },
   };
   document.querySelector('#serverProvider').addEventListener('change', (e) => pivot.setOptions({ provider: e.target.checked ? serverProvider : undefined }));
+
+  createPivot(initial);
 
   // --
   // save & restore the layout (the spec is plain JSON)
@@ -377,7 +462,7 @@
     { id: 'Units', name: 'Units', field: 'Units', width: 60, cssClass: 'cell-right' },
     { id: 'Amount', name: 'Amount', field: 'Amount', width: 90 },
   ];
-  pivot.onPivotCellDrillDown.subscribe((_e, args) => {
+  function showDrillDown(_e, args) {
     const dialog = document.querySelector('#drillDialog');
     const describe = (path) => Object.keys(path).map((field) => pivot.getEngine().formatItem(field, path[field])).join(' › ');
     const where = [describe(args.rowPath), describe(args.columnPath)].filter(Boolean).join(' / ') || 'Grand Total';
@@ -396,7 +481,7 @@
       drillGrid.render();
     }
     drillGrid.resizeCanvas();
-  });
+  }
 </script>
 </body>
 </html>

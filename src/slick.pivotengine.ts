@@ -2,6 +2,9 @@ import type {
   Aggregator,
   PivotAggregator,
   PivotAggregatorContext,
+  PivotAllocationContext,
+  PivotAllocationMethod,
+  PivotDateLevel,
   PivotField,
   PivotFieldItem,
   PivotFieldType,
@@ -13,10 +16,17 @@ import type {
   PivotSort,
   PivotSpec,
   PivotValue,
+  PivotWriteBackChange,
 } from './models/index.js';
 
 /** Token used in `PivotSpec.columns` to position the value headers among the column fields */
 export const PIVOT_VALUES_FIELD = '$values';
+
+/** Levels of an automatic date hierarchy, outermost first */
+export const PIVOT_DATE_LEVELS: PivotDateLevel[] = ['year', 'quarter', 'month', 'day'];
+
+/** Captions of the date hierarchy levels, as the fields Excel creates when it groups a date field ("Years (OrderDate)") */
+const DATE_LEVEL_LABELS: Record<PivotDateLevel, string> = { year: 'Years', quarter: 'Quarters', month: 'Months', day: 'Days' };
 
 /** Key of a blank item (null, undefined, empty string or NaN) */
 const BLANK_KEY = '\u0000blank';
@@ -64,6 +74,9 @@ export interface PivotEngineOption {
 
   /** Custom aggregators keyed by id, added to (or replacing) the built-in ones */
   aggregators?: Record<string, PivotAggregator>;
+
+  /** Locale of the month names and dates of the field items, defaults to the browser locale */
+  locale?: string | string[];
 }
 
 // --
@@ -88,6 +101,44 @@ function toNumber(value: any): number | null {
     return isFinite(num) ? num : null;
   }
   return null;
+}
+
+/** Date of a date, a timestamp or a date string, null when the value is not a valid date */
+function toDate(value: any): Date | null {
+  if (isBlank(value) || typeof value === 'boolean') {
+    return null;
+  }
+  const date = isDate(value) ? value : new Date(value);
+  return isNaN(date.getTime()) ? null : date;
+}
+
+function roundTo(value: number, precision: number): number {
+  const factor = 10 ** precision;
+  return Math.round(value * factor) / factor;
+}
+
+/** Round allocated values, moving the rounding residue to the largest one so that their total stays `total` */
+function roundKeepingTotal(values: number[], total: number, precision = 10): number[] {
+  // without a precision, the values are still rounded to 10 decimals, which removes the floating point noise of the allocation
+  if (!values.length) {
+    return values;
+  }
+  const rounded = values.map((value) => roundTo(value, precision));
+  const residue = roundTo(total - rounded.reduce((sum, value) => sum + value, 0), precision);
+  if (residue) {
+    let largest = 0;
+    rounded.forEach((value, i) => Math.abs(value) > Math.abs(rounded[largest]) && (largest = i));
+    rounded[largest] = roundTo(rounded[largest] + residue, precision);
+  }
+  return rounded;
+}
+
+/** Allocation of a `first` or `last` result: the first (or last) non-blank source value takes the new value */
+function allocateEdgeValue(target: any, values: any[], fromEnd: boolean): any[] {
+  const indexes = values.map((_value, i) => i);
+  const order = fromEnd ? indexes.reverse() : indexes;
+  const index = order.find((i) => !isBlank(values[i])) ?? order[0];
+  return values.map((value, i) => (i === index ? target : value));
 }
 
 /** Comparable form of a min/max candidate: numbers, numeric strings and dates */
@@ -191,6 +242,20 @@ const builtInAggregators: PivotAggregator[] = [
       return state;
     },
     result: (state: { sum: number; }) => state.sum,
+    allocate: (target: any, values: any[], { method, precision }: PivotAllocationContext) => {
+      const total = toNumber(target) ?? 0;
+      const numbers = values.map((value) => toNumber(value) ?? 0);
+      const current = numbers.reduce((sum, value) => sum + value, 0);
+      let allocated: number[];
+      if (method === 'equalIncrement') {
+        allocated = numbers.map((value) => value + (total - current) / numbers.length);
+      } else if (method === 'weighted' && current !== 0) {
+        allocated = numbers.map((value) => (value * total) / current);
+      } else {
+        allocated = numbers.map(() => total / numbers.length);
+      }
+      return roundKeepingTotal(allocated, total, precision);
+    },
   },
   {
     id: 'count',
@@ -232,6 +297,26 @@ const builtInAggregators: PivotAggregator[] = [
       return state;
     },
     result: (state: { sum: number; n: number; }) => (state.n ? state.sum / state.n : null),
+    allocate: (target: any, values: any[], { method, precision }: PivotAllocationContext) => {
+      const average = toNumber(target) ?? 0;
+      const numbers = values.map((value) => toNumber(value));
+      // blank values are not part of an average: they stay blank, unless every value is blank
+      const counted = numbers.some((value) => value !== null) ? numbers.map((value) => value !== null) : numbers.map(() => true);
+      const n = counted.filter(Boolean).length;
+      const current = numbers.reduce<number>((sum, value) => sum + (value ?? 0), 0) / n;
+      const allocated = numbers.map((value, i) => {
+        if (!counted[i]) {
+          return null;
+        }
+        if (method === 'equalIncrement') {
+          return (value ?? 0) + average - current;
+        }
+        return method === 'weighted' && current !== 0 ? ((value ?? 0) * average) / current : average;
+      });
+      const rounded = roundKeepingTotal(allocated.filter((value): value is number => value !== null), average * n, precision);
+      let next = 0;
+      return allocated.map((value, i) => (value === null ? values[i] : rounded[next++]));
+    },
   },
   {
     id: 'max',
@@ -316,6 +401,7 @@ const builtInAggregators: PivotAggregator[] = [
       return state;
     },
     result: (state: { value: any; }) => state.value,
+    allocate: (target: any, values: any[]) => allocateEdgeValue(target, values, false),
   },
   {
     id: 'last',
@@ -329,6 +415,7 @@ const builtInAggregators: PivotAggregator[] = [
       return state;
     },
     result: (state: { value: any; }) => state.value,
+    allocate: (target: any, values: any[]) => allocateEdgeValue(target, values, true),
   },
 ];
 
@@ -411,9 +498,17 @@ export const PivotAggregators = {
  */
 export class PivotEngine {
   protected _fields = new Map<string, PivotField>();
+  protected _dateLevelFields = new Map<string, PivotField>();
   protected _aggregators = new Map<string, PivotAggregator>();
+  protected _locale?: string | string[];
+
+  /** Id of the level field of a date hierarchy, for example `OrderDate.year` */
+  static getDateLevelId(fieldId: string, level: PivotDateLevel): string {
+    return `${fieldId}.${level}`;
+  }
 
   constructor(options?: PivotEngineOption) {
+    this._locale = options?.locale;
     builtInAggregators.forEach((aggregator) => this._aggregators.set(aggregator.id, aggregator));
     if (options?.aggregators) {
       Object.keys(options.aggregators).forEach((id) => this.registerAggregator({ ...options.aggregators![id], id }));
@@ -428,17 +523,35 @@ export class PivotEngine {
   /** Replace the field definitions */
   setFields(fields: PivotField[]): void {
     this._fields.clear();
+    this._dateLevelFields.clear();
     fields.forEach((field) => this._fields.set(field.id, field));
   }
 
-  /** Get all field definitions */
+  /** Get all field definitions (the level fields of the date hierarchies are not listed, see `getDateHierarchy()`) */
   getFields(): PivotField[] {
     return Array.from(this._fields.values());
   }
 
-  /** Get a field definition by id */
+  /** Change the locale of the month names and dates of the field items */
+  setLocale(locale?: string | string[]): void {
+    this._locale = locale;
+  }
+
+  /** Get a field definition by id, including the level fields of the date hierarchies (`OrderDate.year`) */
   getField(fieldId: string): PivotField | undefined {
-    return this._fields.get(fieldId);
+    return this._fields.get(fieldId) ?? this.getDateLevelField(fieldId);
+  }
+
+  /**
+   * Level fields of the automatic date hierarchy of a field, outermost first (`OrderDate.year`, `OrderDate.quarter`,
+   * `OrderDate.month`, `OrderDate.day` by default); empty when the field turns its hierarchy off
+   */
+  getDateHierarchy(fieldId: string): PivotField[] {
+    const field = this._fields.get(fieldId);
+    if (!field || field.dateHierarchy === false) {
+      return [];
+    }
+    return (field.dateHierarchy ?? PIVOT_DATE_LEVELS).map((level) => this.getField(PivotEngine.getDateLevelId(fieldId, level))).filter((level) => !!level);
   }
 
   /** Caption of a field */
@@ -446,7 +559,7 @@ export class PivotEngine {
     if (fieldId === PIVOT_VALUES_FIELD) {
       return 'Values';
     }
-    const field = this._fields.get(fieldId);
+    const field = this.getField(fieldId);
     return field?.label ?? fieldId;
   }
 
@@ -498,12 +611,12 @@ export class PivotEngine {
     if (isBlank(value)) {
       return blankLabel;
     }
-    const field = this._fields.get(fieldId);
+    const field = this.getField(fieldId);
     if (field?.itemFormatter) {
       return String(field.itemFormatter(value) ?? '');
     }
     if (isDate(value)) {
-      return value.toLocaleDateString();
+      return value.toLocaleDateString(this._locale);
     }
     return String(value);
   }
@@ -707,11 +820,112 @@ export class PivotEngine {
   }
 
   // --
+  // write-back
+  // -----------------
+
+  /**
+   * Whether the cells of a value can be edited (write-back): its aggregator allocates, its field can be
+   * written (a plain property or a field with a `setter`) and the value is not shown as a calculation
+   */
+  canWriteBack(value: PivotValue): boolean {
+    const field = this.getField(value.field);
+    return value.writeBack !== false && !value.showAs && !!this._aggregators.get(value.aggregator)?.allocate && !!field && (!!field.setter || !field.getter);
+  }
+
+  /**
+   * Changes of the source rows that give a cell a new value (write-back), without applying them;
+   * empty when the value cannot be written or no source row is behind the cell
+   */
+  allocate(
+    rows: any[],
+    inputSpec: Partial<PivotSpec>,
+    cell: { rowKey: string; columnKey: string; valueId: string; },
+    target: any,
+    options?: { method?: PivotAllocationMethod; precision?: number; }
+  ): PivotWriteBackChange[] {
+    const spec = this.normalizeSpec(inputSpec);
+    const value = spec.values.find((item) => item.id === cell.valueId);
+    if (!value || !this.canWriteBack(value)) {
+      return [];
+    }
+    const sourceRows = this.getSourceRows(rows, spec, cell.rowKey, cell.columnKey);
+    if (!sourceRows.length) {
+      return [];
+    }
+    const field = this.requireField(value.field);
+    const getter = this.createGetter(field);
+    const oldValues = sourceRows.map((row) => getter(row));
+    const valueOptions = value.writeBack || {};
+    const context: PivotAllocationContext = { method: options?.method ?? valueOptions.method ?? 'weighted', precision: options?.precision ?? valueOptions.precision, rows: sourceRows };
+    const newValues = this._aggregators.get(value.aggregator)!.allocate!(target, oldValues, context);
+    return sourceRows
+      .map((row, i) => ({ row, field: field.id, oldValue: oldValues[i], newValue: newValues[i] }))
+      .filter((change) => change.newValue !== change.oldValue);
+  }
+
+  /** Write changes into their source rows with the field setters, or restore their old values with `undo` */
+  applyChanges(changes: PivotWriteBackChange[], undo = false): void {
+    (undo ? changes.slice().reverse() : changes).forEach((change) => this.setFieldValue(change.field, change.row, undo ? change.oldValue : change.newValue));
+  }
+
+  /** Write the value of a field into a source row */
+  setFieldValue(fieldId: string, row: any, value: any): void {
+    const field = this.requireField(fieldId);
+    if (field.setter) {
+      field.setter(row, value);
+    } else if (!field.getter) {
+      row[field.field ?? field.id] = value;
+    } else {
+      throw new Error(`[PivotEngine] the field "${fieldId}" has a getter but no setter, it cannot be written`);
+    }
+  }
+
+  // --
   // protected functions
   // -----------------
 
+  /** Level field of a date hierarchy (`OrderDate.year`), created on first use */
+  protected getDateLevelField(fieldId: string): PivotField | undefined {
+    const cached = this._dateLevelFields.get(fieldId);
+    if (cached) {
+      return cached;
+    }
+    const separator = fieldId.lastIndexOf('.');
+    const level = fieldId.slice(separator + 1) as PivotDateLevel;
+    const dateField = separator > 0 ? this._fields.get(fieldId.slice(0, separator)) : undefined;
+    if (!dateField || !PIVOT_DATE_LEVELS.includes(level) || dateField.dateHierarchy === false || (dateField.dateHierarchy && !dateField.dateHierarchy.includes(level))) {
+      return undefined;
+    }
+    const readDate = this.createGetter(dateField);
+    const getDate = (row: any) => toDate(readDate(row));
+    const levels: Record<PivotDateLevel, Pick<PivotField, 'type' | 'getter' | 'itemFormatter'>> = {
+      year: { type: 'number', getter: (row) => getDate(row)?.getFullYear() ?? null, itemFormatter: (year) => String(year) },
+      quarter: { type: 'number', getter: (row) => { const date = getDate(row); return date ? Math.floor(date.getMonth() / 3) + 1 : null; }, itemFormatter: (quarter) => `Qtr${quarter}` },
+      month: {
+        type: 'number',
+        getter: (row) => { const date = getDate(row); return date ? date.getMonth() + 1 : null; },
+        itemFormatter: (month) => new Intl.DateTimeFormat(this._locale, { month: 'short' }).format(new Date(2000, month - 1, 1)),
+      },
+      day: {
+        type: 'date',
+        getter: (row) => { const date = getDate(row); return date ? new Date(date.getFullYear(), date.getMonth(), date.getDate()) : null; },
+        itemFormatter: (day) => day.toLocaleDateString(this._locale),
+      },
+    };
+    const field: PivotField = {
+      id: fieldId,
+      label: `${DATE_LEVEL_LABELS[level]} (${dateField.label ?? dateField.id})`,
+      ...levels[level],
+      allowedAreas: dateField.allowedAreas,
+      group: dateField.group,
+      dateLevel: { field: dateField.id, level },
+    };
+    this._dateLevelFields.set(fieldId, field);
+    return field;
+  }
+
   protected requireField(fieldId: string): PivotField {
-    const field = this._fields.get(fieldId);
+    const field = this.getField(fieldId);
     if (!field) {
       throw new Error(`[PivotEngine] unknown field "${fieldId}"`);
     }
@@ -757,7 +971,7 @@ export class PivotEngine {
   }
 
   protected applyFilters(rows: any[], spec: PivotSpec, valueDefs: ValueDefinition[], blankLabel: string): any[] {
-    const filters = (spec.filters ?? []).filter((filter) => this._fields.has(filter.field));
+    const filters = (spec.filters ?? []).filter((filter) => !!this.getField(filter.field));
     if (!filters.length) {
       return rows;
     }
@@ -1109,4 +1323,5 @@ if (IIFE_ONLY && window.Slick) {
   window.Slick.PivotEngine = PivotEngine;
   window.Slick.PivotAggregators = PivotAggregators;
   window.Slick.PIVOT_VALUES_FIELD = PIVOT_VALUES_FIELD;
+  window.Slick.PIVOT_DATE_LEVELS = PIVOT_DATE_LEVELS;
 }

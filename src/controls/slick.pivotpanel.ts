@@ -1,5 +1,6 @@
 import type {
   PivotArea,
+  PivotDateLevel,
   PivotField,
   PivotFieldItem,
   PivotFieldType,
@@ -71,6 +72,23 @@ export interface PivotPanelOption {
   /** "Show Values As" choices offered by the Value Field Settings */
   showAsOptions: Array<{ value: PivotShowAsType | ''; label: string; }>;
 
+  /**
+   * Aggregators listed under "Summarize Values By" in the menu of a value pill, by default
+   * Sum, Count, Average, Max, Min and Distinct Count. Aggregators that do not apply to the
+   * field are left out; every aggregator remains available in the Value Field Settings.
+   */
+  summarizeByAggregators: string[];
+
+  /**
+   * Levels added in place of a date field placed in the Rows or Columns area, like the time grouping of
+   * Excel, by default years, quarters and months; `false` adds the date itself. The levels of a date
+   * field are also listed below it in the field list.
+   */
+  autoDateGrouping: PivotDateLevel[] | false;
+
+  /** Captions of the date levels in the field list */
+  dateLevelLabels: Record<PivotDateLevel, string>;
+
   /** Aggregator given to a field dropped in the Values area, by default `sum` for numbers and `count` otherwise */
   defaultAggregator?: (field: PivotField, type: PivotFieldType) => string;
 
@@ -91,6 +109,10 @@ interface MenuItem {
   action?: () => void;
   disabled?: boolean;
   separator?: boolean;
+  /** Radio item: shows a check mark when true */
+  checked?: boolean;
+  /** Labelled group of items */
+  group?: MenuItem[];
 }
 
 interface DragState {
@@ -175,6 +197,9 @@ export class SlickPivotPanel {
       { value: 'rankAscending', label: 'Rank Smallest to Largest' },
       { value: 'rankDescending', label: 'Rank Largest to Smallest' },
     ],
+    summarizeByAggregators: ['sum', 'count', 'avg', 'max', 'min', 'distinctCount'],
+    autoDateGrouping: ['year', 'quarter', 'month'],
+    dateLevelLabels: { year: 'Years', quarter: 'Quarters', month: 'Months', day: 'Days' },
   };
 
   constructor(protected readonly pivot: SlickPivot, containerOrSelector: HTMLElement | string, options?: Partial<PivotPanelOption>) {
@@ -290,16 +315,26 @@ export class SlickPivotPanel {
       return;
     }
     const spec = this.cloneSpec(this.getSpec());
+    let focusIndex = index;
     if (area === 'values') {
       const value: PivotValue = { field: fieldId, aggregator: this.getDefaultAggregator(fieldId) };
       spec.values.splice(index ?? spec.values.length, 0, value);
       // let the engine give the new value a unique id
       spec.values = this.pivot.getEngine().normalizeSpec({ values: spec.values }).values;
     } else {
-      this.removeFieldFromAxes(spec, fieldId, area !== 'filters');
-      this.insertInArea(spec, area, fieldId, index);
+      // a date placed on the rows or the columns is grouped by its levels, like Excel does
+      const grouping = this._options.autoDateGrouping;
+      const levels = (area === 'rows' || area === 'columns') && grouping ? this.getDateLevels(fieldId).filter((level) => grouping.includes(level.dateLevel!.level)) : [];
+      const ids = levels.length ? levels.map((level) => level.id) : [fieldId];
+      ids.forEach((id, i) => {
+        this.removeFieldFromAxes(spec, id, area !== 'filters');
+        this.insertInArea(spec, area, id, index === undefined ? undefined : index + i);
+      });
+      if (index !== undefined) {
+        focusIndex = index + ids.length - 1;
+      }
     }
-    this.commit(spec, { area, index: index ?? this.getAreaItems(area, spec).length - 1 }, `${this.pivot.getEngine().getFieldLabel(fieldId)} added to ${this._options.areaTitles[area]}`);
+    this.commit(spec, { area, index: focusIndex ?? this.getAreaItems(area, spec).length - 1 }, `${this.pivot.getEngine().getFieldLabel(fieldId)} added to ${this._options.areaTitles[area]}`);
   }
 
   /** Move an item of an area to another position (in the same or another area) */
@@ -367,21 +402,46 @@ export class SlickPivotPanel {
     this.commit(spec, remaining ? { area, index: Math.min(index, remaining - 1) } : { field: item.field }, `${item.label} removed from ${this._options.areaTitles[area]}`);
   }
 
-  /** Remove a field from every area */
+  /** Remove a field, and the levels of its date hierarchy, from every area */
   removeField(fieldId: string): void {
     const spec = this.cloneSpec(this.getSpec());
-    this.removeFieldFromAxes(spec, fieldId, true);
-    spec.values = spec.values.filter((value) => value.field !== fieldId);
-    spec.filters = (spec.filters ?? []).filter((filter) => filter.field !== fieldId);
-    spec.sort = (spec.sort ?? []).filter((sort) => sort.field !== fieldId);
+    const ids = new Set([fieldId, ...this.getDateLevels(fieldId).map((level) => level.id)]);
+    ids.forEach((id) => this.removeFieldFromAxes(spec, id, true));
+    spec.values = spec.values.filter((value) => !ids.has(value.field));
+    spec.filters = (spec.filters ?? []).filter((filter) => !ids.has(filter.field));
+    spec.sort = (spec.sort ?? []).filter((sort) => !ids.has(sort.field));
     this.commit(spec, { field: fieldId }, `${this.pivot.getEngine().getFieldLabel(fieldId)} removed`);
   }
 
-  /** Replace a value (Value Field Settings) */
+  /**
+   * Replace a value (Value Field Settings). A value without an id gets its default id, and the
+   * sorts and top filters that referred to the previous id follow it.
+   */
   updateValue(index: number, value: PivotValue): void {
+    const engine = this.pivot.getEngine();
     const spec = this.cloneSpec(this.getSpec());
-    spec.values[index] = value;
-    this.commit(spec, { area: 'values', index }, `${this.pivot.getEngine().getValueLabel(value)} updated`);
+    const previousId = spec.values[index]?.id;
+    const usedIds = new Set(spec.values.filter((_value, i) => i !== index).map((other) => other.id));
+    const baseId = value.id ?? engine.getDefaultValueId(value);
+    let id = baseId;
+    for (let suffix = 2; usedIds.has(id); suffix++) {
+      id = `${baseId}:${suffix}`;
+    }
+    spec.values[index] = { ...value, id };
+    if (previousId && previousId !== id) {
+      spec.sort = spec.sort?.map((sort) => (sort.by?.valueId === previousId ? { ...sort, by: { ...sort.by, valueId: id } } : sort));
+      spec.filters = spec.filters?.map((filter) => (filter.top?.valueId === previousId ? { ...filter, top: { ...filter.top, valueId: id } } : filter));
+    }
+    this.commit(spec, { area: 'values', index }, `${engine.getValueLabel(spec.values[index])} updated`);
+  }
+
+  /** Change the aggregator of a value; an automatic caption and id follow the new aggregator */
+  setValueAggregator(index: number, aggregator: string): void {
+    const value = this.getSpec().values[index];
+    if (value && value.aggregator !== aggregator) {
+      const label = value.label === this.pivot.getEngine().getValueLabel({ ...value, label: undefined }) ? undefined : value.label;
+      this.updateValue(index, { ...value, aggregator, label, id: this.isAutomaticValueId(value) ? undefined : value.id });
+    }
   }
 
   /** Replace (or remove, when undefined) the item filter of a field */
@@ -538,29 +598,44 @@ export class SlickPivotPanel {
     return type;
   }
 
+  /** Level fields of the date hierarchy of a date field, empty for any other field */
+  protected getDateLevels(fieldId: string): PivotField[] {
+    const engine = this.pivot.getEngine();
+    return engine.getField(fieldId)?.dateLevel || this.getFieldType(fieldId) !== 'date' ? [] : engine.getDateHierarchy(fieldId);
+  }
+
   protected getAggregatorChoices(fieldId: string) {
-    const numeric = this.getFieldType(fieldId) === 'number';
+    // the numbers of a date level (years, months) are items, not quantities
+    const numeric = this.getFieldType(fieldId) === 'number' && !this.pivot.getEngine().getField(fieldId)?.dateLevel;
     return this.pivot.getEngine().getAggregators().filter((aggregator) => numeric || !aggregator.numericOnly);
+  }
+
+  /** Whether the id of a value is its default id (possibly made unique with a ":2" suffix) */
+  protected isAutomaticValueId(value: PivotValue): boolean {
+    const defaultId = this.pivot.getEngine().getDefaultValueId(value);
+    return !value.id || value.id === defaultId || (value.id.startsWith(`${defaultId}:`) && /^\d+$/.test(value.id.slice(defaultId.length + 1)));
   }
 
   protected getDefaultAggregator(fieldId: string): string {
     const field = this.pivot.getEngine().getField(fieldId)!;
     const type = this.getFieldType(fieldId);
-    return this._options.defaultAggregator?.(field, type) ?? (type === 'number' ? 'sum' : 'count');
+    return this._options.defaultAggregator?.(field, type) ?? (type === 'number' && !field.dateLevel ? 'sum' : 'count');
   }
 
   protected getDefaultArea(fieldId: string): PivotArea {
     const field = this.pivot.getEngine().getField(fieldId)!;
     const type = this.getFieldType(fieldId);
-    const preferred = this._options.defaultArea?.(field, type) ?? (type === 'number' ? 'values' : 'rows');
+    const preferred = this._options.defaultArea?.(field, type) ?? (type === 'number' && !field.dateLevel ? 'values' : 'rows');
     if (this.canDrop(fieldId, preferred)) {
       return preferred;
     }
     return (['rows', 'columns', 'values', 'filters'] as PivotArea[]).find((area) => this.canDrop(fieldId, area)) ?? preferred;
   }
 
-  protected isFieldUsed(fieldId: string, spec = this.getSpec()): boolean {
-    return spec.rows.includes(fieldId) || spec.columns.includes(fieldId) || spec.values.some((value) => value.field === fieldId) || this.getFilterAreaFields(spec).includes(fieldId);
+  protected isFieldUsed(fieldId: string, spec = this.getSpec(), withDateLevels = true): boolean {
+    const used = spec.rows.includes(fieldId) || spec.columns.includes(fieldId) || spec.values.some((value) => value.field === fieldId) || this.getFilterAreaFields(spec).includes(fieldId);
+    // a date field grouped by its levels is in use too
+    return used || (withDateLevels && this.getDateLevels(fieldId).some((level) => this.isFieldUsed(level.id, spec, false)));
   }
 
   protected getItemFilter(fieldId: string, spec = this.getSpec()): PivotFilter | undefined {
@@ -648,27 +723,40 @@ export class SlickPivotPanel {
     const engine = this.pivot.getEngine();
     const spec = this.getSpec();
     const search = this._searchInput.value.trim().toLowerCase();
-    const fields = engine.getFields().filter((field) => !search || engine.getFieldLabel(field.id).toLowerCase().includes(search));
+    const matches = (fieldId: string) => !search || engine.getFieldLabel(fieldId).toLowerCase().includes(search);
+    const fields = engine.getFields().filter((field) => matches(field.id) || this.getDateLevels(field.id).some((level) => matches(level.id)));
     Utils.emptyElement(this._fieldListElm);
     let lastGroup: string | undefined;
+    const renderItem = (field: PivotField, label: string, isDateLevel = false) => {
+      const used = this.isFieldUsed(field.id, spec);
+      const type = this.getFieldType(field.id);
+      const item = Utils.createDomElement('li', { className: joinClasses('slick-pivot-field', isDateLevel && 'slick-pivot-field-level', used && 'slick-pivot-field-used') }, this._fieldListElm);
+      item.dataset.field = field.id;
+      const checkboxLabel = Utils.createDomElement('label', { className: 'slick-pivot-field-label' }, item);
+      const checkbox = Utils.createDomElement('input', { type: 'checkbox', className: 'slick-pivot-field-checkbox', checked: used }, checkboxLabel);
+      if (isDateLevel) {
+        // the level alone on screen, the full caption ("Years (Order Date)") for assistive technologies
+        checkbox.setAttribute('aria-label', engine.getFieldLabel(field.id));
+      }
+      Utils.createDomElement('span', { className: 'slick-pivot-field-name', textContent: label }, checkboxLabel);
+      if (this.getItemFilter(field.id, spec)) {
+        Utils.createDomElement('span', { className: 'slick-pivot-filtered-icon', title: 'Filtered', ariaLabel: 'Filtered' }, item);
+      }
+      if (!isDateLevel) {
+        Utils.createDomElement('span', { className: `slick-pivot-field-type slick-pivot-field-type-${type}`, textContent: { number: '123', string: 'abc', date: 'date', boolean: 'y/n' }[type], ariaHidden: 'true' }, item);
+      }
+      Utils.createDomElement('button', { className: 'slick-pivot-field-menu-button', type: 'button', ariaLabel: `${engine.getFieldLabel(field.id)} options`, ariaHasPopup: 'menu', textContent: '⋮' }, item);
+    };
     fields.forEach((field) => {
       if (field.group && field.group !== lastGroup) {
         Utils.createDomElement('li', { className: 'slick-pivot-field-group', textContent: field.group }, this._fieldListElm);
       }
       lastGroup = field.group;
-      const used = this.isFieldUsed(field.id, spec);
-      const type = this.getFieldType(field.id);
-      const label = engine.getFieldLabel(field.id);
-      const item = Utils.createDomElement('li', { className: joinClasses('slick-pivot-field', used && 'slick-pivot-field-used') }, this._fieldListElm);
-      item.dataset.field = field.id;
-      const checkboxLabel = Utils.createDomElement('label', { className: 'slick-pivot-field-label' }, item);
-      Utils.createDomElement('input', { type: 'checkbox', className: 'slick-pivot-field-checkbox', checked: used }, checkboxLabel);
-      Utils.createDomElement('span', { className: 'slick-pivot-field-name', textContent: label }, checkboxLabel);
-      if (this.getItemFilter(field.id, spec)) {
-        Utils.createDomElement('span', { className: 'slick-pivot-filtered-icon', title: 'Filtered', ariaLabel: 'Filtered' }, item);
-      }
-      Utils.createDomElement('span', { className: `slick-pivot-field-type slick-pivot-field-type-${type}`, textContent: { number: '123', string: 'abc', date: 'date', boolean: 'y/n' }[type], ariaHidden: 'true' }, item);
-      Utils.createDomElement('button', { className: 'slick-pivot-field-menu-button', type: 'button', ariaLabel: `${label} options`, ariaHasPopup: 'menu', textContent: '⋮' }, item);
+      renderItem(field, engine.getFieldLabel(field.id));
+      // the levels of a date hierarchy are listed below their date field
+      this.getDateLevels(field.id)
+        .filter((level) => matches(field.id) || matches(level.id))
+        .forEach((level) => renderItem(level, this._options.dateLevelLabels[level.dateLevel!.level], true));
     });
     if (!fields.length) {
       Utils.createDomElement('li', { className: 'slick-pivot-field-empty', textContent: 'No matching fields' }, this._fieldListElm);
@@ -994,7 +1082,8 @@ export class SlickPivotPanel {
       items.push({ label: '', separator: true }, { label: 'Remove Field', action: () => this.removeItem(area, index) });
       items.push({ label: '', separator: true });
       if (area === 'values') {
-        items.push({ label: 'Value Field Settings…', action: () => this.openValueSettings(index, pill) });
+        items.push({ label: 'Summarize Values By', group: this.getSummarizeByItems(index) });
+        items.push({ label: '', separator: true }, { label: 'Value Field Settings…', action: () => this.openValueSettings(index, pill) });
       } else {
         items.push({ label: 'Filter…', action: () => this.openFilterPopup(fieldId, pill) });
         if (area !== 'filters') {
@@ -1006,21 +1095,49 @@ export class SlickPivotPanel {
     this.openMenu(anchor, items, pill);
   }
 
+  /** Radio items of the "Summarize Values By" group of a value pill, the current aggregator checked */
+  protected getSummarizeByItems(index: number): MenuItem[] {
+    const value = this.getSpec().values[index];
+    const choices = this.getAggregatorChoices(value.field);
+    const listed = this._options.summarizeByAggregators
+      .map((id) => choices.find((aggregator) => aggregator.id === id))
+      .filter((aggregator) => !!aggregator);
+    if (!listed.some((aggregator) => aggregator.id === value.aggregator)) {
+      // an aggregator chosen in the Value Field Settings is listed too, checked
+      const current = choices.find((aggregator) => aggregator.id === value.aggregator);
+      current && listed.push(current);
+    }
+    return listed.map((aggregator) => ({ label: aggregator.label, checked: aggregator.id === value.aggregator, action: () => this.setValueAggregator(index, aggregator.id) }));
+  }
+
   protected openMenu(anchor: HTMLElement, items: MenuItem[], focusReturn: HTMLElement = anchor): void {
     this.closeMenu();
     this.closePopup();
     const menu = Utils.createDomElement('div', { className: 'slick-pivot-menu', role: 'menu' }, this._panelElm);
-    items.forEach((item) => {
+    const renderItem = (item: MenuItem, parent: HTMLElement) => {
       if (item.separator) {
-        Utils.createDomElement('div', { className: 'slick-pivot-menu-separator', role: 'separator' }, menu);
+        Utils.createDomElement('div', { className: 'slick-pivot-menu-separator', role: 'separator' }, parent);
         return;
       }
-      const button = Utils.createDomElement('button', { className: 'slick-pivot-menu-item', type: 'button', role: 'menuitem', textContent: item.label, disabled: !!item.disabled, tabIndex: -1 }, menu);
+      if (item.group) {
+        const headingId = `slick-pivot-menu-group-${Math.random().toString(36).slice(2, 8)}`;
+        const group = Utils.createDomElement('div', { className: 'slick-pivot-menu-group', role: 'group' }, parent);
+        group.setAttribute('aria-labelledby', headingId);
+        Utils.createDomElement('div', { className: 'slick-pivot-menu-heading', id: headingId, textContent: item.label }, group);
+        item.group.forEach((child) => renderItem(child, group));
+        return;
+      }
+      const isRadio = item.checked !== undefined;
+      const button = Utils.createDomElement('button', { className: 'slick-pivot-menu-item', type: 'button', role: isRadio ? 'menuitemradio' : 'menuitem', textContent: item.label, disabled: !!item.disabled, tabIndex: -1 }, parent);
+      if (isRadio) {
+        button.setAttribute('aria-checked', String(item.checked));
+      }
       button.addEventListener('click', () => {
         this.closeMenu();
         item.action?.();
       });
-    });
+    };
+    items.forEach((item) => renderItem(item, menu));
     this.positionFloating(menu, anchor);
     this._menuElm = menu;
 
@@ -1079,7 +1196,13 @@ export class SlickPivotPanel {
   protected positionFloating(element: HTMLElement, anchor: HTMLElement): void {
     const panelRect = this._panelElm.getBoundingClientRect();
     const anchorRect = anchor.getBoundingClientRect();
-    element.style.top = `${anchorRect.bottom - panelRect.top + this._panelElm.scrollTop + 2}px`;
+    // open above the anchor when it does not fit below and there is more room above
+    const spaceBelow = panelRect.bottom - anchorRect.bottom;
+    const spaceAbove = anchorRect.top - panelRect.top;
+    const top = element.offsetHeight > spaceBelow && spaceAbove > spaceBelow
+      ? Math.max(0, anchorRect.top - panelRect.top - element.offsetHeight - 2)
+      : anchorRect.bottom - panelRect.top + 2;
+    element.style.top = `${top + this._panelElm.scrollTop}px`;
     const left = Math.max(4, Math.min(anchorRect.left - panelRect.left, panelRect.width - element.offsetWidth - 4));
     element.style.left = `${left}px`;
   }
@@ -1147,12 +1270,12 @@ export class SlickPivotPanel {
       const name = nameInput.value.trim();
       const format = numberFormats.find((option) => option.id === formatSelect.value)?.format;
       const updated: PivotValue = { ...value, aggregator, label: name && name !== autoLabel(aggregator) ? name : undefined, showAs: (showAsSelect.value || undefined) as PivotShowAsType | undefined, numberFormat: format };
-      if (updated.id === engine.getDefaultValueId(value)) {
+      if (this.isAutomaticValueId(value)) {
         // follow the aggregator in the default id
         updated.id = undefined;
       }
       this.closePopup();
-      this.updateValue(index, this.pivot.getEngine().normalizeSpec({ values: this.getSpec().values.map((item, i) => (i === index ? updated : item)) }).values[index]);
+      this.updateValue(index, updated);
     };
     okButton.addEventListener('click', apply);
     cancelButton.addEventListener('click', close);

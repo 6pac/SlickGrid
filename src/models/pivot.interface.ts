@@ -28,6 +28,19 @@ export type PivotShowAsType =
   | 'rankAscending'
   | 'rankDescending';
 
+/** Level of the automatic date hierarchy of a date field (Excel time grouping, Power Pivot date hierarchy) */
+export type PivotDateLevel = 'year' | 'quarter' | 'month' | 'day';
+
+/**
+ * How a value typed into a pivot cell is spread over the source rows behind the cell (write-back), as the
+ * allocation methods of Excel What-If analysis:
+ * - `weighted`: every source value is scaled by the same factor, keeping their proportions
+ *   (an equal split when the current total is 0)
+ * - `equal`: every source row gets the same value
+ * - `equalIncrement`: every source row changes by the same amount
+ */
+export type PivotAllocationMethod = 'weighted' | 'equal' | 'equalIncrement';
+
 export interface PivotField<T = any> {
   /** Unique id of the field, used by the spec */
   id: string;
@@ -64,6 +77,34 @@ export interface PivotField<T = any> {
 
   /** Optional group shown in the field list, for example the name of a lookup table */
   group?: string;
+
+  /**
+   * Levels of the automatic date hierarchy of a date field, `false` to turn it off. Each level is a
+   * field of its own whose id is the date field id followed by the level, for example `OrderDate.year`,
+   * `OrderDate.quarter`, `OrderDate.month` and `OrderDate.day` (the default levels).
+   */
+  dateHierarchy?: PivotDateLevel[] | false;
+
+  /** Set by the engine on the level fields of a date hierarchy: the date field and the level they derive from */
+  dateLevel?: { field: string; level: PivotDateLevel; };
+
+  /**
+   * Write a value into a source row (write-back). By default the `field` property is set; a field with
+   * a `getter` and no `setter` cannot be written.
+   */
+  setter?: (row: T, value: any) => void;
+}
+
+/** Context of a write-back allocation */
+export interface PivotAllocationContext {
+  /** How the new value is spread over the source rows */
+  method: PivotAllocationMethod;
+
+  /** Number of decimal places of the written values; the rounding residue goes to the largest one so that the total is kept */
+  precision?: number;
+
+  /** Source rows behind the cell */
+  rows: any[];
 }
 
 /** Context provided to a pivot aggregator on every call to `accumulate` */
@@ -99,6 +140,13 @@ export interface PivotAggregator<S = any, R = any> {
 
   /** Hint of the result type, `number` by default; used to choose the default formatting */
   resultType?: PivotFieldType | 'same';
+
+  /**
+   * Write-back: return the new source values (one per source row behind the cell) that give the cell
+   * the `target` result. Values aggregated by an aggregator without `allocate` cannot be edited.
+   * The built-in `sum`, `avg`, `first` and `last` aggregators allocate.
+   */
+  allocate?: (target: any, values: any[], context: PivotAllocationContext) => any[];
 }
 
 /** Number formatting of a value, passed to `Intl.NumberFormat` */
@@ -139,6 +187,60 @@ export interface PivotValue {
 
   /** Computed but not displayed, for example an input of a measure */
   hidden?: boolean;
+
+  /** Write-back settings of this value, overriding the plugin `writeBack` option; `false` makes the value read-only */
+  writeBack?: false | Pick<PivotWriteBackOption, 'method' | 'precision'>;
+}
+
+/** Write-back settings: how values typed into pivot cells are written into the source rows */
+export interface PivotWriteBackOption {
+  /** How a new value is spread over the source rows behind the cell, defaults to `weighted` */
+  method?: PivotAllocationMethod;
+
+  /** Number of decimal places of the written values (for example 0 for quantities), not rounded by default */
+  precision?: number;
+
+  /** Editor of the value cells, defaults to `Editors.Float` */
+  editor?: Column['editor'];
+}
+
+/** Change of one source row made by a write-back */
+export interface PivotWriteBackChange {
+  /** The source row */
+  row: any;
+
+  /** Id of the field that was written */
+  field: string;
+
+  /** Value of the field before the write-back */
+  oldValue: any;
+
+  /** Value written into the field */
+  newValue: any;
+}
+
+/** A value typed into a pivot cell */
+export interface PivotCellEdit {
+  /** Key of the row header node of the cell */
+  rowKey: string;
+
+  /** Key of the column header node of the cell */
+  columnKey: string;
+
+  /** Id of the edited value */
+  valueId: string;
+
+  /** Value of the cell before the edit */
+  oldValue: any;
+
+  /** Value typed into the cell */
+  newValue: any;
+
+  /** How the new value is spread over the source rows */
+  method: PivotAllocationMethod;
+
+  /** Number of decimal places of the written values */
+  precision?: number;
 }
 
 /** Measure calculated after aggregation, once per cell, from the other values of the same cell (Power Pivot measure) */
@@ -374,8 +476,8 @@ export interface PivotRequest {
   /** Spec without its functions (predicates, measures compute) */
   spec: PivotSpec;
 
-  /** Field descriptions without their functions */
-  fields: Array<Omit<PivotField, 'getter' | 'itemFormatter' | 'comparer'>>;
+  /** Field descriptions without their functions, including the level fields of the date hierarchies used by the spec (see `PivotField.dateLevel`) */
+  fields: Array<Omit<PivotField, 'getter' | 'setter' | 'itemFormatter' | 'comparer'>>;
 }
 
 export interface PivotExecuteContext {
@@ -396,6 +498,9 @@ export interface PivotDataProvider {
 
   /** Source rows behind a cell, used by drill-down */
   getSourceRows?: (request: PivotRequest, rowKey: string, columnKey: string) => Promise<any[]> | any[];
+
+  /** Write a value typed into a cell back to the data (write-back); the pivot is refreshed once it resolves */
+  writeBack?: (request: PivotRequest, edit: PivotCellEdit) => Promise<void> | void;
 }
 
 /** Source rows of the pivot: an array or any object exposing `getItems()` (such as a DataView) */
@@ -444,17 +549,31 @@ export interface PivotOption {
   /** Default number format of numeric values */
   numberFormat?: PivotNumberFormat;
 
+  /** Locale of the month names and dates of the field items, and default locale of the number formats; defaults to the browser locale */
+  locale?: string | string[];
+
   /** Show a caption row above the column headers ("Sum of Amount | Quarter"), defaults to true */
   showFieldCaptions?: boolean;
 
   /** Height of each column group header row, defaults to the grid `preHeaderPanelHeight` or 25 */
   headerRowHeight?: number;
 
-  /** Pin the row label columns to the left, defaults to true */
+  /** Pin the row label columns to the leading edge (the left, or the right in a right-to-left grid), defaults to true */
   pinRowHeaders?: boolean;
 
-  /** Pin the grand total row to the bottom (or top), defaults to true */
-  pinGrandTotalRow?: boolean;
+  /**
+   * Dock the grand total row at the bottom (or the top, see `grandTotals.rows`): `true` pins it there,
+   * `'sticky'` docks it only while it would otherwise be scrolled out of view, so that a short pivot
+   * shows it right below its last row. Defaults to `'sticky'`.
+   */
+  pinGrandTotalRow?: boolean | 'sticky';
+
+  /**
+   * Dock the grand total columns at the trailing edge (or the leading edge when `grandTotals.columns` is
+   * `'start'`): `true` pins them, `'sticky'` docks them only while they would otherwise be scrolled out
+   * of view. Defaults to false.
+   */
+  pinGrandTotalColumns?: boolean | 'sticky';
 
   /** Indentation of each compact layout level, in pixels, defaults to 15 */
   indentation?: number;
@@ -473,6 +592,17 @@ export interface PivotOption {
 
   /** Delay before re-pivoting after the source data changed, in milliseconds, defaults to 50 */
   refreshDelay?: number;
+
+  /**
+   * Let users type a new value into a value cell and write it back to the source rows behind the cell
+   * (the grid also needs `editable: true`), defaults to false. Only values whose aggregator allocates
+   * (`sum`, `avg`, `first`, `last` or a custom one), whose field can be written and that are not shown
+   * as a calculation can be edited; with a provider, the provider needs `writeBack`.
+   */
+  enableWriteBack?: boolean;
+
+  /** Write-back settings: allocation method, precision and editor */
+  writeBack?: PivotWriteBackOption;
 }
 
 /** Information attached to every generated pivot column */
@@ -563,4 +693,12 @@ export interface OnPivotCellDrillDownEventArgs {
 
   /** Source rows behind the cell */
   rows: any[];
+}
+
+export interface OnPivotWriteBackEventArgs extends PivotCellEdit {
+  /** The edited value */
+  value: PivotValue;
+
+  /** Changes of the source rows (empty with a provider, which writes the data itself) */
+  changes: PivotWriteBackChange[];
 }

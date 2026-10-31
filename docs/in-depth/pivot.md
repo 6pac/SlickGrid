@@ -7,7 +7,7 @@ title: Pivot tables
 A pivot table summarizes rows by turning the items of some fields into row headers, the items of other fields into column headers, and aggregating values (sum, count, average, …) where they cross. SlickGrid provides three opt-in modules for it:
 
 - **`PivotEngine`** computes the pivot. It has no DOM dependency, so it also runs on a server or in a Web Worker.
-- **`SlickPivot`** is a grid plugin that renders the result: multi-level column headers, row layouts, subtotals, grand totals, expand/collapse, sorting and drill-down.
+- **`SlickPivot`** is a grid plugin that renders the result: multi-level column headers, row layouts, subtotals, grand totals, expand/collapse, sorting, drill-down and write-back.
 - **`SlickPivotPanel`** is the Excel style *PivotTable Fields* pane: a searchable field list and four drop areas (Filters, Columns, Rows, Values).
 
 None of them adds a runtime dependency, and nothing changes for grids that do not use them. See the [pivot examples](#examples).
@@ -46,6 +46,17 @@ const spec: Partial<PivotSpec> = {
 | `filters` | Filters area and item filters | Where |
 | `PivotField.predefinedValues` | Show items with no data | Column Headings property |
 | `grandTotals` | Grand Totals | a Row Heading with an aggregate expression |
+
+### Date hierarchies
+
+Every date field has an automatic hierarchy, like the time grouping of Excel and the date hierarchies of Power Pivot. Each level is a field of its own, named after the date field: `OrderDate.year`, `OrderDate.quarter`, `OrderDate.month` and `OrderDate.day`. The levels need no declaration and can go wherever a field can (rows, columns, filters).
+
+```ts
+const fields: PivotField[] = [{ id: 'OrderDate', label: 'Order Date', type: 'date' }];
+const spec = { rows: ['OrderDate.year', 'OrderDate.quarter', 'OrderDate.month'], columns: [], values: [{ field: 'Amount', aggregator: 'sum' }] };
+```
+
+The items are numbers, so they sort chronologically, and they are captioned like Excel: `2024`, `Qtr1`, `Jan` (in the `locale` option) and the date for days. Their captions are "Years (Order Date)", "Quarters (Order Date)", and so on. Dates, timestamps and date strings are all accepted. `PivotField.dateHierarchy` limits the levels (`['year', 'month']`) or turns the hierarchy off (`false`), and `engine.getDateHierarchy(fieldId)` returns the level fields.
 
 ### Where the value headers go
 
@@ -124,9 +135,49 @@ The generated rows are plain objects: a value cell is an ordinary column and an 
 - Click the row label header to sort the items by caption, or a value column header to sort the row items by that value, within each parent.
 - Double-click a cell to raise `onPivotCellDrillDown` with the source rows behind it.
 
+### Pinned and sticky rows and columns
+
+The pivot uses the grid's [pinning and sticky docking](/in-depth/pinning-sticky):
+
+- The row label columns are pinned to the leading edge (`pinRowHeaders`).
+- The grand total row is sticky by default (`pinGrandTotalRow: 'sticky'`): a short pivot shows it right below its last row, and a long one docks it at the bottom while the rows scroll under it. `true` pins it permanently and `false` lets it scroll.
+- `pinGrandTotalColumns` pins (`true`) or sticks (`'sticky'`) the grand total columns to the trailing edge, or to the leading edge when `grandTotals.columns` is `'start'`. They are not pinned when they would leave the other columns too little room.
+
+The column group header rows follow every docked column, including columns an application pins or makes sticky through `columnDefaults` or a value's `column` template.
+
+The plugin only owns the pinning it applies, so an application can pin or stick pivot rows of its own. Pivot rows are referenced by id, which `SlickPivot.getRowId(type, path)` builds from the row type and the items of its row fields, and which stays the same when the pivot is computed again:
+
+```ts
+grid.setOptions({ stickyRows: { top: [SlickPivot.getRowId('group', ['East'])] } });
+```
+
+### Right-to-left grids
+
+A grid created with `rtl: true` mirrors the whole pivot: the row labels are pinned at the right edge, the column groups read from right to left, the compact layout indents from the right and numbers align with the end of their cells. The fields pane follows the reading direction of the page or element it is in (`dir="rtl"`).
+
 ### Large pivots
 
 `maxColumns` (1000 by default) cuts the column tree when a high-cardinality field is dropped on the columns. The result then has a `truncated` property, `onPivotTruncated` is raised, and the field list shows a notice.
+
+## Write-back
+
+With `enableWriteBack: true` (and `editable: true` in the grid options), users can type a new value into a value cell, including a subtotal or a grand total, and the plugin writes it back to the source rows behind the cell, then computes the pivot again. As in Excel What-If analysis, `writeBack.method` decides how the new value is spread:
+
+| Method | Effect on the source rows behind the cell |
+|---|---|
+| `weighted` (default) | every value is scaled by the same factor, keeping their proportions (an equal split when the total is 0) |
+| `equal` | every row gets the same share |
+| `equalIncrement` | every row changes by the same amount |
+
+`writeBack.precision` rounds the written values (`0` for quantities) and gives the rounding residue to the largest one, so the total is exactly the typed value. A value's own `writeBack` setting overrides the plugin one, and `writeBack: false` makes it read-only.
+
+A value can be edited when its aggregator allocates (`sum`, `avg`, `first`, `last`, or a custom aggregator with an `allocate` function), its field can be written and it is not shown as a calculation (`showAs`). A plain property is written directly; a field with a `getter` needs a `setter`:
+
+```ts
+{ id: 'AmountK', getter: (row) => row.Amount / 1000, setter: (row, value) => (row.Amount = value * 1000) }
+```
+
+`onBeforeWriteBack` can cancel an edit, and `onWriteBack` receives the changes of the source rows (`{ row, field, oldValue, newValue }`), for example to save them or to build an undo stack: `pivot.applyChanges(changes, true)` restores the old values. `pivot.setCellValue()` does the same as typing into a cell, and `engine.allocate()` computes the changes without applying them, for a server. A DataView source is told which items changed. The cell editor defaults to `Editors.Float`, so load `slick.editors.js` (or set `writeBack.editor`).
 
 ## The PivotTable Fields pane
 
@@ -136,9 +187,9 @@ const panel = new SlickPivotPanel(pivot, '#pivotPanel');
 
 The pane renders into the container you give it, so the page layout stays yours. Users can:
 
-- check a field to add it (numbers go to Values, other fields to Rows), or uncheck it to remove it from every area;
+- check a field to add it (numbers go to Values, other fields to Rows), or uncheck it to remove it from every area. A date field added to the rows or the columns is grouped by years, quarters and months, like Excel does (`autoDateGrouping`), and its levels are listed below it so that each can be added on its own;
 - drag fields from the list into an area, between areas, within an area to reorder them, or out of the areas to remove them;
-- open the `▾` menu of a pill (or press Enter on it) to move it, filter its items, sort it, or open the **Value Field Settings** (custom name, summarize by, show values as, number format);
+- open the `▾` menu of a pill (or press Enter on it) to move it, filter its items or sort it. The menu of a value pill lists the common aggregators under **Summarize Values By** (Sum, Count, Average, Max, Min, Distinct Count; set `summarizeByAggregators` to change the list), and opens the **Value Field Settings** (custom name, every aggregator, show values as, number format);
 - defer the layout updates and apply them with **Update**.
 
 Dragging uses pointer events, so it works the same with a mouse, a pen or a touch screen. Every drag action is also available from the keyboard: Alt+↑/↓ moves the focused pill, Alt+←/→ moves it to another area, Delete removes it, and the arrow keys move the focus. Moves are announced through an `aria-live` region.
@@ -158,9 +209,12 @@ pivot.setOptions({
     },
     async getItems(fieldId, { search, signal }) { /* distinct items for the filter dropdowns */ },
     async getSourceRows(request, rowKey, columnKey) { /* drill-down */ },
+    async writeBack(request, edit) { /* write the typed value back to the data */ },
   },
 });
 ```
+
+The request lists the level fields of the date hierarchies the spec uses, with a `dateLevel` property (`{ field: 'OrderDate', level: 'quarter' }`) that tells the server how to derive them.
 
 A SQL backend can return the subtotals and grand totals of one request with `GROUP BY … GROUPING SETS`, `ROLLUP` or `CUBE`. A Node.js backend can run the `PivotEngine` itself.
 
@@ -171,5 +225,5 @@ Include `slick.pivot.css` (or the `slick.pivot.scss` source). The colors are CSS
 ## Examples
 
 - [Pivoting](https://6pac.github.io/SlickGrid/examples/example-pivot.html): an MS Access style crosstab with custom column templates.
-- [PivotTable Fields](https://6pac.github.io/SlickGrid/examples/example-pivot-panel.html): the interactive pane, the three layouts, drill-down, deferred updates and a simulated server provider.
+- [PivotTable Fields](https://6pac.github.io/SlickGrid/examples/example-pivot-panel.html): the interactive pane, the three layouts, a date hierarchy, drill-down, write-back with undo, pinned or sticky grand totals, a right-to-left grid, deferred updates and a simulated server provider.
 - [Crosstab, lookups and measures](https://6pac.github.io/SlickGrid/examples/example-pivot-crosstab.html): lookups into related tables, distinct count, a custom aggregator and measures.

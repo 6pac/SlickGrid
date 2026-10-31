@@ -49,7 +49,7 @@ $pivot-grip-icon-path: "M9,3H11V5H9V3M13,3H15V5H13V3M9,7H11V9H9V7M13,7H15V9H13V7
     color: var(--slick-pivot-header-color);
     font-weight: var(--slick-header-font-weight, #{v.$slick-header-font-weight});
     background: var(--slick-pivot-header-bg);
-    border-right: 1px solid var(--slick-pivot-border-color);
+    border-inline-end: 1px solid var(--slick-pivot-border-color);
     border-bottom: 1px solid var(--slick-pivot-border-color);
   }
 
@@ -67,15 +67,18 @@ $pivot-grip-icon-path: "M9,3H11V5H9V3M13,3H15V5H13V3M9,7H11V9H9V7M13,7H15V9H13V7
     font-style: italic;
   }
 
-  // stays above the scrolling group captions, which the pre-header translates with the grid
-  .slick-pivot-header-group-pinned {
+  // the group cells of pinned and sticky columns stay above the scrolling ones, which the pre-header
+  // translates with the grid: the scroll offset cancels that translation and the dock offset (measured
+  // from the header cells) moves the cell to its band
+  .slick-pivot-header-group-docked {
     z-index: 2;
-    transform: translateX(var(--slick-pivot-scroll-left, 0px));
+    transform: translate3d(calc(var(--slick-pivot-scroll-left, 0px) + var(--slick-pivot-dock-offset, 0px)), 0, 0);
   }
 
   .slick-pivot-column-toggle {
     flex: 0 0 auto;
-    margin-right: 4px;
+    margin-inline-start: 0;
+    margin-inline-end: 4px;
     font-size: 15px;
     cursor: pointer;
   }
@@ -84,9 +87,19 @@ $pivot-grip-icon-path: "M9,3H11V5H9V3M13,3H15V5H13V3M9,7H11V9H9V7M13,7H15V9H13V7
     vertical-align: text-bottom;
   }
 
+  // numbers align with the end of the cell: the right, or the left in a right-to-left grid
   .slick-cell.slick-pivot-value {
-    text-align: right;
+    text-align: end;
     font-variant-numeric: tabular-nums;
+  }
+
+  // a value that can be typed into (write-back)
+  .slick-cell.slick-pivot-editable {
+    cursor: text;
+  }
+
+  .slick-cell.slick-pivot-editable.editable {
+    text-align: start;
   }
 
   .slick-cell.slick-pivot-total-column {
@@ -102,7 +115,8 @@ $pivot-grip-icon-path: "M9,3H11V5H9V3M13,3H15V5H13V3M9,7H11V9H9V7M13,7H15V9H13V7
 
   .slick-pivot-toggle {
     flex: 0 0 auto;
-    margin-right: 4px;
+    margin-inline-start: 0;
+    margin-inline-end: 4px;
     font-size: 15px;
     cursor: pointer;
   }
@@ -260,7 +274,8 @@ $pivot-grip-icon-path: "M9,3H11V5H9V3M13,3H15V5H13V3M9,7H11V9H9V7M13,7H15V9H13V7
   display: flex;
   align-items: center;
   gap: 6px;
-  padding: 2px 6px 2px 8px;
+  padding-block: 2px;
+  padding-inline: 8px 6px;
   cursor: grab;
   user-select: none;
   touch-action: none;
@@ -271,6 +286,12 @@ $pivot-grip-icon-path: "M9,3H11V5H9V3M13,3H15V5H13V3M9,7H11V9H9V7M13,7H15V9H13V7
 
   &.slick-pivot-field-used .slick-pivot-field-name {
     font-weight: 600;
+  }
+
+  // a level of the date hierarchy listed below its date field
+  &.slick-pivot-field-level {
+    padding-inline-start: 26px;
+    font-size: 0.95em;
   }
 }
 
@@ -602,7 +623,7 @@ $pivot-grip-icon-path: "M9,3H11V5H9V3M13,3H15V5H13V3M9,7H11V9H9V7M13,7H15V9H13V7
   display: block;
   width: 100%;
   padding: 5px 10px;
-  text-align: left;
+  text-align: start;
   white-space: nowrap;
   background: none;
   border: 0;
@@ -619,6 +640,26 @@ $pivot-grip-icon-path: "M9,3H11V5H9V3M13,3H15V5H13V3M9,7H11V9H9V7M13,7H15V9H13V7
     cursor: default;
     opacity: 0.45;
   }
+
+  &[role="menuitemradio"] {
+    position: relative;
+    padding-inline-start: 26px;
+  }
+
+  &[aria-checked="true"]::before {
+    content: '✓';
+    position: absolute;
+    inset-inline-start: 10px;
+    color: var(--slick-pivot-panel-accent);
+    font-weight: bold;
+  }
+}
+
+.slick-pivot-menu-heading {
+  padding: 5px 10px 3px;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--slick-pivot-panel-muted);
 }
 
 .slick-pivot-menu-separator {

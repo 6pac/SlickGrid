@@ -237,5 +237,66 @@ describe('Example - Pivot crosstab, lookups and measures', { retries: 1 }, () =>
       expect(engine.getFieldItems(rows, 'r')).to.deep.equal([{ value: 'a', label: 'a', count: 2 }, { value: 'b', label: 'b', count: 1 }]);
       expect(engine.inferFieldType([{ n: 1 }, { n: 2 }].map((row) => ({ r: row.n })), 'r')).to.eq('number');
     });
+
+    it('should derive the levels of a date hierarchy, captioned and sorted chronologically', () => {
+      const rows = [{ d: new Date(2024, 10, 5) }, { d: new Date(2023, 1, 20, 15, 30) }, { d: new Date(2024, 0, 9) }, { d: '2024-11-05T08:00:00' }, { d: null }];
+      const engine = new win.Slick.PivotEngine({ fields: [{ id: 'd', label: 'Date', type: 'date' }, { id: 'n', dateHierarchy: ['year'] }, { id: 'off', dateHierarchy: false }], locale: 'en-US' });
+      expect(engine.getDateHierarchy('d').map((field: any) => field.id)).to.deep.equal(['d.year', 'd.quarter', 'd.month', 'd.day']);
+      expect(engine.getDateHierarchy('n').map((field: any) => field.id)).to.deep.equal(['n.year']);
+      expect(engine.getField('n.month')).to.be.undefined;
+      expect(engine.getField('off.year')).to.be.undefined;
+      expect(engine.getField('d.month').dateLevel).to.deep.equal({ field: 'd', level: 'month' });
+      expect(engine.getFieldLabel('d.quarter')).to.eq('Quarters (Date)');
+      expect(engine.getFields().map((field: any) => field.id)).to.deep.equal(['d', 'n', 'off']);
+
+      const result = engine.execute(rows, { rows: ['d.year', 'd.quarter', 'd.month'], columns: [], values: [{ field: 'd', aggregator: 'count' }] });
+      const labels = (node: any): any[] => node.children.map((child: any) => (child.children.length ? [child.label, labels(child)] : child.label));
+      expect(labels(result.rowTree)).to.deep.equal([['2023', [['Qtr1', ['Feb']]]], ['2024', [['Qtr1', ['Jan']], ['Qtr4', ['Nov']]]], ['(blank)', [['(blank)', ['(blank)']]]]]);
+      // the string date and the date with a time fall on the same day
+      const days = engine.getFieldItems(rows, 'd.day');
+      expect(days.map((item: any) => item.label)).to.deep.equal(['2/20/2023', '1/9/2024', '11/5/2024', '(blank)']);
+      expect(days[2].count).to.eq(2);
+    });
+
+    it('should spread a new cell value over its source rows with the allocation methods of Excel What-If analysis', () => {
+      const fields = [{ id: 'g' }, { id: 'v', type: 'number' }, { id: 'double', getter: (row: any) => row.v * 2 }];
+      const allocate = (aggregator: string, values: any[], target: any, options?: any) => {
+        const rows = values.map((v) => ({ g: 'a', v }));
+        const engine = new win.Slick.PivotEngine({ fields });
+        const changes = engine.allocate(rows, { rows: ['g'], columns: [], values: [{ field: 'v', aggregator }] }, { rowKey: '["a"]', columnKey: ROOT, valueId: `${aggregator}:v` }, target, options);
+        engine.applyChanges(changes);
+        return rows.map((row) => row.v);
+      };
+      expect(allocate('sum', [10, 30, 60], 200)).to.deep.equal([20, 60, 120]);
+      expect(allocate('sum', [10, 30, 60], 130, { method: 'equalIncrement' })).to.deep.equal([20, 40, 70]);
+      expect(allocate('sum', [10, 30, 60], 30, { method: 'equal' })).to.deep.equal([10, 10, 10]);
+      expect(allocate('sum', [0, 0, 0], 30)).to.deep.equal([10, 10, 10]);
+      // whole units: the rounding residue goes to the largest value, so the total is kept
+      const units = allocate('sum', [1, 1, 1], 10, { precision: 0 });
+      expect(units.reduce((sum, v) => sum + v, 0)).to.eq(10);
+      expect(units.every((v) => Number.isInteger(v))).to.eq(true);
+      // no floating point noise without a precision
+      expect(allocate('sum', [1, 2, 4], 7.7)).to.deep.equal([1.1, 2.2, 4.4]);
+      expect(allocate('avg', [10, '', 30], 40)).to.deep.equal([20, '', 60]);
+      expect(allocate('avg', [10, 30], 25, { method: 'equalIncrement' })).to.deep.equal([15, 35]);
+      expect(allocate('first', ['', 5, 6], 9)).to.deep.equal(['', 9, 6]);
+      expect(allocate('last', [5, 6, null], 9)).to.deep.equal([5, 9, null]);
+
+      const engine = new win.Slick.PivotEngine({ fields });
+      expect(engine.canWriteBack({ field: 'v', aggregator: 'sum' })).to.eq(true);
+      expect(engine.canWriteBack({ field: 'v', aggregator: 'max' })).to.eq(false);
+      expect(engine.canWriteBack({ field: 'double', aggregator: 'sum' })).to.eq(false);
+      expect(engine.canWriteBack({ field: 'v', aggregator: 'sum', showAs: 'percentOfGrandTotal' })).to.eq(false);
+      expect(engine.canWriteBack({ field: 'v', aggregator: 'sum', writeBack: false })).to.eq(false);
+
+      // undo restores the old values; a setter writes a derived field
+      const rows = [{ g: 'a', v: 1 }, { g: 'a', v: 3 }];
+      const withSetter = new win.Slick.PivotEngine({ fields: [{ id: 'g' }, { id: 'double', getter: (row: any) => row.v * 2, setter: (row: any, value: number) => (row.v = value / 2) }] });
+      const changes = withSetter.allocate(rows, { rows: [], columns: [], values: [{ field: 'double', aggregator: 'sum' }] }, { rowKey: ROOT, columnKey: ROOT, valueId: 'sum:double' }, 16);
+      withSetter.applyChanges(changes);
+      expect(rows.map((row) => row.v)).to.deep.equal([2, 6]);
+      withSetter.applyChanges(changes, true);
+      expect(rows.map((row) => row.v)).to.deep.equal([1, 3]);
+    });
   });
 });

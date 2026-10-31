@@ -50,7 +50,7 @@ import type { SlickState } from './plugins/slick.state.js';
 import type { SlickGroupItemMetadataProvider } from './slick.groupitemmetadataprovider.js';
 import type { SlickRemoteModel } from './slick.remotemodel.js';
 import type { SlickRemoteModelYahoo } from './slick.remotemodel-yahoo.js';
-import type { PIVOT_VALUES_FIELD, PivotAggregators, PivotEngine } from './slick.pivotengine.js';
+import type { PIVOT_DATE_LEVELS, PIVOT_VALUES_FIELD, PivotAggregators, PivotEngine } from './slick.pivotengine.js';
 import type { SlickPivot } from './plugins/slick.pivot.js';
 import type { SlickPivotPanel } from './controls/slick.pivotpanel.js';
 import type { Draggable, MouseWheel, reconcileColumnOrder, Resizable, setupColumnReorderDrag, setupDropzonePillDrag } from './slick.interactions.js';
@@ -110,6 +110,7 @@ declare global {
     PivotAggregators: typeof PivotAggregators,
     PivotEngine: typeof PivotEngine,
     PIVOT_VALUES_FIELD: typeof PIVOT_VALUES_FIELD,
+    PIVOT_DATE_LEVELS: typeof PIVOT_DATE_LEVELS,
     Plugins: {
       CellMenu: typeof SlickCellMenu,
       ContextMenu: typeof SlickContextMenu,
