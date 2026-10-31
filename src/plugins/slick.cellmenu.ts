@@ -191,6 +191,10 @@ export class SlickCellMenu implements SlickPlugin {
     this._cellMenuProperties = Utils.extend({}, this._defaults, optionProperties);
   }
 
+  get options() {
+    return this._cellMenuProperties;
+  }
+
   init(grid: SlickGrid) {
     this._grid = grid;
     this._gridOptions = grid.getOptions();

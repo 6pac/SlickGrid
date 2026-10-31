@@ -33,3 +33,8 @@ tsconfig.tsbuildinfo
 !.vscode/tasks.json
 !.vscode/launch.json
 !.vscode/extensions.json
+
+# test and coverage
+coverage/
+.nyc_output/
+.vitest/
