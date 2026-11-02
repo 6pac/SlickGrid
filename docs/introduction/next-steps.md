@@ -8,7 +8,7 @@ You can now build, configure, and react to a grid. Here is where to go next.
 
 - Learn a topic in depth in the [In-depth](/in-depth/) section: editors, formatters, selection, grouping, pinned columns, theming, and more.
 - Look up any option, method, or event in the [Reference](/reference/). Use the **Section / A–Z** toggle or the search box.
-- Browse the [examples](https://github.com/6pac/SlickGrid/wiki/Examples).
+- Browse the [examples](/examples), or see the [Examples wiki page](https://github.com/6pac/SlickGrid/wiki/Examples).
 
 ## Common next topics
 
