@@ -44,6 +44,14 @@ export class SlickCellRangeDecorator implements SlickPlugin {
     this._selectionCss = options?.selectionCss || {} as CSSStyleDeclaration;
   }
 
+  get options(): CellRangeDecoratorOption {
+    return this._options;
+  }
+
+  get addonElement(): HTMLElement | null | undefined {
+    return this._elem;
+  }
+
   destroy() {
     this.hide();
   }

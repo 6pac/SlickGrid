@@ -5,18 +5,18 @@
   "version": "0.2.0",
   "configurations": [
     {
-        "type": "chrome",
-        "request": "launch",
-        "name": "Launch Chrome against localhost",
-        "url": "http://localhost:8080/examples/",
-        "webRoot": "${workspaceFolder}"
+      "type": "chrome",
+      "request": "launch",
+      "name": "Launch Chrome against localhost",
+      "url": "http://localhost:8080/examples/",
+      "webRoot": "${workspaceFolder}"
     },
     {
-        "type": "msedge",
-        "request": "launch",
-        "name": "Launch Edge against localhost",
-        "url": "http://localhost:8080/examples/",
-        "webRoot": "${workspaceFolder}"
+      "type": "msedge",
+      "request": "launch",
+      "name": "Launch Edge against localhost",
+      "url": "http://localhost:8080/examples/",
+      "webRoot": "${workspaceFolder}"
     },
     {
       "name": "Release Preview",
@@ -35,6 +35,23 @@
       "console": "integratedTerminal",
       "internalConsoleOptions": "openOnSessionStart",
       "skipFiles": ["<node_internals>/**", "node_modules/**"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Vitest - Debug Current Test File",
+      "autoAttachChildProcesses": true,
+      "skipFiles": ["<node_internals>/**", "**/node_modules/**"],
+      "program": "${workspaceRoot}/node_modules/vitest/vitest.mjs",
+      "args": [
+        "run",
+        "${relativeFile}",
+        "--no-watch",
+        "--config",
+        "./vitest.config.mts"
+      ],
+      "smartStep": true,
+      "console": "integratedTerminal"
     }
   ]
 }
