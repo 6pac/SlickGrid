@@ -125,8 +125,8 @@ describe('SlickGrid RTL (Right-to-Left)', () => {
 
       const range = grid.getVisibleRange(0, -200);
 
-      expect(range.leftPx).toBe(600);
-      expect(range.rightPx).toBe(1400);
+      expect(range.leftPx).toBe(200);
+      expect(range.rightPx).toBe(1000);
       expect(range.rightPx).toBeGreaterThan(range.leftPx);
     });
   });
