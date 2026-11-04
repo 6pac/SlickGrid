@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
-import { Draggable, MouseWheel, Resizable } from '../slick.interactions';
+import { Draggable, MouseWheel, reconcileColumnOrder, Resizable, setupColumnReorderDrag, setupDropzonePillDrag } from '../slick.interactions';
 
 describe('Draggable class', () => {
   let containerElement: HTMLDivElement;
@@ -51,6 +51,7 @@ describe('Draggable class', () => {
     expect(dragInitSpy).toHaveBeenCalled();
     expect(dragSpy).not.toHaveBeenCalled();
 
+    window.dispatchEvent(new MouseEvent('mouseup'));
     dg.destroy();
   });
 
@@ -94,6 +95,40 @@ describe('Draggable class', () => {
     expect(dragStartSpy).not.toHaveBeenCalled();
     expect(dragSpy).not.toHaveBeenCalled();
     expect(dragEndSpy).not.toHaveBeenCalled();
+  });
+
+  it('does not start a drag when the initialization callback cancels it', () => {
+    const onDragInit = vi.fn(() => false);
+    const onDragStart = vi.fn();
+    const onDrag = vi.fn();
+    dg = Draggable({ containerElement, onDragInit, onDragStart, onDrag });
+    containerElement.dispatchEvent(new MouseEvent('mousedown', { clientX: 2 }));
+    document.body.dispatchEvent(new MouseEvent('mousemove', { clientX: 20 }));
+    window.dispatchEvent(new MouseEvent('mouseup'));
+    expect(onDragInit).toHaveBeenCalledOnce();
+    expect(onDragStart).not.toHaveBeenCalled();
+    expect(onDrag).not.toHaveBeenCalled();
+  });
+
+  it('stops listening for new drag starts after destroy', () => {
+    const onDragInit = vi.fn();
+    dg = Draggable({ containerElement, onDragInit });
+    dg.destroy();
+    containerElement.dispatchEvent(new MouseEvent('mousedown'));
+    expect(onDragInit).not.toHaveBeenCalled();
+  });
+
+  it('accepts a nested drag handle through allowDragFromClosest', () => {
+    const handle = document.createElement('div');
+    handle.className = 'handle';
+    const child = document.createElement('span');
+    handle.appendChild(child);
+    containerElement.appendChild(handle);
+    const onDragInit = vi.fn();
+    dg = Draggable({ containerElement, allowDragFrom: '.handle', allowDragFromClosest: '.handle', onDragInit });
+    child.dispatchEvent(new MouseEvent('mousedown', { bubbles: true }));
+    window.dispatchEvent(new MouseEvent('mouseup'));
+    expect(onDragInit).toHaveBeenCalledOnce();
   });
 
   it('should trigger mousedown and expect a dragInit and a dragStart and drag to all happen since it was triggered by an allowed element and we did move afterward', () => {
@@ -161,8 +196,8 @@ describe('Draggable class', () => {
     });
     expect(dragPos).toEqual(dragStartPos);
     expect(dragEndPos).toEqual({ ...dragStartPos, target: expect.any(Window) });
-    expect(removeBodyListenerSpy).toHaveBeenCalledTimes(2 * 2); // 2x events
-    expect(removeWindowListenerSpy).toHaveBeenCalledTimes(3 * 2); // 3x events
+    expect(removeBodyListenerSpy).toHaveBeenCalledTimes(2);
+    expect(removeWindowListenerSpy).toHaveBeenCalledTimes(3);
   });
 
   it('should NOT trigger dragInit,dragStart events when user is pressing mousedown and mousemove + Meta key combo that we considered as forbidden via "preventDragFromKeys"', async () => {
@@ -211,6 +246,64 @@ describe('Draggable class', () => {
     expect(dragSpy).not.toHaveBeenCalled();
     expect(dragEndSpy).not.toHaveBeenCalled();
     expect(bodyRemoveListenerSpy).not.toHaveBeenCalled();
+  });
+});
+
+describe('column and grouping drag interactions', () => {
+  const dragEvent = (type: string, x = 0) => {
+    const event = new Event(type, { bubbles: true, cancelable: true });
+    Object.defineProperty(event, 'clientX', { value: x });
+    Object.defineProperty(event, 'clientY', { value: 10 });
+    return event;
+  };
+
+  afterEach(() => { document.body.innerHTML = ''; vi.restoreAllMocks(); });
+
+  it('reconciles reordered columns while retaining hidden and fixed positions', () => {
+    const columns = [{ id: 'a' }, { id: 'fixed', reorderable: false }, { id: 'hidden', hidden: true }, { id: 'b' }];
+    expect(reconcileColumnOrder(columns, ['b', 'a'])).toEqual([columns[3], columns[1], columns[2], columns[0]]);
+    expect(reconcileColumnOrder(columns, ['a', 'a'])).toEqual(columns);
+    expect(reconcileColumnOrder(columns, ['b'])).toEqual(columns);
+  });
+
+  it('reorders native dragged headers and reports the original and new order', () => {
+    const header = document.createElement('div');
+    const a = document.createElement('div');
+    const b = document.createElement('div');
+    a.className = b.className = 'slick-header-column';
+    a.dataset.id = 'a';
+    b.dataset.id = 'b';
+    header.append(a, b);
+    document.body.appendChild(header);
+    vi.spyOn(a, 'getBoundingClientRect').mockReturnValue(new DOMRect(0, 0, 100, 20));
+    vi.spyOn(b, 'getBoundingClientRect').mockReturnValue(new DOMRect(100, 0, 100, 20));
+    const onDragEnd = vi.fn();
+    const instance = setupColumnReorderDrag({ headers: [header], container: header, viewportScrollContainerX: header, onDragEnd });
+    a.dispatchEvent(dragEvent('dragstart', 50));
+    b.dispatchEvent(dragEvent('dragover', 190));
+    expect([...header.children]).toEqual([b, a]);
+    a.dispatchEvent(dragEvent('dragend'));
+    expect(onDragEnd).toHaveBeenCalledWith(['b', 'a'], ['a', 'b']);
+    instance.destroy();
+    expect(a.draggable).toBe(false);
+  });
+
+  it('reorders grouping pills and notifies after the drag ends', () => {
+    const dropzone = document.createElement('div');
+    const a = document.createElement('div');
+    const b = document.createElement('div');
+    a.className = b.className = 'slick-dropped-grouping';
+    dropzone.append(a, b);
+    document.body.appendChild(dropzone);
+    vi.spyOn(b, 'getBoundingClientRect').mockReturnValue(new DOMRect(100, 0, 100, 20));
+    const onPillDragEnd = vi.fn();
+    const instance = setupDropzonePillDrag({ dropzoneElm: dropzone, onPillDragEnd });
+    a.dispatchEvent(dragEvent('dragstart', 10));
+    b.dispatchEvent(dragEvent('dragover', 190));
+    expect([...dropzone.children]).toEqual([b, a]);
+    a.dispatchEvent(dragEvent('dragend'));
+    expect(onPillDragEnd).toHaveBeenCalledWith(a);
+    instance.destroy();
   });
 });
 
